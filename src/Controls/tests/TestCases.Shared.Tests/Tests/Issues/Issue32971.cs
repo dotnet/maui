@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,10 +16,10 @@ public class Issue32971 : _IssuesUITest
 	[Category(UITestCategories.WebView)]
 	public void WebViewShouldScrollInsideScrollView()
 	{
-		VerifyInternetConnectivity();
 		App.WaitForElement("TestScrollView");
-
-		// The test passes if we can scroll the WebView content inside a ScrollView.
 		App.ScrollDown("TestScrollView");
+		App.Tap("CheckButton");
+		var scrollStateLabel = App.FindElement("ScrollStateLabel").GetText();
+		Assert.That(scrollStateLabel, Is.EqualTo("Scrolled"));
 	}
 }
