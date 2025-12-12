@@ -238,9 +238,18 @@ namespace Microsoft.Maui.Platform
 
 		void IHandleWindowInsets.ResetWindowInsets(View view)
 		{
+			System.Diagnostics.Debug.WriteLine($"MAUI_INSETS: ResetWindowInsets called on {GetType().Name}");
+			System.Diagnostics.Debug.WriteLine($"MAUI_INSETS: Current padding: L={PaddingLeft} T={PaddingTop} R={PaddingRight} B={PaddingBottom}");
+			System.Diagnostics.Debug.WriteLine($"MAUI_INSETS: _hasStoredOriginalPadding={_hasStoredOriginalPadding}");
+			
 			if (_hasStoredOriginalPadding)
 			{
+				System.Diagnostics.Debug.WriteLine($"MAUI_INSETS: Restoring original padding: L={_originalPadding.left} T={_originalPadding.top} R={_originalPadding.right} B={_originalPadding.bottom}");
 				SetPadding(_originalPadding.left, _originalPadding.top, _originalPadding.right, _originalPadding.bottom);
+			}
+			else
+			{
+				System.Diagnostics.Debug.WriteLine($"MAUI_INSETS: No original padding stored, keeping current padding");
 			}
 		}
 

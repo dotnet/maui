@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       x:Class="Maui.Controls.Sample.Issues.Issue33142Shell"
+       Title="Issue 33142 Shell">
+    
+    <!-- Bottom tabs using TabBar -->
+    <TabBar>
+        <!-- Tab 1: Test page -->
+        <Tab Title="Test" Icon="dotnet_bot.png">
+            <ShellContent>
+                <ContentPage SafeAreaEdges="None">
+                    <!-- Full-height container to test keyboard resize behavior -->
+                    <Grid x:Name="MainContainer" 
+                          AutomationId="MainContainer"
+                          BackgroundColor="LightCoral"
+                          RowDefinitions="*,Auto"
+                          SafeAreaEdges="All">
+                        
+                        <VerticalStackLayout Grid.Row="0" Padding="20" Spacing="10">
+                            <Label 
+                                Text="Shell with Bottom Tabs + SoftInput.AdjustNothing"
+                                FontSize="18"
+                                FontAttributes="Bold"/>
+                            
+                            <Label 
+                                Text="When keyboard appears, SafeAreaEdges.All on Grid should handle keyboard insets. Content should remain visible above keyboard."
+                                FontSize="14"
+                                TextColor="DarkRed"/>
+                        </VerticalStackLayout>
+                        
+                        <!-- Bottom marker with entry -->
+                        <Border Grid.Row="1"
+                                AutomationId="BottomMarker"
+                                BackgroundColor="DarkRed"
+                                HeightRequest="60"
+                                Margin="0">
+                            <VerticalStackLayout Spacing="5" HorizontalOptions="Center" VerticalOptions="Center">
+                                <Label 
+                                    Text="BOTTOM MARKER"
+                                    FontSize="12"
+                                    FontAttributes="Bold"
+                                    TextColor="White"
+                                    HorizontalOptions="Center"/>
+                                <Entry 
+                                    Placeholder="Tap here - tabs should move up"
+                                    AutomationId="TestEntry"
+                                    BackgroundColor="White"
+                                    WidthRequest="250"/>
+                            </VerticalStackLayout>
+                        </Border>
+                    </Grid>
+                </ContentPage>
+            </ShellContent>
+        </Tab>
+        
+        <!-- Tab 2: Info page -->
+        <Tab Title="Info" Icon="dotnet_bot.png">
+            <ShellContent>
+                <ContentPage>
+                    <VerticalStackLayout Padding="20" Spacing="10">
+                        <Label 
+                            Text="Tab 2"
+                            FontSize="24"
+                            FontAttributes="Bold"/>
+                        <Label 
+                            Text="This tab is here to verify bottom tabs remain functional after keyboard interaction."
+                            FontSize="14"/>
+                    </VerticalStackLayout>
+                </ContentPage>
+            </ShellContent>
+        </Tab>
+        
+        <!-- Tab 3: Another tab for visual balance -->
+        <Tab Title="More" Icon="dotnet_bot.png">
+            <ShellContent>
+                <ContentPage>
+                    <VerticalStackLayout Padding="20" Spacing="10">
+                        <Label 
+                            Text="Tab 3"
+                            FontSize="24"
+                            FontAttributes="Bold"/>
+                        <Label 
+                            Text="Another tab to test Shell bottom tab bar behavior with keyboard."
+                            FontSize="14"/>
+                    </VerticalStackLayout>
+                </ContentPage>
+            </ShellContent>
+        </Tab>
+    </TabBar>
+    
+</Shell>

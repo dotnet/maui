@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<FlyoutPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+            xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+            x:Class="Maui.Controls.Sample.Issues.Issue33142FlyoutPage"
+            Title="Issue 33142 FlyoutPage">
+    
+    <!-- Flyout (menu) -->
+    <FlyoutPage.Flyout>
+        <ContentPage Title="Menu">
+            <VerticalStackLayout Padding="20" Spacing="10">
+                <Label 
+                    Text="Flyout Menu"
+                    FontSize="24"
+                    FontAttributes="Bold"/>
+                <Label 
+                    Text="This is the flyout/menu side. The detail page tests keyboard resize."
+                    FontSize="14"/>
+                <Button 
+                    Text="Toggle Flyout"
+                    Clicked="OnToggleFlyout"/>
+            </VerticalStackLayout>
+        </ContentPage>
+    </FlyoutPage.Flyout>
+    
+    <!-- Detail (main content) -->
+    <FlyoutPage.Detail>
+        <NavigationPage>
+            <x:Arguments>
+                <ContentPage Title="Detail" SafeAreaEdges="None">
+                    <!-- Full-height container to test keyboard resize behavior -->
+                    <Grid x:Name="MainContainer" 
+                          AutomationId="MainContainer"
+                          BackgroundColor="LightGreen"
+                          RowDefinitions="*,Auto"
+                          SafeAreaEdges="All">
+                        
+                        <VerticalStackLayout Grid.Row="0" Padding="20" Spacing="10">
+                            <Label 
+                                Text="FlyoutPage with SoftInput.AdjustNothing"
+                                FontSize="18"
+                                FontAttributes="Bold"/>
+                            
+                            <Label 
+                                Text="When keyboard appears, SafeAreaEdges.All on Grid should handle keyboard insets. This ensures content remains above the keyboard."
+                                FontSize="14"
+                                TextColor="DarkGreen"/>
+                            
+                            <Button 
+                                Text="Open Flyout Menu"
+                                Clicked="OnToggleFlyout"
+                                Margin="0,20,0,0"/>
+                        </VerticalStackLayout>
+                        
+                        <!-- Bottom marker with entry -->
+                        <Border Grid.Row="1"
+                                AutomationId="BottomMarker"
+                                BackgroundColor="DarkGreen"
+                                HeightRequest="60"
+                                Margin="0">
+                            <VerticalStackLayout Spacing="5" HorizontalOptions="Center" VerticalOptions="Center">
+                                <Label 
+                                    Text="BOTTOM MARKER"
+                                    FontSize="12"
+                                    FontAttributes="Bold"
+                                    TextColor="White"
+                                    HorizontalOptions="Center"/>
+                                <Entry 
+                                    Placeholder="Tap here - detail should resize"
+                                    AutomationId="TestEntry"
+                                    BackgroundColor="White"
+                                    WidthRequest="250"/>
+                            </VerticalStackLayout>
+                        </Border>
+                    </Grid>
+                </ContentPage>
+            </x:Arguments>
+        </NavigationPage>
+    </FlyoutPage.Detail>
+    
+</FlyoutPage>

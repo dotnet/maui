@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Platform
 		readonly HashSet<AView> _trackedViews = [];
 		bool IsImeAnimating { get; set; }
 
-		AView? _pendingView;
+		readonly List<AView> _pendingViews = [];
 
 		// Static tracking for views that have local inset listeners.
 		// This registry allows child views to find their appropriate listener without
@@ -187,24 +187,38 @@ namespace Microsoft.Maui.Platform
 
 		public virtual WindowInsetsCompat? OnApplyWindowInsets(AView? v, WindowInsetsCompat? insets)
 		{
+			System.Diagnostics.Debug.WriteLine($"MAUI_INSETS: OnApplyWindowInsets called - View={v?.GetType().Name}, IsImeAnimating={IsImeAnimating}");
+			
 			if (insets is null || !insets.HasInsets || v is null || IsImeAnimating)
 			{
-				if (IsImeAnimating)
+				System.Diagnostics.Debug.WriteLine($"MAUI_INSETS: Early return - insets null={insets is null}, HasInsets={insets?.HasInsets}, v null={v is null}, IsImeAnimating={IsImeAnimating}");
+				
+				if (IsImeAnimating && v is not null)
 				{
-					_pendingView = v;
+					// Add view to pending list if not already there
+					if (!_pendingViews.Contains(v))
+					{
+						System.Diagnostics.Debug.WriteLine($"MAUI_INSETS: Adding view to pending list: {v.GetType().Name}");
+						_pendingViews.Add(v);
+					}
 				}
 
 				return insets;
 			}
 
-			_pendingView = null;
+			// Clear pending views when processing insets normally
+			_pendingViews.Clear();
 
+			System.Diagnostics.Debug.WriteLine($"MAUI_INSETS: Processing insets for view: {v.GetType().Name}");
+			
 			// Handle custom inset views first
 			if (v is IHandleWindowInsets customHandler)
 			{
+				System.Diagnostics.Debug.WriteLine($"MAUI_INSETS: View implements IHandleWindowInsets, calling HandleWindowInsets");
 				return customHandler.HandleWindowInsets(v, insets);
 			}
 
+			System.Diagnostics.Debug.WriteLine($"MAUI_INSETS: Using default window insets");
 			// Apply default window insets for standard views
 			return ApplyDefaultWindowInsets(v, insets);
 		}
@@ -424,19 +438,74 @@ namespace Microsoft.Maui.Platform
 
 			if (IsImeAnimation(animation))
 			{
-				if (_pendingView is AView view)
+				// Take snapshot of views that need reset and recalculation
+				var trackedViewsSnapshot = _trackedViews.ToArray();
+				var pendingViewsSnapshot = _pendingViews.ToArray();
+				
+				System.Diagnostics.Debug.WriteLine($"MAUI_INSETS: OnEnd - Starting reset loop with {trackedViewsSnapshot.Length} tracked views");
+				
+				// Reset each tracked view by removing from tracking
+				foreach (var view in trackedViewsSnapshot)
 				{
-					_pendingView = null;
-					view.Post(() =>
+					System.Diagnostics.Debug.WriteLine($"MAUI_INSETS: Processing view type: {view.GetType().Name}");
+					
+					// Reset padding to allow recalculation with correct view bounds
+					if (view is IHandleWindowInsets customHandler)
+					{
+						System.Diagnostics.Debug.WriteLine($"MAUI_INSETS: *** VIEW IMPLEMENTS IHandleWindowInsets: {view.GetType().FullName}");
+						customHandler.ResetWindowInsets(view);
+					}
+					else
+					{
+						System.Diagnostics.Debug.WriteLine($"MAUI_INSETS: View does NOT implement IHandleWindowInsets");
+					}
+					
+					_trackedViews.Remove(view);
+				}
+				
+				System.Diagnostics.Debug.WriteLine($"MAUI_INSETS: OnEnd - Finished reset loop, posting callback");
+				
+				// Post a single callback to request inset recalculation on all tracked and pending views
+				// This ensures all views get updated after keyboard animation completes
+				if (trackedViewsSnapshot.Length > 0 || pendingViewsSnapshot.Length > 0)
+				{
+					// Use any available view to post the callback
+					var viewToPost = trackedViewsSnapshot.FirstOrDefault() ?? pendingViewsSnapshot.FirstOrDefault();
+					viewToPost?.Post(() =>
 					{
 						IsImeAnimating = false;
-						ViewCompat.RequestApplyInsets(view);
+						
+						System.Diagnostics.Debug.WriteLine($"MAUI_INSETS: Inside Post callback - marking {trackedViewsSnapshot.Length} tracked and {pendingViewsSnapshot.Length} pending views for recalculation");
+						
+						// Mark LayoutViewGroups as needing SafeArea recalculation
+						// This will trigger RequestApplyInsets on the next layout pass
+						foreach (var view in trackedViewsSnapshot)
+						{
+							if (view is LayoutViewGroup layoutView)
+							{
+								layoutView.MarkSafeAreaEdgeConfigurationChanged();
+								System.Diagnostics.Debug.WriteLine($"MAUI_INSETS: Marked {view.GetType().Name} for recalculation");
+							}
+						}
+						
+						foreach (var view in pendingViewsSnapshot)
+						{
+							if (view is LayoutViewGroup layoutView)
+							{
+								layoutView.MarkSafeAreaEdgeConfigurationChanged();
+								System.Diagnostics.Debug.WriteLine($"MAUI_INSETS: Marked {view.GetType().Name} for recalculation");
+							}
+						}
 					});
 				}
 				else
 				{
+					// No views to update, just clear the animation flag
 					IsImeAnimating = false;
 				}
+				
+				// Clear pending views since we handled them
+				_pendingViews.Clear();
 			}
 		}
 

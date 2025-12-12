@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<TabbedPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+            xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+            x:Class="Maui.Controls.Sample.Issues.Issue33142TabbedPage"
+            Title="Issue 33142 TabbedPage">
+    
+    <!-- Tab 1: Test page -->
+    <ContentPage Title="Test" IconImageSource="dotnet_bot.png" SafeAreaEdges="None">
+        <!-- Full-height container to test keyboard resize behavior -->
+        <Grid x:Name="MainContainer" 
+              AutomationId="MainContainer"
+              BackgroundColor="LightBlue"
+              RowDefinitions="*,Auto"
+              SafeAreaEdges="All">
+            
+            <VerticalStackLayout Grid.Row="0" Padding="20" Spacing="10">
+                <Label 
+                    Text="TabbedPage with SoftInput.AdjustNothing"
+                    FontSize="18"
+                    FontAttributes="Bold"/>
+                
+                <Label 
+                    Text="When keyboard appears, SafeAreaEdges.All on Grid should handle keyboard insets. Content should remain visible above keyboard."
+                    FontSize="14"
+                    TextColor="DarkSlateGray"/>
+            </VerticalStackLayout>
+            
+            <!-- Bottom marker with entry -->
+            <Border Grid.Row="1"
+                    AutomationId="BottomMarker"
+                    BackgroundColor="Red"
+                    HeightRequest="60"
+                    Margin="0">
+                <VerticalStackLayout Spacing="5" HorizontalOptions="Center" VerticalOptions="Center">
+                    <Label 
+                        Text="BOTTOM MARKER"
+                        FontSize="12"
+                        FontAttributes="Bold"
+                        TextColor="White"
+                        HorizontalOptions="Center"/>
+                    <Entry 
+                        Placeholder="Tap here - tabs should move up"
+                        AutomationId="TestEntry"
+                        BackgroundColor="White"
+                        WidthRequest="250"/>
+                </VerticalStackLayout>
+            </Border>
+        </Grid>
+    </ContentPage>
+    
+    <!-- Tab 2: Info page -->
+    <ContentPage Title="Info" IconImageSource="dotnet_bot.png">
+        <VerticalStackLayout Padding="20" Spacing="10">
+            <Label 
+                Text="Tab 2"
+                FontSize="24"
+                FontAttributes="Bold"/>
+            <Label 
+                Text="This tab is here to verify tabs remain functional after keyboard interaction."
+                FontSize="14"/>
+        </VerticalStackLayout>
+    </ContentPage>
+    
+</TabbedPage>

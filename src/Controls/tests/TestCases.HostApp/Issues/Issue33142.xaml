@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue33142"
+             Title="Issue 33142"
+             SafeAreaEdges="None">
+    
+    <!-- Full-height container with distinct visual marker at bottom -->
+    <!-- We'll measure the bottom marker's position to verify content moves up when keyboard appears -->
+    <Grid x:Name="MainContainer" 
+          AutomationId="MainContainer"
+          BackgroundColor="LightBlue"
+          RowDefinitions="*,Auto"
+          SafeAreaEdges="All">
+        
+        <!-- Filler content to ensure container fills screen -->
+        <VerticalStackLayout Grid.Row="0" Padding="20" Spacing="10">
+            <Label 
+                Text="Test keyboard overlap with SoftInput.AdjustNothing"
+                FontSize="18"
+                FontAttributes="Bold"/>
+            
+            <Label 
+                Text="With AdjustNothing and SafeAreaEdges.All on Grid, bottom padding is applied when keyboard appears. The bottom marker should move up to stay visible above the keyboard."
+                FontSize="14"
+                TextColor="DarkSlateGray"/>
+        </VerticalStackLayout>
+        
+        <!-- Bottom marker - this should move up to stay visible above keyboard -->
+        <!-- We test by measuring the marker's Y position before and after keyboard appears -->
+        <Border Grid.Row="1"
+                AutomationId="BottomMarker"
+                BackgroundColor="Red"
+                HeightRequest="60"
+                Margin="0">
+            <VerticalStackLayout Spacing="5" HorizontalOptions="Center" VerticalOptions="Center">
+                <Label 
+                    Text="BOTTOM MARKER"
+                    FontSize="12"
+                    FontAttributes="Bold"
+                    TextColor="White"
+                    HorizontalOptions="Center"/>
+                <Entry 
+                    Placeholder="Tap here to show keyboard"
+                    AutomationId="TestEntry"
+                    BackgroundColor="White"
+                    WidthRequest="250"/>
+            </VerticalStackLayout>
+        </Border>
+    </Grid>
+</ContentPage>

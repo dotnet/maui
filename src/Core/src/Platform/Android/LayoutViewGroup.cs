@@ -193,8 +193,12 @@ namespace Microsoft.Maui.Platform
 
 		WindowInsetsCompat? IHandleWindowInsets.HandleWindowInsets(View view, WindowInsetsCompat insets)
 		{
+			System.Diagnostics.Debug.WriteLine($"MAUI_INSETS: LayoutViewGroup.HandleWindowInsets called");
+			System.Diagnostics.Debug.WriteLine($"MAUI_INSETS: Current padding before: L={PaddingLeft} T={PaddingTop} R={PaddingRight} B={PaddingBottom}");
+			
 			if (CrossPlatformLayout is null || insets is null)
 			{
+				System.Diagnostics.Debug.WriteLine($"MAUI_INSETS: Early return - CrossPlatformLayout null={CrossPlatformLayout is null}, insets null={insets is null}");
 				return insets;
 			}
 
@@ -202,16 +206,29 @@ namespace Microsoft.Maui.Platform
 			{
 				_originalPadding = (PaddingLeft, PaddingTop, PaddingRight, PaddingBottom);
 				_hasStoredOriginalPadding = true;
+				System.Diagnostics.Debug.WriteLine($"MAUI_INSETS: Stored original padding: L={_originalPadding.left} T={_originalPadding.top} R={_originalPadding.right} B={_originalPadding.bottom}");
 			}
 
-			return SafeAreaExtensions.ApplyAdjustedSafeAreaInsetsPx(insets, CrossPlatformLayout, _context, view);
+			System.Diagnostics.Debug.WriteLine($"MAUI_INSETS: Calling ApplyAdjustedSafeAreaInsetsPx");
+			var result = SafeAreaExtensions.ApplyAdjustedSafeAreaInsetsPx(insets, CrossPlatformLayout, _context, view);
+			System.Diagnostics.Debug.WriteLine($"MAUI_INSETS: After ApplyAdjustedSafeAreaInsetsPx - padding: L={PaddingLeft} T={PaddingTop} R={PaddingRight} B={PaddingBottom}");
+			return result;
 		}
 
 		void IHandleWindowInsets.ResetWindowInsets(View view)
 		{
+			System.Diagnostics.Debug.WriteLine($"MAUI_INSETS: ResetWindowInsets called on {GetType().Name}");
+			System.Diagnostics.Debug.WriteLine($"MAUI_INSETS: Current padding: L={PaddingLeft} T={PaddingTop} R={PaddingRight} B={PaddingBottom}");
+			System.Diagnostics.Debug.WriteLine($"MAUI_INSETS: _hasStoredOriginalPadding={_hasStoredOriginalPadding}");
+			
 			if (_hasStoredOriginalPadding)
 			{
+				System.Diagnostics.Debug.WriteLine($"MAUI_INSETS: Restoring original padding: L={_originalPadding.left} T={_originalPadding.top} R={_originalPadding.right} B={_originalPadding.bottom}");
 				SetPadding(_originalPadding.left, _originalPadding.top, _originalPadding.right, _originalPadding.bottom);
+			}
+			else
+			{
+				System.Diagnostics.Debug.WriteLine($"MAUI_INSETS: No original padding stored, keeping current padding");
 			}
 		}
 

@@ -8,6 +8,16 @@ namespace Microsoft.Maui.Platform;
 
 internal static class SafeAreaExtensions
 {
+	// Edge indices for safe area calculations
+	private const int EdgeLeft = 0;
+	private const int EdgeTop = 1;
+	private const int EdgeRight = 2;
+	private const int EdgeBottom = 3;
+
+	// SoftInput adjust mask constant (0xf0) to extract the adjust mode from SoftInput flags
+	// This allows us to distinguish between different SoftInput modes: AdjustPan (0x20), AdjustNothing (0x30), etc.
+	private const SoftInput AdjustMask = (SoftInput)0xf0;
+
 	internal static ISafeAreaView2? GetSafeAreaView2(object? layout) =>
 		layout switch
 		{
@@ -45,55 +55,78 @@ internal static class SafeAreaExtensions
 		Context context,
 		View view)
 	{
+		System.Diagnostics.Debug.WriteLine($"MAUI_INSETS: === ApplyAdjustedSafeAreaInsetsPx START ===");
+		System.Diagnostics.Debug.WriteLine($"MAUI_INSETS: View type: {view.GetType().Name}");
+		
 		WindowInsetsCompat? newWindowInsets;
 		var baseSafeArea = windowInsets.ToSafeAreaInsetsPx(context);
 		var keyboardInsets = windowInsets.GetKeyboardInsetsPx(context);
 		var isKeyboardShowing = !keyboardInsets.IsEmpty;
 
+		System.Diagnostics.Debug.WriteLine($"MAUI_INSETS: baseSafeArea: L={baseSafeArea.Left} T={baseSafeArea.Top} R={baseSafeArea.Right} B={baseSafeArea.Bottom}");
+		System.Diagnostics.Debug.WriteLine($"MAUI_INSETS: keyboardInsets: L={keyboardInsets.Left} T={keyboardInsets.Top} R={keyboardInsets.Right} B={keyboardInsets.Bottom}");
+		System.Diagnostics.Debug.WriteLine($"MAUI_INSETS: isKeyboardShowing={isKeyboardShowing}");
+
+		// Get the window's SoftInputMode to check for AdjustPan
+		var window = context.GetActivity()?.Window;
+		var softInputMode = window?.Attributes?.SoftInputMode ?? SoftInput.StateUnspecified;
+
+		// When AdjustPan is set with keyboard showing, consume all insets to prevent any view from applying padding
+		// Android handles window panning automatically - we don't want additional inset padding
+		bool isAdjustPan = isKeyboardShowing &&
+			(softInputMode & AdjustMask) == SoftInput.AdjustPan;
+
+		if (isAdjustPan)
+		{
+			// With AdjustPan, consume ALL insets - don't apply any safe area padding
+			// Android will handle the window panning behavior
+			return WindowInsetsCompat.Consumed;
+		}
+
 		var layout = crossPlatformLayout;
 		var safeAreaView2 = GetSafeAreaView2(layout);
 		var margins = (safeAreaView2 as IView)?.Margin ?? Thickness.Zero;
 
-		if (safeAreaView2 is not null)
+		// When keyboard is showing, we may need to pad the container even if there's no SafeAreaView2
+		// This ensures drawer layouts, coordinator layouts, and other containers can be properly adjusted
+		// with SafeAreaEdges when using AdjustNothing mode
+		bool shouldApplyKeyboardInsets = isKeyboardShowing;
+
+		System.Diagnostics.Debug.WriteLine($"MAUI_INSETS: shouldApplyKeyboardInsets={shouldApplyKeyboardInsets}, safeAreaView2 null={safeAreaView2 is null}");
+
+		if (safeAreaView2 is not null || shouldApplyKeyboardInsets)
 		{
 			// Apply safe area selectively per edge based on SafeAreaRegions
-			var left = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(0, layout), baseSafeArea.Left, 0, isKeyboardShowing, keyboardInsets);
-			var top = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(1, layout), baseSafeArea.Top, 1, isKeyboardShowing, keyboardInsets);
-			var right = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(2, layout), baseSafeArea.Right, 2, isKeyboardShowing, keyboardInsets);
-			var bottom = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(3, layout), baseSafeArea.Bottom, 3, isKeyboardShowing, keyboardInsets);
+			var leftRegion = GetSafeAreaRegionForEdge(EdgeLeft, layout);
+			var topRegion = GetSafeAreaRegionForEdge(EdgeTop, layout);
+			var rightRegion = GetSafeAreaRegionForEdge(EdgeRight, layout);
+			var bottomRegion = GetSafeAreaRegionForEdge(EdgeBottom, layout);
+			
+			System.Diagnostics.Debug.WriteLine($"MAUI_INSETS: SafeAreaRegions - L={leftRegion} T={topRegion} R={rightRegion} B={bottomRegion}");
+			
+			var left = GetSafeAreaForEdge(leftRegion, baseSafeArea.Left, EdgeLeft, isKeyboardShowing, keyboardInsets, softInputMode);
+			var top = GetSafeAreaForEdge(topRegion, baseSafeArea.Top, EdgeTop, isKeyboardShowing, keyboardInsets, softInputMode);
+			var right = GetSafeAreaForEdge(rightRegion, baseSafeArea.Right, EdgeRight, isKeyboardShowing, keyboardInsets, softInputMode);
+			var bottom = GetSafeAreaForEdge(bottomRegion, baseSafeArea.Bottom, EdgeBottom, isKeyboardShowing, keyboardInsets, softInputMode);
+
+			System.Diagnostics.Debug.WriteLine($"MAUI_INSETS: After GetSafeAreaForEdge - L={left} T={top} R={right} B={bottom}");
 
 			var globalWindowInsetsListener = MauiWindowInsetListener.FindListenerForView(view);
-            bool hasTrackedViews = globalWindowInsetsListener?.HasTrackedView == true;
+			bool hasTrackedViews = globalWindowInsetsListener?.HasTrackedView == true;
 
-            // If this view has no safe area padding to apply, pass insets through to children
-            // instead of consuming them. This allows child views with SafeAreaEdges set
-            // to properly handle the insets even when the parent has SafeAreaEdges.None
-            // However, if this view was previously tracked (had padding before), we need to
-            // continue processing to reset the padding to 0
-            if (left == 0 && right == 0 && top == 0 && bottom == 0)
-            {
-                // Only pass through if this view hasn't been tracked yet
-                // If it was tracked, we need to reset its padding
-                if (globalWindowInsetsListener?.IsViewTracked(view) != true)
-                {
-                    // Don't consume insets - pass them through for potential child views to handle
-                    return windowInsets;
-                }
-            }
-
-
-			if (isKeyboardShowing &&
-				context.GetActivity()?.Window is Window window &&
-				window?.Attributes is WindowManagerLayoutParams attr)
+			// If this view has no safe area padding to apply, pass insets through to children
+			// instead of consuming them. This allows child views with SafeAreaEdges set
+			// to properly handle the insets even when the parent has SafeAreaEdges.None
+			// However, if this view was previously tracked (had padding before), we need to
+			// continue processing to reset the padding to 0
+			if (left == 0 && right == 0 && top == 0 && bottom == 0)
 			{
-				// If the window is panned from the keyboard being open
-				// and there isn't a bottom inset to apply then just don't touch anything
-				var softInputMode = attr.SoftInputMode;
-				if (softInputMode == SoftInput.AdjustPan
-					&& bottom == 0
-				)
+				// Only pass through if this view hasn't been tracked yet
+				// If it was tracked, we need to reset its padding
+				if (globalWindowInsetsListener?.IsViewTracked(view) != true)
 				{
-					return WindowInsetsCompat.Consumed;
+					// Don't consume insets - pass them through for potential child views to handle
+					return windowInsets;
 				}
 			}
 
@@ -103,11 +136,19 @@ internal static class SafeAreaExtensions
 			var viewWidth = view.Width > 0 ? view.Width : view.MeasuredWidth;
 			var viewHeight = view.Height > 0 ? view.Height : view.MeasuredHeight;
 
+			// Check if this view was previously tracked (had padding)
+			var wasTracked = globalWindowInsetsListener?.IsViewTracked(view) == true;
+
 			if ((viewHeight > 0 && viewWidth > 0) || !hasTrackedViews)
 			{
 				if (left == 0 && right == 0 && top == 0 && bottom == 0)
 				{
 					view.SetPadding(0, 0, 0, 0);
+					if (wasTracked)
+					{
+						// If padding is now zero but view was previously tracked, untrack it
+						globalWindowInsetsListener?.ResetView(view);
+					}
 					return windowInsets;
 				}
 
@@ -158,18 +199,31 @@ internal static class SafeAreaExtensions
 					}
 
 					// Bottom: how much the view extends into the bottom safe area
-					if (bottom > 0 && viewBottom > (screenHeight - bottom))
+					// Use inclusive comparison so we keep padding when the view exactly meets the safe area boundary
+					System.Diagnostics.Debug.WriteLine($"MAUI_INSETS: Bottom calc - viewBottom={viewBottom}, view.PaddingBottom={view.PaddingBottom}, screenHeight={screenHeight}, bottom before={bottom}");
+					// Account for view's current padding when checking if it reaches the bottom edge
+					// This handles cases where view was compressed due to keyboard and needs bottom padding restored
+					if (bottom > 0 && (viewBottom + view.PaddingBottom) >= (screenHeight - bottom))
 					{
 						// Calculate the actual overlap amount
 						var bottomEdge = screenHeight - bottom;
 						bottom = Math.Min(viewBottom - bottomEdge, bottom);
+						System.Diagnostics.Debug.WriteLine($"MAUI_INSETS: Bottom calc - view DOES reach bottom edge (with padding), bottom after={bottom}");
 					}
 					else
 					{
 						// if the view height is zero because it hasn't done the first pass
 						// and we don't have any tracked views yet then we will apply the bottom inset
 						if (viewHeight > 0 || hasTrackedViews)
+						{
+							// View doesn't reach the bottom edge, so no bottom padding needed
+							System.Diagnostics.Debug.WriteLine($"MAUI_INSETS: Bottom calc - view does NOT reach bottom edge (even with padding), setting bottom=0 (hasTrackedViews={hasTrackedViews})");
 							bottom = 0;
+						}
+						else
+						{
+							System.Diagnostics.Debug.WriteLine($"MAUI_INSETS: Bottom calc - view does NOT reach bottom edge, keeping bottom={bottom} (no tracked views yet)");
+						}
 					}
 
 					// Left: how much the view extends into the left safe area
@@ -241,11 +295,21 @@ internal static class SafeAreaExtensions
 				newWindowInsets = builder.Build();
 
 				// Apply all insets to content view group
+				System.Diagnostics.Debug.WriteLine($"MAUI_INSETS: Final padding to apply - L={left} T={top} R={right} B={bottom}");
 				view.SetPadding((int)left, (int)top, (int)right, (int)bottom);
 				if (left > 0 || right > 0 || top > 0 || bottom > 0)
 				{
+					System.Diagnostics.Debug.WriteLine($"MAUI_INSETS: Tracking view (has non-zero padding)");
 					globalWindowInsetsListener?.TrackView(view);
 				}
+				else if (wasTracked)
+				{
+					// If padding is now zero but view was previously tracked, untrack it
+					System.Diagnostics.Debug.WriteLine($"MAUI_INSETS: Resetting view (was tracked, now zero padding)");
+					globalWindowInsetsListener?.ResetView(view);
+				}
+				
+				System.Diagnostics.Debug.WriteLine($"MAUI_INSETS: === ApplyAdjustedSafeAreaInsetsPx END ===");
 			}
 			else
 			{
@@ -261,34 +325,34 @@ internal static class SafeAreaExtensions
 		return newWindowInsets;
 	}
 
-	internal static double GetSafeAreaForEdge(SafeAreaRegions safeAreaRegion, double originalSafeArea, int edge, bool isKeyboardShowing, SafeAreaPadding keyBoardInsets)
+	internal static double GetSafeAreaForEdge(SafeAreaRegions safeAreaRegion, double originalSafeArea, int edge, bool isKeyboardShowing, SafeAreaPadding keyBoardInsets, SoftInput softInputMode = SoftInput.StateUnspecified)
 	{
+		// Handle SoftInput/keyboard specifically for bottom edge when keyboard is showing
+		// Check this BEFORE the SafeAreaRegions.None check to ensure keyboard handling works with SafeAreaEdges
+		if (isKeyboardShowing && edge == EdgeBottom)
+		{
+			// Apply keyboard insets if SafeAreaRegion explicitly includes SoftInput flag
+			// This allows views to opt-in to keyboard avoidance via SafeAreaEdges.All or by setting SoftInput flag
+			if (SafeAreaEdges.IsSoftInput(safeAreaRegion))
+			{
+				return keyBoardInsets.Bottom;
+			}
+
+			// If the keyboard is showing but SafeAreaEdges doesn't include SoftInput flag,
+			// return 0 because that part of the view is covered by the keyboard
+			return 0;
+		}
+		else if (!isKeyboardShowing && SafeAreaEdges.IsOnlySoftInput(safeAreaRegion))
+		{
+			// For bottom edges when keyboard is hidden and region is only softinput, don't apply safe area insets
+			return 0;
+		}
+
 		// Edge-to-edge content - no safe area padding
 		if (safeAreaRegion == SafeAreaRegions.None)
 		{
 			return 0;
 		}
-
-		// Handle SoftInput specifically - only apply keyboard insets for bottom edge when keyboard is showing
-		if (edge == 3)
-        {
-            if (SafeAreaEdges.IsOnlySoftInput(safeAreaRegion))
-            {
-                // SoftInput only applies padding when keyboard is showing
-                return isKeyboardShowing ? keyBoardInsets.Bottom : 0;
-            }
-
-            if (isKeyboardShowing)
-            {
-                // Return keyboard insets for any region that includes SoftInput
-                if (SafeAreaEdges.IsSoftInput(safeAreaRegion))
-                    return keyBoardInsets.Bottom;
-
-                // if the keyboard is showing then we will just return 0 for the bottom inset
-                // because that part of the view is covered by the keyboard so we don't want to pad the view
-                return 0;
-            }
-        }
 
 		// All other regions respect safe area in some form
 		// This includes:
