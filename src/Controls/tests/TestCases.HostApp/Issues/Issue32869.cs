@@ -5,18 +5,18 @@ namespace Maui.Controls.Sample.Issues;
 	[Issue(IssueTracker.Github, 32869, "Image control crashes on Android when image width exceeds height", PlatformAffected.Android)]
 	public class Issue32869 : ContentPage
 	{
-    	Image TestImage;
+	    Image _testImage;
 		public Issue32869()
 		{
 			Title = "Wide Image Test";
             Padding = new Thickness(24);
 
-        TestImage = new Image
+        _testImage = new Image
         {
             AutomationId = "TestImage",
         };
 
-        Content = TestImage;
+        Content = _testImage;
 		LoadWideImageAsync();
     }
 	private async void LoadWideImageAsync()
