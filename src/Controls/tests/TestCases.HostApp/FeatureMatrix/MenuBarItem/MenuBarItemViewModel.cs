@@ -12,7 +12,7 @@ public class MenuBarItemViewModel : INotifyPropertyChanged
 	#region MenuBarItem Properties
 
 	// File Menu
-	private string _fileMenuText = "File";
+	private string _fileMenuText = "FileMenuBar";
 	public string FileMenuText
 	{
 		get => _fileMenuText;
@@ -27,7 +27,7 @@ public class MenuBarItemViewModel : INotifyPropertyChanged
 	}
 
 	// Locations Menu
-	private string _locationsMenuText = "Locations";
+	private string _locationsMenuText = "LocationsMenuBar";
 	public string LocationsMenuText
 	{
 		get => _locationsMenuText;
@@ -42,7 +42,7 @@ public class MenuBarItemViewModel : INotifyPropertyChanged
 	}
 
 	// View Menu
-	private string _viewMenuText = "View";
+	private string _viewMenuText = "ViewMenuBar";
 	public string ViewMenuText
 	{
 		get => _viewMenuText;
@@ -61,7 +61,7 @@ public class MenuBarItemViewModel : INotifyPropertyChanged
 	#region MenuFlyoutItem Properties
 
 	// Exit Item (File Menu)
-	private string _exitText = "Exit";
+	private string _exitText = "ExitMenuBarFlyoutItem";
 	public string ExitText
 	{
 		get => _exitText;
@@ -143,7 +143,7 @@ public class MenuBarItemViewModel : INotifyPropertyChanged
 	}
 
 	// Refresh Item (View Menu)
-	private string _refreshText = "Refresh";
+	private string _refreshText = "Refresh MenuBarFlyoutItem";
 	public string RefreshText
 	{
 		get => _refreshText;
@@ -164,28 +164,6 @@ public class MenuBarItemViewModel : INotifyPropertyChanged
 		set => SetProperty(ref _refreshIcon, value);
 	}
 
-	// Change Theme Item (View Menu)
-	private string _changeThemeText = "Change Theme";
-	public string ChangeThemeText
-	{
-		get => _changeThemeText;
-		set => SetProperty(ref _changeThemeText, value);
-	}
-
-	private bool _changeThemeEnabled = true;
-	public bool ChangeThemeEnabled
-	{
-		get => _changeThemeEnabled;
-		set => SetProperty(ref _changeThemeEnabled, value);
-	}
-
-	private string _changeThemeIcon = "dotnet_bot.png";
-	public string ChangeThemeIcon
-	{
-		get => _changeThemeIcon;
-		set => SetProperty(ref _changeThemeIcon, value);
-	}
-
 	#endregion
 
 	#region Display Properties
@@ -204,6 +182,30 @@ public class MenuBarItemViewModel : INotifyPropertyChanged
 		set => SetProperty(ref _statusMessage, value);
 	}
 
+	private bool _isEntryVisible = false;
+	public bool IsEntryVisible
+	{
+		get => _isEntryVisible;
+		set => SetProperty(ref _isEntryVisible, value);
+	}
+
+	private string _entryText = string.Empty;
+	public string EntryText
+	{
+		get => _entryText;
+		set => SetProperty(ref _entryText, value);
+	}
+
+	private string _entryPlaceholder = "Enter location name";
+	public string EntryPlaceholder
+	{
+		get => _entryPlaceholder;
+		set => SetProperty(ref _entryPlaceholder, value);
+	}
+
+	private string _entryMode = string.Empty; // "add" or "edit"
+	private int _editingLocationIndex = -1;
+
 	public ObservableCollection<string> Locations { get; set; }
 
 	#endregion
@@ -216,8 +218,9 @@ public class MenuBarItemViewModel : INotifyPropertyChanged
 	public ICommand EditLocationCommand { get; }
 	public ICommand RemoveLocationCommand { get; }
 	public ICommand RefreshCommand { get; }
-	public ICommand ChangeThemeCommand { get; }
 	public ICommand ResetCommand { get; }
+	public ICommand ConfirmEntryCommand { get; }
+	public ICommand CancelEntryCommand { get; }
 
 	#endregion
 
@@ -238,8 +241,9 @@ public class MenuBarItemViewModel : INotifyPropertyChanged
 		EditLocationCommand = new Command(OnEditLocation, () => LocationsMenuEnabled);
 		RemoveLocationCommand = new Command(OnRemoveLocation, () => LocationsMenuEnabled);
 		RefreshCommand = new Command(OnRefresh, () => ViewMenuEnabled);
-		ChangeThemeCommand = new Command(OnChangeTheme, () => ViewMenuEnabled);
 		ResetCommand = new Command(OnReset);
+		ConfirmEntryCommand = new Command(OnConfirmEntry, () => IsEntryVisible);
+		CancelEntryCommand = new Command(OnCancelEntry, () => IsEntryVisible);
 
 		// Listen to property changes to update CanExecute
 		PropertyChanged += (s, e) =>
@@ -258,7 +262,11 @@ public class MenuBarItemViewModel : INotifyPropertyChanged
 			else if (e.PropertyName == nameof(ViewMenuEnabled))
 			{
 				((Command)RefreshCommand).ChangeCanExecute();
-				((Command)ChangeThemeCommand).ChangeCanExecute();
+			}
+			else if (e.PropertyName == nameof(IsEntryVisible))
+			{
+				((Command)ConfirmEntryCommand).ChangeCanExecute();
+				((Command)CancelEntryCommand).ChangeCanExecute();
 			}
 		};
 	}
@@ -289,25 +297,12 @@ public class MenuBarItemViewModel : INotifyPropertyChanged
 
 	private void OnAddLocation()
 	{
-		Application.Current?.Dispatcher.Dispatch(async () =>
-		{
-			var locationName = await Application.Current.MainPage.DisplayPromptAsync(
-				"Add Location",
-				"Enter location name:",
-				"Add",
-				"Cancel",
-				placeholder: "e.g., Tokyo, Japan");
-
-			if (!string.IsNullOrWhiteSpace(locationName))
-			{
-				Locations.Add(locationName);
-				StatusMessage = $"Added location: {locationName}";
-			}
-			else if (locationName != null)
-			{
-				StatusMessage = "Location name cannot be empty";
-			}
-		});
+		_entryMode = "add";
+		_editingLocationIndex = -1;
+		EntryText = string.Empty;
+		EntryPlaceholder = "e.g., Tokyo, Japan";
+		IsEntryVisible = true;
+		StatusMessage = "Enter location name in the field below and click Confirm";
 	}
 
 	private void OnEditLocation()
@@ -332,23 +327,12 @@ public class MenuBarItemViewModel : INotifyPropertyChanged
 				var index = Locations.IndexOf(locationToEdit);
 				if (index >= 0)
 				{
-					// Prompt for new name
-					var newName = await Application.Current.MainPage.DisplayPromptAsync(
-						"Edit Location",
-						$"Edit location name:",
-						"Update",
-						"Cancel",
-						initialValue: locationToEdit);
-
-					if (!string.IsNullOrWhiteSpace(newName))
-					{
-						Locations[index] = newName;
-						StatusMessage = $"Updated '{locationToEdit}' to '{newName}'";
-					}
-					else if (newName != null)
-					{
-						StatusMessage = "Location name cannot be empty";
-					}
+					_entryMode = "edit";
+					_editingLocationIndex = index;
+					EntryText = locationToEdit;
+					EntryPlaceholder = "Enter new location name";
+					IsEntryVisible = true;
+					StatusMessage = $"Edit '{locationToEdit}' in the field below and click Confirm";
 				}
 			}
 		});
@@ -385,13 +369,43 @@ public class MenuBarItemViewModel : INotifyPropertyChanged
 
 	private void OnRefresh()
 	{
-		StatusMessage = $"Refreshed at {DateTime.Now:HH:mm:ss}";
+		StatusMessage = $"Refreshed";
 	}
 
-	private void OnChangeTheme()
+	private void OnConfirmEntry()
 	{
-		if (Application.Current is not null)
-		{ Application.Current.UserAppTheme = Application.Current.UserAppTheme != AppTheme.Dark ? AppTheme.Dark : AppTheme.Light; }
+		if (string.IsNullOrWhiteSpace(EntryText))
+		{
+			StatusMessage = "Location name cannot be empty";
+			return;
+		}
+
+		if (_entryMode == "add")
+		{
+			Locations.Add(EntryText);
+			StatusMessage = $"Added location: {EntryText}";
+		}
+		else if (_entryMode == "edit" && _editingLocationIndex >= 0)
+		{
+			var oldName = Locations[_editingLocationIndex];
+			Locations[_editingLocationIndex] = EntryText;
+			StatusMessage = $"Updated '{oldName}' to '{EntryText}'";
+		}
+
+		// Reset entry state
+		IsEntryVisible = false;
+		EntryText = string.Empty;
+		_entryMode = string.Empty;
+		_editingLocationIndex = -1;
+	}
+
+	private void OnCancelEntry()
+	{
+		IsEntryVisible = false;
+		EntryText = string.Empty;
+		_entryMode = string.Empty;
+		_editingLocationIndex = -1;
+		StatusMessage = "Operation cancelled";
 	}
 
 	private void OnReset()
@@ -403,6 +417,18 @@ public class MenuBarItemViewModel : INotifyPropertyChanged
 		FileMenuEnabled = true;
 		LocationsMenuEnabled = true;
 		ViewMenuEnabled = true;
+
+		// Reset locations to initial state
+		Locations.Clear();
+		Locations.Add("Redmond, USA");
+		Locations.Add("London, UK");
+		Locations.Add("Berlin, DE");
+
+		// Hide entry if visible
+		IsEntryVisible = false;
+		EntryText = string.Empty;
+		_entryMode = string.Empty;
+		_editingLocationIndex = -1;
 	}
 
 	#endregion
