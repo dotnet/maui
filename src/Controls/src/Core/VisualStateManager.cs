@@ -82,10 +82,6 @@ namespace Microsoft.Maui.Controls
 
 			var specificity = vsgSpecificity.CopyStyle(1, 0, 0, 0);
 			
-			// Debug output for issue #27202
-			System.Diagnostics.Debug.WriteLine($"[VSM] GoToState({name}) - VSG specificity: {vsgSpecificity.StyleInfo}");
-			System.Diagnostics.Debug.WriteLine($"[VSM] VSM setter specificity will be used");
-
 			foreach (VisualStateGroup group in groups)
 			{
 				if (group.CurrentState?.Name == name)

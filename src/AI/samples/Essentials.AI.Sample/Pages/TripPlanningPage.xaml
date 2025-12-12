@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:viewModels="clr-namespace:Maui.Controls.Sample.ViewModels"
+    xmlns:views="clr-namespace:Maui.Controls.Sample.Views.Itinerary"
+    x:Class="Maui.Controls.Sample.Pages.TripPlanningPage"
+    x:DataType="viewModels:TripPlanningViewModel"
+    SafeAreaEdges="None"
+    Title="{Binding Landmark.Name}">
+
+    <Grid>
+
+        <!-- If AI is available, show LandmarkTripView -->
+        <views:LandmarkTripView IsVisible="{Binding IsNotErrorState}" />
+        
+        <!-- If AI is unavailable or error, show MessageView -->
+        <views:MessageView IsVisible="{Binding IsErrorState}" />
+        
+        <!-- Floating Back Button (top left) -->
+        <Button
+            Text="←" Clicked="OnBackButtonClicked"
+            VerticalOptions="Start" HorizontalOptions="Start"  Margin="20,20,0,0" 
+            HeightRequest="44" WidthRequest="44" CornerRadius="22"
+            FontSize="24" Background="{AppThemeBinding Light=#80FFFFFF, Dark=#80000000}"
+            TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark=White}" />
+
+    </Grid>
+
+</ContentPage>

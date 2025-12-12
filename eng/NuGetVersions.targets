@@ -85,6 +85,14 @@
          Version="$(SystemRuntimeCompilerServicesUnsafePackageVersion)"
     />
     <PackageReference
+        Update="Microsoft.Extensions.AI"
+        Version="$(MicrosoftExtensionsAIVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.Extensions.AI.Abstractions"
+        Version="$(MicrosoftExtensionsAIAbstractionsVersion)"
+    />
+    <PackageReference
         Update="Microsoft.Extensions.Configuration"
         Version="$(MicrosoftExtensionsConfigurationVersion)"
     />
@@ -111,6 +119,10 @@
     <PackageReference
         Update="Microsoft.Extensions.Hosting.Abstractions"
         Version="$(MicrosoftExtensionsHostingAbstractionsVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.Extensions.Http"
+        Version="$(MicrosoftExtensionsHttpVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.Logging.Abstractions"
