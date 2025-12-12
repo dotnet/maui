@@ -21,7 +21,7 @@
     <WorkloadsTestPreviousVersions Condition="'$(WorkloadsTestPreviousVersions)' == ''">true</WorkloadsTestPreviousVersions>
     <!-- Set assembly version to align with major and minor version,
          as for the patches and revisions should be manually updated per assembly if it is serviced. -->
-    <AssemblyVersion>10.0.0.0</AssemblyVersion>
+    <AssemblyVersion>11.0.0.0</AssemblyVersion>
     <!-- Opt-out repo features -->
     <UsingToolIbcOptimization>false</UsingToolIbcOptimization>
     <UsingToolXliff>false</UsingToolXliff>
@@ -61,7 +61,7 @@
     <MicrosoftmacOSSdknet110_261PackageVersion>26.1.11659-ci.net11-0</MicrosoftmacOSSdknet110_261PackageVersion>
     <MicrosoftiOSSdknet110_261PackageVersion>26.1.11659-ci.net11-0</MicrosoftiOSSdknet110_261PackageVersion>
     <MicrosofttvOSSdknet110_261PackageVersion>26.1.11659-ci.net11-0</MicrosofttvOSSdknet110_261PackageVersion>
-    <!-- This is a subscription of the .NET 9 latest stable versions of our packages -->
+    <!-- This is a subscription of the .NET 10 latest stable versions of our packages -->
     <MicrosoftMacCatalystSdknet100_261PackageVersion>26.1.10516</MicrosoftMacCatalystSdknet100_261PackageVersion>
     <MicrosoftmacOSSdknet100_261PackageVersion>26.1.10516</MicrosoftmacOSSdknet100_261PackageVersion>
     <MicrosoftiOSSdknet100_261PackageVersion>26.1.10516</MicrosoftiOSSdknet100_261PackageVersion>
