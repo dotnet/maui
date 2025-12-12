@@ -383,3 +383,4 @@ snapshots-diff/
 temp
 .packages
 /src/Templates/.tempTemplateOutput
+*.js.map
