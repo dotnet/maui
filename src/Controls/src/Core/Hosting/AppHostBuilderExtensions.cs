@@ -70,6 +70,18 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<CollectionView, CollectionViewHandler>();
 		handlersCollection.AddHandler<CarouselView, CarouselViewHandler>();
 #endif
+#if ANDROID
+		if (RuntimeFeature.IsMaterial3Enabled)
+		{
+			handlersCollection.AddHandler<Switch, MaterialSwitchHandler>();
+		}
+		else
+		{
+			handlersCollection.AddHandler<Switch, SwitchHandler>();
+		}
+#else
+		handlersCollection.AddHandler<Switch, SwitchHandler>();
+#endif
 		handlersCollection.AddHandler<Application, ApplicationHandler>();
 		handlersCollection.AddHandler<ActivityIndicator, ActivityIndicatorHandler>();
 		handlersCollection.AddHandler<BoxView, BoxViewHandler>();
@@ -86,7 +98,6 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<SearchBar, SearchBarHandler>();
 		handlersCollection.AddHandler<Slider, SliderHandler>();
 		handlersCollection.AddHandler<Stepper, StepperHandler>();
-		handlersCollection.AddHandler<Switch, SwitchHandler>();
 		handlersCollection.AddHandler<TimePicker, TimePickerHandler>();
 		handlersCollection.AddHandler<Page, PageHandler>();
 		handlersCollection.AddHandler<WebView, WebViewHandler>();
