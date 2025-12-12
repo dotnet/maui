@@ -10,30 +10,40 @@ namespace Maui.Controls.Sample.Issues;
 		{
 			Title = "Wide Image Test";
             Padding = new Thickness(24);
+            _testImage = new Image
+            {
+                AutomationId = "TestImage",
+            };
+            Content = _testImage;
+        }
 
-        _testImage = new Image
+	    protected override async void OnAppearing()
+	    {
+		    base.OnAppearing();
+		    try
+            {
+                await LoadWideImageAsync();
+            }
+            catch (Exception ex)
+            {
+                // Optionally display error to user or log
+                _testImage.Source = null;
+                await DisplayAlert("Error", $"Failed to load image: {ex.Message}", "OK");
+            }
+        }
+
+	    private async Task LoadWideImageAsync()
         {
-            AutomationId = "TestImage",
-        };
-
-        Content = _testImage;
-		LoadWideImageAsync();
-    }
-	private async void LoadWideImageAsync()
-    {
             // Load the wide image from embedded resources
             await using var stream = await FileSystem.OpenAppPackageFileAsync("Issue32869.png");
             using var ms = new MemoryStream();
             await stream.CopyToAsync(ms);
             var imageBytes = ms.ToArray();
-
             // Write to local storage
             var localPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "test_wide_image.png");
-           await using var fileStream = new FileStream(localPath, FileMode.Create);
-        
-            await fileStream.WriteAsync(imageBytes, 0, imageBytes.Length);
-
+            await using var fileStream = new FileStream(localPath, FileMode.Create);
+            await fileStream.WriteAsync(imageBytes);
             // Load the image
-            TestImage.Source = localPath;
-	}
+            _testImage.Source = localPath;
+        }
 }
