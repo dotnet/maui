@@ -324,7 +324,7 @@ namespace Microsoft.Maui.Platform
 			platformView.LayoutDirection = GetLayoutDirection(view);
 		}
 
-		static ALayoutDirection GetLayoutDirection(IView view)
+		internal static ALayoutDirection GetLayoutDirection(IView view)
 		{
 			return view.FlowDirection switch
 			{
