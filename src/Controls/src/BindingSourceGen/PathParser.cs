@@ -44,8 +44,17 @@ internal class PathParser
 		var typeInfo = _context.SemanticModel.GetTypeInfo(memberAccess).Type;
 		var symbol = _context.SemanticModel.GetSymbolInfo(memberAccess).Symbol;
 
+		// Handle known special cases when symbol or type are not resolved at compile time
 		if (symbol == null || typeInfo == null)
 		{
+			// Try to infer from known patterns (e.g., RelayCommand properties)
+			var expressionType = _context.SemanticModel.GetTypeInfo(memberAccess.Expression).Type;
+			if (expressionType != null && TryHandleSpecialCases(member, expressionType, out var specialCasePart) && specialCasePart != null)
+			{
+				result.Value.Add(specialCasePart);
+				return Result<List<IPathPart>>.Success(result.Value);
+			}
+
 			return Result<List<IPathPart>>.Failure(DiagnosticsFactory.UnableToResolvePath(memberAccess.GetLocation()));
 		}
 
@@ -71,6 +80,32 @@ internal class PathParser
 
 		result.Value.Add(part);
 		return Result<List<IPathPart>>.Success(result.Value);
+	}
+
+	private bool TryHandleSpecialCases(string memberName, ITypeSymbol expressionType, out IPathPart? pathPart)
+	{
+		pathPart = null;
+
+		// Check for RelayCommand-generated properties
+		if (expressionType.TryGetRelayCommandPropertyType(memberName, _context.SemanticModel.Compilation, out var commandType) 
+			&& commandType != null)
+		{
+			var memberType = commandType.CreateTypeDescription(_enabledNullable);
+			var containingType = expressionType.CreateTypeDescription(_enabledNullable);
+
+			pathPart = new MemberAccess(
+				MemberName: memberName,
+				IsValueType: !commandType.IsReferenceType,
+				ContainingType: containingType,
+				MemberType: memberType,
+				Kind: AccessorKind.Property,
+				IsGetterInaccessible: false, // Assume generated property is accessible
+				IsSetterInaccessible: true);  // Commands are typically read-only
+
+			return true;
+		}
+
+		return false;
 	}
 
 	private Result<List<IPathPart>> HandleElementAccessExpression(ElementAccessExpressionSyntax elementAccess)

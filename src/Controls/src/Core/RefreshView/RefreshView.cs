@@ -121,7 +121,7 @@ namespace Microsoft.Maui.Controls
 			if (bindable is RefreshView refreshView)
 			{
 				refreshView._isRefreshEnabledExplicit = (bool)value;
-				return refreshView._isRefreshEnabledExplicit && CommandElement.GetCanExecute(refreshView);
+				return refreshView._isRefreshEnabledExplicit && CommandElement.GetCanExecute(refreshView, CommandProperty);
 			}
 
 			return false;
