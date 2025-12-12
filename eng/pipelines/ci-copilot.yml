@@ -49,8 +49,7 @@ stages:
 
           - script: |
               echo "Installing Node.js and npm..."
-              curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-              sudo apt-get install -y nodejs
+              brew install node
               node --version
               npm --version
             displayName: 'Install Node.js'
@@ -60,6 +59,13 @@ stages:
               npm install -g @githubnext/github-copilot-cli
               echo "Copilot CLI installed successfully"
             displayName: 'Install GitHub Copilot CLI'
+
+          - script: |
+              echo "Installing GitHub CLI..."
+              brew install gh
+              gh --version
+              echo "GitHub CLI installed successfully"
+            displayName: 'Install GitHub CLI'
 
           - script: |
               echo "Authenticating with GitHub CLI..."
