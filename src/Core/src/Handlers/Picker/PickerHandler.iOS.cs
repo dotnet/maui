@@ -10,6 +10,10 @@ namespace Microsoft.Maui.Handlers
 		readonly MauiPickerProxy _proxy = new();
 		UIPickerView? _pickerView;
 
+#if MACCATALYST
+		UIAlertController? pickerController;
+#endif
+
 #if !MACCATALYST
 		protected override MauiPicker CreatePlatformView()
 		{
@@ -59,12 +63,20 @@ namespace Microsoft.Maui.Handlers
 
 			// The UIPickerView is displayed as a subview of the UIAlertController when an empty string is provided as the title, instead of using the VirtualView title. 
 			// This behavior deviates from the expected native macOS behavior.
-			var pickerController = UIAlertController.Create("", "", UIAlertControllerStyle.ActionSheet);
+			pickerController = UIAlertController.Create("", "", UIAlertControllerStyle.ActionSheet);
 
 			// needs translation
+			// Handle picker dismissal directly in the Done action instead of using EditingDidEnd event
+			// This simplifies the cleanup logic, avoids duplicate dismiss calls, and prevents VoiceOver issues
+			// Note: EditingDidEnd event breaks VoiceOver accessibility when dismissing the picker, which is why it hasn't been used
 			pickerController.AddAction(UIAlertAction.Create("Done",
 								UIAlertActionStyle.Default,
-								action => FinishSelectItem(pickerView, uITextField)
+								action =>
+								{
+									FinishSelectItem(pickerView, uITextField);
+									if (VirtualView is IPicker virtualView)
+										virtualView.IsFocused = virtualView.IsOpen = false;
+								}
 							));
 
 			if (pickerController.View != null && pickerView != null)
@@ -81,18 +93,6 @@ namespace Microsoft.Maui.Handlers
 				popoverPresentation.SourceView = uITextField;
 				popoverPresentation.SourceRect = uITextField.Bounds;
 			}
-
-			EventHandler? editingDidEndHandler = null;
-
-			editingDidEndHandler = async (s, e) =>
-			{
-				await pickerController.DismissViewControllerAsync(true);
-				if (VirtualView is IPicker virtualView)
-					virtualView.IsFocused = virtualView.IsOpen = false;
-				uITextField.EditingDidEnd -= editingDidEndHandler;
-			};
-
-			uITextField.EditingDidEnd += editingDidEndHandler;
 
 			var platformWindow = MauiContext?.GetPlatformWindow();
 			if (platformWindow is null)
@@ -154,6 +154,21 @@ namespace Microsoft.Maui.Handlers
 		public static void MapReload(IPickerHandler handler, IPicker picker, object? args) => Reload(handler);
 
 		internal static void MapItems(IPickerHandler handler, IPicker picker) => Reload(handler);
+
+#if MACCATALYST
+		// Handle programmatic unfocus on MacCatalyst by dismissing the picker dialog
+		// This allows external code to close the picker (e.g., clicking outside, navigation)
+		internal static async void MapUnfocus(IPickerHandler handler, IPicker picker, object? args)
+		{
+			if (handler is PickerHandler pickerHandler && 
+				pickerHandler.pickerController is not null)
+			{
+				await pickerHandler.pickerController.DismissViewControllerAsync(true);
+				if (handler.VirtualView is IPicker virtualView)
+					virtualView.IsFocused = virtualView.IsOpen = false;
+			}
+		}
+#endif
 
 		public static void MapTitle(IPickerHandler handler, IPicker picker)
 		{
