@@ -17,13 +17,14 @@ public class Issue30381 : _IssuesUITest
     public void WebViewCanGoForwardShouldHaveValueAfterNavigation()
     {
         App.WaitForElement("ClickLinkButton");
+        Thread.Sleep(2000);
 
         // Click the link via JavaScript to navigate to external URL
         App.Tap("ClickLinkButton");
 
         // Wait for navigation to complete
         // Add a delay to allow navigation to process
-        Thread.Sleep(3000);
+        Thread.Sleep(2000);
         App.Tap("UpdateStatusButton");
         Assert.That(App.FindElement("CanGoBackLabel").GetText(), Is.EqualTo("CanGoBack: True"));
         Assert.That(App.FindElement("CanGoForwardLabel").GetText(), Is.EqualTo("CanGoForward: False"));
@@ -35,5 +36,12 @@ public class Issue30381 : _IssuesUITest
         App.Tap("UpdateStatusButton");
         Assert.That(App.FindElement("CanGoBackLabel").GetText(), Is.EqualTo("CanGoBack: False"));
         Assert.That(App.FindElement("CanGoForwardLabel").GetText(), Is.EqualTo("CanGoForward: True"));
+
+        App.Tap("GoForwardButton");
+
+        Thread.Sleep(2000);
+        App.Tap("UpdateStatusButton");
+        Assert.That(App.FindElement("CanGoBackLabel").GetText(), Is.EqualTo("CanGoBack: True"));
+        Assert.That(App.FindElement("CanGoForwardLabel").GetText(), Is.EqualTo("CanGoForward: False"));
     }
 }
