@@ -10,24 +10,28 @@ namespace Microsoft.Maui.Controls
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class Stepper : View, IElementConfiguration<Stepper>, IStepper
 	{
+		// Stores the value that was requested by the user, before clamping
+		double _requestedValue = 0d;
+		// Tracks if the user explicitly set Value (vs it being set by recoercion)
+		bool _userSetValue = false;
+		bool _isRecoercing = false;
+
 		/// <summary>Bindable property for <see cref="Maximum"/>.</summary>
 		public static readonly BindableProperty MaximumProperty = BindableProperty.Create(nameof(Maximum), typeof(double), typeof(Stepper), 100.0,
 			validateValue: (bindable, value) => (double)value >= ((Stepper)bindable).Minimum,
-			coerceValue: (bindable, value) =>
+			propertyChanged: (bindable, oldValue, newValue) =>
 			{
 				var stepper = (Stepper)bindable;
-				stepper.Value = stepper.Value.Clamp(stepper.Minimum, (double)value);
-				return value;
+				stepper.RecoerceValue();
 			});
 
 		/// <summary>Bindable property for <see cref="Minimum"/>.</summary>
 		public static readonly BindableProperty MinimumProperty = BindableProperty.Create(nameof(Minimum), typeof(double), typeof(Stepper), 0.0,
 			validateValue: (bindable, value) => (double)value <= ((Stepper)bindable).Maximum,
-			coerceValue: (bindable, value) =>
+			propertyChanged: (bindable, oldValue, newValue) =>
 			{
 				var stepper = (Stepper)bindable;
-				stepper.Value = stepper.Value.Clamp((double)value, stepper.Maximum);
-				return value;
+				stepper.RecoerceValue();
 			});
 
 		/// <summary>Bindable property for <see cref="Value"/>.</summary>
@@ -35,6 +39,12 @@ namespace Microsoft.Maui.Controls
 			coerceValue: (bindable, value) =>
 			{
 				var stepper = (Stepper)bindable;
+				// Only store the requested value if the user is setting it (not during recoercion)
+				if (!stepper._isRecoercing)
+				{
+					stepper._requestedValue = (double)value;
+					stepper._userSetValue = true;
+				}
 				return Math.Round(((double)value), stepper.digits).Clamp(stepper.Minimum, stepper.Maximum);
 			},
 			propertyChanged: (bindable, oldValue, newValue) =>
@@ -42,6 +52,23 @@ namespace Microsoft.Maui.Controls
 				var stepper = (Stepper)bindable;
 				stepper.ValueChanged?.Invoke(stepper, new ValueChangedEventArgs((double)oldValue, (double)newValue));
 			});
+
+		void RecoerceValue()
+		{
+			_isRecoercing = true;
+			try
+			{
+				// If the user explicitly set Value, try to restore the requested value within the new range
+				if (_userSetValue)
+					Value = _requestedValue;
+				else
+					Value = Value.Clamp(Minimum, Maximum);
+			}
+			finally
+			{
+				_isRecoercing = false;
+			}
+		}
 
 		int digits = 4;
 		//'-log10(increment) + 4' as rounding digits gives us 4 significant decimal digits after the most significant one.
