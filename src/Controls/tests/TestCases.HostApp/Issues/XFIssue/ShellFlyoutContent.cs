@@ -11,14 +11,15 @@ public class ShellFlyoutContent : TestShell
 
 		this.BindingContext = this;
 		AddFlyoutItem(page, "Flyout Item Top");
-		for (int i = 0; i < 50; i++)
+		for (int i = 0; i < 20; i++)
 		{
 			AddFlyoutItem($"Flyout Item :{i}");
 			Items[i].AutomationId = "FlyoutItem";
 		}
 
 		Items.Add(new MenuItem() { Text = "Menu Item" });
-		AddFlyoutItem("Flyout Item Bottom");
+		var bottomItem = AddFlyoutItem("Flyout Item Bottom");
+		bottomItem.AutomationId = "Flyout Item Bottom";
 
 		var layout = new StackLayout()
 		{

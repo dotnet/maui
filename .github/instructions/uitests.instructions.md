@@ -250,6 +250,27 @@ pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "Issue1234
 - It captures logs automatically for debugging
 - Manual `dotnet` commands often fail due to missing environment setup
 
+**🚨 CRITICAL: NEVER Delete Build Artifacts**
+
+**YOU MUST NEVER DELETE THE HOSTAPP BUILD ARTIFACTS AS A "SOLUTION"**
+
+- ❌ **NEVER** run `rm -rf artifacts/bin/Controls.TestCases.HostApp/`
+- ❌ **NEVER** run `rm -rf artifacts/obj/Controls.TestCases.HostApp/`
+- ❌ **NEVER** delete build artifacts to "force a rebuild"
+- ❌ **NEVER** clean the build as a troubleshooting step
+
+**ALWAYS assume:**
+- ✅ If BuildAndRunHostApp.ps1 completes without build errors, a new app was correctly built and deployed
+- ✅ The build system handles incremental builds correctly
+- ✅ If the test passes/fails, it's testing the current code state
+
+**If a test result seems wrong:**
+- ✅ **DO** review your test logic first
+- ✅ **DO** check if your test assertions are correct
+- ✅ **DO** verify your test is actually validating the right behavior
+- ✅ **DO** ask for guidance if confused
+- ❌ **DO NOT** assume stale binaries - the build system works correctly
+
 ### Prerequisites: Kill Existing Appium Processes
 
 **CRITICAL**: Before running UITests with BuildAndRunHostApp.ps1, always kill any existing Appium processes. The UITest framework needs to start its own Appium server, and having a stale process running will cause the tests to fail with an error like:
