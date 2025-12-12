@@ -239,7 +239,7 @@
         <Str Cat="Text">
           <Val><![CDATA[XAML parsing failed]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[XAML ayrıştırılamadı]]></Val>
+            <Val><![CDATA[XAML ayrıştırma başarısız oldu]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
