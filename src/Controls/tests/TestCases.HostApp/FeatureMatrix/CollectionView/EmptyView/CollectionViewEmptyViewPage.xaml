@@ -6,21 +6,22 @@
              Title="CollectionViewFeature">
     <ContentPage.ToolbarItems>
         <ToolbarItem Text="Options"
-                Clicked="NavigateToOptionsPage_Clicked"
-                AutomationId="Options"/>
+                     Clicked="NavigateToOptionsPage_Clicked"
+                     AutomationId="Options"/>
     </ContentPage.ToolbarItems>
 
-        <local:CollectionView2
-            x:Name="collectionView"
-            ItemsSource="{Binding ItemsSource}"
-            EmptyView="{Binding EmptyView}"
-            Header="{Binding Header}"
-            Footer="{Binding Footer}"
-            EmptyViewTemplate="{Binding EmptyViewTemplate}"
-            GroupHeaderTemplate="{Binding GroupHeaderTemplate}"
-            ItemTemplate="{Binding ItemTemplate}"
-            IsGrouped="{Binding IsGrouped}"
-            ItemsLayout="{Binding ItemsLayout}"
-            AutomationId="CollectionViewControl">
-        </local:CollectionView2>
+    <local:CollectionView2
+        x:Name="collectionView"
+        FlowDirection="{Binding FlowDirection}"
+        ItemsSource="{Binding ItemsSource}"
+        EmptyView="{Binding EmptyView}"
+        Header="{Binding Header}"
+        Footer="{Binding Footer}"
+        EmptyViewTemplate="{Binding EmptyViewTemplate}"
+        GroupHeaderTemplate="{Binding GroupHeaderTemplate}"
+        ItemTemplate="{Binding ItemTemplate}"
+        IsGrouped="{Binding IsGrouped}"
+        ItemsLayout="{Binding ItemsLayout}"
+        AutomationId="CollectionViewControl">
+    </local:CollectionView2>
 </ContentPage>
