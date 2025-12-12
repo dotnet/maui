@@ -48,17 +48,13 @@ stages:
             displayName: 'Validate Parameters'
 
           - script: |
-              echo "Installing Node.js and npm..."
-              brew install node
+              echo "Installing Node.js 22..."
+              brew install node@22
+              brew link --overwrite node@22
               node --version
               npm --version
+              echo "Node.js installed successfully"
             displayName: 'Install Node.js'
-
-          - script: |
-              echo "Installing GitHub Copilot CLI..."
-              npm install -g @githubnext/github-copilot-cli
-              echo "Copilot CLI installed successfully"
-            displayName: 'Install GitHub Copilot CLI'
 
           - script: |
               echo "Installing GitHub CLI..."
@@ -76,6 +72,12 @@ stages:
               GH_CLI_TOKEN: $(GH_CLI_TOKEN)
 
           - script: |
+              echo "Installing GitHub Copilot CLI..."
+              npm install -g @github/copilot
+              echo "Copilot CLI installed successfully"
+            displayName: 'Install GitHub Copilot CLI'
+
+          - script: |
               echo "Fetching PR #${{ parameters.PRNumber }}..."
               git fetch origin pull/${{ parameters.PRNumber }}/head:pr-${{ parameters.PRNumber }}
               git checkout pr-${{ parameters.PRNumber }}
@@ -87,9 +89,9 @@ stages:
               echo "Running Copilot PR Reviewer Agent..."
               echo "Reviewing PR #${{ parameters.PRNumber }}..."
               
-              # Invoke the PR reviewer agent using Copilot CLI
-              # The agent will analyze the PR and generate review feedback
-              github-copilot-cli chat --agent pr-reviewer "review PR #${{ parameters.PRNumber }}"
+              # Invoke the PR reviewer agent using Copilot CLI in programmatic mode
+              # --allow-all-tools allows Copilot to execute commands without manual approval
+              copilot -p "review PR #${{ parameters.PRNumber }}" --allow-all-tools --allow-all-paths
             displayName: 'Run PR Reviewer Agent'
             env:
               GITHUB_TOKEN: $(COPILOT_TOKEN)
