@@ -8,6 +8,7 @@
 
 		protected override void Init()
 		{
+			SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
 			Content = new ListView { ItemTemplate = new DataTemplate(typeof(GridViewCell)), ItemsSource = Enumerable.Range(0, 10) };
 		}
 

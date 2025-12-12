@@ -57,10 +57,10 @@ internal static class SafeAreaExtensions
 		if (safeAreaView2 is not null)
 		{
 			// Apply safe area selectively per edge based on SafeAreaRegions
-			var left = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(0, layout), baseSafeArea.Left, 0, isKeyboardShowing, keyboardInsets);
-			var top = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(1, layout), baseSafeArea.Top, 1, isKeyboardShowing, keyboardInsets);
-			var right = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(2, layout), baseSafeArea.Right, 2, isKeyboardShowing, keyboardInsets);
-			var bottom = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(3, layout), baseSafeArea.Bottom, 3, isKeyboardShowing, keyboardInsets);
+			double left = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(0, layout), baseSafeArea.Left, 0, isKeyboardShowing, keyboardInsets);
+			double top = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(1, layout), baseSafeArea.Top, 1, isKeyboardShowing, keyboardInsets);
+			double right = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(2, layout), baseSafeArea.Right, 2, isKeyboardShowing, keyboardInsets);
+			double bottom = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(3, layout), baseSafeArea.Top, 3, isKeyboardShowing, keyboardInsets);
 
 			var globalWindowInsetsListener = MauiWindowInsetListener.FindListenerForView(view);
             bool hasTrackedViews = globalWindowInsetsListener?.HasTrackedView == true;
@@ -108,6 +108,11 @@ internal static class SafeAreaExtensions
 				if (left == 0 && right == 0 && top == 0 && bottom == 0)
 				{
 					view.SetPadding(0, 0, 0, 0);
+					// Untrack view if it was previously tracked since padding is now 0
+					if (globalWindowInsetsListener?.IsViewTracked(view) == true)
+					{
+						globalWindowInsetsListener.ResetView(view);
+					}
 					return windowInsets;
 				}
 
@@ -142,60 +147,85 @@ internal static class SafeAreaExtensions
 					var screenWidth = realMetrics.WidthPixels;
 					var screenHeight = realMetrics.HeightPixels;
 
+					// Check if this is a top-level page view that should get full safe area treatment
+					// Top-level pages (e.g., ContentPage as direct Shell content) need full safe area padding
+					// during navigation to prevent content from being overlapped by system UI.
+					// We detect this by checking if the view's virtual view has no parent or if its parent
+					// is a navigation container (Shell, NavigationPage, etc.)
+					bool isTopLevelPage = false;
+					if (safeAreaView2 is IView virtualView)
+					{
+						// Check if this view has no parent (root level) or if parent is a Window/Shell/NavigationPage
+						var parent = virtualView.Parent;
+						
+						// View is top-level if its parent is not also requesting safe area
+						// (parent doesn't implement ISafeAreaView2). This means the parent is a container
+						// like Shell, NavigationPage, Window, etc., not another ContentPage.
+						// Exception: If we have no tracked views yet AND the parent IS requesting safe area,
+						// this might be TabbedPage initialization - use position-based logic instead.
+						bool parentRequestsSafeArea = parent != null && GetSafeAreaView2(parent) != null;
+						
+						isTopLevelPage = parent == null || 
+						                 (!parentRequestsSafeArea) ||
+						                 (parentRequestsSafeArea && hasTrackedViews);
+					}
+
 					// Calculate actual overlap for each edge
 					// Top: how much the view extends into the top safe area
 					// If the viewTop is < 0 that means that it's most likely
 					// panned off the top of the screen so we don't want to apply any top inset
-					if (top > 0 && viewTop < top && viewTop >= 0)
+					if (top > 0 && !isTopLevelPage && viewTop < top && viewTop >= 0)
 					{
 						// Calculate the actual overlap amount
 						top = Math.Min(top - viewTop, top);
 					}
-					else
+					else if (!isTopLevelPage && (viewHeight > 0 || hasTrackedViews))
 					{
-						if (viewHeight > 0 || hasTrackedViews)
-							top = 0;
+						// For non-top-level views that don't overlap, reset to 0
+						top = 0;
 					}
+					// Otherwise keep the inset value (first layout or top-level page)
 
 					// Bottom: how much the view extends into the bottom safe area
-					if (bottom > 0 && viewBottom > (screenHeight - bottom))
+					if (bottom > 0 && !isTopLevelPage && viewBottom > (screenHeight - bottom))
 					{
 						// Calculate the actual overlap amount
 						var bottomEdge = screenHeight - bottom;
 						bottom = Math.Min(viewBottom - bottomEdge, bottom);
 					}
-					else
+					else if (!isTopLevelPage && (viewHeight > 0 || hasTrackedViews))
 					{
-						// if the view height is zero because it hasn't done the first pass
-						// and we don't have any tracked views yet then we will apply the bottom inset
-						if (viewHeight > 0 || hasTrackedViews)
-							bottom = 0;
+						// For non-top-level views that don't overlap, reset to 0
+						bottom = 0;
 					}
+					// Otherwise keep the inset value (first layout or top-level page)
 
 					// Left: how much the view extends into the left safe area
-					if (left > 0 && viewLeft < left)
+					if (left > 0 && !isTopLevelPage && viewLeft < left)
 					{
 						// Calculate the actual overlap amount
 						left = Math.Min(left - viewLeft, left);
 					}
-					else
+					else if (!isTopLevelPage && (viewWidth > 0 || hasTrackedViews))
 					{
-						if (viewWidth > 0 || hasTrackedViews)
-							left = 0;
+						// For non-top-level views that don't overlap, reset to 0
+						left = 0;
 					}
+					// Otherwise keep the inset value (first layout or top-level page)
 
 					// Right: how much the view extends into the right safe area
-					if (right > 0 && viewRight > (screenWidth - right))
+					if (right > 0 && !isTopLevelPage && viewRight > (screenWidth - right))
 					{
 						// Calculate the actual overlap amount
 						var rightEdge = screenWidth - right;
 						right = Math.Min(viewRight - rightEdge, right);
 					}
-					else
+					else if (!isTopLevelPage && (viewWidth > 0 || hasTrackedViews))
 					{
-						if (viewWidth > 0 || hasTrackedViews)
-							right = 0;
+						// For non-top-level views that don't overlap, reset to 0
+						right = 0;
 					}
+					// Otherwise keep the inset value (first layout or top-level page)
 				}
 
 				// Build new window insets with unconsumed values
@@ -259,6 +289,22 @@ internal static class SafeAreaExtensions
 
 		// Fallback: return the base safe area for legacy views
 		return newWindowInsets;
+	}
+
+	internal static bool IsInsideSafeAreaIgnoredContainer(IView view)
+	{
+		// Walk up the parent hierarchy to check if this view is inside a container
+		// that implements ISafeAreaIgnoredContainer (ListView, TableView, ViewCell)
+		var parent = view.Parent;
+		while (parent != null)
+		{
+			if (parent is ISafeAreaIgnoredContainer)
+				return true;
+
+			parent = (parent as IView)?.Parent;
+		}
+
+		return false;
 	}
 
 	internal static double GetSafeAreaForEdge(SafeAreaRegions safeAreaRegion, double originalSafeArea, int edge, bool isKeyboardShowing, SafeAreaPadding keyBoardInsets)

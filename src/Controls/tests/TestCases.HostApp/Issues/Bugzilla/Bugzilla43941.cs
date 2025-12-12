@@ -18,6 +18,8 @@ public class ContentPage43941 : ContentPage
 		Interlocked.Increment(ref LandingPage43941.Counter);
 		System.Diagnostics.Debug.WriteLine("Page: " + LandingPage43941.Counter);
 
+		SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
+
 		var list = new List<int>();
 		for (var i = 0; i < 30; i++)
 		{

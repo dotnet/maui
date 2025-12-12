@@ -79,6 +79,8 @@
 			Interlocked.Increment(ref LandingPage32206.Counter);
 			System.Diagnostics.Debug.WriteLine("Page: " + LandingPage32206.Counter);
 
+			SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
+
 			Content = new ListView
 			{
 				ItemsSource = new List<string> { "Apple", "Banana", "Cherry" },

@@ -6,6 +6,8 @@ public class Bugzilla32040 : TestContentPage
 {
 	protected override void Init()
 	{
+		SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
+
 		var switchCell = new SwitchCell { Text = "blahblah", AutomationId = "blahblah" };
 		switchCell.Tapped += (s, e) =>
 		{
