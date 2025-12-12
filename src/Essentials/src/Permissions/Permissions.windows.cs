@@ -177,23 +177,25 @@ namespace Microsoft.Maui.ApplicationModel
 			/// <inheritdoc/>
 			protected override Func<IEnumerable<string>> RequiredDeclarations => () => ["microphone"];
 
-		/// <inheritdoc/>
-		public override Task<PermissionStatus> CheckStatusAsync()
-		{
-			// For packaged apps, ensure manifest declaration is present
-			if (AppInfoUtils.IsPackagedApp)
+			/// <inheritdoc/>
+			public override Task<PermissionStatus> CheckStatusAsync()
 			{
-				EnsureDeclared();
+				// For packaged apps, ensure manifest declaration is present
+				if (AppInfoUtils.IsPackagedApp)
+				{
+					EnsureDeclared();
+				}
+
+				return Task.FromResult(CheckStatus() switch
+				{
+					DeviceAccessStatus.Allowed => PermissionStatus.Granted,
+					DeviceAccessStatus.DeniedBySystem => PermissionStatus.Denied,
+					DeviceAccessStatus.DeniedByUser => PermissionStatus.Denied,
+					_ => PermissionStatus.Unknown,
+				});
 			}
 
-			return Task.FromResult(CheckStatus() switch
-			{
-				DeviceAccessStatus.Allowed => PermissionStatus.Granted,
-				DeviceAccessStatus.DeniedBySystem => PermissionStatus.Denied,
-				DeviceAccessStatus.DeniedByUser => PermissionStatus.Denied,
-				_ => PermissionStatus.Unknown,
-			});
-		}			/// <inheritdoc/>
+			/// <inheritdoc/>
 			public override async Task<PermissionStatus> RequestAsync()
 			{
 				// Check status first - if already allowed, return early
