@@ -42,6 +42,29 @@ namespace Microsoft.Maui.Controls
 			if (commandElement.Command == null)
 				return true;
 
+			// If there are dependencies (e.g., CommandParameter for Command), force their bindings
+			// to apply before evaluating CanExecute. This fixes timing issues where Command binding
+			// resolves before CommandParameter binding during reparenting.
+			// See https://github.com/dotnet/maui/issues/31939
+			if (commandProperty?.Dependencies is not null && commandElement is BindableObject bo)
+			{
+				foreach (var dependency in commandProperty.Dependencies)
+				{
+					// Only force bindings to apply when the dependency is actually pending.
+					// Unconditionally forcing can cause re-entrancy/feedback loops in cases where
+					// CanExecute evaluation triggers binding reapplication.
+					if (!bo.GetIsBound(dependency))
+						continue;
+
+					// For command parameter dependencies, 'null' is the common "not resolved yet" state.
+					// If it's already non-null, avoid forcing a re-apply.
+					if (bo.GetValue(dependency) is not null)
+						continue;
+
+					bo.ForceBindingApply(dependency);
+				}
+			}
+
 			return commandElement.Command.CanExecute(commandElement.CommandParameter);
 		}
 	}
