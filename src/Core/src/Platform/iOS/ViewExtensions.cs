@@ -17,10 +17,16 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateIsEnabled(this UIView platformView, IView view)
 		{
-			if (platformView is not UIControl uiControl)
-				return;
-
-			uiControl.Enabled = view.IsEnabled;
+			if (platformView is UIControl uiControl)
+			{
+				// UIControl has native Enabled property with visual feedback
+				uiControl.Enabled = view.IsEnabled;
+			}
+			else
+			{
+				// Non-UIControl views (like UICollectionView) only get interaction disable
+				platformView.UserInteractionEnabled = view.IsEnabled;
+			}
 		}
 
 		public static void Focus(this UIView platformView, FocusRequest request)
