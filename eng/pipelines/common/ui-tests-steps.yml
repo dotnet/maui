@@ -132,8 +132,36 @@ steps:
     $testFilter = ""
     $testConfigrationArgs = "${{ parameters.testConfigurationArgs }}"
 
-    "${{ parameters.testFilter }}".Split(",") | ForEach {
-      $testFilter += "TestCategory=" + $_ + "|"
+    $groupCategories = "${{ parameters.testFilter }}".Split(",", [System.StringSplitOptions]::RemoveEmptyEntries) | ForEach-Object { $_.Trim() }
+    $selectedCategories = $env:UITestSelectedCategories
+    $runAllSelected = $env:UITestRunAll
+
+    $runAllFlag = $runAllSelected -ieq 'true'
+
+    if (-not $runAllFlag -and -not [string]::IsNullOrWhiteSpace($selectedCategories)) {
+      $selectedSet = $selectedCategories.Split(",", [System.StringSplitOptions]::RemoveEmptyEntries) | ForEach-Object { $_.Trim() }
+      $filteredCategories = @()
+
+      $groupCategorySet = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+      foreach ($gc in $groupCategories) {
+        [void]$groupCategorySet.Add($gc)
+      }
+
+      foreach ($category in $selectedSet) {
+        if ($groupCategorySet.Contains($category)) {
+          $filteredCategories += $category
+        }
+      }
+
+      if ($filteredCategories.Count -gt 0) {
+        $groupCategories = $filteredCategories
+      }
+    }
+
+    foreach ($category in $groupCategories) {
+      if (-not [string]::IsNullOrWhiteSpace($category)) {
+        $testFilter += "TestCategory=" + $category + "|"
+      }
     }
 
     $testFilter = $testFilter.TrimEnd("|")
@@ -159,6 +187,8 @@ steps:
     retryCountOnTaskFailure: 1
   env:
     APPIUM_HOME: $(APPIUM_HOME)
+    UITestSelectedCategories: $(UITestSelectedCategories)
+    UITestRunAll: $(UITestRunAll)
 
 - bash: |
     cat ${BASH_SOURCE[0]}
