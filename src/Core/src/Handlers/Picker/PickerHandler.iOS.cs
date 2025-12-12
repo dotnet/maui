@@ -66,6 +66,9 @@ namespace Microsoft.Maui.Handlers
 			pickerController = UIAlertController.Create("", "", UIAlertControllerStyle.ActionSheet);
 
 			// needs translation
+			// Handle picker dismissal directly in the Done action instead of using EditingDidEnd event
+			// This simplifies the cleanup logic, avoids duplicate dismiss calls, and prevents VoiceOver issues
+			// Note: EditingDidEnd event breaks VoiceOver accessibility when dismissing the picker, which is why it hasn't been used
 			pickerController.AddAction(UIAlertAction.Create("Done",
 								UIAlertActionStyle.Default,
 								action =>
@@ -153,6 +156,8 @@ namespace Microsoft.Maui.Handlers
 		internal static void MapItems(IPickerHandler handler, IPicker picker) => Reload(handler);
 
 #if MACCATALYST
+		// Handle programmatic unfocus on MacCatalyst by dismissing the picker dialog
+		// This allows external code to close the picker (e.g., clicking outside, navigation)
 		internal static void MapUnfocus(IPickerHandler handler, IPicker picker, object? args)
 		{
 			if (handler is PickerHandler pickerHandler && pickerHandler.pickerController != null)
