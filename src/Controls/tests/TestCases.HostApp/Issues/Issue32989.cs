@@ -5,7 +5,7 @@ using Microsoft.Maui.Essentials;
 namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 32989, "Exception thrown on .NET 10 Windows when calling Permissions.CheckStatusAsync<Permissions.Microphone>()", PlatformAffected.UWP)]
-public partial class Issue32989 : ContentPage
+public class Issue32989 : ContentPage
 {
     Label statusLabel;
 
