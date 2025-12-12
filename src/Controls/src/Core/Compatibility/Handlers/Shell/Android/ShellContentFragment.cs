@@ -9,6 +9,8 @@ using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Core.View;
 using AndroidX.Fragment.App;
 using Google.Android.Material.AppBar;
+using Microsoft.Maui.Controls.Handlers.Compatibility;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using AndroidAnimation = Android.Views.Animations.Animation;
 using AnimationSet = Android.Views.Animations.AnimationSet;
@@ -135,6 +137,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			_root = inflater.Inflate(Controls.Resource.Layout.shellcontent, null).JavaCast<CoordinatorLayout>();
+
+			// Set theme-aware background color immediately to prevent white flash during transitions.
+			// The CoordinatorLayout is inflated without a background color, which can cause
+			// white flash during fragment transitions when using dark theme.
+			_root.SetBackgroundColor(ShellRenderer.DefaultBottomNavigationViewBackgroundColor.ToPlatform());
 
 			MauiWindowInsetListener.SetupViewWithLocalListener(_root);
 
