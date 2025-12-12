@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:viewModels="clr-namespace:Maui.Controls.Sample.ViewModels"
+    x:Class="Maui.Controls.Sample.Views.Itinerary.ItineraryPlanningView"
+    x:DataType="viewModels:TripPlanningViewModel">
+
+    <VerticalStackLayout Padding="20" Spacing="20">
+        <VerticalStackLayout Spacing="10">
+            <Label Text="✨" FontSize="32" />
+            <Label Text="{Binding Landmark.Name, StringFormat='Planning itinerary for {0}...'}" 
+                   FontSize="28" FontAttributes="Bold" />
+        </VerticalStackLayout>
+        
+        <VerticalStackLayout BindableLayout.ItemsSource="{Binding ToolLookupHistory}" Spacing="12">
+            <BindableLayout.ItemTemplate>
+                <DataTemplate x:DataType="{x:Type x:String}">
+                    <Border Padding="15" StrokeShape="RoundRectangle 12" StrokeThickness="0"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray900}}">
+                        <HorizontalStackLayout Spacing="10">
+                            <Label Text="🔍" FontSize="16" />
+                            <Label FontSize="14" Text="{Binding ., StringFormat='Searching {0}...'}"
+                                   TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray400}}" />
+                        </HorizontalStackLayout>
+                    </Border>
+                </DataTemplate>
+            </BindableLayout.ItemTemplate>
+        </VerticalStackLayout>
+        
+        <ActivityIndicator IsRunning="True" HorizontalOptions="Center" Margin="0,20,0,0" />
+    </VerticalStackLayout>
+
+</ContentView>
