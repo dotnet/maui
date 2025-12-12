@@ -1,3 +1,7 @@
+#if ANDROID
+using Android.Views;
+#endif
+
 namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 28986, "Test SafeArea ContentView for per-edge safe area control", PlatformAffected.Android | PlatformAffected.iOS, issueTestNumber: 3)]
@@ -13,6 +17,12 @@ public partial class Issue28986_ContentView : ContentPage
 		BottomPicker.SelectedIndex = 3; // All
 
 		UpdateSafeAreaSettings();
+
+#if ANDROID
+		// Set SoftInput.AdjustNothing - we have full control over insets (iOS-like behavior)
+		var window = Microsoft.Maui.ApplicationModel.Platform.CurrentActivity?.Window;
+		window?.SetSoftInputMode(SoftInput.AdjustNothing | SoftInput.StateUnspecified);
+#endif
 	}
 
 	private void OnEdgePickerChanged(object sender, EventArgs e)
