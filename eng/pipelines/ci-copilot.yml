@@ -1,0 +1,117 @@
+# Pipeline for running GitHub Copilot PR Reviewer Agent
+# This pipeline installs the Copilot CLI and invokes the PR reviewer agent
+# to conduct automated code reviews on pull requests.
+#
+# For more information, see:
+# https://github.com/dotnet/maui/wiki/PR-Reviewer-Agent
+
+trigger: none  # Manual trigger only
+
+pr: none  # Not triggered by PRs
+
+parameters:
+  - name: PRNumber
+    displayName: 'Pull Request Number'
+    type: string
+    default: ''
+
+  - name: pool
+    type: object
+    default:
+      name: MAUI-Testing
+      vmImage: ubuntu-latest
+      demands:
+        - Agent.OS -equals Darwin
+
+# variables:
+#   - template: /eng/pipelines/common/variables.yml@self
+
+stages:
+  - stage: ReviewPR
+    displayName: 'Review Pull Request'
+    jobs:
+      - job: CopilotReview
+        displayName: 'Run Copilot PR Reviewer Agent'
+        pool: ${{ parameters.pool }}
+        steps:
+          - checkout: self
+            fetchDepth: 0
+            persistCredentials: true
+
+          - script: |
+              echo "Validating PR Number parameter..."
+              if [ -z "${{ parameters.PRNumber }}" ]; then
+                echo "##vso[task.logissue type=error]PRNumber parameter is required"
+                exit 1
+              fi
+              echo "PR Number: ${{ parameters.PRNumber }}"
+            displayName: 'Validate Parameters'
+
+          - script: |
+              echo "Installing Node.js and npm..."
+              curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+              sudo apt-get install -y nodejs
+              node --version
+              npm --version
+            displayName: 'Install Node.js'
+
+          - script: |
+              echo "Installing GitHub Copilot CLI..."
+              npm install -g @githubnext/github-copilot-cli
+              echo "Copilot CLI installed successfully"
+            displayName: 'Install GitHub Copilot CLI'
+
+          - script: |
+              echo "Authenticating with GitHub CLI..."
+              echo "$(GH_CLI_TOKEN)" | gh auth login --with-token
+              gh auth status
+            displayName: 'Authenticate GitHub CLI'
+            env:
+              GH_CLI_TOKEN: $(GH_CLI_TOKEN)
+
+          - script: |
+              echo "Fetching PR #${{ parameters.PRNumber }}..."
+              git fetch origin pull/${{ parameters.PRNumber }}/head:pr-${{ parameters.PRNumber }}
+              git checkout pr-${{ parameters.PRNumber }}
+              echo "Checked out PR branch successfully"
+              git log -1 --oneline
+            displayName: 'Checkout PR Branch'
+
+          - script: |
+              echo "Running Copilot PR Reviewer Agent..."
+              echo "Reviewing PR #${{ parameters.PRNumber }}..."
+              
+              # Invoke the PR reviewer agent using Copilot CLI
+              # The agent will analyze the PR and generate review feedback
+              github-copilot-cli chat --agent pr-reviewer "review PR #${{ parameters.PRNumber }}"
+            displayName: 'Run PR Reviewer Agent'
+            env:
+              GITHUB_TOKEN: $(COPILOT_TOKEN)
+
+          - script: |
+              echo "Posting review comment to PR..."
+              
+              # Check if review feedback file was generated
+              REVIEW_FILE=$(find . -name "Review_Feedback_Issue_*.md" -type f | head -1)
+              
+              if [ -n "$REVIEW_FILE" ]; then
+                echo "Found review file: $REVIEW_FILE"
+                
+                # Post the review as a comment on the PR
+                gh pr comment ${{ parameters.PRNumber }} --body-file "$REVIEW_FILE"
+                echo "Review comment posted successfully"
+              else
+                echo "No review feedback file found, skipping comment"
+              fi
+            displayName: 'Post Review Comment'
+            env:
+              GITHUB_TOKEN: $(GH_COMMENT_TOKEN)
+            condition: succeededOrFailed()
+
+          - task: PublishPipelineArtifact@1
+            displayName: 'Publish Review Artifacts'
+            inputs:
+              targetPath: '$(System.DefaultWorkingDirectory)'
+              artifact: 'ReviewOutput'
+              publishLocation: 'pipeline'
+            condition: succeededOrFailed()
