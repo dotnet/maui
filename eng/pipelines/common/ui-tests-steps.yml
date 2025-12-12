@@ -15,6 +15,30 @@ parameters:
   checkoutDirectory: $(System.DefaultWorkingDirectory)
 
 steps:
+- pwsh: |
+    $runAll = $env:UITestRunAll
+    $groups = $env:UITestCategoryGroupsDelimited
+    $group = "${{ parameters.testFilter }}"
+
+    $skip = $false
+    if ($runAll -ne "true") {
+      if (-not [string]::IsNullOrWhiteSpace($groups)) {
+        if ($groups -notlike "*;$group;*") {
+          $skip = $true
+        }
+      }
+    }
+
+    Write-Host "UITestRunAll=$runAll"
+    Write-Host "UITestCategoryGroupsDelimited=$groups"
+    Write-Host "CATEGORYGROUP=$group"
+    Write-Host "SkipUITestCategory=$skip"
+    Write-Host "##vso[task.setvariable variable=SkipUITestCategory]$skip"
+  displayName: Decide UITest category run
+  env:
+    UITestRunAll: $(UITestRunAll)
+    UITestCategoryGroupsDelimited: $(UITestCategoryGroupsDelimited)
+
 - task: DownloadPipelineArtifact@2
   condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'Mono'))
   inputs:
@@ -183,12 +207,14 @@ steps:
 
     Invoke-Expression $command  
   displayName: $(Agent.JobName)
+  condition: or(ne(variables['SkipUITestCategory'], 'true'), eq(variables['SkipUITestCategory'], ''))
   ${{ if ne(parameters.platform, 'android')}}:
     retryCountOnTaskFailure: 1
   env:
     APPIUM_HOME: $(APPIUM_HOME)
     UITestSelectedCategories: $(UITestSelectedCategories)
     UITestRunAll: $(UITestRunAll)
+    UITestCategoryGroupsDelimited: $(UITestCategoryGroupsDelimited)
 
 - bash: |
     cat ${BASH_SOURCE[0]}
