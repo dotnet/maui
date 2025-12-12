@@ -4,9 +4,9 @@ using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
-	public class Issue31539 : _IssuesUITest
+	public class Issue33136 : _IssuesUITest
 	{
-		public Issue31539(TestDevice device) : base(device) { }
+		public Issue33136(TestDevice device) : base(device) { }
 
 		public override string Issue => "TitleBar Content Overlapping with Traffic Light Buttons on Latest macOS Version";
 		[Test]
