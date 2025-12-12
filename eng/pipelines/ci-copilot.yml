@@ -23,8 +23,9 @@ parameters:
       demands:
         - Agent.OS -equals Darwin
 
-# variables:
-#   - template: /eng/pipelines/common/variables.yml@self
+variables:
+  Codeql.Enabled: false
+  Codeql.SkipTaskAutoInjection: true
 
 stages:
   - stage: ReviewPR
