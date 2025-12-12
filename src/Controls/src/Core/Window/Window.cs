@@ -44,11 +44,13 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="Width"/>.</summary>
 		public static readonly BindableProperty WidthProperty = BindableProperty.Create(
-			nameof(Width), typeof(double), typeof(Window), Primitives.Dimension.Unset);
+			nameof(Width), typeof(double), typeof(Window), Primitives.Dimension.Unset,
+			propertyChanged: OnSizePropertyChanged);
 
 		/// <summary>Bindable property for <see cref="Height"/>.</summary>
 		public static readonly BindableProperty HeightProperty = BindableProperty.Create(
-			nameof(Height), typeof(double), typeof(Window), Primitives.Dimension.Unset);
+			nameof(Height), typeof(double), typeof(Window), Primitives.Dimension.Unset,
+			propertyChanged: OnSizePropertyChanged);        
 
 		/// <summary>Bindable property for <see cref="MaximumWidth"/>.</summary>
 		public static readonly BindableProperty MaximumWidthProperty = BindableProperty.Create(
@@ -227,6 +229,16 @@ namespace Microsoft.Maui.Controls
 		}
 
 		int _batchFrameUpdate = 0;
+
+		static void OnSizePropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			var window = (Window)bindable;
+			// Only trigger SizeChanged if not being updated from platform (FrameChanged)
+			if (window._batchFrameUpdate == 0)
+			{
+				window.SizeChanged?.Invoke(window, EventArgs.Empty);
+			}
+		}
 
 		void IWindow.FrameChanged(Rect frame)
 		{
