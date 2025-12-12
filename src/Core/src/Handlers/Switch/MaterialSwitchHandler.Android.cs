@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Handlers;
 internal partial class MaterialSwitchHandler : ViewHandler<ISwitch, MauiMaterialSwitch>
 {
 	public static PropertyMapper<ISwitch, MaterialSwitchHandler> Mapper =
-		new(ElementMapper)
+		new(ViewMapper)
 		{
 			[nameof(ISwitch.IsOn)] = MapIsOn,
 			[nameof(ISwitch.TrackColor)] = MapTrackColor,
