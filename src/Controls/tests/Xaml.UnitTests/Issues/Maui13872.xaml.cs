@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -7,23 +7,24 @@ public partial class Maui13872 : ContentPage
 {
 	public Maui13872() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests
 	{
-		[Test]
-		public void CompiledBindingToIReadOnlyListCount([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void CompiledBindingToIReadOnlyListCount(XamlInflator inflator)
 		{
 			var page = new Maui13872(inflator);
 			page.BindingContext = new Maui13872ViewModel();
 
 			// Uncompiled bindings (no x:DataType) - should work with all inflators
-			Assert.That(page.label0.Text, Is.EqualTo("3"), "Uncompiled binding to List.Count");
-			Assert.That(page.label1.Text, Is.EqualTo("3"), "Uncompiled binding to ListCount");
+			Assert.Equal("3", page.label0.Text);
+			Assert.Equal("3", page.label1.Text);
 
 			// Compiled bindings (with x:DataType) - IReadOnlyList<T>.Count should resolve correctly.
 			// Count is defined on IReadOnlyCollection<T> which IReadOnlyList<T> inherits.
-			Assert.That(page.label2.Text, Is.EqualTo("3"), "Compiled binding to List.Count");
-			Assert.That(page.label3.Text, Is.EqualTo("3"), "Compiled binding to ListCount");
+			Assert.Equal("3", page.label2.Text);
+			Assert.Equal("3", page.label3.Text);
 		}
 	}
 }

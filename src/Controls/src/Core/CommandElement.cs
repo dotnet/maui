@@ -50,6 +50,17 @@ namespace Microsoft.Maui.Controls
 			{
 				foreach (var dependency in commandProperty.Dependencies)
 				{
+					// Only force bindings to apply when the dependency is actually pending.
+					// Unconditionally forcing can cause re-entrancy/feedback loops in cases where
+					// CanExecute evaluation triggers binding reapplication.
+					if (!bo.GetIsBound(dependency))
+						continue;
+
+					// For command parameter dependencies, 'null' is the common "not resolved yet" state.
+					// If it's already non-null, avoid forcing a re-apply.
+					if (bo.GetValue(dependency) is not null)
+						continue;
+
 					bo.ForceBindingApply(dependency);
 				}
 			}
