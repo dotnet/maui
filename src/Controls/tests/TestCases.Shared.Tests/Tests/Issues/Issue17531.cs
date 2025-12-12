@@ -22,6 +22,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("Red");
 			App.WaitForElement("Green");
 			App.DragAndDrop("Red", "Green");
+			Thread.Sleep(2000); // Wait for the UI to update after drag and drop
 			var dropResultLabel = App.FindElement("DropResultLabel").GetText();
 			Assert.That(dropResultLabel, Is.EqualTo("Success"));
 		}
