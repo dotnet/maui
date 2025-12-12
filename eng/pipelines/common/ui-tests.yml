@@ -12,7 +12,7 @@ parameters:
   skipProvisioning: true
   BuildNativeAOT: false # Parameter to control whether NativeAOT artifacts should be built
   RunNativeAOT: false # Parameter to control whether NativeAOT UI tests should run
-  categoryGroupCondition: "and(succeeded(), or(ne(variables['Build.Reason'],'PullRequest'), eq(stageDependencies.determine_ui_test_categories.detect_ui_test_categories.outputs['detect.UITestRunAll'],'true'), eq(stageDependencies.determine_ui_test_categories.detect_ui_test_categories.outputs['detect.UITestCategoryGroupsDelimited'],''), contains(stageDependencies.determine_ui_test_categories.detect_ui_test_categories.outputs['detect.UITestCategoryGroupsDelimited'], concat(';', variables['CATEGORYGROUP'], ';'))))"
+  categoryGroupCondition: "and(succeeded(), or(ne(variables['Build.Reason'],'PullRequest'), eq(variables['UITestRunAll'],'true'), eq(variables['UITestCategoryGroupsDelimited'],''), contains(variables['UITestCategoryGroupsDelimited'], concat(';', variables['CATEGORYGROUP'], ';'))))"
   categoryGroupsToTest:
     # Make sure that this list is always up-to-date with src/Controls/tests/TestCases.Shared.Tests/UITestCategories.cs
     # we might want to improve this somehow depending on how much the categories change over time
