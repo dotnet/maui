@@ -56,6 +56,49 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void TestMultiBindingContinuesUpdatingAfterConvertBack()
+		{
+			var group = new GroupViewModel();
+			var stack = new StackLayout
+			{
+				BindingContext = group.Person1
+			};
+
+			var label = new Label();
+			label.SetBinding(Label.TextProperty, new MultiBinding
+			{
+				Bindings = new Collection<BindingBase>
+				{
+					new Binding(nameof(PersonViewModel.FirstName)),
+					new Binding(nameof(PersonViewModel.MiddleName)),
+					new Binding(nameof(PersonViewModel.LastName)),
+				},
+				Converter = new StringConcatenationConverter(),
+				Mode = BindingMode.TwoWay,
+			});
+			stack.Children.Add(label);
+
+			string originalName = "Gaius Julius Caesar";
+			Assert.Equal(originalName, label.Text);
+
+			label.Text = "Marcus Tullius Cicero";
+
+			Assert.Equal("Marcus", group.Person1.FirstName);
+			Assert.Equal("Tullius", group.Person1.MiddleName);
+			Assert.Equal("Cicero", group.Person1.LastName);
+			Assert.Equal("Marcus Tullius Cicero", label.Text);
+
+			group.Person1.FirstName = "Julius";
+
+			Assert.Equal("Julius Tullius Cicero", label.Text);
+			Assert.Equal("Julius Tullius Cicero", group.Person1.FullName);
+
+			group.Person1.LastName = "Augustus";
+			Assert.Equal("Julius Tullius Augustus", label.Text);
+			Assert.Equal("Julius Tullius Augustus", group.Person1.FullName);
+		}
+
+		[Fact]
 		public void TestRelativeSources()
 		{
 			// Self
