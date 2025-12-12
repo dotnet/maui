@@ -611,17 +611,13 @@ namespace Microsoft.Maui.Media
 		bool ShouldUsePngFormat()
 		{
 			// Use PNG if:
-			// 1. High quality (>=90) and no resizing needed (preserves original format)
-			// 2. Original file was PNG
-			// 3. Image might have transparency (PNG supports alpha channel)
+			// 1. Original file was PNG
+			// 2. High quality (>=90) and no resizing needed (preserves original format)
 
-			bool highQualityNoResize = compressionQuality >= 90 && !maximumWidth.HasValue && !maximumHeight.HasValue;
 			bool originalWasPng = !string.IsNullOrEmpty(originalFileName) &&
-									(originalFileName.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ||
-									 originalFileName.EndsWith(".PNG", StringComparison.OrdinalIgnoreCase));
+									Path.GetExtension(originalFileName).Equals(".png", StringComparison.OrdinalIgnoreCase);
 
-			// For very high quality or when original was PNG, preserve PNG format
-			return (compressionQuality >= 95 && !maximumWidth.HasValue && !maximumHeight.HasValue) || originalWasPng;
+			return originalWasPng || (compressionQuality >= 90 && !maximumWidth.HasValue && !maximumHeight.HasValue);
 		}
 
 		internal override Task<Stream> PlatformOpenReadAsync()
