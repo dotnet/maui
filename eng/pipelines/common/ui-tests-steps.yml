@@ -15,6 +15,30 @@ parameters:
   checkoutDirectory: $(System.DefaultWorkingDirectory)
 
 steps:
+- pwsh: |
+    $runAll = $env:UITestRunAll
+    $groups = $env:UITestCategoryGroupsDelimited
+    $group = "${{ parameters.testFilter }}"
+
+    $skip = $false
+    if ($runAll -ne "true") {
+      if (-not [string]::IsNullOrWhiteSpace($groups)) {
+        if ($groups -notlike "*;$group;*") {
+          $skip = $true
+        }
+      }
+    }
+
+    Write-Host "UITestRunAll=$runAll"
+    Write-Host "UITestCategoryGroupsDelimited=$groups"
+    Write-Host "CATEGORYGROUP=$group"
+    Write-Host "SkipUITestCategory=$skip"
+    Write-Host "##vso[task.setvariable variable=SkipUITestCategory]$skip"
+  displayName: Decide UITest category run
+  env:
+    UITestRunAll: $(UITestRunAll)
+    UITestCategoryGroupsDelimited: $(UITestCategoryGroupsDelimited)
+
 - task: DownloadPipelineArtifact@2
   condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'Mono'))
   inputs:
@@ -132,8 +156,36 @@ steps:
     $testFilter = ""
     $testConfigrationArgs = "${{ parameters.testConfigurationArgs }}"
 
-    "${{ parameters.testFilter }}".Split(",") | ForEach {
-      $testFilter += "TestCategory=" + $_ + "|"
+    $groupCategories = "${{ parameters.testFilter }}".Split(",", [System.StringSplitOptions]::RemoveEmptyEntries) | ForEach-Object { $_.Trim() }
+    $selectedCategories = $env:UITestSelectedCategories
+    $runAllSelected = $env:UITestRunAll
+
+    $runAllFlag = $runAllSelected -ieq 'true'
+
+    if (-not $runAllFlag -and -not [string]::IsNullOrWhiteSpace($selectedCategories)) {
+      $selectedSet = $selectedCategories.Split(",", [System.StringSplitOptions]::RemoveEmptyEntries) | ForEach-Object { $_.Trim() }
+      $filteredCategories = @()
+
+      $groupCategorySet = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+      foreach ($gc in $groupCategories) {
+        [void]$groupCategorySet.Add($gc)
+      }
+
+      foreach ($category in $selectedSet) {
+        if ($groupCategorySet.Contains($category)) {
+          $filteredCategories += $category
+        }
+      }
+
+      if ($filteredCategories.Count -gt 0) {
+        $groupCategories = $filteredCategories
+      }
+    }
+
+    foreach ($category in $groupCategories) {
+      if (-not [string]::IsNullOrWhiteSpace($category)) {
+        $testFilter += "TestCategory=" + $category + "|"
+      }
     }
 
     $testFilter = $testFilter.TrimEnd("|")
@@ -155,10 +207,14 @@ steps:
 
     Invoke-Expression $command  
   displayName: $(Agent.JobName)
+  condition: or(ne(variables['SkipUITestCategory'], 'true'), eq(variables['SkipUITestCategory'], ''))
   ${{ if ne(parameters.platform, 'android')}}:
     retryCountOnTaskFailure: 1
   env:
     APPIUM_HOME: $(APPIUM_HOME)
+    UITestSelectedCategories: $(UITestSelectedCategories)
+    UITestRunAll: $(UITestRunAll)
+    UITestCategoryGroupsDelimited: $(UITestCategoryGroupsDelimited)
 
 - bash: |
     cat ${BASH_SOURCE[0]}
