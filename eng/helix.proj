@@ -9,6 +9,7 @@
     <DotNetCliPackageType>sdk</DotNetCliPackageType>
     <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
     <FailOnTestFailure>true</FailOnTestFailure>
+    <DotNetCliVersion>$(MicrosoftNETSdkPackageVersion)</DotNetCliVersion>
   </PropertyGroup>
 
   <PropertyGroup>
