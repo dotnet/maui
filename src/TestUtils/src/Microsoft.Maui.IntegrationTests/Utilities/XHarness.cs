@@ -21,12 +21,14 @@ namespace Microsoft.Maui.IntegrationTests
 		/// <param name="appPath"></param>
 		/// <param name="resultDir"></param>
 		/// <param name="targetDevice"></param>
+		/// <param name="deviceUDID">Optional UDID of a specific already-booted simulator to use.</param>
 		/// <param name="launchTimeoutSeconds"></param>
 		/// <returns>True if the app launch command timed out, false if it exits early.</returns>
-		public static bool RunAppleForTimeout(string appPath, string resultDir, string targetDevice, int launchTimeoutSeconds = 75)
+		public static bool RunAppleForTimeout(string appPath, string resultDir, string targetDevice, string? deviceUDID = null, int launchTimeoutSeconds = 75)
 		{
 			var timeoutString = TimeSpan.FromSeconds(launchTimeoutSeconds).ToString();
-			var args = $"apple run --app=\"{appPath}\" --output-directory=\"{resultDir}\" --target={targetDevice} --timeout=\"{timeoutString}\" --verbosity=Debug";
+			var deviceArg = string.IsNullOrEmpty(deviceUDID) ? "" : $" --device=\"{deviceUDID}\"";
+			var args = $"apple run --app=\"{appPath}\" --output-directory=\"{resultDir}\" --target={targetDevice}{deviceArg} --timeout=\"{timeoutString}\" --verbosity=Debug";
 			var xhOutput = RunForOutput(args, out int exitCode, launchTimeoutSeconds + 30);
 
 			var launchLogMatch = false;
