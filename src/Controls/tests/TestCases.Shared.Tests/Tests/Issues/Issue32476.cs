@@ -16,7 +16,7 @@ public class Issue32476 : _IssuesUITest
 	{
 		App.WaitForElement("ToggleButton");
 		App.Tap("ToggleButton");
-		VerifyScreenshot();
+		VerifyScreenshot(includeTitleBar: true);
 	}
 }
 #endif
