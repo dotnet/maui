@@ -1,12 +1,21 @@
+using Android.Content.Res;
 using Android.Graphics.Drawables;
 using ASwitch = AndroidX.AppCompat.Widget.SwitchCompat;
+using MSwitch = Google.Android.Material.MaterialSwitch.MaterialSwitch;
 
 namespace Microsoft.Maui.Platform
 {
 	public static class SwitchExtensions
 	{
-		public static void UpdateIsOn(this ASwitch aSwitch, ISwitch view) =>
+		public static void UpdateIsOn(this ASwitch aSwitch, ISwitch view)
+		{
 			aSwitch.Checked = view.IsOn;
+		}
+
+		internal static void UpdateIsOn(this MSwitch materialSwitch, ISwitch view)
+		{
+			materialSwitch.Checked = view.IsOn;
+		}
 
 		public static void UpdateTrackColor(this ASwitch aSwitch, ISwitch view)
 		{
@@ -20,6 +29,20 @@ namespace Microsoft.Maui.Platform
 			{
 				aSwitch.TrackDrawable?.ClearColorFilter();
 			}
+		}
+
+		internal static void UpdateTrackColor(this MSwitch materialSwitch, ISwitch view)
+		{
+			var trackColor = view.TrackColor;
+
+			if (trackColor is not null)
+			{
+				materialSwitch.TrackTintList = ColorStateList.ValueOf(trackColor.ToPlatform());
+			}
+			// else
+			// {
+			// 	materialSwitch.TrackTintList = null;
+			// }
 		}
 
 		public static void UpdateThumbColor(this ASwitch aSwitch, ISwitch view)
