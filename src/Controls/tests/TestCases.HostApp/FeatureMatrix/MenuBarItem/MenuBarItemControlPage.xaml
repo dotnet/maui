@@ -50,11 +50,6 @@
                                      IconImageSource="{Binding RefreshIcon}"
                                      Command="{Binding RefreshCommand}"
                                      AutomationId="RefreshMenuFlyoutItem"/>
-                     <MenuFlyoutItem Text="{Binding ChangeThemeText}"
-                                     IsEnabled="{Binding ChangeThemeEnabled}"
-                                     IconImageSource="{Binding ChangeThemeIcon}"
-                                     Command="{Binding ChangeThemeCommand}"
-                                     AutomationId="ChangeThemeMenuFlyoutItem"/>
               </MenuBarItem>
        </Shell.MenuBarItems>
 
@@ -63,7 +58,6 @@
               <ContentPage>
                      <VerticalStackLayout Padding="20"
                                           Spacing="25">
-
                             <!-- Current Status Section -->
                             <VerticalStackLayout Spacing="12">
                                    <Label Text="Current Status"
@@ -91,6 +85,27 @@
                                                  FontSize="14"
                                                  AutomationId="StatusMessageLabel"/>
                                    </Grid>
+                            </VerticalStackLayout>
+
+                            <!-- Location Entry Section -->
+                            <VerticalStackLayout Spacing="10"
+                                                 IsVisible="{Binding IsEntryVisible}">
+                                   <Label Text="Enter Location Details"
+                                          FontSize="16"
+                                          FontAttributes="Bold"/>
+
+                                   <Entry Text="{Binding EntryText}"
+                                          Placeholder="{Binding EntryPlaceholder}"
+                                          AutomationId="LocationEntry"/>
+
+                                   <HorizontalStackLayout Spacing="10">
+                                          <Button Text="Confirm"
+                                                  Command="{Binding ConfirmEntryCommand}"
+                                                  AutomationId="ConfirmButton"/>
+                                          <Button Text="Cancel"
+                                                  Command="{Binding CancelEntryCommand}"
+                                                  AutomationId="CancelButton"/>
+                                   </HorizontalStackLayout>
                             </VerticalStackLayout>
 
                             <!-- Menu Controls Section -->

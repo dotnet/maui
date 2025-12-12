@@ -9,13 +9,11 @@ public partial class MenuBarItemControlPage : Shell
 	public MenuBarItemControlPage()
 	{
 		InitializeComponent();
-		this.SetAppThemeColor(BackgroundColorProperty, Colors.White, Colors.Black);
 		_viewModel = new MenuBarItemViewModel();
 		BindingContext = _viewModel;
 
 		// Subscribe to collection changes
 		_viewModel.Locations.CollectionChanged += OnLocationsCollectionChanged;
-
 		// Initial population of menu items
 		PopulateLocationMenuItems();
 	}
