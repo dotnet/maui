@@ -53,14 +53,14 @@ namespace Microsoft.Maui.Platform
 		{
 			var thumbColor = view.ThumbColor;
 			_defaultThumbTintList ??= materialSwitch.ThumbTintList;
+
 			if (thumbColor is not null)
 			{
 				materialSwitch.ThumbTintList = ColorStateList.ValueOf(thumbColor.ToPlatform());
 			}
-			else if (thumbColor is null && materialSwitch is MauiMaterialSwitch mauiSwitch)
+			else
 			{
 				materialSwitch.ThumbTintList = _defaultThumbTintList;
-
 			}
 		}
 
