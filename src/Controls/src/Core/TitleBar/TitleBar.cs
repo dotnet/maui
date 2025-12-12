@@ -348,7 +348,11 @@ namespace Microsoft.Maui.Controls
 			var contentGrid = new Grid()
 			{
 #if MACCATALYST
+#if MACCATALYST26_0_OR_GREATER
+				Margin = new Thickness(90, 0, 0, 0),
+#else
 				Margin = new Thickness(80, 0, 0, 0),
+#endif
 #endif
 				HorizontalOptions = LayoutOptions.Fill,
 				ColumnDefinitions =
