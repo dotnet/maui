@@ -262,7 +262,7 @@ namespace Microsoft.Maui.UnitTests
 				ts.Subscribe(source);
 			})();
 
-			GC.Collect();
+			GC.Collect(2);
 			GC.WaitForPendingFinalizers();
 
 			Assert.NotNull(wr);
@@ -286,7 +286,7 @@ namespace Microsoft.Maui.UnitTests
 				ts.Subscribe(source);
 			})();
 
-			GC.Collect();
+			GC.Collect(2);
 			GC.WaitForPendingFinalizers();
 			new TestSubscriber().Unsubscribe(source);
 
