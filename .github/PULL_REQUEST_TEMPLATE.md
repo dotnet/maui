@@ -1,5 +1,8 @@
 <!--
 !!!!!!! MAIN IS THE ONLY ACTIVE BRANCH. MAKE SURE THIS PR IS TARGETING MAIN. !!!!!!! 
+
+💡 TIP: Try our custom agents or just Copilot to help with your contribution!
+https://github.com/dotnet/maui/wiki/Using-AI-to-Work-on-.NET-MAUI
 -->
 
 ### Description of Change
