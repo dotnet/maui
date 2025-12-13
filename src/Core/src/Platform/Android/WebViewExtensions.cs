@@ -25,6 +25,10 @@ namespace Microsoft.Maui.Platform
 					platformWebView.UpdateCanGoBackForward(webView);
 				}
 			}
+			else
+			{
+				platformWebView.LoadUrl("about:blank");
+			}
 		}
 
 		public static void UpdateSettings(this AWebView platformWebView, IWebView webView, bool javaScriptEnabled, bool domStorageEnabled)
