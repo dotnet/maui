@@ -24,7 +24,7 @@ public class CollectionViewGroupHeaderItemSizingIssue : _IssuesUITest
 		// Get the initial header size (before changing ItemSizingStrategy)
 		var headerElementBefore = App.FindElement("GroupHeader");
 		var headerRectBefore = headerElementBefore.GetRect();
-		
+
 		Console.WriteLine($"Header size BEFORE strategy change: Width={headerRectBefore.Width}, Height={headerRectBefore.Height}");
 		Assert.That(headerRectBefore.Height, Is.GreaterThan(0), "Header should have a height before strategy change");
 
@@ -38,7 +38,7 @@ public class CollectionViewGroupHeaderItemSizingIssue : _IssuesUITest
 		// Get the header size after changing ItemSizingStrategy
 		var headerElementAfter = App.FindElement("GroupHeader");
 		var headerRectAfter = headerElementAfter.GetRect();
-		
+
 		Console.WriteLine($"Header size AFTER strategy change: Width={headerRectAfter.Width}, Height={headerRectAfter.Height}");
 		Assert.That(headerRectAfter.Height, Is.GreaterThan(0), "Header should have a height after strategy change");
 
@@ -46,9 +46,9 @@ public class CollectionViewGroupHeaderItemSizingIssue : _IssuesUITest
 		// Allow for small rounding differences but not significant changes
 		var heightDifference = Math.Abs(headerRectBefore.Height - headerRectAfter.Height);
 		Console.WriteLine($"Height difference: {heightDifference}");
-		
+
 		// Assert that the height difference is minimal (less than 5 pixels tolerance)
-		Assert.That(heightDifference, Is.LessThan(5.0), 
+		Assert.That(heightDifference, Is.LessThan(5.0),
 			$"Header height should not change significantly. Before: {headerRectBefore.Height}, After: {headerRectAfter.Height}, Difference: {heightDifference}");
 	}
 }
