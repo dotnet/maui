@@ -19,7 +19,7 @@ public class CollectionViewGroupHeaderItemSizingIssue : _IssuesUITest
 		App.WaitForElement("GroupHeader");
 
 		// Give time for layout
-		Task.Delay(1000).Wait();
+		Thread.Sleep(1000);
 
 		// Get the initial header size (before changing ItemSizingStrategy)
 		var headerElementBefore = App.FindElement("GroupHeader");
@@ -33,7 +33,7 @@ public class CollectionViewGroupHeaderItemSizingIssue : _IssuesUITest
 		App.Tap("SwitchStrategyButton");
 
 		// Wait for layout to update
-		Task.Delay(1000).Wait();
+		Thread.Sleep(1000);
 
 		// Get the header size after changing ItemSizingStrategy
 		var headerElementAfter = App.FindElement("GroupHeader");

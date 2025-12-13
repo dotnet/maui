@@ -77,7 +77,6 @@ internal static class LayoutFactory2
 						? NSRectAlignment.Top
 						: NSRectAlignment.Leading));
 			}
-			;
 
 			if (layoutHeaderFooterInfo.HasFooter)
 			{
