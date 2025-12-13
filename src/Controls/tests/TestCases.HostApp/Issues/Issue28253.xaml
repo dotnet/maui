@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue28253"
+             Title="Issue28253">
+    <ScrollView>
+        <StackLayout Margin="15,30">
+            <Label Text="RadioButton with Image and Label" AutomationId="label"/>
+            <RadioButton Value="Elephant">
+                <RadioButton.Content>
+                    <Image Source="dotnet_bot.png"/>
+                </RadioButton.Content>
+            </RadioButton>
+            <RadioButton Value="Monkey">
+                <RadioButton.Content>
+                    <HorizontalStackLayout>
+                        <Label VerticalTextAlignment="Center"
+                               Text="Horizontal stack layout"/>
+                        <Image AutomationId="coffeeImage"
+                               Source="coffee.png"/>
+                    </HorizontalStackLayout>
+                </RadioButton.Content>
+            </RadioButton>
+            <RadioButton
+                Value="Tiger"
+                Content="Tiger"/>
+        </StackLayout>
+    </ScrollView>
+</ContentPage>
