@@ -19,10 +19,6 @@
 .PARAMETER RunUnitTests
     Run unit tests after building (default: false)
 
-.PARAMETER UnitTestFilter
-    Filter for which unit tests to run (e.g., "FullyQualifiedName~Core")
-    If not specified, runs all unit tests
-
 .PARAMETER Configuration
     Build configuration: "Debug" or "Release" (default: Debug)
 
@@ -35,10 +31,6 @@
     Builds and runs all unit tests
 
 .EXAMPLE
-    ./BuildAndVerify.ps1 -RunUnitTests -UnitTestFilter "FullyQualifiedName~Core"
-    Builds and runs only Core unit tests
-
-.EXAMPLE
     ./BuildAndVerify.ps1 -Configuration Release
     Builds with Release configuration
 #>
@@ -46,8 +38,6 @@
 [CmdletBinding()]
 param(
     [switch]$RunUnitTests,
-
-    [string]$UnitTestFilter,
 
     [ValidateSet("Debug", "Release")]
     [string]$Configuration = "Debug"
@@ -271,11 +261,6 @@ if ($RunUnitTests) {
                 "-c", $Configuration
                 "--nologo"
             )
-            
-            if ($UnitTestFilter) {
-                $testArgs += "--filter"
-                $testArgs += $UnitTestFilter
-            }
             
             $testOutput = & dotnet @testArgs 2>&1
             
