@@ -1,6 +1,6 @@
 using System;
+using System.Collections.ObjectModel;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.ManualTests.ViewModels;
 
 namespace Maui.Controls.Sample.Issues;
 
@@ -53,4 +53,49 @@ public partial class CollectionViewGroupHeaderItemSizingIssue : ContentPage
 		
 		HeaderSizeLabel.Text = $"Header Size: Check console for {context}";
 	}
+}
+
+public class GroupedAnimalsViewModel
+{
+	public ObservableCollection<AnimalGroup> Animals { get; set; }
+
+	public GroupedAnimalsViewModel()
+	{
+		Animals = new ObservableCollection<AnimalGroup>
+		{
+			new AnimalGroup("Bears")
+			{
+				new Animal { Name = "Grizzly Bear", Location = "North America", ImageUrl = "bear.jpg" },
+				new Animal { Name = "Polar Bear", Location = "Arctic", ImageUrl = "bear.jpg" },
+			},
+			new AnimalGroup("Monkeys")
+			{
+				new Animal { Name = "Baboon", Location = "Africa", ImageUrl = "monkey.jpg" },
+				new Animal { Name = "Capuchin Monkey", Location = "South America", ImageUrl = "monkey.jpg" },
+				new Animal { Name = "Spider Monkey", Location = "Central America", ImageUrl = "monkey.jpg" },
+			},
+			new AnimalGroup("Elephants")
+			{
+				new Animal { Name = "African Elephant", Location = "Africa", ImageUrl = "elephant.jpg" },
+				new Animal { Name = "Asian Elephant", Location = "Asia", ImageUrl = "elephant.jpg" },
+			}
+		};
+	}
+}
+
+public class AnimalGroup : ObservableCollection<Animal>
+{
+	public string Name { get; set; }
+
+	public AnimalGroup(string name) : base()
+	{
+		Name = name;
+	}
+}
+
+public class Animal
+{
+	public string Name { get; set; }
+	public string Location { get; set; }
+	public string ImageUrl { get; set; }
 }
