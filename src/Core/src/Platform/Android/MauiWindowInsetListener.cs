@@ -8,6 +8,7 @@ using AndroidX.Core.View;
 using AndroidX.Core.Widget;
 using AndroidX.RecyclerView.Widget;
 using Google.Android.Material.AppBar;
+using Microsoft.Extensions.Logging;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Platform
@@ -32,6 +33,8 @@ namespace Microsoft.Maui.Platform
 		bool IsImeAnimating { get; set; }
 
 		AView? _pendingView;
+		int _lastImeHeight;
+		WeakReference<AndroidX.CoordinatorLayout.Widget.CoordinatorLayout>? _coordinatorLayoutRef;
 
 		// Static tracking for views that have local inset listeners.
 		// This registry allows child views to find their appropriate listener without
@@ -192,12 +195,58 @@ namespace Microsoft.Maui.Platform
 				if (IsImeAnimating)
 				{
 					_pendingView = v;
+					System.Diagnostics.Debug.WriteLine($"[MauiWindowInsetListener] OnApplyWindowInsets: IsImeAnimating=true, skipping");
 				}
 
 				return insets;
 			}
 
 			_pendingView = null;
+
+			// Check for IME (keyboard) insets and apply padding to CoordinatorLayout if AdjustResize
+			var imeInsets = insets.GetInsets(WindowInsetsCompat.Type.Ime());
+			var imeHeight = imeInsets?.Bottom ?? 0;
+			_lastImeHeight = imeHeight;
+
+			System.Diagnostics.Debug.WriteLine($"[MauiWindowInsetListener] OnApplyWindowInsets: imeHeight={imeHeight}, view={v?.GetType().Name}");
+
+			bool consumedImeInsets = false;
+			if (v is AndroidX.CoordinatorLayout.Widget.CoordinatorLayout coordinatorLayout)
+			{
+				_coordinatorLayoutRef = new WeakReference<AndroidX.CoordinatorLayout.Widget.CoordinatorLayout>(coordinatorLayout);
+				consumedImeInsets = ApplyKeyboardPaddingIfNeeded(coordinatorLayout, imeHeight, v.Context);
+				System.Diagnostics.Debug.WriteLine($"[MauiWindowInsetListener] OnApplyWindowInsets: CoordinatorLayout found, consumedImeInsets={consumedImeInsets}");
+			}
+
+			// If we consumed IME insets, consume entire bottom insets (system bars + IME)
+			if (consumedImeInsets)
+			{
+				System.Diagnostics.Debug.WriteLine($"[MauiWindowInsetListener] OnApplyWindowInsets: Consuming bottom insets (IME + SystemBars)");
+				
+				var systemBars = insets.GetInsets(WindowInsetsCompat.Type.SystemBars());
+				var displayCutout = insets.GetInsets(WindowInsetsCompat.Type.DisplayCutout());
+				
+				// Keep left, top, right but consume bottom
+				var newSystemBars = Insets.Of(
+					systemBars?.Left ?? 0,
+					systemBars?.Top ?? 0,
+					systemBars?.Right ?? 0,
+					0  // Consume bottom
+				) ?? Insets.None;
+				
+				var newDisplayCutout = Insets.Of(
+					displayCutout?.Left ?? 0,
+					displayCutout?.Top ?? 0,
+					displayCutout?.Right ?? 0,
+					0  // Consume bottom
+				) ?? Insets.None;
+				
+				insets = new WindowInsetsCompat.Builder(insets)
+					?.SetInsets(WindowInsetsCompat.Type.Ime(), Insets.None)
+					?.SetInsets(WindowInsetsCompat.Type.SystemBars(), newSystemBars)
+					?.SetInsets(WindowInsetsCompat.Type.DisplayCutout(), newDisplayCutout)
+					?.Build() ?? insets;
+			}
 
 			// Handle custom inset views first
 			if (v is IHandleWindowInsets customHandler)
@@ -206,7 +255,51 @@ namespace Microsoft.Maui.Platform
 			}
 
 			// Apply default window insets for standard views
-			return ApplyDefaultWindowInsets(v, insets);
+			// v is guaranteed to be non-null here due to the check at the start of the method
+			return ApplyDefaultWindowInsets(v!, insets);
+		}
+
+		static bool ApplyKeyboardPaddingIfNeeded(AndroidX.CoordinatorLayout.Widget.CoordinatorLayout coordinatorLayout, int imeHeight, Context? context)
+		{
+			if (context is null)
+			{
+				System.Diagnostics.Debug.WriteLine($"[MauiWindowInsetListener] ApplyKeyboardPaddingIfNeeded: context is null");
+				return false;
+			}
+
+			// Check if window is set to AdjustResize
+			var window = context.GetActivity()?.Window;
+			if (window?.Attributes is WindowManagerLayoutParams attr)
+			{
+				var softInputMode = attr.SoftInputMode;
+				System.Diagnostics.Debug.WriteLine($"[MauiWindowInsetListener] ApplyKeyboardPaddingIfNeeded: softInputMode={softInputMode}, imeHeight={imeHeight}");
+				
+				// Only apply padding if AdjustResize is set AND keyboard is actually showing
+				if ((softInputMode & SoftInput.AdjustResize) == SoftInput.AdjustResize && imeHeight > 0)
+				{
+					System.Diagnostics.Debug.WriteLine($"[MauiWindowInsetListener] ApplyKeyboardPaddingIfNeeded: AdjustResize detected with keyboard open, applying padding={imeHeight}");
+					// Apply bottom padding equal to keyboard height when keyboard is open
+					coordinatorLayout.SetPadding(
+						coordinatorLayout.PaddingLeft,
+						coordinatorLayout.PaddingTop,
+						coordinatorLayout.PaddingRight,
+						imeHeight
+					);
+					
+					// Return true to indicate we handled the IME insets and they should be consumed
+					return true;
+				}
+				else
+				{
+					System.Diagnostics.Debug.WriteLine($"[MauiWindowInsetListener] ApplyKeyboardPaddingIfNeeded: NOT consuming insets (AdjustResize={((softInputMode & SoftInput.AdjustResize) == SoftInput.AdjustResize)}, imeHeight={imeHeight})");
+				}
+			}
+			else
+			{
+				System.Diagnostics.Debug.WriteLine($"[MauiWindowInsetListener] ApplyKeyboardPaddingIfNeeded: window or attributes is null");
+			}
+			
+			return false;
 		}
 
 		static WindowInsetsCompat? ApplyDefaultWindowInsets(AView v, WindowInsetsCompat insets)
@@ -384,6 +477,7 @@ namespace Microsoft.Maui.Platform
 			base.OnPrepare(animation);
 			if (IsImeAnimation(animation))
 			{
+				System.Diagnostics.Debug.WriteLine($"[MauiWindowInsetListener] OnPrepare: IME animation starting, setting IsImeAnimating=true");
 				IsImeAnimating = true;
 			}
 		}
@@ -392,6 +486,7 @@ namespace Microsoft.Maui.Platform
 		{
 			if (IsImeAnimation(animation))
 			{
+				System.Diagnostics.Debug.WriteLine($"[MauiWindowInsetListener] OnStart: IME animation started");
 				IsImeAnimating = true;
 			}
 
@@ -422,11 +517,16 @@ namespace Microsoft.Maui.Platform
 		{
 			base.OnEnd(animation);
 
+			System.Diagnostics.Debug.WriteLine($"[MauiWindowInsetListener] OnEnd called, IsImeAnimation={IsImeAnimation(animation)}");
+
 			if (IsImeAnimation(animation))
 			{
+				System.Diagnostics.Debug.WriteLine($"[MauiWindowInsetListener] OnEnd: IME animation ended");
+
 				if (_pendingView is AView view)
 				{
 					_pendingView = null;
+					System.Diagnostics.Debug.WriteLine($"[MauiWindowInsetListener] OnEnd: Posting RequestApplyInsets on pending view");
 					view.Post(() =>
 					{
 						IsImeAnimating = false;
@@ -436,6 +536,20 @@ namespace Microsoft.Maui.Platform
 				else
 				{
 					IsImeAnimating = false;
+				}
+
+				// Request apply insets on CoordinatorLayout to recalculate padding for keyboard
+				if (_coordinatorLayoutRef?.TryGetTarget(out var coordinatorLayout) == true)
+				{
+					System.Diagnostics.Debug.WriteLine($"[MauiWindowInsetListener] OnEnd: Posting RequestApplyInsets on CoordinatorLayout");
+					coordinatorLayout.Post(() =>
+					{
+						ViewCompat.RequestApplyInsets(coordinatorLayout);
+					});
+				}
+				else
+				{
+					System.Diagnostics.Debug.WriteLine($"[MauiWindowInsetListener] OnEnd: No CoordinatorLayout reference available");
 				}
 			}
 		}
