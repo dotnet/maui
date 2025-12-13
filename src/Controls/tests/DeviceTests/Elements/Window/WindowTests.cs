@@ -123,6 +123,102 @@ namespace Microsoft.Maui.DeviceTests
 		}
 #endif
 
+
+		[Theory]
+		[ClassData(typeof(WindowPageSwapTestCases))]
+		public async Task NavigatedEventsFireOnEachIncomingAndOutGoingPage(WindowPageSwapTestCase swapOrder)
+		{
+			SetupBuilder();
+
+			var firstRootPage = swapOrder.GetNextPageType();
+			var window = new Window(firstRootPage);
+
+			int navigatedToCount = 0;
+			int navigatedFromCount = 0;
+			int navigatingFromCount = 0;
+			Page previousPage = null;
+
+			EventHandler<NavigatedToEventArgs> NavigatedToHandler = null;
+			NavigatedToHandler = (s, args) =>
+			{
+				((Page)s).NavigatedTo -= NavigatedToHandler;
+				navigatedToCount++;
+				Assert.Equal(window.Page, s);
+				Assert.Equal(previousPage, args.PreviousPage);
+			};
+
+			EventHandler<NavigatedFromEventArgs> NavigatedFromHandler = null;
+			NavigatedFromHandler = (s, args) =>
+			{
+				((Page)s).NavigatedFrom -= NavigatedFromHandler;
+				navigatedFromCount++;
+
+				Assert.NotNull(s);
+
+			};
+
+			EventHandler<NavigatingFromEventArgs> NavigatingFromHandler = null;
+			NavigatingFromHandler = (s, args) =>
+			{
+				Assert.True(navigatedToCount > navigatedFromCount || (navigatedToCount == 1 && navigatedFromCount == 0));
+				Assert.True(navigatedToCount > navigatingFromCount || (navigatedToCount == 1 && navigatingFromCount == 0));
+				((Page)s).NavigatingFrom -= NavigatingFromHandler;
+				navigatingFromCount++;
+				Assert.Equal(window.Page, s);
+			};
+
+			firstRootPage.NavigatedTo += NavigatedToHandler;
+			firstRootPage.NavigatedFrom += NavigatedFromHandler;
+			firstRootPage.NavigatingFrom += NavigatingFromHandler;
+
+			int swapCount = 0;
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async (handler) =>
+			{
+				await OnLoadedAsync(swapOrder.Page);
+
+				// Validate initial NavigatedTo has fired
+				Assert.Equal(1, navigatedToCount);
+				Assert.Equal(0, navigatedFromCount);
+				Assert.Equal(0, navigatingFromCount);
+
+				while (!swapOrder.IsFinished())
+				{
+					swapCount++;
+					var previousRootPage = window.Page?.GetType();
+					var nextRootPage = swapOrder.GetNextPageType();
+					previousPage = window.Page;
+
+					nextRootPage.NavigatedTo += NavigatedToHandler;
+					nextRootPage.NavigatedFrom += NavigatedFromHandler;
+					nextRootPage.NavigatingFrom += NavigatingFromHandler;
+
+					window.Page = nextRootPage;
+
+					try
+					{
+						await OnLoadedAsync(swapOrder.Page);
+
+						Assert.Equal(swapCount + 1, navigatedToCount);
+						Assert.Equal(swapCount, navigatedFromCount);
+						Assert.Equal(swapCount, navigatingFromCount);
+
+						previousPage.NavigatedTo -= NavigatedToHandler;
+						previousPage.NavigatedFrom -= NavigatedFromHandler;
+						previousPage.NavigatingFrom -= NavigatingFromHandler;
+					}
+					catch (Exception exc)
+					{
+						throw new Exception($"Failed to swap to {nextRootPage} from {previousRootPage}", exc);
+					}
+				}
+
+				Assert.Equal(swapCount + 1, navigatedToCount);
+				Assert.Equal(swapCount, navigatedFromCount);
+				Assert.Equal(swapCount, navigatingFromCount);
+			});
+		}
+
 		[Theory]
 		[ClassData(typeof(WindowPageSwapTestCases))]
 		public async Task MainPageSwapTests(WindowPageSwapTestCase swapOrder)
