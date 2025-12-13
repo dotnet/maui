@@ -12,7 +12,7 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(typeof(FileImageSourceStub))]
 		[InlineData(typeof(FontImageSourceStub))]
 		[InlineData(typeof(StreamImageSourceStub))]
-		public async Task ThrowsForIncorrectTypes([DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
+		public async Task ThrowsForIncorrectTypes([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
 		{
 			var service = new UriImageSourceService();
 

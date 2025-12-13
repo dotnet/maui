@@ -1,10 +1,11 @@
-﻿using System.Threading.Tasks;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	public abstract partial class TextInputTests<THandler, TView> : ControlsHandlerTestBase
+	public abstract partial class TextInputTests<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] THandler, TView> : ControlsHandlerTestBase
 		where THandler : class, IViewHandler, IPlatformViewHandler, new()
 		where TView : InputView, IView, ITextInput, new()
 	{
