@@ -277,14 +277,27 @@ namespace Microsoft.Maui.Platform
 				// Only apply padding if AdjustResize is set AND keyboard is actually showing
 				if ((softInputMode & SoftInput.AdjustResize) == SoftInput.AdjustResize && imeHeight > 0)
 				{
-					System.Diagnostics.Debug.WriteLine($"[MauiWindowInsetListener] ApplyKeyboardPaddingIfNeeded: AdjustResize detected with keyboard open, applying padding={imeHeight}");
-					// Apply bottom padding equal to keyboard height when keyboard is open
-					coordinatorLayout.SetPadding(
-						coordinatorLayout.PaddingLeft,
-						coordinatorLayout.PaddingTop,
-						coordinatorLayout.PaddingRight,
-						imeHeight
-					);
+					System.Diagnostics.Debug.WriteLine($"[MauiWindowInsetListener] ApplyKeyboardPaddingIfNeeded: AdjustResize detected with keyboard open, applying bottom margin={imeHeight}");
+					
+					// Find the content view inside the CoordinatorLayout
+					var contentView = coordinatorLayout.FindViewById(Resource.Id.navigationlayout_content);
+					if (contentView is not null && contentView.LayoutParameters is ViewGroup.MarginLayoutParams marginParams)
+					{
+						System.Diagnostics.Debug.WriteLine($"[MauiWindowInsetListener] ApplyKeyboardPaddingIfNeeded: Found content view, setting bottom margin={imeHeight}");
+						marginParams.BottomMargin = imeHeight;
+						contentView.LayoutParameters = marginParams;
+					}
+					else
+					{
+						System.Diagnostics.Debug.WriteLine($"[MauiWindowInsetListener] ApplyKeyboardPaddingIfNeeded: Content view not found or no margin params, falling back to CoordinatorLayout padding");
+						// Fallback: Apply padding to CoordinatorLayout itself
+						coordinatorLayout.SetPadding(
+							coordinatorLayout.PaddingLeft,
+							coordinatorLayout.PaddingTop,
+							coordinatorLayout.PaddingRight,
+							imeHeight
+						);
+					}
 					
 					// Return true to indicate we handled the IME insets and they should be consumed
 					return true;
