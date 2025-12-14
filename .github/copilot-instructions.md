@@ -86,6 +86,24 @@ Major test projects:
 
 Find all tests: `find . -name "*.UnitTests.csproj"`
 
+### Build Verification
+
+Before completing tasks, verify builds compile successfully:
+
+**BuildAndVerify.ps1** - Automated build verification script:
+```bash
+# Verify builds compile (default)
+pwsh .github/scripts/BuildAndVerify.ps1
+
+# Verify builds and run unit tests
+pwsh .github/scripts/BuildAndVerify.ps1 -RunUnitTests
+```
+
+**When to use**:
+- **On Linux**: Use when you can't run BuildAndRunHostApp or BuildAndRunSandbox due to OS limitations (e.g., iOS testing)
+- **Before finalizing**: Run before completing any task to catch compilation errors
+- **Cross-platform validation**: Automatically detects OS and builds appropriate targets (Android on Linux, all platforms on macOS/Windows)
+
 ### Code Formatting
 
 Always format code before committing:

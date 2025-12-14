@@ -255,6 +255,10 @@ Automated PowerShell scripts for testing workflows:
 
 - **`scripts/BuildAndRunSandbox.ps1`** - Build, deploy, and test Sandbox app (Android/iOS)
 - **`scripts/BuildAndRunHostApp.ps1`** - Build, deploy, and run UI tests (Android/iOS)
+- **`scripts/BuildAndVerify.ps1`** - Build verification before finalizing (HostApp + UI tests, optional unit tests)
+  - **Use on Linux**: When BuildAndRunHostApp or BuildAndRunSandbox cannot run due to OS limitations (e.g., iOS testing on Linux)
+  - Validates builds compile successfully on available platforms (Android on Linux, all platforms on macOS/Windows)
+  - Optional `-RunUnitTests` flag to run unit tests after building
 - **`scripts/templates/RunWithAppiumTest.template.cs`** - Template for Appium test scripts
 
 ### Log Directories
