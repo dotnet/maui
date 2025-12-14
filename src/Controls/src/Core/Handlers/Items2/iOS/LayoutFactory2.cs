@@ -25,7 +25,7 @@ internal static class LayoutFactory2
 			: CreateHorizontalGrid(gridItemsLayout, groupingInfo, headerFooterInfo);
 
 	static NSCollectionLayoutBoundarySupplementaryItem[] CreateSupplementaryItems(LayoutGroupingInfo? groupingInfo, LayoutHeaderFooterInfo? layoutHeaderFooterInfo,
-		UICollectionViewScrollDirection scrollDirection)
+		UICollectionViewScrollDirection scrollDirection, NSCollectionLayoutDimension width, NSCollectionLayoutDimension height)
 	{
 		if (groupingInfo is not null && groupingInfo.IsGrouped)
 		{
@@ -33,12 +33,8 @@ internal static class LayoutFactory2
 
 			if (groupingInfo.HasHeader)
 			{
-				// Create independent estimated dimensions for group headers so they measure themselves
-				// independently of ItemSizingStrategy (which only affects items, not headers/footers)
-				var headerWidth = NSCollectionLayoutDimension.CreateFractionalWidth(1f);
-				var headerHeight = NSCollectionLayoutDimension.CreateEstimated(44f);
 				items.Add(NSCollectionLayoutBoundarySupplementaryItem.Create(
-					NSCollectionLayoutSize.Create(headerWidth, headerHeight),
+					NSCollectionLayoutSize.Create(width, height),
 					UICollectionElementKindSectionKey.Header.ToString(),
 					scrollDirection == UICollectionViewScrollDirection.Vertical
 						? NSRectAlignment.Top
@@ -47,11 +43,8 @@ internal static class LayoutFactory2
 
 			if (groupingInfo.HasFooter)
 			{
-				// Create independent estimated dimensions for group footers
-				var footerWidth = NSCollectionLayoutDimension.CreateFractionalWidth(1f);
-				var footerHeight = NSCollectionLayoutDimension.CreateEstimated(44f);
 				items.Add(NSCollectionLayoutBoundarySupplementaryItem.Create(
-					NSCollectionLayoutSize.Create(footerWidth, footerHeight),
+					NSCollectionLayoutSize.Create(width, height),
 					UICollectionElementKindSectionKey.Footer.ToString(),
 					scrollDirection == UICollectionViewScrollDirection.Vertical
 						? NSRectAlignment.Bottom
@@ -67,24 +60,19 @@ internal static class LayoutFactory2
 
 			if (layoutHeaderFooterInfo.HasHeader)
 			{
-				// Create independent estimated dimensions for headers
-				var headerWidth = NSCollectionLayoutDimension.CreateFractionalWidth(1f);
-				var headerHeight = NSCollectionLayoutDimension.CreateEstimated(44f);
 				items.Add(NSCollectionLayoutBoundarySupplementaryItem.Create(
-					NSCollectionLayoutSize.Create(headerWidth, headerHeight),
+					NSCollectionLayoutSize.Create(width, height),
 					UICollectionElementKindSectionKey.Header.ToString(),
 					scrollDirection == UICollectionViewScrollDirection.Vertical
 						? NSRectAlignment.Top
 						: NSRectAlignment.Leading));
 			}
+			;
 
 			if (layoutHeaderFooterInfo.HasFooter)
 			{
-				// Create independent estimated dimensions for footers
-				var footerWidth = NSCollectionLayoutDimension.CreateFractionalWidth(1f);
-				var footerHeight = NSCollectionLayoutDimension.CreateEstimated(44f);
 				items.Add(NSCollectionLayoutBoundarySupplementaryItem.Create(
-					NSCollectionLayoutSize.Create(footerWidth, footerHeight),
+					NSCollectionLayoutSize.Create(width, height),
 					UICollectionElementKindSectionKey.Footer.ToString(),
 					scrollDirection == UICollectionViewScrollDirection.Vertical
 						? NSRectAlignment.Bottom
@@ -103,7 +91,7 @@ internal static class LayoutFactory2
 		layoutConfiguration.ScrollDirection = scrollDirection;
 
 		//create global header and footer
-		layoutConfiguration.BoundarySupplementaryItems = CreateSupplementaryItems(null, layoutHeaderFooterInfo, scrollDirection);
+		layoutConfiguration.BoundarySupplementaryItems = CreateSupplementaryItems(null, layoutHeaderFooterInfo, scrollDirection, groupWidth, groupHeight);
 
 		var layout = new CustomUICollectionViewCompositionalLayout(snapInfo, (sectionIndex, environment) =>
 		{
@@ -146,7 +134,9 @@ internal static class LayoutFactory2
 			section.BoundarySupplementaryItems = CreateSupplementaryItems(
 				groupingInfo,
 				null,
-				scrollDirection);
+				scrollDirection,
+				groupWidth,
+				groupHeight);
 
 			return section;
 		}, layoutConfiguration, itemsUpdatingScrollMode);
@@ -196,7 +186,9 @@ internal static class LayoutFactory2
 			section.BoundarySupplementaryItems = CreateSupplementaryItems(
 				groupingInfo,
 				headerFooterInfo,
-				scrollDirection);
+				scrollDirection,
+				groupWidth,
+				groupHeight);
 
 			return section;
 		}, layoutConfiguration, itemsUpdatingScrollMode);
