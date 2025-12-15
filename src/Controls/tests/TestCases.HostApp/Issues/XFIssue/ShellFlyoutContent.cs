@@ -11,7 +11,7 @@ public class ShellFlyoutContent : TestShell
 
 		this.BindingContext = this;
 		AddFlyoutItem(page, "Flyout Item Top");
-		for (int i = 0; i < 20; i++)
+		for (int i = 0; i < 50; i++)
 		{
 			AddFlyoutItem($"Flyout Item :{i}");
 			Items[i].AutomationId = "FlyoutItem";
