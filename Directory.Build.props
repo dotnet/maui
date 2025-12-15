@@ -286,4 +286,9 @@
     <!-- Disables the transitive restore of packages like Microsoft.AspNetCore.App.Ref, Microsoft.WindowsDesktop.App.Ref -->
     <DisableTransitiveFrameworkReferenceDownloads>true</DisableTransitiveFrameworkReferenceDownloads>
   </PropertyGroup>
+
+   <!-- Workaround for EmitCompilerGeneratedFiles issue https://microsoft.visualstudio.com/OS/_workitems/edit/57204991 -->
+  <PropertyGroup>
+    <CoreCompileDependsOn>$(CoreCompileDependsOn);CreateCompilerGeneratedFilesOutputPath</CoreCompileDependsOn>
+  </PropertyGroup>
 </Project>
