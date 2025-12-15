@@ -521,7 +521,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (_emptyViewFormsElement is not null)
 			{
-				// Update flow direction for EmptyView 
+				// Update FlowDirection for View-based or DataTemplate-based EmptyView
 				if (_emptyViewFormsElement.Handler?.PlatformView is UIView emptyView)
 				{
 					emptyView.UpdateFlowDirection(_emptyViewFormsElement);
