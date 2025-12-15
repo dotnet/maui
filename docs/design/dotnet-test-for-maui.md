@@ -45,11 +45,8 @@ This document describes the design and implementation plan for enabling `dotnet 
    - Run tests with a single command
    - Parse test results from standard output
    - Understand which tests passed/failed
-   - Get code coverage information to guide further test creation
 
-3. **Code Coverage on Devices**: Enable collection of code coverage data for platform-specific code running on iOS, Android, and Windows devices/simulators. This addresses a major gap where we currently have no visibility into test coverage of platform code.
-
-4. **XHarness Replacement**: Eventually replace XHarness as the test execution tool, reducing the number of tools to maintain in the ecosystem.
+3. **XHarness Replacement**: Eventually replace XHarness as the test execution tool, reducing the number of tools to maintain in the ecosystem.
 
 ### 1.2 SDK Architecture
 
@@ -60,7 +57,11 @@ This functionality will be implemented in the **Android SDK** and **iOS SDK** as
 - Direct support for native iOS and Android test projects
 - MAUI inherits all capabilities without duplication
 
-### 1.3 Non-Goals (Phase 1)
+### 1.3 Phase 2 Goals (Future Work)
+
+**Code Coverage on Devices**: In a future phase, we plan to enable collection of code coverage data for platform-specific code running on iOS, Android, and Windows devices/simulators. This is **not a primary goal for Phase 1** but will be addressed later once the core testing infrastructure is established.
+
+### 1.4 Non-Goals (Phase 1)
 
 - Test Explorer integration in Visual Studio or VS Code (CLI-only focus)
 - Hot reload during test execution
@@ -114,9 +115,8 @@ A MAUI device-test project is a **MAUI app that hosts MTP**. It produces an **ap
     <PackageReference Include="MSTest" Version="*" />
     <PackageReference Include="MSTest.Sdk" Version="*" />
 
-    <!-- Extensions -->
+    <!-- TRX reporting extension -->
     <PackageReference Include="Microsoft.Testing.Extensions.TrxReport" Version="*" />
-    <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" Version="*" />
   </ItemGroup>
 
 </Project>
@@ -126,7 +126,8 @@ A MAUI device-test project is a **MAUI app that hosts MTP**. It produces an **ap
 
 **MTP extensions provide:**
 - TRX reporting via `Microsoft.Testing.Extensions.TrxReport` (`--report-trx`, `--report-trx-filename`)
-- Code coverage via `Microsoft.Testing.Extensions.CodeCoverage` (`--coverage`, `--coverage-output`, `--coverage-output-format`)
+
+> **Note:** Code coverage support via `Microsoft.Testing.Extensions.CodeCoverage` will be addressed in Phase 2.
 
 ---
 
@@ -299,11 +300,8 @@ public interface IMauiTestProtocol : IPushOnlyProtocol
     Task SendTestNodeUpdateAsync(TestNodeUpdate update);
     Task SendTestSessionFinishedAsync(TestSessionResult result);
     
-    // Artifacts (coverage, logs)
+    // Artifacts (logs, screenshots)
     Task SendFileArtifactAsync(FileArtifact artifact);
-    
-    // Coverage data
-    Task SendCoverageDataAsync(CoverageData coverage);
 }
 ```
 
@@ -434,15 +432,11 @@ Building on the `dotnet run` infrastructure, we need these new targets:
     <!-- Enable MTP server mode for device communication -->
     <_MTPServerMode Condition="'$(TargetPlatformIdentifier)' == 'ios' or '$(TargetPlatformIdentifier)' == 'android'">http</_MTPServerMode>
     <_MTPServerMode Condition="'$(TargetPlatformIdentifier)' == 'windows'">pipe</_MTPServerMode>
-    
-    <!-- Coverage instrumentation -->
-    <AotMsCodeCoverageInstrumentation Condition="'$(CollectCoverage)' == 'true'">true</AotMsCodeCoverageInstrumentation>
   </PropertyGroup>
   
   <ItemGroup>
     <TestRunArguments Include="--server" />
     <TestRunArguments Include="--server-mode $(_MTPServerMode)" />
-    <TestRunArguments Include="--coverage" Condition="'$(CollectCoverage)' == 'true'" />
     <TestRunArguments Include="--results-directory $(TestResultsDirectory)" />
   </ItemGroup>
 </Target>
@@ -468,8 +462,7 @@ Building on the `dotnet run` infrastructure, we need these new targets:
   <CollectDeviceArtifacts
     Device="$(Device)"
     SourcePath="$(DeviceTestResultsPath)"
-    DestinationPath="$(TestResultsDirectory)"
-    IncludeCoverage="$(CollectCoverage)" />
+    DestinationPath="$(TestResultsDirectory)" />
 </Target>
 ```
 
@@ -494,10 +487,10 @@ The MAUI test target chain (invoked from `dotnet test`):
 
 | Target | Description |
 |--------|-------------|
-| `MauiPrepareTestApp` | Build test app + instrument assemblies |
+| `MauiPrepareTestApp` | Build test app |
 | `MauiDeployTestApp` | Deploy to selected device |
 | `MauiRunTestApp` | Execute tests on device |
-| `MauiCollectTestArtifacts` | Pull TRX/coverage from device sandbox |
+| `MauiCollectTestArtifacts` | Pull TRX from device sandbox |
 
 ---
 
@@ -518,9 +511,6 @@ dotnet test --project MyMauiTests.csproj -f net10.0-ios
 
 # Run tests on specific device
 dotnet test --project MyMauiTests.csproj -f net10.0-android --device "Pixel 7 - API 35"
-
-# Run tests with coverage
-dotnet test --project MyMauiTests.csproj -f net10.0-ios --collect "Code Coverage"
 
 # List available devices (reuses dotnet run --list-devices)
 dotnet test --project MyMauiTests.csproj -f net10.0-android --list-devices
@@ -548,8 +538,7 @@ dotnet test --project MyMauiTests.csproj \
 dotnet test --project MyMauiTests.csproj \
   -f net10.0-android \
   --device "emulator-5554" \
-  --collect "Code Coverage" \
-  --results-directory ./coverage \
+  --results-directory ./TestResults \
   --logger "json;LogFileName=results.json"
 ```
 
@@ -604,7 +593,6 @@ dotnet test --project MyMauiDeviceTests.csproj -f net10.0-android --device emula
 **MTP Team:**
 1. Expose HTTP server mode in MTP
 2. Document push-only protocol requirements
-3. Ensure coverage collector works with static instrumentation
 
 **Deliverables:**
 - `dotnet test` runs and reports results for iOS simulator (via iOS SDK)
@@ -631,27 +619,7 @@ dotnet test --project MyMauiDeviceTests.csproj -f net10.0-android --device emula
 - Device selection via `--device` flag
 - TRX and JSON result output
 
-### Phase 3: Code Coverage (2-3 weeks)
-
-**iOS/Android SDK Teams:**
-1. Integrate coverage instrumentation in build
-2. Pull coverage files from devices
-3. Platform-specific coverage implementation
-
-**MAUI Team:**
-1. Validate coverage works for MAUI test projects
-2. Merge coverage from multiple test runs
-
-**MTP Team:**
-1. Ensure coverage works with push-only protocol
-2. Support for Cobertura output format
-
-**Deliverables:**
-- Coverage reports for platform code (iOS/Android via SDKs)
-- Cobertura XML output for CI integration
-- Coverage summary in console output
-
-### Phase 4: Polish & XHarness Migration (3-4 weeks)
+### Phase 3: Polish & XHarness Migration (3-4 weeks)
 
 **MAUI Team:**
 1. Migrate existing tests from XHarness
@@ -668,7 +636,7 @@ dotnet test --project MyMauiDeviceTests.csproj -f net10.0-android --device emula
 - Migration guide for external users
 - Comprehensive documentation
 
-### Phase 5: AI Enablement (2-3 weeks)
+### Phase 4: AI Enablement (2-3 weeks)
 
 **MAUI Team:**
 1. Device list capability (structured output for AI parsing)
@@ -694,8 +662,7 @@ dotnet test --project MyMauiDeviceTests.csproj -f net10.0-android --device emula
   - Android emulator
   - Windows (local)
 - Produces:
-  - TRX
-  - coverage (optional)
+  - TRX results
 - Pulls artifacts back into host `TestResults`
 
 ### Next
@@ -709,6 +676,7 @@ dotnet test --project MyMauiDeviceTests.csproj -f net10.0-android --device emula
 - Optional live streaming mode
 - Evaluate replacing xharness for selected scenarios
 - Enhanced outputs for AI agents (structured event stream + stable artifact naming)
+- **Code coverage on devices** (Phase 5)
 
 ---
 
@@ -720,8 +688,7 @@ The test application running on the device needs to:
 
 1. **Host MTP**: Embed Microsoft.Testing.Platform as the test execution engine
 2. **Implement Push Protocol**: Send results via HTTP to host machine
-3. **Collect Coverage**: When enabled, instrument and collect coverage data
-4. **Handle Lifecycle**: Properly handle app suspension/termination
+3. **Handle Lifecycle**: Properly handle app suspension/termination
 
 ```csharp
 // Example: MAUI Test Application Entry Point
@@ -736,12 +703,6 @@ public static class MauiTestProgram
         
         // Register test framework (MSTest, xUnit, NUnit)
         builder.AddMSTest();
-        
-        // Add coverage if enabled
-        if (args.Contains("--coverage"))
-        {
-            builder.AddCodeCoverage();
-        }
         
         // Configure push protocol
         builder.AddMauiPushProtocol(options =>
@@ -762,7 +723,7 @@ The `dotnet test` process on the host needs to:
 1. **Start Server**: Launch HTTP server to receive test results
 2. **Manage Device**: Deploy app and start test execution
 3. **Aggregate Results**: Collect and format test results
-4. **Pull Artifacts**: Retrieve coverage files and logs from device
+4. **Pull Artifacts**: Retrieve test logs from device
 
 ### 9.3 Network Considerations
 
@@ -887,11 +848,9 @@ Integrate with `Microsoft.CodeCoverage`:
 | Risk | Mitigation |
 |------|------------|
 | **iOS physical device connectivity** | File-based artifact pull is v1; streaming is optional later |
-| **Coverage limitations on mobile** | Start with managed coverage where supported; document constraints; keep "instrument+collect server mode" as an advanced path |
 | **Mixed VSTest + MTP solutions can be fragile** | Recommend MTP mode; document constraints and supported combinations |
 | **Device networking differences between iOS and Android** | Platform-specific transport implementations with abstraction layer |
 | **Simulator reset between runs** | Document expected behavior; provide cleanup options |
-| **App sandboxing impacting coverage file export** | Test artifact extraction on all platforms early in development |
 | **Parallel test execution support** | Defer to future phase; document as non-goal for v1 |
 | **Security vulnerabilities in communication channel** | Prioritize security modeling early; use auth tokens, localhost binding, ephemeral ports; engage with Aspire team for prior art |
 
@@ -906,8 +865,6 @@ Integrate with `Microsoft.CodeCoverage`:
 2. **Protocol Versioning**: How should we handle protocol version mismatches between the device app and host?
 
 3. **Large Result Sets**: What's the recommended approach for tests that produce many results (e.g., 10,000+ tests)?
-
-4. **Coverage File Size**: For large apps, coverage files can be large. Should we support streaming coverage data?
 
 ### 12.2 For MAUI Team
 
@@ -972,7 +929,6 @@ Integrate with `Microsoft.CodeCoverage`:
    - Lifecycle integration (app start → run tests → exit/terminate)
 2. **Extensions validation on mobile**:
    - TRX extension on iOS/Android file systems
-   - CodeCoverage extension feasibility/limits on iOS/Android
 3. **(Optional v2) Streaming protocol surface**:
    - Best practice for push-only/event streaming (server mode / custom sink)
    - Stability/versioning expectations
@@ -990,12 +946,11 @@ Integrate with `Microsoft.CodeCoverage`:
 |-------|-----------|----------|-------|
 | Phase 1: Foundation | 2-3 weeks | 1-2 weeks | 2-3 weeks |
 | Phase 2: Cross-Platform | 2-3 weeks | 0.5-1 weeks | 2-3 weeks |
-| Phase 3: Code Coverage | 2-3 weeks | 1-2 weeks | 2-3 weeks |
-| Phase 4: Polish & Migration | 3-4 weeks | 1-2 weeks | 3-4 weeks |
-| Phase 5: AI Enablement | 2-3 weeks | 1-2 weeks | 2-3 weeks |
-| **Total** | **11-16 weeks** | **4.5-9 weeks** | **11-16 weeks** |
+| Phase 3: Polish & Migration | 3-4 weeks | 1-2 weeks | 3-4 weeks |
+| Phase 4: AI Enablement | 2-3 weeks | 1-2 weeks | 2-3 weeks |
+| **Total** | **9-13 weeks** | **4-6.5 weeks** | **9-13 weeks** |
 
-**Note**: Phases can overlap. MTP team work is mostly enabling/advisory after Phase 1.
+**Note**: Phases can overlap. MTP team work is mostly enabling/advisory after Phase 1. Code coverage (Phase 5) will be planned separately after core infrastructure is complete.
 
 ---
 
@@ -1007,7 +962,6 @@ Integrate with `Microsoft.CodeCoverage`:
 - [ ] `dotnet test` successfully runs tests on Android emulator
 - [ ] `dotnet test` successfully runs tests on Windows
 - [ ] Test results appear in real-time in console
-- [ ] Code coverage data is collected and reported
 - [ ] TRX and JSON output formats work correctly
 - [ ] Device selection via `--device` flag works
 
@@ -1060,11 +1014,11 @@ Integrate with `Microsoft.CodeCoverage`:
 #### Coverage Data
 ```json
 {
-  "type": "coverage/data",
+  "type": "artifact/file",
   "sessionId": "550e8400-e29b-41d4-a716-446655440000",
-  "format": "cobertura",
-  "filePath": "/data/user/0/com.myapp/cache/coverage.xml",
-  "size": 1048576
+  "artifactType": "log",
+  "filePath": "/data/user/0/com.myapp/cache/TestLogs/test.log",
+  "size": 524288
 }
 ```
 
