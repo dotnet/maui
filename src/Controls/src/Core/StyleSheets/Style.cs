@@ -19,6 +19,9 @@ namespace Microsoft.Maui.Controls.StyleSheets
 
 		public static Style Parse(CssReader reader, char stopChar = '\0')
 		{
+			if (!RuntimeFeature.IsCssEnabled)
+				throw new NotSupportedException("Stylesheets are not enabled. To enable stylesheets, set the $(MauiCssEnabled) property to true in your project file.");
+
 			Style style = new Style();
 			string propertyName = null, propertyValue = null;
 
@@ -62,6 +65,9 @@ namespace Microsoft.Maui.Controls.StyleSheets
 
 		public void Apply(VisualElement styleable, Selector.SelectorSpecificity selectorSpecificity = default, bool inheriting = false)
 		{
+			if (!RuntimeFeature.IsCssEnabled)
+				throw new NotSupportedException("Stylesheets are not enabled. To enable stylesheets, set the $(MauiCssEnabled) property to true in your project file.");
+
 			if (styleable == null)
 				throw new ArgumentNullException(nameof(styleable));
 
