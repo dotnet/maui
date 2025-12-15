@@ -354,10 +354,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					return;
 
 				var currentRenderer = _renderers[newContent];
-
-				// Update tracker page immediately before animation to prevent title flicker when updating navBar visibility
-				_tracker.Page = (newContent as IShellContentController)?.Page;
-
 				_isAnimatingOut = oldRenderer;
 				_pageAnimation?.StopAnimation(true);
 				_pageAnimation = null;
@@ -381,6 +377,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				else
 				{
 					RemoveNonVisibleRenderers();
+				}
+
+				// RemoveNonVisibleRenderers was called after animation completed,which delayed page title updates. 
+				// Updating page before animation ensures immediate title display.
+				if (newContent is IShellContentController scc)
+				{
+					_tracker.Page = scc.Page;
 				}
 			}
 		}
