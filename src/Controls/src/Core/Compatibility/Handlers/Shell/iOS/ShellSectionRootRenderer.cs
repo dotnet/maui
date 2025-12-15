@@ -354,6 +354,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					return;
 
 				var currentRenderer = _renderers[newContent];
+
+				// Update tracker page immediately before animation to prevent title flicker when updating navBar visibility
+				_tracker.Page = (newContent as IShellContentController)?.Page;
+
 				_isAnimatingOut = oldRenderer;
 				_pageAnimation?.StopAnimation(true);
 				_pageAnimation = null;
@@ -445,8 +449,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					foreach (var remove in removeMe)
 						_renderers.Remove(remove);
 				}
-
-				_tracker.Page = scc.Page;
 			}
 
 			_isAnimatingOut = null;
