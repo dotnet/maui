@@ -1,5 +1,6 @@
 using BenchmarkDotNet.Attributes;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Hosting;
 
 namespace Microsoft.Maui.Handlers.Benchmarks
@@ -8,6 +9,7 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 	public class GetHandlersBenchmarker
 	{
 		MauiApp _mauiApp;
+		MauiContext _mauiContext;
 
 		Registrar<IView, IViewHandler> _registrar;
 
@@ -20,13 +22,14 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 			_mauiApp = MauiApp
 				.CreateBuilder()
 				.Build();
+			_mauiContext = _mauiApp.Services.GetService<MauiContext>();
 		}
 
 		[GlobalSetup(Target = nameof(GetHandlerUsingRegistrar))]
 		public void SetupForRegistrar()
 		{
 			_registrar = new Registrar<IView, IViewHandler>();
-			_registrar.Register<IButton, ButtonHandler>();
+			_registrar.Register<Button, ButtonHandler>();
 		}
 
 		[Benchmark]
@@ -35,7 +38,7 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 			var handlers = _mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
 			for (int i = 0; i < N; i++)
 			{
-				handlers.GetHandler<IButton>();
+				handlers.GetHandler<Button>(_mauiContext);
 			}
 		}
 
@@ -44,7 +47,7 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 		{
 			for (int i = 0; i < N; i++)
 			{
-				_registrar.GetHandler<IButton>();
+				_registrar.GetHandler<Button>();
 			}
 		}
 	}

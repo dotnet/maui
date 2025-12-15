@@ -2,12 +2,14 @@
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using Microsoft.Maui.Handlers;
 
 
 namespace Microsoft.Maui.Controls
 {
 	/// <summary><see cref="Microsoft.Maui.Controls.View"/> that holds an image.</summary>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
+	[ElementHandler(typeof(ImageHandler))]
 	public partial class Image : View, IImageController, IElementConfiguration<Image>, IViewController, IImageElement, IImage
 	{
 		/// <summary>Bindable property for <see cref="Source"/>.</summary>

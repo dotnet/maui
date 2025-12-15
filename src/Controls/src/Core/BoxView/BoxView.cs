@@ -3,12 +3,14 @@ using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <summary>
 	/// A <see cref="View" /> used to draw a solid colored rectangle.
 	/// </summary>
+	[ElementHandler(typeof(BoxViewHandler))]
 	public partial class BoxView : View, IColorElement, ICornerElement, IElementConfiguration<BoxView>, IShapeView, IShape
 	{
 		/// <summary>Bindable property for <see cref="Color"/>.</summary>
