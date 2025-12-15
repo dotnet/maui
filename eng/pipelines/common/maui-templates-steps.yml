@@ -92,4 +92,4 @@ steps:
     testResultsFiles: '$(build.artifactstagingdirectory)/**/*.trx'
     testRunTitle: ${{ parameters.category }} templates build tests
 
-# - template: /eng/pipelines/common/fail-on-issue.yml
+- template: /eng/pipelines/common/fail-on-issue.yml
