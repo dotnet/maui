@@ -35,6 +35,7 @@ public class ShellTabbedPageFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
+#if TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/33158
 	[Test, Order(2)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShell_TabBarUnselectedColor()
@@ -47,7 +48,6 @@ public class ShellTabbedPageFeatureTests : UITest
 		App.Tap(Apply);
 		VerifyScreenshot();
 	}
-
 
 	[Test, Order(3)]
 	[Category(UITestCategories.Shell)]
@@ -63,6 +63,7 @@ public class ShellTabbedPageFeatureTests : UITest
 		App.Tap(Apply);
 		VerifyScreenshot();
 	}
+#endif
 
 	[Test, Order(4)]
 	[Category(UITestCategories.Shell)]
@@ -79,6 +80,7 @@ public class ShellTabbedPageFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
+#if TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/33158
 	[Test, Order(5)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShell_TabBarTitleColorAndUnSelectedColor()
@@ -93,6 +95,7 @@ public class ShellTabbedPageFeatureTests : UITest
 		App.Tap(Apply);
 		VerifyScreenshot();
 	}
+#endif
 
 	[Test, Order(6)]
 	[Category(UITestCategories.Shell)]
@@ -135,23 +138,8 @@ public class ShellTabbedPageFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS //Issue Link:  https://github.com/dotnet/maui/issues/32994
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/32995, https://github.com/dotnet/maui/issues/32996
 	[Test, Order(9)]
-	[Category(UITestCategories.Shell)]
-	public void VerifyShell_TabBarIsVisible()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement("TabBarIsVisibleTrue");
-		App.Tap("TabBarIsVisibleTrue");
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		VerifyScreenshot();
-	}
-#endif
-
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/32995, https://github.com/dotnet/maui/issues/32996
-	[Test, Order(10)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShell_TabBarDisabledColor()
 	{
@@ -167,8 +155,8 @@ public class ShellTabbedPageFeatureTests : UITest
 	}
 #endif
 
-#if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/32996
-    [Test, Order(11)]
+#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/32996, https://github.com/dotnet/maui/issues/33158
+	[Test, Order(10)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShell_TabBarIsEnabled()
 	{
@@ -184,8 +172,8 @@ public class ShellTabbedPageFeatureTests : UITest
 	}
 #endif
 
-#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS // Issue Link: https://github.com/dotnet/maui/issues/32993
-	[Test, Order(12)]
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/32993
+	[Test, Order(11)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShell_TabBar_FlowDirection()
 	{
@@ -199,7 +187,7 @@ public class ShellTabbedPageFeatureTests : UITest
 	}
 #endif
 
-	[Test, Order(13)]
+	[Test, Order(12)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShell_TabBarForegroundColor()
 	{
@@ -212,7 +200,8 @@ public class ShellTabbedPageFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(14)]
+#if TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/33158
+	[Test, Order(13)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShell_TabBarBackgroundColor()
 	{
@@ -225,7 +214,7 @@ public class ShellTabbedPageFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(15)]
+	[Test, Order(14)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShell_TabBarBackgroundColorAndForegroundColor()
 	{
@@ -240,7 +229,7 @@ public class ShellTabbedPageFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(16)]
+	[Test, Order(15)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShell_TabBarBackgroundColorAndTitleColor()
 	{
@@ -255,7 +244,7 @@ public class ShellTabbedPageFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(17)]
+	[Test, Order(16)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShell_TabBarBackgroundColorAndUnSelectedColor()
 	{
@@ -269,9 +258,10 @@ public class ShellTabbedPageFeatureTests : UITest
 		App.Tap(Apply);
 		VerifyScreenshot();
 	}
+#endif 
 
-#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_IOS // Issue Link: https://github.com/dotnet/maui/issues/32992
-	[Test, Order(18)]
+#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST// Issue Link: https://github.com/dotnet/maui/issues/32992, https://github.com/dotnet/maui/issues/33158
+	[Test, Order(17)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShell_TabBarBackgroundColorSetToNull()
 	{
@@ -287,5 +277,65 @@ public class ShellTabbedPageFeatureTests : UITest
 		App.Tap(Apply);
 		VerifyScreenshot();
 	}
+#endif
+
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST //Issue Link:  https://github.com/dotnet/maui/issues/32994
+	[Test, Order(18)]
+	[Category(UITestCategories.Shell)]
+	public void VerifyShell_TabBarIsVisible()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement("TabBarIsVisibleTrue");
+		App.Tap("TabBarIsVisibleTrue");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("Tab3");
+		App.Tap("Tab3");
+		VerifyScreenshot();
+	}
+#endif
+
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID // Issue Link: https://github.com/dotnet/maui/issues/6740
+   [Test, Order(19)]
+   [Category(UITestCategories.Shell)]
+   public void VerifyShell_TabBarBackgroundColorWithMoreTabs()
+   {
+	   App.WaitForElement("GoToTab1Button"); // Navigate to Tab1 to go back to initial tab
+	   App.Tap("GoToTab1Button");
+	   App.WaitForElement(Options);
+	   App.Tap(Options);
+	   App.WaitForElement("TabBarBackgroundColorLightBlue");
+	   App.Tap("TabBarBackgroundColorLightBlue");
+	   App.WaitForElement(Apply);
+	   App.Tap(Apply);
+	   App.WaitForElement("More");
+	   App.Tap("More");
+	   VerifyScreenshot();
+   }
+
+   [Test, Order(20)]
+   [Category(UITestCategories.Shell)]
+   public void VerifyShell_TabBarUnSelectedColorWithMoreTabs()
+   {
+#if IOS || MACCATALYST
+      App.WaitForElement("Tab1"); // Navigate to Tab1 to close more button
+	  App.Tap("Tab1");
+#else
+	  App.WaitForElement("Tab11");
+	  App.Tap("Tab11");
+	  App.WaitForElement("GoToTab1Button");
+	  App.Tap("GoToTab1Button");
+#endif
+	   App.WaitForElement(Options);
+	   App.Tap(Options);
+	   App.WaitForElement("TabBarUnselectedColorBrown");
+	   App.Tap("TabBarUnselectedColorBrown");
+	   App.WaitForElement(Apply);
+	   App.Tap(Apply);
+	   App.WaitForElement("More");
+	   App.Tap("More");
+	   VerifyScreenshot();
+   }
 #endif
 }
