@@ -107,20 +107,30 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 				if (_measureInvalidated || _cachedConstraints != constraints)
 				{
-					// Check if we should use the cached first item size for MeasureFirstItem optimization
-					var cachedSize = GetCachedFirstItemSizeFromHandler();
-					if (cachedSize != CGSize.Empty)
+					// Only use the cached first-item measurement for actual item cells (not headers/footers)
+					// Supplementary views (headers/footers) set the flag `isHeaderOrFooterChanged` during Bind
+					// so we can detect them here and avoid using the item cache for their measurement.
+					if (isHeaderOrFooterChanged)
 					{
-						_measuredSize = cachedSize.ToSize();
-						// Even when we have a cached measurement, we still need to call Measure
-						// to update the virtual view's internal state and bookkeeping
-						virtualView.Measure(constraints.Width, _measuredSize.Height);
+						var cachedSize = GetCachedFirstItemSizeFromHandler();
+						if (cachedSize != CGSize.Empty)
+						{
+							_measuredSize = cachedSize.ToSize();
+							// Even when we have a cached measurement, we still need to call Measure
+							// to update the virtual view's internal state and bookkeeping
+							virtualView.Measure(constraints.Width, _measuredSize.Height);
+						}
+						else
+						{
+							_measuredSize = virtualView.Measure(constraints.Width, constraints.Height);
+							// If this is the first item being measured, cache it for MeasureFirstItem strategy
+							SetCachedFirstItemSizeToHandler(_measuredSize.ToCGSize());
+						}
 					}
 					else
 					{
+						// For headers/footers, always measure directly without using or updating the first-item cache
 						_measuredSize = virtualView.Measure(constraints.Width, constraints.Height);
-						// If this is the first item being measured, cache it for MeasureFirstItem strategy
-						SetCachedFirstItemSizeToHandler(_measuredSize.ToCGSize());
 					}
 					_cachedConstraints = constraints;
 					_needsArrange = true;
