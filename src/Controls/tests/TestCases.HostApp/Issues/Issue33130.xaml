@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue33130"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             Title="Issue33130">
+    <Grid Margin="20"
+          RowDefinitions="Auto, *">
+        <StackLayout Grid.Row="0"
+                     Spacing="10"
+                     Margin="0,10">
+            <Button Text="Switch to MeasureFirstItem"
+                    Clicked="OnSwitchToMeasureFirstItem"
+                    AutomationId="SwitchStrategyButton"/>
+            <Label x:Name="StatusLabel"
+                   AutomationId="StatusLabel"
+                   Text="ItemSizingStrategy: MeasureAllItems"/>
+        </StackLayout>
+
+        <local:CollectionView2 Grid.Row="1"
+                               x:Name="TestCollectionView"
+                               ItemsSource="{Binding Animals}"
+                               IsGrouped="true"
+                               AutomationId="TestCollectionView"
+                               ItemSizingStrategy="MeasureAllItems">
+            <local:CollectionView2.ItemTemplate>
+                <DataTemplate>
+                    <Grid Padding="10">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Image Grid.RowSpan="2"
+                               Source="{Binding ImageUrl}"
+                               Aspect="AspectFill"
+                               WidthRequest="80"
+                               HeightRequest="80"/>
+                        <Label Grid.Column="1"
+                               Text="{Binding Name}"
+                               FontAttributes="Bold"/>
+                        <Label Grid.Row="1"
+                               Grid.Column="1"
+                               Text="{Binding Location}"
+                               FontAttributes="Italic"
+                               VerticalOptions="End"/>
+                    </Grid>
+                </DataTemplate>
+            </local:CollectionView2.ItemTemplate>
+            <local:CollectionView2.GroupHeaderTemplate>
+                <DataTemplate>
+                    <Label x:Name="GroupHeaderLabel"
+                           Text="{Binding Name}"
+                           BackgroundColor="LightGray"
+                           FontSize="20"
+                           FontAttributes="Bold"
+                           AutomationId="GroupHeader"/>
+                </DataTemplate>
+            </local:CollectionView2.GroupHeaderTemplate>
+            <local:CollectionView2.GroupFooterTemplate>
+                <DataTemplate>
+                    <Label Text="{Binding Count, StringFormat='Total animals: {0:D}'}"
+                           Margin="0,0,0,10"/>
+                </DataTemplate>
+            </local:CollectionView2.GroupFooterTemplate>
+        </local:CollectionView2>
+    </Grid>
+</ContentPage>
