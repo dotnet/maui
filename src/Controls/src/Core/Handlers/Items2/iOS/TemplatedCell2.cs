@@ -40,6 +40,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		Size _measuredSize;
 		Size _cachedConstraints;
 
+		// Indicates the cell is being used as a supplementary view (group header/footer)
+		internal bool isSupplementaryView = false;
 		internal bool MeasureInvalidated => _measureInvalidated;
 
 		// Flags changes confined to the header/footer, preventing unnecessary recycling and revalidation of templated cells.
@@ -110,7 +112,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					// Only use the cached first-item measurement for actual item cells (not headers/footers)
 					// Supplementary views (headers/footers) set the flag `isHeaderOrFooterChanged` during Bind
 					// so we can detect them here and avoid using the item cache for their measurement.
-					if (isHeaderOrFooterChanged)
+					if (!isSupplementaryView)
 					{
 						var cachedSize = GetCachedFirstItemSizeFromHandler();
 						if (cachedSize != CGSize.Empty)
@@ -204,6 +206,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public override void PrepareForReuse()
 		{
 			//Unbind();
+			isSupplementaryView = false;
 			base.PrepareForReuse();
 		}
 
