@@ -46,12 +46,16 @@ namespace Microsoft.Maui.IntegrationTests
 				$"Unable to create template {id}. Check test output for errors.");
 
 			var buildProps = BuildProps;
+			
+			// Always set RuntimeIdentifier to ensure consistent architecture builds
+			// Without this, Mono builds default to host architecture (arm64 on Apple Silicon, x64 on Intel)
+			buildProps.Add($"RuntimeIdentifier={runtimeIdentifier}");
+			
 			if (runtimeVariant == RuntimeVariant.NativeAOT)
 			{
 				buildProps.Add("PublishAot=true");
 				buildProps.Add("PublishAotUsingRuntimePack=true"); // TODO: This parameter will become obsolete https://github.com/dotnet/runtime/issues/87060
 				buildProps.Add("_IsPublishing=true"); // using dotnet build with -p:_IsPublishing=true enables targeting simulators
-				buildProps.Add($"RuntimeIdentifier={runtimeIdentifier}");
 				buildProps.Add("IlcTreatWarningsAsErrors=false"); // TODO: Remove this once all warnings are fixed https://github.com/dotnet/maui/issues/19397
 			}
 
