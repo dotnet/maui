@@ -39,7 +39,7 @@ This document describes the design and implementation plan for enabling `dotnet 
 
 ### 1.1 Primary Goals
 
-1. **Unified CLI Experience**: Enable `dotnet test` to work with .NET MAUI test projects targeting iOS, Android, macOS (Catalyst), and Windows, similar to how `dotnet run` now supports device selection.
+1. **Unified CLI Experience**: Enable `dotnet test` to work with test projects targeting iOS and Android (via the iOS and Android SDKs) and Windows/macOS Catalyst. .NET MAUI will leverage the iOS and Android SDK implementations for its device testing support.
 
 2. **AI Agent Enablement**: Make it easy for AI coding agents to write, run, and validate tests using only command-line tools. AI agents should be able to:
    - Run tests with a single command
@@ -51,7 +51,16 @@ This document describes the design and implementation plan for enabling `dotnet 
 
 4. **XHarness Replacement**: Eventually replace XHarness as the test execution tool, reducing the number of tools to maintain in the ecosystem.
 
-### 1.2 Non-Goals (Phase 1)
+### 1.2 SDK Architecture
+
+This functionality will be implemented in the **Android SDK** and **iOS SDK** as first-class features. .NET MAUI will consume and leverage these SDK implementations rather than implementing its own device testing infrastructure. This ensures:
+
+- Consistent testing experience across all .NET workloads (MAUI, native iOS/Android, etc.)
+- Shared maintenance and improvements across the ecosystem
+- Direct support for native iOS and Android test projects
+- MAUI inherits all capabilities without duplication
+
+### 1.3 Non-Goals (Phase 1)
 
 - Test Explorer integration in Visual Studio or VS Code (CLI-only focus)
 - Hot reload during test execution
@@ -184,7 +193,10 @@ The key limitations (VS-only, Windows-only, VSTest-coupled, no CLI support) mean
                                       │
                                       ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                    MSBuild Test Targets (MAUI Workload)                      │
+│          MSBuild Test Targets (iOS SDK / Android SDK / Windows)             │
+│                                                                              │
+│  • iOS/Android: Implemented in iOS SDK and Android SDK                      │
+│  • MAUI workload leverages these SDK implementations                         │
 │                                                                              │
 │  1. ComputeAvailableDevices (reuse from dotnet run)                         │
 │  2. Build test application                                                   │
@@ -249,8 +261,8 @@ Each scenario has different constraints for how the test host can communicate wi
 | Protocol | Pros | Cons | Scenario Compatibility |
 |----------|------|------|------------------------|
 | **Named Pipes** | Low latency, already used by MTP for `dotnet test`, bidirectional, simple setup | Not available across device/host boundary (iOS/Android devices) | ✅ Local exe, ⚠️ Simulators (varies), ❌ Physical devices |
-| **HTTP/HTTPS** | Works across all boundaries, well-supported on all platforms, firewall-friendly | Higher latency, requires server on host, more overhead | ✅ All scenarios |
-| **Unix Domain Sockets** | Low latency, works for local processes, cross-platform (macOS/Linux) | Not available for physical devices, Windows uses different mechanism | ✅ Local exe, ✅ Simulators, ❌ Physical devices |
+| **HTTP/HTTPS** | Works across all boundaries, well-supported on all platforms, firewall-friendly | Higher latency, requires server on host, more overhead. iOS devices show "allow connections to local network?" dialog. HTTP requires custom entitlement on iOS (HTTPS preferred but requires certificates) | ✅ All scenarios (with caveats) |
+| **Unix Domain Sockets** | Low latency, works for local processes, cross-platform (macOS/Linux) | Not available for physical devices, Windows uses different mechanism, does not work for sandboxed macOS Catalyst apps | ✅ Local exe, ⚠️ Simulators (not Catalyst), ❌ Physical devices |
 | **TCP Sockets** | Cross-platform, lower overhead than HTTP | Firewall issues, port management complexity | ✅ All scenarios (with port forwarding) |
 | **USB/ADB Forward** | Low latency for Android | Platform-specific, complex setup | ❌ iOS, ✅ Android only |
 
@@ -495,6 +507,8 @@ The MAUI test target chain (invoked from `dotnet test`):
 
 ### 6.1 Basic Usage
 
+> **Note:** When target framework is not specified, the tooling will prompt for selection if multiple frameworks are available. When device is not specified, the tooling will check for booted/running devices first, then prompt for device selection if needed (similar to `dotnet run` behavior).
+
 ```bash
 # Run all tests on default device (interactive mode, from project directory)
 dotnet test -f net10.0-ios
@@ -577,11 +591,15 @@ dotnet test --project MyMauiDeviceTests.csproj -f net10.0-android --device emula
 
 ### Phase 1: Foundation (2-3 weeks)
 
-**MAUI Team:**
+**iOS/Android SDK Teams:**
 1. Create HTTP-based push protocol for iOS/Android
-2. Implement `IMauiTestProtocol` interface
-3. Create MSBuild targets for test execution
+2. Implement `IDeviceTestProtocol` interface
+3. Create MSBuild targets for test execution in respective SDKs
 4. Basic console output of test results
+
+**MAUI Team:**
+1. Integrate with iOS/Android SDK test targets
+2. Validate MAUI test projects work with SDK implementations
 
 **MTP Team:**
 1. Expose HTTP server mode in MTP
@@ -589,39 +607,47 @@ dotnet test --project MyMauiDeviceTests.csproj -f net10.0-android --device emula
 3. Ensure coverage collector works with static instrumentation
 
 **Deliverables:**
-- `dotnet test` runs and reports results for iOS simulator
+- `dotnet test` runs and reports results for iOS simulator (via iOS SDK)
+- `dotnet test` runs and reports results for Android emulator (via Android SDK)
 - Basic pass/fail output in console
 
 ### Phase 2: Cross-Platform (2-3 weeks)
 
+**iOS/Android SDK Teams:**
+1. Physical device support (iOS devices, Android devices)
+2. Device artifact collection (pull logs, screenshots)
+3. Integration with `dotnet run` device selection
+
 **MAUI Team:**
-1. Android emulator/device support
-2. Windows support (leverage existing named pipe)
-3. Device artifact collection (pull logs, screenshots)
-4. Integration with `dotnet run` device selection
+1. Windows support (leverage existing named pipe)
+2. Validate MAUI integration across all platforms
 
 **MTP Team:**
 1. Ensure consistent behavior across protocols
 2. Add device-specific diagnostics
 
 **Deliverables:**
-- All platforms supported
+- All platforms supported (iOS/Android via SDKs, Windows/Catalyst via MAUI)
 - Device selection via `--device` flag
 - TRX and JSON result output
 
 ### Phase 3: Code Coverage (2-3 weeks)
 
-**MAUI Team:**
+**iOS/Android SDK Teams:**
 1. Integrate coverage instrumentation in build
 2. Pull coverage files from devices
-3. Merge coverage from multiple test runs
+3. Platform-specific coverage implementation
+
+**MAUI Team:**
+1. Validate coverage works for MAUI test projects
+2. Merge coverage from multiple test runs
 
 **MTP Team:**
 1. Ensure coverage works with push-only protocol
 2. Support for Cobertura output format
 
 **Deliverables:**
-- Coverage reports for platform code
+- Coverage reports for platform code (iOS/Android via SDKs)
 - Cobertura XML output for CI integration
 - Coverage summary in console output
 
@@ -891,6 +917,8 @@ Integrate with `Microsoft.CodeCoverage`:
 
 3. **Visual Testing**: Should screenshot comparison be integrated?
 
+4. **Android Instrumentation**: How should `dotnet test` work with Android instrumentation tests? Should it run instrumentation tests automatically, or require explicit configuration? How is the `Instrumentation` type provided (template, NuGet package, or manual implementation)?
+
 ### 12.3 Cross-Team
 
 1. **XHarness Timeline**: When can we fully deprecate XHarness in favor of this solution?
@@ -907,7 +935,7 @@ Integrate with `Microsoft.CodeCoverage`:
 
 7. **Security Model Review**: When should we conduct a formal security review of the communication channel? Should this block V1 streaming features?
 
-8. **Aspire Reuse**: What components from .NET Aspire's security model can we directly reuse vs. adapt?
+8. **Aspire Reuse**: What components from .NET Aspire's security model can we directly reuse vs. adapt? How does Aspire handle iOS device communication for metrics/telemetry?
 
 ### 12.4 .NET SDK / CLI Team
 
@@ -919,16 +947,23 @@ Integrate with `Microsoft.CodeCoverage`:
 
 ## 13. Work Breakdown by Team
 
-### MAUI Team
+### iOS/Android SDK Teams
 
-1. **MSBuild targets**: Implement `Maui*Test*` target chain (build/deploy/run/collect)
+1. **MSBuild targets**: Implement test target chain (build/deploy/run/collect) in respective SDKs
 2. **Artifact extraction**:
-   - Android: pull from app sandbox
-   - iOS simulator/device: pull from container
-   - Windows: local file path
+   - Android SDK: pull from app sandbox
+   - iOS SDK: pull from simulator/device container
 3. **Device selection plumbing**: Canonical device id formats + mapping to existing deploy tooling
 4. **Reliability**: Timeouts, retries, crash diagnostics, log capture
-5. **Templates/docs**: Device-test project template (recommended for adoption)
+5. **Protocol implementation**: Device-to-host communication for test results
+
+### MAUI Team
+
+1. **SDK Integration**: Consume and leverage iOS/Android SDK test implementations
+2. **Windows/Catalyst support**: Implement test support for Windows/macOS Catalyst
+3. **MAUI-specific validation**: Ensure MAUI test projects work correctly with SDK implementations
+4. **Templates/docs**: MAUI device-test project template (recommended for adoption)
+5. **Migration guidance**: Update from XHarness to SDK-based testing
 
 ### MTP Team
 
