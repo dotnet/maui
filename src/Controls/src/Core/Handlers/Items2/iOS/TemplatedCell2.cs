@@ -110,8 +110,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				if (_measureInvalidated || _cachedConstraints != constraints)
 				{
 					// Only use the cached first-item measurement for actual item cells (not headers/footers)
-					// Supplementary views (headers/footers) set the flag `isHeaderOrFooterChanged` during Bind
-					// so we can detect them here and avoid using the item cache for their measurement.
 					if (!isSupplementaryView)
 					{
 						var cachedSize = GetCachedFirstItemSizeFromHandler();
