@@ -39,7 +39,7 @@ This document describes the design and implementation plan for enabling `dotnet 
 
 ### 1.1 Primary Goals
 
-1. **Unified CLI Experience**: Enable `dotnet test` to work with test projects targeting iOS and Android (via the iOS and Android SDKs) and Windows/macOS Catalyst. .NET MAUI will leverage the iOS and Android SDK implementations for its device testing support.
+1. **Unified CLI Experience for iOS and Android Testing**: Enable `dotnet test` to work with **any test project** targeting iOS and Android platforms - including native iOS/Android apps, MAUI apps, Uno Platform, Avalonia, and other frameworks. This functionality will be implemented in the **iOS SDK** and **Android SDK** as first-class platform features. .NET MAUI will consume and leverage these SDK implementations for its device testing needs, but the testing infrastructure is **not MAUI-specific** - it's a platform capability available to all .NET workloads.
 
 2. **AI Agent Enablement**: Make it easy for AI coding agents to write, run, and validate tests using only command-line tools. AI agents should be able to:
    - Run tests with a single command
