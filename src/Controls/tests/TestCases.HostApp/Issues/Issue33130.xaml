@@ -2,7 +2,6 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues.Issue33130"
-             xmlns:local="clr-namespace:Maui.Controls.Sample"
              Title="Issue33130">
     <Grid Margin="20"
           RowDefinitions="Auto, *">
@@ -17,13 +16,20 @@
                    Text="ItemSizingStrategy: MeasureAllItems"/>
         </StackLayout>
 
-        <local:CollectionView2 Grid.Row="1"
-                               x:Name="TestCollectionView"
-                               ItemsSource="{Binding Animals}"
-                               IsGrouped="true"
-                               AutomationId="TestCollectionView"
-                               ItemSizingStrategy="MeasureAllItems">
-            <local:CollectionView2.ItemTemplate>
+        <CollectionView Grid.Row="1"
+                        x:Name="TestCollectionView"
+                        ItemsSource="{Binding Animals}"
+                        IsGrouped="true"
+                        AutomationId="TestCollectionView"
+                        ItemSizingStrategy="MeasureAllItems">
+            <CollectionView.Header>
+                <Label Text="Animals Collection"
+                       FontSize="24"
+                       AutomationId="CollectionViewHeader"
+                       FontAttributes="Bold"
+                       HorizontalOptions="Center"/>
+            </CollectionView.Header>
+            <CollectionView.ItemTemplate>
                 <DataTemplate>
                     <Grid Padding="10">
                         <Grid.RowDefinitions>
@@ -49,8 +55,8 @@
                                VerticalOptions="End"/>
                     </Grid>
                 </DataTemplate>
-            </local:CollectionView2.ItemTemplate>
-            <local:CollectionView2.GroupHeaderTemplate>
+            </CollectionView.ItemTemplate>
+            <CollectionView.GroupHeaderTemplate>
                 <DataTemplate>
                     <Label x:Name="GroupHeaderLabel"
                            Text="{Binding Name}"
@@ -59,13 +65,13 @@
                            FontAttributes="Bold"
                            AutomationId="GroupHeader"/>
                 </DataTemplate>
-            </local:CollectionView2.GroupHeaderTemplate>
-            <local:CollectionView2.GroupFooterTemplate>
+            </CollectionView.GroupHeaderTemplate>
+            <CollectionView.GroupFooterTemplate>
                 <DataTemplate>
                     <Label Text="{Binding Count, StringFormat='Total animals: {0:D}'}"
                            Margin="0,0,0,10"/>
                 </DataTemplate>
-            </local:CollectionView2.GroupFooterTemplate>
-        </local:CollectionView2>
+            </CollectionView.GroupFooterTemplate>
+        </CollectionView>
     </Grid>
 </ContentPage>

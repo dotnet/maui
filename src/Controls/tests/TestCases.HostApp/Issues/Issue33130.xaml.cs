@@ -10,7 +10,7 @@ public partial class Issue33130 : ContentPage
 	public Issue33130()
 	{
 		InitializeComponent();
-		BindingContext = new GroupedAnimalsViewModel();
+		BindingContext = new Issue33130ViewModel();
 	}
 
 	private void OnSwitchToMeasureFirstItem(object sender, EventArgs e)
@@ -20,45 +20,45 @@ public partial class Issue33130 : ContentPage
 	}
 }
 
-public class GroupedAnimalsViewModel
+public class Issue33130ViewModel
 {
-	public ObservableCollection<GroupHeaderTestAnimalGroup> Animals { get; set; }
+	public ObservableCollection<Issue33130AnimalGroup> Animals { get; set; }
 
-	public GroupedAnimalsViewModel()
+	public Issue33130ViewModel()
 	{
-		Animals = new ObservableCollection<GroupHeaderTestAnimalGroup>
+		Animals = new ObservableCollection<Issue33130AnimalGroup>
 		{
-			new GroupHeaderTestAnimalGroup("Bears")
+			new Issue33130AnimalGroup("Bears")
 			{
-				new GroupHeaderTestAnimal { Name = "Grizzly Bear", Location = "North America", ImageUrl = "bear.jpg" },
-				new GroupHeaderTestAnimal { Name = "Polar Bear", Location = "Arctic", ImageUrl = "bear.jpg" },
+				new Issue33130Animal { Name = "Grizzly Bear", Location = "North America", ImageUrl = "bear.jpg" },
+				new Issue33130Animal { Name = "Polar Bear", Location = "Arctic", ImageUrl = "bear.jpg" },
 			},
-			new GroupHeaderTestAnimalGroup("Monkeys")
+			new Issue33130AnimalGroup("Monkeys")
 			{
-				new GroupHeaderTestAnimal { Name = "Baboon", Location = "Africa", ImageUrl = "monkey.jpg" },
-				new GroupHeaderTestAnimal { Name = "Capuchin Monkey", Location = "South America", ImageUrl = "monkey.jpg" },
-				new GroupHeaderTestAnimal { Name = "Spider Monkey", Location = "Central America", ImageUrl = "monkey.jpg" },
+				new Issue33130Animal { Name = "Baboon", Location = "Africa", ImageUrl = "monkey.jpg" },
+				new Issue33130Animal { Name = "Capuchin Monkey", Location = "South America", ImageUrl = "monkey.jpg" },
+				new Issue33130Animal { Name = "Spider Monkey", Location = "Central America", ImageUrl = "monkey.jpg" },
 			},
-			new GroupHeaderTestAnimalGroup("Elephants")
+			new Issue33130AnimalGroup("Elephants")
 			{
-				new GroupHeaderTestAnimal { Name = "African Elephant", Location = "Africa", ImageUrl = "elephant.jpg" },
-				new GroupHeaderTestAnimal { Name = "Asian Elephant", Location = "Asia", ImageUrl = "elephant.jpg" },
+				new Issue33130Animal { Name = "African Elephant", Location = "Africa", ImageUrl = "elephant.jpg" },
+				new Issue33130Animal { Name = "Asian Elephant", Location = "Asia", ImageUrl = "elephant.jpg" },
 			}
 		};
 	}
 }
 
-public class GroupHeaderTestAnimalGroup : ObservableCollection<GroupHeaderTestAnimal>
+public class Issue33130AnimalGroup : ObservableCollection<Issue33130Animal>
 {
 	public string Name { get; set; }
 
-	public GroupHeaderTestAnimalGroup(string name) : base()
+	public Issue33130AnimalGroup(string name) : base()
 	{
 		Name = name;
 	}
 }
 
-public class GroupHeaderTestAnimal
+public class Issue33130Animal
 {
 	public string Name { get; set; }
 	public string Location { get; set; }
