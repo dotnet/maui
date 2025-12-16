@@ -25,19 +25,19 @@ if ([string]::IsNullOrWhiteSpace($TargetBranch)) {
 
 $targetBranch = $TargetBranch -replace '^refs/heads/', ''
 
-Write-Host "Fetching target branch 'origin/$targetBranch' for diff analysis..." -ForegroundColor Cyan
+Write-Host "Fetching target branch 'origin/${targetBranch}' for diff analysis..." -ForegroundColor Cyan
 try {
-    git fetch origin "$targetBranch" --no-tags --prune --depth=200 | Out-Null
+    git fetch origin "${targetBranch}" --no-tags --prune --depth=200 | Out-Null
 } catch {
-    Write-Warning "Failed to fetch origin/$targetBranch: $($_.Exception.Message). Falling back to running all categories."
+    Write-Warning "Failed to fetch origin/${targetBranch}: $($_.Exception.Message). Falling back to running all categories."
     return
 }
 
 $mergeBase = $null
 try {
-    $mergeBase = (git merge-base HEAD "origin/$targetBranch").Trim()
+    $mergeBase = (git merge-base HEAD "origin/${targetBranch}").Trim()
 } catch {
-    Write-Warning "Could not determine merge base with origin/$targetBranch: $($_.Exception.Message). Falling back to running all categories."
+    Write-Warning "Could not determine merge base with origin/${targetBranch}: $($_.Exception.Message). Falling back to running all categories."
     return
 }
 
