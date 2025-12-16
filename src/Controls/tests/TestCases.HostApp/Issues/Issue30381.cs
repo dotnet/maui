@@ -15,6 +15,7 @@ public class Issue30381 : ContentPage
     {
         CreateUI();
         SetupWebView();
+        MyWebView.Navigated += OnWebViewNavigated;
     }
 
     void CreateUI()
@@ -156,5 +157,14 @@ public class Issue30381 : ContentPage
     {
         CanGoBackLabel.Text = $"CanGoBack: {MyWebView.CanGoBack}";
         CanGoForwardLabel.Text = $"CanGoForward: {MyWebView.CanGoForward}";
+    }
+
+    void OnWebViewNavigated(object sender, WebNavigatedEventArgs e)
+    {
+        if (e.Url.Contains("github.com", StringComparison.OrdinalIgnoreCase))
+        {
+            // Update navigation status after navigation completes
+            UpdateNavigationStatus();
+        }
     }
 }
