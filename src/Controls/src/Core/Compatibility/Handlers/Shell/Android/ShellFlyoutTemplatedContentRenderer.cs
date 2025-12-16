@@ -21,6 +21,7 @@ using Microsoft.Maui.Layouts;
 using AView = Android.Views.View;
 using LP = Android.Views.ViewGroup.LayoutParams;
 
+#pragma warning disable RS0016 // Add public types and members to the declared API
 namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
 	public class ShellFlyoutTemplatedContentRenderer : Java.Lang.Object, IShellFlyoutContentRenderer
@@ -211,11 +212,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			MauiWindowInsetListener.SetupViewWithLocalListener(coordinator, _windowsListener);
 
 			UpdateFlyoutHeaderBehavior();
-			_shellContext.Shell.PropertyChanged += OnShellPropertyChanged;
-
-			UpdateFlyoutBackground();
-
-			UpdateVerticalScrollMode();
 
 			UpdateFlyoutFooter();
 
@@ -265,33 +261,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			((IShellController)_shellContext.Shell).OnFlyoutItemSelected(element);
 		}
 
-		protected virtual void OnShellPropertyChanged(object sender, PropertyChangedEventArgs e)
-		{
-			if (e.PropertyName == Shell.FlyoutHeaderBehaviorProperty.PropertyName)
-				UpdateFlyoutHeaderBehavior();
-			else if (e.IsOneOf(
-				Shell.FlyoutBackgroundColorProperty,
-				Shell.FlyoutBackgroundProperty,
-				Shell.FlyoutBackgroundImageProperty,
-				Shell.FlyoutBackgroundImageAspectProperty))
-				UpdateFlyoutBackground();
-			else if (e.Is(Shell.FlyoutVerticalScrollModeProperty))
-				UpdateVerticalScrollMode();
-			else if (e.IsOneOf(
-				Shell.FlyoutHeaderProperty,
-				Shell.FlyoutHeaderTemplateProperty))
-				UpdateFlyoutHeader();
-			else if (e.IsOneOf(
-				Shell.FlyoutFooterProperty,
-				Shell.FlyoutFooterTemplateProperty))
-				UpdateFlyoutFooter();
-			else if (e.IsOneOf(
-				Shell.FlyoutContentProperty,
-				Shell.FlyoutContentTemplateProperty))
-				UpdateFlyoutContent();
-		}
-
-		protected virtual void UpdateFlyoutContent()
+		public virtual void UpdateFlyoutContent()
 		{
 			if (!_rootView.IsAlive())
 				return;
@@ -361,7 +331,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			return _contentView.PlatformView;
 		}
 
-		protected virtual void UpdateFlyoutHeader()
+		public virtual void UpdateFlyoutHeader()
 		{
 			if (_headerView != null)
 			{
@@ -373,10 +343,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				oldHeaderView.Dispose();
 			}
 
-			if (_flyoutHeader != null)
-			{
-				_flyoutHeader.MeasureInvalidated -= OnFlyoutHeaderMeasureInvalidated;
-			}
+			_flyoutHeader?.MeasureInvalidated -= OnFlyoutHeaderMeasureInvalidated;
 
 			_flyoutHeader = ((IShellController)_shellContext.Shell).FlyoutHeader;
 			if (_flyoutHeader != null)
@@ -413,7 +380,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			UpdateContentPadding();
 		}
 
-		protected virtual void UpdateFlyoutFooter()
+		public virtual void UpdateFlyoutFooter()
 		{
 			if (_footerView != null)
 			{
@@ -426,9 +393,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			var footer = ((IShellController)_shellContext.Shell).FlyoutFooter;
 
-			if (footer == null)
+			if (footer is null)
 			{
-				UpdateContentPadding();
 				return;
 			}
 
@@ -591,7 +557,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
-		void UpdateVerticalScrollMode()
+		public virtual void UpdateVerticalScrollMode()
 		{
 			if (_flyoutContentView is RecyclerView rv && rv.GetLayoutManager() is ScrollLayoutManager lm)
 			{
@@ -599,10 +565,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
-		protected virtual void UpdateFlyoutBackground()
+		public virtual void UpdateFlyoutBackground()
 		{
 			var brush = _shellContext.Shell.FlyoutBackground;
-
 			if (Brush.IsNullOrEmpty(brush))
 			{
 				var color = _shellContext.Shell.FlyoutBackgroundColor;
@@ -671,7 +636,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			});
 		}
 
-		protected virtual void UpdateFlyoutHeaderBehavior()
+		public virtual void UpdateFlyoutHeaderBehavior()
 		{
 			if (_headerView == null)
 				return;
@@ -733,11 +698,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				MauiWindowInsetListener.RemoveViewWithLocalListener(coordinator);
 			}
 
-			if (_shellContext?.Shell != null)
-				_shellContext.Shell.PropertyChanged -= OnShellPropertyChanged;
-
-			if (_flyoutHeader != null)
-				_flyoutHeader.MeasureInvalidated -= OnFlyoutHeaderMeasureInvalidated;
+			_flyoutHeader?.MeasureInvalidated -= OnFlyoutHeaderMeasureInvalidated;
 
 			_flyoutHeader = null;
 
@@ -774,8 +735,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (View != null && View is ShellFlyoutLayout sfl)
 					sfl.LayoutChanging -= OnFlyoutViewLayoutChanging;
 
-				if (_headerView != null)
-					_headerView.LayoutChange -= OnHeaderViewLayoutChange;
+				_headerView?.LayoutChange -= OnHeaderViewLayoutChange;
 
 				_contentView?.View = null;
 
@@ -813,8 +773,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			void Initialize(View view)
 			{
-				if (view != null)
-					view.PropertyChanged += OnViewPropertyChanged;
+				view?.PropertyChanged += OnViewPropertyChanged;
 			}
 
 			void OnViewPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -873,11 +832,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			internal void Disconnect()
 			{
-				if (View != null)
-				{
-					View.PropertyChanged -= OnViewPropertyChanged;
-					View = null;
-				}
+				View?.PropertyChanged -= OnViewPropertyChanged;
+				View = null;
 			}
 
 			internal void SetFlyoutHeaderBehavior(FlyoutHeaderBehavior flyoutHeaderBehavior)

@@ -4373,10 +4373,8 @@
 ~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRecyclerAdapter.GenerateItemList() -> System.Collections.Generic.List<Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRecyclerAdapter.AdapterListItem>
 ~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRecyclerAdapter.OnFlyoutItemsChanged(object sender, System.EventArgs e) -> void
 ~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.AttachFlyout(Microsoft.Maui.Controls.Platform.Compatibility.IShellContext context, Android.Views.View content) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.OnShellPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) -> void
 ~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.UpdateFlyoutSize(Android.Views.View flyoutView) -> void
 ~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer.LoadView(Microsoft.Maui.Controls.Platform.Compatibility.IShellContext shellContext) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer.OnShellPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e) -> void
 ~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.ChangeSection(Microsoft.Maui.Controls.ShellSection shellSection) -> bool
 ~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.CreateItemBackgroundDrawable() -> Android.Graphics.Drawables.Drawable
 ~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.CreateMoreBottomSheet(System.Action<int, Google.Android.Material.BottomSheet.BottomSheetDialog> selectCallback) -> Google.Android.Material.BottomSheet.BottomSheetDialog
