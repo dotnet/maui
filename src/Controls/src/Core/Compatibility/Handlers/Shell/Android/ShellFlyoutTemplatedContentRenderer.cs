@@ -135,33 +135,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					// The flyout overlaps the status bar so we don't really care about insetting it
 					var systemBars = insets.GetInsets(WindowInsetsCompat.Type.SystemBars());
 					var displayCutout = insets.GetInsets(WindowInsetsCompat.Type.DisplayCutout());
+					var leftInset = Math.Max(systemBars?.Left ?? 0, displayCutout?.Left ?? 0);
 					var topInset = Math.Max(systemBars?.Top ?? 0, displayCutout?.Top ?? 0);
+					var rightInset = Math.Max(systemBars?.Right ?? 0, displayCutout?.Right ?? 0);
 					var bottomInset = Math.Max(systemBars?.Bottom ?? 0, displayCutout?.Bottom ?? 0);
 					var appbarLayout = v.FindDescendantView<AppBarLayout>((v) => true);
 
-					int flyoutViewBottomInset = 0;
-
-					if (FooterView is not null)
-					{
-						v.SetPadding(0, 0, 0, bottomInset);
-						flyoutViewBottomInset = 0;
-					}
-					else
-					{
-						flyoutViewBottomInset = bottomInset;
-						v.SetPadding(0, 0, 0, 0);
-					}
-
-					if (appbarLayout.MeasuredHeight > 0)
-					{
-						FlyoutView?.SetPadding(0, 0, 0, flyoutViewBottomInset);
-						appbarLayout?.SetPadding(0, topInset, 0, 0);
-					}
-					else
-					{
-						FlyoutView?.SetPadding(0, topInset, 0, flyoutViewBottomInset);
-						appbarLayout?.SetPadding(0, 0, 0, 0);
-					}
+					v.SetPadding(leftInset, topInset, rightInset, bottomInset);
 
 					if (_bgImageRef != null && _bgImageRef.TryGetTarget(out var bgImage) && bgImage != null)
 					{
