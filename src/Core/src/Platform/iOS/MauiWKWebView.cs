@@ -117,7 +117,6 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-
 		async Task LoadUrlAsync(string? url)
 		{
 			try
