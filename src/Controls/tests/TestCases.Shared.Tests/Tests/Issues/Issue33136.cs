@@ -11,7 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 		public override string Issue => "TitleBar Content Overlapping with Traffic Light Buttons on Latest macOS Version";
 		[Test]
 		[Category(UITestCategories.Window)]
-		public void VerifyBackButtonTitleUpdates()
+		public void VerifyTitleBarAlignment()
 		{
 			App.WaitForElement("TitleBarAlignmentLabel");
 			VerifyScreenshot(includeTitleBar: true);
