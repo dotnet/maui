@@ -177,7 +177,7 @@ stages:
         )
       )
     variables:
-      StageCategoryMatrix: ${{ if eq(variables['Build.Reason'], 'PullRequest') }}${{ coalesce(stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryMatrix'], parameters.defaultCategoryMatrix) }}${{ else }}${{ parameters.defaultCategoryMatrix }}
+      StageCategoryMatrix: $[ coalesce(stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryMatrix'], '${{ parameters.defaultCategoryMatrix }}') ]
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.android, '') }}:
@@ -231,7 +231,7 @@ stages:
         )
       )
     variables:
-      StageCategoryMatrix: ${{ if eq(variables['Build.Reason'], 'PullRequest') }}${{ coalesce(stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryMatrix'], parameters.defaultCategoryMatrix) }}${{ else }}${{ parameters.defaultCategoryMatrix }}
+      StageCategoryMatrix: $[ coalesce(stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryMatrix'], '${{ parameters.defaultCategoryMatrix }}') ]
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.android, '') }}:
@@ -287,7 +287,7 @@ stages:
         )
       )
     variables:
-      StageCategoryMatrix: ${{ if eq(variables['Build.Reason'], 'PullRequest') }}${{ coalesce(stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryMatrix'], parameters.defaultCategoryMatrix) }}${{ else }}${{ parameters.defaultCategoryMatrix }}
+      StageCategoryMatrix: $[ coalesce(stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryMatrix'], '${{ parameters.defaultCategoryMatrix }}') ]
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.ios, '') }}:
@@ -335,12 +335,14 @@ stages:
     dependsOn:
       - discover_ui_test_categories
       - build_ui_tests
-    condition: ${{ if ne(variables['Build.Reason'], 'PullRequest') }} and(succeeded('build_ui_tests'), true) ${{ else }} and(
+    condition: |
+      and(
         succeeded('build_ui_tests'),
         or(
+          ne(variables['Build.Reason'], 'PullRequest'),
           eq(dependencies.discover_ui_test_categories.result, 'Skipped'),
-          eq(stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryMatrix'], ''),
-          contains(stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryMatrix'], '"CollectionView"')
+          eq(stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryList'], ''),
+          contains(stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryList'], 'CollectionView')
         )
       )
     jobs:
@@ -389,12 +391,14 @@ stages:
     dependsOn:
       - discover_ui_test_categories
       - build_ui_tests
-    condition: ${{ if ne(variables['Build.Reason'], 'PullRequest') }} and(succeeded('build_ui_tests'), true) ${{ else }} and(
+    condition: |
+      and(
         succeeded('build_ui_tests'),
         or(
+          ne(variables['Build.Reason'], 'PullRequest'),
           eq(dependencies.discover_ui_test_categories.result, 'Skipped'),
-          eq(stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryMatrix'], ''),
-          contains(stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryMatrix'], '"CarouselView"')
+          eq(stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryList'], ''),
+          contains(stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryList'], 'CarouselView')
         )
       )
     jobs:
@@ -454,7 +458,7 @@ stages:
           )
         )
       variables:
-        StageCategoryMatrix: ${{ if eq(variables['Build.Reason'], 'PullRequest') }}${{ coalesce(stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryMatrix'], parameters.defaultCategoryMatrix) }}${{ else }}${{ parameters.defaultCategoryMatrix }}
+        StageCategoryMatrix: $[ coalesce(stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryMatrix'], '${{ parameters.defaultCategoryMatrix }}') ]
       jobs:
         - ${{ each project in parameters.projects }}:
           - ${{ if ne(project.ios, '') }}:
@@ -506,7 +510,7 @@ stages:
         )
       )
     variables:
-      StageCategoryMatrix: ${{ if eq(variables['Build.Reason'], 'PullRequest') }}${{ coalesce(stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryMatrix'], parameters.defaultCategoryMatrix) }}${{ else }}${{ parameters.defaultCategoryMatrix }}
+      StageCategoryMatrix: $[ coalesce(stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryMatrix'], '${{ parameters.defaultCategoryMatrix }}') ]
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.winui, '') }}:
@@ -553,7 +557,7 @@ stages:
         )
       )
     variables:
-      StageCategoryMatrix: ${{ if eq(variables['Build.Reason'], 'PullRequest') }}${{ coalesce(stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryMatrix'], parameters.defaultCategoryMatrix) }}${{ else }}${{ parameters.defaultCategoryMatrix }}
+      StageCategoryMatrix: $[ coalesce(stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryMatrix'], '${{ parameters.defaultCategoryMatrix }}') ]
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.mac, '') }}:
