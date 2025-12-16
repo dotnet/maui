@@ -15,23 +15,71 @@ parameters:
   checkoutDirectory: $(System.DefaultWorkingDirectory)
 
 steps:
+# EARLY CHECK: Determine if this category group should run tests
+# This runs FIRST to avoid wasting time on provisioning if no tests will run
+- pwsh: |
+    $testFilterParam = $env:CATEGORY_GROUP
+    $detectedCategories = $env:DETECTED_CATEGORIES
+    $isPR = $env:BUILD_REASON -eq "PullRequest"
+    
+    Write-Host "=== Early Category Check ==="
+    Write-Host "Build Reason: $env:BUILD_REASON"
+    Write-Host "Category Group: '$testFilterParam'"
+    Write-Host "Detected Categories: '$detectedCategories'"
+    
+    $shouldRun = $true
+    
+    # For PRs with detected categories, check if this category group has any matches
+    if ($isPR -and -not [string]::IsNullOrWhiteSpace($detectedCategories) -and -not [string]::IsNullOrWhiteSpace($testFilterParam)) {
+        $categoryList = $testFilterParam -split ","
+        $detectedList = $detectedCategories -split ","
+        $hasMatch = $false
+        
+        foreach ($cat in $categoryList) {
+            $cat = $cat.Trim()
+            foreach ($det in $detectedList) {
+                $det = $det.Trim()
+                if ($cat -eq $det) {
+                    $hasMatch = $true
+                    Write-Host "Match found: '$cat'"
+                    break
+                }
+            }
+            if ($hasMatch) { break }
+        }
+        
+        if (-not $hasMatch) {
+            $shouldRun = $false
+            Write-Host "##[warning]No matching categories - SKIPPING all steps for this job"
+            Write-Host "Category group '$testFilterParam' does not contain any detected categories: $detectedCategories"
+        }
+    }
+    
+    Write-Host "Should run tests: $shouldRun"
+    Write-Host "##vso[task.setvariable variable=SHOULD_RUN_TESTS]$shouldRun"
+  displayName: 'Check if category should run'
+  env:
+    CATEGORY_GROUP: $(CATEGORYGROUP)
+    DETECTED_CATEGORIES: $(DETECTED_CATEGORIES)
+    BUILD_REASON: $(Build.Reason)
+
 - task: DownloadPipelineArtifact@2
-  condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'Mono'))
+  condition: and(succeeded(), eq(variables['SHOULD_RUN_TESTS'], 'True'), ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'Mono'))
   inputs:
     artifact: ui-tests-samples
 
 - task: DownloadPipelineArtifact@2
-  condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'NativeAOT'))
+  condition: and(succeeded(), eq(variables['SHOULD_RUN_TESTS'], 'True'), ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'NativeAOT'))
   inputs:
     artifact: ui-tests-samples-nativeaot
 
 - task: DownloadPipelineArtifact@2
-  condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'CoreCLR'))
+  condition: and(succeeded(), eq(variables['SHOULD_RUN_TESTS'], 'True'), ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'CoreCLR'))
   inputs:
     artifact: ui-tests-samples-coreclr
 
 - task: DownloadPipelineArtifact@2
-  condition: eq('${{ parameters.platform }}' , 'windows')
+  condition: and(succeeded(), eq(variables['SHOULD_RUN_TESTS'], 'True'), eq('${{ parameters.platform }}' , 'windows'))
   inputs:
     artifact: ui-tests-samples-windows
 
@@ -40,6 +88,7 @@ steps:
       chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
       $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
     displayName: 'Clean bot'
+    condition: and(succeeded(), eq(variables['SHOULD_RUN_TESTS'], 'True'))
     continueOnError: true
     timeoutInMinutes: 60
 
@@ -50,13 +99,14 @@ steps:
       sudo udevadm control --reload-rules
       sudo udevadm trigger --name-match=kvm
     displayName: Enable KVM
-    condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
+    condition: and(succeeded(), eq(variables['SHOULD_RUN_TESTS'], 'True'), eq(variables['Agent.OS'], 'Linux'))
 
 - ${{ if eq(parameters.platform, 'catalyst')}}:
   - bash: |
       chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/disable-notification-center.sh
       $(System.DefaultWorkingDirectory)/eng/scripts/disable-notification-center.sh
     displayName: 'Disable Notification Center'
+    condition: and(succeeded(), eq(variables['SHOULD_RUN_TESTS'], 'True'))
     continueOnError: true
     timeoutInMinutes: 60
 
@@ -80,7 +130,7 @@ steps:
       openSslArgs: '' # Do not use legacy openssl for Catalyst builds
 
 - task: PowerShell@2
-  condition: and(ne('${{ parameters.platform }}', 'windows'), ne('${{ parameters.platform }}', 'android'))
+  condition: and(succeeded(), eq(variables['SHOULD_RUN_TESTS'], 'True'), ne('${{ parameters.platform }}', 'windows'), ne('${{ parameters.platform }}', 'android'))
   inputs:
     targetType: 'inline'
     script: |
@@ -92,6 +142,7 @@ steps:
 
 - pwsh: ./build.ps1 --target=dotnet --configuration="${{ parameters.configuration }}" --verbosity=diagnostic
   displayName: 'Install .NET'
+  condition: and(succeeded(), eq(variables['SHOULD_RUN_TESTS'], 'True'))
   retryCountOnTaskFailure: 2
   env:
     DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
@@ -99,15 +150,17 @@ steps:
 
 - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
   displayName: 'Add .NET to PATH'
+  condition: and(succeeded(), eq(variables['SHOULD_RUN_TESTS'], 'True'))
 
 # AzDO hosted agents default to 1024x768; set something bigger for Windows UI tests
 - pwsh: |
     $scriptPath = Join-Path "$(System.DefaultWorkingDirectory)" "eng" "scripts" "Set-ScreenResolution.ps1"
     & $scriptPath -Width 1920 -Height 1080
-  condition: eq('${{ parameters.platform }}' , 'windows')
+  condition: and(succeeded(), eq(variables['SHOULD_RUN_TESTS'], 'True'), eq('${{ parameters.platform }}' , 'windows'))
   displayName: "Set screen resolution"
 
 - task: UseNode@1
+  condition: and(succeeded(), eq(variables['SHOULD_RUN_TESTS'], 'True'))
   inputs:
     version: "20.3.1"
   displayName: "Install node"
@@ -116,6 +169,7 @@ steps:
     $skipAppiumDoctor = if ($IsMacOS -or $IsLinux) { "true" } else { "false" }
     dotnet build ./src/Provisioning/Provisioning.csproj -t:ProvisionAppium -p:SkipAppiumDoctor="$skipAppiumDoctor" -bl:"$(LogDirectory)/provision-appium.binlog"
   displayName: "Install Appium"
+  condition: and(succeeded(), eq(variables['SHOULD_RUN_TESTS'], 'True'))
   continueOnError: false
   retryCountOnTaskFailure: 2
   timeoutInMinutes: 10
@@ -133,12 +187,10 @@ steps:
     $testConfigrationArgs = "${{ parameters.testConfigurationArgs }}"
     
     # Get test filter from environment variable (passed from matrix via env block)
-    # When a dynamic matrix is used, the categoryGroup value is passed via env block
     $testFilterParam = $env:CATEGORY_GROUP
     $detectedCategories = $env:DETECTED_CATEGORIES
     $isPR = $env:BUILD_REASON -eq "PullRequest"
     
-    Write-Host "Build Reason: $env:BUILD_REASON"
     Write-Host "Category Group from matrix: '$testFilterParam'"
     Write-Host "Detected Categories: '$detectedCategories'"
     
@@ -148,7 +200,7 @@ steps:
       Write-Host "Using testFilter parameter: '$testFilterParam'"
     }
     
-    # For PRs with detected categories, find intersection with current category group
+    # For PRs with detected categories, use only matching categories
     if ($isPR -and -not [string]::IsNullOrWhiteSpace($detectedCategories) -and -not [string]::IsNullOrWhiteSpace($testFilterParam)) {
         $categoryList = $testFilterParam -split ","
         $detectedList = $detectedCategories -split ","
@@ -165,17 +217,8 @@ steps:
             }
         }
         
-        if ($matchingCategories.Count -gt 0) {
-            $testFilterParam = $matchingCategories -join ","
-            Write-Host "Running matching categories: $testFilterParam"
-        }
-        else {
-            # No matching categories - skip test execution entirely
-            Write-Host "##[section]No matching categories in this group - SKIPPING test execution"
-            Write-Host "Category group '$env:CATEGORY_GROUP' does not contain any of the detected categories: $detectedCategories"
-            Write-Host "##vso[task.complete result=Succeeded;]No tests to run for this category group"
-            exit 0
-        }
+        $testFilterParam = $matchingCategories -join ","
+        Write-Host "Running matching categories: $testFilterParam"
     }
     
     Write-Host "Final test filter: '$testFilterParam'"
@@ -204,6 +247,7 @@ steps:
 
     Invoke-Expression $command  
   displayName: $(Agent.JobName)
+  condition: and(succeeded(), eq(variables['SHOULD_RUN_TESTS'], 'True'))
   ${{ if ne(parameters.platform, 'android')}}:
     retryCountOnTaskFailure: 1
   env:
