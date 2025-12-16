@@ -11,7 +11,7 @@ public class Issue32989 : _IssuesUITest
     public Issue32989(TestDevice device) : base(device) { }
 
     [Test]
-    [Category(UITestCategories.Button)]
+    [Category(UITestCategories.Essentials)]
     public void MicrophonePermissionCheckDoesNotCrash()
     {
         App.WaitForElement("CheckPermissionButton");

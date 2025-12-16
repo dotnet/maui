@@ -21,7 +21,7 @@ parameters:
     - 'Cells,CheckBox,ContextActions,CustomRenderers,DatePicker,Dispatcher,DisplayAlert,DisplayPrompt,DragAndDrop'
     - 'CollectionView'
     - 'Entry'
-    - 'Editor,Effects,FlyoutPage,Focus,Fonts,Frame,Gestures,GraphicsView'
+    - 'Editor,Effects,Essentials,FlyoutPage,Focus,Fonts,Frame,Gestures,GraphicsView'
     - 'Image,ImageButton,IndicatorView,InputTransparent,IsEnabled,IsVisible'
     - 'Label'
     - 'Layout'
