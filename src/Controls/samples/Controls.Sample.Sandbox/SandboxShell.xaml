@@ -3,20 +3,59 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.SandboxShell"
     xmlns:local="clr-namespace:Maui.Controls.Sample"
-    x:Name="shell">
+    x:Name="shell"
+    Title="Shell Handler Tests">
+
+    <!-- Main Tabs -->
     <TabBar Shell.TabBarForegroundColor="Green"
-        Shell.TabBarUnselectedColor="Red">
-        <Tab Title="MainPage1" Icon="groceries.png">
+            Shell.TabBarUnselectedColor="Red">
+
+        <!-- Home Tab -->
+        <Tab Title="Home">
             <ShellContent Icon="groceries.png"
-            Title="Home"
-            ContentTemplate="{DataTemplate local:MainPage}"
-            Route="MainPage" />
+                          Title="Home"
+                          ContentTemplate="{DataTemplate local:MainPage}"
+                          Route="MainPage"/>
         </Tab>
-        <Tab Title="MainPage2" Icon="dotnet_bot.png">
+
+        <!-- Test Pages Tab Group -->
+        <Tab Title="Tests">
             <ShellContent Icon="dotnet_bot.png"
-            Title="Home"
-            ContentTemplate="{DataTemplate local:MainPage}"
-            Route="MainPage2" />
+                          Title="Navigation"
+                          ContentTemplate="{DataTemplate local:NavigationTestPage}"
+                          Route="NavigationTest"/>
+            <ShellContent Icon="groceries.png"
+                          Title="Toolbar"
+                          ContentTemplate="{DataTemplate local:ToolbarTestPage}"
+                          Route="ToolbarTest"/>
+            <ShellContent Icon="dotnet_bot.png"
+                          Title="Flyout"
+                          ContentTemplate="{DataTemplate local:FlyoutTestPage}"
+                          Route="FlyoutTest"/>
+        </Tab>
+
+        <!-- Multi-Content Tab -->
+        <Tab Title="Multi-Tab Test">
+            <ShellContent Icon="groceries.png"
+                          Title="Content 1"
+                          ContentTemplate="{DataTemplate local:Content1Page}"
+                          Route="Content1"/>
+            <ShellContent Icon="dotnet_bot.png"
+                          Title="Content 2"
+                          ContentTemplate="{DataTemplate local:Content2Page}"
+                          Route="Content2"/>
+            <ShellContent Icon="groceries.png"
+                          Title="Content 3"
+                          ContentTemplate="{DataTemplate local:Content3Page}"
+                          Route="Content3"/>
+        </Tab>
+
+        <!-- Settings Tab -->
+        <Tab Title="Settings">
+            <ShellContent Icon="dotnet_bot.png"
+                          Title="Settings"
+                          ContentTemplate="{DataTemplate local:SettingsPage}"
+                          Route="SettingsPage"/>
         </Tab>
     </TabBar>
 </Shell>
