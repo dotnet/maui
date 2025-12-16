@@ -1,5 +1,34 @@
 ﻿<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.MainPage"
+             Title="Main Page"
+             Shell.FlyoutBehavior="Flyout"
              xmlns:local="clr-namespace:Maui.Controls.Sample">
+
+
+        <VerticalStackLayout Spacing="25"
+                             Padding="30,0"
+                             VerticalOptions="Center">
+                <Label Text="Welcome to .NET MAUI!"
+                       AutomationId="WelcomeLabel"
+                       VerticalOptions="Center"
+                       HorizontalOptions="Center"/>
+                <Button Text="Go to Navigation Page Sample"
+                        AutomationId="NavigateButton"
+                        Clicked="Button_Clicked"
+                        VerticalOptions="Center"
+                        HorizontalOptions="Center"/>
+
+                <Button Text="Toggle Flyout"
+                        AutomationId="ToggleFlyoutButton"
+                        Clicked="ToggleFlyoutButton_Clicked"
+                        VerticalOptions="Center"
+                        HorizontalOptions="Center"/>
+
+                <Button Text="Change Flyout Background"
+                        AutomationId="ChangeFlyoutBackgroundButton"
+                        Clicked="ChangeFlyoutBackgroundButton_Clicked"
+                        VerticalOptions="Center"
+                        HorizontalOptions="Center"/>
+        </VerticalStackLayout>
 </ContentPage>

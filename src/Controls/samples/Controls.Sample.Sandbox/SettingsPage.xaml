@@ -1,0 +1,16 @@
+﻿<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.SettingsPage"
+             Title="Settings Page">
+        <VerticalStackLayout>
+                <Label Text="Welcome to Settings page"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center"
+                       FontSize="18"/>
+
+                <Button Text="Pop to Root"
+                        Clicked="Button_Clicked"
+                        HorizontalOptions="Center"
+                        VerticalOptions="Center"/>
+        </VerticalStackLayout>
+</ContentPage>

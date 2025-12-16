@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.NavigationTestPage"
+             Title="Navigation Test">
+    <ScrollView>
+        <VerticalStackLayout Spacing="15"
+                Padding="20">
+            <Label Text="Navigation Tests"
+                   FontSize="24"
+                   FontAttributes="Bold"
+                   Margin="0,0,0,10"/>
+
+            <!-- Basic Navigation -->
+            <Label Text="Basic Navigation"
+                    FontSize="18"
+                    FontAttributes="Bold"/>
+            <Button Text="Push Detail Page"
+                    Clicked="OnPushDetailClicked"/>
+            <Button Text="Push Modal Page"
+                    Clicked="OnPushModalClicked"/>
+            <Button Text="Navigate to MainPage"
+                    Clicked="OnNavigateToMainClicked"/>
+            <Button Text="Navigate to Settings"
+                    Clicked="OnNavigateToSettingsClicked"/>
+
+            <!-- Shell Navigation -->
+            <BoxView HeightRequest="1"
+                    Color="Gray"
+                    Margin="0,10"/>
+            <Label Text="Shell Navigation"
+                    FontSize="18"
+                    FontAttributes="Bold"/>
+            <Button Text="GoToAsync //MainPage"
+                    Clicked="OnGoToMainAsyncClicked"/>
+            <Button Text="GoToAsync //SettingsPage"
+                    Clicked="OnGoToSettingsAsyncClicked"/>
+            <Button Text="GoToAsync with Query"
+                    Clicked="OnGoToWithQueryClicked"/>
+
+            <!-- Deep Navigation -->
+            <BoxView HeightRequest="1"
+                    Color="Gray"
+                    Margin="0,10"/>
+            <Label Text="Deep Navigation"
+                    FontSize="18"
+                    FontAttributes="Bold"/>
+            <Button Text="Navigate Deep (3 levels)"
+                    Clicked="OnNavigateDeepClicked"/>
+
+            <!-- Back Navigation -->
+            <BoxView HeightRequest="1"
+                    Color="Gray"
+                    Margin="0,10"/>
+            <Label Text="Back Navigation"
+                    FontSize="18"
+                    FontAttributes="Bold"/>
+            <Button Text="Pop Current Page"
+                    Clicked="OnPopClicked"/>
+            <Button Text="Pop to Root"
+                    Clicked="OnPopToRootClicked"/>
+
+            <!-- Info -->
+            <BoxView HeightRequest="1"
+                    Color="Gray"
+                    Margin="0,10"/>
+            <Label x:Name="NavigationStackLabel"
+                   Text="Navigation Stack: 0 pages"
+                   FontSize="12"/>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
