@@ -147,6 +147,7 @@ namespace Microsoft.Maui.Storage
 
 	class UnpackagedPreferencesImplementation : IPreferences
 	{
+		static readonly object locker = new object();
 		static readonly string AppPreferencesPath = Path.Combine(FileSystem.AppDataDirectory, "..", "Settings", "preferences.dat");
 
 		readonly PreferencesDictionary _preferences = new();
@@ -243,35 +244,41 @@ namespace Microsoft.Maui.Storage
 
 		void Load()
 		{
-			if (!File.Exists(AppPreferencesPath))
-				return;
-
-			try
+			lock (locker)
 			{
-				using var stream = File.OpenRead(AppPreferencesPath);
-
-				PreferencesDictionary readPreferences = JsonSerializer.Deserialize(stream, PreferencesJsonSerializerContext.Default.PreferencesDictionary);
-
-				if (readPreferences != null)
+				if (!File.Exists(AppPreferencesPath))
+					return;
+	
+				try
 				{
-					_preferences.Clear();
-					foreach (var pair in readPreferences)
-						_preferences.TryAdd(pair.Key, pair.Value);
+					using var stream = File.OpenRead(AppPreferencesPath);
+	
+					PreferencesDictionary readPreferences = JsonSerializer.Deserialize(stream, PreferencesJsonSerializerContext.Default.PreferencesDictionary);
+	
+					if (readPreferences != null)
+					{
+						_preferences.Clear();
+						foreach (var pair in readPreferences)
+							_preferences.TryAdd(pair.Key, pair.Value);
+					}
 				}
-			}
-			catch (JsonException)
-			{
-				// if deserialization fails proceed with empty settings
+				catch (JsonException)
+				{
+					// if deserialization fails proceed with empty settings
+				}
 			}
 		}
 
 		void Save()
 		{
-			var dir = Path.GetDirectoryName(AppPreferencesPath);
-			Directory.CreateDirectory(dir);
-
-			using var stream = File.Create(AppPreferencesPath);
-			JsonSerializer.Serialize(stream, _preferences, PreferencesJsonSerializerContext.Default.PreferencesDictionary);
+			lock (locker)
+			{
+				var dir = Path.GetDirectoryName(AppPreferencesPath);
+				Directory.CreateDirectory(dir);
+	
+				using var stream = File.Create(AppPreferencesPath);
+				JsonSerializer.Serialize(stream, _preferences, PreferencesJsonSerializerContext.Default.PreferencesDictionary);
+			}
 		}
 
 		static string CleanSharedName(string sharedName) =>
