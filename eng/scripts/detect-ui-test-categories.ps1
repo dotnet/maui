@@ -66,7 +66,7 @@ foreach ($line in $diff -split "`n") {
         # Normalize value: UITestCategories.XYZ => XYZ, quoted strings => trimmed text
         if ($rawValue -match '^UITestCategories\.(?<name>[A-Za-z0-9_]+)$') {
             $category = $Matches['name']
-        } elseif ($rawValue -match '^["\'](?<name>[A-Za-z0-9_\- ]+)["\']$') {
+        } elseif ($rawValue -match '^["''](?<name>[A-Za-z0-9_ -]+)["'']$') {
             $category = $Matches['name']
         } else {
             # Attempt to evaluate nameof-style constructs or fallback to raw value
