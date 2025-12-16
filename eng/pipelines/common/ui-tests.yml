@@ -12,32 +12,32 @@ parameters:
   skipProvisioning: true
   BuildNativeAOT: false # Parameter to control whether NativeAOT artifacts should be built
   RunNativeAOT: false # Parameter to control whether NativeAOT UI tests should run
-  defaultCategoryMatrix: |
-    {
-      "Group00": { "CATEGORYGROUP": "Accessibility,ActionSheet,ActivityIndicator,Animation,AppLinks" },
-      "Group01": { "CATEGORYGROUP": "Border,BoxView,Brush,Button" },
-      "Group02": { "CATEGORYGROUP": "CarouselView" },
-      "Group03": { "CATEGORYGROUP": "Cells,CheckBox,ContextActions,CustomRenderers,DatePicker,Dispatcher,DisplayAlert,DisplayPrompt,DragAndDrop" },
-      "Group04": { "CATEGORYGROUP": "CollectionView" },
-      "Group05": { "CATEGORYGROUP": "Entry" },
-      "Group06": { "CATEGORYGROUP": "Editor,Effects,FlyoutPage,Focus,Fonts,Frame,Gestures,GraphicsView" },
-      "Group07": { "CATEGORYGROUP": "Image,ImageButton,IndicatorView,InputTransparent,IsEnabled,IsVisible" },
-      "Group08": { "CATEGORYGROUP": "Label" },
-      "Group09": { "CATEGORYGROUP": "Layout" },
-      "Group10": { "CATEGORYGROUP": "Lifecycle,ManualReview,Maps" },
-      "Group11": { "CATEGORYGROUP": "ListView" },
-      "Group12": { "CATEGORYGROUP": "Navigation" },
-      "Group13": { "CATEGORYGROUP": "Page,Performance,Picker,ProgressBar" },
-      "Group14": { "CATEGORYGROUP": "RadioButton,RefreshView" },
-      "Group15": { "CATEGORYGROUP": "SafeAreaEdges,Shadow" },
-      "Group16": { "CATEGORYGROUP": "ScrollView" },
-      "Group17": { "CATEGORYGROUP": "SearchBar,Shape,Slider" },
-      "Group18": { "CATEGORYGROUP": "SoftInput,Stepper,Switch,SwipeView" },
-      "Group19": { "CATEGORYGROUP": "Shell" },
-      "Group20": { "CATEGORYGROUP": "TabbedPage,TableView,TimePicker,TitleView,ToolbarItem" },
-      "Group21": { "CATEGORYGROUP": "ViewBaseTests,Window" },
-      "Group22": { "CATEGORYGROUP": "WebView" }
-    }
+  categoryGroupsToTest:
+    # Make sure that this list is always up-to-date with src/Controls/tests/TestCases.Shared.Tests/UITestCategories.cs
+    # we might want to improve this somehow depending on how much the categories change over time
+    - 'Accessibility,ActionSheet,ActivityIndicator,Animation,AppLinks'
+    - 'Border,BoxView,Brush,Button'
+    - 'CarouselView'
+    - 'Cells,CheckBox,ContextActions,CustomRenderers,DatePicker,Dispatcher,DisplayAlert,DisplayPrompt,DragAndDrop'
+    - 'CollectionView'
+    - 'Entry'
+    - 'Editor,Effects,FlyoutPage,Focus,Fonts,Frame,Gestures,GraphicsView'
+    - 'Image,ImageButton,IndicatorView,InputTransparent,IsEnabled,IsVisible'
+    - 'Label'
+    - 'Layout'
+    - 'Lifecycle,ManualReview,Maps'
+    - 'ListView'
+    - 'Navigation'
+    - 'Page,Performance,Picker,ProgressBar'
+    - 'RadioButton,RefreshView'
+    - 'SafeAreaEdges,Shadow'
+    - 'ScrollView'
+    - 'SearchBar,Shape,Slider'
+    - 'SoftInput,Stepper,Switch,SwipeView'
+    - 'Shell'
+    - 'TabbedPage,TableView,TimePicker,TitleView,ToolbarItem'
+    - 'ViewBaseTests,Window'
+    - 'WebView'
 
   projects:
     - name: name
@@ -75,8 +75,7 @@ stages:
     condition: |
       or(
         ne(variables['Build.Reason'], 'PullRequest'),
-        eq(dependencies.discover_ui_test_categories.result, 'Succeeded'),
-        eq(dependencies.discover_ui_test_categories.result, 'Skipped')
+        in(dependencies.discover_ui_test_categories.result, 'Succeeded', 'Skipped')
       )
     jobs:
       - job: build_ui_tests
@@ -93,14 +92,7 @@ stages:
 
   - stage: build_ui_tests_coreclr
     displayName: Build UITests CoreCLR Sample App
-    dependsOn:
-      - discover_ui_test_categories
-    condition: |
-      or(
-        ne(variables['Build.Reason'], 'PullRequest'),
-        eq(dependencies.discover_ui_test_categories.result, 'Succeeded'),
-        eq(dependencies.discover_ui_test_categories.result, 'Skipped')
-      )
+    dependsOn: []
     jobs:
       - job: build_ui_tests
         displayName: Build Sample App
@@ -118,14 +110,7 @@ stages:
   - ${{ if eq(parameters.BuildNativeAOT, true) }}:
     - stage: build_ui_tests_nativeaot
       displayName: Build UITests NativeAOT Sample App
-      dependsOn:
-        - discover_ui_test_categories
-      condition: |
-        or(
-          ne(variables['Build.Reason'], 'PullRequest'),
-          eq(dependencies.discover_ui_test_categories.result, 'Succeeded'),
-          eq(dependencies.discover_ui_test_categories.result, 'Skipped')
-        )
+      dependsOn: []
       jobs:
         - job: build_ui_tests
           displayName: Build Sample App
@@ -142,14 +127,7 @@ stages:
 
   - stage: build_ui_tests_windows
     displayName: Build UITests Windows Sample App
-    dependsOn:
-      - discover_ui_test_categories
-    condition: |
-      or(
-        ne(variables['Build.Reason'], 'PullRequest'),
-        eq(dependencies.discover_ui_test_categories.result, 'Succeeded'),
-        eq(dependencies.discover_ui_test_categories.result, 'Skipped')
-      )
+    dependsOn: []
     jobs:
       - job: build_ui_tests
         displayName: Build Sample App (Windows)
@@ -165,19 +143,11 @@ stages:
   - stage: android_ui_tests
     displayName: Android UITests
     dependsOn:
-      - discover_ui_test_categories
       - build_ui_tests
-    condition: |
-      and(
-        succeeded('build_ui_tests'),
-        or(
-          ne(variables['Build.Reason'], 'PullRequest'),
-          eq(dependencies.discover_ui_test_categories.result, 'Succeeded'),
-          eq(dependencies.discover_ui_test_categories.result, 'Skipped')
-        )
-      )
+      - discover_ui_test_categories
     variables:
-      StageCategoryMatrix: $[ coalesce(stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryMatrix'], '${{ parameters.defaultCategoryMatrix }}') ]
+      # Capture detected categories from discovery stage (empty if stage was skipped)
+      detectedCategories: $[ stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryList'] ]
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.android, '') }}:
@@ -185,7 +155,10 @@ stages:
             - ${{ if not(containsValue(project.androidApiLevelsExclude, api)) }}:
               - job: android_ui_tests_${{ project.name }}_${{ api }}
                 strategy:
-                  matrix: $[ fromJson(variables['StageCategoryMatrix']) ]
+                  matrix:
+                    ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
+                      ${{ categoryGroup }}:
+                        CATEGORYGROUP: ${{ categoryGroup }}
                 timeoutInMinutes: 240 # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
@@ -194,7 +167,56 @@ stages:
                 variables:
                   REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                   APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+                  # Make detected categories available at job level
+                  DETECTED_CATEGORIES: $(detectedCategories)
                 steps:
+                  # Calculate effective test filter based on detected categories
+                  - pwsh: |
+                      $detected = "$(DETECTED_CATEGORIES)"
+                      $category = "$(CATEGORYGROUP)"
+                      $isPR = "$(Build.Reason)" -eq "PullRequest"
+                      
+                      Write-Host "Build.Reason: $(Build.Reason)"
+                      Write-Host "Is PR: $isPR"
+                      Write-Host "Detected categories: '$detected'"
+                      Write-Host "Current category group: '$category'"
+                      
+                      # Determine effective filter
+                      $effectiveFilter = $category
+                      
+                      if ($isPR -and -not [string]::IsNullOrWhiteSpace($detected)) {
+                          # For PRs with detected categories, find intersection
+                          $categoryList = $category -split ","
+                          $detectedList = $detected -split ","
+                          $matchingCategories = @()
+                          
+                          foreach ($cat in $categoryList) {
+                              $cat = $cat.Trim()
+                              foreach ($det in $detectedList) {
+                                  $det = $det.Trim()
+                                  if ($cat -eq $det) {
+                                      $matchingCategories += $cat
+                                      break
+                                  }
+                              }
+                          }
+                          
+                          if ($matchingCategories.Count -gt 0) {
+                              $effectiveFilter = $matchingCategories -join ","
+                              Write-Host "Running matching categories: $effectiveFilter"
+                          }
+                          else {
+                              # No match - use a filter that won't match any tests
+                              $effectiveFilter = "_NO_MATCHING_CATEGORY_"
+                              Write-Host "No matching categories - will skip tests"
+                          }
+                      }
+                      else {
+                          Write-Host "Running all categories in group: $effectiveFilter"
+                      }
+                      
+                      Write-Host "##vso[task.setvariable variable=EffectiveTestFilter]$effectiveFilter"
+                    displayName: Calculate test filter
                   - template: ui-tests-steps.yml
                     parameters:
                       platform: android
@@ -206,7 +228,7 @@ stages:
                       ${{ if not(eq(api, 27)) }}:
                         device: android-emulator-64_${{ api }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
-                      testFilter: $(CATEGORYGROUP)
+                      testFilter: $(EffectiveTestFilter)
                       skipProvisioning: ${{ parameters.skipProvisioning }}
                   
                   # Collect and publish Android snapshot diffs
@@ -219,19 +241,10 @@ stages:
   - stage: android_ui_tests_coreclr
     displayName: Android UITests CoreClr
     dependsOn:
-      - discover_ui_test_categories
       - build_ui_tests_coreclr
-    condition: |
-      and(
-        succeeded('build_ui_tests_coreclr'),
-        or(
-          ne(variables['Build.Reason'], 'PullRequest'),
-          eq(dependencies.discover_ui_test_categories.result, 'Succeeded'),
-          eq(dependencies.discover_ui_test_categories.result, 'Skipped')
-        )
-      )
+      - discover_ui_test_categories
     variables:
-      StageCategoryMatrix: $[ coalesce(stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryMatrix'], '${{ parameters.defaultCategoryMatrix }}') ]
+      detectedCategories: $[ stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryList'] ]
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.android, '') }}:
@@ -239,7 +252,10 @@ stages:
             - ${{ if not(containsValue(project.androidApiLevelsExclude, api)) }}:
               - job: android_ui_tests_${{ project.name }}_${{ api }}
                 strategy:
-                  matrix: $[ fromJson(variables['StageCategoryMatrix']) ]
+                  matrix:
+                    ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
+                      ${{ categoryGroup }}:
+                        CATEGORYGROUP: ${{ categoryGroup }}
                 timeoutInMinutes: 240 # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
@@ -248,7 +264,49 @@ stages:
                 variables:
                   REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                   APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+                  DETECTED_CATEGORIES: $(detectedCategories)
                 steps:
+                  - pwsh: |
+                      $detected = "$(DETECTED_CATEGORIES)"
+                      $category = "$(CATEGORYGROUP)"
+                      $isPR = "$(Build.Reason)" -eq "PullRequest"
+                      
+                      Write-Host "Detected categories: '$detected'"
+                      Write-Host "Current category group: '$category'"
+                      
+                      $effectiveFilter = $category
+                      
+                      if ($isPR -and -not [string]::IsNullOrWhiteSpace($detected)) {
+                          $categoryList = $category -split ","
+                          $detectedList = $detected -split ","
+                          $matchingCategories = @()
+                          
+                          foreach ($cat in $categoryList) {
+                              $cat = $cat.Trim()
+                              foreach ($det in $detectedList) {
+                                  $det = $det.Trim()
+                                  if ($cat -eq $det) {
+                                      $matchingCategories += $cat
+                                      break
+                                  }
+                              }
+                          }
+                          
+                          if ($matchingCategories.Count -gt 0) {
+                              $effectiveFilter = $matchingCategories -join ","
+                              Write-Host "Running matching categories: $effectiveFilter"
+                          }
+                          else {
+                              $effectiveFilter = "_NO_MATCHING_CATEGORY_"
+                              Write-Host "No matching categories - will skip tests"
+                          }
+                      }
+                      else {
+                          Write-Host "Running all categories in group: $effectiveFilter"
+                      }
+                      
+                      Write-Host "##vso[task.setvariable variable=EffectiveTestFilter]$effectiveFilter"
+                    displayName: Calculate test filter
                   - template: ui-tests-steps.yml
                     parameters:
                       platform: android
@@ -261,7 +319,7 @@ stages:
                         device: android-emulator-64_${{ api }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
-                      testFilter: $(CATEGORYGROUP)
+                      testFilter: $(EffectiveTestFilter)
                       headless: ${{ parameters.headless }}
                       skipProvisioning: ${{ parameters.skipProvisioning }}
                       runtimeVariant: "CoreCLR"
@@ -275,19 +333,10 @@ stages:
   - stage: ios_ui_tests_mono
     displayName: iOS UITests Mono
     dependsOn:
-      - discover_ui_test_categories
       - build_ui_tests
-    condition: |
-      and(
-        succeeded('build_ui_tests'),
-        or(
-          ne(variables['Build.Reason'], 'PullRequest'),
-          eq(dependencies.discover_ui_test_categories.result, 'Succeeded'),
-          eq(dependencies.discover_ui_test_categories.result, 'Skipped')
-        )
-      )
+      - discover_ui_test_categories
     variables:
-      StageCategoryMatrix: $[ coalesce(stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryMatrix'], '${{ parameters.defaultCategoryMatrix }}') ]
+      detectedCategories: $[ stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryList'] ]
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.ios, '') }}:
@@ -295,7 +344,10 @@ stages:
             - ${{ if not(containsValue(project.iosVersionsExclude, version)) }}:
               - job: ios_ui_tests_mono_${{ project.name }}_${{ replace(version, '.', '_') }}
                 strategy:
-                  matrix: $[ fromJson(variables['StageCategoryMatrix']) ]
+                  matrix:
+                    ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
+                      ${{ categoryGroup }}:
+                        CATEGORYGROUP: ${{ categoryGroup }}
                 timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
@@ -304,7 +356,49 @@ stages:
                 variables:
                   REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                   APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+                  DETECTED_CATEGORIES: $(detectedCategories)
                 steps:
+                  - pwsh: |
+                      $detected = "$(DETECTED_CATEGORIES)"
+                      $category = "$(CATEGORYGROUP)"
+                      $isPR = "$(Build.Reason)" -eq "PullRequest"
+                      
+                      Write-Host "Detected categories: '$detected'"
+                      Write-Host "Current category group: '$category'"
+                      
+                      $effectiveFilter = $category
+                      
+                      if ($isPR -and -not [string]::IsNullOrWhiteSpace($detected)) {
+                          $categoryList = $category -split ","
+                          $detectedList = $detected -split ","
+                          $matchingCategories = @()
+                          
+                          foreach ($cat in $categoryList) {
+                              $cat = $cat.Trim()
+                              foreach ($det in $detectedList) {
+                                  $det = $det.Trim()
+                                  if ($cat -eq $det) {
+                                      $matchingCategories += $cat
+                                      break
+                                  }
+                              }
+                          }
+                          
+                          if ($matchingCategories.Count -gt 0) {
+                              $effectiveFilter = $matchingCategories -join ","
+                              Write-Host "Running matching categories: $effectiveFilter"
+                          }
+                          else {
+                              $effectiveFilter = "_NO_MATCHING_CATEGORY_"
+                              Write-Host "No matching categories - will skip tests"
+                          }
+                      }
+                      else {
+                          Write-Host "Running all categories in group: $effectiveFilter"
+                      }
+                      
+                      Write-Host "##vso[task.setvariable variable=EffectiveTestFilter]$effectiveFilter"
+                    displayName: Calculate test filter
                   - template: ui-tests-steps.yml
                     parameters:
                       platform: ios
@@ -320,7 +414,7 @@ stages:
                         device: ios-simulator-64_${{ version }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       runtimeVariant : "Mono"
-                      testFilter: $(CATEGORYGROUP)
+                      testFilter: $(EffectiveTestFilter)
                       headless: ${{ parameters.headless }}
                       skipProvisioning: ${{ parameters.skipProvisioning }}
                   
@@ -446,19 +540,10 @@ stages:
     - stage: ios_ui_tests_nativeaot
       displayName: iOS UITests NativeAOT
       dependsOn:
-        - discover_ui_test_categories
         - build_ui_tests_nativeaot
-      condition: |
-        and(
-          succeeded('build_ui_tests_nativeaot'),
-          or(
-            ne(variables['Build.Reason'], 'PullRequest'),
-            eq(dependencies.discover_ui_test_categories.result, 'Succeeded'),
-            eq(dependencies.discover_ui_test_categories.result, 'Skipped')
-          )
-        )
+        - discover_ui_test_categories
       variables:
-        StageCategoryMatrix: $[ coalesce(stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryMatrix'], '${{ parameters.defaultCategoryMatrix }}') ]
+        detectedCategories: $[ stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryList'] ]
       jobs:
         - ${{ each project in parameters.projects }}:
           - ${{ if ne(project.ios, '') }}:
@@ -466,7 +551,10 @@ stages:
               - ${{ if not(containsValue(project.iosVersionsExclude, version)) }}:
                 - job: ios_ui_tests_nativeaot_${{ project.name }}_${{ replace(version, '.', '_') }}
                   strategy:
-                    matrix: $[ fromJson(variables['StageCategoryMatrix']) ]
+                    matrix:
+                      ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
+                        ${{ categoryGroup }}:
+                          CATEGORYGROUP: ${{ categoryGroup }}
                   timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
                   workspace:
                     clean: all
@@ -475,7 +563,49 @@ stages:
                   variables:
                     REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                     APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+                    DETECTED_CATEGORIES: $(detectedCategories)
                   steps:
+                    - pwsh: |
+                        $detected = "$(DETECTED_CATEGORIES)"
+                        $category = "$(CATEGORYGROUP)"
+                        $isPR = "$(Build.Reason)" -eq "PullRequest"
+                        
+                        Write-Host "Detected categories: '$detected'"
+                        Write-Host "Current category group: '$category'"
+                        
+                        $effectiveFilter = $category
+                        
+                        if ($isPR -and -not [string]::IsNullOrWhiteSpace($detected)) {
+                            $categoryList = $category -split ","
+                            $detectedList = $detected -split ","
+                            $matchingCategories = @()
+                            
+                            foreach ($cat in $categoryList) {
+                                $cat = $cat.Trim()
+                                foreach ($det in $detectedList) {
+                                    $det = $det.Trim()
+                                    if ($cat -eq $det) {
+                                        $matchingCategories += $cat
+                                        break
+                                    }
+                                }
+                            }
+                            
+                            if ($matchingCategories.Count -gt 0) {
+                                $effectiveFilter = $matchingCategories -join ","
+                                Write-Host "Running matching categories: $effectiveFilter"
+                            }
+                            else {
+                                $effectiveFilter = "_NO_MATCHING_CATEGORY_"
+                                Write-Host "No matching categories - will skip tests"
+                            }
+                        }
+                        else {
+                            Write-Host "Running all categories in group: $effectiveFilter"
+                        }
+                        
+                        Write-Host "##vso[task.setvariable variable=EffectiveTestFilter]$effectiveFilter"
+                      displayName: Calculate test filter
                     - template: ui-tests-steps.yml
                       parameters:
                         platform: ios
@@ -491,32 +621,26 @@ stages:
                           device: ios-simulator-64_${{ version }}
                         provisionatorChannel: ${{ parameters.provisionatorChannel }}
                         runtimeVariant : "NativeAOT"
-                        testFilter: $(CATEGORYGROUP)
+                        testFilter: $(EffectiveTestFilter)
                         headless: ${{ parameters.headless }}
                         skipProvisioning: ${{ parameters.skipProvisioning }}
 
   - stage: winui_ui_tests
     displayName: WinUI UITests
     dependsOn:
-      - discover_ui_test_categories
       - build_ui_tests_windows
-    condition: |
-      and(
-        succeeded('build_ui_tests_windows'),
-        or(
-          ne(variables['Build.Reason'], 'PullRequest'),
-          eq(dependencies.discover_ui_test_categories.result, 'Succeeded'),
-          eq(dependencies.discover_ui_test_categories.result, 'Skipped')
-        )
-      )
+      - discover_ui_test_categories
     variables:
-      StageCategoryMatrix: $[ coalesce(stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryMatrix'], '${{ parameters.defaultCategoryMatrix }}') ]
+      detectedCategories: $[ stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryList'] ]
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.winui, '') }}:
               - job: winui_ui_tests_${{ project.name }}
                 strategy:
-                  matrix: $[ fromJson(variables['StageCategoryMatrix']) ]
+                  matrix:
+                    ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
+                      ${{ categoryGroup }}:
+                        CATEGORYGROUP: ${{ categoryGroup }}
                 timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
@@ -524,7 +648,49 @@ stages:
                 pool: ${{ parameters.windowsPool }}
                 variables:
                   APPIUM_HOME: $(System.DefaultWorkingDirectory)\.appium\
+                  DETECTED_CATEGORIES: $(detectedCategories)
                 steps:
+                  - pwsh: |
+                      $detected = "$(DETECTED_CATEGORIES)"
+                      $category = "$(CATEGORYGROUP)"
+                      $isPR = "$(Build.Reason)" -eq "PullRequest"
+                      
+                      Write-Host "Detected categories: '$detected'"
+                      Write-Host "Current category group: '$category'"
+                      
+                      $effectiveFilter = $category
+                      
+                      if ($isPR -and -not [string]::IsNullOrWhiteSpace($detected)) {
+                          $categoryList = $category -split ","
+                          $detectedList = $detected -split ","
+                          $matchingCategories = @()
+                          
+                          foreach ($cat in $categoryList) {
+                              $cat = $cat.Trim()
+                              foreach ($det in $detectedList) {
+                                  $det = $det.Trim()
+                                  if ($cat -eq $det) {
+                                      $matchingCategories += $cat
+                                      break
+                                  }
+                              }
+                          }
+                          
+                          if ($matchingCategories.Count -gt 0) {
+                              $effectiveFilter = $matchingCategories -join ","
+                              Write-Host "Running matching categories: $effectiveFilter"
+                          }
+                          else {
+                              $effectiveFilter = "_NO_MATCHING_CATEGORY_"
+                              Write-Host "No matching categories - will skip tests"
+                          }
+                      }
+                      else {
+                          Write-Host "Running all categories in group: $effectiveFilter"
+                      }
+                      
+                      Write-Host "##vso[task.setvariable variable=EffectiveTestFilter]$effectiveFilter"
+                    displayName: Calculate test filter
                   - template: ui-tests-steps.yml
                     parameters:
                       platform: windows
@@ -533,7 +699,7 @@ stages:
                       path: ${{ project.winui }}
                       app: ${{ project.app }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
-                      testFilter: $(CATEGORYGROUP)
+                      testFilter: $(EffectiveTestFilter)
                       skipProvisioning: ${{ parameters.skipProvisioning }}
                   
                   # Collect and publish Windows snapshot diffs
@@ -545,25 +711,19 @@ stages:
   - stage: mac_ui_tests
     displayName: macOS UITests
     dependsOn:
-      - discover_ui_test_categories
       - build_ui_tests
-    condition: |
-      and(
-        succeeded('build_ui_tests'),
-        or(
-          ne(variables['Build.Reason'], 'PullRequest'),
-          eq(dependencies.discover_ui_test_categories.result, 'Succeeded'),
-          eq(dependencies.discover_ui_test_categories.result, 'Skipped')
-        )
-      )
+      - discover_ui_test_categories
     variables:
-      StageCategoryMatrix: $[ coalesce(stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryMatrix'], '${{ parameters.defaultCategoryMatrix }}') ]
+      detectedCategories: $[ stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryList'] ]
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.mac, '') }}:
               - job: mac_ui_tests_${{ project.name }}
                 strategy:
-                  matrix: $[ fromJson(variables['StageCategoryMatrix']) ]
+                  matrix:
+                    ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
+                      ${{ categoryGroup }}:
+                        CATEGORYGROUP: ${{ categoryGroup }}
                 timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
@@ -572,7 +732,49 @@ stages:
                 variables:
                   REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                   APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+                  DETECTED_CATEGORIES: $(detectedCategories)
                 steps:
+                  - pwsh: |
+                      $detected = "$(DETECTED_CATEGORIES)"
+                      $category = "$(CATEGORYGROUP)"
+                      $isPR = "$(Build.Reason)" -eq "PullRequest"
+                      
+                      Write-Host "Detected categories: '$detected'"
+                      Write-Host "Current category group: '$category'"
+                      
+                      $effectiveFilter = $category
+                      
+                      if ($isPR -and -not [string]::IsNullOrWhiteSpace($detected)) {
+                          $categoryList = $category -split ","
+                          $detectedList = $detected -split ","
+                          $matchingCategories = @()
+                          
+                          foreach ($cat in $categoryList) {
+                              $cat = $cat.Trim()
+                              foreach ($det in $detectedList) {
+                                  $det = $det.Trim()
+                                  if ($cat -eq $det) {
+                                      $matchingCategories += $cat
+                                      break
+                                  }
+                              }
+                          }
+                          
+                          if ($matchingCategories.Count -gt 0) {
+                              $effectiveFilter = $matchingCategories -join ","
+                              Write-Host "Running matching categories: $effectiveFilter"
+                          }
+                          else {
+                              $effectiveFilter = "_NO_MATCHING_CATEGORY_"
+                              Write-Host "No matching categories - will skip tests"
+                          }
+                      }
+                      else {
+                          Write-Host "Running all categories in group: $effectiveFilter"
+                      }
+                      
+                      Write-Host "##vso[task.setvariable variable=EffectiveTestFilter]$effectiveFilter"
+                    displayName: Calculate test filter
                   - template: ui-tests-steps.yml
                     parameters:
                       platform: catalyst
@@ -581,7 +783,7 @@ stages:
                       path: ${{ project.mac }}
                       app: ${{ project.app }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
-                      testFilter: $(CATEGORYGROUP)
+                      testFilter: $(EffectiveTestFilter)
                       skipProvisioning: ${{ parameters.skipProvisioning }}
                   
                   # Collect and publish Mac snapshot diffs
