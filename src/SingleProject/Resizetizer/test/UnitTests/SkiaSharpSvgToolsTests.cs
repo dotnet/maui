@@ -332,6 +332,31 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				Assert.Equal((SKColor)0xffe26b00, pixmap.GetPixelColor(20, 3));
 				Assert.Equal((SKColor)0xffe26b00, pixmap.GetPixelColor(20, 34));
 			}
+
+			[Fact]
+			public void SvgWithoutViewBoxThrowsInvalidOperationException_32460()
+			{
+				var info = new ResizeImageInfo();
+				info.Filename = "images/no_viewbox.svg";
+				var tools = new SkiaSharpSvgTools(info, Logger);
+				var dpiPath = new DpiPath("", 0.5m);
+
+				// On Mac/Windows: SkiaSharp infers size from width/height, no exception
+				// On Android/iOS: SkiaSharp requires viewBox, throws exception
+				var size = tools.GetOriginalSize();
+				if (size.IsEmpty)
+				{
+					var exception = Assert.Throws<InvalidOperationException>(() => tools.Resize(dpiPath, DestinationFilename));
+					Assert.Contains("may be missing width/height or viewBox attributes", exception.Message, StringComparison.Ordinal);
+				}
+				else
+				{
+					tools.Resize(dpiPath, DestinationFilename);
+					using var resultImage = SKBitmap.Decode(DestinationFilename);
+					Assert.True(resultImage.Width > 0);
+					Assert.True(resultImage.Height > 0);
+				}
+			}
 		}
 	}
 }
