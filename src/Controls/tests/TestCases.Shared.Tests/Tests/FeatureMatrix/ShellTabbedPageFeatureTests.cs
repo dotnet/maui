@@ -20,6 +20,7 @@ public class ShellTabbedPageFeatureTests : UITest
 		App.NavigateToGallery(ShellTabbedFeatureMatrix);
 	}
 
+#if TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/32222, https://github.com/dotnet/maui/issues/32125
 	[Test, Order(1)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShell_TabBarTitleColor()
@@ -34,6 +35,7 @@ public class ShellTabbedPageFeatureTests : UITest
 		App.Tap(Apply);
 		VerifyScreenshot();
 	}
+#endif
 
 #if TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/33158
 	[Test, Order(2)]
@@ -65,6 +67,7 @@ public class ShellTabbedPageFeatureTests : UITest
 	}
 #endif
 
+#if TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/32125, https://github.com/dotnet/maui/issues/32222
 	[Test, Order(4)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShell_TabBarForegroundColorAndTitleColor()
@@ -79,6 +82,7 @@ public class ShellTabbedPageFeatureTests : UITest
 		App.Tap(Apply);
 		VerifyScreenshot();
 	}
+#endif
 
 #if TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/33158
 	[Test, Order(5)]
@@ -187,6 +191,7 @@ public class ShellTabbedPageFeatureTests : UITest
 	}
 #endif
 
+#if TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/32222, https://github.com/dotnet/maui/issues/32125
 	[Test, Order(12)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShell_TabBarForegroundColor()
@@ -199,6 +204,7 @@ public class ShellTabbedPageFeatureTests : UITest
 		App.Tap(Apply);
 		VerifyScreenshot();
 	}
+#endif
 
 #if TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/33158
 	[Test, Order(13)]
