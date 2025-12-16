@@ -40,7 +40,7 @@ public class Issue32932 : TestShell
 					{
 						Children =
 						{
-							new Label { Text = "No values found..." }
+							new Label { Text = "No values found..." , AutomationId= "EmptyViewLabel"}
 						}
 					}
 				}
