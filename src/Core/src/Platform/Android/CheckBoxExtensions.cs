@@ -9,6 +9,8 @@ namespace Microsoft.Maui.Platform
 {
 	public static class CheckBoxExtensions
 	{
+		static ColorStateList? _defaultButtonTintList;
+
 		public static void UpdateBackground(this AppCompatCheckBox platformCheckBox, ICheckBox check)
 		{
 			var paint = check.Background;
@@ -26,10 +28,28 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateForeground(this AppCompatCheckBox platformCheckBox, ICheckBox check)
 		{
-			var mode = PorterDuff.Mode.SrcIn;
+			// For Material 3, preserve the default Material 3 theme colors
+			if (RuntimeFeature.IsMaterial3Enabled)
+			{
+				_defaultButtonTintList ??= platformCheckBox.ButtonTintList;
 
-			CompoundButtonCompat.SetButtonTintList(platformCheckBox, platformCheckBox.GetColorStateList(check));
-			CompoundButtonCompat.SetButtonTintMode(platformCheckBox, mode);
+				if (check.Foreground is SolidPaint solid)
+				{
+					// Apply custom color only when enabled
+					CompoundButtonCompat.SetButtonTintList(platformCheckBox, ColorStateList.ValueOf(solid.Color.ToPlatform()));
+				}
+				else
+				{
+					// Restore Material 3 default theme colors
+					CompoundButtonCompat.SetButtonTintList(platformCheckBox, _defaultButtonTintList);
+				}
+			}
+			else
+			{
+				var mode = PorterDuff.Mode.SrcIn;
+				CompoundButtonCompat.SetButtonTintList(platformCheckBox, platformCheckBox.GetColorStateList(check));
+				CompoundButtonCompat.SetButtonTintMode(platformCheckBox, mode);
+			}
 		}
 
 		internal static ColorStateList GetColorStateList(this AppCompatCheckBox platformCheckBox, ICheckBox check)
