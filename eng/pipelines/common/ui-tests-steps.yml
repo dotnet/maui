@@ -170,9 +170,11 @@ steps:
             Write-Host "Running matching categories: $testFilterParam"
         }
         else {
-            # No match - use a filter that won't match any tests
-            $testFilterParam = "_NO_MATCHING_CATEGORY_"
-            Write-Host "No matching categories in this group - will skip tests"
+            # No matching categories - skip test execution entirely
+            Write-Host "##[section]No matching categories in this group - SKIPPING test execution"
+            Write-Host "Category group '$env:CATEGORY_GROUP' does not contain any of the detected categories: $detectedCategories"
+            Write-Host "##vso[task.complete result=Succeeded;]No tests to run for this category group"
+            exit 0
         }
     }
     
