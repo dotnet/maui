@@ -145,9 +145,6 @@ stages:
     dependsOn:
       - build_ui_tests
       - discover_ui_test_categories
-    variables:
-      # Capture detected categories from discovery stage (empty if stage was skipped)
-      detectedCategories: $[ stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryList'] ]
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.android, '') }}:
@@ -167,8 +164,8 @@ stages:
                 variables:
                   REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                   APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
-                  # Make detected categories available at job level
-                  DETECTED_CATEGORIES: $(detectedCategories)
+                  # Access detected categories directly from stage dependency
+                  DETECTED_CATEGORIES: $[ stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryList'] ]
                 steps:
                   # Calculate effective test filter based on detected categories
                   - pwsh: |
@@ -243,8 +240,6 @@ stages:
     dependsOn:
       - build_ui_tests_coreclr
       - discover_ui_test_categories
-    variables:
-      detectedCategories: $[ stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryList'] ]
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.android, '') }}:
@@ -264,7 +259,7 @@ stages:
                 variables:
                   REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                   APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
-                  DETECTED_CATEGORIES: $(detectedCategories)
+                  DETECTED_CATEGORIES: $[ stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryList'] ]
                 steps:
                   - pwsh: |
                       $detected = "$(DETECTED_CATEGORIES)"
@@ -335,8 +330,6 @@ stages:
     dependsOn:
       - build_ui_tests
       - discover_ui_test_categories
-    variables:
-      detectedCategories: $[ stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryList'] ]
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.ios, '') }}:
@@ -356,7 +349,7 @@ stages:
                 variables:
                   REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                   APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
-                  DETECTED_CATEGORIES: $(detectedCategories)
+                  DETECTED_CATEGORIES: $[ stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryList'] ]
                 steps:
                   - pwsh: |
                       $detected = "$(DETECTED_CATEGORIES)"
@@ -542,8 +535,6 @@ stages:
       dependsOn:
         - build_ui_tests_nativeaot
         - discover_ui_test_categories
-      variables:
-        detectedCategories: $[ stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryList'] ]
       jobs:
         - ${{ each project in parameters.projects }}:
           - ${{ if ne(project.ios, '') }}:
@@ -563,7 +554,7 @@ stages:
                   variables:
                     REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                     APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
-                    DETECTED_CATEGORIES: $(detectedCategories)
+                    DETECTED_CATEGORIES: $[ stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryList'] ]
                   steps:
                     - pwsh: |
                         $detected = "$(DETECTED_CATEGORIES)"
@@ -630,8 +621,6 @@ stages:
     dependsOn:
       - build_ui_tests_windows
       - discover_ui_test_categories
-    variables:
-      detectedCategories: $[ stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryList'] ]
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.winui, '') }}:
@@ -648,7 +637,7 @@ stages:
                 pool: ${{ parameters.windowsPool }}
                 variables:
                   APPIUM_HOME: $(System.DefaultWorkingDirectory)\.appium\
-                  DETECTED_CATEGORIES: $(detectedCategories)
+                  DETECTED_CATEGORIES: $[ stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryList'] ]
                 steps:
                   - pwsh: |
                       $detected = "$(DETECTED_CATEGORIES)"
@@ -713,8 +702,6 @@ stages:
     dependsOn:
       - build_ui_tests
       - discover_ui_test_categories
-    variables:
-      detectedCategories: $[ stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryList'] ]
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.mac, '') }}:
@@ -732,7 +719,7 @@ stages:
                 variables:
                   REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                   APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
-                  DETECTED_CATEGORIES: $(detectedCategories)
+                  DETECTED_CATEGORIES: $[ stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryList'] ]
                 steps:
                   - pwsh: |
                       $detected = "$(DETECTED_CATEGORIES)"
