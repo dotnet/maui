@@ -160,7 +160,9 @@ namespace Microsoft.Maui.Handlers
 		// This allows external code to close the picker (e.g., clicking outside, navigation)
 		internal static void MapUnfocus(IPickerHandler handler, IPicker picker, object? args)
 		{
-			if (handler is PickerHandler pickerHandler && pickerHandler.pickerController != null)
+			if (handler is PickerHandler pickerHandler && 
+				pickerHandler.pickerController is not null &&
+				pickerHandler.pickerController.PresentedViewController is not null)
 			{
 				pickerHandler.pickerController.DismissViewControllerAsync(true);
 				if (handler.VirtualView is IPicker virtualView)
