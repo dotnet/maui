@@ -1,4 +1,4 @@
-# if TEST_FAILS_ON_ANDROID      //Using JavaScript to click the URL is not working on Android.
+# if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS    //Using JavaScript to click the URL is not working on Android and Windows.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
