@@ -110,9 +110,7 @@ namespace Microsoft.Maui.Platform
 
 			if (view is UIScrollView scrollView)
 			{
-				if (CanUseRefreshControlProperty())
-					scrollView.RefreshControl = null;
-
+				scrollView.RefreshControl = null;
 				return true;
 			}
 
@@ -140,10 +138,7 @@ namespace Microsoft.Maui.Platform
  
 			if (view is UIScrollView scrollView)
 			{
-				if (CanUseRefreshControlProperty())
-					scrollView.RefreshControl = _refreshControl;
-				else
-					scrollView.InsertSubview(_refreshControl, index);
+				scrollView.InsertSubview(_refreshControl, index);
 
 				//Setting the bounds so that the refresh control renders above the potential header
 				_refreshControl.Bounds = new CGRect(
@@ -212,8 +207,5 @@ namespace Microsoft.Maui.Platform
 
 		bool ShouldAllowRefreshGesture =>
 			_isEnabled && _isRefreshEnabled;
-
-		bool CanUseRefreshControlProperty() =>
-			this.GetNavigationController()?.NavigationBar?.PrefersLargeTitles ?? true;
 	}
 }
