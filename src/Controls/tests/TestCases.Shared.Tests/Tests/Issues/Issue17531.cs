@@ -27,9 +27,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			try
 			{
-				App.WaitForElement("DropResultLabel");
+				App.FindElement("DropResultLabel").GetText();
 			}
-			catch (TimeoutException)
+			catch (NullReferenceException)
 			{
 				App.DragAndDrop("Red", "Green");
 			}
