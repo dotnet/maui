@@ -31,15 +31,12 @@ public class Issue30381 : _IssuesUITest
 
         App.Tap("GoBackButton");
 
-        // Wait for back navigation to complete
-        Thread.Sleep(2000);
         App.Tap("UpdateStatusButton");
         Assert.That(App.FindElement("CanGoBackLabel").GetText(), Is.EqualTo("CanGoBack: False"));
         Assert.That(App.FindElement("CanGoForwardLabel").GetText(), Is.EqualTo("CanGoForward: True"));
 
         App.Tap("GoForwardButton");
 
-        Thread.Sleep(2000);
         App.Tap("UpdateStatusButton");
         Assert.That(App.FindElement("CanGoBackLabel").GetText(), Is.EqualTo("CanGoBack: True"));
         Assert.That(App.FindElement("CanGoForwardLabel").GetText(), Is.EqualTo("CanGoForward: False"));
