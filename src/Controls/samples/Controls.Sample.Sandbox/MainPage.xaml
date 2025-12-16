@@ -2,4 +2,96 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.MainPage"
              xmlns:local="clr-namespace:Maui.Controls.Sample">
+             <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="15">
+            
+             <Label Text="Material 3 RadioButton Properties Test" 
+                   FontSize="18" 
+                   FontAttributes="Bold"
+                   Margin="0,0,0,10" />
+            
+            <Button x:Name="ChangePropertiesButton" 
+                    Text="Change All Properties" 
+                    Clicked="OnChangePropertiesClicked"
+                    Margin="0,0,0,10" />
+
+            <RadioButton x:Name="IsVisibleRadioButton"
+                Content="IsVisible Property"
+                IsVisible="True"
+                TextColor="Orange" />
+            
+  
+            <RadioButton x:Name="DefaultRadioButton"
+                         Content="Default RadioButton" 
+                         IsChecked="True" />
+            
+         
+            <RadioButton x:Name="CharacterSpacingRadioButton"
+                         Content="Character Spacing" 
+                         CharacterSpacing="2" />
+            
+     
+            <RadioButton x:Name="TextColorRadioButton"
+                         Content="Text Color" 
+                         TextColor="Red" />
+            
+        
+            <RadioButton x:Name="FontSizeRadioButton"
+                         Content="Font Size Large" 
+                         FontSize="20" />
+            
+     
+            <RadioButton x:Name="FontAttributesRadioButton"
+                         Content="Bold Italic Font" 
+                         FontAttributes="Bold,Italic" />
+            
+         
+            <RadioButton x:Name="BorderColorRadioButton"
+                         Content="Border Color Blue" 
+                         BorderColor="Blue" 
+                         BorderWidth="2" />
+            
+         
+            <RadioButton x:Name="ThickBorderRadioButton"
+                         Content="Thick Border" 
+                         BorderColor="Green" 
+                         BorderWidth="4" />
+            
+    
+            <RadioButton x:Name="CornerRadiusRadioButton"
+                         Content="Corner Radius" 
+                         BorderColor="Purple" 
+                         BorderWidth="2"
+                         CornerRadius="10" />
+            
+           
+            <RadioButton x:Name="BackgroundColorRadioButton"
+                         Content="Background Color" 
+                         BackgroundColor="LightYellow" />
+            
+        
+            <RadioButton x:Name="MultiplePropertiesRadioButton"
+                         Content="Multiple Properties" 
+                         TextColor="White"
+                         BackgroundColor="DarkBlue"
+                         FontSize="16"
+                         FontAttributes="Bold"
+                         CharacterSpacing="1"
+                         BorderColor="Yellow"
+                         BorderWidth="3"
+                         CornerRadius="8" />
+
+            <RadioButton x:Name="CheckedChangedRadioButton"
+                         Content="CheckedChanged Event"
+                         CharacterSpacing="0"
+                         TextColor="Black"
+                         CheckedChanged="OnCheckedChangedRadioButton_CheckedChanged" />
+
+            <!-- IsEnabled and IsVisible Properties -->
+            <RadioButton x:Name="IsEnabledRadioButton"
+                         Content="IsEnabled Property"
+                         IsEnabled="True"
+                         TextColor="Green" />
+        </VerticalStackLayout>
+    </ScrollView> 
 </ContentPage>
