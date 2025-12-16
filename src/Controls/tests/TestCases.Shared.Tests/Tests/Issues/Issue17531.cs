@@ -27,13 +27,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			try
 			{
-				App.FindElement("DropResultLabel").GetText();
+				App.WaitForElement("DropResultLabel");
 			}
-			catch (NullReferenceException)
+			catch (TimeoutException)
 			{
 				App.DragAndDrop("Red", "Green");
 			}
 #endif
+			App.WaitForElement("DropResultLabel");
 			var dropResultLabel = App.FindElement("DropResultLabel").GetText();
 			Assert.That(dropResultLabel, Is.EqualTo("Success"));
 		}
