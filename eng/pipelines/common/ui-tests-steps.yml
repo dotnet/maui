@@ -131,12 +131,59 @@ steps:
 
     $testFilter = ""
     $testConfigrationArgs = "${{ parameters.testConfigurationArgs }}"
-
-    "${{ parameters.testFilter }}".Split(",") | ForEach {
-      $testFilter += "TestCategory=" + $_ + "|"
+    
+    # Get test filter from environment variable (passed from matrix via env block)
+    # When a dynamic matrix is used, the categoryGroup value is passed via env block
+    $testFilterParam = $env:CATEGORY_GROUP
+    $detectedCategories = $env:DETECTED_CATEGORIES
+    $isPR = $env:BUILD_REASON -eq "PullRequest"
+    
+    Write-Host "Build Reason: $env:BUILD_REASON"
+    Write-Host "Category Group from matrix: '$testFilterParam'"
+    Write-Host "Detected Categories: '$detectedCategories'"
+    
+    # Fallback to parameter for non-matrix builds
+    if (-not $testFilterParam) {
+      $testFilterParam = "${{ parameters.testFilter }}"
+      Write-Host "Using testFilter parameter: '$testFilterParam'"
     }
-
-    $testFilter = $testFilter.TrimEnd("|")
+    
+    # For PRs with detected categories, find intersection with current category group
+    if ($isPR -and -not [string]::IsNullOrWhiteSpace($detectedCategories) -and -not [string]::IsNullOrWhiteSpace($testFilterParam)) {
+        $categoryList = $testFilterParam -split ","
+        $detectedList = $detectedCategories -split ","
+        $matchingCategories = @()
+        
+        foreach ($cat in $categoryList) {
+            $cat = $cat.Trim()
+            foreach ($det in $detectedList) {
+                $det = $det.Trim()
+                if ($cat -eq $det) {
+                    $matchingCategories += $cat
+                    break
+                }
+            }
+        }
+        
+        if ($matchingCategories.Count -gt 0) {
+            $testFilterParam = $matchingCategories -join ","
+            Write-Host "Running matching categories: $testFilterParam"
+        }
+        else {
+            # No match - use a filter that won't match any tests
+            $testFilterParam = "_NO_MATCHING_CATEGORY_"
+            Write-Host "No matching categories in this group - will skip tests"
+        }
+    }
+    
+    Write-Host "Final test filter: '$testFilterParam'"
+    
+    if ($testFilterParam) {
+      $testFilterParam.Split(",") | ForEach {
+        $testFilter += "TestCategory=" + $_ + "|"
+      }
+      $testFilter = $testFilter.TrimEnd("|")
+    }
 
     # Cake does not allow empty parameters, so check if our filter is empty before adding it
     if ($testConfigrationArgs) {
@@ -159,6 +206,9 @@ steps:
     retryCountOnTaskFailure: 1
   env:
     APPIUM_HOME: $(APPIUM_HOME)
+    CATEGORY_GROUP: $(CATEGORYGROUP)
+    DETECTED_CATEGORIES: $(DETECTED_CATEGORIES)
+    BUILD_REASON: $(Build.Reason)
 
 - bash: |
     cat ${BASH_SOURCE[0]}
