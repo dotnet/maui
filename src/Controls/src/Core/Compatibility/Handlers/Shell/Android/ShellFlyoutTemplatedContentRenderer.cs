@@ -87,7 +87,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		// - Do not extend; add new logic to the forthcoming implementation instead.
 		internal class WindowsListener : MauiWindowInsetListener, IOnApplyWindowInsetsListener
 		{
-			private WeakReference<ImageView> _bgImageRef;
 			private WeakReference<AView> _flyoutViewRef;
 			private WeakReference<AView> _footerViewRef;
 
@@ -120,11 +119,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 			}
 
-			public WindowsListener(ImageView bgImage)
-			{
-				_bgImageRef = new WeakReference<ImageView>(bgImage);
-			}
-
 			public override WindowInsetsCompat OnApplyWindowInsets(AView v, WindowInsetsCompat insets)
 			{
 				if (insets == null || v == null)
@@ -142,11 +136,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					var appbarLayout = v.FindDescendantView<AppBarLayout>((v) => true);
 
 					v.SetPadding(leftInset, topInset, rightInset, bottomInset);
-
-					if (_bgImageRef != null && _bgImageRef.TryGetTarget(out var bgImage) && bgImage != null)
-					{
-						bgImage.SetPadding(0, topInset, 0, bottomInset);
-					}
 
 					return WindowInsetsCompat.Consumed;
 				}
@@ -187,7 +176,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				LayoutParameters = new LP(coordinator.LayoutParameters)
 			};
 
-			_windowsListener = new WindowsListener(_bgImage);
+			_windowsListener = new WindowsListener();
 			MauiWindowInsetListener.SetupViewWithLocalListener(coordinator, _windowsListener);
 
 			UpdateFlyoutHeaderBehavior();
