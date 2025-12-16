@@ -212,7 +212,7 @@ stages:
                           Write-Host "Running all categories in group: $effectiveFilter"
                       }
                       
-                      Write-Host "##vso[task.setvariable variable=CATEGORYGROUP]$effectiveFilter"
+                      Write-Host "##vso[task.setvariable variable=EFFECTIVE_FILTER]$effectiveFilter"
                     displayName: Calculate test filter
                   - template: ui-tests-steps.yml
                     parameters:
@@ -225,7 +225,7 @@ stages:
                       ${{ if not(eq(api, 27)) }}:
                         device: android-emulator-64_${{ api }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
-                      testFilter: $(CATEGORYGROUP)
+                      testFilter: $(EFFECTIVE_FILTER)
                       skipProvisioning: ${{ parameters.skipProvisioning }}
                   
                   # Collect and publish Android snapshot diffs
@@ -300,7 +300,7 @@ stages:
                           Write-Host "Running all categories in group: $effectiveFilter"
                       }
                       
-                      Write-Host "##vso[task.setvariable variable=CATEGORYGROUP]$effectiveFilter"
+                      Write-Host "##vso[task.setvariable variable=EFFECTIVE_FILTER]$effectiveFilter"
                     displayName: Calculate test filter
                   - template: ui-tests-steps.yml
                     parameters:
@@ -314,7 +314,7 @@ stages:
                         device: android-emulator-64_${{ api }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
-                      testFilter: $(CATEGORYGROUP)
+                      testFilter: $(EFFECTIVE_FILTER)
                       headless: ${{ parameters.headless }}
                       skipProvisioning: ${{ parameters.skipProvisioning }}
                       runtimeVariant: "CoreCLR"
@@ -390,7 +390,7 @@ stages:
                           Write-Host "Running all categories in group: $effectiveFilter"
                       }
                       
-                      Write-Host "##vso[task.setvariable variable=CATEGORYGROUP]$effectiveFilter"
+                      Write-Host "##vso[task.setvariable variable=EFFECTIVE_FILTER]$effectiveFilter"
                     displayName: Calculate test filter
                   - template: ui-tests-steps.yml
                     parameters:
@@ -407,7 +407,7 @@ stages:
                         device: ios-simulator-64_${{ version }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       runtimeVariant : "Mono"
-                      testFilter: $(CATEGORYGROUP)
+                      testFilter: $(EFFECTIVE_FILTER)
                       headless: ${{ parameters.headless }}
                       skipProvisioning: ${{ parameters.skipProvisioning }}
                   
@@ -595,7 +595,7 @@ stages:
                             Write-Host "Running all categories in group: $effectiveFilter"
                         }
                         
-                        Write-Host "##vso[task.setvariable variable=CATEGORYGROUP]$effectiveFilter"
+                        Write-Host "##vso[task.setvariable variable=EFFECTIVE_FILTER]$effectiveFilter"
                       displayName: Calculate test filter
                     - template: ui-tests-steps.yml
                       parameters:
@@ -612,7 +612,7 @@ stages:
                           device: ios-simulator-64_${{ version }}
                         provisionatorChannel: ${{ parameters.provisionatorChannel }}
                         runtimeVariant : "NativeAOT"
-                        testFilter: $(CATEGORYGROUP)
+                        testFilter: $(EFFECTIVE_FILTER)
                         headless: ${{ parameters.headless }}
                         skipProvisioning: ${{ parameters.skipProvisioning }}
 
@@ -678,7 +678,7 @@ stages:
                           Write-Host "Running all categories in group: $effectiveFilter"
                       }
                       
-                      Write-Host "##vso[task.setvariable variable=CATEGORYGROUP]$effectiveFilter"
+                      Write-Host "##vso[task.setvariable variable=EFFECTIVE_FILTER]$effectiveFilter"
                     displayName: Calculate test filter
                   - template: ui-tests-steps.yml
                     parameters:
@@ -688,7 +688,7 @@ stages:
                       path: ${{ project.winui }}
                       app: ${{ project.app }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
-                      testFilter: $(CATEGORYGROUP)
+                      testFilter: $(EFFECTIVE_FILTER)
                       skipProvisioning: ${{ parameters.skipProvisioning }}
                   
                   # Collect and publish Windows snapshot diffs
@@ -760,7 +760,7 @@ stages:
                           Write-Host "Running all categories in group: $effectiveFilter"
                       }
                       
-                      Write-Host "##vso[task.setvariable variable=CATEGORYGROUP]$effectiveFilter"
+                      Write-Host "##vso[task.setvariable variable=EFFECTIVE_FILTER]$effectiveFilter"
                     displayName: Calculate test filter
                   - template: ui-tests-steps.yml
                     parameters:
@@ -770,7 +770,7 @@ stages:
                       path: ${{ project.mac }}
                       app: ${{ project.app }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
-                      testFilter: $(CATEGORYGROUP)
+                      testFilter: $(EFFECTIVE_FILTER)
                       skipProvisioning: ${{ parameters.skipProvisioning }}
                   
                   # Collect and publish Mac snapshot diffs
