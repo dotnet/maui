@@ -87,38 +87,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		// - Do not extend; add new logic to the forthcoming implementation instead.
 		internal class WindowsListener : MauiWindowInsetListener, IOnApplyWindowInsetsListener
 		{
-			private WeakReference<AView> _flyoutViewRef;
-			private WeakReference<AView> _footerViewRef;
-
-			public AView FlyoutView
-			{
-				get
-				{
-					if (_flyoutViewRef != null && _flyoutViewRef.TryGetTarget(out var flyoutView))
-						return flyoutView;
-
-					return null;
-				}
-				set
-				{
-					_flyoutViewRef = new WeakReference<AView>(value);
-				}
-			}
-			public AView FooterView
-			{
-				get
-				{
-					if (_footerViewRef != null && _footerViewRef.TryGetTarget(out var footerView))
-						return footerView;
-
-					return null;
-				}
-				set
-				{
-					_footerViewRef = new WeakReference<AView>(value);
-				}
-			}
-
 			public override WindowInsetsCompat OnApplyWindowInsets(AView v, WindowInsetsCompat insets)
 			{
 				if (insets == null || v == null)
@@ -273,7 +241,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			_flyoutContentView = CreateFlyoutContent(_rootView);
-			_windowsListener.FlyoutView = _flyoutContentView;
 			if (_flyoutContentView == null)
 				return;
 
@@ -389,7 +356,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				var oldFooterView = _footerView;
 				_rootView.RemoveView(_footerView);
 				_footerView = null;
-				_windowsListener.FooterView = null;
 				oldFooterView.View = null;
 			}
 
@@ -408,8 +374,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				MatchWidth = true
 			};
-
-			_windowsListener.FooterView = _footerView;
 
 			var footerViewLP = new CoordinatorLayout.LayoutParams(0, 0)
 			{
