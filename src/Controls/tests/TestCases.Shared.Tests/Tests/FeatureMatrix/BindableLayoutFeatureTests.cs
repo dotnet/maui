@@ -261,12 +261,16 @@ public class BindableLayoutFeatureTests : UITest
 		App.Tap("ItemsSourceObservableCollection");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("Apple");
+		App.WaitForElement("Banana");
 		App.WaitForNoElement("Cat");
+		App.WaitForNoElement("Dog");
 		App.WaitForElement("ReplaceItems");
 		App.Tap("ReplaceItems");
-		App.WaitForNoElement("Apple");
+		App.WaitForElement("ReplaceItems");
+		App.Tap("ReplaceItems");
+		App.WaitForNoElement("Banana");
 		App.WaitForElement("Cat");
+		App.WaitForElement("Dog");
 	}
 
 	[Test, Order(17)]
