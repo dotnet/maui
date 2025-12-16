@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue31782">
+    
+    <VerticalStackLayout Spacing="20" Padding="20">
+        
+        <!-- Test 1: Label with HorizontalOptions="End" and WordWrap (multi-line) -->
+        <Grid HorizontalOptions="End" BackgroundColor="LightBlue">
+            <Label x:Name="TestLabel"
+                   AutomationId="TestLabel"
+                   Text="How does .NET MAUI handle mauinavigaton?"
+                   LineBreakMode="WordWrap"
+                   TextColor="#212121"
+                   FontSize="20"
+                   VerticalTextAlignment="Center" 
+                   HorizontalOptions="End"
+                   BackgroundColor="LightGreen"/>
+        </Grid>
+        
+        <!-- Test 2: Label with HorizontalOptions="Center" and WordWrap -->
+        <Grid HorizontalOptions="Center" BackgroundColor="LightBlue">
+            <Label x:Name="CenterLabel"
+                   AutomationId="CenterLabel"
+                   Text="This is a centered label with word wrapping enabled"
+                   LineBreakMode="WordWrap"
+                   TextColor="#212121"
+                   FontSize="16"
+                   HorizontalOptions="Center"
+                   BackgroundColor="LightCoral"/>
+        </Grid>
+        
+        <!-- Test 3: Label with HorizontalOptions="Start" and WordWrap -->
+        <Grid HorizontalOptions="Start" BackgroundColor="LightBlue">
+            <Label x:Name="StartLabel"
+                   AutomationId="StartLabel"
+                   Text="Start aligned label that should wrap without extra space"
+                   LineBreakMode="WordWrap"
+                   TextColor="#212121"
+                   FontSize="16"
+                   HorizontalOptions="Start"
+                   BackgroundColor="LightYellow"/>
+        </Grid>
+        
+        <!-- Instruction label for manual verification -->
+        <Label Text="Each colored label should NOT have trailing space. The colored background should match the text width."
+               LineBreakMode="WordWrap"
+               FontSize="14"
+               TextColor="Gray"
+               Margin="0,20,0,0"/>
+               
+    </VerticalStackLayout>
+</ContentPage>

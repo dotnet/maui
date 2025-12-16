@@ -1,3 +1,4 @@
+using Android.Text;
 using Android.Views;
 using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Graphics;
@@ -13,6 +14,37 @@ namespace Microsoft.Maui.Handlers
 		{
 			this.PrepareForTextViewArrange(frame);
 			base.PlatformArrange(frame);
+		}
+
+#pragma warning disable RS0016 // Symbol is not part of the declared public API
+		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
+#pragma warning restore RS0016
+		{
+			var size = base.GetDesiredSize(widthConstraint, heightConstraint);
+
+			// Android TextView reports full available width instead of actual text width when
+			// text wraps to multiple lines, causing incorrect positioning for non-Fill alignments.
+			if (VirtualView.HorizontalLayoutAlignment != Primitives.LayoutAlignment.Fill &&
+				PlatformView?.Layout is Layout layout &&
+				layout.LineCount > 1)
+			{
+				float maxLineWidth = 0;
+				for (int i = 0; i < layout.LineCount; i++)
+				{
+					float lineWidth = layout.GetLineWidth(i);
+					if (lineWidth > maxLineWidth)
+						maxLineWidth = lineWidth;
+				}
+
+				if (maxLineWidth > 0)
+				{
+					var actualWidth = Context.FromPixels(maxLineWidth + PlatformView.PaddingLeft + PlatformView.PaddingRight);
+					if (actualWidth < size.Width)
+						return new Size(actualWidth, size.Height);
+				}
+			}
+
+			return size;
 		}
 
 		internal static void MapBackground(ILabelHandler handler, ILabel label)
