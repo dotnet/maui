@@ -233,14 +233,7 @@ namespace Microsoft.Maui.Platform
 
 			// Request parent to not intercept touch events while we're scrolling
 			// This allows ScrollView to work properly inside containers like DrawerLayout (Shell Flyout)
-			if (ev.Action == MotionEventActions.Down)
-			{
-				Parent?.RequestDisallowInterceptTouchEvent(true);
-			}
-			else if (ev.Action == MotionEventActions.Up || ev.Action == MotionEventActions.Cancel)
-			{
-				Parent?.RequestDisallowInterceptTouchEvent(false);
-			}
+			ScrollViewExtensions.HandleTouchEvent(ev, Parent);
 
 			// The nested ScrollViews will allow us to scroll EITHER vertically OR horizontally in a single gesture.
 			// This will allow us to also scroll diagonally.
@@ -493,14 +486,7 @@ namespace Microsoft.Maui.Platform
 
 			// Request parent to not intercept touch events while we're scrolling
 			// This allows ScrollView to work properly inside containers like DrawerLayout (Shell Flyout)
-			if (ev.Action == MotionEventActions.Down)
-			{
-				Parent?.RequestDisallowInterceptTouchEvent(true);
-			}
-			else if (ev.Action == MotionEventActions.Up || ev.Action == MotionEventActions.Cancel)
-			{
-				Parent?.RequestDisallowInterceptTouchEvent(false);
-			}
+			ScrollViewExtensions.HandleTouchEvent(ev, Parent);
 
 			// If the touch is caught by the horizontal scrollview, forward it to the parent 
 			_parentScrollView.ShouldSkipOnTouch = true;
