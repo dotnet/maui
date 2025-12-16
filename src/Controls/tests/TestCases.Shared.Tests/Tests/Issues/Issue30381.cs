@@ -1,3 +1,4 @@
+# if TEST_FAILS_ON_ANDROID      //Using JavaScript to click the URL is not working on Android.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -42,3 +43,4 @@ public class Issue30381 : _IssuesUITest
         Assert.That(App.FindElement("CanGoForwardLabel").GetText(), Is.EqualTo("CanGoForward: False"));
     }
 }
+#endif
