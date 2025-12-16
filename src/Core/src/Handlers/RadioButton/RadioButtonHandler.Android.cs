@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override AppCompatRadioButton CreatePlatformView()
 		{
-			return new AppCompatRadioButton(Context)
+			return new AppCompatRadioButton(MauiMaterialContextThemeWrapper.Create(Context))
 			{
 				SoundEffectsEnabled = false
 			};
