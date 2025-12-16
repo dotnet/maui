@@ -15,6 +15,7 @@ using LD = Android.Views.LayoutDirection;
 using LP = Android.Views.ViewGroup.LayoutParams;
 using Paint = Android.Graphics.Paint;
 
+#pragma warning disable RS0016 // Add public types and members to the declared API
 namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
 	public class ShellFlyoutRenderer : DrawerLayout, IShellFlyoutRenderer, IFlyoutBehaviorObserver, IAppearanceObserver
@@ -143,7 +144,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_shellContext = shellContext;
 			_flyoutHeight = LP.MatchParent;
 
-			Shell.PropertyChanged += OnShellPropertyChanged;
 			ShellController.AddAppearanceObserver(this, Shell);
 			UpdateFlowDirection();
 
@@ -157,6 +157,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		int FlyoutHeight => (_flyoutHeight == -1) ? LP.MatchParent : (int)_flyoutHeight;
 		Shell Shell => _shellContext.Shell;
 		IShellController ShellController => _shellContext.Shell;
+
+		internal IShellFlyoutContentRenderer FlyoutContentRenderer => _flyoutContent;
 
 		public override bool OnInterceptTouchEvent(MotionEvent ev)
 		{
@@ -258,33 +260,22 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
-		protected virtual void OnShellPropertyChanged(object sender, PropertyChangedEventArgs e)
+		/// <summary>
+		/// Updates the flyout presented state. Called by ShellHandler mapper or PropertyChanged.
+		/// </summary>
+
+		public void UpdateFlyoutPresented(bool presented)
 		{
 			if (_flyoutContent == null)
 				return;
 
-			if (e.PropertyName == Shell.FlyoutIsPresentedProperty.PropertyName)
+			if (!FlyoutFirstDrawPassFinished)
 			{
-				if (!FlyoutFirstDrawPassFinished)
-				{
-					// if the first draw pass hasn't happened yet
-					// then calling close/open drawer really confuses 
-					// drawer layout
-					return;
-				}
-
-				UpdateDrawerState();
+				// if the first draw pass hasn't happened yet
+				// then calling close/open drawer really confuses drawer layout
+				return;
 			}
-			else if (e.PropertyName == Shell.FlowDirectionProperty.PropertyName)
-			{
-				UpdateFlowDirection();
-			}
-		}
 
-		void UpdateDrawerState()
-		{
-
-			var presented = Shell.FlyoutIsPresented;
 			if (presented)
 			{
 				if (!IsDrawerOpen(_flyoutContent.AndroidView))
@@ -296,9 +287,69 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
-		void UpdateFlowDirection()
+		void UpdateDrawerState()
+		{
+			UpdateFlyoutPresented(Shell.FlyoutIsPresented);
+		}
+
+		/// <summary>
+		/// Updates the flow direction. Called by ShellHandler mapper or PropertyChanged.
+		/// </summary>
+		public void UpdateFlowDirection()
 		{
 			LayoutDirection = _shellContext.Shell.FlowDirection.ToLayoutDirection();
+		}
+
+		/// <summary>
+		/// Updates the flyout behavior. Called by ShellHandler mapper.
+		/// </summary>
+		public void UpdateFlyoutBehavior(FlyoutBehavior behavior)
+		{
+			AddFlyoutContentToLayoutIfNeeded(behavior);
+
+			if (_flyoutContent?.AndroidView == null)
+				return;
+
+			bool closeAfterUpdate = (behavior == FlyoutBehavior.Flyout && _behavior == FlyoutBehavior.Locked);
+			_behavior = behavior;
+			UpdateDrawerLockMode(behavior);
+
+			if (closeAfterUpdate)
+				CloseDrawer(_flyoutContent.AndroidView, false);
+		}
+
+		/// <summary>
+		/// Updates the flyout size (width and height). Called by ShellHandler mapper.
+		/// </summary>
+		public void UpdateFlyoutSize(double width, double height)
+		{
+			var previousFlyoutWidth = FlyoutWidth;
+			var previousFlyoutHeight = FlyoutHeight;
+
+			if (width != -1)
+				_flyoutWidth = Context.ToPixels(width);
+			else
+				_flyoutWidth = -1;
+
+			if (height != -1)
+				_flyoutHeight = Context.ToPixels(height);
+			else
+				_flyoutHeight = LP.MatchParent;
+
+			if (previousFlyoutWidth != FlyoutWidth || previousFlyoutHeight != FlyoutHeight)
+			{
+				UpdateFlyoutSize();
+				if (_content != null)
+					UpdateDrawerLockMode(_behavior);
+			}
+		}
+
+		/// <summary>
+		/// Updates the flyout backdrop (scrim). Called by ShellHandler mapper.
+		/// </summary>
+		public void UpdateFlyoutBackdrop(Brush backdrop)
+		{
+			UpdateScrim(backdrop);
 		}
 
 		void OnDualScreenServiceScreenChanged(object sender, EventArgs e)
@@ -407,9 +458,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		internal void Disconnect()
 		{
 			ShellController?.RemoveAppearanceObserver(this);
-
-			if (Shell != null)
-				Shell.PropertyChanged -= OnShellPropertyChanged;
 
 			if (this.IsAlive())
 			{
