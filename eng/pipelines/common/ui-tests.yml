@@ -12,32 +12,6 @@ parameters:
   skipProvisioning: true
   BuildNativeAOT: false # Parameter to control whether NativeAOT artifacts should be built
   RunNativeAOT: false # Parameter to control whether NativeAOT UI tests should run
-  categoryGroupsToTest:
-    # Make sure that this list is always up-to-date with src/Controls/tests/TestCases.Shared.Tests/UITestCategories.cs
-    # we might want to improve this somehow depending on how much the categories change over time
-    - 'Accessibility,ActionSheet,ActivityIndicator,Animation,AppLinks'
-    - 'Border,BoxView,Brush,Button'
-    - 'CarouselView'
-    - 'Cells,CheckBox,ContextActions,CustomRenderers,DatePicker,Dispatcher,DisplayAlert,DisplayPrompt,DragAndDrop'
-    - 'CollectionView'
-    - 'Entry'
-    - 'Editor,Effects,FlyoutPage,Focus,Fonts,Frame,Gestures,GraphicsView'
-    - 'Image,ImageButton,IndicatorView,InputTransparent,IsEnabled,IsVisible'
-    - 'Label'
-    - 'Layout'
-    - 'Lifecycle,ManualReview,Maps'
-    - 'ListView'
-    - 'Navigation'
-    - 'Page,Performance,Picker,ProgressBar'
-    - 'RadioButton,RefreshView'
-    - 'SafeAreaEdges,Shadow'
-    - 'ScrollView'
-    - 'SearchBar,Shape,Slider'
-    - 'SoftInput,Stepper,Switch,SwipeView'
-    - 'Shell'
-    - 'TabbedPage,TableView,TimePicker,TitleView,ToolbarItem'
-    - 'ViewBaseTests,Window'
-    - 'WebView'
 
   projects:
     - name: name
@@ -48,10 +22,64 @@ parameters:
       mac: /optional/path/to/mac.csproj
       app: /optional/path/to/app.csproj
 
+variables:
+  UITestCategoryMatrixDefault: |
+    {
+      "Group00": { "CATEGORYGROUP": "Accessibility,ActionSheet,ActivityIndicator,Animation,AppLinks" },
+      "Group01": { "CATEGORYGROUP": "Border,BoxView,Brush,Button" },
+      "Group02": { "CATEGORYGROUP": "CarouselView" },
+      "Group03": { "CATEGORYGROUP": "Cells,CheckBox,ContextActions,CustomRenderers,DatePicker,Dispatcher,DisplayAlert,DisplayPrompt,DragAndDrop" },
+      "Group04": { "CATEGORYGROUP": "CollectionView" },
+      "Group05": { "CATEGORYGROUP": "Entry" },
+      "Group06": { "CATEGORYGROUP": "Editor,Effects,FlyoutPage,Focus,Fonts,Frame,Gestures,GraphicsView" },
+      "Group07": { "CATEGORYGROUP": "Image,ImageButton,IndicatorView,InputTransparent,IsEnabled,IsVisible" },
+      "Group08": { "CATEGORYGROUP": "Label" },
+      "Group09": { "CATEGORYGROUP": "Layout" },
+      "Group10": { "CATEGORYGROUP": "Lifecycle,ManualReview,Maps" },
+      "Group11": { "CATEGORYGROUP": "ListView" },
+      "Group12": { "CATEGORYGROUP": "Navigation" },
+      "Group13": { "CATEGORYGROUP": "Page,Performance,Picker,ProgressBar" },
+      "Group14": { "CATEGORYGROUP": "RadioButton,RefreshView" },
+      "Group15": { "CATEGORYGROUP": "SafeAreaEdges,Shadow" },
+      "Group16": { "CATEGORYGROUP": "ScrollView" },
+      "Group17": { "CATEGORYGROUP": "SearchBar,Shape,Slider" },
+      "Group18": { "CATEGORYGROUP": "SoftInput,Stepper,Switch,SwipeView" },
+      "Group19": { "CATEGORYGROUP": "Shell" },
+      "Group20": { "CATEGORYGROUP": "TabbedPage,TableView,TimePicker,TitleView,ToolbarItem" },
+      "Group21": { "CATEGORYGROUP": "ViewBaseTests,Window" },
+      "Group22": { "CATEGORYGROUP": "WebView" }
+    }
+
 stages:
+  - stage: discover_ui_test_categories
+    displayName: Discover UI Test Categories
+    condition: eq(variables['Build.Reason'], 'PullRequest')
+    jobs:
+      - job: detect
+        displayName: Detect category filters
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - checkout: self
+            fetchDepth: 0
+          - task: PowerShell@2
+            name: DetectCategories
+            displayName: Determine UI test categories for PRs
+            inputs:
+              pwsh: true
+              filePath: $(System.DefaultWorkingDirectory)/eng/scripts/detect-ui-test-categories.ps1
+              arguments: '-TargetBranch "$(System.PullRequest.TargetBranch)"'
+
   - stage: build_ui_tests
     displayName: Build UITests Sample App
-    dependsOn: []
+    dependsOn:
+      - discover_ui_test_categories
+    condition: |
+      or(
+        ne(variables['Build.Reason'], 'PullRequest'),
+        eq(dependencies.discover_ui_test_categories.result, 'Succeeded'),
+        eq(dependencies.discover_ui_test_categories.result, 'Skipped')
+      )
     jobs:
       - job: build_ui_tests
         displayName: Build Sample App
@@ -67,7 +95,14 @@ stages:
 
   - stage: build_ui_tests_coreclr
     displayName: Build UITests CoreCLR Sample App
-    dependsOn: []
+    dependsOn:
+      - discover_ui_test_categories
+    condition: |
+      or(
+        ne(variables['Build.Reason'], 'PullRequest'),
+        eq(dependencies.discover_ui_test_categories.result, 'Succeeded'),
+        eq(dependencies.discover_ui_test_categories.result, 'Skipped')
+      )
     jobs:
       - job: build_ui_tests
         displayName: Build Sample App
@@ -85,7 +120,14 @@ stages:
   - ${{ if eq(parameters.BuildNativeAOT, true) }}:
     - stage: build_ui_tests_nativeaot
       displayName: Build UITests NativeAOT Sample App
-      dependsOn: []
+      dependsOn:
+        - discover_ui_test_categories
+      condition: |
+        or(
+          ne(variables['Build.Reason'], 'PullRequest'),
+          eq(dependencies.discover_ui_test_categories.result, 'Succeeded'),
+          eq(dependencies.discover_ui_test_categories.result, 'Skipped')
+        )
       jobs:
         - job: build_ui_tests
           displayName: Build Sample App
@@ -102,7 +144,14 @@ stages:
 
   - stage: build_ui_tests_windows
     displayName: Build UITests Windows Sample App
-    dependsOn: []
+    dependsOn:
+      - discover_ui_test_categories
+    condition: |
+      or(
+        ne(variables['Build.Reason'], 'PullRequest'),
+        eq(dependencies.discover_ui_test_categories.result, 'Succeeded'),
+        eq(dependencies.discover_ui_test_categories.result, 'Skipped')
+      )
     jobs:
       - job: build_ui_tests
         displayName: Build Sample App (Windows)
@@ -117,7 +166,20 @@ stages:
 
   - stage: android_ui_tests
     displayName: Android UITests
-    dependsOn: build_ui_tests
+    dependsOn:
+      - discover_ui_test_categories
+      - build_ui_tests
+    condition: |
+      and(
+        succeeded('build_ui_tests'),
+        or(
+          ne(variables['Build.Reason'], 'PullRequest'),
+          eq(dependencies.discover_ui_test_categories.result, 'Succeeded'),
+          eq(dependencies.discover_ui_test_categories.result, 'Skipped')
+        )
+      )
+    variables:
+      StageCategoryMatrix: ${{ coalesce(stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryMatrix'], variables['UITestCategoryMatrixDefault']) }}
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.android, '') }}:
@@ -125,10 +187,7 @@ stages:
             - ${{ if not(containsValue(project.androidApiLevelsExclude, api)) }}:
               - job: android_ui_tests_${{ project.name }}_${{ api }}
                 strategy:
-                  matrix:
-                    ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
-                      ${{ categoryGroup }}:
-                        CATEGORYGROUP: ${{ categoryGroup }}
+                  matrix: $[ fromJson(variables['StageCategoryMatrix']) ]
                 timeoutInMinutes: 240 # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
@@ -161,7 +220,20 @@ stages:
 
   - stage: android_ui_tests_coreclr
     displayName: Android UITests CoreClr
-    dependsOn: build_ui_tests_coreclr
+    dependsOn:
+      - discover_ui_test_categories
+      - build_ui_tests_coreclr
+    condition: |
+      and(
+        succeeded('build_ui_tests_coreclr'),
+        or(
+          ne(variables['Build.Reason'], 'PullRequest'),
+          eq(dependencies.discover_ui_test_categories.result, 'Succeeded'),
+          eq(dependencies.discover_ui_test_categories.result, 'Skipped')
+        )
+      )
+    variables:
+      StageCategoryMatrix: ${{ coalesce(stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryMatrix'], variables['UITestCategoryMatrixDefault']) }}
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.android, '') }}:
@@ -169,10 +241,7 @@ stages:
             - ${{ if not(containsValue(project.androidApiLevelsExclude, api)) }}:
               - job: android_ui_tests_${{ project.name }}_${{ api }}
                 strategy:
-                  matrix:
-                    ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
-                      ${{ categoryGroup }}:
-                        CATEGORYGROUP: ${{ categoryGroup }}
+                  matrix: $[ fromJson(variables['StageCategoryMatrix']) ]
                 timeoutInMinutes: 240 # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
@@ -207,7 +276,20 @@ stages:
 
   - stage: ios_ui_tests_mono
     displayName: iOS UITests Mono
-    dependsOn: build_ui_tests
+    dependsOn:
+      - discover_ui_test_categories
+      - build_ui_tests
+    condition: |
+      and(
+        succeeded('build_ui_tests'),
+        or(
+          ne(variables['Build.Reason'], 'PullRequest'),
+          eq(dependencies.discover_ui_test_categories.result, 'Succeeded'),
+          eq(dependencies.discover_ui_test_categories.result, 'Skipped')
+        )
+      )
+    variables:
+      StageCategoryMatrix: ${{ coalesce(stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryMatrix'], variables['UITestCategoryMatrixDefault']) }}
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.ios, '') }}:
@@ -215,10 +297,7 @@ stages:
             - ${{ if not(containsValue(project.iosVersionsExclude, version)) }}:
               - job: ios_ui_tests_mono_${{ project.name }}_${{ replace(version, '.', '_') }}
                 strategy:
-                  matrix:
-                    ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
-                      ${{ categoryGroup }}:
-                        CATEGORYGROUP: ${{ categoryGroup }}
+                  matrix: $[ fromJson(variables['StageCategoryMatrix']) ]
                 timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
@@ -255,7 +334,19 @@ stages:
 
   - stage: ios_ui_tests_mono_cv1
     displayName: iOS UITests Mono CollectionView1
-    dependsOn: build_ui_tests
+    dependsOn:
+      - discover_ui_test_categories
+      - build_ui_tests
+    condition: |
+      and(
+        succeeded('build_ui_tests'),
+        or(
+          ne(variables['Build.Reason'], 'PullRequest'),
+          eq(dependencies.discover_ui_test_categories.result, 'Skipped'),
+          eq(stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryMatrix'], ''),
+          contains(stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryMatrix'], '"CollectionView"')
+        )
+      )
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.ios, '') }}:
@@ -299,7 +390,19 @@ stages:
 
   - stage: ios_ui_tests_mono_carv1
     displayName: iOS UITests Mono CarouselView1
-    dependsOn: build_ui_tests
+    dependsOn:
+      - discover_ui_test_categories
+      - build_ui_tests
+    condition: |
+      and(
+        succeeded('build_ui_tests'),
+        or(
+          ne(variables['Build.Reason'], 'PullRequest'),
+          eq(dependencies.discover_ui_test_categories.result, 'Skipped'),
+          eq(stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryMatrix'], ''),
+          contains(stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryMatrix'], '"CarouselView"')
+        )
+      )
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.ios, '') }}:
@@ -344,7 +447,20 @@ stages:
   - ${{ if and(eq(parameters.BuildNativeAOT, true), eq(parameters.RunNativeAOT, true)) }}:
     - stage: ios_ui_tests_nativeaot
       displayName: iOS UITests NativeAOT
-      dependsOn: build_ui_tests_nativeaot
+      dependsOn:
+        - discover_ui_test_categories
+        - build_ui_tests_nativeaot
+      condition: |
+        and(
+          succeeded('build_ui_tests_nativeaot'),
+          or(
+            ne(variables['Build.Reason'], 'PullRequest'),
+            eq(dependencies.discover_ui_test_categories.result, 'Succeeded'),
+            eq(dependencies.discover_ui_test_categories.result, 'Skipped')
+          )
+        )
+      variables:
+        StageCategoryMatrix: ${{ coalesce(stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryMatrix'], variables['UITestCategoryMatrixDefault']) }}
       jobs:
         - ${{ each project in parameters.projects }}:
           - ${{ if ne(project.ios, '') }}:
@@ -352,10 +468,7 @@ stages:
               - ${{ if not(containsValue(project.iosVersionsExclude, version)) }}:
                 - job: ios_ui_tests_nativeaot_${{ project.name }}_${{ replace(version, '.', '_') }}
                   strategy:
-                    matrix:
-                      ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
-                        ${{ categoryGroup }}:
-                          CATEGORYGROUP: ${{ categoryGroup }}
+                    matrix: $[ fromJson(variables['StageCategoryMatrix']) ]
                   timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
                   workspace:
                     clean: all
@@ -386,16 +499,26 @@ stages:
 
   - stage: winui_ui_tests
     displayName: WinUI UITests
-    dependsOn: build_ui_tests_windows
+    dependsOn:
+      - discover_ui_test_categories
+      - build_ui_tests_windows
+    condition: |
+      and(
+        succeeded('build_ui_tests_windows'),
+        or(
+          ne(variables['Build.Reason'], 'PullRequest'),
+          eq(dependencies.discover_ui_test_categories.result, 'Succeeded'),
+          eq(dependencies.discover_ui_test_categories.result, 'Skipped')
+        )
+      )
+    variables:
+      StageCategoryMatrix: ${{ coalesce(stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryMatrix'], variables['UITestCategoryMatrixDefault']) }}
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.winui, '') }}:
               - job: winui_ui_tests_${{ project.name }}
                 strategy:
-                  matrix:
-                    ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
-                      ${{ categoryGroup }}:
-                        CATEGORYGROUP: ${{ categoryGroup }}
+                  matrix: $[ fromJson(variables['StageCategoryMatrix']) ]
                 timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
@@ -423,16 +546,26 @@ stages:
 
   - stage: mac_ui_tests
     displayName: macOS UITests
-    dependsOn: build_ui_tests
+    dependsOn:
+      - discover_ui_test_categories
+      - build_ui_tests
+    condition: |
+      and(
+        succeeded('build_ui_tests'),
+        or(
+          ne(variables['Build.Reason'], 'PullRequest'),
+          eq(dependencies.discover_ui_test_categories.result, 'Succeeded'),
+          eq(dependencies.discover_ui_test_categories.result, 'Skipped')
+        )
+      )
+    variables:
+      StageCategoryMatrix: ${{ coalesce(stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryMatrix'], variables['UITestCategoryMatrixDefault']) }}
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.mac, '') }}:
               - job: mac_ui_tests_${{ project.name }}
                 strategy:
-                  matrix:
-                    ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
-                      ${{ categoryGroup }}:
-                        CATEGORYGROUP: ${{ categoryGroup }}
+                  matrix: $[ fromJson(variables['StageCategoryMatrix']) ]
                 timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
