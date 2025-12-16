@@ -311,10 +311,25 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			var task = GetAppearedOrDisappearedTask(page);
 
-			PopToRootViewController(animated);
+			var poppedControllers = PopToRootViewController(animated);
 
 			_ignorePopCall = false;
 			var success = !await task;
+
+			if (poppedControllers is not null)
+			{
+				foreach (var poppedController in poppedControllers)
+				{
+					if (poppedController is ParentingViewController parentingViewController)
+					{
+						parentingViewController.Disconnect(false);
+					}
+					else
+					{
+						poppedController?.Dispose();
+					}
+				}
+			}
 
 			UpdateToolBarVisible();
 			return success;
