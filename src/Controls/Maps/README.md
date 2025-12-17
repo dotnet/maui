@@ -53,6 +53,7 @@
 - **Shapes**: Draw **polygons**, **polylines**, and **circles** to outline areas or routes.
 - **Map interactions**: Handle `MapClicked`, move the camera/region, and programmatically add or remove map elements at runtime.
 - **Map display**: Switch map types (e.g., Street, Satellite, Hybrid) and control gesture support (scroll, zoom, rotate).
+- **User location**: Show the user’s current location with `IsShowingUser` (platform location permission required).
 
 ### Samples: pins and shapes
 
@@ -92,7 +93,38 @@
 </maps:Map>
 ```
 
+### Samples: interactions and map modes
+
+```csharp
+// In code-behind
+void OnMapClicked(object sender, MapClickedEventArgs e)
+{
+    // Drop a pin where the user tapped
+    var map = (Map)sender;
+    map.Pins.Add(new Pin
+    {
+        Label = "Dropped pin",
+        Type = PinType.Place,
+        Location = e.Location
+    });
+
+    // Move/zoom to the tapped location
+    map.MoveToRegion(MapSpan.FromCenterAndRadius(e.Location, Distance.FromMeters(500)));
+}
+
+// Toggle map display mode
+void ToggleMapType(Map map) =>
+    map.MapType = map.MapType == MapType.Street ? MapType.Satellite : MapType.Street;
+
+// Common runtime toggles
+void EnableLocationAndTraffic(Map map)
+{
+    map.IsShowingUser = true;      // requires location permission on the device
+    map.IsTrafficEnabled = true;   // show live traffic where supported
+}
+```
+
 ## 📚 Learn more
 
-- [.NET MAUI Map control docs](https://learn.microsoft.com/dotnet/maui/user-interface/controls/map?view=net-maui-10.0) – capabilities, events, and platform guidance
+- [.NET MAUI Map control docs](https://learn.microsoft.com/dotnet/maui/user-interface/controls/map) – capabilities, events, and platform guidance
 - [.NET MAUI documentation](https://learn.microsoft.com/dotnet/maui/) – build and ship cross-platform apps
