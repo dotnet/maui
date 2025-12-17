@@ -44,7 +44,10 @@ param(
     [int]$PrNumber,
 
     [Parameter(Mandatory = $false)]
-    [string]$ProjectPath = ""
+    [string]$ProjectPath = "",
+    
+    [Parameter(Mandatory = $false)]
+    [switch]$Yes
 )
 
 $ErrorActionPreference = "Stop"
@@ -52,7 +55,7 @@ $ProgressPreference = "SilentlyContinue"
 
 # Configuration - Allow override via environment variable
 $GitHubRepo = if ($env:MAUI_REPO) { $env:MAUI_REPO } else { "dotnet/maui" }
-$AzureDevOpsOrg = "xamarin"
+$AzureDevOpsOrg = "dnceng-public"
 $AzureDevOpsProject = "public"
 $PackageName = "Microsoft.Maui.Controls"
 
@@ -117,7 +120,7 @@ function Get-PullRequestInfo {
     
     try {
         $prUrl = "https://api.github.com/repos/$GitHubRepo/pulls/$PrNumber"
-        $pr = Invoke-RestMethod -Uri $prUrl -Headers @{ "User-Agent" = "MAUI-PR-Script" }
+        $pr = Invoke-RestMethod -Uri $prUrl -Headers @{ "User-Agent" = "MAUI-PR-Script" } -TimeoutSec 30
         
         return @{
             Number = $pr.number
@@ -143,11 +146,11 @@ function Get-BuildInfo {
         $response = Invoke-RestMethod -Uri $checksUrl -Headers @{ 
             "User-Agent" = "MAUI-PR-Script"
             "Accept" = "application/vnd.github.v3+json"
-        }
+        } -TimeoutSec 30
         
-        # Look for the main MAUI build check
+        # Look for the main MAUI build check (not uitests)
         $buildCheck = $response.check_runs | Where-Object { 
-            $_.name -eq "MAUI-public" -and $_.status -eq "completed"
+            $_.name -like "maui-pr*" -and $_.name -notlike "*uitests*" -and $_.status -eq "completed" -and $_.details_url -match 'buildId='
         } | Select-Object -First 1
         
         if (-not $buildCheck) {
@@ -156,17 +159,21 @@ function Get-BuildInfo {
         
         if ($buildCheck.conclusion -ne "success") {
             Write-Warning "Build completed with status: $($buildCheck.conclusion)"
-            $continue = Read-Host "Do you want to continue anyway? (y/N)"
-            if ($continue -ne "y" -and $continue -ne "Y") {
-                throw "Build was not successful. Aborting."
+            if (-not $Yes) {
+                $continue = Read-Host "Do you want to continue anyway? (y/N)"
+                if ($continue -ne "y" -and $continue -ne "Y") {
+                    throw "Build was not successful. Aborting."
+                }
             }
         }
         
         # Extract build ID from details URL
         if ($buildCheck.details_url -match 'buildId=(\d+)') {
-            $buildId = $Matches[1]
-            Write-Success "Found build ID: $buildId"
-            return $buildId
+            return @{
+                BuildId = $Matches[1]
+                Status = $buildCheck.conclusion
+                Url = $buildCheck.details_url
+            }
         }
         
         throw "Could not extract build ID from check run details."
@@ -184,13 +191,13 @@ function Get-BuildArtifacts {
     
     try {
         $artifactsUrl = "https://dev.azure.com/$AzureDevOpsOrg/$AzureDevOpsProject/_apis/build/builds/$BuildId/artifacts?api-version=7.1"
-        $response = Invoke-RestMethod -Uri $artifactsUrl -Headers @{ "User-Agent" = "MAUI-PR-Script" }
+        $response = Invoke-RestMethod -Uri $artifactsUrl -Headers @{ "User-Agent" = "MAUI-PR-Script" } -TimeoutSec 30
         
-        # Look for nuget artifact
-        $artifact = $response.value | Where-Object { $_.name -eq "nuget" } | Select-Object -First 1
+        # Look for PackageArtifacts artifact
+        $artifact = $response.value | Where-Object { $_.name -eq "PackageArtifacts" } | Select-Object -First 1
         
         if (-not $artifact) {
-            throw "No 'nuget' artifact found in build $BuildId"
+            throw "No 'PackageArtifacts' artifact found in build $BuildId"
         }
         
         return $artifact.resource.downloadUrl
@@ -225,7 +232,9 @@ function Get-Artifacts {
     
     Write-Info "Downloading artifacts (this may take a moment)..."
     try {
+        $ProgressPreference = 'SilentlyContinue'
         Invoke-WebRequest -Uri $DownloadUrl -OutFile $zipFile -UseBasicParsing
+        $ProgressPreference = 'Continue'
         Write-Success "Downloaded artifacts"
         
         Write-Info "Extracting artifacts..."
@@ -273,7 +282,7 @@ function Get-TargetFrameworkVersion {
     $content = Get-Content $ProjectPath -Raw
     
     # Look for TargetFramework or TargetFrameworks
-    if ($content -match '<TargetFrameworks?>([^<]+)</TargetFrameworks?>') {
+    if ($content -match '<TargetFrameworks?>(.*?)</TargetFrameworks?>') {
         $tfms = $Matches[1]
         
         # Extract .NET version (e.g., net9.0, net10.0)
@@ -436,11 +445,11 @@ try {
     Write-Info "Current target framework: .NET $targetNetVersion.0"
     
     Write-Step "Finding build artifacts"
-    $buildId = Get-BuildInfo -SHA $prInfo.SHA
+    $buildInfo = Get-BuildInfo -SHA $prInfo.SHA
     
     Write-Step "Downloading artifacts"
-    $downloadUrl = Get-BuildArtifacts -BuildId $buildId
-    $packagesDir = Get-Artifacts -DownloadUrl $downloadUrl -BuildId $buildId
+    $downloadUrl = Get-BuildArtifacts -BuildId $buildInfo.BuildId
+    $packagesDir = Get-Artifacts -DownloadUrl $downloadUrl -BuildId $buildInfo.BuildId
     
     Write-Step "Extracting package information"
     $version = Get-PackageVersion -PackagesDir $packagesDir
@@ -457,9 +466,14 @@ try {
         Write-Info "Your project targets: .NET $targetNetVersion.0"
         Write-Info "This PR build targets: .NET $packageNetVersion.0"
         
-        $response = Read-Host "`nDo you want to update your project to .NET $packageNetVersion.0? (y/N)"
-        if ($response -eq "y" -or $response -eq "Y") {
+        if ($Yes) {
             $willUpdateTfm = $true
+        } else {
+            $response = Read-Host "`nDo you want to update your project to .NET $packageNetVersion.0? (y/N)"
+            $willUpdateTfm = ($response -eq "y" -or $response -eq "Y")
+        }
+        
+        if ($willUpdateTfm) {
             Write-Warning "Note: You may need to manually update other package dependencies to versions compatible with .NET $packageNetVersion.0"
         }
         else {
@@ -487,23 +501,20 @@ try {
     Write-Host "Changes to be applied:" -ForegroundColor White
     Write-Host "  • Project: $projectName" -ForegroundColor Gray
     Write-Host "  • Package version: $version" -ForegroundColor Gray
-    
-    # Extract .NET version from package version (e.g., 10.0.20-ci.main.25607.5 -> 10)
-    $packageDotNetVersion = $null
-    if ($version -match '^(\d+)\.') {
-        $packageDotNetVersion = $Matches[1]
-    }
-    
     if ($willUpdateTfm) {
-        $targetVersionForDisplay = if ($packageDotNetVersion) { "$packageDotNetVersion.0" } else { "$packageNetVersion.0" }
+        $targetVersionForDisplay = if ($packageDotNetVersion) { "$packageDotNetVersion.0" } else { "10.0" }
         Write-Host "  • Target framework: Will be updated to .NET $targetVersionForDisplay" -ForegroundColor Gray
     }
     Write-Host ""
     
-    $response = Read-Host "Do you want to continue? (y/N)"
-    if ($response -ne "y" -and $response -ne "Y") {
-        Write-Warning "Operation cancelled by user"
-        exit 0
+    if ($Yes) {
+        Write-Info "Auto-accepting confirmation (-Yes flag)"
+    } else {
+        $response = Read-Host "Do you want to continue? (y/N)"
+        if ($response -ne "y" -and $response -ne "Y") {
+            Write-Warning "Operation cancelled by user"
+            return
+        }
     }
     Write-Host ""
     
@@ -521,9 +532,12 @@ try {
     
     # Get latest stable version for revert instructions
     try {
-        $nugetResponse = Invoke-RestMethod -Uri "https://api.nuget.org/v3-flatcontainer/microsoft.maui.controls/index.json" -UseBasicParsing
-        $stableVersions = $nugetResponse.versions | Where-Object { $_ -notmatch '-' } | Sort-Object -Descending
-        $latestStable = $stableVersions[0]
+        $nugetResponse = Invoke-RestMethod -Uri "https://api.nuget.org/v3-flatcontainer/microsoft.maui.controls/index.json" -UseBasicParsing -TimeoutSec 30
+        $stableVersions = $nugetResponse.versions | Where-Object { $_ -notmatch '-' }
+        $latestStable = $stableVersions | Sort-Object { [Version]$_ } -Descending | Select-Object -First 1
+        if ([string]::IsNullOrEmpty($latestStable)) {
+            $latestStable = "X.Y.Z"
+        }
     }
     catch {
         $latestStable = "X.Y.Z"
@@ -548,16 +562,30 @@ try {
     Write-Info "Local package source: $packagesDir"
     Write-Host ""
     
+    # Get latest stable version for revert instructions
+    $stableVersion = "X.Y.Z"
+    try {
+        $nugetResponse = Invoke-RestMethod -Uri "https://api.nuget.org/v3-flatcontainer/$($PackageName.ToLower())/index.json" -Method Get -ErrorAction SilentlyContinue
+        if ($nugetResponse -and $nugetResponse.versions) {
+            $stableVersions = $nugetResponse.versions | Where-Object { $_ -notmatch '-' }
+            if ($stableVersions) {
+                $stableVersion = $stableVersions | Select-Object -Last 1
+            }
+        }
+    } catch {
+        # If we can't fetch, just use placeholder
+    }
+    
     Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Yellow
     Write-Host "  TO REVERT TO PRODUCTION VERSION" -ForegroundColor Yellow
     Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Yellow
     Write-Host ""
     Write-Host "1. Edit $projectName and change the version:" -ForegroundColor White
     Write-Host "   From: Version=`"$version`"" -ForegroundColor Gray
-    Write-Host "   To:   Version=`"X.Y.Z`"" -ForegroundColor Gray
+    Write-Host "   To:   Version=`"$stableVersion`"" -ForegroundColor Gray
     Write-Host "   (Check https://www.nuget.org/packages/$PackageName for latest)" -ForegroundColor DarkGray
     Write-Host ""
-    Write-Host "2. In NuGet.config, remove or comment out the 'maui-pr-build' source" -ForegroundColor White
+    Write-Host "2. In NuGet.config, remove or comment out the 'maui-pr-$PrNumber' source" -ForegroundColor White
     Write-Host ""
     Write-Host "3. Run: dotnet restore --force" -ForegroundColor White
     Write-Host ""
@@ -575,6 +603,4 @@ catch {
     Write-Host "  • Check if there's a completed build for this PR (look for green checkmarks)" -ForegroundColor Gray
     Write-Host "  • Check your internet connection" -ForegroundColor Gray
     Write-Host "  • Visit: https://github.com/dotnet/maui/wiki/Testing-PR-Builds" -ForegroundColor Gray
-    
-    exit 1
 }
