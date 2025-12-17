@@ -100,6 +100,17 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		protected override void DisconnectHandler(AWebView platformView)
 		{
+			// Clean up lifecycle event handler to prevent memory leaks
+			if (_onBackPressedHandler != null && MauiContext?.Services != null)
+			{
+				var lifecycleService = MauiContext.Services.GetService<ILifecycleEventService>();
+				if (lifecycleService is LifecycleEventService concreteService)
+				{
+					concreteService.RemoveEvent(nameof(AndroidLifecycle.OnBackPressed), _onBackPressedHandler);
+					_onBackPressedHandler = null;
+				}
+			}
+
 			platformView.StopLoading();
 
 			if (_webviewManager != null)
