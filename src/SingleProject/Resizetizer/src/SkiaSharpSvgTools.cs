@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Resizetizer
 				var size = GetOriginalSize();
 				if (size.IsEmpty)
 				{
-					throw new InvalidOperationException($"Cannot draw SVG file '{Filename}'. The SVG has an no size and may be missing width/height or viewBox attributes.");
+					throw new InvalidOperationException($"Cannot draw SVG file '{Filename}'. The SVG has no size and may be missing width/height or viewBox attributes.");
 				}
 
 				// vector scaling has rounding issues, so first draw as intended
