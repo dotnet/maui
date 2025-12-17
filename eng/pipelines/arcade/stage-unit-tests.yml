@@ -34,27 +34,12 @@ stages:
           skipSimulatorSetup: true
           base64Encode: true
           outputVariableName: dotnetbuilds-internal-container-read-token-base64
-
-      # Display PR environment variables for diagnostic purposes (PR builds only)
-      - ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
-        - script: |
-            echo "##[group]PR Build Environment Variables"
-            echo "Build.Reason: $(Build.Reason)"
-            echo "BUILD_REASON: $BUILD_REASON"
-            echo "System.PullRequest.PullRequestNumber: $(System.PullRequest.PullRequestNumber)"
-            echo "SYSTEM_PULLREQUEST_PULLREQUESTNUMBER: $SYSTEM_PULLREQUEST_PULLREQUESTNUMBER"
-            echo "CI: $CI"
-            echo "##[endgroup]"
-          displayName: 🔍 Display PR Environment Variables
-          env:
-            BUILD_REASON: $(Build.Reason)
-            SYSTEM_PULLREQUEST_PULLREQUESTNUMBER: $(System.PullRequest.PullRequestNumber)
-            CI: true
       
       - script: ${{ job.buildScript }} -restore -build -configuration ${{ parameters.buildConfig }} -projects "${{ parameters.buildTaskProjects }}" /p:ArchiveTests=false /p:TreatWarningsAsErrors=$(TreatWarningsAsErrors) /bl:$(Build.Arcade.LogsPath)${{ parameters.buildConfig }}/buildtasks.binlog $(_OfficialBuildIdArgs)
         displayName: 🛠️ Build BuildTasks
         env:
           BUILD_REASON: $(Build.Reason)
+          BUILD_SOURCEBRANCH: $(Build.SourceBranch)
           SYSTEM_PULLREQUEST_PULLREQUESTNUMBER: $(System.PullRequest.PullRequestNumber)
 
       # - template: /eng/pipelines/arcade/setup-test-env.yml

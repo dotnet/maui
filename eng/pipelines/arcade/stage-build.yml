@@ -80,30 +80,16 @@ stages:
               - ${{ each pair in step }}:
                   ${{ pair.key }}: ${{ pair.value }}
 
-            # Display PR environment variables for diagnostic purposes (PR builds only)
-            - ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
-              - script: |
-                  echo "##[group]PR Build Environment Variables"
-                  echo "Build.Reason: $(Build.Reason)"
-                  echo "BUILD_REASON: $BUILD_REASON"
-                  echo "System.PullRequest.PullRequestNumber: $(System.PullRequest.PullRequestNumber)"
-                  echo "SYSTEM_PULLREQUEST_PULLREQUESTNUMBER: $SYSTEM_PULLREQUEST_PULLREQUESTNUMBER"
-                  echo "CI: $CI"
-                  echo "##[endgroup]"
-                displayName: 🔍 Display PR Environment Variables
-                env:
-                  BUILD_REASON: $(Build.Reason)
-                  SYSTEM_PULLREQUEST_PULLREQUESTNUMBER: $(System.PullRequest.PullRequestNumber)
-                  CI: true
-
             - script: ${{ BuildPlatform.buildScript }} -restore -build -configuration ${{ BuildConfiguration }} -projects "${{ parameters.buildTaskProjects }}" /p:ArchiveTests=false /p:TreatWarningsAsErrors=$(TreatWarningsAsErrors) /bl:$(Build.Arcade.LogsPath)${{ BuildConfiguration }}/buildtasks_${{ BuildPlatform.os }}.binlog $(_OfficialBuildIdArgs)
               displayName: 🛠️ Build BuildTasks
               env:
                 BUILD_REASON: $(Build.Reason)
+                BUILD_SOURCEBRANCH: $(Build.SourceBranch)
                 SYSTEM_PULLREQUEST_PULLREQUESTNUMBER: $(System.PullRequest.PullRequestNumber)
 
             - script: ${{ BuildPlatform.buildScript }} -restore -build -configuration ${{ BuildConfiguration }} -projects ${{ BuildPlatform.sln }} /p:ArchiveTests=false /p:TreatWarningsAsErrors=$(TreatWarningsAsErrors) /p:CodesignRequireProvisioningProfile=false /p:EnableWindowsTargeting=true /bl:$(Build.Arcade.LogsPath)${{ BuildConfiguration }}/build_${{ BuildPlatform.os }}.binlog $(_OfficialBuildIdArgs)
               displayName: 🛠️ Build Microsoft.Maui.sln
               env:
                 BUILD_REASON: $(Build.Reason)
+                BUILD_SOURCEBRANCH: $(Build.SourceBranch)
                 SYSTEM_PULLREQUEST_PULLREQUESTNUMBER: $(System.PullRequest.PullRequestNumber)

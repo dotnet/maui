@@ -72,28 +72,13 @@ stages:
           - ${{ each pair in step }}:
               ${{ pair.key }}: ${{ pair.value }}
 
-        # Display PR environment variables for diagnostic purposes (PR builds only)
-        - ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
-          - script: |
-              echo "##[group]PR Build Environment Variables"
-              echo "Build.Reason: $(Build.Reason)"
-              echo "BUILD_REASON: $BUILD_REASON"
-              echo "System.PullRequest.PullRequestNumber: $(System.PullRequest.PullRequestNumber)"
-              echo "SYSTEM_PULLREQUEST_PULLREQUESTNUMBER: $SYSTEM_PULLREQUEST_PULLREQUESTNUMBER"
-              echo "CI: $CI"
-              echo "##[endgroup]"
-            displayName: 🔍 Display PR Environment Variables
-            env:
-              BUILD_REASON: $(Build.Reason)
-              SYSTEM_PULLREQUEST_PULLREQUESTNUMBER: $(System.PullRequest.PullRequestNumber)
-              CI: true
-
         # Run on public pipeline
         - ${{ if not(parameters.enableMicrobuild) }}:
           - script: $(_buildScript) -restore -pack -publish $(_PublishArgs) -configuration $(_BuildConfig) /bl:$(Build.Arcade.LogsPath)/$(_BuildConfig)/pack.binlog $(_OfficialBuildIdArgs)
             displayName: Pack & Publish
             env:
               BUILD_REASON: $(Build.Reason)
+              BUILD_SOURCEBRANCH: $(Build.SourceBranch)
               SYSTEM_PULLREQUEST_PULLREQUESTNUMBER: $(System.PullRequest.PullRequestNumber)
 
         # Run on internal pipeline
@@ -102,6 +87,7 @@ stages:
             displayName: Pack, Sign
             env:
               BUILD_REASON: $(Build.Reason)
+              BUILD_SOURCEBRANCH: $(Build.SourceBranch)
               SYSTEM_PULLREQUEST_PULLREQUESTNUMBER: $(System.PullRequest.PullRequestNumber)
 
           # only for workloads
@@ -109,6 +95,7 @@ stages:
             displayName: Build Workloads, Sign & Publish
             env:
               BUILD_REASON: $(Build.Reason)
+              BUILD_SOURCEBRANCH: $(Build.SourceBranch)
               SYSTEM_PULLREQUEST_PULLREQUESTNUMBER: $(System.PullRequest.PullRequestNumber)
 
         - task: CopyFiles@2

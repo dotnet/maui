@@ -84,26 +84,11 @@ stages:
             - ${{ each pair in step }}:
                 ${{ pair.key }}: ${{ pair.value }}
 
-          # Display PR environment variables for diagnostic purposes (PR builds only)
-          - ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
-            - script: |
-                echo "##[group]PR Build Environment Variables"
-                echo "Build.Reason: $(Build.Reason)"
-                echo "BUILD_REASON: $BUILD_REASON"
-                echo "System.PullRequest.PullRequestNumber: $(System.PullRequest.PullRequestNumber)"
-                echo "SYSTEM_PULLREQUEST_PULLREQUESTNUMBER: $SYSTEM_PULLREQUEST_PULLREQUESTNUMBER"
-                echo "CI: $CI"
-                echo "##[endgroup]"
-              displayName: 🔍 Display PR Environment Variables
-              env:
-                BUILD_REASON: $(Build.Reason)
-                SYSTEM_PULLREQUEST_PULLREQUESTNUMBER: $(System.PullRequest.PullRequestNumber)
-                CI: true
-
           - script: $(_buildScript) -restore -build -configuration ${{ BuildConfiguration }} -projects "${{ parameters.buildTaskProjects }}" /p:ArchiveTests=false /p:TreatWarningsAsErrors=$(TreatWarningsAsErrors) /bl:$(Build.Arcade.LogsPath)${{ BuildConfiguration }}/buildtasks.binlog $(_OfficialBuildIdArgs)
             displayName: 🛠️ Build BuildTasks
             env:
               BUILD_REASON: $(Build.Reason)
+              BUILD_SOURCEBRANCH: $(Build.SourceBranch)
               SYSTEM_PULLREQUEST_PULLREQUESTNUMBER: $(System.PullRequest.PullRequestNumber)
 
           - script: $(_msbuildCommand) "${{ parameters.helixProject }}" -warnAsError 0 -restore /p:Configuration=${{ BuildConfiguration }} /p:HelixInternal="${{ parameters.helixInternal }}" /p:TestRunNameSuffix="_${{ BuildConfiguration }}" /bl:$(Build.Arcade.LogsPath)${{ BuildConfiguration }}/helix_tests.binlog ${{ parameters.extraHelixArguments }}
@@ -112,5 +97,6 @@ stages:
               SYSTEM_ACCESSTOKEN: $(System.AccessToken) # We need to set this env var to publish helix results to Azure Dev Ops
               HelixAccessToken: ${{ parameters.HelixAccessToken }}
               BUILD_REASON: $(Build.Reason)
+              BUILD_SOURCEBRANCH: $(Build.SourceBranch)
               SYSTEM_PULLREQUEST_PULLREQUESTNUMBER: $(System.PullRequest.PullRequestNumber)
     
