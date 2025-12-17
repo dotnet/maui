@@ -214,33 +214,26 @@ namespace Microsoft.Maui.Platform
 				this.RefreshThemeResources();
 			}
 
-			// Only set passthrough regions when the title bar is actually visible
-			// to avoid blocking caption button input when title bar is hidden
+			var rectArray = new List<Rect32>();
+			foreach (var child in PassthroughTitlebarElements)
+			{
+				var transform = child.TransformToVisual(null);
+				var bounds = transform.TransformBounds(
+					new FRect(0, 0, child.ActualWidth, child.ActualHeight));
+				var rect = GetRect(bounds, XamlRoot.RasterizationScale);
+				rectArray.Add(rect);
+			}
+
 			if (AppWindowId.HasValue)
 			{
 				var nonClientInputSrc =
 					InputNonClientPointerSource.GetForWindowId(AppWindowId.Value);
 
-				if (AppTitleBarContentControl.Visibility == UI.Xaml.Visibility.Visible)
+				// Only set passthrough regions when the title bar is actually visible
+				// to avoid blocking caption button input when title bar is hidden
+				if (rectArray.Count > 0 && AppTitleBarContentControl.Visibility == UI.Xaml.Visibility.Visible)
 				{
-					var rectArray = new List<Rect32>();
-					foreach (var child in PassthroughTitlebarElements)
-					{
-						var transform = child.TransformToVisual(null);
-						var bounds = transform.TransformBounds(
-							new FRect(0, 0, child.ActualWidth, child.ActualHeight));
-						var rect = GetRect(bounds, XamlRoot.RasterizationScale);
-						rectArray.Add(rect);
-					}
-
-					if (rectArray.Count > 0)
-					{
-						nonClientInputSrc.SetRegionRects(NonClientRegionKind.Passthrough, [.. rectArray]);
-					}
-					else
-					{
-						nonClientInputSrc.ClearRegionRects(NonClientRegionKind.Passthrough);
-					}
+					nonClientInputSrc.SetRegionRects(NonClientRegionKind.Passthrough, [.. rectArray]);
 				}
 				else
 				{
