@@ -29,8 +29,10 @@ steps:
     Write-Host "Test Filter (from parameter): '$testFilterFallback'"
     Write-Host "Detected Categories: '$detectedCategories'"
     
-    # Use testFilter parameter as fallback when CATEGORYGROUP is not set (CV2/CARV2 stages)
-    if ([string]::IsNullOrWhiteSpace($testFilterParam)) {
+    # Use testFilter parameter as fallback when CATEGORYGROUP is not set or not expanded
+    # When CATEGORYGROUP variable doesn't exist, it shows as literal '$(CATEGORYGROUP)'
+    $categoryGroupNotSet = [string]::IsNullOrWhiteSpace($testFilterParam) -or $testFilterParam -eq '$(CATEGORYGROUP)'
+    if ($categoryGroupNotSet -and -not [string]::IsNullOrWhiteSpace($testFilterFallback)) {
         $testFilterParam = $testFilterFallback
         Write-Host "Using testFilter parameter as category: '$testFilterParam'"
     }
