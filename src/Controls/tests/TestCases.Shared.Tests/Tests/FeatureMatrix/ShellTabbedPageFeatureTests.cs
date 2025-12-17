@@ -21,12 +21,10 @@ public class ShellTabbedPageFeatureTests : UITest
 	}
 
 #if TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/32222, https://github.com/dotnet/maui/issues/32125
-	[Test, Order(1)]
+	[Test, Order(6)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShell_TabBarTitleColor()
 	{
-		App.WaitForElement("ShellTabbedButton");
-		App.Tap("ShellTabbedButton");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("TabBarTitleColorPurple");
@@ -101,10 +99,12 @@ public class ShellTabbedPageFeatureTests : UITest
 	}
 #endif
 
-	[Test, Order(6)]
+	[Test, Order(1)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShell_NavigatingTabs()
 	{
+		App.WaitForElement("ShellTabbedButton");
+		App.Tap("ShellTabbedButton");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("NavigateToTab3");
