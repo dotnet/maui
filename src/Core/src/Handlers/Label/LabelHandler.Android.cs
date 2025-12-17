@@ -16,9 +16,7 @@ namespace Microsoft.Maui.Handlers
 			base.PlatformArrange(frame);
 		}
 
-#pragma warning disable RS0016 // Symbol is not part of the declared public API
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
-#pragma warning restore RS0016
 		{
 			var size = base.GetDesiredSize(widthConstraint, heightConstraint);
 
