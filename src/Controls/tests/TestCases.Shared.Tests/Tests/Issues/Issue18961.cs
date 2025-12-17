@@ -54,7 +54,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			// 8. Verify Entry returns to approximately its original position after keyboard dismissal
 			var finalRect = App.FindElement(LastEntry).GetRect();
-			Assert.That(Math.Abs(finalRect.Y - initialRect.Y), Is.LessThan(50),
+			Assert.That(Math.Abs(finalRect.Y - initialRect.Y), Is.LessThan(5),
 				"Entry should return close to its original position after keyboard dismissal");
 		}
 	}
