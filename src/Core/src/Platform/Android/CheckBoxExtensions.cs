@@ -29,6 +29,7 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateForeground(this AppCompatCheckBox platformCheckBox, ICheckBox check)
 		{
 			var mode = PorterDuff.Mode.SrcIn;
+
 			CompoundButtonCompat.SetButtonTintList(platformCheckBox, platformCheckBox.GetColorStateList(check));
 			CompoundButtonCompat.SetButtonTintMode(platformCheckBox, mode);
 		}
@@ -44,10 +45,10 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				// No custom foreground color
+				
 				if (RuntimeFeature.IsMaterial3Enabled)
 				{
-					// Save the default button tint list from the theme on first call
+					// Save the default button tint list
 					_defaultButtonTintList ??= platformCheckBox.ButtonTintList;
 
 					// Material 3: Use the default theme's buttonTint
