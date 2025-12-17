@@ -28,47 +28,40 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateForeground(this AppCompatCheckBox platformCheckBox, ICheckBox check)
 		{
-			// For Material 3, preserve the default Material 3 theme colors
-			if (RuntimeFeature.IsMaterial3Enabled)
-			{
-				_defaultButtonTintList ??= platformCheckBox.ButtonTintList;
-
-				if (check.Foreground is SolidPaint solid)
-				{
-					// Apply custom color only when enabled
-					CompoundButtonCompat.SetButtonTintList(platformCheckBox, ColorStateList.ValueOf(solid.Color.ToPlatform()));
-				}
-				else
-				{
-					// Restore Material 3 default theme colors
-					CompoundButtonCompat.SetButtonTintList(platformCheckBox, _defaultButtonTintList);
-				}
-			}
-			else
-			{
-				var mode = PorterDuff.Mode.SrcIn;
-				CompoundButtonCompat.SetButtonTintList(platformCheckBox, platformCheckBox.GetColorStateList(check));
-				CompoundButtonCompat.SetButtonTintMode(platformCheckBox, mode);
-			}
+			var mode = PorterDuff.Mode.SrcIn;
+			CompoundButtonCompat.SetButtonTintList(platformCheckBox, platformCheckBox.GetColorStateList(check));
+			CompoundButtonCompat.SetButtonTintMode(platformCheckBox, mode);
 		}
 
 		internal static ColorStateList GetColorStateList(this AppCompatCheckBox platformCheckBox, ICheckBox check)
 		{
-			AColor tintColor;
-
 			// For the moment, we're only supporting solid color Paint for the Android Checkbox
 			if (check.Foreground is SolidPaint solid)
 			{
 				var color = solid.Color;
-				tintColor = color.ToPlatform();
+				AColor tintColor = color.ToPlatform();
+				return ColorStateListExtensions.CreateCheckBox(tintColor);
 			}
 			else
 			{
-				Graphics.Color accent = platformCheckBox.Context?.GetAccentColor() ?? Graphics.Color.FromArgb("#ff33b5e5");
-				tintColor = accent.ToPlatform();
-			}
+				// No custom foreground color
+				if (RuntimeFeature.IsMaterial3Enabled)
+				{
+					// Save the default button tint list from the theme on first call
+					_defaultButtonTintList ??= platformCheckBox.ButtonTintList;
 
-			return ColorStateListExtensions.CreateCheckBox(tintColor);
+					// Material 3: Use the default theme's buttonTint
+					if (_defaultButtonTintList is not null)
+					{
+						return _defaultButtonTintList;
+					}
+				}
+
+				// Material 2: Use accent color
+				Graphics.Color accent = platformCheckBox.Context?.GetAccentColor() ?? Graphics.Color.FromArgb("#ff33b5e5");
+				AColor tintColor = accent.ToPlatform();
+				return ColorStateListExtensions.CreateCheckBox(tintColor);
+			}
 		}
 	}
 }
