@@ -4,9 +4,9 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-public class IssueNavbarVisible : _IssuesUITest
+public class Issue33191 : _IssuesUITest
 {
-    public IssueNavbarVisible(TestDevice testDevice) : base(testDevice)
+    public Issue33191(TestDevice testDevice) : base(testDevice)
     {
     }
 

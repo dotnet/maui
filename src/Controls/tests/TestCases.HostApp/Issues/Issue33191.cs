@@ -1,9 +1,9 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 33153, "NavBar visibility does not update when switching tabs", PlatformAffected.iOS)]
-public class IssueNavBarVisible : Shell
+[Issue(IssueTracker.Github, 33191, "NavBar visibility does not update when switching tabs", PlatformAffected.iOS)]
+public class Issue33191 : Shell
 {
-    public IssueNavBarVisible()
+    public Issue33191()
     {
         var tabBar = new TabBar { Title = "First Tab" };
         var tab = new Tab { Title = "First Tab" };
@@ -11,13 +11,13 @@ public class IssueNavBarVisible : Shell
         var page1Content = new ShellContent
         {
             Title = "Page",
-            ContentTemplate = new DataTemplate(() => new IssueNavBarPage1())
+            ContentTemplate = new DataTemplate(() => new Issue33191Page1())
         };
 
         var page2Content = new ShellContent
         {
             Title = "Page 1",
-            ContentTemplate = new DataTemplate(() => new IssueNavBarPage2())
+            ContentTemplate = new DataTemplate(() => new Issue33191Page2())
         };
 
         tab.Items.Add(page1Content);
@@ -27,9 +27,9 @@ public class IssueNavBarVisible : Shell
     }
 }
 
-public class IssueNavBarPage1 : ContentPage
+public class Issue33191Page1 : ContentPage
 {
-    public IssueNavBarPage1()
+    public Issue33191Page1()
     {
         Title = "Page";
 
@@ -52,9 +52,9 @@ public class IssueNavBarPage1 : ContentPage
     }
 }
 
-public class IssueNavBarPage2 : ContentPage
+public class Issue33191Page2 : ContentPage
 {
-    public IssueNavBarPage2()
+    public Issue33191Page2()
     {
         Title = "Page 1";
         Shell.SetNavBarIsVisible(this, false);
