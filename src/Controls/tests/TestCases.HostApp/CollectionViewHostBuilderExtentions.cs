@@ -35,11 +35,12 @@ namespace Maui.Controls.Sample
 				{
 					if ($"{en.Key}" == "TEST_CONFIGURATION_ARGS")
 					{
-						cv2Handlers = $"{en.Value}".Contains("CollectionView2", StringComparison.OrdinalIgnoreCase);
+						// If TEST_CONFIGURATION_ARGS contains "CollectionView1", use legacy CV1 handlers
+						// Otherwise, use CV2 handlers (default)
+						cv2Handlers = !$"{en.Value}".Contains("CollectionView1", StringComparison.OrdinalIgnoreCase);
 						break;
 					}
 				}
-
 				if (cv2Handlers)
 				{
 					Console.WriteLine($"Using CollectionView2 handlers");
