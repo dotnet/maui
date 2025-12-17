@@ -38,8 +38,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				UpdateHasHeader();
 				NotifyDataSetChanged();
 			}
-			else if (property.Is(Microsoft.Maui.Controls.StructuredItemsView.FooterProperty) ||
-				property.Is(Microsoft.Maui.Controls.StructuredItemsView.FooterTemplateProperty))
+			else if (property.Is(Microsoft.Maui.Controls.StructuredItemsView.FooterProperty) || property.Is(Microsoft.Maui.Controls.StructuredItemsView.FooterTemplateProperty))
 			{
 				UpdateHasFooter();
 				NotifyDataSetChanged();

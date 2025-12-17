@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Storage
 			}
 			catch (OperationCanceledException)
 			{
-				return null;
+				return [];
 			}
 		}
 	}

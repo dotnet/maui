@@ -9,7 +9,7 @@ jobs:
   add-changelog:
     name: Add changelog
     runs-on: ubuntu-latest
-    if: github.actor == 'dotnet-maestro[bot]'
+    if: github.repository_owner == 'dotnet' && github.actor == 'dotnet-maestro[bot]'
 
     steps:
     - name: 'Compute changelog'
