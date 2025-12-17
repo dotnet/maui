@@ -54,6 +54,44 @@
 - **Map interactions**: Handle `MapClicked`, move the camera/region, and programmatically add or remove map elements at runtime.
 - **Map display**: Switch map types (e.g., Street, Satellite, Hybrid) and control gesture support (scroll, zoom, rotate).
 
+### Samples: pins and shapes
+
+```xml
+<maps:Map MapType="Hybrid" MapClicked="OnMapClicked">
+    <maps:Map.Pins>
+        <maps:Pin Label="Office" Type="Place">
+            <maps:Pin.Location>
+                <essentials:Location Latitude="47.6424" Longitude="-122.3219" />
+            </maps:Pin.Location>
+        </maps:Pin>
+    </maps:Map.Pins>
+
+    <maps:Map.MapElements>
+        <maps:Polygon StrokeColor="Red" FillColor="#40FF0000" StrokeWidth="4">
+            <maps:Polygon.Geopath>
+                <maps:LocationCollection>
+                    <essentials:Location Latitude="47.642" Longitude="-122.323" />
+                    <essentials:Location Latitude="47.643" Longitude="-122.326" />
+                    <essentials:Location Latitude="47.640" Longitude="-122.327" />
+                </maps:LocationCollection>
+            </maps:Polygon.Geopath>
+        </maps:Polygon>
+
+        <maps:Polyline StrokeColor="DodgerBlue" StrokeWidth="6">
+            <maps:Polyline.Geopath>
+                <maps:LocationCollection>
+                    <essentials:Location Latitude="47.639" Longitude="-122.330" />
+                    <essentials:Location Latitude="47.640" Longitude="-122.335" />
+                </maps:LocationCollection>
+            </maps:Polyline.Geopath>
+        </maps:Polyline>
+
+        <maps:Circle StrokeColor="Green" FillColor="#40008000" StrokeWidth="3"
+                    Center="47.641,-122.329" Radius="200" />
+    </maps:Map.MapElements>
+</maps:Map>
+```
+
 ## 📚 Learn more
 
 - [.NET MAUI Map control docs](https://learn.microsoft.com/dotnet/maui/user-interface/controls/map?view=net-maui-10.0) – capabilities, events, and platform guidance
