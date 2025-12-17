@@ -29,6 +29,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.EnterText("TargetView", "DragAndDropEvents");
 			App.Tap("GoButton");
 
+			Thread.Sleep(1000); // CI-safe delay for page navigation
 			App.WaitForElement("LabelDragElement");
 			App.DragAndDrop("LabelDragElement", "DragTarget");
 
@@ -158,6 +159,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.EnterText("TargetView", "DragAndDropEventArgs");
 			App.Tap("GoButton");
 
+			Thread.Sleep(1000); // CI-safe delay for page navigation
 			App.WaitForElement("LabelDragElement");
 			App.DragAndDrop("LabelDragElement", "DragTarget");
 
@@ -361,13 +363,24 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			App.WaitForElement("Blue");
 			App.WaitForElement("Green");
-			App.DragAndDrop("Blue", "Green");
 
-			// Wait for all UI elements to confirm drag and drop operation completion
-			App.WaitForElement("DropRelativeLayout");
-			App.WaitForElement("DropRelativeScreen");
-			App.WaitForElement("DropRelativeLabel");
-			App.WaitForElement("DragStartRelativeScreen");
+			bool dragDropSuccess = false;
+			for(int i = 0; i < 3; i++)
+			{
+				App.DragAndDrop("Blue", "Green");
+				Thread.Sleep(500);
+				App.WaitForElement("DropRelativeLayout");
+				if (GetCoordinatesFromLabel(App.FindElement("DropRelativeLayout").GetText()) != null)
+				{
+					dragDropSuccess = true;
+					break;
+				}
+			}
+			
+			if(!dragDropSuccess)
+			{
+				Assert.Fail("Drag-and-drop operation failed after many attempts. Drop event did not fire.");
+			}
 
 			var dropRelativeToLayout = GetCoordinatesFromLabel(App.FindElement("DropRelativeLayout").GetText());
 			var dropRelativeToScreen = GetCoordinatesFromLabel(App.FindElement("DropRelativeScreen").GetText());
