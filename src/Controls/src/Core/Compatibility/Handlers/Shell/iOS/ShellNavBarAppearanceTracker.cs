@@ -98,7 +98,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			var navigationBarAppearance = new UINavigationBarAppearance();
 
-			if (appearance == null)
+			if (appearance is null)
 			{
 				navBar.StandardAppearance = navBar.ScrollEdgeAppearance = navigationBarAppearance;
 			}
