@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Maui;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.LifecycleEvents;
 using static global::Android.Views.ViewGroup;
 using AWebView = global::Android.Webkit.WebView;
 using Path = System.IO.Path;
@@ -21,6 +22,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		private WebChromeClient? _webChromeClient;
 		private AndroidWebKitWebViewManager? _webviewManager;
 		internal AndroidWebKitWebViewManager? WebviewManager => _webviewManager;
+		private AndroidLifecycle.OnBackPressed? _onBackPressedHandler;
 
 		private ILogger? _logger;
 		internal ILogger Logger => _logger ??= Services!.GetService<ILogger<BlazorWebViewHandler>>() ?? NullLogger<BlazorWebViewHandler>.Instance;
@@ -58,6 +60,40 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			Logger.CreatedAndroidWebkitWebView();
 
 			return blazorAndroidWebView;
+		}
+
+		protected override void ConnectHandler(AWebView platformView)
+		{
+			base.ConnectHandler(platformView);
+
+			// Register OnBackPressed lifecycle event handler to check WebView's back navigation
+			// This ensures predictive back gesture (Android 13+) checks WebView.CanGoBack() before popping page
+			var services = MauiContext?.Services;
+			if (services != null)
+			{
+				// Create a weak reference to avoid memory leaks
+				var weakPlatformView = new WeakReference<AWebView>(platformView);
+
+				AndroidLifecycle.OnBackPressed handler = (activity) =>
+				{
+					// Check if WebView is still alive and can navigate back
+					if (weakPlatformView.TryGetTarget(out var webView) && webView.CanGoBack())
+					{
+						webView.GoBack();
+						return true; // Prevent back propagation - handled by WebView
+					}
+
+					return false; // Allow back propagation - let page be popped
+				};
+
+				// Register with lifecycle service - will be invoked by HandleBackNavigation in MauiAppCompatActivity
+				var lifecycleService = services.GetService<ILifecycleEventService>();
+				if (lifecycleService is LifecycleEventService concreteService)
+				{
+					concreteService.AddEvent(nameof(AndroidLifecycle.OnBackPressed), handler);
+					_onBackPressedHandler = handler;
+				}
+			}
 		}
 
 		private const string AndroidFireAndForgetAsyncSwitch = "BlazorWebView.AndroidFireAndForgetAsync";
