@@ -51,7 +51,7 @@ handle_error() {
 
 # Configuration - Allow override via environment variable
 GITHUB_REPO="${MAUI_REPO:-dotnet/maui}"
-AZURE_DEVOPS_ORG="xamarin"
+AZURE_DEVOPS_ORG="dnceng-public"
 AZURE_DEVOPS_PROJECT="public"
 PACKAGE_NAME="Microsoft.Maui.Controls"
 
@@ -174,8 +174,8 @@ get_build_info() {
     local checks_url="https://api.github.com/repos/$GITHUB_REPO/commits/$sha/check-runs"
     local checks_json=$(curl -s -H "User-Agent: MAUI-PR-Script" -H "Accept: application/vnd.github.v3+json" "$checks_url")
     
-    # Find the main MAUI build check
-    local build_check=$(echo "$checks_json" | jq -r '.check_runs[] | select(.name == "MAUI-public" and .status == "completed") | @json' | head -n 1)
+    # Find the main MAUI build check (not uitests)
+    local build_check=$(echo "$checks_json" | jq -r '.check_runs[] | select((.name | startswith("maui-pr")) and (.name | contains("uitests") | not) and .status == "completed" and (.details_url | contains("buildId="))) | @json' | head -n 1)
     
     if [ -z "$build_check" ] || [ "$build_check" == "null" ]; then
         error "No completed build found for this PR"
@@ -216,11 +216,11 @@ get_build_artifacts() {
     local artifacts_url="https://dev.azure.com/$AZURE_DEVOPS_ORG/$AZURE_DEVOPS_PROJECT/_apis/build/builds/$build_id/artifacts?api-version=7.1"
     local artifacts_json=$(curl -s -H "User-Agent: MAUI-PR-Script" "$artifacts_url")
     
-    # Look for nuget artifact
-    local download_url=$(echo "$artifacts_json" | jq -r '.value[] | select(.name == "nuget") | .resource.downloadUrl' | head -n 1)
+    # Look for PackageArtifacts artifact
+    local download_url=$(echo "$artifacts_json" | jq -r '.value[] | select(.name == "PackageArtifacts") | .resource.downloadUrl' | head -n 1)
     
     if [ -z "$download_url" ] || [ "$download_url" == "null" ]; then
-        error "No 'nuget' artifact found in build $build_id"
+        error "No 'PackageArtifacts' artifact found in build $build_id"
         exit 1
     fi
     
@@ -346,9 +346,6 @@ update_target_frameworks() {
     sed -i.tmp "s/net[0-9]\+\.0-/net$new_net_version.0-/g" "$project_path"
     rm -f "$project_path.tmp"
     
-    # Cleanup backup file on success
-    rm -f "$project_path.bak"
-    
     success "Updated target frameworks to .NET $new_net_version.0"
     warning "You may need to update other package dependencies to match .NET $new_net_version.0"
 }
@@ -405,19 +402,10 @@ update_package_reference() {
     
     # Replace the version in PackageReference
     sed -i.tmp "s|\(<PackageReference[[:space:]]\+Include=\"$PACKAGE_NAME\"[[:space:]]\+Version=\"\)[^\"]\+\(\"[[:space:]]*/*>\)|\1$version\2|g" "$project_path"
+    
     rm -f "$project_path.tmp"
     
-    # Check if content was actually modified
-    if ! diff -q "$project_path" "$project_path.bak" > /dev/null 2>&1; then
-        # Cleanup backup file on success
-        rm -f "$project_path.bak"
-        success "Updated $PACKAGE_NAME to version $version"
-    else
-        # Restore backup and report error
-        mv "$project_path.bak" "$project_path"
-        error "Could not find $PACKAGE_NAME package reference in project file"
-        exit 1
-    fi
+    success "Updated $PACKAGE_NAME to version $version"
 }
 
 # Main execution
@@ -478,16 +466,27 @@ EOF
     success "Found package version: $version"
     
     # Extract .NET version from package version (e.g., 10.0.20-ci.main.25607.5 -> 10)
-    local package_dotnet_version
-    package_dotnet_version=$(get_package_dotnet_version "$version")
+    local package_dotnet_version=""
+    if [[ $version =~ ^([0-9]+)\. ]]; then
+        package_dotnet_version="${BASH_REMATCH[1]}"
+    fi
+    
+    # Get package .NET version
+    local package_net_version
+    package_net_version=$(get_package_dotnet_version "$version")
     
     # Check compatibility
     local will_update_tfm=false
-    local target_version="$package_dotnet_version.0"
-    if ! test_version_compatibility "$version" "$target_net_version" "$package_dotnet_version"; then
+    local target_version="$package_net_version.0"
+    if ! test_version_compatibility "$version" "$target_net_version" "$package_net_version"; then
         warning "This PR build may target a newer .NET version than your project"
         info "Your project targets: .NET $target_net_version.0"
-        info "This PR build targets: .NET $package_dotnet_version.0"
+        if [[ -n "$package_dotnet_version" ]]; then
+            info "This PR build targets: .NET $package_dotnet_version.0"
+            target_version="$package_dotnet_version.0"
+        else
+            info "This PR build targets: .NET $package_net_version.0"
+        fi
         
         read -p "Do you want to update your project to .NET $target_version? (y/N) " -n 1 -r
         echo
@@ -575,16 +574,30 @@ EOF
     info "Local package source: $packages_dir"
     echo ""
     
+    # Get latest stable version for revert instructions
+    local stable_version="X.Y.Z"
+    local package_lower=$(echo "$PACKAGE_NAME" | tr '[:upper:]' '[:lower:]')
+    if command -v curl >/dev/null 2>&1; then
+        local nuget_response=$(curl -s "https://api.nuget.org/v3-flatcontainer/$package_lower/index.json" 2>/dev/null || echo "")
+        if [[ -n "$nuget_response" ]]; then
+            # Extract stable versions (those without -)
+            stable_version=$(echo "$nuget_response" | grep -o '"[0-9]\+\.[0-9]\+\.[0-9]\+"' | grep -v '-' | tail -1 | tr -d '"')
+            if [[ -z "$stable_version" ]]; then
+                stable_version="X.Y.Z"
+            fi
+        fi
+    fi
+    
     echo -e "${YELLOW}═══════════════════════════════════════════════════════════${NC}"
     echo -e "${YELLOW}  TO REVERT TO PRODUCTION VERSION${NC}"
     echo -e "${YELLOW}═══════════════════════════════════════════════════════════${NC}"
     echo ""
     echo -e "${WHITE}1. Edit $project_name and change the version:${NC}"
     echo -e "${GRAY}   From: Version=\"$version\"${NC}"
-    echo -e "${GRAY}   To:   Version=\"X.Y.Z\"${NC}"
+    echo -e "${GRAY}   To:   Version=\"$stable_version\"${NC}"
     echo -e "${DGRAY}   (Check https://www.nuget.org/packages/$PACKAGE_NAME for latest)${NC}"
     echo ""
-    echo -e "${WHITE}2. In NuGet.config, remove or comment out the 'maui-pr-build' source${NC}"
+    echo -e "${WHITE}2. In NuGet.config, remove or comment out the 'maui-pr-$pr_number' source${NC}"
     echo ""
     echo -e "${WHITE}3. Run: dotnet restore --force${NC}"
     echo ""
