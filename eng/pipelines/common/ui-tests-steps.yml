@@ -19,13 +19,21 @@ steps:
 # This runs FIRST to avoid wasting time on provisioning if no tests will run
 - pwsh: |
     $testFilterParam = $env:CATEGORY_GROUP
+    $testFilterFallback = $env:TEST_FILTER_PARAM
     $detectedCategories = $env:DETECTED_CATEGORIES
     $isPR = $env:BUILD_REASON -eq "PullRequest"
     
     Write-Host "=== Early Category Check ==="
     Write-Host "Build Reason: $env:BUILD_REASON"
-    Write-Host "Category Group: '$testFilterParam'"
+    Write-Host "Category Group (from matrix): '$testFilterParam'"
+    Write-Host "Test Filter (from parameter): '$testFilterFallback'"
     Write-Host "Detected Categories: '$detectedCategories'"
+    
+    # Use testFilter parameter as fallback when CATEGORYGROUP is not set (CV2/CARV2 stages)
+    if ([string]::IsNullOrWhiteSpace($testFilterParam)) {
+        $testFilterParam = $testFilterFallback
+        Write-Host "Using testFilter parameter as category: '$testFilterParam'"
+    }
     
     $shouldRun = $true
     
@@ -60,6 +68,7 @@ steps:
   displayName: 'Check if category should run'
   env:
     CATEGORY_GROUP: $(CATEGORYGROUP)
+    TEST_FILTER_PARAM: ${{ parameters.testFilter }}
     DETECTED_CATEGORIES: $(DETECTED_CATEGORIES)
     BUILD_REASON: $(Build.Reason)
 

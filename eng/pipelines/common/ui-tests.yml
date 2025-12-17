@@ -314,6 +314,7 @@ stages:
                 variables:
                   REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                   APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+                  DETECTED_CATEGORIES: $[ stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryList'] ]
                 steps:
                   - template: ui-tests-steps.yml
                     parameters:
@@ -370,6 +371,7 @@ stages:
                 variables:
                   REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                   APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+                  DETECTED_CATEGORIES: $[ stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryList'] ]
                 steps:
                   - template: ui-tests-steps.yml
                     parameters:
