@@ -47,6 +47,13 @@
 </ContentPage>
    ```
 
+## 🧭 Features at a glance
+
+- **Pins**: Labels, addresses, pin types, custom images, and tap handling via `PinClicked`.
+- **Shapes**: Draw **polygons**, **polylines**, and **circles** to outline areas or routes.
+- **Map interactions**: Handle `MapClicked`, move the camera/region, and programmatically add or remove map elements at runtime.
+- **Map display**: Switch map types (e.g., Street, Satellite, Hybrid) and control gesture support (scroll, zoom, rotate).
+
 ## 📚 Learn more
 
 - [.NET MAUI Map control docs](https://learn.microsoft.com/dotnet/maui/user-interface/controls/map?view=net-maui-10.0) – capabilities, events, and platform guidance
