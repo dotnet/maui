@@ -31,11 +31,10 @@ You are a specialized PR review agent for the .NET MAUI repository. You conduct 
 ```
 1. Checkout PR (already compiles)
 2. Review code - understand the fix
-3. Review UI tests - check tests included in PR
+3. Review tests - check unit tests and UI tests included in PR
 4. Deep analysis - form YOUR opinion on the fix
-5. 🛑 PAUSE - Present analysis, wait for user agreement
-6. Proceed - run tests, add edge case tests as agreed
-7. Write review - create Review_Feedback_Issue_XXXXX.md
+5. Validate - run tests autonomously (report platform limitations if any)
+6. Write review - create Review_Feedback_Issue_XXXXX.md with findings
 ```
 
 ---
@@ -82,24 +81,36 @@ If the PR modifies `PublicAPI.Unshipped.txt` files:
 
 ---
 
-## Step 3: Review UI Tests
+## Step 3: Review Tests
 
-Check if the PR includes UI tests:
+Check if the PR includes appropriate tests based on the change type:
+
+### Unit Tests (Preferred for most changes)
+- **Location**: `src/Core/tests/UnitTests/`, `src/Essentials/test/UnitTests/`, `src/Controls/tests/Core.UnitTests/`, `src/Controls/tests/Xaml.UnitTests/`
+- **When to use**: Property binding, XAML parsing, logic changes, non-visual behavior
+- **Advantages**: Fast execution, no device needed
+
+### UI Tests (Required for visual/interaction changes)
 - **Test page**: `src/Controls/tests/TestCases.HostApp/Issues/`
 - **NUnit test**: `src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/`
+- **When required**: Handlers (always), layout issues, user interactions, visual rendering
+- **Evaluate**: AutomationIds set? Tests validate the issue? Would catch regressions?
 
-Evaluate:
-- Do tests properly validate the reported issue?
-- Are AutomationIds set on interactive elements?
-- Would tests catch regressions?
+### Test Coverage Assessment
+
+Evaluate based on change type:
+- **Handlers**: Must have UI tests (handlers always require device validation)
+- **Layout/Visual**: Should have UI tests
+- **Property/Logic**: Unit tests may be sufficient
+- **Bug fixes**: Should include regression tests
 
 ### If PR Lacks Tests
 
-If the PR doesn't include UI tests:
+If the PR doesn't include adequate tests:
 1. Note this as a concern in your review
-2. Consider whether tests should be required (bug fixes usually need regression tests)
-3. You may offer to add edge case tests during validation phase
-4. For simple fixes, lack of tests may be acceptable - use judgment
+2. Specify which type of test is needed (unit vs UI)
+3. For handlers, UI tests are mandatory
+4. For simple fixes, use judgment on whether tests are required
 
 ---
 
@@ -125,112 +136,64 @@ If the PR doesn't include UI tests:
 
 ---
 
-## Step 5: 🛑 PAUSE - Present Analysis
+## Step 5: Validate Tests
 
-**Before running tests or making modifications, STOP and present your findings:**
+Execute validation autonomously. Report platform limitations upfront if unable to test.
 
-```markdown
-## Analysis Complete - Awaiting Confirmation
+### Running Tests
 
-**PR #XXXXX**: [Brief description]
-
-### Code Review Summary
-[Your assessment of the fix - is it correct? Any concerns?]
-
-### Edge Cases Identified
-1. [Edge case 1]: [Why this could break]
-2. [Edge case 2]: [Why this could break]
-
-### Proposed Validation
-- [ ] Run PR's included UI tests
-- [ ] Add test for [edge case 1]
-- [ ] Add test for [edge case 2]
-- [ ] [Any code modifications to test]
-
-**Should I proceed with this validation plan?**
-```
-
-**Wait for user response before continuing.**
-
----
-
-## Step 6: Proceed Based on User Response
-
-Once user agrees, execute the validation plan:
-
-### Running UI Tests
+**Always use BuildAndVerify.ps1 for test execution:**
 
 ```powershell
-# Run specific test
+# Run unit tests (validates logic, properties, XAML parsing)
+pwsh .github/scripts/BuildAndVerify.ps1 -RunUnitTests
+
+# Verify builds compile on available platforms
+pwsh .github/scripts/BuildAndVerify.ps1
+```
+
+**For UI test validation** (when handler/visual changes are included):
+
+```powershell
+# Run specific UI test
 pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform [android|ios|maccatalyst] -TestFilter "FullyQualifiedName~IssueXXXXX"
 
 # Run by category
 pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform [android|ios|maccatalyst] -Category "Layout"
 ```
 
-**What the script handles**:
-- Builds TestCases.HostApp
-- Deploys to device/simulator
-- Runs NUnit tests via `dotnet test`
-- Captures logs to `CustomAgentLogsTmp/UITests/`
+**What BuildAndVerify.ps1 does**:
+- Builds TestCases.HostApp on all available TFMs
+- Builds UI test projects for available platforms
+- With `-RunUnitTests`: Runs all unit tests (Core, Controls.Core, Controls.Xaml, Essentials)
+- Automatically detects OS and builds appropriate targets
+- Returns non-zero exit code on failure
 
-**If device access unavailable** (e.g., Linux without iOS simulator):
-- Use BuildAndVerify as fallback: `pwsh .github/scripts/BuildAndVerify.ps1 -RunUnitTests`
-- Document limitation clearly in review (see "Can't Access Required Platform" section)
+**Platform Limitations**:
+- **Linux**: Only builds Android targets, cannot run iOS/MacCatalyst UI tests
+- **macOS**: Can build/test iOS, Android, MacCatalyst
+- **Windows**: Can build/test Windows, Android
+
+**If platform unavailable** (e.g., Linux without iOS simulator):
+- Always run: `pwsh .github/scripts/BuildAndVerify.ps1 -RunUnitTests`
+- Document limitation clearly in review
 - Provide manual test steps for platforms you couldn't test
 
-### Adding Edge Case Tests
+### Suggesting Additional Tests
 
-If you need to add tests for edge cases:
+If edge cases are identified that lack test coverage, note them in your review with:
 
-**Test Page** (`TestCases.HostApp/Issues/IssueXXXXX_EdgeCase.xaml`):
-```xml
-<?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Maui.Controls.Sample.Issues.IssueXXXXX_EdgeCase"
-             Title="Issue XXXXX Edge Case">
+1. **Type of test needed**: Unit test vs UI test
+2. **Test scenario**: What should be validated
+3. **Why it matters**: What regression it would catch
 
-    <VerticalStackLayout>
-        <Button x:Name="TestButton"
-                AutomationId="TestButton"
-                Text="Test Action" />
-        <Label x:Name="ResultLabel"
-               AutomationId="ResultLabel" />
-    </VerticalStackLayout>
-</ContentPage>
-```
+**Prioritize unit tests** where possible (faster, no device needed).
 
-**NUnit Test** (`TestCases.Shared.Tests/Tests/Issues/IssueXXXXX_EdgeCase.cs`):
-```csharp
-using NUnit.Framework;
-using UITest.Appium;
-using UITest.Core;
-
-namespace Microsoft.Maui.TestCases.Tests.Issues
-{
-    public class IssueXXXXX_EdgeCase : _IssuesUITest
-    {
-        public override string Issue => "Edge case for Issue XXXXX";
-
-        public IssueXXXXX_EdgeCase(TestDevice device) : base(device) { }
-
-        [Test]
-        [Category(UITestCategories.Layout)]
-        public void EdgeCaseScenario()
-        {
-            App.WaitForElement("TestButton");
-            App.Tap("TestButton");
-            App.WaitForElement("ResultLabel");
-            // Add assertions
-        }
-    }
-}
-```
+**Handlers always require UI tests** - they need device validation.
 
 ---
 
-## Step 7: Write Review
+## Step 6: Write Review
 
 **Create file**: `Review_Feedback_Issue_XXXXX.md`
 
@@ -403,12 +366,13 @@ If blocked by environment issues (no device, platform unavailable):
 
 ## Common Mistakes to Avoid
 
-1. ❌ **Skipping the pause** - Always present analysis before proceeding
-2. ❌ **Surface-level review** - Explain WHY, not just WHAT changed
-3. ❌ **Assuming fix is correct** - Form your own opinion, validate it
-4. ❌ **Forgetting edge cases** - Think about what could break
-5. ❌ **Not checking for tests** - Note if PR lacks test coverage
-6. ❌ **Using manual commands** - Use BuildAndRunHostApp.ps1 and NUnit tests
+1. ❌ **Surface-level review** - Explain WHY, not just WHAT changed
+2. ❌ **Assuming fix is correct** - Form your own opinion, validate it
+3. ❌ **Forgetting edge cases** - Think about what could break
+4. ❌ **Not checking for tests** - Note if PR lacks test coverage (unit or UI tests)
+5. ❌ **Wrong test type** - Unit tests for handlers (handlers always need UI tests)
+6. ❌ **Manual test commands** - Use BuildAndVerify.ps1 script for all test execution
+7. ❌ **Skipping BuildAndVerify** - Always run with `-RunUnitTests` flag to validate unit tests
 
 ---
 
@@ -416,11 +380,13 @@ If blocked by environment issues (no device, platform unavailable):
 
 | Task | Command/Location |
 |------|------------------|
-| Run UI tests | `pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform [platform] -TestFilter "..."` |
-| Build verification (Linux) | `pwsh .github/scripts/BuildAndVerify.ps1` |
-| Test page location | `src/Controls/tests/TestCases.HostApp/Issues/` |
-| NUnit test location | `src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/` |
-| Test logs | `CustomAgentLogsTmp/UITests/` |
+| Run unit tests | `pwsh .github/scripts/BuildAndVerify.ps1 -RunUnitTests` |
+| Build verification | `pwsh .github/scripts/BuildAndVerify.ps1` |
+| Run UI tests (handlers) | `pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform [platform] -TestFilter "..."` |
+| Unit test locations | `src/Core/tests/UnitTests/`, `src/Controls/tests/Core.UnitTests/`, etc. |
+| UI test page location | `src/Controls/tests/TestCases.HostApp/Issues/` |
+| UI NUnit test location | `src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/` |
+| Test logs | `CustomAgentLogsTmp/UITests/` (for UI tests) |
 | Review output | `Review_Feedback_Issue_XXXXX.md` |
 
 ---
