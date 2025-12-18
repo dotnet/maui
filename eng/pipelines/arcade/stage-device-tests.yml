@@ -290,7 +290,7 @@ stages:
         - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/Microsoft.Maui.BuildTasks.slnf' /bl:BuildBuildTasks.binlog $(_OfficialBuildIdArgs)
           displayName: Build BuildTasks
 
-        - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) /p:BuildDeviceTests=true /p:UseMonoRuntime=false /bl:BuildDeviceTests.binlog
+        - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) /p:BuildDeviceTests=true /p:UseMonoRuntime=false /p:IncludeIosTargetFrameworks=false /p:IncludeMacCatalystTargetFrameworks=false /bl:BuildDeviceTests.binlog
           displayName: Build DeviceTests (CoreCLR)
 
         - publish: ${{ parameters.checkoutDirectory }}/artifacts/bin
