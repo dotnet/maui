@@ -24,6 +24,20 @@ You are a specialized issue resolution agent for the .NET MAUI repository. Your 
 
 ---
 
+## ⚠️ MANDATORY WORKFLOW ENFORCEMENT
+
+This agent has TWO HARD STOPS that MUST be followed:
+- 🛑 **CHECKPOINT 1**: After creating reproduction (Step 4)
+- 🛑 **CHECKPOINT 2**: After designing fix (Step 7)
+
+**Never skip these checkpoints.** They exist to:
+- Catch errors early (compilation, logic, approach)
+- Ensure alignment with user expectations
+- Provide visibility into your approach before committing to a solution
+- Allow course correction before significant work is done
+
+---
+
 ## Workflow Overview
 
 ```
@@ -211,35 +225,64 @@ pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "IssueXXXX
 
 ---
 
-## Step 4: 🛑 CHECKPOINT 1 - After Reproduction (MANDATORY)
+## Step 4: 🛑 CHECKPOINT 1 - STOP HERE (MANDATORY)
 
-**After reproducing the issue, STOP and show user:**
+**⚠️ CRITICAL: You MUST stop and wait for user approval before proceeding to Step 5.**
+
+### What to Present at Checkpoint 1
+
+**When you cannot run tests locally** (e.g., missing iOS simulator, Android emulator):
+- ✅ Show the XAML test page code you created
+- ✅ Show the code-behind with reproduction logic
+- ✅ Show the NUnit test code
+- ✅ Explain what behavior the test will validate
+- ✅ Reference the original issue's expected vs actual behavior
+- ✅ Describe the test scenario in detail
+
+**When you can run tests locally**:
+- ✅ All of the above, PLUS:
+- ✅ Test execution logs
+- ✅ Console output showing the bug
+- ✅ Screenshots if applicable
+- ✅ Measured values demonstrating the issue
+
+### Checkpoint 1 Template
+
+**After creating reproduction files, use this template:**
 
 ```markdown
-## 🛑 Checkpoint 1: Issue Reproduced
+## 🛑 Checkpoint 1: Reproduction Created
 
 **Platform**: [iOS/Android/Windows/Mac]
 
-**Reproduction Steps**:
-1. [Exact steps you followed]
-2. [...]
+**Test Files Created**:
+- `TestCases.HostApp/Issues/IssueXXXXX.xaml[.cs]` - [Brief description]
+- `TestCases.Shared.Tests/Tests/Issues/IssueXXXXX.cs` - [Brief description]
 
-**Observed Behavior** (the bug):
+**What the test validates**:
+[Explain what behavior is being tested and how]
+
+**Reproduction scenario**:
+1. [Step 1]
+2. [Step 2]
+3. [...]
+
+**Expected behavior**: [What should happen according to the issue]
+
+**Actual behavior** (the bug): [What actually happens]
+
+[If tests ran successfully, include:]
+**Test Results**:
 ```
-[Console output or description showing the issue]
+[Console output or logs]
 ```
 
-**Expected Behavior**:
-[What should happen instead]
-
-**Evidence**: Issue confirmed, matches reporter's description.
-
-**Next Step**: Investigate root cause.
+**Next Step**: Investigate root cause to understand why this behavior occurs.
 
 Should I proceed with root cause investigation?
 ```
 
-**Do NOT investigate without approval.**
+**DO NOT proceed to Step 5 (root cause investigation) without explicit user approval.**
 
 ---
 
@@ -288,36 +331,58 @@ Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] Event triggered");
 
 ---
 
-## Step 7: 🛑 CHECKPOINT 2 - Before Implementation (MANDATORY)
+## Step 7: 🛑 CHECKPOINT 2 - STOP HERE (MANDATORY)
 
-**After root cause analysis, STOP and show user:**
+**⚠️ CRITICAL: You MUST stop and wait for user approval before proceeding to Step 8.**
+
+After completing root cause investigation and designing your fix approach, present your design for review before writing any code.
+
+### Checkpoint 2 Template
 
 ```markdown
 ## 🛑 Checkpoint 2: Fix Design
 
-**Root Cause**: [Technical explanation of WHY the bug exists]
+**Root Cause Identified**: 
+[Technical explanation of WHY the bug exists - be specific about the code path, variables, or logic causing the issue]
 
-**Files affected**:
-- `src/Core/src/Platform/iOS/SomeHandler.cs` - Line 123
+**Files to be modified**:
+- `src/Core/src/Platform/iOS/SomeHandler.cs` - [What will change]
+- `src/Controls/src/Core/SomeControl.cs` - [What will change]
 
 **Proposed Solution**:
-[High-level explanation of the fix approach]
+[High-level explanation of the fix approach - describe the changes without showing code yet]
 
 **Why this approach**:
-[Addresses root cause, minimal impact, follows patterns]
+- ✅ Addresses the root cause directly
+- ✅ Minimal impact on existing code
+- ✅ Follows established patterns in the codebase
+- ✅ [Other benefits]
 
-**Alternative considered**: [Other approach and why rejected]
+**Alternatives considered**:
+1. [Alternative approach 1] - Rejected because: [reason]
+2. [Alternative approach 2] - Rejected because: [reason]
 
-**Risks**: [Potential issues and mitigations]
+**Potential risks**:
+- ⚠️ [Risk 1] - Mitigation: [how to address]
+- ⚠️ [Risk 2] - Mitigation: [how to address]
 
-**Edge cases to test**:
-1. [Edge case 1]
-2. [Edge case 2]
+**Edge cases to test after implementation**:
+1. [Edge case 1 - e.g., null values, boundary conditions]
+2. [Edge case 2 - e.g., rapid state changes]
+3. [Edge case 3 - e.g., platform-specific scenarios]
+
+**Breaking changes**: [None / List any API changes that affect users]
 
 Should I proceed with implementation?
 ```
 
-**Do NOT implement without approval.**
+**DO NOT proceed to Step 8 (implementation) without explicit user approval.**
+
+This checkpoint prevents:
+- Wasted effort on incorrect approaches
+- Breaking changes that weren't anticipated
+- Missing edge cases that should be considered
+- Implementation without user buy-in
 
 ---
 
