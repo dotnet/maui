@@ -30,7 +30,6 @@ namespace Microsoft.Maui.Platform
 			ClipBounds = _clipRect;
 		}
 
-		/// <inheritdoc />
 		protected override void OnSizeChanged(int width, int height, int oldWidth, int oldHeight)
 		{
 			base.OnSizeChanged(width, height, oldWidth, oldHeight);
