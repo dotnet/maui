@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -11,14 +11,18 @@ public partial class Bz53318 : ContentPage
 {
 	public Bz53318() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests
 	{
-		[Test]
-		public void DoesCompilesArgsInsideDataTemplate([Values(XamlInflator.XamlC)] XamlInflator inflator)
+		[Theory]
+		[InlineData(XamlInflator.XamlC)]
+		internal void DoesCompilesArgsInsideDataTemplate(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.XamlC)
-				Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Bz53318)));
+			{
+				var ex = Record.Exception(() => MockCompiler.Compile(typeof(Bz53318)));
+				Assert.Null(ex);
+			}
 		}
 	}
 }

@@ -12,12 +12,17 @@ using Microsoft.Maui.UnitTests;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
-	public class BaseTestFixture
+	public class BaseTestFixture : IDisposable
 	{
 		CultureInfo _defaultCulture;
 		CultureInfo _defaultUICulture;
 
-		public virtual void Setup()
+		public BaseTestFixture()
+		{
+			Setup();
+		}
+
+		protected internal virtual void Setup()
 		{
 			Microsoft.Maui.Controls.Hosting.CompatibilityCheck.UseCompatibility();
 			_defaultCulture = System.Threading.Thread.CurrentThread.CurrentCulture;
@@ -28,9 +33,23 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			AppInfo.SetCurrent(null);
 		}
 
-
-		public virtual void TearDown()
+		public void Dispose()
 		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (disposing)
+			{
+				TearDown();
+			}
+		}
+
+		protected internal virtual void TearDown()
+		{
+			Application.Current = null;
 			AppInfo.SetCurrent(null);
 			DeviceDisplay.SetCurrent(null);
 			DeviceInfo.SetCurrent(null);

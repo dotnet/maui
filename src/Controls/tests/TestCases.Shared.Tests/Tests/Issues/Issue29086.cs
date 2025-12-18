@@ -18,13 +18,15 @@ public class Issue29086 : _IssuesUITest
 	[Category(UITestCategories.SwipeView)]
 	public void SwipeViewShouldNotClose()
 	{
-		App.WaitForElement("SwipeItem");
-		App.SwipeLeftToRight("SwipeItem");
-		App.WaitForElement("AddButton");
-		App.Click("AddButton");
-		App.WaitForElement("AddButton");
-		App.Click("AddButton");
-		VerifyScreenshot();
+		App.WaitForElement("SwipeItem1");
+		App.SwipeLeftToRight("SwipeItem1");
+		App.SwipeRightToLeft("SwipeItem2");
+		App.WaitForElement("AddButton1");
+		App.WaitForElement("AddButtonRight2");
+		App.Click("AddButton1");
+		App.Click("AddButtonRight2");
+		App.WaitForNoElement("AddButton1");
+		App.WaitForNoElement("AddButtonRight2");
 	}
 }
 #endif

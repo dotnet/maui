@@ -1,7 +1,8 @@
+using System;
 using System.Linq;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -20,18 +21,19 @@ public partial class Gh3821 : ContentPage
 		}
 	}
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests : IDisposable
 	{
-		[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-		[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
+		public Tests() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		public void Dispose() => DispatcherProvider.SetCurrent(null);
 
-		[Test]
-		public void NoConflictsInNamescopes([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void NoConflictsInNamescopes(XamlInflator inflator)
 		{
 			var layout = new Gh3821(inflator) { Text = "root" };
 			var label0 = (Label)((Gh3821View)((StackLayout)layout.Content).Children[0]).Content;
-			Assert.That(label0.Text, Is.EqualTo("root"));
+			Assert.Equal("root", label0.Text);
 		}
 	}
 }

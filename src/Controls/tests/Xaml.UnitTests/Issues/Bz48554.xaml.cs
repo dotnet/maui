@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -49,16 +49,18 @@ public partial class Bz48554 : ContentPage
 		InitializeComponent();
 	}
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests
 	{
-		[Test]
-		public void XStaticWithXamlC([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void XStaticWithXamlC(XamlInflator inflator)
 		{
 			Bz48554 page = null;
-			Assert.DoesNotThrow(() => page = new Bz48554(inflator));
+			var exception = Record.Exception(() => page = new Bz48554(inflator));
+			Assert.Null(exception);
 			Assert.NotNull(page.SliderGrades);
-			Assert.AreEqual(5, page.SliderGrades.Values.Count);
+			Assert.Equal(5, page.SliderGrades.Values.Count);
 		}
 	}
 }

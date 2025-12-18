@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Storage
 					resultList.Add(file);
 			}
 
-			return resultList.Count == 0 ? null : resultList.Select(storageFile => new FileResult(storageFile));
+			return resultList.Count == 0 ? [] : resultList.Select(storageFile => new FileResult(storageFile));
 		}
 
 		static void SetFileTypes(PickOptions options, FileOpenPicker picker)

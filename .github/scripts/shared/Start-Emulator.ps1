@@ -50,7 +50,22 @@ if ($Platform -eq "android") {
         exit 1
     }
     
-    # Get device UDID if not provided
+    # Get device UDID if not provided OR if it's an AVD name that needs to be booted
+    # Check if DeviceUdid is an AVD name (not an emulator-XXXX format)
+    if ($DeviceUdid -and $DeviceUdid -notmatch "^emulator-\d+$") {
+        # DeviceUdid is likely an AVD name - check if it's in the AVD list
+        $avdList = emulator -list-avds
+        if ($avdList -contains $DeviceUdid) {
+            Write-Info "DeviceUdid '$DeviceUdid' is an AVD name. Will boot this emulator..."
+            $selectedAvd = $DeviceUdid
+            $DeviceUdid = $null  # Clear so we boot and get actual device ID below
+        } else {
+            Write-Error "DeviceUdid '$DeviceUdid' is not a valid emulator ID or AVD name."
+            Write-Info "Available AVDs: $($avdList -join ', ')"
+            exit 1
+        }
+    }
+    
     if (-not $DeviceUdid) {
         Write-Info "Auto-detecting Android device..."
         
@@ -91,13 +106,15 @@ if ($Platform -eq "android") {
             # 3. Any Nexus device
             # 4. First available device
             
-            $selectedAvd = $null
-            
-            # Try to find API 30 Nexus device
-            $api30Nexus = $avdList | Where-Object { $_ -match "API.*30" -and $_ -match "Nexus" } | Select-Object -First 1
-            if ($api30Nexus) {
-                $selectedAvd = $api30Nexus
-                Write-Info "Selected API 30 Nexus device: $selectedAvd"
+            # $selectedAvd may already be set if AVD name was provided
+            # Only run auto-selection if not already set
+            if (-not $selectedAvd) {
+                # Try to find API 30 Nexus device
+                $api30Nexus = $avdList | Where-Object { $_ -match "API.*30" -and $_ -match "Nexus" } | Select-Object -First 1
+                if ($api30Nexus) {
+                    $selectedAvd = $api30Nexus
+                    Write-Info "Selected API 30 Nexus device: $selectedAvd"
+                }
             }
             
             # Try to find any API 30 device

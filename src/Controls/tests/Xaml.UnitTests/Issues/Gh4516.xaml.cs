@@ -1,5 +1,5 @@
 using System;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -12,15 +12,17 @@ public partial class Gh4516 : ContentPage
 {
 	public Gh4516() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests
 	{
-		[Test]
-		public void BindingToEmptyCollection([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void BindingToEmptyCollection(XamlInflator inflator)
 		{
 			Gh4516 layout = null;
-			Assert.DoesNotThrow(() => layout = new Gh4516(inflator) { BindingContext = new Gh4516VM() });
-			Assert.That((layout.image.Source as FileImageSource).File, Is.EqualTo("foo.jpg"));
+			var ex = Record.Exception(() => layout = new Gh4516(inflator) { BindingContext = new Gh4516VM() });
+			Assert.Null(ex);
+			Assert.Equal("foo.jpg", (layout.image.Source as FileImageSource).File);
 		}
 	}
 }

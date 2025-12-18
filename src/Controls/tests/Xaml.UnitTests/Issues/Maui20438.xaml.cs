@@ -1,7 +1,7 @@
 #if NET6_0_OR_GREATER
 using System;
 using System.ComponentModel;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -12,35 +12,39 @@ public partial class Maui20438 : ContentPage
         InitializeComponent();
     }
 
-    [TestFixture]
-    class Tests
+    [Collection("Issue")]
+    public class Tests
     {
-        [Test]
-        public void DateOnlyBinding([Values] XamlInflator inflator)
+        [Theory]
+        [XamlInflatorData]
+        internal void DateOnlyBinding(XamlInflator inflator)
         {
             var page = new Maui20438(inflator);
-            Assert.That(page.datePicker.Date, Is.EqualTo(new DateTime(2025, 3, 15)));
+            Assert.Equal(new DateTime(2025, 3, 15), page.datePicker.Date);
         }
 
-        [Test]
-        public void TimeOnlyBinding([Values] XamlInflator inflator)
+        [Theory]
+        [XamlInflatorData]
+        internal void TimeOnlyBinding(XamlInflator inflator)
         {
             var page = new Maui20438(inflator);
-            Assert.That(page.timePicker.Time, Is.EqualTo(new TimeSpan(14, 30, 0)));
+            Assert.Equal(new TimeSpan(14, 30, 0), page.timePicker.Time);
         }
 
-        [Test]
-        public void DateOnlyToNonNullableDateTime([Values] XamlInflator inflator)
+        [Theory]
+        [XamlInflatorData]
+        internal void DateOnlyToNonNullableDateTime(XamlInflator inflator)
         {
             var page = new Maui20438(inflator);
-            Assert.That(page.customDatePicker.NonNullableDateTime, Is.EqualTo(new DateTime(2025, 3, 15)));
+            Assert.Equal(new DateTime(2025, 3, 15), page.customDatePicker.NonNullableDateTime);
         }
 
-        [Test]
-        public void TimeOnlyToNonNullableTimeSpan([Values] XamlInflator inflator)
+        [Theory]
+        [XamlInflatorData]
+        internal void TimeOnlyToNonNullableTimeSpan(XamlInflator inflator)
         {
             var page = new Maui20438(inflator);
-            Assert.That(page.customTimePicker.NonNullableTimeSpan, Is.EqualTo(new TimeSpan(14, 30, 0)));
+            Assert.Equal(new TimeSpan(14, 30, 0), page.customTimePicker.NonNullableTimeSpan);
         }
     }
 }

@@ -1,9 +1,10 @@
+using System;
 using System.Collections.Generic;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -11,29 +12,32 @@ public partial class Maui21757_2
 {
 	public Maui21757_2() => InitializeComponent();
 
-	class Test
+	[Collection("Issue")]
+	public class Test : IDisposable
 	{
-		[SetUp]
-		public void Setup()
+		public Test()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		public void Dispose() => AppInfo.SetCurrent(null);
 
-		[Test]
-		public void TypeLiteralAndXTypeCanBeUsedInterchangeably([Values] XamlInflator inflator)
+		[Theory]
+		[InlineData(XamlInflator.XamlC)]
+		[InlineData(XamlInflator.SourceGen)]
+		internal void TypeLiteralAndXTypeCanBeUsedInterchangeably(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.SourceGen)
 			{
 				var result = MockSourceGenerator.RunMauiSourceGenerator(MockSourceGenerator.CreateMauiCompilation(), typeof(Maui21757_2));
-				Assert.That(result.Diagnostics, Is.Empty);
+				Assert.Empty(result.Diagnostics);
 			}
 			else if (inflator == XamlInflator.XamlC)
-				Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Maui21757_2)));
-			else
-				Assert.Ignore("Only XamlC and SourceGen support this feature");
+			{
+				var ex = Record.Exception(() => MockCompiler.Compile(typeof(Maui21757_2)));
+				Assert.Null(ex);
+			}
 		}
 	}
 }

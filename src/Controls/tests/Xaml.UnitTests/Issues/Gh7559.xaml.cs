@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -8,15 +8,16 @@ public partial class Gh7559 : ContentPage
 {
 	public Gh7559() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests
 	{
-		[Test]
-		public void GenericBPCompiles([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void GenericBPCompiles(XamlInflator inflator)
 		{
 			var layout = new Gh7559(inflator);
 			var value = Gh7559Generic<Gh7559Enum>.GetIcon(layout);
-			Assert.That(value, Is.EqualTo(Gh7559Enum.LetterA));
+			Assert.Equal(Gh7559Enum.LetterA, value);
 		}
 	}
 }

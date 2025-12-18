@@ -37,14 +37,5 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			((IShellContentController)ShellContentTab).RecyclePage(_page);
 			_page = null;
 		}
-
-		public override void OnDestroy()
-		{
-			_mauiContext
-				.GetDispatcher()
-				.Dispatch(Dispose);
-
-			base.OnDestroy();
-		}
 	}
 }

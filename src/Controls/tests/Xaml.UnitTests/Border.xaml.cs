@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -11,11 +11,12 @@ public partial class Border : ContentPage
 {
 	public Border() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+	[Collection("Xaml Inflation")]
+	public class Tests
 	{
-		[Test]
-		public void InitializeStrokeShape([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void InitializeStrokeShape(XamlInflator inflator)
 		{
 			var layout = new Border(inflator);
 			Assert.NotNull(layout.Border0.StrokeShape);
@@ -23,19 +24,20 @@ public partial class Border : ContentPage
 			Assert.NotNull(layout.Border2.StrokeShape);
 		}
 
-		[Test]
-		public void BindingToStrokeShapeWorks([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void BindingToStrokeShapeWorks(XamlInflator inflator)
 		{
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			var layout = new Border(inflator);
 
 			BorderViewModel viewModel = new();
 			layout.BindingContext = viewModel;
-			Assert.IsTrue(layout.BorderWithBinding.StrokeShape is RoundRectangle);
-			Assert.AreEqual(4, ((RoundRectangle)layout.BorderWithBinding.StrokeShape).CornerRadius.TopLeft);
+			Assert.True(layout.BorderWithBinding.StrokeShape is RoundRectangle);
+			Assert.Equal(4, ((RoundRectangle)layout.BorderWithBinding.StrokeShape).CornerRadius.TopLeft);
 
 			viewModel.RoundedRect = new RoundRectangle() { CornerRadius = new CornerRadius(8) };
-			Assert.AreEqual(8, ((RoundRectangle)layout.BorderWithBinding.StrokeShape).CornerRadius.TopLeft);
+			Assert.Equal(8, ((RoundRectangle)layout.BorderWithBinding.StrokeShape).CornerRadius.TopLeft);
 			DispatcherProvider.SetCurrent(null);
 		}
 	}
