@@ -40,8 +40,8 @@ namespace Microsoft.Maui.LifecycleEvents
 		public bool ContainsEvent(string eventName) =>
 			_mapper.TryGetValue(eventName, out var delegates) && delegates?.Count > 0;
 
-		public void RemoveEvent<TDelegate>(string eventName, TDelegate action)
-			where TDelegate : Delegate
+		internal void RemoveEvent<TDelegate>(string eventName, TDelegate action)
+				where TDelegate : Delegate
 		{
 			if (_mapper.TryGetValue(eventName, out var delegates) && delegates != null)
 			{

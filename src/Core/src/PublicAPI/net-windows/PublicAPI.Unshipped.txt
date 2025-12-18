@@ -1,2 +1,1 @@
 #nullable enable
-Microsoft.Maui.LifecycleEvents.LifecycleEventService.RemoveEvent<TDelegate>(string! eventName, TDelegate! action) -> void
