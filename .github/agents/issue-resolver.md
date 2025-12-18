@@ -60,7 +60,7 @@ This agent has TWO HARD STOPS that MUST be followed:
 The developer MUST provide the issue number in their prompt.
 
 ```bash
-# Fetch GitHub issue and any associated PRs
+# Fetch GitHub issue
 ISSUE_NUM=12345  # Replace with actual number
 echo "Fetching: https://github.com/dotnet/maui/issues/$ISSUE_NUM"
 ```
@@ -68,16 +68,27 @@ echo "Fetching: https://github.com/dotnet/maui/issues/$ISSUE_NUM"
 **Read thoroughly**:
 - Issue description
 - ALL comments (additional details, workarounds, platform info)
-- Linked/associated PRs (check if fix is already in progress)
 - Screenshots/code samples
-- Check current state: is there an open PR? What checkpoint is it at?
+
+**Find the specific Copilot-created PR for this issue** (CRITICAL):
+- Search for **OPEN PRs** linked to this issue created by @copilot
+- **DO NOT** read closed PRs (irrelevant to current state)
+- The PR title should contain the issue number (e.g., "[Issue-Resolver] Fix issue #12345")
+- If PR exists: Read PR description to determine current checkpoint/stage
+- If no PR exists: This is a fresh start from checkpoint 0
+
+**Determine current state**:
+- **No PR**: Start from beginning (checkpoint 0)
+- **PR exists at Checkpoint 1**: Review reproduction test, determine if approved or needs revision
+- **PR exists at Checkpoint 2**: Review fix design, determine if approved or needs revision
+- **PR exists post-Checkpoint 2**: Continue implementation/testing phase
 
 **Extract key details**:
 - Affected platforms (iOS, Android, Windows, Mac, All)
 - Minimum reproduction steps
 - Expected vs actual behavior
 - When the issue started (specific MAUI version if mentioned)
-- Associated PRs and their current state
+- Current checkpoint from associated PR (if any)
 
 ---
 
@@ -92,7 +103,10 @@ echo "Fetching: https://github.com/dotnet/maui/issues/$ISSUE_NUM"
 
 **Affected Platforms**: [iOS/Android/Windows/Mac/All]
 
-**Associated PRs**: [List any open PRs, their status, and current checkpoint]
+**Current State**:
+- **Associated PR**: [None | PR #XXXXX by @copilot]
+- **Current Checkpoint**: [None (fresh start) | Checkpoint 1 (reproduction) | Checkpoint 2 (fix design) | Implementation phase]
+- **PR Status**: [If exists: what's been done, what's pending]
 
 **Reproduction Strategy**:
 - **Preferred**: Unit test (faster to run and iterate)
@@ -100,7 +114,7 @@ echo "Fetching: https://github.com/dotnet/maui/issues/$ISSUE_NUM"
 - Location: [Specify test project and file path]
 - Will test: [scenario description]
 
-**Next Step**: Creating reproduction test, will validate it fails/reproduces the issue.
+**Next Step**: [Based on current checkpoint - e.g., "Creating reproduction test" or "Reviewing existing reproduction" or "Implementing approved fix"]
 
 Any concerns about this approach?
 ```
