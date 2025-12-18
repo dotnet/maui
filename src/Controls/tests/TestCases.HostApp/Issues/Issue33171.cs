@@ -3,12 +3,14 @@ namespace Maui.Controls.Sample.Issues;
 [Issue(IssueTracker.Github, 33171, "When TitleBar.IsVisible = false the caption buttons become unresponsive on Windows", PlatformAffected.UWP)]
 public class Issue33171 : ContentPage
 {
-    public Issue33171()
+	TitleBar titleBar;
+
+	public Issue33171()
 	{
 		Title = "Issue 33171";
 
 		// Create TitleBar
-		var titleBar = new TitleBar
+		titleBar = new TitleBar
 		{
 			Title = "Maui App",
 			Subtitle = "Hello, World!",
@@ -30,7 +32,6 @@ public class Issue33171 : ContentPage
 		// Create a label to display window size
 		var windowSizeLabel = new Label
 		{
-			Text = "Window Size: Not set",
 			AutomationId = "WindowSizeLabel",
 			FontSize = 16,
 			HorizontalOptions = LayoutOptions.Center
@@ -41,20 +42,47 @@ public class Issue33171 : ContentPage
 		{
 			Text = "Reduce Window Width",
 			AutomationId = "ReduceWidthButton",
-			HorizontalOptions = LayoutOptions.Center
 		};
+
+		var changeVisibility = new Button
+		{
+			Text = "Toggle",
+			AutomationId = "ToggleTitleBarVisibilityButton",
+		};
+
+		var getStatus = new Button
+		{
+			Text = "Get Status",
+			AutomationId = "GetStatusButton",
+		};
+
+		getStatus.Clicked += (sender, e) =>
+		{
+			if (Window != null)
+			{
+				windowSizeLabel.Text = Window.Width.ToString();
+			}
+		};
+
+		changeVisibility.Clicked += (sender, e) =>
+		{
+			if (Window != null && Window.TitleBar != null)
+			{
+				titleBar.IsVisible = !titleBar.IsVisible;
+			}
+		};	
+
 
 		reduceWidthButton.Clicked += (sender, e) =>
 		{
 			if (Window != null)
 			{
-				// Reduce window width by 50 pixels
 				var currentWidth = Window.Width;
-				var newWidth = Math.Max(currentWidth - 50, 300); // Minimum width of 300
+				var newWidth = Window.Width/2;
 				Window.Width = newWidth;
+				Window.Height = Window.Height / 2;
 				
-				// Update the label with current window size
-				windowSizeLabel.Text = $"Window Size: {Window.Width:F0} x {Window.Height:F0}";
+				windowSizeLabel.Text = Window.Width.ToString();
 			}
 		};
 
@@ -74,6 +102,8 @@ public class Issue33171 : ContentPage
 						HorizontalOptions = LayoutOptions.Center
 					},
 					windowSizeLabel,
+					changeVisibility,
+					getStatus,
 					reduceWidthButton,
 				}
 		};
