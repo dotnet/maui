@@ -21,15 +21,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.NavigateToGallery(ButtonGallery);
 		}
 
-		// Test change to trigger category detection
-		[Test]
-		[Category(UITestCategories.Button)]
-		public void DummyButtonTest()
-		{
-			// Placeholder test for category detection validation
-			Assert.Pass("Category detection test");
-		}
-
 		[Test]
 		[Category(UITestCategories.Button)]
 		public void Clicked()
