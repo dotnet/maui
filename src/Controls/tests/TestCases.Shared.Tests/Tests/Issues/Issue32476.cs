@@ -16,7 +16,8 @@ public class Issue32476 : _IssuesUITest
 	{
 		App.WaitForElement("ToggleButton");
 		App.Tap("ToggleButton");
-
+		App.Tap("ToggleButton");
+		
 		// wait for window layout to update after flow direction change.
 		Task.Delay(500).Wait();
 		VerifyScreenshot(includeTitleBar: true);

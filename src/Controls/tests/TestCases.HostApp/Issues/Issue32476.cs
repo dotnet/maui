@@ -12,11 +12,17 @@ public class Issue32476 : Shell
 			AutomationId = "ToggleButton"
 		};
 
+		var buttonTapLabel = new Label
+		{
+			Text = "Tap the button to toggle FlowDirection to RTL",
+			HorizontalOptions = LayoutOptions.Center
+		};
+
 		button.Clicked += (s, e) =>
 		{
-			FlowDirection = FlowDirection == FlowDirection.LeftToRight
-				? FlowDirection.RightToLeft
-				: FlowDirection.LeftToRight;
+			buttonTapLabel.Text = "Toggling FlowDirection...";
+			FlowDirection = FlowDirection = FlowDirection.RightToLeft;
+			buttonTapLabel.Text = "FlowDirection is now RTL";
 		};
 
 		var contentPage = new ContentPage
@@ -32,7 +38,8 @@ public class Issue32476 : Shell
 							Text = "Tap the button to toggle FlowDirection to RTL. The Flyout MenuIcon must not overlap with native window controls.",
 							LineBreakMode = LineBreakMode.WordWrap
 						},
-						button
+						button,
+						buttonTapLabel
 					}
 			}
 		};
