@@ -175,7 +175,8 @@
                             <VerticalStackLayout Spacing="12">
                                    <Label Text="Available Locations"
                                           FontSize="18"
-                                          FontAttributes="Bold"/>
+                                          FontAttributes="Bold"
+                                          AutomationId="AvailableLocationsLabel"/>
 
                                    <CollectionView ItemsSource="{Binding Locations}"
                                                    HeightRequest="200"
