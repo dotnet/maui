@@ -26,19 +26,22 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		[Test]
-		// [TestCase("maui", "Debug", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, null)]
-		// [TestCase("maui", "Release", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, null)]
-		[TestCase("maui", "Debug", DotNetCurrent, "iossimulator-x64", RuntimeVariant.Mono, null)]
-		[TestCase("maui", "Release", DotNetCurrent, "iossimulator-x64", RuntimeVariant.Mono, null)]
-		[TestCase("maui", "Release", DotNetCurrent, "iossimulator-x64", RuntimeVariant.Mono, "full")]
-		// [TestCase("maui-blazor", "Debug", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, null)]
-		// [TestCase("maui-blazor", "Release", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, null)]
-		[TestCase("maui-blazor", "Debug", DotNetCurrent, "iossimulator-x64", RuntimeVariant.Mono, null)]
-		[TestCase("maui-blazor", "Release", DotNetCurrent, "iossimulator-x64", RuntimeVariant.Mono, null)]
-		[TestCase("maui-blazor", "Release", DotNetCurrent, "iossimulator-x64", RuntimeVariant.Mono, "full")]
-		[TestCase("maui", "Release", DotNetCurrent, "iossimulator-x64", RuntimeVariant.NativeAOT, null)]
-		public void RunOniOS(string id, string config, string framework, string runtimeIdentifier, RuntimeVariant runtimeVariant, string trimMode)
+		// [TestCase("maui", "Debug", DotNetPrevious, RuntimeVariant.Mono, null)]
+		// [TestCase("maui", "Release", DotNetPrevious, RuntimeVariant.Mono, null)]
+		[TestCase("maui", "Debug", DotNetCurrent, RuntimeVariant.Mono, null)]
+		[TestCase("maui", "Release", DotNetCurrent, RuntimeVariant.Mono, null)]
+		[TestCase("maui", "Release", DotNetCurrent, RuntimeVariant.Mono, "full")]
+		// [TestCase("maui-blazor", "Debug", DotNetPrevious, RuntimeVariant.Mono, null)]
+		// [TestCase("maui-blazor", "Release", DotNetPrevious, RuntimeVariant.Mono, null)]
+		[TestCase("maui-blazor", "Debug", DotNetCurrent, RuntimeVariant.Mono, null)]
+		[TestCase("maui-blazor", "Release", DotNetCurrent, RuntimeVariant.Mono, null)]
+		[TestCase("maui-blazor", "Release", DotNetCurrent, RuntimeVariant.Mono, "full")]
+		[TestCase("maui", "Release", DotNetCurrent, RuntimeVariant.NativeAOT, null)]
+		public void RunOniOS(string id, string config, string framework, RuntimeVariant runtimeVariant, string trimMode)
 		{
+			// Use architecture-appropriate runtime identifier based on host system
+			string runtimeIdentifier = TestEnvironment.IOSSimulatorRuntimeIdentifier;
+
 			var projectDir = TestDirectory;
 			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
