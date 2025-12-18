@@ -3,9 +3,7 @@ trigger:
     include:
     - main
     - release/*
-    - net9.0
-    - net10.0
-    - net11.0
+    - net*.0
   tags:
     include:
     - '*'
@@ -13,7 +11,7 @@ trigger:
     include:
     - '*'
     exclude:
-    - .github/*
+    - .github/**
     - docs/*
     - src/Templates/*
     - CODE-OF-CONDUCT.md
@@ -28,14 +26,12 @@ pr:
     include:
     - main
     - release/*
-    - net9.0
-    - net10.0
-    - net11.0
+    - net*.0
   paths:
     include:
     - '*'
     exclude:
-    - .github/*
+    - .github/**
     - docs/*
     - src/Templates/*
     - CODE-OF-CONDUCT.md
@@ -123,7 +119,7 @@ stages:
         iosVersions: [ 'simulator-18.4' ]
         catalystVersions: [ 'latest' ]
         windowsVersions: [ 'packaged', 'unpackaged' ]
-        skipProvisioning: ${{ or(not(parameters.UseProvisionator), false) }}
+        skipProvisioning: true
       ${{ else }}:
         androidApiLevels: [ 33, 23 ]
         iosVersions: [ 'simulator-18.4' ]

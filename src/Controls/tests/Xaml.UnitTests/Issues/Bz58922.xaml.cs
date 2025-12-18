@@ -1,6 +1,7 @@
+using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Devices;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -12,25 +13,26 @@ public partial class Bz58922 : ContentPage
 	}
 
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests : IDisposable
 	{
 		MockDeviceInfo mockDeviceInfo;
 
-		[SetUp] public void Setup() => DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
+		public Tests() => DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
 
-		[TearDown] public void TearDown() => DeviceInfo.SetCurrent(null);
+		public void Dispose() => DeviceInfo.SetCurrent(null);
 
-		[Test]
-		public void OnIdiomXDouble([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void OnIdiomXDouble(XamlInflator inflator)
 		{
 			mockDeviceInfo.Idiom = DeviceIdiom.Phone;
 			var layout = new Bz58922(inflator);
-			Assert.That(layout.grid.HeightRequest, Is.EqualTo(320));
+			Assert.Equal(320, layout.grid.HeightRequest);
 
 			mockDeviceInfo.Idiom = DeviceIdiom.Tablet;
 			layout = new Bz58922(inflator);
-			Assert.That(layout.grid.HeightRequest, Is.EqualTo(480));
+			Assert.Equal(480, layout.grid.HeightRequest);
 		}
 	}
 }

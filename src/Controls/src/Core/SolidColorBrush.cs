@@ -47,13 +47,10 @@ namespace Microsoft.Maui.Controls
 			if (!(obj is SolidColorBrush dest))
 				return false;
 
-			return Color == dest.Color;
+			return Equals(Color, dest.Color);
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/SolidColorBrush.xml" path="//Member[@MemberName='GetHashCode']/Docs/*" />
-		public override int GetHashCode()
-		{
-			return -1234567890 + Color.GetHashCode();
-		}
+		public override int GetHashCode() => base.GetHashCode();
 	}
 }

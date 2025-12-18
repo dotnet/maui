@@ -1,6 +1,7 @@
+using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -8,10 +9,10 @@ public partial class TestSharedResourceDictionary : ContentPage
 {
 	public TestSharedResourceDictionary() => InitializeComponent();
 
-	class Tests
+	[Collection("Xaml Inflation")]
+	public class Tests : IDisposable
 	{
-		[SetUp]
-		public void Setup()
+		public Tests()
 		{
 			Application.Current = new MockApplication
 			{
@@ -22,28 +23,31 @@ public partial class TestSharedResourceDictionary : ContentPage
 			};
 		}
 
-		[TearDown] public void TearDown() => Application.ClearCurrent();
+		public void Dispose() => Application.ClearCurrent();
 
-		[Test]
-		public void MergedResourcesAreFound([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void MergedResourcesAreFound(XamlInflator inflator)
 		{
 			var layout = new TestSharedResourceDictionary(inflator);
-			Assert.AreEqual(Colors.Pink, layout.label.TextColor);
+			Assert.Equal(Colors.Pink, layout.label.TextColor);
 		}
 
-		[Test]
-		public void NoConflictsBetweenSharedRDs([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void NoConflictsBetweenSharedRDs(XamlInflator inflator)
 		{
 			var layout = new TestSharedResourceDictionary(inflator);
-			Assert.AreEqual(Colors.Pink, layout.label.TextColor);
-			Assert.AreEqual(Colors.Purple, layout.label2.TextColor);
+			Assert.Equal(Colors.Pink, layout.label.TextColor);
+			Assert.Equal(Colors.Purple, layout.label2.TextColor);
 		}
 
-		[Test]
-		public void ImplicitStyleCanBeSharedFromSharedRD([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void ImplicitStyleCanBeSharedFromSharedRD(XamlInflator inflator)
 		{
 			var layout = new TestSharedResourceDictionary(inflator);
-			Assert.AreEqual(Colors.Red, layout.implicitLabel.TextColor);
+			Assert.Equal(Colors.Red, layout.implicitLabel.TextColor);
 		}
 
 		class MyRD : ResourceDictionary
@@ -55,11 +59,12 @@ public partial class TestSharedResourceDictionary : ContentPage
 			}
 		}
 
-		[Test]
-		public void MergedRDAtAppLevel([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void MergedRDAtAppLevel(XamlInflator inflator)
 		{
 			var layout = new TestSharedResourceDictionary(inflator);
-			Assert.AreEqual("Foo", layout.label3.Text);
+			Assert.Equal("Foo", layout.label3.Text);
 		}
 
 	}

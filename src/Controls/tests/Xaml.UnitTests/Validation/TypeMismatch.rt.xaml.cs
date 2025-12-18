@@ -1,23 +1,25 @@
 using System;
-using NUnit.Framework;
+using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
+[Collection("Xaml Inflation feature")]
 public partial class TypeMismatch : ContentPage
 {
 	public TypeMismatch() => InitializeComponent();
 
-	class Tests
+	public class Tests : BaseTestFixture
 	{
-		[Test]
-		public void ThrowsOnMismatchingType([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void ThrowsOnMismatchingType(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.XamlC)
-				Assert.Throws(new BuildExceptionConstraint(7, 16, m => m.Contains("No property, BindableProperty", StringComparison.Ordinal)), () => MockCompiler.Compile(typeof(TypeMismatch)));
+				XamlExceptionAssert.ThrowsBuildException(7, 16, m => m.Contains("No property, BindableProperty", StringComparison.Ordinal), () => MockCompiler.Compile(typeof(TypeMismatch)));
 			else if (inflator == XamlInflator.Runtime)
-				Assert.Throws(new XamlParseExceptionConstraint(7, 16, m => m.StartsWith("Cannot assign property", StringComparison.Ordinal)), () => new TypeMismatch(inflator));
+				XamlExceptionAssert.ThrowsXamlParseException(7, 16, m => m.StartsWith("Cannot assign property", StringComparison.Ordinal), () => new TypeMismatch(inflator));
 			else if (inflator == XamlInflator.SourceGen)
 			{
 				var result = CreateMauiCompilation()
@@ -32,10 +34,9 @@ public partial class TypeMismatch : ContentPage
 }
 """)
 					.RunMauiSourceGenerator(typeof(TypeMismatch));
-				Assert.That(result.Diagnostics, Is.Not.Empty);
+				Assert.NotEmpty(result.Diagnostics);
 			}
-			else
-				Assert.Ignore($"Unknown inflator {inflator}");
+			// else - unknown inflator, nothing to test
 		}
 	}
 }

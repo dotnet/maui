@@ -1,5 +1,5 @@
 using System.Linq;
-using NUnit.Framework;
+using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
@@ -9,16 +9,19 @@ public partial class DuplicateXArgumentsElements : BindableObject
 {
 	public DuplicateXArgumentsElements() => InitializeComponent();
 
-	[TestFixture]
-	static class Tests
+	[Collection("Xaml Inflation")]
+	public class Tests : BaseTestFixture
 	{
-		[Test]
-		public static void ThrowXamlParseException([Values] XamlInflator inflator)
+		[Theory]
+		[InlineData(XamlInflator.Runtime)]
+		[InlineData(XamlInflator.XamlC)]
+		[InlineData(XamlInflator.SourceGen)]
+		internal void ThrowXamlParseException(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.XamlC)
 			{
 				MockCompiler.Compile(typeof(DuplicateXArgumentsElements), out var md, out var hasLoggedErrors);
-				Assert.That(hasLoggedErrors);
+				Assert.True(hasLoggedErrors);
 			}
 			else if (inflator == XamlInflator.Runtime)
 				Assert.Throws<XamlParseException>(() => new DuplicateXArgumentsElements(inflator));
@@ -36,7 +39,7 @@ public partial class DuplicateXArgumentsElements : BindableObject
 }
 """)
 					.RunMauiSourceGenerator(typeof(DuplicateXArgumentsElements));
-				Assert.That(result.Diagnostics.Any());
+				Assert.True(result.Diagnostics.Any());
 			}
 		}
 	}

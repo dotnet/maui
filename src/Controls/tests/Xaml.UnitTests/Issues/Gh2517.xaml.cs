@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -7,16 +7,17 @@ public partial class Gh2517 : ContentPage
 {
 	public Gh2517() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests
 	{
-		[Test]
-		public void BindingWithInvalidPathIsNotCompiled([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void BindingWithInvalidPathIsNotCompiled(XamlInflator inflator)
 		{
 			var view = new Gh2517(inflator);
 
 			var binding = view.Label.GetContext(Label.TextProperty).Bindings.GetValue();
-			Assert.That(binding, Is.TypeOf<Binding>());
+			Assert.IsType<Binding>(binding);
 		}
 	}
 }

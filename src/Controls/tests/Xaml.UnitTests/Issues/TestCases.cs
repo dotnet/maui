@@ -6,7 +6,7 @@ using System.Runtime.ConstrainedExecution;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -15,20 +15,18 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 	}
 
-	[TestFixture]
-	public class TestCases
+	[Collection("Issue")]
+	public class TestCases : IDisposable
 	{
 		CultureInfo _defaultCulture;
 
-		[SetUp]
-		public virtual void Setup()
+		public TestCases()
 		{
 			_defaultCulture = System.Threading.Thread.CurrentThread.CurrentCulture;
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown]
-		public virtual void TearDown()
+		public void Dispose()
 		{
 			DispatcherProvider.SetCurrent(null);
 			System.Threading.Thread.CurrentThread.CurrentCulture = _defaultCulture;
@@ -41,12 +39,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			return (View)bindable.GetValue(InnerViewProperty);
 		}
 
-		public static void SetInnerView(BindableObject bindable, View value)
+		internal static void SetInnerView(BindableObject bindable, View value)
 		{
 			bindable.SetValue(InnerViewProperty, value);
 		}
 
-		[Test]
+		[Fact]
 		public void TestCase001()
 		{
 			var xaml = @"<?xml version=""1.0"" encoding=""UTF-8"" ?>
@@ -76,14 +74,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			Assert.NotNull(GetInnerView(contentPage));
 			//			Assert.AreEqual ("innerView", GetInnerView (contentPage).Name);
-			Assert.AreEqual(GetInnerView(contentPage), ((Microsoft.Maui.Controls.Internals.INameScope)contentPage).FindByName("innerView"));
+			Assert.Equal(GetInnerView(contentPage), ((Microsoft.Maui.Controls.Internals.INameScope)contentPage).FindByName("innerView"));
 			Assert.NotNull(label0);
 			Assert.NotNull(label1);
-			Assert.AreEqual(4, contentPage.Content.Descendants().Count());
+			Assert.Equal(4, contentPage.Content.Descendants().Count());
 		}
 
 
-		[Test]
+		[Fact]
 		public void TestCase002()
 		{
 			var xaml = @"<?xml version=""1.0"" encoding=""UTF-8"" ?>
@@ -97,10 +95,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
                 </local:BasePage.Content>
            </local:BasePage>";
 			var contentPage = new ContentPage().LoadFromXaml(xaml);
-			Assert.That(contentPage.Content, Is.InstanceOf<Label>());
+			Assert.IsType<Label>(contentPage.Content);
 		}
 
-		[Test]
+		[Fact]
 		public void TestCase003()
 		{
 			var xaml = @"<?xml version=""1.0"" encoding=""UTF-8"" ?>
@@ -149,13 +147,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			var listview = page.FindByName<ListView>("listview");
 			Cell cell = null;
-			Assert.DoesNotThrow(() => { cell = listview.TemplatedItems[0]; });
+			cell = listview.TemplatedItems[0];
 			Assert.NotNull(cell);
-			Assert.That(cell, Is.TypeOf<ViewCell>());
-			Assert.AreSame(model[0], cell.BindingContext);
+			Assert.IsType<ViewCell>(cell);
+			Assert.Same(model[0], cell.BindingContext);
 		}
 
-		[Test]
+		[Fact]
 		public void TestCase004()
 		{
 			var xaml = @"<?xml version=""1.0"" encoding=""UTF-8"" ?>
@@ -182,10 +180,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				</ContentPage>";
 
 			var page = new ContentPage();
-			Assert.DoesNotThrow(() => page.LoadFromXaml(xaml));
+			page.LoadFromXaml(xaml);
 		}
 
-		[Test]
+		[Fact]
 		public void Issue1415()
 		{
 			var xaml = @"<?xml version=""1.0"" encoding=""utf-8"" ?>
@@ -200,10 +198,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			var label = page.FindByName<Label>("label");
 			Assert.NotNull(label);
 			label.BindingContext = "foo";
-			Assert.AreEqual("oof", label.Text);
+			Assert.Equal("oof", label.Text);
 		}
 
-		[TestCase("en-US"), TestCase("tr-TR"), TestCase("fr-FR")]
+		[Theory]
+		[InlineData("en-US")]
+		[InlineData("tr-TR")]
+		[InlineData("fr-FR")]
 		//only happens in european cultures
 		public void Issue1493(string culture)
 		{
@@ -218,7 +219,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 							cmp:RelativeLayout.WidthConstraint=""{cmp:ConstraintExpression Type=RelativeToParent, Property=Width, Factor=0.6}""/>";
 			View view = new View();
 			view.LoadFromXaml(xaml);
-			Assert.DoesNotThrow(() => view.LoadFromXaml(xaml));
 		}
 	}
 }

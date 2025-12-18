@@ -1,10 +1,11 @@
+using System;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -12,41 +13,42 @@ public partial class Maui21774
 {
 	public Maui21774() => InitializeComponent();
 
-	class Test
+	[Collection("Issue")]
+	public class Test : IDisposable
 	{
-		[SetUp]
-		public void Setup()
+		public Test()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		public void Dispose() => AppInfo.SetCurrent(null);
 
-		[Test]
-		public void AppThemeChangeOnUnparentedPage([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void AppThemeChangeOnUnparentedPage(XamlInflator inflator)
 		{
 			Application.Current.Resources.Add("labelColor", Colors.LimeGreen);
 			Application.Current.UserAppTheme = AppTheme.Light;
 			var page = new Maui21774(inflator);
 			Application.Current.MainPage = page;
 
-			Assert.That(page.label0.TextColor, Is.EqualTo(Colors.LimeGreen));
-			Assert.That(page.label1.TextColor, Is.EqualTo(Colors.LimeGreen));
+			Assert.Equal(Colors.LimeGreen, page.label0.TextColor);
+			Assert.Equal(Colors.LimeGreen, page.label1.TextColor);
 
 			//unparent the page, change the resource and the theme
 			Application.Current.MainPage = null;
 			Application.Current.Resources["labelColor"] = Colors.HotPink;
 			Application.Current.UserAppTheme = AppTheme.Dark;
 			//labels should not change
-			Assert.That(page.label0.TextColor, Is.EqualTo(Colors.LimeGreen));
-			Assert.That(page.label1.TextColor, Is.EqualTo(Colors.LimeGreen));
+			Assert.Equal(Colors.LimeGreen, page.label0.TextColor);
+			Assert.Equal(Colors.LimeGreen, page.label1.TextColor);
 
 			//reparent the page
 			Application.Current.MainPage = page;
 			//labels should change
-			Assert.That(page.label0.TextColor, Is.EqualTo(Colors.HotPink));
-			Assert.That(page.label1.TextColor, Is.EqualTo(Colors.HotPink));
+			Assert.Equal(Colors.HotPink, page.label0.TextColor);
+			Assert.Equal(Colors.HotPink, page.label1.TextColor);
 		}
 	}
 }

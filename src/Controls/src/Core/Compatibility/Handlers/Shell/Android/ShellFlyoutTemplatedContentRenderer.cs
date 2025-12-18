@@ -427,7 +427,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var footer = ((IShellController)_shellContext.Shell).FlyoutFooter;
 
 			if (footer == null)
+			{
+				UpdateContentPadding();
 				return;
+			}
 
 			if (_flyoutWidth == 0)
 				return;

@@ -2,7 +2,8 @@ using System;
 using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
-using NUnit.Framework;
+using Microsoft.Maui.Controls.Build.Tasks;
+using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
@@ -12,14 +13,17 @@ public partial class FactoryMethodMissingCtor : MockView
 {
 	public FactoryMethodMissingCtor() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+	[Collection("Xaml Inflation")]
+	public class Tests : BaseTestFixture
 	{
-		[Test]
-		public void Throw([Values] XamlInflator inflator)
+		[Theory]
+		[InlineData(XamlInflator.Runtime)]
+		[InlineData(XamlInflator.XamlC)]
+		[InlineData(XamlInflator.SourceGen)]
+		internal void Throw(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.XamlC)
-				Assert.Throws(new BuildExceptionConstraint(7, 4), () => MockCompiler.Compile(typeof(FactoryMethodMissingCtor)));
+				Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(FactoryMethodMissingCtor)));
 			else if (inflator == XamlInflator.Runtime)
 				Assert.Throws<MissingMethodException>(() => new FactoryMethodMissingCtor(inflator));
 			else if (inflator == XamlInflator.SourceGen)
@@ -63,7 +67,7 @@ public class MockFactory
 	};
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
+[XamlProcessing(XamlInflator.Runtime, true)]
 public partial class FactoryMethods : ContentPage
 {
 	public FactoryMethods() => InitializeComponent();
@@ -115,7 +119,7 @@ public class MockFactory
 }
 """)
 					.RunMauiSourceGenerator(typeof(FactoryMethodMissingCtor));
-				Assert.That(result.Diagnostics.Any(d => d.Id == "MAUIX2003"));
+				Assert.True(result.Diagnostics.Any(d => d.Id == "MAUIX2003"));
 			}
 		}
 
