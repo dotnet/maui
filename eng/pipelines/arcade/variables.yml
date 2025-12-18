@@ -44,6 +44,10 @@ variables:
     value: test
   - name: _SignArgs
     value: '/p:DotNetSignType=$(_SignType) /p:TeamName=$(TeamName)'
+# PR builds get a distinct version label
+- ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
+  - name: _OfficialBuildIdArgs
+    value: /p:OfficialBuildId=$(_BuildOfficialId) /p:_SkipUpdateBuildNumber=true /p:PreReleaseVersionLabel=ci.pr$(System.PullRequest.PullRequestNumber)
 # Set up non-PR build from internal project
 - ${{ if or(eq(variables['Build.DefinitionName'], 'dotnet-maui'), eq(variables['Build.DefinitionName'], 'dotnet-maui-build')) }}:
   # needed for darc (dependency flow) publishing

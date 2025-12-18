@@ -32,7 +32,6 @@
 
     <PropertyGroup>
       <PreReleaseVersionLabel Condition="'$(CI)' == 'true' and '$(BUILD_REASON)' == 'Schedule'">$(NightlyTag)</PreReleaseVersionLabel>
-      <PreReleaseVersionLabel Condition="'$(CI)' == 'true' and '$(BUILD_REASON)' == 'PullRequest'">$(PreReleaseVersionLabel).pr$(SYSTEM_PULLREQUEST_PULLREQUESTNUMBER)</PreReleaseVersionLabel>
     </PropertyGroup>
 
     <ItemGroup>
