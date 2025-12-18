@@ -143,7 +143,7 @@ public class MenuBarItemViewModel : INotifyPropertyChanged
 	}
 
 	// Refresh Item (View Menu)
-	private string _refreshText = "Refresh MenuBarFlyoutItem";
+	private string _refreshText = "RefreshMenuBarFlyoutItem";
 	public string RefreshText
 	{
 		get => _refreshText;
