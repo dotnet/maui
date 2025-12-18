@@ -41,10 +41,10 @@ This agent has TWO HARD STOPS that MUST be followed:
 ## Workflow Overview
 
 ```
-1. Fetch issue from GitHub - read ALL comments
+1. Fetch issue and associated PR (if any) - read ALL comments, understand current state
 2. Create initial assessment - show user before starting
-3. Reproduce in TestCases.HostApp - create test page + UI test
-4. 🛑 CHECKPOINT 1: Show reproduction, wait for approval
+3. Create reproduction test - prioritize unit tests (faster), otherwise UI tests
+4. 🛑 CHECKPOINT 1: Show reproduction test, validate it fails/reproduces, wait for approval
 5. Investigate root cause - use instrumentation
 6. Design fix approach
 7. 🛑 CHECKPOINT 2: Show fix design, wait for approval
@@ -55,12 +55,12 @@ This agent has TWO HARD STOPS that MUST be followed:
 
 ---
 
-## Step 1: Fetch Issue Details
+## Step 1: Fetch Issue and Associated PRs
 
 The developer MUST provide the issue number in their prompt.
 
 ```bash
-# Navigate to GitHub issue
+# Fetch GitHub issue and any associated PRs
 ISSUE_NUM=12345  # Replace with actual number
 echo "Fetching: https://github.com/dotnet/maui/issues/$ISSUE_NUM"
 ```
@@ -68,15 +68,16 @@ echo "Fetching: https://github.com/dotnet/maui/issues/$ISSUE_NUM"
 **Read thoroughly**:
 - Issue description
 - ALL comments (additional details, workarounds, platform info)
-- Linked issues/PRs
+- Linked/associated PRs (check if fix is already in progress)
 - Screenshots/code samples
-- Check for existing PRs attempting to fix this
+- Check current state: is there an open PR? What checkpoint is it at?
 
 **Extract key details**:
 - Affected platforms (iOS, Android, Windows, Mac, All)
 - Minimum reproduction steps
 - Expected vs actual behavior
 - When the issue started (specific MAUI version if mentioned)
+- Associated PRs and their current state
 
 ---
 
@@ -91,12 +92,15 @@ echo "Fetching: https://github.com/dotnet/maui/issues/$ISSUE_NUM"
 
 **Affected Platforms**: [iOS/Android/Windows/Mac/All]
 
-**Reproduction Plan**:
-- Creating test page in TestCases.HostApp/Issues/IssueXXXXX.xaml
-- Will test: [scenario description]
-- Platforms to test: [list]
+**Associated PRs**: [List any open PRs, their status, and current checkpoint]
 
-**Next Step**: Creating reproduction test page, will show results before investigating.
+**Reproduction Strategy**:
+- **Preferred**: Unit test (faster to run and iterate)
+- **Fallback**: UI test if issue requires UI interaction
+- Location: [Specify test project and file path]
+- Will test: [scenario description]
+
+**Next Step**: Creating reproduction test, will validate it fails/reproduces the issue.
 
 Any concerns about this approach?
 ```
@@ -107,105 +111,94 @@ Any concerns about this approach?
 
 ## Step 3: Reproduce the Issue
 
-**All reproduction MUST be done in TestCases.HostApp. NEVER use Sandbox app.**
+### Test Strategy - Prioritize Unit Tests
 
-### Create Test Page
+**🎯 Prefer unit tests when possible** (faster to run and iterate):
+- Location: `src/Controls/tests/Core.UnitTests/`, `src/Controls/tests/Xaml.UnitTests/`, etc.
+- Use when: Testing logic, property changes, handlers, XAML parsing
+- Run with: `dotnet test [test-project].csproj --filter "FullyQualifiedName~TestMethod"`
 
-**File**: `src/Controls/tests/TestCases.HostApp/Issues/IssueXXXXX.xaml`
+**Fall back to UI tests when needed** (requires UI interaction):
+- Location: `src/Controls/tests/TestCases.HostApp/Issues/` + `src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/`
+- Use when: Testing visual layout, gestures, platform-specific UI behavior
+- **NEVER use Sandbox app** - always use TestCases.HostApp
 
-```xml
-<?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Maui.Controls.Sample.Issues.IssueXXXXX"
-             Title="Issue XXXXX">
+### Create Unit Test (Preferred)
 
-    <VerticalStackLayout Padding="20" Spacing="10">
-        <Label Text="Testing Issue #XXXXX" FontSize="18" FontAttributes="Bold"/>
-
-        <!-- Recreate the exact scenario from the issue report -->
-        <Button Text="Trigger Issue"
-                Clicked="OnTriggerIssue"
-                AutomationId="TriggerButton"/>
-
-        <Label x:Name="StatusLabel"
-               Text="Status will appear here"
-               AutomationId="StatusLabel"/>
-    </VerticalStackLayout>
-</ContentPage>
-```
-
-**File**: `src/Controls/tests/TestCases.HostApp/Issues/IssueXXXXX.xaml.cs`
+**Example unit test structure**:
 
 ```csharp
+// Location: src/Controls/tests/Core.UnitTests/IssueXXXXXTests.cs
+namespace Microsoft.Maui.Controls.Core.UnitTests;
+
+[TestFixture]
+public class IssueXXXXXTests : BaseTestFixture
+{
+    [Test]
+    public void IssueXXXXX_ReproducesBug()
+    {
+        // Arrange: Set up the scenario that triggers the issue
+        var control = new MyControl { Property = InitialValue };
+
+        // Act: Perform the action that causes the bug
+        control.Property = NewValue;
+
+        // Assert: Verify the bug occurs (test should FAIL without fix)
+        Assert.That(control.ActualBehavior, Is.EqualTo(BuggyBehavior));
+    }
+}
+```
+
+**Run unit test**:
+```bash
+dotnet test src/Controls/tests/Core.UnitTests/Core.UnitTests.csproj --filter "FullyQualifiedName~IssueXXXXX"
+```
+
+### Create UI Test (When UI Interaction Required)
+
+**Follow the UI Testing Guidelines**: See `.github/instructions/uitests.instructions.md` for complete details on:
+- Two-project requirement (HostApp test page + NUnit test)
+- File naming conventions (`IssueXXXXX.xaml`, `IssueXXXXX.cs`)
+- `AutomationId` usage for element location
+- Base class (`_IssuesUITest`) and test structure
+- Category selection (`UITestCategories`)
+- Platform coverage rules
+
+**Quick UI test template**:
+
+```csharp
+// HostApp: src/Controls/tests/TestCases.HostApp/Issues/IssueXXXXX.xaml.cs
 namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, XXXXX, "Brief description", PlatformAffected.All)]
 public partial class IssueXXXXX : ContentPage
 {
-    public IssueXXXXX()
+    public IssueXXXXX() { InitializeComponent(); }
+    
+    private void OnTrigger(object sender, EventArgs e)
     {
-        InitializeComponent();
-    }
-
-    protected override void OnAppearing()
-    {
-        base.OnAppearing();
-        Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(500), () =>
-        {
-            CaptureState("OnAppearing");
-        });
-    }
-
-    private void OnTriggerIssue(object sender, EventArgs e)
-    {
-        Console.WriteLine("=== TRIGGERING ISSUE #XXXXX ===");
-        // Reproduce the exact steps from the issue report
-
-        Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(500), () =>
-        {
-            CaptureState("AfterTrigger");
-        });
-    }
-
-    private void CaptureState(string context)
-    {
-        Console.WriteLine($"=== STATE CAPTURE: {context} ===");
-        // Add measurements relevant to the issue
-        Console.WriteLine("=== END STATE CAPTURE ===");
+        // Reproduce issue scenario
+        StatusLabel.Text = "Bug reproduced";
     }
 }
-```
 
-### Create UI Test
-
-**File**: `src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/IssueXXXXX.cs`
-
-```csharp
-namespace Microsoft.Maui.TestCases.Tests.Issues;
-
+// NUnit Test: src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/IssueXXXXX.cs
 public class IssueXXXXX : _IssuesUITest
 {
-    public override string Issue => "Brief description of issue";
-
     public IssueXXXXX(TestDevice device) : base(device) { }
-
+    
     [Test]
-    [Category(UITestCategories.YourCategory)]  // ONE category only
+    [Category(UITestCategories.YourCategory)]
     public void IssueXXXXXTest()
     {
         App.WaitForElement("TriggerButton");
         App.Tap("TriggerButton");
-
-        // Add assertions that FAIL without fix, PASS with fix
-        var result = App.FindElement("StatusLabel").GetText();
-        Assert.That(result, Is.EqualTo("Expected Value"));
+        Assert.That(App.FindElement("StatusLabel").GetText(), Is.EqualTo("Bug reproduced"));
     }
 }
 ```
 
-### Run Test
-
+**Run UI test**:
 ```powershell
 # Android
 pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "IssueXXXXX"
@@ -214,19 +207,18 @@ pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "Issue
 pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "IssueXXXXX"
 ```
 
-**What the script handles**:
-- Builds TestCases.HostApp for target platform
-- Auto-detects device/emulator/simulator
-- Manages Appium server (starts/stops automatically)
-- Runs dotnet test with your filter
-- Captures all logs to `CustomAgentLogsTmp/UITests/`
-
-**Logs include**: `appium.log`, `android-device.log` or `ios-device.log`, `test-output.log`
+### Build Verification Fallback (Linux/No Device Access)
 
 **If device access unavailable** (e.g., Linux without iOS simulator):
-- Use BuildAndVerify as fallback to verify compilation: `pwsh .github/scripts/BuildAndVerify.ps1 -RunUnitTests`
-- Document limitation: reproduction verified via compilation + unit tests only, not runtime behavior
-- See "Build Verification on Linux" section in Error Handling for details
+```bash
+# Verify compilation only
+pwsh .github/scripts/BuildAndVerify.ps1
+
+# Verify compilation + run unit tests
+pwsh .github/scripts/BuildAndVerify.ps1 -RunUnitTests
+```
+
+**Limitation**: BuildAndVerify checks compilation and unit tests only, not UI test execution or runtime behavior. Document this limitation when reporting reproduction results.
 
 ---
 
@@ -236,51 +228,49 @@ pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "IssueXXXX
 
 ### What to Present at Checkpoint 1
 
-**When you cannot run tests locally** (e.g., missing iOS simulator, Android emulator):
-- ✅ Show the XAML test page code you created
-- ✅ Show the code-behind with reproduction logic
-- ✅ Show the NUnit test code
-- ✅ Explain what behavior the test will validate
+**Required for all tests**:
+- ✅ Show the test code you created (unit test or UI test)
+- ✅ Confirm the test **FAILS** and reproduces the issue
+- ✅ Explain what behavior the test validates
 - ✅ Reference the original issue's expected vs actual behavior
-- ✅ Describe the test scenario in detail
+- ✅ Show test execution output demonstrating failure
 
-**When you can run tests locally**:
-- ✅ All of the above, PLUS:
-- ✅ Test execution logs
-- ✅ Console output showing the bug
-- ✅ Screenshots if applicable
-- ✅ Measured values demonstrating the issue
+**For unit tests**:
+- ✅ Test file location and test method name
+- ✅ Test execution output showing failure
+- ✅ Assert statement that fails
+
+**For UI tests**:
+- ✅ HostApp test page location
+- ✅ NUnit test location
+- ✅ Test execution logs (from BuildAndRunHostApp.ps1)
+- ✅ Console output or screenshots if applicable
 
 ### Checkpoint 1 Template
 
-**After creating reproduction files, use this template:**
+**After creating and running reproduction test, use this template:**
 
 ```markdown
-## 🛑 Checkpoint 1: Reproduction Created
+## 🛑 Checkpoint 1: Reproduction Created and Validated
 
-**Platform**: [iOS/Android/Windows/Mac]
+**Test Type**: [Unit Test / UI Test]
 
-**Test Files Created**:
-- `TestCases.HostApp/Issues/IssueXXXXX.xaml[.cs]` - [Brief description]
-- `TestCases.Shared.Tests/Tests/Issues/IssueXXXXX.cs` - [Brief description]
+**Test Location**:
+- [File path and test method name]
 
 **What the test validates**:
 [Explain what behavior is being tested and how]
-
-**Reproduction scenario**:
-1. [Step 1]
-2. [Step 2]
-3. [...]
 
 **Expected behavior**: [What should happen according to the issue]
 
 **Actual behavior** (the bug): [What actually happens]
 
-[If tests ran successfully, include:]
-**Test Results**:
+**Test Execution - Confirms Reproduction**:
 ```
-[Console output or logs]
+[Test output showing FAILURE that reproduces the bug]
 ```
+
+**Reproduction confirmed**: ✅ Test fails and reproduces the issue
 
 **Next Step**: Investigate root cause to understand why this behavior occurs.
 
@@ -682,12 +672,15 @@ pwsh .github/scripts/BuildAndVerify.ps1 -RunUnitTests
 
 ## Common Mistakes to Avoid
 
-1. ❌ **Skipping reproduction** - Always reproduce first
+1. ❌ **Skipping reproduction** - Always reproduce first with a failing test
 2. ❌ **No checkpoints** - Two checkpoints are mandatory
-3. ❌ **Fixing symptoms** - Understand root cause
-4. ❌ **Missing UI tests** - Every fix needs automated tests
-5. ❌ **Incomplete PR** - No before/after evidence
-6. ❌ **Using Sandbox** - Always use TestCases.HostApp
+3. ❌ **Not checking associated PRs** - Always check if fix is already in progress
+4. ❌ **Fixing symptoms** - Understand root cause before implementing fix
+5. ❌ **Missing automated tests** - Every fix needs unit or UI tests
+6. ❌ **Not confirming test fails** - Test must FAIL before fix, PASS after fix
+7. ❌ **UI test when unit test would work** - Prefer unit tests (faster)
+8. ❌ **Using Sandbox** - Always use TestCases.HostApp for UI tests
+9. ❌ **Incomplete PR** - No before/after evidence
 
 ---
 
@@ -695,10 +688,12 @@ pwsh .github/scripts/BuildAndVerify.ps1 -RunUnitTests
 
 | Task | Command/Location |
 |------|------------------|
+| Run unit tests | `dotnet test [project].csproj --filter "FullyQualifiedName~TestMethod"` |
 | Run UI tests | `pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform [platform] -TestFilter "..."` |
-| Build verification (Linux) | `pwsh .github/scripts/BuildAndVerify.ps1` |
-| Test page location | `src/Controls/tests/TestCases.HostApp/Issues/` |
-| NUnit test location | `src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/` |
+| Build verification (Linux) | `pwsh .github/scripts/BuildAndVerify.ps1 -RunUnitTests` |
+| Unit test locations | `src/Controls/tests/Core.UnitTests/`, `src/Controls/tests/Xaml.UnitTests/`, etc. |
+| UI test page location | `src/Controls/tests/TestCases.HostApp/Issues/` |
+| UI NUnit test location | `src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/` |
 | Test logs | `CustomAgentLogsTmp/UITests/` |
 | Format code | `dotnet format Microsoft.Maui.sln --no-restore` |
 | PublicAPI fix | `dotnet format analyzers Microsoft.Maui.sln` |
