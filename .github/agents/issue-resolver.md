@@ -494,6 +494,99 @@ pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -Category "Collect
 
 ---
 
+## PR Standards
+
+**Note**: PRs are created/updated at checkpoints (after reproduction, after fix design) for validation, not as a final step. When creating or updating PRs, follow these standards.
+
+### PR Title Format
+
+**Required**: `[Issue-Resolver] Fix #XXXXX - <Brief Description>`
+
+Examples:
+- `[Issue-Resolver] Fix #12345 - CollectionView RTL padding incorrect on iOS`
+- `[Issue-Resolver] Fix #67890 - Label truncation with SafeArea enabled`
+
+### PR Description Template
+
+```markdown
+Fixes #XXXXX
+
+> [!NOTE]
+> Are you waiting for the changes in this PR to be merged?
+> It would be very helpful if you could [test the resulting artifacts](https://github.com/dotnet/maui/wiki/Testing-PR-Builds) from this PR and let us know in a comment if this change resolves your issue. Thank you!
+
+## Summary
+
+[Brief 2-3 sentence description of what the issue was and what this PR fixes]
+
+**Quick verification:**
+- ✅ Tested on [Platform(s)] - Issue resolved
+- ✅ Edge cases tested
+- ✅ UI tests added and passing
+
+<details>
+<summary><b>📋 Click to expand full PR details</b></summary>
+
+## Root Cause
+
+[Technical explanation of WHY the bug existed]
+
+---
+
+## Solution
+
+[Explanation of HOW your fix resolves the root cause]
+
+**Files Changed**:
+- `path/to/file.cs` - Description of change
+
+---
+
+## Testing
+
+**Before fix:**
+```
+[Console output showing bug]
+```
+
+**After fix:**
+```
+[Console output showing fix works]
+```
+
+**Edge Cases Tested**:
+- [Edge case 1] - ✅ Pass
+- [Edge case 2] - ✅ Pass
+
+**Platforms Tested**:
+- ✅ iOS
+- ✅ Android
+
+---
+
+## Test Coverage
+
+- ✅ Test page: `TestCases.HostApp/Issues/IssueXXXXX.xaml`
+- ✅ NUnit test: `TestCases.Shared.Tests/Tests/Issues/IssueXXXXX.cs`
+
+---
+
+## Breaking Changes
+
+None
+
+</details>
+```
+
+**Important**: This repository uses PR title and description as commit messages. Ensure they are:
+- Clear and descriptive
+- Useful for future reference in git history
+- Following the format above
+
+**PR Reviewer Validation**: The `pr-reviewer` agent validates that PRs follow these standards before approval.
+
+---
+
 ## Time Budgets
 
 | Issue Type | Expected Time | Examples |
