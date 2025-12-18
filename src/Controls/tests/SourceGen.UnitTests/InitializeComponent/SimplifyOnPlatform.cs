@@ -339,10 +339,13 @@ public partial class TestPage : ContentPage
 	}
 
 	[Fact]
-	public void OnPlatformWithMissingTargetPlatformShouldUseDefault()
+	public void OnPlatformWithMissingTargetPlatformShouldNotThrow()
 	{
 		// Reproduces Bugzilla39636: When MacCatalyst is not defined in OnPlatform,
-		// SourceGen should use default(T) instead of throwing an exception
+		// SourceGen should not throw an exception.
+		// When there's no matching platform and no Default, the OnPlatform is kept for runtime resolution
+		// because we cannot determine at compile time if creating default(T) is safe
+		// (e.g., abstract types like Brush, types with protected constructors like View).
 		var xaml =
 """
 <?xml version="1.0" encoding="UTF-8"?>
@@ -385,11 +388,11 @@ public partial class TestPage : ContentPage
 		// Should not have any errors (no TargetInvocationException)
 		Assert.False(result.Diagnostics.Any(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error));
 		
-		// Should generate SetValue with default(double) for the WidthRequest property
-		// The generated code should look like: label.SetValue(global::Microsoft.Maui.Controls.VisualElement.WidthRequestProperty, double1);
-		// where double1 is assigned from double0 which is: double double0 = default;
-		Assert.Contains("double double0 = default;", generated, StringComparison.Ordinal);
-		Assert.Contains("var double1 = double0;", generated, StringComparison.Ordinal);
-		Assert.Contains("label.SetValue(global::Microsoft.Maui.Controls.VisualElement.WidthRequestProperty, double1);", generated, StringComparison.Ordinal);
+		// Since there's no matching platform and no Default, the OnPlatform element is kept for runtime resolution.
+		// This is the safe approach because:
+		// 1. We can't create instances of abstract types at compile time
+		// 2. We can't create instances of types with protected constructors at compile time
+		// 3. The runtime OnPlatform<T> correctly returns default(T) = 0.0 for double
+		Assert.Contains("OnPlatform", generated, StringComparison.Ordinal);
 	}
 }

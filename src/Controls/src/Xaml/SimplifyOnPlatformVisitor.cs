@@ -87,13 +87,16 @@ class SimplifyOnPlatformVisitor : IXamlNodeVisitor
 			bool hasKey = node.Properties.TryGetValue(XmlName.xKey, out keyNode);
 
 			// If no value found for target platform and no Default,
-			// create a default value node if we have x:TypeArguments
-			if (onNode == null && node.XmlType.TypeArguments != null && node.XmlType.TypeArguments.Count > 0)
+			// don't simplify - let the runtime handle it.
+			// At runtime, OnPlatform<T> returns default(T) = null for reference types.
+			// We can't create a default value at compile time because:
+			// 1. The type might be abstract (e.g., Brush)
+			// 2. The type might have a protected/private constructor (e.g., View)
+			// 3. A null resource entry may not be meaningful
+			if (onNode == null)
 			{
-				// Create default value for the type (to match OnPlatform<T> runtime behavior)
-				var typeArg = node.XmlType.TypeArguments[0];
-				var elementNode = new ElementNode(typeArg, typeArg.NamespaceUri, node.NamespaceResolver, node.LineNumber, node.LinePosition);
-				onNode = elementNode;
+				// Skip simplification - keep the OnPlatform element for runtime resolution
+				return;
 			}
 
 			// If OnPlatform has x:Key but the replacement node is a ValueNode,
@@ -190,7 +193,10 @@ class SimplifyOnPlatformVisitor : IXamlNodeVisitor
 
 		INode GetDefault(ElementNode onPlatform)
 		{
+			// Check both empty namespace (attribute syntax) and MAUI namespace (element syntax)
 			if (onPlatform.Properties.TryGetValue(new XmlName("", "Default"), out INode defaultNode))
+				return defaultNode;
+			if (onPlatform.Properties.TryGetValue(new XmlName(XamlParser.MauiUri, "Default"), out defaultNode))
 				return defaultNode;
 			return null;
 		}
