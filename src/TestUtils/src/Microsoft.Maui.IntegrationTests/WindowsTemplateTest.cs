@@ -179,4 +179,28 @@ public class WindowsTemplateTest : BaseTemplateTests
 				$"Unable to find expected asset: {fullpath}");
 		}
 	}
+
+	[Test]
+	public void BuildWithIdentityClient()
+	{
+		var projectDir = TestDirectory;
+		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+
+		Assert.IsTrue(DotnetInternal.New("maui", projectDir, DotNetCurrent),
+			$"Unable to create template maui. Check test output for errors.");
+
+		// .NET 9 and later was Unpackaged, so we need to remove the line
+		FileUtilities.ReplaceInFile(projectFile,
+			"</Project>",
+			"""
+			<ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
+			  <PackageReference Include="Microsoft.Identity.Client" Version="4.79.1" />
+			  <PackageReference Include="Microsoft.Identity.Client.Desktop.WinUI3" Version="4.79.1"/>
+			</ItemGroup>
+			</Project>
+			""");
+
+		Assert.IsTrue(DotnetInternal.Build(projectFile, "Debug", properties: BuildProps, msbuildWarningsAsErrors: true),
+			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+	}
 }

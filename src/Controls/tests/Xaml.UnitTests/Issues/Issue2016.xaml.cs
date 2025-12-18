@@ -1,6 +1,7 @@
+using System;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -8,26 +9,27 @@ public partial class Issue2016 : ContentPage
 {
 	public Issue2016() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests : IDisposable
 	{
-		[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-		[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
+		public Tests() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		public void Dispose() => DispatcherProvider.SetCurrent(null);
 
-		[Test]
-		public void TestSwitches([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void TestSwitches(XamlInflator inflator)
 		{
 			var page = new Issue2016(inflator);
-			Assert.AreEqual(false, page.a0.IsToggled);
-			Assert.AreEqual(false, page.b0.IsToggled);
-			Assert.AreEqual(false, page.s0.IsToggled);
-			Assert.AreEqual(false, page.t0.IsToggled);
+			Assert.False(page.a0.IsToggled);
+			Assert.False(page.b0.IsToggled);
+			Assert.False(page.s0.IsToggled);
+			Assert.False(page.t0.IsToggled);
 
 			page.a0.IsToggled = true;
 			page.b0.IsToggled = true;
 
-			Assert.AreEqual(true, page.s0.IsToggled);
-			Assert.AreEqual(true, page.t0.IsToggled);
+			Assert.True(page.s0.IsToggled);
+			Assert.True(page.t0.IsToggled);
 		}
 	}
 }

@@ -1,9 +1,11 @@
+using System;
 using System.Linq;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
+using Xunit.Sdk;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -11,19 +13,20 @@ public partial class Maui25935
 {
 	public Maui25935() => InitializeComponent();
 
-	class Test
+	[Collection("Issue")]
+	public class Test : IDisposable
 	{
-		[SetUp]
-		public void Setup()
+		public Test()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		public void Dispose() => AppInfo.SetCurrent(null);
 
-		[Test]
-		public void ToolBarItemAppThemeBinding([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void ToolBarItemAppThemeBinding(XamlInflator inflator)
 		{
 			var page = new Maui25935(inflator);
 			var items = page.Picker.Items.ToArray();

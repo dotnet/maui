@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
@@ -30,22 +30,23 @@ public partial class Bz53203 : ContentPage
 		InitializeComponent();
 	}
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests
 	{
-		[Test]
-		public void MarkupOnAttachedBPDoesNotThrowAtCompileTime([Values(XamlInflator.XamlC)] XamlInflator inflator)
+		[Fact]
+		internal void MarkupOnAttachedBPDoesNotThrowAtCompileTime()
 		{
 			MockCompiler.Compile(typeof(Bz53203));
 		}
 
-		[Test]
-		public void MarkupOnAttachedBP([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void MarkupOnAttachedBP(XamlInflator inflator)
 		{
 			var page = new Bz53203(inflator);
 			var label = page.label0;
-			Assert.That(Grid.GetRow(label), Is.EqualTo(42));
-			Assert.That(GetParameter(label), Is.EqualTo(Bz53203Values.Better));
+			Assert.Equal(42, Grid.GetRow(label));
+			Assert.Equal(Bz53203Values.Better, GetParameter(label));
 		}
 
 	}

@@ -3,7 +3,7 @@ using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Build.Tasks;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
@@ -34,14 +34,26 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 	{
 		public XmlnsCollision() => InitializeComponent();
 
-		[TestFixture]
-		class Test
+		[Collection("Xaml Inflation")]
+		public class Test : BaseTestFixture
 		{
-			[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
-			[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+			protected internal override void Setup()
+			{
+				base.Setup();
+				AppInfo.SetCurrent(new MockAppInfo());
+			}
 
-			[Test]
-			public void ConflictInXmlns([Values] XamlInflator inflator)
+			protected internal override void TearDown()
+			{
+				AppInfo.SetCurrent(null);
+				base.TearDown();
+			}
+
+			[Theory]
+			[InlineData(XamlInflator.Runtime)]
+			[InlineData(XamlInflator.XamlC)]
+			[InlineData(XamlInflator.SourceGen)]
+			internal void ConflictInXmlns(XamlInflator inflator)
 			{
 				switch (inflator)
 				{
@@ -49,7 +61,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 						Assert.Throws<BuildException>(() =>
 						{
 							MockCompiler.Compile(typeof(XmlnsCollision), out var hasLoggedErrors);
-							Assert.IsTrue(hasLoggedErrors);
+							Assert.True(hasLoggedErrors);
 						});
 						break;
 					case XamlInflator.SourceGen:
@@ -61,7 +73,7 @@ using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Build.Tasks;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
@@ -96,7 +108,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 }
 """)
 							.RunMauiSourceGenerator(typeof(XmlnsCollision));
-						Assert.That(result.Diagnostics.Any());
+						Assert.True(result.Diagnostics.Any());
 						return;
 					case XamlInflator.Runtime:
 						Assert.Throws<XamlParseException>(() =>

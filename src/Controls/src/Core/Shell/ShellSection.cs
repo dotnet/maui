@@ -992,12 +992,22 @@ namespace Microsoft.Maui.Controls
 		}
 
 		internal bool IsVisibleSection => Parent?.Parent is Shell shell && shell.CurrentItem?.CurrentItem == this;
+
 		void PresentedPageDisappearing()
 		{
 			if (this is IShellSectionController sectionController)
 			{
 				CurrentItem?.SendDisappearing();
-				sectionController.PresentedPage?.SendDisappearing();
+				var presentedPage = sectionController.PresentedPage;
+				if (presentedPage is not null)
+				{
+					// Don't send disappearing to a modal page if we're switching ShellItems
+					// The modal belongs to the new ShellItem, not the old one being disappeared
+					if (IsVisibleSection)
+					{
+						presentedPage.SendDisappearing();
+					}
+				}
 			}
 		}
 

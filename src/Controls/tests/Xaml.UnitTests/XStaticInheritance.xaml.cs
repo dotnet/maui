@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -23,35 +23,39 @@ public partial class XStaticInheritance : ContentPage
 		//this stub will be replaced at compile time
 	}
 
-	[TestFixture]
-	class Tests
+	[Collection("Xaml Inflation")]
+	public class Tests
 	{
-		[Test]
-		public void XStaticCanAccessInheritedConstant([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void XStaticCanAccessInheritedConstant(XamlInflator inflator)
 		{
 			var layout = new XStaticInheritance(inflator);
-			Assert.That(layout.baseConstant.Text, Is.EqualTo("base class string"));
+			Assert.Equal("base class string", layout.baseConstant.Text);
 		}
 
-		[Test]
-		public void XStaticCanAccessInheritedStaticProperty([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void XStaticCanAccessInheritedStaticProperty(XamlInflator inflator)
 		{
 			var layout = new XStaticInheritance(inflator);
-			Assert.That(layout.baseProperty.Text, Is.EqualTo("base static property"));
+			Assert.Equal("base static property", layout.baseProperty.Text);
 		}
 
-		[Test]
-		public void XStaticCanAccessInheritedStaticField([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void XStaticCanAccessInheritedStaticField(XamlInflator inflator)
 		{
 			var layout = new XStaticInheritance(inflator);
-			Assert.That(layout.baseField.Text, Is.EqualTo("base static field"));
+			Assert.Equal("base static field", layout.baseField.Text);
 		}
 
-		[Test]
-		public void XStaticCanAccessDerivedClassMember([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void XStaticCanAccessDerivedClassMember(XamlInflator inflator)
 		{
 			var layout = new XStaticInheritance(inflator);
-			Assert.That(layout.derivedConstant.Text, Is.EqualTo("derived class string"));
+			Assert.Equal("derived class string", layout.derivedConstant.Text);
 		}
 	}
 }

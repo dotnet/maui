@@ -1,5 +1,5 @@
-using NUnit.Framework;
-using NUnit.Framework.Constraints;
+using System;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -28,21 +28,21 @@ public partial class Bz53350
 	{
 	}
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests : IDisposable
 	{
-		[TearDown]
-		public void TearDown()
+		public void Dispose()
 		{
 			Application.Current = null;
 		}
 
-		[Test]
-		public void PropertiesWithGenericType([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void PropertiesWithGenericType(XamlInflator inflator)
 		{
 			var layout = new Bz53350(inflator);
-			Assert.That(layout.content.SomeBP, Is.EqualTo("Foo"));
-			Assert.That(layout.content.SomeProperty, Is.EqualTo("Bar"));
+			Assert.Equal("Foo", layout.content.SomeBP);
+			Assert.Equal("Bar", layout.content.SomeProperty);
 		}
 	}
 }
