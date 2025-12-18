@@ -192,21 +192,19 @@ public class Issue28986_SafeAreaBorderOrientation : _IssuesUITest
         Assert.That(borderContent.GetRect().Width, Is.GreaterThan(0), "Border should remain visible after multiple orientation changes");
         Assert.That(borderContent.GetRect().Height, Is.GreaterThan(0), "Border should remain visible after multiple orientation changes");
 
-        // 7. Verify dimension consistency within same orientation (more reliable than position)
-        // Note: X/Y positions can shift during orientation cycles due to safe area recalculations,
-        // so we verify dimensions instead which should remain consistent
-        const double dimensionTolerance = 10.0;
+        // 7. Verify positioning consistency within same orientation (with tolerance for real orientation changes)
+        const double positionTolerance = 10.0; // Increased tolerance for real device orientation changes
 
-        Assert.That(Math.Abs(initialPortraitBounds.Width - finalPortraitBounds.Width), Is.LessThanOrEqualTo(dimensionTolerance),
-            "Portrait width should be consistent between multiple orientation cycles");
-        Assert.That(Math.Abs(initialPortraitBounds.Height - finalPortraitBounds.Height), Is.LessThanOrEqualTo(dimensionTolerance),
-            "Portrait height should be consistent between multiple orientation cycles");
+        Assert.That(Math.Abs(initialPortraitBounds.X - finalPortraitBounds.X), Is.LessThanOrEqualTo(positionTolerance),
+            "Portrait X position should be consistent between multiple orientation cycles");
+        Assert.That(Math.Abs(initialPortraitBounds.Y - finalPortraitBounds.Y), Is.LessThanOrEqualTo(positionTolerance),
+            "Portrait Y position should be consistent between multiple orientation cycles");
 
-        // 8. Verify landscape dimension consistency
-        Assert.That(Math.Abs(firstLandscapeBounds.Width - secondLandscapeBounds.Width), Is.LessThanOrEqualTo(dimensionTolerance),
-            "Landscape width should be consistent between orientation cycles");
-        Assert.That(Math.Abs(firstLandscapeBounds.Height - secondLandscapeBounds.Height), Is.LessThanOrEqualTo(dimensionTolerance),
-            "Landscape height should be consistent between orientation cycles");
+        // 8. Verify landscape positioning consistency
+        Assert.That(Math.Abs(firstLandscapeBounds.X - secondLandscapeBounds.X), Is.LessThanOrEqualTo(positionTolerance),
+            "Landscape X position should be consistent between orientation cycles");
+        Assert.That(Math.Abs(firstLandscapeBounds.Y - secondLandscapeBounds.Y), Is.LessThanOrEqualTo(positionTolerance),
+            "Landscape Y position should be consistent between orientation cycles");
 
         // 9. Verify safe area consistency within same orientation
         Assert.That(initialPortraitSafeArea, Is.EqualTo(finalPortraitSafeArea),

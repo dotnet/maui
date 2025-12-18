@@ -29,7 +29,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.EnterText("TargetView", "DragAndDropEvents");
 			App.Tap("GoButton");
 
-			Thread.Sleep(1000); // CI-safe delay for page navigation
 			App.WaitForElement("LabelDragElement");
 			App.DragAndDrop("LabelDragElement", "DragTarget");
 
@@ -159,7 +158,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.EnterText("TargetView", "DragAndDropEventArgs");
 			App.Tap("GoButton");
 
-			Thread.Sleep(1000); // CI-safe delay for page navigation
 			App.WaitForElement("LabelDragElement");
 			App.DragAndDrop("LabelDragElement", "DragTarget");
 
