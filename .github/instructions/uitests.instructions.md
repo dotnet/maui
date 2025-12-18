@@ -250,6 +250,32 @@ pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "Issue1234
 - It captures logs automatically for debugging
 - Manual `dotnet` commands often fail due to missing environment setup
 
+### Linux Environment Without Device Access
+
+If you cannot run BuildAndRunHostApp due to OS limitations (e.g., Linux without iOS simulator):
+
+**Verify compilation and unit tests**:
+```bash
+# With unit tests (recommended - validates related functionality)
+pwsh .github/scripts/BuildAndVerify.ps1 -RunUnitTests
+
+# Or just compilation (faster)
+pwsh .github/scripts/BuildAndVerify.ps1
+```
+
+**What this checks**:
+- ✅ HostApp compiles for available platforms (Android on Linux)
+- ✅ UI test project compiles
+- ✅ Unit tests pass (with `-RunUnitTests`): Core, Controls.Core, Controls.Xaml, Essentials
+
+**What this does NOT check**:
+- ❌ UI test execution via Appium (requires device/simulator)
+- ❌ Runtime UI behavior
+- ❌ Device-specific behaviors
+- ❌ Platform-specific code paths (iOS, MacCatalyst on Linux)
+
+**Use this as last resort** when device testing is impossible. Always document the limitation clearly and recommend manual testing.
+
 ### Prerequisites: Kill Existing Appium Processes
 
 **CRITICAL**: Before running UITests with BuildAndRunHostApp.ps1, always kill any existing Appium processes. The UITest framework needs to start its own Appium server, and having a stale process running will cause the tests to fail with an error like:
