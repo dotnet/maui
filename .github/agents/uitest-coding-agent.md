@@ -419,6 +419,40 @@ pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "IssueXXXX
 
 ---
 
+## Verification on Linux Without Device Access
+
+If you cannot run BuildAndRunHostApp due to OS limitations:
+
+1. **Verify test code compiles and run unit tests**:
+   ```bash
+   # With unit tests (recommended - validates related functionality)
+   pwsh .github/scripts/BuildAndVerify.ps1 -RunUnitTests
+   
+   # Or just compilation (faster)
+   pwsh .github/scripts/BuildAndVerify.ps1
+   ```
+
+2. **Report to user**:
+   ```markdown
+   ⚠️ **Test Created - Compilation Verified**
+
+   **Files created:**
+   - `TestCases.HostApp/Issues/IssueXXXXX.xaml[.cs]`
+   - `TestCases.Shared.Tests/Tests/Issues/IssueXXXXX.cs`
+
+   **Verification status:**
+   - ✅ Test code compiles successfully
+   - ✅ Unit tests pass (Core, Controls.Core, Controls.Xaml, Essentials)
+   - ❌ UI test NOT executed (requires device/simulator)
+   - ❌ Runtime UI behavior NOT validated
+
+   **Recommended**: UI test execution on platform with device access (iOS/Android).
+   ```
+
+3. **Limitation**: BuildAndVerify checks compilation and unit tests only. UI test may compile but fail at runtime due to UI-specific issues.
+
+---
+
 ## Running Tests Locally
 
 📖 **Complete documentation**: See [uitests.instructions.md](../instructions/uitests.instructions.md#running-ui-tests-locally) for:

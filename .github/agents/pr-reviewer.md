@@ -174,6 +174,11 @@ pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform [android|ios|maccatalyst] 
 - Runs NUnit tests via `dotnet test`
 - Captures logs to `CustomAgentLogsTmp/UITests/`
 
+**If device access unavailable** (e.g., Linux without iOS simulator):
+- Use BuildAndVerify as fallback: `pwsh .github/scripts/BuildAndVerify.ps1 -RunUnitTests`
+- Document limitation clearly in review (see "Can't Access Required Platform" section)
+- Provide manual test steps for platforms you couldn't test
+
 ### Adding Edge Case Tests
 
 If you need to add tests for edge cases:
@@ -348,16 +353,51 @@ dotnet build ./Microsoft.Maui.BuildTasks.slnf
 rm -rf bin/ obj/ && dotnet restore --force
 ```
 
+### Can't Access Required Platform
+
+If testing on platform without device access (e.g., Linux for iOS):
+
+1. **Verify builds compile and run unit tests**:
+   ```bash
+   # With unit tests
+   pwsh .github/scripts/BuildAndVerify.ps1 -RunUnitTests
+   
+   # Or just compilation (faster)
+   pwsh .github/scripts/BuildAndVerify.ps1
+   ```
+
+2. **Document limitation in review**:
+   ```markdown
+   ⚠️ **Limited Testing**
+
+   Due to platform limitations (Linux/no iOS access), only verified:
+   - ✅ Code compiles successfully for available platforms (Android on Linux)
+   - ✅ Unit tests pass (Core, Controls.Core, Controls.Xaml, Essentials)
+   - ❌ UI tests NOT executed (requires device/simulator)
+   - ❌ Runtime behavior NOT validated
+
+   **Recommended**:
+   - Manual testing on iOS/MacCatalyst by reviewer with device access
+   - OR CI pipeline validation on target platforms
+   ```
+
+3. **Provide manual test steps** for platforms you couldn't test
+
 ### Can't Complete Testing
 
 If blocked by environment issues (no device, platform unavailable):
 
-1. Document what you attempted
-2. Provide manual test steps for the user
-3. Complete code review portion
-4. Note limitation in review
+1. **Run BuildAndVerify to verify compilation**:
+   ```bash
+   pwsh .github/scripts/BuildAndVerify.ps1 -RunUnitTests
+   ```
 
-**Don't skip testing silently** - always explain why and provide alternatives.
+2. Document what you attempted
+3. Provide manual test steps for the user
+4. Complete code review portion
+5. Note limitation in review
+
+**Don't skip verification silently** - always explain why and provide alternatives.
 
 ---
 
@@ -377,6 +417,7 @@ If blocked by environment issues (no device, platform unavailable):
 | Task | Command/Location |
 |------|------------------|
 | Run UI tests | `pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform [platform] -TestFilter "..."` |
+| Build verification (Linux) | `pwsh .github/scripts/BuildAndVerify.ps1` |
 | Test page location | `src/Controls/tests/TestCases.HostApp/Issues/` |
 | NUnit test location | `src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/` |
 | Test logs | `CustomAgentLogsTmp/UITests/` |
