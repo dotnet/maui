@@ -339,13 +339,12 @@ public partial class TestPage : ContentPage
 	}
 
 	[Fact]
-	public void OnPlatformWithMissingTargetPlatformShouldNotThrow()
+	public void OnPlatformWithMissingTargetPlatformShouldUseDefault()
 	{
 		// Reproduces Bugzilla39636: When MacCatalyst is not defined in OnPlatform,
-		// SourceGen should not throw an exception.
-		// When there's no matching platform and no Default, the OnPlatform is kept for runtime resolution
-		// because we cannot determine at compile time if creating default(T) is safe
-		// (e.g., abstract types like Brush, types with protected constructors like View).
+		// SourceGen should use default(T) instead of throwing an exception.
+		// The SimplifyOnPlatformVisitor marks the node as IsOnPlatformDefaultValue,
+		// and CreateValuesVisitor generates default(T) for it.
 		var xaml =
 """
 <?xml version="1.0" encoding="UTF-8"?>
@@ -388,11 +387,8 @@ public partial class TestPage : ContentPage
 		// Should not have any errors (no TargetInvocationException)
 		Assert.False(result.Diagnostics.Any(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error));
 		
-		// Since there's no matching platform and no Default, the OnPlatform element is kept for runtime resolution.
-		// This is the safe approach because:
-		// 1. We can't create instances of abstract types at compile time
-		// 2. We can't create instances of types with protected constructors at compile time
-		// 3. The runtime OnPlatform<T> correctly returns default(T) = 0.0 for double
-		Assert.Contains("OnPlatform", generated, StringComparison.Ordinal);
+		// Should generate default(double) for the value since no matching platform
+		// The generated code should include: double double0 = default;
+		Assert.Contains("double double0 = default;", generated, StringComparison.Ordinal);
 	}
 }
