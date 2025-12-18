@@ -248,9 +248,9 @@ stages:
             IncludeDotNetCli: true
             DisplayNamePrefix: DeviceTestsAndroid
 
-# CoreCLR Device Tests Stages
+# CoreCLR Device Tests Stages (Android only)
 - stage: devicetests_build_coreclr
-  displayName: ${{ parameters.TargetFrameworkVersion }} ios/catalyst/android CoreCLR Helix Tests
+  displayName: ${{ parameters.TargetFrameworkVersion }} Android CoreCLR Helix Tests
   dependsOn: []
   jobs:
   - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
@@ -302,104 +302,6 @@ stages:
           displayName: Publish Failed Artifacts Directory
           condition: not(succeeded())
           artifact: ${{ parameters.appArtifactName }}_coreclr_failed_$(System.JobAttempt)
-
-- stage: devicetests_ios_coreclr
-  displayName: ${{ parameters.TargetFrameworkVersion }} iOS CoreCLR Helix Tests
-  dependsOn: 
-    - devicetests_build_coreclr
-  jobs:
-  - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
-    parameters:
-      helixRepo: dotnet/maui
-      pool: ${{ parameters.testPool }}
-      enableMicrobuild: false
-      enablePublishUsingPipelines: true
-      enablePublishBuildAssets: ${{ parameters.publishAssets }}
-      enableTelemetry: true
-      enableSourceBuild: ${{ parameters.enableSourceBuild }}
-      enableSourceIndex: ${{ parameters.enableSourceIndex }}
-      sourceIndexParams: ${{ parameters.sourceIndexParams }}
-      publishAssetsImmediately: true
-      enablePublishBuildArtifacts: true
-      enablePublishTestResults: false
-      workspace:
-        clean: all
-      jobs:
-      - job: device_tests_ios_coreclr
-        displayName: Run DeviceTests iOS (CoreCLR)
-        timeoutInMinutes: 240
-        variables:
-        - name: _BuildConfig
-          value: ${{ parameters.BuildConfiguration }}
-        preSteps:
-        - checkout: self
-          fetchDepth: 1
-          clean: true
-
-        - task: DownloadPipelineArtifact@2
-          displayName: 'Download Build'
-          condition: succeeded()
-          inputs:
-            artifactName: ${{ parameters.appArtifactName }}_coreclr
-            targetPath: ${{ parameters.checkoutDirectory }}/artifacts/bin
-
-        - template: /eng/common/templates-official/steps/send-to-helix.yml
-          parameters:
-            HelixProjectPath: ${{ parameters.helixProject }}
-            HelixProjectArguments: /p:TargetOS=ios /p:TestRunNameSuffix="_$(_BuildConfig)_CoreCLR" /p:TestRunNamePrefix="DeviceTestsIOS_CoreCLR_"
-            HelixConfiguration: $(_BuildConfig)
-            IncludeDotNetCli: true
-            DisplayNamePrefix: DeviceTestsIOS_CoreCLR
-            WorkItemTimeout: 04:00:00
-            XUnitWorkItemTimeout: 04:00:00
-
-- stage: devicetests_catalyst_coreclr
-  displayName: ${{ parameters.TargetFrameworkVersion }} MacCatalyst CoreCLR Helix Tests
-  dependsOn: 
-    - devicetests_build_coreclr
-  jobs:
-  - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
-    parameters:
-      helixRepo: dotnet/maui
-      pool: ${{ parameters.buildPool }}
-      enableMicrobuild: ${{ parameters.enableMicrobuild }}
-      enablePublishUsingPipelines: true
-      enablePublishBuildAssets: ${{ parameters.publishAssets }}
-      enableTelemetry: true
-      enableSourceBuild: ${{ parameters.enableSourceBuild }}
-      enableSourceIndex: ${{ parameters.enableSourceIndex }}
-      sourceIndexParams: ${{ parameters.sourceIndexParams }}
-      publishAssetsImmediately: true
-      enablePublishBuildArtifacts: true
-      enablePublishTestResults: false
-      workspace:
-        clean: all
-      jobs:
-      - job: device_tests_maccatalyst_coreclr
-        displayName: Run DeviceTests MacCatalyst (CoreCLR)
-        timeoutInMinutes: 60
-        variables:
-        - name: _BuildConfig
-          value: ${{ parameters.BuildConfiguration }}
-        preSteps:
-        - checkout: self
-          fetchDepth: 1
-          clean: true
-
-        - task: DownloadPipelineArtifact@2
-          displayName: 'Download Build'
-          condition: succeeded()
-          inputs:
-            artifactName: ${{ parameters.appArtifactName }}_coreclr
-            targetPath: ${{ parameters.checkoutDirectory }}/artifacts/bin
-
-        - template: /eng/common/templates-official/steps/send-to-helix.yml
-          parameters:
-            HelixProjectPath: ${{ parameters.helixProject }}
-            HelixProjectArguments: /p:TargetOS=maccatalyst /p:TestRunNameSuffix="_$(_BuildConfig)_CoreCLR" /p:TestRunNamePrefix="DeviceTestsMacCatalyst_CoreCLR_"
-            HelixConfiguration: $(_BuildConfig)
-            IncludeDotNetCli: true
-            DisplayNamePrefix: DeviceTestsMacCatalyst_CoreCLR
 
 - stage: devicetests_android_coreclr
   displayName: ${{ parameters.TargetFrameworkVersion }} Android CoreCLR Helix Tests
