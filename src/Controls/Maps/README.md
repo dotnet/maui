@@ -87,8 +87,18 @@
             </maps:Polyline.Geopath>
         </maps:Polyline>
 
-        <maps:Circle StrokeColor="Green" FillColor="#40008000" StrokeWidth="3"
-                    Center="47.641,-122.329" Radius="200" />
+        <maps:Circle StrokeColor="Green" FillColor="#40008000" StrokeWidth="3">
+            <maps:Circle.Center>
+                <essentials:Location Latitude="47.641" Longitude="-122.329" />
+            </maps:Circle.Center>
+            <maps:Circle.Radius>
+                <maps:Distance>
+                    <x:Arguments>
+                        <x:Double>200</x:Double>
+                    </x:Arguments>
+                </maps:Distance>
+            </maps:Circle.Radius>
+        </maps:Circle>
     </maps:Map.MapElements>
 </maps:Map>
 ```
