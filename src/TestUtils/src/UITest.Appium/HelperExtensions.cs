@@ -2,11 +2,13 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Android;
 using OpenQA.Selenium.Appium.Android.Enums;
 using OpenQA.Selenium.Appium.Interfaces;
 using OpenQA.Selenium.Appium.iOS;
+using OpenQA.Selenium.Appium.Windows;
 using UITest.Core;
 
 namespace UITest.Appium
@@ -743,6 +745,141 @@ namespace UITest.Appium
 			var results = WaitForAtLeastOne(result, timeoutMessage, timeout, retryFrequency);
 
 			return results;
+		}
+
+		public static bool TapMinimizeButton(this IApp app, bool clickButton = false)
+		{
+			if (app is not AppiumWindowsApp windowsApp)
+				return false;
+
+			var windowsDriver = windowsApp.Driver as WindowsDriver;
+			if (windowsDriver == null)
+				return false;
+
+			try
+			{
+				var minimizeButton = FindSystemButton(windowsDriver, "Minimize", "MinimizeButton", "PART_Min");
+
+				if (minimizeButton != null && minimizeButton.Displayed && minimizeButton.Enabled)
+				{
+					if (clickButton)
+					{
+						minimizeButton.Click();
+					}
+					return true;
+				}
+
+				return false;
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"UITest: Error testing minimize button: {ex.Message}");
+				return false;
+			}
+		}
+
+		/// <summary>
+		/// Tests if the Windows maximize/restore button is accessible and responsive
+		/// </summary>
+		/// <param name="app">The Windows app instance</param>
+		/// <param name="clickButton">Whether to actually click the maximize button (default: false)</param>
+		/// <returns>True if the maximize/restore button is accessible and responsive</returns>
+		public static bool TapMaximizeButton(this IApp app, bool clickButton = false)
+		{
+			if (app is not AppiumWindowsApp windowsApp)
+				return false;
+
+			var windowsDriver = windowsApp.Driver as WindowsDriver;
+			if (windowsDriver == null)
+				return false;
+
+			try
+			{
+				var maximizeButton = FindSystemButton(windowsDriver, "Maximize", "MaximizeButton", "PART_Max", "Restore");
+
+				if (maximizeButton != null && maximizeButton.Displayed && maximizeButton.Enabled)
+				{
+					if (clickButton)
+					{
+						maximizeButton.Click();
+					}
+					return true;
+				}
+
+				return false;
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"UITest: Error testing maximize button: {ex.Message}");
+				return false;
+			}
+		}
+
+		/// <summary>
+		/// Tests if the Windows close button is accessible (does not actually close the app)
+		/// </summary>
+		/// <param name="app">The Windows app instance</param>
+		/// <returns>True if the close button is accessible</returns>
+		public static bool TapCloseButton(this IApp app)
+		{
+			if (app is not AppiumWindowsApp windowsApp)
+				return false;
+
+			var windowsDriver = windowsApp.Driver as WindowsDriver;
+			if (windowsDriver == null)
+				return false;
+
+			try
+			{
+				var closeButton = FindSystemButton(windowsDriver, "Close", "CloseButton", "PART_Close");
+
+				return closeButton != null && closeButton.Displayed && closeButton.Enabled;
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"UITest: Error testing close button accessibility: {ex.Message}");
+				return false;
+			}
+		}
+
+		static IWebElement? FindSystemButton(WindowsDriver driver, params string[] identifiers)
+		{
+			foreach (var identifier in identifiers)
+			{
+				try
+				{
+					try
+					{
+						var element = driver.FindElement(By.XPath($"//*[@Name='{identifier}']"));
+						if (element != null)
+							return element;
+					}
+					catch { }
+
+					try
+					{
+						var element = driver.FindElement(By.XPath($"//*[@AutomationId='{identifier}']"));
+						if (element != null)
+							return element;
+					}
+					catch { }
+
+					// Strategy 5: By XPath with partial name match (for localized systems)
+					try
+					{
+						var element = driver.FindElement(By.XPath($"//*[contains(@Name, '{identifier}')]"));
+						if (element != null)
+							return element;
+					}
+					catch { }
+				}
+				catch (Exception ex)
+				{
+					Console.WriteLine($"UITest: Exception searching for {identifier}: {ex.Message}");
+				}
+			}
+
+			return null;
 		}
 
 		/// <summary>
