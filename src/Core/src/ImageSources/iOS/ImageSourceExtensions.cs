@@ -60,6 +60,11 @@ namespace Microsoft.Maui
 		internal static UIImage? GetPlatformImage(this IFileImageSource imageSource)
 		{
 			var filename = imageSource.File;
+			
+			// If the path is absolute (e.g., from MediaPicker), try to load it directly first
+			if (Path.IsPathRooted(filename) && File.Exists(filename))
+				return UIImage.FromFile(filename);
+			
 			return UIImage.FromBundle(filename) ?? UIImage.FromFile(filename);
 		}
 
@@ -68,6 +73,13 @@ namespace Microsoft.Maui
 			ArgumentNullException.ThrowIfNull(imageSource);
 
 			var filename = imageSource.File;
+
+			// If the path is absolute (e.g., from MediaPicker), check if it exists directly first
+			if (Path.IsPathRooted(filename) && File.Exists(filename))
+			{
+				scale = 1;
+				return CGImageSource.FromUrl(NSUrl.CreateFileUrl(filename));
+			}
 
 			// search the bundle for the scaled image
 			var bundle = FileSystemUtils.PlatformGetFullAppPackageFilePath(filename);
