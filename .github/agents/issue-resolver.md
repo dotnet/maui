@@ -129,8 +129,9 @@ Any concerns about this approach?
 
 **🎯 Prefer unit tests when possible** (faster to run and iterate):
 - Location: `src/Controls/tests/Core.UnitTests/`, `src/Controls/tests/Xaml.UnitTests/`, etc.
-- Use when: Testing logic, property changes, handlers, XAML parsing
-- Run with: `dotnet test [test-project].csproj --filter "FullyQualifiedName~TestMethod"`
+- Use when: Testing logic, property changes, XAML parsing
+- **Handlers always require UI tests** (not unit tests)
+- Run with: `pwsh .github/scripts/BuildAndVerify.ps1 -RunUnitTests`
 
 **Fall back to UI tests when needed** (requires UI interaction):
 - Location: `src/Controls/tests/TestCases.HostApp/Issues/` + `src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/`
@@ -165,7 +166,7 @@ public class IssueXXXXXTests : BaseTestFixture
 
 **Run unit test**:
 ```bash
-dotnet test src/Controls/tests/Core.UnitTests/Core.UnitTests.csproj --filter "FullyQualifiedName~IssueXXXXX"
+pwsh .github/scripts/BuildAndVerify.ps1 -RunUnitTests
 ```
 
 ### Create UI Test (When UI Interaction Required)
