@@ -49,7 +49,7 @@ parameters:
 
 stages:
 - stage: devicetests_build
-  displayName: ${{ parameters.TargetFrameworkVersion }} ios/catalyst/android Helix Tests
+  displayName: ${{ parameters.TargetFrameworkVersion }} ios/catalyst/android Helix Tests (Mono)
   dependsOn: []
   jobs:
   - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
@@ -70,7 +70,7 @@ stages:
         clean: all
       jobs:
       - job: builddevice_tests
-        displayName: Build Device Tests
+        displayName: Build Device Tests (Mono)
         timeoutInMinutes: 60
         variables:
         - name: _BuildConfig
@@ -103,7 +103,7 @@ stages:
           artifact: ${{ parameters.appArtifactName }}_failed_$(System.JobAttempt)
 
 - stage: devicetests_ios
-  displayName: ${{ parameters.TargetFrameworkVersion }} iOS Helix Tests
+  displayName: ${{ parameters.TargetFrameworkVersion }} iOS Helix Tests (Mono)
   dependsOn: 
     - devicetests_build
   jobs:
@@ -125,7 +125,7 @@ stages:
         clean: all
       jobs:
       - job: device_tests_ios
-        displayName: Run DeviceTests iOS
+        displayName: Run DeviceTests iOS (Mono)
         timeoutInMinutes: 240
         variables:
         - name: _BuildConfig
@@ -153,7 +153,7 @@ stages:
             XUnitWorkItemTimeout: 04:00:00
 
 - stage: devicetests_catalyst
-  displayName: ${{ parameters.TargetFrameworkVersion }} MacCatalyst Helix Tests
+  displayName: ${{ parameters.TargetFrameworkVersion }} MacCatalyst Helix Tests (Mono)
   dependsOn: 
     - devicetests_build
   jobs:
@@ -175,7 +175,7 @@ stages:
         clean: all
       jobs:
       - job: device_tests_maccatalyst
-        displayName: Run DeviceTests MacCatalyst
+        displayName: Run DeviceTests MacCatalyst (Mono)
         timeoutInMinutes: 60
         variables:
         - name: _BuildConfig
@@ -201,7 +201,7 @@ stages:
             DisplayNamePrefix: DeviceTestsMacCatalyst
 
 - stage: devicetests_android
-  displayName: ${{ parameters.TargetFrameworkVersion }} Android Helix Tests
+  displayName: ${{ parameters.TargetFrameworkVersion }} Android Helix Tests (Mono)
   dependsOn: 
     - devicetests_build
   jobs:
@@ -223,7 +223,7 @@ stages:
         clean: all
       jobs:
       - job: device_tests_android
-        displayName: Run DeviceTests Android
+        displayName: Run DeviceTests Android (Mono)
         timeoutInMinutes: 60
         variables:
         - name: _BuildConfig
@@ -343,7 +343,7 @@ stages:
             artifactName: ${{ parameters.appArtifactName }}_coreclr
             targetPath: ${{ parameters.checkoutDirectory }}/artifacts/bin
 
-        - template: /eng/common/templates-official/steps/send-to-helix.yml
+        - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/steps/send-to-helix.yml', '/eng/common/templates-official/steps/send-to-helix.yml@self') }}
           parameters:
             HelixProjectPath: ${{ parameters.helixProject }}
             HelixProjectArguments: /p:TargetOS=android /p:TestRunNameSuffix="_$(_BuildConfig)_CoreCLR" /p:TestRunNamePrefix="DeviceTestsAndroid_CoreCLR_"
