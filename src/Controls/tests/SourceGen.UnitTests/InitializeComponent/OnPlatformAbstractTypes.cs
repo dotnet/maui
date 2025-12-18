@@ -238,8 +238,7 @@ public partial class TestPage : ContentPage
 	public void OnPlatformWithAbstractTypeNoDefaultNoMatchingPlatform()
 	{
 		// When there's no Default and no matching platform, and the type is abstract,
-		// SourceGen should NOT try to create an instance of the abstract type.
-		// Instead, it should either skip the resource or keep the OnPlatform runtime behavior.
+		// SourceGen should generate default(T) instead of trying to instantiate the abstract type.
 		var xaml =
 """
 <?xml version="1.0" encoding="UTF-8"?>
@@ -285,10 +284,12 @@ public partial class TestPage : ContentPage
 		// Should NOT contain "new Brush()" - that would be a compiler error
 		Assert.DoesNotContain("new global::Microsoft.Maui.Controls.Brush()", generated, StringComparison.Ordinal);
 		
-		// The OnPlatform should either:
-		// 1. Be kept as-is (OnPlatform element) for runtime resolution, or
-		// 2. Not be simplified at all for this platform
-		// Either way, there should be no compilation errors
+		// Should generate default instead of trying to instantiate the type
+		// The pattern is: Brush brush0 = default;
+		Assert.Contains("Brush", generated, StringComparison.Ordinal);
+		Assert.Contains("= default;", generated, StringComparison.Ordinal);
+		
+		// There should be no compilation errors
 		Assert.False(result.Diagnostics.Any(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error),
 			$"SourceGen should not fail for OnPlatform<Brush> without Default. Errors: {string.Join(", ", result.Diagnostics)}");
 	}
@@ -297,7 +298,7 @@ public partial class TestPage : ContentPage
 	public void OnPlatformWithProtectedCtorTypeNoDefaultNoMatchingPlatform()
 	{
 		// When there's no Default and no matching platform, and the type has protected ctor,
-		// SourceGen should NOT try to create an instance of that type.
+		// SourceGen should generate default(T) instead of trying to instantiate the type.
 		var xaml =
 """
 <?xml version="1.0" encoding="UTF-8"?>
@@ -338,8 +339,11 @@ public partial class TestPage : ContentPage
 		// Should NOT contain "new View()" - that would be a compiler error due to protected ctor
 		Assert.DoesNotContain("new global::Microsoft.Maui.Controls.View()", generated, StringComparison.Ordinal);
 		
-		// Either the OnPlatform is kept for runtime, or no element is added
-		// Either way, there should be no compilation errors
+		// Should generate default instead of trying to instantiate the type
+		Assert.Contains("View", generated, StringComparison.Ordinal);
+		Assert.Contains("= default;", generated, StringComparison.Ordinal);
+		
+		// There should be no compilation errors
 		Assert.False(result.Diagnostics.Any(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error),
 			$"SourceGen should not fail for OnPlatform<View> without Default. Errors: {string.Join(", ", result.Diagnostics)}");
 	}
