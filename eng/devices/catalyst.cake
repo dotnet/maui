@@ -88,7 +88,7 @@ void ExecuteBuild(string project, string binDir, string config, string rid, stri
 				.Append($"/p:RuntimeIdentifier={rid}")
 				.Append($"/bl:{binlog}");
 
-			if (isUsingCoreClr)
+			if (useCoreClr)
 			{
 				args.Append("/p:UseMonoRuntime=false");
 			}
