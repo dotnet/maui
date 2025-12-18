@@ -1,8 +1,10 @@
+using System;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
+using Xunit.Sdk;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -10,20 +12,21 @@ public partial class Maui18324 : ContentPage
 {
 	public Maui18324() => InitializeComponent();
 
-	class Test
+	[Collection("Issue")]
+	public class Test : IDisposable
 	{
-		[SetUp]
-		public void Setup()
+		public Test()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
 
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		public void Dispose() => AppInfo.SetCurrent(null);
 
-		[Test]
-		public void xTypeShoudntCrash([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void xTypeShoudntCrash(XamlInflator inflator)
 		{
 			var page = new Maui18324(inflator);
 		}

@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests.Issues;
 
@@ -14,38 +14,35 @@ public partial class Maui9648 : ContentPage
 {
 	public Maui9648() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests : IDisposable
 	{
-		[SetUp] 
-		public void SetUp() => Application.Current = new MockApplication();
+		public Tests() => Application.Current = new MockApplication();
+		public void Dispose() => Application.Current = null;
 
-		[Test]
-		public void ApplyToDerivedTypesWorksForMultipleImplicitStyles([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void ApplyToDerivedTypesWorksForMultipleImplicitStyles(XamlInflator inflator)
 		{
 			var page = new Maui9648(inflator);
 			Application.Current.LoadPage(page);
 
 			// CustomEntry should have all three styles applied
-			Assert.That(page.testEntry.TextColor, Is.EqualTo(Colors.Red), 
-				"CustomEntry should have TextColor from InputView implicit style");
-			Assert.That(page.testEntry.FontSize, Is.EqualTo(48), 
-				"CustomEntry should have FontSize from Entry implicit style");
-			Assert.That(page.testEntry.BackgroundColor, Is.EqualTo(Colors.LightGreen), 
-				"CustomEntry should have BackgroundColor from its own implicit style");
+			Assert.Equal(Colors.Red, page.testEntry.TextColor);
+			Assert.Equal(48, page.testEntry.FontSize);
+			Assert.Equal(Colors.LightGreen, page.testEntry.BackgroundColor);
 		}
 
-		[Test]
-		public void ApplyToDerivedTypesWorksForEntry([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void ApplyToDerivedTypesWorksForEntry(XamlInflator inflator)
 		{
 			var page = new Maui9648(inflator);
 			Application.Current.LoadPage(page);
 
 			// Regular Entry should have styles from InputView and Entry
-			Assert.That(page.regularEntry.TextColor, Is.EqualTo(Colors.Red), 
-				"Entry should have TextColor from InputView implicit style");
-			Assert.That(page.regularEntry.FontSize, Is.EqualTo(48), 
-				"Entry should have FontSize from its own implicit style");
+			Assert.Equal(Colors.Red, page.regularEntry.TextColor);
+			Assert.Equal(48, page.regularEntry.FontSize);
 		}
 	}
 }

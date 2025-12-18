@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -23,11 +23,12 @@ public partial class BPNotResolvedOnSubClass : ContentPage
 	}
 
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests
 	{
-		[Test]
-		public void CorrectlyResolveBPOnSubClasses([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void CorrectlyResolveBPOnSubClasses(XamlInflator inflator)
 		{
 			var layout = new BPNotResolvedOnSubClass(inflator);
 			var style = (Style)layout.Resources["Microsoft.Maui.Controls.Button"];
@@ -36,7 +37,7 @@ public partial class BPNotResolvedOnSubClass : ContentPage
 			var button = new Button();
 			button.Style = style;
 
-			Assert.AreEqual(Color.FromArgb("#dddddd"), button.GetValue(ShadowColorProperty));
+			Assert.Equal(Color.FromArgb("#dddddd"), button.GetValue(ShadowColorProperty));
 		}
 	}
 }

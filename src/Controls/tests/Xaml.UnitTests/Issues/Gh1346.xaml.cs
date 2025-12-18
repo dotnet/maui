@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Globalization;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -12,18 +12,19 @@ public partial class Gh1346 : ContentPage
 	public Gh1346() => InitializeComponent();
 
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests
 	{
-		[Test]
-		public void xStaticInStyle([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void xStaticInStyle(XamlInflator inflator)
 		{
 			var layout = new Gh1346(inflator);
 			var style = layout.Resources["TestIconStyle"] as Style;
 			var setter = style.Setters[0];
-			Assert.That(setter.Property, Is.EqualTo(Gh1346FontIcon.IconProperty));
-			Assert.That(setter.Value, Is.TypeOf<Gh1346FontAwesome>());
-			Assert.That(layout.fontIcon.Icon.Icon, Is.EqualTo("\uf2dc"));
+			Assert.Equal(Gh1346FontIcon.IconProperty, setter.Property);
+			Assert.IsType<Gh1346FontAwesome>(setter.Value);
+			Assert.Equal("\uf2dc", layout.fontIcon.Icon.Icon);
 		}
 	}
 }

@@ -1,5 +1,5 @@
 using System;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -20,18 +20,20 @@ public partial class Gh4130 : ContentPage
 		var c = new Gh4130Control();
 	}
 
-	void OnTextChanged(object sender, EventArgs e) => Assert.Pass();
+	bool _eventFired = false;
+	void OnTextChanged(object sender, EventArgs e) => _eventFired = true;
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests
 	{
-		[Test]
-		public void NonGenericEventHanlders([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void NonGenericEventHanlders(XamlInflator inflator)
 		{
 			var layout = new Gh4130(inflator);
 			var control = layout.Content as Gh4130Control;
 			control.FireEvent();
-			Assert.Fail();
+			Assert.True(layout._eventFired);
 		}
 	}
 }

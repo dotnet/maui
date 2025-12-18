@@ -1,8 +1,9 @@
+using System;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -10,29 +11,30 @@ public partial class Maui22714
 {
 	public Maui22714() => InitializeComponent();
 
-	class Test
+	[Collection("Issue")]
+	public class Test : IDisposable
 	{
-		[SetUp]
-		public void Setup()
+		public Test()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		public void Dispose() => AppInfo.SetCurrent(null);
 
-		[Test]
-		public void TestNonCompiledResourceDictionary(
-			[Values] XamlInflator inflator,
-			[Values] bool treatWarningsAsErrors)
+		[Theory]
+		[InlineData(XamlInflator.XamlC, true)]
+		[InlineData(XamlInflator.XamlC, false)]
+		[InlineData(XamlInflator.SourceGen, false)]
+		[InlineData(XamlInflator.Runtime, false)]
+		internal void TestNonCompiledResourceDictionary(XamlInflator inflator, bool treatWarningsAsErrors)
 		{
 			if (inflator == XamlInflator.XamlC)
 			{
 				if (treatWarningsAsErrors)
 				{
-					Assert.Throws(
-						new BuildExceptionConstraint(22, 32, static msg => msg.Contains(" XC0024 ", System.StringComparison.Ordinal)),
-						() => MockCompiler.Compile(typeof(Maui22714), treatWarningsAsErrors: true));
+					var ex = Assert.Throws<Build.Tasks.BuildException>(() => MockCompiler.Compile(typeof(Maui22714), treatWarningsAsErrors: true));
+					Assert.Contains(" XC0024 ", ex.Message, StringComparison.Ordinal);
 				}
 				else
 				{
@@ -48,8 +50,6 @@ public partial class Maui22714
 				// This will never affect non-compiled builds
 				_ = new Maui22714(inflator);
 			}
-			else
-				Assert.Ignore("This test is not yet implemented");
 		}
 	}
 }

@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -6,22 +6,24 @@ public partial class FindByName : ContentPage
 {
 	public FindByName() => InitializeComponent();
 
-	[TestFixture]
-	class FindByNameTests
+	[Collection("Xaml Inflation")]
+	public class FindByNameTests
 	{
-		[Test]
-		public void TestRootName([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void TestRootName(XamlInflator inflator)
 		{
 			var page = new FindByName(inflator);
-			Assert.AreSame(page, ((Maui.Controls.Internals.INameScope)page).FindByName("root"));
-			Assert.AreSame(page, page.FindByName<FindByName>("root"));
+			Assert.Same(page, ((Maui.Controls.Internals.INameScope)page).FindByName("root"));
+			Assert.Same(page, page.FindByName<FindByName>("root"));
 		}
 
-		[Test]
-		public void TestName([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void TestName(XamlInflator inflator)
 		{
 			var page = new FindByName(inflator);
-			Assert.AreSame(page.label0, page.FindByName<Label>("label0"));
+			Assert.Same(page.label0, page.FindByName<Label>("label0"));
 		}
 	}
 }

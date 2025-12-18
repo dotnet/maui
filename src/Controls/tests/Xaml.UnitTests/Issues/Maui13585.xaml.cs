@@ -1,7 +1,8 @@
+using System;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
@@ -10,29 +11,31 @@ public partial class Maui13585 : ContentPage
 {
 	public Maui13585() => InitializeComponent();
 
-	class Tests
+	[Collection("Issue")]
+	public class Tests : IDisposable
 	{
-		[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		public Tests() => AppInfo.SetCurrent(new MockAppInfo());
+		public void Dispose() => AppInfo.SetCurrent(null);
 
-		[Test]
-		public void TriggerWithDynamicResource([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void TriggerWithDynamicResource(XamlInflator inflator)
 		{
 			var page = new Maui13585(inflator);
-			Assert.That(page.styleTriggerWithStaticResources.BackgroundColor, Is.EqualTo(Colors.Green));
-			Assert.That(page.styleTriggerWithDynamicResources.BackgroundColor, Is.EqualTo(Colors.Green));
+			Assert.Equal(Colors.Green, page.styleTriggerWithStaticResources.BackgroundColor);
+			Assert.Equal(Colors.Green, page.styleTriggerWithDynamicResources.BackgroundColor);
 
 			page.styleTriggerWithStaticResources.IsEnabled = false;
 			page.styleTriggerWithDynamicResources.IsEnabled = false;
 
-			Assert.That(page.styleTriggerWithStaticResources.BackgroundColor, Is.EqualTo(Colors.Purple));
-			Assert.That(page.styleTriggerWithDynamicResources.BackgroundColor, Is.EqualTo(Colors.Purple));
+			Assert.Equal(Colors.Purple, page.styleTriggerWithStaticResources.BackgroundColor);
+			Assert.Equal(Colors.Purple, page.styleTriggerWithDynamicResources.BackgroundColor);
 
 			page.styleTriggerWithStaticResources.IsEnabled = true;
 			page.styleTriggerWithDynamicResources.IsEnabled = true;
 
-			Assert.That(page.styleTriggerWithStaticResources.BackgroundColor, Is.EqualTo(Colors.Green));
-			Assert.That(page.styleTriggerWithDynamicResources.BackgroundColor, Is.EqualTo(Colors.Green));
+			Assert.Equal(Colors.Green, page.styleTriggerWithStaticResources.BackgroundColor);
+			Assert.Equal(Colors.Green, page.styleTriggerWithDynamicResources.BackgroundColor);
 		}
 	}
 }

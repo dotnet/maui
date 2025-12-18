@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -12,27 +12,30 @@ public partial class Issue2152 : ContentPage
 	int clickcount;
 	public void OnButtonClicked(object sender, EventArgs e) => clickcount++;
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests : IDisposable
 	{
-		[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-		[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
+		public Tests() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		public void Dispose() => DispatcherProvider.SetCurrent(null);
 
-		[Test]
-		public void TestEventConnection([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void TestEventConnection(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.SourceGen)
 			{
 				var result = MockSourceGenerator.RunMauiSourceGenerator(MockSourceGenerator.CreateMauiCompilation(), typeof(Issue2152));
 			}
 			Issue2152 layout = null;
-			Assert.DoesNotThrow(() => layout = new Issue2152(inflator));
+			var ex1 = Record.Exception(() => layout = new Issue2152(inflator));
+			Assert.Null(ex1);
 			Cell cell = null;
-			Assert.DoesNotThrow(() => cell = layout.listview.TemplatedItems.GetOrCreateContent(0, null));
+			var ex2 = Record.Exception(() => cell = layout.listview.TemplatedItems.GetOrCreateContent(0, null));
+			Assert.Null(ex2);
 			var button = cell.FindByName<Button>("btn") as IButtonController;
-			Assert.AreEqual(0, layout.clickcount);
+			Assert.Equal(0, layout.clickcount);
 			button.SendClicked();
-			Assert.AreEqual(1, layout.clickcount);
+			Assert.Equal(1, layout.clickcount);
 		}
 	}
 }
