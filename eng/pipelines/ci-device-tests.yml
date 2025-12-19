@@ -65,8 +65,8 @@ parameters:
 - name: macOSPool
   type: object
   default:
-    name: MAUI
-    vmImage: MAUI
+    name: Azure Pipelines
+    vmImage: macOS-15
 
 - name: targetFrameworkVersions
   type: object
