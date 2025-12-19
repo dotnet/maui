@@ -73,6 +73,25 @@ namespace Microsoft.Maui.Controls.Platform
 				page.PropertyChanged += OnModalPagePropertyChanged;
 		}
 
+		[Export("presentationControllerShouldDismiss:")]
+		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
+		public bool ShouldDismiss(UIPresentationController _)
+		{
+			// By default, allow dismissal
+			// Developer can override via ModalAttemptedDismiss event
+			return true;
+		}
+
+		[Export("presentationControllerDidAttemptToDismiss:")]
+		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
+		public void DidAttemptToDismiss(UIPresentationController _)
+		{
+			// Notify the page that dismissal was attempted
+			// This allows the developer to take action or show UI
+			// The page can set Cancel = true to prevent dismissal
+			Page.SendModalAttemptedDismiss();
+		}
+
 		[Export("presentationControllerDidDismiss:")]
 		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
 		public void DidDismiss(UIPresentationController _)

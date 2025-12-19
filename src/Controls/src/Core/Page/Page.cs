@@ -809,6 +809,20 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		internal bool SendModalAttemptedDismiss()
+		{
+			var args = new ModalAttemptedDismissEventArgs();
+			ModalAttemptedDismiss?.Invoke(this, args);
+			OnModalAttemptedDismiss(args);
+			return args.Cancel;
+		}
+
+		/// <summary>
+		/// When overridden in a derived class, allows application developers to customize behavior when a user attempts to dismiss a modal page.
+		/// </summary>
+		/// <param name="args">The event arguments.</param>
+		protected virtual void OnModalAttemptedDismiss(ModalAttemptedDismissEventArgs args) { }
+
 		static void OnImageSourceChanged(BindableObject bindable, object oldvalue, object newValue)
 		{
 			if (oldvalue is ImageSource oldImageSource)
@@ -837,6 +851,12 @@ namespace Microsoft.Maui.Controls
 		/// Raised after the page was navigated away from.
 		/// </summary>
 		public event EventHandler<NavigatedFromEventArgs> NavigatedFrom;
+
+		/// <summary>
+		/// Raised when a user attempts to dismiss a modal page using interactive gestures (like swiping down on iOS FormSheet/PageSheet).
+		/// Use this event to prevent dismissal by setting <see cref="ModalAttemptedDismissEventArgs.Cancel"/> to <see langword="true"/>.
+		/// </summary>
+		public event EventHandler<ModalAttemptedDismissEventArgs> ModalAttemptedDismiss;
 
 		/// <summary>
 		/// When overridden in a derived class, allows application developers to customize behavior immediately after the page was navigated to.
