@@ -54,7 +54,7 @@
                                      CheckedChanged="OnItemsUpdatingScrollModeChanged"
                                      AutomationId="ItemsUpdatingKeepLastItemInView"/>
                     </HorizontalStackLayout>
-                     <HorizontalStackLayout Spacing="10">
+                    <HorizontalStackLayout Spacing="10">
                         <RadioButton x:Name="ItemsUpdatingKeepScrollOffset"
                                      Content="KeepScrollOffset"
                                      FontSize="10"
@@ -93,7 +93,7 @@
                                      GroupName="ItemsSourceGroup"
                                      CheckedChanged="OnItemsSourceChanged"
                                      AutomationId="ItemsSourceGroupedList2"/>
-                         <RadioButton x:Name="ItemsSourceGroupedList3"
+                        <RadioButton x:Name="ItemsSourceGroupedList3"
                                      Content="Grouped List3"
                                      FontSize="10"
                                      GroupName="ItemsSourceGroup"
@@ -124,7 +124,7 @@
                                  FontSize="11"
                                  AutomationId="IsGroupedFalse"/>
                 </StackLayout>
-                 <Label Text="ItemsLayout:"
+                <Label Text="ItemsLayout:"
                        FontAttributes="Bold"
                        FontSize="12"/>
                 <VerticalStackLayout>
@@ -160,6 +160,26 @@
                                      AutomationId="ItemsLayoutHorizontalGrid"/>
                     </HorizontalStackLayout>
                 </VerticalStackLayout>
+
+                <!-- FlowDirection -->
+                <Label Text="FlowDirection:"
+                       FontSize="12"
+                       FontAttributes="Bold"/>
+                <StackLayout Orientation="Horizontal">
+                    <RadioButton x:Name="FlowDirectionLeftToRight"
+                                 Content="LeftToRight"
+                                 GroupName="FlowDirectionOptions"
+                                 IsChecked="True"
+                                 CheckedChanged="OnFlowDirectionChanged"
+                                 FontSize="11"
+                                 AutomationId="FlowDirectionLeftToRight"/>
+                    <RadioButton x:Name="FlowDirectionRightToLeft"
+                                 Content="RightToLeft"
+                                 GroupName="FlowDirectionOptions"
+                                 CheckedChanged="OnFlowDirectionChanged"
+                                 FontSize="11"
+                                 AutomationId="FlowDirectionRightToLeft"/>
+                </StackLayout>
             </StackLayout>
         </Grid>
     </ScrollView>
