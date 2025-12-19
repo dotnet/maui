@@ -145,7 +145,7 @@ stages:
         - template: /eng/common/templates-official/steps/send-to-helix.yml
           parameters:
             HelixProjectPath: ${{ parameters.helixProject }}
-            HelixProjectArguments: /p:TargetOS=ios /p:TestRunNameSuffix="_$(_BuildConfig)" /p:TestRunNamePrefix="DeviceTestsIOS_"
+            HelixProjectArguments: /p:TargetOS=ios /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsIOS_
             HelixConfiguration: $(_BuildConfig)
             IncludeDotNetCli: true
             DisplayNamePrefix: DeviceTestsIOS
@@ -160,7 +160,7 @@ stages:
   - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
     parameters:
       helixRepo: dotnet/maui
-      pool: ${{ parameters.buildPool }}
+      pool: ${{ parameters.testPool }}
       enableMicrobuild: ${{ parameters.enableMicrobuild }}
       enablePublishUsingPipelines: true
       enablePublishBuildAssets: ${{ parameters.publishAssets }}
@@ -195,7 +195,7 @@ stages:
         - template: /eng/common/templates-official/steps/send-to-helix.yml
           parameters:
             HelixProjectPath: ${{ parameters.helixProject }}
-            HelixProjectArguments: /p:TargetOS=maccatalyst /p:TestRunNameSuffix="_$(_BuildConfig)" /p:TestRunNamePrefix="DeviceTestsMacCatalyst_"
+            HelixProjectArguments: /p:TargetOS=maccatalyst /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsMacCatalyst_
             HelixConfiguration: $(_BuildConfig)
             IncludeDotNetCli: true
             DisplayNamePrefix: DeviceTestsMacCatalyst
@@ -208,7 +208,7 @@ stages:
   - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
     parameters:
       helixRepo: dotnet/maui
-      pool: ${{ parameters.buildPool }}
+      pool: ${{ parameters.testPool }}
       enableMicrobuild: ${{ parameters.enableMicrobuild }}
       enablePublishUsingPipelines: true
       enablePublishBuildAssets: ${{ parameters.publishAssets }}
@@ -243,7 +243,7 @@ stages:
         - template: /eng/common/templates-official/steps/send-to-helix.yml
           parameters:
             HelixProjectPath: ${{ parameters.helixProject }}
-            HelixProjectArguments: /p:TargetOS=android /p:TestRunNameSuffix="_$(_BuildConfig)" /p:TestRunNamePrefix="DeviceTestsAndroid_"
+            HelixProjectArguments: /p:TargetOS=android /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsAndroid_
             HelixConfiguration: $(_BuildConfig)
             IncludeDotNetCli: true
             DisplayNamePrefix: DeviceTestsAndroid
@@ -311,7 +311,7 @@ stages:
   - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
     parameters:
       helixRepo: dotnet/maui
-      pool: ${{ parameters.buildPool }}
+      pool: ${{ parameters.testPool }}
       enableMicrobuild: ${{ parameters.enableMicrobuild }}
       enablePublishUsingPipelines: true
       enablePublishBuildAssets: ${{ parameters.publishAssets }}
@@ -346,7 +346,7 @@ stages:
         - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/steps/send-to-helix.yml', '/eng/common/templates-official/steps/send-to-helix.yml@self') }}
           parameters:
             HelixProjectPath: ${{ parameters.helixProject }}
-            HelixProjectArguments: /p:TargetOS=android /p:TestRunNameSuffix="_$(_BuildConfig)_CoreCLR" /p:TestRunNamePrefix="DeviceTestsAndroid_CoreCLR_"
+            HelixProjectArguments: /p:TargetOS=android /p:TestRunNameSuffix=_$(_BuildConfig)_CoreCLR /p:TestRunNamePrefix=DeviceTestsAndroid_CoreCLR_
             HelixConfiguration: $(_BuildConfig)
             IncludeDotNetCli: true
             DisplayNamePrefix: DeviceTestsAndroid_CoreCLR

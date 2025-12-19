@@ -83,7 +83,7 @@ stages:
   - template: /eng/pipelines/arcade/stage-device-tests.yml@self
     parameters:
       buildPool: ${{ parameters.macOSPool }}
-      testPool: ${{ parameters.macOSTestPool }}
+      testPool: ${{ parameters.windowsPool }}
       runAsPublic: true
       TargetFrameworkVersion: ${{ targetFrameworkVersion.tfm }}
       prepareSteps:
