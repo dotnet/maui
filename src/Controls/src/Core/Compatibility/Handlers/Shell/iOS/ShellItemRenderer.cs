@@ -421,7 +421,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (SelectedViewController is UINavigationController navigationController)
 			{
-				navigationController.NavigationBar.PrefersLargeTitles = largeTitleDisplayMode != LargeTitleDisplayMode.Never;
+				navigationController.NavigationBar.PrefersLargeTitles = largeTitleDisplayMode == LargeTitleDisplayMode.Always;
 				var top = navigationController.TopViewController;
 				if (top is not null)
 				{
