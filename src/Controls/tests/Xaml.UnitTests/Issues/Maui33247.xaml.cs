@@ -19,18 +19,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 /// </summary>
 public partial class Maui33247 : ContentPage
 {
-	public object CapturedParameter { get; private set; }
-
 	public Maui33247()
 	{
 		InitializeComponent();
 		BindingContext = this;
 	}
 
-	public ICommand Navigate => new Command((param) =>
-	{
-		CapturedParameter = param;
-	});
+	public ICommand Navigate => new Command((param) => { });
 
 	[Collection("Issue")]
 	public class Tests
