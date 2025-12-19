@@ -160,7 +160,7 @@ stages:
   - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
     parameters:
       helixRepo: dotnet/maui
-      pool: ${{ parameters.buildPool }}
+      pool: ${{ parameters.testPool }}
       enableMicrobuild: ${{ parameters.enableMicrobuild }}
       enablePublishUsingPipelines: true
       enablePublishBuildAssets: ${{ parameters.publishAssets }}
@@ -208,7 +208,7 @@ stages:
   - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
     parameters:
       helixRepo: dotnet/maui
-      pool: ${{ parameters.buildPool }}
+      pool: ${{ parameters.testPool }}
       enableMicrobuild: ${{ parameters.enableMicrobuild }}
       enablePublishUsingPipelines: true
       enablePublishBuildAssets: ${{ parameters.publishAssets }}
@@ -311,7 +311,7 @@ stages:
   - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
     parameters:
       helixRepo: dotnet/maui
-      pool: ${{ parameters.buildPool }}
+      pool: ${{ parameters.testPool }}
       enableMicrobuild: ${{ parameters.enableMicrobuild }}
       enablePublishUsingPipelines: true
       enablePublishBuildAssets: ${{ parameters.publishAssets }}
