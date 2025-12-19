@@ -64,7 +64,14 @@ namespace Microsoft.Maui.Controls
 		internal override void Apply(bool fromTarget)
 		{
 			base.Apply(fromTarget);
-			ApplyCore();
+			// For AppThemeBinding (one-way from theme to UI), don't re-apply when
+			// a value is set from the target side. This prevents the binding from
+			// overwriting derived style setters (issue #33203).
+			// Only re-apply on theme changes (via OnAppThemeChanged) or initial application.
+			if (!fromTarget)
+			{
+				ApplyCore();
+			}
 		}
 
 		internal override void Apply(object context, BindableObject bindObj, BindableProperty targetProperty, bool fromBindingContextChanged, SetterSpecificity specificity)
@@ -98,6 +105,29 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
+			// Check if there's already a value set with equal or higher specificity
+			// that wasn't set by this binding.
+			// This prevents AppThemeBinding from overwriting derived style setters (issue #33203)
+			// while still allowing the binding to update when the theme changes.
+			var context = target.GetContext(_targetProperty);
+			if (context != null)
+			{
+				var currentSpecificity = context.Values.GetSpecificity();
+				if (currentSpecificity >= specificity && !currentSpecificity.IsDefault)
+				{
+					// Get the current value
+					var currentValue = context.Values.GetValue();
+					
+					// Check if the current value is one that this binding could have set
+					// (either Light, Dark, or Default value). If not, it was set by
+					// something else (like a derived style) and we shouldn't override.
+					if (!IsValueFromThisBinding(currentValue))
+					{
+						return;
+					}
+				}
+			}
+
 			if (dispatch)
 				target.Dispatcher.DispatchIfRequired(Set);
 			else
@@ -119,6 +149,23 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 			;
+		}
+
+		/// <summary>
+		/// Checks if the given value could have been set by this binding
+		/// (i.e., it matches Light, Dark, or Default value)
+		/// </summary>
+		bool IsValueFromThisBinding(object value)
+		{
+			// Check if value matches any of the values this binding could set
+			if (_isLightSet && Equals(value, _light))
+				return true;
+			if (_isDarkSet && Equals(value, _dark))
+				return true;
+			if (Default != null && Equals(value, Default))
+				return true;
+			
+			return false;
 		}
 
 		object _light;

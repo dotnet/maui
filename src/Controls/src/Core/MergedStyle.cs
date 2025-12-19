@@ -113,16 +113,21 @@ namespace Microsoft.Maui.Controls
 			if (_applicableImplicitStyles != null && _applicableImplicitStyles.Count > 0)
 			{
 				// Apply in reverse order (most base first, most derived last)
-				// so derived styles override base styles
+				// so derived styles override base styles.
+				// Use graduated specificities so derived styles have higher priority than base styles.
+				// This is important for AppThemeBinding which continues to update after initial application.
+				// _applicableImplicitStyles[0] = most derived, _applicableImplicitStyles[Count-1] = most base
 				for (int i = _applicableImplicitStyles.Count - 1; i >= 0; i--)
 				{
-					//NOTE specificity could be more fine grained (using distance)
-					((IStyle)_applicableImplicitStyles[i]).Apply(bindable, new SetterSpecificity(SetterSpecificity.StyleImplicit, 0, 0, 0));
+					// Calculate specificity: most derived (i=0) gets highest, most base gets lowest
+					// Use StyleImplicit as base and add offset based on position
+					// This ensures derived style's static values override base style's bindings
+					ushort styleSpecificity = (ushort)(SetterSpecificity.StyleImplicit + (_applicableImplicitStyles.Count - 1 - i));
+					((IStyle)_applicableImplicitStyles[i]).Apply(bindable, new SetterSpecificity(styleSpecificity, 0, 0, 0));
 				}
 			}
 			else
 			{
-				//NOTE specificity could be more fine grained (using distance)
 				ImplicitStyle?.Apply(bindable, new SetterSpecificity(SetterSpecificity.StyleImplicit, 0, 0, 0));
 			}
 			if (ClassStyles != null)
@@ -275,9 +280,11 @@ namespace Microsoft.Maui.Controls
 				if (_applicableImplicitStyles != null && _applicableImplicitStyles.Count > 0)
 				{
 					// Apply in reverse order (most base first, most derived last)
+					// Use graduated specificities so derived styles have higher priority than base styles.
 					for (int i = _applicableImplicitStyles.Count - 1; i >= 0; i--)
 					{
-						((IStyle)_applicableImplicitStyles[i]).Apply(Target, new SetterSpecificity(SetterSpecificity.StyleImplicit, 0, 0, 0));
+						ushort styleSpecificity = (ushort)(SetterSpecificity.StyleImplicit + (_applicableImplicitStyles.Count - 1 - i));
+						((IStyle)_applicableImplicitStyles[i]).Apply(Target, new SetterSpecificity(styleSpecificity, 0, 0, 0));
 					}
 				}
 				else
