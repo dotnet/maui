@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
+             x:Class="Maui.Controls.Sample.Issues.IssueModalFormSheetDismissAttempt"
+             Title="FormSheet Modal Dismiss Attempt">
+    <VerticalStackLayout Padding="10" Spacing="10">
+        <Label Text="This test verifies the ModalDismissAttempted event fires when attempting to dismiss a FormSheet modal on iOS"
+               AutomationId="InstructionLabel"/>
+        
+        <Button Text="Open FormSheet Modal"
+                AutomationId="OpenModalButton"
+                Clicked="OnOpenModalClicked"/>
+        
+        <Label Text="Event Status: Waiting"
+               AutomationId="EventStatusLabel"
+               x:Name="EventStatusLabel"/>
+    </VerticalStackLayout>
+</ContentPage>
