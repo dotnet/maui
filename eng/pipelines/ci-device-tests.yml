@@ -54,7 +54,9 @@ parameters:
   type: object
   default:
     name: NetCore-Public
-    image: 1es-windows-2022
+    demands:
+        - ImageOverride -equals 1es-windows-2022-open
+    image: 1es-windows-2022-open
     os: Windows
 
 - name: macOSTestPool
