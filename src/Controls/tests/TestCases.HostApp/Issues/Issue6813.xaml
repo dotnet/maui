@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
+             x:Class="Maui.Controls.Sample.Issues.Issue6813"
+             ios:Page.ModalPresentationStyle="FormSheet"
+             Title="Issue 6813">
+
+    <VerticalStackLayout Padding="20" Spacing="10">
+        <Label Text="Formsheet Modal Reuse Test" 
+               FontSize="18" 
+               FontAttributes="Bold"
+               AutomationId="TitleLabel"/>
+        
+        <Label x:Name="StatusLabel"
+               Text="Not yet presented"
+               AutomationId="StatusLabel"/>
+        
+        <Label x:Name="SizeLabel"
+               Text="Size: 0 x 0"
+               AutomationId="SizeLabel"/>
+        
+        <Button Text="Show This Modal Again"
+                Clicked="OnShowModalClicked"
+                AutomationId="ShowModalButton"/>
+        
+        <Button Text="Close Modal"
+                Clicked="OnCloseModalClicked"
+                AutomationId="CloseModalButton"/>
+    </VerticalStackLayout>
+</ContentPage>

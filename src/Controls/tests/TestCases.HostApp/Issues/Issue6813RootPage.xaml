@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue6813RootPage"
+             Title="Issue 6813 Root">
+
+    <VerticalStackLayout Padding="20" Spacing="10">
+        <Label Text="Testing: Reusing Same Modal Page" 
+               FontSize="18" 
+               FontAttributes="Bold"/>
+        
+        <Label Text="This test verifies that reusing the same page instance for formsheet modals doesn't cause progressive shrinking."
+               Margin="0,0,0,20"/>
+        
+        <Button Text="Show Formsheet Modal"
+                Clicked="OnShowModalClicked"
+                AutomationId="ShowModalButton"/>
+        
+        <Label Text="Instructions: Tap 'Show Formsheet Modal', then in the modal tap 'Show This Modal Again' repeatedly. The modal size should remain consistent."
+               TextColor="Gray"
+               FontSize="12"
+               Margin="0,20,0,0"/>
+    </VerticalStackLayout>
+</ContentPage>

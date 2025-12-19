@@ -18,6 +18,15 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			_modal = modal;
 
+			// When reusing a page instance for modal presentation, we need to invalidate
+			// any cached layout measurements from previous presentations to ensure
+			// the page measures correctly for the new modal context.
+			// This fixes the issue where modals get progressively smaller when reusing the same page.
+			if (modal.VirtualView is IView view)
+			{
+				view.InvalidateMeasure();
+			}
+
 			if (_modal.VirtualView is IElementConfiguration<Page> elementConfiguration)
 			{
 				if (elementConfiguration.On<PlatformConfiguration.iOS>()?.ModalPresentationStyle() is PlatformConfiguration.iOSSpecific.UIModalPresentationStyle style)
