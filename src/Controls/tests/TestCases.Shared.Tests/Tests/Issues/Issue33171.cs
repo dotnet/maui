@@ -18,7 +18,7 @@ public class Issue33171 : _IssuesUITest
 		App.Tap("ToggleTitleBarVisibilityButton");
 		App.Tap("ReduceWidthButton");
 		var windowSize = App.FindElement("WindowSizeLabel").GetText();
-		App.TapMaximizeButton(clickButton: true);
+		App.TapMaximizeButton();
 		App.Tap("GetStatusButton");	
 		var newWindowSize = App.FindElement("WindowSizeLabel").GetText();
 		Assert.That(newWindowSize, Is.Not.EqualTo(windowSize), "Window size should change after maximizing the window.");
