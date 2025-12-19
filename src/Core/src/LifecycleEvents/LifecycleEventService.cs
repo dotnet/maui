@@ -45,7 +45,8 @@ namespace Microsoft.Maui.LifecycleEvents
 		{
 			if (_mapper.TryGetValue(eventName, out var delegates) && delegates != null)
 			{
-				delegates.Remove(action);
+				if (delegates.Remove(action) && delegates.Count == 0)
+					_mapper.Remove(eventName);
 			}
 		}
 	}
