@@ -1,5 +1,5 @@
 ---
-name: test-repro-agent
+name: uitest-coding-agent
 description: Specialized agent for creating reproduction tests for .NET MAUI issues - does NOT fix issues
 ---
 
