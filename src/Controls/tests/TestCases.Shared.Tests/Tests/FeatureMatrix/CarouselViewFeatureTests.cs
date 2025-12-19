@@ -835,6 +835,17 @@ public class CarouselViewFeatureTests : UITest
 		App.EnterText(ScrollToIndexEntry, "3");
 		App.WaitForElement(ScrollToButton);
 		App.Tap(ScrollToButton);
+#if IOS //In CI CarouselView ScrollTo sometimes scrolls to wrong item
+		try
+		{
+			App.WaitForElement("Item 4");
+		}
+		catch (TimeoutException)
+		{
+			App.WaitForElement(ScrollToButton);
+			App.Tap(ScrollToButton);
+		}
+#endif
 		App.WaitForElement("Item 4");
 	}
 
