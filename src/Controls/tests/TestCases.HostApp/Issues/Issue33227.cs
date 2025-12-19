@@ -1,9 +1,9 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 33206, "Shell NavigationBar colors persist when navigating between pages", PlatformAffected.iOS | PlatformAffected.UWP)]
-public class IssueShellColorTest : Shell
+[Issue(IssueTracker.Github, 33227, "Shell NavigationBar colors persist when navigating between pages", PlatformAffected.iOS | PlatformAffected.UWP)]
+public class Issue33227 : Shell
 {
-    public IssueShellColorTest()
+    public Issue33227()
     {
         var tabBar = new TabBar { Title = "Tab1" };
         var tab = new Tab { Title = "Tab1" };
@@ -11,13 +11,13 @@ public class IssueShellColorTest : Shell
         var page1Content = new ShellContent
         {
             Title = "Page1",
-            ContentTemplate = new DataTemplate(() => new IssueShellColorPage1())
+            ContentTemplate = new DataTemplate(() => new Issue33227Page1())
         };
 
         var page2Content = new ShellContent
         {
             Title = "Page2",
-            ContentTemplate = new DataTemplate(() => new IssueShellColorPage2())
+            ContentTemplate = new DataTemplate(() => new Issue33227Page2())
         };
 
         tab.Items.Add(page1Content);
@@ -27,9 +27,9 @@ public class IssueShellColorTest : Shell
     }
 }
 
-public class IssueShellColorPage1 : ContentPage
+public class Issue33227Page1 : ContentPage
 {
-    public IssueShellColorPage1()
+    public Issue33227Page1()
     {
         var layout = new VerticalStackLayout
         {
@@ -50,9 +50,9 @@ public class IssueShellColorPage1 : ContentPage
     }
 }
 
-public class IssueShellColorPage2 : ContentPage
+public class Issue33227Page2 : ContentPage
 {
-    public IssueShellColorPage2()
+    public Issue33227Page2()
     {
         Shell.SetBackgroundColor(this, Colors.Yellow);
         Shell.SetTitleColor(this, Colors.Orange);

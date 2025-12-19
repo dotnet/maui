@@ -5,9 +5,9 @@ using UITest.Core;
 
 namespace Maui.Controls.TestCases.Tests.Issues;
 
-public class IssueShellColorTest : _IssuesUITest
+public class Issue33227 : _IssuesUITest
 {
-    public IssueShellColorTest(TestDevice device) : base(device)
+    public Issue33227(TestDevice device) : base(device)
     {
     }
 
