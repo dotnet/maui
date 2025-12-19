@@ -1,0 +1,51 @@
+<Project>
+  <!-- 
+  TODO: This is a prototype.
+    This file sets up optimization data (MIBC profiles) for use with ReadyToRun compilation.
+    MIBC (Managed IL Binary Compilation) profiles contain PGO (Profile-Guided Optimization) data
+    that improves native code generation quality for ReadyToRun images.
+    
+    Based on dotnet/runtime's approach:
+    - https://github.com/dotnet/runtime/blob/main/eng/restore/optimizationData.targets
+    - https://github.com/dotnet/runtime/blob/main/eng/nativepgo.targets
+  -->
+
+  <PropertyGroup>
+    <!-- Enable R2R with PGO data during publish for Android on ARM64 -->
+    <AndroidEnableProfiledAot Condition="'$(AndroidEnableProfiledAot)' == '' and '$(Configuration)' == 'Release' and '$(TargetFramework)' != '' and $(TargetFramework.Contains('-android'))">true</AndroidEnableProfiledAot>
+    
+    <!-- Determine the NuGet package cache location -->
+    <MauiPgoDataPackagePathRoot Condition="'$(MauiPgoDataPackagePathRoot)' == ''">$(NUGET_PACKAGES)</MauiPgoDataPackagePathRoot>
+    <MauiPgoDataPackagePathRoot Condition="'$(MauiPgoDataPackagePathRoot)' == '' and '$(OS)' == 'Windows_NT'">$(UserProfile)\.nuget\packages\</MauiPgoDataPackagePathRoot>
+    <MauiPgoDataPackagePathRoot Condition="'$(MauiPgoDataPackagePathRoot)' == ''">$(HOME)/.nuget/packages/</MauiPgoDataPackagePathRoot>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(AndroidEnableProfiledAot)' == 'true' and '$(TargetFramework)' != '' and $(TargetFramework.Contains('-android'))">
+    <!-- 
+      Reference the optimization data package for linux-arm64 (which is used for Android ARM64)
+      The package contains MIBC profiles that will be used during R2R compilation
+    -->
+    <PackageReference Include="optimization.linux-arm64.MIBC.Runtime" 
+                      Version="$(optimizationlinuxarm64MIBCRuntimePackageVersion)" 
+                      PrivateAssets="all" 
+                      IsImplicitlyDefined="true" 
+                      Publish="true" />
+  </ItemGroup>
+
+  <!-- 
+    Set up the path to the MIBC files from the NuGet package after restore.
+    This makes them available to the R2R compiler.
+  -->
+  <PropertyGroup Condition="'$(AndroidEnableProfiledAot)' == 'true' and '$(TargetFramework)' != '' and $(TargetFramework.Contains('-android'))">
+    <MauiPgoDataPackagePath>$(MauiPgoDataPackagePathRoot)optimization.linux-arm64.mibc.runtime/$(optimizationlinuxarm64MIBCRuntimePackageVersion)/</MauiPgoDataPackagePath>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(AndroidEnableProfiledAot)' == 'true' and '$(TargetFramework)' != '' and $(TargetFramework.Contains('-android')) and Exists('$(MauiPgoDataPackagePath)')">
+    <!-- 
+      Include all MIBC files from the package as optimization data inputs.
+      These files will be consumed by crossgen2/R2R compilation.
+    -->
+    <MibcFile Include="$(MauiPgoDataPackagePath)data/*.mibc" />
+  </ItemGroup>
+
+</Project>
