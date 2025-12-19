@@ -340,7 +340,6 @@ public class GraphicsViewFeatureTests : UITest
 
 	[Test]
 	[Category(UITestCategories.GraphicsView)]
-	[Category(UITestCategories.Gestures)]
 	public void GraphicsView_DragInteraction_VerifyEventTriggered()
 	{
 		App.WaitForElement("ClearEventsButton");

@@ -15,7 +15,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.ListView)]
-		[Category(UITestCategories.Compatibility)]
 		public void Issue1900Test()
 		{
 			App.WaitForElement("ListView");

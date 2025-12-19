@@ -20,7 +20,6 @@ public class TabbedPageTests : _IssuesUITest
 	public override string Issue => "TabbedPage nav basic tests";
 
 	[Test]
-	[Category(UITestCategories.TabbedPage)]
 	public void TabbedPageWithModalIssueTestsAllElementsPresent()
 	{
 		App.WaitForElement(HomePage);
@@ -31,7 +30,6 @@ public class TabbedPageTests : _IssuesUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.TabbedPage)]
 	public void TabbedPageWithModalIssueTestsPopFromFirstTab()
 	{
 		App.WaitForElement(Pop);
@@ -40,7 +38,6 @@ public class TabbedPageTests : _IssuesUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.TabbedPage)]
 	public void TabbedPageWithModalIssueTestsPopFromSecondTab()
 	{
 		App.WaitForElement(HomePage);
