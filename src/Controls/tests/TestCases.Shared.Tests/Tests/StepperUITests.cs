@@ -23,7 +23,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test]
-		[Category(UITestCategories.Stepper)]
 		[Description("Increase the Stepper value")]
 		public void IncreaseStepper()
 		{
@@ -46,7 +45,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test]
-		[Category(UITestCategories.Stepper)]
 		[Description("Decrease the Stepper value")]
 		public void DecreaseStepper()
 		{

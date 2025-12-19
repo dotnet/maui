@@ -14,7 +14,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Button)]
-		[Category(UITestCategories.Compatibility)]
 		public void Issue3390Test()
 		{
 			App.WaitForElement("TestButton");
