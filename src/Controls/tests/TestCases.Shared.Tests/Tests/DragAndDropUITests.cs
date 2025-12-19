@@ -363,7 +363,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Green");
 
 			bool dragDropSuccess = false;
-			for(int i = 0; i < 3; i++)
+			for (int i = 0; i < 3; i++)
 			{
 				App.DragAndDrop("Blue", "Green");
 				Thread.Sleep(500);
@@ -374,8 +374,8 @@ namespace Microsoft.Maui.TestCases.Tests
 					break;
 				}
 			}
-			
-			if(!dragDropSuccess)
+
+			if (!dragDropSuccess)
 			{
 				Assert.Fail("Drag-and-drop operation failed after many attempts. Drop event did not fire.");
 			}
