@@ -142,11 +142,16 @@ internal static class SafeAreaExtensions
 					var screenWidth = realMetrics.WidthPixels;
 					var screenHeight = realMetrics.HeightPixels;
 
-					// Detect transitional views during Shell tab animations to avoid incorrect safe area calculations
+					// Detect transitional views during Shell tab animations to avoid incorrect safe area padding.
+					// ViewPager2 reports intermediate positions while animating - skip position-based logic for these.
 					var isFullWidthView = viewWidth >= screenWidth - left - right;
+					// View completely outside visible screen (sliding in from off-screen)
 					var isOffScreen = viewLeft >= screenWidth || viewRight <= 0 || viewTop >= screenHeight || viewBottom <= 0;
+					// Full-width view not at x=0 (1px tolerance for floating-point rounding)
 					var isDisplaced = isFullWidthView && viewLeft != 0 && Math.Abs(viewLeft) > 1;
+					// View extends past screen bounds during animation
 					var extendsBeyondScreen = viewRight > screenWidth + 1 || viewBottom > screenHeight + 1;
+					// Bounds mismatch during animation (10px tolerance for cumulative margin rounding errors)
 					var hasCorruptedBounds = isFullWidthView && Math.Abs(viewRight - (viewLeft + viewWidth)) > 10;
 					
 					var isTransitionalView = isOffScreen || isDisplaced || extendsBeyondScreen || hasCorruptedBounds;
