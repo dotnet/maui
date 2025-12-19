@@ -31,11 +31,15 @@ namespace Microsoft.Maui.IntegrationTests
 		[TestCase("maui", "Debug", DotNetCurrent, "iossimulator-x64", RuntimeVariant.Mono, null)]
 		[TestCase("maui", "Release", DotNetCurrent, "iossimulator-x64", RuntimeVariant.Mono, null)]
 		[TestCase("maui", "Release", DotNetCurrent, "iossimulator-x64", RuntimeVariant.Mono, "full")]
+		[TestCase("maui", "Debug", DotNetCurrent, "iossimulator-x64", RuntimeVariant.CoreCLR, null)]
+		[TestCase("maui", "Release", DotNetCurrent, "iossimulator-x64", RuntimeVariant.CoreCLR, null)]
 		// [TestCase("maui-blazor", "Debug", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, null)]
 		// [TestCase("maui-blazor", "Release", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, null)]
 		[TestCase("maui-blazor", "Debug", DotNetCurrent, "iossimulator-x64", RuntimeVariant.Mono, null)]
 		[TestCase("maui-blazor", "Release", DotNetCurrent, "iossimulator-x64", RuntimeVariant.Mono, null)]
 		[TestCase("maui-blazor", "Release", DotNetCurrent, "iossimulator-x64", RuntimeVariant.Mono, "full")]
+		[TestCase("maui-blazor", "Debug", DotNetCurrent, "iossimulator-x64", RuntimeVariant.CoreCLR, null)]
+		[TestCase("maui-blazor", "Release", DotNetCurrent, "iossimulator-x64", RuntimeVariant.CoreCLR, null)]
 		[TestCase("maui", "Release", DotNetCurrent, "iossimulator-x64", RuntimeVariant.NativeAOT, null)]
 		public void RunOniOS(string id, string config, string framework, string runtimeIdentifier, RuntimeVariant runtimeVariant, string trimMode)
 		{
@@ -46,6 +50,11 @@ namespace Microsoft.Maui.IntegrationTests
 				$"Unable to create template {id}. Check test output for errors.");
 
 			var buildProps = BuildProps;
+			if (runtimeVariant == RuntimeVariant.CoreCLR)
+			{
+				buildProps.Add("UseMonoRuntime=false");
+			}
+
 			if (runtimeVariant == RuntimeVariant.NativeAOT)
 			{
 				buildProps.Add("PublishAot=true");

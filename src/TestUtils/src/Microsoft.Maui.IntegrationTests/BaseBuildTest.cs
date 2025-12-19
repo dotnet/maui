@@ -5,6 +5,7 @@ namespace Microsoft.Maui.IntegrationTests
 	public enum RuntimeVariant
 	{
 		Mono,
+		CoreCLR,
 		NativeAOT
 	}
 
