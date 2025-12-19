@@ -119,9 +119,9 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-	/// Occurs when the <see cref="IsToggled"/> property changes.
-	/// </summary>
-	public event EventHandler<ToggledEventArgs> Toggled;
+		/// Occurs when the <see cref="IsToggled"/> property changes.
+		/// </summary>
+		public event EventHandler<ToggledEventArgs> Toggled;
 
 		/// <inheritdoc/>
 		public IPlatformElementConfiguration<T, Switch> On<T>() where T : IConfigPlatform

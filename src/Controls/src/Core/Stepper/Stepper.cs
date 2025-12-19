@@ -164,9 +164,9 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-	/// Occurs when the <see cref="Value"/> property changes.
-	/// </summary>
-	public event EventHandler<ValueChangedEventArgs> ValueChanged;
+		/// Occurs when the <see cref="Value"/> property changes.
+		/// </summary>
+		public event EventHandler<ValueChangedEventArgs> ValueChanged;
 
 		/// <inheritdoc/>
 		public IPlatformElementConfiguration<T, Stepper> On<T>() where T : IConfigPlatform => _platformConfigurationRegistry.Value.On<T>();
