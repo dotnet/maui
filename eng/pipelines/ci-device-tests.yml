@@ -53,8 +53,11 @@ parameters:
 - name: windowsPool
   type: object
   default:
-    name: Azure Pipelines
-    vmImage: windows-2022
+    name: NetCore-Public
+    demands:
+        - ImageOverride -equals 1es-windows-2022-open
+    image: 1es-windows-2022-open
+    os: Windows
 
 - name: macOSTestPool
   type: object
