@@ -53,8 +53,9 @@ parameters:
 - name: windowsPool
   type: object
   default:
-    name: Azure Pipelines
-    vmImage: windows-2022
+    name: NetCore-Public
+    image: 1es-windows-2022
+    os: Windows
 
 - name: macOSTestPool
   type: object
