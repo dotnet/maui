@@ -99,6 +99,17 @@ namespace Microsoft.Maui.Controls.Platform
 				Page.Navigation.PopModalAsync(false).FireAndForget();
 		}
 
+		[Export("presentationControllerDidAttemptToDismiss:")]
+		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
+		public void DidAttemptToDismiss(UIPresentationController _)
+		{
+			var window = (_modal?.VirtualView as Page)?.Window;
+			if (window != null)
+			{
+				window.OnModalDismissAttempted(Page);
+			}
+		}
+
 		public override void DismissViewController(bool animated, Action? completionHandler)
 		{
 			base.DismissViewController(animated, completionHandler);

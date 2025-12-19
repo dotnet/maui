@@ -279,6 +279,8 @@ namespace Microsoft.Maui.Controls
 
 		public event EventHandler<ModalPushingEventArgs>? ModalPushing;
 
+		public event EventHandler<ModalDismissAttemptedEventArgs>? ModalDismissAttempted;
+
 		internal void NotifyOfWindowModalEvent(EventArgs eventArgs)
 		{
 			switch (eventArgs)
@@ -294,6 +296,9 @@ namespace Microsoft.Maui.Controls
 					break;
 				case ModalPushingEventArgs pushingEvents:
 					ModalPushing?.Invoke(this, pushingEvents);
+					break;
+				case ModalDismissAttemptedEventArgs dismissAttemptedEvents:
+					ModalDismissAttempted?.Invoke(this, dismissAttemptedEvents);
 					break;
 				default:
 					break;

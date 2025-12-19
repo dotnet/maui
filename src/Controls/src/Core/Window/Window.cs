@@ -268,6 +268,7 @@ namespace Microsoft.Maui.Controls
 		public event EventHandler<ModalPoppingEventArgs>? ModalPopping;
 		public event EventHandler<ModalPushedEventArgs>? ModalPushed;
 		public event EventHandler<ModalPushingEventArgs>? ModalPushing;
+		public event EventHandler<ModalDismissAttemptedEventArgs>? ModalDismissAttempted;
 		public event EventHandler? PopCanceled;
 
 		public event EventHandler? Created;
@@ -483,6 +484,13 @@ namespace Microsoft.Maui.Controls
 		{
 			var args = new ModalPushingEventArgs(modalPage);
 			ModalPushing?.Invoke(this, args);
+			Application?.NotifyOfWindowModalEvent(args);
+		}
+
+		internal void OnModalDismissAttempted(Page modalPage)
+		{
+			var args = new ModalDismissAttemptedEventArgs(modalPage);
+			ModalDismissAttempted?.Invoke(this, args);
 			Application?.NotifyOfWindowModalEvent(args);
 		}
 
