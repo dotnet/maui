@@ -27,6 +27,21 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		private ILogger? _logger;
 		internal ILogger Logger => _logger ??= Services!.GetService<ILogger<BlazorWebViewHandler>>() ?? NullLogger<BlazorWebViewHandler>.Instance;
 
+		/// <summary>
+		/// Gets the concrete LifecycleEventService to access internal RemoveEvent method.
+		/// RemoveEvent is internal because it's not part of the public ILifecycleEventService contract,
+		/// but is needed for proper cleanup of lifecycle event handlers.
+		/// </summary>
+		private LifecycleEventService? TryGetLifecycleEventService()
+		{
+			var services = MauiContext?.Services;
+			if (services != null)
+			{
+				return services.GetService<ILifecycleEventService>() as LifecycleEventService;
+			}
+			return null;
+		}
+
 		protected override AWebView CreatePlatformView()
 		{
 			Logger.CreatingAndroidWebkitWebView();
@@ -62,22 +77,44 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			return blazorAndroidWebView;
 		}
 
+		/// <summary>
+		/// Connects the handler to the Android <see cref="AWebView"/> and registers platform-specific
+		/// back navigation handling so that the WebView can consume back presses before the page is popped.
+		/// </summary>
+		/// <param name="platformView">The native Android <see cref="AWebView"/> instance associated with this handler.</param>
+		/// <remarks>
+		/// This override calls the base implementation and then registers an <see cref="AndroidLifecycle.OnBackPressed"/>
+		/// lifecycle event handler. The handler checks <see cref="AWebView.CanGoBack"/> and, when possible, navigates
+		/// back within the WebView instead of allowing the back press (or predictive back gesture on Android 13+)
+		/// to propagate and pop the containing page.
+		/// <para>
+		/// When multiple BlazorWebView instances exist, the handler includes focus and visibility checks to ensure
+		/// only the currently visible and focused WebView handles the back navigation, preventing conflicts between instances.
+		/// </para>
+		/// Inheritors that override this method should call the base implementation to preserve this back navigation
+		/// behavior unless they intentionally replace it.
+		/// </remarks>
 		protected override void ConnectHandler(AWebView platformView)
 		{
 			base.ConnectHandler(platformView);
 
 			// Register OnBackPressed lifecycle event handler to check WebView's back navigation
 			// This ensures predictive back gesture (Android 13+) checks WebView.CanGoBack() before popping page
-			var services = MauiContext?.Services;
-			if (services != null)
+			var lifecycleService = TryGetLifecycleEventService();
+			if (lifecycleService != null)
 			{
 				// Create a weak reference to avoid memory leaks
 				var weakPlatformView = new WeakReference<AWebView>(platformView);
 
 				AndroidLifecycle.OnBackPressed handler = (activity) =>
 				{
-					// Check if WebView is still alive and can navigate back
-					if (weakPlatformView.TryGetTarget(out var webView) && webView.CanGoBack())
+					// Check if WebView is still alive, attached to window, and has focus
+					// This prevents non-visible or unfocused BlazorWebView instances from
+					// incorrectly intercepting back navigation when multiple instances exist
+					if (weakPlatformView.TryGetTarget(out var webView) &&
+						webView.IsAttachedToWindow &&
+						webView.HasWindowFocus &&
+						webView.CanGoBack())
 					{
 						webView.GoBack();
 						return true; // Prevent back propagation - handled by WebView
@@ -87,12 +124,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				};
 
 				// Register with lifecycle service - will be invoked by HandleBackNavigation in MauiAppCompatActivity
-				var lifecycleService = services.GetService<ILifecycleEventService>();
-				if (lifecycleService is LifecycleEventService concreteService)
-				{
-					concreteService.AddEvent(nameof(AndroidLifecycle.OnBackPressed), handler);
-					_onBackPressedHandler = handler;
-				}
+				lifecycleService.AddEvent(nameof(AndroidLifecycle.OnBackPressed), handler);
+				_onBackPressedHandler = handler;
 			}
 		}
 
@@ -101,12 +134,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		protected override void DisconnectHandler(AWebView platformView)
 		{
 			// Clean up lifecycle event handler to prevent memory leaks
-			if (_onBackPressedHandler != null && MauiContext?.Services != null)
+			if (_onBackPressedHandler != null)
 			{
-				var lifecycleService = MauiContext.Services.GetService<ILifecycleEventService>();
-				if (lifecycleService is LifecycleEventService concreteService)
+				var lifecycleService = TryGetLifecycleEventService();
+				if (lifecycleService != null)
 				{
-					concreteService.RemoveEvent(nameof(AndroidLifecycle.OnBackPressed), _onBackPressedHandler);
+					lifecycleService.RemoveEvent(nameof(AndroidLifecycle.OnBackPressed), _onBackPressedHandler);
 					_onBackPressedHandler = null;
 				}
 			}
