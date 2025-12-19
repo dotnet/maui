@@ -1,6 +1,3 @@
-using Google.Android.Material.Slider;
-using Java.Lang;
-
 namespace Microsoft.Maui.Handlers;
 
 internal partial class MaterialSliderHandler : ViewHandler<ISlider, MauiMaterialSlider>
