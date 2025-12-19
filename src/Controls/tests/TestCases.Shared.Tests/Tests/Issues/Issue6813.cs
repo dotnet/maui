@@ -11,7 +11,7 @@ public class Issue6813 : _IssuesUITest
 	public Issue6813(TestDevice device) : base(device) { }
 
 	[Test]
-	[Category(UITestCategories.Modal)]
+	[Category(UITestCategories.Navigation)]
 	public void ReusingModalPageShouldNotCauseSizingIssues()
 	{
 		// Start from root page
@@ -68,10 +68,13 @@ public class Issue6813 : _IssuesUITest
 			$"Third presentation height should not shrink. Initial: {initialSize.Height}, Third: {thirdSize.Height}");
 	}
 	
-	private (double Width, double Height) ParseSize(string sizeText)
+	private (double Width, double Height) ParseSize(string? sizeText)
 	{
+		if (string.IsNullOrEmpty(sizeText))
+			return (0, 0);
+			
 		// Parse "Size: 393 x 851" format
-		var parts = sizeText.Replace("Size:", "").Trim().Split('x');
+		var parts = sizeText.Replace("Size:", "", StringComparison.Ordinal).Trim().Split('x');
 		if (parts.Length == 2 &&
 		    double.TryParse(parts[0].Trim(), out var width) &&
 		    double.TryParse(parts[1].Trim(), out var height))
