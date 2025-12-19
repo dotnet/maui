@@ -94,12 +94,6 @@ parameters:
     name: Azure Pipelines
     vmImage: macOS-15
 
-- name: macOSHelixPool
-  type: object
-  default:
-    name: MAUI
-    vmImage: MAUI
-
 - name: targetFrameworkVersions
   type: object
   default:
