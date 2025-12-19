@@ -20,6 +20,15 @@ public class Issue33171 : ContentPage
 
 		titleBar.LeadingContent = new Image {Source = "dotnet_bot.png", HeightRequest = 24};
 
+		titleBar.Content = new SearchBar
+		{
+			Placeholder = "Search",
+			PlaceholderColor = Colors.White,
+			MaximumWidthRequest = 300,
+			HorizontalOptions = LayoutOptions.Fill,
+			VerticalOptions = LayoutOptions.Center
+		};
+
 		// Set the TitleBar on the current Window when this page appears
 		this.Loaded += (sender, e) =>
 		{
