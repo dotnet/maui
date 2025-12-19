@@ -189,6 +189,7 @@ steps:
         fi
       displayName: Install Simulator Runtimes
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+      continueOnError: true
       timeoutInMinutes: 30
 
 # Provision Additional Software
