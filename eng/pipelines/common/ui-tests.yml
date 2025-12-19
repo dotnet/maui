@@ -205,6 +205,54 @@ stages:
                       platform: 'Android'
                       artifactName: 'uitest-snapshot-results-android-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
+  - stage: ios_ui_tests_coreclr
+    displayName: iOS UITests CoreCLR
+    dependsOn: build_ui_tests_coreclr
+    jobs:
+      - ${{ each project in parameters.projects }}:
+        - ${{ if ne(project.ios, '') }}:
+          - ${{ each version in parameters.iosVersions }}:
+            - ${{ if not(containsValue(project.iosVersionsExclude, version)) }}:
+              - job: ios_ui_tests_coreclr_${{ project.name }}_${{ replace(version, '.', '_') }}
+                strategy:
+                  matrix:
+                    ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
+                      ${{ categoryGroup }}:
+                        CATEGORYGROUP: ${{ categoryGroup }}
+                timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
+                workspace:
+                  clean: all
+                displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
+                pool: ${{ parameters.iosPool }}
+                variables:
+                  REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+                  APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+                steps:
+                  - template: ui-tests-steps.yml
+                    parameters:
+                      platform: ios
+                      ${{ if eq(version, 'latest') }}:
+                        version: 18.5
+                      ${{ if ne(version, 'latest') }}:
+                        version: ${{ version }}
+                      path: ${{ project.ios }}
+                      app: ${{ project.app }}
+                      ${{ if and(eq(version, 'latest'), true) }}:
+                        device: ios-simulator-64
+                      ${{ if and(ne(version, 'latest'), true) }}:
+                        device: ios-simulator-64_${{ version }}
+                      provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                      runtimeVariant : "CoreCLR"
+                      testFilter: $(CATEGORYGROUP)
+                      headless: ${{ parameters.headless }}
+                      skipProvisioning: ${{ parameters.skipProvisioning }}
+                  
+                  # Collect and publish iOS snapshot diffs
+                  - template: ui-tests-collect-snapshot-diffs.yml
+                    parameters:
+                      platform: 'iOS'
+                      artifactName: 'uitest-snapshot-results-ios-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
+
   - stage: ios_ui_tests_mono
     displayName: iOS UITests Mono
     dependsOn: build_ui_tests
@@ -458,3 +506,42 @@ stages:
                     parameters:
                       platform: 'Mac'
                       artifactName: 'uitest-snapshot-results-mac-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
+
+  - stage: maccatalyst_ui_tests_coreclr
+    displayName: MacCatalyst UITests CoreCLR
+    dependsOn: build_ui_tests_coreclr
+    jobs:
+      - ${{ each project in parameters.projects }}:
+        - ${{ if ne(project.mac, '') }}:
+              - job: maccatalyst_ui_tests_coreclr_${{ project.name }}
+                strategy:
+                  matrix:
+                    ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
+                      ${{ categoryGroup }}:
+                        CATEGORYGROUP: ${{ categoryGroup }}
+                timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
+                workspace:
+                  clean: all
+                displayName: ${{ coalesce(project.desc, project.name) }}
+                pool: ${{ parameters.macosPool }}
+                variables:
+                  REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+                  APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+                steps:
+                  - template: ui-tests-steps.yml
+                    parameters:
+                      platform: catalyst
+                      version: "15.3"
+                      device: mac
+                      path: ${{ project.mac }}
+                      app: ${{ project.app }}
+                      provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                      runtimeVariant : "CoreCLR"
+                      testFilter: $(CATEGORYGROUP)
+                      skipProvisioning: ${{ parameters.skipProvisioning }}
+                  
+                  # Collect and publish MacCatalyst snapshot diffs
+                  - template: ui-tests-collect-snapshot-diffs.yml
+                    parameters:
+                      platform: 'MacCatalyst'
+                      artifactName: 'uitest-snapshot-results-maccatalyst-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
