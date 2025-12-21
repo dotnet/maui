@@ -60,6 +60,7 @@ stages:
           testResultsFormat: VSTest
           testResultsFiles: $(Agent.TempDirectory)/Controls.Xaml.UnitTests/*.trx
           testRunTitle: Controls.Xaml.UnitTests - ${{ job.testOS }}
+        condition: always()
 
       - template: /eng/pipelines/common/run-dotnet-preview.yml
         parameters:
@@ -75,6 +76,7 @@ stages:
           testResultsFormat: VSTest
           testResultsFiles: $(Agent.TempDirectory)/Resizetizer.UnitTests/*.trx
           testRunTitle: Resizetizer.UnitTests - ${{ job.testOS }}
+        condition: always()
 
       - template: /eng/pipelines/common/run-dotnet-preview.yml
         parameters:
@@ -90,6 +92,7 @@ stages:
           testResultsFormat: VSTest
           testResultsFiles: $(Agent.TempDirectory)/Graphics.Tests/*.trx
           testRunTitle: Graphics.Tests - ${{ job.testOS }}
+        condition: always()
 
       - task: ${{ parameters.publishTaskPrefix }}PublishPipelineArtifact@1
         displayName: Publish Logs
@@ -98,4 +101,4 @@ stages:
           artifact: Logs - Unit Tests ${{ job.testOS }} $(System.JobAttempt)
         condition: always()
 
-      # - template: /eng/pipelines/common/fail-on-issue.yml
+      - template: /eng/pipelines/common/fail-on-issue.yml
