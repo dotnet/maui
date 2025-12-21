@@ -69,6 +69,9 @@
     <EmbeddedResource Include="Resources\Fonts\Dokdo-Regular.ttf" />
     <EmbeddedResource Include="Resources\Images\royals.png" />
     <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+    <MauiAsset Include="Resources\TestFiles\test.txt" LogicalName="%(Filename)%(Extension)">
+      <Link>Resources\TestFiles\%(Filename)%(Extension)</Link>
+    </MauiAsset>
   </ItemGroup>
 
   <ItemGroup>
