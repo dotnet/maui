@@ -102,3 +102,5 @@ stages:
         condition: always()
 
       - template: /eng/pipelines/common/fail-on-issue.yml
+        parameters:
+          condition: always()
