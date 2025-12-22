@@ -65,7 +65,7 @@ public void RunOniOS(string id, string config, string framework, RuntimeVariant 
         runtimeIdentifier: TestEnvironment.IOSSimulatorRuntimeIdentifier));
 
     // Run with XHarness
-    Assert.IsTrue(XHarness.RunAppleForTimeout(appPath, resultDir, TestSimulator.XHarnessID));
+    Assert.IsTrue(XHarness.RunAppleForTimeout(appPath, resultDir, TestSimulator.XHarnessID, TestSimulator.GetUDID()));
 }
 ```
 
@@ -87,6 +87,7 @@ if (!TestEnvironment.IsWindows)
 | `BaseTemplateTests` | Extends BaseBuildTest with template-specific setup |
 | `DotnetInternal` | Wraps `dotnet` CLI using local SDK (`.dotnet/dotnet`) |
 | `XHarness` | Runs apps on devices/simulators |
+| `Simulator` | iOS simulator management (boot, shutdown, UDID) |
 | `TestEnvironment` | Platform detection, paths, `IOSSimulatorRuntimeIdentifier` |
 | `FileUtilities` | File manipulation helpers |
 
