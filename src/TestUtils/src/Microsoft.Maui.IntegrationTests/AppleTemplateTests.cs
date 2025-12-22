@@ -28,15 +28,15 @@ namespace Microsoft.Maui.IntegrationTests
 		[Test]
 		// [TestCase("maui", "Debug", DotNetPrevious, RuntimeVariant.Mono, null)]
 		// [TestCase("maui", "Release", DotNetPrevious, RuntimeVariant.Mono, null)]
-		//[TestCase("maui", "Debug", DotNetCurrent, RuntimeVariant.Mono, null)]
+		[TestCase("maui", "Debug", DotNetCurrent, RuntimeVariant.Mono, null)]
 		[TestCase("maui", "Release", DotNetCurrent, RuntimeVariant.Mono, null)]
-		//[TestCase("maui", "Release", DotNetCurrent, RuntimeVariant.Mono, "full")]
+		[TestCase("maui", "Release", DotNetCurrent, RuntimeVariant.Mono, "full")]
 		// [TestCase("maui-blazor", "Debug", DotNetPrevious, RuntimeVariant.Mono, null)]
 		// [TestCase("maui-blazor", "Release", DotNetPrevious, RuntimeVariant.Mono, null)]
-		//[TestCase("maui-blazor", "Debug", DotNetCurrent, RuntimeVariant.Mono, null)]
-		//[TestCase("maui-blazor", "Release", DotNetCurrent, RuntimeVariant.Mono, null)]
-		//[TestCase("maui-blazor", "Release", DotNetCurrent, RuntimeVariant.Mono, "full")]
-		//[TestCase("maui", "Release", DotNetCurrent, RuntimeVariant.NativeAOT, null)]
+		[TestCase("maui-blazor", "Debug", DotNetCurrent, RuntimeVariant.Mono, null)]
+		[TestCase("maui-blazor", "Release", DotNetCurrent, RuntimeVariant.Mono, null)]
+		[TestCase("maui-blazor", "Release", DotNetCurrent, RuntimeVariant.Mono, "full")]
+		[TestCase("maui", "Release", DotNetCurrent, RuntimeVariant.NativeAOT, null)]
 		public void RunOniOS(string id, string config, string framework, RuntimeVariant runtimeVariant, string trimMode)
 		{
 			var projectDir = TestDirectory;
