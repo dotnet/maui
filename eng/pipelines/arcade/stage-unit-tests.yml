@@ -58,7 +58,8 @@ stages:
       - task: PublishTestResults@2
         inputs:
           testResultsFormat: VSTest
-          testResultsFiles: '$(Agent.TempDirectory)/Controls.Xaml.UnitTests/**/*.trx'
+          testResultsFiles: '**/*.trx'
+          searchFolder: '$(Agent.TempDirectory)/Controls.Xaml.UnitTests'
           testRunTitle: Controls.Xaml.UnitTests - ${{ job.testOS }}
         condition: always()
 
@@ -74,7 +75,8 @@ stages:
       - task: PublishTestResults@2
         inputs:
           testResultsFormat: VSTest
-          testResultsFiles: '$(Agent.TempDirectory)/Resizetizer.UnitTests/**/*.trx'
+          testResultsFiles: '**/*.trx'
+          searchFolder: '$(Agent.TempDirectory)/Resizetizer.UnitTests'
           testRunTitle: Resizetizer.UnitTests - ${{ job.testOS }}
         condition: always()
 
@@ -90,7 +92,8 @@ stages:
       - task: PublishTestResults@2
         inputs:
           testResultsFormat: VSTest
-          testResultsFiles: '$(Agent.TempDirectory)/Graphics.Tests/**/*.trx'
+          testResultsFiles: '**/*.trx'
+          searchFolder: '$(Agent.TempDirectory)/Graphics.Tests'
           testRunTitle: Graphics.Tests - ${{ job.testOS }}
         condition: always()
 
