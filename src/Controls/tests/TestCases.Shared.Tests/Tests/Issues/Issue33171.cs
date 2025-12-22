@@ -1,3 +1,4 @@
+#if WINDOWS			//This issue is Windows specific
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -24,3 +25,4 @@ public class Issue33171 : _IssuesUITest
 		Assert.That(newWindowSize, Is.Not.EqualTo(windowSize), "Window size should change after maximizing the window.");
 	}
 }
+#endif
