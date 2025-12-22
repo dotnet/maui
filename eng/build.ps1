@@ -64,18 +64,7 @@ if ($help) {
 if ($vs) {
   $solution = Split-Path $PSScriptRoot -Parent | Join-Path -ChildPath "xcsync.sln"
 
-  . $PSScriptRoot\common\tools.ps1
-
-  # This tells .NET Core to use the bootstrapped runtime
-  $env:DOTNET_ROOT=InitializeDotNetCli -install:$true -createSdkLocationFile:$true
-
-  # This tells MSBuild to load the SDK from the directory of the bootstrapped SDK
-  $env:DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR=$env:DOTNET_ROOT
-
-  # Put our local dotnet.exe on PATH first so Visual Studio knows which one to use
-  $env:PATH=($env:DOTNET_ROOT + ";" + $env:PATH);
-
-  # Launch Visual Studio with the locally defined environment variables
+  # Launch Visual Studio - global.json paths will handle SDK discovery
   ."$solution"
 
   exit 0
