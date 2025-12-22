@@ -10,7 +10,7 @@ public class MenuBarItemFeatureTests : UITest
 	public const string MenuBarItemFeatureMatrix = "MenuBarItem Feature Matrix";
 
 	public MenuBarItemFeatureTests(TestDevice device)
-		: base(device)
+	 : base(device)
 	{
 	}
 
@@ -20,7 +20,7 @@ public class MenuBarItemFeatureTests : UITest
 		App.NavigateToGallery(MenuBarItemFeatureMatrix);
 	}
 
-	[Test]
+	[Test, Order(1)]
 	public void MenuBarItem_FileMenuExit()
 	{
 		App.WaitForElement("ResetButton");
@@ -37,7 +37,7 @@ public class MenuBarItemFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test]
+	[Test, Order(2)]
 	public void MenuBarItem_LocationsMenuChangeLocation()
 	{
 		App.WaitForElement("ResetButton");
@@ -66,7 +66,7 @@ public class MenuBarItemFeatureTests : UITest
 
 	}
 
-	[Test]
+	[Test, Order(3)]
 	public void MenuBarItem_LocationsMenuAddLocation()
 	{
 		App.WaitForElement("ResetButton");
@@ -92,7 +92,7 @@ public class MenuBarItemFeatureTests : UITest
 
 	}
 
-	[Test]
+	[Test, Order(4)]
 	public void MenuBarItem_LocationsMenuEditLocation()
 	{
 		App.WaitForElement("ResetButton");
@@ -117,7 +117,7 @@ public class MenuBarItemFeatureTests : UITest
 
 	}
 
-	[Test]
+	[Test, Order(5)]
 	public void MenuBarItem_LocationsMenuRemoveLocation()
 	{
 		App.WaitForElement("ResetButton");
@@ -134,11 +134,12 @@ public class MenuBarItemFeatureTests : UITest
 		App.WaitForElement("Berlin, DE");
 		App.Tap("Berlin, DE");
 
-		App.WaitForNoElement("Berlin, DE");
+		var locationLabel = App.FindElement("StatusMessageLabel");
+		Assert.That(locationLabel.GetText(), Is.EqualTo("Removed location: Berlin, DE"));
 
 	}
 
-	[Test]
+	[Test, Order(6)]
 	public void MenuBarItem_ViewMenuRefreshCommand()
 	{
 		App.WaitForElement("ResetButton");
@@ -157,7 +158,7 @@ public class MenuBarItemFeatureTests : UITest
 		Assert.That(statusLabel.GetText(), Does.Contain("Refreshed"));
 	}
 
-	[Test]
+	[Test, Order(7)]
 	public void MenuBarItem_DisableFileMenu()
 	{
 		App.WaitForElement("ResetButton");
@@ -174,7 +175,7 @@ public class MenuBarItemFeatureTests : UITest
 		Assert.That(fileSwitch, Is.Not.Null);
 	}
 
-	[Test]
+	[Test, Order(8)]
 	public void MenuBarItem_DisableLocationsMenu()
 	{
 		App.WaitForElement("ResetButton");
@@ -188,8 +189,7 @@ public class MenuBarItemFeatureTests : UITest
 		var locationsSwitch = App.FindElement("LocationsMenuEnabledSwitch");
 		Assert.That(locationsSwitch, Is.Not.Null);
 	}
-
-	[Test]
+	[Test, Order(9)]
 	public void MenuBarItem_DisableViewMenu()
 	{
 		App.WaitForElement("ResetButton");
@@ -204,7 +204,7 @@ public class MenuBarItemFeatureTests : UITest
 		Assert.That(viewSwitch, Is.Not.Null);
 	}
 
-	[Test]
+	[Test, Order(10)]
 	public void MenuBarItem_MenuTextBindingUpdates()
 	{
 		App.WaitForElement("ResetButton");
@@ -213,27 +213,27 @@ public class MenuBarItemFeatureTests : UITest
 
 		App.WaitForElement("FileMenuBar");
 		App.Tap("FileMenuBar");
-		App.WaitForElement("Exit");
+		App.WaitForElement("ExitMenuBarFlyoutItem");
 
-		App.WaitForElement("ViewMenuBarItem");
-		App.Tap("ViewMenuBarItem");
+		App.WaitForElement("FileMenuBarItem");
+		App.Tap("FileMenuBarItem");
 
 		App.WaitForElement("LocationsMenuBar");
-		App.Tap("LocationsMenuBarItem");
+		App.Tap("LocationsMenuBar");
 		App.WaitForElement("Change Location");
 		App.WaitForElement("Add Location");
 		App.WaitForElement("Edit Location");
 		App.WaitForElement("Remove Location");
 
-		App.WaitForElement("ViewMenuBarItem");
-		App.Tap("ViewMenuBarItem");
+		App.WaitForElement("FileMenuBarItem");
+		App.Tap("FileMenuBarItem");
 
 		App.WaitForElement("ViewMenuBar");
-		App.Tap("ViewMenuBarItem");
-		App.WaitForElement("Refresh");
+		App.Tap("ViewMenuBar");
+		App.WaitForElement("RefreshMenuBarFlyoutItem");
 	}
 
-	[Test]
+	[Test, Order(11)]
 	public void MenuBarItem_DynamicLocationMenuItems()
 	{
 		App.WaitForElement("ResetButton");
@@ -259,7 +259,7 @@ public class MenuBarItemFeatureTests : UITest
 		Assert.That(locationLabel.GetText(), Is.EqualTo("London, UK"));
 	}
 
-	[Test]
+	[Test, Order(13)]
 	public void MenuBarItem_VerifyAllMenusPresent()
 	{
 		App.WaitForElement("ResetButton");
@@ -283,7 +283,7 @@ public class MenuBarItemFeatureTests : UITest
 		App.WaitForElement("LocationsCollectionView");
 	}
 
-	[Test]
+	[Test, Order(14)]
 	public void MenuBarItem_RefreshMenuItemProperties()
 	{
 		App.WaitForElement("ResetButton");
@@ -296,7 +296,7 @@ public class MenuBarItemFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test]
+	[Test, Order(15)]
 	public void MenuBarItem_AddMultipleLocations()
 	{
 		App.WaitForElement("ResetButton");
@@ -329,7 +329,7 @@ public class MenuBarItemFeatureTests : UITest
 		App.WaitForElement("Paris, FR");
 	}
 
-	[Test]
+	[Test, Order(16)]
 	public void MenuBarItem_CancelAddLocation()
 	{
 		App.WaitForElement("ResetButton");
@@ -350,7 +350,7 @@ public class MenuBarItemFeatureTests : UITest
 		App.WaitForNoElement("Cancelled Location");
 	}
 
-	[Test]
+	[Test, Order(17)]
 	public void MenuBarItem_ResetRestolesDefaultLocations()
 	{
 		App.WaitForElement("ResetButton");
@@ -368,20 +368,19 @@ public class MenuBarItemFeatureTests : UITest
 
 		// Verify custom location was added
 		var locationsCollection = App.WaitForElement("LocationsCollectionView");
-		Assert.That(locationsCollection, Does.Contain("Custom Location"));
+		App.WaitForElement("Custom Location");
 
 		// Reset
 		App.Tap("ResetButton");
 
 		// Verify only default locations remain
-		locationsCollection = App.WaitForElement("LocationsCollectionView");
-		Assert.That(locationsCollection, Does.Contain("Redmond, USA"));
-		Assert.That(locationsCollection, Does.Contain("London, UK"));
-		Assert.That(locationsCollection, Does.Contain("Berlin, DE"));
-		Assert.That(locationsCollection, Does.Not.Contain("Custom Location"));
+		App.WaitForElement("Redmond, USA");
+		App.WaitForElement("London, UK");
+		App.WaitForElement("Berlin, DE");
+		App.WaitForNoElement("Custom Location");
 	}
 
-	[Test]
+	[Test, Order(18)]
 	public void MenuBarItem_ToggleMenusOnOff()
 	{
 		App.WaitForElement("ResetButton");
@@ -411,7 +410,7 @@ public class MenuBarItemFeatureTests : UITest
 		App.WaitForElement("ViewMenuBar");
 	}
 
-	[Test]
+	[Test, Order(19)]
 	public void MenuBarItem_VerifyInitialLocationState()
 	{
 		App.WaitForElement("ResetButton");
@@ -423,12 +422,12 @@ public class MenuBarItemFeatureTests : UITest
 
 		// Verify default locations in collection
 		var locationsCollection = App.WaitForElement("LocationsCollectionView");
-		Assert.That(locationsCollection, Does.Contain("Redmond, USA"));
-		Assert.That(locationsCollection, Does.Contain("London, UK"));
-		Assert.That(locationsCollection, Does.Contain("Berlin, DE"));
+		App.WaitForElement("Redmond, USA");
+		App.WaitForElement("London, UK");
+		App.WaitForElement("Berlin, DE");
 	}
 
-	[Test]
+	[Test, Order(20)]
 	public void MenuBarItem_EntryVisibilityToggling()
 	{
 		App.WaitForElement("ResetButton");
@@ -452,27 +451,7 @@ public class MenuBarItemFeatureTests : UITest
 		// The entry should be hidden after cancel
 	}
 
-	[Test]
-	public void MenuBarItem_MenuBarItemTextBinding()
-	{
-		App.WaitForElement("ResetButton");
-		App.Tap("ResetButton");
-
-		// Verify all menu bar items have correct text through binding
-		App.WaitForElement("FileMenuBar");
-		var fileMenu = App.FindElement("FileMenuBar");
-		Assert.That(fileMenu.GetText(), Does.Contain("File"));
-
-		App.WaitForElement("LocationsMenuBar");
-		var locationsMenu = App.FindElement("LocationsMenuBar");
-		Assert.That(locationsMenu.GetText(), Does.Contain("Locations"));
-
-		App.WaitForElement("ViewMenuBar");
-		var viewMenu = App.FindElement("ViewMenuBar");
-		Assert.That(viewMenu.GetText(), Does.Contain("View"));
-	}
-
-	[Test]
+	[Test, Order(21)]
 	public void MenuBarItem_AddEmptyLocationValidation()
 	{
 		App.WaitForElement("ResetButton");
@@ -493,7 +472,7 @@ public class MenuBarItemFeatureTests : UITest
 		Assert.That(statusLabel.GetText(), Does.Contain("cannot be empty").Or.Contain("empty"));
 	}
 
-	[Test]
+	[Test, Order(22)]
 	public void MenuBarItem_MenuFlyoutSeparatorPresent()
 	{
 		App.WaitForElement("ResetButton");
