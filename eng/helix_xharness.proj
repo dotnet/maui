@@ -110,8 +110,7 @@
                 <TestTimeout>01:15:00</TestTimeout>
                 <LaunchTimeout>00:10:00</LaunchTimeout>
                 <AppBundlePath>$([System.IO.Directory]::GetDirectories('$(ScenariosDir)Controls.DeviceTests/Release/$(TargetFrameworkToTest)-ios/', '*.app', System.IO.SearchOption.AllDirectories))</AppBundlePath>
-                <CustomCommands>set -ex
-xharness apple test --target "$target" --app "$app" --output-directory "$output_directory" --timeout "$timeout" --launch-timeout "$launch_timeout" --set-env="TestFilter=Category=%(Identity)"</CustomCommands>
+                <CustomCommands>xharness apple test --target "$target" --app "$app" --output-directory "$output_directory" --timeout "$timeout" --launch-timeout "$launch_timeout" --set-env="TestFilter=Category=%(Identity)"</CustomCommands>
             </XHarnessAppBundleToTest>
             <!-- Core.DeviceTests - one work item per category -->
             <XHarnessAppBundleToTest Include="@(CoreTestCategory->'Core.DeviceTests-%(Identity)')">
@@ -120,8 +119,7 @@ xharness apple test --target "$target" --app "$app" --output-directory "$output_
                 <TestTimeout>01:15:00</TestTimeout>
                 <LaunchTimeout>00:10:00</LaunchTimeout>
                 <AppBundlePath>$([System.IO.Directory]::GetDirectories('$(ScenariosDir)Core.DeviceTests/Release/$(TargetFrameworkToTest)-ios/', '*.app', System.IO.SearchOption.AllDirectories))</AppBundlePath>
-                <CustomCommands>set -ex
-xharness apple test --target "$target" --app "$app" --output-directory "$output_directory" --timeout "$timeout" --launch-timeout "$launch_timeout" --set-env="TestFilter=Category=%(Identity)"</CustomCommands>
+                <CustomCommands>xharness apple test --target "$target" --app "$app" --output-directory "$output_directory" --timeout "$timeout" --launch-timeout "$launch_timeout" --set-env="TestFilter=Category=%(Identity)"</CustomCommands>
             </XHarnessAppBundleToTest>
             <!-- Graphics, Essentials, BlazorWebView - single work item each -->
             <XHarnessAppBundleToTest Include="$([System.IO.Directory]::GetDirectories('$(ScenariosDir)Graphics.DeviceTests/Release/$(TargetFrameworkToTest)-ios/', '*.app', System.IO.SearchOption.AllDirectories))">
