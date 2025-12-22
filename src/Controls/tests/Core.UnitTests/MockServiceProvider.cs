@@ -22,6 +22,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		Dictionary<Type, object> _services = new();
 
 		public object GetService(Type serviceType)
-			=> _services?[serviceType];
+			=> _services.TryGetValue(serviceType, out var service) ? service : null;
 	}
 }
