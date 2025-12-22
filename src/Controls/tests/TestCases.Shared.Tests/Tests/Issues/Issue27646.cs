@@ -1,4 +1,4 @@
-#if WINDOWS // MacCatalyst don't support programmatic window resizing. So, ignored test on MacCatalyst.
+#if WINDOWS // MacCatalyst doesn't support programmatic window resizing. So, ignored test on MacCatalyst.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;

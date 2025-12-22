@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="Height"/>.</summary>
 		public static readonly BindableProperty HeightProperty = BindableProperty.Create(
 			nameof(Height), typeof(double), typeof(Window), Primitives.Dimension.Unset,
-			propertyChanged: OnSizePropertyChanged);        
+			propertyChanged: OnSizePropertyChanged);
 
 		/// <summary>Bindable property for <see cref="MaximumWidth"/>.</summary>
 		public static readonly BindableProperty MaximumWidthProperty = BindableProperty.Create(
