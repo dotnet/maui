@@ -28,12 +28,14 @@ namespace Microsoft.Maui.IntegrationTests
 		{
 			var timeoutString = TimeSpan.FromSeconds(launchTimeoutSeconds).ToString();
 			
-			// When a device UDID is provided, use --device to target the already-booted simulator directly.
+			// --target is always required to specify the platform type (e.g., ios-simulator-64).
+			// When a device UDID is also provided, add --device to target that specific already-booted simulator.
 			// This avoids XHarness from managing (and potentially shutting down) the simulator.
-			// When no UDID is provided, fall back to --target which lets XHarness find/create a simulator.
-			string deviceArg = !string.IsNullOrEmpty(deviceUdid) 
-				? $"--device=\"{deviceUdid}\"" 
-				: $"--target={targetDevice}";
+			string deviceArg = $"--target={targetDevice}";
+			if (!string.IsNullOrEmpty(deviceUdid))
+			{
+				deviceArg += $" --device=\"{deviceUdid}\"";
+			}
 			
 			var args = $"apple run --app=\"{appPath}\" --output-directory=\"{resultDir}\" {deviceArg} --timeout=\"{timeoutString}\" --verbosity=Debug";
 			var xhOutput = RunForOutput(args, out int exitCode, launchTimeoutSeconds + 30);
