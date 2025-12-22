@@ -21,7 +21,7 @@
     -->
     <PropertyGroup Condition="'$(TargetOS)' == 'ios'">
         <!-- These categories run as individual work items; skipped from the "Other" work item -->
-        <ControlsTestCategoriesToSkipForRestOfTests>CollectionView;CarouselView;FlyoutPage;Shell;TabbedPage;WebView;HybridWebView</ControlsTestCategoriesToSkipForRestOfTests>
+        <ControlsTestCategoriesToSkipForRestOfTests>CollectionView;Shell;HybridWebView</ControlsTestCategoriesToSkipForRestOfTests>
     </PropertyGroup>
     <ItemGroup Condition="'$(TargetOS)' == 'ios'">
         <ControlsTestCategoriesToRunIndividually Include="$(ControlsTestCategoriesToSkipForRestOfTests)" />
