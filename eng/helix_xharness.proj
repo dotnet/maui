@@ -15,6 +15,17 @@
         <TargetFrameworkToTest>$(_MauiDotNetTfm)</TargetFrameworkToTest>
     </PropertyGroup>
 
+    <!-- 
+        Test categories for iOS category splitting.
+        Keep in sync with src/Controls/tests/DeviceTests/TestCategory.cs and src/Core/tests/DeviceTests/TestCategory.cs
+    -->
+    <ItemGroup Condition="'$(TargetOS)' == 'ios'">
+        <!-- Controls.DeviceTests categories -->
+        <ControlsTestCategory Include="Accessibility;Application;Behavior;Border;BoxView;Button;CarouselView;CheckBox;CollectionView;Compatibility;ContentView;DatePicker;Dispatcher;Editor;Element;Entry;FlexLayout;FlyoutPage;Frame;Gesture;HybridWebView;Image;Label;Layout;Lifecycle;ListView;MenuFlyout;Mapper;Memory;Modal;NavigationPage;Page;Path;Picker;RadioButton;RefreshView;ScrollView;SearchBar;Shape;Shell;Slider;SwipeView;TabbedPage;TextInput;Toolbar;TemplatedView;View;VisualElement;VisualElementTree;WebView;Window;WindowOverlay;Xaml" />
+        <!-- Core.DeviceTests categories -->
+        <CoreTestCategory Include="ActivityIndicator;Border;Button;CheckBox;ContentView;Element;DatePicker;Dispatcher;Editor;Entry;FlowDirection;FlyoutView;Fonts;Graphics;GraphicsView;Image;ImageButton;ImageSource;IndicatorView;Label;Layout;Memory;NavigationPage;Page;Picker;ProgressBar;RefreshView;ScrollView;SearchBar;ShapeView;Slider;Stepper;SwipeView;Switch;TextFormatting;TimePicker;View;WebView;Window" />
+    </ItemGroup>
+
     <!-- Local build outside of Azure Pipeline -->
     <PropertyGroup Condition="'$(SYSTEM_ACCESSTOKEN)' == ''">
         <ScenariosDir>$(RepoRoot)artifacts/bin/</ScenariosDir>
@@ -90,18 +101,49 @@
             <_MAUIScenarioSearch Include="@(MAUIScenario)" />
         </ItemGroup>
 
-        <!-- Add the discovered items to the appropriate Helix test collection -->
+        <!-- iOS: Controls and Core use category splitting, others run as single work item -->
         <ItemGroup Condition="'$(TargetOS)' == 'ios'">
-            <XHarnessAppBundleToTest Include="$([System.IO.Directory]::GetDirectories('%(_MAUIScenarioSearch.PayloadDirectory)/Release/$(TargetFrameworkToTest)-ios/', '*.app', System.IO.SearchOption.AllDirectories))" >
+            <!-- Controls.DeviceTests - one work item per category -->
+            <XHarnessAppBundleToTest Include="@(ControlsTestCategory->'Controls.DeviceTests-%(Identity)')">
+                <TestTarget>ios-simulator-64</TestTarget>
+                <WorkItemTimeout>02:00:00</WorkItemTimeout>
+                <TestTimeout>01:15:00</TestTimeout>
+                <LaunchTimeout>00:10:00</LaunchTimeout>
+                <AppBundlePath>$([System.IO.Directory]::GetDirectories('$(ScenariosDir)Controls.DeviceTests/Release/$(TargetFrameworkToTest)-ios/', '*.app', System.IO.SearchOption.AllDirectories))</AppBundlePath>
+                <CustomCommands>set -ex
+xharness apple test --target "$target" --app "$app" --output-directory "$output_directory" --timeout "$timeout" --launch-timeout "$launch_timeout" --set-env="TestFilter=Category=%(Identity)"</CustomCommands>
+            </XHarnessAppBundleToTest>
+            <!-- Core.DeviceTests - one work item per category -->
+            <XHarnessAppBundleToTest Include="@(CoreTestCategory->'Core.DeviceTests-%(Identity)')">
+                <TestTarget>ios-simulator-64</TestTarget>
+                <WorkItemTimeout>02:00:00</WorkItemTimeout>
+                <TestTimeout>01:15:00</TestTimeout>
+                <LaunchTimeout>00:10:00</LaunchTimeout>
+                <AppBundlePath>$([System.IO.Directory]::GetDirectories('$(ScenariosDir)Core.DeviceTests/Release/$(TargetFrameworkToTest)-ios/', '*.app', System.IO.SearchOption.AllDirectories))</AppBundlePath>
+                <CustomCommands>set -ex
+xharness apple test --target "$target" --app "$app" --output-directory "$output_directory" --timeout "$timeout" --launch-timeout "$launch_timeout" --set-env="TestFilter=Category=%(Identity)"</CustomCommands>
+            </XHarnessAppBundleToTest>
+            <!-- Graphics, Essentials, BlazorWebView - single work item each -->
+            <XHarnessAppBundleToTest Include="$([System.IO.Directory]::GetDirectories('$(ScenariosDir)Graphics.DeviceTests/Release/$(TargetFrameworkToTest)-ios/', '*.app', System.IO.SearchOption.AllDirectories))">
                 <TestTarget>ios-simulator-64</TestTarget>
                 <WorkItemTimeout>02:00:00</WorkItemTimeout>
                 <TestTimeout>01:00:00</TestTimeout>
-                <WorkItemPrefix>%(_MAUIScenarioSearch.ScenarioDirectoryName)</WorkItemPrefix>
+            </XHarnessAppBundleToTest>
+            <XHarnessAppBundleToTest Include="$([System.IO.Directory]::GetDirectories('$(ScenariosDir)Essentials.DeviceTests/Release/$(TargetFrameworkToTest)-ios/', '*.app', System.IO.SearchOption.AllDirectories))">
+                <TestTarget>ios-simulator-64</TestTarget>
+                <WorkItemTimeout>02:00:00</WorkItemTimeout>
+                <TestTimeout>01:00:00</TestTimeout>
+            </XHarnessAppBundleToTest>
+            <XHarnessAppBundleToTest Include="$([System.IO.Directory]::GetDirectories('$(ScenariosDir)MauiBlazorWebView.DeviceTests/Release/$(TargetFrameworkToTest)-ios/', '*.app', System.IO.SearchOption.AllDirectories))">
+                <TestTarget>ios-simulator-64</TestTarget>
+                <WorkItemTimeout>02:00:00</WorkItemTimeout>
+                <TestTimeout>01:00:00</TestTimeout>
             </XHarnessAppBundleToTest>
         </ItemGroup>
 
+        <!-- MacCatalyst and Android: Use the original MAUIScenario approach (no category splitting) -->
         <ItemGroup Condition="'$(TargetOS)' == 'maccatalyst'">
-            <XHarnessAppBundleToTest Include="$([System.IO.Directory]::GetDirectories('%(_MAUIScenarioSearch.PayloadDirectory)/Release/$(TargetFrameworkToTest)-maccatalyst/', '*.app', System.IO.SearchOption.AllDirectories))" >
+            <XHarnessAppBundleToTest Include="$([System.IO.Directory]::GetDirectories('%(_MAUIScenarioSearch.PayloadDirectory)/Release/$(TargetFrameworkToTest)-maccatalyst/', '*.app', System.IO.SearchOption.AllDirectories))">
                 <TestTarget>maccatalyst</TestTarget>
                 <WorkItemTimeout>02:00:00</WorkItemTimeout>
                 <TestTimeout>01:00:00</TestTimeout>
@@ -109,6 +151,7 @@
             </XHarnessAppBundleToTest>
         </ItemGroup>
 
+        <!-- Android: All scenarios run as single work items (no category splitting) -->
         <ItemGroup Condition="'$(TargetOS)' == 'android'">
             <_apks Include="%(_MAUIScenarioSearch.PayloadDirectory)/Release/$(TargetFrameworkToTest)-android/**/*Signed.apk" />
             <XHarnessApkToTest Include="@(_apks)">
@@ -122,6 +165,8 @@
                 <AndroidPackageName>$([System.String]::Copy('%(AndroidPackageName)').Replace('-Signed',''))</AndroidPackageName>
             </XHarnessApkToTest>
         </ItemGroup>
+
+        <Message Text="Created @(XHarnessAppBundleToTest->Count()) iOS work items" Importance="high" Condition="'$(TargetOS)' == 'ios'" />
     </Target>
 
 
