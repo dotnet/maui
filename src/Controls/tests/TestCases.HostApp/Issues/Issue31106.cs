@@ -64,20 +64,24 @@ namespace Maui.Controls.Sample.Issues
 
             _testPicker.ItemsSource = items;
             _testPicker.SelectedIndexChanged += OnPickerSelectedIndexChanged;
-            _testPicker.Focused += OnPickerFocused;
-            _testPicker.Unfocused += OnPickerUnfocused;
+            _testPicker.PropertyChanged += OnPickerPropertyChanged;
         }
 
-        void OnPickerFocused(object sender, FocusEventArgs e)
+        void OnPickerPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            _pickerStateLabel.Text = "Picker State: Open";
-            _pickerStateLabel.TextColor = Colors.Green;
-        }
-
-        void OnPickerUnfocused(object sender, FocusEventArgs e)
-        {
-            _pickerStateLabel.Text = "Picker State: Closed";
-            _pickerStateLabel.TextColor = Colors.Red;
+            if (e.PropertyName == nameof(Picker.IsOpen))
+            {
+                if (_testPicker.IsOpen)
+                {
+                    _pickerStateLabel.Text = "Picker State: Open";
+                    _pickerStateLabel.TextColor = Colors.Green;
+                }
+                else
+                {
+                    _pickerStateLabel.Text = "Picker State: Closed";
+                    _pickerStateLabel.TextColor = Colors.Red;
+                }
+            }
         }
 
         void OnPickerSelectedIndexChanged(object sender, EventArgs e)
