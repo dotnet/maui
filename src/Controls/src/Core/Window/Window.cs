@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Xml.Schema;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
@@ -82,6 +83,7 @@ namespace Microsoft.Maui.Controls
 		List<IVisualTreeElement> _visualChildren;
 		Toolbar? _toolbar;
 		MenuBarTracker _menuBarTracker;
+		IAlertManager? _alertManager;
 
 		IToolbar? IToolbarElement.Toolbar => Toolbar;
 		internal Toolbar? Toolbar
@@ -99,7 +101,6 @@ namespace Microsoft.Maui.Controls
 		public Window()
 		{
 			_visualChildren = new List<IVisualTreeElement>();
-			AlertManager = new AlertManager(this);
 			ModalNavigationManager = new ModalNavigationManager(this);
 			Navigation = new NavigationImpl(this);
 #pragma warning disable CA1416 // TODO: VisualDiagnosticsOverlay is supported on android 23.0 and above
@@ -328,7 +329,26 @@ namespace Microsoft.Maui.Controls
 			return result;
 		}
 
-		internal AlertManager AlertManager { get; }
+		internal IAlertManager AlertManager
+		{
+			get
+			{
+				if (_alertManager is null)
+				{
+					// Try to get IAlertManager from services if a handler is available
+					var mauiContext = Handler?.MauiContext;
+					if (mauiContext is not null)
+					{
+						_alertManager = mauiContext.Services.GetService<IAlertManager>();
+					}
+
+					// Fallback to default implementation if not provided by services
+					_alertManager ??= new AlertManager(this);
+				}
+
+				return _alertManager;
+			}
+		}
 
 		internal ModalNavigationManager ModalNavigationManager { get; }
 
