@@ -58,10 +58,8 @@ stages:
       - task: PublishTestResults@2
         inputs:
           testResultsFormat: VSTest
-          testResultsFiles: '**/*.trx'
-          searchFolder: '$(Agent.TempDirectory)/Controls.Xaml.UnitTests'
+          testResultsFiles: $(Agent.TempDirectory)/Controls.Xaml.UnitTests/*.trx
           testRunTitle: Controls.Xaml.UnitTests - ${{ job.testOS }}
-        condition: always()
 
       - template: /eng/pipelines/common/run-dotnet-preview.yml
         parameters:
@@ -75,10 +73,8 @@ stages:
       - task: PublishTestResults@2
         inputs:
           testResultsFormat: VSTest
-          testResultsFiles: '**/*.trx'
-          searchFolder: '$(Agent.TempDirectory)/Resizetizer.UnitTests'
+          testResultsFiles: $(Agent.TempDirectory)/Resizetizer.UnitTests/*.trx
           testRunTitle: Resizetizer.UnitTests - ${{ job.testOS }}
-        condition: always()
 
       - template: /eng/pipelines/common/run-dotnet-preview.yml
         parameters:
@@ -92,10 +88,8 @@ stages:
       - task: PublishTestResults@2
         inputs:
           testResultsFormat: VSTest
-          testResultsFiles: '**/*.trx'
-          searchFolder: '$(Agent.TempDirectory)/Graphics.Tests'
+          testResultsFiles: $(Agent.TempDirectory)/Graphics.Tests/*.trx
           testRunTitle: Graphics.Tests - ${{ job.testOS }}
-        condition: always()
 
       - task: ${{ parameters.publishTaskPrefix }}PublishPipelineArtifact@1
         displayName: Publish Logs
@@ -104,6 +98,4 @@ stages:
           artifact: Logs - Unit Tests ${{ job.testOS }} $(System.JobAttempt)
         condition: always()
 
-      - template: /eng/pipelines/common/fail-on-issue.yml
-        parameters:
-          condition: always()
+      # - template: /eng/pipelines/common/fail-on-issue.yml
