@@ -65,7 +65,10 @@ namespace Microsoft.Maui.IntegrationTests
 
 		public static string GetSimulatorUDID(string targetDevice)
 		{
-			return RunForOutput($"apple device \"{targetDevice}\" ", out _, timeoutInSeconds: 30);
+			var logDir = TestEnvironment.GetLogDirectory();
+			Directory.CreateDirectory(logDir);
+			var diagnosticsPath = Path.Combine(logDir, $"xharness-device-{targetDevice.Replace("/", "-", StringComparison.Ordinal)}.log");
+			return RunForOutput($"apple device \"{targetDevice}\" --diagnostics=\"{diagnosticsPath}\"", out _, timeoutInSeconds: 30);
 		}
 
 		public static bool Run(string args, int timeoutInSeconds = DEFAULT_TIMEOUT)
@@ -81,6 +84,5 @@ namespace Microsoft.Maui.IntegrationTests
 		{
 			return DotnetInternal.RunForOutput(XHarnessTool, args, out exitCode, timeoutInSeconds);
 		}
-
 	}
 }

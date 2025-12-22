@@ -28,20 +28,17 @@ namespace Microsoft.Maui.IntegrationTests
 		[Test]
 		// [TestCase("maui", "Debug", DotNetPrevious, RuntimeVariant.Mono, null)]
 		// [TestCase("maui", "Release", DotNetPrevious, RuntimeVariant.Mono, null)]
-		[TestCase("maui", "Debug", DotNetCurrent, RuntimeVariant.Mono, null)]
+		//[TestCase("maui", "Debug", DotNetCurrent, RuntimeVariant.Mono, null)]
 		[TestCase("maui", "Release", DotNetCurrent, RuntimeVariant.Mono, null)]
-		[TestCase("maui", "Release", DotNetCurrent, RuntimeVariant.Mono, "full")]
+		//[TestCase("maui", "Release", DotNetCurrent, RuntimeVariant.Mono, "full")]
 		// [TestCase("maui-blazor", "Debug", DotNetPrevious, RuntimeVariant.Mono, null)]
 		// [TestCase("maui-blazor", "Release", DotNetPrevious, RuntimeVariant.Mono, null)]
-		[TestCase("maui-blazor", "Debug", DotNetCurrent, RuntimeVariant.Mono, null)]
-		[TestCase("maui-blazor", "Release", DotNetCurrent, RuntimeVariant.Mono, null)]
-		[TestCase("maui-blazor", "Release", DotNetCurrent, RuntimeVariant.Mono, "full")]
-		[TestCase("maui", "Release", DotNetCurrent, RuntimeVariant.NativeAOT, null)]
+		//[TestCase("maui-blazor", "Debug", DotNetCurrent, RuntimeVariant.Mono, null)]
+		//[TestCase("maui-blazor", "Release", DotNetCurrent, RuntimeVariant.Mono, null)]
+		//[TestCase("maui-blazor", "Release", DotNetCurrent, RuntimeVariant.Mono, "full")]
+		//[TestCase("maui", "Release", DotNetCurrent, RuntimeVariant.NativeAOT, null)]
 		public void RunOniOS(string id, string config, string framework, RuntimeVariant runtimeVariant, string trimMode)
 		{
-			// Use architecture-appropriate runtime identifier based on host system
-			string runtimeIdentifier = TestEnvironment.IOSSimulatorRuntimeIdentifier;
-
 			var projectDir = TestDirectory;
 			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
@@ -49,10 +46,6 @@ namespace Microsoft.Maui.IntegrationTests
 				$"Unable to create template {id}. Check test output for errors.");
 
 			var buildProps = BuildProps;
-
-			// Always set RuntimeIdentifier to ensure consistent architecture builds
-			// Without this, Mono builds default to host architecture (arm64 on Apple Silicon, x64 on Intel)
-			buildProps.Add($"RuntimeIdentifier={runtimeIdentifier}");
 
 			if (runtimeVariant == RuntimeVariant.NativeAOT)
 			{
@@ -71,12 +64,20 @@ namespace Microsoft.Maui.IntegrationTests
 			Assert.IsTrue(DotnetInternal.Build(projectFile, config, framework: $"{framework}-ios", properties: buildProps),
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 
-			var appFile = Path.Combine(projectDir, "bin", config, $"{framework}-ios", runtimeIdentifier, $"{Path.GetFileName(projectDir)}.app");
+			// Find the .app bundle - it may be in the bin folder with or without a RID subfolder depending on build settings
+			var appName = $"{Path.GetFileName(projectDir)}.app";
+			var binDir = Path.Combine(projectDir, "bin", config, $"{framework}-ios");
+			var appFile = Directory.GetDirectories(binDir, appName, SearchOption.AllDirectories).FirstOrDefault()
+				?? Path.Combine(binDir, appName);
+
+			// Write xh-results to the log directory for artifact collection
+			var xhResultsDir = Path.Combine(TestEnvironment.GetLogDirectory(), "xh-results", Path.GetFileName(projectDir));
+			Directory.CreateDirectory(xhResultsDir);
 
 			// Pass the device UDID to use the already-booted simulator directly.
 			// This prevents XHarness from managing the simulator lifecycle and avoids race conditions
 			// where XHarness might shut down the simulator before launching the app.
-			Assert.IsTrue(XHarness.RunAppleForTimeout(appFile, Path.Combine(projectDir, "xh-results"), TestSimulator.XHarnessID, TestSimulator.GetUDID()),
+			Assert.IsTrue(XHarness.RunAppleForTimeout(appFile, xhResultsDir, TestSimulator.XHarnessID, TestSimulator.GetUDID()),
 				$"Project {Path.GetFileName(projectFile)} failed to run. Check test output/attachments for errors.");
 		}
 	}

@@ -83,8 +83,8 @@ namespace Microsoft.Maui.IntegrationTests
 			"TreatWarningsAsErrors=true",
 			// Detailed trimmer warnings, if present
 			"TrimmerSingleWarn=false",
-			// Allow skipping Xcode version validation via SKIP_XCODE_VERSION_CHECK environment variable
-			$"ValidateXcodeVersion={!(Environment.GetEnvironmentVariable("SKIP_XCODE_VERSION_CHECK")?.Equals("true", StringComparison.OrdinalIgnoreCase) == true)}",
+			// Allow skipping Xcode version validation via environment variable or TestConfig
+			$"ValidateXcodeVersion={!TestConfig.SkipXcodeVersionCheck}",
 		};
 
 
