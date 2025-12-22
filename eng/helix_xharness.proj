@@ -19,9 +19,12 @@
         Test categories for iOS category splitting - only the heavy/slow categories.
         These run as separate work items while all other Controls tests run together.
     -->
+    <PropertyGroup Condition="'$(TargetOS)' == 'ios'">
+        <!-- These categories run as individual work items; skipped from the "Other" work item -->
+        <ControlsTestCategoriesToSkipForRestOfTests>CollectionView;CarouselView;FlyoutPage;Shell;TabbedPage;WebView;HybridWebView</ControlsTestCategoriesToSkipForRestOfTests>
+    </PropertyGroup>
     <ItemGroup Condition="'$(TargetOS)' == 'ios'">
-        <!-- Controls.DeviceTests - only split out the heavy categories -->
-        <ControlsTestCategory Include="CollectionView;CarouselView;FlyoutPage;Shell;TabbedPage;WebView;HybridWebView" />
+        <ControlsTestCategory Include="$(ControlsTestCategoriesToSkipForRestOfTests)" />
     </ItemGroup>
 
     <!-- Local build outside of Azure Pipeline -->
@@ -117,7 +120,7 @@
                 <TestTimeout>01:15:00</TestTimeout>
                 <LaunchTimeout>00:10:00</LaunchTimeout>
                 <AppBundlePath>$([System.IO.Directory]::GetDirectories('$(ScenariosDir)Controls.DeviceTests/Release/$(TargetFrameworkToTest)-ios/', '*.app', System.IO.SearchOption.AllDirectories))</AppBundlePath>
-                <CustomCommands>xharness apple test --target "$target" --app "$app" --output-directory "$output_directory" --timeout "$timeout" --launch-timeout "$launch_timeout" --set-env="TestFilter=Category!=CollectionView&amp;Category!=CarouselView&amp;Category!=FlyoutPage&amp;Category!=Shell&amp;Category!=TabbedPage&amp;Category!=WebView&amp;Category!=HybridWebView"</CustomCommands>
+                <CustomCommands>xharness apple test --target "$target" --app "$app" --output-directory "$output_directory" --timeout "$timeout" --launch-timeout "$launch_timeout" --set-env="SkipCategories=$(ControlsTestCategoriesToSkipForRestOfTests)"</CustomCommands>
             </XHarnessAppBundleToTest>
             <!-- Core.DeviceTests - single work item (no category splitting) -->
             <XHarnessAppBundleToTest Include="$([System.IO.Directory]::GetDirectories('$(ScenariosDir)Core.DeviceTests/Release/$(TargetFrameworkToTest)-ios/', '*.app', System.IO.SearchOption.AllDirectories))">
