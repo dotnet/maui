@@ -73,7 +73,10 @@ namespace Microsoft.Maui.IntegrationTests
 
 			var appFile = Path.Combine(projectDir, "bin", config, $"{framework}-ios", runtimeIdentifier, $"{Path.GetFileName(projectDir)}.app");
 
-			Assert.IsTrue(XHarness.RunAppleForTimeout(appFile, Path.Combine(projectDir, "xh-results"), TestSimulator.XHarnessID),
+			// Pass the device UDID to use the already-booted simulator directly.
+			// This prevents XHarness from managing the simulator lifecycle and avoids race conditions
+			// where XHarness might shut down the simulator before launching the app.
+			Assert.IsTrue(XHarness.RunAppleForTimeout(appFile, Path.Combine(projectDir, "xh-results"), TestSimulator.XHarnessID, TestSimulator.GetUDID()),
 				$"Project {Path.GetFileName(projectFile)} failed to run. Check test output/attachments for errors.");
 		}
 	}
