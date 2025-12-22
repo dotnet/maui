@@ -102,8 +102,9 @@ if (!TestEnvironment.IsWindows)
 
 ### Prerequisites
 
-1. Build MAUI: `dotnet cake --target=VS --workloads=global`
-2. Set `MAUI_PACKAGE_VERSION`: `export MAUI_PACKAGE_VERSION=$(ls .dotnet/packs/Microsoft.Maui.Sdk | head -1)`
+1. Verify `.dotnet/` folder exists (local SDK). If missing, stop and tell user to run `dotnet cake` to provision locally.
+2. Set `MAUI_PACKAGE_VERSION` environment variable. If missing, tests will fail with "MAUI_PACKAGE_VERSION was not set."
+   - Example: `export MAUI_PACKAGE_VERSION=$(ls .dotnet/packs/Microsoft.Maui.Sdk | head -1)`
 
 ### Environment Variables
 
