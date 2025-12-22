@@ -6,7 +6,7 @@ using System.Windows.Input;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -17,24 +17,23 @@ public partial class Maui31939 : ContentPage
 {
 	public Maui31939() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests : IDisposable
 	{
-		[SetUp]
-		public void Setup()
+		public Tests()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown]
-		public void TearDown()
+		public void Dispose()
 		{
 			DispatcherProvider.SetCurrent(null);
 		}
 
-		[Test]
-		public void CommandParameterTemplateBindingShouldNotBeNullWhenCanExecuteIsCalled([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void CommandParameterTemplateBindingShouldNotBeNullWhenCanExecuteIsCalled(XamlInflator inflator)
 		{
 			// Verify initial template binding works correctly: CommandParameter should be resolved
 			// before CanExecute is called when template is first applied.
@@ -42,17 +41,17 @@ public partial class Maui31939 : ContentPage
 			var page = new Maui31939(inflator);
 			page.BindingContext = viewModel;
 
-			Assert.That(viewModel.CanExecuteCalledWithNullParameter, Is.False, 
-				"CanExecute was called with null parameter during template binding application");
+			Assert.False(viewModel.CanExecuteCalledWithNullParameter);
 
 			var button = (Button)page.TestControl.GetTemplateChild("TestButton");
-			Assert.That(button, Is.Not.Null);
-			Assert.That(button.CommandParameter, Is.EqualTo("TestValue"));
-			Assert.That(button.Command, Is.Not.Null);
+			Assert.NotNull(button);
+			Assert.Equal("TestValue", button.CommandParameter);
+			Assert.NotNull(button.Command);
 		}
 
-		[Test]
-		public void CommandParameterTemplateBindingWorksAfterReparenting([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void CommandParameterTemplateBindingWorksAfterReparenting(XamlInflator inflator)
 		{
 			// Regression test: when elements are reparented within a ControlTemplate, bindings
 			// are re-applied. Due to the async void ApplyRelativeSourceBinding path, Command may
@@ -64,8 +63,8 @@ public partial class Maui31939 : ContentPage
 			var grid = (Grid)page.TestControl.GetTemplateChild("MainLayout");
 			var button = (Button)page.TestControl.GetTemplateChild("TestButton");
 
-			Assert.That(button, Is.Not.Null);
-			Assert.That(button.CommandParameter, Is.EqualTo("TestValue"));
+			Assert.NotNull(button);
+			Assert.Equal("TestValue", button.CommandParameter);
 
 			// Simulate reparenting operation (like the issue describes)
 			viewModel.ResetCanExecuteTracking();
@@ -74,9 +73,8 @@ public partial class Maui31939 : ContentPage
 
 			// After reparenting, CommandParameter should still be bound correctly
 			// and CanExecute should not have been called with null
-			Assert.That(viewModel.CanExecuteCalledWithNullParameter, Is.False,
-				"CanExecute was called with null parameter after reparenting");
-			Assert.That(button.CommandParameter, Is.EqualTo("TestValue"));
+			Assert.False(viewModel.CanExecuteCalledWithNullParameter);
+			Assert.Equal("TestValue", button.CommandParameter);
 		}
 	}
 }

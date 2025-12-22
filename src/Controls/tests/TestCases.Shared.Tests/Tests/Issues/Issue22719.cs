@@ -18,8 +18,10 @@ public class Issue22719 : _IssuesUITest
 		App.WaitForElement("Label");
 #if MACCATALYST // The EnterFullScreen script is applicable only for MacCatalyst
 		App.EnterFullScreen();
-#endif
+		VerifyScreenshot(includeTitleBar: true);
+#elif WINDOWS
 		VerifyScreenshot();
+#endif
 	}
 }
 #endif
