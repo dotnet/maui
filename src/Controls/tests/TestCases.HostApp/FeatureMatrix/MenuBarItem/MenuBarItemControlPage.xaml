@@ -43,8 +43,7 @@
               </MenuBarItem>
 
               <MenuBarItem Text="{Binding ViewMenuText}"
-                           IsEnabled="{Binding ViewMenuEnabled}"
-                           AutomationId="ViewMenuBarItem">
+                           IsEnabled="{Binding ViewMenuEnabled}">
                      <MenuFlyoutItem Text="{Binding RefreshText}"
                                      IsEnabled="{Binding RefreshEnabled}"
                                      IconImageSource="{Binding RefreshIcon}"
@@ -158,6 +157,7 @@
                                                                  Spacing="8">
                                                  <Label Text="{Binding ViewMenuEnabled, StringFormat='Enabled: {0}'}"
                                                         FontSize="12"
+                                                        AutomationId="ViewMenuEnabledLabel"
                                                         VerticalOptions="Center"/>
                                                  <Switch IsToggled="{Binding ViewMenuEnabled}"
                                                          VerticalOptions="Center"

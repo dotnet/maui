@@ -75,7 +75,7 @@ public class MenuBarItemViewModel : INotifyPropertyChanged
 		set => SetProperty(ref _exitEnabled, value);
 	}
 
-	private string _exitIcon = "dotnet_bot.png";
+	private string _exitIcon = "dotnet_bot_resized.png";
 	public string ExitIcon
 	{
 		get => _exitIcon;
@@ -157,7 +157,7 @@ public class MenuBarItemViewModel : INotifyPropertyChanged
 		set => SetProperty(ref _refreshEnabled, value);
 	}
 
-	private string _refreshIcon = "dotnet_bot.png";
+	private string _refreshIcon = "dotnet_bot_resized.png";
 	public string RefreshIcon
 	{
 		get => _refreshIcon;
@@ -315,26 +315,25 @@ public class MenuBarItemViewModel : INotifyPropertyChanged
 
 		Application.Current?.Dispatcher.Dispatch(async () =>
 		{
-			// Show list of locations to choose from
-			var locationToEdit = await Application.Current.MainPage.DisplayActionSheet(
+			// Navigate to custom selection page for automation
+			var selectionPage = new LocationSelectionPage(
 				"Select Location to Edit",
-				"Cancel",
-				null,
-				Locations.ToArray());
-
-			if (locationToEdit != null && locationToEdit != "Cancel")
-			{
-				var index = Locations.IndexOf(locationToEdit);
-				if (index >= 0)
+				Locations.ToList(),
+				location =>
 				{
-					_entryMode = "edit";
-					_editingLocationIndex = index;
-					EntryText = locationToEdit;
-					EntryPlaceholder = "Enter new location name";
-					IsEntryVisible = true;
-					StatusMessage = $"Edit '{locationToEdit}' in the field below and click Confirm";
-				}
-			}
+					var index = Locations.IndexOf(location);
+					if (index >= 0)
+					{
+						_entryMode = "edit";
+						_editingLocationIndex = index;
+						EntryText = location;
+						EntryPlaceholder = "Enter new location name";
+						IsEntryVisible = true;
+						StatusMessage = $"Edit '{location}' in the field below and click Confirm";
+					}
+				});
+
+			await Application.Current.MainPage.Navigation.PushModalAsync(selectionPage);
 		});
 	}
 
@@ -348,22 +347,21 @@ public class MenuBarItemViewModel : INotifyPropertyChanged
 
 		Application.Current?.Dispatcher.Dispatch(async () =>
 		{
-			// Show list of locations to choose from
-			var locationToRemove = await Application.Current.MainPage.DisplayActionSheet(
+			// Navigate to custom selection page for automation
+			var selectionPage = new LocationSelectionPage(
 				"Select Location to Remove",
-				"Cancel",
-				"Remove",
-				Locations.ToArray());
-
-			if (locationToRemove != null && locationToRemove != "Cancel")
-			{
-				var index = Locations.IndexOf(locationToRemove);
-				if (index >= 0)
+				Locations.ToList(),
+				location =>
 				{
-					Locations.RemoveAt(index);
-					StatusMessage = $"Removed location: {locationToRemove}";
-				}
-			}
+					var index = Locations.IndexOf(location);
+					if (index >= 0)
+					{
+						Locations.RemoveAt(index);
+						StatusMessage = $"Removed location: {location}";
+					}
+				});
+
+			await Application.Current.MainPage.Navigation.PushModalAsync(selectionPage);
 		});
 	}
 
