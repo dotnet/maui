@@ -5,19 +5,14 @@ using UITest.Core;
 namespace Microsoft.Maui.TestCases.Tests;
 
 [Category(UITestCategories.Layout)]
-public class StackLayoutFeatureTests : UITest
+public class StackLayoutFeatureTests : _GalleryUITest
 {
 	public const string StackLayoutFeatureMatrix = "StackLayout Feature Matrix";
+	public override string GalleryPageName => StackLayoutFeatureMatrix;
 
 	public StackLayoutFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(StackLayoutFeatureMatrix);
 	}
 
 	[Test]
