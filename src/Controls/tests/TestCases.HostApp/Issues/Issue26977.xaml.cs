@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 26977, "Setter.TargetName + ControlTemplate crash", PlatformAffected.Android)]
+[Issue(IssueTracker.Github, 26977, "Setter.TargetName + ControlTemplate crash", PlatformAffected.All)]
 public partial class Issue26977 : ContentPage
 {
 	public Issue26977()
