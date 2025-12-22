@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Test for OnPlatform<View> with Default element syntax -->
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Unreported012">
+	<StackLayout x:Name="layout">
+		<!-- OnPlatform with View type that has protected constructor -->
+		<OnPlatform x:TypeArguments="View">
+			<On Platform="WinUI">
+				<Border x:Name="winuiBorder" BackgroundColor="Blue" HeightRequest="50" />
+			</On>
+			<OnPlatform.Default>
+				<Label x:Name="defaultLabel" Text="Default Content" />
+			</OnPlatform.Default>
+		</OnPlatform>
+	</StackLayout>
+</ContentPage>
