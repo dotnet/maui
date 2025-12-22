@@ -24,7 +24,7 @@
         <ControlsTestCategoriesToSkipForRestOfTests>CollectionView;CarouselView;FlyoutPage;Shell;TabbedPage;WebView;HybridWebView</ControlsTestCategoriesToSkipForRestOfTests>
     </PropertyGroup>
     <ItemGroup Condition="'$(TargetOS)' == 'ios'">
-        <ControlsTestCategory Include="$(ControlsTestCategoriesToSkipForRestOfTests)" />
+        <ControlsTestCategoriesToRunIndividually Include="$(ControlsTestCategoriesToSkipForRestOfTests)" />
     </ItemGroup>
 
     <!-- Local build outside of Azure Pipeline -->
@@ -105,7 +105,7 @@
         <!-- iOS: Split only heavy Controls categories, run everything else as single work items -->
         <ItemGroup Condition="'$(TargetOS)' == 'ios'">
             <!-- Controls.DeviceTests - heavy categories run as separate work items -->
-            <XHarnessAppBundleToTest Include="@(ControlsTestCategory->'Controls.DeviceTests-%(Identity)')">
+            <XHarnessAppBundleToTest Include="@(ControlsTestCategoriesToRunIndividually->'Controls.DeviceTests-%(Identity)')">
                 <TestTarget>ios-simulator-64</TestTarget>
                 <WorkItemTimeout>02:00:00</WorkItemTimeout>
                 <TestTimeout>01:15:00</TestTimeout>
@@ -120,7 +120,7 @@
                 <TestTimeout>01:15:00</TestTimeout>
                 <LaunchTimeout>00:10:00</LaunchTimeout>
                 <AppBundlePath>$([System.IO.Directory]::GetDirectories('$(ScenariosDir)Controls.DeviceTests/Release/$(TargetFrameworkToTest)-ios/', '*.app', System.IO.SearchOption.AllDirectories))</AppBundlePath>
-                <CustomCommands>xharness apple test --target "$target" --app "$app" --output-directory "$output_directory" --timeout "$timeout" --launch-timeout "$launch_timeout" --set-env="SkipCategories=$(ControlsTestCategoriesToSkipForRestOfTests)"</CustomCommands>
+                <CustomCommands>xharness apple test --target "$target" --app "$app" --output-directory "$output_directory" --timeout "$timeout" --launch-timeout "$launch_timeout" --set-env="TestFilter=SkipCategories=$(ControlsTestCategoriesToSkipForRestOfTests)"</CustomCommands>
             </XHarnessAppBundleToTest>
             <!-- Core.DeviceTests - single work item (no category splitting) -->
             <XHarnessAppBundleToTest Include="$([System.IO.Directory]::GetDirectories('$(ScenariosDir)Core.DeviceTests/Release/$(TargetFrameworkToTest)-ios/', '*.app', System.IO.SearchOption.AllDirectories))">
