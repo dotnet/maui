@@ -69,39 +69,23 @@ namespace Microsoft.Maui.IntegrationTests
 		public string TestNuGetConfig => Path.Combine(TestEnvironment.GetTestDirectoryRoot(), "NuGet.config");
 
 		// Properties that ensure we don't use cached packages, and *only* the empty NuGet.config
-		protected List<string> BuildProps
+		protected List<string> BuildProps => new()
 		{
-			get
-			{
-				var props = new List<string>
-				{
-					"RestoreNoCache=true",
-					//"GenerateAppxPackageOnBuild=true",
-					$"RestorePackagesPath={Path.Combine(TestEnvironment.GetTestDirectoryRoot(), "packages")}",
-					$"RestoreConfigFile={TestNuGetConfig}",
-					// Avoid iOS build warning as error on Windows: There is no available connection to the Mac. Task 'VerifyXcodeVersion' will not be executed
-					$"CustomBeforeMicrosoftCSharpTargets={Path.Combine(TestEnvironment.GetMauiDirectory(), "src", "Templates", "TemplateTestExtraTargets.targets")}",
-					//Try not restore dependencies of 6.0.10
-					$"DisableTransitiveFrameworkReferenceDownloads=true",
-					// Surface warnings as build errors
-					"TreatWarningsAsErrors=true",
-					// Detailed trimmer warnings, if present
-					"TrimmerSingleWarn=false",
-				};
-
-				// Allow disabling Xcode version validation for cases where Xcode version is newer than SDK expects
-				var skipXcodeValidation = Environment.GetEnvironmentVariable("SKIP_XCODE_VERSION_CHECK");
-				if (!string.IsNullOrEmpty(skipXcodeValidation) && skipXcodeValidation.Equals("true", StringComparison.OrdinalIgnoreCase))
-				{
-					props.Add("ValidateXcodeVersion=false");
-				}
-
-				// Prevent output path redirection from repo's Directory.Build.props
-				props.Add("UseCommonOutputDirectory=false");
-
-				return props;
-			}
-		}
+			"RestoreNoCache=true",
+			//"GenerateAppxPackageOnBuild=true",
+			$"RestorePackagesPath={Path.Combine(TestEnvironment.GetTestDirectoryRoot(), "packages")}",
+			$"RestoreConfigFile={TestNuGetConfig}",
+			// Avoid iOS build warning as error on Windows: There is no available connection to the Mac. Task 'VerifyXcodeVersion' will not be executed
+			$"CustomBeforeMicrosoftCSharpTargets={Path.Combine(TestEnvironment.GetMauiDirectory(), "src", "Templates", "TemplateTestExtraTargets.targets")}",
+			//Try not restore dependencies of 6.0.10
+			$"DisableTransitiveFrameworkReferenceDownloads=true",
+			// Surface warnings as build errors
+			"TreatWarningsAsErrors=true",
+			// Detailed trimmer warnings, if present
+			"TrimmerSingleWarn=false",
+			// Allow skipping Xcode version validation via SKIP_XCODE_VERSION_CHECK environment variable
+			$"ValidateXcodeVersion={!(Environment.GetEnvironmentVariable("SKIP_XCODE_VERSION_CHECK")?.Equals("true", StringComparison.OrdinalIgnoreCase) == true)}",
+		};
 
 
 		/// <summary>
@@ -142,12 +126,6 @@ namespace Microsoft.Maui.IntegrationTests
 			File.Copy(Path.Combine(TestEnvironment.GetMauiDirectory(), "NuGet.config"), TestNuGetConfig, true);
 			FileUtilities.ReplaceInFile(TestNuGetConfig, "<add key=\"nuget-only\" value=\"true\" />", "");
 			FileUtilities.ReplaceInFile(TestNuGetConfig, "NUGET_ONLY_PLACEHOLDER", extraPacksDir);
-
-			// Create empty Directory.Build.props and Directory.Build.targets to prevent inheritance
-			// from the repo's root files which would redirect output paths to artifacts/
-			var testDirRoot = TestEnvironment.GetTestDirectoryRoot();
-			File.WriteAllText(Path.Combine(testDirRoot, "Directory.Build.props"), "<Project />");
-			File.WriteAllText(Path.Combine(testDirRoot, "Directory.Build.targets"), "<Project />");
 		}
 
 		[SetUp]
