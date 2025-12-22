@@ -29,8 +29,6 @@ public class Issue33038_StartPage : ContentPage
 
 public class Issue33038_SignInPage : ContentPage
 {
-	Label _safeAreaTopLabel = new Label { AutomationId = "SafeAreaTopLabel" };
-
 	public Issue33038_SignInPage()
 	{
 		Shell.SetNavBarIsVisible(this, false);
@@ -43,43 +41,8 @@ public class Issue33038_SignInPage : ContentPage
 			Children =
 			{
 				new Label { Text = "Sign In Page", BackgroundColor = Colors.Yellow, AutomationId = "SignInLabel" },
-				new Entry { Placeholder = "Email", AutomationId = "EmailEntry" },
-				_safeAreaTopLabel
+				new Entry { Placeholder = "Email", AutomationId = "EmailEntry" }
 			}
 		};
-	}
-
-	protected override void OnAppearing()
-	{
-		base.OnAppearing();
-		_safeAreaTopLabel.Text = GetSafeAreaTop().ToString();
-	}
-
-	int GetSafeAreaTop()
-	{
-#if ANDROID
-		try
-		{
-			if (Microsoft.Maui.ApplicationModel.Platform.CurrentActivity?.Window?.DecorView is Android.Views.View decorView)
-			{
-				var insets = AndroidX.Core.View.ViewCompat.GetRootWindowInsets(decorView);
-				if (insets is not null)
-				{
-					var systemBars = insets.GetInsets(AndroidX.Core.View.WindowInsetsCompat.Type.SystemBars());
-					var displayCutout = insets.GetInsets(AndroidX.Core.View.WindowInsetsCompat.Type.DisplayCutout());
-					return Math.Max(systemBars.Top, displayCutout.Top);
-				}
-			}
-		}
-		catch { }
-#elif IOS
-		try
-		{
-			if (Handler?.PlatformView is UIKit.UIView view && view.Window is not null)
-				return (int)view.Window.SafeAreaInsets.Top;
-		}
-		catch { }
-#endif
-		return 0;
 	}
 }
