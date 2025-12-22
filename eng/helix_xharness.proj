@@ -16,14 +16,12 @@
     </PropertyGroup>
 
     <!-- 
-        Test categories for iOS category splitting.
-        Keep in sync with src/Controls/tests/DeviceTests/TestCategory.cs and src/Core/tests/DeviceTests/TestCategory.cs
+        Test categories for iOS category splitting - only the heavy/slow categories.
+        These run as separate work items while all other Controls tests run together.
     -->
     <ItemGroup Condition="'$(TargetOS)' == 'ios'">
-        <!-- Controls.DeviceTests categories -->
-        <ControlsTestCategory Include="Accessibility;Application;Behavior;Border;BoxView;Button;CarouselView;CheckBox;CollectionView;Compatibility;ContentView;DatePicker;Dispatcher;Editor;Element;Entry;FlexLayout;FlyoutPage;Frame;Gesture;HybridWebView;Image;Label;Layout;Lifecycle;ListView;MenuFlyout;Mapper;Memory;Modal;NavigationPage;Page;Path;Picker;RadioButton;RefreshView;ScrollView;SearchBar;Shape;Shell;Slider;SwipeView;TabbedPage;TextInput;Toolbar;TemplatedView;View;VisualElement;VisualElementTree;WebView;Window;WindowOverlay;Xaml" />
-        <!-- Core.DeviceTests categories -->
-        <CoreTestCategory Include="ActivityIndicator;Border;Button;CheckBox;ContentView;Element;DatePicker;Dispatcher;Editor;Entry;FlowDirection;FlyoutView;Fonts;Graphics;GraphicsView;Image;ImageButton;ImageSource;IndicatorView;Label;Layout;Memory;NavigationPage;Page;Picker;ProgressBar;RefreshView;ScrollView;SearchBar;ShapeView;Slider;Stepper;SwipeView;Switch;TextFormatting;TimePicker;View;WebView;Window" />
+        <!-- Controls.DeviceTests - only split out the heavy categories -->
+        <ControlsTestCategory Include="CollectionView;CarouselView;FlyoutPage;Shell;TabbedPage;WebView;HybridWebView" />
     </ItemGroup>
 
     <!-- Local build outside of Azure Pipeline -->
@@ -101,9 +99,9 @@
             <_MAUIScenarioSearch Include="@(MAUIScenario)" />
         </ItemGroup>
 
-        <!-- iOS: Controls and Core use category splitting, others run as single work item -->
+        <!-- iOS: Split only heavy Controls categories, run everything else as single work items -->
         <ItemGroup Condition="'$(TargetOS)' == 'ios'">
-            <!-- Controls.DeviceTests - one work item per category -->
+            <!-- Controls.DeviceTests - heavy categories run as separate work items -->
             <XHarnessAppBundleToTest Include="@(ControlsTestCategory->'Controls.DeviceTests-%(Identity)')">
                 <TestTarget>ios-simulator-64</TestTarget>
                 <WorkItemTimeout>02:00:00</WorkItemTimeout>
@@ -112,14 +110,20 @@
                 <AppBundlePath>$([System.IO.Directory]::GetDirectories('$(ScenariosDir)Controls.DeviceTests/Release/$(TargetFrameworkToTest)-ios/', '*.app', System.IO.SearchOption.AllDirectories))</AppBundlePath>
                 <CustomCommands>xharness apple test --target "$target" --app "$app" --output-directory "$output_directory" --timeout "$timeout" --launch-timeout "$launch_timeout" --set-env="TestFilter=Category=%(Identity)"</CustomCommands>
             </XHarnessAppBundleToTest>
-            <!-- Core.DeviceTests - one work item per category -->
-            <XHarnessAppBundleToTest Include="@(CoreTestCategory->'Core.DeviceTests-%(Identity)')">
+            <!-- Controls.DeviceTests - all other categories run as one work item -->
+            <XHarnessAppBundleToTest Include="Controls.DeviceTests-Other">
                 <TestTarget>ios-simulator-64</TestTarget>
                 <WorkItemTimeout>02:00:00</WorkItemTimeout>
                 <TestTimeout>01:15:00</TestTimeout>
                 <LaunchTimeout>00:10:00</LaunchTimeout>
-                <AppBundlePath>$([System.IO.Directory]::GetDirectories('$(ScenariosDir)Core.DeviceTests/Release/$(TargetFrameworkToTest)-ios/', '*.app', System.IO.SearchOption.AllDirectories))</AppBundlePath>
-                <CustomCommands>xharness apple test --target "$target" --app "$app" --output-directory "$output_directory" --timeout "$timeout" --launch-timeout "$launch_timeout" --set-env="TestFilter=Category=%(Identity)"</CustomCommands>
+                <AppBundlePath>$([System.IO.Directory]::GetDirectories('$(ScenariosDir)Controls.DeviceTests/Release/$(TargetFrameworkToTest)-ios/', '*.app', System.IO.SearchOption.AllDirectories))</AppBundlePath>
+                <CustomCommands>xharness apple test --target "$target" --app "$app" --output-directory "$output_directory" --timeout "$timeout" --launch-timeout "$launch_timeout" --set-env="TestFilter=Category!=CollectionView&amp;Category!=CarouselView&amp;Category!=FlyoutPage&amp;Category!=Shell&amp;Category!=TabbedPage&amp;Category!=WebView&amp;Category!=HybridWebView"</CustomCommands>
+            </XHarnessAppBundleToTest>
+            <!-- Core.DeviceTests - single work item (no category splitting) -->
+            <XHarnessAppBundleToTest Include="$([System.IO.Directory]::GetDirectories('$(ScenariosDir)Core.DeviceTests/Release/$(TargetFrameworkToTest)-ios/', '*.app', System.IO.SearchOption.AllDirectories))">
+                <TestTarget>ios-simulator-64</TestTarget>
+                <WorkItemTimeout>02:00:00</WorkItemTimeout>
+                <TestTimeout>01:00:00</TestTimeout>
             </XHarnessAppBundleToTest>
             <!-- Graphics, Essentials, BlazorWebView - single work item each -->
             <XHarnessAppBundleToTest Include="$([System.IO.Directory]::GetDirectories('$(ScenariosDir)Graphics.DeviceTests/Release/$(TargetFrameworkToTest)-ios/', '*.app', System.IO.SearchOption.AllDirectories))">

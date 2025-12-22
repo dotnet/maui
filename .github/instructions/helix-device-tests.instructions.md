@@ -38,17 +38,19 @@ Check available queues at [helix.dot.net](https://helix.dot.net).
 
 ## iOS Category Splitting
 
-For iOS, Controls.DeviceTests and Core.DeviceTests are split by category into separate Helix work items. This mirrors the old cake-based approach and enables parallel execution.
+For iOS, Controls.DeviceTests heavy categories are split into separate Helix work items. This mirrors the old cake-based approach and enables parallel execution for the slowest tests.
 
 **How it works:**
-1. Categories are defined in `ControlsTestCategory` and `CoreTestCategory` ItemGroups in `helix_xharness.proj`
-2. Each category becomes a separate Helix work item
-3. XHarness passes `--set-env="TestFilter=Category=X"` to filter tests
-4. The test app reads `TestFilter` environment variable and excludes other categories
+1. Heavy categories are defined in `ControlsTestCategory` ItemGroup in `helix_xharness.proj`
+2. Each heavy category becomes a separate Helix work item
+3. All other Controls tests run together in a single "Other" work item
+4. XHarness passes `--set-env="TestFilter=Category=X"` to filter tests
+5. Core.DeviceTests runs as a single work item (no splitting)
 
-**Keep in sync:** Category lists must match:
-- `src/Controls/tests/DeviceTests/TestCategory.cs`
-- `src/Core/tests/DeviceTests/TestCategory.cs`
+**Heavy categories that run separately:**
+- CollectionView, CarouselView, FlyoutPage, Shell, TabbedPage, WebView, HybridWebView
+
+**Keep in sync:** If adding new heavy categories, update the `ControlsTestCategory` ItemGroup and the exclusion filter in the "Other" work item.
 
 ## Running Device Tests Locally
 
