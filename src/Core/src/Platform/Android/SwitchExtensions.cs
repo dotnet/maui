@@ -14,11 +14,11 @@ namespace Microsoft.Maui.Platform
 
 			if (trackColor is not null)
 			{
-				aSwitch.TrackDrawable?.SetColorFilter(trackColor, FilterMode.SrcAtop);
+				aSwitch.TrackDrawable = aSwitch.TrackDrawable.SafeSetColorFilter(trackColor.ToPlatform(), FilterMode.SrcAtop);
 			}
 			else
 			{
-				aSwitch.TrackDrawable?.ClearColorFilter();
+				aSwitch.TrackDrawable = aSwitch.TrackDrawable.SafeClearColorFilter();
 			}
 		}
 
@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Platform
 
 			if (thumbColor is not null)
 			{
-				aSwitch.ThumbDrawable?.SetColorFilter(thumbColor, FilterMode.SrcAtop);
+				aSwitch.ThumbDrawable = aSwitch.ThumbDrawable.SafeSetColorFilter(thumbColor.ToPlatform(), FilterMode.SrcAtop);
 			}
 		}
 
