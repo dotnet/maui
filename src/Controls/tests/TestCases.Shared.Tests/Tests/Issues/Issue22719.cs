@@ -16,10 +16,12 @@ public class Issue22719 : _IssuesUITest
 	public void ShouldFlyoutBeVisibleAfterMaximizingWindow()
 	{
 		App.WaitForElement("Label");
-#if MACCATALYST // The EnterFullScreen script is applicable only for MacCatalyst
+#if MACCATALYST //The EnterFullScreen script is applicable only for MacCatalyst
 		App.EnterFullScreen();
-#endif
+		VerifyScreenshot(includeTitleBar: true);
+#else
 		VerifyScreenshot();
+#endif
 	}
 }
 #endif
