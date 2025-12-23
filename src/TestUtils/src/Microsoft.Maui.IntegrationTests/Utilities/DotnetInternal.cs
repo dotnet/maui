@@ -144,8 +144,8 @@ namespace Microsoft.Maui.IntegrationTests
 				TestContext.WriteLine("║ 1. Set environment variable:                                                 ║");
 				TestContext.WriteLine("║    export SKIP_XCODE_VERSION_CHECK=true                                      ║");
 				TestContext.WriteLine("║                                                                              ║");
-				TestContext.WriteLine("║ 2. Or toggle SkipXcodeVersionCheck in TestConfig.cs:                         ║");
-				TestContext.WriteLine("║    src/TestUtils/src/Microsoft.Maui.IntegrationTests/TestConfig.cs           ║");
+				TestContext.WriteLine("║ 2. Or set SkipXcodeVersionCheck in TestEnvironment.cs                        ║");
+				TestContext.WriteLine("║    src/TestUtils/src/.../Utilities/TestEnvironment.cs                        ║");
 				TestContext.WriteLine("╚══════════════════════════════════════════════════════════════════════════════╝");
 				TestContext.WriteLine("");
 			}
