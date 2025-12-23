@@ -16,7 +16,12 @@ These integration tests use **xUnit** as the test framework.
 All integration tests run on **Azure DevOps agents** via the stage template `eng/pipelines/arcade/stage-integration-tests.yml`.
 
 - **Windows tests**: Run on Windows 1ES pools
-- **macOS tests**: Run on Azure Pipelines hosted macOS-15 images (ARM64)
+- **macOS tests**: Run on Azure Pipelines hosted images
+  - General macOS tests: `macOS-15` (ARM64/Apple Silicon)
+  - `RunOnAndroid`: `macOS-15` (ARM64 only)
+  - `RunOniOS`: Runs on **both** architectures:
+    - `macOS-15` (ARM64/Apple Silicon)
+    - `macOS-13` (x64/Intel)
 
 ## Test Categories
 
