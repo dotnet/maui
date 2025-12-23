@@ -5,19 +5,14 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-public class ShapesFeatureTests : UITest
+public class ShapesFeatureTests : _GalleryUITest
 {
 	public const string ShapesFeatureMatrix = "Shapes Feature Matrix";
+	public override string GalleryPageName => ShapesFeatureMatrix;
 
 	public ShapesFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(ShapesFeatureMatrix);
 	}
 
 	public void VerifyShapeScreenshot()

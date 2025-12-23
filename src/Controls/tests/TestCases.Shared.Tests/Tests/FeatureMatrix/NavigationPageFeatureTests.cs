@@ -6,17 +6,12 @@ using UITest.Core;
 namespace Microsoft.Maui.TestCases.Tests
 {
 	[Category(UITestCategories.Navigation)]
-	public class NavigationPageFeatureTests : UITest
+	public class NavigationPageFeatureTests : _GalleryUITest
 	{
 		public const string NavigationPageFeatureMatrix = "NavigationPage Feature Matrix";
+		public override string GalleryPageName => NavigationPageFeatureMatrix;
 
 		public NavigationPageFeatureTests(TestDevice device) : base(device) { }
-
-		protected override void FixtureSetup()
-		{
-			base.FixtureSetup();
-			App.NavigateToGallery(NavigationPageFeatureMatrix);
-		}
 
 		[Test, Order(1)]
 		public void EntryPoints_AreVisible()

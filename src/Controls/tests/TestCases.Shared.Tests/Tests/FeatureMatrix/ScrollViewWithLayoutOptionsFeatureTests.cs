@@ -5,9 +5,10 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-public class ScrollViewWithLayoutOptionsFeatureTests : UITest
+public class ScrollViewWithLayoutOptionsFeatureTests : _GalleryUITest
 {
 	public const string ScrollViewWithLayoutOptionsFeatureMatrix = "ScrollView With LayoutOptions Feature Matrix";
+	public override string GalleryPageName => ScrollViewWithLayoutOptionsFeatureMatrix;
 	public const string Options = "Options";
 	public const string Apply = "Apply";
 	public const string HorizontalStart = "HorizontalStart";
@@ -31,16 +32,12 @@ public class ScrollViewWithLayoutOptionsFeatureTests : UITest
 	{
 	}
 
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(ScrollViewWithLayoutOptionsFeatureMatrix);
-	}
-
 	[Test, Order(1)]
 	[Category(UITestCategories.ScrollView)]
 	public void VerifyLayoutWithOrientationVertical_HorizontalOptionsStart()
 	{
+		App.WaitForElement("ScrollViewWithLayoutOptionsButton");
+		App.Tap("ScrollViewWithLayoutOptionsButton");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(HorizontalStart);
