@@ -1,25 +1,23 @@
-namespace Microsoft.Maui.IntegrationTests;
+﻿namespace Microsoft.Maui.IntegrationTests;
 
-[Trait("Category", Categories.WindowsTemplates)]
+[Category(Categories.WindowsTemplates)]
 public class WindowsTemplateTest : BaseTemplateTests
 {
-	public WindowsTemplateTest(BuildTestFixture fixture, ITestOutputHelper output) : base(fixture, output) { }
-
-	[Theory]
-	[InlineData("maui", DotNetPrevious, "Debug")]
-	[InlineData("maui", DotNetPrevious, "Release")]
-	[InlineData("maui", DotNetCurrent, "Debug")]
-	[InlineData("maui", DotNetCurrent, "Release")]
-	[InlineData("maui-blazor", DotNetPrevious, "Debug")]
-	[InlineData("maui-blazor", DotNetPrevious, "Release")]
-	[InlineData("maui-blazor", DotNetCurrent, "Debug")]
-	[InlineData("maui-blazor", DotNetCurrent, "Release")]
+	[Test]
+	[TestCase("maui", DotNetPrevious, "Debug")]
+	[TestCase("maui", DotNetPrevious, "Release")]
+	[TestCase("maui", DotNetCurrent, "Debug")]
+	[TestCase("maui", DotNetCurrent, "Release")]
+	[TestCase("maui-blazor", DotNetPrevious, "Debug")]
+	[TestCase("maui-blazor", DotNetPrevious, "Release")]
+	[TestCase("maui-blazor", DotNetCurrent, "Debug")]
+	[TestCase("maui-blazor", DotNetCurrent, "Release")]
 	public void BuildPackaged(string id, string framework, string config)
 	{
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-		Assert.True(DotnetInternal.New(id, projectDir, framework),
+		Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
 			$"Unable to create template {id}. Check test output for errors.");
 
 		// .NET 9 and later was Unpackaged, so we need to remove the line
@@ -27,30 +25,30 @@ public class WindowsTemplateTest : BaseTemplateTests
 			"<WindowsPackageType>None</WindowsPackageType>",
 			"");
 
-		Assert.True(DotnetInternal.Build(projectFile, config, properties: BuildProps, msbuildWarningsAsErrors: true),
+		Assert.IsTrue(DotnetInternal.Build(projectFile, config, properties: BuildProps, msbuildWarningsAsErrors: true),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
 
-	[Theory]
-	[InlineData("maui", true, true, "None")]
-	[InlineData("maui", true, true, "MSIX")]
-	[InlineData("maui", true, false, "None")]
-	[InlineData("maui", true, false, "MSIX")]
-	[InlineData("maui", false, true, "None")]
-	[InlineData("maui", false, true, "MSIX")]
-	[InlineData("maui", false, false, "None")]
-	[InlineData("maui", false, false, "MSIX")]
+	[Test]
+	[TestCase("maui", true, true, "None")]
+	[TestCase("maui", true, true, "MSIX")]
+	[TestCase("maui", true, false, "None")]
+	[TestCase("maui", true, false, "MSIX")]
+	[TestCase("maui", false, true, "None")]
+	[TestCase("maui", false, true, "MSIX")]
+	[TestCase("maui", false, false, "None")]
+	[TestCase("maui", false, false, "MSIX")]
 	public void BuildWindowsAppSDKSelfContained(string id, bool wasdkself, bool netself, string packageType)
 	{
 		if (TestEnvironment.IsMacOS)
 		{
-			return; // Skip: This test is designed for testing a windows build.
+			Assert.Ignore("This test is designed for testing a windows build.");
 		}
 
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-		Assert.True(DotnetInternal.New(id, projectDir, DotNetCurrent),
+		Assert.IsTrue(DotnetInternal.New(id, projectDir, DotNetCurrent),
 			$"Unable to create template {id}. Check test output for errors.");
 
 		FileUtilities.ReplaceInFile(projectFile,
@@ -64,26 +62,26 @@ public class WindowsTemplateTest : BaseTemplateTests
 		var extendedBuildProps = BuildProps;
 		extendedBuildProps.Add($"TargetFramework={DotNetCurrent}-windows10.0.19041.0");
 
-		Assert.True(DotnetInternal.Build(projectFile, "Debug", properties: extendedBuildProps, msbuildWarningsAsErrors: true),
+		Assert.IsTrue(DotnetInternal.Build(projectFile, "Debug", properties: extendedBuildProps, msbuildWarningsAsErrors: true),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
 
-	[Theory]
-	[InlineData("maui", true, "None")]
-	[InlineData("maui", true, "MSIX")]
-	[InlineData("maui", false, "None")]
-	[InlineData("maui", false, "MSIX")]
+	[Test]
+	[TestCase("maui", true, "None")]
+	[TestCase("maui", true, "MSIX")]
+	[TestCase("maui", false, "None")]
+	[TestCase("maui", false, "MSIX")]
 	public void BuildWindowsRidGraph(string id, bool useRidGraph, string packageType)
 	{
 		if (TestEnvironment.IsMacOS)
 		{
-			return; // Skip: This test is designed for testing a windows build.
+			Assert.Ignore("This test is designed for testing a windows build.");
 		}
 
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-		Assert.True(DotnetInternal.New(id, projectDir, DotNetCurrent),
+		Assert.IsTrue(DotnetInternal.New(id, projectDir, DotNetCurrent),
 			$"Unable to create template {id}. Check test output for errors.");
 
 		FileUtilities.ReplaceInFile(projectFile,
@@ -96,33 +94,33 @@ public class WindowsTemplateTest : BaseTemplateTests
 		var extendedBuildProps = BuildProps;
 		extendedBuildProps.Add($"TargetFramework={DotNetCurrent}-windows10.0.19041.0");
 
-		Assert.True(DotnetInternal.Build(projectFile, "Debug", properties: extendedBuildProps, msbuildWarningsAsErrors: true),
+		Assert.IsTrue(DotnetInternal.Build(projectFile, "Debug", properties: extendedBuildProps, msbuildWarningsAsErrors: true),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
 
-	[Theory]
-	[InlineData("maui", DotNetCurrent, "Release", false)]
-	[InlineData("maui", DotNetPrevious, "Release", true)]
-	[InlineData("maui-blazor", DotNetCurrent, "Release", false)]
-	[InlineData("maui-blazor", DotNetPrevious, "Release", true)]
+	[Test]
+	[TestCase("maui", DotNetCurrent, "Release", false)]
+	[TestCase("maui", DotNetPrevious, "Release", true)]
+	[TestCase("maui-blazor", DotNetCurrent, "Release", false)]
+	[TestCase("maui-blazor", DotNetPrevious, "Release", true)]
 	public void PublishUnpackaged(string id, string framework, string config, bool usesRidGraph)
 	{
 		if (!TestEnvironment.IsWindows)
 		{
-			return; // Skip: Running Windows templates is only supported on Windows.
+			Assert.Ignore("Running Windows templates is only supported on Windows.");
 		}
 
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-		Assert.True(DotnetInternal.New(id, projectDir, framework),
+		Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
 			$"Unable to create template {id}. Check test output for errors.");
 
 		// .NET 9 is Unpackaged by default, so we don't have to do anything
 		FileUtilities.ShouldContainInFile(projectFile,
 			"<WindowsPackageType>None</WindowsPackageType>");
 
-		Assert.True(DotnetInternal.Publish(projectFile, config, framework: $"{framework}-windows10.0.19041.0", properties: BuildProps),
+		Assert.IsTrue(DotnetInternal.Publish(projectFile, config, framework: $"{framework}-windows10.0.19041.0", properties: BuildProps),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 
 		var rid = usesRidGraph ? "win10-x64" : "win-x64";
@@ -137,28 +135,28 @@ public class WindowsTemplateTest : BaseTemplateTests
 		void AssetExists(string filename)
 		{
 			var fullpath = Path.Combine(assetsRoot!, filename);
-			Assert.True(File.Exists(fullpath),
+			Assert.IsTrue(File.Exists(fullpath),
 				$"Unable to find expected asset: {fullpath}");
 		}
 	}
 
-	[Theory]
-	[InlineData("maui", DotNetCurrent, "Release", false)]
-	[InlineData("maui", DotNetPrevious, "Release", true)]
-	[InlineData("maui-blazor", DotNetCurrent, "Release", false)]
-	[InlineData("maui-blazor", DotNetPrevious, "Release", true)]
+	[Test]
+	[TestCase("maui", DotNetCurrent, "Release", false)]
+	[TestCase("maui", DotNetPrevious, "Release", true)]
+	[TestCase("maui-blazor", DotNetCurrent, "Release", false)]
+	[TestCase("maui-blazor", DotNetPrevious, "Release", true)]
 	public void PublishPackaged(string id, string framework, string config, bool usesRidGraph)
 	{
 		if (!TestEnvironment.IsWindows)
 		{
-			return; // Skip: Running Windows templates is only supported on Windows.
+			Assert.Ignore("Running Windows templates is only supported on Windows.");
 		}
 
 		var projectDir = TestDirectory;
 		var name = Path.GetFileName(projectDir);
 		var projectFile = Path.Combine(projectDir, $"{name}.csproj");
 
-		Assert.True(DotnetInternal.New(id, projectDir, framework),
+		Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
 			$"Unable to create template {id}. Check test output for errors.");
 
 		// .NET 9 and later was Unpackaged, so we need to remove the line
@@ -166,7 +164,7 @@ public class WindowsTemplateTest : BaseTemplateTests
 			"<WindowsPackageType>None</WindowsPackageType>",
 			"");
 
-		Assert.True(DotnetInternal.Publish(projectFile, config, framework: $"{framework}-windows10.0.19041.0", properties: BuildProps),
+		Assert.IsTrue(DotnetInternal.Publish(projectFile, config, framework: $"{framework}-windows10.0.19041.0", properties: BuildProps),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 
 		var rid = usesRidGraph ? "win10-x64" : "win-x64";
@@ -177,18 +175,18 @@ public class WindowsTemplateTest : BaseTemplateTests
 		void AssetExists(string filename)
 		{
 			var fullpath = Path.Combine(assetsRoot!, filename);
-			Assert.True(File.Exists(fullpath),
+			Assert.IsTrue(File.Exists(fullpath),
 				$"Unable to find expected asset: {fullpath}");
 		}
 	}
 
-	[Fact]
+	[Test]
 	public void BuildWithIdentityClient()
 	{
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-		Assert.True(DotnetInternal.New("maui", projectDir, DotNetCurrent),
+		Assert.IsTrue(DotnetInternal.New("maui", projectDir, DotNetCurrent),
 			$"Unable to create template maui. Check test output for errors.");
 
 		// .NET 9 and later was Unpackaged, so we need to remove the line
@@ -202,7 +200,7 @@ public class WindowsTemplateTest : BaseTemplateTests
 			</Project>
 			""");
 
-		Assert.True(DotnetInternal.Build(projectFile, "Debug", properties: BuildProps, msbuildWarningsAsErrors: true),
+		Assert.IsTrue(DotnetInternal.Build(projectFile, "Debug", properties: BuildProps, msbuildWarningsAsErrors: true),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
 }

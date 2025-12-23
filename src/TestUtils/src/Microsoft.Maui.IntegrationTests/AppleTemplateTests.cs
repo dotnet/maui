@@ -1,50 +1,48 @@
+
 using Microsoft.Maui.IntegrationTests.Apple;
 
 namespace Microsoft.Maui.IntegrationTests
 {
-	[Trait("Category", Categories.RunOniOS)]
-	public class AppleTemplateTests : BaseBuildTest, IDisposable
+	[Category(Categories.RunOniOS)]
+	public class AppleTemplateTests : BaseBuildTest
 	{
 		Simulator TestSimulator = new Simulator();
 
-		public AppleTemplateTests(BuildTestFixture fixture, ITestOutputHelper output) : base(fixture, output)
+		[SetUp]
+		public void AppleTemplateSetup()
 		{
 			if (!TestEnvironment.IsMacOS)
-				return; // Skip on non-macOS
+				Assert.Ignore("Running Apple templates is only supported on macOS.");
 
 			TestSimulator.Shutdown();
-			if (!TestSimulator.Launch())
-				throw new Exception($"Failed to boot simulator with UDID '{TestSimulator.GetUDID()}'.");
+			Assert.IsTrue(TestSimulator.Launch(), $"Failed to boot simulator with UDID '{TestSimulator.GetUDID()}'.");
 			TestSimulator.ShowWindow();
 		}
 
-		public new void Dispose()
+		[OneTimeTearDown]
+		public void AppleTemplateFxtTearDown()
 		{
 			TestSimulator.Shutdown();
-			base.Dispose();
 		}
 
-		[Theory]
-		// [InlineData("maui", "Debug", DotNetPrevious, RuntimeVariant.Mono, null)]
-		// [InlineData("maui", "Release", DotNetPrevious, RuntimeVariant.Mono, null)]
-		[InlineData("maui", "Debug", DotNetCurrent, RuntimeVariant.Mono, null)]
-		[InlineData("maui", "Release", DotNetCurrent, RuntimeVariant.Mono, null)]
-		[InlineData("maui", "Release", DotNetCurrent, RuntimeVariant.Mono, "full")]
-		// [InlineData("maui-blazor", "Debug", DotNetPrevious, RuntimeVariant.Mono, null)]
-		// [InlineData("maui-blazor", "Release", DotNetPrevious, RuntimeVariant.Mono, null)]
-		[InlineData("maui-blazor", "Debug", DotNetCurrent, RuntimeVariant.Mono, null)]
-		[InlineData("maui-blazor", "Release", DotNetCurrent, RuntimeVariant.Mono, null)]
-		[InlineData("maui-blazor", "Release", DotNetCurrent, RuntimeVariant.Mono, "full")]
-		[InlineData("maui", "Release", DotNetCurrent, RuntimeVariant.NativeAOT, null)]
-		public void RunOniOS(string id, string config, string framework, RuntimeVariant runtimeVariant, string? trimMode)
+		[Test]
+		// [TestCase("maui", "Debug", DotNetPrevious, RuntimeVariant.Mono, null)]
+		// [TestCase("maui", "Release", DotNetPrevious, RuntimeVariant.Mono, null)]
+		[TestCase("maui", "Debug", DotNetCurrent, RuntimeVariant.Mono, null)]
+		[TestCase("maui", "Release", DotNetCurrent, RuntimeVariant.Mono, null)]
+		[TestCase("maui", "Release", DotNetCurrent, RuntimeVariant.Mono, "full")]
+		// [TestCase("maui-blazor", "Debug", DotNetPrevious, RuntimeVariant.Mono, null)]
+		// [TestCase("maui-blazor", "Release", DotNetPrevious, RuntimeVariant.Mono, null)]
+		[TestCase("maui-blazor", "Debug", DotNetCurrent, RuntimeVariant.Mono, null)]
+		[TestCase("maui-blazor", "Release", DotNetCurrent, RuntimeVariant.Mono, null)]
+		[TestCase("maui-blazor", "Release", DotNetCurrent, RuntimeVariant.Mono, "full")]
+		[TestCase("maui", "Release", DotNetCurrent, RuntimeVariant.NativeAOT, null)]
+		public void RunOniOS(string id, string config, string framework, RuntimeVariant runtimeVariant, string trimMode)
 		{
-			if (!TestEnvironment.IsMacOS)
-				return; // Skip: Running Apple templates is only supported on macOS.
-
 			var projectDir = TestDirectory;
 			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-			Assert.True(DotnetInternal.New(id, projectDir, framework),
+			Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
 				$"Unable to create template {id}. Check test output for errors.");
 
 			var buildProps = BuildProps;
@@ -63,7 +61,7 @@ namespace Microsoft.Maui.IntegrationTests
 				buildProps.Add("TrimmerSingleWarn=false"); // Disable trimmer warnings for iOS full trimming builds due to ObjCRuntime issues
 			}
 
-			Assert.True(DotnetInternal.Build(projectFile, config, framework: $"{framework}-ios", properties: buildProps),
+			Assert.IsTrue(DotnetInternal.Build(projectFile, config, framework: $"{framework}-ios", properties: buildProps),
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 
 			// Find the .app bundle - it may be in the bin folder with or without a RID subfolder depending on build settings
@@ -79,7 +77,7 @@ namespace Microsoft.Maui.IntegrationTests
 			// Pass the device UDID to use the already-booted simulator directly.
 			// This prevents XHarness from managing the simulator lifecycle and avoids race conditions
 			// where XHarness might shut down the simulator before launching the app.
-			Assert.True(XHarness.RunAppleForTimeout(appFile, xhResultsDir, TestSimulator.XHarnessID, TestSimulator.GetUDID()),
+			Assert.IsTrue(XHarness.RunAppleForTimeout(appFile, xhResultsDir, TestSimulator.XHarnessID, TestSimulator.GetUDID()),
 				$"Project {Path.GetFileName(projectFile)} failed to run. Check test output/attachments for errors.");
 		}
 	}

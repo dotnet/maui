@@ -1,15 +1,13 @@
-
+﻿
 using System.Collections;
 using Newtonsoft.Json;
 
 namespace Microsoft.Maui.IntegrationTests
 {
-	[Trait("Category", Categories.Samples)]
+	[Category(Categories.Samples)]
 	public class SampleTests : BaseBuildTest
 	{
-		public SampleTests(BuildTestFixture fixture, ITestOutputHelper output) : base(fixture, output) { }
-
-		public static IEnumerable<object[]> SampleTestMatrix
+		public static IEnumerable SampleTestMatrix
 		{
 			get
 			{
@@ -20,14 +18,14 @@ namespace Microsoft.Maui.IntegrationTests
 				{
 					foreach (var config in new[] { "Debug", "Release" })
 					{
-						yield return new object[] { projectFile, config };
+						yield return new TestCaseData(projectFile, config);
 					}
 				}
 			}
 		}
 
-		[Theory]
-		[MemberData(nameof(SampleTestMatrix))]
+		[Test]
+		[TestCaseSource(nameof(SampleTestMatrix))]
 		public void Build(string relativeProj, string config)
 		{
 			var projectFile = Path.GetFullPath(Path.Combine(TestEnvironment.GetMauiDirectory(), relativeProj));
@@ -42,7 +40,7 @@ namespace Microsoft.Maui.IntegrationTests
 				"TrimmerSingleWarn=false",
 			};
 
-			Assert.True(DotnetInternal.Build(projectFile, config, properties: sampleProps, binlogPath: binlog),
+			Assert.IsTrue(DotnetInternal.Build(projectFile, config, properties: sampleProps, binlogPath: binlog),
 					$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 		}
 

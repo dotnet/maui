@@ -9,7 +9,7 @@ Integration tests validate end-to-end functionality by creating, building, and r
 
 ## Test Framework
 
-These integration tests use **xUnit** as the test framework.
+These integration tests use **NUnit** as the test framework.
 
 ## CI Infrastructure
 
@@ -39,75 +39,60 @@ Tests are organized by categories (defined in `Utilities/Categories.cs`) that ma
 | `RunOniOS` | Build, install, run on iOS simulator | macOS |
 | `Samples` | Sample project builds | All |
 
-**Critical**: Each test should have **exactly ONE** `[Trait("Category", Categories.X)]` attribute.
+**Critical**: Each test should have **exactly ONE** `[Category]` attribute.
 
 ## Writing Integration Tests
 
 ### Basic Pattern
 
 ```csharp
-[Trait("Category", Categories.Build)]
-public class SimpleTemplateTest : BaseTemplateTests
+[Test]
+[Category(Categories.Build)]
+[TestCase("maui", DotNetCurrent, "Debug")]
+[TestCase("maui", DotNetCurrent, "Release")]
+public void Build(string id, string framework, string config)
 {
-    public SimpleTemplateTest(BuildTestFixture fixture, ITestOutputHelper output) 
-        : base(fixture, output) { }
+    var projectDir = TestDirectory;
+    var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-    [Theory]
-    [InlineData("maui", DotNetCurrent, "Debug")]
-    [InlineData("maui", DotNetCurrent, "Release")]
-    public void Build(string id, string framework, string config)
-    {
-        var projectDir = TestDirectory;
-        var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+    // Create from template
+    Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
+        $"Unable to create template {id}.");
 
-        // Create from template
-        Assert.True(DotnetInternal.New(id, projectDir, framework),
-            $"Unable to create template {id}.");
-
-        // Build
-        Assert.True(DotnetInternal.Build(projectFile, config, properties: BuildProps),
-            $"Project failed to build.");
-    }
+    // Build
+    Assert.IsTrue(DotnetInternal.Build(projectFile, config, properties: BuildProps),
+        $"Project failed to build.");
 }
 ```
 
 ### Device Test Pattern (iOS)
 
 ```csharp
-[Trait("Category", Categories.RunOniOS)]
-public class AppleTemplateTests : BaseBuildTest, IDisposable
+[Test]
+[Category(Categories.RunOniOS)]
+[TestCase("maui", "Release", DotNetCurrent, RuntimeVariant.Mono, null)]
+public void RunOniOS(string id, string config, string framework, RuntimeVariant rv, string? trimMode)
 {
-    public AppleTemplateTests(BuildTestFixture fixture, ITestOutputHelper output) 
-        : base(fixture, output) { }
+    // Create and build
+    Assert.IsTrue(DotnetInternal.New(id, projectDir, framework));
+    Assert.IsTrue(DotnetInternal.Build(projectFile, config, 
+        framework: $"{framework}-ios",
+        properties: buildProps,
+        runtimeIdentifier: TestEnvironment.IOSSimulatorRuntimeIdentifier));
 
-    [Theory]
-    [InlineData("maui", "Release", DotNetCurrent, RuntimeVariant.Mono, null)]
-    public void RunOniOS(string id, string config, string framework, RuntimeVariant rv, string? trimMode)
-    {
-        if (!TestEnvironment.IsMacOS)
-            return; // Skip on non-macOS
-            
-        // Create and build
-        Assert.True(DotnetInternal.New(id, projectDir, framework));
-        Assert.True(DotnetInternal.Build(projectFile, config, 
-            framework: $"{framework}-ios",
-            properties: buildProps));
-
-        // Run with XHarness
-        Assert.True(XHarness.RunAppleForTimeout(appPath, resultDir, TestSimulator.XHarnessID, TestSimulator.GetUDID()));
-    }
+    // Run with XHarness
+    Assert.IsTrue(XHarness.RunAppleForTimeout(appPath, resultDir, TestSimulator.XHarnessID, TestSimulator.GetUDID()));
 }
 ```
 
 ### Platform Guards
 
 ```csharp
-// In xUnit, skip tests by returning early
 if (!TestEnvironment.IsMacOS)
-    return; // Skip: Running Apple templates is only supported on macOS.
+    Assert.Ignore("Running Apple templates is only supported on macOS.");
 
 if (!TestEnvironment.IsWindows)
-    return; // Skip: Running Windows templates is only supported on Windows.
+    Assert.Ignore("Running Windows templates is only supported on Windows.");
 ```
 
 ## Key Classes
@@ -116,7 +101,6 @@ if (!TestEnvironment.IsWindows)
 |-------|---------|
 | `BaseBuildTest` | Base class with `TestDirectory`, `BuildProps`, lifecycle methods |
 | `BaseTemplateTests` | Extends BaseBuildTest with template-specific setup |
-| `BuildTestFixture` | Collection fixture for one-time setup (NuGet config, packages) |
 | `DotnetInternal` | Wraps `dotnet` CLI using local SDK (`.dotnet/dotnet`) |
 | `XHarness` | Runs apps on devices/simulators |
 | `Simulator` | iOS simulator management (boot, shutdown, UDID) |
@@ -178,14 +162,13 @@ dotnet test ... --filter "Category=RunOniOS"
 
 ### DO
 - Use `BuildProps` from base class for isolation
-- Use exactly ONE `[Trait("Category", Categories.X)]` per test class
+- Use exactly ONE `[Category]` per test
 - Check platform with `TestEnvironment.Is*` before platform-specific tests
 - Use `TestEnvironment.IOSSimulatorRuntimeIdentifier` for iOS builds
 - Include meaningful assertion messages
-- Implement `IDisposable` for cleanup in device test classes
 
 ### DON'T
 - Hardcode paths - use `TestDirectory`, `TestEnvironment` helpers
-- Use multiple category traits per test
+- Use multiple categories per test
 - Skip platform guards for platform-specific tests
 - Hardcode iOS runtime identifiers (arm64 vs x64)

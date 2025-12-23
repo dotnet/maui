@@ -25,7 +25,7 @@ namespace Microsoft.Maui.IntegrationTests.Apple
 			// If XHarness couldn't find a device and we're not on CI, try to auto-detect
 			else if (!TestEnvironment.IsRunningOnCI)
 			{
-				Console.WriteLine($"XHarness failed to find device for '{XHarnessID}', attempting auto-detection...");
+				TestContext.WriteLine($"XHarness failed to find device for '{XHarnessID}', attempting auto-detection...");
 				_udid = TryGetLatestAvailableSimulatorUDID();
 			}
 
@@ -99,7 +99,7 @@ namespace Microsoft.Maui.IntegrationTests.Apple
 						var udid = device.GetProperty("udid").GetString() ?? "";
 						if (!string.IsNullOrEmpty(udid))
 						{
-							Console.WriteLine($"Auto-detected simulator: {name} ({latestVersion}) - {udid}");
+							TestContext.WriteLine($"Auto-detected simulator: {name} ({latestVersion}) - {udid}");
 							return udid;
 						}
 					}
@@ -112,14 +112,14 @@ namespace Microsoft.Maui.IntegrationTests.Apple
 					if (!string.IsNullOrEmpty(udid))
 					{
 						var name = device.GetProperty("name").GetString() ?? "";
-						Console.WriteLine($"Auto-detected simulator: {name} ({latestVersion}) - {udid}");
+						TestContext.WriteLine($"Auto-detected simulator: {name} ({latestVersion}) - {udid}");
 						return udid;
 					}
 				}
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine($"Failed to auto-detect simulator: {ex.Message}");
+				TestContext.WriteLine($"Failed to auto-detect simulator: {ex.Message}");
 			}
 
 			return "";

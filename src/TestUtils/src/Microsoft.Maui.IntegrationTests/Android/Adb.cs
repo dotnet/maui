@@ -14,9 +14,9 @@ namespace Microsoft.Maui.IntegrationTests.Android
 			bool bootCompleted = false;
 			while (DateTime.UtcNow < maxWaitTime && !bootCompleted)
 			{
-				Console.WriteLine($"Waiting {currentWaitTime}/{timeout} seconds for the emulator to boot up...");
+				TestContext.WriteLine($"Waiting {currentWaitTime}/{timeout} seconds for the emulator to boot up...");
 				var adbOutput = RunForOutput(GetArgs("shell getprop sys.boot_completed", deviceId), out _);
-				Console.WriteLine($"sys.boot_completed: {adbOutput}");
+				TestContext.WriteLine($"sys.boot_completed: {adbOutput}");
 				int.TryParse(adbOutput, out int bootCompletedPropValue);
 				bootCompleted = bootCompletedPropValue == 1;
 				Thread.Sleep(10000);
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.IntegrationTests.Android
 		{
 			RunForOutput(args, out int exitCode, timeout, deviceId);
 			if (exitCode != 0)
-				Console.WriteLine(exitCode);
+				TestContext.WriteLine(exitCode);
 
 			return exitCode == 0;
 		}

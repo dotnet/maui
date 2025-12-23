@@ -53,7 +53,7 @@ namespace Microsoft.Maui.IntegrationTests
 				&& exitCode != 0;
 
 			if (!didTimeoutAsExpected)
-				Console.WriteLine(xhOutput);
+				TestContext.WriteLine(xhOutput);
 
 			return didTimeoutAsExpected;
 		}
@@ -75,7 +75,7 @@ namespace Microsoft.Maui.IntegrationTests
 		{
 			var xhOutput = RunForOutput(args, out int exitCode, timeoutInSeconds);
 			if (exitCode != 0)
-				Console.WriteLine(xhOutput);
+				TestContext.WriteLine(xhOutput);
 
 			return exitCode == 0;
 		}
