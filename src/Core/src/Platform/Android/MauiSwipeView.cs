@@ -108,6 +108,9 @@ namespace Microsoft.Maui.Platform
 			var diffX = interceptPoint.X - _initialPoint.X;
 			var diffY = interceptPoint.Y - _initialPoint.Y;
 
+			if(diffX == 0 && diffY == 0)
+				return _isOpen;
+
 			SwipeDirection swipeDirection;
 
 			if (Math.Abs(diffX) > Math.Abs(diffY))
