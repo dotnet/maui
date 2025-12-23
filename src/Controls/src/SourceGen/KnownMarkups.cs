@@ -308,7 +308,16 @@ internal class KnownMarkups
 	{
 		returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindingBase")!;
 		ITypeSymbol? dataTypeSymbol = null;
-		if (   context.Variables.TryGetValue(markupNode, out ILocalValue extVariable)
+		
+		// Check if the binding has a Source property with a RelativeSource.
+		// In this case, we should NOT compile the binding using x:DataType because
+		// the source type will be determined at runtime by the RelativeSource, not x:DataType.
+		bool hasRelativeSource = HasRelativeSourceBinding(markupNode);
+		
+		context.Variables.TryGetValue(markupNode, out ILocalValue? extVariable);
+		
+		if (   !hasRelativeSource
+			&& extVariable is not null
 			&& TryGetXDataType(markupNode, context, out dataTypeSymbol)
 			&& dataTypeSymbol is not null)
 		{
@@ -587,6 +596,29 @@ internal class KnownMarkups
 				&& node.TryGetPropertyName(parentNode, out var propertyName)
 				&& propertyName.NamespaceURI == ""
 				&& propertyName.LocalName == "BindingContext";
+		}
+
+		// Checks if the binding has a Source property that is a RelativeSource extension.
+		// When a binding uses RelativeSource, the source type is determined at runtime,
+		// so we should NOT compile the binding using x:DataType.
+		static bool HasRelativeSourceBinding(ElementNode bindingNode)
+		{
+			// Check if Source property exists
+			if (!bindingNode.Properties.TryGetValue(new XmlName("", "Source"), out INode? sourceNode)
+				&& !bindingNode.Properties.TryGetValue(new XmlName(null, "Source"), out sourceNode))
+			{
+				return false;
+			}
+
+			// Check if the Source is a RelativeSourceExtension
+			if (sourceNode is ElementNode sourceElementNode)
+			{
+				// Check if the element is a RelativeSourceExtension
+				return sourceElementNode.XmlType.Name == "RelativeSourceExtension"
+					|| sourceElementNode.XmlType.Name == "RelativeSource";
+			}
+
+			return false;
 		}
 	}
 
