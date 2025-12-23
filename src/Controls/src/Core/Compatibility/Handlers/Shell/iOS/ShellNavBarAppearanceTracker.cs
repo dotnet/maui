@@ -29,10 +29,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				navBar.BarTintColor = _defaultBarTint;
 				navBar.TintColor = _defaultTint;
 				navBar.TitleTextAttributes = _defaultTitleAttributes;
-			}
 
-			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
-				UpdateiOS13NavigationBarAppearance(controller, null);
+				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
+					UpdateiOS13NavigationBarAppearance(controller, null);
+			}
 		}
 
 		public void SetAppearance(UINavigationController controller, ShellAppearance appearance)
@@ -100,6 +100,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (appearance is null)
 			{
+				navigationBarAppearance.ConfigureWithOpaqueBackground();
+				navBar.Translucent = false;
 				navBar.StandardAppearance = navBar.ScrollEdgeAppearance = navigationBarAppearance;
 			}
 			else
