@@ -31,19 +31,20 @@ namespace Microsoft.Maui.IntegrationTests
 		
 
 		// Individual test methods for each configuration to enable parallel CI runs
-		[Test, Category(Categories.RunOniOS), Category(Categories.RunOniOS_MauiDebug)]
+		// CI uses --filter "Name=TestMethodName" to run each test in a separate job
+		[Test, Category(Categories.RunOniOS)]
 		public void RunOniOS_MauiDebug() => RunOniOS("maui", "Debug", DotNetCurrent, RuntimeVariant.Mono, null);
 
-		[Test, Category(Categories.RunOniOS), Category(Categories.RunOniOS_MauiRelease)]
+		[Test, Category(Categories.RunOniOS)]
 		public void RunOniOS_MauiRelease() => RunOniOS("maui", "Release", DotNetCurrent, RuntimeVariant.Mono, null);
 
-		[Test, Category(Categories.RunOniOS), Category(Categories.RunOniOS_MauiReleaseTrimFull)]
+		[Test, Category(Categories.RunOniOS)]
 		public void RunOniOS_MauiReleaseTrimFull() => RunOniOS("maui", "Release", DotNetCurrent, RuntimeVariant.Mono, "full");
 
-		[Test, Category(Categories.RunOniOS), Category(Categories.RunOniOS_BlazorDebug)]
+		[Test, Category(Categories.RunOniOS)]
 		public void RunOniOS_BlazorDebug() => RunOniOS("maui-blazor", "Debug", DotNetCurrent, RuntimeVariant.Mono, null);
 
-		[Test, Category(Categories.RunOniOS), Category(Categories.RunOniOS_BlazorRelease)]
+		[Test, Category(Categories.RunOniOS)]
 		public void RunOniOS_BlazorRelease() => RunOniOS("maui-blazor", "Release", DotNetCurrent, RuntimeVariant.Mono, null);
 
 		// TODO: Re-enable once ASP.NET Core fixes trimmer warning IL2111 with Blazor Router.NotFoundPage
@@ -59,10 +60,10 @@ namespace Microsoft.Maui.IntegrationTests
 		// This is a known limitation - Blazor doesn't fully support TrimMode=full for application assemblies.
 		// See: https://learn.microsoft.com/en-us/aspnet/core/blazor/host-and-deploy/configure-trimmer
 		//
-		// [Test, Category(Categories.RunOniOS), Category(Categories.RunOniOS_BlazorReleaseTrimFull)]
+		// [Test, Category(Categories.RunOniOS)]
 		// public void RunOniOS_BlazorReleaseTrimFull() => RunOniOS("maui-blazor", "Release", DotNetCurrent, RuntimeVariant.Mono, "full");
 
-		[Test, Category(Categories.RunOniOS), Category(Categories.RunOniOS_MauiNativeAOT)]
+		[Test, Category(Categories.RunOniOS)]
 		public void RunOniOS_MauiNativeAOT() => RunOniOS("maui", "Release", DotNetCurrent, RuntimeVariant.NativeAOT, null);
 
 		void RunOniOS(string id, string config, string framework, RuntimeVariant runtimeVariant, string? trimMode)

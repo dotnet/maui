@@ -282,41 +282,41 @@ stages:
       timeout: 240
       testCategory: RunOnAndroid
 
-    # RunOniOS - Split into individual test lanes for faster debugging
+    # RunOniOS - Individual test methods run in parallel
     # ARM64 (Apple Silicon) lanes
     - name: mac_runios_maui_debug_arm64
       pool: ${{ parameters.MacOSPoolArm64 }}
       timeout: 60
-      testCategory: RunOniOS_MauiDebug
+      testName: RunOniOS_MauiDebug
 
     - name: mac_runios_maui_release_arm64
       pool: ${{ parameters.MacOSPoolArm64 }}
       timeout: 60
-      testCategory: RunOniOS_MauiRelease
+      testName: RunOniOS_MauiRelease
 
     - name: mac_runios_maui_trim_arm64
       pool: ${{ parameters.MacOSPoolArm64 }}
       timeout: 60
-      testCategory: RunOniOS_MauiReleaseTrimFull
+      testName: RunOniOS_MauiReleaseTrimFull
 
     - name: mac_runios_blazor_debug_arm64
       pool: ${{ parameters.MacOSPoolArm64 }}
       timeout: 60
-      testCategory: RunOniOS_BlazorDebug
+      testName: RunOniOS_BlazorDebug
 
     - name: mac_runios_blazor_release_arm64
       pool: ${{ parameters.MacOSPoolArm64 }}
       timeout: 60
-      testCategory: RunOniOS_BlazorRelease
+      testName: RunOniOS_BlazorRelease
 
     # TODO: Re-enable once ASP.NET Core fixes trimmer warning IL2111 with Blazor Router.NotFoundPage
     # Issue: https://github.com/dotnet/aspnetcore/issues/63951
     # - name: mac_runios_blazor_trim_arm64
     #   pool: ${{ parameters.MacOSPoolArm64 }}
     #   timeout: 60
-    #   testCategory: RunOniOS_BlazorReleaseTrimFull
+    #   testName: RunOniOS_BlazorReleaseTrimFull
 
     - name: mac_runios_nativeaot_arm64
       pool: ${{ parameters.MacOSPoolArm64 }}
       timeout: 60
-      testCategory: RunOniOS_MauiNativeAOT
+      testName: RunOniOS_MauiNativeAOT

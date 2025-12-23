@@ -27,7 +27,7 @@ namespace Microsoft.Maui.IntegrationTests
 		/// </summary>
 		public static bool SkipXcodeVersionCheck =>
 			Environment.GetEnvironmentVariable("SKIP_XCODE_VERSION_CHECK")?.Equals("true", StringComparison.OrdinalIgnoreCase) == true
-			|| true; // ← Toggle to true if needed locally
+			|| false; // ← Toggle to true if needed locally
 
 		/// <summary>
 		/// Specifies the iOS test device target for XHarness (e.g., "ios-simulator-64_18.5").
