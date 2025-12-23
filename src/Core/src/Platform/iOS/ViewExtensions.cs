@@ -399,6 +399,7 @@ namespace Microsoft.Maui.Platform
 			if (provider == null)
 				return;
 
+			platformView.RemoveBackgroundLayer();
 			if (imageSource != null)
 			{
 				var service = provider.GetRequiredImageSourceService(imageSource);
@@ -410,7 +411,16 @@ namespace Microsoft.Maui.Platform
 				if (backgroundImage == null)
 					return;
 
-				platformView.BackgroundColor = UIColor.FromPatternImage(backgroundImage);
+				var imageLayer = new StaticCALayer
+				{
+					Name = BackgroundLayerName,
+					Contents = backgroundImage.CGImage,
+					Frame = platformView.Bounds,
+					ContentsGravity = CoreAnimation.CALayer.GravityResize
+				};
+
+				platformView.BackgroundColor = UIColor.Clear;
+				platformView.InsertBackgroundLayer(imageLayer, 0);
 			}
 		}
 
