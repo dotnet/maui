@@ -12,6 +12,15 @@ namespace Microsoft.Maui.IntegrationTests
 
 		public static bool IsRunningOnCI => !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("AGENT_NAME"));
 
+		public static bool IsArm64 => RuntimeInformation.OSArchitecture == Architecture.Arm64;
+
+		/// <summary>
+		/// Gets the appropriate iOS simulator runtime identifier based on the host architecture.
+		/// Returns "iossimulator-arm64" on ARM64 Macs and "iossimulator-x64" on Intel Macs.
+		/// </summary>
+		public static string IOSSimulatorRuntimeIdentifier =>
+			IsArm64 ? "iossimulator-arm64" : "iossimulator-x64";
+
 
 		static string _mauiDir = "";
 		public static string GetMauiDirectory()
