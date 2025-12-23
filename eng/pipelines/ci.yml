@@ -101,20 +101,12 @@ parameters:
     vmImage: $(HostedMacImage)
     os: macOS
 
-# ARM64 macOS pool (Apple Silicon) - macOS-15 is ARM64 by default
+# ARM64 macOS pool (Apple Silicon)
 - name: MacOSPoolArm64
   type: object
   default:
     name: Azure Pipelines
-    vmImage: macOS-15
-    os: macOS
-
-# x64 macOS pool (Intel) - macOS-13 is x64 only
-- name: MacOSPoolX64
-  type: object
-  default:
-    name: Azure Pipelines
-    vmImage: macOS-13
+    vmImage: macOS-15-arm64
     os: macOS
 
 stages:
@@ -285,10 +277,8 @@ stages:
       testCategory: MultiProject
 
     # TODO: macOSTemplates and AOT template categories
-
-    # RunOnAndroid - ARM64 only (Apple Silicon)
     - name: mac_runandroid_arm64_tests
-      pool: ${{ parameters.MacOSPoolArm64 }}
+      pool: ${{ parameters.MacOSPool }}
       timeout: 240
       testCategory: RunOnAndroid
 
@@ -300,6 +290,6 @@ stages:
 
     # RunOniOS - x64 (Intel)
     - name: mac_runios_x64_tests
-      pool: ${{ parameters.MacOSPoolX64 }}
+      pool: ${{ parameters.MacOSPool }}
       timeout: 240
       testCategory: RunOniOS
