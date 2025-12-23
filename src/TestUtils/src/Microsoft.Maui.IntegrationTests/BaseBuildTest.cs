@@ -169,8 +169,12 @@ namespace Microsoft.Maui.IntegrationTests
 		[TearDown]
 		public void BuildTestTearDown()
 		{
-			// Log all files in test directory for debugging
+			// Log all files in test directory and log directory for debugging
 			LogTestDirectoryContents();
+			LogLogDirectoryContents();
+			
+			// Copy log files to the artifact publish location
+			CopyLogsToPublishDirectory();
 
 			// Attach test content and logs as artifacts
 			try
@@ -193,6 +197,59 @@ namespace Microsoft.Maui.IntegrationTests
 			catch (Exception ex)
 			{
 				TestContext.WriteLine($"[TearDown] ERROR attaching logs: {ex.Message}");
+			}
+		}
+
+		/// <summary>
+		/// Copies log files from the test directory to the artifact publish location.
+		/// </summary>
+		protected void CopyLogsToPublishDirectory()
+		{
+			try
+			{
+				var publishDir = LogDirectory;
+				TestContext.WriteLine($"[CopyLogs] Target publish directory: {publishDir}");
+				
+				if (!Directory.Exists(publishDir))
+				{
+					Directory.CreateDirectory(publishDir);
+					TestContext.WriteLine($"[CopyLogs] Created directory: {publishDir}");
+				}
+
+				if (Directory.Exists(TestDirectory))
+				{
+					// Copy all log, binlog, and txt files from test directory to publish directory
+					var logPatterns = new[] { "*.log", "*.binlog", "*.txt" };
+					foreach (var pattern in logPatterns)
+					{
+						var files = Directory.GetFiles(TestDirectory, pattern, SearchOption.AllDirectories);
+						TestContext.WriteLine($"[CopyLogs] Found {files.Length} {pattern} files to copy");
+						foreach (var file in files)
+						{
+							try
+							{
+								var destFile = Path.Combine(publishDir, Path.GetFileName(file));
+								// If file with same name exists, add a unique suffix
+								if (File.Exists(destFile))
+								{
+									var nameWithoutExt = Path.GetFileNameWithoutExtension(file);
+									var ext = Path.GetExtension(file);
+									destFile = Path.Combine(publishDir, $"{nameWithoutExt}_{Guid.NewGuid():N}{ext}");
+								}
+								File.Copy(file, destFile, overwrite: true);
+								TestContext.WriteLine($"[CopyLogs] Copied: {file} -> {destFile}");
+							}
+							catch (Exception ex)
+							{
+								TestContext.WriteLine($"[CopyLogs] ERROR copying {file}: {ex.Message}");
+							}
+						}
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				TestContext.WriteLine($"[CopyLogs] ERROR: {ex.Message}");
 			}
 		}
 

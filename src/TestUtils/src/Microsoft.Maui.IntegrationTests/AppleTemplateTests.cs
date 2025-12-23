@@ -3,7 +3,6 @@ using Microsoft.Maui.IntegrationTests.Apple;
 
 namespace Microsoft.Maui.IntegrationTests
 {
-	[Category(Categories.RunOniOS)]
 	public class AppleTemplateTests : BaseBuildTest
 	{
 		Simulator TestSimulator = new Simulator();
@@ -25,19 +24,29 @@ namespace Microsoft.Maui.IntegrationTests
 			TestSimulator.Shutdown();
 		}
 
-		[Test]
-		// [TestCase("maui", "Debug", DotNetPrevious, RuntimeVariant.Mono, null)]
-		// [TestCase("maui", "Release", DotNetPrevious, RuntimeVariant.Mono, null)]
-		[TestCase("maui", "Debug", DotNetCurrent, RuntimeVariant.Mono, null)]
-		[TestCase("maui", "Release", DotNetCurrent, RuntimeVariant.Mono, null)]
-		[TestCase("maui", "Release", DotNetCurrent, RuntimeVariant.Mono, "full")]
-		// [TestCase("maui-blazor", "Debug", DotNetPrevious, RuntimeVariant.Mono, null)]
-		// [TestCase("maui-blazor", "Release", DotNetPrevious, RuntimeVariant.Mono, null)]
-		[TestCase("maui-blazor", "Debug", DotNetCurrent, RuntimeVariant.Mono, null)]
-		[TestCase("maui-blazor", "Release", DotNetCurrent, RuntimeVariant.Mono, null)]
-		[TestCase("maui-blazor", "Release", DotNetCurrent, RuntimeVariant.Mono, "full")]
-		[TestCase("maui", "Release", DotNetCurrent, RuntimeVariant.NativeAOT, null)]
-		public void RunOniOS(string id, string config, string framework, RuntimeVariant runtimeVariant, string trimMode)
+		// Individual test methods for each configuration to enable parallel CI runs
+		[Test, Category(Categories.RunOniOS), Category(Categories.RunOniOS_MauiDebug)]
+		public void RunOniOS_MauiDebug() => RunOniOS("maui", "Debug", DotNetCurrent, RuntimeVariant.Mono, null);
+
+		[Test, Category(Categories.RunOniOS), Category(Categories.RunOniOS_MauiRelease)]
+		public void RunOniOS_MauiRelease() => RunOniOS("maui", "Release", DotNetCurrent, RuntimeVariant.Mono, null);
+
+		[Test, Category(Categories.RunOniOS), Category(Categories.RunOniOS_MauiReleaseTrimFull)]
+		public void RunOniOS_MauiReleaseTrimFull() => RunOniOS("maui", "Release", DotNetCurrent, RuntimeVariant.Mono, "full");
+
+		[Test, Category(Categories.RunOniOS), Category(Categories.RunOniOS_BlazorDebug)]
+		public void RunOniOS_BlazorDebug() => RunOniOS("maui-blazor", "Debug", DotNetCurrent, RuntimeVariant.Mono, null);
+
+		[Test, Category(Categories.RunOniOS), Category(Categories.RunOniOS_BlazorRelease)]
+		public void RunOniOS_BlazorRelease() => RunOniOS("maui-blazor", "Release", DotNetCurrent, RuntimeVariant.Mono, null);
+
+		[Test, Category(Categories.RunOniOS), Category(Categories.RunOniOS_BlazorReleaseTrimFull)]
+		public void RunOniOS_BlazorReleaseTrimFull() => RunOniOS("maui-blazor", "Release", DotNetCurrent, RuntimeVariant.Mono, "full");
+
+		[Test, Category(Categories.RunOniOS), Category(Categories.RunOniOS_MauiNativeAOT)]
+		public void RunOniOS_MauiNativeAOT() => RunOniOS("maui", "Release", DotNetCurrent, RuntimeVariant.NativeAOT, null);
+
+		void RunOniOS(string id, string config, string framework, RuntimeVariant runtimeVariant, string? trimMode)
 		{
 			var projectDir = TestDirectory;
 			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");

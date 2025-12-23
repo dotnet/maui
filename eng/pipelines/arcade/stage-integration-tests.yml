@@ -31,7 +31,8 @@ stages:
           project: ${{ parameters.mauiSourcePath }}/src/TestUtils/src/Microsoft.Maui.IntegrationTests/Microsoft.Maui.IntegrationTests.csproj
           arguments: '-c ${{ parameters.buildConfig }} --filter "Category=${{ job.testCategory }}" --logger trx --results-directory $(Agent.TempDirectory)/Microsoft.Maui.IntegrationTests'
           useExitCodeForErrors: true
-          ${{ if eq(job.testCategory, 'RunOniOS') }}:
+          # Set IOS_TEST_DEVICE for all iOS-related tests (RunOniOS and RunOniOS_*)
+          ${{ if or(eq(job.testCategory, 'RunOniOS'), startsWith(job.testCategory, 'RunOniOS_')) }}:
             envVariables:
               IOS_TEST_DEVICE: ios-simulator-64_18.5
 

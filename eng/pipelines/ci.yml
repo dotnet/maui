@@ -282,14 +282,39 @@ stages:
       timeout: 240
       testCategory: RunOnAndroid
 
-    # RunOniOS - ARM64 (Apple Silicon)
-    - name: mac_runios_arm64_tests
+    # RunOniOS - Split into individual test lanes for faster debugging
+    # ARM64 (Apple Silicon) lanes
+    - name: mac_runios_maui_debug_arm64
       pool: ${{ parameters.MacOSPoolArm64 }}
-      timeout: 240
-      testCategory: RunOniOS
+      timeout: 60
+      testCategory: RunOniOS_MauiDebug
 
-    # RunOniOS - x64 (Intel)
-    - name: mac_runios_x64_tests
-      pool: ${{ parameters.MacOSPool }}
-      timeout: 240
-      testCategory: RunOniOS
+    - name: mac_runios_maui_release_arm64
+      pool: ${{ parameters.MacOSPoolArm64 }}
+      timeout: 60
+      testCategory: RunOniOS_MauiRelease
+
+    - name: mac_runios_maui_trim_arm64
+      pool: ${{ parameters.MacOSPoolArm64 }}
+      timeout: 60
+      testCategory: RunOniOS_MauiReleaseTrimFull
+
+    - name: mac_runios_blazor_debug_arm64
+      pool: ${{ parameters.MacOSPoolArm64 }}
+      timeout: 60
+      testCategory: RunOniOS_BlazorDebug
+
+    - name: mac_runios_blazor_release_arm64
+      pool: ${{ parameters.MacOSPoolArm64 }}
+      timeout: 60
+      testCategory: RunOniOS_BlazorRelease
+
+    - name: mac_runios_blazor_trim_arm64
+      pool: ${{ parameters.MacOSPoolArm64 }}
+      timeout: 60
+      testCategory: RunOniOS_BlazorReleaseTrimFull
+
+    - name: mac_runios_nativeaot_arm64
+      pool: ${{ parameters.MacOSPoolArm64 }}
+      timeout: 60
+      testCategory: RunOniOS_MauiNativeAOT

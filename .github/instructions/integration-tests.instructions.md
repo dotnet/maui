@@ -19,9 +19,21 @@ All integration tests run on **Azure DevOps agents** via the stage template `eng
 - **macOS tests**: Run on Azure Pipelines hosted images
   - General macOS tests: `macOS-15` (ARM64/Apple Silicon)
   - `RunOnAndroid`: `macOS-15` (ARM64 only)
-  - `RunOniOS`: Runs on **both** architectures:
-    - `macOS-15` (ARM64/Apple Silicon)
-    - `macOS-13` (x64/Intel)
+  - `RunOniOS_*`: Each iOS test runs in a **separate job** on `macOS-15` (ARM64)
+
+### Individual iOS Test Lanes
+
+iOS tests are split into individual jobs for faster debugging:
+
+| Category | Description | Timeout |
+|----------|-------------|---------|
+| `RunOniOS_MauiDebug` | MAUI app, Debug config | 60 min |
+| `RunOniOS_MauiRelease` | MAUI app, Release config | 60 min |
+| `RunOniOS_MauiReleaseTrimFull` | MAUI app, Release, full trim | 60 min |
+| `RunOniOS_BlazorDebug` | Blazor app, Debug config | 60 min |
+| `RunOniOS_BlazorRelease` | Blazor app, Release config | 60 min |
+| `RunOniOS_BlazorReleaseTrimFull` | Blazor app, Release, full trim | 60 min |
+| `RunOniOS_MauiNativeAOT` | MAUI app, NativeAOT | 60 min |
 
 ## Test Categories
 
@@ -36,10 +48,11 @@ Tests are organized by categories (defined in `Utilities/Categories.cs`) that ma
 | `MultiProject` | Multi-project templates | All |
 | `AOT` | Native AOT compilation | macOS |
 | `RunOnAndroid` | Build, install, run on Android emulator | macOS |
-| `RunOniOS` | Build, install, run on iOS simulator | macOS |
+| `RunOniOS` | All iOS simulator tests (parent category) | macOS |
+| `RunOniOS_*` | Individual iOS test configurations | macOS ARM64 |
 | `Samples` | Sample project builds | All |
 
-**Critical**: Each test should have **exactly ONE** `[Category]` attribute.
+**Note**: iOS tests have both the `RunOniOS` parent category and a specific `RunOniOS_*` subcategory for flexible filtering.
 
 ## Writing Integration Tests
 
