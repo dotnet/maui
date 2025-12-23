@@ -24,6 +24,12 @@ namespace Microsoft.Maui.IntegrationTests
 			TestSimulator.Shutdown();
 		}
 
+		// [TestCase("maui", "Debug", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, null)]
+		// [TestCase("maui", "Release", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, null)]
+		// [TestCase("maui-blazor", "Debug", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, null)]
+		// [TestCase("maui-blazor", "Release", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, null)]
+		
+
 		// Individual test methods for each configuration to enable parallel CI runs
 		[Test, Category(Categories.RunOniOS), Category(Categories.RunOniOS_MauiDebug)]
 		public void RunOniOS_MauiDebug() => RunOniOS("maui", "Debug", DotNetCurrent, RuntimeVariant.Mono, null);
@@ -62,6 +68,9 @@ namespace Microsoft.Maui.IntegrationTests
 				buildProps.Add("PublishAotUsingRuntimePack=true"); // TODO: This parameter will become obsolete https://github.com/dotnet/runtime/issues/87060
 				buildProps.Add("_IsPublishing=true"); // using dotnet build with -p:_IsPublishing=true enables targeting simulators
 				buildProps.Add("IlcTreatWarningsAsErrors=false"); // TODO: Remove this once all warnings are fixed https://github.com/dotnet/maui/issues/19397
+				// Restrict to iOS-only to avoid restoring NativeAOT packages for other platforms (e.g., Android)
+				// which may not be available in the configured NuGet sources
+				buildProps.Add($"TargetFrameworks={framework}-ios");
 			}
 
 			if (!string.IsNullOrEmpty(trimMode))
