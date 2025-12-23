@@ -47,25 +47,26 @@ namespace Microsoft.Maui.IntegrationTests
 		{
 			if (_logDirectory == null)
 			{
-				var artifactsStaging = Environment.GetEnvironmentVariable("BUILD_ARTIFACTSTAGINGDIRECTORY");
 				var envLogDirectory = Environment.GetEnvironmentVariable("LogDirectory");
-				if (envLogDirectory != null)
+				if (!string.IsNullOrEmpty(envLogDirectory))
 				{
+					// LogDirectory env var is already a complete log directory path, use it directly
 					_logDirectory = envLogDirectory;
 				}
 				else
 				{
+					var artifactsStaging = Environment.GetEnvironmentVariable("BUILD_ARTIFACTSTAGINGDIRECTORY");
 					if (artifactsStaging != null)
 					{
-						_logDirectory = artifactsStaging;
+						_logDirectory = $"{artifactsStaging}/logs";
 					}
 					else
 					{
-						_logDirectory = GetTestDirectoryRoot();
+						_logDirectory = $"{GetTestDirectoryRoot()}/logs";
 					}
 				}
 			}
-			return $"{_logDirectory}/logs";
+			return _logDirectory;
 		}
 
 		static string _testOutputDirectory = "";
