@@ -1,0 +1,123 @@
+# Template for running integration tests on Helix (ARM64 only)
+parameters:
+- name: prepareSteps
+  type: stepList
+  default: []
+- name: postSteps
+  type: stepList
+  default: []
+- name: stageDependsOn
+  type: object
+  default: []
+- name: enableSourceBuild
+  type: boolean
+  default: false
+- name: enableSourceIndex
+  type: boolean
+  default: false
+- name: sourceIndexParams
+  type: object
+  default: []
+- name: publishAssets
+  type: boolean
+  default: false
+- name: enableMicrobuild
+  type: boolean
+  default: false
+- name: runAsPublic
+  type: boolean
+  default: true
+- name: helixInternal
+  type: string
+  default: ''
+- name: HelixAccessToken
+  type: string
+  default: ''
+- name: creator
+  type: string
+  default: 'maui'
+- name: extraHelixArguments
+  type: string
+  default: ''
+- name: buildTaskProjects
+  type: string
+  default: '$(Build.SourcesDirectory)/Microsoft.Maui.BuildTasks.slnf'
+- name: helixProject
+  type: string
+  default: '$(Build.SourcesDirectory)/eng/helix_integration.proj'
+- name: buildConfigurations
+  type: object
+  default:
+  - Debug
+- name: helixPool
+  type: object
+- name: testCategories
+  type: object
+  default:
+  - RunOniOS
+  - RunOnAndroid
+- name: mauiSourcePath
+  type: string
+  default: $(Build.SourcesDirectory)
+- name: repoLogPath
+  type: string
+  default: $(Build.Arcade.LogsPath)
+- name: publishTaskPrefix
+  type: string
+  default: '1ES.'
+
+stages:
+- stage: HelixIntegrationTests
+  displayName: Run Helix Integration Tests (ARM64)
+  dependsOn: ${{ parameters.stageDependsOn }}
+  jobs:
+  - ${{ each BuildConfiguration in parameters.buildConfigurations }}:
+    - ${{ each TestCategory in parameters.testCategories }}:
+      - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml@self', '/eng/common/templates-official/jobs/jobs.yml@self') }}
+        parameters:
+          helixRepo: dotnet/maui
+          pool: ${{ parameters.helixPool }}
+          enableMicrobuild: ${{ parameters.enableMicrobuild }}
+          enablePublishUsingPipelines: true
+          enablePublishBuildAssets: ${{ parameters.publishAssets }}
+          enableTelemetry: true
+          enableSourceBuild: ${{ parameters.enableSourceBuild }}
+          enableSourceIndex: ${{ parameters.enableSourceIndex }}
+          sourceIndexParams: ${{ parameters.sourceIndexParams }}
+          publishAssetsImmediately: true
+          enablePublishBuildArtifacts: true
+          enablePublishTestResults: true
+          workspace:
+            clean: all
+          jobs:
+          - job: helix_integration_tests_${{ TestCategory }}_${{ BuildConfiguration }}
+            displayName: Helix ${{ TestCategory }} (${{ BuildConfiguration }})
+            timeoutInMinutes: 240
+            variables:
+            - name: _BuildConfig
+              value: ${{ BuildConfiguration }}
+            steps:
+            - ${{ each step in parameters.prepareSteps }}:
+              - ${{ each pair in step }}:
+                  ${{ pair.key }}: ${{ pair.value }}
+
+            - script: $(_buildScript) -restore -build -configuration ${{ BuildConfiguration }} -projects "${{ parameters.buildTaskProjects }}" /p:ArchiveTests=false /p:TreatWarningsAsErrors=$(TreatWarningsAsErrors) /bl:$(Build.Arcade.LogsPath)${{ BuildConfiguration }}/buildtasks.binlog $(_OfficialBuildIdArgs)
+              displayName: 🛠️ Build BuildTasks
+
+            - script: $(_msbuildCommand) "${{ parameters.helixProject }}" -warnAsError 0 -restore /p:Configuration=${{ BuildConfiguration }} /p:HelixInternal="${{ parameters.helixInternal }}" /p:TestCategory=${{ TestCategory }} /p:TestRunNameSuffix="_${{ TestCategory }}_${{ BuildConfiguration }}" /bl:$(Build.Arcade.LogsPath)${{ BuildConfiguration }}/helix_integration_tests_${{ TestCategory }}.binlog ${{ parameters.extraHelixArguments }}
+              displayName: Run Helix Integration Tests - ${{ TestCategory }}
+              env:
+                SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+                HelixAccessToken: ${{ parameters.HelixAccessToken }}
+                IOS_TEST_DEVICE: ios-simulator-64_18.5
+
+            - task: ${{ parameters.publishTaskPrefix }}PublishPipelineArtifact@1
+              displayName: Publish Logs
+              inputs:
+                targetPath: ${{ parameters.repoLogPath }}
+                artifact: Logs - Helix Integration Tests ${{ TestCategory }} ${{ BuildConfiguration }} $(System.JobAttempt)
+              condition: always()
+
+            - template: /eng/pipelines/common/fail-on-issue.yml
+              parameters:
+                condition: always()
