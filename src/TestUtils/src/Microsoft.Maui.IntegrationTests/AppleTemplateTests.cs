@@ -46,8 +46,21 @@ namespace Microsoft.Maui.IntegrationTests
 		[Test, Category(Categories.RunOniOS), Category(Categories.RunOniOS_BlazorRelease)]
 		public void RunOniOS_BlazorRelease() => RunOniOS("maui-blazor", "Release", DotNetCurrent, RuntimeVariant.Mono, null);
 
-		[Test, Category(Categories.RunOniOS), Category(Categories.RunOniOS_BlazorReleaseTrimFull)]
-		public void RunOniOS_BlazorReleaseTrimFull() => RunOniOS("maui-blazor", "Release", DotNetCurrent, RuntimeVariant.Mono, "full");
+		// TODO: Re-enable once ASP.NET Core fixes trimmer warning IL2111 with Blazor Router.NotFoundPage
+		// Issue: https://github.com/dotnet/aspnetcore/issues/63951
+		// 
+		// When building maui-blazor template with TrimMode=full, the Razor source generator produces code
+		// that accesses Router.NotFoundPage via reflection, triggering IL2111:
+		//
+		//   error IL2111: Method 'Microsoft.AspNetCore.Components.Routing.Router.NotFoundPage.set' with
+		//   parameters or return value with `DynamicallyAccessedMembersAttribute` is accessed via reflection.
+		//   Trimmer can't guarantee availability of the requirements of the method.
+		//
+		// This is a known limitation - Blazor doesn't fully support TrimMode=full for application assemblies.
+		// See: https://learn.microsoft.com/en-us/aspnet/core/blazor/host-and-deploy/configure-trimmer
+		//
+		// [Test, Category(Categories.RunOniOS), Category(Categories.RunOniOS_BlazorReleaseTrimFull)]
+		// public void RunOniOS_BlazorReleaseTrimFull() => RunOniOS("maui-blazor", "Release", DotNetCurrent, RuntimeVariant.Mono, "full");
 
 		[Test, Category(Categories.RunOniOS), Category(Categories.RunOniOS_MauiNativeAOT)]
 		public void RunOniOS_MauiNativeAOT() => RunOniOS("maui", "Release", DotNetCurrent, RuntimeVariant.NativeAOT, null);

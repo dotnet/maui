@@ -309,10 +309,12 @@ stages:
       timeout: 60
       testCategory: RunOniOS_BlazorRelease
 
-    - name: mac_runios_blazor_trim_arm64
-      pool: ${{ parameters.MacOSPoolArm64 }}
-      timeout: 60
-      testCategory: RunOniOS_BlazorReleaseTrimFull
+    # TODO: Re-enable once ASP.NET Core fixes trimmer warning IL2111 with Blazor Router.NotFoundPage
+    # Issue: https://github.com/dotnet/aspnetcore/issues/63951
+    # - name: mac_runios_blazor_trim_arm64
+    #   pool: ${{ parameters.MacOSPoolArm64 }}
+    #   timeout: 60
+    #   testCategory: RunOniOS_BlazorReleaseTrimFull
 
     - name: mac_runios_nativeaot_arm64
       pool: ${{ parameters.MacOSPoolArm64 }}
