@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+    <!-- Material 3 Base Theme (Automatically switches between light/dark) -->
+    <style name="Maui.Material3.Theme.Base" parent="Theme.Material3.DayNight">
+        <!-- For .NET 9 we optout of edge to edge enforcement by default -->
+        <item name="maui_edgetoedge_optout">true</item>
+        <item name="maui_splash">false</item>
+        <item name="materialButtonStyle">@style/MauiMaterialButton</item>
+    </style>
+
+
+    <!-- Material 3 No Action Bar Theme -->
+    <style name="Maui.Material3.Theme.NoActionBar" parent="Maui.Material3.Theme.Base">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="windowActionModeOverlay">true</item>
+        <item name="android:actionModeBackground">?attr/colorSurface</item>
+        <item name="android:actionModeStyle">@style/Material3ActionMode</item>
+    </style>
+
+    <!-- Material 3 Action Mode -->
+    <style name="Material3ActionMode">
+      <item name="android:background">?attr/colorSurface</item>
+      <item name="android:height">?attr/actionBarSize</item>
+    </style>
+
+    <!-- Material 3 Splash Theme -->
+    <style name="Maui.Material3.SplashTheme" parent="Maui.Material3.Theme.NoActionBar">
+        <item name="maui_splash">true</item>
+        <item name="android:windowBackground">@drawable/maui_splash</item>
+        <!--
+          Android 12+ specific settings
+          See: https://developer.android.com/guide/topics/ui/splash-screen#set-theme
+        -->
+        <item name="android:windowSplashScreenBackground">@color/md_theme_light_surface</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/maui_splash</item>
+    </style>
+
+    <style name="MauiMaterialButton" parent="Widget.Material3.Button">
+      <!-- remove all the min sizes as MAUI manages it -->
+      <item name="android:minWidth">0dp</item>
+      <item name="android:minHeight">0dp</item>
+      <!-- padding is the space between the edge of the background and the contents  -->
+      <item name="android:paddingLeft">0dp</item>
+      <item name="android:paddingRight">0dp</item>
+      <item name="android:paddingTop">0dp</item>
+      <item name="android:paddingBottom">0dp</item>
+      <!-- insets are the amount of space between the actual color and the edge of the view frame -->
+      <item name="android:insetTop">0dp</item>
+      <item name="android:insetBottom">0dp</item>
+      <item name="android:insetLeft">0dp</item>
+      <item name="android:insetRight">0dp</item>
+      <!-- Icon size attribute to allow proper icon sizing in Material 3 -->
+      <item name="iconSize">0dp</item>
+    </style>
+</resources>
