@@ -38,8 +38,11 @@ namespace Microsoft.Maui.IntegrationTests
 				else
 					binlogPrefix = isPublishing ? "publish" : "build";
 
-				var binlogName = $"{binlogPrefix}-{DateTime.UtcNow.ToFileTimeUtc()}.binlog";
-				binlogPath = Path.Combine(Path.GetDirectoryName(projectFile) ?? "", binlogName);
+				// Include project name for easier identification
+				var projectName = Path.GetFileNameWithoutExtension(projectFile);
+				var binlogName = $"{projectName}-{binlogPrefix}-{DateTime.UtcNow.ToFileTimeUtc()}.binlog";
+				// Write to log directory so binlogs get published as artifacts in CI
+				binlogPath = Path.Combine(TestEnvironment.GetLogDirectory(), binlogName);
 			}
 			buildArgs += $" -bl:\"{binlogPath}\"";
 
