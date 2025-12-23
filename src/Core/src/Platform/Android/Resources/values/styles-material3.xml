@@ -2,7 +2,7 @@
 <resources>
     <!-- Material 3 Base Theme (Automatically switches between light/dark) -->
     <style name="Maui.Material3.Theme.Base" parent="Theme.Material3.DayNight">
-        <!-- For .NET 9 we optout of edge to edge enforcement by default -->
+        <!-- For .NET 9 we opt out of edge to edge enforcement by default -->
         <item name="maui_edgetoedge_optout">true</item>
         <item name="maui_splash">false</item>
     </style>
@@ -22,17 +22,4 @@
       <item name="android:background">?attr/colorSurface</item>
       <item name="android:height">?attr/actionBarSize</item>
     </style>
-
-    <!-- Material 3 Splash Theme -->
-    <style name="Maui.Material3.SplashTheme" parent="Maui.Material3.Theme.NoActionBar">
-        <item name="maui_splash">true</item>
-        <item name="android:windowBackground">@drawable/maui_splash</item>
-        <!--
-          Android 12+ specific settings
-          See: https://developer.android.com/guide/topics/ui/splash-screen#set-theme
-        -->
-        <item name="android:windowSplashScreenBackground">@color/md_theme_light_surface</item>
-        <item name="android:windowSplashScreenAnimatedIcon">@drawable/maui_splash</item>
-    </style>
-
 </resources>

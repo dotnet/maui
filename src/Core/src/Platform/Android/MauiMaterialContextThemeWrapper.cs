@@ -5,6 +5,7 @@ namespace Microsoft.Maui.Platform;
 
 internal class MauiMaterialContextThemeWrapper : ContextThemeWrapper
 {
+    // MaterIsMaterial3Enabledial3 Flag needed for Control Level theming. App Level theming is handled in MauiAppCompatActivity
     public MauiMaterialContextThemeWrapper(Context context)
         : this(context, RuntimeFeature.IsMaterial3Enabled
             ? Resource.Style.Maui_Material3_Theme_Base
