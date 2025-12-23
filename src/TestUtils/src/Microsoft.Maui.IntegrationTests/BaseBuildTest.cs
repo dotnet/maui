@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+using System.Globalization;
+using System.Runtime.CompilerServices;
 
 namespace Microsoft.Maui.IntegrationTests
 {
@@ -8,7 +9,8 @@ namespace Microsoft.Maui.IntegrationTests
 		NativeAOT
 	}
 
-	public abstract class BaseBuildTest
+	[Collection("IntegrationTests")]
+	public abstract class BaseBuildTest : IDisposable
 	{
 		public const string DotNetCurrent = "net10.0";
 		public const string DotNetPrevious = "net9.0";
@@ -29,7 +31,41 @@ namespace Microsoft.Maui.IntegrationTests
 		// of the .NET 8 MAUI, then this should be 8.0.80 for example.
 		public const string MauiVersionPrevious = "9.0.82";
 
-		char[] invalidChars = { '{', '}', '(', ')', '$', ':', ';', '\"', '\'', ',', '=', '.', '-', ' ', };
+		protected readonly BuildTestFixture _fixture;
+		protected readonly ITestOutputHelper _output;
+		private readonly string _testName;
+
+		static readonly char[] invalidChars = { '{', '}', '(', ')', '$', ':', ';', '\"', '\'', ',', '=', '.', '-', ' ', };
+
+		public BaseBuildTest(BuildTestFixture fixture, ITestOutputHelper output, [CallerMemberName] string testName = "")
+		{
+			_fixture = fixture;
+			_output = output;
+			_testName = SanitizeTestName(testName);
+
+			// SetUp equivalent: create test directory
+			if (Directory.Exists(TestDirectory))
+				Directory.Delete(TestDirectory, recursive: true);
+
+			Directory.CreateDirectory(TestDirectory);
+		}
+
+		private static string SanitizeTestName(string name)
+		{
+			var result = name;
+			foreach (var c in invalidChars.Concat(Path.GetInvalidPathChars().Concat(Path.GetInvalidFileNameChars())))
+			{
+				result = result.Replace(c, '_');
+			}
+			result = result.Replace("_", string.Empty, StringComparison.OrdinalIgnoreCase);
+
+			if (result.Length > 20)
+			{
+				// If the test name is too long, hash it to avoid path length issues
+				result = result.Substring(0, 15) + Convert.ToString(Math.Abs(string.GetHashCode(result.AsSpan(), StringComparison.Ordinal)), CultureInfo.InvariantCulture);
+			}
+			return result;
+		}
 
 		public string MauiPackageVersion
 		{
@@ -42,31 +78,13 @@ namespace Microsoft.Maui.IntegrationTests
 			}
 		}
 
-		public string TestName
-		{
-			get
-			{
-				var result = TestContext.CurrentContext.Test.Name;
-				foreach (var c in invalidChars.Concat(Path.GetInvalidPathChars().Concat(Path.GetInvalidFileNameChars())))
-				{
-					result = result.Replace(c, '_');
-				}
-				result = result.Replace("_", string.Empty, StringComparison.OrdinalIgnoreCase);
-
-				if (result.Length > 20)
-				{
-					// If the test name is too long, hash it to avoid path length issues
-					result = result.Substring(0, 15) + Convert.ToString(Math.Abs(string.GetHashCode(result.AsSpan(), StringComparison.Ordinal)), CultureInfo.InvariantCulture);
-				}
-				return result;
-			}
-		}
+		public string TestName => _testName;
 
 		public string LogDirectory => Path.Combine(TestEnvironment.GetLogDirectory(), TestName);
 
 		public string TestDirectory => Path.Combine(TestEnvironment.GetTestDirectoryRoot(), TestName);
 
-		public string TestNuGetConfig => Path.Combine(TestEnvironment.GetTestDirectoryRoot(), "NuGet.config");
+		public string TestNuGetConfig => _fixture.TestNuGetConfig;
 
 		// Properties that ensure we don't use cached packages, and *only* the empty NuGet.config
 		protected List<string> BuildProps => new()
@@ -87,91 +105,14 @@ namespace Microsoft.Maui.IntegrationTests
 			$"ValidateXcodeVersion={!TestConfig.SkipXcodeVersionCheck}",
 		};
 
-
-		/// <summary>
-		/// Copy NuGet packages that are not installed as part of the workload and set up NuGet.config
-		/// See: `PrepareSeparateBuildContext` in `eng/cake/dotnet.cake`.
-		/// </summary>
-		/// <exception cref="DirectoryNotFoundException"></exception>
-		[OneTimeSetUp]
-		public void BuildTestFxtSetUp()
+		public void Dispose()
 		{
-			string[] NuGetOnlyPackages = new string[] {
-				"Microsoft.Maui.Controls.*.nupkg",
-				"Microsoft.Maui.Core.*.nupkg",
-				"Microsoft.Maui.Essentials.*.nupkg",
-				"Microsoft.Maui.Graphics.*.nupkg",
-				"Microsoft.Maui.Maps.*.nupkg",
-				"Microsoft.Maui.Resizetizer.*.nupkg",
-				"Microsoft.AspNetCore.Components.WebView.*.nupkg",
-			};
-
-			var mauiDir = TestEnvironment.GetMauiDirectory();
-			var artifactDir = Path.Combine(mauiDir, "artifacts");
-			if (!Directory.Exists(artifactDir))
-				throw new DirectoryNotFoundException($"Build artifact directory '{artifactDir}' was not found.");
-
-			var extraPacksDir = Path.Combine(TestEnvironment.GetTestDirectoryRoot(), "extra-packages");
-			if (Directory.Exists(extraPacksDir))
-				Directory.Delete(extraPacksDir, true);
-
-			Directory.CreateDirectory(extraPacksDir);
-
-			foreach (var searchPattern in NuGetOnlyPackages)
-			{
-				// First, try artifacts/ root (CI layout where packages are downloaded directly)
-				var packages = Directory.GetFiles(artifactDir, searchPattern).ToList();
-
-				// If not found and running locally, try artifacts/packages/*/Shipping/ (local dotnet cake build layout)
-				if (packages.Count == 0 && !TestEnvironment.IsRunningOnCI)
-				{
-					var packagesDir = Path.Combine(artifactDir, "packages");
-					if (Directory.Exists(packagesDir))
-					{
-						packages = Directory.GetFiles(packagesDir, searchPattern, SearchOption.AllDirectories).ToList();
-					}
-				}
-
-				// If still not found locally, try .dotnet/library-packs/ (installed workload packages)
-				if (packages.Count == 0 && !TestEnvironment.IsRunningOnCI)
-				{
-					var libraryPacksDir = Path.Combine(mauiDir, ".dotnet", "library-packs");
-					if (Directory.Exists(libraryPacksDir))
-					{
-						packages = Directory.GetFiles(libraryPacksDir, searchPattern).ToList();
-					}
-				}
-
-				foreach (var pack in packages)
-					File.Copy(pack, Path.Combine(extraPacksDir, Path.GetFileName(pack)));
-			}
-
-			File.Copy(Path.Combine(TestEnvironment.GetMauiDirectory(), "NuGet.config"), TestNuGetConfig, true);
-			FileUtilities.ReplaceInFile(TestNuGetConfig, "<add key=\"nuget-only\" value=\"true\" />", "");
-			FileUtilities.ReplaceInFile(TestNuGetConfig, "NUGET_ONLY_PLACEHOLDER", extraPacksDir);
-		}
-
-		[SetUp]
-		public void BuildTestSetUp()
-		{
-			if (Directory.Exists(TestDirectory))
-				Directory.Delete(TestDirectory, recursive: true);
-
-			Directory.CreateDirectory(TestDirectory);
-		}
-
-		[OneTimeTearDown]
-		public void BuildTestFxtTearDown() { }
-
-		[TearDown]
-		public void BuildTestTearDown()
-		{
-			// Attach test content and logs as artifacts
+			// TearDown equivalent: Attach test content and logs as artifacts
 			foreach (var log in Directory.GetFiles(Path.Combine(TestDirectory), "*log", SearchOption.AllDirectories))
 			{
-				TestContext.AddTestAttachment(log, Path.GetFileName(TestDirectory));
+				// In xUnit, we write to output instead of using TestContext.AddTestAttachment
+				_output.WriteLine($"Log file: {log}");
 			}
 		}
-
 	}
 }

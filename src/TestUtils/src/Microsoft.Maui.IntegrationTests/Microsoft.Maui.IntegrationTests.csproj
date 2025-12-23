@@ -6,11 +6,11 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <RollForward>Major</RollForward>
+    <IsTestProject>true</IsTestProject>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NUnit" Version="3.13.3" />
-    <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
+    <PackageReference Include="xunit" Version="2.9.0" />
     <PackageReference Include="MSBuild.StructuredLogger" Version="2.2.158" />
   </ItemGroup>
 

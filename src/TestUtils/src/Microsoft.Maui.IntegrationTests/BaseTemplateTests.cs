@@ -1,10 +1,10 @@
-﻿namespace Microsoft.Maui.IntegrationTests;
+namespace Microsoft.Maui.IntegrationTests;
 
 public abstract class BaseTemplateTests : BaseBuildTest
 {
-	[SetUp]
-	public void TemplateTestsSetUp()
+	public BaseTemplateTests(BuildTestFixture fixture, ITestOutputHelper output) : base(fixture, output)
 	{
+		// SetUp equivalent: copy Directory.Build.* files
 		File.Copy(Path.Combine(TestEnvironment.GetMauiDirectory(), "src", "Templates", "tests", "Directory.Build.props"),
 			Path.Combine(TestDirectory, "Directory.Build.props"), true);
 		File.Copy(Path.Combine(TestEnvironment.GetMauiDirectory(), "src", "Templates", "tests", "Directory.Build.targets"),
@@ -21,14 +21,14 @@ public abstract class BaseTemplateTests : BaseBuildTest
 
 	protected void AssertContains(string expected, string actual)
 	{
-		Assert.IsTrue(
+		Assert.True(
 			actual.Contains(expected, StringComparison.Ordinal),
 			$"Expected string '{actual}' to contain '{expected}'.");
 	}
 
 	protected void AssertDoesNotContain(string expected, string actual)
 	{
-		Assert.IsFalse(
+		Assert.False(
 			actual.Contains(expected, StringComparison.Ordinal),
 			$"Expected string '{actual}' to not contain '{expected}'.");
 	}
