@@ -410,7 +410,14 @@ namespace Microsoft.Maui.Platform
 				if (backgroundImage == null)
 					return;
 
-				platformView.BackgroundColor = UIColor.FromPatternImage(backgroundImage);
+				platformView.RemoveBackgroundLayer();
+				var backgroundLayer = new CALayer
+				{
+					Name = BackgroundLayerName,
+					Contents = backgroundImage.CGImage,
+					Frame = platformView.Frame,	
+				};
+				platformView.InsertBackgroundLayer(backgroundLayer,0);
 			}
 		}
 
