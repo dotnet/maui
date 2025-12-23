@@ -61,6 +61,7 @@ namespace Microsoft.Maui.IntegrationTests
 				$"Unable to create template {id}. Check test output for errors.");
 
 			var buildProps = BuildProps;
+			var runtimeIdentifier = "";
 
 			if (runtimeVariant == RuntimeVariant.NativeAOT)
 			{
@@ -71,6 +72,9 @@ namespace Microsoft.Maui.IntegrationTests
 				// Restrict to iOS-only to avoid restoring NativeAOT packages for other platforms (e.g., Android)
 				// which may not be available in the configured NuGet sources
 				buildProps.Add($"TargetFrameworks={framework}-ios");
+				// NativeAOT builds default to device (ios-arm64) when using PublishAot=true.
+				// We must explicitly specify the simulator RID so the app can run on the simulator in our tests.
+				runtimeIdentifier = TestEnvironment.IOSSimulatorRuntimeIdentifier;
 			}
 
 			if (!string.IsNullOrEmpty(trimMode))
@@ -79,7 +83,7 @@ namespace Microsoft.Maui.IntegrationTests
 				buildProps.Add("TrimmerSingleWarn=false"); // Disable trimmer warnings for iOS full trimming builds due to ObjCRuntime issues
 			}
 
-			Assert.IsTrue(DotnetInternal.Build(projectFile, config, framework: $"{framework}-ios", properties: buildProps),
+			Assert.IsTrue(DotnetInternal.Build(projectFile, config, framework: $"{framework}-ios", properties: buildProps, runtimeIdentifier: runtimeIdentifier),
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 
 			// Find the .app bundle - it may be in the bin folder with or without a RID subfolder depending on build settings
