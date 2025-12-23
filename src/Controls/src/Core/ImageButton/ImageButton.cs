@@ -244,7 +244,7 @@ namespace Microsoft.Maui.Controls
 		bool IImageController.GetLoadAsAnimation() => false;
 
 		protected override bool IsEnabledCore =>
-			base.IsEnabledCore && CommandElement.GetCanExecute(this, CommandProperty);
+			base.IsEnabledCore && CommandElement.GetCanExecute(this);
 
 		void ICommandElement.CanExecuteChanged(object sender, EventArgs e) =>
 			RefreshIsEnabledProperty();
