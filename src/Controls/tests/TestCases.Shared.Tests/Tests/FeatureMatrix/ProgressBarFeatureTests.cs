@@ -4,17 +4,15 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests
 {
-	public class ProgressBarFeatureTests : UITest
+	public class ProgressBarFeatureTests : _GalleryUITest
 	{
+		public const string ProgressBarFeatureMatrix = "ProgressBar Feature Matrix";
+
+		public override string GalleryPageName => ProgressBarFeatureMatrix;
+
 		public ProgressBarFeatureTests(TestDevice device)
 			: base(device)
 		{
-		}
-
-		protected override void FixtureSetup()
-		{
-			base.FixtureSetup();
-			App.NavigateToGallery("ProgressBar Feature Matrix");
 		}
 
 		[Test, Order(1)]

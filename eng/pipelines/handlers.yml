@@ -11,7 +11,7 @@ trigger:
     include:
     - '*'
     exclude:
-    - .github/*
+    - .github/**
     - docs/*
     - CODE-OF-CONDUCT.md
     - CONTRIBUTING.md
@@ -30,7 +30,7 @@ pr:
     include:
     - '*'
     exclude:
-    - .github/*
+    - .github/**
     - docs/*
     - CODE-OF-CONDUCT.md
     - CONTRIBUTING.md
@@ -128,14 +128,6 @@ parameters:
     vmImage: $(androidTestsVmImage)
     demands:
     - macOS.Name -equals Sequoia
-
-resources:
-  repositories:
-  - repository: yaml-templates
-    type: github
-    name: xamarin/yaml-templates
-    endpoint: xamarin
-    ref: refs/heads/main
 
 stages:
 
