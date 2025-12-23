@@ -47,7 +47,11 @@ namespace Microsoft.Maui.DeviceTests
 					if (filterValue.StartsWith("SkipCategories="))
 					{
 						Console.WriteLine($"TestFilter: {filterValue}");
-						var categoriesToSkip = filterValue.Substring("SkipCategories=".Length).Split(new[] { ',', ';' }).Select(c => c.Trim()).ToList();
+						var categoriesToSkip = filterValue.Substring("SkipCategories=".Length)
+							.Split(new[] { ',', ';' })
+							.Select(c => c.Trim())
+							.Where(c => !string.IsNullOrWhiteSpace(c))
+							.ToList();
 						return categoriesToSkip.Select(c => $"Category={c}").ToList();
 					}
 				}
