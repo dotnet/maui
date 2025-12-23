@@ -44,9 +44,9 @@ For iOS, Controls.DeviceTests heavy categories are split into separate Helix wor
 1. Heavy categories are defined in `ControlsTestCategoriesToSkipForRestOfTests` property in `helix_xharness.proj`
 2. The `ControlsTestCategoriesToRunIndividually` ItemGroup is populated from that property
 3. Each heavy category becomes a separate Helix work item
-4. All other Controls tests run together in a single "Other" work item
+4. All other Controls tests run together in a single "General" work item
 5. XHarness passes `--set-env="TestFilter=Category=X"` for individual categories
-6. XHarness passes `--set-env="TestFilter=SkipCategories=X;Y;Z"` for the "Other" work item
+6. XHarness passes `--set-env="TestFilter=SkipCategories=X;Y;Z"` for the "General" work item
 7. Core.DeviceTests runs as a single work item (no splitting)
 
 **Heavy categories that run separately:**

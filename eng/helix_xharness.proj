@@ -114,7 +114,7 @@
                 <CustomCommands>xharness apple test --target "$target" --app "$app" --output-directory "$output_directory" --timeout "$timeout" --launch-timeout "$launch_timeout" --set-env="TestFilter=Category=%(Identity)"</CustomCommands>
             </XHarnessAppBundleToTest>
             <!-- Controls.DeviceTests - all other categories run as one work item -->
-            <XHarnessAppBundleToTest Include="Controls.DeviceTests-Other">
+            <XHarnessAppBundleToTest Include="Controls.DeviceTests-General">
                 <TestTarget>ios-simulator-64</TestTarget>
                 <WorkItemTimeout>02:00:00</WorkItemTimeout>
                 <TestTimeout>01:15:00</TestTimeout>
