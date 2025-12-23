@@ -32,5 +32,27 @@ namespace Microsoft.Maui.Platform
 					platformProgressBar.ProgressTintList = tintList;
 			}
 		}
+
+		internal static void UpdateProgress(this MaterialProgressBar materialProgressBar, IProgress progress)
+		{
+			materialProgressBar.Progress = (int)(progress.Progress * Maximum);
+		}
+
+		internal static void UpdateProgressColor(this MaterialProgressBar materialProgressBar, IProgress progress)
+		{
+			Color color = progress.ProgressColor;
+
+			if (color is null)
+			{
+				// Reset to theme default by passing empty array - Material3's setIndicatorColor() 
+				// automatically resolves this to theme's colorPrimary when length == 0
+				materialProgressBar.SetIndicatorColor([]);
+			}
+			else
+			{
+				var colorArray = new int[] { color.ToPlatform() };
+				materialProgressBar.SetIndicatorColor(colorArray);
+			}
+		}
 	}
 }
