@@ -13,31 +13,26 @@ These integration tests use **xUnit** as the test framework.
 
 ## CI Infrastructure
 
-### Helix Tests (ARM64 only)
-The `RunOniOS` and `RunOnAndroid` categories run on **Helix** using ARM64 macOS machines:
-- Configuration: `eng/helix_integration.proj`
-- Queue: `osx.15.arm64.maui.open` (public) or `osx.15.arm64` (internal)
-- Stage template: `eng/pipelines/arcade/stage-helix-integration-tests.yml`
+All integration tests run on **Azure DevOps agents** via the stage template `eng/pipelines/arcade/stage-integration-tests.yml`.
 
-### Regular Integration Tests
-Other categories (`Build`, `Blazor`, `WindowsTemplates`, etc.) run directly on Azure DevOps agents:
-- Stage template: `eng/pipelines/arcade/stage-integration-tests.yml`
+- **Windows tests**: Run on Windows 1ES pools
+- **macOS tests**: Run on Azure Pipelines hosted macOS-15 images (ARM64)
 
 ## Test Categories
 
 Tests are organized by categories (defined in `Utilities/Categories.cs`) that map to CI jobs:
 
-| Category | Purpose | Platform | CI |
-|----------|---------|----------|-----|
-| `Build` | Basic template build tests | All | Azure DevOps |
-| `WindowsTemplates` | Windows-specific scenarios | Windows | Azure DevOps |
-| `macOSTemplates` | macOS-specific scenarios | macOS | Azure DevOps |
-| `Blazor` | Blazor hybrid templates | All | Azure DevOps |
-| `MultiProject` | Multi-project templates | All | Azure DevOps |
-| `AOT` | Native AOT compilation | macOS | Azure DevOps |
-| `RunOnAndroid` | Build, install, run on Android emulator | macOS | **Helix (ARM64)** |
-| `RunOniOS` | Build, install, run on iOS simulator | macOS | **Helix (ARM64)** |
-| `Samples` | Sample project builds | All | Azure DevOps |
+| Category | Purpose | Platform |
+|----------|---------|----------|
+| `Build` | Basic template build tests | All |
+| `WindowsTemplates` | Windows-specific scenarios | Windows |
+| `macOSTemplates` | macOS-specific scenarios | macOS |
+| `Blazor` | Blazor hybrid templates | All |
+| `MultiProject` | Multi-project templates | All |
+| `AOT` | Native AOT compilation | macOS |
+| `RunOnAndroid` | Build, install, run on Android emulator | macOS |
+| `RunOniOS` | Build, install, run on iOS simulator | macOS |
+| `Samples` | Sample project builds | All |
 
 **Critical**: Each test should have **exactly ONE** `[Trait("Category", Categories.X)]` attribute.
 
