@@ -35,7 +35,7 @@ public partial class Maui18123 : ContentPage
 		public void Dispose() => AppInfo.SetCurrent(null);
 
 		[Theory]
-		[XamlInflatorData]
+		[XamlInflatorData(Skip = "Test hangs due to infinite loop with ForceBindingApply + MultiBinding + DataTriggers - see PR #32961")]
 		internal void MultiBindingShouldNotThrow(XamlInflator inflator)
 		{
 			var page = new Maui18123(inflator);
