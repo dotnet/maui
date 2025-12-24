@@ -13,15 +13,19 @@ namespace Microsoft.Maui.IntegrationTests
 			if (!TestEnvironment.IsMacOS)
 				Assert.Ignore("Running Apple templates is only supported on macOS.");
 
-			TestSimulator.Shutdown();
-			Assert.IsTrue(TestSimulator.Launch(), $"Failed to boot simulator with UDID '{TestSimulator.GetUDID()}'.");
-			TestSimulator.ShowWindow();
+			// Don't pre-boot the simulator - let XHarness handle the simulator lifecycle.
+			// Pre-booting causes race conditions with XHarness's watchdog disabling logic,
+			// which shuts down and reboots the simulator, leading to "simctl exit code 149" errors.
+			// Just ensure the UDID is resolved so we can pass it to XHarness.
+			var udid = TestSimulator.GetUDID();
+			Assert.IsFalse(string.IsNullOrEmpty(udid), $"Failed to get simulator UDID for '{TestSimulator.XHarnessID}'.");
 		}
 
 		[OneTimeTearDown]
 		public void AppleTemplateFxtTearDown()
 		{
-			TestSimulator.Shutdown();
+			// Don't shutdown the simulator - XHarness manages the lifecycle.
+			// Shutting down here could interfere with other tests or cause issues.
 		}
 
 		// [TestCase("maui", "Debug", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, null)]
@@ -110,9 +114,9 @@ namespace Microsoft.Maui.IntegrationTests
 			var xhResultsDir = Path.Combine(TestEnvironment.GetLogDirectory(), "xh-results", Path.GetFileName(projectDir));
 			Directory.CreateDirectory(xhResultsDir);
 
-			// Pass the device UDID to use the already-booted simulator directly.
-			// This prevents XHarness from managing the simulator lifecycle and avoids race conditions
-			// where XHarness might shut down the simulator before launching the app.
+			// Pass both target and device UDID to XHarness.
+			// The target specifies the platform type, and the UDID ensures XHarness uses the correct simulator.
+			// We don't pre-boot the simulator - XHarness handles the lifecycle when given a UDID.
 			Assert.IsTrue(XHarness.RunAppleForTimeout(appFile, xhResultsDir, TestSimulator.XHarnessID, TestSimulator.GetUDID()),
 				$"Project {Path.GetFileName(projectFile)} failed to run. Check test output/attachments for errors.");
 		}
