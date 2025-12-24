@@ -323,10 +323,26 @@ namespace Microsoft.Maui.Controls
 			var args = new ActionSheetArguments(title, cancel, destruction, buttons);
 
 			args.FlowDirection = flowDirection;
+
+			// If page is no longer attached to a window (e.g., navigated away), ignore the action sheet request
+			if (Window is null)
+			{
+				// Complete the task with cancel result
+				args.SetResult(cancel);
+				return args.Result.Task;
+			}
+
 			if (IsPlatformEnabled)
 				Window.AlertManager.RequestActionSheet(this, args);
 			else
-				_pendingActions.Add(() => Window.AlertManager.RequestActionSheet(this, args));
+				_pendingActions.Add(() =>
+				{
+					// Check again in case window was detached while waiting
+					if (Window is not null)
+						Window.AlertManager.RequestActionSheet(this, args);
+					else
+						args.SetResult(cancel);
+				});
 
 			return args.Result.Task;
 		}
@@ -384,10 +400,25 @@ namespace Microsoft.Maui.Controls
 			var args = new AlertArguments(title, message, accept, cancel);
 			args.FlowDirection = flowDirection;
 
+			// If page is no longer attached to a window (e.g., navigated away), ignore the alert request
+			if (Window is null)
+			{
+				// Complete the task with default result (cancel)
+				args.SetResult(false);
+				return args.Result.Task;
+			}
+
 			if (IsPlatformEnabled)
 				Window.AlertManager.RequestAlert(this, args);
 			else
-				_pendingActions.Add(() => Window.AlertManager.RequestAlert(this, args));
+				_pendingActions.Add(() =>
+				{
+					// Check again in case window was detached while waiting
+					if (Window is not null)
+						Window.AlertManager.RequestAlert(this, args);
+					else
+						args.SetResult(false);
+				});
 
 			return args.Result.Task;
 		}
@@ -408,10 +439,25 @@ namespace Microsoft.Maui.Controls
 		{
 			var args = new PromptArguments(title, message, accept, cancel, placeholder, maxLength, keyboard, initialValue);
 
+			// If page is no longer attached to a window (e.g., navigated away), ignore the prompt request
+			if (Window is null)
+			{
+				// Complete the task with null result
+				args.SetResult(null);
+				return args.Result.Task;
+			}
+
 			if (IsPlatformEnabled)
 				Window.AlertManager.RequestPrompt(this, args);
 			else
-				_pendingActions.Add(() => Window.AlertManager.RequestPrompt(this, args));
+				_pendingActions.Add(() =>
+				{
+					// Check again in case window was detached while waiting
+					if (Window is not null)
+						Window.AlertManager.RequestPrompt(this, args);
+					else
+						args.SetResult(null);
+				});
 
 			return args.Result.Task;
 		}
