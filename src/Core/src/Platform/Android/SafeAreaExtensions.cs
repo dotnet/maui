@@ -142,78 +142,75 @@ internal static class SafeAreaExtensions
 					var screenWidth = realMetrics.WidthPixels;
 					var screenHeight = realMetrics.HeightPixels;
 
-					// Detect transitional views during Shell tab animations to avoid incorrect safe area padding.
-					// ViewPager2 reports intermediate positions while animating - skip position-based logic for these.
-					var isFullWidthView = viewWidth >= screenWidth - left - right;
-					// View completely outside visible screen (sliding in from off-screen)
-					var isOffScreen = viewLeft >= screenWidth || viewRight <= 0 || viewTop >= screenHeight || viewBottom <= 0;
-					// Full-width view not at x=0 (1px tolerance for floating-point rounding)
-					var isDisplaced = isFullWidthView && viewLeft != 0 && Math.Abs(viewLeft) > 1;
-					// View extends past screen bounds during animation
-					var extendsBeyondScreen = viewRight > screenWidth + 1 || viewBottom > screenHeight + 1;
-					// Bounds mismatch during animation (10px tolerance for cumulative margin rounding errors)
-					var hasCorruptedBounds = isFullWidthView && Math.Abs(viewRight - (viewLeft + viewWidth)) > 10;
-					
-					var isTransitionalView = isOffScreen || isDisplaced || extendsBeyondScreen || hasCorruptedBounds;
+					// Check if view extends beyond screen bounds - this indicates the view
+					// is still being positioned (e.g., during Shell fragment transitions).
+					// In this case, consume all insets to prevent children from processing
+					// invalid data, and request a re-apply after the view settles.
+					bool viewExtendsBeyondScreen = viewRight > screenWidth || viewBottom > screenHeight || 
+					                               viewLeft < 0 || viewTop < 0;
 
-					// Only run position-based calculations for non-transitional views
-					// Transitional views keep their full safe area insets
-					if (!isTransitionalView)
+					if (viewExtendsBeyondScreen)
 					{
-						// Calculate actual overlap for each edge
-						// Top: how much the view extends into the top safe area
-						// If the viewTop is < 0 that means that it's most likely
-						// panned off the top of the screen so we don't want to apply any top inset
-						if (top > 0 && viewTop < top && viewTop >= 0)
-						{
-							// Calculate the actual overlap amount
-							top = Math.Min(top - viewTop, top);
-						}
-						else
-						{
-							if (viewHeight > 0 || hasTrackedViews)
-								top = 0;
-						}
+						// Request insets to be reapplied after the next layout pass
+						// when the view should be properly positioned.
+						// Don't return early - let processing continue with current insets
+						// to avoid visual popping, the re-apply will correct any issues.
+						view.Post(() => ViewCompat.RequestApplyInsets(view));
+					}
 
-						// Bottom: how much the view extends into the bottom safe area
-						if (bottom > 0 && viewBottom > (screenHeight - bottom))
-						{
-							// Calculate the actual overlap amount
-							var bottomEdge = screenHeight - bottom;
-							bottom = Math.Min(viewBottom - bottomEdge, bottom);
-						}
-						else
-						{
-							// if the view height is zero because it hasn't done the first pass
-							// and we don't have any tracked views yet then we will apply the bottom inset
-							if (viewHeight > 0 || hasTrackedViews)
-								bottom = 0;
-						}
+					// Calculate actual overlap for each edge
+					// Top: how much the view extends into the top safe area
+					// If the viewTop is < 0 that means that it's most likely
+					// panned off the top of the screen so we don't want to apply any top inset
+					if (top > 0 && viewTop < top && viewTop >= 0)
+					{
+						// Calculate the actual overlap amount
+						top = Math.Min(top - viewTop, top);
+					}
+					else
+					{
+						if (viewHeight > 0 || hasTrackedViews)
+							top = 0;
+					}
 
-						// Left: how much the view extends into the left safe area
-						if (left > 0 && viewLeft < left)
-						{
-							// Calculate the actual overlap amount
-							left = Math.Min(left - viewLeft, left);
-						}
-						else
-						{
-							if (viewWidth > 0 || hasTrackedViews)
-								left = 0;
-						}
+					// Bottom: how much the view extends into the bottom safe area
+					if (bottom > 0 && viewBottom > (screenHeight - bottom))
+					{
+						// Calculate the actual overlap amount
+						var bottomEdge = screenHeight - bottom;
+						bottom = Math.Min(viewBottom - bottomEdge, bottom);
+					}
+					else
+					{
+						// if the view height is zero because it hasn't done the first pass
+						// and we don't have any tracked views yet then we will apply the bottom inset
+						if (viewHeight > 0 || hasTrackedViews)
+							bottom = 0;
+					}
 
-						// Right: how much the view extends into the right safe area
-						if (right > 0 && viewRight > (screenWidth - right))
-						{
-							// Calculate the actual overlap amount
-							var rightEdge = screenWidth - right;
-							right = Math.Min(viewRight - rightEdge, right);
-						}
-						else
-						{
-							if (viewWidth > 0 || hasTrackedViews)
-								right = 0;
-						}
+					// Left: how much the view extends into the left safe area
+					if (left > 0 && viewLeft < left)
+					{
+						// Calculate the actual overlap amount
+						left = Math.Min(left - viewLeft, left);
+					}
+					else
+					{
+						if (viewWidth > 0 || hasTrackedViews)
+							left = 0;
+					}
+
+					// Right: how much the view extends into the right safe area
+					if (right > 0 && viewRight > (screenWidth - right))
+					{
+						// Calculate the actual overlap amount
+						var rightEdge = screenWidth - right;
+						right = Math.Min(viewRight - rightEdge, right);
+					}
+					else
+					{
+						if (viewWidth > 0 || hasTrackedViews)
+							right = 0;
 					}
 				}
 
