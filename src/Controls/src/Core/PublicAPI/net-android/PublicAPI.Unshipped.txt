@@ -1,1 +1,3 @@
 #nullable enable
+~override Microsoft.Maui.Controls.Handlers.Items.ItemContentView.DispatchTouchEvent(Android.Views.MotionEvent e) -> bool
+~override Microsoft.Maui.Controls.Handlers.Items.ItemContentView.OnInterceptTouchEvent(Android.Views.MotionEvent ev) -> bool
