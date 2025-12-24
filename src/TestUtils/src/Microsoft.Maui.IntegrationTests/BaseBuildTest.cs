@@ -170,20 +170,9 @@ namespace Microsoft.Maui.IntegrationTests
 			CopyLogsToPublishDirectory();
 
 			// Attach test content and logs as artifacts
-			try
+			foreach (var log in Directory.GetFiles(Path.Combine(TestDirectory), "*log", SearchOption.AllDirectories))
 			{
-				if (Directory.Exists(TestDirectory))
-				{
-					var logFiles = Directory.GetFiles(TestDirectory, "*log", SearchOption.AllDirectories);
-					foreach (var log in logFiles)
-					{
-						TestContext.AddTestAttachment(log, Path.GetFileName(TestDirectory));
-					}
-				}
-			}
-			catch (Exception)
-			{
-				// Silently ignore attachment errors
+				TestContext.AddTestAttachment(log, Path.GetFileName(TestDirectory));
 			}
 		}
 
@@ -222,17 +211,17 @@ namespace Microsoft.Maui.IntegrationTests
 								}
 								File.Copy(file, destFile, overwrite: true);
 							}
-							catch (Exception)
+							catch (Exception ex)
 							{
-								// Silently ignore copy errors
+								Console.WriteLine($"Failed to copy log file '{file}': {ex.Message}");
 							}
 						}
 					}
 				}
 			}
-			catch (Exception)
+			catch (Exception ex)
 			{
-				// Silently ignore errors
+				Console.WriteLine($"Failed to copy logs to publish directory: {ex.Message}");
 			}
 		}
 
