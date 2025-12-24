@@ -3,6 +3,7 @@ using Android.Content.Res;
 using Android.Graphics;
 using Android.Util;
 using Android.Widget;
+using MSlider = Google.Android.Material.Slider.Slider;
 
 namespace Microsoft.Maui.Platform
 {
@@ -12,15 +13,14 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateMinimum(this SeekBar seekBar, ISlider slider) => UpdateValue(seekBar, slider);
 
-		internal static void UpdateMinimum(this MauiMaterialSlider mSlider, ISlider slider)
+		internal static void UpdateMinimum(this MSlider mSlider, ISlider slider)
 		{
-			
 			mSlider.ValueFrom = (float)slider.Minimum;
 		}
 
 		public static void UpdateMaximum(this SeekBar seekBar, ISlider slider) => UpdateValue(seekBar, slider);
 
-		internal static void UpdateMaximum(this MauiMaterialSlider mSlider, ISlider slider)
+		internal static void UpdateMaximum(this MSlider mSlider, ISlider slider)
 		{
 			mSlider.ValueTo = (float)slider.Maximum;
 		}
@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Platform
 			seekBar.Progress = (int)((value - min) / (max - min) * PlatformMaxValue);
 		}
 
-		internal static void UpdateValue(this MauiMaterialSlider mSlider, ISlider slider)
+		internal static void UpdateValue(this MSlider mSlider, ISlider slider)
 		{
 			mSlider.Value = (float)slider.Value;
 		}
@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		internal static void UpdateMinimumTrackColor(this MauiMaterialSlider mSlider, ISlider slider)
+		internal static void UpdateMinimumTrackColor(this MSlider mSlider, ISlider slider)
 		{
 			if (slider.MinimumTrackColor is not null)
 			{
@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		internal static void UpdateMaximumTrackColor(this MauiMaterialSlider mSlider, ISlider slider)
+		internal static void UpdateMaximumTrackColor(this MSlider mSlider, ISlider slider)
 		{
 			if (slider.MaximumTrackColor is not null)
 			{
@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateThumbColor(this SeekBar seekBar, ISlider slider) =>
 			seekBar.Thumb?.SetColorFilter(slider.ThumbColor, FilterMode.SrcIn);
 
-		internal static void UpdateThumbColor(this MauiMaterialSlider mSlider, ISlider slider)
+		internal static void UpdateThumbColor(this MSlider mSlider, ISlider slider)
 		{
 			if (slider.ThumbImageSource is not null && slider.Handler is not null)
 			{
@@ -123,7 +123,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		internal static async Task UpdateThumbImageSourceAsync(this MauiMaterialSlider mSlider, ISlider slider,
+		internal static async Task UpdateThumbImageSourceAsync(this MSlider mSlider, ISlider slider,
    IImageSourceServiceProvider provider)
 		{
 			var context = mSlider.Context;
