@@ -59,7 +59,7 @@
                                 <Button Grid.Column="2"
                                         Text="LightBlue"
                                         BackgroundColor="LightBlue"
-                                        TextColor="White"
+                                        TextColor="Black"
                                         Clicked="OnTabBarBackgroundColorClicked"
                                         AutomationId="TabBarBackgroundColorLightBlue"/>
                         </Grid>
@@ -150,7 +150,7 @@
                               ColumnSpacing="5">
                                 <Button Grid.Column="0"
                                         Text="Blue"
-                                        BackgroundColor="blue"
+                                        BackgroundColor="Blue"
                                         TextColor="White"
                                         Clicked="OnTabBarUnselectedColorClicked"
                                         AutomationId="TabBarUnselectedColorBlue"/>
