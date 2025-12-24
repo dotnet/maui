@@ -43,7 +43,7 @@ internal partial class MaterialSliderHandler : ViewHandler<ISlider, Slider>
         // TODO: Material3: Cleanup listeners when implemented
     }
 
-    internal static void MapValue(MaterialSliderHandler handler, ISlider slider)
+    public static void MapValue(MaterialSliderHandler handler, ISlider slider)
     {
         handler.PlatformView.UpdateValue(slider);
     }
@@ -81,10 +81,10 @@ internal partial class MaterialSliderHandler : ViewHandler<ISlider, Slider>
             .FireAndForget(handler);
     }
 
-    internal void OnStartTrackingTouch(Slider slider) =>
+    void OnStartTrackingTouch(Slider slider) =>
         VirtualView?.DragStarted();
 
-    internal void OnStopTrackingTouch(Slider slider) =>
+    void OnStopTrackingTouch(Slider slider) =>
         VirtualView?.DragCompleted();
 
 }
