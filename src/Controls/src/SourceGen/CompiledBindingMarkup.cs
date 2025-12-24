@@ -378,8 +378,30 @@ internal struct CompiledBindingMarkup
 						&& property.Parameters.Length == 1
 						&& property.Parameters[0].Type.SpecialType == SpecialType.System_Object);
 
+				// Try to find an indexer with an enum parameter type
+				indexer ??= previousPartType
+					.GetAllProperties(indexerName, _context)
+					.FirstOrDefault(property =>
+						property.GetMethod != null
+						&& !property.GetMethod.IsStatic
+						&& property.Parameters.Length == 1
+						&& property.Parameters[0].Type.TypeKind == TypeKind.Enum);
+
 				if (indexer is not null)
 				{
+					// If the indexer parameter is an enum, use the fully qualified enum member wrapped in EnumIndex
+					if (indexer.Parameters[0].Type.TypeKind == TypeKind.Enum)
+					{
+						var enumType = indexer.Parameters[0].Type;
+						var enumMember = enumType.GetMembers()
+							.OfType<IFieldSymbol>()
+							.FirstOrDefault(f => f.IsStatic && f.Name == indexArg);
+						if (enumMember != null)
+						{
+							index = new EnumIndex($"{enumType.ToFQDisplayString()}.{indexArg}");
+						}
+					}
+
 					var indexAccess = new IndexAccess(indexerName, index, indexer.Type.IsValueType);
 					bindingPathParts.Add(indexAccess);
 
