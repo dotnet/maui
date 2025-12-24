@@ -7,6 +7,19 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class LayoutHandler : ViewHandler<ILayout, LayoutView>
 	{
+		protected override void SetupContainer()
+		{
+			base.SetupContainer();
+
+			// When a WrapperView is created, the child (PlatformView) is moved inside it.
+			// Reset the child's transform to identity to prevent transform compounding,
+			// since the WrapperView will handle the transform for the entire container.
+			if (ContainerView is WrapperView)
+			{
+				PlatformView.ResetLayerTransform();
+			}
+		}
+
 		protected override LayoutView CreatePlatformView()
 		{
 			if (VirtualView == null)
