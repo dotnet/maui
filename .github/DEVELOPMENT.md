@@ -14,7 +14,11 @@ This page contains steps to build and run the .NET MAUI repository from source. 
    ### Mac
    - Install [VSCode](https://code.visualstudio.com/download)
    - Follow the steps for installing the .NET MAUI Dev Kit for VS Code: https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.dotnet-maui
-      
+
+## AI-Assisted Development
+
+We have custom AI agents to help you work on issues more efficiently. See [Using AI to Work on .NET MAUI](https://github.com/dotnet/maui/wiki/Using-AI-to-Work-on-.NET-MAUI) for details.
+
 ## Building the Build Tasks
 Before opening the solution in Visual Studio / VS Code you **MUST** build the build tasks.
 
