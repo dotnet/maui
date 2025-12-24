@@ -15,7 +15,12 @@
         "sourcegen",
         "Tizen",
         "darc",
-        "Darc"
+        "Darc",
+        "xcrun",
+        "simctl",
+        "screencap",
+        "libimobiledevice",
+        "idevicesyslog"
     ],
     "ignoreWords": [],
     "patterns": [
