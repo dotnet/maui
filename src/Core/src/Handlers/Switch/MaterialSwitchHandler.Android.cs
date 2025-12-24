@@ -1,10 +1,11 @@
 using System;
 using Android.Widget;
+using Google.Android.Material.MaterialSwitch;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Handlers;
 
-internal partial class MaterialSwitchHandler : ViewHandler<ISwitch, MauiMaterialSwitch>
+internal partial class MaterialSwitchHandler : ViewHandler<ISwitch, MaterialSwitch>
 {
 	public static PropertyMapper<ISwitch, MaterialSwitchHandler> Mapper =
 		new(ViewMapper)
@@ -23,12 +24,12 @@ internal partial class MaterialSwitchHandler : ViewHandler<ISwitch, MauiMaterial
 	{
 	}
 
-	protected override MauiMaterialSwitch CreatePlatformView()
+	protected override MaterialSwitch CreatePlatformView()
 	{
-		return new MauiMaterialSwitch(Context);
+		return new MaterialSwitch(Context);
 	}
 
-	protected override void ConnectHandler(MauiMaterialSwitch platformView)
+	protected override void ConnectHandler(MaterialSwitch platformView)
 	{
 		_changeListener = new MaterialSwitchCheckedChangeListener(this);
 		platformView.SetOnCheckedChangeListener(_changeListener);
@@ -36,7 +37,7 @@ internal partial class MaterialSwitchHandler : ViewHandler<ISwitch, MauiMaterial
 		base.ConnectHandler(platformView);
 	}
 
-	protected override void DisconnectHandler(MauiMaterialSwitch platformView)
+	protected override void DisconnectHandler(MaterialSwitch platformView)
 	{
 		platformView.SetOnCheckedChangeListener(null);
 		_changeListener?.Dispose();
