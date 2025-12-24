@@ -96,9 +96,6 @@ namespace Microsoft.Maui.IntegrationTests
 		[OneTimeSetUp]
 		public void BuildTestFxtSetUp()
 		{
-			// Log diagnostic information about test environment
-			LogTestEnvironmentInfo();
-
 			string[] NuGetOnlyPackages = new string[] {
 				"Microsoft.Maui.Controls.*.nupkg",
 				"Microsoft.Maui.Core.*.nupkg",
@@ -169,10 +166,6 @@ namespace Microsoft.Maui.IntegrationTests
 		[TearDown]
 		public void BuildTestTearDown()
 		{
-			// Log all files in test directory and log directory for debugging
-			LogTestDirectoryContents();
-			LogLogDirectoryContents();
-			
 			// Copy log files to the artifact publish location
 			CopyLogsToPublishDirectory();
 
@@ -182,21 +175,15 @@ namespace Microsoft.Maui.IntegrationTests
 				if (Directory.Exists(TestDirectory))
 				{
 					var logFiles = Directory.GetFiles(TestDirectory, "*log", SearchOption.AllDirectories);
-					TestContext.WriteLine($"[TearDown] Found {logFiles.Length} log files to attach in {TestDirectory}");
 					foreach (var log in logFiles)
 					{
-						TestContext.WriteLine($"[TearDown] Attaching: {log}");
 						TestContext.AddTestAttachment(log, Path.GetFileName(TestDirectory));
 					}
 				}
-				else
-				{
-					TestContext.WriteLine($"[TearDown] WARNING: TestDirectory does not exist: {TestDirectory}");
-				}
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
-				TestContext.WriteLine($"[TearDown] ERROR attaching logs: {ex.Message}");
+				// Silently ignore attachment errors
 			}
 		}
 
@@ -208,12 +195,10 @@ namespace Microsoft.Maui.IntegrationTests
 			try
 			{
 				var publishDir = LogDirectory;
-				TestContext.WriteLine($"[CopyLogs] Target publish directory: {publishDir}");
 				
 				if (!Directory.Exists(publishDir))
 				{
 					Directory.CreateDirectory(publishDir);
-					TestContext.WriteLine($"[CopyLogs] Created directory: {publishDir}");
 				}
 
 				if (Directory.Exists(TestDirectory))
@@ -223,7 +208,6 @@ namespace Microsoft.Maui.IntegrationTests
 					foreach (var pattern in logPatterns)
 					{
 						var files = Directory.GetFiles(TestDirectory, pattern, SearchOption.AllDirectories);
-						TestContext.WriteLine($"[CopyLogs] Found {files.Length} {pattern} files to copy");
 						foreach (var file in files)
 						{
 							try
@@ -237,115 +221,19 @@ namespace Microsoft.Maui.IntegrationTests
 									destFile = Path.Combine(publishDir, $"{nameWithoutExt}_{Guid.NewGuid():N}{ext}");
 								}
 								File.Copy(file, destFile, overwrite: true);
-								TestContext.WriteLine($"[CopyLogs] Copied: {file} -> {destFile}");
 							}
-							catch (Exception ex)
+							catch (Exception)
 							{
-								TestContext.WriteLine($"[CopyLogs] ERROR copying {file}: {ex.Message}");
+								// Silently ignore copy errors
 							}
 						}
 					}
 				}
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
-				TestContext.WriteLine($"[CopyLogs] ERROR: {ex.Message}");
+				// Silently ignore errors
 			}
-		}
-
-		/// <summary>
-		/// Logs diagnostic information about the test environment at the start of the test fixture.
-		/// </summary>
-		protected void LogTestEnvironmentInfo()
-		{
-			TestContext.WriteLine("=== Test Environment Info ===");
-			TestContext.WriteLine($"[ENV] MAUI Directory: {TestEnvironment.GetMauiDirectory()}");
-			TestContext.WriteLine($"[ENV] Log Directory: {TestEnvironment.GetLogDirectory()}");
-			TestContext.WriteLine($"[ENV] Test Directory Root: {TestEnvironment.GetTestDirectoryRoot()}");
-			TestContext.WriteLine($"[ENV] Is Running on CI: {TestEnvironment.IsRunningOnCI}");
-			TestContext.WriteLine($"[ENV] Is macOS: {TestEnvironment.IsMacOS}");
-			TestContext.WriteLine($"[ENV] Is ARM64: {TestEnvironment.IsArm64}");
-			TestContext.WriteLine($"[ENV] iOS Simulator RID: {TestEnvironment.IOSSimulatorRuntimeIdentifier}");
-			TestContext.WriteLine($"[ENV] AGENT_TEMPDIRECTORY: {Environment.GetEnvironmentVariable("AGENT_TEMPDIRECTORY") ?? "(not set)"}");
-			TestContext.WriteLine($"[ENV] BUILD_ARTIFACTSTAGINGDIRECTORY: {Environment.GetEnvironmentVariable("BUILD_ARTIFACTSTAGINGDIRECTORY") ?? "(not set)"}");
-			TestContext.WriteLine($"[ENV] LogDirectory env var: {Environment.GetEnvironmentVariable("LogDirectory") ?? "(not set)"}");
-			TestContext.WriteLine("=== End Environment Info ===");
-		}
-
-		/// <summary>
-		/// Logs all files in the test directory for debugging purposes.
-		/// </summary>
-		protected void LogTestDirectoryContents()
-		{
-			TestContext.WriteLine($"=== Test Directory Contents: {TestDirectory} ===");
-			try
-			{
-				if (!Directory.Exists(TestDirectory))
-				{
-					TestContext.WriteLine($"[WARN] Directory does not exist: {TestDirectory}");
-					return;
-				}
-
-				// List all files recursively
-				var allFiles = Directory.GetFiles(TestDirectory, "*", SearchOption.AllDirectories);
-				TestContext.WriteLine($"[DIR] Total files: {allFiles.Length}");
-				
-				foreach (var file in allFiles.Take(50)) // Limit to 50 files to avoid log spam
-				{
-					var info = new FileInfo(file);
-					TestContext.WriteLine($"[FILE] {file} ({info.Length} bytes)");
-				}
-
-				if (allFiles.Length > 50)
-				{
-					TestContext.WriteLine($"[DIR] ... and {allFiles.Length - 50} more files");
-				}
-
-				// List log files specifically
-				var logFiles = allFiles.Where(f => f.EndsWith(".log", StringComparison.OrdinalIgnoreCase) || 
-					f.EndsWith(".binlog", StringComparison.OrdinalIgnoreCase) ||
-					f.EndsWith(".txt", StringComparison.OrdinalIgnoreCase)).ToArray();
-				TestContext.WriteLine($"[DIR] Log/txt/binlog files: {logFiles.Length}");
-				foreach (var log in logFiles)
-				{
-					TestContext.WriteLine($"[LOG] {log}");
-				}
-			}
-			catch (Exception ex)
-			{
-				TestContext.WriteLine($"[ERROR] Failed to list directory contents: {ex.Message}");
-			}
-			TestContext.WriteLine("=== End Test Directory Contents ===");
-		}
-
-		/// <summary>
-		/// Logs all files in the log directory for debugging purposes.
-		/// </summary>
-		protected void LogLogDirectoryContents()
-		{
-			var logDir = LogDirectory;
-			TestContext.WriteLine($"=== Log Directory Contents: {logDir} ===");
-			try
-			{
-				if (!Directory.Exists(logDir))
-				{
-					TestContext.WriteLine($"[WARN] Log directory does not exist: {logDir}");
-					return;
-				}
-
-				var allFiles = Directory.GetFiles(logDir, "*", SearchOption.AllDirectories);
-				TestContext.WriteLine($"[DIR] Total files in log directory: {allFiles.Length}");
-				foreach (var file in allFiles)
-				{
-					var info = new FileInfo(file);
-					TestContext.WriteLine($"[FILE] {file} ({info.Length} bytes)");
-				}
-			}
-			catch (Exception ex)
-			{
-				TestContext.WriteLine($"[ERROR] Failed to list log directory contents: {ex.Message}");
-			}
-			TestContext.WriteLine("=== End Log Directory Contents ===");
 		}
 
 	}
