@@ -25,12 +25,16 @@
     <PackageId>Microsoft.Maui.Controls.Maps</PackageId>
     <PackageTags>$(DefaultPackageTags);maps;mapping</PackageTags>
     <Description>Maps and mapping support for .NET Multi-platform App UI (.NET MAUI) apps.</Description>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" PrivateAssets="all" />
     <ProjectReference Include="..\..\..\Core\src\Core.csproj" PrivateAssets="all" />
     <ProjectReference Include="..\..\..\Core\maps\src\Maps.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)..\README.md" Link="README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
   
   <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
