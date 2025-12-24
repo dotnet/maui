@@ -411,10 +411,20 @@ namespace Microsoft.Maui.Platform
 				if (backgroundImage == null)
 					return;
 
+				var cgImage = backgroundImage.CGImage;
+				if (cgImage == null && backgroundImage.CIImage != null)
+				{
+					using var context = CoreImage.CIContext.Create();
+					cgImage = context.CreateCGImage(backgroundImage.CIImage, backgroundImage.CIImage.Extent);
+				}
+
+				if (cgImage == null)
+					return;
+
 				var imageLayer = new StaticCALayer
 				{
 					Name = BackgroundLayerName,
-					Contents = backgroundImage.CGImage,
+					Contents = cgImage,
 					Frame = platformView.Bounds,
 					ContentsGravity = CoreAnimation.CALayer.GravityResize
 				};
