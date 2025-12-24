@@ -71,7 +71,11 @@ namespace Microsoft.Maui.Controls
 
 				if (args.OldItems != null)
 					foreach (Element element in args.OldItems)
+					{
 						RemoveLogicalChild(element);
+						// Clean up the route from the routing system when element is removed
+						Routing.RemoveElementRoute(element);
+					}
 			};
 		}
 
@@ -103,7 +107,11 @@ namespace Microsoft.Maui.Controls
 		public string Route
 		{
 			get { return Routing.GetRoute(this); }
-			set { Routing.SetRoute(this, value); }
+			set
+			{
+				Routing.ValidateForDuplicates(this, value);
+				Routing.SetRoute(this, value);
+			}
 		}
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/BaseShellItem.xml" path="//Member[@MemberName='Title']/Docs/*" />
