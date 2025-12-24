@@ -15,7 +15,6 @@ namespace Maui.Controls.Sample.Issues
 		{
 			InitializeComponent();
 	     	Routing.RegisterRoute("NewPage", typeof(Issue13537InnerPage));
-			Application.Current.Windows[0].Page = new NavigationPage(new Issue13537HomePage());
 		}
 	}
 
