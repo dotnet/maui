@@ -798,23 +798,19 @@ void StartVisualStudioForDotNet()
         return;
     }
 
-    if (localDotnet)
-    {
-        SetDotNetEnvironmentVariables();
-    }
-
     if (IsRunningOnWindows())
     {
         var vsLatest = VSWhereLatest(new VSWhereLatestSettings { IncludePrerelease = includePrerelease, });
         if (vsLatest == null)
             throw new Exception("Unable to find Visual Studio!");
 
+        // Launch Visual Studio - global.json paths will handle SDK discovery
         StartProcess(vsLatest.CombineWithFilePath("./Common7/IDE/devenv.exe"), sln);
     }
     else
     {
-
-        StartProcess("open", new ProcessSettings { Arguments = sln, EnvironmentVariables = GetDotNetEnvironmentVariables() });
+        // Launch with 'open' - global.json paths will handle SDK discovery
+        StartProcess("open", new ProcessSettings { Arguments = sln });
     }
 }
 
