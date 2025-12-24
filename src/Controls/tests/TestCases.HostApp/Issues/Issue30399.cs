@@ -13,6 +13,7 @@ public class Issue30399 : ContentPage
 		{
 			Title = "Maui App",
 			Subtitle = "Hello, World!",
+			FlowDirection = FlowDirection.LeftToRight,
 			ForegroundColor = Colors.Red,
 			HeightRequest = 48
 		};
