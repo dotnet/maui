@@ -229,7 +229,9 @@ namespace Microsoft.Maui.Platform
 				var nonClientInputSrc =
 					InputNonClientPointerSource.GetForWindowId(AppWindowId.Value);
 
-				if (rectArray.Count > 0)
+				// Only set passthrough regions when the title bar is actually visible
+				// to avoid blocking caption button input when title bar is hidden
+				if (rectArray.Count > 0 && AppTitleBarContentControl.Visibility == UI.Xaml.Visibility.Visible)
 				{
 					nonClientInputSrc.SetRegionRects(NonClientRegionKind.Passthrough, [.. rectArray]);
 				}
