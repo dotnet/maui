@@ -38,6 +38,7 @@ namespace Microsoft.Maui.Handlers
 			if (handler.VirtualView.PresentedContent is IView view)
 			{
 				var platformView = view.ToPlatform(handler.MauiContext);
+				platformView.RemoveFromSuperview();
 				handler.PlatformView.AddSubview(platformView);
 
 				if (view.FlowDirection == FlowDirection.MatchParent)
