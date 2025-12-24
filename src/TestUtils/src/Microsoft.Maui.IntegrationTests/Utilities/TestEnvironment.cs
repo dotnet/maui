@@ -72,7 +72,9 @@ namespace Microsoft.Maui.IntegrationTests
 		{
 			if (_logDirectory == null)
 			{
-				var envLogDirectory = Environment.GetEnvironmentVariable("LogDirectory");
+				// Check for LogDirectory env var (Azure DevOps may uppercase it on macOS/Linux)
+				var envLogDirectory = Environment.GetEnvironmentVariable("LogDirectory")
+					?? Environment.GetEnvironmentVariable("LOGDIRECTORY");
 				if (!string.IsNullOrEmpty(envLogDirectory))
 				{
 					// LogDirectory env var is already a complete log directory path, use it directly
