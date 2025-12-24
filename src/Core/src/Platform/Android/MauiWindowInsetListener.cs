@@ -534,6 +534,37 @@ namespace Microsoft.Maui.Platform
 
 			if (IsImeAnimation(animation))
 			{
+				// Determine if we should reset padding based on SoftInputMode
+				// We only reset if we applied keyboard padding (AdjustResize mode)
+				// For AdjustPan or other modes, we never applied padding, so don't reset
+				var shouldReset = false;
+				Context? context = null;
+
+				// Get context from tracked or pending views
+				var allViews = _trackedViews.Concat(_pendingViews);
+				foreach (var view in allViews)
+				{
+					context = view.Context;
+					if (context != null)
+						break;
+				}
+
+				if (context?.GetActivity()?.Window?.Attributes is WindowManagerLayoutParams attr)
+				{
+					var softInputMode = attr.SoftInputMode;
+					shouldReset = (softInputMode & SoftInput.AdjustResize) == SoftInput.AdjustResize;
+				}
+
+				if (!shouldReset)
+				{
+					// Not AdjustResize mode - don't reset anything
+					// Native Android handles AdjustPan, and we didn't apply any padding
+					IsImeAnimating = false;
+					_pendingViews.Clear();
+					return;
+				}
+
+				// AdjustResize mode - proceed with reset logic
 				// Take snapshot of views that need reset and recalculation
 				var trackedViewsSnapshot = _trackedViews.ToArray();
 				var pendingViewsSnapshot = _pendingViews.ToArray();
