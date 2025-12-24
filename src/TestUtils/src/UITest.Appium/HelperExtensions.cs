@@ -2687,6 +2687,33 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// Taps the clear button in a search bar control with platform-specific implementations.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="automationId">The automation ID of the search bar.</param>
+		/// <param name="timeout">Optional timeout for waiting for the clear button. Default is null, which uses the default timeout.</param>
+		public static void TapSearchBarClearButton(this IApp app, string automationId, TimeSpan? timeout = null)
+		{
+			if (app is AppiumAndroidApp)
+			{
+				app.WaitForElement(AppiumQuery.ByXPath("//android.widget.ImageView[@content-desc='Clear query']"), timeout: timeout);
+				app.Tap(AppiumQuery.ByXPath("//android.widget.ImageView[@content-desc='Clear query']"));
+			}
+			else if (app is AppiumIOSApp || app is AppiumCatalystApp)
+			{
+				app.WaitForElement("Clear text", timeout: timeout);
+				app.Tap("Clear text");
+			}
+			else if (app is AppiumWindowsApp)
+			{
+				var searchBar = app.WaitForElement(AppiumQuery.ByAccessibilityId(automationId), timeout: timeout);
+				var rect = searchBar.GetRect();
+				app.Tap(automationId);
+				app.TapCoordinates(rect.Right - 84, rect.Y + rect.Height / 2);
+			}
+		}
+
+		/// <summary>
 		/// Taps an element and retries until another element appears and is ready for interaction.
 		/// Sometimes elements may appear but are not yet ready for interaction; this helper method retries the tap until the target element is interactable or the retry limit is reached.
 		/// </summary>
