@@ -4,20 +4,16 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-public class ShellTabbedPageFeatureTests : UITest
+public class ShellTabbedPageFeatureTests : _GalleryUITest
 {
 	public const string ShellTabbedFeatureMatrix = "Shell Feature Matrix";
+	public override string GalleryPageName => ShellTabbedFeatureMatrix;
 	public const string Options = "Options";
 	public const string Apply = "Apply";
 
 	public ShellTabbedPageFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(ShellTabbedFeatureMatrix);
 	}
 
 #if TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/32222, https://github.com/dotnet/maui/issues/32125
@@ -266,7 +262,7 @@ public class ShellTabbedPageFeatureTests : UITest
 	}
 #endif 
 
-#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST// Issue Link: https://github.com/dotnet/maui/issues/32992, https://github.com/dotnet/maui/issues/33158
+#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/32992, https://github.com/dotnet/maui/issues/33158
 	[Test, Order(17)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShell_TabBarBackgroundColorSetToNull()

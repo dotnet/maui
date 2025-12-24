@@ -101,7 +101,7 @@
                    IsEnabled="{Binding IsEnabled, Mode=TwoWay}"
                    Icon="coffee.png">
                      <ShellContent x:Name="tab3Item"
-                                   Shell.TabBarIsVisible="{Binding IsTabBarVisible, Mode=TwoWay}"
+                                   Shell.TabBarIsVisible="{Binding TabBarIsVisible, Mode=TwoWay}"
                                    Title="shellTab3">
                             <ContentPage Title="Tab3 Content">
                                    <VerticalStackLayout Padding="10">
@@ -251,7 +251,7 @@
                                           <Label Text="{Binding CurrentItemTitle, StringFormat='Current Item: {0}'}"
                                                  FontAttributes="Bold"
                                                  TextColor="DarkCyan"
-                                                 AutomationId="Tab9CurrentItemLabel"/>
+                                                 AutomationId="Tab10CurrentItemLabel"/>
                                           <Button Text="Go to Tab1"
                                                   Clicked="OnGoToTab1Clicked"
                                                   AutomationId="GoToTab1Button"/>
@@ -271,7 +271,7 @@
                                           <Label Text="{Binding CurrentItemTitle, StringFormat='Current Item: {0}'}"
                                                  FontAttributes="Bold"
                                                  TextColor="DarkCyan"
-                                                 AutomationId="Tab9CurrentItemLabel"/>
+                                                 AutomationId="Tab11CurrentItemLabel"/>
                                           <Button Text="Go to Tab1"
                                                   Clicked="OnGoToTab1Clicked"
                                                   AutomationId="GoToTab1Button"/>
