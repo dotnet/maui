@@ -15,7 +15,7 @@ namespace Maui.Controls.Sample.Issues
 			Label label = new Label();
 			label.AutomationId = "Label";
 
-			const string url = "https://learn.microsoft.com/en-us/dotnet/";
+			const string url = "https://dotnet.microsoft.com";
 
 			CookieContainer cookieContainer = new();
 			Uri uri = new(url, UriKind.RelativeOrAbsolute);
@@ -38,6 +38,13 @@ namespace Maui.Controls.Sample.Issues
 
 			webView.Navigated += (s, e) =>
 			{
+#if ANDROID
+				if (((WebView)s).Handler?.PlatformView is Android.Webkit.WebView androidWebView)
+				{
+					var cookieManager = Android.Webkit.CookieManager.Instance;
+					cookieManager?.Flush();
+				}
+#endif
 				var cookies = webView.Cookies.GetCookies(uri);
 				foreach (Cookie c in cookies)
 				{

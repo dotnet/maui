@@ -290,6 +290,8 @@ public class EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		App.WaitForElement("TextChangedLabel");
+		App.Tap("TextChangedLabel");
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
