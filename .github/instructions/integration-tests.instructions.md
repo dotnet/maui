@@ -18,22 +18,29 @@ All integration tests run on **Azure DevOps agents** via the stage template `eng
 - **Windows tests**: Run on Windows 1ES pools
 - **macOS tests**: Run on Azure Pipelines hosted images
   - General macOS tests: `macOS-15` (ARM64/Apple Silicon)
-  - `RunOnAndroid`: `macOS-15` (ARM64 only)
-  - `RunOniOS_*`: Each iOS test runs in a **separate job** on `macOS-15` (ARM64)
+  - `RunOnAndroid`: `macOS-15` (via MacOSPool)
+  - `RunOniOS_*`: Each iOS test runs in **two separate lanes**:
+    - **ARM64 lane** (`MacOSPoolArm64`): `macOS-15` with Apple Silicon
+    - **MacOSPool lane** (`MacOSPool`): For comparison testing
+
+### Test Retry
+
+Integration tests are configured with **automatic retry on failure** (`retryCountOnTaskFailure: 1`). If a test fails, Azure DevOps will automatically retry it once before reporting failure.
 
 ### Individual iOS Test Lanes
 
-iOS tests are split into individual jobs for faster debugging:
+iOS tests are split into individual jobs for faster debugging and parallel execution. Each test runs on both ARM64 and MacOSPool for comparison:
 
-| Category | Description | Timeout |
-|----------|-------------|---------|
+| Test | Description | Timeout |
+|------|-------------|---------|
 | `RunOniOS_MauiDebug` | MAUI app, Debug config | 60 min |
 | `RunOniOS_MauiRelease` | MAUI app, Release config | 60 min |
 | `RunOniOS_MauiReleaseTrimFull` | MAUI app, Release, full trim | 60 min |
 | `RunOniOS_BlazorDebug` | Blazor app, Debug config | 60 min |
 | `RunOniOS_BlazorRelease` | Blazor app, Release config | 60 min |
-| `RunOniOS_BlazorReleaseTrimFull` | Blazor app, Release, full trim | 60 min |
 | `RunOniOS_MauiNativeAOT` | MAUI app, NativeAOT | 60 min |
+
+**Note**: `RunOniOS_BlazorReleaseTrimFull` is temporarily disabled due to [ASP.NET Core issue #63951](https://github.com/dotnet/aspnetcore/issues/63951).
 
 ## Test Categories
 
@@ -48,11 +55,10 @@ Tests are organized by categories (defined in `Utilities/Categories.cs`) that ma
 | `MultiProject` | Multi-project templates | All |
 | `AOT` | Native AOT compilation | macOS |
 | `RunOnAndroid` | Build, install, run on Android emulator | macOS |
-| `RunOniOS` | All iOS simulator tests (parent category) | macOS |
-| `RunOniOS_*` | Individual iOS test configurations | macOS ARM64 |
+| `RunOniOS` | iOS simulator tests (class-level category on `AppleTemplateTests`) | macOS |
 | `Samples` | Sample project builds | All |
 
-**Note**: iOS tests have both the `RunOniOS` parent category and a specific `RunOniOS_*` subcategory for flexible filtering.
+**Note**: The `RunOniOS` category is applied at the **class level** on `AppleTemplateTests`. Individual test methods don't need their own category attribute.
 
 ## Writing Integration Tests
 
@@ -175,13 +181,13 @@ dotnet test ... --filter "Category=RunOniOS"
 
 ### DO
 - Use `BuildProps` from base class for isolation
-- Use exactly ONE `[Category]` per test
+- Apply `[Category]` at the **class level** when all tests share the same category
 - Check platform with `TestEnvironment.Is*` before platform-specific tests
 - Use `TestEnvironment.IOSSimulatorRuntimeIdentifier` for iOS builds
 - Include meaningful assertion messages
 
 ### DON'T
 - Hardcode paths - use `TestDirectory`, `TestEnvironment` helpers
-- Use multiple categories per test
+- Add `[Category]` to each test method when the class has a category
 - Skip platform guards for platform-specific tests
 - Hardcode iOS runtime identifiers (arm64 vs x64)
