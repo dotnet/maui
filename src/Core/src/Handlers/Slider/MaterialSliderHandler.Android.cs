@@ -1,6 +1,8 @@
+using Google.Android.Material.Slider;
+
 namespace Microsoft.Maui.Handlers;
 
-internal partial class MaterialSliderHandler : ViewHandler<ISlider, MauiMaterialSlider>
+internal partial class MaterialSliderHandler : ViewHandler<ISlider, Slider>
 {
     public static PropertyMapper<ISlider, MaterialSliderHandler> Mapper =
             new(ViewMapper)
@@ -22,23 +24,23 @@ internal partial class MaterialSliderHandler : ViewHandler<ISlider, MauiMaterial
     {
     }
 
-    protected override MauiMaterialSlider CreatePlatformView()
+    protected override Slider CreatePlatformView()
     {
-        return new MauiMaterialSlider(Context)
+        return new Slider(Context)
         {
             DuplicateParentStateEnabled = false,
         };
     }
 
-    protected override void ConnectHandler(MauiMaterialSlider platformView)
+    protected override void ConnectHandler(Slider platformView)
     {
-        // TODO: Add listeners when https://github.com/dotnet/android-libraries/issues/230 is resolved
+        // TODO: Material3: Add listeners when https://github.com/dotnet/android-libraries/issues/230 is resolved
 
     }
 
-    protected override void DisconnectHandler(MauiMaterialSlider platformView)
+    protected override void DisconnectHandler(Slider platformView)
     {
-        // TODO: Cleanup listeners when implemented
+        // TODO: Material3: Cleanup listeners when implemented
     }
 
     internal static void MapValue(MaterialSliderHandler handler, ISlider slider)
@@ -79,10 +81,10 @@ internal partial class MaterialSliderHandler : ViewHandler<ISlider, MauiMaterial
             .FireAndForget(handler);
     }
 
-    internal void OnStartTrackingTouch(MauiMaterialSlider slider) =>
+    internal void OnStartTrackingTouch(Slider slider) =>
         VirtualView?.DragStarted();
 
-    internal void OnStopTrackingTouch(MauiMaterialSlider slider) =>
+    internal void OnStopTrackingTouch(Slider slider) =>
         VirtualView?.DragCompleted();
 
 }
