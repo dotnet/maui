@@ -11,27 +11,18 @@ namespace Microsoft.Maui.Controls
 	public class TextCell : Cell, ICommandElement
 	{
 		/// <summary>Bindable property for <see cref="Command"/>.</summary>
-		public static readonly BindableProperty CommandProperty;
+		public static readonly BindableProperty CommandProperty =
+			BindableProperty.Create(nameof(Command), typeof(ICommand), typeof(TextCell),
+			propertyChanging: CommandElement.OnCommandChanging,
+			propertyChanged: CommandElement.OnCommandChanged);
 
 		/// <summary>Bindable property for <see cref="CommandParameter"/>.</summary>
-		public static readonly BindableProperty CommandParameterProperty;
-
-		static TextCell()
-		{
-			CommandParameterProperty = BindableProperty.Create(nameof(CommandParameter),
+		public static readonly BindableProperty CommandParameterProperty =
+			BindableProperty.Create(nameof(CommandParameter),
 				typeof(object),
 				typeof(TextCell),
 				null,
 				propertyChanged: CommandElement.OnCommandParameterChanged);
-
-			CommandProperty = BindableProperty.Create(nameof(Command), typeof(ICommand), typeof(TextCell),
-				propertyChanging: CommandElement.OnCommandChanging,
-				propertyChanged: CommandElement.OnCommandChanged);
-
-			// Register dependency: Command depends on CommandParameter for CanExecute evaluation
-			// See https://github.com/dotnet/maui/issues/31939
-			CommandProperty.DependsOn(CommandParameterProperty);
-		}
 
 		/// <summary>Bindable property for <see cref="Text"/>.</summary>
 		public static readonly BindableProperty TextProperty = BindableProperty.Create(nameof(Text), typeof(string), typeof(TextCell), default(string));
@@ -104,7 +95,10 @@ namespace Microsoft.Maui.Controls
 
 		void ICommandElement.CanExecuteChanged(object sender, EventArgs eventArgs)
 		{
-			IsEnabled = CommandElement.GetCanExecute(this, CommandProperty);
+			if (Command is null)
+				return;
+
+			IsEnabled = Command.CanExecute(CommandParameter);
 		}
 
 		WeakCommandSubscription ICommandElement.CleanupTracker { get; set; }
