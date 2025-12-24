@@ -372,6 +372,9 @@ namespace Microsoft.Maui.Platform
 			{
 				NavigationViewControl.OnApplyTemplateFinished -= OnNavigationViewControlOnApplyTemplateFinished;
 				NavigationViewControl.ButtonHolderGrid!.SizeChanged += OnButtonHolderGridSizeChanged;
+
+				// Need to update the background color for the buttons after the template is applied
+				UpdateBackgroundColorForButtons();
 			}
 
 			ContentChanged?.Invoke(this, EventArgs.Empty);
