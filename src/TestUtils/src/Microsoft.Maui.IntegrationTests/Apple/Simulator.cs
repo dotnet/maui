@@ -6,7 +6,103 @@ namespace Microsoft.Maui.IntegrationTests.Apple
 	{
 		readonly string XCRunTool = "xcrun";
 
-		public string XHarnessID { get; set; } = TestEnvironment.IosTestDevice ?? "ios-simulator-64";
+		string? _xharnessID;
+		
+		/// <summary>
+		/// Gets the XHarness target ID (e.g., "ios-simulator-64_18.5").
+		/// If IOS_TEST_DEVICE is not set or doesn't include a version, auto-detects
+		/// the latest available iOS runtime on this machine.
+		/// </summary>
+		public string XHarnessID
+		{
+			get
+			{
+				if (_xharnessID == null)
+				{
+					_xharnessID = ResolveXHarnessID();
+				}
+				return _xharnessID;
+			}
+			set => _xharnessID = value;
+		}
+
+		string ResolveXHarnessID()
+		{
+			var envValue = TestEnvironment.IosTestDevice;
+			
+			// If env var is set and includes a version (has underscore), use it directly
+			if (!string.IsNullOrEmpty(envValue) && envValue.Contains('_', StringComparison.Ordinal))
+			{
+				return envValue;
+			}
+
+			// Try to get the base target (e.g., "ios-simulator-64")
+			var baseTarget = envValue ?? "ios-simulator-64";
+
+			// Auto-detect the latest iOS version and append it
+			var latestVersion = TryGetLatestIOSVersion();
+			if (latestVersion != null)
+			{
+				var versionSuffix = $"{latestVersion.Major}.{latestVersion.Minor}";
+				var resolvedTarget = $"{baseTarget}_{versionSuffix}";
+				TestContext.WriteLine($"Auto-detected iOS target: {resolvedTarget}");
+				return resolvedTarget;
+			}
+
+			// Fallback to base target (may fail if XHarness can't find a match)
+			TestContext.WriteLine($"Warning: Could not auto-detect iOS version, using '{baseTarget}' which may fail.");
+			return baseTarget;
+		}
+
+		/// <summary>
+		/// Gets the latest available iOS runtime version from simctl.
+		/// Prefers iOS 18.x over newer versions for XHarness compatibility (iPhone XS device type).
+		/// </summary>
+		Version? TryGetLatestIOSVersion()
+		{
+			try
+			{
+				var output = ToolRunner.Run(XCRunTool, "simctl list runtimes --json", out int exitCode, timeoutInSeconds: 30);
+				if (exitCode != 0 || string.IsNullOrEmpty(output))
+					return null;
+
+				using var doc = JsonDocument.Parse(output);
+				var runtimes = doc.RootElement.GetProperty("runtimes");
+
+				Version? preferredVersion = null; // iOS 18.x
+				Version? latestVersion = null;    // Any iOS version
+
+				foreach (var runtime in runtimes.EnumerateArray())
+				{
+					if (!runtime.TryGetProperty("platform", out var platform) || platform.GetString() != "iOS")
+						continue;
+					if (!runtime.TryGetProperty("isAvailable", out var available) || !available.GetBoolean())
+						continue;
+					if (!runtime.TryGetProperty("version", out var versionProp))
+						continue;
+
+					var versionStr = versionProp.GetString();
+					if (Version.TryParse(versionStr, out var version))
+					{
+						// Track latest overall
+						if (latestVersion == null || version > latestVersion)
+							latestVersion = version;
+
+						// Prefer iOS 18.x for XHarness compatibility (has iPhone XS device type)
+						if (version.Major == 18 && (preferredVersion == null || version > preferredVersion))
+							preferredVersion = version;
+					}
+				}
+
+				// Use 18.x if available, otherwise fall back to latest
+				return preferredVersion ?? latestVersion;
+			}
+			catch (Exception ex)
+			{
+				TestContext.WriteLine($"Failed to detect iOS version: {ex.Message}");
+				return null;
+			}
+		}
 
 		string _udid = "";
 		public string GetUDID()
@@ -22,12 +118,6 @@ namespace Microsoft.Maui.IntegrationTests.Apple
 			{
 				_udid = xharnessOutput;
 			}
-			// If XHarness couldn't find a device and we're not on CI, try to auto-detect
-			else if (!TestEnvironment.IsRunningOnCI)
-			{
-				TestContext.WriteLine($"XHarness failed to find device for '{XHarnessID}', attempting auto-detection...");
-				_udid = TryGetLatestAvailableSimulatorUDID();
-			}
 
 			return _udid;
 		}
@@ -38,91 +128,6 @@ namespace Microsoft.Maui.IntegrationTests.Apple
 		static bool IsValidUDID(string value)
 		{
 			return !string.IsNullOrEmpty(value) && Guid.TryParse(value, out _);
-		}
-
-		/// <summary>
-		/// Attempts to find the latest available iOS simulator by querying simctl directly.
-		/// This is a fallback for local development when XHarness target doesn't match installed runtimes.
-		/// </summary>
-		string TryGetLatestAvailableSimulatorUDID()
-		{
-			try
-			{
-				var output = ToolRunner.Run(XCRunTool, "simctl list runtimes --json", out int exitCode, timeoutInSeconds: 30);
-				if (exitCode != 0 || string.IsNullOrEmpty(output))
-					return "";
-
-				// Parse runtimes to find the latest iOS runtime
-				using var doc = JsonDocument.Parse(output);
-				var runtimes = doc.RootElement.GetProperty("runtimes");
-				
-				string? latestRuntimeId = null;
-				Version latestVersion = new Version(0, 0);
-				
-				foreach (var runtime in runtimes.EnumerateArray())
-				{
-					if (!runtime.TryGetProperty("platform", out var platform) || platform.GetString() != "iOS")
-						continue;
-					if (!runtime.TryGetProperty("isAvailable", out var available) || !available.GetBoolean())
-						continue;
-					if (!runtime.TryGetProperty("version", out var versionProp))
-						continue;
-					
-					var versionStr = versionProp.GetString();
-					if (Version.TryParse(versionStr, out var version) && version > latestVersion)
-					{
-						latestVersion = version;
-						latestRuntimeId = runtime.GetProperty("identifier").GetString();
-					}
-				}
-
-				if (string.IsNullOrEmpty(latestRuntimeId))
-					return "";
-
-				// Now find a device for this runtime
-				output = ToolRunner.Run(XCRunTool, "simctl list devices available --json", out exitCode, timeoutInSeconds: 30);
-				if (exitCode != 0 || string.IsNullOrEmpty(output))
-					return "";
-
-				using var devicesDoc = JsonDocument.Parse(output);
-				var devices = devicesDoc.RootElement.GetProperty("devices");
-
-				if (!devices.TryGetProperty(latestRuntimeId, out var runtimeDevices))
-					return "";
-
-				// Prefer iPhone devices, pick the first available one
-				foreach (var device in runtimeDevices.EnumerateArray())
-				{
-					var name = device.GetProperty("name").GetString() ?? "";
-					if (name.Contains("iPhone", StringComparison.OrdinalIgnoreCase))
-					{
-						var udid = device.GetProperty("udid").GetString() ?? "";
-						if (!string.IsNullOrEmpty(udid))
-						{
-							TestContext.WriteLine($"Auto-detected simulator: {name} ({latestVersion}) - {udid}");
-							return udid;
-						}
-					}
-				}
-
-				// Fallback to any device in this runtime
-				foreach (var device in runtimeDevices.EnumerateArray())
-				{
-					var udid = device.GetProperty("udid").GetString() ?? "";
-					if (!string.IsNullOrEmpty(udid))
-					{
-						var name = device.GetProperty("name").GetString() ?? "";
-						TestContext.WriteLine($"Auto-detected simulator: {name} ({latestVersion}) - {udid}");
-						return udid;
-					}
-				}
-			}
-			catch (Exception ex)
-			{
-				TestContext.WriteLine($"Failed to auto-detect simulator: {ex.Message}");
-			}
-
-			return "";
 		}
 
 		public bool Launch()
