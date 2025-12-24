@@ -14,7 +14,6 @@ public class Issue13616 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CarouselView)]
-	[Category(UITestCategories.Compatibility)]
 	public void Issue13616Test()
 	{
 		App.WaitForElement("AddItemButtonId");

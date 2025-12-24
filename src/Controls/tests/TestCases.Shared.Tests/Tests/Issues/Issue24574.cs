@@ -14,7 +14,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Gestures)]
-		[Category(UITestCategories.Compatibility)]
 		public void TapThenDoubleTap()
 		{
 			App.Screenshot("I am at Issue 24574");
