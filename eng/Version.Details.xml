@@ -170,6 +170,10 @@
       <Uri>https://github.com/dotnet/xharness</Uri>
       <Sha>bdf0f92540d68762bb028b8cb859146048f3c356</Sha>
     </Dependency>
+    <Dependency Name="optimization.linux-arm64.MIBC.Runtime" Version="1.0.0-prerelease.25502.1">
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-optimization</Uri>
+      <Sha>71ce9774e9875270b80faaac1d6b60568a80e1fa</Sha>
+    </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
     <Dependency Name="Microsoft.DotNet.Build.Tasks.Feed" Version="10.0.0-beta.25523.113">

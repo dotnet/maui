@@ -17,6 +17,7 @@
   <Import Condition="'$(SampleProject)' != 'true' and '$(MauiTestProject)' != 'true'" Project="eng\BannedApis.targets" />
   <Import Project="eng\AndroidX.targets" />
   <Import Project="eng\NuGetVersions.targets" />
+  <Import Project="eng\optimizationData.targets" />
 
   <PropertyGroup>
     <!-- Allows for MAUI Xaml Hot Reload Samples to run without checks  -->
