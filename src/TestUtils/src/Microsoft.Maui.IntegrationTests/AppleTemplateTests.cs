@@ -13,15 +13,20 @@ namespace Microsoft.Maui.IntegrationTests
 			if (!TestEnvironment.IsMacOS)
 				Assert.Ignore("Running Apple templates is only supported on macOS.");
 
-			// Don't pre-boot or manage the simulator - let XHarness handle the entire lifecycle.
-			// XHarness will find/create a simulator based on the target (e.g., ios-simulator-64_18.5).
+			// Pre-boot the simulator before XHarness runs.
+			// This ensures the full timeout is available for install + run, not consumed by boot time.
+			// Without this, booting a shutdown simulator (~30-35s on CI) can exhaust the timeout
+			// before the app even gets installed.
+			TestSimulator.Shutdown();
+			Assert.IsTrue(TestSimulator.Launch(), 
+				$"Failed to boot simulator. Target: {TestSimulator.XHarnessID}, UDID: {TestSimulator.GetUDID()}");
 		}
 
 		[OneTimeTearDown]
 		public void AppleTemplateFxtTearDown()
 		{
-			// Don't shutdown the simulator - XHarness manages the lifecycle.
-			// Shutting down here could interfere with other tests or cause issues.
+			// Shutdown simulator after all tests complete to clean up resources.
+			TestSimulator.Shutdown();
 		}
 
 		// [TestCase("maui", "Debug", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, null)]
