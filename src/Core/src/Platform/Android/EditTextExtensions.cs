@@ -26,7 +26,12 @@ namespace Microsoft.Maui.Platform
 			// User Types => VirtualView Updated => Triggers Native Update
 			// Then it will cause the cursor to reset to position zero as the user typed
 			editText.Text = entry.Text;
-			editText.SetSelection(editText.Text?.Length ?? 0);
+
+			// Ensure the selection position doesn't exceed the actual text length
+			// to prevent crashes when text is modified by text watchers (e.g., EmojiCompat)
+			// Use editText.Length() as the authoritative source after text watchers have processed
+			int selectionPosition = Math.Min(entry.Text?.Length ?? 0, editText.Length());
+			editText.SetSelection(selectionPosition);
 
 			// TODO ezhart The renderer sets the text to selected and shows the keyboard if the EditText is focused
 		}
@@ -34,7 +39,12 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateText(this EditText editText, IEditor editor)
 		{
 			editText.Text = editor.Text;
-			editText.SetSelection(editText.Text?.Length ?? 0);
+
+			// Ensure the selection position doesn't exceed the actual text length
+			// to prevent crashes when text is modified by text watchers (e.g., EmojiCompat)
+			// Use editText.Length() as the authoritative source after text watchers have processed
+			int selectionPosition = Math.Min(editor.Text?.Length ?? 0, editText.Length());
+			editText.SetSelection(selectionPosition);
 		}
 
 		public static void UpdateTextColor(this EditText editText, ITextStyle entry)
@@ -354,7 +364,9 @@ namespace Microsoft.Maui.Platform
 
 			// If we implement the OnSelectionChanged method, this method is called after a keyboard layout change with SelectionStart = 0,
 			// Let's restore the cursor position to its previous location.
-			editText.SetSelection(previousCursorPosition);
+			// Ensure the selection position doesn't exceed the actual text length
+			int selectionPosition = Math.Min(previousCursorPosition, editText.Length());
+			editText.SetSelection(selectionPosition);
 		}
 
 		internal static bool IsCompletedAction(this EditorActionEventArgs e, ImeAction currentInputImeFlag)
