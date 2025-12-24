@@ -13,12 +13,8 @@ namespace Microsoft.Maui.IntegrationTests
 			if (!TestEnvironment.IsMacOS)
 				Assert.Ignore("Running Apple templates is only supported on macOS.");
 
-			// Don't pre-boot the simulator - let XHarness handle the simulator lifecycle.
-			// Pre-booting causes race conditions with XHarness's watchdog disabling logic,
-			// which shuts down and reboots the simulator, leading to "simctl exit code 149" errors.
-			// Just ensure the UDID is resolved so we can pass it to XHarness.
-			var udid = TestSimulator.GetUDID();
-			Assert.IsFalse(string.IsNullOrEmpty(udid), $"Failed to get simulator UDID for '{TestSimulator.XHarnessID}'.");
+			// Don't pre-boot or manage the simulator - let XHarness handle the entire lifecycle.
+			// XHarness will find/create a simulator based on the target (e.g., ios-simulator-64_18.5).
 		}
 
 		[OneTimeTearDown]
@@ -114,10 +110,10 @@ namespace Microsoft.Maui.IntegrationTests
 			var xhResultsDir = Path.Combine(TestEnvironment.GetLogDirectory(), "xh-results", Path.GetFileName(projectDir));
 			Directory.CreateDirectory(xhResultsDir);
 
-			// Pass both target and device UDID to XHarness.
-			// The target specifies the platform type, and the UDID ensures XHarness uses the correct simulator.
-			// We don't pre-boot the simulator - XHarness handles the lifecycle when given a UDID.
-			Assert.IsTrue(XHarness.RunAppleForTimeout(appFile, xhResultsDir, TestSimulator.XHarnessID, TestSimulator.GetUDID()),
+			// Let XHarness find the simulator based on target (e.g., ios-simulator-64_18.5).
+			// Don't pass a specific UDID - this gives XHarness full control over the simulator
+			// lifecycle and avoids race conditions with watchdog disabling.
+			Assert.IsTrue(XHarness.RunAppleForTimeout(appFile, xhResultsDir, TestSimulator.XHarnessID),
 				$"Project {Path.GetFileName(projectFile)} failed to run. Check test output/attachments for errors.");
 		}
 	}

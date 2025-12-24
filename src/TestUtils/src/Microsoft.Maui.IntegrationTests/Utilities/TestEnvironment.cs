@@ -27,7 +27,7 @@ namespace Microsoft.Maui.IntegrationTests
 		/// </summary>
 		public static bool SkipXcodeVersionCheck =>
 			Environment.GetEnvironmentVariable("SKIP_XCODE_VERSION_CHECK")?.Equals("true", StringComparison.OrdinalIgnoreCase) == true
-			|| true; // ← Toggle to true if needed locally
+			|| false; // ← Toggle to true if needed locally
 
 		/// <summary>
 		/// Specifies the iOS test device target for XHarness (e.g., "ios-simulator-64_18.5").
@@ -72,9 +72,7 @@ namespace Microsoft.Maui.IntegrationTests
 		{
 			if (_logDirectory == null)
 			{
-				// Check for LogDirectory env var (Azure DevOps may uppercase it on macOS/Linux)
-				var envLogDirectory = Environment.GetEnvironmentVariable("LogDirectory")
-					?? Environment.GetEnvironmentVariable("LOGDIRECTORY");
+				var envLogDirectory = Environment.GetEnvironmentVariable("LogDirectory");
 				if (!string.IsNullOrEmpty(envLogDirectory))
 				{
 					// LogDirectory env var is already a complete log directory path, use it directly
