@@ -12,26 +12,15 @@ namespace Microsoft.Maui.Controls
 	public partial class MenuItem : BaseMenuItem, IMenuItemController, ICommandElement, IMenuElement, IPropertyPropagationController
 	{
 		/// <summary>Bindable property for <see cref="Command"/>.</summary>
-		public static readonly BindableProperty CommandProperty;
+		public static readonly BindableProperty CommandProperty = BindableProperty.Create(
+			nameof(Command), typeof(ICommand), typeof(MenuItem), null,
+			propertyChanging: CommandElement.OnCommandChanging,
+			propertyChanged: CommandElement.OnCommandChanged);
 
 		/// <summary>Bindable property for <see cref="CommandParameter"/>.</summary>
-		public static readonly BindableProperty CommandParameterProperty;
-
-		static MenuItem()
-		{
-			CommandParameterProperty = BindableProperty.Create(
-				nameof(CommandParameter), typeof(object), typeof(MenuItem), null,
-				propertyChanged: CommandElement.OnCommandParameterChanged);
-
-			CommandProperty = BindableProperty.Create(
-				nameof(Command), typeof(ICommand), typeof(MenuItem), null,
-				propertyChanging: CommandElement.OnCommandChanging,
-				propertyChanged: CommandElement.OnCommandChanged);
-
-			// Register dependency: Command depends on CommandParameter for CanExecute evaluation
-			// See https://github.com/dotnet/maui/issues/31939
-			CommandProperty.DependsOn(CommandParameterProperty);
-		}
+		public static readonly BindableProperty CommandParameterProperty = BindableProperty.Create(
+			nameof(CommandParameter), typeof(object), typeof(MenuItem), null,
+			propertyChanged: CommandElement.OnCommandParameterChanged);
 
 		/// <summary>Bindable property for <see cref="IsDestructive"/>.</summary>
 		public static readonly BindableProperty IsDestructiveProperty = BindableProperty.Create(nameof(IsDestructive), typeof(bool), typeof(MenuItem), false);
@@ -133,7 +122,7 @@ namespace Microsoft.Maui.Controls
 				return false;
 			}
 
-			var canExecute = CommandElement.GetCanExecute(menuItem, CommandProperty);
+			var canExecute = CommandElement.GetCanExecute(menuItem);
 			if (!canExecute)
 			{
 				return false;
