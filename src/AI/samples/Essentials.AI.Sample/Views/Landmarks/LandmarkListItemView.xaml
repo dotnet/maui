@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:models="clr-namespace:Maui.Controls.Sample.Models"
+    x:Class="Maui.Controls.Sample.Views.Landmarks.LandmarkListItemView"
+    x:Name="ListItemControl">
+    
+    <Border
+        WidthRequest="250"
+        HeightRequest="180"
+        Padding="0"
+        StrokeShape="RoundRectangle 16"
+        StrokeThickness="0"
+        Shadow="{Shadow Brush=Black, Offset='0,2', Radius=8, Opacity=0.3}">
+        <Border.GestureRecognizers>
+            <TapGestureRecognizer Tapped="OnLandmarkTapped" />
+        </Border.GestureRecognizers>
+        
+        <Grid>
+            <Image
+                Aspect="AspectFill"
+                Source="{Binding Source={x:Reference ListItemControl}, Path=Landmark.ThumbnailImageName, StringFormat='images/thumbnails/{0}.jpg'}" />
+            <BoxView 
+                Color="Black"
+                Opacity="0.3"
+                VerticalOptions="End"
+                HeightRequest="60" />
+            <Label
+                Text="{Binding Source={x:Reference ListItemControl}, Path=Landmark.Name}"
+                FontSize="18"
+                FontAttributes="Bold"
+                TextColor="White"
+                VerticalOptions="End"
+                HorizontalOptions="Center"
+                Margin="10" />
+        </Grid>
+    </Border>
+    
+</ContentView>

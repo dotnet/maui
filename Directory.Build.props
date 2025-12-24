@@ -26,6 +26,7 @@
     <IncludePreviousTfms>false</IncludePreviousTfms>
     <IncludePreviousTfmsEssentials>false</IncludePreviousTfmsEssentials>
     <IncludePreviousTfmsGraphics>false</IncludePreviousTfmsGraphics>
+    <IncludePreviousTfmsEssentialsAI>false</IncludePreviousTfmsEssentialsAI>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -256,6 +257,13 @@
     <!-- Library: Previous .NET Graphics TFMs -->
     <MauiGraphicsPreviousPlatforms>$(MauiPreviousPlatforms)</MauiGraphicsPreviousPlatforms>
     <MauiGraphicsPreviousPlatforms Condition="'$(IncludeMacOSTargetFrameworks)' == 'true'">$(MauiGraphicsPreviousPlatforms);net$(_MauiPreviousDotNetVersion)-macos$(MacosPreviousTargetFrameworkVersion)</MauiGraphicsPreviousPlatforms>
+
+    <!-- Library: Essentials AI TFMs -->
+    <MauiEssentialsAIPlatforms>$(MauiPlatforms)</MauiEssentialsAIPlatforms>
+    <MauiEssentialsAIPlatforms Condition="'$(IncludeMacOSTargetFrameworks)' == 'true'">$(MauiEssentialsAIPlatforms);net$(_MauiDotNetVersion)-macos$(MacosTargetFrameworkVersion)</MauiEssentialsAIPlatforms>
+    <!-- Library: Previous .NET EssentialsAI TFMs -->
+    <MauiEssentialsAIPreviousPlatforms>$(MauiPreviousPlatforms)</MauiEssentialsAIPreviousPlatforms>
+    <MauiEssentialsAIPreviousPlatforms Condition="'$(IncludeMacOSTargetFrameworks)' == 'true'">$(MauiEssentialsAIPreviousPlatforms);net$(_MauiPreviousDotNetVersion)-macos$(MacosPreviousTargetFrameworkVersion)</MauiEssentialsAIPreviousPlatforms>
   </PropertyGroup>
 
   <PropertyGroup>
