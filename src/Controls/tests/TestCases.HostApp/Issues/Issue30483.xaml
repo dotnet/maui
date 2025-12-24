@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
+       x:Class="Maui.Controls.Sample.Issues.Issue30483"
+       Title="Issue30483"
+       FlyoutBehavior="Flyout"
+       FlyoutWidth="310">
+
+    <Shell.FlyoutHeader>
+        <Grid Padding="10" BackgroundColor="Red" AutomationId="FlyoutHeader">
+            <Label Text="Header" 
+                   TextColor="White"
+                   FontSize="24"
+                   VerticalOptions="Center"
+                   HorizontalOptions="Center"/>
+        </Grid>
+    </Shell.FlyoutHeader>
+
+    <Shell.FlyoutContent>
+        <CollectionView SelectionMode="Single"
+                        ItemsSource="{Binding MenuItems}"
+                        AutomationId="MenuCollectionView">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="local:FlyoutMenuItem">
+                    <Grid HeightRequest="44" 
+                          ColumnSpacing="0"
+                          RowSpacing="0"
+                          AutomationId="{Binding AutomationId}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="50" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        
+                        <BoxView Grid.Column="0"
+                                 Color="Blue"
+                                 WidthRequest="24"
+                                 HeightRequest="24"
+                                 VerticalOptions="Center"
+                                 HorizontalOptions="Center"/>
+                        
+                        <Label Grid.Column="1"
+                               Text="{Binding Title}"
+                               TextColor="White"
+                               VerticalTextAlignment="Center"
+                               AutomationId="{Binding LabelAutomationId}"/>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Shell.FlyoutContent>
+
+    <Shell.FlyoutFooter>
+        <Button Margin="10"
+                Text="Footer Button"
+                BackgroundColor="CornflowerBlue"
+                HorizontalOptions="Fill"
+                VerticalOptions="Fill"
+                AutomationId="FlyoutFooter"/>
+    </Shell.FlyoutFooter>
+
+    <FlyoutItem Route="MainPage"
+                Title="Main"
+                FlyoutItemIsVisible="False">
+        <ShellContent ContentTemplate="{DataTemplate local:Issue30483Content}" />
+    </FlyoutItem>
+</Shell>
