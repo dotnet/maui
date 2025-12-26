@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.NotNull(window);
 			Assert.NotNull(window.AlertManager);
-			Assert.Null(window.AlertManager.Subscription);
+			Assert.Null(((AlertManager)window.AlertManager).Subscription);
 		}
 
 		[Fact]
@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			window.Page = new ContentPage();
 
-			Assert.Null(window.AlertManager.Subscription);
+			Assert.Null(((AlertManager)window.AlertManager).Subscription);
 			window.MauiContext.Services.DidNotReceive().GetService(Arg.Is<Type>(x => x == typeof(AlertManager.IAlertManagerSubscription)));
 		}
 
@@ -71,8 +71,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var page = new ContentPage { Handler = Substitute.For<IViewHandler>() };
 			window.Page = page;
 
-			Assert.NotNull(window.AlertManager.Subscription);
-			Assert.Equal(sub, window.AlertManager.Subscription);
+			Assert.NotNull(((AlertManager)window.AlertManager).Subscription);
+			Assert.Equal(sub, ((AlertManager)window.AlertManager).Subscription);
 			window.MauiContext.Services.Received().GetService(Arg.Is<Type>(x => x == typeof(AlertManager.IAlertManagerSubscription)));
 		}
 
@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var page = new ContentPage { IsBusy = true };
 			window.Page = page;
 
-			Assert.Null(window.AlertManager.Subscription);
+			Assert.Null(((AlertManager)window.AlertManager).Subscription);
 		}
 
 		[Fact]
@@ -203,6 +203,32 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			continueTask.Wait();
 			sub.Received().OnActionSheetRequested(Arg.Is(page), Arg.Is(args));
 			Assert.True(completed);
+		}
+
+		[Fact]
+		public void CustomAlertManagerCanBeProvidedViaServices()
+		{
+			// Arrange - Create a custom alert manager
+			var customAlertManager = Substitute.For<IAlertManager>();
+			customAlertManager.Window.Returns((Window)null);
+
+			// Setup services to return custom alert manager
+			var services = Substitute.For<IServiceProvider>();
+			services.GetService(Arg.Is<Type>(x => x == typeof(IAlertManager))).Returns(customAlertManager);
+
+			var mauiContext = Substitute.For<IMauiContext>();
+			mauiContext.Services.Returns(services);
+
+			var windowHandler = Substitute.For<IElementHandler>();
+			windowHandler.MauiContext.Returns(mauiContext);
+
+			// Act - Create window with handler
+			var window = new Window();
+			window.Handler = windowHandler;
+
+			// Assert - Custom alert manager should be used
+			Assert.Equal(customAlertManager, window.AlertManager);
+			services.Received().GetService(Arg.Is<Type>(x => x == typeof(IAlertManager)));
 		}
 	}
 }
