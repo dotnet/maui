@@ -73,6 +73,29 @@ namespace Microsoft.Maui.Platform
 			editText.SetInputType(entry);
 		}
 
+		public static void UpdateHasBorder(this EditText editText, IEntry entry)
+		{
+			if (entry.HasBorder)
+			{
+				if (OperatingSystem.IsAndroidVersionAtLeast(23) && editText.Context?.Theme is Resources.Theme theme)
+				{
+					using var typedValue = new TypedValue();
+					if (theme.ResolveAttribute(global::Android.Resource.Attribute.ColorAccent, typedValue, true))
+					{
+						if (editText.Resources?.GetColorStateList(typedValue.ResourceId, theme) is ColorStateList accentColorStateList)
+						{
+							editText.BackgroundTintList = accentColorStateList;
+							return;
+						}
+					}
+				}
+			}
+			else
+			{
+				editText.BackgroundTintList = ColorStateList.ValueOf(Colors.Transparent.ToPlatform());
+			}
+		}
+
 		public static void UpdateHorizontalTextAlignment(this EditText editText, ITextAlignment textAlignment)
 		{
 			editText.UpdateHorizontalAlignment(textAlignment.HorizontalTextAlignment);
