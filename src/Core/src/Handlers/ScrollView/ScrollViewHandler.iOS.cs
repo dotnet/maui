@@ -98,26 +98,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (args is ScrollToRequest request)
 			{
-				var uiScrollView = handler.PlatformView;
-
-				if (uiScrollView.ContentSize == CGSize.Empty && handler is ScrollViewHandler scrollViewHandler)
-				{
-					// If the ContentSize of the UIScrollView has not yet been defined,
-					// we create a pending scroll request that we will launch after performing the Layout and sizing process.
-					scrollViewHandler.PendingScrollToRequest = request;
-					return;
-				}
-
-				var availableScrollHeight = uiScrollView.ContentSize.Height - uiScrollView.Frame.Height;
-				var availableScrollWidth = uiScrollView.ContentSize.Width - uiScrollView.Frame.Width;
-				var minScrollHorizontal = Math.Min(request.HorizontalOffset, availableScrollWidth);
-				var minScrollVertical = Math.Min(request.VerticalOffset, availableScrollHeight);
-				uiScrollView.SetContentOffset(new CGPoint(minScrollHorizontal, minScrollVertical), !request.Instant);
-
-				if (request.Instant)
-				{
-					scrollView.ScrollFinished();
-				}
+				ScrollTo(handler, request);
 			}
 		}
 
@@ -166,7 +147,46 @@ namespace Microsoft.Maui.Handlers
 			width = ViewHandlerExtensions.ResolveConstraints(width, scrollView.Width, scrollView.MinimumWidth, scrollView.MaximumWidth);
 			height = ViewHandlerExtensions.ResolveConstraints(height, scrollView.Height, scrollView.MinimumHeight, scrollView.MaximumHeight);
 
+			if (PendingScrollToRequest is ScrollToRequest request)
+			{
+				// If we have a pending scroll request, we execute it now that the content size is known
+				// and reset the pending request to null.
+				// This will ensure that the scroll happens after the layout pass.
+				ScrollTo(this, request);
+			}
+
 			return new Size(width, height);
+		}
+
+		static void ScrollTo(IScrollViewHandler handler, ScrollToRequest request)
+		{
+			var uiScrollView = handler.PlatformView;
+
+			if (handler is ScrollViewHandler scrollViewHandler)
+			{
+				if (uiScrollView.ContentSize == CGSize.Empty)
+				{
+					// If the ContentSize of the UIScrollView has not yet been defined,
+					// we create a pending scroll request that we will launch after performing the Layout and sizing process.
+					scrollViewHandler.PendingScrollToRequest = request;
+					return;
+				}
+				else
+				{
+					scrollViewHandler.PendingScrollToRequest = null;
+				}
+			}
+			
+			var availableScrollHeight = uiScrollView.ContentSize.Height - uiScrollView.Frame.Height;
+			var availableScrollWidth = uiScrollView.ContentSize.Width - uiScrollView.Frame.Width;
+			var minScrollHorizontal = Math.Min(request.HorizontalOffset, availableScrollWidth);
+			var minScrollVertical = Math.Min(request.VerticalOffset, availableScrollHeight);
+			uiScrollView.SetContentOffset(new CGPoint(minScrollHorizontal, minScrollVertical), !request.Instant);
+
+			if (request.Instant)
+			{
+				handler.VirtualView.ScrollFinished();
+			}
 		}
 
 		static Size MeasureContent(IContentView contentView, Thickness inset, double widthConstraint, double heightConstraint)
