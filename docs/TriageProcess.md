@@ -40,13 +40,6 @@ At this point, we will try to make a call regarding its impact and severity. If 
 If the bug is relatively high impact, we will move the issue into the `.NET V Planning` (where V is the .NET version we're planning this for) milestone to review during our [sprint planning](#milestone-planning) meeting.
 If the impact is unclear or there is a very corner case scenario, we may move it to the next `.NET V Planning` or `Backlog` milestone to further evaluate the impact by reviewing customer up-votes/comments at a later time.
 
-### Investigations
-
-In many situations, it's not immediately clear whether a specific issue reported is a bug or not. To be certain, the team will need to spend time investigating it before making a decision about the fate of the issue. In these situations we will apply the `investigate` label to the issue.
-Often, these issues turn out to be a result of some kind of misconfiguration in the user code.
-However, in rare cases, they are caused by highly impactful problems. During triage, we will decide whether certain issues require immediate investigation.
-If not, we will move the investigation to the `.NET V Planning` (where V represents the .NET version we're planning this for) to review during one of the upcoming [sprint planning meetings](#milestone-planning).
-
 ### Documentation requests
 
 Some issues turn out to indicate user confusion around how to configure different aspects of the framework.
@@ -56,10 +49,7 @@ If we identify a documentation issue that too many customers are having trouble 
 ## Milestone Planning
 
 Our milestones are usually a month long.
-Before each milestone, we have one or more planning meetings, where we look through all the accumulated issues in the `.NET V Planning` (where V is the .NET version we're planning this for) milestone and choose the most important and impactful ones to handle during the next milestone. This will be a mixture of feature requests, bug fixes, documentation issues, as well as some investigations.
-
-Note that we will investigate only issues that have accumulated more than a certain number of up-votes and/or comments, which will indicate that there is some wider impact associated with it.
-We may not investigate issues that haven't received many votes/comments and choose to close these. The reason is that the impact is very scoped, and potentially something is wrong in the user code. Consider asking these questions on StackOverflow, or if a bug is super important to you, please consider contributing to our project yourself.
+Before each milestone, we have one or more planning meetings, where we look through all the accumulated issues in the `.NET V Planning` (where V is the .NET version we're planning this for) milestone and choose the most important and impactful ones to handle during the next milestone. This will be a mixture of feature requests, bug fixes, and documentation issues.
 
 For some feature requests and bug reports, depending on the user involvement, we may choose to move these to the backlog at this point. What this means is that they will not be looked at again up until the next major release planning.
 
@@ -81,7 +71,7 @@ The following diagram summarizes the processes detailed above:
 graph TD
     A[Issue] --> B{Triage}
     B -->|Bugs| C[Current]
-    B -->|Bugs, Features,<br/>Investigations, Docs| D[.NET <i>n</i> Planning]
+    B -->|Bugs, Features, Docs| D[.NET <i>n</i> Planning]
     B -->|Bugs, Features, Docs| E[Backlog]
     B --> F[Close]
     D --> H[Sprint Planning]
