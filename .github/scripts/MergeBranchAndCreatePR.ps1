@@ -66,9 +66,6 @@ function Write-Error {
     Write-Host "❌ $Message" -ForegroundColor Red
 }
 
-# Get current date for branch naming
-$dateStamp = Get-Date -Format "yyyyMMdd"
-
 Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Magenta
 Write-Host "║          Branch Merge and PR Creation Script              ║" -ForegroundColor Magenta
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
@@ -106,7 +103,7 @@ try {
     Write-Host "`n" + ("=" * 60) -ForegroundColor DarkGray
     Write-Step "Processing: $SourceBranch → $TargetBranch"
     
-    $mergeBranch = "merge/$SourceBranch-to-$TargetBranch-$dateStamp"
+    $mergeBranch = "merge/$SourceBranch-to-$TargetBranch"
     $result.MergeBranch = $mergeBranch
 
     # Check if merge branch already exists on remote

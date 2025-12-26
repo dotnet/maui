@@ -42,10 +42,12 @@ pwsh .github/scripts/MergeBranchAndCreatePR.ps1 -Remote "origin" -TargetBranch "
 
 The script will:
 1. Fetch latest changes from origin
-2. Create a merge branch (e.g., `merge/main-to-net10.0-20251226`) - NEVER pushes to target branch directly
+2. Create a merge branch (e.g., `merge/main-to-net10.0`) - NEVER pushes to target branch directly
 3. Merge source into the merge branch
 4. Push the merge branch (not the target branch)
 5. Create a PR with `p/0` label
+
+If the merge branch already exists (from a previous unmerged run), the script skips and exits successfully.
 
 ### Step 3: Handle Conflicts (if any)
 
