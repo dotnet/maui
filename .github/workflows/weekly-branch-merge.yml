@@ -1,0 +1,84 @@
+# Weekly Branch Merge Workflow
+# Automatically merges main into specified target branches every week
+
+name: Weekly Branch Merge
+
+on:
+  # Run every Monday at 9:00 AM UTC
+  schedule:
+    - cron: '0 9 * * 1'
+  
+  # Allow manual trigger
+  workflow_dispatch:
+    inputs:
+      target_branch:
+        description: 'Target branch to merge into - REQUIRED'
+        required: true
+        type: string
+      source_branch:
+        description: 'Source branch to merge from'
+        required: false
+        default: 'main'
+      dry_run:
+        description: 'Dry run (no changes)'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  merge-branches:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # For scheduled runs, merge into both branches
+        # For manual runs, this is overridden by the input
+        target: ${{ github.event_name == 'schedule' && fromJson('["net10.0", "net11.0"]') || fromJson(format('["{0}"]', github.event.inputs.target_branch)) }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for merge
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Run merge script
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          SOURCE="${{ github.event.inputs.source_branch || 'main' }}"
+          DRY_RUN="${{ github.event.inputs.dry_run || 'false' }}"
+          TARGET="${{ matrix.target }}"
+          
+          ARGS="-Remote origin -SourceBranch $SOURCE -TargetBranch $TARGET"
+          
+          if [ "$DRY_RUN" = "true" ]; then
+            ARGS="$ARGS -DryRun"
+          fi
+          
+          echo "Running: pwsh -File .github/scripts/MergeBranchAndCreatePR.ps1 $ARGS"
+          pwsh -File .github/scripts/MergeBranchAndCreatePR.ps1 $ARGS
+
+      - name: Report results
+        if: always()
+        run: |
+          echo "## 📊 Merge Results for ${{ matrix.target }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Source**: ${{ github.event.inputs.source_branch || 'main' }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Target**: ${{ matrix.target }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ job.status }}" = "success" ]; then
+            echo "✅ Merge completed successfully!" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "PR created with **p/0** label for priority review." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Merge failed. Check the logs above." >> $GITHUB_STEP_SUMMARY
+          fi

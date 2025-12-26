@@ -219,3 +219,16 @@ The repository includes specialized custom agents for specific tasks. These agen
 - User asks "What does PR #12345 do?" → Informational query, handle yourself
 - User asks "How do I test PRs?" → Documentation query, handle yourself
 - User has follow-up questions after agent completes → Continue the conversation yourself
+
+## Reusable Skills
+
+Skills are automated workflows following the [Agent Skills specification](https://agentskills.io/specification). Each skill is a directory in `.github/skills/` containing a `SKILL.md` file with YAML frontmatter and instructions.
+
+### Available Skills
+
+1. **merge-branches** (`.github/skills/merge-branches/SKILL.md`)
+   - **Script**: `.github/scripts/MergeBranchAndCreatePR.ps1`
+   - **Workflow**: `.github/workflows/weekly-branch-merge.yml`
+   - **Purpose**: Merges main into net10.0 and net11.0 branches, creates PRs
+   - **Trigger phrases**: "merge main into net10 and net11", "weekly branch merge", "create merge PRs"
+   - **Usage**: `pwsh .github/scripts/MergeBranchAndCreatePR.ps1`
