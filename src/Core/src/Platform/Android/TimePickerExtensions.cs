@@ -9,6 +9,7 @@ public static class TimePickerExtensions
 	{
 		mauiTimePicker.SetTime(timePicker);
 	}
+	
 	internal static void UpdateFormat(this MauiMaterialTimePicker mauiTimePicker, ITimePicker timePicker)
 	{
 		mauiTimePicker.SetTime(timePicker);
