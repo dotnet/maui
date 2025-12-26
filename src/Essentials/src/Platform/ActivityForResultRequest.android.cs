@@ -70,8 +70,8 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 
 		if (!IsRegistered)
 		{
+			Trace.WriteLine("ActivityForResultRequest is not registered; cancelling the request.");
 			tcs.SetCanceled();
-			Trace.WriteLine("ActivityForResultRequest is not registered. So the request will be cancelled");
 			return tcs.Task;
 		}
 
