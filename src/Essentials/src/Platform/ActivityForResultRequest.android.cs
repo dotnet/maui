@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using AndroidX.Activity;
 using AndroidX.Activity.Result;
@@ -70,6 +71,7 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 		if (!IsRegistered)
 		{
 			tcs.SetCanceled();
+			Trace.WriteLine("ActivityForResultRequest is not registered. So the request will be cancelled");
 			return tcs.Task;
 		}
 
