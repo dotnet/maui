@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue33070"
+             Title="Issue 33070">
+
+    <ScrollView>
+        <VerticalStackLayout AutomationId="ScrollViewContent"
+                Padding="20"
+                             Spacing="15">
+            <Label Text="Test Drawable Mutation Fix"
+                   FontSize="20"
+                   FontAttributes="Bold"/>
+
+            <Label Text="Rapidly changing colors on shared drawables should not crash the app."
+                   TextColor="Gray"/>
+
+            <!-- ActivityIndicator Test -->
+            <Border Padding="10"
+                    Stroke="LightGray"
+                    StrokeThickness="1">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="ActivityIndicator"
+                           FontAttributes="Bold"/>
+                    <ActivityIndicator x:Name="ActivityIndicatorTest"
+                                       IsRunning="True"
+                                       Color="Red"
+                                       AutomationId="ActivityIndicator"/>
+                    <Button Text="Change ActivityIndicator Color"
+                            Clicked="OnChangeActivityIndicatorColor"
+                            AutomationId="ChangeActivityIndicatorButton"/>
+                    <Label x:Name="ActivityIndicatorStatus"
+                           Text="Ready"
+                           AutomationId="ActivityIndicatorStatus"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Entry Clear Button Test -->
+            <Border Padding="10"
+                    Stroke="LightGray"
+                    StrokeThickness="1">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Entry Clear Button"
+                           FontAttributes="Bold"/>
+                    <Entry x:Name="EntryTest"
+                           Text="Test Entry"
+                           ClearButtonVisibility="WhileEditing"
+                           TextColor="Blue"
+                           AutomationId="Entry"/>
+                    <Button Text="Change Entry Text Color"
+                            Clicked="OnChangeEntryColor"
+                            AutomationId="ChangeEntryButton"/>
+                    <Label x:Name="EntryStatus"
+                           Text="Ready"
+                           AutomationId="EntryStatus"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Switch Test -->
+            <Border Padding="10"
+                    Stroke="LightGray"
+                    StrokeThickness="1">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Switch Track/Thumb"
+                           FontAttributes="Bold"/>
+                    <Switch x:Name="SwitchTest"
+                            IsToggled="True"
+                            ThumbColor="Green"
+                            OnColor="LightGreen"
+                            AutomationId="Switch"/>
+                    <Button Text="Change Switch Colors"
+                            Clicked="OnChangeSwitchColors"
+                            AutomationId="ChangeSwitchButton"/>
+                    <Label x:Name="SwitchStatus"
+                           Text="Ready"
+                           AutomationId="SwitchStatus"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- SearchBar Test -->
+            <Border Padding="10"
+                    Stroke="LightGray"
+                    StrokeThickness="1">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="SearchBar Icons"
+                           FontAttributes="Bold"/>
+                    <SearchBar x:Name="SearchBarTest"
+                               Placeholder="Search..."
+                               TextColor="Purple"
+                               PlaceholderColor="LightGray"
+                               CancelButtonColor="Red"
+                               AutomationId="SearchBar"/>
+                    <Button Text="Change SearchBar Colors"
+                            Clicked="OnChangeSearchBarColors"
+                            AutomationId="ChangeSearchBarButton"/>
+                    <Label x:Name="SearchBarStatus"
+                           Text="Ready"
+                           AutomationId="SearchBarStatus"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Rapid Changes Test -->
+            <Border Padding="10"
+                    Stroke="LightGray"
+                    StrokeThickness="1"
+                    BackgroundColor="LightYellow">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Stress Test - Rapid Color Changes"
+                           FontAttributes="Bold"/>
+                    <Label Text="This simulates the crash scenario from large apps with many screens"
+                           FontSize="12"
+                           TextColor="Gray"/>
+                    <Button Text="Run Rapid Changes Test"
+                            Clicked="OnRunRapidChangesTest"
+                            AutomationId="RunRapidChangesButton"/>
+                    <Label x:Name="RapidChangesStatus"
+                           Text="Ready"
+                           AutomationId="RapidChangesStatus"/>
+                    <Label x:Name="RapidChangesProgress"
+                           Text=""
+                           AutomationId="RapidChangesProgress"
+                           FontSize="12"
+                           TextColor="Gray"/>
+                </VerticalStackLayout>
+            </Border>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

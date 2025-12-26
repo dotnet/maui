@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Platform
 				editText.SetHintTextColor(color);
 
 				var searchMagIconImage = searchView.FindViewById<ImageView>(Resource.Id.search_mag_icon);
-				searchMagIconImage?.Drawable?.SetTint(color);
+				searchMagIconImage.SafeSetTint(color);
 			}
 		}
 
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Platform
 					editText.SetTextColor(color);
 
 				var searchMagIconImage = searchView.FindViewById<ImageView>(Resource.Id.search_mag_icon);
-				searchMagIconImage?.Drawable?.SetTint(color);
+				searchMagIconImage.SafeSetTint(color);
 			}
 		}
 
@@ -129,14 +129,10 @@ namespace Microsoft.Maui.Platform
 			if (searchCloseButtonIdentifier > 0)
 			{
 				var image = searchView.FindViewById<ImageView>(searchCloseButtonIdentifier);
-
-				if (image is not null && image.Drawable is Drawable drawable)
-				{
-					if (searchBar.CancelButtonColor is not null)
-						drawable.SetColorFilter(searchBar.CancelButtonColor, FilterMode.SrcIn);
-					else if (TryGetDefaultStateColor(searchView, AAttribute.TextColorPrimary, out var color))
-						drawable.SetColorFilter(color, FilterMode.SrcIn);
-				}
+				if (searchBar.CancelButtonColor is not null)
+					image.SafeSetTint(searchBar.CancelButtonColor.ToPlatform());
+				else if (TryGetDefaultStateColor(searchView, AAttribute.TextColorPrimary, out var color))
+					image.SafeSetTint(color);
 			}
 		}
 
@@ -154,9 +150,15 @@ namespace Microsoft.Maui.Platform
 				if (image?.Drawable is not null)
 				{
 					if (searchBar.SearchIconColor is not null)
-						image.Drawable.SetColorFilter(searchBar.SearchIconColor, FilterMode.SrcIn);
+					{
+						var drawable = image.Drawable.SafeSetColorFilter(searchBar.SearchIconColor.ToPlatform(), FilterMode.SrcIn);
+						image.SetImageDrawable(drawable);
+					}
 					else
-						image.Drawable.ClearColorFilter();
+					{
+						var drawable = image.Drawable.SafeClearColorFilter();
+						image.SetImageDrawable(drawable);
+					}
 				}
 			}
 		}

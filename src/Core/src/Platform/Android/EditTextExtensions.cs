@@ -227,12 +227,14 @@ namespace Microsoft.Maui.Platform
 		{
 			if (textColor is not null)
 			{
-				clearButtonDrawable?.SetColorFilter(textColor.ToPlatform(), FilterMode.SrcIn);
+				clearButtonDrawable = clearButtonDrawable.SafeSetColorFilter(textColor.ToPlatform(), FilterMode.SrcIn);
 			}
 			else
 			{
-				clearButtonDrawable?.ClearColorFilter();
+				clearButtonDrawable = clearButtonDrawable.SafeClearColorFilter();
 			}
+
+			editText.SetCompoundDrawablesRelativeWithIntrinsicBounds(null, null, clearButtonDrawable, null);
 		}
 
 		public static void UpdateReturnType(this EditText editText, IEntry entry)
