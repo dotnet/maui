@@ -143,9 +143,9 @@ If the PR doesn't include UI tests:
 
 ### Proposed Validation
 - [ ] Run PR's included UI tests
+- [ ] Test suspected gap: [description]
 - [ ] Add test for [edge case 1]
 - [ ] Add test for [edge case 2]
-- [ ] [Any code modifications to test]
 
 **Should I proceed with this validation plan?**
 ```
@@ -265,12 +265,67 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 ## Issues Found
 ### Must Fix
-[Critical issues]
+**Use ONLY for confirmed broken behavior (tested and failed).**
+
+#### 🚨 CRITICAL: Verify Gaps Before Flagging
+
+**If you identify a potentially missing feature or gap:**
+
+##### Step 1: Test the Suspected Gap
+
+**NEVER flag as "Must Fix" without testing.**
+
+Create a minimal test to verify the gap actually exists:
+
+```csharp
+// Example: Test runtime property changes
+[Test]
+public void RuntimePropertyChangeTest()
+{
+    App.WaitForElement("TestButton");
+    App.Tap("TestButton"); // Triggers Shell.SetNavBarIsVisible(page, false)
+    
+    // Does navbar actually hide?
+    // If it DOES work, your "gap" doesn't exist!
+}
+```
+
+**Test first, flag second.**
+
+##### Step 2: Assess Severity with Evidence
+
+| Finding | Evidence | Severity |
+|---------|----------|----------|
+| **Confirmed broken** | Tested and failed | "Must Fix" |
+| **Likely broken** | Strong code evidence, not tested | "Should Test First" |
+| **Might be broken** | Weak evidence, pattern assumption | "Investigate More" |
+| **Already works** | Found in another component, tested | "Not an Issue" |
+
+[Critical issues with evidence]
 
 ### Should Fix
 [Recommended improvements]
 
+### Needs Investigation
+**Use for untested potential issues.**
+
+[Issues that need testing to confirm]
+
 ## Approval Checklist
+
+**Before approving or requesting changes:**
+
+- [ ] **Searched broadly** - Checked all related components, not just one file
+- [ ] **Tested gaps** - Any "Must Fix" items were tested and confirmed broken
+- [ ] **Understood architecture** - Mapped out which components own which features
+- [ ] **Verified assumptions** - No conclusions based solely on pattern expectations
+- [ ] **Provided evidence** - Each issue includes search commands, test results, or code references
+
+**If you answered "no" to any item, revise your review.**
+
+---
+
+**Standard checklist:**
 - [ ] Code solves the stated problem
 - [ ] Minimal, focused changes
 - [ ] Appropriate test coverage
