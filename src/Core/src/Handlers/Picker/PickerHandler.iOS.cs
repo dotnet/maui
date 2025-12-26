@@ -70,6 +70,17 @@ namespace Microsoft.Maui.Handlers
 			if (pickerController.View != null && pickerView != null)
 			{
 				pickerController.View.AddSubview(pickerView);
+				
+				var container = pickerController.View;
+				pickerView.TranslatesAutoresizingMaskIntoConstraints = false;
+				NSLayoutConstraint.ActivateConstraints(
+				[
+					pickerView.CenterXAnchor.ConstraintEqualTo(container.CenterXAnchor),
+					pickerView.WidthAnchor.ConstraintEqualTo(container.WidthAnchor),
+					pickerView.TopAnchor.ConstraintEqualTo(container.TopAnchor, paddingTitle),
+					pickerView.HeightAnchor.ConstraintEqualTo(pickerHeight),
+				]);
+
 				var doneButtonHeight = 90;
 				var height = NSLayoutConstraint.Create(pickerController.View, NSLayoutAttribute.Height, NSLayoutRelation.Equal, null, NSLayoutAttribute.NoAttribute, 1, pickerHeight + doneButtonHeight);
 				pickerController.View.AddConstraint(height);
