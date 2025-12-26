@@ -134,6 +134,204 @@ VerifyScreenshot("CustomTestName");
 App.Screenshot("TestStep1");
 ```
 
+## Navigation Setup
+
+TestCases.HostApp issues can use **one of three patterns**:
+
+### Pattern 1: Simple ContentPage (No Navigation)
+Use when issue doesn't require navigation (e.g., layout bugs, control rendering issues):
+
+```csharp
+[Issue(IssueTracker.Github, XXXXX, "Description", PlatformAffected.All)]
+public partial class IssueXXXXX : ContentPage
+{
+    public IssueXXXXX()
+    {
+        // Initialize UI directly
+        Content = new VerticalStackLayout { /* ... */ };
+    }
+}
+```
+
+### Pattern 2: NavigationPage Wrapper (Push/Pop Navigation)
+**Use when issue requires Navigation.PushAsync/PopAsync** (most common for multi-page scenarios):
+
+```csharp
+// Main test class - wraps a NavigationPage
+[Issue(IssueTracker.Github, XXXXX, "Description", PlatformAffected.All)]
+public partial class IssueXXXXX : NavigationPage
+{
+    public IssueXXXXX() : base(new IssueXXXXXMainPage())
+    {
+    }
+}
+
+// First page in the navigation stack
+public partial class IssueXXXXXMainPage : ContentPage
+{
+    public IssueXXXXXMainPage()
+    {
+        Title = "Issue XXXXX";
+        Content = new VerticalStackLayout
+        {
+            Children =
+            {
+                new Button
+                {
+                    Text = "Navigate to Second Page",
+                    AutomationId = "NavigateButton",
+                    Command = new Command(async () =>
+                    {
+                        await Navigation.PushAsync(new IssueXXXXXSecondPage());
+                    })
+                }
+            }
+        };
+    }
+}
+
+// Second page
+public class IssueXXXXXSecondPage : ContentPage
+{
+    public IssueXXXXXSecondPage()
+    {
+        Title = "Second Page";
+        Content = new Button
+        {
+            Text = "Go Back",
+            AutomationId = "GoBackButton",
+            Command = new Command(async () => await Navigation.PopAsync())
+        };
+    }
+}
+```
+
+**Why this matters**: Calling `Navigation.PushAsync()` without being inside a `NavigationPage` causes an immediate crash. The `IssueXXXXX : NavigationPage` wrapper provides the navigation context.
+
+### Pattern 3: Shell-Based Navigation
+Use when issue specifically involves Shell:
+
+```csharp
+[Issue(IssueTracker.Github, XXXXX, "Description", PlatformAffected.All)]
+public partial class IssueXXXXX : Shell
+{
+    public IssueXXXXX()
+    {
+        Items.Add(new ShellContent
+        {
+            Title = "Main",
+            Content = new IssueXXXXXMainPage()
+        });
+    }
+}
+```
+
+### Decision Tree: Which Pattern to Use?
+
+```
+Does the issue require Navigation.PushAsync/PopAsync?
+├─ YES → Use Pattern 2 (NavigationPage wrapper)
+│
+└─ NO
+   ├─ Does issue require Shell-specific features?
+   │  ├─ YES → Use Pattern 3 (Shell)
+   │  └─ NO → Use Pattern 1 (Simple ContentPage)
+```
+
+### Create Test Page (Example with Navigation)
+
+**File**: `src/Controls/tests/TestCases.HostApp/Issues/IssueXXXXX.xaml.cs`
+
+```csharp
+namespace Maui.Controls.Sample.Issues;
+
+[Issue(IssueTracker.Github, XXXXX, "Brief description", PlatformAffected.All)]
+public partial class IssueXXXXX : NavigationPage
+{
+    public IssueXXXXX() : base(new IssueXXXXXMainPage())
+    {
+    }
+}
+
+public partial class IssueXXXXXMainPage : ContentPage
+{
+    public IssueXXXXXMainPage()
+    {
+        Title = "Issue XXXXX";
+        var layout = new VerticalStackLayout 
+        { 
+            Padding = 20, 
+            Spacing = 10 
+        };
+
+        layout.Children.Add(new Label 
+        { 
+            Text = "Testing Issue #XXXXX",
+            FontSize = 18,
+            FontAttributes = FontAttributes.Bold
+        });
+
+        layout.Children.Add(new Button
+        {
+            Text = "Trigger Issue",
+            AutomationId = "TriggerButton",
+            Command = new Command(OnTriggerIssue)
+        });
+
+        StatusLabel = new Label
+        {
+            Text = "Status will appear here",
+            AutomationId = "StatusLabel"
+        };
+        layout.Children.Add(StatusLabel);
+
+        Content = layout;
+    }
+
+    public Label StatusLabel { get; private set; }
+
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+        Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(500), () =>
+        {
+            CaptureState("OnAppearing");
+        });
+    }
+
+    private void OnTriggerIssue()
+    {
+        Console.WriteLine("=== TRIGGERING ISSUE #XXXXX ===");
+        // Reproduce the exact steps from the issue report
+
+        Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(500), () =>
+        {
+            CaptureState("AfterTrigger");
+        });
+    }
+
+    private void CaptureState(string context)
+    {
+        Console.WriteLine($"=== STATE CAPTURE: {context} ===");
+        // Add measurements relevant to the issue
+        Console.WriteLine("=== END STATE CAPTURE ===");
+    }
+}
+```
+
+### Common Navigation Crash Symptoms
+
+**If you see these errors, you likely need NavigationPage wrapper**:
+
+```
+❌ NullReferenceException at Navigation.PushAsync
+❌ InvalidOperationException: Navigation is not supported
+❌ App crashes immediately when tapping navigation button
+❌ "The app was expected to be running still, investigate as possible crash"
+```
+
+**Fix**: Change `IssueXXXXX : ContentPage` to `IssueXXXXX : NavigationPage` and create separate page classes.
+
 ## Test Categories
 
 ### Category Guidelines
