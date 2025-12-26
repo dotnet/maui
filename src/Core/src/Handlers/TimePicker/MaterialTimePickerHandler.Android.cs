@@ -8,7 +8,7 @@ using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Handlers;
 
-internal partial class MaterialTimePickerHandler : ViewHandler<ITimePicker, MauiTimePicker>
+internal partial class MaterialTimePickerHandler : ViewHandler<ITimePicker, MauiMaterialTimePicker>
 {
     internal MaterialTimePicker? _dialog;
     internal bool _isUpdatingIsOpen;
@@ -35,7 +35,7 @@ internal partial class MaterialTimePickerHandler : ViewHandler<ITimePicker, Maui
     {
     }
 
-    protected override void ConnectHandler(MauiTimePicker platformView)
+    protected override void ConnectHandler(MauiMaterialTimePicker platformView)
     {
         base.ConnectHandler(platformView);
 
@@ -46,7 +46,7 @@ internal partial class MaterialTimePickerHandler : ViewHandler<ITimePicker, Maui
         platformView.HidePicker = HidePickerDialog;
     }
 
-    protected override void DisconnectHandler(MauiTimePicker platformView)
+    protected override void DisconnectHandler(MauiMaterialTimePicker platformView)
     {
         if (_dialog is not null)
         {
@@ -187,9 +187,9 @@ internal partial class MaterialTimePickerHandler : ViewHandler<ITimePicker, Maui
         handler.PlatformView?.UpdateCharacterSpacing(picker);
     }
 
-    protected override MauiTimePicker CreatePlatformView()
+    protected override MauiMaterialTimePicker CreatePlatformView()
     {
-        return new MauiTimePicker(Context);
+        return new MauiMaterialTimePicker(Context);
     }
 
     bool Use24HourView => VirtualView != null && (DateFormat.Is24HourFormat(PlatformView?.Context)
