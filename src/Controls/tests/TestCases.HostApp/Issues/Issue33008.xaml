@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue33008"
+             Title="Issue 33008 - ShowsCancelButton">
+
+       <Shell.SearchHandler>
+              <SearchHandler Placeholder="Search..."
+                             AutomationId="SearchHandler"
+                             x:Name="SearchHandler"
+                             ShowsCancelButton="True"/>
+       </Shell.SearchHandler>
+
+       <ScrollView>
+              <VerticalStackLayout Padding="20"
+                                   Spacing="15">
+                     <Label Text="ShowsCancelButton Property Tests"
+                            FontSize="18"
+                            FontAttributes="Bold"
+                            AutomationId="TitleLabel"/>
+
+                     <!-- SearchBar Tests -->
+                     <Label Text="SearchBar Tests"
+                            FontSize="16"
+                            FontAttributes="Bold"
+                            Margin="0,10,0,0"/>
+
+                     <Label Text="1. Default (true):"
+                            FontAttributes="Bold"/>
+                     <SearchBar x:Name="SearchBarDefault"
+                                Placeholder="Default - shows cancel when typing"
+                                AutomationId="SearchBarDefault"/>
+
+                     <Label Text="2. ShowsCancelButton=True:"
+                            FontAttributes="Bold"/>
+                     <SearchBar x:Name="SearchBarTrue"
+                                Placeholder="True - shows cancel when typing"
+                                ShowsCancelButton="True"
+                                AutomationId="SearchBarTrue"/>
+
+                     <Label Text="3. ShowsCancelButton=False:"
+                            FontAttributes="Bold"/>
+                     <SearchBar x:Name="SearchBarFalse"
+                                Placeholder="False - NEVER shows cancel"
+                                ShowsCancelButton="False"
+                                AutomationId="SearchBarFalse"/>
+
+                     <Button Text="Set Text"
+                             Clicked="OnSetText"
+                             AutomationId="SetTextButton"/>
+
+                     <!-- Status -->
+                     <BoxView HeightRequest="2"
+                              Color="Gray"
+                              Margin="0,10,0,0"/>
+                     <Label Text="Status:"
+                            FontAttributes="Bold"/>
+                     <Label x:Name="StatusLabel"
+                            Text="Ready"
+                            AutomationId="StatusLabel"/>
+
+              </VerticalStackLayout>
+       </ScrollView>
+</ContentPage>

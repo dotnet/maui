@@ -157,6 +157,9 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="CancelButtonColor"/>.</summary>
 		public static readonly BindableProperty CancelButtonColorProperty = BindableProperty.Create(nameof(CancelButtonColor), typeof(Color), typeof(SearchHandler), default(Color));
 
+		/// <summary>Bindable property for <see cref="ShowsCancelButton"/>.</summary>
+		public static readonly BindableProperty ShowsCancelButtonProperty = BindableProperty.Create(nameof(ShowsCancelButton), typeof(bool), typeof(SearchHandler), true);
+
 		/// <summary>Bindable property for <see cref="FontFamily"/>.</summary>
 		public static readonly BindableProperty FontFamilyProperty = FontElement.FontFamilyProperty;
 
@@ -198,6 +201,19 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (Color)GetValue(CancelButtonColorProperty); }
 			set { SetValue(CancelButtonColorProperty, value); }
+		}
+
+		/// <summary>
+		/// Gets or sets a value that indicates whether the cancel button is shown.
+		/// </summary>
+		/// <remarks>
+		/// On iOS, the cancel button appears when the search bar is focused and allows users to dismiss the keyboard.
+		/// Default value is <c>true</c>.
+		/// </remarks>
+		public bool ShowsCancelButton
+		{
+			get { return (bool)GetValue(ShowsCancelButtonProperty); }
+			set { SetValue(ShowsCancelButtonProperty, value); }
 		}
 
 
