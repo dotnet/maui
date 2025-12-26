@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Platform
 
 				platformView.Background = mauiDrawable;
 			}
-			
+
 			mauiDrawable.SetBackground(radioButton.Background);
 
 			if (radioButton.StrokeColor != null)
@@ -99,13 +99,7 @@ namespace Microsoft.Maui.Platform
 				platformView.Background = mauiDrawable;
 			}
 
-			// Material3 RadioButtons should not draw any background surface by design, but when radioButton.Background 
-			// is null, BorderDrawable.SetBackground() falls back to SetDefaultBackgroundColor() which uses the theme's 
-			// windowBackground attribute, causing unwanted surface backgrounds.
-			// Workaround: provide default transparent background for Material3 to prevent this fallback.
-			var background = radioButton.Background ??
-				new SolidPaint(Colors.Transparent);
-			mauiDrawable.SetBackground(background);
+			mauiDrawable.SetBackground(radioButton.Background);
 
 			if (radioButton.StrokeColor is not null)
 			{
