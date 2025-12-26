@@ -72,9 +72,13 @@ internal partial class MaterialTimePickerHandler : ViewHandler<ITimePicker, Maui
         if (_dialog is not null)
         {
             if (_dismissListener is not null)
+            {
                 _dialog.RemoveOnDismissListener(_dismissListener);
+            }
             if (_positiveButtonClickListener is not null)
+            {
                 _dialog.RemoveOnPositiveButtonClickListener(_positiveButtonClickListener);
+            }
         }
     }
 
@@ -222,7 +226,9 @@ internal class MaterialTimePickerPositiveButtonClickListener : Java.Lang.Object,
     public void OnClick(View? v)
     {
         if (!_handler.TryGetTarget(out var handler) || handler.VirtualView is null || handler._dialog is null)
+        {
             return;
+        }
 
         handler.VirtualView.Time = new TimeSpan(handler._dialog.Hour, handler._dialog.Minute, 0);
         handler.VirtualView.IsFocused = false;
@@ -244,7 +250,9 @@ internal class MaterialTimePickerDismissListener : Java.Lang.Object, IDialogInte
     public void OnDismiss(IDialogInterface? dialog)
     {
         if (!_handler.TryGetTarget(out var handler))
+        {
             return;
+        }
 
         // Dialog was dismissed (back button, outside tap, cancel button, etc.)
         // Clean up without trying to dismiss again
