@@ -45,8 +45,10 @@ internal class MauiMaterialTimePicker : TextInputEditText, IOnClickListener
 
     void Initialize()
     {
-        if (Background != null)
+        if (Background is not null)
+        {
             DrawableCompat.Wrap(Background);
+        }
 
         PickerManager.Init(this);
 

@@ -12,8 +12,8 @@ internal partial class MaterialTimePickerHandler : ViewHandler<ITimePicker, Maui
 {
     internal MaterialTimePicker? _dialog;
     internal bool _isUpdatingIsOpen;
-    MaterialTimePickerPositiveButtonClickListener? _positiveButtonClickListener;
-    MaterialTimePickerDismissListener? _dismissListener;
+    internal MaterialTimePickerPositiveButtonClickListener? _positiveButtonClickListener;
+    internal MaterialTimePickerDismissListener? _dismissListener;
 
     public static PropertyMapper<ITimePicker, MaterialTimePickerHandler> Mapper =
                 new(ViewMapper)
@@ -50,6 +50,7 @@ internal partial class MaterialTimePickerHandler : ViewHandler<ITimePicker, Maui
     {
         if (_dialog is not null)
         {
+            RemoveListeners();
             _dialog.Dismiss();
             _dialog = null;
         }
@@ -66,22 +67,28 @@ internal partial class MaterialTimePickerHandler : ViewHandler<ITimePicker, Maui
         base.DisconnectHandler(platformView);
     }
 
-
-    void HidePickerDialog()
+    void RemoveListeners()
     {
         if (_dialog is not null)
         {
+            if (_dismissListener is not null)
+                _dialog.RemoveOnDismissListener(_dismissListener);
+            if (_positiveButtonClickListener is not null)
+                _dialog.RemoveOnPositiveButtonClickListener(_positiveButtonClickListener);
+        }
+    }
+
+
+    internal void HidePickerDialog()
+    {
+        if (_dialog is not null)
+        {
+            RemoveListeners();
             _dialog.Dismiss();
         }
 
         _dialog = null;
-
-        if (VirtualView is not null && !_isUpdatingIsOpen)
-        {
-            _isUpdatingIsOpen = true;
-            VirtualView.IsOpen = false;
-            _isUpdatingIsOpen = false;
-        }
+        UpdateIsOpenState(false);
     }
 
     void ShowPickerDialog()
@@ -114,12 +121,7 @@ internal partial class MaterialTimePickerHandler : ViewHandler<ITimePicker, Maui
         _dialog = CreateTimePickerDialog(hour, minute);
         _dialog?.Show(fragmentManager, "MaterialTimePicker");
 
-        if (VirtualView is not null && !_isUpdatingIsOpen)
-        {
-            _isUpdatingIsOpen = true;
-            VirtualView.IsOpen = true;
-            _isUpdatingIsOpen = false;
-        }
+        UpdateIsOpenState(true);
     }
 
     protected virtual MaterialTimePicker? CreateTimePickerDialog(int hour, int minute)
@@ -192,7 +194,19 @@ internal partial class MaterialTimePickerHandler : ViewHandler<ITimePicker, Maui
         return new MauiMaterialTimePicker(Context);
     }
 
-    bool Use24HourView => VirtualView != null && (DateFormat.Is24HourFormat(PlatformView?.Context)
+    internal void UpdateIsOpenState(bool isOpen)
+    {
+        if (VirtualView is null || _isUpdatingIsOpen)
+        {
+            return;
+        }
+
+        _isUpdatingIsOpen = true;
+        VirtualView.IsOpen = isOpen;
+        _isUpdatingIsOpen = false;
+    }
+
+    bool Use24HourView => VirtualView is not null && (DateFormat.Is24HourFormat(PlatformView?.Context)
             && VirtualView.Format == "t" || VirtualView.Format == "HH:mm");
 }
 
@@ -213,7 +227,8 @@ internal class MaterialTimePickerPositiveButtonClickListener : Java.Lang.Object,
         handler.VirtualView.Time = new TimeSpan(handler._dialog.Hour, handler._dialog.Minute, 0);
         handler.VirtualView.IsFocused = false;
 
-        handler._dialog.Dismiss();
+        // HidePickerDialog removes all listeners and dismisses properly
+        handler.HidePickerDialog();
     }
 }
 
@@ -235,11 +250,6 @@ internal class MaterialTimePickerDismissListener : Java.Lang.Object, IDialogInte
         // Clean up without trying to dismiss again
         handler._dialog = null;
 
-        if (handler.VirtualView is not null && !handler._isUpdatingIsOpen)
-        {
-            handler._isUpdatingIsOpen = true;
-            handler.VirtualView.IsOpen = false;
-            handler._isUpdatingIsOpen = false;
-        }
+        handler.UpdateIsOpenState(false);
     }
 }
