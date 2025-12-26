@@ -90,6 +90,9 @@ namespace Microsoft.Maui.Handlers
 				if (VirtualView is IPicker virtualView)
 					virtualView.IsFocused = virtualView.IsOpen = false;
 				uITextField.EditingDidEnd -= editingDidEndHandler;
+
+				// Restore VoiceOver focus to the picker field when the alert closes
+				uITextField.PostAccessibilityFocusNotification();
 			};
 
 			uITextField.EditingDidEnd += editingDidEndHandler;
@@ -101,9 +104,13 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			var currentViewController = GetCurrentViewController(platformWindow.RootViewController);
-			platformWindow.BeginInvokeOnMainThread(() =>
+			platformWindow.BeginInvokeOnMainThread(async () =>
 			{
-				currentViewController?.PresentViewControllerAsync(pickerController, true);
+				if(currentViewController is not null)
+				{
+					await currentViewController.PresentViewControllerAsync(pickerController, true);
+				}
+				pickerView?.PostAccessibilityFocusNotification();
 			});
 		}
 
@@ -272,6 +279,12 @@ namespace Microsoft.Maui.Handlers
 			{
 				if (VirtualView is IPicker virtualView)
 					virtualView.IsFocused = virtualView.IsOpen = true;
+
+				// Notify VoiceOver that the picker popup has appeared
+				if (sender is MauiPicker platformView && platformView.InputView is not null)
+				{
+					platformView.PostAccessibilityFocusNotification(platformView.InputView);
+				}
 #if MACCATALYST
 				if (Handler is not PickerHandler handler)
 					return;
@@ -291,8 +304,17 @@ namespace Microsoft.Maui.Handlers
 				{
 					pickerView.Select(model.SelectedIndex, 0, false);
 				}
+
 				if (VirtualView is IPicker virtualView)
+				{
 					virtualView.IsFocused = virtualView.IsOpen = false;
+				}
+
+				// Restore VoiceOver focus to the picker field when the popup closes
+				if (sender is MauiPicker platformView)
+				{
+					platformView.PostAccessibilityFocusNotification();
+				}
 			}
 
 			void OnEditing(object? sender, EventArgs eventArgs)
