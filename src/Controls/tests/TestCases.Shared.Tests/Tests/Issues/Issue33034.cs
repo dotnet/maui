@@ -1,4 +1,4 @@
-#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // SafeAreaEdges not supported on Catalyst and Windows
+#if ANDROID || IOS  // SafeAreaEdges not supported on Catalyst and Windows
 
 using NUnit.Framework;
 using UITest.Appium;
