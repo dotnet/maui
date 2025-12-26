@@ -111,7 +111,44 @@ namespace Microsoft.Maui.IntegrationTests
 			TestContext.WriteLine(runOutput);
 			TestContext.WriteLine($"-------- Process output end --------");
 
+			// Provide helpful messages for common errors
+			if (exitCode != 0)
+			{
+				CheckForCommonErrors(runOutput);
+			}
+
 			return exitCode == 0;
+		}
+
+		/// <summary>
+		/// Checks build output for common errors and provides helpful guidance.
+		/// </summary>
+		static void CheckForCommonErrors(string output)
+		{
+			// Check for Xcode version mismatch
+			if (output.Contains("requires Xcode", StringComparison.OrdinalIgnoreCase) && output.Contains("The current version of Xcode is", StringComparison.OrdinalIgnoreCase))
+			{
+				// Extract the error message line for display
+				var errorLine = output.Split('\n')
+					.FirstOrDefault(line => line.Contains("requires Xcode", StringComparison.OrdinalIgnoreCase))
+					?.Trim() ?? "Xcode version mismatch";
+
+				TestContext.WriteLine("");
+				TestContext.WriteLine("╔══════════════════════════════════════════════════════════════════════════════╗");
+				TestContext.WriteLine("║ XCODE VERSION MISMATCH DETECTED                                              ║");
+				TestContext.WriteLine("╠══════════════════════════════════════════════════════════════════════════════╣");
+				TestContext.WriteLine($"  {errorLine}");
+				TestContext.WriteLine("╠══════════════════════════════════════════════════════════════════════════════╣");
+				TestContext.WriteLine("║ To skip Xcode version validation, you can:                                   ║");
+				TestContext.WriteLine("║                                                                              ║");
+				TestContext.WriteLine("║ 1. Set environment variable:                                                 ║");
+				TestContext.WriteLine("║    export SKIP_XCODE_VERSION_CHECK=true                                      ║");
+				TestContext.WriteLine("║                                                                              ║");
+				TestContext.WriteLine("║ 2. Or set SkipXcodeVersionCheck in TestEnvironment.cs                        ║");
+				TestContext.WriteLine("║    src/TestUtils/src/.../Utilities/TestEnvironment.cs                        ║");
+				TestContext.WriteLine("╚══════════════════════════════════════════════════════════════════════════════╝");
+				TestContext.WriteLine("");
+			}
 		}
 
 		public static string RunForOutput(string command, string args, out int exitCode, int timeoutInSeconds = DEFAULT_TIMEOUT)
