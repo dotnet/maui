@@ -327,7 +327,7 @@ namespace Microsoft.Maui.Controls
 			// If page is no longer attached to a window (e.g., navigated away), ignore the action sheet request
 			if (Window is null)
 			{
-				// Complete the task with cancel result
+				Trace.WriteLine("DisplayActionSheetAsync: Window is null, action sheet will not be shown. This can happen if the page is not attached to a window.");
 				args.SetResult(cancel);
 				return args.Result.Task;
 			}
