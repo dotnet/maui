@@ -300,6 +300,14 @@ namespace Microsoft.Maui.Controls
 				shell.UpdateCurrentState(ShellNavigationSource.ShellSectionChanged);
 			}
 
+			//For TabBarItems itemchanged will fall in ShellItem class , we need to set the QueryAttributesProperty here
+			ShellContent currentShellContent = shellItem.CurrentItem?.CurrentItem;
+			var existing = (ShellRouteParameters)currentShellContent?.GetValue(ShellContent.QueryAttributesProperty);
+			if (oldValue is not null && newValue is not null && existing is null)
+			{
+				currentShellContent?.SetValue(ShellContent.QueryAttributesProperty, new ShellRouteParameters());
+			}
+
 			shellItem.SendStructureChanged();
 
 			if (shellItem.IsVisibleItem)
