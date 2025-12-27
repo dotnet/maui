@@ -26,6 +26,10 @@ namespace Microsoft.Maui.Controls
 
 		IStyle _implicitStyle;
 
+		// List of all applicable implicit styles for ApplyToDerivedTypes support
+		// Stored in order from most derived to most base
+		List<Style> _applicableImplicitStyles;
+
 		IStyle _style;
 
 		IList<string> _styleClass;
@@ -104,8 +108,28 @@ namespace Microsoft.Maui.Controls
 
 		void Apply(BindableObject bindable)
 		{
-			//NOTE specificity could be more fine grained (using distance)
-			ImplicitStyle?.Apply(bindable, new SetterSpecificity(SetterSpecificity.StyleImplicit, 0, 0, 0));
+			// Apply implicit styles from most base to most derived
+			// This ensures derived styles override base styles for conflicting properties
+			if (_applicableImplicitStyles != null && _applicableImplicitStyles.Count > 0)
+			{
+				// Apply in reverse order (most base first, most derived last)
+				// so derived styles override base styles.
+				// Use graduated specificities so derived styles have higher priority than base styles.
+				// This is important for AppThemeBinding which continues to update after initial application.
+				// _applicableImplicitStyles[0] = most derived, _applicableImplicitStyles[Count-1] = most base
+				for (int i = _applicableImplicitStyles.Count - 1; i >= 0; i--)
+				{
+					// Calculate specificity: most derived (i=0) gets highest, most base gets lowest
+					// Use StyleImplicit as base and add offset based on position
+					// This ensures derived style's static values override base style's bindings
+					ushort styleSpecificity = (ushort)(SetterSpecificity.StyleImplicit + (_applicableImplicitStyles.Count - 1 - i));
+					((IStyle)_applicableImplicitStyles[i]).Apply(bindable, new SetterSpecificity(styleSpecificity, 0, 0, 0));
+				}
+			}
+			else
+			{
+				ImplicitStyle?.Apply(bindable, new SetterSpecificity(SetterSpecificity.StyleImplicit, 0, 0, 0));
+			}
 			if (ClassStyles != null)
 				foreach (var classStyle in ClassStyles)
 					//NOTE specificity could be more fine grained (using distance)
@@ -122,7 +146,18 @@ namespace Microsoft.Maui.Controls
 			if (ClassStyles != null)
 				foreach (var classStyle in ClassStyles)
 					((IStyle)classStyle)?.UnApply(bindable);
-			ImplicitStyle?.UnApply(bindable);
+			// UnApply implicit styles in reverse order of application (most derived first)
+			if (_applicableImplicitStyles != null && _applicableImplicitStyles.Count > 0)
+			{
+				for (int i = 0; i < _applicableImplicitStyles.Count; i++)
+				{
+					((IStyle)_applicableImplicitStyles[i]).UnApply(bindable);
+				}
+			}
+			else
+			{
+				ImplicitStyle?.UnApply(bindable);
+			}
 		}
 
 		void OnClassStyleChanged()
@@ -136,6 +171,7 @@ namespace Microsoft.Maui.Controls
 			var first = true;
 
 			// Collect all applicable styles from the type hierarchy
+			// The list is ordered from most derived (first) to most base (last)
 			foreach (BindableProperty implicitStyleProperty in _implicitStyles)
 			{
 				var implicitStyle = (Style)Target.GetValue(implicitStyleProperty);
@@ -152,6 +188,7 @@ namespace Microsoft.Maui.Controls
 			// If no styles found, clear
 			if (applicableStyles.Count == 0)
 			{
+				_applicableImplicitStyles = null;
 				ImplicitStyle = null;
 				return;
 			}
@@ -159,64 +196,17 @@ namespace Microsoft.Maui.Controls
 			// If only one style, use it directly (no performance overhead)
 			if (applicableStyles.Count == 1)
 			{
+				_applicableImplicitStyles = null;
 				ImplicitStyle = applicableStyles[0];
 				return;
 			}
 
-			// Multiple styles - need to merge them by creating a chain
-			// The chain goes: most base style <- ... <- most derived style
-			// This ensures derived styles override base styles for conflicting properties
-			Style mergedStyle = null;
-			
-			// Process from most base (last in list) to most derived (first in list)
-			for (int i = applicableStyles.Count - 1; i >= 0; i--)
-			{
-				var currentStyle = applicableStyles[i];
-				
-				if (i == applicableStyles.Count - 1)
-				{
-					// Most base style - use as-is
-					mergedStyle = currentStyle;
-				}
-				else
-				{
-					// Create a new style that wraps the current style and chains to previous
-					var wrapperStyle = new Style(currentStyle.TargetType)
-					{
-						BasedOn = mergedStyle,
-						CanCascade = currentStyle.CanCascade,
-						ApplyToDerivedTypes = currentStyle.ApplyToDerivedTypes
-					};
-					
-					// Copy setters from current style
-					foreach (var setter in currentStyle.Setters)
-					{
-						wrapperStyle.Setters.Add(setter);
-					}
-					
-					// Copy behaviors if any exist
-					if (currentStyle.Behaviors.Count > 0)
-					{
-						foreach (var behavior in currentStyle.Behaviors)
-						{
-							wrapperStyle.Behaviors.Add(behavior);
-						}
-					}
-					
-					// Copy triggers if any exist
-					if (currentStyle.Triggers.Count > 0)
-					{
-						foreach (var trigger in currentStyle.Triggers)
-						{
-							wrapperStyle.Triggers.Add(trigger);
-						}
-					}
-					
-					mergedStyle = wrapperStyle;
-				}
-			}
-			
-			ImplicitStyle = mergedStyle;
+			// Multiple styles - store them for sequential application in Apply()
+			// This preserves each style's BasedOn chain intact
+			_applicableImplicitStyles = applicableStyles;
+			// Set ImplicitStyle to the most derived style for compatibility
+			// (some code may check if ImplicitStyle is set)
+			ImplicitStyle = applicableStyles[0];
 		}
 
 		void RegisterImplicitStyles()
@@ -264,7 +254,20 @@ namespace Microsoft.Maui.Controls
 				foreach (var classStyle in ClassStyles)
 					((IStyle)classStyle)?.UnApply(Target);
 			if (shouldReApplyImplicitStyle)
-				ImplicitStyle?.UnApply(Target);
+			{
+				// UnApply all applicable implicit styles if we have multiple
+				if (_applicableImplicitStyles != null && _applicableImplicitStyles.Count > 0)
+				{
+					for (int i = 0; i < _applicableImplicitStyles.Count; i++)
+					{
+						((IStyle)_applicableImplicitStyles[i]).UnApply(Target);
+					}
+				}
+				else
+				{
+					ImplicitStyle?.UnApply(Target);
+				}
+			}
 
 			_implicitStyle = implicitStyle;
 			_classStyles = classStyles;
@@ -272,7 +275,23 @@ namespace Microsoft.Maui.Controls
 
 			//FIXME compute specificity
 			if (shouldReApplyImplicitStyle)
-				ImplicitStyle?.Apply(Target, new SetterSpecificity(SetterSpecificity.StyleImplicit, 0, 0, 0));
+			{
+				// Apply all applicable implicit styles if we have multiple
+				if (_applicableImplicitStyles != null && _applicableImplicitStyles.Count > 0)
+				{
+					// Apply in reverse order (most base first, most derived last)
+					// Use graduated specificities so derived styles have higher priority than base styles.
+					for (int i = _applicableImplicitStyles.Count - 1; i >= 0; i--)
+					{
+						ushort styleSpecificity = (ushort)(SetterSpecificity.StyleImplicit + (_applicableImplicitStyles.Count - 1 - i));
+						((IStyle)_applicableImplicitStyles[i]).Apply(Target, new SetterSpecificity(styleSpecificity, 0, 0, 0));
+					}
+				}
+				else
+				{
+					ImplicitStyle?.Apply(Target, new SetterSpecificity(SetterSpecificity.StyleImplicit, 0, 0, 0));
+				}
+			}
 
 			if (shouldReApplyClassStyle && ClassStyles != null)
 				foreach (var classStyle in ClassStyles)
