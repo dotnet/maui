@@ -145,7 +145,7 @@ namespace Microsoft.Maui.Controls
 			RefreshIsEnabledProperty();
 
 		protected override bool IsEnabledCore =>
-			base.IsEnabledCore && CommandElement.GetCanExecute(this);
+			base.IsEnabledCore && CommandElement.GetCanExecute(this, CommandProperty);
 		public Paint Foreground => Color?.AsPaint();
 
 		bool ICheckBox.IsChecked
