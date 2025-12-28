@@ -40,30 +40,11 @@ namespace Microsoft.Maui.Controls
 			return null;
 		}
 
-		internal static void RegisterRadioButton(RadioButton radioButton, RadioButtonGroupController controller)
-		{
-			if (radioButton != null && controller != null)
-			{
-				if (!groupControllers.TryGetValue(radioButton, out _))
-				{
-					groupControllers.Add(radioButton, controller);
-				}
-			}
-		}
-
 		internal void HandleRadioButtonGroupSelectionChanged(RadioButton radioButton)
 		{
 			if (radioButton.GroupName != _groupName)
 			{
 				return;
-			}
-
-			// Ensure this RadioButton is registered with this controller
-			// This handles RadioButtons in CollectionView DataTemplates that weren't
-			// discovered via ChildAdded events
-			if (!groupControllers.TryGetValue(radioButton, out _))
-			{
-				groupControllers.Add(radioButton, this);
 			}
 
 			_layout.SetValue(RadioButtonGroup.SelectedValueProperty, radioButton.Value);
@@ -188,19 +169,10 @@ namespace Microsoft.Maui.Controls
 
 			_selectedValue = radioButtonValue;
 
-			// Search all descendants for RadioButtons with matching group name
-			// This is necessary for RadioButtons in CollectionView DataTemplates
-			// that don't trigger ChildAdded events on the parent layout
 			foreach (var child in _layout.Descendants())
 			{
 				if (child is RadioButton radioButton && radioButton.GroupName == _groupName)
 				{
-					// Register the RadioButton if not already registered
-					if (!groupControllers.TryGetValue(radioButton, out _))
-					{
-						groupControllers.Add(radioButton, this);
-					}
-
 					if (radioButtonValue is not null)
 					{
 						if (radioButton.Value is not null && radioButton.Value.Equals(radioButtonValue))
@@ -225,33 +197,6 @@ namespace Microsoft.Maui.Controls
 			var oldName = _groupName;
 			_groupName = groupName;
 			UpdateGroupNames(_layout, _groupName, oldName);
-
-			// After setting group name, discover and register any existing RadioButtons
-			// This handles RadioButtons in CollectionView DataTemplates that were already created
-			if (!string.IsNullOrEmpty(_groupName))
-			{
-				foreach (var descendant in _layout.Descendants())
-				{
-					if (descendant is RadioButton radioButton)
-					{
-						// Only register RadioButtons that match our group or have no group set
-						var rbGroupName = radioButton.GroupName;
-						if (rbGroupName == _groupName || (string.IsNullOrEmpty(rbGroupName) && string.IsNullOrEmpty(oldName)))
-						{
-							if (!groupControllers.TryGetValue(radioButton, out _))
-							{
-								groupControllers.Add(radioButton, this);
-							}
-
-							// If this RadioButton is checked, update SelectedValue
-							if (radioButton.IsChecked && object.Equals(radioButton.Value, _selectedValue) == false)
-							{
-								_layout.SetValue(RadioButtonGroup.SelectedValueProperty, radioButton.Value);
-							}
-						}
-					}
-				}
-			}
 		}
 	}
 }
