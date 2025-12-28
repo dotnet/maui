@@ -108,6 +108,9 @@ namespace Microsoft.Maui.Handlers
 		public static void MapSelectionLength(IEditorHandler handler, ITextInput editor) =>
 			handler.PlatformView?.UpdateSelectionLength(editor);
 
+		public static void MapUnderlineColor(IEditorHandler handler, IEditor editor) =>
+			handler.PlatformView?.UpdateUnderlineColor(editor);
+
 		static void MapFocus(IEditorHandler handler, IEditor editor, object? args)
 		{
 			if (args is FocusRequest request)

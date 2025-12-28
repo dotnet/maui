@@ -119,6 +119,9 @@ namespace Microsoft.Maui.Platform
 
 			UpdatePlaceholderLabelFrame();
 			ShouldCenterVertically();
+			
+			// Reposition underline layer if it exists
+			TextViewExtensions.UpdateUnderlineLayerFrame(this);
 		}
 
 		MauiLabel InitPlaceholderLabel()

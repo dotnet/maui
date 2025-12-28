@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using ObjCRuntime;
 using UIKit;
 
@@ -194,6 +195,68 @@ namespace Microsoft.Maui.Platform
 			{
 				entryHandler.PlatformView.ResignFirstResponder();
 				entryHandler.VirtualView.Completed();
+			}
+		}
+
+		public static void UpdateUnderlineColor(this UITextView textView, ITextInput textInput)
+		{
+			var underlineColor = textInput.UnderlineColor;
+
+			if (underlineColor == null)
+			{
+				// Remove the underline layer if it exists
+				RemoveUnderlineLayer(textView);
+				return;
+			}
+
+			// Add or update the underline layer
+			UpdateUnderlineLayer(textView, underlineColor);
+		}
+
+		static void RemoveUnderlineLayer(UIView view)
+		{
+			var existingLayer = view.Layer.Sublayers?.FirstOrDefault(l => l.Name == "MauiTextInputUnderlineLayer");
+			if (existingLayer != null)
+			{
+				existingLayer.RemoveFromSuperLayer();
+			}
+		}
+
+		static void UpdateUnderlineLayer(UIView view, Graphics.Color color)
+		{
+			const string layerName = "MauiTextInputUnderlineLayer";
+			
+			// Find or create the underline layer
+			var underlineLayer = view.Layer.Sublayers?.FirstOrDefault(l => l.Name == layerName);
+			
+			if (underlineLayer == null)
+			{
+				underlineLayer = new CoreAnimation.CALayer
+				{
+					Name = layerName
+				};
+				view.Layer.AddSublayer(underlineLayer);
+			}
+
+			// Update the layer properties
+			underlineLayer.BackgroundColor = color.ToPlatform().CGColor;
+			
+			// Position the layer at the bottom of the view
+			// Height of 2px is standard iOS underline thickness
+			var bounds = view.Bounds;
+			underlineLayer.Frame = new CoreGraphics.CGRect(0, bounds.Height - 2, bounds.Width, 2);
+		}
+
+		internal static void UpdateUnderlineLayerFrame(UIView view)
+		{
+			const string layerName = "MauiTextInputUnderlineLayer";
+			var underlineLayer = view.Layer.Sublayers?.FirstOrDefault(l => l.Name == layerName);
+			
+			if (underlineLayer != null)
+			{
+				// Reposition the layer when view bounds change
+				var bounds = view.Bounds;
+				underlineLayer.Frame = new CoreGraphics.CGRect(0, bounds.Height - 2, bounds.Width, 2);
 			}
 		}
 	}

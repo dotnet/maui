@@ -33,6 +33,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IEditor.Keyboard)] = MapKeyboard,
 			[nameof(IEditor.CursorPosition)] = MapCursorPosition,
 			[nameof(IEditor.SelectionLength)] = MapSelectionLength,
+			[nameof(IEditor.UnderlineColor)] = MapUnderlineColor,
 #if IOS
 			[nameof(IEditor.IsEnabled)] = MapIsEnabled,
 #endif

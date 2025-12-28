@@ -143,6 +143,9 @@ namespace Microsoft.Maui.Handlers
 		public static void MapSelectionLength(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateSelectionLength(entry);
 
+		public static void MapUnderlineColor(IEntryHandler handler, IEntry entry) =>
+			handler.PlatformView?.UpdateUnderlineColor(entry);
+
 		public static void MapClearButtonVisibility(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateClearButtonVisibility(entry);
 

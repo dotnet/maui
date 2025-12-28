@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue7906"
+             Title="Issue 7906">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="20">
+            <Label Text="Issue 7906: Entry and Editor UnderlineColor"
+                   FontSize="18"
+                   FontAttributes="Bold"/>
+
+            <!-- Test Case 1: Default Entry (platform default underline) -->
+            <Label Text="1. Default Entry (platform default)"/>
+            <Entry Placeholder="Default Entry"
+                   Text="Default underline"
+                   AutomationId="DefaultEntry"/>
+
+            <!-- Test Case 2: Entry with custom underline color (Blue) -->
+            <Label Text="2. Entry with Blue underline"/>
+            <Entry Placeholder="Blue underline"
+                   Text="Should have blue underline"
+                   UnderlineColor="Blue"
+                   AutomationId="BlueUnderlineEntry"/>
+
+            <!-- Test Case 3: Entry with transparent/hidden underline -->
+            <Label Text="3. Entry with hidden underline (Transparent)"/>
+            <Entry Placeholder="No underline"
+                   Text="Underline should be hidden"
+                   UnderlineColor="Transparent"
+                   AutomationId="TransparentUnderlineEntry"/>
+
+            <!-- Test Case 4: Entry with VisualStateManager (Blue normal, Red focused) -->
+            <Label Text="4. Entry with VSM (Blue normal, Red focused)"/>
+            <Entry Placeholder="Tap to see red underline"
+                   Text="Blue when unfocused, red when focused"
+                   UnderlineColor="Blue"
+                   AutomationId="VSMEntry">
+                <VisualStateManager.VisualStateGroups>
+                    <VisualStateGroup x:Name="CommonStates">
+                        <VisualState x:Name="Normal">
+                            <VisualState.Setters>
+                                <Setter Property="UnderlineColor" Value="Blue"/>
+                            </VisualState.Setters>
+                        </VisualState>
+                        <VisualState x:Name="Focused">
+                            <VisualState.Setters>
+                                <Setter Property="UnderlineColor" Value="Red"/>
+                            </VisualState.Setters>
+                        </VisualState>
+                    </VisualStateGroup>
+                </VisualStateManager.VisualStateGroups>
+            </Entry>
+
+            <!-- Test Case 5: Editor with custom underline color (Green) -->
+            <Label Text="5. Editor with Green underline"/>
+            <Editor Placeholder="Green underline"
+                    Text="Editor with green underline"
+                    HeightRequest="100"
+                    UnderlineColor="Green"
+                    AutomationId="GreenUnderlineEditor"/>
+
+            <!-- Test Case 6: Editor with hidden underline -->
+            <Label Text="6. Editor with hidden underline (Transparent)"/>
+            <Editor Placeholder="No underline"
+                    Text="Editor with no underline"
+                    HeightRequest="100"
+                    UnderlineColor="Transparent"
+                    AutomationId="TransparentUnderlineEditor"/>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

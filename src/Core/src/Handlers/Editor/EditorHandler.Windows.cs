@@ -87,6 +87,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapSelectionLength(IEditorHandler handler, IEditor editor) =>
 			handler.PlatformView?.UpdateSelectionLength(editor);
 
+		public static void MapUnderlineColor(IEditorHandler handler, IEditor editor)
+		{
+			// No-op on Windows - TextBox uses borders, not underlines
+		}
+
 		public static void MapVerticalTextAlignment(IEditorHandler handler, IEditor editor) =>
 			handler.PlatformView?.UpdateVerticalTextAlignment(editor);
 

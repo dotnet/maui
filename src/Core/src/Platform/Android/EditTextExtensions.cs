@@ -465,5 +465,29 @@ namespace Microsoft.Maui.Platform
 				return new global::Android.Graphics.Rect(leftEdge, topEdge, rightEdge, bottomEdge);
 			}
 		}
+
+		public static void UpdateUnderlineColor(this EditText editText, ITextInput textInput)
+		{
+			var underlineColor = textInput.UnderlineColor;
+
+			if (underlineColor == null)
+			{
+				// Reset to default Material Design underline
+				editText.BackgroundTintList = null;
+				return;
+			}
+
+			// Use ColorStateList to control underline color in all states
+			var colorStateList = GetUnderlineColorStateList(underlineColor);
+			editText.BackgroundTintList = colorStateList;
+		}
+
+		static ColorStateList GetUnderlineColorStateList(Graphics.Color color)
+		{
+			var androidColor = color.ToPlatform();
+			
+			// Create ColorStateList for all states (focused, enabled, disabled, etc.)
+			return ColorStateList.ValueOf(androidColor);
+		}
 	}
 }

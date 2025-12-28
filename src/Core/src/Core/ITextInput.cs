@@ -1,3 +1,5 @@
+using Microsoft.Maui.Graphics;
+
 namespace Microsoft.Maui
 {
 	/// <summary>
@@ -44,5 +46,16 @@ namespace Microsoft.Maui
 		/// Gets the length of the selection.
 		/// </summary>
 		int SelectionLength { get; set; }
+
+		/// <summary>
+		/// Gets the underline color for the text input.
+		/// </summary>
+		/// <remarks>
+		/// On Android, this controls the Material Design underline color.
+		/// On iOS/MacCatalyst, this creates a custom underline layer.
+		/// On Windows, this property has no effect as TextBox uses borders.
+		/// Set to <see cref="Colors.Transparent"/> to hide the underline, or <see langword="null"/> to use platform defaults.
+		/// </remarks>
+		Color? UnderlineColor { get; }
 	}
 }
