@@ -60,6 +60,9 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly BindableProperty FontAutoScalingEnabledProperty = FontElement.FontAutoScalingEnabledProperty;
 
+		/// <summary>Bindable property for <see cref="UnderlineColor"/>.</summary>
+		public static readonly BindableProperty UnderlineColorProperty = BindableProperty.Create(nameof(UnderlineColor), typeof(Color), typeof(InputView), null);
+
 		/// <include file="../../docs/Microsoft.Maui.Controls/InputView.xml" path="//Member[@MemberName='MaxLength']/Docs/*" />
 		public int MaxLength
 		{
@@ -258,6 +261,19 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(FontAutoScalingEnabledProperty, value);
 		}
 
+		/// <summary>
+		/// Gets or sets the border thickness. This is a bindable property.
+		/// </summary>
+		/// <summary>
+		/// Gets or sets the underline color. This is a bindable property.
+		/// </summary>
+		/// <remarks>Set to Transparent to hide the underline. Primarily affects Android Material Design underlines.</remarks>
+		public Color UnderlineColor
+		{
+			get => (Color)GetValue(UnderlineColorProperty);
+			set => SetValue(UnderlineColorProperty, value);
+		}
+
 		double IFontElement.FontSizeDefaultValueCreator() =>
 				this.GetDefaultFontSize();
 
@@ -298,6 +314,8 @@ namespace Microsoft.Maui.Controls
 			get => Text;
 			set => SetValue(TextProperty, value, SetterSpecificity.FromHandler);
 		}
+
+		Color ITextInput.UnderlineColor => UnderlineColor;
 
 		private protected override string GetDebuggerDisplay()
 		{

@@ -219,5 +219,9 @@ namespace Microsoft.Maui.Handlers
 				}
 			}
 		}
+
+		public static void MapUnderlineColor(IEditorHandler handler, IEditor editor) =>
+			handler.PlatformView?.UpdateUnderlineColor(editor);
+
 	}
 }

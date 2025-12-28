@@ -1,2 +1,5 @@
 #nullable enable
 ~override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.ViewWillTransitionToSize(CoreGraphics.CGSize toSize, UIKit.IUIViewControllerTransitionCoordinator coordinator) -> void
+~Microsoft.Maui.Controls.InputView.UnderlineColor.get -> Microsoft.Maui.Graphics.Color
+~Microsoft.Maui.Controls.InputView.UnderlineColor.set -> void
+~static readonly Microsoft.Maui.Controls.InputView.UnderlineColorProperty -> Microsoft.Maui.Controls.BindableProperty

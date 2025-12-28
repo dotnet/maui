@@ -12,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Graphics;
 using static Android.Views.View;
 using static Android.Widget.TextView;
+using AColor = Android.Graphics.Color;
 
 namespace Microsoft.Maui.Platform
 {
@@ -463,6 +464,24 @@ namespace Microsoft.Maui.Platform
 				var rightEdge = leftEdge + buttonRect.Width();
 
 				return new global::Android.Graphics.Rect(leftEdge, topEdge, rightEdge, bottomEdge);
+			}
+		}
+
+		public static void UpdateUnderlineColor(this EditText editText, ITextInput textInput)
+		{
+			var underlineColor = textInput.UnderlineColor;
+
+			if (underlineColor == null)
+				return;
+
+			// Android Material Design uses backgroundTint for underline color
+			if (underlineColor == Colors.Transparent)
+			{
+				editText.BackgroundTintList = ColorStateList.ValueOf(AColor.Transparent);
+			}
+			else
+			{
+				editText.BackgroundTintList = ColorStateList.ValueOf(underlineColor.ToPlatform());
 			}
 		}
 	}

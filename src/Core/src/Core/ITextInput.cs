@@ -1,3 +1,5 @@
+using Microsoft.Maui.Graphics;
+
 namespace Microsoft.Maui
 {
 	/// <summary>
@@ -44,5 +46,10 @@ namespace Microsoft.Maui
 		/// Gets the length of the selection.
 		/// </summary>
 		int SelectionLength { get; set; }
+
+		/// <summary>
+		/// Gets the underline color.
+		/// </summary>
+		Color UnderlineColor { get; }
 	}
 }

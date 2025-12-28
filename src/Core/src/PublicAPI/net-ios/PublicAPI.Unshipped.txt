@@ -1,2 +1,8 @@
 #nullable enable
 override Microsoft.Maui.Platform.MauiView.DidUpdateFocus(UIKit.UIFocusUpdateContext! context, UIKit.UIFocusAnimationCoordinator! coordinator) -> void
+override Microsoft.Maui.Platform.MauiTextField.LayoutSubviews() -> void
+Microsoft.Maui.ITextInput.UnderlineColor.get -> Microsoft.Maui.Graphics.Color!
+static Microsoft.Maui.Handlers.EditorHandler.MapUnderlineColor(Microsoft.Maui.Handlers.IEditorHandler! handler, Microsoft.Maui.IEditor! editor) -> void
+static Microsoft.Maui.Handlers.EntryHandler.MapUnderlineColor(Microsoft.Maui.Handlers.IEntryHandler! handler, Microsoft.Maui.IEntry! entry) -> void
+static Microsoft.Maui.Platform.TextFieldExtensions.UpdateUnderlineColor(this UIKit.UITextField! textField, Microsoft.Maui.ITextInput! textInput) -> void
+static Microsoft.Maui.Platform.TextViewExtensions.UpdateUnderlineColor(this UIKit.UITextView! textView, Microsoft.Maui.ITextInput! textInput) -> void

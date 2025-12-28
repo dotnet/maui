@@ -113,5 +113,9 @@ namespace Microsoft.Maui.Handlers
 			if (VirtualView.SelectionLength != selectedTextLength)
 				VirtualView.SelectionLength = selectedTextLength;
 		}
+
+		public static void MapUnderlineColor(IEditorHandler handler, IEditor editor) =>
+			handler.PlatformView?.UpdateUnderlineColor(editor);
+
 	}
 }

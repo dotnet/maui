@@ -24,6 +24,31 @@ namespace Microsoft.Maui.Platform
 			base.WillMoveToWindow(window);
 		}
 
+		public override void LayoutSubviews()
+		{
+			base.LayoutSubviews();
+			
+			// Update underline layer frame after layout
+			UpdateUnderlineLayerFrame();
+		}
+
+		void UpdateUnderlineLayerFrame()
+		{
+			// Find the underline layer and update its frame
+			if (Layer?.Sublayers != null)
+			{
+				foreach (var layer in Layer.Sublayers)
+				{
+					if (layer.Name == "MauiTextInputUnderlineLayer")
+					{
+						var bounds = Bounds;
+						layer.Frame = new CoreGraphics.CGRect(0, bounds.Height - 2, bounds.Width, 2);
+						break;
+					}
+				}
+			}
+		}
+
 		public override string? Text
 		{
 			get => base.Text;

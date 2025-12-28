@@ -273,5 +273,8 @@ namespace Microsoft.Maui.Handlers
 			PlatformView.SetCompoundDrawablesWithIntrinsicBounds(null, null, null, null);
 			_clearButtonVisible = false;
 		}
+
+		public static void MapUnderlineColor(IEntryHandler handler, IEntry entry) =>
+			handler.PlatformView?.UpdateUnderlineColor(entry);
 	}
 }

@@ -141,5 +141,9 @@ namespace Microsoft.Maui.Handlers
 
 		void OnPlatformViewSizeChanged(object sender, SizeChangedEventArgs e) =>
 			MauiTextBox.InvalidateAttachedProperties(PlatformView);
+
+		public static void MapUnderlineColor(IEntryHandler handler, IEntry entry) =>
+			handler.PlatformView?.UpdateUnderlineColor(entry);
+
 	}
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using CoreAnimation;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Graphics;
@@ -270,6 +271,28 @@ namespace Microsoft.Maui.Platform
 			{
 				entryHandler.PlatformView.ResignFirstResponder();
 				entryHandler.VirtualView.Completed();
+			}
+		}
+
+		public static void UpdateUnderlineColor(this UITextField textField, ITextInput textInput)
+		{
+			var underlineColor = textInput.UnderlineColor;
+
+			if (underlineColor == null)
+			{
+				// Remove underline layer if it exists
+				TextInputUnderlineLayer.RemoveUnderlineLayer(textField);
+				return;
+			}
+
+			// Create or update custom underline using CALayer
+			var underlineLayer = TextInputUnderlineLayer.GetOrCreateUnderlineLayer(textField);
+			if (underlineLayer != null)
+			{
+				underlineLayer.BackgroundColor = underlineColor.ToCGColor();
+				
+				// Update layer position in case bounds changed
+				TextInputUnderlineLayer.UpdateUnderlineLayerFrame(textField, underlineLayer);
 			}
 		}
 	}

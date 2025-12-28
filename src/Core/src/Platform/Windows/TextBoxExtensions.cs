@@ -224,5 +224,12 @@ namespace Microsoft.Maui.Platform
 			var newCursorPosition = textBox.SelectionStart + cursorOffset;
 			return Math.Max(0, newCursorPosition);
 		}
+
+		public static void UpdateUnderlineColor(this TextBox textBox, ITextInput textInput)
+		{
+			// Windows TextBox doesn't have a built-in underline like Android Material Design
+			// The border is controlled via BorderThickness and BorderBrush
+			// This is a no-op on Windows
+		}
 	}
 }

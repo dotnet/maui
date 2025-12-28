@@ -1,1 +1,5 @@
 #nullable enable
+Microsoft.Maui.ITextInput.UnderlineColor.get -> Microsoft.Maui.Graphics.Color!
+static Microsoft.Maui.Handlers.EditorHandler.MapUnderlineColor(Microsoft.Maui.Handlers.IEditorHandler! handler, Microsoft.Maui.IEditor! editor) -> void
+static Microsoft.Maui.Handlers.EntryHandler.MapUnderlineColor(Microsoft.Maui.Handlers.IEntryHandler! handler, Microsoft.Maui.IEntry! entry) -> void
+static Microsoft.Maui.Platform.EditTextExtensions.UpdateUnderlineColor(this Android.Widget.EditText! editText, Microsoft.Maui.ITextInput! textInput) -> void
