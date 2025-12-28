@@ -24,6 +24,8 @@ namespace Microsoft.Maui.Controls
 			_layout = (Element)layout;
 			_layout.ChildAdded += ChildAdded;
 			_layout.ChildRemoved += ChildRemoved;
+			_layout.DescendantAdded += DescendantAdded;
+			_layout.DescendantRemoved += DescendantRemoved;
 
 			if (!string.IsNullOrEmpty(_groupName))
 			{
@@ -93,6 +95,30 @@ namespace Microsoft.Maui.Controls
 							groupControllers.Remove(radioButton1);
 						}
 					}
+				}
+			}
+		}
+
+		void DescendantAdded(object sender, ElementEventArgs e)
+		{
+			if (string.IsNullOrEmpty(_groupName) || _layout == null)
+			{
+				return;
+			}
+
+			if (e.Element is RadioButton radioButton)
+			{
+				AddRadioButton(radioButton);
+			}
+		}
+
+		void DescendantRemoved(object sender, ElementEventArgs e)
+		{
+			if (e.Element is RadioButton radioButton)
+			{
+				if (groupControllers.TryGetValue(radioButton, out _))
+				{
+					groupControllers.Remove(radioButton);
 				}
 			}
 		}
