@@ -49,11 +49,6 @@ namespace Microsoft.Maui.Controls
 			bindable.SetValue(SelectedValueProperty, selectedValue);
 		}
 
-		internal static RadioButtonGroupController GetController(BindableObject bindableObject)
-		{
-			return GetRadioButtonGroupController(bindableObject);
-		}
-
 		internal static void UpdateRadioButtonGroup(RadioButton radioButton)
 		{
 			UncheckOtherRadioButtonsInScope(radioButton);
