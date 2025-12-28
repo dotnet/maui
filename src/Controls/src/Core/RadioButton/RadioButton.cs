@@ -401,7 +401,40 @@ namespace Microsoft.Maui.Controls
 		internal void OnGroupSelectionChanged(RadioButton radioButton)
 		{
 			var controller = RadioButtonGroupController.GetGroupController(this);
+
+			// If no controller is registered (e.g., RadioButton in CollectionView DataTemplate),
+			// search up the visual tree for a layout with matching RadioButtonGroup.GroupName
+			if (controller == null && !string.IsNullOrEmpty(this.GroupName))
+			{
+				controller = FindControllerInAncestors(this, this.GroupName);
+
+				// Register this RadioButton with the found controller
+				if (controller != null)
+				{
+					RadioButtonGroupController.RegisterRadioButton(this, controller);
+				}
+			}
+
 			controller?.HandleRadioButtonGroupSelectionChanged(radioButton);
+		}
+
+		static RadioButtonGroupController FindControllerInAncestors(Element element, string groupName)
+		{
+			var parent = element.Parent;
+			while (parent != null)
+			{
+				// Check if this parent has RadioButtonGroup properties set
+				var parentGroupName = RadioButtonGroup.GetGroupName(parent as BindableObject);
+				if (parentGroupName == groupName)
+				{
+					// This parent has matching group name, get its controller
+					return RadioButtonGroup.GetController(parent as BindableObject);
+				}
+
+				parent = parent.Parent;
+			}
+
+			return null;
 		}
 
 		static View BuildDefaultTemplate()
