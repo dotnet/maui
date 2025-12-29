@@ -106,14 +106,23 @@ try {
     $mergeBranch = "merge/$SourceBranch-to-$TargetBranch"
     $result.MergeBranch = $mergeBranch
 
-    # Check if merge branch already exists on remote
-    Write-Step "Checking if merge branch already exists..."
-    $existingBranch = git ls-remote --heads $Remote $mergeBranch 2>&1
-    if ($existingBranch) {
-        Write-Warning "Merge branch '$mergeBranch' already exists on $Remote"
-        Write-Warning "Skipping - a merge for today is already in progress"
+    # Check if there's already an open PR for this merge
+    Write-Step "Checking for existing open PR..."
+    $existingPR = gh pr list --head $mergeBranch --base $TargetBranch --state open --json number,url --jq '.[0]' 2>&1
+    if ($existingPR -and $existingPR -ne "null") {
+        $prData = $existingPR | ConvertFrom-Json
+        Write-Warning "An open PR already exists for this merge"
+        Write-Warning "PR #$($prData.number): $($prData.url)"
         $result.Status = "Skipped"
-        $result.Error = "Branch already exists"
+        $result.PRUrl = $prData.url
+        $result.Error = "PR already exists"
+    }
+    # Check if merge branch already exists on remote (but no PR)
+    elseif (git ls-remote --heads $Remote $mergeBranch 2>&1) {
+        Write-Warning "Merge branch '$mergeBranch' exists on $Remote but no open PR found"
+        Write-Warning "Skipping - branch may need manual cleanup or PR was closed"
+        $result.Status = "Skipped"
+        $result.Error = "Branch exists without open PR"
     }
     else {
         Write-Success "No existing merge branch found"
