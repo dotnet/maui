@@ -98,7 +98,7 @@ parameters:
   type: object
   default:
     name: Azure Pipelines
-    vmImage: $(HostedMacImage)
+    vmImage: macOS-15
     os: macOS
 
 # ARM64 macOS pool (Apple Silicon)
