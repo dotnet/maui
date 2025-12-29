@@ -33,7 +33,8 @@
 
   <!-- IBC data packages don't follow NuGet conventions.  -->
   <Target Name="GetMIBCData"
-          AfterTargets="Restore">
+          AfterTargets="Restore"
+          Condition="'@(MIBCPackage)' != ''">
 
     <PropertyGroup>
       <_MergeMibcFilesCacheFile>$(MibcOptimizationDataDir)$(_MibcTargetPlatform)/$(_MibcTargetArchitecture)/merge_mibc_files.cache</_MergeMibcFilesCacheFile>
