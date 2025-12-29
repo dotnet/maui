@@ -21,25 +21,26 @@ trigger:
     - README.md
     - THIRD-PARTY-NOTICES.TXT
 
-pr:
-  branches:
-    include:
-    - main
-    - release/*
-    - net*.0
-  paths:
-    include:
-    - '*'
-    exclude:
-    - .github/**
-    - docs/*
-    - src/Templates/*
-    - CODE-OF-CONDUCT.md
-    - CONTRIBUTING.md
-    - LICENSE.TXT
-    - PATENTS.TXT
-    - README.md
-    - THIRD-PARTY-NOTICES.TXT
+pr: none
+# pr:
+#   branches:
+#     include:
+#     - main
+#     - release/*
+#     - net*.0
+#   paths:
+#     include:
+#     - '*'
+#     exclude:
+#     - .github/**
+#     - docs/*
+#     - src/Templates/*
+#     - CODE-OF-CONDUCT.md
+#     - CONTRIBUTING.md
+#     - LICENSE.TXT
+#     - PATENTS.TXT
+#     - README.md
+#     - THIRD-PARTY-NOTICES.TXT
 
 variables:
   - template: /eng/pipelines/common/variables.yml@self
