@@ -18,7 +18,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void ValidateFrameOffsets()
 		{
 			App.WaitForElement("FrameWithImage");
-			App.Tap("FrameWithImage");
 			VerifyScreenshot();
 		}
 	}
