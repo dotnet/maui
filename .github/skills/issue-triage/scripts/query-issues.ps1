@@ -394,7 +394,7 @@ function Format-Table-Output {
         @{Label="Title"; Expression={$_.Title}; Width=50},
         @{Label="Age"; Expression={$_.Age}; Width=10},
         @{Label="Platform"; Expression={$_.Platform}; Width=12},
-        @{Label="Comments"; Expression={$_.Comments}; Width=8}
+        @{Label="Comments"; Expression={$_.CommentCount}; Width=8}
     ) -AutoSize
 }
 
