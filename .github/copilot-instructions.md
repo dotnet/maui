@@ -200,6 +200,16 @@ The repository includes specialized custom agents for specific tasks. These agen
    - **Trigger phrases**: "test this PR", "validate PR #XXXXX in Sandbox", "reproduce issue #XXXXX", "try out in Sandbox"
    - **Do NOT use for**: Code review (use pr agent), writing automated tests (use uitest-coding-agent)
 
+### Reusable Skills
+
+Skills are modular capabilities that can be invoked directly or used by agents. Located in `.github/skills/`:
+
+1. **issue-triage** (`.github/skills/issue-triage/SKILL.md`)
+   - **Purpose**: Query and triage open issues that need milestones, labels, or investigation
+   - **Trigger phrases**: "find issues to triage", "show me old Android issues", "what issues need attention", "triage Android issues"
+   - **Scripts**: `init-triage-session.ps1`, `query-issues.ps1`, `record-triage.ps1`
+   - **Used by**: Any agent or direct invocation
+
 ### Using Custom Agents
 
 **Delegation Policy**: When user request matches agent trigger phrases, **ALWAYS delegate to the appropriate agent immediately**. Do not ask for permission or explain alternatives unless the request is ambiguous.
