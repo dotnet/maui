@@ -414,6 +414,11 @@ stages:
             clean: true
 
           steps:
+          # Restore dotnet tools (required for dotnet cake)
+          - script: dotnet tool restore
+            displayName: 'Restore .NET tools'
+            retryCountOnTaskFailure: 3
+
           # Install .NET SDK
           - script: dotnet cake --target=dotnet --configuration="Release" --verbosity=diagnostic
             displayName: 'Install .NET'
