@@ -5,6 +5,45 @@ using System.Windows.Input;
 
 namespace Maui.Controls.Sample;
 
+public class LocationItem : INotifyPropertyChanged
+{
+	public event PropertyChangedEventHandler PropertyChanged;
+
+	public int Id { get; set; }
+	private string _name;
+	public string Name
+	{
+		get => _name;
+		set
+		{
+			if (_name != value)
+			{
+				_name = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+
+	private bool _isSelected;
+	public bool IsSelected
+	{
+		get => _isSelected;
+		set
+		{
+			if (_isSelected != value)
+			{
+				_isSelected = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+
+	protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+	{
+		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+	}
+}
+
 public class MenuBarItemViewModel : INotifyPropertyChanged
 {
 	public event PropertyChangedEventHandler PropertyChanged;
@@ -206,7 +245,14 @@ public class MenuBarItemViewModel : INotifyPropertyChanged
 	private string _entryMode = string.Empty; // "add" or "edit"
 	private int _editingLocationIndex = -1;
 
-	public ObservableCollection<string> Locations { get; set; }
+	private int _selectedLocationIndex = -1;
+	public int SelectedLocationIndex
+	{
+		get => _selectedLocationIndex;
+		set => SetProperty(ref _selectedLocationIndex, value);
+	}
+
+	public ObservableCollection<LocationItem> Locations { get; set; }
 
 	#endregion
 
@@ -227,11 +273,11 @@ public class MenuBarItemViewModel : INotifyPropertyChanged
 	public MenuBarItemViewModel()
 	{
 		// Initialize locations collection
-		Locations = new ObservableCollection<string>
+		Locations = new ObservableCollection<LocationItem>
 		{
-			"Redmond, USA",
-			"London, UK",
-			"Berlin, DE"
+			new LocationItem { Id = 0, Name = "Redmond, USA", IsSelected = false },
+			new LocationItem { Id = 1, Name = "London, UK", IsSelected = false },
+			new LocationItem { Id = 2, Name = "Berlin, DE", IsSelected = false }
 		};
 
 		// Initialize commands
@@ -283,8 +329,9 @@ public class MenuBarItemViewModel : INotifyPropertyChanged
 		});
 	}
 
-	private void OnChangeLocation(string location)
+	private void OnChangeLocation(object parameter)
 	{
+		var location = parameter as string;
 		if (string.IsNullOrWhiteSpace(location))
 		{
 			StatusMessage = "Invalid location provided";
@@ -313,28 +360,19 @@ public class MenuBarItemViewModel : INotifyPropertyChanged
 			return;
 		}
 
-		Application.Current?.Dispatcher.Dispatch(async () =>
+		if (SelectedLocationIndex < 0 || SelectedLocationIndex >= Locations.Count)
 		{
-			// Navigate to custom selection page for automation
-			var selectionPage = new LocationSelectionPage(
-				"Select Location to Edit",
-				Locations.ToList(),
-				location =>
-				{
-					var index = Locations.IndexOf(location);
-					if (index >= 0)
-					{
-						_entryMode = "edit";
-						_editingLocationIndex = index;
-						EntryText = location;
-						EntryPlaceholder = "Enter new location name";
-						IsEntryVisible = true;
-						StatusMessage = $"Edit '{location}' in the field below and click Confirm";
-					}
-				});
+			StatusMessage = "Please select a location to edit by checking its checkbox";
+			return;
+		}
 
-			await Application.Current.MainPage.Navigation.PushModalAsync(selectionPage);
-		});
+		var location = Locations[SelectedLocationIndex];
+		_entryMode = "edit";
+		_editingLocationIndex = SelectedLocationIndex;
+		EntryText = location.Name;
+		EntryPlaceholder = "Enter new location name";
+		IsEntryVisible = true;
+		StatusMessage = $"Edit '{location.Name}' in the field below and click Confirm";
 	}
 
 	private void OnRemoveLocation()
@@ -345,24 +383,16 @@ public class MenuBarItemViewModel : INotifyPropertyChanged
 			return;
 		}
 
-		Application.Current?.Dispatcher.Dispatch(async () =>
+		if (SelectedLocationIndex < 0 || SelectedLocationIndex >= Locations.Count)
 		{
-			// Navigate to custom selection page for automation
-			var selectionPage = new LocationSelectionPage(
-				"Select Location to Remove",
-				Locations.ToList(),
-				location =>
-				{
-					var index = Locations.IndexOf(location);
-					if (index >= 0)
-					{
-						Locations.RemoveAt(index);
-						StatusMessage = $"Removed location: {location}";
-					}
-				});
+			StatusMessage = "Please select a location to remove by checking its checkbox";
+			return;
+		}
 
-			await Application.Current.MainPage.Navigation.PushModalAsync(selectionPage);
-		});
+		var location = Locations[SelectedLocationIndex];
+		Locations.RemoveAt(SelectedLocationIndex);
+		SelectedLocationIndex = -1; // Clear selection after removal
+		StatusMessage = $"Removed location: {location.Name}";
 	}
 
 	private void OnRefresh()
@@ -380,13 +410,14 @@ public class MenuBarItemViewModel : INotifyPropertyChanged
 
 		if (_entryMode == "add")
 		{
-			Locations.Add(EntryText);
+			var newId = Locations.Count > 0 ? Locations.Max(l => l.Id) + 1 : 0;
+			Locations.Add(new LocationItem { Id = newId, Name = EntryText, IsSelected = false });
 			StatusMessage = $"Added location: {EntryText}";
 		}
 		else if (_entryMode == "edit" && _editingLocationIndex >= 0)
 		{
-			var oldName = Locations[_editingLocationIndex];
-			Locations[_editingLocationIndex] = EntryText;
+			var oldName = Locations[_editingLocationIndex].Name;
+			Locations[_editingLocationIndex].Name = EntryText;
 			StatusMessage = $"Updated '{oldName}' to '{EntryText}'";
 		}
 
@@ -418,15 +449,16 @@ public class MenuBarItemViewModel : INotifyPropertyChanged
 
 		// Reset locations to initial state
 		Locations.Clear();
-		Locations.Add("Redmond, USA");
-		Locations.Add("London, UK");
-		Locations.Add("Berlin, DE");
+		Locations.Add(new LocationItem { Id = 0, Name = "Redmond, USA", IsSelected = false });
+		Locations.Add(new LocationItem { Id = 1, Name = "London, UK", IsSelected = false });
+		Locations.Add(new LocationItem { Id = 2, Name = "Berlin, DE", IsSelected = false });
 
 		// Hide entry if visible
 		IsEntryVisible = false;
 		EntryText = string.Empty;
 		_entryMode = string.Empty;
 		_editingLocationIndex = -1;
+		SelectedLocationIndex = -1;
 	}
 
 	#endregion

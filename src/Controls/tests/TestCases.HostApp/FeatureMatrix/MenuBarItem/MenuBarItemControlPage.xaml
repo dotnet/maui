@@ -178,22 +178,23 @@
                                           FontAttributes="Bold"
                                           AutomationId="AvailableLocationsLabel"/>
 
-                                   <CollectionView ItemsSource="{Binding Locations}"
+                                   <CollectionView x:Name="LocationsCollectionView"
+                                                   ItemsSource="{Binding Locations}"
                                                    HeightRequest="200"
                                                    AutomationId="LocationsCollectionView">
                                           <CollectionView.ItemTemplate>
-                                                 <DataTemplate x:DataType="x:String">
+                                                 <DataTemplate x:DataType="local:LocationItem">
                                                         <Grid Padding="8,4"
                                                               ColumnDefinitions="Auto,*"
                                                               ColumnSpacing="10">
-                                                               <Ellipse WidthRequest="8"
-                                                                        HeightRequest="8"
-                                                                        Fill="Gray"
-                                                                        VerticalOptions="Center"/>
+                                                               <CheckBox IsChecked="{Binding IsSelected}"
+                                                                         VerticalOptions="Center"
+                                                                         AutomationId="{Binding Id, StringFormat='LocationCheckBox_{0}'}"/>
                                                                <Label Grid.Column="1"
-                                                                      Text="{Binding .}"
+                                                                      Text="{Binding Name}"
                                                                       FontSize="15"
-                                                                      VerticalOptions="Center"/>
+                                                                      VerticalOptions="Center"
+                                                                      AutomationId="{Binding Id, StringFormat='LocationLabel_{0}'}"/>
                                                         </Grid>
                                                  </DataTemplate>
                                           </CollectionView.ItemTemplate>
