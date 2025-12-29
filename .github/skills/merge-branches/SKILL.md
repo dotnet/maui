@@ -32,7 +32,7 @@ pwsh .github/scripts/MergeBranchAndCreatePR.ps1 -Remote "origin" -TargetBranch "
 | `-Remote` | Yes | - | The git remote to operate against (e.g., "origin", "upstream") |
 | `-TargetBranch` | Yes | - | The branch to merge into (e.g., "net10.0", "net11.0") |
 | `-SourceBranch` | No | "main" | The branch to merge from |
-| `-DryRun` | No | false | If specified, shows what would happen without making changes |
+| `-DryRun` | No | (absent) | Switch parameter. If specified, shows what would happen without making changes |
 
 ### Examples
 
@@ -78,7 +78,7 @@ The `weekly-branch-merge.yml` workflow provides automated scheduling:
 ## Error Handling
 
 The script will fail if:
-- An open PR already exists for the merge (previous week's PR wasn't merged)
+- An open PR already exists from a `merge/{source}-to-{target}` branch (previous week's PR wasn't merged)
 - Merge conflicts are detected (requires manual resolution)
 - Git operations fail for any reason
 
