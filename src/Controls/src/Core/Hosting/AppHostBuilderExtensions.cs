@@ -74,7 +74,6 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<ActivityIndicator, ActivityIndicatorHandler>();
 		handlersCollection.AddHandler<BoxView, BoxViewHandler>();
 		handlersCollection.AddHandler<Button, ButtonHandler>();
-		handlersCollection.AddHandler<DatePicker, DatePickerHandler>();
 		handlersCollection.AddHandler<Editor, EditorHandler>();
 		handlersCollection.AddHandler<Entry, EntryHandler>();
 		handlersCollection.AddHandler<GraphicsView, GraphicsViewHandler>();
@@ -95,6 +94,19 @@ public static partial class AppHostBuilderExtensions
 			// NOTE: not registered under NativeAOT or TrimMode=Full scenarios
 			handlersCollection.AddHandler<HybridWebView, HybridWebViewHandler>();
 		}
+
+#if ANDROID
+		if(RuntimeFeature.IsMaterial3Enabled)
+		{
+			handlersCollection.AddHandler<DatePicker, MaterialDatePickerHandler>();
+		}
+		else
+		{
+			handlersCollection.AddHandler<DatePicker, DatePickerHandler>();
+		}
+#else
+		handlersCollection.AddHandler<DatePicker, DatePickerHandler>();
+#endif
 		handlersCollection.AddHandler<Border, BorderHandler>();
 		handlersCollection.AddHandler<IContentView, ContentViewHandler>();
 		handlersCollection.AddHandler<ContentView, ContentViewHandler>();

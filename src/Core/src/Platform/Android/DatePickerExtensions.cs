@@ -11,11 +11,19 @@ namespace Microsoft.Maui.Platform
 			platformDatePicker.SetText(datePicker);
 		}
 
+		internal static void UpdateFormat(this MauiMaterialDatePicker platformDatePicker, IDatePicker datePicker)
+		{
+			platformDatePicker.SetText(datePicker);
+		}
 		public static void UpdateDate(this MauiDatePicker platformDatePicker, IDatePicker datePicker)
 		{
 			platformDatePicker.SetText(datePicker);
 		}
 
+		internal static void UpdateDate(this MauiMaterialDatePicker platformDatePicker, IDatePicker datePicker)
+		{
+			platformDatePicker.SetText(datePicker);
+		}
 		public static void UpdateTextColor(this MauiDatePicker platformDatePicker, IDatePicker datePicker)
 		{
 			var textColor = datePicker.TextColor;
@@ -51,9 +59,36 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		internal static void UpdateMinimumDate(this MauiMaterialDatePicker platformDatePicker, IDatePicker datePicker, Google.Android.Material.DatePicker.MaterialDatePicker? materialDialog)
+		{
+			// Material 3 MaterialDatePicker has immutable CalendarConstraints
+			// If dialog is open, recreate it with updated constraints
+			if (materialDialog is not null && materialDialog.IsVisible)
+			{
+				platformDatePicker.HidePicker?.Invoke();
+				platformDatePicker.ShowPicker?.Invoke();
+			}
+		}
+
 		public static void UpdateMaximumDate(this MauiDatePicker platformDatePicker, IDatePicker datePicker)
 		{
 			platformDatePicker.UpdateMinimumDate(datePicker, null);
+		}
+
+		internal static void UpdateMaximumDate(this MauiMaterialDatePicker platformDatePicker, IDatePicker picker)
+		{
+			platformDatePicker.UpdateMaximumDate(picker, null);
+		}
+
+		internal static void UpdateMaximumDate(this MauiMaterialDatePicker platformDatePicker, IDatePicker datePicker, Google.Android.Material.DatePicker.MaterialDatePicker? materialDialog)
+		{
+			// Material 3 MaterialDatePicker has immutable CalendarConstraints
+			// If dialog is open, recreate it with updated constraints
+			if (materialDialog is not null && materialDialog.IsVisible)
+			{
+				platformDatePicker.HidePicker?.Invoke();
+				platformDatePicker.ShowPicker?.Invoke();
+			}
 		}
 
 		public static void UpdateMaximumDate(this MauiDatePicker platformDatePicker, IDatePicker datePicker, DatePickerDialog? datePickerDialog)
@@ -74,6 +109,11 @@ namespace Microsoft.Maui.Platform
 		}
 
 		internal static void SetText(this MauiDatePicker platformDatePicker, IDatePicker datePicker)
+		{
+			platformDatePicker.Text = datePicker.Date?.ToString(datePicker.Format) ?? string.Empty;
+		}
+
+		internal static void SetText(this MauiMaterialDatePicker platformDatePicker, IDatePicker datePicker)
 		{
 			platformDatePicker.Text = datePicker.Date?.ToString(datePicker.Format) ?? string.Empty;
 		}
