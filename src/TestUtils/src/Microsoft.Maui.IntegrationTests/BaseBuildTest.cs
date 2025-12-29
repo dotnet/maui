@@ -178,12 +178,16 @@ namespace Microsoft.Maui.IntegrationTests
 
 		/// <summary>
 		/// Copies log files from the test directory to the artifact publish location.
+		/// Uses SYSTEM_JOBATTEMPT environment variable to create separate folders for each retry attempt.
 		/// </summary>
 		protected void CopyLogsToPublishDirectory()
 		{
 			try
 			{
-				var publishDir = LogDirectory;
+				// Azure DevOps sets SYSTEM_JOBATTEMPT to indicate which retry attempt this is (1 = first run, 2 = first retry, etc.)
+				var jobAttempt = Environment.GetEnvironmentVariable("SYSTEM_JOBATTEMPT") ?? "1";
+				var attemptFolder = $"attempt-{jobAttempt}";
+				var publishDir = Path.Combine(LogDirectory, attemptFolder);
 				
 				if (!Directory.Exists(publishDir))
 				{

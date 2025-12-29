@@ -27,6 +27,8 @@ All integration tests run on **Azure DevOps agents** via the stage template `eng
 
 Integration tests are configured with **automatic retry on failure** (`retryCountOnTaskFailure: 1`). If a test fails, Azure DevOps will automatically retry it once before reporting failure.
 
+**Log Preservation**: Logs from each attempt are saved to separate folders (`attempt-1/`, `attempt-2/`, etc.) so that both the original run and retry logs are preserved for debugging. This uses the `SYSTEM_JOBATTEMPT` environment variable provided by Azure DevOps.
+
 ### Individual iOS Test Lanes
 
 iOS tests are split into individual jobs for faster debugging and parallel execution. Each test runs on both ARM64 and MacOSPool for comparison:
