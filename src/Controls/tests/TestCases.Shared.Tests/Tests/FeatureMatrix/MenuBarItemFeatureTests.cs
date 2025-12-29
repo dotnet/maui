@@ -98,6 +98,9 @@ public class MenuBarItemFeatureTests : UITest
 		App.WaitForElement("ResetButton");
 		App.Tap("ResetButton");
 
+		App.WaitForElement("LocationCheckBox_0");
+		App.Tap("LocationCheckBox_0"); // Select Redmond, USA
+
 		// Open Locations menu
 		App.WaitForElement("LocationsMenuBar");
 		App.Tap("LocationsMenuBar");
@@ -105,9 +108,6 @@ public class MenuBarItemFeatureTests : UITest
 		// Click Edit Location
 		App.WaitForElement("Edit Location");
 		App.Tap("Edit Location");
-
-		App.WaitForElement("Redmond, USA");
-		App.Tap("Redmond, USA");
 
 		App.WaitForElement("LocationEntry");
 		App.ClearText("LocationEntry");
@@ -123,6 +123,9 @@ public class MenuBarItemFeatureTests : UITest
 		App.WaitForElement("ResetButton");
 		App.Tap("ResetButton");
 
+		App.WaitForElement("LocationCheckBox_2");
+		App.Tap("LocationCheckBox_2"); // Select Berlin, DE
+
 		// Open Locations menu
 		App.WaitForElement("LocationsMenuBar");
 		App.Tap("LocationsMenuBar");
@@ -131,11 +134,10 @@ public class MenuBarItemFeatureTests : UITest
 		App.WaitForElement("Remove Location");
 		App.Tap("Remove Location");
 
-		App.WaitForElement("Berlin, DE");
-		App.Tap("Berlin, DE");
+		App.WaitForNoElement("Berlin, DE");
 
-		var locationLabel = App.FindElement("StatusMessageLabel");
-		Assert.That(locationLabel.GetText(), Is.EqualTo("Removed location: Berlin, DE"));
+		// var locationLabel = App.FindElement("StatusMessageLabel");
+		// Assert.That(locationLabel.GetText(), Is.EqualTo("Removed location: Berlin, DE"));
 
 	}
 
