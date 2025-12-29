@@ -290,8 +290,10 @@ public class EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+#if WINDOWS // On Windows, the Entry control cursor does not disappear when IsCursorVisible is set to false
 		App.WaitForElement("TextChangedLabel");
 		App.Tap("TextChangedLabel");
+#endif
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 

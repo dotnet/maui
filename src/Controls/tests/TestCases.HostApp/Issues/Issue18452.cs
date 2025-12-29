@@ -36,14 +36,10 @@ namespace Maui.Controls.Sample.Issues
 
 			grid.Children.Add(webView);
 
-			webView.Navigated += (s, e) =>
+			webView.Navigated += async (s, e) =>
 			{
 #if ANDROID
-				if (((WebView)s).Handler?.PlatformView is Android.Webkit.WebView androidWebView)
-				{
-					var cookieManager = Android.Webkit.CookieManager.Instance;
-					cookieManager?.Flush();
-				}
+				await Task.Delay(500); // Wait for cookies to be set on Android
 #endif
 				var cookies = webView.Cookies.GetCookies(uri);
 				foreach (Cookie c in cookies)
