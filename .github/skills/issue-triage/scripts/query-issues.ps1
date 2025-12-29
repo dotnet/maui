@@ -118,6 +118,73 @@ $platformLabels = @{
     "maccatalyst" = "platform/macOS 🍏"
 }
 
+# Query current milestones dynamically to avoid hardcoding
+Write-Host "Fetching current milestones..." -ForegroundColor DarkGray
+$currentMilestones = @{
+    CurrentSR = ""           # The soonest SR milestone (for regressions)
+    NextSR = ""              # The next SR milestone (for other important bugs)
+    Servicing = ""           # The Servicing milestone (for PRs)
+    Backlog = "Backlog"      # Always "Backlog"
+}
+
+try {
+    $msResult = gh api repos/dotnet/maui/milestones --jq '.[] | {title, due_on}' 2>$null
+    $msLines = $msResult -split "`n" | Where-Object { $_.Trim() -ne "" }
+    
+    $srMilestones = @()
+    $servicingMilestone = ""
+    
+    foreach ($line in $msLines) {
+        try {
+            $ms = $line | ConvertFrom-Json -ErrorAction Stop
+            # Match .NET SR milestones (e.g., ".NET 10.0 SR3", ".NET 9.0 SR5")
+            if ($ms.title -match "\.NET.*SR\d+") {
+                $srMilestones += [PSCustomObject]@{
+                    Title = $ms.title
+                    DueOn = $ms.due_on
+                }
+            }
+            # Match Servicing milestones (e.g., ".NET 10 Servicing")
+            elseif ($ms.title -match "\.NET.*Servicing" -and $ms.title -notmatch "SR") {
+                $servicingMilestone = $ms.title
+            }
+        }
+        catch {
+            # Skip lines that aren't valid JSON
+            continue
+        }
+    }
+    
+    # Sort SR milestones by due date (soonest first) or by SR number
+    if ($srMilestones.Count -gt 0) {
+        $sortedSR = $srMilestones | Sort-Object { 
+            $parsedDate = [DateTime]::MinValue
+            if ($_.DueOn -and [DateTime]::TryParse($_.DueOn, [ref]$parsedDate)) {
+                $parsedDate
+            } else {
+                [DateTime]::MaxValue
+            }
+        }
+        $currentMilestones.CurrentSR = $sortedSR[0].Title
+        if ($sortedSR.Count -gt 1) {
+            $currentMilestones.NextSR = $sortedSR[1].Title
+        } else {
+            $currentMilestones.NextSR = $sortedSR[0].Title
+        }
+    }
+    
+    if ($servicingMilestone) {
+        $currentMilestones.Servicing = $servicingMilestone
+    }
+    
+    Write-Host "  Current SR: $($currentMilestones.CurrentSR)" -ForegroundColor DarkGray
+    Write-Host "  Next SR: $($currentMilestones.NextSR)" -ForegroundColor DarkGray
+    Write-Host "  Servicing: $($currentMilestones.Servicing)" -ForegroundColor DarkGray
+}
+catch {
+    Write-Host "  Warning: Could not fetch milestones, using defaults" -ForegroundColor Yellow
+}
+
 # Build gh issue list command arguments
 $ghArgs = @(
     "issue", "list",
@@ -323,7 +390,7 @@ foreach ($issue in $issues) {
     }
     
     # Generate milestone suggestion based on issue characteristics
-    $suggestedMilestone = "Backlog"
+    $suggestedMilestone = $currentMilestones.Backlog
     $suggestionReason = "No PR, not a regression"
     
     # Check if any linked PR has a milestone
@@ -340,19 +407,26 @@ foreach ($issue in $issues) {
         $suggestionReason = "PR already has milestone"
     }
     elseif ($isRegression) {
-        if ($regressedIn -match "10\.0\.0|10-preview|10-rc") {
-            $suggestedMilestone = ".NET 10.0 SR3"
-            $suggestionReason = "Regression in .NET 10"
+        # Use the current (soonest) SR milestone for regressions
+        if ($currentMilestones.CurrentSR) {
+            $suggestedMilestone = $currentMilestones.CurrentSR
+            $suggestionReason = "Regression - current SR milestone"
         } else {
-            $suggestedMilestone = ".NET 10.0 SR4"
-            $suggestionReason = "Regression"
+            $suggestedMilestone = $currentMilestones.Backlog
+            $suggestionReason = "Regression (no SR milestone found)"
         }
     }
     elseif ($linkedPRs.Count -gt 0) {
         $openPRs = $linkedPRs | Where-Object { $_.State -eq "OPEN" }
         if ($openPRs.Count -gt 0) {
-            $suggestedMilestone = ".NET 10 Servicing"
-            $suggestionReason = "Has open PR"
+            # Use Servicing milestone for PRs, fallback to next SR
+            if ($currentMilestones.Servicing) {
+                $suggestedMilestone = $currentMilestones.Servicing
+                $suggestionReason = "Has open PR"
+            } elseif ($currentMilestones.NextSR) {
+                $suggestedMilestone = $currentMilestones.NextSR
+                $suggestionReason = "Has open PR"
+            }
         }
     }
     

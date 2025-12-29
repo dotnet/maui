@@ -75,10 +75,10 @@ What would you like to do with this issue?
 ### Step 4: Wait for User Decision
 
 Wait for user to say:
-- A milestone name (e.g., "Backlog", "SR3", ".NET 10 Servicing")
+- A milestone name (e.g., "Backlog", "current SR", "Servicing")
 - "yes" to accept suggestion
 - "skip" or "next" to move on without changes
-- Specific instructions (e.g., "SR4 and add regression label")
+- Specific instructions (e.g., "next SR and add regression label")
 
 ### Step 5: Apply Changes and Move to Next
 
@@ -100,13 +100,16 @@ After applying changes, automatically present the NEXT issue.
 
 ## Milestone Suggestion Logic
 
+The script dynamically queries current milestones from dotnet/maui and suggests them based on issue characteristics:
+
 | Condition | Suggested Milestone | Reason |
 |-----------|---------------------|--------|
 | Linked PR has milestone | PR's milestone | "PR already has milestone" |
-| Has `i/regression` + regressed in .NET 10 | .NET 10.0 SR3 | "Regression in .NET 10" |
-| Has `i/regression` (other) | .NET 10.0 SR4 | "Regression" |
-| Has open linked PR | .NET 10 Servicing | "Has open PR" |
+| Has `i/regression` label | Current SR milestone (soonest due) | "Regression - current SR milestone" |
+| Has open linked PR | Servicing milestone (or next SR) | "Has open PR" |
 | Default | Backlog | "No PR, not a regression" |
+
+**Note**: SR milestones are sorted by due date, so the soonest SR is suggested for regressions. Milestone names change monthly, so they are queried dynamically rather than hardcoded.
 
 ## Applying Triage Decisions
 
@@ -115,21 +118,23 @@ After applying changes, automatically present the NEXT issue.
 gh issue edit ISSUE_NUMBER --repo dotnet/maui --milestone "Backlog"
 
 # Set milestone and add labels  
-gh issue edit ISSUE_NUMBER --repo dotnet/maui --milestone ".NET 10.0 SR3" --add-label "i/regression"
+gh issue edit ISSUE_NUMBER --repo dotnet/maui --milestone "MILESTONE_NAME" --add-label "i/regression"
 
 # Set milestone on both issue AND linked PR
-gh issue edit ISSUE_NUMBER --repo dotnet/maui --milestone ".NET 10.0 SR3"
-gh pr edit PR_NUMBER --repo dotnet/maui --milestone ".NET 10.0 SR3"
+gh issue edit ISSUE_NUMBER --repo dotnet/maui --milestone "MILESTONE_NAME"
+gh pr edit PR_NUMBER --repo dotnet/maui --milestone "MILESTONE_NAME"
 ```
 
-## Common Milestone Choices
+## Common Milestone Types
 
-| Milestone | Use When |
-|-----------|----------|
-| `.NET 10.0 SR3` | Regressions in .NET 10, critical bugs with PRs ready |
-| `.NET 10.0 SR4` | Important bugs, regressions being investigated |
-| `.NET 10 Servicing` | General fixes with PRs, non-urgent improvements |
-| `Backlog` | No PR, not a regression, nice-to-have fixes |
+| Milestone Type | Use When |
+|----------------|----------|
+| Current SR (e.g., SR3) | Regressions, critical bugs with PRs ready |
+| Next SR (e.g., SR4) | Important bugs, regressions being investigated |
+| Servicing | General fixes with PRs, non-urgent improvements |
+| Backlog | No PR, not a regression, nice-to-have fixes |
+
+**Note**: Use `init-triage-session.ps1` to see current milestone names.
 
 ## Label Quick Reference
 
