@@ -67,8 +67,11 @@ namespace Microsoft.Maui.Handlers
 			PlatformView.UpdateReturnType(VirtualView);
 		}
 
-		public static void MapBackground(IEntryHandler handler, IEntry entry) =>
+		public static void MapBackground(IEntryHandler handler, IEntry entry)
+		{
 			handler.PlatformView?.UpdateBackground(entry);
+			handler.PlatformView?.UpdateUnderlineColor(entry);
+		}
 
 		public static void MapText(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateText(entry);
