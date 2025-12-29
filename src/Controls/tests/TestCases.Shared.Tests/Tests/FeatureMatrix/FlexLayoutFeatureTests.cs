@@ -5,17 +5,12 @@ using UITest.Core;
 namespace Microsoft.Maui.TestCases.Tests;
 
 [Category(UITestCategories.Layout)]
-public class FlexLayoutFeatureTests : UITest
+public class FlexLayoutFeatureTests : _GalleryUITest
 {
     public const string FlexLayoutFeatureMatrix = "FlexLayout Feature Matrix";
+    public override string GalleryPageName => FlexLayoutFeatureMatrix;
 
     public FlexLayoutFeatureTests(TestDevice device) : base(device) { }
-
-    protected override void FixtureSetup()
-    {
-        base.FixtureSetup();
-        App.NavigateToGallery(FlexLayoutFeatureMatrix);
-    }
 
     [Test, Order(1)]
     public void FlexLayout_ValidateDefaultValues()

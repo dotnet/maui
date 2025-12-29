@@ -6,17 +6,14 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-public class ButtonFeatureTests : UITest
+public class ButtonFeatureTests : _GalleryUITest
 {
 	public const string ButtonFeatureMatrix = "Button Feature Matrix";
+
+	public override string GalleryPageName => ButtonFeatureMatrix;
+
 	public ButtonFeatureTests(TestDevice testDevice) : base(testDevice)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(ButtonFeatureMatrix);
 	}
 
 	[Test]
