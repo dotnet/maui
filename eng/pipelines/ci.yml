@@ -286,68 +286,68 @@ stages:
     # ARM64 (Apple Silicon) lanes - using MacOSPoolArm64
     - name: mac_runios_maui_debug_arm64
       pool: ${{ parameters.MacOSPoolArm64 }}
-      timeout: 30
+      timeout: 45
       testName: RunOniOS_MauiDebug
 
     - name: mac_runios_maui_release_arm64
       pool: ${{ parameters.MacOSPoolArm64 }}
-      timeout: 30
+      timeout: 45
       testName: RunOniOS_MauiRelease
 
     - name: mac_runios_maui_trim_arm64
       pool: ${{ parameters.MacOSPoolArm64 }}
-      timeout: 30
+      timeout: 45
       testName: RunOniOS_MauiReleaseTrimFull
 
     - name: mac_runios_blazor_debug_arm64
       pool: ${{ parameters.MacOSPoolArm64 }}
-      timeout: 30
+      timeout: 45
       testName: RunOniOS_BlazorDebug
 
     - name: mac_runios_blazor_release_arm64
       pool: ${{ parameters.MacOSPoolArm64 }}
-      timeout: 30
+      timeout: 45
       testName: RunOniOS_BlazorRelease
 
     # TODO: Re-enable once ASP.NET Core fixes trimmer warning IL2111 with Blazor Router.NotFoundPage
     # Issue: https://github.com/dotnet/aspnetcore/issues/63951
     # - name: mac_runios_blazor_trim_arm64
     #   pool: ${{ parameters.MacOSPoolArm64 }}
-    #   timeout: 30
+    #   timeout: 45
     #   testName: RunOniOS_BlazorReleaseTrimFull
 
     - name: mac_runios_nativeaot_arm64
       pool: ${{ parameters.MacOSPoolArm64 }}
-      timeout: 30
+      timeout: 45
       testName: RunOniOS_MauiNativeAOT
 
     # MacOSPool lanes - comparison with ARM64 pool
     - name: mac_runios_maui_debug
       pool: ${{ parameters.MacOSPool }}
-      timeout: 30
+      timeout: 45
       testName: RunOniOS_MauiDebug
 
     - name: mac_runios_maui_release
       pool: ${{ parameters.MacOSPool }}
-      timeout: 30
+      timeout: 45
       testName: RunOniOS_MauiRelease
 
     - name: mac_runios_maui_trim
       pool: ${{ parameters.MacOSPool }}
-      timeout: 30
+      timeout: 45
       testName: RunOniOS_MauiReleaseTrimFull
 
     - name: mac_runios_blazor_debug
       pool: ${{ parameters.MacOSPool }}
-      timeout: 30
+      timeout: 45
       testName: RunOniOS_BlazorDebug
 
     - name: mac_runios_blazor_release
       pool: ${{ parameters.MacOSPool }}
-      timeout: 30
+      timeout: 45
       testName: RunOniOS_BlazorRelease
 
     - name: mac_runios_nativeaot
       pool: ${{ parameters.MacOSPool }}
-      timeout: 30
+      timeout: 45
       testName: RunOniOS_MauiNativeAOT

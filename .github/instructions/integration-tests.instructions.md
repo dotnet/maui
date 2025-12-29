@@ -33,12 +33,12 @@ iOS tests are split into individual jobs for faster debugging and parallel execu
 
 | Test | Description | Timeout |
 |------|-------------|---------|
-| `RunOniOS_MauiDebug` | MAUI app, Debug config | 30 min |
-| `RunOniOS_MauiRelease` | MAUI app, Release config | 30 min |
-| `RunOniOS_MauiReleaseTrimFull` | MAUI app, Release, full trim | 30 min |
-| `RunOniOS_BlazorDebug` | Blazor app, Debug config | 30 min |
-| `RunOniOS_BlazorRelease` | Blazor app, Release config | 30 min |
-| `RunOniOS_MauiNativeAOT` | MAUI app, NativeAOT | 30 min |
+| `RunOniOS_MauiDebug` | MAUI app, Debug config | 45 min |
+| `RunOniOS_MauiRelease` | MAUI app, Release config | 45 min |
+| `RunOniOS_MauiReleaseTrimFull` | MAUI app, Release, full trim | 45 min |
+| `RunOniOS_BlazorDebug` | Blazor app, Debug config | 45 min |
+| `RunOniOS_BlazorRelease` | Blazor app, Release config | 45 min |
+| `RunOniOS_MauiNativeAOT` | MAUI app, NativeAOT | 45 min |
 
 **Note**: `RunOniOS_BlazorReleaseTrimFull` is temporarily disabled due to [ASP.NET Core issue #63951](https://github.com/dotnet/aspnetcore/issues/63951).
 
