@@ -219,6 +219,7 @@ namespace Microsoft.Maui.Platform
 			if (existingLayer != null)
 			{
 				existingLayer.RemoveFromSuperLayer();
+				existingLayer.Dispose();
 			}
 		}
 
@@ -249,8 +250,12 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdateUnderlineLayerFrame(UIView view)
 		{
+		// Early exit if no layers exist (most common case)
+		if (view.Layer.Sublayers == null || view.Layer.Sublayers.Length == 0)
+			return;
+
 			const string layerName = "MauiTextInputUnderlineLayer";
-			var underlineLayer = view.Layer.Sublayers?.FirstOrDefault(l => l.Name == layerName);
+			var underlineLayer = view.Layer.Sublayers.FirstOrDefault(l => l.Name == layerName);
 			
 			if (underlineLayer != null)
 			{
