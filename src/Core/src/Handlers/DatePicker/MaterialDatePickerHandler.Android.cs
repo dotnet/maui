@@ -9,6 +9,8 @@ namespace Microsoft.Maui.Handlers;
 
 internal partial class MaterialDatePickerHandler : ViewHandler<IDatePicker, MauiMaterialDatePicker>
 {
+    const long MillisecondsPerDay = 86400000;
+
     internal MaterialDatePicker? _dialog;
     internal bool _isUpdatingIsOpen;
     internal MaterialDatePickerPositiveButtonClickListener? _positiveButtonClickListener;
@@ -159,14 +161,12 @@ internal partial class MaterialDatePickerHandler : ViewHandler<IDatePicker, Maui
 
     protected virtual MaterialDatePicker? CreateDatePickerDialog(int year, int month, int day)
     {
-        // Convert to UTC milliseconds at midnight (Material DatePicker uses UTC timestamps)
         long selection = GetUtcMilliseconds(year, month, day);
 
         var builder = MaterialDatePicker.Builder.DatePicker()
             .SetSelection(selection)
             .SetInputMode(MaterialDatePicker.InputModeCalendar);
 
-        // Apply min/max date constraints if set
         var constraints = BuildCalendarConstraints();
         if (constraints is not null)
         {
@@ -177,8 +177,8 @@ internal partial class MaterialDatePickerHandler : ViewHandler<IDatePicker, Maui
 
         if (_positiveButtonClickListener is not null && _dismissListener is not null)
         {
-            dialog?.AddOnPositiveButtonClickListener(_positiveButtonClickListener);
-            dialog?.AddOnDismissListener(_dismissListener);
+            dialog.AddOnPositiveButtonClickListener(_positiveButtonClickListener);
+            dialog.AddOnDismissListener(_dismissListener);
         }
 
         return dialog;
@@ -195,47 +195,28 @@ internal partial class MaterialDatePickerHandler : ViewHandler<IDatePicker, Maui
         }
 
         var constraintsBuilder = new CalendarConstraints.Builder();
+        var validators = new List<CalendarConstraints.IDateValidator>(2);
 
-        // Convert dates to UTC milliseconds (Material DatePicker uses UTC timestamps)
-        long? minMillis = minDate.HasValue ? GetUtcMilliseconds(minDate.Value.Year, minDate.Value.Month - 1, minDate.Value.Day) : null;
-        long? maxMillis = maxDate.HasValue ? GetUtcMilliseconds(maxDate.Value.Year, maxDate.Value.Month - 1, maxDate.Value.Day) : null;
-
-        // Set the visible date range in the calendar
-        if (minMillis.HasValue)
+        if (minDate.HasValue)
         {
-            constraintsBuilder.SetStart(minMillis.Value);
-        }
-        if (maxMillis.HasValue)
-        {
-            constraintsBuilder.SetEnd(maxMillis.Value);
+            long minMillis = GetUtcMilliseconds(minDate.Value.Year, minDate.Value.Month - 1, minDate.Value.Day);
+            constraintsBuilder.SetStart(minMillis);
+            validators.Add(DateValidatorPointForward.From(minMillis));
         }
 
-        // Create validator to gray out and disable dates outside the allowed range
-        CalendarConstraints.IDateValidator? validator = null;
-
-        if (minMillis.HasValue && maxMillis.HasValue)
+        if (maxDate.HasValue)
         {
-            // Both minimum and maximum dates are set - need to combine both validators
-            var validators = new List<CalendarConstraints.IDateValidator>
-            {
-                DateValidatorPointForward.From(minMillis.Value),
-                DateValidatorPointBackward.Before(maxMillis.Value + 86400000)  // Add 1 day (86400000ms) because Before() is exclusive
-            };
-            validator = CompositeDateValidator.AllOf(validators);
-        }
-        else if (minMillis.HasValue)
-        {
-            // Only minimum date is set - disable all dates before it
-            validator = DateValidatorPointForward.From(minMillis.Value);
-        }
-        else if (maxMillis.HasValue)
-        {
-            // Only maximum date is set - disable all dates after it
-            validator = DateValidatorPointBackward.Before(maxMillis.Value + 86400000);  // Add 1 day because Before() is exclusive
+            long maxMillis = GetUtcMilliseconds(maxDate.Value.Year, maxDate.Value.Month - 1, maxDate.Value.Day);
+            constraintsBuilder.SetEnd(maxMillis);
+            // Add 1 day because Before() is exclusive, we want inclusive
+            validators.Add(DateValidatorPointBackward.Before(maxMillis + MillisecondsPerDay));
         }
 
-        if (validator is not null)
+        if (validators.Count > 0)
         {
+            var validator = validators.Count == 1
+                ? validators[0]
+                : CompositeDateValidator.AllOf(validators);
             constraintsBuilder.SetValidator(validator);
         }
 
@@ -282,7 +263,7 @@ internal partial class MaterialDatePickerHandler : ViewHandler<IDatePicker, Maui
         }
 
         var year = date?.Year ?? DateTime.Today.Year;
-        var month = (date?.Month ?? DateTime.Today.Month) - 1;  // Android uses 0-based months
+        var month = (date?.Month ?? DateTime.Today.Month) - 1;
         var day = date?.Day ?? DateTime.Today.Day;
 
         _dialog = CreateDatePickerDialog(year, month, day);
@@ -372,7 +353,6 @@ internal class MaterialDatePickerDismissListener : Java.Lang.Object, IDialogInte
         // Dialog was dismissed (back button, outside tap, cancel button, etc.)
         // Clean up without trying to dismiss again
         handler._dialog = null;
-
         handler.UpdateIsOpenState(false);
     }
 }
