@@ -54,7 +54,8 @@ parameters:
   type: object
   default:
   - name: NetCore1ESPool-Internal
-    image: 1es-windows-2022
+    demands:
+        - ImageOverride -equals 1es-windows-2022
     os: Windows
     buildScript: $(_buildScript)
     sln: '$(Build.SourcesDirectory)/Microsoft.Maui.sln'
@@ -68,7 +69,8 @@ parameters:
   type: object
   default:
   - name: NetCore-Public
-    image: 1es-windows-2022
+    demands:
+        - ImageOverride -equals 1es-windows-2022-open
     os: Windows
     buildScript: $(_buildScript)
     sln: '$(Build.SourcesDirectory)/Microsoft.Maui.sln'
@@ -83,11 +85,13 @@ parameters:
   default:
     internal:
       name: NetCore1ESPool-Internal
-      image: 1es-windows-2022
+      demands:
+        - ImageOverride -equals 1es-windows-2022
       os: windows
     public:
       name: NetCore-Public
-      image: 1es-windows-2022
+      demands:
+        - ImageOverride -equals 1es-windows-2022-open
       os: windows
 
 - name: MacOSPool

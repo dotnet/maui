@@ -4,19 +4,15 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-public class GraphicsViewFeatureTests : UITest
+public class GraphicsViewFeatureTests : _GalleryUITest
 {
 	public const string GraphicsViewFeatureMatrix = "GraphicsView Feature Matrix";
+
+	public override string GalleryPageName => GraphicsViewFeatureMatrix;
 
 	public GraphicsViewFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(GraphicsViewFeatureMatrix);
 	}
 
 	public void VerifyShapeScreenshot()
@@ -30,6 +26,7 @@ public class GraphicsViewFeatureTests : UITest
 
 	#region Default Values and Initial State Tests
 
+#if TEST_FAILS_ON_CATALYST // On MacCatalyst, when the test case is executed directly, the cursor automatically stays centered on the screen. Because of this, the cursor interacts with the GraphicsView and triggers the StartHoverInteraction event in CI. To avoid this false interaction, the test case is restricted.
 	[Test, Order(1)]
 	[Category(UITestCategories.GraphicsView)]
 	public void GraphicsView_ValidateDefaultValues_VerifyInitialState()
@@ -47,7 +44,7 @@ public class GraphicsViewFeatureTests : UITest
 		var interactionLabel = App.FindElement("InteractionEventLabel");
 		Assert.That(interactionLabel.GetText(), Is.EqualTo("No interactions yet"));
 	}
-
+#endif
 	#endregion
 
 	#region Drawable Type Tests

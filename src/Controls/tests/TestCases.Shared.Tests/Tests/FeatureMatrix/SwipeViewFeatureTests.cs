@@ -4,19 +4,14 @@ using UITest.Core;
 namespace Microsoft.Maui.TestCases.Tests;
 
 [Category(UITestCategories.SwipeView)]
-public class SwipeViewFeatureTests : UITest
+public class SwipeViewFeatureTests : _GalleryUITest
 {
 	public const string SwipeViewFeatureMatrix = "SwipeView Feature Matrix";
+	public override string GalleryPageName => SwipeViewFeatureMatrix;
 
 	public SwipeViewFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(SwipeViewFeatureMatrix);
 	}
 
 #if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/30949 && https://github.com/dotnet/maui/issues/30947

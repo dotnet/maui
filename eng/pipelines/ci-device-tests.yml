@@ -53,8 +53,11 @@ parameters:
 - name: windowsPool
   type: object
   default:
-    name: Azure Pipelines
-    vmImage: windows-2022
+    name: NetCore-Public
+    demands:
+        - ImageOverride -equals 1es-windows-2022-open
+    image: 1es-windows-2022-open
+    os: Windows
 
 - name: macOSTestPool
   type: object
@@ -80,7 +83,7 @@ stages:
   - template: /eng/pipelines/arcade/stage-device-tests.yml@self
     parameters:
       buildPool: ${{ parameters.macOSPool }}
-      testPool: ${{ parameters.macOSTestPool }}
+      testPool: ${{ parameters.windowsPool }}
       runAsPublic: true
       TargetFrameworkVersion: ${{ targetFrameworkVersion.tfm }}
       prepareSteps:
