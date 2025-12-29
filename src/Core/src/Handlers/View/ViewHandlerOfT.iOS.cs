@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Handlers
 			ContainerView ??= new WrapperView(PlatformView.Bounds);
 			ContainerView.AddSubview(PlatformView);
 
-			if (oldIndex is int idx && idx > 0)
+			if (oldIndex is int idx && idx >= 0)
 				oldParent?.InsertSubview(ContainerView, idx);
 			else
 				oldParent?.AddSubview(ContainerView);
