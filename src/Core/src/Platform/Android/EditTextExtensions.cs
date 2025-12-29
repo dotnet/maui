@@ -469,25 +469,39 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateUnderlineColor(this EditText editText, ITextInput textInput)
 		{
 			var underlineColor = textInput.UnderlineColor;
+			var background = editText.Background;
 
-			if (underlineColor == null)
+			// If the background is a MauiLayerDrawable, it contains:
+			// - Layer 0: User's custom background (if any)
+			// - Layer 1: Material Design underline (abc_edit_text_material)
+			if (background is MauiLayerDrawable layerDrawable && layerDrawable.NumberOfLayers >= 2)
 			{
-				// Reset to default Material Design underline
-				editText.BackgroundTintList = null;
-				return;
+				// Get the underline layer (should be the last layer)
+				var underlineLayer = layerDrawable.GetDrawable(layerDrawable.NumberOfLayers - 1);
+
+				if (underlineColor == null)
+				{
+					// Reset to default Material Design underline color
+					underlineLayer?.ClearColorFilter();
+				}
+				else
+				{
+					// Tint only the underline layer, not the user's background
+					underlineLayer?.SetColorFilter(underlineColor.ToPlatform(), FilterMode.SrcIn);
+				}
 			}
-
-			// Use ColorStateList to control underline color in all states
-			var colorStateList = GetUnderlineColorStateList(underlineColor);
-			editText.BackgroundTintList = colorStateList;
-		}
-
-		static ColorStateList GetUnderlineColorStateList(Graphics.Color color)
-		{
-			var androidColor = color.ToPlatform();
-			
-			// Create ColorStateList for all states (focused, enabled, disabled, etc.)
-			return ColorStateList.ValueOf(androidColor);
+			else if (background is not null)
+			{
+				// Fallback for cases where background is just the Material underline (no custom background)
+				if (underlineColor == null)
+				{
+					background.ClearColorFilter();
+				}
+				else
+				{
+					background.SetColorFilter(underlineColor.ToPlatform(), FilterMode.SrcIn);
+				}
+			}
 		}
 	}
 }

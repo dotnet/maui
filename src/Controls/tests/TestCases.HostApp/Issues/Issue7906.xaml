@@ -68,6 +68,14 @@
                     UnderlineColor="Transparent"
                     AutomationId="TransparentUnderlineEditor"/>
 
+            <!-- Test Case 7: REGRESSION - Entry with Background + UnderlineColor -->
+            <Label Text="7. REGRESSION: Red background + Blue underline"/>
+            <Entry Placeholder="Both properties together"
+                   Text="Red background + Blue underline"
+                   Background="Red"
+                   UnderlineColor="Blue"
+                   AutomationId="BackgroundAndUnderlineEntry"/>
+
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

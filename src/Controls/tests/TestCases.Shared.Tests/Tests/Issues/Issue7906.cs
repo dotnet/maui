@@ -55,4 +55,17 @@ public class Issue7906 : _IssuesUITest
 		// Verify it returns to blue when unfocused
 		VerifyScreenshot("ReturnToUnfocused");
 	}
+
+	[Test]
+	[Category(UITestCategories.Entry)]
+	public void BackgroundAndUnderlineColorWorkTogether()
+	{
+		// Wait for the regression test entry to load
+		App.WaitForElement("BackgroundAndUnderlineEntry");
+		
+		// Visual verification that both properties work independently
+		// Expected: Red background fill with blue underline
+		// NOT expected: Purple/tinted background (would indicate BackgroundTintList regression)
+		VerifyScreenshot("BackgroundAndUnderline");
+	}
 }
