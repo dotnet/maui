@@ -12,11 +12,13 @@
 
   <ItemGroup>
     <!-- Mibc data to use when exact architecture match is available -->
+    <!-- TODO: Use android MIBC profile once available. -->
     <MIBCPackageDef Include="optimization.linux-arm64.MIBC.Runtime"
                     Version="$(optimizationlinuxarm64MIBCRuntimePackageVersion)"
                     MibcArchitecture="android/arm64" />
 
     <!-- Mibc data to use when exact architecture match not available -->
+    <!-- TODO: Use android MIBC profile once available. -->
     <MIBCPackageDef Include="optimization.linux-arm64.MIBC.Runtime"
                 Version="$(optimizationlinuxarm64MIBCRuntimePackageVersion)"
                 MibcArchitecture="android" />
