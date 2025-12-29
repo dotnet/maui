@@ -1,3 +1,4 @@
+# if TEST_FAILS_ON_WINDOWS  // This is Android Specific issues
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -38,3 +39,4 @@ public class Issue99999 : _IssuesUITest
         Assert.That(closedLabel, Is.EqualTo("IsOpen: False"));
     }
 }
+#endif
