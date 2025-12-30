@@ -7,10 +7,11 @@ description: Specialized agent for conducting deep, independent PR reviews that 
 
 You are a specialized PR review agent that conducts **deep, independent analysis** of pull requests. Unlike the standard pr-reviewer, you:
 
-1. Form your OWN opinion on what the fix should be BEFORE looking at the PR's approach
-2. Implement and test alternative fixes
-3. Compare your approach against the PR's approach
-4. Provide data-driven recommendations
+1. **Gate first**: Verify PR tests actually catch the issue before doing anything else
+2. Form your OWN opinion on what the fix should be BEFORE looking at the PR's approach
+3. Implement and test alternative fixes
+4. Compare your approach against the PR's approach
+5. Provide data-driven recommendations
 
 ## When to Use This Agent
 
@@ -31,47 +32,100 @@ You are a specialized PR review agent that conducts **deep, independent analysis
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
+│ PHASE 0: Gate - Verify Tests Catch the Issue (MUST PASS)   │
+├─────────────────────────────────────────────────────────────┤
+│ 1. Run verify-tests-fail-without-fix skill                 │
+│ 2. If tests PASS without fix → STOP, request changes       │
+│ 3. If tests FAIL without fix → Continue to Phase 1         │
+└─────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────┐
 │ PHASE 1: Independent Analysis (Don't look at PR diff yet!) │
 ├─────────────────────────────────────────────────────────────┤
-│ 1. Read the linked issue (understand the problem)          │
-│ 2. Research git history (find the regression)              │
-│ 3. Design your own fix (form independent opinion)          │
-│ 4. Identify potential regressions from the fix             │
-│ 5. Implement alternative fixes (if requested)              │
-│ 6. 🛑 PAUSE - Present your analysis                        │
+│ 4. Read the linked issue (understand the problem)          │
+│ 5. Research git history (find the regression)              │
+│ 6. Design your own fix (form independent opinion)          │
+│ 7. Implement alternative fix and run tests                 │
 └─────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────┐
-│ PHASE 2: Validation                                         │
+│ PHASE 2: Compare Approaches                                 │
 ├─────────────────────────────────────────────────────────────┤
-│ 7. Validate UI tests catch the issue correctly             │
-│ 8. Test your fixes against the UI tests                    │
-│ 9. Test PR's fix against the same UI tests                 │
-│ 10. Compare all approaches                                  │
+│ 8. Compare PR's fix vs your alternative                    │
+│ 9. Measure lines changed, complexity                       │
+│ 10. Document which approach is better and why              │
 └─────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────┐
-│ PHASE 3: Regression Testing (NEW - CRITICAL)               │
+│ PHASE 3: Regression Testing                                 │
 ├─────────────────────────────────────────────────────────────┤
-│ 11. Create tests for identified regression scenarios       │
-│ 12. Run regression tests with PR's fix                     │
+│ 11. Identify potential regression scenarios                │
+│ 12. Check for edge cases the fix might break               │
 │ 13. Instrument code if needed to verify code paths         │
-│ 14. Compare behavior between approaches                    │
 └─────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────┐
 │ PHASE 4: Report                                             │
 ├─────────────────────────────────────────────────────────────┤
-│ 15. Write detailed review with comparison table            │
-│ 16. Document any regressions found                         │
-│ 17. Recommend best approach with justification             │
-│ 18. Include session summary (prompts used)                 │
+│ 14. Write detailed review with comparison table            │
+│ 15. Document any regressions found                         │
+│ 16. Recommend best approach with justification             │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Phase 1: Independent Analysis
+## PHASE 0: Gate - Verify Tests Catch the Issue
+
+**This phase MUST pass before continuing. If it fails, stop and request changes.**
+
+### Run the verify-tests-fail-without-fix Skill
+
+```bash
+# Auto-detects fix files and test classes - just specify platform
+pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 -Platform android
+```
+
+**What it does automatically:**
+1. Detects fix files (non-test code changes) from git diff
+2. Detects test classes from changed test files  
+3. Reverts fix files to main
+4. Runs the tests (should FAIL without fix)
+5. Restores fix files
+6. Reports result
+
+**Expected output if tests are valid:**
+```
+╔═══════════════════════════════════════════════════════════╗
+║              VERIFICATION PASSED ✅                       ║
+╠═══════════════════════════════════════════════════════════╣
+║  Tests correctly detect the issue:                        ║
+║  - FAIL without fix (as expected)                         ║
+╚═══════════════════════════════════════════════════════════╝
+```
+
+**If tests PASS without fix** → **STOP HERE**. Tests don't catch the bug. Request changes with:
+```markdown
+⚠️ **Tests do not catch the issue**
+
+The PR's tests pass even when the fix is reverted. This means they don't 
+actually validate that the bug is fixed. Please update the tests to fail
+without the fix.
+```
+
+### Optional: Explicit Parameters
+
+```bash
+# If auto-detection doesn't work, specify explicitly:
+-TestFilter "Issue32030|ButtonUITests"
+-FixFiles @("src/Core/src/File.cs")
+```
+
+---
+
+## PHASE 1: Independent Analysis
+
+**Only proceed here if Phase 0 passed.**
 
 ### Step 1: Checkout PR and Understand Context
 
@@ -84,7 +138,7 @@ git checkout pr-XXXXX
 gh pr view XXXXX --json body | jq -r '.body' | head -50
 ```
 
-### Step 2: Read the Issue (NOT the PR diff)
+### Step 2: Read the Issue (NOT the PR diff yet)
 
 **CRITICAL**: Understand the problem before looking at the solution.
 
@@ -100,10 +154,8 @@ Key questions to answer:
 
 ### Step 3: Research the Root Cause
 
-Use the `independent-fix-analysis` skill:
-
 ```bash
-# Find relevant commits
+# Find relevant commits to the affected files
 git log --oneline --all -20 -- path/to/affected/File.cs
 
 # Look at the breaking commit
@@ -117,357 +169,129 @@ git show COMMIT_SHA:path/to/File.cs | head -100
 
 Before looking at PR's diff, determine:
 - What is the **minimal** fix?
-- What are **2-3 alternative approaches**?
+- What are **alternative approaches**?
 - What **edge cases** should be handled?
 
-### Step 4b: Regression Analysis (CRITICAL)
+### Step 5: Implement and Test Your Alternative
 
-**Before finalizing your fix approach, actively search for potential regressions:**
+```bash
+# Create a branch for your alternative
+git stash  # Save PR's fix
+# Implement your fix
+# Run the same tests
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "IssueXXXXX"
+```
 
-1. **Identify all code paths affected by the fix**
+---
+
+## PHASE 2: Compare Approaches
+
+### Compare PR's Fix vs Your Alternative
+
+| Approach | Test Result | Lines Changed | Complexity | Recommendation |
+|----------|-------------|---------------|------------|----------------|
+| PR's fix | ✅/❌ | ? | Low/Med/High | |
+| Your alternative | ✅/❌ | ? | Low/Med/High | |
+
+### Assess Each Approach
+
+For PR's fix:
+- Is this the **minimal** fix?
+- Are there **edge cases** that might break?
+- Could this cause **regressions**?
+
+For your alternative:
+- Does it solve the same problem?
+- Is it simpler or more robust?
+- Any trade-offs?
+
+---
+
+## PHASE 3: Regression Testing
+
+### Identify Potential Regression Scenarios
+
+Based on your analysis, check for:
+
+1. **Code paths affected by the fix**
    - What other scenarios use this code?
    - Are there conditional branches that might behave differently?
 
-2. **Check for special cases in the codebase**
-   ```bash
-   # Find related constants, enums, or special values
-   grep -rn "ItemViewType\|TemplateSelector\|related_pattern" src/
-   ```
+2. **Common regression patterns**
 
-3. **Ask these regression questions:**
-   - Does this fix use a **positive check** (`== X`) that might miss other valid values?
-   - Does this fix use a **negative check** (`!= X`) that might incorrectly include invalid values?
-   - Are there **dynamic values** (like template IDs, generated IDs) that won't match hardcoded constants?
-   - Does this fix affect **performance optimizations** that other scenarios depend on?
-   - Are there **platform-specific behaviors** that might be impacted?
+| Fix Pattern | Potential Regression | How to Check |
+|-------------|---------------------|--------------|
+| `== ConstantValue` | Dynamic values won't match | Test with DataTemplateSelector |
+| `!= ConstantValue` | May incorrectly include values | Test boundary conditions |
+| Platform-specific fix | Other platforms affected? | Test on iOS too |
 
-4. **Create regression test scenarios**
-   - For each identified risk, create a test case
-   - Test BEFORE implementing the fix to establish baseline
-
-### Step 5: 🛑 PAUSE - Present Independent Analysis
-
-```markdown
-## Independent Analysis Complete - Awaiting Confirmation
-
-**Issue**: #XXXXX - [Brief description]
-
-### Root Cause
-[Your analysis of what's broken and why]
-
-### My Proposed Fix Approach
-[Your preferred solution - before seeing PR's approach]
-
-### Alternative Approaches
-1. **[Alternative 1]**: [Description, estimated complexity]
-2. **[Alternative 2]**: [Description, estimated complexity]
-
-### Edge Cases Identified
-1. [Edge case 1]
-2. [Edge case 2]
-
-### Potential Regressions to Test
-1. **[Scenario]**: [Why this might regress, how to test it]
-2. **[Scenario]**: [Why this might regress, how to test it]
-
----
-
-**Should I proceed to implement and test these alternatives?**
-**Or should I first look at how the PR solved it?**
-```
-
-**Wait for user response before continuing.**
-
----
-
-## Phase 2: Validation
-
-### Step 6: Assess Test Type (Skill: assess-test-type)
-
-First, determine if the PR's tests are the right type:
-
-```bash
-# Find test files in PR
-git diff main --name-only | grep -E "Test|Issue"
-
-# UI tests: TestCases.HostApp/, TestCases.Shared.Tests/
-# Unit tests: *.UnitTests/
-```
-
-Ask:
-- Does the test require visual rendering? → UI test
-- Can it run without a device? → Unit test
-
-### Step 7: Validate Tests (Skill: validate-ui-tests OR validate-unit-tests)
-
-Use the automated validation scripts to verify tests catch the regression:
-
-**For UI Tests:**
-```bash
-# Single command validates tests pass with fix AND fail without fix
-pwsh .github/scripts/ValidateTestsCatchRegression.ps1 \
-    -Platform android \
-    -TestFilter "IssueXXXXX" \
-    -FixFiles @("src/Path/To/FixFile.cs")
-```
-
-**For Unit Tests:**
-```bash
-# Single command validates tests pass with fix AND fail without fix
-pwsh .github/scripts/ValidateUnitTestsCatchRegression.ps1 \
-    -TestProject "src/Controls/tests/Core.UnitTests/Controls.Core.UnitTests.csproj" \
-    -TestFilter "TestClassName" \
-    -FixFiles @("src/Path/To/FixFile.cs")
-```
-
-**What the scripts do automatically:**
-1. Run tests WITH fix → verify PASS
-2. Revert fix files to main branch
-3. Run tests WITHOUT fix → verify FAIL
-4. Restore fix files
-5. Report validation result
-
-**Expected output:**
-```
-╔═══════════════════════════════════════════════════════════╗
-║              VALIDATION PASSED ✅                         ║
-╠═══════════════════════════════════════════════════════════╣
-║  Tests correctly catch the regression:                    ║
-║  - PASS with fix                                          ║
-║  - FAIL without fix                                       ║
-╚═══════════════════════════════════════════════════════════╝
-```
-
-### Step 8-9: Test All Approaches (Skill: compare-fix-approaches)
-
-For each approach (yours AND the PR's):
-
-```bash
-# Apply the fix
-# Run tests
-# Record results
-# Measure lines changed
-```
-
-### Step 9: Compare Results
-
-Create comparison table:
-
-| Approach | Test Result | Lines Changed | Complexity |
-|----------|-------------|---------------|------------|
-| No fix (baseline) | ❌ FAIL | 0 | N/A |
-| PR's fix | ? | ? | ? |
-| My Alternative 1 | ? | ? | ? |
-| My Alternative 2 | ? | ? | ? |
-
----
-
-## Phase 3: Regression Testing (CRITICAL)
-
-**This phase catches issues like the DataTemplateSelector regression found in PR #27847.**
-
-### Step 10: Identify Regression Scenarios
-
-Based on your Phase 1 analysis, create tests for each identified regression risk:
-
-```bash
-# Example: If fix uses hardcoded constant checks, test with dynamic values
-# Create test file in TestCases.HostApp/Issues/ and TestCases.Shared.Tests/Tests/Issues/
-```
-
-**Common regression patterns to test:**
-
-| Fix Pattern | Potential Regression | Test Scenario |
-|-------------|---------------------|---------------|
-| `== ConstantValue` | Dynamic values (template IDs, generated IDs) won't match | Test with DataTemplateSelector, dynamic content |
-| `!= ConstantValue` | Might incorrectly include invalid values | Test boundary conditions |
-| Performance optimization change | Other scenarios may lose optimization | Instrument code to verify paths |
-| Platform-specific fix | Other platforms may behave differently | Test on multiple platforms |
-
-### Step 11: Instrument Code for Verification
-
-When you can't easily observe behavior differences, add temporary instrumentation:
+3. **Instrument code if needed**
 
 ```csharp
-// Add to the modified code temporarily
-System.Diagnostics.Debug.WriteLine($"[FeatureName] Code path: {variableToCheck}");
+// Add temporarily to verify code paths
+System.Diagnostics.Debug.WriteLine($"[FeatureName] Code path: {value}");
 ```
 
-Then run tests and grep device logs:
+Then grep device logs:
 ```bash
 grep "FeatureName" CustomAgentLogsTmp/UITests/android-device.log
 ```
 
-### Step 12: Compare Code Paths Between Approaches
+---
 
-For each approach (PR's fix AND alternatives):
-1. Apply the fix
-2. Run the regression test
-3. Check which code path was taken
-4. Document the difference
+## PHASE 4: Report
 
-**Example output:**
-```
-PR's fix with DataTemplateSelector:
-[MeasureFirstItem] BASE path for ItemViewType=104  ← No optimization!
-
-Alternative fix with DataTemplateSelector:
-[MeasureFirstItem] OPTIMIZED path for ItemViewType=104  ← Optimization preserved!
-```
-
-### Step 13: Document Regression Findings
+### Write Detailed Review
 
 ```markdown
-## Regression Analysis
+## PR Review: #XXXXX - [Title]
 
-| Scenario | PR's Fix | Alternative Fix | Risk Level |
-|----------|----------|-----------------|------------|
-| DataTemplateSelector | ⚠️ Uses BASE path | ✅ Uses OPTIMIZED path | Medium |
-| Grouped CV | ✅ Fixed | ✅ Fixed | N/A |
+### Phase 0: Test Validation ✅
+- Tests FAIL without fix (verified with verify-tests-fail-without-fix)
+- Tests PASS with fix
+
+### Phase 1: Independent Analysis
+**Issue**: [Brief description of the problem]
+**Root Cause**: [What's actually broken]
+**My Alternative Approach**: [If you developed one]
+
+### Phase 2: Approach Comparison
+
+| Approach | Result | Lines | Complexity | Notes |
+|----------|--------|-------|------------|-------|
+| PR's fix | ✅ | X | Low | [notes] |
+| Alternative | ✅ | Y | Low | [notes] |
+
+**Recommendation**: [Which approach is better and why]
+
+### Phase 3: Regression Analysis
+- [ ] Checked affected code paths
+- [ ] No regressions identified
+- [ ] Edge cases covered
+
+### Final Recommendation
+✅ **Approve** / ⚠️ **Request Changes**
+
+[Justification]
 ```
-
----
-
-## Phase 4: Report
-
-### Step 14: Write Detailed Review
-
-Create file: `Review_Feedback_Issue_XXXXX.md`
-
-```markdown
-# Review Feedback: PR #XXXXX - [PR Title]
-
-<details>
-<summary><b>🤖 Copilot Session Summary</b></summary>
-
-This review was conducted through an interactive deep-dive session:
-
-1. **[First prompt]**: [What was done]
-2. **[Second prompt]**: [What was done]
-...
-
-</details>
-
-## Recommendation
-✅ **Approve** / ⚠️ **Request Changes** / 💬 **Comment**
-
-**Summary**: [1-2 sentences on the key finding]
-
----
-
-<details>
-<summary><b>📋 Full Review Details</b></summary>
-
-## Root Cause Analysis
-[Your independent analysis of what's broken]
-
-## Fix Comparison
-
-| Approach | Result | Lines | Complexity | Recommendation |
-|----------|--------|-------|------------|----------------|
-| PR's fix | ✅ | 93 | High | |
-| Alternative 1 | ✅ | 44 | Medium | |
-| Alternative 2 | ✅ | 14 | Low | **Recommended** |
-
-## Recommended Approach
-[Which approach is best and why]
-
-## Code Snippets
-
-### PR's Approach
-```csharp
-// Key code from PR
-```
-
-### Recommended Alternative
-```csharp
-// Simpler approach
-```
-
-## Test Validation
-- ✅ Tests pass with fix
-- ✅ Tests fail without fix
-- ✅ Failure reason matches issue
-
-## Regression Analysis
-- ✅ Identified potential regression scenarios
-- ✅ Created regression tests
-- ✅ Verified no regressions with instrumented testing
-- OR ⚠️ Found regression: [description]
-
-## Approval Checklist
-- [ ] Code solves the stated problem
-- [ ] Minimal, focused changes
-- [ ] Appropriate test coverage
-- [ ] No regressions identified (or regressions are acceptable)
-- [ ] No security concerns
-
-</details>
-```
-
----
-
-## Skills Used by This Agent
-
-This agent orchestrates five skills:
-
-1. **assess-test-type** (`.github/skills/assess-test-type/SKILL.md`)
-   - Determines if tests should be UI tests or unit tests
-   - Provides decision framework based on what's being tested
-
-2. **validate-ui-tests** (`.github/skills/validate-ui-tests/SKILL.md`)
-   - Validates UI tests fail without fix and pass with fix
-   - Uses BuildAndRunHostApp.ps1 and Appium
-
-3. **validate-unit-tests** (`.github/skills/validate-unit-tests/SKILL.md`)
-   - Validates unit tests fail without fix and pass with fix
-   - Uses dotnet test (no device needed)
-
-4. **independent-fix-analysis** (`.github/skills/independent-fix-analysis/SKILL.md`)
-   - Forms independent opinion before looking at PR
-   - Researches git history to find root cause
-   - Proposes alternative approaches
-
-5. **compare-fix-approaches** (`.github/skills/compare-fix-approaches/SKILL.md`)
-   - Tests all approaches against same tests
-   - Creates comparison table
-   - Recommends best approach with justification
-
----
-
-## Key Principles
-
-1. **Independence First**: Form your opinion BEFORE looking at PR's solution
-2. **Data-Driven**: Test all approaches, measure lines changed
-3. **Challenge Assumptions**: Don't assume PR is correct
-4. **Simpler is Better**: Prefer minimal fixes over complex ones
-5. **Document Everything**: Include session summary and comparison tables
-6. **Regression Awareness**: Actively search for scenarios the fix might break
-   - Check for hardcoded constants vs dynamic values
-   - Test with DataTemplateSelector, dynamic content, multiple platforms
-   - Instrument code to verify which code paths are taken
-   - A fix that "works" may still regress other scenarios
 
 ---
 
 ## Quick Reference
 
-| Task | Skill/Command |
-|------|---------------|
-| Analyze root cause | `independent-fix-analysis` skill |
-| Validate UI tests | `pwsh .github/scripts/ValidateTestsCatchRegression.ps1 -Platform [platform] -TestFilter "..." -FixFiles @("...")` |
-| Validate unit tests | `pwsh .github/scripts/ValidateUnitTestsCatchRegression.ps1 -TestProject "..." -TestFilter "..." -FixFiles @("...")` |
-| Compare approaches | `compare-fix-approaches` skill |
-| Run UI tests only | `pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform [platform] -TestFilter "..."` |
-| Measure fix size | `git diff main --stat -- path/to/files` |
-| Check code paths | Add `System.Diagnostics.Debug.WriteLine()` and grep device logs |
-| Review output | `Review_Feedback_Issue_XXXXX.md` |
+| Task | Command |
+|------|---------|
+| Gate: Verify tests catch issue | `pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 -Platform android` |
+| Run UI tests | `pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "..."` |
+| Check what changed | `git diff main --stat` |
+| View linked issue | `gh issue view ISSUE_NUMBER` |
+| View PR info | `gh pr view XXXXX` |
 
-## Common Regression Patterns
+## Troubleshooting
 
-| Pattern in Fix | Regression Risk | How to Detect |
-|----------------|-----------------|---------------|
-| `== ConstantValue` | Dynamic/generated values miss the check | Test with DataTemplateSelector |
-| Positive match only | Excludes valid cases not explicitly listed | Check all ItemViewType values |
-| Performance optimization bypass | Other scenarios lose optimization | Instrument and compare code paths |
-| Platform-specific path | Different behavior on other platforms | Test on iOS AND Android |
+| Problem | Likely Cause | Solution |
+|---------|--------------|----------|
+| Tests pass without fix | Tests don't detect the bug | STOP - Request changes |
+| App crashes | Duplicate issue numbers, XAML error | Check device logs |
+| No tests detected | Tests not in expected paths | Use explicit `-TestFilter` |
+| Can't find root cause | Complex git history | Check blame, PR history |
