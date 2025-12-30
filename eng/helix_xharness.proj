@@ -66,13 +66,11 @@
         <HelixPreCommand Include="export XHARNESS_LOG_WITH_TIMESTAMPS=true" />
     </ItemGroup>
 
-    <!-- Windows: Include eng folder and .config folder as correlation payload for Cake scripts -->
+    <!-- Windows: Include eng folder as correlation payload for Cake scripts -->
+    <!-- Note: eng/devices/.config contains a minimal dotnet-tools.json with just cake.tool -->
     <ItemGroup Condition="'$(TargetsWindows)' == 'true'">
         <HelixCorrelationPayload Include="$(RepoRoot)eng">
             <Destination>eng</Destination>
-        </HelixCorrelationPayload>
-        <HelixCorrelationPayload Include="$(RepoRoot).config">
-            <Destination>.config</Destination>
         </HelixCorrelationPayload>
     </ItemGroup>
 
