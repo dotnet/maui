@@ -401,6 +401,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_displayedPage.PropertyChanged += OnDisplayedPagePropertyChanged;
 				UpdateTabBarHidden();
 				UpdateLargeTitles();
+				UpdateNavBarHidden();
 			}
 		}
 
