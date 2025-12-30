@@ -251,8 +251,66 @@ Func<string[], string[]> FilterCategories = (string[] allCategories) => {
 	return filteredCategories;
 };
 
+// Import existing certificate from the .cer file for packaged tests
+// This is needed when running testOnly on a machine that didn't build the MSIX
+Task("ImportCert")
+	.WithCriteria(isPackagedTestRun)
+	.Does(() =>
+{
+	Information("Checking for existing certificate to import...");
+	
+	var projectDir = PROJECT.GetDirectory();
+	var cerPaths = GetFiles(projectDir.FullPath + "/**/AppPackages/*/*.cer");
+	
+	if(cerPaths.Count() == 0)
+	{
+		var arcadeBin = new DirectoryPath("../../artifacts/bin/");
+		
+		if(PROJECT.FullPath.Contains("Controls.DeviceTests"))
+			projectDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Controls.DeviceTests/" + CONFIGURATION + "/"));
+		else if(PROJECT.FullPath.Contains("Core.DeviceTests"))
+			projectDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Core.DeviceTests/" + CONFIGURATION + "/"));
+		else if(PROJECT.FullPath.Contains("Graphics.DeviceTests"))
+			projectDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Graphics.DeviceTests/" + CONFIGURATION + "/"));
+		else if(PROJECT.FullPath.Contains("MauiBlazorWebView.DeviceTests"))
+			projectDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/MauiBlazorWebView.DeviceTests/" + CONFIGURATION + "/"));
+		else if(PROJECT.FullPath.Contains("Essentials.DeviceTests"))
+			projectDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Essentials.DeviceTests/" + CONFIGURATION + "/"));
+			
+		cerPaths = GetFiles(projectDir.FullPath + "/**/AppPackages/*/*.cer");
+	}
+	
+	if(cerPaths.Count() == 0)
+	{
+		Warning("No certificate file found to import");
+		return;
+	}
+	
+	var cerPath = cerPaths.First();
+	Information($"Found certificate to import: {cerPath}");
+	
+	// Import the certificate to LocalMachine\TrustedPeople store using certutil (works without elevation on Helix)
+	var importResult = StartProcess("certutil", $"-addstore TrustedPeople \"{MakeAbsolute(cerPath).FullPath}\"");
+	if(importResult != 0)
+	{
+		// Try PowerShell as fallback
+		Information("certutil failed, trying PowerShell...");
+		importResult = StartProcess("powershell", $"Import-Certificate -FilePath \"{MakeAbsolute(cerPath).FullPath}\" -CertStoreLocation Cert:\\LocalMachine\\TrustedPeople");
+	}
+	
+	if(importResult == 0)
+	{
+		Information("Certificate imported successfully");
+	}
+	else
+	{
+		Warning($"Certificate import returned exit code: {importResult}");
+	}
+});
+
 Task("testOnly")
 	.IsDependentOn("SetupTestPaths")
+	.IsDependentOn("ImportCert")
 	.Does(() =>
 {
 	CleanDirectories(TEST_RESULTS);
