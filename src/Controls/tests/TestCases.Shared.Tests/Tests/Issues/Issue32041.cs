@@ -20,6 +20,9 @@ public class Issue32041 : _IssuesUITest
 		// Wait for the main container to be visible
 		App.WaitForElement("MainContainer");
 
+		// To make initial CL bottom margin not applied before keyboard appears
+		VerifyScreenshot();
+
 		// Get the bottom marker's initial position before keyboard appears
 		var bottomMarkerBefore = App.FindElement("BottomMarker").GetRect();
 		var initialBottom = bottomMarkerBefore.Y + bottomMarkerBefore.Height;

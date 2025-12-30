@@ -31,7 +31,6 @@ namespace Microsoft.Maui.Platform
 
 		readonly List<AView> _pendingViews = [];
 		int _lastImeHeight;
-		//WeakReference<AndroidX.CoordinatorLayout.Widget.CoordinatorLayout>? _coordinatorLayoutRef;
 
 		// Static tracking for views that have local inset listeners.
 		// This registry allows child views to find their appropriate listener without
@@ -209,15 +208,20 @@ namespace Microsoft.Maui.Platform
 			// Check for IME (keyboard) insets and apply padding to CoordinatorLayout if AdjustResize
 			var imeInsets = insets.GetInsets(WindowInsetsCompat.Type.Ime());
 			var imeHeight = imeInsets?.Bottom ?? 0;
-			_lastImeHeight = imeHeight;
 
 			bool consumedImeInsets = false;
 			if (v is AndroidX.CoordinatorLayout.Widget.CoordinatorLayout coordinatorLayout)
 			{
-				consumedImeInsets = ApplyKeyboardPaddingIfNeeded(coordinatorLayout, imeHeight, v.Context);
+				// Only apply keyboard padding when IME height changes
+				// This prevents interference with non-keyboard events (rotation, bottom nav, etc.)
+				if (imeHeight != _lastImeHeight)
+				{
+					consumedImeInsets = ApplyKeyboardPaddingIfNeeded(coordinatorLayout, imeHeight, v.Context);
+				}
 			}
 
-			// If we consumed IME insets, consume entire bottom insets (system bars + IME)
+			_lastImeHeight = imeHeight;
+
 			if (consumedImeInsets)
 			{
 
