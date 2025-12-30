@@ -409,19 +409,64 @@ Task("testOnly")
 		}
 
 		// Install the DeviceTests app
-		StartProcess("powershell", "Add-AppxPackage -Path \"" + MakeAbsolute(msixPath).FullPath + "\"");
+		var installResult = StartProcess("powershell", "Add-AppxPackage -Path \"" + MakeAbsolute(msixPath).FullPath + "\"");
+		Information($"MSIX installation exit code: {installResult}");
+		
+		// Verify the app was installed
+		var verifyInstall = StartProcess("powershell", new ProcessSettings {
+			Arguments = $"-Command \"Get-AppxPackage -Name '{PACKAGEID}' | Select-Object Name, Version, Status\"",
+			RedirectStandardOutput = true
+		});
+		Information($"App package verification exit code: {verifyInstall}");
 
 		if (isControlsProjectTestRun)
 		{
 			// Start the app once, this will trigger the discovery of the test categories
 			var startArgsInitial = "Start-Process shell:AppsFolder\\$((Get-AppxPackage -Name \"" + PACKAGEID + "\").PackageFamilyName)!App -ArgumentList \"" + testResultsFile + "\", \"-1\"";
+			Information($"Starting app for category discovery: {startArgsInitial}");
+			Information($"Expected category file location: {testsToRunFile}");
 			StartProcess("powershell", startArgsInitial);
 
 			Information($"Waiting 10 seconds for category discovery to finish...");
 			System.Threading.Thread.Sleep(10000);
+			
+			// Check if the app is still running
+			var checkAppProcess = StartProcess("powershell", new ProcessSettings {
+				Arguments = $"-Command \"Get-Process | Where-Object {{ $_.MainWindowTitle -like '*DeviceTests*' -or $_.ProcessName -like '*DeviceTests*' }} | Select-Object ProcessName, Id\"",
+				RedirectStandardOutput = true
+			});
+			
+			// List files in the upload directory for debugging
+			Information($"Files in test results directory ({testResultsPath}):");
+			if(DirectoryExists(testResultsPath))
+			{
+				foreach(var file in GetFiles(testResultsPath + "/*"))
+				{
+					Information($"  - {file.GetFilename()}");
+				}
+			}
+			else
+			{
+				Information("  Directory does not exist!");
+			}
 
 			if (!FileExists(testsToRunFile)) {
-				throw new Exception("Test categories file was not created during discovery phase");
+				// Additional debugging - wait a bit more and check again
+				Information("Category file not found after 10 seconds, waiting another 10 seconds...");
+				System.Threading.Thread.Sleep(10000);
+				
+				Information($"Files in test results directory after additional wait:");
+				if(DirectoryExists(testResultsPath))
+				{
+					foreach(var file in GetFiles(testResultsPath + "/*"))
+					{
+						Information($"  - {file.GetFilename()}");
+					}
+				}
+				
+				if (!FileExists(testsToRunFile)) {
+					throw new Exception("Test categories file was not created during discovery phase");
+				}
 			}
 
 			var expectedCategories = System.IO.File.ReadAllLines(testsToRunFile);

@@ -25,6 +25,43 @@ echo Upload Root: %HELIX_WORKITEM_UPLOAD_ROOT%
 echo Correlation Payload: %HELIX_CORRELATION_PAYLOAD%
 echo ========================================
 
+REM Install Windows App SDK runtime (required for unpackaged apps, helpful for packaged too)
+echo.
+echo ========================================
+echo Installing Windows App SDK Runtime
+echo ========================================
+
+REM Extract version from Versions.props (just major.minor)
+set VERSIONS_PROPS=%HELIX_CORRELATION_PAYLOAD%\eng\Versions.props
+set WASDK_VERSION=1.7
+if exist "%VERSIONS_PROPS%" (
+    for /f "tokens=2 delims=<>" %%a in ('findstr /c:"MicrosoftWindowsAppSDKPackageVersion" "%VERSIONS_PROPS%"') do (
+        for /f "tokens=1,2 delims=." %%b in ("%%a") do (
+            set WASDK_VERSION=%%b.%%c
+        )
+    )
+)
+echo Windows App SDK version: %WASDK_VERSION%
+
+set INSTALLER_URL=https://aka.ms/windowsappsdk/%WASDK_VERSION%/latest/windowsappruntimeinstall-x64.exe
+set INSTALLER_PATH=%TEMP%\WindowsAppRuntimeInstall-x64.exe
+
+echo Downloading Windows App SDK runtime from %INSTALLER_URL%...
+powershell -Command "Invoke-WebRequest -Uri '%INSTALLER_URL%' -OutFile '%INSTALLER_PATH%'"
+if %ERRORLEVEL% NEQ 0 (
+    echo WARNING: Failed to download Windows App SDK runtime installer
+) else (
+    echo Installing Windows App SDK runtime...
+    "%INSTALLER_PATH%" --quiet --force
+    if %ERRORLEVEL% NEQ 0 (
+        echo WARNING: Windows App SDK runtime installation returned exit code %ERRORLEVEL%
+    ) else (
+        echo Windows App SDK runtime installed successfully
+    )
+    del /f "%INSTALLER_PATH%" 2>nul
+)
+echo ========================================
+
 REM The payload is extracted to HELIX_WORKITEM_PAYLOAD
 REM The correlation payload (eng folder) is at HELIX_CORRELATION_PAYLOAD
 
@@ -81,10 +118,47 @@ echo ========================================
 echo Test execution completed with exit code: %EXIT_CODE%
 echo ========================================
 
-REM Copy any test result files to the upload directory
-if exist "%HELIX_WORKITEM_ROOT%\*Results*.xml" (
-    echo Copying test results to upload directory...
-    copy /Y "%HELIX_WORKITEM_ROOT%\*Results*.xml" "%HELIX_WORKITEM_UPLOAD_ROOT%\"
+REM Copy all relevant files to the upload directory for diagnostics
+echo.
+echo ========================================
+echo Gathering files for upload
+echo ========================================
+
+REM Copy test result files
+if exist "%HELIX_WORKITEM_UPLOAD_ROOT%\*Results*.xml" (
+    echo Found test results in upload root
+    dir "%HELIX_WORKITEM_UPLOAD_ROOT%\*.xml" 2>nul
 )
+
+REM Copy the category discovery file if it exists
+if exist "%HELIX_WORKITEM_UPLOAD_ROOT%\devicetestcategories.txt" (
+    echo Found category file: devicetestcategories.txt
+) else (
+    echo WARNING: Category file not found in upload root
+)
+
+REM Copy any log files from the work item root
+if exist "%HELIX_WORKITEM_ROOT%\*.log" (
+    echo Copying log files...
+    copy /Y "%HELIX_WORKITEM_ROOT%\*.log" "%HELIX_WORKITEM_UPLOAD_ROOT%\" 2>nul
+)
+
+REM Copy any binlog files
+if exist "%HELIX_WORKITEM_UPLOAD_ROOT%\*.binlog" (
+    echo Found binlog files
+    dir "%HELIX_WORKITEM_UPLOAD_ROOT%\*.binlog" 2>nul
+)
+
+REM List all files in the upload directory
+echo.
+echo Files in upload directory:
+dir "%HELIX_WORKITEM_UPLOAD_ROOT%" 2>nul
+
+REM Also list files in the artifacts bin directory for debugging
+echo.
+echo Files in artifacts bin directory:
+dir "%HELIX_CORRELATION_PAYLOAD%\artifacts\bin\%SCENARIO_NAME%" /s /b 2>nul | findstr /i "\.xml \.txt \.log" | head -20
+
+echo ========================================
 
 exit /b %EXIT_CODE%
