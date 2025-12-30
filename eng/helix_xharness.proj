@@ -7,12 +7,12 @@
         <HelixTargetQueues Condition="'$(TargetOS)' == 'ios'">osx.15.arm64.maui.open;osx.26.arm64.open</HelixTargetQueues>
         <HelixTargetQueues Condition="'$(TargetOS)' == 'maccatalyst'">osx.15.arm64.maui.open;osx.26.arm64.open</HelixTargetQueues>
         <HelixTargetQueues Condition="'$(TargetOS)' == 'android'">ubuntu.2204.amd64.android.33.open</HelixTargetQueues>
-        <HelixTargetQueues Condition="'$(TargetOS)' == 'windows'">Windows.11.Amd64.Open</HelixTargetQueues>
+        <HelixTargetQueues Condition="'$(TargetOS)' == 'windows'">windows.11.amd64.client.open</HelixTargetQueues>
         <!-- Internal queues -->
         <HelixTargetQueues Condition="'$(TargetOS)' == 'ios' and '$(HelixInternal)' == 'True'">osx.15.arm64.iphone.maui</HelixTargetQueues>
         <HelixTargetQueues Condition="'$(TargetOS)' == 'maccatalyst' and '$(HelixInternal)' == 'True'">osx.15.arm64.iphone.maui</HelixTargetQueues>
         <HelixTargetQueues Condition="'$(TargetOS)' == 'android' and '$(HelixInternal)' == 'True'">ubuntu.2204.amd64.android.33</HelixTargetQueues>
-        <HelixTargetQueues Condition="'$(TargetOS)' == 'windows' and '$(HelixInternal)' == 'True'">Windows.11.Amd64</HelixTargetQueues>
+        <HelixTargetQueues Condition="'$(TargetOS)' == 'windows' and '$(HelixInternal)' == 'True'">windows.11.amd64.client</HelixTargetQueues>
         <TargetsAppleMobile Condition="'$(TargetOS)' == 'ios'">true</TargetsAppleMobile>
         <TargetsWindows Condition="'$(TargetOS)' == 'windows'">true</TargetsWindows>
         <Creator Condition="'$(HelixAccessToken)' == ''">maui</Creator>
