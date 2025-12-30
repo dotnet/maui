@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Android.Content;
-using Android.OS;
 using AndroidX.Fragment.App;
 using Google.Android.Material.DatePicker;
 
@@ -10,7 +9,6 @@ namespace Microsoft.Maui.Handlers;
 internal partial class MaterialDatePickerHandler : ViewHandler<IDatePicker, MauiMaterialDatePicker>
 {
     const long MillisecondsPerDay = 86400000;
-
     internal MaterialDatePicker? _dialog;
     internal bool _isUpdatingIsOpen;
     internal MaterialDatePickerPositiveButtonClickListener? _positiveButtonClickListener;
@@ -199,14 +197,14 @@ internal partial class MaterialDatePickerHandler : ViewHandler<IDatePicker, Maui
 
         if (minDate.HasValue)
         {
-            long minMillis = GetUtcMilliseconds(minDate.Value.Year, minDate.Value.Month - 1, minDate.Value.Day);
+            long minMillis = GetUtcMilliseconds(minDate.Value.Year, minDate.Value.Month, minDate.Value.Day);
             constraintsBuilder.SetStart(minMillis);
             validators.Add(DateValidatorPointForward.From(minMillis));
         }
 
         if (maxDate.HasValue)
         {
-            long maxMillis = GetUtcMilliseconds(maxDate.Value.Year, maxDate.Value.Month - 1, maxDate.Value.Day);
+            long maxMillis = GetUtcMilliseconds(maxDate.Value.Year, maxDate.Value.Month, maxDate.Value.Day);
             constraintsBuilder.SetEnd(maxMillis);
             // Add 1 day because Before() is exclusive, we want inclusive
             validators.Add(DateValidatorPointBackward.Before(maxMillis + MillisecondsPerDay));
@@ -225,10 +223,9 @@ internal partial class MaterialDatePickerHandler : ViewHandler<IDatePicker, Maui
 
     static long GetUtcMilliseconds(int year, int month, int day)
     {
-        var date = new DateTimeOffset(year, month + 1, day, 0, 0, 0, TimeSpan.Zero);
+        var date = new DateTimeOffset(year, month, day, 0, 0, 0, TimeSpan.Zero);
         return date.ToUnixTimeMilliseconds();
     }
-
 
     void ShowPickerDialog()
     {
@@ -263,7 +260,7 @@ internal partial class MaterialDatePickerHandler : ViewHandler<IDatePicker, Maui
         }
 
         var year = date?.Year ?? DateTime.Today.Year;
-        var month = (date?.Month ?? DateTime.Today.Month) - 1;
+        var month = date?.Month ?? DateTime.Today.Month;
         var day = date?.Day ?? DateTime.Today.Day;
 
         _dialog = CreateDatePickerDialog(year, month, day);
