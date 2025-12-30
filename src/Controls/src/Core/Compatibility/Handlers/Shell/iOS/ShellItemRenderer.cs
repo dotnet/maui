@@ -316,14 +316,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (disabledColor is null)
 				return;
 
-			// Set text color for disabled state - needed for both text-only and icon tabs
-			// Global UITabBarAppearance.Disabled handles initial state, but per-item is needed for dynamic changes
+			// Per-item text attributes needed for dynamic enable/disable changes
 			var textAttributes = isEnabled ? null : new UIStringAttributes { ForegroundColor = disabledColor };
 			tabBarItem.SetTitleTextAttributes(textAttributes, UIControlState.Normal);
 			tabBarItem.SetTitleTextAttributes(textAttributes, UIControlState.Disabled);
 
-			// For tabs with icons, also tint the icon image
-			// UITabBarAppearance.Disabled.IconColor doesn't work for actual image tinting
+			// Tint icon image since UITabBarAppearance.Disabled.IconColor doesn't work
 			if (tabBarItem.Image is not null)
 			{
 				tabBarItem.Image = isEnabled
