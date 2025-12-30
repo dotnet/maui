@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			IShellAppearanceElement appearanceElement = appearance;
 			var backgroundColor = appearanceElement.EffectiveTabBarBackgroundColor;
 			var foregroundColor = appearanceElement.EffectiveTabBarForegroundColor; // Currently unused
-			var disabledColor = appearanceElement.EffectiveTabBarDisabledColor; // Unused on iOS
+			var disabledColor = appearanceElement.EffectiveTabBarDisabledColor;
 			var unselectedColor = appearanceElement.EffectiveTabBarUnselectedColor;
 			var titleColor = appearanceElement.EffectiveTabBarTitleColor;
 
@@ -75,6 +75,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var foregroundColor = appearanceElement.EffectiveTabBarForegroundColor;
 			var unselectedColor = appearanceElement.EffectiveTabBarUnselectedColor;
 			var titleColor = appearanceElement.EffectiveTabBarTitleColor;
+			var disabledColor = appearanceElement.EffectiveTabBarDisabledColor;
 
 			controller.TabBar
 				.UpdateiOS15TabBarAppearance(
@@ -86,6 +87,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					backgroundColor,
 					titleColor ?? foregroundColor,
 					unselectedColor);
+
+			// Set disabled color in the global appearance for text-only tabs
+			if (disabledColor is not null && _tabBarAppearance is not null)
+			{
+				var disabledUIColor = disabledColor.ToPlatform();
+				var disabledAttributes = new UIStringAttributes { ForegroundColor = disabledUIColor };
+
+				_tabBarAppearance.StackedLayoutAppearance.Disabled.TitleTextAttributes = disabledAttributes;
+				_tabBarAppearance.InlineLayoutAppearance.Disabled.TitleTextAttributes = disabledAttributes;
+				_tabBarAppearance.CompactInlineLayoutAppearance.Disabled.TitleTextAttributes = disabledAttributes;
+
+				controller.TabBar.StandardAppearance = controller.TabBar.ScrollEdgeAppearance = _tabBarAppearance;
+			}
 		}
 
 		void UpdateTabBarAppearance(UITabBarController controller, ShellAppearance appearance)
@@ -95,6 +109,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var foregroundColor = appearanceElement.EffectiveTabBarForegroundColor;
 			var unselectedColor = appearanceElement.EffectiveTabBarUnselectedColor;
 			var titleColor = appearanceElement.EffectiveTabBarTitleColor;
+			var disabledColor = appearanceElement.EffectiveTabBarDisabledColor;
 
 			var tabBar = controller.TabBar;
 
@@ -113,6 +128,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				tabBar.TintColor = (foregroundColor ?? titleColor).ToPlatform();
 				UITabBarItem.Appearance.SetTitleTextAttributes(new UIStringAttributes { ForegroundColor = (titleColor ?? foregroundColor).ToPlatform() }, UIControlState.Selected);
 			}
+
+			// Set disabled color for text-only tabs
+			if (disabledColor is not null && disabledColor.IsNotDefault())
+				UITabBarItem.Appearance.SetTitleTextAttributes(new UIStringAttributes { ForegroundColor = disabledColor.ToPlatform() }, UIControlState.Disabled);
 		}
 	}
 }
