@@ -6,7 +6,7 @@
         <HelixTargetQueues Condition="'$(TargetOS)' == 'ios'">osx.15.arm64.maui.open</HelixTargetQueues>
         <HelixTargetQueues Condition="'$(TargetOS)' == 'maccatalyst'">osx.15.arm64.maui.open</HelixTargetQueues>
         <HelixTargetQueues Condition="'$(TargetOS)' == 'android'">ubuntu.2204.amd64.android.33.open</HelixTargetQueues>
-        <HelixTargetQueues Condition="'$(TargetOS)' == 'windows'">Windows.11.Amd64.Open</HelixTargetQueues>
+        <HelixTargetQueues Condition="'$(TargetOS)' == 'windows'">windows.11.amd64.client.open</HelixTargetQueues>
         <TargetsAppleMobile Condition="'$(TargetOS)' == 'ios'">true</TargetsAppleMobile>
         <TargetsWindows Condition="'$(TargetOS)' == 'windows'">true</TargetsWindows>
         <Creator Condition="'$(HelixAccessToken)' == ''">maui</Creator>
