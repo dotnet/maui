@@ -29,7 +29,9 @@ REM The payload is extracted to HELIX_WORKITEM_PAYLOAD
 REM The correlation payload (eng folder) is at HELIX_CORRELATION_PAYLOAD
 
 REM Set up the artifacts directory structure expected by the cake script
-set ARTIFACTS_BIN=%HELIX_WORKITEM_ROOT%\artifacts\bin
+REM Cake script uses relative path ../../artifacts/bin/ from eng/devices/
+REM So we need to create %HELIX_CORRELATION_PAYLOAD%\artifacts\bin\
+set ARTIFACTS_BIN=%HELIX_CORRELATION_PAYLOAD%\artifacts\bin
 if not exist "%ARTIFACTS_BIN%" mkdir "%ARTIFACTS_BIN%"
 
 REM Copy/link the test payload to the expected location
@@ -51,13 +53,14 @@ if %ERRORLEVEL% NEQ 0 (
     exit /b %ERRORLEVEL%
 )
 
-REM Change to the work item root directory
-cd /d "%HELIX_WORKITEM_ROOT%"
+REM Stay in eng/devices directory so dotnet cake is found (local tool)
+REM The cake script will use --root to find artifacts
 
 REM Run the cake script with the testOnly target
 REM Note: The cake script's testOnly task looks for built artifacts in artifacts/bin
 echo Running device tests via Cake script...
-dotnet cake "%HELIX_CORRELATION_PAYLOAD%\eng\devices\windows.cake" ^
+echo Current directory: %CD%
+dotnet cake windows.cake ^
     --target=testOnly ^
     --project="%SCENARIO_NAME%.csproj" ^
     --device=%DEVICE% ^
