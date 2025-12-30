@@ -23,7 +23,7 @@ public class Issue33158 : Shell
         };
         secondPageTab.Items.Add(new ShellContent
         {
-            ContentTemplate = new DataTemplate(() => new SecondPage())
+            ContentTemplate = new DataTemplate(() => new Issue33158SecondPage())
         });
         var thirdTab = new Tab
         {
@@ -33,7 +33,7 @@ public class Issue33158 : Shell
         };
         thirdTab.Items.Add(new ShellContent
         {
-            ContentTemplate = new DataTemplate(() => new ThirdPage())
+            ContentTemplate = new DataTemplate(() => new Issue33158ThirdPage())
         });
         var tabBar = new TabBar();
         tabBar.Items.Add(mainPageTab);
@@ -61,9 +61,9 @@ public class Issue33158 : Shell
         }
     }
 
-    public class SecondPage : ContentPage
+    public class Issue33158SecondPage : ContentPage
     {
-        public SecondPage()
+        public Issue33158SecondPage()
         {
             Content = new StackLayout
             {
@@ -80,9 +80,9 @@ public class Issue33158 : Shell
             };
         }
     }
-    public class ThirdPage : ContentPage
+    public class Issue33158ThirdPage : ContentPage
     {
-        public ThirdPage()
+        public Issue33158ThirdPage()
         {
             var label = new Label
             {
