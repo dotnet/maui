@@ -44,6 +44,15 @@ iOS tests are split into individual jobs for faster debugging and parallel execu
 
 **Note**: `RunOniOS_BlazorReleaseTrimFull` is temporarily disabled due to [ASP.NET Core issue #63951](https://github.com/dotnet/aspnetcore/issues/63951).
 
+### MacOSPool Lane Conditions
+
+The **MacOSPool lanes** (non-ARM64 comparison tests) only run under specific conditions:
+
+1. **Non-PR builds** on branches: `main`, `net*.0`, `release/*`, or `inflight/*`
+2. **PR builds** where the target branch is: `net*.0`, `release/*`, or `inflight/*`
+
+This ensures MacOSPool comparison tests don't run on regular PR builds targeting `main`, saving CI resources while still running them for release-related branches.
+
 ## Test Categories
 
 Tests are organized by categories (defined in `Utilities/Categories.cs`) that map to CI jobs:

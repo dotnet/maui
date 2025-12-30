@@ -16,6 +16,8 @@ stages:
       displayName: ${{ coalesce(job.testName, job.testCategory) }} ${{ job.pool.os }} (${{ job.pool.vmImage }})
       pool: ${{ job.pool }}
       timeoutInMinutes: ${{ job.timeout }}
+      ${{ if job.condition }}:
+        condition: ${{ job.condition }}
       variables:
         # Build the filter based on whether testName or testCategory is provided
         ${{ if job.testName }}:
