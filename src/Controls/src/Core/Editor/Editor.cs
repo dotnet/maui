@@ -60,6 +60,7 @@ namespace Microsoft.Maui.Controls
 		readonly Lazy<PlatformConfigurationRegistry<Editor>> _platformConfigurationRegistry;
 
 		/// <summary>Gets or sets a value that controls whether the editor will change size to accommodate input as the user enters it. This is a bindable property.</summary>
+		/// <value>An <see cref="EditorAutoSizeOption"/> value. The default is <see cref="EditorAutoSizeOption.Disabled"/>.</value>
 		/// <remarks>Automatic resizing is turned off by default.</remarks>
 		public EditorAutoSizeOption AutoSize
 		{

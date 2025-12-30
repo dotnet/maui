@@ -121,10 +121,10 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="BorderColor"/>. This is a bindable property.</summary>
 		public static readonly BindableProperty BorderColorProperty = BorderElement.BorderColorProperty;
 
-		/// <summary>Bindable property for <see cref="CornerRadius"/>.</summary>
+		/// <summary>Bindable property for <see cref="CornerRadius"/>. This is a bindable property.</summary>
 		public static readonly BindableProperty CornerRadiusProperty = BorderElement.CornerRadiusProperty;
 
-		/// <summary>Bindable property for <see cref="BorderWidth"/>.</summary>
+		/// <summary>Bindable property for <see cref="BorderWidth"/>. This is a bindable property.</summary>
 		public static readonly BindableProperty BorderWidthProperty = BorderElement.BorderWidthProperty;
 
 		// If Content is set to a string, the string will be displayed using the native Text property
