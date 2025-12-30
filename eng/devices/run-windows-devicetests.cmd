@@ -38,15 +38,17 @@ if not exist "%ARTIFACTS_BIN%\%SCENARIO_NAME%" (
     xcopy /E /I /Y "%HELIX_WORKITEM_PAYLOAD%" "%ARTIFACTS_BIN%\%SCENARIO_NAME%"
 )
 
-REM Change to the correlation payload root directory where .config/dotnet-tools.json exists
-cd /d "%HELIX_CORRELATION_PAYLOAD%"
+REM Change to the eng/devices directory where .config/dotnet-tools.json exists (minimal - just cake.tool)
+cd /d "%HELIX_CORRELATION_PAYLOAD%\eng\devices"
 
 REM Restore dotnet tools (required for dotnet cake)
-echo Restoring dotnet tools...
+echo Restoring dotnet tools from %CD%...
+echo Contents of .config directory:
+dir /b .config
 dotnet tool restore
 if %ERRORLEVEL% NEQ 0 (
-    echo WARNING: dotnet tool restore failed with exit code %ERRORLEVEL%
-    echo Continuing anyway...
+    echo ERROR: dotnet tool restore failed with exit code %ERRORLEVEL%
+    exit /b %ERRORLEVEL%
 )
 
 REM Change to the work item root directory
@@ -55,7 +57,7 @@ cd /d "%HELIX_WORKITEM_ROOT%"
 REM Run the cake script with the testOnly target
 REM Note: The cake script's testOnly task looks for built artifacts in artifacts/bin
 echo Running device tests via Cake script...
-dotnet cake "%HELIX_CORRELATION_PAYLOAD%\devices\windows.cake" ^
+dotnet cake "%HELIX_CORRELATION_PAYLOAD%\eng\devices\windows.cake" ^
     --target=testOnly ^
     --project="%SCENARIO_NAME%.csproj" ^
     --device=%DEVICE% ^
