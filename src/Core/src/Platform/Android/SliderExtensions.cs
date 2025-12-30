@@ -43,7 +43,10 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdateValue(this MauiMaterialSlider mSlider, ISlider slider)
 		{
-			mSlider.Value = (float)slider.Value;
+			if ((float)slider.Value != mSlider.Value)
+			{
+				mSlider.Value = (float)slider.Value;
+			}
 		}
 
 		public static void UpdateMinimumTrackColor(this SeekBar seekBar, ISlider slider)
@@ -94,6 +97,7 @@ namespace Microsoft.Maui.Platform
 				mSlider.ThumbTintList = ColorStateList.ValueOf(slider.ThumbColor.ToPlatform());
 			}
 		}
+
 		public static async Task UpdateThumbImageSourceAsync(this SeekBar seekBar, ISlider slider, IImageSourceServiceProvider provider)
 		{
 			var context = seekBar.Context;
@@ -171,14 +175,14 @@ namespace Microsoft.Maui.Platform
 		{
 			var context = mSlider.Context;
 
-			if (context == null)
+			if (context is null)
 			{
 				return;
 			}
 
 			var thumbImageSource = slider.ThumbImageSource;
 
-			if (thumbImageSource != null)
+			if (thumbImageSource is not null)
 			{
 				var service = provider.GetRequiredImageSourceService(thumbImageSource);
 				var result = await service.GetDrawableAsync(thumbImageSource, context);
