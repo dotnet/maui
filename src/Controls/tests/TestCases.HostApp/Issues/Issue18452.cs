@@ -15,7 +15,7 @@ namespace Maui.Controls.Sample.Issues
 			Label label = new Label();
 			label.AutomationId = "Label";
 
-			const string url = "https://dotnet.microsoft.com";
+			const string url = "https://learn.microsoft.com/en-us/dotnet/";
 
 			CookieContainer cookieContainer = new();
 			Uri uri = new(url, UriKind.RelativeOrAbsolute);
@@ -36,11 +36,8 @@ namespace Maui.Controls.Sample.Issues
 
 			grid.Children.Add(webView);
 
-			webView.Navigated += async (s, e) =>
+			webView.Navigated += (s, e) =>
 			{
-#if ANDROID
-				await Task.Delay(500); // Wait for cookies to be set on Android
-#endif
 				var cookies = webView.Cookies.GetCookies(uri);
 				foreach (Cookie c in cookies)
 				{
