@@ -6,16 +6,29 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/Switch.xml" path="Type[@FullName='Microsoft.Maui.Controls.Switch']/Docs/*" />
+	/// <summary>
+	/// Represents a control that the user can toggle between two states: on or off.
+	/// </summary>
+	/// <remarks>
+	/// A <see cref="Switch"/> is a UI element that can be toggled between on and off states.
+	/// Use the <see cref="IsToggled"/> property to determine or set the current state.
+	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class Switch : View, IElementConfiguration<Switch>, ISwitch
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/Switch.xml" path="//Member[@MemberName='SwitchOnVisualState']/Docs/*" />
+		/// <summary>
+		/// The visual state name for when the switch is in the on position.
+		/// </summary>
+		/// <value>The string "On".</value>
 		public const string SwitchOnVisualState = "On";
-		/// <include file="../../docs/Microsoft.Maui.Controls/Switch.xml" path="//Member[@MemberName='SwitchOffVisualState']/Docs/*" />
+		
+		/// <summary>
+		/// The visual state name for when the switch is in the off position.
+		/// </summary>
+		/// <value>The string "Off".</value>
 		public const string SwitchOffVisualState = "Off";
 
-		/// <summary>Bindable property for <see cref="IsToggled"/>.</summary>
+		/// <summary>Bindable property for <see cref="IsToggled"/>. This is a bindable property.</summary>
 		public static readonly BindableProperty IsToggledProperty = BindableProperty.Create(nameof(IsToggled), typeof(bool), typeof(Switch), false, propertyChanged: (bindable, oldValue, newValue) =>
 		{
 			((Switch)bindable).Toggled?.Invoke(bindable, new ToggledEventArgs((bool)newValue));
@@ -24,24 +37,28 @@ namespace Microsoft.Maui.Controls
 
 		}, defaultBindingMode: BindingMode.TwoWay);
 
-		/// <summary>Bindable property for <see cref="OnColor"/>.</summary>
+		/// <summary>Bindable property for <see cref="OnColor"/>. This is a bindable property.</summary>
 		public static readonly BindableProperty OnColorProperty = BindableProperty.Create(nameof(OnColor), typeof(Color), typeof(Switch), null,
 			propertyChanged: (bindable, oldValue, newValue) =>
 			{
 				((IView)bindable)?.Handler?.UpdateValue(nameof(ISwitch.TrackColor));
 			});
 
-		/// <summary>Bindable property for <see cref="OffColor"/>.</summary>
+		/// <summary>Bindable property for <see cref="OffColor"/>. This is a bindable property.</summary>
 		public static readonly BindableProperty OffColorProperty = BindableProperty.Create(nameof(OffColor), typeof(Color), typeof(Switch), null,
 			propertyChanged: (bindable, oldValue, newValue) =>
 			{
 				((IView)bindable)?.Handler?.UpdateValue(nameof(ISwitch.TrackColor));
 			});
 
-		/// <summary>Bindable property for <see cref="ThumbColor"/>.</summary>
+		/// <summary>Bindable property for <see cref="ThumbColor"/>. This is a bindable property.</summary>
 		public static readonly BindableProperty ThumbColorProperty = BindableProperty.Create(nameof(ThumbColor), typeof(Color), typeof(Switch), null);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Switch.xml" path="//Member[@MemberName='OnColor']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the color of the switch track when it is in the on position.
+		/// This is a bindable property.
+		/// </summary>
+		/// <value>The <see cref="Color"/> of the track when on. The default is <see langword="null"/>, which uses the platform default.</value>
 		public Color OnColor
 		{
 			get { return (Color)GetValue(OnColorProperty); }
@@ -49,9 +66,10 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets or sets the color of the toggle switch's track when it is in the off state.
-		/// If not set, the default color will be used for the off-track appearance.
+		/// Gets or sets the color of the switch track when it is in the off position.
+		/// This is a bindable property.
 		/// </summary>
+		/// <value>The <see cref="Color"/> of the track when off. The default is <see langword="null"/>, which uses the platform default.</value>
 		public Color OffColor
 		{
 			get { return (Color)GetValue(OffColorProperty); }
@@ -59,7 +77,11 @@ namespace Microsoft.Maui.Controls
 		}
 
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Switch.xml" path="//Member[@MemberName='ThumbColor']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the color of the switch thumb (the movable circular part).
+		/// This is a bindable property.
+		/// </summary>
+		/// <value>The <see cref="Color"/> of the thumb. The default is <see langword="null"/>, which uses the platform default.</value>
 		public Color ThumbColor
 		{
 			get { return (Color)GetValue(ThumbColorProperty); }
@@ -68,13 +90,19 @@ namespace Microsoft.Maui.Controls
 
 		readonly Lazy<PlatformConfigurationRegistry<Switch>> _platformConfigurationRegistry;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Switch.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Switch"/> class.
+		/// </summary>
 		public Switch()
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Switch>>(() => new PlatformConfigurationRegistry<Switch>(this));
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Switch.xml" path="//Member[@MemberName='IsToggled']/Docs/*" />
+		/// <summary>
+		/// Gets or sets a value indicating whether the switch is in the on position.
+		/// This is a bindable property.
+		/// </summary>
+		/// <value><see langword="true"/> if the switch is on; otherwise, <see langword="false"/>. The default is <see langword="false"/>.</value>
 		public bool IsToggled
 		{
 			get { return (bool)GetValue(IsToggledProperty); }
@@ -90,6 +118,9 @@ namespace Microsoft.Maui.Controls
 				VisualStateManager.GoToState(this, SwitchOffVisualState);
 		}
 
+		/// <summary>
+		/// Occurs when the <see cref="IsToggled"/> property changes.
+		/// </summary>
 		public event EventHandler<ToggledEventArgs> Toggled;
 
 		/// <inheritdoc/>
