@@ -1,40 +1,24 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Dispatching;
-
-using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
 public partial class Maui22001
 {
-	public Maui22001()
-	{
-		InitializeComponent();
-	}
+	public Maui22001() => InitializeComponent();
 
-	public Maui22001(bool useCompiledXaml)
-	{
-		//this stub will be replaced at compile time
-	}
-
-	[TestFixture]
-	class Test
+	[Collection("Issue")]
+	public class Test : IDisposable
 	{
 		MockDeviceDisplay mockDeviceDisplay;
 		MockDeviceInfo mockDeviceInfo;
-		[SetUp]
-		public void Setup()
+
+		public Test()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
@@ -43,29 +27,26 @@ public partial class Maui22001
 			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
 		}
 
-		[TearDown]
-		public void TearDown()
+		public void Dispose()
 		{
 			AppInfo.SetCurrent(null);
 			mockDeviceDisplay = null;
 			mockDeviceInfo = null;
 		}
 
-		[Test]
-		public void StateTriggerTargetName([Values(false, true)] bool useCompiledXaml)
+		[Theory]
+		[XamlInflatorData]
+		internal void StateTriggerTargetName(XamlInflator inflator)
 		{
-			var page = new Maui22001(useCompiledXaml);
+			var page = new Maui22001(inflator);
 
-			IWindow window = new Window
-			{
-				Page = page
-			};
-			Assert.That(page._firstGrid.IsVisible, Is.True);
-			Assert.That(page._secondGrid.IsVisible, Is.False);
+			IWindow window = new Window { Page = page };
+			Assert.True(page._firstGrid.IsVisible);
+			Assert.False(page._secondGrid.IsVisible);
 
 			mockDeviceDisplay.SetMainDisplayOrientation(DisplayOrientation.Landscape);
-			Assert.That(page._firstGrid.IsVisible, Is.False);
-			Assert.That(page._secondGrid.IsVisible, Is.True);
+			Assert.False(page._firstGrid.IsVisible);
+			Assert.True(page._secondGrid.IsVisible);
 		}
 	}
 }

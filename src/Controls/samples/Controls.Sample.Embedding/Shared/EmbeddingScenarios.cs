@@ -1,5 +1,5 @@
-﻿using Microsoft.Maui.Platform;
-using Microsoft.Maui.Controls.Embedding;
+﻿using Microsoft.Maui.Controls.Embedding;
+using Microsoft.Maui.Platform;
 
 #if ANDROID
 using PlatformView = Android.Views.View;

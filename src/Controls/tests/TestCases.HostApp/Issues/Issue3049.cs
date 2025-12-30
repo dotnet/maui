@@ -20,7 +20,7 @@
 			Button button = new Button { Text = "Click me first", AutomationId = Button1Id };
 			button.Clicked += async (s, e) =>
 			{
-				string action = await DisplayActionSheet(null, null, null, Action1, "Click outside ActionSheet instead");
+				string action = await DisplayActionSheetAsync(null, null, null, Action1, "Click outside ActionSheet instead");
 				System.Diagnostics.Debug.WriteLine("## " + action);
 			};
 

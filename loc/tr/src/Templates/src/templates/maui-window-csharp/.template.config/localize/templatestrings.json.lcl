@@ -23,12 +23,12 @@
         <Str Cat="Text">
           <Val><![CDATA[A window for displaying a page using C#.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[C# kullanarak sayfa görüntüleme penceresi.]]></Val>
+            <Val><![CDATA[C# kullanarak bir sayfayı görüntülemek için bir pencere.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";name" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";name" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[.NET MAUI Window (C#)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">

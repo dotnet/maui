@@ -5,8 +5,7 @@
     <DataTemplate x:Key="TabBarNavigationViewMenuItem">
         <NavigationViewItem 
             x:Name="navViewItem"
-            Content="{Binding Content}" 
-            Foreground="{Binding TitleColor}" 
+            Content="{Binding Content}"
             Background="{Binding Background}" 
             IsSelected="{Binding IsSelected, Mode=TwoWay}"
             MenuItemsSource="{Binding MenuItemsSource}"

@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.ObjectModel;
 
 namespace Maui.Controls.Sample.Issues;
+
 [Issue(IssueTracker.Github, 22320, "CollectionView does not highlight selected grouped items correctly", PlatformAffected.iOS | PlatformAffected.macOS)]
 public class Issue22320 : ContentPage
 {

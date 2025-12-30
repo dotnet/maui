@@ -1,53 +1,49 @@
+using System;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Microsoft.Maui.Devices;
-using NUnit.Framework;
+using Xunit;
+using Xunit.Sdk;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class Maui6944 : ContentPage
 {
-	public partial class Maui6944 : ContentPage
+	public Maui6944() => InitializeComponent();
+
+	[Collection("Issue")]
+	public class Test : IDisposable
 	{
-		public Maui6944() => InitializeComponent();
-		public Maui6944(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+		public Test() => AppInfo.SetCurrent(new MockAppInfo());
+		public void Dispose() => AppInfo.SetCurrent(null);
 
-		[TestFixture]
-		class Test
+		[Theory]
+		[XamlInflatorData]
+		internal void ContentPropertyAttributeOnLayoutSubclass(XamlInflator inflator)
 		{
-			[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
-			[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
-
-			[Test]
-			public void ContentPropertyAttributeOnLayoutSubclass([Values(false, true)] bool useCompiledXaml)
-			{
-				var page = new Maui6944(useCompiledXaml);
-				Assert.That(page.layout, Is.Not.Null);
-				Assert.That(page.layout, Is.TypeOf<Maui6944Layout>());
-				Assert.That(page.layout.ChildContent, Is.EqualTo(page.label));
-			}
+			var page = new Maui6944(inflator);
+			Assert.NotNull(page.layout);
+			Assert.IsType<Maui6944Layout>(page.layout);
+			Assert.Equal(page.label, page.layout.ChildContent);
 		}
 	}
+}
 
-	public class Maui6944Base : Grid
+public class Maui6944Base : Grid
+{
+}
+
+[ContentProperty("ChildContent")]
+public class Maui6944Layout : Maui6944Base
+{
+	public static readonly BindableProperty ChildContentProperty =
+		BindableProperty.Create(
+			nameof(ChildContent),
+			typeof(View), typeof(Maui6944Layout),
+			defaultValue: null);
+
+	public View ChildContent
 	{
-	}
-
-	[ContentProperty("ChildContent")]
-	public class Maui6944Layout : Maui6944Base
-	{
-		public static readonly BindableProperty ChildContentProperty =
-			BindableProperty.Create(
-				nameof(ChildContent),
-				typeof(View), typeof(Maui6944Layout),
-				defaultValue: null);
-
-		public View ChildContent
-		{
-			get => (View)GetValue(ChildContentProperty);
-			set => SetValue(ChildContentProperty, value);
-		}
-
+		get => (View)GetValue(ChildContentProperty);
+		set => SetValue(ChildContentProperty, value);
 	}
 }

@@ -9,7 +9,7 @@
     <!-- Disable multi-RID builds to workaround a parallel build issue -->
     <RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst'))">maccatalyst-x64</RuntimeIdentifier>
     <RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst')) and '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'arm64'">maccatalyst-arm64</RuntimeIdentifier>
-    <RuntimeIdentifiers Condition="$(TargetFramework.Contains('-android'))">android-arm64;android-x86;android-x64</RuntimeIdentifiers>
+    <RuntimeIdentifiers Condition="$(TargetFramework.Contains('-android'))">android-arm64;android-x64</RuntimeIdentifiers>
     <ExcludeMicrosoftNetTestSdk>true</ExcludeMicrosoftNetTestSdk>
   </PropertyGroup>
 
@@ -18,15 +18,6 @@
     <ApplicationId>com.microsoft.maui.graphics.devicetests</ApplicationId>
     <ApplicationVersion>1</ApplicationVersion>
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <!--
-      Uncomment the below to enabled unpackaged apps and change the
-      value of the "commandName" in the Properties\launchSettings.json
-      from "MsixPackage" to "Project".
-    -->
-    <!--<WindowsPackageType>None</WindowsPackageType>-->
   </PropertyGroup>
 
   <PropertyGroup>

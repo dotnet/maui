@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 {
 	class TypeExtension : ICompiledMarkupExtension
 	{
-		public IEnumerable<Instruction> ProvideValue(IElementNode node, ModuleDefinition module, ILContext context, out TypeReference memberRef)
+		public IEnumerable<Instruction> ProvideValue(ElementNode node, ModuleDefinition module, ILContext context, out TypeReference memberRef)
 		{
 			memberRef = module.ImportReference(context.Cache, ("mscorlib", "System", "Type"));
 			var name = new XmlName("", "TypeName");
@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				Create(Ldtoken, module.ImportReference(typeref)),
 				Create(Call, module.ImportMethodReference(context.Cache, ("mscorlib", "System", "Type"),
 														  methodName: "GetTypeFromHandle",
-														  parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") },
+														  parameterTypes: [("mscorlib", "System", "RuntimeTypeHandle")],
 														  isStatic: true)),
 			};
 		}

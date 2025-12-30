@@ -13,6 +13,11 @@
 		public static IAndroidLifecycleBuilder OnConfigurationChanged(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnConfigurationChanged del) => lifecycle.OnEvent(del);
 		public static IAndroidLifecycleBuilder OnCreate(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnCreate del) => lifecycle.OnEvent(del);
 		public static IAndroidLifecycleBuilder OnDestroy(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnDestroy del) => lifecycle.OnEvent(del);
+		public static IAndroidLifecycleBuilder OnKeyDown(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnKeyDown del) => lifecycle.OnEvent(del);
+		public static IAndroidLifecycleBuilder OnKeyLongPress(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnKeyLongPress del) => lifecycle.OnEvent(del);
+		public static IAndroidLifecycleBuilder OnKeyMultiple(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnKeyMultiple del) => lifecycle.OnEvent(del);
+		public static IAndroidLifecycleBuilder OnKeyShortcut(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnKeyShortcut del) => lifecycle.OnEvent(del);
+		public static IAndroidLifecycleBuilder OnKeyUp(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnKeyUp del) => lifecycle.OnEvent(del);
 		public static IAndroidLifecycleBuilder OnNewIntent(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnNewIntent del) => lifecycle.OnEvent(del);
 		public static IAndroidLifecycleBuilder OnPause(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnPause del) => lifecycle.OnEvent(del);
 		public static IAndroidLifecycleBuilder OnPostCreate(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnPostCreate del) => lifecycle.OnEvent(del);

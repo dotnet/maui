@@ -34,7 +34,13 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Xml;
 using Microsoft.Maui.Controls.Internals;
+#if !__SOURCEGEN__
 using Microsoft.Maui.Devices;
+#endif
+
+#if __SOURCEGEN__
+#nullable disable
+#endif
 
 namespace Microsoft.Maui.Controls.Xaml
 {
@@ -46,10 +52,10 @@ namespace Microsoft.Maui.Controls.Xaml
 			var prefixes = PrefixesToIgnore(xmlns);
 			(rootNode.IgnorablePrefixes ?? (rootNode.IgnorablePrefixes = new List<string>())).AddRange(prefixes);
 			rootNode.Properties.AddRange(attributes);
-			ParseXamlElementFor(rootNode, reader);
+			ParseXamlElementFor(rootNode, reader, rootNode);
 		}
 
-		static void ParseXamlElementFor(IElementNode node, XmlReader reader)
+		static void ParseXamlElementFor(ElementNode node, XmlReader reader, RootNode rootNode)
 		{
 			Debug.Assert(reader.NodeType == XmlNodeType.Element);
 
@@ -79,11 +85,23 @@ namespace Microsoft.Maui.Controls.Xaml
 							if (node.Properties.ContainsKey(name))
 								throw new XamlParseException($"'{reader.Name}' is a duplicate property name.", ((IXmlLineInfo)reader).Clone());
 
+							// Property elements should not have attributes (except xmlns declarations)
+							for (var i = 0; i < reader.AttributeCount; i++)
+							{
+								reader.MoveToAttribute(i);
+								if (reader.NamespaceURI != "http://www.w3.org/2000/xmlns/")
+								{
+									var lineInfo = (IXmlLineInfo)reader;
+									rootNode.Warnings.Add(($"Property element '{name.LocalName}' cannot have attributes. Attribute '{reader.Name}' will be ignored.", lineInfo.LineNumber, lineInfo.LinePosition));
+								}
+							}
+							reader.MoveToElement();
+
 							INode prop = null;
 							if (reader.IsEmptyElement)
 								Debug.WriteLine($"Unexpected empty element '<{reader.Name} />'", (IXmlLineInfo)reader);
 							else
-								prop = ReadNode(reader);
+								prop = ReadNode(reader, rootNode);
 
 							if (prop != null)
 								node.Properties.Add(name, prop);
@@ -94,25 +112,25 @@ namespace Microsoft.Maui.Controls.Xaml
 							if (node.Properties.ContainsKey(XmlName.xArguments))
 								throw new XamlParseException($"'x:Arguments' is a duplicate directive name.", ((IXmlLineInfo)reader).Clone());
 
-							var prop = ReadNode(reader);
+							var prop = ReadNode(reader, rootNode);
 							if (prop != null)
 								node.Properties.Add(XmlName.xArguments, prop);
 						}
 						// 3. DataTemplate (should be handled by 4.)
-						else if (node.XmlType.NamespaceUri == MauiUri &&
-								 (node.XmlType.Name == "DataTemplate" || node.XmlType.Name == "ControlTemplate"))
+						else if ((node.XmlType.NamespaceUri == MauiUri || node.XmlType.NamespaceUri == MauiGlobalUri)
+								&& (node.XmlType.Name == "DataTemplate" || node.XmlType.Name == "ControlTemplate"))
 						{
 							if (node.Properties.ContainsKey(XmlName._CreateContent))
 								throw new XamlParseException($"Multiple child elements in {node.XmlType.Name}", ((IXmlLineInfo)reader).Clone());
 
-							var prop = ReadNode(reader, true);
+							var prop = ReadNode(reader, rootNode, nested: true);
 							if (prop != null)
 								node.Properties.Add(XmlName._CreateContent, prop);
 						}
 						// 4. Implicit content, implicit collection, or collection syntax. Add to CollectionItems, resolve case later.
 						else
 						{
-							var item = ReadNode(reader, true);
+							var item = ReadNode(reader, rootNode, nested: true);
 							if (item != null)
 								node.CollectionItems.Add(item);
 						}
@@ -126,6 +144,9 @@ namespace Microsoft.Maui.Controls.Xaml
 						else
 							node.CollectionItems.Add(new ValueNode(reader.Value.Trim(), (IXmlNamespaceResolver)reader));
 						break;
+					case XmlNodeType.Comment:
+						// Ignore XML comments
+						break;
 					default:
 						Debug.WriteLine("Unhandled node {0} {1} {2}", reader.NodeType, reader.Name, reader.Value);
 						break;
@@ -133,7 +154,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			}
 		}
 
-		static INode ReadNode(XmlReader reader, bool nested = false)
+		static INode ReadNode(XmlReader reader, RootNode rootNode, bool nested = false)
 		{
 			var skipFirstRead = nested;
 			Debug.Assert(reader.NodeType == XmlNodeType.Element);
@@ -157,7 +178,7 @@ namespace Microsoft.Maui.Controls.Xaml
 							((IXmlLineInfo)reader).LinePosition);
 					case XmlNodeType.Element:
 						var isEmpty = reader.IsEmptyElement && reader.Name == name;
-						var elementName = reader.Name;
+						var elementName = reader.LocalName;
 						var elementNsUri = reader.NamespaceURI;
 						var elementXmlInfo = (IXmlLineInfo)reader;
 						IList<KeyValuePair<string, string>> xmlns;
@@ -168,10 +189,10 @@ namespace Microsoft.Maui.Controls.Xaml
 
 						node = new ElementNode(new XmlType(elementNsUri, elementName, typeArguments), elementNsUri,
 							reader as IXmlNamespaceResolver, elementXmlInfo.LineNumber, elementXmlInfo.LinePosition);
-						((IElementNode)node).Properties.AddRange(attributes);
+						((ElementNode)node).Properties.AddRange(attributes);
 						(node.IgnorablePrefixes ?? (node.IgnorablePrefixes = new List<string>())).AddRange(prefixes);
 
-						ParseXamlElementFor((IElementNode)node, reader);
+						ParseXamlElementFor((ElementNode)node, reader, rootNode);
 						nodes.Add(node);
 						if (isEmpty || nested)
 							return node;
@@ -183,6 +204,9 @@ namespace Microsoft.Maui.Controls.Xaml
 						nodes.Add(node);
 						break;
 					case XmlNodeType.Whitespace:
+						break;
+					case XmlNodeType.Comment:
+						// Ignore XML comments
 						break;
 					default:
 						Debug.WriteLine("Unhandled node {0} {1} {2}", reader.NodeType, reader.Name, reader.Value);
@@ -248,11 +272,12 @@ namespace Microsoft.Maui.Controls.Xaml
 					case "Name":
 						return XmlName.xName;
 					case "Class":
+						return XmlName.xClass;
 					case "FieldModifier":
-						return new XmlName(null, null);
+						return XmlName.xFieldModifier;
 					default:
 						Debug.WriteLine("Unhandled attribute {0}", name);
-						return new XmlName(null, null);
+						return XmlName.Empty;
 				}
 			}
 
@@ -269,15 +294,18 @@ namespace Microsoft.Maui.Controls.Xaml
 					case "DataType":
 						return XmlName.xDataType;
 					case "Class":
+						return XmlName.xClass;
 					case "FieldModifier":
-						return new XmlName(null, null);
+						return XmlName.xFieldModifier;
 					case "FactoryMethod":
 						return XmlName.xFactoryMethod;
 					case "Arguments":
 						return XmlName.xArguments;
+					case "ClassModifier":
+						return XmlName.xClassModifier;
 					default:
 						Debug.WriteLine("Unhandled attribute {0}", name);
-						return new XmlName(null, null);
+						return XmlName.Empty;
 				}
 			}
 
@@ -295,6 +323,8 @@ namespace Microsoft.Maui.Controls.Xaml
 				if (targetPlatform == null)
 					continue;
 
+				//FIXME
+#if !__SOURCEGEN__
 				try
 				{
 					if (targetPlatform != DeviceInfo.Platform.ToString())
@@ -310,6 +340,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				{
 					prefixes.Add(prefix);
 				}
+#endif
 			}
 			return prefixes;
 		}
@@ -332,20 +363,53 @@ namespace Microsoft.Maui.Controls.Xaml
 		}
 
 		static IList<XmlnsDefinitionAttribute> s_xmlnsDefinitions;
+		internal static IList<XmlnsPrefixAttribute> s_xmlnsPrefixes;
+		internal static Dictionary<Assembly, bool> s_allowImplicitXmlns = new();
+		static bool ValidateProtectedXmlns(string xmlNamespace, string assemblyName)
+		{
+			//maui, and x: xmlns are protected
+			if (xmlNamespace != XamlParser.MauiUri && xmlNamespace != XamlParser.X2009Uri)
+				return true;
 
-		static void GatherXmlnsDefinitionAttributes()
+			//we know thos assemblies, they are fine in maui or x xmlns
+			if (assemblyName.StartsWith("Microsoft", StringComparison.OrdinalIgnoreCase)
+				|| assemblyName.StartsWith("System", StringComparison.OrdinalIgnoreCase)
+				|| assemblyName.StartsWith("mscorlib", StringComparison.OrdinalIgnoreCase))
+				return true;
+
+			return false;
+		}
+
+
+		internal static void GatherXmlnsDefinitionAndXmlnsPrefixAttributes(Assembly currentAssembly)
 		{
 			Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
-			s_xmlnsDefinitions = new List<XmlnsDefinitionAttribute>();
-
+			s_xmlnsDefinitions = [];
+			s_xmlnsPrefixes = [];
 			foreach (var assembly in assemblies)
 			{
 				try
 				{
 					foreach (XmlnsDefinitionAttribute attribute in assembly.GetCustomAttributes(typeof(XmlnsDefinitionAttribute)))
 					{
+						// Only add global xmlns definition from the current assembly
+						if (attribute.XmlNamespace == XamlParser.MauiGlobalUri
+							&& assembly != currentAssembly)
+							continue;
+
+						attribute.AssemblyName ??= assembly.FullName;
+
+						if (!ValidateProtectedXmlns(attribute.XmlNamespace, attribute.AssemblyName))
+						{
+							Debug.WriteLine($"Can not overloadxmlns {attribute.XmlNamespace}. cause it's protected.");
+							continue;
+						}
 						s_xmlnsDefinitions.Add(attribute);
-						attribute.AssemblyName = attribute.AssemblyName ?? assembly.FullName;
+					}
+
+					foreach (XmlnsPrefixAttribute attribute in assembly.GetCustomAttributes(typeof(XmlnsPrefixAttribute), false))
+					{
+						s_xmlnsPrefixes.Add(attribute);
 					}
 				}
 				catch (Exception ex)
@@ -357,10 +421,14 @@ namespace Microsoft.Maui.Controls.Xaml
 			}
 		}
 
+#if NET
 		[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
+#endif
 #if !NETSTANDARD
 		[RequiresDynamicCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
 #endif
+
+#if !__SOURCEGEN__
 		public static Type GetElementType(XmlType xmlType, IXmlLineInfo xmlInfo, Assembly currentAssembly, bool expandToExtension,
 			out XamlParseException exception)
 		{
@@ -368,9 +436,9 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		retry:
 			if (s_xmlnsDefinitions == null)
-				GatherXmlnsDefinitionAttributes();
+				GatherXmlnsDefinitionAndXmlnsPrefixAttributes(currentAssembly);
 
-			Type type = xmlType.GetTypeReference(
+			var types = xmlType.GetTypeReferences(
 				s_xmlnsDefinitions,
 				currentAssembly?.FullName,
 				(typeInfo) =>
@@ -380,12 +448,13 @@ namespace Microsoft.Maui.Controls.Xaml
 						return t;
 					return null;
 				},
-				expandToExtension);
+				expandToExtension).Distinct().ToList();
 
 			var typeArguments = xmlType.TypeArguments;
 			exception = null;
 
-			if (type == null)
+
+			if (types.Count == 0)
 			{
 				// This covers the scenario where the AppDomain's loaded
 				// assemblies might have changed since this method was first
@@ -398,6 +467,14 @@ namespace Microsoft.Maui.Controls.Xaml
 					goto retry;
 				}
 			}
+
+			if (types.Count > 1)
+			{
+				exception = new XamlParseException($"Ambiguous type '{xmlType.Name}' in xmlns '{xmlType.NamespaceUri}'", xmlInfo);
+				return null;
+			}
+
+			var type = types.Count == 1 ? types[0] : null;
 
 			if (type != null && typeArguments != null)
 			{
@@ -448,5 +525,6 @@ namespace Microsoft.Maui.Controls.Xaml
 		public static bool IsVisibleInternal(this Assembly from, Assembly to) =>
 			from.GetCustomAttributes<InternalsVisibleToAttribute>().Any(ca =>
 				ca.AssemblyName.StartsWith(to.GetName().Name, StringComparison.InvariantCulture));
+#endif
 	}
 }

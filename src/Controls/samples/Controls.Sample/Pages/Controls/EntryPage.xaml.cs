@@ -64,19 +64,19 @@ namespace Maui.Controls.Sample.Pages
 		void OnEntryCompleted(object sender, EventArgs e)
 		{
 			var text = ((Microsoft.Maui.Controls.Entry)sender).Text;
-			DisplayAlert("Completed", text, "Ok");
+			DisplayAlertAsync("Completed", text, "Ok");
 		}
 
 		void OnEntryFocused(object sender, FocusEventArgs e)
 		{
 			var text = ((Microsoft.Maui.Controls.Entry)sender).Text;
-			DisplayAlert("Focused", text, "Ok");
+			DisplayAlertAsync("Focused", text, "Ok");
 		}
 
 		void OnEntryUnfocused(object sender, FocusEventArgs e)
 		{
 			var text = ((Entry)sender).Text;
-			DisplayAlert("Unfocused", text, "Ok");
+			DisplayAlertAsync("Unfocused", text, "Ok");
 		}
 
 		void OnUpdateBackgroundColorButtonClicked(object sender, System.EventArgs e)

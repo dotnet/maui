@@ -19,11 +19,6 @@ namespace Microsoft.Maui.IntegrationTests
 
 	public static class BuildWarningsUtilities
 	{
-		public static List<WarningsPerFile> ExpectedNativeAOTWarnings
-		{
-			get => expectedNativeAOTWarnings;
-		}
-
 		// We rely on the fact that expected file paths are stored as relative to the repo root (e.g., src/Core/...).
 		// While the actual file paths are always full paths and can have different repo roots (e.g., building locally or on CI).
 		private static bool CompareWarningsFilePaths(this string actual, string expected) => actual.Contains(expected, StringComparison.Ordinal);
@@ -127,6 +122,20 @@ namespace Microsoft.Maui.IntegrationTests
 
 		// IMPORTANT: Always store expected File information as a relative path to the repo ROOT
 		private static readonly List<WarningsPerFile> expectedNativeAOTWarnings = new();
+
+		// Windows-specific expected warnings (if any)
+		// These might be different from iOS/Mac warnings due to platform-specific implementations
+		private static readonly List<WarningsPerFile> expectedNativeAOTWarningsWindows = new();
+
+		public static List<WarningsPerFile> ExpectedNativeAOTWarnings
+		{
+			get => expectedNativeAOTWarnings;
+		}
+
+		public static List<WarningsPerFile> ExpectedNativeAOTWarningsWindows
+		{
+			get => expectedNativeAOTWarningsWindows;
+		}
 
 		#region Utility methods for generating the list of expected warnings
 

@@ -33,7 +33,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			DragCoordinatesAndRestore(androidApp, fromX, fromY, toX, toY);
 
-			VerifyScreenshot();
+			App.WaitForElement("RefreshStatusLabel");
+			Assert.That(App.FindElement("RefreshStatusLabel").GetText(), Is.EqualTo("RefreshView Not Triggered"));
 		}
 
 		void DragCoordinatesAndRestore(AppiumAndroidApp androidApp, int fromX, int fromY, int toX, int toY)

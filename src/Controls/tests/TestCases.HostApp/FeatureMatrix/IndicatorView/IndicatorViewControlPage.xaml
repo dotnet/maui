@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.IndicatorViewControlMainPage"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:DataType="local:IndicatorViewViewModel"
+             Title="IndicatorView Control">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Options"
+                     Clicked="NavigateToOptionsPage_Clicked"
+                     AutomationId="Options"/>
+    </ContentPage.ToolbarItems>
+
+    <Grid Padding="10"
+          RowDefinitions="*, Auto, Auto, Auto"
+          ColumnDefinitions="*, *"
+          RowSpacing="5"
+          ColumnSpacing="10">
+
+        <!-- CarouselView -->
+        <local:CarouselView2 Grid.Row="0"
+                             Grid.ColumnSpan="2"
+                             ItemsSource="{Binding CarouselItems}"
+                             Position="{Binding Position, Mode=TwoWay}"
+                             Loop="False"
+                             HorizontalScrollBarVisibility="Never"
+                             IndicatorView="{x:Reference customIndicator}">
+            <local:CarouselView2.ItemTemplate>
+                <DataTemplate x:DataType="local:IndicatorViewCarouselItem">
+                    <Border BackgroundColor="{Binding Color}"
+                            HeightRequest="250"
+                            WidthRequest="250"
+                            Stroke="DarkGray"
+                            StrokeThickness="2"
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center">
+                        <Grid Padding="10">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Label Grid.Row="0"
+                                   Text="{Binding Title}"
+                                   FontSize="Large"
+                                   TextColor="Black"
+                                   HorizontalTextAlignment="Center"
+                                   VerticalOptions="Center"/>
+                            <Label Grid.Row="1"
+                                   Text="{Binding Description}"
+                                   FontSize="Small"
+                                   TextColor="DarkGray"
+                                   HorizontalTextAlignment="Center"
+                                   VerticalOptions="Center"/>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </local:CarouselView2.ItemTemplate>
+        </local:CarouselView2>
+
+        <!-- IndicatorView -->
+        <IndicatorView Grid.Row="1"
+                       Grid.ColumnSpan="2"
+                       x:Name="customIndicator"
+                       Margin="0,0,0,20"
+                       HorizontalOptions="Center"
+                       ItemsSource="{Binding CarouselItems}"
+                       Count="{Binding Count}"
+                       Position="{Binding Position, Mode=TwoWay}"
+                       HideSingle="{Binding HideSingle}"
+                       IndicatorColor="{Binding IndicatorColor}"
+                       SelectedIndicatorColor="{Binding SelectedIndicatorColor}"
+                       IndicatorSize="{Binding IndicatorSize}"
+                       IndicatorsShape="{Binding IndicatorsShape}"
+                       MaximumVisible="{Binding MaximumVisible}"
+                       IndicatorTemplate="{Binding IndicatorTemplate}"
+                       FlowDirection="{Binding FlowDirection}"
+                       IsEnabled="{Binding IsEnabled}"
+                       IsVisible="{Binding IsVisible}"
+                       Shadow="{Binding Shadow}"
+                       AutomationId="IndicatorViewControl"/>
+
+        <Label Grid.Row="2"
+               Grid.Column="0"
+               Text="{Binding Position, StringFormat='Position: {0}'}"
+               FontSize="14"
+               HorizontalOptions="Center"
+               AutomationId="PositionLabel"/>
+        <Label Grid.Row="2"
+               Grid.Column="1"
+               Text="{Binding Count, StringFormat='Count: {0}'}"
+               FontSize="14"
+               HorizontalOptions="Center"
+               AutomationId="CountLabel"/>
+
+        <Button Grid.Row="3"
+                Grid.Column="0"
+                Text="Add Item"
+                Clicked="OnAddItemClicked"
+                AutomationId="AddItemButton"/>
+        <Button Grid.Row="3"
+                Grid.Column="1"
+                Text="Remove Item"
+                Clicked="OnRemoveItemClicked"
+                AutomationId="RemoveItemButton"/>
+
+    </Grid>
+</ContentPage>

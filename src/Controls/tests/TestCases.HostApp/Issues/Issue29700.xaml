@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue29700"
+             Title="29700">
+    <VerticalStackLayout>
+        <Label Text="Hello, World"
+               AutomationId="TestLabel"
+               x:Name="TestLabel"
+               TextType="Html"/>
+        <Button Text="Change text transform"
+                AutomationId="ChangeTextTransformButton"
+                Clicked="Button_Clicked"/>
+    </VerticalStackLayout>
+</ContentPage>

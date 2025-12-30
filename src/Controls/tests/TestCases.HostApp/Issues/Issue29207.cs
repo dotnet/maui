@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 
 namespace Maui.Controls.Sample.Issues;
+
 [Issue(IssueTracker.Github, 29207, "KeepLastItemInView Does Not Scroll to Last Item When Adding Items at Top, Instead Scrolls to SecondLast Item", PlatformAffected.UWP)]
 public class Issue29207 : ContentPage
 {

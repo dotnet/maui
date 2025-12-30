@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				Span span = formattedString.Spans[i];
 				var transform = span.TextTransform != TextTransform.Default ? span.TextTransform : defaultTextTransform;
-				var text = TextTransformUtilites.GetTransformedText(span.Text, transform);
+				var text = TextTransformUtilities.GetTransformedText(span.Text, transform);
 
 				if (text == null)
 					continue;

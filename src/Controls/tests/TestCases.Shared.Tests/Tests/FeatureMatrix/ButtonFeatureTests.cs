@@ -6,17 +6,14 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-public class ButtonFeatureTests : UITest
+public class ButtonFeatureTests : _GalleryUITest
 {
 	public const string ButtonFeatureMatrix = "Button Feature Matrix";
+
+	public override string GalleryPageName => ButtonFeatureMatrix;
+
 	public ButtonFeatureTests(TestDevice testDevice) : base(testDevice)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(ButtonFeatureMatrix);
 	}
 
 	[Test]
@@ -75,6 +72,8 @@ public class ButtonFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("ButtonControl");
+		App.WaitForElement("ClickedEventLabel");
+		App.Tap("ClickedEventLabel");
 		VerifyScreenshot();
 	}
 #endif
@@ -115,6 +114,8 @@ public class ButtonFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("ButtonControl");
+		App.WaitForElement("ClickedEventLabel");
+		App.Tap("ClickedEventLabel");
 		VerifyScreenshot();
 	}
 
@@ -249,6 +250,8 @@ public class ButtonFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("ButtonControl");
+		App.WaitForElement("ClickedEventLabel");
+		App.Tap("ClickedEventLabel");
 		VerifyScreenshot();
 	}
 

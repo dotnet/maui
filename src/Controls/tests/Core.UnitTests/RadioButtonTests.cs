@@ -1,3 +1,5 @@
+using System;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -170,6 +172,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var radioButton2 = new RadioButton() { GroupName = "foo" };
 			var radioButton3 = new RadioButton() { GroupName = "foo" };
 
+			var layout = new Grid();
+			layout.Children.Add(radioButton1);
+			layout.Children.Add(radioButton2);
+			layout.Children.Add(radioButton3);
+
 			radioButton1.IsChecked = true;
 			radioButton2.IsChecked = true;
 
@@ -235,6 +242,82 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			radioButton1.Value = "updated";
 
 			Assert.Equal("updated", layout.GetValue(RadioButtonGroup.SelectedValueProperty));
+		}
+
+		[Fact]
+		public async Task RadioButtonGroupLayoutShouldNotLeak()
+		{
+			WeakReference CreateReference()
+			{
+				var layout = new StackLayout();
+				var rb1 = new RadioButton { Content = "RB1", Value = "RB1" };
+				var rb2 = new RadioButton { Content = "RB2", Value = "RB2" };
+				layout.Add(rb1);
+				layout.Add(rb2);
+				layout.SetValue(RadioButtonGroup.GroupNameProperty, "GroupA");
+				layout.SetValue(RadioButtonGroup.SelectedValueProperty, "RB1");
+
+				return new(layout);
+			}
+
+			WeakReference reference = CreateReference();
+
+			await TestHelpers.Collect();
+
+			Assert.False(reference.IsAlive, "RadioButtonGroup should not be alive");
+		}
+
+		[Fact]
+		public async Task RadioButtonShouldNotLeak()
+		{
+			WeakReference CreateReference()
+			{
+				var radioButton = new RadioButton { Content = "RB1", Value = "RB1", GroupName = "GroupA" };
+				return new(radioButton);
+			}
+			WeakReference reference = CreateReference();
+
+			await TestHelpers.Collect();
+
+			Assert.False(reference.IsAlive, "RadioButton should not be alive");
+
+		}
+		
+		[Fact]
+		public void GroupNullSelectionClearsAnySelection()
+		{
+			var layout = new Grid();
+			layout.SetValue(RadioButtonGroup.GroupNameProperty, "foo");
+
+			var radioButton1 = new RadioButton() { Value = 1, IsChecked = true };
+			var radioButton2 = new RadioButton() { Value = 2 };
+			var radioButton3 = new RadioButton() { Value = 3 };
+
+			layout.Children.Add(radioButton1);
+			layout.Children.Add(radioButton2);
+			layout.Children.Add(radioButton3);
+
+			Assert.Equal(1, layout.GetValue(RadioButtonGroup.SelectedValueProperty));
+
+			layout.SetValue(RadioButtonGroup.SelectedValueProperty, null);
+
+			Assert.False(radioButton1.IsChecked);
+		}
+
+		[Fact]
+		public void ValuePropertyCanBeSetToNull()
+		{
+			var radioButton = new RadioButton();
+
+			Assert.Null(radioButton.Value);
+
+			radioButton.Value = 1;
+
+			Assert.Equal(1, radioButton.Value);
+
+			radioButton.Value = null;
+
+			Assert.Null(radioButton.Value);
 		}
 	}
 }

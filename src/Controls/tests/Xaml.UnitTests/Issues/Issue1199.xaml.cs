@@ -1,35 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class Issue1199 : ContentPage
 {
-	public partial class Issue1199 : ContentPage
+	public Issue1199() => InitializeComponent();
+
+	[Collection("Issue")]
+	public class Tests
 	{
-		public Issue1199()
+		[Theory]
+		[XamlInflatorData]
+		internal void AllowCreationOfTypesFromString(XamlInflator inflator)
 		{
-			InitializeComponent();
-		}
+			var layout = new Issue1199(inflator);
+			var res = (Color)layout.Resources["AlmostSilver"];
 
-		public Issue1199(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
-		{
-			[TestCase(true)]
-			[TestCase(false)]
-			public void AllowCreationOfTypesFromString(bool useCompiledXaml)
-			{
-				var layout = new Issue1199(useCompiledXaml);
-				var res = (Color)layout.Resources["AlmostSilver"];
-
-				Assert.AreEqual(Color.FromArgb("#FFCCCCCC"), res);
-			}
+			Assert.Equal(Color.FromArgb("#FFCCCCCC"), res);
 		}
 	}
 }

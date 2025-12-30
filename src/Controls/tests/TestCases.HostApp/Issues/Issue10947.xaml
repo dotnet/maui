@@ -16,20 +16,28 @@
             <x:String>Sixth Item</x:String>
         </x:Array>
     </ContentPage.Resources>
-
-    <CollectionView x:Name="CollectionView1" ItemsSource="{StaticResource stringArray}" Background="aliceblue">
+    <CollectionView
+        x:Name="CollectionView1"
+        ItemsSource="{StaticResource stringArray}"
+        Background="aliceblue">
+        <CollectionView.Margin>
+            <OnPlatform x:TypeArguments="Thickness">
+                <On Platform="iOS"
+                        Value="0,50,0,0"/>
+            </OnPlatform>
+        </CollectionView.Margin>
         <CollectionView.Header>
             <StackLayout Background="Pink">
                 <Entry AutomationId="HeaderEntry"
-                    Background="LightGray"
-                    Placeholder="Header Entry"/>
+                       Background="LightGray"
+                       Placeholder="Header Entry"/>
             </StackLayout>
         </CollectionView.Header>
         <CollectionView.Footer>
             <StackLayout Background="Pink">
                 <Entry AutomationId="FooterEntry"
-                    Background="LightGray"
-                    Placeholder="Footer Entry" />
+                       Background="LightGray"
+                       Placeholder="Footer Entry"/>
             </StackLayout>
         </CollectionView.Footer>
         <CollectionView.ItemTemplate>

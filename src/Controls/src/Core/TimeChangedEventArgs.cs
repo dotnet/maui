@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="oldTime"></param>
 		/// <param name="newTime"></param>
 		/// <remarks>To be added.</remarks>
-		public TimeChangedEventArgs(TimeSpan oldTime, TimeSpan newTime)
+		public TimeChangedEventArgs(TimeSpan? oldTime, TimeSpan? newTime)
 		{
 			OldTime = oldTime;
 			NewTime = newTime;
@@ -20,11 +20,11 @@ namespace Microsoft.Maui.Controls
 		/// <summary>The time that the user entered.</summary>
 		/// <value>To be added.</value>
 		/// <remarks>To be added.</remarks>
-		public TimeSpan NewTime { get; private set; }
+		public TimeSpan? NewTime { get; private set; }
 
 		/// <summary>The time that was on the element at the time that the user selected it.</summary>
 		/// <value>To be added.</value>
 		/// <remarks>To be added.</remarks>
-		public TimeSpan OldTime { get; private set; }
+		public TimeSpan? OldTime { get; private set; }
 	}
 }

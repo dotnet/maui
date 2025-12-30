@@ -1,43 +1,33 @@
+using System;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
-
-using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class Maui22105
 {
-	public partial class Maui22105
+	public Maui22105() => InitializeComponent();
+
+	[Collection("Issue")]
+	public class Tests : IDisposable
 	{
-		public Maui22105()
+		public Tests()
 		{
-			InitializeComponent();
+			Application.SetCurrentApplication(new MockApplication());
+			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		public Maui22105(bool useCompiledXaml)
+		public void Dispose() => AppInfo.SetCurrent(null);
+
+		[Theory]
+		[XamlInflatorData]
+		internal void DefaultValueShouldBeApplied(XamlInflator inflator)
 		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Test
-		{
-			[SetUp]
-			public void Setup()
-			{
-				Application.SetCurrentApplication(new MockApplication());
-				DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-			}
-
-			[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
-
-			[Test]
-			public void DefaultValueShouldBeApplied([Values(false, true)] bool useCompiledXaml)
-			{
-				var page = new Maui22105(useCompiledXaml);
-				Assert.That(page.label.FontSize, Is.EqualTo(100));
-			}
+			var page = new Maui22105(inflator);
+			Assert.Equal(100, page.label.FontSize);
 		}
 	}
 }

@@ -4,6 +4,7 @@ using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
+
 public class Issue28714 : _IssuesUITest
 {
 	public override string Issue => "[iOS] WebView BackgroundColor is not setting correctly";

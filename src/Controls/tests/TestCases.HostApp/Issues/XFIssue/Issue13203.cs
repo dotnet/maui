@@ -23,7 +23,7 @@ public class Issue13203 : TestContentPage
 
 		var source = new List<Item> { new Item { Text = Success } };
 		cv.ItemsSource = source;
-
+		SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
 		Content = cv;
 
 		Appearing += (sender, args) => { cv.IsVisible = true; };

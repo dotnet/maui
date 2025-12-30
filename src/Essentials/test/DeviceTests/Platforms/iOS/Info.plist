@@ -32,5 +32,7 @@
 	<string>Access to your location is required for cool things to happen!</string>
 	<key>NSContactsUsageDescription</key>
 	<string>Contacts</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Microphone access is required for microphone tests.</string>
 </dict>
 </plist>

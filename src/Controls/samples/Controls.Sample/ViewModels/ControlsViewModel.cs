@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Maui.Controls.Sample.Models;
 using Maui.Controls.Sample.Pages;
+using Maui.Controls.Sample.Pages.WebViewGalleries;
 using Maui.Controls.Sample.ViewModels.Base;
 
 namespace Maui.Controls.Sample.ViewModels
@@ -90,7 +91,7 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(TimePickerPage), "TimePicker",
 				"A view that allows the user to select a time."),
 
-			new SectionModel(typeof(WebViewPage), "WebView",
+			new SectionModel(typeof(WebViewGalleries), "WebView",
 				"WebView is a view for displaying web and HTML content in your app.")
 		};
 	}

@@ -1,6 +1,7 @@
 ﻿// Based on: https://github.com/xamarin/xamarin-android-tools/blob/d92fc3e3a27e8240551baa813b15d6bf006a5620/src/Microsoft.Android.Build.BaseTasks/AndroidAsyncTask.cs
 
 using System;
+using Microsoft.Maui.Resizetizer.Resources;
 using static System.Threading.Tasks.TaskExtensions;
 
 namespace Microsoft.Maui.Resizetizer
@@ -22,9 +23,9 @@ namespace Microsoft.Maui.Resizetizer
 				// This blocks on AsyncTask.Execute, until Complete is called
 				return base.Execute();
 			}
-			catch (Exception exc)
+			catch (Exception ex)
 			{
-				LogCodedError("MAUI0000", exc.ToString());
+				LogCodedError(ErrorCodes.GeneralResourceProcessingCode, ErrorMessages.GeneralResourceProcessing, string.Format(ErrorMessages.GeneralResourceProcessingError, ex.ToString()));
 				return false;
 			}
 			finally

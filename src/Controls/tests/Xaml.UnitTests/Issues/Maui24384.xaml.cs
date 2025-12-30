@@ -1,8 +1,9 @@
+using System;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -10,38 +11,26 @@ public partial class Maui24384 : ContentPage
 {
 	public static System.Collections.Immutable.ImmutableArray<string> StaticLetters => ["A", "B", "C"];
 
-	public Maui24384()
-	{
-		InitializeComponent();
-	}
+	public Maui24384() => InitializeComponent();
 
-
-	public Maui24384(bool useCompiledXaml)
+	[Collection("Issue")]
+	public class Test : IDisposable
 	{
-		//this stub will be replaced at compile time
-	}
-
-	[TestFixture]
-	class Test
-	{
-		[SetUp]
-		public void Setup()
+		public Test()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		public void Dispose() => AppInfo.SetCurrent(null);
 
-		[Test]
-		public void ImmutableToIList([Values] bool useCompiledXaml)
+		[Theory]
+		[XamlInflatorData]
+		internal void ImmutableToIList(XamlInflator inflator)
 		{
-			if (useCompiledXaml)
-				MockCompiler.Compile(typeof(Maui24384));
-			// Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Maui24384)));
-			var page = new Maui24384(useCompiledXaml);
+			var page = new Maui24384(inflator);
 			var picker = page.Content as Picker;
-			Assert.That(picker.ItemsSource, Is.EquivalentTo(Maui24384.StaticLetters));
+			Assert.Equivalent(Maui24384.StaticLetters, picker.ItemsSource);
 		}
 	}
 }

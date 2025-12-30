@@ -221,7 +221,7 @@
         <Str Cat="Text">
           <Val><![CDATA[An element with the name "{0}" already exists in this NameScope.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Элемент с именем "{0}" уже существует в этой области видимости имен.]]></Val>
+            <Val><![CDATA[Элемент с именем "{0}" уже существует в этой области NameScope.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -230,7 +230,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Property, Property setter or BindableProperty "{0}" is deprecated.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Свойство, метод задания свойства или BindableProperty "{0}" упразднены.]]></Val>
+            <Val><![CDATA[Свойство, метод задания свойства или BindableProperty "{0}" является нерекомендуемым.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -302,7 +302,7 @@
         <Str Cat="Text">
           <Val><![CDATA[StyleSheet require either a Source or a content.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Для таблицы стилей (StyleSheet) необходимо указать источник (Source) или содержимое.]]></Val>
+            <Val><![CDATA[Для таблицы стилей (StyleSheet) необходимо указать свойство Source или содержимое.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -320,7 +320,7 @@
         <Str Cat="Text">
           <Val><![CDATA[StyleSheet cannot have both a Source and a content.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[У таблицы стилей не может быть свойство Source и содержимое.]]></Val>
+            <Val><![CDATA[У таблицы стилей (StyleSheet) не может быть одновременно свойство Source и содержимое.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[StyleSheet can not have both a Source and a content.]]></Val>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests"
+             x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui27202">
+	<ContentPage.Resources>
+		<ResourceDictionary>
+			<!-- Base style with VisualStateManager -->
+			<Style x:Key="BaseLabel" TargetType="Label">
+				<Setter Property="BackgroundColor" Value="Transparent" />
+				<Setter Property="FontSize" Value="20" />
+				<Setter Property="VisualStateManager.VisualStateGroups">
+					<VisualStateGroupList>
+						<VisualStateGroup x:Name="CommonStates">
+							<VisualState x:Name="Disabled">
+								<VisualState.Setters>
+									<Setter Property="TextColor" Value="Gray" />
+								</VisualState.Setters>
+							</VisualState>
+						</VisualStateGroup>
+					</VisualStateGroupList>
+				</Setter>
+			</Style>
+
+			<!-- Derived style 1 - should inherit VisualStateManager -->
+			<Style BasedOn="{StaticResource BaseLabel}" TargetType="local:CustomLabel1">
+				<Setter Property="TextColor" Value="Green" />
+			</Style>
+
+			<!-- Derived style 2 - should inherit VisualStateManager -->
+			<Style BasedOn="{StaticResource BaseLabel}" TargetType="local:CustomLabel2">
+				<Setter Property="TextColor" Value="Blue" />
+			</Style>
+		</ResourceDictionary>
+	</ContentPage.Resources>
+
+	<VerticalStackLayout Padding="30,0" Spacing="25">
+		<local:CustomLabel1 x:Name="EnabledLabel1" Text="Enabled label 1" />
+		<local:CustomLabel2 x:Name="EnabledLabel2" Text="Enabled label 2" />
+		<local:CustomLabel1 x:Name="DisabledLabel1" IsEnabled="False" Text="Disabled label 1" />
+		<local:CustomLabel2 x:Name="DisabledLabel2" IsEnabled="False" Text="Disabled label 2" />
+	</VerticalStackLayout>
+</ContentPage>

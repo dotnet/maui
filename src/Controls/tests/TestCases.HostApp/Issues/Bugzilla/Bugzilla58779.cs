@@ -48,7 +48,7 @@ public class Bugzilla58779 : TestContentPage
 		button.Clicked += (sender, e) =>
 		{
 			String[] string_array = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15" };
-			this.DisplayActionSheet("title", CancelId, "destruction", string_array);
+			this.DisplayActionSheetAsync("title", CancelId, "destruction", string_array);
 		};
 
 		Content = content;

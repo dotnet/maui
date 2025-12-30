@@ -17,7 +17,7 @@ namespace Maui.Controls.Sample.Pages
 			ImageContextCommand = new Command(
 				execute: async (object arg) =>
 				{
-					await DisplayAlert(
+					await DisplayAlertAsync(
 						title: "Image",
 						message: $"The image's context menu was clicked via a command with parameter: {arg}",
 						cancel: "OK");
@@ -30,7 +30,7 @@ namespace Maui.Controls.Sample.Pages
 					count += incrementAmount;
 					OnPropertyChanged(nameof(CounterValue));
 
-					await DisplayAlert(
+					await DisplayAlertAsync(
 						title: "Dynamic Option",
 						message: $"If you see this, then I am enabled.",
 						cancel: "OK");
@@ -110,7 +110,7 @@ namespace Maui.Controls.Sample.Pages
 
 		async void OnEntryShowTextClicked(object sender, EventArgs e)
 		{
-			await DisplayAlert(
+			await DisplayAlertAsync(
 				title: "Entry",
 				message: $"The entry's text is: {EntryWithContextFlyout.Text}",
 				cancel: "OK");
@@ -128,7 +128,7 @@ namespace Maui.Controls.Sample.Pages
 
 		async void OnImageContextClicked(object sender, EventArgs e)
 		{
-			await DisplayAlert(
+			await DisplayAlertAsync(
 				title: "Image",
 				message: $"The image's context menu was clicked",
 				cancel: "OK");
@@ -176,7 +176,7 @@ namespace Maui.Controls.Sample.Pages
 			IMenuElement newMenuItem;
 			MenuFlyoutItem mfi = new MenuFlyoutItem() { Text = $"New {newItemType} menu item #{newItemLocalValue}" };
 
-			mfi.Clicked += (s, e) => DisplayAlert(
+			mfi.Clicked += (s, e) => DisplayAlertAsync(
 				title: "New Menu Item Click",
 				message: $"The new menu item {newItemLocalValue} was clicked",
 				cancel: "OK");

@@ -204,11 +204,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					_actionView = null;
 				}
 
-				if (_initialPoint != null)
-				{
-					_initialPoint.Dispose();
-					_initialPoint = null;
-				}
+				_initialPoint?.Dispose();
+				_initialPoint = null;
 			}
 
 			_isDisposed = true;

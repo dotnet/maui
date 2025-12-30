@@ -5,9 +5,9 @@
     xmlns:local="using:Microsoft.Maui.Controls.Xaml.UnitTests"
     x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.FontImageExtension">
 
-    <Tab Title="Hello" Icon="{FontImage Size={x:Static local:FontImageExtension.Size}, Color={x:Static local:FontImageExtension.Color}, FontFamily={x:Static local:FontImageExtension.FontFamily}, Glyph={x:Static local:FontImageExtension.Glyph}}" />
-    <Tab Title="World" Icon="{FontImage Size={x:Static local:FontImageExtension.Size}, Color={x:Static local:FontImageExtension.Color}, FontFamily={x:Static local:FontImageExtension.FontFamily}, Glyph={x:Static local:FontImageExtension.Glyph}}" />
-    <Tab Title="ContentProperty" Icon="{FontImage MyGlyph, Size={x:Static local:FontImageExtension.Size}, Color={x:Static local:FontImageExtension.Color}, FontFamily={x:Static local:FontImageExtension.FontFamily}}" />
-    <Tab Title="DefaultSize" Icon="{FontImage MyGlyph, Color={x:Static local:FontImageExtension.Color}, FontFamily={x:Static local:FontImageExtension.FontFamily}}" />
+    <Tab Title="Hello" Icon="{FontImageSource Size={x:Static local:FontImageExtension.Size}, Color={x:Static local:FontImageExtension.Color}, FontFamily={x:Static local:FontImageExtension.FontFamily}, Glyph={x:Static local:FontImageExtension.Glyph}}" />
+    <Tab Title="World" Icon="{FontImageSource Size={x:Static local:FontImageExtension.Size}, Color={x:Static local:FontImageExtension.Color}, FontFamily={x:Static local:FontImageExtension.FontFamily}, Glyph={x:Static local:FontImageExtension.Glyph}}" />
+    <Tab Title="ContentProperty" Icon="{FontImageSource MyGlyph, Size={x:Static local:FontImageExtension.Size}, Color={x:Static local:FontImageExtension.Color}, FontFamily={x:Static local:FontImageExtension.FontFamily}}" />
+    <Tab Title="DefaultSize" Icon="{FontImageSource MyGlyph, Color={x:Static local:FontImageExtension.Color}, FontFamily={x:Static local:FontImageExtension.FontFamily}}" />
 
 </TabBar>

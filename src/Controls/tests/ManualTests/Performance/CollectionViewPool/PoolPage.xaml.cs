@@ -17,7 +17,7 @@ public partial class PoolPage : ContentPage
 
 	public async Task LoadLogs()
 	{
-		
+
 		using var stream = await FileSystem.OpenAppPackageFileAsync("logs.json");
 		using var reader = new StreamReader(stream);
 
@@ -25,8 +25,8 @@ public partial class PoolPage : ContentPage
 		var contents = reader.ReadToEnd();
 
 		Logs = JsonUtil.Deserialize<List<Log>>(contents);
-		
-		
+
+
 
 		cv.ItemsSource = Logs;
 	}

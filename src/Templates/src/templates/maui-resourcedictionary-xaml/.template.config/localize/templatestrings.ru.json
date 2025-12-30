@@ -1,7 +1,7 @@
 {
-  "author": "Microsoft",
+  "author": "Майкрософт",
   "name": ".NET MAUI ResourceDictionary (XAML)",
   "description": "Репозиторий ресурсов, используемых приложением .NET MAUI. Типичные ресурсы, хранимые в ResourceDictionary, включают стили, шаблоны элементов управления, шаблоны данных, преобразователи и цвета.",
   "postActions/openInEditor/description": "Открывает файл Dictionary1.xaml в редакторе.",
-  "symbols/namespace/description": "Пространство имен для созданного кода."
+  "symbols/namespace/description": "Пространство имен для сформированного кода."
 }

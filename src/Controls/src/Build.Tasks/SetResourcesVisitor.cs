@@ -1,22 +1,13 @@
 using System;
-using System.Collections;
-using System.Linq;
 using Microsoft.Maui.Controls.Xaml;
 using Mono.Cecil;
-using Mono.Cecil.Cil;
 
 namespace Microsoft.Maui.Controls.Build.Tasks
 {
-	class SetResourcesVisitor : IXamlNodeVisitor
+	class SetResourcesVisitor(ILContext context) : IXamlNodeVisitor
 	{
-		public SetResourcesVisitor(ILContext context)
-		{
-			Context = context;
-			Module = context.Body.Method.Module;
-		}
-
-		public ILContext Context { get; }
-		ModuleDefinition Module { get; }
+		public ILContext Context { get; } = context;
+		ModuleDefinition Module { get; } = context.Body.Method.Module;
 		public TreeVisitingMode VisitingMode => TreeVisitingMode.TopDown;
 		public bool StopOnDataTemplate => true;
 		public bool StopOnResourceDictionary => false;
@@ -24,7 +15,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 		public void Visit(ValueNode node, INode parentNode)
 		{
-			if (!IsResourceDictionary((IElementNode)parentNode))
+			if (!IsResourceDictionary((ElementNode)parentNode))
 				return;
 
 			node.Accept(new SetPropertiesVisitor(Context, stopOnResourceDictionary: false), parentNode);
@@ -43,19 +34,19 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			{
 				if ((propertyName.LocalName == "Resources" || propertyName.LocalName.EndsWith(".Resources", StringComparison.Ordinal)))
 				{
-					Context.IL.Append(SetPropertiesVisitor.SetPropertyValue(Context.Variables[(IElementNode)parentNode], propertyName, node, Context, node));
+					Context.IL.Append(SetPropertiesVisitor.SetPropertyValue(Context.Variables[(ElementNode)parentNode], propertyName, node, Context, node));
 					return;
 				}
 			}
 
 			//Only proceed further if the node is a keyless RD
-			if (parentNode is IElementNode
-				&& IsResourceDictionary((IElementNode)parentNode)
-				&& !((IElementNode)parentNode).Properties.ContainsKey(XmlName.xKey))
+			if (   parentNode is ElementNode node1
+				&& IsResourceDictionary(node1)
+				&& !node1.Properties.ContainsKey(XmlName.xKey))
 				node.Accept(new SetPropertiesVisitor(Context, stopOnResourceDictionary: false), parentNode);
-			else if (parentNode is ListNode
-					 && IsResourceDictionary((IElementNode)parentNode.Parent)
-					 && !((IElementNode)parentNode.Parent).Properties.ContainsKey(XmlName.xKey))
+			else if (   parentNode is ListNode
+					 && IsResourceDictionary((ElementNode)parentNode.Parent)
+					 && !((ElementNode)parentNode.Parent).Properties.ContainsKey(XmlName.xKey))
 				node.Accept(new SetPropertiesVisitor(Context, stopOnResourceDictionary: false), parentNode);
 		}
 
@@ -67,27 +58,24 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		{
 		}
 
-		public bool IsResourceDictionary(ElementNode node) => IsResourceDictionary((IElementNode)node);
-
-		bool IsResourceDictionary(IElementNode node)
+		public bool IsResourceDictionary(ElementNode node)
 		{
-			var parentVar = Context.Variables[(IElementNode)node];
+			var parentVar = Context.Variables[node];
 			return parentVar.VariableType.FullName == "Microsoft.Maui.Controls.ResourceDictionary"
 				|| parentVar.VariableType.ResolveCached(Context.Cache).BaseType?.FullName == "Microsoft.Maui.Controls.ResourceDictionary";
 		}
 
 		public bool SkipChildren(INode node, INode parentNode)
 		{
-			var enode = node as ElementNode;
-			if (enode == null)
+			if (node is not ElementNode enode)
 				return false;
-			if (parentNode is IElementNode
-				&& IsResourceDictionary((IElementNode)parentNode)
-				&& !((IElementNode)parentNode).Properties.ContainsKey(XmlName.xKey))
+			if (   parentNode is ElementNode node1
+				&& IsResourceDictionary(node1)
+				&& !node1.Properties.ContainsKey(XmlName.xKey))
 				return true;
-			if (parentNode is ListNode
-				&& IsResourceDictionary((IElementNode)parentNode.Parent)
-				&& !((IElementNode)parentNode.Parent).Properties.ContainsKey(XmlName.xKey))
+			if (   parentNode is ListNode
+				&& IsResourceDictionary((ElementNode)parentNode.Parent)
+				&& !((ElementNode)parentNode.Parent).Properties.ContainsKey(XmlName.xKey))
 				return true;
 			return false;
 		}

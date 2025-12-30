@@ -25,6 +25,7 @@ public class Issue8186 : TestNavigationPage
 						{
 							Navigation.PushAsync(new ContentPage()
 							{
+								SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container),
 								Content = new Button()
 								{
 									Text = "Pop Page",

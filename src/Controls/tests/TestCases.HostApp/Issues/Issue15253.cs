@@ -9,6 +9,7 @@ public class Issue15253 : ContentPage
 	ObservableCollection<Model15253> Items;
 	public Issue15253()
 	{
+		SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
 		Items = new ObservableCollection<Model15253>();
 		Items.Add(new Model15253 { Name = "one", AutomationId = "15253One" });
 		Items.Add(new Model15253 { Name = "two", AutomationId = "15253Two" });

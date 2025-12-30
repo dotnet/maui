@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.ToolbarFeatureMainPage"
+             Title="ToolBarPage">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem x:Name="primary1" Text="Test (1)" Clicked="ItemClicked" AutomationId="PrimaryToolbar1" />
+        <ToolbarItem Text="Test (2)" Clicked="ItemClicked" AutomationId="PrimaryToolbar2" />
+        <ToolbarItem x:Name="secondary1" Text="Test Secondary (1)" Order="Secondary" Priority="1" IconImageSource="coffee.png" Clicked="ItemClicked" AutomationId="SecondaryToolbar1" />
+        <ToolbarItem x:Name="secondary2" Text="Test Secondary (2)" Order="Secondary" Priority="2" Clicked="ItemClicked" AutomationId="SecondaryToolbar2">
+            <ToolbarItem.IconImageSource>
+                <FontImageSource FontFamily="Ionicons" Glyph="&#xf30c;" Color="Red" />
+            </ToolbarItem.IconImageSource>
+        </ToolbarItem>
+        <ToolbarItem x:Name="secondary4" Text="Test Secondary (4)" Order="Secondary" Priority="4" Clicked="ItemClicked" IsEnabled="False" AutomationId="SecondaryToolbar4" />
+        <ToolbarItem x:Name="secondary3" Text="Test Secondary (3)" Order="Secondary" Priority="3" Command="{Binding ClickedCommand}" AutomationId="SecondaryToolbar3" />
+    </ContentPage.ToolbarItems>
+    <ContentPage.Content>
+        <VerticalStackLayout Margin="12">
+            <Label x:Name="menuLabel" Text="You clicked on ToolbarItem: {none}" AutomationId="MenuLabel" />
+            <Button Text="Enable/Disable Test (1)" Clicked="Button_Clicked1" AutomationId="IsEnabledButton1" />
+            <Button Text="Enable/Disable Test Secondary (4)" Clicked="Button_Clicked" AutomationId="IsEnabledButton4" />
+            <Button Text="Enable/Disable Test Secondary (2) after 1 seconds" Clicked="Button_Clicked2" AutomationId="IsEnabledButton2" />
+            <Button Text="Change text on Test Secondary (1)" Clicked="Button_Clicked3" AutomationId="ChangeTextButton1" />
+            <Button Text="Remove/Add Secondary (3)" Clicked="Button_Clicked4" AutomationId="RemoveAddButton3" />
+            <Button Text="Change Command Property on Secondary (3)" Clicked="Button_Clicked5" AutomationId="ChangeCommandButton3" />
+        </VerticalStackLayout>
+    </ContentPage.Content>
+</ContentPage>

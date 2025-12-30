@@ -9,7 +9,6 @@
       "src\\Graphics\\samples\\GraphicsTester.Skia.Console\\GraphicsTester.Skia.Console.csproj",
       "src\\Graphics\\samples\\GraphicsTester.Skia.Gtk\\GraphicsTester.Skia.Gtk.csproj",
       "src\\Graphics\\samples\\GraphicsTester.Skia.Mac\\GraphicsTester.Skia.Mac.csproj",
-      "src\\Graphics\\samples\\GraphicsTester.Skia.Tizen\\GraphicsTester.Skia.Tizen.csproj",
       "src\\Graphics\\samples\\GraphicsTester.Skia.Windows\\GraphicsTester.Skia.Windows.csproj",
       "src\\Graphics\\samples\\GraphicsTester.WinUI.Desktop\\GraphicsTester.WinUI.Desktop.csproj",
       "src\\Graphics\\samples\\GraphicsTester.iOS\\GraphicsTester.iOS.csproj",

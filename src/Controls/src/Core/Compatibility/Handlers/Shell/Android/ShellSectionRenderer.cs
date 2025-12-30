@@ -9,11 +9,14 @@ using Android.Views;
 using AndroidX.AppCompat.App;
 using AndroidX.AppCompat.Widget;
 using AndroidX.CoordinatorLayout.Widget;
+using AndroidX.Core.View;
 using AndroidX.Fragment.App;
 using AndroidX.ViewPager.Widget;
 using AndroidX.ViewPager2.Widget;
+using Google.Android.Material.AppBar;
 using Google.Android.Material.Tabs;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Platform;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 using AView = Android.Views.View;
 
@@ -65,7 +68,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		#endregion IOnClickListener
 
 		readonly IShellContext _shellContext;
-		AView _rootView;
+		CoordinatorLayout _rootView;
 		bool _selecting;
 		TabLayout _tablayout;
 		IShellTabLayoutAppearanceTracker _tabLayoutAppearanceTracker;
@@ -100,6 +103,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var context = Context;
 			var root = PlatformInterop.CreateShellCoordinatorLayout(context);
 			var appbar = PlatformInterop.CreateShellAppBar(context, Resource.Attribute.appBarLayoutStyle, root);
+
+			MauiWindowInsetListener.SetupViewWithLocalListener(root);
+
 			int actionBarHeight = context.GetActionBarHeight();
 
 			var shellToolbar = new Toolbar(shellSection);
@@ -192,6 +198,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			if (_rootView != null)
 			{
+				// Clean up the coordinator layout and local listener first
+				if (_rootView is not null)
+				{
+					MauiWindowInsetListener.RemoveViewWithLocalListener(_rootView);
+				}
+
 				UnhookEvents();
 
 				_shellContext?.Shell?.Toolbar?.Handler?.DisconnectHandler();

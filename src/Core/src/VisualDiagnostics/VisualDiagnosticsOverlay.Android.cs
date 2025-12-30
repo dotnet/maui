@@ -65,7 +65,7 @@ namespace Microsoft.Maui
 				return new Point();
 
 			var decorView = nativeActivity.Window?.DecorView;
-			var rectangle = new Android.Graphics.Rect();
+			var rectangle = new global::Android.Graphics.Rect();
 
 			decorView?.GetWindowVisibleDisplayFrame(rectangle);
 

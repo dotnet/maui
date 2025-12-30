@@ -7,11 +7,12 @@
         xmlns:pageModels="clr-namespace:MauiApp._1.PageModels"
         xmlns:shimmer="clr-namespace:Syncfusion.Maui.Toolkit.Shimmer;assembly=Syncfusion.Maui.Toolkit"
         x:Class="MauiApp._1.Pages.Controls.ProjectCardView"
+        SemanticProperties.Description="{Binding AccessibilityDescription}"
         Style="{StaticResource CardStyle}"
+        MinimumHeightRequest="250"
         x:DataType="models:Project">
     <shimmer:SfShimmer
         BackgroundColor="Transparent"
-        VerticalOptions="FillAndExpand"
         IsActive="{Binding IsBusy, Source={RelativeSource AncestorType={x:Type pageModels:MainPageModel}}, x:DataType=pageModels:IProjectTaskPageModel}">
         <shimmer:SfShimmer.CustomView>
             <VerticalStackLayout Spacing="15">
@@ -45,15 +46,15 @@
                     Size="{StaticResource IconSize}"/>
                     </Image.Source>
                 </Image>
-                <Label Text="{Binding Name}" TextColor="{StaticResource Gray400}" FontSize="14" TextTransform="Uppercase"/>
+                <Label Text="{Binding Name}" TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray400}}" FontSize="14" TextTransform="Uppercase"/>
                 <Label Text="{Binding Description}" LineBreakMode="WordWrap"/>
-                <HorizontalStackLayout Spacing="15" BindableLayout.ItemsSource="{Binding Tags}">
+                <FlexLayout Wrap="Wrap" Direction="Row" AlignItems="Start" JustifyContent="Start" BindableLayout.ItemsSource="{Binding Tags}">
                     <BindableLayout.ItemTemplate>
                         <DataTemplate x:DataType="models:Tag">
                             <controls:TagView />
                         </DataTemplate>
                     </BindableLayout.ItemTemplate>
-                </HorizontalStackLayout>
+                </FlexLayout>
             </VerticalStackLayout>
         </shimmer:SfShimmer.Content>
     </shimmer:SfShimmer>

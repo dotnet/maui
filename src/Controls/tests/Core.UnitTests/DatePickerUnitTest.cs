@@ -21,6 +21,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void TestMinimumDateNull()
+		{
+			DatePicker picker = new DatePicker();
+
+			picker.MinimumDate = null;
+
+			Assert.Null(picker.MinimumDate);
+		}
+
+		[Fact]
 		public void TestMaximumDate()
 		{
 			DatePicker picker = new DatePicker();
@@ -31,6 +41,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			picker.MaximumDate = new DateTime(1800, 1, 1);
 			Assert.Equal(new DateTime(2050, 1, 1), picker.MaximumDate);
+		}
+
+		[Fact]
+		public void TestMaximumDateNull()
+		{
+			DatePicker picker = new DatePicker();
+
+			picker.MaximumDate = null;
+
+			Assert.Null(picker.MaximumDate);
 		}
 
 		[Fact]
@@ -133,10 +153,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(selected);
 		}
 
-		public static object[] DateTimes = {
+		readonly static object[] DateTimes = {
 			new object[] { new DateTime (2006, 12, 20), new DateTime (2011, 11, 30) },
 			new object[] { new DateTime (1900, 1, 1), new DateTime (1999, 01, 15) }, // Minimum Date
-			new object[] { new DateTime (2006, 12, 20), new DateTime (2100, 12, 31) } // Maximum Date
+			new object[] { new DateTime (2006, 12, 20), new DateTime (2100, 12, 31) }, // Maximum Date
+			new object[] { new DateTime (2006, 12, 20), null },
+			new object[] { null, new DateTime (2006, 12, 20) },
 		};
 
 		public static IEnumerable<object[]> DateTimesData()
@@ -148,14 +170,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Theory, MemberData(nameof(DateTimesData))]
-		public void DatePickerSelectedEventArgs(DateTime initialDate, DateTime finalDate)
+		public void DatePickerSelectedEventArgs(DateTime? initialDate, DateTime? finalDate)
 		{
 			var datePicker = new DatePicker();
 			datePicker.Date = initialDate;
 
 			DatePicker pickerFromSender = null;
-			DateTime oldDate = new DateTime();
-			DateTime newDate = new DateTime();
+			DateTime? oldDate = new DateTime();
+			DateTime? newDate = new DateTime();
 
 			datePicker.DateSelected += (s, e) =>
 			{
@@ -171,13 +193,52 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(finalDate, newDate);
 		}
 
+		readonly static object[] DateTimesForSelectedTrigger = [
+			new object[] { new DateTime (2006, 12, 20), new DateTime (2011, 11, 30), true },
+			new object[] { new DateTime (1900, 1, 1), new DateTime (1999, 01, 15), true }, // Minimum Date
+			new object[] { new DateTime (2006, 12, 20), new DateTime (2100, 12, 31), true }, // Maximum Date
+			new object[] { new DateTime (2006, 12, 20), null, true },
+			new object[] { null, new DateTime (2006, 12, 20), true },
+			new object[] { new DateTime(2006, 12, 20), new DateTime (2006, 12, 20), false },
+			new object[] { null, null, false },
+		];
+
+		public static IEnumerable<object[]> DateTimesForSelectedTriggerData()
+		{
+			foreach (var o in DateTimesForSelectedTrigger)
+			{
+				yield return o as object[];
+			}
+		}
+
+		[Theory, MemberData(nameof(DateTimesForSelectedTriggerData))]
+		public void DatePickerSelectedEventTriggered(DateTime? initialDate, DateTime? finalDate, bool shouldDateSelectedTrigger)
+		{
+			bool isDateSelectedTriggered = false;
+
+			var datePicker = new DatePicker();
+			datePicker.Date = initialDate;
+
+			DateTime? oldDate = new DateTime();
+			DateTime? newDate = new DateTime();
+
+			datePicker.DateSelected += (s, e) =>
+			{
+				isDateSelectedTriggered = true;
+			};
+
+			datePicker.Date = finalDate;
+
+			Assert.Equal(shouldDateSelectedTrigger, isDateSelectedTriggered);
+		}
+
 		[Fact]
 		//https://bugzilla.xamarin.com/show_bug.cgi?id=32144
 		public void SetNullValueDoesNotThrow()
 		{
 			var datePicker = new DatePicker();
 			datePicker.SetValue(DatePicker.DateProperty, null);
-			Assert.Equal(DateTime.Today, datePicker.Date);
+			Assert.Null(datePicker.Date);
 		}
 
 		[Fact]
@@ -191,7 +252,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		//https://github.com/xamarin/Microsoft.Maui.Controls/issues/5784
+		//https://github.com/xamarin/Xamarin.Forms/issues/5784
 		public void SetMaxAndMinDateTimeToNow()
 		{
 			var datePicker = new DatePicker();

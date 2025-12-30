@@ -122,23 +122,23 @@ namespace Microsoft.Maui.Resizetizer
 			EnqueueMessage(logMessageQueue, data, logDataAvailable);
 		}
 
-		public void LogError(string message) => LogCodedError(code: null, message: message, file: null, lineNumber: 0);
+		public void LogError(string message) => LogCodedError(code: null, subcategory: null, message: message, file: null, lineNumber: 0);
 
-		public void LogError(string message, params object[] messageArgs) => LogCodedError(code: null, message: string.Format(message, messageArgs));
+		public void LogError(string message, params object[] messageArgs) => LogCodedError(code: null, subcategory: null, message: string.Format(message, messageArgs));
 
-		public void LogCodedError(string code, string message) => LogCodedError(code: code, message: message, file: null, lineNumber: 0);
+		public void LogCodedError(string code, string subcategory, string message) => LogCodedError(code: code, subcategory: subcategory, message: message, file: null, lineNumber: 0);
 
-		public void LogCodedError(string code, string message, params object[] messageArgs) => LogCodedError(code: code, message: string.Format(message, messageArgs), file: null, lineNumber: 0);
+		public void LogCodedError(string code, string subcategory, string message, params object[] messageArgs) => LogCodedError(code: code, subcategory: subcategory, message: string.Format(message, messageArgs), file: null, lineNumber: 0);
 
-		public void LogCodedError(string code, string file, int lineNumber, string message, params object[] messageArgs) => LogCodedError(code: code, message: string.Format(message, messageArgs), file: file, lineNumber: lineNumber);
+		public void LogCodedError(string code, string subcategory, string file, int lineNumber, string message, params object[] messageArgs) => LogCodedError(code: code, subcategory: subcategory, message: string.Format(message, messageArgs), file: file, lineNumber: lineNumber);
 
-		public void LogCodedError(string code, string message, string file, int lineNumber)
+		public void LogCodedError(string code, string subcategory, string message, string file, int lineNumber)
 		{
 			if (uiThreadId == Thread.CurrentThread.ManagedThreadId)
 			{
 #pragma warning disable 618
 				Log.LogError(
-					subcategory: null,
+					subcategory: subcategory,
 					errorCode: code,
 					helpKeyword: null,
 					file: file,
@@ -153,7 +153,7 @@ namespace Microsoft.Maui.Resizetizer
 			}
 
 			var data = new BuildErrorEventArgs(
-					subcategory: null,
+					subcategory: subcategory,
 					code: code,
 					file: file,
 					lineNumber: lineNumber,

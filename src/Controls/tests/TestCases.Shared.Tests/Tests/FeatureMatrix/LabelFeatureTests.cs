@@ -6,7 +6,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-public class LabelFeatureTests : UITest
+public class LabelFeatureTests : _GalleryUITest
 {
 	public const string LabelFeatureMatrix = "Label Feature Matrix";
 	public const string Options = "Options";
@@ -46,16 +46,11 @@ public class LabelFeatureTests : UITest
 	public const string LineBreakModeNoWrap = "LineBreakModeNoWrap";
 	public const string MainLabel = "MainLabel";
 
+	public override string GalleryPageName => LabelFeatureMatrix;
 
 	public LabelFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(LabelFeatureMatrix);
 	}
 
 	[Test, Order(1)]
@@ -524,6 +519,8 @@ public class LabelFeatureTests : UITest
 		App.EnterText(FontSizeEntry, "24");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
+		App.WaitForElement(MainLabel);
+		App.Tap(MainLabel);
 		VerifyScreenshot();
 	}
 
@@ -573,6 +570,8 @@ public class LabelFeatureTests : UITest
 		App.EnterText(CharacterSpacingEntry, "3");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
+		App.WaitForElement(MainLabel);
+		App.Tap(MainLabel);
 		VerifyScreenshot();
 	}
 
@@ -713,6 +712,8 @@ public class LabelFeatureTests : UITest
 		App.EnterText(MaxLinesEntry, "1");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
+		App.WaitForElement(MainLabel);
+		App.Tap(MainLabel);
 		VerifyScreenshot();
 	}
 
@@ -730,6 +731,8 @@ public class LabelFeatureTests : UITest
 		App.EnterText(LineHeightEntry, "2");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
+		App.WaitForElement(MainLabel);
+		App.Tap(MainLabel);
 		VerifyScreenshot();
 	}
 

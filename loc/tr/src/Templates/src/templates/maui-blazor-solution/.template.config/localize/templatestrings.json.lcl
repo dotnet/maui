@@ -167,7 +167,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Server]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Server]]></Val>
+            <Val><![CDATA[Sunucu]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

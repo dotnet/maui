@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             BackgroundColor="{AppThemeBinding Light=White,Dark=Black}"
+             x:Class="Maui.Controls.Sample.Issues.Issue15695">
+
+        <StackLayout>
+                <Switch x:Name="mauiSwitch"
+                        Margin="20"
+                        IsToggled="True"
+                        AutomationId="Switch"
+                        OffColor="Red"
+                        OnColor="Green"
+                        HorizontalOptions="Center"
+                        VerticalOptions="Center"/>
+                <Button Text="ToggleSwitch"
+                        AutomationId="ToggleSwitch"
+                        Clicked="OnButtonClicked"/>
+                <Button Text="Reset State"
+                        AutomationId="ResetStateButton"
+                        Clicked="Reset_State_Button_Clicked"/>
+                <Button Text="Set Null Color for off State"
+                        AutomationId="NullOffColorButton"
+                        Clicked="OffNullColorButtonClicked"/>
+                <Button Text="Change Theme"
+                        AutomationId="ChangeThemeButton"
+                        Clicked="ChangeThemeButtonClicked"/>
+
+        </StackLayout>
+</ContentPage>

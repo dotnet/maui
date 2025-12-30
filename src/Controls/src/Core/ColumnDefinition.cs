@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls
 			=> SetValue(WidthProperty, width);
 
 		/// <summary>Gets or sets the width of the column.</summary>
-		[System.ComponentModel.TypeConverter(typeof(GridLengthTypeConverter))]
+		[System.ComponentModel.TypeConverter(typeof(Converters.GridLengthTypeConverter))]
 		public GridLength Width
 		{
 			get { return (GridLength)GetValue(WidthProperty); }

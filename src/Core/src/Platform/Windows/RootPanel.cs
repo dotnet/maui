@@ -7,7 +7,7 @@ using Microsoft.UI.Xaml.Controls;
 namespace Microsoft.Maui.Platform
 {
 	[Obsolete("Use Microsoft.Maui.Platform.ContentPanel")]
-	public class RootPanel : Panel
+	public partial class RootPanel : Panel
 	{
 		internal Func<double, double, Size>? CrossPlatformMeasure { get; set; }
 		internal Func<Rect, Size>? CrossPlatformArrange { get; set; }

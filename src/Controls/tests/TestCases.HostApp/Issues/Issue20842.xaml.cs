@@ -13,8 +13,8 @@
 
 	public class PersonDataTemplateSelector : DataTemplateSelector
 	{
-		public required DataTemplate ValidTemplate { get; set; }
-		public required DataTemplate InvalidTemplate { get; set; }
+		public DataTemplate ValidTemplate { get; set; }
+		public DataTemplate InvalidTemplate { get; set; }
 
 		protected override DataTemplate OnSelectTemplate(object item, BindableObject container)
 		{

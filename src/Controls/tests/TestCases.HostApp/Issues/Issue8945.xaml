@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<controls:TestContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			       xmlns:controls="clr-namespace:Maui.Controls.Sample.Issues"
+             xmlns:cmp="clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls"
+             x:Class="Maui.Controls.Sample.Issues.Issue8945">
+  <ContentPage.Content>
+    <VerticalStackLayout
+        Padding="12, 24">
+        <Label      
+            AutomationId="WaitForStubControl"
+            Text="IsOpen" />
+        <DatePicker
+              x:Name="IsOpenDatePicker" AutomationId="IsOpenDatePicker" Date="01/01/2025" />
+        <Button AutomationId="OpenDatePickerButton" Text="Open DatePicker" Clicked="OnOpenDatePickerClicked" />
+        <Button AutomationId="CloseDatePickerButton" Text="Close DatePicker" Clicked="OnCloseDatePickerClicked" />
+      <Label x:Name="DatePickerStatusLabel" AutomationId="DatePickerStatusLabel" Text="-" />
+      <TimePicker
+            x:Name="IsOpenTimePicker" AutomationId="IsOpenTimePicker" Time="4:15:30" />
+      <Button AutomationId="OpenTimePickerButton" Text="Open TimePicker" Clicked="OnOpenTimePickerClicked" />
+      <Button AutomationId="CloseTimePickerButton" Text="Close TimePicker" Clicked="OnCloseTimePickerClicked" />
+      <Label x:Name="TimePickerStatusLabel" AutomationId="TimePickerStatusLabel" Text="-" />
+      <Picker
+            x:Name="IsOpenPicker" AutomationId="IsOpenPicker"
+            Title="Select an item">
+          <Picker.Items>
+            <x:String>Item 1</x:String>
+            <x:String>Item 2</x:String>
+            <x:String>Item 3</x:String>
+          </Picker.Items>
+      </Picker>
+        <Button AutomationId="OpenPickerButton" Text="Open Picker" Clicked="OnOpenPickerClicked" />
+        <Button AutomationId="ClosePickerButton" Text="Close Picker" Clicked="OnClosePickerClicked" />
+        <Label x:Name="PickerStatusLabel" AutomationId="PickerStatusLabel" Text="-" />
+    </VerticalStackLayout>
+  </ContentPage.Content>
+</controls:TestContentPage>

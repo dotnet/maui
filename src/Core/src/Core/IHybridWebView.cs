@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui
 {
-	public interface IHybridWebView : IView
+	public interface IHybridWebView : IView, IWebRequestInterceptingWebView, IInitializationAwareWebView
 	{
 		/// <summary>
 		/// Specifies the file within the <see cref="HybridRoot"/> that should be served as the default file. The

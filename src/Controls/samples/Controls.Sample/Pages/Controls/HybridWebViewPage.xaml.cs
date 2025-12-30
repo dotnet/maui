@@ -74,6 +74,52 @@ namespace Maui.Controls.Sample.Pages
 			Dispatcher.Dispatch(() => statusText.Text += Environment.NewLine + e.Message);
 		}
 
+		private async void InvokeJSExceptionButton_Clicked(object sender, EventArgs e)
+		{
+			var statusResult = "";
+
+			try
+			{
+				statusResult += Environment.NewLine + "Calling JavaScript function that throws exception...";
+				var result = await hwv.InvokeJavaScriptAsync<string>(
+					"ThrowJavaScriptError",
+					SampleInvokeJsContext.Default.String,
+					[],
+					[]);
+				
+				statusResult += Environment.NewLine + "JavaScript function unexpectedly succeeded with result: " + result;
+			}
+			catch (Exception ex)
+			{
+				statusResult += Environment.NewLine + $"Caught JavaScript exception in C#: {ex.GetType().Name} - {ex.Message}";
+			}
+
+			Dispatcher.Dispatch(() => statusText.Text += statusResult);
+		}
+
+		private async void InvokeJSAsyncExceptionButton_Clicked(object sender, EventArgs e)
+		{
+			var statusResult = "";
+
+			try
+			{
+				statusResult += Environment.NewLine + "Calling async JavaScript function that throws exception...";
+				var result = await hwv.InvokeJavaScriptAsync<string>(
+					"ThrowJavaScriptErrorAsync",
+					SampleInvokeJsContext.Default.String,
+					[],
+					[]);
+				
+				statusResult += Environment.NewLine + "Async JavaScript function unexpectedly succeeded with result: " + result;
+			}
+			catch (Exception ex)
+			{
+				statusResult += Environment.NewLine + $"Caught async JavaScript exception in C#: {ex.GetType().Name} - {ex.Message}";
+			}
+
+			Dispatcher.Dispatch(() => statusText.Text += statusResult);
+		}
+
 		public class ComputationResult
 		{
 			public double result { get; set; }
@@ -152,6 +198,21 @@ namespace Maui.Controls.Sample.Pages
 					Message = "Hello from C#! " + s,
 					Value = i,
 				};
+			}
+
+			// Demo method that throws an exception to showcase error handling
+			public void ThrowException()
+			{
+				Debug.WriteLine("ThrowException called - about to throw");
+				throw new InvalidOperationException("This is a test exception thrown from C# code!");
+			}
+
+			// Demo async method that throws an exception
+			public async Task<string> ThrowExceptionAsync()
+			{
+				Debug.WriteLine("ThrowExceptionAsync called - about to throw");
+				await Task.Delay(100);
+				throw new ArgumentException("This is an async test exception thrown from C# code!");
 			}
 		}
 

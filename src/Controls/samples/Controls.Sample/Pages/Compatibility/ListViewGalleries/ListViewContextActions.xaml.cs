@@ -20,13 +20,13 @@ namespace Maui.Controls.Sample.Pages
 		private void OnDetailClicked(object sender, EventArgs e)
 		{
 			var mi = ((MenuItem)sender);
-			DisplayAlert("Detail Action", $"Details for item {mi.CommandParameter}", "OK");
+			DisplayAlertAsync("Detail Action", $"Details for item {mi.CommandParameter}", "OK");
 		}
 
 		private void OnDeleteClicked(object sender, EventArgs e)
 		{
 			var mi = ((MenuItem)sender);
-			DisplayAlert("Delete Action", $"Deleting item {mi.CommandParameter}!", "OK");
+			DisplayAlertAsync("Delete Action", $"Deleting item {mi.CommandParameter}!", "OK");
 		}
 
 		private record ContextListViewItem(int Index, string Text);

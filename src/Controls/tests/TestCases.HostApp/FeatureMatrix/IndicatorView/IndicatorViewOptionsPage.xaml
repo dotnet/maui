@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.IndicatorViewOptionsPage"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:DataType="local:IndicatorViewViewModel"
+             Title="IndicatorView Options">
+        <ContentPage.ToolbarItems>
+                <ToolbarItem Text="Apply"
+                             Clicked="ApplyButton_Clicked"/>
+        </ContentPage.ToolbarItems>
+        <Grid Padding="20"
+              RowSpacing="10"
+              ColumnSpacing="10"
+              ColumnDefinitions="*">
+
+                <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+
+                <!-- IndicatorColor -->
+                <Label Grid.Row="0"
+                       Text="IndicatorColor"
+                       FontAttributes="Bold"
+                       AutomationId="IndicatorColorLabel"/>
+                <Grid Grid.Row="1"
+                      ColumnDefinitions="*,*,*,*"
+                      ColumnSpacing="5">
+                        <Button Grid.Column="0"
+                                Text="Brown"
+                                BackgroundColor="Brown"
+                                Clicked="OnIndicatorColorClicked"
+                                AutomationId="IndicatorColorBrownButton"/>
+                        <Button Grid.Column="1"
+                                Text="Blue"
+                                BackgroundColor="Blue"
+                                Clicked="OnIndicatorColorClicked"
+                                AutomationId="IndicatorColorBlueButton"/>
+                        <Button Grid.Column="2"
+                                Text="Red"
+                                BackgroundColor="Red"
+                                Clicked="OnIndicatorColorClicked"
+                                AutomationId="IndicatorColorRedButton"/>
+                        <Button Grid.Column="3"
+                                Text="Green"
+                                BackgroundColor="Green"
+                                Clicked="OnIndicatorColorClicked"
+                                AutomationId="IndicatorColorGreenButton"/>
+                </Grid>
+
+                <!-- SelectedIndicatorColor -->
+                <Label Grid.Row="2"
+                       Text="SelectedIndicatorColor"
+                       FontAttributes="Bold"
+                       AutomationId="SelectedIndicatorColorLabel"/>
+                <Grid Grid.Row="3"
+                      ColumnDefinitions="*,*,*,*"
+                      ColumnSpacing="5">
+                        <Button Grid.Column="0"
+                                Text="Gray"
+                                BackgroundColor="Gray"
+                                Clicked="OnSelectedIndicatorColorClicked"
+                                AutomationId="SelectedIndicatorColorGrayButton"/>
+                        <Button Grid.Column="1"
+                                Text="DarkBlue"
+                                BackgroundColor="DarkBlue"
+                                Clicked="OnSelectedIndicatorColorClicked"
+                                AutomationId="SelectedIndicatorColorDarkBlueButton"/>
+                        <Button Grid.Column="2"
+                                Text="Orange"
+                                BackgroundColor="Orange"
+                                Clicked="OnSelectedIndicatorColorClicked"
+                                AutomationId="SelectedIndicatorColorOrangeButton"/>
+                        <Button Grid.Column="3"
+                                Text="Purple"
+                                BackgroundColor="Purple"
+                                Clicked="OnSelectedIndicatorColorClicked"
+                                AutomationId="SelectedIndicatorColorPurpleButton"/>
+                </Grid>
+
+                <!-- IndicatorSize + Position -->
+                <Grid Grid.Row="4"
+                      ColumnDefinitions="*,*"
+                      ColumnSpacing="10">
+                        <StackLayout Grid.Column="0"
+                                     Spacing="10">
+                                <Label Text="IndicatorSize"
+                                       FontAttributes="Bold"
+                                       AutomationId="IndicatorSizeLabel"/>
+                                <Stepper Value="{Binding IndicatorSize}"
+                                         Minimum="1"
+                                         Maximum="100"
+                                         Increment="10"
+                                         AutomationId="IndicatorSizeStepper"/>
+                        </StackLayout>
+                        <StackLayout Grid.Column="1"
+                                     Spacing="10">
+                                <Label Text="Position"
+                                       FontAttributes="Bold"
+                                       AutomationId="PositionLabel"/>
+                                <Stepper Value="{Binding Position}"
+                                         Minimum="0"
+                                         Maximum="50"
+                                         Increment="1"
+                                         AutomationId="PositionStepper"/>
+                        </StackLayout>
+
+                </Grid>
+
+                <!-- IndicatorShape & HideSingle -->
+                <Grid Grid.Row="5"
+                      ColumnDefinitions="*,*"
+                      ColumnSpacing="10">
+                        <StackLayout Grid.Column="0">
+                                <Label Text="IndicatorShape"
+                                       FontAttributes="Bold"
+                                       AutomationId="IndicatorShapeLabel"/>
+                                <Grid ColumnDefinitions="*,*"
+                                      ColumnSpacing="5">
+                                        <RadioButton Grid.Column="0"
+                                                     Content="Circle"
+                                                     GroupName="IndicatorShape"
+                                                     IsChecked="True"
+                                                     CheckedChanged="OnIndicatorsShapeChanged"
+                                                     AutomationId="IndicatorShapeCircleRadioButton"/>
+                                        <RadioButton Grid.Column="1"
+                                                     Content="Square"
+                                                     GroupName="IndicatorShape"
+                                                     CheckedChanged="OnIndicatorsShapeChanged"
+                                                     AutomationId="IndicatorShapeSquareRadioButton"/>
+                                </Grid>
+                        </StackLayout>
+                        <StackLayout Grid.Column="1">
+                                <Label Text="HideSingle"
+                                       FontAttributes="Bold"
+                                       AutomationId="HideSingleLabel"/>
+                                <Grid ColumnDefinitions="*,*"
+                                      ColumnSpacing="5">
+                                        <RadioButton Grid.Column="0"
+                                                     Content="True"
+                                                     IsChecked="True"
+                                                     GroupName="HideSingle"
+                                                     CheckedChanged="OnHideSingleChanged"
+                                                     AutomationId="HideSingleTrueRadioButton"/>
+                                        <RadioButton Grid.Column="1"
+                                                     Content="False"
+                                                     GroupName="HideSingle"
+                                                     CheckedChanged="OnHideSingleChanged"
+                                                     AutomationId="HideSingleFalseRadioButton"/>
+                                </Grid>
+                        </StackLayout>
+                </Grid>
+
+                <!-- FlowDirection & Shadow -->
+                <Grid Grid.Row="6"
+                      ColumnDefinitions="*,*"
+                      ColumnSpacing="10">
+                        <StackLayout Grid.Column="0">
+                                <Label Text="FlowDirection"
+                                       FontAttributes="Bold"
+                                       AutomationId="FlowDirectionLabel"/>
+                                <Grid ColumnDefinitions="*,*"
+                                      ColumnSpacing="5">
+                                        <RadioButton Grid.Column="0"
+                                                     Content="LTR"
+                                                     GroupName="FlowDirection"
+                                                     IsChecked="True"
+                                                     CheckedChanged="OnFlowDirectionChanged"
+                                                     AutomationId="FlowDirectionLTRRadioButton"/>
+                                        <RadioButton Grid.Column="1"
+                                                     Content="RTL"
+                                                     GroupName="FlowDirection"
+                                                     CheckedChanged="OnFlowDirectionChanged"
+                                                     AutomationId="FlowDirectionRTLRadioButton"/>
+                                </Grid>
+                        </StackLayout>
+                        <StackLayout Grid.Column="1">
+                                <Label Text="Shadow"
+                                       FontAttributes="Bold"
+                                       AutomationId="ShadowLabel"/>
+                                <Grid ColumnDefinitions="*,*"
+                                      ColumnSpacing="5">
+                                        <RadioButton Grid.Column="1"
+                                                     Content="False"
+                                                     GroupName="Shadow"
+                                                     IsChecked="True"
+                                                     CheckedChanged="OnShadowChanged"
+                                                     AutomationId="ShadowFalseRadioButton"/>
+                                        <RadioButton Grid.Column="0"
+                                                     Content="True"
+                                                     GroupName="Shadow"
+                                                     CheckedChanged="OnShadowChanged"
+                                                     AutomationId="ShadowTrueRadioButton"/>
+                                </Grid>
+                        </StackLayout>
+                </Grid>
+
+                <!-- IsEnabled & IsVisible -->
+                <Grid Grid.Row="7"
+                      ColumnDefinitions="*,*"
+                      ColumnSpacing="10">
+                        <StackLayout Grid.Column="0">
+                                <Label Text="IsEnabled"
+                                       FontAttributes="Bold"
+                                       AutomationId="IsEnabledLabel"/>
+                                <Grid ColumnDefinitions="*,*"
+                                      ColumnSpacing="5">
+                                        <RadioButton Grid.Column="0"
+                                                     Content="True"
+                                                     GroupName="IsEnabled"
+                                                     IsChecked="True"
+                                                     CheckedChanged="OnIsEnabledChanged"
+                                                     AutomationId="IsEnabledTrueRadioButton"/>
+                                        <RadioButton Grid.Column="1"
+                                                     Content="False"
+                                                     GroupName="IsEnabled"
+                                                     CheckedChanged="OnIsEnabledChanged"
+                                                     AutomationId="IsEnabledFalseRadioButton"/>
+                                </Grid>
+                        </StackLayout>
+                        <StackLayout Grid.Column="1">
+                                <Label Text="IsVisible"
+                                       FontAttributes="Bold"
+                                       AutomationId="IsVisibleLabel"/>
+                                <Grid ColumnDefinitions="*,*"
+                                      ColumnSpacing="5">
+                                        <RadioButton Grid.Column="0"
+                                                     Content="True"
+                                                     GroupName="IsVisible"
+                                                     IsChecked="True"
+                                                     CheckedChanged="OnIsVisibleChanged"
+                                                     AutomationId="IsVisibleTrueRadioButton"/>
+                                        <RadioButton Grid.Column="1"
+                                                     Content="False"
+                                                     GroupName="IsVisible"
+                                                     CheckedChanged="OnIsVisibleChanged"
+                                                     AutomationId="IsVisibleFalseRadioButton"/>
+                                </Grid>
+                        </StackLayout>
+                </Grid>
+
+                <!-- MaximumVisible -->
+                <Label Grid.Row="8"
+                       Text="MaximumVisible"
+                       FontAttributes="Bold"
+                       AutomationId="MaximumVisibleLabel"/>
+                <StackLayout Grid.Row="9"
+                             Spacing="10">
+                        <Stepper Value="{Binding MaximumVisible}"
+                                 Minimum="1"
+                                 Maximum="100"
+                                 Increment="1"
+                                 AutomationId="MaximumVisibleStepper"/>
+                </StackLayout>
+
+                <!-- IndicatorTemplate -->
+                <Label Grid.Row="10"
+                       Text="IndicatorTemplate"
+                       FontAttributes="Bold"
+                       AutomationId="IndicatorTemplateLabel"/>
+                <Grid Grid.Row="11"
+                      ColumnDefinitions="*,*,*"
+                      ColumnSpacing="5">
+                        <Button x:Name="IconTemplateButton"
+                                Grid.Column="0"
+                                Text="Icon"
+                                Clicked="OnIconTemplateClicked"
+                                TextColor="Black"
+                                AutomationId="IconTemplateButton"/>
+
+                        <Button x:Name="StarTemplateButton"
+                                Grid.Column="1"
+                                Text="Star"
+                                Clicked="OnStarTemplateClicked"
+                                TextColor="Black"
+                                AutomationId="StarTemplateButton"/>
+
+                        <Button x:Name="HeartTemplateButton"
+                                Grid.Column="2"
+                                Text="Heart"
+                                Clicked="OnHeartTemplateClicked"
+                                TextColor="Black"
+                                AutomationId="HeartTemplateButton"/>
+                </Grid>
+        </Grid>
+</ContentPage>

@@ -1,17 +1,17 @@
 {
   "author": "Microsoft",
-  "name": "マルチプロジェクト アプリの.NET MAUI",
+  "name": ".NET MAUI マルチプロジェクト アプリ",
   "description": "複数の個別のアプリ プロジェクトを使用して、iOS、Android、Mac Catalyst、WinUI 用の.NET MAUI アプリケーションを作成するためのプロジェクト。",
   "postActions/openInEditor/description": "エディターで MainPage.xaml を開きます。",
-  "symbols/applicationId/description": "プロジェクト内の $(ApplicationId) をオーバーライドします",
-  "symbols/Framework/description": "プロジェクトのターゲット フレームワークです。",
+  "symbols/applicationId/description": "プロジェクト内の $(ApplicationId) をオーバーライドする",
+  "symbols/Framework/description": "プロジェクトのターゲット フレームワーク。",
   "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "ターゲット DOTNET_TFM_VALUE",
   "symbols/android/displayName": "Android",
   "symbols/android/description": "Android アプリ ヘッド プロジェクトを含める",
   "symbols/ios/displayName": "iOS",
   "symbols/ios/description": "iOS アプリ ヘッド プロジェクトを含める",
-  "symbols/maccatalyst/displayName": "Mac Mac Mac を使用した macOS",
-  "symbols/maccatalyst/description": "macOS アプリ ヘッド プロジェクトを含める (Mac Mac Mac を使用)",
-  "symbols/winui/displayName": "WinUI 3 を使用している Windows",
+  "symbols/maccatalyst/displayName": "Mac Catalyst を使用する macOS",
+  "symbols/maccatalyst/description": "macOS アプリ ヘッド プロジェクトを含める (Mac Catalyst を使用)",
+  "symbols/winui/displayName": "WinUI 3 を使用する Windows",
   "symbols/winui/description": "Windows アプリ ヘッド プロジェクトを含める (WinUI 3 を使用)"
 }

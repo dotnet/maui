@@ -10,8 +10,14 @@
 @using Microsoft.AspNetCore.Components.Web.Virtualization
 @using Microsoft.JSInterop
 @using MauiApp._1.Shared
-@using MauiApp._1.Web
-@*#if (UseWebAssembly)
+@using MauiApp._1.Shared.Layout
+@*#if (UseWebAssembly) -->
 @using MauiApp._1.Web.Client
-#endif*@
+##endif*@
+@*#if (UseServer && UseWebAssembly && InteractiveAtRoot) -->
+@using MauiApp._1.Web.Client.Layout
+##endif*@
 @using MauiApp._1.Web.Components
+@*#if ((UseServer && !UseWebAssembly) && InteractiveAtRoot) -->
+@using MauiApp._1.Web.Components.Layout
+##endif*@

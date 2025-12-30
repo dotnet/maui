@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -13,43 +13,38 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			InitializeComponent();
 		}
 
-		public Bz28556(bool useCompiledXaml)
+		[Collection("Issue")]
+		public class Tests
 		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
-		{
-			[TestCase(true)]
-			[TestCase(false)]
-			public void SettersAppliedBeforeTriggers(bool useCompiledXaml)
+			[Theory]
+			[XamlInflatorData]
+			internal void SettersAppliedBeforeTriggers(XamlInflator inflator)
 			{
-				var layout = new Bz28556(useCompiledXaml);
+				var layout = new Bz28556(inflator);
 
-				Assert.AreEqual(Colors.Yellow, layout.entry.TextColor);
-				Assert.AreEqual(Colors.Green, layout.entry.BackgroundColor);
+				Assert.Equal(Colors.Yellow, layout.entry.TextColor);
+				Assert.Equal(Colors.Green, layout.entry.BackgroundColor);
 
-				Assert.AreEqual(Colors.Red, layout.disableEntry.TextColor);
-				Assert.AreEqual(Colors.Purple, layout.disableEntry.BackgroundColor);
+				Assert.Equal(Colors.Red, layout.disableEntry.TextColor);
+				Assert.Equal(Colors.Purple, layout.disableEntry.BackgroundColor);
 
 				layout.entry.IsEnabled = false;
 				layout.disableEntry.IsEnabled = true;
 
-				Assert.AreEqual(Colors.Yellow, layout.disableEntry.TextColor);
-				Assert.AreEqual(Colors.Green, layout.disableEntry.BackgroundColor);
+				Assert.Equal(Colors.Yellow, layout.disableEntry.TextColor);
+				Assert.Equal(Colors.Green, layout.disableEntry.BackgroundColor);
 
-				Assert.AreEqual(Colors.Red, layout.entry.TextColor);
-				Assert.AreEqual(Colors.Purple, layout.entry.BackgroundColor);
+				Assert.Equal(Colors.Red, layout.entry.TextColor);
+				Assert.Equal(Colors.Purple, layout.entry.BackgroundColor);
 
 				layout.entry.IsEnabled = true;
 				layout.disableEntry.IsEnabled = false;
 
-				Assert.AreEqual(Colors.Yellow, layout.entry.TextColor);
-				Assert.AreEqual(Colors.Green, layout.entry.BackgroundColor);
+				Assert.Equal(Colors.Yellow, layout.entry.TextColor);
+				Assert.Equal(Colors.Green, layout.entry.BackgroundColor);
 
-				Assert.AreEqual(Colors.Red, layout.disableEntry.TextColor);
-				Assert.AreEqual(Colors.Purple, layout.disableEntry.BackgroundColor);
+				Assert.Equal(Colors.Red, layout.disableEntry.TextColor);
+				Assert.Equal(Colors.Purple, layout.disableEntry.BackgroundColor);
 			}
 		}
 	}

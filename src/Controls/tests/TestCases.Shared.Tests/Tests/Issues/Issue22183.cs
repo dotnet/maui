@@ -12,6 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "RadioButton with value cannot display selected state correctly";
 
+
 		[Test]
 		[Category(UITestCategories.RadioButton)]
 		public void RadioButtonWithValueChangeSelected()

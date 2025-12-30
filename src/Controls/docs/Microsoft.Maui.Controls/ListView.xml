@@ -90,7 +90,7 @@
         <remarks>
           <para>For memory and performance reasons, application developers should strongly prefer <see cref="F:Microsoft.Maui.Controls.ListViewCachingStrategy.RecycleElement" />, when possible. See <see cref="T:Microsoft.Maui.Controls.ListViewCachingStrategy" /> for more details.</para>
           <para>
-            <block type="note">When developers specify <see cref="F:Microsoft.Maui.Controls.ListViewCachingStrategy.RecycleElement" />, <c>OnElementChanged</c> events are not raised when cells are recycled. Instead,  the cell is retained and its property values change when the binding context is updated to that of an available cell, <c>OnElementPropertyChanged</c> events are raised. Application developers should remember to listen for the correct events, and should note that their renderers will need to be updated if the default behavior changes to <see cref="F:Microsoft.Maui.Controls.ListViewCachingStrategy.RecycleElement" /> in a future release. </block>
+            When developers specify <see cref="F:Microsoft.Maui.Controls.ListViewCachingStrategy.RecycleElement" />, <c>OnElementChanged</c> events are not raised when cells are recycled. Instead,  the cell is retained and its property values change when the binding context is updated to that of an available cell, <c>OnElementPropertyChanged</c> events are raised. Application developers should remember to listen for the correct events, and should note that their renderers will need to be updated if the default behavior changes to <see cref="F:Microsoft.Maui.Controls.ListViewCachingStrategy.RecycleElement" /> in a future release.
           </para>
         </remarks>
       </Docs>
@@ -1892,7 +1892,7 @@ ListView CreateListView()
         <summary>Application developers override this method to register event handlers for list view items.</summary>
         <remarks>
           <para>Application developers must call <see cref="M:Microsoft.Maui.Controls.ListView.SetupContent(Microsoft.Maui.Controls.Cell,System.Int32)" /> before performing any other action when overriding this method.</para>
-          <block type="note">Application developers who override this method to allocate resources must override <see cref="M:Microsoft.Maui.Controls.ListView.UnhookContent(Microsoft.Maui.Controls.Cell)" /> in order to deallocate them.</block>
+          <para>Application developers who override this method to allocate resources must override <see cref="M:Microsoft.Maui.Controls.ListView.UnhookContent(Microsoft.Maui.Controls.Cell)" /> in order to deallocate them.</para>
         </remarks>
       </Docs>
     </Member>
@@ -1920,7 +1920,7 @@ ListView CreateListView()
         <summary>Application developers override this method to unregister event handlers for list view items that they registered in <see cref="M:Microsoft.Maui.Controls.ListView.SetupContent(Microsoft.Maui.Controls.Cell,System.Int32)" />.</summary>
         <remarks>
           <para>Application developers must call <see cref="M:Microsoft.Maui.Controls.ListView.UnhookContent(Microsoft.Maui.Controls.Cell)" /> before performing any other action when overriding this method.</para>
-          <block type="note">Application developers who override <see cref="M:Microsoft.Maui.Controls.ListView.SetupContent(Microsoft.Maui.Controls.Cell,System.Int32)" /> to allocate resources must override this method in order to deallocate them.</block>
+          <para>Application developers who override <see cref="M:Microsoft.Maui.Controls.ListView.SetupContent(Microsoft.Maui.Controls.Cell,System.Int32)" /> to allocate resources must override this method in order to deallocate them.</para>
         </remarks>
       </Docs>
     </Member>

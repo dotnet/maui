@@ -136,7 +136,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			DatePicker view = Element;
 			((IElementController)view).SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, true);
 
-			ShowPickerDialog(view.Date.Year, view.Date.Month - 1, view.Date.Day);
+			var year = view.Date?.Year ?? DateTime.Today.Year;
+			var month = (view.Date?.Month ?? DateTime.Today.Month) - 1;
+			var day = view.Date?.Day ?? DateTime.Today.Day;
+
+			ShowPickerDialog(year, month, day);
 		}
 
 		void ShowPickerDialog(int year, int month, int day)
@@ -164,19 +168,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			Element.Unfocus();
 		}
 
-		void SetDate(DateTime date)
+		void SetDate(DateTime? date)
 		{
 			if (String.IsNullOrWhiteSpace(Element.Format))
 			{
-				EditText.Text = date.ToShortDateString();
+				EditText.Text = date?.ToShortDateString();
 			}
 			else if (Element.Format.Contains('/', StringComparison.Ordinal))
 			{
-				EditText.Text = date.ToString(Element.Format, CultureInfo.InvariantCulture);
+				EditText.Text = date?.ToString(Element.Format, CultureInfo.InvariantCulture);
 			}
 			else
 			{
-				EditText.Text = date.ToString(Element.Format);
+				EditText.Text = date?.ToString(Element.Format);
 			}
 		}
 
@@ -198,7 +202,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			if (_dialog != null)
 			{
-				_dialog.DatePicker.MaxDate = (long)Element.MaximumDate.ToUniversalTime().Subtract(DateTime.MinValue.AddYears(1969)).TotalMilliseconds;
+				if (Element.MaximumDate is null)
+				{
+					_dialog.DatePicker.MaxDate = (long)DateTime.MaxValue.ToUniversalTime()
+						.Subtract(DateTime.MinValue.AddYears(1969)).TotalMilliseconds;
+
+					return;
+				}
+
+				_dialog.DatePicker.MaxDate = (long)Element.MaximumDate.Value
+					.ToUniversalTime().Subtract(DateTime.MinValue.AddYears(1969)).TotalMilliseconds;
 			}
 		}
 
@@ -207,7 +220,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			if (_dialog != null)
 			{
-				_dialog.DatePicker.MinDate = (long)Element.MinimumDate.ToUniversalTime().Subtract(DateTime.MinValue.AddYears(1969)).TotalMilliseconds;
+				if (Element.MinimumDate is null)
+				{
+					_dialog.DatePicker.MinDate = (long)DateTime.MinValue.ToUniversalTime()
+						.Subtract(DateTime.MinValue.AddYears(1969)).TotalMilliseconds;
+
+					return;
+				}
+
+				_dialog.DatePicker.MinDate = (long)Element.MinimumDate.Value
+					.ToUniversalTime().Subtract(DateTime.MinValue.AddYears(1969)).TotalMilliseconds;
 			}
 		}
 

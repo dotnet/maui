@@ -5,6 +5,7 @@ using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
+
 public class Issue28530 : _IssuesUITest
 {
 	public Issue28530(TestDevice device) : base(device) { }

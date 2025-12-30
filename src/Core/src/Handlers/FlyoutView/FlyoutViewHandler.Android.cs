@@ -4,6 +4,8 @@ using Android.App.Roles;
 using Android.Runtime;
 using Android.Views;
 using AndroidX.AppCompat.Widget;
+using AndroidX.CoordinatorLayout.Widget;
+using AndroidX.Core.View;
 using AndroidX.DrawerLayout.Widget;
 using AndroidX.Fragment.App;
 using AndroidX.Lifecycle;
@@ -244,8 +246,6 @@ namespace Microsoft.Maui.Handlers
 				DrawerLayout.AddView(flyoutView, layoutParameters);
 			}
 
-			DrawerLayout.CloseDrawer(flyoutView);
-
 			if (VirtualView is IToolbarElement te && te.Toolbar?.Handler is ToolbarHandler th)
 				th.SetupWithDrawerLayout(DrawerLayout);
 		}
@@ -285,6 +285,13 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(View platformView)
 		{
+			MauiWindowInsetListener.RegisterParentForChildViews(platformView);
+
+			if (_navigationRoot is CoordinatorLayout cl)
+			{
+				MauiWindowInsetListener.SetupViewWithLocalListener(cl);
+			}
+
 			if (platformView is DrawerLayout dl)
 			{
 				dl.DrawerStateChanged += OnDrawerStateChanged;
@@ -294,6 +301,13 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(View platformView)
 		{
+			MauiWindowInsetListener.UnregisterView(platformView);
+			if (_navigationRoot is CoordinatorLayout cl)
+			{
+				MauiWindowInsetListener.UnregisterView(cl);
+				_navigationRoot = null;
+			}
+
 			if (platformView is DrawerLayout dl)
 			{
 				dl.DrawerStateChanged -= OnDrawerStateChanged;

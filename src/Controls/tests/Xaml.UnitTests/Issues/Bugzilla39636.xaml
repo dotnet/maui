@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests"
+             x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Bugzilla39636">
+    <ContentPage.Resources>
+        <OnPlatform x:Key="SizeMedium" x:TypeArguments="x:Double">
+            <On Platform="iOS" Value="40"/>
+            <On Platform="Android" Value="30"/>
+            <On Platform="UWP" Value="60"/>
+        </OnPlatform>
+    </ContentPage.Resources>
+    <Label x:Name="testLabel" Text="Test" WidthRequest="{StaticResource SizeMedium}" />
+</ContentPage>

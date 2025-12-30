@@ -19,7 +19,9 @@ namespace Microsoft.Maui.Compatibility.Core.UnitTests
 			var builder = MauiApp.CreateBuilder().UseMauiApp<ApplicationStub>();
 
 			if (useCompatibility)
+#pragma warning disable 0618
 				builder = builder.UseMauiCompatibility();
+#pragma warning restore 0618
 
 			var mauiApp =
 				builder.ConfigureMauiHandlers(collection =>

@@ -35,20 +35,15 @@
 ~Microsoft.Maui.Controls.Xaml.DynamicResourceExtension.Key.get -> string
 ~Microsoft.Maui.Controls.Xaml.DynamicResourceExtension.Key.set -> void
 ~Microsoft.Maui.Controls.Xaml.DynamicResourceExtension.ProvideValue(System.IServiceProvider serviceProvider) -> object
-~Microsoft.Maui.Controls.Xaml.FontImageExtension.Color.get -> Microsoft.Maui.Graphics.Color
-~Microsoft.Maui.Controls.Xaml.FontImageExtension.Color.set -> void
-~Microsoft.Maui.Controls.Xaml.FontImageExtension.FontFamily.get -> string
-~Microsoft.Maui.Controls.Xaml.FontImageExtension.FontFamily.set -> void
-~Microsoft.Maui.Controls.Xaml.FontImageExtension.Glyph.get -> string
-~Microsoft.Maui.Controls.Xaml.FontImageExtension.Glyph.set -> void
-~Microsoft.Maui.Controls.Xaml.FontImageExtension.ProvideValue(System.IServiceProvider serviceProvider) -> Microsoft.Maui.Controls.ImageSource
 ~Microsoft.Maui.Controls.Xaml.Internals.SimpleValueTargetProvider.FindByName(string name) -> object
 ~Microsoft.Maui.Controls.Xaml.Internals.SimpleValueTargetProvider.RootObject.get -> object
 ~Microsoft.Maui.Controls.Xaml.Internals.SimpleValueTargetProvider.SimpleValueTargetProvider(object[] objectAndParents, object targetProperty, Microsoft.Maui.Controls.Internals.INameScope scope) -> void
 ~Microsoft.Maui.Controls.Xaml.Internals.SimpleValueTargetProvider.SimpleValueTargetProvider(object[] objectAndParents, object targetProperty, Microsoft.Maui.Controls.Internals.INameScope[] scopes, bool notused) -> void
 ~Microsoft.Maui.Controls.Xaml.Internals.SimpleValueTargetProvider.SimpleValueTargetProvider(object[] objectAndParents, object targetProperty, Microsoft.Maui.Controls.Internals.INameScope[] scopes, object rootObject) -> void
+~Microsoft.Maui.Controls.Xaml.Internals.XamlDataTypeProvider.XamlDataTypeProvider(string dataType) -> void
 ~Microsoft.Maui.Controls.Xaml.Internals.XamlServiceProvider.Add(System.Type type, object service) -> void
 ~Microsoft.Maui.Controls.Xaml.Internals.XamlServiceProvider.GetService(System.Type serviceType) -> object
+~Microsoft.Maui.Controls.Xaml.Internals.XamlServiceProvider.XamlServiceProvider(object rootObject) -> void
 ~Microsoft.Maui.Controls.Xaml.Internals.XamlTypeResolver.XamlTypeResolver(System.Xml.IXmlNamespaceResolver namespaceResolver, System.Reflection.Assembly currentAssembly) -> void
 ~Microsoft.Maui.Controls.Xaml.Internals.XmlLineInfoProvider.XmlLineInfo.get -> System.Xml.IXmlLineInfo
 ~Microsoft.Maui.Controls.Xaml.Internals.XmlLineInfoProvider.XmlLineInfoProvider(System.Xml.IXmlLineInfo xmlLineInfo) -> void
@@ -149,11 +144,10 @@ Microsoft.Maui.Controls.Xaml.DynamicResourceExtension.DynamicResourceExtension()
 Microsoft.Maui.Controls.Xaml.Extensions
 Microsoft.Maui.Controls.Xaml.FontImageExtension
 Microsoft.Maui.Controls.Xaml.FontImageExtension.FontImageExtension() -> void
-Microsoft.Maui.Controls.Xaml.FontImageExtension.Size.get -> double
-Microsoft.Maui.Controls.Xaml.FontImageExtension.Size.set -> void
 Microsoft.Maui.Controls.Xaml.Internals.SimpleValueTargetProvider
 Microsoft.Maui.Controls.Xaml.Internals.ValueTargetProvider
 Microsoft.Maui.Controls.Xaml.Internals.ValueTargetProvider.ValueTargetProvider(object! targetObject, object! targetProperty) -> void
+Microsoft.Maui.Controls.Xaml.Internals.XamlDataTypeProvider
 Microsoft.Maui.Controls.Xaml.Internals.XamlServiceProvider
 Microsoft.Maui.Controls.Xaml.Internals.XamlServiceProvider.XamlServiceProvider() -> void
 Microsoft.Maui.Controls.Xaml.Internals.XamlTypeResolver

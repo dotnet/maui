@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
 namespace Maui.Controls.Sample.Issues
@@ -31,6 +32,7 @@ namespace Maui.Controls.Sample.Issues
 			PullToRefreshCommand = new Command(async () => await SimulateHttpRequest());
 		}
 
+		[RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Deserialize<TValue>(String, JsonSerializerOptions)")]
 		private async Task SimulateHttpRequest()
 		{
 			refreshView.IsRefreshing = true;
@@ -57,17 +59,17 @@ namespace Maui.Controls.Sample.Issues
 			refreshView.IsRefreshing = false;
 		}
 
-		private async void OnUpdateDataClicked(object sender, EventArgs e)
+		private async void OnUpdateDataClicked(object? sender, EventArgs e)
 		{
 			await SimulateHttpRequest();
 		}
 
-		private void OnClearDataClicked(object sender, EventArgs e)
+		private void OnClearDataClicked(object? sender, EventArgs e)
 		{
 			Items.Clear();
 		}
 
-		private void OnRefreshing(object sender, EventArgs e)
+		private void OnRefreshing(object? sender, EventArgs e)
 		{
 			PullToRefreshCommand.Execute(null);
 		}

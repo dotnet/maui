@@ -1,84 +1,71 @@
+using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class TestSharedResourceDictionary : ContentPage
 {
-	public partial class TestSharedResourceDictionary : ContentPage
+	public TestSharedResourceDictionary() => InitializeComponent();
+
+	[Collection("Xaml Inflation")]
+	public class Tests : IDisposable
 	{
-		public TestSharedResourceDictionary()
+		public Tests()
 		{
-			InitializeComponent();
-		}
-
-		public TestSharedResourceDictionary(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		public class Tests
-		{
-			[SetUp]
-			public void Setup()
+			Application.Current = new MockApplication
 			{
-				Application.Current = new MockApplication
+				Resources = new ResourceDictionary
 				{
-					Resources = new ResourceDictionary
-					{
-						new MyRD()
-					}
-				};
-			}
-
-			[TearDown]
-			public void TearDown()
-			{
-				Application.ClearCurrent();
-			}
-
-			[TestCase(false)]
-			[TestCase(true)]
-			public void MergedResourcesAreFound(bool useCompiledXaml)
-			{
-				var layout = new TestSharedResourceDictionary(useCompiledXaml);
-				Assert.AreEqual(Colors.Pink, layout.label.TextColor);
-			}
-
-			[TestCase(false)]
-			[TestCase(true)]
-			public void NoConflictsBetweenSharedRDs(bool useCompiledXaml)
-			{
-				var layout = new TestSharedResourceDictionary(useCompiledXaml);
-				Assert.AreEqual(Colors.Pink, layout.label.TextColor);
-				Assert.AreEqual(Colors.Purple, layout.label2.TextColor);
-			}
-
-			[TestCase(false)]
-			[TestCase(true)]
-			public void ImplicitStyleCanBeSharedFromSharedRD(bool useCompiledXaml)
-			{
-				var layout = new TestSharedResourceDictionary(useCompiledXaml);
-				Assert.AreEqual(Colors.Red, layout.implicitLabel.TextColor);
-			}
-
-			class MyRD : ResourceDictionary
-			{
-				public MyRD()
-				{
-					Add("foo", "Foo");
-					Add("bar", "Bar");
+					new MyRD()
 				}
-			}
-
-			[TestCase(false)]
-			[TestCase(true)]
-			public void MergedRDAtAppLevel(bool useCompiledXaml)
-			{
-				var layout = new TestSharedResourceDictionary(useCompiledXaml);
-				Assert.AreEqual("Foo", layout.label3.Text);
-			}
-
+			};
 		}
+
+		public void Dispose() => Application.ClearCurrent();
+
+		[Theory]
+		[XamlInflatorData]
+		internal void MergedResourcesAreFound(XamlInflator inflator)
+		{
+			var layout = new TestSharedResourceDictionary(inflator);
+			Assert.Equal(Colors.Pink, layout.label.TextColor);
+		}
+
+		[Theory]
+		[XamlInflatorData]
+		internal void NoConflictsBetweenSharedRDs(XamlInflator inflator)
+		{
+			var layout = new TestSharedResourceDictionary(inflator);
+			Assert.Equal(Colors.Pink, layout.label.TextColor);
+			Assert.Equal(Colors.Purple, layout.label2.TextColor);
+		}
+
+		[Theory]
+		[XamlInflatorData]
+		internal void ImplicitStyleCanBeSharedFromSharedRD(XamlInflator inflator)
+		{
+			var layout = new TestSharedResourceDictionary(inflator);
+			Assert.Equal(Colors.Red, layout.implicitLabel.TextColor);
+		}
+
+		class MyRD : ResourceDictionary
+		{
+			public MyRD()
+			{
+				Add("foo", "Foo");
+				Add("bar", "Bar");
+			}
+		}
+
+		[Theory]
+		[XamlInflatorData]
+		internal void MergedRDAtAppLevel(XamlInflator inflator)
+		{
+			var layout = new TestSharedResourceDictionary(inflator);
+			Assert.Equal("Foo", layout.label3.Text);
+		}
+
 	}
 }

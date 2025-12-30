@@ -4,19 +4,15 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-public class RadioButtonFeatureTests : UITest
+public class RadioButtonFeatureTests : _GalleryUITest
 {
 	public const string RadioButtonFeatureMatrix = "RadioButton Feature Matrix";
+
+	public override string GalleryPageName => RadioButtonFeatureMatrix;
 
 	public RadioButtonFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(RadioButtonFeatureMatrix);
 	}
 
 	[Test, Order(1)]
@@ -213,6 +209,8 @@ public class RadioButtonFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("RadioButtonControlOne");
+		App.WaitForElement("SelectedValueLabelOne");
+		App.Tap("SelectedValueLabelOne");
 		VerifyScreenshot();
 	}
 

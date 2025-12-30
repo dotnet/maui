@@ -1,27 +1,20 @@
-using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class Gh4572 : ContentPage
 {
-	public partial class Gh4572 : ContentPage
-	{
-		public Gh4572() => InitializeComponent();
-		public Gh4572(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+	public Gh4572() => InitializeComponent();
 
-		[TestFixture]
-		class Tests
+	[Collection("Issue")]
+	public class Tests
+	{
+		[Theory]
+		[XamlInflatorData]
+		internal void BindingAsElement(XamlInflator inflator)
 		{
-			[TestCase(true), TestCase(false)]
-			public void BindingAsElement(bool useCompiledXaml)
-			{
-				if (useCompiledXaml)
-					Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Gh4572)));
-				var layout = new Gh4572(useCompiledXaml) { BindingContext = new { labeltext = "Foo" } };
-				Assert.That(layout.label.Text, Is.EqualTo("Foo"));
-			}
+			var layout = new Gh4572(inflator) { BindingContext = new { labeltext = "Foo" } };
+			Assert.Equal("Foo", layout.label.Text);
 		}
 	}
 }

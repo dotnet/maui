@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -48,6 +49,29 @@ namespace Microsoft.Maui.Controls
 			return _navigationFrame;
 		}
 
+		private void OnPagePropertyChanged(object? sender, PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName == Page.IconImageSourceProperty.PropertyName)
+			{
+				if (sender is Page page)
+				{
+					//Find the corresponding ViewModel for the triggering Page
+					if (Handler?.MauiContext is not null && _navigationView?.MenuItemsSource is IList<NavigationViewItemViewModel> menuItems)
+					{
+						foreach (var item in menuItems)
+						{
+							if (item.Data == page)
+							{
+								item.Icon = page.IconImageSource?.ToIconSource(Handler.MauiContext)?.CreateIconElement();
+								item.IconColor = (page.IconImageSource as FontImageSource)?.Color?.AsPaint()?.ToPlatform();
+								break;
+							}
+						}
+					}
+				}
+			}
+		}
+
 		static FrameworkElement? OnCreatePlatformView(ViewHandler<ITabbedView, FrameworkElement> arg)
 		{
 			if (arg.VirtualView is TabbedPage tabbedPage)
@@ -82,6 +106,10 @@ namespace Microsoft.Maui.Controls
 			Appearing += OnTabbedPageAppearing;
 			Disappearing += OnTabbedPageDisappearing;
 			NavigationFrame.Navigated += OnNavigated;
+			foreach (var child in Children)
+			{
+				child.PropertyChanged += OnPagePropertyChanged;
+			}
 
 			// If CreatePlatformView didn't set the NavigationView then that means we are using the
 			// WindowRootView for our tabs
@@ -134,6 +162,10 @@ namespace Microsoft.Maui.Controls
 
 			Appearing -= OnTabbedPageAppearing;
 			Disappearing -= OnTabbedPageDisappearing;
+			foreach (var child in Children)
+			{
+				child.PropertyChanged -= OnPagePropertyChanged;
+			}
 			if (_navigationView != null)
 			{
 				_navigationView.SelectedItem = null;
@@ -329,6 +361,7 @@ namespace Microsoft.Maui.Controls
 					(vm, page) =>
 					{
 						vm.Icon = page.IconImageSource?.ToIconSource(handler.MauiContext!)?.CreateIconElement();
+						vm.IconColor = (page.IconImageSource as FontImageSource)?.Color?.AsPaint()?.ToPlatform();
 						vm.Content = page.Title;
 						vm.Data = page;
 						vm.SelectedTitleColor = view.BarTextColor?.AsPaint()?.ToPlatform();

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage 
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui" 
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
+	xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests.Issues"
+	x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Issues.Maui9648">
+	<ContentPage.Resources>
+		<ResourceDictionary>
+			<!-- Base implicit style for InputView with ApplyToDerivedTypes -->
+			<Style TargetType="InputView" ApplyToDerivedTypes="True">
+				<Setter Property="TextColor" Value="Red" />
+			</Style>
+
+			<!-- Implicit style for Entry with ApplyToDerivedTypes -->
+			<Style TargetType="Entry" ApplyToDerivedTypes="True">
+				<Setter Property="FontSize" Value="48" />
+			</Style>
+
+			<!-- Implicit style for CustomEntry with ApplyToDerivedTypes -->
+			<Style TargetType="local:CustomEntry" ApplyToDerivedTypes="True">
+				<Setter Property="BackgroundColor" Value="LightGreen" />
+			</Style>
+		</ResourceDictionary>
+	</ContentPage.Resources>
+	
+	<StackLayout>
+		<!-- CustomEntry should have all three styles applied:
+		     - TextColor from InputView style
+		     - FontSize from Entry style  
+		     - BackgroundColor from CustomEntry style -->
+		<local:CustomEntry x:Name="testEntry" Text="Test" />
+		
+		<!-- Regular Entry should have two styles applied:
+		     - TextColor from InputView style
+		     - FontSize from Entry style -->
+		<Entry x:Name="regularEntry" Text="Regular Entry" />
+	</StackLayout>
+</ContentPage>

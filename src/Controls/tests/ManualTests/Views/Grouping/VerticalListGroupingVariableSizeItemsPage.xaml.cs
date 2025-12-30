@@ -2,12 +2,12 @@
 
 namespace Microsoft.Maui.ManualTests.Views
 {
-    public partial class VerticalListGroupingVariableSizeItemsPage : ContentPage
-    {
-        public VerticalListGroupingVariableSizeItemsPage()
-        {
-            InitializeComponent();
-            BindingContext = new GroupedAnimalsViewModel();
-        }
-    }
+	public partial class VerticalListGroupingVariableSizeItemsPage : ContentPage
+	{
+		public VerticalListGroupingVariableSizeItemsPage()
+		{
+			InitializeComponent();
+			BindingContext = new GroupedAnimalsViewModel();
+		}
+	}
 }

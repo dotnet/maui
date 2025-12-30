@@ -173,7 +173,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		[PortHandler]
 		void UpdateTime()
 		{
-			Control.Time = Element.Time;
+			Control.Time = Element.Time ?? TimeSpan.Zero;
 			if (Element.Format?.Contains('H', StringComparison.Ordinal) == true)
 			{
 				Control.ClockIdentifier = "24HourClock";

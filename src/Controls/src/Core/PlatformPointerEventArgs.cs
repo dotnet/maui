@@ -1,4 +1,10 @@
 ﻿using System;
+
+#if ANDROID
+using Android.Views;
+using AView = Android.Views.View;
+#endif
+
 namespace Microsoft.Maui.Controls;
 
 /// <summary>
@@ -27,14 +33,14 @@ public class PlatformPointerEventArgs
 	/// <summary>
 	/// Gets the native view attached to the event.
 	/// </summary>
-	public Android.Views.View Sender { get; }
+	public AView Sender { get; }
 
 	/// <summary>
 	/// Gets the native event or handler attached to the view.
 	/// </summary>
-	public Android.Views.MotionEvent MotionEvent { get; }
+	public MotionEvent MotionEvent { get; }
 
-	internal PlatformPointerEventArgs(Android.Views.View sender, Android.Views.MotionEvent motionEvent)
+	internal PlatformPointerEventArgs(AView sender, MotionEvent motionEvent)
 	{
 		Sender = sender;
 		MotionEvent = motionEvent;

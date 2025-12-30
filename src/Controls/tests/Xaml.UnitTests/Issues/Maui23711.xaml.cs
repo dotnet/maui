@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
@@ -6,11 +7,10 @@ using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlCompilation(XamlCompilationOptions.Skip)]
 public partial class Maui23711 : ContentPage
 {
 	public Maui23711()
@@ -18,18 +18,12 @@ public partial class Maui23711 : ContentPage
 		InitializeComponent();
 	}
 
-	public Maui23711(bool useCompiledXaml)
-	{
-		//this stub will be replaced at compile time
-	}
-
-	[TestFixture]
-	class Test
+	[Collection("Issue")]
+	public class Tests : IDisposable
 	{
 		MockDeviceInfo mockDeviceInfo;
 
-		[SetUp]
-		public void Setup()
+		public Tests()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
@@ -37,19 +31,19 @@ public partial class Maui23711 : ContentPage
 		}
 
 
-		[TearDown]
-		public void TearDown()
+		public void Dispose()
 		{
 			AppInfo.SetCurrent(null);
 			DeviceInfo.SetCurrent(null);
 		}
 
-		[Test]
-		public void UsesReflectionBasedBindingsWhenCompilationOfBindingsWithSourceIsDisabled([Values(false, true)] bool compileBindingsWithSource)
+		[Theory]
+		[XamlInflatorData]
+		internal void UsesReflectionBasedBindingsWhenCompilationOfBindingsWithSourceIsDisabled(XamlInflator inflator)
 		{
-			MockCompiler.Compile(typeof(Maui23711), out MethodDefinition methodDefinition, out bool hasLoggedErrors, compileBindingsWithSource: compileBindingsWithSource);
-			Assert.That(!hasLoggedErrors);
-			Assert.AreEqual(compileBindingsWithSource, ContainsTypedBindingInstantiation(methodDefinition));
+			MockCompiler.Compile(typeof(Maui23711), out MethodDefinition methodDefinition, out bool hasLoggedErrors, compileBindingsWithSource: inflator == XamlInflator.XamlC);
+			Assert.False(hasLoggedErrors);
+			Assert.Equal(inflator == XamlInflator.XamlC, ContainsTypedBindingInstantiation(methodDefinition));
 		}
 
 		static bool ContainsTypedBindingInstantiation(MethodDefinition methodDef)

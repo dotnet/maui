@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Controls;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
 using Xunit;
 
@@ -8,6 +9,7 @@ namespace Microsoft.Maui.DeviceTests
 	public class XamlTests
 	{
 		[Fact("Parsed XAML can use mscorlib")]
+		[RequiresUnreferencedCode("XAML parsing may require unreferenced code")]
 		public void Namespace_mscorlib_Parsed()
 		{
 			var page = new ContentPage();
@@ -37,6 +39,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact("Parsed XAML can use x:Array")]
+		[RequiresUnreferencedCode("XAML parsing may require unreferenced code")]
 		public void x_Array_Parsed()
 		{
 			var page = new ContentPage();

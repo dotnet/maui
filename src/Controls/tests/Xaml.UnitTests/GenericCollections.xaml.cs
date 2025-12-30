@@ -1,51 +1,40 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Microsoft.Maui.Controls;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public class AttachedBP
 {
-	public class AttachedBP
-	{
-		public static readonly BindableProperty AttachedBPProperty = BindableProperty.CreateAttached(
-			"AttachedBP",
-			typeof(GenericCollection),
-			typeof(AttachedBP),
-			null);
+	public static readonly BindableProperty AttachedBPProperty = BindableProperty.CreateAttached(
+		"AttachedBP",
+		typeof(GenericCollection),
+		typeof(AttachedBP),
+		null);
 
-		public static GenericCollection GetAttachedBP(BindableObject bindable)
-		{
-			throw new NotImplementedException();
-		}
+	public static GenericCollection GetAttachedBP(BindableObject bindable)
+	{
+		throw new NotImplementedException();
 	}
+}
 
-	public class GenericCollection : ObservableCollection<object>
+public class GenericCollection : ObservableCollection<object>
+{
+}
+
+public partial class GenericCollections : ContentPage
+{
+	public GenericCollections() => InitializeComponent();
+
+	[Collection("Xaml Inflation")]
+	public class Tests
 	{
-	}
-
-	public partial class GenericCollections : ContentPage
-	{
-		public GenericCollections()
+		[Theory]
+		[XamlInflatorData]
+		internal void SupportsCrookedGenericScenarios(XamlInflator inflator)
 		{
-			InitializeComponent();
-		}
-
-		public GenericCollections(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		public class Tests
-		{
-			[TestCase(false)]
-			[TestCase(true)]
-			public void SupportsCrookedGenericScenarios(bool useCompiledXaml)
-			{
-				var p = new GenericCollections();
-				Assert.AreEqual("Foo", (p.label0.GetValue(AttachedBP.AttachedBPProperty) as GenericCollection)[0]);
-			}
+			var p = new GenericCollections(inflator);
+			Assert.Equal("Foo", (p.label0.GetValue(AttachedBP.AttachedBPProperty) as GenericCollection)[0]);
 		}
 	}
 }

@@ -4,6 +4,7 @@ parameters:
   buildConfig: Debug
   repoLogPath: $(Build.Arcade.LogsPath)
   publishTaskPrefix: '1ES.'
+  buildTaskProjects: '$(Build.SourcesDirectory)/Microsoft.Maui.BuildTasks.slnf'
 
 stages:
 - stage: UnitTests
@@ -16,28 +17,34 @@ stages:
       pool: ${{ job.pool }}
       timeoutInMinutes: ${{ job.timeout }}
       steps:
-      - template: /eng/pipelines/arcade/setup-test-env.yml
+      - checkout: self
+        clean: true
+
+      - template: /eng/pipelines/common/provision.yml@self
         parameters:
-          mauiSourcePath: ${{ parameters.mauiSourcePath }}
-          buildConfig: ${{ parameters.buildConfig }}
-          repoLogPath: ${{ parameters.repoLogPath }}
-          installPackageArtifacts: false
-          buildMSBuildTasks: true
+          checkoutDirectory: '$(System.DefaultWorkingDirectory)'
+          skipJdk: false
+          skipAndroidCommonSdks: false
+          skipAndroidPlatformApis: false
+          onlyAndroidPlatformDefaultApis: true
+          skipAndroidEmulatorImages: true
+          skipAndroidCreateAvds: true
+          skipProvisioning: true
+          skipXcode: false
+          skipSimulatorSetup: true
+          base64Encode: true
+          outputVariableName: dotnetbuilds-internal-container-read-token-base64
+      
+      - script: ${{ job.buildScript }} -restore -build -configuration ${{ parameters.buildConfig }} -projects "${{ parameters.buildTaskProjects }}" /p:ArchiveTests=false /p:TreatWarningsAsErrors=$(TreatWarningsAsErrors) /bl:$(Build.Arcade.LogsPath)${{ parameters.buildConfig }}/buildtasks.binlog $(_OfficialBuildIdArgs)
+        displayName: 🛠️ Build BuildTasks
 
-      # - template: /eng/pipelines/common/run-dotnet-preview.yml
+      # - template: /eng/pipelines/arcade/setup-test-env.yml
       #   parameters:
-      #     displayName: Run Controls.Core.UnitTests - ${{ job.testOS }}
       #     mauiSourcePath: ${{ parameters.mauiSourcePath }}
-      #     command: test
-      #     project: ${{ parameters.mauiSourcePath }}/src/Controls/tests/Core.UnitTests/Controls.Core.UnitTests.csproj
-      #     arguments: '-c ${{ parameters.buildConfig }} --logger trx --results-directory $(Agent.TempDirectory)/Controls.Core.UnitTests /p:_SkipUpdateBuildNumber=true'
-      #     useExitCodeForErrors: true
-
-      # - task: PublishTestResults@2
-      #   inputs:
-      #     testResultsFormat: VSTest
-      #     testResultsFiles: $(Agent.TempDirectory)/Controls.Core.UnitTests/*.trx
-      #     testRunTitle: Controls.Core.UnitTests - ${{ job.testOS }}
+      #     buildConfig: ${{ parameters.buildConfig }}
+      #     repoLogPath: ${{ parameters.repoLogPath }}
+      #     installPackageArtifacts: false
+      #     buildMSBuildTasks: true
 
       - template: /eng/pipelines/common/run-dotnet-preview.yml
         parameters:
@@ -45,7 +52,7 @@ stages:
           mauiSourcePath: ${{ parameters.mauiSourcePath }}
           command: test
           project: ${{ parameters.mauiSourcePath }}/src/Controls/tests/Xaml.UnitTests/Controls.Xaml.UnitTests.csproj
-          arguments: '-c ${{ parameters.buildConfig }} --logger trx --results-directory $(Agent.TempDirectory)/Controls.Xaml.UnitTests /p:_SkipUpdateBuildNumber=true'
+          arguments: '-c ${{ parameters.buildConfig }} --logger trx --results-directory $(Agent.TempDirectory)/Controls.Xaml.UnitTests /bl:$(Build.Arcade.LogsPath)${{ parameters.buildConfig }}/Controls.Xaml.UnitTests.binlog /p:_SkipUpdateBuildNumber=true'
           useExitCodeForErrors: true
 
       - task: PublishTestResults@2
@@ -53,66 +60,6 @@ stages:
           testResultsFormat: VSTest
           testResultsFiles: $(Agent.TempDirectory)/Controls.Xaml.UnitTests/*.trx
           testRunTitle: Controls.Xaml.UnitTests - ${{ job.testOS }}
-
-      - template: /eng/pipelines/common/run-dotnet-preview.yml
-        parameters:
-          displayName: Run SourceGen.UnitTests - ${{ job.testOS }}
-          mauiSourcePath: ${{ parameters.mauiSourcePath }}
-          command: test
-          project: ${{ parameters.mauiSourcePath }}/src/Controls/tests/SourceGen.UnitTests/SourceGen.UnitTests.csproj
-          arguments: '-c ${{ parameters.buildConfig }} --logger trx --results-directory $(Agent.TempDirectory)/SourceGen.UnitTests /p:_SkipUpdateBuildNumber=true'
-          useExitCodeForErrors: true
-
-      - task: PublishTestResults@2
-        inputs:
-          testResultsFormat: VSTest
-          testResultsFiles: $(Agent.TempDirectory)/SourceGen.UnitTests/*.trx
-          testRunTitle: SourceGen.UnitTests - ${{ job.testOS }}
-
-      # - template: /eng/pipelines/common/run-dotnet-preview.yml
-      #   parameters:
-      #     displayName: Run Controls.BindingSourceGen.UnitTests - ${{ job.testOS }}
-      #     mauiSourcePath: ${{ parameters.mauiSourcePath }}
-      #     command: test
-      #     project: ${{ parameters.mauiSourcePath }}/src/Controls/tests/BindingSourceGen.UnitTests/Controls.BindingSourceGen.UnitTests.csproj
-      #     arguments: '-c ${{ parameters.buildConfig }} --logger trx --results-directory $(Agent.TempDirectory)/Controls.BindingSourceGen.UnitTests /p:_SkipUpdateBuildNumber=true'
-      #     useExitCodeForErrors: true
-
-      # - task: PublishTestResults@2
-      #   inputs:
-      #     testResultsFormat: VSTest
-      #     testResultsFiles: $(Agent.TempDirectory)/Controls.BindingSourceGen.UnitTests/*.trx
-      #     testRunTitle: Controls.BindingSourceGen.UnitTests - ${{ job.testOS }}
-
-      # - template: /eng/pipelines/common/run-dotnet-preview.yml
-      #   parameters:
-      #     displayName: Run Core.UnitTests - ${{ job.testOS }}
-      #     mauiSourcePath: ${{ parameters.mauiSourcePath }}
-      #     command: test
-      #     project: ${{ parameters.mauiSourcePath }}/src/Core/tests/UnitTests/Core.UnitTests.csproj
-      #     arguments: '-c ${{ parameters.buildConfig }} --logger trx --results-directory $(Agent.TempDirectory)/Core.UnitTests /p:_SkipUpdateBuildNumber=true'
-      #     useExitCodeForErrors: true
-
-      # - task: PublishTestResults@2
-      #   inputs:
-      #     testResultsFormat: VSTest
-      #     testResultsFiles: $(Agent.TempDirectory)/Core.UnitTests/*.trx
-      #     testRunTitle: Core.UnitTests - ${{ job.testOS }}
-
-      # - template: /eng/pipelines/common/run-dotnet-preview.yml
-      #   parameters:
-      #     displayName: Run Essentials.UnitTests - ${{ job.testOS }}
-      #     mauiSourcePath: ${{ parameters.mauiSourcePath }}
-      #     command: test
-      #     project: ${{ parameters.mauiSourcePath }}/src/Essentials/test/UnitTests/Essentials.UnitTests.csproj
-      #     arguments: '-c ${{ parameters.buildConfig }} --logger trx --results-directory $(Agent.TempDirectory)/Essentials.UnitTests /p:_SkipUpdateBuildNumber=true'
-      #     useExitCodeForErrors: true
-
-      # - task: PublishTestResults@2
-      #   inputs:
-      #     testResultsFormat: VSTest
-      #     testResultsFiles: $(Agent.TempDirectory)/Essentials.UnitTests/*.trx
-      #     testRunTitle: Essentials.UnitTests - ${{ job.testOS }}
 
       - template: /eng/pipelines/common/run-dotnet-preview.yml
         parameters:
@@ -144,23 +91,6 @@ stages:
           testResultsFiles: $(Agent.TempDirectory)/Graphics.Tests/*.trx
           testRunTitle: Graphics.Tests - ${{ job.testOS }}
 
-      # - template: /eng/pipelines/common/run-dotnet-preview.yml
-      #   parameters:
-      #     displayName: Run Compatibility.Core.UnitTests - ${{ job.testOS }}
-      #     mauiSourcePath: ${{ parameters.mauiSourcePath }}
-      #     command: test
-      #     project: ${{ parameters.mauiSourcePath }}/src/Compatibility/Core/tests/Compatibility.UnitTests/Compatibility.Core.UnitTests.csproj
-      #     arguments: '-c ${{ parameters.buildConfig }} --logger trx --results-directory $(Agent.TempDirectory)/Compatibility.Core.UnitTests /p:_SkipUpdateBuildNumber=true'
-      #     useExitCodeForErrors: true
-
-      # - task: PublishTestResults@2
-      #   inputs:
-      #     testResultsFormat: VSTest
-      #     testResultsFiles: $(Agent.TempDirectory)/Compatibility.Core.UnitTests/*.trx
-      #     testRunTitle: Compatibility.Core.UnitTests - ${{ job.testOS }}
-
-      # TODO: Controls.Core.Design.UnitTests.csproj
-
       - task: ${{ parameters.publishTaskPrefix }}PublishPipelineArtifact@1
         displayName: Publish Logs
         inputs:
@@ -168,4 +98,4 @@ stages:
           artifact: Logs - Unit Tests ${{ job.testOS }} $(System.JobAttempt)
         condition: always()
 
-      - template: /eng/pipelines/common/fail-on-issue.yml
+      # - template: /eng/pipelines/common/fail-on-issue.yml

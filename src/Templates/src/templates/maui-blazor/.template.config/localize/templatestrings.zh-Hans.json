@@ -1,7 +1,7 @@
 {
   "author": "Microsoft",
   "name": ".NET MAUI Blazor Hybrid 应用",
-  "description": "用于使用 Blazor Hybrid 创建适用于 iOS、Android、Mac Catalyst、WinUI 和 Tizen 的 .NET MAUI 应用程序的项目",
+  "description": "一个项目，用于使用 Blazor Hybrid 创建适用于 iOS、Android、Mac Catalyst 和 WinUI 的 .NET MAUI 应用程序",
   "postActions/openInEditor/description": "在编辑器中打开 Components/Pages/Home.razor。",
   "symbols/applicationId/description": "替代项目中的 $(ApplicationId)",
   "symbols/Framework/description": "项目的目标框架。",

@@ -12,8 +12,7 @@
 			android:id="@+id/flyoutcontent_appbar"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
-			android:background="@null"
 			app:elevation="0dp"
-			android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar" />
+			android:theme="@style/MauiAppBarLayout" />
 
 </microsoft.maui.controls.platform.compatibility.ShellFlyoutLayout>

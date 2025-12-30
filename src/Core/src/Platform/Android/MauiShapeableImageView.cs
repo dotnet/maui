@@ -5,7 +5,7 @@ using Google.Android.Material.ImageView;
 
 namespace Microsoft.Maui.Platform
 {
-	internal class MauiShapeableImageView : ShapeableImageView
+	public class MauiShapeableImageView : ShapeableImageView
 	{
 		public MauiShapeableImageView(Context? context) : base(context)
 		{

@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:Maui.Controls.Sample"
              x:Class="Maui.Controls.Sample.SliderControlMainPage"
+             x:DataType="local:SliderViewModel"
              Title="SliderFeature">
 
   <ContentPage.ToolbarItems>
@@ -11,8 +12,8 @@
 
   <Grid Padding="20" RowDefinitions="Auto, Auto, Auto, Auto,Auto, Auto, Auto" ColumnDefinitions="0.5*, 0.5*" RowSpacing="10">
     <!-- Slider Control -->
-    <Slider Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"  
-               Minimum="{Binding Minimum}"
+    <Grid x:Name="SliderGrid" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
+      <Slider Minimum="{Binding Minimum}"
             Maximum="{Binding Maximum}"
             Value="{Binding Value}"
             ThumbColor="{Binding ThumbColor}"
@@ -26,6 +27,7 @@
             DragStartedCommand="{Binding DragStartedCommand}"
             DragCompletedCommand="{Binding DragCompletedCommand}"
             Margin="0,100,0,100" AutomationId="SliderControl" />
+    </Grid>
 
     <!-- Minimum Value -->
     <Label Grid.Row="1" Grid.Column="0" 

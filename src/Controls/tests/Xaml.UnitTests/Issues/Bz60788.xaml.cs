@@ -1,33 +1,23 @@
-using System;
-using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class Bz60788 : ContentPage
 {
-	public partial class Bz60788 : ContentPage
+	public Bz60788() => InitializeComponent();
+
+	[Collection("Issue")]
+	public class Tests
 	{
-		public Bz60788()
-		{
-			InitializeComponent();
-		}
 
-		public Bz60788(bool useCompiledXaml)
+		[Theory]
+		[XamlInflatorData]
+		internal void KeyedRDWithImplicitStyles(XamlInflator inflator)
 		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
-		{
-
-			[TestCase(true), TestCase(false)]
-			public void KeyedRDWithImplicitStyles(bool useCompiledXaml)
-			{
-				var layout = new Bz60788(useCompiledXaml);
-				Assert.That(layout.Resources.Count, Is.EqualTo(2));
-				Assert.That(((ResourceDictionary)layout.Resources["RedTextBlueBackground"]).Count, Is.EqualTo(3));
-				Assert.That(((ResourceDictionary)layout.Resources["BlueTextRedBackground"]).Count, Is.EqualTo(3));
-			}
+			var layout = new Bz60788(inflator);
+			Assert.Equal(2, layout.Resources.Count);
+			Assert.Equal(3, ((ResourceDictionary)layout.Resources["RedTextBlueBackground"]).Count);
+			Assert.Equal(3, ((ResourceDictionary)layout.Resources["BlueTextRedBackground"]).Count);
 		}
 	}
 }

@@ -99,6 +99,24 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				Assert.Contains(image, LogErrorEvents.FirstOrDefault()?.Message, StringComparison.OrdinalIgnoreCase);
 			}
 
+			[Theory]
+			[InlineData("link_out.svg")]
+			public void ImageProcessingErrorCode(string image)
+			{
+				var items = new[]
+				{
+					new TaskItem($"images/{image}"),
+				};
+
+				var task = GetNewTask(items);
+				var success = task.Execute();
+				Assert.False(success);
+
+				var errorCode = LogErrorEvents.FirstOrDefault()?.Code;
+
+				Assert.Equal("MAUIR0001", errorCode);
+			}
+
 			[Fact]
 			public void GenerationSkippedOnIncrementalBuild()
 			{

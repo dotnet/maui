@@ -1,37 +1,39 @@
 using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class Gh5706 : Shell
 {
-	public partial class Gh5706 : Shell
+	class VM
 	{
-		public Gh5706() => InitializeComponent();
-		public Gh5706(bool useCompiledXaml)
+		public VM() => FilterCommand = new Command((p) => Param = p);
+
+		public Command FilterCommand { get; set; }
+
+		public object Param { get; set; }
+	}
+
+	public Gh5706() => InitializeComponent();
+
+	[Collection("Issue")]
+	public class Tests : IDisposable
+	{
+		public Tests() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		public void Dispose() => DispatcherProvider.SetCurrent(null);
+
+		[Theory]
+		[XamlInflatorData]
+		internal void ReportSyntaxError(XamlInflator inflator)
 		{
-			//this stub will be replaced at compile time
-		}
+			var layout = new Gh5706(inflator);
+			layout.searchHandler.BindingContext = new VM();
 
-		[TestFixture]
-		class Tests
-		{
-			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
-
-			[Test]
-			public void ReportSyntaxError([Values(false, true)] bool useCompiledXaml)
-			{
-				var layout = new Gh5706(useCompiledXaml);
-				layout.searchHandler.BindingContext = new Gh5706VM();
-
-				Assert.That(layout.searchHandler.CommandParameter, Is.Null);
-				layout.searchHandler.Query = "Foo";
-				Assert.That(layout.searchHandler.CommandParameter, Is.EqualTo("Foo"));
-			}
+			Assert.Null(layout.searchHandler.CommandParameter);
+			layout.searchHandler.Query = "Foo";
+			Assert.Equal("Foo", layout.searchHandler.CommandParameter);
 		}
 	}
 

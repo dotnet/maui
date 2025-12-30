@@ -44,6 +44,10 @@
           Condition="'$(TargetFramework)' != '' and '$(PublicApiType)' == 'Generate'"
           Inputs="$(TargetDir)$(AssemblyName).dll"
           Outputs="$(IntermediateOutputPath)GeneratePublicApiFiles.stamp">
+    <WriteLinesToFile
+      File="%(PublicAPIFiles.Identity)"
+      Lines="#nullable enable"
+      Condition="'%(PublicAPIFiles.Identity)' != '' and !Exists('%(PublicAPIFiles.Identity)')" />
     <GeneratePublicApiFiles
       Assembly="$(TargetDir)$(AssemblyName).dll"
       Files="@(PublicAPIFiles)"

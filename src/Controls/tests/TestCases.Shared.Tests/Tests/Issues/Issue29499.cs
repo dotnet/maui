@@ -1,4 +1,4 @@
-﻿#if ANDROID
+﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Secondary ToolBar still not supported for Shell page of iOS and Catalyst Issue Link: https://github.com/dotnet/maui/issues/30674
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -20,7 +20,8 @@ public class Issue29499 : _IssuesUITest
 		App.WaitForElement("GoBackButton");
 		App.Click("GoBackButton");
 		App.WaitForElement("GotoIssue29499Subpage");
-		((AppiumApp)App).Driver.FindElement(OpenQA.Selenium.By.XPath("//*[@content-desc=\"More options\"]")).Click();
+		App.WaitForMoreButton();
+		App.TapMoreButton();
 		VerifyScreenshot();
 	}
 }

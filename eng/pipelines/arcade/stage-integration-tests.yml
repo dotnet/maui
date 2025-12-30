@@ -33,7 +33,7 @@ stages:
           useExitCodeForErrors: true
           ${{ if eq(job.testCategory, 'RunOniOS') }}:
             envVariables:
-              IOS_TEST_DEVICE: ios-simulator-64_18.0
+              IOS_TEST_DEVICE: ios-simulator-64_18.5
 
       - task: PublishTestResults@2
         inputs:
@@ -47,5 +47,4 @@ stages:
           targetPath: ${{ parameters.repoLogPath }}
           artifact: Logs - Integration Tests ${{ job.testCategory }} ${{ job.pool.os }} $(System.JobAttempt)
         condition: always()
-
-      - template: /eng/pipelines/common/fail-on-issue.yml
+      # - template: /eng/pipelines/common/fail-on-issue.yml

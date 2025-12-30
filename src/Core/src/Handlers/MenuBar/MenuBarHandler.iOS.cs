@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Handlers
 					}
 					else
 					{
-						PlatformView.InsertSiblingMenuBefore(menuItem, UIMenuIdentifier.File.GetConstant());
+						PlatformView.InsertSiblingMenuBefore(menuItem, UIMenuIdentifier.File.GetConstant() ?? string.Empty);
 					}
 				}
 

@@ -4,6 +4,8 @@ using Android.Content;
 using Android.Runtime;
 using Android.Webkit;
 using Java.Net;
+using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Platform;
 using AWebView = Android.Webkit.WebView;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
@@ -83,10 +85,40 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			}
 
 			var requestUri = request?.Url?.ToString();
+
+			var logger = _webViewHandler?.Logger;
+
+			logger?.LogDebug("Intercepting request for {Url}.", requestUri);
+
+			if (view is not null && request is not null && !string.IsNullOrEmpty(requestUri))
+			{
+				// 1. Check if the app wants to modify or override the request
+				var response = WebRequestInterceptingWebView.TryInterceptResponseStream(_webViewHandler, view, request, requestUri, logger);
+				if (response is not null)
+				{
+					return response;
+				}
+
+				// 2. Check if the request is for a Blazor resource
+				response = GetResponse(requestUri, _webViewHandler?.Logger);
+				if (response is not null)
+				{
+					return response;
+				}
+			}
+
+			// 3. Otherwise, we let the request go through as is
+			logger?.LogDebug("Request for {Url} was not handled.", requestUri);
+
+			return base.ShouldInterceptRequest(view, request);
+		}
+
+		private WebResourceResponse? GetResponse(string requestUri, ILogger? logger)
+		{
 			var allowFallbackOnHostPage = AppOriginUri.IsBaseOfPage(requestUri);
 			requestUri = QueryStringHelper.RemovePossibleQueryString(requestUri);
 
-			_webViewHandler?.Logger.HandlingWebRequest(requestUri);
+			logger?.HandlingWebRequest(requestUri);
 
 			if (requestUri != null &&
 				_webViewHandler != null &&
@@ -95,16 +127,16 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			{
 				var contentType = headers["Content-Type"];
 
-				_webViewHandler?.Logger.ResponseContentBeingSent(requestUri, statusCode);
+				logger?.ResponseContentBeingSent(requestUri, statusCode);
 
 				return new WebResourceResponse(contentType, "UTF-8", statusCode, statusMessage, headers, content);
 			}
 			else
 			{
-				_webViewHandler?.Logger.ReponseContentNotFound(requestUri ?? string.Empty);
+				logger?.ResponseContentNotFound(requestUri ?? string.Empty);
 			}
 
-			return base.ShouldInterceptRequest(view, request);
+			return null;
 		}
 
 		public override void OnPageFinished(AWebView? view, string? url)

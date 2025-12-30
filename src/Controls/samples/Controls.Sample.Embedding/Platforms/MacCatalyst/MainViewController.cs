@@ -44,7 +44,13 @@ public class MainViewController : UIViewController
 		_scenario = new EmbeddingScenarios.Scenario3_Correct();
 
 		// create the view and (maybe) the window
-		(_mauiView, _nativeView) = _scenario.Embed(ParentViewController!.View!.Window);
+		var window = ParentViewController?.View?.Window;
+		if (window is null)
+		{
+			throw new InvalidOperationException("Unable to get window from parent view controller");
+		}
+
+		(_mauiView, _nativeView) = _scenario.Embed(window);
 
 		// add the new view to the UI
 		stackView.AddArrangedSubview(new ContainerView(_nativeView));
@@ -68,7 +74,7 @@ public class MainViewController : UIViewController
 		if (_mauiView?.DotNetBot is not Image bot)
 			return;
 
-		await bot.RotateTo(360, 1000);
+		await bot.RotateToAsync(360, 1000);
 		bot.Rotation = 0;
 
 		bot.HeightRequest = 90;
@@ -76,8 +82,11 @@ public class MainViewController : UIViewController
 
 	private void AddNavBarButtons()
 	{
+		var windowIcon = UIImage.GetSystemImage("macwindow.badge.plus") ?? throw new InvalidOperationException("Unable to load system image 'macwindow.badge.plus'");
+
+
 		var addNewWindowButton = new UIBarButtonItem(
-			UIImage.GetSystemImage("macwindow.badge.plus"),
+			windowIcon,
 			UIBarButtonItemStyle.Plain,
 			(sender, e) => RequestSession());
 

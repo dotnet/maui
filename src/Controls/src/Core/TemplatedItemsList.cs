@@ -35,7 +35,9 @@ namespace Microsoft.Maui.Controls.Internals
 
 		static readonly BindableProperty IndexProperty = BindableProperty.Create("Index", typeof(int), typeof(TItem), -1);
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		static readonly BindablePropertyKey IsGroupHeaderPropertyKey = BindableProperty.CreateAttachedReadOnly("IsGroupHeader", typeof(bool), typeof(Cell), false);
+#pragma warning restore CS0618 // Type or member is obsolete
 
 		readonly BindableProperty _itemSourceProperty;
 		readonly BindableProperty _itemTemplateProperty;
@@ -189,7 +191,9 @@ namespace Microsoft.Maui.Controls.Internals
 		{
 			get
 			{
+#pragma warning disable CS0618 // Type or member is obsolete
 				var listView = _itemsView as ListView;
+#pragma warning restore CS0618 // Type or member is obsolete
 				if (listView == null)
 					return ListViewCachingStrategy.RetainElement;
 
@@ -760,12 +764,14 @@ namespace Microsoft.Maui.Controls.Internals
 				groupProxy.HeaderContent.BindingContext = groupProxy;
 				// TODO: the interceptor doesn't support generics at the moment
 				// groupProxy.HeaderContent.SetBinding(TextCell.TextProperty, static (TemplatedItemsList<TView, TItem> list) => list.Name);
+#pragma warning disable CS0618 // Type or member is obsolete
 				groupProxy.HeaderContent.SetBinding(
 					TextCell.TextProperty,
 					TypedBinding.ForSingleNestingLevel(
 						nameof(TemplatedItemsList<TView, TItem>.Name),
 						getter: static (TemplatedItemsList<TView, TItem> list) => list.Name,
 						setter: static (list, val) => list.Name = val));
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 
 			SetIndex(groupProxy.HeaderContent, index);

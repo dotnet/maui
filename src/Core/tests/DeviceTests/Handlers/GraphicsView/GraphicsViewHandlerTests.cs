@@ -29,11 +29,11 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory(DisplayName = "Can draw image loaded in background thread")]
-		[InlineData("red.png", 0xFFFF0000)]
-		[InlineData("green.png", 0xFF00FF00)]
-		[InlineData("blue.png", 0xFF0000FF)]
-		[InlineData("white.png", 0xFFFFFFFF)]
-		[InlineData("black.png", 0xFF000000)]
+		[InlineData("red_raw.png", 0xFFFF0000)]
+		[InlineData("green_raw.png", 0xFF00FF00)]
+		[InlineData("blue_raw.png", 0xFF0000FF)]
+		[InlineData("white_raw.png", 0xFFFFFFFF)]
+		[InlineData("black_raw.png", 0xFF000000)]
 		public async Task GraphicsViewCanDrawBackgroundImage(string filename, uint color)
 		{
 			var expected = Color.FromUint(color);
@@ -56,11 +56,11 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory(DisplayName = "Can draw image loaded in draw loop")]
-		[InlineData("red.png", 0xFFFF0000)]
-		[InlineData("green.png", 0xFF00FF00)]
-		[InlineData("blue.png", 0xFF0000FF)]
-		[InlineData("white.png", 0xFFFFFFFF)]
-		[InlineData("black.png", 0xFF000000)]
+		[InlineData("red_raw.png", 0xFFFF0000)]
+		[InlineData("green_raw.png", 0xFF00FF00)]
+		[InlineData("blue_raw.png", 0xFF0000FF)]
+		[InlineData("white_raw.png", 0xFFFFFFFF)]
+		[InlineData("black_raw.png", 0xFF000000)]
 		public async Task GraphicsViewCanDrawInlineImage(string filename, uint color)
 		{
 			var expected = Color.FromUint(color);

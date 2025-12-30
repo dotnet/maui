@@ -11,19 +11,6 @@ namespace Microsoft.Maui.Handlers
 			VirtualView?.Background != null ||
 			base.NeedsContainer;
 
-		public static void MapBackground(IShapeViewHandler handler, IShapeView shapeView)
-		{
-			// If Fill and Background are not null, will use Fill for the Shape background
-			// and Background for the ShapeView background.
-			if (shapeView.Background is not null && shapeView.Fill is not null)
-			{
-				handler.UpdateValue(nameof(IViewHandler.ContainerView));
-				handler.ToPlatform().UpdateBackground(shapeView);
-
-				handler.PlatformView?.InvalidateShape(shapeView);
-			}
-		}
-
 		public static void MapShape(IShapeViewHandler handler, IShapeView shapeView)
 		{
 			handler.PlatformView?.UpdateShape(shapeView);

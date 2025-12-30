@@ -25,7 +25,7 @@ public partial class MyMauiContent
 
 		SemanticScreenReader.Announce(CounterBtn.Text);
 
-		await image.ScaleTo(1.2, 60);
-		await image.ScaleTo(1, 60);
+		await image.ScaleToAsync(1.2, 60);
+		await image.ScaleToAsync(1, 60);
 	}
 }

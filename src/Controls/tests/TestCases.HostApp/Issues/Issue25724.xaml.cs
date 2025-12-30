@@ -19,7 +19,7 @@ namespace Maui.Controls.Sample.Issues
 			BindingContext = new Issue25724ViewModel();
 		}
 
-		void ToggleHeader(object sender, System.EventArgs e)
+		void ToggleHeader(object? sender, System.EventArgs e)
 		{
 			header = CollectionView.Header ?? header;
 
@@ -29,7 +29,7 @@ namespace Maui.Controls.Sample.Issues
 				CollectionView.Header = null;
 		}
 
-		void ToggleFooter(object sender, System.EventArgs e)
+		void ToggleFooter(object? sender, System.EventArgs e)
 		{
 			footer = CollectionView.Footer ?? footer;
 

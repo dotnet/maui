@@ -65,7 +65,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void OnFlyoutItemsChanged(object sender, EventArgs e)
 		{
 			_source.ReSyncCache();
+#pragma warning disable CS0618 // Type or member is obsolete
 			TableView.ReloadData();
+#pragma warning restore CS0618 // Type or member is obsolete
 			ShellFlyoutContentManager.UpdateVerticalScrollMode();
 		}
 
@@ -76,17 +78,23 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			base.ViewDidLoad();
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			TableView.SeparatorStyle = UITableViewCellSeparatorStyle.None;
+#pragma warning restore CS0618 // Type or member is obsolete
 			if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11)
 #if TVOS
 				|| OperatingSystem.IsTvOSVersionAtLeast(11)
 #endif
 			)
 			{
+#pragma warning disable CS0618 // Type or member is obsolete
 				TableView.ContentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentBehavior.Never;
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			TableView.Source = _source;
+#pragma warning restore CS0618 // Type or member is obsolete
 			ShellFlyoutContentManager.ViewDidLoad();
 		}
 

@@ -23,12 +23,12 @@
         <Str Cat="Text">
           <Val><![CDATA[A repository for resources that are used by a .NET MAUI app. Typical resources that are stored in a ResourceDictionary include styles, control templates, data templates, converters, and colors.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[.NET MAUI 应用使用的资源存储库。存储在 ResourceDictionary 中的典型资源包括样式、控件模板、数据模板、转换器和颜色。]]></Val>
+            <Val><![CDATA[.NET MAUI 应用使用的资源的存储库。存储在 ResourceDictionary 中的典型资源包括样式、控件模板、数据模板、转换器和颜色。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";name" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";name" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[.NET MAUI ResourceDictionary (XAML)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">

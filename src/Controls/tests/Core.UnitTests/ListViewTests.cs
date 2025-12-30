@@ -12,7 +12,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-
+#pragma warning disable CS0618 // Type or member is obsolete
 	public class ListViewTests : BaseTestFixture
 	{
 		MockDeviceInfo mockDeviceInfo;
@@ -1671,4 +1671,5 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			element.ForceUpdateSize();
 		}
 	}
+#pragma warning restore CS0618 // Type or member is obsolete
 }

@@ -1,5 +1,5 @@
-using Microsoft.Maui.ManualTests.Categories;
 using System.Collections.ObjectModel;
+using Microsoft.Maui.ManualTests.Categories;
 
 namespace Microsoft.Maui.ManualTests.Tests.RefreshView;
 
@@ -9,37 +9,37 @@ namespace Microsoft.Maui.ManualTests.Tests.RefreshView;
 	category: Category.Editor)]
 public partial class D23 : ContentPage
 {
-    readonly ObservableCollection<string> _messages = new();
+	readonly ObservableCollection<string> _messages = new();
 
-    int _counter = 0;
+	int _counter = 0;
 
-    public D23()
-    {
-        InitializeComponent();
+	public D23()
+	{
+		InitializeComponent();
 
-        entryMessage.Completed += async (s, e) => await SendMessageAsync();
-        listViewMessages.ItemsSource = _messages;
-    }
+		entryMessage.Completed += async (s, e) => await SendMessageAsync();
+		listViewMessages.ItemsSource = _messages;
+	}
 
-    async Task SendMessageAsync()
-    {
-        // simulates sending messages
-        await Task.Delay(200);
+	async Task SendMessageAsync()
+	{
+		// simulates sending messages
+		await Task.Delay(200);
 
-        AppendMessage($"{DateTime.Now:HH:mm:ss}: {++_counter} {Message}");
+		AppendMessage($"{DateTime.Now:HH:mm:ss}: {++_counter} {Message}");
 
-        Message = string.Empty;
-    }
+		Message = string.Empty;
+	}
 
-    private void AppendMessage(string message)
-    {
-        _messages.Add(message);
-        listViewMessages.ScrollTo(_messages.Last(), ScrollToPosition.End);
-    }
+	private void AppendMessage(string message)
+	{
+		_messages.Add(message);
+		listViewMessages.ScrollTo(_messages.Last(), ScrollToPosition.End);
+	}
 
-    string Message
-    {
-        get => entryMessage.Text;
-        set => entryMessage.Text = value;
-    }
+	string Message
+	{
+		get => entryMessage.Text;
+		set => entryMessage.Text = value;
+	}
 }

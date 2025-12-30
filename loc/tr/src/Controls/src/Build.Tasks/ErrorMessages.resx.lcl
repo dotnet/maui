@@ -23,7 +23,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Missing a "public static Get{0}" method or a public instance property getter for the attached property "{1}.{0}Property".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA["{1}.{0}Property" iliştirilmiş özelliği için "public static Get{0}" metodu veya genel örnek özellik alıcısı eksik.]]></Val>
+            <Val><![CDATA[İliştirilmiş özellik “{1}.{0}Özellik” için “genel statik Get{0}” yöntemi veya genel örnek özelliği alıcı eksik.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -32,7 +32,7 @@
         <Str Cat="Text">
           <Val><![CDATA[The name of the BindableProperty {0} does not end with "Property".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[{0} BindableProperty adı "Property" ile bitmiyor.]]></Val>
+            <Val><![CDATA[{0} BindableProperty'sinin adı “Property” ile bitmiyor.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -59,7 +59,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Binding: "{0}" cannot be parsed as an index for a "{1}".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Bağlama: "{0}", "{1}" için dizin olarak ayrıştırılamıyor.]]></Val>
+            <Val><![CDATA[Bağlama: “{0}”, bir “{1}” için dizin olarak ayrıştırılamaz.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -68,7 +68,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Binding: Unsupported indexer index type: "{0}".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Bağlama: "{0}" dizin oluşturucu dizin türü desteklenmiyor.]]></Val>
+            <Val><![CDATA[Bağlama: Desteklenmeyen dizin oluşturucu dizin türü: “{0}”.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -77,7 +77,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Binding: Property "{0}" not found on "{1}".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Bağlama: "{1}" üzerinde "{0}" özelliği bulunamadı.]]></Val>
+            <Val><![CDATA[Bağlama: “{1}” üzerinde “{0}” özelliği bulunamadı.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -122,7 +122,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Missing default constructor for "{0}".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA["{0}" için varsayılan oluşturucu eksik.]]></Val>
+            <Val><![CDATA[“{0}” için varsayılan oluşturucu eksik.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -140,7 +140,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Cannot set the content of "{0}" as it doesn't have a [ContentProperty]5D; attribute.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA["{0}" içeriği, [ContentProperty]5D; özniteliğine sahip olmadığından ayarlanamıyor.]]></Val>
+            <Val><![CDATA[“{0}” içeriği [ContentProperty]5D; özniteliğine sahip olmadığı için ayarlanamaz.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -149,7 +149,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Cannot convert value "{0}" to "{1}".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA["{0}" değeri "{1}" türüne dönüştürülemiyor.]]></Val>
+            <Val><![CDATA[“{0}” değeri “{1}” olarak dönüştürülemiyor.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -158,7 +158,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Enum value not found for "{0}".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA["{0}" için sabit listesi değeri bulunamadı.]]></Val>
+            <Val><![CDATA[“{0}” için sabit listesi değeri bulunamadı.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -194,7 +194,7 @@
         <Str Cat="Text">
           <Val><![CDATA[No property, BindableProperty, or event found for "{0}", or mismatching type between value and property.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA["{0}" için özellik, BindableProperty veya olay bulunamadı ya da değer ile özellik arasındaki tür eşleşmiyor.]]></Val>
+            <Val><![CDATA[“{0}” için hiçbir özellik, BindableProperty veya olay bulunamadı veya değer ile özellik arasında uyumsuzluk var.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -203,7 +203,7 @@
         <Str Cat="Text">
           <Val><![CDATA[No static method found for "{0}::{1} ({2})".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA["{0}::{1} ({2})" için statik metot bulunamadı.]]></Val>
+            <Val><![CDATA[“{0}::{1} ({2})” için statik yöntem bulunamadı.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -212,7 +212,7 @@
         <Str Cat="Text">
           <Val><![CDATA[EventHandler "{0}" with correct signature not found in type "{1}".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA["{1}" türünde doğru imzaya sahip "{0}" EventHandler bulunamadı.]]></Val>
+            <Val><![CDATA[“{1}” türünde doğru imzaya sahip EventHandler “{0}” bulunamadı.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -221,7 +221,7 @@
         <Str Cat="Text">
           <Val><![CDATA[An element with the name "{0}" already exists in this NameScope.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Bu NameScope içinde "{0}" adlı bir öğe zaten var.]]></Val>
+            <Val><![CDATA[“{0}” adında bir öğe bu NameScope'ta zaten var.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -239,7 +239,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Missing mandatory property "{0}" on "{1}".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA["{1}" türünde zorunlu "{0}" özelliği eksik.]]></Val>
+            <Val><![CDATA[“{1}” üzerinde zorunlu özellik “{0}” eksik.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -248,7 +248,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Cannot resolve property "{0}" on type "{1} (property missing or missing accessors)".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA["{1} türündeki "{0}" özelliği çözümlenemiyor (özellik veya erişimciler eksik)".]]></Val>
+            <Val><![CDATA[“{1} (özellik eksik veya erişimcileri eksik)” türünde “{0}” özelliği çözülemiyor.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -257,7 +257,7 @@
         <Str Cat="Text">
           <Val><![CDATA["A resource with the key "{0}" is already present in the ResourceDictionary.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA["ResourceDictionary içinde "{0}" anahtarına sahip bir kaynak zaten var.]]></Val>
+            <Val><![CDATA[“{0}” anahtarlı bir kaynak zaten ResourceDictionary'de mevcuttur.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -275,7 +275,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Resource "{0}" not found.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA["{0}" kaynağı bulunamadı.]]></Val>
+            <Val><![CDATA[“{0}” kaynağı bulunamadı.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -380,7 +380,7 @@
         <Str Cat="Text">
           <Val><![CDATA[x:Static: unable to find a public -- or accessible internal -- static field, static property, const or enum value named "{0}" in "{1}".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[x:Static: "{1}" içinde "{0}" adlı genel -- veya erişilebilir, dahili -- statik alan, statik özellik, sabit veya sabit listesi değeri bulunamıyor.]]></Val>
+            <Val><![CDATA[x:Static: “{1}” içinde “{0}” adlı bir genel veya erişilebilir iç statik alan, statik özellik, sabit veya sabit listesi değeri bulunamadı.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -398,7 +398,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Undeclared xmlns prefix "{0}".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA["{0}" xmlns ön eki bildirilmedi.]]></Val>
+            <Val><![CDATA[Bildirilmemiş xmlns öneki “{0}”.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

@@ -12,17 +12,16 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Set FlyoutPage.Detail = New Page() twice will crash the application when set FlyoutLayoutBehavior = FlyoutLayoutBehavior.Split";
 
-		// Crash after navigation
-		/*
 		[Test]
-		[Ignore("The sample is crashing.")]
 		[Category(UITestCategories.FlyoutPage)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAllPlatformsWhenRunningOnXamarinUITest("The sample is crashing. More information: https://github.com/dotnet/maui/issues/21205")]
 		public void Bugzilla41842Test()
 		{
+#if MACCATALYST
+			App.WaitForElement("FlyoutLabel");
+#else
 			App.WaitForElement("Success");
+#endif
 		}
-		*/
 	}
 }

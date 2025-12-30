@@ -41,7 +41,7 @@ namespace Maui.Controls.Sample.Pages.SwipeViewGalleries
 				IsVisible = false
 			};
 
-			swipeItem1.Invoked += (sender, e) => { DisplayAlert("SwipeView", "Test 1 Invoked", "Ok"); };
+			swipeItem1.Invoked += (sender, e) => { DisplayAlertAsync("SwipeView", "Test 1 Invoked", "Ok"); };
 
 			var swipeItem2 = new SwipeItem
 			{
@@ -50,7 +50,7 @@ namespace Maui.Controls.Sample.Pages.SwipeViewGalleries
 				Text = "Test 2"
 			};
 
-			swipeItem2.Invoked += (sender, e) => { DisplayAlert("SwipeView", "Test 2 Invoked", "Ok"); };
+			swipeItem2.Invoked += (sender, e) => { DisplayAlertAsync("SwipeView", "Test 2 Invoked", "Ok"); };
 
 			var swipeItems = new SwipeItems { swipeItem1, swipeItem2 };
 

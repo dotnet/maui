@@ -2,7 +2,7 @@
   "author": "Microsoft",
   "name": ".NET MAUI Class ライブラリ",
   "description": ".NET MAUI クラス ライブラリを作成するためのプロジェクト",
-  "postActions/openInEditor/description": "エディターで Class1.cs を開きます",
-  "symbols/Framework/description": "プロジェクトのターゲット フレームワークです。",
+  "postActions/openInEditor/description": "エディターで Class1.cs を開きます。",
+  "symbols/Framework/description": "プロジェクトのターゲット フレームワーク。",
   "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "ターゲット DOTNET_TFM_VALUE"
 }

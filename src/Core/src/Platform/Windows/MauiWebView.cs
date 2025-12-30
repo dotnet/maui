@@ -7,7 +7,7 @@ using Windows.ApplicationModel;
 
 namespace Microsoft.Maui.Platform
 {
-	public class MauiWebView : WebView2, IWebViewDelegate
+	public partial class MauiWebView : WebView2, IWebViewDelegate
 	{
 		readonly WeakReference<WebViewHandler> _handler;
 

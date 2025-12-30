@@ -18,8 +18,11 @@ public class Issue30728 : _IssuesUITest
 	{
 		App.WaitForElement("Tab 1");
 		App.Tap("Tab 1");
+		App.WaitForElement("Tab 2");
 		App.Tap("Tab 2");
+		App.WaitForElement("Tab 3");
 		App.Tap("Tab 3");
+		App.WaitForElement("Tab 1");
 		App.Tap("Tab 1");
 
 		VerifyScreenshot();

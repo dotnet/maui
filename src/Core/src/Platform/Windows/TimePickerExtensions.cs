@@ -1,89 +1,137 @@
 ﻿using System;
 using Microsoft.Maui.Graphics;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation.Peers;
+using Microsoft.UI.Xaml.Automation.Provider;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
+using Windows.UI.ViewManagement.Core;
 
-namespace Microsoft.Maui.Platform
+namespace Microsoft.Maui.Platform;
+
+public static class TimePickerExtensions
 {
-	public static class TimePickerExtensions
+	public static void UpdateTime(this TimePicker nativeTimePicker, ITimePicker timePicker)
 	{
-		public static void UpdateTime(this TimePicker nativeTimePicker, ITimePicker timePicker)
-		{
-			nativeTimePicker.Time = timePicker.Time;
+		nativeTimePicker.Time = timePicker.Time ?? TimeSpan.Zero;
 
-			if (timePicker.Format?.Contains('H', StringComparison.Ordinal) == true)
-			{
-				nativeTimePicker.ClockIdentifier = "24HourClock";
-			}
-			else
-			{
-				nativeTimePicker.ClockIdentifier = "12HourClock";
-			}
+		if (timePicker.Format?.Contains('H', StringComparison.Ordinal) == true)
+		{
+			nativeTimePicker.ClockIdentifier = "24HourClock";
+		}
+		else
+		{
+			nativeTimePicker.ClockIdentifier = "12HourClock";
+		}
+	}
+
+	public static void UpdateCharacterSpacing(this TimePicker platformTimePicker, ITimePicker timePicker)
+	{
+		platformTimePicker.CharacterSpacing = timePicker.CharacterSpacing.ToEm();
+	}
+
+	public static void UpdateFont(this TimePicker platformTimePicker, ITimePicker timePicker, IFontManager fontManager) =>
+		platformTimePicker.UpdateFont(timePicker.Font, fontManager);
+
+	public static void UpdateTextColor(this TimePicker platformTimePicker, ITimePicker timePicker)
+	{
+		Color textColor = timePicker.TextColor;
+
+		UI.Xaml.Media.Brush? platformBrush = textColor?.ToPlatform();
+
+		if (platformBrush == null)
+		{
+			platformTimePicker.Resources.RemoveKeys(TextColorResourceKeys);
+			platformTimePicker.ClearValue(TimePicker.ForegroundProperty);
+		}
+		else
+		{
+			platformTimePicker.Resources.SetValueForAllKey(TextColorResourceKeys, platformBrush);
+			platformTimePicker.Foreground = platformBrush;
 		}
 
-		public static void UpdateCharacterSpacing(this TimePicker platformTimePicker, ITimePicker timePicker)
+		platformTimePicker.RefreshThemeResources();
+	}
+
+	// ResourceKeys controlling the foreground color of the TimePicker.
+	// https://docs.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.controls.timepicker?view=windows-app-sdk-1.1
+	static readonly string[] TextColorResourceKeys =
+	{
+		"TimePickerButtonForeground",
+		"TimePickerButtonForegroundPointerOver",
+		"TimePickerButtonForegroundPressed",
+		"TimePickerButtonForegroundDisabled"
+	};
+
+	public static void UpdateBackground(this TimePicker platformTimePicker, ITimePicker timePicker)
+	{
+		var brush = timePicker?.Background?.ToPlatform();
+
+		if (brush is null)
 		{
-			platformTimePicker.CharacterSpacing = timePicker.CharacterSpacing.ToEm();
+			platformTimePicker.Resources.RemoveKeys(BackgroundColorResourceKeys);
+			platformTimePicker.ClearValue(TimePicker.BackgroundProperty);
+		}
+		else
+		{
+			platformTimePicker.Resources.SetValueForAllKey(BackgroundColorResourceKeys, brush);
+			platformTimePicker.Background = brush;
 		}
 
-		public static void UpdateFont(this TimePicker platformTimePicker, ITimePicker timePicker, IFontManager fontManager) =>
-			platformTimePicker.UpdateFont(timePicker.Font, fontManager);
+		platformTimePicker.RefreshThemeResources();
+	}
 
-		public static void UpdateTextColor(this TimePicker platformTimePicker, ITimePicker timePicker)
+	static readonly string[] BackgroundColorResourceKeys =
+	{
+		"TimePickerButtonBackground",
+		"TimePickerButtonBackgroundPointerOver",
+		"TimePickerButtonBackgroundPressed",
+		"TimePickerButtonBackgroundDisabled",
+		"TimePickerButtonBackgroundFocused",
+	};
+
+	internal static void UpdateIsOpen(this TimePicker platformTimePicker, ITimePicker timePicker)
+	{
+		if (!platformTimePicker.IsLoaded)
 		{
-			Color textColor = timePicker.TextColor;
-
-			UI.Xaml.Media.Brush? platformBrush = textColor?.ToPlatform();
-
-			if (platformBrush == null)
+			RoutedEventHandler? onLoaded = null;
+			onLoaded = (s, e) =>
 			{
-				platformTimePicker.Resources.RemoveKeys(TextColorResourceKeys);
-				platformTimePicker.ClearValue(TimePicker.ForegroundProperty);
-			}
-			else
-			{
-				platformTimePicker.Resources.SetValueForAllKey(TextColorResourceKeys, platformBrush);
-				platformTimePicker.Foreground = platformBrush;
-			}
-
-			platformTimePicker.RefreshThemeResources();
+				platformTimePicker.Loaded -= onLoaded;
+				UpdateIsOpen(platformTimePicker, timePicker);
+			};
+			platformTimePicker.Loaded += onLoaded;
+			return;
 		}
 
-		// ResourceKeys controlling the foreground color of the TimePicker.
-		// https://docs.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.controls.timepicker?view=windows-app-sdk-1.1
-		static readonly string[] TextColorResourceKeys =
+		if (timePicker.IsOpen)
 		{
-			"TimePickerButtonForeground",
-			"TimePickerButtonForegroundPointerOver",
-			"TimePickerButtonForegroundPressed",
-			"TimePickerButtonForegroundDisabled"
-		};
+			platformTimePicker.Focus(FocusState.Programmatic);
 
-		// TODO NET8 add to public API
-		internal static void UpdateBackground(this TimePicker platformTimePicker, ITimePicker timePicker)
-		{
-			var brush = timePicker?.Background?.ToPlatform();
+			// Create automation peer for the TimePicker to invoke a click
+			var peer = FrameworkElementAutomationPeer.CreatePeerForElement(platformTimePicker) ?? new TimePickerAutomationPeer(platformTimePicker);
 
-			if (brush is null)
+			// Look for button inside and invoke it
+			var children = peer.GetChildren();
+
+			if (children is null)
+				return;
+
+			foreach (var child in children)
 			{
-				platformTimePicker.Resources.RemoveKeys(BackgroundColorResourceKeys);
-				platformTimePicker.ClearValue(TimePicker.BackgroundProperty);
+				if (child.GetClassName().Contains("Button", StringComparison.OrdinalIgnoreCase) &&
+					child.GetPattern(PatternInterface.Invoke) is IInvokeProvider childInvoke)
+				{
+					childInvoke.Invoke();
+					return;
+				}
 			}
-			else
-			{
-				platformTimePicker.Resources.SetValueForAllKey(BackgroundColorResourceKeys, brush);
-				platformTimePicker.Background = brush;
-			}
-
-			platformTimePicker.RefreshThemeResources();
 		}
-
-		static readonly string[] BackgroundColorResourceKeys =
+		else
 		{
-			"TimePickerButtonBackground",
-			"TimePickerButtonBackgroundPointerOver",
-			"TimePickerButtonBackgroundPressed",
-			"TimePickerButtonBackgroundDisabled",
-			"TimePickerButtonBackgroundFocused",
-		};
+			// Lost the WinUI TimePicker focus.
+			var parent = VisualTreeHelper.GetParent(platformTimePicker) as UIElement;
+			parent?.Focus(FocusState.Programmatic);
+		}
 	}
 }

@@ -24,8 +24,8 @@
   </Docs>
   <Members>
     <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public XmlnsDefinitionAttribute (string xmlNamespace, string clrNamespace);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(string xmlNamespace, string clrNamespace) cil managed" />
+      <MemberSignature Language="C#" Value="public XmlnsDefinitionAttribute (string xmlNamespace, string target);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(string xmlNamespace, string target) cil managed" />
       <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.XmlnsDefinitionAttribute.#ctor(System.String,System.String)" />
       <MemberSignature Language="F#" Value="new Microsoft.Maui.Controls.XmlnsDefinitionAttribute : string * string -&gt; Microsoft.Maui.Controls.XmlnsDefinitionAttribute" Usage="new Microsoft.Maui.Controls.XmlnsDefinitionAttribute (xmlNamespace, clrNamespace)" />
       <MemberType>Constructor</MemberType>
@@ -35,11 +35,11 @@
       </AssemblyInfo>
       <Parameters>
         <Parameter Name="xmlNamespace" Type="System.String" />
-        <Parameter Name="clrNamespace" Type="System.String" />
+        <Parameter Name="target" Type="System.String" />
       </Parameters>
       <Docs>
         <param name="xmlNamespace">To be added.</param>
-        <param name="clrNamespace">To be added.</param>
+        <param name="target">To be added.</param>
       </Docs>
     </Member>
     <Member MemberName="AssemblyName">
@@ -63,6 +63,22 @@
       <MemberSignature Language="ILAsm" Value=".property instance string ClrNamespace" />
       <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.XmlnsDefinitionAttribute.ClrNamespace" />
       <MemberSignature Language="F#" Value="member this.ClrNamespace : string" Usage="Microsoft.Maui.Controls.XmlnsDefinitionAttribute.ClrNamespace" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+      </Docs>
+    </Member>
+    <Member MemberName="Target">
+      <MemberSignature Language="C#" Value="public string Target { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance string Target" />
+      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.XmlnsDefinitionAttribute.Target" />
+      <MemberSignature Language="F#" Value="member this.ClrNamespace : string" Usage="Microsoft.Maui.Controls.XmlnsDefinitionAttribute.Target" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>

@@ -5,19 +5,27 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/CompressedLayout.xml" path="Type[@FullName='Microsoft.Maui.Controls.CompressedLayout']/Docs/*" />
+	/// <summary>Contains attached properties for omitting redundant renderers.</summary>
+	[Obsolete("CompressedLayout does not provide meaningful functionality and may be removed in a future release. Please remove usage of this API.")]
 	public static class CompressedLayout
 	{
 		/// <summary>Bindable property for <c>IsHeadless</c>.</summary>
+		[Obsolete("CompressedLayout does not provide meaningful functionality and may be removed in a future release. Please remove usage of this API.")]
 		public static readonly BindableProperty IsHeadlessProperty =
 			BindableProperty.Create("IsHeadless", typeof(bool), typeof(CompressedLayout), default(bool),
 				propertyChanged: OnIsHeadlessPropertyChanged);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/CompressedLayout.xml" path="//Member[@MemberName='GetIsHeadless']/Docs/*" />
+		/// <summary>Gets a Boolean value that tells whether layout compression is enabled for the specified bindable object.</summary>
+		/// <param name="bindable">The <see cref="BindableObject" /> whose status to check.</param>
+		/// <returns><see langword="true" /> if layout compression is enabled for <paramref name="bindable" />. Otherwise, returns <see langword="false" />.</returns>
+		[Obsolete("CompressedLayout does not provide meaningful functionality and may be removed in a future release. Please remove usage of this API.")]
 		public static bool GetIsHeadless(BindableObject bindable)
 			=> (bool)bindable.GetValue(IsHeadlessProperty);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/CompressedLayout.xml" path="//Member[@MemberName='SetIsHeadless']/Docs/*" />
+		/// <summary>Turns layout compression on or off for the specified bindable object.</summary>
+		/// <param name="bindable">The <see cref="BindableObject" /> on which to enable or disable layout compression</param>
+		/// <param name="value">The new layout compression value. <see langword="true" /> to enable layout compression</param>
+		[Obsolete("CompressedLayout does not provide meaningful functionality and may be removed in a future release. Please remove usage of this API.")]
 		public static void SetIsHeadless(BindableObject bindable, bool value)
 			=> bindable.SetValue(IsHeadlessProperty, value);
 
@@ -35,10 +43,14 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <c>HeadlessOffset</c>.</summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
+		[Obsolete("CompressedLayout does not provide meaningful functionality and may be removed in a future release. Please remove usage of this API.")]
 		public static readonly BindableProperty HeadlessOffsetProperty = HeadlessOffsetPropertyKey.BindableProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/CompressedLayout.xml" path="//Member[@MemberName='GetHeadlessOffset']/Docs/*" />
+		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
+		/// <param name="bindable">For internal use by the Microsoft.Maui.Controls platform.</param>
+		/// <returns>For internal use by the Microsoft.Maui.Controls platform.</returns>
 		[EditorBrowsable(EditorBrowsableState.Never)]
+		[Obsolete("CompressedLayout does not provide meaningful functionality and may be removed in a future release. Please remove usage of this API.")]
 		public static Point GetHeadlessOffset(BindableObject bindable)
 			=> (Point)bindable.GetValue(HeadlessOffsetProperty);
 

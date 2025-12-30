@@ -126,7 +126,7 @@ namespace Microsoft.Maui.Controls.Internals
 				_navTree[0].Count > 0 &&
 				_navTree[0][0] is not Shell)
 			{
-				previousPage.SendNavigatingFrom(new NavigatingFromEventArgs());
+				previousPage.SendNavigatingFrom(new NavigatingFromEventArgs(CurrentPage, NavigationType.Pop));
 				previousPage.SendDisappearing();
 				CurrentPage.SendAppearing();
 			}
@@ -223,7 +223,7 @@ namespace Microsoft.Maui.Controls.Internals
 				_navTree[0].Count > 0 &&
 				_navTree[0][0] is not Shell)
 			{
-				previousPage.SendNavigatingFrom(new NavigatingFromEventArgs());
+				previousPage.SendNavigatingFrom(new NavigatingFromEventArgs(page, NavigationType.Push));
 				previousPage.SendDisappearing();
 				page.SendAppearing();
 			}

@@ -2,7 +2,8 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues.Issue21173"
-             Title="Issue21173">
+             Title="Issue21173"
+             SafeAreaEdges="Container">
 
     <StackLayout Spacing="10" VerticalOptions="Center">
         <Border WidthRequest="100"

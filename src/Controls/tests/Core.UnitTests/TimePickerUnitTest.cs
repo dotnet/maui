@@ -41,6 +41,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void NullTimeIsValid()
+		{
+			var timePicker = new TimePicker
+			{
+				Time = null
+			};
+
+			Assert.Null(timePicker.Time);
+		}
+
+		[Fact]
 		public void TestTimeSelected()
 		{
 			var picker = new TimePicker();
@@ -57,7 +68,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public static object[] TimeSpans = {
 			new object[] { new TimeSpan (), new TimeSpan(9, 0, 0) },
 			new object[] { new TimeSpan(9, 0, 0), new TimeSpan(17, 30, 0) },
-			new object[] { new TimeSpan(23, 59, 59), new TimeSpan(0, 0, 0) }
+			new object[] { new TimeSpan(23, 59, 59), new TimeSpan(0, 0, 0) },
+			new object[] { new TimeSpan(23, 59, 59), null },
+			new object[] { null, new TimeSpan(23, 59, 59) },
 		};
 
 		public static IEnumerable<object[]> TimeSpansData()
@@ -75,8 +88,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			timePicker.Time = initialTime;
 
 			TimePicker pickerFromSender = null;
-			TimeSpan oldTime = new TimeSpan();
-			TimeSpan newTime = new TimeSpan();
+			TimeSpan? oldTime = new TimeSpan();
+			TimeSpan? newTime = new TimeSpan();
 
 			timePicker.TimeSelected += (s, e) =>
 			{

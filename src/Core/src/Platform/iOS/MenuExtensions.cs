@@ -112,7 +112,7 @@ namespace Microsoft.Maui.Platform
 				if (result != null)
 				{
 					platformMenu =
-						uIMenuBuilder.GetMenu(((UIMenuIdentifier)result).GetConstant());
+						uIMenuBuilder.GetMenu(((UIMenuIdentifier)result).GetConstant() ?? string.Empty);
 				}
 			}
 

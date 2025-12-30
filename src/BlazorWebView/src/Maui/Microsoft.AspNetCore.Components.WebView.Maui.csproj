@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <DefineConstants>$(DefineConstants);WEBVIEW2_MAUI</DefineConstants>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <PropertyGroup Condition="!$(TargetFramework.StartsWith('netstandard'))">
@@ -32,7 +33,6 @@
 
   <ItemGroup>
     <Compile Include="..\SharedSource\**\*.cs" Link="Windows\SharedSource\%(Filename)%(Extension)" />
-    <Compile Include="..\..\..\Core\src\TaskExtensions.cs" Link="Utilities\TaskExtensions.cs" />
   </ItemGroup>
 
   <ItemGroup>

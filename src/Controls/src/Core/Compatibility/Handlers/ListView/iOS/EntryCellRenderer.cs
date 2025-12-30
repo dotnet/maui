@@ -22,9 +22,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		[UnsupportedOSPlatform("ios14.0")]
 		[UnsupportedOSPlatform("tvos14.0")]
+#pragma warning disable CS0618 // Type or member is obsolete
 		public override UITableViewCell GetCell(Cell item, UITableViewCell reusableCell, UITableView tv)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			var entryCell = (EntryCell)item;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			var tvc = reusableCell as EntryCellTableViewCell;
 			if (tvc == null)
@@ -61,25 +65,41 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		[UnsupportedOSPlatform("tvos14.0")]
 		static void HandlePropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			var entryCell = (EntryCell)sender;
+#pragma warning restore CS0618 // Type or member is obsolete
 			var realCell = (EntryCellTableViewCell)GetRealCell(entryCell);
 
+#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 			if (e.PropertyName == EntryCell.LabelProperty.PropertyName)
 				UpdateLabel(realCell, entryCell);
+#pragma warning disable CS0618 // Type or member is obsolete
 			else if (e.PropertyName == EntryCell.TextProperty.PropertyName)
 				UpdateText(realCell, entryCell);
+#pragma warning disable CS0618 // Type or member is obsolete
 			else if (e.PropertyName == EntryCell.PlaceholderProperty.PropertyName)
 				UpdatePlaceholder(realCell, entryCell);
+#pragma warning disable CS0618 // Type or member is obsolete
 			else if (e.PropertyName == EntryCell.KeyboardProperty.PropertyName)
 				UpdateKeyboard(realCell, entryCell);
+#pragma warning disable CS0618 // Type or member is obsolete
 			else if (e.PropertyName == EntryCell.LabelColorProperty.PropertyName)
 				UpdateLabelColor(realCell, entryCell);
+#pragma warning disable CS0618 // Type or member is obsolete
 			else if (e.PropertyName == EntryCell.HorizontalTextAlignmentProperty.PropertyName)
 				UpdateHorizontalTextAlignment(realCell, entryCell);
 			else if (e.PropertyName == Cell.IsEnabledProperty.PropertyName)
 				UpdateIsEnabled(realCell, entryCell);
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
 				UpdateHorizontalTextAlignment(realCell, entryCell);
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		static void OnKeyBoardDoneButtonPressed(object sender, EventArgs e)
@@ -93,20 +113,28 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		static void OnTextFieldTextChanged(object sender, EventArgs eventArgs)
 		{
 			var cell = (EntryCellTableViewCell)sender;
+#pragma warning disable CS0618 // Type or member is obsolete
 			var model = (EntryCell)cell.Cell;
+#pragma warning restore CS0618 // Type or member is obsolete
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			model
 				.SetValue(EntryCell.TextProperty, cell.TextField.Text, specificity: SetterSpecificity.FromHandler);
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		static void UpdateHorizontalTextAlignment(EntryCellTableViewCell cell, EntryCell entryCell)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			cell.TextField.UpdateHorizontalTextAlignment(entryCell);
 		}
 
 		[UnsupportedOSPlatform("ios14.0")]
 		[UnsupportedOSPlatform("tvos14.0")]
+#pragma warning disable CS0618 // Type or member is obsolete
 		static void UpdateIsEnabled(EntryCellTableViewCell cell, EntryCell entryCell)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			cell.UserInteractionEnabled = entryCell.IsEnabled;
 			cell.TextLabel.Enabled = entryCell.IsEnabled;
@@ -114,31 +142,41 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			cell.TextField.Enabled = entryCell.IsEnabled;
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		static void UpdateKeyboard(EntryCellTableViewCell cell, EntryCell entryCell)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			cell.TextField.ApplyKeyboard(entryCell.Keyboard);
 		}
 
 		[UnsupportedOSPlatform("ios14.0")]
 		[UnsupportedOSPlatform("tvos14.0")]
+#pragma warning disable CS0618 // Type or member is obsolete
 		static void UpdateLabel(EntryCellTableViewCell cell, EntryCell entryCell)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			cell.TextLabel.Text = entryCell.Label;
 		}
 
 		[UnsupportedOSPlatform("ios14.0")]
 		[UnsupportedOSPlatform("tvos14.0")]
+#pragma warning disable CS0618 // Type or member is obsolete
 		static void UpdateLabelColor(EntryCellTableViewCell cell, EntryCell entryCell)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			cell.TextLabel.TextColor = entryCell.LabelColor?.ToPlatform() ?? DefaultTextColor.ToPlatform();
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		static void UpdatePlaceholder(EntryCellTableViewCell cell, EntryCell entryCell)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			cell.TextField.Placeholder = entryCell.Placeholder;
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		static void UpdateText(EntryCellTableViewCell cell, EntryCell entryCell)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			if (cell.TextField.Text == entryCell.Text)
 				return;
@@ -168,8 +206,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 #pragma warning disable CA1416, CA1422 // TODO:  'UITableViewCell.TextLabel' is unsupported on: 'ios' 14.0 and late
 				// simple algorithm to generally line up entries
+#pragma warning disable CS0618 // Type or member is obsolete
 				var start = (nfloat)Math.Round(Math.Max(Frame.Width * 0.3, TextLabel.Frame.Right + 10));
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 				TextField.Frame = new RectangleF(start, (Frame.Height - 30) / 2, Frame.Width - TextLabel.Frame.Left - start, 30);
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
 #pragma warning restore CA1416, CA1422
 				// Centers TextField Content  (iOS6)
 				TextField.VerticalAlignment = UIControlContentVerticalAlignment.Center;

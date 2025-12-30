@@ -1,49 +1,41 @@
 using System;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class Issue2152 : ContentPage
 {
-	public partial class Issue2152 : ContentPage
+	public Issue2152() => InitializeComponent();
+
+	int clickcount;
+	public void OnButtonClicked(object sender, EventArgs e) => clickcount++;
+
+	[Collection("Issue")]
+	public class Tests : IDisposable
 	{
-		public Issue2152()
-		{
-			InitializeComponent();
-		}
+		public Tests() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		public void Dispose() => DispatcherProvider.SetCurrent(null);
 
-		public Issue2152(bool useCompiledXaml)
+		[Theory]
+		[XamlInflatorData]
+		internal void TestEventConnection(XamlInflator inflator)
 		{
-			//this stub will be replaced at compile time
-		}
-
-		int clickcount;
-		public void OnButtonClicked(object sender, EventArgs e)
-		{
-			clickcount++;
-		}
-
-		[TestFixture]
-		public class Tests
-		{
-			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
-
-			[TestCase(false)]
-			[TestCase(true)]
-			public void TestEventConnection(bool useCompiledXaml)
+			if (inflator == XamlInflator.SourceGen)
 			{
-				Issue2152 layout = null;
-				Assert.DoesNotThrow(() => layout = new Issue2152(useCompiledXaml));
-				Cell cell = null;
-				Assert.DoesNotThrow(() => cell = layout.listview.TemplatedItems.GetOrCreateContent(0, null));
-				var button = cell.FindByName<Button>("btn") as IButtonController;
-				Assert.AreEqual(0, layout.clickcount);
-				button.SendClicked();
-				Assert.AreEqual(1, layout.clickcount);
+				var result = MockSourceGenerator.RunMauiSourceGenerator(MockSourceGenerator.CreateMauiCompilation(), typeof(Issue2152));
 			}
+			Issue2152 layout = null;
+			var ex1 = Record.Exception(() => layout = new Issue2152(inflator));
+			Assert.Null(ex1);
+			Cell cell = null;
+			var ex2 = Record.Exception(() => cell = layout.listview.TemplatedItems.GetOrCreateContent(0, null));
+			Assert.Null(ex2);
+			var button = cell.FindByName<Button>("btn") as IButtonController;
+			Assert.Equal(0, layout.clickcount);
+			button.SendClicked();
+			Assert.Equal(1, layout.clickcount);
 		}
 	}
 }

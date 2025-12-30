@@ -1645,5 +1645,34 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(shell.CurrentPage, page2);
 			Assert.True(fired);
 		}
+
+		[Fact]
+		public void ShellContentTitleShouldNotBeAppliedMultipleTimesWithStringFormat()
+		{
+			var theLabel = new Label
+			{
+				Text = "Hello, World!",
+				AutomationId = "theLabel"
+			};
+
+			var contentPage = new ContentPage
+			{
+				Content = theLabel
+			};
+
+			ShellContent shellContent = new ShellContent
+			{
+				Content = contentPage,
+			};
+
+			shellContent.SetBinding(ShellContent.TitleProperty, new Binding
+			{
+				Source = theLabel,
+				Path = "Text",
+				StringFormat = "Title: {0}"
+			});
+
+			Assert.Equal("Title: Hello, World!", shellContent.Title);
+		}
 	}
 }

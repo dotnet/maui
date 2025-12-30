@@ -3,6 +3,7 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
+using Microsoft.Maui.Converters;
 
 namespace Microsoft.Maui
 {
@@ -101,6 +102,21 @@ namespace Microsoft.Maui
 			return new GridLength(absoluteValue);
 		}
 
+#if NET11_0_OR_GREATER
+		/// <summary>Converts a string to a GridLength using the type converter.</summary>
+		/// <param name="value">The string value representing a GridLength ("auto", "*", "2*", or a number).</param>
+		/// <returns>A GridLength instance parsed from the string.</returns>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
+		/// <exception cref="FormatException">Thrown if <paramref name="value"/> is not a valid GridLength format.</exception>
+		public static implicit operator GridLength(string value)
+		{
+			if (value is null)
+				throw new ArgumentNullException(nameof(value));
+			
+			return Converters.GridLengthTypeConverter.ParseStringToGridLength(value);
+		}
+#endif
+
 		/// <summary>Returns a string that represents this GridLength.</summary>
 		/// <returns>A string representation in the format "{Value}.{GridUnitType}".</returns>
 		public override string ToString()
@@ -119,21 +135,5 @@ namespace Microsoft.Maui
 		/// <param name="right">The second GridLength to compare.</param>
 		/// <returns><see langword="true"/> if the two GridLengths differ; otherwise, <see langword="false"/>.</returns>
 		public static bool operator !=(GridLength left, GridLength right) => !(left == right);
-
-		private sealed class GridLengthTypeConverter : TypeConverter
-		{
-			public override bool CanConvertFrom(ITypeDescriptorContext? context, Type? sourceType)
-				=> sourceType == typeof(double);
-
-			public override object ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object? value)
-				=> value switch
-				{
-					double d => (GridLength)d,
-					_ => throw new NotSupportedException(),
-				};
-
-			public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType) => false;
-			public override object ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type? destinationType) => throw new NotSupportedException();
-		}
 	}
 }

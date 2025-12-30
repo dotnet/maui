@@ -8,6 +8,7 @@ public class ContextActionCellTest : TestContentPage
 
 	protected override void Init()
 	{
+		this.SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
 		dataSection = new TableSection {
 			new TextCell{ Text = "Text Cell", ContextActions = { new MenuItem{ Text = "Save" } } },
 			new TextCell{ Text = "Text Cell 1" },

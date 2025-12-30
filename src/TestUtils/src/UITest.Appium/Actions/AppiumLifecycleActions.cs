@@ -58,10 +58,18 @@ namespace UITest.Appium
 				return CommandResponse.FailedEmptyResponse;
 
 			if (_app.GetTestDevice() == TestDevice.Mac)
-			{
-				_app.Driver.ExecuteScript("macos: activateApp", new Dictionary<string, object>
+			{		
+				var args = _app.Config.GetProperty<Dictionary<string, string>>("TestConfigurationArgs") ?? new Dictionary<string, string>();
+
+				if (args.ContainsKey("test") && parameters.ContainsKey("testName") && parameters["testName"] is string testName && !string.IsNullOrEmpty(testName))
+				{
+					args["test"] = testName;
+				}
+
+				_app.Driver.ExecuteScript("macos: launchApp", new Dictionary<string, object>
 				{
 					{ "bundleId", _app.GetAppId() },
+					{ "environment", args},
 				});
 			}
 			else if (_app.Driver is WindowsDriver windowsDriver)
@@ -101,6 +109,9 @@ namespace UITest.Appium
 			else
 			{
 				_app.Driver.ActivateApp(_app.GetAppId());
+				// Give it time for the animation to settle, otherwise there's a risk
+				// of picking wrong elements coordinates and `Tap`s will fail silently.
+				Thread.Sleep(100);
 			}
 
 			return CommandResponse.SuccessEmptyResponse;

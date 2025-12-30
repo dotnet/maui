@@ -12,14 +12,14 @@ public class Bugzilla43469 : TestContentPage
 
 		button.Clicked += async (sender, args) =>
 		{
-			await DisplayAlert("First", "Text", "OK", "Cancel");
-			await DisplayAlert("Second", "Text", "OK", "Cancel");
-			await DisplayAlert("Three", "Text", "OK", "Cancel");
+			await DisplayAlertAsync("First", "Text", "OK", "Cancel");
+			await DisplayAlertAsync("Second", "Text", "OK", "Cancel");
+			await DisplayAlertAsync("Three", "Text", "OK", "Cancel");
 #pragma warning disable CS0618 // Type or member is obsolete
 #pragma warning disable CS0612 // Type or member is obsolete
 			Device.BeginInvokeOnMainThread(new Action(async () =>
 			{
-				await DisplayAlert("Fourth", "Text", "OK", "Cancel");
+				await DisplayAlertAsync("Fourth", "Text", "OK", "Cancel");
 			}));
 #pragma warning restore CS0612 // Type or member is obsolete
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -28,7 +28,7 @@ public class Bugzilla43469 : TestContentPage
 #pragma warning disable CS0612 // Type or member is obsolete
 			Device.BeginInvokeOnMainThread(new Action(async () =>
 			{
-				await DisplayAlert("Fifth", "Text", "OK", "Cancel");
+				await DisplayAlertAsync("Fifth", "Text", "OK", "Cancel");
 			}));
 #pragma warning restore CS0612 // Type or member is obsolete
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -37,7 +37,7 @@ public class Bugzilla43469 : TestContentPage
 #pragma warning disable CS0612 // Type or member is obsolete
 			Device.BeginInvokeOnMainThread(new Action(async () =>
 			{
-				await DisplayAlert("Sixth", "Text", "OK", "Cancel");
+				await DisplayAlertAsync("Sixth", "Text", "OK", "Cancel");
 			}));
 #pragma warning restore CS0612 // Type or member is obsolete
 #pragma warning restore CS0618 // Type or member is obsolete

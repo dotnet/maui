@@ -1,0 +1,12 @@
+{
+  "version" : 1,
+  "defaultOnFailure": "fail",
+  "localRerunCount" : 2,
+  "retryOnRules": [
+    {"testAssembly": {"wildcard": "Microsoft.Maui.Controls.*" }}
+  ],
+  "failOnRules": [
+  ],
+  "quarantineRules": [
+  ]
+}

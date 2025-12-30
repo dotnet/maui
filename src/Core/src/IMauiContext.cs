@@ -1,4 +1,7 @@
 using System;
+#if ANDROID
+using Android.Content;
+#endif
 
 namespace Microsoft.Maui
 {
@@ -8,8 +11,8 @@ namespace Microsoft.Maui
 
 		IMauiHandlersFactory Handlers { get; }
 
-#if __ANDROID__
-		Android.Content.Context? Context { get; }
+#if ANDROID
+		Context? Context { get; }
 #endif
 	}
 }

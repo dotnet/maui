@@ -2,7 +2,8 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              Title="Issue 18111"
-             x:Class="Maui.Controls.Sample.Issues.Issue18111">
+             x:Class="Maui.Controls.Sample.Issues.Issue18111"
+             SafeAreaEdges="Container">
     <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="20">
         <Slider
             AutomationId="WaitForSliderControl"

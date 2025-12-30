@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+#if ANDROID
+using Android.Text;
+#endif
 
 namespace Microsoft.Maui
 {
@@ -39,12 +42,18 @@ namespace Microsoft.Maui
 
 			var newLength = currLength + addLength - remLength;
 
-			return newLength <= textInput.MaxLength;
+			var shouldChange = newLength <= textInput.MaxLength;
+
+			// cut text when user is pasting a text longer that maxlength
+			if(!shouldChange && !string.IsNullOrWhiteSpace(replacementString) && replacementString!.Length >= textInput.MaxLength)
+				textInput.Text = replacementString!.Substring(0, textInput.MaxLength);
+
+			return shouldChange;
 		}
 #endif
 
-#if __ANDROID__
-		public static void UpdateText(this ITextInput textInput, Android.Text.TextChangedEventArgs e)
+#if ANDROID
+		public static void UpdateText(this ITextInput textInput, TextChangedEventArgs e)
 		{
 			if (e.Text is Java.Lang.ICharSequence cs)
 				textInput.UpdateText(cs.ToString());

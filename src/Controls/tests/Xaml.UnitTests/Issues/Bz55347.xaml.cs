@@ -1,41 +1,31 @@
 using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class Bz55347 : ContentPage
 {
-	public partial class Bz55347 : ContentPage
+	public Bz55347()
 	{
-		public Bz55347()
-		{
-		}
+	}
 
-		public Bz55347(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+	[Collection("Issue")]
+	public class Tests : IDisposable
+	{
+		public void Dispose() => Application.Current = null;
 
-		[TestFixture]
-		class Tests
+		[Theory]
+		[XamlInflatorData]
+		internal void PaddingThicknessResource(XamlInflator inflator)
 		{
-			[TearDown]
-			public void TearDown()
+			Application.Current = new MockApplication
 			{
-				Application.Current = null;
-			}
-
-			[TestCase(true)]
-			[TestCase(false)]
-			public void PaddingThicknessResource(bool useCompiledXaml)
-			{
-				Application.Current = new MockApplication
-				{
-					Resources = new ResourceDictionary {
-						{"Padding", new Thickness(8)}
-					}
-				};
-				var layout = new Bz55347(useCompiledXaml);
-			}
+				Resources = new ResourceDictionary {
+					{"Padding", new Thickness(8)}
+				}
+			};
+			var layout = new Bz55347(inflator);
 		}
 	}
 }

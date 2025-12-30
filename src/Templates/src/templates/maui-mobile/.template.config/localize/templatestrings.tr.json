@@ -1,7 +1,7 @@
 {
   "author": "Microsoft",
   "name": ".NET MAUI Uygulaması",
-  "description": "iOS, Android, Mac Catalyst, WinUI ve Tizen için bir .NET MAUI uygulaması oluşturmaya yönelik proje",
+  "description": "iOS, Android, Mac Catalyst ve WinUI için .NET MAUI uygulaması oluşturma projesi",
   "postActions/openInEditor/description": "Düzenleyicide MainPage.xaml dosyasını açar.",
   "postActions/restore/description": "Bu projenin gerektirdiği NuGet paketlerini geri yükleyin.",
   "postActions/restore/manualInstructions/default/text": "'dotnet restore' çalıştır",

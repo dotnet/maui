@@ -40,7 +40,7 @@ namespace Microsoft.Maui
 		protected abstract MauiApp CreateMauiApp();
 
 		[Export("application:willFinishLaunchingWithOptions:")]
-		public virtual bool WillFinishLaunching(UIApplication application, NSDictionary launchOptions)
+		public virtual bool WillFinishLaunching(UIApplication application, NSDictionary? launchOptions)
 		{
 			var mauiApp = CreateMauiApp();
 
@@ -56,7 +56,7 @@ namespace Microsoft.Maui
 		}
 
 		[Export("application:didFinishLaunchingWithOptions:")]
-		public virtual bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
+		public virtual bool FinishedLaunching(UIApplication application, NSDictionary? launchOptions)
 		{
 			_application = _services!.GetRequiredService<IApplication>();
 

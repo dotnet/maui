@@ -1,44 +1,28 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-using System.Linq;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Dispatching;
-
-using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
 public partial class Maui24900 : ContentPage
 {
-	public Maui24900()
-	{
-		InitializeComponent();
-	}
-
-	public Maui24900(bool useCompiledXaml)
-	{
-		//this stub will be replaced at compile time
-	}
+	public Maui24900() => InitializeComponent();
 
 	void Header_Tapped(object sender, TappedEventArgs e)
 	{
 
 	}
 
-	[TestFixture]
-	class Test
+	[Collection("Issue")]
+	public class Test : IDisposable
 	{
 		MockDeviceInfo mockDeviceInfo;
 
-		[SetUp]
-		public void Setup()
+		public Test()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
@@ -46,21 +30,19 @@ public partial class Maui24900 : ContentPage
 		}
 
 
-		[TearDown]
-		public void TearDown()
+		public void Dispose()
 		{
 			AppInfo.SetCurrent(null);
 			DeviceInfo.SetCurrent(null);
 		}
 
-		[Test]
-		public void OnPlatformDownNotThrow([Values(false, true)] bool useCompiledXaml)
+		[Theory]
+		[XamlInflatorData]
+		internal void OnPlatformDoesNotThrow(XamlInflator inflator)
 		{
 			mockDeviceInfo.Platform = DevicePlatform.WinUI;
-			Assert.DoesNotThrow(() => new Maui24900(useCompiledXaml));
-
-
-
+			var ex = Record.Exception(() => new Maui24900(inflator));
+			Assert.Null(ex);
 		}
 	}
 }

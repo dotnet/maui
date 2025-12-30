@@ -3,15 +3,22 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              AutomationId="KeyboardScrollingGridPage"
              x:Class="Maui.Controls.Sample.KeyboardScrollingGridPage">
-    <Grid RowDefinitions="*, Auto">
-        <VerticalStackLayout Grid.Row="1">
-            <Entry Placeholder="Entry 1" AutomationId="Entry1"/>
-            <Entry Placeholder="Entry 2" AutomationId="Entry2"/>
-            <Entry Placeholder="Entry 3" AutomationId="Entry3"/>
-            <Entry Placeholder="Entry 4" AutomationId="Entry4"/>
-            <Entry Placeholder="Entry 5" AutomationId="Entry5"/>
-            <Entry Placeholder="Entry 6" AutomationId="Entry6"/>
-            <Entry Placeholder="Entry 7" AutomationId="Entry7"/>
-        </VerticalStackLayout>
-    </Grid>
+       <Grid RowDefinitions="*, Auto">
+              <VerticalStackLayout Grid.Row="1">
+                     <Entry Placeholder="Entry 1"
+                            AutomationId="Entry1"/>
+                     <Entry Placeholder="Entry 2"
+                            AutomationId="Entry2"/>
+                     <Entry Placeholder="Entry 3"
+                            AutomationId="Entry3"/>
+                     <Entry Placeholder="Entry 4"
+                            AutomationId="Entry4"/>
+                     <Entry Placeholder="Entry 5"
+                            AutomationId="Entry5"/>
+                     <Entry Placeholder="Entry 6"
+                            AutomationId="Entry6"/>
+                     <Entry Placeholder="Entry 7"
+                            AutomationId="Entry7"/>
+              </VerticalStackLayout>
+       </Grid>
 </ContentView>

@@ -5,9 +5,11 @@ using UITest.Core;
 namespace Microsoft.Maui.TestCases.Tests;
 
 [Category(UITestCategories.Editor)]
-public class EditorFeatureTests : UITest
+public class EditorFeatureTests : _GalleryUITest
 {
 	public const string EditorFeatureMatrix = "Editor Feature Matrix";
+
+	public override string GalleryPageName => EditorFeatureMatrix;
 
 #if IOS
 	private const int CropBottomValue = 1550;
@@ -22,12 +24,6 @@ public class EditorFeatureTests : UITest
 	public EditorFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(EditorFeatureMatrix);
 	}
 
 	[Test, Order(0)]
@@ -67,20 +63,27 @@ public class EditorFeatureTests : UITest
 #endif
 
 	[Test, Order(1)]
-	public void VerifyEditorFocusedEvent()
+	public async Task VerifyEditorFocusedEvent()
 	{
 		App.WaitForElement("TestEditor");
 		App.Tap("TestEditor");
-		App.DismissKeyboard();
+		await Task.Delay(100);
+#if ANDROID || IOS
+		if (App.IsKeyboardShown())
+		{
+			App.DismissKeyboard();
+		}
+#endif
 		Assert.That(App.WaitForElement("FocusedLabel").GetText(), Is.EqualTo("Focused: Event Triggered"));
 	}
 
 	[Test, Order(3)]
-	public void VerifyEditorUnfocusedEvent()
+	public async Task VerifyEditorUnfocusedEvent()
 	{
 		App.WaitForElement("TestEditor");
 		App.WaitForElement("SelectionLengthEntry");
 		App.Tap("SelectionLengthEntry");
+		await Task.Delay(100);
 		App.DismissKeyboard();
 		Assert.That(App.WaitForElement("UnfocusedLabel").GetText(), Is.EqualTo("Unfocused: Event Triggered"));
 	}

@@ -13,16 +13,15 @@ namespace Microsoft.Maui.Controls.XamlC
 	{
 		public IEnumerable<Instruction> ProvideValue(VariableDefinitionReference vardefref, ModuleDefinition module, BaseNode node, ILContext context)
 		{
-			INode sourceNode = null;
-			((IElementNode)node).Properties.TryGetValue(new XmlName("", "Source"), out sourceNode);
+			((ElementNode)node).Properties.TryGetValue(new XmlName("", "Source"), out INode sourceNode);
 			if (sourceNode == null)
-				((IElementNode)node).Properties.TryGetValue(new XmlName(XamlParser.MauiUri, "Source"), out sourceNode);
+				((ElementNode)node).Properties.TryGetValue(new XmlName(XamlParser.MauiUri, "Source"), out sourceNode);
 
 			INode styleNode = null;
-			if (!((IElementNode)node).Properties.TryGetValue(new XmlName("", "Style"), out styleNode) &&
-				!((IElementNode)node).Properties.TryGetValue(new XmlName(XamlParser.MauiUri, "Style"), out styleNode) &&
-				((IElementNode)node).CollectionItems.Count == 1)
-				styleNode = ((IElementNode)node).CollectionItems[0];
+			if (!((ElementNode)node).Properties.TryGetValue(new XmlName("", "Style"), out styleNode) &&
+				!((ElementNode)node).Properties.TryGetValue(new XmlName(XamlParser.MauiUri, "Style"), out styleNode) &&
+				((ElementNode)node).CollectionItems.Count == 1)
+				styleNode = ((ElementNode)node).CollectionItems[0];
 
 			if (sourceNode != null && styleNode != null)
 				throw new BuildException(BuildExceptionCode.StyleSheetSourceOrContent, node, null);
@@ -30,10 +29,10 @@ namespace Microsoft.Maui.Controls.XamlC
 			if (sourceNode == null && styleNode == null)
 				throw new BuildException(BuildExceptionCode.StyleSheetNoSourceOrContent, node, null);
 
-			if (styleNode != null && !(styleNode is ValueNode))
+			if (styleNode != null && styleNode is not ValueNode)
 				throw new BuildException(BuildExceptionCode.StyleSheetStyleNotALiteral, node, null);
 
-			if (sourceNode != null && !(sourceNode is ValueNode))
+			if (sourceNode != null && sourceNode is not ValueNode)
 				throw new BuildException(BuildExceptionCode.StyleSheetSourceNotALiteral, node, null);
 
 			if (styleNode != null)
@@ -42,14 +41,14 @@ namespace Microsoft.Maui.Controls.XamlC
 				yield return Create(Ldstr, style);
 				yield return Create(Call, module.ImportMethodReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.StyleSheets", "StyleSheet"),
 																	   methodName: "FromString",
-																	   parameterTypes: new[] { ("mscorlib", "System", "String") },
+																	   parameterTypes: [("mscorlib", "System", "String")],
 																	   isStatic: true));
 			}
 			else
 			{
 				var source = (sourceNode as ValueNode)?.Value as string;
 				INode rootNode = node;
-				while (!(rootNode is ILRootNode))
+				while (rootNode is not ILRootNode)
 					rootNode = rootNode.Parent;
 
 				var rootTargetPath = RDSourceTypeConverter.GetPathForType(context, module, ((ILRootNode)rootNode).TypeReference);
@@ -71,7 +70,7 @@ namespace Microsoft.Maui.Controls.XamlC
 
 				yield return Create(Call, module.ImportMethodReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.StyleSheets", "StyleSheet"),
 																	   methodName: "FromResource",
-																	   parameterTypes: new[] { ("mscorlib", "System", "String"), ("mscorlib", "System.Reflection", "Assembly"), ("System.Xml.ReaderWriter", "System.Xml", "IXmlLineInfo") },
+																	   parameterTypes: [("mscorlib", "System", "String"), ("mscorlib", "System.Reflection", "Assembly"), ("System.Xml.ReaderWriter", "System.Xml", "IXmlLineInfo")],
 																	   isStatic: true));
 			}
 

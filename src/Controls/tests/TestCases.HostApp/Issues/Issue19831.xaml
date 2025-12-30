@@ -9,7 +9,7 @@
                 <StackLayout>
                     <ListView>
                         <ListView.ItemTemplate>
-                            <DataTemplate>
+                            <DataTemplate x:DataType="x:String">
                                 <ViewCell>
                                     <ViewCell.ContextActions>
                                         <MenuItem Text="View"/>

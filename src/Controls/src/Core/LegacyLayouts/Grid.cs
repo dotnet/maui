@@ -171,7 +171,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			view.PropertyChanged -= OnItemPropertyChanged;
 		}
 
-		internal override void ComputeConstraintForView(View view)
+		protected override LayoutConstraint ComputeConstraintForView(View view)
 		{
 			LayoutOptions vOptions = view.VerticalOptions;
 			LayoutOptions hOptions = view.HorizontalOptions;
@@ -235,7 +235,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 					result |= LayoutConstraint.HorizontallyFixed;
 			}
 
-			view.ComputedConstraint = result;
+			return result;
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -259,7 +259,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 				var child = sender as View;
 				if (child != null)
 				{
-					ComputeConstraintForView(child);
+					child.ComputedConstraint = ComputeConstraintForView(child);
 				}
 
 				InvalidateLayout();

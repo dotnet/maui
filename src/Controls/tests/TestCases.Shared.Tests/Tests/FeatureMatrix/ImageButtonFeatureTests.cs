@@ -6,7 +6,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-public class ImageButtonFeatureTests : UITest
+public class ImageButtonFeatureTests : _GalleryUITest
 {
 	public const string ImageButtonFeatureMatrix = "ImageButton Feature Matrix";
 	public const string Options = "Options";
@@ -28,16 +28,11 @@ public class ImageButtonFeatureTests : UITest
 	public const string IsEnabledFalse = "IsEnabledFalse";
 	public const string PaddingEntry = "PaddingEntry";
 
+	public override string GalleryPageName => ImageButtonFeatureMatrix;
 
 	public ImageButtonFeatureTests(TestDevice device)
 	: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(ImageButtonFeatureMatrix);
 	}
 
 	[Test, Order(1)]
@@ -71,7 +66,7 @@ public class ImageButtonFeatureTests : UITest
 		App.WaitForElement("ImageButtonControl", timeout: TimeSpan.FromSeconds(3));
 		VerifyScreenshot();
 	}
-
+#if TEST_FAILS_ON_ANDROID // Issue Link: https://github.com/dotnet/maui/issues/30576
 	[Test]
 	[Category(UITestCategories.ImageButton)]
 	public void VerifyImageButtonAspect_AspectFitWithImageSourceFromStream()
@@ -88,6 +83,22 @@ public class ImageButtonFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
+	[Test]
+	[Category(UITestCategories.ImageButton)]
+	public void VerifyImageButtonAspect_FillWithImageSourceFromStream()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ImageFill);
+		App.Tap(ImageFill);
+		App.WaitForElement(SourceTypeStream);
+		App.Tap(SourceTypeStream);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("ImageButtonControl");
+		VerifyScreenshot();
+	}
+#endif
 	[Test]
 	[Category(UITestCategories.ImageButton)]
 	public void VerifyImageButtonAspect_AspectFitWithImageSourceFromFontImage()
@@ -156,22 +167,6 @@ public class ImageButtonFeatureTests : UITest
 
 	[Test]
 	[Category(UITestCategories.ImageButton)]
-	public void VerifyImageButtonAspect_FillWithImageSourceFromStream()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(ImageFill);
-		App.Tap(ImageFill);
-		App.WaitForElement(SourceTypeStream);
-		App.Tap(SourceTypeStream);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElement("ImageButtonControl");
-		VerifyScreenshot();
-	}
-
-	[Test]
-	[Category(UITestCategories.ImageButton)]
 	public void VerifyImageButtonAspect_CenterWithImageSourceFromFile()
 	{
 		App.WaitForElement(Options);
@@ -189,6 +184,7 @@ public class ImageButtonFeatureTests : UITest
 
 #if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/29959
 
+#if TEST_FAILS_ON_ANDROID // Issue Link: https://github.com/dotnet/maui/issues/30576
 	[Test]
 	[Category(UITestCategories.ImageButton)]
 	public void VerifyImageButtonAspect_AspectFillWithImageSourceFromStream()
@@ -220,6 +216,7 @@ public class ImageButtonFeatureTests : UITest
 		App.WaitForElement("ImageButtonControl");
 		VerifyScreenshot();
 	}
+#endif
 
 	[Test]
 	[Category(UITestCategories.ImageButton)]
@@ -510,6 +507,8 @@ public class ImageButtonFeatureTests : UITest
 		App.WaitForElement(CornerRadiusEntry);
 		App.ClearText(CornerRadiusEntry);
 		App.EnterText(CornerRadiusEntry, "30,30,30,30");
+		App.WaitForElement(SourceTypeFile);
+		App.Tap(SourceTypeFile);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("ImageButtonControl");

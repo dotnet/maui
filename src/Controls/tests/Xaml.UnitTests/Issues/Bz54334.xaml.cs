@@ -1,92 +1,84 @@
 using System;
-using System.Collections.Generic;
 using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public class Bz54334App : Application
 {
-	public class Bz54334App : Application
+	bool daymode = true;
+	internal Bz54334App(XamlInflator inflator)
 	{
-		bool daymode = true;
-		public Bz54334App(bool useCompiledXaml)
+		Resources = new ResourceDictionary{
+			new Style(typeof(Label)) {
+				Setters = {
+					new Setter {Property = Label.TextColorProperty, Value=Colors.Blue}
+				}
+			}
+		};
+		this.LoadPage(new Bz54334(inflator));
+		WeakReferenceMessenger.Default.Register<ContentPage, string>(this, "ChangeTheme", (s, m) =>
 		{
-			Resources = new ResourceDictionary{
-				new Style(typeof(Label)) {
-					Setters = {
-						new Setter {Property = Label.TextColorProperty, Value=Colors.Blue}
-					}
-				}
-			};
-			this.LoadPage(new Bz54334(useCompiledXaml));
-			WeakReferenceMessenger.Default.Register<ContentPage, string>(this, "ChangeTheme", (s, m) =>
-			{
-				ToggleTheme();
-			});
-		}
-
-		void ToggleTheme()
-		{
-			Resources = daymode ? new ResourceDictionary{
-				new Style(typeof(Label)) {
-					Setters = {
-						new Setter {Property = Label.TextColorProperty, Value=Colors.Red}
-					}
-				}
-			} : new ResourceDictionary{
-				new Style(typeof(Label)) {
-					Setters = {
-						new Setter {Property = Label.TextColorProperty, Value=Colors.Blue}
-					}
-				}
-			};
-			daymode = !daymode;
-		}
+			ToggleTheme();
+		});
 	}
 
-	public partial class Bz54334 : ContentPage
+	void ToggleTheme()
 	{
-		public Bz54334()
-		{
-			InitializeComponent();
-		}
-		public Bz54334(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
-		{
-			[TearDown]
-			public void TearDown()
-			{
-				Application.Current = null;
+		Resources = daymode ? new ResourceDictionary{
+			new Style(typeof(Label)) {
+				Setters = {
+					new Setter {Property = Label.TextColorProperty, Value=Colors.Red}
+				}
 			}
-
-			[TestCase(true)]
-			[TestCase(false, Ignore = "This is failing on CI on macOS: https://github.com/dotnet/maui/issues/15054")]
-			public void FooBz54334(bool useCompiledXaml)
-			{
-				var app = Application.Current = new Bz54334App(useCompiledXaml);
-				var page = app.MainPage as Bz54334;
-				var l0 = page.label;
-				var l1 = page.themedLabel;
-
-				Assert.That(l0.TextColor, Is.EqualTo(Colors.Black));
-				Assert.That(l1.TextColor, Is.EqualTo(Colors.Blue));
-
-				WeakReferenceMessenger.Default.Send<ContentPage, string>(page, "ChangeTheme");
-				Assert.That(l0.TextColor, Is.EqualTo(Colors.Black));
-				Assert.That(l1.TextColor, Is.EqualTo(Colors.Red));
-
-				WeakReferenceMessenger.Default.Send<ContentPage, string>(page, "ChangeTheme");
-				Assert.That(l0.TextColor, Is.EqualTo(Colors.Black));
-				Assert.That(l1.TextColor, Is.EqualTo(Colors.Blue));
-
+		} : new ResourceDictionary{
+			new Style(typeof(Label)) {
+				Setters = {
+					new Setter {Property = Label.TextColorProperty, Value=Colors.Blue}
+				}
 			}
+		};
+		daymode = !daymode;
+	}
+}
+
+public partial class Bz54334 : ContentPage
+{
+	public Bz54334()
+	{
+		InitializeComponent();
+	}
+
+	[Collection("Issue")]
+	public class Tests : IDisposable
+	{
+		public void Dispose()
+		{
+			Application.Current = null;
+		}
+
+		[Theory]
+		[XamlInflatorData]
+		//		[TestCase(false, Ignore = "This is failing on CI on macOS: https://github.com/dotnet/maui/issues/15054")]
+		internal void FooBz54334(XamlInflator inflator)
+		{
+			var app = Application.Current = new Bz54334App(inflator);
+			var page = app.MainPage as Bz54334;
+			var l0 = page.label;
+			var l1 = page.themedLabel;
+
+			Assert.Equal(Colors.Black, l0.TextColor);
+			Assert.Equal(Colors.Blue, l1.TextColor);
+
+			WeakReferenceMessenger.Default.Send<ContentPage, string>(page, "ChangeTheme");
+			Assert.Equal(Colors.Black, l0.TextColor);
+			Assert.Equal(Colors.Red, l1.TextColor);
+
+			WeakReferenceMessenger.Default.Send<ContentPage, string>(page, "ChangeTheme");
+			Assert.Equal(Colors.Black, l0.TextColor);
+			Assert.Equal(Colors.Blue, l1.TextColor);
+
 		}
 	}
 }

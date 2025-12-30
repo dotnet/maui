@@ -64,13 +64,13 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 
 			microsoftPin.MarkerClicked += (sender, args) =>
 			{
-				DisplayAlert("Marker", $"Marker Clicked: {((Pin)sender!).Label}", "OK");
+				DisplayAlertAsync("Marker", $"Marker Clicked: {((Pin)sender!).Label}", "OK");
 			};
 
 			// TODO this doesn't seem to work on iOS?
 			microsoftPin.InfoWindowClicked += (sender, args) =>
 			{
-				DisplayAlert("Info", $"Info Window Clicked: {((Pin)sender!).Label}", "OK");
+				DisplayAlertAsync("Info", $"Info Window Clicked: {((Pin)sender!).Label}", "OK");
 			};
 
 			pinsMap.Pins.Add(microsoftPin);
@@ -109,7 +109,7 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 
 		void OnMapClicked(object sender, MapClickedEventArgs e)
 		{
-			DisplayAlert("Map", $"Map {e.Location.Latitude}, {e.Location.Longitude} clicked.", "Ok");
+			DisplayAlertAsync("Map", $"Map {e.Location.Latitude}, {e.Location.Longitude} clicked.", "Ok");
 		}
 	}
 }

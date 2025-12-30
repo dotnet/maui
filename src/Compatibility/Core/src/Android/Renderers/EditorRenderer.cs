@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		void ITextWatcher.OnTextChanged(ICharSequence s, int start, int before, int count)
 		{
-			Internals.TextTransformUtilites.SetPlainText(Element, s?.ToString());
+			Internals.TextTransformUtilities.SetPlainText(Element, s?.ToString());
 		}
 
 		protected override void OnFocusChangeRequested(object sender, VisualElement.FocusRequestArgs e)

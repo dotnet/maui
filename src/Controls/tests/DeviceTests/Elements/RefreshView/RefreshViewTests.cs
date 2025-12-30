@@ -28,6 +28,7 @@ namespace Microsoft.Maui.DeviceTests
 				});
 			});
 		}
+
 		[Fact(DisplayName = "Setting the content of RefreshView removes previous platform view from visual tree")]
 		public async Task ChangingRefreshViewContentRemovesPreviousContentsPlatformViewFromVisualTree()
 		{
@@ -46,6 +47,72 @@ namespace Microsoft.Maui.DeviceTests
 				await Task.Yield();
 				Assert.NotNull(((newContent as IView).Handler as IPlatformViewHandler).PlatformView.GetParent());
 			});
+		}
+
+		[Fact(DisplayName = "IsRefreshEnabled defaults to true")]
+		public void IsRefreshEnabledDefaultsToTrue()
+		{
+			var refreshView = new RefreshView();
+			Assert.True(refreshView.IsRefreshEnabled);
+		}
+
+		[Fact(DisplayName = "IsRefreshEnabled can be set to false")]
+		public void IsRefreshEnabledCanBeSetToFalse()
+		{
+			var refreshView = new RefreshView();
+			refreshView.IsRefreshEnabled = false;
+			Assert.False(refreshView.IsRefreshEnabled);
+		}
+
+		[Fact(DisplayName = "IsRefreshEnabled prevents IsRefreshing from being set to true")]
+		public void IsRefreshEnabledPreventsIsRefreshingFromBeingSetToTrue()
+		{
+			var refreshView = new RefreshView();
+			refreshView.IsRefreshEnabled = false;
+			refreshView.IsRefreshing = true;
+			Assert.False(refreshView.IsRefreshing);
+		}
+
+		[Fact(DisplayName = "IsRefreshing can be set to false when IsRefreshEnabled is false")]
+		public void IsRefreshingCanBeSetToFalseWhenIsRefreshEnabledIsFalse()
+		{
+			var refreshView = new RefreshView();
+			refreshView.IsRefreshing = true;
+			Assert.True(refreshView.IsRefreshing);
+			
+			refreshView.IsRefreshEnabled = false;
+			Assert.False(refreshView.IsRefreshing); // Should be automatically cleared
+		}
+
+		[Fact(DisplayName = "IsEnabled prevents IsRefreshing from being set to true")]
+		public void IsEnabledPreventsIsRefreshingFromBeingSetToTrue()
+		{
+			var refreshView = new RefreshView();
+			refreshView.IsEnabled = false;
+			refreshView.IsRefreshing = true;
+			Assert.False(refreshView.IsRefreshing);
+		}
+
+		[Fact(DisplayName = "Setting IsRefreshEnabled to false while refreshing stops refresh")]
+		public void SettingIsRefreshEnabledToFalseWhileRefreshingStopsRefresh()
+		{
+			var refreshView = new RefreshView();
+			refreshView.IsRefreshing = true;
+			Assert.True(refreshView.IsRefreshing);
+			
+			refreshView.IsRefreshEnabled = false;
+			Assert.False(refreshView.IsRefreshing);
+		}
+
+		[Fact(DisplayName = "Setting IsEnabled to false while refreshing stops refresh")]
+		public void SettingIsEnabledToFalseWhileRefreshingStopsRefresh()
+		{
+			var refreshView = new RefreshView();
+			refreshView.IsRefreshing = true;
+			Assert.True(refreshView.IsRefreshing);
+			
+			refreshView.IsEnabled = false;
+			Assert.False(refreshView.IsRefreshing);
 		}
 	}
 }

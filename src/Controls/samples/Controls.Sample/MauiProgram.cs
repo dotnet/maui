@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using Maui.Controls.Sample.Controls;
 using Maui.Controls.Sample.Pages;
 using Maui.Controls.Sample.Services;
@@ -67,6 +70,36 @@ namespace Maui.Controls.Sample
 					handlers.AddHandler<Microsoft.Maui.Controls.CarouselView, Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2>();
 				});
 #endif
+			}
+
+			// Diagnostics
+			{
+				appBuilder.Services.AddMetrics();
+
+				ActivitySource.AddActivityListener(new ActivityListener
+				{
+					ShouldListenTo = source => source.Name is "Microsoft.Maui",
+					Sample = (ref ActivityCreationOptions<ActivityContext> options) => ActivitySamplingResult.AllDataAndRecorded,
+					ActivityStarted = activity => Console.WriteLine("Started: {0,-15} {1,-60} [{2}]", activity.OperationName, activity.Id, GetTags(activity.TagObjects)),
+					ActivityStopped = activity => Console.WriteLine("Stopped: {0,-15} {1,-60} {2,-15} [{3}]", activity.OperationName, activity.Id, activity.Duration, GetTags(activity.TagObjects)),
+				});
+
+				MeterListener meterListener = new();
+				meterListener.InstrumentPublished = (instrument, listener) =>
+				{
+					if (instrument.Meter.Name is "Microsoft.Maui")
+					{
+						listener.EnableMeasurementEvents(instrument);
+					}
+				};
+				meterListener.SetMeasurementEventCallback<int>((instrument, measurement, tags, state) =>
+				{
+					Console.WriteLine($"{instrument.Name} recorded measurement {measurement} [{GetTags(tags.ToArray())}]");
+				});
+				meterListener.Start();
+
+				static string GetTags(IEnumerable<KeyValuePair<string, object?>> tags) =>
+					 string.Join(", ", tags.Where(t => t.Value is not null).Select(t => t.Key));
 			}
 
 			if (UseMauiGraphicsSkia)

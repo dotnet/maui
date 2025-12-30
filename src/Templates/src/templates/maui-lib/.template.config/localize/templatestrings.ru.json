@@ -4,5 +4,5 @@
   "description": "Проект по созданию библиотеки классов .NET MAUI",
   "postActions/openInEditor/description": "Открывает файл Class1.cs в редакторе.",
   "symbols/Framework/description": "Целевая платформа для проекта.",
-  "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Target DOTNET_TFM_VALUE"
+  "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Целевое значение DOTNET_TFM_VALUE"
 }

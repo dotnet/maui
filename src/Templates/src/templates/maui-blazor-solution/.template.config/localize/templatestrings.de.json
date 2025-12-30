@@ -28,6 +28,6 @@
   "symbols/AllInteractive/displayName": "_Aktivieren des interaktiven Renderings global auf der gesamten Website",
   "symbols/AllInteractive/description": "Konfiguriert, ob jede Seite interaktiv werden soll, indem ein interaktiver Rendermodus auf der obersten Ebene angewendet wird. False gibt an, dass Seiten standardmäßig statisches Serverrendering verwenden und auf Seiten- oder Komponentenbasis als interaktiv markiert werden können.",
   "symbols/NoHttps/description": "Ob HTTPS deaktiviert werden soll. Diese Option gilt nur, wenn \"Individual\" nicht für \"--auth\" verwendet wird.",
-  "symbols/UseProgramMain/displayName": "Keine Anweisungen _der obersten Ebene verwenden",
+  "symbols/UseProgramMain/displayName": "Keine Anweisungen_der obersten Ebene verwenden",
   "symbols/UseProgramMain/description": "Gibt an, ob anstelle von Anweisungen der obersten Ebene eine explizite Programmklasse und eine Main-Methode generiert werden soll."
 }

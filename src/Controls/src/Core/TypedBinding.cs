@@ -205,7 +205,14 @@ namespace Microsoft.Maui.Controls.Internals
 			RelativeBindingSource relativeSource, Element relativeSourceTarget, BindableObject targetObject, BindableProperty targetProperty, SetterSpecificity specificity)
 #pragma warning restore RECS0165 // Asynchronous methods should return a Task instead of void
 		{
-			await relativeSource.Apply(this, relativeSourceTarget, targetObject, targetProperty, specificity);
+			try
+			{
+				await relativeSource.Apply(this, relativeSourceTarget, targetObject, targetProperty, specificity);
+			}
+			catch (Exception ex)
+			{
+				BindingDiagnostics.SendBindingFailure(this, relativeSource, targetObject, targetProperty, "Binding", BindingExpression.ApplyingRelativeSourceBindingErrorMessage, relativeSource.Mode, ex.Message);
+			}
 		}
 
 		internal override BindingBase Clone()
@@ -316,6 +323,10 @@ namespace Microsoft.Maui.Controls.Internals
 					catch (Exception ex) when (ex is NullReferenceException || ex is KeyNotFoundException || ex is IndexOutOfRangeException || ex is ArgumentOutOfRangeException)
 					{
 					}
+					catch (Exception ex)
+					{
+						BindingDiagnostics.SendBindingFailure(this, sourceObject, target, property, "Binding", $"Exception thrown from getter: {ex.Message}");
+					}
 				}
 				if (!BindingExpressionHelper.TryConvert(ref value, property, property.ReturnType, true))
 				{
@@ -335,7 +346,21 @@ namespace Microsoft.Maui.Controls.Internals
 					BindingDiagnostics.SendBindingFailure(this, sourceObject, target, property, "Binding", BindingExpression.CannotConvertTypeErrorMessage, value, typeof(TProperty));
 					return;
 				}
-				_setter((TSource)sourceObject, (TProperty)value);
+
+				try
+				{
+					_setter((TSource)sourceObject, (TProperty)value);
+				}
+				catch (Exception ex) when (ex is NullReferenceException || ex is KeyNotFoundException || ex is IndexOutOfRangeException || ex is ArgumentOutOfRangeException)
+				{
+					// Ignore exceptions that are thrown when the source object is null or the property
+					// cannot be found. This can happen when the source object is a collection and the
+					// property is not found in the collection item.
+				}
+				catch (Exception ex)
+				{
+					BindingDiagnostics.SendBindingFailure(this, sourceObject, target, property, "Binding", $"Exception thrown from setter: {ex.Message}");
+				}
 			}
 		}
 

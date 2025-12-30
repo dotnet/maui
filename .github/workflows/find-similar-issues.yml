@@ -1,0 +1,541 @@
+name: "Find Similar Issues with AI"
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: read
+  issues: write
+  models: read  # Required for GitHub Models
+
+jobs:
+  find-similar-issues:
+    name: Find Similar Issues
+    runs-on: ubuntu-latest
+    if: github.event_name == 'issues' && github.repository_owner == 'dotnet'
+    
+    steps:
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Create package.json
+        run: |
+          cat > package.json << 'PACKAGEJSON'
+          {
+            "name": "similar-issues-finder",
+            "version": "1.0.0",
+            "dependencies": {
+              "@octokit/rest": "^20.0.0"
+            }
+          }
+          PACKAGEJSON
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Find Similar Issues with GitHub Models
+        id: find-similar
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_LABELS: ${{ toJSON(github.event.issue.labels.*.name) }}
+        run: |
+          node << 'EOF'
+          const { Octokit } = require("@octokit/rest");
+          const fs = require('fs');
+          const https = require('https');
+          
+          const octokit = new Octokit({
+            auth: process.env.GITHUB_TOKEN
+          });
+          
+          // GitHub Models endpoint
+          const endpoint = "https://models.inference.ai.azure.com";
+          const modelName = "gpt-4o-mini";
+          const githubToken = process.env.GITHUB_TOKEN;
+          
+          const issueNumber = parseInt(process.env.ISSUE_NUMBER);
+          const issueTitle = process.env.ISSUE_TITLE;
+          const issueBody = process.env.ISSUE_BODY || '';
+          const issueLabels = JSON.parse(process.env.ISSUE_LABELS || '[]');
+          const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
+          
+          async function findSimilarIssues() {
+            try {
+              console.log('Fetching existing issues...');
+              
+              // Fetch recent issues (last 1000)
+              const allIssues = [];
+              let page = 1;
+              
+              while (page <= 10) {
+                const response = await octokit.issues.listForRepo({
+                  owner,
+                  repo,
+                  state: 'all',
+                  per_page: 100,
+                  page,
+                  sort: 'updated',
+                  direction: 'desc'
+                });
+                
+                if (response.data.length === 0) break;
+                
+                allIssues.push(...response.data.filter(issue => 
+                  issue.number !== issueNumber && !issue.pull_request
+                ));
+                
+                page++;
+              }
+              
+              console.log(`Analyzing ${allIssues.length} issues`);
+              
+              // Enhanced filtering with multiple factors
+              const currentText = `${issueTitle}\n${issueBody}`.toLowerCase();
+              const currentWords = extractSignificantWords(currentText);
+              const currentPlatforms = extractPlatforms(issueLabels);
+              
+              const candidates = allIssues.map(issue => {
+                const issueText = `${issue.title}\n${issue.body || ''}`.toLowerCase();
+                const issueWords = extractSignificantWords(issueText);
+                const issueLabels = issue.labels.map(l => l.name);
+                const issuePlatforms = extractPlatforms(issueLabels);
+                
+                // Calculate base text similarity
+                const textScore = calculateJaccardSimilarity(currentWords, issueWords);
+                
+                // Calculate label similarity boost
+                const labelBoost = calculateLabelSimilarity(issueLabels, issueLabels);
+                
+                // Calculate platform match boost
+                const platformBoost = calculatePlatformBoost(currentPlatforms, issuePlatforms);
+                
+                // Calculate time decay factor (recent issues more relevant)
+                const timeDecay = calculateTimeDecay(issue.created_at);
+                
+                // Calculate interaction score (popular issues more relevant)
+                const interactionScore = calculateInteractionScore(issue.comments, issue.reactions);
+                
+                // Combined score with weighted factors
+                const quickScore = (
+                  textScore * 0.50 +           // 50% text similarity
+                  labelBoost * 0.20 +          // 20% label match
+                  platformBoost * 0.15 +       // 15% platform match
+                  timeDecay * 0.10 +           // 10% recency
+                  interactionScore * 0.05      // 5% popularity
+                );
+                
+                return { 
+                  issue, 
+                  quickScore,
+                  textScore,
+                  labelBoost,
+                  platformBoost,
+                  timeDecay,
+                  interactionScore
+                };
+              })
+              .filter(c => c.quickScore > 0.10) // Only keep reasonable candidates (lowered threshold)
+              .sort((a, b) => b.quickScore - a.quickScore)
+              .slice(0, 100); // Top 100 candidates for AI analysis (increased for better coverage)
+              
+              console.log(`Filtered to ${candidates.length} candidates for AI analysis`);
+              
+              // Use AI for semantic similarity on candidates
+              const topSimilar = await analyzeWithAI(candidates, currentPlatforms);
+              
+              const output = {
+                found: topSimilar.length > 0,
+                issues: topSimilar
+              };
+              
+              fs.writeFileSync('similar-issues.json', JSON.stringify(output, null, 2));
+              console.log('Similar issues found:', topSimilar.length);
+              
+            } catch (error) {
+              console.error('Error finding similar issues:', error);
+              fs.writeFileSync('similar-issues.json', JSON.stringify({ found: false, issues: [] }, null, 2));
+            }
+          }
+          
+          async function analyzeWithAI(candidates, currentPlatforms) {
+            const currentIssue = `Title: ${issueTitle}\n\nDescription: ${issueBody}`;
+            const platformInfo = currentPlatforms.length > 0 
+              ? `\nAffected platforms: ${currentPlatforms.join(', ')}` 
+              : '';
+            
+            const similarities = [];
+            
+            for (const candidate of candidates) {
+              const { issue, textScore, labelBoost, platformBoost, timeDecay, interactionScore } = candidate;
+              
+              // Fetch comments to check for workarounds/solutions
+              let hasWorkaround = false;
+              let workaroundText = '';
+              
+              try {
+                // Only fetch comments if issue has some (avoid unnecessary API calls)
+                if (issue.comments > 0) {
+                  const commentsResponse = await octokit.issues.listComments({
+                    owner,
+                    repo,
+                    issue_number: issue.number,
+                    per_page: 100 // Get up to 100 comments
+                  });
+                  
+                  const comments = commentsResponse.data;
+                  
+                  // Check issue body and comments for workaround indicators
+                  const allText = [
+                    issue.body || '',
+                    ...comments.map(c => c.body)
+                  ].join('\n').toLowerCase();
+                  
+                  // Look for workaround/solution keywords
+                  const workaroundPatterns = [
+                    /workaround/i,
+                    /work[\s-]?around/i,
+                    /temporary fix/i,
+                    /temp fix/i,
+                    /solution/i,
+                    /solved/i,
+                    /fixed by/i,
+                    /fix:/i,
+                    /resolved by/i,
+                    /this fixed it/i,
+                    /this works/i,
+                    /try this/i
+                  ];
+                  
+                  hasWorkaround = workaroundPatterns.some(pattern => pattern.test(allText));
+                  
+                  // If workaround found, try to extract a snippet
+                  if (hasWorkaround) {
+                    // Find the most relevant comment
+                    const workaroundComment = comments.find(c => 
+                      workaroundPatterns.some(p => p.test(c.body))
+                    );
+                    
+                    if (workaroundComment) {
+                      // Extract first 150 chars around the workaround mention
+                      const body = workaroundComment.body;
+                      const match = workaroundPatterns.find(p => p.test(body));
+                      if (match) {
+                        const matchText = body.match(match);
+                        if (matchText) {
+                          const index = body.indexOf(matchText[0]);
+                          const start = Math.max(0, index - 50);
+                          const end = Math.min(body.length, index + 100);
+                          workaroundText = body.substring(start, end).trim();
+                          if (start > 0) workaroundText = '...' + workaroundText;
+                          if (end < body.length) workaroundText = workaroundText + '...';
+                        }
+                      }
+                    }
+                  }
+                }
+              } catch (error) {
+                console.error(`Error fetching comments for #${issue.number}:`, error.message);
+              }
+              
+              const candidateText = `Title: ${issue.title}\n\nDescription: ${issue.body || 'No description'}`;
+              const candidatePlatforms = extractPlatforms(issue.labels.map(l => l.name));
+              const candidatePlatformInfo = candidatePlatforms.length > 0 
+                ? `\nAffected platforms: ${candidatePlatforms.join(', ')}` 
+                : '';
+              
+              try {
+                const systemPrompt = "You are an expert at analyzing GitHub issues for the .NET MAUI framework. " +
+                  "Determine if two issues describe the same problem, related problems, or duplicates. " +
+                  "Consider: Technical details (controls, APIs, platforms affected), error messages and stack traces, " +
+                  "symptoms and behaviors described, platform specifics (Android, iOS, Windows, macOS). " +
+                  "Give extra weight to platform matches. " +
+                  "Respond with ONLY a JSON object in this exact format: " +
+                  '{"score": 0.0, "reason": "brief explanation"} ' +
+                  "Where score is between 0.0 and 1.0: " +
+                  "1.0 = Exact duplicate, 0.8-0.9 = Very similar likely related, " +
+                  "0.7-0.79 = Possibly related, Below 0.7 = Different issues";
+                
+                const userPrompt = "Current Issue:" + platformInfo + "\\n" + currentIssue + 
+                  "\\n\\n---\\n\\nCompare with:" + candidatePlatformInfo + "\\n" + candidateText;
+                
+                const apiResponse = await fetch(endpoint + "/chat/completions", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + githubToken
+                  },
+                  body: JSON.stringify({
+                    messages: [
+                      {
+                        role: "system",
+                        content: systemPrompt
+                      },
+                      {
+                        role: "user",
+                        content: userPrompt
+                      }
+                    ],
+                    model: modelName,
+                    temperature: 0.3,
+                    max_tokens: 150
+                  })
+                });
+                
+                const response = await apiResponse.json();
+                
+                // Check for API errors
+                if (!response.choices || !response.choices[0]) {
+                  console.error(`Invalid API response for #${issue.number}:`, JSON.stringify(response));
+                  continue;
+                }
+                
+                let content = response.choices[0].message.content.trim();
+                console.log(`AI Response for #${issue.number}:`, content);
+                
+                // Remove markdown code blocks if present
+                content = content.replace(/^```json\s*/gm, '').replace(/^```\s*/gm, '').trim();
+                
+                const result = JSON.parse(content);
+                let aiScore = parseFloat(result.score);
+                
+                // Apply platform boost to AI score if platforms match
+                if (platformBoost > 0.5) {
+                  aiScore = Math.min(1.0, aiScore * 1.15);
+                }
+                
+                // Apply time decay to final score
+                const finalScore = aiScore * (0.85 + (timeDecay * 0.15));
+                
+                if (finalScore >= 0.60) { // Lowered from 0.70 to catch more potential matches
+                  const ageInDays = Math.floor((Date.now() - new Date(issue.created_at)) / (1000 * 60 * 60 * 24));
+                  const isPopular = issue.comments > 5 || (issue.reactions && issue.reactions.total_count > 5);
+                  
+                  similarities.push({
+                    number: issue.number,
+                    title: issue.title,
+                    state: issue.state,
+                    url: issue.html_url,
+                    score: finalScore,
+                    reason: result.reason || '',
+                    labels: issue.labels.map(l => l.name),
+                    comments: issue.comments,
+                    age_days: ageInDays,
+                    is_popular: isPopular,
+                    platforms: candidatePlatforms,
+                    has_workaround: hasWorkaround,
+                    workaround_snippet: workaroundText
+                  });
+                }
+                
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+              } catch (error) {
+                console.error(`Error analyzing issue #${issue.number}:`, error.message);
+              }
+            }
+            
+            return similarities.sort((a, b) => b.score - a.score).slice(0, 5);
+          }
+          
+          function extractPlatforms(labels) {
+            const platforms = [];
+            const platformLabels = labels.filter(l => l.startsWith('platform/'));
+            
+            platformLabels.forEach(label => {
+              const platform = label.replace('platform/', '');
+              platforms.push(platform);
+            });
+            
+            return platforms;
+          }
+          
+          function calculateLabelSimilarity(labels1, labels2) {
+            // Focus on area- and platform/ labels
+            const areaLabels1 = labels1.filter(l => l.startsWith('area-') || l.startsWith('platform/'));
+            const areaLabels2 = labels2.filter(l => l.startsWith('area-') || l.startsWith('platform/'));
+            
+            if (areaLabels1.length === 0 || areaLabels2.length === 0) return 0;
+            
+            const intersection = areaLabels1.filter(l => areaLabels2.includes(l));
+            const union = [...new Set([...areaLabels1, ...areaLabels2])];
+            
+            return intersection.length / union.length;
+          }
+          
+          function calculatePlatformBoost(platforms1, platforms2) {
+            if (platforms1.length === 0 || platforms2.length === 0) return 0;
+            
+            const matches = platforms1.filter(p => platforms2.includes(p));
+            
+            // Strong boost if platforms match
+            return matches.length > 0 ? 1.0 : 0.0;
+          }
+          
+          function calculateTimeDecay(createdAt) {
+            const ageInDays = (Date.now() - new Date(createdAt)) / (1000 * 60 * 60 * 24);
+            
+            // Exponential decay: issues older than 365 days get reduced weight
+            // Recent issues (< 30 days) get full weight
+            if (ageInDays <= 30) return 1.0;
+            if (ageInDays <= 90) return 0.9;
+            if (ageInDays <= 180) return 0.8;
+            if (ageInDays <= 365) return 0.7;
+            return 0.5; // Older issues still considered but with less weight
+          }
+          
+          function calculateInteractionScore(comments, reactions) {
+            // Popular issues (lots of engagement) get slight boost
+            const commentScore = Math.min(comments / 20, 1.0); // Max at 20 comments
+            const reactionScore = reactions && reactions.total_count 
+              ? Math.min(reactions.total_count / 10, 1.0) // Max at 10 reactions
+              : 0;
+            
+            return (commentScore * 0.7 + reactionScore * 0.3);
+          }
+          
+          function extractSignificantWords(text) {
+            const cleaned = text
+              .replace(/```[\s\S]*?```/g, '')
+              .replace(/`[^`]+`/g, '')
+              .replace(/https?:\/\/[^\s]+/g, '')
+              .replace(/[^a-z0-9\s]/gi, ' ');
+            
+            const words = cleaned.split(/\s+/)
+              .filter(w => w.length > 3)
+              .filter(w => !isCommonWord(w));
+            
+            return [...new Set(words)];
+          }
+          
+          function calculateJaccardSimilarity(set1, set2) {
+            const intersection = set1.filter(w => set2.includes(w));
+            const union = [...new Set([...set1, ...set2])];
+            return union.length > 0 ? intersection.length / union.length : 0;
+          }
+          
+          function isCommonWord(word) {
+            const common = ['the', 'and', 'for', 'with', 'this', 'that', 'from', 'have', 'not', 'are', 'was', 'will', 'can', 'when', 'where', 'what', 'how', 'use', 'using', 'does', 'issue', 'problem', 'error', 'work', 'working'];
+            return common.includes(word.toLowerCase());
+          }
+          
+          findSimilarIssues();
+          EOF
+
+      - name: Post Comment with Results
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          node << 'EOF'
+          const { Octokit } = require("@octokit/rest");
+          const fs = require('fs');
+          
+          const octokit = new Octokit({
+            auth: process.env.GITHUB_TOKEN
+          });
+          
+          const issueNumber = parseInt(process.env.ISSUE_NUMBER);
+          const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
+          
+          async function postComment() {
+            try {
+              if (!fs.existsSync('similar-issues.json')) {
+                console.log('No results file found, skipping comment');
+                return;
+              }
+              
+              const results = JSON.parse(fs.readFileSync('similar-issues.json', 'utf8'));
+              
+              let commentBody = '';
+              
+              if (results.found && results.issues.length > 0) {
+                commentBody = `## 🔍 Similar Issues Found\n\n`;
+                commentBody += `We found **${results.issues.length} similar issue(s)** that might be related to your report. Click to expand for details.\n\n`;
+                
+                results.issues.forEach((issue, index) => {
+                  const confidencePercent = Math.round(issue.score * 100);
+                  const stateEmoji = issue.state === 'open' ? '🟢' : '🔴';
+                  const stateText = issue.state === 'open' ? 'Open' : 'Closed ✅';
+                  const labels = issue.labels.length > 0 
+                    ? issue.labels.slice(0, 5).map(l => `\`${l}\``).join(', ') 
+                    : 'None';
+                  
+                  // Add badges for notable attributes
+                  let badges = '';
+                  if (issue.has_workaround) badges += ' ✅';  // Workaround available
+                  if (issue.is_popular) badges += ' 🔥';
+                  if (issue.age_days <= 30) badges += ' 🆕';
+                  if (issue.platforms && issue.platforms.length > 0) {
+                    badges += ` 📱[${issue.platforms.join(', ')}]`;
+                  }
+                  
+                  commentBody += `<details>\n`;
+                  commentBody += `<summary><strong>${index + 1}. ${stateEmoji} <a href="${issue.url}">#${issue.number}</a>: ${issue.title}</strong> (${confidencePercent}% match)${badges}</summary>\n\n`;
+                  commentBody += `**State:** ${stateText}  \n`;
+                  commentBody += `**Labels:** ${labels}  \n`;
+                  commentBody += `**Age:** ${issue.age_days} days | **Comments:** ${issue.comments}  \n`;
+                  
+                  if (issue.reason) {
+                    commentBody += `**Why similar:** ${issue.reason}\n`;
+                  }
+                  
+                  // Highlight workaround availability
+                  if (issue.has_workaround) {
+                    commentBody += `\n> ✅ **Workaround/Solution mentioned in comments**\n`;
+                    if (issue.workaround_snippet) {
+                      commentBody += `> \n> _"${issue.workaround_snippet}"_\n`;
+                    }
+                    commentBody += `> \n> 👉 [Read full discussion](${issue.url})\n`;
+                  }
+                  
+                  commentBody += `\n</details>\n\n`;
+                });
+                
+                commentBody += `---\n\n`;
+                commentBody += `<details>\n`;
+                commentBody += `<summary><strong>📋 What should I do?</strong></summary>\n\n`;
+                commentBody += `Please review the issues listed above:\n\n`;
+                commentBody += `- ✅ If any of these issues describe the same problem, check if they contain a **solution or workaround**\n`;
+                commentBody += `- 🔄 If one of these is a duplicate, please **close your issue** and add your details to the existing issue\n`;
+                commentBody += `- 🧹 This helps keep our issue list clean and **increases the chances** of issues being resolved\n\n`;
+                commentBody += `If none of these issues match your problem, no action is needed. Our team will review your issue during triage.\n\n`;
+                commentBody += `**Legend:**\n`;
+                commentBody += `✅ = Has workaround/solution | 🔥 = Popular (lots of engagement) | 🆕 = Recent (< 30 days) | 📱 = Platform-specific\n\n`;
+                commentBody += `</details>\n\n`;
+                commentBody += `---\n\n`;
+                commentBody += `*This is an automated message powered by GitHub Models AI. [Learn more about our triage process](https://github.com/dotnet/maui/blob/main/docs/TriageProcess.md).*`;
+              } else {
+                commentBody = `## 🔍 Similar Issues Search\n\n`;
+                commentBody += `We searched our repository for similar issues, but none were found with a confidence score of 70% or higher.\n\n`;
+                commentBody += `This could mean:\n`;
+                commentBody += `- ✨ This might be a new or unique issue\n`;
+                commentBody += `- 📝 The issue description is significantly different from existing reports\n\n`;
+                commentBody += `Our team will review this issue during our regular triage process. Thank you for your report!\n\n`;
+                commentBody += `---\n\n`;
+                commentBody += `*This is an automated message powered by GitHub Models AI. [Learn more about our triage process](https://github.com/dotnet/maui/blob/main/docs/TriageProcess.md).*`;
+              }
+              
+              await octokit.issues.createComment({
+                owner,
+                repo,
+                issue_number: issueNumber,
+                body: commentBody
+              });
+              
+              console.log('Comment posted successfully');
+              
+            } catch (error) {
+              console.error('Error posting comment:', error);
+              process.exit(1);
+            }
+          }
+          
+          postComment();
+          EOF

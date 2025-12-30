@@ -2,12 +2,12 @@
 
 namespace Microsoft.Maui.ManualTests.Views
 {
-    public partial class VerticalListVariableSizeItemsPage : ContentPage
-    {
-        public VerticalListVariableSizeItemsPage()
-        {
-            InitializeComponent();
-            BindingContext = new MonkeysViewModel();
-        }
-    }
+	public partial class VerticalListVariableSizeItemsPage : ContentPage
+	{
+		public VerticalListVariableSizeItemsPage()
+		{
+			InitializeComponent();
+			BindingContext = new MonkeysViewModel();
+		}
+	}
 }

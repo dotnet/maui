@@ -119,7 +119,14 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 			else
 			{
-				_wrapGrid.ItemWidth = Math.Floor(_wrapGrid.ActualWidth / Span);
+				if (Span > 1)
+				{
+					_wrapGrid.ItemWidth = Math.Floor(_wrapGrid.ActualWidth / Span);
+				}
+				else
+				{
+					_wrapGrid.ClearValue(ItemsWrapGrid.ItemWidthProperty);
+				}
 			}
 		}
 
@@ -157,7 +164,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
 		{
-			_formsEmptyView?.Layout(new Rect(0, 0, finalSize.Width, finalSize.Height));
+			_formsEmptyView?.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height));
 
 			return base.ArrangeOverride(finalSize);
 		}

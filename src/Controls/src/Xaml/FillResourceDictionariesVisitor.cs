@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		public void Visit(ValueNode node, INode parentNode)
 		{
-			if (!Context.Types.TryGetValue((IElementNode)parentNode, out var type) || !typeof(ResourceDictionary).IsAssignableFrom(type))
+			if (!Context.Types.TryGetValue((ElementNode)parentNode, out var type) || !typeof(ResourceDictionary).IsAssignableFrom(type))
 				return;
 
 			node.Accept(new ApplyPropertiesVisitor(Context, stopOnResourceDictionary: false), parentNode);
@@ -55,14 +55,14 @@ namespace Microsoft.Maui.Controls.Xaml
 			}
 
 			//Only proceed further if the node is a keyless RD
-			if (parentNode is IElementNode
-				&& Context.Types.TryGetValue((IElementNode)parentNode, out var parentType)
+			if (parentNode is ElementNode
+				&& Context.Types.TryGetValue((ElementNode)parentNode, out var parentType)
 				&& typeof(ResourceDictionary).IsAssignableFrom(parentType)
-				&& !((IElementNode)parentNode).Properties.ContainsKey(XmlName.xKey))
+				&& !((ElementNode)parentNode).Properties.ContainsKey(XmlName.xKey))
 				node.Accept(new ApplyPropertiesVisitor(Context, stopOnResourceDictionary: false), parentNode);
 			else if (parentNode is ListNode
-					 && typeof(ResourceDictionary).IsAssignableFrom(Context.Types[((IElementNode)parentNode.Parent)])
-					 && !((IElementNode)parentNode.Parent).Properties.ContainsKey(XmlName.xKey))
+					 && typeof(ResourceDictionary).IsAssignableFrom(Context.Types[((ElementNode)parentNode.Parent)])
+					 && !((ElementNode)parentNode.Parent).Properties.ContainsKey(XmlName.xKey))
 				node.Accept(new ApplyPropertiesVisitor(Context, stopOnResourceDictionary: false), parentNode);
 		}
 
@@ -78,14 +78,14 @@ namespace Microsoft.Maui.Controls.Xaml
 		{
 			if (!(node is ElementNode))
 				return false;
-			if (parentNode is IElementNode
-				&& Context.Types.TryGetValue((IElementNode)parentNode, out var parentType)
+			if (parentNode is ElementNode parentElementNode
+				&& Context.Types.TryGetValue(parentElementNode, out var parentType)
 				&& typeof(ResourceDictionary).IsAssignableFrom(parentType)
-				&& !((IElementNode)parentNode).Properties.ContainsKey(XmlName.xKey))
+				&& !((ElementNode)parentNode).Properties.ContainsKey(XmlName.xKey))
 				return true;
 			if (parentNode is ListNode
-				&& typeof(ResourceDictionary).IsAssignableFrom(Context.Types[((IElementNode)parentNode.Parent)])
-				&& !((IElementNode)parentNode.Parent).Properties.ContainsKey(XmlName.xKey))
+				&& typeof(ResourceDictionary).IsAssignableFrom(Context.Types[((ElementNode)parentNode.Parent)])
+				&& !((ElementNode)parentNode.Parent).Properties.ContainsKey(XmlName.xKey))
 				return true;
 			return false;
 		}

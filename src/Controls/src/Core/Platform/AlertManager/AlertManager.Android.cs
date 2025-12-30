@@ -1,6 +1,7 @@
 ﻿#nullable disable
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Android.App;
 using Android.Content;
@@ -21,45 +22,15 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	internal partial class AlertManager
 	{
-		readonly List<AlertRequestHelper> Subscriptions = new List<AlertRequestHelper>();
-
-		internal void Subscribe(Window window)
+		private partial IAlertManagerSubscription CreateSubscription(IMauiContext mauiContext)
 		{
-			IMauiContext mauiContext = window?.MauiContext;
-			Context context = mauiContext?.Context;
+			Context context = mauiContext.Context;
 			Activity activity = context.GetActivity();
 
-			if (Subscriptions.Any(s => s.Activity == activity))
-			{
-				return;
-			}
-
-			Subscriptions.Add(new AlertRequestHelper(activity, mauiContext));
+			return new AlertRequestHelper(activity, mauiContext);
 		}
 
-		internal void Unsubscribe(Window window)
-		{
-			IMauiContext mauiContext = window?.Handler?.MauiContext;
-			Context context = mauiContext?.Context;
-			Activity activity = context?.GetActivity();
-			if (activity == null)
-				return;
-
-			var toRemove = Subscriptions.Where(s => s.Activity == activity).ToList();
-
-			foreach (AlertRequestHelper alertRequestHelper in toRemove)
-			{
-				alertRequestHelper.Dispose();
-				Subscriptions.Remove(alertRequestHelper);
-			}
-		}
-
-		internal void ResetBusyCount(Activity context)
-		{
-			Subscriptions.FirstOrDefault(s => s.Activity == context)?.ResetBusyCount();
-		}
-
-		internal sealed class AlertRequestHelper : IDisposable
+		internal sealed partial class AlertRequestHelper
 		{
 			int _busyCount;
 
@@ -67,34 +38,14 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				Activity = context;
 				MauiContext = mauiContext;
-
-#pragma warning disable CS0618 // TODO: Remove when we internalize/replace MessagingCenter
-				MessagingCenter.Subscribe<Page, bool>(Activity, Page.BusySetSignalName, OnPageBusy);
-				MessagingCenter.Subscribe<Page, AlertArguments>(Activity, Page.AlertSignalName, OnAlertRequested);
-				MessagingCenter.Subscribe<Page, PromptArguments>(Activity, Page.PromptSignalName, OnPromptRequested);
-				MessagingCenter.Subscribe<Page, ActionSheetArguments>(Activity, Page.ActionSheetSignalName, OnActionSheetRequested);
-#pragma warning restore CS0618 // Type or member is obsolete
 			}
 
 			public Activity Activity { get; }
+
 			public IMauiContext MauiContext { get; }
 
-			public void Dispose()
-			{
-#pragma warning disable CS0618 // TODO: Remove when we internalize/replace MessagingCenter
-				MessagingCenter.Unsubscribe<Page, bool>(Activity, Page.BusySetSignalName);
-				MessagingCenter.Unsubscribe<Page, AlertArguments>(Activity, Page.AlertSignalName);
-				MessagingCenter.Unsubscribe<Page, PromptArguments>(Activity, Page.PromptSignalName);
-				MessagingCenter.Unsubscribe<Page, ActionSheetArguments>(Activity, Page.ActionSheetSignalName);
-#pragma warning restore CS0618 // Type or member is obsolete
-			}
-
-			public void ResetBusyCount()
-			{
-				_busyCount = 0;
-			}
-
-			void OnPageBusy(IView sender, bool enabled)
+			// TODO: This method is obsolete in .NET 10 and will be removed in .NET11.
+			public partial void OnPageBusy(Page sender, bool enabled)
 			{
 				// Verify that the page making the request is part of this activity 
 				if (!PageIsInThisContext(sender) && enabled)
@@ -107,8 +58,14 @@ namespace Microsoft.Maui.Controls.Platform
 				UpdateProgressBarVisibility(_busyCount > 0);
 			}
 
-			void OnActionSheetRequested(IView sender, ActionSheetArguments arguments)
+			public partial void OnActionSheetRequested(Page sender, ActionSheetArguments arguments)
 			{
+				// Wait for handler to be ready before showing dialog
+				if (WaitForHandlerIfNeeded(sender, () => OnActionSheetRequested(sender, arguments)))
+				{
+					return;
+				}
+
 				// Verify that the page making the request is part of this activity 
 				if (!PageIsInThisContext(sender))
 				{
@@ -166,8 +123,14 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 			}
 
-			void OnAlertRequested(IView sender, AlertArguments arguments)
+			public partial void OnAlertRequested(Page sender, AlertArguments arguments)
 			{
+				// Wait for handler to be ready before showing dialog
+				if (WaitForHandlerIfNeeded(sender, () => OnAlertRequested(sender, arguments)))
+				{
+					return;
+				}
+
 				// Verify that the page making the request is part of this activity 
 				if (!PageIsInThisContext(sender))
 				{
@@ -246,8 +209,14 @@ namespace Microsoft.Maui.Controls.Platform
 				return TextDirection.Ltr;
 			}
 
-			void OnPromptRequested(IView sender, PromptArguments arguments)
+			public partial void OnPromptRequested(Page sender, PromptArguments arguments)
 			{
+				// Wait for handler to be ready before showing dialog
+				if (WaitForHandlerIfNeeded(sender, () => OnPromptRequested(sender, arguments)))
+				{
+					return;
+				}
+
 				// Verify that the page making the request is part of this activity 
 				if (!PageIsInThisContext(sender))
 				{
@@ -288,6 +257,22 @@ namespace Microsoft.Maui.Controls.Platform
 				alertDialog.Window.SetSoftInputMode(SoftInput.StateVisible);
 				alertDialog.Show();
 				editText.RequestFocus();
+			}
+
+			bool WaitForHandlerIfNeeded(IView sender, System.Action action)
+			{
+				if (sender.Handler is null && sender is VisualElement ve)
+				{
+					void OnHandlerReady(object s, EventArgs e)
+					{
+						ve.HandlerChanged -= OnHandlerReady;
+						action();
+					}
+
+					ve.HandlerChanged += OnHandlerReady;
+					return true;
+				}
+				return false;
 			}
 
 			void UpdateProgressBarVisibility(bool isBusy)

@@ -30,11 +30,39 @@ namespace Microsoft.Maui.Handlers
 			return Microsoft.Maui.PlatformInterop.CreateToolbar(context, context.GetActionBarHeight(), -1);
 		}
 
+		protected override void ConnectHandler(MaterialToolbar platformView)
+		{
+			base.ConnectHandler(platformView);
+			platformView.ViewAttachedToWindow += OnViewAttachedToWindow;
+			platformView.ViewDetachedFromWindow += OnViewDetachedFromWindow;
+		}
+
+
+		void OnViewDetachedFromWindow(object? sender, View.ViewDetachedFromWindowEventArgs e)
+		{
+			if (sender is MaterialToolbar mt && mt.IsAlive() && mt.Context is not null)
+			{
+				MauiWindowInsetListenerExtensions.RemoveMauiWindowInsetListener(mt, mt.Context);
+			}
+		}
+		
+		void OnViewAttachedToWindow(object? sender, View.ViewAttachedToWindowEventArgs e)
+		{
+			var context = MauiContext?.Context ?? throw new InvalidOperationException("Context cannot be null");
+            MauiWindowInsetListenerExtensions.TrySetMauiWindowInsetListener(PlatformView, context);
+        }
+
 		private protected override void OnDisconnectHandler(object platformView)
 		{
 			base.OnDisconnectHandler(platformView);
+
 			if (platformView is MaterialToolbar mt && mt.IsAlive())
+			{
 				mt.RemoveFromParent();
+				mt.ViewAttachedToWindow -= OnViewAttachedToWindow;
+				mt.ViewDetachedFromWindow -= OnViewDetachedFromWindow;
+
+			};
 		}
 
 		public static void MapTitle(IToolbarHandler arg1, IToolbar arg2)

@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		public void Visit(MarkupNode markupnode, INode parentNode)
 		{
-			var parentElement = parentNode as IElementNode;
+			var parentElement = parentNode as ElementNode;
 			XmlName propertyName;
 			if (!markupnode.TryGetPropertyName(parentNode, out propertyName))
 				return;
@@ -54,10 +54,10 @@ namespace Microsoft.Maui.Controls.Xaml
 
 			var markupString = markupnode.MarkupString;
 			var node =
-				ParseExpression(ref markupString, markupnode.NamespaceResolver, markupnode, markupnode, parentNode) as IElementNode;
+				ParseExpression(ref markupString, markupnode.NamespaceResolver, markupnode, markupnode, parentNode) as ElementNode;
 			if (node != null)
 			{
-				((IElementNode)parentNode).Properties[propertyName] = node;
+				((ElementNode)parentNode).Properties[propertyName] = node;
 				node.Parent = parentNode;
 			}
 		}
@@ -114,7 +114,7 @@ namespace Microsoft.Maui.Controls.Xaml
 		[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
 		public class MarkupExpansionParser : MarkupExpressionParser, IExpressionParser<INode>
 		{
-			IElementNode _node;
+			ElementNode _node;
 			internal Action<Exception> ExceptionHandler { get; set; }
 			object IExpressionParser.Parse(string match, ref string remaining, IServiceProvider serviceProvider)
 			{

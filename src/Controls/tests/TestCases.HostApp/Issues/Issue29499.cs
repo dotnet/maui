@@ -13,6 +13,7 @@ public class Issue29499 : Shell
 	{
 		public Issue29499Page()
 		{
+			this.SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
 			SetForegroundColor(this, Colors.Red);
 			ToolbarItems.Add(new ToolbarItem { Text = "Item1", Order = ToolbarItemOrder.Secondary });
 			ToolbarItems.Add(new ToolbarItem { Text = "Item2", Order = ToolbarItemOrder.Secondary });

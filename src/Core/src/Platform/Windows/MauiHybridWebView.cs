@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Platform
 #if !NETSTANDARD
 	[RequiresDynamicCode(HybridWebViewHandler.DynamicFeatures)]
 #endif
-	public class MauiHybridWebView : WebView2, IHybridPlatformWebView
+	public partial class MauiHybridWebView : WebView2, IHybridPlatformWebView
 	{
 		private readonly WeakReference<HybridWebViewHandler> _handler;
 		internal Task<bool>? WebViewReadyTask { get; set; }

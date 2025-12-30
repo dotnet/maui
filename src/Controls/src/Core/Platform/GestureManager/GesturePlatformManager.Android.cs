@@ -25,7 +25,6 @@ namespace Microsoft.Maui.Controls.Platform
 		bool _inputTransparent;
 		bool _isEnabled;
 		bool? _focusableDefaultValue;
-		bool? _clickableDefaultValue;
 		protected virtual VisualElement? Element => _handler?.VirtualView as VisualElement;
 
 		View? View => Element as View;
@@ -129,6 +128,7 @@ namespace Microsoft.Maui.Controls.Platform
 				throw new InvalidOperationException("Context cannot be null here");
 
 			var context = Control.Context;
+			var pointerHandler = InitializePointerHandler();
 			var listener = new InnerGestureListener(
 				new TapGestureHandler(() => View, () =>
 				{
@@ -140,10 +140,12 @@ namespace Microsoft.Maui.Controls.Platform
 				new PanGestureHandler(() => View),
 				new SwipeGestureHandler(() => View),
 				InitializeDragAndDropHandler(),
-				InitializePointerHandler()
+				pointerHandler
 			);
 
-			return new TapAndPanGestureDetector(context, listener);
+			var detector = new TapAndPanGestureDetector(context, listener);
+			detector.SetPointerGestureHandler(pointerHandler);
+			return detector;
 		}
 
 		ScaleGestureDetector InitializeScaleDetector()
@@ -228,15 +230,12 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					platformView.KeyPress += OnKeyPress;
 					_focusableDefaultValue ??= platformView.Focusable;
-					_clickableDefaultValue ??= platformView.Clickable;
 					platformView.Focusable = true;
-					platformView.Clickable = true;
 				}
 			}
 			else
 			{
 				_focusableDefaultValue = null;
-				_clickableDefaultValue = null;
 			}
 		}
 
@@ -292,9 +291,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (platformView is not null)
 			{
 				platformView.Focusable = _focusableDefaultValue ?? platformView.Focusable;
-				platformView.Clickable = _clickableDefaultValue ?? platformView.Clickable;
 				_focusableDefaultValue = null;
-				_clickableDefaultValue = null;
 				platformView.Touch -= OnPlatformViewTouched;
 				platformView.KeyPress -= OnKeyPress;
 			}

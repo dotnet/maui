@@ -22,7 +22,7 @@ public class Issue28634 : TestShell
 	{
 		public Issue28634ContentPage()
 		{
-
+			this.SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
 			var searchHandler = new SearchHandler
 			{
 				Placeholder = "Type a fruit name to search",

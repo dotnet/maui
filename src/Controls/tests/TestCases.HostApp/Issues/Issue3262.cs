@@ -279,7 +279,7 @@ namespace Maui.Controls.Sample.Issues
 							Command = new Command(async () =>
 							{
 								var result = await webView.EvaluateJavaScriptAsync("document.cookie");
-								await this.DisplayAlert("cookie", result, "Cancel");
+								await this.DisplayAlertAsync("cookie", result, "Cancel");
 							})
 						},
 						new Button()

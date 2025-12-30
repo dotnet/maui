@@ -2,12 +2,12 @@
 
 namespace Microsoft.Maui.ManualTests.Views
 {
-    public partial class VerticalListHeaderFooterDataTemplatePage : ContentPage
-    {
-        public VerticalListHeaderFooterDataTemplatePage()
-        {
-            InitializeComponent();
-            BindingContext = new MonkeysViewModel();
-        }
-    }
+	public partial class VerticalListHeaderFooterDataTemplatePage : ContentPage
+	{
+		public VerticalListHeaderFooterDataTemplatePage()
+		{
+			InitializeComponent();
+			BindingContext = new MonkeysViewModel();
+		}
+	}
 }

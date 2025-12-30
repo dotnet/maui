@@ -1,5 +1,6 @@
 ﻿using Android.App;
 using Android.Content.Res;
+using AppCompatAlertDialog = AndroidX.AppCompat.App.AlertDialog;
 
 namespace Microsoft.Maui.Platform
 {
@@ -49,15 +50,14 @@ namespace Microsoft.Maui.Platform
 				platformPicker.Text = picker.GetItem(picker.SelectedIndex);
 		}
 
-		internal static void UpdateFlowDirection(this AndroidX.AppCompat.App.AlertDialog alertDialog, MauiPicker platformPicker)
+		internal static void UpdateFlowDirection(this AppCompatAlertDialog alertDialog, MauiPicker platformPicker)
 		{
 			var platformLayoutDirection = platformPicker.LayoutDirection;
 
 			// Propagate the MauiPicker LayoutDirection to the AlertDialog
 			var dv = alertDialog.Window?.DecorView;
 
-			if (dv is not null)
-				dv.LayoutDirection = platformLayoutDirection;
+			dv?.LayoutDirection = platformLayoutDirection;
 
 			var lv = alertDialog?.ListView;
 

@@ -4,13 +4,19 @@ using System.Runtime.CompilerServices;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
+#if !_MAUIXAML_SOURCEGEN_BACKCOMPAT
+	[Obsolete("Specify xaml inflator and other options using msbuild metadata on MauiXaml items in your .csproj: <MauiXaml Update=\"YourFile.xaml\" Inflator=\"XamlC\" />", error: true)]
+#endif
 	[Flags]
 	public enum XamlCompilationOptions
 	{
-		Skip = 1 << 0,
-		Compile = 1 << 1
+		Skip = XamlInflator.Runtime,
+		Compile = XamlInflator.XamlC,
 	}
 
+#if !_MAUIXAML_SOURCEGEN_BACKCOMPAT
+	[Obsolete("Specify xaml inflator and other options using msbuild metadata on MauiXaml items in your .csproj: <MauiXaml Update=\"YourFile.xaml\" Inflator=\"XamlC\" />", error: true)]
+#endif
 	[AttributeUsage(AttributeTargets.Assembly | AttributeTargets.Module | AttributeTargets.Class, Inherited = false)]
 	public sealed class XamlCompilationAttribute : Attribute
 	{
@@ -22,6 +28,7 @@ namespace Microsoft.Maui.Controls.Xaml
 		public XamlCompilationOptions XamlCompilationOptions { get; set; }
 	}
 
+#if _MAUIXAML_SOURCEGEN_BACKCOMPAT
 	static class XamlCExtensions
 	{
 		public static bool IsCompiled(this Type type)
@@ -39,4 +46,5 @@ namespace Microsoft.Maui.Controls.Xaml
 			return false;
 		}
 	}
+#endif
 }

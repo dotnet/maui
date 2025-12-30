@@ -1,43 +1,32 @@
 using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class Issue1306 : ListView
 {
-	public partial class Issue1306 : ListView
+	public Issue1306() => InitializeComponent();
+
+	[Collection("Issue")]
+	public class Tests : IDisposable
 	{
-		public Issue1306()
+		public Tests() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		public void Dispose() => DispatcherProvider.SetCurrent(null);
+
+		[Theory]
+		[XamlInflatorData]
+		internal void AssignBindingMarkupToBindingBase(XamlInflator inflator)
 		{
-			InitializeComponent();
-		}
+			var listView = new Issue1306(inflator);
 
-		public Issue1306(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		public class Tests
-		{
-			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
-
-			[TestCase(false)]
-			[TestCase(true)]
-			public void AssignBindingMarkupToBindingBase(bool useCompiledXaml)
-			{
-				var listView = new Issue1306(useCompiledXaml);
-
-				Assert.NotNull(listView.GroupDisplayBinding);
-				Assert.NotNull(listView.GroupShortNameBinding);
-				Assert.That(listView.GroupDisplayBinding, Is.TypeOf<Binding>());
-				Assert.That(listView.GroupShortNameBinding, Is.TypeOf<Binding>());
-				Assert.AreEqual("Key", (listView.GroupDisplayBinding as Binding).Path);
-				Assert.AreEqual("Key", (listView.GroupShortNameBinding as Binding).Path);
-			}
+			Assert.NotNull(listView.GroupDisplayBinding);
+			Assert.NotNull(listView.GroupShortNameBinding);
+			Assert.IsType<Binding>(listView.GroupDisplayBinding);
+			Assert.IsType<Binding>(listView.GroupShortNameBinding);
+			Assert.Equal("Key", (listView.GroupDisplayBinding as Binding).Path);
+			Assert.Equal("Key", (listView.GroupShortNameBinding as Binding).Path);
 		}
 	}
 }

@@ -3,6 +3,7 @@ using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
+
 public class Issue19500 : _IssuesUITest
 {
 	public override string Issue => "[iOS] Editor is not be able to scroll if IsReadOnly is true";
@@ -18,7 +19,7 @@ public class Issue19500 : _IssuesUITest
 	public void TextInEditorShouldScroll()
 	{
 		var yPosLabel = App.WaitForElement(yPositionLabel);
-		App.ScrollDown("editor");
+		App.ScrollDown("editor", ScrollStrategy.Gesture, withInertia: false);
 #if MACCATALYST
 		App.ScrollDown("editor"); // To make sure the editor is scrolled down
 		var yPos = yPosLabel.GetText();

@@ -29,7 +29,7 @@ namespace Maui.Controls.Sample
 
 			System.Diagnostics.Debug.WriteLine($"Tapped the test overlay button.");
 
-			var result = await window!.Page!.DisplayActionSheet(
+			var result = await window!.Page!.DisplayActionSheetAsync(
 				"Greetings from Visual Studio Client Experiences!",
 				"Goodbye!",
 				null,

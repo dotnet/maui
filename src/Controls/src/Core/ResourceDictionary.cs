@@ -10,7 +10,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-
+using System.Runtime.ExceptionServices;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls
 		internal static Action<ResourceDictionary, Uri, string, Assembly, System.Xml.IXmlLineInfo> s_setAndLoadSource;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='Source']/Docs/*" />
-		[System.ComponentModel.TypeConverter(typeof(RDSourceTypeConverter))]
+		[TypeConverter(typeof(RDSourceTypeConverter))]
 		public Uri Source
 		{
 			get { return _source; }
@@ -46,7 +46,19 @@ namespace Microsoft.Maui.Controls
 		public void SetAndCreateSource<T>(Uri value)
 			where T : ResourceDictionary, new()
 		{
-			var instance = s_instances.GetValue(typeof(T), static _ => new T());
+			var instance = s_instances.GetValue(typeof(T), static _ =>
+			{
+				try
+				{
+					return new T();
+				}
+				catch (TargetInvocationException tie) when (tie.InnerException is not null)
+				{
+					ExceptionDispatchInfo.Capture(tie.InnerException).Throw();
+					throw;
+				}
+			});
+
 			SetSource(value, instance);
 		}
 
@@ -66,7 +78,18 @@ namespace Microsoft.Maui.Controls
 
 		internal static ResourceDictionary GetOrCreateInstance([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
 		{
-			return s_instances.GetValue(type, _ => (ResourceDictionary)Activator.CreateInstance(type));
+			return s_instances.GetValue(type, _ =>
+			{
+				try
+				{
+					return (ResourceDictionary)Activator.CreateInstance(type);
+				}
+				catch (TargetInvocationException tie) when (tie.InnerException is not null)
+				{
+					ExceptionDispatchInfo.Capture(tie.InnerException).Throw();
+					throw;
+				}
+			});
 		}
 
 		internal void SetSource(Uri source, ResourceDictionary sourceInstance)

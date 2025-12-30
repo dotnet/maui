@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue31606MainPage">
+  <ContentPage.ToolbarItems>
+    <ToolbarItem Order="Primary" Text="Menu Option 1" SemanticProperties.Description="Info about option 1" />
+    <ToolbarItem Order="Secondary" Text="Menu Option 2" SemanticProperties.Description="Info about option 2" />
+  </ContentPage.ToolbarItems>
+
+  <VerticalStackLayout Padding="10" HorizontalOptions="Start">
+    <Label Text="Semantic properties test" FontAttributes="Bold"/>
+
+    <Label Text="1) Image with a description and a hint:"/>
+    <Image Source="coffee.png" WidthRequest="150" HeightRequest="150"
+           SemanticProperties.Description="Like"
+           SemanticProperties.Hint="Like this post."/>
+
+    <Label Text="2) Label with a semantic heading level:"/>
+    <Label Text="Installation" SemanticProperties.HeadingLevel="Level2" />
+
+    <Label AutomationId="TestStatus" Text="If this label appears, the test passed."/>
+  </VerticalStackLayout>
+</ContentPage>

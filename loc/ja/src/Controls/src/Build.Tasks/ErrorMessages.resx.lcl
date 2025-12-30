@@ -14,7 +14,7 @@
         <Str Cat="Text">
           <Val><![CDATA[No Add() method defined on "{0}{1}".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Add() メソッドが "{0}{1}" に定義されていません。]]></Val>
+            <Val><![CDATA["{0}{1}" に Add() メソッドが定義されていません。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -23,7 +23,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Missing a "public static Get{0}" method or a public instance property getter for the attached property "{1}.{0}Property".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[添付プロパティ "{1}. {0}Property" の "public static Get{0}" メソッドまたはパブリック インスタンス プロパティ ゲッターがありません。]]></Val>
+            <Val><![CDATA[添付プロパティ "{1}.{0}Property" の "public static Get{0}" メソッド、またはパブリック インスタンス プロパティ ゲッターがありません。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -59,7 +59,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Binding: "{0}" cannot be parsed as an index for a "{1}".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[バインド: "{0}" は、"{1}" のインデックスとして解析できません。]]></Val>
+            <Val><![CDATA[バインド: "{0}" を "{1}" のインデックスとして解析することはできません。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -167,7 +167,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Invalid Xaml "{0}".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Xaml "{0}" が無効です。]]></Val>
+            <Val><![CDATA[XAML "{0}" が無効です。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -194,7 +194,7 @@
         <Str Cat="Text">
           <Val><![CDATA[No property, BindableProperty, or event found for "{0}", or mismatching type between value and property.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA["{0}" のプロパティ、BindableProperty、またはイベントが見つからないか、値とプロパティの型が一致しません。]]></Val>
+            <Val><![CDATA["{0}" のプロパティ、BindableProperty、イベントが見つからないか、値とプロパティの型が一致しません。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -203,7 +203,7 @@
         <Str Cat="Text">
           <Val><![CDATA[No static method found for "{0}::{1} ({2})".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA["{0}::{1} ({2})" の静的メソッドが見つかりません。]]></Val>
+            <Val><![CDATA["{0}::{1} ({2})" の静的メソッドが見つかりませんでした。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -239,7 +239,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Missing mandatory property "{0}" on "{1}".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA["{1}" の必須プロパティ "{0}" がありません。]]></Val>
+            <Val><![CDATA["{1}" に必須プロパティ "{0}" がありません。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -248,7 +248,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Cannot resolve property "{0}" on type "{1} (property missing or missing accessors)".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[型 "{1}" のプロパティ"{0}"を解決できません (プロパティが見つからないか、アクセサーがありません)。]]></Val>
+            <Val><![CDATA[型 "{1}" のプロパティ "{0} " を解決できません (プロパティが見つからないか、アクセサーがありません)。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -257,7 +257,7 @@
         <Str Cat="Text">
           <Val><![CDATA["A resource with the key "{0}" is already present in the ResourceDictionary.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[キーが "{0}"のリソースは、ResourceDictionary 内に既に存在します。]]></Val>
+            <Val><![CDATA[キーが "{0}" のリソースは、ResourceDictionary 内に既に存在します。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -350,7 +350,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Consider attributing the markup extension "{0}" with [RequireService]5D; or [AcceptEmptyServiceProvider]5D; if it doesn't require any.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[マークアップ拡張 "{0}" に [RequireService]5D; または [AcceptEmptyServiceProvider]5D; が必要ない場合は、その拡張子に起因することを検討してください。]]></Val>
+            <Val><![CDATA[マークアップ拡張 "{0}" がサービスを必要としない場合は、[RequireService]5D; または [AcceptEmptyServiceProvider]5D; 属性を付与することを検討してください。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -371,7 +371,7 @@
         <Str Cat="Text">
           <Val><![CDATA[x:Key expects a string literal.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[x:Key には文字列リテラルが期待されています。]]></Val>
+            <Val><![CDATA[x:Key には文字列リテラルが必要です。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -398,7 +398,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Undeclared xmlns prefix "{0}".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[宣言されていない xmlns プレフィックス "{0}" です。]]></Val>
+            <Val><![CDATA[宣言されていない xmlns プレフィックス "{0}"。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

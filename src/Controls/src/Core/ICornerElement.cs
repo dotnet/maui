@@ -1,6 +1,13 @@
 namespace Microsoft.Maui.Controls;
 
-interface ICornerElement
+/// <summary>
+/// Defines properties for elements that can have rounded corners.
+/// </summary>
+/// <remarks>
+/// This interface is implemented by UI elements that support corner radius customization,
+/// allowing for consistent styling of corners across different controls.
+/// </remarks>
+public interface ICornerElement
 {
 	/// <summary>
 	/// Gets the radius for the corners of the element.

@@ -22,6 +22,7 @@ public partial class Issue20250 : TestShell
 	{
 		public Issue20250ContentPage()
 		{
+			SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
 			Shell.SetSearchHandler(this, new SearchHandler
 			{
 				AutomationId = "searchHandler",

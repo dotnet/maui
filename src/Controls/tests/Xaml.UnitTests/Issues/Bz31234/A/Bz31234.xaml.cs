@@ -1,31 +1,19 @@
-using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests.A
+namespace Microsoft.Maui.Controls.Xaml.UnitTests.A;
+
+public partial class Bz31234 : ContentPage
 {
-	public partial class Bz31234 : ContentPage
+	public Bz31234() => InitializeComponent();
+
+	[Collection("Issue")]
+	public class Tests
 	{
-		public Bz31234()
+		[Theory]
+		[XamlInflatorData]
+		internal void ShouldPass(XamlInflator inflator)
 		{
-			InitializeComponent();
-		}
-
-		public Bz31234(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		public class Tests
-		{
-			[TestCase(true), TestCase(false)]
-			public void ShouldPass(bool useCompiledXaml)
-			{
-				new Bz31234(useCompiledXaml);
-				Assert.Pass();
-			}
+			new Bz31234(inflator);
 		}
 	}
 }
