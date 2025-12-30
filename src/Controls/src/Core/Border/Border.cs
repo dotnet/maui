@@ -45,6 +45,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets or sets the child content that is placed inside the border. This is a bindable property.
 		/// </summary>
+		/// <value>A <see cref="View"/> that contains the child content, or <see langword="null"/> if no content is set.</value>
 		public View? Content
 		{
 			get { return (View?)GetValue(ContentProperty); }
@@ -197,6 +198,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets or sets the shape of the border. This is a bindable property.
 		/// </summary>
+		/// <value>An <see cref="IShape"/> that defines the border shape, or <see langword="null"/> for the default <see cref="Rectangle"/> shape.</value>
 		/// <remarks>
 		/// The default value is a <see cref="Rectangle"/>. You can set this to other shapes like <see cref="RoundRectangle"/>, 
 		/// <see cref="Ellipse"/>, or any custom <see cref="IShape"/> implementation to change the border's appearance.
@@ -211,6 +213,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets or sets the brush used to paint the border stroke. This is a bindable property.
 		/// </summary>
+		/// <value>A <see cref="Brush"/> used for the border stroke, or <see langword="null"/> if no stroke is set.</value>
 		public Brush? Stroke
 		{
 			set { SetValue(StrokeProperty, value); }
@@ -230,6 +233,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets or sets the pattern of dashes and gaps used to outline the border. This is a bindable property.
 		/// </summary>
+		/// <value>A <see cref="DoubleCollection"/> containing the dash pattern, or <see langword="null"/> for a solid line.</value>
 		public DoubleCollection? StrokeDashArray
 		{
 			set { SetValue(StrokeDashArrayProperty, value); }
@@ -239,6 +243,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets or sets the distance within the dash pattern where a dash begins. This is a bindable property.
 		/// </summary>
+		/// <value>A <see cref="double"/> representing the offset in device-independent units. The default is 0.0.</value>
 		public double StrokeDashOffset
 		{
 			set { SetValue(StrokeDashOffsetProperty, value); }
@@ -248,6 +253,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets or sets the shape at the start and end of the border stroke. This is a bindable property.
 		/// </summary>
+		/// <value>A <see cref="PenLineCap"/> value. The default is <see cref="PenLineCap.Flat"/>.</value>
 		public PenLineCap StrokeLineCap
 		{
 			set { SetValue(StrokeLineCapProperty, value); }
@@ -257,6 +263,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets or sets the type of join that is used at the vertices of the border stroke. This is a bindable property.
 		/// </summary>
+		/// <value>A <see cref="PenLineJoin"/> value. The default is <see cref="PenLineJoin.Miter"/>.</value>
 		public PenLineJoin StrokeLineJoin
 		{
 			set { SetValue(StrokeLineJoinProperty, value); }
@@ -298,6 +305,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets the stroke dash pattern as a float array for platform rendering.
 		/// </summary>
+		/// <value>A float array containing the dash pattern values, or <see langword="null"/> for a solid line.</value>
 		public float[]? StrokeDashPattern
 		{
 			get
