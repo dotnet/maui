@@ -58,11 +58,14 @@ REM The cake script will use --root to find artifacts
 
 REM Run the cake script with the testOnly target
 REM Note: The cake script's testOnly task looks for built artifacts in artifacts/bin
+REM Pass the full path to a fake project file in the scenario directory so GetDirectory() works
 echo Running device tests via Cake script...
 echo Current directory: %CD%
+set PROJECT_PATH=%HELIX_CORRELATION_PAYLOAD%\artifacts\bin\%SCENARIO_NAME%\%SCENARIO_NAME%.csproj
+echo Project path: %PROJECT_PATH%
 dotnet cake windows.cake ^
     --target=testOnly ^
-    --project="%SCENARIO_NAME%.csproj" ^
+    --project="%PROJECT_PATH%" ^
     --device=%DEVICE% ^
     --packageid=%PACKAGE_ID% ^
     --results="%HELIX_WORKITEM_UPLOAD_ROOT%" ^
