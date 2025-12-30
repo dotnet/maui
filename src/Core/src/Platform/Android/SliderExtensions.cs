@@ -58,6 +58,7 @@ namespace Microsoft.Maui.Platform
 				mSlider.TrackActiveTintList = ColorStateList.ValueOf(slider.MinimumTrackColor.ToPlatform());
 			}
 		}
+
 		public static void UpdateMaximumTrackColor(this SeekBar seekBar, ISlider slider)
 		{
 			if (slider.MaximumTrackColor != null)
@@ -74,6 +75,7 @@ namespace Microsoft.Maui.Platform
 				mSlider.TrackInactiveTintList = ColorStateList.ValueOf(slider.MaximumTrackColor.ToPlatform());
 			}
 		}
+		
 		public static void UpdateThumbColor(this SeekBar seekBar, ISlider slider) =>
 			seekBar.Thumb?.SetColorFilter(slider.ThumbColor, FilterMode.SrcIn);
 
