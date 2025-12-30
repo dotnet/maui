@@ -38,12 +38,19 @@ if not exist "%ARTIFACTS_BIN%\%SCENARIO_NAME%" (
     xcopy /E /I /Y "%HELIX_WORKITEM_PAYLOAD%" "%ARTIFACTS_BIN%\%SCENARIO_NAME%"
 )
 
+REM Change to the correlation payload root directory where .config/dotnet-tools.json exists
+cd /d "%HELIX_CORRELATION_PAYLOAD%"
+
+REM Restore dotnet tools (required for dotnet cake)
+echo Restoring dotnet tools...
+dotnet tool restore
+if %ERRORLEVEL% NEQ 0 (
+    echo WARNING: dotnet tool restore failed with exit code %ERRORLEVEL%
+    echo Continuing anyway...
+)
+
 REM Change to the work item root directory
 cd /d "%HELIX_WORKITEM_ROOT%"
-
-REM Create a minimal project structure for the cake script
-REM The cake script expects to find the project at a certain path
-set PROJECT_PATH=src\placeholder.csproj
 
 REM Run the cake script with the testOnly target
 REM Note: The cake script's testOnly task looks for built artifacts in artifacts/bin
