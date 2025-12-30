@@ -11,6 +11,22 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateBackground(this MaterialButton platformView, IButton button) =>
 			platformView.UpdateButtonBackground(button);
 
+		public static void UpdateTextColor(this MaterialButton platformButton, ITextStyle button)
+		{
+			var textColor = button.TextColor;
+
+			if (textColor != null)
+			{
+				platformButton.SetTextColor(textColor.ToPlatform());
+			}
+			else if (platformButton.Context is not null)
+			{
+				// Reset to default theme text color when null
+				using var tempButton = new MaterialButton(platformButton.Context);
+				platformButton.SetTextColor(tempButton.TextColors);
+			}
+		}
+
 		public static void UpdateStrokeColor(this MaterialButton platformView, IButton button) =>
 			platformView.UpdateButtonStroke(button);
 
