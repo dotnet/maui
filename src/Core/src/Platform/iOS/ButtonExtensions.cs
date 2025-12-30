@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Maui.Graphics;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
@@ -30,16 +31,32 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateTextColor(this UIButton platformButton, ITextStyle button)
 		{
-			if (button.TextColor is null)
-				return;
-
-			var color = button.TextColor.ToPlatform();
+			// Reset to default system blue color when TextColor is null.
+			// This is essential for VisualState setters to be properly unapplied.
+			var color = button.TextColor?.ToPlatform() ?? UIColor.SystemBlue;
 
 			platformButton.SetTitleColor(color, UIControlState.Normal);
 			platformButton.SetTitleColor(color, UIControlState.Highlighted);
 			platformButton.SetTitleColor(color, UIControlState.Disabled);
 
 			platformButton.TintColor = color;
+		}
+
+		public static void UpdateBackground(this UIButton platformButton, Graphics.Paint? paint)
+		{
+			// Remove previous background gradient layer if any
+			platformButton.RemoveBackgroundLayer();
+
+			if (paint.IsNullOrEmpty())
+			{
+				// Reset to clear background for buttons when paint is null.
+				// UIColor.Clear ensures proper transparency when VisualState setters are unapplied.
+				platformButton.BackgroundColor = UIColor.Clear;
+				return;
+			}
+
+			// Delegate to the standard view background update
+			ViewExtensions.UpdateBackground(platformButton, paint);
 		}
 
 		public static void UpdateCharacterSpacing(this UIButton platformButton, ITextStyle textStyle)

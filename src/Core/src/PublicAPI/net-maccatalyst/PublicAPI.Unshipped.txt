@@ -1,2 +1,3 @@
 #nullable enable
+static Microsoft.Maui.Platform.ButtonExtensions.UpdateBackground(this UIKit.UIButton! platformButton, Microsoft.Maui.Graphics.Paint? paint) -> void
 override Microsoft.Maui.Platform.MauiView.DidUpdateFocus(UIKit.UIFocusUpdateContext! context, UIKit.UIFocusAnimationCoordinator! coordinator) -> void
