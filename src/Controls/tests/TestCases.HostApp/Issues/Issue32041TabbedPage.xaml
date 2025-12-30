@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <TabbedPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+            xmlns:android="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;assembly=Microsoft.Maui.Controls"
             x:Class="Maui.Controls.Sample.Issues.Issue32041TabbedPage"
-            Title="Issue 32041 TabbedPage">
+            Title="Issue 32041 TabbedPage"
+            android:TabbedPage.ToolbarPlacement="Bottom">
     
     <!-- Tab 1: Test page -->
     <ContentPage Title="Test" IconImageSource="dotnet_bot.png">
@@ -14,12 +16,12 @@
             
             <VerticalStackLayout Grid.Row="0" Padding="20" Spacing="10">
                 <Label 
-                    Text="TabbedPage with SoftInput.AdjustResize"
+                    Text="TabbedPage with Bottom Tabs + AdjustResize"
                     FontSize="18"
                     FontAttributes="Bold"/>
                 
                 <Label 
-                    Text="When keyboard appears, the entire page (including tabs at bottom) should resize. Tabs should move up and remain visible above keyboard."
+                    Text="When keyboard appears, the bottom tabs should move up and remain visible above keyboard."
                     FontSize="14"
                     TextColor="DarkSlateGray"/>
             </VerticalStackLayout>

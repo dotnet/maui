@@ -277,50 +277,41 @@ namespace Microsoft.Maui.Platform
 				// Only apply padding if AdjustResize is set AND keyboard is actually showing
 				if ((softInputMode & SoftInput.AdjustResize) == SoftInput.AdjustResize && imeHeight > 0)
 				{
-					// Find the content view inside the CoordinatorLayout
-					var contentView = coordinatorLayout.FindViewById(Resource.Id.navigationlayout_content);
-					if (contentView is not null && contentView.LayoutParameters is ViewGroup.MarginLayoutParams marginParams)
-					{
-						marginParams.BottomMargin = imeHeight;
-						contentView.LayoutParameters = marginParams;
-					}
-					else
-					{
-						// Fallback: Apply padding to CoordinatorLayout itself
-						coordinatorLayout.SetPadding(
-							coordinatorLayout.PaddingLeft,
-							coordinatorLayout.PaddingTop,
-							coordinatorLayout.PaddingRight,
-							imeHeight
-						);
-					}
-
+					SetCoordinatorLayoutBottomSpace(coordinatorLayout, imeHeight);
 					// Return true to indicate we handled the IME insets and they should be consumed
 					return true;
 				}
 				else
 				{
 					// Clear any existing padding when keyboard is not showing or AdjustResize is not set
-					var contentView = coordinatorLayout.FindViewById(Resource.Id.navigationlayout_content);
-					if (contentView is not null && contentView.LayoutParameters is ViewGroup.MarginLayoutParams marginParams)
-					{
-						marginParams.BottomMargin = 0;
-						contentView.LayoutParameters = marginParams;
-					}
-					else
-					{
-						// Clear CoordinatorLayout padding
-						coordinatorLayout.SetPadding(
-							coordinatorLayout.PaddingLeft,
-							coordinatorLayout.PaddingTop,
-							coordinatorLayout.PaddingRight,
-							0
-						);
-					}
+					SetCoordinatorLayoutBottomSpace(coordinatorLayout, 0);
 				}
 			}
 
 			return false;
+		}
+
+		/// <summary>
+		/// Sets the bottom margin or padding on a CoordinatorLayout to accommodate keyboard or other bottom insets.
+		/// Prefers setting margin on navigationlayout_content if available, otherwise falls back to padding on the layout itself.
+		/// </summary>
+		static void SetCoordinatorLayoutBottomSpace(AndroidX.CoordinatorLayout.Widget.CoordinatorLayout coordinatorLayout, int bottomSpace)
+		{
+			var contentView = coordinatorLayout.FindViewById(Resource.Id.navigationlayout_content);
+			if (contentView is not null && contentView.LayoutParameters is ViewGroup.MarginLayoutParams marginParams)
+			{
+				marginParams.BottomMargin = bottomSpace;
+				contentView.LayoutParameters = marginParams;
+			}
+			else
+			{
+				coordinatorLayout.SetPadding(
+					coordinatorLayout.PaddingLeft,
+					coordinatorLayout.PaddingTop,
+					coordinatorLayout.PaddingRight,
+					bottomSpace
+				);
+			}
 		}
 
 		static WindowInsetsCompat? ApplyDefaultWindowInsets(AView v, WindowInsetsCompat insets)
@@ -578,22 +569,7 @@ namespace Microsoft.Maui.Platform
 				{
 					if (view is AndroidX.CoordinatorLayout.Widget.CoordinatorLayout coordinatorLayout)
 					{
-						var contentView = coordinatorLayout.FindViewById(Resource.Id.navigationlayout_content);
-						if (contentView is not null && contentView.LayoutParameters is ViewGroup.MarginLayoutParams marginParams)
-						{
-							marginParams.BottomMargin = 0;
-							contentView.LayoutParameters = marginParams;
-						}
-						else
-						{
-							// Reset CoordinatorLayout padding
-							coordinatorLayout.SetPadding(
-								coordinatorLayout.PaddingLeft,
-								coordinatorLayout.PaddingTop,
-								coordinatorLayout.PaddingRight,
-								0
-							);
-						}
+						SetCoordinatorLayoutBottomSpace(coordinatorLayout, 0);
 						break; // Only need to reset once
 					}
 				}
