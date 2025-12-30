@@ -2,14 +2,14 @@ using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 99999, "Picker IsOpen property can be programmatically opened and closed", PlatformAffected.Android)]
-public class Issue99999 : ContentPage
+[Issue(IssueTracker.Github, 33331, "[Android] Picker IsOpen not reset when picker is dismissed", PlatformAffected.Android)]
+public class Issue33331 : ContentPage
 {
     readonly List<string> _fruits = new() { "Apple", "Banana", "Mango", "Orange", "Pineapple" };
     readonly Picker _testPicker;
     readonly Label _isOpenLabel;
 
-    public Issue99999()
+    public Issue33331()
     {
         _testPicker = new Picker
         {

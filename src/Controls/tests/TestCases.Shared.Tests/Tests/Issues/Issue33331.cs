@@ -5,11 +5,11 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-public class Issue99999 : _IssuesUITest
+public class Issue33331 : _IssuesUITest
 {
-    public override string Issue => "Picker IsOpen property can be programmatically opened and closed";
+    public override string Issue => "[Android] Picker IsOpen not reset when picker is dismissed";
 
-    public Issue99999(TestDevice device) : base(device) { }
+    public Issue33331(TestDevice device) : base(device) { }
 
     [Test]
     [Category(UITestCategories.Picker)]
@@ -25,9 +25,7 @@ public class Issue99999 : _IssuesUITest
         App.Tap("OpenPickerButton");
 
 #if ANDROID
-		    // On Android, picker is not dismissed by a single tap coordinate, so using two taps to dismiss
-		    App.TapCoordinates(250, 250);
-            App.TapCoordinates(250, 250);
+		App.Tap("Cancel");
 #elif IOS || MACCATALYST
         // On iOS, tap Done button
         App.Tap("Done");
