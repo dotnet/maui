@@ -14,12 +14,10 @@ public class Issue33264 : _IssuesUITest
 	[Category(UITestCategories.RadioButton)]
 	public void RadioButtonGroupBindingWorksInsideCollectionView()
 	{
-		// Wait for page to load
+		// Wait for all elements to load
 		App.WaitForElement("ChoicesCollectionView");
+		App.WaitForElement("Choice 2");
 		App.WaitForElement("SelectedValueLabel");
-
-		// Give it a moment to render
-		Task.Delay(500).Wait();
 		
 		// Initially, SelectedValue should show "None"
 		var initialValue = App.FindElement("SelectedValueLabel").GetText();
@@ -27,11 +25,10 @@ public class Issue33264 : _IssuesUITest
 		Assert.That(initialValue, Is.EqualTo("None"), "Initial value should be 'None'");
 
 		// Tap "Choice 2" radio button
-		App.WaitForElement("Choice 2");
 		App.Tap("Choice 2");
 
-		// Wait for binding update
-		Task.Delay(1000).Wait();
+		// Wait for binding update by polling the label text
+		App.WaitForTextToBePresentInElement("SelectedValueLabel", "Choice 2");
 
 		// Verify SelectedValue is updated
 		var selectedValue = App.FindElement("SelectedValueLabel").GetText();
@@ -41,8 +38,8 @@ public class Issue33264 : _IssuesUITest
 		// Tap "Choice 3" radio button
 		App.Tap("Choice 3");
 
-		// Wait for binding update
-		Task.Delay(1000).Wait();
+		// Wait for binding update by polling the label text
+		App.WaitForTextToBePresentInElement("SelectedValueLabel", "Choice 3");
 
 		// Verify SelectedValue is updated again
 		selectedValue = App.FindElement("SelectedValueLabel").GetText();
