@@ -56,11 +56,18 @@ pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1 -Limit 5
 
 ### Step 1: Find PRs to Review
 
-Load PRs into memory (the script will display summary):
+**CRITICAL**: You MUST use the PowerShell script below. Do NOT attempt to query GitHub directly with `gh` commands or `jq` if the script fails. The script contains important prioritization logic (SR3 before SR4, P/0 first, etc.) that cannot be replicated with ad-hoc queries.
 
 ```bash
 pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1 -Limit 5
 ```
+
+**If the script fails** (e.g., HTTP 502, network error, authentication issue):
+1. **STOP** - Do not attempt fallback queries
+2. **Report the error** to the user
+3. **Suggest retry** - Ask user to try again in a few minutes (GitHub API may be temporarily unavailable)
+
+**Why no fallbacks?** Ad-hoc queries bypass the milestone prioritization logic and will return incorrectly ordered results (e.g., SR4 PRs before SR3 PRs).
 
 ### Step 2: Present ONE PR at a Time
 
