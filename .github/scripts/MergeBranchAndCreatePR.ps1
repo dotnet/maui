@@ -51,17 +51,17 @@ function Write-Step {
     Write-Host "`n📋 $Message" -ForegroundColor Cyan
 }
 
-function Write-Success {
+function Write-SuccessMessage {
     param([string]$Message)
     Write-Host "✅ $Message" -ForegroundColor Green
 }
 
-function Write-Warning {
+function Write-WarningMessage {
     param([string]$Message)
     Write-Host "⚠️  $Message" -ForegroundColor Yellow
 }
 
-function Write-Error {
+function Write-ErrorMessage {
     param([string]$Message)
     Write-Host "❌ $Message" -ForegroundColor Red
 }
@@ -71,7 +71,7 @@ Write-Host "║          Branch Merge and PR Creation Script              ║" -
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
 
 if ($DryRun) {
-    Write-Warning "DRY RUN MODE - No changes will be made"
+    Write-WarningMessage "DRY RUN MODE - No changes will be made"
 }
 
 Write-Host "`nConfiguration:" -ForegroundColor White
@@ -97,8 +97,11 @@ try {
     Write-Step "Fetching latest from $Remote..."
     if (-not $DryRun) {
         git fetch $Remote --prune
+        if ($LASTEXITCODE -ne 0) {
+            throw "Failed to fetch from $Remote"
+        }
     }
-    Write-Success "Fetched latest"
+    Write-SuccessMessage "Fetched latest"
 
     Write-Host "`n" + ("=" * 60) -ForegroundColor DarkGray
     Write-Step "Processing: $SourceBranch → $TargetBranch"
@@ -108,27 +111,50 @@ try {
 
     # Check if there's already an open PR for this merge
     Write-Step "Checking for existing open PR..."
-    $existingPR = gh pr list --head $mergeBranch --base $TargetBranch --state open --json number,url --jq '.[0]' 2>&1
-    if ($existingPR -and $existingPR -ne "null") {
-        $prData = $existingPR | ConvertFrom-Json
-        Write-Error "An open PR already exists for this merge - previous week's PR was not merged!"
-        Write-Error "PR #$($prData.number): $($prData.url)"
-        Write-Error "Please merge or close the existing PR before running this workflow again."
+    try {
+        $existingPR = gh pr list --head $mergeBranch --base $TargetBranch --state open --json number,url --jq '.[0]' 2>&1 | Out-String
+        if ($LASTEXITCODE -ne 0) {
+            throw "gh pr list failed with exit code $LASTEXITCODE.`nOutput:`n$existingPR"
+        }
+        $existingPR = $existingPR.Trim()
+    }
+    catch {
+        throw "Failed to check for existing PRs: $_"
+    }
+
+    if ($existingPR -and $existingPR -ne "null" -and $existingPR -ne "") {
+        try {
+            $prData = $existingPR | ConvertFrom-Json
+        }
+        catch {
+            throw "Failed to parse PR data from 'gh pr list': $($_.Exception.Message). Raw output: $existingPR"
+        }
+        Write-ErrorMessage "An open PR already exists for this merge - previous week's PR was not merged!"
+        Write-ErrorMessage "PR #$($prData.number): $($prData.url)"
+        Write-ErrorMessage "Please merge or close the existing PR before running this workflow again."
         $result.Status = "Failed"
         $result.PRUrl = $prData.url
         $result.Error = "PR already exists - previous week's merge was not completed"
     }
     else {
         # Check if merge branch already exists on remote (but no PR - just need to create PR)
-        $existingBranch = git ls-remote --heads $Remote $mergeBranch 2>&1
-        $branchExists = [bool]$existingBranch
+        try {
+            $existingBranch = git ls-remote --heads $Remote $mergeBranch 2>&1 | Out-String
+            if ($LASTEXITCODE -ne 0) {
+                throw "git ls-remote failed with exit code $LASTEXITCODE. Output:`n$existingBranch"
+            }
+            $branchExists = -not [string]::IsNullOrWhiteSpace($existingBranch)
+        }
+        catch {
+            throw "Failed to check for existing branch '$mergeBranch' on remote '$Remote': $_"
+        }
 
         if ($branchExists) {
-            Write-Warning "Merge branch '$mergeBranch' exists on $Remote but no open PR found"
+            Write-WarningMessage "Merge branch '$mergeBranch' exists on $Remote but no open PR found"
             Write-Step "Creating PR for existing branch..."
         }
         else {
-            Write-Success "No existing merge branch found"
+            Write-SuccessMessage "No existing merge branch found"
         }
 
         try {
@@ -137,15 +163,21 @@ try {
                 Write-Step "Checking out $TargetBranch..."
                 if (-not $DryRun) {
                     git checkout "$Remote/$TargetBranch" -B $TargetBranch 2>&1 | Out-Null
+                    if ($LASTEXITCODE -ne 0) {
+                        throw "Failed to checkout $TargetBranch from $Remote"
+                    }
                 }
-                Write-Success "Checked out $TargetBranch"
+                Write-SuccessMessage "Checked out $TargetBranch"
 
                 # Create merge branch
                 Write-Step "Creating merge branch: $mergeBranch"
                 if (-not $DryRun) {
                     git checkout -b $mergeBranch
+                    if ($LASTEXITCODE -ne 0) {
+                        throw "Failed to create merge branch $mergeBranch"
+                    }
                 }
-                Write-Success "Created $mergeBranch"
+                Write-SuccessMessage "Created $mergeBranch"
 
                 # Merge source branch
                 Write-Step "Merging $SourceBranch into $mergeBranch..."
@@ -160,14 +192,17 @@ try {
                         throw "Merge failed: $mergeOutput"
                     }
                 }
-                Write-Success "Merged $SourceBranch"
+                Write-SuccessMessage "Merged $SourceBranch"
 
                 # Push branch
                 Write-Step "Pushing $mergeBranch to $Remote..."
                 if (-not $DryRun) {
                     git push -u $Remote $mergeBranch 2>&1 | Out-Null
+                    if ($LASTEXITCODE -ne 0) {
+                        throw "Failed to push $mergeBranch to $Remote"
+                    }
                 }
-                Write-Success "Pushed $mergeBranch"
+                Write-SuccessMessage "Pushed $mergeBranch"
             }
 
             # Create PR with p/0 label
@@ -201,7 +236,7 @@ This PR brings the latest changes from ``$SourceBranch`` branch into the ``$Targ
 
                 if ($LASTEXITCODE -eq 0) {
                     $result.PRUrl = $prUrl
-                    Write-Success "Created PR: $prUrl"
+                    Write-SuccessMessage "Created PR: $prUrl"
                 } else {
                     throw "Failed to create PR: $prUrl"
                 }
@@ -216,12 +251,19 @@ This PR brings the latest changes from ``$SourceBranch`` branch into the ``$Targ
         catch {
             $result.Status = "Failed"
             $result.Error = $_.Exception.Message
-            Write-Error $_.Exception.Message
+            Write-ErrorMessage $_.Exception.Message
             
             # Try to clean up
             if (-not $DryRun) {
-                git merge --abort 2>&1 | Out-Null
+                Write-Step "Attempting cleanup..."
+                $mergeAbort = git merge --abort 2>&1
+                if ($LASTEXITCODE -eq 0) {
+                    Write-Host "  Aborted merge" -ForegroundColor Gray
+                }
                 git checkout $originalBranch 2>&1 | Out-Null
+                if ($LASTEXITCODE -ne 0) {
+                    Write-WarningMessage "Failed to return to original branch: $originalBranch"
+                }
             }
         }
     }
@@ -231,6 +273,9 @@ finally {
     Write-Step "Returning to original branch: $originalBranch"
     if (-not $DryRun) {
         git checkout $originalBranch 2>&1 | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            Write-WarningMessage "Failed to return to original branch $originalBranch"
+        }
     }
 }
 

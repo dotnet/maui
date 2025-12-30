@@ -32,7 +32,12 @@ permissions:
 jobs:
   merge-branches:
     runs-on: ubuntu-latest
+    if: github.repository_owner == 'dotnet'
+    concurrency:
+      group: weekly-branch-merge-${{ matrix.target }}
+      cancel-in-progress: false
     strategy:
+      fail-fast: false
       matrix:
         # For scheduled runs, merge into both branches
         # For manual runs, this is overridden by the input
