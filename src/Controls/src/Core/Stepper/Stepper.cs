@@ -6,7 +6,13 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/Stepper.xml" path="Type[@FullName='Microsoft.Maui.Controls.Stepper']/Docs/*" />
+	/// <summary>
+	/// Represents a control that allows a user to incrementally adjust a numeric value by tapping plus or minus buttons.
+	/// </summary>
+	/// <remarks>
+	/// The <see cref="Stepper"/> provides buttons to increase or decrease a numeric value by a fixed <see cref="Increment"/>.
+	/// The value is constrained between <see cref="Minimum"/> and <see cref="Maximum"/>.
+	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class Stepper : View, IElementConfiguration<Stepper>, IStepper
 	{
@@ -16,7 +22,7 @@ namespace Microsoft.Maui.Controls
 		bool _userSetValue = false;
 		bool _isRecoercing = false;
 
-		/// <summary>Bindable property for <see cref="Maximum"/>.</summary>
+		/// <summary>Bindable property for <see cref="Maximum"/>. This is a bindable property.</summary>
 		public static readonly BindableProperty MaximumProperty = BindableProperty.Create(nameof(Maximum), typeof(double), typeof(Stepper), 100.0,
 			validateValue: (bindable, value) => (double)value >= ((Stepper)bindable).Minimum,
 			propertyChanged: (bindable, oldValue, newValue) =>
@@ -25,7 +31,7 @@ namespace Microsoft.Maui.Controls
 				stepper.RecoerceValue();
 			});
 
-		/// <summary>Bindable property for <see cref="Minimum"/>.</summary>
+		/// <summary>Bindable property for <see cref="Minimum"/>. This is a bindable property.</summary>
 		public static readonly BindableProperty MinimumProperty = BindableProperty.Create(nameof(Minimum), typeof(double), typeof(Stepper), 0.0,
 			validateValue: (bindable, value) => (double)value <= ((Stepper)bindable).Maximum,
 			propertyChanged: (bindable, oldValue, newValue) =>
@@ -34,7 +40,7 @@ namespace Microsoft.Maui.Controls
 				stepper.RecoerceValue();
 			});
 
-		/// <summary>Bindable property for <see cref="Value"/>.</summary>
+		/// <summary>Bindable property for <see cref="Value"/>. This is a bindable property.</summary>
 		public static readonly BindableProperty ValueProperty = BindableProperty.Create(nameof(Value), typeof(double), typeof(Stepper), 0.0, BindingMode.TwoWay,
 			coerceValue: (bindable, value) =>
 			{
@@ -73,16 +79,25 @@ namespace Microsoft.Maui.Controls
 		int digits = 4;
 		//'-log10(increment) + 4' as rounding digits gives us 4 significant decimal digits after the most significant one.
 		//If your increment uses more than 4 significant digits, you're holding it wrong.
-		/// <summary>Bindable property for <see cref="Increment"/>.</summary>
+		/// <summary>Bindable property for <see cref="Increment"/>. This is a bindable property.</summary>
 		public static readonly BindableProperty IncrementProperty = BindableProperty.Create(nameof(Increment), typeof(double), typeof(Stepper), 1.0,
 			propertyChanged: (b, o, n) => { ((Stepper)b).digits = (int)(-Math.Log10((double)n) + 4).Clamp(1, 15); });
 
 		readonly Lazy<PlatformConfigurationRegistry<Stepper>> _platformConfigurationRegistry;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Stepper.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Stepper"/> class with default minimum (0), maximum (100), and increment (1) values.
+		/// </summary>
 		public Stepper() => _platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Stepper>>(() => new PlatformConfigurationRegistry<Stepper>(this));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Stepper.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Stepper"/> class with specified minimum, maximum, value, and increment.
+		/// </summary>
+		/// <param name="min">The minimum value.</param>
+		/// <param name="max">The maximum value.</param>
+		/// <param name="val">The initial value, clamped between <paramref name="min"/> and <paramref name="max"/>.</param>
+		/// <param name="increment">The amount to increment or decrement the value by with each button press.</param>
+		/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="min"/> is greater than or equal to <paramref name="max"/>.</exception>
 		public Stepper(double min, double max, double val, double increment) : this()
 		{
 			if (min >= max)
@@ -102,34 +117,55 @@ namespace Microsoft.Maui.Controls
 			Value = val.Clamp(min, max);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Stepper.xml" path="//Member[@MemberName='Increment']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the amount by which the stepper value changes with each button press.
+		/// This is a bindable property.
+		/// </summary>
+		/// <value>The increment value. The default is 1.</value>
 		public double Increment
 		{
 			get => (double)GetValue(IncrementProperty);
 			set => SetValue(IncrementProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Stepper.xml" path="//Member[@MemberName='Maximum']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the maximum value of the stepper.
+		/// This is a bindable property.
+		/// </summary>
+		/// <value>The maximum value. The default is 100.</value>
+		/// <remarks>Changing this value will automatically clamp the <see cref="Value"/> to be within the new range.</remarks>
 		public double Maximum
 		{
 			get => (double)GetValue(MaximumProperty);
 			set => SetValue(MaximumProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Stepper.xml" path="//Member[@MemberName='Minimum']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the minimum value of the stepper.
+		/// This is a bindable property.
+		/// </summary>
+		/// <value>The minimum value. The default is 0.</value>
+		/// <remarks>Changing this value will automatically clamp the <see cref="Value"/> to be within the new range.</remarks>
 		public double Minimum
 		{
 			get => (double)GetValue(MinimumProperty);
 			set => SetValue(MinimumProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Stepper.xml" path="//Member[@MemberName='Value']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the current value of the stepper.
+		/// This is a bindable property.
+		/// </summary>
+		/// <value>The current value, clamped between <see cref="Minimum"/> and <see cref="Maximum"/>. The default is 0.</value>
 		public double Value
 		{
 			get => (double)GetValue(ValueProperty);
 			set => SetValue(ValueProperty, value);
 		}
 
+		/// <summary>
+		/// Occurs when the <see cref="Value"/> property changes.
+		/// </summary>
 		public event EventHandler<ValueChangedEventArgs> ValueChanged;
 
 		/// <inheritdoc/>
