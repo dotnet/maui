@@ -412,10 +412,12 @@ namespace Microsoft.Maui.Platform
 					return;
 
 				var cgImage = backgroundImage.CGImage;
+				var shouldDisposeCGImage = false;
 				if (cgImage == null && backgroundImage.CIImage != null)
 				{
 					using var context = CoreImage.CIContext.Create();
 					cgImage = context.CreateCGImage(backgroundImage.CIImage, backgroundImage.CIImage.Extent);
+					shouldDisposeCGImage = true;
 				}
 
 				if (cgImage == null)
@@ -431,6 +433,10 @@ namespace Microsoft.Maui.Platform
 
 				platformView.BackgroundColor = UIColor.Clear;
 				platformView.InsertBackgroundLayer(imageLayer, 0);
+
+				// Dispose the CGImage if we created it via CreateCGImage.
+				if (shouldDisposeCGImage)
+					cgImage?.Dispose();
 			}
 		}
 
