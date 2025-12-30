@@ -7,5 +7,10 @@
 		{
 			InitializeComponent();
 		}
+
+		private void OnButtonClicked(object sender, EventArgs e)
+		{
+			collectionView.ScrollTo("LAST", position: ScrollToPosition.End, animate: true);
+		}
 	}
 }
