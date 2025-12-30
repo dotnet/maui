@@ -1,2 +1,5 @@
 #nullable enable
+Microsoft.Maui.IEntry.HasBorder.get -> bool
+static Microsoft.Maui.Handlers.EntryHandler.MapHasBorder(Microsoft.Maui.Handlers.IEntryHandler! handler, Microsoft.Maui.IEntry! entry) -> void
+static Microsoft.Maui.Platform.TextFieldExtensions.UpdateHasBorder(this UIKit.UITextField! textField, Microsoft.Maui.IEntry! entry) -> void
 override Microsoft.Maui.Platform.MauiView.DidUpdateFocus(UIKit.UIFocusUpdateContext! context, UIKit.UIFocusAnimationCoordinator! coordinator) -> void
