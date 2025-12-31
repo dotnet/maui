@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Shell
+    x:Class="Maui.Controls.Sample.ShellControlPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:Maui.Controls.Sample"
+    x:DataType="local:ShellViewModel"
+    Title="{Binding Title}"
+    Shell.BackgroundColor="{Binding ShellBackgroundColor}"
+    Shell.ForegroundColor="{Binding ShellForegroundColor}"
+    Shell.TitleColor="{Binding ShellTitleColor}"
+    Shell.DisabledColor="{Binding ShellDisabledColor}"
+    Shell.UnselectedColor="{Binding ShellUnselectedColor}"
+    Shell.NavBarIsVisible="{Binding ShellNavBarIsVisible}"
+    Shell.NavBarHasShadow="{Binding NavBarHasShadow}"
+    Shell.NavBarVisibilityAnimationEnabled="{Binding NavBarVisibilityAnimationEnabled}">
+
+    
+    <Shell.TitleView>
+        <Grid IsVisible="{Binding ShowTitleView}"
+              ColumnDefinitions="Auto,Auto"
+              VerticalOptions="Center"
+              HorizontalOptions="Center">
+
+            <Image Source="dotnet_bot.png"
+                   WidthRequest="28"
+                   HeightRequest="28"
+                   VerticalOptions="Center"/>
+
+            <Label Text="Shell TitleView"
+                   Margin="8,0,0,0"
+                   VerticalOptions="Center"
+                   FontAttributes="Bold"
+                   TextColor="White"/>
+        </Grid>
+    </Shell.TitleView>
+
+    <TabBar>
+
+        <ShellContent
+            Title="Home"
+            Route="home"
+            Shell.PresentationMode="{Binding PresentationMode}">
+            <ContentPage>
+
+                <ContentPage.ToolbarItems>
+                    <ToolbarItem Text="Options"
+                                 Clicked="NavigateToOptionsPage_Clicked"/>
+                </ContentPage.ToolbarItems>
+
+                <VerticalStackLayout Padding="20">
+                    <Label Text="Home Page" FontSize="18"/>
+                </VerticalStackLayout>
+
+            </ContentPage>
+        </ShellContent>
+
+        <ShellContent Title="Tab1">
+            <ContentPage>
+                <Label Text="Tab1 Content" Padding="20"/>
+            </ContentPage>
+        </ShellContent>
+
+        <ShellContent Title="Tab2">
+            <ContentPage>
+                <Label Text="Tab2 Content" Padding="20"/>
+            </ContentPage>
+        </ShellContent>
+
+    </TabBar>
+</Shell>
