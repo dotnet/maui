@@ -464,6 +464,13 @@ Task("testOnly")
 					}
 				}
 				
+				// Check Windows Event Log for application crashes
+				Information("Checking Windows Event Log for recent application crashes...");
+				var eventLogResult = StartProcess("powershell", new ProcessSettings {
+					Arguments = $"-Command \"Get-WinEvent -FilterHashtable @{{LogName='Application';Level=2;StartTime=(Get-Date).AddMinutes(-5)}} -MaxEvents 10 2>$null | Select-Object TimeCreated, ProviderName, Message | Format-List\"",
+					RedirectStandardOutput = true
+				});
+				
 				if (!FileExists(testsToRunFile)) {
 					throw new Exception("Test categories file was not created during discovery phase");
 				}
