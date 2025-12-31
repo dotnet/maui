@@ -1,3 +1,4 @@
+#if ANDROID         //This is Android specific issue
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -12,9 +13,9 @@ public class Issue32030 : _IssuesUITest
     [Category(UITestCategories.WebView)]
     public void VerifyWebViewStaysWithinGridCell()
     {
-        App.WaitForElement("TopLabel");
-        // Wait for the WebView to render properly
-        Thread.Sleep(TimeSpan.FromSeconds(2));
+        App.WaitForElement("BottomButton");
+        App.Tap("BottomButton");
         VerifyScreenshot();
     }
 }
+#endif
