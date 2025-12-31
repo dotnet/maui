@@ -163,7 +163,7 @@ dir "%HELIX_WORKITEM_UPLOAD_ROOT%" 2>nul
 REM Also list files in the artifacts bin directory for debugging
 echo.
 echo Files in artifacts bin directory:
-dir "%HELIX_CORRELATION_PAYLOAD%\artifacts\bin\%SCENARIO_NAME%" /s /b 2>nul | findstr /i "\.xml \.txt \.log" | head -20
+for /f "tokens=*" %%f in ('dir "%HELIX_CORRELATION_PAYLOAD%\artifacts\bin\%SCENARIO_NAME%" /s /b 2^>nul ^| findstr /i "\.xml \.txt \.log"') do @echo %%f
 
 echo ========================================
 
