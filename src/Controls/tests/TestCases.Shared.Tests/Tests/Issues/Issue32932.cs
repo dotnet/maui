@@ -17,6 +17,11 @@ public class Issue32932 : _IssuesUITest
 	public void EmptyViewShouldDisplayWhenCollectionViewIsInsideVerticalStackLayout()
 	{
 		App.WaitForElement("EmptyView");
+
+#if WINDOWS // EmptyView(null ItemsSource) elements Not Accessible via Automation on Windows Platform Issue Link:  https://github.com/dotnet/maui/issues/28022
+		VerifyScreenshot();
+#else
 		App.WaitForElement("EmptyViewLabel");
+#endif
 	}
 }
