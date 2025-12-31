@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
@@ -24,7 +25,7 @@ namespace Microsoft.Maui.Controls
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	[TypeConverter(typeof(ShellSectionTypeConverter))]
 	[DebuggerTypeProxy(typeof(ShellSectionDebugView))]
-	public partial class ShellSection : ShellGroupItem, IShellSectionController, IPropertyPropagationController, IVisualTreeElement, IStackNavigation
+	public partial class ShellSection : ShellGroupItem, IShellSectionController, IPropertyPropagationController, IVisualTreeElement, IStackNavigation, IStackNavigationView // For testing purpose only added IStackNavigationView here. Need to find is there any other way to make it work.
 	{
 		#region PropertyKeys
 
@@ -835,12 +836,35 @@ namespace Microsoft.Maui.Controls
 			_navStack.Remove(page);
 			PresentedPageAppearing();
 
-			InvokeNavigationRequest(args);
-			if (args.Task != null)
-				await args.Task;
+			// Try handler-based navigation first if handler exists
+			if (Handler != null && _handlerBasedNavigationCompletionSource == null)
+			{
+				try
+				{
+					var navigationRequest = new NavigationRequest(Stack, animated);
+					((IStackNavigation)this).RequestNavigation(navigationRequest);
+					if (_handlerBasedNavigationCompletionSource?.Task != null)
+						await _handlerBasedNavigationCompletionSource.Task;
+				}
+				catch (Exception ex)
+				{
+					System.Diagnostics.Debug.WriteLine($"ShellSection: Handler-based Pop failed, falling back to legacy: {ex.Message}");
+					// Fallback to legacy navigation
+					InvokeNavigationRequest(args);
+					if (args.Task != null)
+						await args.Task;
+				}
+			}
+			else
+			{
+				// Fallback to legacy navigation
+				InvokeNavigationRequest(args);
+				if (args.Task != null)
+					await args.Task;
 
-			if (_handlerBasedNavigationCompletionSource?.Task != null)
-				await _handlerBasedNavigationCompletionSource.Task;
+				if (_handlerBasedNavigationCompletionSource?.Task != null)
+					await _handlerBasedNavigationCompletionSource.Task;
+			}
 
 			RemovePage(page);
 
@@ -870,15 +894,38 @@ namespace Microsoft.Maui.Controls
 				RequestType = NavigationRequestType.PopToRoot
 			};
 
-			InvokeNavigationRequest(args);
 			var oldStack = _navStack;
 			_navStack = new List<Page> { null };
 
-			if (args.Task != null)
-				await args.Task;
+			// Try handler-based navigation first if handler exists
+			if (Handler != null && _handlerBasedNavigationCompletionSource == null)
+			{
+				try
+				{
+					var navigationRequest = new NavigationRequest(Stack, animated);
+					((IStackNavigation)this).RequestNavigation(navigationRequest);
+					if (_handlerBasedNavigationCompletionSource?.Task != null)
+						await _handlerBasedNavigationCompletionSource.Task;
+				}
+				catch (Exception ex)
+				{
+					System.Diagnostics.Debug.WriteLine($"ShellSection: Handler-based PopToRoot failed, falling back to legacy: {ex.Message}");
+					// Fallback to legacy navigation
+					InvokeNavigationRequest(args);
+					if (args.Task != null)
+						await args.Task;
+				}
+			}
+			else
+			{
+				// Fallback to legacy navigation
+				InvokeNavigationRequest(args);
+				if (args.Task != null)
+					await args.Task;
 
-			if (_handlerBasedNavigationCompletionSource?.Task != null)
-				await _handlerBasedNavigationCompletionSource.Task;
+				if (_handlerBasedNavigationCompletionSource?.Task != null)
+					await _handlerBasedNavigationCompletionSource.Task;
+			}
 
 			for (int i = 1; i < oldStack.Count; i++)
 			{
@@ -914,6 +961,25 @@ namespace Microsoft.Maui.Controls
 			_navStack.Add(page);
 			PresentedPageAppearing();
 			AddPage(page);
+
+#if ANDROID
+
+			// Try handler-based navigation first if handler exists
+			if (Handler != null && _handlerBasedNavigationCompletionSource == null)
+			{
+				try
+				{
+					var navigationRequest = new NavigationRequest(Stack, animated);
+					((IStackNavigation)this).RequestNavigation(navigationRequest);
+					return _handlerBasedNavigationCompletionSource?.Task ?? Task.CompletedTask;
+				}
+				catch (Exception ex)
+				{
+					System.Diagnostics.Debug.WriteLine($"ShellSection: Handler-based navigation failed, falling back to legacy: {ex.Message}");
+				}
+			}
+#endif
+			// Fallback to legacy navigation
 			InvokeNavigationRequest(args);
 
 			return args.Task ??
@@ -1287,11 +1353,110 @@ namespace Microsoft.Maui.Controls
 		TaskCompletionSource<object>? _handlerBasedNavigationCompletionSource;
 		internal Task? PendingNavigationTask => _handlerBasedNavigationCompletionSource?.Task;
 
+#pragma warning disable RS0016 // Add public types and members to the declared API
+
+		// IView implementation forwarded to handler
+		// This was added for temporary compatibility while migrating Shell to handlers
+		// Need to remove this later
+		public FlowDirection FlowDirection => throw new NotImplementedException();
+
+
+		public Primitives.LayoutAlignment HorizontalLayoutAlignment => throw new NotImplementedException();
+
+		public Primitives.LayoutAlignment VerticalLayoutAlignment => throw new NotImplementedException();
+
+		public Semantics? Semantics => throw new NotImplementedException();
+
+		public IShape? Clip => throw new NotImplementedException();
+
+		public IShadow? Shadow => throw new NotImplementedException();
+
+		public bool IsFocused { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
+		public Visibility Visibility => throw new NotImplementedException();
+
+		public double Opacity => throw new NotImplementedException();
+
+		public Paint? Background => throw new NotImplementedException();
+
+		public Rect Frame { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
+		public double Width => throw new NotImplementedException();
+
+		public double MinimumWidth => throw new NotImplementedException();
+
+		public double MaximumWidth => throw new NotImplementedException();
+
+		public double Height => throw new NotImplementedException();
+
+		public double MinimumHeight => throw new NotImplementedException();
+
+		public double MaximumHeight => throw new NotImplementedException();
+
+		public Thickness Margin => throw new NotImplementedException();
+
+		public Size DesiredSize => throw new NotImplementedException();
+
+		public int ZIndex => throw new NotImplementedException();
+
+		IViewHandler? IView.Handler { get => throw new NotImplementedException(); set => Handler = value; }
+
+		public bool InputTransparent => throw new NotImplementedException();
+
+		public double TranslationX => throw new NotImplementedException();
+
+		public double TranslationY => throw new NotImplementedException();
+
+		public double Scale => throw new NotImplementedException();
+
+		public double ScaleX => throw new NotImplementedException();
+
+		public double ScaleY => throw new NotImplementedException();
+
+		public double Rotation => throw new NotImplementedException();
+
+		public double RotationX => throw new NotImplementedException();
+
+		public double RotationY => throw new NotImplementedException();
+
+		public double AnchorX => throw new NotImplementedException();
+
+		public double AnchorY => throw new NotImplementedException();
+
+		public Size Arrange(Rect bounds)
+		{
+			throw new NotImplementedException();
+		}
+
+		public Size Measure(double widthConstraint, double heightConstraint)
+		{
+			throw new NotImplementedException();
+		}
+
+		public void InvalidateMeasure()
+		{
+			throw new NotImplementedException();
+		}
+
+		public void InvalidateArrange()
+		{
+			throw new NotImplementedException();
+		}
+
+		public bool Focus()
+		{
+			throw new NotImplementedException();
+		}
+
+		public void Unfocus()
+		{
+			throw new NotImplementedException();
+		}
+
 		void IStackNavigation.RequestNavigation(NavigationRequest eventArgs)
 		{
-			if (_handlerBasedNavigationCompletionSource != null)
-				throw new InvalidOperationException("Pending Navigations still processing");
-
+			// Reset completion source for new navigation request
+			// Don't throw if there's a pending one - just create a new one
 			_handlerBasedNavigationCompletionSource = new TaskCompletionSource<object>();
 			Handler.Invoke(nameof(IStackNavigation.RequestNavigation), eventArgs);
 		}
@@ -1302,6 +1467,12 @@ namespace Microsoft.Maui.Controls
 			var source = _handlerBasedNavigationCompletionSource;
 			_handlerBasedNavigationCompletionSource = null;
 			source?.SetResult(true);
+
+			// Notify handler about navigation completion so it can update toolbar, etc.
+			if (Handler is IStackNavigation handlerNavigation)
+			{
+				handlerNavigation.NavigationFinished(newStack);
+			}
 		}
 #nullable disable
 

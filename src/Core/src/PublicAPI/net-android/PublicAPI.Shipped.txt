@@ -3674,7 +3674,6 @@ virtual Microsoft.Maui.Platform.BorderDrawable.DisposeBorder(bool disposing) -> 
 virtual Microsoft.Maui.Platform.EnergySaverListenerManager.Dispose(bool disposing) -> void
 virtual Microsoft.Maui.Platform.NavigationRootManager.Disconnect() -> void
 virtual Microsoft.Maui.Platform.StackNavigationManager.AddFragmentDestination() -> AndroidX.Navigation.Fragment.FragmentNavigator.Destination!
-virtual Microsoft.Maui.Platform.StackNavigationManager.Connect(Microsoft.Maui.IView! navigationView) -> void
 virtual Microsoft.Maui.Platform.StackNavigationManager.Disconnect() -> void
 virtual Microsoft.Maui.Platform.StackNavigationManager.OnDestinationChanged(AndroidX.Navigation.NavController! navController, AndroidX.Navigation.NavDestination! navDestination, Android.OS.Bundle? bundle) -> void
 virtual Microsoft.Maui.Platform.StackNavigationManager.OnNavigationViewFragmentDestroyed(AndroidX.Fragment.App.FragmentManager! fm, Microsoft.Maui.Platform.NavigationViewFragment! navHostPageFragment) -> void

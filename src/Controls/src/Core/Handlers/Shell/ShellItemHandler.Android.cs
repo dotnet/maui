@@ -397,7 +397,7 @@ namespace Microsoft.Maui.Controls.Handlers
         /// </summary>
         protected virtual void OnNavigationRequested(object sender, Internals.NavigationRequestedEventArgs e)
         {
-            e.Task = HandleFragmentUpdate((ShellNavigationSource)e.RequestType, (ShellSection)sender, e.Page, e.Animated);
+            //e.Task = HandleFragmentUpdate((ShellNavigationSource)e.RequestType, (ShellSection)sender, e.Page, e.Animated);
         }
 
         /// <summary>
@@ -485,7 +485,7 @@ namespace Microsoft.Maui.Controls.Handlers
                     throw new InvalidOperationException("Unexpected navigation type");
             }
 
-			IReadOnlyList<Page> stack = shellSection.Stack;
+            IReadOnlyList<Page> stack = shellSection.Stack;
             Element targetElement = null;
             IShellObservableFragment target = null;
 
