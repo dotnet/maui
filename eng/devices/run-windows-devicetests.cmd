@@ -31,15 +31,17 @@ echo ========================================
 echo Installing Windows App SDK Runtime
 echo ========================================
 
-REM Extract version from Versions.props (just major.minor)
+REM Extract version from Versions.props using PowerShell (more reliable)
 set VERSIONS_PROPS=%HELIX_CORRELATION_PAYLOAD%\eng\Versions.props
 set WASDK_VERSION=1.7
+
 if exist "%VERSIONS_PROPS%" (
-    for /f "tokens=2 delims=<>" %%a in ('findstr /c:"MicrosoftWindowsAppSDKPackageVersion" "%VERSIONS_PROPS%"') do (
-        for /f "tokens=1,2 delims=." %%b in ("%%a") do (
-            set WASDK_VERSION=%%b.%%c
-        )
+    echo Found Versions.props at %VERSIONS_PROPS%
+    for /f "usebackq delims=" %%v in (`powershell -Command "(Select-String -Path '%VERSIONS_PROPS%' -Pattern 'MicrosoftWindowsAppSDKPackageVersion>([0-9]+\.[0-9]+)' | ForEach-Object { $_.Matches.Groups[1].Value })"`) do (
+        set WASDK_VERSION=%%v
     )
+) else (
+    echo WARNING: Versions.props not found at %VERSIONS_PROPS%, using default version
 )
 echo Windows App SDK version: %WASDK_VERSION%
 
@@ -51,14 +53,18 @@ powershell -Command "Invoke-WebRequest -Uri '%INSTALLER_URL%' -OutFile '%INSTALL
 if %ERRORLEVEL% NEQ 0 (
     echo WARNING: Failed to download Windows App SDK runtime installer
 ) else (
-    echo Installing Windows App SDK runtime...
-    "%INSTALLER_PATH%" --quiet --force
-    if %ERRORLEVEL% NEQ 0 (
-        echo WARNING: Windows App SDK runtime installation returned exit code %ERRORLEVEL%
+    if exist "%INSTALLER_PATH%" (
+        echo Installing Windows App SDK runtime...
+        "%INSTALLER_PATH%" --quiet --force
+        if %ERRORLEVEL% NEQ 0 (
+            echo WARNING: Windows App SDK runtime installation returned exit code %ERRORLEVEL%
+        ) else (
+            echo Windows App SDK runtime installed successfully
+        )
+        del /f "%INSTALLER_PATH%" 2>nul
     ) else (
-        echo Windows App SDK runtime installed successfully
+        echo WARNING: Installer file not found after download
     )
-    del /f "%INSTALLER_PATH%" 2>nul
 )
 echo ========================================
 
