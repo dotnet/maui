@@ -5,6 +5,8 @@
         <!-- For .NET 9 we opt out of edge to edge enforcement by default -->
         <item name="maui_edgetoedge_optout">true</item>
         <item name="maui_splash">false</item>
+        <!-- ImageButton style -->
+        <item name="mauiMaterialImageButtonStyle">@style/MauiMaterialImageButton</item>
     </style>
 
 
@@ -21,5 +23,21 @@
     <style name="Material3ActionMode">
       <item name="android:background">?attr/colorSurface</item>
       <item name="android:height">?attr/actionBarSize</item>
+    </style>
+
+    <!-- Material 3 ImageButton Style -->
+    <style name="MauiMaterialImageButton" parent="Widget.MaterialComponents.ShapeableImageView">
+      <!-- Remove default background to let MAUI manage it -->
+      <item name="android:background">@null</item>
+      <!-- Remove padding as MAUI manages it -->
+      <item name="android:padding">0dp</item>
+      <!-- Remove min sizes as MAUI manages sizing -->
+      <item name="android:minWidth">0dp</item>
+      <item name="android:minHeight">0dp</item>
+      <!-- Insets -->
+      <item name="android:insetTop">0dp</item>
+      <item name="android:insetBottom">0dp</item>
+      <item name="android:insetLeft">0dp</item>
+      <item name="android:insetRight">0dp</item>
     </style>
 </resources>
