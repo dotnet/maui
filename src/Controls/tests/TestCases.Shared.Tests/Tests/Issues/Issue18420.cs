@@ -16,7 +16,9 @@ public class Issue18420 : _IssuesUITest
 	{
 		App.WaitForElement("RotateButton");
 		App.Tap("RotateButton");
+		Thread.Sleep(1000);
 		App.Tap("RotateButton");
+		Thread.Sleep(1000);
 		App.Tap("RotateButton");
 		App.WaitForElement("RotateButton");
 	}

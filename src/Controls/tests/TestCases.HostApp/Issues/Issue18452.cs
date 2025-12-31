@@ -15,7 +15,7 @@ namespace Maui.Controls.Sample.Issues
 			Label label = new Label();
 			label.AutomationId = "Label";
 
-			const string url = "https://learn.microsoft.com/en-us/dotnet/";
+			const string url = "https://learn.microsoft.com";
 
 			CookieContainer cookieContainer = new();
 			Uri uri = new(url, UriKind.RelativeOrAbsolute);
@@ -36,8 +36,21 @@ namespace Maui.Controls.Sample.Issues
 
 			grid.Children.Add(webView);
 
-			webView.Navigated += (s, e) =>
+			webView.Navigated += async (s, e) =>
 			{
+#if ANDROID
+				await Task.Delay(300);
+				var cookieString = Android.Webkit.CookieManager.Instance?.GetCookie("https://learn.microsoft.com");
+			
+				if (!string.IsNullOrEmpty(cookieString) && cookieString.Contains("DotNetMAUICookie", StringComparison.OrdinalIgnoreCase))
+				{
+					if (!grid.Contains(label))
+					{
+						grid.Children.Add(label);
+						label.Text = "Success";
+					}
+				}
+#else
 				var cookies = webView.Cookies.GetCookies(uri);
 				foreach (Cookie c in cookies)
 				{
@@ -51,6 +64,7 @@ namespace Maui.Controls.Sample.Issues
 						}
 					}
 				}
+#endif
 			};
 
 			Content = grid;
