@@ -146,9 +146,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 #pragma warning disable CA1422 // Validate platform compatibility
 			base.TraitCollectionDidChange(previousTraitCollection);
 #pragma warning restore CA1422 // Validate platform compatibility
-
-			var application = _shellContext?.Shell?.FindMauiContext().Services.GetService<IApplication>();
-			application?.ThemeChanged();
 		}
 
 		void IDisconnectable.Disconnect()
