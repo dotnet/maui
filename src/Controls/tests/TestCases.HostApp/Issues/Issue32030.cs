@@ -32,27 +32,29 @@ public class Issue32030 : ContentPage
         // Create WebView
         webView = new WebView
         {
-            BackgroundColor = Colors.BurlyWood
+            BackgroundColor = Colors.BurlyWood,
+            Source = new HtmlWebViewSource
+            {
+                Html = @"<html><body><h1>Initial Content</h1></body></html>"
+            }
         };
-        webView.Navigated += WebView_Navigated;
         grid.Add(webView);
         Grid.SetRow(webView, 1);
 
-        // Create "below webview" Label
-        var bottomLabel = new Label
+        var button = new Button
         {
-            Text = "Below webview",
-            HorizontalTextAlignment = TextAlignment.Center
+            Text = "Click Me",
+            AutomationId = "BottomButton",
         };
-        grid.Add(bottomLabel);
-        Grid.SetRow(bottomLabel, 2);
+
+        button.Clicked += (s, e) =>
+        {
+            webView.Source = null;
+        };
+        grid.Add(button);
+        Grid.SetRow(button, 2);
 
         // Set the grid as the page content
         Content = grid;
-    }
-
-    async void WebView_Navigated(object sender, WebNavigatedEventArgs e)
-    {
-        await DisplayAlert("Navigation Completed", $"WebView navigated to: {e.Url}", "OK");
     }
 }
