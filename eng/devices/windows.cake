@@ -619,6 +619,56 @@ Task("testOnly")
 		throw new Exception($"No test result files found. All test processes may have crashed or failed to start.");
 	}
 
+	// Merge all test result files into a single testResults.xml for Helix to find
+	// Helix expects a file named testResults.xml in xunit format
+	var mergedResultsFile = System.IO.Path.Combine(testResultsPath, "testResults.xml");
+	Information($"Merging {actualResultFiles.Length} test result files into testResults.xml for Helix...");
+	
+	try
+	{
+		// Create a merged xunit assemblies document
+		var mergedDoc = new System.Xml.XmlDocument();
+		var assembliesNode = mergedDoc.CreateElement("assemblies");
+		mergedDoc.AppendChild(assembliesNode);
+		
+		foreach (var file in actualResultFiles)
+		{
+			try
+			{
+				var doc = new System.Xml.XmlDocument();
+				doc.Load(file);
+				
+				// Find assembly nodes and import them
+				var assemblyNodes = doc.SelectNodes("//assembly");
+				if (assemblyNodes != null)
+				{
+					foreach (System.Xml.XmlNode node in assemblyNodes)
+					{
+						var importedNode = mergedDoc.ImportNode(node, true);
+						assembliesNode.AppendChild(importedNode);
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				Warning($"Failed to parse {System.IO.Path.GetFileName(file)}: {ex.Message}");
+			}
+		}
+		
+		mergedDoc.Save(mergedResultsFile);
+		Information($"✓ Created merged test results file: {mergedResultsFile}");
+	}
+	catch (Exception ex)
+	{
+		Warning($"Failed to merge test results: {ex.Message}");
+		// Fall back to copying the first result file as testResults.xml
+		if (actualResultFiles.Length > 0)
+		{
+			System.IO.File.Copy(actualResultFiles[0], mergedResultsFile, true);
+			Information($"Copied {System.IO.Path.GetFileName(actualResultFiles[0])} as testResults.xml");
+		}
+	}
+
 	// If we're running Controls tests, validate we have results for expected categories
 	if (isControlsProjectTestRun && failedCategories.Any())
 	{
