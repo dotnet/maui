@@ -59,13 +59,38 @@ Write-Host "║  Platform:  $Platform                                         " 
 Write-Host "║  State:     $StateFile                                    " -ForegroundColor Cyan
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
 
-# Phase definitions
+# Phase definitions with their required tools
 $Phases = @(
-    @{ Name = "gate"; Agent = "pr-reviewer-gate"; Description = "Verify tests catch the bug" },
-    @{ Name = "analyze"; Agent = "pr-reviewer-analyze"; Description = "Independent analysis" },
-    @{ Name = "compare"; Agent = "pr-reviewer-compare"; Description = "Compare approaches" },
-    @{ Name = "regression"; Agent = "pr-reviewer-regression"; Description = "Regression testing" },
-    @{ Name = "report"; Agent = "pr-reviewer-report"; Description = "Generate final report" }
+    @{ 
+        Name = "gate"
+        Agent = "pr-reviewer-gate"
+        Description = "Verify tests catch the bug"
+        Tools = @("shell", "read", "write")
+    },
+    @{ 
+        Name = "analyze"
+        Agent = "pr-reviewer-analyze"
+        Description = "Independent analysis"
+        Tools = @("shell", "read", "grep", "glob")
+    },
+    @{ 
+        Name = "compare"
+        Agent = "pr-reviewer-compare"
+        Description = "Compare approaches"
+        Tools = @("shell", "read", "write", "grep", "glob")
+    },
+    @{ 
+        Name = "regression"
+        Agent = "pr-reviewer-regression"
+        Description = "Regression testing"
+        Tools = @("shell", "read", "grep", "glob")
+    },
+    @{ 
+        Name = "report"
+        Agent = "pr-reviewer-report"
+        Description = "Generate final report"
+        Tools = @("read", "write")
+    }
 )
 
 # Initialize state file if it doesn't exist or starting from gate
@@ -142,17 +167,46 @@ function Test-PhaseStatus {
 function Invoke-Agent {
     param(
         [string]$AgentName,
-        [string]$Prompt
+        [string]$Prompt,
+        [string[]]$AllowTools = @()
     )
     
-    Write-Host "`n📤 Invoking agent: $AgentName" -ForegroundColor Yellow
-    Write-Host "   Prompt: $($Prompt.Substring(0, [Math]::Min(100, $Prompt.Length)))..." -ForegroundColor Gray
+    Write-Host "`n" -NoNewline
+    Write-Host "┌─────────────────────────────────────────────────────────────" -ForegroundColor Magenta
+    Write-Host "│ 📤 INVOKING AGENT: $AgentName" -ForegroundColor Magenta
+    Write-Host "├─────────────────────────────────────────────────────────────" -ForegroundColor Magenta
+    Write-Host "│ Prompt:" -ForegroundColor Magenta
+    $Prompt -split "`n" | ForEach-Object { Write-Host "│   $_" -ForegroundColor Gray }
+    Write-Host "│ Tools: $($AllowTools -join ', ')" -ForegroundColor Magenta
+    Write-Host "└─────────────────────────────────────────────────────────────" -ForegroundColor Magenta
     
-    # Invoke copilot CLI with the agent and prompt
-    $result = copilot --agent=$AgentName --prompt $Prompt 2>&1
+    $startTime = Get-Date
+    Write-Host "`n⏳ Agent started at: $($startTime.ToString('HH:mm:ss'))" -ForegroundColor Yellow
+    
+    # Build tool allow arguments
+    $toolArgs = @()
+    foreach ($tool in $AllowTools) {
+        $toolArgs += "--allow-tool"
+        $toolArgs += $tool
+    }
+    
+    $toolArgsDisplay = ($AllowTools | ForEach-Object { "--allow-tool $_" }) -join " "
+    Write-Host "📋 Command: copilot --agent=$AgentName $toolArgsDisplay -p `"...`"" -ForegroundColor Cyan
+    Write-Host "─────────────────────────────────────────────────────────────" -ForegroundColor DarkGray
+    
+    # Run copilot with specified tools
+    $result = & copilot --agent=$AgentName @toolArgs -p $Prompt 2>&1
+    
+    $endTime = Get-Date
+    $duration = $endTime - $startTime
+    
+    Write-Host "─────────────────────────────────────────────────────────────" -ForegroundColor DarkGray
+    Write-Host "⏱️ Agent finished at: $($endTime.ToString('HH:mm:ss')) (Duration: $($duration.ToString('mm\:ss')))" -ForegroundColor Yellow
     
     if ($LASTEXITCODE -ne 0) {
         Write-Host "⚠️ Agent returned non-zero exit code: $LASTEXITCODE" -ForegroundColor Yellow
+    } else {
+        Write-Host "✅ Agent exited successfully" -ForegroundColor Green
     }
     
     return $result
@@ -208,11 +262,30 @@ Platform: $Platform
 Complete the $($phase.Name) phase and update the state file with your results.
 "@
         
-        # Invoke the agent
-        $output = Invoke-Agent -AgentName $phase.Agent -Prompt $prompt
+        # Invoke the agent with its allowed tools
+        $output = Invoke-Agent -AgentName $phase.Agent -Prompt $prompt -AllowTools $phase.Tools
         
         # Display output
         Write-Host $output
+        
+        # Show state file section after agent completes
+        Write-Host "`n┌─────────────────────────────────────────────────────────────" -ForegroundColor Blue
+        Write-Host "│ 📄 STATE FILE - $($phase.Name.ToUpper()) SECTION" -ForegroundColor Blue
+        Write-Host "└─────────────────────────────────────────────────────────────" -ForegroundColor Blue
+        
+        if (Test-Path $StateFilePath) {
+            $stateContent = Get-Content $StateFilePath -Raw
+            # Extract just this phase's section
+            $phasePattern = "## $($phase.Name)[\s\S]*?(?=---|\z)"
+            if ($stateContent -match $phasePattern) {
+                Write-Host $Matches[0] -ForegroundColor DarkCyan
+            } else {
+                Write-Host "(Could not find $($phase.Name) section)" -ForegroundColor DarkGray
+            }
+        } else {
+            Write-Host "(State file not found)" -ForegroundColor DarkGray
+        }
+        Write-Host "─────────────────────────────────────────────────────────────" -ForegroundColor Blue
         
         # Check if phase passed (except for report which is always last)
         if ($phase.Name -ne "report") {
@@ -225,9 +298,11 @@ Complete the $($phase.Name) phase and update the state file with your results.
                 $content = Get-Content $StateFilePath -Raw
                 if ($content -match "## $($phase.Name)[\s\S]*?\*\*Status\*\*:\s*FAILED") {
                     Write-Host "`n❌ Phase '$($phase.Name)' FAILED - stopping review" -ForegroundColor Red
+                    Write-Host "   See state file for details: $StateFilePath" -ForegroundColor Yellow
                     exit 1
                 } else {
                     Write-Host "`n⚠️ Phase '$($phase.Name)' status unclear - check state file" -ForegroundColor Yellow
+                    Write-Host "   State file: $StateFilePath" -ForegroundColor Gray
                     Write-Host "   Continue? (y/n): " -NoNewline
                     $continue = Read-Host
                     if ($continue -ne "y") {
@@ -235,7 +310,7 @@ Complete the $($phase.Name) phase and update the state file with your results.
                     }
                 }
             } else {
-                Write-Host "✅ Phase '$($phase.Name)' completed" -ForegroundColor Green
+                Write-Host "✅ Phase '$($phase.Name)' completed successfully" -ForegroundColor Green
             }
         }
     }
