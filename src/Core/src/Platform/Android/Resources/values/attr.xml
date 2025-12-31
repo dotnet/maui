@@ -17,5 +17,8 @@
   <declare-styleable name="ScrollViewRendererTheme">
     <attr name="scrollViewStyle" format="reference"/>
   </declare-styleable>
+
+  <!-- ImageButton style attribute -->
+  <attr name="mauiMaterialImageButtonStyle" format="reference" />
   
 </resources>
