@@ -6,11 +6,14 @@
     x:Name="shell"
     Title="Shell Handler Tests">
 
-    <!-- Main Tabs -->
-    <TabBar Shell.TabBarForegroundColor="Green"
+    <ShellContent Title="Home"
+                  ContentTemplate="{DataTemplate local:MainPage}"
+                  Route="MainPage"/>
+
+    <!-- <TabBar Shell.TabBarForegroundColor="Green"
             Shell.TabBarUnselectedColor="Red">
 
-        <!-- Home Tab -->
+
         <Tab Title="Home">
             <ShellContent Icon="groceries.png"
                           Title="Home"
@@ -18,7 +21,7 @@
                           Route="MainPage"/>
         </Tab>
 
-        <!-- Test Pages Tab Group -->
+
         <Tab Title="Tests">
             <ShellContent Icon="dotnet_bot.png"
                           Title="Navigation"
@@ -34,7 +37,7 @@
                           Route="FlyoutTest"/>
         </Tab>
 
-        <!-- Multi-Content Tab -->
+
         <Tab Title="Multi-Tab Test">
             <ShellContent Icon="groceries.png"
                           Title="Content 1"
@@ -50,12 +53,12 @@
                           Route="Content3"/>
         </Tab>
 
-        <!-- Settings Tab -->
+
         <Tab Title="Settings">
             <ShellContent Icon="dotnet_bot.png"
                           Title="Settings"
                           ContentTemplate="{DataTemplate local:SettingsPage}"
                           Route="SettingsPage"/>
         </Tab>
-    </TabBar>
+    </TabBar> -->
 </Shell>

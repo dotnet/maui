@@ -319,12 +319,23 @@ namespace Microsoft.Maui.Platform
 			_fragmentNavigator = null;
 		}
 
-		public virtual void Connect(IView navigationView)
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		public virtual void Connect(IView navigationView, FragmentContainerView? fragmentContainerView = null)
+#pragma warning restore RS0016 // Add public types and members to the declared API
 		{
 			VirtualView = navigationView;
 			NavigationView = (IStackNavigation)navigationView;
 
-			_fragmentContainerView = navigationView.Handler?.PlatformView as FragmentContainerView;
+			// For Shell sections the FragmentContainerView is created externally
+			// so we accept it as a parameter.
+			if (fragmentContainerView is not null)
+			{
+				_fragmentContainerView = fragmentContainerView;
+			}
+			else
+			{
+				_fragmentContainerView = navigationView.Handler?.PlatformView as FragmentContainerView;
+			}
 
 			_fragmentManager = MauiContext?.GetFragmentManager();
 
