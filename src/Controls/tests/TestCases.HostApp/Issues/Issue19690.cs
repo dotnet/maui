@@ -10,7 +10,7 @@ public class Issue19690 : ContentPage
 
 	public Issue19690()
 	{
-		var button = new CustomButton
+		var button = new Issue19690CustomButton
 		{
 			Text = "Click Me",
 			AutomationId = "TestButton"
@@ -45,10 +45,10 @@ public class Issue19690 : ContentPage
 		};
 	}
 
-	class CustomButton : Button
+	class Issue19690CustomButton : Button
 	{
 		public static readonly BindableProperty IsCustomProperty =
-			BindableProperty.Create(nameof(IsCustom), typeof(bool), typeof(CustomButton), false, propertyChanged: OnIsCustomChanged);
+			BindableProperty.Create(nameof(IsCustom), typeof(bool), typeof(Issue19690CustomButton), false, propertyChanged: OnIsCustomChanged);
 
 		public bool IsCustom
 		{
@@ -56,7 +56,7 @@ public class Issue19690 : ContentPage
 			set => SetValue(IsCustomProperty, value);
 		}
 
-		public CustomButton()
+		public Issue19690CustomButton()
 		{
 			var visualStateGroups = new VisualStateGroupList();
 			var commonStates = new VisualStateGroup { Name = "CommonStates" };
@@ -105,7 +105,7 @@ public class Issue19690 : ContentPage
 
 		static void OnIsCustomChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			if (bindable is CustomButton button)
+			if (bindable is Issue19690CustomButton button)
 			{
 				button.ChangeVisualState();
 			}
