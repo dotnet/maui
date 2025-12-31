@@ -1,15 +1,16 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-    Verifies that UI tests fail when the PR's fix is reverted.
+    Verifies that UI tests fail when the PR's fix is reverted and pass with the fix.
 
 .DESCRIPTION
     This script verifies that tests actually catch the issue by:
     1. Auto-detecting fix files from git diff (excludes test paths)
     2. Reverting the fix files to main branch
-    3. Running tests WITHOUT the fix (should fail)
+    3. Running tests WITHOUT the fix (should FAIL)
     4. Restoring the fix files
-    5. Reporting whether tests correctly detect the issue
+    5. Running tests WITH the fix (should PASS)
+    6. Reporting whether tests correctly detect the issue
 
     Fix files are auto-detected by finding all changed files that are NOT in test directories.
 
@@ -75,10 +76,12 @@ $TestPathPatterns = @(
     "*snapshots*",
     "*.png",
     "*.jpg",
-    ".github/*"
+    ".github/*",
+    "*.md",
+    "pr-*-review.md"
 )
 
-# Function to check if a file is a test file
+# Function to check if a file should be excluded from fix files
 function Test-IsTestFile {
     param([string]$FilePath)
     
@@ -219,6 +222,7 @@ New-Item -ItemType Directory -Force -Path $OutputPath | Out-Null
 
 $ValidationLog = Join-Path $OutputPath "verification-log.txt"
 $WithoutFixLog = Join-Path $OutputPath "test-without-fix.log"
+$WithFixLog = Join-Path $OutputPath "test-with-fix.log"
 
 function Write-Log {
     param([string]$Message)
@@ -269,11 +273,21 @@ foreach ($file in $FixFiles) {
 Write-Log ""
 Write-Log "Storing current state of fix files..."
 $backupDir = Join-Path $OutputPath "fix-backup"
+
+# Clean backup directory to avoid stale files from previous runs
+if (Test-Path $backupDir) {
+    Remove-Item -Path $backupDir -Recurse -Force
+}
 New-Item -ItemType Directory -Force -Path $backupDir | Out-Null
 
 foreach ($file in $FixFiles) {
     $sourcePath = Join-Path $RepoRoot $file
-    $destPath = Join-Path $backupDir (Split-Path $file -Leaf)
+    # Preserve directory structure to avoid name collisions
+    $destPath = Join-Path $backupDir $file
+    $destDir = Split-Path $destPath -Parent
+    if (-not (Test-Path $destDir)) {
+        New-Item -ItemType Directory -Force -Path $destDir | Out-Null
+    }
     Copy-Item $sourcePath $destPath -Force
     Write-Log "  Backed up: $file"
 }
@@ -301,9 +315,9 @@ Write-Log "=========================================="
 Write-Log "STEP 2: Running tests WITHOUT fix (should FAIL)"
 Write-Log "=========================================="
 
-# Use shared BuildAndRunHostApp.ps1 infrastructure
+# Use shared BuildAndRunHostApp.ps1 infrastructure with -Rebuild to ensure clean builds
 $buildScript = Join-Path $RepoRoot ".github/scripts/BuildAndRunHostApp.ps1"
-& $buildScript -Platform $Platform -TestFilter $TestFilter 2>&1 | Tee-Object -FilePath $WithoutFixLog
+& $buildScript -Platform $Platform -TestFilter $TestFilter -Rebuild 2>&1 | Tee-Object -FilePath $WithoutFixLog
 
 $withoutFixResult = Get-TestResult -LogFile (Join-Path $RepoRoot "CustomAgentLogsTmp/UITests/test-output.log")
 
@@ -314,32 +328,53 @@ Write-Log "STEP 3: Restoring fix files"
 Write-Log "=========================================="
 
 foreach ($file in $FixFiles) {
-    $sourcePath = Join-Path $backupDir (Split-Path $file -Leaf)
+    # Use full path structure matching backup
+    $sourcePath = Join-Path $backupDir $file
     $destPath = Join-Path $RepoRoot $file
     Copy-Item $sourcePath $destPath -Force
     Write-Log "  Restored: $file"
 }
 
-# Step 4: Evaluate results
+# Step 4: Run tests WITH fix
+Write-Log ""
+Write-Log "=========================================="
+Write-Log "STEP 4: Running tests WITH fix (should PASS)"
+Write-Log "=========================================="
+
+& $buildScript -Platform $Platform -TestFilter $TestFilter -Rebuild 2>&1 | Tee-Object -FilePath $WithFixLog
+
+$withFixResult = Get-TestResult -LogFile (Join-Path $RepoRoot "CustomAgentLogsTmp/UITests/test-output.log")
+
+# Step 5: Evaluate results
 Write-Log ""
 Write-Log "=========================================="
 Write-Log "VERIFICATION RESULTS"
 Write-Log "=========================================="
 
 $verificationPassed = $false
+$failedWithoutFix = -not $withoutFixResult.Passed
+$passedWithFix = $withFixResult.Passed
 
-if (-not $withoutFixResult.Passed) {
+if ($failedWithoutFix) {
     Write-Log "✅ Tests FAILED without fix (expected - issue detected)"
-    $verificationPassed = $true
 } else {
     Write-Log "❌ Tests PASSED without fix (unexpected!)"
     Write-Log "   The tests don't detect the issue."
-    Write-Log "   Either the tests are wrong or the fix files don't contain the actual fix."
 }
+
+if ($passedWithFix) {
+    Write-Log "✅ Tests PASSED with fix (expected - fix works)"
+} else {
+    Write-Log "❌ Tests FAILED with fix (unexpected!)"
+    Write-Log "   The fix doesn't resolve the issue, or there's another problem."
+}
+
+$verificationPassed = $failedWithoutFix -and $passedWithFix
 
 Write-Log ""
 Write-Log "Summary:"
-Write-Log "  - Tests WITHOUT fix: $(if ($withoutFixResult.Passed) { 'PASS ❌ (should fail!)' } else { 'FAIL ✅ (expected)' })"
+Write-Log "  - Tests WITHOUT fix: $(if ($failedWithoutFix) { 'FAIL ✅ (expected)' } else { 'PASS ❌ (should fail!)' })"
+Write-Log "  - Tests WITH fix: $(if ($passedWithFix) { 'PASS ✅ (expected)' } else { 'FAIL ❌ (should pass!)' })"
 
 if ($verificationPassed) {
     Write-Host ""
@@ -348,6 +383,7 @@ if ($verificationPassed) {
     Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Green
     Write-Host "║  Tests correctly detect the issue:                        ║" -ForegroundColor Green
     Write-Host "║  - FAIL without fix (as expected)                         ║" -ForegroundColor Green
+    Write-Host "║  - PASS with fix (as expected)                            ║" -ForegroundColor Green
     Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Green
     exit 0
 } else {
@@ -355,13 +391,20 @@ if ($verificationPassed) {
     Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Red
     Write-Host "║              VERIFICATION FAILED ❌                       ║" -ForegroundColor Red
     Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Red
-    Write-Host "║  Tests do NOT detect the issue:                           ║" -ForegroundColor Red
-    Write-Host "║  - Tests pass even without the fix                        ║" -ForegroundColor Red
+    if (-not $failedWithoutFix) {
+        Write-Host "║  Tests PASSED without fix (should fail)                   ║" -ForegroundColor Red
+        Write-Host "║  - Tests don't actually detect the bug                    ║" -ForegroundColor Red
+    }
+    if (-not $passedWithFix) {
+        Write-Host "║  Tests FAILED with fix (should pass)                      ║" -ForegroundColor Red
+        Write-Host "║  - Fix doesn't resolve the issue or test is broken        ║" -ForegroundColor Red
+    }
     Write-Host "║                                                           ║" -ForegroundColor Red
     Write-Host "║  Possible causes:                                         ║" -ForegroundColor Red
     Write-Host "║  1. Wrong fix files specified                             ║" -ForegroundColor Red
     Write-Host "║  2. Tests don't actually test the fixed behavior          ║" -ForegroundColor Red
     Write-Host "║  3. The issue was already fixed in base branch            ║" -ForegroundColor Red
+    Write-Host "║  4. Build caching - try clean rebuild                     ║" -ForegroundColor Red
     Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Red
     exit 1
 }
