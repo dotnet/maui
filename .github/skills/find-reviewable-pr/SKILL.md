@@ -1,15 +1,15 @@
 ---
 name: find-reviewable-pr
-description: Finds open PRs in the dotnet/maui repository that are good candidates for review, prioritizing by milestone, priority labels, partner/community status.
+description: Finds open PRs in the dotnet/maui and dotnet/docs-maui repositories that are good candidates for review, prioritizing by milestone, priority labels, partner/community status.
 metadata:
   author: dotnet-maui
-  version: "2.0"
-compatibility: Requires GitHub CLI (gh) authenticated with access to dotnet/maui repository.
+  version: "2.1"
+compatibility: Requires GitHub CLI (gh) authenticated with access to dotnet/maui and dotnet/docs-maui repositories.
 ---
 
 # Find Reviewable PR
 
-This skill searches the dotnet/maui repository for open pull requests that are good candidates for review, prioritized by importance.
+This skill searches the dotnet/maui and dotnet/docs-maui repositories for open pull requests that are good candidates for review, prioritized by importance.
 
 ## When to Use
 
@@ -18,6 +18,7 @@ This skill searches the dotnet/maui repository for open pull requests that are g
 - "Show me milestoned PRs"
 - "Find partner PRs to review"
 - "What community PRs are open?"
+- "Find docs-maui PRs to review"
 
 ## Priority Categories (in order)
 
@@ -26,30 +27,38 @@ This skill searches the dotnet/maui repository for open pull requests that are g
 3. **Partner** - PRs from Syncfusion and other partners
 4. **Community** - External contributions needing review
 5. **Recent** - PRs created in the last 2 weeks
+6. **docs-maui** - Documentation PRs (5 priority + 5 recent by default)
 
 ## Quick Start
 
 ```bash
-# Find all reviewable PRs (shows top from each category)
+# Find all reviewable PRs (shows top from each category including docs-maui)
 pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1
 
 # Find only milestoned PRs
 pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1 -Category milestoned
+
+# Find only docs-maui PRs
+pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1 -Category docs-maui
 
 # Find Android PRs only
 pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1 -Platform android
 
 # Limit results per category
 pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1 -Limit 5
+
+# Adjust docs-maui limit (default is 5 per sub-category)
+pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1 -DocsLimit 10
 ```
 
 ## Script Parameters
 
 | Parameter | Values | Default | Description |
 |-----------|--------|---------|-------------|
-| `-Category` | milestoned, priority, recent, partner, community, all | all | Filter by category |
+| `-Category` | milestoned, priority, recent, partner, community, docs-maui, all | all | Filter by category |
 | `-Platform` | android, ios, windows, maccatalyst, all | all | Filter by platform |
-| `-Limit` | 1-100 | 10 | Max PRs per category |
+| `-Limit` | 1-100 | 10 | Max PRs per category (maui repo) |
+| `-DocsLimit` | 1-100 | 5 | Max PRs per sub-category for docs-maui |
 | `-OutputFormat` | review, table, json | review | Output format |
 
 ## Workflow for Reviewing PRs

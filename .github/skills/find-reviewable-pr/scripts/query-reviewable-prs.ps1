@@ -1,7 +1,7 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-    Finds open PRs in dotnet/maui that are good candidates for review.
+    Finds open PRs in dotnet/maui and dotnet/docs-maui that are good candidates for review.
 
 .DESCRIPTION
     This script queries GitHub for open PRs and prioritizes them by:
@@ -10,9 +10,10 @@
     3. Recent PRs (created in last 2 weeks)
     4. Partner PRs (Syncfusion, etc.)
     5. Community PRs (external contributions)
+    6. docs-maui PRs (5 priority + 5 recent by default)
 
 .PARAMETER Category
-    Filter by category: "milestoned", "priority", "recent", "partner", "community", "all"
+    Filter by category: "milestoned", "priority", "recent", "partner", "community", "docs-maui", "all"
 
 .PARAMETER Platform
     Filter by platform: "android", "ios", "windows", "maccatalyst", "all"
@@ -20,21 +21,28 @@
 .PARAMETER Limit
     Maximum number of PRs to return per category (default: 10)
 
+.PARAMETER DocsLimit
+    Maximum number of docs-maui PRs to return per sub-category (priority/recent) (default: 5)
+
 .PARAMETER OutputFormat
     Output format: "table", "json", "review" (default: "review")
 
 .EXAMPLE
     ./query-reviewable-prs.ps1
-    # Returns prioritized PRs across all categories
+    # Returns prioritized PRs across all categories including docs-maui
 
 .EXAMPLE
     ./query-reviewable-prs.ps1 -Category milestoned -Platform android
     # Returns milestoned Android PRs only
+
+.EXAMPLE
+    ./query-reviewable-prs.ps1 -Category docs-maui
+    # Returns only docs-maui PRs
 #>
 
 param(
     [Parameter(Mandatory = $false)]
-    [ValidateSet("milestoned", "priority", "recent", "partner", "community", "all")]
+    [ValidateSet("milestoned", "priority", "recent", "partner", "community", "docs-maui", "all")]
     [string]$Category = "all",
 
     [Parameter(Mandatory = $false)]
@@ -43,6 +51,9 @@ param(
 
     [Parameter(Mandatory = $false)]
     [int]$Limit = 10,
+
+    [Parameter(Mandatory = $false)]
+    [int]$DocsLimit = 5,
 
     [Parameter(Mandatory = $false)]
     [ValidateSet("table", "json", "review")]
@@ -66,9 +77,9 @@ $platformLabels = @{
 # Calculate date for "recent" filter (2 weeks ago)
 $twoWeeksAgo = (Get-Date).AddDays(-14).ToString("yyyy-MM-dd")
 
-# Fetch all open non-draft PRs
+# Fetch all open non-draft PRs from dotnet/maui
 Write-Host ""
-Write-Host "Fetching open PRs..." -ForegroundColor Cyan
+Write-Host "Fetching open PRs from dotnet/maui..." -ForegroundColor Cyan
 
 $allPRs = @()
 try {
@@ -82,11 +93,33 @@ try {
     # Filter out drafts
     $allPRs = $allPRs | Where-Object { -not $_.isDraft }
     
-    Write-Host "  Found $($allPRs.Count) non-draft open PRs" -ForegroundColor Green
+    Write-Host "  Found $($allPRs.Count) non-draft open PRs in dotnet/maui" -ForegroundColor Green
 }
 catch {
     Write-Error "Failed to query GitHub: $_"
     exit 1
+}
+
+# Fetch all open non-draft PRs from dotnet/docs-maui
+Write-Host ""
+Write-Host "Fetching open PRs from dotnet/docs-maui..." -ForegroundColor Cyan
+
+$docsMauiPRs = @()
+try {
+    $docsResult = gh pr list --repo dotnet/docs-maui --state open --limit 100 --json number,title,labels,createdAt,isDraft,author,additions,deletions,changedFiles,milestone,url,reviewDecision,reviews,projectItems 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        Write-Warning "Failed to fetch docs-maui PRs: $docsResult"
+    } else {
+        $docsMauiPRs = $docsResult | ConvertFrom-Json
+        
+        # Filter out drafts
+        $docsMauiPRs = $docsMauiPRs | Where-Object { -not $_.isDraft }
+        
+        Write-Host "  Found $($docsMauiPRs.Count) non-draft open PRs in dotnet/docs-maui" -ForegroundColor Green
+    }
+}
+catch {
+    Write-Warning "Failed to query docs-maui: $_"
 }
 
 # Helper function to get review status summary
@@ -286,6 +319,40 @@ foreach ($pr in $allPRs) {
 
 Write-Host "  Processed $($processedPRs.Count) PRs matching filters" -ForegroundColor Green
 
+# Process docs-maui PRs
+$processedDocsMauiPRs = @()
+
+foreach ($pr in $docsMauiPRs) {
+    $categories = Get-PRCategory -pr $pr
+    $labelNames = ($pr.labels | ForEach-Object { $_.name }) -join ", "
+    
+    $processedDocsMauiPRs += [PSCustomObject]@{
+        Number = $pr.number
+        Title = $pr.title
+        Author = $pr.author.login
+        Platform = "Docs"
+        Complexity = Get-PRComplexity -pr $pr
+        Milestone = if ($pr.milestone) { $pr.milestone.title } else { "" }
+        Categories = $categories
+        Labels = $labelNames
+        CreatedAt = [DateTime]::Parse($pr.createdAt)
+        Age = [Math]::Round(((Get-Date) - [DateTime]::Parse($pr.createdAt)).TotalDays)
+        Files = $pr.changedFiles
+        Additions = $pr.additions
+        Deletions = $pr.deletions
+        URL = $pr.url
+        ReviewDecision = $pr.reviewDecision
+        ReviewStatus = Get-ReviewStatus -pr $pr
+        ProjectStatus = Get-ProjectStatus -pr $pr
+        IsPartner = ($labelNames -match "partner/")
+        IsCommunity = ($labelNames -match "community")
+        IsPriority = ($labelNames -match "p/0" -or $labelNames -match "pri0" -or $labelNames -match "priority")
+        Repo = "docs-maui"
+    }
+}
+
+Write-Host "  Processed $($processedDocsMauiPRs.Count) docs-maui PRs" -ForegroundColor Green
+
 # Helper function to get milestone sort priority (lower = higher priority)
 function Get-MilestonePriority {
     param($milestone)
@@ -325,6 +392,12 @@ $recentPRs = $processedPRs | Where-Object { $_.Age -le 14 } | Sort-Object {
     Get-MilestonePriority $_.Milestone
 }, { if ($_.IsPriority) { 0 } else { 1 } }, CreatedAt -Descending
 
+# Organize docs-maui PRs by priority and recency
+$docsMauiPriorityPRs = $processedDocsMauiPRs | Where-Object { $_.IsPriority } | Sort-Object { 
+    Get-MilestonePriority $_.Milestone
+}, CreatedAt
+$docsMauiRecentPRs = $processedDocsMauiPRs | Sort-Object CreatedAt -Descending
+
 # Filter by category if specified
 if ($Category -ne "all") {
     switch ($Category) {
@@ -333,6 +406,7 @@ if ($Category -ne "all") {
         "partner" { $processedPRs = $partnerPRs }
         "community" { $processedPRs = $communityPRs }
         "recent" { $processedPRs = $recentPRs }
+        "docs-maui" { $processedPRs = @() } # Will be handled separately
     }
 }
 
@@ -459,6 +533,52 @@ function Format-Review-Output {
         }
     }
     
+    # docs-maui PRs - Priority
+    if ($docsMauiPriorityPRs.Count -gt 0 -and ($Category -eq "all" -or $Category -eq "docs-maui")) {
+        Write-Host ""
+        Write-Host "📚 DOCS-MAUI PRIORITY PRs - $($docsMauiPriorityPRs.Count) found" -ForegroundColor Blue
+        Write-Host "-----------------------------------------------------------"
+        foreach ($pr in ($docsMauiPriorityPRs | Select-Object -First $DocsLimit)) {
+            Write-Host "==="
+            Write-Host "Number:$($pr.Number)"
+            Write-Host "Title:$($pr.Title)"
+            Write-Host "URL:$($pr.URL)"
+            Write-Host "Author:$($pr.Author)"
+            Write-Host "Repo:docs-maui"
+            Write-Host "Complexity:$($pr.Complexity)"
+            Write-Host "Milestone:$($pr.Milestone)"
+            Write-Host "ReviewStatus:$($pr.ReviewStatus)"
+            if ($pr.ProjectStatus) { Write-Host "ProjectStatus:$($pr.ProjectStatus)" }
+            Write-Host "Age:$($pr.Age) days"
+            Write-Host "Files:$($pr.Files) (+$($pr.Additions)/-$($pr.Deletions))"
+            Write-Host "Labels:$($pr.Labels)"
+            Write-Host "Category:docs-maui-priority"
+        }
+    }
+    
+    # docs-maui PRs - Recent
+    if ($docsMauiRecentPRs.Count -gt 0 -and ($Category -eq "all" -or $Category -eq "docs-maui")) {
+        Write-Host ""
+        Write-Host "📖 DOCS-MAUI RECENT PRs - $($docsMauiRecentPRs.Count) found" -ForegroundColor Blue
+        Write-Host "-----------------------------------------------------------"
+        foreach ($pr in ($docsMauiRecentPRs | Select-Object -First $DocsLimit)) {
+            Write-Host "==="
+            Write-Host "Number:$($pr.Number)"
+            Write-Host "Title:$($pr.Title)"
+            Write-Host "URL:$($pr.URL)"
+            Write-Host "Author:$($pr.Author)"
+            Write-Host "Repo:docs-maui"
+            Write-Host "Complexity:$($pr.Complexity)"
+            Write-Host "Milestone:$($pr.Milestone)"
+            Write-Host "ReviewStatus:$($pr.ReviewStatus)"
+            if ($pr.ProjectStatus) { Write-Host "ProjectStatus:$($pr.ProjectStatus)" }
+            Write-Host "Age:$($pr.Age) days"
+            Write-Host "Files:$($pr.Files) (+$($pr.Additions)/-$($pr.Deletions))"
+            Write-Host "Labels:$($pr.Labels)"
+            Write-Host "Category:docs-maui-recent"
+        }
+    }
+    
     # Summary
     Write-Host ""
     Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Cyan
@@ -468,6 +588,8 @@ function Format-Review-Output {
     Write-Host "  Partner: $($partnerPRs.Count)"
     Write-Host "  Community: $($communityPRs.Count)"
     Write-Host "  Recent (2 weeks): $($recentPRs.Count)"
+    Write-Host "  docs-maui Priority: $($docsMauiPriorityPRs.Count)"
+    Write-Host "  docs-maui Recent: $($docsMauiRecentPRs.Count)"
 }
 
 function Format-Json-Output {
@@ -477,6 +599,8 @@ function Format-Json-Output {
         Partner = $partnerPRs | Select-Object -First $Limit
         Community = $communityPRs | Select-Object -First $Limit
         Recent = $recentPRs | Select-Object -First $Limit
+        DocsMauiPriority = $docsMauiPriorityPRs | Select-Object -First $DocsLimit
+        DocsMauiRecent = $docsMauiRecentPRs | Select-Object -First $DocsLimit
     }
     return $output | ConvertTo-Json -Depth 10
 }
