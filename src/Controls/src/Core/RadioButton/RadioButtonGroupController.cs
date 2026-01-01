@@ -22,8 +22,6 @@ namespace Microsoft.Maui.Controls
 			}
 
 			_layout = (Element)layout;
-			_layout.ChildAdded += ChildAdded;
-			_layout.ChildRemoved += ChildRemoved;
 			_layout.DescendantAdded += DescendantAdded;
 			_layout.DescendantRemoved += DescendantRemoved;
 
@@ -50,53 +48,6 @@ namespace Microsoft.Maui.Controls
 			}
 
 			_layout.SetValue(RadioButtonGroup.SelectedValueProperty, radioButton.Value);
-		}
-
-		void ChildAdded(object sender, ElementEventArgs e)
-		{
-			if (string.IsNullOrEmpty(_groupName) || _layout == null)
-			{
-				return;
-			}
-
-			if (e.Element is RadioButton radioButton)
-			{
-				AddRadioButton(radioButton);
-			}
-			else
-			{
-				foreach (var element in e.Element.Descendants())
-				{
-					if (element is RadioButton childRadioButton)
-					{
-						AddRadioButton(childRadioButton);
-					}
-				}
-			}
-		}
-
-		void ChildRemoved(object sender, ElementEventArgs e)
-		{
-			if (e.Element is RadioButton radioButton)
-			{
-				if (groupControllers.TryGetValue(radioButton, out _))
-				{
-					groupControllers.Remove(radioButton);
-				}
-			}
-			else
-			{
-				foreach (var element in e.Element.Descendants())
-				{
-					if (element is RadioButton radioButton1)
-					{
-						if (groupControllers.TryGetValue(radioButton1, out _))
-						{
-							groupControllers.Remove(radioButton1);
-						}
-					}
-				}
-			}
 		}
 
 		void DescendantAdded(object sender, ElementEventArgs e)
