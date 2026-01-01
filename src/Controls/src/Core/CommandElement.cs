@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Controls
 			commandElement.CanExecuteChanged(bo, EventArgs.Empty);
 		}
 
-		public static bool GetCanExecute(ICommandElement commandElement)
+		public static bool GetCanExecute(ICommandElement commandElement, BindableProperty? commandProperty = null)
 		{
 			if (commandElement.Command == null)
 				return true;
