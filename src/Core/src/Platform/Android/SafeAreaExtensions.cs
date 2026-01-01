@@ -56,22 +56,6 @@ internal static class SafeAreaExtensions
 
 		if (safeAreaView2 is not null)
 		{
-			// Check if we should skip inset handling entirely for AdjustPan mode
-			// When AdjustPan is set, the window pans instead of resizing, so we should
-			// not modify any padding while the keyboard is showing - it should be a no-op
-			if (isKeyboardShowing &&
-				context.GetActivity()?.Window is Window window &&
-				window?.Attributes is WindowManagerLayoutParams attr)
-			{
-				var softInputMode = attr.SoftInputMode;
-				if ((softInputMode & SoftInput.AdjustPan) == SoftInput.AdjustPan)
-				{
-					// With AdjustPan, the window pans rather than resizes
-					// Don't touch any padding - just consume the insets and return
-					return WindowInsetsCompat.Consumed;
-				}
-			}
-
 			// Apply safe area selectively per edge based on SafeAreaRegions
 			var left = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(0, layout), baseSafeArea.Left, 0, isKeyboardShowing, keyboardInsets);
 			var top = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(1, layout), baseSafeArea.Top, 1, isKeyboardShowing, keyboardInsets);
@@ -97,6 +81,21 @@ internal static class SafeAreaExtensions
                 }
             }
 
+
+			if (isKeyboardShowing &&
+				context.GetActivity()?.Window is Window window &&
+				window?.Attributes is WindowManagerLayoutParams attr)
+			{
+				// If the window is panned from the keyboard being open
+				// and there isn't a bottom inset to apply then just don't touch anything
+				var softInputMode = attr.SoftInputMode;
+				if ((softInputMode & SoftInput.AdjustPan) == SoftInput.AdjustPan
+					&& bottom == 0
+				)
+				{
+					return WindowInsetsCompat.Consumed;
+				}
+			}
 
 			// Check intersection with view bounds to determine which edges actually need padding
 			// If we don't have any tracked views yet we will find the first view to pad
