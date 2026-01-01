@@ -26,7 +26,7 @@ This skill searches the dotnet/maui and dotnet/docs-maui repositories for open p
 2. **Milestoned** - PRs assigned to SR3, SR4, or Servicing milestones
 3. **Partner** - PRs from Syncfusion and other partners
 4. **Community** - External contributions needing review
-5. **Recent** - PRs created in the last 2 weeks
+5. **Recent** - PRs created in the last 2 weeks (5 from maui + 5 from docs-maui by default)
 6. **docs-maui** - Documentation PRs (5 priority + 5 recent by default)
 
 ## Quick Start
@@ -58,6 +58,7 @@ pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1 -DocsLim
 | `-Category` | milestoned, priority, recent, partner, community, docs-maui, all | all | Filter by category |
 | `-Platform` | android, ios, windows, maccatalyst, all | all | Filter by platform |
 | `-Limit` | 1-100 | 10 | Max PRs per category (maui repo) |
+| `-RecentLimit` | 1-100 | 5 | Max recent PRs from maui repo |
 | `-DocsLimit` | 1-100 | 5 | Max PRs per sub-category for docs-maui |
 | `-OutputFormat` | review, table, json | review | Output format |
 

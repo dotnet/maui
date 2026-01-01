@@ -7,7 +7,7 @@
     This script queries GitHub for open PRs and prioritizes them by:
     1. Milestoned PRs (SR3, SR4, Servicing)
     2. P/0 labeled PRs (critical priority)
-    3. Recent PRs (created in last 2 weeks)
+    3. Recent PRs (5 from maui + 5 from docs-maui by default)
     4. Partner PRs (Syncfusion, etc.)
     5. Community PRs (external contributions)
     6. docs-maui PRs (5 priority + 5 recent by default)
@@ -21,6 +21,9 @@
 .PARAMETER Limit
     Maximum number of PRs to return per category (default: 10)
 
+.PARAMETER RecentLimit
+    Maximum number of recent PRs to return from maui (default: 5)
+
 .PARAMETER DocsLimit
     Maximum number of docs-maui PRs to return per sub-category (priority/recent) (default: 5)
 
@@ -29,7 +32,7 @@
 
 .EXAMPLE
     ./query-reviewable-prs.ps1
-    # Returns prioritized PRs across all categories including docs-maui
+    # Returns prioritized PRs across all categories including 5 recent from maui and 5 from docs-maui
 
 .EXAMPLE
     ./query-reviewable-prs.ps1 -Category milestoned -Platform android
@@ -51,6 +54,9 @@ param(
 
     [Parameter(Mandatory = $false)]
     [int]$Limit = 10,
+
+    [Parameter(Mandatory = $false)]
+    [int]$RecentLimit = 5,
 
     [Parameter(Mandatory = $false)]
     [int]$DocsLimit = 5,
@@ -515,7 +521,7 @@ function Format-Review-Output {
         Write-Host ""
         Write-Host "🕐 RECENT PRs (last 2 weeks) - $($recentOnly.Count) found" -ForegroundColor Cyan
         Write-Host "-----------------------------------------------------------"
-        foreach ($pr in ($recentOnly | Select-Object -First $Limit)) {
+        foreach ($pr in ($recentOnly | Select-Object -First $RecentLimit)) {
             Write-Host "==="
             Write-Host "Number:$($pr.Number)"
             Write-Host "Title:$($pr.Title)"
@@ -598,7 +604,7 @@ function Format-Json-Output {
         Milestoned = $milestonedPRs | Select-Object -First $Limit
         Partner = $partnerPRs | Select-Object -First $Limit
         Community = $communityPRs | Select-Object -First $Limit
-        Recent = $recentPRs | Select-Object -First $Limit
+        Recent = $recentPRs | Select-Object -First $RecentLimit
         DocsMauiPriority = $docsMauiPriorityPRs | Select-Object -First $DocsLimit
         DocsMauiRecent = $docsMauiRecentPRs | Select-Object -First $DocsLimit
     }
