@@ -37,8 +37,8 @@ param(
 
     [string]$StateFile,
 
-    [ValidateSet("gate", "analyze", "compare", "regression", "report")]
-    [string]$StartPhase = "gate"
+    [ValidateSet("init", "gate", "analyze", "compare", "regression", "report")]
+    [string]$StartPhase = "init"
 )
 
 $ErrorActionPreference = "Stop"
@@ -61,6 +61,12 @@ Write-Host "╚═════════════════════�
 
 # Phase definitions with their required tools
 $Phases = @(
+    @{ 
+        Name = "init"
+        Agent = "pr-reviewer-init"
+        Description = "Initialize state from PR data"
+        Tools = @("shell", "read", "write")
+    },
     @{ 
         Name = "gate"
         Agent = "pr-reviewer-gate"
@@ -92,50 +98,6 @@ $Phases = @(
         Tools = @("read", "write")
     }
 )
-
-# Initialize state file if it doesn't exist or starting from gate
-function Initialize-StateFile {
-    $prInfo = gh pr view $PRNumber --json title,body,url | ConvertFrom-Json
-    
-    $stateContent = @"
-# PR Review State: #$PRNumber
-
-**Title**: $($prInfo.title)
-**URL**: $($prInfo.url)
-**Platform**: $Platform
-**Started**: $(Get-Date -Format "yyyy-MM-ddTHH:mm:ssZ")
-**Current Phase**: gate
-
----
-
-## Gate
-**Status**: PENDING ⏳
-
----
-
-## Analysis
-**Status**: PENDING ⏳
-
----
-
-## Comparison
-**Status**: PENDING ⏳
-
----
-
-## Regression
-**Status**: PENDING ⏳
-
----
-
-## Report
-**Status**: PENDING ⏳
-
-"@
-
-    Set-Content -Path $StateFilePath -Value $stateContent -Encoding UTF8
-    Write-Host "✅ Initialized state file: $StateFilePath" -ForegroundColor Green
-}
 
 # Check if a phase passed by reading state file
 function Test-PhaseStatus {
@@ -232,12 +194,10 @@ function Start-PRReview {
         }
     }
     
-    # Initialize state file if starting from gate
-    if ($StartPhase -eq "gate") {
-        Initialize-StateFile
-    } elseif (-not (Test-Path $StateFilePath)) {
+    # If not starting from init, state file must exist
+    if ($StartPhase -ne "init" -and -not (Test-Path $StateFilePath)) {
         Write-Host "❌ State file not found: $StateFilePath" -ForegroundColor Red
-        Write-Host "   Run with -StartPhase gate to initialize" -ForegroundColor Yellow
+        Write-Host "   Run with -StartPhase init to initialize" -ForegroundColor Yellow
         exit 1
     }
     
@@ -250,10 +210,26 @@ function Start-PRReview {
         Write-Host "  Phase: $($phase.Name.ToUpper()) - $($phase.Description)" -ForegroundColor Cyan
         Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Cyan
         
-        Update-CurrentPhase -PhaseName $phase.Name
+        # Don't try to update state file for init phase (it doesn't exist yet)
+        if ($phase.Name -ne "init") {
+            Update-CurrentPhase -PhaseName $phase.Name
+        }
         
         # Build prompt for this phase
-        $prompt = @"
+        if ($phase.Name -eq "init") {
+            $prompt = @"
+Initialize PR review state file.
+
+PR Number: $PRNumber
+Platform: $Platform
+State File: $StateFilePath
+
+Fetch PR data, comments, previous review runs, and create the state file.
+Look for previous pr-reviewer runs in PR comments to resume context.
+Extract edge cases and regression concerns from discussion.
+"@
+        } else {
+            $prompt = @"
 Read the current PR review state from: $StateFilePath
 
 PR Number: $PRNumber
@@ -261,6 +237,7 @@ Platform: $Platform
 
 Complete the $($phase.Name) phase and update the state file with your results.
 "@
+        }
         
         # Invoke the agent with its allowed tools
         $output = Invoke-Agent -AgentName $phase.Agent -Prompt $prompt -AllowTools $phase.Tools
