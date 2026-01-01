@@ -89,7 +89,9 @@ internal static class SafeAreaExtensions
 				// If the window is panned from the keyboard being open
 				// and there isn't a bottom inset to apply then just don't touch anything
 				var softInputMode = attr.SoftInputMode;
-				if ((softInputMode & SoftInput.AdjustPan) == SoftInput.AdjustPan
+				// Mask to extract only the adjust mode (ignoring state flags)
+				var adjustMode = softInputMode & SoftInput.MaskAdjust;
+				if (adjustMode == SoftInput.AdjustPan
 					&& bottom == 0
 				)
 				{
