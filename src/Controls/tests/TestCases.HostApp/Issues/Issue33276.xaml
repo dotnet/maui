@@ -2,53 +2,56 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues.Issue33276"
-             Title="Issue 33276">
+             Title="Issue 33276"
+             SafeAreaEdges="None">
     
     <!-- Test for safe area padding restoration after keyboard closes -->
     <!-- The safe area bottom padding should be restored when IME closes -->
+    <!-- Using a colored background on the container so we can see the padding -->
     <Grid x:Name="MainContainer" 
           AutomationId="MainContainer"
-          BackgroundColor="LightBlue"
-          SafeAreaEdges="All"
-          RowDefinitions="*,Auto">
+          BackgroundColor="Red"
+          SafeAreaEdges="All">
         
-        <VerticalStackLayout Grid.Row="0" Padding="20" Spacing="10">
-            <Label 
-                Text="Test SafeArea padding restoration after keyboard"
-                FontSize="18"
-                FontAttributes="Bold"/>
+        <!-- Inner content with different background to visualize padding -->
+        <Grid BackgroundColor="LightBlue"
+              RowDefinitions="*,Auto">
             
-            <Label 
-                Text="Open the keyboard by tapping the Entry below, then close it. The bottom safe area padding should be restored after keyboard closes."
-                FontSize="14"
-                TextColor="DarkSlateGray"/>
-            
-            <Label 
-                AutomationId="PaddingStatusLabel"
-                Text="Padding status: Initial"
-                FontSize="14"
-                TextColor="Navy"/>
-        </VerticalStackLayout>
-        
-        <!-- Bottom content with Entry to trigger keyboard -->
-        <Border Grid.Row="1"
-                AutomationId="BottomBorder"
-                BackgroundColor="Orange"
-                HeightRequest="80"
-                Margin="0">
-            <VerticalStackLayout Spacing="5" HorizontalOptions="Center" VerticalOptions="Center">
+            <VerticalStackLayout Grid.Row="0" Padding="20" Spacing="10">
                 <Label 
-                    Text="BOTTOM CONTENT"
-                    FontSize="12"
-                    FontAttributes="Bold"
-                    TextColor="White"
-                    HorizontalOptions="Center"/>
-                <Entry 
-                    Placeholder="Type something"
-                    AutomationId="TestEntry"
-                    BackgroundColor="White"
-                    WidthRequest="250"/>
+                    Text="Test SafeArea padding restoration after keyboard"
+                    FontSize="18"
+                    FontAttributes="Bold"/>
+                
+                <Label 
+                    Text="Open the keyboard by tapping the Entry below, then close it. The RED padding at the bottom should be restored after keyboard closes."
+                    FontSize="14"
+                    TextColor="DarkSlateGray"/>
+                
+                <Label 
+                    AutomationId="PaddingStatusLabel"
+                    x:Name="PaddingStatusLabel"
+                    Text="Padding status: Initial"
+                    FontSize="14"
+                    TextColor="Navy"/>
             </VerticalStackLayout>
-        </Border>
+            
+            <!-- Bottom marker at the very bottom of the inner content -->
+            <!-- This marker sits right above the safe area padding -->
+            <BoxView Grid.Row="1"
+                     AutomationId="BottomMarker"
+                     BackgroundColor="Green"
+                     HeightRequest="50"/>
+        </Grid>
+        
+        <!-- Entry placed in a fixed position to trigger keyboard -->
+        <Entry 
+            Placeholder="Type something"
+            AutomationId="TestEntry"
+            BackgroundColor="White"
+            WidthRequest="250"
+            HorizontalOptions="Center"
+            VerticalOptions="End"
+            Margin="0,0,0,60"/>
     </Grid>
 </ContentPage>

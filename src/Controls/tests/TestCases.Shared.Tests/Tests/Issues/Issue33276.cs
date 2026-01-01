@@ -20,39 +20,44 @@ public class Issue33276 : _IssuesUITest
 		// Wait for the main container to be visible
 		App.WaitForElement("MainContainer");
 
-		// Get the bottom border's initial position before keyboard appears
-		var bottomBorderBefore = App.FindElement("BottomBorder").GetRect();
-		var initialY = bottomBorderBefore.Y;
-		var initialBottom = bottomBorderBefore.Y + bottomBorderBefore.Height;
+		// Get the bottom marker's initial position before keyboard appears
+		// The bottom marker sits right above the safe area padding
+		var bottomMarkerBefore = App.FindElement("BottomMarker").GetRect();
+		var initialBottom = bottomMarkerBefore.Y + bottomMarkerBefore.Height;
+
+		// Get the padding status label to see initial padding
+		var paddingLabelBefore = App.FindElement("PaddingStatusLabel").GetText();
+		System.Console.WriteLine($"[Issue33276] Initial padding label: {paddingLabelBefore}");
+		System.Console.WriteLine($"[Issue33276] Initial bottom marker bottom edge: {initialBottom}");
 
 		// Tap the entry to show the keyboard
 		App.Tap("TestEntry");
 
 		// Wait for keyboard to appear and layout to adjust
-		Thread.Sleep(1500);
+		Thread.Sleep(2000);
 
-		// Dismiss the keyboard
+		// Dismiss the keyboard by tapping outside or using back
 		App.DismissKeyboard();
 
 		// Wait for keyboard to close and layout to restore
-		Thread.Sleep(1500);
+		Thread.Sleep(2000);
 
-		// Get the bottom border's position after keyboard closes
-		var bottomBorderAfter = App.FindElement("BottomBorder").GetRect();
-		var afterY = bottomBorderAfter.Y;
-		var afterBottom = bottomBorderAfter.Y + bottomBorderAfter.Height;
+		// Get the bottom marker's position after keyboard closes
+		var bottomMarkerAfter = App.FindElement("BottomMarker").GetRect();
+		var afterBottom = bottomMarkerAfter.Y + bottomMarkerAfter.Height;
 
-		// The bottom border should return to its original position after keyboard closes
+		// Get the padding status label after keyboard closes
+		var paddingLabelAfter = App.FindElement("PaddingStatusLabel").GetText();
+		System.Console.WriteLine($"[Issue33276] After keyboard padding label: {paddingLabelAfter}");
+		System.Console.WriteLine($"[Issue33276] After keyboard bottom marker bottom edge: {afterBottom}");
+
+		// The bottom marker should return to its original position after keyboard closes
+		// If the safe area padding is NOT restored, the bottom marker will be lower (closer to screen edge)
 		// Allow for small tolerance (within 5 pixels) due to potential animation timing
-		Assert.That(afterY, Is.EqualTo(initialY).Within(5),
-			$"Bottom border Y position should be restored after keyboard closes. Initial Y: {initialY}px, After Y: {afterY}px");
-
 		Assert.That(afterBottom, Is.EqualTo(initialBottom).Within(5),
-			$"Bottom border bottom edge should be restored after keyboard closes. Initial bottom: {initialBottom}px, After bottom: {afterBottom}px");
-
-		// Verify the bottom border is still accessible and has correct dimensions
-		Assert.That(bottomBorderAfter.Height, Is.EqualTo(bottomBorderBefore.Height).Within(5),
-			"Bottom border height should remain consistent after keyboard opens and closes");
+			$"Bottom marker position should be restored after keyboard closes. " +
+			$"Initial bottom: {initialBottom}px, After bottom: {afterBottom}px. " +
+			$"If after > initial, safe area padding was NOT restored (bug #33276).");
 	}
 }
 #endif
