@@ -308,7 +308,16 @@ internal class KnownMarkups
 	{
 		returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindingBase")!;
 		ITypeSymbol? dataTypeSymbol = null;
-		if (   context.Variables.TryGetValue(markupNode, out ILocalValue extVariable)
+		
+		// Check if the binding has a Source property with a RelativeSource.
+		// In this case, we should NOT compile the binding using x:DataType because
+		// the source type will be determined at runtime by the RelativeSource, not x:DataType.
+		bool hasRelativeSource = HasRelativeSourceBinding(markupNode);
+		
+		context.Variables.TryGetValue(markupNode, out ILocalValue? extVariable);
+		
+		if (   !hasRelativeSource
+			&& extVariable is not null
 			&& TryGetXDataType(markupNode, context, out dataTypeSymbol)
 			&& dataTypeSymbol is not null)
 		{
@@ -588,6 +597,29 @@ internal class KnownMarkups
 				&& propertyName.NamespaceURI == ""
 				&& propertyName.LocalName == "BindingContext";
 		}
+
+		// Checks if the binding has a Source property that is a RelativeSource extension.
+		// When a binding uses RelativeSource, the source type is determined at runtime,
+		// so we should NOT compile the binding using x:DataType.
+		static bool HasRelativeSourceBinding(ElementNode bindingNode)
+		{
+			// Check if Source property exists
+			if (!bindingNode.Properties.TryGetValue(new XmlName("", "Source"), out INode? sourceNode)
+				&& !bindingNode.Properties.TryGetValue(new XmlName(null, "Source"), out sourceNode))
+			{
+				return false;
+			}
+
+			// Check if the Source is a RelativeSourceExtension
+			if (sourceNode is ElementNode sourceElementNode)
+			{
+				// Check if the element is a RelativeSourceExtension
+				return sourceElementNode.XmlType.Name == "RelativeSourceExtension"
+					|| sourceElementNode.XmlType.Name == "RelativeSource";
+			}
+
+			return false;
+		}
 	}
 
 	internal static bool ProvideValueForDataTemplateExtension(ElementNode markupNode, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
@@ -674,6 +706,7 @@ internal class KnownMarkups
 	/// Provides value for AppThemeBindingExtension by generating an AppThemeBinding instance
 	/// with Light, Dark, and Default properties set based on the markup extension's properties.
 	/// </summary>
+#if NET11_0_OR_GREATER
 	internal static bool ProvideValueForAppThemeBindingExtension(ElementNode node, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
 	{
 		returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.AppThemeBinding")!;
@@ -757,61 +790,29 @@ internal class KnownMarkups
 		// At least one value must be set
 		if (lightValue is null && darkValue is null && defaultValue is null)
 		{
-			context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError,
-				LocationHelpers.LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)node, ""),
+			context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, 
+				LocationHelpers.LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)node, ""), 
 				"AppThemeBindingExtension requires a non-null value to be specified for at least one theme or Default"));
 			value = string.Empty;
 			return false;
 		}
 
-		// Determine which helper method to call based on which values are set
-		string helperMethodName;
-		var args = new List<string>();
+		// Build the AppThemeBinding initialization expression
+		var parts = new List<string>();
+		
+		if (lightValue is not null)
+			parts.Add($"Light = {lightValue}");
+		
+		if (darkValue is not null)
+			parts.Add($"Dark = {darkValue}");
+		
+		if (defaultValue is not null)
+			parts.Add($"Default = {defaultValue}");
 
-		if (lightValue is not null && darkValue is not null && defaultValue is not null)
-		{
-			helperMethodName = "CreateAppThemeBindingLightDarkDefault";
-			args.Add(lightValue);
-			args.Add(darkValue);
-			args.Add(defaultValue);
-		}
-		else if (lightValue is not null && darkValue is not null)
-		{
-			helperMethodName = "CreateAppThemeBindingLightDark";
-			args.Add(lightValue);
-			args.Add(darkValue);
-		}
-		else if (lightValue is not null && defaultValue is not null)
-		{
-			helperMethodName = "CreateAppThemeBindingLightDefault";
-			args.Add(lightValue);
-			args.Add(defaultValue);
-		}
-		else if (darkValue is not null && defaultValue is not null)
-		{
-			helperMethodName = "CreateAppThemeBindingDarkDefault";
-			args.Add(darkValue);
-			args.Add(defaultValue);
-		}
-		else if (lightValue is not null)
-		{
-			helperMethodName = "CreateAppThemeBindingLight";
-			args.Add(lightValue);
-		}
-		else if (darkValue is not null)
-		{
-			helperMethodName = "CreateAppThemeBindingDark";
-			args.Add(darkValue);
-		}
-		else // defaultValue is not null
-		{
-			helperMethodName = "CreateAppThemeBindingDefault";
-			args.Add(defaultValue!);
-		}
-
-		value = $"global::Microsoft.Maui.Controls.XamlSourceGen.AppThemeBindingHelpers.{helperMethodName}({string.Join(", ", args)})";
+		value = $"new global::Microsoft.Maui.Controls.AppThemeBinding {{ {string.Join(", ", parts)} }}";
 		return true;
 	}
+#endif
 
 	//all of this could/should be better, but is already slightly better than XamlC
 	internal static bool ProvideValueForStaticResourceExtension(ElementNode node, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)

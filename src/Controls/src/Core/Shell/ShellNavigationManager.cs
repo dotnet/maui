@@ -309,7 +309,16 @@ namespace Microsoft.Maui.Controls
 
 
 			if (baseShellItem is ShellContent)
-				baseShellItem.ApplyQueryAttributes(MergeData(element, filteredQuery, isPopping));
+			{
+				var mergedData = MergeData(element, filteredQuery, isPopping);
+
+				//if we are pop or navigating back, we need to apply the query attributes to the ShellContent
+				if (isPopping)
+				{
+					element.SetValue(ShellContent.QueryAttributesProperty, mergedData);
+				}
+				baseShellItem.ApplyQueryAttributes(mergedData);
+			}
 			else if (isLastItem)
 				element.SetValue(ShellContent.QueryAttributesProperty, MergeData(element, query, isPopping));
 
