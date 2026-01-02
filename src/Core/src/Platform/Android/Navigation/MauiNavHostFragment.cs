@@ -18,5 +18,11 @@ namespace Microsoft.Maui.Platform
 		protected MauiNavHostFragment(nint javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
 		{
 		}
+
+		public override void OnDestroy()
+		{
+			base.OnDestroy();
+			this.Dispose();
+		}
 	}
 }
