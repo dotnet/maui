@@ -2,6 +2,7 @@
 abstract Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.Layout.get -> Microsoft.Maui.Controls.IItemsLayout!
 Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2
 Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2.CollectionViewHandler2() -> void
+Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2.CollectionViewHandler2(Microsoft.Maui.PropertyMapper? mapper = null) -> void
 Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>
 Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.Element.get -> TItemsView!
 Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.ItemsView.get -> TItemsView!
@@ -16,8 +17,11 @@ override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.C
 override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.CreatePlatformView() -> Microsoft.UI.Xaml.Controls.ItemsView!
 override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.DisconnectHandler(Microsoft.UI.Xaml.Controls.ItemsView! platformView) -> void
 static Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2.MapCanReorderItems(Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2! handler, Microsoft.Maui.Controls.ReorderableItemsView! itemsView) -> void
+static Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2.MapGroupFooterTemplate(Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2! handler, Microsoft.Maui.Controls.GroupableItemsView! itemsView) -> void
+static Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2.MapGroupHeaderTemplate(Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2! handler, Microsoft.Maui.Controls.GroupableItemsView! itemsView) -> void
 static Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2.MapIsGrouped(Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2! handler, Microsoft.Maui.Controls.GroupableItemsView! itemsView) -> void
 static Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2.MapItemsSource(Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2! handler, Microsoft.Maui.Controls.SelectableItemsView! itemsView) -> void
+static Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2.Mapper -> Microsoft.Maui.PropertyMapper<Microsoft.Maui.Controls.CollectionView!, Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2!>!
 static Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2.MapSelectedItem(Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2! handler, Microsoft.Maui.Controls.SelectableItemsView! itemsView) -> void
 static Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2.MapSelectedItems(Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2! handler, Microsoft.Maui.Controls.SelectableItemsView! itemsView) -> void
 static Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2.MapSelectionMode(Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2! handler, Microsoft.Maui.Controls.SelectableItemsView! itemsView) -> void

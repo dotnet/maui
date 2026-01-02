@@ -8,6 +8,28 @@ using WItemsView = Microsoft.UI.Xaml.Controls.ItemsView;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2;
 
+public partial class CollectionViewHandler2
+{
+	public CollectionViewHandler2() : base(Mapper)
+	{
+	}
+
+
+	public CollectionViewHandler2(PropertyMapper? mapper = null) : base(mapper ?? Mapper)
+	{
+	}
+
+	public static PropertyMapper<CollectionView, CollectionViewHandler2> Mapper = new(ItemsViewMapper)
+	{
+		[ReorderableItemsView.CanReorderItemsProperty.PropertyName] = MapCanReorderItems,
+		[GroupableItemsView.IsGroupedProperty.PropertyName] = MapIsGrouped,
+		[GroupableItemsView.GroupHeaderTemplateProperty.PropertyName] = MapGroupHeaderTemplate,
+		[GroupableItemsView.GroupFooterTemplateProperty.PropertyName] = MapGroupFooterTemplate,
+		[SelectableItemsView.SelectedItemProperty.PropertyName] = MapSelectedItem,
+		[SelectableItemsView.SelectedItemsProperty.PropertyName] = MapSelectedItems,
+		[SelectableItemsView.SelectionModeProperty.PropertyName] = MapSelectionMode,
+	};
+}
 public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItemsView>
 {
 	bool _ignorePlatformSelectionChange;
@@ -22,6 +44,17 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 	{
 		handler.UpdateItemsSource();
 	}
+
+	public static void MapGroupHeaderTemplate(CollectionViewHandler2 handler, GroupableItemsView itemsView)
+	{
+		handler.UpdateItemsSource();
+	}
+
+	public static void MapGroupFooterTemplate(CollectionViewHandler2 handler, GroupableItemsView itemsView)
+	{
+		handler.UpdateItemsSource();
+	}
+
 
 	public static void MapItemsSource(CollectionViewHandler2 handler, SelectableItemsView itemsView)
 	{
@@ -67,8 +100,8 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 
 		if (oldListViewBase is not null)
 		{
-			oldListViewBase.ClearValue(WItemsView.SelectionModeProperty);
 			oldListViewBase.SelectionChanged -= PlatformSelectionChanged;
+			oldListViewBase.ClearValue(WItemsView.SelectionModeProperty);
 		}
 
 		if (ItemsView is not null)
@@ -96,12 +129,15 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 
 	void PlatformSelectionChanged(WItemsView sender, ItemsViewSelectionChangedEventArgs args)
 	{
+		if (PlatformView is null)
+			return;
+
 		UpdateVirtualSelection();
 	}
 
 	void UpdateVirtualSelection()
 	{
-		if (_ignorePlatformSelectionChange || ItemsView is null)
+		if (_ignorePlatformSelectionChange || ItemsView is null || PlatformView is null)
 		{
 			return;
 		}
@@ -223,7 +259,7 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 					index++;
 				}
 				break;
-			case ItemsViewSelectionMode.None:	
+			case ItemsViewSelectionMode.None:
 			case ItemsViewSelectionMode.Extended:
 			default:
 				break;
