@@ -178,10 +178,12 @@ public class Issue28986 : _IssuesUITest
 		// Open Soft Input test entry
 		App.Tap("SoftInputTestEntry");
 
+		// With AdjustPan mode (the default on Android), the window pans instead of resizing
+		// So the ContentGrid height should NOT change when keyboard shows
 		App.RetryAssert(() =>
 		{
 			var containerPositionWithSoftInput = App.WaitForElement("ContentGrid").GetRect();
-			Assert.That(containerPositionWithSoftInput.Height, Is.LessThan(containerPosition.Height), "ContentGrid height should be less when Soft Input is shown with Container edges");
+			Assert.That(containerPositionWithSoftInput.Height, Is.EqualTo(containerPosition.Height).Within(5), "ContentGrid height should stay the same with AdjustPan mode - window pans instead of resizing");
 		});
 
 		App.DismissKeyboard();
