@@ -236,8 +236,8 @@ namespace Microsoft.Maui.Platform
 			}
 
 			// Check if AppBarLayout has meaningful content
-			bool appBarHasContent = appBarLayout?.MeasuredHeight > 0;
-			if (!appBarHasContent && appBarLayout is not null)
+			bool appBarHasContent = false;
+			if (appBarLayout is not null)
 			{
 				for (int i = 0; i < appBarLayout.ChildCount; i++)
 				{
