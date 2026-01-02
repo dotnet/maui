@@ -375,14 +375,6 @@ namespace Microsoft.Maui.Platform
 				_fragmentContainerView.ChildViewAdded += OnNavigationHostViewAdded;
 			}
 		}
-
-
-#pragma warning disable RS0016
-		~StackNavigationManager()
-#pragma warning restore RS0016
-		{
-			System.Diagnostics.Debug.WriteLine($"~StackNavigationManager called");
-		}
 		
 		void OnNavigationPlatformViewAttachedToWindow(object? sender, AView.ViewAttachedToWindowEventArgs e)
 		{
