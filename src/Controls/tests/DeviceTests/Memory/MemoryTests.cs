@@ -577,6 +577,95 @@ public class MemoryTests : ControlsHandlerTestBase
 		await AssertionExtensions.WaitForGC([.. references]);
 	}
 
+	[Fact("FlyoutPage Detail Does Not Leak When Replaced")]
+	public async Task FlyoutPageDetailDoesNotLeak()
+	{
+		SetupBuilder();
+
+		var references = new List<WeakReference>();
+		var flyoutPage = new FlyoutPage
+		{
+			Flyout = new ContentPage { Title = "Flyout" }
+		};
+
+		await CreateHandlerAndAddToWindow(new Window(flyoutPage), async () =>
+		{
+			await OnLoadedAsync(flyoutPage);
+
+			// Create and set first detail page
+			var detailPage1 = new ContentPage { Title = "Detail 1" };
+			var navPage1 = new NavigationPage(detailPage1);
+			flyoutPage.Detail = navPage1;
+
+			await OnLoadedAsync(detailPage1);
+
+			references.Add(new(navPage1));
+			references.Add(new(navPage1.Handler));
+			references.Add(new(navPage1.Handler.PlatformView));
+			references.Add(new(detailPage1));
+			references.Add(new(detailPage1.Handler));
+			references.Add(new(detailPage1.Handler.PlatformView));
+
+			// Replace with second detail page
+			var detailPage2 = new ContentPage { Title = "Detail 2" };
+			var navPage2 = new NavigationPage(detailPage2);
+			flyoutPage.Detail = navPage2;
+
+			await OnLoadedAsync(detailPage2);
+
+			// The old detail page and navigation page should be collected
+			navPage1 = null;
+			detailPage1 = null;
+		});
+
+		await AssertionExtensions.WaitForGC([.. references]);
+	}
+
+	[Fact("FlyoutPage Detail Does Not Leak With Multiple Replacements")]
+	public async Task FlyoutPageDetailDoesNotLeakWithMultipleReplacements()
+	{
+		SetupBuilder();
+
+		var references = new List<WeakReference>();
+		var flyoutPage = new FlyoutPage
+		{
+			Flyout = new ContentPage { Title = "Flyout" }
+		};
+
+		await CreateHandlerAndAddToWindow(new Window(flyoutPage), async () =>
+		{
+			await OnLoadedAsync(flyoutPage);
+
+			// Simulate multiple replacements similar to the Sandbox scenario
+			for (int i = 0; i < 5; i++)
+			{
+				var detailPage = new ContentPage { Title = $"Detail {i}" };
+				var navPage = new NavigationPage(detailPage);
+				
+				flyoutPage.Detail = navPage;
+				await OnLoadedAsync(detailPage);
+
+				// Track references for first 3 iterations (they should be collected)
+				if (i < 3)
+				{
+					references.Add(new(navPage));
+					references.Add(new(navPage.Handler));
+					references.Add(new(navPage.Handler.PlatformView));
+					references.Add(new(detailPage));
+					references.Add(new(detailPage.Handler));
+					references.Add(new(detailPage.Handler.PlatformView));
+				}
+
+				// Small delay to simulate real usage
+				await Task.Delay(50);
+			}
+
+			// After loop, the last 2 detail pages are still active, but first 3 should be collected
+		});
+
+		await AssertionExtensions.WaitForGC([.. references]);
+	}
+
 	[Fact("VisualDiagnosticsOverlay Does Not Leak"
 #if IOS || MACCATALYST
 		, Skip = "Fails with 'MauiContext should have been set on parent.'"
