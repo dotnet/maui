@@ -26,8 +26,8 @@ This skill searches the dotnet/maui and dotnet/docs-maui repositories for open p
 2. **Milestoned** - PRs assigned to SR3, SR4, or Servicing milestones
 3. **Partner** - PRs from Syncfusion and other partners
 4. **Community** - External contributions needing review
-5. **Recent** - PRs created in the last 2 weeks (5 from maui + 5 from docs-maui by default)
-6. **docs-maui** - Documentation PRs (5 priority + 5 recent by default)
+5. **Recent Waiting for Review** - PRs created in last 2 weeks that need review (minimum 5)
+6. **docs-maui Waiting for Review** - Documentation PRs needing review (minimum 5)
 
 ## Quick Start
 
@@ -38,8 +38,11 @@ pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1
 # Find only milestoned PRs
 pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1 -Category milestoned
 
-# Find only docs-maui PRs
+# Find only docs-maui PRs waiting for review
 pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1 -Category docs-maui
+
+# Find recent PRs waiting for review
+pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1 -Category recent
 
 # Find Android PRs only
 pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1 -Platform android
@@ -47,7 +50,7 @@ pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1 -Platfor
 # Limit results per category
 pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1 -Limit 5
 
-# Adjust docs-maui limit (default is 5 per sub-category)
+# Adjust docs-maui limit (default is 5, minimum enforced)
 pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1 -DocsLimit 10
 ```
 
@@ -58,8 +61,10 @@ pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1 -DocsLim
 | `-Category` | milestoned, priority, recent, partner, community, docs-maui, all | all | Filter by category |
 | `-Platform` | android, ios, windows, maccatalyst, all | all | Filter by platform |
 | `-Limit` | 1-100 | 10 | Max PRs per category (maui repo) |
-| `-RecentLimit` | 1-100 | 5 | Max recent PRs from maui repo |
-| `-DocsLimit` | 1-100 | 5 | Max PRs per sub-category for docs-maui |
+| `-RecentLimit` | 1-100 | 5 | Max recent PRs waiting for review from maui repo (minimum 5 enforced) |
+| `-DocsLimit` | 1-100 | 5 | Max PRs for docs-maui waiting for review (minimum 5 enforced) |
+| `-ExcludeAuthors` | string[] | (none) | Exclude PRs from specific authors (e.g., `-ExcludeAuthors PureWeen,rmarinho`) |
+| `-IncludeAuthors` | string[] | (none) | Only include PRs from specific authors |
 | `-OutputFormat` | review, table, json | review | Output format |
 
 ## Workflow for Reviewing PRs

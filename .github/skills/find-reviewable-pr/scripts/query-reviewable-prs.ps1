@@ -63,7 +63,13 @@ param(
 
     [Parameter(Mandatory = $false)]
     [ValidateSet("table", "json", "review")]
-    [string]$OutputFormat = "review"
+    [string]$OutputFormat = "review",
+
+    [Parameter(Mandatory = $false)]
+    [string[]]$ExcludeAuthors = @(),
+
+    [Parameter(Mandatory = $false)]
+    [string[]]$IncludeAuthors = @()
 )
 
 $ErrorActionPreference = "Stop"
@@ -83,17 +89,60 @@ $platformLabels = @{
 # Calculate date for "recent" filter (2 weeks ago)
 $twoWeeksAgo = (Get-Date).AddDays(-14).ToString("yyyy-MM-dd")
 
+# Helper function to invoke GitHub CLI with retry logic
+function Invoke-GitHubWithRetry {
+    param(
+        [string]$Command,
+        [string]$Description,
+        [int]$MaxRetries = 3
+    )
+    
+    $retryCount = 0
+    $baseDelay = 2  # Start with 2 seconds
+    
+    while ($retryCount -lt $MaxRetries) {
+        try {
+            $result = Invoke-Expression $Command 2>&1
+            if ($LASTEXITCODE -eq 0) {
+                return $result
+            }
+            
+            # Check if it's a transient error (502, 503, timeout, stream error)
+            $errorText = $result -join " "
+            if ($errorText -match "502|503|504|timeout|stream error|CANCEL|Bad Gateway") {
+                $retryCount++
+                if ($retryCount -lt $MaxRetries) {
+                    $delay = $baseDelay * [Math]::Pow(2, $retryCount - 1)  # Exponential backoff: 2, 4, 8 seconds
+                    Write-Warning "  Transient error detected. Retrying in $delay seconds... (attempt $($retryCount + 1)/$MaxRetries)"
+                    Start-Sleep -Seconds $delay
+                    continue
+                }
+            }
+            
+            # Non-transient error or max retries reached
+            throw "Failed to $Description`: $errorText"
+        }
+        catch {
+            $retryCount++
+            if ($retryCount -ge $MaxRetries) {
+                throw $_
+            }
+            $delay = $baseDelay * [Math]::Pow(2, $retryCount - 1)
+            Write-Warning "  Error occurred. Retrying in $delay seconds... (attempt $($retryCount + 1)/$MaxRetries)"
+            Start-Sleep -Seconds $delay
+        }
+    }
+    
+    throw "Failed to $Description after $MaxRetries attempts"
+}
+
 # Fetch all open non-draft PRs from dotnet/maui
 Write-Host ""
 Write-Host "Fetching open PRs from dotnet/maui..." -ForegroundColor Cyan
 
 $allPRs = @()
 try {
-    $prResult = gh pr list --repo dotnet/maui --state open --limit 200 --json number,title,labels,createdAt,isDraft,author,additions,deletions,changedFiles,milestone,url,reviewDecision,reviews,projectItems 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        Write-Error "Failed to fetch PRs: $prResult"
-        exit 1
-    }
+    $prResult = Invoke-GitHubWithRetry -Command 'gh pr list --repo dotnet/maui --state open --limit 200 --json number,title,labels,createdAt,isDraft,author,additions,deletions,changedFiles,milestone,url,reviewDecision,reviews,projectItems' -Description "fetch PRs from dotnet/maui"
     $allPRs = $prResult | ConvertFrom-Json
     
     # Filter out drafts
@@ -112,20 +161,17 @@ Write-Host "Fetching open PRs from dotnet/docs-maui..." -ForegroundColor Cyan
 
 $docsMauiPRs = @()
 try {
-    $docsResult = gh pr list --repo dotnet/docs-maui --state open --limit 100 --json number,title,labels,createdAt,isDraft,author,additions,deletions,changedFiles,milestone,url,reviewDecision,reviews,projectItems 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        Write-Warning "Failed to fetch docs-maui PRs: $docsResult"
-    } else {
-        $docsMauiPRs = $docsResult | ConvertFrom-Json
-        
-        # Filter out drafts
-        $docsMauiPRs = $docsMauiPRs | Where-Object { -not $_.isDraft }
-        
-        Write-Host "  Found $($docsMauiPRs.Count) non-draft open PRs in dotnet/docs-maui" -ForegroundColor Green
-    }
+    $docsResult = Invoke-GitHubWithRetry -Command 'gh pr list --repo dotnet/docs-maui --state open --limit 100 --json number,title,labels,createdAt,isDraft,author,additions,deletions,changedFiles,milestone,url,reviewDecision,reviews,projectItems' -Description "fetch PRs from dotnet/docs-maui"
+    $docsMauiPRs = $docsResult | ConvertFrom-Json
+    
+    # Filter out drafts
+    $docsMauiPRs = $docsMauiPRs | Where-Object { -not $_.isDraft }
+    
+    Write-Host "  Found $($docsMauiPRs.Count) non-draft open PRs in dotnet/docs-maui" -ForegroundColor Green
 }
 catch {
-    Write-Warning "Failed to query docs-maui: $_"
+    Write-Error "Failed to query docs-maui: $_"
+    exit 1
 }
 
 # Helper function to get review status summary
@@ -287,12 +333,35 @@ function Test-PRPlatform {
     return $false
 }
 
+# Helper function to check if author matches filter
+function Test-AuthorFilter {
+    param($author, $excludeAuthors, $includeAuthors)
+    
+    # If include list is specified, author must be in it
+    if ($includeAuthors.Count -gt 0) {
+        return $author -in $includeAuthors
+    }
+    
+    # If exclude list is specified, author must NOT be in it
+    if ($excludeAuthors.Count -gt 0) {
+        return $author -notin $excludeAuthors
+    }
+    
+    # No filter specified, include all
+    return $true
+}
+
 # Process and categorize all PRs
 $processedPRs = @()
 
 foreach ($pr in $allPRs) {
     # Apply platform filter
     if (-not (Test-PRPlatform -pr $pr -platformFilter $Platform)) {
+        continue
+    }
+    
+    # Apply author filter
+    if (-not (Test-AuthorFilter -author $pr.author.login -excludeAuthors $ExcludeAuthors -includeAuthors $IncludeAuthors)) {
         continue
     }
     
@@ -329,6 +398,11 @@ Write-Host "  Processed $($processedPRs.Count) PRs matching filters" -Foreground
 $processedDocsMauiPRs = @()
 
 foreach ($pr in $docsMauiPRs) {
+    # Apply author filter
+    if (-not (Test-AuthorFilter -author $pr.author.login -excludeAuthors $ExcludeAuthors -includeAuthors $IncludeAuthors)) {
+        continue
+    }
+    
     $categories = Get-PRCategory -pr $pr
     $labelNames = ($pr.labels | ForEach-Object { $_.name }) -join ", "
     
@@ -394,15 +468,20 @@ $partnerPRs = $processedPRs | Where-Object { $_.IsPartner } | Sort-Object {
 $communityPRs = $processedPRs | Where-Object { $_.IsCommunity } | Sort-Object { 
     Get-MilestonePriority $_.Milestone
 }, { if ($_.IsPriority) { 0 } else { 1 } }, CreatedAt -Descending
-$recentPRs = $processedPRs | Where-Object { $_.Age -le 14 } | Sort-Object { 
+# Recent PRs that are waiting for review (REVIEW_REQUIRED or no reviews yet)
+$recentPRs = $processedPRs | Where-Object { 
+    $_.Age -le 14 -and ($_.ReviewDecision -eq "REVIEW_REQUIRED" -or $_.ReviewDecision -eq $null -or $_.ReviewDecision -eq "")
+} | Sort-Object { 
     Get-MilestonePriority $_.Milestone
 }, { if ($_.IsPriority) { 0 } else { 1 } }, CreatedAt -Descending
 
-# Organize docs-maui PRs by priority and recency
+# Organize docs-maui PRs by priority and recency (filter recent to waiting for review)
 $docsMauiPriorityPRs = $processedDocsMauiPRs | Where-Object { $_.IsPriority } | Sort-Object { 
     Get-MilestonePriority $_.Milestone
 }, CreatedAt
-$docsMauiRecentPRs = $processedDocsMauiPRs | Sort-Object CreatedAt -Descending
+$docsMauiRecentPRs = $processedDocsMauiPRs | Where-Object {
+    $_.ReviewDecision -eq "REVIEW_REQUIRED" -or $_.ReviewDecision -eq $null -or $_.ReviewDecision -eq ""
+} | Sort-Object CreatedAt -Descending
 
 # Filter by category if specified
 if ($Category -ne "all") {
@@ -513,15 +592,22 @@ function Format-Review-Output {
         }
     }
     
-    # Recent PRs (only show those not in other categories)
-    $recentOnly = $recentPRs | Where-Object { 
-        -not $_.IsPriority -and -not $_.IsPartner -and -not $_.IsCommunity -and $_.Milestone -eq ""
+    # Recent PRs waiting for review
+    # When Category is explicitly "recent", show ALL recent PRs
+    # When Category is "all", only show those not in other categories (to avoid duplicates)
+    $recentToDisplay = if ($Category -eq "recent") {
+        $recentPRs
+    } else {
+        $recentPRs | Where-Object { 
+            -not $_.IsPriority -and -not $_.IsPartner -and -not $_.IsCommunity -and $_.Milestone -eq ""
+        }
     }
-    if ($recentOnly.Count -gt 0 -and ($Category -eq "all" -or $Category -eq "recent")) {
+    if ($recentToDisplay.Count -gt 0 -and ($Category -eq "all" -or $Category -eq "recent")) {
         Write-Host ""
-        Write-Host "🕐 RECENT PRs (last 2 weeks) - $($recentOnly.Count) found" -ForegroundColor Cyan
+        Write-Host "🕐 RECENT PRs WAITING FOR REVIEW (last 2 weeks) - $($recentToDisplay.Count) found" -ForegroundColor Cyan
         Write-Host "-----------------------------------------------------------"
-        foreach ($pr in ($recentOnly | Select-Object -First $RecentLimit)) {
+        $recentToShow = [Math]::Max($RecentLimit, 5)  # Always show at least 5
+        foreach ($pr in ($recentToDisplay | Select-Object -First $recentToShow)) {
             Write-Host "==="
             Write-Host "Number:$($pr.Number)"
             Write-Host "Title:$($pr.Title)"
@@ -562,12 +648,13 @@ function Format-Review-Output {
         }
     }
     
-    # docs-maui PRs - Recent
+    # docs-maui PRs - Waiting for Review (at least 5)
     if ($docsMauiRecentPRs.Count -gt 0 -and ($Category -eq "all" -or $Category -eq "docs-maui")) {
         Write-Host ""
-        Write-Host "📖 DOCS-MAUI RECENT PRs - $($docsMauiRecentPRs.Count) found" -ForegroundColor Blue
+        Write-Host "📖 DOCS-MAUI PRs WAITING FOR REVIEW - $($docsMauiRecentPRs.Count) found" -ForegroundColor Blue
         Write-Host "-----------------------------------------------------------"
-        foreach ($pr in ($docsMauiRecentPRs | Select-Object -First $DocsLimit)) {
+        $docsToShow = [Math]::Max($DocsLimit, 5)  # Always show at least 5
+        foreach ($pr in ($docsMauiRecentPRs | Select-Object -First $docsToShow)) {
             Write-Host "==="
             Write-Host "Number:$($pr.Number)"
             Write-Host "Title:$($pr.Title)"
@@ -581,7 +668,7 @@ function Format-Review-Output {
             Write-Host "Age:$($pr.Age) days"
             Write-Host "Files:$($pr.Files) (+$($pr.Additions)/-$($pr.Deletions))"
             Write-Host "Labels:$($pr.Labels)"
-            Write-Host "Category:docs-maui-recent"
+            Write-Host "Category:docs-maui-waiting-for-review"
         }
     }
     
@@ -593,9 +680,9 @@ function Format-Review-Output {
     Write-Host "  Milestoned: $($milestonedPRs.Count)"
     Write-Host "  Partner: $($partnerPRs.Count)"
     Write-Host "  Community: $($communityPRs.Count)"
-    Write-Host "  Recent (2 weeks): $($recentPRs.Count)"
+    Write-Host "  Recent Waiting for Review (2 weeks): $($recentPRs.Count)"
     Write-Host "  docs-maui Priority: $($docsMauiPriorityPRs.Count)"
-    Write-Host "  docs-maui Recent: $($docsMauiRecentPRs.Count)"
+    Write-Host "  docs-maui Waiting for Review: $($docsMauiRecentPRs.Count)"
 }
 
 function Format-Json-Output {
@@ -604,9 +691,9 @@ function Format-Json-Output {
         Milestoned = $milestonedPRs | Select-Object -First $Limit
         Partner = $partnerPRs | Select-Object -First $Limit
         Community = $communityPRs | Select-Object -First $Limit
-        Recent = $recentPRs | Select-Object -First $RecentLimit
+        RecentWaitingForReview = $recentPRs | Select-Object -First ([Math]::Max($RecentLimit, 5))
         DocsMauiPriority = $docsMauiPriorityPRs | Select-Object -First $DocsLimit
-        DocsMauiRecent = $docsMauiRecentPRs | Select-Object -First $DocsLimit
+        DocsMauiWaitingForReview = $docsMauiRecentPRs | Select-Object -First ([Math]::Max($DocsLimit, 5))
     }
     return $output | ConvertTo-Json -Depth 10
 }
