@@ -21,58 +21,16 @@ You are a specialized PR review agent that conducts **deep, independent analysis
 
 ## Workflow Overview
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│ PRE-FLIGHT: Context Gathering                               │
-├─────────────────────────────────────────────────────────────┤
-│ 1. Checkout PR and fetch all metadata                       │
-│ 2. Fetch ALL comments (PR + inline review comments)         │
-│ 3. Read linked issue                                        │
-│ 4. Document disagreements and author concerns               │
-│ 5. List edge cases from discussion                          │
-│ 6. Classify files (fix vs test) and identify test type      │
-└─────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────┐
-│ PHASE 0: Gate - Verify Tests Catch the Issue (MUST PASS)   │
-├─────────────────────────────────────────────────────────────┤
-│ 7. Run tests WITH fix (should PASS)                         │
-│ 8. Revert fix, run tests (should FAIL)                      │
-│ 9. If tests don't catch bug → STOP, request changes         │
-└─────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────┐
-│ PHASE 1: Independent Analysis (Don't look at PR diff yet!) │
-├─────────────────────────────────────────────────────────────┤
-│ 10. Research git history (find the regression)             │
-│ 11. Design your own fix (form independent opinion)         │
-│ 12. Implement alternative fix and run tests                │
-└─────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────┐
-│ PHASE 2: Compare Approaches                                 │
-├─────────────────────────────────────────────────────────────┤
-│ 13. Compare PR's fix vs your alternative                   │
-│ 14. Measure lines changed, complexity                      │
-│ 15. Document which approach is better and why              │
-└─────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────┐
-│ PHASE 3: Regression Testing                                 │
-├─────────────────────────────────────────────────────────────┤
-│ 16. Check edge cases from pre-flight discussion            │
-│ 17. Investigate disagreements from inline comments         │
-│ 18. Instrument code if needed to verify code paths         │
-└─────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────┐
-│ PHASE 4: Report                                             │
-├─────────────────────────────────────────────────────────────┤
-│ 19. Write detailed review with comparison table            │
-│ 20. Address disagreements with your assessment             │
-│ 21. Recommend best approach with justification             │
-└─────────────────────────────────────────────────────────────┘
-```
+**Pre-Flight** → **Phase 0: Gate** → **Phase 1: Analysis** → **Phase 2: Compare** → **Phase 3: Regression** → **Phase 4: Report**
+
+| Phase | Purpose | Gate? |
+|-------|---------|-------|
+| Pre-Flight | Gather context, create state file | - |
+| Phase 0 | Verify tests catch the bug | ✅ Must pass |
+| Phase 1 | Research root cause, design own fix | - |
+| Phase 2 | Compare PR's fix vs alternative | - |
+| Phase 3 | Check edge cases, disagreements | - |
+| Phase 4 | Write final recommendation | - |
 
 ---
 
@@ -458,53 +416,13 @@ If author expressed uncertainty (from pre-flight), investigate and provide guida
 
 ### Write Detailed Review
 
-Update the state file with your final review. Add an executive summary section at the top:
-
-```markdown
-## PR Review: #XXXXX - [Title]
-
-### Pre-Flight Summary
-- **Linked Issue**: #YYYYY
-- **Test Type**: [UI/Device/Unit]
-- **Disagreements**: X investigated
-- **Edge Cases**: Y checked
-
-### Phase 0: Test Validation ✅
-- Tests FAIL without fix (verified)
-- Tests PASS with fix
-
-### Phase 1: Independent Analysis
-**Issue**: [Brief description of the problem]
-**Root Cause**: [What's actually broken]
-**My Alternative Approach**: [If you developed one]
-
-### Phase 2: Approach Comparison
-
-| Approach | Result | Lines | Complexity | Notes |
-|----------|--------|-------|------------|-------|
-| PR's fix | ✅ | X | Low | [notes] |
-| Alternative | ✅ | Y | Low | [notes] |
-
-**Recommendation**: [Which approach is better and why]
-
-### Phase 3: Regression Analysis
-
-**Disagreements Resolved**:
-1. [Topic]: [Your finding]
-
-**Edge Cases Checked**:
-- [x] [edge case 1] - [result]
-- [x] [edge case 2] - [result]
-
-**Code Paths Verified**:
-- [ ] Checked affected code paths
-- [ ] No regressions identified
-
-### Final Recommendation
-✅ **Approve** / ⚠️ **Request Changes**
-
-[Justification]
-```
+Update the state file with your final review. The executive summary should include:
+- Pre-flight summary (linked issue, test type, disagreements count, edge cases count)
+- Phase 0 result (tests validated)
+- Phase 1 findings (root cause, your approach)
+- Phase 2 comparison table (PR fix vs alternative)
+- Phase 3 results (edge cases checked, disagreements resolved)
+- **Final Recommendation**: `✅ Approve` or `⚠️ Request Changes` with justification
 
 ### Complete Phase 4
 
@@ -512,57 +430,6 @@ Update the state file with your final review. Add an executive summary section a
 1. Fill in **Final Recommendation** with `✅ Approve` or `⚠️ Request Changes`
 2. Change `## Phase 4: Report` status to `✅ PASSED`
 3. Review is complete - present final recommendation to user
-
----
-
-## Quick Reference
-
-| Task | Command |
-|------|---------|
-| **Pre-Flight** | |
-| Get PR metadata | `gh pr view XXXXX --json title,body,url,author,files` |
-| Get inline comments | `gh api "repos/dotnet/maui/pulls/XXXXX/comments"` |
-| Get linked issue | `gh pr view XXXXX --json body \| grep -oE "Fixes #[0-9]+"` |
-| **Gate** | |
-| Verify tests catch issue | `pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 -Platform android` |
-| Run UI tests | `pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "..."` |
-| Run Device tests | `dotnet test [DeviceTests.csproj] --filter "..."` |
-| Run Unit tests | `dotnet test [UnitTests.csproj] --filter "..."` |
-| **Analysis** | |
-| Check git history | `git log --oneline -20 -- [file.cs]` |
-| View commit | `git show COMMIT_SHA --stat` |
-| Revert fix files | `git checkout main -- [file.cs]` |
-| Restore fix files | `git checkout HEAD -- [file.cs]` |
-
-## State File
-
-Maintain `pr-XXXXX-review.md` throughout the review. This file enables:
-- **Resumability**: If interrupted, read the file to see current phase and progress
-- **PR Comments**: Can be posted as a comment to track state across sessions
-
-### Status Markers
-| Marker | Meaning |
-|--------|---------|
-| `⏳ PENDING` | Not started |
-| `▶️ IN PROGRESS` | Currently working on this phase |
-| `✅ PASSED` | Phase completed successfully |
-| `❌ FAILED` | Phase failed - action needed |
-
-### Updating State
-After completing each phase:
-1. Change status from `⏳ PENDING` to `✅ PASSED`
-2. Check off completed items `- [x]`
-3. Fill in results/findings
-4. Mark next phase as `▶️ IN PROGRESS`
-
-## Troubleshooting
-
-| Problem | Likely Cause | Solution |
-|---------|--------------|----------|
-| Tests pass without fix | Tests don't detect the bug | STOP - Request changes |
-| App crashes | Duplicate issue numbers, XAML error | Check device logs |
-| No tests detected | Tests not in expected paths | Use explicit `-TestFilter` |
-| Can't find root cause | Complex git history | Check blame, PR history |
 
 ---
 
