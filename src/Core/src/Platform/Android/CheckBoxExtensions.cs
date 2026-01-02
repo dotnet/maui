@@ -36,6 +36,9 @@ namespace Microsoft.Maui.Platform
 
 		internal static ColorStateList GetColorStateList(this AppCompatCheckBox platformCheckBox, ICheckBox check)
 		{
+			// Cache the default button tint list if not already cached
+			_defaultButtonTintList ??= platformCheckBox.ButtonTintList;
+
 			// For the moment, we're only supporting solid color Paint for the Android Checkbox
 			if (check.Foreground is SolidPaint solid)
 			{
@@ -45,12 +48,8 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				
 				if (RuntimeFeature.IsMaterial3Enabled)
 				{
-					// Save the default button tint list
-					_defaultButtonTintList ??= platformCheckBox.ButtonTintList;
-
 					// Material 3: Use the default theme's buttonTint
 					if (_defaultButtonTintList is not null)
 					{
