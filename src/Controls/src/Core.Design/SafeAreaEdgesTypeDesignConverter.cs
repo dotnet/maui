@@ -5,34 +5,48 @@ using Microsoft.Maui;
 
 namespace Microsoft.Maui.Controls.Design
 {
+	public static class StringExtensions
+	{
+		public static bool IsEmpty(this string str) => string.IsNullOrEmpty(str);
+		public static bool EqualsIgnoreCase(this string str, string other) =>
+			str?.Equals(other, StringComparison.OrdinalIgnoreCase) ?? false;
+	}
+
 	public class SafeAreaEdgesTypeDesignConverter : StringConverter
 	{
+		private static readonly string[] ValidValues = { "All", "None", "Default", "SoftInput", "Container" };
+
 		public override bool IsValid(ITypeDescriptorContext context, object value)
 		{
 			// MUST MATCH SafeAreaEdgesTypeConverter.ConvertFrom
-			string strValue = value?.ToString()?.Trim();
-			if (string.IsNullOrEmpty(strValue))
+			var strValue = value?.ToString()?.Trim();
+			if (strValue.IsEmpty())
 				return false;
 
-			// Split by comma and check each part
-			string[] parts = strValue.Split(',');
-			
+			// Split by comma and validate each part
+			var parts = strValue.Split(',');
+
 			// Must have 1, 2, or 4 parts
 			if (parts.Length != 1 && parts.Length != 2 && parts.Length != 4)
 				return false;
 
 			// Each part must be a valid SafeAreaRegions value
-			foreach (string part in parts)
+			foreach (var part in parts)
 			{
-				string trimmedPart = part.Trim();
-				if (!string.Equals(trimmedPart, "All", StringComparison.OrdinalIgnoreCase) &&
-					!string.Equals(trimmedPart, "None", StringComparison.OrdinalIgnoreCase) &&
-					!string.Equals(trimmedPart, "Default", StringComparison.OrdinalIgnoreCase) &&
-					!string.Equals(trimmedPart, "SoftInput", StringComparison.OrdinalIgnoreCase) &&
-					!string.Equals(trimmedPart, "Container", StringComparison.OrdinalIgnoreCase))
+				var trimmedPart = part.Trim();
+				var isValidPart = false;
+
+				foreach (var valid in ValidValues)
 				{
-					return false;
+					if (trimmedPart.EqualsIgnoreCase(valid))
+					{
+						isValidPart = true;
+						break;
+					}
 				}
+
+				if (!isValidPart)
+					return false;
 			}
 
 			return true;
