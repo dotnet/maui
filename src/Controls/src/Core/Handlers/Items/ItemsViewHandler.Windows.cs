@@ -670,7 +670,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return null;
 		}
 
-		protected virtual int ItemCount => CollectionViewSource.View.Count;
+		protected virtual int ItemCount => CollectionViewSource is not null ? CollectionViewSource.View.Count : 0;
 
 		protected virtual object GetItem(int index)
 		{
