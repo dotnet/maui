@@ -570,13 +570,16 @@ namespace Microsoft.Maui.Controls
 			if (Shell.Current?.CurrentState?.Location is not null)
 			{
 				var currentRoute = Shell.Current?.CurrentState?.Location?.ToString();
-				var currentPaths = new List<string>(currentRoute.Split('/'));
-
-				// The first two elements of routeStack and currentpaths are dummy/empty values
-				if (currentPaths.Count == routeStack.Count && currentPaths.Count > 3 && currentPaths[2] == routeStack[2])
+				if (!string.IsNullOrEmpty(currentRoute))
 				{
-					// Current route is same as the new route, so remove the last elements of the routeStack
-					routeStack.RemoveRange(3, routeStack.Count - 3);
+					var currentPaths = new List<string>(currentRoute.Split('/'));
+					// Indices 0 and 1 of both routeStack and currentPaths are dummy/empty values
+					// The first meaningful route segment is at index 2.
+					if (currentPaths.Count == routeStack.Count && currentPaths.Count > 3 && currentPaths[2] == routeStack[2])
+					{
+						// Current route is same as the new route, so remove the last elements of the routeStack
+						routeStack.RemoveRange(3, routeStack.Count - 3);
+					}
 				}
 			}
 #endif
