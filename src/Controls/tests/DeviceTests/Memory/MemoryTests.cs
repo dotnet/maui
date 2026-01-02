@@ -85,6 +85,7 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<TimePicker, TimePickerHandler>();
 				handlers.AddHandler<Toolbar, ToolbarHandler>();
 				handlers.AddHandler<WebView, WebViewHandler>();
+				handlers.AddHandler<FlyoutPage, FlyoutViewHandler>();
 
 #if IOS || MACCATALYST
 				handlers.AddHandler<NavigationPage, NavigationRenderer>();
@@ -585,7 +586,8 @@ public class MemoryTests : ControlsHandlerTestBase
 		var references = new List<WeakReference>();
 		var flyoutPage = new FlyoutPage
 		{
-			Flyout = new ContentPage { Title = "Flyout" }
+			Flyout = new ContentPage { Title = "Flyout" },
+			Detail = new ContentPage { Title = "Detail" }
 		};
 
 		await CreateHandlerAndAddToWindow(new Window(flyoutPage), async () =>
@@ -595,7 +597,7 @@ public class MemoryTests : ControlsHandlerTestBase
 			var detailPage1 = new ContentPage { Title = "Detail 1" };
 			var navPage1 = new NavigationPage(detailPage1);
 			flyoutPage.Detail = navPage1;
-
+			
 			await OnLoadedAsync(detailPage1);
 
 			references.Add(new(navPage1));
@@ -626,7 +628,8 @@ public class MemoryTests : ControlsHandlerTestBase
 		var references = new List<WeakReference>();
 		var flyoutPage = new FlyoutPage
 		{
-			Flyout = new ContentPage { Title = "Flyout" }
+			Flyout = new ContentPage { Title = "Flyout" },
+			Detail = new ContentPage { Title = "Detail" }
 		};
 
 		await CreateHandlerAndAddToWindow(new Window(flyoutPage), async () =>
