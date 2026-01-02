@@ -310,7 +310,7 @@ namespace Microsoft.Maui.Platform
 				_fragmentContainerView.ViewAttachedToWindow -= OnNavigationPlatformViewAttachedToWindow;
 				_fragmentContainerView.ChildViewAdded -= OnNavigationHostViewAdded;
 			}
-
+			
 			if (_fragmentManager is not null)
 			{
 				CleanUpFragments(_fragmentManager);
@@ -336,7 +336,7 @@ namespace Microsoft.Maui.Platform
 		static void CleanUpFragments(FragmentManager fragmentManager)
 		{
 			fragmentManager.ExecutePendingTransactionsEx();
-			;				if (fragmentManager.BackStackEntryCount > 0)
+			if (fragmentManager.BackStackEntryCount > 0)
 			{
 				fragmentManager.PopBackStackImmediate();
 			}
@@ -347,7 +347,7 @@ namespace Microsoft.Maui.Platform
 				transaction.RemoveEx(fragment);
 			}
 
-			transaction.CommitAllowingStateLoss();
+			transaction.CommitNowAllowingStateLoss();
 			fragmentManager.ExecutePendingTransactionsEx();
 		}
 
