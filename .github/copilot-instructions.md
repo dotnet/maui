@@ -188,10 +188,10 @@ The repository includes specialized custom agents for specific tasks. These agen
    - **Capabilities**: Issue reproduction, root cause analysis, fix implementation, testing
    - **Trigger phrases**: "fix issue #XXXXX", "resolve bug #XXXXX", "implement fix for #XXXXX"
 
-2. **pr-reviewer** - Specialized agent for conducting thorough, independent PR reviews that challenge assumptions and propose alternative solutions
+2. **pr-reviewer** - Specialized agent for conducting thorough, constructive code reviews of .NET MAUI pull requests
    - **Use when**: User requests code review of a pull request
-   - **Capabilities**: Independent root cause analysis, alternative fix implementation, comparative testing, test validation
-   - **Trigger phrases**: "review PR #XXXXX", "review pull request #XXXXX", "code review for PR #XXXXX", "review this PR", "deep review PR #XXXXX"
+   - **Capabilities**: Code quality analysis, best practices validation, test coverage review
+   - **Trigger phrases**: "review PR #XXXXX", "review pull request #XXXXX", "code review for PR #XXXXX", "review this PR"
    - **Do NOT use for**: Building/testing PR functionality (use Sandbox), asking about PR details (handle yourself)
 
 3. **uitest-coding-agent** - Specialized agent for writing new UI tests for .NET MAUI with proper syntax, style, and conventions
@@ -205,53 +205,12 @@ The repository includes specialized custom agents for specific tasks. These agen
    - **Trigger phrases**: "test this PR", "validate PR #XXXXX in Sandbox", "reproduce issue #XXXXX", "try out in Sandbox"
    - **Do NOT use for**: Code review (use pr-reviewer), writing automated tests (use uitest-coding-agent)
 
-### Reusable Skills
-
-Skills are modular capabilities that agents can invoke. Located in `.github/skills/`:
-
-1. **assess-test-type** (`.github/skills/assess-test-type/SKILL.md`)
-   - **Purpose**: Determines whether tests should be UI tests or unit tests
-   - **Trigger phrases**: "should this be a UI test or unit test", "what type of test is appropriate"
-   - **Used by**: `pr-reviewer` agent
-
-2. **validate-ui-tests** (`.github/skills/validate-ui-tests/SKILL.md`)
-   - **Purpose**: Validates UI tests correctly fail without fix and pass with fix
-   - **Trigger phrases**: "validate the UI tests", "check if UI tests catch the regression"
-   - **Used by**: `pr-reviewer` agent
-
-3. **validate-unit-tests** (`.github/skills/validate-unit-tests/SKILL.md`)
-   - **Purpose**: Validates unit tests correctly fail without fix and pass with fix
-   - **Trigger phrases**: "validate the unit tests", "check if unit tests catch the regression"
-   - **Used by**: `pr-reviewer` agent
-
-4. **independent-fix-analysis** (`.github/skills/independent-fix-analysis/SKILL.md`)
-   - **Purpose**: Analyze issue and propose fixes independently before comparing with PR
-   - **Trigger phrases**: "analyze this issue independently", "propose your own fix"
-   - **Used by**: `pr-reviewer` agent
-
-5. **compare-fix-approaches** (`.github/skills/compare-fix-approaches/SKILL.md`)
-   - **Purpose**: Compare multiple fix approaches by testing against same UI tests
-   - **Trigger phrases**: "compare the approaches", "which fix is better"
-   - **Used by**: `pr-reviewer` agent
-
-6. **find-reviewable-pr** (`.github/skills/find-reviewable-pr/SKILL.md`)
-   - **Purpose**: Find open PRs that are ready for review based on platform, recency, complexity, and project status
-   - **Trigger phrases**: "find a PR to review", "find an easy Android PR", "what PRs are available for review"
-   - **Used by**: Any agent or direct invocation
-
-7. **issue-triage** (`.github/skills/issue-triage/SKILL.md`)
-   - **Purpose**: Query and triage open issues that need milestones, labels, or investigation
-   - **Trigger phrases**: "find issues to triage", "show me old Android issues", "what issues need attention"
-   - **Script**: `.github/skills/issue-triage/scripts/QueryTriageIssues.ps1`
-   - **Used by**: Any agent or direct invocation
-
 ### Using Custom Agents
 
 **Delegation Policy**: When user request matches agent trigger phrases, **ALWAYS delegate to the appropriate agent immediately**. Do not ask for permission or explain alternatives unless the request is ambiguous.
 
 **Examples of correct delegation**:
 - User: "Review PR #12345" → Immediately invoke **pr-reviewer** agent
-- User: "Deep review PR #12345" → Immediately invoke **pr-reviewer** agent
 - User: "Test this PR" → Immediately invoke **sandbox-agent**
 - User: "Fix issue #67890" → Immediately invoke **issue-resolver** agent
 - User: "Write UI test for CollectionView" → Immediately invoke **uitest-coding-agent**
