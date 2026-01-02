@@ -5,12 +5,13 @@
 
 .DESCRIPTION
     This script verifies that tests actually catch the issue by:
-    1. Auto-detecting fix files from git diff (excludes test paths)
-    2. Reverting the fix files to main branch
-    3. Running tests WITHOUT the fix (should FAIL)
-    4. Restoring the fix files
-    5. Running tests WITH the fix (should PASS)
-    6. Reporting whether tests correctly detect the issue
+    1. Auto-detecting the PR base branch from GitHub
+    2. Auto-detecting fix files from git diff (excludes test paths)
+    3. Reverting the fix files to the base branch
+    4. Running tests WITHOUT the fix (should FAIL)
+    5. Restoring the fix files
+    6. Running tests WITH the fix (should PASS)
+    7. Reporting whether tests correctly detect the issue
 
     Fix files are auto-detected by finding all changed files that are NOT in test directories.
 
@@ -26,7 +27,7 @@
     by excluding test directories.
 
 .PARAMETER BaseBranch
-    Branch to revert files from (default: "main")
+    Branch to revert files from. Auto-detected from PR if not specified.
 
 .PARAMETER OutputDir
     Directory to store results (default: "CustomAgentLogsTmp/TestValidation")
@@ -57,7 +58,7 @@ param(
     [string[]]$FixFiles,
 
     [Parameter(Mandatory = $false)]
-    [string]$BaseBranch = "main",
+    [string]$BaseBranch,
 
     [Parameter(Mandatory = $false)]
     [string]$OutputDir = "CustomAgentLogsTmp/TestValidation"
@@ -65,6 +66,42 @@ param(
 
 $ErrorActionPreference = "Stop"
 $RepoRoot = git rev-parse --show-toplevel
+
+# Auto-detect base branch if not provided
+if (-not $BaseBranch) {
+    Write-Host "🔍 Auto-detecting base branch from PR..." -ForegroundColor Cyan
+    
+    # Get the remote repo for the current branch
+    $currentBranch = git rev-parse --abbrev-ref HEAD 2>$null
+    $remote = git config "branch.$currentBranch.remote" 2>$null
+    if (-not $remote) { $remote = "origin" }
+    
+    # Get the repo owner/name from the remote URL
+    $remoteUrl = git remote get-url $remote 2>$null
+    $repo = $null
+    if ($remoteUrl -match "github\.com[:/]([^/]+/[^/]+?)(\.git)?$") {
+        $repo = $matches[1]
+    }
+    
+    # Get base branch from GitHub PR using gh CLI
+    # When using --repo, we must also provide the branch name as an argument
+    if ($repo) {
+        $BaseBranch = gh pr view $currentBranch --repo $repo --json baseRefName --jq '.baseRefName' 2>$null
+    } else {
+        $BaseBranch = gh pr view --json baseRefName --jq '.baseRefName' 2>$null
+    }
+    
+    if ($BaseBranch) {
+        Write-Host "✅ Auto-detected base branch: $BaseBranch" -ForegroundColor Green
+    } else {
+        Write-Host "❌ Could not detect base branch." -ForegroundColor Red
+        Write-Host "   Make sure:" -ForegroundColor Yellow
+        Write-Host "   - You're on a branch with an open PR" -ForegroundColor Yellow
+        Write-Host "   - gh CLI is installed and authenticated" -ForegroundColor Yellow
+        Write-Host "   Or specify -BaseBranch manually." -ForegroundColor Yellow
+        exit 1
+    }
+}
 
 # Test path patterns to exclude when auto-detecting fix files
 $TestPathPatterns = @(
@@ -97,22 +134,21 @@ function Test-IsTestFile {
 if (-not $FixFiles -or $FixFiles.Count -eq 0) {
     Write-Host "🔍 Auto-detecting fix files from git diff..." -ForegroundColor Cyan
     
-    # Get tracked changes (modified files)
-    $trackedChanges = git diff $BaseBranch --name-only 2>$null
+    # Get committed files changed between current branch HEAD and base branch (the PR diff)
+    # Using HEAD ensures we only get committed changes, not uncommitted working tree changes
+    $changedFiles = git diff $BaseBranch HEAD --name-only 2>$null
     if ($LASTEXITCODE -ne 0) {
-        $trackedChanges = git diff "origin/$BaseBranch" --name-only 2>$null
+        $changedFiles = git diff "origin/$BaseBranch" HEAD --name-only 2>$null
     }
     
-    # Get untracked files (new files not yet committed)
-    $untrackedFiles = git ls-files --others --exclude-standard 2>$null
-    
-    # Combine both
-    $allChangedFiles = @()
-    if ($trackedChanges) { $allChangedFiles += $trackedChanges }
-    if ($untrackedFiles) { $allChangedFiles += $untrackedFiles }
+    if (-not $changedFiles) {
+        Write-Host "❌ No committed changes detected between HEAD and $BaseBranch." -ForegroundColor Red
+        Write-Host "   Make sure your changes are committed." -ForegroundColor Yellow
+        exit 1
+    }
     
     $FixFiles = @()
-    foreach ($file in $allChangedFiles) {
+    foreach ($file in $changedFiles) {
         if (-not (Test-IsTestFile $file)) {
             $FixFiles += $file
         }
@@ -121,7 +157,7 @@ if (-not $FixFiles -or $FixFiles.Count -eq 0) {
     if ($FixFiles.Count -eq 0) {
         Write-Host "❌ No fix files detected. All changed files appear to be test files." -ForegroundColor Red
         Write-Host "   Changed files:" -ForegroundColor Yellow
-        foreach ($file in $allChangedFiles) {
+        foreach ($file in $changedFiles) {
             Write-Host "     - $file" -ForegroundColor Yellow
         }
         exit 1
@@ -137,23 +173,15 @@ if (-not $FixFiles -or $FixFiles.Count -eq 0) {
 if (-not $TestFilter) {
     Write-Host "🔍 Auto-detecting test filter from changed test files..." -ForegroundColor Cyan
     
-    # Get tracked changes
-    $trackedChanges = git diff $BaseBranch --name-only 2>$null
+    # Get committed files changed between current branch HEAD and base branch (the PR diff)
+    $changedFiles = git diff $BaseBranch HEAD --name-only 2>$null
     if ($LASTEXITCODE -ne 0) {
-        $trackedChanges = git diff "origin/$BaseBranch" --name-only 2>$null
+        $changedFiles = git diff "origin/$BaseBranch" HEAD --name-only 2>$null
     }
-    
-    # Get untracked files
-    $untrackedFiles = git ls-files --others --exclude-standard 2>$null
-    
-    # Combine both
-    $allChangedFiles = @()
-    if ($trackedChanges) { $allChangedFiles += $trackedChanges }
-    if ($untrackedFiles) { $allChangedFiles += $untrackedFiles }
     
     # Find test files (files in test directories that are .cs files)
     $testFiles = @()
-    foreach ($file in $allChangedFiles) {
+    foreach ($file in $changedFiles) {
         if ($file -match "TestCases\.(Shared\.Tests|HostApp).*\.cs$" -and $file -notmatch "^_") {
             $testFiles += $file
         }
@@ -266,31 +294,68 @@ foreach ($file in $FixFiles) {
         Write-Log "ERROR: Fix file not found: $file"
         exit 1
     }
-    Write-Log "  ✓ $file"
+    Write-Log "  ✓ $file exists"
 }
 
-# Store current state of fix files
+# Determine which files exist in the base branch (can be reverted)
 Write-Log ""
-Write-Log "Storing current state of fix files..."
-$backupDir = Join-Path $OutputPath "fix-backup"
-
-# Clean backup directory to avoid stale files from previous runs
-if (Test-Path $backupDir) {
-    Remove-Item -Path $backupDir -Recurse -Force
-}
-New-Item -ItemType Directory -Force -Path $backupDir | Out-Null
+Write-Log "Checking which fix files exist in $BaseBranch..."
+$RevertableFiles = @()
+$NewFiles = @()
 
 foreach ($file in $FixFiles) {
-    $sourcePath = Join-Path $RepoRoot $file
-    # Preserve directory structure to avoid name collisions
-    $destPath = Join-Path $backupDir $file
-    $destDir = Split-Path $destPath -Parent
-    if (-not (Test-Path $destDir)) {
-        New-Item -ItemType Directory -Force -Path $destDir | Out-Null
+    # Check if file exists in base branch
+    $existsInBase = git ls-tree -r $BaseBranch --name-only -- $file 2>$null
+    if (-not $existsInBase) {
+        $existsInBase = git ls-tree -r "origin/$BaseBranch" --name-only -- $file 2>$null
     }
-    Copy-Item $sourcePath $destPath -Force
-    Write-Log "  Backed up: $file"
+    
+    if ($existsInBase) {
+        $RevertableFiles += $file
+        Write-Log "  ✓ $file (exists in $BaseBranch - will revert)"
+    } else {
+        $NewFiles += $file
+        Write-Log "  ○ $file (new file - skipping revert)"
+    }
 }
+
+if ($RevertableFiles.Count -eq 0) {
+    Write-Host "❌ No revertable fix files found. All fix files are new." -ForegroundColor Red
+    Write-Host "   Cannot verify test behavior without files to revert." -ForegroundColor Yellow
+    exit 1
+}
+
+# Check for uncommitted changes ONLY on files we will revert
+Write-Log ""
+Write-Log "Checking for uncommitted changes on revertable files..."
+$uncommittedFiles = @()
+foreach ($file in $RevertableFiles) {
+    # Check if file has uncommitted changes (staged or unstaged)
+    $status = git status --porcelain -- $file 2>$null
+    if ($status) {
+        $uncommittedFiles += $file
+    }
+}
+
+if ($uncommittedFiles.Count -gt 0) {
+    Write-Host "" -ForegroundColor Red
+    Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Red
+    Write-Host "║  ERROR: Uncommitted changes detected in fix files         ║" -ForegroundColor Red
+    Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Red
+    Write-Host "║  This script requires revertable fix files to be          ║" -ForegroundColor Red
+    Write-Host "║  committed so they can be restored via git checkout HEAD. ║" -ForegroundColor Red
+    Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Red
+    Write-Host ""
+    Write-Host "Uncommitted files:" -ForegroundColor Yellow
+    foreach ($file in $uncommittedFiles) {
+        Write-Host "  - $file" -ForegroundColor Yellow
+    }
+    Write-Host ""
+    Write-Host "Run 'git add <files> && git commit' to commit your changes." -ForegroundColor Cyan
+    exit 1
+}
+
+Write-Log "  ✓ All revertable fix files are committed"
 
 # Step 1: Revert fix files to base branch
 Write-Log ""
@@ -298,7 +363,7 @@ Write-Log "=========================================="
 Write-Log "STEP 1: Reverting fix files to $BaseBranch"
 Write-Log "=========================================="
 
-foreach ($file in $FixFiles) {
+foreach ($file in $RevertableFiles) {
     Write-Log "  Reverting: $file"
     git checkout $BaseBranch -- $file 2>&1 | Out-Null
     if ($LASTEXITCODE -ne 0) {
@@ -307,7 +372,7 @@ foreach ($file in $FixFiles) {
     }
 }
 
-Write-Log "  Fix files reverted to $BaseBranch state"
+Write-Log "  ✓ $($RevertableFiles.Count) fix file(s) reverted to $BaseBranch state"
 
 # Step 2: Run tests WITHOUT fix
 Write-Log ""
@@ -321,19 +386,22 @@ $buildScript = Join-Path $RepoRoot ".github/scripts/BuildAndRunHostApp.ps1"
 
 $withoutFixResult = Get-TestResult -LogFile (Join-Path $RepoRoot "CustomAgentLogsTmp/UITests/test-output.log")
 
-# Step 3: Restore fix files
+# Step 3: Restore fix files from current branch HEAD
 Write-Log ""
 Write-Log "=========================================="
-Write-Log "STEP 3: Restoring fix files"
+Write-Log "STEP 3: Restoring fix files from HEAD"
 Write-Log "=========================================="
 
-foreach ($file in $FixFiles) {
-    # Use full path structure matching backup
-    $sourcePath = Join-Path $backupDir $file
-    $destPath = Join-Path $RepoRoot $file
-    Copy-Item $sourcePath $destPath -Force
-    Write-Log "  Restored: $file"
+foreach ($file in $RevertableFiles) {
+    Write-Log "  Restoring: $file"
+    git checkout HEAD -- $file 2>&1 | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+        Write-Log "  ERROR: Failed to restore $file from HEAD"
+        exit 1
+    }
 }
+
+Write-Log "  ✓ $($RevertableFiles.Count) fix file(s) restored from HEAD"
 
 # Step 4: Run tests WITH fix
 Write-Log ""
