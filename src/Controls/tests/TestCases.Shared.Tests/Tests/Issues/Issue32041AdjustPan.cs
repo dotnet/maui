@@ -32,15 +32,18 @@ public class Issue32041AdjustPan : _IssuesUITest
 
 		// With AdjustPan, the window pans (moves up) rather than resizing content
 		// The bottom marker should still be accessible (just panned up, not cut off)
-		// Note: Appium's GetRect() returns visible bounds, so height may differ when panned
-		// The key is that the element remains accessible and interactive
+		// Note: With AdjustPan, Appium coordinates change because the window pans,
+		// but the key is that no SafeArea padding is applied to the container
 		App.WaitForElement("BottomMarkerPan");
 		var bottomMarkerAfter = App.FindElement("BottomMarkerPan").GetRect();
 		
-		// Verify the bottom marker is still present and has reasonable dimensions
-		// With panning, the marker moves but maintains its structure
-		Assert.That(bottomMarkerAfter.Height, Is.GreaterThan(0),
-			"Bottom marker should remain accessible with AdjustPan (window pans instead of resizing)");
+		// Verify the bottom marker is still present and has the same dimensions
+		// With AdjustPan, the marker's size shouldn't change (only screen position changes due to panning)
+		Assert.That(bottomMarkerAfter.Height, Is.EqualTo(bottomMarkerBefore.Height).Within(5),
+			"Bottom marker height should remain the same with AdjustPan (no padding applied, just panning)");
+		
+		Assert.That(bottomMarkerAfter.Width, Is.EqualTo(bottomMarkerBefore.Width).Within(5),
+			"Bottom marker width should remain the same with AdjustPan");
 		
 		// Verify the entry field is still interactive after panning
 		Assert.DoesNotThrow(() => App.FindElement("TestEntryPan"),
