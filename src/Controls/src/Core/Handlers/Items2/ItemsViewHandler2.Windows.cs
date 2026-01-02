@@ -197,7 +197,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					{
 						Source = TemplatedItemSourceFactory2.CreateGrouped(itemsSource, itemTemplate,
 							groupableItemsView.GroupHeaderTemplate, groupableItemsView.GroupFooterTemplate,
-							Element, mauiContext: MauiContext, IsSourceGrouped = false)
+							Element, mauiContext: MauiContext),IsSourceGrouped= false
 					};
 				}
 				else
