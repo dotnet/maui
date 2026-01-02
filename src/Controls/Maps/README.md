@@ -30,16 +30,20 @@
    ```xml
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:maps="clr-namespace:Microsoft.Maui.Controls.Maps"
-             xmlns:essentials="clr-namespace:Microsoft.Maui.Devices.Sensors;assembly=Microsoft.Maui">
+             xmlns:maps="http://schemas.microsoft.com/dotnet/2021/maui/maps"
+             xmlns:sensors="clr-namespace:Microsoft.Maui.Devices.Sensors;assembly=Microsoft.Maui.Essentials">
     <maps:Map>
         <maps:Map.Pins>
             <maps:Pin Label="Downtown"
                       Address="Main Street"
                       Type="Place">
                 <maps:Pin.Location>
-                    <essentials:Location Latitude="47.6205"
-                                         Longitude="-122.3493" />
+                    <sensors:Location>
+                        <x:Arguments>
+                            <x:Double>47.6205</x:Double>
+                            <x:Double>-122.3493</x:Double>
+                        </x:Arguments>
+                    </sensors:Location>
                 </maps:Pin.Location>
             </maps:Pin>
         </maps:Map.Pins>
@@ -58,11 +62,18 @@
 ### Samples: pins and shapes
 
 ```xml
-<maps:Map MapType="Hybrid" MapClicked="OnMapClicked">
+<maps:Map xmlns:maps="http://schemas.microsoft.com/dotnet/2021/maui/maps"
+          xmlns:sensors="clr-namespace:Microsoft.Maui.Devices.Sensors;assembly=Microsoft.Maui.Essentials"
+          MapType="Hybrid" MapClicked="OnMapClicked">
     <maps:Map.Pins>
         <maps:Pin Label="Office" Type="Place">
             <maps:Pin.Location>
-                <essentials:Location Latitude="47.6424" Longitude="-122.3219" />
+                <sensors:Location>
+                    <x:Arguments>
+                        <x:Double>47.6424</x:Double>
+                        <x:Double>-122.3219</x:Double>
+                    </x:Arguments>
+                </sensors:Location>
             </maps:Pin.Location>
         </maps:Pin>
     </maps:Map.Pins>
@@ -70,26 +81,52 @@
     <maps:Map.MapElements>
         <maps:Polygon StrokeColor="Red" FillColor="#40FF0000" StrokeWidth="4">
             <maps:Polygon.Geopath>
-                <maps:LocationCollection>
-                    <essentials:Location Latitude="47.642" Longitude="-122.323" />
-                    <essentials:Location Latitude="47.643" Longitude="-122.326" />
-                    <essentials:Location Latitude="47.640" Longitude="-122.327" />
-                </maps:LocationCollection>
+                <sensors:Location>
+                    <x:Arguments>
+                        <x:Double>47.642</x:Double>
+                        <x:Double>-122.323</x:Double>
+                    </x:Arguments>
+                </sensors:Location>
+                <sensors:Location>
+                    <x:Arguments>
+                        <x:Double>47.643</x:Double>
+                        <x:Double>-122.326</x:Double>
+                    </x:Arguments>
+                </sensors:Location>
+                <sensors:Location>
+                    <x:Arguments>
+                        <x:Double>47.640</x:Double>
+                        <x:Double>-122.327</x:Double>
+                    </x:Arguments>
+                </sensors:Location>
             </maps:Polygon.Geopath>
         </maps:Polygon>
 
         <maps:Polyline StrokeColor="DodgerBlue" StrokeWidth="6">
             <maps:Polyline.Geopath>
-                <maps:LocationCollection>
-                    <essentials:Location Latitude="47.639" Longitude="-122.330" />
-                    <essentials:Location Latitude="47.640" Longitude="-122.335" />
-                </maps:LocationCollection>
+                <sensors:Location>
+                    <x:Arguments>
+                        <x:Double>47.639</x:Double>
+                        <x:Double>-122.330</x:Double>
+                    </x:Arguments>
+                </sensors:Location>
+                <sensors:Location>
+                    <x:Arguments>
+                        <x:Double>47.640</x:Double>
+                        <x:Double>-122.335</x:Double>
+                    </x:Arguments>
+                </sensors:Location>
             </maps:Polyline.Geopath>
         </maps:Polyline>
 
         <maps:Circle StrokeColor="Green" FillColor="#40008000" StrokeWidth="3">
             <maps:Circle.Center>
-                <essentials:Location Latitude="47.641" Longitude="-122.329" />
+                <sensors:Location>
+                    <x:Arguments>
+                        <x:Double>47.641</x:Double>
+                        <x:Double>-122.329</x:Double>
+                    </x:Arguments>
+                </sensors:Location>
             </maps:Circle.Center>
             <maps:Circle.Radius>
                 <maps:Distance>
