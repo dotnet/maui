@@ -2,6 +2,8 @@
 using System.Collections;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Dispatching;
@@ -14,6 +16,7 @@ using WASDKScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
 using WItemsView = Microsoft.UI.Xaml.Controls.ItemsView;
 using WScrollPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter;
 using WVisibility = Microsoft.UI.Xaml.Visibility;
+
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
 {
@@ -194,14 +197,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					{
 						Source = TemplatedItemSourceFactory2.CreateGrouped(itemsSource, itemTemplate,
 							groupableItemsView.GroupHeaderTemplate, groupableItemsView.GroupFooterTemplate,
-							Element, mauiContext: MauiContext)
+							Element, mauiContext: MauiContext, IsSourceGrouped = false)
 					};
 				}
 				else
 				{
+					var flattenedSource = itemsSource;
+					if (itemsSource is not null && IsItemsSourceGrouped(itemsSource))
+					{
+						flattenedSource = FlattenGroupedItemsSource(itemsSource);
+					}
+
 					return new CollectionViewSource
 					{
-						Source = TemplatedItemSourceFactory2.Create(itemsSource, itemTemplate, Element, mauiContext: MauiContext),
+						Source = TemplatedItemSourceFactory2.Create(flattenedSource, itemTemplate, Element, mauiContext: MauiContext),
 						IsSourceGrouped = false
 					};
 				}
@@ -212,6 +221,29 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				Source = itemsSource,
 				IsSourceGrouped = false
 			};
+		}
+
+		bool IsItemsSourceGrouped(object itemsSource)
+		{
+			if (itemsSource is IEnumerable enumerable)
+			{
+				foreach (var item in enumerable)
+				{
+					if (item is IEnumerable && item is not string)
+					{
+						return true;
+					}
+					break;
+				}
+			}
+			return false;
+		}
+
+		IEnumerable FlattenGroupedItemsSource(IEnumerable groupedSource)
+		{
+			return groupedSource.Cast<object>().
+				Where(group => group is IEnumerable && group is not string).
+				SelectMany(group => ((IEnumerable)group).Cast<object>());
 		}
 
 		protected virtual void UpdateItemsSource()
@@ -317,7 +349,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				Layout = CreateItemsLayout()
 			};
 
-			if (Layout is LinearItemsLayout listItemsLayout && 
+			if (Layout is LinearItemsLayout listItemsLayout &&
 				listItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal)
 			{
 				ScrollViewer.SetHorizontalScrollMode(itemsView, UI.Xaml.Controls.ScrollMode.Enabled);
@@ -886,7 +918,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		int FindItemIndex(object item)
 		{
-			if(_collectionViewSource is null)
+			if (_collectionViewSource is null)
 			{
 				return -1;
 			}
