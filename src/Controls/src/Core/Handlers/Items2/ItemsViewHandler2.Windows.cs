@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using Microsoft.Maui.Controls.Handlers.Items;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Maui.Controls.Internals;
@@ -197,8 +198,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					{
 						Source = TemplatedItemSourceFactory2.CreateGrouped(itemsSource, itemTemplate,
 							groupableItemsView.GroupHeaderTemplate, groupableItemsView.GroupFooterTemplate,
-							Element, mauiContext: MauiContext),
-						IsSourceGrouped = false
+							Element, mauiContext: MauiContext, IsSourceGrouped = false)
 					};
 				}
 				else
