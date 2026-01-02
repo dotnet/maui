@@ -177,6 +177,58 @@ Update `pr-XXXXX-review.md` with:
 
 ### Author Concerns
 - [any uncertainty expressed by author]
+
+---
+
+## Phase 0: Gate
+**Status**: ⏳ PENDING
+
+- [ ] Tests PASS with fix
+- [ ] Fix files reverted to main
+- [ ] Tests FAIL without fix
+- [ ] Fix files restored
+
+**Result**: [PENDING]
+
+---
+
+## Phase 1: Analysis
+**Status**: ⏳ PENDING
+
+- [ ] Reviewed pre-flight findings
+- [ ] Researched git history for root cause
+- [ ] Formed independent opinion on fix approach
+
+**Root Cause**: [PENDING]
+**My Approach**: [PENDING]
+
+---
+
+## Phase 2: Compare
+**Status**: ⏳ PENDING
+
+- [ ] Compared PR's fix vs my approach
+- [ ] Documented recommendation
+
+**Recommendation**: [PENDING]
+
+---
+
+## Phase 3: Regression
+**Status**: ⏳ PENDING
+
+### Edge Cases (from pre-flight)
+- [ ] [edge case 1] - Result: [PENDING]
+
+### Disagreements Investigated
+- [ ] [disagreement 1] - Finding: [PENDING]
+
+---
+
+## Phase 4: Report
+**Status**: ⏳ PENDING
+
+**Final Recommendation**: ⏳ PENDING
 ```
 
 ---
@@ -414,12 +466,24 @@ Update `pr-XXXXX-review.md` with final review:
 
 ## State File
 
-Maintain `pr-XXXXX-review.md` throughout the review with:
-- Pre-flight findings (disagreements, edge cases, author concerns)
-- Gate results
-- Analysis findings
-- Regression test results
-- Final recommendation
+Maintain `pr-XXXXX-review.md` throughout the review. This file enables:
+- **Resumability**: If interrupted, read the file to see current phase and progress
+- **PR Comments**: Can be posted as a comment to track state across sessions
+
+### Status Markers
+| Marker | Meaning |
+|--------|---------|
+| `⏳ PENDING` | Not started |
+| `▶️ IN PROGRESS` | Currently working on this phase |
+| `✅ PASSED` | Phase completed successfully |
+| `❌ FAILED` | Phase failed - action needed |
+
+### Updating State
+After completing each phase:
+1. Change status from `⏳ PENDING` to `✅ PASSED`
+2. Check off completed items `- [x]`
+3. Fill in results/findings
+4. Mark next phase as `▶️ IN PROGRESS`
 
 ## Troubleshooting
 
