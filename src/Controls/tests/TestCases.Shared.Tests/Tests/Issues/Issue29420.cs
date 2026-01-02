@@ -13,19 +13,21 @@ public class Issue29420 : _IssuesUITest
 
 	[Test, Order(1)]
 	[Category(UITestCategories.CarouselView)]
-	public void VerifyCarouselViewKeepLastInViewOnItemInsert()
+	public async Task VerifyCarouselViewKeepLastInViewOnItemInsert()
 	{
 		App.WaitForElement("CarouselView");
 		App.Tap("InsertButton");
+		await Task.Delay(200); // Wait for the scrollbar to disappear.
 		VerifyScreenshot("CarouselViewKeepLastInViewOnItemInsert");
 	}
 
 	[Test, Order(2)]
 	[Category(UITestCategories.CarouselView)]
-	public void VerifyCarouselViewKeepLastInViewOnItemAdd()
+	public async Task VerifyCarouselViewKeepLastInViewOnItemAdd()
 	{
 		App.WaitForElement("CarouselView");
 		App.Tap("AddButton");
+		await Task.Delay(200); // Wait for the scrollbar to disappear.
 		VerifyScreenshot("CarouselViewKeepLastInViewOnItemAdd");
 	}
 }
