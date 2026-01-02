@@ -592,7 +592,6 @@ public class MemoryTests : ControlsHandlerTestBase
 		{
 			await OnLoadedAsync(flyoutPage);
 
-			// Create and set first detail page
 			var detailPage1 = new ContentPage { Title = "Detail 1" };
 			var navPage1 = new NavigationPage(detailPage1);
 			flyoutPage.Detail = navPage1;
@@ -606,14 +605,12 @@ public class MemoryTests : ControlsHandlerTestBase
 			references.Add(new(detailPage1.Handler));
 			references.Add(new(detailPage1.Handler.PlatformView));
 
-			// Replace with second detail page
 			var detailPage2 = new ContentPage { Title = "Detail 2" };
 			var navPage2 = new NavigationPage(detailPage2);
 			flyoutPage.Detail = navPage2;
 
 			await OnLoadedAsync(detailPage2);
 
-			// The old detail page and navigation page should be collected
 			navPage1 = null;
 			detailPage1 = null;
 		});
@@ -636,7 +633,6 @@ public class MemoryTests : ControlsHandlerTestBase
 		{
 			await OnLoadedAsync(flyoutPage);
 
-			// Simulate multiple replacements similar to the Sandbox scenario
 			for (int i = 0; i < 5; i++)
 			{
 				var detailPage = new ContentPage { Title = $"Detail {i}" };
@@ -645,7 +641,6 @@ public class MemoryTests : ControlsHandlerTestBase
 				flyoutPage.Detail = navPage;
 				await OnLoadedAsync(detailPage);
 
-				// Track references for first 3 iterations (they should be collected)
 				if (i < 3)
 				{
 					references.Add(new(navPage));
@@ -656,11 +651,9 @@ public class MemoryTests : ControlsHandlerTestBase
 					references.Add(new(detailPage.Handler.PlatformView));
 				}
 
-				// Small delay to simulate real usage
 				await Task.Delay(50);
 			}
 
-			// After loop, the last 2 detail pages are still active, but first 3 should be collected
 		});
 
 		await AssertionExtensions.WaitForGC([.. references]);
