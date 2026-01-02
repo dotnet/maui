@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Platform
 	{
 		const int DefaultIndicatorSize = 6;
 		const string SquareSymbol = "squareshape.fill";
-		const string CircleSymbol = "circle.fill";
+		const string CircleSymbol = "circlebadge.fill";
 		WeakReference<IIndicatorView>? _indicatorView;
 		bool _updatingPosition;
 
