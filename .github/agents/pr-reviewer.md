@@ -78,7 +78,105 @@ You are a specialized PR review agent that conducts **deep, independent analysis
 
 ## PRE-FLIGHT: Context Gathering
 
-**Before any analysis, gather ALL available context.**
+**🚨 CRITICAL: This is your FIRST action. Create the state file BEFORE doing anything else.**
+
+### Step 0: Check for Existing State File or Create New One
+
+**Before fetching any data, check if `pr-XXXXX-review.md` already exists.**
+
+```bash
+# Check if state file exists
+if [ -f "pr-XXXXX-review.md" ]; then
+    echo "State file exists - resuming review"
+    cat pr-XXXXX-review.md
+else
+    echo "Creating new state file"
+fi
+```
+
+**If the file EXISTS**: Read it to determine your current phase and resume from there. Look for:
+- Which phase has `▶️ IN PROGRESS` status - that's where you left off
+- Which phases have `✅ PASSED` status - those are complete
+- Which phases have `⏳ PENDING` status - those haven't started
+
+**If the file does NOT exist**: Create it with the template structure:
+
+```bash
+# Create the state file immediately with the template
+cat > pr-XXXXX-review.md << 'EOF'
+# PR Review: #XXXXX - [Title TBD]
+
+**Date:** [TODAY]  
+**Reviewer:** pr-reviewer agent  
+**PR Link:** https://github.com/dotnet/maui/pull/XXXXX
+
+---
+
+## Pre-Flight
+**Status**: ▶️ IN PROGRESS
+
+[Will be populated after gathering context]
+
+---
+
+## Phase 0: Gate
+**Status**: ⏳ PENDING
+
+- [ ] Tests PASS with fix
+- [ ] Fix files reverted to main
+- [ ] Tests FAIL without fix
+- [ ] Fix files restored
+
+**Result**: [PENDING]
+
+---
+
+## Phase 1: Analysis
+**Status**: ⏳ PENDING
+
+- [ ] Reviewed pre-flight findings
+- [ ] Researched git history for root cause
+- [ ] Formed independent opinion on fix approach
+
+**Root Cause**: [PENDING]
+**My Approach**: [PENDING]
+
+---
+
+## Phase 2: Compare
+**Status**: ⏳ PENDING
+
+- [ ] Compared PR's fix vs my approach
+- [ ] Documented recommendation
+
+**Recommendation**: [PENDING]
+
+---
+
+## Phase 3: Regression
+**Status**: ⏳ PENDING
+
+### Edge Cases (from pre-flight)
+[PENDING]
+
+### Disagreements Investigated
+[PENDING]
+
+---
+
+## Phase 4: Report
+**Status**: ⏳ PENDING
+
+**Final Recommendation**: ⏳ PENDING
+EOF
+```
+
+This file:
+- Serves as your TODO list for all phases
+- Tracks progress if interrupted
+- Must exist before you start gathering context
+
+**Then gather context and update the file as you go.**
 
 ### Step 1: Checkout PR
 
@@ -149,93 +247,21 @@ Classify into:
 
 Identify test type: **UI Tests** | **Device Tests** | **Unit Tests**
 
-### Pre-Flight Output
+### Step 7: Complete Pre-Flight
 
-Update `pr-XXXXX-review.md` with:
-
-```markdown
-## Pre-Flight Complete ✅
-
-| Item | Value |
-|------|-------|
-| PR | #XXXXX - [Title] |
-| Author | [name] |
-| Linked Issue | #YYYYY |
-| Fix Files | N files |
-| Test Files | M files |
-| Test Type | [UI/Device/Unit] |
-| Inline Comments | L threads |
-| Disagreements | X to investigate |
-| Edge Cases | Y to check |
-
-### Disagreements to Investigate
-1. [File:Line]: [Reviewer] says X, [Author] says Y
-
-### Edge Cases from Discussion
-- [ ] [edge case 1]
-- [ ] [edge case 2]
-
-### Author Concerns
-- [any uncertainty expressed by author]
-
----
-
-## Phase 0: Gate
-**Status**: ⏳ PENDING
-
-- [ ] Tests PASS with fix
-- [ ] Fix files reverted to main
-- [ ] Tests FAIL without fix
-- [ ] Fix files restored
-
-**Result**: [PENDING]
-
----
-
-## Phase 1: Analysis
-**Status**: ⏳ PENDING
-
-- [ ] Reviewed pre-flight findings
-- [ ] Researched git history for root cause
-- [ ] Formed independent opinion on fix approach
-
-**Root Cause**: [PENDING]
-**My Approach**: [PENDING]
-
----
-
-## Phase 2: Compare
-**Status**: ⏳ PENDING
-
-- [ ] Compared PR's fix vs my approach
-- [ ] Documented recommendation
-
-**Recommendation**: [PENDING]
-
----
-
-## Phase 3: Regression
-**Status**: ⏳ PENDING
-
-### Edge Cases (from pre-flight)
-- [ ] [edge case 1] - Result: [PENDING]
-
-### Disagreements Investigated
-- [ ] [disagreement 1] - Finding: [PENDING]
-
----
-
-## Phase 4: Report
-**Status**: ⏳ PENDING
-
-**Final Recommendation**: ⏳ PENDING
-```
+**Update state file** - Change Pre-Flight status and populate with gathered context:
+1. Change `## Pre-Flight` status from `▶️ IN PROGRESS` to `✅ COMPLETE`
+2. Fill in the summary table with PR metadata, file counts, etc.
+3. Add disagreements, edge cases, and author concerns
+4. Change `## Phase 0: Gate` status to `▶️ IN PROGRESS`
 
 ---
 
 ## PHASE 0: Gate - Verify Tests Catch the Issue
 
 **This phase MUST pass before continuing. If it fails, stop and request changes.**
+
+**At start**: Verify state file shows `## Phase 0: Gate` with `▶️ IN PROGRESS` status.
 
 ### Identify Test Type (from Pre-Flight)
 
@@ -275,11 +301,22 @@ without the fix.
 -FixFiles @("src/Core/src/File.cs")
 ```
 
+### Complete Phase 0
+
+**Update state file**:
+1. Check off completed items in the checklist
+2. Fill in **Result**: `PASSED ✅` or `FAILED ❌`
+3. Change `## Phase 0: Gate` status to `✅ PASSED` or `❌ FAILED`
+4. If PASSED: Change `## Phase 1: Analysis` status to `▶️ IN PROGRESS`
+5. If FAILED: Stop and request changes from PR author
+
 ---
 
 ## PHASE 1: Independent Analysis
 
-**Only proceed here if Phase 0 passed. Use context from Pre-Flight.**
+**Only proceed here if Phase 0 passed.**
+
+**At start**: Verify state file shows `## Phase 1: Analysis` with `▶️ IN PROGRESS` status.
 
 ### Step 1: Review Pre-Flight Findings
 
@@ -322,11 +359,19 @@ pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "Issue
 git stash pop
 ```
 
-**Update `pr-XXXXX-review.md`** with your analysis findings.
+### Complete Phase 1
+
+**Update state file**:
+1. Check off completed items in the checklist
+2. Fill in **Root Cause** and **My Approach**
+3. Change `## Phase 1: Analysis` status to `✅ PASSED`
+4. Change `## Phase 2: Compare` status to `▶️ IN PROGRESS`
 
 ---
 
 ## PHASE 2: Compare Approaches
+
+**At start**: Verify state file shows `## Phase 2: Compare` with `▶️ IN PROGRESS` status.
 
 ### Compare PR's Fix vs Your Alternative
 
@@ -347,9 +392,19 @@ For your alternative:
 - Is it simpler or more robust?
 - Any trade-offs?
 
+### Complete Phase 2
+
+**Update state file**:
+1. Check off completed items in the checklist
+2. Fill in **Recommendation** with your assessment
+3. Change `## Phase 2: Compare` status to `✅ PASSED`
+4. Change `## Phase 3: Regression` status to `▶️ IN PROGRESS`
+
 ---
 
 ## PHASE 3: Regression Testing
+
+**At start**: Verify state file shows `## Phase 3: Regression` with `▶️ IN PROGRESS` status.
 
 ### Step 1: Check Edge Cases from Pre-Flight
 
@@ -387,15 +442,23 @@ If author expressed uncertainty (from pre-flight), investigate and provide guida
 
 3. **Instrument code if needed** - Add `Debug.WriteLine` and grep device logs.
 
-**Update `pr-XXXXX-review.md`** with regression findings.
+### Complete Phase 3
+
+**Update state file**:
+1. Check off edge cases with results
+2. Check off disagreements with findings
+3. Change `## Phase 3: Regression` status to `✅ PASSED`
+4. Change `## Phase 4: Report` status to `▶️ IN PROGRESS`
 
 ---
 
 ## PHASE 4: Report
 
+**At start**: Verify state file shows `## Phase 4: Report` with `▶️ IN PROGRESS` status.
+
 ### Write Detailed Review
 
-Update `pr-XXXXX-review.md` with final review:
+Update the state file with your final review. Add an executive summary section at the top:
 
 ```markdown
 ## PR Review: #XXXXX - [Title]
@@ -442,6 +505,13 @@ Update `pr-XXXXX-review.md` with final review:
 
 [Justification]
 ```
+
+### Complete Phase 4
+
+**Update state file**:
+1. Fill in **Final Recommendation** with `✅ Approve` or `⚠️ Request Changes`
+2. Change `## Phase 4: Report` status to `✅ PASSED`
+3. Review is complete - present final recommendation to user
 
 ---
 
@@ -498,6 +568,8 @@ After completing each phase:
 
 ## Common Mistakes to Avoid
 
+- ❌ **Not creating state file first** - ALWAYS create `pr-XXXXX-review.md` before gathering any context
+- ❌ **Not updating state file after each phase** - ALWAYS update status markers and check off items
 - ❌ **Looking at PR diff before analyzing the issue** - Form your own opinion first
 - ❌ **Skipping Phase 0 gate** - Always verify tests actually catch the bug
 - ❌ **Assuming the PR's fix is correct** - That's the whole point of this agent
