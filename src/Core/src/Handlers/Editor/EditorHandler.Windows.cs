@@ -99,7 +99,7 @@ namespace Microsoft.Maui.Handlers
 		void OnLostFocus(object? sender, RoutedEventArgs e) =>
 			VirtualView?.Completed();
 
-		void OnPlatformViewSizeChanged(object sender, RoutedEventArgs e) =>
+		void OnPlatformViewSizeChanged(object sender, SizeChangedEventArgs e) =>
 			MauiTextBox.InvalidateAttachedProperties(PlatformView);
 
 		private void OnSelectionChanged(object sender, RoutedEventArgs e)
