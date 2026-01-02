@@ -50,7 +50,7 @@ param(
 $ErrorActionPreference = "Stop"
 
 # Get build info
-$buildUrl = "https://dev.azure.com/$Org/$Project/_apis/build/builds/$BuildId`?api-version=7.0"
+$buildUrl = "https://dev.azure.com/$Org/$Project/_apis/build/builds/${BuildId}?api-version=7.0"
 $timelineUrl = "https://dev.azure.com/$Org/$Project/_apis/build/builds/$BuildId/timeline?api-version=7.0"
 
 try {

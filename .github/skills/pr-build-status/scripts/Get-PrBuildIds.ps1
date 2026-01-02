@@ -60,6 +60,6 @@ $builds = $checks | Where-Object { $_.link -match "dev\.azure\.com" } | ForEach-
         State    = $_.state
         Link     = $_.link
     }
-} | Sort-Object -Property BuildId -Unique | Sort-Object -Property Pipeline
+} | Sort-Object -Property Pipeline, BuildId -Unique
 
 $builds

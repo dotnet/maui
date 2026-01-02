@@ -1,6 +1,10 @@
 ---
 name: pr-build-status
 description: "Retrieve Azure DevOps build information for GitHub Pull Requests, including build IDs, stage status, and failed jobs."
+metadata:
+  author: dotnet-maui
+  version: "1.0"
+compatibility: Requires GitHub CLI (gh) authenticated with access to dotnet/maui repository.
 ---
 
 # PR Build Status Skill
@@ -9,7 +13,7 @@ Retrieve Azure DevOps build information for GitHub Pull Requests.
 
 ## Tools Required
 
-This skill only needs `bash` to run PowerShell scripts. No file editing or other tools required.
+This skill uses `bash` together with `pwsh` (PowerShell 7+) to run the PowerShell scripts. No file editing or other tools are required.
 
 ## When to Use
 
@@ -20,30 +24,37 @@ This skill only needs `bash` to run PowerShell scripts. No file editing or other
 
 ## Scripts
 
-All scripts are in `.github/skills/pr-build-status/`
+All scripts are in `.github/skills/pr-build-status/scripts/`
 
 ### 1. Get Build IDs for a PR
 ```bash
-pwsh .github/skills/pr-build-status/Get-PrBuildIds.ps1 -PrNumber <PR_NUMBER>
+pwsh .github/skills/pr-build-status/scripts/Get-PrBuildIds.ps1 -PrNumber <PR_NUMBER>
 ```
 
 ### 2. Get Build Status
 ```bash
-pwsh .github/skills/pr-build-status/Get-BuildInfo.ps1 -BuildId <BUILD_ID>
+pwsh .github/skills/pr-build-status/scripts/Get-BuildInfo.ps1 -BuildId <BUILD_ID>
 # For failed jobs only:
-pwsh .github/skills/pr-build-status/Get-BuildInfo.ps1 -BuildId <BUILD_ID> -FailedOnly
+pwsh .github/skills/pr-build-status/scripts/Get-BuildInfo.ps1 -BuildId <BUILD_ID> -FailedOnly
 ```
 
-### 3. Get Test Results
+### 3. Get Build Errors and Test Failures
 ```bash
-pwsh .github/skills/pr-build-status/Get-TestResults.ps1 -BuildId <BUILD_ID> -FailedOnly
+# Get all errors (build errors + test failures)
+pwsh .github/skills/pr-build-status/scripts/Get-BuildErrors.ps1 -BuildId <BUILD_ID>
+
+# Get only build/compilation errors
+pwsh .github/skills/pr-build-status/scripts/Get-BuildErrors.ps1 -BuildId <BUILD_ID> -ErrorsOnly
+
+# Get only test failures
+pwsh .github/skills/pr-build-status/scripts/Get-BuildErrors.ps1 -BuildId <BUILD_ID> -TestsOnly
 ```
 
 ## Workflow
 
-1. Get build IDs: `Get-PrBuildIds.ps1 -PrNumber XXXXX`
-2. For each build, get status: `Get-BuildInfo.ps1 -BuildId YYYYY`
-3. For UI test builds with failures, get test details: `Get-TestResults.ps1 -BuildId YYYYY -FailedOnly`
+1. Get build IDs: `scripts/Get-PrBuildIds.ps1 -PrNumber XXXXX`
+2. For each build, get status: `scripts/Get-BuildInfo.ps1 -BuildId YYYYY`
+3. For failed builds, get error details: `scripts/Get-BuildErrors.ps1 -BuildId YYYYY`
 
 ## Prerequisites
 
