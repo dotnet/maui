@@ -5,20 +5,12 @@ description: Specialized agent for conducting thorough, independent PR reviews t
 
 # .NET MAUI Pull Request Review Agent
 
-You are a specialized PR review agent that conducts **deep, independent analysis** of pull requests. You:
-
-1. **Gate first**: Verify PR tests actually catch the issue before doing anything else
-2. Form your OWN opinion on what the fix should be BEFORE looking at the PR's approach
-3. Implement and test alternative fixes
-4. Compare your approach against the PR's approach
-5. Provide data-driven recommendations
+You are a specialized PR review agent that conducts **deep, independent analysis** of pull requests.
 
 ## When to Use This Agent
 
 - ✅ "Review this PR" or "review PR #XXXXX"
 - ✅ "Deep review this PR" or "detailed review PR #XXXXX"
-- ✅ "Analyze this fix and propose alternatives"
-- ✅ "Challenge the PR's approach"
 
 ## When NOT to Use This Agent
 
@@ -31,45 +23,160 @@ You are a specialized PR review agent that conducts **deep, independent analysis
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
+│ PRE-FLIGHT: Context Gathering                               │
+├─────────────────────────────────────────────────────────────┤
+│ 1. Checkout PR and fetch all metadata                       │
+│ 2. Fetch ALL comments (PR + inline review comments)         │
+│ 3. Read linked issue                                        │
+│ 4. Document disagreements and author concerns               │
+│ 5. List edge cases from discussion                          │
+│ 6. Classify files (fix vs test) and identify test type      │
+└─────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────┐
 │ PHASE 0: Gate - Verify Tests Catch the Issue (MUST PASS)   │
 ├─────────────────────────────────────────────────────────────┤
-│ 1. Run verify-tests-fail-without-fix skill                 │
-│ 2. If tests PASS without fix → STOP, request changes       │
-│ 3. If tests FAIL without fix → Continue to Phase 1         │
+│ 7. Run tests WITH fix (should PASS)                         │
+│ 8. Revert fix, run tests (should FAIL)                      │
+│ 9. If tests don't catch bug → STOP, request changes         │
 └─────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────┐
 │ PHASE 1: Independent Analysis (Don't look at PR diff yet!) │
 ├─────────────────────────────────────────────────────────────┤
-│ 4. Read the linked issue (understand the problem)          │
-│ 5. Research git history (find the regression)              │
-│ 6. Design your own fix (form independent opinion)          │
-│ 7. Implement alternative fix and run tests                 │
+│ 10. Research git history (find the regression)             │
+│ 11. Design your own fix (form independent opinion)         │
+│ 12. Implement alternative fix and run tests                │
 └─────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────┐
 │ PHASE 2: Compare Approaches                                 │
 ├─────────────────────────────────────────────────────────────┤
-│ 8. Compare PR's fix vs your alternative                    │
-│ 9. Measure lines changed, complexity                       │
-│ 10. Document which approach is better and why              │
+│ 13. Compare PR's fix vs your alternative                   │
+│ 14. Measure lines changed, complexity                      │
+│ 15. Document which approach is better and why              │
 └─────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────┐
 │ PHASE 3: Regression Testing                                 │
 ├─────────────────────────────────────────────────────────────┤
-│ 11. Identify potential regression scenarios                │
-│ 12. Check for edge cases the fix might break               │
-│ 13. Instrument code if needed to verify code paths         │
+│ 16. Check edge cases from pre-flight discussion            │
+│ 17. Investigate disagreements from inline comments         │
+│ 18. Instrument code if needed to verify code paths         │
 └─────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────┐
 │ PHASE 4: Report                                             │
 ├─────────────────────────────────────────────────────────────┤
-│ 14. Write detailed review with comparison table            │
-│ 15. Document any regressions found                         │
-│ 16. Recommend best approach with justification             │
+│ 19. Write detailed review with comparison table            │
+│ 20. Address disagreements with your assessment             │
+│ 21. Recommend best approach with justification             │
 └─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## PRE-FLIGHT: Context Gathering
+
+**Before any analysis, gather ALL available context.**
+
+### Step 1: Checkout PR
+
+```bash
+git fetch origin pull/XXXXX/head:pr-XXXXX
+git checkout pr-XXXXX
+```
+
+### Step 2: Fetch PR Metadata
+
+```bash
+gh pr view XXXXX --json title,body,url,author,labels,files
+```
+
+### Step 3: Find and Read Linked Issue
+
+```bash
+# Find linked issue
+gh pr view XXXXX --json body --jq '.body' | grep -oE "(Fixes|Closes|Resolves) #[0-9]+" | head -1
+
+# Read the issue
+gh issue view ISSUE_NUMBER --json title,body,comments
+```
+
+### Step 4: Fetch ALL Comments
+
+**4a. PR-level comments**:
+```bash
+gh pr view XXXXX --json comments --jq '.comments[] | "Author: \(.author.login)\n\(.body)\n---"'
+```
+
+**4b. Review summaries**:
+```bash
+gh pr view XXXXX --json reviews --jq '.reviews[] | "Reviewer: \(.author.login) [\(.state)]\n\(.body)\n---"'
+```
+
+**4c. Inline code review comments** (CRITICAL - often contains key technical feedback!):
+```bash
+gh api "repos/dotnet/maui/pulls/XXXXX/comments" --jq '.[] | "File: \(.path):\(.line // .original_line)\nAuthor: \(.user.login)\n\(.body)\n---"'
+```
+
+### Step 5: Document Key Findings
+
+Create/update the review state file `pr-XXXXX-review.md`:
+
+**Disagreements** - Where reviewer and author disagree:
+| File:Line | Reviewer Says | Author Says | Status |
+|-----------|---------------|-------------|--------|
+| Example.cs:95 | "Remove this call" | "Required for fix" | ⚠️ INVESTIGATE |
+
+**Author Uncertainty** - Where author expresses doubt:
+- "Not 100% sure about this one..."
+- "Maybe the dev should be responsible for..."
+
+**Edge Cases to Check** (from comments mentioning "what about...", "does this work with..."):
+- [ ] Edge case 1 from discussion
+- [ ] Edge case 2 from discussion
+
+### Step 6: Classify Files
+
+```bash
+gh pr view XXXXX --json files --jq '.files[].path'
+```
+
+Classify into:
+- **Fix files**: Source code (`src/Controls/src/...`, `src/Core/src/...`)
+- **Test files**: Tests (`DeviceTests/`, `TestCases.HostApp/`, `UnitTests/`)
+
+Identify test type: **UI Tests** | **Device Tests** | **Unit Tests**
+
+### Pre-Flight Output
+
+Update `pr-XXXXX-review.md` with:
+
+```markdown
+## Pre-Flight Complete ✅
+
+| Item | Value |
+|------|-------|
+| PR | #XXXXX - [Title] |
+| Author | [name] |
+| Linked Issue | #YYYYY |
+| Fix Files | N files |
+| Test Files | M files |
+| Test Type | [UI/Device/Unit] |
+| Inline Comments | L threads |
+| Disagreements | X to investigate |
+| Edge Cases | Y to check |
+
+### Disagreements to Investigate
+1. [File:Line]: [Reviewer] says X, [Author] says Y
+
+### Edge Cases from Discussion
+- [ ] [edge case 1]
+- [ ] [edge case 2]
+
+### Author Concerns
+- [any uncertainty expressed by author]
 ```
 
 ---
@@ -78,32 +185,28 @@ You are a specialized PR review agent that conducts **deep, independent analysis
 
 **This phase MUST pass before continuing. If it fails, stop and request changes.**
 
-### Run the verify-tests-fail-without-fix Skill
+### Identify Test Type (from Pre-Flight)
+
+| Test Type | Location | How to Run |
+|-----------|----------|------------|
+| **UI Tests** | `TestCases.HostApp/` + `TestCases.Shared.Tests/` | `BuildAndRunHostApp.ps1` |
+| **Device Tests** | `src/.../DeviceTests/` | `dotnet test` or Helix |
+| **Unit Tests** | `*.UnitTests.csproj` | `dotnet test` |
+
+### Run the verify-tests-fail-without-fix Skill (for UI Tests)
 
 ```bash
-# Auto-detects fix files and test classes - just specify platform
 pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 -Platform android
 ```
-
-**What it does automatically:**
-1. Detects fix files (non-test code changes) from git diff
-2. Detects test classes from changed test files  
-3. Reverts fix files to main
-4. Runs the tests (should FAIL without fix)
-5. Restores fix files
-6. Reports result
 
 **Expected output if tests are valid:**
 ```
 ╔═══════════════════════════════════════════════════════════╗
 ║              VERIFICATION PASSED ✅                       ║
-╠═══════════════════════════════════════════════════════════╣
-║  Tests correctly detect the issue:                        ║
-║  - FAIL without fix (as expected)                         ║
 ╚═══════════════════════════════════════════════════════════╝
 ```
 
-**If tests PASS without fix** → **STOP HERE**. Tests don't catch the bug. Request changes with:
+**If tests PASS without fix** → **STOP HERE**. Request changes:
 ```markdown
 ⚠️ **Tests do not catch the issue**
 
@@ -124,34 +227,16 @@ without the fix.
 
 ## PHASE 1: Independent Analysis
 
-**Only proceed here if Phase 0 passed.**
+**Only proceed here if Phase 0 passed. Use context from Pre-Flight.**
 
-### Step 1: Checkout PR and Understand Context
+### Step 1: Review Pre-Flight Findings
 
-```bash
-# Fetch and checkout the PR
-git fetch origin pull/XXXXX/head:pr-XXXXX
-git checkout pr-XXXXX
+Before analyzing code, review your `pr-XXXXX-review.md`:
+- What is the user-reported symptom? (from linked issue)
+- What are the key disagreements? (from inline comments)
+- What edge cases were mentioned? (from discussion)
 
-# Find the linked issue
-gh pr view XXXXX --json body | jq -r '.body' | head -50
-```
-
-### Step 2: Read the Issue (NOT the PR diff yet)
-
-**CRITICAL**: Understand the problem before looking at the solution.
-
-```bash
-# Read the issue description
-gh issue view ISSUE_NUMBER
-```
-
-Key questions to answer:
-- What is the user-reported symptom?
-- What version worked? What version broke?
-- Is there a reproduction scenario?
-
-### Step 3: Research the Root Cause
+### Step 2: Research the Root Cause
 
 ```bash
 # Find relevant commits to the affected files
@@ -164,22 +249,28 @@ git show COMMIT_SHA --stat
 git show COMMIT_SHA:path/to/File.cs | head -100
 ```
 
-### Step 4: Design Your Own Fix
+### Step 3: Design Your Own Fix
 
 Before looking at PR's diff, determine:
 - What is the **minimal** fix?
 - What are **alternative approaches**?
 - What **edge cases** should be handled?
 
-### Step 5: Implement and Test Your Alternative
+### Step 4: Implement and Test Your Alternative (Optional)
 
 ```bash
-# Create a branch for your alternative
-git stash  # Save PR's fix
+# Save PR's fix
+git stash
+
 # Implement your fix
 # Run the same tests
 pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "IssueXXXXX"
+
+# Restore PR's fix
+git stash pop
 ```
+
+**Update `pr-XXXXX-review.md`** with your analysis findings.
 
 ---
 
@@ -208,9 +299,28 @@ For your alternative:
 
 ## PHASE 3: Regression Testing
 
-### Identify Potential Regression Scenarios
+### Step 1: Check Edge Cases from Pre-Flight
 
-Based on your analysis, check for:
+Go through each edge case identified during pre-flight (from `pr-XXXXX-review.md`):
+
+```markdown
+### Edge Cases from Discussion
+- [ ] [edge case 1] - Tested: [result]
+- [ ] [edge case 2] - Tested: [result]
+```
+
+### Step 2: Investigate Disagreements
+
+For each disagreement between reviewers and author (from pre-flight):
+1. Understand both positions
+2. Test to determine who is correct
+3. Document your finding in `pr-XXXXX-review.md`
+
+### Step 3: Verify Author's Uncertain Areas
+
+If author expressed uncertainty (from pre-flight), investigate and provide guidance.
+
+### Step 4: Check Code Paths
 
 1. **Code paths affected by the fix**
    - What other scenarios use this code?
@@ -218,23 +328,14 @@ Based on your analysis, check for:
 
 2. **Common regression patterns**
 
-| Fix Pattern | Potential Regression | How to Check |
-|-------------|---------------------|--------------|
-| `== ConstantValue` | Dynamic values won't match | Test with DataTemplateSelector |
-| `!= ConstantValue` | May incorrectly include values | Test boundary conditions |
-| Platform-specific fix | Other platforms affected? | Test on iOS too |
+| Fix Pattern | Potential Regression |
+|-------------|---------------------|
+| `== ConstantValue` | Dynamic values won't match |
+| Platform-specific fix | Other platforms affected? |
 
-3. **Instrument code if needed**
+3. **Instrument code if needed** - Add `Debug.WriteLine` and grep device logs.
 
-```csharp
-// Add temporarily to verify code paths
-System.Diagnostics.Debug.WriteLine($"[FeatureName] Code path: {value}");
-```
-
-Then grep device logs:
-```bash
-grep "FeatureName" CustomAgentLogsTmp/UITests/android-device.log
-```
+**Update `pr-XXXXX-review.md`** with regression findings.
 
 ---
 
@@ -242,11 +343,19 @@ grep "FeatureName" CustomAgentLogsTmp/UITests/android-device.log
 
 ### Write Detailed Review
 
+Update `pr-XXXXX-review.md` with final review:
+
 ```markdown
 ## PR Review: #XXXXX - [Title]
 
+### Pre-Flight Summary
+- **Linked Issue**: #YYYYY
+- **Test Type**: [UI/Device/Unit]
+- **Disagreements**: X investigated
+- **Edge Cases**: Y checked
+
 ### Phase 0: Test Validation ✅
-- Tests FAIL without fix (verified with verify-tests-fail-without-fix)
+- Tests FAIL without fix (verified)
 - Tests PASS with fix
 
 ### Phase 1: Independent Analysis
@@ -264,9 +373,17 @@ grep "FeatureName" CustomAgentLogsTmp/UITests/android-device.log
 **Recommendation**: [Which approach is better and why]
 
 ### Phase 3: Regression Analysis
+
+**Disagreements Resolved**:
+1. [Topic]: [Your finding]
+
+**Edge Cases Checked**:
+- [x] [edge case 1] - [result]
+- [x] [edge case 2] - [result]
+
+**Code Paths Verified**:
 - [ ] Checked affected code paths
 - [ ] No regressions identified
-- [ ] Edge cases covered
 
 ### Final Recommendation
 ✅ **Approve** / ⚠️ **Request Changes**
@@ -280,11 +397,29 @@ grep "FeatureName" CustomAgentLogsTmp/UITests/android-device.log
 
 | Task | Command |
 |------|---------|
-| Gate: Verify tests catch issue | `pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 -Platform android` |
+| **Pre-Flight** | |
+| Get PR metadata | `gh pr view XXXXX --json title,body,url,author,files` |
+| Get inline comments | `gh api "repos/dotnet/maui/pulls/XXXXX/comments"` |
+| Get linked issue | `gh pr view XXXXX --json body \| grep -oE "Fixes #[0-9]+"` |
+| **Gate** | |
+| Verify tests catch issue | `pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 -Platform android` |
 | Run UI tests | `pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "..."` |
-| Check what changed | `git diff main --stat` |
-| View linked issue | `gh issue view ISSUE_NUMBER` |
-| View PR info | `gh pr view XXXXX` |
+| Run Device tests | `dotnet test [DeviceTests.csproj] --filter "..."` |
+| Run Unit tests | `dotnet test [UnitTests.csproj] --filter "..."` |
+| **Analysis** | |
+| Check git history | `git log --oneline -20 -- [file.cs]` |
+| View commit | `git show COMMIT_SHA --stat` |
+| Revert fix files | `git checkout main -- [file.cs]` |
+| Restore fix files | `git checkout HEAD -- [file.cs]` |
+
+## State File
+
+Maintain `pr-XXXXX-review.md` throughout the review with:
+- Pre-flight findings (disagreements, edge cases, author concerns)
+- Gate results
+- Analysis findings
+- Regression test results
+- Final recommendation
 
 ## Troubleshooting
 
