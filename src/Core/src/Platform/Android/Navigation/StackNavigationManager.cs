@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Android.Content;
 using Android.OS;
 using Android.Views;
@@ -310,13 +311,44 @@ namespace Microsoft.Maui.Platform
 				_fragmentContainerView.ChildViewAdded -= OnNavigationHostViewAdded;
 			}
 
+			if (_fragmentManager is not null)
+			{
+				CleanUpFragments(_fragmentManager);
+			}
+
 			_fragmentLifecycleCallbacks?.Disconnect();
 			_fragmentLifecycleCallbacks = null;
-
+			
 			VirtualView = null;
 			NavigationView = null;
 			SetNavHost(null);
 			_fragmentNavigator = null;
+			_fragmentManager = null;
+			_fragmentContainerView = null;
+			_navGraph = null;
+			_currentPage = null;
+			NavigationStack = [];
+			ActiveRequestedArgs = null;
+			OnResumeRequestedArgs = null;
+		}
+
+
+		static void CleanUpFragments(FragmentManager fragmentManager)
+		{
+			fragmentManager.ExecutePendingTransactionsEx();
+			;				if (fragmentManager.BackStackEntryCount > 0)
+			{
+				fragmentManager.PopBackStackImmediate();
+			}
+
+			var transaction = fragmentManager.BeginTransactionEx();
+			foreach (var fragment in fragmentManager.Fragments)
+			{
+				transaction.RemoveEx(fragment);
+			}
+
+			transaction.CommitAllowingStateLoss();
+			fragmentManager.ExecutePendingTransactionsEx();
 		}
 
 		public virtual void Connect(IView navigationView)
@@ -344,6 +376,14 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+
+#pragma warning disable RS0016
+		~StackNavigationManager()
+#pragma warning restore RS0016
+		{
+			System.Diagnostics.Debug.WriteLine($"~StackNavigationManager called");
+		}
+		
 		void OnNavigationPlatformViewAttachedToWindow(object? sender, AView.ViewAttachedToWindowEventArgs e)
 		{
 			// If the previous Navigation Host Fragment was destroyed then we need to add a new one
@@ -505,7 +545,7 @@ namespace Microsoft.Maui.Platform
 					(FragmentNavigator)NavController
 						.NavigatorProvider
 						.GetNavigator(Java.Lang.Class.FromType(typeof(FragmentNavigator)));
-
+				
 				foreach (var fragment in _navHost.ChildFragmentManager.Fragments)
 				{
 					if (fragment is NavigationViewFragment nvf)
