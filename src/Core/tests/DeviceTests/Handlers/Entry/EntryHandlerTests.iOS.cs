@@ -863,5 +863,12 @@ namespace Microsoft.Maui.DeviceTests
 
 			return -1;
 		}
+		
+		bool GetNativeHasBorder(EntryHandler entryHandler)
+		{
+			var textField = GetNativeEntry(entryHandler);
+
+			return textField.BorderStyle == UITextBorderStyle.RoundedRect;
+		}
 	}
 }

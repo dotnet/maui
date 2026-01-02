@@ -29,6 +29,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public bool IsReadOnly { get; set; }
 
+		public bool HasBorder { get; set; } = true;
+
 		public Font Font { get; set; }
 
 		public int MaxLength { get; set; } = int.MaxValue;

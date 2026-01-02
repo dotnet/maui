@@ -675,6 +675,130 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(platformAlignment, values.PlatformViewValue);
 		}
 
+		[Theory(DisplayName = "HasBorder Initializes Correctly")]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task HasBorderInitializesCorrectly(bool hasBorder)
+		{
+			var entry = new EntryStub()
+			{
+				HasBorder = hasBorder
+			};
+
+			await ValidatePropertyInitValue(entry, () => entry.HasBorder, GetNativeHasBorder, hasBorder);
+		}
+
+		[Theory(DisplayName = "HasBorder Updates Correctly")]
+		[InlineData(true, true)]
+		[InlineData(true, false)]
+		[InlineData(false, true)]
+		[InlineData(false, false)]
+		public async Task HasBorderUpdatesCorrectly(bool setValue, bool unsetValue)
+		{
+			var entry = new EntryStub();
+
+			await ValidatePropertyUpdatesValue(
+				entry,
+				nameof(IEntry.HasBorder),
+				GetNativeHasBorder,
+				setValue,
+				unsetValue);
+		}
+
+		[Theory(DisplayName = "Updating HasBorder Does Not Affect Text")]
+		[InlineData(true, false)]
+		[InlineData(false, true)]
+		public async Task HasBorderDoesNotAffectText(bool initialHasBorder, bool newHasBorder)
+		{
+			var entry = new EntryStub
+			{
+				Text = "Test Text",
+				HasBorder = initialHasBorder
+			};
+
+			await ValidateUnrelatedPropertyUnaffected(
+				entry,
+				GetNativeText,
+				nameof(IEntry.HasBorder),
+				() => entry.HasBorder = newHasBorder);
+		}
+
+		[Theory(DisplayName = "Updating HasBorder Does Not Affect TextColor")]
+		[InlineData(true, false)]
+		[InlineData(false, true)]
+		public async Task HasBorderDoesNotAffectTextColor(bool initialHasBorder, bool newHasBorder)
+		{
+			var entry = new EntryStub
+			{
+				Text = "Test",
+				TextColor = Colors.Red,
+				HasBorder = initialHasBorder
+			};
+
+			await ValidateUnrelatedPropertyUnaffected(
+				entry,
+				GetNativeTextColor,
+				nameof(IEntry.HasBorder),
+				() => entry.HasBorder = newHasBorder);
+		}
+
+		[Theory(DisplayName = "Updating HasBorder Does Not Affect Placeholder")]
+		[InlineData(true, false)]
+		[InlineData(false, true)]
+		public async Task HasBorderDoesNotAffectPlaceholder(bool initialHasBorder, bool newHasBorder)
+		{
+			var entry = new EntryStub
+			{
+				Placeholder = "Enter text",
+				HasBorder = initialHasBorder
+			};
+
+			await ValidateUnrelatedPropertyUnaffected(
+				entry,
+				GetNativePlaceholder,
+				nameof(IEntry.HasBorder),
+				() => entry.HasBorder = newHasBorder);
+		}
+
+		[Theory(DisplayName = "Updating Text Does Not Affect HasBorder")]
+		[InlineData("Short", "Longer Text")]
+		[InlineData("Long text here", "Short")]
+		public async Task TextDoesNotAffectHasBorder(string initialText, string newText)
+		{
+			var entry = new EntryStub
+			{
+				Text = initialText,
+				HasBorder = true
+			};
+
+			await ValidateUnrelatedPropertyUnaffected(
+				entry,
+				GetNativeHasBorder,
+				nameof(IEntry.Text),
+				() => entry.Text = newText);
+		}
+
+		[Theory(DisplayName = "Updating TextColor Does Not Affect HasBorder")]
+		[InlineData(0xFFFF0000, 0xFF0000FF)]
+		[InlineData(0xFF0000FF, 0xFFFF0000)]
+		public async Task TextColorDoesNotAffectHasBorder(uint setValue, uint unsetValue)
+		{
+			var entry = new EntryStub
+			{
+				Text = "Test",
+				HasBorder = true
+			};
+
+			var setColor = Color.FromUint(setValue);
+			var unsetColor = Color.FromUint(unsetValue);
+
+			await ValidateUnrelatedPropertyUnaffected(
+				entry,
+				GetNativeHasBorder,
+				nameof(IEntry.TextColor),
+				() => entry.TextColor = setColor);
+		}
+
 		[Category(TestCategory.Entry)]
 		public class EntryTextStyleTests : TextStyleHandlerTests<EntryHandler, EntryStub>
 		{
