@@ -88,8 +88,10 @@ internal static class SafeAreaExtensions
 			{
 				// When AdjustPan is set, the window pans instead of resizing
 				// so we should not modify any padding - just consume the insets and return
+				// Use MaskAdjust to properly distinguish AdjustPan from AdjustNothing
 				var softInputMode = attr.SoftInputMode;
-				if ((softInputMode & SoftInput.AdjustPan) == SoftInput.AdjustPan)
+				var adjustMode = softInputMode & SoftInput.MaskAdjust;
+				if (adjustMode == SoftInput.AdjustPan)
 				{
 					return WindowInsetsCompat.Consumed;
 				}
