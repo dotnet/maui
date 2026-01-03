@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+
 using Android.Content;
 using Android.OS;
 using Android.Views;
@@ -336,7 +336,7 @@ namespace Microsoft.Maui.Platform
 		static void CleanUpFragments(FragmentManager fragmentManager)
 		{
 			fragmentManager.ExecutePendingTransactionsEx();
-			if (fragmentManager.BackStackEntryCount > 0)
+			while (fragmentManager.BackStackEntryCount > 0)
 			{
 				fragmentManager.PopBackStackImmediate();
 			}
