@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	class GesturePlatformManager : IDisposable
+	class GesturePlatformManager : IGesturePlatformManager
 	{
 		IViewHandler? _handler;
 		Lazy<GestureDetector> _gestureDetector;
