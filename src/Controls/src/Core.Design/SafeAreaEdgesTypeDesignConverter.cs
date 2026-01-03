@@ -1,26 +1,16 @@
-using System;
-using System.ComponentModel;
-using Controls.Core.Design;
-using Microsoft.Maui;
-
 namespace Microsoft.Maui.Controls.Design
 {
-	public static class StringExtensions
-	{
-		public static bool IsEmpty(this string str) => string.IsNullOrEmpty(str);
-		public static bool EqualsIgnoreCase(this string str, string other) =>
-			str?.Equals(other, StringComparison.OrdinalIgnoreCase) ?? false;
-	}
-
 	public class SafeAreaEdgesTypeDesignConverter : StringConverter
 	{
-		private static readonly string[] ValidValues = { "All", "None", "Default", "SoftInput", "Container" };
+		private static readonly HashSet<string> ValidValues =
+			new HashSet<string>(
+				new[] { "All", "None", "Default", "SoftInput", "Container" },
+				StringComparer.OrdinalIgnoreCase);
 
 		public override bool IsValid(ITypeDescriptorContext context, object value)
 		{
 			// MUST MATCH SafeAreaEdgesTypeConverter.ConvertFrom
-			var strValue = value?.ToString()?.Trim();
-			if (strValue.IsEmpty())
+			if (value?.ToString()?.Trim() is not string strValue || strValue.Length == 0)
 				return false;
 
 			// Split by comma and validate each part
@@ -33,19 +23,7 @@ namespace Microsoft.Maui.Controls.Design
 			// Each part must be a valid SafeAreaRegions value
 			foreach (var part in parts)
 			{
-				var trimmedPart = part.Trim();
-				var isValidPart = false;
-
-				foreach (var valid in ValidValues)
-				{
-					if (trimmedPart.EqualsIgnoreCase(valid))
-					{
-						isValidPart = true;
-						break;
-					}
-				}
-
-				if (!isValidPart)
+				if (!ValidValues.Contains(part.Trim()))
 					return false;
 			}
 
