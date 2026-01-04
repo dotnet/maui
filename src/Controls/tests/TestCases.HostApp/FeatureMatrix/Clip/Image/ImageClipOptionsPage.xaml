@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.ImageClipOptionsPage"
+             Title="SliderFeature">
+       <ContentPage.ToolbarItems>
+              <ToolbarItem Text="Apply"
+                           Clicked="ApplyButton_Clicked"
+                           AutomationId="Apply"/>
+       </ContentPage.ToolbarItems>
+       <VerticalStackLayout Padding="10"
+                            Spacing="4">
+              <Label Text="Aspect"
+                     FontAttributes="Bold"
+                     FontSize="14"/>
+              <HorizontalStackLayout>
+                     <RadioButton Content="AspectFit"
+                                  IsChecked="True"
+                                  GroupName="AspectGroup"
+                                  CheckedChanged="AspectRadio_CheckedChanged"
+                                  AutomationId="ImageAspectFit"/>
+                     <RadioButton Content="AspectFill"
+                                  GroupName="AspectGroup"
+                                  CheckedChanged="AspectRadio_CheckedChanged"
+                                  AutomationId="ImageAspectFill"/>
+                     <RadioButton Content="Fill"
+                                  GroupName="AspectGroup"
+                                  CheckedChanged="AspectRadio_CheckedChanged"
+                                  AutomationId="ImageFill"/>
+                     <RadioButton Content="Center"
+                                  GroupName="AspectGroup"
+                                  CheckedChanged="AspectRadio_CheckedChanged"
+                                  AutomationId="ImageCenter"/>
+              </HorizontalStackLayout>
+
+              <Label Text="Source Type"
+                     FontAttributes="Bold"
+                     FontSize="14"/>
+              <HorizontalStackLayout>
+                     <RadioButton Content="File"
+                                  GroupName="SourceTypeGroup"
+                                  CheckedChanged="SourceTypeRadio_CheckedChanged"
+                                  AutomationId="SourceTypeFile"/>
+                     <RadioButton Content="Uri"
+                                  GroupName="SourceTypeGroup"
+                                  CheckedChanged="SourceTypeRadio_CheckedChanged"
+                                  AutomationId="SourceTypeUri"/>
+                     <RadioButton Content="Stream"
+                                  GroupName="SourceTypeGroup"
+                                  CheckedChanged="SourceTypeRadio_CheckedChanged"
+                                  AutomationId="SourceTypeStream"/>
+                     <RadioButton Content="FontImage"
+                                  GroupName="SourceTypeGroup"
+                                  CheckedChanged="SourceTypeRadio_CheckedChanged"
+                                  AutomationId="SourceTypeFontImage"/>
+              </HorizontalStackLayout>
+              <RadioButton Content="ClipImage"
+                           GroupName="SourceTypeGroup"
+                           CheckedChanged="SourceTypeRadio_CheckedChanged"
+                           AutomationId="SourceTypeClipImage"/>
+
+              <Label Text="Clip Geometry"
+                     FontAttributes="Bold"
+                     FontSize="14"/>
+              <HorizontalStackLayout>
+                     <RadioButton Content="None"
+                                  IsChecked="True"
+                                  GroupName="ClipGroup"
+                                  CheckedChanged="ClipRadio_CheckedChanged"
+                                  AutomationId="ClipNone"/>
+                     <RadioButton Content="Rectangle"
+                                  GroupName="ClipGroup"
+                                  CheckedChanged="ClipRadio_CheckedChanged"
+                                  AutomationId="RectangleGeometry"/>
+                     <RadioButton Content="Ellipse"
+                                  GroupName="ClipGroup"
+                                  CheckedChanged="ClipRadio_CheckedChanged"
+                                  AutomationId="EllipseGeometry"/>
+                     <RadioButton Content="RoundRectangle"
+                                  GroupName="ClipGroup"
+                                  CheckedChanged="ClipRadio_CheckedChanged"
+                                  AutomationId="RoundRectangleGeometry"/>
+              </HorizontalStackLayout>
+              <HorizontalStackLayout>
+                     <RadioButton Content="GeometryGroup"
+                                  GroupName="ClipGroup"
+                                  CheckedChanged="ClipRadio_CheckedChanged"
+                                  AutomationId="GeometryGroup"/>
+              </HorizontalStackLayout>
+
+              <Label Text="PathGeometry Segment: "
+                     FontAttributes="Bold"
+                     FontSize="14"/>
+              <HorizontalStackLayout>
+                     <RadioButton Content="Line"
+                                  GroupName="PathTypeGroup"
+                                  CheckedChanged="PathTypeRadio_CheckedChanged"
+                                  AutomationId="LineSegment"/>
+                     <RadioButton Content="Arc"
+                                  GroupName="PathTypeGroup"
+                                  CheckedChanged="PathTypeRadio_CheckedChanged"
+                                  AutomationId="ArcSegment"/>
+                     <RadioButton Content="Bezier"
+                                  GroupName="PathTypeGroup"
+                                  CheckedChanged="PathTypeRadio_CheckedChanged"
+                                  AutomationId="BezierSegment"/>
+                     <RadioButton Content="PolyQuadraticBezier"
+                                  GroupName="PathTypeGroup"
+                                  CheckedChanged="PathTypeRadio_CheckedChanged"
+                                  AutomationId="PolyQuadraticBezierSegment"/>
+              </HorizontalStackLayout>
+              <HorizontalStackLayout>
+                     <RadioButton Content="QuadraticBezier"
+                                  GroupName="PathTypeGroup"
+                                  CheckedChanged="PathTypeRadio_CheckedChanged"
+                                  AutomationId="QuadraticBezierSegment"/>
+                     <RadioButton Content="PolyLine"
+                                  GroupName="PathTypeGroup"
+                                  CheckedChanged="PathTypeRadio_CheckedChanged"
+                                  AutomationId="PolyLineSegment"/>
+                     <RadioButton Content="PolyBezier"
+                                  GroupName="PathTypeGroup"
+                                  CheckedChanged="PathTypeRadio_CheckedChanged"
+                                  AutomationId="PolyBezierSegment"/>
+              </HorizontalStackLayout>
+       </VerticalStackLayout>
+</ContentPage>

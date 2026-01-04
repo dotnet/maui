@@ -94,6 +94,7 @@ namespace Maui.Controls.Sample
 			new GalleryPageFactory(() => new SliderControlPage(), "Slider Feature Matrix"),
 			new GalleryPageFactory(() => new NavigationPageControlPage(), "NavigationPage Feature Matrix"),
 			new GalleryPageFactory(() => new CheckBoxControlPage(), "CheckBox Feature Matrix"),
+			new GalleryPageFactory(() => new ImageClipControlPage(), "Clip Feature Matrix"),
 			new GalleryPageFactory(() => new CollectionViewFeaturePage(), "CollectionView Feature Matrix"),
 			new GalleryPageFactory(() => new LabelControlPage(), "Label Feature Matrix"),
 			new GalleryPageFactory(() => new CarouselViewFeaturePage(), "CarouselView Feature Matrix"),
