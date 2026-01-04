@@ -799,6 +799,74 @@ namespace Microsoft.Maui.DeviceTests
 				() => entry.TextColor = setColor);
 		}
 
+		[Theory(DisplayName = "HasBorder Works Correctly with Background")]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task HasBorderWorksCorrectlyWithBackground(bool hasBorder)
+		{
+			var entry = new EntryStub
+			{
+				Text = "Test",
+				HasBorder = hasBorder,
+				Background = new SolidPaintStub(Colors.Red)
+			};
+
+			await AttachAndRun(entry, async (handler) =>
+			{
+				await AssertEventually(() => handler.PlatformView.IsLoaded());
+			});
+
+			await ValidatePropertyInitValue(entry, () => entry.HasBorder, GetNativeHasBorder, hasBorder);
+
+			var hasBackground = await GetValueAsync(entry, handler =>
+			{
+				return handler.PlatformView != null;
+			});
+
+			Assert.True(hasBackground);
+		}
+
+		[Theory(DisplayName = "Updating Background Does Not Affect HasBorder")]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task BackgroundDoesNotAffectHasBorder(bool hasBorder)
+		{
+			var entry = new EntryStub
+			{
+				Text = "Test",
+				HasBorder = hasBorder,
+				Background = new SolidPaintStub(Colors.Yellow)
+			};
+
+			await ValidateUnrelatedPropertyUnaffected(
+				entry,
+				GetNativeHasBorder,
+				nameof(IEntry.Background),
+				() => entry.Background = new SolidPaintStub(Colors.Red));
+		}
+
+		[Theory(DisplayName = "Updating HasBorder Does Not Affect Background")]
+		[InlineData(true, false)]
+		[InlineData(false, true)]
+		public async Task HasBorderDoesNotAffectBackground(bool initialHasBorder, bool newHasBorder)
+		{
+			var entry = new EntryStub
+			{
+				Text = "Test",
+				HasBorder = initialHasBorder,
+				Background = new SolidPaintStub(Colors.Blue)
+			};
+			
+			await AttachAndRun(entry, async (handler) =>
+			{
+				await AssertEventually(() => handler.PlatformView.IsLoaded());
+				
+				entry.HasBorder = newHasBorder;
+
+				Assert.NotNull(handler.PlatformView);
+			});
+		}
+
 		[Category(TestCategory.Entry)]
 		public class EntryTextStyleTests : TextStyleHandlerTests<EntryHandler, EntryStub>
 		{
