@@ -9,8 +9,7 @@
        <!-- MenuBar Definition -->
        <Shell.MenuBarItems>
               <MenuBarItem Text="{Binding FileMenuText}"
-                           IsEnabled="{Binding FileMenuEnabled}"
-                           AutomationId="FileMenuBarItem">
+                           IsEnabled="{Binding FileMenuEnabled}">
                      <MenuFlyoutItem Text="{Binding ExitText}"
                                      IsEnabled="{Binding ExitEnabled}"
                                      IconImageSource="{Binding ExitIcon}"
@@ -152,7 +151,8 @@
                                          ColumnSpacing="10">
                                           <Label Text="{Binding ViewMenuText}"
                                                  FontSize="15"
-                                                 VerticalOptions="Center"/>
+                                                 VerticalOptions="Center"
+                                                 AutomationId="ViewMenuBarItem"/>
                                           <HorizontalStackLayout Grid.Column="1"
                                                                  Spacing="8">
                                                  <Label Text="{Binding ViewMenuEnabled, StringFormat='Enabled: {0}'}"

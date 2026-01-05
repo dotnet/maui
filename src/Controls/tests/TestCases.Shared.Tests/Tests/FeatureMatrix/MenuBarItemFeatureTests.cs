@@ -4,21 +4,17 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-[Category(UITestCategories.Visual)]
-public class MenuBarItemFeatureTests : UITest
+[Category(UITestCategories.Shell)]
+public class MenuBarItemFeatureTests : _GalleryUITest
 {
 	public const string MenuBarItemFeatureMatrix = "MenuBarItem Feature Matrix";
+	public override string GalleryPageName => MenuBarItemFeatureMatrix;
 
 	public MenuBarItemFeatureTests(TestDevice device)
 	 : base(device)
 	{
 	}
 
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(MenuBarItemFeatureMatrix);
-	}
 
 	[Test, Order(1)]
 	public void MenuBarItem_FileMenuExit()
@@ -134,10 +130,8 @@ public class MenuBarItemFeatureTests : UITest
 		App.WaitForElement("Remove Location");
 		App.Tap("Remove Location");
 
-		App.WaitForNoElement("Berlin, DE");
-
-		// var locationLabel = App.FindElement("StatusMessageLabel");
-		// Assert.That(locationLabel.GetText(), Is.EqualTo("Removed location: Berlin, DE"));
+		var locationLabel = App.FindElement("StatusMessageLabel");
+		Assert.That(locationLabel.GetText(), Is.EqualTo("Removed location: Berlin, DE"));
 
 	}
 
@@ -217,8 +211,8 @@ public class MenuBarItemFeatureTests : UITest
 		App.Tap("FileMenuBar");
 		App.WaitForElement("ExitMenuBarFlyoutItem");
 
-		App.WaitForElement("FileMenuBarItem");
-		App.Tap("FileMenuBarItem");
+		App.WaitForElement("ViewMenuBarItem");
+		App.Tap("ViewMenuBarItem");
 
 		App.WaitForElement("LocationsMenuBar");
 		App.Tap("LocationsMenuBar");
@@ -227,8 +221,8 @@ public class MenuBarItemFeatureTests : UITest
 		App.WaitForElement("Edit Location");
 		App.WaitForElement("Remove Location");
 
-		App.WaitForElement("FileMenuBarItem");
-		App.Tap("FileMenuBarItem");
+		App.WaitForElement("ViewMenuBarItem");
+		App.Tap("ViewMenuBarItem");
 
 		App.WaitForElement("ViewMenuBar");
 		App.Tap("ViewMenuBar");
