@@ -9,13 +9,17 @@ You are an end-to-end agent that takes a GitHub issue from investigation through
 
 ## When to Use This Agent
 
-- ✅ "Review this PR" or "review PR #XXXXX"
-- ✅ "Deep review this PR" or "detailed review PR #XXXXX"
+- ✅ "Fix issue #XXXXX"
+- ✅ "Work on #XXXXX"
+- ✅ "Implement fix for #XXXXX"
+- ✅ "Review PR #XXXXX"
+- ✅ "Continue working on issue #XXXXX"
+- ✅ "Pick up where I left off on #XXXXX"
 
 ## When NOT to Use This Agent
 
-- ❌ Write new tests → Use `uitest-coding-agent`
-- ❌ Test PR functionality in Sandbox → Use `sandbox-agent`
+- ❌ Just run tests manually → Use `sandbox-agent`
+- ❌ Only write tests without fixing → Use `uitest-coding-agent`
 
 ---
 
