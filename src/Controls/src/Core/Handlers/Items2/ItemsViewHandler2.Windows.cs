@@ -594,8 +594,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 
 			var header = structuredItemsView.Header;
+			var headerTemplate = structuredItemsView.HeaderTemplate;
 
-			if (header is null)
+			// Hide header only if both Header and HeaderTemplate are null
+			if (header is null && headerTemplate is null)
 			{
 				if (_headerDisplayed)
 				{
@@ -613,26 +615,42 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
-			_header = header switch
+			// If HeaderTemplate is set, use it regardless of header value
+			if (headerTemplate is not null)
 			{
-				string text => new TextBlock
+				_header = RealizeHeaderFooterTemplate(header, headerTemplate, ref _mauiHeader);
+			}
+			else if (header is not null)
+			{
+				_header = header switch
 				{
-					Text = text,
-					Margin = new Microsoft.UI.Xaml.Thickness(0, 0, 0, 10)
-				},
+					string text => new TextBlock
+					{
+						Text = text,
+						Margin = new Microsoft.UI.Xaml.Thickness(0, 0, 0, 10)
+					},
+					View view => RealizeHeaderFooterView(view, ref _mauiHeader),
+					_ => new TextBlock
+					{
+						Text = header.ToString(),
+						Margin = new Microsoft.UI.Xaml.Thickness(0, 0, 0, 10)
+					}
+				};
+			}
+			else
+			{
+				// This shouldn't happen due to null check above, but handle it safely
+				return;
+			}
 
-				View view => RealizeHeaderFooterView(view, ref _mauiHeader),
-				_ => RealizeHeaderFooterTemplate(header, structuredItemsView.HeaderTemplate, ref _mauiHeader),
-			};
-
-			if (PlatformView is MauiItemsView platformItemsView && _mauiHeader is not null)
+			if (PlatformView is MauiItemsView platformItemsView && _header is not null)
 			{
 				platformItemsView.SetHeader(_header, _mauiHeader);
 				platformItemsView.HeaderVisibility = WVisibility.Visible;
 			}
-			
-			// Add logical child if it's a View (not a template)
-			if (_mauiHeader is not null && structuredItemsView.HeaderTemplate is null)
+
+			// Add logical child for View
+			if (_mauiHeader is not null)
 			{
 				ItemsView.AddLogicalChild(_mauiHeader);
 			}
@@ -648,8 +666,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 
 			var footer = structuredItemsView.Footer;
+			var footerTemplate = structuredItemsView.FooterTemplate;
 
-			if (footer is null)
+			// Hide footer only if both Footer and FooterTemplate are null
+			if (footer is null && footerTemplate is null)
 			{
 				if (_footerDisplayed)
 				{
@@ -667,25 +687,42 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
-			_footer = footer switch
+			// If FooterTemplate is set, use it regardless of footer value
+			if (footerTemplate is not null)
 			{
-				string text => new TextBlock
+				_footer = RealizeHeaderFooterTemplate(footer, footerTemplate, ref _mauiFooter);
+			}
+			else if (footer is not null)
+			{
+				_footer = footer switch
 				{
-					Text = text,
-					Margin = new Microsoft.UI.Xaml.Thickness(0, 10, 0, 0)
-				},
-				View view => RealizeHeaderFooterView(view, ref _mauiFooter),
-				_ => RealizeHeaderFooterTemplate(footer, structuredItemsView.FooterTemplate, ref _mauiFooter),
-			};
+					string text => new TextBlock
+					{
+						Text = text,
+						Margin = new Microsoft.UI.Xaml.Thickness(0, 10, 0, 0)
+					},
+					View view => RealizeHeaderFooterView(view, ref _mauiFooter),
+					_ => new TextBlock
+					{
+						Text = footer.ToString(),
+						Margin = new Microsoft.UI.Xaml.Thickness(0, 10, 0, 0)
+					}
+				};
+			}
+			else
+			{
+				// This shouldn't happen due to null check above, but handle it safely
+				return;
+			}
 
-			if (PlatformView is MauiItemsView platformItemsView && _mauiFooter is not null)
+			if (PlatformView is MauiItemsView platformItemsView && _footer is not null)
 			{
 				platformItemsView.SetFooter(_footer, _mauiFooter);
 				platformItemsView.FooterVisibility = WVisibility.Visible;
 			}
-			
-			// Add logical child if it's a View (not a template)
-			if (_mauiFooter is not null && structuredItemsView.FooterTemplate is null)
+
+			// Add logical child for View
+			if (_mauiFooter is not null)
 			{
 				ItemsView.AddLogicalChild(_mauiFooter);
 			}
