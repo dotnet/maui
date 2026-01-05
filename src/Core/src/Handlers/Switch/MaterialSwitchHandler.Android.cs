@@ -26,7 +26,7 @@ internal partial class MaterialSwitchHandler : ViewHandler<ISwitch, MaterialSwit
 
 	protected override MaterialSwitch CreatePlatformView()
 	{
-		return new MaterialSwitch(Context);
+		return new MaterialSwitch(MauiMaterialContextThemeWrapper.Create(Context));
 	}
 
 	protected override void ConnectHandler(MaterialSwitch platformView)
