@@ -2234,6 +2234,7 @@
 ~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootHeader.ItemSelected(UIKit.UICollectionView collectionView, Foundation.NSIndexPath indexPath) -> void
 ~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootHeader.NumberOfSections(UIKit.UICollectionView collectionView) -> nint
 ~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootHeader.ShouldSelectItem(UIKit.UICollectionView collectionView, Foundation.NSIndexPath indexPath) -> bool
+~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootRenderer.TraitCollectionDidChange(UIKit.UITraitCollection previousTraitCollection) -> void
 ~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootRenderer.ViewWillTransitionToSize(CoreGraphics.CGSize toSize, UIKit.IUIViewControllerTransitionCoordinator coordinator) -> void
 ~override Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewSource.GetCell(UIKit.UITableView tableView, Foundation.NSIndexPath indexPath) -> UIKit.UITableViewCell
 ~override Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewSource.GetHeightForFooter(UIKit.UITableView tableView, nint section) -> System.Runtime.InteropServices.NFloat
