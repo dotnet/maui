@@ -1,4 +1,5 @@
-﻿using UIKit;
+﻿using System;
+using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
@@ -59,10 +60,16 @@ namespace Microsoft.Maui.Platform
 		{
 			if (CurrentView?.Handler is ElementHandler handler)
 			{
-				var application = handler.GetRequiredService<IApplication>();
-
-				application?.UpdateUserInterfaceStyle();
-				application?.ThemeChanged();
+				try
+				{
+					var application = handler.GetRequiredService<IApplication>();
+					application.UpdateUserInterfaceStyle();
+					application.ThemeChanged();
+				}
+				catch (ObjectDisposedException)
+				{
+					// The service provider might have been disposed during shutdown
+				}
 			}
 
 #pragma warning disable CA1422 // Validate platform compatibility
