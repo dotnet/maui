@@ -93,7 +93,20 @@ pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1 -Limit 5
 To enable: `gh auth refresh -s read:project`
 ```
 
-### Step 3: Present ONE PR at a Time
+### Step 3: Present Results from ALL Categories
+
+**CRITICAL**: When presenting PR results, you MUST include PRs from ALL categories returned by the script:
+
+1. 🔴 **Priority (P/0)** - Always include if present
+2. 📅 **Milestoned** - Always include if present  
+3. 🤝 **Partner** - Always include if present
+4. ✨ **Community** - Always include if present
+5. 🕐 **Recent** - Always include if present
+6. 📖 **docs-maui** - Always include if present
+
+**DO NOT** omit any category. Each category table should include columns for: PR, Title, Author, Platform/Repo, Status, Age, Updated.
+
+### Step 4: Present ONE PR at a Time for Review
 
 When user asks to review, present only ONE PR in this format:
 
@@ -118,7 +131,7 @@ When user asks to review, present only ONE PR in this format:
 Would you like me to review this PR?
 ```
 
-### Step 4: Invoke PR Reviewer
+### Step 5: Invoke PR Reviewer
 
 When user confirms, use the **pr-reviewer** agent:
 - "Review PR #XXXXX"
