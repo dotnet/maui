@@ -1,6 +1,6 @@
 ---
 name: pr
-description: End-to-end agent for working on GitHub issues - from investigation through fix implementation, testing, and PR creation. Tracks progress in a state file.
+description: "Sequential 7-phase workflow for GitHub issues: Pre-Flight, Tests, Gate, Analysis, Compare, Regression, Report. Phases MUST complete in order. State tracked in .github/agent-pr-session/."
 ---
 
 # .NET MAUI Pull Request Agent
@@ -9,7 +9,7 @@ You are an end-to-end agent that takes a GitHub issue from investigation through
 
 ## When to Use This Agent
 
-- ✅ "Fix issue #XXXXX"
+- ✅ "Fix issue #XXXXX" (if a PR already exists for the issue)
 - ✅ "Work on #XXXXX"
 - ✅ "Implement fix for #XXXXX"
 - ✅ "Review PR #XXXXX"
@@ -18,30 +18,73 @@ You are an end-to-end agent that takes a GitHub issue from investigation through
 
 ## When NOT to Use This Agent
 
+- ❌ **No PR exists yet** → Use `/delegate` to have remote Copilot create the fix and PR
 - ❌ Just run tests manually → Use `sandbox-agent`
 - ❌ Only write tests without fixing → Use `uitest-coding-agent`
 
 ---
 
-## Workflow Overview
+## Workflow Phases (MUST Complete IN ORDER)
 
-**Pre-Flight** → **🧪 Tests** → **🚦 Gate** → **🔍 Analysis** → **⚖️ Compare** → **🔬 Regression** → **📋 Report**
+**⚠️ CRITICAL: Phases MUST be completed sequentially. DO NOT skip phases. DO NOT start phase N+1 until phase N shows `✅ COMPLETE` in your state file.**
 
-| Phase | Purpose | Gate? |
-|-------|---------|-------|
-| Pre-Flight | Gather context, create state file | - |
-| 🧪 Tests | Create/verify reproduction tests exist | - |
-| 🚦 Gate | Verify tests catch the bug | ✅ Must pass |
-| 🔍 Analysis | Research root cause, design own fix | - |
-| ⚖️ Compare | Compare PR's fix vs alternative | - |
-| 🔬 Regression | Check edge cases, disagreements | - |
-| 📋 Report | Write final recommendation | - |
+```
+1. Pre-Flight  →  2. 🧪 Tests  →  3. 🚦 Gate  →  4. 🔍 Analysis  →  5. ⚖️ Compare  →  6. 🔬 Regression  →  7. 📋 Report
+                                      ⛔
+                                 MUST PASS
+```
+
+| # | Phase | Purpose | Gate? |
+|---|-------|---------|-------|
+| 1 | Pre-Flight | Gather context, create state file | - |
+| 2 | 🧪 Tests | Create/verify reproduction tests exist | - |
+| 3 | 🚦 Gate | Verify tests catch the bug | ⛔ MUST PASS |
+| 4 | 🔍 Analysis | Research root cause, design own fix | - |
+| 5 | ⚖️ Compare | Compare PR's fix vs alternative | - |
+| 6 | 🔬 Regression | Check edge cases, disagreements | - |
+| 7 | 📋 Report | Write final recommendation | - |
+
+### Phase Checklist (Track Your Progress)
+
+Before starting ANY phase, verify your state file shows the correct status:
+
+- [ ] **Phase 1: Pre-Flight** - Status should be `▶️ IN PROGRESS` or `✅ COMPLETE`
+- [ ] **Phase 2: 🧪 Tests** - Only start when Pre-Flight is `✅ COMPLETE`
+- [ ] **Phase 3: 🚦 Gate** - Only start when 🧪 Tests is `✅ COMPLETE`
+- [ ] **Phase 4: 🔍 Analysis** - Only start when 🚦 Gate is `✅ PASSED`
+- [ ] **Phase 5: ⚖️ Compare** - Only start when 🔍 Analysis is `✅ COMPLETE`
+- [ ] **Phase 6: 🔬 Regression** - Only start when ⚖️ Compare is `✅ COMPLETE`
+- [ ] **Phase 7: 📋 Report** - Only start when 🔬 Regression is `✅ COMPLETE`
+
+### 🚨 PHASE GATE CHECK (Apply Before EVERY Phase)
+
+**Before starting ANY phase, you MUST:**
+1. Read your state file: `.github/agent-pr-session/pr-XXXXX.md`
+2. Verify ALL prior phases show `✅ COMPLETE` or `✅ PASSED`
+3. Verify the CURRENT phase shows `▶️ IN PROGRESS`
+
+**If prior phases are NOT complete → STOP. Go back and complete them first.**
 
 ---
 
-## PRE-FLIGHT: Context Gathering
+## PRE-FLIGHT: Context Gathering (Phase 1)
 
 **🚨 CRITICAL: This is your FIRST action. Create the state file BEFORE doing anything else.**
+
+### Pre-Flight Scope
+
+**✅ What TO Do in Pre-Flight:**
+- Create/check state file
+- Read issue description and comments
+- Note platforms affected
+- Identify files changed (if PR exists)
+- Document disagreements and edge cases from comments
+
+**❌ What NOT To Do in Pre-Flight (save for later phases):**
+- Research git history for root cause → That's Phase 4: 🔍 Analysis
+- Design or implement fixes → That's Phase 4: 🔍 Analysis
+- Form opinions on the correct approach → That's Phase 4: 🔍 Analysis
+- Run tests → That's Phase 3: 🚦 Gate
 
 ### Step 0: Check for Existing State File or Create New One
 
@@ -331,11 +374,11 @@ Identify test type: **UI Tests** | **Device Tests** | **Unit Tests**
 
 ---
 
-## 🧪 TESTS: Create/Verify Reproduction Tests
+## 🧪 TESTS: Create/Verify Reproduction Tests (Phase 2)
 
 **Purpose:** Ensure tests exist that reproduce the issue before proceeding.
 
-**At start**: Verify state file shows 🧪 Tests with `▶️ IN PROGRESS` status.
+**⚠️ Gate Check:** Pre-Flight must be `✅ COMPLETE`. See "Phase Gate Check" above.
 
 ### Step 1: Check if Tests Already Exist
 
@@ -372,11 +415,11 @@ dotnet build src/Controls/tests/TestCases.Shared.Tests/TestCases.Shared.Tests.cs
 
 ---
 
-## 🚦 GATE: Verify Tests Catch the Issue
+## 🚦 GATE: Verify Tests Catch the Issue (Phase 3)
 
-**This phase MUST pass before continuing. If it fails, stop and request changes.**
+**⛔ This phase MUST pass before continuing. If it fails, stop and request changes.**
 
-**At start**: Verify state file shows 🚦 Gate with `▶️ IN PROGRESS` status.
+**⚠️ Gate Check:** 🧪 Tests must be `✅ COMPLETE`. See "Phase Gate Check" above.
 
 ### Identify Test Type (from Pre-Flight)
 
@@ -427,11 +470,9 @@ without the fix.
 
 ---
 
-## 🔍 ANALYSIS: Independent Analysis
+## 🔍 ANALYSIS: Independent Analysis (Phase 4)
 
-**Only proceed here if 🚦 Gate passed.**
-
-**At start**: Verify state file shows 🔍 Analysis with `▶️ IN PROGRESS` status.
+**⚠️ Gate Check:** 🚦 Gate must be `✅ PASSED` (not just complete). See "Phase Gate Check" above.
 
 ### Step 1: Review Pre-Flight Findings
 
@@ -484,9 +525,9 @@ git stash pop
 
 ---
 
-## ⚖️ COMPARE: Compare Approaches
+## ⚖️ COMPARE: Compare Approaches (Phase 5)
 
-**At start**: Verify state file shows ⚖️ Compare with `▶️ IN PROGRESS` status.
+**⚠️ Gate Check:** Phases 1-4 must be complete. See "Phase Gate Check" above.
 
 ### Compare PR's Fix vs Your Alternative
 
@@ -517,9 +558,9 @@ For your alternative:
 
 ---
 
-## 🔬 REGRESSION: Regression Testing
+## 🔬 REGRESSION: Regression Testing (Phase 6)
 
-**At start**: Verify state file shows 🔬 Regression with `▶️ IN PROGRESS` status.
+**⚠️ Gate Check:** Phases 1-5 must be complete. See "Phase Gate Check" above.
 
 ### Step 1: Check Edge Cases from Pre-Flight
 
@@ -567,9 +608,9 @@ If author expressed uncertainty (from pre-flight), investigate and provide guida
 
 ---
 
-## 📋 REPORT: Final Report
+## 📋 REPORT: Final Report (Phase 7)
 
-**At start**: Verify state file shows 📋 Report with `▶️ IN PROGRESS` status.
+**⚠️ Gate Check:** ALL phases 1-6 must be complete. See "Phase Gate Check" above.
 
 ### Write Final Report
 
@@ -600,6 +641,9 @@ Update the state file to its final format with collapsible sections. The final s
 
 ## Common Mistakes to Avoid
 
+- ❌ **Skipping phases or doing them out of order** - ALWAYS complete phases 1→2→3→4→5→6→7 in sequence
+- ❌ **Researching root cause during Pre-Flight** - Root cause analysis belongs in Phase 4 (🔍 Analysis), not Pre-Flight
+- ❌ **Implementing fixes before tests exist** - Create tests in Phase 2, verify in Phase 3, THEN fix in Phase 4
 - ❌ **Not creating state file first** - ALWAYS create `.github/agent-pr-session/pr-XXXXX.md` before gathering any context
 - ❌ **Not updating state file after each phase** - ALWAYS update status markers and check off items
 - ❌ **Ignoring prior agent reviews in PR comments** - If a comment contains a completed review (with phase table, Final Recommendation, etc.), import it as your state file content instead of starting fresh
