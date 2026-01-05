@@ -50,9 +50,9 @@
 		<None Include="$(ArtifactsBinDir)Controls.SourceGen\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.SourceGen.pdb" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
 		<None Include="$(ArtifactsBinDir)Controls.BindingSourceGen\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.BindingSourceGen.dll" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
 		<None Include="$(ArtifactsBinDir)Controls.BindingSourceGen\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.BindingSourceGen.pdb" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
+		<None Include="$(MibcOptimizationDataDir)**\*.mibc" Visible="false" Pack="true" PackagePath="mibc" Condition="'$(MibcOptimizationDataDir)' != '' and Exists('$(MibcOptimizationDataDir)')" />
 		<None Remove="$(OutputPath)*.xml" />
 		<None Include="nuget\**" PackagePath="" Pack="true" Exclude="nuget\**\*.aotprofile.txt" />
-		<None Include="$(MibcOptimizationDataDir)**\*.mibc" Visible="false" Pack="true" PackagePath="mibc" Condition="'$(MibcOptimizationDataDir)' != '' and Exists('$(MibcOptimizationDataDir)')" />
 	</ItemGroup>
 
 	<ItemGroup>
