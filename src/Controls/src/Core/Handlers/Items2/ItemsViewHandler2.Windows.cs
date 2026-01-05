@@ -126,22 +126,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			handler.UpdateItemsLayout();
 		}
-		
+
 		public static void MapHeader(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
 		{
 			handler.UpdateHeader();
 		}
-		
+
 		public static void MapHeaderTemplate(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
 		{
 			handler.UpdateHeader();
 		}
-		
+
 		public static void MapFooter(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
 		{
 			handler.UpdateFooter();
 		}
-		
+
 		public static void MapFooterTemplate(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
 		{
 			handler.UpdateFooter();
@@ -150,7 +150,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		protected override WItemsView CreatePlatformView()
 		{
 			var itemsView = SelectListViewBase();
-			
+
 			return itemsView;
 		}
 
@@ -197,7 +197,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					{
 						Source = TemplatedItemSourceFactory2.CreateGrouped(itemsSource, itemTemplate,
 							groupableItemsView.GroupHeaderTemplate, groupableItemsView.GroupFooterTemplate,
-							Element, mauiContext: MauiContext),IsSourceGrouped= false
+							Element, mauiContext: MauiContext),
+						IsSourceGrouped = false
 					};
 				}
 				else
@@ -255,7 +256,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			CleanUpCollectionViewSource();
 
-			
+
 
 			_collectionViewSource = CreateCollectionViewSource();
 			_itemsSource = _collectionViewSource?.Source as IList;
@@ -357,7 +358,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 				ScrollViewer.SetVerticalScrollMode(itemsView, UI.Xaml.Controls.ScrollMode.Disabled);
 				ScrollViewer.SetVerticalScrollBarVisibility(itemsView, WASDKScrollBarVisibility.Disabled);
-				
+
 				// Set header/footer to horizontal layout
 				itemsView.SetLayoutOrientation(true);
 			}
@@ -379,7 +380,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			UpdateItemsSource();
 
 			PlatformView.Layout = CreateItemsLayout();
-			
+
 			// Update header/footer orientation
 			if (PlatformView is MauiItemsView mauiItemsView && Layout is LinearItemsLayout linearLayout)
 			{
@@ -515,7 +516,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (emptyViewTemplate is not null)
 			{
 				// If EmptyViewTemplate is provided, use it instead of EmptyView
-				_emptyView = RealizeEmptyViewTemplate(emptyView, emptyViewTemplate);
+				_emptyView = ItemsViewExtensions.RealizeEmptyViewTemplate(emptyView, emptyViewTemplate, MauiContext!, ref _mauiEmptyView);
 			}
 			else if (emptyView is not null)
 			{
@@ -530,10 +531,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 						};
 						break;
 					case View view:
-						_emptyView = RealizeEmptyView(view);
+						_emptyView = ItemsViewExtensions.RealizeEmptyView(view, MauiContext!, ref _mauiEmptyView);
 						break;
 					default:
-						_emptyView = RealizeEmptyViewTemplate(emptyView, null); // Fallback
+						_emptyView = ItemsViewExtensions.RealizeEmptyViewTemplate(emptyView, null, MauiContext!, ref _mauiEmptyView);
 						break;
 				}
 			}
@@ -585,7 +586,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				_emptyViewDisplayed = false;
 			}
 		}
-		
+
 		void UpdateHeader()
 		{
 			if (Element is not StructuredItemsView structuredItemsView || PlatformView is null)
@@ -605,7 +606,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					{
 						mauiItemsView.HeaderVisibility = WVisibility.Collapsed;
 					}
-					
+
 					if (_mauiHeader is not null)
 					{
 						ItemsView.RemoveLogicalChild(_mauiHeader);
@@ -657,7 +658,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			_headerDisplayed = true;
 		}
-		
+
 		void UpdateFooter()
 		{
 			if (Element is not StructuredItemsView structuredItemsView || PlatformView is null)
@@ -677,7 +678,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					{
 						mauiItemsView.FooterVisibility = WVisibility.Collapsed;
 					}
-					
+
 					if (_mauiFooter is not null)
 					{
 						ItemsView.RemoveLogicalChild(_mauiFooter);
@@ -730,118 +731,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			_footerDisplayed = true;
 		}
 
-#nullable disable
-		FrameworkElement RealizeEmptyViewTemplate(object bindingContext, DataTemplate emptyViewTemplate)
-		{
-			if (emptyViewTemplate is null)
-			{
-				return new TextBlock
-				{
-					HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Center,
-					VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Center,
-					Text = bindingContext.ToString()
-				};
-			}
-
-			var template = emptyViewTemplate.SelectDataTemplate(bindingContext, null);
-			var view = template.CreateContent() as View;
-			view.BindingContext = bindingContext;
-
-			return RealizeEmptyView(view);
-		}
-
-		FrameworkElement RealizeEmptyView(View view)
-		{
-			_mauiEmptyView = view ?? throw new ArgumentNullException(nameof(view));
-
-			if (MauiContext is null)
-				throw new InvalidOperationException("MauiContext cannot be null when creating a handler.");
-
-			var handler = view.ToHandler(MauiContext);
-			var platformView = handler.ContainerView ?? handler.PlatformView;
-			return platformView;
-		}
-
-		FrameworkElement RealizeHeaderFooterTemplate(object bindingContext, DataTemplate template, ref View mauiView)
-		{
-			if (template is null)
-			{
-				return new TextBlock
-				{
-					Text = bindingContext.ToString(),
-					Margin = new Microsoft.UI.Xaml.Thickness(0, 5, 0, 5)
-				};
-			}
-
-			var dataTemplate = template.SelectDataTemplate(bindingContext, null);
-			var view = dataTemplate.CreateContent() as View;
-			view.BindingContext = bindingContext;
-
-			return RealizeHeaderFooterView(view, ref mauiView);
-		}
-
-		FrameworkElement RealizeHeaderFooterView(View view, ref View mauiView)
-		{
-			mauiView = view ?? throw new ArgumentNullException(nameof(view));
-
-			var handler = view.ToHandler(MauiContext);
-			var platformView = handler.ContainerView ?? handler.PlatformView;
-
-			return platformView;
-		}
-#nullable enable
-
 		void UpdateVerticalScrollBarVisibility()
 		{
-			if (Element.VerticalScrollBarVisibility != ScrollBarVisibility.Default)
-			{
-				// If the value is changing to anything other than the default, record the default 
-				if (_defaultVerticalScrollVisibility is null)
-				{
-					ScrollViewer.SetVerticalScrollBarVisibility(PlatformView, WASDKScrollBarVisibility.Visible);
-				}
-			}
-
-			if (_defaultVerticalScrollVisibility is null)
-			{
-				// If the default has never been recorded, then this has never been set to anything but the 
-				// default value; there's nothing to do.
-				return;
-			}
-
-			switch (Element.VerticalScrollBarVisibility)
-			{
-				case (ScrollBarVisibility.Always):
-					ScrollViewer.SetVerticalScrollBarVisibility(PlatformView, WASDKScrollBarVisibility.Visible);
-					break;
-				case (ScrollBarVisibility.Never):
-					ScrollViewer.SetVerticalScrollBarVisibility(PlatformView, WASDKScrollBarVisibility.Hidden);
-					break;
-				case (ScrollBarVisibility.Default):
-					ScrollViewer.SetVerticalScrollBarVisibility(PlatformView, _defaultVerticalScrollVisibility.Value);
-					break;
-			}
+			ItemsViewExtensions.UpdateVerticalScrollBarVisibility(
+				PlatformView,
+				Element.VerticalScrollBarVisibility,
+				ref _defaultVerticalScrollVisibility);
 		}
 
 		void UpdateHorizontalScrollBarVisibility()
 		{
-			if (_defaultHorizontalScrollVisibility is null)
-			{
-				_defaultHorizontalScrollVisibility = ScrollViewer.GetHorizontalScrollBarVisibility(PlatformView);
-			}
-
-			switch (Element.HorizontalScrollBarVisibility)
-			{
-				case (ScrollBarVisibility.Always):
-					ScrollViewer.SetHorizontalScrollBarVisibility(PlatformView, WASDKScrollBarVisibility.Visible);
-					break;
-				case (ScrollBarVisibility.Never):
-					ScrollViewer.SetHorizontalScrollBarVisibility(PlatformView, WASDKScrollBarVisibility.Hidden);
-					break;
-				case (ScrollBarVisibility.Default):
-					ScrollViewer.SetHorizontalScrollBarVisibility(PlatformView, _defaultHorizontalScrollVisibility.Value);
-					break;
-			}
+			ItemsViewExtensions.UpdateHorizontalScrollBarVisibility(
+				PlatformView,
+				Element.HorizontalScrollBarVisibility,
+				ref _defaultHorizontalScrollVisibility);
 		}
 
 		void PointerScrollChanged(object sender, PointerRoutedEventArgs e)
