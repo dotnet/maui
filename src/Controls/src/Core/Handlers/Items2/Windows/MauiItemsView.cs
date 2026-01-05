@@ -106,7 +106,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 		}
 		
-		public void SetHeader(FrameworkElement header, View mauiHeader)
+		public void SetHeader(FrameworkElement header, View? mauiHeader)
 		{
 			_header = header;
 			_mauiHeader = mauiHeader;
@@ -118,7 +118,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 		}
 		
-		public void SetFooter(FrameworkElement footer, View mauiFooter)
+		public void SetFooter(FrameworkElement footer, View? mauiFooter)
 		{
 			_footer = footer;
 			_mauiFooter = mauiFooter;
