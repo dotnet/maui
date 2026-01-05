@@ -247,13 +247,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				CustomizableViewControllers = Array.Empty<UIViewController>();
 
 				// Apply initial IsEnabled state for each tab item
-				if (TabBar.Items.Length >= items.Count)
-				{
-					for (int tabIndex = 0; tabIndex < items.Count; tabIndex++)
-					{
-						TabBar.Items[tabIndex].Enabled = items[tabIndex].IsEnabled;
-					}
-				}
+				SetTabItemsEnabledState();
 
 				if (goTo)
 					GoTo(ShellItem.CurrentItem);
@@ -299,6 +293,28 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			renderer.ShellSection.PropertyChanged += OnShellSectionPropertyChanged;
 		}
 
+		void SetTabItemsEnabledState()
+		{
+			if (TabBar?.Items is null)
+			{
+				return;
+			}
+
+			var items = ShellItemController.GetItems();
+			if (items is null)
+			{
+				return;
+			}
+
+			if (TabBar.Items.Length >= items.Count)
+			{
+				for (int tabIndex = 0; tabIndex < items.Count; tabIndex++)
+				{
+					TabBar.Items[tabIndex].Enabled = items[tabIndex].IsEnabled;
+				}
+			}
+		}
+
 		void CreateTabRenderers()
 		{
 			if (ShellItem.CurrentItem == null)
@@ -325,13 +341,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			CustomizableViewControllers = Array.Empty<UIViewController>();
 
 			// Apply initial IsEnabled state for newly added tab items
-			if (TabBar.Items.Length >= items.Count)
-			{
-				for (int tabIndex = 0; tabIndex < items.Count; tabIndex++)
-				{
-					TabBar.Items[tabIndex].Enabled = items[tabIndex].IsEnabled;
-				}
-			}
+			SetTabItemsEnabledState();
 
 			UpdateTabBarHidden();
 
