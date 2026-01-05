@@ -68,46 +68,72 @@ fi
 
 **If the file does NOT exist**: Create it with the template structure:
 
-```bash
-# Create the state file immediately with the template
-cat > .github/agent-pr-session/pr-XXXXX.md << 'EOF'
-# PR Session: #XXXXX - [Issue Title TBD]
+```markdown
+# PR Review: #XXXXX - [Issue Title TBD]
 
-**Date:** [TODAY]
-**Issue:** https://github.com/dotnet/maui/issues/XXXXX
-**Existing PR:** [link if exists, or "None"]
+**Date:** [TODAY] | **Issue:** [#XXXXX](https://github.com/dotnet/maui/issues/XXXXX) | **PR:** [#YYYYY](https://github.com/dotnet/maui/pull/YYYYY) or None
+
+## ⏳ Status: IN PROGRESS
+
+| Phase | Status |
+|-------|--------|
+| Pre-Flight | ▶️ IN PROGRESS |
+| Phase 0 (Gate) | ⏳ PENDING |
+| Phase 1 (Analysis) | ⏳ PENDING |
+| Phase 2 (Compare) | ⏳ PENDING |
+| Phase 3 (Regression) | ⏳ PENDING |
+| Phase 4 (Report) | ⏳ PENDING |
 
 ---
 
-## Issue Summary
+<details>
+<summary><strong>📋 Issue Summary</strong></summary>
+
 [From issue body]
 
-## Key Comments
-[Notable comments from issue discussion]
+**Steps to Reproduce:**
+1. [Step 1]
+2. [Step 2]
 
-## Existing PR Notes (if applicable)
-- **PR Link:** #YYYYY
-- **PR Status:** [Draft/Open/Changes Requested]
-- **Reviewer Feedback:** [Key points from review comments]
-- **Inline Comments:** [Unresolved discussions]
-- **Author Concerns:** [Any uncertainty expressed]
-
-## Platforms Affected
+**Platforms Affected:**
 - [ ] iOS
 - [ ] Android
 - [ ] Windows
 - [ ] MacCatalyst
 
----
+</details>
 
-## Pre-Flight
-**Status**: ▶️ IN PROGRESS
+<details>
+<summary><strong>📁 Files Changed</strong></summary>
 
-[Will be populated after gathering context]
+| File | Type | Changes |
+|------|------|---------|
+| `path/to/fix.cs` | Fix | +X lines |
+| `path/to/test.cs` | Test | +Y lines |
 
----
+</details>
 
-## Phase 0: Gate
+<details>
+<summary><strong>💬 PR Discussion Summary</strong></summary>
+
+**Key Comments:**
+- [Notable comments from issue/PR discussion]
+
+**Reviewer Feedback:**
+- [Key points from review comments]
+
+**Disagreements to Investigate:**
+| File:Line | Reviewer Says | Author Says | Status |
+|-----------|---------------|-------------|--------|
+
+**Author Uncertainty:**
+- [Areas where author expressed doubt]
+
+</details>
+
+<details>
+<summary><strong>🔬 Phase 0: Gate - Test Verification</strong></summary>
+
 **Status**: ⏳ PENDING
 
 - [ ] Tests PASS with fix
@@ -115,48 +141,66 @@ cat > .github/agent-pr-session/pr-XXXXX.md << 'EOF'
 - [ ] Tests FAIL without fix
 - [ ] Fix files restored
 
-**Result**: [PENDING]
+**Result:** [PENDING]
 
----
+</details>
 
-## Phase 1: Analysis
+<details>
+<summary><strong>🔍 Phase 1: Independent Analysis</strong></summary>
+
 **Status**: ⏳ PENDING
 
 - [ ] Reviewed pre-flight findings
 - [ ] Researched git history for root cause
 - [ ] Formed independent opinion on fix approach
 
-**Root Cause**: [PENDING]
-**My Approach**: [PENDING]
+**Root Cause:** [PENDING]
+
+**Alternative Approaches Considered:**
+| Alternative | Location | Why NOT to use |
+|-------------|----------|----------------|
+
+**My Approach:** [PENDING]
+
+</details>
+
+<details>
+<summary><strong>⚖️ Phase 2: Compare Approaches</strong></summary>
+
+**Status**: ⏳ PENDING
+
+| Approach | Test Result | Lines Changed | Complexity | Recommendation |
+|----------|-------------|---------------|------------|----------------|
+| PR's fix | | | | |
+| My approach | | | | |
+
+**Recommendation:** [PENDING]
+
+</details>
+
+<details>
+<summary><strong>🧪 Phase 3: Regression Testing</strong></summary>
+
+**Status**: ⏳ PENDING
+
+**Edge Cases Verified:**
+- [ ] [Edge case 1]
+- [ ] [Edge case 2]
+
+**Disagreements Investigated:**
+- [Findings]
+
+**Potential Regressions:** [PENDING]
+
+</details>
 
 ---
 
-## Phase 2: Compare
-**Status**: ⏳ PENDING
+**Final Recommendation:** ⏳ PENDING
 
-- [ ] Compared PR's fix vs my approach
-- [ ] Documented recommendation
-
-**Recommendation**: [PENDING]
-
----
-
-## Phase 3: Regression
-**Status**: ⏳ PENDING
-
-### Edge Cases (from pre-flight)
-[PENDING]
-
-### Disagreements Investigated
-[PENDING]
-
----
-
-## Phase 4: Report
-**Status**: ⏳ PENDING
-
-**Final Recommendation**: ⏳ PENDING
-EOF
+**Justification:**
+1. [Reason 1]
+2. [Reason 2]
 ```
 
 This file:
@@ -443,24 +487,31 @@ If author expressed uncertainty (from pre-flight), investigate and provide guida
 
 ## PHASE 4: Report
 
-**At start**: Verify state file shows `## Phase 4: Report` with `▶️ IN PROGRESS` status.
+**At start**: Verify state file shows Phase 4 with `▶️ IN PROGRESS` status in the status table.
 
-### Write Detailed Review
+### Write Final Report
 
-Update the state file with your final review. The executive summary should include:
-- Pre-flight summary (linked issue, test type, disagreements count, edge cases count)
-- Phase 0 result (tests validated)
-- Phase 1 findings (root cause, your approach)
-- Phase 2 comparison table (PR fix vs alternative)
-- Phase 3 results (edge cases checked, disagreements resolved)
-- **Final Recommendation**: `✅ Approve` or `⚠️ Request Changes` with justification
+Update the state file to its final format with collapsible sections. The final structure should be:
+
+1. **Header** with date, issue link, PR link - always visible
+2. **Final Recommendation** summary table - always visible
+3. **Collapsible sections** for each phase's details:
+   - 📋 Issue Summary
+   - 📁 Files Changed
+   - 💬 PR Discussion Summary
+   - 🔬 Phase 0: Gate - Test Verification
+   - 🔍 Phase 1: Independent Analysis
+   - ⚖️ Phase 2: Compare Approaches
+   - 🧪 Phase 3: Regression Testing
+4. **Justification** bullet points - always visible
 
 ### Complete Phase 4
 
 **Update state file**:
-1. Fill in **Final Recommendation** with `✅ Approve` or `⚠️ Request Changes`
-2. Change `## Phase 4: Report` status to `✅ PASSED`
-3. Review is complete - present final recommendation to user
+1. Change header status from `⏳ Status: IN PROGRESS` to `✅ Final Recommendation: APPROVE` or `⚠️ Final Recommendation: REQUEST CHANGES`
+2. Update the status table to show all phases as `✅ PASSED`
+3. Fill in justification bullet points
+4. Review is complete - present final recommendation to user
 
 ---
 
