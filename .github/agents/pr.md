@@ -40,13 +40,18 @@ You are an end-to-end agent that takes a GitHub issue from investigation through
 
 ### Step 0: Check for Existing State File or Create New One
 
-**Before fetching any data, check if `pr-XXXXX-review.md` already exists.**
+**State file location**: `/.github/agent-pr-session/pr-XXXXX.md`
+
+- **Initial name**: `pr-XXXXX.md` where XXXXX is issue number (placeholder)
+- **After PR created**: Rename to actual PR number (e.g., `pr-12345.md`)
+- **Committed to repo**: Yes, tracked in git
 
 ```bash
 # Check if state file exists
-if [ -f "pr-XXXXX-review.md" ]; then
-    echo "State file exists - resuming review"
-    cat pr-XXXXX-review.md
+mkdir -p .github/agent-pr-session
+if [ -f ".github/agent-pr-session/pr-XXXXX.md" ]; then
+    echo "State file exists - resuming session"
+    cat .github/agent-pr-session/pr-XXXXX.md
 else
     echo "Creating new state file"
 fi
@@ -61,12 +66,33 @@ fi
 
 ```bash
 # Create the state file immediately with the template
-cat > pr-XXXXX-review.md << 'EOF'
-# PR Review: #XXXXX - [Title TBD]
+cat > .github/agent-pr-session/pr-XXXXX.md << 'EOF'
+# PR Session: #XXXXX - [Issue Title TBD]
 
-**Date:** [TODAY]  
-**Reviewer:** pr-reviewer agent  
-**PR Link:** https://github.com/dotnet/maui/pull/XXXXX
+**Date:** [TODAY]
+**Issue:** https://github.com/dotnet/maui/issues/XXXXX
+**Existing PR:** [link if exists, or "None"]
+
+---
+
+## Issue Summary
+[From issue body]
+
+## Key Comments
+[Notable comments from issue discussion]
+
+## Existing PR Notes (if applicable)
+- **PR Link:** #YYYYY
+- **PR Status:** [Draft/Open/Changes Requested]
+- **Reviewer Feedback:** [Key points from review comments]
+- **Inline Comments:** [Unresolved discussions]
+- **Author Concerns:** [Any uncertainty expressed]
+
+## Platforms Affected
+- [ ] iOS
+- [ ] Android
+- [ ] Windows
+- [ ] MacCatalyst
 
 ---
 
@@ -133,6 +159,7 @@ This file:
 - Serves as your TODO list for all phases
 - Tracks progress if interrupted
 - Must exist before you start gathering context
+- Gets committed to `/.github/agent-pr-session/` directory
 
 **Then gather context and update the file as you go.**
 
@@ -178,7 +205,7 @@ gh api "repos/dotnet/maui/pulls/XXXXX/comments" --jq '.[] | "File: \(.path):\(.l
 
 ### Step 5: Document Key Findings
 
-Create/update the review state file `pr-XXXXX-review.md`:
+Create/update the state file `.github/agent-pr-session/pr-XXXXX.md`:
 
 **Disagreements** - Where reviewer and author disagree:
 | File:Line | Reviewer Says | Author Says | Status |
@@ -278,7 +305,7 @@ without the fix.
 
 ### Step 1: Review Pre-Flight Findings
 
-Before analyzing code, review your `pr-XXXXX-review.md`:
+Before analyzing code, review your `.github/agent-pr-session/pr-XXXXX.md`:
 - What is the user-reported symptom? (from linked issue)
 - What are the key disagreements? (from inline comments)
 - What edge cases were mentioned? (from discussion)
@@ -366,7 +393,7 @@ For your alternative:
 
 ### Step 1: Check Edge Cases from Pre-Flight
 
-Go through each edge case identified during pre-flight (from `pr-XXXXX-review.md`):
+Go through each edge case identified during pre-flight (from `.github/agent-pr-session/pr-XXXXX.md`):
 
 ```markdown
 ### Edge Cases from Discussion
@@ -379,7 +406,7 @@ Go through each edge case identified during pre-flight (from `pr-XXXXX-review.md
 For each disagreement between reviewers and author (from pre-flight):
 1. Understand both positions
 2. Test to determine who is correct
-3. Document your finding in `pr-XXXXX-review.md`
+3. Document your finding in `.github/agent-pr-session/pr-XXXXX.md`
 
 ### Step 3: Verify Author's Uncertain Areas
 
@@ -435,7 +462,7 @@ Update the state file with your final review. The executive summary should inclu
 
 ## Common Mistakes to Avoid
 
-- ❌ **Not creating state file first** - ALWAYS create `pr-XXXXX-review.md` before gathering any context
+- ❌ **Not creating state file first** - ALWAYS create `.github/agent-pr-session/pr-XXXXX.md` before gathering any context
 - ❌ **Not updating state file after each phase** - ALWAYS update status markers and check off items
 - ❌ **Looking at PR diff before analyzing the issue** - Form your own opinion first
 - ❌ **Skipping Phase 0 gate** - Always verify tests actually catch the bug
