@@ -102,6 +102,8 @@ function Invoke-GitHubWithRetry {
     
     while ($retryCount -lt $MaxRetries) {
         try {
+            # Reset LASTEXITCODE before running command
+            $global:LASTEXITCODE = 0
             $result = Invoke-Expression $Command 2>&1
             if ($LASTEXITCODE -eq 0) {
                 return $result
@@ -136,13 +138,41 @@ function Invoke-GitHubWithRetry {
     throw "Failed to $Description after $MaxRetries attempts"
 }
 
+# Check if we have read:project scope by testing a simple query with projectItems
+$hasProjectScope = $true
+Write-Host ""
+Write-Host "Checking GitHub token scopes..." -ForegroundColor Cyan
+try {
+    $testResult = gh pr list --repo dotnet/maui --state open --limit 1 --json projectItems 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        if ($testResult -match "read:project") {
+            $hasProjectScope = $false
+            Write-Host ""
+            Write-Host "╔═══════════════════════════════════════════════════════════════════════════════╗" -ForegroundColor Yellow
+            Write-Host "║  NOTE: Your GitHub token is missing the 'read:project' scope.                 ║" -ForegroundColor Yellow
+            Write-Host "║  Project board data will not be available for PR prioritization.              ║" -ForegroundColor Yellow
+            Write-Host "║                                                                               ║" -ForegroundColor Yellow
+            Write-Host "║  To enable project data, run:  gh auth refresh -s read:project                ║" -ForegroundColor Yellow
+            Write-Host "╚═══════════════════════════════════════════════════════════════════════════════╝" -ForegroundColor Yellow
+            Write-Host ""
+        }
+    }
+}
+catch {
+    $hasProjectScope = $false
+}
+
+# Build the JSON fields list based on available scopes
+$baseFields = "number,title,labels,createdAt,isDraft,author,additions,deletions,changedFiles,milestone,url,reviewDecision,reviews"
+$jsonFields = if ($hasProjectScope) { "$baseFields,projectItems" } else { $baseFields }
+
 # Fetch all open non-draft PRs from dotnet/maui
 Write-Host ""
 Write-Host "Fetching open PRs from dotnet/maui..." -ForegroundColor Cyan
 
 $allPRs = @()
 try {
-    $prResult = Invoke-GitHubWithRetry -Command 'gh pr list --repo dotnet/maui --state open --limit 200 --json number,title,labels,createdAt,isDraft,author,additions,deletions,changedFiles,milestone,url,reviewDecision,reviews,projectItems' -Description "fetch PRs from dotnet/maui"
+    $prResult = Invoke-GitHubWithRetry -Command "gh pr list --repo dotnet/maui --state open --limit 200 --json $jsonFields" -Description "fetch PRs from dotnet/maui"
     $allPRs = $prResult | ConvertFrom-Json
     
     # Filter out drafts
@@ -161,7 +191,7 @@ Write-Host "Fetching open PRs from dotnet/docs-maui..." -ForegroundColor Cyan
 
 $docsMauiPRs = @()
 try {
-    $docsResult = Invoke-GitHubWithRetry -Command 'gh pr list --repo dotnet/docs-maui --state open --limit 100 --json number,title,labels,createdAt,isDraft,author,additions,deletions,changedFiles,milestone,url,reviewDecision,reviews,projectItems' -Description "fetch PRs from dotnet/docs-maui"
+    $docsResult = Invoke-GitHubWithRetry -Command "gh pr list --repo dotnet/docs-maui --state open --limit 100 --json $jsonFields" -Description "fetch PRs from dotnet/docs-maui"
     $docsMauiPRs = $docsResult | ConvertFrom-Json
     
     # Filter out drafts
