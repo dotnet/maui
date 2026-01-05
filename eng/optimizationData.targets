@@ -5,48 +5,32 @@
     https://github.com/dotnet/runtime/blob/main/eng/restore/optimizationData.targets
   -->
 
-  <PropertyGroup>
-    <_MibcTargetPlatform>$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))</_MibcTargetPlatform>
-    <_MibcTargetArchitecture Condition="'$(RuntimeIdentifier)' != ''">$(RuntimeIdentifier.Split('-')[1])</_MibcTargetArchitecture>
-  </PropertyGroup>
-
   <ItemGroup>
-    <!-- Mibc data to use when exact architecture match is available -->
     <!-- TODO: Use android MIBC profile once available. -->
     <MIBCPackageDef Include="optimization.linux-arm64.MIBC.Runtime"
                     Version="$(optimizationlinuxarm64MIBCRuntimePackageVersion)"
                     MibcArchitecture="android/arm64" />
 
-    <!-- Mibc data to use when exact architecture match not available -->
-    <!-- TODO: Use android MIBC profile once available. -->
-    <MIBCPackageDef Include="optimization.linux-arm64.MIBC.Runtime"
-                Version="$(optimizationlinuxarm64MIBCRuntimePackageVersion)"
-                MibcArchitecture="android" />
-
-    <!-- Use the package that matches the target platform and architecture -->
-    <MIBCPackage Include="@(MIBCPackageDef->HasMetadata('MibcArchitecture')->WithMetadataValue('MibcArchitecture','$(_MibcTargetPlatform)/$(_MibcTargetArchitecture)'))" />
-    <MIBCPackage Include="@(MIBCPackageDef->HasMetadata('MibcArchitecture')->WithMetadataValue('MibcArchitecture','$(_MibcTargetPlatform)'))" Condition="'@(MIBCPackage)' == ''" />
-
-    <!-- Use PackageDownload to restore the MIBC package -->
-    <PackageDownload Include="@(MIBCPackage)" Version="[%(Version)]" />
+    <!-- Restore all MIBC packages (distinct by identity) -->
+    <PackageDownload Include="@(MIBCPackageDef->Distinct())" Version="[%(Version)]" />
   </ItemGroup>
 
   <!-- IBC data packages don't follow NuGet conventions.  -->
   <Target Name="GetMIBCData"
           AfterTargets="Restore"
-          Condition="'@(MIBCPackage)' != ''">
+          Condition="'@(MIBCPackageDef)' != ''">
 
     <PropertyGroup>
       <_MergeMibcFilesCacheFile>$(MibcOptimizationDataDir)$(_MibcTargetPlatform)/$(_MibcTargetArchitecture)/merge_mibc_files.cache</_MergeMibcFilesCacheFile>
     </PropertyGroup>
     <ItemGroup>
-      <MIBCPackage>
-        <PackagePath>$(NuGetPackageRoot)%(MIBCPackage.Identity)/%(MIBCPackage.Version)</PackagePath>
-      </MIBCPackage>
-      <_optimizationMibcFile Include="%(MIBCPackage.PackagePath)/**/*.mibc" SubdirectoryName="$(_MibcTargetPlatform)/$(_MibcTargetArchitecture)" />
+      <MIBCPackageDef>
+        <PackagePath>$(NuGetPackageRoot)%(MIBCPackageDef.Identity)/%(MIBCPackageDef.Version)</PackagePath>
+      </MIBCPackageDef>
+      <_optimizationMibcFile Include="%(MIBCPackageDef.PackagePath)/**/*.mibc" SubdirectoryName="%(MIBCPackageDef.MibcArchitecture)" />
       <_optimizationMibcDestinationFile Include="@(_optimizationMibcFile->'$(MibcOptimizationDataDir)%(SubdirectoryName)/%(RecursiveDir)%(Filename)%(Extension)')" />
       <ExcessFilesCurrentlyPresent Include="$(MibcOptimizationDataDir)/**" 
-                                   Exclude="@(_optimizationMibcDestinationFile);$(_MergeMibcFilesCacheFile)"/>
+                                   Exclude="@(_optimizationMibcDestinationFile)"/>
     </ItemGroup>
 
     <Error Condition="'@(_optimizationMibcFile)' == ''" Text="Failed to restore Mibc optimization data" />
