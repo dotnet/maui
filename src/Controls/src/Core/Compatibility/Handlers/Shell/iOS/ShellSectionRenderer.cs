@@ -69,6 +69,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		IShellSectionRootRenderer _renderer;
 		ShellSection _shellSection;
 		bool _ignorePopCall;
+		bool _popRequested;
 
 		// When setting base.ViewControllers iOS doesn't modify the property right away. 
 		// if you set base.ViewControllers to a new array and then retrieve base.ViewControllers
@@ -108,6 +109,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		[Internals.Preserve(Conditional = true)]
 		bool DidPopItem(UINavigationBar _, UINavigationItem __)
 		{
+			// If pop was NOT explicitly requested (user-initiated like long-press), delegate to SendPop
+			// SendPop() calls GoToAsync which properly triggers navigation events
+			if (!_popRequested)
+				return SendPop();
+
+			// For programmatic pops (_popRequested == true), do manual synchronization with null checks
 			// Check for null references
 			if (_shellSection?.Stack is null || NavigationBar?.Items is null)
 				return true;
@@ -434,6 +441,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual async void OnPopRequested(NavigationRequestedEventArgs e)
 		{
+			_popRequested = true;
 			var page = e.Page;
 			var animated = e.Animated;
 
@@ -474,6 +482,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual async void OnPopToRootRequested(NavigationRequestedEventArgs e)
 		{
+			_popRequested = true;
 			var animated = e.Animated;
 			var task = new TaskCompletionSource<bool>();
 			var pages = _shellSection.Stack.ToList();
@@ -577,7 +586,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			foreach (var child in ShellSection.Stack)
 			{
-				if (child?.Handler is IPlatformViewHandler { ViewController: var vc } && viewController == vc)
+				if (child?.Handler is IPlatformViewHandler handler && viewController == handler.ViewController)
 					return child;
 			}
 
@@ -628,6 +637,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public override void PushViewController(UIViewController viewController, bool animated)
 		{
 			_pendingViewControllers = null;
+			_popRequested = false;
 			if (IsInMoreTab && ParentViewController is UITabBarController tabBarController)
 			{
 				tabBarController.MoreNavigationController.PushViewController(viewController, animated);
