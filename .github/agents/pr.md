@@ -268,6 +268,30 @@ gh pr view XXXXX --json reviews --jq '.reviews[] | "Reviewer: \(.author.login) [
 gh api "repos/dotnet/maui/pulls/XXXXX/comments" --jq '.[] | "File: \(.path):\(.line // .original_line)\nAuthor: \(.user.login)\n\(.body)\n---"'
 ```
 
+**4d. Detect Prior Agent Reviews** (CRITICAL - check for existing completed work!):
+```bash
+# Check if any comment contains a prior agent review
+gh pr view XXXXX --json comments --jq '.comments[] | select(.body | contains("Final Recommendation") and contains("| Phase | Status |")) | .body'
+```
+
+**Signs of a prior agent review in comments:**
+- Contains phase status table (`| Phase | Status |`)
+- Contains `✅ Final Recommendation: APPROVE` or `⚠️ Final Recommendation: REQUEST CHANGES`
+- Contains collapsible `<details>` sections with phase content
+- Contains structured analysis (Root Cause, Platform Comparison, etc.)
+
+**If prior agent review found:**
+1. **Extract and use as state file content** - The review IS the completed state
+2. Parse the phase statuses to determine what's already done
+3. Import all findings (root cause, comparisons, regression results)
+4. Update your local state file with this content
+5. Resume from whichever phase is not yet complete (or report as done)
+
+**Do NOT:**
+- Start from scratch if a complete review already exists
+- Treat the prior review as just "reference material"
+- Re-do phases that are already marked `✅ PASSED`
+
 ### Step 5: Document Key Findings
 
 Create/update the state file `.github/agent-pr-session/pr-XXXXX.md`:
@@ -578,6 +602,7 @@ Update the state file to its final format with collapsible sections. The final s
 
 - ❌ **Not creating state file first** - ALWAYS create `.github/agent-pr-session/pr-XXXXX.md` before gathering any context
 - ❌ **Not updating state file after each phase** - ALWAYS update status markers and check off items
+- ❌ **Ignoring prior agent reviews in PR comments** - If a comment contains a completed review (with phase table, Final Recommendation, etc.), import it as your state file content instead of starting fresh
 - ❌ **Looking at PR diff before analyzing the issue** - Form your own opinion first
 - ❌ **Skipping 🚦 Gate** - Always verify tests actually catch the bug
 - ❌ **Assuming the PR's fix is correct** - That's the whole point of this agent
