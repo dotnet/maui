@@ -38,6 +38,7 @@ public class Issue33331 : ContentPage
         {
             Padding = new Thickness(16),
             Spacing = 12,
+            VerticalOptions = LayoutOptions.Center,
             Children =
                 {
                     _testPicker,

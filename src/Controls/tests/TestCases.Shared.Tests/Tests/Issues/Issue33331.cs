@@ -23,15 +23,7 @@ public class Issue33331 : _IssuesUITest
         Assert.That(initialLabel, Is.EqualTo("IsOpen: False"));
 
         App.Tap("OpenPickerButton");
-
-#if ANDROID
-		App.Tap("Cancel");
-#elif IOS || MACCATALYST
-        // On iOS, tap Done button
-        App.Tap("Done");
-#endif
-
-        // Verify IsOpen changed back to false
+        App.ClosePicker(windowsTapx: 250, windowsTapy: 250);
         App.WaitForElement("IsOpenLabel");
         var closedLabel = App.FindElement("IsOpenLabel").GetText();
         Assert.That(closedLabel, Is.EqualTo("IsOpen: False"));
