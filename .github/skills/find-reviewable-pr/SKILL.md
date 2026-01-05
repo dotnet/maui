@@ -84,7 +84,16 @@ pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1 -Limit 5
 
 **Why no fallbacks?** Ad-hoc queries bypass the milestone prioritization logic and will return incorrectly ordered results (e.g., SR4 PRs before SR3 PRs).
 
-### Step 2: Present ONE PR at a Time
+### Step 2: Check for Warnings
+
+**IMPORTANT**: If the script output contains a warning about missing `read:project` scope, you MUST include this warning at the TOP of your response to the user:
+
+```
+⚠️ **Note**: Your GitHub token is missing the `read:project` scope. Project board data is not available.
+To enable: `gh auth refresh -s read:project`
+```
+
+### Step 3: Present ONE PR at a Time
 
 When user asks to review, present only ONE PR in this format:
 
@@ -109,7 +118,7 @@ When user asks to review, present only ONE PR in this format:
 Would you like me to review this PR?
 ```
 
-### Step 3: Invoke PR Reviewer
+### Step 4: Invoke PR Reviewer
 
 When user confirms, use the **pr-reviewer** agent:
 - "Review PR #XXXXX"
