@@ -62,10 +62,10 @@
     <MicrosoftiOSSdknet110_262PackageVersion>26.2.11231-ci.net11-0</MicrosoftiOSSdknet110_262PackageVersion>
     <MicrosofttvOSSdknet110_262PackageVersion>26.2.11231-ci.net11-0</MicrosofttvOSSdknet110_262PackageVersion>
     <!-- This is a subscription of the .NET 10 latest stable versions of our packages -->
-    <MicrosoftMacCatalystSdknet100_261PackageVersion>26.1.10516</MicrosoftMacCatalystSdknet100_261PackageVersion>
-    <MicrosoftmacOSSdknet100_261PackageVersion>26.1.10516</MicrosoftmacOSSdknet100_261PackageVersion>
-    <MicrosoftiOSSdknet100_261PackageVersion>26.1.10516</MicrosoftiOSSdknet100_261PackageVersion>
-    <MicrosofttvOSSdknet100_261PackageVersion>26.1.10516</MicrosofttvOSSdknet100_261PackageVersion>
+    <MicrosoftMacCatalystSdknet100_262PackageVersion>26.2.10192</MicrosoftMacCatalystSdknet100_262PackageVersion>
+    <MicrosoftmacOSSdknet100_262PackageVersion>26.2.10192</MicrosoftmacOSSdknet100_262PackageVersion>
+    <MicrosoftiOSSdknet100_262PackageVersion>26.2.10192</MicrosoftiOSSdknet100_262PackageVersion>
+    <MicrosofttvOSSdknet100_262PackageVersion>26.2.10192</MicrosofttvOSSdknet100_262PackageVersion>
     <!-- This is a subscription of the .NET 9 latest stable versions of our packages -->
     <MicrosoftMacCatalystSdknet90_260PackageVersion>26.0.9754</MicrosoftMacCatalystSdknet90_260PackageVersion>
     <MicrosoftmacOSSdknet90_260PackageVersion>26.0.9754</MicrosoftmacOSSdknet90_260PackageVersion>
