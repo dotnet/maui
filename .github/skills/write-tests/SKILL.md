@@ -1,11 +1,11 @@
 ---
 name: write-tests
-description: Creates UI tests for a GitHub issue. Generates HostApp page and NUnit test files following MAUI conventions. Use when PR lacks tests or tests need to be created for an issue.
+description: Creates UI tests for a GitHub issue and verifies they reproduce the bug. Iterates until tests actually fail (proving they catch the issue). Use when PR lacks tests or tests need to be created for an issue.
 ---
 
 # Write Tests Skill
 
-Creates UI tests that reproduce a GitHub issue, following .NET MAUI conventions.
+Creates UI tests that reproduce a GitHub issue, following .NET MAUI conventions. **Verifies the tests actually fail before completing.**
 
 ## When to Use
 
@@ -116,15 +116,34 @@ public class IssueXXXXX : _IssuesUITest
 ### Step 4: Verify Files Compile
 
 ```bash
-dotnet build src/Controls/tests/TestCases.HostApp/Maui.Controls.Sample.HostApp.csproj -c Debug -f net10.0-android --no-restore -v q
-dotnet build src/Controls/tests/TestCases.Shared.Tests/TestCases.Shared.Tests.csproj -c Debug --no-restore -v q
+dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -c Debug -f net10.0-android --no-restore -v q
+dotnet build src/Controls/tests/TestCases.Shared.Tests/Controls.TestCases.Shared.Tests.csproj -c Debug --no-restore -v q
 ```
+
+### Step 5: Verify Tests Reproduce the Bug ⚠️ CRITICAL
+
+**Tests must FAIL to prove they catch the bug.** Run verification:
+
+```bash
+pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 -Platform ios -TestFilter "IssueXXXXX"
+```
+
+The script auto-detects that only test files exist (no fix files) and runs in "verify failure only" mode.
+
+**If tests FAIL** → ✅ Success! Tests correctly reproduce the bug.
+
+**If tests PASS** → ❌ Your test is wrong. Go back to Step 2 and fix:
+- Review test scenario against issue description
+- Ensure test actions match reproduction steps
+- Update and rerun until tests FAIL
+
+**Do NOT mark this skill complete until tests FAIL.**
 
 ## Output
 
-After completion, report:
+After completion (tests verified to fail), report:
 ```markdown
-✅ Tests created for Issue #XXXXX
+✅ Tests created and verified for Issue #XXXXX
 
 **Files:**
 - `src/Controls/tests/TestCases.HostApp/Issues/IssueXXXXX.cs`
@@ -132,6 +151,7 @@ After completion, report:
 
 **Test method:** `ButtonClickUpdatesLabel`
 **Category:** `UITestCategories.Button`
+**Verification:** Tests FAIL as expected (bug reproduced)
 ```
 
 ## Common Patterns

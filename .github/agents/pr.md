@@ -296,7 +296,7 @@ Identify test type: **UI Tests** | **Device Tests** | **Unit Tests**
 
 ## 🧪 TESTS: Create/Verify Reproduction Tests (Phase 2)
 
-> **SCOPE**: Ensure tests exist that reproduce the issue.
+> **SCOPE**: Ensure tests exist that reproduce the issue. **Tests must be verified to FAIL before this phase is complete.**
 
 **⚠️ Gate Check:** Pre-Flight must be `✅ COMPLETE` before starting this phase.
 
@@ -313,7 +313,7 @@ gh pr view XXXXX --json files --jq '.files[].path' | grep -E "TestCases\.(HostAp
 find src/Controls/tests -name "*XXXXX*" -type f 2>/dev/null
 ```
 
-**If tests exist** → Verify they follow conventions, then mark phase complete.
+**If tests exist** → Verify they follow conventions and reproduce the bug.
 
 **If NO tests exist** → Create them using the `write-tests` skill.
 
@@ -323,77 +323,80 @@ Invoke the `write-tests` skill which will:
 1. Read `.github/instructions/uitests.instructions.md` for conventions
 2. Create HostApp page: `src/Controls/tests/TestCases.HostApp/Issues/IssueXXXXX.cs`
 3. Create NUnit test: `src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/IssueXXXXX.cs`
+4. **Verify tests FAIL** (reproduce the bug) - iterating until they do
 
 ### Step 3: Verify Tests Compile
 
 ```bash
-dotnet build src/Controls/tests/TestCases.HostApp/Maui.Controls.Sample.HostApp.csproj -c Debug -f net10.0-android --no-restore -v q
-dotnet build src/Controls/tests/TestCases.Shared.Tests/TestCases.Shared.Tests.csproj -c Debug --no-restore -v q
+dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -c Debug -f net10.0-android --no-restore -v q
+dotnet build src/Controls/tests/TestCases.Shared.Tests/Controls.TestCases.Shared.Tests.csproj -c Debug --no-restore -v q
 ```
+
+### Step 4: Verify Tests Reproduce the Bug (if not done by write-tests skill)
+
+```bash
+pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 -Platform ios -TestFilter "IssueXXXXX"
+```
+
+The script auto-detects mode based on git diff. If only test files changed, it verifies tests FAIL.
+
+**Tests must FAIL.** If they pass, the test is wrong - fix it and rerun.
 
 ### Complete 🧪 Tests
 
 **Update state file**:
 1. Check off completed items in the checklist
 2. Fill in test file paths
-3. Change 🧪 Tests status to `✅ COMPLETE`
-4. Change 🚦 Gate status to `▶️ IN PROGRESS`
+3. Note: "Tests verified to FAIL (bug reproduced)"
+4. Change 🧪 Tests status to `✅ COMPLETE`
+5. Change 🚦 Gate status to `▶️ IN PROGRESS`
 
 ---
 
 ## 🚦 GATE: Verify Tests Catch the Issue (Phase 3)
 
-> **SCOPE**: Verify tests fail without the fix and pass with it.
+> **SCOPE**: Verify tests correctly detect the fix (for PRs) or confirm tests were verified (for issues).
 
-**⛔ This phase MUST pass before continuing. If it fails, stop and request changes.**
+**⛔ This phase MUST pass before continuing. If it fails, stop and fix the tests.**
 
 **⚠️ Gate Check:** 🧪 Tests must be `✅ COMPLETE` before starting this phase.
 
-### Identify Test Type (from Pre-Flight)
+### Gate Depends on Starting Point
 
-| Test Type | Location | How to Run |
-|-----------|----------|------------|
-| **UI Tests** | `TestCases.HostApp/` + `TestCases.Shared.Tests/` | `BuildAndRunHostApp.ps1` |
-| **Device Tests** | `src/.../DeviceTests/` | `dotnet test` or Helix |
-| **Unit Tests** | `*.UnitTests.csproj` | `dotnet test` |
+**If starting from an Issue (no fix yet):**
+Tests were already verified to FAIL in Phase 2. Gate is a confirmation step:
+- Confirm tests were run and failed
+- Mark Gate as passed
+- Proceed to Phase 4 (Analysis) to implement fix
 
-### Run the verify-tests-fail-without-fix Skill (for UI Tests)
+**If starting from a PR (fix exists):**
+Use full verification mode - tests should FAIL without fix, PASS with fix.
 
 ```bash
 pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 -Platform android
 ```
 
-**Expected output if tests are valid:**
+### Expected Output (PR with fix)
+
 ```
 ╔═══════════════════════════════════════════════════════════╗
 ║              VERIFICATION PASSED ✅                       ║
+╠═══════════════════════════════════════════════════════════╣
+║  - FAIL without fix (as expected)                         ║
+║  - PASS with fix (as expected)                            ║
 ╚═══════════════════════════════════════════════════════════╝
 ```
 
-**If tests PASS without fix** → **STOP HERE**. Request changes:
-```markdown
-⚠️ **Tests do not catch the issue**
+### If Tests Don't Behave as Expected
 
-The PR's tests pass even when the fix is reverted. This means they don't 
-actually validate that the bug is fixed. Please update the tests to fail
-without the fix.
-```
-
-### Optional: Explicit Parameters
-
-```bash
-# If auto-detection doesn't work, specify explicitly:
--TestFilter "Issue32030|ButtonUITests"
--FixFiles @("src/Core/src/File.cs")
-```
+**If tests PASS without fix** → Tests don't catch the bug. Go back to Phase 2, invoke `write-tests` skill again to fix the tests.
 
 ### Complete 🚦 Gate
 
 **Update state file**:
-1. Check off completed items in the checklist
-2. Fill in **Result**: `PASSED ✅` or `FAILED ❌`
-3. Change 🚦 Gate status to `✅ PASSED` or `❌ FAILED`
-4. If FAILED: Stop and request changes from PR author
+1. Fill in **Result**: `PASSED ✅`
+2. Change 🚦 Gate status to `✅ PASSED`
+3. Proceed to Phase 4
 
 ---
 

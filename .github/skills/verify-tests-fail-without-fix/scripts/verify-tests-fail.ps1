@@ -1,26 +1,29 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-    Verifies that UI tests fail when the PR's fix is reverted and pass with the fix.
+    Verifies that UI tests catch the bug. Auto-detects mode based on whether fix files exist.
 
 .DESCRIPTION
-    This script verifies that tests actually catch the issue by:
-    1. Auto-detecting the PR base branch from GitHub
-    2. Auto-detecting fix files from git diff (excludes test paths)
-    3. Reverting the fix files to the base branch
-    4. Running tests WITHOUT the fix (should FAIL)
-    5. Restoring the fix files
-    6. Running tests WITH the fix (should PASS)
-    7. Reporting whether tests correctly detect the issue
-
-    Fix files are auto-detected by finding all changed files that are NOT in test directories.
+    This script verifies that tests actually catch the issue. It auto-detects the mode:
+    
+    **If fix files exist (non-test code changed):**
+    - Full verification mode
+    - Reverts fix files to base branch
+    - Runs tests WITHOUT fix (should FAIL)
+    - Restores fix files
+    - Runs tests WITH fix (should PASS)
+    
+    **If only test files changed (no fix files):**
+    - Verify failure only mode
+    - Runs tests once expecting them to FAIL
+    - Confirms tests reproduce the bug
 
 .PARAMETER Platform
     Target platform: "android" or "ios"
 
 .PARAMETER TestFilter
     Test filter to pass to dotnet test (e.g., "FullyQualifiedName~Issue12345").
-    If not provided, auto-detects from test files in the PR (looks for IssueXXXXX pattern).
+    If not provided, auto-detects from test files in the git diff.
 
 .PARAMETER FixFiles
     (Optional) Array of file paths to revert. If not provided, auto-detects from git diff
@@ -37,7 +40,7 @@
     ./verify-tests-fail.ps1 -Platform android
 
 .EXAMPLE
-    # Specify test filter, auto-detect fix files
+    # Specify test filter, auto-detect mode and fix files
     ./verify-tests-fail.ps1 -Platform android -TestFilter "Issue32030"
 
 .EXAMPLE
@@ -67,42 +70,6 @@ param(
 $ErrorActionPreference = "Stop"
 $RepoRoot = git rev-parse --show-toplevel
 
-# Auto-detect base branch if not provided
-if (-not $BaseBranch) {
-    Write-Host "🔍 Auto-detecting base branch from PR..." -ForegroundColor Cyan
-    
-    # Get the remote repo for the current branch
-    $currentBranch = git rev-parse --abbrev-ref HEAD 2>$null
-    $remote = git config "branch.$currentBranch.remote" 2>$null
-    if (-not $remote) { $remote = "origin" }
-    
-    # Get the repo owner/name from the remote URL
-    $remoteUrl = git remote get-url $remote 2>$null
-    $repo = $null
-    if ($remoteUrl -match "github\.com[:/]([^/]+/[^/]+?)(\.git)?$") {
-        $repo = $matches[1]
-    }
-    
-    # Get base branch from GitHub PR using gh CLI
-    # When using --repo, we must also provide the branch name as an argument
-    if ($repo) {
-        $BaseBranch = gh pr view $currentBranch --repo $repo --json baseRefName --jq '.baseRefName' 2>$null
-    } else {
-        $BaseBranch = gh pr view --json baseRefName --jq '.baseRefName' 2>$null
-    }
-    
-    if ($BaseBranch) {
-        Write-Host "✅ Auto-detected base branch: $BaseBranch" -ForegroundColor Green
-    } else {
-        Write-Host "❌ Could not detect base branch." -ForegroundColor Red
-        Write-Host "   Make sure:" -ForegroundColor Yellow
-        Write-Host "   - You're on a branch with an open PR" -ForegroundColor Yellow
-        Write-Host "   - gh CLI is installed and authenticated" -ForegroundColor Yellow
-        Write-Host "   Or specify -BaseBranch manually." -ForegroundColor Yellow
-        exit 1
-    }
-}
-
 # Test path patterns to exclude when auto-detecting fix files
 $TestPathPatterns = @(
     "*/tests/*",
@@ -130,50 +97,148 @@ function Test-IsTestFile {
     return $false
 }
 
-# Auto-detect fix files from git diff if not provided
-if (-not $FixFiles -or $FixFiles.Count -eq 0) {
-    Write-Host "🔍 Auto-detecting fix files from git diff..." -ForegroundColor Cyan
+# ============================================================
+# AUTO-DETECT MODE: Check if there are fix files to revert
+# ============================================================
+
+# Try to detect base branch
+$BaseBranchDetected = $BaseBranch
+if (-not $BaseBranchDetected) {
+    $currentBranch = git rev-parse --abbrev-ref HEAD 2>$null
+    $remote = git config "branch.$currentBranch.remote" 2>$null
+    if (-not $remote) { $remote = "origin" }
     
-    # Get committed files changed between current branch HEAD and base branch (the PR diff)
-    # Using HEAD ensures we only get committed changes, not uncommitted working tree changes
-    $changedFiles = git diff $BaseBranch HEAD --name-only 2>$null
+    $remoteUrl = git remote get-url $remote 2>$null
+    $repo = $null
+    if ($remoteUrl -match "github\.com[:/]([^/]+/[^/]+?)(\.git)?$") {
+        $repo = $matches[1]
+    }
+    
+    if ($repo) {
+        $BaseBranchDetected = gh pr view $currentBranch --repo $repo --json baseRefName --jq '.baseRefName' 2>$null
+    } else {
+        $BaseBranchDetected = gh pr view --json baseRefName --jq '.baseRefName' 2>$null
+    }
+}
+
+# Check for fix files (non-test files that changed)
+$DetectedFixFiles = @()
+if ($BaseBranchDetected) {
+    $changedFiles = git diff $BaseBranchDetected HEAD --name-only 2>$null
     if ($LASTEXITCODE -ne 0) {
-        $changedFiles = git diff "origin/$BaseBranch" HEAD --name-only 2>$null
+        $changedFiles = git diff "origin/$BaseBranchDetected" HEAD --name-only 2>$null
     }
     
-    if (-not $changedFiles) {
-        Write-Host "❌ No committed changes detected between HEAD and $BaseBranch." -ForegroundColor Red
-        Write-Host "   Make sure your changes are committed." -ForegroundColor Yellow
-        exit 1
-    }
-    
-    $FixFiles = @()
-    foreach ($file in $changedFiles) {
-        if (-not (Test-IsTestFile $file)) {
-            $FixFiles += $file
-        }
-    }
-    
-    if ($FixFiles.Count -eq 0) {
-        Write-Host "❌ No fix files detected. All changed files appear to be test files." -ForegroundColor Red
-        Write-Host "   Changed files:" -ForegroundColor Yellow
+    if ($changedFiles) {
         foreach ($file in $changedFiles) {
-            Write-Host "     - $file" -ForegroundColor Yellow
+            if (-not (Test-IsTestFile $file)) {
+                $DetectedFixFiles += $file
+            }
         }
+    }
+}
+
+# Also check explicitly provided fix files
+if ($FixFiles -and $FixFiles.Count -gt 0) {
+    $DetectedFixFiles = $FixFiles
+}
+
+# Determine mode based on whether we have fix files
+$VerifyFailureOnlyMode = ($DetectedFixFiles.Count -eq 0)
+
+# ============================================================
+# VERIFY FAILURE ONLY MODE (no fix files detected)
+# ============================================================
+if ($VerifyFailureOnlyMode) {
+    Write-Host ""
+    Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
+    Write-Host "║         VERIFY FAILURE ONLY MODE                          ║" -ForegroundColor Cyan
+    Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Cyan
+    Write-Host "║  No fix files detected - verifying tests FAIL             ║" -ForegroundColor Cyan
+    Write-Host "║  (Only test files changed, or new tests created)          ║" -ForegroundColor Cyan
+    Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+    Write-Host ""
+    
+    if (-not $TestFilter) {
+        Write-Host "❌ -TestFilter is required when no fix files are detected" -ForegroundColor Red
+        Write-Host "   Example: -TestFilter 'Issue33356'" -ForegroundColor Yellow
         exit 1
     }
     
-    Write-Host "✅ Auto-detected $($FixFiles.Count) fix file(s):" -ForegroundColor Green
-    foreach ($file in $FixFiles) {
-        Write-Host "   - $file" -ForegroundColor White
+    # Create output directory
+    $OutputPath = Join-Path $RepoRoot $OutputDir
+    New-Item -ItemType Directory -Force -Path $OutputPath | Out-Null
+    $FailureOnlyLog = Join-Path $OutputPath "verify-failure-only.log"
+    
+    Write-Host "Platform: $Platform" -ForegroundColor White
+    Write-Host "TestFilter: $TestFilter" -ForegroundColor White
+    Write-Host ""
+    Write-Host "Running tests (expecting FAILURE)..." -ForegroundColor Yellow
+    
+    # Run the test
+    $buildScript = Join-Path $RepoRoot ".github/scripts/BuildAndRunHostApp.ps1"
+    & $buildScript -Platform $Platform -TestFilter $TestFilter -Rebuild 2>&1 | Tee-Object -FilePath $FailureOnlyLog
+    
+    # Check test result
+    $testOutputLog = Join-Path $RepoRoot "CustomAgentLogsTmp/UITests/test-output.log"
+    $testFailed = $false
+    
+    if (Test-Path $testOutputLog) {
+        $content = Get-Content $testOutputLog -Raw
+        if ($content -match "Failed:\s*(\d+)" -and [int]$matches[1] -gt 0) {
+            $testFailed = $true
+        }
     }
+    
+    Write-Host ""
+    if ($testFailed) {
+        Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Green
+        Write-Host "║         VERIFICATION PASSED ✅                            ║" -ForegroundColor Green
+        Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Green
+        Write-Host "║  Tests FAILED as expected (bug is reproduced)             ║" -ForegroundColor Green
+        Write-Host "║                                                           ║" -ForegroundColor Green
+        Write-Host "║  Next: Implement a fix, then rerun to verify tests pass.  ║" -ForegroundColor Green
+        Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Green
+        exit 0
+    } else {
+        Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Red
+        Write-Host "║         VERIFICATION FAILED ❌                            ║" -ForegroundColor Red
+        Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Red
+        Write-Host "║  Tests PASSED (unexpected - bug not reproduced)           ║" -ForegroundColor Red
+        Write-Host "║                                                           ║" -ForegroundColor Red
+        Write-Host "║  Your test is wrong. Fix it and rerun.                    ║" -ForegroundColor Red
+        Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Red
+        exit 1
+    }
+}
+
+# ============================================================
+# FULL VERIFICATION MODE (fix files detected)
+# ============================================================
+
+Write-Host ""
+Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
+Write-Host "║         FULL VERIFICATION MODE                            ║" -ForegroundColor Cyan
+Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Cyan
+Write-Host "║  Fix files detected - will verify:                        ║" -ForegroundColor Cyan
+Write-Host "║  1. Tests FAIL without fix                                ║" -ForegroundColor Cyan
+Write-Host "║  2. Tests PASS with fix                                   ║" -ForegroundColor Cyan
+Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+Write-Host ""
+
+$BaseBranch = $BaseBranchDetected
+$FixFiles = $DetectedFixFiles
+
+Write-Host "✅ Base branch: $BaseBranch" -ForegroundColor Green
+Write-Host "✅ Fix files ($($FixFiles.Count)):" -ForegroundColor Green
+foreach ($file in $FixFiles) {
+    Write-Host "   - $file" -ForegroundColor White
 }
 
 # Auto-detect test filter from test files if not provided
 if (-not $TestFilter) {
     Write-Host "🔍 Auto-detecting test filter from changed test files..." -ForegroundColor Cyan
     
-    # Get committed files changed between current branch HEAD and base branch (the PR diff)
     $changedFiles = git diff $BaseBranch HEAD --name-only 2>$null
     if ($LASTEXITCODE -ne 0) {
         $changedFiles = git diff "origin/$BaseBranch" HEAD --name-only 2>$null
@@ -195,14 +260,11 @@ if (-not $TestFilter) {
     }
     
     # Extract class names from test files
-    # For NUnit tests in TestCases.Shared.Tests, the class name is what we filter on
     $testClassNames = @()
     foreach ($file in $testFiles) {
-        # Only process Shared.Tests files (the actual test classes, not HostApp UI pages)
         if ($file -match "TestCases\.Shared\.Tests.*\.cs$") {
             $fullPath = Join-Path $RepoRoot $file
             if (Test-Path $fullPath) {
-                # Extract class name from file content
                 $content = Get-Content $fullPath -Raw
                 if ($content -match "public\s+(partial\s+)?class\s+(\w+)") {
                     $className = $matches[2]
@@ -214,7 +276,7 @@ if (-not $TestFilter) {
         }
     }
     
-    # Fallback: use file names without extension if class extraction failed
+    # Fallback: use file names without extension
     if ($testClassNames.Count -eq 0) {
         foreach ($file in $testFiles) {
             $fileName = [System.IO.Path]::GetFileNameWithoutExtension($file)
@@ -230,7 +292,6 @@ if (-not $TestFilter) {
         exit 1
     }
     
-    # Build test filter - combine with OR (|) for multiple classes
     if ($testClassNames.Count -eq 1) {
         $TestFilter = $testClassNames[0]
     } else {
