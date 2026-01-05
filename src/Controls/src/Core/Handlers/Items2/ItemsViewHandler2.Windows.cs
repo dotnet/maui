@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Dispatching;
@@ -483,7 +484,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (emptyViewTemplate is not null)
 			{
 				// If EmptyViewTemplate is provided, use it instead of EmptyView
-				_emptyView = RealizeEmptyViewTemplate(emptyView, emptyViewTemplate);
+				_emptyView = ItemsViewExtensions.RealizeEmptyViewTemplate(emptyView, emptyViewTemplate, MauiContext!, ref _mauiEmptyView);
 			}
 			else if (emptyView is not null)
 			{
@@ -498,10 +499,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 						};
 						break;
 					case View view:
-						_emptyView = RealizeEmptyView(view);
+						_emptyView = ItemsViewExtensions.RealizeEmptyView(view, MauiContext!, ref _mauiEmptyView);
 						break;
 					default:
-						_emptyView = RealizeEmptyViewTemplate(emptyView, null); // Fallback
+						_emptyView = ItemsViewExtensions.RealizeEmptyViewTemplate(emptyView, null, MauiContext!, ref _mauiEmptyView);
 						break;
 				}
 			}
@@ -589,8 +590,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					Margin = new Microsoft.UI.Xaml.Thickness(0, 0, 0, 10)
 				},
 
-				View view => RealizeHeaderFooterView(view, ref _mauiHeader),
-				_ => RealizeHeaderFooterTemplate(header, structuredItemsView.HeaderTemplate, ref _mauiHeader),
+				View view => ItemsViewExtensions.RealizeHeaderFooterView(view, MauiContext!, ref _mauiHeader),
+				_ => ItemsViewExtensions.RealizeHeaderFooterTemplate(header, structuredItemsView.HeaderTemplate, MauiContext!, ref _mauiHeader),
 			};
 
 			if (PlatformView is MauiItemsView platformItemsView && _mauiHeader is not null)
@@ -642,8 +643,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					Text = text,
 					Margin = new Microsoft.UI.Xaml.Thickness(0, 10, 0, 0)
 				},
-				View view => RealizeHeaderFooterView(view, ref _mauiFooter),
-				_ => RealizeHeaderFooterTemplate(footer, structuredItemsView.FooterTemplate, ref _mauiFooter),
+				View view => ItemsViewExtensions.RealizeHeaderFooterView(view, MauiContext!, ref _mauiFooter),
+				_ => ItemsViewExtensions.RealizeHeaderFooterTemplate(footer, structuredItemsView.FooterTemplate, MauiContext!, ref _mauiFooter),
 			};
 
 			if (PlatformView is MauiItemsView platformItemsView && _mauiFooter is not null)
@@ -661,118 +662,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			_footerDisplayed = true;
 		}
 
-#nullable disable
-		FrameworkElement RealizeEmptyViewTemplate(object bindingContext, DataTemplate emptyViewTemplate)
-		{
-			if (emptyViewTemplate is null)
-			{
-				return new TextBlock
-				{
-					HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Center,
-					VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Center,
-					Text = bindingContext.ToString()
-				};
-			}
-
-			var template = emptyViewTemplate.SelectDataTemplate(bindingContext, null);
-			var view = template.CreateContent() as View;
-			view.BindingContext = bindingContext;
-
-			return RealizeEmptyView(view);
-		}
-
-		FrameworkElement RealizeEmptyView(View view)
-		{
-			_mauiEmptyView = view ?? throw new ArgumentNullException(nameof(view));
-
-			if (MauiContext is null)
-				throw new InvalidOperationException("MauiContext cannot be null when creating a handler.");
-
-			var handler = view.ToHandler(MauiContext);
-			var platformView = handler.ContainerView ?? handler.PlatformView;
-			return platformView;
-		}
-
-		FrameworkElement RealizeHeaderFooterTemplate(object bindingContext, DataTemplate template, ref View mauiView)
-		{
-			if (template is null)
-			{
-				return new TextBlock
-				{
-					Text = bindingContext.ToString(),
-					Margin = new Microsoft.UI.Xaml.Thickness(0, 5, 0, 5)
-				};
-			}
-
-			var dataTemplate = template.SelectDataTemplate(bindingContext, null);
-			var view = dataTemplate.CreateContent() as View;
-			view.BindingContext = bindingContext;
-
-			return RealizeHeaderFooterView(view, ref mauiView);
-		}
-
-		FrameworkElement RealizeHeaderFooterView(View view, ref View mauiView)
-		{
-			mauiView = view ?? throw new ArgumentNullException(nameof(view));
-
-			var handler = view.ToHandler(MauiContext);
-			var platformView = handler.ContainerView ?? handler.PlatformView;
-
-			return platformView;
-		}
-#nullable enable
-
 		void UpdateVerticalScrollBarVisibility()
 		{
-			if (Element.VerticalScrollBarVisibility != ScrollBarVisibility.Default)
-			{
-				// If the value is changing to anything other than the default, record the default 
-				if (_defaultVerticalScrollVisibility is null)
-				{
-					ScrollViewer.SetVerticalScrollBarVisibility(PlatformView, WASDKScrollBarVisibility.Visible);
-				}
-			}
-
-			if (_defaultVerticalScrollVisibility is null)
-			{
-				// If the default has never been recorded, then this has never been set to anything but the 
-				// default value; there's nothing to do.
-				return;
-			}
-
-			switch (Element.VerticalScrollBarVisibility)
-			{
-				case (ScrollBarVisibility.Always):
-					ScrollViewer.SetVerticalScrollBarVisibility(PlatformView, WASDKScrollBarVisibility.Visible);
-					break;
-				case (ScrollBarVisibility.Never):
-					ScrollViewer.SetVerticalScrollBarVisibility(PlatformView, WASDKScrollBarVisibility.Hidden);
-					break;
-				case (ScrollBarVisibility.Default):
-					ScrollViewer.SetVerticalScrollBarVisibility(PlatformView, _defaultVerticalScrollVisibility.Value);
-					break;
-			}
+			ItemsViewExtensions.UpdateVerticalScrollBarVisibility(
+				PlatformView,
+				Element.VerticalScrollBarVisibility,
+				ref _defaultVerticalScrollVisibility);
 		}
 
 		void UpdateHorizontalScrollBarVisibility()
 		{
-			if (_defaultHorizontalScrollVisibility is null)
-			{
-				_defaultHorizontalScrollVisibility = ScrollViewer.GetHorizontalScrollBarVisibility(PlatformView);
-			}
-
-			switch (Element.HorizontalScrollBarVisibility)
-			{
-				case (ScrollBarVisibility.Always):
-					ScrollViewer.SetHorizontalScrollBarVisibility(PlatformView, WASDKScrollBarVisibility.Visible);
-					break;
-				case (ScrollBarVisibility.Never):
-					ScrollViewer.SetHorizontalScrollBarVisibility(PlatformView, WASDKScrollBarVisibility.Hidden);
-					break;
-				case (ScrollBarVisibility.Default):
-					ScrollViewer.SetHorizontalScrollBarVisibility(PlatformView, _defaultHorizontalScrollVisibility.Value);
-					break;
-			}
+			ItemsViewExtensions.UpdateHorizontalScrollBarVisibility(
+				PlatformView,
+				Element.HorizontalScrollBarVisibility,
+				ref _defaultHorizontalScrollVisibility);
 		}
 
 		void PointerScrollChanged(object sender, PointerRoutedEventArgs e)
