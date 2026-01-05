@@ -274,10 +274,22 @@ namespace Microsoft.Maui.Platform
 			{
 				var softInputMode = attr.SoftInputMode;
 
+				var contentView = coordinatorLayout.FindViewById(Resource.Id.navigationlayout_content);
+
 				// Only apply padding if AdjustResize is set AND keyboard is actually showing
 				if ((softInputMode & SoftInput.AdjustResize) == SoftInput.AdjustResize && imeHeight > 0)
 				{
-					SetCoordinatorLayoutBottomSpace(coordinatorLayout, imeHeight);
+					// Get the bottom margin (for bottom tabs) - this value is constant and doesn't change
+					var bottomMargin = 0;
+					if (contentView?.LayoutParameters is ViewGroup.MarginLayoutParams marginParams)
+					{
+						bottomMargin = marginParams.BottomMargin;
+					}
+
+					// Apply padding = imeHeight - bottomMargin
+					// This compensates for the margin that creates white space
+					SetCoordinatorLayoutBottomSpace(coordinatorLayout, imeHeight - bottomMargin);
+
 					// Return true to indicate we handled the IME insets and they should be consumed
 					return true;
 				}
@@ -298,10 +310,14 @@ namespace Microsoft.Maui.Platform
 		static void SetCoordinatorLayoutBottomSpace(AndroidX.CoordinatorLayout.Widget.CoordinatorLayout coordinatorLayout, int bottomSpace)
 		{
 			var contentView = coordinatorLayout.FindViewById(Resource.Id.navigationlayout_content);
-			if (contentView is not null && contentView.LayoutParameters is ViewGroup.MarginLayoutParams marginParams)
+			if (contentView is not null)
 			{
-				marginParams.BottomMargin = bottomSpace;
-				contentView.LayoutParameters = marginParams;
+				contentView.SetPadding(
+					contentView.PaddingLeft,
+					contentView.PaddingTop,
+					contentView.PaddingRight,
+					bottomSpace
+				);
 			}
 			else
 			{
