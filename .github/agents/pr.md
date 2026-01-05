@@ -25,16 +25,17 @@ You are an end-to-end agent that takes a GitHub issue from investigation through
 
 ## Workflow Overview
 
-**Pre-Flight** → **Phase 0: Gate** → **Phase 1: Analysis** → **Phase 2: Compare** → **Phase 3: Regression** → **Phase 4: Report**
+**Pre-Flight** → **🧪 Tests** → **🚦 Gate** → **🔍 Analysis** → **⚖️ Compare** → **🔬 Regression** → **📋 Report**
 
 | Phase | Purpose | Gate? |
 |-------|---------|-------|
 | Pre-Flight | Gather context, create state file | - |
-| Phase 0 | Verify tests catch the bug | ✅ Must pass |
-| Phase 1 | Research root cause, design own fix | - |
-| Phase 2 | Compare PR's fix vs alternative | - |
-| Phase 3 | Check edge cases, disagreements | - |
-| Phase 4 | Write final recommendation | - |
+| 🧪 Tests | Create/verify reproduction tests exist | - |
+| 🚦 Gate | Verify tests catch the bug | ✅ Must pass |
+| 🔍 Analysis | Research root cause, design own fix | - |
+| ⚖️ Compare | Compare PR's fix vs alternative | - |
+| 🔬 Regression | Check edge cases, disagreements | - |
+| 📋 Report | Write final recommendation | - |
 
 ---
 
@@ -78,11 +79,12 @@ fi
 | Phase | Status |
 |-------|--------|
 | Pre-Flight | ▶️ IN PROGRESS |
-| Phase 0 (Gate) | ⏳ PENDING |
-| Phase 1 (Analysis) | ⏳ PENDING |
-| Phase 2 (Compare) | ⏳ PENDING |
-| Phase 3 (Regression) | ⏳ PENDING |
-| Phase 4 (Report) | ⏳ PENDING |
+| 🧪 Tests | ⏳ PENDING |
+| 🚦 Gate | ⏳ PENDING |
+| 🔍 Analysis | ⏳ PENDING |
+| ⚖️ Compare | ⏳ PENDING |
+| 🔬 Regression | ⏳ PENDING |
+| 📋 Report | ⏳ PENDING |
 
 ---
 
@@ -132,7 +134,22 @@ fi
 </details>
 
 <details>
-<summary><strong>🔬 Phase 0: Gate - Test Verification</strong></summary>
+<summary><strong>🧪 Tests</strong></summary>
+
+**Status**: ⏳ PENDING
+
+- [ ] PR includes UI tests
+- [ ] Tests reproduce the issue
+- [ ] Tests follow naming convention (`IssueXXXXX`)
+
+**Test Files:**
+- HostApp: [PENDING]
+- NUnit: [PENDING]
+
+</details>
+
+<details>
+<summary><strong>🚦 Gate - Test Verification</strong></summary>
 
 **Status**: ⏳ PENDING
 
@@ -146,7 +163,7 @@ fi
 </details>
 
 <details>
-<summary><strong>🔍 Phase 1: Independent Analysis</strong></summary>
+<summary><strong>🔍 Analysis</strong></summary>
 
 **Status**: ⏳ PENDING
 
@@ -165,7 +182,7 @@ fi
 </details>
 
 <details>
-<summary><strong>⚖️ Phase 2: Compare Approaches</strong></summary>
+<summary><strong>⚖️ Compare</strong></summary>
 
 **Status**: ⏳ PENDING
 
@@ -179,7 +196,7 @@ fi
 </details>
 
 <details>
-<summary><strong>🧪 Phase 3: Regression Testing</strong></summary>
+<summary><strong>🔬 Regression</strong></summary>
 
 **Status**: ⏳ PENDING
 
@@ -283,18 +300,59 @@ Identify test type: **UI Tests** | **Device Tests** | **Unit Tests**
 ### Step 7: Complete Pre-Flight
 
 **Update state file** - Change Pre-Flight status and populate with gathered context:
-1. Change `## Pre-Flight` status from `▶️ IN PROGRESS` to `✅ COMPLETE`
+1. Change Pre-Flight status from `▶️ IN PROGRESS` to `✅ COMPLETE`
 2. Fill in the summary table with PR metadata, file counts, etc.
 3. Add disagreements, edge cases, and author concerns
-4. Change `## Phase 0: Gate` status to `▶️ IN PROGRESS`
+4. Change 🧪 Tests status to `▶️ IN PROGRESS`
 
 ---
 
-## PHASE 0: Gate - Verify Tests Catch the Issue
+## 🧪 TESTS: Create/Verify Reproduction Tests
+
+**Purpose:** Ensure tests exist that reproduce the issue before proceeding.
+
+**At start**: Verify state file shows 🧪 Tests with `▶️ IN PROGRESS` status.
+
+### Step 1: Check if Tests Already Exist
+
+```bash
+# Check if PR includes test files
+gh pr view XXXXX --json files --jq '.files[].path' | grep -E "TestCases\.(HostApp|Shared\.Tests)"
+```
+
+**If tests exist in PR** → Verify they follow conventions, then mark phase complete.
+
+**If NO tests exist** → Create them using the `write-tests` skill.
+
+### Step 2: Create Tests (if needed)
+
+Invoke the `write-tests` skill which will:
+1. Read `.github/instructions/uitests.instructions.md` for conventions
+2. Create HostApp page: `src/Controls/tests/TestCases.HostApp/Issues/IssueXXXXX.cs`
+3. Create NUnit test: `src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/IssueXXXXX.cs`
+
+### Step 3: Verify Tests Compile
+
+```bash
+dotnet build src/Controls/tests/TestCases.HostApp/Maui.Controls.Sample.HostApp.csproj -c Debug -f net10.0-android --no-restore -v q
+dotnet build src/Controls/tests/TestCases.Shared.Tests/TestCases.Shared.Tests.csproj -c Debug --no-restore -v q
+```
+
+### Complete 🧪 Tests
+
+**Update state file**:
+1. Check off completed items in the checklist
+2. Fill in test file paths
+3. Change 🧪 Tests status to `✅ COMPLETE`
+4. Change 🚦 Gate status to `▶️ IN PROGRESS`
+
+---
+
+## 🚦 GATE: Verify Tests Catch the Issue
 
 **This phase MUST pass before continuing. If it fails, stop and request changes.**
 
-**At start**: Verify state file shows `## Phase 0: Gate` with `▶️ IN PROGRESS` status.
+**At start**: Verify state file shows 🚦 Gate with `▶️ IN PROGRESS` status.
 
 ### Identify Test Type (from Pre-Flight)
 
@@ -334,22 +392,22 @@ without the fix.
 -FixFiles @("src/Core/src/File.cs")
 ```
 
-### Complete Phase 0
+### Complete 🚦 Gate
 
 **Update state file**:
 1. Check off completed items in the checklist
 2. Fill in **Result**: `PASSED ✅` or `FAILED ❌`
-3. Change `## Phase 0: Gate` status to `✅ PASSED` or `❌ FAILED`
-4. If PASSED: Change `## Phase 1: Analysis` status to `▶️ IN PROGRESS`
+3. Change 🚦 Gate status to `✅ PASSED` or `❌ FAILED`
+4. If PASSED: Change 🔍 Analysis status to `▶️ IN PROGRESS`
 5. If FAILED: Stop and request changes from PR author
 
 ---
 
-## PHASE 1: Independent Analysis
+## 🔍 ANALYSIS: Independent Analysis
 
-**Only proceed here if Phase 0 passed.**
+**Only proceed here if 🚦 Gate passed.**
 
-**At start**: Verify state file shows `## Phase 1: Analysis` with `▶️ IN PROGRESS` status.
+**At start**: Verify state file shows 🔍 Analysis with `▶️ IN PROGRESS` status.
 
 ### Step 1: Review Pre-Flight Findings
 
@@ -392,19 +450,19 @@ pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "Issue
 git stash pop
 ```
 
-### Complete Phase 1
+### Complete 🔍 Analysis
 
 **Update state file**:
 1. Check off completed items in the checklist
 2. Fill in **Root Cause** and **My Approach**
-3. Change `## Phase 1: Analysis` status to `✅ PASSED`
-4. Change `## Phase 2: Compare` status to `▶️ IN PROGRESS`
+3. Change 🔍 Analysis status to `✅ PASSED`
+4. Change ⚖️ Compare status to `▶️ IN PROGRESS`
 
 ---
 
-## PHASE 2: Compare Approaches
+## ⚖️ COMPARE: Compare Approaches
 
-**At start**: Verify state file shows `## Phase 2: Compare` with `▶️ IN PROGRESS` status.
+**At start**: Verify state file shows ⚖️ Compare with `▶️ IN PROGRESS` status.
 
 ### Compare PR's Fix vs Your Alternative
 
@@ -425,19 +483,19 @@ For your alternative:
 - Is it simpler or more robust?
 - Any trade-offs?
 
-### Complete Phase 2
+### Complete ⚖️ Compare
 
 **Update state file**:
 1. Check off completed items in the checklist
 2. Fill in **Recommendation** with your assessment
-3. Change `## Phase 2: Compare` status to `✅ PASSED`
-4. Change `## Phase 3: Regression` status to `▶️ IN PROGRESS`
+3. Change ⚖️ Compare status to `✅ PASSED`
+4. Change 🔬 Regression status to `▶️ IN PROGRESS`
 
 ---
 
-## PHASE 3: Regression Testing
+## 🔬 REGRESSION: Regression Testing
 
-**At start**: Verify state file shows `## Phase 3: Regression` with `▶️ IN PROGRESS` status.
+**At start**: Verify state file shows 🔬 Regression with `▶️ IN PROGRESS` status.
 
 ### Step 1: Check Edge Cases from Pre-Flight
 
@@ -475,19 +533,19 @@ If author expressed uncertainty (from pre-flight), investigate and provide guida
 
 3. **Instrument code if needed** - Add `Debug.WriteLine` and grep device logs.
 
-### Complete Phase 3
+### Complete 🔬 Regression
 
 **Update state file**:
 1. Check off edge cases with results
 2. Check off disagreements with findings
-3. Change `## Phase 3: Regression` status to `✅ PASSED`
-4. Change `## Phase 4: Report` status to `▶️ IN PROGRESS`
+3. Change 🔬 Regression status to `✅ PASSED`
+4. Change 📋 Report status to `▶️ IN PROGRESS`
 
 ---
 
-## PHASE 4: Report
+## 📋 REPORT: Final Report
 
-**At start**: Verify state file shows Phase 4 with `▶️ IN PROGRESS` status in the status table.
+**At start**: Verify state file shows 📋 Report with `▶️ IN PROGRESS` status.
 
 ### Write Final Report
 
@@ -499,13 +557,14 @@ Update the state file to its final format with collapsible sections. The final s
    - 📋 Issue Summary
    - 📁 Files Changed
    - 💬 PR Discussion Summary
-   - 🔬 Phase 0: Gate - Test Verification
-   - 🔍 Phase 1: Independent Analysis
-   - ⚖️ Phase 2: Compare Approaches
-   - 🧪 Phase 3: Regression Testing
+   - 🧪 Tests
+   - 🚦 Gate
+   - 🔍 Analysis
+   - ⚖️ Compare
+   - 🔬 Regression
 4. **Justification** bullet points - always visible
 
-### Complete Phase 4
+### Complete 📋 Report
 
 **Update state file**:
 1. Change header status from `⏳ Status: IN PROGRESS` to `✅ Final Recommendation: APPROVE` or `⚠️ Final Recommendation: REQUEST CHANGES`
@@ -520,7 +579,7 @@ Update the state file to its final format with collapsible sections. The final s
 - ❌ **Not creating state file first** - ALWAYS create `.github/agent-pr-session/pr-XXXXX.md` before gathering any context
 - ❌ **Not updating state file after each phase** - ALWAYS update status markers and check off items
 - ❌ **Looking at PR diff before analyzing the issue** - Form your own opinion first
-- ❌ **Skipping Phase 0 gate** - Always verify tests actually catch the bug
+- ❌ **Skipping 🚦 Gate** - Always verify tests actually catch the bug
 - ❌ **Assuming the PR's fix is correct** - That's the whole point of this agent
 - ❌ **Surface-level "LGTM" reviews** - Explain WHY, compare approaches
 - ❌ **Not checking for regressions** - The fix might break other scenarios
