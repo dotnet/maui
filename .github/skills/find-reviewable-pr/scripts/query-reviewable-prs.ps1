@@ -163,7 +163,7 @@ catch {
 }
 
 # Build the JSON fields list based on available scopes
-$baseFields = "number,title,labels,createdAt,isDraft,author,additions,deletions,changedFiles,milestone,url,reviewDecision,reviews"
+$baseFields = "number,title,labels,createdAt,updatedAt,isDraft,author,additions,deletions,changedFiles,milestone,url,reviewDecision,reviews"
 $jsonFields = if ($hasProjectScope) { "$baseFields,projectItems" } else { $baseFields }
 
 # Fetch all open non-draft PRs from dotnet/maui
@@ -408,7 +408,9 @@ foreach ($pr in $allPRs) {
         Categories = $categories
         Labels = $labelNames
         CreatedAt = [DateTime]::Parse($pr.createdAt)
+        UpdatedAt = [DateTime]::Parse($pr.updatedAt)
         Age = [Math]::Round(((Get-Date) - [DateTime]::Parse($pr.createdAt)).TotalDays)
+        Updated = [Math]::Round(((Get-Date) - [DateTime]::Parse($pr.updatedAt)).TotalDays)
         Files = $pr.changedFiles
         Additions = $pr.additions
         Deletions = $pr.deletions
@@ -446,7 +448,9 @@ foreach ($pr in $docsMauiPRs) {
         Categories = $categories
         Labels = $labelNames
         CreatedAt = [DateTime]::Parse($pr.createdAt)
+        UpdatedAt = [DateTime]::Parse($pr.updatedAt)
         Age = [Math]::Round(((Get-Date) - [DateTime]::Parse($pr.createdAt)).TotalDays)
+        Updated = [Math]::Round(((Get-Date) - [DateTime]::Parse($pr.updatedAt)).TotalDays)
         Files = $pr.changedFiles
         Additions = $pr.additions
         Deletions = $pr.deletions
@@ -547,6 +551,7 @@ function Format-Review-Output {
             Write-Host "ReviewStatus:$($pr.ReviewStatus)"
             if ($pr.ProjectStatus) { Write-Host "ProjectStatus:$($pr.ProjectStatus)" }
             Write-Host "Age:$($pr.Age) days"
+            Write-Host "Updated:$($pr.Updated) days ago"
             Write-Host "Files:$($pr.Files) (+$($pr.Additions)/-$($pr.Deletions))"
             Write-Host "Labels:$($pr.Labels)"
             Write-Host "Category:priority"
@@ -570,6 +575,7 @@ function Format-Review-Output {
             Write-Host "ReviewStatus:$($pr.ReviewStatus)"
             if ($pr.ProjectStatus) { Write-Host "ProjectStatus:$($pr.ProjectStatus)" }
             Write-Host "Age:$($pr.Age) days"
+            Write-Host "Updated:$($pr.Updated) days ago"
             Write-Host "Files:$($pr.Files) (+$($pr.Additions)/-$($pr.Deletions))"
             Write-Host "Labels:$($pr.Labels)"
             Write-Host "Category:milestoned"
@@ -593,6 +599,7 @@ function Format-Review-Output {
             Write-Host "ReviewStatus:$($pr.ReviewStatus)"
             if ($pr.ProjectStatus) { Write-Host "ProjectStatus:$($pr.ProjectStatus)" }
             Write-Host "Age:$($pr.Age) days"
+            Write-Host "Updated:$($pr.Updated) days ago"
             Write-Host "Files:$($pr.Files) (+$($pr.Additions)/-$($pr.Deletions))"
             Write-Host "Labels:$($pr.Labels)"
             Write-Host "Category:partner"
@@ -616,6 +623,7 @@ function Format-Review-Output {
             Write-Host "ReviewStatus:$($pr.ReviewStatus)"
             if ($pr.ProjectStatus) { Write-Host "ProjectStatus:$($pr.ProjectStatus)" }
             Write-Host "Age:$($pr.Age) days"
+            Write-Host "Updated:$($pr.Updated) days ago"
             Write-Host "Files:$($pr.Files) (+$($pr.Additions)/-$($pr.Deletions))"
             Write-Host "Labels:$($pr.Labels)"
             Write-Host "Category:community"
@@ -649,6 +657,7 @@ function Format-Review-Output {
             Write-Host "ReviewStatus:$($pr.ReviewStatus)"
             if ($pr.ProjectStatus) { Write-Host "ProjectStatus:$($pr.ProjectStatus)" }
             Write-Host "Age:$($pr.Age) days"
+            Write-Host "Updated:$($pr.Updated) days ago"
             Write-Host "Files:$($pr.Files) (+$($pr.Additions)/-$($pr.Deletions))"
             Write-Host "Labels:$($pr.Labels)"
             Write-Host "Category:recent"
@@ -672,6 +681,7 @@ function Format-Review-Output {
             Write-Host "ReviewStatus:$($pr.ReviewStatus)"
             if ($pr.ProjectStatus) { Write-Host "ProjectStatus:$($pr.ProjectStatus)" }
             Write-Host "Age:$($pr.Age) days"
+            Write-Host "Updated:$($pr.Updated) days ago"
             Write-Host "Files:$($pr.Files) (+$($pr.Additions)/-$($pr.Deletions))"
             Write-Host "Labels:$($pr.Labels)"
             Write-Host "Category:docs-maui-priority"
@@ -696,6 +706,7 @@ function Format-Review-Output {
             Write-Host "ReviewStatus:$($pr.ReviewStatus)"
             if ($pr.ProjectStatus) { Write-Host "ProjectStatus:$($pr.ProjectStatus)" }
             Write-Host "Age:$($pr.Age) days"
+            Write-Host "Updated:$($pr.Updated) days ago"
             Write-Host "Files:$($pr.Files) (+$($pr.Additions)/-$($pr.Deletions))"
             Write-Host "Labels:$($pr.Labels)"
             Write-Host "Category:docs-maui-waiting-for-review"
