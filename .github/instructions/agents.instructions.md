@@ -31,7 +31,7 @@ Agents in this repo target **Copilot CLI** as the primary interface.
 
 ### Name Format
 
-- ✅ `pr-reviewer`, `uitest-coding-agent`
+- ✅ `pr`, `uitest-coding-agent`, `sandbox-agent`
 - ❌ `PR-Reviewer` (uppercase), `pr_reviewer` (underscores), `--name` (leading/consecutive hyphens)
 
 ---
@@ -68,7 +68,7 @@ description: Helps with code review stuff
 
 ### One Agent = One Role
 
-- ✅ `pr-reviewer` - Reviews PRs
+- ✅ `pr` - Reviews and works on PRs
 - ❌ `everything-agent` - Too broad
 
 ### Commands Over Concepts
