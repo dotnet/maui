@@ -9,16 +9,15 @@ You are an end-to-end agent that takes a GitHub issue from investigation through
 
 ## When to Use This Agent
 
-- ✅ "Fix issue #XXXXX" (if a PR already exists for the issue)
-- ✅ "Work on #XXXXX"
+- ✅ "Fix issue #XXXXX" - Works whether or not a PR exists
+- ✅ "Work on issue #XXXXX"
 - ✅ "Implement fix for #XXXXX"
 - ✅ "Review PR #XXXXX"
-- ✅ "Continue working on issue #XXXXX"
+- ✅ "Continue working on #XXXXX"
 - ✅ "Pick up where I left off on #XXXXX"
 
 ## When NOT to Use This Agent
 
-- ❌ **No PR exists yet** → Use `/delegate` to have remote Copilot create the fix and PR
 - ❌ Just run tests manually → Use `sandbox-agent`
 - ❌ Only write tests without fixing → Use `uitest-coding-agent`
 
@@ -82,17 +81,19 @@ Before starting ANY phase, verify your state file shows the correct status:
 
 **❌ What NOT To Do in Pre-Flight (save for later phases):**
 - Research git history for root cause → That's Phase 4: 🔍 Analysis
+- Look at implementation code to understand the bug → That's Phase 4: 🔍 Analysis
 - Design or implement fixes → That's Phase 4: 🔍 Analysis
 - Form opinions on the correct approach → That's Phase 4: 🔍 Analysis
 - Run tests → That's Phase 3: 🚦 Gate
 
 ### Step 0: Check for Existing State File or Create New One
 
-**State file location**: `/.github/agent-pr-session/pr-XXXXX.md`
+**State file location**: `.github/agent-pr-session/pr-XXXXX.md`
 
-- **Initial name**: `pr-XXXXX.md` where XXXXX is issue number (placeholder)
-- **After PR created**: Rename to actual PR number (e.g., `pr-12345.md`)
-- **Committed to repo**: Yes, tracked in git
+**Naming convention:**
+- If starting from **PR #12345** → Name file `pr-12345.md` (use PR number)
+- If starting from **Issue #33356** (no PR yet) → Name file `pr-33356.md` (use issue number as placeholder)
+- When PR is created later → Rename to use actual PR number
 
 ```bash
 # Check if state file exists
@@ -267,55 +268,51 @@ This file:
 - Serves as your TODO list for all phases
 - Tracks progress if interrupted
 - Must exist before you start gathering context
-- Gets committed to `/.github/agent-pr-session/` directory
+- Gets committed to `.github/agent-pr-session/` directory
 
 **Then gather context and update the file as you go.**
 
-### Step 1: Checkout PR
+### Step 1: Gather Context (depends on starting point)
 
+**If starting from a PR:**
 ```bash
+# Checkout the PR
 git fetch origin pull/XXXXX/head:pr-XXXXX
 git checkout pr-XXXXX
-```
 
-### Step 2: Fetch PR Metadata
-
-```bash
+# Fetch PR metadata
 gh pr view XXXXX --json title,body,url,author,labels,files
-```
 
-### Step 3: Find and Read Linked Issue
-
-```bash
-# Find linked issue
+# Find and read linked issue
 gh pr view XXXXX --json body --jq '.body' | grep -oE "(Fixes|Closes|Resolves) #[0-9]+" | head -1
-
-# Read the issue
 gh issue view ISSUE_NUMBER --json title,body,comments
 ```
 
-### Step 4: Fetch ALL Comments
-
-**4a. PR-level comments**:
+**If starting from an Issue (no PR exists):**
 ```bash
+# Stay on current branch - do NOT checkout anything
+# Fetch issue details directly
+gh issue view XXXXX --json title,body,comments,labels
+```
+
+### Step 2: Fetch Comments
+
+**If PR exists** - Fetch PR discussion:
+```bash
+# PR-level comments
 gh pr view XXXXX --json comments --jq '.comments[] | "Author: \(.author.login)\n\(.body)\n---"'
-```
 
-**4b. Review summaries**:
-```bash
+# Review summaries
 gh pr view XXXXX --json reviews --jq '.reviews[] | "Reviewer: \(.author.login) [\(.state)]\n\(.body)\n---"'
-```
 
-**4c. Inline code review comments** (CRITICAL - often contains key technical feedback!):
-```bash
+# Inline code review comments (CRITICAL - often contains key technical feedback!)
 gh api "repos/dotnet/maui/pulls/XXXXX/comments" --jq '.[] | "File: \(.path):\(.line // .original_line)\nAuthor: \(.user.login)\n\(.body)\n---"'
-```
 
-**4d. Detect Prior Agent Reviews** (CRITICAL - check for existing completed work!):
-```bash
-# Check if any comment contains a prior agent review
+# Detect Prior Agent Reviews
 gh pr view XXXXX --json comments --jq '.comments[] | select(.body | contains("Final Recommendation") and contains("| Phase | Status |")) | .body'
 ```
+
+**If issue only** - Comments already fetched in Step 1.
 
 **Signs of a prior agent review in comments:**
 - Contains phase status table (`| Phase | Status |`)
@@ -335,24 +332,20 @@ gh pr view XXXXX --json comments --jq '.comments[] | select(.body | contains("Fi
 - Treat the prior review as just "reference material"
 - Re-do phases that are already marked `✅ PASSED`
 
-### Step 5: Document Key Findings
+### Step 3: Document Key Findings
 
-Create/update the state file `.github/agent-pr-session/pr-XXXXX.md`:
+Update the state file `.github/agent-pr-session/pr-XXXXX.md`:
 
-**Disagreements** - Where reviewer and author disagree:
+**If PR exists** - Document disagreements and reviewer feedback:
 | File:Line | Reviewer Says | Author Says | Status |
 |-----------|---------------|-------------|--------|
 | Example.cs:95 | "Remove this call" | "Required for fix" | ⚠️ INVESTIGATE |
-
-**Author Uncertainty** - Where author expresses doubt:
-- "Not 100% sure about this one..."
-- "Maybe the dev should be responsible for..."
 
 **Edge Cases to Check** (from comments mentioning "what about...", "does this work with..."):
 - [ ] Edge case 1 from discussion
 - [ ] Edge case 2 from discussion
 
-### Step 6: Classify Files
+### Step 4: Classify Files (if PR exists)
 
 ```bash
 gh pr view XXXXX --json files --jq '.files[].path'
@@ -364,12 +357,12 @@ Classify into:
 
 Identify test type: **UI Tests** | **Device Tests** | **Unit Tests**
 
-### Step 7: Complete Pre-Flight
+### Step 5: Complete Pre-Flight
 
 **Update state file** - Change Pre-Flight status and populate with gathered context:
 1. Change Pre-Flight status from `▶️ IN PROGRESS` to `✅ COMPLETE`
-2. Fill in the summary table with PR metadata, file counts, etc.
-3. Add disagreements, edge cases, and author concerns
+2. Fill in issue summary, platforms affected, regression info
+3. Add edge cases and any disagreements (if PR exists)
 4. Change 🧪 Tests status to `▶️ IN PROGRESS`
 
 ---
@@ -382,12 +375,18 @@ Identify test type: **UI Tests** | **Device Tests** | **Unit Tests**
 
 ### Step 1: Check if Tests Already Exist
 
+**If PR exists:**
 ```bash
-# Check if PR includes test files
 gh pr view XXXXX --json files --jq '.files[].path' | grep -E "TestCases\.(HostApp|Shared\.Tests)"
 ```
 
-**If tests exist in PR** → Verify they follow conventions, then mark phase complete.
+**If issue only:**
+```bash
+# Check if tests exist for this issue number
+find src/Controls/tests -name "*XXXXX*" -type f 2>/dev/null
+```
+
+**If tests exist** → Verify they follow conventions, then mark phase complete.
 
 **If NO tests exist** → Create them using the `write-tests` skill.
 
@@ -643,12 +642,11 @@ Update the state file to its final format with collapsible sections. The final s
 
 - ❌ **Skipping phases or doing them out of order** - ALWAYS complete phases 1→2→3→4→5→6→7 in sequence
 - ❌ **Researching root cause during Pre-Flight** - Root cause analysis belongs in Phase 4 (🔍 Analysis), not Pre-Flight
+- ❌ **Looking at implementation code during Pre-Flight** - Just gather issue/PR context, save code analysis for Phase 4
 - ❌ **Implementing fixes before tests exist** - Create tests in Phase 2, verify in Phase 3, THEN fix in Phase 4
 - ❌ **Not creating state file first** - ALWAYS create `.github/agent-pr-session/pr-XXXXX.md` before gathering any context
 - ❌ **Not updating state file after each phase** - ALWAYS update status markers and check off items
-- ❌ **Ignoring prior agent reviews in PR comments** - If a comment contains a completed review (with phase table, Final Recommendation, etc.), import it as your state file content instead of starting fresh
+- ❌ **Ignoring prior agent reviews in PR comments** - If a comment contains a completed review, import it as your state file content
 - ❌ **Looking at PR diff before analyzing the issue** - Form your own opinion first
 - ❌ **Skipping 🚦 Gate** - Always verify tests actually catch the bug
-- ❌ **Assuming the PR's fix is correct** - That's the whole point of this agent
-- ❌ **Surface-level "LGTM" reviews** - Explain WHY, compare approaches
 - ❌ **Not checking for regressions** - The fix might break other scenarios
