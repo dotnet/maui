@@ -1,4 +1,3 @@
-# if TEST_FAILS_ON_WINDOWS  // This is Android Specific issues
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -23,10 +22,9 @@ public class Issue33331 : _IssuesUITest
         Assert.That(initialLabel, Is.EqualTo("IsOpen: False"));
 
         App.Tap("OpenPickerButton");
-        App.ClosePicker(windowsTapx: 250, windowsTapy: 250);
+        App.ClosePicker(windowsTapx: 50, windowsTapy: 50);
         App.WaitForElement("IsOpenLabel");
         var closedLabel = App.FindElement("IsOpenLabel").GetText();
         Assert.That(closedLabel, Is.EqualTo("IsOpen: False"));
     }
 }
-#endif
