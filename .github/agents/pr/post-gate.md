@@ -142,7 +142,7 @@ For your alternative:
 
 ### If Starting from Issue (No PR) - Verify Fix Works
 
-Run the full verification (not `-VerifyFailureOnly`) to confirm your fix works:
+Run the full verification to confirm your fix works (the script auto-detects mode when fix files are present):
 
 ```bash
 # Commit your fix first

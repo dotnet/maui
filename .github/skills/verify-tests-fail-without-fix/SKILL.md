@@ -75,12 +75,6 @@ The script automatically determines the mode:
 2. Verifies they FAIL (bug reproduced)
 3. Reports result
 
-## Auto-Detection
-
-**Fix files**: Changed files excluding test paths (`*/tests/*`, `*TestCases*`, `*.Tests/*`, etc.)
-
-**Test classes**: Parses C# class names from changed test files - works with any naming pattern.
-
 ## Optional Parameters
 
 ```bash
@@ -93,34 +87,3 @@ The script automatically determines the mode:
 # Verify failure only (no fix exists yet)
 -VerifyFailureOnly
 ```
-
-## Expected Output
-
-**Full mode (with fix):**
-```
-╔═══════════════════════════════════════════════════════════╗
-║              VERIFICATION PASSED ✅                       ║
-╠═══════════════════════════════════════════════════════════╣
-║  Tests correctly detect the issue:                        ║
-║  - FAIL without fix (as expected)                         ║
-║  - PASS with fix (as expected)                            ║
-╚═══════════════════════════════════════════════════════════╝
-```
-
-**Verify Failure Only mode:**
-```
-╔═══════════════════════════════════════════════════════════╗
-║         VERIFICATION PASSED ✅                            ║
-╠═══════════════════════════════════════════════════════════╣
-║  Tests FAILED as expected (bug is reproduced)             ║
-╚═══════════════════════════════════════════════════════════╝
-```
-
-## Troubleshooting
-
-| Problem | Cause | Solution |
-|---------|-------|----------|
-| Tests pass without fix | Tests don't detect the bug | Review test assertions, update test |
-| Tests pass in -VerifyFailureOnly | **Test is wrong** | Review test vs issue description, fix test |
-| App crashes | Duplicate issue numbers, XAML error | Check device logs |
-| Element not found | Wrong AutomationId, app crashed | Verify IDs match |
