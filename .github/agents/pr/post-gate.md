@@ -21,6 +21,15 @@ If Gate is not passed, go back to `.github/agents/pr.md` and complete phases 1-3
 
 **⚠️ Gate Check:** Verify 🚦 Gate is `✅ PASSED` in your state file before proceeding.
 
+### 🚨 CRITICAL: Always Run try-fix Loop
+
+**Even when a PR already has a fix that passes tests**, you MUST run the `try-fix` loop to:
+- Independently explore alternative solutions
+- Compare the PR's approach against alternatives
+- Validate the PR's fix is actually the best option (or discover a better one)
+
+**Do NOT skip this step just because the PR's fix works.** The goal is independent analysis.
+
 ### Step 1: Loop - Call try-fix Skill
 
 Invoke the `try-fix` skill repeatedly to explore alternative fixes:

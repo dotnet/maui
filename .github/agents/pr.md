@@ -39,6 +39,15 @@ After Gate passes, read `.github/agents/pr/post-gate.md` for **Phases 4-5**.
 └─────────────────────────────────────────┘     └─────────────────────────────────────────────┘
 ```
 
+### 🚨 CRITICAL: Phase 4 Always Uses `try-fix` Skill
+
+**Even when a PR already has a fix**, Phase 4 requires running the `try-fix` skill to:
+1. **Independently explore alternative solutions** - Don't just accept the PR's approach
+2. **Compare multiple fix candidates** - The PR's fix is Candidate #1, but there may be better approaches
+3. **Validate the PR's fix is actually the best option** - Or discover a superior alternative
+
+This ensures independent analysis rather than rubber-stamping the PR.
+
 ---
 
 ## PRE-FLIGHT: Context Gathering (Phase 1)
