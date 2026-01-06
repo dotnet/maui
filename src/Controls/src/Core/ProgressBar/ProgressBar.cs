@@ -8,7 +8,13 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/ProgressBar.xml" path="Type[@FullName='Microsoft.Maui.Controls.ProgressBar']/Docs/*" />
+	/// <summary>
+	/// A view control that displays progress as a partially filled bar.
+	/// </summary>
+	/// <remarks>
+	/// The ProgressBar displays progress as a horizontal bar that is filled to a percentage represented by the <see cref="Progress"/> property.
+	/// Use the <see cref="ProgressTo"/> method to animate the progress bar.
+	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class ProgressBar : View, IElementConfiguration<ProgressBar>, IProgress
 	{
@@ -20,27 +26,41 @@ namespace Microsoft.Maui.Controls
 
 		readonly Lazy<PlatformConfigurationRegistry<ProgressBar>> _platformConfigurationRegistry;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ProgressBar.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the ProgressBar class.
+		/// </summary>
 		public ProgressBar()
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<ProgressBar>>(() => new PlatformConfigurationRegistry<ProgressBar>(this));
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ProgressBar.xml" path="//Member[@MemberName='ProgressColor']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the color of the progress bar. This is a bindable property.
+		/// </summary>
+		/// <value>The color of the progress bar.</value>
 		public Color ProgressColor
 		{
 			get { return (Color)GetValue(ProgressColorProperty); }
 			set { SetValue(ProgressColorProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ProgressBar.xml" path="//Member[@MemberName='Progress']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the progress value. This is a bindable property.
+		/// </summary>
+		/// <value>A value between 0.0 and 1.0 that specifies the fraction of the bar that is filled. Values outside this range will be clamped.</value>
 		public double Progress
 		{
 			get { return (double)GetValue(ProgressProperty); }
 			set { SetValue(ProgressProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ProgressBar.xml" path="//Member[@MemberName='ProgressTo']/Docs/*" />
+		/// <summary>
+		/// Animates the <see cref="Progress"/> property from its current value to the specified value.
+		/// </summary>
+		/// <param name="value">The target progress value (0.0 to 1.0).</param>
+		/// <param name="length">The length of the animation in milliseconds.</param>
+		/// <param name="easing">The easing function to use for the animation.</param>
+		/// <returns>A task that completes when the animation finishes, with a result indicating whether the animation completed successfully.</returns>
 		public Task<bool> ProgressTo(double value, uint length, Easing easing)
 		{
 			var tcs = new TaskCompletionSource<bool>();

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Test for OnPlatform<Brush> without Default when platform doesn't match -->
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Unreported013">
+	<ContentPage.Resources>
+		<!-- OnPlatform with abstract type Brush, no Default specified -->
+		<OnPlatform x:Key="TestBrushNoDefault" x:TypeArguments="Brush">
+			<On Platform="WinUI">
+				<SolidColorBrush Color="Red" />
+			</On>
+		</OnPlatform>
+	</ContentPage.Resources>
+	<!-- Note: Not using StaticResource here since the value may be null -->
+	<Border x:Name="testBorder" />
+</ContentPage>

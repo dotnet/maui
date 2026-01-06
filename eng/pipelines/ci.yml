@@ -54,12 +54,13 @@ parameters:
   type: object
   default:
   - name: NetCore1ESPool-Internal
-    image: 1es-windows-2022
+    demands:
+        - ImageOverride -equals 1es-windows-2022
     os: Windows
     buildScript: $(_buildScript)
     sln: '$(Build.SourcesDirectory)/Microsoft.Maui.sln'
-  - name: Azure Pipelines
-    vmImage: $(HostedMacImage)
+  - name: MAUI
+    vmImage: MAUI
     os: macOS
     buildScript: $(_buildScriptMacOS)
     sln: '$(Build.SourcesDirectory)/Microsoft.Maui-mac.slnf'
@@ -68,12 +69,13 @@ parameters:
   type: object
   default:
   - name: NetCore-Public
-    image: 1es-windows-2022
+    demands:
+        - ImageOverride -equals 1es-windows-2022-open
     os: Windows
     buildScript: $(_buildScript)
     sln: '$(Build.SourcesDirectory)/Microsoft.Maui.sln'
-  - name: Azure Pipelines
-    vmImage: $(HostedMacImage)
+  - name: MAUI
+    vmImage: MAUI
     os: macOS
     buildScript: $(_buildScriptMacOS)
     sln: '$(Build.SourcesDirectory)/Microsoft.Maui-mac.slnf'
@@ -83,18 +85,20 @@ parameters:
   default:
     internal:
       name: NetCore1ESPool-Internal
-      image: 1es-windows-2022
+      demands:
+        - ImageOverride -equals 1es-windows-2022
       os: windows
     public:
       name: NetCore-Public
-      image: 1es-windows-2022
+      demands:
+        - ImageOverride -equals 1es-windows-2022-open
       os: windows
 
 - name: MacOSPool
   type: object
   default:
-    name: Azure Pipelines
-    vmImage: $(HostedMacImage)
+    name: MAUI
+    vmImage: MAUI
     os: macOS
 
 stages:
