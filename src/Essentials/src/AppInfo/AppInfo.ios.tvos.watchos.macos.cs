@@ -30,7 +30,10 @@ namespace Microsoft.Maui.ApplicationModel
 
 #if __IOS__ || __TVOS__
 		public async void ShowSettingsUI()
-			=> await Launcher.Default.OpenAsync(UIApplication.OpenSettingsUrlString);
+		{
+			var settingsUrl = new NSUrl(UIApplication.OpenSettingsUrlString);
+			await UIApplication.SharedApplication.OpenUrlAsync(settingsUrl, new UIApplicationOpenUrlOptions());
+		}
 #elif __MACOS__
 		public void ShowSettingsUI()
 		{
