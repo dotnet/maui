@@ -23,7 +23,7 @@ This skill searches the dotnet/maui and dotnet/docs-maui repositories for open p
 ## Priority Categories (in order)
 
 1. **Priority (P/0)** - Critical priority PRs that need immediate attention
-2. **Milestoned** - PRs assigned to SR3, SR4, or Servicing milestones
+2. **Milestoned** - PRs assigned to current milestone(s), sorted by lowest SR number first (e.g., SR5 before SR6), then Servicing
 3. **Partner** - PRs from Syncfusion and other partners
 4. **Community** - External contributions needing review
 5. **Recent Waiting for Review** - PRs created in last 2 weeks that need review (minimum 5)
@@ -82,7 +82,7 @@ pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1 -Limit 5
 2. **Report the error** to the user
 3. **Suggest retry** - Ask user to try again in a few minutes (GitHub API may be temporarily unavailable)
 
-**Why no fallbacks?** Ad-hoc queries bypass the milestone prioritization logic and will return incorrectly ordered results (e.g., SR4 PRs before SR3 PRs).
+**Why no fallbacks?** Ad-hoc queries bypass the milestone prioritization logic and will return incorrectly ordered results (e.g., later SR milestones before earlier ones).
 
 ### Step 2: Check for Warnings
 

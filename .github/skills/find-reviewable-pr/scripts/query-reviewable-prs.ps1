@@ -5,7 +5,7 @@
 
 .DESCRIPTION
     This script queries GitHub for open PRs and prioritizes them by:
-    1. Milestoned PRs (SR3, SR4, Servicing)
+    1. Milestoned PRs (dynamically sorted by SR number - lower numbers first, e.g., SR5 before SR6)
     2. P/0 labeled PRs (critical priority)
     3. Recent PRs (5 from maui + 5 from docs-maui by default)
     4. Partner PRs (Syncfusion, etc.)
