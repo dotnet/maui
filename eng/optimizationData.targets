@@ -20,9 +20,6 @@
           AfterTargets="Restore"
           Condition="'@(MIBCPackageDef)' != ''">
 
-    <PropertyGroup>
-      <_MergeMibcFilesCacheFile>$(MibcOptimizationDataDir)$(_MibcTargetPlatform)/$(_MibcTargetArchitecture)/merge_mibc_files.cache</_MergeMibcFilesCacheFile>
-    </PropertyGroup>
     <ItemGroup>
       <MIBCPackageDef>
         <PackagePath>$(NuGetPackageRoot)%(MIBCPackageDef.Identity)/%(MIBCPackageDef.Version)</PackagePath>
