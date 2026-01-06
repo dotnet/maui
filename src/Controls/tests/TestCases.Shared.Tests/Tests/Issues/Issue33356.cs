@@ -29,7 +29,7 @@ public class Issue33356 : _IssuesUITest
 		searchResults.First().Tap();
 #endif
 		App.WaitForElement("Issue33356CatNameLabel");
-#if ANDROID
+#if ANDROID || WINDOWS
 		App.TapBackArrow();
 #else
 		App.Back();
@@ -38,7 +38,7 @@ public class Issue33356 : _IssuesUITest
 		App.WaitForElement("Abyssinian");
 		App.Tap("Abyssinian");
 		App.WaitForElement("Issue33356CatNameLabel");
-#if ANDROID
+#if ANDROID || WINDOWS
 		App.TapBackArrow();
 #else
 		App.Back();
