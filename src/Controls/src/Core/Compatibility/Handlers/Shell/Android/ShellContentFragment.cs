@@ -189,6 +189,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (_page is not null)
 			{
 				_pageFragmentMap.Remove(_page);
+				_page.DisconnectHandlers();
+				_page = null;
 			}
 
 			// If the user taps very quickly on back button multiple times to pop a page,
@@ -208,6 +210,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (_shellContent != null)
 			{
 				((IShellContentController)_shellContent).RecyclePage(_page);
+				_page.Handler = null;
 			}
 
 			if (_shellPageContainer != null)
@@ -233,8 +236,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_viewhandler = null;
 			_shellContent = null;
 			_shellPageContainer = null;
-			_page?.DisconnectHandlers();
-			_page = null;
 		}
 
 		protected override void Dispose(bool disposing)
