@@ -30,7 +30,12 @@ namespace Microsoft.Maui.ApplicationModel
 
 #if __IOS__ || __TVOS__
 		public async void ShowSettingsUI()
-			=> await Launcher.Default.OpenAsync(UIApplication.OpenSettingsUrlString);
+		{
+			// iOS 18/26 requires direct usage of UIApplication.OpenUrlAsync with UIApplicationOpenUrlOptions
+			// to properly open app settings. Using Launcher abstraction doesn't work correctly on iOS 18/26.
+			var settingsUrl = new NSUrl(UIApplication.OpenSettingsUrlString);
+			await UIApplication.SharedApplication.OpenUrlAsync(settingsUrl, new UIApplicationOpenUrlOptions());
+		}
 #elif __MACOS__
 		public void ShowSettingsUI()
 		{
