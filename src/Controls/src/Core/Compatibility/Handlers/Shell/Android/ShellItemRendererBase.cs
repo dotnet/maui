@@ -171,6 +171,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 					if (!isForCurrentTab && removeFragment != _currentFragment)
 						return Task.FromResult(true);
+
+					DisposePage(page);
 					break;
 
 				case ShellNavigationSource.PopToRoot:
@@ -427,6 +429,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var t = ChildFragmentManager.BeginTransactionEx();
 			t.RemoveEx(fragment);
 			t.CommitAllowingStateLossEx();
+		}
+
+		void DisposePage(Page page)
+		{
+			if (ShellContentFragment.TryGetFragment(page, out var shellFragment))
+			{
+				shellFragment.Destroy();
+			}
 		}
 	}
 }

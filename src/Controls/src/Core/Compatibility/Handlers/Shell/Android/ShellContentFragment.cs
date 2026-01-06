@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Collections.Generic;
 using Android.OS;
 using Android.Runtime;
 using Android.Views;
@@ -22,6 +23,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		// AndroidX.Fragment packaged stopped calling CreateAnimation for every call
 		// of creating a fragment
 		bool _isAnimating = false;
+
+		static readonly Dictionary<Page, ShellContentFragment> _pageFragmentMap = new Dictionary<Page, ShellContentFragment>();
 
 		#region IAnimationListener
 
@@ -90,6 +93,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public event EventHandler AnimationFinished;
 
 		public Fragment Fragment => this;
+
+		internal static bool TryGetFragment(Page page, out ShellContentFragment fragment)
+		{
+			return _pageFragmentMap.TryGetValue(page, out fragment);
+		}
 
 		public override AndroidAnimation OnCreateAnimation(int transit, bool enter, int nextAnim)
 		{
@@ -163,6 +171,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_appearanceTracker = _shellContext.CreateToolbarAppearanceTracker();
 
 			((IShellController)_shellContext.Shell).AddAppearanceObserver(this, _page);
+			_pageFragmentMap[_page] = this;
 
 			if (_shellPageContainer.LayoutParameters is CoordinatorLayout.LayoutParams layoutParams)
 				layoutParams.Behavior = new AppBarLayout.ScrollingViewBehavior();
@@ -170,12 +179,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			return _root;
 		}
 
-		void Destroy()
+		internal void Destroy()
 		{
 			if (_destroyed)
 				return;
 
 			_destroyed = true;
+
+			if (_page is not null)
+			{
+				_pageFragmentMap.Remove(_page);
+			}
 
 			// If the user taps very quickly on back button multiple times to pop a page,
 			// the app enters background state in the middle of the animation causing the fragment to be destroyed without completing the animation.
@@ -194,7 +208,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (_shellContent != null)
 			{
 				((IShellContentController)_shellContent).RecyclePage(_page);
-				_page.Handler = null;
 			}
 
 			if (_shellPageContainer != null)
@@ -220,6 +233,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_viewhandler = null;
 			_shellContent = null;
 			_shellPageContainer = null;
+			_page?.DisconnectHandlers();
+			_page = null;
 		}
 
 		protected override void Dispose(bool disposing)
