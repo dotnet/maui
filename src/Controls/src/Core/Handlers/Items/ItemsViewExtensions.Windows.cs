@@ -4,6 +4,7 @@ using Microsoft.Maui.Controls.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WASDKScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
+using WASDKScrollingScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollingScrollBarVisibility;	
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
@@ -41,7 +42,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return platformView as FrameworkElement ?? throw new InvalidOperationException("Unable to convert view to FrameworkElement");
 		}
 
-		internal static FrameworkElement RealizeHeaderFooterTemplate(object bindingContext, DataTemplate? template, IMauiContext mauiContext, ref View? mauiView)
+		internal static FrameworkElement RealizeHeaderFooterTemplate(object? bindingContext, DataTemplate? template, IMauiContext mauiContext, ref View? mauiView)
 		{
 			if (template is null)
 			{
@@ -101,13 +102,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				switch (scrollBarVisibility)
 				{
 					case ScrollBarVisibility.Always:
-						scrollView.VerticalScrollBarVisibility = (ScrollingScrollBarVisibility)WASDKScrollBarVisibility.Visible;
+						scrollView.VerticalScrollBarVisibility = WASDKScrollingScrollBarVisibility.Visible;
 						break;
 					case ScrollBarVisibility.Never:
-						scrollView.VerticalScrollBarVisibility = (ScrollingScrollBarVisibility)WASDKScrollBarVisibility.Hidden;
+						scrollView.VerticalScrollBarVisibility = WASDKScrollingScrollBarVisibility.Hidden;
 						break;
 					case ScrollBarVisibility.Default:
-						scrollView.VerticalScrollBarVisibility = (ScrollingScrollBarVisibility)defaultVerticalScrollVisibility.Value;
+						scrollView.VerticalScrollBarVisibility = (WASDKScrollingScrollBarVisibility)defaultVerticalScrollVisibility.Value;
 						break;
 				}
 			}
