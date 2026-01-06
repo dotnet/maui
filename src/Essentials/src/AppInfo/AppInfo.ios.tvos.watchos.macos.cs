@@ -30,7 +30,22 @@ namespace Microsoft.Maui.ApplicationModel
 
 #if __IOS__ || __TVOS__
 		public async void ShowSettingsUI()
-			=> await Launcher.Default.OpenAsync(UIApplication.OpenSettingsUrlString);
+		{
+			// iOS 26+ requires a different URL format to navigate to app-specific settings
+			// https://github.com/dotnet/maui/issues/33382
+			if (OperatingSystem.IsIOSVersionAtLeast(26, 0) || OperatingSystem.IsTvOSVersionAtLeast(26, 0))
+			{
+				var bundleId = PackageName;
+				if (!string.IsNullOrEmpty(bundleId))
+				{
+					await Launcher.Default.OpenAsync($"app-settings:{bundleId}");
+					return;
+				}
+			}
+
+			// Fallback to the standard settings URL for older iOS versions or if bundle ID is unavailable
+			await Launcher.Default.OpenAsync(UIApplication.OpenSettingsUrlString);
+		}
 #elif __MACOS__
 		public void ShowSettingsUI()
 		{
