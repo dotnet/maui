@@ -11,6 +11,10 @@ namespace Microsoft.Maui.Controls
 			// Adjust the mappings to preserve Controls.Entry legacy behaviors
 #if ANDROID
 			EntryHandler.Mapper.ReplaceMapping<Entry, IEntryHandler>(PlatformConfiguration.AndroidSpecific.Entry.ImeOptionsProperty.PropertyName, MapImeOptions);
+			
+			//Material3 Entry Handler mappings
+			MaterialEntryHandler.Mapper.ReplaceMapping<Entry, MaterialEntryHandler>(nameof(Text), MapText);
+			MaterialEntryHandler.Mapper.ReplaceMapping<Entry, MaterialEntryHandler>(nameof(TextTransform), MapText);
 #elif WINDOWS
 			EntryHandler.Mapper.ReplaceMapping<Entry, IEntryHandler>(PlatformConfiguration.WindowsSpecific.InputView.DetectReadingOrderFromContentProperty.PropertyName, MapDetectReadingOrderFromContent);
 #elif IOS
