@@ -93,23 +93,17 @@ please run the UI tests from PR #32479
 # Start GitHub Copilot CLI with agent support
 copilot
 
-# Invoke the issue-resolver agent
-/agent issue-resolver
+# Invoke the pr agent
+/agent pr
 
-# Request issue investigation
-please investigate and fix https://github.com/dotnet/maui/issues/XXXXX
+# Request PR review
+please review https://github.com/dotnet/maui/pull/XXXXX
 ```
 
-**PR Reviewer Agent:**
+**For issues without a PR:**
 ```bash
-# Start GitHub Copilot CLI with agent support
-copilot
-
-# Invoke the pr-reviewer agent
-/agent pr-reviewer
-
-# Request a review
-please review https://github.com/dotnet/maui/pull/XXXXX
+# Use /delegate to have remote Copilot create the fix
+/delegate fix issue https://github.com/dotnet/maui/issues/XXXXX
 ```
 
 ### Option 3: GitHub Copilot Agents (Web)
@@ -121,13 +115,12 @@ please review https://github.com/dotnet/maui/pull/XXXXX
 3. **Choose your agent** from the dropdown:
    - `sandbox-agent` for manual testing and experimentation
    - `uitest-coding-agent` for writing and running UI tests
-   - `issue-resolver` for investigating and fixing issues
-   - `pr-reviewer` for PR reviews
+   - `pr` for reviewing and working on existing PRs
 
 4. **Enter a task** in the text box:
    - For sandbox testing: `Please test PR #32479`
    - For UI tests: `Please write UI tests for issue #12345`
-   - For issue resolution: `Please investigate and fix: https://github.com/dotnet/maui/issues/XXXXX`
+   - For PR review: `Please review PR #XXXXX`
    - For PR reviews: `Please review this PR: https://github.com/dotnet/maui/pull/XXXXX`
 
 5. **Click Start task** or press Return
@@ -224,18 +217,16 @@ Agents work with **time budgets as estimates for planning**, not hard deadlines:
 ## File Structure
 
 ### Agent Definitions
+- **`agents/pr.md`** - PR review and work workflow with 7 sequential phases
 - **`agents/sandbox-agent.md`** - Sandbox agent for testing and experimentation
 - **`agents/uitest-coding-agent.md`** - UI test agent for writing and running tests
-- **`agents/issue-resolver.md`** - Issue resolver agent for investigating and fixing issues
-- **`agents/pr-reviewer.md`** - PR reviewer agent (inline instructions)
 - **`agents/README.md`** - Agent selection guide and quick reference
 
 ### Agent Files
 
 Agents are now self-contained single files:
 
-- **`agents/pr-reviewer.md`** - PR review workflow with hands-on testing (~400 lines)
-- **`agents/issue-resolver.md`** - Issue resolution workflow with checkpoints (~620 lines)
+- **`agents/pr.md`** - PR review and work workflow with 7 sequential phases (~650 lines)
 - **`agents/sandbox-agent.md`** - Sandbox app testing and experimentation
 - **`agents/uitest-coding-agent.md`** - UI test writing and execution
 
@@ -380,7 +371,7 @@ For issues or questions about the AI agent instructions:
 ## Metrics
 
 **Agent Files**:
-- 4 agent definition files (sandbox-agent, uitest-coding-agent, issue-resolver, pr-reviewer)
+- 3 agent definition files (pr, sandbox-agent, uitest-coding-agent)
 - 53 total markdown files in `.github/` directory
 - All validated and consistent with consolidated structure
 
