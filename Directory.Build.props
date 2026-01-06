@@ -166,10 +166,10 @@
   <!-- version number information -->
   <PropertyGroup>
     <!-- Default versions from the SDKs (update when there is a new TFM version) -->
-    <IosTargetFrameworkVersionSdkDefault>26.2</IosTargetFrameworkVersionSdkDefault>
-    <TvosTargetFrameworkVersionSdkDefault>26.2</TvosTargetFrameworkVersionSdkDefault>
-    <MacCatalystTargetFrameworkVersionSdkDefault>26.2</MacCatalystTargetFrameworkVersionSdkDefault>
-    <MacosTargetFrameworkVersionSdkDefault>26.2</MacosTargetFrameworkVersionSdkDefault>
+    <IosTargetFrameworkVersionSdkDefault>26.0</IosTargetFrameworkVersionSdkDefault>
+    <TvosTargetFrameworkVersionSdkDefault>26.0</TvosTargetFrameworkVersionSdkDefault>
+    <MacCatalystTargetFrameworkVersionSdkDefault>26.0</MacCatalystTargetFrameworkVersionSdkDefault>
+    <MacosTargetFrameworkVersionSdkDefault>26.0</MacosTargetFrameworkVersionSdkDefault>
     <AndroidTargetFrameworkVersionSdkDefault>36.0</AndroidTargetFrameworkVersionSdkDefault>
     <!-- Current .NET -->
     <IosTargetFrameworkVersion>26.0</IosTargetFrameworkVersion>
@@ -230,8 +230,8 @@
     <!-- App: Device Tests TFMs (no Tizen yet) -->
     <MauiDeviceTestsPlatforms Condition="'$(IncludeWindowsTargetFrameworks)' == 'true'">$(WindowsMauiPlatforms);$(MauiDeviceTestsPlatforms)</MauiDeviceTestsPlatforms>
     <MauiDeviceTestsPlatforms Condition="'$(IncludeAndroidTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-android;$(MauiDeviceTestsPlatforms)</MauiDeviceTestsPlatforms>
-    <MauiDeviceTestsPlatforms Condition="'$(IncludeMacCatalystTargetFrameworks)' == 'true'">net11.0-maccatalyst;$(MauiDeviceTestsPlatforms)</MauiDeviceTestsPlatforms>
-    <MauiDeviceTestsPlatforms Condition="'$(IncludeIosTargetFrameworks)' == 'true'">net11.0-ios;$(MauiDeviceTestsPlatforms)</MauiDeviceTestsPlatforms>
+    <MauiDeviceTestsPlatforms Condition="'$(IncludeMacCatalystTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-maccatalyst;$(MauiDeviceTestsPlatforms)</MauiDeviceTestsPlatforms>
+    <MauiDeviceTestsPlatforms Condition="'$(IncludeIosTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-ios;$(MauiDeviceTestsPlatforms)</MauiDeviceTestsPlatforms>
 
     <!-- App: Embedding Sample TFMs (no Tizen yet) -->
     <MauiEmbeddingPlatforms Condition="'$(IncludeWindowsTargetFrameworks)' == 'true'">$(WindowsMauiPlatforms);$(MauiEmbeddingPlatforms)</MauiEmbeddingPlatforms>
