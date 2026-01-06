@@ -57,7 +57,6 @@ stages:
         displayName: Build Sample App
         pool: ${{ parameters.androidPool }}
         variables:
-          REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
           APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
         steps:
           - template: ui-tests-build-sample.yml
@@ -73,7 +72,6 @@ stages:
         displayName: Build Sample App
         pool: ${{ parameters.androidPool }}
         variables:
-          REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
           APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
         steps:
           - template: ui-tests-build-sample.yml
@@ -91,7 +89,6 @@ stages:
           displayName: Build Sample App
           pool: ${{ parameters.androidPool }}
           variables:
-            REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
             APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
           steps:
             - template: ui-tests-build-sample.yml
@@ -135,7 +132,6 @@ stages:
                 displayName: ${{ coalesce(project.desc, project.name) }} (API ${{ api }})
                 pool: ${{ parameters.androidLinuxPool }}
                 variables:
-                  REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                   APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
                 steps:
                   - template: ui-tests-steps.yml
@@ -179,7 +175,6 @@ stages:
                 displayName: ${{ coalesce(project.desc, project.name) }} (API ${{ api }})
                 pool: ${{ parameters.androidLinuxPool }}
                 variables:
-                  REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                   APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
                 steps:
                   - template: ui-tests-steps.yml
@@ -225,7 +220,6 @@ stages:
                 displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
                 pool: ${{ parameters.iosPool }}
                 variables:
-                  REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                   APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
                 steps:
                   - template: ui-tests-steps.yml
@@ -268,7 +262,6 @@ stages:
                 displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
                 pool: ${{ parameters.iosPool }}
                 variables:
-                  REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                   APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
                 steps:
                   - template: ui-tests-steps.yml
@@ -312,7 +305,6 @@ stages:
                 displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
                 pool: ${{ parameters.iosPool }}
                 variables:
-                  REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                   APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
                 steps:
                   - template: ui-tests-steps.yml
@@ -362,7 +354,6 @@ stages:
                   displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
                   pool: ${{ parameters.iosPool }}
                   variables:
-                    REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                     APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
                   steps:
                     - template: ui-tests-steps.yml
@@ -439,7 +430,6 @@ stages:
                 displayName: ${{ coalesce(project.desc, project.name) }}
                 pool: ${{ parameters.macosPool }}
                 variables:
-                  REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                   APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
                 steps:
                   - template: ui-tests-steps.yml

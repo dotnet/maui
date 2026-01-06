@@ -101,38 +101,47 @@ steps:
       xcrun xcode-select --print-path
       echo
       echo selecting latest xcode...
-      # Use REQUIRED_XCODE for devdiv team project or if CollectionUri contains xamarin, XCODE for others (e.g., maui-pr)
-      if [[ "$(System.TeamProject)" == "devdiv" || "$(System.CollectionUri)" == *"xamarin"* ]]; then
-        XCODE_VERSION=$(REQUIRED_XCODE)
-      else
-        XCODE_VERSION=$(XCODE)
-      fi
+      # XCODE variable is in major.minor format (e.g., 26.1)
+      XCODE_MAJOR_MINOR=$(XCODE)
+      echo "XCODE variable (major.minor): ${XCODE_MAJOR_MINOR}"
       
-      # Check if the specified Xcode version exists, if not try fallback
-      XCODE_PATH="/Applications/Xcode_${XCODE_VERSION}.app"
-      if [[ ! -d "$XCODE_PATH" ]]; then
-        echo "Xcode version ${XCODE_VERSION} not found at ${XCODE_PATH}"
-        # Extract fallback version by removing the last part after the final dot (e.g., 26.0.1 -> 26.0.0)
-        if [[ "$XCODE_VERSION" =~ ^([0-9]+\.[0-9]+)\.[0-9]+$ ]]; then
-          FALLBACK_VERSION="${BASH_REMATCH[1]}.0"
-          FALLBACK_PATH="/Applications/Xcode_${FALLBACK_VERSION}.app"
-          echo "Trying fallback Xcode version: ${FALLBACK_VERSION}"
-          if [[ -d "$FALLBACK_PATH" ]]; then
-            echo "Found fallback Xcode version at ${FALLBACK_PATH}"
-            XCODE_VERSION="$FALLBACK_VERSION"
-            XCODE_PATH="$FALLBACK_PATH"
-          else
-            echo "Warning: Fallback Xcode version ${FALLBACK_VERSION} also not found at ${FALLBACK_PATH}"
-            echo "Proceeding with original version ${XCODE_VERSION} - this may fail"
-          fi
+      # Parse major and minor versions
+      MAJOR=$(echo "$XCODE_MAJOR_MINOR" | cut -d'.' -f1)
+      MINOR=$(echo "$XCODE_MAJOR_MINOR" | cut -d'.' -f2)
+      PREV_MINOR=$((MINOR - 1))
+      
+      # Build list of versions to try: major.minor.1, major.minor.0, major.(minor-1).1, major.(minor-1).0
+      VERSIONS_TO_TRY=(
+        "${MAJOR}.${MINOR}.1"
+        "${MAJOR}.${MINOR}.0"
+        "${MAJOR}.${PREV_MINOR}.1"
+        "${MAJOR}.${PREV_MINOR}.0"
+      )
+      
+      echo "Will try Xcode versions in order: ${VERSIONS_TO_TRY[*]}"
+      
+      XCODE_VERSION=""
+      XCODE_PATH=""
+      
+      for VERSION in "${VERSIONS_TO_TRY[@]}"; do
+        CANDIDATE_PATH="/Applications/Xcode_${VERSION}.app"
+        echo "Checking for Xcode ${VERSION} at ${CANDIDATE_PATH}..."
+        if [[ -d "$CANDIDATE_PATH" ]]; then
+          echo "Found Xcode version ${VERSION} at ${CANDIDATE_PATH}"
+          XCODE_VERSION="$VERSION"
+          XCODE_PATH="$CANDIDATE_PATH"
+          break
         else
-          echo "Warning: Cannot determine fallback version for ${XCODE_VERSION}"
-          echo "Proceeding with original version - this may fail"
+          echo "Xcode version ${VERSION} not found"
         fi
-      else
-        echo "Found Xcode version ${XCODE_VERSION} at ${XCODE_PATH}"
+      done
+      
+      if [[ -z "$XCODE_PATH" ]]; then
+        echo "ERROR: None of the Xcode versions were found: ${VERSIONS_TO_TRY[*]}"
+        exit 1
       fi
       
+      echo "Selected Xcode version: ${XCODE_VERSION} at ${XCODE_PATH}"
       sudo xcode-select -s "$XCODE_PATH"
       xcrun xcode-select --print-path
       xcodebuild -version
@@ -146,15 +155,14 @@ steps:
   - ${{ if ne(parameters.skipSimulatorSetup, 'true') }}:
     - script: |
         echo installing simulator runtimes...
-        # Use REQUIRED_XCODE for devdiv team project or if CollectionUri contains xamarin, XCODE for others (e.g., maui-pr)
-        if [[ "$(System.TeamProject)" == "devdiv" || "$(System.CollectionUri)" == *"xamarin"* ]]; then
-          XCODE_VERSION=$(REQUIRED_XCODE)
-        else
-          XCODE_VERSION=$(XCODE)
-        fi
+        # XCODE variable is in major.minor format (e.g., 26.1)
+        XCODE_MAJOR_MINOR=$(XCODE)
+        MAJOR=$(echo "$XCODE_MAJOR_MINOR" | cut -d'.' -f1)
+        MINOR=$(echo "$XCODE_MAJOR_MINOR" | cut -d'.' -f2)
+        
         # if we're using Xcode 26.0[.?], then explicitly install the iOS 26.0 simulator (the iOS 26.0.1 simulator doesn't work for us)
         # also install the universal simulator version, so that this bot can run x64 apps in the simulator.
-        if [[ "${XCODE_VERSION}" =~ ^26[.]0.*$ ]]; then
+        if [[ "${MAJOR}" == "26" && "${MINOR}" == "0" ]]; then
           RC=0
           sudo xcodebuild -downloadPlatform iOS -architectureVariant universal -buildVersion 26.0 || RC=$?
           if [[ "$RC" == "70" ]]; then
@@ -181,6 +189,7 @@ steps:
         fi
       displayName: Install Simulator Runtimes
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+      continueOnError: true
       timeoutInMinutes: 30
 
 # Provision Additional Software

@@ -11,7 +11,7 @@ namespace Microsoft.Maui.IntegrationTests
 	public abstract class BaseBuildTest
 	{
 		public const string DotNetCurrent = "net10.0";
-		public const string DotNetPrevious = "net9.0";
+		public const string DotNetPrevious = "net10.0";
 
 		// Versions of .NET MAUI that are used when testing the <MauiVersion> property. These should preferrably
 		// different to the defaults in the SDKs such that the tests can test what would happen if the user puts
@@ -27,7 +27,7 @@ namespace Microsoft.Maui.IntegrationTests
 		// not be the same as the default in MicrosoftMauiPreviousDotNetReleasedVersion in eng/Versions.props
 		// as this would result in the tests not testing anything. If the .NET 9 version of MAUI pulls in 8.0.100
 		// of the .NET 8 MAUI, then this should be 8.0.80 for example.
-		public const string MauiVersionPrevious = "9.0.82";
+		public const string MauiVersionPrevious = "10.0.0";
 
 		char[] invalidChars = { '{', '}', '(', ')', '$', ':', ';', '\"', '\'', ',', '=', '.', '-', ' ', };
 

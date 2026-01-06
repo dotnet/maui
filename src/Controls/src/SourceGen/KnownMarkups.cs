@@ -37,7 +37,9 @@ internal class KnownMarkups
 			return false;
 		}
 
+#pragma warning disable CA1307 // Specify StringComparison for clarity - char overload doesn't support StringComparison
 		var dotIdx = member.LastIndexOf('.');
+#pragma warning restore CA1307 // Specify StringComparison for clarity
 		var typename = member.Substring(0, dotIdx);
 		var membername = member.Substring(dotIdx + 1);
 
