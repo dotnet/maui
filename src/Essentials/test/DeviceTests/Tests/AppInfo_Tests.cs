@@ -63,5 +63,17 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			Assert.Equal(new Version(1, 0), AppInfo.Version);
 #endif
 		}
+
+#if __IOS__
+		[Fact]
+		[Trait("Issue", "33382")]
+		public void ShowSettingsUI_DoesNotThrow()
+		{
+			// This test verifies that ShowSettingsUI can be called without throwing
+			// The actual behavior (opening settings) is tested manually
+			var exception = Record.Exception(() => AppInfo.ShowSettingsUI());
+			Assert.Null(exception);
+		}
+#endif
 	}
 }
