@@ -217,7 +217,19 @@ If author expressed uncertainty (from pre-flight), investigate and provide guida
    git checkout -b fix/issue-XXXXX
    ```
 
-3. **Push and create PR**:
+3. **⛔ STOP: Ask user for confirmation before creating PR**:
+   
+   Present a summary to the user and wait for explicit approval:
+   > "I'm ready to create a PR for issue #XXXXX. Here's what will be included:
+   > - **Branch**: fix/issue-XXXXX
+   > - **Files changed**: [list files]
+   > - **Tests added**: [list test files]
+   > 
+   > Would you like me to push and create the PR?"
+   
+   **Do NOT proceed until user confirms.**
+
+4. **Push and create PR** (after user confirmation):
    ```bash
    git push -u origin fix/issue-XXXXX
    gh pr create --title "Fix #XXXXX: [Title]" --body "Fixes #XXXXX
