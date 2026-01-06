@@ -4,19 +4,15 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-public class BorderFeatureTests : UITest
+public class BorderFeatureTests : _GalleryUITest
 {
 	public const string BorderFeatureMatrix = "Border Feature Matrix";
+
+	public override string GalleryPageName => BorderFeatureMatrix;
 
 	public BorderFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(BorderFeatureMatrix);
 	}
 
 	[Test]

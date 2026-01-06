@@ -129,14 +129,6 @@ parameters:
     demands:
     - macOS.Name -equals Sequoia
 
-resources:
-  repositories:
-  - repository: yaml-templates
-    type: github
-    name: xamarin/yaml-templates
-    endpoint: xamarin
-    ref: refs/heads/main
-
 stages:
 
 - stage: build_net

@@ -69,9 +69,6 @@ extends:
       spotBugs:
         enabled: false
         justification: 'Failing with "Could not successfully find the java tool launcher"'
-      sourceRepositoriesToScan:
-        exclude:
-        - repository: yaml-templates
       suppression:
         suppressionFile: $(Build.SourcesDirectory)\eng\automation\guardian\source.gdnsuppress
     stages:
