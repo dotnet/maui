@@ -26,7 +26,7 @@ internal partial class MaterialSliderHandler : ViewHandler<ISlider, Slider>
 
     protected override Slider CreatePlatformView()
     {
-        return new Slider(Context)
+        return new Slider(MauiMaterialContextThemeWrapper.Create(Context))
         {
             DuplicateParentStateEnabled = false,
         };
