@@ -1,4 +1,4 @@
-# PR Agent: Post-Gate Phases (4-7)
+# PR Agent: Post-Gate Phases (4-5)
 
 **⚠️ PREREQUISITE: Only read this file after 🚦 Gate shows `✅ PASSED` in your state file.**
 
@@ -6,207 +6,91 @@ If Gate is not passed, go back to `.github/agents/pr.md` and complete phases 1-3
 
 ---
 
-## Workflow Depends on Starting Point
+## Workflow Overview
 
-**Starting from a PR (fix exists):**
-- Phase 4: Research root cause independently
-- Phase 5: Compare your approach vs PR's fix
-- Phase 6: Regression testing
-- Phase 7: Report with APPROVE/REQUEST CHANGES
-
-**Starting from an Issue (no fix yet):**
-- Phase 4: Research root cause, **implement fix**
-- Phase 5: Skip comparison (no PR to compare)
-- Phase 6: Verify fix with full test verification
-- Phase 7: Create PR
+| Phase | Name | What Happens |
+|-------|------|--------------|
+| 4 | **Fix** | Explore fix candidates using `try-fix` skill, select best one |
+| 5 | **Report** | Deliver result (approve PR, request changes, or create new PR) |
 
 ---
 
-## 🔍 ANALYSIS: Independent Analysis (Phase 4)
+## 🔧 FIX: Explore and Select Fix (Phase 4)
 
-> **SCOPE**: Research root cause, design your own fix approach, understand the problem deeply.
+> **SCOPE**: Explore alternative fixes using `try-fix` skill, select the best approach.
 
 **⚠️ Gate Check:** Verify 🚦 Gate is `✅ PASSED` in your state file before proceeding.
 
-### Step 1: Review Pre-Flight Findings
+### Step 1: Loop - Call try-fix Skill
 
-Before analyzing code, review your `.github/agent-pr-session/pr-XXXXX.md`:
-- What is the user-reported symptom? (from linked issue)
-- What are the key disagreements? (from inline comments, if PR exists)
-- What edge cases were mentioned? (from discussion)
+Invoke the `try-fix` skill repeatedly to explore alternative fixes:
 
-### Step 2: Research the Root Cause
-
-```bash
-# Find relevant commits to the affected files
-git log --oneline --all -20 -- path/to/affected/File.cs
-
-# Look at the breaking commit (if regression)
-git show COMMIT_SHA --stat
-
-# Compare implementations
-git show COMMIT_SHA:path/to/File.cs | head -100
+```
+┌─────────────────────────────────────────────────────────────┐
+│  try-fix loop (max 5 total candidates)                      │
+├─────────────────────────────────────────────────────────────┤
+│  1. Invoke try-fix skill                                    │
+│  2. Skill reads state file, sees prior attempts             │
+│  3. Skill proposes NEW approach, tests it, records result   │
+│  4. Skill reverts changes, returns to agent                 │
+│  5. Check: exhausted=true OR 5 candidates reached?          │
+│     YES → Exit loop                                         │
+│     NO  → Go to step 1                                      │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-### Step 3: Design Your Own Fix
+**Stop the loop when:**
+- `try-fix` returns `exhausted=true` (no more ideas)
+- 5 candidates have been recorded in the table
+- User requests to stop
 
-Determine:
-- What is the **minimal** fix?
-- What are **alternative approaches**?
-- What **edge cases** should be handled?
+### Step 2: Select Best Fix
 
-### Step 4: Implement Fix
+Review the **Fix Candidates** table and select the best approach:
 
-**If starting from an Issue (no PR):**
-Implement your fix now. This is the main deliverable.
+**Selection criteria (in order of priority):**
+1. **Must pass tests** - Only consider candidates with ✅ PASS
+2. **Simplest solution** - Fewer lines changed, lower complexity
+3. **Most robust** - Handles edge cases, less likely to regress
+4. **Matches codebase style** - Consistent with existing patterns
 
-```bash
-# Implement the fix in the appropriate source files
-# Then verify tests now PASS
-pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "IssueXXXXX"
-```
-
-**If starting from a PR:**
-Optionally implement your alternative to compare approaches.
-
-```bash
-# Save PR's fix
-git stash
-
-# Implement your fix
-# Run the same tests
-pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "IssueXXXXX"
-
-# Restore PR's fix
-git stash pop
-```
-
-### Complete 🔍 Analysis
-
-**Update state file**:
-1. Check off completed items in the checklist
-2. Fill in **Root Cause** and **My Approach**
-3. Change 🔍 Analysis status to `✅ COMPLETE`
-4. Change ⚖️ Compare status to `▶️ IN PROGRESS` (or `⏭️ SKIPPED` if no PR)
-
----
-
-## ⚖️ COMPARE: Compare Approaches (Phase 5)
-
-> **SCOPE**: Compare PR's fix vs your alternative, recommend the better approach.
-
-**⚠️ Gate Check:** Verify 🔍 Analysis is `✅ COMPLETE` before proceeding.
-
-### If Starting from Issue (No PR)
-
-**Skip this phase** - there's no PR fix to compare against.
-
-Mark as `⏭️ SKIPPED` in state file and proceed to Phase 6 (Regression).
-
-### If Starting from PR
-
-Compare PR's Fix vs Your Alternative:
-
-| Approach | Test Result | Lines Changed | Complexity | Recommendation |
-|----------|-------------|---------------|------------|----------------|
-| PR's fix | ✅/❌ | ? | Low/Med/High | |
-| Your alternative | ✅/❌ | ? | Low/Med/High | |
-
-### Assess Each Approach
-
-For PR's fix:
-- Is this the **minimal** fix?
-- Are there **edge cases** that might break?
-- Could this cause **regressions**?
-
-For your alternative:
-- Does it solve the same problem?
-- Is it simpler or more robust?
-- Any trade-offs?
-
-### Complete ⚖️ Compare
-
-**Update state file**:
-1. Fill in comparison table with findings (or mark `⏭️ SKIPPED` if no PR)
-2. Fill in **Recommendation** with your assessment
-3. Change ⚖️ Compare status to `✅ COMPLETE` or `⏭️ SKIPPED`
-4. Change 🔬 Regression status to `▶️ IN PROGRESS`
-
----
-
-## 🔬 REGRESSION: Regression Testing (Phase 6)
-
-> **SCOPE**: Verify edge cases, investigate disagreements, check for potential regressions.
-
-**⚠️ Gate Check:** Verify ⚖️ Compare is `✅ COMPLETE` or `⏭️ SKIPPED` before proceeding.
-
-### If Starting from Issue (No PR) - Verify Fix Works
-
-Run the full verification to confirm your fix works (the script auto-detects mode when fix files are present):
-
-```bash
-# Commit your fix first
-git add -A && git commit -m "Fix: Description of the fix"
-
-# Run full verification - should FAIL without fix, PASS with fix
-pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 -Platform ios -TestFilter "IssueXXXXX"
-```
-
-### Step 1: Check Edge Cases from Pre-Flight
-
-Go through each edge case identified during pre-flight (from `.github/agent-pr-session/pr-XXXXX.md`):
+Update the state file:
 
 ```markdown
-### Edge Cases from Discussion
-- [ ] [edge case 1] - Tested: [result]
-- [ ] [edge case 2] - Tested: [result]
+**Exhausted:** Yes
+**Selected Fix:** #N - [Reason for selection]
 ```
 
-### Step 2: Investigate Disagreements (if PR exists)
+### Step 3: Apply Selected Fix
 
-For each disagreement between reviewers and author (from pre-flight):
-1. Understand both positions
-2. Test to determine who is correct
-3. Document your finding in state file
+Apply the selected fix to the working tree (it was reverted after testing):
 
-### Step 3: Verify Author's Uncertain Areas (if PR exists)
+**If selected fix is the PR's fix (#1):**
+- No action needed - PR's changes are already in place
 
-If author expressed uncertainty (from pre-flight), investigate and provide guidance.
+**If selected fix is an alternative (#2+):**
+- Re-implement the fix (you documented the approach in the table)
+- Or: if you saved a patch, apply it
 
-### Step 4: Check Code Paths
-
-1. **Code paths affected by the fix**
-   - What other scenarios use this code?
-   - Are there conditional branches that might behave differently?
-
-2. **Common regression patterns**
-
-| Fix Pattern | Potential Regression |
-|-------------|---------------------|
-| `== ConstantValue` | Dynamic values won't match |
-| Platform-specific fix | Other platforms affected? |
-
-3. **Instrument code if needed** - Add `Debug.WriteLine` and grep device logs.
-
-### Complete 🔬 Regression
+### Complete 🔧 Fix
 
 **Update state file**:
-1. Check off edge cases with results
-2. Document disagreement findings
-3. Change 🔬 Regression status to `✅ COMPLETE`
+1. Verify Fix Candidates table is complete
+2. Verify Selected Fix is documented
+3. Change 🔧 Fix status to `✅ COMPLETE`
 4. Change 📋 Report status to `▶️ IN PROGRESS`
 
 ---
 
-## 📋 REPORT: Final Report (Phase 7)
+## 📋 REPORT: Final Report (Phase 5)
 
-> **SCOPE**: Write final recommendation with justification, or create PR if starting from issue.
+> **SCOPE**: Deliver the final result - either a PR review or a new PR.
 
-**⚠️ Gate Check:** Verify ALL phases 1-6 are `✅ COMPLETE`, `✅ PASSED`, or `⏭️ SKIPPED` before proceeding.
+**⚠️ Gate Check:** Verify ALL phases 1-4 are `✅ COMPLETE` or `✅ PASSED` before proceeding.
 
 ### If Starting from Issue (No PR) - Create PR
 
-1. **Ensure all changes are committed**:
+1. **Ensure selected fix is applied and committed**:
    ```bash
    git add -A
    git commit -m "Fix #XXXXX: [Description of fix]"
@@ -222,8 +106,10 @@ If author expressed uncertainty (from pre-flight), investigate and provide guida
    Present a summary to the user and wait for explicit approval:
    > "I'm ready to create a PR for issue #XXXXX. Here's what will be included:
    > - **Branch**: fix/issue-XXXXX
+   > - **Selected fix**: Candidate #N - [approach]
    > - **Files changed**: [list files]
    > - **Tests added**: [list test files]
+   > - **Other candidates considered**: [brief summary]
    > 
    > Would you like me to push and create the PR?"
    
@@ -240,97 +126,62 @@ If author expressed uncertainty (from pre-flight), investigate and provide guida
    ## Root Cause
    [What was causing the issue]
 
-   ## Changes
-   - [List of changes made]
+   ## Solution
+   [Selected approach and why]
+
+   ## Other Approaches Considered
+   [Brief summary of alternatives tried]
 
    ## Testing
-   - Added UI tests: Issue33356.cs
+   - Added UI tests: IssueXXXXX.cs
    - Tests verify [what the tests check]
    "
    ```
 
-4. **Update state file** with PR link
+5. **Update state file** with PR link
 
 ### If Starting from PR - Write Review
 
-Update the state file to its final format. The final structure should be:
+Determine your recommendation based on the Fix phase:
 
-1. **Header** with date, issue link, PR link - always visible
-2. **Final Recommendation** - `✅ APPROVE` or `⚠️ REQUEST CHANGES`
-3. **Phase status table** - all phases marked complete
-4. **Collapsible sections** for each phase's details
-5. **Justification** bullet points - always visible
+**If PR's fix (Candidate #1) was selected:**
+- Recommend: `✅ APPROVE`
+- Justification: PR's approach is correct/optimal
+
+**If an alternative fix was selected:**
+- Recommend: `⚠️ REQUEST CHANGES`
+- Justification: Suggest the better approach from Candidate #N
+
+**If PR's fix failed tests:**
+- Recommend: `⚠️ REQUEST CHANGES`
+- Justification: Fix doesn't work, suggest alternatives
+
+### Final State File Format
+
+Update the state file header:
+
+```markdown
+## ✅ Final Recommendation: APPROVE
+```
+or
+```markdown
+## ⚠️ Final Recommendation: REQUEST CHANGES
+```
+
+Update all phase statuses to complete.
 
 ### Complete 📋 Report
 
 **Update state file**:
-1. Change header status from `⏳ Status: IN PROGRESS` to `✅ Final Recommendation: APPROVE` or `✅ PR CREATED`
-2. Update the status table to show all phases as `✅ PASSED`, `✅ COMPLETE`, or `⏭️ SKIPPED`
-3. Fill in justification bullet points or PR link
-4. Present final result to user
-
----
-
-## State File: Post-Gate Sections
-
-After Gate passes, add these sections to your state file if not already present:
-
-```markdown
-<details>
-<summary><strong>🔍 Analysis</strong></summary>
-
-**Status**: ▶️ IN PROGRESS
-
-- [ ] Reviewed pre-flight findings
-- [ ] Researched git history for root cause
-- [ ] Formed independent opinion on fix approach
-
-**Root Cause:** [PENDING]
-
-**Alternative Approaches Considered:**
-| Alternative | Location | Why NOT to use |
-|-------------|----------|----------------|
-
-**My Approach:** [PENDING]
-
-</details>
-
-<details>
-<summary><strong>⚖️ Compare</strong></summary>
-
-**Status**: ⏳ PENDING
-
-| Approach | Test Result | Lines Changed | Complexity | Recommendation |
-|----------|-------------|---------------|------------|----------------|
-| PR's fix | | | | |
-| My approach | | | | |
-
-**Recommendation:** [PENDING]
-
-</details>
-
-<details>
-<summary><strong>🔬 Regression</strong></summary>
-
-**Status**: ⏳ PENDING
-
-**Edge Cases Verified:**
-- [ ] [Edge case 1]
-- [ ] [Edge case 2]
-
-**Disagreements Investigated:**
-- [Findings]
-
-**Potential Regressions:** [PENDING]
-
-</details>
-```
+1. Change header status to final recommendation
+2. Update all phases to `✅ COMPLETE` or `✅ PASSED`
+3. Present final result to user
 
 ---
 
 ## Common Mistakes in Post-Gate Phases
 
-- ❌ **Looking at PR diff before forming your own opinion** - Research the bug independently first
-- ❌ **Skipping edge case verification** - Always check edge cases from pre-flight
-- ❌ **Not documenting your alternative approach** - Even if PR's fix is better, document what you considered
+- ❌ **Skipping the try-fix loop** - Always explore at least one alternative
+- ❌ **Selecting a failing fix** - Only select from passing candidates
+- ❌ **Forgetting to revert between attempts** - Each try-fix must start clean
 - ❌ **Rushing the report** - Take time to write clear justification

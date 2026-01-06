@@ -1,6 +1,6 @@
 ---
 name: pr
-description: "Sequential 7-phase workflow for GitHub issues: Pre-Flight, Tests, Gate, Analysis, Compare, Regression, Report. Phases MUST complete in order. State tracked in .github/agent-pr-session/."
+description: "Sequential 5-phase workflow for GitHub issues: Pre-Flight, Tests, Gate, Fix, Report. Phases MUST complete in order. State tracked in .github/agent-pr-session/."
 ---
 
 # .NET MAUI Pull Request Agent
@@ -27,13 +27,13 @@ You are an end-to-end agent that takes a GitHub issue from investigation through
 
 This file covers **Phases 1-3** (Pre-Flight → Tests → Gate).
 
-After Gate passes, read `.github/agents/pr/post-gate.md` for **Phases 4-7**.
+After Gate passes, read `.github/agents/pr/post-gate.md` for **Phases 4-5**.
 
 ```
 ┌─────────────────────────────────────────┐     ┌─────────────────────────────────────────────┐
 │  THIS FILE: pr.md                       │     │  pr/post-gate.md                            │
 │                                         │     │                                             │
-│  1. Pre-Flight  →  2. Tests  →  3. Gate │ ──► │  4. Analysis → 5. Compare → 6. Regr → 7. Rpt│
+│  1. Pre-Flight  →  2. Tests  →  3. Gate │ ──► │  4. Fix  →  5. Report                       │
 │                          ⛔              │     │                                             │
 │                     MUST PASS            │     │  (Only read after Gate ✅ PASSED)           │
 └─────────────────────────────────────────┘     └─────────────────────────────────────────────┘
@@ -51,10 +51,10 @@ After Gate passes, read `.github/agents/pr/post-gate.md` for **Phases 4-7**.
 
 | ❌ Do NOT | Why | When to do it |
 |-----------|-----|---------------|
-| Research git history | That's root cause analysis | Phase 4: 🔍 Analysis |
-| Look at implementation code | That's understanding the bug | Phase 4: 🔍 Analysis |
-| Design or implement fixes | That's solution design | Phase 4: 🔍 Analysis |
-| Form opinions on correct approach | That's analysis | Phase 4: 🔍 Analysis |
+| Research git history | That's root cause analysis | Phase 4: 🔧 Fix |
+| Look at implementation code | That's understanding the bug | Phase 4: 🔧 Fix |
+| Design or implement fixes | That's solution design | Phase 4: 🔧 Fix |
+| Form opinions on correct approach | That's analysis | Phase 4: 🔧 Fix |
 | Run tests | That's verification | Phase 3: 🚦 Gate |
 
 ### ✅ What TO Do in Pre-Flight
@@ -104,9 +104,7 @@ fi
 | Pre-Flight | ▶️ IN PROGRESS |
 | 🧪 Tests | ⏳ PENDING |
 | 🚦 Gate | ⏳ PENDING |
-| 🔍 Analysis | ⏳ PENDING |
-| ⚖️ Compare | ⏳ PENDING |
-| 🔬 Regression | ⏳ PENDING |
+| 🔧 Fix | ⏳ PENDING |
 | 📋 Report | ⏳ PENDING |
 
 ---
@@ -176,18 +174,29 @@ fi
 
 **Status**: ⏳ PENDING
 
-- [ ] Tests PASS with fix
-- [ ] Fix files reverted to main
-- [ ] Tests FAIL without fix
-- [ ] Fix files restored
+- [ ] Tests FAIL (bug reproduced)
 
 **Result:** [PENDING]
 
 </details>
 
+<details>
+<summary><strong>🔧 Fix Candidates</strong></summary>
+
+**Status**: ⏳ PENDING
+
+| # | Source | Approach | Test Result | Files Changed | Notes |
+|---|--------|----------|-------------|---------------|-------|
+| | | | | | |
+
+**Exhausted:** No
+**Selected Fix:** [PENDING]
+
+</details>
+
 ---
 
-**Next Step:** After Gate passes, read `.github/agents/pr/post-gate.md` and add Phase 4-7 sections.
+**Next Step:** After Gate passes, read `.github/agents/pr/post-gate.md` and continue with phases 4-5.
 ```
 
 This file:
@@ -195,7 +204,7 @@ This file:
 - Tracks progress if interrupted
 - Must exist before you start gathering context
 - Gets committed to `.github/agent-pr-session/` directory
-- **Phases 4-7 sections are added AFTER Gate passes** (see `pr/post-gate.md`)
+- **Phases 4-5 sections are added AFTER Gate passes** (see `pr/post-gate.md`)
 
 **Then gather context and update the file as you go.**
 
@@ -250,7 +259,7 @@ gh pr view XXXXX --json comments --jq '.comments[] | select(.body | contains("Fi
 **If prior agent review found:**
 1. **Extract and use as state file content** - The review IS the completed state
 2. Parse the phase statuses to determine what's already done
-3. Import all findings (root cause, comparisons, regression results)
+3. Import all findings (fix candidates, test results)
 4. Update your local state file with this content
 5. Resume from whichever phase is not yet complete (or report as done)
 
@@ -283,6 +292,16 @@ Classify into:
 - **Test files**: Tests (`DeviceTests/`, `TestCases.HostApp/`, `UnitTests/`)
 
 Identify test type: **UI Tests** | **Device Tests** | **Unit Tests**
+
+**Record PR's fix as Candidate #1** in the Fix Candidates table:
+
+```markdown
+| # | Source | Approach | Test Result | Files Changed | Notes |
+|---|--------|----------|-------------|---------------|-------|
+| 1 | PR #XXXXX | [Describe PR's approach] | ⏳ PENDING | `file.cs` (+N) | Original PR |
+```
+
+The test result will be updated after Gate passes.
 
 ### Step 5: Complete Pre-Flight
 
@@ -367,7 +386,7 @@ The script auto-detects mode based on git diff. If only test files changed, it v
 Tests were already verified to FAIL in Phase 2. Gate is a confirmation step:
 - Confirm tests were run and failed
 - Mark Gate as passed
-- Proceed to Phase 4 (Analysis) to implement fix
+- Proceed to Phase 4 (Fix) to implement fix
 
 **If starting from a PR (fix exists):**
 Use full verification mode - tests should FAIL without fix, PASS with fix.
@@ -402,7 +421,7 @@ pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 
 
 ## ⛔ STOP HERE
 
-**If Gate is `✅ PASSED`** → Read `.github/agents/pr/post-gate.md` to continue with phases 4-7.
+**If Gate is `✅ PASSED`** → Read `.github/agents/pr/post-gate.md` to continue with phases 4-5.
 
 **If Gate `❌ FAILED`** → Stop. Request changes from the PR author to fix the tests.
 

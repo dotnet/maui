@@ -183,11 +183,11 @@ The repository includes specialized custom agents for specific tasks. These agen
 
 ### Available Custom Agents
 
-1. **pr** - Sequential 7-phase workflow for reviewing and working on PRs
-   - **Use when**: A PR already exists and needs review or work
-   - **Capabilities**: PR review, test verification, root cause analysis, regression testing
-   - **Trigger phrases**: "review PR #XXXXX", "work on PR #XXXXX", "continue PR #XXXXX"
-   - **Do NOT use for**: Issues without a PR yet → Use `/delegate` to have remote Copilot create the fix
+1. **pr** - Sequential 5-phase workflow for reviewing and working on PRs
+   - **Use when**: A PR already exists and needs review or work, OR an issue needs a fix
+   - **Capabilities**: PR review, test verification, fix exploration, alternative comparison
+   - **Trigger phrases**: "review PR #XXXXX", "work on PR #XXXXX", "fix issue #XXXXX", "continue PR #XXXXX"
+   - **Do NOT use for**: Just running tests manually → Use `sandbox-agent`
 
 2. **uitest-coding-agent** - Specialized agent for writing new UI tests for .NET MAUI with proper syntax, style, and conventions
    - **Use when**: Creating new UI tests or updating existing ones
