@@ -597,7 +597,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			// If HeaderTemplate is set, use it regardless of header value
 			if (headerTemplate is not null)
 			{
-				_header = RealizeHeaderFooterTemplate(header, headerTemplate, ref _mauiHeader);
+				var bindingContext = header ?? (object)string.Empty;
+				_header = ItemsViewExtensions.RealizeHeaderFooterTemplate(bindingContext, headerTemplate, MauiContext!, ref _mauiHeader);
 			}
 			else if (header is not null)
 			{
@@ -608,7 +609,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 						Text = text,
 						Margin = new Microsoft.UI.Xaml.Thickness(0, 0, 0, 10)
 					},
-					View view => RealizeHeaderFooterView(view, ref _mauiHeader),
+					View view => ItemsViewExtensions.RealizeHeaderFooterView(view, MauiContext!, ref _mauiHeader),
 					_ => new TextBlock
 					{
 						Text = header.ToString(),
@@ -669,7 +670,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			// If FooterTemplate is set, use it regardless of footer value
 			if (footerTemplate is not null)
 			{
-				_footer = RealizeHeaderFooterTemplate(footer, footerTemplate, ref _mauiFooter);
+				var bindingContext = footer ?? (object)string.Empty;
+				_footer = ItemsViewExtensions.RealizeHeaderFooterTemplate(bindingContext, footerTemplate, MauiContext!, ref _mauiFooter);
 			}
 			else if (footer is not null)
 			{
@@ -680,7 +682,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 						Text = text,
 						Margin = new Microsoft.UI.Xaml.Thickness(0, 10, 0, 0)
 					},
-					View view => RealizeHeaderFooterView(view, ref _mauiFooter),
+					View view => ItemsViewExtensions.RealizeHeaderFooterView(view, MauiContext!, ref _mauiFooter),
 					_ => new TextBlock
 					{
 						Text = footer.ToString(),
