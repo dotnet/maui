@@ -29,5 +29,22 @@ namespace Microsoft.Maui.Controls
 
 			Platform.EditTextExtensions.UpdateText(handler.PlatformView, entry);
 		}
+
+		// MaterialEntryHandler-specific overloads
+		internal static void MapText(MaterialEntryHandler handler, Entry entry)
+		{
+			if (handler.PlatformView?.EditText is null)
+			{
+				return;
+			}
+
+			if (handler.DataFlowDirection == DataFlowDirection.FromPlatform)
+			{
+				Platform.EditTextExtensions.UpdateTextFromPlatform(handler.PlatformView.EditText, entry);
+				return;
+			}
+
+			Platform.EditTextExtensions.UpdateText(handler.PlatformView.EditText, entry);
+		}
 	}
 }
