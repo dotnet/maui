@@ -77,33 +77,71 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			ScrollBarVisibility scrollBarVisibility,
 			ref WASDKScrollBarVisibility? defaultVerticalScrollVisibility)
 		{
-			if (scrollBarVisibility != ScrollBarVisibility.Default)
+			// Check if this is a ScrollView (CV2 - new ItemsView control)
+			if (control is Microsoft.UI.Xaml.Controls.ItemsView itemsView && itemsView.ScrollView is not null)
 			{
-				// If the value is changing to anything other than the default, record the default 
+				var scrollView = itemsView.ScrollView;
+
+				if (scrollBarVisibility != ScrollBarVisibility.Default)
+				{
+					// If the value is changing to anything other than the default, record the default
+					if (defaultVerticalScrollVisibility is null)
+					{
+						defaultVerticalScrollVisibility = (WASDKScrollBarVisibility)scrollView.VerticalScrollBarVisibility;
+					}
+				}
+
 				if (defaultVerticalScrollVisibility is null)
 				{
-					defaultVerticalScrollVisibility = ScrollViewer.GetVerticalScrollBarVisibility(control);
+					// If the default has never been recorded, then this has never been set to anything but the
+					// default value; there's nothing to do.
+					return;
+				}
+
+				switch (scrollBarVisibility)
+				{
+					case ScrollBarVisibility.Always:
+						scrollView.VerticalScrollBarVisibility = (ScrollingScrollBarVisibility)WASDKScrollBarVisibility.Visible;
+						break;
+					case ScrollBarVisibility.Never:
+						scrollView.VerticalScrollBarVisibility = (ScrollingScrollBarVisibility)WASDKScrollBarVisibility.Hidden;
+						break;
+					case ScrollBarVisibility.Default:
+						scrollView.VerticalScrollBarVisibility = (ScrollingScrollBarVisibility)defaultVerticalScrollVisibility.Value;
+						break;
 				}
 			}
-
-			if (defaultVerticalScrollVisibility is null)
+			else
 			{
-				// If the default has never been recorded, then this has never been set to anything but the 
-				// default value; there's nothing to do.
-				return;
-			}
+				// CV1 - Use ScrollViewer attached properties
+				if (scrollBarVisibility != ScrollBarVisibility.Default)
+				{
+					// If the value is changing to anything other than the default, record the default
+					if (defaultVerticalScrollVisibility is null)
+					{
+						defaultVerticalScrollVisibility = ScrollViewer.GetVerticalScrollBarVisibility(control);
+					}
+				}
 
-			switch (scrollBarVisibility)
-			{
-				case ScrollBarVisibility.Always:
-					ScrollViewer.SetVerticalScrollBarVisibility(control, WASDKScrollBarVisibility.Visible);
-					break;
-				case ScrollBarVisibility.Never:
-					ScrollViewer.SetVerticalScrollBarVisibility(control, WASDKScrollBarVisibility.Hidden);
-					break;
-				case ScrollBarVisibility.Default:
-					ScrollViewer.SetVerticalScrollBarVisibility(control, defaultVerticalScrollVisibility.Value);
-					break;
+				if (defaultVerticalScrollVisibility is null)
+				{
+					// If the default has never been recorded, then this has never been set to anything but the
+					// default value; there's nothing to do.
+					return;
+				}
+
+				switch (scrollBarVisibility)
+				{
+					case ScrollBarVisibility.Always:
+						ScrollViewer.SetVerticalScrollBarVisibility(control, WASDKScrollBarVisibility.Visible);
+						break;
+					case ScrollBarVisibility.Never:
+						ScrollViewer.SetVerticalScrollBarVisibility(control, WASDKScrollBarVisibility.Hidden);
+						break;
+					case ScrollBarVisibility.Default:
+						ScrollViewer.SetVerticalScrollBarVisibility(control, defaultVerticalScrollVisibility.Value);
+						break;
+				}
 			}
 		}
 
@@ -112,22 +150,60 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			ScrollBarVisibility scrollBarVisibility,
 			ref WASDKScrollBarVisibility? defaultHorizontalScrollVisibility)
 		{
-			if (defaultHorizontalScrollVisibility is null)
+			// Check if this is a ScrollView (CV2 - new ItemsView control)
+			if (control is Microsoft.UI.Xaml.Controls.ItemsView itemsView && itemsView.ScrollView is not null)
 			{
-				defaultHorizontalScrollVisibility = ScrollViewer.GetHorizontalScrollBarVisibility(control);
-			}
+				var scrollView = itemsView.ScrollView;
 
-			switch (scrollBarVisibility)
+				if (scrollBarVisibility != ScrollBarVisibility.Default)
+				{
+					// If the value is changing to anything other than the default, record the default
+					if (defaultHorizontalScrollVisibility is null)
+					{
+						defaultHorizontalScrollVisibility = (WASDKScrollBarVisibility)scrollView.HorizontalScrollBarVisibility;
+					}
+				}
+
+				if (defaultHorizontalScrollVisibility is null)
+				{
+					// If the default has never been recorded, then this has never been set to anything but the
+					// default value; there's nothing to do.
+					return;
+				}
+
+				switch (scrollBarVisibility)
+				{
+					case ScrollBarVisibility.Always:
+						scrollView.HorizontalScrollBarVisibility = (ScrollingScrollBarVisibility)WASDKScrollBarVisibility.Visible;
+						break;
+					case ScrollBarVisibility.Never:
+						scrollView.HorizontalScrollBarVisibility = (ScrollingScrollBarVisibility)WASDKScrollBarVisibility.Hidden;
+						break;
+					case ScrollBarVisibility.Default:
+						scrollView.HorizontalScrollBarVisibility = (ScrollingScrollBarVisibility)defaultHorizontalScrollVisibility.Value;
+						break;
+				}
+			}
+			else
 			{
-				case ScrollBarVisibility.Always:
-					ScrollViewer.SetHorizontalScrollBarVisibility(control, WASDKScrollBarVisibility.Visible);
-					break;
-				case ScrollBarVisibility.Never:
-					ScrollViewer.SetHorizontalScrollBarVisibility(control, WASDKScrollBarVisibility.Hidden);
-					break;
-				case ScrollBarVisibility.Default:
-					ScrollViewer.SetHorizontalScrollBarVisibility(control, defaultHorizontalScrollVisibility.Value);
-					break;
+				// CV1 - Use ScrollViewer attached properties
+				if (defaultHorizontalScrollVisibility is null)
+				{
+					defaultHorizontalScrollVisibility = ScrollViewer.GetHorizontalScrollBarVisibility(control);
+				}
+
+				switch (scrollBarVisibility)
+				{
+					case ScrollBarVisibility.Always:
+						ScrollViewer.SetHorizontalScrollBarVisibility(control, WASDKScrollBarVisibility.Visible);
+						break;
+					case ScrollBarVisibility.Never:
+						ScrollViewer.SetHorizontalScrollBarVisibility(control, WASDKScrollBarVisibility.Hidden);
+						break;
+					case ScrollBarVisibility.Default:
+						ScrollViewer.SetHorizontalScrollBarVisibility(control, defaultHorizontalScrollVisibility.Value);
+						break;
+				}
 			}
 		}
 	}
