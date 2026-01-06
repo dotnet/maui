@@ -166,32 +166,104 @@ catch {
 $baseFields = "number,title,labels,createdAt,updatedAt,isDraft,author,additions,deletions,changedFiles,milestone,url,reviewDecision,reviews"
 $jsonFields = if ($hasProjectScope) { "$baseFields,projectItems" } else { $baseFields }
 
-# Fetch all open non-draft PRs from dotnet/maui
+# Fetch PRs from dotnet/maui using multiple targeted queries to ensure comprehensive coverage
 Write-Host ""
 Write-Host "Fetching open PRs from dotnet/maui..." -ForegroundColor Cyan
 
 $allPRs = @()
+$seenPRNumbers = @{}
+
+# Helper function to add PRs while avoiding duplicates
+function Add-UniquePRs {
+    param($prs, [ref]$allPRs, [ref]$seenNumbers)
+    
+    $added = 0
+    foreach ($pr in $prs) {
+        if (-not $seenNumbers.Value.ContainsKey($pr.number)) {
+            $seenNumbers.Value[$pr.number] = $true
+            $allPRs.Value += $pr
+            $added++
+        }
+    }
+    return $added
+}
+
 try {
-    $prResult = Invoke-GitHubWithRetry -Command "gh pr list --repo dotnet/maui --state open --limit 200 --json $jsonFields" -Description "fetch PRs from dotnet/maui"
-    $allPRs = $prResult | ConvertFrom-Json
+    # Query 1: Milestoned PRs - dynamically fetch active SR and Preview milestones
+    Write-Host "  Fetching active milestones..." -ForegroundColor Gray
+    $milestonesResult = Invoke-GitHubWithRetry -Command "gh api repos/dotnet/maui/milestones --jq '.[].title'" -Description "fetch milestones"
+    $allMilestones = $milestonesResult -split "`n" | Where-Object { $_ -ne "" }
+    
+    # Filter for SR and Preview milestones only (ignore Servicing, Backlog, Planning)
+    $targetMilestones = $allMilestones | Where-Object { 
+        $_ -match "SR\d" -or $_ -match "preview"
+    }
+    
+    if ($targetMilestones.Count -gt 0) {
+        Write-Host "  Fetching milestoned PRs (SR/Preview)..." -ForegroundColor Gray
+        foreach ($milestone in $targetMilestones) {
+            $searchQuery = "milestone:`"$milestone`""
+            $prResult = Invoke-GitHubWithRetry -Command "gh pr list --repo dotnet/maui --state open --search '$searchQuery' --limit 25 --json $jsonFields" -Description "fetch $milestone PRs"
+            $prs = $prResult | ConvertFrom-Json
+            $added = Add-UniquePRs -prs $prs -allPRs ([ref]$allPRs) -seenNumbers ([ref]$seenPRNumbers)
+            if ($added -gt 0) { Write-Host "    $milestone`: $added PRs" -ForegroundColor Gray }
+        }
+    } else {
+        Write-Host "    No active SR/Preview milestones found" -ForegroundColor Gray
+    }
+    
+    # Query 2: P/0 priority PRs
+    Write-Host "  Fetching P/0 priority PRs..." -ForegroundColor Gray
+    $prResult = Invoke-GitHubWithRetry -Command "gh pr list --repo dotnet/maui --state open --search 'label:p/0' --limit 25 --json $jsonFields" -Description "fetch P/0 PRs"
+    $prs = $prResult | ConvertFrom-Json
+    $added = Add-UniquePRs -prs $prs -allPRs ([ref]$allPRs) -seenNumbers ([ref]$seenPRNumbers)
+    Write-Host "    P/0: $added PRs" -ForegroundColor Gray
+    
+    # Query 3: Partner PRs
+    Write-Host "  Fetching partner PRs..." -ForegroundColor Gray
+    $prResult = Invoke-GitHubWithRetry -Command "gh pr list --repo dotnet/maui --state open --search 'label:partner/syncfusion' --limit 25 --json $jsonFields" -Description "fetch partner PRs"
+    $prs = $prResult | ConvertFrom-Json
+    $added = Add-UniquePRs -prs $prs -allPRs ([ref]$allPRs) -seenNumbers ([ref]$seenPRNumbers)
+    Write-Host "    Partner: $added PRs" -ForegroundColor Gray
+    
+    # Query 4: Community PRs
+    Write-Host "  Fetching community PRs..." -ForegroundColor Gray
+    $prResult = Invoke-GitHubWithRetry -Command "gh pr list --repo dotnet/maui --state open --search 'label:`"community ✨`"' --limit 25 --json $jsonFields" -Description "fetch community PRs"
+    $prs = $prResult | ConvertFrom-Json
+    $added = Add-UniquePRs -prs $prs -allPRs ([ref]$allPRs) -seenNumbers ([ref]$seenPRNumbers)
+    Write-Host "    Community: $added PRs" -ForegroundColor Gray
+    
+    # Query 5: Recently updated PRs (sorted by updated date)
+    Write-Host "  Fetching recently updated PRs..." -ForegroundColor Gray
+    $prResult = Invoke-GitHubWithRetry -Command "gh pr list --repo dotnet/maui --state open --search 'sort:updated-desc' --limit 25 --json $jsonFields" -Description "fetch recently updated PRs"
+    $prs = $prResult | ConvertFrom-Json
+    $added = Add-UniquePRs -prs $prs -allPRs ([ref]$allPRs) -seenNumbers ([ref]$seenPRNumbers)
+    Write-Host "    Recently updated: $added PRs" -ForegroundColor Gray
+    
+    # Query 6: Recently created PRs (sorted by created date)
+    Write-Host "  Fetching recently created PRs..." -ForegroundColor Gray
+    $prResult = Invoke-GitHubWithRetry -Command "gh pr list --repo dotnet/maui --state open --search 'sort:created-desc' --limit 25 --json $jsonFields" -Description "fetch recently created PRs"
+    $prs = $prResult | ConvertFrom-Json
+    $added = Add-UniquePRs -prs $prs -allPRs ([ref]$allPRs) -seenNumbers ([ref]$seenPRNumbers)
+    Write-Host "    Recently created: $added PRs" -ForegroundColor Gray
     
     # Filter out drafts
     $allPRs = $allPRs | Where-Object { -not $_.isDraft }
     
-    Write-Host "  Found $($allPRs.Count) non-draft open PRs in dotnet/maui" -ForegroundColor Green
+    Write-Host "  Found $($allPRs.Count) unique non-draft open PRs in dotnet/maui" -ForegroundColor Green
 }
 catch {
     Write-Error "Failed to query GitHub: $_"
     exit 1
 }
 
-# Fetch all open non-draft PRs from dotnet/docs-maui
+# Fetch all open non-draft PRs from dotnet/docs-maui (sorted by updated date)
 Write-Host ""
 Write-Host "Fetching open PRs from dotnet/docs-maui..." -ForegroundColor Cyan
 
 $docsMauiPRs = @()
 try {
-    $docsResult = Invoke-GitHubWithRetry -Command "gh pr list --repo dotnet/docs-maui --state open --limit 100 --json $jsonFields" -Description "fetch PRs from dotnet/docs-maui"
+    $docsResult = Invoke-GitHubWithRetry -Command "gh pr list --repo dotnet/docs-maui --state open --search 'sort:updated-desc' --limit 50 --json $jsonFields" -Description "fetch PRs from dotnet/docs-maui"
     $docsMauiPRs = $docsResult | ConvertFrom-Json
     
     # Filter out drafts
@@ -512,10 +584,10 @@ $recentPRs = $processedPRs | Where-Object {
 # Organize docs-maui PRs by priority and recency (filter recent to waiting for review)
 $docsMauiPriorityPRs = $processedDocsMauiPRs | Where-Object { $_.IsPriority } | Sort-Object { 
     Get-MilestonePriority $_.Milestone
-}, CreatedAt
+}, UpdatedAt -Descending
 $docsMauiRecentPRs = $processedDocsMauiPRs | Where-Object {
     $_.ReviewDecision -eq "REVIEW_REQUIRED" -or $_.ReviewDecision -eq $null -or $_.ReviewDecision -eq ""
-} | Sort-Object CreatedAt -Descending
+} | Sort-Object UpdatedAt -Descending
 
 # Filter by category if specified
 if ($Category -ne "all") {
