@@ -40,6 +40,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		WASDKScrollBarVisibility? _defaultHorizontalScrollVisibility;
 		WASDKScrollBarVisibility? _defaultVerticalScrollVisibility;
 
+		int _lastRemainingItemsThresholdIndex = -1;
+
 		WeakNotifyPropertyChangedProxy? _layoutPropertyChangedProxy;
 		PropertyChangedEventHandler? _layoutPropertyChanged;
 
@@ -289,6 +291,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			UpdateEmptyViewVisibility();
 
+			if(e.Action == NotifyCollectionChangedAction.Add || e.Action == NotifyCollectionChangedAction.Reset )
+			{
+				_lastRemainingItemsThresholdIndex = -1;
+			}
+
 			VirtualView.Dispatcher.DispatchAsync(() => ApplyItemsUpdatingScrollMode());
 		}
 
@@ -429,6 +436,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			PlatformView.ScrollView.ViewChanged += ScrollViewChanged;
 			PlatformView.ScrollView.PointerWheelChanged += PointerScrollChanged;
+
+			UpdateVerticalScrollBarVisibility();
+			UpdateHorizontalScrollBarVisibility();
 		}
 
 		void LayoutPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -759,11 +769,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			Element.SendScrolled(itemsViewScrolledEventArgs);
 
 			var remainingItemsThreshold = Element.RemainingItemsThreshold;
-			if (_collectionViewSource != null && remainingItemsThreshold > -1 &&
-				_collectionViewSource.View.Count - 1 - itemsViewScrolledEventArgs.LastVisibleItemIndex <= remainingItemsThreshold)
+			if (_collectionViewSource != null && remainingItemsThreshold > -1)
 			{
-				Element.SendRemainingItemsThresholdReached();
-			}
+				var itemsRemaining = _collectionViewSource.View.Count - 1 - itemsViewScrolledEventArgs.LastVisibleItemIndex;
+					
+				if(itemsRemaining<= remainingItemsThreshold)
+				{
+					if (itemsViewScrolledEventArgs.LastVisibleItemIndex > _lastRemainingItemsThresholdIndex) 
+					{
+						_lastRemainingItemsThresholdIndex = itemsViewScrolledEventArgs.LastVisibleItemIndex;
+					Element.SendRemainingItemsThresholdReached();
+					}
+				
+				}
+			
+			} 
 		}
 
 		ItemsViewScrolledEventArgs ComputeVisibleIndexes(ItemsViewScrolledEventArgs args, bool advancing)
