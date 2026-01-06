@@ -14,20 +14,8 @@ public class Issue32869 : ContentPage
 			AutomationId = "TestImage",
 		};
 		Content = _testImage;
-	}
 
-	protected override async void OnAppearing()
-	{
-		base.OnAppearing();
-		try
-		{
-			await LoadWideImageAsync();
-		}
-		catch (Exception ex)
-		{
-			_testImage.Source = null;
-			await DisplayAlert("Error", $"Failed to load image: {ex.Message}", "OK");
-		}
+		_ = LoadWideImageAsync();
 	}
 
 	async Task LoadWideImageAsync()
