@@ -296,7 +296,8 @@ namespace Microsoft.Maui.Media
 						
 						var rotatedResult = new FileResult(tempFilePath)
 						{
-							FileName = result.FileName
+							FileName = result.FileName,
+							ContentType = result.ContentType
 						};
 						rotatedResults.Add(rotatedResult);
 					}
