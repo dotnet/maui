@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
+       x:Class="Maui.Controls.Sample.Issues.Issue33356">
+    <ShellContent Title="Home" Route="Home">
+        <ContentPage Title="Search Test">
+            <Shell.SearchHandler>
+                <local:Issue33356SearchHandler
+                    AutomationId="SearchHandler"
+                    Placeholder="Type to search (try 'cat')"
+                    SearchBoxVisibility="Expanded"
+                    ShowsResults="True">
+                    <SearchHandler.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Padding="10" AutomationId="SuggestionItem">
+                                <Label Text="{Binding Name}" 
+                                       FontAttributes="Bold"
+                                       AutomationId="SuggestionLabel"/>
+                            </Grid>
+                        </DataTemplate>
+                    </SearchHandler.ItemTemplate>
+                </local:Issue33356SearchHandler>
+            </Shell.SearchHandler>
+            
+            <VerticalStackLayout Padding="20" Spacing="10">
+                <Label AutomationId="WaitForStubControl" 
+                       Text="Issue 33356: Search suggestion navigation test"
+                       FontSize="18"
+                       FontAttributes="Bold"/>
+                <Label Text="1. Type 'cat' in the search box above"/>
+                <Label Text="2. Tap on 'Bengal Cat' in the suggestions"/>
+                <Label Text="3. Should navigate to detail page"/>
+                <Label AutomationId="StatusLabel" 
+                       x:Name="StatusLabel"
+                       Text="Status: Waiting for search"
+                       TextColor="Gray"/>
+            </VerticalStackLayout>
+        </ContentPage>
+    </ShellContent>
+</Shell>

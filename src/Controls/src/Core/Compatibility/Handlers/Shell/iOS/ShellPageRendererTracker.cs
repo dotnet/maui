@@ -1045,8 +1045,24 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 			}
 
-			_searchController.Active = false;
+			// Store the search controller reference before any state changes
+			var searchController = _searchController;
+			
+			// Call ItemSelected first to trigger navigation before dismissing the search UI.
+			// On iOS 26+, setting Active = false before navigation can cause the navigation
+			// to be lost due to the search controller dismissal animation.
 			(SearchHandler as ISearchHandlerController)?.ItemSelected(e);
+			
+			// Deactivate the search controller after navigation has been initiated.
+			// Using BeginInvokeOnMainThread ensures this happens after the current run loop,
+			// allowing the navigation to proceed without interference from the dismissal animation.
+			ViewController?.BeginInvokeOnMainThread(() =>
+			{
+				if (searchController is not null)
+				{
+					searchController.Active = false;
+				}
+			});
 		}
 
 		void SearchButtonClicked(object? sender, EventArgs e)
