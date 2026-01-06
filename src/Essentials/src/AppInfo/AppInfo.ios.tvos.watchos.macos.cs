@@ -31,6 +31,8 @@ namespace Microsoft.Maui.ApplicationModel
 #if __IOS__ || __TVOS__
 		public async void ShowSettingsUI()
 		{
+			// iOS 18/26 requires using UIApplication.OpenUrlAsync directly with UIApplicationOpenUrlOptions
+			// instead of the deprecated openURL method to properly open app settings
 			var settingsUrl = new NSUrl(UIApplication.OpenSettingsUrlString);
 			await UIApplication.SharedApplication.OpenUrlAsync(settingsUrl, new UIApplicationOpenUrlOptions());
 		}
