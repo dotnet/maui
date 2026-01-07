@@ -29,7 +29,7 @@ public class Issue19219Shell : Shell
 				AutomationId = "SearchHandlerLabel"
 			};
 
-			var fruits = new List<string> { "New York", "London", "Sydney", "Toronto", "Los Angeles", "Chicago", "Melbourne", "Vancouver",
+			var fruits = new List<string> { "Los Angeles", "New York", "London", "Sydney", "Toronto", "Chicago", "Melbourne", "Vancouver",
   			"Manchester", "Birmingham", "San Francisco", "Dublin", "Auckland", "Glasgow", "Perth", "Houston",
   			"Seattle", "Cape Town", "Ottawa", "Brisbane", "Boston", "Phoenix", "Washington", "Edinburgh" };
 			var searchHandler = new SearchHandler
@@ -49,23 +49,13 @@ public class Issue19219Shell : Shell
 			});
 
 			Shell.SetSearchHandler(this, searchHandler);
-			Button button = new Button
-			{
-				Text = "Set query in SearchHandler",
-				Command = new Command(() =>
-				{
-					searchHandler.Query = "a";
 
-				}),
-				AutomationId = "SetQueryButton"
+			Grid grid = new Grid
+			{
+				Children = { label }
 			};
 
-			StackLayout stackLayout = new StackLayout
-			{
-				Children = { button, label }
-			};
-
-			Content = stackLayout;
+			Content = grid;
 		}
 	}
 }

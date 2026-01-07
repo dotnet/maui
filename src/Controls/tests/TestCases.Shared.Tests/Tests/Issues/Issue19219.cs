@@ -17,14 +17,14 @@ public class Issue19219 : _IssuesUITest
 	[Category(UITestCategories.SearchBar)]
 	public void ShouldExecuteCommandWhenTappingShellSearchItem()
 	{
-		App.WaitForElement("SetQueryButton");
-		var searchHandler = App.GetShellSearchHandler().GetRect();
-		App.Tap("SetQueryButton");
-		App.TapCoordinates(searchHandler.X + 100, searchHandler.Y + 10);
-#if ANDROID
-		App.TapCoordinates(searchHandler.X + 100, searchHandler.Height + 100);
+		App.WaitForElement("SearchHandlerLabel");
+		var searchHandler = App.GetShellSearchHandler();
+		searchHandler.Tap();
+		searchHandler.SendKeys("Los Angeles");
+#if ANDROID // Android does not support selecting elements in SearchHandler's results so used tap coordinates
+		var y = searchHandler.GetRect().Y + searchHandler.GetRect().Height;
+		App.TapCoordinates(searchHandler.GetRect().X + 10, y + 10);
 #else
-		App.WaitForElement("Los Angeles");
 		App.Tap("Los Angeles");
 #endif
 		var text = App.WaitForElement("SearchHandlerLabel").GetText();
