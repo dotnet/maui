@@ -52,7 +52,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					var viewContent = template.CreateContent() as View;
 					if (_view.Handler?.MauiContext is not null && viewContent is not null)
 					{
-						wrapper = new ElementWrapper(_view.Handler.MauiContext);
+						var handler = _view.Handler as ItemsViewHandler2<ItemsView>;
+						wrapper = new ElementWrapper(_view.Handler.MauiContext, handler);
 						wrapper.HorizontalAlignment = HorizontalAlignment.Stretch;
 						wrapper.HorizontalContentAlignment = HorizontalAlignment.Stretch;
 						wrapper.SetContent(viewContent);
@@ -104,11 +105,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		}
 	}
 
-	internal partial class ElementWrapper(IMauiContext context) : ContentControl
+	internal partial class ElementWrapper : ContentControl
 	{
 		public IView? VirtualView { get; private set; }
-		
-		private IMauiContext _context = context;
+
+		private IMauiContext _context;
+		private ItemsViewHandler2<ItemsView>? _handler;
+
+		public ElementWrapper(IMauiContext context, ItemsViewHandler2<ItemsView>? handler = null)
+		{
+			_context = context;
+			_handler = handler;
+		}
 
 		public void SetContent(IView view)
 		{
@@ -117,6 +125,36 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				Content = view.ToPlatform(_context);
 				VirtualView = view;
 			}
+		}
+
+		protected override Windows.Foundation.Size MeasureOverride(Windows.Foundation.Size availableSize)
+		{
+			// Check if we should use cached first item size
+			var cachedSize = _handler?.GetCachedFirstItemSize() ?? Windows.Foundation.Size.Empty;
+
+			if (!cachedSize.IsEmpty)
+			{
+				// Use cached size for MeasureFirstItem strategy
+				base.MeasureOverride(cachedSize);
+				return cachedSize;
+			}
+
+			// Measure normally
+			var measuredSize = base.MeasureOverride(availableSize);
+
+			// Cache the size if this is the first item and using MeasureFirstItem
+			if (_handler != null &&
+				_handler.VirtualView is StructuredItemsView siv &&
+				siv.ItemSizingStrategy == ItemSizingStrategy.MeasureFirstItem)
+			{
+				var currentCached = _handler.GetCachedFirstItemSize();
+				if (currentCached.IsEmpty)
+				{
+					_handler.SetCachedFirstItemSize(measuredSize);
+				}
+			}
+
+			return measuredSize;
 		}
 	}
 }

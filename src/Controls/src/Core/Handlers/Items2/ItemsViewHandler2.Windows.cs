@@ -22,6 +22,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 	{
 		CollectionViewSource? _collectionViewSource;
 		IList? _itemsSource;
+		Windows.Foundation.Size _firstItemMeasuredSize = Windows.Foundation.Size.Empty;
 
 		FrameworkElement? _emptyView;
 		View? _mauiEmptyView;
@@ -47,6 +48,38 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		protected TItemsView Element => VirtualView;
 
 		protected abstract IItemsLayout Layout { get; }
+
+		/// <summary>
+		/// Gets the cached first item measured size for MeasureFirstItem optimization.
+		/// Returns Size.Empty if not cached or not using MeasureFirstItem strategy.
+		/// </summary>
+		internal Windows.Foundation.Size GetCachedFirstItemSize()
+		{
+			if (VirtualView is StructuredItemsView siv && siv.ItemSizingStrategy == ItemSizingStrategy.MeasureFirstItem)
+			{
+				return _firstItemMeasuredSize;
+			}
+			return Windows.Foundation.Size.Empty;
+		}
+
+		/// <summary>
+		/// Sets the cached first item measured size for MeasureFirstItem optimization.
+		/// </summary>
+		internal void SetCachedFirstItemSize(Windows.Foundation.Size size)
+		{
+			if (VirtualView is StructuredItemsView siv && siv.ItemSizingStrategy == ItemSizingStrategy.MeasureFirstItem)
+			{
+				_firstItemMeasuredSize = size;
+			}
+		}
+
+		/// <summary>
+		/// Invalidates the cached first item size.
+		/// </summary>
+		internal void InvalidateFirstItemSize()
+		{
+			_firstItemMeasuredSize = Windows.Foundation.Size.Empty;
+		}
 
 		public ItemsViewHandler2() : base(ItemsViewMapper)
 		{
@@ -124,22 +157,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			handler.UpdateItemsLayout();
 		}
-		
+
 		public static void MapHeader(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
 		{
 			handler.UpdateHeader();
 		}
-		
+
 		public static void MapHeaderTemplate(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
 		{
 			handler.UpdateHeader();
 		}
-		
+
 		public static void MapFooter(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
 		{
 			handler.UpdateFooter();
 		}
-		
+
 		public static void MapFooterTemplate(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
 		{
 			handler.UpdateFooter();
@@ -148,7 +181,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		protected override WItemsView CreatePlatformView()
 		{
 			var itemsView = SelectListViewBase();
-			
+
 			return itemsView;
 		}
 
@@ -224,7 +257,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			CleanUpCollectionViewSource();
 
-			
+
 
 			_collectionViewSource = CreateCollectionViewSource();
 			_itemsSource = _collectionViewSource?.Source as IList;
@@ -318,7 +351,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				Layout = CreateItemsLayout()
 			};
 
-			if (Layout is LinearItemsLayout listItemsLayout && 
+			if (Layout is LinearItemsLayout listItemsLayout &&
 				listItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal)
 			{
 				ScrollViewer.SetHorizontalScrollMode(itemsView, UI.Xaml.Controls.ScrollMode.Enabled);
@@ -326,7 +359,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 				ScrollViewer.SetVerticalScrollMode(itemsView, UI.Xaml.Controls.ScrollMode.Disabled);
 				ScrollViewer.SetVerticalScrollBarVisibility(itemsView, WASDKScrollBarVisibility.Disabled);
-				
+
 				// Set header/footer to horizontal layout
 				itemsView.SetLayoutOrientation(true);
 			}
@@ -348,7 +381,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			UpdateItemsSource();
 
 			PlatformView.Layout = CreateItemsLayout();
-			
+
 			// Update header/footer orientation
 			if (PlatformView is MauiItemsView mauiItemsView && Layout is LinearItemsLayout linearLayout)
 			{
@@ -554,7 +587,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				_emptyViewDisplayed = false;
 			}
 		}
-		
+
 		void UpdateHeader()
 		{
 			if (Element is not StructuredItemsView structuredItemsView || PlatformView is null)
@@ -572,7 +605,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					{
 						mauiItemsView.HeaderVisibility = WVisibility.Collapsed;
 					}
-					
+
 					if (_mauiHeader is not null)
 					{
 						ItemsView.RemoveLogicalChild(_mauiHeader);
@@ -599,7 +632,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				platformItemsView.SetHeader(_header, _mauiHeader);
 				platformItemsView.HeaderVisibility = WVisibility.Visible;
 			}
-			
+
 			// Add logical child if it's a View (not a template)
 			if (_mauiHeader is not null && structuredItemsView.HeaderTemplate is null)
 			{
@@ -608,7 +641,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			_headerDisplayed = true;
 		}
-		
+
 		void UpdateFooter()
 		{
 			if (Element is not StructuredItemsView structuredItemsView || PlatformView is null)
@@ -626,7 +659,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					{
 						mauiItemsView.FooterVisibility = WVisibility.Collapsed;
 					}
-					
+
 					if (_mauiFooter is not null)
 					{
 						ItemsView.RemoveLogicalChild(_mauiFooter);
@@ -652,7 +685,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				platformItemsView.SetFooter(_footer, _mauiFooter);
 				platformItemsView.FooterVisibility = WVisibility.Visible;
 			}
-			
+
 			// Add logical child if it's a View (not a template)
 			if (_mauiFooter is not null && structuredItemsView.FooterTemplate is null)
 			{
@@ -789,7 +822,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		int FindItemIndex(object item)
 		{
-			if(_collectionViewSource is null)
+			if (_collectionViewSource is null)
 			{
 				return -1;
 			}
