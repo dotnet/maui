@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Platform;
 
 internal class MauiMaterialDatePicker : TextInputEditText, IOnClickListener
 {
-    public MauiMaterialDatePicker(Context context) : base(context)
+    public MauiMaterialDatePicker(Context context) : base(MauiMaterialContextThemeWrapper.Create(context))
     {
         Initialize();
     }
