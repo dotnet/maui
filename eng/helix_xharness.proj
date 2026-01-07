@@ -66,8 +66,7 @@
         <HelixPreCommand Include="export XHARNESS_LOG_WITH_TIMESTAMPS=true" />
     </ItemGroup>
 
-    <!-- Windows: Include eng folder as correlation payload for Cake scripts -->
-    <!-- Note: eng/devices/.config contains a minimal dotnet-tools.json with just cake.tool -->
+    <!-- Windows: Include eng folder as correlation payload for the test runner script and Versions.props -->
     <ItemGroup Condition="'$(TargetsWindows)' == 'true'">
         <HelixCorrelationPayload Include="$(RepoRoot)eng">
             <Destination>eng</Destination>
@@ -201,7 +200,7 @@
             </XHarnessApkToTest>
         </ItemGroup>
 
-        <!-- Windows: Use HelixWorkItem with Cake script (not XHarness) -->
+        <!-- Windows: Use HelixWorkItem with test runner script (not XHarness) -->
         <!-- Windows packaged tests only - unpackaged tests require additional bootstrapper setup -->
         <ItemGroup Condition="'$(TargetOS)' == 'windows'">
             <HelixWorkItem Include="%(_MAUIScenarioSearch.ScenarioDirectoryName)-packaged">
