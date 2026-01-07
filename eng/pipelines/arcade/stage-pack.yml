@@ -8,6 +8,8 @@ parameters:
   default: []
 - name: pool
   type: object
+- name: macPool
+  type: object
 - name: enableSourceBuild
   type: boolean
   default: false
@@ -59,6 +61,27 @@ stages:
         clean: all
 
       jobs:
+      - job: pack_net_macOS
+        displayName: Pack macOS
+        timeoutInMinutes: 240
+        pool: ${{ parameters.macPool }}
+        preSteps:
+        - checkout: self
+          fetchDepth: 1
+          clean: true
+
+        steps:
+        - ${{ each step in parameters.prepareSteps }}:
+          - ${{ each pair in step }}:
+              ${{ pair.key }}: ${{ pair.value }}
+
+        - script: $(_buildScriptMacOS) -restore -pack -publish $(_PublishArgs) -configuration $(_BuildConfig) /bl:$(Build.Arcade.LogsPath)/$(_BuildConfig)/pack-mac.binlog $(_OfficialBuildIdArgs)
+          displayName: Pack & Publish
+
+        - ${{ each step in parameters.postSteps }}:
+          - ${{ each pair in step }}:
+              ${{ pair.key }}: ${{ pair.value }}
+
       - job: pack_net_Windows
         displayName: Pack Windows
         timeoutInMinutes: 240
