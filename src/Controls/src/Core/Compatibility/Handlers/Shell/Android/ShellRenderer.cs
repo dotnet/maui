@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public static Color DefaultBackgroundColor => ResolveThemeColor(RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#FEF7FF") : Color.FromArgb("#2c3e50"), RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#141218") : Color.FromArgb("#1B3147"));
 		public static Color DefaultForegroundColor => ResolveThemeColor(RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#1D1B20") : Colors.White, RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#E6E0E9") : Colors.White);
 		public static Color DefaultTitleColor => ResolveThemeColor(RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#1D1B20") : Colors.White, RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#E6E0E9") : Colors.White);
-		public static readonly Color DefaultUnselectedColor = RuntimeFeature.IsMaterial3Enabled ? Color.FromRgba(255, 255, 255, 180) : Color.FromRgba(255, 255, 255, 180);
+		public static readonly Color DefaultUnselectedColor = Color.FromRgba(255, 255, 255, 180);
 		internal static Color DefaultBottomNavigationViewBackgroundColor => ResolveThemeColor(RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#F3EDF7") : Colors.White, RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#1D1B20") : Color.FromArgb("#1B3147"));
 		internal static bool IsDarkTheme => Application.Current?.RequestedTheme == AppTheme.Dark;
 

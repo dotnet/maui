@@ -198,9 +198,29 @@ namespace Microsoft.Maui.Platform
 
 		internal static int ResolveMaterial3Color(Context context, int resID)
 		{
-			var typedValue = new TypedValue();
-			context?.Theme?.ResolveAttribute(resID, typedValue, true);
-			return typedValue.Data;
+			using (var typedValue = new TypedValue())
+			{
+				if (context?.Theme?.ResolveAttribute(resID, typedValue, true) == true)
+				{
+					if (typedValue.Type >= DataType.FirstInt && typedValue.Type <= DataType.LastInt)
+					{
+						return typedValue.Data;
+					}
+					else if (typedValue.Type == DataType.String)
+					{
+						if (context.Resources != null)
+						{
+							if (OperatingSystem.IsAndroidVersionAtLeast(23))
+								return context.Resources.GetColor(typedValue.ResourceId, context.Theme);
+							else
+#pragma warning disable CS0618 // Type or member is obsolete
+								return context.Resources.GetColor(typedValue.ResourceId);
+#pragma warning restore CS0618 // Type or member is obsolete
+						}
+					}
+				}
+			}
+			return 0;
 		}
 
 		internal static int GetDisabledThemeAttrColor(this Context context, int attr)
