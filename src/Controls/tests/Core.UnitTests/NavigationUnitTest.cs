@@ -694,6 +694,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await navPage.PushAsync(middlePage);
 			await navPage.PushAsync(topPage);
 
+			// Assign a handler to the middle page to verify it gets disconnected
+			var mockHandler = new HandlerStub();
+			middlePage.Handler = mockHandler;
+
 			// Act: Remove the middle (non-visible) page from the stack
 			navPage.Navigation.RemovePage(middlePage);
 			await navPage.NavigatingTask;
@@ -706,12 +710,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			// Verify the page is no longer a logical child of the NavigationPage
 			Assert.DoesNotContain(middlePage, navPage.InternalChildren.Cast<Page>());
+
+			// Verify the handler was disconnected
+			Assert.Null(middlePage.Handler);
 		}
 
 		[Theory]
 		[InlineData(true)]
 		[InlineData(false)]
-		public async Task RemovePageCallsDisconnectHandlersOnRemovedPage(bool useMaui)
+		public async Task RemovePageDisconnectsHandlerForRemovedRootPage(bool useMaui)
 		{
 			// Arrange: Create a navigation stack with 2 pages where the root page has a handler
 			var root = new ContentPage { Title = "Root" };
