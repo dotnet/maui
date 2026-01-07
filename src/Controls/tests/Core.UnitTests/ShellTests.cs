@@ -1676,26 +1676,19 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void DuplicateRoutesShouldThrowArgumentException()
+		public void DuplicateSiblingRoutesShouldThrowArgumentException()
 		{
 			var shell = new Shell();
 			var sameRoute = "DuplicateRoute";
 
-			var flyoutItem1 = new FlyoutItem();
-			var shellContent1 = new ShellContent
-			{
-				Title = "Home"
-			};
-			flyoutItem1.Items.Add(shellContent1);
-			shell.Items.Add(flyoutItem1);
-
-			var flyoutItem2 = new FlyoutItem();
-			var shellContent2 = new ShellContent
-			{
-				Title = "Home"
-			};
-			flyoutItem2.Items.Add(shellContent2);
-			shell.Items.Add(flyoutItem2);
+			var flyoutItem = new FlyoutItem();
+			var shellSection = new ShellSection();
+			var shellContent1 = new ShellContent { Title = "Page1", Content = new ContentPage() };
+			var shellContent2 = new ShellContent { Title = "Page2", Content = new ContentPage() };
+			shellSection.Items.Add(shellContent1);
+			shellSection.Items.Add(shellContent2);
+			flyoutItem.Items.Add(shellSection);
+			shell.Items.Add(flyoutItem);
 
 			shellContent1.Route = sameRoute;
 			var exception = Assert.Throws<ArgumentException>(() =>
@@ -1703,7 +1696,101 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				shellContent2.Route = sameRoute;
 			});
 
-			Assert.Equal($"Duplicated Route: \"{sameRoute}\" is already registered to another element of type ShellContent. Routes must be unique across the Shell hierarchy to avoid navigation conflicts. (Parameter 'route')", exception.Message);
+			Assert.Equal($"Duplicated Route: \"{sameRoute}\" is already registered to another element of type ShellContent. Routes must be unique among siblings to avoid navigation conflicts. (Parameter 'route')", exception.Message);
+		}
+
+		[Fact]
+		public void SameRouteInDifferentParentsIsAllowed()
+		{
+			var shell = new Shell();
+			var sameRoute = "SharedRoute";
+
+			// Create two different ShellSections, each with their own ShellContent
+			var flyoutItem = new FlyoutItem();
+			var shellSection1 = new ShellSection();
+			var shellSection2 = new ShellSection();
+			var shellContent1 = new ShellContent { Title = "Page1", Content = new ContentPage() };
+			var shellContent2 = new ShellContent { Title = "Page2", Content = new ContentPage() };
+			
+			shellSection1.Items.Add(shellContent1);
+			shellSection2.Items.Add(shellContent2);
+			flyoutItem.Items.Add(shellSection1);
+			flyoutItem.Items.Add(shellSection2);
+			shell.Items.Add(flyoutItem);
+
+			// Both should be able to have the same route since they're in different parents
+			shellContent1.Route = sameRoute;
+			shellContent2.Route = sameRoute; // Should not throw - different parents
+			
+			Assert.Equal(sameRoute, shellContent1.Route);
+			Assert.Equal(sameRoute, shellContent2.Route);
+		}
+
+		[Fact]
+		public void ChangingRouteAllowsReuseAmongSiblings()
+		{
+			var shell = new Shell();
+			var route = "TestRoute";
+
+			var flyoutItem = new FlyoutItem();
+			var shellSection = new ShellSection();
+			var shellContent1 = new ShellContent { Title = "Page1", Content = new ContentPage() };
+			var shellContent2 = new ShellContent { Title = "Page2", Content = new ContentPage() };
+			shellSection.Items.Add(shellContent1);
+			shellSection.Items.Add(shellContent2);
+			flyoutItem.Items.Add(shellSection);
+			shell.Items.Add(flyoutItem);
+
+			// Set initial route
+			shellContent1.Route = route;
+
+			// Change the route to something else
+			shellContent1.Route = "NewRoute";
+
+			// Now the original route should be available for the sibling
+			shellContent2.Route = route; // Should not throw
+			Assert.Equal(route, shellContent2.Route);
+		}
+
+		[Fact]
+		public void RemovingElementClearsRoute()
+		{
+			var shell = new Shell();
+			var route = "RemovableRoute";
+
+			var flyoutItem = new FlyoutItem();
+			var shellSection = new ShellSection();
+			var shellContent1 = new ShellContent { Title = "Page1", Content = new ContentPage() };
+			var shellContent2 = new ShellContent { Title = "Page2", Content = new ContentPage() };
+			shellSection.Items.Add(shellContent1);
+			shellSection.Items.Add(shellContent2);
+			flyoutItem.Items.Add(shellSection);
+			shell.Items.Add(flyoutItem);
+
+			shellContent1.Route = route;
+
+			// Remove the element from ShellSection.Items
+			shellSection.Items.Remove(shellContent1);
+
+			// Now the route should be available for another element
+			shellContent2.Route = route; // Should not throw
+			Assert.Equal(route, shellContent2.Route);
+		}
+
+		[Fact]
+		public void ReassigningSameRouteToSameElementDoesNotThrow()
+		{
+			var shell = new Shell();
+			var route = "SameRoute";
+
+			var flyoutItem = new FlyoutItem();
+			var shellContent = new ShellContent { Title = "Page" };
+			flyoutItem.Items.Add(shellContent);
+			shell.Items.Add(flyoutItem);
+
+			shellContent.Route = route;
+			shellContent.Route = route; // Should not throw - same element, same route
+			Assert.Equal(route, shellContent.Route);
 		}
 	}
 }

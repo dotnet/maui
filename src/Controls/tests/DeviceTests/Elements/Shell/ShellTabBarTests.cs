@@ -96,12 +96,9 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			SetupBuilder();
 
-			// Generate unique routes to avoid duplicate route exceptions when running multiple test cases
-			var uniqueId = Guid.NewGuid().ToString("N").Substring(0, 8);
-
 			var selectedContent = new ShellContent()
 			{
-				Route = $"Tab1_{uniqueId}",
+				Route = "Tab1",
 				Title = "Tab1",
 				Content = new ContentPage(),
 				Icon = "white_tab.png"
@@ -109,7 +106,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var unselectedContent = new ShellContent()
 			{
-				Route = $"Tab2_{uniqueId}",
+				Route = "Tab2",
 				Title = "Tab2",
 				Content = new ContentPage(),
 				Icon = "white_tab.png"
@@ -117,7 +114,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var unselectedContent_2 = new ShellContent()
 			{
-				Route = $"Tab3_{uniqueId}",
+				Route = "Tab3",
 				Title = "Tab3",
 				Content = new ContentPage(),
 				Icon = "white_tab.png"

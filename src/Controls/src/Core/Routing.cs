@@ -1,6 +1,5 @@
 #nullable disable
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -14,7 +13,6 @@ namespace Microsoft.Maui.Controls
 		static Dictionary<string, RouteFactory> s_routes = new(StringComparer.Ordinal);
 		static Dictionary<string, Page> s_implicitPageRoutes = new(StringComparer.Ordinal);
 		static HashSet<string> s_routeKeys;
-		readonly static ConcurrentDictionary<string, string> routeSet = new ConcurrentDictionary<string, string>();
 
 		const string ImplicitPrefix = "IMPL_";
 		const string DefaultPrefix = "D_FAULT_";
@@ -117,7 +115,6 @@ namespace Microsoft.Maui.Controls
 			s_implicitPageRoutes.Clear();
 			s_routes.Clear();
 			s_routeKeys = null;
-			routeSet.Clear();
 		}
 
 		/// <summary>Bindable property for attached property <c>Route</c>.</summary>
@@ -223,7 +220,6 @@ namespace Microsoft.Maui.Controls
 			{
 				s_routeKeys = null;
 			}
-			RemoveRouteFromSet(route);
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Routing.xml" path="//Member[@MemberName='RegisterRoute'][1]/Docs/*" />
@@ -240,36 +236,39 @@ namespace Microsoft.Maui.Controls
 			obj.SetValue(RouteProperty, value);
 		}
 
-		private static void RemoveRouteFromSet(string route)
-		{
-			if (!string.IsNullOrEmpty(route) && IsUserDefined(route))
-			{
-				routeSet.TryRemove(route, out _);
-			}
-		}
-
 		internal static void ValidateForDuplicates(Element element, string route)
 		{
+			// If setting the same route to the same element, no need to validate
 			var currentRoute = GetRoute(element);
-
-			// Remove the old route when it's being changed
-			if (!string.IsNullOrEmpty(currentRoute) && IsUserDefined(currentRoute) && currentRoute != route)
+			if (currentRoute == route)
 			{
-				RemoveRouteFromSet(currentRoute);
+				return;
 			}
 
-			if (!string.IsNullOrEmpty(route) && IsUserDefined(route))
+			// Only validate user-defined routes
+			if (string.IsNullOrEmpty(route) || !IsUserDefined(route))
 			{
-				if (!routeSet.TryAdd(route, element.GetType().Name))
-				{
-					// Get the existing element type information directly from routeSet
-					var existingElementType = routeSet.TryGetValue(route, out var existingTypeName)
-						? existingTypeName ?? "unknown element"
-						: "unknown element";
+				return;
+			}
 
+			// Check for duplicate routes among siblings (elements with the same parent)
+			var parent = element.Parent;
+			if (parent == null)
+			{
+				return;
+			}
+
+			foreach (var child in parent.LogicalChildrenInternal)
+			{
+				if (child == element)
+					continue;
+
+				var siblingRoute = GetRoute(child);
+				if (siblingRoute == route)
+				{
 					throw new ArgumentException(
-						$"Duplicated Route: \"{route}\" is already registered to another element of type {existingElementType}. " +
-						$"Routes must be unique across the Shell hierarchy to avoid navigation conflicts.",
+						$"Duplicated Route: \"{route}\" is already registered to another element of type {child.GetType().Name}. " +
+						$"Routes must be unique among siblings to avoid navigation conflicts.",
 						nameof(route));
 				}
 			}
@@ -277,11 +276,7 @@ namespace Microsoft.Maui.Controls
 
 		internal static void RemoveElementRoute(Element element)
 		{
-			if (element == null)
-				return;
-
-			var route = GetRoute(element);
-			RemoveRouteFromSet(route);
+			// No longer needed with sibling-based validation, but keep for API compatibility
 		}
 
 		static void ValidateRoute(string route, RouteFactory routeFactory)

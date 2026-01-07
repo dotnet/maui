@@ -554,17 +554,17 @@ namespace Microsoft.Maui.DeviceTests
 					{
 						new ShellContent()
 						{
-							Route = "PageItem1",
+							Route = "Item1",
 							Content = page1
 						},
 						new ShellContent()
 						{
-							Route = "PageItem2",
+							Route = "Item2",
 							Content = page2
 						},
 						new ShellContent()
 						{
-							Route = "PageItem3",
+							Route = "Item3",
 							Content = page3
 						},
 					}
@@ -581,16 +581,16 @@ namespace Microsoft.Maui.DeviceTests
 					return view.Handler != null && view.ToPlatform() == GetTitleView(handler);
 				}
 
-				await shell.GoToAsync("//PageItem2");
+				await shell.GoToAsync("//Item2");
 				await AssertEventually(() => viewIsTitleView(titleView2));
 
-				await shell.GoToAsync("//PageItem1");
+				await shell.GoToAsync("//Item1");
 				await AssertEventually(() => viewIsTitleView(titleView1));
 
-				await shell.GoToAsync("//PageItem2");
+				await shell.GoToAsync("//Item2");
 				await AssertEventually(() => viewIsTitleView(titleView2));
 
-				await shell.GoToAsync("//PageItem3");
+				await shell.GoToAsync("//Item3");
 				await AssertEventually(() => viewIsTitleView(shellTitleView));
 			});
 		}
@@ -611,12 +611,12 @@ namespace Microsoft.Maui.DeviceTests
 					{
 						new ShellContent()
 						{
-							Route = "NewPageItem1",
+							Route = "Item1",
 							Content = page1
 						},
 						new ShellContent()
 						{
-							Route = "NewPageItem2",
+							Route = "Item2",
 							Content = page2
 						},
 					}
@@ -626,8 +626,8 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
 			{
 				var initialHandler = page1.Handler;
-				await shell.GoToAsync("//NewPageItem2");
-				await shell.GoToAsync("//NewPageItem1");
+				await shell.GoToAsync("//Item2");
+				await shell.GoToAsync("//Item1");
 				Assert.Equal(initialHandler, page1.Handler);
 			});
 		}
@@ -723,18 +723,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				// TODO MAUI Fix this 
 				await Task.Delay(100);
-
-				// Navigate to the second item's route (dynamically determined)
-				string secondItemRoute = null;
-				if (shell.Items.Count > 1)
-				{
-					secondItemRoute = shell.Items[1].Route;
-				}
-
-				if (!string.IsNullOrEmpty(secondItemRoute))
-				{
-					await shell.GoToAsync($"//{secondItemRoute}");
-				}
+				await shell.GoToAsync("//page2");
 				await Task.Delay(100);
 			});
 		}
