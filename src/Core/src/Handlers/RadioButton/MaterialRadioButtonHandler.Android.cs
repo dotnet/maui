@@ -34,7 +34,7 @@ internal partial class MaterialRadioButtonHandler : ViewHandler<IRadioButton, Ma
 
 	protected override MaterialRadioButton CreatePlatformView()
 	{
-		return new MaterialRadioButton(Context)
+		return new MaterialRadioButton(MauiMaterialContextThemeWrapper.Create(Context))
 		{
 			SoundEffectsEnabled = false
 		};
