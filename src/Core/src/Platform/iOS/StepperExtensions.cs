@@ -25,18 +25,8 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateValue(this UIStepper platformStepper, IStepper stepper)
 		{
-			// Update MinimumValue first to prevent UIStepper from incorrectly clamping the Value.
-			// If MAUI updates Value before Minimum, a stale higher MinimumValue would cause iOS to clamp Value incorrectly.
-			if (platformStepper.MinimumValue != stepper.Minimum)
-			{
-				platformStepper.MinimumValue = stepper.Minimum;
-			}
-
 			if (platformStepper.Value != stepper.Value)
-			{
 				platformStepper.Value = stepper.Value;
-			}
-
 		}
 	}
 }
