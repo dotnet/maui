@@ -250,45 +250,7 @@ namespace Microsoft.Maui.TestCases.Tests
 						var deviceScreenDensity = (long?)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceScreenDensity")
 							?? throw new InvalidOperationException("deviceScreenDensity capability is missing or null.");
 
-						// Check if this is a Material3 build by multiple methods
-						var testFilter = Environment.GetEnvironmentVariable("TEST_FILTER") ?? "";
-						var isMaterial3Test = testFilter.Contains("Material3", StringComparison.OrdinalIgnoreCase);
-						
-						// Alternative detection: Check if current test has Material3 category (for local testing)
-						if (!isMaterial3Test)
-						{
-							try
-							{
-								var currentTest = TestContext.CurrentContext?.Test;
-								if (currentTest?.Properties != null && currentTest.Properties.ContainsKey("Category"))
-								{
-									var categories = currentTest.Properties["Category"];
-									if (categories != null)
-									{
-										foreach (var category in categories)
-										{
-											if (category?.ToString()?.Contains("Material3", StringComparison.OrdinalIgnoreCase) == true)
-											{
-												isMaterial3Test = true;
-												// Set TEST_FILTER for consistent behavior
-												Environment.SetEnvironmentVariable("TEST_FILTER", "Material3");
-												break;
-											}
-										}
-									}
-								}
-							}
-							catch
-							{
-								// Ignore errors in category detection, fall back to TEST_FILTER only
-							}
-						}
-						
-						if (isMaterial3Test)
-						{
-							environmentName = "android-material3";
-						}
-						else if (deviceApiLevel == 36)
+						if (deviceApiLevel == 36)
 						{
 							environmentName = "android-notch-36";
 						}
@@ -338,7 +300,7 @@ namespace Microsoft.Maui.TestCases.Tests
 						throw new NotImplementedException($"Unknown device type {_testDevice}");
 				}
 
-				name ??= TestContext.CurrentContext?.Test?.MethodName ?? TestContext.CurrentContext?.Test?.Name;
+				name ??= TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
 
 				// Currently Android is the OS with the ripple animations, but Windows may also have some animations
 				// that need to finish before taking a screenshot.
