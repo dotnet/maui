@@ -153,14 +153,6 @@ public abstract partial class ChatClientBase : IChatClient
 		}
 	}
 
-	internal void LogStreamingCompleted(string methodName)
-	{
-		if (_logger.IsEnabled(LogLevel.Debug))
-		{
-			LogCompleted(methodName);
-		}
-	}
-
 	internal void LogStreamingUpdate(string methodName, ChatResponseUpdate update)
 	{
 		if (_logger.IsEnabled(LogLevel.Trace))
