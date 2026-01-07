@@ -196,6 +196,13 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		internal static int ResolveMaterial3Color(Context context, int resID)
+		{
+			var typedValue = new TypedValue();
+			context?.Theme?.ResolveAttribute(resID, typedValue, true);
+			return typedValue.Data;
+		}
+
 		internal static int GetDisabledThemeAttrColor(this Context context, int attr)
 		{
 			if (context.Theme == null)

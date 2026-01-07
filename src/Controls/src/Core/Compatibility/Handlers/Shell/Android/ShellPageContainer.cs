@@ -12,25 +12,23 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
 	internal class ShellPageContainer : ViewGroup
 	{
-		static int? DarkBackground;
-		static int? LightBackground;
-
-
 		public IViewHandler Child { get; set; }
 
 		public bool IsInFragment { get; set; }
 
-		public ShellPageContainer(Context context, IPlatformViewHandler child, bool inFragment = false) : base(context)
+		public ShellPageContainer(Context context, IPlatformViewHandler child, bool inFragment = false)
+ : base(context)
 		{
 			Child = child;
 			IsInFragment = inFragment;
 			if (child.VirtualView.Background == null)
 			{
-				int color;
-				if (ShellRenderer.IsDarkTheme)
-					color = DarkBackground ??= ContextCompat.GetColor(context, AColorRes.BackgroundDark);
-				else
-					color = LightBackground ??= ContextCompat.GetColor(context, AColorRes.BackgroundLight);
+				bool isDark = ShellRenderer.IsDarkTheme;
+				bool isMaterial3 = RuntimeFeature.IsMaterial3Enabled;
+
+				int color = isMaterial3
+				 ? GetMaterial3Background(context)
+				 : GetResourceBackground(context, isDark);
 
 				child.PlatformView.SetBackgroundColor(new AColor(color));
 			}
@@ -38,6 +36,22 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			AddView(child.PlatformView);
 		}
 
+		int GetMaterial3Background(Context context)
+		{
+			return ContextExtensions.ResolveMaterial3Color(context, Resource.Attribute.colorSurface);
+		}
+
+		int GetResourceBackground(Context context, bool isDark)
+		{
+			if (isDark)
+			{
+				return ContextCompat.GetColor(context, AColorRes.BackgroundDark);
+			}
+			else
+			{
+				return ContextCompat.GetColor(context, AColorRes.BackgroundLight);
+			}
+		}
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
 		{
 			var width = r - l;

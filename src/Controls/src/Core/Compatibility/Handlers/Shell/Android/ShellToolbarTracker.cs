@@ -596,13 +596,21 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			if (page == null || !_appBar.IsAlive())
 				return;
-
 			if (Shell.GetNavBarHasShadow(page))
 			{
-				if (_appBarElevation <= 0)
-					_appBarElevation = _appBar.Context.ToPixels(4);
+				if (RuntimeFeature.IsMaterial3Enabled)
+				{
+					_appBar.SetElevation(0f);
+				}
+				else
+				{
+					if (_appBarElevation <= 0)
+					{
+						_appBarElevation = _appBar.Context.ToPixels(4);
+					}
 
-				_appBar.SetElevation(_appBarElevation);
+					_appBar.SetElevation(_appBarElevation);
+				}
 			}
 			else
 			{
