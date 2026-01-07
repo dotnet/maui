@@ -61,36 +61,9 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		internal static void UpdateMinimumDate(this MauiMaterialDatePicker platformDatePicker, IDatePicker datePicker, Google.Android.Material.DatePicker.MaterialDatePicker? materialDialog)
-		{
-			// Material 3 MaterialDatePicker has immutable CalendarConstraints
-			// If dialog is open, recreate it with updated constraints
-			if (materialDialog is not null && materialDialog.IsVisible)
-			{
-				platformDatePicker.HidePicker?.Invoke();
-				platformDatePicker.ShowPicker?.Invoke();
-			}
-		}
-
 		public static void UpdateMaximumDate(this MauiDatePicker platformDatePicker, IDatePicker datePicker)
 		{
 			platformDatePicker.UpdateMinimumDate(datePicker, null);
-		}
-
-		internal static void UpdateMaximumDate(this MauiMaterialDatePicker platformDatePicker, IDatePicker picker)
-		{
-			platformDatePicker.UpdateMaximumDate(picker, null);
-		}
-
-		internal static void UpdateMaximumDate(this MauiMaterialDatePicker platformDatePicker, IDatePicker datePicker, Google.Android.Material.DatePicker.MaterialDatePicker? materialDialog)
-		{
-			// Material 3 MaterialDatePicker has immutable CalendarConstraints
-			// If dialog is open, recreate it with updated constraints
-			if (materialDialog is not null && materialDialog.IsVisible)
-			{
-				platformDatePicker.HidePicker?.Invoke();
-				platformDatePicker.ShowPicker?.Invoke();
-			}
 		}
 
 		public static void UpdateMaximumDate(this MauiDatePicker platformDatePicker, IDatePicker datePicker, DatePickerDialog? datePickerDialog)
