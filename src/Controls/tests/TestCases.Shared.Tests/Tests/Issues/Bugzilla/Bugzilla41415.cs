@@ -5,7 +5,6 @@ using UITest.Core;
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
 	[Category(UITestCategories.ScrollView)]
-	[Category(UITestCategories.Compatibility)]
 	public class Bugzilla41415UITests : _IssuesUITest
 	{
 		const string ButtonId = "ClickId";

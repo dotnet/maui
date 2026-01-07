@@ -5,9 +5,11 @@ using UITest.Core;
 namespace Microsoft.Maui.TestCases.Tests;
 
 [Category(UITestCategories.Entry)]
-public class EntryFeatureTests : UITest
+public class EntryFeatureTests : _GalleryUITest
 {
 	public const string EntryFeatureMatrix = "Entry Feature Matrix";
+
+	public override string GalleryPageName => EntryFeatureMatrix;
 
 #if IOS
 	private const int CropBottomValue = 1550;
@@ -22,12 +24,6 @@ public class EntryFeatureTests : UITest
 	public EntryFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(EntryFeatureMatrix);
 	}
 
 	[Test, Order(0)]
@@ -294,6 +290,10 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+#if WINDOWS // On Windows, the Entry control cursor does not disappear when IsCursorVisible is set to false
+		App.WaitForElement("TextChangedLabel");
+		App.Tap("TextChangedLabel");
+#endif
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 

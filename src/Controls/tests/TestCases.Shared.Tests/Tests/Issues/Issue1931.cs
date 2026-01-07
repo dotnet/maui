@@ -18,7 +18,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.ScrollView)]
-		[Category(UITestCategories.Compatibility)]
 		public void ScrollViewInHeaderDisposesProperly()
 		{
 			App.WaitForElement(Go);

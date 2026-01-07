@@ -7,21 +7,16 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests
 {
-	public class CollectionView_EmptyViewFeatureTests : UITest
+	public class CollectionView_EmptyViewFeatureTests : _GalleryUITest
 	{
 		public const string CollectionViewFeatureMatrix = "CollectionView Feature Matrix";
+
+		public override string GalleryPageName => CollectionViewFeatureMatrix;
 
 		public CollectionView_EmptyViewFeatureTests(TestDevice device)
 			: base(device)
 		{
 		}
-
-		protected override void FixtureSetup()
-		{
-			base.FixtureSetup();
-			App.NavigateToGallery(CollectionViewFeatureMatrix);
-		}
-
 
 		[Test, Order(1)]
 		[Category(UITestCategories.CollectionView)]

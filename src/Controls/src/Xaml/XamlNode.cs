@@ -110,6 +110,13 @@ class ElementNode(XmlType type, string namespaceURI, IXmlNamespaceResolver names
 	public XmlType XmlType { get; } = type;
 	public string NamespaceURI { get; } = namespaceURI;
 	public NameScopeRef NameScopeRef { get; set; }
+	
+	/// <summary>
+	/// When true, this node represents a default value for an OnPlatform element
+	/// where no matching platform was found. SourceGen should generate default(T)
+	/// instead of trying to instantiate the type.
+	/// </summary>
+	public bool IsOnPlatformDefaultValue { get; set; }
 
 	public override void Accept(IXamlNodeVisitor visitor, INode parentNode)
 	{
@@ -150,7 +157,8 @@ class ElementNode(XmlType type, string namespaceURI, IXmlNamespaceResolver names
 	{
 		var clone = new ElementNode(XmlType, NamespaceURI, NamespaceResolver, LineNumber, LinePosition)
 		{
-			IgnorablePrefixes = IgnorablePrefixes
+			IgnorablePrefixes = IgnorablePrefixes,
+			IsOnPlatformDefaultValue = IsOnPlatformDefaultValue
 		};
 		foreach (var kvp in Properties)
 			clone.Properties.Add(kvp.Key, kvp.Value.Clone());

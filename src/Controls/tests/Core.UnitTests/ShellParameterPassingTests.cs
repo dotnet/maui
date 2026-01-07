@@ -577,5 +577,206 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			_ = new TestShell(content);
 			Assert.False(content.IsSet(ShellContent.QueryAttributesProperty));
 		}
+
+		// Tests for Issue #13537 - TabBar navigation should invoke ApplyQueryAttributes
+		// These tests verify that QueryAttributesProperty is set on ShellContent when switching tabs,
+		// which triggers ApplyQueryAttributes on the page/viewmodel implementing IQueryAttributable.
+
+		[Fact]
+		public async Task TabBarNavigationSetsQueryAttributesProperty()
+		{
+			// Arrange: Create a TabBar with two tabs
+			var testPage1 = new ShellTestPage();
+			var testPage2 = new ShellTestPage();
+
+			var content1 = new ShellContent { Content = testPage1, Route = "content1" };
+			var content2 = new ShellContent { Content = testPage2, Route = "content2" };
+
+			var tab1 = new Tab { Title = "Tab1", Route = "tab1" };
+			tab1.Items.Add(content1);
+
+			var tab2 = new Tab { Title = "Tab2", Route = "tab2" };
+			tab2.Items.Add(content2);
+
+			var tabBar = new TabBar();
+			tabBar.Items.Add(tab1);
+			tabBar.Items.Add(tab2);
+
+			var shell = new TestShell();
+			shell.Items.Add(tabBar);
+
+			// Verify initial state - QueryAttributesProperty not set on tab2's content
+			Assert.False(content2.IsSet(ShellContent.QueryAttributesProperty),
+				"QueryAttributesProperty should not be set initially");
+
+			// Act: Switch to the second tab
+			tabBar.CurrentItem = tab2;
+			await Task.Yield();
+
+			// Assert: QueryAttributesProperty should now be set on tab2's content
+			// This is what triggers ApplyQueryAttributes on the page
+			Assert.True(content2.IsSet(ShellContent.QueryAttributesProperty),
+				"QueryAttributesProperty should be set when switching tabs (Issue #13537)");
+		}
+
+		[Fact]
+		public async Task TabBarNavigationWithGoToAsyncSetsQueryAttributesProperty()
+		{
+			// Arrange: Create a TabBar with two tabs
+			var testPage1 = new ShellTestPage();
+			var testPage2 = new ShellTestPage();
+
+			var content1 = new ShellContent { Content = testPage1, Route = "content1" };
+			var content2 = new ShellContent { Content = testPage2, Route = "content2" };
+
+			var tab1 = new Tab { Title = "Tab1", Route = "tab1" };
+			tab1.Items.Add(content1);
+
+			var tab2 = new Tab { Title = "Tab2", Route = "tab2" };
+			tab2.Items.Add(content2);
+
+			var tabBar = new TabBar();
+			tabBar.Items.Add(tab1);
+			tabBar.Items.Add(tab2);
+
+			var shell = new TestShell();
+			shell.Items.Add(tabBar);
+
+			// Act: Navigate to tab2 using GoToAsync without parameters
+			await shell.GoToAsync("///tab2/content2");
+
+			// Assert: QueryAttributesProperty should be set
+			Assert.True(content2.IsSet(ShellContent.QueryAttributesProperty),
+				"QueryAttributesProperty should be set when navigating via GoToAsync (Issue #13537)");
+		}
+
+		// Tests for Issue #28453 - ShellContent routes should call ApplyQueryAttributes
+		[Fact]
+		public async Task FlyoutItemNavigationSetsQueryAttributesProperty()
+		{
+			// Arrange: Create Shell with two FlyoutItems
+			var testPage1 = new ShellTestPage();
+			var testPage2 = new ShellTestPage();
+
+			var flyoutItem1 = CreateShellItem<FlyoutItem>(testPage1, shellItemRoute: "flyout1");
+			var flyoutItem2 = CreateShellItem<FlyoutItem>(testPage2, shellItemRoute: "flyout2");
+
+			var shell = new TestShell(flyoutItem1, flyoutItem2);
+
+			// Get the ShellContent for flyoutItem2
+			var content2 = flyoutItem2.CurrentItem.CurrentItem;
+
+			// Verify initial state
+			Assert.False(content2.IsSet(ShellContent.QueryAttributesProperty),
+				"QueryAttributesProperty should not be set initially");
+
+			// Act: Navigate to the second flyout item
+			IShellController shellController = shell;
+			await shellController.OnFlyoutItemSelectedAsync(flyoutItem2);
+
+			// Assert: QueryAttributesProperty should now be set
+			Assert.True(content2.IsSet(ShellContent.QueryAttributesProperty),
+				"QueryAttributesProperty should be set when switching FlyoutItems (Issue #28453)");
+		}
+
+		[Fact]
+		public async Task NavigatingBackToTabSetsQueryAttributesProperty()
+		{
+			// Arrange: Create a TabBar with two tabs
+			var testPage1 = new ShellTestPage();
+			var testPage2 = new ShellTestPage();
+
+			var content1 = new ShellContent { Content = testPage1, Route = "content1" };
+			var content2 = new ShellContent { Content = testPage2, Route = "content2" };
+
+			var tab1 = new Tab { Title = "Tab1", Route = "tab1" };
+			tab1.Items.Add(content1);
+
+			var tab2 = new Tab { Title = "Tab2", Route = "tab2" };
+			tab2.Items.Add(content2);
+
+			var tabBar = new TabBar();
+			tabBar.Items.Add(tab1);
+			tabBar.Items.Add(tab2);
+
+			var shell = new TestShell();
+			shell.Items.Add(tabBar);
+
+			// Act: Navigate tab1 -> tab2 -> tab1
+			tabBar.CurrentItem = tab2;
+			await Task.Yield();
+
+			Assert.True(content2.IsSet(ShellContent.QueryAttributesProperty),
+				"QueryAttributesProperty should be set when switching to tab2");
+
+			tabBar.CurrentItem = tab1;
+			await Task.Yield();
+
+			// Assert: QueryAttributesProperty should be set on tab1 when navigating back
+			Assert.True(content1.IsSet(ShellContent.QueryAttributesProperty),
+				"QueryAttributesProperty should be set when switching back to tab1");
+		}
+
+		[Fact]
+		public async Task PopNavigationTriggersApplyQueryAttributes()
+		{
+			// Arrange
+			var shell = new TestShell(CreateShellItem());
+			Routing.RegisterRoute("details", typeof(ShellTestPage));
+
+			// Navigate to details page with parameter
+			await shell.GoToAsync($"details?{nameof(ShellTestPage.SomeQueryParameter)}=1234");
+			var detailsPage = shell.CurrentPage as ShellTestPage;
+			Assert.Equal("1234", detailsPage.SomeQueryParameter);
+
+			// Navigate to another page
+			await shell.GoToAsync("details");
+			var secondPage = shell.CurrentPage as ShellTestPage;
+
+			// Act: Pop back
+			await shell.GoToAsync("..");
+
+			// Assert: ApplyQueryAttributes should have been called on the first details page
+			// to restore its parameters
+			Assert.True(detailsPage.AppliedQueryAttributes.Count >= 2,
+				"ApplyQueryAttributes should be triggered when popping back to a page");
+			Assert.Equal("1234", detailsPage.SomeQueryParameter);
+		}
+
+		[Fact]
+		public async Task ShellSectionChangedSetsQueryAttributesProperty()
+		{
+			// Arrange: Create Shell with multiple sections in a single ShellItem
+			var testPage1 = new ShellTestPage();
+			var testPage2 = new ShellTestPage();
+
+			var content1 = new ShellContent { Content = testPage1, Route = "content1" };
+			var content2 = new ShellContent { Content = testPage2, Route = "content2" };
+
+			var section1 = new ShellSection { Route = "section1" };
+			section1.Items.Add(content1);
+
+			var section2 = new ShellSection { Route = "section2" };
+			section2.Items.Add(content2);
+
+			var shellItem = new ShellItem { Route = "item" };
+			shellItem.Items.Add(section1);
+			shellItem.Items.Add(section2);
+
+			var shell = new TestShell();
+			shell.Items.Add(shellItem);
+
+			// Verify initial state
+			Assert.False(content2.IsSet(ShellContent.QueryAttributesProperty),
+				"QueryAttributesProperty should not be set initially");
+
+			// Act: Change the current section
+			shellItem.CurrentItem = section2;
+			await Task.Yield();
+
+			// Assert: QueryAttributesProperty should be set
+			Assert.True(content2.IsSet(ShellContent.QueryAttributesProperty),
+				"QueryAttributesProperty should be set when changing ShellSection");
+		}
 	}
 }
