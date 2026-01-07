@@ -156,8 +156,12 @@ dotnet maui screenshot [options]
 
 **Platform Implementation:**
 
+Initial implementation targets Android and iOS/Mac Catalyst, with Windows and macOS support planned as described below.
+
 - **Android**: Uses `adb screencap`
-- **iOS/Mac Catalyst**: Uses `simctl io screenshot` for simulator, iOS devices (future implementation)
+- **iOS/Mac Catalyst**: Uses `simctl io screenshot` for simulator, and device capture via Xcode tooling (future implementation)
+- **Windows** (planned): Uses Windows screen capture APIs to capture the active app window or full screen.
+- **macOS** (planned): Uses macOS screen capture APIs or command-line tooling to capture the active app window or full screen.
 
 ### Future Commands
 
