@@ -623,7 +623,7 @@ If migrating from Xamarin.UITest:
 
 - [UITesting-Architecture.md](design/UITesting-Architecture.md) - CI/CD integration, advanced patterns, and architecture decisions
 - [UI Testing Instructions](../.github/instructions/uitests.instructions.md) - Agent-specific UI testing guidelines
-- [Appium Documentation](http://appium.io/docs/en/about-appium/intro/)
+- [Appium Documentation](https://appium.io/docs/en/latest/)
 - [NUnit Documentation](https://docs.nunit.org/)
 - [.NET MAUI Testing Wiki](https://github.com/dotnet/maui/wiki/UITests)
 - [UI Tests Pipeline](../eng/pipelines/ui-tests.yml) - CI/CD pipeline for UI tests
