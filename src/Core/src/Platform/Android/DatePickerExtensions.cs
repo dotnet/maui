@@ -15,6 +15,7 @@ namespace Microsoft.Maui.Platform
 		{
 			platformDatePicker.SetText(datePicker);
 		}
+
 		public static void UpdateDate(this MauiDatePicker platformDatePicker, IDatePicker datePicker)
 		{
 			platformDatePicker.SetText(datePicker);
@@ -24,6 +25,7 @@ namespace Microsoft.Maui.Platform
 		{
 			platformDatePicker.SetText(datePicker);
 		}
+
 		public static void UpdateTextColor(this MauiDatePicker platformDatePicker, IDatePicker datePicker)
 		{
 			var textColor = datePicker.TextColor;

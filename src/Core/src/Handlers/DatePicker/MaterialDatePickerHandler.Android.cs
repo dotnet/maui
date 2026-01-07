@@ -8,12 +8,10 @@ namespace Microsoft.Maui.Handlers;
 
 internal partial class MaterialDatePickerHandler : ViewHandler<IDatePicker, MauiMaterialDatePicker>
 {
-    const long MillisecondsPerDay = 86400000;
     internal MaterialDatePicker? _dialog;
     internal bool _isUpdatingIsOpen;
     internal MaterialDatePickerPositiveButtonClickListener? _positiveButtonClickListener;
     internal MaterialDatePickerDismissListener? _dismissListener;
-    internal MaterialDatePicker? DatePickerDialog => _dialog;
     public static PropertyMapper<IDatePicker, MaterialDatePickerHandler> Mapper =
                     new(ViewMapper)
                     {
@@ -206,8 +204,8 @@ internal partial class MaterialDatePickerHandler : ViewHandler<IDatePicker, Maui
         {
             long maxMillis = GetUtcMilliseconds(maxDate.Value.Year, maxDate.Value.Month, maxDate.Value.Day);
             constraintsBuilder.SetEnd(maxMillis);
-            // Add 1 day because Before() is exclusive, we want inclusive
-            validators.Add(DateValidatorPointBackward.Before(maxMillis + MillisecondsPerDay));
+            // Add 1 day (86400000 milliseconds) because Before() is exclusive, we want inclusive
+            validators.Add(DateValidatorPointBackward.Before(maxMillis + 86400000));
         }
 
         if (validators.Count > 0)
