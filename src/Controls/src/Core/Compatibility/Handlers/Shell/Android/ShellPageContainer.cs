@@ -16,17 +16,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public bool IsInFragment { get; set; }
 
-		public ShellPageContainer(Context context, IPlatformViewHandler child, bool inFragment = false)
- : base(context)
+		public ShellPageContainer(Context context, IPlatformViewHandler child, bool inFragment = false) : base(context)
 		{
 			Child = child;
 			IsInFragment = inFragment;
 			if (child.VirtualView.Background == null)
 			{
 				bool isDark = ShellRenderer.IsDarkTheme;
-				bool isMaterial3 = RuntimeFeature.IsMaterial3Enabled;
 
-				int color = isMaterial3
+				int color = RuntimeFeature.IsMaterial3Enabled
 				 ? GetMaterial3Background(context)
 				 : GetResourceBackground(context, isDark);
 
@@ -52,6 +50,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return ContextCompat.GetColor(context, AColorRes.BackgroundLight);
 			}
 		}
+
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
 		{
 			var width = r - l;
