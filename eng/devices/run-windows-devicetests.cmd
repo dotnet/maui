@@ -5,6 +5,9 @@ REM   ScenarioName: Controls.DeviceTests, Core.DeviceTests, etc.
 REM   Device: packaged or unpackaged
 REM   PackageId: Package ID for the app
 REM   TargetFrameworkVersion: net10.0, etc.
+REM
+REM This script runs Windows device tests directly without requiring Cake.
+REM It handles certificate import, MSIX installation, test execution, and result merging.
 
 setlocal enabledelayedexpansion
 
@@ -12,6 +15,12 @@ set SCENARIO_NAME=%1
 set DEVICE=%2
 set PACKAGE_ID=%3
 set TFM=%4
+set EXIT_CODE=0
+
+REM Configuration
+set WINDOWS_VERSION=10.0.19041.0
+set CONFIGURATION=Debug
+set CATEGORY_TIMEOUT_SECONDS=480
 
 echo ========================================
 echo Windows Device Tests on Helix
@@ -20,18 +29,38 @@ echo Scenario: %SCENARIO_NAME%
 echo Device: %DEVICE%
 echo Package ID: %PACKAGE_ID%
 echo Target Framework: %TFM%
-echo Work Item Root: %HELIX_WORKITEM_ROOT%
+echo Work Item Payload: %HELIX_WORKITEM_PAYLOAD%
 echo Upload Root: %HELIX_WORKITEM_UPLOAD_ROOT%
 echo Correlation Payload: %HELIX_CORRELATION_PAYLOAD%
 echo ========================================
 
-REM Install Windows App SDK runtime (required for unpackaged apps, helpful for packaged too)
+REM Determine test type
+set IS_PACKAGED=0
+if /i "%DEVICE%"=="packaged" set IS_PACKAGED=1
+
+set IS_CONTROLS_TEST=0
+echo %SCENARIO_NAME% | findstr /i "Controls.DeviceTests" >nul && set IS_CONTROLS_TEST=1
+
+REM Set up paths
+set SCENARIO_DIR=%HELIX_WORKITEM_PAYLOAD%
+set TEST_RESULTS_DIR=%HELIX_WORKITEM_UPLOAD_ROOT%
+set PACKAGE_ID_SAFE=%PACKAGE_ID:.=_%
+set TEST_RESULTS_FILE=%TEST_RESULTS_DIR%\TestResults-%PACKAGE_ID_SAFE%.xml
+set CATEGORY_FILE=%TEST_RESULTS_DIR%\devicetestcategories.txt
+
+echo Scenario directory: %SCENARIO_DIR%
+echo Test results file: %TEST_RESULTS_FILE%
+echo Is packaged: %IS_PACKAGED%
+echo Is Controls test: %IS_CONTROLS_TEST%
+
+REM ========================================
+REM Install Windows App SDK Runtime
+REM ========================================
 echo.
 echo ========================================
 echo Installing Windows App SDK Runtime
 echo ========================================
 
-REM Extract version from Versions.props using PowerShell (more reliable)
 set VERSIONS_PROPS=%HELIX_CORRELATION_PAYLOAD%\eng\Versions.props
 set WASDK_VERSION=1.7
 
@@ -49,15 +78,15 @@ set INSTALLER_URL=https://aka.ms/windowsappsdk/%WASDK_VERSION%/latest/windowsapp
 set INSTALLER_PATH=%TEMP%\WindowsAppRuntimeInstall-x64.exe
 
 echo Downloading Windows App SDK runtime from %INSTALLER_URL%...
-powershell -Command "Invoke-WebRequest -Uri '%INSTALLER_URL%' -OutFile '%INSTALLER_PATH%'"
+powershell -Command "Invoke-WebRequest -Uri '%INSTALLER_URL%' -OutFile '%INSTALLER_PATH%' -UseBasicParsing"
 if %ERRORLEVEL% NEQ 0 (
     echo WARNING: Failed to download Windows App SDK runtime installer
 ) else (
     if exist "%INSTALLER_PATH%" (
         echo Installing Windows App SDK runtime...
         "%INSTALLER_PATH%" --quiet --force
-        if %ERRORLEVEL% NEQ 0 (
-            echo WARNING: Windows App SDK runtime installation returned exit code %ERRORLEVEL%
+        if !ERRORLEVEL! NEQ 0 (
+            echo WARNING: Windows App SDK runtime installation returned exit code !ERRORLEVEL!
         ) else (
             echo Windows App SDK runtime installed successfully
         )
@@ -68,103 +97,313 @@ if %ERRORLEVEL% NEQ 0 (
 )
 echo ========================================
 
-REM The payload is extracted to HELIX_WORKITEM_PAYLOAD
-REM The correlation payload (eng folder) is at HELIX_CORRELATION_PAYLOAD
-
-REM Set up the artifacts directory structure expected by the cake script
-REM Cake script uses relative path ../../artifacts/bin/ from eng/devices/
-REM So we need to create %HELIX_CORRELATION_PAYLOAD%\artifacts\bin\
-set ARTIFACTS_BIN=%HELIX_CORRELATION_PAYLOAD%\artifacts\bin
-if not exist "%ARTIFACTS_BIN%" mkdir "%ARTIFACTS_BIN%"
-
-REM Copy/link the test payload to the expected location
-if not exist "%ARTIFACTS_BIN%\%SCENARIO_NAME%" (
-    echo Copying test payload to %ARTIFACTS_BIN%\%SCENARIO_NAME%
-    xcopy /E /I /Y "%HELIX_WORKITEM_PAYLOAD%" "%ARTIFACTS_BIN%\%SCENARIO_NAME%"
+REM ========================================
+REM Import Certificate (packaged only)
+REM ========================================
+if %IS_PACKAGED%==1 (
+    echo.
+    echo ========================================
+    echo Importing Certificate
+    echo ========================================
+    
+    REM Find .cer file in AppPackages
+    set CER_FILE=
+    for /f "delims=" %%f in ('dir /s /b "%SCENARIO_DIR%\*.cer" 2^>nul ^| findstr /i "AppPackages"') do (
+        set CER_FILE=%%f
+    )
+    
+    if defined CER_FILE (
+        echo Found certificate to import: !CER_FILE!
+        certutil -addstore TrustedPeople "!CER_FILE!"
+        if !ERRORLEVEL! NEQ 0 (
+            echo certutil failed, trying PowerShell...
+            powershell -Command "Import-Certificate -FilePath '!CER_FILE!' -CertStoreLocation Cert:\LocalMachine\TrustedPeople"
+            if !ERRORLEVEL! EQU 0 (
+                echo Certificate imported successfully via PowerShell
+            ) else (
+                echo WARNING: Certificate import failed
+            )
+        ) else (
+            echo Certificate imported successfully via certutil
+        )
+    ) else (
+        echo WARNING: No certificate file found to import
+    )
+    echo ========================================
 )
 
-REM Change to the eng/devices directory where .config/dotnet-tools.json exists (minimal - just cake.tool)
-cd /d "%HELIX_CORRELATION_PAYLOAD%\eng\devices"
+REM ========================================
+REM Run Tests
+REM ========================================
+echo.
+echo ========================================
+echo Running Tests
+echo ========================================
 
-REM Restore dotnet tools (required for dotnet cake)
-echo Restoring dotnet tools from %CD%...
-echo Contents of .config directory:
-dir /b .config
-dotnet tool restore
-if %ERRORLEVEL% NEQ 0 (
-    echo ERROR: dotnet tool restore failed with exit code %ERRORLEVEL%
-    exit /b %ERRORLEVEL%
+if %IS_PACKAGED%==1 (
+    REM ========================================
+    REM Packaged Test Execution
+    REM ========================================
+    
+    REM Uninstall previous app if exists
+    echo Uninstalling previously deployed app...
+    powershell -Command "$app = Get-AppxPackage -Name '%PACKAGE_ID%' -ErrorAction SilentlyContinue; if ($app) { Remove-AppxPackage -Package $app.PackageFullName }"
+    
+    REM Find MSIX file
+    set MSIX_FILE=
+    for /f "delims=" %%f in ('dir /s /b "%SCENARIO_DIR%\*.msix" 2^>nul ^| findstr /i "AppPackages" ^| findstr /v /i "Dependencies"') do (
+        set MSIX_FILE=%%f
+    )
+    
+    if not defined MSIX_FILE (
+        echo ERROR: No MSIX file found in %SCENARIO_DIR%
+        exit /b 1
+    )
+    
+    echo Found MSIX: !MSIX_FILE!
+    
+    REM Install dependencies
+    echo Installing dependencies...
+    for /f "delims=" %%f in ('dir /s /b "%SCENARIO_DIR%\*.msix" 2^>nul ^| findstr /i "Dependencies" ^| findstr /i "x64"') do (
+        echo Installing dependency: %%f
+        powershell -Command "Add-AppxPackage -Path '%%f'" 2>nul
+    )
+    
+    REM Install the app
+    echo Installing app package...
+    powershell -Command "Add-AppxPackage -Path '!MSIX_FILE!'"
+    if !ERRORLEVEL! NEQ 0 (
+        echo ERROR: Failed to install app package
+        exit /b 1
+    )
+    
+    REM Get package family name
+    for /f "delims=" %%p in ('powershell -Command "(Get-AppxPackage -Name '%PACKAGE_ID%').PackageFamilyName"') do (
+        set PACKAGE_FAMILY_NAME=%%p
+    )
+    
+    if not defined PACKAGE_FAMILY_NAME (
+        echo ERROR: Failed to get package family name
+        exit /b 1
+    )
+    
+    echo Package installed: !PACKAGE_FAMILY_NAME!
+    
+    if %IS_CONTROLS_TEST%==1 (
+        REM Category-based test execution for Controls.DeviceTests
+        echo Starting app for category discovery...
+        powershell -Command "Start-Process 'shell:AppsFolder\!PACKAGE_FAMILY_NAME!!App' -ArgumentList '\"%TEST_RESULTS_FILE%\"', '-1'"
+        
+        echo Waiting 10 seconds for category discovery...
+        timeout /t 10 /nobreak >nul
+        
+        if not exist "%CATEGORY_FILE%" (
+            echo Category file not found after 10 seconds, waiting another 10 seconds...
+            timeout /t 10 /nobreak >nul
+            
+            echo Files in test results directory:
+            dir "%TEST_RESULTS_DIR%" 2>nul
+            
+            REM Check Windows Event Log for crashes
+            echo Checking Windows Event Log for application crashes...
+            powershell -Command "Get-WinEvent -FilterHashtable @{LogName='Application';Level=2;StartTime=(Get-Date).AddMinutes(-5)} -MaxEvents 10 -ErrorAction SilentlyContinue | Select-Object TimeCreated, ProviderName, Message | Format-List"
+            
+            if not exist "%CATEGORY_FILE%" (
+                echo ERROR: Test categories file was not created during discovery phase
+                set EXIT_CODE=1
+                goto :results
+            )
+        )
+        
+        REM Read categories and run each one
+        set CATEGORY_INDEX=0
+        for /f "usebackq delims=" %%c in ("%CATEGORY_FILE%") do (
+            set CATEGORY_NAME=%%c
+            set EXPECTED_RESULT_FILE=%TEST_RESULTS_DIR%\TestResults-%PACKAGE_ID_SAFE%_!CATEGORY_NAME!.xml
+            
+            echo Running category !CATEGORY_INDEX!: !CATEGORY_NAME!
+            powershell -Command "Start-Process 'shell:AppsFolder\!PACKAGE_FAMILY_NAME!!App' -ArgumentList '\"%TEST_RESULTS_FILE%\"', '!CATEGORY_INDEX!'"
+            
+            REM Wait for test results with timeout
+            call :wait_for_result "!EXPECTED_RESULT_FILE!" "!CATEGORY_NAME!"
+            
+            set /a CATEGORY_INDEX+=1
+        )
+    ) else (
+        REM Single test run for non-Controls projects
+        echo Starting app for single test run...
+        powershell -Command "Start-Process 'shell:AppsFolder\!PACKAGE_FAMILY_NAME!!App' -ArgumentList '\"%TEST_RESULTS_FILE%\"'"
+        
+        call :wait_for_result "%TEST_RESULTS_FILE%" "All Tests"
+    )
+) else (
+    REM ========================================
+    REM Unpackaged Test Execution
+    REM ========================================
+    
+    REM Find the executable
+    set TEST_EXE=
+    set TFM_WITH_WINDOWS=%TFM%-windows%WINDOWS_VERSION%
+    for /f "delims=" %%f in ('dir /s /b "%SCENARIO_DIR%\*.exe" 2^>nul ^| findstr /i "!TFM_WITH_WINDOWS!" ^| findstr /i "win-x64" ^| findstr /v /i "createdump"') do (
+        set TEST_EXE=%%f
+    )
+    
+    if not defined TEST_EXE (
+        REM Try without TFM path filter
+        for /f "delims=" %%f in ('dir /s /b "%SCENARIO_DIR%\*.exe" 2^>nul ^| findstr /v /i "createdump"') do (
+            set TEST_EXE=%%f
+        )
+    )
+    
+    if not defined TEST_EXE (
+        echo ERROR: No executable found for unpackaged tests
+        exit /b 1
+    )
+    
+    echo Found test executable: !TEST_EXE!
+    
+    if %IS_CONTROLS_TEST%==1 (
+        REM Category discovery
+        echo Starting app for category discovery...
+        "!TEST_EXE!" "%TEST_RESULTS_FILE%" -1
+        
+        echo Waiting 10 seconds for category discovery...
+        timeout /t 10 /nobreak >nul
+        
+        if not exist "%CATEGORY_FILE%" (
+            echo ERROR: Test categories file was not created during discovery phase
+            set EXIT_CODE=1
+            goto :results
+        )
+        
+        REM Run each category
+        set CATEGORY_INDEX=0
+        for /f "usebackq delims=" %%c in ("%CATEGORY_FILE%") do (
+            set CATEGORY_NAME=%%c
+            set EXPECTED_RESULT_FILE=%TEST_RESULTS_DIR%\TestResults-%PACKAGE_ID_SAFE%_!CATEGORY_NAME!.xml
+            
+            echo Running category !CATEGORY_INDEX!: !CATEGORY_NAME!
+            "!TEST_EXE!" "%TEST_RESULTS_FILE%" !CATEGORY_INDEX!
+            
+            call :wait_for_result "!EXPECTED_RESULT_FILE!" "!CATEGORY_NAME!"
+            
+            set /a CATEGORY_INDEX+=1
+        )
+    ) else (
+        REM Single test run
+        echo Starting test executable...
+        "!TEST_EXE!" "%TEST_RESULTS_FILE%"
+        
+        call :wait_for_result "%TEST_RESULTS_FILE%" "All Tests"
+    )
 )
 
-REM Stay in eng/devices directory so dotnet cake is found (local tool)
-REM The cake script will use --root to find artifacts
-
-REM Run the cake script with the testOnly target
-REM Note: The cake script's testOnly task looks for built artifacts in artifacts/bin
-REM Pass the full path to a fake project file in the scenario directory so GetDirectory() works
-echo Running device tests via Cake script...
-echo Current directory: %CD%
-set PROJECT_PATH=%HELIX_CORRELATION_PAYLOAD%\artifacts\bin\%SCENARIO_NAME%\%SCENARIO_NAME%.csproj
-echo Project path: %PROJECT_PATH%
-dotnet cake windows.cake ^
-    --target=testOnly ^
-    --project="%PROJECT_PATH%" ^
-    --device=%DEVICE% ^
-    --packageid=%PACKAGE_ID% ^
-    --results="%HELIX_WORKITEM_UPLOAD_ROOT%" ^
-    --binlog="%HELIX_WORKITEM_UPLOAD_ROOT%" ^
-    --configuration=Debug ^
-    --targetFrameworkVersion=%TFM% ^
-    --workloads=global ^
-    --verbosity=diagnostic
-
-set EXIT_CODE=%ERRORLEVEL%
-
+:results
+REM ========================================
+REM Results Processing
+REM ========================================
+echo.
 echo ========================================
-echo Test execution completed with exit code: %EXIT_CODE%
+echo Processing Results
 echo ========================================
 
-REM Copy all relevant files to the upload directory for diagnostics
+REM Clean up category file
+if exist "%CATEGORY_FILE%" del /f "%CATEGORY_FILE%"
+
+REM Check for result files
+set RESULT_COUNT=0
+for %%f in ("%TEST_RESULTS_DIR%\TestResults-*.xml") do set /a RESULT_COUNT+=1
+
+if %RESULT_COUNT%==0 (
+    echo ERROR: No test result files found. All test processes may have crashed.
+    set EXIT_CODE=1
+    goto :upload
+)
+
+echo Found %RESULT_COUNT% test result file(s)
+
+REM Merge results into testResults.xml for Helix
+echo Merging test results for Helix...
+powershell -Command ^
+    "$resultFiles = Get-ChildItem -Path '%TEST_RESULTS_DIR%' -Filter 'TestResults-*.xml';" ^
+    "$mergedDoc = New-Object System.Xml.XmlDocument;" ^
+    "$assembliesNode = $mergedDoc.CreateElement('assemblies');" ^
+    "$mergedDoc.AppendChild($assembliesNode) | Out-Null;" ^
+    "foreach ($file in $resultFiles) {" ^
+    "    try {" ^
+    "        $doc = New-Object System.Xml.XmlDocument;" ^
+    "        $doc.Load($file.FullName);" ^
+    "        $nodes = $doc.SelectNodes('//assembly');" ^
+    "        foreach ($node in $nodes) {" ^
+    "            $imported = $mergedDoc.ImportNode($node, $true);" ^
+    "            $assembliesNode.AppendChild($imported) | Out-Null;" ^
+    "        }" ^
+    "    } catch { Write-Host \"WARNING: Failed to parse $($file.Name): $_\" }" ^
+    "}" ^
+    "$mergedDoc.Save('%TEST_RESULTS_DIR%\testResults.xml');" ^
+    "Write-Host 'Created merged testResults.xml'"
+
+REM Check for test failures in result files
+for %%f in ("%TEST_RESULTS_DIR%\TestResults-*.xml") do (
+    powershell -Command ^
+        "$doc = New-Object System.Xml.XmlDocument;" ^
+        "$doc.Load('%%f');" ^
+        "$failed = $doc.SelectSingleNode('/assemblies/assembly[@failed > 0 or @errors > 0]/@failed');" ^
+        "if ($failed) { Write-Host 'ERROR: At least' $failed.Value 'test(s) failed in %%~nxf'; exit 1 }"
+    if !ERRORLEVEL! NEQ 0 set EXIT_CODE=1
+)
+
+:upload
+REM ========================================
+REM Gather files for upload
+REM ========================================
 echo.
 echo ========================================
 echo Gathering files for upload
 echo ========================================
 
-REM Copy test result files
-if exist "%HELIX_WORKITEM_UPLOAD_ROOT%\*Results*.xml" (
-    echo Found test results in upload root
-    dir "%HELIX_WORKITEM_UPLOAD_ROOT%\*.xml" 2>nul
-)
-
-REM Copy the category discovery file if it exists
-if exist "%HELIX_WORKITEM_UPLOAD_ROOT%\devicetestcategories.txt" (
-    echo Found category file: devicetestcategories.txt
-) else (
-    echo WARNING: Category file not found in upload root
-)
-
-REM Copy any log files from the work item root
-if exist "%HELIX_WORKITEM_ROOT%\*.log" (
-    echo Copying log files...
-    copy /Y "%HELIX_WORKITEM_ROOT%\*.log" "%HELIX_WORKITEM_UPLOAD_ROOT%\" 2>nul
-)
-
-REM Copy any binlog files
-if exist "%HELIX_WORKITEM_UPLOAD_ROOT%\*.binlog" (
-    echo Found binlog files
-    dir "%HELIX_WORKITEM_UPLOAD_ROOT%\*.binlog" 2>nul
-)
-
-REM List all files in the upload directory
-echo.
 echo Files in upload directory:
-dir "%HELIX_WORKITEM_UPLOAD_ROOT%" 2>nul
+dir "%TEST_RESULTS_DIR%" 2>nul
 
-REM Also list files in the artifacts bin directory for debugging
-echo.
-echo Files in artifacts bin directory:
-for /f "tokens=*" %%f in ('dir "%HELIX_CORRELATION_PAYLOAD%\artifacts\bin\%SCENARIO_NAME%" /s /b 2^>nul ^| findstr /i "\.xml \.txt \.log"') do @echo %%f
-
+echo ========================================
+echo Test execution completed with exit code: %EXIT_CODE%
 echo ========================================
 
 exit /b %EXIT_CODE%
+
+REM ========================================
+REM Subroutine: Wait for test result file
+REM ========================================
+:wait_for_result
+set WAIT_FILE=%~1
+set WAIT_CATEGORY=%~2
+set WAIT_SECONDS=0
+
+echo Waiting for test results: %WAIT_FILE%
+
+:wait_loop
+if exist "%WAIT_FILE%" (
+    echo [OK] Found test results for %WAIT_CATEGORY% after %WAIT_SECONDS% seconds
+    goto :eof
+)
+
+if %WAIT_SECONDS% GEQ %CATEGORY_TIMEOUT_SECONDS% (
+    echo [FAIL] Timeout waiting for %WAIT_CATEGORY% test results after %WAIT_SECONDS% seconds
+    set EXIT_CODE=1
+    goto :eof
+)
+
+timeout /t 1 /nobreak >nul
+set /a WAIT_SECONDS+=1
+
+if %WAIT_SECONDS%==10 echo Still waiting for %WAIT_CATEGORY%... ^(%WAIT_SECONDS%s^)
+if %WAIT_SECONDS%==30 echo Still waiting for %WAIT_CATEGORY%... ^(%WAIT_SECONDS%s^)
+if %WAIT_SECONDS%==60 echo Still waiting for %WAIT_CATEGORY%... ^(%WAIT_SECONDS%s^)
+if %WAIT_SECONDS%==120 echo Still waiting for %WAIT_CATEGORY%... ^(%WAIT_SECONDS%s^)
+if %WAIT_SECONDS%==180 echo Still waiting for %WAIT_CATEGORY%... ^(%WAIT_SECONDS%s^)
+if %WAIT_SECONDS%==240 echo Still waiting for %WAIT_CATEGORY%... ^(%WAIT_SECONDS%s^)
+if %WAIT_SECONDS%==300 echo Still waiting for %WAIT_CATEGORY%... ^(%WAIT_SECONDS%s^)
+if %WAIT_SECONDS%==360 echo Still waiting for %WAIT_CATEGORY%... ^(%WAIT_SECONDS%s^)
+if %WAIT_SECONDS%==420 echo Still waiting for %WAIT_CATEGORY%... ^(%WAIT_SECONDS%s^)
+
+goto :wait_loop
