@@ -32,7 +32,14 @@ public static class MauiProgram
 
 		// Register AI
 #if IOS || MACCATALYST
-		builder.Services.AddSingleton<IChatClient, AppleIntelligenceChatClient>();
+		if (OperatingSystem.IsMacCatalystVersionAtLeast(26) || OperatingSystem.IsIOSVersionAtLeast(26))
+		{
+			builder.Services.AddSingleton<IChatClient, AppleIntelligenceChatClient>();
+		}
+		else
+		{
+			// TODO: Fallback to cloud AI client for older OS versions
+		}
 #endif
 
 		// Register Pages
