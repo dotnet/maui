@@ -150,9 +150,13 @@ namespace Microsoft.Maui.Platform
 				if (image?.Drawable is not null)
 				{
 					if (searchBar.SearchIconColor is not null)
+					{
 						SafeSetTint(image, searchBar.SearchIconColor.ToPlatform());
-					else
-						SafeSetTint(image, Color.Transparent);
+					}
+					else if (TryGetDefaultStateColor(searchView, AAttribute.TextColorPrimary, out var color))
+					{
+						SafeSetTint(image, color);
+					}
 				}
 			}
 		}
