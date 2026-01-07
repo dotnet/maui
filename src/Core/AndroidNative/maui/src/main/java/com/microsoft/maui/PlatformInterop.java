@@ -297,10 +297,6 @@ public class PlatformInterop {
     }
 
     private static void prepare(RequestBuilder<Drawable> builder, MauiTarget target, boolean cachingEnabled, ImageLoaderCallback callback) {
-        prepare(builder, target, cachingEnabled, callback, false);
-    }
-
-    private static void prepare(RequestBuilder<Drawable> builder, MauiTarget target, boolean cachingEnabled, ImageLoaderCallback callback, boolean constrainSize) {
         // A special value to work around https://github.com/dotnet/maui/issues/6783 where targets
         // are actually re-used if all the variables are the same.
         // Adding this "error image" that will always load a null image makes each request unique,
@@ -314,13 +310,6 @@ public class PlatformInterop {
                 .skipMemoryCache(true);
         }
 
-        // Constrain bitmap size to prevent excessive memory allocation
-        // See https://github.com/dotnet/maui/issues/32869
-        if (constrainSize) {
-            builder = builder
-                .override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL);
-        }
-
         target.load(builder);
     }
 
@@ -329,28 +318,20 @@ public class PlatformInterop {
     }
 
     private static void loadInto(RequestBuilder<Drawable> builder, ImageView imageView, boolean cachingEnabled, ImageLoaderCallback callback, Object model) {
-        loadInto(builder, imageView, cachingEnabled, callback, model, false);
-    }
-
-    private static void loadInto(RequestBuilder<Drawable> builder, ImageView imageView, boolean cachingEnabled, ImageLoaderCallback callback, Object model, boolean constrainSize) {
         MauiCustomViewTarget target = new MauiCustomViewTarget(imageView, callback, model);
-        prepare(builder, target, cachingEnabled, callback, constrainSize);
+        prepare(builder, target, cachingEnabled, callback);
     }
 
     private static void load(RequestBuilder<Drawable> builder, Context context, boolean cachingEnabled, ImageLoaderCallback callback, Object model) {
-        load(builder, context, cachingEnabled, callback, model, false);
-    }
-
-    private static void load(RequestBuilder<Drawable> builder, Context context, boolean cachingEnabled, ImageLoaderCallback callback, Object model, boolean constrainSize) {
         MauiCustomTarget target = new MauiCustomTarget(context, callback, model);
-        prepare(builder, target, cachingEnabled, callback, constrainSize);
+        prepare(builder, target, cachingEnabled, callback);
     }
 
     public static void loadImageFromFile(ImageView imageView, String file, ImageLoaderCallback callback) {
         RequestBuilder<Drawable> builder = Glide
             .with(imageView)
             .load(file);
-        loadInto(builder, imageView, true, callback, file, true);
+        loadInto(builder, imageView, true, callback, file);
     }
 
     public static void loadImageFromUri(ImageView imageView, String uri, boolean cachingEnabled, ImageLoaderCallback callback) {
@@ -362,14 +343,14 @@ public class PlatformInterop {
         RequestBuilder<Drawable> builder = Glide
             .with(imageView)
             .load(androidUri);
-        loadInto(builder, imageView, cachingEnabled, callback, androidUri, true);
+        loadInto(builder, imageView, cachingEnabled, callback, androidUri);
     }
 
     public static void loadImageFromStream(ImageView imageView, InputStream inputStream, ImageLoaderCallback callback) {
         RequestBuilder<Drawable> builder = Glide
             .with(imageView)
             .load(inputStream);
-        loadInto(builder, imageView, false, callback, inputStream, true);
+        loadInto(builder, imageView, false, callback, inputStream);
     }
 
     public static void loadImageFromFont(ImageView imageView, @ColorInt int color, String glyph, Typeface typeface, float textSize, ImageLoaderCallback callback) {
@@ -385,7 +366,7 @@ public class PlatformInterop {
         RequestBuilder<Drawable> builder = Glide
             .with(context)
             .load(file);
-        load(builder, context, true, callback, file, true);
+        load(builder, context, true, callback, file);
     }
 
     public static void loadImageFromUri(Context context, String uri, boolean cachingEnabled, ImageLoaderCallback callback) {
@@ -397,14 +378,14 @@ public class PlatformInterop {
         RequestBuilder<Drawable> builder = Glide
             .with(context)
             .load(androidUri);
-        load(builder, context, cachingEnabled, callback, androidUri, true);
+        load(builder, context, cachingEnabled, callback, androidUri);
     }
 
     public static void loadImageFromStream(Context context, InputStream inputStream, ImageLoaderCallback callback) {
         RequestBuilder<Drawable> builder = Glide
             .with(context)
             .load(inputStream);
-        load(builder, context, false, callback, inputStream, true);
+        load(builder, context, false, callback, inputStream);
     }
 
     public static void loadImageFromFont(Context context, @ColorInt int color, String glyph, Typeface typeface, float textSize, ImageLoaderCallback callback) {
