@@ -67,9 +67,17 @@ namespace Microsoft.Maui.TestCases.Tests
 					config.SetProperty("Headless", bool.Parse(Environment.GetEnvironmentVariable("HEADLESS") ?? "false"));
 					break;
 				case TestDevice.iOS:
-					config.SetProperty("DeviceName", Environment.GetEnvironmentVariable("DEVICE_NAME") ?? "iPhone Xs");
-					config.SetProperty("PlatformVersion", Environment.GetEnvironmentVariable("PLATFORM_VERSION") ?? _defaultiOSVersion);
-					config.SetProperty("Udid", Environment.GetEnvironmentVariable("DEVICE_UDID") ?? "");
+					string udid = Environment.GetEnvironmentVariable("DEVICE_UDID") ?? "";
+					if (!string.IsNullOrEmpty(udid))
+					{
+						config.SetProperty("Udid", udid);
+					}
+					else
+					{					 
+						config.SetProperty("DeviceName", Environment.GetEnvironmentVariable("DEVICE_NAME") ?? "iPhone Xs");
+						config.SetProperty("PlatformVersion", Environment.GetEnvironmentVariable("PLATFORM_VERSION") ?? _defaultiOSVersion);
+					}
+					
 					config.SetProperty("Headless", bool.Parse(Environment.GetEnvironmentVariable("HEADLESS") ?? "false"));
 					break;
 				case TestDevice.Windows:
@@ -265,12 +273,19 @@ namespace Microsoft.Maui.TestCases.Tests
 					case TestDevice.iOS:
 						var platformVersion = (string?)((AppiumApp)App).Driver.Capabilities.GetCapability("platformVersion")
 							?? throw new InvalidOperationException("platformVersion capability is missing or null.");
+						var udid = (string?)((AppiumApp)App).Driver.Capabilities.GetCapability("udid");
 						var device = (string?)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceName")
-							?? throw new InvalidOperationException("deviceName capability is missing or null.");
+							?? ((udid is not null) ? String.Empty : throw new InvalidOperationException("deviceName capability is missing or null."));
 
 						environmentName = "ios";
 
-						if (device.Contains(" Xs", StringComparison.OrdinalIgnoreCase) && platformVersion == _defaultiOSVersion)
+						// Check for iOS 26+ (handles 26.0, 26.1, 26.2, etc.)
+						// Also check device name which may contain "iOS 26.x" for simulator naming
+						if (platformVersion.StartsWith("26.", StringComparison.Ordinal) || platformVersion.StartsWith("26", StringComparison.Ordinal))
+						{
+							environmentName = "ios-26";
+						}
+						else if (device.Contains(" Xs", StringComparison.OrdinalIgnoreCase) && platformVersion == _defaultiOSVersion)
 						{
 							environmentName = "ios";
 						}
@@ -374,7 +389,20 @@ namespace Microsoft.Maui.TestCases.Tests
 				}
 				else
 				{
-					_visualRegressionTester.VerifyMatchesSnapshot(name!, actualImage, environmentName: environmentName, testContext: _visualTestContext);
+					try
+					{
+						_visualRegressionTester.VerifyMatchesSnapshot(name!, actualImage, environmentName: environmentName, testContext: _visualTestContext);
+					}
+					catch (VisualTestFailedException ex) when (_testDevice == TestDevice.iOS && environmentName == "ios-26" && ex.Message.Contains("size differs", StringComparison.Ordinal))
+					{
+						throw new InvalidOperationException(
+							$"{ex.Message}\n\n" +
+							"iOS 26 visual tests require an iPhone 11 Pro simulator for correct screen resolution.\n" +
+							"To create the simulator, run:\n" +
+							"  xcrun simctl create \"iPhone 11 Pro\" com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro com.apple.CoreSimulator.SimRuntime.iOS-26-0\n\n" +
+							"Then run the tests targeting the new simulator.",
+							ex);
+					}
 				}
 			}
 		}
