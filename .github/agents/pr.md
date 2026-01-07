@@ -42,9 +42,11 @@ After Gate passes, read `.github/agents/pr/post-gate.md` for **Phases 4-5**.
 ### 🚨 CRITICAL: Phase 4 Always Uses `try-fix` Skill
 
 **Even when a PR already has a fix**, Phase 4 requires running the `try-fix` skill to:
-1. **Independently explore alternative solutions** - Don't just accept the PR's approach
-2. **Compare multiple fix candidates** - The PR's fix is Candidate #1, but there may be better approaches
-3. **Validate the PR's fix is actually the best option** - Or discover a superior alternative
+1. **Independently explore alternative solutions** - Generate fix ideas WITHOUT looking at the PR's solution
+2. **Test alternatives empirically** - Actually implement and run tests, don't just theorize
+3. **Compare with PR's fix** - PR's fix is already validated by Gate; try-fix explores if there's something better
+
+The PR's fix is NOT tested by try-fix (Gate already did that). try-fix generates and tests YOUR independent ideas.
 
 This ensures independent analysis rather than rubber-stamping the PR.
 
@@ -196,7 +198,9 @@ fi
 
 | # | Source | Approach | Test Result | Files Changed | Notes |
 |---|--------|----------|-------------|---------------|-------|
-| | | | | | |
+| PR | PR #XXXXX | [PR's approach - from Pre-Flight] | ⏳ PENDING (Gate) | [files] | Original PR - validated by Gate |
+
+**Note:** try-fix candidates (1, 2, 3...) are added during Phase 4. PR's fix is reference only.
 
 **Exhausted:** No
 **Selected Fix:** [PENDING]
@@ -302,15 +306,17 @@ Classify into:
 
 Identify test type: **UI Tests** | **Device Tests** | **Unit Tests**
 
-**Record PR's fix as Candidate #1** in the Fix Candidates table:
+**Record PR's fix as reference** (at the bottom of the Fix Candidates table):
 
 ```markdown
 | # | Source | Approach | Test Result | Files Changed | Notes |
 |---|--------|----------|-------------|---------------|-------|
-| 1 | PR #XXXXX | [Describe PR's approach] | ⏳ PENDING | `file.cs` (+N) | Original PR |
+| PR | PR #XXXXX | [Describe PR's approach] | ⏳ PENDING (Gate) | `file.cs` (+N) | Original PR |
 ```
 
-The test result will be updated after Gate passes.
+**Note:** The PR's fix is validated by Gate (Phase 3), NOT by try-fix. try-fix candidates are numbered 1, 2, 3... and are YOUR independent ideas.
+
+The test result will be updated to `✅ PASS (Gate)` after Gate passes.
 
 ### Step 5: Complete Pre-Flight
 

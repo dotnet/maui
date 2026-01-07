@@ -10,84 +10,129 @@ If Gate is not passed, go back to `.github/agents/pr.md` and complete phases 1-3
 
 | Phase | Name | What Happens |
 |-------|------|--------------|
-| 4 | **Fix** | Explore fix candidates using `try-fix` skill, select best one |
+| 4 | **Fix** | Invoke `try-fix` skill repeatedly to explore independent alternatives, then compare with PR's fix |
 | 5 | **Report** | Deliver result (approve PR, request changes, or create new PR) |
 
 ---
 
 ## 🔧 FIX: Explore and Select Fix (Phase 4)
 
-> **SCOPE**: Explore alternative fixes using `try-fix` skill, select the best approach.
+> **SCOPE**: Explore independent fix alternatives using `try-fix` skill, compare with PR's fix, select the best approach.
 
 **⚠️ Gate Check:** Verify 🚦 Gate is `✅ PASSED` in your state file before proceeding.
 
-### 🚨 CRITICAL: Always Run try-fix Loop
+### 🚨 CRITICAL: try-fix is Independent of PR's Fix
 
-**Even when a PR already has a fix that passes tests**, you MUST run the `try-fix` loop to:
-- Independently explore alternative solutions
-- Compare the PR's approach against alternatives
-- Validate the PR's fix is actually the best option (or discover a better one)
+**The PR's fix has already been validated by Gate (tests FAIL without it, PASS with it).**
 
-**Do NOT skip this step just because the PR's fix works.** The goal is independent analysis.
+The purpose of Phase 4 is NOT to re-test the PR's fix, but to:
+1. **Generate independent fix ideas** - What would YOU do to fix this bug?
+2. **Test those ideas empirically** - Actually implement and run tests
+3. **Compare with PR's fix** - Is there a simpler/better alternative?
+4. **Learn from failures** - Record WHY failed attempts didn't work
 
-### Step 1: Loop - Call try-fix Skill
+**Do NOT let the PR's fix influence your thinking.** Generate ideas as if you hadn't seen the PR.
 
-Invoke the `try-fix` skill repeatedly to explore alternative fixes:
+### Step 1: Agent Orchestrates try-fix Loop
+
+Invoke the `try-fix` skill repeatedly. The skill handles one fix attempt per invocation.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  try-fix loop (max 5 total candidates)                      │
+│  Agent orchestration loop                                   │
 ├─────────────────────────────────────────────────────────────┤
-│  1. Invoke try-fix skill                                    │
-│  2. Skill reads state file, sees prior attempts             │
-│  3. Skill proposes NEW approach, tests it, records result   │
-│  4. Skill reverts changes, returns to agent                 │
-│  5. Check: exhausted=true OR 5 candidates reached?          │
-│     YES → Exit loop                                         │
-│     NO  → Go to step 1                                      │
+│                                                             │
+│  attempts = 0                                               │
+│  max_attempts = 5                                           │
+│                                                             │
+│  while (attempts < max_attempts):                           │
+│      result = invoke try-fix skill                          │
+│      attempts++                                             │
+│                                                             │
+│      if result.exhausted:                                   │
+│          break  # try-fix has no more ideas                 │
+│                                                             │
+│      # result.passed indicates if this attempt worked       │
+│      # Continue loop to explore more alternatives           │
+│                                                             │
+│  # After loop: compare all try-fix results vs PR's fix      │
+│                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 **Stop the loop when:**
 - `try-fix` returns `exhausted=true` (no more ideas)
-- 5 candidates have been recorded in the table
+- 5 try-fix attempts have been made
 - User requests to stop
 
-### Step 2: Select Best Fix
+### What try-fix Does (Each Invocation)
 
-Review the **Fix Candidates** table and select the best approach:
+Each `try-fix` invocation:
+1. Reads state file to learn from prior failed attempts
+2. Reverts PR's fix to get a broken baseline
+3. Proposes ONE new independent fix idea
+4. Implements and tests it
+5. Records result (with failure analysis if it failed)
+6. Reverts all changes (restores PR's fix)
+7. Returns `{passed: bool, exhausted: bool}`
+
+See `.github/skills/try-fix/SKILL.md` for full details.
+
+### Step 2: Compare Results
+
+After the loop, review the **Fix Candidates** table:
+
+```markdown
+| # | Source | Approach | Test Result | Files Changed | Notes |
+|---|--------|----------|-------------|---------------|-------|
+| 1 | try-fix | Fix in TabbedPageManager | ❌ FAIL | 1 file | Why failed: Too late in lifecycle |
+| 2 | try-fix | RequestApplyInsets only | ❌ FAIL | 1 file | Why failed: Trigger insufficient |
+| 3 | try-fix | Reset + RequestApplyInsets | ✅ PASS | 2 files | Works! |
+| PR | PR #33359 | [PR's approach] | ✅ PASS (Gate) | 2 files | Original PR |
+```
+
+**Compare passing candidates:**
+- PR's fix (known to pass from Gate)
+- Any try-fix attempts that passed
+
+### Step 3: Select Best Fix
 
 **Selection criteria (in order of priority):**
 1. **Must pass tests** - Only consider candidates with ✅ PASS
-2. **Simplest solution** - Fewer lines changed, lower complexity
+2. **Simplest solution** - Fewer files, fewer lines, lower complexity
 3. **Most robust** - Handles edge cases, less likely to regress
 4. **Matches codebase style** - Consistent with existing patterns
 
 Update the state file:
 
 ```markdown
-**Exhausted:** Yes
-**Selected Fix:** #N - [Reason for selection]
+**Exhausted:** Yes (or No if stopped early)
+**Selected Fix:** PR's fix - [Reason] OR #N - [Reason why alternative is better]
 ```
 
-### Step 3: Apply Selected Fix
+**Possible outcomes:**
+- **PR's fix is best** → Approve the PR
+- **try-fix found a simpler/better alternative** → Request changes with suggestion
+- **try-fix found same solution independently** → Strong validation, approve PR
+- **All try-fix attempts failed** → PR's fix is the only working solution, approve PR
 
-Apply the selected fix to the working tree (it was reverted after testing):
+### Step 4: Apply Selected Fix (if different from PR)
 
-**If selected fix is the PR's fix (#1):**
+**If PR's fix was selected:**
 - No action needed - PR's changes are already in place
 
-**If selected fix is an alternative (#2+):**
+**If a try-fix alternative was selected:**
 - Re-implement the fix (you documented the approach in the table)
-- Or: if you saved a patch, apply it
+- Commit the changes
 
 ### Complete 🔧 Fix
 
 **Update state file**:
-1. Verify Fix Candidates table is complete
-2. Verify Selected Fix is documented
-3. Change 🔧 Fix status to `✅ COMPLETE`
-4. Change 📋 Report status to `▶️ IN PROGRESS`
+1. Verify Fix Candidates table is complete with all attempts
+2. Verify failure analyses are documented for failed attempts
+3. Verify Selected Fix is documented with reasoning
+4. Change 🔧 Fix status to `✅ COMPLETE`
+5. Change 📋 Report status to `▶️ IN PROGRESS`
 
 ---
 
@@ -153,13 +198,13 @@ Apply the selected fix to the working tree (it was reverted after testing):
 
 Determine your recommendation based on the Fix phase:
 
-**If PR's fix (Candidate #1) was selected:**
+**If PR's fix was selected:**
 - Recommend: `✅ APPROVE`
 - Justification: PR's approach is correct/optimal
 
 **If an alternative fix was selected:**
 - Recommend: `⚠️ REQUEST CHANGES`
-- Justification: Suggest the better approach from Candidate #N
+- Justification: Suggest the better approach from try-fix Candidate #N
 
 **If PR's fix failed tests:**
 - Recommend: `⚠️ REQUEST CHANGES`
@@ -190,7 +235,10 @@ Update all phase statuses to complete.
 
 ## Common Mistakes in Post-Gate Phases
 
-- ❌ **Skipping the try-fix loop** - Always explore at least one alternative
+- ❌ **Looking at PR's fix before generating ideas** - Generate fix ideas independently first
+- ❌ **Re-testing the PR's fix in try-fix** - Gate already validated it; try-fix tests YOUR ideas
+- ❌ **Skipping the try-fix loop** - Always explore at least one independent alternative
+- ❌ **Not analyzing why fixes failed** - Record the flawed reasoning to help future attempts
 - ❌ **Selecting a failing fix** - Only select from passing candidates
-- ❌ **Forgetting to revert between attempts** - Each try-fix must start clean
+- ❌ **Forgetting to revert between attempts** - Each try-fix must start from broken baseline, end with PR restored
 - ❌ **Rushing the report** - Take time to write clear justification
