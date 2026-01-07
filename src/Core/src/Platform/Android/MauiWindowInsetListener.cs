@@ -267,24 +267,31 @@ namespace Microsoft.Maui.Platform
 			// Handle bottom navigation for TabbedPage with ToolbarPlacement.Bottom
 			var bottomTabContainer = v.FindViewById<ViewGroup>(Resource.Id.navigationlayout_bottomtabs);
 			var hasBottomNav = bottomTabContainer?.MeasuredHeight > 0;
-
-			// Never pad CoordinatorLayout - let child views extend to screen edges
-			v.SetPadding(0, 0, 0, 0);
+			var contentView = v.FindViewById(Resource.Id.navigationlayout_content);
 
 			if (hasBottomNav)
 			{
 				var bottomInset = Math.Max(systemBars?.Bottom ?? 0, displayCutout?.Bottom ?? 0);
 
-				// Pad content view to prevent overlap with tab bar
-				var contentView = v.FindViewById(Resource.Id.navigationlayout_content);
+				// Pad content view to push it up, preventing overlap with tab bar
 				contentView?.SetPadding(
 					contentView.PaddingLeft,
 					contentView.PaddingTop,
 					contentView.PaddingRight,
 					bottomInset);
 			}
+			else
+			{
+				// Reset content view padding when bottom navigation is removed dynamically
+				contentView?.SetPadding(
+					contentView.PaddingLeft,
+					contentView.PaddingTop,
+					contentView.PaddingRight,
+					0);
+			}
 
 			// Create new insets with consumed values
+			// Pass bottom insets through (NOT consumed) so BottomNavigationView can handle its own padding
 			var newSystemBars = Insets.Of(
 				systemBars?.Left ?? 0,
 				appBarHasContent ? 0 : systemBars?.Top ?? 0,
