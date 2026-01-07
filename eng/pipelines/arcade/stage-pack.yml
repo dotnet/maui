@@ -37,7 +37,6 @@ stages:
   - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
     parameters:
       helixRepo: dotnet/maui
-      pool: ${{ parameters.pool }}
       enableMicrobuild: ${{ parameters.enableMicrobuild }}
       enablePublishUsingPipelines: true
       enablePublishBuildAssets: ${{ parameters.publishAssets }}
@@ -85,6 +84,7 @@ stages:
       - job: pack_net_Windows
         displayName: Pack Windows
         timeoutInMinutes: 240
+        pool: ${{ parameters.pool }}
         preSteps:
         - checkout: self
           fetchDepth: 1
