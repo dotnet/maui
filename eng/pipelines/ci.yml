@@ -147,7 +147,7 @@ stages:
         skipAndroidEmulatorImages: true
         skipAndroidCreateAvds: true
         skipProvisioning: true
-        skipXcode: true
+        skipXcode: false
 
 - template: /eng/pipelines/arcade/stage-build.yml@self
   parameters:
