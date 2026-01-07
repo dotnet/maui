@@ -167,12 +167,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						if (ChildFragmentManager.Contains(removeFragment.Fragment) && !isForCurrentTab && removeFragment != _currentFragment)
 							RemoveFragment(removeFragment.Fragment);
 						_fragmentMap.Remove(page);
+
+						DisposePage(page);
 					}
 
 					if (!isForCurrentTab && removeFragment != _currentFragment)
 						return Task.FromResult(true);
 
-					DisposePage(page);
 					break;
 
 				case ShellNavigationSource.PopToRoot:
