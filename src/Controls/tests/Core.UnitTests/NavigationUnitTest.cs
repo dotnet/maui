@@ -679,6 +679,62 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			});
 		}
 
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task RemovePageDisconnectsHandlerForNonVisiblePage(bool useMaui)
+		{
+			// Arrange: Create a navigation stack with 3 pages
+			var root = new ContentPage { Title = "Root" };
+			var middlePage = new ContentPage { Title = "Middle" };
+			var topPage = new ContentPage { Title = "Top" };
+			var navPage = new TestNavigationPage(useMaui, root);
+			_ = new TestWindow(navPage);
+
+			await navPage.PushAsync(middlePage);
+			await navPage.PushAsync(topPage);
+
+			// Act: Remove the middle (non-visible) page from the stack
+			navPage.Navigation.RemovePage(middlePage);
+			await navPage.NavigatingTask;
+
+			// Assert: Verify the page was removed from the navigation stack
+			Assert.Equal(2, navPage.Navigation.NavigationStack.Count);
+			Assert.Same(root, navPage.RootPage);
+			Assert.Same(topPage, navPage.CurrentPage);
+			Assert.DoesNotContain(middlePage, navPage.Navigation.NavigationStack);
+
+			// Verify the page is no longer a logical child of the NavigationPage
+			Assert.DoesNotContain(middlePage, navPage.InternalChildren.Cast<Page>());
+		}
+
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task RemovePageCallsDisconnectHandlersOnRemovedPage(bool useMaui)
+		{
+			// Arrange: Create a navigation stack with 2 pages where the root page has a handler
+			var root = new ContentPage { Title = "Root" };
+			var topPage = new ContentPage { Title = "Top" };
+			var navPage = new TestNavigationPage(useMaui, root);
+			var window = new TestWindow(navPage);
+
+			// Manually assign a mock handler to track disconnection
+			var mockHandler = new HandlerStub();
+			root.Handler = mockHandler;
+
+			await navPage.PushAsync(topPage);
+
+			// Act: Remove the root page (non-visible) from the stack
+			navPage.Navigation.RemovePage(root);
+			await navPage.NavigatingTask;
+
+			// Assert: Handler should be disconnected (set to null on the page)
+			Assert.Null(root.Handler);
+			Assert.Same(topPage, navPage.RootPage);
+			Assert.Same(topPage, navPage.CurrentPage);
+		}
+
 		[Fact]
 		public async Task CurrentPageUpdatesOnPopBeforeAsyncCompletes()
 		{
