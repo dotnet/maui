@@ -909,8 +909,8 @@ namespace Microsoft.Maui.Controls
 					{
 						Owner.RemoveFromInnerChildren(page);
 
-						// Only disconnect handlers if the removed page is not visible.
-						// When the current page is removed, the handler is disconnected through PopAsync().
+						// Disconnect handlers for the removed non-visible page.
+						// Note: When the current page is removed, PopAsync() is called instead (see lines 897-902).
 						page?.DisconnectHandlers();
 
 						if (Owner.RootPage == page)
