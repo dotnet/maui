@@ -99,6 +99,8 @@ internal partial class MaterialEntryHandler : ViewHandler<IEntry, MauiMaterialTe
 
 		_clearButtonClickListener?.Dispose();
 		_clearButtonClickListener = null;
+
+		_defaultHintTextColors = null;
 	}
 
 	void OnViewAttachedToWindow(object? sender, ViewAttachedToWindowEventArgs e)
@@ -204,7 +206,9 @@ internal partial class MaterialEntryHandler : ViewHandler<IEntry, MauiMaterialTe
 	{
 		// Password toggle takes precedence
 		if (entry.IsPassword)
+		{
 			return;
+		}
 
 		bool shouldShowClearButton = entry.ClearButtonVisibility == ClearButtonVisibility.WhileEditing &&
 			!string.IsNullOrEmpty(entry.Text) &&

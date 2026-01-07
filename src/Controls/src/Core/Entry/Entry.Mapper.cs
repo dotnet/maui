@@ -11,10 +11,6 @@ namespace Microsoft.Maui.Controls
 			// Adjust the mappings to preserve Controls.Entry legacy behaviors
 #if ANDROID
 			EntryHandler.Mapper.ReplaceMapping<Entry, IEntryHandler>(PlatformConfiguration.AndroidSpecific.Entry.ImeOptionsProperty.PropertyName, MapImeOptions);
-			
-			//Material3 Entry Handler mappings
-			MaterialEntryHandler.Mapper.ReplaceMapping<Entry, MaterialEntryHandler>(nameof(Text), MapText);
-			MaterialEntryHandler.Mapper.ReplaceMapping<Entry, MaterialEntryHandler>(nameof(TextTransform), MapText);
 #elif WINDOWS
 			EntryHandler.Mapper.ReplaceMapping<Entry, IEntryHandler>(PlatformConfiguration.WindowsSpecific.InputView.DetectReadingOrderFromContentProperty.PropertyName, MapDetectReadingOrderFromContent);
 #elif IOS
@@ -23,6 +19,15 @@ namespace Microsoft.Maui.Controls
 #endif
 			EntryHandler.Mapper.ReplaceMapping<Entry, IEntryHandler>(nameof(Text), MapText);
 			EntryHandler.Mapper.ReplaceMapping<Entry, IEntryHandler>(nameof(TextTransform), MapText);
+
+			// Material3 Entry Handler mappings
+#if ANDROID
+			if (RuntimeFeature.IsMaterial3Enabled)
+			{
+				MaterialEntryHandler.Mapper.ReplaceMapping<Entry, MaterialEntryHandler>(nameof(Text), MapText);
+				MaterialEntryHandler.Mapper.ReplaceMapping<Entry, MaterialEntryHandler>(nameof(TextTransform), MapText);
+			}
+#endif
 
 #if IOS || ANDROID
 			EntryHandler.Mapper.AppendToMapping(nameof(VisualElement.IsFocused), InputView.MapIsFocused);
