@@ -25,8 +25,8 @@ Write new UI tests that:
 
 **NO, use different agent if:**
 - "Test this PR" → use `sandbox-agent`
-- "Review this PR" → use `pr-reviewer`
-- "Investigate issue #XXXXX" → use `issue-resolver`
+- "Review this PR" → use `pr` agent
+- "Fix issue #XXXXX" (no PR exists) → suggest `/delegate` command
 - Only need manual verification → use `sandbox-agent`
 
 ---

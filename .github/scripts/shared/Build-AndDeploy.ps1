@@ -52,7 +52,10 @@ param(
     [string]$DeviceUdid,
     
     [Parameter(Mandatory=$false)]
-    [string]$BundleId
+    [string]$BundleId,
+
+    [Parameter(Mandatory=$false)]
+    [switch]$Rebuild
 )
 
 # Import shared utilities
@@ -71,12 +74,18 @@ if ($Platform -eq "android") {
     #region Android Build and Deploy
     
     Write-Step "Building and deploying $projectName for Android..."
-    Write-Info "Build command: dotnet build $ProjectPath -f $TargetFramework -c $Configuration -t:Run"
+    
+    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-t:Run")
+    if ($Rebuild) {
+        $buildArgs += "--no-incremental"
+    }
+    
+    Write-Info "Build command: dotnet build $($buildArgs -join ' ')"
     
     $buildStartTime = Get-Date
     
     # Build and deploy in one step (Run target handles both)
-    dotnet build $ProjectPath -f $TargetFramework -c $Configuration -t:Run
+    & dotnet build @buildArgs
     
     $buildExitCode = $LASTEXITCODE
     $buildDuration = (Get-Date) - $buildStartTime
@@ -94,12 +103,18 @@ if ($Platform -eq "android") {
     #region iOS Build and Deploy
     
     Write-Step "Building $projectName for iOS..."
-    Write-Info "Build command: dotnet build $ProjectPath -f $TargetFramework -c $Configuration"
+    
+    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration)
+    if ($Rebuild) {
+        $buildArgs += "--no-incremental"
+    }
+    
+    Write-Info "Build command: dotnet build $($buildArgs -join ' ')"
     
     $buildStartTime = Get-Date
     
     # Build app
-    dotnet build $ProjectPath -f $TargetFramework -c $Configuration
+    & dotnet build @buildArgs
     
     $buildExitCode = $LASTEXITCODE
     $buildDuration = (Get-Date) - $buildStartTime

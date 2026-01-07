@@ -161,20 +161,20 @@ Work with the Sandbox app for manual testing, PR validation, issue reproduction,
 
 ## When NOT to Use Sandbox
 
-- ❌ User asks to "review PR #XXXXX" → Use **pr-reviewer** agent for code review
+- ❌ User asks to "review PR #XXXXX" → Use **pr** agent for code review
 - ❌ User asks to "write UI tests" or "create automated tests" → Use **uitest-coding-agent**
 - ❌ User asks to "validate the UI tests" or "verify test quality" → Review test code instead
-- ❌ User asks to "fix issue #XXXXX" → Use **issue-resolver** agent
+- ❌ User asks to "fix issue #XXXXX" (no PR exists) → Suggest `/delegate` command
 - ❌ PR only adds documentation (no code changes to test)
 - ❌ PR only modifies build scripts (no functional changes)
 
 ## Distinction: Code Review vs. Functional Testing
 
-**Code Review** (pr-reviewer agent):
+**Code Review** (pr agent):
 - Analyzes code quality, patterns, best practices
 - Reviews test coverage and correctness
 - Checks for potential bugs or issues in the code itself
-- Trigger: "review PR", "review pull request", "code review"
+- Trigger: "review PR", "work on PR"
 
 **Functional Testing** (sandbox-agent):
 - Builds and deploys PR to device/simulator
