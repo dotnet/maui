@@ -240,6 +240,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			Destroy();
 			base.OnDestroy();
 		}
+		
+		public override void OnHiddenChanged(bool hidden)
+		{
+			base.OnHiddenChanged(hidden);
+			
+			if (!hidden && _toolbarTracker?.GetToolbar() is Toolbar toolbar)
+			{
+				// Force TitleView update when fragment becomes visible (fixes issue #33304)
+				if(toolbar.TitleView != null)
+				toolbar.Handler?.UpdateValue(nameof(Toolbar.TitleView));
+			}
+		}
+
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)

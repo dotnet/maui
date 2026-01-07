@@ -98,6 +98,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_toolbar = toolbar;
 		}
 
+		IToolbar IShellToolbarTracker.GetToolbar()
+		{
+			return _toolbar;
+		}
+
 		public bool CanNavigateBack
 		{
 			get
