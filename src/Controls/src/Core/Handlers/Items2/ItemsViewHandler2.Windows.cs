@@ -306,6 +306,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
+			if (PlatformView.Layout is UniformGridLayout layout)
+			{
+				PlatformView.UpdateLayout();
+			}
+
+
 			if (VirtualView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
 			{
 				// Keeps the first item in the list displayed when new items are added.
