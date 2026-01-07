@@ -52,6 +52,11 @@ internal partial class MaterialDatePickerHandler : ViewHandler<IDatePicker, Maui
         handler.PlatformView?.UpdateTextColor(picker);
     }
 
+    // Material3 MaterialDatePicker uses immutable CalendarConstraints.
+    // Min/Max dates cannot be updated after Build().
+    // A new picker is created each time the dialog is shown, so
+    // min/max validation is handled via CalendarConstraints during creation.
+    // No additional runtime validation is required.
     static void MapMinimumDate(MaterialDatePickerHandler handler, IDatePicker picker)
     {
     }
