@@ -6,6 +6,7 @@ using WApp = Microsoft.UI.Xaml.Application;
 using WControlTemplate = Microsoft.UI.Xaml.Controls.ControlTemplate;
 using WVisibility = Microsoft.UI.Xaml.Visibility;
 using WStackPanel = Microsoft.UI.Xaml.Controls.StackPanel;
+using WScrollView = Microsoft.UI.Xaml.Controls.ScrollView;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
 {
@@ -26,6 +27,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		WStackPanel? _containerPanel;
 		FrameworkElement? _itemsRepeater;
 		bool _isHorizontalLayout;
+		WScrollView? _scrollView;
 
 		public MauiItemsView()
 		{
@@ -139,6 +141,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			_footerContentControl = GetTemplateChild("FooterContentControl") as ContentControl;
 			_containerPanel = GetTemplateChild("PART_ContainerGrid") as WStackPanel;
 			_itemsRepeater = GetTemplateChild("PART_ItemsRepeater") as FrameworkElement;
+			_scrollView = GetTemplateChild("PART_ScrollView") as WScrollView;
 
 			if (_emptyView is not null && _emptyViewContentControl is not null)
 			{
@@ -184,7 +187,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				_headerContentControl.HorizontalContentAlignment = UI.Xaml.HorizontalAlignment.Left;
 				_footerContentControl.VerticalContentAlignment = UI.Xaml.VerticalAlignment.Top;
 				_footerContentControl.HorizontalContentAlignment = UI.Xaml.HorizontalAlignment.Left;
-			}
+
+				if (_scrollView is not null)
+				{
+					_scrollView.ContentOrientation = UI.Xaml.Controls.ScrollingContentOrientation.Horizontal;
+				}
+ 			}
 			else
 			{
 				_containerPanel.Orientation = Orientation.Vertical;
@@ -194,6 +202,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				_headerContentControl.HorizontalContentAlignment = UI.Xaml.HorizontalAlignment.Stretch;
 				_footerContentControl.VerticalContentAlignment = UI.Xaml.VerticalAlignment.Top;
 				_footerContentControl.HorizontalContentAlignment = UI.Xaml.HorizontalAlignment.Stretch;
+
+				if(_scrollView is not null)
+				{
+					_scrollView.ContentOrientation = UI.Xaml.Controls.ScrollingContentOrientation.Vertical;
+				}
 			}
 		}
 
