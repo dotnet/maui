@@ -200,16 +200,20 @@ namespace Microsoft.Maui.Platform
 		{
 			using (var typedValue = new TypedValue())
 			{
+				// Attempt to resolve the theme attribute
 				if (context?.Theme?.ResolveAttribute(resID, typedValue, true) == true)
 				{
+					// Check if the value is a direct color integer
 					if (typedValue.Type >= DataType.FirstInt && typedValue.Type <= DataType.LastInt)
 					{
 						return typedValue.Data;
 					}
-					else if (typedValue.Type == DataType.String)
+					// Check if the value is a resource reference (@color/...)
+					else if (typedValue.Type is DataType.String)
 					{
-						if (context.Resources != null)
+						if (context.Resources is not null)
 						{
+							// Resolve the resource reference to get the actual color
 							if (OperatingSystem.IsAndroidVersionAtLeast(23))
 								return context.Resources.GetColor(typedValue.ResourceId, context.Theme);
 							else

@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			Child = child;
 			IsInFragment = inFragment;
-			if (child.VirtualView.Background == null)
+			if (child.VirtualView.Background is null)
 			{
 				bool isDark = ShellRenderer.IsDarkTheme;
 
