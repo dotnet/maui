@@ -54,18 +54,10 @@ internal partial class MaterialDatePickerHandler : ViewHandler<IDatePicker, Maui
 
     static void MapMinimumDate(MaterialDatePickerHandler handler, IDatePicker picker)
     {
-        if (handler is MaterialDatePickerHandler platformHandler)
-        {
-            handler.PlatformView?.UpdateMinimumDate(picker, platformHandler._dialog);
-        }
     }
 
     static void MapMaximumDate(MaterialDatePickerHandler handler, IDatePicker picker)
     {
-        if (handler is MaterialDatePickerHandler platformHandler)
-        {
-            handler.PlatformView?.UpdateMaximumDate(picker, platformHandler._dialog);
-        }
     }
 
     static void MapFormat(MaterialDatePickerHandler handler, IDatePicker picker)
