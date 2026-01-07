@@ -1,6 +1,6 @@
 ---
 description: "Design document for the dotnet-maui CLI tool for AI-assisted development"
-date: 2025-11-19
+date: 2026-01-07
 ---
 
 # dotnet-maui CLI Design Document
@@ -159,108 +159,12 @@ dotnet maui screenshot [options]
 - **Android**: Uses `adb screencap`
 - **iOS/Mac Catalyst**: Uses `simctl io screenshot` for simulator, iOS devices (future implementation)
 
-#### `logs`
+### Future Commands
 
-Streams or retrieves device logs from the running application.
+To keep scope small for initial version, future commands are:
 
-**Usage:**
-
-```bash
-dotnet maui logs [options]
-```
-
-**Options:**
-
-- `-f|--follow`: Stream logs continuously (like `tail -f`)
-- `--level <LEVEL>`: Minimum log level (trace|debug|info|warn|error)
-- `--clear`: Clear logs before starting
-
-**Example:**
-
-```bash
-dotnet maui logs --follow
-dotnet maui logs --filter "Exception"
-dotnet maui logs --clear
-```
-
-**Platform Implementation:**
-
-- **Android**: `adb logcat` with filtering
-- **iOS/Mac Catalyst**: similar to existing `dotnet run` behavior
-
-#### `tree`
-
-Displays the visual tree structure of the running application.
-
-**Usage:**
-
-```bash
-dotnet maui tree [options]
-```
-
-**Options:**
-
-- `--format <FORMAT>`: Output format (text|json|xml, default: text)
-- `--depth <NUMBER>`: Maximum tree depth (default: unlimited)
-- `--element <AUTOMATION_ID>`: Start from specific element
-
-**Example:**
-
-```bash
-dotnet maui tree
-dotnet maui tree --format json
-dotnet maui tree --element "MainCard"
-```
-
-**Output Format (text):**
-
-```md
-ContentPage (AutomationId: MainPage)
-├─ VerticalStackLayout
-│  ├─ Label (AutomationId: TitleLabel)
-│  │  └─ Text: "Welcome to MAUI"
-│  ├─ Entry (AutomationId: UsernameEntry)
-│  │  └─ Placeholder: "Username"
-│  └─ Button (AutomationId: LoginButton)
-│     └─ Text: "Login"
-```
-
-**Output Format (json):**
-
-```json
-{
-  "type": "ContentPage",
-  "automationId": "MainPage",
-  "properties": {
-    "Title": "Login"
-  },
-  "children": [
-    {
-      "type": "VerticalStackLayout",
-      "children": [
-        {
-          "type": "Label",
-          "automationId": "TitleLabel",
-          "properties": {
-            "Text": "Welcome to MAUI",
-            "FontSize": 24
-          }
-        }
-      ]
-    }
-  ]
-}
-```
-
-**Implementation:**
-
-Since we want to see .NET MAUI's visual tree, and not the native one,
-this can be implemented similarly to XAML Live Preview in Visual
-Studio.
-
-We should investigate existing connections like the debugger or Hot
-Reload to implement this behavior and return this information from the
-running application.
+- `dotnet maui log` or `logs`
+- `dotnet maui tree` for displaying the visual tree
 
 ## Integration with `dotnet run` and `dotnet watch`
 
@@ -363,6 +267,11 @@ There are other .NET MAUI CLI tools such as:
   - https://github.com/Redth/AndroidSdk.Tools
 
 These could easily be added down the road.
+
+Future commands:
+
+- `dotnet maui log` or `logs` for viewing console output
+- `dotnet maui tree` for displaying the visual tree
 
 **Decision**: Start with just a few subcommands and expand in the
 future.
