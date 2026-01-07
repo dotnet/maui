@@ -4,17 +4,14 @@ This folder contains instructions and configurations for AI coding assistants wo
 
 ## Available Agents
 
+### PR Agent
+The PR agent is a unified 5-phase workflow for investigating issues and reviewing/working on PRs. It handles everything from context gathering through test verification, fix exploration, and creating PRs or review reports.
+
 ### Sandbox Agent
 The sandbox agent is your general-purpose tool for working with the .NET MAUI Sandbox app. Use it for manual testing, PR validation, issue reproduction, and experimentation with MAUI features.
 
 ### UI Test Coding Agent
 The UI test coding agent writes and runs automated UI tests following .NET MAUI conventions. Use it for creating new test coverage, running existing tests from PRs, and validating UI test correctness.
-
-### Issue Resolver Agent
-The issue resolver agent investigates, reproduces, and fixes reported issues in the .NET MAUI repository with comprehensive testing and validation.
-
-### PR Reviewer Agent (Inline)
-The PR reviewer agent conducts thorough, constructive code reviews of .NET MAUI pull requests with hands-on testing and validation. This agent uses inline instructions rather than a separate file.
 
 ## How to Use
 
@@ -88,7 +85,7 @@ please write UI tests for issue #12345
 please run the UI tests from PR #32479
 ```
 
-**Issue Resolver Agent:**
+**PR Agent:**
 ```bash
 # Start GitHub Copilot CLI with agent support
 copilot
@@ -96,11 +93,12 @@ copilot
 # Invoke the pr agent
 /agent pr
 
-# Request PR review
+# Fix an issue or review a PR
+please fix issue #12345
 please review https://github.com/dotnet/maui/pull/XXXXX
 ```
 
-**For issues without a PR:**
+**For issues without a PR (remote Copilot):**
 ```bash
 # Use /delegate to have remote Copilot create the fix
 /delegate fix issue https://github.com/dotnet/maui/issues/XXXXX
@@ -149,32 +147,19 @@ Automated testing specialist for the .NET MAUI test suite:
 4. **Cross-Platform** - Tests on iOS, Android, Windows, and MacCatalyst
 5. **Automated Workflow** - Uses `BuildAndRunHostApp.ps1` to handle building, deployment, and logging to `CustomAgentLogsTmp/UITests/`
 
-### Issue Resolver Agent
+### PR Agent
 
-Comprehensive issue investigation and resolution:
+Unified 5-phase workflow for issue investigation and PR work:
 
-1. **Issue Investigation** - Analyzes the reported issue and gathers context
-2. **Reproduction** - Creates minimal reproduction case in Sandbox app
-3. **Root Cause Analysis** - Identifies the underlying problem in the codebase
-4. **Fix Implementation** - Implements and tests the fix
-5. **Validation** - Tests both with and without the fix to prove it works
-6. **UI Test Creation** - Adds automated UI test to prevent regression
-7. **Documentation** - Provides detailed explanation of the issue and fix
-
-### PR Reviewer Agent
-
-Thorough PR review with hands-on testing:
-
-1. **Code Analysis** - Reviews code for correctness, style, and best practices
-2. **Build & Deploy** - Builds the Sandbox app and deploys to simulator/emulator
-3. **Real Testing** - Tests PR changes on actual devices with measurements
-4. **Before/After Comparison** - Compares behavior with and without PR changes  
-5. **Edge Case Testing** - Tests scenarios not mentioned by the PR author
-6. **Documented Results** - Provides review with actual test data and evidence
+1. **Pre-Flight** - Context gathering from issues/PRs
+2. **Tests** - Create or verify reproduction tests exist
+3. **Gate** - Verify tests catch the issue (mandatory checkpoint)
+4. **Fix** - Explore fix alternatives using `try-fix` skill, compare approaches
+5. **Report** - Create PR or write review report
 
 ### When Agents Pause
 
-Both agents will pause and ask for help if they encounter:
+All agents will pause and ask for help if they encounter:
 - Merge conflicts when applying changes
 - Build errors that prevent testing
 - Test results that are unexpected or confusing
@@ -217,16 +202,17 @@ Agents work with **time budgets as estimates for planning**, not hard deadlines:
 ## File Structure
 
 ### Agent Definitions
-- **`agents/pr.md`** - PR review and work workflow with 7 sequential phases
+- **`agents/pr.md`** - PR workflow phases 1-3 (Pre-Flight, Tests, Gate)
+- **`agents/pr/post-gate.md`** - PR workflow phases 4-5 (Fix, Report)
 - **`agents/sandbox-agent.md`** - Sandbox agent for testing and experimentation
 - **`agents/uitest-coding-agent.md`** - UI test agent for writing and running tests
-- **`agents/README.md`** - Agent selection guide and quick reference
 
 ### Agent Files
 
-Agents are now self-contained single files:
+Agent files in the `.github/agents/` directory:
 
-- **`agents/pr.md`** - PR review and work workflow with 7 sequential phases (~650 lines)
+- **`agents/pr.md`** - PR workflow phases 1-3 (Pre-Flight, Tests, Gate)
+- **`agents/pr/post-gate.md`** - PR workflow phases 4-5 (Fix, Report)
 - **`agents/sandbox-agent.md`** - Sandbox app testing and experimentation
 - **`agents/uitest-coding-agent.md`** - UI test writing and execution
 
@@ -239,6 +225,9 @@ These provide specialized guidance for specific scenarios used by all agents:
 - **`instructions/templates.instructions.md`** - Template modification rules
 - **`instructions/xaml-unittests.instructions.md`** - XAML unit testing guidelines
 - **`instructions/collectionview-handler-detection.instructions.md`** - CollectionView handler configuration
+- **`instructions/agents.instructions.md`** - Custom agent authoring guidelines
+- **`instructions/skills.instructions.md`** - Skill development standards
+- **`instructions/helix-device-tests.instructions.md`** - Helix device test infrastructure
 
 ### Shared Scripts
 
@@ -255,23 +244,28 @@ All agent logs are consolidated under `CustomAgentLogsTmp/`:
 - **`CustomAgentLogsTmp/Sandbox/`** - Sandbox agent logs (appium.log, android-device.log, ios-device.log, RunWithAppiumTest.cs)
 - **`CustomAgentLogsTmp/UITests/`** - UI test agent logs (appium.log, android-device.log, ios-device.log, test-output.log)
 
-### Recent Improvements (Phase 2 - November 2025)
+### Skills
 
-**Infrastructure Consolidation:**
+Reusable skills in `.github/skills/` that agents can invoke:
+
+- **`try-fix/`** - Proposes and tests independent fix approaches, records results, learns from failures
+- **`verify-tests-fail-without-fix/`** - Verifies UI tests catch bugs (auto-detects mode based on git diff)
+- **`write-tests/`** - Creates UI tests for issues following MAUI conventions
+- **`pr-build-status/`** - Retrieves Azure DevOps build status for PRs
+
+### Recent Improvements (January 2026)
+
+**PR Agent Consolidation:**
+1. **Unified PR Agent** - Replaced separate `issue-resolver` and `pr-reviewer` agents with single 5-phase `pr` agent
+2. **try-fix Skill** - New skill for exploring independent fix alternatives with empirical testing
+3. **Skills Integration** - Added `verify-tests-fail-without-fix` and `write-tests` skills for reusable test workflows
+4. **Agent/Skills Guidelines** - New instruction files for authoring agents and skills
+
+**Prior Infrastructure Consolidation (November 2025):**
 1. **Unified Log Structure** - All logs now under `CustomAgentLogsTmp/` with subdirectories for Sandbox and UITests
 2. **Shared Script Library** - Created reusable PowerShell scripts for device startup, build, and deployment
 3. **Agent Simplification** - Consolidated `uitest-pr-validator` into `uitest-coding-agent` for clarity
-4. **Agent Rename** - `sandbox-pr-tester` → `sandbox-agent` to reflect broader purpose (testing, validation, experimentation)
-5. **Automated Testing Scripts** - All agents now use PowerShell scripts instead of manual commands
-6. **noReset Capability Added** - Android Appium tests now include `noReset: true` to prevent app reinstalls
-7. **Complete Link Validation** - All 53 markdown files validated and updated with correct paths
-
-**Phase 1 Improvements (November 2025):**
-1. **Mandatory pre-work moved to top** - Critical requirements now at line 6 instead of line 43
-2. **Reading order & stopping points** - Explicit "STOP after Essential Reading" to prevent reading loop
-3. **Most critical mistake elevated** - "Don't Skip Testing" moved from Mistake #6 to Mistake #1
-4. **Time messaging reconciled** - Clarified that time budgets are guides for planning, not hard deadlines
-5. **Appium version updated** - All references updated to Appium.WebDriver 8.0.1 (latest stable)
+4. **Automated Testing Scripts** - All agents now use PowerShell scripts instead of manual commands
 
 ### General Guidelines
 - **`copilot-instructions.md`** - General coding standards, build requirements, file conventions for the entire repository
@@ -371,8 +365,8 @@ For issues or questions about the AI agent instructions:
 ## Metrics
 
 **Agent Files**:
-- 3 agent definition files (pr, sandbox-agent, uitest-coding-agent)
-- 53 total markdown files in `.github/` directory
+- 4 agent files (pr.md, pr/post-gate.md, sandbox-agent.md, uitest-coding-agent.md)
+- 4 skills (try-fix, verify-tests-fail-without-fix, write-tests, pr-build-status)
 - All validated and consistent with consolidated structure
 
 **Automation**:
@@ -388,6 +382,6 @@ For issues or questions about the AI agent instructions:
 
 ---
 
-**Last Updated**: 2025-11-25
+**Last Updated**: 2026-01-07
 
-**Note**: These instructions are actively being refined based on real-world usage. Phase 2 infrastructure consolidation completed November 2025. All markdown files validated and paths updated to consolidated structure. Feedback and improvements are welcome!
+**Note**: These instructions are actively being refined based on real-world usage. PR agent consolidation completed January 2026 (unified 5-phase workflow with try-fix skill). Feedback and improvements are welcome!
