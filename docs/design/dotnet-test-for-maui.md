@@ -1,8 +1,10 @@
-# `dotnet test` for .NET MAUI
+# `dotnet test` for Mobile Platforms
 
 ## Overview
 
-This document describes the design and implementation plan for enabling `dotnet test` to work seamlessly with .NET MAUI applications. The goal is to allow developers and AI agents to write and run tests on simulators, emulators, and physical devices using the familiar `dotnet test` command-line experience, powered by the Microsoft Testing Platform (MTP).
+This document describes the design and implementation plan for enabling `dotnet test` to work seamlessly with mobile and device test projects targeting iOS, Android, and other platforms. The goal is to allow developers and AI agents to write and run tests on simulators, emulators, and physical devices using the familiar `dotnet test` command-line experience, powered by the Microsoft Testing Platform (MTP).
+
+> **Scope:** This functionality is **not MAUI-specific**. It will be implemented in the **iOS SDK** and **Android SDK** as first-class platform features, available to all .NET workloads including native iOS/Android apps, MAUI, Uno Platform, Avalonia, and other frameworks.
 
 ## Status
 
@@ -63,7 +65,7 @@ This functionality will be implemented in the **Android SDK** and **iOS SDK** as
 
 ### 1.4 Non-Goals (Phase 1)
 
-- Test Explorer integration in Visual Studio or VS Code (CLI-only focus)
+- Test Explorer integration in Visual Studio or VS Code (CLI-only focus for v1; IDE integration is a future phase)
 - Hot reload during test execution
 - Parallel test execution across multiple devices
 - Support every test framework in v1 (start with MSTest runner / MTP-first; broaden later)
@@ -85,9 +87,9 @@ This functionality will be implemented in the **Android SDK** and **iOS SDK** as
 }
 ```
 
-### 2.2 MAUI Device Test Project Model
+### 2.2 Device Test Project Model
 
-A MAUI device-test project is a **MAUI app that hosts MTP**. It produces an **app package** (apk/ipa/msix) that runs tests inside the real runtime.
+A device-test project is an **app that hosts MTP**. It produces an **app package** (apk/ipa/msix) that runs tests inside the real runtime.
 
 **Key requirements:**
 - Output must be an executable test app (MTP expectation)
@@ -105,9 +107,6 @@ A MAUI device-test project is a **MAUI app that hosts MTP**. It produces an **ap
     <!-- Exe is recommended for self-hosted MTP apps (MTP itself is host-agnostic) -->
     <OutputType>Exe</OutputType>
     <IsTestProject>true</IsTestProject>
-
-    <!-- Device-test marker -->
-    <IsMauiDeviceTestProject>true</IsMauiDeviceTestProject>
   </PropertyGroup>
 
   <ItemGroup>
@@ -121,6 +120,8 @@ A MAUI device-test project is a **MAUI app that hosts MTP**. It produces an **ap
 
 </Project>
 ```
+
+> **Note:** The `IsTestProject` property is sufficient to identify test projects. No additional markers are required.
 
 > **Note:** Using `MSTest.Sdk` as the project SDK (instead of `Microsoft.NET.Sdk`) automatically brings in the MSTest framework, adapter, MTP runner, and common extensions (TrxReport, CodeCoverage). This is the recommended approach for MTP-based test projects. For other test frameworks like xUnit or NUnit, you'll need to add the extensions explicitly.
 
@@ -264,7 +265,7 @@ Each scenario has different constraints for how the test host can communicate wi
 | **Named Pipes** | Low latency, already used by MTP for `dotnet test`, bidirectional, simple setup | Not available across device/host boundary (iOS/Android devices) | ✅ Local exe, ⚠️ Simulators (varies), ❌ Physical devices |
 | **HTTP/HTTPS** | Works across all boundaries, well-supported on all platforms, firewall-friendly | Higher latency, requires server on host, more overhead. iOS devices show "allow connections to local network?" dialog. HTTP requires custom entitlement on iOS (HTTPS preferred but requires certificates) | ✅ All scenarios (with caveats) |
 | **Unix Domain Sockets** | Low latency, works for local processes, cross-platform (macOS/Linux) | Not available for physical devices, Windows uses different mechanism, does not work for sandboxed macOS Catalyst apps | ✅ Local exe, ⚠️ Simulators (not Catalyst), ❌ Physical devices |
-| **TCP Sockets** | Cross-platform, lower overhead than HTTP | Firewall issues, port management complexity | ✅ All scenarios (with port forwarding) |
+| **TCP Sockets** | Cross-platform, lower overhead than HTTP | Firewall issues, port management complexity. **Note:** iOS 18+ no longer supports TCP tunneling for physical devices | ⚠️ Simulators/emulators, ❌ iOS physical devices (18+), ✅ Android |
 | **USB/ADB Forward** | Low latency for Android | Platform-specific, complex setup | ❌ iOS, ✅ Android only |
 
 #### 4.2.3 Implementation Considerations
@@ -329,18 +330,25 @@ public interface IMauiTestProtocol : IPushOnlyProtocol
 
 We recommend a phased approach for device ↔ host communication:
 
-#### V1: File-based artifacts (most robust)
+#### V1: File-based artifacts (most robust) - **RECOMMENDED FOR MVP**
 
-**Mechanism:** Test app writes TRX/coverage to its sandbox; MAUI tooling pulls files back after completion.
+**Mechanism:** Test app writes TRX/coverage to its sandbox; tooling pulls files back after completion.
 
 **Pros:**
 - Works even when networking is constrained (especially iOS devices)
 - Simple reliability model: "run → pull files → parse"
 - Aligns naturally with MTP extensions that already write to `--results-directory` / `TestResults`
+- Most reliable approach based on prior experience with XHarness
 
 **Cons:**
 - No live streaming of per-test progress to host (unless also mirrored to logs)
 - Requires platform-specific "pull from sandbox" implementations
+
+**Artifact Collection:**
+- TRX test results
+- Console/app logs
+- Crash diagnostics (`.ips` files on iOS, tombstones on Android)
+- Screenshots (if applicable)
 
 #### V2: Streamed events to host (best UX for AI + humans)
 
@@ -418,10 +426,10 @@ This is a potential future enhancement (particularly for complex native coverage
 
 ### 5.1 New MSBuild Targets
 
-Building on the `dotnet run` infrastructure, we need these new targets:
+Building on the `dotnet run` infrastructure, we need these new targets. Note: Target names should align with existing SDK conventions and avoid framework-specific prefixes.
 
 ```xml
-<!-- Microsoft.Maui.Sdk.Tests.targets -->
+<!-- Implemented in iOS SDK / Android SDK -->
 
 <!-- Compute test-specific run arguments -->
 <Target Name="ComputeTestRunArguments" 
@@ -446,7 +454,7 @@ Building on the `dotnet run` infrastructure, we need these new targets:
         DependsOnTargets="DeployToDevice;ComputeTestRunArguments">
   
   <!-- Platform-specific execution logic -->
-  <ExecuteMauiTests
+  <ExecuteDeviceTests
     Device="$(Device)"
     RuntimeIdentifier="$(RuntimeIdentifier)"
     TestArguments="@(TestRunArguments)"
@@ -476,21 +484,19 @@ Building on the `dotnet run` infrastructure, we need these new targets:
 | `$(TestTimeout)` | Maximum test execution time | `00:30:00` |
 | `$(TestFilter)` | Filter expression for tests to run | (none) |
 | `$(MTPServerEndpoint)` | Host endpoint for test results | Auto-assigned |
-| `$(IsMauiDeviceTestProject)` | Marker for MAUI device test projects | `false` |
-| `$(MauiTestDevice)` | Device identifier (name/UDID/emulator id) | (none) |
-| `$(MauiTestDeviceType)` | Device type: emulator/device/simulator | (auto-detected) |
-| `$(MauiTestTarget)` | Target platform: android/ios/windows | (from TFM) |
+
+> **Note:** Properties should use existing SDK conventions where possible. Avoid introducing new prefixed properties (e.g., `MauiTestDevice`) when existing properties like `$(Device)` serve the same purpose.
 
 ### 5.3 Target Chain
 
-The MAUI test target chain (invoked from `dotnet test`):
+The test target chain (invoked from `dotnet test`):
 
 | Target | Description |
 |--------|-------------|
-| `MauiPrepareTestApp` | Build test app |
-| `MauiDeployTestApp` | Deploy to selected device |
-| `MauiRunTestApp` | Execute tests on device |
-| `MauiCollectTestArtifacts` | Pull TRX from device sandbox |
+| `PrepareTestApp` | Build test app |
+| `DeployTestApp` | Deploy to selected device |
+| `RunTestApp` | Execute tests on device |
+| `CollectTestArtifacts` | Pull TRX and diagnostics from device sandbox |
 
 ---
 
@@ -548,17 +554,15 @@ dotnet test --project MyMauiTests.csproj \
 |--------|-----------|
 | `--device <id>` | Device/simulator identifier (bypasses interactive selection) |
 | `--list-devices` | List available devices for the target framework |
-| `--deploy-timeout` | Timeout for app deployment (default: 2 minutes) |
-| `--test-timeout` | Timeout for test execution (default: 30 minutes) |
+
+> **Note:** Timeout switches should reuse existing `dotnet test` timeout mechanisms where available. New switches should only be introduced if existing options are insufficient.
 
 ### 6.4 MSBuild Property-Based Usage (AI-Friendly)
 
-Add first-class MAUI test knobs as MSBuild properties (no new CLI parsing required initially):
+Device selection via MSBuild properties (no new CLI parsing required initially):
 
 ```bash
-dotnet test --project MyMauiDeviceTests.csproj -f net10.0-android \
-  -p:MauiTestTarget=Android \
-  -p:MauiTestDevice=emulator-5554
+dotnet test --project MyDeviceTests.csproj -f net10.0-android -p:Device=emulator-5554
 ```
 
 ### 6.5 Full TRX + Coverage Example
@@ -580,77 +584,51 @@ dotnet test --project MyMauiDeviceTests.csproj -f net10.0-android --device emula
 
 ### Phase 1: Foundation (2-3 weeks)
 
-**iOS/Android SDK Teams:**
-1. Create HTTP-based push protocol for iOS/Android
-2. Implement `IDeviceTestProtocol` interface
-3. Create MSBuild targets for test execution in respective SDKs
-4. Basic console output of test results
+**Goal:** Basic `dotnet test` working on Android emulator and iOS simulator
 
-**MAUI Team:**
-1. Integrate with iOS/Android SDK test targets
-2. Validate MAUI test projects work with SDK implementations
-
-**MTP Team:**
-1. Expose HTTP server mode in MTP
-2. Document push-only protocol requirements
+**Work Items:**
+1. Create file-based artifact collection for iOS/Android (TRX pull from device sandbox)
+2. Implement MSBuild targets for test execution in iOS SDK and Android SDK
+3. Basic console output of test results
+4. Integration with `dotnet run` device selection
 
 **Deliverables:**
-- `dotnet test` runs and reports results for iOS simulator (via iOS SDK)
-- `dotnet test` runs and reports results for Android emulator (via Android SDK)
+- `dotnet test` runs and reports results for iOS simulator
+- `dotnet test` runs and reports results for Android emulator
 - Basic pass/fail output in console
+- TRX file retrieved from device
 
-### Phase 2: Cross-Platform (2-3 weeks)
+### Phase 2: Cross-Platform & Physical Devices (2-3 weeks)
 
-**iOS/Android SDK Teams:**
+**Goal:** Full platform support including physical devices
+
+**Work Items:**
 1. Physical device support (iOS devices, Android devices)
-2. Device artifact collection (pull logs, screenshots)
-3. Integration with `dotnet run` device selection
-
-**MAUI Team:**
-1. Windows support (leverage existing named pipe)
-2. Validate MAUI integration across all platforms
-
-**MTP Team:**
-1. Ensure consistent behavior across protocols
-2. Add device-specific diagnostics
+2. Device artifact collection (pull logs, screenshots, crash diagnostics)
+3. Windows support (leverage existing named pipe infrastructure)
+4. Improved error messages and diagnostics
 
 **Deliverables:**
-- All platforms supported (iOS/Android via SDKs, Windows/Catalyst via MAUI)
+- All platforms supported (iOS, Android, Windows, macOS Catalyst)
 - Device selection via `--device` flag
 - TRX and JSON result output
+- Crash diagnostic collection (.ips files on iOS)
 
-### Phase 3: Polish & XHarness Migration (3-4 weeks)
+### Phase 3: Polish & Documentation (2-3 weeks)
 
-**MAUI Team:**
-1. Migrate existing tests from XHarness
-2. Update CI pipelines
-3. Performance optimization
-4. Documentation and samples
+**Goal:** Production-ready experience
 
-**MTP Team:**
-1. Performance tuning for device scenarios
-2. Error handling improvements
-
-**Deliverables:**
-- Complete replacement of XHarness in MAUI repo
-- Migration guide for external users
-- Comprehensive documentation
-
-### Phase 4: AI Enablement (2-3 weeks)
-
-**MAUI Team:**
-1. Device list capability (structured output for AI parsing)
-2. Simplified error reporting with actionable messages
-3. Stable artifact naming conventions
-
-**MTP Team:**
-1. Coverage-driven suggestions (identify uncovered code areas)
-2. Structured event stream for AI consumption
+**Work Items:**
+1. Performance optimization
+2. Comprehensive documentation and samples
+3. Error handling improvements
+4. Device-test project templates
 
 **Deliverables:**
-- AI agents can reliably discover devices, run tests, parse results
-- Coverage data guides AI-assisted test generation
-- Documentation tailored for AI agent integration
+- Documentation for customers
+- Project templates
+- Stable artifact naming conventions
+- Clear, actionable error messages
 
 ---
 
@@ -658,25 +636,26 @@ dotnet test --project MyMauiDeviceTests.csproj -f net10.0-android --device emula
 
 ### MVP (CLI)
 
-- `dotnet test` runs MAUI device-test projects on:
+- `dotnet test` runs device-test projects on:
   - Android emulator
+  - iOS simulator
   - Windows (local)
 - Produces:
   - TRX results
+  - Console/app logs
 - Pulls artifacts back into host `TestResults`
 
 ### Next
 
-- iOS simulator support
 - Android physical device support
-- iOS physical device support (likely file-based first)
+- iOS physical device support (file-based)
+- Crash diagnostic collection
 
-### Long-term
+### Future (Optional)
 
-- Optional live streaming mode
-- Evaluate replacing xharness for selected scenarios
-- Enhanced outputs for AI agents (structured event stream + stable artifact naming)
-- **Code coverage on devices** (Phase 5)
+- Live streaming mode for real-time results
+- Test Explorer integration in VS/VS Code
+- **Code coverage on devices**
 
 ---
 
@@ -860,21 +839,19 @@ Integrate with `Microsoft.CodeCoverage`:
 
 ### 12.1 For MTP Team
 
-1. **HTTP Server Mode**: Does MTP need modifications to support HTTP as a transport for the push protocol, or can we implement this in the MAUI layer?
+1. **HTTP Server Mode**: Does MTP need modifications to support HTTP as a transport for the push protocol, or can we implement this in the platform SDK layer?
 
 2. **Protocol Versioning**: How should we handle protocol version mismatches between the device app and host?
 
 3. **Large Result Sets**: What's the recommended approach for tests that produce many results (e.g., 10,000+ tests)?
 
-### 12.2 For MAUI Team
+### 12.2 For iOS/Android SDK Teams
 
 1. **Test Framework Support**: Should we support all frameworks (xUnit, NUnit, MSTest) from day one, or start with one?
 
-2. **Hot Reload**: Is there value in supporting hot reload during test development?
+2. **Android Instrumentation**: How should `dotnet test` work with Android instrumentation tests? Should it run instrumentation tests automatically, or require explicit configuration? How is the `Instrumentation` type provided (template, NuGet package, or manual implementation)?
 
-3. **Visual Testing**: Should screenshot comparison be integrated?
-
-4. **Android Instrumentation**: How should `dotnet test` work with Android instrumentation tests? Should it run instrumentation tests automatically, or require explicit configuration? How is the `Instrumentation` type provided (template, NuGet package, or manual implementation)?
+3. **Crash Diagnostic Collection**: What's the best approach for collecting .ips files (iOS) and tombstones (Android) after test failures?
 
 ### 12.3 Cross-Team
 
@@ -888,39 +865,34 @@ Integrate with `Microsoft.CodeCoverage`:
 
 5. **Test Filtering**: Should we support filtering (category/trait) on-device or host-side?
 
-6. **MAUI Test Runner Packaging**: Template or auto-generated?
+6. **Security Model Review**: When should we conduct a formal security review of the communication channel? Should this block streaming features?
 
-7. **Security Model Review**: When should we conduct a formal security review of the communication channel? Should this block V1 streaming features?
-
-8. **Aspire Reuse**: What components from .NET Aspire's security model can we directly reuse vs. adapt? How does Aspire handle iOS device communication for metrics/telemetry?
+7. **Aspire Reuse**: What components from .NET Aspire's security model can we directly reuse vs. adapt?
 
 ### 12.4 .NET SDK / CLI Team
 
 1. **CLI UX Alignment**: Should `dotnet test --device` become official or stay MSBuild property-driven?
 
-2. **MTP Mode Guidance**: Documentation for MAUI device testing in MTP mode (selected via `global.json`)
+2. **MTP Mode Guidance**: Documentation for device testing in MTP mode (selected via `global.json`)
 
 ---
 
 ## 13. Work Breakdown by Team
 
-### iOS/Android SDK Teams
+### iOS SDK Team
 
-1. **MSBuild targets**: Implement test target chain (build/deploy/run/collect) in respective SDKs
-2. **Artifact extraction**:
-   - Android SDK: pull from app sandbox
-   - iOS SDK: pull from simulator/device container
+1. **MSBuild targets**: Implement test target chain (build/deploy/run/collect) for iOS
+2. **Artifact extraction**: Pull from simulator/device container (TRX, logs, .ips crash files)
 3. **Device selection plumbing**: Canonical device id formats + mapping to existing deploy tooling
 4. **Reliability**: Timeouts, retries, crash diagnostics, log capture
-5. **Protocol implementation**: Device-to-host communication for test results
 
-### MAUI Team
+### Android SDK Team
 
-1. **SDK Integration**: Consume and leverage iOS/Android SDK test implementations
-2. **Windows/Catalyst support**: Implement test support for Windows/macOS Catalyst
-3. **MAUI-specific validation**: Ensure MAUI test projects work correctly with SDK implementations
-4. **Templates/docs**: MAUI device-test project template (recommended for adoption)
-5. **Migration guidance**: Update from XHarness to SDK-based testing
+1. **MSBuild targets**: Implement test target chain (build/deploy/run/collect) for Android
+2. **Artifact extraction**: Pull from app sandbox (TRX, logs, tombstones)
+3. **Device selection plumbing**: ADB device formats + mapping to existing deploy tooling
+4. **Android Instrumentation**: Define how `Instrumentation` type is provided (template vs. NuGet)
+5. **Reliability**: Timeouts, retries, crash diagnostics, log capture
 
 ### MTP Team
 
@@ -929,28 +901,27 @@ Integrate with `Microsoft.CodeCoverage`:
    - Lifecycle integration (app start → run tests → exit/terminate)
 2. **Extensions validation on mobile**:
    - TRX extension on iOS/Android file systems
-3. **(Optional v2) Streaming protocol surface**:
+3. **(Optional future) Streaming protocol surface**:
    - Best practice for push-only/event streaming (server mode / custom sink)
    - Stability/versioning expectations
 
 ### .NET SDK / CLI Team (if needed)
 
 1. **CLI UX alignment**: Decide whether `dotnet test --device` becomes official or stays MSBuild property-driven
-2. **MTP mode guidance**: Docs for MAUI device testing in MTP mode (selected via `global.json`)
+2. **MTP mode guidance**: Docs for device testing in MTP mode (selected via `global.json`)
 
 ---
 
 ## 14. Estimation Summary
 
-| Phase | MAUI Team | MTP Team | Total |
-|-------|-----------|----------|-------|
-| Phase 1: Foundation | 2-3 weeks | 1-2 weeks | 2-3 weeks |
-| Phase 2: Cross-Platform | 2-3 weeks | 0.5-1 weeks | 2-3 weeks |
-| Phase 3: Polish & Migration | 3-4 weeks | 1-2 weeks | 3-4 weeks |
-| Phase 4: AI Enablement | 2-3 weeks | 1-2 weeks | 2-3 weeks |
-| **Total** | **9-13 weeks** | **4-6.5 weeks** | **9-13 weeks** |
+| Phase | Effort | Duration |
+|-------|--------|----------|
+| Phase 1: Foundation | iOS SDK + Android SDK + MTP coordination | 2-3 weeks |
+| Phase 2: Cross-Platform & Physical Devices | iOS SDK + Android SDK | 2-3 weeks |
+| Phase 3: Polish & Documentation | All teams | 2-3 weeks |
+| **Total** | | **6-9 weeks** |
 
-**Note**: Phases can overlap. MTP team work is mostly enabling/advisory after Phase 1. Code coverage (Phase 5) will be planned separately after core infrastructure is complete.
+**Note**: Phases can overlap. iOS and Android SDK work can proceed in parallel. MTP team work is mostly enabling/advisory. Code coverage will be planned separately after core infrastructure is complete.
 
 ---
 
