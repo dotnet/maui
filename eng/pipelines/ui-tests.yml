@@ -106,7 +106,7 @@ parameters:
     type: object
     default:
       name: Azure Pipelines
-      vmImage: macOS-14
+      vmImage: macOS-15
 
 stages:
 
