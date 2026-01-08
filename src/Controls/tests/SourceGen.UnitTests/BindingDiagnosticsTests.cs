@@ -220,7 +220,7 @@ public class ViewModel
 	xmlns:test="clr-namespace:Test"
 	x:Class="Test.TestPage"
 	x:DataType="test:ViewModel">
-	<Label Text="{Binding Name[0]}" />
+	<Label Text="{Binding User[0]}" />
 </ContentPage>
 """;
 
@@ -231,6 +231,11 @@ namespace Test;
 public partial class TestPage : Microsoft.Maui.Controls.ContentPage { }
 
 public class ViewModel 
+{
+	public User User { get; set; }
+}
+
+public class User
 {
 	public string Name { get; set; }
 }
