@@ -70,12 +70,23 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<CollectionView, CollectionViewHandler>();
 		handlersCollection.AddHandler<CarouselView, CarouselViewHandler>();
 #endif
+#if ANDROID
+		if (RuntimeFeature.IsMaterial3Enabled)
+		{
+			handlersCollection.AddHandler<Editor, MaterialEditorHandler>();
+		}
+		else
+		{
+			handlersCollection.AddHandler<Editor, EditorHandler>();
+		}
+#else
+		handlersCollection.AddHandler<Editor, EditorHandler>();
+#endif
 		handlersCollection.AddHandler<Application, ApplicationHandler>();
 		handlersCollection.AddHandler<ActivityIndicator, ActivityIndicatorHandler>();
 		handlersCollection.AddHandler<BoxView, BoxViewHandler>();
 		handlersCollection.AddHandler<Button, ButtonHandler>();
 		handlersCollection.AddHandler<DatePicker, DatePickerHandler>();
-		handlersCollection.AddHandler<Editor, EditorHandler>();
 		handlersCollection.AddHandler<Entry, EntryHandler>();
 		handlersCollection.AddHandler<GraphicsView, GraphicsViewHandler>();
 		handlersCollection.AddHandler<Image, ImageHandler>();
