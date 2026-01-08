@@ -34,6 +34,8 @@ namespace Microsoft.Maui.Layouts
 		public static Rect ComputeFrame(this IView view, Rect bounds)
 		{
 			Thickness margin = view.Margin;
+			bool hasExplicitWidth = IsExplicitSet(view.Width);
+			bool hasExplicitHeight = IsExplicitSet(view.Height);
 
 			// We need to determine the width the element wants to consume; normally that's the element's DesiredSize.Width
 			var consumedWidth = view.DesiredSize.Width;
@@ -41,11 +43,11 @@ namespace Microsoft.Maui.Layouts
 			// But if the element is set to fill horizontally and it doesn't have an explicitly set width,
 			// then we want the minimum between its MaximumWidth and the bounds' width
 			// MaximumWidth is always positive infinity if not defined by the user
-			if (view.HorizontalLayoutAlignment == LayoutAlignment.Fill && !IsExplicitSet(view.Width))
+			if (view.HorizontalLayoutAlignment == LayoutAlignment.Fill && !hasExplicitWidth)
 			{
 				consumedWidth = Math.Min(bounds.Width, view.MaximumWidth);
 			}
-			else if (!IsExplicitSet(view.Width))
+			else if (!hasExplicitWidth)
 			{
 				consumedWidth = Math.Min(bounds.Width, view.DesiredSize.Width);
 			}
@@ -60,7 +62,7 @@ namespace Microsoft.Maui.Layouts
 			// But, if the element is set to fill vertically and it doesn't have an explicitly set height,
 			// then we want the minimum between its MaximumHeight  and the bounds' height
 			// MaximumHeight is always positive infinity if not defined by the user
-			if (view.VerticalLayoutAlignment == LayoutAlignment.Fill && !IsExplicitSet(view.Height))
+			if (view.VerticalLayoutAlignment == LayoutAlignment.Fill && !hasExplicitHeight)
 			{
 				consumedHeight = Math.Min(bounds.Height, view.MaximumHeight);
 			}
@@ -78,17 +80,18 @@ namespace Microsoft.Maui.Layouts
 		{
 			var alignment = view.HorizontalLayoutAlignment;
 			var desiredWidth = view.DesiredSize.Width;
+			bool hasExplicitWidth = IsExplicitSet(view.Width);
 
-			if (alignment == LayoutAlignment.Fill && (IsExplicitSet(view.Width) || !double.IsInfinity(view.MaximumWidth)))
+			if (alignment == LayoutAlignment.Fill && (hasExplicitWidth || !double.IsInfinity(view.MaximumWidth)))
 			{
 				// If the view has an explicit width (or non-infinite MaxWidth) set and the layout alignment is Fill,
 				// we just treat the view as centered within the space it "fills"
 				alignment = LayoutAlignment.Center;
 
 				// If the width is not set, we use the minimum between the MaxWidth or the bound's width
-				desiredWidth = IsExplicitSet(view.Width) ? desiredWidth : Math.Min(bounds.Width, view.MaximumWidth);
+				desiredWidth = hasExplicitWidth ? desiredWidth : Math.Min(bounds.Width, view.MaximumWidth);
 			}
-			else if (!IsExplicitSet(view.Width))
+			else if (!hasExplicitWidth)
 			{
 				desiredWidth = Math.Min(bounds.Width, view.DesiredSize.Width);
 			}
@@ -120,15 +123,16 @@ namespace Microsoft.Maui.Layouts
 		{
 			var alignment = view.VerticalLayoutAlignment;
 			var desiredHeight = view.DesiredSize.Height;
+			bool hasExplicitHeight = IsExplicitSet(view.Height);
 
-			if (alignment == LayoutAlignment.Fill && (IsExplicitSet(view.Height) || !double.IsInfinity(view.MaximumHeight)))
+			if (alignment == LayoutAlignment.Fill && (hasExplicitHeight || !double.IsInfinity(view.MaximumHeight)))
 			{
 				// If the view has an explicit height (or non-infinite MaxHeight) set and the layout alignment is Fill,
 				// we just treat the view as centered within the space it "fills"
 				alignment = LayoutAlignment.Center;
 
 				// If the height is not set, we use the minimum between the MaxHeight or the bound's height
-				desiredHeight = IsExplicitSet(view.Height) ? desiredHeight : Math.Min(bounds.Height, view.MaximumHeight);
+				desiredHeight = hasExplicitHeight ? desiredHeight : Math.Min(bounds.Height, view.MaximumHeight);
 			}
 
 			double frameY = bounds.Y + margin.Top;
