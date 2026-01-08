@@ -3,4 +3,3 @@ override Microsoft.Maui.Controls.Shapes.Shape.OnPropertyChanged(string? property
 ~override Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.OnInterceptTouchEvent(Android.Views.MotionEvent e) -> bool
 ~override Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.OnTouchEvent(Android.Views.MotionEvent e) -> bool
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.OnHiddenChanged(bool hidden) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellToolbarTracker.GetToolbar() -> Microsoft.Maui.IToolbar
