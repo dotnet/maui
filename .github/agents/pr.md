@@ -216,7 +216,7 @@ This file:
 - Serves as your TODO list for all phases
 - Tracks progress if interrupted
 - Must exist before you start gathering context
-- Gets committed to `.github/agent-pr-session/` directory
+- **Always include when committing changes** (to `.github/agent-pr-session/`)
 - **Phases 4-5 sections are added AFTER Gate passes** (see `pr/post-gate.md`)
 
 **Then gather context and update the file as you go.**
