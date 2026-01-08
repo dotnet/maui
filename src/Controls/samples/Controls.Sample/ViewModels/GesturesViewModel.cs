@@ -13,6 +13,8 @@ namespace Maui.Controls.Sample.ViewModels
 				"Drag and Drop Views."),
 			new SectionModel(typeof(DropFileToMauiApp), "Drag and Drop file from OS",
 				"Drop File to App"),
+			new SectionModel(typeof(LongPressGestureGalleryPage), "Long Press Gesture",
+				"Long Press Gesture."),
 			new SectionModel(typeof(PanGestureGallery), "Pan Gesture",
 				"Pan Gesture."),
 			new SectionModel(typeof(PinchGestureTestPage), "Pinch Gesture",
