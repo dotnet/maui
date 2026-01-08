@@ -1,0 +1,1 @@
+Use the `env-setup` agent to run a full .NET MAUI environment health check - validate SDK, workloads, Android SDK, Java JDK, and Xcode on relevant platforms. Automatically fix any missing components.  Repeat as necessary until the environment is fully configured.
