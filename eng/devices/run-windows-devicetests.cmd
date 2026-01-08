@@ -244,21 +244,19 @@ if %IS_PACKAGED%==1 (
     REM Unpackaged Test Execution
     REM ========================================
     
-    REM Find the executable
+    REM Find the executable - look for Microsoft.Maui.{SCENARIO}.exe specifically
+    REM to avoid matching RestartAgent.exe or other helper executables
     set TEST_EXE=
-    set TFM_WITH_WINDOWS=%TFM%-windows%WINDOWS_VERSION%
-    for /f "delims=" %%f in ('dir /s /b "%SCENARIO_DIR%\*.exe" 2^>nul ^| findstr /i "!TFM_WITH_WINDOWS!" ^| findstr /i "win-x64" ^| findstr /v /i "createdump"') do (
+    set EXPECTED_EXE_NAME=Microsoft.Maui.%SCENARIO%.exe
+    echo Looking for executable: !EXPECTED_EXE_NAME!
+    
+    for /f "delims=" %%f in ('dir /s /b "%SCENARIO_DIR%\!EXPECTED_EXE_NAME!" 2^>nul') do (
         set TEST_EXE=%%f
     )
     
     if not defined TEST_EXE (
-        REM Try without TFM path filter
-        for /f "delims=" %%f in ('dir /s /b "%SCENARIO_DIR%\*.exe" 2^>nul ^| findstr /v /i "createdump"') do (
-            set TEST_EXE=%%f
-        )
-    )
-    
-    if not defined TEST_EXE (
+        echo WARNING: Could not find !EXPECTED_EXE_NAME!, listing available executables:
+        dir /s /b "%SCENARIO_DIR%\*.exe" 2>nul
         echo ERROR: No executable found for unpackaged tests
         exit /b 1
     )
