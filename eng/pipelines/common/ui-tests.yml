@@ -123,6 +123,8 @@ stages:
     jobs:
       - job: build_ui_tests_material3
         displayName: Build Sample App (Material3)
+        workspace:
+          clean: all
         pool: ${{ parameters.androidPool }}
         variables:
           REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)

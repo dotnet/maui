@@ -54,6 +54,16 @@ steps:
 - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
   displayName: 'Add .NET to PATH'
 
+# Clean artifacts for Material3 build to ensure clean state
+# Reference: Controls.TestCases.HostApp.csproj line 17-19 warning comment
+- pwsh: |
+    if (("${{ parameters.useMaterial3 }}" -eq "true") -and ("${{ parameters.platform }}" -eq "android")) {
+        Write-Host "Cleaning artifacts folder for Material3 clean build"
+        Remove-Item -Path "$(System.DefaultWorkingDirectory)/artifacts" -Recurse -Force -ErrorAction SilentlyContinue
+        Write-Host "Artifacts folder cleaned successfully"
+    }
+  displayName: 'Clean artifacts for Material3'
+  
 - pwsh: |
     Get-Content $PSCommandPath
     $buildCommand = "./build.ps1 --target=uitests-apphost --configuration=${{ parameters.configuration }} --${{ parameters.platform }} --verbosity=diagnostic --usenuget=false --runtimevariant=${{ parameters.runtimeVariant }}"
