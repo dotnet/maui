@@ -1,9 +1,9 @@
 using System;
-using Microsoft.Maui.Graphics;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
-using Windows.Foundation;
+using WinPoint = Windows.Foundation.Point;
+using MauiPoint = Microsoft.Maui.Graphics.Point;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls.Platform
 	{
 		readonly IPlatformViewHandler _handler;
 		DispatcherTimer? _timer;
-		Point _startPosition;
+		WinPoint _startPosition;
 		bool _isLongPressing;
 
 		public LongPressGestureHandler(IPlatformViewHandler handler)
@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Controls.Platform
 			_startPosition = pointerPoint.Position;
 			_isLongPressing = false;
 
-			StartTimers(view, new Point(_startPosition.X, _startPosition.Y));
+			StartTimers(view, new MauiPoint(_startPosition.X, _startPosition.Y));
 
 			// Don't set e.Handled - allow other gesture handlers to process
 		}
@@ -112,7 +112,7 @@ namespace Microsoft.Maui.Controls.Platform
 			CancelTimer();
 		}
 
-		void StartTimers(View view, Point position)
+		void StartTimers(View view, MauiPoint position)
 		{
 			var recognizers = view.GestureRecognizers;
 			if (recognizers == null)
