@@ -27,8 +27,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			Assert.That(tapLabel, Is.EqualTo("Tap Count: 1"), "Tap should fire on quick tap");
 			Assert.That(longPressLabel, Is.EqualTo("Long Press Count: 0"), "LongPress should NOT fire on quick tap");
 
-			// Long press should fire LongPress
-			App.TouchAndHold("TapAndLongPressFrame", System.TimeSpan.FromSeconds(1));
+			// Long press should fire LongPress (TouchAndHold holds for 2 seconds by default)
+			App.TouchAndHold("TapAndLongPressFrame");
 			App.WaitForElement("LongPressLabel");
 
 			longPressLabel = App.FindElement("LongPressLabel").GetText();
@@ -58,8 +58,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("LongPressInScrollFrame");
 
-			// Hold still - should fire LongPress
-			App.TouchAndHold("LongPressInScrollFrame", System.TimeSpan.FromSeconds(1));
+			// Hold still - should fire LongPress (TouchAndHold holds for 2 seconds by default)
+			App.TouchAndHold("LongPressInScrollFrame");
 			App.WaitForElement("LongPress3Label");
 
 			var label = App.FindElement("LongPress3Label").GetText();
@@ -73,8 +73,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("LongPress1");
 			App.WaitForElement("LongPress2");
 
-			// Long press first frame
-			App.TouchAndHold("LongPress1", System.TimeSpan.FromSeconds(1));
+			// Long press first frame (TouchAndHold holds for 2 seconds by default)
+			App.TouchAndHold("LongPress1");
 			App.WaitForElement("LongPress4Label");
 
 			var label1 = App.FindElement("LongPress4Label").GetText();
@@ -83,8 +83,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			Assert.That(label1, Is.EqualTo("LongPress1 Count: 1"), "First LongPress should fire");
 			Assert.That(label2, Is.EqualTo("LongPress2 Count: 0"), "Second LongPress should NOT fire");
 
-			// Long press second frame
-			App.TouchAndHold("LongPress2", System.TimeSpan.FromSeconds(1));
+			// Long press second frame (TouchAndHold holds for 2 seconds by default)
+			App.TouchAndHold("LongPress2");
 			App.WaitForElement("LongPress5Label");
 
 			label1 = App.FindElement("LongPress4Label").GetText();
