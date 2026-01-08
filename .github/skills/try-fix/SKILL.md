@@ -171,16 +171,16 @@ Add a new row to the **Fix Candidates** table in the state file:
 
 **For PASSING fixes:**
 ```markdown
-| # | Source | Approach | Test Result | Files Changed | Notes |
-|---|--------|----------|-------------|---------------|-------|
-| N | try-fix | [Your approach] | ✅ PASS | `file.cs` (+X) | Works! [any observations] |
+| # | Source | Approach | Test Result | Files Changed | Model | Notes |
+|---|--------|----------|-------------|---------------|-------|-------|
+| N | try-fix | [Your approach] | ✅ PASS | `file.cs` (+X) | [Model Name] | Works! [any observations] |
 ```
 
 **For FAILING fixes (include failure analysis):**
 ```markdown
-| # | Source | Approach | Test Result | Files Changed | Notes |
-|---|--------|----------|-------------|---------------|-------|
-| N | try-fix | [Your approach] | ❌ FAIL | `file.cs` (+X) | **Why failed:** [Analysis of flawed reasoning and what you learned] |
+| # | Source | Approach | Test Result | Files Changed | Model | Notes |
+|---|--------|----------|-------------|---------------|-------|-------|
+| N | try-fix | [Your approach] | ❌ FAIL | `file.cs` (+X) | [Model Name] | **Why failed:** [Analysis of flawed reasoning and what you learned] |
 ```
 
 ### Step 10: Revert Everything
@@ -213,12 +213,12 @@ The state file should have this section:
 ```markdown
 ## Fix Candidates
 
-| # | Source | Approach | Test Result | Files Changed | Notes |
-|---|--------|----------|-------------|---------------|-------|
-| 1 | try-fix | Fix in TabbedPageManager | ❌ FAIL | `TabbedPageManager.cs` (+5) | **Why failed:** Too late in lifecycle - by the time OnPageSelected fires, layout already measured with stale values |
-| 2 | try-fix | RequestApplyInsets only | ❌ FAIL | `ToolbarExtensions.cs` (+2) | **Why failed:** Trigger alone insufficient - calculation logic still used cached values |
-| 3 | try-fix | Reset cache + RequestApplyInsets | ✅ PASS | `ToolbarExtensions.cs`, `InsetListener.cs` (+8) | Works! Similar to PR's approach |
-| PR | PR #XXXXX | [PR's approach] | ✅ PASS (Gate) | [files] | Original PR - validated by Gate |
+| # | Source | Approach | Test Result | Files Changed | Model | Notes |
+|---|--------|----------|-------------|---------------|-------|-------|
+| 1 | try-fix | Fix in TabbedPageManager | ❌ FAIL | `TabbedPageManager.cs` (+5) | Claude 3.5 Sonnet | **Why failed:** Too late in lifecycle - by the time OnPageSelected fires, layout already measured with stale values |
+| 2 | try-fix | RequestApplyInsets only | ❌ FAIL | `ToolbarExtensions.cs` (+2) | Claude 3.5 Sonnet | **Why failed:** Trigger alone insufficient - calculation logic still used cached values |
+| 3 | try-fix | Reset cache + RequestApplyInsets | ✅ PASS | `ToolbarExtensions.cs`, `InsetListener.cs` (+8) | Claude 3.5 Sonnet | Works! Similar to PR's approach |
+| PR | PR #XXXXX | [PR's approach] | ✅ PASS (Gate) | [files] | Author | Original PR - validated by Gate |
 
 **Exhausted:** Yes
 **Selected Fix:** #3 or PR - both work, compare for simplicity
@@ -271,9 +271,9 @@ This helps the next try-fix invocation avoid the same mistake.
 ```markdown
 ## Fix Candidates
 
-| # | Source | Approach | Test Result | Files Changed | Notes |
-|---|--------|----------|-------------|---------------|-------|
-| PR | PR #33359 | RequestApplyInsets + reset appBarHasContent | ✅ PASS (Gate) | 2 files | Original PR |
+| # | Source | Approach | Test Result | Files Changed | Model | Notes |
+|---|--------|----------|-------------|---------------|-------|-------|
+| PR | PR #33359 | RequestApplyInsets + reset appBarHasContent | ✅ PASS (Gate) | 2 files | Author | Original PR |
 
 **Exhausted:** No
 **Selected Fix:** [PENDING]
@@ -294,10 +294,10 @@ This helps the next try-fix invocation avoid the same mistake.
 ```markdown
 ## Fix Candidates
 
-| # | Source | Approach | Test Result | Files Changed | Notes |
-|---|--------|----------|-------------|---------------|-------|
-| 1 | try-fix | Fix in TabbedPageManager.OnPageSelected | ❌ FAIL | `TabbedPageManager.cs` (+5) | **Why failed:** Too late in lifecycle - OnPageSelected fires after layout measured |
-| PR | PR #33359 | RequestApplyInsets + reset appBarHasContent | ✅ PASS (Gate) | 2 files | Original PR |
+| # | Source | Approach | Test Result | Files Changed | Model | Notes |
+|---|--------|----------|-------------|---------------|-------|-------|
+| 1 | try-fix | Fix in TabbedPageManager.OnPageSelected | ❌ FAIL | `TabbedPageManager.cs` (+5) | Claude 3.5 Sonnet | **Why failed:** Too late in lifecycle - OnPageSelected fires after layout measured |
+| PR | PR #33359 | RequestApplyInsets + reset appBarHasContent | ✅ PASS (Gate) | 2 files | Author | Original PR |
 
 **Exhausted:** No
 **Selected Fix:** [PENDING]
@@ -317,11 +317,11 @@ This helps the next try-fix invocation avoid the same mistake.
 ```markdown
 ## Fix Candidates
 
-| # | Source | Approach | Test Result | Files Changed | Notes |
-|---|--------|----------|-------------|---------------|-------|
-| 1 | try-fix | Fix in TabbedPageManager.OnPageSelected | ❌ FAIL | `TabbedPageManager.cs` (+5) | **Why failed:** Too late in lifecycle |
-| 2 | try-fix | RequestApplyInsets in UpdateIsVisible | ✅ PASS | `ToolbarExtensions.cs` (+2) | Works! Simpler than PR (1 file vs 2) |
-| PR | PR #33359 | RequestApplyInsets + reset appBarHasContent | ✅ PASS (Gate) | 2 files | Original PR |
+| # | Source | Approach | Test Result | Files Changed | Model | Notes |
+|---|--------|----------|-------------|---------------|-------|-------|
+| 1 | try-fix | Fix in TabbedPageManager.OnPageSelected | ❌ FAIL | `TabbedPageManager.cs` (+5) | Claude 3.5 Sonnet | **Why failed:** Too late in lifecycle |
+| 2 | try-fix | RequestApplyInsets in UpdateIsVisible | ✅ PASS | `ToolbarExtensions.cs` (+2) | Claude 3.5 Sonnet | Works! Simpler than PR (1 file vs 2) |
+| PR | PR #33359 | RequestApplyInsets + reset appBarHasContent | ✅ PASS (Gate) | 2 files | Author | Original PR |
 
 **Exhausted:** No
 **Selected Fix:** [PENDING]
