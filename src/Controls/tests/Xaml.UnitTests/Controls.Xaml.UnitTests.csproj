@@ -79,16 +79,10 @@
     <MauiXaml Update="**\*.sgxc.xaml" Inflator="SourceGen;XamlC" />    
 
     <MauiXaml Update="FontSize.xaml" NoWarn="0612;0618" />
-    <MauiXaml Update="BindingsCompiler.xaml" NoWarn="MAUIG2045" />
     <MauiXaml Update="Issues\Bz55343.xaml" NoWarn="0612" />
-    <MauiXaml Update="Issues\Gh2517.xaml" NoWarn="MAUIG2045" />
-    <MauiXaml Update="Issues\Gh3606.xaml" NoWarn="MAUIG2045" />
-    <MauiXaml Update="Issues\Gh7097.xaml" NoWarn="MAUIG2045" />
     <MauiXaml Update="Issues\Issue1438.xaml" NoWarn="0612" />
     <MauiXaml Update="Issues\Issue2578.xaml" NoWarn="0612" />
     <MauiXaml Update="Issues\Issue2659.xaml" NoWarn="0612" />
-    <MauiXaml Update="Issues\Maui20768.xaml" NoWarn="MAUIG2045" />
-    <MauiXaml Update="Issues\Maui25871.xaml" NoWarn="MAUIG2045" />
 
     <MauiXaml Update="Benchmark.xaml" TreeOrder="true" />
   </ItemGroup>

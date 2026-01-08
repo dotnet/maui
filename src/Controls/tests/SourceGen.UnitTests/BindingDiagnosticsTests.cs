@@ -47,7 +47,7 @@ public class ViewModel
 		// Should have a diagnostic for property not found
 		var diagnostic = result.Diagnostics.FirstOrDefault(d => d.Id == "MAUIG2045");
 		Assert.NotNull(diagnostic);
-		Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
+		Assert.Equal(DiagnosticSeverity.Warning, diagnostic.Severity);
 		
 		var message = diagnostic.GetMessage();
 		Assert.Contains("NonExistentProperty", message, System.StringComparison.Ordinal);

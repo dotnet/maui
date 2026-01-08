@@ -20,5 +20,5 @@ MAUIG2024 | XamlInflation | Warning | BindingWithXDataTypeFromOuterScope
 MAUIG2041 | XamlInflation | Error | BindingIndexerNotClosed
 MAUIG2042 | XamlInflation | Error | BindingIndexerEmpty
 MAUIG2043 | XamlInflation | Error | BindingIndexerTypeUnsupported
-MAUIG2045 | XamlInflation | Error | BindingPropertyNotFound
+MAUIG2045 | XamlInflation | Warning | BindingPropertyNotFound
 MAUIG2064 | XamlInflation | Error | NamescopeDuplicate
