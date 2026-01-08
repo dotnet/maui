@@ -251,66 +251,8 @@ Func<string[], string[]> FilterCategories = (string[] allCategories) => {
 	return filteredCategories;
 };
 
-// Import existing certificate from the .cer file for packaged tests
-// This is needed when running testOnly on a machine that didn't build the MSIX
-Task("ImportCert")
-	.WithCriteria(isPackagedTestRun)
-	.Does(() =>
-{
-	Information("Checking for existing certificate to import...");
-	
-	var projectDir = PROJECT.GetDirectory();
-	var cerPaths = GetFiles(projectDir.FullPath + "/**/AppPackages/*/*.cer");
-	
-	if(cerPaths.Count() == 0)
-	{
-		var arcadeBin = new DirectoryPath("../../artifacts/bin/");
-		
-		if(PROJECT.FullPath.Contains("Controls.DeviceTests"))
-			projectDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Controls.DeviceTests/" + CONFIGURATION + "/"));
-		else if(PROJECT.FullPath.Contains("Core.DeviceTests"))
-			projectDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Core.DeviceTests/" + CONFIGURATION + "/"));
-		else if(PROJECT.FullPath.Contains("Graphics.DeviceTests"))
-			projectDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Graphics.DeviceTests/" + CONFIGURATION + "/"));
-		else if(PROJECT.FullPath.Contains("MauiBlazorWebView.DeviceTests"))
-			projectDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/MauiBlazorWebView.DeviceTests/" + CONFIGURATION + "/"));
-		else if(PROJECT.FullPath.Contains("Essentials.DeviceTests"))
-			projectDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Essentials.DeviceTests/" + CONFIGURATION + "/"));
-			
-		cerPaths = GetFiles(projectDir.FullPath + "/**/AppPackages/*/*.cer");
-	}
-	
-	if(cerPaths.Count() == 0)
-	{
-		Warning("No certificate file found to import");
-		return;
-	}
-	
-	var cerPath = cerPaths.First();
-	Information($"Found certificate to import: {cerPath}");
-	
-	// Import the certificate to LocalMachine\TrustedPeople store using certutil (works without elevation on Helix)
-	var importResult = StartProcess("certutil", $"-addstore TrustedPeople \"{MakeAbsolute(cerPath).FullPath}\"");
-	if(importResult != 0)
-	{
-		// Try PowerShell as fallback
-		Information("certutil failed, trying PowerShell...");
-		importResult = StartProcess("powershell", $"Import-Certificate -FilePath \"{MakeAbsolute(cerPath).FullPath}\" -CertStoreLocation Cert:\\LocalMachine\\TrustedPeople");
-	}
-	
-	if(importResult == 0)
-	{
-		Information("Certificate imported successfully");
-	}
-	else
-	{
-		Warning($"Certificate import returned exit code: {importResult}");
-	}
-});
-
 Task("testOnly")
 	.IsDependentOn("SetupTestPaths")
-	.IsDependentOn("ImportCert")
 	.Does(() =>
 {
 	CleanDirectories(TEST_RESULTS);
@@ -409,71 +351,19 @@ Task("testOnly")
 		}
 
 		// Install the DeviceTests app
-		var installResult = StartProcess("powershell", "Add-AppxPackage -Path \"" + MakeAbsolute(msixPath).FullPath + "\"");
-		Information($"MSIX installation exit code: {installResult}");
-		
-		// Verify the app was installed
-		var verifyInstall = StartProcess("powershell", new ProcessSettings {
-			Arguments = $"-Command \"Get-AppxPackage -Name '{PACKAGEID}' | Select-Object Name, Version, Status\"",
-			RedirectStandardOutput = true
-		});
-		Information($"App package verification exit code: {verifyInstall}");
+		StartProcess("powershell", "Add-AppxPackage -Path \"" + MakeAbsolute(msixPath).FullPath + "\"");
 
 		if (isControlsProjectTestRun)
 		{
 			// Start the app once, this will trigger the discovery of the test categories
 			var startArgsInitial = "Start-Process shell:AppsFolder\\$((Get-AppxPackage -Name \"" + PACKAGEID + "\").PackageFamilyName)!App -ArgumentList \"" + testResultsFile + "\", \"-1\"";
-			Information($"Starting app for category discovery: {startArgsInitial}");
-			Information($"Expected category file location: {testsToRunFile}");
 			StartProcess("powershell", startArgsInitial);
 
 			Information($"Waiting 10 seconds for category discovery to finish...");
 			System.Threading.Thread.Sleep(10000);
-			
-			// Check if the app is still running
-			var checkAppProcess = StartProcess("powershell", new ProcessSettings {
-				Arguments = $"-Command \"Get-Process | Where-Object {{ $_.MainWindowTitle -like '*DeviceTests*' -or $_.ProcessName -like '*DeviceTests*' }} | Select-Object ProcessName, Id\"",
-				RedirectStandardOutput = true
-			});
-			
-			// List files in the upload directory for debugging
-			Information($"Files in test results directory ({testResultsPath}):");
-			if(DirectoryExists(testResultsPath))
-			{
-				foreach(var file in GetFiles(testResultsPath + "/*"))
-				{
-					Information($"  - {file.GetFilename()}");
-				}
-			}
-			else
-			{
-				Information("  Directory does not exist!");
-			}
 
 			if (!FileExists(testsToRunFile)) {
-				// Additional debugging - wait a bit more and check again
-				Information("Category file not found after 10 seconds, waiting another 10 seconds...");
-				System.Threading.Thread.Sleep(10000);
-				
-				Information($"Files in test results directory after additional wait:");
-				if(DirectoryExists(testResultsPath))
-				{
-					foreach(var file in GetFiles(testResultsPath + "/*"))
-					{
-						Information($"  - {file.GetFilename()}");
-					}
-				}
-				
-				// Check Windows Event Log for application crashes
-				Information("Checking Windows Event Log for recent application crashes...");
-				var eventLogResult = StartProcess("powershell", new ProcessSettings {
-					Arguments = $"-Command \"Get-WinEvent -FilterHashtable @{{LogName='Application';Level=2;StartTime=(Get-Date).AddMinutes(-5)}} -MaxEvents 10 2>$null | Select-Object TimeCreated, ProviderName, Message | Format-List\"",
-					RedirectStandardOutput = true
-				});
-				
-				if (!FileExists(testsToRunFile)) {
-					throw new Exception("Test categories file was not created during discovery phase");
-				}
+				throw new Exception("Test categories file was not created during discovery phase");
 			}
 
 			var expectedCategories = System.IO.File.ReadAllLines(testsToRunFile);
@@ -617,56 +507,6 @@ Task("testOnly")
 	if (actualResultFiles.Length == 0)
 	{
 		throw new Exception($"No test result files found. All test processes may have crashed or failed to start.");
-	}
-
-	// Merge all test result files into a single testResults.xml for Helix to find
-	// Helix expects a file named testResults.xml in xunit format
-	var mergedResultsFile = System.IO.Path.Combine(testResultsPath, "testResults.xml");
-	Information($"Merging {actualResultFiles.Length} test result files into testResults.xml for Helix...");
-	
-	try
-	{
-		// Create a merged xunit assemblies document
-		var mergedDoc = new System.Xml.XmlDocument();
-		var assembliesNode = mergedDoc.CreateElement("assemblies");
-		mergedDoc.AppendChild(assembliesNode);
-		
-		foreach (var file in actualResultFiles)
-		{
-			try
-			{
-				var doc = new System.Xml.XmlDocument();
-				doc.Load(file);
-				
-				// Find assembly nodes and import them
-				var assemblyNodes = doc.SelectNodes("//assembly");
-				if (assemblyNodes != null)
-				{
-					foreach (System.Xml.XmlNode node in assemblyNodes)
-					{
-						var importedNode = mergedDoc.ImportNode(node, true);
-						assembliesNode.AppendChild(importedNode);
-					}
-				}
-			}
-			catch (Exception ex)
-			{
-				Warning($"Failed to parse {System.IO.Path.GetFileName(file)}: {ex.Message}");
-			}
-		}
-		
-		mergedDoc.Save(mergedResultsFile);
-		Information($"✓ Created merged test results file: {mergedResultsFile}");
-	}
-	catch (Exception ex)
-	{
-		Warning($"Failed to merge test results: {ex.Message}");
-		// Fall back to copying the first result file as testResults.xml
-		if (actualResultFiles.Length > 0)
-		{
-			System.IO.File.Copy(actualResultFiles[0], mergedResultsFile, true);
-			Information($"Copied {System.IO.Path.GetFileName(actualResultFiles[0])} as testResults.xml");
-		}
 	}
 
 	// If we're running Controls tests, validate we have results for expected categories
