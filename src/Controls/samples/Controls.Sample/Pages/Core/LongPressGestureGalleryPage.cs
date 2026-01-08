@@ -187,19 +187,19 @@ namespace Maui.Controls.Sample.Pages
 
 		void OnLongPressed(object? sender, LongPressedEventArgs e)
 		{
-			stateLabel.Text = $"State: {e.State}";
-			stateLabel.TextColor = e.State == GestureStatus.Completed ? Colors.Green : Colors.Red;
+			stateLabel.Text = "State: Completed";
+			stateLabel.TextColor = Colors.Green;
 
-			if (e.Parameter is View view)
+			if (e.Position.HasValue)
 			{
-				positionLabel.Text = $"Position: {e.GetPosition(view)?.X:F0}, {e.GetPosition(view)?.Y:F0}";
+				positionLabel.Text = $"Position: {e.Position.Value.X:F0}, {e.Position.Value.Y:F0}";
 			}
 		}
 
 		void OnLongPressing(object? sender, LongPressingEventArgs e)
 		{
-			stateLabel.Text = $"State: {e.State}";
-			stateLabel.TextColor = e.State switch
+			stateLabel.Text = $"State: {e.Status}";
+			stateLabel.TextColor = e.Status switch
 			{
 				GestureStatus.Started => Colors.Blue,
 				GestureStatus.Running => Colors.Orange,
@@ -207,6 +207,11 @@ namespace Maui.Controls.Sample.Pages
 				GestureStatus.Canceled => Colors.Red,
 				_ => Colors.Gray
 			};
+
+			if (e.Position.HasValue)
+			{
+				positionLabel.Text = $"Position: {e.Position.Value.X:F0}, {e.Position.Value.Y:F0}";
+			}
 		}
 
 		void HandleLongPressCommand(string source)
