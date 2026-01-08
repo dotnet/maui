@@ -56,6 +56,12 @@ namespace Microsoft.Maui.Controls
 		/// Gets or sets the minimum duration (in milliseconds) the user must press before the gesture is recognized.
 		/// Default is 500 milliseconds.
 		/// </summary>
+		/// <remarks>
+		/// <para><b>Platform Limitations:</b></para>
+		/// <para><b>Android:</b> This property is not configurable on Android. The platform uses the system-default 
+		/// long press timeout (typically 400ms from ViewConfiguration.getLongPressTimeout()), which cannot be changed 
+		/// per gesture recognizer. The MinimumPressDuration value is ignored on Android.</para>
+		/// </remarks>
 		public int MinimumPressDuration
 		{
 			get { return (int)GetValue(MinimumPressDurationProperty); }
