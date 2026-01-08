@@ -56,7 +56,7 @@ steps:
 
 - pwsh: |
     Get-Content $PSCommandPath
-    $buildCommand = "./build.ps1 --target=uitests-apphost --configuration="${{ parameters.configuration }}" --${{ parameters.platform }} --verbosity=diagnostic --usenuget=false --runtimevariant="${{ parameters.runtimeVariant }}"
+    $buildCommand = "./build.ps1 --target=uitests-apphost --configuration=${{ parameters.configuration }} --${{ parameters.platform }} --verbosity=diagnostic --usenuget=false --runtimevariant=${{ parameters.runtimeVariant }}"
     
     # Add Material3 build property if enabled
     if (("${{ parameters.useMaterial3 }}" -eq "true") -and ("${{ parameters.platform }}" -eq "android")) {
