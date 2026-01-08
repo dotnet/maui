@@ -11,12 +11,9 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			NativeDetector.Detected += OnDetected;
 			
-			// Configure based on LongPressGestureRecognizer properties
+			// Configure minimum holding time from LongPressGestureRecognizer properties
 			if (Recognizer is LongPressGestureRecognizer longPress)
 			{
-				// Tizen NUI doesn't support runtime configuration of duration
-				// It uses system default for long press
-				// The MinimumPressDuration is part of MAUI API but Tizen doesn't expose this
 				NativeDetector.SetMinimumHoldingTime((uint)longPress.MinimumPressDuration);
 			}
 		}
