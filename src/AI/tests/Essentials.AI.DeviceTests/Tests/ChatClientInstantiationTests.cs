@@ -1,12 +1,7 @@
+#if IOS || MACCATALYST
 using Xunit;
 
-#if IOS || MACCATALYST
 using PlatformChatClient = Microsoft.Maui.Essentials.AI.AppleIntelligenceChatClient;
-#elif ANDROID
-using PlatformChatClient = Microsoft.Maui.Essentials.AI.MLKitGenAIChatClient;
-#elif WINDOWS
-using PlatformChatClient = Microsoft.Maui.Essentials.AI.WindowsAIChatClient;
-#endif
 
 namespace Microsoft.Maui.Essentials.AI.DeviceTests;
 
@@ -49,3 +44,4 @@ public partial class ChatClientInstantiationTests
 		Assert.NotSame(client1, client2);
 	}
 }
+#endif

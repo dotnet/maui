@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\Essentials.AI.UnitTests\TestData\DataStreams\maui-itinerary-1.txt" Link="maui-itinerary-1.txt">
+    <None Include="..\Essentials.AI.UnitTests\TestData\DataStreams\Itinerary\maui-itinerary-1.txt" Link="maui-itinerary-1.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

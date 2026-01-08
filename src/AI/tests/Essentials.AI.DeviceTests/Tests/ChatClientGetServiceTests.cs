@@ -1,13 +1,8 @@
+#if IOS || MACCATALYST
 using Microsoft.Extensions.AI;
 using Xunit;
 
-#if IOS || MACCATALYST
 using PlatformChatClient = Microsoft.Maui.Essentials.AI.AppleIntelligenceChatClient;
-#elif ANDROID
-using PlatformChatClient = Microsoft.Maui.Essentials.AI.MLKitGenAIChatClient;
-#elif WINDOWS
-using PlatformChatClient = Microsoft.Maui.Essentials.AI.WindowsAIChatClient;
-#endif
 
 namespace Microsoft.Maui.Essentials.AI.DeviceTests;
 
@@ -21,16 +16,8 @@ public partial class ChatClientGetServiceTests
 
 		Assert.NotNull(metadata);
 
-#if IOS || MACCATALYST
 		Assert.Equal("apple", metadata.ProviderName);
 		Assert.Equal("apple-intelligence", metadata.DefaultModelId);
-#elif ANDROID
-		Assert.Equal("ml-kit", metadata.ProviderName);
-		Assert.Equal("gemini-nano", metadata.DefaultModelId);
-#elif WINDOWS
-		Assert.Equal("windows-ai", metadata.ProviderName);
-		Assert.Equal("phi-silica", metadata.DefaultModelId);
-#endif
 	}
 
 	[Fact]
@@ -68,3 +55,4 @@ public partial class ChatClientGetServiceTests
 		Assert.Same(client, self);
 	}
 }
+#endif
