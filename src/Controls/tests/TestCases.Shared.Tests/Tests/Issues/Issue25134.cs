@@ -25,4 +25,3 @@ public class Issue25134 : _IssuesUITest
         Assert.That(button.GetText(), Is.EqualTo("gone"));
     }
 }
-
