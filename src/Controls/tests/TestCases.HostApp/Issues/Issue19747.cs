@@ -1,57 +1,59 @@
-using Microsoft.Maui.Controls;
-
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 19747, "Shell BackButtonBehavior TextOverride property not working as expected", PlatformAffected.Android)]
-public class Issue19747 : Shell
+[Issue(IssueTracker.Github, 19747, "Shell BackButtonBehavior TextOverride text gets truncated", PlatformAffected.Android)]
+public class Issue19747 : TestShell
 {
-	public Issue19747()
+	public const string NavigateButtonText = "Navigate to Page 2";
+	public const string BackButtonText = "Cancel";
+
+	protected override void Init()
 	{
-		Items.Add(new ContentPage
-		{
-			Title = "Main Page",
-			Content = new VerticalStackLayout
+		CreateContentPage("Home").Content =
+			new StackLayout
 			{
 				new Label
 				{
-					Text = "Navigate to test TextOverride",
-					AutomationId = "MainPageLabel"
+					Text = "Tap the button to navigate to Page 2. The back button should show 'Cancel' text fully visible, not truncated.",
+					Margin = new Thickness(20)
 				},
 				new Button
 				{
-					Text = "Navigate",
 					AutomationId = "NavigateButton",
-					Command = new Command(async () => await Navigation.PushAsync(new DetailPage()))
-				}
-			}
-		});
-	}
-
-	public class DetailPage : ContentPage
-	{
-		public DetailPage()
-		{
-			Title = "Detail Page";
-			
-			// Set BackButtonBehavior with TextOverride
-			Shell.SetBackButtonBehavior(this, new BackButtonBehavior
-			{
-				TextOverride = "Cancel"
-			});
-
-			Content = new VerticalStackLayout
-			{
-				new Label
-				{
-					Text = "Check if back button shows 'Cancel' without truncation",
-					AutomationId = "DetailLabel"
-				},
-				new Label
-				{
-					Text = "On Android, the text should not be truncated (should show 'Cancel', not 'Ca...')",
-					AutomationId = "InstructionLabel"
+					Text = NavigateButtonText,
+					Command = new Command(async () =>
+					{
+						await Shell.Current.Navigation.PushAsync(new Issue19747Page2());
+					})
 				}
 			};
-		}
+	}
+}
+
+public class Issue19747Page2 : ContentPage
+{
+	public Issue19747Page2()
+	{
+		Title = "Page2";
+
+		// Set BackButtonBehavior with TextOverride
+		Shell.SetBackButtonBehavior(this, new BackButtonBehavior
+		{
+			TextOverride = Issue19747.BackButtonText // "Cancel" - should be fully visible, not truncated
+		});
+
+		Content = new StackLayout
+		{
+			new Label
+			{
+				Text = "This is Page 2. The back button should show 'Cancel' as the text, not truncated.",
+				Margin = new Thickness(20)
+			},
+			new Label
+			{
+				AutomationId = "StatusLabel",
+				Text = $"Expected back button text: {Issue19747.BackButtonText}",
+				Margin = new Thickness(20)
+			}
+		};
 	}
 }
