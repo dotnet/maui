@@ -10,7 +10,9 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="Type[@FullName='Microsoft.Maui.Controls.ImageButton']/Docs/*" />
+	/// <summary>
+	/// Represents a button control that displays an image.
+	/// </summary>
 	public partial class ImageButton : View, IImageController, IElementConfiguration<ImageButton>, IBorderElement, IButtonController, IViewController, IPaddingElement, IButtonElement, ICommandElement, IImageElement, IImageButton
 	{
 		const int DefaultCornerRadius = -1;
@@ -59,67 +61,89 @@ namespace Microsoft.Maui.Controls
 		readonly Lazy<PlatformConfigurationRegistry<ImageButton>> _platformConfigurationRegistry;
 
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="ImageButton"/> class.
+		/// </summary>
 		public ImageButton()
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<ImageButton>>(() => new PlatformConfigurationRegistry<ImageButton>(this));
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='BorderColor']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the border color of the button.
+		/// </summary>
 		public Color BorderColor
 		{
 			get { return (Color)GetValue(BorderElement.BorderColorProperty); }
 			set { SetValue(BorderElement.BorderColorProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='CornerRadius']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the corner radius of the button.
+		/// </summary>
 		public int CornerRadius
 		{
 			get { return (int)GetValue(CornerRadiusProperty); }
 			set { SetValue(CornerRadiusProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='BorderWidth']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the border width of the button.
+		/// </summary>
 		public double BorderWidth
 		{
 			get { return (double)GetValue(BorderWidthProperty); }
 			set { SetValue(BorderWidthProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='Aspect']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the aspect ratio of the image.
+		/// </summary>
 		public Aspect Aspect
 		{
 			get { return (Aspect)GetValue(AspectProperty); }
 			set { SetValue(AspectProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='IsLoading']/Docs/*" />
+		/// <summary>
+		/// Gets a value indicating whether the image is currently loading.
+		/// </summary>
 		public bool IsLoading => (bool)GetValue(IsLoadingProperty);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='IsPressed']/Docs/*" />
+		/// <summary>
+		/// Gets a value indicating whether the button is currently pressed.
+		/// </summary>
 		public bool IsPressed => (bool)GetValue(IsPressedProperty);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='IsOpaque']/Docs/*" />
+		/// <summary>
+		/// Gets or sets a value indicating whether the image is opaque.
+		/// </summary>
 		public bool IsOpaque
 		{
 			get { return (bool)GetValue(IsOpaqueProperty); }
 			set { SetValue(IsOpaqueProperty, value); }
 		}
-		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='Command']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the command to invoke when the button is clicked.
+		/// </summary>
 		public ICommand Command
 		{
 			get { return (ICommand)GetValue(CommandProperty); }
 			set { SetValue(CommandProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='CommandParameter']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the parameter to pass to the command.
+		/// </summary>
 		public object CommandParameter
 		{
 			get { return GetValue(CommandParameterProperty); }
 			set { SetValue(CommandParameterProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='Source']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the image source for the button.
+		/// </summary>
 		[System.ComponentModel.TypeConverter(typeof(ImageSourceConverter))]
 		public ImageSource Source
 		{
@@ -170,47 +194,67 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='SetIsLoading']/Docs/*" />
+		/// <summary>
+		/// Sets the loading state of the image.
+		/// </summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SetIsLoading(bool isLoading) => SetValue(IsLoadingPropertyKey, isLoading);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='SetIsPressed']/Docs/*" />
+		/// <summary>
+		/// Sets the pressed state of the button.
+		/// </summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SetIsPressed(bool isPressed) =>
 			SetValue(IsPressedPropertyKey, isPressed);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='SendClicked']/Docs/*" />
+		/// <summary>
+		/// Sends the clicked event for the button.
+		/// </summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendClicked() =>
 			ButtonElement.ElementClicked(this, this);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='SendPressed']/Docs/*" />
+		/// <summary>
+		/// Sends the pressed event for the button.
+		/// </summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendPressed() =>
 			ButtonElement.ElementPressed(this, this);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='SendReleased']/Docs/*" />
+		/// <summary>
+		/// Sends the released event for the button.
+		/// </summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendReleased() =>
 			ButtonElement.ElementReleased(this, this);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='PropagateUpClicked']/Docs/*" />
+		/// <summary>
+		/// Propagates the clicked event up the visual tree.
+		/// </summary>
 		public void PropagateUpClicked() =>
 			Clicked?.Invoke(this, EventArgs.Empty);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='PropagateUpPressed']/Docs/*" />
+		/// <summary>
+		/// Propagates the pressed event up the visual tree.
+		/// </summary>
 		public void PropagateUpPressed() =>
 			Pressed?.Invoke(this, EventArgs.Empty);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='PropagateUpReleased']/Docs/*" />
+		/// <summary>
+		/// Propagates the released event up the visual tree.
+		/// </summary>
 		public void PropagateUpReleased() =>
 			Released?.Invoke(this, EventArgs.Empty);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='RaiseImageSourcePropertyChanged']/Docs/*" />
+		/// <summary>
+		/// Raises the property changed event for the image source.
+		/// </summary>
 		public void RaiseImageSourcePropertyChanged() =>
 			OnPropertyChanged(nameof(Source));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='Padding']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the padding of the button.
+		/// </summary>
 		public Thickness Padding
 		{
 			get { return (Thickness)GetValue(PaddingElement.PaddingProperty); }
