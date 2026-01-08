@@ -12,7 +12,42 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 {
 	bool _ignorePlatformSelectionChange;
 
+	// Cache for MeasureFirstItem optimization
+	global::Windows.Foundation.Size _firstItemMeasuredSize = global::Windows.Foundation.Size.Empty;
+
 	protected override IItemsLayout Layout { get => ItemsView.ItemsLayout; }
+
+	/// <summary>
+	/// Gets the cached first item measured size for MeasureFirstItem optimization.
+	/// Returns Size.Empty if not cached or not using MeasureFirstItem strategy.
+	/// </summary>
+	internal global::Windows.Foundation.Size GetCachedFirstItemSize()
+	{
+		if (VirtualView is CollectionView cv && cv.ItemSizingStrategy == ItemSizingStrategy.MeasureFirstItem)
+		{
+			return _firstItemMeasuredSize;
+		}
+		return global::Windows.Foundation.Size.Empty;
+	}
+
+	/// <summary>
+	/// Sets the cached first item measured size for MeasureFirstItem optimization.
+	/// </summary>
+	internal void SetCachedFirstItemSize(global::Windows.Foundation.Size size)
+	{
+		if (VirtualView is CollectionView cv && cv.ItemSizingStrategy == ItemSizingStrategy.MeasureFirstItem)
+		{
+			_firstItemMeasuredSize = size;
+		}
+	}
+
+	/// <summary>
+	/// Invalidates the cached first item size.
+	/// </summary>
+	internal void InvalidateFirstItemSize()
+	{
+		_firstItemMeasuredSize = global::Windows.Foundation.Size.Empty;
+	}
 
 	public static void MapCanReorderItems(CollectionViewHandler2 handler, ReorderableItemsView itemsView)
 	{
@@ -213,7 +248,7 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 				break;
 			case ItemsViewSelectionMode.Multiple:
 				PlatformView.DeselectAll();
-				
+
 				// Use safe enumeration to avoid ArgumentOutOfRangeException during collection updates
 				int index = 0;
 				foreach (var nativeItem in itemList)
@@ -229,7 +264,7 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 					index++;
 				}
 				break;
-			case ItemsViewSelectionMode.None:	
+			case ItemsViewSelectionMode.None:
 			case ItemsViewSelectionMode.Extended:
 			default:
 				break;
