@@ -57,6 +57,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 						wrapper.HorizontalContentAlignment = HorizontalAlignment.Stretch;
 						wrapper.SetContent(viewContent);
 
+						if(wrapper is not null)
+						{
+							wrapper.IsHeaderOrFooter = templateContext.IsHeader || templateContext.IsFooter;
+						}
+
 						if (wrapper?.VirtualView is View virtualView)
 						{
 							virtualView.SetValue(OriginTemplateProperty, template);
@@ -110,6 +115,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		
 		private IMauiContext _context = context;
 
+		public bool IsHeaderOrFooter { get; set; }	
+
 		public void SetContent(IView view)
 		{
 			if (VirtualView is null || VirtualView.Handler is null)
@@ -117,6 +124,43 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				Content = view.ToPlatform(_context);
 				VirtualView = view;
 			}
+		}
+
+		protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
+		{
+			// Access handler through view parent chain (same pattern as iOS)
+			CollectionViewHandler2? handler = null;
+			if (VirtualView is View view &&
+				view.Parent is ItemsView itemsView &&
+				itemsView.Handler is CollectionViewHandler2 cvHandler)
+			{
+				handler = cvHandler;
+			}
+
+			// Check if we should use cached first item size
+			var cachedSize = handler?.GetCachedFirstItemSize() ?? global::Windows.Foundation.Size.Empty;
+
+			if (!cachedSize.IsEmpty)
+			{
+				// Use cached size for MeasureFirstItem strategy
+				base.MeasureOverride(cachedSize);
+				return cachedSize;
+			}
+
+			// Measure normally
+			var measuredSize = base.MeasureOverride(availableSize);
+
+			// Cache the size if this is the first item being measured
+			if (handler != null && !IsHeaderOrFooter)
+			{
+				var currentCached = handler.GetCachedFirstItemSize();
+				if (currentCached.IsEmpty)
+				{
+					handler.SetCachedFirstItemSize(measuredSize);
+				}
+			}
+
+			return measuredSize;
 		}
 	}
 }

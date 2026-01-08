@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		WeakNotifyPropertyChangedProxy? _layoutPropertyChangedProxy;
 		PropertyChangedEventHandler? _layoutPropertyChanged;
-
+		bool _isScrollingForItemsUpdate;
 		protected TItemsView ItemsView => VirtualView;
 		protected TItemsView Element => VirtualView;
 
@@ -70,13 +70,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			[Controls.ItemsView.EmptyViewTemplateProperty.PropertyName] = MapEmptyViewTemplate,
 			[Controls.ItemsView.FlowDirectionProperty.PropertyName] = MapFlowDirection,
 			[Controls.ItemsView.IsVisibleProperty.PropertyName] = MapIsVisible,
-			[Controls.ItemsView.ItemsUpdatingScrollModeProperty.PropertyName] = MapItemsUpdatingScrollMode,
 			[Controls.StructuredItemsView.ItemsLayoutProperty.PropertyName] = MapItemsLayout,
 			[Controls.StructuredItemsView.HeaderProperty.PropertyName] = MapHeader,
 			[Controls.StructuredItemsView.HeaderTemplateProperty.PropertyName] = MapHeaderTemplate,
 			[Controls.StructuredItemsView.FooterProperty.PropertyName] = MapFooter,
 			[Controls.StructuredItemsView.FooterTemplateProperty.PropertyName] = MapFooterTemplate,
 		};
+
+
+
+		private bool _scrollUpdatePending;
 
 		public static void MapItemsSource(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
 		{
@@ -116,10 +119,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public static void MapIsVisible(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
 		{
 			handler.PlatformView.UpdateVisibility(itemsView);
-		}
-
-		public static void MapItemsUpdatingScrollMode(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
-		{
 		}
 
 		public static void MapItemsLayout(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
@@ -296,7 +295,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				_lastRemainingItemsThresholdIndex = -1;
 			}
 
-			VirtualView.Dispatcher.DispatchAsync(() => ApplyItemsUpdatingScrollMode());
+			if (!_scrollUpdatePending && PlatformView is not null)
+			{
+				_scrollUpdatePending = true;
+				
+				PlatformView.LayoutUpdated += OnLayoutUpdated;
+			}
+		}
+		void OnLayoutUpdated(object? s, object args)
+		{
+			PlatformView.LayoutUpdated -= OnLayoutUpdated;
+			_scrollUpdatePending = false;
+			ApplyItemsUpdatingScrollMode();
 		}
 
 		void ApplyItemsUpdatingScrollMode()
@@ -314,6 +324,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (VirtualView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
 			{
+				_isScrollingForItemsUpdate = true;
 				// Keeps the first item in the list displayed when new items are added.
 				PlatformView.StartBringItemIntoView(0, new BringIntoViewOptions() { AnimationDesired = false });
 			}
@@ -748,6 +759,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		void HandleScroll(WScrollPresenter scrollViewer)
 		{
+			if(_isScrollingForItemsUpdate)
+			{
+				_isScrollingForItemsUpdate = false;
+				return;
+			}
+
 			var itemsViewScrolledEventArgs = new ItemsViewScrolledEventArgs
 			{
 				HorizontalOffset = scrollViewer.HorizontalOffset,
