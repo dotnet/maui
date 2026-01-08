@@ -1,37 +1,28 @@
-using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class Maui19560 : ContentPage
 {
-	public partial class Maui19560 : ContentPage
+	public Maui19560()
 	{
-		public Maui19560()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
+	}
 
-		public Maui19560(bool useCompiledXaml)
+	[Collection("Issue")]
+	public class Tests
+	{
+		[Theory]
+		[XamlInflatorData]
+		internal void StylesAreAppliedToShadow(XamlInflator inflator)
 		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
-		{
-			[TestCase(true)]
-			[TestCase(false)]
-			public void StylesAreAppliedToShadow(bool useCompiledXaml)
-			{
-				var layout = new Maui19560(useCompiledXaml);
-				Assert.AreEqual(Colors.Red, ((SolidColorBrush)layout.label.Shadow.Brush).Color);
-				Assert.AreEqual(0.5, layout.label.Shadow.Opacity);
-				Assert.AreEqual(15, layout.label.Shadow.Radius);
-				Assert.AreEqual(10, layout.label.Shadow.Offset.X);
-				Assert.AreEqual(10, layout.label.Shadow.Offset.Y);
-			}
+			var page = new Maui19560(inflator);
+			Assert.Equal(Colors.Red, ((SolidColorBrush)page.label.Shadow.Brush).Color);
+			Assert.Equal(0.5, page.label.Shadow.Opacity);
+			Assert.Equal(15, page.label.Shadow.Radius);
+			Assert.Equal(10, page.label.Shadow.Offset.X);
+			Assert.Equal(10, page.label.Shadow.Offset.Y);
 		}
 	}
 }
