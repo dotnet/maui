@@ -118,6 +118,9 @@ namespace Microsoft.Maui.Controls.Platform
 			if (recognizers == null)
 				return;
 
+			// Note: If multiple LongPressGestureRecognizers are present on the same view,
+			// only the last one's MinimumPressDuration is used. This is an edge case scenario
+			// that is not commonly used in practice (typically one LongPress per element).
 			foreach (var recognizer in recognizers)
 			{
 				if (recognizer is LongPressGestureRecognizer longPress)
@@ -133,8 +136,16 @@ namespace Microsoft.Maui.Controls.Platform
 							return; // Already fired
 
 						_isLongPressing = true;
-						longPress.SendLongPressed(view, position);
-						longPress.SendLongPressing(view, GestureStatus.Completed, position);
+						
+						// Fire for ALL LongPress recognizers on this view
+						foreach (var r in view.GestureRecognizers)
+						{
+							if (r is LongPressGestureRecognizer lp)
+							{
+								lp.SendLongPressed(view, position);
+								lp.SendLongPressing(view, GestureStatus.Completed, position);
+							}
+						}
 						
 						CancelTimer();
 					};
