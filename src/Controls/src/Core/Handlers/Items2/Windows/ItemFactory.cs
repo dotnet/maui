@@ -52,8 +52,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					var viewContent = template.CreateContent() as View;
 					if (_view.Handler?.MauiContext is not null && viewContent is not null)
 					{
-						var handler = _view.Handler as ItemsViewHandler2<ItemsView>;
-						wrapper = new ElementWrapper(_view.Handler.MauiContext, handler);
+						wrapper = new ElementWrapper(_view.Handler.MauiContext);
 						wrapper.HorizontalAlignment = HorizontalAlignment.Stretch;
 						wrapper.HorizontalContentAlignment = HorizontalAlignment.Stretch;
 						wrapper.SetContent(viewContent);
@@ -105,18 +104,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		}
 	}
 
-	internal partial class ElementWrapper : ContentControl
+	internal partial class ElementWrapper(IMauiContext context) : ContentControl
 	{
 		public IView? VirtualView { get; private set; }
 
-		private IMauiContext _context;
-		private ItemsViewHandler2<ItemsView>? _handler;
-
-		public ElementWrapper(IMauiContext context, ItemsViewHandler2<ItemsView>? handler = null)
-		{
-			_context = context;
-			_handler = handler;
-		}
+		private IMauiContext _context = context;
 
 		public void SetContent(IView view)
 		{
@@ -127,10 +119,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 		}
 
-		protected override Windows.Foundation.Size MeasureOverride(Windows.Foundation.Size availableSize)
+		protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
 		{
+			// Access handler through view parent chain (same pattern as iOS)
+			CollectionViewHandler2? handler = null;
+			if (VirtualView is View view &&
+				view.Parent is ItemsView itemsView &&
+				itemsView.Handler is CollectionViewHandler2 cvHandler)
+			{
+				handler = cvHandler;
+			}
+
 			// Check if we should use cached first item size
-			var cachedSize = _handler?.GetCachedFirstItemSize() ?? Windows.Foundation.Size.Empty;
+			var cachedSize = handler?.GetCachedFirstItemSize() ?? global::Windows.Foundation.Size.Empty;
 
 			if (!cachedSize.IsEmpty)
 			{
@@ -142,15 +143,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			// Measure normally
 			var measuredSize = base.MeasureOverride(availableSize);
 
-			// Cache the size if this is the first item and using MeasureFirstItem
-			if (_handler != null &&
-				_handler.VirtualView is StructuredItemsView siv &&
-				siv.ItemSizingStrategy == ItemSizingStrategy.MeasureFirstItem)
+			// Cache the size if this is the first item being measured
+			if (handler != null)
 			{
-				var currentCached = _handler.GetCachedFirstItemSize();
+				var currentCached = handler.GetCachedFirstItemSize();
 				if (currentCached.IsEmpty)
 				{
-					_handler.SetCachedFirstItemSize(measuredSize);
+					handler.SetCachedFirstItemSize(measuredSize);
 				}
 			}
 

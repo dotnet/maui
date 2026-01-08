@@ -22,7 +22,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 	{
 		CollectionViewSource? _collectionViewSource;
 		IList? _itemsSource;
-		Windows.Foundation.Size _firstItemMeasuredSize = Windows.Foundation.Size.Empty;
 
 		FrameworkElement? _emptyView;
 		View? _mauiEmptyView;
@@ -48,38 +47,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		protected TItemsView Element => VirtualView;
 
 		protected abstract IItemsLayout Layout { get; }
-
-		/// <summary>
-		/// Gets the cached first item measured size for MeasureFirstItem optimization.
-		/// Returns Size.Empty if not cached or not using MeasureFirstItem strategy.
-		/// </summary>
-		internal Windows.Foundation.Size GetCachedFirstItemSize()
-		{
-			if (VirtualView is StructuredItemsView siv && siv.ItemSizingStrategy == ItemSizingStrategy.MeasureFirstItem)
-			{
-				return _firstItemMeasuredSize;
-			}
-			return Windows.Foundation.Size.Empty;
-		}
-
-		/// <summary>
-		/// Sets the cached first item measured size for MeasureFirstItem optimization.
-		/// </summary>
-		internal void SetCachedFirstItemSize(Windows.Foundation.Size size)
-		{
-			if (VirtualView is StructuredItemsView siv && siv.ItemSizingStrategy == ItemSizingStrategy.MeasureFirstItem)
-			{
-				_firstItemMeasuredSize = size;
-			}
-		}
-
-		/// <summary>
-		/// Invalidates the cached first item size.
-		/// </summary>
-		internal void InvalidateFirstItemSize()
-		{
-			_firstItemMeasuredSize = Windows.Foundation.Size.Empty;
-		}
 
 		public ItemsViewHandler2() : base(ItemsViewMapper)
 		{
