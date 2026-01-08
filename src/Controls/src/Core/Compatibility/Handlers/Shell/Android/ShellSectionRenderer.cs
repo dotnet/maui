@@ -249,7 +249,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				// Force TitleView update when fragment becomes visible (fixes issue #33304)
 				if(toolbar.TitleView != null)
-				toolbar.Handler?.UpdateValue(nameof(Toolbar.TitleView));
+				{
+					toolbar.Handler?.UpdateValue(nameof(Toolbar.TitleView));
+				}
 			}
 		}
 
