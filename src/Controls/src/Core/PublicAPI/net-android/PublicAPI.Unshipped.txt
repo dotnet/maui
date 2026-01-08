@@ -1,3 +1,2 @@
 #nullable enable
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.OnHiddenChanged(bool hidden) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.IShellToolbarTracker.GetToolbar() -> Microsoft.Maui.IToolbar
