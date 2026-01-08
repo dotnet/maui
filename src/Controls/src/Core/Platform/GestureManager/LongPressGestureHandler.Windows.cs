@@ -1,0 +1,161 @@
+using System;
+using Microsoft.Maui.Graphics;
+using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Input;
+using Windows.Foundation;
+
+namespace Microsoft.Maui.Controls.Platform
+{
+	class LongPressGestureHandler : IDisposable
+	{
+		readonly IPlatformViewHandler _handler;
+		DispatcherTimer? _timer;
+		Point _startPosition;
+		bool _isLongPressing;
+
+		public LongPressGestureHandler(IPlatformViewHandler handler)
+		{
+			_handler = handler;
+		}
+
+		public void SubscribeEvents()
+		{
+			var container = GetContainer();
+			if (container != null)
+			{
+				container.PointerPressed += OnPointerPressed;
+				container.PointerReleased += OnPointerReleased;
+				container.PointerCanceled += OnPointerCanceled;
+				container.PointerMoved += OnPointerMoved;
+			}
+		}
+
+		public void UnsubscribeEvents()
+		{
+			var container = GetContainer();
+			if (container != null)
+			{
+				container.PointerPressed -= OnPointerPressed;
+				container.PointerReleased -= OnPointerReleased;
+				container.PointerCanceled -= OnPointerCanceled;
+				container.PointerMoved -= OnPointerMoved;
+			}
+			CancelTimer();
+		}
+
+		FrameworkElement? GetContainer() => 
+			(_handler.ContainerView ?? _handler.PlatformView) as FrameworkElement;
+
+		View? GetView() => _handler.VirtualView as View;
+
+		void OnPointerPressed(object sender, PointerRoutedEventArgs e)
+		{
+			var view = GetView();
+			if (view == null)
+				return;
+
+			var container = GetContainer();
+			if (container == null)
+				return;
+
+			var pointerPoint = e.GetCurrentPoint(container);
+			_startPosition = pointerPoint.Position;
+			_isLongPressing = false;
+
+			StartTimers(view, new Point(_startPosition.X, _startPosition.Y));
+
+			// Don't set e.Handled - allow other gesture handlers to process
+		}
+
+		void OnPointerMoved(object sender, PointerRoutedEventArgs e)
+		{
+			var view = GetView();
+			if (view == null)
+				return;
+
+			var container = GetContainer();
+			if (container == null)
+				return;
+
+			var pointerPoint = e.GetCurrentPoint(container);
+			var currentPos = pointerPoint.Position;
+			var deltaX = Math.Abs(currentPos.X - _startPosition.X);
+			var deltaY = Math.Abs(currentPos.Y - _startPosition.Y);
+
+			var recognizers = view.GestureRecognizers;
+			if (recognizers == null)
+				return;
+
+			foreach (var recognizer in recognizers)
+			{
+				if (recognizer is LongPressGestureRecognizer longPress)
+				{
+					if (deltaX > longPress.AllowableMovement || deltaY > longPress.AllowableMovement)
+					{
+						CancelTimer();
+						break;
+					}
+				}
+			}
+
+			// Don't set e.Handled - allow scrolling/panning to work
+		}
+
+		void OnPointerReleased(object sender, PointerRoutedEventArgs e)
+		{
+			CancelTimer();
+		}
+
+		void OnPointerCanceled(object sender, PointerRoutedEventArgs e)
+		{
+			CancelTimer();
+		}
+
+		void StartTimers(View view, Point position)
+		{
+			var recognizers = view.GestureRecognizers;
+			if (recognizers == null)
+				return;
+
+			foreach (var recognizer in recognizers)
+			{
+				if (recognizer is LongPressGestureRecognizer longPress)
+				{
+					var duration = TimeSpan.FromMilliseconds(longPress.MinimumPressDuration);
+					
+					// Use DispatcherTimer which automatically runs on UI thread
+					_timer = new DispatcherTimer();
+					_timer.Interval = duration;
+					_timer.Tick += (s, e) =>
+					{
+						if (_isLongPressing)
+							return; // Already fired
+
+						_isLongPressing = true;
+						longPress.SendLongPressed(view, position);
+						longPress.SendLongPressing(view, GestureStatus.Completed, position);
+						
+						CancelTimer();
+					};
+					_timer.Start();
+				}
+			}
+		}
+
+		void CancelTimer()
+		{
+			if (_timer != null)
+			{
+				_timer.Stop();
+				_timer = null;
+			}
+			_isLongPressing = false;
+		}
+
+		public void Dispose()
+		{
+			UnsubscribeEvents();
+		}
+	}
+}
