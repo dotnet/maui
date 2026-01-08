@@ -41,6 +41,12 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 	{
 	}
 
+	public static void MapItemSizingStrategy(CollectionViewHandler2 handler, StructuredItemsView itemsView)
+	{
+		handler.InvalidateFirstItemSize();
+		handler.UpdateItemsSource();
+	}
+
 	protected override void ConnectHandler(WItemsView platformView)
 	{
 		base.ConnectHandler(platformView);
@@ -265,5 +271,23 @@ partial class SelectionModeConvert : UI.Xaml.Data.IValueConverter
 			default:
 				return SelectionMode.None;
 		}
+	}
+
+	public static PropertyMapper<CollectionView, CollectionViewHandler2> Mapper = new(ItemsViewMapper)
+	{
+		[ReorderableItemsView.CanReorderItemsProperty.PropertyName] = MapCanReorderItems,
+		[GroupableItemsView.IsGroupedProperty.PropertyName] = MapIsGrouped,
+		[SelectableItemsView.SelectedItemProperty.PropertyName] = MapSelectedItem,
+		[SelectableItemsView.SelectedItemsProperty.PropertyName] = MapSelectedItems,
+		[SelectableItemsView.SelectionModeProperty.PropertyName] = MapSelectionMode,
+		[StructuredItemsView.ItemSizingStrategyProperty.PropertyName] = MapItemSizingStrategy,
+	};
+
+	public CollectionViewHandler2() : base(Mapper)
+	{
+	}
+
+	public CollectionViewHandler2(PropertyMapper mapper = null) : base(mapper ?? Mapper)
+	{
 	}
 }
