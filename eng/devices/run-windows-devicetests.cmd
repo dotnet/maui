@@ -189,10 +189,12 @@ if %IS_PACKAGED%==1 (
     
     echo Package installed: !PACKAGE_FAMILY_NAME!
     
+    REM Build APP_URI once (escape ! as ^! due to delayed expansion)
+    set "APP_URI=shell:AppsFolder\!PACKAGE_FAMILY_NAME!^!App"
+    
     if %IS_CONTROLS_TEST%==1 (
         REM Category-based test execution for Controls.DeviceTests
         echo Starting app for category discovery...
-        set "APP_URI=shell:AppsFolder\!PACKAGE_FAMILY_NAME!^!App"
         powershell -Command "Start-Process '!APP_URI!' -ArgumentList '\"%TEST_RESULTS_FILE%\"', '-1'"
         
         echo Waiting 10 seconds for category discovery...
@@ -223,7 +225,6 @@ if %IS_PACKAGED%==1 (
             set EXPECTED_RESULT_FILE=%TEST_RESULTS_DIR%\TestResults-%PACKAGE_ID_SAFE%_!CATEGORY_NAME!.xml
             
             echo Running category !CATEGORY_INDEX!: !CATEGORY_NAME!
-            set "APP_URI=shell:AppsFolder\!PACKAGE_FAMILY_NAME!^!App"
             powershell -Command "Start-Process '!APP_URI!' -ArgumentList '\"%TEST_RESULTS_FILE%\"', '!CATEGORY_INDEX!'"
             
             REM Wait for test results with timeout
@@ -234,7 +235,6 @@ if %IS_PACKAGED%==1 (
     ) else (
         REM Single test run for non-Controls projects
         echo Starting app for single test run...
-        set "APP_URI=shell:AppsFolder\!PACKAGE_FAMILY_NAME!^!App"
         powershell -Command "Start-Process '!APP_URI!' -ArgumentList '\"%TEST_RESULTS_FILE%\"'"
         
         call :wait_for_result "%TEST_RESULTS_FILE%" "All Tests"
