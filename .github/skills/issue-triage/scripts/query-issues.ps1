@@ -39,19 +39,19 @@
     Optional file path to save results
 
 .EXAMPLE
-    ./QueryTriageIssues.ps1
+    ./query-issues.ps1
     # Returns up to 50 issues needing triage, sorted by creation date
 
 .EXAMPLE
-    ./QueryTriageIssues.ps1 -Platform android -Limit 20
+    ./query-issues.ps1 -Platform android -Limit 20
     # Returns up to 20 Android issues needing triage
 
 .EXAMPLE
-    ./QueryTriageIssues.ps1 -Area "collectionview" -SortBy reactions -OutputFormat markdown
+    ./query-issues.ps1 -Area "collectionview" -SortBy reactions -OutputFormat markdown
     # Returns CollectionView issues sorted by reactions, formatted as markdown
 
 .EXAMPLE
-    ./QueryTriageIssues.ps1 -MinAge 30 -OutputFile "old-issues.md" -OutputFormat markdown
+    ./query-issues.ps1 -MinAge 30 -OutputFile "old-issues.md" -OutputFormat markdown
     # Saves issues older than 30 days to a markdown file
 #>
 
