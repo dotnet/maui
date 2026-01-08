@@ -1,3 +1,5 @@
+#if TEST_FAILS_ON_WINDOWS
+// CollectionView Header is not visible with OnPlatform in HostApp, but works in Sandbox (fixed in https://github.com/dotnet/maui/pull/28935)
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -20,3 +22,4 @@ public class Issue25124 : _IssuesUITest
 		VerifyScreenshot();
 	}
 }
+#endif
