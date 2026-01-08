@@ -24,8 +24,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		// of creating a fragment
 		bool _isAnimating = false;
 
-		static readonly Dictionary<Page, ShellContentFragment> _pageFragmentMap = new Dictionary<Page, ShellContentFragment>();
-
 		#region IAnimationListener
 
 		void AndroidAnimation.IAnimationListener.OnAnimationEnd(AndroidAnimation animation)
@@ -93,11 +91,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public event EventHandler AnimationFinished;
 
 		public Fragment Fragment => this;
-
-		internal static bool TryGetFragment(Page page, out ShellContentFragment fragment)
-		{
-			return _pageFragmentMap.TryGetValue(page, out fragment);
-		}
 
 		public override AndroidAnimation OnCreateAnimation(int transit, bool enter, int nextAnim)
 		{
@@ -171,7 +164,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_appearanceTracker = _shellContext.CreateToolbarAppearanceTracker();
 
 			((IShellController)_shellContext.Shell).AddAppearanceObserver(this, _page);
-			_pageFragmentMap[_page] = this;
 
 			if (_shellPageContainer.LayoutParameters is CoordinatorLayout.LayoutParams layoutParams)
 				layoutParams.Behavior = new AppBarLayout.ScrollingViewBehavior();
@@ -179,7 +171,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			return _root;
 		}
 
-		internal void Destroy()
+		void Destroy()
 		{
 			if (_destroyed)
 				return;
@@ -221,13 +213,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_toolbarTracker?.Dispose();
 			_appearanceTracker?.Dispose();
 
-			if (_page is not null)
-			{
-				_pageFragmentMap.Remove(_page);
-				_page.DisconnectHandlers();
-				_page = null;
-			}
-
 			_appearanceTracker = null;
 			_toolbarTracker = null;
 			_toolbar = null;
@@ -235,6 +220,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_viewhandler = null;
 			_shellContent = null;
 			_shellPageContainer = null;
+		}
+
+		internal void DisposePage()
+		{
+			Destroy();
+
+			if (_page is not null)
+			{
+				_page.DisconnectHandlers();
+				_page = null;
+			}
 		}
 
 		protected override void Dispose(bool disposing)

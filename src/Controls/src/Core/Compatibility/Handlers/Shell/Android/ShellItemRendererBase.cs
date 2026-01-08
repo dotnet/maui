@@ -168,7 +168,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 							RemoveFragment(removeFragment.Fragment);
 						_fragmentMap.Remove(page);
 
-						DisposePage(page);
+						if (removeFragment is ShellContentFragment shellFragment)
+						{
+							shellFragment.DisposePage();
+						}
 					}
 
 					if (!isForCurrentTab && removeFragment != _currentFragment)
@@ -430,14 +433,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var t = ChildFragmentManager.BeginTransactionEx();
 			t.RemoveEx(fragment);
 			t.CommitAllowingStateLossEx();
-		}
-
-		void DisposePage(Page page)
-		{
-			if (ShellContentFragment.TryGetFragment(page, out var shellFragment))
-			{
-				shellFragment.Destroy();
-			}
 		}
 	}
 }
