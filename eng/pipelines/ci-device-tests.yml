@@ -69,8 +69,8 @@ parameters:
 - name: macOSPoolInternal
   type: object
   default:
-    name: MAUI
-    vmImage: MAUI
+    name: Azure Pipelines
+    vmImage: macOS-15
 
 # Public pools (dnceng-public)
 - name: windowsPoolPublic

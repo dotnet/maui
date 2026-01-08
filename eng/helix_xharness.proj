@@ -3,9 +3,14 @@
         <HelixType>test/devices/</HelixType>
         <HelixBuild Condition="'$(HelixBuild)' == ''">$(BUILD_BUILDNUMBER)</HelixBuild>
         <HelixBuild Condition="'$(HelixBuild)' == ''">default</HelixBuild>
-        <HelixTargetQueues Condition="'$(TargetOS)' == 'ios'">osx.15.arm64.maui.open</HelixTargetQueues>
-        <HelixTargetQueues Condition="'$(TargetOS)' == 'maccatalyst'">osx.15.arm64.maui.open</HelixTargetQueues>
-        <HelixTargetQueues Condition="'$(TargetOS)' == 'android'">ubuntu.2204.amd64.android.33.open</HelixTargetQueues>
+        <!-- Public queues (default) -->
+        <HelixTargetQueues Condition="'$(TargetOS)' == 'ios' and '$(HelixInternal)' != 'True'">osx.15.arm64.maui.open</HelixTargetQueues>
+        <HelixTargetQueues Condition="'$(TargetOS)' == 'maccatalyst' and '$(HelixInternal)' != 'True'">osx.15.arm64.maui.open</HelixTargetQueues>
+        <HelixTargetQueues Condition="'$(TargetOS)' == 'android' and '$(HelixInternal)' != 'True'">ubuntu.2204.amd64.android.33.open</HelixTargetQueues>
+        <!-- Internal queues -->
+        <HelixTargetQueues Condition="'$(TargetOS)' == 'ios' and '$(HelixInternal)' == 'True'">osx.15.arm64</HelixTargetQueues>
+        <HelixTargetQueues Condition="'$(TargetOS)' == 'maccatalyst' and '$(HelixInternal)' == 'True'">osx.15.arm64</HelixTargetQueues>
+        <HelixTargetQueues Condition="'$(TargetOS)' == 'android' and '$(HelixInternal)' == 'True'">ubuntu.2204.amd64.android.33</HelixTargetQueues>
         <TargetsAppleMobile Condition="'$(TargetOS)' == 'ios'">true</TargetsAppleMobile>
         <Creator Condition="'$(HelixAccessToken)' == ''">maui</Creator>
         <IncludeDotNetCli>true</IncludeDotNetCli>

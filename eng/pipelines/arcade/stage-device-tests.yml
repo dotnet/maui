@@ -145,7 +145,10 @@ stages:
         - template: /eng/common/templates-official/steps/send-to-helix.yml
           parameters:
             HelixProjectPath: ${{ parameters.helixProject }}
-            HelixProjectArguments: /p:TargetOS=ios /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsIOS_
+            ${{ if eq(parameters.runAsPublic, true) }}:
+              HelixProjectArguments: /p:TargetOS=ios /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsIOS_ /p:HelixInternal=False
+            ${{ else }}:
+              HelixProjectArguments: /p:TargetOS=ios /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsIOS_ /p:HelixInternal=True
             HelixConfiguration: $(_BuildConfig)
             IncludeDotNetCli: true
             DisplayNamePrefix: DeviceTestsIOS
@@ -195,7 +198,10 @@ stages:
         - template: /eng/common/templates-official/steps/send-to-helix.yml
           parameters:
             HelixProjectPath: ${{ parameters.helixProject }}
-            HelixProjectArguments: /p:TargetOS=maccatalyst /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsMacCatalyst_
+            ${{ if eq(parameters.runAsPublic, true) }}:
+              HelixProjectArguments: /p:TargetOS=maccatalyst /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsMacCatalyst_ /p:HelixInternal=False
+            ${{ else }}:
+              HelixProjectArguments: /p:TargetOS=maccatalyst /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsMacCatalyst_ /p:HelixInternal=True
             HelixConfiguration: $(_BuildConfig)
             IncludeDotNetCli: true
             DisplayNamePrefix: DeviceTestsMacCatalyst
@@ -243,7 +249,10 @@ stages:
         - template: /eng/common/templates-official/steps/send-to-helix.yml
           parameters:
             HelixProjectPath: ${{ parameters.helixProject }}
-            HelixProjectArguments: /p:TargetOS=android /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsAndroid_
+            ${{ if eq(parameters.runAsPublic, true) }}:
+              HelixProjectArguments: /p:TargetOS=android /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsAndroid_ /p:HelixInternal=False
+            ${{ else }}:
+              HelixProjectArguments: /p:TargetOS=android /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsAndroid_ /p:HelixInternal=True
             HelixConfiguration: $(_BuildConfig)
             IncludeDotNetCli: true
             DisplayNamePrefix: DeviceTestsAndroid
@@ -346,7 +355,10 @@ stages:
         - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/steps/send-to-helix.yml', '/eng/common/templates-official/steps/send-to-helix.yml@self') }}
           parameters:
             HelixProjectPath: ${{ parameters.helixProject }}
-            HelixProjectArguments: /p:TargetOS=android /p:TestRunNameSuffix=_$(_BuildConfig)_CoreCLR /p:TestRunNamePrefix=DeviceTestsAndroid_CoreCLR_
+            ${{ if eq(parameters.runAsPublic, true) }}:
+              HelixProjectArguments: /p:TargetOS=android /p:TestRunNameSuffix=_$(_BuildConfig)_CoreCLR /p:TestRunNamePrefix=DeviceTestsAndroid_CoreCLR_ /p:HelixInternal=False
+            ${{ else }}:
+              HelixProjectArguments: /p:TargetOS=android /p:TestRunNameSuffix=_$(_BuildConfig)_CoreCLR /p:TestRunNamePrefix=DeviceTestsAndroid_CoreCLR_ /p:HelixInternal=True
             HelixConfiguration: $(_BuildConfig)
             IncludeDotNetCli: true
             DisplayNamePrefix: DeviceTestsAndroid_CoreCLR
