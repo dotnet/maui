@@ -133,6 +133,7 @@ Update the state file:
 3. Verify Selected Fix is documented with reasoning
 4. Change 🔧 Fix status to `✅ COMPLETE`
 5. Change 📋 Report status to `▶️ IN PROGRESS`
+6. **Commit and push the state file**
 
 ---
 
@@ -229,7 +230,8 @@ Update all phase statuses to complete.
 **Update state file**:
 1. Change header status to final recommendation
 2. Update all phases to `✅ COMPLETE` or `✅ PASSED`
-3. Present final result to user
+3. **Commit and push the state file**
+4. Present final result to user
 
 ---
 
