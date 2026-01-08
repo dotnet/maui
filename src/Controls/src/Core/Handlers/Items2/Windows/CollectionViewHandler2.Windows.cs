@@ -28,6 +28,8 @@ public partial class CollectionViewHandler2
 		[SelectableItemsView.SelectedItemProperty.PropertyName] = MapSelectedItem,
 		[SelectableItemsView.SelectedItemsProperty.PropertyName] = MapSelectedItems,
 		[SelectableItemsView.SelectionModeProperty.PropertyName] = MapSelectionMode,
+		[StructuredItemsView.ItemSizingStrategyProperty.PropertyName] = MapItemsUpdatingScrollMode,
+		
 	};
 }
 public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItemsView>
@@ -35,6 +37,9 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 	bool _ignorePlatformSelectionChange;
 
 	protected override IItemsLayout Layout { get => ItemsView.ItemsLayout; }
+
+	// Cache for MeasureFirstItem optimization
+	global::Windows.Foundation.Size _firstItemMeasuredSize = global::Windows.Foundation.Size.Empty;
 
 	public static void MapCanReorderItems(CollectionViewHandler2 handler, ReorderableItemsView itemsView)
 	{
@@ -55,6 +60,11 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 		handler.UpdateItemsSource();
 	}
 
+	public static void MapItemsUpdatingScrollMode(CollectionViewHandler2 handler, ItemsView itemsView)
+	{
+		handler.InvalidateFirstItemSize();
+		handler.UpdateItemsSource();
+	}
 
 	public static void MapItemsSource(CollectionViewHandler2 handler, SelectableItemsView itemsView)
 	{
@@ -72,6 +82,38 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 
 	public static void MapSelectionMode(CollectionViewHandler2 handler, SelectableItemsView itemsView)
 	{
+	}
+
+	/// <summary>
+	/// Gets the cached first item measured size for MeasureFirstItem optimization.
+	/// Returns Size.Empty if not cached or not using MeasureFirstItem strategy.
+	/// </summary>
+	internal global::Windows.Foundation.Size GetCachedFirstItemSize()
+	{
+		if (VirtualView is CollectionView cv && cv.ItemSizingStrategy == ItemSizingStrategy.MeasureFirstItem)
+		{
+			return _firstItemMeasuredSize;
+		}
+		return global::Windows.Foundation.Size.Empty;
+	}
+
+	/// <summary>
+	/// Sets the cached first item measured size for MeasureFirstItem optimization.
+	/// </summary>
+	internal void SetCachedFirstItemSize(global::Windows.Foundation.Size size)
+	{
+		if (VirtualView is CollectionView cv && cv.ItemSizingStrategy == ItemSizingStrategy.MeasureFirstItem)
+		{
+			_firstItemMeasuredSize = size;
+		}
+	}
+
+	/// <summary>
+	/// Invalidates the cached first item size.
+	/// </summary>
+	internal void InvalidateFirstItemSize()
+	{
+		_firstItemMeasuredSize = global::Windows.Foundation.Size.Empty;
 	}
 
 	protected override void ConnectHandler(WItemsView platformView)
