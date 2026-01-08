@@ -176,7 +176,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 					if (!isForCurrentTab && removeFragment != _currentFragment)
 						return Task.FromResult(true);
-
 					break;
 
 				case ShellNavigationSource.PopToRoot:

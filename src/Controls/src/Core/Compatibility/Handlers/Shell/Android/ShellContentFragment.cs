@@ -1,6 +1,5 @@
 #nullable disable
 using System;
-using System.Collections.Generic;
 using Android.OS;
 using Android.Runtime;
 using Android.Views;
@@ -212,6 +211,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_root?.Dispose();
 			_toolbarTracker?.Dispose();
 			_appearanceTracker?.Dispose();
+
 
 			_appearanceTracker = null;
 			_toolbarTracker = null;
