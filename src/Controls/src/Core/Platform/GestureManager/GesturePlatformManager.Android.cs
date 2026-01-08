@@ -21,6 +21,7 @@ namespace Microsoft.Maui.Controls.Platform
 		Lazy<TapAndPanGestureDetector> _tapAndPanAndSwipeDetector;
 		Lazy<DragAndDropGestureHandler> _dragAndDropGestureHandler;
 		Lazy<PointerGestureHandler> _pointerGestureHandler;
+		Lazy<LongPressGestureHandler> _longPressGestureHandler;
 		bool _disposed;
 		bool _inputTransparent;
 		bool _isEnabled;
@@ -38,6 +39,7 @@ namespace Microsoft.Maui.Controls.Platform
 			_scaleDetector = new Lazy<ScaleGestureDetector>(InitializeScaleDetector);
 			_dragAndDropGestureHandler = new Lazy<DragAndDropGestureHandler>(InitializeDragAndDropHandler);
 			_pointerGestureHandler = new Lazy<PointerGestureHandler>(InitializePointerHandler);
+			_longPressGestureHandler = new Lazy<LongPressGestureHandler>(InitializeLongPressHandler);
 			SetupElement(null, Element);
 		}
 
@@ -85,6 +87,10 @@ namespace Microsoft.Maui.Controls.Platform
 			if (!ViewHasPinchGestures() || !_scaleDetector.Value.IsInProgress)
 				eventConsumed = _tapAndPanAndSwipeDetector.Value.OnTouchEvent(e) || eventConsumed;
 
+			// Handle long press gestures
+			if (ViewHasLongPressGestures())
+				_longPressGestureHandler.Value.OnTouchEvent(e);
+
 			return eventConsumed;
 		}
 
@@ -120,6 +126,11 @@ namespace Microsoft.Maui.Controls.Platform
 		PointerGestureHandler InitializePointerHandler()
 		{
 			return new PointerGestureHandler(() => View, () => Control);
+		}
+
+		LongPressGestureHandler InitializeLongPressHandler()
+		{
+			return new LongPressGestureHandler(() => View, () => Control, () => _handler);
 		}
 
 		TapAndPanGestureDetector InitializeTapAndPanAndSwipeDetector()
@@ -172,6 +183,21 @@ namespace Microsoft.Maui.Controls.Platform
 			for (var i = 0; i < count; i++)
 			{
 				if (View.GestureRecognizers[i] is PinchGestureRecognizer)
+					return true;
+			}
+
+			return false;
+		}
+
+		bool ViewHasLongPressGestures()
+		{
+			if (View is null)
+				return false;
+
+			int count = View.GestureRecognizers.Count;
+			for (var i = 0; i < count; i++)
+			{
+				if (View.GestureRecognizers[i] is LongPressGestureRecognizer)
 					return true;
 			}
 
