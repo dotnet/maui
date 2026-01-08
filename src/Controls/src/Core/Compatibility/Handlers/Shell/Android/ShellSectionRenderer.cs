@@ -246,15 +246,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			base.OnHiddenChanged(hidden);
 			
-			if (!hidden && _toolbarTracker?.GetToolbar() is Toolbar toolbar)
+			if (!hidden)
 			{
-				// Force TitleView update when fragment becomes visible (fixes issue #33304)
-				//if(toolbar.TitleView != null)
-				{
-				
-					ShellToolbar.Handler.UpdateValue("TitleView");
-					//NavigationPage.GetTitleView(_toolbarTracker.Page)?.Handler?.UpdateValue("TitleView");
-				}
+				ShellToolbar.Handler.UpdateValue("TitleView");
 			}
 		}
 
