@@ -12,6 +12,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
 	internal class ShellPageContainer : ViewGroup
 	{
+		static int? DarkBackground;
+		static int? LightBackground;
 		public IViewHandler Child { get; set; }
 
 		public bool IsInFragment { get; set; }
@@ -36,19 +38,23 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		int GetMaterial3Background(Context context)
 		{
-			return ContextExtensions.ResolveMaterial3Color(context, Resource.Attribute.colorSurface);
+			// Material 3 colorSurface automatically adapts to light/dark theme
+			// The theme resolution happens in GetThemeAttrColor based on the active theme
+			return ContextExtensions.GetThemeAttrColor(context, Resource.Attribute.colorSurface);
 		}
 
 		int GetResourceBackground(Context context, bool isDark)
 		{
+			int color;
 			if (isDark)
 			{
-				return ContextCompat.GetColor(context, AColorRes.BackgroundDark);
+				color = DarkBackground ??= ContextCompat.GetColor(context, AColorRes.BackgroundDark);
 			}
 			else
 			{
-				return ContextCompat.GetColor(context, AColorRes.BackgroundLight);
+				color = LightBackground ??= ContextCompat.GetColor(context, AColorRes.BackgroundLight);
 			}
+			return color;
 		}
 
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
