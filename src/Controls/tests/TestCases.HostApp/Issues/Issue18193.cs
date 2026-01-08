@@ -15,13 +15,13 @@
 			tabBar.Items.Add(CreateShellContent("Page 6", typeof(Issue18193Page6), nameof(Issue18193Page6)));
 			//Added the TabBar Items ,this will show overflow menu in Windows
 			//to access the extra pages, keeping the interface clean and easy to navigate.
-			tabBar.Items.Add(CreateShellContent("Page 7", typeof(Issue18193Page7), nameof(Issue18193Page7)));
-			tabBar.Items.Add(CreateShellContent("Page 8", typeof(Issue18193Page8), nameof(Issue18193Page8)));
-			tabBar.Items.Add(CreateShellContent("Page 9", typeof(Issue18193Page9), nameof(Issue18193Page9)));
-			tabBar.Items.Add(CreateShellContent("Page 10", typeof(Issue18193Page10), nameof(Issue18193Page10)));
-			tabBar.Items.Add(CreateShellContent("Page 11", typeof(Issue18193Page11), nameof(Issue18193Page11)));
-			tabBar.Items.Add(CreateShellContent("Page 12", typeof(Issue18193Page12), nameof(Issue18193Page12)));
-			tabBar.Items.Add(CreateShellContent("Page 13", typeof(Issue18193Page13), nameof(Issue18193Page13)));
+			tabBar.Items.Add(CreateShellContent("Page 7", typeof(Issue18193Page2), nameof(Issue18193Page7)));
+			tabBar.Items.Add(CreateShellContent("Page 8", typeof(Issue18193Page3), nameof(Issue18193Page8)));
+			tabBar.Items.Add(CreateShellContent("Page 9", typeof(Issue18193Page4), nameof(Issue18193Page9)));
+			tabBar.Items.Add(CreateShellContent("Page 10", typeof(Issue18193Page5), nameof(Issue18193Page10)));
+			tabBar.Items.Add(CreateShellContent("Page 11", typeof(Issue18193Page6), nameof(Issue18193Page11)));
+			tabBar.Items.Add(CreateShellContent("Page 12", typeof(Issue18193Page2), nameof(Issue18193Page12)));
+			tabBar.Items.Add(CreateShellContent("Page 13", typeof(Issue18193Page3), nameof(Issue18193Page13)));
 			Items.Add(tabBar);
 			Routing.RegisterRoute(nameof(Issue18193DetailPage), typeof(Issue18193DetailPage));
 		}
@@ -38,9 +38,9 @@
 	{
 		public Issue18193MainPage()
 		{
-			Button sixthPageButton = new Button() { AutomationId = "NavigationToPageSixthButton", Text = "Navigate to page 6" };
-			sixthPageButton.Clicked += (s, e) => Issue18193.Current.GoToAsync("//" + nameof(Issue18193Page6));
-			Content = sixthPageButton;
+			var button = new Button() { AutomationId = "NavigationToPage6Button", Text = "Navigate to page 6" };
+			button.Clicked += (s, e) => Issue18193.Current.GoToAsync("//" + nameof(Issue18193Page6));
+			Content = button;
 		}
 	}
 
@@ -49,9 +49,9 @@
 		public Issue18193DetailPage()
 		{
 			Title = "Detail Page";
-			Button backButton = new Button() { AutomationId = "NavigateBackButton", Text = "Navigate back" };
-			backButton.Clicked += (s, e) => Issue18193.Current.GoToAsync("..");
-			Content = backButton;
+			var button = new Button() { AutomationId = "NavigateBackButton", Text = "Navigate back" };
+			button.Clicked += (s, e) => Issue18193.Current.GoToAsync("..");
+			Content = button;
 		}
 	}
 
@@ -63,7 +63,7 @@
 			{
 				Text = "Navigate to page 5",
 				Command = new Command(async () => await Issue18193.Current.GoToAsync("//" + nameof(Issue18193Page5))),
-				AutomationId = "NavigateToPageFiveButton"
+				AutomationId = "NavigateToPage5Button"
 			};
 		}
 	}
@@ -91,17 +91,17 @@
 	{
 		public Issue18193Page6()
 		{
-			Button detailPageButton = new Button() { AutomationId = "NavigateToDetailButton", Text = "Navigate to detail page" };
-			detailPageButton.Clicked += (s, e) => Issue18193.Current.GoToAsync(nameof(Issue18193DetailPage));
+			var button = new Button() { AutomationId = "NavigateToDetailButton", Text = "Navigate to detail page" };
+			button.Clicked += (s, e) => Issue18193.Current.GoToAsync(nameof(Issue18193DetailPage));
 
-			Button secondPageButton = new Button() { AutomationId = "NavigateToPageTwoButton", Text = "Navigate to Page 2" };
-			secondPageButton.Clicked += (s, e) => Issue18193.Current.GoToAsync("//" + nameof(Issue18193Page2));
+			var button2 = new Button() { AutomationId = "NavigateToPage2Button", Text = "Navigate to Page 2" };
+			button2.Clicked += (s, e) => Issue18193.Current.GoToAsync("//" + nameof(Issue18193Page2));
 			Content = new StackLayout
 			{
 				Children =
 				{
-					detailPageButton,
-					secondPageButton
+					button,
+					button2
 				}
 			};
 		}
