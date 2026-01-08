@@ -347,66 +347,130 @@ internal struct CompiledBindingMarkup
 
 			if (indexArg != null)
 			{
-				var defaultMemberAttribute = previousPartType.GetAttributes().FirstOrDefault(a => a.AttributeClass?.ToFQDisplayString() == "global::System.Reflection.DefaultMemberAttribute");
-				var indexerName = defaultMemberAttribute?.ConstructorArguments.FirstOrDefault().Value as string ?? "Item";
-
 				index = indexArg;
 
-				IPropertySymbol? indexer = null;
-				if (int.TryParse(indexArg, out int indexArgInt))
+				// For arrays, use the element type directly without trying to find an indexer
+				if (previousPartType is IArrayTypeSymbol arrayType)
 				{
+					if (!int.TryParse(indexArg, out int indexArgInt))
+					{
+						_context.ReportDiagnostic(Diagnostic.Create(Descriptors.BindingIndexerTypeUnsupported, GetLocation(_node), previousPartType.ToFQDisplayString()));
+						return false;
+					}
 					index = indexArgInt;
-					indexer = previousPartType
-						.GetAllProperties(indexerName, _context)
-						.FirstOrDefault(property =>
-							property.GetMethod != null
-							&& !property.GetMethod.IsStatic
-							&& property.Parameters.Length == 1
-							&& property.Parameters[0].Type.SpecialType == SpecialType.System_Int32);
-				}
 
-				indexer ??= previousPartType
-					.GetAllProperties(indexerName, _context)
-					.FirstOrDefault(property =>
-						property.GetMethod != null
-						&& !property.GetMethod.IsStatic
-						&& property.Parameters.Length == 1
-						&& property.Parameters[0].Type.SpecialType == SpecialType.System_String);
-
-				indexer ??= previousPartType
-					.GetAllProperties(indexerName, _context)
-					.FirstOrDefault(property =>
-						property.GetMethod != null
-						&& !property.GetMethod.IsStatic
-						&& property.Parameters.Length == 1
-						&& property.Parameters[0].Type.SpecialType == SpecialType.System_Object);
-
-				if (indexer is not null)
-				{
-					var indexAccess = new IndexAccess(indexerName, index, indexer.Type.IsValueType);
-					bindingPathParts.Add(indexAccess);
-
-					previousPartType = indexer.Type;
-
-					setterOptions = new SetterOptions(
-						IsWritable: indexer.SetMethod != null && indexer.SetMethod.IsPublic() && !indexer.SetMethod.IsStatic,
-						AcceptsNullValue: previousPartType.IsTypeNullable(enabledNullable: true));
-				}
-				else if (previousPartType is IArrayTypeSymbol arrayType)
-				{
-					var indexAccess = new IndexAccess("", index, arrayType.ElementType.IsValueType);
+					IPathPart indexAccess = new IndexAccess("", index, arrayType.ElementType.IsValueType);
+					if (previousPartIsNullable)
+					{
+						indexAccess = new ConditionalAccess(indexAccess);
+					}
 					bindingPathParts.Add(indexAccess);
 
 					previousPartType = arrayType.ElementType;
 
 					setterOptions = new SetterOptions(
-						IsWritable: true, // TODO is this correct?
+						IsWritable: true, // arrays are writable by index
 						AcceptsNullValue: previousPartType.IsTypeNullable(enabledNullable: true));
 				}
 				else
 				{
-					_context.ReportDiagnostic(Diagnostic.Create(Descriptors.BindingIndexerTypeUnsupported, GetLocation(_node), previousPartType.ToFQDisplayString()));
-					return false;
+					// For constructed generic types, we need to check the OriginalDefinition for the DefaultMemberAttribute
+					var typeToCheckForAttribute = previousPartType is INamedTypeSymbol namedType && namedType.IsGenericType 
+						? namedType.OriginalDefinition 
+						: previousPartType;
+					var defaultMemberAttribute = typeToCheckForAttribute.GetAttributes().FirstOrDefault(a => a.AttributeClass?.ToFQDisplayString() == "global::System.Reflection.DefaultMemberAttribute");
+					var indexerName = defaultMemberAttribute?.ConstructorArguments.FirstOrDefault().Value as string ?? "Item";
+
+					// For indexer lookup, we also need to search properties that are indexers (have parameters)
+					// The indexer may be declared directly on the type or inherited from interfaces
+					IPropertySymbol? indexer = null;
+					if (int.TryParse(indexArg, out int indexArgInt))
+					{
+						index = indexArgInt;
+						indexer = previousPartType
+							.GetAllProperties(indexerName, _context)
+							.FirstOrDefault(property =>
+								property.GetMethod != null
+								&& !property.GetMethod.IsStatic
+								&& property.Parameters.Length == 1
+								&& property.Parameters[0].Type.SpecialType == SpecialType.System_Int32);
+
+						// If not found by name, try to find any indexer with int parameter (for cases where DefaultMemberAttribute is missing or different)
+						// But prefer indexers that are not from non-generic interfaces like IList (which returns object)
+						indexer ??= previousPartType
+							.GetAllProperties(_context)
+							.Where(property =>
+								property.IsIndexer
+								&& property.GetMethod != null
+								&& !property.GetMethod.IsStatic
+								&& property.Parameters.Length == 1
+								&& property.Parameters[0].Type.SpecialType == SpecialType.System_Int32)
+							.OrderByDescending(p => p.Type.SpecialType != SpecialType.System_Object) // Prefer non-object return types
+							.FirstOrDefault();
+					}
+
+					indexer ??= previousPartType
+						.GetAllProperties(indexerName, _context)
+						.FirstOrDefault(property =>
+							property.GetMethod != null
+							&& !property.GetMethod.IsStatic
+							&& property.Parameters.Length == 1
+							&& property.Parameters[0].Type.SpecialType == SpecialType.System_String);
+
+					// Fallback: try to find any indexer with string parameter, preferring non-object return types
+					indexer ??= previousPartType
+						.GetAllProperties(_context)
+						.Where(property =>
+							property.IsIndexer
+							&& property.GetMethod != null
+							&& !property.GetMethod.IsStatic
+							&& property.Parameters.Length == 1
+							&& property.Parameters[0].Type.SpecialType == SpecialType.System_String)
+						.OrderByDescending(p => p.Type.SpecialType != SpecialType.System_Object)
+						.FirstOrDefault();
+
+					indexer ??= previousPartType
+						.GetAllProperties(indexerName, _context)
+						.FirstOrDefault(property =>
+							property.GetMethod != null
+							&& !property.GetMethod.IsStatic
+							&& property.Parameters.Length == 1
+							&& property.Parameters[0].Type.SpecialType == SpecialType.System_Object);
+
+					// Fallback: try to find any indexer with object parameter
+					indexer ??= previousPartType
+						.GetAllProperties(_context)
+						.FirstOrDefault(property =>
+							property.IsIndexer
+							&& property.GetMethod != null
+							&& !property.GetMethod.IsStatic
+							&& property.Parameters.Length == 1
+							&& property.Parameters[0].Type.SpecialType == SpecialType.System_Object);
+
+					if (indexer is not null)
+					{
+						// Use MetadataName because for indexers with [IndexerName("CustomName")], the
+						// Name property is "this[]" but MetadataName is "CustomName" which is what
+						// PropertyChanged events use (e.g., "CustomName[3]" not "this[][3]")
+						var actualIndexerName = indexer.MetadataName;
+						IPathPart indexAccess = new IndexAccess(actualIndexerName, index, indexer.Type.IsValueType);
+						if (previousPartIsNullable)
+						{
+							indexAccess = new ConditionalAccess(indexAccess);
+						}
+						bindingPathParts.Add(indexAccess);
+
+						previousPartType = indexer.Type;
+
+						setterOptions = new SetterOptions(
+							IsWritable: indexer.SetMethod != null && indexer.SetMethod.IsPublic() && !indexer.SetMethod.IsStatic,
+							AcceptsNullValue: previousPartType.IsTypeNullable(enabledNullable: true));
+					}
+					else
+					{
+						_context.ReportDiagnostic(Diagnostic.Create(Descriptors.BindingIndexerTypeUnsupported, GetLocation(_node), previousPartType.ToFQDisplayString()));
+						return false;
+					}
 				}
 			}
 		}
