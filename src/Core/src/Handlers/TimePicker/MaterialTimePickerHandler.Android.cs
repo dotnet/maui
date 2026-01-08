@@ -1,10 +1,9 @@
 using System;
-using Android.App;
 using Android.Content;
 using Android.Text.Format;
 using Android.Views;
+using AndroidX.Fragment.App;
 using Google.Android.Material.TimePicker;
-using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Handlers;
 
@@ -51,7 +50,12 @@ internal partial class MaterialTimePickerHandler : ViewHandler<ITimePicker, Maui
         if (_dialog is not null)
         {
             RemoveListeners();
-            _dialog.Dismiss();
+
+            if (_dialog.IsAdded)
+            {
+                _dialog.DismissAllowingStateLoss();
+            }
+
             _dialog = null;
         }
 
@@ -85,10 +89,17 @@ internal partial class MaterialTimePickerHandler : ViewHandler<ITimePicker, Maui
 
     internal void HidePickerDialog()
     {
-        if (_dialog is not null)
+        if (_dialog is null)
         {
-            RemoveListeners();
-            _dialog.Dismiss();
+            UpdateIsOpenState(false);
+            return;
+        }
+
+        RemoveListeners();
+
+        if (_dialog.IsAdded)
+        {
+            _dialog.DismissAllowingStateLoss();
         }
 
         _dialog = null;
@@ -107,14 +118,22 @@ internal partial class MaterialTimePickerHandler : ViewHandler<ITimePicker, Maui
 
     void ShowPickerDialog(TimeSpan? time)
     {
-        var fragmentManager = Context?.GetFragmentManager();
+        // Get FragmentActivity - MaterialTimePicker requires AndroidX FragmentManager
+        if (Context?.GetActivity() is not FragmentActivity fragmentActivity ||
+            fragmentActivity.IsDestroyed ||
+            fragmentActivity.IsFinishing)
+        {
+            return;
+        }
 
+        var fragmentManager = fragmentActivity.SupportFragmentManager;
         if (fragmentManager is null)
         {
             return;
         }
 
-        if (_dialog is not null && _dialog.IsVisible)
+        // Prevent duplicate dialogs
+        if (_dialog is not null && (_dialog.IsVisible || _dialog.IsAdded))
         {
             return;
         }
