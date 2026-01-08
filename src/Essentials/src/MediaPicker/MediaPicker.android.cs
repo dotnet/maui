@@ -160,17 +160,17 @@ namespace Microsoft.Maui.Media
 							using var inputStream = File.OpenRead(path);
 							var fileName = System.IO.Path.GetFileName(path);
 							using var rotatedStream = await ImageProcessor.RotateImageAsync(inputStream, fileName);
-							
-							var rotatedPath = System.IO.Path.Combine(
-								System.IO.Path.GetDirectoryName(path),
-								System.IO.Path.GetFileNameWithoutExtension(path) + "_rotated" + System.IO.Path.GetExtension(path));
-								
-							using var outputStream = File.Create(rotatedPath);
 							rotatedStream.Position = 0;
-							await rotatedStream.CopyToAsync(outputStream);
 							
-							// Use the rotated image
-							path = rotatedPath;
+							// Close input stream before deleting
+							inputStream.Close();
+							
+							// Delete original file
+							try { File.Delete(path); } catch { }
+							
+							// Write rotated image to original path (preserves filename)
+							using var outputStream = File.Create(path);
+							await rotatedStream.CopyToAsync(outputStream);
 						}
 
 						// Apply compression/resizing if needed
