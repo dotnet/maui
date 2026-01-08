@@ -247,7 +247,7 @@ if %IS_PACKAGED%==1 (
     REM Find the executable - look for Microsoft.Maui.{SCENARIO}.exe specifically
     REM to avoid matching RestartAgent.exe or other helper executables
     set TEST_EXE=
-    set EXPECTED_EXE_NAME=Microsoft.Maui.%SCENARIO%.exe
+    set EXPECTED_EXE_NAME=Microsoft.Maui.%SCENARIO_NAME%.exe
     echo Looking for executable: !EXPECTED_EXE_NAME!
     
     for /f "delims=" %%f in ('dir /s /b "%SCENARIO_DIR%\!EXPECTED_EXE_NAME!" 2^>nul') do (
