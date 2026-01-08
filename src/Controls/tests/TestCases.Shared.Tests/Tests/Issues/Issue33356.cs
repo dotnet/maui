@@ -24,12 +24,12 @@ public class Issue33356 : _IssuesUITest
 	public void Issue33356NavigateShouldOccur()
 	{
 		App.WaitForElement("Issue33356CatsCollectionView");
-		var searchHander = App.GetShellSearchHandler();
-		searchHander.Tap();
-		searchHander.SendKeys("A");
+		var searchHandler = App.GetShellSearchHandler();
+		searchHandler.Tap();
+		searchHandler.SendKeys("A");
 #if ANDROID // Android does not support selecting elements in SearchHandler's results so used tap coordinates
-		var y = searchHander.GetRect().Y + searchHander.GetRect().Height;
-		App.TapCoordinates(searchHander.GetRect().X + 10, y + 10);
+		var y = searchHandler.GetRect().Y + searchHandler.GetRect().Height;
+		App.TapCoordinates(searchHandler.GetRect().X + 10, y + 10);
 #else
 		var searchResults = App.FindElements("SearchResultName");
 		searchResults.First().Tap();
