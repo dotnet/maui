@@ -25,6 +25,7 @@ namespace Microsoft.Maui.Controls.Platform
 		VisualElement? _element;
 		TappedEventHandler? _tappedEventHandler;
 		DoubleTappedEventHandler? _doubleTappedEventHandler;
+		LongPressGestureHandler? _longPressGestureHandler;
 
 		SubscriptionFlags _subscriptionFlags = SubscriptionFlags.None;
 
@@ -417,6 +418,9 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			ClearContainerEventHandlers();
+
+			_longPressGestureHandler?.Dispose();
+			_longPressGestureHandler = null;
 
 			if (_element is View && ElementGestureRecognizers is { } gestureRecognizers)
 			{
@@ -954,6 +958,21 @@ namespace Microsoft.Maui.Controls.Platform
 
 			ClearContainerEventHandlers();
 			UpdateDragAndDropGestureRecognizers();
+
+			// Handle LongPressGestureRecognizer
+			bool hasLongPressGesture = gestures.HasAnyGesturesFor<LongPressGestureRecognizer>();
+			if (hasLongPressGesture)
+			{
+				if (_longPressGestureHandler == null)
+				{
+					_longPressGestureHandler = new LongPressGestureHandler(_handler);
+				}
+				_longPressGestureHandler.SubscribeEvents();
+			}
+			else
+			{
+				_longPressGestureHandler?.UnsubscribeEvents();
+			}
 
 			var children = (view as IGestureController)?.GetChildElements(Point.Zero);
 
