@@ -192,7 +192,8 @@ if %IS_PACKAGED%==1 (
     if %IS_CONTROLS_TEST%==1 (
         REM Category-based test execution for Controls.DeviceTests
         echo Starting app for category discovery...
-        powershell -Command "Start-Process 'shell:AppsFolder\!PACKAGE_FAMILY_NAME!!App' -ArgumentList '\"%TEST_RESULTS_FILE%\"', '-1'"
+        set "APP_URI=shell:AppsFolder\!PACKAGE_FAMILY_NAME!^!App"
+        powershell -Command "Start-Process '!APP_URI!' -ArgumentList '\"%TEST_RESULTS_FILE%\"', '-1'"
         
         echo Waiting 10 seconds for category discovery...
         timeout /t 10 /nobreak >nul
@@ -222,7 +223,8 @@ if %IS_PACKAGED%==1 (
             set EXPECTED_RESULT_FILE=%TEST_RESULTS_DIR%\TestResults-%PACKAGE_ID_SAFE%_!CATEGORY_NAME!.xml
             
             echo Running category !CATEGORY_INDEX!: !CATEGORY_NAME!
-            powershell -Command "Start-Process 'shell:AppsFolder\!PACKAGE_FAMILY_NAME!!App' -ArgumentList '\"%TEST_RESULTS_FILE%\"', '!CATEGORY_INDEX!'"
+            set "APP_URI=shell:AppsFolder\!PACKAGE_FAMILY_NAME!^!App"
+            powershell -Command "Start-Process '!APP_URI!' -ArgumentList '\"%TEST_RESULTS_FILE%\"', '!CATEGORY_INDEX!'"
             
             REM Wait for test results with timeout
             call :wait_for_result "!EXPECTED_RESULT_FILE!" "!CATEGORY_NAME!"
@@ -232,7 +234,8 @@ if %IS_PACKAGED%==1 (
     ) else (
         REM Single test run for non-Controls projects
         echo Starting app for single test run...
-        powershell -Command "Start-Process 'shell:AppsFolder\!PACKAGE_FAMILY_NAME!!App' -ArgumentList '\"%TEST_RESULTS_FILE%\"'"
+        set "APP_URI=shell:AppsFolder\!PACKAGE_FAMILY_NAME!^!App"
+        powershell -Command "Start-Process '!APP_URI!' -ArgumentList '\"%TEST_RESULTS_FILE%\"'"
         
         call :wait_for_result "%TEST_RESULTS_FILE%" "All Tests"
     )
