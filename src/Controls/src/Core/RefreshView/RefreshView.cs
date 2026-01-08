@@ -9,7 +9,9 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/RefreshView.xml" path="Type[@FullName='Microsoft.Maui.Controls.RefreshView']/Docs/*" />
+	/// <summary>
+	/// Represents a view that provides pull-to-refresh functionality.
+	/// </summary>
 	[ContentProperty(nameof(Content))]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class RefreshView : ContentView, IElementConfiguration<RefreshView>, IRefreshView, ICommandElement
@@ -17,7 +19,9 @@ namespace Microsoft.Maui.Controls
 		readonly Lazy<PlatformConfigurationRegistry<RefreshView>> _platformConfigurationRegistry;
 		public event EventHandler Refreshing;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RefreshView.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="RefreshView"/> class.
+		/// </summary>
 		public RefreshView()
 		{
 			IsClippedToBounds = true;
@@ -62,7 +66,9 @@ namespace Microsoft.Maui.Controls
 			return value;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RefreshView.xml" path="//Member[@MemberName='IsRefreshing']/Docs/*" />
+		/// <summary>
+		/// Gets or sets a value indicating whether the view is currently refreshing.
+		/// </summary>
 		public bool IsRefreshing
 		{
 			get { return (bool)GetValue(IsRefreshingProperty); }
@@ -76,7 +82,9 @@ namespace Microsoft.Maui.Controls
 			propertyChanged: CommandElement.OnCommandChanged);
 
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RefreshView.xml" path="//Member[@MemberName='Command']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the command to invoke when the view is refreshed.
+		/// </summary>
 		public ICommand Command
 		{
 			get { return (ICommand)GetValue(CommandProperty); }
@@ -91,7 +99,9 @@ namespace Microsoft.Maui.Controls
 				null,
 				propertyChanged: CommandElement.OnCommandParameterChanged);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RefreshView.xml" path="//Member[@MemberName='CommandParameter']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the parameter to pass to the command.
+		/// </summary>
 		public object CommandParameter
 		{
 			get { return GetValue(CommandParameterProperty); }
@@ -102,7 +112,9 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty RefreshColorProperty =
 			BindableProperty.Create(nameof(RefreshColor), typeof(Color), typeof(RefreshView), null);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RefreshView.xml" path="//Member[@MemberName='RefreshColor']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the color of the refresh indicator.
+		/// </summary>
 		public Color RefreshColor
 		{
 			get { return (Color)GetValue(RefreshColorProperty); }
