@@ -15,7 +15,7 @@ internal partial class MaterialEntryHandler : ViewHandler<IEntry, MauiMaterialTe
 	ColorStateList? _defaultHintTextColors;
 
 	public static PropertyMapper<IEntry, MaterialEntryHandler> Mapper =
-	  new(ElementMapper)
+	  new(ViewMapper)
 	  {
 		  [nameof(IEntry.Background)] = MapBackground,
 		  [nameof(IEntry.Text)] = MapText,
