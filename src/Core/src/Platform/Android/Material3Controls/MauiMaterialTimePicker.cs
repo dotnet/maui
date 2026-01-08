@@ -12,17 +12,17 @@ namespace Microsoft.Maui.Platform;
 
 internal class MauiMaterialTimePicker : TextInputEditText, IOnClickListener
 {
-    public MauiMaterialTimePicker(Context context) : base(context)
+    public MauiMaterialTimePicker(Context context) : base(MauiMaterialContextThemeWrapper.Create(context))
     {
         Initialize();
     }
 
-    public MauiMaterialTimePicker(Context context, IAttributeSet? attrs) : base(context, attrs)
+    public MauiMaterialTimePicker(Context context, IAttributeSet? attrs) : base(MauiMaterialContextThemeWrapper.Create(context), attrs)
     {
         Initialize();
     }
 
-    public MauiMaterialTimePicker(Context context, IAttributeSet? attrs, int defStyleAttr) : base(context, attrs, defStyleAttr)
+    public MauiMaterialTimePicker(Context context, IAttributeSet? attrs, int defStyleAttr) : base(MauiMaterialContextThemeWrapper.Create(context), attrs, defStyleAttr)
     {
         Initialize();
     }
