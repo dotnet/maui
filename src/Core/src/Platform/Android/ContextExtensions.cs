@@ -196,6 +196,37 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		internal static int ResolveMaterial3Color(Context context, int resID)
+		{
+			using (var typedValue = new TypedValue())
+			{
+				// Attempt to resolve the theme attribute
+				if (context?.Theme?.ResolveAttribute(resID, typedValue, true) == true)
+				{
+					// Check if the value is a direct color integer
+					if (typedValue.Type >= DataType.FirstInt && typedValue.Type <= DataType.LastInt)
+					{
+						return typedValue.Data;
+					}
+					// Check if the value is a resource reference (@color/...)
+					else if (typedValue.Type is DataType.String)
+					{
+						if (context.Resources is not null)
+						{
+							// Resolve the resource reference to get the actual color
+							if (OperatingSystem.IsAndroidVersionAtLeast(23))
+								return context.Resources.GetColor(typedValue.ResourceId, context.Theme);
+							else
+#pragma warning disable CS0618 // Type or member is obsolete
+								return context.Resources.GetColor(typedValue.ResourceId);
+#pragma warning restore CS0618 // Type or member is obsolete
+						}
+					}
+				}
+			}
+			return 0;
+		}
+
 		internal static int GetDisabledThemeAttrColor(this Context context, int attr)
 		{
 			if (context.Theme == null)

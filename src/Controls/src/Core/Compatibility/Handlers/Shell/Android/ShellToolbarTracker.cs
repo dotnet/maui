@@ -600,7 +600,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				if (RuntimeFeature.IsMaterial3Enabled)
 				{
-					// AppBar elevation is  set 0f to match Material 3 AppBar behavior.
+					// Material 3 de-emphasizes elevation-based shadows for top app bars.
+					// Unlike Material 2, visual hierarchy is defined by surface roles
+					// rather than shadow elevation, so AppBar elevation is set to 0.
 					_appBar.SetElevation(0f);
 				}
 				else

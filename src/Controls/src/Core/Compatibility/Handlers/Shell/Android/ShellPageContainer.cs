@@ -12,8 +12,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
 	internal class ShellPageContainer : ViewGroup
 	{
-		static int? DarkBackground;
-		static int? LightBackground;
 		public IViewHandler Child { get; set; }
 
 		public bool IsInFragment { get; set; }
@@ -22,62 +20,35 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			Child = child;
 			IsInFragment = inFragment;
+			if (child.VirtualView.Background is null)
+			{
+				bool isDark = ShellRenderer.IsDarkTheme;
 
-			UpdateBackgroundColor();
+				int color = RuntimeFeature.IsMaterial3Enabled
+				 ? GetMaterial3Background(context)
+				 : GetResourceBackground(context, isDark);
 
+				child.PlatformView.SetBackgroundColor(new AColor(color));
+			}
 			child.PlatformView.RemoveFromParent();
 			AddView(child.PlatformView);
 		}
 
-		void UpdateBackgroundColor()
-		{
-			if (Child is IPlatformViewHandler handler && handler.VirtualView?.Background is null)
-			{
-				bool isDark = ShellRenderer.IsDarkTheme;
-				int color = RuntimeFeature.IsMaterial3Enabled
-				 ? GetMaterial3Background(Context)
-				 : GetResourceBackground(Context, isDark);
-
-				handler.PlatformView.SetBackgroundColor(new AColor(color));
-			}
-		}
-
-		void OnRequestedThemeChanged(object sender, AppThemeChangedEventArgs e)
-		{
-			UpdateBackgroundColor();
-		}
-
-		protected override void OnAttachedToWindow()
-		{
-			base.OnAttachedToWindow();
-
-			// Subscribe to theme changes when view is attached
-			Application.Current?.RequestedThemeChanged += OnRequestedThemeChanged;
-		}
-
-		protected override void OnDetachedFromWindow()
-		{
-			base.OnDetachedFromWindow();
-
-			// Unsubscribe from theme changes to prevent memory leak
-			Application.Current?.RequestedThemeChanged -= OnRequestedThemeChanged;
-		}
-
 		int GetMaterial3Background(Context context)
 		{
-			// Material 3 colorSurface automatically adapts to light/dark theme
-			// The theme resolution happens in ResolveMaterial3Color based on the active theme
-			return ContextExtensions.GetThemeAttrColor(context, Resource.Attribute.colorSurface);
+			return ContextExtensions.ResolveMaterial3Color(context, Resource.Attribute.colorSurface);
 		}
 
 		int GetResourceBackground(Context context, bool isDark)
 		{
-			int color;
 			if (isDark)
-				color = DarkBackground ??= ContextCompat.GetColor(context, AColorRes.BackgroundDark);
+			{
+				return ContextCompat.GetColor(context, AColorRes.BackgroundDark);
+			}
 			else
-				color = LightBackground ??= ContextCompat.GetColor(context, AColorRes.BackgroundLight);
-			return color;
+			{
+				return ContextCompat.GetColor(context, AColorRes.BackgroundLight);
+			}
 		}
 
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
