@@ -58,8 +58,8 @@ parameters:
     os: Windows
     buildScript: $(_buildScript)
     sln: '$(Build.SourcesDirectory)/Microsoft.Maui.sln'
-  - name: Azure Pipelines
-    vmImage: $(HostedMacImage)
+  - name: MAUI
+    vmImage: MAUI
     os: macOS
     buildScript: $(_buildScriptMacOS)
     sln: '$(Build.SourcesDirectory)/Microsoft.Maui-mac.slnf'
@@ -72,8 +72,8 @@ parameters:
     os: Windows
     buildScript: $(_buildScript)
     sln: '$(Build.SourcesDirectory)/Microsoft.Maui.sln'
-  - name: Azure Pipelines
-    vmImage: $(HostedMacImage)
+  - name: MAUI
+    vmImage: MAUI
     os: macOS
     buildScript: $(_buildScriptMacOS)
     sln: '$(Build.SourcesDirectory)/Microsoft.Maui-mac.slnf'
@@ -93,8 +93,8 @@ parameters:
 - name: MacOSPool
   type: object
   default:
-    name: Azure Pipelines
-    vmImage: $(HostedMacImage)
+    name: MAUI
+    vmImage: MAUI
     os: macOS
 
 stages:

@@ -59,8 +59,8 @@ parameters:
 - name: macOSTestPool
   type: object
   default:
-    name: Azure Pipelines
-    vmImage: macOS-15
+    name: MAUI
+    vmImage: MAUI
 
 - name: macOSPool
   type: object
@@ -82,7 +82,7 @@ stages:
       buildPool: ${{ parameters.macOSPool }}
       testPool: ${{ parameters.macOSTestPool }}
       runAsPublic: true
-      TargetFrameworkVersion: ${{ targetFrameworkVersion.tfm }}
+      TargetFrameworkVersion: net11.0
       prepareSteps:
       - template: /eng/pipelines/common/provision.yml@self
         parameters:
