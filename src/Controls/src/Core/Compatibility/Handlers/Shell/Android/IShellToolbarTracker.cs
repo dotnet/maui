@@ -12,8 +12,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		Color TintColor { get; set; }
 
-		IToolbar GetToolbar();
-
 		void SetToolbar(IToolbar toolbar);
 	}
 }
