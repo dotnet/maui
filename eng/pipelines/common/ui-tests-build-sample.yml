@@ -58,9 +58,9 @@ steps:
     Get-Content $PSCommandPath
     $buildCommand = "./build.ps1 --target=uitests-apphost --configuration=${{ parameters.configuration }} --${{ parameters.platform }} --verbosity=diagnostic --usenuget=false --runtimevariant=${{ parameters.runtimeVariant }}"
     
-    # Add Material3 build property if enabled
+    # Add Material3 build argument if enabled
     if (("${{ parameters.useMaterial3 }}" -eq "true") -and ("${{ parameters.platform }}" -eq "android")) {
-        $buildCommand += " /p:UseMaterial3=true"
+        $buildCommand += " --usematerial3=true"
         Write-Host "Building with Material3 enabled"
     } elseif ("${{ parameters.useMaterial3 }}" -eq "true") {
         Write-Host "Material3 is only supported for Android platform, ignoring useMaterial3 parameter"
