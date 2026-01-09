@@ -66,8 +66,8 @@ internal class PathParser
 			ContainingType: containgType,
 			MemberType: memberType,
 			Kind: accessorKind,
-			IsGetterInaccessible: !isGetterAccessible,
-			IsSetterInaccessible: !isSetterAccessible);
+			IsGetterAccessible: isGetterAccessible,
+			IsSetterAccessible: isSetterAccessible);
 
 		result.Value.Add(part);
 		return Result<List<IPathPart>>.Success(result.Value);
