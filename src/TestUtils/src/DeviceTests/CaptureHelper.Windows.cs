@@ -29,12 +29,49 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static GraphicsCaptureItem CreateItemForWindow(IntPtr hwnd)
 		{
-			var interop = GraphicsCaptureItem.As<IGraphicsCaptureItemInterop>();
-			var itemPointer = interop.CreateForWindow(hwnd, GraphicsCaptureItemGuid);
-			var item = GraphicsCaptureItem.FromAbi(itemPointer);
-			Marshal.Release(itemPointer);
+			// Debug logging for Helix CI investigation
+			System.Diagnostics.Debug.WriteLine($"[CaptureHelper] CreateItemForWindow called with hwnd: 0x{hwnd:X}");
+			Console.WriteLine($"[CaptureHelper] CreateItemForWindow called with hwnd: 0x{hwnd:X}");
+			
+			// Check if Graphics Capture is supported
+			var isSupported = GraphicsCaptureSession.IsSupported();
+			System.Diagnostics.Debug.WriteLine($"[CaptureHelper] GraphicsCaptureSession.IsSupported(): {isSupported}");
+			Console.WriteLine($"[CaptureHelper] GraphicsCaptureSession.IsSupported(): {isSupported}");
+			
+			if (!isSupported)
+			{
+				throw new PlatformNotSupportedException(
+					$"Graphics Capture is not supported on this system. " +
+					$"hwnd=0x{hwnd:X}, IsSupported={isSupported}. " +
+					$"This typically occurs on systems without a GPU or in headless/remote desktop environments.");
+			}
 
-			return item;
+			try
+			{
+				var interop = GraphicsCaptureItem.As<IGraphicsCaptureItemInterop>();
+				System.Diagnostics.Debug.WriteLine($"[CaptureHelper] Got IGraphicsCaptureItemInterop interface");
+				Console.WriteLine($"[CaptureHelper] Got IGraphicsCaptureItemInterop interface");
+				
+				var itemPointer = interop.CreateForWindow(hwnd, GraphicsCaptureItemGuid);
+				System.Diagnostics.Debug.WriteLine($"[CaptureHelper] CreateForWindow returned pointer: 0x{itemPointer:X}");
+				Console.WriteLine($"[CaptureHelper] CreateForWindow returned pointer: 0x{itemPointer:X}");
+				
+				var item = GraphicsCaptureItem.FromAbi(itemPointer);
+				Marshal.Release(itemPointer);
+
+				System.Diagnostics.Debug.WriteLine($"[CaptureHelper] Successfully created GraphicsCaptureItem, Size: {item.Size}");
+				Console.WriteLine($"[CaptureHelper] Successfully created GraphicsCaptureItem, Size: {item.Size}");
+				
+				return item;
+			}
+			catch (Exception ex)
+			{
+				System.Diagnostics.Debug.WriteLine($"[CaptureHelper] FAILED: {ex.GetType().Name}: {ex.Message}");
+				Console.WriteLine($"[CaptureHelper] FAILED: {ex.GetType().Name}: {ex.Message}");
+				Console.WriteLine($"[CaptureHelper] hwnd=0x{hwnd:X}, IsSupported={isSupported}");
+				Console.WriteLine($"[CaptureHelper] Stack trace: {ex.StackTrace}");
+				throw;
+			}
 		}
 
 		public static GraphicsCaptureItem CreateItemForMonitor(IntPtr hmon)
