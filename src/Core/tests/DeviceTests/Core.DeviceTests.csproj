@@ -40,6 +40,8 @@
     <DefineConstants>$(DefineConstants);UNPACKAGED</DefineConstants>
     <!-- Include Windows App SDK native DLLs for unpackaged self-contained builds -->
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <!-- Disable bootstrap UI prompt for self-contained apps (required for headless CI/Helix) -->
+    <WindowsAppSDKBootstrapAutoInitializeOptions_OnNoMatch_ShowUI>false</WindowsAppSDKBootstrapAutoInitializeOptions_OnNoMatch_ShowUI>
   </PropertyGroup>
 
   <PropertyGroup>
