@@ -2,7 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:Maui.Controls.Sample"
-             x:Class="Maui.Controls.Sample.ImageClipOptionsPage"
+             x:Class="Maui.Controls.Sample.ClipOptionsPage"
              Title="SliderFeature">
        <ContentPage.ToolbarItems>
               <ToolbarItem Text="Apply"
@@ -11,54 +11,6 @@
        </ContentPage.ToolbarItems>
        <VerticalStackLayout Padding="10"
                             Spacing="4">
-              <Label Text="Aspect"
-                     FontAttributes="Bold"
-                     FontSize="14"/>
-              <HorizontalStackLayout>
-                     <RadioButton Content="AspectFit"
-                                  IsChecked="True"
-                                  GroupName="AspectGroup"
-                                  CheckedChanged="AspectRadio_CheckedChanged"
-                                  AutomationId="ImageAspectFit"/>
-                     <RadioButton Content="AspectFill"
-                                  GroupName="AspectGroup"
-                                  CheckedChanged="AspectRadio_CheckedChanged"
-                                  AutomationId="ImageAspectFill"/>
-                     <RadioButton Content="Fill"
-                                  GroupName="AspectGroup"
-                                  CheckedChanged="AspectRadio_CheckedChanged"
-                                  AutomationId="ImageFill"/>
-                     <RadioButton Content="Center"
-                                  GroupName="AspectGroup"
-                                  CheckedChanged="AspectRadio_CheckedChanged"
-                                  AutomationId="ImageCenter"/>
-              </HorizontalStackLayout>
-
-              <Label Text="Source Type"
-                     FontAttributes="Bold"
-                     FontSize="14"/>
-              <HorizontalStackLayout>
-                     <RadioButton Content="File"
-                                  GroupName="SourceTypeGroup"
-                                  CheckedChanged="SourceTypeRadio_CheckedChanged"
-                                  AutomationId="SourceTypeFile"/>
-                     <RadioButton Content="Uri"
-                                  GroupName="SourceTypeGroup"
-                                  CheckedChanged="SourceTypeRadio_CheckedChanged"
-                                  AutomationId="SourceTypeUri"/>
-                     <RadioButton Content="Stream"
-                                  GroupName="SourceTypeGroup"
-                                  CheckedChanged="SourceTypeRadio_CheckedChanged"
-                                  AutomationId="SourceTypeStream"/>
-                     <RadioButton Content="FontImage"
-                                  GroupName="SourceTypeGroup"
-                                  CheckedChanged="SourceTypeRadio_CheckedChanged"
-                                  AutomationId="SourceTypeFontImage"/>
-              </HorizontalStackLayout>
-              <RadioButton Content="ClipImage"
-                           GroupName="SourceTypeGroup"
-                           CheckedChanged="SourceTypeRadio_CheckedChanged"
-                           AutomationId="SourceTypeClipImage"/>
 
               <Label Text="Clip Geometry"
                      FontAttributes="Bold"
