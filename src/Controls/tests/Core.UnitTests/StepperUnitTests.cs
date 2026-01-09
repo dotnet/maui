@@ -248,5 +248,31 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			stepper.Value += stepper.Increment;
 			Assert.Equal(5.39, stepper.Value);
 		}
+
+		[Fact]
+		// https://github.com/dotnet/maui/issues/28330
+		public void StepperAllowsMinimumEqualToMaximum()
+		{
+			// This tests the edge case where Minimum == Maximum
+			// The stepper should accept this configuration and value should be clamped
+			var stepper = new Stepper
+			{
+				Minimum = 1,
+				Maximum = 1,
+				Value = 1
+			};
+
+			Assert.Equal(1, stepper.Minimum);
+			Assert.Equal(1, stepper.Maximum);
+			Assert.Equal(1, stepper.Value);
+
+			// Attempting to increment beyond max should not change value
+			stepper.Value += stepper.Increment;
+			Assert.Equal(1, stepper.Value);
+
+			// Attempting to decrement below min should not change value
+			stepper.Value -= stepper.Increment;
+			Assert.Equal(1, stepper.Value);
+		}
 	}
 }
