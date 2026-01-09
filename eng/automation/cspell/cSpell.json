@@ -20,7 +20,8 @@
         "simctl",
         "screencap",
         "mlaunch",
-        "devicectl"
+        "devicectl",
+        "xcdevice"
     ],
     "ignoreWords": [],
     "patterns": [
