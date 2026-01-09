@@ -385,7 +385,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (longPressRecognizer == null)
 				return null;
 
-			var uiRecognizer = CreateLongPressRecognizer(r =>
+			var longPressUiRecognizer = CreateLongPressRecognizer(r =>
 			{
 				var eventTracker = weakEventTracker.Target as GesturePlatformManager;
 				var view = eventTracker?._handler?.VirtualView as View;
@@ -415,7 +415,7 @@ namespace Microsoft.Maui.Controls.Platform
 						break;
 				}
 			});
-			return new List<UIGestureRecognizer?> { uiRecognizer };
+			return new List<UIGestureRecognizer?> { longPressUiRecognizer };
 		}
 
 		UIPanGestureRecognizer CreatePanRecognizer(int numTouches, Action<UIPanGestureRecognizer> action)
