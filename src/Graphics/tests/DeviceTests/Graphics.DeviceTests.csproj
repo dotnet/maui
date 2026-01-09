@@ -30,7 +30,7 @@
   </PropertyGroup>
 
   <!-- Unpackaged Windows builds need Windows App SDK DLLs bundled -->
-  <PropertyGroup Condition="'$(WindowsPackageType)' == 'None'">
+  <PropertyGroup Condition="'$(WindowsPackageType)' == 'None' AND '$(OutputType)' == 'Exe'">
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
   </PropertyGroup>
 

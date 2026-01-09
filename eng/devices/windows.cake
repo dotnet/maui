@@ -172,9 +172,10 @@ Task("buildOnly")
 	else
 	{
 		// Apply correct build properties for unpackaged builds
+		// Note: WindowsAppSDKSelfContained is set in project files (not here) to avoid
+		// propagating to library project dependencies which don't support this property
 		s.MSBuildSettings.Properties.Add("SelfContained", new List<string> { "True" });
 		s.MSBuildSettings.Properties.Add("WindowsPackageType", new List<string> { "None" });
-		s.MSBuildSettings.Properties.Add("WindowsAppSDKSelfContained", new List<string> { "True" });
 		s.MSBuildSettings.Properties.Add("ExtraDefineConstants", new List<string> { "UNPACKAGED" });
 	}
 
