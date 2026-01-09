@@ -1,9 +1,21 @@
 ﻿using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
+using Google.Android.Material.RadioButton;
 
 namespace Microsoft.Maui.Handlers
 {
+	internal class MaterialRadioButtonHandler : RadioButtonHandler
+	{
+		protected override MaterialRadioButton CreatePlatformView()
+		{
+			return new MaterialRadioButton(MauiMaterialContextThemeWrapper.Create(Context))
+			{
+				SoundEffectsEnabled = false
+			};
+		}
+	}
+
 	public partial class RadioButtonHandler : ViewHandler<IRadioButton, View>
 	{
 		static AppCompatRadioButton? GetPlatformRadioButton(IRadioButtonHandler handler) => handler.PlatformView as AppCompatRadioButton;
