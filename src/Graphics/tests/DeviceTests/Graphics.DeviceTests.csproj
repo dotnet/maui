@@ -29,6 +29,11 @@
     <!--<WindowsPackageType>None</WindowsPackageType>-->
   </PropertyGroup>
 
+  <!-- Unpackaged Windows builds need Windows App SDK DLLs bundled -->
+  <PropertyGroup Condition="'$(WindowsPackageType)' == 'None'">
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+  </PropertyGroup>
+
   <ItemGroup>
     <MauiIcon Include="Resources\appicon.svg" ForegroundFile="Resources\appiconfg.svg" Color="#512BD4" />
     <MauiSplashScreen Include="Resources\appiconfg.svg" Color="#512BD4" BaseSize="128,128" />

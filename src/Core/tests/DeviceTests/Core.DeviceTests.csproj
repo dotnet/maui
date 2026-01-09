@@ -38,6 +38,8 @@
 
   <PropertyGroup Condition="'$(WindowsPackageType)' == 'None'">
     <DefineConstants>$(DefineConstants);UNPACKAGED</DefineConstants>
+    <!-- Include Windows App SDK native DLLs for unpackaged self-contained builds -->
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
   </PropertyGroup>
 
   <PropertyGroup>
