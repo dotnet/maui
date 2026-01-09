@@ -1,4 +1,7 @@
 using System.Collections.Specialized;
+#if MACCATALYST
+using UIKit;
+#endif
 
 namespace Maui.Controls.Sample;
 
@@ -11,6 +14,18 @@ public partial class MenuBarItemControlPage : Shell
 		InitializeComponent();
 		_viewModel = new MenuBarItemViewModel();
 		BindingContext = _viewModel;
+
+#if MACCATALYST
+		// On MacCatalyst, when this Shell page is loaded directly via test runner,
+		// we need to trigger a menu rebuild to ensure MenuBarItems are visible
+		this.Loaded += (s, e) =>
+		{
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(13))
+			{
+				UIMenuSystem.MainSystem.SetNeedsRebuild();
+			}
+		};
+#endif
 
 		// Subscribe to collection changes
 		_viewModel.Locations.CollectionChanged += OnLocationsCollectionChanged;
