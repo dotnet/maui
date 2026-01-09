@@ -456,26 +456,30 @@ stages:
             displayName: Build MauiBlazorWebView.DeviceTests (Windows Packaged)
             retryCountOnTaskFailure: 1
 
+          # NOTE: Unpackaged builds disabled - apps crash on Helix with exit code 0xC000027B
+          # (Windows App SDK Bootstrap initialization failure). This needs further investigation.
+          # See: https://github.com/dotnet/maui/pull/33328 for context.
+          # 
           # Build unpackaged versions (WindowsAppSDKSelfContained=true set in project files)
-          - script: dotnet cake eng/devices/windows.cake --target=buildOnly --project="$(Build.SourcesDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj" --device=unpackaged --binlog="$(Build.SourcesDirectory)/artifacts/log" --configuration=Debug --packageid=com.microsoft.maui.controls.devicetests --verbosity=diagnostic
-            displayName: Build Controls.DeviceTests (Windows Unpackaged)
-            retryCountOnTaskFailure: 1
-
-          - script: dotnet cake eng/devices/windows.cake --target=buildOnly --project="$(Build.SourcesDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj" --device=unpackaged --binlog="$(Build.SourcesDirectory)/artifacts/log" --configuration=Debug --packageid=com.microsoft.maui.core.devicetests --verbosity=diagnostic
-            displayName: Build Core.DeviceTests (Windows Unpackaged)
-            retryCountOnTaskFailure: 1
-
-          - script: dotnet cake eng/devices/windows.cake --target=buildOnly --project="$(Build.SourcesDirectory)/src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj" --device=unpackaged --binlog="$(Build.SourcesDirectory)/artifacts/log" --configuration=Debug --packageid=com.microsoft.maui.graphics.devicetests --verbosity=diagnostic
-            displayName: Build Graphics.DeviceTests (Windows Unpackaged)
-            retryCountOnTaskFailure: 1
-
-          - script: dotnet cake eng/devices/windows.cake --target=buildOnly --project="$(Build.SourcesDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj" --device=unpackaged --binlog="$(Build.SourcesDirectory)/artifacts/log" --configuration=Debug --packageid=com.microsoft.maui.essentials.devicetests --verbosity=diagnostic
-            displayName: Build Essentials.DeviceTests (Windows Unpackaged)
-            retryCountOnTaskFailure: 1
-
-          - script: dotnet cake eng/devices/windows.cake --target=buildOnly --project="$(Build.SourcesDirectory)/src/BlazorWebView/tests/DeviceTests/MauiBlazorWebView.DeviceTests.csproj" --device=unpackaged --binlog="$(Build.SourcesDirectory)/artifacts/log" --configuration=Debug --packageid=Microsoft.Maui.MauiBlazorWebView.DeviceTests --verbosity=diagnostic
-            displayName: Build MauiBlazorWebView.DeviceTests (Windows Unpackaged)
-            retryCountOnTaskFailure: 1
+          # - script: dotnet cake eng/devices/windows.cake --target=buildOnly --project="$(Build.SourcesDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj" --device=unpackaged --binlog="$(Build.SourcesDirectory)/artifacts/log" --configuration=Debug --packageid=com.microsoft.maui.controls.devicetests --verbosity=diagnostic
+          #   displayName: Build Controls.DeviceTests (Windows Unpackaged)
+          #   retryCountOnTaskFailure: 1
+          #
+          # - script: dotnet cake eng/devices/windows.cake --target=buildOnly --project="$(Build.SourcesDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj" --device=unpackaged --binlog="$(Build.SourcesDirectory)/artifacts/log" --configuration=Debug --packageid=com.microsoft.maui.core.devicetests --verbosity=diagnostic
+          #   displayName: Build Core.DeviceTests (Windows Unpackaged)
+          #   retryCountOnTaskFailure: 1
+          #
+          # - script: dotnet cake eng/devices/windows.cake --target=buildOnly --project="$(Build.SourcesDirectory)/src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj" --device=unpackaged --binlog="$(Build.SourcesDirectory)/artifacts/log" --configuration=Debug --packageid=com.microsoft.maui.graphics.devicetests --verbosity=diagnostic
+          #   displayName: Build Graphics.DeviceTests (Windows Unpackaged)
+          #   retryCountOnTaskFailure: 1
+          #
+          # - script: dotnet cake eng/devices/windows.cake --target=buildOnly --project="$(Build.SourcesDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj" --device=unpackaged --binlog="$(Build.SourcesDirectory)/artifacts/log" --configuration=Debug --packageid=com.microsoft.maui.essentials.devicetests --verbosity=diagnostic
+          #   displayName: Build Essentials.DeviceTests (Windows Unpackaged)
+          #   retryCountOnTaskFailure: 1
+          #
+          # - script: dotnet cake eng/devices/windows.cake --target=buildOnly --project="$(Build.SourcesDirectory)/src/BlazorWebView/tests/DeviceTests/MauiBlazorWebView.DeviceTests.csproj" --device=unpackaged --binlog="$(Build.SourcesDirectory)/artifacts/log" --configuration=Debug --packageid=Microsoft.Maui.MauiBlazorWebView.DeviceTests --verbosity=diagnostic
+          #   displayName: Build MauiBlazorWebView.DeviceTests (Windows Unpackaged)
+          #   retryCountOnTaskFailure: 1
 
           # Create zip archives for each device test project
           - pwsh: |
