@@ -57,10 +57,20 @@ namespace Microsoft.Maui.Controls.Platform
 			ImageSource source = toolbar.TitleIcon;
 
 			ToolbarTitleIconImageView? iconView = null;
-
-			if (nativeToolbar.GetChildAt(0) is ToolbarTitleIconImageView existingImageView)
+			for (int childIndex = 0; childIndex < nativeToolbar.ChildCount; childIndex++)
 			{
-				iconView = existingImageView;
+				var child = nativeToolbar.GetChildAt(childIndex);
+				if (child is ToolbarTitleIconImageView icon)
+				{
+					if (iconView is null)
+					{
+						iconView = icon; // Keep the first one found
+					}
+					else
+					{
+						nativeToolbar.RemoveView(icon); // Remove any extras (self-healing)
+					}
+				}
 			}
 
 			if (source is null || source.IsEmpty)
