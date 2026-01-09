@@ -74,8 +74,23 @@ stages:
           - ${{ each pair in step }}:
               ${{ pair.key }}: ${{ pair.value }}
 
-        - script: $(_buildScriptMacOS) -restore -pack -publish $(_PublishArgs) -configuration $(_BuildConfig) /bl:$(Build.Arcade.LogsPath)/$(_BuildConfig)/pack-mac.binlog $(_OfficialBuildIdArgs)
+        - script: $(_buildScriptMacOS) -restore -pack -configuration $(_BuildConfig) /bl:$(Build.Arcade.LogsPath)/$(_BuildConfig)/pack-mac.binlog $(_OfficialBuildIdArgs)
           displayName: Pack & Publish
+
+        - task: CopyFiles@2
+          displayName: Copy Native Binaries
+          inputs:
+            SourceFolder: '$(Build.SourcesDirectory)\artifacts\bin'
+            Contents: |
+              */$(_BuildConfig)/*/*.resources.zip
+            TargetFolder: '$(Agent.TempDirectory)\native-binaries'
+
+        - task: ${{ parameters.publishTaskPrefix }}PublishPipelineArtifact@1
+          displayName: Publish Native Binaries
+          inputs:
+            targetPath: '$(Agent.TempDirectory)\native-binaries'
+            artifact: MacNativeArtifacts
+          condition: always()
 
         - ${{ each step in parameters.postSteps }}:
           - ${{ each pair in step }}:

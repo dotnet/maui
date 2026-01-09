@@ -41,8 +41,8 @@
   <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
   <Import Project="$(MauiSrcDirectory)Workload\Shared\LibraryPacks.targets" />
 
-  <!-- Some helpers for Intellisense -->
-  <!-- <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'ios'">
+  <!-- Some helpers for Intellisense on local runs -->
+  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'ios'">
     <_FilesUsedForIntellisense Include="..\..\..\..\artifacts\obj\Essentials.AI\$(Configuration)\$(TargetFramework)\iOS\**\*.cs" Link="Platform\MaciOS\%(RecursiveDir)%(Filename)%(Extension)" Condition="Exists('..\..\..\..\artifacts\obj\Essentials.AI\$(Configuration)\$(TargetFramework)\iOS\ObjCRuntime\Messaging.g.cs')" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'maccatalyst'">
@@ -50,12 +50,12 @@
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'ios' Or '$(TargetPlatformIdentifier)' == 'maccatalyst' Or '$(TargetPlatformIdentifier)' == 'macos' ">
     <_FilesUsedForIntellisense Include="Platform\MaciOS\StructsAndEnums.cs" />
-    <Compile Include="@(_FilesUsedForIntellisense)" />
+    <Compile Include="@(_FilesUsedForIntellisense)" Condition="'$(CI)' != 'true' and '$(TF_BUILD)' != 'true'" />
   </ItemGroup>
   <Target Name="RemoveGeneratedFiles" BeforeTargets="_CollectGeneratedSources" Condition=" '$(TargetPlatformIdentifier)' == 'ios' Or '$(TargetPlatformIdentifier)' == 'maccatalyst' Or '$(TargetPlatformIdentifier)' == 'macos' ">
     <ItemGroup>
       <Compile Remove="@(_FilesUsedForIntellisense)" />
     </ItemGroup>
-  </Target> -->
+  </Target>
 
 </Project>
