@@ -8,7 +8,7 @@
         <HelixTargetQueues Condition="'$(TargetOS)' == 'maccatalyst' and '$(HelixInternal)' != 'True'">osx.15.arm64.maui.open</HelixTargetQueues>
         <HelixTargetQueues Condition="'$(TargetOS)' == 'android' and '$(HelixInternal)' != 'True'">ubuntu.2204.amd64.android.33.open</HelixTargetQueues>
         <!-- Internal queues -->
-        <HelixTargetQueues Condition="'$(TargetOS)' == 'ios' and '$(HelixInternal)' == 'True'">osx.26.arm64;osx.15.iphone.maui</HelixTargetQueues>
+        <HelixTargetQueues Condition="'$(TargetOS)' == 'ios' and '$(HelixInternal)' == 'True'">osx.26.arm64;osx.15.arm64.iphone.maui</HelixTargetQueues>
         <HelixTargetQueues Condition="'$(TargetOS)' == 'maccatalyst' and '$(HelixInternal)' == 'True'">osx.26.arm64</HelixTargetQueues>
         <HelixTargetQueues Condition="'$(TargetOS)' == 'android' and '$(HelixInternal)' == 'True'">ubuntu.2204.amd64.android.33</HelixTargetQueues>
         <TargetsAppleMobile Condition="'$(TargetOS)' == 'ios'">true</TargetsAppleMobile>
