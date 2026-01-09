@@ -171,9 +171,9 @@ Tests should run on all applicable platforms by default. The test infrastructure
 
 ### No Inline #if Directives in Test Methods
 
-**Do NOT use `#if ANDROID`, `#if IOS`, etc. directly in test methods.** Platform-specific behavior must be hidden behind extension methods for readability.
+**Do NOT use `#if ANDROID`, `#if IOS`, etc. inside test method bodies.** Platform-specific behavior must be hidden behind extension methods for readability.
 
-**Note:** This rule is about **code cleanliness**, not platform scope. Using `#if ANDROID ... #else ...` still compiles for all platforms - the issue is that inline directives make test logic hard to read and maintain.
+**Note:** File-level `#if` (to exclude entire files) or wrapping entire test methods is acceptable. This rule targets inline conditionals within test logic that make code hard to read and maintain.
 
 ```csharp
 // ❌ BAD - inline #if in test method (hard to read)
