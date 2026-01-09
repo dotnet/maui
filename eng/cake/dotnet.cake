@@ -209,7 +209,6 @@ Task("uitests-apphost")
         {
             Information("Building for CoreCLR");
             properties.Add("UseMonoRuntime", "false");
-            properties.Add("TargetFramework", $"{DefaultDotnetVersion}-android");
         }
 
         if (USE_NATIVE_AOT)
