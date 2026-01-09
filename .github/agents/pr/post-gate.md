@@ -142,7 +142,7 @@ Update the state file:
 
 **⚠️ Gate Check:** Verify ALL phases 1-4 are `✅ COMPLETE` or `✅ PASSED` before proceeding.
 
-### Step 1: Finalize Title and Description
+### Finalize Title and Description
 
 **Invoke the `pr-finalize` skill** to ensure the PR title and description:
 - Accurately reflect the actual implementation
