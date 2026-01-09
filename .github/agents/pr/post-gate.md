@@ -183,34 +183,12 @@ If reviewing an existing PR, check if title/description need updates and include
 
 4. **Push and create PR** (after user confirmation):
 
-   Use the `pr-finalize` skill output template for the PR body:
-   
    ```bash
    git push -u origin fix/issue-XXXXX
-   gh pr create --title "[Platform] Brief description of behavior fix" --body "<!-- Please let the below note in for people that find this PR -->
-   > [!NOTE]
-   > Are you waiting for the changes in this PR to be merged?
-   > It would be very helpful if you could [test the resulting artifacts](https://github.com/dotnet/maui/wiki/Testing-PR-Builds) from this PR and let us know in a comment if this change resolves your issue. Thank you!
-
-   ### Description of Change
-
-   [One-line summary]
-
-   **Root cause:** [Why bug occurred]
-
-   **Fix:** [What code now does]
-
-   **Key insight:** [Non-obvious understanding]
-
-   **What to avoid:** [Patterns that would re-break]
-
-   ### Issues Fixed
-
-   Fixes #XXXXX
-
-   **Related:** #YYYYY (if applicable)
-   "
+   gh pr create --title "[Platform] Brief description of behavior fix" --body "<pr-finalize skill output>"
    ```
+   
+   Use the `pr-finalize` skill output as the `--body` argument.
 
 5. **Update state file** with PR link
 

@@ -1,6 +1,7 @@
 ---
 name: pr-finalize
 description: Finalizes any PR for merge by verifying title and description match actual implementation. Ensures commit message helps future agents understand the change. Use on any PR before merge, when description may be stale, or to review commit message quality.
+compatibility: Requires GitHub CLI (gh)
 ---
 
 # PR Finalize
@@ -51,7 +52,7 @@ Then produce:
 
 PR description should:
 1. Start with the required NOTE block (so users can test PR artifacts)
-2. Include the standard sections from `.github/PULL_REQUEST_TEMPLATE.md`
+2. Include the base sections from `.github/PULL_REQUEST_TEMPLATE.md` ("Description of Change" and "Issues Fixed"). The skill adds additional structured fields (Root cause, Fix, Key insight, etc.) as recommended enhancements for better agent context.
 3. Match the actual implementation
 
 ```markdown
@@ -106,7 +107,7 @@ Add these elements so future agents can understand the change:
 
 ### Description of Change
 
-[One-line summary]
+[Brief summary]
 
 **Root cause:** [Why bug occurred]
 
