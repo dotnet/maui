@@ -110,8 +110,8 @@ public void RunOniOS(string id, string config, string framework, RuntimeVariant 
         properties: buildProps,
         runtimeIdentifier: TestEnvironment.IOSSimulatorRuntimeIdentifier));
 
-    // Run with XHarness
-    Assert.IsTrue(XHarness.RunAppleForTimeout(appPath, resultDir, TestSimulator.XHarnessID, TestSimulator.GetUDID()));
+    // Run with XHarness (omit UDID to let XHarness control simulator lifecycle)
+    Assert.IsTrue(XHarness.RunAppleForTimeout(appPath, resultDir, TestSimulator.XHarnessID));
 }
 ```
 

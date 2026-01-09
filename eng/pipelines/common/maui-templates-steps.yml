@@ -93,3 +93,5 @@ steps:
     testRunTitle: ${{ parameters.category }} templates build tests
 
 - template: /eng/pipelines/common/fail-on-issue.yml
+  parameters:
+    condition: always()
