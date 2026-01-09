@@ -74,7 +74,7 @@ stages:
       jobs:
       - job: builddevice_tests
         displayName: Build Device Tests (Mono)
-        timeoutInMinutes: 60
+        timeoutInMinutes: 120
         variables:
         - name: _BuildConfig
           value: ${{ parameters.BuildConfiguration }}
@@ -287,7 +287,7 @@ stages:
       jobs:
       - job: builddevice_tests_coreclr
         displayName: Build Device Tests (CoreCLR)
-        timeoutInMinutes: 60
+        timeoutInMinutes: 120
         variables:
         - name: _BuildConfig
           value: ${{ parameters.BuildConfiguration }}
