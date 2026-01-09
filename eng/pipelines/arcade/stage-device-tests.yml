@@ -46,6 +46,9 @@ parameters:
 - name: checkoutDirectory
   type: string
   default: $(System.DefaultWorkingDirectory)
+- name: HelixAccessToken
+  type: string
+  default: ''
 
 stages:
 - stage: devicetests_build
@@ -149,6 +152,7 @@ stages:
               HelixProjectArguments: /p:TargetOS=ios /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsIOS_ /p:HelixInternal=False
             ${{ else }}:
               HelixProjectArguments: /p:TargetOS=ios /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsIOS_ /p:HelixInternal=True
+            HelixAccessToken: ${{ parameters.HelixAccessToken }}
             HelixConfiguration: $(_BuildConfig)
             IncludeDotNetCli: true
             DisplayNamePrefix: DeviceTestsIOS
@@ -202,6 +206,7 @@ stages:
               HelixProjectArguments: /p:TargetOS=maccatalyst /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsMacCatalyst_ /p:HelixInternal=False
             ${{ else }}:
               HelixProjectArguments: /p:TargetOS=maccatalyst /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsMacCatalyst_ /p:HelixInternal=True
+            HelixAccessToken: ${{ parameters.HelixAccessToken }}
             HelixConfiguration: $(_BuildConfig)
             IncludeDotNetCli: true
             DisplayNamePrefix: DeviceTestsMacCatalyst
@@ -253,6 +258,7 @@ stages:
               HelixProjectArguments: /p:TargetOS=android /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsAndroid_ /p:HelixInternal=False
             ${{ else }}:
               HelixProjectArguments: /p:TargetOS=android /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsAndroid_ /p:HelixInternal=True
+            HelixAccessToken: ${{ parameters.HelixAccessToken }}
             HelixConfiguration: $(_BuildConfig)
             IncludeDotNetCli: true
             DisplayNamePrefix: DeviceTestsAndroid
@@ -359,6 +365,7 @@ stages:
               HelixProjectArguments: /p:TargetOS=android /p:TestRunNameSuffix=_$(_BuildConfig)_CoreCLR /p:TestRunNamePrefix=DeviceTestsAndroid_CoreCLR_ /p:HelixInternal=False
             ${{ else }}:
               HelixProjectArguments: /p:TargetOS=android /p:TestRunNameSuffix=_$(_BuildConfig)_CoreCLR /p:TestRunNamePrefix=DeviceTestsAndroid_CoreCLR_ /p:HelixInternal=True
+            HelixAccessToken: ${{ parameters.HelixAccessToken }}
             HelixConfiguration: $(_BuildConfig)
             IncludeDotNetCli: true
             DisplayNamePrefix: DeviceTestsAndroid_CoreCLR

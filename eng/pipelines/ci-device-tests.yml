@@ -47,6 +47,9 @@ variables:
 - template: /eng/common/templates/variables/pool-providers.yml@self
 - template: /eng/pipelines/common/variables.yml@self
 - template: /eng/pipelines/arcade/variables.yml@self
+# Include Helix access token for internal builds
+- ${{ if eq(variables['System.TeamProject'], 'internal') }}:
+  - group: DotNet-HelixApi-Access
 
 parameters:
 
@@ -112,6 +115,7 @@ stages:
         buildPool: ${{ parameters.macOSPoolInternal }}
         testPool: ${{ parameters.windowsPoolInternal }}
         runAsPublic: false
+        HelixAccessToken: $(HelixApiAccessToken)
       ${{ else }}:
         buildPool: ${{ parameters.macOSPoolPublic }}
         testPool: ${{ parameters.windowsPoolPublic }}
