@@ -269,7 +269,6 @@
                              BorderBrush="{TemplateBinding BorderBrush}"
                              BorderThickness="{TemplateBinding BorderThickness}"
                              CornerRadius="{TemplateBinding CornerRadius}"
-                             HorizontalAnchorRatio="NaN"
                              TabNavigation="{TemplateBinding TabNavigation}"
                              XYFocusKeyboardNavigation="{TemplateBinding XYFocusKeyboardNavigation}">
         <controls:StackPanel x:Name="PART_ContainerGrid">

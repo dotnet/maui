@@ -37,8 +37,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		View? _mauiHeader;
 		bool _headerDisplayed;
 
-		WASDKScrollBarVisibility? _defaultHorizontalScrollVisibility;
-		WASDKScrollBarVisibility? _defaultVerticalScrollVisibility;
+		ScrollingScrollBarVisibility? _defaultHorizontalScrollVisibility;
+		ScrollingScrollBarVisibility? _defaultVerticalScrollVisibility;
 
 		int _lastRemainingItemsThresholdIndex = -1;
 
@@ -188,7 +188,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			var itemsSource = Element.ItemsSource;
 			var itemTemplate = Element.ItemTemplate;
 
-			if (itemTemplate is not null)
+			if (itemTemplate is not null && itemsSource is not null)
 			{
 				if (ItemsView is GroupableItemsView groupableItemsView && groupableItemsView.IsGrouped)
 				{
@@ -730,18 +730,80 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		void UpdateVerticalScrollBarVisibility()
 		{
-			ItemsViewExtensions.UpdateVerticalScrollBarVisibility(
-				PlatformView,
-				Element.VerticalScrollBarVisibility,
-				ref _defaultVerticalScrollVisibility);
+			var scrollBarVisibility = Element.VerticalScrollBarVisibility;
+			var scrollView = PlatformView.ScrollView;
+
+			if (scrollView is null)
+				return;
+
+			if (scrollBarVisibility != ScrollBarVisibility.Default)
+			{
+				// If the value is changing to anything other than the default, record the default
+				if (_defaultVerticalScrollVisibility is null)
+				{
+					_defaultVerticalScrollVisibility = scrollView.VerticalScrollBarVisibility;
+				}
+			}
+
+			if (_defaultVerticalScrollVisibility is null)
+			{
+				// If the default has never been recorded, then this has never been set to anything but the
+				// default value; there's nothing to do.
+				return;
+			}
+
+			switch (scrollBarVisibility)
+			{
+				case ScrollBarVisibility.Always:
+					scrollView.VerticalScrollBarVisibility = ScrollingScrollBarVisibility.Visible;
+					break;
+				case ScrollBarVisibility.Never:
+					scrollView.VerticalScrollBarVisibility = ScrollingScrollBarVisibility.Hidden;
+					break;
+				case ScrollBarVisibility.Default:
+					scrollView.VerticalScrollBarVisibility =_defaultVerticalScrollVisibility.Value;
+					break;
+			}
+
 		}
 
 		void UpdateHorizontalScrollBarVisibility()
 		{
-			ItemsViewExtensions.UpdateHorizontalScrollBarVisibility(
-				PlatformView,
-				Element.HorizontalScrollBarVisibility,
-				ref _defaultHorizontalScrollVisibility);
+			var scrollBarVisibility = Element.HorizontalScrollBarVisibility;
+			var scrollView = PlatformView.ScrollView;
+
+			if (scrollView is null)
+				return;
+
+			if (scrollBarVisibility != ScrollBarVisibility.Default)
+			{
+				// If the value is changing to anything other than the default, record the default
+				if (_defaultHorizontalScrollVisibility is null)
+				{
+					_defaultHorizontalScrollVisibility = scrollView.HorizontalScrollBarVisibility;
+				}
+			}
+
+			if (_defaultHorizontalScrollVisibility is null)
+			{
+				// If the default has never been recorded, then this has never been set to anything but the
+				// default value; there's nothing to do.
+				return;
+			}
+
+			switch (scrollBarVisibility)
+			{
+				case ScrollBarVisibility.Always:
+					scrollView.HorizontalScrollBarVisibility = ScrollingScrollBarVisibility.Visible;
+						break;
+				case ScrollBarVisibility.Never:
+					scrollView.HorizontalScrollBarVisibility = ScrollingScrollBarVisibility.Hidden;
+					break;
+				case ScrollBarVisibility.Default:
+					scrollView.HorizontalScrollBarVisibility = _defaultHorizontalScrollVisibility.Value;
+					break;
+			}
+
 		}
 
 		void PointerScrollChanged(object sender, PointerRoutedEventArgs e)
