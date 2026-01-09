@@ -317,10 +317,23 @@ namespace Microsoft.Maui.Controls
 				{
 					element.SetValue(ShellContent.QueryAttributesProperty, mergedData);
 				}
-				baseShellItem.ApplyQueryAttributes(mergedData);
+
+				// Skip applying query attributes if the merged data is empty and we're popping back
+				// This respects when user calls query.Clear() - they don't want attributes applied on back navigation
+				if (mergedData.Count > 0 || !isPopping)
+				{
+					baseShellItem.ApplyQueryAttributes(mergedData);
+				}
 			}
 			else if (isLastItem)
-				element.SetValue(ShellContent.QueryAttributesProperty, MergeData(element, query, isPopping));
+			{
+				var mergedData = MergeData(element, query, isPopping);
+				// Skip setting query attributes if the merged data is empty and we're popping back
+				if (mergedData.Count > 0 || !isPopping)
+				{
+					element.SetValue(ShellContent.QueryAttributesProperty, mergedData);
+				}
+			}
 
 			ShellRouteParameters MergeData(Element shellElement, ShellRouteParameters data, bool isPopping)
 			{
