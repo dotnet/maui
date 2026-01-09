@@ -6,12 +6,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue33356 : _IssuesUITest
 {
-#if ANDROID
-	const string BackButtonIdentifier = "";
-#else
-	const string BackButtonIdentifier = "Cats";
-#endif
-
 	public Issue33356(TestDevice device)
 		: base(device)
 	{
@@ -27,20 +21,14 @@ public class Issue33356 : _IssuesUITest
 		var searchHandler = App.GetShellSearchHandler();
 		searchHandler.Tap();
 		searchHandler.SendKeys("A");
-#if ANDROID // Android does not support selecting elements in SearchHandler's results so used tap coordinates
-		var y = searchHandler.GetRect().Y + searchHandler.GetRect().Height;
-		App.TapCoordinates(searchHandler.GetRect().X + 10, y + 10);
-#else
-		var searchResults = App.FindElements("SearchResultName");
-		searchResults.First().Tap();
-#endif
+		App.TapFirstSearchResult(this, searchHandler, "SearchResultName");
 		App.WaitForElement("Issue33356CatNameLabel");
-		App.TapBackArrow(BackButtonIdentifier);
+		App.TapBackArrow(Device == TestDevice.Android ? "" : "Cats");
 		App.WaitForElement("Issue33356CatsCollectionView");
 		App.WaitForElement("Abyssinian");
 		App.Tap("Abyssinian");
 		App.WaitForElement("Issue33356CatNameLabel");
-		App.TapBackArrow(BackButtonIdentifier);
+		App.TapBackArrow(Device == TestDevice.Android ? "" : "Cats");
 		App.WaitForElement("Issue33356CatsCollectionView");
 	}
 }
