@@ -46,33 +46,33 @@
                      FontSize="14"/>
               <HorizontalStackLayout>
                      <RadioButton Content="Line"
-                                  GroupName="PathTypeGroup"
+                                  GroupName="ClipGroup"
                                   CheckedChanged="PathTypeRadio_CheckedChanged"
                                   AutomationId="LineSegment"/>
                      <RadioButton Content="Arc"
-                                  GroupName="PathTypeGroup"
+                                  GroupName="ClipGroup"
                                   CheckedChanged="PathTypeRadio_CheckedChanged"
                                   AutomationId="ArcSegment"/>
                      <RadioButton Content="Bezier"
-                                  GroupName="PathTypeGroup"
+                                  GroupName="ClipGroup"
                                   CheckedChanged="PathTypeRadio_CheckedChanged"
                                   AutomationId="BezierSegment"/>
                      <RadioButton Content="PolyQuadraticBezier"
-                                  GroupName="PathTypeGroup"
+                                  GroupName="ClipGroup"
                                   CheckedChanged="PathTypeRadio_CheckedChanged"
                                   AutomationId="PolyQuadraticBezierSegment"/>
               </HorizontalStackLayout>
               <HorizontalStackLayout>
                      <RadioButton Content="QuadraticBezier"
-                                  GroupName="PathTypeGroup"
+                                  GroupName="ClipGroup"
                                   CheckedChanged="PathTypeRadio_CheckedChanged"
                                   AutomationId="QuadraticBezierSegment"/>
                      <RadioButton Content="PolyLine"
-                                  GroupName="PathTypeGroup"
+                                  GroupName="ClipGroup"
                                   CheckedChanged="PathTypeRadio_CheckedChanged"
                                   AutomationId="PolyLineSegment"/>
                      <RadioButton Content="PolyBezier"
-                                  GroupName="PathTypeGroup"
+                                  GroupName="ClipGroup"
                                   CheckedChanged="PathTypeRadio_CheckedChanged"
                                   AutomationId="PolyBezierSegment"/>
               </HorizontalStackLayout>

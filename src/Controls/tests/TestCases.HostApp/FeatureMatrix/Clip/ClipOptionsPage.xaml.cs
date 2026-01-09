@@ -24,15 +24,15 @@ public partial class ClipOptionsPage : ContentPage
 			vm.Clip = rb.Content?.ToString() switch
 			{
 				"None" => null,
-				"Rectangle" => new RectangleGeometry(new Rect(0, 275, 150, 100)),
-				"Ellipse" => new EllipseGeometry(new Point(175, 275), 100, 65),
-				"RoundRectangle" => new RoundRectangleGeometry(new CornerRadius(50), new Rect(0, 275, 150, 100)),
+				"Rectangle" => new RectangleGeometry(new Rect(75, 100, 150, 100)),
+				"Ellipse" => new EllipseGeometry(new Point(150, 150), 100, 65),
+				"RoundRectangle" => new RoundRectangleGeometry(new CornerRadius(50), new Rect(75, 100, 150, 100)),
 				"GeometryGroup" => new GeometryGroup
 				{
 					Children = new GeometryCollection
 					{
-						new EllipseGeometry(new Point(100, 300), 80, 50),
-						new RectangleGeometry(new Rect(200, 250, 100, 150))
+						new EllipseGeometry(new Point(150, 100), 40, 25),
+						new RectangleGeometry(new Rect(75, 150, 150, 50))
 					}
 				},
 				_ => null

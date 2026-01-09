@@ -2,31 +2,31 @@ namespace Maui.Controls.Sample;
 
 public class ClipControlPage : NavigationPage
 {
-	private ClipViewModel _viewModel;
-	public ClipControlPage()
-	{
-		_viewModel = new ClipViewModel();
-		PushAsync(new ClipControlMainPage(_viewModel));
-	}
+    private ClipViewModel _viewModel;
+    public ClipControlPage()
+    {
+        _viewModel = new ClipViewModel();
+        PushAsync(new ClipControlMainPage(_viewModel));
+    }
 }
 
 public partial class ClipControlMainPage : ContentPage
 {
-	private ClipViewModel _viewModel;
-	public ClipControlMainPage(ClipViewModel viewModel)
-	{
-		InitializeComponent();
-		_viewModel = viewModel;
-		BindingContext = viewModel;
-	}
+    private ClipViewModel _viewModel;
+    public ClipControlMainPage(ClipViewModel viewModel)
+    {
+        InitializeComponent();
+        _viewModel = viewModel;
+        BindingContext = viewModel;
+    }
 
-	private async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)
-	{
-		BindingContext = _viewModel = new ClipViewModel();
-		await Navigation.PushAsync(new ClipOptionsPage(_viewModel));
-	}
-	
-	private void ControlType_Clicked(object sender, EventArgs e)
+    private async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)
+    {
+        BindingContext = _viewModel = new ClipViewModel();
+        await Navigation.PushAsync(new ClipOptionsPage(_viewModel));
+    }
+
+    private void ControlType_Clicked(object sender, EventArgs e)
     {
         if (sender is Button button)
         {
@@ -46,7 +46,6 @@ public partial class ClipControlMainPage : ContentPage
             "Button" => CreateButtonControl(),
             "Border" => CreateBorderControl(),
             "BoxView" => CreateBoxViewControl(),
-            "Frame" => CreateFrameControl(),
             _ => new Label { Text = "Unknown Control" }
         };
 
@@ -58,10 +57,10 @@ public partial class ClipControlMainPage : ContentPage
     {
         var image = new Image
         {
-            Source = "dotnet_bot.svg",
+            Source = "blue.png",
             WidthRequest = 300,
             HeightRequest = 300,
-            Aspect = Aspect.AspectFit,
+            Aspect = Aspect.AspectFill,
             AutomationId = "TestControl"
         };
         image.SetBinding(VisualElement.ClipProperty, new Binding(nameof(ClipViewModel.Clip)));
@@ -95,7 +94,7 @@ public partial class ClipControlMainPage : ContentPage
             BackgroundColor = Colors.Orange,
             TextColor = Colors.White,
             WidthRequest = 300,
-            HeightRequest = 150,
+            HeightRequest = 300,
             AutomationId = "TestControl"
         };
         button.SetBinding(VisualElement.ClipProperty, new Binding(nameof(ClipViewModel.Clip)));
@@ -137,31 +136,5 @@ public partial class ClipControlMainPage : ContentPage
         };
         boxView.SetBinding(VisualElement.ClipProperty, new Binding(nameof(ClipViewModel.Clip)));
         return boxView;
-    }
-
-    private Frame CreateFrameControl()
-    {
-        var frame = new Frame
-        {
-            BackgroundColor = Colors.Green,
-            BorderColor = Colors.DarkGreen,
-            CornerRadius = 20,
-            HasShadow = true,
-            Padding = 30,
-            WidthRequest = 300,
-            HeightRequest = 300,
-            AutomationId = "TestControl",
-            Content = new Label
-            {
-                Text = "Frame Content\nClipped",
-                TextColor = Colors.White,
-                FontSize = 22,
-                FontAttributes = FontAttributes.Bold,
-                HorizontalOptions = LayoutOptions.Center,
-                VerticalOptions = LayoutOptions.Center
-            }
-        };
-        frame.SetBinding(VisualElement.ClipProperty, new Binding(nameof(ClipViewModel.Clip)));
-        return frame;
     }
 }
