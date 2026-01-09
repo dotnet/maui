@@ -22,7 +22,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("WaitForStubControl");
 
 			// Load images.
-			await Task.Delay(1000);
+			await Task.Delay(2000);
 
 			// The test passes if you are able to see the image, name, and location of each monkey.
 			VerifyScreenshot();
