@@ -142,6 +142,18 @@ Update the state file:
 
 **⚠️ Gate Check:** Verify ALL phases 1-4 are `✅ COMPLETE` or `✅ PASSED` before proceeding.
 
+### Step 1: Finalize Title and Description
+
+**Invoke the `pr-finalize` skill** to ensure the PR title and description:
+- Accurately reflect the actual implementation
+- Provide context for future agents (root cause, key insight, what to avoid)
+- Follow the repository's PR template structure
+
+See `.github/skills/pr-finalize/SKILL.md` for details.
+
+If creating a new PR (from issue), use the skill's output template to write the PR body.
+If reviewing an existing PR, check if title/description need updates and include in review.
+
 ### If Starting from Issue (No PR) - Create PR
 
 1. **Ensure selected fix is applied and committed**:
@@ -170,25 +182,33 @@ Update the state file:
    **Do NOT proceed until user confirms.**
 
 4. **Push and create PR** (after user confirmation):
+
+   Use the `pr-finalize` skill output template for the PR body:
+   
    ```bash
    git push -u origin fix/issue-XXXXX
-   gh pr create --title "Fix #XXXXX: [Title]" --body "Fixes #XXXXX
+   gh pr create --title "[Platform] Brief description of behavior fix" --body "<!-- Please let the below note in for people that find this PR -->
+   > [!NOTE]
+   > Are you waiting for the changes in this PR to be merged?
+   > It would be very helpful if you could [test the resulting artifacts](https://github.com/dotnet/maui/wiki/Testing-PR-Builds) from this PR and let us know in a comment if this change resolves your issue. Thank you!
 
-   ## Description
-   [Brief description of the fix]
+   ### Description of Change
 
-   ## Root Cause
-   [What was causing the issue]
+   [One-line summary]
 
-   ## Solution
-   [Selected approach and why]
+   **Root cause:** [Why bug occurred]
 
-   ## Other Approaches Considered
-   [Brief summary of alternatives tried]
+   **Fix:** [What code now does]
 
-   ## Testing
-   - Added UI tests: IssueXXXXX.cs
-   - Tests verify [what the tests check]
+   **Key insight:** [Non-obvious understanding]
+
+   **What to avoid:** [Patterns that would re-break]
+
+   ### Issues Fixed
+
+   Fixes #XXXXX
+
+   **Related:** #YYYYY (if applicable)
    "
    ```
 
@@ -209,6 +229,10 @@ Determine your recommendation based on the Fix phase:
 **If PR's fix failed tests:**
 - Recommend: `⚠️ REQUEST CHANGES`
 - Justification: Fix doesn't work, suggest alternatives
+
+**Check title/description accuracy:**
+- Run the `pr-finalize` skill to verify title and description match implementation
+- If discrepancies found, include suggested updates in review comments
 
 ### Final State File Format
 
