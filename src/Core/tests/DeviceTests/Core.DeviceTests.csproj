@@ -36,7 +36,7 @@
     <!-- <WindowsPackageType>None</WindowsPackageType> -->
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(WindowsPackageType)' == 'None'">
+  <PropertyGroup Condition="'$(WindowsPackageType)' == 'None' AND '$(OutputType)' == 'Exe'">
     <DefineConstants>$(DefineConstants);UNPACKAGED</DefineConstants>
     <!-- Include Windows App SDK native DLLs for unpackaged self-contained builds -->
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
