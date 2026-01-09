@@ -43,7 +43,7 @@ namespace Microsoft.Maui.DeviceTests
 				Console.WriteLine($"[CaptureHelper] CreateItemForWindow: SUCCESS, Size={item.Size}");
 				return item;
 			}
-			catch (ArgumentException ex) when (ex.Message.Contains("Value does not fall within the expected range"))
+			catch (ArgumentException ex) when (ex.Message.Contains("Value does not fall within the expected range", StringComparison.Ordinal))
 			{
 				Console.WriteLine($"[CaptureHelper] CreateItemForWindow: FAILED with ArgumentException");
 				Console.WriteLine($"[CaptureHelper]   hwnd=0x{hwnd:X}, IsSupported={isSupported}");
