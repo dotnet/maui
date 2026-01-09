@@ -263,17 +263,28 @@ if %IS_PACKAGED%==1 (
     
     echo Found test executable: !TEST_EXE!
     
+    REM Set working directory to executable directory for unpackaged apps
+    for %%i in ("!TEST_EXE!") do set EXE_DIR=%%~dpi
+    echo Executable directory: !EXE_DIR!
+    pushd "!EXE_DIR!"
+    
     if %IS_CONTROLS_TEST%==1 (
         REM Category discovery
         echo Starting app for category discovery...
-        "!TEST_EXE!" "%TEST_RESULTS_FILE%" -1
+        echo Command: "!TEST_EXE!" "%TEST_RESULTS_FILE%" -1
+        start "" /wait "!TEST_EXE!" "%TEST_RESULTS_FILE%" -1
+        set LAUNCH_ERRORLEVEL=!ERRORLEVEL!
+        echo App exited with code: !LAUNCH_ERRORLEVEL!
         
         echo Waiting 10 seconds for category discovery...
         timeout /t 10 /nobreak >nul
         
         if not exist "%CATEGORY_FILE%" (
             echo ERROR: Test categories file was not created during discovery phase
+            echo Checking if exe directory has the file...
+            dir "!EXE_DIR!\*.txt" 2>nul
             set EXIT_CODE=1
+            popd
             goto :results
         )
         
@@ -284,7 +295,7 @@ if %IS_PACKAGED%==1 (
             set EXPECTED_RESULT_FILE=%TEST_RESULTS_DIR%\TestResults-%PACKAGE_ID_SAFE%_!CATEGORY_NAME!.xml
             
             echo Running category !CATEGORY_INDEX!: !CATEGORY_NAME!
-            "!TEST_EXE!" "%TEST_RESULTS_FILE%" !CATEGORY_INDEX!
+            start "" /wait "!TEST_EXE!" "%TEST_RESULTS_FILE%" !CATEGORY_INDEX!
             
             call :wait_for_result "!EXPECTED_RESULT_FILE!" "!CATEGORY_NAME!"
             
@@ -293,10 +304,15 @@ if %IS_PACKAGED%==1 (
     ) else (
         REM Single test run
         echo Starting test executable...
-        "!TEST_EXE!" "%TEST_RESULTS_FILE%"
+        echo Command: "!TEST_EXE!" "%TEST_RESULTS_FILE%"
+        start "" /wait "!TEST_EXE!" "%TEST_RESULTS_FILE%"
+        set LAUNCH_ERRORLEVEL=!ERRORLEVEL!
+        echo App exited with code: !LAUNCH_ERRORLEVEL!
         
         call :wait_for_result "%TEST_RESULTS_FILE%" "All Tests"
     )
+    
+    popd
 )
 
 :results
