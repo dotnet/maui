@@ -1,2 +1,20 @@
 {
+    "servers": {
+        "mauidevenv": {
+            "type": "stdio",
+            "command": "dnx",
+            "args": [
+                "Mcp.Server.MauiDevEnv",
+                "--yes"
+            ]
+        },
+        "appledev": {
+            "command": "dnx",
+            "args": [
+                "AppleDev.Mcp.Server",
+                "--yes"
+            ],
+            "type": "stdio"
+        }
+    }
 }
