@@ -19,8 +19,8 @@
         "xcrun",
         "simctl",
         "screencap",
-        "libimobiledevice",
-        "idevicesyslog"
+        "mlaunch",
+        "devicectl"
     ],
     "ignoreWords": [],
     "patterns": [

@@ -220,13 +220,13 @@ dotnet maui logs --level error
 ### iOS / Mac Catalyst
 
 - **Device Detection**: `xcrun simctl list devices` (simulators),
-  `idevice_id -l` from [libimobiledevice] (physical devices)
+  `xcrun devicectl list devices` (physical devices)
 
 - **Screenshots**: `xcrun simctl io booted screenshot <file>`
   (simulators), iOS devices (future implementation)
 
 - **Logs**: `xcrun simctl spawn booted log stream` or Console.app
-  (simulators), `idevicesyslog` (physical devices)
+  (simulators), `mlaunch --logdev` (physical devices)
 
 ## Security and Privacy
 
@@ -285,10 +285,10 @@ future.
 - [vibe-wpf experiment][vibe-wpf]
 - [dotnet run for .NET MAUI specification][dotnet-run-spec]
 - [Workload manifest specification][workload-spec]
-- [libimobiledevice for macOS][libimobiledevice]
+- [AppleDev.Tools][appledev-tools] - Wraps simctl and xcdevice commands
 - [System.CommandLine documentation](https://learn.microsoft.com/dotnet/standard/commandline/)
 - [Android Debug Bridge (ADB)](https://developer.android.com/studio/command-line/adb)
 - [simctl command-line tool](https://nshipster.com/simctl/)
 
 [vibe-wpf]: https://github.com/jonathanpeppers/vibe-wpf
-[libimobiledevice]: https://github.com/benvium/libimobiledevice-macosx
+[appledev-tools]: https://github.com/Redth/AppleDev.Tools
