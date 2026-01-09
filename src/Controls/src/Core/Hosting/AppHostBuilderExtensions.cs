@@ -78,7 +78,6 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<Editor, EditorHandler>();
 		handlersCollection.AddHandler<Entry, EntryHandler>();
 		handlersCollection.AddHandler<GraphicsView, GraphicsViewHandler>();
-		handlersCollection.AddHandler<Image, ImageHandler>();
 		handlersCollection.AddHandler<Layout, LayoutHandler>();
 		handlersCollection.AddHandler<Picker, PickerHandler>();
 		handlersCollection.AddHandler<ProgressBar, ProgressBarHandler>();
@@ -95,6 +94,19 @@ public static partial class AppHostBuilderExtensions
 			// NOTE: not registered under NativeAOT or TrimMode=Full scenarios
 			handlersCollection.AddHandler<HybridWebView, HybridWebViewHandler>();
 		}
+
+#if ANDROID
+		if(RuntimeFeature.IsMaterial3Enabled)
+		{
+			handlersCollection.AddHandler<Image, MaterialImageHandler>();
+		}
+		else
+		{
+			handlersCollection.AddHandler<Image, ImageHandler>();
+		}
+#else
+		handlersCollection.AddHandler<Image, ImageHandler>();
+#endif
 		handlersCollection.AddHandler<Border, BorderHandler>();
 		handlersCollection.AddHandler<IContentView, ContentViewHandler>();
 		handlersCollection.AddHandler<ContentView, ContentViewHandler>();
