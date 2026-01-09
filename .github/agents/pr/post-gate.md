@@ -33,6 +33,14 @@ The purpose of Phase 4 is NOT to re-test the PR's fix, but to:
 
 **Do NOT let the PR's fix influence your thinking.** Generate ideas as if you hadn't seen the PR.
 
+### Step 0: Verify State File and Change Status
+
+**🚨 BEFORE starting try-fix loop:**
+1. Read state file `.github/agent-pr-session/pr-XXXXX.md`
+2. Verify 🚦 Gate is `✅ PASSED`
+3. Change 🔧 Fix status from `⏳ PENDING` to `▶️ IN PROGRESS`
+4. **COMMIT the state file**: `git add .github/agent-pr-session/pr-XXXXX.md && git commit -m "Starting Fix phase"`
+
 ### Step 1: Agent Orchestrates try-fix Loop
 
 Invoke the `try-fix` skill repeatedly. The skill handles one fix attempt per invocation.
@@ -127,12 +135,15 @@ Update the state file:
 
 ### Complete 🔧 Fix
 
-**Update state file**:
+**🚨 CRITICAL: Update state file NOW**:
 1. Verify Fix Candidates table is complete with all attempts
 2. Verify failure analyses are documented for failed attempts
 3. Verify Selected Fix is documented with reasoning
 4. Change 🔧 Fix status to `✅ COMPLETE`
 5. Change 📋 Report status to `▶️ IN PROGRESS`
+6. **COMMIT the state file**: `git add .github/agent-pr-session/pr-XXXXX.md && git commit -m "Fix phase complete - selected fix: [summary]"`
+
+**⛔ DO NOT proceed to Phase 5 (Report) until state file is updated and committed.**
 
 ---
 
@@ -230,7 +241,8 @@ Update all phase statuses to complete.
 1. Change header status to final recommendation
 2. Update all phases to `✅ COMPLETE` or `✅ PASSED`
 3. Present final result to user
-
+4. Update the "Next Steps" section documenting follow-up actions (e.g., wait for PR merge, monitor CI, etc.)
+5. **COMMIT the state file**: `git add .github/agent-pr-session/pr-XXXXX.md && git commit -m "PR review complete - [APPROVE/REQUEST CHANGES]"`
 ---
 
 ## Common Mistakes in Post-Gate Phases
