@@ -2219,6 +2219,25 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// Selects an item in an iOS picker wheel by sending the item value directly.
+		/// This method is specifically for iOS/Catalyst where picker wheels use XCUIElementTypePickerWheel.
+		/// </summary>
+		/// <param name="app">The IApp instance representing the application.</param>
+		/// <param name="value">The value to select in the picker wheel.</param>
+		/// <exception cref="InvalidOperationException">Thrown when the app is not an iOS or Catalyst app.</exception>
+		public static void SelectPickerWheelValue(this IApp app, string value)
+		{
+			if (app is not AppiumIOSApp && app is not AppiumCatalystApp)
+			{
+				throw new InvalidOperationException($"SelectPickerWheelValue is only supported on iOS and Catalyst apps");
+			}
+
+			var appiumApp = (AppiumApp)app;
+			var pickerWheel = appiumApp.Driver.FindElement(MobileBy.ClassName("XCUIElementTypePickerWheel"));
+			pickerWheel.SendKeys(value);
+		}
+
+		/// <summary>
 		/// Gets the default query for the back arrow button based on the app type.
 		/// </summary>
 		/// <param name="app">The IApp instance representing the application.</param>
