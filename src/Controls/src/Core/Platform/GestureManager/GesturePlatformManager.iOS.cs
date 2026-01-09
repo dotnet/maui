@@ -19,6 +19,8 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	class GesturePlatformManager : IDisposable
 	{
+		static readonly UIGesturesProbe _alwaysRecognizeSimultaneously = (g, o) => true;
+
 		readonly NotifyCollectionChangedEventHandler _collectionChangedHandler;
 
 		readonly Dictionary<IGestureRecognizer, List<UIGestureRecognizer?>> _gestureRecognizers = new Dictionary<IGestureRecognizer, List<UIGestureRecognizer?>>();
@@ -380,42 +382,40 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			var longPressRecognizer = recognizer as LongPressGestureRecognizer;
-			if (longPressRecognizer != null)
+			if (longPressRecognizer == null)
+				return null;
+
+			var uiRecognizer = CreateLongPressRecognizer(r =>
 			{
-				var uiRecognizer = CreateLongPressRecognizer(r =>
+				var eventTracker = weakEventTracker.Target as GesturePlatformManager;
+				var view = eventTracker?._handler?.VirtualView as View;
+				var lpRecognizer = weakRecognizer.Target as LongPressGestureRecognizer;
+
+				if (lpRecognizer == null || view == null)
+					return;
+
+				var position = r.LocationInView(eventTracker?.PlatformView);
+				var point = new Point(position.X, position.Y);
+
+				switch (r.State)
 				{
-					var eventTracker = weakEventTracker.Target as GesturePlatformManager;
-					var view = eventTracker?._handler?.VirtualView as View;
-					var lpRecognizer = weakRecognizer.Target as LongPressGestureRecognizer;
-
-					if (lpRecognizer != null && view != null)
-					{
-						var position = r.LocationInView(eventTracker?.PlatformView);
-						var point = new Point(position.X, position.Y);
-
-						switch (r.State)
-						{
-							case UIGestureRecognizerState.Began:
-								lpRecognizer.SendLongPressing(view, GestureStatus.Started, point);
-								break;
-							case UIGestureRecognizerState.Changed:
-								lpRecognizer.SendLongPressing(view, GestureStatus.Running, point);
-								break;
-							case UIGestureRecognizerState.Ended:
-								lpRecognizer.SendLongPressed(view, point);
-								lpRecognizer.SendLongPressing(view, GestureStatus.Completed, point);
-								break;
-							case UIGestureRecognizerState.Cancelled:
-							case UIGestureRecognizerState.Failed:
-								lpRecognizer.SendLongPressing(view, GestureStatus.Canceled, point);
-								break;
-						}
-					}
-				});
-				return new List<UIGestureRecognizer?> { uiRecognizer };
-			}
-
-			return null;
+					case UIGestureRecognizerState.Began:
+						lpRecognizer.SendLongPressing(view, GestureStatus.Started, point);
+						break;
+					case UIGestureRecognizerState.Changed:
+						lpRecognizer.SendLongPressing(view, GestureStatus.Running, point);
+						break;
+					case UIGestureRecognizerState.Ended:
+						lpRecognizer.SendLongPressed(view, point);
+						lpRecognizer.SendLongPressing(view, GestureStatus.Completed, point);
+						break;
+					case UIGestureRecognizerState.Cancelled:
+					case UIGestureRecognizerState.Failed:
+						lpRecognizer.SendLongPressing(view, GestureStatus.Canceled, point);
+						break;
+				}
+			});
+			return new List<UIGestureRecognizer?> { uiRecognizer };
 		}
 
 		UIPanGestureRecognizer CreatePanRecognizer(int numTouches, Action<UIPanGestureRecognizer> action)
@@ -467,7 +467,7 @@ namespace Microsoft.Maui.Controls.Platform
 			
 			// Enable simultaneous recognition with other gestures (like Swipe, Tap)
 			// This allows LongPress to coexist with other gestures
-			result.ShouldRecognizeSimultaneously = (g, o) => true;
+			result.ShouldRecognizeSimultaneously = _alwaysRecognizeSimultaneously;
 			
 			return result;
 		}

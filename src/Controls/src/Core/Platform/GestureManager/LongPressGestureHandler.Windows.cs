@@ -22,13 +22,13 @@ namespace Microsoft.Maui.Controls.Platform
 		public void SubscribeEvents()
 		{
 			var container = GetContainer();
-			if (container != null)
-			{
-				container.PointerPressed += OnPointerPressed;
-				container.PointerReleased += OnPointerReleased;
-				container.PointerCanceled += OnPointerCanceled;
-				container.PointerMoved += OnPointerMoved;
-			}
+			if (container == null)
+				return;
+
+			container.PointerPressed += OnPointerPressed;
+			container.PointerReleased += OnPointerReleased;
+			container.PointerCanceled += OnPointerCanceled;
+			container.PointerMoved += OnPointerMoved;
 		}
 
 		public void UnsubscribeEvents()
@@ -74,6 +74,10 @@ namespace Microsoft.Maui.Controls.Platform
 			if (view == null)
 				return;
 
+			var recognizers = view.GestureRecognizers;
+			if (recognizers == null)
+				return;
+
 			var container = GetContainer();
 			if (container == null)
 				return;
@@ -82,10 +86,6 @@ namespace Microsoft.Maui.Controls.Platform
 			var currentPos = pointerPoint.Position;
 			var deltaX = Math.Abs(currentPos.X - _startPosition.X);
 			var deltaY = Math.Abs(currentPos.Y - _startPosition.Y);
-
-			var recognizers = view.GestureRecognizers;
-			if (recognizers == null)
-				return;
 
 			foreach (var recognizer in recognizers)
 			{
