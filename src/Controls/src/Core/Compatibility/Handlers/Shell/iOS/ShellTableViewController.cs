@@ -98,6 +98,20 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			ShellFlyoutContentManager.ViewDidLoad();
 		}
 
+		public override void LoadView()
+		{
+			base.LoadView();
+			View = new AccessibilityNeutralTableView();
+		}
+
+		internal class AccessibilityNeutralTableView : UITableView, IUIAccessibilityContainer
+		{
+			public AccessibilityNeutralTableView()
+			{
+				this.SetAccessibilityContainerType(UIAccessibilityContainerType.None);
+			}
+		}
+
 		[System.Runtime.Versioning.SupportedOSPlatform("ios11.0")]
 		[System.Runtime.Versioning.SupportedOSPlatform("tvos11.0")]
 		public override void ViewSafeAreaInsetsDidChange()
