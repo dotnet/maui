@@ -287,17 +287,17 @@ namespace Microsoft.Maui.Platform
 			}
 
 			// Create new insets with consumed values
-			// Pass bottom insets through (NOT consumed) so BottomNavigationView can handle its own padding
+			// Pass insets through to child views - SafeAreaExtensions overlap logic determines actual padding needed
 			var newSystemBars = Insets.Of(
 				systemBars?.Left ?? 0,
-				appBarHasContent ? 0 : systemBars?.Top ?? 0,
+				systemBars?.Top ?? 0,
 				systemBars?.Right ?? 0,
 				systemBars?.Bottom ?? 0
 			) ?? Insets.None;
 
 			var newDisplayCutout = Insets.Of(
 				displayCutout?.Left ?? 0,
-				appBarHasContent ? 0 : displayCutout?.Top ?? 0,
+				displayCutout?.Top ?? 0,
 				displayCutout?.Right ?? 0,
 				displayCutout?.Bottom ?? 0
 			) ?? Insets.None;
