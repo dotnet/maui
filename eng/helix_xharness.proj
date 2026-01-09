@@ -201,16 +201,12 @@
         </ItemGroup>
 
         <!-- Windows: Use HelixWorkItem with test runner script (not XHarness) -->
-        <!-- Both packaged (MSIX) and unpackaged tests are run -->
+        <!-- Currently only packaged (MSIX) tests are run - unpackaged tests require additional work -->
+        <!-- to properly include Windows App SDK native DLLs in self-contained builds -->
         <ItemGroup Condition="'$(TargetOS)' == 'windows'">
             <HelixWorkItem Include="%(_MAUIScenarioSearch.ScenarioDirectoryName)-packaged">
                 <PayloadArchive>%(_MAUIScenarioSearch.PayloadDirectory).zip</PayloadArchive>
                 <Command>call %HELIX_CORRELATION_PAYLOAD%\eng\devices\run-windows-devicetests.cmd %(_MAUIScenarioSearch.ScenarioDirectoryName) packaged %(_MAUIScenarioSearch.WindowsPackageId) $(TargetFrameworkToTest)</Command>
-                <Timeout>02:00:00</Timeout>
-            </HelixWorkItem>
-            <HelixWorkItem Include="%(_MAUIScenarioSearch.ScenarioDirectoryName)-unpackaged">
-                <PayloadArchive>%(_MAUIScenarioSearch.PayloadDirectory).zip</PayloadArchive>
-                <Command>call %HELIX_CORRELATION_PAYLOAD%\eng\devices\run-windows-devicetests.cmd %(_MAUIScenarioSearch.ScenarioDirectoryName) unpackaged %(_MAUIScenarioSearch.WindowsPackageId) $(TargetFrameworkToTest)</Command>
                 <Timeout>02:00:00</Timeout>
             </HelixWorkItem>
         </ItemGroup>
