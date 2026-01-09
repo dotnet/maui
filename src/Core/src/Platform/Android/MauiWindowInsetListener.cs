@@ -273,21 +273,17 @@ namespace Microsoft.Maui.Platform
 			{
 				var bottomInset = Math.Max(systemBars?.Bottom ?? 0, displayCutout?.Bottom ?? 0);
 
-				// Pad content view to push it up, preventing overlap with tab bar
+				// Pad content view to prevent overlap with bottom navigation
 				contentView?.SetPadding(
-					contentView.PaddingLeft,
-					contentView.PaddingTop,
-					contentView.PaddingRight,
+					systemBars?.Left ?? 0,
+					0,
+					systemBars?.Right ?? 0,
 					bottomInset);
 			}
 			else
 			{
 				// Reset content view padding when bottom navigation is removed dynamically
-				contentView?.SetPadding(
-					contentView.PaddingLeft,
-					contentView.PaddingTop,
-					contentView.PaddingRight,
-					0);
+				contentView?.SetPadding(0, 0, 0, 0);
 			}
 
 			// Create new insets with consumed values
