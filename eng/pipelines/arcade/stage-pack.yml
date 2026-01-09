@@ -28,6 +28,9 @@ parameters:
 - name: runAsPublic
   type: boolean
   default: true
+- name: publishTaskPrefix
+  type: string
+  default: '1ES.'
 
 stages:
 - stage: Pack
