@@ -963,10 +963,7 @@ namespace Microsoft.Maui.Controls.Platform
 			bool hasLongPressGesture = gestures.HasAnyGesturesFor<LongPressGestureRecognizer>();
 			if (hasLongPressGesture)
 			{
-				if (_longPressGestureHandler == null)
-				{
-					_longPressGestureHandler = new LongPressGestureHandler(_handler);
-				}
+				_longPressGestureHandler ??= new LongPressGestureHandler(_handler);
 				_longPressGestureHandler.SubscribeEvents();
 			}
 			else
