@@ -35,7 +35,7 @@ public static class MauiProgram
 		if (OperatingSystem.IsMacCatalystVersionAtLeast(26) || OperatingSystem.IsIOSVersionAtLeast(26))
 		{
 			builder.Services.AddSingleton<IChatClient, AppleIntelligenceChatClient>();
-			builder.Services.AddSingleton<IEmbeddingGenerator<string, Embedding<float>>>(sp => new NaturalLanguageContextualEmbeddingGenerator());
+			builder.Services.AddSingleton<IEmbeddingGenerator<string, Embedding<float>>, NaturalLanguageContextualEmbeddingGenerator>();
 		}
 		else
 		{

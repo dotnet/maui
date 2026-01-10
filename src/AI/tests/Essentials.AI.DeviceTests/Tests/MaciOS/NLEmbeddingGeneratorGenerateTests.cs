@@ -98,5 +98,17 @@ public class NLEmbeddingGeneratorGenerateTests
 		var dimensions = result.Select(e => e.Vector.Length).Distinct().ToList();
 		Assert.Single(dimensions);
 	}
+
+	[Fact]
+	public async Task GenerateAsync_ConsistentResultCount()
+	{
+		var generator = new NaturalLanguageEmbeddingGenerator();
+		var values = new[] { "One", "Two", "Three", "Four", "Five" };
+
+		var result = await generator.GenerateAsync(values);
+
+		Assert.NotNull(result);
+		Assert.Equal(values.Length, result.Count);
+	}
 }
 #endif
