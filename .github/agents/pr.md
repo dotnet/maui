@@ -239,7 +239,7 @@ fi
 
 ---
 
-**Next Step:** After Gate passes, read `.github/agents/pr/post-gate.md` and continue with phases 4-5.
+**Next Step:** [UPDATE THIS AFTER EACH PHASE - e.g., "Complete Tests phase", "Run Gate verification", "After Gate passes, read post-gate.md for phases 4-5", etc.]
 ```
 
 This file:
