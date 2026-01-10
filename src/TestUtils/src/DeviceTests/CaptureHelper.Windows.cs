@@ -29,27 +29,20 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static GraphicsCaptureItem CreateItemForWindow(IntPtr hwnd)
 		{
-			// Diagnostic logging for Helix CI - investigating intermittent failures
-			var isSupported = GraphicsCaptureSession.IsSupported();
-			Console.WriteLine($"[CaptureHelper] CreateItemForWindow: hwnd=0x{hwnd:X}, IsSupported={isSupported}");
-
-			try
+			// Windows Graphics Capture API may not be available on Helix VMs or in certain environments.
+			// Check IsSupported() first to avoid cryptic ArgumentException from COM interop.
+			if (!GraphicsCaptureSession.IsSupported())
 			{
-				var interop = GraphicsCaptureItem.As<IGraphicsCaptureItemInterop>();
-				var itemPointer = interop.CreateForWindow(hwnd, GraphicsCaptureItemGuid);
-				var item = GraphicsCaptureItem.FromAbi(itemPointer);
-				Marshal.Release(itemPointer);
+				throw new PlatformNotSupportedException(
+					"Windows Graphics Capture API is not supported in this environment. " +
+					"This commonly occurs on Helix CI VMs where the required graphics infrastructure is not available.");
+			}
 
-				Console.WriteLine($"[CaptureHelper] CreateItemForWindow: SUCCESS, Size={item.Size}");
-				return item;
-			}
-			catch (ArgumentException ex) when (ex.Message.Contains("Value does not fall within the expected range", StringComparison.Ordinal))
-			{
-				Console.WriteLine($"[CaptureHelper] CreateItemForWindow: FAILED with ArgumentException");
-				Console.WriteLine($"[CaptureHelper]   hwnd=0x{hwnd:X}, IsSupported={isSupported}");
-				Console.WriteLine($"[CaptureHelper]   Exception: {ex.Message}");
-				throw;
-			}
+			var interop = GraphicsCaptureItem.As<IGraphicsCaptureItemInterop>();
+			var itemPointer = interop.CreateForWindow(hwnd, GraphicsCaptureItemGuid);
+			var item = GraphicsCaptureItem.FromAbi(itemPointer);
+			Marshal.Release(itemPointer);
+			return item;
 		}
 
 		public static GraphicsCaptureItem CreateItemForMonitor(IntPtr hmon)
