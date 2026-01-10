@@ -135,13 +135,24 @@ Update the state file:
 
 ### Complete 🔧 Fix
 
-**🚨 CRITICAL: Update state file NOW**:
-1. Verify Fix Candidates table is complete with all attempts
-2. Verify failure analyses are documented for failed attempts
-3. Verify Selected Fix is documented with reasoning
-4. Change 🔧 Fix status to `✅ COMPLETE`
-5. Change 📋 Report status to `▶️ IN PROGRESS`
-6. **COMMIT the state file**: `git add .github/agent-pr-session/pr-XXXXX.md && git commit -m "Fix phase complete - selected fix: [summary]"`
+**🚨 CRITICAL: Update state file in TWO places:**
+
+**A. Update the stage table** (top of file):
+1. Change 🔧 Fix status to `✅ COMPLETE`
+2. Change 📋 Report status to `▶️ IN PROGRESS`
+
+**B. Update the detailed `<details><summary>🔧 Fix Candidates</summary>` section:**
+1. Change `**Status**: ⏳ PENDING` to `**Status**: ✅ COMPLETE`
+2. Verify Fix Candidates table is complete with all try-fix attempts (numbered 1, 2, 3...)
+3. Verify failure analyses are documented for failed attempts (why they didn't work)
+4. Verify **Selected Fix** is documented with reasoning (PR's fix OR try-fix alternative)
+5. Update `**Exhausted:**` field (Yes/No - did you explore enough alternatives?)
+
+**C. Commit the state file:**
+```bash
+git add .github/agent-pr-session/pr-XXXXX.md
+git commit -m "Fix phase complete - selected fix: [summary]"
+```
 
 **⛔ DO NOT proceed to Phase 5 (Report) until state file is updated and committed.**
 
