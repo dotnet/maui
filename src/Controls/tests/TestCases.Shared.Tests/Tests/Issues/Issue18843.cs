@@ -12,7 +12,8 @@ public class Issue18843 : _IssuesUITest
 		: base(device)
 	{ }
 
-	[Category(UITestCategories.TitleView)]
+    [Test]
+	[Category(UITestCategories.Navigation)]
 	public void NoLeftMarginShouldBeShown()
 	{
 		_ = App.WaitForElement("WaitForStubControl");
