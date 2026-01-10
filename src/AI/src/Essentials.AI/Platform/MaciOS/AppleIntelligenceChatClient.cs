@@ -11,6 +11,7 @@ namespace Microsoft.Maui.Essentials.AI;
 /// <summary>
 /// Provides an <see cref="IChatClient"/> implementation based on native Apple Intelligence APIs
 /// </summary>
+[SupportedOSPlatform("tvos26.0")]
 [SupportedOSPlatform("ios26.0")]
 [SupportedOSPlatform("maccatalyst26.0")]
 [SupportedOSPlatform("macos26.0")]
@@ -23,7 +24,6 @@ public sealed partial class AppleIntelligenceChatClient : ChatClientBase
 		// AppleIntelligenceLogger.Log = (message) => System.Diagnostics.Debug.WriteLine("[Native] " + message);
 	}
 #endif
-
 
 	/// <summary>
 	/// Initializes a new <see cref="AppleIntelligenceChatClient"/> instance.
@@ -433,11 +433,13 @@ public sealed partial class AppleIntelligenceChatClient : ChatClientBase
 		public override string OutputSchema => function.ReturnJsonSchema?.GetRawText() ?? "{\"type\":\"string\"}";
 
 #pragma warning disable IL3050, IL2026 // DefaultJsonTypeInfoResolver is only used when reflection-based serialization is enabled
-		public override async void CallWithArguments(NSString arguments, Action<NSString> completion)
+		public override async void CallWithArguments(NSString arguments, AIToolCompletionHandler completionHandler)
 		{
 			try
 			{
-				var aiArgs = JsonSerializer.Deserialize<AIFunctionArguments>(arguments, AIJsonUtilities.DefaultOptions);
+				ArgumentNullException.ThrowIfNull(arguments);
+
+				var aiArgs = JsonSerializer.Deserialize<AIFunctionArguments>((string)arguments, AIJsonUtilities.DefaultOptions);
 
 				var result = await function.InvokeAsync(aiArgs, cancellationToken: default);
 
@@ -445,17 +447,17 @@ public sealed partial class AppleIntelligenceChatClient : ChatClientBase
 					? JsonSerializer.Serialize(result)
 					: "{}";
 
-				completion(new NSString(resultJson));
+				completionHandler(new NSString(resultJson), null);
 			}
 			catch (Exception ex)
 			{
-				var errorJson = JsonSerializer.Serialize(new
-				{
-					error = ex.Message,
-					type = ex.GetType().Name
-				});
+				var userInfo = NSDictionary<NSString, NSObject>.FromObjectsAndKeys(
+					[new NSString(ex.Message)],
+					[NSError.LocalizedDescriptionKey]);
 
-				completion(new NSString(errorJson));
+				var error = new NSError(new NSString("AIFunctionToolAdapterErrorDomain"), -1, userInfo);
+
+				completionHandler(null, error);
 			}
 		}
 #pragma warning restore IL3050, IL2026

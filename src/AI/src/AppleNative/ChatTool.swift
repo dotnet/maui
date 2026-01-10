@@ -6,5 +6,5 @@ public protocol AIToolNative : Sendable {
     @objc var desc: String { get }
     @objc var argumentsSchema: String { get }
     @objc var outputSchema: String { get }
-    @objc func call(arguments: String, completion: @escaping (String) -> Void)
+    @objc func call(arguments: String) async throws -> String
 }

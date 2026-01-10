@@ -61,6 +61,10 @@
         Version="$(_SkiaSharpVersion)"
     />
     <PackageReference
+         Update="System.Numerics.Tensors"
+         Version="$(SystemNumericsTensorsPackageVersion)"
+    />
+    <PackageReference
          Update="System.Numerics.Vectors"
          Version="$(SystemNumericsVectorsVersion)"
     />

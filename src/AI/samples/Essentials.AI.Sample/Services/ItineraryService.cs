@@ -8,9 +8,7 @@ using Microsoft.Extensions.AI;
 
 namespace Maui.Controls.Sample.Services;
 
-#pragma warning disable CS9113 // Parameter is unread.
 public class ItineraryService(IChatClient chatClient, LandmarkDataService landmarkService)
-#pragma warning restore CS9113 // Parameter is unread.
 {
 	public record ItineraryStreamUpdate(
 		ToolLookup? ToolLookup = null,
@@ -29,7 +27,7 @@ public class ItineraryService(IChatClient chatClient, LandmarkDataService landma
 			Converters = { new JsonStringEnumConverter() },
 		};
 
-		var findPointsOfInterestTool = new FindPointsOfInterestTool(landmark);
+		var findPointsOfInterestTool = new FindPointsOfInterestTool(landmark, landmarkService);
 		var findPointsOfInterestFunction = AIFunctionFactory.Create(findPointsOfInterestTool.Call);
 
 		string[] systemInstructions = [
@@ -40,7 +38,7 @@ public class ItineraryService(IChatClient chatClient, LandmarkDataService landma
 			
 			The point of interest categories may include:
 			""",
-			string.Join(", ", Enum.GetNames<FindPointsOfInterestTool.Category>()),
+			string.Join(", ", Enum.GetNames<PointOfInterestCategory>()),
 			$"Here is a description of {landmark.Name} for your reference when considering what activities to generate:",
 			landmark.Description
 		];

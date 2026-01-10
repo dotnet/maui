@@ -30,14 +30,13 @@ public partial class LandmarksViewModel(LandmarkDataService dataService) : Obser
         IsLoading = true;
         try 
         {
-            await dataService.LoadLandmarksAsync();
-
-            FeaturedLandmark = dataService.FeaturedLandmark;
+            FeaturedLandmark = await dataService.GetFeaturedLandmarkAsync();
 
             ContinentGroups.Clear();
-            foreach (var continent in dataService.LandmarksByContinent.Keys.OrderBy(c => c))
+            var landmarksByContinent = await dataService.GetLandmarksByContinentAsync();
+            foreach (var continent in landmarksByContinent.Keys.OrderBy(c => c))
             {
-                if (dataService.LandmarksByContinent.TryGetValue(continent, out var landmarks))
+                if (landmarksByContinent.TryGetValue(continent, out var landmarks))
                 {
                     ContinentGroups.Add(new ContinentGroup(continent, landmarks));
                 }

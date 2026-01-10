@@ -7,23 +7,22 @@ using ObjCRuntime;
 
 namespace Microsoft.Maui.Essentials.AI;
 
-// typedef void (^AppleIntelligenceLogAction)(NSString * _Nonnull);
-[Internal]
-delegate void AppleIntelligenceLogAction(string message);
-
-// @interface AppleIntelligenceLogger : NSObject
-[Introduced(PlatformName.iOS, 26, 0)]
-[Introduced(PlatformName.MacCatalyst, 26, 0)]
-[Introduced(PlatformName.MacOSX, 26, 0)]
-[BaseType(typeof(NSObject))]
-[Internal]
-interface AppleIntelligenceLogger
-{
-	// @property (class, nonatomic, copy) void (^ _Nullable)(NSString * _Nonnull) log;
-	[Static]
-	[NullAllowed, Export("log", ArgumentSemantic.Copy)]
-	AppleIntelligenceLogAction Log { get; set; }
-}
+// // typedef void (^AppleIntelligenceLogAction)(NSString * _Nonnull);
+// [Internal] delegate void AppleIntelligenceLogAction(string message);
+//
+// // @interface AppleIntelligenceLogger : NSObject
+// [Introduced(PlatformName.iOS, 26, 0)]
+// [Introduced(PlatformName.MacCatalyst, 26, 0)]
+// [Introduced(PlatformName.MacOSX, 26, 0)]
+// [BaseType(typeof(NSObject))]
+// [Internal]
+// interface AppleIntelligenceLogger
+// {
+// 	// @property (class, nonatomic, copy) void (^ _Nullable)(NSString * _Nonnull) log;
+// 	[Static]
+// 	[NullAllowed, Export("log", ArgumentSemantic.Copy)]
+// 	AppleIntelligenceLogAction Log { get; set; }
+// }
 
 // @interface AIContentNative : NSObject
 [Introduced(PlatformName.iOS, 26, 0)]
@@ -35,6 +34,8 @@ interface AppleIntelligenceLogger
 interface AIContentNative
 {
 }
+
+[Internal] delegate void AIToolCompletionHandler([NullAllowed] NSString result, [NullAllowed] NSError error);
 
 // This is essential to keep as we need to reference IAIToolNative in this file
 interface IAIToolNative { }
@@ -69,10 +70,10 @@ interface AIToolNative
 	[Export("outputSchema")]
 	string OutputSchema { get; }
 
-	// - (void)callWithArguments:(NSString * _Nonnull)arguments completion:(void (^ _Nonnull)(NSString * _Nonnull))completion;
+	// - (void)callWithArguments:(NSString * _Nonnull)arguments completionHandler:(void (^ _Nonnull)(NSString * _Nullable, NSError * _Nullable))completionHandler;
 	[Abstract]
-	[Export("callWithArguments:completion:")]
-	void CallWithArguments(NSString arguments, Action<NSString> completion);
+	[Export("callWithArguments:completionHandler:")]
+	void CallWithArguments(NSString arguments, AIToolCompletionHandler completionHandler);
 }
 
 // @interface CancellationTokenNative : NSObject

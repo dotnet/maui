@@ -18,6 +18,8 @@ public partial class TripPlanningViewModel(ItineraryService itineraryService, Ta
         Error           // Show error message
     }
 
+    private CancellationTokenSource _cancellationTokenSource = new();
+
     [ObservableProperty]
     public partial Landmark Landmark { get; set; }
 
@@ -56,20 +58,30 @@ public partial class TripPlanningViewModel(ItineraryService itineraryService, Ta
             return;
 
         // Generate tags for the landmark description
-        await GenerateTagsAsync();
+        await GenerateTagsAsync(_cancellationTokenSource.Token);
     }
 
-    private async Task GenerateTagsAsync()
+    public void Cancel()
+    {
+        _cancellationTokenSource.Cancel();
+    }
+
+    private async Task GenerateTagsAsync(CancellationToken cancellationToken)
     {
         try
         {
-            var tags = await taggingService.GenerateTagsAsync(Landmark.Description);
+            var tags = await taggingService.GenerateTagsAsync(Landmark.Description, cancellationToken);
             GeneratedTags.Clear();
             foreach (var tag in tags)
             {
+                if (cancellationToken.IsCancellationRequested) break;
                 GeneratedTags.Add(tag);
-                await Task.Delay(100); // Simulate slight delay for better UX
+                await Task.Delay(100, cancellationToken); // Simulate slight delay for better UX
             }
+        }
+        catch (OperationCanceledException)
+        {
+            // Ignore for cancellation
         }
         catch (Exception ex)
         {
@@ -80,6 +92,11 @@ public partial class TripPlanningViewModel(ItineraryService itineraryService, Ta
 
     private async Task RequestItineraryAsync()
     {
+        // Cancel any pending operations
+        _cancellationTokenSource.Cancel();
+        _cancellationTokenSource = new CancellationTokenSource();
+        var cancellationToken = _cancellationTokenSource.Token;
+
         CurrentState = TripPlanningState.Generating;
         ErrorMessage = string.Empty;
         Itinerary = null;
@@ -88,13 +105,15 @@ public partial class TripPlanningViewModel(ItineraryService itineraryService, Ta
         try
         {
             // Build the itinerary
-            await Task.Run(BuildItineraryAsync);
+            await Task.Run(() => BuildItineraryAsync(cancellationToken), cancellationToken);
 
             // Fetch weather for each day
-            if (Itinerary is not null)
+            if (Itinerary is not null && !cancellationToken.IsCancellationRequested)
             {
                 foreach (var dayVm in Itinerary.Days)
                 {
+                    if (cancellationToken.IsCancellationRequested) break;
+
                     dayVm.WeatherForecast = await weatherService.GetWeatherForecastAsync(
                         Landmark.Latitude,
                         Landmark.Longitude,
@@ -102,7 +121,14 @@ public partial class TripPlanningViewModel(ItineraryService itineraryService, Ta
                 }
             }
 
-            CurrentState = TripPlanningState.Complete;
+            if (!cancellationToken.IsCancellationRequested)
+            {
+                CurrentState = TripPlanningState.Complete;
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Ignore for cancellation
         }
         catch (Exception ex)
         {
@@ -111,20 +137,22 @@ public partial class TripPlanningViewModel(ItineraryService itineraryService, Ta
         }
     }
 
-    private async Task BuildItineraryAsync()
+    private async Task BuildItineraryAsync(CancellationToken cancellationToken)
     {
         Itinerary? latestItinerary = null;
 
         var lookups = new Dictionary<string, string>();
 
         // Generate itinerary with streaming updates
-        await foreach (var update in itineraryService.StreamItineraryAsync(Landmark, 3))
+        await foreach (var update in itineraryService.StreamItineraryAsync(Landmark, 3, cancellationToken))
         {
             // Handle tool lookups
             if (update.ToolLookup is not null)
             {
                 dispatcher.Dispatch(() =>
                 {
+                    if (cancellationToken.IsCancellationRequested) return;
+
                     var text = update.ToolLookup.Arguments?["pointOfInterest"]?.ToString() ?? "Unknown";
                     lookups[update.ToolLookup.Id] = text;
                     ToolLookupHistory.Add(text);
@@ -136,6 +164,8 @@ public partial class TripPlanningViewModel(ItineraryService itineraryService, Ta
             {
                 dispatcher.Dispatch(() =>
                 {
+                    if (cancellationToken.IsCancellationRequested) return;
+
                     if (lookups.TryGetValue(update.ToolLookupResult.Id, out var text))
                     {
                         ToolLookupHistory.Remove(text);

@@ -35,6 +35,7 @@ public static class MauiProgram
 		if (OperatingSystem.IsMacCatalystVersionAtLeast(26) || OperatingSystem.IsIOSVersionAtLeast(26))
 		{
 			builder.Services.AddSingleton<IChatClient, AppleIntelligenceChatClient>();
+			builder.Services.AddSingleton<IEmbeddingGenerator<string, Embedding<float>>>(sp => new NaturalLanguageContextualEmbeddingGenerator());
 		}
 		else
 		{
@@ -51,7 +52,7 @@ public static class MauiProgram
 		builder.Services.AddTransient<TripPlanningViewModel>();
 
 		// Register Services
-		builder.Services.AddSingleton<LandmarkDataService>(sp => LandmarkDataService.Instance);
+		builder.Services.AddSingleton<LandmarkDataService>();
 		builder.Services.AddTransient<ItineraryService>();
 		builder.Services.AddTransient<TaggingService>();
 		builder.Services.AddHttpClient<WeatherService>();

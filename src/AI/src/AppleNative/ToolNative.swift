@@ -48,11 +48,7 @@ final class ToolNative: Tool {
         onToolCall?(callId, name, argumentsJson)
 
         // Call the C# tool
-        let resultJson: String = await withCheckedContinuation { continuation in
-            tool.call(arguments: argumentsJson) { result in
-                continuation.resume(returning: String(result))
-            }
-        }
+        let resultJson: String = try await tool.call(arguments: argumentsJson)
 
         // Notify that tool execution completed
         onToolResult?(callId, name, resultJson)

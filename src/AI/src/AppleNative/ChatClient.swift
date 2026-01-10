@@ -1,6 +1,19 @@
 import Foundation
 import FoundationModels
 
+#if APPLE_INTELLIGENCE_LOGGING_ENABLED
+/// Type alias for the logging action block.
+public typealias AppleIntelligenceLogAction = (String) -> Void
+
+/// Singleton holder for the logger action.
+@objc(AppleIntelligenceLogger)
+public class AppleIntelligenceLogger: NSObject {
+    /// The logging action. Set this to receive log callbacks.
+    /// Example: AppleIntelligenceLogger.log = { message in print("[Native] \(message)") }
+    @objc public static var log: AppleIntelligenceLogAction?
+}
+#endif
+
 @objc(ChatClientError)
 public enum ChatClientError: Int {
     case emptyMessages = 1
@@ -24,6 +37,7 @@ public class ChatClientNative: NSObject {
         let methodName = "streamResponse"
         let cq = OperationQueue.current?.underlyingQueue
 
+#if APPLE_INTELLIGENCE_LOGGING_ENABLED
         if let log = AppleIntelligenceLogger.log {
             log("[\(methodName)] Invoked with \(messages.count) messages")
             log("[\(methodName)] Messages: \(formatMessagesDetailed(messages))")
@@ -31,23 +45,28 @@ public class ChatClientNative: NSObject {
                 log("[\(methodName)] Options: \(formatOptionsDetailed(opts))")
             }
         }
+#endif
 
         let toolWatcher =
             options?.tools == nil
             ? nil
             : ToolCallWatcher(
                 onToolCall: { id, name, arguments in
+#if APPLE_INTELLIGENCE_LOGGING_ENABLED
                     if let log = AppleIntelligenceLogger.log {
                         log("[\(methodName)] Tool invoking: \(name) (id=\(id)) with arguments: \(arguments)")
                     }
+#endif
 
                     let update = ResponseUpdateNative(updateType: .toolCall, toolCallId: id, toolCallName: name, toolCallArguments: arguments)
                     cq?.async { onUpdate(update) } ?? onUpdate(update)
                 },
                 onToolResult: { id, name, result in
+#if APPLE_INTELLIGENCE_LOGGING_ENABLED
                     if let log = AppleIntelligenceLogger.log {
                         log("[\(methodName)] Tool completed: \(name) (id=\(id)) with result: \(result)")
                     }
+#endif
 
                     let update = ResponseUpdateNative(updateType: .toolResult, toolCallId: id, toolCallName: name, toolCallResult: result)
                     cq?.async { onUpdate(update) } ?? onUpdate(update)
@@ -57,48 +76,60 @@ public class ChatClientNative: NSObject {
         return executeTask(methodName, messages, options, toolWatcher, onComplete) { session, prompt, schema, genOptions in
 
             if let jsonSchema = schema {
+#if APPLE_INTELLIGENCE_LOGGING_ENABLED
                 if let log = AppleIntelligenceLogger.log {
                     log("[\(methodName)] Starting schema-based stream response")
                 }
+#endif
 
                 let responseStream = session.streamResponse(to: prompt, schema: jsonSchema, includeSchemaInPrompt: false, options: genOptions)
 
                 for try await response in responseStream {
                     try Task.checkCancellation()
                     let text = response.content.jsonString
+#if APPLE_INTELLIGENCE_LOGGING_ENABLED
                     if let log = AppleIntelligenceLogger.log {
                         log("[\(methodName)] Streaming update: \(text)")
                     }
+#endif
                     let update = ResponseUpdateNative(updateType: .content, text: text)
                     cq?.async { onUpdate(update) } ?? onUpdate(update)
                 }
 
                 let response = try await responseStream.collect()
+#if APPLE_INTELLIGENCE_LOGGING_ENABLED
                 if let log = AppleIntelligenceLogger.log {
                     log("[\(methodName)] Stream collected, content length: \(response.content.jsonString.count)")
                 }
+#endif
                 return (response.content.jsonString, response.transcriptEntries)
             } else {
+#if APPLE_INTELLIGENCE_LOGGING_ENABLED
                 if let log = AppleIntelligenceLogger.log {
                     log("[\(methodName)] Starting text-based stream response")
                 }
+#endif
 
                 let responseStream = session.streamResponse(to: prompt, options: genOptions)
 
                 for try await response in responseStream {
                     try Task.checkCancellation()
                     let text = response.content
+#if APPLE_INTELLIGENCE_LOGGING_ENABLED
                     if let log = AppleIntelligenceLogger.log {
                         log("[\(methodName)] Streaming update: \(text)")
                     }
+#endif
                     let update = ResponseUpdateNative(updateType: .content, text: text)
                     cq?.async { onUpdate(update) } ?? onUpdate(update)
                 }
 
                 let response = try await responseStream.collect()
+#if APPLE_INTELLIGENCE_LOGGING_ENABLED
                 if let log = AppleIntelligenceLogger.log {
                     log("[\(methodName)] Stream collected, content length: \(response.content.count)")
                 }
+#endif
                 return (response.content, response.transcriptEntries)
             }
         }
@@ -117,6 +148,7 @@ public class ChatClientNative: NSObject {
         let methodName = "getResponse"
         let cq = OperationQueue.current?.underlyingQueue
 
+#if APPLE_INTELLIGENCE_LOGGING_ENABLED
         if let log = AppleIntelligenceLogger.log {
             log("[\(methodName)] Invoked with \(messages.count) messages")
             log("[\(methodName)] Messages: \(formatMessagesDetailed(messages))")
@@ -124,23 +156,28 @@ public class ChatClientNative: NSObject {
                 log("[\(methodName)] Options: \(formatOptionsDetailed(opts))")
             }
         }
+#endif
 
         let toolWatcher =
             options?.tools == nil
             ? nil
             : ToolCallWatcher(
                 onToolCall: { id, name, arguments in
+#if APPLE_INTELLIGENCE_LOGGING_ENABLED
                     if let log = AppleIntelligenceLogger.log {
                         log("[\(methodName)] Tool invoking: \(name) (id=\(id)) with arguments: \(arguments)")
                     }
+#endif
 
                     let update = ResponseUpdateNative(updateType: .toolCall, toolCallId: id, toolCallName: name, toolCallArguments: arguments)
                     cq?.async { onUpdate(update) } ?? onUpdate(update)
                 },
                 onToolResult: { id, name, result in
+#if APPLE_INTELLIGENCE_LOGGING_ENABLED
                     if let log = AppleIntelligenceLogger.log {
                         log("[\(methodName)] Tool completed: \(name) (id=\(id)) with result: \(result)")
                     }
+#endif
 
                     let update = ResponseUpdateNative(updateType: .toolResult, toolCallId: id, toolCallName: name, toolCallResult: result)
                     cq?.async { onUpdate(update) } ?? onUpdate(update)
@@ -149,22 +186,28 @@ public class ChatClientNative: NSObject {
 
         return executeTask(methodName, messages, options, toolWatcher, onComplete) { session, prompt, schema, genOptions in
 
+#if APPLE_INTELLIGENCE_LOGGING_ENABLED
             if let log = AppleIntelligenceLogger.log {
                 log("[\(methodName)] \(schema != nil ? "Getting schema-based response" : "Getting text-based response")")
             }
+#endif
 
             let response = try await {
                 if let jsonSchema = schema {
                     let inner = try await session.respond(to: prompt, schema: jsonSchema, includeSchemaInPrompt: false, options: genOptions)
+#if APPLE_INTELLIGENCE_LOGGING_ENABLED
                     if let log = AppleIntelligenceLogger.log {
                         log("[\(methodName)] Response received, content length: \(inner.content.jsonString.count)")
                     }
+#endif
                     return (inner.content.jsonString, inner.transcriptEntries)
                 } else {
                     let inner = try await session.respond(to: prompt, options: genOptions)
+#if APPLE_INTELLIGENCE_LOGGING_ENABLED
                     if let log = AppleIntelligenceLogger.log {
                         log("[\(methodName)] Response received, content length: \(inner.content.count)")
                     }
+#endif
                     return (inner.content, inner.transcriptEntries)
                 }
             }()
@@ -187,9 +230,11 @@ public class ChatClientNative: NSObject {
         genOptions: GenerationOptions
     ) {
 
+#if APPLE_INTELLIGENCE_LOGGING_ENABLED
         if let log = AppleIntelligenceLogger.log {
             log("[\(methodName)] Preparing session with \(messages.count) messages, hasTools=\(options?.tools != nil)")
         }
+#endif
 
         let lastMessage = messages.last!
         let otherMessages = messages.dropLast()
@@ -197,6 +242,7 @@ public class ChatClientNative: NSObject {
         let model = SystemLanguageModel.default
         let tools = options?.tools?.map { ToolNative($0, toolWatcher?.notifyToolCall, toolWatcher?.notifyToolResult) } ?? []
 
+#if APPLE_INTELLIGENCE_LOGGING_ENABLED
         if let log = AppleIntelligenceLogger.log, let toolList = options?.tools {
             for tool in toolList {
                 log("[\(methodName)] Tool registered: \(tool.name) - \(tool.desc)")
@@ -204,6 +250,7 @@ public class ChatClientNative: NSObject {
                 log("[\(methodName)] Tool \(tool.name) outputSchema: \(tool.outputSchema)")
             }
         }
+#endif
 
         let transcript = try Transcript(entries: otherMessages.map(self.toTranscriptEntry))
         let prompt = try self.toPrompt(message: lastMessage)
@@ -211,9 +258,11 @@ public class ChatClientNative: NSObject {
         // Parse the JSON schema from the options
         let schema: GenerationSchema? = try {
             if let jsonSchema = options?.responseJsonSchema {
+#if APPLE_INTELLIGENCE_LOGGING_ENABLED
                 if let log = AppleIntelligenceLogger.log {
                     log("[\(methodName)] Parsing JSON schema for structured output: \(jsonSchema)")
                 }
+#endif
 
                 let parsed = try JsonSchemaDecoder.parse(String(jsonSchema))
                 return parsed
@@ -235,9 +284,11 @@ public class ChatClientNative: NSObject {
 
         let session = LanguageModelSession(model: model, tools: tools, transcript: transcript)
 
+#if APPLE_INTELLIGENCE_LOGGING_ENABLED
         if let log = AppleIntelligenceLogger.log {
             log("[\(methodName)] Session ready, hasSchema=\(schema != nil)")
         }
+#endif
 
         return (session, prompt, schema, genOptions)
     }
@@ -257,9 +308,11 @@ public class ChatClientNative: NSObject {
 
         guard !messages.isEmpty else {
             let error = NSError.chatError(.emptyMessages, description: "No messages provided.")
+#if APPLE_INTELLIGENCE_LOGGING_ENABLED
             if let log = AppleIntelligenceLogger.log {
                 log("[\(methodName)] Failed: No messages provided")
             }
+#endif
 
             cq?.async { onComplete(nil, error.toNSError()) } ?? onComplete(nil, error.toNSError())
             return nil
@@ -281,16 +334,20 @@ public class ChatClientNative: NSObject {
                 // Create response with all transcript messages
                 let response = ChatResponseNative(messages: transcriptMessages)
 
+#if APPLE_INTELLIGENCE_LOGGING_ENABLED
                 if let log = AppleIntelligenceLogger.log {
                     log("[\(methodName)] Completed with \(transcriptMessages.count) messages")
                     log("[\(methodName)] Response: \(self.formatResponseDetailed(response))")
                 }
+#endif
 
                 cq?.async { onComplete(response, nil) } ?? onComplete(response, nil)
             } catch {
+#if APPLE_INTELLIGENCE_LOGGING_ENABLED
                 if let log = AppleIntelligenceLogger.log {
                     log("[\(methodName)] Failed: \(error.localizedDescription)")
                 }
+#endif
 
                 cq?.async { onComplete(nil, error.toNSError()) } ?? onComplete(nil, error.toNSError())
             }
@@ -417,6 +474,7 @@ public class ChatClientNative: NSObject {
 
     // MARK: - Logging Helpers
 
+#if APPLE_INTELLIGENCE_LOGGING_ENABLED
     private func formatMessagesDetailed(_ messages: [ChatMessageNative]) -> String {
         let formatted = messages.map { message -> String in
             let role = "\(message.role)"
@@ -470,6 +528,7 @@ public class ChatClientNative: NSObject {
         }.joined(separator: ", ")
         return "ChatResponse(messages=[\(messagesStr)])"
     }
+#endif
 }
 
 extension NSError {

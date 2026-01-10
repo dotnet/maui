@@ -53,7 +53,7 @@ typedef void (^AICompletionBlock)(ChatResponseNative *_Nullable result,
 }
 
 - (void)callWithArguments:(NSString *)arguments
-               completion:(void (^)(NSString *))completion {
+        completionHandler:(void (^)(NSString * _Nullable, NSError * _Nullable))completionHandler {
     // Parse the arguments
     NSError *error = nil;
     NSDictionary *argsDict = [NSJSONSerialization JSONObjectWithData:[arguments dataUsingEncoding:NSUTF8StringEncoding]
@@ -82,7 +82,7 @@ typedef void (^AICompletionBlock)(ChatResponseNative *_Nullable result,
         result = [NSString stringWithFormat:@"There are no %@ in Maui", poiType];
     }
     
-    completion(result);
+    completionHandler(result, nil);
 }
 
 @end
@@ -94,10 +94,10 @@ typedef void (^AICompletionBlock)(ChatResponseNative *_Nullable result,
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    // Set up logging using simple block
-    AppleIntelligenceLogger.log = ^(NSString *message) {
-        NSLog(@"[Native] %@", message);
-    };
+    // // Set up logging using simple block
+    // AppleIntelligenceLogger.log = ^(NSString *message) {
+    //     NSLog(@"[Native] %@", message);
+    // };
     
     // 1. Create the client
     ChatClientNative *client = [[ChatClientNative alloc] init];

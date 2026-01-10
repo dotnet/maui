@@ -3,42 +3,29 @@ using Maui.Controls.Sample.Models;
 
 namespace Maui.Controls.Sample.Services.Tools;
 
-public class FindPointsOfInterestTool(Landmark landmark)
+public class FindPointsOfInterestTool(Landmark landmark, LandmarkDataService landmarkService)
 {
-    public enum Category
-    {
-        Cafe,
-        Campground,
-        Hotel,
-        Marina,
-        Museum,
-        NationalMonument,
-        Restaurant,
-    }
-
     [DisplayName("findPointsOfInterest")]
     [Description("Finds points of interest for a landmark.")]
-    public string Call(
+    public async Task<string> Call(
         [Description("This is the type of destination to look up for.")]
-        Category pointOfInterest,
+        PointOfInterestCategory pointOfInterest,
         [Description("The natural language query of what to search for.")]
         string naturalLanguageQuery)
     {
-        var suggestions = GetSuggestions(pointOfInterest);
-
-        return $"There are these {pointOfInterest} in {landmark.Name}: {string.Join(", ", suggestions)}";
-    }
-
-    private static string[] GetSuggestions(Category category) =>
-        category switch
+        var searchResults = await landmarkService.SearchPointsOfInterestAsync(pointOfInterest, naturalLanguageQuery);
+        if (searchResults.Count == 0)
         {
-            Category.Cafe => ["Cafe 1", "Cafe 2", "Cafe 3"],
-            Category.Campground => ["Campground 1", "Campground 2", "Campground 3"],
-            Category.Hotel => ["Hotel 1", "Hotel 2", "Hotel 3"],
-            Category.Marina => ["Marina 1", "Marina 2", "Marina 3"],
-            Category.Museum => ["Museum 1", "Museum 2", "Museum 3"],
-            Category.NationalMonument => ["The National Rock 1", "The National Rock 2", "The National Rock 3"],
-            Category.Restaurant => ["Restaurant 1", "Restaurant 2", "Restaurant 3"],
-            _ => []
-        };
+            return $"I couldn't find any {pointOfInterest} in {landmark.Name}.";
+        }
+
+        var topMatches = searchResults.Select(x => $" - {x.Name}: {x.Description}");
+
+        return
+            $"""
+            Here are the top {pointOfInterest}s in {landmark.Name} matching '{naturalLanguageQuery}':
+
+            {string.Join(Environment.NewLine, topMatches)}
+            """;
+    }
 }
