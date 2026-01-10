@@ -13,7 +13,7 @@ stages:
   jobs:
   - ${{ each job in parameters.jobMatrix }}:
     - job: ${{ job.name }}
-      displayName: ${{ coalesce(job.testName, job.testCategory) }} ${{ job.pool.os }} (${{ job.pool.vmImage }})
+      displayName: ${{ coalesce(job.testName, job.testCategory) }} ${{ coalesce(job.pool.label, job.pool.os) }}
       pool: ${{ job.pool }}
       timeoutInMinutes: ${{ job.timeout }}
       ${{ if job.condition }}:
@@ -51,7 +51,7 @@ stages:
         inputs:
           testResultsFormat: VSTest
           testResultsFiles: '$(Agent.TempDirectory)/Microsoft.Maui.IntegrationTests/**/*.trx'
-          testRunTitle: Integration Tests - $(testIdentifier) ${{ job.pool.os }} (${{ job.pool.vmImage }})
+          testRunTitle: Integration Tests - $(testIdentifier) ${{ coalesce(job.pool.label, job.pool.os) }}
           failTaskOnMissingResultsFile: true
         condition: always()
 
@@ -59,7 +59,7 @@ stages:
         displayName: Publish Logs
         inputs:
           targetPath: ${{ parameters.repoLogPath }}
-          artifact: Logs - Integration Tests $(testIdentifier) ${{ job.pool.vmImage }} $(System.JobAttempt)
+          artifact: Logs - Integration Tests $(testIdentifier) ${{ coalesce(job.pool.label, job.pool.os) }} $(System.JobAttempt)
         condition: always()
 
       - template: /eng/pipelines/common/fail-on-issue.yml

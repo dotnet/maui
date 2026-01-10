@@ -100,6 +100,7 @@ parameters:
     name: Azure Pipelines
     vmImage: $(HostedMacImage)
     os: macOS
+    label: macOS
 
 # ARM64 macOS pool (Apple Silicon)
 - name: MacOSPoolArm64
@@ -108,6 +109,7 @@ parameters:
     name: Azure Pipelines
     vmImage: macOS-15-arm64
     os: macOS
+    label: macOS-arm64
 
 # Condition for MacOSPool comparison lanes (non-ARM64)
 # Runs on: (non-PR on main/net*.0/release/*/inflight/*) OR (PR targeting net*.0/release/*/inflight/*)
