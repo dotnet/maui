@@ -142,6 +142,18 @@ Update the state file:
 
 **⚠️ Gate Check:** Verify ALL phases 1-4 are `✅ COMPLETE` or `✅ PASSED` before proceeding.
 
+### Finalize Title and Description
+
+**Invoke the `pr-finalize` skill** to ensure the PR title and description:
+- Accurately reflect the actual implementation
+- Provide context for future agents (root cause, key insight, what to avoid)
+- Follow the repository's PR template structure
+
+See `.github/skills/pr-finalize/SKILL.md` for details.
+
+If creating a new PR (from issue), use the skill's output template to write the PR body.
+If reviewing an existing PR, check if title/description need updates and include in review.
+
 ### If Starting from Issue (No PR) - Create PR
 
 1. **Ensure selected fix is applied and committed**:
@@ -170,27 +182,13 @@ Update the state file:
    **Do NOT proceed until user confirms.**
 
 4. **Push and create PR** (after user confirmation):
+
    ```bash
    git push -u origin fix/issue-XXXXX
-   gh pr create --title "Fix #XXXXX: [Title]" --body "Fixes #XXXXX
-
-   ## Description
-   [Brief description of the fix]
-
-   ## Root Cause
-   [What was causing the issue]
-
-   ## Solution
-   [Selected approach and why]
-
-   ## Other Approaches Considered
-   [Brief summary of alternatives tried]
-
-   ## Testing
-   - Added UI tests: IssueXXXXX.cs
-   - Tests verify [what the tests check]
-   "
+   gh pr create --title "[Platform] Brief description of behavior fix" --body "<pr-finalize skill output>"
    ```
+   
+   Use the `pr-finalize` skill output as the `--body` argument.
 
 5. **Update state file** with PR link
 
@@ -209,6 +207,10 @@ Determine your recommendation based on the Fix phase:
 **If PR's fix failed tests:**
 - Recommend: `⚠️ REQUEST CHANGES`
 - Justification: Fix doesn't work, suggest alternatives
+
+**Check title/description accuracy:**
+- Run the `pr-finalize` skill to verify title and description match implementation
+- If discrepancies found, include suggested updates in review comments
 
 ### Final State File Format
 
