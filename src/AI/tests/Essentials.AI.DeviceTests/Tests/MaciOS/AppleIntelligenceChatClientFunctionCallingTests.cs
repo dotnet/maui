@@ -6,7 +6,7 @@ using PlatformChatClient = Microsoft.Maui.Essentials.AI.AppleIntelligenceChatCli
 
 namespace Microsoft.Maui.Essentials.AI.DeviceTests;
 
-public class ChatClientFunctionCallingTests
+public class AppleIntelligenceChatClientFunctionCallingTests
 {
 	[Fact]
 	public async Task GetResponseAsync_CallsFunctionAndReturnsResult()

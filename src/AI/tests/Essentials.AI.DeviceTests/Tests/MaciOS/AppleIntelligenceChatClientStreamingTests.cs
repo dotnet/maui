@@ -6,7 +6,7 @@ using PlatformChatClient = Microsoft.Maui.Essentials.AI.AppleIntelligenceChatCli
 
 namespace Microsoft.Maui.Essentials.AI.DeviceTests;
 
-public class ChatClientStreamingTests
+public class AppleIntelligenceChatClientStreamingTests
 {
 	[Fact]
 	public async Task GetStreamingResponseAsync_ReturnsStreamingUpdates()

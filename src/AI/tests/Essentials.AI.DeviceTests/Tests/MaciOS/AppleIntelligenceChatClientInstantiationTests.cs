@@ -5,7 +5,7 @@ using PlatformChatClient = Microsoft.Maui.Essentials.AI.AppleIntelligenceChatCli
 
 namespace Microsoft.Maui.Essentials.AI.DeviceTests;
 
-public partial class ChatClientInstantiationTests
+public partial class AppleIntelligenceChatClientInstantiationTests
 {
 	[Fact]
 	public void ChatClient_CanBeCreated()

@@ -4,6 +4,22 @@ using NaturalLanguage;
 
 namespace Microsoft.Maui.Essentials.AI;
 
+/// <summary>
+/// Provides an <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/> implementation using Apple's
+/// Natural Language framework for generating sentence embeddings.
+/// </summary>
+/// <remarks>
+/// <para>
+/// This generator uses Apple's <see cref="NLEmbedding"/> API to generate vector embeddings for text.
+/// The underlying <see cref="NLEmbedding"/> is not thread-safe, so this class uses a semaphore to
+/// ensure that only one embedding generation request is processed at a time. Concurrent calls to
+/// <see cref="GenerateAsync"/> will be serialized and processed sequentially.
+/// </para>
+/// <para>
+/// For high-throughput scenarios requiring parallel embedding generation, consider creating multiple
+/// instances of this class, each with its own underlying <see cref="NLEmbedding"/>.
+/// </para>
+/// </remarks>
 [SupportedOSPlatform("tvos13.0")]
 [SupportedOSPlatform("ios13.0")]
 [SupportedOSPlatform("maccatalyst")]

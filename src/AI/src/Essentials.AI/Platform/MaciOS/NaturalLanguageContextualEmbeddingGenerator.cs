@@ -4,6 +4,30 @@ using NaturalLanguage;
 
 namespace Microsoft.Maui.Essentials.AI;
 
+/// <summary>
+/// Provides an <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/> implementation using Apple's
+/// Natural Language framework for generating contextual embeddings.
+/// </summary>
+/// <remarks>
+/// <para>
+/// This generator uses Apple's <see cref="NLContextualEmbedding"/> API to generate context-aware
+/// vector embeddings for text. Unlike sentence embeddings, contextual embeddings take into account
+/// the surrounding context of each token to produce more semantically rich representations.
+/// </para>
+/// <para>
+/// The underlying <see cref="NLContextualEmbedding"/> is not thread-safe, so this class uses a
+/// semaphore to ensure that only one embedding generation request is processed at a time. Concurrent
+/// calls to <see cref="GenerateAsync"/> will be serialized and processed sequentially.
+/// </para>
+/// <para>
+/// For high-throughput scenarios requiring parallel embedding generation, consider creating multiple
+/// instances of this class, each with its own underlying <see cref="NLContextualEmbedding"/>.
+/// </para>
+/// <para>
+/// On first use, this generator will automatically request and load the required model assets.
+/// This may take additional time on the first call to <see cref="GenerateAsync"/>.
+/// </para>
+/// </remarks>
 [SupportedOSPlatform("tvos17.0")]
 [SupportedOSPlatform("macos14.0")]
 [SupportedOSPlatform("ios17.0")]

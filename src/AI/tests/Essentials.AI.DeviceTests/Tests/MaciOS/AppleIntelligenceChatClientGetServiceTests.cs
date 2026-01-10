@@ -6,7 +6,7 @@ using PlatformChatClient = Microsoft.Maui.Essentials.AI.AppleIntelligenceChatCli
 
 namespace Microsoft.Maui.Essentials.AI.DeviceTests;
 
-public partial class ChatClientGetServiceTests
+public partial class AppleIntelligenceChatClientGetServiceTests
 {
 	[Fact]
 	public void GetService_ReturnsMetadataWithCorrectProviderAndModel()
