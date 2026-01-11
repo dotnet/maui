@@ -56,7 +56,9 @@ param(
     [ValidateSet("Debug", "Release")]
     [string]$Configuration = "Debug",
 
-    [string]$DeviceUdid
+    [string]$DeviceUdid,
+
+    [switch]$Rebuild
 )
 
 # Script configuration
@@ -151,6 +153,7 @@ $buildDeployParams = @{
     TargetFramework = $TargetFramework
     Configuration = $Configuration
     DeviceUdid = $DeviceUdid
+    Rebuild = $Rebuild
 }
 
 if ($Platform -eq "ios") {
