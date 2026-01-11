@@ -14,6 +14,9 @@
     <RuntimeIdentifiers Condition="$(TargetFramework.Contains('-ios')) and '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'arm64'">iossimulator-x64;iossimulator-arm64</RuntimeIdentifiers>
     <ExcludeMicrosoftNetTestSdk>true</ExcludeMicrosoftNetTestSdk>
     <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
+  <!-- NOTE: By default the UseMaterial3 flag value is false. If you change the UseMaterial3 flag, you MUST delete the artifacts folder 
+       and rebuild the entire codebase using: dotnet build ./Microsoft.Maui.BuildTasks.slnf -->
+    <UseMaterial3>false</UseMaterial3>
   </PropertyGroup>
 
   <PropertyGroup>

@@ -4,7 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-public class CheckBoxFeatureTests : UITest
+public class CheckBoxFeatureTests : _GalleryUITest
 {
 	const string IsCheckedLabel = "IsCheckedLabel";
 	const string CheckBoxControl = "CheckBoxControl";
@@ -18,15 +18,11 @@ public class CheckBoxFeatureTests : UITest
 
 	public const string CheckBoxFeatureMatrix = "CheckBox Feature Matrix";
 
+	public override string GalleryPageName => CheckBoxFeatureMatrix;
+
 	public CheckBoxFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(CheckBoxFeatureMatrix);
 	}
 
 	[Test, Order(1)]

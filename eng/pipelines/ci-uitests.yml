@@ -4,6 +4,7 @@ trigger:
     - main
     - release/*
     - net*.0
+    - inflight/*
   tags:
     include:
     - '*'
@@ -27,6 +28,7 @@ pr:
     - main
     - release/*
     - net*.0
+    - inflight/*
   paths:
     include:
     - '*'
@@ -82,14 +84,16 @@ parameters:
   - name: windowsBuildPool
     type: object
     default:
-      name: $(windowsVmPool)
-      vmImage: $(windowsVmImage)
-
+      name: NetCore-Public
+      demands:
+        - ImageOverride -equals 1es-windows-2022-open
+    
   - name: windowsPool
     type: object
     default:
-      name: $(windowsTestsVmPool)
-      vmImage: $(windowsTestsVmImage)
+      name: NetCore-Public
+      demands:
+        - ImageOverride -equals 1es-windows-2022-open
 
   - name: macosPool
     type: object

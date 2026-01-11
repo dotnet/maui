@@ -42,7 +42,8 @@ parameters:
   type: object
   default:
     name: NetCore1ESPool-Internal
-    image: 1es-windows-2022
+    demands:
+      - ImageOverride -equals 1es-windows-2022
     os: windows
 
 resources:

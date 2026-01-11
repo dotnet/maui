@@ -2,6 +2,9 @@
   "tools": {
     "dotnet": "11.0.100-alpha.1.26057.107"
   },
+  "sdk": {
+    "paths": [ ".dotnet", "$host$" ]
+  },
   "msbuild-sdks": {
     "MSBuild.Sdk.Extras": "3.0.44",
     "Microsoft.Build.NoTargets": "3.7.0",
