@@ -94,6 +94,7 @@ parameters:
         - ImageOverride -equals 1es-windows-2022-open
       os: windows
 
+# Typically X64 pools but XCode 26.2 isn't available yet for the Azure Pipelines X64 Pools
 - name: MacOSPool
   type: object
   default:
@@ -101,21 +102,33 @@ parameters:
     vmImage: MAUI
     os: macOS
     label: macOS
+# Switch back to this once XCode 26.2 is available on Azure Pipelines
+#     name: Azure Pipelines
+#     vmImage: $(HostedMacImage)
+#     os: macOS
+#     label: macOS
 
 # ARM64 macOS pool (Apple Silicon)
 - name: MacOSPoolArm64
   type: object
   default:
-    name: Azure Pipelines
-    vmImage: macOS-15-arm64
+    name: MAUI
+    vmImage: MAUI
     os: macOS
     label: macOS-arm64
+# Switch back to this once XCode 26.2 is available on Azure Pipelines
+#     name: Azure Pipelines
+#     vmImage: macOS-15-arm64
+#     os: macOS
+#     label: macOS-arm64
 
 # Condition for MacOSPool comparison lanes (non-ARM64)
-# Runs on: (non-PR on main/net*.0/release/*/inflight/*) OR (PR targeting net*.0/release/*/inflight/*)
+# Currently disabled - both pools use MAUI self-hosted since Xcode 26.2 isn't available on Azure Pipelines x64.
+# Re-enable once Azure Pipelines has Xcode 26.2 on x64 pools.
+# Original condition: or(and(ne(variables['Build.Reason'], 'PullRequest'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), and(startsWith(variables['Build.SourceBranch'], 'refs/heads/net'), endsWith(variables['Build.SourceBranch'], '.0')), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/inflight/'))), and(eq(variables['Build.Reason'], 'PullRequest'), or(and(startsWith(variables['System.PullRequest.TargetBranch'], 'net'), endsWith(variables['System.PullRequest.TargetBranch'], '.0')), startsWith(variables['System.PullRequest.TargetBranch'], 'release/'), startsWith(variables['System.PullRequest.TargetBranch'], 'inflight/'))))
 - name: macOSPoolLaneCondition
   type: string
-  default: or(and(ne(variables['Build.Reason'], 'PullRequest'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), and(startsWith(variables['Build.SourceBranch'], 'refs/heads/net'), endsWith(variables['Build.SourceBranch'], '.0')), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/inflight/'))), and(eq(variables['Build.Reason'], 'PullRequest'), or(and(startsWith(variables['System.PullRequest.TargetBranch'], 'net'), endsWith(variables['System.PullRequest.TargetBranch'], '.0')), startsWith(variables['System.PullRequest.TargetBranch'], 'release/'), startsWith(variables['System.PullRequest.TargetBranch'], 'inflight/'))))
+  default: false
 
 stages:
 
