@@ -61,6 +61,9 @@
     <PackageReference Include="Xamarin.Google.Android.Material" />
     <PackageReference Include="Xamarin.AndroidX.SwipeRefreshLayout" />
     <PackageReference Include="Xamarin.AndroidX.Navigation.UI" />
+    <PackageReference Include="Xamarin.AndroidX.Navigation.Fragment" />
+    <PackageReference Include="Xamarin.AndroidX.Navigation.Runtime" />
+    <PackageReference Include="Xamarin.AndroidX.Navigation.Common" />
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.Contains('-ios')) or $(TargetFramework.Contains('-maccatalyst'))">
     <NativeReference Include="../AppleNative/PlatformInterop/MauiPlatformInterop.xcframework.zip">
