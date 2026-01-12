@@ -578,21 +578,24 @@ namespace Microsoft.Maui.Controls.Platform
 				return false;
 			}
 
-			if (!Equals(tap.View, otherTap.View))
+			// Allow gestures on parent and child views to recognize simultaneously.
+			// This enables scenarios like CollectionView selection working when a parent has a TapGestureRecognizer.
+			// Only restrict simultaneous recognition when gestures are on the SAME view with incompatible settings.
+			if (Equals(tap.View, otherTap.View))
 			{
-				return false;
+				// Same view - only allow simultaneous recognition if tap/touch requirements match
+				if (tap.NumberOfTapsRequired != otherTap.NumberOfTapsRequired)
+				{
+					return false;
+				}
+
+				if (tap.NumberOfTouchesRequired != otherTap.NumberOfTouchesRequired)
+				{
+					return false;
+				}
 			}
 
-			if (tap.NumberOfTapsRequired != otherTap.NumberOfTapsRequired)
-			{
-				return false;
-			}
-
-			if (tap.NumberOfTouchesRequired != otherTap.NumberOfTouchesRequired)
-			{
-				return false;
-			}
-
+			// Different views (parent/child relationship) or same view with matching requirements - allow simultaneous recognition
 			return true;
 		}
 
