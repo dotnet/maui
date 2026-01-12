@@ -1,5 +1,4 @@
-﻿#if ANDROID
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +11,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public Issue21717(TestDevice device) : base(device) { }
 
 		[Test]
-		[Category(UITestCategories.Picker)]
 		[Category(UITestCategories.Entry)]
 		public async Task VerticalTextAlignmentShouldWork()
 		{
@@ -24,4 +22,3 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
-#endif
