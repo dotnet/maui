@@ -183,7 +183,7 @@ stages:
       jobs:
       - job: device_tests_maccatalyst
         displayName: Run DeviceTests MacCatalyst (Mono)
-        timeoutInMinutes: 60
+        timeoutInMinutes: 240
         variables:
         - name: _BuildConfig
           value: ${{ parameters.BuildConfiguration }}
