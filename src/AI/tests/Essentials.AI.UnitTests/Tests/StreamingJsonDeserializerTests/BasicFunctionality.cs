@@ -42,7 +42,7 @@ public partial class StreamingJsonDeserializerTests
 
 			// Start new JSON with both properties
 			deserializer.Reset();
-			
+
 			// Chunk 2: Both properties complete
 			var result2 = deserializer.ProcessChunk(@"{""text"": ""Hello"", ""score"": 42}");
 			Assert.NotNull(result2);

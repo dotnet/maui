@@ -18,7 +18,7 @@ public partial class StreamingJsonDeserializerTests
 			Assert.NotNull(result1.Meta);
 			Assert.Equal(1, result1.Meta.Score);
 			Assert.Equal("John", result1.Meta.Author);
-			
+
 			// Now test incremental addition
 			deserializer.Reset();
 			var result2 = deserializer.ProcessChunk(@"{""text"": ""Hi""}");

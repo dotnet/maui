@@ -126,7 +126,7 @@ public class AppleIntelligenceChatClientJsonSchemaTests : ChatClientJsonSchemaTe
 
 		var exception = await Assert.ThrowsAsync<InvalidOperationException>(
 			() => client.GetResponseAsync(messages, options));
-		
+
 		Assert.Contains("JSON schema", exception.Message, StringComparison.OrdinalIgnoreCase);
 	}
 
@@ -150,7 +150,7 @@ public class AppleIntelligenceChatClientJsonSchemaTests : ChatClientJsonSchemaTe
 				// Should not reach here
 			}
 		});
-		
+
 		Assert.Contains("JSON schema", exception.Message, StringComparison.OrdinalIgnoreCase);
 	}
 

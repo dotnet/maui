@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Maui.Controls.Sample.Services;
 using Maui.Controls.Sample.Models;
+using Maui.Controls.Sample.Services;
 using Microsoft.Maui.Essentials.AI.UnitTests.TestHelpers;
 using Xunit;
 using Xunit.Abstractions;
@@ -55,7 +55,7 @@ public partial class StreamingJsonDeserializerTests
 			// Deep comparison: streaming result should equal direct deserialization
 			var fullJson = string.Concat(chunks);
 			var directDeserialized = JsonSerializer.Deserialize<Itinerary>(fullJson, DeserializationOptions);
-			
+
 			Assert.NotNull(directDeserialized);
 			Assert.Equivalent(directDeserialized, finalItinerary, strict: true);
 		}
@@ -66,7 +66,7 @@ public partial class StreamingJsonDeserializerTests
 		{
 			var deserializer = new StreamingJsonDeserializer<Itinerary>(DeserializationOptions);
 			var chunks = File.ReadAllLines(filePath);
-			
+
 			var daysProgression = new List<(int ChunkNumber, int? DaysCount, int? ActivitiesInFirstDay)>();
 
 			// Track days array progression
@@ -77,7 +77,7 @@ public partial class StreamingJsonDeserializerTests
 
 				var daysCount = currentModel.Days?.Count;
 				var activitiesCount = currentModel.Days?.FirstOrDefault()?.Activities?.Count;
-				
+
 				var lastEntry = daysProgression.LastOrDefault();
 				if (daysCount != lastEntry.DaysCount || activitiesCount != lastEntry.ActivitiesInFirstDay)
 				{
@@ -87,7 +87,7 @@ public partial class StreamingJsonDeserializerTests
 			}
 
 			Assert.NotEmpty(daysProgression);
-			
+
 			// We should see the days array build up
 			var finalDaysCount = daysProgression[^1].DaysCount;
 			Assert.True(finalDaysCount > 0, $"Expected days array to have items in {fileName}");
@@ -99,7 +99,7 @@ public partial class StreamingJsonDeserializerTests
 		{
 			var deserializer = new StreamingJsonDeserializer<Itinerary>(DeserializationOptions);
 			var chunks = File.ReadAllLines(filePath);
-			
+
 			var titleProgression = new List<string?>();
 
 			// Track title field progression
@@ -117,7 +117,7 @@ public partial class StreamingJsonDeserializerTests
 			}
 
 			Assert.NotEmpty(titleProgression);
-			
+
 			// Final title should not be empty
 			var finalTitle = titleProgression[^1];
 			Assert.False(string.IsNullOrEmpty(finalTitle), $"Final title should not be empty in {fileName}");
@@ -134,7 +134,7 @@ public partial class StreamingJsonDeserializerTests
 			foreach (var chunk in chunks)
 			{
 				var currentItinerary = deserializer.ProcessChunk(chunk);
-				
+
 				// Each chunk should produce a non-null result
 				Assert.NotNull(currentItinerary);
 			}
@@ -147,7 +147,7 @@ public partial class StreamingJsonDeserializerTests
 			// This test ensures we get a constant stream of updated models.
 			// At least 70% of chunks should produce a NEW serialized JSON output,
 			// indicating that the model is continuously updating rather than stalling.
-			
+
 			// Note: Some chunks may not produce updates due to whitespace-only chunks,
 			// partial property values, or unchanged content - 70% is a reasonable threshold.
 

@@ -33,7 +33,7 @@ public partial class JsonStreamChunkerTests
 
 			// Debug output
 			Assert.True(concatenated.Length > 0, $"Concatenated is empty. Chunks: [{string.Join("], [", chunks)}]");
-			
+
 			// Assert - concatenated should be valid JSON
 			try
 			{
@@ -71,14 +71,14 @@ public partial class JsonStreamChunkerTests
 		{
 			// Test pattern: single char grows to full string
 			var chunker = new JsonStreamChunker();
-			
+
 			var chunks = new List<string>();
 			chunks.Add(chunker.Process("""{"title": "M"}"""));
 			chunks.Add(chunker.Process("""{"title": "Maui Itinerary"}"""));
 			chunks.Add(chunker.Flush());
 
 			var concatenated = string.Concat(chunks);
-			
+
 			Assert.True(IsValidJson(concatenated), $"Invalid JSON: {concatenated}");
 			var doc = JsonDocument.Parse(concatenated);
 			Assert.Equal("Maui Itinerary", doc.RootElement.GetProperty("title").GetString());
@@ -89,14 +89,14 @@ public partial class JsonStreamChunkerTests
 		{
 			// Test that empty strings can grow to non-empty
 			var chunker = new JsonStreamChunker();
-			
+
 			var chunks = new List<string>();
 			chunks.Add(chunker.Process("""{"title": ""}"""));
 			chunks.Add(chunker.Process("""{"title": "Hello World"}"""));
 			chunks.Add(chunker.Flush());
 
 			var concatenated = string.Concat(chunks);
-			
+
 			Assert.True(IsValidJson(concatenated), $"Invalid JSON: {concatenated}");
 			var doc = JsonDocument.Parse(concatenated);
 			Assert.Equal("Hello World", doc.RootElement.GetProperty("title").GetString());
@@ -107,13 +107,13 @@ public partial class JsonStreamChunkerTests
 		{
 			// Numbers, booleans, null should be emitted immediately
 			var chunker = new JsonStreamChunker();
-			
+
 			var chunks = new List<string>();
 			chunks.Add(chunker.Process("""{"count": 42, "active": true, "data": null}"""));
 			chunks.Add(chunker.Flush());
 
 			var concatenated = string.Concat(chunks);
-			
+
 			Assert.True(IsValidJson(concatenated), $"Invalid JSON: {concatenated}");
 			var doc = JsonDocument.Parse(concatenated);
 			Assert.Equal(42, doc.RootElement.GetProperty("count").GetInt32());

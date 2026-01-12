@@ -53,7 +53,7 @@ public partial class JsonStreamChunkerTests
 
 			// Deep equality check
 			var areEqual = JsonElementsAreEqual(finalDoc.RootElement, concatenatedDoc.RootElement);
-			Assert.True(areEqual, 
+			Assert.True(areEqual,
 				$"Concatenated JSON does not match final line.\n\nExpected:\n{finalLine}\n\nActual:\n{concatenated}");
 		}
 	}

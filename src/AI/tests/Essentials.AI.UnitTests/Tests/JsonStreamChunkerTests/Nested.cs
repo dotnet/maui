@@ -33,7 +33,7 @@ public partial class JsonStreamChunkerTests
 
 			// Assert - first check the concatenated output is parsable
 			Assert.True(IsValidJson(concatenated), $"Invalid JSON produced:\n{concatenated}");
-			
+
 			var doc = JsonDocument.Parse(concatenated);
 			var activity = doc.RootElement
 				.GetProperty("days")[0]
@@ -73,7 +73,7 @@ public partial class JsonStreamChunkerTests
 		{
 			// When a new array item appears, it should close strings in the previous item
 			var chunker = new JsonStreamChunker();
-			
+
 			var chunks = new List<string>();
 			chunks.Add(chunker.Process("""{"items": [{"name": "First"}]}"""));
 			// New array item appears - should close "First"
@@ -81,7 +81,7 @@ public partial class JsonStreamChunkerTests
 			chunks.Add(chunker.Flush());
 
 			var concatenated = string.Concat(chunks);
-			
+
 			Assert.True(IsValidJson(concatenated), $"Invalid JSON: {concatenated}");
 			var doc = JsonDocument.Parse(concatenated);
 			Assert.Equal("First", doc.RootElement.GetProperty("items")[0].GetProperty("name").GetString());
@@ -93,14 +93,14 @@ public partial class JsonStreamChunkerTests
 		{
 			// Test pattern from mount-fuji line 35: {"activities": [{}, ...]}
 			var chunker = new JsonStreamChunker();
-			
+
 			var chunks = new List<string>();
 			chunks.Add(chunker.Process("""{"activities": [{}]}"""));
 			chunks.Add(chunker.Process("""{"activities": [{}, {"description": "Hello"}]}"""));
 			chunks.Add(chunker.Flush());
 
 			var concatenated = string.Concat(chunks);
-			
+
 			Assert.True(IsValidJson(concatenated), $"Invalid JSON: {concatenated}");
 			var doc = JsonDocument.Parse(concatenated);
 			Assert.Equal(2, doc.RootElement.GetProperty("activities").GetArrayLength());
@@ -111,14 +111,14 @@ public partial class JsonStreamChunkerTests
 		{
 			// Test pattern: deep nesting first, then new root property appears
 			var chunker = new JsonStreamChunker();
-			
+
 			var chunks = new List<string>();
 			chunks.Add(chunker.Process("""{"days": [{"activities": [{"title": "Hello"}]}]}"""));
 			chunks.Add(chunker.Process("""{"days": [{"activities": [{"title": "Hello World"}]}], "title": "Trip"}"""));
 			chunks.Add(chunker.Flush());
 
 			var concatenated = string.Concat(chunks);
-			
+
 			Assert.True(IsValidJson(concatenated), $"Invalid JSON: {concatenated}");
 			var doc = JsonDocument.Parse(concatenated);
 			Assert.Equal("Trip", doc.RootElement.GetProperty("title").GetString());
@@ -130,7 +130,7 @@ public partial class JsonStreamChunkerTests
 		{
 			// Complex nesting: days[] with activities[] inside
 			var chunker = new JsonStreamChunker();
-			
+
 			var chunks = new List<string>();
 			chunks.Add(chunker.Process("""{"days": [{"activities": [{"title": "Drive"}]}]}"""));
 			chunks.Add(chunker.Process("""{"days": [{"activities": [{"title": "Drive"}, {"title": "Lunch"}]}]}"""));
@@ -138,7 +138,7 @@ public partial class JsonStreamChunkerTests
 			chunks.Add(chunker.Flush());
 
 			var concatenated = string.Concat(chunks);
-			
+
 			Assert.True(IsValidJson(concatenated), $"Invalid JSON: {concatenated}");
 			var doc = JsonDocument.Parse(concatenated);
 			Assert.Equal(2, doc.RootElement.GetProperty("days").GetArrayLength());

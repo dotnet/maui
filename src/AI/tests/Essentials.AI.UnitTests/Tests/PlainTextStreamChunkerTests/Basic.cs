@@ -14,7 +14,7 @@ public partial class PlainTextStreamChunkerTests
 		{
 			// Arrange
 			var chunker = new PlainTextStreamChunker();
-			
+
 			// Act
 			var chunks = new List<string>();
 			chunks.Add(chunker.Process("Hello"));
@@ -32,7 +32,7 @@ public partial class PlainTextStreamChunkerTests
 		{
 			// Arrange
 			var chunker = new PlainTextStreamChunker();
-			
+
 			// Act
 			var chunk = chunker.Process("Hello World");
 
@@ -45,7 +45,7 @@ public partial class PlainTextStreamChunkerTests
 		{
 			// Arrange
 			var chunker = new PlainTextStreamChunker();
-			
+
 			// Act
 			var chunk1 = chunker.Process("Hello");
 			var chunk2 = chunker.Process("Hello");
@@ -60,7 +60,7 @@ public partial class PlainTextStreamChunkerTests
 		{
 			// Arrange
 			var chunker = new PlainTextStreamChunker();
-			
+
 			// Act
 			var chunk = chunker.Process("");
 
@@ -73,7 +73,7 @@ public partial class PlainTextStreamChunkerTests
 		{
 			// Arrange
 			var chunker = new PlainTextStreamChunker();
-			
+
 			// Act
 			var chunk = chunker.Process(null!);
 
@@ -86,7 +86,7 @@ public partial class PlainTextStreamChunkerTests
 		{
 			// Arrange
 			var chunker = new PlainTextStreamChunker();
-			
+
 			// Act
 			var chunk = chunker.Flush();
 
@@ -100,7 +100,7 @@ public partial class PlainTextStreamChunkerTests
 			// Arrange
 			var chunker = new PlainTextStreamChunker();
 			chunker.Process("Hello World");
-			
+
 			// Act
 			var chunk = chunker.Flush();
 

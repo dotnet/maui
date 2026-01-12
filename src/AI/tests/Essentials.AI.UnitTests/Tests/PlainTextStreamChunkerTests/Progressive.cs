@@ -15,7 +15,7 @@ public partial class PlainTextStreamChunkerTests
 			// Arrange
 			var chunker = new PlainTextStreamChunker();
 			var text = "Hello";
-			
+
 			// Act - simulate character-by-character streaming
 			var chunks = new List<string>();
 			for (int i = 1; i <= text.Length; i++)
@@ -41,7 +41,7 @@ public partial class PlainTextStreamChunkerTests
 				"The quick brown",
 				"The quick brown fox"
 			};
-			
+
 			// Act
 			var chunks = new List<string>();
 			foreach (var text in progressiveText)
@@ -61,9 +61,9 @@ public partial class PlainTextStreamChunkerTests
 			// Arrange
 			var chunker = new PlainTextStreamChunker();
 			var paragraph = "This is a longer piece of text that simulates a real AI response. " +
-			                "It contains multiple sentences and should be processed correctly. " +
-			                "The chunker should handle this without any issues.";
-			
+							"It contains multiple sentences and should be processed correctly. " +
+							"The chunker should handle this without any issues.";
+
 			// Simulate streaming in chunks
 			var chunks = new List<string>();
 			var chunkSize = 20;
@@ -84,7 +84,7 @@ public partial class PlainTextStreamChunkerTests
 		{
 			// Arrange
 			var chunker = new PlainTextStreamChunker();
-			
+
 			// Act
 			var chunks = new List<string>();
 			chunks.Add(chunker.Process("Line 1"));
@@ -102,7 +102,7 @@ public partial class PlainTextStreamChunkerTests
 		{
 			// Arrange
 			var chunker = new PlainTextStreamChunker();
-			
+
 			// Act
 			var chunks = new List<string>();
 			chunks.Add(chunker.Process("Special chars: "));
@@ -120,7 +120,7 @@ public partial class PlainTextStreamChunkerTests
 		{
 			// Arrange
 			var chunker = new PlainTextStreamChunker();
-			
+
 			// Act
 			var chunks = new List<string>();
 			chunks.Add(chunker.Process("Hello "));

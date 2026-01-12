@@ -33,7 +33,7 @@ public partial class StreamingJsonDeserializerTests
 			// Deep comparison with direct deserialization
 			var fullJson = string.Concat(chunks);
 			var directDeserialized = JsonSerializer.Deserialize<EmotionalResponse>(fullJson, DeserializationOptions);
-			
+
 			Assert.NotNull(directDeserialized);
 			Assert.Equivalent(directDeserialized, finalResponse, strict: true);
 		}
@@ -58,7 +58,7 @@ public partial class StreamingJsonDeserializerTests
 			// Deep comparison with direct deserialization
 			var fullJson = string.Concat(chunks);
 			var directDeserialized = JsonSerializer.Deserialize<EmotionalResponse>(fullJson, DeserializationOptions);
-			
+
 			Assert.NotNull(directDeserialized);
 			Assert.Equivalent(directDeserialized, finalResponse, strict: true);
 		}

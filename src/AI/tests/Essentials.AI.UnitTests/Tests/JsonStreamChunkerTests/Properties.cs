@@ -62,14 +62,14 @@ public partial class JsonStreamChunkerTests
 		{
 			// When multiple new strings appear at once, they should go to pending
 			var chunker = new JsonStreamChunker();
-			
+
 			var chunks = new List<string>();
 			chunks.Add(chunker.Process("""{"title": "A", "subtitle": "B"}"""));
 			chunks.Add(chunker.Process("""{"title": "A", "subtitle": "B", "description": "C"}"""));
 			chunks.Add(chunker.Flush());
 
 			var concatenated = string.Concat(chunks);
-			
+
 			Assert.True(IsValidJson(concatenated), $"Invalid JSON: {concatenated}");
 			var doc = JsonDocument.Parse(concatenated);
 			Assert.Equal("A", doc.RootElement.GetProperty("title").GetString());
@@ -82,14 +82,14 @@ public partial class JsonStreamChunkerTests
 		{
 			// Test pattern: multiple new root properties appear at once
 			var chunker = new JsonStreamChunker();
-			
+
 			var chunks = new List<string>();
 			chunks.Add(chunker.Process("""{"description": "Hello"}"""));
 			chunks.Add(chunker.Process("""{"description": "Hello World", "title": "Trip", "rationale": "Fun"}"""));
 			chunks.Add(chunker.Flush());
 
 			var concatenated = string.Concat(chunks);
-			
+
 			Assert.True(IsValidJson(concatenated), $"Invalid JSON: {concatenated}");
 			var doc = JsonDocument.Parse(concatenated);
 			Assert.Equal("Hello World", doc.RootElement.GetProperty("description").GetString());
@@ -103,7 +103,7 @@ public partial class JsonStreamChunkerTests
 			// This is the exact pattern from serengeti-itinerary-1.jsonl lines 1-2
 			// When activities[] appears, it should close the subtitle string
 			var chunker = new JsonStreamChunker();
-			
+
 			// Act
 			var chunks = new List<string>();
 			// Line 1
@@ -113,13 +113,13 @@ public partial class JsonStreamChunkerTests
 			chunks.Add(chunker.Flush());
 
 			var concatenated = string.Concat(chunks);
-			
+
 			// Should be valid JSON
 			Assert.True(IsValidJson(concatenated), $"Invalid JSON: {concatenated}\n\nChunks:\n[{string.Join("], [", chunks)}]");
-			
+
 			var doc = JsonDocument.Parse(concatenated);
 			var day = doc.RootElement.GetProperty("days")[0];
-			
+
 			Assert.Equal("Day 1: Arrival and Wildlife Safari", day.GetProperty("subtitle").GetString());
 			Assert.True(day.TryGetProperty("activities", out var activities), "activities property should exist");
 			Assert.Equal(0, activities.GetArrayLength());
@@ -130,14 +130,14 @@ public partial class JsonStreamChunkerTests
 		{
 			// Test pattern from serengeti: {"type": ""} → {"type": "Sightseeing"}
 			var chunker = new JsonStreamChunker();
-			
+
 			var chunks = new List<string>();
 			chunks.Add(chunker.Process("""{"activities": [{"type": ""}]}"""));
 			chunks.Add(chunker.Process("""{"activities": [{"type": "Sightseeing", "title": "Game Drive"}]}"""));
 			chunks.Add(chunker.Flush());
 
 			var concatenated = string.Concat(chunks);
-			
+
 			Assert.True(IsValidJson(concatenated), $"Invalid JSON: {concatenated}");
 			var doc = JsonDocument.Parse(concatenated);
 			var activity = doc.RootElement.GetProperty("activities")[0];
@@ -151,7 +151,7 @@ public partial class JsonStreamChunkerTests
 			// When a string and an array appear at the same level, both are "growable"
 			// We need to handle this without knowing which will change
 			var chunker = new JsonStreamChunker();
-			
+
 			var chunks = new List<string>();
 			// First: empty object in days array
 			chunks.Add(chunker.Process("""{"days": [{}]}"""));
@@ -162,7 +162,7 @@ public partial class JsonStreamChunkerTests
 			chunks.Add(chunker.Flush());
 
 			var concatenated = string.Concat(chunks);
-			
+
 			Assert.True(IsValidJson(concatenated), $"Invalid JSON: {concatenated}\n\nChunks:\n[{string.Join("], [", chunks)}]");
 			var doc = JsonDocument.Parse(concatenated);
 			var day = doc.RootElement.GetProperty("days")[0];
@@ -176,7 +176,7 @@ public partial class JsonStreamChunkerTests
 		{
 			// Opposite case: array is the one that grows
 			var chunker = new JsonStreamChunker();
-			
+
 			var chunks = new List<string>();
 			chunks.Add(chunker.Process("""{"days": [{}]}"""));
 			chunks.Add(chunker.Process("""{"days": [{"subtitle": "", "activities": []}]}"""));
@@ -185,7 +185,7 @@ public partial class JsonStreamChunkerTests
 			chunks.Add(chunker.Flush());
 
 			var concatenated = string.Concat(chunks);
-			
+
 			Assert.True(IsValidJson(concatenated), $"Invalid JSON: {concatenated}\n\nChunks:\n[{string.Join("], [", chunks)}]");
 			var doc = JsonDocument.Parse(concatenated);
 			var day = doc.RootElement.GetProperty("days")[0];
@@ -199,7 +199,7 @@ public partial class JsonStreamChunkerTests
 		{
 			// Multiple growable types: string, array, object
 			var chunker = new JsonStreamChunker();
-			
+
 			var chunks = new List<string>();
 			chunks.Add(chunker.Process("""{"title": "", "items": [], "meta": {}}"""));
 			// String grows
@@ -207,7 +207,7 @@ public partial class JsonStreamChunkerTests
 			chunks.Add(chunker.Flush());
 
 			var concatenated = string.Concat(chunks);
-			
+
 			Assert.True(IsValidJson(concatenated), $"Invalid JSON: {concatenated}\n\nChunks:\n[{string.Join("], [", chunks)}]");
 			var doc = JsonDocument.Parse(concatenated);
 			Assert.Equal("Hello", doc.RootElement.GetProperty("title").GetString());

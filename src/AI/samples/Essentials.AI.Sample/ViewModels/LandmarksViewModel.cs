@@ -9,42 +9,42 @@ public record ContinentGroup(string Name, List<Landmark> Landmarks);
 
 public partial class LandmarksViewModel(LandmarkDataService dataService) : ObservableObject
 {
-    [ObservableProperty]
-    public partial Landmark? FeaturedLandmark { get; private set; }
+	[ObservableProperty]
+	public partial Landmark? FeaturedLandmark { get; private set; }
 
-    [ObservableProperty]
-    public partial bool IsLoading { get; set; }
+	[ObservableProperty]
+	public partial bool IsLoading { get; set; }
 
-    public ObservableCollection<ContinentGroup> ContinentGroups => field ??= [];
+	public ObservableCollection<ContinentGroup> ContinentGroups => field ??= [];
 
-    public async Task InitializeAsync()
-    {
-        if (IsLoading || ContinentGroups.Count > 0)
-            return;
+	public async Task InitializeAsync()
+	{
+		if (IsLoading || ContinentGroups.Count > 0)
+			return;
 
-        await LoadLandmarksAsync();
-    }
+		await LoadLandmarksAsync();
+	}
 
-    private async Task LoadLandmarksAsync()
-    {
-        IsLoading = true;
-        try 
-        {
-            FeaturedLandmark = await dataService.GetFeaturedLandmarkAsync();
+	private async Task LoadLandmarksAsync()
+	{
+		IsLoading = true;
+		try
+		{
+			FeaturedLandmark = await dataService.GetFeaturedLandmarkAsync();
 
-            ContinentGroups.Clear();
-            var landmarksByContinent = await dataService.GetLandmarksByContinentAsync();
-            foreach (var continent in landmarksByContinent.Keys.OrderBy(c => c))
-            {
-                if (landmarksByContinent.TryGetValue(continent, out var landmarks))
-                {
-                    ContinentGroups.Add(new ContinentGroup(continent, landmarks));
-                }
-            }
-        }
-        finally
-        {
-            IsLoading = false;
-        }
-    }
+			ContinentGroups.Clear();
+			var landmarksByContinent = await dataService.GetLandmarksByContinentAsync();
+			foreach (var continent in landmarksByContinent.Keys.OrderBy(c => c))
+			{
+				if (landmarksByContinent.TryGetValue(continent, out var landmarks))
+				{
+					ContinentGroups.Add(new ContinentGroup(continent, landmarks));
+				}
+			}
+		}
+		finally
+		{
+			IsLoading = false;
+		}
+	}
 }

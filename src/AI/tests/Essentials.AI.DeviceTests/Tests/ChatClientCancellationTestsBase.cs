@@ -50,9 +50,9 @@ public abstract class ChatClientCancellationTestsBase<T>
 		};
 
 		using var cts = new CancellationTokenSource();
-		
+
 		var task = client.GetResponseAsync(messages, cancellationToken: cts.Token);
-		
+
 		await Task.Delay(50);
 		cts.Cancel();
 
@@ -121,7 +121,7 @@ public abstract class ChatClientCancellationTestsBase<T>
 		};
 
 		using var cts = new CancellationTokenSource();
-		
+
 		var updateCount = 0;
 		await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
 		{

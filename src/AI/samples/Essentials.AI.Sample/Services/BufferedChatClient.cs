@@ -97,7 +97,7 @@ public class BufferedChatClient(IChatClient innerClient, int minBufferSize = 100
 
 			lastUpdate = update;
 
-			var shouldFlush = 
+			var shouldFlush =
 				textBuffer.Length >= _minBufferSize &&
 				TimeSpan.FromMilliseconds(currentYieldTicks - lastYieldTicks) >= _bufferDelay;
 

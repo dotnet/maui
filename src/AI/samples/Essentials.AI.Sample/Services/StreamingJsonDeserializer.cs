@@ -32,7 +32,7 @@ internal sealed class StreamingJsonDeserializer<T>
 		_skipDeserialization = skipDeserialization;
 		options ??= new JsonSerializerOptions();
 		_options = new JsonSerializerOptions(options)
-        {
+		{
 			DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
 			AllowTrailingCommas = true,
 			ReadCommentHandling = JsonCommentHandling.Skip,
@@ -54,7 +54,7 @@ internal sealed class StreamingJsonDeserializer<T>
 					}
 				}
 			}
-        };
+		};
 	}
 
 	/// <summary>
@@ -338,7 +338,7 @@ internal sealed class StreamingJsonDeserializer<T>
 				writer.WriteNumber(pendingPropertyNameBytes, doubleValue);
 			else
 				writer.WriteNumber(pendingPropertyNameBytes, reader.GetDecimal());
-			
+
 			pendingPropertyNameBytes = default;
 		}
 		else
@@ -418,20 +418,20 @@ internal sealed class StreamingJsonDeserializer<T>
 			return;
 
 		var partialValueBytes = utf8Json[valueStartIndex..];
-		
+
 		// Skip any whitespace after the colon
 		int i = 0;
 		while (i < partialValueBytes.Length && (partialValueBytes[i] == (byte)' ' || partialValueBytes[i] == (byte)'\t' || partialValueBytes[i] == (byte)'\n' || partialValueBytes[i] == (byte)'\r'))
 			i++;
-		
+
 		if (i >= partialValueBytes.Length)
 			return;
-			
+
 		partialValueBytes = partialValueBytes[i..];
-		
+
 		// Determine the value type by the first character
 		var firstChar = partialValueBytes[0];
-		
+
 		if (firstChar == (byte)'"')
 		{
 			// String value - extract everything after the opening quote
@@ -445,7 +445,7 @@ internal sealed class StreamingJsonDeserializer<T>
 			var numberEnd = 0;
 			while (numberEnd < partialValueBytes.Length && IsNumberChar(partialValueBytes[numberEnd]))
 				numberEnd++;
-			
+
 			if (numberEnd > 0)
 			{
 				var numberBytes = partialValueBytes[..numberEnd];
@@ -483,17 +483,17 @@ internal sealed class StreamingJsonDeserializer<T>
 		}
 		// else: incomplete literal (e.g., "tru", "fal", "nul") - skip for now
 	}
-	
+
 	/// <summary>
 	/// Checks if a byte is a valid character in a JSON number (digit, decimal point, sign, or exponent).
 	/// </summary>
 	private static bool IsNumberChar(byte b)
 	{
-		return b >= (byte)'0' && b <= (byte)'9' 
-			|| b == (byte)'.' 
-			|| b == (byte)'-' 
-			|| b == (byte)'+' 
-			|| b == (byte)'e' 
+		return b >= (byte)'0' && b <= (byte)'9'
+			|| b == (byte)'.'
+			|| b == (byte)'-'
+			|| b == (byte)'+'
+			|| b == (byte)'e'
 			|| b == (byte)'E';
 	}
 

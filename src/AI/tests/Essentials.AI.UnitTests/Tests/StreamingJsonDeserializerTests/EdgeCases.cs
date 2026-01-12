@@ -70,16 +70,16 @@ public partial class StreamingJsonDeserializerTests
 
 			// Start with title and array
 			var result = deserializer.ProcessChunk(@"{""title"":""Store"",""items"":[");
-			
+
 			// Add multiple items one by one
 			for (int i = 0; i < 5; i++)
 			{
 				if (i > 0)
 					result = deserializer.ProcessChunk(",");
-				
+
 				result = deserializer.ProcessChunk($@"{{""name"":""Item{i}"",""price"":{i * 10},""category"":""Food""}}");
 			}
-			
+
 			// Close array and object
 			result = deserializer.ProcessChunk("]}");
 

@@ -62,7 +62,7 @@ public partial class JsonStreamingRoundtripTests
 				{
 					// Days count should never decrease
 					if (lastDaysCount.HasValue)
-						Assert.True(model.Days.Count >= lastDaysCount.Value, 
+						Assert.True(model.Days.Count >= lastDaysCount.Value,
 							$"Days count decreased from {lastDaysCount} to {model.Days.Count} at step {i}");
 					lastDaysCount = model.Days.Count;
 				}
@@ -120,7 +120,7 @@ public partial class JsonStreamingRoundtripTests
 					Assert.Equal(expected.GetBoolean(), actual.GetBoolean());
 					break;
 
-				// Null is already handled above
+					// Null is already handled above
 			}
 		}
 	}

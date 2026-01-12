@@ -34,7 +34,7 @@ public class StreamingJsonDeserializerBenchmark
 	public void NewUtf8JsonWriterSkipDeserializationApproach()
 	{
 		var deserializer = new StreamingJsonDeserializer<TravelItinerary>(_options, skipDeserialization: true);
-		
+
 		TravelItinerary? lastModel = null;
 		foreach (var chunk in _chunks!)
 		{
@@ -48,7 +48,7 @@ public class StreamingJsonDeserializerBenchmark
 	public void OldStringBuilderSkipDeserializationApproach()
 	{
 		var deserializer = new StreamingJsonDeserializer<TravelItinerary>(_options, skipDeserialization: false);
-		
+
 		TravelItinerary? lastModel = null;
 		foreach (var chunk in _chunks!)
 		{

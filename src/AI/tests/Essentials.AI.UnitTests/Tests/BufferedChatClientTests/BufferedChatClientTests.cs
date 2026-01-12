@@ -1,5 +1,5 @@
-using Microsoft.Extensions.AI;
 using System.Runtime.CompilerServices;
+using Microsoft.Extensions.AI;
 
 namespace Microsoft.Maui.Essentials.AI.UnitTests;
 

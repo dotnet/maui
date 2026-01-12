@@ -18,10 +18,10 @@ public partial class StreamingJsonDeserializerTests
 
 			// String is cut in the middle: "Hel
 			var result1 = deserializer.ProcessChunk(@"{""text"": ""Hel");
-			
+
 			// Complete the string: lo World"
 			var result2 = deserializer.ProcessChunk(@"lo World"", ""score"": 42}");
-			
+
 			Assert.NotNull(result2);
 			Assert.Equal("Hello World", result2.Text);
 			Assert.Equal(42, result2.Score);
@@ -85,7 +85,7 @@ public partial class StreamingJsonDeserializerTests
 
 			// String value complete but missing closing quote
 			var result1 = deserializer.ProcessChunk(@"{""text"": ""Complete text");
-			
+
 			// Add closing quote and rest
 			var result2 = deserializer.ProcessChunk(@""", ""score"": 100}");
 
@@ -116,13 +116,13 @@ public partial class StreamingJsonDeserializerTests
 			// Build a long string in many small chunks (simulating token streaming)
 			var baseText = "This is a very long text that represents LLM output streaming. ";
 			var result = deserializer.ProcessChunk(@"{""text"": """);
-			
+
 			// Stream the long text in small chunks
 			for (int i = 0; i < 10; i++)
 			{
 				result = deserializer.ProcessChunk(baseText);
 			}
-			
+
 			// Close the string and object
 			result = deserializer.ProcessChunk(@""", ""score"": 999}");
 

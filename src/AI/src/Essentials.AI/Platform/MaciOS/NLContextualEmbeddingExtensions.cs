@@ -5,8 +5,8 @@ namespace Microsoft.Extensions.AI;
 
 public static class NLContextualEmbeddingExtensions
 {
-    public static IEmbeddingGenerator<string, Embedding<float>> AsEmbeddingGenerator(this NLContextualEmbedding embedding)
-    {
-        return new NLContextualEmbeddingGenerator(embedding);
-    }
+	public static IEmbeddingGenerator<string, Embedding<float>> AsEmbeddingGenerator(this NLContextualEmbedding embedding)
+	{
+		return new NLContextualEmbeddingGenerator(embedding);
+	}
 }

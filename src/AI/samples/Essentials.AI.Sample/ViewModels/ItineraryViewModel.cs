@@ -8,23 +8,23 @@ public partial class ItineraryViewModel(Itinerary itinerary, Landmark landmark) 
 {
 	public string Title => itinerary.Title;
 
-    public string Description => itinerary.Description;
+	public string Description => itinerary.Description;
 
-    public string Rationale => itinerary.Rationale;
-    
-    public ObservableCollection<DayPlanViewModel> Days =>
-        field ??= CreateDays();
+	public string Rationale => itinerary.Rationale;
+
+	public ObservableCollection<DayPlanViewModel> Days =>
+		field ??= CreateDays();
 
 	private ObservableCollection<DayPlanViewModel> CreateDays()
 	{
 		var startDate = DateOnly.FromDateTime(DateTime.Today);
 
-        var list = new ObservableCollection<DayPlanViewModel>();
+		var list = new ObservableCollection<DayPlanViewModel>();
 		for (int i = 0; i < itinerary.Days.Count; i++)
 		{
 			list.Add(new DayPlanViewModel(itinerary.Days[i], landmark, startDate.AddDays(i)));
 		}
 
-        return list;
+		return list;
 	}
 }

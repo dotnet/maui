@@ -1,5 +1,5 @@
-using Microsoft.Extensions.AI;
 using Maui.Controls.Sample.Services;
+using Microsoft.Extensions.AI;
 using Xunit;
 
 namespace Microsoft.Maui.Essentials.AI.UnitTests;
@@ -15,12 +15,12 @@ public partial class BufferedChatClientTests
 			var mockClient = new MockChatClient();
 			mockClient.SetNonStreamingResponse("Test response");
 			var bufferedClient = new BufferedChatClient(mockClient);
-			
+
 			var messages = new List<ChatMessage> { new(ChatRole.User, "Test") };
-			
+
 			// Act
 			var response = await bufferedClient.GetResponseAsync(messages);
-			
+
 			// Assert
 			Assert.NotNull(response);
 			Assert.Single(response.Messages);
@@ -34,18 +34,18 @@ public partial class BufferedChatClientTests
 			// Arrange
 			var mockClient = new MockChatClient();
 			var bufferedClient = new BufferedChatClient(mockClient, minBufferSize: 100, bufferDelay: TimeSpan.FromMilliseconds(250));
-			
+
 			mockClient.AddTextChunk("This is a long enough message that will trigger the buffer to flush when the conditions are met.");
-			
+
 			var messages = new List<ChatMessage> { new(ChatRole.User, "Test") };
-			
+
 			// Act
 			var updates = new List<ChatResponseUpdate>();
 			await foreach (var update in bufferedClient.GetStreamingResponseAsync(messages))
 			{
 				updates.Add(update);
 			}
-			
+
 			// Assert
 			Assert.NotEmpty(updates);
 			var firstUpdate = updates[0];

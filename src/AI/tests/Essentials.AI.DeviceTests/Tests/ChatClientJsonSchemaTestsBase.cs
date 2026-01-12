@@ -35,7 +35,7 @@ public abstract class ChatClientJsonSchemaTestsBase<T>
 
 		Assert.NotNull(response);
 		Assert.NotNull(response.Text);
-		
+
 		// Verify the response can be parsed as the expected type
 		var weatherResponse = JsonSerializer.Deserialize<WeatherResponse>(response.Text, JsonSerializerOptions.Web);
 		Assert.NotNull(weatherResponse);
@@ -59,7 +59,7 @@ public abstract class ChatClientJsonSchemaTestsBase<T>
 
 		Assert.NotNull(response);
 		Assert.NotNull(response.Text);
-		
+
 		// Verify it's valid JSON
 		var doc = JsonDocument.Parse(response.Text);
 		Assert.NotNull(doc);
@@ -92,7 +92,7 @@ public abstract class ChatClientJsonSchemaTestsBase<T>
 
 		var completeText = textBuilder.ToString();
 		Assert.False(string.IsNullOrEmpty(completeText), "Should receive streaming response");
-		
+
 		// Verify the complete response is valid JSON
 		var weatherResponse = JsonSerializer.Deserialize<WeatherResponse>(completeText);
 		Assert.NotNull(weatherResponse);
@@ -112,11 +112,11 @@ public abstract class ChatClientJsonSchemaTestsBase<T>
 		};
 
 		var response = await client.GetResponseAsync(messages, options);
-		
+
 		Assert.NotNull(response);
 		Assert.NotNull(response.Text);
 		Assert.False(string.IsNullOrWhiteSpace(response.Text), "Response text should not be empty");
-		
+
 		// Verify the response is valid JSON (will throw if invalid)
 		using var doc = JsonDocument.Parse(response.Text);
 		Assert.Equal(JsonValueKind.Object, doc.RootElement.ValueKind);
@@ -144,10 +144,10 @@ public abstract class ChatClientJsonSchemaTestsBase<T>
 				textBuilder.Append(update.Text);
 			}
 		}
-		
+
 		var responseText = textBuilder.ToString();
 		Assert.False(string.IsNullOrWhiteSpace(responseText), "Streaming response should not be empty");
-		
+
 		// Verify the complete response is valid JSON (will throw if invalid)
 		using var doc = JsonDocument.Parse(responseText);
 		Assert.Equal(JsonValueKind.Object, doc.RootElement.ValueKind);
@@ -161,12 +161,12 @@ public abstract class ChatClientJsonSchemaTestsBase<T>
 		{
 			new(ChatRole.User, "Say hello in a message field.")
 		};
-		
+
 		var jsonOptions = new JsonSerializerOptions
 		{
 			PropertyNamingPolicy = JsonNamingPolicy.CamelCase
 		};
-		
+
 		var options = new ChatOptions
 		{
 			ResponseFormat = ChatResponseFormat.ForJsonSchema<SimpleResponse>(jsonOptions),
@@ -177,7 +177,7 @@ public abstract class ChatClientJsonSchemaTestsBase<T>
 
 		Assert.NotNull(response);
 		Assert.NotNull(response.Text);
-		
+
 		// Verify the response can be parsed
 		var simpleResponse = JsonSerializer.Deserialize<SimpleResponse>(response.Text, jsonOptions);
 		Assert.NotNull(simpleResponse);
@@ -201,7 +201,7 @@ public abstract class ChatClientJsonSchemaTestsBase<T>
 
 		Assert.NotNull(response);
 		Assert.NotNull(response.Text);
-		
+
 		var itinerary = JsonSerializer.Deserialize<TripItinerary>(response.Text, JsonSerializerOptions.Web);
 		Assert.NotNull(itinerary);
 		Assert.NotNull(itinerary.Destination);

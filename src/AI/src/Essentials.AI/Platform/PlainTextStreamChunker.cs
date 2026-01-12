@@ -9,28 +9,28 @@ namespace Microsoft.Maui.Essentials.AI;
 /// </remarks>
 internal sealed class PlainTextStreamChunker : StreamChunkerBase
 {
-    /// <summary>Tracks the last complete response to compute deltas.</summary>
-    private string _lastResponse = "";
+	/// <summary>Tracks the last complete response to compute deltas.</summary>
+	private string _lastResponse = "";
 
-    /// <inheritdoc />
-    public override string Process(string completeResponse)
-    {
-        if (string.IsNullOrEmpty(completeResponse))
-            return string.Empty;
+	/// <inheritdoc />
+	public override string Process(string completeResponse)
+	{
+		if (string.IsNullOrEmpty(completeResponse))
+			return string.Empty;
 
-        // Simple substring delta - emit only new characters
-        var delta = completeResponse.Length > _lastResponse.Length
-            ? completeResponse.Substring(_lastResponse.Length)
-            : string.Empty;
+		// Simple substring delta - emit only new characters
+		var delta = completeResponse.Length > _lastResponse.Length
+			? completeResponse.Substring(_lastResponse.Length)
+			: string.Empty;
 
-        _lastResponse = completeResponse;
-        return delta;
-    }
+		_lastResponse = completeResponse;
+		return delta;
+	}
 
-    /// <inheritdoc />
-    public override string Flush()
-    {
-        // Plain text has no pending state to flush
-        return string.Empty;
-    }
+	/// <inheritdoc />
+	public override string Flush()
+	{
+		// Plain text has no pending state to flush
+		return string.Empty;
+	}
 }

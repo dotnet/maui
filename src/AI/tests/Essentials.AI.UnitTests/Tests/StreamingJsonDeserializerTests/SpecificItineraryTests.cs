@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Maui.Controls.Sample.Services;
 using Maui.Controls.Sample.Models;
+using Maui.Controls.Sample.Services;
 using Microsoft.Maui.Essentials.AI.UnitTests.TestHelpers;
 using Xunit;
 using Xunit.Abstractions;
@@ -76,7 +76,7 @@ public partial class StreamingJsonDeserializerTests
 			Assert.Contains("Mount Fuji", finalItinerary.Description, StringComparison.Ordinal);
 			Assert.NotNull(finalItinerary.Days);
 			Assert.True(finalItinerary.Days.Count >= 1, $"Expected at least 1 day, got {finalItinerary.Days.Count}");
-			
+
 			// Verify first day has activities
 			Assert.NotEmpty(finalItinerary.Days[0].Activities);
 		}
@@ -87,7 +87,7 @@ public partial class StreamingJsonDeserializerTests
 			// This test specifically validates the maui-itinerary-openai-1.txt file has good progression
 			var deserializer = new StreamingJsonDeserializer<Itinerary>(DeserializationOptions);
 			var chunks = DataStreamsHelper.GetFileLines("Itinerary/maui-itinerary-openai-1.txt");
-			
+
 			var results = new List<DeserializationResult>();
 			Itinerary? previousModel = null;
 
@@ -95,7 +95,7 @@ public partial class StreamingJsonDeserializerTests
 			foreach (var chunk in chunks)
 			{
 				var currentModel = deserializer.ProcessChunk(chunk);
-				
+
 				var result = new DeserializationResult
 				{
 					ChunkNumber = results.Count + 1,
@@ -104,33 +104,33 @@ public partial class StreamingJsonDeserializerTests
 					IsSameInstanceAsPrevious = ReferenceEquals(currentModel, previousModel),
 					IsNull = currentModel == null
 				};
-				
+
 				results.Add(result);
 				previousModel = currentModel;
 			}
 
 			output.WriteLine($"Total chunks: {chunks.Length}");
 			output.WriteLine($"Total results: {results.Count}");
-			
+
 			var uniqueInstances = results
 				.Where(r => !r.IsNull)
 				.Select(r => r.Model)
 				.Distinct()
 				.Count();
-			
+
 			output.WriteLine($"Unique instances: {uniqueInstances}");
-			
+
 			// Final result should not be null
 			Assert.NotNull(results[^1].Model);
-			
+
 			// We should have substantial unique instances throughout the stream (at least 400 for this 494-chunk stream)
-			Assert.True(uniqueInstances >= 400, 
+			Assert.True(uniqueInstances >= 400,
 				$"Only {uniqueInstances} unique instances found. Expected at least 400 to show excellent progression.");
-			
+
 			// Final result should match direct deserialization
 			var fullJson = string.Concat(chunks);
 			var directDeserialized = JsonSerializer.Deserialize<Itinerary>(fullJson, DeserializationOptions);
-			
+
 			Assert.NotNull(directDeserialized);
 			Assert.Equivalent(directDeserialized, results[^1].Model, strict: false);
 		}
@@ -140,11 +140,11 @@ public partial class StreamingJsonDeserializerTests
 		{
 			// This test proves that the TypeInfoResolver bypasses 'required' constraints
 			var deserializer = new StreamingJsonDeserializer<Itinerary>(DeserializationOptions);
-			
+
 			string partialJson = "{\"title\": \"Test Trip\", \"destinationName\": \"Test\", \"description\": \"Test desc\", \"rationale\": \"Test\", \"days\": []}";
-			
+
 			var result = deserializer.ProcessChunk(partialJson);
-			
+
 			// Should successfully deserialize even though properties have 'required' modifier
 			Assert.NotNull(result);
 			Assert.Equal("Test Trip", result.Title);
@@ -154,18 +154,18 @@ public partial class StreamingJsonDeserializerTests
 		public void ProcessChunk_IncompleteItineraryJson_ReturnsPartialObject()
 		{
 			var deserializer = new StreamingJsonDeserializer<Itinerary>(DeserializationOptions);
-			
+
 			// Only title and partial description
 			var chunk1 = "{\"title\": \"Paris Trip\", \"destinationName\": \"Paris\"";
 			var result1 = deserializer.ProcessChunk(chunk1);
-			
+
 			// Should return empty or previous state (incomplete JSON)
 			Assert.NotNull(result1);
-			
+
 			// Complete the JSON
 			var chunk2 = ", \"description\": \"City of lights\", \"rationale\": \"Romantic\", \"days\": []}";
 			var result2 = deserializer.ProcessChunk(chunk2);
-			
+
 			// Now should have complete object despite 'required' properties
 			Assert.NotNull(result2);
 			Assert.Equal("Paris Trip", result2.Title);
@@ -175,7 +175,7 @@ public partial class StreamingJsonDeserializerTests
 			// Deep comparison: streaming result should equal direct deserialization
 			var fullJson = chunk1 + chunk2;
 			var directDeserialized = JsonSerializer.Deserialize<Itinerary>(fullJson, DeserializationOptions);
-			
+
 			Assert.NotNull(directDeserialized);
 			Assert.Equivalent(directDeserialized, result2, strict: true);
 		}

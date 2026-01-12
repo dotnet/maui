@@ -387,33 +387,33 @@ public abstract class ChatClientFunctionCallingTestsBase<T>
 		var response = await client.GetResponseAsync(messages, options);
 
 		Assert.NotNull(response);
-		
+
 		// Verify both functions were called
 		Assert.True(timeCallCount > 0, "GetCurrentTime should have been called");
 		Assert.True(weatherCallCount > 0, "GetWeather should have been called");
-		
+
 		// Verify the date was passed from time to weather
 		Assert.NotNull(capturedDate);
 		Assert.Contains("2025-12-02", capturedDate, StringComparison.OrdinalIgnoreCase);
-		
+
 		// Verify transcript entries contain all the messages
 		Assert.NotNull(response.Messages);
-		Assert.True(response.Messages.Count >= 5, 
+		Assert.True(response.Messages.Count >= 5,
 			$"Expected at least 5 messages (user, function call, tool result, function call, tool result, assistant), but got {response.Messages.Count}");
-		
+
 		// Verify we have function call content
 		bool hasFunctionCall = response.Messages
 			.Any(m => m.Contents.Any(c => c is FunctionCallContent));
 		Assert.True(hasFunctionCall, "Response should contain FunctionCallContent");
-		
+
 		// Verify we have function result content
 		bool hasFunctionResult = response.Messages
 			.Any(m => m.Contents.Any(c => c is FunctionResultContent));
 		Assert.True(hasFunctionResult, "Response should contain FunctionResultContent");
-		
+
 		// Verify the time tool result contains the static time
 		var timeResults = response.Messages
-			.Where(m => m.Contents.Any(c => 
+			.Where(m => m.Contents.Any(c =>
 				c is FunctionResultContent frc &&
 				frc.Result?.ToString()?.Contains("2025-12-02 12:00:00", StringComparison.OrdinalIgnoreCase) == true))
 			.ToList();
@@ -499,7 +499,7 @@ public abstract class ChatClientFunctionCallingTestsBase<T>
 		// This test verifies that enum parameters are properly preserved in the JSON schema
 		// and that the AI can call the function with valid enum values.
 		// This was a critical bug where enum constraints were being lost during schema parsing.
-		
+
 		bool functionWasCalled = false;
 		PointOfInterestCategory? capturedCategory = null;
 		string? capturedQuery = null;
@@ -510,7 +510,7 @@ public abstract class ChatClientFunctionCallingTestsBase<T>
 				functionWasCalled = true;
 				capturedCategory = pointOfInterest;
 				capturedQuery = naturalLanguageQuery;
-				
+
 				// Return mock data based on category
 				return pointOfInterest switch
 				{
@@ -544,14 +544,14 @@ public abstract class ChatClientFunctionCallingTestsBase<T>
 		Assert.True(functionWasCalled, "Function with enum parameter should have been called");
 		Assert.NotNull(capturedCategory);
 		Assert.NotNull(capturedQuery);
-		
+
 		// Verify the AI used a valid enum value
 		Assert.True(Enum.IsDefined(typeof(PointOfInterestCategory), capturedCategory.Value),
 			$"AI should use a valid enum value, but got: {capturedCategory}");
-		
+
 		// Verify the query is related to the user's request
 		Assert.True(
-			capturedQuery.Contains("hotel", StringComparison.OrdinalIgnoreCase) || 
+			capturedQuery.Contains("hotel", StringComparison.OrdinalIgnoreCase) ||
 			capturedQuery.Contains("maui", StringComparison.OrdinalIgnoreCase),
 			$"The natural language query should relate to the user's request, but got: {capturedQuery}");
 	}
@@ -560,7 +560,7 @@ public abstract class ChatClientFunctionCallingTestsBase<T>
 	public async Task GetStreamingResponseAsync_FunctionWithEnumParameter_CallsToolCorrectly()
 	{
 		// This test verifies enum parameters work correctly in streaming scenarios
-		
+
 		bool functionWasCalled = false;
 		PointOfInterestCategory? capturedCategory = null;
 		string? capturedQuery = null;
@@ -598,7 +598,7 @@ public abstract class ChatClientFunctionCallingTestsBase<T>
 		await foreach (var update in client.GetStreamingResponseAsync(messages, options))
 		{
 			receivedUpdates = true;
-			
+
 			if (update.Contents.Any(c => c is FunctionCallContent))
 			{
 				foundFunctionCall = true;
@@ -609,7 +609,7 @@ public abstract class ChatClientFunctionCallingTestsBase<T>
 		Assert.True(foundFunctionCall, "Should receive FunctionCallContent in streaming updates");
 		Assert.True(functionWasCalled, "Function with enum parameter should have been called during streaming");
 		Assert.NotNull(capturedCategory);
-		
+
 		// Verify the AI used a valid enum value
 		Assert.True(Enum.IsDefined(typeof(PointOfInterestCategory), capturedCategory.Value),
 			$"AI should use a valid enum value, but got: {capturedCategory}");
@@ -617,19 +617,19 @@ public abstract class ChatClientFunctionCallingTestsBase<T>
 		Assert.NotNull(capturedQuery);
 		// Verify the query is related to the user's request
 		Assert.True(
-			capturedQuery.Contains("restaurant", StringComparison.OrdinalIgnoreCase) || 
+			capturedQuery.Contains("restaurant", StringComparison.OrdinalIgnoreCase) ||
 			capturedQuery.Contains("maui", StringComparison.OrdinalIgnoreCase),
 			$"The natural language query should relate to the user's request, but got: {capturedQuery}");
 	}
 }
 
-	public enum PointOfInterestCategory
-	{
-		Cafe,
-		Campground,
-		Hotel,
-		Marina,
-		Museum,
-		NationalMonument,
-		Restaurant
-	}
+public enum PointOfInterestCategory
+{
+	Cafe,
+	Campground,
+	Hotel,
+	Marina,
+	Museum,
+	NationalMonument,
+	Restaurant
+}

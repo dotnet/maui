@@ -10,16 +10,16 @@ namespace Microsoft.Maui.Essentials.AI;
 /// </remarks>
 internal abstract class StreamChunkerBase
 {
-    /// <summary>
-    /// Processes a complete snapshot and returns a streaming chunk representing the delta.
-    /// </summary>
-    /// <param name="completeResponse">A complete response representing the current state.</param>
-    /// <returns>A string chunk to emit. Concatenating all chunks yields the final response.</returns>
-    public abstract string Process(string completeResponse);
+	/// <summary>
+	/// Processes a complete snapshot and returns a streaming chunk representing the delta.
+	/// </summary>
+	/// <param name="completeResponse">A complete response representing the current state.</param>
+	/// <returns>A string chunk to emit. Concatenating all chunks yields the final response.</returns>
+	public abstract string Process(string completeResponse);
 
-    /// <summary>
-    /// Flushes any remaining state and closes all pending output.
-    /// </summary>
-    /// <returns>Final chunk to complete the output (may be empty).</returns>
-    public abstract string Flush();
+	/// <summary>
+	/// Flushes any remaining state and closes all pending output.
+	/// </summary>
+	/// <returns>Final chunk to complete the output (may be empty).</returns>
+	public abstract string Flush();
 }
