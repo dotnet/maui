@@ -67,6 +67,8 @@ parameters:
     default:
       name: MAUI
       vmImage: MAUI
+      demands:
+        - Agent.OSArchitecture -equals X64
   
   - name: androidPoolLinux
     type: object
