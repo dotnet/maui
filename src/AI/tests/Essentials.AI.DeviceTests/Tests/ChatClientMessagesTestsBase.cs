@@ -12,12 +12,12 @@ public abstract class ChatClientMessagesTestsBase<T>
 	where T : class, IChatClient, new()
 {
 	[Fact]
-	public async Task GetResponseAsync_WithEmptyMessages_HandlesGracefully()
+	public async Task GetResponseAsync_WithEmptyMessages_ThrowsException()
 	{
 		var client = new T();
 		var messages = new List<ChatMessage>();
 
-		await client.GetResponseAsync(messages);
+		await Assert.ThrowsAsync<ArgumentException>(() => client.GetResponseAsync(messages));
 	}
 
 	[Fact]
@@ -85,15 +85,18 @@ public abstract class ChatClientMessagesTestsBase<T>
 	}
 
 	[Fact]
-	public async Task GetStreamingResponseAsync_WithEmptyMessages_HandlesGracefully()
+	public async Task GetStreamingResponseAsync_WithEmptyMessages_ThrowsException()
 	{
 		var client = new T();
 		var messages = new List<ChatMessage>();
 
-		await foreach (var update in client.GetStreamingResponseAsync(messages))
+		await Assert.ThrowsAnyAsync<Exception>(async () =>
 		{
-			// Process updates
-		}
+			await foreach (var update in client.GetStreamingResponseAsync(messages))
+			{
+				// Process updates
+			}
+		});
 	}
 
 	[Fact]

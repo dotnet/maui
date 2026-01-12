@@ -26,7 +26,7 @@ public abstract class ChatClientCancellationTestsBase<T>
 	}
 
 	[Fact]
-	public async Task GetResponseAsync_WithCanceledToken_ThrowsOrCompletesGracefully()
+	public async Task GetResponseAsync_WithCanceledToken_ThrowsOperationCanceledException()
 	{
 		var client = new T();
 		var messages = new List<ChatMessage>
@@ -37,18 +37,11 @@ public abstract class ChatClientCancellationTestsBase<T>
 		using var cts = new CancellationTokenSource();
 		cts.Cancel();
 
-		try
-		{
-			await client.GetResponseAsync(messages, cancellationToken: cts.Token);
-		}
-		catch (OperationCanceledException)
-		{
-			// Expected behavior
-		}
+		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => client.GetResponseAsync(messages, cancellationToken: cts.Token));
 	}
 
 	[Fact]
-	public async Task GetResponseAsync_CancelAfterStart_HandlesGracefully()
+	public async Task GetResponseAsync_CancelAfterStart_ThrowsOperationCanceledException()
 	{
 		var client = new T();
 		var messages = new List<ChatMessage>
@@ -63,18 +56,11 @@ public abstract class ChatClientCancellationTestsBase<T>
 		await Task.Delay(50);
 		cts.Cancel();
 
-		try
-		{
-			await task;
-		}
-		catch (OperationCanceledException)
-		{
-			// Expected behavior
-		}
+		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => task);
 	}
 
 	[Fact]
-	public async Task GetResponseAsync_WithTimeout_CompletesOrThrows()
+	public async Task GetResponseAsync_WithTimeout_ThrowsOperationCanceledException()
 	{
 		var client = new T();
 		var messages = new List<ChatMessage>
@@ -84,14 +70,7 @@ public abstract class ChatClientCancellationTestsBase<T>
 
 		using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(100));
 
-		try
-		{
-			await client.GetResponseAsync(messages, cancellationToken: cts.Token);
-		}
-		catch (OperationCanceledException)
-		{
-			// Expected if operation times out
-		}
+		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => client.GetResponseAsync(messages, cancellationToken: cts.Token));
 	}
 
 	[Fact]
@@ -112,7 +91,7 @@ public abstract class ChatClientCancellationTestsBase<T>
 	}
 
 	[Fact]
-	public async Task GetStreamingResponseAsync_WithCanceledToken_ThrowsOrCompletesGracefully()
+	public async Task GetStreamingResponseAsync_WithCanceledToken_ThrowsOperationCanceledException()
 	{
 		var client = new T();
 		var messages = new List<ChatMessage>
@@ -123,21 +102,17 @@ public abstract class ChatClientCancellationTestsBase<T>
 		using var cts = new CancellationTokenSource();
 		cts.Cancel();
 
-		try
+		await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
 		{
 			await foreach (var update in client.GetStreamingResponseAsync(messages, cancellationToken: cts.Token))
 			{
 				// Should not reach here
 			}
-		}
-		catch (OperationCanceledException)
-		{
-			// Expected behavior
-		}
+		});
 	}
 
 	[Fact]
-	public async Task GetStreamingResponseAsync_CancelDuringStreaming_HandlesGracefully()
+	public async Task GetStreamingResponseAsync_CancelDuringStreaming_ThrowsOperationCanceledException()
 	{
 		var client = new T();
 		var messages = new List<ChatMessage>
@@ -148,7 +123,7 @@ public abstract class ChatClientCancellationTestsBase<T>
 		using var cts = new CancellationTokenSource();
 		
 		var updateCount = 0;
-		try
+		await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
 		{
 			await foreach (var update in client.GetStreamingResponseAsync(messages, cancellationToken: cts.Token))
 			{
@@ -158,15 +133,11 @@ public abstract class ChatClientCancellationTestsBase<T>
 					cts.Cancel();
 				}
 			}
-		}
-		catch (OperationCanceledException)
-		{
-			// Expected behavior
-		}
+		});
 	}
 
 	[Fact]
-	public async Task GetStreamingResponseAsync_WithTimeout_CompletesOrThrows()
+	public async Task GetStreamingResponseAsync_WithTimeout_ThrowsOperationCanceledException()
 	{
 		var client = new T();
 		var messages = new List<ChatMessage>
@@ -176,16 +147,12 @@ public abstract class ChatClientCancellationTestsBase<T>
 
 		using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(100));
 
-		try
+		await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
 		{
 			await foreach (var update in client.GetStreamingResponseAsync(messages, cancellationToken: cts.Token))
 			{
 				// Process updates until timeout
 			}
-		}
-		catch (OperationCanceledException)
-		{
-			// Expected if operation times out
-		}
+		});
 	}
 }

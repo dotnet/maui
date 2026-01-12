@@ -35,27 +35,21 @@ public abstract class EmbeddingGeneratorGenerateTestsBase<T>
 	}
 
 	[Fact]
-	public async Task GenerateAsync_WithEmptyList_ReturnsEmptyResult()
+	public async Task GenerateAsync_WithEmptyList_ThrowsException()
 	{
 		var generator = new T();
 		var values = Array.Empty<string>();
 
-		var result = await generator.GenerateAsync(values);
-
-		Assert.NotNull(result);
-		Assert.Empty(result);
+		await Assert.ThrowsAnyAsync<Exception>(() => generator.GenerateAsync(values));
 	}
 
 	[Fact]
-	public async Task GenerateAsync_WithEmptyString_ReturnsEmbedding()
+	public async Task GenerateAsync_WithEmptyString_ThrowsException()
 	{
 		var generator = new T();
 		var values = new[] { "" };
 
-		var result = await generator.GenerateAsync(values);
-
-		Assert.NotNull(result);
-		Assert.Single(result);
+		await Assert.ThrowsAnyAsync<Exception>(() => generator.GenerateAsync(values));
 	}
 
 	[Fact]

@@ -76,6 +76,12 @@ public class NLEmbeddingGenerator : IEmbeddingGenerator<string, Embedding<float>
         EmbeddingGenerationOptions? options = null,
         CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(values);
+        if (!values.Any())
+        {
+            throw new ArgumentException("The values collection must contain at least one value.", nameof(values));
+        }
+
         var potentialCount = values.TryGetNonEnumeratedCount(out var count) ? count : 0;
 
         var result = new GeneratedEmbeddings<Embedding<float>>(potentialCount);
@@ -85,6 +91,8 @@ public class NLEmbeddingGenerator : IEmbeddingGenerator<string, Embedding<float>
         {
             foreach (var value in values)
             {
+                ArgumentException.ThrowIfNullOrEmpty(value);
+
                 cancellationToken.ThrowIfCancellationRequested();
 
                 var vector = _embedding.GetVector(value);
@@ -103,10 +111,7 @@ public class NLEmbeddingGenerator : IEmbeddingGenerator<string, Embedding<float>
     /// <inheritdoc />
     object? IEmbeddingGenerator.GetService(Type serviceType, object? serviceKey)
     {
-        if (serviceType is null)
-        {
-            throw new ArgumentNullException(nameof(serviceType));
-        }
+        ArgumentNullException.ThrowIfNull(serviceType);
 
         if (serviceKey is not null)
         {

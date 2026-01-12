@@ -106,7 +106,7 @@ public class NLContextualEmbeddingGeneratorInstantiationTests : EmbeddingGenerat
 	}
 
 	[Fact]
-	public void LanguageConstructor_WithSpanish_CreatesInstance()
+	public void LanguageConstructor_WithNonEnglish_CreatesInstance()
 	{
 		var generator = new NLContextualEmbeddingGenerator(NLLanguage.Spanish);
 		Assert.NotNull(generator);

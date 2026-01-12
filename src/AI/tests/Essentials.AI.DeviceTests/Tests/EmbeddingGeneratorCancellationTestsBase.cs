@@ -30,7 +30,6 @@ public abstract class EmbeddingGeneratorCancellationTestsBase<T>
 		using var cts = new CancellationTokenSource();
 		cts.Cancel();
 
-		await Assert.ThrowsAsync<OperationCanceledException>(
-			() => generator.GenerateAsync(values, cancellationToken: cts.Token));
+		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => generator.GenerateAsync(values, cancellationToken: cts.Token));
 	}
 }

@@ -88,7 +88,21 @@ public sealed partial class AppleIntelligenceChatClient : ChatClientBase
 	{
 		LogMethodInvoked(nameof(GetResponseAsync), messages, options);
 
+		if (messages is null)
+		{
+			var ex = new ArgumentNullException(nameof(messages));
+			LogMethodFailed(nameof(GetResponseAsync), ex);
+			return Task.FromException<ChatResponse>(ex);
+		}
+
 		var nativeMessages = messages.Select(ToNative).ToArray();
+		if (nativeMessages.Length == 0)
+		{
+			var ex = new ArgumentException("The messages collection must contain at least one message.", nameof(messages));
+			LogMethodFailed(nameof(GetResponseAsync), ex);
+			return Task.FromException<ChatResponse>(ex);
+		}
+
 		var nativeOptions = options is null ? null : ToNative(options);
 		var native = new ChatClientNative();
 
@@ -152,11 +166,11 @@ public sealed partial class AppleIntelligenceChatClient : ChatClientBase
 	{
 		LogMethodInvoked(nameof(GetStreamingResponseAsync), messages, options);
 
-		if (options?.ResponseFormat is ChatResponseFormatJson jsonFormat &&
-			StrictSchemaTransformCache.GetOrCreateTransformedSchema(jsonFormat) is { } jsonSchema)
+		if (messages is null)
 		{
-			options.ResponseFormat = ChatResponseFormat.ForJsonSchema(
-				jsonSchema, jsonFormat.SchemaName, jsonFormat.SchemaDescription);
+			var ex = new ArgumentNullException(nameof(messages));
+			LogMethodFailed(nameof(GetResponseAsync), ex);
+			throw ex;
 		}
 
 		var nativeMessages = messages.Select(ToNative).ToArray();
@@ -167,7 +181,7 @@ public sealed partial class AppleIntelligenceChatClient : ChatClientBase
 		var channel = Channel.CreateUnbounded<ChatResponseUpdate>();
 
 		// Use appropriate stream chunker based on response format
-		StreamChunkerBase chunker = options?.ResponseFormat is ChatResponseFormatJson
+		StreamChunkerBase chunker = nativeOptions?.ResponseJsonSchema is not null
 			? new JsonStreamChunker()
 			: new PlainTextStreamChunker();
 
@@ -366,8 +380,14 @@ public sealed partial class AppleIntelligenceChatClient : ChatClientBase
 			throw new ArgumentOutOfRangeException(nameof(role), $"The role '{role}' is not supported by Apple Intelligence chat APIs.");
 	}
 
-	private static ChatOptionsNative ToNative(ChatOptions options) =>
-		new ChatOptionsNative
+	private static ChatOptionsNative ToNative(ChatOptions options)
+	{
+		if (options.MaxOutputTokens is <= 0)
+		{
+			throw new ArgumentOutOfRangeException(nameof(options), "The MaxOutputTokens option must be greater than zero.");
+		}
+
+		return new ChatOptionsNative
 		{
 			TopK = ToNative(options.TopK),
 			Seed = ToNative(options.Seed),
@@ -376,6 +396,7 @@ public sealed partial class AppleIntelligenceChatClient : ChatClientBase
 			ResponseJsonSchema = ToNative(options.ResponseFormat),
 			Tools = ToNative(options.Tools)
 		};
+	}
 
 	private static AIFunctionToolAdapter[]? ToNative(IList<AITool>? tools)
 	{
@@ -398,7 +419,12 @@ public sealed partial class AppleIntelligenceChatClient : ChatClientBase
 	private static NSString? ToNative(ChatResponseFormat? format) =>
 		format switch
 		{
-			ChatResponseFormatJson jsonFormat => (NSString?)jsonFormat.Schema.ToString(),
+			ChatResponseFormatJson jsonFormat when StrictSchemaTransformCache.GetOrCreateTransformedSchema(jsonFormat) is { } jsonSchema =>
+				(NSString?)ChatResponseFormat.ForJsonSchema(jsonSchema, jsonFormat.SchemaName ?? "json_schema", jsonFormat.SchemaDescription).Schema.ToString(),
+			ChatResponseFormatJson jsonFormat when jsonFormat.Schema is not null =>
+				throw new InvalidOperationException("Failed to transform JSON schema for Apple Intelligence chat API."),
+			ChatResponseFormatJson =>
+				throw new InvalidOperationException("Apple Intelligence chat API requires a JSON schema for structured responses."),
 			_ => null
 		};
 

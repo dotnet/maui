@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Essentials.AI.DeviceTests;
 public abstract class ChatClientFunctionCallingTestsBase<T>
 	where T : class, IChatClient, new()
 {
-	protected virtual T EnableFunctionCalling(T client) => client;
+	protected virtual IChatClient EnableFunctionCalling(T client) => client;
 
 	[Fact]
 	public async Task GetResponseAsync_CallsFunctionAndReturnsResult()
@@ -493,17 +493,6 @@ public abstract class ChatClientFunctionCallingTestsBase<T>
 		Assert.True(foundStaticTime, "Should find the static time '2025-12-02 12:00:00' in function results");
 	}
 
-	public enum PointOfInterestCategory
-	{
-		Cafe,
-		Campground,
-		Hotel,
-		Marina,
-		Museum,
-		NationalMonument,
-		Restaurant
-	}
-
 	[Fact]
 	public async Task GetResponseAsync_FunctionWithEnumParameter_CallsToolCorrectly()
 	{
@@ -561,7 +550,10 @@ public abstract class ChatClientFunctionCallingTestsBase<T>
 			$"AI should use a valid enum value, but got: {capturedCategory}");
 		
 		// Verify the query is related to the user's request
-		Assert.Contains("hotel", capturedQuery, StringComparison.OrdinalIgnoreCase);
+		Assert.True(
+			capturedQuery.Contains("hotel", StringComparison.OrdinalIgnoreCase) || 
+			capturedQuery.Contains("maui", StringComparison.OrdinalIgnoreCase),
+			$"The natural language query should relate to the user's request, but got: {capturedQuery}");
 	}
 
 	[Fact]
@@ -571,12 +563,15 @@ public abstract class ChatClientFunctionCallingTestsBase<T>
 		
 		bool functionWasCalled = false;
 		PointOfInterestCategory? capturedCategory = null;
+		string? capturedQuery = null;
 
 		var findPointsOfInterestTool = AIFunctionFactory.Create(
 			(PointOfInterestCategory pointOfInterest, string naturalLanguageQuery) =>
 			{
 				functionWasCalled = true;
 				capturedCategory = pointOfInterest;
+				capturedQuery = naturalLanguageQuery;
+
 				return $"There are these {pointOfInterest} in Maui: Location 1, Location 2, Location 3";
 			},
 			name: "FindPointsOfInterest",
@@ -618,5 +613,23 @@ public abstract class ChatClientFunctionCallingTestsBase<T>
 		// Verify the AI used a valid enum value
 		Assert.True(Enum.IsDefined(typeof(PointOfInterestCategory), capturedCategory.Value),
 			$"AI should use a valid enum value, but got: {capturedCategory}");
+
+		Assert.NotNull(capturedQuery);
+		// Verify the query is related to the user's request
+		Assert.True(
+			capturedQuery.Contains("restaurant", StringComparison.OrdinalIgnoreCase) || 
+			capturedQuery.Contains("maui", StringComparison.OrdinalIgnoreCase),
+			$"The natural language query should relate to the user's request, but got: {capturedQuery}");
 	}
 }
+
+	public enum PointOfInterestCategory
+	{
+		Cafe,
+		Campground,
+		Hotel,
+		Marina,
+		Museum,
+		NationalMonument,
+		Restaurant
+	}

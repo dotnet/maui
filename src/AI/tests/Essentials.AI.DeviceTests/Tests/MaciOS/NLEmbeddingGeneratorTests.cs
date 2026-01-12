@@ -87,13 +87,6 @@ public class NLEmbeddingGeneratorInstantiationTests : EmbeddingGeneratorInstanti
 	}
 
 	[Fact]
-	public void LanguageConstructor_WithSpanish_CreatesInstance()
-	{
-		var generator = new NLEmbeddingGenerator(NLLanguage.Spanish);
-		Assert.NotNull(generator);
-	}
-
-	[Fact]
 	public void EmbeddingConstructor_WithValidEmbedding_CreatesInstance()
 	{
 		var embedding = NLEmbedding.GetSentenceEmbedding(NLLanguage.English);

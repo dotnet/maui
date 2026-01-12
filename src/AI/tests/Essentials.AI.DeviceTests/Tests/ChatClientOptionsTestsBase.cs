@@ -24,7 +24,7 @@ public abstract class ChatClientOptionsTestsBase<T>
 	}
 
 	[Fact]
-	public async Task GetResponseAsync_WithChatOptionsAcceptsValidOptions()
+	public async Task GetResponseAsync_WithChatOptions_AcceptsValidOptions()
 	{
 		var client = new T();
 		var messages = new List<ChatMessage>
@@ -43,7 +43,7 @@ public abstract class ChatClientOptionsTestsBase<T>
 	}
 
 	[Fact]
-	public async Task GetResponseAsync_WithResponseFormatAcceptsJsonFormat()
+	public virtual async Task GetResponseAsync_WithResponseFormat_AcceptsJsonFormat()
 	{
 		var client = new T();
 		var messages = new List<ChatMessage>
@@ -59,7 +59,7 @@ public abstract class ChatClientOptionsTestsBase<T>
 	}
 
 	[Fact]
-	public async Task GetResponseAsync_WithExtremeTemperatureHandlesGracefully()
+	public async Task GetResponseAsync_WithExtremeTemperature_HandlesGracefully()
 	{
 		var client = new T();
 		var messages = new List<ChatMessage>
@@ -76,7 +76,7 @@ public abstract class ChatClientOptionsTestsBase<T>
 	}
 
 	[Fact]
-	public async Task GetResponseAsync_WithZeroMaxTokensHandlesGracefully()
+	public async Task GetResponseAsync_WithZeroMaxTokens_ThrowsException()
 	{
 		var client = new T();
 		var messages = new List<ChatMessage>
@@ -88,7 +88,7 @@ public abstract class ChatClientOptionsTestsBase<T>
 			MaxOutputTokens = 0
 		};
 
-		await client.GetResponseAsync(messages, options);
+		await Assert.ThrowsAnyAsync<Exception>(() => client.GetResponseAsync(messages, options));
 	}
 
 	[Fact]
@@ -107,7 +107,7 @@ public abstract class ChatClientOptionsTestsBase<T>
 	}
 
 	[Fact]
-	public async Task GetStreamingResponseAsync_WithChatOptionsAcceptsValidOptions()
+	public async Task GetStreamingResponseAsync_WithChatOptions_AcceptsValidOptions()
 	{
 		var client = new T();
 		var messages = new List<ChatMessage>
@@ -129,7 +129,7 @@ public abstract class ChatClientOptionsTestsBase<T>
 	}
 
 	[Fact]
-	public async Task GetStreamingResponseAsync_WithResponseFormatAcceptsJsonFormat()
+	public virtual async Task GetStreamingResponseAsync_WithResponseFormat_AcceptsJsonFormat()
 	{
 		var client = new T();
 		var messages = new List<ChatMessage>
