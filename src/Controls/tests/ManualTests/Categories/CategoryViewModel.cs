@@ -99,7 +99,7 @@ public class CarouselViewCategoryViewModel : CategoryViewModel
 	public override string CategoryName => Category.CarouselView;
 }
 
-[Category(id: "L", title: Category.ScrollView)]
+[Category(id: "N", title: Category.ScrollView)]
 public class ScrollViewCategoryViewModel : CategoryViewModel
 {
 	public override string CategoryName => Category.ScrollView;

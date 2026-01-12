@@ -41,8 +41,7 @@ public partial class N4_SearchBar: ContentPage
 		{
 			// Filter monkeys by name or location
 			var filtered = _allMonkeys.Where(m => 
-				m.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) || 
-				m.Location.Contains(searchText, StringComparison.OrdinalIgnoreCase)).ToList();
+				m.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase)).ToList();
 			
 			_viewModel.Monkeys.Clear();
 			foreach (var monkey in filtered)

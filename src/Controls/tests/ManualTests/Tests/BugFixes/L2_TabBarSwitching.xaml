@@ -12,7 +12,7 @@
                         <Label Text="2. Click 'Tab2' to switch to Tab2 and then switch back to Tab1." />
                         <Label Text="3. Click button 'Back to BugFixes Category' to go back to BugFixes Category page." />
                         <Button Text="Back to BugFixes Category" Clicked="OnBackClicked" />
-                        <Label Text="Welcome To Tab1"
+                        <Label Text="Welcome to Tab1"
                             HorizontalOptions="Center"
                             VerticalOptions="Center"/>
                     </VerticalStackLayout>

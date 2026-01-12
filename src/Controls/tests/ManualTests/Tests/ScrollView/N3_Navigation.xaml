@@ -13,8 +13,7 @@
         
         <VerticalStackLayout Grid.Row="0" Spacing="5" Margin="0,0,0,15">
             <Label Text="1. Click any monkey image to navigate to the detail page." />
-            <Label Text="2. Verify that the detail page shows complete information." />
-            <Label Text="3. Use the back button to return to the scrollview." />      
+            <Label Text="2. Verify that the detail page shows complete information." />   
         </VerticalStackLayout>
 
         <ScrollView Grid.Row="1" Orientation="Horizontal">

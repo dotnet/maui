@@ -56,16 +56,7 @@
             <Label Text="{Binding Details}"
                    FontSize="16"
                    LineBreakMode="WordWrap"
-                   TextColor="Black" />
-            
-            <!-- Back Button -->
-            <Button Text="Back"
-                    Clicked="OnBackClicked"
-                    BackgroundColor="#176515"
-                    TextColor="White"
-                    CornerRadius="10"
-                    HeightRequest="50"
-                    Margin="0,20,0,0" />
+                   TextColor="Black" />            
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

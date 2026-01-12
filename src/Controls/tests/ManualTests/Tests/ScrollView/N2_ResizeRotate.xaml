@@ -12,7 +12,7 @@
         <VerticalStackLayout Grid.Row="0" Spacing="5" Margin="0,0,0,15">
             <Label Text="1. Windows/MacCatalyst:Resize the window horizontally and vertically to see adaptive behavior." />
             <Label Text="2. Android/iOS:Rotate the device/window and check layout adjustment." />
-            <Label Text="3. Scroll horizontally/vertically to view all monkeys in a single row." />
+            <Label Text="3. Scroll horizontally to view all monkeys in a single row." />
         </VerticalStackLayout>
 
         <ScrollView Grid.Row="1" Orientation="Horizontal">
