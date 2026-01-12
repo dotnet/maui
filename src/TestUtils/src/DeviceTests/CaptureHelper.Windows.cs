@@ -30,7 +30,7 @@ namespace Microsoft.Maui.DeviceTests
 		public static GraphicsCaptureItem CreateItemForWindow(IntPtr hwnd)
 		{
 			// Windows Graphics Capture API may not be available on Helix VMs or in certain environments.
-			// Check IsSupported() first to avoid cryptic ArgumentException from COM interop.
+			// Check IsSupported() first to provide a clear error message.
 			if (!GraphicsCaptureSession.IsSupported())
 			{
 				throw new PlatformNotSupportedException(
@@ -38,11 +38,23 @@ namespace Microsoft.Maui.DeviceTests
 					"This commonly occurs on Helix CI VMs where the required graphics infrastructure is not available.");
 			}
 
-			var interop = GraphicsCaptureItem.As<IGraphicsCaptureItemInterop>();
-			var itemPointer = interop.CreateForWindow(hwnd, GraphicsCaptureItemGuid);
-			var item = GraphicsCaptureItem.FromAbi(itemPointer);
-			Marshal.Release(itemPointer);
-			return item;
+			try
+			{
+				var interop = GraphicsCaptureItem.As<IGraphicsCaptureItemInterop>();
+				var itemPointer = interop.CreateForWindow(hwnd, GraphicsCaptureItemGuid);
+				var item = GraphicsCaptureItem.FromAbi(itemPointer);
+				Marshal.Release(itemPointer);
+				return item;
+			}
+			catch (ArgumentException ex) when (ex.Message.Contains("Value does not fall within the expected range", StringComparison.Ordinal))
+			{
+				// On Helix CI VMs, IsSupported() returns true but CreateForWindow fails because
+				// the VM's display environment doesn't support actual window capture.
+				// Convert to PlatformNotSupportedException so tests can be properly skipped.
+				throw new PlatformNotSupportedException(
+					"Windows Graphics Capture failed: the display environment does not support window capture. " +
+					"This commonly occurs on Helix CI VMs.", ex);
+			}
 		}
 
 		public static GraphicsCaptureItem CreateItemForMonitor(IntPtr hmon)

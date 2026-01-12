@@ -292,7 +292,16 @@ namespace Microsoft.Maui.DeviceTests
 				// working on DirectX controls (such as Win2D).
 				// We could use this window bitmap directly, but that is extra effort to crop
 				// to the view bounds... so until this breaks...
-				using var windowBitmap = await CaptureHelper.RenderAsync(window, device);
+				try
+				{
+					using var windowBitmap = await CaptureHelper.RenderAsync(window, device);
+				}
+				catch (PlatformNotSupportedException)
+				{
+					// On Helix CI VMs, window capture is not supported. 
+					// Continue without it - this may cause issues with DirectX controls like Win2D,
+					// but should work for standard XAML controls.
+				}
 
 				var bmp = new RenderTargetBitmap();
 				await bmp.RenderAsync(view);
