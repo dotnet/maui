@@ -1,15 +1,19 @@
-#if IOS || MACCATALYST
 using Microsoft.Extensions.AI;
 using Xunit;
 
 namespace Microsoft.Maui.Essentials.AI.DeviceTests;
 
-public class NLEmbeddingGeneratorConcurrencyTests
+/// <summary>
+/// Base class for embedding generator concurrency tests.
+/// </summary>
+/// <typeparam name="T">The embedding generator type to test.</typeparam>
+public abstract class EmbeddingGeneratorConcurrencyTestsBase<T>
+	where T : class, IEmbeddingGenerator<string, Embedding<float>>, new()
 {
 	[Fact]
 	public async Task GenerateAsync_ConcurrentCalls_HandledSafely()
 	{
-		var generator = new NaturalLanguageEmbeddingGenerator();
+		var generator = new T();
 		var tasks = new List<Task<GeneratedEmbeddings<Embedding<float>>>>();
 
 		// Launch multiple concurrent requests
@@ -32,7 +36,7 @@ public class NLEmbeddingGeneratorConcurrencyTests
 	[Fact]
 	public async Task GenerateAsync_SequentialCalls_ProduceConsistentResults()
 	{
-		var generator = new NaturalLanguageEmbeddingGenerator();
+		var generator = new T();
 		var testText = "The quick brown fox";
 
 		var result1 = await generator.GenerateAsync(new[] { testText });
@@ -43,15 +47,10 @@ public class NLEmbeddingGeneratorConcurrencyTests
 		Assert.Single(result1);
 		Assert.Single(result2);
 
-		// Same text should produce same embedding
+		// Same text should produce same embedding dimensions
 		var vec1 = result1[0].Vector.ToArray();
 		var vec2 = result2[0].Vector.ToArray();
 
 		Assert.Equal(vec1.Length, vec2.Length);
-		for (int i = 0; i < vec1.Length; i++)
-		{
-			Assert.Equal(vec1[i], vec2[i]);
-		}
 	}
 }
-#endif

@@ -1,14 +1,19 @@
-#if IOS || MACCATALYST
+using Microsoft.Extensions.AI;
 using Xunit;
 
 namespace Microsoft.Maui.Essentials.AI.DeviceTests;
 
-public class NLContextualEmbeddingGeneratorCancellationTests
+/// <summary>
+/// Base class for embedding generator cancellation tests.
+/// </summary>
+/// <typeparam name="T">The embedding generator type to test.</typeparam>
+public abstract class EmbeddingGeneratorCancellationTestsBase<T>
+	where T : class, IEmbeddingGenerator<string, Embedding<float>>, new()
 {
 	[Fact]
 	public async Task GenerateAsync_AcceptsCancellationToken()
 	{
-		var generator = new NaturalLanguageContextualEmbeddingGenerator();
+		var generator = new T();
 		var values = new[] { "Hello world" };
 		using var cts = new CancellationTokenSource();
 
@@ -20,7 +25,7 @@ public class NLContextualEmbeddingGeneratorCancellationTests
 	[Fact]
 	public async Task GenerateAsync_WithCanceledToken_ThrowsOperationCanceledException()
 	{
-		var generator = new NaturalLanguageContextualEmbeddingGenerator();
+		var generator = new T();
 		var values = new[] { "Hello world" };
 		using var cts = new CancellationTokenSource();
 		cts.Cancel();
@@ -29,4 +34,3 @@ public class NLContextualEmbeddingGeneratorCancellationTests
 			() => generator.GenerateAsync(values, cancellationToken: cts.Token));
 	}
 }
-#endif

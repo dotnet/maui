@@ -1,17 +1,20 @@
-#if IOS || MACCATALYST
 using Microsoft.Extensions.AI;
 using Xunit;
 
-using PlatformChatClient = Microsoft.Maui.Essentials.AI.AppleIntelligenceChatClient;
-
 namespace Microsoft.Maui.Essentials.AI.DeviceTests;
 
-public class AppleIntelligenceChatClientMessagesTests
+/// <summary>
+/// Base class for ChatClient message handling tests.
+/// Provides common tests for any IChatClient implementation.
+/// </summary>
+/// <typeparam name="T">The concrete ChatClient type to test.</typeparam>
+public abstract class ChatClientMessagesTestsBase<T>
+	where T : class, IChatClient, new()
 {
 	[Fact]
 	public async Task GetResponseAsync_WithEmptyMessages_HandlesGracefully()
 	{
-		var client = new PlatformChatClient();
+		var client = new T();
 		var messages = new List<ChatMessage>();
 
 		await client.GetResponseAsync(messages);
@@ -20,7 +23,7 @@ public class AppleIntelligenceChatClientMessagesTests
 	[Fact]
 	public async Task GetResponseAsync_WithSystemMessage_AcceptsSystemRole()
 	{
-		var client = new PlatformChatClient();
+		var client = new T();
 		var messages = new List<ChatMessage>
 		{
 			new(ChatRole.System, "You are a helpful assistant"),
@@ -33,7 +36,7 @@ public class AppleIntelligenceChatClientMessagesTests
 	[Fact]
 	public async Task GetResponseAsync_WithConversationHistory_AcceptsMultipleMessages()
 	{
-		var client = new PlatformChatClient();
+		var client = new T();
 		var messages = new List<ChatMessage>
 		{
 			new(ChatRole.User, "What's 2 + 2?"),
@@ -47,7 +50,7 @@ public class AppleIntelligenceChatClientMessagesTests
 	[Fact]
 	public async Task GetResponseAsync_WithLongMessage_HandlesGracefully()
 	{
-		var client = new PlatformChatClient();
+		var client = new T();
 		var longText = string.Join(" ", Enumerable.Repeat("This is a test message.", 100));
 		var messages = new List<ChatMessage>
 		{
@@ -60,7 +63,7 @@ public class AppleIntelligenceChatClientMessagesTests
 	[Fact]
 	public async Task GetResponseAsync_WithEmptyMessageContent_HandlesGracefully()
 	{
-		var client = new PlatformChatClient();
+		var client = new T();
 		var messages = new List<ChatMessage>
 		{
 			new(ChatRole.User, "")
@@ -72,7 +75,7 @@ public class AppleIntelligenceChatClientMessagesTests
 	[Fact]
 	public async Task GetResponseAsync_WithSpecialCharacters_HandlesGracefully()
 	{
-		var client = new PlatformChatClient();
+		var client = new T();
 		var messages = new List<ChatMessage>
 		{
 			new(ChatRole.User, "Test with special chars: 你好 🌍 émojis & symbols!")
@@ -84,7 +87,7 @@ public class AppleIntelligenceChatClientMessagesTests
 	[Fact]
 	public async Task GetStreamingResponseAsync_WithEmptyMessages_HandlesGracefully()
 	{
-		var client = new PlatformChatClient();
+		var client = new T();
 		var messages = new List<ChatMessage>();
 
 		await foreach (var update in client.GetStreamingResponseAsync(messages))
@@ -96,7 +99,7 @@ public class AppleIntelligenceChatClientMessagesTests
 	[Fact]
 	public async Task GetStreamingResponseAsync_WithSystemMessage_AcceptsSystemRole()
 	{
-		var client = new PlatformChatClient();
+		var client = new T();
 		var messages = new List<ChatMessage>
 		{
 			new(ChatRole.System, "You are a helpful assistant"),
@@ -112,7 +115,7 @@ public class AppleIntelligenceChatClientMessagesTests
 	[Fact]
 	public async Task GetStreamingResponseAsync_WithConversationHistory_AcceptsMultipleMessages()
 	{
-		var client = new PlatformChatClient();
+		var client = new T();
 		var messages = new List<ChatMessage>
 		{
 			new(ChatRole.User, "What's 2 + 2?"),
@@ -129,7 +132,7 @@ public class AppleIntelligenceChatClientMessagesTests
 	[Fact]
 	public async Task GetStreamingResponseAsync_WithLongMessage_HandlesGracefully()
 	{
-		var client = new PlatformChatClient();
+		var client = new T();
 		var longText = string.Join(" ", Enumerable.Repeat("This is a test message.", 100));
 		var messages = new List<ChatMessage>
 		{
@@ -145,7 +148,7 @@ public class AppleIntelligenceChatClientMessagesTests
 	[Fact]
 	public async Task GetStreamingResponseAsync_WithEmptyMessageContent_HandlesGracefully()
 	{
-		var client = new PlatformChatClient();
+		var client = new T();
 		var messages = new List<ChatMessage>
 		{
 			new(ChatRole.User, "")
@@ -160,7 +163,7 @@ public class AppleIntelligenceChatClientMessagesTests
 	[Fact]
 	public async Task GetStreamingResponseAsync_WithSpecialCharacters_HandlesGracefully()
 	{
-		var client = new PlatformChatClient();
+		var client = new T();
 		var messages = new List<ChatMessage>
 		{
 			new(ChatRole.User, "Test with special chars: 你好 🌍 émojis & symbols!")
@@ -172,4 +175,3 @@ public class AppleIntelligenceChatClientMessagesTests
 		}
 	}
 }
-#endif

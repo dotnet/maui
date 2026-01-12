@@ -1,13 +1,18 @@
-#if IOS || MACCATALYST
 using Microsoft.Extensions.AI;
 using Xunit;
 
-using PlatformChatClient = Microsoft.Maui.Essentials.AI.AppleIntelligenceChatClient;
-
 namespace Microsoft.Maui.Essentials.AI.DeviceTests;
 
-public class AppleIntelligenceChatClientFunctionCallingTests
+/// <summary>
+/// Base class for ChatClient function calling tests.
+/// Provides common tests for any IChatClient implementation.
+/// </summary>
+/// <typeparam name="T">The concrete ChatClient type to test.</typeparam>
+public abstract class ChatClientFunctionCallingTestsBase<T>
+	where T : class, IChatClient, new()
 {
+	protected virtual T EnableFunctionCalling(T client) => client;
+
 	[Fact]
 	public async Task GetResponseAsync_CallsFunctionAndReturnsResult()
 	{
@@ -24,7 +29,7 @@ public class AppleIntelligenceChatClientFunctionCallingTests
 			name: "GetWeather",
 			description: "Gets the weather for a location");
 
-		var client = new PlatformChatClient();
+		var client = EnableFunctionCalling(new T());
 		var messages = new List<ChatMessage>
 		{
 			new(ChatRole.User, "What's the weather in Seattle?")
@@ -66,7 +71,7 @@ public class AppleIntelligenceChatClientFunctionCallingTests
 			name: "GetTime",
 			description: "Gets the current time for a timezone");
 
-		var client = new PlatformChatClient();
+		var client = EnableFunctionCalling(new T());
 		var messages = new List<ChatMessage>
 		{
 			new(ChatRole.User, "What's the weather in Seattle and what time is it in PST?")
@@ -98,7 +103,7 @@ public class AppleIntelligenceChatClientFunctionCallingTests
 			name: "GetWeather",
 			description: "Gets the weather for a location");
 
-		var client = new PlatformChatClient();
+		var client = EnableFunctionCalling(new T());
 		var messages = new List<ChatMessage>
 		{
 			new(ChatRole.User, "What's the weather in Boston?")
@@ -129,7 +134,7 @@ public class AppleIntelligenceChatClientFunctionCallingTests
 			name: "GetWeather",
 			description: "Gets the weather for a location");
 
-		var client = new PlatformChatClient();
+		var client = EnableFunctionCalling(new T());
 		var messages = new List<ChatMessage>
 		{
 			new(ChatRole.User, "What's the weather in Chicago?")
@@ -164,7 +169,7 @@ public class AppleIntelligenceChatClientFunctionCallingTests
 			name: "GetWeather",
 			description: "Gets the weather for a location");
 
-		var client = new PlatformChatClient();
+		var client = EnableFunctionCalling(new T());
 		var messages = new List<ChatMessage>
 		{
 			new(ChatRole.User, "What's the weather in Denver?")
@@ -199,7 +204,7 @@ public class AppleIntelligenceChatClientFunctionCallingTests
 			name: "GetWeather",
 			description: "Gets the weather for a location");
 
-		var client = new PlatformChatClient();
+		var client = EnableFunctionCalling(new T());
 		var messages = new List<ChatMessage>
 		{
 			new(ChatRole.User, "What's the weather in Miami?")
@@ -259,7 +264,7 @@ public class AppleIntelligenceChatClientFunctionCallingTests
 			name: "GetTime",
 			description: "Gets the current time for a timezone");
 
-		var client = new PlatformChatClient();
+		var client = EnableFunctionCalling(new T());
 		var messages = new List<ChatMessage>
 		{
 			new(ChatRole.User, "What's the weather in New York and what time is it in EST?")
@@ -293,7 +298,7 @@ public class AppleIntelligenceChatClientFunctionCallingTests
 			name: "Search",
 			description: "Searches for information");
 
-		var client = new PlatformChatClient();
+		var client = EnableFunctionCalling(new T());
 		var messages = new List<ChatMessage>
 		{
 			new(ChatRole.User, "Search for 'dotnet maui' with 10 results including images")
@@ -323,7 +328,7 @@ public class AppleIntelligenceChatClientFunctionCallingTests
 			name: "Search",
 			description: "Searches for information");
 
-		var client = new PlatformChatClient();
+		var client = EnableFunctionCalling(new T());
 		var messages = new List<ChatMessage>
 		{
 			new(ChatRole.User, "Search for 'xamarin forms' with 5 results without images")
@@ -369,7 +374,7 @@ public class AppleIntelligenceChatClientFunctionCallingTests
 			name: "GetWeather",
 			description: "Gets the weather forecast for a specific date. Requires the date in YYYY-MM-DD format.");
 
-		var client = new PlatformChatClient();
+		var client = EnableFunctionCalling(new T());
 		var messages = new List<ChatMessage>
 		{
 			new(ChatRole.User, "What's the weather like today?")
@@ -441,7 +446,7 @@ public class AppleIntelligenceChatClientFunctionCallingTests
 			name: "GetWeather",
 			description: "Gets the weather forecast for a specific date. Requires the date in YYYY-MM-DD format.");
 
-		var client = new PlatformChatClient();
+		var client = EnableFunctionCalling(new T());
 		var messages = new List<ChatMessage>
 		{
 			new(ChatRole.User, "What's the weather like today?")
@@ -529,7 +534,7 @@ public class AppleIntelligenceChatClientFunctionCallingTests
 			name: "FindPointsOfInterest",
 			description: "Finds points of interest for a landmark.");
 
-		var client = new PlatformChatClient();
+		var client = EnableFunctionCalling(new T());
 		var systemMessage = new ChatMessage(ChatRole.System,
 			"Your job is to help find hotels and restaurants. " +
 			"Always use the FindPointsOfInterest tool to find businesses.");
@@ -577,7 +582,7 @@ public class AppleIntelligenceChatClientFunctionCallingTests
 			name: "FindPointsOfInterest",
 			description: "Finds points of interest for a landmark.");
 
-		var client = new PlatformChatClient();
+		var client = EnableFunctionCalling(new T());
 		var systemMessage = new ChatMessage(ChatRole.System,
 			"Your job is to help find restaurants and cafes. " +
 			"Always use the FindPointsOfInterest tool to find businesses.");
@@ -615,4 +620,3 @@ public class AppleIntelligenceChatClientFunctionCallingTests
 			$"AI should use a valid enum value, but got: {capturedCategory}");
 	}
 }
-#endif

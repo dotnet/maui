@@ -1,17 +1,20 @@
-#if IOS || MACCATALYST
 using Microsoft.Extensions.AI;
 using Xunit;
 
-using PlatformChatClient = Microsoft.Maui.Essentials.AI.AppleIntelligenceChatClient;
-
 namespace Microsoft.Maui.Essentials.AI.DeviceTests;
 
-public class AppleIntelligenceChatClientCancellationTests
+/// <summary>
+/// Base class for ChatClient cancellation tests.
+/// Provides common tests for any IChatClient implementation.
+/// </summary>
+/// <typeparam name="T">The concrete ChatClient type to test.</typeparam>
+public abstract class ChatClientCancellationTestsBase<T>
+	where T : class, IChatClient, new()
 {
 	[Fact]
 	public async Task GetResponseAsync_AcceptsCancellationToken()
 	{
-		var client = new PlatformChatClient();
+		var client = new T();
 		var messages = new List<ChatMessage>
 		{
 			new(ChatRole.User, "Hello")
@@ -25,7 +28,7 @@ public class AppleIntelligenceChatClientCancellationTests
 	[Fact]
 	public async Task GetResponseAsync_WithCanceledToken_ThrowsOrCompletesGracefully()
 	{
-		var client = new PlatformChatClient();
+		var client = new T();
 		var messages = new List<ChatMessage>
 		{
 			new(ChatRole.User, "Hello")
@@ -47,7 +50,7 @@ public class AppleIntelligenceChatClientCancellationTests
 	[Fact]
 	public async Task GetResponseAsync_CancelAfterStart_HandlesGracefully()
 	{
-		var client = new PlatformChatClient();
+		var client = new T();
 		var messages = new List<ChatMessage>
 		{
 			new(ChatRole.User, "Tell me a long story")
@@ -73,7 +76,7 @@ public class AppleIntelligenceChatClientCancellationTests
 	[Fact]
 	public async Task GetResponseAsync_WithTimeout_CompletesOrThrows()
 	{
-		var client = new PlatformChatClient();
+		var client = new T();
 		var messages = new List<ChatMessage>
 		{
 			new(ChatRole.User, "Hello")
@@ -94,7 +97,7 @@ public class AppleIntelligenceChatClientCancellationTests
 	[Fact]
 	public async Task GetStreamingResponseAsync_AcceptsCancellationToken()
 	{
-		var client = new PlatformChatClient();
+		var client = new T();
 		var messages = new List<ChatMessage>
 		{
 			new(ChatRole.User, "Hello")
@@ -111,7 +114,7 @@ public class AppleIntelligenceChatClientCancellationTests
 	[Fact]
 	public async Task GetStreamingResponseAsync_WithCanceledToken_ThrowsOrCompletesGracefully()
 	{
-		var client = new PlatformChatClient();
+		var client = new T();
 		var messages = new List<ChatMessage>
 		{
 			new(ChatRole.User, "Hello")
@@ -136,7 +139,7 @@ public class AppleIntelligenceChatClientCancellationTests
 	[Fact]
 	public async Task GetStreamingResponseAsync_CancelDuringStreaming_HandlesGracefully()
 	{
-		var client = new PlatformChatClient();
+		var client = new T();
 		var messages = new List<ChatMessage>
 		{
 			new(ChatRole.User, "Count to 100")
@@ -165,7 +168,7 @@ public class AppleIntelligenceChatClientCancellationTests
 	[Fact]
 	public async Task GetStreamingResponseAsync_WithTimeout_CompletesOrThrows()
 	{
-		var client = new PlatformChatClient();
+		var client = new T();
 		var messages = new List<ChatMessage>
 		{
 			new(ChatRole.User, "Count to 100")
@@ -186,4 +189,3 @@ public class AppleIntelligenceChatClientCancellationTests
 		}
 	}
 }
-#endif

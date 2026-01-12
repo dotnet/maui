@@ -1,14 +1,19 @@
-#if IOS || MACCATALYST
+using Microsoft.Extensions.AI;
 using Xunit;
 
 namespace Microsoft.Maui.Essentials.AI.DeviceTests;
 
-public class NLEmbeddingGeneratorSimilarityTests
+/// <summary>
+/// Base class for embedding generator similarity tests.
+/// </summary>
+/// <typeparam name="T">The embedding generator type to test.</typeparam>
+public abstract class EmbeddingGeneratorSimilarityTestsBase<T>
+	where T : class, IEmbeddingGenerator<string, Embedding<float>>, new()
 {
 	[Fact]
 	public async Task GenerateAsync_SimilarTexts_ProduceSimilarEmbeddings()
 	{
-		var generator = new NaturalLanguageEmbeddingGenerator();
+		var generator = new T();
 		var values = new[] { "The weather is nice today", "Today the weather is beautiful" };
 
 		var result = await generator.GenerateAsync(values);
@@ -29,7 +34,7 @@ public class NLEmbeddingGeneratorSimilarityTests
 	[Fact]
 	public async Task GenerateAsync_DissimilarTexts_ProduceDifferentEmbeddings()
 	{
-		var generator = new NaturalLanguageEmbeddingGenerator();
+		var generator = new T();
 		var values = new[] { "The weather is nice today", "Computer programming with C#" };
 
 		var result = await generator.GenerateAsync(values);
@@ -50,7 +55,7 @@ public class NLEmbeddingGeneratorSimilarityTests
 	[Fact]
 	public async Task GenerateAsync_IdenticalTexts_ProduceIdenticalEmbeddings()
 	{
-		var generator = new NaturalLanguageEmbeddingGenerator();
+		var generator = new T();
 		var values = new[] { "Hello world", "Hello world" };
 
 		var result = await generator.GenerateAsync(values);
@@ -90,4 +95,3 @@ public class NLEmbeddingGeneratorSimilarityTests
 		return dotProduct / (MathF.Sqrt(normA) * MathF.Sqrt(normB));
 	}
 }
-#endif
