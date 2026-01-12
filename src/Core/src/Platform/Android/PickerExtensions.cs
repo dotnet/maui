@@ -67,5 +67,64 @@ namespace Microsoft.Maui.Platform
 				lv.TextDirection = platformLayoutDirection.ToTextDirection();
 			}
 		}
+
+		internal static void UpdateTitle(this MauiMaterialPicker platformPicker, IPicker picker)
+		{
+			UpdatePicker(platformPicker, picker);
+		}
+
+		internal static void UpdateTitleColor(this MauiMaterialPicker platformPicker, IPicker picker)
+		{
+			var titleColor = picker.TitleColor;
+
+			if (titleColor is not null)
+			{
+				if (PlatformInterop.CreateEditTextColorStateList(platformPicker.TextColors, titleColor.ToPlatform()) is ColorStateList c)
+				{
+					platformPicker.SetHintTextColor(c);
+				}
+				else if (picker.TextColor == picker.TitleColor)
+				{
+					platformPicker.SetHintTextColor(titleColor.ToPlatform());
+				}
+			}
+		}
+
+		internal static void UpdateSelectedIndex(this MauiMaterialPicker platformPicker, IPicker picker)
+		{
+			UpdatePicker(platformPicker, picker);
+		}
+
+		internal static void UpdatePicker(this MauiMaterialPicker platformPicker, IPicker picker)
+		{
+			platformPicker.Hint = picker.Title;
+
+			if (picker.SelectedIndex == -1 || picker.SelectedIndex >= picker.GetCount())
+			{
+				platformPicker.Text = null;
+			}
+			else
+			{
+				platformPicker.Text = picker.GetItem(picker.SelectedIndex);
+			}
+		}
+
+		internal static void UpdateFlowDirection(this AppCompatAlertDialog alertDialog, MauiMaterialPicker platformPicker)
+		{
+			var platformLayoutDirection = platformPicker.LayoutDirection;
+
+			// Propagate the MauiMaterialPicker LayoutDirection to the AlertDialog
+			var dv = alertDialog.Window?.DecorView;
+
+			dv?.LayoutDirection = platformLayoutDirection;
+
+			var lv = alertDialog?.ListView;
+
+			if (lv is not null)
+			{
+				lv.LayoutDirection = platformLayoutDirection;
+				lv.TextDirection = platformLayoutDirection.ToTextDirection();
+			}
+		}
 	}
 }
