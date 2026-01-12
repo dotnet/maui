@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Essentials.AI;
 [SupportedOSPlatform("ios13.0")]
 [SupportedOSPlatform("maccatalyst")]
 [SupportedOSPlatform("macos")]
-public class NaturalLanguageEmbeddingGenerator : IEmbeddingGenerator<string, Embedding<float>>
+public class NLEmbeddingGenerator : IEmbeddingGenerator<string, Embedding<float>>
 {
     /// <summary>Semaphore to ensure thread-safe access to the embedding generator.</summary>
     private readonly SemaphoreSlim _semaphore = new(1, 1);
@@ -39,20 +39,20 @@ public class NaturalLanguageEmbeddingGenerator : IEmbeddingGenerator<string, Emb
     private EmbeddingGeneratorMetadata? _metadata;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="NaturalLanguageEmbeddingGenerator"/> class
+    /// Initializes a new instance of the <see cref="NLEmbeddingGenerator"/> class
     /// using the English sentence embedding.
     /// </summary>
-    public NaturalLanguageEmbeddingGenerator()
+    public NLEmbeddingGenerator()
         : this(NLLanguage.English)
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="NaturalLanguageEmbeddingGenerator"/> class
+    /// Initializes a new instance of the <see cref="NLEmbeddingGenerator"/> class
     /// with the specified language's sentence embedding.
     /// </summary>
     /// <param name="language">The language for which to generate embeddings.</param>
-    public NaturalLanguageEmbeddingGenerator(NLLanguage language)
+    public NLEmbeddingGenerator(NLLanguage language)
     {
         _embedding = NLEmbedding.GetSentenceEmbedding(language)
             ?? throw new NotSupportedException($"Sentence embedding for language '{language}' is not supported.");
@@ -60,11 +60,11 @@ public class NaturalLanguageEmbeddingGenerator : IEmbeddingGenerator<string, Emb
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="NaturalLanguageEmbeddingGenerator"/> class
+    /// Initializes a new instance of the <see cref="NLEmbeddingGenerator"/> class
     /// with the specified <see cref="NLEmbedding"/>.
     /// </summary>
     /// <param name="embedding">The <see cref="NLEmbedding"/> to use for generating embeddings.</param>
-    public NaturalLanguageEmbeddingGenerator(NLEmbedding embedding)
+    public NLEmbeddingGenerator(NLEmbedding embedding)
     {
         _embedding = embedding ?? throw new ArgumentNullException(nameof(embedding));
         _ownsEmbedding = false;

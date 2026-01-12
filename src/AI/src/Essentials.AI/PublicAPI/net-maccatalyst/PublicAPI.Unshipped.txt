@@ -8,18 +8,18 @@ Microsoft.Maui.Essentials.AI.AppleIntelligenceChatClient.AppleIntelligenceChatCl
 Microsoft.Maui.Essentials.AI.ChatClientBase
 Microsoft.Maui.Essentials.AI.ChatClientBase.JsonSerializerOptions.get -> System.Text.Json.JsonSerializerOptions!
 Microsoft.Maui.Essentials.AI.ChatClientBase.JsonSerializerOptions.set -> void
-Microsoft.Maui.Essentials.AI.NaturalLanguageContextualEmbeddingGenerator
-Microsoft.Maui.Essentials.AI.NaturalLanguageContextualEmbeddingGenerator.Dispose() -> void
-Microsoft.Maui.Essentials.AI.NaturalLanguageContextualEmbeddingGenerator.GenerateAsync(System.Collections.Generic.IEnumerable<string!>! values, Microsoft.Extensions.AI.EmbeddingGenerationOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Extensions.AI.GeneratedEmbeddings<Microsoft.Extensions.AI.Embedding<float>!>!>!
-Microsoft.Maui.Essentials.AI.NaturalLanguageContextualEmbeddingGenerator.NaturalLanguageContextualEmbeddingGenerator() -> void
-Microsoft.Maui.Essentials.AI.NaturalLanguageContextualEmbeddingGenerator.NaturalLanguageContextualEmbeddingGenerator(NaturalLanguage.NLContextualEmbedding! embedding) -> void
-Microsoft.Maui.Essentials.AI.NaturalLanguageContextualEmbeddingGenerator.NaturalLanguageContextualEmbeddingGenerator(NaturalLanguage.NLLanguage language) -> void
-Microsoft.Maui.Essentials.AI.NaturalLanguageEmbeddingGenerator
-Microsoft.Maui.Essentials.AI.NaturalLanguageEmbeddingGenerator.Dispose() -> void
-Microsoft.Maui.Essentials.AI.NaturalLanguageEmbeddingGenerator.GenerateAsync(System.Collections.Generic.IEnumerable<string!>! values, Microsoft.Extensions.AI.EmbeddingGenerationOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Extensions.AI.GeneratedEmbeddings<Microsoft.Extensions.AI.Embedding<float>!>!>!
-Microsoft.Maui.Essentials.AI.NaturalLanguageEmbeddingGenerator.NaturalLanguageEmbeddingGenerator() -> void
-Microsoft.Maui.Essentials.AI.NaturalLanguageEmbeddingGenerator.NaturalLanguageEmbeddingGenerator(NaturalLanguage.NLEmbedding! embedding) -> void
-Microsoft.Maui.Essentials.AI.NaturalLanguageEmbeddingGenerator.NaturalLanguageEmbeddingGenerator(NaturalLanguage.NLLanguage language) -> void
+Microsoft.Maui.Essentials.AI.NLContextualEmbeddingGenerator
+Microsoft.Maui.Essentials.AI.NLContextualEmbeddingGenerator.Dispose() -> void
+Microsoft.Maui.Essentials.AI.NLContextualEmbeddingGenerator.GenerateAsync(System.Collections.Generic.IEnumerable<string!>! values, Microsoft.Extensions.AI.EmbeddingGenerationOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Extensions.AI.GeneratedEmbeddings<Microsoft.Extensions.AI.Embedding<float>!>!>!
+Microsoft.Maui.Essentials.AI.NLContextualEmbeddingGenerator.NLContextualEmbeddingGenerator() -> void
+Microsoft.Maui.Essentials.AI.NLContextualEmbeddingGenerator.NLContextualEmbeddingGenerator(NaturalLanguage.NLContextualEmbedding! embedding) -> void
+Microsoft.Maui.Essentials.AI.NLContextualEmbeddingGenerator.NLContextualEmbeddingGenerator(NaturalLanguage.NLLanguage language) -> void
+Microsoft.Maui.Essentials.AI.NLEmbeddingGenerator
+Microsoft.Maui.Essentials.AI.NLEmbeddingGenerator.Dispose() -> void
+Microsoft.Maui.Essentials.AI.NLEmbeddingGenerator.GenerateAsync(System.Collections.Generic.IEnumerable<string!>! values, Microsoft.Extensions.AI.EmbeddingGenerationOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Extensions.AI.GeneratedEmbeddings<Microsoft.Extensions.AI.Embedding<float>!>!>!
+Microsoft.Maui.Essentials.AI.NLEmbeddingGenerator.NLEmbeddingGenerator() -> void
+Microsoft.Maui.Essentials.AI.NLEmbeddingGenerator.NLEmbeddingGenerator(NaturalLanguage.NLEmbedding! embedding) -> void
+Microsoft.Maui.Essentials.AI.NLEmbeddingGenerator.NLEmbeddingGenerator(NaturalLanguage.NLLanguage language) -> void
 abstract Microsoft.Maui.Essentials.AI.ChatClientBase.GetResponseAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage!>! messages, Microsoft.Extensions.AI.ChatOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Extensions.AI.ChatResponse!>!
 abstract Microsoft.Maui.Essentials.AI.ChatClientBase.GetStreamingResponseAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage!>! messages, Microsoft.Extensions.AI.ChatOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.ChatResponseUpdate!>!
 override Microsoft.Maui.Essentials.AI.AppleIntelligenceChatClient.GetResponseAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage!>! messages, Microsoft.Extensions.AI.ChatOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Extensions.AI.ChatResponse!>!

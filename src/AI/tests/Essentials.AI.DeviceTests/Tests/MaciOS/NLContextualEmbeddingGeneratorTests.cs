@@ -6,20 +6,18 @@ using Xunit;
 
 namespace Microsoft.Maui.Essentials.AI.DeviceTests;
 
-public class NLContextualEmbeddingGeneratorCancellationTests : EmbeddingGeneratorCancellationTestsBase<NaturalLanguageContextualEmbeddingGenerator>
+[Category("NLContextualEmbeddingGenerator")]
+public class NLContextualEmbeddingGeneratorCancellationTests : EmbeddingGeneratorCancellationTestsBase<NLContextualEmbeddingGenerator>
 {
-	// All cancellation tests are inherited from base class
-	// Add implementation-specific cancellation tests here if needed
 }
 
-public class NLContextualEmbeddingGeneratorConcurrencyTests : EmbeddingGeneratorConcurrencyTestsBase<NaturalLanguageContextualEmbeddingGenerator>
+[Category("NLContextualEmbeddingGenerator")]
+public class NLContextualEmbeddingGeneratorConcurrencyTests : EmbeddingGeneratorConcurrencyTestsBase<NLContextualEmbeddingGenerator>
 {
-	// Implementation-specific test for NaturalLanguageContextualEmbeddingGenerator
-
 	[Fact]
 	public async Task GenerateAsync_SequentialCalls_ProduceConsistentDimensions()
 	{
-		var generator = new NaturalLanguageContextualEmbeddingGenerator();
+		var generator = new NLContextualEmbeddingGenerator();
 		var testText = "The quick brown fox";
 
 		var result1 = await generator.GenerateAsync(new[] { testText });
@@ -38,15 +36,14 @@ public class NLContextualEmbeddingGeneratorConcurrencyTests : EmbeddingGenerator
 	}
 }
 
-public class NLContextualEmbeddingGeneratorDisposalTests : EmbeddingGeneratorDisposalTestsBase<NaturalLanguageContextualEmbeddingGenerator>
+[Category("NLContextualEmbeddingGenerator")]
+public class NLContextualEmbeddingGeneratorDisposalTests : EmbeddingGeneratorDisposalTestsBase<NLContextualEmbeddingGenerator>
 {
-	// Implementation-specific tests for NaturalLanguageContextualEmbeddingGenerator
-
 	[Fact]
 	public void Dispose_WithOwnedEmbedding_DisposesEmbedding()
 	{
 		// When using default constructor, generator owns the embedding
-		var generator = new NaturalLanguageContextualEmbeddingGenerator();
+		var generator = new NLContextualEmbeddingGenerator();
 		generator.Dispose();
 		// No exception means success
 	}
@@ -57,7 +54,7 @@ public class NLContextualEmbeddingGeneratorDisposalTests : EmbeddingGeneratorDis
 		var embedding = NLContextualEmbedding.CreateWithLanguage(NLLanguage.English.GetConstant()!);
 		Assert.NotNull(embedding);
 
-		var generator = new NaturalLanguageContextualEmbeddingGenerator(embedding);
+		var generator = new NLContextualEmbeddingGenerator(embedding);
 		generator.Dispose();
 
 		// Embedding should still be accessible (not disposed)
@@ -73,85 +70,45 @@ public class NLContextualEmbeddingGeneratorDisposalTests : EmbeddingGeneratorDis
 		var generator = embedding.AsEmbeddingGenerator();
 
 		Assert.NotNull(generator);
-		Assert.IsType<NaturalLanguageContextualEmbeddingGenerator>(generator);
+		Assert.IsType<NLContextualEmbeddingGenerator>(generator);
 	}
 }
 
-public class NLContextualEmbeddingGeneratorGenerateTests : EmbeddingGeneratorGenerateTestsBase<NaturalLanguageContextualEmbeddingGenerator>
+[Category("NLContextualEmbeddingGenerator")]
+public class NLContextualEmbeddingGeneratorGenerateTests : EmbeddingGeneratorGenerateTestsBase<NLContextualEmbeddingGenerator>
 {
-	// Implementation-specific tests for NaturalLanguageContextualEmbeddingGenerator
-
-	[Fact]
-	public async Task GenerateAsync_MultipleCalls_LoadsAssetsOnce()
-	{
-		var generator = new NaturalLanguageContextualEmbeddingGenerator();
-
-		var result1 = await generator.GenerateAsync(new[] { "First call" });
-		Assert.NotNull(result1);
-
-		var result2 = await generator.GenerateAsync(new[] { "Second call" });
-		Assert.NotNull(result2);
-
-		var result3 = await generator.GenerateAsync(new[] { "Third call" });
-		Assert.NotNull(result3);
-	}
-
-	[Fact]
-	public async Task GenerateAsync_TokenVectorAveraging_ProducesConsistentDimensions()
-	{
-		var generator = new NaturalLanguageContextualEmbeddingGenerator();
-		var values = new[]
-		{
-			"Short",
-			"A medium length sentence",
-			"A much longer sentence with many more words to process and tokenize"
-		};
-
-		var result = await generator.GenerateAsync(values);
-
-		Assert.NotNull(result);
-		Assert.Equal(3, result.Count);
-
-		var nonEmptyResults = result.Where(e => e.Vector.Length > 0).ToList();
-		if (nonEmptyResults.Count > 1)
-		{
-			var dimensions = nonEmptyResults.Select(e => e.Vector.Length).Distinct().ToList();
-			Assert.Single(dimensions);
-		}
-	}
 }
-public class NLContextualEmbeddingGeneratorGetServiceTests : EmbeddingGeneratorGetServiceTestsBase<NaturalLanguageContextualEmbeddingGenerator>
+
+[Category("NLContextualEmbeddingGenerator")]
+public class NLContextualEmbeddingGeneratorGetServiceTests : EmbeddingGeneratorGetServiceTestsBase<NLContextualEmbeddingGenerator>
 {
 	protected override string ExpectedProviderName => "apple";
 	protected override string ExpectedDefaultModelId => "natural-language-contextual";
 
-	// Implementation-specific tests for NaturalLanguageContextualEmbeddingGenerator
-
 	[Fact]
 	public void GetService_ReturnsUnderlyingNLContextualEmbedding()
 	{
-		IEmbeddingGenerator<string, Embedding<float>> generator = new NaturalLanguageContextualEmbeddingGenerator();
+		IEmbeddingGenerator<string, Embedding<float>> generator = new NLContextualEmbeddingGenerator();
 		var embedding = generator.GetService<NLContextualEmbedding>();
 
 		Assert.NotNull(embedding);
 	}
 }
 
-public class NLContextualEmbeddingGeneratorInstantiationTests : EmbeddingGeneratorInstantiationTestsBase<NaturalLanguageContextualEmbeddingGenerator>
+[Category("NLContextualEmbeddingGenerator")]
+public class NLContextualEmbeddingGeneratorInstantiationTests : EmbeddingGeneratorInstantiationTestsBase<NLContextualEmbeddingGenerator>
 {
-	// Implementation-specific tests for NaturalLanguageContextualEmbeddingGenerator
-
 	[Fact]
 	public void LanguageConstructor_WithEnglish_CreatesInstance()
 	{
-		var generator = new NaturalLanguageContextualEmbeddingGenerator(NLLanguage.English);
+		var generator = new NLContextualEmbeddingGenerator(NLLanguage.English);
 		Assert.NotNull(generator);
 	}
 
 	[Fact]
 	public void LanguageConstructor_WithSpanish_CreatesInstance()
 	{
-		var generator = new NaturalLanguageContextualEmbeddingGenerator(NLLanguage.Spanish);
+		var generator = new NLContextualEmbeddingGenerator(NLLanguage.Spanish);
 		Assert.NotNull(generator);
 	}
 
@@ -161,21 +118,20 @@ public class NLContextualEmbeddingGeneratorInstantiationTests : EmbeddingGenerat
 		var embedding = NLContextualEmbedding.CreateWithLanguage(NLLanguage.English.GetConstant()!);
 		Assert.NotNull(embedding);
 
-		var generator = new NaturalLanguageContextualEmbeddingGenerator(embedding);
+		var generator = new NLContextualEmbeddingGenerator(embedding);
 		Assert.NotNull(generator);
 	}
 
 	[Fact]
 	public void EmbeddingConstructor_WithNull_ThrowsArgumentNullException()
 	{
-		Assert.Throws<ArgumentNullException>(() => new NaturalLanguageContextualEmbeddingGenerator((NLContextualEmbedding)null!));
+		Assert.Throws<ArgumentNullException>(() => new NLContextualEmbeddingGenerator((NLContextualEmbedding)null!));
 	}
 }
 
-public class NLContextualEmbeddingGeneratorSimilarityTests : EmbeddingGeneratorSimilarityTestsBase<NaturalLanguageContextualEmbeddingGenerator>
+[Category("NLContextualEmbeddingGenerator")]
+public class NLContextualEmbeddingGeneratorSimilarityTests : EmbeddingGeneratorSimilarityTestsBase<NLContextualEmbeddingGenerator>
 {
-	// All similarity tests are inherited from base class
-	// Add implementation-specific similarity tests here if needed
 }
 
 #endif

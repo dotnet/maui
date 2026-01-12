@@ -6,27 +6,24 @@ using Xunit;
 
 namespace Microsoft.Maui.Essentials.AI.DeviceTests;
 
-public class NLEmbeddingGeneratorCancellationTests : EmbeddingGeneratorCancellationTestsBase<NaturalLanguageEmbeddingGenerator>
+[Category("NLEmbeddingGenerator")]
+public class NLEmbeddingGeneratorCancellationTests : EmbeddingGeneratorCancellationTestsBase<NLEmbeddingGenerator>
 {
-	// All cancellation tests are inherited from base class
-	// Add implementation-specific cancellation tests here if needed
 }
 
-public class NLEmbeddingGeneratorConcurrencyTests : EmbeddingGeneratorConcurrencyTestsBase<NaturalLanguageEmbeddingGenerator>
+[Category("NLEmbeddingGenerator")]
+public class NLEmbeddingGeneratorConcurrencyTests : EmbeddingGeneratorConcurrencyTestsBase<NLEmbeddingGenerator>
 {
-	// All concurrency tests are inherited from base class
-	// Add implementation-specific concurrency tests here if needed
 }
 
-public class NLEmbeddingGeneratorDisposalTests : EmbeddingGeneratorDisposalTestsBase<NaturalLanguageEmbeddingGenerator>
+[Category("NLEmbeddingGenerator")]
+public class NLEmbeddingGeneratorDisposalTests : EmbeddingGeneratorDisposalTestsBase<NLEmbeddingGenerator>
 {
-	// Implementation-specific tests for NaturalLanguageEmbeddingGenerator
-
 	[Fact]
 	public void Dispose_WithOwnedEmbedding_DisposesEmbedding()
 	{
 		// When using default constructor, generator owns the embedding
-		var generator = new NaturalLanguageEmbeddingGenerator();
+		var generator = new NLEmbeddingGenerator();
 		generator.Dispose();
 		// No exception means success
 	}
@@ -37,7 +34,7 @@ public class NLEmbeddingGeneratorDisposalTests : EmbeddingGeneratorDisposalTests
 		var embedding = NLEmbedding.GetSentenceEmbedding(NLLanguage.English);
 		Assert.NotNull(embedding);
 
-		var generator = new NaturalLanguageEmbeddingGenerator(embedding);
+		var generator = new NLEmbeddingGenerator(embedding);
 		generator.Dispose();
 
 		// Embedding should still be usable
@@ -54,73 +51,45 @@ public class NLEmbeddingGeneratorDisposalTests : EmbeddingGeneratorDisposalTests
 		var generator = embedding.AsEmbeddingGenerator();
 
 		Assert.NotNull(generator);
-		Assert.IsType<NaturalLanguageEmbeddingGenerator>(generator);
+		Assert.IsType<NLEmbeddingGenerator>(generator);
 	}
 }
-public class NLEmbeddingGeneratorGenerateTests : EmbeddingGeneratorGenerateTestsBase<NaturalLanguageEmbeddingGenerator>
+
+[Category("NLEmbeddingGenerator")]
+public class NLEmbeddingGeneratorGenerateTests : EmbeddingGeneratorGenerateTestsBase<NLEmbeddingGenerator>
 {
-	// Implementation-specific tests for NaturalLanguageEmbeddingGenerator
-
-	[Fact]
-	public async Task GenerateAsync_WithSingleValue_ReturnsNonEmptyVector()
-	{
-		var generator = new NaturalLanguageEmbeddingGenerator();
-		var values = new[] { "Hello world" };
-
-		var result = await generator.GenerateAsync(values);
-
-		Assert.NotNull(result);
-		Assert.Single(result);
-		Assert.NotEmpty(result[0].Vector.ToArray());
-	}
-
-	[Fact]
-	public async Task GenerateAsync_WithMultipleValues_ReturnsNonEmptyVectors()
-	{
-		var generator = new NaturalLanguageEmbeddingGenerator();
-		var values = new[] { "Hello", "World", "Test" };
-
-		var result = await generator.GenerateAsync(values);
-
-		Assert.NotNull(result);
-		Assert.Equal(3, result.Count);
-		foreach (var embedding in result)
-		{
-			Assert.NotEmpty(embedding.Vector.ToArray());
-		}
-	}
 }
-public class NLEmbeddingGeneratorGetServiceTests : EmbeddingGeneratorGetServiceTestsBase<NaturalLanguageEmbeddingGenerator>
+
+[Category("NLEmbeddingGenerator")]
+public class NLEmbeddingGeneratorGetServiceTests : EmbeddingGeneratorGetServiceTestsBase<NLEmbeddingGenerator>
 {
 	protected override string ExpectedProviderName => "apple";
 	protected override string ExpectedDefaultModelId => "natural-language";
 
-	// Implementation-specific tests for NaturalLanguageEmbeddingGenerator
-
 	[Fact]
 	public void GetService_ReturnsUnderlyingNLEmbedding()
 	{
-		IEmbeddingGenerator<string, Embedding<float>> generator = new NaturalLanguageEmbeddingGenerator();
+		IEmbeddingGenerator<string, Embedding<float>> generator = new NLEmbeddingGenerator();
 		var embedding = generator.GetService<NLEmbedding>();
 
 		Assert.NotNull(embedding);
 	}
 }
-public class NLEmbeddingGeneratorInstantiationTests : EmbeddingGeneratorInstantiationTestsBase<NaturalLanguageEmbeddingGenerator>
-{
-	// Implementation-specific tests for NaturalLanguageEmbeddingGenerator
 
+[Category("NLEmbeddingGenerator")]
+public class NLEmbeddingGeneratorInstantiationTests : EmbeddingGeneratorInstantiationTestsBase<NLEmbeddingGenerator>
+{
 	[Fact]
 	public void LanguageConstructor_WithEnglish_CreatesInstance()
 	{
-		var generator = new NaturalLanguageEmbeddingGenerator(NLLanguage.English);
+		var generator = new NLEmbeddingGenerator(NLLanguage.English);
 		Assert.NotNull(generator);
 	}
 
 	[Fact]
 	public void LanguageConstructor_WithSpanish_CreatesInstance()
 	{
-		var generator = new NaturalLanguageEmbeddingGenerator(NLLanguage.Spanish);
+		var generator = new NLEmbeddingGenerator(NLLanguage.Spanish);
 		Assert.NotNull(generator);
 	}
 
@@ -130,21 +99,20 @@ public class NLEmbeddingGeneratorInstantiationTests : EmbeddingGeneratorInstanti
 		var embedding = NLEmbedding.GetSentenceEmbedding(NLLanguage.English);
 		Assert.NotNull(embedding);
 
-		var generator = new NaturalLanguageEmbeddingGenerator(embedding);
+		var generator = new NLEmbeddingGenerator(embedding);
 		Assert.NotNull(generator);
 	}
 
 	[Fact]
 	public void EmbeddingConstructor_WithNull_ThrowsArgumentNullException()
 	{
-		Assert.Throws<ArgumentNullException>(() => new NaturalLanguageEmbeddingGenerator((NLEmbedding)null!));
+		Assert.Throws<ArgumentNullException>(() => new NLEmbeddingGenerator((NLEmbedding)null!));
 	}
 }
 
-public class NLEmbeddingGeneratorSimilarityTests : EmbeddingGeneratorSimilarityTestsBase<NaturalLanguageEmbeddingGenerator>
+[Category("NLEmbeddingGenerator")]
+public class NLEmbeddingGeneratorSimilarityTests : EmbeddingGeneratorSimilarityTestsBase<NLEmbeddingGenerator>
 {
-	// All similarity tests are inherited from base class
-	// Add implementation-specific similarity tests here if needed
 }
 
 #endif

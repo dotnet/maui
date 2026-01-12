@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Essentials.AI;
 [SupportedOSPlatform("macos14.0")]
 [SupportedOSPlatform("ios17.0")]
 [SupportedOSPlatform("maccatalyst17.0")]
-public class NaturalLanguageContextualEmbeddingGenerator : IEmbeddingGenerator<string, Embedding<float>>
+public class NLContextualEmbeddingGenerator : IEmbeddingGenerator<string, Embedding<float>>
 {
     /// <summary>Semaphore to ensure thread-safe access to the embedding generator.</summary>
     private readonly SemaphoreSlim _semaphore = new(1, 1);
@@ -50,20 +50,20 @@ public class NaturalLanguageContextualEmbeddingGenerator : IEmbeddingGenerator<s
     private bool _assetsLoaded;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="NaturalLanguageContextualEmbeddingGenerator"/> class
+    /// Initializes a new instance of the <see cref="NLContextualEmbeddingGenerator"/> class
     /// using the English language.
     /// </summary>
-    public NaturalLanguageContextualEmbeddingGenerator()
+    public NLContextualEmbeddingGenerator()
         : this(NLLanguage.English)
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="NaturalLanguageContextualEmbeddingGenerator"/> class
+    /// Initializes a new instance of the <see cref="NLContextualEmbeddingGenerator"/> class
     /// with the specified language.
     /// </summary>
     /// <param name="language">The language for which to generate embeddings.</param>
-    public NaturalLanguageContextualEmbeddingGenerator(NLLanguage language)
+    public NLContextualEmbeddingGenerator(NLLanguage language)
     {
         _embedding = NLContextualEmbedding.CreateWithLanguage(language.GetConstant()!)
             ?? throw new NotSupportedException($"Contextual embedding for language '{language}' is not supported.");
@@ -71,11 +71,11 @@ public class NaturalLanguageContextualEmbeddingGenerator : IEmbeddingGenerator<s
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="NaturalLanguageContextualEmbeddingGenerator"/> class
+    /// Initializes a new instance of the <see cref="NLContextualEmbeddingGenerator"/> class
     /// with the specified <see cref="NLContextualEmbedding"/>.
     /// </summary>
     /// <param name="embedding">The <see cref="NLContextualEmbedding"/> to use for generating embeddings.</param>
-    public NaturalLanguageContextualEmbeddingGenerator(NLContextualEmbedding embedding)
+    public NLContextualEmbeddingGenerator(NLContextualEmbedding embedding)
     {
         _embedding = embedding ?? throw new ArgumentNullException(nameof(embedding));
         _ownsEmbedding = false;
