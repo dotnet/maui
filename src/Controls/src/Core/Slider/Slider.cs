@@ -145,6 +145,12 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(ValueProperty, value); }
 		}
 
+		double IRange.Value
+		{
+			get => Value;
+			set => SetValue(ValueProperty, value, SetterSpecificity.FromHandler);
+		}
+
 		public event EventHandler<ValueChangedEventArgs> ValueChanged;
 		public event EventHandler DragStarted;
 		public event EventHandler DragCompleted;
