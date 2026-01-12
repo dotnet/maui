@@ -534,10 +534,10 @@ namespace Microsoft.Maui.Layouts.Flex
 				}
 
 				float flex_tolerance = layout.flex_dim;
-#if WINDOWS
-				// Windows requires tolerance for floating-point precision issues in flex wrapping
+
+				// Minimum tolerance for floating-point precision issues in flex wrapping
 				flex_tolerance += 0.1f;
-#endif
+
 				float child_size = child.Frame[layout.frame_size_i];
 				if (layout.wrap)
 				{
