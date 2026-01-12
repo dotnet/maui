@@ -5,24 +5,24 @@ namespace Microsoft.Maui.ManualTests.Tests.BugFixes;
 [Test(id: "L2", title: "TabBar Switching Test", category: Category.BugFixes)]
 public partial class L2_TabBarSwitching : Shell
 {
-private static CategoryViewModel _savedCategoryViewModel;
+    private static CategoryViewModel _savedCategoryViewModel;
 
-public L2_TabBarSwitching()
-{
-InitializeComponent();
+    public L2_TabBarSwitching()
+    {
+        InitializeComponent();
 
-// Save the CategoryPage's ViewModel so we can recreate it
-if (Application.Current?.MainPage is Shell shell)
-{
-var currentPage = shell.CurrentPage;
-if (currentPage is CategoryPage categoryPage && categoryPage.BindingContext is CategoryViewModel vm)
-{
-_savedCategoryViewModel = vm;
-}
-}
-}
+        // Save the CategoryPage's ViewModel so we can recreate it
+        if (Application.Current?.MainPage is Shell shell)
+        {
+            var currentPage = shell.CurrentPage;
+            if (currentPage is CategoryPage categoryPage && categoryPage.BindingContext is CategoryViewModel vm)
+            {
+                _savedCategoryViewModel = vm;
+            }
+        }
+    }
 
-private async void OnBackClicked(object sender, EventArgs e)
+    private async void OnBackClicked(object sender, EventArgs e)
 {
 if (Application.Current != null)
 {
