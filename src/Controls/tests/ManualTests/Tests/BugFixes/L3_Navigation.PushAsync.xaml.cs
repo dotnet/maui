@@ -16,14 +16,14 @@ public partial class L3_Navigation_PushAsync : ContentPage
 	private async void OnNavigateToNewPage1Clicked(object sender, EventArgs e)
 	{
 		await Navigation.PushAsync(new ContentPage
-		 { 
+		{
 			Title = "New Page1",
-			Content = new Label 
-    		{ 
-        		Text = "Welcome to New Page 1",
-        		VerticalOptions = LayoutOptions.Center,
-        		HorizontalOptions = LayoutOptions.Center
-    		}
+			Content = new Label
+			{
+				Text = "Welcome to New Page 1",
+				VerticalOptions = LayoutOptions.Center,
+				HorizontalOptions = LayoutOptions.Center
+			}
 		});
 	}
 
