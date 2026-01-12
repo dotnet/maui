@@ -218,13 +218,6 @@ Task("uitests-apphost")
             properties.Add("_UseNativeAot", "true");
             properties.Add("RuntimeIdentifier", "iossimulator-x64");
         }
-        
-        var useMaterial3 = Argument("usematerial3", false);
-        if (useMaterial3)
-        {
-            Information("Building with Material3 enabled");
-            properties.Add("UseMaterial3", "true");
-        }
 
         if (useNuget)
         {

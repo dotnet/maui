@@ -54,31 +54,61 @@ steps:
 - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
   displayName: 'Add .NET to PATH'
 
-# Clean artifacts for Material3 build to ensure clean state
-# Reference: Controls.TestCases.HostApp.csproj line 17-19 warning comment
+# Modify HostApp project file to enable Material3 if requested
 - pwsh: |
     if (("${{ parameters.useMaterial3 }}" -eq "true") -and ("${{ parameters.platform }}" -eq "android")) {
-        Write-Host "Cleaning artifacts folder for Material3 clean build"
-        Remove-Item -Path "$(System.DefaultWorkingDirectory)/artifacts" -Recurse -Force -ErrorAction SilentlyContinue
-        Write-Host "Artifacts folder cleaned successfully"
+        $projectFile = "$(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj"
+        Write-Host "Enabling Material3 in HostApp project file: $projectFile"
+        
+        # Read the project file content
+        $content = Get-Content $projectFile -Raw
+        
+        # Add UseMaterial3 property to the first PropertyGroup
+        $pattern = '(<PropertyGroup[^>]*>)'
+        $replacement = '$1`n    <UseMaterial3>true</UseMaterial3>'
+        $newContent = $content -replace $pattern, $replacement, 1
+        
+        # Write back to file
+        Set-Content $projectFile -Value $newContent -NoNewline
+        Write-Host "Material3 enabled in project file"
+        
+        # Display the modified section for verification
+        Write-Host "Modified project file content (first 20 lines):"
+        Get-Content $projectFile | Select-Object -First 20
     }
-  displayName: 'Clean artifacts for Material3'
+  displayName: 'Enable Material3 in HostApp project'
   
 - pwsh: |
     Get-Content $PSCommandPath
     $buildCommand = "./build.ps1 --target=uitests-apphost --configuration=${{ parameters.configuration }} --${{ parameters.platform }} --verbosity=diagnostic --usenuget=false --runtimevariant=${{ parameters.runtimeVariant }}"
     
-    # Add Material3 build argument if enabled
+    # Display build command
     if (("${{ parameters.useMaterial3 }}" -eq "true") -and ("${{ parameters.platform }}" -eq "android")) {
-        $buildCommand += " --usematerial3=true"
-        Write-Host "Building with Material3 enabled"
-    } elseif ("${{ parameters.useMaterial3 }}" -eq "true") {
-        Write-Host "Material3 is only supported for Android platform, ignoring useMaterial3 parameter"
+        Write-Host "Building with Material3 enabled via project file modification"
     }
     
     Invoke-Expression $buildCommand
   displayName: 'Build the samples'
 
+# Restore original HostApp project file after build
+- pwsh: |
+    if (("${{ parameters.useMaterial3 }}" -eq "true") -and ("${{ parameters.platform }}" -eq "android")) {
+        $projectFile = "$(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj"
+        Write-Host "Restoring original HostApp project file"
+        
+        # Read the current content
+        $content = Get-Content $projectFile -Raw
+        
+        # Remove the UseMaterial3 property we added
+        $newContent = $content -replace '\s*<UseMaterial3>true</UseMaterial3>\r?\n', ''
+        
+        # Write back to file
+        Set-Content $projectFile -Value $newContent -NoNewline
+        Write-Host "Project file restored to original state"
+    }
+  displayName: 'Restore HostApp project file'
+  condition: always()
+  
 - bash: |
     if [ -f "$HOME/Library/Logs/CoreSimulator/*" ]; then rm -r $HOME/Library/Logs/CoreSimulator/*; fi
     if [ -f "$HOME/Library/Logs/DiagnosticReports/*" ]; then rm -r $HOME/Library/Logs/DiagnosticReports/*; fi
