@@ -156,7 +156,7 @@ stages:
                   - template: ui-tests-collect-snapshot-diffs.yml
                     parameters:
                       platform: 'Android'
-                      artifactName: 'uitest-snapshot-results-android-$(System.JobName)-$(System.JobAttempt)'
+                      artifactName: 'uitest-snapshot-results-android-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
 
   - stage: android_ui_tests_coreclr
@@ -203,7 +203,7 @@ stages:
                   - template: ui-tests-collect-snapshot-diffs.yml
                     parameters:
                       platform: 'Android'
-                      artifactName: 'uitest-snapshot-results-android-$(System.JobName)-$(System.JobAttempt)'
+                      artifactName: 'uitest-snapshot-results-android-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
   - stage: ios_ui_tests_mono
     displayName: iOS UITests Mono
@@ -251,7 +251,7 @@ stages:
                   - template: ui-tests-collect-snapshot-diffs.yml
                     parameters:
                       platform: 'iOS'
-                      artifactName: 'uitest-snapshot-results-ios-$(System.JobName)-$(System.JobAttempt)'
+                      artifactName: 'uitest-snapshot-results-ios-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
   - stage: ios_ui_tests_mono_cv2
     displayName: iOS UITests Mono CollectionView2
@@ -295,7 +295,7 @@ stages:
                   - template: ui-tests-collect-snapshot-diffs.yml
                     parameters:
                       platform: 'iOS CV2'
-                      artifactName: 'uitest-snapshot-results-ios-cv2-$(System.JobName)-$(System.JobAttempt)'
+                      artifactName: 'uitest-snapshot-results-ios-cv2-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
   - stage: ios_ui_tests_mono_carv2
     displayName: iOS UITests Mono CarouselView2
@@ -338,7 +338,7 @@ stages:
                   - template: ui-tests-collect-snapshot-diffs.yml
                     parameters:
                       platform: 'iOS CARV2'
-                      artifactName: 'uitest-snapshot-results-ios-carv2-$(System.JobName)-$(System.JobAttempt)'
+                      artifactName: 'uitest-snapshot-results-ios-carv2-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
   # NativeAOT iOS UI tests stage - only run when both BuildNativeAOT and RunNativeAOT parameters are true
   - ${{ if and(eq(parameters.BuildNativeAOT, true), eq(parameters.RunNativeAOT, true)) }}:
@@ -419,7 +419,7 @@ stages:
                   - template: ui-tests-collect-snapshot-diffs.yml
                     parameters:
                       platform: 'Windows'
-                      artifactName: 'uitest-snapshot-results-windows-$(System.JobName)-$(System.JobAttempt)'
+                      artifactName: 'uitest-snapshot-results-windows-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
   - stage: mac_ui_tests
     displayName: macOS UITests
@@ -457,4 +457,4 @@ stages:
                   - template: ui-tests-collect-snapshot-diffs.yml
                     parameters:
                       platform: 'Mac'
-                      artifactName: 'uitest-snapshot-results-mac-$(System.JobName)-$(System.JobAttempt)'
+                      artifactName: 'uitest-snapshot-results-mac-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'

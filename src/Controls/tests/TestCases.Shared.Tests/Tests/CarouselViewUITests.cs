@@ -6,21 +6,17 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests
 {
-	public class CarouselViewUITests : UITest
+	public class CarouselViewUITests : _GalleryUITest
 	{
 		const string CarouselViewGallery = "CarouselView Gallery";
+
+		public override string GalleryPageName => CarouselViewGallery;
 
 		public CarouselViewUITests(TestDevice device) : base(device)
 		{
 		}
 
 		protected override bool ResetAfterEachTest => true;
-
-		public override void TestSetup()
-		{
-			base.TestSetup();
-			App.NavigateToGallery(CarouselViewGallery);
-		}
 
 		[Test]
 		[Category(UITestCategories.CarouselView)]

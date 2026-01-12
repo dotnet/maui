@@ -58,7 +58,7 @@ public partial class CarouselViewControlPage : ContentPage
 		if (int.TryParse(scrollToIndexEntry.Text, out int index) &&
 			index >= 0 && index < carouselView.ItemsSource.Cast<object>().Count())
 		{
-			carouselView.ScrollTo(index);
+			carouselView.ScrollTo(index, animate: false);
 		}
 	}
 }
