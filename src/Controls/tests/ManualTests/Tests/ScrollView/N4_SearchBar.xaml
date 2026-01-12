@@ -11,7 +11,7 @@
         <VerticalStackLayout Grid.Row="0" Spacing="5" Margin="0,0,0,15">
             <Label Text="1. Use the search bar to filter monkeys by name." />
             <Label Text="2. Verify that enter values the 'x' button display." />
-            <Label Text="3. Verify that clear input values the 'x' button disappear." />
+            <Label Text="3. Verify that clearing the input causes the 'x' button to disappear." />
         </VerticalStackLayout>
         
         <!-- Search Bar Section -->
