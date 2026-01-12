@@ -36,7 +36,7 @@ This guide applies when you:
 - ✅ **ALWAYS** check for errors/exceptions FIRST before claiming success
 - ✅ **ALWAYS** verify "Test completed" marker appears in output
 - ✅ **ALWAYS** verify expected test actions in logs (Tapping, Screenshot, etc.)
-- ✅ **ALWAYS** check device logs for debug logging markers (use both Console.WriteLine and Debug.WriteLine - see Log Capture section)
+- ✅ **ALWAYS** check device logs for Console.WriteLine markers (e.g., "SANDBOX: ...")
 - ✅ **ALWAYS** verify artifacts exist (screenshots, if test captures them)
 
 ### Rule 1: NEVER ASSUME TEST COMPLETION
@@ -54,7 +54,7 @@ After running BuildAndRunSandbox.ps1, you MUST:
 
 ### Rule 3: VALIDATE DEVICE LOGS FOR EXPECTED BEHAVIOR
 - ✅ **DO** check device logs confirm your expected test actions happened
-- ✅ **DO** grep for your debug logging markers (e.g., "SANDBOX.*CLICKED") - use both Console.WriteLine and Debug.WriteLine for cross-platform coverage
+- ✅ **DO** grep for your Console.WriteLine markers (e.g., "SANDBOX.*CLICKED")
 - ❌ **DO NOT** claim the test worked without verifying device logs show the action
 
 ### Rule 4: SYSTEMATIC VALIDATION CHECKLIST
@@ -283,7 +283,7 @@ gh pr checkout <PR_NUMBER>
    - Check AutomationIds: `grep AutomationId MainPage.xaml`
    - Update test to use those IDs (not template defaults)
    - Add test logic: tap buttons, verify labels
-   - Add debug logging markers (both Console.WriteLine and Debug.WriteLine for cross-platform coverage)
+   - Add Console.WriteLine markers for debugging
 
 3. **Example**:
    ```bash
@@ -481,7 +481,7 @@ This proves the test scenario correctly reproduces the bug.
 │ 1. Update MainPage.xaml[.cs] with your test scenario       │
 │    - Add UI elements for reproduction                       │
 │    - Add AutomationIds to all interactive elements          │
-│    - Add debug logging (Console + Debug.WriteLine)          │
+│    - Add Console.WriteLine markers for debugging            │
 ├─────────────────────────────────────────────────────────────┤
 │ 2. Update Appium test to match your MainPage               │
 │    CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs         │
@@ -679,41 +679,18 @@ cat CustomAgentLogsTmp/Sandbox/appium.log
 
 ### 📝 Adding Debug Logging to Your Test Scenario
 
-**Use BOTH `Console.WriteLine` AND `Debug.WriteLine` for cross-platform log capture.**
+**Use `Console.WriteLine` for logging** - it works on all platforms.
 
-Different platforms capture different logging mechanisms:
-
-| Platform | Console.WriteLine | Debug.WriteLine | Notes |
-|----------|-------------------|-----------------|-------|
-| **Android** | ✅ Tag: `DOTNET` | ✅ Tag: `<package>` | Both work |
-| **iOS** | ✅ via `libSystem.Native.dylib` | ❌ Not captured | Use Console.WriteLine |
-| **MacCatalyst** | ❌ Not captured | ✅ via os_log | Use Debug.WriteLine |
-
-**Recommended pattern for cross-platform logging:**
 ```csharp
-using System.Diagnostics;
-
 // Use a unique prefix for easy grep
-Console.WriteLine("SANDBOX_CONSOLE: Button clicked");
-Debug.WriteLine("SANDBOX_DEBUG: Button clicked");
-
-// Or create a helper method:
-void Log(string message)
-{
-    Console.WriteLine($"SANDBOX: {message}");
-    Debug.WriteLine($"SANDBOX: {message}");
-}
+Console.WriteLine("SANDBOX: Button clicked");
+Console.WriteLine($"SANDBOX: Value is {myValue}");
 ```
 
 **Searching logs:**
 ```bash
-# Android - will find both Console.WriteLine and Debug.WriteLine
 grep "SANDBOX" CustomAgentLogsTmp/Sandbox/android-device.log
-
-# iOS - will find Console.WriteLine
 grep "SANDBOX" CustomAgentLogsTmp/Sandbox/ios-device.log
-
-# MacCatalyst - will find Debug.WriteLine
 grep "SANDBOX" CustomAgentLogsTmp/Sandbox/catalyst-device.log
 ```
 
@@ -819,7 +796,7 @@ What should I try next?
 **Testing Tips**:
 - For layout bugs: Use `element.GetRect()` to measure positions
 - For SafeArea PRs: Measure child content position, not parent size
-- Add debug logging with BOTH `Console.WriteLine` AND `Debug.WriteLine` for cross-platform coverage (see Log Capture section)
+- Add `Console.WriteLine("SANDBOX: ...")` markers for debugging
 
 ---
 
