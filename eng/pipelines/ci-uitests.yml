@@ -68,7 +68,7 @@ parameters:
       name: MAUI
       vmImage: MAUI
       demands:
-        - Agent.OSArchitecture -equals X64
+        - Agent.OSArchitecture -equals ARM64
   
   - name: androidPoolLinux
     type: object
@@ -81,7 +81,9 @@ parameters:
     type: object
     default:
       name: MAUI
-      vmImage: MAUI
+      vmImage: MAUI      
+      demands:
+        - Agent.OSArchitecture -equals ARM64
   
   - name: windowsBuildPool
     type: object
