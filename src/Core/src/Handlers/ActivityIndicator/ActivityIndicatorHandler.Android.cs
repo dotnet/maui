@@ -1,4 +1,6 @@
-﻿using Android.Widget;
+﻿using System;
+using Android.Widget;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -14,6 +16,42 @@ namespace Microsoft.Maui.Handlers
 		public static partial void MapColor(IActivityIndicatorHandler handler, IActivityIndicator activityIndicator)
 		{
 			handler.PlatformView?.UpdateColor(activityIndicator);
+		}
+	}
+
+	internal partial class MaterialActivityIndicatorHandler : ActivityIndicatorHandler
+	{
+		protected override MaterialActivityIndicator CreatePlatformView()
+		{
+			return new MaterialActivityIndicator(MauiMaterialContextThemeWrapper.Create(Context))
+			{
+				Indeterminate = true
+			};
+		}
+
+		public override void PlatformArrange(Rect frame)
+		{
+			if (Context == null || PlatformView == null)
+			{
+				return;
+			}
+
+			// Get the child's desired size (what it measured at)
+			var desiredWidth = VirtualView?.DesiredSize.Width ?? frame.Width;
+			var desiredHeight = VirtualView?.DesiredSize.Height ?? frame.Height;
+
+			// Constrain to desired size (don't let parent stretch us)
+			var constrainedWidth = Math.Min(frame.Width, desiredWidth);
+			var constrainedHeight = Math.Min(frame.Height, desiredHeight);
+
+			// Create new frame with constrained size, centered if necessary
+			var arrangeFrame = new Rect(
+				frame.X + (frame.Width - constrainedWidth) / 2,
+				frame.Y + (frame.Height - constrainedHeight) / 2,
+				constrainedWidth,
+				constrainedHeight);
+
+			base.PlatformArrange(arrangeFrame);
 		}
 	}
 }
