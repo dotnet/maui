@@ -223,12 +223,11 @@ if ($Platform -eq "android") {
 # Capture test start time for iOS logs
 $testStartTime = Get-Date
 
-# For MacCatalyst, start log stream BEFORE the test to capture real-time logs
 # For MacCatalyst, launch the app BEFORE running tests so Appium finds the correct bundle
 # This is critical because both maui and maui2 repos may share the same bundle ID
-# We also capture stdout/stderr directly for Console.WriteLine logging
+# We use dotnet run with StandardOutputPath/StandardErrorPath to capture Console.WriteLine
+# See: https://github.com/dotnet/macios/blob/main/docs/building-apps/build-properties.md#runwithopen
 $catalystAppProcess = $null
-$catalystLogStreamJob = $null
 if ($Platform -eq "catalyst") {
     # Determine runtime identifier
     $arch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLower()
@@ -239,28 +238,36 @@ if ($Platform -eq "catalyst") {
     $appPath = [System.IO.Path]::GetFullPath($appPath)
     
     if (Test-Path $appPath) {
-        Write-Info "Launching MacCatalyst app to register with system..."
+        Write-Info "Launching MacCatalyst app with dotnet run..."
         Write-Info "App path: $appPath"
         
         # Make executable (like CI does)
         $executablePath = Join-Path $appPath "Contents/MacOS/Controls.TestCases.HostApp"
         if (Test-Path $executablePath) {
             & chmod +x $executablePath
-            
-            # Launch the executable directly to capture stdout/stderr (Console.WriteLine)
-            # This captures Console.WriteLine which doesn't appear in log stream
-            Write-Info "Starting app executable directly to capture Console.WriteLine output..."
-            $catalystAppProcess = Start-Process -FilePath $executablePath -RedirectStandardOutput $deviceLogFile -RedirectStandardError "$deviceLogFile.stderr" -PassThru
-            
-            # Give app time to launch and register
-            Write-Info "Waiting for app to launch (PID: $($catalystAppProcess.Id))..."
-            Start-Sleep -Seconds 3
-            Write-Success "MacCatalyst app launched with stdout capture"
+        }
+        
+        # Use dotnet run with StandardOutputPath/StandardErrorPath
+        # This launches the app via 'open' but captures stdout/stderr to files
+        # Console.WriteLine on MacCatalyst goes to stderr
+        $stderrFile = "$deviceLogFile.stderr"
+        $hostAppProject = Join-Path $PSScriptRoot "../../src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj"
+        $hostAppProject = [System.IO.Path]::GetFullPath($hostAppProject)
+        
+        Write-Info "Starting app with dotnet run (logs to $stderrFile)..."
+        & dotnet run --project $hostAppProject -f $TargetFramework --no-build `
+            -p:StandardOutputPath=$deviceLogFile `
+            -p:StandardErrorPath=$stderrFile 2>&1 | Out-Null
+        
+        # dotnet run exits immediately when using 'open', give app time to launch
+        Start-Sleep -Seconds 3
+        
+        # Get app process ID for later cleanup
+        $catalystAppProcess = Get-Process -Name "Controls.TestCases.HostApp" -ErrorAction SilentlyContinue | Select-Object -First 1
+        if ($catalystAppProcess) {
+            Write-Success "MacCatalyst app launched (PID: $($catalystAppProcess.Id))"
         } else {
-            Write-Warning "Executable not found at: $executablePath"
-            # Fallback to 'open' command
-            & open $appPath
-            Start-Sleep -Seconds 3
+            Write-Success "MacCatalyst app launched with log capture"
         }
     } else {
         Write-Warning "MacCatalyst app not found at: $appPath"
@@ -290,20 +297,16 @@ try {
     Write-Error "Failed to run tests: $_"
     exit 1
 } finally {
-    # Stop MacCatalyst log stream if it was started
-    if ($catalystLogStreamJob) {
-        Write-Info "Stopping MacCatalyst log stream..."
-        Stop-Job -Job $catalystLogStreamJob -ErrorAction SilentlyContinue
-        Remove-Job -Job $catalystLogStreamJob -Force -ErrorAction SilentlyContinue
-        Write-Success "Log stream stopped"
-    }
-    
     # Stop MacCatalyst app process if we started it
-    if ($catalystAppProcess -and -not $catalystAppProcess.HasExited) {
-        Write-Info "Stopping MacCatalyst app process (PID: $($catalystAppProcess.Id))..."
-        $catalystAppProcess.Kill()
-        $catalystAppProcess.WaitForExit(5000)
-        Write-Success "App process stopped"
+    if ($catalystAppProcess) {
+        # Re-fetch the process since the original reference may be stale
+        $runningApp = Get-Process -Id $catalystAppProcess.Id -ErrorAction SilentlyContinue
+        if ($runningApp -and -not $runningApp.HasExited) {
+            Write-Info "Stopping MacCatalyst app process (PID: $($catalystAppProcess.Id))..."
+            $runningApp.Kill()
+            $runningApp.WaitForExit(5000) | Out-Null
+            Write-Success "App process stopped"
+        }
     }
 }
 

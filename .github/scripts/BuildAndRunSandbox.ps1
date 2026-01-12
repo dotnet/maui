@@ -205,6 +205,8 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 # For MacCatalyst, launch the app BEFORE Appium test (similar to BuildAndRunHostApp.ps1)
+# We use dotnet run with StandardOutputPath/StandardErrorPath to capture Console.WriteLine
+# See: https://github.com/dotnet/macios/blob/main/docs/building-apps/build-properties.md#runwithopen
 $catalystAppProcess = $null
 if ($Platform -eq "catalyst") {
     # Determine runtime identifier
@@ -215,27 +217,36 @@ if ($Platform -eq "catalyst") {
     $appPath = Join-Path $RepoRoot "artifacts/bin/Maui.Controls.Sample.Sandbox/$Configuration/$TargetFramework/$rid/Sandbox.app"
     
     if (Test-Path $appPath) {
-        Write-Info "Launching MacCatalyst Sandbox app..."
+        Write-Info "Launching MacCatalyst Sandbox app with dotnet run..."
         Write-Info "App path: $appPath"
         
         # Make executable
         $executablePath = Join-Path $appPath "Contents/MacOS/Maui.Controls.Sample.Sandbox"
         if (Test-Path $executablePath) {
             & chmod +x $executablePath
-            
-            # Launch the executable directly to capture stdout/stderr (Console.WriteLine)
-            $deviceLogFile = Join-Path $SandboxAppiumDir "catalyst-device.log"
-            Write-Info "Starting app executable directly to capture Console.WriteLine output..."
-            $catalystAppProcess = Start-Process -FilePath $executablePath -RedirectStandardOutput $deviceLogFile -RedirectStandardError "$deviceLogFile.stderr" -PassThru
-            
-            Write-Info "Waiting for app to launch (PID: $($catalystAppProcess.Id))..."
-            Start-Sleep -Seconds 3
-            Write-Success "MacCatalyst Sandbox app launched with stdout capture"
+        }
+        
+        # Use dotnet run with StandardOutputPath/StandardErrorPath
+        # This launches the app via 'open' but captures stdout/stderr to files
+        # Console.WriteLine on MacCatalyst goes to stderr
+        $deviceLogFile = Join-Path $SandboxAppiumDir "catalyst-device.log"
+        $stderrFile = "$deviceLogFile.stderr"
+        $sandboxProject = Join-Path $RepoRoot "src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj"
+        
+        Write-Info "Starting app with dotnet run (logs to $stderrFile)..."
+        & dotnet run --project $sandboxProject -f $TargetFramework --no-build `
+            -p:StandardOutputPath=$deviceLogFile `
+            -p:StandardErrorPath=$stderrFile 2>&1 | Out-Null
+        
+        # dotnet run exits immediately when using 'open', give app time to launch
+        Start-Sleep -Seconds 3
+        
+        # Get app process ID for later cleanup
+        $catalystAppProcess = Get-Process -Name "Maui.Controls.Sample.Sandbox" -ErrorAction SilentlyContinue | Select-Object -First 1
+        if ($catalystAppProcess) {
+            Write-Success "MacCatalyst Sandbox app launched (PID: $($catalystAppProcess.Id))"
         } else {
-            Write-Warning "Executable not found at: $executablePath"
-            # Fallback to 'open' command
-            & open $appPath
-            Start-Sleep -Seconds 3
+            Write-Success "MacCatalyst Sandbox app launched with log capture"
         }
     } else {
         Write-Warning "MacCatalyst Sandbox app not found at: $appPath"
@@ -492,9 +503,12 @@ try {
     }
     
     # Stop MacCatalyst app if we started it
-    if ($catalystAppProcess -and -not $catalystAppProcess.HasExited) {
-        Write-Info "Stopping MacCatalyst Sandbox app (we started it)..."
-        Stop-Process -Id $catalystAppProcess.Id -Force -ErrorAction SilentlyContinue
+    if ($catalystAppProcess) {
+        $runningApp = Get-Process -Id $catalystAppProcess.Id -ErrorAction SilentlyContinue
+        if ($runningApp -and -not $runningApp.HasExited) {
+            Write-Info "Stopping MacCatalyst Sandbox app (we started it)..."
+            Stop-Process -Id $catalystAppProcess.Id -Force -ErrorAction SilentlyContinue
+        }
     }
     
     # Stop Appium if we started it
@@ -516,11 +530,14 @@ Pop-Location
 #region Cleanup
 
 # Stop MacCatalyst app if we started it
-if ($catalystAppProcess -and -not $catalystAppProcess.HasExited) {
-    Write-Host ""
-    Write-Info "Stopping MacCatalyst Sandbox app (PID: $($catalystAppProcess.Id))..."
-    Stop-Process -Id $catalystAppProcess.Id -Force -ErrorAction SilentlyContinue
-    Write-Success "MacCatalyst Sandbox app stopped"
+if ($catalystAppProcess) {
+    $runningApp = Get-Process -Id $catalystAppProcess.Id -ErrorAction SilentlyContinue
+    if ($runningApp -and -not $runningApp.HasExited) {
+        Write-Host ""
+        Write-Info "Stopping MacCatalyst Sandbox app (PID: $($catalystAppProcess.Id))..."
+        Stop-Process -Id $catalystAppProcess.Id -Force -ErrorAction SilentlyContinue
+        Write-Success "MacCatalyst Sandbox app stopped"
+    }
 }
 
 # Stop Appium if we started it
