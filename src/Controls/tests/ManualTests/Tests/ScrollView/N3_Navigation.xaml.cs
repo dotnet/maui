@@ -10,8 +10,6 @@ namespace Microsoft.Maui.ManualTests.Tests.ScrollView;
 	category: Category.ScrollView)]
 public partial class N3_Navigation : ContentPage
 {
-	public Command<Monkey> NavigateCommand { get; }
-	public Microsoft.Maui.ManualTests.ViewModels.MonkeysViewModel Monkeys { get; }
 	public N3_Navigation()
 	{
 		InitializeComponent();
