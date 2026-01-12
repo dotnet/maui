@@ -10,7 +10,7 @@
             <Label Text="1. This test is to check if Navigation works after rapidly open and closing new page.(https://github.com/dotnet/maui/issues/32425)" />
             <Label Text="2. Click Button 'Go to New Page 1' " />
             <Label Text="3. Back to L3 page after navigating to New Page 1" />
-            <Label Text="3. Rapidly opening and closing NewPage1 severral times (>10 times), check if it always works" />
+            <Label Text="3. Rapidly opening and closing NewPage1 several times (>10 times), check if it always works" />
 
             <Button 
                 Text="Go to New Page 1"
