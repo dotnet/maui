@@ -10,10 +10,9 @@ namespace Microsoft.Maui.ManualTests.Tests.ScrollView;
 	category: Category.ScrollView)]
 public partial class N2_ResizeRotate : ContentPage
 {
-		public N2_ResizeRotate()
-		{
-			InitializeComponent();
-			BindingContext = new MonkeysViewModel();
-		}
-		// ...existing code...
+	public N2_ResizeRotate()
+	{
+		InitializeComponent();
+		BindingContext = new MonkeysViewModel();
+	}
 }
