@@ -20,7 +20,11 @@
 
   <PropertyGroup>
     <ApplicationTitle>Sandbox</ApplicationTitle>
-    <!-- Workaround: dotnet run on MacCatalyst expects .app bundle name to match assembly name -->
+    <!-- Workaround for https://github.com/dotnet/sdk/issues/47727
+         dotnet run on MacCatalyst constructs the .app bundle path using the assembly name,
+         but the build creates the bundle using ApplicationTitle. This mismatch causes
+         "file not found" errors. Override ApplicationTitle to match assembly name as a
+         workaround. This can be removed once the SDK fix is available. -->
     <ApplicationTitle Condition="$(TargetFramework.Contains('-maccatalyst'))">Maui.Controls.Sample.Sandbox</ApplicationTitle>
     <ApplicationId>com.microsoft.maui.sandbox</ApplicationId>
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
