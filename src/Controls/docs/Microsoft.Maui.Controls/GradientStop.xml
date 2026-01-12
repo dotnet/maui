@@ -12,6 +12,8 @@
   </Base>
   <Interfaces />
   <Docs>
+    <summary>Represents a color and position within a gradient.</summary>
+    <remarks>A <see cref="T:Microsoft.Maui.Controls.GradientStop" /> is used to specify colors at specific positions in a <see cref="T:Microsoft.Maui.Controls.LinearGradientBrush" /> or <see cref="T:Microsoft.Maui.Controls.RadialGradientBrush" />. The gradient is calculated by interpolating between the colors at their specified offsets.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -25,6 +27,8 @@
       </AssemblyInfo>
       <Parameters />
       <Docs>
+        <summary>Initializes a new instance of the <see cref="T:Microsoft.Maui.Controls.GradientStop" /> class.</summary>
+        <remarks>Creates a gradient stop with default values.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -42,8 +46,10 @@
         <Parameter Name="offset" Type="System.Single" />
       </Parameters>
       <Docs>
-        <param name="color">To be added.</param>
-        <param name="offset">To be added.</param>
+        <param name="color">The color of the gradient stop.</param>
+        <param name="offset">The position of the gradient stop within the gradient, ranging from 0.0 (start) to 1.0 (end).</param>
+        <summary>Initializes a new instance of the <see cref="T:Microsoft.Maui.Controls.GradientStop" /> class with the specified color and offset.</summary>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Color">
@@ -60,6 +66,9 @@
         <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
+        <summary>Gets or sets the color of the gradient stop. This is a bindable property.</summary>
+        <value>A <see cref="T:Microsoft.Maui.Graphics.Color" /> that represents the color at this gradient stop.</value>
+        <remarks>This property defines the color that will be displayed at the position specified by the <see cref="P:Microsoft.Maui.Controls.GradientStop.Offset" /> property in the gradient.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ColorProperty">
@@ -76,6 +85,8 @@
         <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
+        <summary>Identifies the <see cref="P:Microsoft.Maui.Controls.GradientStop.Color" /> bindable property.</summary>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Equals">
@@ -95,7 +106,10 @@
         <Parameter Name="obj" Type="System.Object" />
       </Parameters>
       <Docs>
-        <param name="obj">To be added.</param>
+        <param name="obj">The object to compare with the current instance.</param>
+        <summary>Determines whether the specified object is equal to the current <see cref="T:Microsoft.Maui.Controls.GradientStop" />.</summary>
+        <returns><see langword="true" /> if the specified object is a <see cref="T:Microsoft.Maui.Controls.GradientStop" /> with the same <see cref="P:Microsoft.Maui.Controls.GradientStop.Color" /> and <see cref="P:Microsoft.Maui.Controls.GradientStop.Offset" />; otherwise, <see langword="false" />.</returns>
+        <remarks>Two gradient stops are considered equal if their colors are equal and their offsets are within 0.00001 of each other.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetHashCode">
@@ -113,6 +127,9 @@
       </ReturnValue>
       <Parameters />
       <Docs>
+        <summary>Returns the hash code for this instance.</summary>
+        <returns>A 32-bit signed integer hash code.</returns>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Offset">
@@ -129,6 +146,13 @@
         <ReturnType>System.Single</ReturnType>
       </ReturnValue>
       <Docs>
+        <summary>Gets or sets the position of the gradient stop within the gradient. This is a bindable property.</summary>
+        <value>A <see langword="float" /> value between 0.0 and 1.0 that represents the relative position of the gradient stop. The default value is 0.0.</value>
+        <remarks>
+          <para>The <see cref="P:Microsoft.Maui.Controls.GradientStop.Offset" /> property specifies where the associated <see cref="P:Microsoft.Maui.Controls.GradientStop.Color" /> appears in the gradient. A value of 0.0 represents the start of the gradient, while 1.0 represents the end. Values between 0.0 and 1.0 position the color proportionally along the gradient path.</para>
+          <para>For a <see cref="T:Microsoft.Maui.Controls.LinearGradientBrush" />, the gradient path runs from the <see cref="P:Microsoft.Maui.Controls.LinearGradientBrush.StartPoint" /> to the <see cref="P:Microsoft.Maui.Controls.LinearGradientBrush.EndPoint" />. For a <see cref="T:Microsoft.Maui.Controls.RadialGradientBrush" />, the gradient radiates from the center to the outer edge defined by the <see cref="P:Microsoft.Maui.Controls.RadialGradientBrush.Radius" />.</para>
+          <para>Multiple gradient stops at different offsets create smooth color transitions. Gradient stops do not need to be added in order of their offset values, as they will be automatically sorted during rendering.</para>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="OffsetProperty">
@@ -145,6 +169,8 @@
         <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
+        <summary>Identifies the <see cref="P:Microsoft.Maui.Controls.GradientStop.Offset" /> bindable property.</summary>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>
