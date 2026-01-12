@@ -11,7 +11,7 @@ namespace Microsoft.Maui.ManualTests.Tests.CarouselView;
 public partial class M3_Navigation : ContentPage
 {
     private double width = 0;
-     private double height = 0;
+    private double height = 0;
 
 	public M3_Navigation()
 	{
