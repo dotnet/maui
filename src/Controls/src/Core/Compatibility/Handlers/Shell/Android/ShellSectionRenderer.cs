@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected IShellContext ShellContext => _shellContext;
 		IShellSectionController SectionController => (IShellSectionController)ShellSection;
 		IMauiContext MauiContext => ShellContext.Shell.Handler.MauiContext;
-		Toolbar shellToolbar;
+		Toolbar _shellToolbar;
 
 		public ShellSectionRenderer(IShellContext shellContext)
 		{
@@ -109,9 +109,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			int actionBarHeight = context.GetActionBarHeight();
 
-			shellToolbar = new Toolbar(shellSection);
-			ShellToolbarTracker.ApplyToolbarChanges(_shellContext.Shell.Toolbar, shellToolbar);
-			_toolbar = (AToolbar)shellToolbar.ToPlatform(_shellContext.Shell.FindMauiContext());
+			_shellToolbar = new Toolbar(shellSection);
+			ShellToolbarTracker.ApplyToolbarChanges(_shellContext.Shell.Toolbar, _shellToolbar);
+			_toolbar = (AToolbar)_shellToolbar.ToPlatform(_shellContext.Shell.FindMauiContext());
 			appbar.AddView(_toolbar);
 			_tablayout = PlatformInterop.CreateShellTabLayout(context, appbar, actionBarHeight);
 
@@ -136,7 +136,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			_toolbarTracker = _shellContext.CreateTrackerForToolbar(_toolbar);
-			_toolbarTracker.SetToolbar(shellToolbar);
+			_toolbarTracker.SetToolbar(_shellToolbar);
 			_toolbarTracker.Page = currentPage;
 
 			_viewPager.CurrentItem = currentIndex;
@@ -248,7 +248,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			
 			if (!hidden)
 			{
-				shellToolbar.Handler.UpdateValue("TitleView");
+				_shellToolbar.Handler.UpdateValue("TitleView");
 			}
 		}
 
