@@ -226,4 +226,71 @@ public partial class ClipOptionsPage : ContentPage
 		};
 	}
 
+	private void ShapeChanged(object sender, CheckedChangedEventArgs e)
+	{
+		if (!e.Value || !(sender is RadioButton rb) || !(BindingContext is ClipViewModel vm))
+			return;
+
+		vm.StrokeShape = rb.Content.ToString() switch
+		{
+			"RoundRectangle" => new RoundRectangle { CornerRadius = new CornerRadius(40) },
+			"Polygon" => new Polygon
+			{
+				Points = new PointCollection
+				{
+					new Point(150, 0),
+					new Point(250, 70),
+					new Point(210, 180),
+					new Point(85, 180),
+					new Point(40, 70)
+				}
+			},
+			_ => new Rectangle()
+		};
+	}
+
+	private void OnStrokeColorClicked(object sender, EventArgs e)
+	{
+		if (sender is Button button && button.BackgroundColor != Colors.Transparent)
+		{
+			_viewModel.Stroke = button.BackgroundColor;
+		}
+	}
+
+	private void OnShadowRadioButtonCheckedChanged(object sender, CheckedChangedEventArgs e)
+	{
+		var radioButton = sender as RadioButton;
+		if (radioButton != null && radioButton.IsChecked)
+		{
+			_viewModel.Shadow = new Shadow { Brush = Colors.Violet, Radius = 20, Offset = new Point(0, 0), Opacity = 1f };
+		}
+	}
+
+	private void OnStrokeThicknessChanged(object sender, TextChangedEventArgs e)
+	{
+		if (double.TryParse(StrokeThicknessEntry.Text, out double strokeThickness))
+		{
+			_viewModel.StrokeThickness = strokeThickness;
+		}
+	}
+
+	//BoxView
+	private void OnColorRadioButtonChanged(object sender, EventArgs e)
+	{
+		if (sender is RadioButton radioButton && radioButton.IsChecked)
+		{
+			switch (radioButton.Value.ToString())
+			{
+				case "Red":
+					_viewModel.Color = Colors.Red;
+					break;
+				case "Green":
+					_viewModel.Color = Colors.Green;
+					break;
+				default:
+					_viewModel.Color = Colors.Transparent;
+					break;
+			}
+		}
+	}
 }

@@ -76,5 +76,73 @@
                                   CheckedChanged="PathTypeRadio_CheckedChanged"
                                   AutomationId="PolyBezierSegment"/>
               </HorizontalStackLayout>
+
+              <Label FontAttributes="Bold"
+                     Text="Stroke Shape"/>
+              <HorizontalStackLayout>
+                     <RadioButton x:Name="RoundRectangleShapeRadio"
+                                  Content="RoundRectangle"
+                                  GroupName="Shape"
+                                  AutomationId="RoundRectangleShapeRadio"
+                                  CheckedChanged="ShapeChanged"/>
+                     <RadioButton x:Name="PolygonShapeRadio"
+                                  Content="Polygon"
+                                  GroupName="Shape"
+                                  AutomationId="PolygonShapeRadio"
+                                  CheckedChanged="ShapeChanged"/>
+              </HorizontalStackLayout>
+
+              <Label FontAttributes="Bold"
+                     Text="Stroke Color"/>
+              <HorizontalStackLayout>
+                     <Button x:Name="BlueColorButton"
+                             Text="Blue"
+                             TextColor="White"
+                             BackgroundColor="Blue"
+                             Clicked="OnStrokeColorClicked"
+                             AutomationId="BlueColorButton"
+                             CommandParameter="Blue"/>
+                     <Button x:Name="GreenColorButton"
+                             Text="Green"
+                             TextColor="White"
+                             BackgroundColor="Green"
+                             Clicked="OnStrokeColorClicked"
+                             AutomationId="GreenColorButton"
+                             CommandParameter="Green"/>
+              </HorizontalStackLayout>
+
+              <Label VerticalOptions="Center"
+                     Text="Stroke Thickness"/>
+              <Entry x:Name="StrokeThicknessEntry"
+                     Text="5"
+                     TextChanged="OnStrokeThicknessChanged"
+                     AutomationId="StrokeThicknessEntry"
+                     Grid.Column="1"/>
+
+              <Label Text="Shadow:"
+                     VerticalOptions="Center"/>
+              <RadioButton x:Name="ShadowFalseRadio"
+                           VerticalOptions="Center"
+                           AutomationId="ShadowTrueRadioButton"
+                           GroupName="Shadow"
+                           Content="True"
+                           CheckedChanged="OnShadowRadioButtonCheckedChanged"/>
+
+
+              <!-- BoxView -->
+              <Label FontAttributes="Bold"
+                     Text="Box Color"/>
+              <VerticalStackLayout>
+                     <RadioButton Content="Red"
+                                  Value="Red"
+                                  GroupName="Colors"
+                                  AutomationId="RedRadioButton"
+                                  CheckedChanged="OnColorRadioButtonChanged"/>
+                     <RadioButton Content="Green"
+                                  Value="Green"
+                                  GroupName="Colors"
+                                  AutomationId="GreenRadioButton"
+                                  CheckedChanged="OnColorRadioButtonChanged"/>
+              </VerticalStackLayout>
        </VerticalStackLayout>
 </ContentPage>

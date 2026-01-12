@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.ImageClip"
+             Title="ImageClip">
+
+  <ContentPage.ToolbarItems>
+    <ToolbarItem Text="Options"
+                 Clicked="NavigateToOptionsPage_Clicked"
+                 AutomationId="Options"/>
+  </ContentPage.ToolbarItems>
+
+  <Grid RowDefinitions="*,Auto"
+        RowSpacing="15">
+    <Image Source="blue.png"
+           WidthRequest="300"
+           HeightRequest="300"
+           Aspect="AspectFill"
+           AutomationId="TestControl"
+           Clip="{Binding Clip}"/>
+  </Grid>
+</ContentPage>

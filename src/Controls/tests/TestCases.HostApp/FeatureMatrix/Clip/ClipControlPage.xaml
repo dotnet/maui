@@ -4,93 +4,12 @@
              x:Class="Maui.Controls.Sample.ClipControlMainPage"
              Title="ClipControlPage">
 
-        <ContentPage.ToolbarItems>
-                <ToolbarItem Text="Options"
-                             Clicked="NavigateToOptionsPage_Clicked"
-                             AutomationId="Options"/>
-        </ContentPage.ToolbarItems>
-
-        <Grid Padding="15"
-              RowSpacing="15">
-                <Grid.RowDefinitions>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-
-                <Grid Grid.Row="0"
-                      x:Name="CurrentControlContainer"
-                      HorizontalOptions="Center"
-                      VerticalOptions="Center">
-                        <!-- Default control will be Image -->
-                        <Image x:Name="TestImage"
-                               Source="blue.png"
-                               WidthRequest="300"
-                               HeightRequest="300"
-                               Aspect="AspectFill"
-                               Clip="{Binding Clip}"
-                               AutomationId="TestControl"/>
-                </Grid>
-
-                <!-- Current Clip Info -->
-                <HorizontalStackLayout Grid.Row="2"
-                                       Spacing="10"
-                                       HorizontalOptions="Center">
-                        <Label Text="Current Clip Geometry:"
-                               FontAttributes="Bold"
-                               FontSize="14"/>
-                        <Label Text="{Binding SelectedClip}"
-                               FontSize="14"
-                               TextColor="DarkSlateGray"
-                               HorizontalTextAlignment="Center"/>
-                </HorizontalStackLayout>
-
-                <!-- Control Type Selection -->
-                <VerticalStackLayout Grid.Row="3"
-                                     Spacing="10">
-                        <Label Text="Select Control Type:"
-                               FontSize="16"
-                               FontAttributes="Bold"
-                               HorizontalOptions="Center"/>
-
-                        <Grid ColumnDefinitions="*,*,*"
-                              RowDefinitions="Auto,Auto"
-                              ColumnSpacing="10"
-                              RowSpacing="10">
-
-                                <Button Text="Image"
-                                        Clicked="ControlType_Clicked"
-                                        AutomationId="SelectImage"
-                                        BackgroundColor="#FF40C8F5"
-                                        Grid.Row="0"
-                                        Grid.Column="0"/>
-                                <Button Text="Label"
-                                        Clicked="ControlType_Clicked"
-                                        AutomationId="SelectLabel"
-                                        BackgroundColor="LightBlue"
-                                        Grid.Row="0"
-                                        Grid.Column="1"/>
-                                <Button Text="Button"
-                                        Clicked="ControlType_Clicked"
-                                        AutomationId="SelectButton"
-                                        BackgroundColor="Orange"
-                                        Grid.Row="0"
-                                        Grid.Column="2"/>
-
-                                <Button Text="Border"
-                                        Clicked="ControlType_Clicked"
-                                        AutomationId="SelectBorder"
-                                        BackgroundColor="Purple"
-                                        Grid.Row="1"
-                                        Grid.Column="0"/>
-                                <Button Text="BoxView"
-                                        Clicked="ControlType_Clicked"
-                                        AutomationId="SelectBoxView"
-                                        BackgroundColor="Red"
-                                        Grid.Row="1"
-                                        Grid.Column="1"/>
-                        </Grid>
-                </VerticalStackLayout>
-        </Grid>
+        <!-- Control Type Selection -->
+        <VerticalStackLayout Spacing="10">
+                <Button Text="Border" Clicked="OnBorderPageClicked"/>
+                <Button Text="BoxView" Clicked="OnBoxViewPageClicked"/>
+                <Button Text="Button" Clicked="OnButtonPageClicked"/>
+                <Button Text="Image" Clicked="OnImagePageClicked"/>
+                <Button Text="Label" Clicked="OnLabelPageClicked"/>
+        </VerticalStackLayout>
 </ContentPage>

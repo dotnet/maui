@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.BorderClip"
+             Title="BorderClip">
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Options"
+                     Clicked="NavigateToOptionsPage_Clicked"
+                     AutomationId="Options"/>
+    </ContentPage.ToolbarItems>
+
+    <Grid RowDefinitions="*,Auto"
+          RowSpacing="15">
+        <Border Stroke="{Binding Stroke}"
+                StrokeThickness="{Binding StrokeThickness}"
+                StrokeShape="{Binding StrokeShape}"
+                Shadow="{Binding Shadow}"
+                BackgroundColor="Purple"
+                WidthRequest="300"
+                HeightRequest="300"
+                AutomationId="TestControl"
+                Clip="{Binding Clip}">
+            <Label Text="Border Content With Clipping"
+                   TextColor="White"
+                   FontSize="24"
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center"/>
+        </Border>
+    </Grid>
+</ContentPage>
