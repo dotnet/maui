@@ -20,6 +20,8 @@
 
   <PropertyGroup>
     <ApplicationTitle>Sandbox</ApplicationTitle>
+    <!-- Workaround: dotnet run on MacCatalyst expects .app bundle name to match assembly name -->
+    <ApplicationTitle Condition="$(TargetFramework.Contains('-maccatalyst'))">Maui.Controls.Sample.Sandbox</ApplicationTitle>
     <ApplicationId>com.microsoft.maui.sandbox</ApplicationId>
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>
