@@ -351,6 +351,11 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "TitleView can use constraints to expand area")]
 		public async Task TitleViewConstraints()
 		{
+			// Skip on iOS 26+ due to UINavigationBar internal API changes
+			// See: https://github.com/dotnet/maui/issues/33004
+			if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+				return;
+
 			EnsureHandlerCreated(builder =>
 			{
 				builder.ConfigureMauiHandlers(handlers =>
@@ -523,6 +528,11 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Back Button Text Has Correct Default")]
 		public async Task BackButtonTextHasCorrectDefault()
 		{
+			// Skip on iOS 26+ due to UINavigationBar internal API changes
+			// See: https://github.com/dotnet/maui/issues/33004
+			if (OperatingSystem.IsIOSVersionAtLeast(26))
+				return;
+
 			SetupBuilder();
 			var shell = await CreateShellAsync(shell =>
 			{
@@ -543,6 +553,11 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Back Button Behavior Text")]
 		public async Task BackButtonBehaviorText()
 		{
+			// Skip on iOS 26+ due to UINavigationBar internal API changes
+			// See: https://github.com/dotnet/maui/issues/33004
+			if (OperatingSystem.IsIOSVersionAtLeast(26))
+				return;
+
 			SetupBuilder();
 			var shell = await CreateShellAsync(shell =>
 			{
