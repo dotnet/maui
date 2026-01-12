@@ -6,7 +6,6 @@ namespace Microsoft.Maui.ManualTests.Tests.CarouselView;
 public partial class AddMonkeyPage : ContentPage
 {
 	private ObservableCollection<Monkey> _monkeys;
-	private const string DefaultImageUrl = "https://raw.githubusercontent.com/jamesmontemagno/app-monkeys/master/baboon.jpg";
 
 	public AddMonkeyPage(ObservableCollection<Monkey> monkeys)
 	{
