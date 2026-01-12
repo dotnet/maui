@@ -134,7 +134,9 @@ namespace Microsoft.Maui.Platform
 			var maxLength = searchBar.MaxLength;
 
 			if (maxLength == -1)
+			{
 				maxLength = int.MaxValue;
+			}
 
 			var children = platformControl.GetChildren<TextBox>();
 			if (children is not null)
