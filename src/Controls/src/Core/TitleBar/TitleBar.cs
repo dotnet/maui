@@ -43,6 +43,15 @@ namespace Microsoft.Maui.Controls
 		public const string TitleBarActiveState = "TitleBarTitleActive";
 		public const string TitleBarInactiveState = "TitleBarTitleInactive";
 
+		internal const string TitleBarLTRState = "TitleBarLeftToRight";
+		internal const string TitleBarRTLState = "TitleBarRightToLeft";
+
+		// Margin space (80px) required for Mac Catalyst window traffic light controls when not in fullscreen
+		const int MacCatalystMargin = 80;
+
+		// Margin space (150px) required for Windows title bar system buttons
+		const int WindowsMargin = 150;
+
 		/// <summary>Bindable property for <see cref="Icon"/>.</summary>
 		public static readonly BindableProperty IconProperty = BindableProperty.Create(nameof(Icon), typeof(ImageSource),
 			typeof(TitleBar), null, propertyChanged: OnIconChanged);
@@ -279,6 +288,19 @@ namespace Microsoft.Maui.Controls
 				Window.Activated += Window_Activated;
 				Window.Deactivated += Window_Deactivated;
 			}
+			else if (e.PropertyName == nameof(FlowDirection))
+			{
+				UpdateFlowDirectionState();
+			}
+		}
+
+		void UpdateFlowDirectionState()
+		{
+			string flowDirectionState = FlowDirection == FlowDirection.RightToLeft
+				? TitleBarRTLState
+				: TitleBarLTRState;
+
+			ApplyVisibleState(flowDirectionState);
 		}
 
 		internal void ApplyVisibleState(string stateGroup)
@@ -328,6 +350,7 @@ namespace Microsoft.Maui.Controls
 			}
 
 			ApplyVisibleState(TitleBarActiveState);
+			UpdateFlowDirectionState();
 		}
 
 		private void Window_Activated(object? sender, System.EventArgs e)
@@ -347,9 +370,6 @@ namespace Microsoft.Maui.Controls
 			#region Root Grid
 			var contentGrid = new Grid()
 			{
-#if MACCATALYST
-				Margin = new Thickness(80, 0, 0, 0),
-#endif
 				HorizontalOptions = LayoutOptions.Fill,
 				ColumnDefinitions =
 				{
@@ -359,9 +379,6 @@ namespace Microsoft.Maui.Controls
 					new ColumnDefinition(GridLength.Auto), // Subtitle content
 					new ColumnDefinition(GridLength.Star), // Content
 					new ColumnDefinition(GridLength.Auto), // Trailing content
-#if !MACCATALYST
-					new ColumnDefinition(150),             // Min drag region + padding for system buttons
-#endif
 				},
 #pragma warning disable CS0618 // Type or member is obsolete
 				IgnoreSafeArea = true,
@@ -546,6 +563,40 @@ namespace Microsoft.Maui.Controls
 			var trailingContentVisibleGroup = GetVisibleStateGroup(TitleBarTrailing, TrailingVisibleState, TrailingHiddenState);
 			trailingContentVisibleGroup.Name = "TrailingContentGroup";
 			visualStateGroups.Add(trailingContentVisibleGroup);
+			#endregion
+
+			#region FlowDirection states
+			var flowDirectionGroup = new VisualStateGroup() { Name = "FlowDirectionGroup" };
+
+			// Left-to-Right state (default)
+			var ltrState = new VisualState() { Name = TitleBarLTRState };
+			ltrState.Setters.Add(new Setter()
+			{
+				Property = MarginProperty,
+				TargetName = TemplateRootName,
+#if MACCATALYST
+				Value = new Thickness(MacCatalystMargin, 0, 0, 0)  // System buttons on left in macOS
+#else
+				Value = new Thickness(0, 0, WindowsMargin, 0)  // System buttons on right in Windows
+#endif
+			});
+			flowDirectionGroup.States.Add(ltrState);
+
+			// Right-to-Left state
+			var rtlState = new VisualState() { Name = TitleBarRTLState };
+			rtlState.Setters.Add(new Setter()
+			{
+				Property = MarginProperty,
+				TargetName = TemplateRootName,
+#if MACCATALYST
+				Value = new Thickness(0, 0, MacCatalystMargin, 0)  // System buttons on right in macOS RTL
+#else
+				Value = new Thickness(WindowsMargin, 0, 0, 0)  // System buttons on left in Windows RTL
+#endif
+			});
+			flowDirectionGroup.States.Add(rtlState);
+
+			visualStateGroups.Add(flowDirectionGroup);
 			#endregion
 
 			INameScope nameScope = new NameScope();
