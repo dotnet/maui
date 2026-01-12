@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Samples.Model
 {
@@ -19,6 +20,7 @@ namespace Samples.Model
 
 		public string Description { get; }
 
+		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 		public Type PageType { get; }
 
 		public string[] Tags { get; }

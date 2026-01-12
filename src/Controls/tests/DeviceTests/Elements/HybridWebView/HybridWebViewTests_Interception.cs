@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Text;
@@ -19,6 +20,7 @@ namespace Microsoft.Maui.DeviceTests;
 public partial class HybridWebViewTests_Interception : HybridWebViewTestsBase
 {
 	[Fact]
+	[RequiresUnreferencedCode("Test uses JSON serialization which may require unreferenced code")]
 	public Task RequestsCanBeInterceptedAndCustomDataReturned() =>
 		RunTest(async (hybridWebView) =>
 		{
@@ -48,6 +50,7 @@ public partial class HybridWebViewTests_Interception : HybridWebViewTestsBase
 		});
 
 	[Fact]
+	[RequiresUnreferencedCode("Test uses JSON serialization which may require unreferenced code")]
 	public Task RequestsCanBeInterceptedAndAsyncCustomDataReturned() =>
 		RunTest(async (hybridWebView) =>
 		{
@@ -86,6 +89,8 @@ public partial class HybridWebViewTests_Interception : HybridWebViewTestsBase
 			}
 		});
 
+	[Theory]
+	[RequiresUnreferencedCode("Test uses JSON serialization which may require unreferenced code")]
 #if !ANDROID // Custom schemes are not supported on Android
 #if !WINDOWS // TODO: There seems to be a bug with the implementation in the WASDK version of WebView2
 	[Theory]
