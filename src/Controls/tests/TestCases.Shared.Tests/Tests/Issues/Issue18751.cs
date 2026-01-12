@@ -21,8 +21,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			App.WaitForElement("WaitForStubControl");
 
-			// Load images.
-			await Task.Delay(2000);
+#if IOS // In iOS need more time to load images from the internet
+			await Task.Delay(5000);
+#else
+			await Task.Delay(1000);
+#endif
 
 			// The test passes if you are able to see the image, name, and location of each monkey.
 			VerifyScreenshot();
