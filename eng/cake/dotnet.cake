@@ -218,6 +218,20 @@ Task("uitests-apphost")
             properties.Add("_UseNativeAot", "true");
             properties.Add("RuntimeIdentifier", "iossimulator-x64");
         }
+        else if (IsCIBuild() && System.Runtime.InteropServices.RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.Arm64)
+        {
+            // On CI with ARM64 agents, build universal binaries for iOS/macCatalyst to support both architectures
+            if (HasArgument("ios"))
+            {
+                Information("Building universal binary for iOS (x64 + arm64) on CI");
+                properties.Add("RuntimeIdentifiers", "iossimulator-x64;iossimulator-arm64");
+            }
+            else if (HasArgument("catalyst") || HasArgument("maccatalyst"))
+            {
+                Information("Building universal binary for MacCatalyst (x64 + arm64) on CI");
+                properties.Add("RuntimeIdentifiers", "maccatalyst-x64;maccatalyst-arm64");
+            }
+        }
 
         if (useNuget)
         {

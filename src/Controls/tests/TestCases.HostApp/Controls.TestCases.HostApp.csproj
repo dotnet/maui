@@ -10,8 +10,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <!-- Disable multi-RID builds to workaround a parallel build issue -->
     <RuntimeIdentifiers Condition="$(TargetFramework.Contains('-maccatalyst'))">maccatalyst-x64</RuntimeIdentifiers>
-    <RuntimeIdentifiers Condition="$(TargetFramework.Contains('-maccatalyst'))">maccatalyst-x64;maccatalyst-arm64</RuntimeIdentifiers>
-    <RuntimeIdentifiers Condition="$(TargetFramework.Contains('-ios'))">iossimulator-x64;iossimulator-arm64</RuntimeIdentifiers>
     <ExcludeMicrosoftNetTestSdk>true</ExcludeMicrosoftNetTestSdk>
     <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
   <!-- NOTE: By default the UseMaterial3 flag value is false. If you change the UseMaterial3 flag, you MUST delete the artifacts folder 
