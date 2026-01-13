@@ -5,7 +5,15 @@ using System.Windows.Input;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/SelectableItemsView.xml" path="Type[@FullName='Microsoft.Maui.Controls.SelectableItemsView']/Docs/*" />
+	/// <summary>
+	/// A structured items view that supports item selection.
+	/// </summary>
+	/// <remarks>
+	/// <see cref="SelectableItemsView"/> extends <see cref="StructuredItemsView"/> to add selection capabilities.
+	/// Use <see cref="SelectionMode"/> to control whether single or multiple items can be selected.
+	/// The <see cref="SelectedItem"/> and <see cref="SelectedItems"/> properties track the current selection,
+	/// and the <see cref="SelectionChanged"/> event notifies when selection changes.
+	/// </remarks>
 	public class SelectableItemsView : StructuredItemsView
 	{
 		/// <summary>Bindable property for <see cref="SelectionMode"/>.</summary>
@@ -40,40 +48,75 @@ namespace Microsoft.Maui.Controls
 
 		bool _suppressSelectionChangeNotification;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SelectableItemsView.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="SelectableItemsView"/> class.
+		/// </summary>
 		public SelectableItemsView()
 		{
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SelectableItemsView.xml" path="//Member[@MemberName='SelectedItem']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the currently selected item when <see cref="SelectionMode"/> is <see cref="SelectionMode.Single"/>.
+		/// </summary>
+		/// <value>The selected data item, or <see langword="null"/> if no item is selected.</value>
+		/// <remarks>
+		/// This property is only meaningful when <see cref="SelectionMode"/> is <see cref="SelectionMode.Single"/>.
+		/// For multiple selection, use the <see cref="SelectedItems"/> property instead.
+		/// The binding mode defaults to <see cref="BindingMode.TwoWay"/>.
+		/// </remarks>
 		public object SelectedItem
 		{
 			get => GetValue(SelectedItemProperty);
 			set => SetValue(SelectedItemProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SelectableItemsView.xml" path="//Member[@MemberName='SelectedItems']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the collection of currently selected items when <see cref="SelectionMode"/> is <see cref="SelectionMode.Multiple"/>.
+		/// </summary>
+		/// <value>A list of selected data items. Never <see langword="null"/>; returns an empty list when no items are selected.</value>
+		/// <remarks>
+		/// This property tracks all selected items when <see cref="SelectionMode"/> is <see cref="SelectionMode.Multiple"/>.
+		/// For single selection, use the <see cref="SelectedItem"/> property instead for simpler binding.
+		/// </remarks>
 		public IList<object> SelectedItems
 		{
 			get => (IList<object>)GetValue(SelectedItemsProperty);
 			set => SetValue(SelectedItemsProperty, new SelectionList(this, value));
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SelectableItemsView.xml" path="//Member[@MemberName='SelectionChangedCommand']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the command to execute when the selection changes.
+		/// </summary>
+		/// <value>An <see cref="ICommand"/> to execute when selection changes, or <see langword="null"/> for no command.</value>
+		/// <remarks>
+		/// The command's parameter is set to the <see cref="SelectionChangedCommandParameter"/> value.
+		/// The command executes in addition to the <see cref="SelectionChanged"/> event firing.
+		/// </remarks>
 		public ICommand SelectionChangedCommand
 		{
 			get => (ICommand)GetValue(SelectionChangedCommandProperty);
 			set => SetValue(SelectionChangedCommandProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SelectableItemsView.xml" path="//Member[@MemberName='SelectionChangedCommandParameter']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the parameter to pass to the <see cref="SelectionChangedCommand"/>.
+		/// </summary>
+		/// <value>The command parameter, or <see langword="null"/> if no parameter is needed.</value>
 		public object SelectionChangedCommandParameter
 		{
 			get => GetValue(SelectionChangedCommandParameterProperty);
 			set => SetValue(SelectionChangedCommandParameterProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SelectableItemsView.xml" path="//Member[@MemberName='SelectionMode']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the selection mode, which determines whether users can select no items, one item, or multiple items.
+		/// </summary>
+		/// <value>A <see cref="SelectionMode"/> value. The default is <see cref="SelectionMode.None"/>.</value>
+		/// <remarks>
+		/// Set to <see cref="SelectionMode.Single"/> to allow selecting one item at a time,
+		/// <see cref="SelectionMode.Multiple"/> to allow selecting multiple items,
+		/// or <see cref="SelectionMode.None"/> to disable selection entirely.
+		/// </remarks>
 		public SelectionMode SelectionMode
 		{
 			get => (SelectionMode)GetValue(SelectionModeProperty);

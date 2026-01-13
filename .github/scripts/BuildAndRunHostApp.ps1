@@ -11,7 +11,7 @@
     4. Captures all device logs and test output
 
 .PARAMETER Platform
-    Target platform: "android" or "ios"
+    Target platform: "android", "ios", or "catalyst" (MacCatalyst)
 
 .PARAMETER TestFilter
     Test filter to pass to dotnet test (e.g., "FullyQualifiedName~Issue12345")
@@ -39,12 +39,15 @@
     
 .EXAMPLE
     ./BuildAndRunHostApp.ps1 -Platform ios -Category "Button"
+    
+.EXAMPLE
+    ./BuildAndRunHostApp.ps1 -Platform catalyst -TestFilter "Issue12345"
 #>
 
 [CmdletBinding(DefaultParameterSetName = "TestFilter")]
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet("android", "ios")]
+    [ValidateSet("android", "ios", "catalyst")]
     [string]$Platform,
 
     [Parameter(Mandatory = $true, ParameterSetName = "TestFilter")]
@@ -124,22 +127,32 @@ if ($Platform -eq "android") {
 } elseif ($Platform -eq "ios") {
     $TargetFramework = "net10.0-ios"
     $AppBundleId = "com.microsoft.maui.uitests"
+} elseif ($Platform -eq "catalyst") {
+    $TargetFramework = "net10.0-maccatalyst"
+    $AppBundleId = "com.microsoft.maui.uitests"
 }
 
-# Use shared Start-Emulator script to detect and start device
-$startEmulatorParams = @{
-    Platform = $Platform
-}
+# Start emulator/simulator (skip for catalyst - runs on desktop)
+if ($Platform -ne "catalyst") {
+    # Use shared Start-Emulator script to detect and start device
+    $startEmulatorParams = @{
+        Platform = $Platform
+    }
 
-if ($DeviceUdid) {
-    $startEmulatorParams.DeviceUdid = $DeviceUdid
-}
+    if ($DeviceUdid) {
+        $startEmulatorParams.DeviceUdid = $DeviceUdid
+    }
 
-$DeviceUdid = & "$PSScriptRoot/shared/Start-Emulator.ps1" @startEmulatorParams
+    $DeviceUdid = & "$PSScriptRoot/shared/Start-Emulator.ps1" @startEmulatorParams
 
-if ($LASTEXITCODE -ne 0) {
-    Write-Error "Failed to start or detect device"
-    exit 1
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "Failed to start or detect device"
+        exit 1
+    }
+} else {
+    # MacCatalyst runs directly on the Mac - use "host" as placeholder
+    $DeviceUdid = "host"
+    Write-Success "MacCatalyst will run on host Mac (no device needed)"
 }
 
 #endregion
@@ -177,6 +190,8 @@ if ($Platform -eq "android") {
     $TestProject = Join-Path $RepoRoot "src/Controls/tests/TestCases.Android.Tests/Controls.TestCases.Android.Tests.csproj"
 } elseif ($Platform -eq "ios") {
     $TestProject = Join-Path $RepoRoot "src/Controls/tests/TestCases.iOS.Tests/Controls.TestCases.iOS.Tests.csproj"
+} elseif ($Platform -eq "catalyst") {
+    $TestProject = Join-Path $RepoRoot "src/Controls/tests/TestCases.Mac.Tests/Controls.TestCases.Mac.Tests.csproj"
 }
 
 if (-not (Test-Path $TestProject)) {
@@ -208,6 +223,58 @@ if ($Platform -eq "android") {
 # Capture test start time for iOS logs
 $testStartTime = Get-Date
 
+# For MacCatalyst, launch the app BEFORE running tests so Appium finds the correct bundle
+# This is critical because both maui and maui2 repos may share the same bundle ID
+# We use dotnet run with StandardOutputPath/StandardErrorPath to capture Console.WriteLine
+# See: https://github.com/dotnet/macios/blob/main/docs/building-apps/build-properties.md#runwithopen
+$catalystAppProcess = $null
+if ($Platform -eq "catalyst") {
+    # Determine runtime identifier
+    $arch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLower()
+    $rid = if ($arch -eq "arm64") { "maccatalyst-arm64" } else { "maccatalyst-x64" }
+    
+    # Build app path - matches Build-AndDeploy.ps1 output location
+    $appPath = Join-Path $PSScriptRoot "../../artifacts/bin/Controls.TestCases.HostApp/Debug/$TargetFramework/$rid/Controls.TestCases.HostApp.app"
+    $appPath = [System.IO.Path]::GetFullPath($appPath)
+    
+    if (Test-Path $appPath) {
+        Write-Info "Launching MacCatalyst app with dotnet run..."
+        Write-Info "App path: $appPath"
+        
+        # Make executable (like CI does)
+        $executablePath = Join-Path $appPath "Contents/MacOS/Controls.TestCases.HostApp"
+        if (Test-Path $executablePath) {
+            & chmod +x $executablePath
+        }
+        
+        # Use dotnet run with StandardOutputPath/StandardErrorPath
+        # This launches the app via 'open' but captures stdout/stderr to files
+        # Console.WriteLine on MacCatalyst goes to stderr
+        $stderrFile = "$deviceLogFile.stderr"
+        $hostAppProject = Join-Path $PSScriptRoot "../../src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj"
+        $hostAppProject = [System.IO.Path]::GetFullPath($hostAppProject)
+        
+        Write-Info "Starting app with dotnet run (logs to $stderrFile)..."
+        & dotnet run --project $hostAppProject -f $TargetFramework --no-build `
+            -p:StandardOutputPath=$deviceLogFile `
+            -p:StandardErrorPath=$stderrFile 2>&1 | Out-Null
+        
+        # dotnet run exits immediately when using 'open', give app time to launch
+        Start-Sleep -Seconds 3
+        
+        # Get app process ID for later cleanup
+        $catalystAppProcess = Get-Process -Name "Controls.TestCases.HostApp" -ErrorAction SilentlyContinue | Select-Object -First 1
+        if ($catalystAppProcess) {
+            Write-Success "MacCatalyst app launched (PID: $($catalystAppProcess.Id))"
+        } else {
+            Write-Success "MacCatalyst app launched with log capture"
+        }
+    } else {
+        Write-Warning "MacCatalyst app not found at: $appPath"
+        Write-Warning "Test may use wrong app bundle if another version is registered"
+    }
+}
+
 Write-Info "Executing: dotnet test --filter `"$effectiveFilter`""
 Write-Host ""
 
@@ -229,6 +296,18 @@ try {
 } catch {
     Write-Error "Failed to run tests: $_"
     exit 1
+} finally {
+    # Stop MacCatalyst app process if we started it
+    if ($catalystAppProcess) {
+        # Re-fetch the process since the original reference may be stale
+        $runningApp = Get-Process -Id $catalystAppProcess.Id -ErrorAction SilentlyContinue
+        if ($runningApp -and -not $runningApp.HasExited) {
+            Write-Info "Stopping MacCatalyst app process (PID: $($catalystAppProcess.Id))..."
+            $runningApp.Kill()
+            $runningApp.WaitForExit(5000) | Out-Null
+            Write-Success "App process stopped"
+        }
+    }
 }
 
 #endregion
@@ -241,7 +320,8 @@ if ($Platform -eq "android") {
     Write-Info "Dumping Android logcat buffer (filtered to HostApp)..."
     
     # Try to filter by package name (HostApp)
-    & adb -s $DeviceUdid logcat -d | Select-String "com.microsoft.maui.uitests" > $deviceLogFile
+    # Include DOTNET tag for Console.WriteLine and package name for Debug.WriteLine
+    & adb -s $DeviceUdid logcat -d | Select-String "com.microsoft.maui.uitests|DOTNET" > $deviceLogFile
     
     if ((Get-Item $deviceLogFile).Length -eq 0) {
         Write-Warning "No logs found for com.microsoft.maui.uitests, dumping entire logcat..."
@@ -261,6 +341,33 @@ if ($Platform -eq "android") {
     Invoke-Expression "$iosLogCommand > `"$deviceLogFile`" 2>&1"
     
     Write-Info "iOS logs saved to: $deviceLogFile"
+} elseif ($Platform -eq "catalyst") {
+    # On macOS, Console.WriteLine goes to stderr, not stdout
+    # Stderr was captured to $deviceLogFile.stderr, stdout to $deviceLogFile
+    Write-Info "MacCatalyst logs captured via stdout/stderr redirect during test execution"
+    
+    # Check stderr first - this is where Console.WriteLine output goes on macOS
+    $stderrFile = "$deviceLogFile.stderr"
+    if ((Test-Path $stderrFile) -and ((Get-Item $stderrFile).Length -gt 0)) {
+        Write-Info "Console.WriteLine output found in stderr..."
+        # Copy stderr content to main log file (overwrite since stderr is the useful one)
+        Get-Content $stderrFile | Set-Content -Path $deviceLogFile -Encoding UTF8
+    }
+    
+    # If log file is still empty or small, try log show as fallback (for Debug.WriteLine via os_log)
+    $logFileSize = 0
+    if (Test-Path $deviceLogFile) {
+        $logFileSize = (Get-Item $deviceLogFile).Length
+    }
+    
+    if ($logFileSize -lt 100) {
+        Write-Info "Console output was minimal, using os_log fallback (captures Debug.WriteLine)..."
+        $logStartTimeStr = $testStartTime.AddMinutes(-1).ToString("yyyy-MM-dd HH:mm:ss")
+        $catalystLogCommand = "log show --level debug --predicate 'process contains `"Controls.TestCases.HostApp`" OR processImagePath contains `"Controls.TestCases.HostApp`"' --start `"$logStartTimeStr`" --style compact"
+        Invoke-Expression "$catalystLogCommand > `"$deviceLogFile`" 2>&1"
+    }
+    
+    Write-Info "MacCatalyst logs saved to: $deviceLogFile"
 }
 
 #endregion
@@ -272,8 +379,10 @@ if (Test-Path $deviceLogFile) {
     Write-Host "═══════════════════════════════════════════════════════" -ForegroundColor Cyan
     if ($Platform -eq "android") {
         Write-Host "  Android Device Logs (Last 100 lines)" -ForegroundColor Cyan
-    } else {
+    } elseif ($Platform -eq "ios") {
         Write-Host "  iOS Simulator Logs (Last 100 lines)" -ForegroundColor Cyan
+    } elseif ($Platform -eq "catalyst") {
+        Write-Host "  MacCatalyst App Logs (Last 100 lines)" -ForegroundColor Cyan
     }
     Write-Host "═══════════════════════════════════════════════════════" -ForegroundColor Cyan
     
