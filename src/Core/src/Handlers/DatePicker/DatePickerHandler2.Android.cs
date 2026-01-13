@@ -88,7 +88,7 @@ internal partial class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMateria
         handler.PlatformView?.UpdateCharacterSpacing(picker);
     }
 
-    public static CommandMapper<ITimePicker, ITimePickerHandler> CommandMapper = new(ViewCommandMapper)
+    public static CommandMapper<IDatePicker, IDatePickerHandler> CommandMapper = new(ViewCommandMapper)
     {
     };
 
