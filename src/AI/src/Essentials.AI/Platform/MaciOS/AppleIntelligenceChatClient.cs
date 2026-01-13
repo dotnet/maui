@@ -86,24 +86,8 @@ public sealed partial class AppleIntelligenceChatClient : ChatClientBase
 		ChatOptions? options = null,
 		CancellationToken cancellationToken = default)
 	{
-		LogMethodInvoked(nameof(GetResponseAsync), messages, options);
-
-		if (messages is null)
-		{
-			var ex = new ArgumentNullException(nameof(messages));
-			LogMethodFailed(nameof(GetResponseAsync), ex);
-			return Task.FromException<ChatResponse>(ex);
-		}
-
-		var nativeMessages = messages.Select(ToNative).ToArray();
-		if (nativeMessages.Length == 0)
-		{
-			var ex = new ArgumentException("The messages collection must contain at least one message.", nameof(messages));
-			LogMethodFailed(nameof(GetResponseAsync), ex);
-			return Task.FromException<ChatResponse>(ex);
-		}
-
-		var nativeOptions = options is null ? null : ToNative(options);
+		var nativeMessages = ToNative(messages, options);
+		var nativeOptions = ToNative(options);
 		var native = new ChatClientNative();
 
 		var tcs = new TaskCompletionSource<ChatResponse>();
@@ -135,22 +119,18 @@ public sealed partial class AppleIntelligenceChatClient : ChatClientBase
 				{
 					if (error.Domain == nameof(ChatClientNative) && error.Code == (int)ChatClientError.Cancelled)
 					{
-						LogMethodCanceled(nameof(GetResponseAsync));
 						tcs.TrySetCanceled();
 					}
 					else
 					{
-						var ex = new NSErrorException(error);
-						LogMethodFailed(nameof(GetResponseAsync), ex);
-						tcs.TrySetException(ex);
+						tcs.TrySetException(new NSErrorException(error));
 					}
-
-					return;
 				}
-
-				var chatResponse = FromNativeChatResponse(response);
-				LogMethodCompleted(nameof(GetResponseAsync), chatResponse);
-				tcs.TrySetResult(chatResponse);
+				else
+				{
+					var chatResponse = FromNativeChatResponse(response);
+					tcs.TrySetResult(chatResponse);
+				}
 			});
 
 		cancellationToken.Register(() => nativeToken?.Cancel());
@@ -164,17 +144,8 @@ public sealed partial class AppleIntelligenceChatClient : ChatClientBase
 		ChatOptions? options = null,
 		[EnumeratorCancellation] CancellationToken cancellationToken = default)
 	{
-		LogMethodInvoked(nameof(GetStreamingResponseAsync), messages, options);
-
-		if (messages is null)
-		{
-			var ex = new ArgumentNullException(nameof(messages));
-			LogMethodFailed(nameof(GetResponseAsync), ex);
-			throw ex;
-		}
-
-		var nativeMessages = messages.Select(ToNative).ToArray();
-		var nativeOptions = options is null ? null : ToNative(options);
+		var nativeMessages = ToNative(messages, options);
+		var nativeOptions = ToNative(options);
 
 		var native = new ChatClientNative();
 
@@ -207,7 +178,6 @@ public sealed partial class AppleIntelligenceChatClient : ChatClientBase
 									Contents = { new TextContent(delta) }
 								};
 
-								LogStreamingUpdate(nameof(GetStreamingResponseAsync), chatUpdate);
 								channel.Writer.TryWrite(chatUpdate);
 							}
 						}
@@ -246,19 +216,14 @@ public sealed partial class AppleIntelligenceChatClient : ChatClientBase
 			{
 				if (error is not null)
 				{
-					Exception ex;
 					if (error.Domain == nameof(ChatClientNative) && error.Code == (int)ChatClientError.Cancelled)
 					{
-						LogMethodCanceled(nameof(GetStreamingResponseAsync));
-						ex = new OperationCanceledException();
+						channel.Writer.Complete(new OperationCanceledException());
 					}
 					else
 					{
-						ex = new NSErrorException(error);
-						LogMethodFailed(nameof(GetStreamingResponseAsync), ex);
+						channel.Writer.Complete(new NSErrorException(error));
 					}
-
-					channel.Writer.Complete(ex);
 				}
 				else
 				{
@@ -272,12 +237,10 @@ public sealed partial class AppleIntelligenceChatClient : ChatClientBase
 							Contents = { new TextContent(finalChunk) }
 						};
 
-						LogStreamingUpdate(nameof(GetStreamingResponseAsync), finalUpdate);
 						channel.Writer.TryWrite(finalUpdate);
 					}
 
 					var chatResponse = FromNativeChatResponse(finalResult);
-					LogMethodCompleted(nameof(GetStreamingResponseAsync), chatResponse);
 					channel.Writer.Complete();
 				}
 			});
@@ -288,6 +251,24 @@ public sealed partial class AppleIntelligenceChatClient : ChatClientBase
 		{
 			yield return update;
 		}
+	}
+
+	private ChatMessageNative[] ToNative(IEnumerable<ChatMessage> messages, ChatOptions? options)
+	{
+		ArgumentNullException.ThrowIfNull(messages);
+
+		var toConvert = options?.Instructions is not null
+			? messages.Prepend(new(ChatRole.System, options.Instructions))
+			: messages;
+
+		ChatMessageNative[] nativeMessages = [.. toConvert.Select(ToNative)];
+
+		if (nativeMessages.Length == 0)
+		{
+			throw new ArgumentException("The messages collection must contain at least one message.", nameof(messages));
+		}
+
+		return nativeMessages;
 	}
 
 	private static ChatResponse FromNativeChatResponse(ChatResponseNative? response)
@@ -380,8 +361,13 @@ public sealed partial class AppleIntelligenceChatClient : ChatClientBase
 			throw new ArgumentOutOfRangeException(nameof(role), $"The role '{role}' is not supported by Apple Intelligence chat APIs.");
 	}
 
-	private static ChatOptionsNative ToNative(ChatOptions options)
+	private static ChatOptionsNative? ToNative(ChatOptions? options)
 	{
+		if (options is null)
+		{
+			return null;
+		}
+
 		if (options.MaxOutputTokens is <= 0)
 		{
 			throw new ArgumentOutOfRangeException(nameof(options), "The MaxOutputTokens option must be greater than zero.");

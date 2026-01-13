@@ -2,7 +2,7 @@ using System.Runtime.CompilerServices;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 
-namespace Maui.Controls.Sample.Services;
+namespace Maui.Controls.Sample.AI;
 
 /// <summary>
 /// A chat client wrapper that prevents Agent Framework from adding its own function invocation layer.

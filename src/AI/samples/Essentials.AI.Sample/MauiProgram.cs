@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using Maui.Controls.Sample.AI;
 using Maui.Controls.Sample.Pages;
 using Maui.Controls.Sample.Services;
 using Maui.Controls.Sample.ViewModels;
@@ -36,6 +37,7 @@ public static class MauiProgram
 		// Register AI Chat Clients
 #if IOS || MACCATALYST
 #pragma warning disable CA1416 // Validate platform compatibility - this sample requires iOS/macCatalyst 26.0+
+
 		// Register the base Apple Intelligence client
 		builder.Services.AddSingleton<AppleIntelligenceChatClient>();
 
@@ -49,7 +51,11 @@ public static class MauiProgram
 		{
 			var appleClient = sp.GetRequiredService<AppleIntelligenceChatClient>();
 			var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
-			return new NonFunctionInvokingChatClient(appleClient, loggerFactory, sp);
+			return appleClient
+				.AsBuilder()
+				.UseLogging(loggerFactory)
+				.Use(cc => new NonFunctionInvokingChatClient(cc, loggerFactory, sp))
+				.Build();
 		});
 
 		// Register "cloud-model" - for now, use Apple Intelligence with buffering
@@ -61,12 +67,12 @@ public static class MauiProgram
 			return appleClient
 				.AsBuilder()
 				.UseLogging(loggerFactory)
-				.UseFunctionInvocation()
 				.Use(cc => new BufferedChatClient(cc))
 				.Build();
 		});
 
 		builder.Services.AddSingleton<IEmbeddingGenerator<string, Embedding<float>>, NLContextualEmbeddingGenerator>();
+
 #pragma warning restore CA1416
 #endif
 

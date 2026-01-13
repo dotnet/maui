@@ -12,6 +12,7 @@ public class TaggingService(IChatClient chatClient)
 		var systemPrompt =
 			"""
 			Your job is to extract the most relevant tags from the input text.
+			Return tags as single words or phrases in CamelCase to be used on social media posts.
 			""";
 
 		var userPrompt =

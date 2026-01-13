@@ -113,54 +113,6 @@ public abstract partial class ChatClientBase : IChatClient
 		// Nothing to dispose by default. Override if needed.
 	}
 
-	internal void LogMethodInvoked(string methodName, IEnumerable<ChatMessage> messages, ChatOptions? options)
-	{
-		if (_logger.IsEnabled(LogLevel.Trace))
-		{
-			LogInvokedSensitive(methodName, AsJson(messages), AsJson(options), AsJson(((IChatClient)this).GetService<ChatClientMetadata>()));
-		}
-		else if (_logger.IsEnabled(LogLevel.Debug))
-		{
-			LogInvoked(methodName);
-		}
-	}
-
-	internal void LogMethodCompleted(string methodName, ChatResponse? response = null)
-	{
-		if (_logger.IsEnabled(LogLevel.Trace) && response is not null)
-		{
-			LogCompletedSensitive(methodName, AsJson(response));
-		}
-		else if (_logger.IsEnabled(LogLevel.Debug))
-		{
-			LogCompleted(methodName);
-		}
-	}
-
-	internal void LogMethodCanceled(string methodName)
-	{
-		if (_logger.IsEnabled(LogLevel.Debug))
-		{
-			LogInvocationCanceled(methodName);
-		}
-	}
-
-	internal void LogMethodFailed(string methodName, Exception error)
-	{
-		if (_logger.IsEnabled(LogLevel.Debug))
-		{
-			LogInvocationFailed(methodName, error);
-		}
-	}
-
-	internal void LogStreamingUpdate(string methodName, ChatResponseUpdate update)
-	{
-		if (_logger.IsEnabled(LogLevel.Trace))
-		{
-			LogStreamingUpdateSensitive(methodName, AsJson(update));
-		}
-	}
-
 	internal void LogFunctionInvoking(string methodName, string functionName, string callId, string? arguments = null)
 	{
 		if (_logger.IsEnabled(LogLevel.Trace) && arguments is not null)
@@ -184,46 +136,6 @@ public abstract partial class ChatClientBase : IChatClient
 			LogToolInvocationCompleted(methodName, callId);
 		}
 	}
-
-	internal string AsJson<T>(T value)
-	{
-		try
-		{
-			if (_jsonSerializerOptions.TryGetTypeInfo(typeof(T), out var typeInfo) ||
-				AIJsonUtilities.DefaultOptions.TryGetTypeInfo(typeof(T), out typeInfo))
-			{
-				return JsonSerializer.Serialize(value, typeInfo);
-			}
-		}
-		catch
-		{
-			// If we fail to serialize, just fall through to returning "{}".
-		}
-
-		return "{}";
-	}
-
-	// Method invocation logging
-	[LoggerMessage(LogLevel.Debug, "{MethodName} invoked.")]
-	private partial void LogInvoked(string methodName);
-
-	[LoggerMessage(LogLevel.Trace, "{MethodName} invoked: {Messages}. Options: {ChatOptions}. Metadata: {ChatClientMetadata}.")]
-	private partial void LogInvokedSensitive(string methodName, string messages, string chatOptions, string chatClientMetadata);
-
-	[LoggerMessage(LogLevel.Debug, "{MethodName} completed.")]
-	private partial void LogCompleted(string methodName);
-
-	[LoggerMessage(LogLevel.Trace, "{MethodName} completed: {ChatResponse}.")]
-	private partial void LogCompletedSensitive(string methodName, string chatResponse);
-
-	[LoggerMessage(LogLevel.Trace, "{MethodName} received streaming update: {ChatResponseUpdate}")]
-	private partial void LogStreamingUpdateSensitive(string methodName, string chatResponseUpdate);
-
-	[LoggerMessage(LogLevel.Debug, "{MethodName} canceled.")]
-	private partial void LogInvocationCanceled(string methodName);
-
-	[LoggerMessage(LogLevel.Error, "{MethodName} failed.")]
-	private partial void LogInvocationFailed(string methodName, Exception error);
 
 	// Tool call logging
 	[LoggerMessage(LogLevel.Debug, "{MethodName} received tool call: {ToolName} (ID: {ToolCallId})")]
