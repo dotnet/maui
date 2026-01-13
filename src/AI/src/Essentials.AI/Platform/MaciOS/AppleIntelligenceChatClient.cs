@@ -192,7 +192,7 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 						channel.Writer.TryWrite(finalUpdate);
 					}
 
-					var chatResponse = FromNativeChatResponse(finalResult);
+					// Note: The full ChatResponse is not used in streaming mode - updates are sent progressively
 					channel.Writer.Complete();
 				}
 			});
