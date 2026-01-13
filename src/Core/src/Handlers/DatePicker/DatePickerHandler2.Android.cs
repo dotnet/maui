@@ -98,7 +98,7 @@ internal partial class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMateria
 
     protected override MauiMaterialDatePicker CreatePlatformView()
     {
-        return new MauiMaterialDatePicker(MauiMaterialContextThemeWrapper.Create(Context));
+        return new MauiMaterialDatePicker(Context);
     }
 
     protected override void ConnectHandler(MauiMaterialDatePicker platformView)
