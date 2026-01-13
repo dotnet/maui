@@ -11,6 +11,7 @@ using static Android.Views.View;
 
 namespace Microsoft.Maui.Platform;
 
+// TODO: material3 - make it public in .net 11
 internal class MauiMaterialDatePicker : TextInputEditText, IOnClickListener
 {
     public MauiMaterialDatePicker(Context context) : base(MauiMaterialContextThemeWrapper.Create(context))

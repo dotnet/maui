@@ -6,13 +6,14 @@ using Google.Android.Material.DatePicker;
 
 namespace Microsoft.Maui.Handlers;
 
-internal partial class MaterialDatePickerHandler : ViewHandler<IDatePicker, MauiMaterialDatePicker>
+// TODO: material3 - make it public in .net 11
+internal partial class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMaterialDatePicker>
 {
     internal MaterialDatePicker? _dialog;
     internal bool _isUpdatingIsOpen;
     internal MaterialDatePickerPositiveButtonClickListener? _positiveButtonClickListener;
     internal MaterialDatePickerDismissListener? _dismissListener;
-    public static PropertyMapper<IDatePicker, MaterialDatePickerHandler> Mapper =
+    public static PropertyMapper<IDatePicker, DatePickerHandler2> Mapper =
                     new(ViewMapper)
                     {
                         [nameof(IDatePicker.Background)] = MapBackground,
@@ -27,14 +28,14 @@ internal partial class MaterialDatePickerHandler : ViewHandler<IDatePicker, Maui
 
                     };
 
-    static void MapBackground(MaterialDatePickerHandler handler, IDatePicker datePicker)
+    static void MapBackground(DatePickerHandler2 handler, IDatePicker datePicker)
     {
         handler.PlatformView?.UpdateBackground(datePicker);
     }
 
-    static void MapIsOpen(MaterialDatePickerHandler handler, IDatePicker picker)
+    static void MapIsOpen(DatePickerHandler2 handler, IDatePicker picker)
     {
-        if (handler.IsConnected() && handler is MaterialDatePickerHandler platformHandler && !platformHandler._isUpdatingIsOpen)
+        if (handler.IsConnected() && handler is DatePickerHandler2 platformHandler && !platformHandler._isUpdatingIsOpen)
         {
             if (picker.IsOpen)
             {
@@ -47,7 +48,7 @@ internal partial class MaterialDatePickerHandler : ViewHandler<IDatePicker, Maui
         }
     }
 
-    static void MapTextColor(MaterialDatePickerHandler handler, IDatePicker picker)
+    static void MapTextColor(DatePickerHandler2 handler, IDatePicker picker)
     {
         handler.PlatformView?.UpdateTextColor(picker);
     }
@@ -57,32 +58,32 @@ internal partial class MaterialDatePickerHandler : ViewHandler<IDatePicker, Maui
     // A new picker is created each time the dialog is shown, so
     // min/max validation is handled via CalendarConstraints during creation.
     // No additional runtime validation is required.
-    static void MapMinimumDate(MaterialDatePickerHandler handler, IDatePicker picker)
+    static void MapMinimumDate(DatePickerHandler2 handler, IDatePicker picker)
     {
     }
 
-    static void MapMaximumDate(MaterialDatePickerHandler handler, IDatePicker picker)
+    static void MapMaximumDate(DatePickerHandler2 handler, IDatePicker picker)
     {
     }
 
-    static void MapFormat(MaterialDatePickerHandler handler, IDatePicker picker)
+    static void MapFormat(DatePickerHandler2 handler, IDatePicker picker)
     {
         handler.PlatformView?.UpdateFormat(picker);
     }
 
-    static void MapFont(MaterialDatePickerHandler handler, IDatePicker picker)
+    static void MapFont(DatePickerHandler2 handler, IDatePicker picker)
     {
         var fontManager = handler.GetRequiredService<IFontManager>();
 
         handler.PlatformView?.UpdateFont(picker, fontManager);
     }
 
-    static void MapDate(MaterialDatePickerHandler handler, IDatePicker picker)
+    static void MapDate(DatePickerHandler2 handler, IDatePicker picker)
     {
         handler.PlatformView?.UpdateDate(picker);
     }
 
-    static void MapCharacterSpacing(MaterialDatePickerHandler handler, IDatePicker picker)
+    static void MapCharacterSpacing(DatePickerHandler2 handler, IDatePicker picker)
     {
         handler.PlatformView?.UpdateCharacterSpacing(picker);
     }
@@ -91,7 +92,7 @@ internal partial class MaterialDatePickerHandler : ViewHandler<IDatePicker, Maui
     {
     };
 
-    public MaterialDatePickerHandler() : base(Mapper, CommandMapper)
+    public DatePickerHandler2() : base(Mapper, CommandMapper)
     {
     }
 
@@ -298,11 +299,11 @@ internal partial class MaterialDatePickerHandler : ViewHandler<IDatePicker, Maui
 
 internal class MaterialDatePickerPositiveButtonClickListener : Java.Lang.Object, IMaterialPickerOnPositiveButtonClickListener
 {
-    readonly WeakReference<MaterialDatePickerHandler> _handler;
+    readonly WeakReference<DatePickerHandler2> _handler;
 
-    public MaterialDatePickerPositiveButtonClickListener(MaterialDatePickerHandler handler)
+    public MaterialDatePickerPositiveButtonClickListener(DatePickerHandler2 handler)
     {
-        _handler = new WeakReference<MaterialDatePickerHandler>(handler);
+        _handler = new WeakReference<DatePickerHandler2>(handler);
     }
 
     public void OnPositiveButtonClick(Java.Lang.Object? selection)
@@ -328,11 +329,11 @@ internal class MaterialDatePickerPositiveButtonClickListener : Java.Lang.Object,
 
 internal class MaterialDatePickerDismissListener : Java.Lang.Object, IDialogInterfaceOnDismissListener
 {
-    readonly WeakReference<MaterialDatePickerHandler> _handler;
+    readonly WeakReference<DatePickerHandler2> _handler;
 
-    public MaterialDatePickerDismissListener(MaterialDatePickerHandler handler)
+    public MaterialDatePickerDismissListener(DatePickerHandler2 handler)
     {
-        _handler = new WeakReference<MaterialDatePickerHandler>(handler);
+        _handler = new WeakReference<DatePickerHandler2>(handler);
     }
 
     public void OnDismiss(IDialogInterface? dialog)
