@@ -5,9 +5,10 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Handlers;
 
-internal partial class MaterialSwitchHandler : ViewHandler<ISwitch, MaterialSwitch>
+// TODO: material3 - make it public in .net 11
+internal partial class SwitchHandler2 : ViewHandler<ISwitch, MaterialSwitch>
 {
-	public static PropertyMapper<ISwitch, MaterialSwitchHandler> Mapper =
+	public static PropertyMapper<ISwitch, SwitchHandler2> Mapper =
 		new(ViewMapper)
 		{
 			[nameof(ISwitch.IsOn)] = MapIsOn,
@@ -15,12 +16,12 @@ internal partial class MaterialSwitchHandler : ViewHandler<ISwitch, MaterialSwit
 			[nameof(ISwitch.ThumbColor)] = MapThumbColor,
 		};
 
-	public static CommandMapper<ISwitch, MaterialSwitchHandler> CommandMapper =
+	public static CommandMapper<ISwitch, SwitchHandler2> CommandMapper =
 		new(ViewCommandMapper);
 
 	MaterialSwitchCheckedChangeListener? _changeListener;
 
-	public MaterialSwitchHandler() : base(Mapper, CommandMapper)
+	public SwitchHandler2() : base(Mapper, CommandMapper)
 	{
 	}
 
@@ -63,17 +64,17 @@ internal partial class MaterialSwitchHandler : ViewHandler<ISwitch, MaterialSwit
 		return size;
 	}
 
-	public static void MapIsOn(MaterialSwitchHandler handler, ISwitch view)
+	public static void MapIsOn(SwitchHandler2 handler, ISwitch view)
 	{
 		handler.PlatformView?.UpdateIsOn(view);
 	}
 
-	public static void MapTrackColor(MaterialSwitchHandler handler, ISwitch view)
+	public static void MapTrackColor(SwitchHandler2 handler, ISwitch view)
 	{
 		handler.PlatformView?.UpdateTrackColor(view);
 	}
 
-	public static void MapThumbColor(MaterialSwitchHandler handler, ISwitch view)
+	public static void MapThumbColor(SwitchHandler2 handler, ISwitch view)
 	{
 		handler.PlatformView?.UpdateThumbColor(view);
 	}
@@ -88,11 +89,11 @@ internal partial class MaterialSwitchHandler : ViewHandler<ISwitch, MaterialSwit
 
 	sealed class MaterialSwitchCheckedChangeListener : Java.Lang.Object, CompoundButton.IOnCheckedChangeListener
 	{
-		readonly WeakReference<MaterialSwitchHandler> _handler;
+		readonly WeakReference<SwitchHandler2> _handler;
 
-		public MaterialSwitchCheckedChangeListener(MaterialSwitchHandler handler)
+		public MaterialSwitchCheckedChangeListener(SwitchHandler2 handler)
 		{
-			_handler = new WeakReference<MaterialSwitchHandler>(handler);
+			_handler = new WeakReference<SwitchHandler2>(handler);
 		}
 
 		void CompoundButton.IOnCheckedChangeListener.OnCheckedChanged(CompoundButton? buttonView, bool isToggled)
