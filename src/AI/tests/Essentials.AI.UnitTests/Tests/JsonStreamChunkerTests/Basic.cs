@@ -1,5 +1,4 @@
 using System.Text.Json;
-using Maui.Controls.Sample.Services;
 using Xunit;
 
 namespace Microsoft.Maui.Essentials.AI.UnitTests;
