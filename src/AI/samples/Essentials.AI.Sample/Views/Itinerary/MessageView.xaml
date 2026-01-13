@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:viewModels="clr-namespace:Maui.Controls.Sample.ViewModels"
+    x:Class="Maui.Controls.Sample.Views.Itinerary.MessageView"
+    x:DataType="viewModels:TripPlanningViewModel">
+
+    <Grid>
+        <!-- Background Header Image -->
+        <Image 
+            VerticalOptions="Start" 
+            HeightRequest="420" 
+            Aspect="AspectFill" 
+            Source="{Binding Landmark.BackgroundImageName, StringFormat='images/backgrounds/{0}.jpg'}"
+            Opacity="0.6"
+            ZIndex="0" />
+
+        <!-- Message Content -->
+        <VerticalStackLayout 
+            Padding="20" 
+            Spacing="20" 
+            VerticalOptions="Center" 
+            ZIndex="1">
+            
+            <!-- Error Message (if error) -->
+            <Label 
+                IsVisible="{Binding HasError}"
+                Text="{Binding ErrorMessage}" 
+                TextColor="Red" 
+                FontSize="20" 
+                HorizontalTextAlignment="Center" 
+                LineBreakMode="WordWrap" />
+
+            <!-- General Message (if not error) -->
+            <Label 
+                IsVisible="{Binding HasError, Converter={StaticResource InvertedBoolConverter}}"
+                Text="{Binding Message}" 
+                FontSize="20" 
+                HorizontalTextAlignment="Center" 
+                LineBreakMode="WordWrap" />
+        </VerticalStackLayout>
+    </Grid>
+
+</ContentView>
