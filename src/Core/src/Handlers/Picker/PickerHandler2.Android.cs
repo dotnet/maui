@@ -7,11 +7,12 @@ using AResource = Android.Resource;
 
 namespace Microsoft.Maui.Handlers;
 
-internal partial class MaterialPickerHandler : ViewHandler<IPicker, MauiMaterialPicker>
+// TODO: Material3 - make it public in .net 11
+internal partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPicker>
 {
 	AppCompatAlertDialog? _dialog;
 
-	public static PropertyMapper<IPicker, MaterialPickerHandler> Mapper =
+	public static PropertyMapper<IPicker, PickerHandler2> Mapper =
 		new(ViewMapper)
 		{
 			[nameof(IPicker.Background)] = MapBackground,
@@ -27,13 +28,13 @@ internal partial class MaterialPickerHandler : ViewHandler<IPicker, MauiMaterial
 			[nameof(IPicker.IsOpen)] = MapIsOpen,
 		};
 
-	public static CommandMapper<IPicker, MaterialPickerHandler> CommandMapper = new(ViewCommandMapper)
+	public static CommandMapper<IPicker, PickerHandler2> CommandMapper = new(ViewCommandMapper)
 	{
 		[nameof(IPicker.Focus)] = MapFocus,
 		[nameof(IPicker.Unfocus)] = MapUnfocus,
 	};
 
-	public MaterialPickerHandler() : base(Mapper, CommandMapper)
+	public PickerHandler2() : base(Mapper, CommandMapper)
 	{
 	}
 
@@ -64,56 +65,56 @@ internal partial class MaterialPickerHandler : ViewHandler<IPicker, MauiMaterial
 		base.DisconnectHandler(platformView);
 	}
 
-	public static void MapBackground(MaterialPickerHandler handler, IPicker picker)
+	public static void MapBackground(PickerHandler2 handler, IPicker picker)
 	{
 		handler.PlatformView?.UpdateBackground(picker);
 	}
 
-	internal static void MapItems(MaterialPickerHandler handler, IPicker picker) => Reload(handler);
+	internal static void MapItems(PickerHandler2 handler, IPicker picker) => Reload(handler);
 
-	public static void MapTitle(MaterialPickerHandler handler, IPicker picker)
+	public static void MapTitle(PickerHandler2 handler, IPicker picker)
 	{
 		handler.PlatformView?.UpdateTitle(picker);
 	}
 
-	public static void MapTitleColor(MaterialPickerHandler handler, IPicker picker)
+	public static void MapTitleColor(PickerHandler2 handler, IPicker picker)
 	{
 		handler.PlatformView?.UpdateTitleColor(picker);
 	}
 
-	public static void MapSelectedIndex(MaterialPickerHandler handler, IPicker picker)
+	public static void MapSelectedIndex(PickerHandler2 handler, IPicker picker)
 	{
 		handler.PlatformView?.UpdateSelectedIndex(picker);
 	}
 
-	public static void MapCharacterSpacing(MaterialPickerHandler handler, IPicker picker)
+	public static void MapCharacterSpacing(PickerHandler2 handler, IPicker picker)
 	{
 		handler.PlatformView?.UpdateCharacterSpacing(picker);
 	}
 
-	public static void MapFont(MaterialPickerHandler handler, IPicker picker)
+	public static void MapFont(PickerHandler2 handler, IPicker picker)
 	{
 		var fontManager = handler.GetRequiredService<IFontManager>();
 
 		handler.PlatformView?.UpdateFont(picker, fontManager);
 	}
 
-	public static void MapHorizontalTextAlignment(MaterialPickerHandler handler, IPicker picker)
+	public static void MapHorizontalTextAlignment(PickerHandler2 handler, IPicker picker)
 	{
 		handler.PlatformView?.UpdateHorizontalAlignment(picker.HorizontalTextAlignment);
 	}
 
-	public static void MapTextColor(MaterialPickerHandler handler, IPicker picker)
+	public static void MapTextColor(PickerHandler2 handler, IPicker picker)
 	{
 		handler.PlatformView.UpdateTextColor(picker.TextColor);
 	}
 
-	public static void MapVerticalTextAlignment(MaterialPickerHandler handler, IPicker picker)
+	public static void MapVerticalTextAlignment(PickerHandler2 handler, IPicker picker)
 	{
 		handler.PlatformView?.UpdateVerticalAlignment(picker.VerticalTextAlignment);
 	}
 
-	internal static void MapIsOpen(MaterialPickerHandler handler, IPicker picker)
+	internal static void MapIsOpen(PickerHandler2 handler, IPicker picker)
 	{
 		if (handler.IsConnected())
 		{
@@ -128,7 +129,7 @@ internal partial class MaterialPickerHandler : ViewHandler<IPicker, MauiMaterial
 		}
 	}
 
-	internal static void MapFocus(MaterialPickerHandler handler, IPicker picker, object? args)
+	internal static void MapFocus(PickerHandler2 handler, IPicker picker, object? args)
 	{
 		if (handler.IsConnected())
 		{
@@ -137,7 +138,7 @@ internal partial class MaterialPickerHandler : ViewHandler<IPicker, MauiMaterial
 		}
 	}
 
-	internal static void MapUnfocus(MaterialPickerHandler handler, IPicker picker, object? args)
+	internal static void MapUnfocus(PickerHandler2 handler, IPicker picker, object? args)
 	{
 		if (handler.IsConnected())
 		{
@@ -160,67 +161,90 @@ internal partial class MaterialPickerHandler : ViewHandler<IPicker, MauiMaterial
 
 	void DismissDialog()
 	{
-		_dialog?.Dismiss();
+		DismissPickerDialog();
 	}
 
 	void OnClick(object? sender, EventArgs e)
 	{
 		if (_dialog is null && VirtualView is not null)
 		{
-			// Use MauiMaterialContextThemeWrapper to ensure proper Material 3 theming
-			// for the dialog when Material 3 is enabled in the project
-			using (var builder = new MaterialAlertDialogBuilder(MauiMaterialContextThemeWrapper.Create(Context)))
-			{
-				if (VirtualView.TitleColor is null)
-				{
-					builder.SetTitle(VirtualView.Title ?? string.Empty);
-				}
-				else
-				{
-					var title = new SpannableString(VirtualView.Title ?? string.Empty);
-					title.SetSpan(new ForegroundColorSpan(VirtualView.TitleColor.ToPlatform()), 0, title.Length(), SpanTypes.ExclusiveExclusive);
-					builder.SetTitle(title);
-				}
-
-				string[] items = VirtualView.GetItemsAsArray();
-
-				for (var i = 0; i < items.Length; i++)
-				{
-					var item = items[i];
-					if (item is null)
-					{
-						items[i] = String.Empty;
-					}
-				}
-
-				builder.SetSingleChoiceItems(items, VirtualView.SelectedIndex, (s, e) =>
-				{
-					var selectedIndex = e.Which;
-					VirtualView.SelectedIndex = selectedIndex;
-					base.PlatformView?.UpdatePicker(VirtualView);
-
-					_dialog?.Dismiss();
-				});
-
-				builder.SetNegativeButton(AResource.String.Cancel, (o, args) => { });
-
-				_dialog = builder.Create();
-			}
-
-			if (_dialog is null)
-			{
-				return;
-			}
-
-			_dialog.UpdateFlowDirection(PlatformView);
-			_dialog.SetCanceledOnTouchOutside(true);
-
-			_dialog.ShowEvent += OnDialogShown;
-			_dialog.DismissEvent += OnDialogDismiss;
-
-			_dialog.Show();
-			VirtualView.IsOpen = true;
+			CreatePickerDialog();
+			ShowPickerDialog();
 		}
+	}
+
+	void CreatePickerDialog()
+	{
+		// Use MauiMaterialContextThemeWrapper to ensure proper Material 3 theming
+		// for the dialog when Material 3 is enabled in the project
+		using (var builder = new MaterialAlertDialogBuilder(MauiMaterialContextThemeWrapper.Create(Context)))
+		{
+			SetupDialogTitle(builder);
+			SetupDialogItems(builder);
+			builder.SetNegativeButton(AResource.String.Cancel, (o, args) => { });
+
+			_dialog = builder.Create();
+		}
+	}
+
+	void SetupDialogTitle(MaterialAlertDialogBuilder builder)
+	{
+		if (VirtualView.TitleColor is null)
+		{
+			builder.SetTitle(VirtualView.Title ?? string.Empty);
+		}
+		else
+		{
+			var title = new SpannableString(VirtualView.Title ?? string.Empty);
+			title.SetSpan(new ForegroundColorSpan(VirtualView.TitleColor.ToPlatform()), 0, title.Length(), SpanTypes.ExclusiveExclusive);
+			builder.SetTitle(title);
+		}
+	}
+
+	void SetupDialogItems(MaterialAlertDialogBuilder builder)
+	{
+		string[] items = VirtualView.GetItemsAsArray();
+
+		// Ensure no null items
+		for (var i = 0; i < items.Length; i++)
+		{
+			var item = items[i];
+			if (item is null)
+			{
+				items[i] = String.Empty;
+			}
+		}
+
+		builder.SetSingleChoiceItems(items, VirtualView.SelectedIndex, (sender, e) =>
+		{
+			var selectedIndex = e.Which;
+			VirtualView.SelectedIndex = selectedIndex;
+			PlatformView?.UpdatePicker(VirtualView);
+
+			DismissPickerDialog();
+		});
+	}
+
+	void ShowPickerDialog()
+	{
+		if (_dialog is null)
+		{
+			return;
+		}
+
+		_dialog.UpdateFlowDirection(PlatformView);
+		_dialog.SetCanceledOnTouchOutside(true);
+
+		_dialog.ShowEvent += OnDialogShown;
+		_dialog.DismissEvent += OnDialogDismiss;
+
+		_dialog.Show();
+		VirtualView.IsOpen = true;
+	}
+
+	void DismissPickerDialog()
+	{
+		_dialog?.Dismiss();
 	}
 
 	void OnDialogDismiss(object? sender, EventArgs e)
@@ -246,7 +270,7 @@ internal partial class MaterialPickerHandler : ViewHandler<IPicker, MauiMaterial
 		VirtualView.IsFocused = true;
 	}
 
-	static void Reload(MaterialPickerHandler handler)
+	static void Reload(PickerHandler2 handler)
 	{
 		handler.PlatformView.UpdatePicker(handler.VirtualView);
 	}

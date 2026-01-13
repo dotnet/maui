@@ -68,11 +68,13 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		// TODO: Material3 - make it public in .net 11
 		internal static void UpdateTitle(this MauiMaterialPicker platformPicker, IPicker picker)
 		{
 			UpdatePicker(platformPicker, picker);
 		}
 
+		// TODO: Material3 - make it public in .net 11
 		internal static void UpdateTitleColor(this MauiMaterialPicker platformPicker, IPicker picker)
 		{
 			var titleColor = picker.TitleColor;
@@ -90,6 +92,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		// TODO: Material3 - make it public in .net 11
 		internal static void UpdateSelectedIndex(this MauiMaterialPicker platformPicker, IPicker picker)
 		{
 			UpdatePicker(platformPicker, picker);
