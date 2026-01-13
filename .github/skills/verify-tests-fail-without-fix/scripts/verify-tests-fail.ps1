@@ -183,13 +183,194 @@ if ($DetectedFixFiles.Count -eq 0 -and $RequireFullVerification) {
     exit 1
 }
 
-# If no fix files and not requiring full verification, warn but continue
+# If no fix files and not requiring full verification, run in "verify failure only" mode
 if ($DetectedFixFiles.Count -eq 0) {
     Write-Host ""
-    Write-Host "⚠️  Warning: No fix files detected. Cannot run full verification." -ForegroundColor Yellow
-    Write-Host "   Use -RequireFullVerification to enforce full verification mode." -ForegroundColor Yellow
-    Write-Host "   Use -FixFiles to specify fix files explicitly." -ForegroundColor Yellow
-    exit 0
+    Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
+    Write-Host "║         VERIFY FAILURE ONLY MODE                          ║" -ForegroundColor Cyan
+    Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Cyan
+    Write-Host "║  No fix files detected - will only verify:                ║" -ForegroundColor Cyan
+    Write-Host "║  1. Tests FAIL (proving they catch the bug)               ║" -ForegroundColor Cyan
+    Write-Host "║                                                           ║" -ForegroundColor Cyan
+    Write-Host "║  Use this mode when creating tests before writing a fix. ║" -ForegroundColor Cyan
+    Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+    Write-Host ""
+    
+    # Auto-detect test filter if not provided
+    if (-not $TestFilter) {
+        Write-Host "🔍 Auto-detecting test filter from changed test files..." -ForegroundColor Cyan
+        
+        $changedFiles = @()
+        if ($BaseBranchDetected) {
+            $changedFiles = git diff $BaseBranchDetected HEAD --name-only 2>$null
+            if ($LASTEXITCODE -ne 0) {
+                $changedFiles = git diff "origin/$BaseBranchDetected" HEAD --name-only 2>$null
+            }
+        }
+        
+        # If no base branch, use git status to find unstaged/staged files
+        if (-not $changedFiles -or $changedFiles.Count -eq 0) {
+            $changedFiles = git diff --name-only 2>$null
+            if ($changedFiles -and $changedFiles.Count -gt 0) {
+                $changedFiles = @($changedFiles)
+            } else {
+                $changedFiles = git diff --cached --name-only 2>$null
+            }
+        }
+        
+        # Find test files (files in test directories that are .cs files)
+        $testFiles = @()
+        foreach ($file in $changedFiles) {
+            if ($file -match "TestCases\.(Shared\.Tests|HostApp).*\.cs$" -and $file -notmatch "^_") {
+                $testFiles += $file
+            }
+        }
+        
+        if ($testFiles.Count -eq 0) {
+            Write-Host "❌ Could not auto-detect test filter. No test files found in changed files." -ForegroundColor Red
+            Write-Host "   Looking for files matching: TestCases.(Shared.Tests|HostApp)/*.cs" -ForegroundColor Yellow
+            Write-Host "   Please provide -TestFilter parameter explicitly." -ForegroundColor Yellow
+            exit 1
+        }
+        
+        # Extract class names from test files
+        $testClassNames = @()
+        foreach ($file in $testFiles) {
+            if ($file -match "TestCases\.Shared\.Tests.*\.cs$") {
+                $fullPath = Join-Path $RepoRoot $file
+                if (Test-Path $fullPath) {
+                    $content = Get-Content $fullPath -Raw
+                    if ($content -match "public\s+(partial\s+)?class\s+(\w+)") {
+                        $className = $matches[2]
+                        if ($className -notmatch "^_" -and $testClassNames -notcontains $className) {
+                            $testClassNames += $className
+                        }
+                    }
+                }
+            }
+        }
+        
+        # Fallback: use file names without extension
+        if ($testClassNames.Count -eq 0) {
+            foreach ($file in $testFiles) {
+                $fileName = [System.IO.Path]::GetFileNameWithoutExtension($file)
+                if ($fileName -notmatch "^_" -and $testClassNames -notcontains $fileName) {
+                    $testClassNames += $fileName
+                }
+            }
+        }
+        
+        if ($testClassNames.Count -eq 0) {
+            Write-Host "❌ Could not extract test class names from changed files." -ForegroundColor Red
+            Write-Host "   Please provide -TestFilter parameter explicitly." -ForegroundColor Yellow
+            exit 1
+        }
+        
+        if ($testClassNames.Count -eq 1) {
+            $TestFilter = $testClassNames[0]
+        } else {
+            $TestFilter = $testClassNames -join "|"
+        }
+        
+        Write-Host "✅ Auto-detected $($testClassNames.Count) test class(es):" -ForegroundColor Green
+        foreach ($name in $testClassNames) {
+            Write-Host "   - $name" -ForegroundColor White
+        }
+        Write-Host "   Filter: $TestFilter" -ForegroundColor Cyan
+    }
+    
+    # Create output directory
+    $OutputPath = Join-Path $RepoRoot $OutputDir
+    New-Item -ItemType Directory -Force -Path $OutputPath | Out-Null
+    
+    $ValidationLog = Join-Path $OutputPath "verification-log.txt"
+    $TestLog = Join-Path $OutputPath "test-failure-verification.log"
+    
+    # Initialize log
+    "" | Set-Content $ValidationLog
+    "=========================================" | Add-Content $ValidationLog
+    "Verify Tests Fail (Failure Only Mode)" | Add-Content $ValidationLog
+    "=========================================" | Add-Content $ValidationLog
+    "Platform: $Platform" | Add-Content $ValidationLog
+    "TestFilter: $TestFilter" | Add-Content $ValidationLog
+    "" | Add-Content $ValidationLog
+    
+    Write-Host "🧪 Running tests (expecting them to FAIL)..." -ForegroundColor Cyan
+    Write-Host ""
+    
+    # Use shared BuildAndRunHostApp.ps1 infrastructure with -Rebuild to ensure clean builds
+    $buildScript = Join-Path $RepoRoot ".github/scripts/BuildAndRunHostApp.ps1"
+    & $buildScript -Platform $Platform -TestFilter $TestFilter -Rebuild 2>&1 | Tee-Object -FilePath $TestLog
+    
+    # Parse test results
+    $testOutputLog = Join-Path $RepoRoot "CustomAgentLogsTmp/UITests/test-output.log"
+    $testResult = @{ Passed = $false; Error = $null }
+    
+    if (Test-Path $testOutputLog) {
+        $content = Get-Content $testOutputLog -Raw
+        if ($content -match "Failed:\s*(\d+)") {
+            $testResult.Passed = $false
+            $testResult.FailCount = [int]$matches[1]
+        } elseif ($content -match "Passed:\s*(\d+)") {
+            $testResult.Passed = $true
+            $testResult.PassCount = [int]$matches[1]
+        } else {
+            $testResult.Error = "Could not parse test results"
+        }
+    } else {
+        $testResult.Error = "Test output log not found: $testOutputLog"
+    }
+    
+    # Evaluate results
+    Write-Host ""
+    Write-Host "=========================================="
+    Write-Host "VERIFICATION RESULTS"
+    Write-Host "=========================================="
+    Write-Host ""
+    
+    if ($testResult.Error) {
+        Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Red
+        Write-Host "║              ERROR PARSING TEST RESULTS                   ║" -ForegroundColor Red
+        Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Red
+        Write-Host "║  $($testResult.Error.PadRight(57)) ║" -ForegroundColor Red
+        Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Red
+        exit 1
+    }
+    
+    if (-not $testResult.Passed) {
+        # Tests FAILED - this is what we want!
+        Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Green
+        Write-Host "║              VERIFICATION PASSED ✅                       ║" -ForegroundColor Green
+        Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Green
+        Write-Host "║  Tests FAILED as expected!                                ║" -ForegroundColor Green
+        Write-Host "║                                                           ║" -ForegroundColor Green
+        Write-Host "║  This proves the tests correctly reproduce the bug.      ║" -ForegroundColor Green
+        Write-Host "║  You can now proceed to write the fix.                   ║" -ForegroundColor Green
+        Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Green
+        Write-Host ""
+        Write-Host "Failed tests: $($testResult.FailCount)" -ForegroundColor Yellow
+        exit 0
+    } else {
+        # Tests PASSED - this is bad!
+        Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Red
+        Write-Host "║              VERIFICATION FAILED ❌                       ║" -ForegroundColor Red
+        Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Red
+        Write-Host "║  Tests PASSED but they should FAIL!                       ║" -ForegroundColor Red
+        Write-Host "║                                                           ║" -ForegroundColor Red
+        Write-Host "║  This means your tests don't actually reproduce the bug. ║" -ForegroundColor Red
+        Write-Host "║                                                           ║" -ForegroundColor Red
+        Write-Host "║  Possible causes:                                         ║" -ForegroundColor Red
+        Write-Host "║  1. Test scenario doesn't match the issue description     ║" -ForegroundColor Red
+        Write-Host "║  2. Test assertions are wrong or too lenient              ║" -ForegroundColor Red
+        Write-Host "║  3. The bug was already fixed in this branch              ║" -ForegroundColor Red
+        Write-Host "║  4. The bug only happens in specific conditions           ║" -ForegroundColor Red
+        Write-Host "║                                                           ║" -ForegroundColor Red
+        Write-Host "║  Go back and revise your tests!                           ║" -ForegroundColor Red
+        Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Red
+        Write-Host ""
+        Write-Host "Passed tests: $($testResult.PassCount)" -ForegroundColor Yellow
+        exit 1
+    }
 }
 
 # ============================================================
