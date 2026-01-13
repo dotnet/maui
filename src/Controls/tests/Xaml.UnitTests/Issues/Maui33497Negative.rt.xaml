@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- 
+    Test for https://github.com/dotnet/maui/issues/33497 - Negative case
+    
+    The ExternalAssembly declares:
+    [assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/maui/global", 
+        "Microsoft.Maui.Controls.Xaml.UnitTests.ExternalAssembly.Maui33497Negative")]
+    
+    Expected: This XmlnsDefinition should be IGNORED by the consuming assembly.
+    External assemblies should not be able to add types to the global xmlns.
+    Only the consuming assembly can add types to global xmlns via its own XmlnsDefinition.
+    
+    This XAML should fail to compile because ExternalGlobalType cannot be resolved.
+-->
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/maui/global"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests"
+             x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui33497Negative">
+    <local:Maui33497NegativeView x:Name="TestView" Value="{x:Static ExternalGlobalType.Value1}" />
+</ContentPage>

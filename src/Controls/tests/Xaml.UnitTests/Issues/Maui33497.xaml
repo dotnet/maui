@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/maui/global"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests"
+             x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui33497">
+    <!-- 
+        Test for https://github.com/dotnet/maui/issues/33497
+        
+        This assembly (Xaml.UnitTests) defines:
+        [assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/maui/global", 
+            "Microsoft.Maui.Controls.Xaml.UnitTests.ExternalAssembly.Maui33497",
+            AssemblyName = "Microsoft.Maui.Controls.Xaml.UnitTests.ExternalAssembly")]
+        
+        Bug: When using XmlnsDefinition with AssemblyName pointing to an external assembly,
+        the types from that namespace should be available via the global xmlns.
+        Currently this doesn't work - AlertType cannot be resolved.
+    -->
+    <local:Maui33497View x:Name="TestView" Alert="{x:Static AlertType.Warning}" />
+</ContentPage>
