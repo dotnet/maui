@@ -1,16 +1,23 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-    Verifies that UI tests catch the bug by running tests without and with the fix.
+    Verifies that UI tests catch the bug. Supports two modes: verify failure only or full verification.
 
 .DESCRIPTION
-    This script verifies that tests actually catch the issue by:
+    This script verifies that tests actually catch the issue. It supports two modes:
+    
+    VERIFY FAILURE ONLY MODE (no fix files detected):
+    - Runs tests to verify they FAIL (proving they catch the bug)
+    - Used when creating tests before writing a fix
+    
+    FULL VERIFICATION MODE (fix files detected):
     1. Reverting fix files to base branch
     2. Running tests WITHOUT fix (should FAIL)
     3. Restoring fix files
     4. Running tests WITH fix (should PASS)
     
-    Fix files are auto-detected from the git diff (non-test files that changed).
+    The script auto-detects which mode to use based on whether fix files are present.
+    Fix files and test filters are auto-detected from the git diff (non-test files that changed).
 
 .PARAMETER Platform
     Target platform: "android" or "ios"
@@ -21,7 +28,7 @@
 
 .PARAMETER FixFiles
     (Optional) Array of file paths to revert. If not provided, auto-detects from git diff
-    by excluding test directories.
+    by excluding test directories. If no fix files are found, runs in verify failure only mode.
 
 .PARAMETER BaseBranch
     Branch to revert files from. Auto-detected from PR if not specified.
@@ -31,19 +38,20 @@
 
 .PARAMETER RequireFullVerification
     If set, the script will fail if it cannot run full verification mode
-    (i.e., if no fix files are detected). Used by the skill to ensure proper validation.
+    (i.e., if no fix files are detected). Without this flag, the script will
+    automatically run in verify failure only mode when no fix files are found.
 
 .EXAMPLE
-    # Auto-detect everything - simplest usage
+    # Verify failure only mode - tests should fail (test creation workflow)
     ./verify-tests-fail.ps1 -Platform android
 
 .EXAMPLE
-    # Specify test filter, auto-detect mode and fix files
-    ./verify-tests-fail.ps1 -Platform android -TestFilter "Issue32030"
+    # Full verification mode - require fix files to be present
+    ./verify-tests-fail.ps1 -Platform android -RequireFullVerification
 
 .EXAMPLE
-    # Require full verification (fail if no fix files detected)
-    ./verify-tests-fail.ps1 -Platform android -RequireFullVerification
+    # Specify test filter explicitly (works in both modes)
+    ./verify-tests-fail.ps1 -Platform android -TestFilter "Issue32030"
 
 .EXAMPLE
     # Specify everything explicitly
