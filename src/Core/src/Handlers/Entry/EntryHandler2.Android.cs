@@ -9,12 +9,13 @@ using static Android.Widget.TextView;
 
 namespace Microsoft.Maui.Handlers;
 
-internal partial class MaterialEntryHandler : ViewHandler<IEntry, MauiMaterialTextInputLayout>
+// TODO: Material3: Make it public in .NET 11
+internal partial class EntryHandler2 : ViewHandler<IEntry, MauiMaterialTextInputLayout>
 {
 	ClearButtonClickListener? _clearButtonClickListener;
 	ColorStateList? _defaultHintTextColors;
 
-	public static PropertyMapper<IEntry, MaterialEntryHandler> Mapper =
+	public static PropertyMapper<IEntry, EntryHandler2> Mapper =
 	  new(ViewMapper)
 	  {
 		  [nameof(IEntry.Background)] = MapBackground,
@@ -38,13 +39,13 @@ internal partial class MaterialEntryHandler : ViewHandler<IEntry, MauiMaterialTe
 		  [nameof(IEntry.ClearButtonVisibility)] = MapClearButtonVisibility,
 	  };
 
-	public static CommandMapper<IEntry, MaterialEntryHandler> CommandMapper =
+	public static CommandMapper<IEntry, EntryHandler2> CommandMapper =
 	  new(ViewCommandMapper)
 	  {
 		  [nameof(IEntry.Focus)] = MapFocus
 	  };
 
-	public MaterialEntryHandler() : base(Mapper, CommandMapper)
+	public EntryHandler2() : base(Mapper, CommandMapper)
 	{
 	}
 
@@ -113,16 +114,16 @@ internal partial class MaterialEntryHandler : ViewHandler<IEntry, MauiMaterialTe
 		PlatformView.EditText?.UpdateReturnType(VirtualView);
 	}
 
-	public static void MapBackground(MaterialEntryHandler handler, IEntry entry) =>
+	public static void MapBackground(EntryHandler2 handler, IEntry entry) =>
 		handler.PlatformView?.UpdateBackground(entry);
 
-	public static void MapText(MaterialEntryHandler handler, IEntry entry) =>
+	public static void MapText(EntryHandler2 handler, IEntry entry) =>
 		handler.PlatformView.EditText?.UpdateText(entry);
 
-	public static void MapTextColor(MaterialEntryHandler handler, IEntry entry) =>
+	public static void MapTextColor(EntryHandler2 handler, IEntry entry) =>
 		handler.PlatformView.EditText?.UpdateTextColor(entry);
 
-	public static void MapIsPassword(MaterialEntryHandler handler, IEntry entry)
+	public static void MapIsPassword(EntryHandler2 handler, IEntry entry)
 	{
 		handler.UpdateValue(nameof(IEntry.Text));
 		handler.PlatformView.EditText?.UpdateIsPassword(entry);
@@ -139,27 +140,27 @@ internal partial class MaterialEntryHandler : ViewHandler<IEntry, MauiMaterialTe
 		}
 	}
 
-	public static void MapHorizontalTextAlignment(MaterialEntryHandler handler, IEntry entry) =>
+	public static void MapHorizontalTextAlignment(EntryHandler2 handler, IEntry entry) =>
 		handler.PlatformView.EditText?.UpdateHorizontalTextAlignment(entry);
 
-	public static void MapVerticalTextAlignment(MaterialEntryHandler handler, IEntry entry) =>
+	public static void MapVerticalTextAlignment(EntryHandler2 handler, IEntry entry) =>
 		handler?.PlatformView.EditText?.UpdateVerticalTextAlignment(entry);
 
-	public static void MapIsTextPredictionEnabled(MaterialEntryHandler handler, IEntry entry) =>
+	public static void MapIsTextPredictionEnabled(EntryHandler2 handler, IEntry entry) =>
 		handler.PlatformView.EditText?.UpdateIsTextPredictionEnabled(entry);
 
-	public static void MapIsSpellCheckEnabled(MaterialEntryHandler handler, IEntry entry) =>
+	public static void MapIsSpellCheckEnabled(EntryHandler2 handler, IEntry entry) =>
 		handler.PlatformView.EditText?.UpdateIsSpellCheckEnabled(entry);
 
-	public static void MapMaxLength(MaterialEntryHandler handler, IEntry entry) =>
+	public static void MapMaxLength(EntryHandler2 handler, IEntry entry) =>
 		handler.PlatformView.EditText?.UpdateMaxLength(entry);
 
-	public static void MapPlaceholder(MaterialEntryHandler handler, IEntry entry)
+	public static void MapPlaceholder(EntryHandler2 handler, IEntry entry)
 	{
 		handler.PlatformView.Hint = entry.Placeholder;
 	}
 
-	public static void MapPlaceholderColor(MaterialEntryHandler handler, IEntry entry)
+	public static void MapPlaceholderColor(EntryHandler2 handler, IEntry entry)
 	{
 		if (entry.PlaceholderColor is not null)
 		{
@@ -173,36 +174,36 @@ internal partial class MaterialEntryHandler : ViewHandler<IEntry, MauiMaterialTe
 		}
 	}
 
-	public static void MapFont(MaterialEntryHandler handler, IEntry entry) =>
+	public static void MapFont(EntryHandler2 handler, IEntry entry) =>
 		handler.PlatformView.EditText?.UpdateFont(entry, handler.GetRequiredService<IFontManager>());
 
-	public static void MapIsReadOnly(MaterialEntryHandler handler, IEntry entry)
+	public static void MapIsReadOnly(EntryHandler2 handler, IEntry entry)
 	{
 		handler.UpdateValue(nameof(IEntry.Text));
 
 		handler.PlatformView.EditText?.UpdateIsReadOnly(entry);
 	}
 
-	public static void MapKeyboard(MaterialEntryHandler handler, IEntry entry)
+	public static void MapKeyboard(EntryHandler2 handler, IEntry entry)
 	{
 		handler.UpdateValue(nameof(IEntry.Text));
 
 		handler.PlatformView.EditText?.UpdateKeyboard(entry);
 	}
 
-	public static void MapReturnType(MaterialEntryHandler handler, IEntry entry) =>
+	public static void MapReturnType(EntryHandler2 handler, IEntry entry) =>
 		handler.PlatformView.EditText?.UpdateReturnType(entry);
 
-	public static void MapCharacterSpacing(MaterialEntryHandler handler, IEntry entry) =>
+	public static void MapCharacterSpacing(EntryHandler2 handler, IEntry entry) =>
 		handler.PlatformView.EditText?.UpdateCharacterSpacing(entry);
 
-	public static void MapCursorPosition(MaterialEntryHandler handler, IEntry entry) =>
+	public static void MapCursorPosition(EntryHandler2 handler, IEntry entry) =>
 		handler.PlatformView.EditText?.UpdateCursorPosition(entry);
 
-	public static void MapSelectionLength(MaterialEntryHandler handler, IEntry entry) =>
+	public static void MapSelectionLength(EntryHandler2 handler, IEntry entry) =>
 		handler.PlatformView.EditText?.UpdateSelectionLength(entry);
 
-	public static void MapClearButtonVisibility(MaterialEntryHandler handler, IEntry entry)
+	public static void MapClearButtonVisibility(EntryHandler2 handler, IEntry entry)
 	{
 		// Password toggle takes precedence
 		if (entry.IsPassword)
@@ -225,7 +226,7 @@ internal partial class MaterialEntryHandler : ViewHandler<IEntry, MauiMaterialTe
 		}
 	}
 
-	static void MapFocus(MaterialEntryHandler handler, IEntry entry, object? args)
+	static void MapFocus(EntryHandler2 handler, IEntry entry, object? args)
 	{
 		if (args is FocusRequest request)
 		{
@@ -328,11 +329,11 @@ internal partial class MaterialEntryHandler : ViewHandler<IEntry, MauiMaterialTe
 
 	class ClearButtonClickListener : Java.Lang.Object, IOnClickListener
 	{
-		readonly WeakReference<MaterialEntryHandler> _handlerRef;
+		readonly WeakReference<EntryHandler2> _handlerRef;
 
-		public ClearButtonClickListener(MaterialEntryHandler handler)
+		public ClearButtonClickListener(EntryHandler2 handler)
 		{
-			_handlerRef = new WeakReference<MaterialEntryHandler>(handler);
+			_handlerRef = new WeakReference<EntryHandler2>(handler);
 		}
 
 		public void OnClick(global::Android.Views.View? v)

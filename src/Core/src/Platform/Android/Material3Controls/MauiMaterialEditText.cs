@@ -49,6 +49,7 @@ internal class MauiMaterialEditText : TextInputEditText
 	}
 }
 
+// TODO: Material3: Make it public in .NET 11
 internal class MauiMaterialTextInputLayout : TextInputLayout
 {
 	public MauiMaterialTextInputLayout(Context context) : base(context)
