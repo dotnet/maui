@@ -5,6 +5,7 @@ using Google.Android.Material.TextField;
 
 namespace Microsoft.Maui.Platform;
 
+// TODO: Material3 - make it public in .net 11
 internal class MauiMaterialPicker : MauiMaterialPickerBase
 {
 	public MauiMaterialPicker(Context context) : base(context)
@@ -23,6 +24,7 @@ internal class MauiMaterialPicker : MauiMaterialPickerBase
 	}
 }
 
+// TODO: Material3 - make it public in .net 11
 internal class MauiMaterialPickerBase : TextInputEditText
 {
 	public MauiMaterialPickerBase(Context context) : base(MauiMaterialContextThemeWrapper.Create(context))
