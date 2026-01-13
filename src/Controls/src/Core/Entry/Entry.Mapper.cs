@@ -24,8 +24,8 @@ namespace Microsoft.Maui.Controls
 #if ANDROID
 			if (RuntimeFeature.IsMaterial3Enabled)
 			{
-				MaterialEntryHandler.Mapper.ReplaceMapping<Entry, MaterialEntryHandler>(nameof(Text), MapText);
-				MaterialEntryHandler.Mapper.ReplaceMapping<Entry, MaterialEntryHandler>(nameof(TextTransform), MapText);
+				EntryHandler2.Mapper.ReplaceMapping<Entry, EntryHandler2>(nameof(Text), MapText);
+				EntryHandler2.Mapper.ReplaceMapping<Entry, EntryHandler2>(nameof(TextTransform), MapText);
 			}
 #endif
 
