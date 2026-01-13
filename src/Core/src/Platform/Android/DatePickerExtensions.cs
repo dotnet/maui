@@ -90,7 +90,6 @@ namespace Microsoft.Maui.Platform
 			platformDatePicker.Text = datePicker.Date?.ToString(datePicker.Format) ?? string.Empty;
 		}
 
-		// TODO: material3 - make it public in .net 11
 		internal static void SetText(this MauiMaterialDatePicker platformDatePicker, IDatePicker datePicker)
 		{
 			platformDatePicker.Text = datePicker.Date?.ToString(datePicker.Format) ?? string.Empty;
