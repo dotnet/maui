@@ -7,14 +7,15 @@ using Google.Android.Material.TimePicker;
 
 namespace Microsoft.Maui.Handlers;
 
-internal partial class MaterialTimePickerHandler : ViewHandler<ITimePicker, MauiMaterialTimePicker>
+// TODO: Material3: Make it public in .NET 11
+internal partial class TimePickerHandler2 : ViewHandler<ITimePicker, MauiMaterialTimePicker>
 {
     internal MaterialTimePicker? _dialog;
     internal bool _isUpdatingIsOpen;
     internal MaterialTimePickerPositiveButtonClickListener? _positiveButtonClickListener;
     internal MaterialTimePickerDismissListener? _dismissListener;
 
-    public static PropertyMapper<ITimePicker, MaterialTimePickerHandler> Mapper =
+    public static PropertyMapper<ITimePicker, TimePickerHandler2> Mapper =
                 new(ViewMapper)
                 {
                     [nameof(ITimePicker.Background)] = MapBackground,
@@ -30,7 +31,7 @@ internal partial class MaterialTimePickerHandler : ViewHandler<ITimePicker, Maui
     {
     };
 
-    public MaterialTimePickerHandler() : base(Mapper, CommandMapper)
+    public TimePickerHandler2() : base(Mapper, CommandMapper)
     {
     }
 
@@ -165,14 +166,14 @@ internal partial class MaterialTimePickerHandler : ViewHandler<ITimePicker, Maui
         return dialog;
     }
 
-    public static void MapBackground(ITimePickerHandler handler, ITimePicker timePicker)
+    public static void MapBackground(TimePickerHandler2 handler, ITimePicker timePicker)
     {
         handler.PlatformView?.UpdateBackground(timePicker);
     }
 
-    public static void MapIsOpen(MaterialTimePickerHandler handler, ITimePicker picker)
+    public static void MapIsOpen(TimePickerHandler2 handler, ITimePicker picker)
     {
-        if (handler.IsConnected() && handler is MaterialTimePickerHandler timePickerHandler && !timePickerHandler._isUpdatingIsOpen)
+        if (handler.IsConnected() && handler is TimePickerHandler2 timePickerHandler && !timePickerHandler._isUpdatingIsOpen)
         {
             if (picker.IsOpen)
             {
@@ -185,29 +186,29 @@ internal partial class MaterialTimePickerHandler : ViewHandler<ITimePicker, Maui
         }
     }
 
-    public static void MapTime(MaterialTimePickerHandler handler, ITimePicker picker)
+    public static void MapTime(TimePickerHandler2 handler, ITimePicker picker)
     {
-        handler.PlatformView?.UpdateFormat(picker);
+        handler.PlatformView?.UpdateTime(picker);
     }
 
-    public static void MapTextColor(MaterialTimePickerHandler handler, ITimePicker picker)
+    public static void MapTextColor(TimePickerHandler2 handler, ITimePicker picker)
     {
         handler.PlatformView?.UpdateTextColor(picker);
     }
 
-    public static void MapFormat(MaterialTimePickerHandler handler, ITimePicker picker)
+    public static void MapFormat(TimePickerHandler2 handler, ITimePicker picker)
     {
         handler.PlatformView?.UpdateFormat(picker);
     }
 
-    public static void MapFont(MaterialTimePickerHandler handler, ITimePicker picker)
+    public static void MapFont(TimePickerHandler2 handler, ITimePicker picker)
     {
         var fontManager = handler.GetRequiredService<IFontManager>();
 
         handler.PlatformView?.UpdateFont(picker, fontManager);
     }
 
-    public static void MapCharacterSpacing(MaterialTimePickerHandler handler, ITimePicker picker)
+    public static void MapCharacterSpacing(TimePickerHandler2 handler, ITimePicker picker)
     {
         handler.PlatformView?.UpdateCharacterSpacing(picker);
     }
@@ -235,11 +236,11 @@ internal partial class MaterialTimePickerHandler : ViewHandler<ITimePicker, Maui
 
 internal class MaterialTimePickerPositiveButtonClickListener : Java.Lang.Object, View.IOnClickListener
 {
-    readonly WeakReference<MaterialTimePickerHandler> _handler;
+    readonly WeakReference<TimePickerHandler2> _handler;
 
-    public MaterialTimePickerPositiveButtonClickListener(MaterialTimePickerHandler handler)
+    public MaterialTimePickerPositiveButtonClickListener(TimePickerHandler2 handler)
     {
-        _handler = new WeakReference<MaterialTimePickerHandler>(handler);
+        _handler = new WeakReference<TimePickerHandler2>(handler);
     }
 
     public void OnClick(View? v)
@@ -259,11 +260,11 @@ internal class MaterialTimePickerPositiveButtonClickListener : Java.Lang.Object,
 
 internal class MaterialTimePickerDismissListener : Java.Lang.Object, IDialogInterfaceOnDismissListener
 {
-    readonly WeakReference<MaterialTimePickerHandler> _handler;
+    readonly WeakReference<TimePickerHandler2> _handler;
 
-    public MaterialTimePickerDismissListener(MaterialTimePickerHandler handler)
+    public MaterialTimePickerDismissListener(TimePickerHandler2 handler)
     {
-        _handler = new WeakReference<MaterialTimePickerHandler>(handler);
+        _handler = new WeakReference<TimePickerHandler2>(handler);
     }
 
     public void OnDismiss(IDialogInterface? dialog)

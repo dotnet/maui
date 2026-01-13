@@ -73,7 +73,7 @@ public static partial class AppHostBuilderExtensions
 #if ANDROID
 		if (RuntimeFeature.IsMaterial3Enabled)
 		{
-			handlersCollection.AddHandler<TimePicker, MaterialTimePickerHandler>();
+			handlersCollection.AddHandler<TimePicker, TimePickerHandler2>();
 		}
 		else
 		{
