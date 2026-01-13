@@ -130,19 +130,22 @@ if (-not $BaseBranchDetected) {
 
 # Fetch the base branch from origin to ensure we have the latest
 # This ensures accurate diff detection even if local branch is stale
+$BaseBranchRef = $BaseBranchDetected
 if ($BaseBranchDetected) {
     Write-Host "ℹ️  Fetching latest $BaseBranchDetected from origin..." -ForegroundColor Cyan
     git fetch origin "${BaseBranchDetected}:${BaseBranchDetected}" 2>$null
     if ($LASTEXITCODE -ne 0) {
         # If direct fetch fails (e.g., currently on that branch), just fetch the ref
+        # In this case, use origin/$BaseBranchDetected for comparisons since local wasn't updated
         git fetch origin $BaseBranchDetected 2>$null
+        $BaseBranchRef = "origin/$BaseBranchDetected"
     }
 }
 
 # Check for fix files (non-test files that changed)
 $DetectedFixFiles = @()
 if ($BaseBranchDetected) {
-    $changedFiles = git diff $BaseBranchDetected HEAD --name-only 2>$null
+    $changedFiles = git diff $BaseBranchRef HEAD --name-only 2>$null
     
     if ($changedFiles) {
         foreach ($file in $changedFiles) {
@@ -201,11 +204,8 @@ if ($DetectedFixFiles.Count -eq 0) {
         Write-Host "🔍 Auto-detecting test filter from changed test files..." -ForegroundColor Cyan
         
         $changedFiles = @()
-        if ($BaseBranchDetected) {
-            $changedFiles = git diff $BaseBranchDetected HEAD --name-only 2>$null
-            if ($LASTEXITCODE -ne 0) {
-                $changedFiles = git diff "origin/$BaseBranchDetected" HEAD --name-only 2>$null
-            }
+        if ($BaseBranchRef) {
+            $changedFiles = git diff $BaseBranchRef HEAD --name-only 2>$null
         }
         
         # If no base branch, use git status to find unstaged/staged files
@@ -390,7 +390,7 @@ Write-Host ""
 $BaseBranch = $BaseBranchDetected
 $FixFiles = $DetectedFixFiles
 
-Write-Host "✅ Base branch: $BaseBranch" -ForegroundColor Green
+Write-Host "✅ Base branch: $BaseBranch (using ref: $BaseBranchRef)" -ForegroundColor Green
 Write-Host "✅ Fix files ($($FixFiles.Count)):" -ForegroundColor Green
 foreach ($file in $FixFiles) {
     Write-Host "   - $file" -ForegroundColor White
@@ -400,10 +400,7 @@ foreach ($file in $FixFiles) {
 if (-not $TestFilter) {
     Write-Host "🔍 Auto-detecting test filter from changed test files..." -ForegroundColor Cyan
     
-    $changedFiles = git diff $BaseBranch HEAD --name-only 2>$null
-    if ($LASTEXITCODE -ne 0) {
-        $changedFiles = git diff "origin/$BaseBranch" HEAD --name-only 2>$null
-    }
+    $changedFiles = git diff $BaseBranchRef HEAD --name-only 2>$null
     
     # Find test files (files in test directories that are .cs files)
     $testFiles = @()
@@ -527,10 +524,7 @@ $NewFiles = @()
 
 foreach ($file in $FixFiles) {
     # Check if file exists in base branch
-    $existsInBase = git ls-tree -r $BaseBranch --name-only -- $file 2>$null
-    if (-not $existsInBase) {
-        $existsInBase = git ls-tree -r "origin/$BaseBranch" --name-only -- $file 2>$null
-    }
+    $existsInBase = git ls-tree -r $BaseBranchRef --name-only -- $file 2>$null
     
     if ($existsInBase) {
         $RevertableFiles += $file
@@ -587,10 +581,10 @@ Write-Log "=========================================="
 
 foreach ($file in $RevertableFiles) {
     Write-Log "  Reverting: $file"
-    git checkout $BaseBranch -- $file 2>&1 | Out-Null
+    git checkout $BaseBranchRef -- $file 2>&1 | Out-Null
     if ($LASTEXITCODE -ne 0) {
-        Write-Log "  Warning: Could not revert from $BaseBranch, trying origin/$BaseBranch"
-        git checkout "origin/$BaseBranch" -- $file 2>&1 | Out-Null
+        Write-Log "  ERROR: Failed to revert $file from $BaseBranchRef"
+        exit 1
     }
 }
 
