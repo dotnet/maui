@@ -234,7 +234,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets the size of the content.
+		/// Gets the size of the scrollable content.
 		/// </summary>
 		public Size ContentSize
 		{

@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls
 			nameof(SearchCommandParameter), typeof(object), typeof(SearchBar), null,
 			propertyChanged: CommandElement.OnCommandParameterChanged);
 
-		/// <summary>Bindable property for <see cref="Text"/>.</summary>
+		/// <summary>Bindable property for <see cref="InputView.Text"/>.</summary>
 		public new static readonly BindableProperty TextProperty = InputView.TextProperty;
 
 		/// <summary>Bindable property for <see cref="CancelButtonColor"/>.</summary>
@@ -38,10 +38,10 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="SearchIconColor"/>.</summary>
 		public static readonly BindableProperty SearchIconColorProperty = BindableProperty.Create(nameof(SearchIconColor), typeof(Color), typeof(SearchBar), default(Color));
 
-		/// <summary>Bindable property for <see cref="Placeholder"/>.</summary>
+		/// <summary>Bindable property for <see cref="InputView.Placeholder"/>.</summary>
 		public new static readonly BindableProperty PlaceholderProperty = InputView.PlaceholderProperty;
 
-		/// <summary>Bindable property for <see cref="PlaceholderColor"/>.</summary>
+		/// <summary>Bindable property for <see cref="InputView.PlaceholderColor"/>.</summary>
 		public new static readonly BindableProperty PlaceholderColorProperty = InputView.PlaceholderColorProperty;
 
 		/// <inheritdoc cref="InputView.FontFamilyProperty"/>
@@ -73,10 +73,10 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="VerticalTextAlignment"/>.</summary>
 		public static readonly BindableProperty VerticalTextAlignmentProperty = TextAlignmentElement.VerticalTextAlignmentProperty;
 
-		/// <summary>Bindable property for <see cref="TextColor"/>.</summary>
+		/// <summary>Bindable property for <see cref="InputView.TextColor"/>.</summary>
 		public new static readonly BindableProperty TextColorProperty = InputView.TextColorProperty;
 
-		/// <summary>Bindable property for <see cref="CharacterSpacing"/>.</summary>
+		/// <summary>Bindable property for <see cref="InputView.CharacterSpacing"/>.</summary>
 		public new static readonly BindableProperty CharacterSpacingProperty = InputView.CharacterSpacingProperty;
 
 		readonly Lazy<PlatformConfigurationRegistry<SearchBar>> _platformConfigurationRegistry;
