@@ -63,17 +63,36 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					var window = new MauiWinUIWindow();
 					weakReferences.Add(new WeakReference(window));
+					System.Diagnostics.Debug.WriteLine($"[WindowLeakTest] Created window {i}, IsAlive before activate: {weakReferences[i].IsAlive}");
 
 					window.Activate();
 					await Task.Delay(100);
 					window.Close();
+					System.Diagnostics.Debug.WriteLine($"[WindowLeakTest] Closed window {i}, IsAlive after close: {weakReferences[i].IsAlive}");
 				}
 
+				System.Diagnostics.Debug.WriteLine($"[WindowLeakTest] Before GC - Alive count: {weakReferences.Count(r => r.IsAlive)}");
+				
 				GC.Collect();
 				GC.WaitForPendingFinalizers();
 				GC.WaitForFullGCComplete();
+				
+				// Additional GC passes for Helix VMs
+				for (int i = 0; i < 3; i++)
+				{
+					await Task.Delay(100);
+					GC.Collect();
+					GC.WaitForPendingFinalizers();
+				}
 
-				Assert.True(weakReferences.Count(r => r.IsAlive) == 0);
+				var aliveCount = weakReferences.Count(r => r.IsAlive);
+				System.Diagnostics.Debug.WriteLine($"[WindowLeakTest] After GC - Alive count: {aliveCount}");
+				for (int i = 0; i < weakReferences.Count; i++)
+				{
+					System.Diagnostics.Debug.WriteLine($"[WindowLeakTest] Window {i} IsAlive: {weakReferences[i].IsAlive}");
+				}
+
+				Assert.True(aliveCount == 0, $"Expected 0 alive windows but found {aliveCount}");
 			});
 		}
 
@@ -292,24 +311,48 @@ namespace Microsoft.Maui.DeviceTests
 				int deactivated = 0;
 				int resumed = 0;
 
-				window.Activated += (_, _) => activated++;
-				window.Deactivated += (_, _) => deactivated++;
-				window.Resumed += (_, _) => resumed++;
+				window.Activated += (_, _) => 
+				{
+					activated++;
+					System.Diagnostics.Debug.WriteLine($"[MinMaxTest] Activated fired, count now: {activated}");
+				};
+				window.Deactivated += (_, _) => 
+				{
+					deactivated++;
+					System.Diagnostics.Debug.WriteLine($"[MinMaxTest] Deactivated fired, count now: {deactivated}");
+				};
+				window.Resumed += (_, _) => 
+				{
+					resumed++;
+					System.Diagnostics.Debug.WriteLine($"[MinMaxTest] Resumed fired, count now: {resumed}");
+				};
 
 				await CreateHandlerAndAddToWindow<IWindowHandler>(window, async (handler) =>
 				{
 					var platformWindow = window.Handler.PlatformView as UI.Xaml.Window;
+					System.Diagnostics.Debug.WriteLine($"[MinMaxTest] Starting test, platformWindow is null: {platformWindow == null}");
 
 					await Task.Yield();
+					System.Diagnostics.Debug.WriteLine($"[MinMaxTest] After initial yield - activated:{activated} deactivated:{deactivated} resumed:{resumed}");
 
 					for (int i = 0; i < 2; i++)
 					{
+						System.Diagnostics.Debug.WriteLine($"[MinMaxTest] Loop {i}: Calling Restore()");
 						platformWindow.Restore();
 						await Task.Yield();
+						// Add a small delay to allow window state change to propagate
+						await Task.Delay(50);
+						System.Diagnostics.Debug.WriteLine($"[MinMaxTest] Loop {i}: After Restore - activated:{activated} deactivated:{deactivated} resumed:{resumed}");
+						
+						System.Diagnostics.Debug.WriteLine($"[MinMaxTest] Loop {i}: Calling Minimize()");
 						platformWindow.Minimize();
+						await Task.Delay(50);
+						System.Diagnostics.Debug.WriteLine($"[MinMaxTest] Loop {i}: After Minimize - activated:{activated} deactivated:{deactivated} resumed:{resumed}");
 					}
 				});
 
+				System.Diagnostics.Debug.WriteLine($"[MinMaxTest] Final counts - activated:{activated} deactivated:{deactivated} resumed:{resumed}");
+				System.Diagnostics.Debug.WriteLine($"[MinMaxTest] Expected - activated:2 deactivated:2 resumed:1");
 				Assert.Equal(2, activated);
 				Assert.Equal(1, resumed);
 				Assert.Equal(2, deactivated);
