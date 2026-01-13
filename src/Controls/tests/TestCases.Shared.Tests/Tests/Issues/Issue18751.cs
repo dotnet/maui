@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_WINDOWS //related issues: https://github.com/dotnet/maui/issues/15994
+﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS //related issues: https://github.com/dotnet/maui/issues/33507, https://github.com/dotnet/maui/issues/15994
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -21,11 +21,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			App.WaitForElement("WaitForStubControl");
 
-#if IOS // In iOS need more time to load images from the internet
-			await Task.Delay(5000);
-#else
+			// Load images.
 			await Task.Delay(1000);
-#endif
 
 			// The test passes if you are able to see the image, name, and location of each monkey.
 			VerifyScreenshot();
