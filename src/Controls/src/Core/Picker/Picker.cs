@@ -343,6 +343,15 @@ namespace Microsoft.Maui.Controls
 
 		protected override void OnHandlerChanged()
 		{
+			// If Handler is being detached, unsubscribe from ItemsSource collection changes
+			if (Handler == null)
+			{
+				if (ItemsSource is INotifyCollectionChanged notifyCollection)
+				{
+					notifyCollection.CollectionChanged -= CollectionChanged;
+				}
+			}
+
 			base.OnHandlerChanged();
 
 			// Process any pending actions when handler becomes available
