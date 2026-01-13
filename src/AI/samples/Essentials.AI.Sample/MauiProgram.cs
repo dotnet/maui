@@ -31,9 +31,6 @@ public static class MauiProgram
 			fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
 		});
 
-		// Register Language Preference Service
-		builder.Services.AddSingleton<LanguagePreferenceService>();
-
 		// Register AI Chat Clients
 #if IOS || MACCATALYST
 #pragma warning disable CA1416 // Validate platform compatibility - this sample requires iOS/macCatalyst 26.0+
@@ -96,7 +93,8 @@ public static class MauiProgram
 		builder.Services.AddTransient<TripPlanningViewModel>();
 
 		// Register Services
-		builder.Services.AddSingleton<LandmarkDataService>();
+		builder.Services.AddSingleton<DataService>();
+		builder.Services.AddSingleton<LanguagePreferenceService>();
 		builder.Services.AddTransient<ItineraryService>();
 		builder.Services.AddTransient<TaggingService>();
 		builder.Services.AddHttpClient<WeatherService>();

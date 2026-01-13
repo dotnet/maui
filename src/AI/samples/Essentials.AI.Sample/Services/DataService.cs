@@ -6,8 +6,15 @@ using Microsoft.Extensions.AI;
 
 namespace Maui.Controls.Sample.Services;
 
-public class LandmarkDataService
+public class DataService
 {
+	private static readonly JsonSerializerOptions _jsonSerializerOptions = new()
+	{
+		PropertyNameCaseInsensitive = true,
+		PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+		Converters = { new JsonStringEnumConverter() },
+	};
+
 	private readonly IEmbeddingGenerator<string, Embedding<float>> _generator;
 
 	private readonly Task _initializationTask;
@@ -19,14 +26,7 @@ public class LandmarkDataService
 	private Dictionary<int, Landmark>? _landmarksById;
 	private Landmark? _featuredLandmark;
 
-	private static readonly JsonSerializerOptions _jsonSerializerOptions = new()
-	{
-		PropertyNameCaseInsensitive = true,
-		PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-		Converters = { new JsonStringEnumConverter() },
-	};
-
-	public LandmarkDataService(IEmbeddingGenerator<string, Embedding<float>> generator)
+	public DataService(IEmbeddingGenerator<string, Embedding<float>> generator)
 	{
 		_generator = generator;
 		_initializationTask = LoadLandmarksAsync();
@@ -42,6 +42,44 @@ public class LandmarkDataService
 	/// </summary>
 	public IEnumerable<string> GetDestinationNames() => _landmarks?.Select(l => l.Name) ?? [];
 
+	public async Task<IReadOnlyList<Landmark>> GetLandmarksAsync()
+	{
+		await _initializationTask;
+		return _landmarks ?? [];
+	}
+
+	public async Task<IReadOnlyDictionary<string, List<Landmark>>> GetLandmarksByContinentAsync()
+	{
+		await _initializationTask;
+		return _landmarksByContinent ?? [];
+	}
+
+	public async Task<Landmark?> GetFeaturedLandmarkAsync()
+	{
+		await _initializationTask;
+		return _featuredLandmark;
+	}
+
+	public async Task<IReadOnlyList<Landmark>> SearchLandmarksAsync(string query, int maxResults = 5)
+	{
+		await _initializationTask;
+
+		var candidates = _landmarks ?? [];
+
+		return await SearchAsync(candidates, query, l => l.Embedding, maxResults);
+	}
+
+	public async Task<IReadOnlyList<PointOfInterest>> SearchPointsOfInterestAsync(PointOfInterestCategory category, string query, int maxResults = 3)
+	{
+		await _initializationTask;
+
+		var candidates = category == PointOfInterestCategory.None
+			? _pointsOfInterest ?? []
+			: _pointsOfInterest?.Where(p => p.Category == category).ToList() ?? [];
+
+		return await SearchAsync(candidates, $"{category}: {query}", p => p.Embedding, maxResults);
+	}
+
 	private async Task LoadLandmarksAsync()
 	{
 		try
@@ -55,6 +93,12 @@ public class LandmarkDataService
 			_landmarksById = _landmarks.ToDictionary(l => l.Id);
 
 			_featuredLandmark = _landmarksById.GetValueOrDefault(1020);
+
+			foreach (var landmark in _landmarks)
+			{
+				var text = $"{landmark.Name}. {landmark.ShortDescription}";
+				landmark.Embedding = await _generator.GenerateAsync(text);
+			}
 
 			_pointsOfInterest = await LoadDataAsync<PointOfInterest>("pointsOfInterestData.json");
 
@@ -75,57 +119,31 @@ public class LandmarkDataService
 		}
 	}
 
-	public async Task<IReadOnlyList<Landmark>> GetLandmarksAsync()
+	private async Task<IReadOnlyList<T>> SearchAsync<T>(
+		IEnumerable<T> candidates,
+		string query,
+		Func<T, Embedding<float>?> embeddingSelector,
+		int maxResults)
 	{
-		await _initializationTask;
-		return _landmarks ?? [];
-	}
-
-	public async Task<IReadOnlyDictionary<string, List<Landmark>>> GetLandmarksByContinentAsync()
-	{
-		await _initializationTask;
-		return _landmarksByContinent ?? new Dictionary<string, List<Landmark>>();
-	}
-
-	public async Task<Landmark?> GetFeaturedLandmarkAsync()
-	{
-		await _initializationTask;
-		return _featuredLandmark;
-	}
-
-	public async Task<Landmark?> GetLandmarkByIdAsync(int id)
-	{
-		await _initializationTask;
-		return _landmarksById?.GetValueOrDefault(id);
-	}
-
-	public async Task<IReadOnlyList<PointOfInterest>> SearchPointsOfInterestAsync(PointOfInterestCategory category, string query, int maxResults = 3)
-	{
-		await _initializationTask;
-
-		var candidates = category == PointOfInterestCategory.None
-			? _pointsOfInterest ?? []
-			: _pointsOfInterest?.Where(p => p.Category == category).ToList() ?? [];
-
-		if (candidates.Count == 0)
+		var items = candidates as ICollection<T> ?? [.. candidates];
+		if (items.Count == 0)
 		{
 			return [];
 		}
 
-		var search = $"{category}: {query}";
-		var searchEmbedding = await _generator.GenerateAsync(search);
+		var searchEmbedding = await _generator.GenerateAsync(query);
 
-		return candidates
-			.Select(p => new
+		return items
+			.Select(item => new
 			{
-				POI = p,
-				Score = p.Embedding is null
-					? -1f
-					: TensorPrimitives.CosineSimilarity(searchEmbedding.Vector.Span, p.Embedding.Vector.Span)
+				Item = item,
+				Score = embeddingSelector(item) is Embedding<float> embedding
+					? TensorPrimitives.CosineSimilarity(searchEmbedding.Vector.Span, embedding.Vector.Span)
+					: -1f
 			})
 			.OrderByDescending(x => x.Score)
 			.Take(maxResults)
-			.Select(x => x.POI)
+			.Select(x => x.Item)
 			.ToList();
 	}
 

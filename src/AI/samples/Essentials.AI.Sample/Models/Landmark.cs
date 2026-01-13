@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Microsoft.Extensions.AI;
 
 namespace Maui.Controls.Sample.Models;
 
@@ -30,4 +31,10 @@ public record Landmark
 
 	[JsonIgnore]
 	public Location Location => new(Latitude, Longitude);
+
+	/// <summary>
+	/// Embedding vector generated from Name and ShortDescription for RAG search.
+	/// </summary>
+	[JsonIgnore]
+	public Embedding<float>? Embedding { get; set; }
 }

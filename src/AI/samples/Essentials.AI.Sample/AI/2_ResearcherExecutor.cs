@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Text.Json;
+using Maui.Controls.Sample.Models;
 using Maui.Controls.Sample.Services;
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Workflows;
@@ -9,56 +10,84 @@ using Microsoft.Extensions.Logging;
 namespace Maui.Controls.Sample.AI;
 
 /// <summary>
-/// Agent 2: Researcher - Uses AI to find the best matching destination from available options.
-/// Tools: getDestinations() - lists available destinations
-/// The AI determines which destination best matches the user's request.
+/// Agent 2: Researcher - Uses RAG to find candidate destinations, then AI selects the best match.
+/// Uses semantic search (embeddings) to pre-filter destinations, then LLM picks the best one.
 /// </summary>
-internal sealed class ResearcherExecutor(AIAgent agent, LandmarkDataService landmarkService, JsonSerializerOptions jsonOptions, ILogger logger)
+internal sealed class ResearcherExecutor(AIAgent agent, DataService dataService, JsonSerializerOptions jsonOptions, ILogger logger)
 	: Executor<TravelPlanResult, ResearchResult>("ResearcherExecutor")
 {
-	private IWorkflowContext? _context;
+	/// <summary>
+	/// Maximum number of RAG candidates to return from semantic search.
+	/// </summary>
+	private const int MaxRagCandidates = 5;
 
-	public const string Instructions = $"""
+	public const string Instructions = """
 		You are a travel researcher.
-		Your job is to match the user's destination to an available one.
+		Your job is to select the best matching destination from a list of candidates.
 		
 		Rules:
-		1. ALWAYS use the `{GetDestinationsToolName}` tool to see what destinations are available in the database.
-		2. NEVER use your own knowledge or make up destinations.
-		3. ALWAYS use the destinations returned by the tool.
+		1. You will be given a list of candidate destinations that semantically match the user's request.
+		2. Select the ONE destination that best matches what the user asked for.
+		3. NEVER make up destinations - only choose from the provided candidates.
+		4. If none of the candidates match well, pick the closest one.
 		
-		Find the destination that best matches what the user requested.
-		Return the exact name of the matching destination from the available list.
+		Return the exact name of the best matching destination from the candidates.
 		""";
-
-	public const string GetDestinationsToolName = "getDestinations";
 
 	public override async ValueTask<ResearchResult> HandleAsync(
 		TravelPlanResult input,
 		IWorkflowContext context,
 		CancellationToken cancellationToken = default)
 	{
-		_context = context;
-
 		logger.LogDebug("[ResearcherExecutor] Starting - finding best matching destination for '{DestinationName}'", input.DestinationName);
 		logger.LogTrace("[ResearcherExecutor] Input: {@Input}", input);
 
 		await context.AddEventAsync(new ExecutorStatusEvent("Searching destinations..."));
 
-		// Ask AI to find the best match from available destinations
+		// Step 1: Use RAG to find semantically similar destinations
+		var candidates = await dataService.SearchLandmarksAsync(input.DestinationName, MaxRagCandidates);
+
+		logger.LogDebug("[ResearcherExecutor] RAG returned {Count} candidates: {Names}",
+			candidates.Count, string.Join(", ", candidates.Select(c => c.Name)));
+
+		if (candidates.Count == 0)
+		{
+			logger.LogDebug("[ResearcherExecutor] No candidates found");
+			await context.AddEventAsync(new ExecutorStatusEvent("No matching destinations found"));
+			return new ResearchResult(null, input.DayCount, input.Language);
+		}
+
+		// If only one candidate, use it directly without LLM call
+		if (candidates.Count == 1)
+		{
+			var singleMatch = candidates[0];
+			logger.LogDebug("[ResearcherExecutor] Single candidate found: {Name}", singleMatch.Name);
+			await context.AddEventAsync(new ExecutorStatusEvent($"Found destination: {singleMatch.Name}"));
+			return new ResearchResult(singleMatch, input.DayCount, input.Language);
+		}
+
+		await context.AddEventAsync(new ExecutorStatusEvent($"Evaluating {candidates.Count} candidates..."));
+
+		// Step 2: Ask LLM to pick the best match from RAG candidates
+		var candidateDescriptions = string.Join("\n", candidates.Select(c =>
+			$"- {c.Name}: {c.ShortDescription}"));
+
 		var prompt = $"""
-			Find destinations for a trip to "{input.DestinationName}"
+			The user wants to visit: "{input.DestinationName}"
+			
+			Here are the available destinations that might match:
+			{candidateDescriptions}
+			
+			Which destination best matches what the user is looking for?
 			""";
 
 		logger.LogTrace("[ResearcherExecutor] Prompt: {Prompt}", prompt);
 
 		var runOptions = new ChatClientAgentRunOptions(new ChatOptions
 		{
-			Tools = [AIFunctionFactory.Create(GetDestinationsAsync, name: GetDestinationsToolName)],
 			ResponseFormat = ChatResponseFormat.ForJsonSchema<DestinationMatchResult>(jsonOptions)
 		});
 
-		// Run agent - it will call getDestinations and determine the best match
 		var response = await agent.RunAsync(prompt, options: runOptions, cancellationToken: cancellationToken);
 
 		logger.LogTrace("[ResearcherExecutor] Raw response: {Response}", response.Text);
@@ -67,40 +96,19 @@ internal sealed class ResearcherExecutor(AIAgent agent, LandmarkDataService land
 		var matchResult = JsonSerializer.Deserialize<DestinationMatchResult>(response.Text, jsonOptions);
 		var matchedName = matchResult?.MatchedDestinationName ?? input.DestinationName;
 
-		logger.LogDebug("[ResearcherExecutor] AI matched '{RequestedName}' to '{MatchedName}'", input.DestinationName, matchedName);
+		logger.LogDebug("[ResearcherExecutor] AI selected '{MatchedName}' from candidates", matchedName);
 
-		// Load the full landmark data using the AI's matched name
-		var landmark = landmarkService.Landmarks
-			.FirstOrDefault(l => l.Name.Equals(matchedName, StringComparison.OrdinalIgnoreCase));
+		// Find the landmark from candidates (prefer exact match from candidates)
+		var landmark = candidates.FirstOrDefault(l => l.Name.Equals(matchedName, StringComparison.OrdinalIgnoreCase))
+			?? candidates[0]; // Fallback to top RAG result if LLM returned unexpected name
 
 		var result = new ResearchResult(landmark, input.DayCount, input.Language);
 
-		logger.LogDebug("[ResearcherExecutor] Completed - destination found: {Found}", landmark is not null);
+		logger.LogDebug("[ResearcherExecutor] Completed - selected destination: {Name}", landmark.Name);
 		logger.LogTrace("[ResearcherExecutor] Output: {@Result}", result);
 
-		var statusMsg = landmark is not null ? $"Found destination: {landmark.Name}" : "No matching destination found";
-		await context.AddEventAsync(new ExecutorStatusEvent(statusMsg));
+		await context.AddEventAsync(new ExecutorStatusEvent($"Found destination: {landmark.Name}"));
 
 		return result;
-	}
-
-	[Description("Get a list of all available destination names that can be used for travel itineraries.")]
-	private async Task<string[]> GetDestinationsAsync()
-	{
-		if (_context is not null)
-		{
-			await _context.AddEventAsync(new ExecutorStatusEvent("Fetching available destinations..."));
-		}
-
-		var destinations = landmarkService.GetDestinationNames().ToArray();
-		logger.LogTrace("[ResearcherExecutor] getDestinations tool called - returning {Count} destinations: {Destinations}",
-			destinations.Length, string.Join(", ", destinations));
-
-		if (_context is not null)
-		{
-			await _context.AddEventAsync(new ExecutorStatusEvent($"Found {destinations.Length} destinations"));
-		}
-
-		return destinations;
 	}
 }

@@ -56,7 +56,7 @@ This sample demonstrates how to integrate Large Language Models (LLMs) into a .N
 
 - **`Services/ItineraryService`**: Streams AI-generated itineraries using `IChatClient.GetStreamingResponseAsync()` with JSON schema constraints
 - **`Services/TaggingService`**: Generates descriptive tags from text using AI with JSON response format
-- **`Services/LandmarkDataService`**: Singleton service that loads and provides access to landmark data from `landmarkData.json`
+- **`Services/DataService`**: Singleton service that loads landmark/POI data and generates embeddings for RAG search
 - **`Services/FindPointsOfInterestTool`**: Mock tool for AI function calling (demonstrates tool integration pattern, currently returns placeholder data)
 - **`Services/StreamingJsonDeserializer`**: Utility for deserializing incomplete JSON during streaming
 

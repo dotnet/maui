@@ -8,7 +8,7 @@ namespace Maui.Controls.Sample.ViewModels;
 public record ContinentGroup(string Name, List<Landmark> Landmarks);
 
 public partial class LandmarksViewModel(
-	LandmarkDataService dataService,
+	DataService dataService,
 	LanguagePreferenceService languagePreference) : ObservableObject
 {
 	[ObservableProperty]
