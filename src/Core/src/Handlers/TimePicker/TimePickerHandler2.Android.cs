@@ -27,7 +27,7 @@ internal partial class TimePickerHandler2 : ViewHandler<ITimePicker, MauiMateria
                     [nameof(ITimePicker.IsOpen)] = MapIsOpen,
                 };
 
-    public static CommandMapper<ITimePicker, ITimePickerHandler> CommandMapper = new(ViewCommandMapper)
+    public static CommandMapper<ITimePicker, TimePickerHandler2> CommandMapper = new(ViewCommandMapper)
     {
     };
 
