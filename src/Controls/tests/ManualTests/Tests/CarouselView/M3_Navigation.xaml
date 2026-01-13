@@ -50,10 +50,5 @@
                 </DataTemplate>
             </CarouselView.ItemTemplate>
         </CarouselView>
-        
-        <Label Text="Tap image to view details"
-               FontSize="14"
-               HorizontalOptions="Center"
-               Margin="0,20,0,0" />
     </StackLayout>
 </ContentPage>

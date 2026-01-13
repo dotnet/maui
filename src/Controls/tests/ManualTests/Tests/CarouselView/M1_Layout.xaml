@@ -44,10 +44,5 @@
                 </DataTemplate>
             </CarouselView.ItemTemplate>
         </CarouselView>
-        
-        <Label Text="Swipe left/right to navigate through monkeys"
-               FontSize="14"
-               HorizontalOptions="Center"
-               Margin="0,20,0,0" />
     </StackLayout>
 </ContentPage>

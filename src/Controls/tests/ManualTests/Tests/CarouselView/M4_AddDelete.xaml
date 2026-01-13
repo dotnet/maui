@@ -58,9 +58,5 @@
                 </DataTemplate>
             </CarouselView.ItemTemplate>
         </CarouselView>
-        
-        <Label Text="Tap image to view details and delete"
-               FontSize="12"
-               HorizontalOptions="Center"/>
     </VerticalStackLayout>
 </ContentPage>
