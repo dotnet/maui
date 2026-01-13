@@ -7,11 +7,12 @@ using static Android.Views.View;
 
 namespace Microsoft.Maui.Handlers;
 
-internal class MaterialEditorHandler : ViewHandler<IEditor, MauiMaterialEditText>
+// TODO: Material3 - make it public in .net 11
+internal class EditorHandler2 : ViewHandler<IEditor, MauiMaterialEditText>
 {
 	bool _set;
 
-	public static PropertyMapper<IEditor, MaterialEditorHandler> Mapper = 
+	public static PropertyMapper<IEditor, EditorHandler2> Mapper =
 		new(ViewMapper)
 		{
 			[nameof(IEditor.Background)] = MapBackground,
@@ -32,13 +33,13 @@ internal class MaterialEditorHandler : ViewHandler<IEditor, MauiMaterialEditText
 			[nameof(IEditor.SelectionLength)] = MapSelectionLength,
 		};
 
-	public static CommandMapper<IEditor, MaterialEditorHandler> CommandMapper = 
+	public static CommandMapper<IEditor, EditorHandler2> CommandMapper =
 		new(ViewCommandMapper)
 		{
 			[nameof(IEditor.Focus)] = MapFocus
 		};
 
-	public MaterialEditorHandler() : base(Mapper, CommandMapper)
+	public EditorHandler2() : base(Mapper, CommandMapper)
 	{
 	}
 
@@ -88,89 +89,89 @@ internal class MaterialEditorHandler : ViewHandler<IEditor, MauiMaterialEditText
 		_set = false;
 	}
 
-	public static void MapBackground(MaterialEditorHandler handler, IEditor editor)
+	public static void MapBackground(EditorHandler2 handler, IEditor editor)
 	{
 		handler.PlatformView?.UpdateBackground(editor);
 	}
 
-	public static void MapText(MaterialEditorHandler handler, IEditor editor)
+	public static void MapText(EditorHandler2 handler, IEditor editor)
 	{
 		handler.PlatformView?.UpdateText(editor);
 	}
 
-	public static void MapTextColor(MaterialEditorHandler handler, IEditor editor)
+	public static void MapTextColor(EditorHandler2 handler, IEditor editor)
 	{
 		handler.PlatformView?.UpdateTextColor(editor);
 	}
 
-	public static void MapPlaceholder(MaterialEditorHandler handler, IEditor editor)
+	public static void MapPlaceholder(EditorHandler2 handler, IEditor editor)
 	{
 		handler.PlatformView?.UpdatePlaceholder(editor);
 	}
 
-	public static void MapPlaceholderColor(MaterialEditorHandler handler, IEditor editor)
+	public static void MapPlaceholderColor(EditorHandler2 handler, IEditor editor)
 	{
 		handler.PlatformView?.UpdatePlaceholderColor(editor);
 	}
 
-	public static void MapCharacterSpacing(MaterialEditorHandler handler, IEditor editor)
+	public static void MapCharacterSpacing(EditorHandler2 handler, IEditor editor)
 	{
 		handler.PlatformView?.UpdateCharacterSpacing(editor);
 	}
 
-	public static void MapMaxLength(MaterialEditorHandler handler, IEditor editor)
+	public static void MapMaxLength(EditorHandler2 handler, IEditor editor)
 	{
 		handler.PlatformView?.UpdateMaxLength(editor);
 	}
 
-	public static void MapIsReadOnly(MaterialEditorHandler handler, IEditor editor)
+	public static void MapIsReadOnly(EditorHandler2 handler, IEditor editor)
 	{
 		handler.PlatformView?.UpdateIsReadOnly(editor);
 	}
 
-	public static void MapIsTextPredictionEnabled(MaterialEditorHandler handler, IEditor editor)
+	public static void MapIsTextPredictionEnabled(EditorHandler2 handler, IEditor editor)
 	{
 		handler.PlatformView?.UpdateIsTextPredictionEnabled(editor);
 	}
 
-	public static void MapIsSpellCheckEnabled(MaterialEditorHandler handler, IEditor editor)
+	public static void MapIsSpellCheckEnabled(EditorHandler2 handler, IEditor editor)
 	{
 		handler.PlatformView?.UpdateIsSpellCheckEnabled(editor);
 	}
 
-	public static void MapFont(MaterialEditorHandler handler, IEditor editor)
+	public static void MapFont(EditorHandler2 handler, IEditor editor)
 	{
 		handler.PlatformView?.UpdateFont(editor, handler.GetRequiredService<IFontManager>());
 	}
 
-	public static void MapHorizontalTextAlignment(MaterialEditorHandler handler, IEditor editor)
+	public static void MapHorizontalTextAlignment(EditorHandler2 handler, IEditor editor)
 	{
 		handler.PlatformView?.UpdateHorizontalTextAlignment(editor);
 	}
 
-	public static void MapVerticalTextAlignment(MaterialEditorHandler handler, IEditor editor)
+	public static void MapVerticalTextAlignment(EditorHandler2 handler, IEditor editor)
 	{
 		handler.PlatformView?.UpdateVerticalTextAlignment(editor);
 	}
 
-	public static void MapKeyboard(MaterialEditorHandler handler, IEditor editor)
+	public static void MapKeyboard(EditorHandler2 handler, IEditor editor)
 	{
 		handler.UpdateValue(nameof(IEditor.Text));
 
 		handler.PlatformView?.UpdateKeyboard(editor);
 	}
 
-	public static void MapCursorPosition(MaterialEditorHandler handler, ITextInput editor)
+	public static void MapCursorPosition(EditorHandler2 handler, ITextInput editor)
 	{
 		handler.PlatformView?.UpdateCursorPosition(editor);
 	}
 
-	public static void MapSelectionLength(MaterialEditorHandler handler, ITextInput editor)
+	public static void MapSelectionLength(EditorHandler2 handler, ITextInput editor)
 	{
 		handler.PlatformView?.UpdateSelectionLength(editor);
 	}
 
-	static void MapFocus(MaterialEditorHandler handler, IEditor editor, object? args)
+	static void MapFocus(EditorHandler2 handler, IEditor editor, object? args)
 	{
 		if (args is FocusRequest request)
 		{
@@ -188,7 +189,7 @@ internal class MaterialEditorHandler : ViewHandler<IEditor, MauiMaterialEditText
 		DataFlowDirection = DataFlowDirection.ToPlatform;
 	}
 
-	private void OnFocusChange(object? sender, FocusChangeEventArgs e)
+	void OnFocusChange(object? sender, FocusChangeEventArgs e)
 	{
 		if (!e.HasFocus)
 		{

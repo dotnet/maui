@@ -6,6 +6,7 @@ using Google.Android.Material.TextField;
 
 namespace Microsoft.Maui.Platform;
 
+// TODO: Material3 - make it public in .net 11
 internal class MauiMaterialEditText : TextInputEditText
 {
 	public event EventHandler? SelectionChanged;

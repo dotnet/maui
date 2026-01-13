@@ -18,8 +18,10 @@ namespace Microsoft.Maui.Controls
 #if ANDROID
 			if (RuntimeFeature.IsMaterial3Enabled)
 			{
-				MaterialEditorHandler.Mapper.ReplaceMapping<Editor, MaterialEditorHandler>(nameof(Text), MapText);
-				MaterialEditorHandler.Mapper.ReplaceMapping<Editor, MaterialEditorHandler>(nameof(TextTransform), MapText);
+				EditorHandler2.Mapper.ReplaceMapping<Editor, EditorHandler2>(nameof(Text), MapText);
+				EditorHandler2.Mapper.ReplaceMapping<Editor, EditorHandler2>(nameof(TextTransform), MapText);
+				EditorHandler2.Mapper.AppendToMapping<Editor, EditorHandler2>(nameof(VisualElement.IsFocused), InputView.MapIsFocused);
+				EditorHandler2.CommandMapper.PrependToMapping<Editor, EditorHandler2>(nameof(IEditor.Focus), InputView.MapFocus);
 			}
 #endif
 

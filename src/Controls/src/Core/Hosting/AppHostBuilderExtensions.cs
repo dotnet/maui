@@ -73,7 +73,7 @@ public static partial class AppHostBuilderExtensions
 #if ANDROID
 		if (RuntimeFeature.IsMaterial3Enabled)
 		{
-			handlersCollection.AddHandler<Editor, MaterialEditorHandler>();
+			handlersCollection.AddHandler<Editor, EditorHandler2>();
 		}
 		else
 		{
