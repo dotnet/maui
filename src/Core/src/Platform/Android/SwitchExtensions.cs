@@ -15,6 +15,7 @@ namespace Microsoft.Maui.Platform
 			aSwitch.Checked = view.IsOn;
 		}
 
+		// TODO: material3 - make it public in .net 11
 		internal static void UpdateIsOn(this MSwitch materialSwitch, ISwitch view)
 		{
 			materialSwitch.Checked = view.IsOn;
@@ -34,6 +35,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		// TODO: material3 - make it public in .net 11
 		internal static void UpdateTrackColor(this MSwitch materialSwitch, ISwitch view)
 		{
 			var trackColor = view.TrackColor;
@@ -49,6 +51,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		// TODO: material3 - make it public in .net 11
 		internal static void UpdateThumbColor(this MSwitch materialSwitch, ISwitch view)
 		{
 			var thumbColor = view.ThumbColor;
