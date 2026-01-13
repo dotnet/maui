@@ -13,6 +13,7 @@
     <ExcludeMicrosoftNetTestSdk>true</ExcludeMicrosoftNetTestSdk>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>808cc184-141a-409e-addd-565c973dbce6</UserSecretsId>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -36,6 +37,14 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <DefineConstants>$(DefineConstants);ENABLE_OPENAI_CLIENT</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.0.0-preview.1.25560.10" />
+    <PackageReference Include="OpenAI" Version="2.6.0" />
+  </ItemGroup>
+
   <ItemGroup>
     <MauiIcon Include="Resources\appicon.svg" ForegroundFile="Resources\appiconfg.svg" Color="#512BD4" />
     <MauiSplashScreen Include="Resources\appiconfg.svg" Color="#512BD4" BaseSize="128,128" />
@@ -54,6 +63,24 @@
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
     <ProjectReference Include="..\..\src\Essentials.AI\Essentials.AI.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Tests/OpenAI/" />
+  </ItemGroup>
+
+  <Target Name="AddUserSecrets" BeforeTargets="PrepareForBuild" Condition=" '$(UserSecretsId)' != '' ">
+    <PropertyGroup>
+      <UserSecretsFilePath Condition=" '$(OS)' == 'Windows_NT' ">
+        $([System.Environment]::GetFolderPath(SpecialFolder.UserProfile))\AppData\Roaming\Microsoft\UserSecrets\$(UserSecretsId)\secrets.json
+      </UserSecretsFilePath>
+      <UserSecretsFilePath Condition=" '$(OS)' == 'Unix' ">
+        $([System.Environment]::GetFolderPath(SpecialFolder.UserProfile))/.microsoft/usersecrets/$(UserSecretsId)/secrets.json
+      </UserSecretsFilePath>
+    </PropertyGroup>
+    <ItemGroup>
+      <EmbeddedResource Include="$(UserSecretsFilePath)" Condition="Exists($(UserSecretsFilePath))" />
+    </ItemGroup>
+  </Target>
 
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
 
