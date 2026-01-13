@@ -17,7 +17,7 @@ internal partial class MaterialActivityIndicator : CircularProgressIndicator
     {
     }
 
-    public MaterialActivityIndicator(Context context, IAttributeSet? attrs) : base(MauiMaterialContextThemeWrapper.Create(context), attrs)
+    public MaterialActivityIndicator(Context context, IAttributeSet? attrs) : base(context, attrs)
     {
     }
 
