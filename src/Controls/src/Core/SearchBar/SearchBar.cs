@@ -10,7 +10,9 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="Type[@FullName='Microsoft.Maui.Controls.SearchBar']/Docs/*" />
+	/// <summary>
+	/// Represents a text entry control optimized for searching.
+	/// </summary>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class SearchBar : InputView, ITextAlignmentElement, ISearchBarController, IElementConfiguration<SearchBar>, ICommandElement, ISearchBar
 	{
@@ -27,7 +29,7 @@ namespace Microsoft.Maui.Controls
 			nameof(SearchCommandParameter), typeof(object), typeof(SearchBar), null,
 			propertyChanged: CommandElement.OnCommandParameterChanged);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='TextProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Text"/>.</summary>
 		public new static readonly BindableProperty TextProperty = InputView.TextProperty;
 
 		/// <summary>Bindable property for <see cref="CancelButtonColor"/>.</summary>
@@ -36,10 +38,10 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="SearchIconColor"/>.</summary>
 		public static readonly BindableProperty SearchIconColorProperty = BindableProperty.Create(nameof(SearchIconColor), typeof(Color), typeof(SearchBar), default(Color));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='PlaceholderProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Placeholder"/>.</summary>
 		public new static readonly BindableProperty PlaceholderProperty = InputView.PlaceholderProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='PlaceholderColorProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="PlaceholderColor"/>.</summary>
 		public new static readonly BindableProperty PlaceholderColorProperty = InputView.PlaceholderColorProperty;
 
 		/// <inheritdoc cref="InputView.FontFamilyProperty"/>
@@ -71,10 +73,10 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="VerticalTextAlignment"/>.</summary>
 		public static readonly BindableProperty VerticalTextAlignmentProperty = TextAlignmentElement.VerticalTextAlignmentProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='TextColorProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="TextColor"/>.</summary>
 		public new static readonly BindableProperty TextColorProperty = InputView.TextColorProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='CharacterSpacingProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="CharacterSpacing"/>.</summary>
 		public new static readonly BindableProperty CharacterSpacingProperty = InputView.CharacterSpacingProperty;
 
 		readonly Lazy<PlatformConfigurationRegistry<SearchBar>> _platformConfigurationRegistry;
@@ -88,7 +90,9 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(ReturnTypeProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='CancelButtonColor']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the color of the cancel button.
+		/// </summary>
 		public Color CancelButtonColor
 		{
 			get { return (Color)GetValue(CancelButtonColorProperty); }
@@ -103,28 +107,36 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(SearchIconColorProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='HorizontalTextAlignment']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the horizontal text alignment.
+		/// </summary>
 		public TextAlignment HorizontalTextAlignment
 		{
 			get { return (TextAlignment)GetValue(TextAlignmentElement.HorizontalTextAlignmentProperty); }
 			set { SetValue(TextAlignmentElement.HorizontalTextAlignmentProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='VerticalTextAlignment']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the vertical text alignment.
+		/// </summary>
 		public TextAlignment VerticalTextAlignment
 		{
 			get { return (TextAlignment)GetValue(TextAlignmentElement.VerticalTextAlignmentProperty); }
 			set { SetValue(TextAlignmentElement.VerticalTextAlignmentProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='SearchCommand']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the command to invoke when the search button is pressed.
+		/// </summary>
 		public ICommand SearchCommand
 		{
 			get { return (ICommand)GetValue(SearchCommandProperty); }
 			set { SetValue(SearchCommandProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='SearchCommandParameter']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the parameter to pass to the search command.
+		/// </summary>
 		public object SearchCommandParameter
 		{
 			get { return GetValue(SearchCommandParameterProperty); }
@@ -133,7 +145,9 @@ namespace Microsoft.Maui.Controls
 
 		public event EventHandler SearchButtonPressed;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="SearchBar"/> class.
+		/// </summary>
 		public SearchBar()
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<SearchBar>>(() => new PlatformConfigurationRegistry<SearchBar>(this));
@@ -169,7 +183,9 @@ namespace Microsoft.Maui.Controls
 		void ICommandElement.CanExecuteChanged(object sender, EventArgs e) =>
 			RefreshIsEnabledProperty();
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='OnSearchButtonPressed']/Docs/*" />
+		/// <summary>
+		/// Called when the search button is pressed.
+		/// </summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void OnSearchButtonPressed()
 		{
