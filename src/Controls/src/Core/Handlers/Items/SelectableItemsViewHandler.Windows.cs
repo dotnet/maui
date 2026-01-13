@@ -96,11 +96,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 								{
 									if (item is ItemTemplateContext itemPair)
 									{
-										return itemPair.Item == ItemsView.SelectedItem;
+										return object.Equals(itemPair.Item, ItemsView.SelectedItem);
 									}
 									else
 									{
-										return item == ItemsView.SelectedItem;
+										return object.Equals(item, ItemsView.SelectedItem);
 									}
 								});
 						}
