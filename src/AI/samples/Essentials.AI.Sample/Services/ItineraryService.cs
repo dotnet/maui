@@ -3,16 +3,16 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Maui.Controls.Sample.AI;
 using Maui.Controls.Sample.Models;
-using Microsoft.Agents.AI.Workflows;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Agents.AI;
 
 namespace Maui.Controls.Sample.Services;
 
 /// <summary>
 /// Service that generates travel itineraries using the 4-agent AI workflow.
+/// Uses the workflow-as-agent pattern for a cleaner, more unified API.
 /// </summary>
 public class ItineraryService(
-	[FromKeyedServices("itinerary-workflow")] Workflow workflow,
+	[FromKeyedServices("itinerary-workflow-agent")] AIAgent workflowAgent,
 	LanguagePreferenceService languagePreference)
 {
 	private static readonly JsonSerializerOptions s_jsonOptions = new()
@@ -51,32 +51,28 @@ public class ItineraryService(
 		string input,
 		[EnumeratorCancellation] CancellationToken cancellationToken = default)
 	{
-		// Execute the 4-agent workflow with streaming
-		await using var run = await InProcessExecution.StreamAsync(workflow, input);
-		await run.TrySendMessageAsync(new TurnToken(emitEvents: true));
-
 		var deserializer = new StreamingJsonDeserializer<Itinerary>(s_jsonOptions);
 		JsonMerger? merger = null;
 		var lastExecutorId = string.Empty;
 
-		await foreach (var evt in run.WatchStreamAsync(cancellationToken))
+		// Stream responses from the workflow agent
+		await foreach (var update in workflowAgent.RunStreamingAsync(input, cancellationToken: cancellationToken))
 		{
-			// Handle our custom status events from executors
-			if (evt is ExecutorStatusEvent statusEvent)
+			// Check RawRepresentation for our custom workflow events
+			if (update.RawRepresentation is ExecutorStatusEvent statusEvent)
 			{
 				yield return new ItineraryStreamUpdate
 				{
 					StatusMessage = statusEvent.StatusMessage
 				};
 			}
-			// Handle streaming itinerary text chunks from ItineraryPlannerExecutor/TranslatorExecutor
-			else if (evt is ItineraryTextChunkEvent textChunk)
+			else if (update.RawRepresentation is ItineraryTextChunkEvent textChunk)
 			{
 				// Initialize last executor ID
 				if (string.IsNullOrEmpty(lastExecutorId))
-                {
+				{
 					lastExecutorId = textChunk.ExecutorId;
-                }
+				}
 
 				// Detect executor switch (e.g., from ItineraryPlanner to Translator)
 				if (lastExecutorId != textChunk.ExecutorId)

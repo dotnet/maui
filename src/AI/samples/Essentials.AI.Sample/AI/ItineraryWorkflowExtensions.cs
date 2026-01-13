@@ -55,7 +55,7 @@ public static class ItineraryWorkflowExtensions
 			chatClientServiceKey: "cloud-model");
 
 		// Register the workflow
-		builder.AddWorkflow("itinerary-workflow", (sp, key) =>
+		var workflow = builder.AddWorkflow("itinerary-workflow", (sp, key) =>
 		{
 			var travelPlannerAgent = sp.GetRequiredKeyedService<AIAgent>("travel-planner-agent");
 			var researcherAgent = sp.GetRequiredKeyedService<AIAgent>("researcher-agent");
@@ -87,6 +87,9 @@ public static class ItineraryWorkflowExtensions
 
 			return workflow;
 		});
+
+		// Register the workflow as an AI agent for easy invocation
+		workflow.AddAsAIAgent("itinerary-workflow-agent");
 
 		return builder;
 	}

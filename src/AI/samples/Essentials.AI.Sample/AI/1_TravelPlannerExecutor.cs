@@ -9,9 +9,10 @@ namespace Maui.Controls.Sample.AI;
 /// <summary>
 /// Agent 1: Travel Planner - Parses natural language to extract intent.
 /// No tools - just NLP to extract destinationName, dayCount, language.
+/// Extends ChatProtocolExecutor to support the chat protocol for workflow-as-agent.
 /// </summary>
 internal sealed class TravelPlannerExecutor(AIAgent agent, JsonSerializerOptions jsonOptions, ILogger logger)
-	: Executor<string, TravelPlanResult>("TravelPlannerExecutor")
+	: ChatProtocolExecutor("TravelPlannerExecutor")
 {
 	public const string Instructions = """
 		You are a simple text parser. 
@@ -33,13 +34,13 @@ internal sealed class TravelPlannerExecutor(AIAgent agent, JsonSerializerOptions
 		- "Plan a 7 day Japan trip in Spanish" → destinationName: "Japan", dayCount: 7, language: "Spanish"
 		""";
 
-	public override async ValueTask<TravelPlanResult> HandleAsync(
-		string input,
+	protected override async ValueTask TakeTurnAsync(
+		List<ChatMessage> messages,
 		IWorkflowContext context,
+		bool? emitEvents = null,
 		CancellationToken cancellationToken = default)
 	{
 		logger.LogDebug("[TravelPlannerExecutor] Starting - parsing user intent");
-		logger.LogTrace("[TravelPlannerExecutor] Input: {Input}", input);
 
 		await context.AddEventAsync(new ExecutorStatusEvent("Analyzing your request..."));
 
@@ -48,7 +49,7 @@ internal sealed class TravelPlannerExecutor(AIAgent agent, JsonSerializerOptions
 			ResponseFormat = ChatResponseFormat.ForJsonSchema<TravelPlanResult>(jsonOptions)
 		});
 
-		var response = await agent.RunAsync(input, options: runOptions, cancellationToken: cancellationToken);
+		var response = await agent.RunAsync(messages, options: runOptions, cancellationToken: cancellationToken);
 
 		logger.LogTrace("[TravelPlannerExecutor] Raw response: {Response}", response.Text);
 
@@ -62,6 +63,6 @@ internal sealed class TravelPlannerExecutor(AIAgent agent, JsonSerializerOptions
 			: $"Planning {result.DayCount}-day trip to {result.DestinationName}";
 		await context.AddEventAsync(new ExecutorStatusEvent(summary));
 
-		return result;
+		await context.SendMessageAsync(result, cancellationToken);
 	}
 }

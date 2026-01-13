@@ -76,7 +76,7 @@ public static class MauiProgram
 				.Build();
 		});
 
-		builder.Services.AddSingleton<IEmbeddingGenerator<string, Embedding<float>>, NLContextualEmbeddingGenerator>();
+		builder.Services.AddSingleton<IEmbeddingGenerator<string, Embedding<float>>, NLEmbeddingGenerator>();
 
 #pragma warning restore CA1416
 #endif
