@@ -13,7 +13,7 @@ public partial class TripPlanningViewModel(ItineraryService itineraryService, Ta
 	public enum TripPlanningState
 	{
 		Initial,        // Show landmark description and generate button
-		Generating,     // Show planning view with tool lookups
+		Generating,     // Show planning view with status messages
 		Complete,       // Show full itinerary
 		Error           // Show error message
 	}
@@ -39,6 +39,18 @@ public partial class TripPlanningViewModel(ItineraryService itineraryService, Ta
 	[ObservableProperty]
 	public partial string? ErrorMessage { get; set; }
 
+	/// <summary>Oldest status message (most faded, opacity 0.3).</summary>
+	[ObservableProperty]
+	public partial string? Status1 { get; set; }
+
+	/// <summary>Middle status message (opacity 0.6).</summary>
+	[ObservableProperty]
+	public partial string? Status2 { get; set; }
+
+	/// <summary>Newest status message (solid, opacity 1.0).</summary>
+	[ObservableProperty]
+	public partial string? Status3 { get; set; }
+
 	public bool IsInitialState => CurrentState == TripPlanningState.Initial;
 	public bool IsGeneratingState => CurrentState == TripPlanningState.Generating && Itinerary is null;
 	public bool HasItinerary => CurrentState == TripPlanningState.Complete || Itinerary is not null;
@@ -46,8 +58,6 @@ public partial class TripPlanningViewModel(ItineraryService itineraryService, Ta
 	public bool IsNotErrorState => CurrentState != TripPlanningState.Error;
 
 	public ObservableCollection<string> GeneratedTags => field ??= [];
-
-	public ObservableCollection<string> ToolLookupHistory => field ??= [];
 
 	public ICommand GenerateItineraryCommand =>
 		field ??= new Command(async () => await RequestItineraryAsync(), () => Landmark is not null && CurrentState == TripPlanningState.Initial);
@@ -101,7 +111,9 @@ public partial class TripPlanningViewModel(ItineraryService itineraryService, Ta
 		CurrentState = TripPlanningState.Generating;
 		ErrorMessage = string.Empty;
 		Itinerary = null;
-		ToolLookupHistory.Clear();
+		Status1 = null;
+		Status2 = null;
+		Status3 = null;
 
 		try
 		{
@@ -141,49 +153,36 @@ public partial class TripPlanningViewModel(ItineraryService itineraryService, Ta
 
 	private async Task BuildItineraryAsync(CancellationToken cancellationToken)
 	{
-		Itinerary? latestItinerary = null;
-
-		var lookups = new Dictionary<string, string>();
-
 		// Generate itinerary with streaming updates
 		await foreach (var update in itineraryService.StreamItineraryAsync(Landmark, 3, cancellationToken))
 		{
-			// Handle tool lookups
-			if (update.ToolLookup is not null)
+			if (cancellationToken.IsCancellationRequested)
+				break;
+
+			// Handle status updates - shift messages in fading trail
+			if (update.StatusMessage is not null)
 			{
 				dispatcher.Dispatch(() =>
 				{
 					if (cancellationToken.IsCancellationRequested)
 						return;
 
-					var text = update.ToolLookup.Arguments?["pointOfInterest"]?.ToString() ?? "Unknown";
-					lookups[update.ToolLookup.Id] = text;
-					ToolLookupHistory.Add(text);
-				});
-			}
-
-			// Handle tool lookup results
-			if (update.ToolLookupResult is not null)
-			{
-				dispatcher.Dispatch(() =>
-				{
-					if (cancellationToken.IsCancellationRequested)
-						return;
-
-					if (lookups.TryGetValue(update.ToolLookupResult.Id, out var text))
-					{
-						ToolLookupHistory.Remove(text);
-					}
-
-					ToolLookupHistory.Add(update.ToolLookupResult.Result?.ToString() ?? "Unknown Result");
+					Status1 = Status2;
+					Status2 = Status3;
+					Status3 = update.StatusMessage;
 				});
 			}
 
 			// Handle partial itinerary updates
 			if (update.PartialItinerary is not null)
 			{
-				latestItinerary = update.PartialItinerary;
-				Itinerary = new ItineraryViewModel(latestItinerary, Landmark);
+				dispatcher.Dispatch(() =>
+				{
+					if (cancellationToken.IsCancellationRequested)
+						return;
+
+					Itinerary = new ItineraryViewModel(update.PartialItinerary, Landmark);
+				});
 			}
 		}
 	}

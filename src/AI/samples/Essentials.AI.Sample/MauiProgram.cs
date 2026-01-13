@@ -30,18 +30,48 @@ public static class MauiProgram
 			fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
 		});
 
-		// Register AI
+		// Register Language Preference Service
+		builder.Services.AddSingleton<LanguagePreferenceService>();
+
+		// Register AI Chat Clients
 #if IOS || MACCATALYST
-		if (OperatingSystem.IsMacCatalystVersionAtLeast(26) || OperatingSystem.IsIOSVersionAtLeast(26))
+#pragma warning disable CA1416 // Validate platform compatibility - this sample requires iOS/macCatalyst 26.0+
+		// Register the base Apple Intelligence client
+		builder.Services.AddSingleton<AppleIntelligenceChatClient>();
+
+		// Register the Apple Intelligence client as IChatClient to allow direct use
+		builder.Services.AddSingleton<IChatClient>(sp => sp.GetRequiredService<AppleIntelligenceChatClient>());
+
+		// Register the Agent Framework wrapper as "local-model"
+		// This prevents double tool invocation when using Microsoft Agent Framework
+		// TODO: workaround for https://github.com/dotnet/extensions/pull/7126
+		builder.Services.AddKeyedSingleton<IChatClient>("local-model", (sp, _) =>
 		{
-			builder.Services.AddSingleton<IChatClient, AppleIntelligenceChatClient>();
-			builder.Services.AddSingleton<IEmbeddingGenerator<string, Embedding<float>>, NLContextualEmbeddingGenerator>();
-		}
-		else
+			var appleClient = sp.GetRequiredService<AppleIntelligenceChatClient>();
+			var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
+			return new NonFunctionInvokingChatClient(appleClient, loggerFactory, sp);
+		});
+
+		// Register "cloud-model" - for now, use Apple Intelligence with buffering
+		// TODO: Add OpenAI/Azure support for better translation quality
+		builder.Services.AddKeyedSingleton<IChatClient>("cloud-model", (sp, _) =>
 		{
-			// TODO: Fallback to cloud AI client for older OS versions
-		}
+			var appleClient = sp.GetRequiredService<AppleIntelligenceChatClient>();
+			var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
+			return appleClient
+				.AsBuilder()
+				.UseLogging(loggerFactory)
+				.UseFunctionInvocation()
+				.Use(cc => new BufferedChatClient(cc))
+				.Build();
+		});
+
+		builder.Services.AddSingleton<IEmbeddingGenerator<string, Embedding<float>>, NLContextualEmbeddingGenerator>();
+#pragma warning restore CA1416
 #endif
+
+		// Register AI agents and workflow
+		builder.AddItineraryWorkflow();
 
 		// Register Pages
 		builder.Services.AddTransient<LandmarksPage>();

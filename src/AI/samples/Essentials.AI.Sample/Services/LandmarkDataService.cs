@@ -8,6 +8,11 @@ namespace Maui.Controls.Sample.Services;
 
 public class LandmarkDataService
 {
+	/// <summary>
+	/// Singleton instance for use by workflow executors that need direct access.
+	/// </summary>
+	public static LandmarkDataService Instance { get; private set; } = null!;
+
 	private readonly IEmbeddingGenerator<string, Embedding<float>> _generator;
 
 	private readonly Task _initializationTask;
@@ -30,7 +35,18 @@ public class LandmarkDataService
 	{
 		_generator = generator;
 		_initializationTask = LoadLandmarksAsync();
+		Instance = this;
 	}
+
+	/// <summary>
+	/// Gets all loaded landmarks.
+	/// </summary>
+	public IReadOnlyList<Landmark> Landmarks => _landmarks ?? [];
+
+	/// <summary>
+	/// Gets the names of all available destinations.
+	/// </summary>
+	public IEnumerable<string> GetDestinationNames() => _landmarks?.Select(l => l.Name) ?? [];
 
 	private async Task LoadLandmarksAsync()
 	{

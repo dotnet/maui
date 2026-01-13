@@ -1,104 +1,127 @@
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Maui.Controls.Sample.Models;
-using Maui.Controls.Sample.Services.Tools;
-using Microsoft.Extensions.AI;
+using Microsoft.Agents.AI.Workflows;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Maui.Controls.Sample.Services;
 
-public class ItineraryService(IChatClient chatClient, LandmarkDataService landmarkService)
+/// <summary>
+/// Service that generates travel itineraries using the 4-agent AI workflow.
+/// </summary>
+public class ItineraryService(
+	[FromKeyedServices("itinerary-workflow")] Workflow workflow,
+	LanguagePreferenceService languagePreference)
 {
-	public record ItineraryStreamUpdate(
-		ToolLookup? ToolLookup = null,
-		ToolLookup? ToolLookupResult = null,
-		Itinerary? PartialItinerary = null);
+	private static readonly JsonSerializerOptions s_jsonOptions = new()
+	{
+		PropertyNameCaseInsensitive = true,
+		PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+		Converters = { new JsonStringEnumConverter() },
+	};
 
+	/// <summary>
+	/// Streams an itinerary for a specific landmark (legacy UI-driven flow).
+	/// Constructs a natural language request from the parameters.
+	/// </summary>
 	public async IAsyncEnumerable<ItineraryStreamUpdate> StreamItineraryAsync(
 		Landmark landmark,
 		int dayCount,
 		[EnumeratorCancellation] CancellationToken cancellationToken = default)
 	{
-		var jsonOptions = new JsonSerializerOptions
+		// Build natural language request from UI parameters
+		var language = languagePreference.SelectedLanguage;
+		var userRequest = language.Equals("English", StringComparison.OrdinalIgnoreCase)
+			? $"Create a {dayCount}-day itinerary for {landmark.Name}"
+			: $"Create a {dayCount}-day itinerary for {landmark.Name} in {language}";
+
+		await foreach (var update in StreamItineraryAsync(userRequest, cancellationToken))
 		{
-			PropertyNameCaseInsensitive = true,
-			PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-			Converters = { new JsonStringEnumConverter() },
-		};
+			yield return update;
+		}
+	}
 
-		var findPointsOfInterestTool = new FindPointsOfInterestTool(landmark, landmarkService);
-		var findPointsOfInterestFunction = AIFunctionFactory.Create(findPointsOfInterestTool.Call);
+	/// <summary>
+	/// Streams an itinerary from a natural language request.
+	/// Example: "Give me a 5-day Maui itinerary in French"
+	/// </summary>
+	public async IAsyncEnumerable<ItineraryStreamUpdate> StreamItineraryAsync(
+		string input,
+		[EnumeratorCancellation] CancellationToken cancellationToken = default)
+	{
+		// Execute the 4-agent workflow with streaming
+		await using var run = await InProcessExecution.StreamAsync(workflow, input);
+		await run.TrySendMessageAsync(new TurnToken(emitEvents: true));
 
-		string[] systemInstructions = [
-			"Your job is to create an itinerary for the person.",
-			"Each day needs an activity, hotel and restaurant.",
-			$"""
-			Always use the findPointsOfInterest tool to find businesses and activities in {landmark.Name}, especially hotels and restaurants.
-			
-			The point of interest categories may include:
-			""",
-			string.Join(", ", Enum.GetNames<PointOfInterestCategory>()),
-			$"Here is a description of {landmark.Name} for your reference when considering what activities to generate:",
-			landmark.Description
-		];
+		var deserializer = new StreamingJsonDeserializer<Itinerary>(s_jsonOptions);
+		JsonMerger? merger = null;
+		var lastExecutorId = string.Empty;
 
-		string[] userPrompt = [
-			$"Generate a {dayCount}-day itinerary to {landmark.Name}.",
-			"Give it a fun title and description.",
-			"Here is an example, but don't copy it:",
-			JsonSerializer.Serialize(Itinerary.GetExampleTripToJapan(), jsonOptions)
-		];
-
-		var messages = new List<ChatMessage>
+		await foreach (var evt in run.WatchStreamAsync(cancellationToken))
 		{
-			new(ChatRole.System, [.. systemInstructions.Select(s => new TextContent(s))]),
-			new(ChatRole.User, [.. userPrompt.Select(s => new TextContent(s))])
-		};
-
-		var options = new ChatOptions
-		{
-			Tools = [findPointsOfInterestFunction],
-			ResponseFormat = ChatResponseFormat.ForJsonSchema<Itinerary>(jsonOptions)
-		};
-
-		var deserializer = new StreamingJsonDeserializer<Itinerary>(jsonOptions);
-
-		var bufferedClient = new BufferedChatClient(chatClient, minBufferSize: 100, bufferDelay: TimeSpan.FromMilliseconds(250));
-		await foreach (var update in bufferedClient.GetStreamingResponseAsync(messages, options, cancellationToken))
-		{
-			// Detect tool calls from the streaming update
-			foreach (var item in update.Contents)
+			// Handle our custom status events from executors
+			if (evt is ExecutorStatusEvent statusEvent)
 			{
-				if (item is FunctionCallContent functionCall)
+				yield return new ItineraryStreamUpdate
 				{
-					var toolLookup = new ToolLookup
-					{
-						Id = functionCall.CallId,
-						Arguments = functionCall.Arguments
-					};
+					StatusMessage = statusEvent.StatusMessage
+				};
+			}
+			// Handle streaming itinerary text chunks from ItineraryPlannerExecutor/TranslatorExecutor
+			else if (evt is ItineraryTextChunkEvent textChunk)
+			{
+				// Initialize last executor ID
+				if (string.IsNullOrEmpty(lastExecutorId))
+                {
+					lastExecutorId = textChunk.ExecutorId;
+                }
 
-					yield return new ItineraryStreamUpdate { ToolLookup = toolLookup };
-				}
-				else if (item is FunctionResultContent functionResult)
+				// Detect executor switch (e.g., from ItineraryPlanner to Translator)
+				if (lastExecutorId != textChunk.ExecutorId)
 				{
-					var toolLookup = new ToolLookup
-					{
-						Id = functionResult.CallId,
-						Result = functionResult.Result
-					};
+					// Save the complete reconstructed JSON from the previous executor as the base for merging
+					merger = new JsonMerger(deserializer.ReconstructedJsonUtf8.ToArray());
+					lastExecutorId = textChunk.ExecutorId;
+					deserializer.Reset();
+				}
 
-					yield return new ItineraryStreamUpdate { ToolLookupResult = toolLookup };
-				}
-				else if (item is TextContent textContent)
+				var partialItinerary = deserializer.ProcessChunk(textChunk.TextChunk);
+				if (partialItinerary is not null)
 				{
-					var partialItinerary = deserializer.ProcessChunk(textContent.Text);
-					if (partialItinerary is not null)
+					// If we have a merger (translation phase), merge with base itinerary
+					if (merger is not null)
 					{
-						yield return new ItineraryStreamUpdate { PartialItinerary = partialItinerary };
+						merger.MergeOverlayUtf8(deserializer.ReconstructedJsonMemory.Span);
+						var mergedItinerary = merger.Deserialize<Itinerary>(s_jsonOptions);
+						if (mergedItinerary is not null)
+						{
+							partialItinerary = mergedItinerary;
+						}
 					}
+
+					yield return new ItineraryStreamUpdate
+					{
+						PartialItinerary = partialItinerary
+					};
 				}
 			}
 		}
 	}
+}
+
+/// <summary>
+/// Update from the itinerary streaming process.
+/// </summary>
+public record ItineraryStreamUpdate
+{
+	/// <summary>
+	/// Status message to display in the fading status trail.
+	/// </summary>
+	public string? StatusMessage { get; init; }
+
+	/// <summary>
+	/// The partial or complete itinerary.
+	/// </summary>
+	public Itinerary? PartialItinerary { get; init; }
 }

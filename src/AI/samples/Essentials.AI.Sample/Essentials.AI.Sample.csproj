@@ -36,8 +36,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Microsoft Agent Framework -->
+    <PackageReference Include="Microsoft.Agents.AI" Version="$(MicrosoftAgentsAIVersion)" />
+    <PackageReference Include="Microsoft.Agents.AI.Hosting" Version="$(MicrosoftAgentsAIVersion)" />
+    <PackageReference Include="Microsoft.Agents.AI.Workflows" Version="$(MicrosoftAgentsAIVersion)" />
+    <!-- Microsoft Extensions -->
     <PackageReference Include="Microsoft.Extensions.AI" />
-    <PackageReference Include="System.Numerics.Tensors" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
