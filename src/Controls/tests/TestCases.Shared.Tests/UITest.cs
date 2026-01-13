@@ -102,6 +102,13 @@ namespace Microsoft.Maui.TestCases.Tests
 				config.SetTestConfigurationArg("TEST_CONFIGURATION_ARGS", commandLineArgs);
 			}
 
+			// Pass log file path to app if set - app will write ILogger output to this file
+			var logFilePath = Environment.GetEnvironmentVariable("MAUI_LOG_FILE") ?? "";
+			if (!String.IsNullOrEmpty(logFilePath))
+			{
+				config.SetTestConfigurationArg("MAUI_LOG_FILE", logFilePath);
+			}
+
 			return config;
 		}
 
