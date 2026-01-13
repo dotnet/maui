@@ -3,11 +3,8 @@ Microsoft.Extensions.AI.NLContextualEmbeddingExtensions
 Microsoft.Extensions.AI.NLEmbeddingExtensions
 Microsoft.Maui.Essentials.AI.AppleIntelligenceChatClient
 Microsoft.Maui.Essentials.AI.AppleIntelligenceChatClient.AppleIntelligenceChatClient() -> void
-Microsoft.Maui.Essentials.AI.AppleIntelligenceChatClient.AppleIntelligenceChatClient(Microsoft.Extensions.Logging.ILogger<Microsoft.Maui.Essentials.AI.AppleIntelligenceChatClient!>? logger) -> void
-Microsoft.Maui.Essentials.AI.AppleIntelligenceChatClient.AppleIntelligenceChatClient(Microsoft.Extensions.Logging.ILogger? logger) -> void
-Microsoft.Maui.Essentials.AI.ChatClientBase
-Microsoft.Maui.Essentials.AI.ChatClientBase.JsonSerializerOptions.get -> System.Text.Json.JsonSerializerOptions!
-Microsoft.Maui.Essentials.AI.ChatClientBase.JsonSerializerOptions.set -> void
+Microsoft.Maui.Essentials.AI.AppleIntelligenceChatClient.GetResponseAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage!>! messages, Microsoft.Extensions.AI.ChatOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Extensions.AI.ChatResponse!>!
+Microsoft.Maui.Essentials.AI.AppleIntelligenceChatClient.GetStreamingResponseAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage!>! messages, Microsoft.Extensions.AI.ChatOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.ChatResponseUpdate!>!
 Microsoft.Maui.Essentials.AI.NLContextualEmbeddingGenerator
 Microsoft.Maui.Essentials.AI.NLContextualEmbeddingGenerator.Dispose() -> void
 Microsoft.Maui.Essentials.AI.NLContextualEmbeddingGenerator.GenerateAsync(System.Collections.Generic.IEnumerable<string!>! values, Microsoft.Extensions.AI.EmbeddingGenerationOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Extensions.AI.GeneratedEmbeddings<Microsoft.Extensions.AI.Embedding<float>!>!>!
@@ -20,9 +17,5 @@ Microsoft.Maui.Essentials.AI.NLEmbeddingGenerator.GenerateAsync(System.Collectio
 Microsoft.Maui.Essentials.AI.NLEmbeddingGenerator.NLEmbeddingGenerator() -> void
 Microsoft.Maui.Essentials.AI.NLEmbeddingGenerator.NLEmbeddingGenerator(NaturalLanguage.NLEmbedding! embedding) -> void
 Microsoft.Maui.Essentials.AI.NLEmbeddingGenerator.NLEmbeddingGenerator(NaturalLanguage.NLLanguage language) -> void
-abstract Microsoft.Maui.Essentials.AI.ChatClientBase.GetResponseAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage!>! messages, Microsoft.Extensions.AI.ChatOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Extensions.AI.ChatResponse!>!
-abstract Microsoft.Maui.Essentials.AI.ChatClientBase.GetStreamingResponseAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage!>! messages, Microsoft.Extensions.AI.ChatOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.ChatResponseUpdate!>!
-override Microsoft.Maui.Essentials.AI.AppleIntelligenceChatClient.GetResponseAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage!>! messages, Microsoft.Extensions.AI.ChatOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Extensions.AI.ChatResponse!>!
-override Microsoft.Maui.Essentials.AI.AppleIntelligenceChatClient.GetStreamingResponseAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage!>! messages, Microsoft.Extensions.AI.ChatOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.ChatResponseUpdate!>!
 static Microsoft.Extensions.AI.NLContextualEmbeddingExtensions.AsEmbeddingGenerator(this NaturalLanguage.NLContextualEmbedding! embedding) -> Microsoft.Extensions.AI.IEmbeddingGenerator<string!, Microsoft.Extensions.AI.Embedding<float>!>!
 static Microsoft.Extensions.AI.NLEmbeddingExtensions.AsEmbeddingGenerator(this NaturalLanguage.NLEmbedding! embedding) -> Microsoft.Extensions.AI.IEmbeddingGenerator<string!, Microsoft.Extensions.AI.Embedding<float>!>!

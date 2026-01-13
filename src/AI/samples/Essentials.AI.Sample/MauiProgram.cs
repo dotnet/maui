@@ -42,11 +42,17 @@ public static class MauiProgram
 		builder.Services.AddSingleton<AppleIntelligenceChatClient>();
 
 		// Register the Apple Intelligence client as IChatClient to allow direct use
-		builder.Services.AddSingleton<IChatClient>(sp => sp.GetRequiredService<AppleIntelligenceChatClient>());
+		builder.Services.AddSingleton<IChatClient>(sp =>
+		{
+			var appleClient = sp.GetRequiredService<AppleIntelligenceChatClient>();
+			var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
+			return appleClient
+				.AsBuilder()
+				.UseLogging(loggerFactory)
+				.Build();
+		});
 
 		// Register the Agent Framework wrapper as "local-model"
-		// This prevents double tool invocation when using Microsoft Agent Framework
-		// TODO: workaround for https://github.com/dotnet/extensions/pull/7126
 		builder.Services.AddKeyedSingleton<IChatClient>("local-model", (sp, _) =>
 		{
 			var appleClient = sp.GetRequiredService<AppleIntelligenceChatClient>();
@@ -54,14 +60,16 @@ public static class MauiProgram
 			return appleClient
 				.AsBuilder()
 				.UseLogging(loggerFactory)
+				// This prevents double tool invocation when using Microsoft Agent Framework
+				// TODO: workaround for https://github.com/dotnet/extensions/issues/7204
 				.Use(cc => new NonFunctionInvokingChatClient(cc, loggerFactory, sp))
 				.Build();
 		});
 
-		// Register "cloud-model" - for now, use Apple Intelligence with buffering
-		// TODO: Add OpenAI/Azure support for better translation quality
+		// Register "cloud-model" with buffering
 		builder.Services.AddKeyedSingleton<IChatClient>("cloud-model", (sp, _) =>
 		{
+			// TODO: Add OpenAI/Azure support for better translation quality
 			var appleClient = sp.GetRequiredService<AppleIntelligenceChatClient>();
 			var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
 			return appleClient

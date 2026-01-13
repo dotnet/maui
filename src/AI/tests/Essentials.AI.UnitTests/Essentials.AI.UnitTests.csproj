@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="$(CoverletCollectorPackageVersion)"/>
+    <PackageReference Include="Microsoft.Extensions.AI" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
     <PackageReference Include="NSubstitute" Version="$(NSubstitutePackageVersion)" />
     <PackageReference Include="xunit" Version="$(XunitPackageVersion)"/>
@@ -26,6 +27,7 @@
     <Compile Include="..\..\..\AI\samples\Essentials.AI.Sample\Services\StreamingJsonDeserializer.cs" Link="Services\StreamingJsonDeserializer.cs" />
     <Compile Include="..\..\..\AI\samples\Essentials.AI.Sample\Services\BufferedChatClient.cs" Link="Services\BufferedChatClient.cs" />
     <Compile Include="..\..\..\AI\samples\Essentials.AI.Sample\Services\JsonMerger.cs" Link="Services\JsonMerger.cs" />
+    <Compile Include="..\..\..\AI\samples\Essentials.AI.Sample\AI\NonFunctionInvokingChatClient.cs" Link="AI\NonFunctionInvokingChatClient.cs" />
   </ItemGroup>
 
   <ItemGroup>

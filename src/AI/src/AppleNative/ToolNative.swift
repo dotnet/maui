@@ -42,7 +42,7 @@ final class ToolNative: Tool {
 
     func call(arguments: Arguments) async throws -> Output {
         let argumentsJson = arguments.jsonString
-        let callId = arguments.id.map { String(describing: $0) } ?? UUID().uuidString
+        let callId = arguments.id.map { extractGuid(from: String(describing: $0)) } ?? UUID().uuidString
 
         // Notify that tool is being called
         onToolCall?(callId, name, argumentsJson)
@@ -54,6 +54,21 @@ final class ToolNative: Tool {
         onToolResult?(callId, name, resultJson)
 
         return try Output(json: resultJson)
+    }
+
+    /// Extracts a GUID from a string matching the exact format `GenerationID(value: "UUID")`.
+    /// Returns the original string if the pattern doesn't match.
+    private func extractGuid(from string: String) -> String {
+        // Pattern matches exactly: GenerationID(value: "UUID")
+        let pattern = #"^GenerationID\(value: "([0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12})"\)$"#
+        
+        guard let regex = try? NSRegularExpression(pattern: pattern),
+              let match = regex.firstMatch(in: string, range: NSRange(string.startIndex..., in: string)),
+              let guidRange = Range(match.range(at: 1), in: string) else {
+            return string
+        }
+        
+        return String(string[guidRange])
     }
 
     struct Arguments: ConvertibleFromGeneratedContent {

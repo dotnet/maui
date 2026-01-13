@@ -4,7 +4,6 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading.Channels;
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Essentials.AI;
 
@@ -15,47 +14,18 @@ namespace Microsoft.Maui.Essentials.AI;
 [SupportedOSPlatform("ios26.0")]
 [SupportedOSPlatform("maccatalyst26.0")]
 [SupportedOSPlatform("macos26.0")]
-public sealed partial class AppleIntelligenceChatClient : ChatClientBase
+public sealed class AppleIntelligenceChatClient : IChatClient
 {
-#if DEBUG
-	static AppleIntelligenceChatClient()
-	{
-		// Enable native logging for debugging purposes, this is quite verbose.
-		// AppleIntelligenceLogger.Log = (message) => System.Diagnostics.Debug.WriteLine("[Native] " + message);
-	}
-#endif
+	// static AppleIntelligenceChatClient()
+	// {
+	// 	// Enable native logging for debugging purposes, this is quite verbose.
+	// 	AppleIntelligenceLogger.Log = (message) => System.Diagnostics.Debug.WriteLine("[Native] " + message);
+	// }
 
 	/// <summary>
-	/// Initializes a new <see cref="AppleIntelligenceChatClient"/> instance.
+	/// Lazily-initialized metadata describing the implementation.
 	/// </summary>
-	public AppleIntelligenceChatClient()
-		: this(null)
-	{
-	}
-
-	/// <summary>
-	/// Initializes a new <see cref="AppleIntelligenceChatClient"/> instance with the specified logger.
-	/// </summary>
-	/// <param name="logger">An optional <see cref="ILogger"/> instance for logging chat operations.</param>
-	public AppleIntelligenceChatClient(ILogger? logger)
-		: base(logger)
-	{
-	}
-
-	/// <summary>
-	/// Initializes a new <see cref="AppleIntelligenceChatClient"/> instance with the specified logger.
-	/// </summary>
-	/// <param name="logger">An optional <see cref="ILogger"/> instance for logging chat operations.</param>
-	public AppleIntelligenceChatClient(ILogger<AppleIntelligenceChatClient>? logger)
-		: base(logger)
-	{
-	}
-
-	/// <inheritdoc />
-	internal override string ProviderName => "apple";
-
-	/// <inheritdoc />
-	internal override string DefaultModelId => "apple-intelligence";
+	private ChatClientMetadata? _metadata;
 
 	internal static AIJsonSchemaTransformCache StrictSchemaTransformCache { get; } =
 		new(new()
@@ -81,7 +51,7 @@ public sealed partial class AppleIntelligenceChatClient : ChatClientBase
 		});
 
 	/// <inheritdoc />
-	public override Task<ChatResponse> GetResponseAsync(
+	public Task<ChatResponse> GetResponseAsync(
 		IEnumerable<ChatMessage> messages,
 		ChatOptions? options = null,
 		CancellationToken cancellationToken = default)
@@ -97,21 +67,7 @@ public sealed partial class AppleIntelligenceChatClient : ChatClientBase
 			nativeOptions,
 			onUpdate: (update) =>
 			{
-				switch (update.UpdateType)
-				{
-					case ResponseUpdateTypeNative.ToolCall:
-						LogFunctionInvoking(nameof(GetResponseAsync), update.ToolCallName!, update.ToolCallId!, update.ToolCallArguments);
-						break;
-
-					case ResponseUpdateTypeNative.ToolResult:
-						LogFunctionInvocationCompleted(nameof(GetResponseAsync), update.ToolCallId!, update.ToolCallResult!);
-						break;
-
-					case ResponseUpdateTypeNative.Content:
-					default:
-						// Content updates are not used in non-streaming mode
-						break;
-				}
+				// Updates are not used in non-streaming mode
 			},
 			onComplete: (response, error) =>
 			{
@@ -139,7 +95,7 @@ public sealed partial class AppleIntelligenceChatClient : ChatClientBase
 	}
 
 	/// <inheritdoc />
-	public override async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
+	public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
 		IEnumerable<ChatMessage> messages,
 		ChatOptions? options = null,
 		[EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -184,8 +140,6 @@ public sealed partial class AppleIntelligenceChatClient : ChatClientBase
 						break;
 
 					case ResponseUpdateTypeNative.ToolCall:
-						LogFunctionInvoking(nameof(GetStreamingResponseAsync), update.ToolCallName!, update.ToolCallId!, update.ToolCallArguments);
-
 						var args = update.ToolCallArguments is null
 							? null
 #pragma warning disable IL3050, IL2026 // DefaultJsonTypeInfoResolver is only used when reflection-based serialization is enabled
@@ -201,8 +155,6 @@ public sealed partial class AppleIntelligenceChatClient : ChatClientBase
 						break;
 
 					case ResponseUpdateTypeNative.ToolResult:
-						LogFunctionInvocationCompleted(nameof(GetStreamingResponseAsync), update.ToolCallId!, update.ToolCallResult!);
-
 						var toolResultUpdate = new ChatResponseUpdate
 						{
 							Role = ChatRole.Assistant,
@@ -253,7 +205,38 @@ public sealed partial class AppleIntelligenceChatClient : ChatClientBase
 		}
 	}
 
-	private ChatMessageNative[] ToNative(IEnumerable<ChatMessage> messages, ChatOptions? options)
+	/// <inheritdoc />
+	object? IChatClient.GetService(Type serviceType, object? serviceKey)
+	{
+		ArgumentNullException.ThrowIfNull(serviceType);
+
+		if (serviceKey is not null)
+		{
+			return null;
+		}
+
+		if (serviceType == typeof(ChatClientMetadata))
+		{
+			return _metadata ??= new ChatClientMetadata(
+				providerName: "apple",
+				defaultModelId: "apple-intelligence");
+		}
+
+		if (serviceType.IsInstanceOfType(this))
+		{
+			return this;
+		}
+
+		return null;
+	}
+
+	/// <inheritdoc />
+	void IDisposable.Dispose()
+	{
+		// Nothing to dispose.
+	}
+
+	private static ChatMessageNative[] ToNative(IEnumerable<ChatMessage> messages, ChatOptions? options)
 	{
 		ArgumentNullException.ThrowIfNull(messages);
 
