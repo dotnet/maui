@@ -7,6 +7,7 @@ using Android.Widget;
 using Google.Android.Material.TextField;
 namespace Microsoft.Maui.Platform;
 
+// TODO: Material3: Make it public in .NET 11
 internal class MauiMaterialEditText : TextInputEditText
 {
 	public event EventHandler? SelectionChanged;
@@ -49,6 +50,7 @@ internal class MauiMaterialEditText : TextInputEditText
 	}
 }
 
+// TODO: Material3: Make it public in .NET 11
 internal class MauiMaterialTextInputLayout : TextInputLayout
 {
 	public MauiMaterialTextInputLayout(Context context) : base(context)

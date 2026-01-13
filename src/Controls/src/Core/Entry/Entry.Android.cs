@@ -30,8 +30,9 @@ namespace Microsoft.Maui.Controls
 			Platform.EditTextExtensions.UpdateText(handler.PlatformView, entry);
 		}
 
+		// TODO: Material3: Make it public in .NET 11
 		// MaterialEntryHandler-specific overloads
-		internal static void MapText(MaterialEntryHandler handler, Entry entry)
+		internal static void MapText(EntryHandler2 handler, Entry entry)
 		{
 			if (handler.PlatformView?.EditText is null)
 			{

@@ -52,6 +52,7 @@ import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
+import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
 import com.microsoft.maui.glide.MauiCustomTarget;
@@ -136,7 +137,7 @@ public class PlatformInterop {
             view = view.findViewById(androidx.appcompat.R.id.search_src_text);
         } else if (view instanceof TextInputLayout) {
             EditText editText = ((TextInputLayout) view).getEditText();
-            if (editText instanceof EditText) {
+            if (editText instanceof TextInputEditText) {
                 view = editText;
             }
         }
