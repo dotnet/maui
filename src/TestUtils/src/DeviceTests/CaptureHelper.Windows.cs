@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.Graphics.Canvas;
@@ -11,6 +12,27 @@ namespace Microsoft.Maui.DeviceTests
 	public static class CaptureHelper
 	{
 		static readonly Guid GraphicsCaptureItemGuid = new("79C3F95B-31F7-4EC2-A464-632EF5D30760");
+
+		// Log to a file that will be uploaded as a Helix artifact
+		static void Log(string message)
+		{
+			var timestamp = DateTime.Now.ToString("HH:mm:ss.fff");
+			var logMessage = $"[{timestamp}] [CaptureHelper] {message}";
+			Console.WriteLine(logMessage);
+			
+			try
+			{
+				// Write to HELIX_WORKITEM_UPLOAD_ROOT if available, otherwise use temp
+				var uploadRoot = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT");
+				var logDir = !string.IsNullOrEmpty(uploadRoot) ? uploadRoot : Path.GetTempPath();
+				var logFile = Path.Combine(logDir, "CaptureHelper.log");
+				File.AppendAllText(logFile, logMessage + Environment.NewLine);
+			}
+			catch
+			{
+				// Ignore logging failures
+			}
+		}
 
 		[ComImport]
 		[Guid("3628E81B-3CAC-4C60-B7F4-23CE0E0C3356")]
@@ -30,11 +52,11 @@ namespace Microsoft.Maui.DeviceTests
 		public static GraphicsCaptureItem CreateItemForWindow(IntPtr hwnd)
 		{
 			var isSupported = GraphicsCaptureSession.IsSupported();
-			Console.WriteLine($"[CaptureHelper] CreateItemForWindow called: hwnd=0x{hwnd:X}, IsSupported={isSupported}");
+			Log($"CreateItemForWindow called: hwnd=0x{hwnd:X}, IsSupported={isSupported}");
 
 			if (!isSupported)
 			{
-				Console.WriteLine($"[CaptureHelper] IsSupported=false, throwing PlatformNotSupportedException");
+				Log("IsSupported=false, throwing PlatformNotSupportedException");
 				throw new PlatformNotSupportedException(
 					"Windows Graphics Capture API is not supported in this environment. " +
 					"This commonly occurs on Helix CI VMs where the required graphics infrastructure is not available.");
@@ -46,12 +68,12 @@ namespace Microsoft.Maui.DeviceTests
 				var itemPointer = interop.CreateForWindow(hwnd, GraphicsCaptureItemGuid);
 				var item = GraphicsCaptureItem.FromAbi(itemPointer);
 				Marshal.Release(itemPointer);
-				Console.WriteLine($"[CaptureHelper] CreateItemForWindow SUCCESS: Size={item.Size}");
+				Log($"CreateItemForWindow SUCCESS: Size={item.Size}");
 				return item;
 			}
 			catch (ArgumentException ex) when (ex.Message.Contains("Value does not fall within the expected range", StringComparison.Ordinal))
 			{
-				Console.WriteLine($"[CaptureHelper] CreateItemForWindow FAILED with ArgumentException: {ex.Message}");
+				Log($"CreateItemForWindow FAILED with ArgumentException: {ex.Message}");
 				throw new PlatformNotSupportedException(
 					"Windows Graphics Capture failed: the display environment does not support window capture. " +
 					"This commonly occurs on Helix CI VMs.", ex);
