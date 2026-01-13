@@ -11,9 +11,20 @@ This document describes the design and implementation plan for enabling `dotnet 
 | Stage | Status |
 |-------|--------|
 | Design | 🟡 In Progress |
-| Implementation | 🔴 Not Started |
+| Implementation | 🟡 POC Available |
 | Testing | 🔴 Not Started |
 | Documentation | 🔴 Not Started |
+
+### Proof of Concept
+
+A working POC demonstrating Android device testing with MTP is available at:
+- **Repository**: [rmarinho/testfx#2](https://github.com/rmarinho/testfx/pull/2)
+- **Features demonstrated**:
+  - Two execution modes: Activity Mode (via `dotnet run --device`) and Instrumentation Mode (via `adb instrument`)
+  - MSTest with MTP (Microsoft.Testing.Platform) on Android
+  - Custom `IDataConsumer` for logcat output
+  - TRX file collection from device sandbox
+  - Exit code propagation
 
 ## Authors
 
@@ -334,6 +345,27 @@ We recommend a phased approach for device ↔ host communication:
 
 **Mechanism:** Test app writes TRX/coverage to its sandbox; tooling pulls files back after completion.
 
+**POC Implementation (Android):**
+```xml
+<!-- Get the most recent TRX file name -->
+<Exec Command="adb $(_AdbDevice) shell &quot;run-as $(ApplicationId) ls -t files/TestResults/ 2>/dev/null | head -1&quot;"
+      ConsoleToMSBuild="true">
+  <Output TaskParameter="ConsoleOutput" PropertyName="_LatestTrxFileName" />
+</Exec>
+
+<!-- Pull the latest TRX file using run-as + cat -->
+<Exec Command="adb $(_AdbDevice) shell &quot;run-as $(ApplicationId) cat files/TestResults/$(_LatestTrxFileName)&quot; > &quot;$(TestResultsDirectory)/$(ProjectName).trx&quot;" />
+
+<!-- Capture logcat for debugging -->
+<Exec Command="adb $(_AdbDevice) logcat -d > &quot;$(TestResultsDirectory)/$(ProjectName)_logcat.txt&quot;" />
+```
+
+**Why `run-as` + `cat`:**
+- Works with debuggable APKs (debug builds) without root
+- `run-as <package>` accesses app's private storage
+- `cat` outputs file content to stdout which can be redirected locally
+- Alternative `adb pull` doesn't work with app-private directories
+
 **Pros:**
 - Works even when networking is constrained (especially iOS devices)
 - Simple reliability model: "run → pull files → parse"
@@ -420,9 +452,136 @@ This is a potential future enhancement (particularly for complex native coverage
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
----
+### 4.5 Android Execution Modes
 
-## 5. MSBuild Integration
+Based on the POC implementation, Android device tests support **two execution modes**:
+
+#### 4.5.1 Activity Mode (Default) - via `dotnet run --device`
+
+Uses the existing `dotnet run --device` infrastructure to deploy and launch the app's `MainActivity`.
+
+```bash
+dotnet test MyTests.csproj -f net10.0-android -p:Device=emulator-5554
+```
+
+**Flow:**
+1. `dotnet run --device` builds and deploys the APK
+2. Launches `MainActivity` via `adb shell am start`
+3. `MainActivity.OnCreate` calls `MicrosoftTestingPlatformEntryPoint.Main()`
+4. Tests execute, results stream to logcat
+5. App exits via `Java.Lang.JavaSystem.Exit(exitCode)`
+
+**Pros:**
+- Simple, leverages existing `dotnet run` infrastructure
+- No additional Android SDK changes required
+
+**Cons:**
+- App may not signal completion reliably in some scenarios
+- Exit code propagation depends on app termination being detected
+
+#### 4.5.2 Instrumentation Mode - via `adb instrument`
+
+Uses Android Instrumentation for more reliable test execution with proper wait-for-completion semantics.
+
+```bash
+dotnet test MyTests.csproj -f net10.0-android -p:Device=emulator-5554 -p:UseInstrumentation=true
+```
+
+**Flow:**
+1. Build and install APK via `dotnet build -t:Install`
+2. Launch via `adb shell am instrument -w <package>/<instrumentation-class>`
+3. `-w` flag waits for instrumentation to complete
+4. `TestInstrumentation.OnStart` calls `MicrosoftTestingPlatformEntryPoint.Main()`
+5. Tests execute, results stream to logcat
+6. `Instrumentation.Finish(exitCode, results)` signals completion
+
+**Pros:**
+- More reliable completion detection
+- Proper exit code propagation via `Finish()`
+- Standard Android test pattern
+
+**Cons:**
+- Requires `TestInstrumentation` class in test project
+- Requires AndroidManifest.xml instrumentation registration
+- **Requires Android SDK enhancement** (see below)
+
+#### 4.5.3 Required Android SDK Enhancement
+
+To support Instrumentation Mode via `dotnet run`, the Android SDK's `Microsoft.Android.Sdk.Application.targets` needs modification:
+
+**Current target** (`_AndroidComputeRunArguments`) only supports activity launch:
+```xml
+<RunArguments>$(AdbTarget) shell am start -S -n "$(_AndroidPackage)/$(AndroidLaunchActivity)"</RunArguments>
+```
+
+**Required enhancement** - add support for `UseInstrumentation` property:
+```xml
+<PropertyGroup Condition="'$(UseInstrumentation)' == 'true'">
+  <RunCommand>$(_AdbToolPath)</RunCommand>
+  <RunArguments>$(AdbTarget) shell am instrument -w "$(_AndroidPackage)/$(AndroidInstrumentationName)"</RunArguments>
+</PropertyGroup>
+```
+
+**New MSBuild Properties:**
+
+| Property | Description | Default |
+|----------|-------------|---------|
+| `$(UseInstrumentation)` | Use `adb instrument` instead of `adb am start` | `false` |
+| `$(AndroidInstrumentationName)` | Full instrumentation class name (e.g., `myapp.TestInstrumentation`) | (none) |
+
+**Action Item:** File issue on dotnet/android to add `UseInstrumentation` support to `_AndroidComputeRunArguments` target.
+
+#### 4.5.4 Test Project Requirements (Instrumentation Mode)
+
+**1. TestInstrumentation class:**
+```csharp
+[Instrumentation(Name = "mypackage.TestInstrumentation")]
+public class TestInstrumentation : Instrumentation
+{
+    public override void OnCreate(Bundle? arguments)
+    {
+        base.OnCreate(arguments);
+        Start();
+    }
+
+    public override async void OnStart()
+    {
+        base.OnStart();
+        int exitCode = 1;
+        Bundle results = new Bundle();
+        
+        try
+        {
+            var testResultsDir = Path.Combine(TargetContext.FilesDir.AbsolutePath, "TestResults");
+            Directory.CreateDirectory(testResultsDir);
+            
+            var args = new[] { "--results-directory", testResultsDir, "--report-trx" };
+            exitCode = await MicrosoftTestingPlatformEntryPoint.Main(args);
+            
+            results.PutInt("exitCode", exitCode);
+            results.PutString("status", exitCode == 0 ? "SUCCESS" : "FAILURE");
+        }
+        catch (Exception ex)
+        {
+            results.PutString("error", ex.ToString());
+        }
+        finally
+        {
+            Finish(exitCode == 0 ? Result.Ok : Result.Canceled, results);
+        }
+    }
+}
+```
+
+**2. AndroidManifest.xml registration:**
+```xml
+<instrumentation
+  android:name="mypackage.TestInstrumentation"
+  android:targetPackage="com.mycompany.mytestapp"
+  android:label="Test Instrumentation" />
+```
+
+---
 
 ### 5.1 New MSBuild Targets
 
@@ -578,25 +737,64 @@ dotnet test --project MyMauiDeviceTests.csproj -f net10.0-android --device emula
 - In MTP mode, MTP args should not require the legacy `--` indirection that VSTest mode uses; keep `--` as an escape hatch for parity with existing CLI patterns.
 - Keep naming and output paths stable/predictable for AI agents to parse reliably.
 
----
+### 6.6 Expected Console Output Format
 
-## 7. Implementation Phases
+Based on the POC implementation, device test output follows this format:
+
+```
+╔══════════════════════════════════════════════════════════════╗
+║           Microsoft.Testing.Platform - Device Tests          ║
+╠══════════════════════════════════════════════════════════════╣
+║  Started: 2026-01-13 14:30:00                                ║
+╚══════════════════════════════════════════════════════════════╝
+
+▶ Running: SimpleTest_ShouldPass
+✓ Passed:  SimpleTest_ShouldPass
+▶ Running: AndroidPlatformTest
+✓ Passed:  AndroidPlatformTest
+▶ Running: StringTest_ShouldPass
+✓ Passed:  StringTest_ShouldPass
+▶ Running: LongRunningTest_30Seconds
+✓ Passed:  LongRunningTest_30Seconds
+
+══════════════════════════════════════════════════════════════
+  Test Run Completed
+  Duration: 30.28s
+══════════════════════════════════════════════════════════════
+
+Test run summary: Passed!
+  total: 4
+  failed: 0
+  succeeded: 4
+  skipped: 0
+  duration: 30s 282ms
+```
+
+This output is generated by custom MTP extensions (`IDataConsumer` and `ITestSessionLifetimeHandler`) and written to Android logcat, then streamed to the console via `dotnet run --device` or captured after `adb instrument` completes.
+
+---
 
 ### Phase 1: Foundation (2-3 weeks)
 
 **Goal:** Basic `dotnet test` working on Android emulator and iOS simulator
 
+**Status:** 🟡 POC demonstrates Android emulator support
+
 **Work Items:**
-1. Create file-based artifact collection for iOS/Android (TRX pull from device sandbox)
-2. Implement MSBuild targets for test execution in iOS SDK and Android SDK
-3. Basic console output of test results
-4. Integration with `dotnet run` device selection
+1. ✅ Create file-based artifact collection for Android (TRX pull from device sandbox) - **Demonstrated in POC**
+2. ✅ Implement MSBuild targets for test execution (POC uses `Directory.Build.targets`) - **Demonstrated in POC**
+3. ✅ Basic console output of test results via custom `IDataConsumer` - **Demonstrated in POC**
+4. ✅ Two execution modes: Activity Mode and Instrumentation Mode - **Demonstrated in POC**
+5. 🔴 Integration with `dotnet run` device selection - **Requires Android SDK changes**
+6. 🔴 iOS simulator support - **Not started**
 
 **Deliverables:**
-- `dotnet test` runs and reports results for iOS simulator
-- `dotnet test` runs and reports results for Android emulator
-- Basic pass/fail output in console
-- TRX file retrieved from device
+- ✅ `dotnet test` runs and reports results for Android emulator (via POC workaround)
+- 🔴 `dotnet test` runs and reports results for iOS simulator
+- ✅ Basic pass/fail output in console
+- ✅ TRX file retrieved from device
+
+**Blocking Item:** Android SDK needs to add `UseInstrumentation` property support to enable `dotnet run --device` to launch via instrumentation.
 
 ### Phase 2: Cross-Platform & Physical Devices (2-3 weeks)
 
@@ -666,34 +864,92 @@ dotnet test --project MyMauiDeviceTests.csproj -f net10.0-android --device emula
 The test application running on the device needs to:
 
 1. **Host MTP**: Embed Microsoft.Testing.Platform as the test execution engine
-2. **Implement Push Protocol**: Send results via HTTP to host machine
+2. **Implement Push Protocol**: Send results via HTTP to host machine (V2) or write to device storage (V1)
 3. **Handle Lifecycle**: Properly handle app suspension/termination
+4. **Custom Extensions**: Implement device-specific reporting extensions
 
+#### 9.1.1 MTP Extensions for Device Testing
+
+The POC demonstrates custom MTP extensions for device-specific output:
+
+**DeviceTestReporter (IDataConsumer):**
 ```csharp
-// Example: MAUI Test Application Entry Point
-public static class MauiTestProgram
+internal sealed class DeviceTestReporter : IDataConsumer, IOutputDeviceDataProducer
 {
-    public static async Task<int> Main(string[] args)
+    public Type[] DataTypesConsumed => [typeof(TestNodeUpdateMessage)];
+
+    public async Task ConsumeAsync(IDataProducer dataProducer, IData value, CancellationToken cancellationToken)
     {
-        var builder = await TestApplication.CreateBuilderAsync(args);
-        
-        // Register MAUI-specific extensions
-        builder.AddMauiDeviceTestHost();
-        
-        // Register test framework (MSTest, xUnit, NUnit)
-        builder.AddMSTest();
-        
-        // Configure push protocol
-        builder.AddMauiPushProtocol(options =>
+        var testNodeUpdateMessage = (TestNodeUpdateMessage)value;
+        TestNodeStateProperty nodeState = testNodeUpdateMessage.TestNode.Properties.Single<TestNodeStateProperty>();
+
+        switch (nodeState)
         {
-            options.ServerEndpoint = GetServerEndpoint(args);
-        });
-        
-        using var app = await builder.BuildAsync();
-        return await app.RunAsync();
+            case PassedTestNodeStateProperty:
+                Log.Info(TAG, $"✓ Passed: {testNodeUpdateMessage.TestNode.DisplayName}");
+                break;
+            case FailedTestNodeStateProperty failedState:
+                Log.Info(TAG, $"✗ Failed: {testNodeUpdateMessage.TestNode.DisplayName}");
+                Log.Info(TAG, $"  Error: {failedState.Exception?.Message}");
+                break;
+            // ... other states
+        }
     }
 }
 ```
+
+**DeviceTestSessionHandler (ITestSessionLifetimeHandler):**
+```csharp
+internal sealed class DeviceTestSessionHandler : ITestSessionLifetimeHandler, IOutputDeviceDataProducer
+{
+    public async Task OnTestSessionStartingAsync(ITestSessionContext testSessionContext)
+    {
+        Log.Info(TAG, "Test session starting...");
+    }
+
+    public async Task OnTestSessionFinishingAsync(ITestSessionContext testSessionContext)
+    {
+        Log.Info(TAG, "Test session completed.");
+    }
+}
+```
+
+**Registration via TestingPlatformBuilderHook:**
+```csharp
+public static class DeviceTestingPlatformBuilderHook
+{
+    public static void AddExtensions(ITestApplicationBuilder builder, string[] args)
+    {
+        builder.TestHost.AddDataConsumer(sp => new DeviceTestReporter(sp.GetOutputDevice()));
+        builder.TestHost.AddTestSessionLifetimeHandle(sp => new DeviceTestSessionHandler(sp.GetOutputDevice()));
+    }
+}
+```
+
+**Project file registration:**
+```xml
+<ItemGroup>
+  <TestingPlatformBuilderHook Include="DeviceTestingExtensions">
+    <DisplayName>Device Testing Extensions</DisplayName>
+    <TypeFullName>MyApp.DeviceTestingPlatformBuilderHook</TypeFullName>
+  </TestingPlatformBuilderHook>
+</ItemGroup>
+```
+
+> **Note:** MTP generates extension methods for NuGet packages that provide MTP extensions at MSBuild build time. Consider reusing this pattern for device-specific extensions.
+
+#### 9.1.2 Entry Point Considerations
+
+The entry point differs by platform and execution mode:
+
+| Platform | Mode | Entry Point |
+|----------|------|-------------|
+| Android | Activity | `MainActivity.OnCreate` → `MicrosoftTestingPlatformEntryPoint.Main(args)` |
+| Android | Instrumentation | `TestInstrumentation.OnStart` → `MicrosoftTestingPlatformEntryPoint.Main(args)` |
+| iOS | App | `AppDelegate` or custom entry point → `MicrosoftTestingPlatformEntryPoint.Main(args)` |
+| Windows | Exe | Standard `Main(string[] args)` → MTP |
+
+> **Note:** On devices, command-line arguments may need to be passed via environment variables since `args` are not provided the same way as desktop apps.
 
 ### 9.2 Host Machine Requirements
 
@@ -849,9 +1105,11 @@ Integrate with `Microsoft.CodeCoverage`:
 
 1. **Test Framework Support**: Should we support all frameworks (xUnit, NUnit, MSTest) from day one, or start with one?
 
-2. **Android Instrumentation**: How should `dotnet test` work with Android instrumentation tests? Should it run instrumentation tests automatically, or require explicit configuration? How is the `Instrumentation` type provided (template, NuGet package, or manual implementation)?
+2. **Android Instrumentation**: ✅ **Resolved in POC** - See Section 4.5 for the two-mode approach (Activity Mode and Instrumentation Mode). The `Instrumentation` type is implemented in the test project (see `TestInstrumentation.cs` in POC). **Pending:** Android SDK needs to support `UseInstrumentation` property in `dotnet run` to launch via `adb shell am instrument` instead of activity start.
 
 3. **Crash Diagnostic Collection**: What's the best approach for collecting .ips files (iOS) and tombstones (Android) after test failures?
+
+4. **Android SDK `dotnet run` Enhancement**: The Android SDK's `_AndroidComputeRunArguments` target (in `Microsoft.Android.Sdk.Application.targets`) needs to support a new property `UseInstrumentation` to launch test apps via `adb shell am instrument -w` instead of `adb shell am start`. This enables proper wait-for-completion semantics for long-running tests.
 
 ### 12.3 Cross-Team
 
@@ -891,7 +1149,11 @@ Integrate with `Microsoft.CodeCoverage`:
 1. **MSBuild targets**: Implement test target chain (build/deploy/run/collect) for Android
 2. **Artifact extraction**: Pull from app sandbox (TRX, logs, tombstones)
 3. **Device selection plumbing**: ADB device formats + mapping to existing deploy tooling
-4. **Android Instrumentation**: Define how `Instrumentation` type is provided (template vs. NuGet)
+4. **Android Instrumentation Support**: 
+   - Add `UseInstrumentation` property to `_AndroidComputeRunArguments` target
+   - Add `AndroidInstrumentationName` property for specifying instrumentation class
+   - Modify `RunArguments` to use `adb shell am instrument -w` when `UseInstrumentation=true`
+   - See [Microsoft.Android.Sdk.Application.targets](https://github.com/dotnet/android/blob/main/src/Xamarin.Android.Build.Tasks/Microsoft.Android.Sdk/targets/Microsoft.Android.Sdk.Application.targets#L52-L79)
 5. **Reliability**: Timeouts, retries, crash diagnostics, log capture
 
 ### MTP Team
@@ -901,7 +1163,15 @@ Integrate with `Microsoft.CodeCoverage`:
    - Lifecycle integration (app start → run tests → exit/terminate)
 2. **Extensions validation on mobile**:
    - TRX extension on iOS/Android file systems
-3. **(Optional future) Streaming protocol surface**:
+   - ✅ POC validates TRX works on Android with `--report-trx` flag
+3. **MTP extension compatibility for mobile**:
+   - Some extensions (CodeCoverage, Fakes) may start subprocesses which isn't allowed on mobile
+   - Need to adjust extensions/core to prevent subprocess launching in mobile scenarios
+   - Fakes runtime should throw exception if unsupported APIs are called on mobile
+4. **Console output forwarding**:
+   - Determine if `PlatformOutputDeviceManager` needs updates to forward console output from device
+   - Consider `IFileSystem` updates to ensure file writes to results directory are copied from device
+5. **(Optional future) Streaming protocol surface**:
    - Best practice for push-only/event streaming (server mode / custom sink)
    - Stability/versioning expectations
 
