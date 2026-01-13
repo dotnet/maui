@@ -5,8 +5,6 @@ using Android.Content;
 using Android.Views;
 using AndroidX.Core.Graphics;
 using AndroidX.Core.View;
-using AndroidX.Core.Widget;
-using AndroidX.RecyclerView.Widget;
 using Google.Android.Material.AppBar;
 using AView = Android.Views.View;
 
@@ -31,7 +29,8 @@ namespace Microsoft.Maui.Platform
 		readonly HashSet<AView> _trackedViews = [];
 		bool IsImeAnimating { get; set; }
 
-		AView? _pendingView;
+		readonly List<AView> _pendingViews = [];
+		int _lastImeHeight;
 
 		// Static tracking for views that have local inset listeners.
 		// This registry allows child views to find their appropriate listener without
@@ -189,15 +188,67 @@ namespace Microsoft.Maui.Platform
 		{
 			if (insets is null || !insets.HasInsets || v is null || IsImeAnimating)
 			{
-				if (IsImeAnimating)
+
+				if (IsImeAnimating && v is not null)
 				{
-					_pendingView = v;
+					// Add view to pending list if not already there
+					if (!_pendingViews.Contains(v))
+					{
+						_pendingViews.Add(v);
+					}
 				}
 
 				return insets;
 			}
 
-			_pendingView = null;
+			// Clear pending views when processing insets normally
+			_pendingViews.Clear();
+
+
+			// Check for IME (keyboard) insets and apply padding to CoordinatorLayout if AdjustResize
+			var imeInsets = insets.GetInsets(WindowInsetsCompat.Type.Ime());
+			var imeHeight = imeInsets?.Bottom ?? 0;
+
+			bool consumedImeInsets = false;
+			if (v is AndroidX.CoordinatorLayout.Widget.CoordinatorLayout coordinatorLayout)
+			{
+				// Only apply keyboard padding when IME height changes
+				// This prevents interference with non-keyboard events (rotation, bottom nav, etc.)
+				if (imeHeight != _lastImeHeight)
+				{
+					consumedImeInsets = ApplyKeyboardPaddingIfNeeded(coordinatorLayout, imeHeight, v.Context);
+				}
+			}
+
+			_lastImeHeight = imeHeight;
+
+			if (consumedImeInsets)
+			{
+
+				var systemBars = insets.GetInsets(WindowInsetsCompat.Type.SystemBars());
+				var displayCutout = insets.GetInsets(WindowInsetsCompat.Type.DisplayCutout());
+
+				// Keep left, top, right but consume bottom
+				var newSystemBars = Insets.Of(
+					systemBars?.Left ?? 0,
+					systemBars?.Top ?? 0,
+					systemBars?.Right ?? 0,
+					0  // Consume bottom
+				) ?? Insets.None;
+
+				var newDisplayCutout = Insets.Of(
+					displayCutout?.Left ?? 0,
+					displayCutout?.Top ?? 0,
+					displayCutout?.Right ?? 0,
+					0  // Consume bottom
+				) ?? Insets.None;
+
+				insets = new WindowInsetsCompat.Builder(insets)
+					?.SetInsets(WindowInsetsCompat.Type.Ime(), Insets.None)
+					?.SetInsets(WindowInsetsCompat.Type.SystemBars(), newSystemBars)
+					?.SetInsets(WindowInsetsCompat.Type.DisplayCutout(), newDisplayCutout)
+					?.Build() ?? insets;
+			}
 
 			// Handle custom inset views first
 			if (v is IHandleWindowInsets customHandler)
@@ -206,7 +257,77 @@ namespace Microsoft.Maui.Platform
 			}
 
 			// Apply default window insets for standard views
-			return ApplyDefaultWindowInsets(v, insets);
+			// v is guaranteed to be non-null here due to the check at the start of the method
+			return ApplyDefaultWindowInsets(v!, insets);
+		}
+
+		static bool ApplyKeyboardPaddingIfNeeded(AndroidX.CoordinatorLayout.Widget.CoordinatorLayout coordinatorLayout, int imeHeight, Context? context)
+		{
+			if (context is null)
+			{
+				return false;
+			}
+
+			// Check if window is set to AdjustResize
+			var window = context.GetActivity()?.Window;
+			if (window?.Attributes is WindowManagerLayoutParams attr)
+			{
+				var softInputMode = attr.SoftInputMode;
+
+				var contentView = coordinatorLayout.FindViewById(Resource.Id.navigationlayout_content);
+
+				// Only apply padding if AdjustResize is set AND keyboard is actually showing
+				if ((softInputMode & SoftInput.AdjustResize) == SoftInput.AdjustResize && imeHeight > 0)
+				{
+					// Get the bottom margin (for bottom tabs) - this value is constant and doesn't change
+					var bottomMargin = 0;
+					if (contentView?.LayoutParameters is ViewGroup.MarginLayoutParams marginParams)
+					{
+						bottomMargin = marginParams.BottomMargin;
+					}
+
+					// Apply padding = imeHeight - bottomMargin
+					// This compensates for the margin that creates white space
+					SetCoordinatorLayoutBottomSpace(coordinatorLayout, imeHeight - bottomMargin);
+
+					// Return true to indicate we handled the IME insets and they should be consumed
+					return true;
+				}
+				else
+				{
+					// Clear any existing padding when keyboard is not showing or AdjustResize is not set
+					SetCoordinatorLayoutBottomSpace(coordinatorLayout, 0);
+				}
+			}
+
+			return false;
+		}
+
+		/// <summary>
+		/// Sets the bottom margin or padding on a CoordinatorLayout to accommodate keyboard or other bottom insets.
+		/// Prefers setting margin on navigationlayout_content if available, otherwise falls back to padding on the layout itself.
+		/// </summary>
+		static void SetCoordinatorLayoutBottomSpace(AndroidX.CoordinatorLayout.Widget.CoordinatorLayout coordinatorLayout, int bottomSpace)
+		{
+			var contentView = coordinatorLayout.FindViewById(Resource.Id.navigationlayout_content);
+			if (contentView is not null)
+			{
+				contentView.SetPadding(
+					contentView.PaddingLeft,
+					contentView.PaddingTop,
+					contentView.PaddingRight,
+					bottomSpace
+				);
+			}
+			else
+			{
+				coordinatorLayout.SetPadding(
+					coordinatorLayout.PaddingLeft,
+					coordinatorLayout.PaddingTop,
+					coordinatorLayout.PaddingRight,
+					bottomSpace
+				);
+			}
 		}
 
 		static WindowInsetsCompat? ApplyDefaultWindowInsets(AView v, WindowInsetsCompat insets)
@@ -304,10 +425,10 @@ namespace Microsoft.Maui.Platform
 
 		public bool HasTrackedView => _trackedViews.Count > 0;
 
-        public bool IsViewTracked(AView view)
-        {
-            return _trackedViews.Contains(view);
-        }
+		public bool IsViewTracked(AView view)
+		{
+			return _trackedViews.Contains(view);
+		}
 		public void ResetView(AView view)
 		{
 			if (view is IHandleWindowInsets customHandler)
@@ -424,19 +545,100 @@ namespace Microsoft.Maui.Platform
 
 			if (IsImeAnimation(animation))
 			{
-				if (_pendingView is AView view)
+				// Determine if we should reset padding based on SoftInputMode
+				// We only reset if we applied keyboard padding (AdjustResize mode)
+				// For AdjustPan or other modes, we never applied padding, so don't reset
+				var shouldReset = false;
+				Context? context = null;
+
+				// Get context from tracked or pending views
+				var allViews = _trackedViews.Concat(_pendingViews);
+				foreach (var view in allViews)
 				{
-					_pendingView = null;
-					view.Post(() =>
+					context = view.Context;
+					if (context != null)
+						break;
+				}
+
+				if (context?.GetActivity()?.Window?.Attributes is WindowManagerLayoutParams attr)
+				{
+					var softInputMode = attr.SoftInputMode;
+					shouldReset = (softInputMode & SoftInput.AdjustResize) == SoftInput.AdjustResize;
+				}
+
+				if (!shouldReset)
+				{
+					// Not AdjustResize mode - don't reset anything
+					// Native Android handles AdjustPan, and we didn't apply any padding
+					IsImeAnimating = false;
+					_pendingViews.Clear();
+					return;
+				}
+
+				// AdjustResize mode - proceed with reset logic
+				// Take snapshot of views that need reset and recalculation
+				var trackedViewsSnapshot = _trackedViews.ToArray();
+				var pendingViewsSnapshot = _pendingViews.ToArray();
+
+				// Reset keyboard padding on CoordinatorLayout when keyboard dismisses
+				foreach (var view in trackedViewsSnapshot.Concat(pendingViewsSnapshot))
+				{
+					if (view is AndroidX.CoordinatorLayout.Widget.CoordinatorLayout coordinatorLayout)
+					{
+						SetCoordinatorLayoutBottomSpace(coordinatorLayout, 0);
+						break; // Only need to reset once
+					}
+				}
+
+				// Reset each tracked view by removing from tracking
+				foreach (var view in trackedViewsSnapshot)
+				{
+					// Reset padding to allow recalculation with correct view bounds
+					if (view is IHandleWindowInsets customHandler)
+					{
+						customHandler.ResetWindowInsets(view);
+					}
+
+					_trackedViews.Remove(view);
+				}
+
+				// Post a single callback to request inset recalculation on all tracked and pending views
+				// This ensures all views get updated after keyboard animation completes
+				if (trackedViewsSnapshot.Length > 0 || pendingViewsSnapshot.Length > 0)
+				{
+					// Use any available view to post the callback
+					var viewToPost = trackedViewsSnapshot.FirstOrDefault() ?? pendingViewsSnapshot.FirstOrDefault();
+					viewToPost?.Post(() =>
 					{
 						IsImeAnimating = false;
-						ViewCompat.RequestApplyInsets(view);
+
+						// Mark LayoutViewGroups as needing SafeArea recalculation
+						// This will trigger RequestApplyInsets on the next layout pass
+						foreach (var view in trackedViewsSnapshot)
+						{
+							if (view is LayoutViewGroup layoutView)
+							{
+								layoutView.MarkSafeAreaEdgeConfigurationChanged();
+							}
+						}
+
+						foreach (var view in pendingViewsSnapshot)
+						{
+							if (view is LayoutViewGroup layoutView)
+							{
+								layoutView.MarkSafeAreaEdgeConfigurationChanged();
+							}
+						}
 					});
 				}
 				else
 				{
+					// No views to update, just clear the animation flag
 					IsImeAnimating = false;
 				}
+
+				// Clear pending views since we handled them
+				_pendingViews.Clear();
 			}
 		}
 
