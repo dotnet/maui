@@ -13,6 +13,12 @@ namespace Microsoft.Maui.DeviceTests
 	{
 		static readonly Guid GraphicsCaptureItemGuid = new("79C3F95B-31F7-4EC2-A464-632EF5D30760");
 
+		/// <summary>
+		/// Set this to a directory path where logs should be written.
+		/// On Helix, this should be set to the directory of the test results file.
+		/// </summary>
+		public static string? LogDirectory { get; set; }
+
 		// Log to a file that will be uploaded as a Helix artifact
 		static void Log(string message)
 		{
@@ -22,9 +28,20 @@ namespace Microsoft.Maui.DeviceTests
 			
 			try
 			{
-				// Write to HELIX_WORKITEM_UPLOAD_ROOT if available, otherwise use temp
-				var uploadRoot = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT");
-				var logDir = !string.IsNullOrEmpty(uploadRoot) ? uploadRoot : Path.GetTempPath();
+				// Priority order for log directory:
+				// 1. LogDirectory if explicitly set (set by test runner from test results file path)
+				// 2. HELIX_WORKITEM_UPLOAD_ROOT environment variable
+				// 3. Temp directory as fallback
+				var logDir = LogDirectory;
+				if (string.IsNullOrEmpty(logDir))
+				{
+					logDir = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT");
+				}
+				if (string.IsNullOrEmpty(logDir))
+				{
+					logDir = Path.GetTempPath();
+				}
+				
 				var logFile = Path.Combine(logDir, "CaptureHelper.log");
 				File.AppendAllText(logFile, logMessage + Environment.NewLine);
 			}
