@@ -3,9 +3,10 @@ using Google.Android.Material.Slider;
 
 namespace Microsoft.Maui.Handlers;
 
-internal partial class MaterialSliderHandler : ViewHandler<ISlider, Slider>
+// TODO: Material3: Make it public in .NET 11
+internal partial class SliderHandler2 : ViewHandler<ISlider, Slider>
 {
-    public static PropertyMapper<ISlider, MaterialSliderHandler> Mapper =
+    public static PropertyMapper<ISlider, SliderHandler2> Mapper =
             new(ViewMapper)
             {
                 [nameof(ISlider.Value)] = MapValue,
@@ -17,10 +18,10 @@ internal partial class MaterialSliderHandler : ViewHandler<ISlider, Slider>
                 [nameof(ISlider.ThumbImageSource)] = MapThumbImageSource,
             };
 
-    public static CommandMapper<ISlider, MaterialSliderHandler> CommandMapper =
+    public static CommandMapper<ISlider, SliderHandler2> CommandMapper =
             new(ViewCommandMapper);
 
-    public MaterialSliderHandler() : base(Mapper, CommandMapper)
+    public SliderHandler2() : base(Mapper, CommandMapper)
     {
     }
 
@@ -75,37 +76,37 @@ internal partial class MaterialSliderHandler : ViewHandler<ISlider, Slider>
         platformView.Touch -= Slider_Touch;
     }
 
-    public static void MapValue(MaterialSliderHandler handler, ISlider slider)
+    public static void MapValue(SliderHandler2 handler, ISlider slider)
     {
         handler.PlatformView?.UpdateValue(slider);
     }
 
-    public static void MapMinimum(MaterialSliderHandler handler, ISlider slider)
+    public static void MapMinimum(SliderHandler2 handler, ISlider slider)
     {
         handler.PlatformView?.UpdateMinimum(slider);
     }
 
-    public static void MapMaximum(MaterialSliderHandler handler, ISlider slider)
+    public static void MapMaximum(SliderHandler2 handler, ISlider slider)
     {
         handler.PlatformView?.UpdateMaximum(slider);
     }
 
-    public static void MapMinimumTrackColor(MaterialSliderHandler handler, ISlider slider)
+    public static void MapMinimumTrackColor(SliderHandler2 handler, ISlider slider)
     {
         handler.PlatformView?.UpdateMinimumTrackColor(slider);
     }
 
-    public static void MapMaximumTrackColor(MaterialSliderHandler handler, ISlider slider)
+    public static void MapMaximumTrackColor(SliderHandler2 handler, ISlider slider)
     {
         handler.PlatformView?.UpdateMaximumTrackColor(slider);
     }
 
-    public static void MapThumbColor(MaterialSliderHandler handler, ISlider slider)
+    public static void MapThumbColor(SliderHandler2 handler, ISlider slider)
     {
         handler.PlatformView?.UpdateThumbColor(slider);
     }
 
-    public static void MapThumbImageSource(MaterialSliderHandler handler, ISlider slider)
+    public static void MapThumbImageSource(SliderHandler2 handler, ISlider slider)
     {
         var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
 
