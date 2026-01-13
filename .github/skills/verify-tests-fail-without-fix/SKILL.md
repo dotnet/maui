@@ -1,43 +1,85 @@
 ---
 name: verify-tests-fail-without-fix
-description: Verifies UI tests catch the bug by checking tests FAIL without the fix and PASS with the fix. Requires fix files to be detected in the PR.
+description: Verifies UI tests catch the bug. Supports two modes - verify failure only (test creation) or full verification (test + fix validation).
 ---
 
 # Verify Tests Fail Without Fix
 
-Verifies UI tests actually catch the issue by running tests in two states:
+Verifies UI tests actually catch the issue. Supports two workflow modes:
+
+## Mode 1: Verify Failure Only (Test Creation)
+
+Use when **creating tests before writing a fix**:
+- Runs tests to verify they **FAIL** (proving they catch the bug)
+- No fix files required
+- Perfect for test-first development
+
+```bash
+# Auto-detect test filter from changed test files
+pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 -Platform android
+
+# With explicit test filter
+pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 -Platform ios -TestFilter "Issue33356"
+```
+
+## Mode 2: Full Verification (Fix Validation)
+
+Use when **validating both tests and fix**:
 1. **Without fix** - tests should FAIL (bug is present)
 2. **With fix** - tests should PASS (bug is fixed)
 
-## Usage
-
 ```bash
-# Auto-detects everything - just specify platform (recommended for skill invocation)
-pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 -Platform android -RequireFullVerification
+# Auto-detect everything (recommended)
+pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 -Platform android
 
 # With explicit test filter
-pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 -Platform ios -TestFilter "Issue33356" -RequireFullVerification
+pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 -Platform ios -TestFilter "Issue33356"
+
+# Enforce full verification (error if no fix files)
+pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 -Platform android -RequireFullVerification
 ```
 
 ## Requirements
 
-This skill requires:
-- **Fix files** in the PR (non-test code changes)
-- **Test files** in the PR (to verify against)
+**Verify Failure Only Mode:**
+- Test files in the PR (or working directory)
 
-If no fix files are detected, the skill will error out with troubleshooting guidance.
+**Full Verification Mode:**
+- Test files in the PR
+- Fix files in the PR (non-test code changes)
+
+The script auto-detects which mode to use based on whether fix files are present.
 
 ## Expected Output
 
+**Verify Failure Only Mode:**
 ```
 ╔═══════════════════════════════════════════════════════════╗
 ║              VERIFICATION PASSED ✅                       ║
 ╠═══════════════════════════════════════════════════════════╣
-║  - FAIL without fix (as expected)                         ║
+║  Tests FAILED as expected!                                ║
+║  This proves the tests correctly reproduce the bug.       ║
+╚═══════════════════════════════════════════════════════════╝
+```
+
+**Full Verification Mode:**
+```
+╔═══════════════════════════════════════════════════════════╗
+║ Tests pass (in failure-only mode) | Tests don't detect the bug | Review test assertions, update test |
+| Tests pass without fix (full mode) | Tests don't detect the bug | Review test assertions, update test |
+| Tests fail with fix (full mode) | Fix doesn't work or test is wrong | Review fix implementation |
+| No fix files with `-RequireFullVerification` | No non-test files changed or base branch detection failed | Use `-FixFiles` or `-BaseBranch` explicitly, or remove `-RequireFullVerification`
 ║  - PASS with fix (as expected)                            ║
 ╚═══════════════════════════════════════════════════════════╝
 ```
 
+**Verify Failure Only Mode (no fix files):**
+1. Fetches base branch from origin (if available)
+2. Auto-detects test classes from changed test files
+3. Runs tests (should FAIL to prove they catch the bug)
+4. Reports result
+
+**Full Verification Mode (fix files detected):**
 ## Troubleshooting
 
 | Problem | Cause | Solution |
