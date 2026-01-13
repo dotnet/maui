@@ -15,8 +15,4 @@ public class PlatformLogger {
     public void v(String message) {
         Log.v(tag, message);
     }
-
-    public void w(String message, Throwable throwable) {
-        Log.w(tag, message, throwable);
-    }
 }

@@ -2,7 +2,6 @@ package com.microsoft.maui;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.ContextWrapper;
 import android.content.res.ColorStateList;
 import android.graphics.BlendMode;
 import android.graphics.BlendModeColorFilter;
@@ -66,46 +65,6 @@ import java.util.Arrays;
 import java.util.List;
 
 public class PlatformInterop {
-    private static final PlatformLogger logger = new PlatformLogger("PlatformInterop");
-
-    /**
-     * Checks if the given context is destroyed.
-     * This is similar to the C# IsDestroyed extension method in ContextExtensions.cs
-     * @param context The context to check
-     * @return true if the context is destroyed, false otherwise
-     */
-    public static boolean isContextDestroyed(Context context) {
-        Activity activity = getActivity(context);
-        if (activity != null) {
-            if (activity.isFinishing() || activity.isDestroyed()) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Gets the Activity from a Context, similar to the C# GetActivity extension method.
-     * @param context The context to get the activity from
-     * @return The activity if found, null otherwise
-     */
-    static Activity getActivity(Context context) {
-        if (context == null) {
-            return null;
-        }
-
-        if (context instanceof Activity) {
-            return (Activity) context;
-        }
-
-        if (context instanceof ContextWrapper) {
-            Context baseContext = ((ContextWrapper) context).getBaseContext();
-            return getActivity(baseContext);
-        }
-
-        return null;
-    }
 
     public static void requestLayoutIfNeeded(View view) {
         
@@ -404,10 +363,6 @@ public class PlatformInterop {
     }
 
     public static void loadImageFromFile(Context context, String file, ImageLoaderCallback callback) {
-        if (isContextDestroyed(context)) {
-            callback.onComplete(false, null, null);
-            return;
-        }
         RequestBuilder<Drawable> builder = Glide
             .with(context)
             .load(file);
@@ -415,10 +370,6 @@ public class PlatformInterop {
     }
 
     public static void loadImageFromUri(Context context, String uri, boolean cachingEnabled, ImageLoaderCallback callback) {
-        if (isContextDestroyed(context)) {
-            callback.onComplete(false, null, null);
-            return;
-        }
         Uri androidUri = Uri.parse(uri);
         if (androidUri == null) {
             callback.onComplete(false, null, null);
@@ -431,10 +382,6 @@ public class PlatformInterop {
     }
 
     public static void loadImageFromStream(Context context, InputStream inputStream, ImageLoaderCallback callback) {
-        if (isContextDestroyed(context)) {
-            callback.onComplete(false, null, null);
-            return;
-        }
         RequestBuilder<Drawable> builder = Glide
             .with(context)
             .load(inputStream);
@@ -442,10 +389,6 @@ public class PlatformInterop {
     }
 
     public static void loadImageFromFont(Context context, @ColorInt int color, String glyph, Typeface typeface, float textSize, ImageLoaderCallback callback) {
-        if (isContextDestroyed(context)) {
-            callback.onComplete(false, null, null);
-            return;
-        }
         FontModel fontModel = new FontModel(color, glyph, textSize, typeface);
         RequestBuilder<Drawable> builder = Glide
             .with(context)

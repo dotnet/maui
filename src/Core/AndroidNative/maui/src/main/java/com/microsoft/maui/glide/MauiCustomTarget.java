@@ -1,6 +1,8 @@
 package com.microsoft.maui.glide;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Looper;
@@ -14,7 +16,6 @@ import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
 
 import com.microsoft.maui.ImageLoaderCallback;
-import com.microsoft.maui.PlatformInterop;
 import com.microsoft.maui.PlatformLogger;
 import com.microsoft.maui.glide.MauiTarget;
 
@@ -81,11 +82,35 @@ public class MauiCustomTarget extends CustomTarget<Drawable> implements MauiTarg
         handler.post(runnable);
     }
 
+    private static boolean isContextDestroyed(Context context) {
+        Activity activity = getActivity(context);
+        if (activity != null) {
+            if (activity.isFinishing() || activity.isDestroyed()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static Activity getActivity(Context context) {
+        if (context == null) {
+            return null;
+        }
+        if (context instanceof Activity) {
+            return (Activity) context;
+        }
+        if (context instanceof ContextWrapper) {
+            Context baseContext = ((ContextWrapper) context).getBaseContext();
+            return getActivity(baseContext);
+        }
+        return null;
+    }
+
     private void clear() {
         // TODO: it looks like no one is really disposing the result on C# side
         // we must fix it there to release the Glide cache entry properly
         post(() -> {
-            if (PlatformInterop.isContextDestroyed(context)) {
+            if (isContextDestroyed(context)) {
                 if (logger.isVerboseLoggable) {
                     logger.v("clear() skipped - context destroyed: " + resourceLogIdentifier);
                 }
