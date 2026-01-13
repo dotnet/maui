@@ -45,6 +45,14 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var handler = CreateHandler<LayoutHandler>(layout);
 				await image.WaitUntilLoaded();
+				
+				// Diagnostic logging for Helix
+				var platformView = handler.ToPlatform();
+				System.Diagnostics.Debug.WriteLine($"[ImageTest] Layout size: {layout.Width}x{layout.Height}");
+				System.Diagnostics.Debug.WriteLine($"[ImageTest] Image size: {image.Width}x{image.Height}");
+				System.Diagnostics.Debug.WriteLine($"[ImageTest] Platform view size: {platformView.ActualWidth}x{platformView.ActualHeight}");
+				System.Diagnostics.Debug.WriteLine($"[ImageTest] Image.IsLoaded: {image.IsLoaded}");
+				
 				await handler.ToPlatform().AssertContainsColor(Colors.Red, MauiContext);
 			});
 		}
