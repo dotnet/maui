@@ -73,7 +73,7 @@ public static partial class AppHostBuilderExtensions
 #if ANDROID
 		if (RuntimeFeature.IsMaterial3Enabled)
 		{
-			handlersCollection.AddHandler<Slider, MaterialSliderHandler>();
+			handlersCollection.AddHandler<Slider, SliderHandler2>();
 		}
 		else
 		{
