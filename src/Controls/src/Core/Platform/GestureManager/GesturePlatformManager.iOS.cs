@@ -381,7 +381,7 @@ namespace Microsoft.Maui.Controls.Platform
 				return new List<UIGestureRecognizer?> { uiRecognizer };
 			}
 
-			if (longPressRecognizer is not LongPressGestureRecognizer longPressRecognizer)
+			if (recognizer is not LongPressGestureRecognizer longPressRecognizer)
 				return null;
 
 			var longPressUiRecognizer = CreateLongPressRecognizer(r =>
