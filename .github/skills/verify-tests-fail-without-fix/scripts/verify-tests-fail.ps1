@@ -1,16 +1,22 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-    Verifies that UI tests catch the bug by running tests without and with the fix.
+    Verifies that UI tests catch the bug. Auto-detects mode based on whether fix files exist.
 
 .DESCRIPTION
-    This script verifies that tests actually catch the issue by:
-    1. Reverting fix files to base branch
-    2. Running tests WITHOUT fix (should FAIL)
-    3. Restoring fix files
-    4. Running tests WITH fix (should PASS)
+    This script verifies that tests actually catch the issue. It auto-detects the mode:
     
-    Fix files are auto-detected from the git diff (non-test files that changed).
+    **If fix files exist (non-test code changed):**
+    - Full verification mode
+    - Reverts fix files to base branch
+    - Runs tests WITHOUT fix (should FAIL)
+    - Restores fix files
+    - Runs tests WITH fix (should PASS)
+    
+    **If only test files changed (no fix files):**
+    - Verify failure only mode
+    - Runs tests once expecting them to FAIL
+    - Confirms tests reproduce the bug
 
 .PARAMETER Platform
     Target platform: "android" or "ios"
@@ -29,10 +35,6 @@
 .PARAMETER OutputDir
     Directory to store results (default: "CustomAgentLogsTmp/TestValidation")
 
-.PARAMETER RequireFullVerification
-    If set, the script will fail if it cannot run full verification mode
-    (i.e., if no fix files are detected). Used by the skill to ensure proper validation.
-
 .EXAMPLE
     # Auto-detect everything - simplest usage
     ./verify-tests-fail.ps1 -Platform android
@@ -40,10 +42,6 @@
 .EXAMPLE
     # Specify test filter, auto-detect mode and fix files
     ./verify-tests-fail.ps1 -Platform android -TestFilter "Issue32030"
-
-.EXAMPLE
-    # Require full verification (fail if no fix files detected)
-    ./verify-tests-fail.ps1 -Platform android -RequireFullVerification
 
 .EXAMPLE
     # Specify everything explicitly
@@ -66,10 +64,7 @@ param(
     [string]$BaseBranch,
 
     [Parameter(Mandatory = $false)]
-    [string]$OutputDir = "CustomAgentLogsTmp/TestValidation",
-
-    [Parameter(Mandatory = $false)]
-    [switch]$RequireFullVerification
+    [string]$OutputDir = "CustomAgentLogsTmp/TestValidation"
 )
 
 $ErrorActionPreference = "Stop"
@@ -110,32 +105,19 @@ function Test-IsTestFile {
 $BaseBranchDetected = $BaseBranch
 if (-not $BaseBranchDetected) {
     $currentBranch = git rev-parse --abbrev-ref HEAD 2>$null
+    $remote = git config "branch.$currentBranch.remote" 2>$null
+    if (-not $remote) { $remote = "origin" }
     
-    # Try gh pr view without --repo first (works for PRs from forks to upstream)
-    $BaseBranchDetected = gh pr view --json baseRefName --jq '.baseRefName' 2>$null
-    
-    # If that fails, try with the origin remote's repo
-    if (-not $BaseBranchDetected) {
-        $remoteUrl = git remote get-url origin 2>$null
-        $repo = $null
-        if ($remoteUrl -match "github\.com[:/]([^/]+/[^/]+?)(\.git)?$") {
-            $repo = $matches[1]
-        }
-        
-        if ($repo) {
-            $BaseBranchDetected = gh pr view $currentBranch --repo $repo --json baseRefName --jq '.baseRefName' 2>$null
-        }
+    $remoteUrl = git remote get-url $remote 2>$null
+    $repo = $null
+    if ($remoteUrl -match "github\.com[:/]([^/]+/[^/]+?)(\.git)?$") {
+        $repo = $matches[1]
     }
-}
-
-# Fetch the base branch from origin to ensure we have the latest
-# This ensures accurate diff detection even if local branch is stale
-if ($BaseBranchDetected) {
-    Write-Host "ℹ️  Fetching latest $BaseBranchDetected from origin..." -ForegroundColor Cyan
-    git fetch origin "${BaseBranchDetected}:${BaseBranchDetected}" 2>$null
-    if ($LASTEXITCODE -ne 0) {
-        # If direct fetch fails (e.g., currently on that branch), just fetch the ref
-        git fetch origin $BaseBranchDetected 2>$null
+    
+    if ($repo) {
+        $BaseBranchDetected = gh pr view $currentBranch --repo $repo --json baseRefName --jq '.baseRefName' 2>$null
+    } else {
+        $BaseBranchDetected = gh pr view --json baseRefName --jq '.baseRefName' 2>$null
     }
 }
 
@@ -143,6 +125,9 @@ if ($BaseBranchDetected) {
 $DetectedFixFiles = @()
 if ($BaseBranchDetected) {
     $changedFiles = git diff $BaseBranchDetected HEAD --name-only 2>$null
+    if ($LASTEXITCODE -ne 0) {
+        $changedFiles = git diff "origin/$BaseBranchDetected" HEAD --name-only 2>$null
+    }
     
     if ($changedFiles) {
         foreach ($file in $changedFiles) {
@@ -158,38 +143,73 @@ if ($FixFiles -and $FixFiles.Count -gt 0) {
     $DetectedFixFiles = $FixFiles
 }
 
-# Error if no fix files detected and RequireFullVerification is set
-if ($DetectedFixFiles.Count -eq 0 -and $RequireFullVerification) {
-    Write-Host ""
-    Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Red
-    Write-Host "║         ERROR: NO FIX FILES DETECTED                      ║" -ForegroundColor Red
-    Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Red
-    Write-Host "║  Full verification mode required but no fix files found.  ║" -ForegroundColor Red
-    Write-Host "║                                                           ║" -ForegroundColor Red
-    Write-Host "║  Possible causes:                                         ║" -ForegroundColor Red
-    Write-Host "║  - Base branch detection failed                           ║" -ForegroundColor Red
-    Write-Host "║  - No non-test files changed in this PR                   ║" -ForegroundColor Red
-    Write-Host "║  - Git fetch failed to update local branch                ║" -ForegroundColor Red
-    Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Red
-    Write-Host ""
-    Write-Host "Debug info:" -ForegroundColor Yellow
-    Write-Host "  Base branch detected: '$BaseBranchDetected'" -ForegroundColor Yellow
-    Write-Host "  Current branch: $(git rev-parse --abbrev-ref HEAD)" -ForegroundColor Yellow
-    Write-Host ""
-    Write-Host "To fix, try one of:" -ForegroundColor Cyan
-    Write-Host "  1. Specify fix files explicitly: -FixFiles @('path/to/fix.cs')" -ForegroundColor White
-    Write-Host "  2. Specify base branch: -BaseBranch 'main'" -ForegroundColor White
-    Write-Host "  3. Ensure you're on a PR branch with non-test file changes" -ForegroundColor White
-    exit 1
-}
+# Determine mode based on whether we have fix files
+$VerifyFailureOnlyMode = ($DetectedFixFiles.Count -eq 0)
 
-# If no fix files and not requiring full verification, warn but continue
-if ($DetectedFixFiles.Count -eq 0) {
+# ============================================================
+# VERIFY FAILURE ONLY MODE (no fix files detected)
+# ============================================================
+if ($VerifyFailureOnlyMode) {
     Write-Host ""
-    Write-Host "⚠️  Warning: No fix files detected. Cannot run full verification." -ForegroundColor Yellow
-    Write-Host "   Use -RequireFullVerification to enforce full verification mode." -ForegroundColor Yellow
-    Write-Host "   Use -FixFiles to specify fix files explicitly." -ForegroundColor Yellow
-    exit 0
+    Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
+    Write-Host "║         VERIFY FAILURE ONLY MODE                          ║" -ForegroundColor Cyan
+    Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Cyan
+    Write-Host "║  No fix files detected - verifying tests FAIL             ║" -ForegroundColor Cyan
+    Write-Host "║  (Only test files changed, or new tests created)          ║" -ForegroundColor Cyan
+    Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+    Write-Host ""
+    
+    if (-not $TestFilter) {
+        Write-Host "❌ -TestFilter is required when no fix files are detected" -ForegroundColor Red
+        Write-Host "   Example: -TestFilter 'Issue33356'" -ForegroundColor Yellow
+        exit 1
+    }
+    
+    # Create output directory
+    $OutputPath = Join-Path $RepoRoot $OutputDir
+    New-Item -ItemType Directory -Force -Path $OutputPath | Out-Null
+    $FailureOnlyLog = Join-Path $OutputPath "verify-failure-only.log"
+    
+    Write-Host "Platform: $Platform" -ForegroundColor White
+    Write-Host "TestFilter: $TestFilter" -ForegroundColor White
+    Write-Host ""
+    Write-Host "Running tests (expecting FAILURE)..." -ForegroundColor Yellow
+    
+    # Run the test
+    $buildScript = Join-Path $RepoRoot ".github/scripts/BuildAndRunHostApp.ps1"
+    & $buildScript -Platform $Platform -TestFilter $TestFilter -Rebuild 2>&1 | Tee-Object -FilePath $FailureOnlyLog
+    
+    # Check test result
+    $testOutputLog = Join-Path $RepoRoot "CustomAgentLogsTmp/UITests/test-output.log"
+    $testFailed = $false
+    
+    if (Test-Path $testOutputLog) {
+        $content = Get-Content $testOutputLog -Raw
+        if ($content -match "Failed:\s*(\d+)" -and [int]$matches[1] -gt 0) {
+            $testFailed = $true
+        }
+    }
+    
+    Write-Host ""
+    if ($testFailed) {
+        Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Green
+        Write-Host "║         VERIFICATION PASSED ✅                            ║" -ForegroundColor Green
+        Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Green
+        Write-Host "║  Tests FAILED as expected (bug is reproduced)             ║" -ForegroundColor Green
+        Write-Host "║                                                           ║" -ForegroundColor Green
+        Write-Host "║  Next: Implement a fix, then rerun to verify tests pass.  ║" -ForegroundColor Green
+        Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Green
+        exit 0
+    } else {
+        Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Red
+        Write-Host "║         VERIFICATION FAILED ❌                            ║" -ForegroundColor Red
+        Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Red
+        Write-Host "║  Tests PASSED (unexpected - bug not reproduced)           ║" -ForegroundColor Red
+        Write-Host "║                                                           ║" -ForegroundColor Red
+        Write-Host "║  Your test is wrong. Fix it and rerun.                    ║" -ForegroundColor Red
+        Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Red
+        exit 1
+    }
 }
 
 # ============================================================

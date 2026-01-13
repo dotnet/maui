@@ -1,34 +1,37 @@
 ---
 name: verify-tests-fail-without-fix
-description: Verifies UI tests catch the bug by checking tests FAIL without the fix and PASS with the fix. Requires fix files to be detected in the PR.
+description: Verifies UI tests catch the bug. Auto-detects mode based on git diff - if fix files exist, verifies FAIL without fix and PASS with fix. If only test files, verifies tests FAIL.
 ---
 
 # Verify Tests Fail Without Fix
 
-Verifies UI tests actually catch the issue by running tests in two states:
-1. **Without fix** - tests should FAIL (bug is present)
-2. **With fix** - tests should PASS (bug is fixed)
+Verifies UI tests actually catch the issue. **Mode is auto-detected based on git diff.**
 
 ## Usage
 
 ```bash
-# Auto-detects everything - just specify platform (recommended for skill invocation)
-pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 -Platform android -RequireFullVerification
+# Auto-detects everything - just specify platform
+pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 -Platform android
 
 # With explicit test filter
-pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 -Platform ios -TestFilter "Issue33356" -RequireFullVerification
+pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 -Platform ios -TestFilter "Issue33356"
 ```
 
-## Requirements
+## Auto-Detection
 
-This skill requires:
-- **Fix files** in the PR (non-test code changes)
-- **Test files** in the PR (to verify against)
+The script automatically determines the mode:
 
-If no fix files are detected, the skill will error out with troubleshooting guidance.
+| Changed Files | Mode | Behavior |
+|---------------|------|----------|
+| Fix files + test files | Full verification | FAIL without fix, PASS with fix |
+| Only test files | Verify failure only | Tests must FAIL (reproduce bug) |
+
+**Fix files** = any changed file NOT in test directories
+**Test files** = files in `TestCases.*` directories
 
 ## Expected Output
 
+**Full mode (fix files detected):**
 ```
 ╔═══════════════════════════════════════════════════════════╗
 ║              VERIFICATION PASSED ✅                       ║
@@ -38,39 +41,49 @@ If no fix files are detected, the skill will error out with troubleshooting guid
 ╚═══════════════════════════════════════════════════════════╝
 ```
 
+**Verify failure only (no fix files):**
+```
+╔═══════════════════════════════════════════════════════════╗
+║         VERIFICATION PASSED ✅                            ║
+╠═══════════════════════════════════════════════════════════╣
+║  Tests FAILED as expected (bug is reproduced)             ║
+╚═══════════════════════════════════════════════════════════╝
+```
+
 ## Troubleshooting
 
 | Problem | Cause | Solution |
 |---------|-------|----------|
-| No fix files detected | Base branch detection failed or no non-test files changed | Use `-FixFiles` or `-BaseBranch` explicitly |
 | Tests pass without fix | Tests don't detect the bug | Review test assertions, update test |
-| Tests fail with fix | Fix doesn't work or test is wrong | Review fix implementation |
+| Tests pass (no fix files) | **Test is wrong** | Review test vs issue description, fix test |
 | App crashes | Duplicate issue numbers, XAML error | Check device logs |
 | Element not found | Wrong AutomationId, app crashed | Verify IDs match |
 
 ## What It Does
 
-1. Fetches base branch from origin to ensure accurate diff
-2. Auto-detects fix files (non-test code) from git diff
-3. Auto-detects test classes from `TestCases.Shared.Tests/*.cs`
-4. Reverts fix files to base branch
-5. Runs tests (should FAIL without fix)
-6. Restores fix files
-7. Runs tests (should PASS with fix)
-8. Reports result
+**Full mode:**
+1. Auto-detects fix files (non-test code) from git diff
+2. Auto-detects test classes from `TestCases.Shared.Tests/*.cs`
+3. Reverts fix files to base branch
+4. Runs tests (should FAIL without fix)
+5. Restores fix files
+6. Runs tests (should PASS with fix)
+7. Reports result
+
+**Verify Failure Only mode:**
+1. Runs tests once
+2. Verifies they FAIL (bug reproduced)
+3. Reports result
 
 ## Optional Parameters
 
 ```bash
-# Require full verification (fail if no fix files detected) - recommended
--RequireFullVerification
-
 # Explicit test filter
 -TestFilter "Issue32030|ButtonUITests"
 
 # Explicit fix files  
 -FixFiles @("src/Core/src/File.cs")
 
-# Explicit base branch
--BaseBranch "main"
+# Verify failure only (no fix exists yet)
+-VerifyFailureOnly
 ```
