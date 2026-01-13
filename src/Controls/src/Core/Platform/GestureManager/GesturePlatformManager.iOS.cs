@@ -851,6 +851,19 @@ namespace Microsoft.Maui.Controls.Platform
 					return true;
 				}
 
+				// ✅ FIX: Don't allow parent gestures to intercept touches on UICollectionView
+				// These controls have their own native selection mechanisms that should not be blocked
+				// Check if the touch view or any of its parents is a collection/table view
+				var currentView = touch.View;
+				while (currentView != null && currentView != platformView)
+				{
+					if (currentView is UICollectionView)
+					{
+						return false; // Don't allow parent gesture to claim this touch
+					}
+					currentView = currentView.Superview;
+				}
+
 				// If the touch is coming from the UIView our handler is wrapping (e.g., if it's  
 				// wrapping a UIView which already has a gesture recognizer), then we should let it through
 				// (This goes for children of that control as well)
