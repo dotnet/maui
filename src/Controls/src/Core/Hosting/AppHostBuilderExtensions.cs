@@ -73,7 +73,7 @@ public static partial class AppHostBuilderExtensions
 #if ANDROID
 		if (RuntimeFeature.IsMaterial3Enabled)
 		{
-			handlersCollection.AddHandler<RadioButton, MaterialRadioButtonHandler>();
+			handlersCollection.AddHandler<RadioButton, RadioButtonHandler2>();
 		}
 		else
 		{

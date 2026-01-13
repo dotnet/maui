@@ -5,7 +5,8 @@ using Google.Android.Material.RadioButton;
 
 namespace Microsoft.Maui.Handlers
 {
-	internal class MaterialRadioButtonHandler : RadioButtonHandler
+	// TODO: Material3 - make it public in .net 11
+	internal class RadioButtonHandler2 : RadioButtonHandler
 	{
 		protected override MaterialRadioButton CreatePlatformView()
 		{
