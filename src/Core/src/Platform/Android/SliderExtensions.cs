@@ -13,6 +13,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateMinimum(this SeekBar seekBar, ISlider slider) => UpdateValue(seekBar, slider);
 
+		// TODO: Material3: Make it public in .NET 11
 		internal static void UpdateMinimum(this MSlider mSlider, ISlider slider)
 		{
 			mSlider.ValueFrom = (float)slider.Minimum;
@@ -20,6 +21,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateMaximum(this SeekBar seekBar, ISlider slider) => UpdateValue(seekBar, slider);
 
+		// TODO: Material3: Make it public in .NET 11
 		internal static void UpdateMaximum(this MSlider mSlider, ISlider slider)
 		{
 			mSlider.ValueTo = (float)slider.Maximum;
@@ -34,6 +36,7 @@ namespace Microsoft.Maui.Platform
 			seekBar.Progress = (int)((value - min) / (max - min) * PlatformMaxValue);
 		}
 
+		// TODO: Material3: Make it public in .NET 11
 		internal static void UpdateValue(this MSlider mSlider, ISlider slider)
 		{
 			if ((float)slider.Value != mSlider.Value)
@@ -51,6 +54,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		// TODO: Material3: Make it public in .NET 11
 		internal static void UpdateMinimumTrackColor(this MSlider mSlider, ISlider slider)
 		{
 			if (slider.MinimumTrackColor is not null)
@@ -68,6 +72,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		// TODO: Material3: Make it public in .NET 11
 		internal static void UpdateMaximumTrackColor(this MSlider mSlider, ISlider slider)
 		{
 			if (slider.MaximumTrackColor is not null)
@@ -79,6 +84,7 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateThumbColor(this SeekBar seekBar, ISlider slider) =>
 			seekBar.Thumb?.SetColorFilter(slider.ThumbColor, FilterMode.SrcIn);
 
+		// TODO: Material3: Make it public in .NET 11
 		internal static void UpdateThumbColor(this MSlider mSlider, ISlider slider)
 		{
 			if (slider.ThumbImageSource is not null && slider.Handler is not null)
@@ -129,6 +135,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		// TODO: Material3: Make it public in .NET 11
 		internal static async Task UpdateThumbImageSourceAsync(this MSlider mSlider, ISlider slider,
    IImageSourceServiceProvider provider)
 		{
