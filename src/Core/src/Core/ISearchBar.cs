@@ -13,6 +13,11 @@ namespace Microsoft.Maui
 		Color CancelButtonColor { get; }
 
 		/// <summary>
+		/// Gets a value indicating whether the cancel button should be displayed.
+		/// </summary>
+		bool ShowsCancelButton { get; }
+
+		/// <summary>
 		/// Gets the color of the Search icon.
 		/// </summary>
 		Color SearchIconColor { get; }

@@ -112,6 +112,11 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateCancelButtonColor(searchBar);
 		}
 
+		public static void MapShowsCancelButton(ISearchBarHandler handler, ISearchBar searchBar)
+		{
+			// ShowsCancelButton is iOS-specific behavior
+		}
+
 		internal static void MapSearchIconColor(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.PlatformView?.UpdateSearchIconColor(searchBar);
