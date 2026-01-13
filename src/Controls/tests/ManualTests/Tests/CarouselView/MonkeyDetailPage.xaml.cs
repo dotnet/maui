@@ -3,12 +3,19 @@ using System.Collections.ObjectModel;
 
 namespace Microsoft.Maui.ManualTests.Tests.CarouselView;
 
+/// <summary>
+/// Detail page for displaying monkey information with optional delete functionality.
+/// Provides two constructor overloads: one for read-only viewing and one that enables deletion from a collection.
+/// </summary>
 public partial class MonkeyDetailPage : ContentPage
 {
 	private Monkey _monkey;
 	private ObservableCollection<Monkey> _monkeys;
 
-	// Constructor for viewing only (no delete)
+	/// <summary>
+	/// Constructor for viewing only (no delete)
+	/// </summary>
+	/// <param name="monkey">The monkey to display.</param>
 	public MonkeyDetailPage(Monkey monkey)
 	{
 		InitializeComponent();
@@ -18,7 +25,11 @@ public partial class MonkeyDetailPage : ContentPage
 		deleteButton.IsVisible = false;
 	}
 
-	// Constructor for viewing with delete option
+	/// <summary>
+	/// Constructor for viewing with delete option
+	/// </summary>
+	/// <param name="monkey">The monkey to display.</param>
+	/// <param name="monkeys">The collection of monkeys from which the displayed monkey can be deleted.</param>
 	public MonkeyDetailPage(Monkey monkey, ObservableCollection<Monkey> monkeys)
 	{
 		InitializeComponent();
