@@ -44,7 +44,7 @@
   <ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'ios'">
     <_AppleBindingFilesForIntellisense
       Include="$(MauiRootDirectory)artifacts\obj\$(ProjectName)\$(Configuration)\$(TargetFramework)\iOS\**\*.cs"
-      Link="Platform\MaciOS\%(RecursiveDir)%(Filename)%(Extension)"
+      Link="Platform\iOS\generated\%(RecursiveDir)%(Filename)%(Extension)"
       Condition="Exists('$(MauiRootDirectory)artifacts\obj\$(ProjectName)\$(Configuration)\$(TargetFramework)\iOS\ObjCRuntime\Messaging.g.cs')" />
   </ItemGroup>
 
@@ -52,7 +52,7 @@
   <ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'maccatalyst'">
     <_AppleBindingFilesForIntellisense
       Include="$(MauiRootDirectory)artifacts\obj\$(ProjectName)\$(Configuration)\$(TargetFramework)\MacCatalyst\**\*.cs"
-      Link="Platform\MaciOS\%(RecursiveDir)%(Filename)%(Extension)"
+      Link="Platform\MacCatalyst\generated\%(RecursiveDir)%(Filename)%(Extension)"
       Condition="Exists('$(MauiRootDirectory)artifacts\obj\$(ProjectName)\$(Configuration)\$(TargetFramework)\MacCatalyst\ObjCRuntime\Messaging.g.cs')" />
   </ItemGroup>
 
@@ -60,7 +60,7 @@
   <ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'macos'">
     <_AppleBindingFilesForIntellisense
       Include="$(MauiRootDirectory)artifacts\obj\$(ProjectName)\$(Configuration)\$(TargetFramework)\macOS\**\*.cs"
-      Link="Platform\MaciOS\%(RecursiveDir)%(Filename)%(Extension)"
+      Link="Platform\Mac\generated\%(RecursiveDir)%(Filename)%(Extension)"
       Condition="Exists('$(MauiRootDirectory)artifacts\obj\$(ProjectName)\$(Configuration)\$(TargetFramework)\macOS\ObjCRuntime\Messaging.g.cs')" />
   </ItemGroup>
 
