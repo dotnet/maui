@@ -47,6 +47,21 @@
 		<AndroidAotProfile Include="$(MSBuildThisFileDirectory)maui-blazor.aotprofile" />
 	</ItemGroup>
 
+	<!--
+		Enable Composite Partial R2R for Android CoreCLR Release builds.
+	-->
+	<PropertyGroup Condition="'$(TargetPlatformIdentifier)' == 'android' and '$(UseMonoRuntime)' == 'false' and '$(Configuration)' == 'Release' and '$(MauiEnableAndroidR2R)' != 'false'">
+		<PublishReadyToRun>true</PublishReadyToRun>
+    <PublishReadyToRunComposite>true</PublishReadyToRunComposite>
+    <!-- TODO: Marshal methods generation isn't supported for Android R2R builds https://github.com/dotnet/android/issues/10062 -->
+    <AndroidEnableMarshalMethods>false</AndroidEnableMarshalMethods>
+    <PublishReadyToRunCrossgen2ExtraArgs>$(PublishReadyToRunCrossgen2ExtraArgs) --partial</PublishReadyToRunCrossgen2ExtraArgs>
+	</PropertyGroup>
+
+	<ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'android' and '$(UseMonoRuntime)' == 'false' and '$(PublishReadyToRun)' == 'true'">
+		<_ReadyToRunPgoFiles Include="$(MSBuildThisFileDirectory)mibc\android\**\*.mibc" />
+	</ItemGroup>
+
 	<!-- Check Tasks ABI and other validations -->
 	<PropertyGroup>
 		<_MauiTargetsImportedAgain Condition="'$(_MauiTargetsImported)'=='True'">True</_MauiTargetsImportedAgain>
