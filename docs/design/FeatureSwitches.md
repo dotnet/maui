@@ -6,6 +6,7 @@ The following switches are toggled for applications running on Mono for `TrimMod
 
 | MSBuild Property Name | AppContext Setting | Description |
 |-|-|-|
+| MauiXamlInflator | N/A | Controls how XAML files are processed. See [XAML Inflator](#mauixamlinflator) section below. |
 | MauiEnableIVisualAssemblyScanning | Microsoft.Maui.RuntimeFeature.IsIVisualAssemblyScanningEnabled | When enabled, MAUI will scan assemblies for types implementing `IVisual` and for `[assembly: Visual(...)]` attributes and register these types. |
 | MauiShellSearchResultsRendererDisplayMemberNameSupported | Microsoft.Maui.RuntimeFeature.IsShellSearchResultsRendererDisplayMemberNameSupported | When disabled, it is necessary to always set `ItemTemplate` of any `SearchHandler`. Displaying search results through `DisplayMemberName` will not work. |
 | MauiQueryPropertyAttributeSupport | Microsoft.Maui.RuntimeFeature.IsQueryPropertyAttributeSupported | When disabled, the `[QueryProperty(...)]` attributes won't be used to set values to properties when navigating. |
@@ -17,6 +18,38 @@ The following switches are toggled for applications running on Mono for `TrimMod
 | EnableDiagnostics | Microsoft.Maui.RuntimeFeature.EnableDiagnostics | Enables diagnostic for the running app |
 | EnableMauiDiagnostics | Microsoft.Maui.RuntimeFeature.EnableMauiDiagnostics | Enables MAUI specific diagnostics, like VisualDiagnostics and BindingDiagnostics. Defaults to EnableDiagnostics |
 | _EnableMauiAspire | Microsoft.Maui.RuntimeFeature.EnableMauiAspire | When enabled, MAUI Aspire integration features are available. **Warning**: Using Aspire outside of Debug configuration may introduce performance and security risks in production. |
+
+## MauiXamlInflator
+
+Controls how XAML files are processed and compiled. Starting with .NET 11, the default value is `SourceGen`.
+
+**Available Values:**
+- `SourceGen` (default) - XAML is compiled to C# at build time using a source generator. This provides the best performance and debugging experience, including full XAML Hot Reload support.
+- `Runtime` - XAML is inflated at runtime. This has negative performance impact and is deprecated.
+- `XamlC` - XAML is compiled using the XamlC IL weaver after compilation. This prevents some debugging capabilities like XAML Hot Reload and is deprecated.
+
+**Example:**
+```xml
+<PropertyGroup>
+  <!-- Use default (SourceGen) - recommended -->
+  <!-- No need to specify MauiXamlInflator -->
+  
+  <!-- Or explicitly set deprecated inflators (will produce warning MAUI1001) -->
+  <MauiXamlInflator>Runtime</MauiXamlInflator>
+</PropertyGroup>
+```
+
+**Per-file override:**
+You can override the inflator for individual XAML files using item metadata:
+```xml
+<ItemGroup>
+  <MauiXaml Update="MyPage.xaml" Inflator="Runtime" />
+</ItemGroup>
+```
+
+**Breaking Change in .NET 11:**
+- The `[XamlCompilation]` attribute is now obsolete with `error: true`. Use MSBuild properties or item metadata instead.
+- The default inflator changed from configuration-based (Runtime in Debug, XamlC in Release) to `SourceGen` for all configurations.
 
 ## MauiEnableIVisualAssemblyScanning
 
