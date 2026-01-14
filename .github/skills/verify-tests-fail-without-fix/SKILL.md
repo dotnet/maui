@@ -64,13 +64,14 @@ The script auto-detects which mode to use based on whether fix files are present
 **Full Verification Mode:**
 ```
 ╔═══════════════════════════════════════════════════════════╗
-║ Tests pass (in failure-only mode) | Tests don't detect the bug | Review test assertions, update test |
-| Tests pass without fix (full mode) | Tests don't detect the bug | Review test assertions, update test |
-| Tests fail with fix (full mode) | Fix doesn't work or test is wrong | Review fix implementation |
-| No fix files with `-RequireFullVerification` | No non-test files changed or base branch detection failed | Use `-FixFiles` or `-BaseBranch` explicitly, or remove `-RequireFullVerification`
+║              VERIFICATION PASSED ✅                       ║
+╠═══════════════════════════════════════════════════════════╣
+║  - FAIL without fix (as expected)                         ║
 ║  - PASS with fix (as expected)                            ║
 ╚═══════════════════════════════════════════════════════════╝
 ```
+
+## What It Does
 
 **Verify Failure Only Mode (no fix files):**
 1. Fetches base branch from origin (if available)
@@ -79,6 +80,15 @@ The script auto-detects which mode to use based on whether fix files are present
 4. Reports result
 
 **Full Verification Mode (fix files detected):**
+1. Fetches base branch from origin to ensure accurate diff
+2. Auto-detects fix files (non-test code) from git diff
+3. Auto-detects test classes from `TestCases.Shared.Tests/*.cs`
+4. Reverts fix files to base branch
+5. Runs tests (should FAIL without fix)
+6. Restores fix files
+7. Runs tests (should PASS with fix)
+8. Reports result
+
 ## Troubleshooting
 
 | Problem | Cause | Solution |
@@ -88,17 +98,6 @@ The script auto-detects which mode to use based on whether fix files are present
 | Tests fail with fix | Fix doesn't work or test is wrong | Review fix implementation |
 | App crashes | Duplicate issue numbers, XAML error | Check device logs |
 | Element not found | Wrong AutomationId, app crashed | Verify IDs match |
-
-## What It Does
-
-1. Fetches base branch from origin to ensure accurate diff
-2. Auto-detects fix files (non-test code) from git diff
-3. Auto-detects test classes from `TestCases.Shared.Tests/*.cs`
-4. Reverts fix files to base branch
-5. Runs tests (should FAIL without fix)
-6. Restores fix files
-7. Runs tests (should PASS with fix)
-8. Reports result
 
 ## Optional Parameters
 
