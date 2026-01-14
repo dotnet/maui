@@ -71,11 +71,12 @@
 		<ItemGroup>
 			<_CopyItems Include="nuget\buildTransitive\**" Exclude="nuget\buildTransitive\*;nuget\buildTransitive\netstandard2.0\**" />
 			<_CopyItems Include="nuget\buildTransitive\netstandard2.0\**" />
-			<_CopyItems Include="$(MibcOptimizationDataDir)**\*.mibc" Condition="'$(MibcOptimizationDataDir)' != '' and Exists('$(MibcOptimizationDataDir)')" />
 			<_CopyItems Include="$(TargetDir)*.dll" Exclude="$(TargetDir)System.*.dll;$(TargetDir)Microsoft.Build.*" />
 			<_CopyItems Include="$(TargetDir)*.pdb" Exclude="$(TargetDir)System.*.pdb;$(TargetDir)Microsoft.Build.*" />
+			<_MibcCopyItems Include="$(MibcOptimizationDataDir)**\*.mibc" Condition="'$(MibcOptimizationDataDir)' != '' and Exists('$(MibcOptimizationDataDir)')" />
 		</ItemGroup>
 		<Copy SourceFiles="@(_CopyItems)" DestinationFolder="$(_MauiBuildTasksLocation)%(RecursiveDir)" ContinueOnError="true" Retries="3" RetryDelayMilliseconds="1000" />
+		<Copy SourceFiles="@(_MibcCopyItems)" DestinationFolder="$(_MauiBuildTasksLocation)mibc\%(RecursiveDir)" ContinueOnError="true" Retries="3" RetryDelayMilliseconds="1000" Condition="'@(_MibcCopyItems)' != ''" />
 	</Target>
 
 	<ItemGroup>
