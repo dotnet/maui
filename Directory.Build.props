@@ -3,16 +3,6 @@
   <Import Condition="'$(EnvironmentBuildPropsImported)' != 'True'" Project="$(MSBuildThisFileDirectory)eng\Environment.Build.props" />
 
   <PropertyGroup>
-    <!-- 
-      Keep backward compatibility with XamlC, XamlCompilationAttribute, and xaml-comp processing instruction
-      in SourceGen and Build.Tasks projects (which target netstandard2.0 and can't use NET12_0_OR_GREATER).
-      This flag will be removed in NET12 when [XamlCompilation] becomes a no-op.
-      -->
-    <_MauiXamlSourceGenBackCompat>true</_MauiXamlSourceGenBackCompat>
-    <DefineConstants Condition=" '$(_MauiXamlSourceGenBackCompat)' == 'true' ">$(DefineConstants);_MAUIXAML_SOURCEGEN_BACKCOMPAT</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <!-- Detailed trimmer warnings, if present -->
     <TrimmerSingleWarn>false</TrimmerSingleWarn>
