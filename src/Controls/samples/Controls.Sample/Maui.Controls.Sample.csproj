@@ -12,6 +12,8 @@
     <IsPackable>false</IsPackable>
     <NoWarn>$(NoWarn);CA1416;CS0618;XC0618;XC0022</NoWarn>
     <Nullable>enable</Nullable>
+    <!-- This sample project uses deprecated APIs for demonstration - use Runtime inflation -->
+    <MauiXamlInflator>Runtime</MauiXamlInflator>
     <!-- Disable multi-RID builds to workaround a parallel build issue -->
     <RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst'))">maccatalyst-x64</RuntimeIdentifier>
     <RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst')) and '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'arm64'">maccatalyst-arm64</RuntimeIdentifier>
@@ -91,5 +93,6 @@
   <Import Condition=" '$(UseMaui)' != 'true' " Project="..\..\..\BlazorWebView\src\Maui\build\Microsoft.AspNetCore.Components.WebView.Maui.targets" />
 
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
+
 
 </Project>
