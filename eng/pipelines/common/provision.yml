@@ -192,6 +192,17 @@ steps:
       continueOnError: true
       timeoutInMinutes: 30
 
+    # Also install iOS 18.5 simulator for integration tests that require it
+    - script: |
+        echo "Installing iOS 18.5 simulator runtime for integration tests..."
+        sudo xcodebuild -downloadPlatform iOS -buildVersion 18.5 || {
+          echo "Warning: Failed to install iOS 18.5 simulator. Tests requiring this version may fail."
+        }
+      displayName: Install iOS 18.5 Simulator (for integration tests)
+      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+      continueOnError: true
+      timeoutInMinutes: 30
+
 # Provision Additional Software
 - ${{ if or(eq(variables['System.TeamProject'], 'DevDiv'), ne(parameters.skipProvisionator, true)) }}:
   # Prepare macOS
