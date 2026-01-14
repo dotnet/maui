@@ -320,12 +320,14 @@ static class CodeBehindCodeWriter
 			return false;
 		}
 
+#if !NET12_0_OR_GREATER
 		// if the following xml processing instruction is present
 		//
 		// <?xaml-comp compile="true" ?>
 		//
 		// we will generate a xaml.g.cs file with the default ctor calling InitializeComponent, and a XamlCompilation attribute
 		var hasXamlCompilationProcessingInstruction = GetXamlCompilationProcessingInstruction(root.OwnerDocument);
+#endif
 
 		var rootClass = root.Attributes["Class", XamlParser.X2006Uri]
 					 ?? root.Attributes["Class", XamlParser.X2009Uri];
@@ -334,8 +336,12 @@ static class CodeBehindCodeWriter
 		{
 			XmlnsHelper.ParseXmlns(rootClass.Value, out rootType, out rootClrNamespace, out _, out _);
 		}
+#if !NET12_0_OR_GREATER
 		else if (hasXamlCompilationProcessingInstruction
 				&& (root.NamespaceURI == XamlParser.MauiUri || root.NamespaceURI == XamlParser.MauiGlobalUri))
+#else
+		else if (root.NamespaceURI == XamlParser.MauiUri || root.NamespaceURI == XamlParser.MauiGlobalUri)
+#endif
 		{
 			//make sure the base type can be resolved. if not, don't consider this as xaml, and move away
 			var typeArgs = GetAttributeValue(root, "TypeArguments", XamlParser.X2006Uri, XamlParser.X2009Uri);
@@ -376,6 +382,7 @@ static class CodeBehindCodeWriter
 		return true;
 	}
 
+#if !NET12_0_OR_GREATER
 	//true, unless explicitely false
 	static bool GetXamlCompilationProcessingInstruction(XmlDocument xmlDoc)
 	{
@@ -389,6 +396,7 @@ static class CodeBehindCodeWriter
 
 		return true;
 	}
+#endif
 
 	internal static string GetWarningDisable(XmlDocument xmlDoc)
 	{
