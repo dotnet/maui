@@ -593,7 +593,6 @@ namespace Microsoft.Maui.Controls.Platform
 				return false;
 			}
 
-			// Different views (parent/child relationship) or same view with matching requirements - allow simultaneous recognition
 			return true;
 		}
 
