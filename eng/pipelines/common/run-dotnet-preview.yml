@@ -55,7 +55,7 @@ steps:
         if ([System.Convert]::ToBoolean("${{ parameters.useExitCodeForErrors }}") -and $LASTEXITCODE -ne 0) {
             Write-Host "##vso[task.logissue type=error]Test suite had $LASTEXITCODE failure(s)."
             Write-Host "##vso[task.complete result=Failed;]"
-            exit 0
+            exit $LASTEXITCODE
         }
     displayName: ${{ parameters.displayName }}
     condition: ${{ parameters.condition }}

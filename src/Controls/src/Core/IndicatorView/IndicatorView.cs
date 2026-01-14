@@ -10,7 +10,14 @@ using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/IndicatorView.xml" path="Type[@FullName='Microsoft.Maui.Controls.IndicatorView']/Docs/*" />
+	/// <summary>
+	/// A view that displays a visual indicator representing the position within a collection of items.
+	/// </summary>
+	/// <remarks>
+	/// <see cref="IndicatorView"/> is commonly used with <see cref="CarouselView"/> to display dots or other shapes
+	/// indicating the current position and total number of items. The indicators automatically update when
+	/// the position changes.
+	/// </remarks>
 	[ContentProperty(nameof(IndicatorLayout))]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class IndicatorView : TemplatedView, ITemplatedIndicatorView
@@ -53,86 +60,157 @@ namespace Microsoft.Maui.Controls
 
 		static readonly BindableProperty IndicatorLayoutProperty = BindableProperty.Create(nameof(IndicatorLayout), typeof(IBindableLayout), typeof(IndicatorView), null, propertyChanged: TemplateUtilities.OnContentChanged);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/IndicatorView.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="IndicatorView"/> class.
+		/// </summary>
 		public IndicatorView() { }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/IndicatorView.xml" path="//Member[@MemberName='IndicatorsShape']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the shape of the indicators.
+		/// </summary>
+		/// <value>An <see cref="IndicatorShape"/> value. The default is <see cref="IndicatorShape.Circle"/>.</value>
 		public IndicatorShape IndicatorsShape
 		{
 			get { return (IndicatorShape)GetValue(IndicatorsShapeProperty); }
 			set { SetValue(IndicatorsShapeProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/IndicatorView.xml" path="//Member[@MemberName='IndicatorLayout']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the layout that arranges the indicator views.
+		/// </summary>
+		/// <value>An <see cref="IBindableLayout"/> that contains the indicator views.</value>
+		/// <remarks>
+		/// This property is set automatically when <see cref="IndicatorTemplate"/> is specified.
+		/// Use this as the content property when defining custom indicator layouts in XAML.
+		/// </remarks>
 		public IBindableLayout IndicatorLayout
 		{
 			get => (IBindableLayout)GetValue(IndicatorLayoutProperty);
 			set => SetValue(IndicatorLayoutProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/IndicatorView.xml" path="//Member[@MemberName='Position']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the index of the currently selected indicator.
+		/// </summary>
+		/// <value>The zero-based index of the current position. The default is 0.</value>
+		/// <remarks>
+		/// This property is typically bound to a <see cref="CarouselView.Position"/> property to
+		/// keep the indicator view synchronized with the carousel position.
+		/// </remarks>
 		public int Position
 		{
 			get => (int)GetValue(PositionProperty);
 			set => SetValue(PositionProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/IndicatorView.xml" path="//Member[@MemberName='Count']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the total number of indicators to display.
+		/// </summary>
+		/// <value>The total number of indicators. The default is 0.</value>
+		/// <remarks>
+		/// This is automatically set when <see cref="ItemsSource"/> is provided.
+		/// You can also set this manually when not using an items source.
+		/// </remarks>
 		public int Count
 		{
 			get => (int)GetValue(CountProperty);
 			set => SetValue(CountProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/IndicatorView.xml" path="//Member[@MemberName='MaximumVisible']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the maximum number of indicators to display at once.
+		/// </summary>
+		/// <value>The maximum number of visible indicators. The default is <see cref="int.MaxValue"/>.</value>
+		/// <remarks>
+		/// When the total count exceeds this value, only the most relevant indicators around
+		/// the current position are shown. Useful for large collections to avoid cluttering the UI.
+		/// </remarks>
 		public int MaximumVisible
 		{
 			get => (int)GetValue(MaximumVisibleProperty);
 			set => SetValue(MaximumVisibleProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/IndicatorView.xml" path="//Member[@MemberName='IndicatorTemplate']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the data template used to display each indicator.
+		/// </summary>
+		/// <value>A <see cref="DataTemplate"/> that defines the appearance of each indicator, or <see langword="null"/> to use the default indicator style.</value>
+		/// <remarks>
+		/// When set, this allows full customization of indicator appearance. When <see langword="null"/>,
+		/// indicators are rendered using <see cref="IndicatorsShape"/>, <see cref="IndicatorSize"/>, and color properties.
+		/// </remarks>
 		public DataTemplate IndicatorTemplate
 		{
 			get => (DataTemplate)GetValue(IndicatorTemplateProperty);
 			set => SetValue(IndicatorTemplateProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/IndicatorView.xml" path="//Member[@MemberName='HideSingle']/Docs/*" />
+		/// <summary>
+		/// Gets or sets a value indicating whether the indicator view is hidden when only one item exists.
+		/// </summary>
+		/// <value><see langword="true"/> to hide the indicator view when there is only one item; otherwise, <see langword="false"/>. The default is <see langword="true"/>.</value>
+		/// <remarks>
+		/// When enabled and <see cref="Count"/> is 1 or less, the indicator view will not be displayed.
+		/// </remarks>
 		public bool HideSingle
 		{
 			get => (bool)GetValue(HideSingleProperty);
 			set => SetValue(HideSingleProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/IndicatorView.xml" path="//Member[@MemberName='IndicatorColor']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the color of unselected indicators.
+		/// </summary>
+		/// <value>A <see cref="Color"/> for unselected indicators. The default is <see cref="Colors.LightGrey"/>.</value>
 		public Color IndicatorColor
 		{
 			get => (Color)GetValue(IndicatorColorProperty);
 			set => SetValue(IndicatorColorProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/IndicatorView.xml" path="//Member[@MemberName='SelectedIndicatorColor']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the color of the selected indicator.
+		/// </summary>
+		/// <value>A <see cref="Color"/> for the selected indicator. The default is <see cref="Colors.Black"/>.</value>
 		public Color SelectedIndicatorColor
 		{
 			get => (Color)GetValue(SelectedIndicatorColorProperty);
 			set => SetValue(SelectedIndicatorColorProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/IndicatorView.xml" path="//Member[@MemberName='IndicatorSize']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the size of each indicator.
+		/// </summary>
+		/// <value>The size of each indicator in device-independent units. The default is 6.0.</value>
+		/// <remarks>
+		/// This value determines both the width and height of each indicator when using the default rendering.
+		/// </remarks>
 		public double IndicatorSize
 		{
 			get => (double)GetValue(IndicatorSizeProperty);
 			set => SetValue(IndicatorSizeProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/IndicatorView.xml" path="//Member[@MemberName='ItemsSource']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the collection of items for which indicators will be displayed.
+		/// </summary>
+		/// <value>An <see cref="IEnumerable"/> collection of items, or <see langword="null"/>.</value>
+		/// <remarks>
+		/// When set, the <see cref="Count"/> property is automatically updated based on the number of items.
+		/// Typically bound to the same collection as a <see cref="CarouselView"/>'s ItemsSource property.
+		/// </remarks>
 		public IEnumerable ItemsSource
 		{
 			get => (IEnumerable)GetValue(ItemsSourceProperty);
 			set => SetValue(ItemsSourceProperty, value);
 		}
 
+		/// <summary>
+		/// Measures the indicator view to determine its desired size.
+		/// </summary>
+		/// <param name="widthConstraint">The available width.</param>
+		/// <param name="heightConstraint">The available height.</param>
+		/// <returns>A <see cref="SizeRequest"/> indicating the desired size of the indicator view.</returns>
 		[Obsolete("Use MeasureOverride instead")]
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
