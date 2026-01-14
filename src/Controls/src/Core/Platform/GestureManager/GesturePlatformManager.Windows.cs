@@ -452,7 +452,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			foreach (SwipeGestureRecognizer recognizer in view.GestureRecognizers.GetGesturesFor<SwipeGestureRecognizer>())
 			{
-				((ISwipeGestureController)recognizer).SendSwipe(view, e.Delta.Translation.X + e.Cumulative.Translation.X, e.Delta.Translation.Y + e.Cumulative.Translation.Y);
+				((ISwipeGestureController)recognizer).SendSwipe(view, e.Cumulative.Translation.X, e.Cumulative.Translation.Y);
 			}
 		}
 
@@ -471,7 +471,7 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					recognizer.SendPanStarted(view, PanGestureRecognizer.CurrentId.Value);
 				}
-				recognizer.SendPan(view, e.Delta.Translation.X + e.Cumulative.Translation.X, e.Delta.Translation.Y + e.Cumulative.Translation.Y, PanGestureRecognizer.CurrentId.Value);
+				recognizer.SendPan(view, e.Cumulative.Translation.X, e.Cumulative.Translation.Y, PanGestureRecognizer.CurrentId.Value);
 			}
 			_wasPanGestureStartedSent = true;
 		}
