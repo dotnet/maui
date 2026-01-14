@@ -103,7 +103,7 @@
 	<!-- Warn when using deprecated Runtime or XamlC inflator -->
 	<Warning 
 		Code="MAUI1001"
-		Text="MauiXamlInflator is set to '$(MauiXamlInflator)'. The 'Runtime' and 'XamlC' inflators are deprecated. Consider using 'SourceGen' for optimal performance and debugging experience." 
+		Text="MauiXamlInflator is set to '$(MauiXamlInflator)'. The 'Runtime' and 'XamlC' inflators are deprecated. Consider removing the MauiXamlInflator property to use the default 'SourceGen' inflator for optimal performance and debugging experience." 
 		Condition="'$(MauiXamlInflator)' != '' And !$([System.String]::new('$(MauiXamlInflator)').ToLowerInvariant().Contains('sourcegen'))" />
   </Target>
 
