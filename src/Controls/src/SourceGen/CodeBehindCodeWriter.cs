@@ -107,8 +107,10 @@ static class CodeBehindCodeWriter
 		sb.AppendLine("{");
 		sb.AppendLine($"\t[global::Microsoft.Maui.Controls.Xaml.XamlFilePath(\"{projItem.RelativePath?.Replace("\\", "\\\\")}\")]");
 
+#pragma warning disable CS0618 // XamlCompilation is deprecated but still generated for backcompat
 		if (!addXamlCompilationAttribute && (xamlInflators & XamlInflator.XamlC) == 0 && !alreadyHasXamlCompilationAttribute)
-			sb.AppendLine($"\t[global::Microsoft.Maui.Controls.Xaml.XamlCompilation(global::Microsoft.Maui.Controls.Xaml.XamlCompilationOptions.Skip)]");
+			sb.AppendLine($"\t#pragma warning disable CS0618\n\t[global::Microsoft.Maui.Controls.Xaml.XamlCompilation(global::Microsoft.Maui.Controls.Xaml.XamlCompilationOptions.Skip)]\n\t#pragma warning restore CS0618");
+#pragma warning restore CS0618
 
 		if (hideFromIntellisense)
 		{
