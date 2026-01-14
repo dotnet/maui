@@ -4,8 +4,10 @@ using System.Runtime.CompilerServices;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
-#if !_MAUIXAML_SOURCEGEN_BACKCOMPAT
-	[Obsolete("Specify xaml inflator and other options using msbuild metadata on MauiXaml items in your .csproj: <MauiXaml Update=\"YourFile.xaml\" Inflator=\"XamlC\" />", error: true)]
+#if NET12_0_OR_GREATER
+	[Obsolete("XamlCompilationOptions is no longer used. Specify xaml inflator using msbuild metadata on MauiXaml items in your .csproj: <MauiXaml Update=\"YourFile.xaml\" Inflator=\"XamlC\" />", error: true)]
+#elif NET11_0_OR_GREATER
+	[Obsolete("XamlCompilationOptions is deprecated. Specify xaml inflator using msbuild metadata on MauiXaml items in your .csproj: <MauiXaml Update=\"YourFile.xaml\" Inflator=\"XamlC\" />")]
 #endif
 	[Flags]
 	public enum XamlCompilationOptions
@@ -14,8 +16,10 @@ namespace Microsoft.Maui.Controls.Xaml
 		Compile = XamlInflator.XamlC,
 	}
 
-#if !_MAUIXAML_SOURCEGEN_BACKCOMPAT
-	[Obsolete("Specify xaml inflator and other options using msbuild metadata on MauiXaml items in your .csproj: <MauiXaml Update=\"YourFile.xaml\" Inflator=\"XamlC\" />", error: true)]
+#if NET12_0_OR_GREATER
+	[Obsolete("XamlCompilationAttribute is no longer used. Specify xaml inflator using msbuild metadata on MauiXaml items in your .csproj: <MauiXaml Update=\"YourFile.xaml\" Inflator=\"XamlC\" />", error: true)]
+#elif NET11_0_OR_GREATER
+	[Obsolete("XamlCompilationAttribute is deprecated. Specify xaml inflator using msbuild metadata on MauiXaml items in your .csproj: <MauiXaml Update=\"YourFile.xaml\" Inflator=\"XamlC\" />")]
 #endif
 	[AttributeUsage(AttributeTargets.Assembly | AttributeTargets.Module | AttributeTargets.Class, Inherited = false)]
 	public sealed class XamlCompilationAttribute : Attribute
@@ -28,7 +32,7 @@ namespace Microsoft.Maui.Controls.Xaml
 		public XamlCompilationOptions XamlCompilationOptions { get; set; }
 	}
 
-#if _MAUIXAML_SOURCEGEN_BACKCOMPAT
+#if !NET12_0_OR_GREATER
 	static class XamlCExtensions
 	{
 		public static bool IsCompiled(this Type type)
