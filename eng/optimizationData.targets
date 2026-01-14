@@ -9,7 +9,7 @@
     <!-- TODO: Use android MIBC profile once available. -->
     <MIBCPackageDef Include="optimization.linux-arm64.MIBC.Runtime"
                     Version="$(optimizationlinuxarm64MIBCRuntimePackageVersion)"
-                    TargetPlatform="android/arm64" />
+                    TargetPlatform="android" />
 
     <!-- Restore all MIBC packages (distinct by identity) -->
     <PackageDownload Include="@(MIBCPackageDef->Distinct())" Version="[%(Version)]" />
