@@ -20,10 +20,10 @@ namespace Microsoft.Maui.Essentials.AI;
 /// instances of this class, each with its own underlying <see cref="NLEmbedding"/>.
 /// </para>
 /// </remarks>
-[SupportedOSPlatform("tvos13.0")]
 [SupportedOSPlatform("ios13.0")]
-[SupportedOSPlatform("maccatalyst")]
-[SupportedOSPlatform("macos")]
+[SupportedOSPlatform("maccatalyst13.1")]
+[SupportedOSPlatform("macos10.15")]
+[SupportedOSPlatform("tvos13.0")]
 public class NLEmbeddingGenerator : IEmbeddingGenerator<string, Embedding<float>>
 {
 	/// <summary>Semaphore to ensure thread-safe access to the embedding generator.</summary>

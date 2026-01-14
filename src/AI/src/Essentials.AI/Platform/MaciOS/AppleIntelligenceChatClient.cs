@@ -10,10 +10,10 @@ namespace Microsoft.Maui.Essentials.AI;
 /// <summary>
 /// Provides an <see cref="IChatClient"/> implementation based on native Apple Intelligence APIs
 /// </summary>
-[SupportedOSPlatform("tvos26.0")]
 [SupportedOSPlatform("ios26.0")]
 [SupportedOSPlatform("maccatalyst26.0")]
 [SupportedOSPlatform("macos26.0")]
+[SupportedOSPlatform("tvos26.0")]
 public sealed class AppleIntelligenceChatClient : IChatClient
 {
 	// static AppleIntelligenceChatClient()
