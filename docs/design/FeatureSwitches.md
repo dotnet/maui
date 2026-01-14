@@ -49,10 +49,10 @@ You can override the inflator for individual XAML files using item metadata:
 
 **Changes in .NET 11:**
 - The default inflator changed from configuration-based (Runtime in Debug, XamlC in Release) to `SourceGen` for all configurations.
-- The `[XamlCompilation]` attribute is still supported but will be deprecated in .NET 12.
+- The `[XamlCompilation]` attribute is deprecated (produces warning) but still functional.
 
-**Breaking Change in .NET 12:**
-- The `[XamlCompilation]` attribute will be obsolete with `error: true`. Use MSBuild properties or item metadata instead.
+**Changes in .NET 12:**
+- The `[XamlCompilation]` attribute will be obsolete with `error: true` and becomes a no-op. Use MSBuild properties or item metadata instead.
 
 ## MauiEnableIVisualAssemblyScanning
 
