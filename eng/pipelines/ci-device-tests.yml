@@ -70,6 +70,8 @@ parameters:
   default:
     name: MAUI
     vmImage: MAUI
+    demands:
+      - Agent.OSArchitecture -equals ARM64
 
 - name: targetFrameworkVersions
   type: object
