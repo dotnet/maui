@@ -1,5 +1,6 @@
 namespace Microsoft.Maui.Essentials.AI;
 
+[Native]
 internal enum ChatClientError : long
 {
 	EmptyMessages = 1,
@@ -8,6 +9,7 @@ internal enum ChatClientError : long
 	Cancelled = 4
 }
 
+[Native]
 internal enum ChatRoleNative : long
 {
 	User = 1,
@@ -16,6 +18,7 @@ internal enum ChatRoleNative : long
 	Tool = 4,
 }
 
+[Native]
 internal enum ResponseUpdateTypeNative : long
 {
 	Content = 0,

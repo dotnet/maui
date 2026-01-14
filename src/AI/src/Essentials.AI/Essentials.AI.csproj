@@ -32,30 +32,14 @@
     <!-- <PackageReference Include="Xamarin.Google.MLKit.GenAI.Prompt" /> -->
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'ios' Or '$(TargetPlatformIdentifier)' == 'maccatalyst' Or '$(TargetPlatformIdentifier)' == 'macos' ">
-    <XcodeProject Include="..\AppleNative\EssentialsAI.xcodeproj">
+    <XcodeProject Include="..\AppleNative\EssentialsAI\EssentialsAI.xcodeproj">
       <SchemeName>EssentialsAI</SchemeName>
     </XcodeProject>
-    <ObjcBindingApiDefinition Include="Platform\MaciOS\ApiDefinitions.cs" />
-    <ObjcBindingCoreSource Include="Platform\MaciOS\StructsAndEnums.cs" />
+    <ObjcBindingApiDefinition Include="..\AppleNative\ApiDefinitions.cs" />
+    <ObjcBindingCoreSource Include="..\AppleNative\StructsAndEnums.cs" />
   </ItemGroup>
   <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
+  <Import Project="$(MauiSrcDirectory)AppleBindings.targets" />
   <Import Project="$(MauiSrcDirectory)Workload\Shared\LibraryPacks.targets" />
-
-  <!-- Some helpers for Intellisense on local runs -->
-  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'ios'">
-    <_FilesUsedForIntellisense Include="..\..\..\..\artifacts\obj\Essentials.AI\$(Configuration)\$(TargetFramework)\iOS\**\*.cs" Link="Platform\MaciOS\%(RecursiveDir)%(Filename)%(Extension)" Condition="Exists('..\..\..\..\artifacts\obj\Essentials.AI\$(Configuration)\$(TargetFramework)\iOS\ObjCRuntime\Messaging.g.cs')" />
-  </ItemGroup>
-  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'maccatalyst'">
-    <_FilesUsedForIntellisense Include="..\..\..\..\artifacts\obj\Essentials.AI\$(Configuration)\$(TargetFramework)\MacCatalyst\**\*.cs" Link="Platform\MaciOS\%(RecursiveDir)%(Filename)%(Extension)" Condition="Exists('..\..\..\..\artifacts\obj\Essentials.AI\$(Configuration)\$(TargetFramework)\MacCatalyst\ObjCRuntime\Messaging.g.cs')" />
-  </ItemGroup>
-  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'ios' Or '$(TargetPlatformIdentifier)' == 'maccatalyst' Or '$(TargetPlatformIdentifier)' == 'macos' ">
-    <_FilesUsedForIntellisense Include="Platform\MaciOS\StructsAndEnums.cs" />
-    <Compile Include="@(_FilesUsedForIntellisense)" Condition="'$(CI)' != 'true' and '$(TF_BUILD)' != 'true'" />
-  </ItemGroup>
-  <Target Name="RemoveGeneratedFiles" BeforeTargets="_CollectGeneratedSources" Condition=" '$(TargetPlatformIdentifier)' == 'ios' Or '$(TargetPlatformIdentifier)' == 'maccatalyst' Or '$(TargetPlatformIdentifier)' == 'macos' ">
-    <ItemGroup>
-      <Compile Remove="@(_FilesUsedForIntellisense)" />
-    </ItemGroup>
-  </Target>
 
 </Project>

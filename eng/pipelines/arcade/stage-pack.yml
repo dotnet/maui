@@ -115,6 +115,13 @@ stages:
           - ${{ each pair in step }}:
               ${{ pair.key }}: ${{ pair.value }}
 
+        # Download Mac native binaries built on macOS
+        - task: ${{ parameters.publishTaskPrefix }}DownloadPipelineArtifact@2
+          displayName: Download Mac Native Binaries
+          inputs:
+            artifact: MacNativeArtifacts
+            path: '$(Build.SourcesDirectory)/artifacts/bin'
+
         # Run on public pipeline
         - ${{ if not(parameters.enableMicrobuild) }}:
           - script: $(_buildScript) -restore -pack -publish $(_PublishArgs) -configuration $(_BuildConfig) /bl:$(Build.Arcade.LogsPath)/$(_BuildConfig)/pack.binlog $(_OfficialBuildIdArgs)
