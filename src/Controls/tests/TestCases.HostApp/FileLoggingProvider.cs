@@ -4,9 +4,9 @@ namespace Maui.Controls.Sample;
 
 /// <summary>
 /// A simple file-based logging provider for capturing ILogger output during UI tests.
-/// Enabled when MAUI_ENABLE_FILE_LOGGING environment variable is set to "true".
+/// Enabled when the MAUI_LOG_FILE environment variable is set to the desired log file path.
 /// </summary>
-public class FileLoggingProvider : ILoggerProvider
+internal class FileLoggingProvider : ILoggerProvider
 {
 	private readonly StreamWriter _writer;
 	private readonly LogLevel _minLevel;
@@ -14,6 +14,11 @@ public class FileLoggingProvider : ILoggerProvider
 	public FileLoggingProvider(string filePath, LogLevel minLevel = LogLevel.Debug)
 	{
 		_minLevel = minLevel;
+		var directory = Path.GetDirectoryName(filePath);
+		if (!string.IsNullOrEmpty(directory))
+		{
+			Directory.CreateDirectory(directory);
+		}
 		_writer = new StreamWriter(filePath, append: false) { AutoFlush = true };
 		_writer.WriteLine($"=== MAUI HostApp File Logger Started at {DateTime.Now} ===");
 		_writer.WriteLine($"Log file: {filePath}");
@@ -32,7 +37,7 @@ public class FileLoggingProvider : ILoggerProvider
 	}
 }
 
-public class FileLogger : ILogger
+internal class FileLogger : ILogger
 {
 	private readonly string _categoryName;
 	private readonly StreamWriter _writer;
@@ -79,7 +84,7 @@ public class FileLogger : ILogger
 			}
 		}
 
-		// Also write to Console.WriteLine for backward compatibility
+		// Also write to console for local debugging visibility
 		Console.WriteLine(logLine);
 		if (exception != null)
 		{
