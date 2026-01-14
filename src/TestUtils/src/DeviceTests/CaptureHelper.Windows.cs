@@ -19,6 +19,50 @@ namespace Microsoft.Maui.DeviceTests
 		/// </summary>
 		public static string? LogDirectory { get; set; }
 
+		/// <summary>
+		/// Log a message to a file that will be uploaded as a Helix artifact.
+		/// Use this for diagnostic logging in tests that need to be captured on Helix.
+		/// </summary>
+		/// <param name="tag">A short tag to identify the source (e.g., "WindowLeakTest")</param>
+		/// <param name="message">The message to log</param>
+		/// <param name="logFileName">Optional log file name (defaults to "TestDiagnostics.log")</param>
+		public static void LogTest(string tag, string message, string logFileName = "TestDiagnostics.log")
+		{
+			var timestamp = DateTime.Now.ToString("HH:mm:ss.fff");
+			var logMessage = $"[{timestamp}] [{tag}] {message}";
+			Console.WriteLine(logMessage);
+			System.Diagnostics.Debug.WriteLine(logMessage);
+			
+			try
+			{
+				var logDir = GetLogDirectory();
+				var logFile = Path.Combine(logDir, logFileName);
+				File.AppendAllText(logFile, logMessage + Environment.NewLine);
+			}
+			catch
+			{
+				// Ignore logging failures
+			}
+		}
+
+		static string GetLogDirectory()
+		{
+			// Priority order for log directory:
+			// 1. LogDirectory if explicitly set (set by test runner from test results file path)
+			// 2. HELIX_WORKITEM_UPLOAD_ROOT environment variable
+			// 3. Temp directory as fallback
+			var logDir = LogDirectory;
+			if (string.IsNullOrEmpty(logDir))
+			{
+				logDir = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT");
+			}
+			if (string.IsNullOrEmpty(logDir))
+			{
+				logDir = Path.GetTempPath();
+			}
+			return logDir;
+		}
+
 		// Log to a file that will be uploaded as a Helix artifact
 		static void Log(string message)
 		{
@@ -28,20 +72,7 @@ namespace Microsoft.Maui.DeviceTests
 			
 			try
 			{
-				// Priority order for log directory:
-				// 1. LogDirectory if explicitly set (set by test runner from test results file path)
-				// 2. HELIX_WORKITEM_UPLOAD_ROOT environment variable
-				// 3. Temp directory as fallback
-				var logDir = LogDirectory;
-				if (string.IsNullOrEmpty(logDir))
-				{
-					logDir = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT");
-				}
-				if (string.IsNullOrEmpty(logDir))
-				{
-					logDir = Path.GetTempPath();
-				}
-				
+				var logDir = GetLogDirectory();
 				var logFile = Path.Combine(logDir, "CaptureHelper.log");
 				File.AppendAllText(logFile, logMessage + Environment.NewLine);
 			}

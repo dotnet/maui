@@ -59,37 +59,62 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<IWindowHandler>(mainPage, async (handler) =>
 			{
+				CaptureHelper.LogTest("WindowLeakTest", "Starting MauiWinUIWindowDoesntLeak test");
+				
 				for (int i = 0; i < 3; i++)
 				{
 					var window = new MauiWinUIWindow();
 					weakReferences.Add(new WeakReference(window));
-					System.Diagnostics.Debug.WriteLine($"[WindowLeakTest] Created window {i}, IsAlive before activate: {weakReferences[i].IsAlive}");
+					CaptureHelper.LogTest("WindowLeakTest", $"Created window {i}, handle: {window.GetHashCode()}, IsAlive before activate: {weakReferences[i].IsAlive}");
 
 					window.Activate();
+					CaptureHelper.LogTest("WindowLeakTest", $"Window {i} activated");
 					await Task.Delay(100);
+					
 					window.Close();
-					System.Diagnostics.Debug.WriteLine($"[WindowLeakTest] Closed window {i}, IsAlive after close: {weakReferences[i].IsAlive}");
+					CaptureHelper.LogTest("WindowLeakTest", $"Window {i} closed, IsAlive after close: {weakReferences[i].IsAlive}");
 				}
 
-				System.Diagnostics.Debug.WriteLine($"[WindowLeakTest] Before GC - Alive count: {weakReferences.Count(r => r.IsAlive)}");
+				CaptureHelper.LogTest("WindowLeakTest", $"All windows created and closed. Before GC - Alive count: {weakReferences.Count(r => r.IsAlive)}");
 				
+				// Log WeakReference targets before GC
+				for (int i = 0; i < weakReferences.Count; i++)
+				{
+					var target = weakReferences[i].Target;
+					CaptureHelper.LogTest("WindowLeakTest", $"Window {i}: IsAlive={weakReferences[i].IsAlive}, Target is null={target == null}");
+				}
+				
+				CaptureHelper.LogTest("WindowLeakTest", "Running GC.Collect()");
 				GC.Collect();
 				GC.WaitForPendingFinalizers();
 				GC.WaitForFullGCComplete();
 				
-				// Additional GC passes for Helix VMs
-				for (int i = 0; i < 3; i++)
+				CaptureHelper.LogTest("WindowLeakTest", $"After first GC - Alive count: {weakReferences.Count(r => r.IsAlive)}");
+				
+				// Additional GC passes for Helix VMs - sometimes GC needs more passes
+				for (int gcPass = 0; gcPass < 5; gcPass++)
 				{
 					await Task.Delay(100);
-					GC.Collect();
+					GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true);
 					GC.WaitForPendingFinalizers();
+					GC.Collect();
+					
+					var aliveNow = weakReferences.Count(r => r.IsAlive);
+					CaptureHelper.LogTest("WindowLeakTest", $"After GC pass {gcPass + 1} - Alive count: {aliveNow}");
+					
+					if (aliveNow == 0)
+					{
+						CaptureHelper.LogTest("WindowLeakTest", $"All windows collected after {gcPass + 1} GC passes");
+						break;
+					}
 				}
 
 				var aliveCount = weakReferences.Count(r => r.IsAlive);
-				System.Diagnostics.Debug.WriteLine($"[WindowLeakTest] After GC - Alive count: {aliveCount}");
+				CaptureHelper.LogTest("WindowLeakTest", $"Final state - Alive count: {aliveCount}");
+				
 				for (int i = 0; i < weakReferences.Count; i++)
 				{
-					System.Diagnostics.Debug.WriteLine($"[WindowLeakTest] Window {i} IsAlive: {weakReferences[i].IsAlive}");
+					CaptureHelper.LogTest("WindowLeakTest", $"Window {i} IsAlive: {weakReferences[i].IsAlive}");
 				}
 
 				Assert.True(aliveCount == 0, $"Expected 0 alive windows but found {aliveCount}");
