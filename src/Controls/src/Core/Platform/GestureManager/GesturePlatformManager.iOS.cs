@@ -407,7 +407,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				if (o.View is UICollectionView)
 				{
-				//	return false;
+					return false;
 				}
 				
 				return true;
