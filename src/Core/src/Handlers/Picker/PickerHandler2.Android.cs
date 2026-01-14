@@ -106,7 +106,7 @@ internal partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPicker>
 
 	public static void MapTextColor(PickerHandler2 handler, IPicker picker)
 	{
-		handler.PlatformView.UpdateTextColor(picker.TextColor);
+		handler.PlatformView?.UpdateTextColor(picker.TextColor);
 	}
 
 	public static void MapVerticalTextAlignment(PickerHandler2 handler, IPicker picker)
@@ -254,8 +254,11 @@ internal partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPicker>
 			return;
 		}
 
+		// Clean up ALL event handlers before nulling the reference
+		_dialog.ShowEvent -= OnDialogShown;  // Remove ShowEvent handler to prevent leak
 		_dialog.DismissEvent -= OnDialogDismiss;
 		VirtualView.IsFocused = false;
+		VirtualView.IsOpen = false;
 		_dialog = null;
 	}
 
@@ -272,6 +275,6 @@ internal partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPicker>
 
 	static void Reload(PickerHandler2 handler)
 	{
-		handler.PlatformView.UpdatePicker(handler.VirtualView);
+		handler.PlatformView?.UpdatePicker(handler.VirtualView);
 	}
 }
