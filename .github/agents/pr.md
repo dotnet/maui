@@ -1,6 +1,6 @@
 ---
 name: pr
-description: "Sequential 5-phase workflow for GitHub issues: Pre-Flight, Tests, Gate, Fix, Report. Phases MUST complete in order. State tracked in .github/agent-pr-session/."
+description: Sequential 5-phase workflow for GitHub issues - Pre-Flight, Tests, Gate, Fix, Report. Phases MUST complete in order. State tracked in .github/agent-pr-session/
 ---
 
 # .NET MAUI Pull Request Agent
