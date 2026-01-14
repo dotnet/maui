@@ -18,7 +18,7 @@
         <Grid HeightRequest="250">
             <Image
                 Aspect="AspectFill"
-                Source="{Binding Source={x:Reference FeaturedControl}, Path=Landmark.BackgroundImageName, StringFormat='images/backgrounds/{0}.jpg'}" />
+                Source="{Binding Source={x:Reference FeaturedControl}, Path=Landmark.BackgroundImageName, StringFormat='Images/Backgrounds/{0}.jpg'}" />
             <BoxView 
                 Color="Black"
                 Opacity="0.3" />

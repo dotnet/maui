@@ -11,7 +11,7 @@
         <!-- Background Header Image -->
         <Image
             VerticalOptions="Start" HeightRequest="420" Aspect="AspectFill"
-            Source="{Binding Landmark.BackgroundImageName, StringFormat='images/backgrounds/{0}.jpg'}" />
+            Source="{Binding Landmark.BackgroundImageName, StringFormat='Images/Backgrounds/{0}.jpg'}" />
         
         <!-- Gradient overlay -->
         <BoxView VerticalOptions="Start" HeightRequest="420">
