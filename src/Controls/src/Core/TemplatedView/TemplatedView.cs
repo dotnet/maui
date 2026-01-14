@@ -136,6 +136,19 @@ namespace Microsoft.Maui.Controls
 
 		partial void OnApplyTemplateImpl();
 
+		Paint IView.Background
+		{
+			get
+			{
+				// When using ControlTemplate with explicit Background, don't auto-apply to container
+				// This matches WPF/UWP behavior and allows Background to be used exclusively in templates
+				if (ControlTemplate is not null && Background is not null)
+					return null;
+
+				return Background;
+			}
+		}
+
 		protected override void OnChildRemoved(Element child, int oldLogicalIndex)
 		{
 			base.OnChildRemoved(child, oldLogicalIndex);
