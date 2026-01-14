@@ -202,42 +202,10 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 				using (var assemblyDefinition = AssemblyDefinition.ReadAssembly(IOPath.GetFullPath(Assembly), readerParameters))
 				{
-#if _MAUIXAML_SOURCEGEN_BACKCOMPAT
-					CustomAttribute xamlcAttr = null;
-					if (assemblyDefinition.HasCustomAttributes &&
-						(xamlcAttr =
-							assemblyDefinition.CustomAttributes.FirstOrDefault(
-								ca => ca.AttributeType.FullName == "Microsoft.Maui.Controls.Xaml.XamlCompilationAttribute")) != null)
-					{
-						var options = (XamlCompilationOptions)xamlcAttr.ConstructorArguments[0].Value;
-						if ((options & XamlCompilationOptions.Skip) == XamlCompilationOptions.Skip)
-							skipassembly = true;
-						if ((options & XamlCompilationOptions.Compile) == XamlCompilationOptions.Compile)
-							skipassembly = false;
-					}
-
-					xamlcAttr = null;
-#endif
-
 					foreach (var module in assemblyDefinition.Modules)
 					{
 						var skipmodule = skipassembly;
 						(bool, XamlInflator)? moduleInflatorOptions = assemblyInflatorOptions;
-
-#if _MAUIXAML_SOURCEGEN_BACKCOMPAT
-						if (module.HasCustomAttributes &&
-							(xamlcAttr =
-								module.CustomAttributes.FirstOrDefault(
-									ca => ca.AttributeType.FullName == "Microsoft.Maui.Controls.Xaml.XamlCompilationAttribute")) != null)
-						{
-							var options = (XamlCompilationOptions)xamlcAttr.ConstructorArguments[0].Value;
-							if ((options & XamlCompilationOptions.Skip) == XamlCompilationOptions.Skip)
-								skipmodule = true;
-							if ((options & XamlCompilationOptions.Compile) == XamlCompilationOptions.Compile)
-								skipmodule = false;
-						}
-						xamlcAttr = null;
-#endif
 
 						LoggingHelper.LogMessage(Low, $"{new string(' ', 2)}Module: {module.Name}");
 						var resourcesToPrune = new List<EmbeddedResource>();
@@ -261,21 +229,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 							}
 							var skiptype = skipmodule;
 							(bool, XamlInflator)? typeInflatorOptions = moduleInflatorOptions;
-
-#if _MAUIXAML_SOURCEGEN_BACKCOMPAT
-							if (typeDef.HasCustomAttributes &&
-								(xamlcAttr =
-									typeDef.CustomAttributes.FirstOrDefault(
-										ca => ca.AttributeType.FullName == "Microsoft.Maui.Controls.Xaml.XamlCompilationAttribute")) != null)
-							{
-								var options = (XamlCompilationOptions)xamlcAttr.ConstructorArguments[0].Value;
-								if ((options & XamlCompilationOptions.Skip) == XamlCompilationOptions.Skip)
-									skiptype = true;
-								if ((options & XamlCompilationOptions.Compile) == XamlCompilationOptions.Compile)
-									skiptype = false;
-							}
-							xamlcAttr = null;
-#endif
 
 							if (Type != null)
 								skiptype = !(Type == classname);
