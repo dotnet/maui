@@ -47,7 +47,7 @@
 [CmdletBinding(DefaultParameterSetName = "TestFilter")]
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet("android", "ios", "catalyst")]
+    [ValidateSet("android", "ios", "catalyst", "maccatalyst")]
     [string]$Platform,
 
     [Parameter(Mandatory = $true, ParameterSetName = "TestFilter")]
@@ -69,6 +69,11 @@ $ErrorActionPreference = "Stop"
 $RepoRoot = Resolve-Path "$PSScriptRoot/../.."
 $HostAppProject = Join-Path $RepoRoot "src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj"
 $HostAppLogsDir = Join-Path $RepoRoot "CustomAgentLogsTmp/UITests"
+
+# Normalize platform name (accept both "catalyst" and "maccatalyst")
+if ($Platform -eq "maccatalyst") {
+    $Platform = "catalyst"
+}
 
 # Import shared utilities
 . "$PSScriptRoot/shared/shared-utils.ps1"
