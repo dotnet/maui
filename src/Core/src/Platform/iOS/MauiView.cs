@@ -359,7 +359,9 @@ namespace Microsoft.Maui.Platform
 
 			// Fallback to legacy ISafeAreaView behavior
 			if (View is ISafeAreaView sav)
+			{
 				return sav.IgnoreSafeArea ? SafeAreaPadding.Empty : baseSafeArea;
+			}
 
 			// Non-safe-area views pass through to parent
 			return SafeAreaPadding.Empty;
