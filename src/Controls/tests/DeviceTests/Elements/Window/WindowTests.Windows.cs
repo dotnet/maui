@@ -59,65 +59,19 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<IWindowHandler>(mainPage, async (handler) =>
 			{
-				CaptureHelper.LogTest("WindowLeakTest", "Starting MauiWinUIWindowDoesntLeak test");
-				
 				for (int i = 0; i < 3; i++)
 				{
 					var window = new MauiWinUIWindow();
 					weakReferences.Add(new WeakReference(window));
-					CaptureHelper.LogTest("WindowLeakTest", $"Created window {i}, handle: {window.GetHashCode()}, IsAlive before activate: {weakReferences[i].IsAlive}");
 
 					window.Activate();
-					CaptureHelper.LogTest("WindowLeakTest", $"Window {i} activated");
 					await Task.Delay(100);
-					
 					window.Close();
-					CaptureHelper.LogTest("WindowLeakTest", $"Window {i} closed, IsAlive after close: {weakReferences[i].IsAlive}");
 				}
 
-				CaptureHelper.LogTest("WindowLeakTest", $"All windows created and closed. Before GC - Alive count: {weakReferences.Count(r => r.IsAlive)}");
-				
-				// Log WeakReference targets before GC
-				for (int i = 0; i < weakReferences.Count; i++)
-				{
-					var target = weakReferences[i].Target;
-					CaptureHelper.LogTest("WindowLeakTest", $"Window {i}: IsAlive={weakReferences[i].IsAlive}, Target is null={target == null}");
-				}
-				
-				CaptureHelper.LogTest("WindowLeakTest", "Running GC.Collect()");
-				GC.Collect();
-				GC.WaitForPendingFinalizers();
-				GC.WaitForFullGCComplete();
-				
-				CaptureHelper.LogTest("WindowLeakTest", $"After first GC - Alive count: {weakReferences.Count(r => r.IsAlive)}");
-				
-				// Additional GC passes for Helix VMs - sometimes GC needs more passes
-				for (int gcPass = 0; gcPass < 5; gcPass++)
-				{
-					await Task.Delay(100);
-					GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true);
-					GC.WaitForPendingFinalizers();
-					GC.Collect();
-					
-					var aliveNow = weakReferences.Count(r => r.IsAlive);
-					CaptureHelper.LogTest("WindowLeakTest", $"After GC pass {gcPass + 1} - Alive count: {aliveNow}");
-					
-					if (aliveNow == 0)
-					{
-						CaptureHelper.LogTest("WindowLeakTest", $"All windows collected after {gcPass + 1} GC passes");
-						break;
-					}
-				}
-
-				var aliveCount = weakReferences.Count(r => r.IsAlive);
-				CaptureHelper.LogTest("WindowLeakTest", $"Final state - Alive count: {aliveCount}");
-				
-				for (int i = 0; i < weakReferences.Count; i++)
-				{
-					CaptureHelper.LogTest("WindowLeakTest", $"Window {i} IsAlive: {weakReferences[i].IsAlive}");
-				}
-
-				Assert.True(aliveCount == 0, $"Expected 0 alive windows but found {aliveCount}");
+				// Use the standard WaitForGC pattern which tries up to 40 GC cycles with Task.Yield
+				// This is the same approach used by all other memory leak tests in the repo
+				await AssertionExtensions.WaitForGC(weakReferences.ToArray());
 			});
 		}
 
