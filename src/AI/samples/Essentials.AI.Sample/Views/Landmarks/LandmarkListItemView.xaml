@@ -20,7 +20,7 @@
         <Grid>
             <Image
                 Aspect="AspectFill"
-                Source="{Binding Source={x:Reference ListItemControl}, Path=Landmark.ThumbnailImageName, StringFormat='images/thumbnails/{0}.jpg'}" />
+                Source="{Binding Source={x:Reference ListItemControl}, Path=Landmark.ThumbnailImageName, StringFormat='Images/Thumbnails/{0}.jpg'}" />
             <BoxView 
                 Color="Black"
                 Opacity="0.3"

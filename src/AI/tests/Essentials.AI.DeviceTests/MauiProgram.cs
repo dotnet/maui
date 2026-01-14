@@ -3,12 +3,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.TestUtils.DeviceTests.Runners;
 using Microsoft.Extensions.AI;
-using OpenAI.Embeddings;
 
 #if ENABLE_OPENAI_CLIENT
 using System.ClientModel;
 using OpenAI;
 using OpenAI.Chat;
+using OpenAI.Embeddings;
 #endif
 
 namespace Microsoft.Maui.Essentials.AI.DeviceTests;
