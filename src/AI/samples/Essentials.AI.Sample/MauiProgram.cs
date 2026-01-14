@@ -1,10 +1,8 @@
-﻿using System.Reflection;
-using Maui.Controls.Sample.AI;
+﻿using Maui.Controls.Sample.AI;
 using Maui.Controls.Sample.Pages;
 using Maui.Controls.Sample.Services;
 using Maui.Controls.Sample.ViewModels;
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Essentials.AI;
 
@@ -15,9 +13,6 @@ public static class MauiProgram
 	public static MauiApp CreateMauiApp()
 	{
 		var builder = MauiApp.CreateBuilder();
-
-		builder.Configuration
-			.AddJsonStream(GetUserSecretsStream() ?? throw new InvalidOperationException("User secrets file not found as embedded resource."));
 
 		builder.UseMauiApp<App>();
 
@@ -110,12 +105,5 @@ public static class MauiProgram
 #endif
 
 		return builder.Build();
-	}
-
-	private static Stream? GetUserSecretsStream()
-	{
-		var assembly = Assembly.GetExecutingAssembly();
-		var stream = assembly.GetManifestResourceStream("Maui.Essentials.AI.Sample.secrets.json");
-		return stream;
 	}
 }
