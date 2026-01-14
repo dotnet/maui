@@ -475,23 +475,46 @@ stages:
           #   retryCountOnTaskFailure: 1
 
           # Create zip archives for each device test project
+          # The MSIX packages are built in the project's AppPackages directory, not artifacts/bin
           - pwsh: |
-              $scenarios = @(
-                "Controls.DeviceTests",
-                "Core.DeviceTests", 
-                "Graphics.DeviceTests",
-                "Essentials.DeviceTests",
-                "MauiBlazorWebView.DeviceTests"
-              )
-              foreach ($scenario in $scenarios) {
-                $sourcePath = "$(Build.SourcesDirectory)/artifacts/bin/$scenario"
-                $zipPath = "$(Build.SourcesDirectory)/artifacts/bin/$scenario.zip"
-                if (Test-Path $sourcePath) {
-                  Write-Host "Creating archive for $scenario..."
-                  Compress-Archive -Path "$sourcePath/*" -DestinationPath $zipPath -Force
+              $scenarios = @{
+                "Controls.DeviceTests" = "$(Build.SourcesDirectory)/src/Controls/tests/DeviceTests"
+                "Core.DeviceTests" = "$(Build.SourcesDirectory)/src/Core/tests/DeviceTests"
+                "Graphics.DeviceTests" = "$(Build.SourcesDirectory)/src/Graphics/tests/DeviceTests"
+                "Essentials.DeviceTests" = "$(Build.SourcesDirectory)/src/Essentials/test/DeviceTests"
+                "MauiBlazorWebView.DeviceTests" = "$(Build.SourcesDirectory)/src/BlazorWebView/tests/DeviceTests"
+              }
+              
+              # Ensure artifacts/bin directory exists
+              $artifactsDir = "$(Build.SourcesDirectory)/artifacts/bin"
+              New-Item -ItemType Directory -Force -Path $artifactsDir | Out-Null
+              
+              foreach ($scenario in $scenarios.Keys) {
+                $projectDir = $scenarios[$scenario]
+                $appPackagesDir = "$projectDir/AppPackages"
+                $zipPath = "$artifactsDir/$scenario.zip"
+                
+                if (Test-Path $appPackagesDir) {
+                  Write-Host "Creating archive for $scenario from $appPackagesDir..."
+                  # Archive the AppPackages folder which contains MSIX, dependencies, and cert
+                  Compress-Archive -Path "$appPackagesDir" -DestinationPath $zipPath -Force
                   Write-Host "Created $zipPath"
+                  
+                  # Verify the archive contains MSIX
+                  $zipContents = Get-ChildItem -Path $appPackagesDir -Recurse -Filter "*.msix" | Select-Object -First 1
+                  if ($zipContents) {
+                    Write-Host "  Archive contains MSIX: $($zipContents.Name)"
+                  } else {
+                    Write-Host "  WARNING: No MSIX found in archive!"
+                  }
                 } else {
-                  Write-Host "Warning: $sourcePath not found"
+                  Write-Host "Warning: $appPackagesDir not found"
+                  # Fallback: try artifacts/bin if it exists (legacy path)
+                  $legacyPath = "$artifactsDir/$scenario"
+                  if (Test-Path $legacyPath) {
+                    Write-Host "  Using legacy path: $legacyPath"
+                    Compress-Archive -Path "$legacyPath/*" -DestinationPath $zipPath -Force
+                  }
                 }
               }
             displayName: Create payload archives
