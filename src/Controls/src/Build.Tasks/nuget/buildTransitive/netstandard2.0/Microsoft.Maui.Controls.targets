@@ -50,7 +50,7 @@
 	<!--
 		Enable Composite Partial R2R for Android CoreCLR Release builds.
 	-->
-	<PropertyGroup Condition="'$(TargetPlatformIdentifier)' == 'android' and '$(UseMonoRuntime)' == 'false' and '$(Configuration)' == 'Release' and '$(_MauiEnableCompositePartialReadyToRun)' != 'false'">
+	<PropertyGroup Condition="'$(TargetPlatformIdentifier)' == 'android' and '$(UseMonoRuntime)' == 'false' and '$(Configuration)' == 'Release' and '$(_MauiEnablePartialReadyToRunComposite)' != 'false'">
 		<PublishReadyToRun>true</PublishReadyToRun>
     <PublishReadyToRunComposite>true</PublishReadyToRunComposite>
     <!-- TODO: Marshal methods generation isn't supported for Android R2R builds https://github.com/dotnet/android/issues/10062 -->
