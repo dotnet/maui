@@ -28,8 +28,11 @@ class SetNamescopesAndRegisterNamesVisitor(SourceGenContext context) : IXamlNode
 			return;
 		var name = (string)node.Value;
 		if (namescope.namesInScope.ContainsKey(name))
-			//TODO send diagnostic instead
-			throw new Exception("dup x:Name");
+		{
+			var location = LocationHelpers.LocationCreate(Context.ProjectItem.RelativePath!, (System.Xml.IXmlLineInfo)node, "x:Name");
+			Context.ReportDiagnostic(Microsoft.CodeAnalysis.Diagnostic.Create(Descriptors.NamescopeDuplicate, location, name));
+			return;
+		}
 		namescope.namesInScope.Add(name, Context.Variables[(ElementNode)parentNode]);
 		using (PrePost.NewConditional(Writer, "!_MAUIXAML_SG_NAMESCOPE_DISABLE"))
 		{
@@ -113,7 +116,7 @@ class SetNamescopesAndRegisterNamesVisitor(SourceGenContext context) : IXamlNode
 		return new LocalVariable(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Internals.NameScope")!, namescope);
 	}
 
-	public static  ILocalValue CreateNamescope(IndentedTextWriter writer, SourceGenContext context, string? accessor = null)
+	public static ILocalValue CreateNamescope(IndentedTextWriter writer, SourceGenContext context, string? accessor = null)
 	{
 		var namescope = NamingHelpers.CreateUniqueVariableName(context, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Internals.INameScope")!);
 		using (PrePost.NewConditional(writer, "!_MAUIXAML_SG_NAMESCOPE_DISABLE"))
