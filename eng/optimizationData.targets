@@ -9,7 +9,7 @@
     <!-- TODO: Use android MIBC profile once available. -->
     <MIBCPackageDef Include="optimization.linux-arm64.MIBC.Runtime"
                     Version="$(optimizationlinuxarm64MIBCRuntimePackageVersion)"
-                    MibcArchitecture="android/arm64" />
+                    TargetPlatform="android/arm64" />
 
     <!-- Restore all MIBC packages (distinct by identity) -->
     <PackageDownload Include="@(MIBCPackageDef->Distinct())" Version="[%(Version)]" />
@@ -24,7 +24,7 @@
       <MIBCPackageDef>
         <PackagePath>$(NuGetPackageRoot)%(MIBCPackageDef.Identity)/%(MIBCPackageDef.Version)</PackagePath>
       </MIBCPackageDef>
-      <_optimizationMibcFile Include="%(MIBCPackageDef.PackagePath)/**/*.mibc" SubdirectoryName="%(MIBCPackageDef.MibcArchitecture)" />
+      <_optimizationMibcFile Include="%(MIBCPackageDef.PackagePath)/**/*.mibc" SubdirectoryName="%(MIBCPackageDef.TargetPlatform)" />
       <_optimizationMibcDestinationFile Include="@(_optimizationMibcFile->'$(MibcOptimizationDataDir)%(SubdirectoryName)/%(RecursiveDir)%(Filename)%(Extension)')" />
       <ExcessFilesCurrentlyPresent Include="$(MibcOptimizationDataDir)/**" 
                                    Exclude="@(_optimizationMibcDestinationFile)"/>
