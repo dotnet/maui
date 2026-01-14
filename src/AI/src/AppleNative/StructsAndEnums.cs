@@ -1,3 +1,5 @@
+using ObjCRuntime;
+
 namespace Microsoft.Maui.Essentials.AI;
 
 [Native]
