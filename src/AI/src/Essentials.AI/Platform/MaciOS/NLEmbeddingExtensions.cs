@@ -20,7 +20,7 @@ public static class NLEmbeddingExtensions
 	/// dispose it when the generator is disposed.
 	/// </returns>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="embedding"/> is <see langword="null"/>.</exception>
-	public static IEmbeddingGenerator<string, Embedding<float>> AsEmbeddingGenerator(this NLEmbedding embedding)
+	public static IEmbeddingGenerator<string, Embedding<float>> AsIEmbeddingGenerator(this NLEmbedding embedding)
 	{
 		return new NLEmbeddingGenerator(embedding);
 	}

@@ -10,4 +10,4 @@ Microsoft.Maui.Essentials.AI.NLEmbeddingGenerator.GenerateAsync(System.Collectio
 Microsoft.Maui.Essentials.AI.NLEmbeddingGenerator.NLEmbeddingGenerator() -> void
 Microsoft.Maui.Essentials.AI.NLEmbeddingGenerator.NLEmbeddingGenerator(NaturalLanguage.NLEmbedding! embedding) -> void
 Microsoft.Maui.Essentials.AI.NLEmbeddingGenerator.NLEmbeddingGenerator(NaturalLanguage.NLLanguage language) -> void
-static Microsoft.Extensions.AI.NLEmbeddingExtensions.AsEmbeddingGenerator(this NaturalLanguage.NLEmbedding! embedding) -> Microsoft.Extensions.AI.IEmbeddingGenerator<string!, Microsoft.Extensions.AI.Embedding<float>!>!
+static Microsoft.Extensions.AI.NLEmbeddingExtensions.AsIEmbeddingGenerator(this NaturalLanguage.NLEmbedding! embedding) -> Microsoft.Extensions.AI.IEmbeddingGenerator<string!, Microsoft.Extensions.AI.Embedding<float>!>!

@@ -43,7 +43,7 @@ public class NLEmbeddingGeneratorDisposalTests : EmbeddingGeneratorDisposalTests
 	}
 
 	[Fact]
-	public void AsEmbeddingGenerator_CreatesGeneratorFromNLEmbedding()
+	public void AsIEmbeddingGenerator_CreatesGeneratorFromNLEmbedding()
 	{
 		var embedding = NLEmbedding.GetSentenceEmbedding(NLLanguage.English);
 		Assert.NotNull(embedding);
