@@ -71,6 +71,7 @@
 		<ItemGroup>
 			<_CopyItems Include="nuget\buildTransitive\**" Exclude="nuget\buildTransitive\*;nuget\buildTransitive\netstandard2.0\**" />
 			<_CopyItems Include="nuget\buildTransitive\netstandard2.0\**" />
+			<_CopyItems Include="$(MibcOptimizationDataDir)**\*.mibc" Condition="'$(MibcOptimizationDataDir)' != '' and Exists('$(MibcOptimizationDataDir)')" />
 			<_CopyItems Include="$(TargetDir)*.dll" Exclude="$(TargetDir)System.*.dll;$(TargetDir)Microsoft.Build.*" />
 			<_CopyItems Include="$(TargetDir)*.pdb" Exclude="$(TargetDir)System.*.pdb;$(TargetDir)Microsoft.Build.*" />
 		</ItemGroup>
