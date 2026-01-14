@@ -28,14 +28,32 @@ namespace Microsoft.Maui.DeviceTests
 #if IOS || MACCATALYST
 			foreach (var en in Foundation.NSProcessInfo.ProcessInfo.Environment)
 			{
+				string key = $"{en.Key}";
 				string filterValue = $"{en.Value}";
-				if ($"{en.Key}" == "TestFilter" && filterValue.StartsWith("Category="))
+
+				if (key == "TestFilter")
 				{
-					Console.WriteLine($"TestFilter: {filterValue}");
-					string categoryToRun = $"{filterValue.Split('=')[1]}";
-					var categories = new List<String>(GetTestCategoryValues(testCategoryType));
-					categories.Remove(categoryToRun);
-					return categories.Select(c => $"Category={c}").ToList();
+					// Support TestFilter=Category=X (run only category X)
+					if (filterValue.StartsWith("Category="))
+					{
+						Console.WriteLine($"TestFilter: {filterValue}");
+						string categoryToRun = $"{filterValue.Split('=')[1]}";
+						var categories = new List<String>(GetTestCategoryValues(testCategoryType));
+						categories.Remove(categoryToRun);
+						return categories.Select(c => $"Category={c}").ToList();
+					}
+
+					// Support TestFilter=SkipCategories=X,Y,Z (skip categories X, Y, Z)
+					if (filterValue.StartsWith("SkipCategories="))
+					{
+						Console.WriteLine($"TestFilter: {filterValue}");
+						var categoriesToSkip = filterValue.Substring("SkipCategories=".Length)
+							.Split(new[] { ',', ';' })
+							.Select(c => c.Trim())
+							.Where(c => !string.IsNullOrWhiteSpace(c))
+							.ToList();
+						return categoriesToSkip.Select(c => $"Category={c}").ToList();
+					}
 				}
 			}
 #endif

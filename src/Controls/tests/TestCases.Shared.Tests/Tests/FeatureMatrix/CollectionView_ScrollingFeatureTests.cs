@@ -4,8 +4,7 @@ using UITest.Core;
 
 
 namespace Microsoft.Maui.TestCases.Tests;
-
-public class CollectionView_ScrollingFeatureTests : UITest
+public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 {
 	public const string ScrollingFeatureMatrix = "CollectionView Feature Matrix";
 	public const string Options = "Options";
@@ -26,16 +25,11 @@ public class CollectionView_ScrollingFeatureTests : UITest
 	public const string ItemsLayoutHorizontalList = "ItemsLayoutHorizontalList";
 	public const string AddButton = "AddButton";
 
+	public override string GalleryPageName => ScrollingFeatureMatrix;
 
 	public CollectionView_ScrollingFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(ScrollingFeatureMatrix);
 	}
 
 	[Test, Order(1)]

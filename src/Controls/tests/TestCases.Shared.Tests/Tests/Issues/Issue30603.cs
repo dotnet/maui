@@ -12,7 +12,6 @@ public class Issue30603 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Editor)]
-	[Category(UITestCategories.Entry)]
 	public void EditorAndEntryInputFieldsShouldChangeColorsOnAppThemeChange()
 	{
 		App.WaitForElement("changeThemeButton");

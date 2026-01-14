@@ -14,7 +14,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.WebView)]
-		[Category(UITestCategories.Compatibility)]
 		public void CookiesCorrectlyLoadWithMultipleWebViews()
 		{
 			VerifyInternetConnectivity();

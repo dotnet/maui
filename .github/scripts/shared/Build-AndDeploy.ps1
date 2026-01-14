@@ -35,7 +35,7 @@
 
 param(
     [Parameter(Mandatory=$true)]
-    [ValidateSet("android", "ios")]
+    [ValidateSet("android", "ios", "catalyst")]
     [string]$Platform,
     
     [Parameter(Mandatory=$true)]
@@ -52,7 +52,10 @@ param(
     [string]$DeviceUdid,
     
     [Parameter(Mandatory=$false)]
-    [string]$BundleId
+    [string]$BundleId,
+
+    [Parameter(Mandatory=$false)]
+    [switch]$Rebuild
 )
 
 # Import shared utilities
@@ -71,12 +74,18 @@ if ($Platform -eq "android") {
     #region Android Build and Deploy
     
     Write-Step "Building and deploying $projectName for Android..."
-    Write-Info "Build command: dotnet build $ProjectPath -f $TargetFramework -c $Configuration -t:Run"
+    
+    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-t:Run")
+    if ($Rebuild) {
+        $buildArgs += "--no-incremental"
+    }
+    
+    Write-Info "Build command: dotnet build $($buildArgs -join ' ')"
     
     $buildStartTime = Get-Date
     
     # Build and deploy in one step (Run target handles both)
-    dotnet build $ProjectPath -f $TargetFramework -c $Configuration -t:Run
+    & dotnet build @buildArgs
     
     $buildExitCode = $LASTEXITCODE
     $buildDuration = (Get-Date) - $buildStartTime
@@ -94,12 +103,18 @@ if ($Platform -eq "android") {
     #region iOS Build and Deploy
     
     Write-Step "Building $projectName for iOS..."
-    Write-Info "Build command: dotnet build $ProjectPath -f $TargetFramework -c $Configuration"
+    
+    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration)
+    if ($Rebuild) {
+        $buildArgs += "--no-incremental"
+    }
+    
+    Write-Info "Build command: dotnet build $($buildArgs -join ' ')"
     
     $buildStartTime = Get-Date
     
     # Build app
-    dotnet build $ProjectPath -f $TargetFramework -c $Configuration
+    & dotnet build @buildArgs
     
     $buildExitCode = $LASTEXITCODE
     $buildDuration = (Get-Date) - $buildStartTime
@@ -176,6 +191,38 @@ if ($Platform -eq "android") {
     }
     
     Write-Success "App installed successfully"
+    
+    #endregion
+} elseif ($Platform -eq "catalyst") {
+    #region MacCatalyst Build (no deploy step - runs on host)
+    
+    Write-Step "Building $projectName for MacCatalyst..."
+    
+    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration)
+    if ($Rebuild) {
+        $buildArgs += "--no-incremental"
+    }
+    
+    Write-Info "Build command: dotnet build $($buildArgs -join ' ')"
+    
+    $buildStartTime = Get-Date
+    
+    # Build app
+    & dotnet build @buildArgs
+    
+    $buildExitCode = $LASTEXITCODE
+    $buildDuration = (Get-Date) - $buildStartTime
+    
+    if ($buildExitCode -ne 0) {
+        Write-Error "Build failed with exit code $buildExitCode"
+        exit $buildExitCode
+    }
+    
+    Write-Success "Build completed in $($buildDuration.TotalSeconds) seconds"
+    
+    # MacCatalyst apps run directly on the Mac - no install step needed
+    # The test framework (Appium) will launch the app directly
+    Write-Success "MacCatalyst app ready (runs on host Mac)"
     
     #endregion
 }

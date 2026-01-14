@@ -87,12 +87,17 @@ class SimplifyOnPlatformVisitor : IXamlNodeVisitor
 			bool hasKey = node.Properties.TryGetValue(XmlName.xKey, out keyNode);
 
 			// If no value found for target platform and no Default,
-			// create a default value node if we have x:TypeArguments
+			// create a default value node if we have x:TypeArguments.
+			// Mark it as IsOnPlatformDefaultValue so SourceGen can generate default(T)
+			// instead of trying to instantiate the type (which fails for abstract types
+			// or types with protected constructors).
 			if (onNode == null && node.XmlType.TypeArguments != null && node.XmlType.TypeArguments.Count > 0)
 			{
-				// Create default value for the type (to match OnPlatform<T> runtime behavior)
 				var typeArg = node.XmlType.TypeArguments[0];
-				var elementNode = new ElementNode(typeArg, typeArg.NamespaceUri, node.NamespaceResolver, node.LineNumber, node.LinePosition);
+				var elementNode = new ElementNode(typeArg, typeArg.NamespaceUri, node.NamespaceResolver, node.LineNumber, node.LinePosition)
+				{
+					IsOnPlatformDefaultValue = true
+				};
 				onNode = elementNode;
 			}
 
@@ -190,7 +195,10 @@ class SimplifyOnPlatformVisitor : IXamlNodeVisitor
 
 		INode GetDefault(ElementNode onPlatform)
 		{
+			// Check both empty namespace (attribute syntax) and MAUI namespace (element syntax)
 			if (onPlatform.Properties.TryGetValue(new XmlName("", "Default"), out INode defaultNode))
+				return defaultNode;
+			if (onPlatform.Properties.TryGetValue(new XmlName(XamlParser.MauiUri, "Default"), out defaultNode))
 				return defaultNode;
 			return null;
 		}

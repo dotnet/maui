@@ -4,17 +4,13 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-public class AppThemeFeatureTests : UITest
+public class AppThemeFeatureTests : _GalleryUITest
 {
 	public const string AppThemeFeatureMatrix = "App Theme";
+	public override string GalleryPageName => AppThemeFeatureMatrix;
+
 	public AppThemeFeatureTests(TestDevice testDevice) : base(testDevice)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(AppThemeFeatureMatrix);
 	}
 
 	public void VerifyScreenshotWithPlatformCropping()

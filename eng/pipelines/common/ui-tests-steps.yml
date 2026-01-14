@@ -69,7 +69,7 @@ steps:
     skipAndroidEmulatorImages: ${{ ne(parameters.platform, 'android') }}
     skipAndroidCreateAvds: true
     androidEmulatorApiLevel: ${{ parameters.version }}
-    skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
+    skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows'), eq(parameters.platform, 'catalyst')) }}
     skipSimulatorSetup: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows'), eq(parameters.platform, 'catalyst')) }}
     provisionatorChannel: ${{ parameters.provisionatorChannel }}
     ${{ if parameters.skipProvisioning }}:

@@ -183,36 +183,41 @@ The repository includes specialized custom agents for specific tasks. These agen
 
 ### Available Custom Agents
 
-1. **issue-resolver** - Specialized agent for investigating and resolving community-reported .NET MAUI issues through hands-on testing and implementation
-   - **Use when**: Working on bug fixes from GitHub issues
-   - **Capabilities**: Issue reproduction, root cause analysis, fix implementation, testing
-   - **Trigger phrases**: "fix issue #XXXXX", "resolve bug #XXXXX", "implement fix for #XXXXX"
+1. **pr** - Sequential 5-phase workflow for reviewing and working on PRs
+   - **Use when**: A PR already exists and needs review or work, OR an issue needs a fix
+   - **Capabilities**: PR review, test verification, fix exploration, alternative comparison
+   - **Trigger phrases**: "review PR #XXXXX", "work on PR #XXXXX", "fix issue #XXXXX", "continue PR #XXXXX"
+   - **Do NOT use for**: Just running tests manually → Use `sandbox-agent`
 
-2. **pr-reviewer** - Specialized agent for conducting thorough, constructive code reviews of .NET MAUI pull requests
-   - **Use when**: User requests code review of a pull request
-   - **Capabilities**: Code quality analysis, best practices validation, test coverage review
-   - **Trigger phrases**: "review PR #XXXXX", "review pull request #XXXXX", "code review for PR #XXXXX", "review this PR"
-   - **Do NOT use for**: Building/testing PR functionality (use Sandbox), asking about PR details (handle yourself)
-
-3. **uitest-coding-agent** - Specialized agent for writing new UI tests for .NET MAUI with proper syntax, style, and conventions
+2. **uitest-coding-agent** - Specialized agent for writing new UI tests for .NET MAUI with proper syntax, style, and conventions
    - **Use when**: Creating new UI tests or updating existing ones
    - **Capabilities**: UI test authoring, Appium WebDriver usage, NUnit test patterns
    - **Trigger phrases**: "write UI test for #XXXXX", "create UI tests", "add test coverage"
 
-4. **sandbox-agent** - Specialized agent for working with the Sandbox app for testing, validation, and experimentation
+3. **sandbox-agent** - Specialized agent for working with the Sandbox app for testing, validation, and experimentation
    - **Use when**: User wants to manually test PR functionality or reproduce issues
    - **Capabilities**: Sandbox app setup, Appium-based manual testing, PR functional validation
    - **Trigger phrases**: "test this PR", "validate PR #XXXXX in Sandbox", "reproduce issue #XXXXX", "try out in Sandbox"
-   - **Do NOT use for**: Code review (use pr-reviewer), writing automated tests (use uitest-coding-agent)
+   - **Do NOT use for**: Code review (use pr agent), writing automated tests (use uitest-coding-agent)
+
+### Reusable Skills
+
+Skills are modular capabilities that can be invoked directly or used by agents. Located in `.github/skills/`:
+
+1. **issue-triage** (`.github/skills/issue-triage/SKILL.md`)
+   - **Purpose**: Query and triage open issues that need milestones, labels, or investigation
+   - **Trigger phrases**: "find issues to triage", "show me old Android issues", "what issues need attention", "triage Android issues"
+   - **Scripts**: `init-triage-session.ps1`, `query-issues.ps1`, `record-triage.ps1`
+   - **Used by**: Any agent or direct invocation
 
 ### Using Custom Agents
 
 **Delegation Policy**: When user request matches agent trigger phrases, **ALWAYS delegate to the appropriate agent immediately**. Do not ask for permission or explain alternatives unless the request is ambiguous.
 
 **Examples of correct delegation**:
-- User: "Review PR #12345" → Immediately invoke **pr-reviewer** agent
+- User: "Review PR #12345" → Immediately invoke **pr** agent
 - User: "Test this PR" → Immediately invoke **sandbox-agent**
-- User: "Fix issue #67890" → Immediately invoke **issue-resolver** agent
+- User: "Fix issue #67890" (no PR exists) → Suggest using `/delegate` command
 - User: "Write UI test for CollectionView" → Immediately invoke **uitest-coding-agent**
 
 **When NOT to delegate**:
