@@ -3,8 +3,6 @@
   <Import Condition="'$(EnvironmentBuildPropsImported)' != 'True'" Project="$(MSBuildThisFileDirectory)eng\Environment.Build.props" />
 
   <PropertyGroup>
-    <ValidateXcodeVersion>false</ValidateXcodeVersion>
-
     <!-- 
       Keep backward compatibility with XamlC, XamlCompilationAttribute, and xaml-comp processing instruction
       When we're ready to turn this off, we can remove all code depending on this condition, and drop this property group
