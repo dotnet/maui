@@ -124,7 +124,7 @@ internal partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPicker>
 			}
 			else
 			{
-				handler.DismissDialog();
+				handler.DismissPickerDialog();
 			}
 		}
 	}
@@ -142,7 +142,7 @@ internal partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPicker>
 	{
 		if (handler.IsConnected())
 		{
-			handler.DismissDialog();
+			handler.DismissPickerDialog();
 			ViewHandler.MapUnfocus(handler, picker, args);
 		}
 	}
@@ -157,11 +157,6 @@ internal partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPicker>
 		{
 			OnClick(PlatformView, EventArgs.Empty);
 		}
-	}
-
-	void DismissDialog()
-	{
-		DismissPickerDialog();
 	}
 
 	void OnClick(object? sender, EventArgs e)
