@@ -148,7 +148,10 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(TextAlignmentElement.HorizontalTextAlignmentProperty, value); }
 		}
 
-		/// <summary>Gets or sets the LineBreakMode for the Label. This is a bindable property.</summary>
+		/// <summary>
+		/// Gets or sets the LineBreakMode for the Label.
+		/// The default value is <see cref="LineBreakMode.WordWrap"/>. This is a bindable property.
+		/// </summary>
 		public LineBreakMode LineBreakMode
 		{
 			get { return (LineBreakMode)GetValue(LineBreakModeProperty); }

@@ -3,7 +3,10 @@
     "dotnet": "11.0.100-alpha.1.26057.107"
   },
   "sdk": {
-    "paths": [ ".dotnet", "$host$" ]
+    "paths": [
+      ".dotnet",
+      "$host$"
+    ]
   },
   "msbuild-sdks": {
     "MSBuild.Sdk.Extras": "3.0.44",
