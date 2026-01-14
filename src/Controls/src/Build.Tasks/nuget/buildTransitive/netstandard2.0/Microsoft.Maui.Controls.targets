@@ -85,13 +85,8 @@
 
   <Target Name="_MauiXamlComputeInflator">
   	<ItemGroup>
-      <!-- Default inflator is SourceGen -->
-      <_MauiXamlDefaultInflator Include="SourceGen" />
-      
-      <!-- Assign the default inflator to MauiXaml that don't have any -->
+      <!-- Assign the default inflator (SourceGen) to MauiXaml that don't have any -->
       <!-- there's a roslyn bug that stops parsing value at the first semicolon. replace them all https://github.com/dotnet/roslyn/issues/43970 -->
-      <!-- Special value 'Default' uses the default inflator (SourceGen) -->
-      <MauiXaml Condition="'%(MauiXaml.Inflator)' == 'Default'" Inflator="@(_MauiXamlDefaultInflator)" />
       <MauiXaml Inflator="$([MSBuild]::ValueOrDefault('%(MauiXaml.Inflator)','$(_MauiXamlInflator)').Replace(';', ','))"/>
       <MauiXaml NoWarn="$([MSBuild]::ValueOrDefault('%(MauiXaml.NoWarn)','').Replace(';', ','))"/>
 
