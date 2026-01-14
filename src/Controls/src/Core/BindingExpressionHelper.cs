@@ -26,9 +26,19 @@ namespace Microsoft.Maui.Controls
 			object original = value;
 			try
 			{
-				convertTo = Nullable.GetUnderlyingType(convertTo) ?? convertTo;
-
+				var underlyingType = Nullable.GetUnderlyingType(convertTo);
 				var stringValue = value as string ?? string.Empty;
+
+				// Handle empty/whitespace string conversion to nullable types
+				// Empty string should convert to null for nullable value types
+				// See: https://github.com/dotnet/maui/issues/8342
+				if (underlyingType != null && string.IsNullOrWhiteSpace(stringValue))
+				{
+					value = null!;
+					return true;
+				}
+
+				convertTo = underlyingType ?? convertTo;
 				// see: https://bugzilla.xamarin.com/show_bug.cgi?id=32871
 				// do not canonicalize "*.[.]"; "1." should not update bound BindableProperty
 				if (stringValue.EndsWith(CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator, StringComparison.Ordinal) && DecimalTypes.Contains(convertTo))
