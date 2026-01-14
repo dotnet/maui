@@ -12,7 +12,7 @@ namespace Maui.Controls.Sample.Pages.ScrollViewPages
 			InitializeComponent();
 		}
 
-		public void OrientationSelectedIndexChanged(object sender, EventArgs args)
+		public void OrientationSelectedIndexChanged(object? sender, EventArgs args)
 		{
 			ScrollViewer.Orientation = (ScrollOrientation)Orientation.SelectedIndex;
 		}

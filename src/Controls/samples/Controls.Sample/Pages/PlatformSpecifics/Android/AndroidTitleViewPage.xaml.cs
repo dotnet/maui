@@ -11,7 +11,7 @@ namespace Maui.Controls.Sample.Pages
 			InitializeComponent();
 		}
 
-		void OnReturnButtonClicked(object sender, EventArgs e)
+		void OnReturnButtonClicked(object? sender, EventArgs e)
 		{
 			Navigation.PopAsync();
 		}
