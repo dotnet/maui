@@ -405,9 +405,9 @@ namespace Microsoft.Maui.Controls.Platform
 			result.Direction = (UISwipeGestureRecognizerDirection)direction;
 			result.ShouldRecognizeSimultaneously = (g, o) => 
 			{
-				if (o.View is UIScrollView)
+				if (o.View is UICollectionView)
 				{
-					return false;
+				//	return false;
 				}
 				
 				return true;
