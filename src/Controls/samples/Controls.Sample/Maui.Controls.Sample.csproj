@@ -95,11 +95,12 @@
   <!-- These XAML files have XSG parsing issues, use Runtime inflator until fixed -->
   <!-- Must be after Maui.InTree.props to properly override the globbed items -->
   <ItemGroup>
-    <MauiXaml Remove="Pages/Controls/SwipeViewGalleries/*.xaml;Pages/Others/StyleSheetsPage.xaml;Pages/Others/TwoPaneViewPage.xaml;Pages/Controls/ButtonPage.xaml" />
+    <MauiXaml Remove="Pages/Controls/SwipeViewGalleries/*.xaml;Pages/Others/StyleSheetsPage.xaml;Pages/Others/TwoPaneViewPage.xaml;Pages/Controls/ButtonPage.xaml;Pages/Controls/RadioButtonGalleries/RadioButtonContentGallery.xaml" />
     <MauiXaml Include="Pages/Controls/SwipeViewGalleries/*.xaml" Inflator="Runtime" />
     <MauiXaml Include="Pages/Others/StyleSheetsPage.xaml" Inflator="Runtime" />
     <MauiXaml Include="Pages/Others/TwoPaneViewPage.xaml" Inflator="Runtime" />
     <MauiXaml Include="Pages/Controls/ButtonPage.xaml" Inflator="Runtime" />
+    <MauiXaml Include="Pages/Controls/RadioButtonGalleries/RadioButtonContentGallery.xaml" Inflator="Runtime" />
   </ItemGroup>
 
   <!-- These XAML files use obsolete APIs (Device, NamedSize) intentionally for demonstration -->
