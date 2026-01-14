@@ -15,12 +15,12 @@ namespace Maui.Controls.Sample.Pages
 			returnToPlatformSpecificsPage = restore;
 		}
 
-		void OnShadowButtonClicked(object sender, EventArgs e)
+		void OnShadowButtonClicked(object? sender, EventArgs e)
 		{
 			On<iOS>().SetApplyShadow(!On<iOS>().GetApplyShadow());
 		}
 
-		void OnReturnButtonClicked(object sender, EventArgs e)
+		void OnReturnButtonClicked(object? sender, EventArgs e)
 		{
 			returnToPlatformSpecificsPage.Execute(null);
 		}
