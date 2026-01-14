@@ -80,7 +80,6 @@ Task("GenerateMsixCert")
 	var currentUserMyStore = new X509Store("My", StoreLocation.CurrentUser);
 	currentUserMyStore.Open(OpenFlags.ReadWrite);
 	certificateThumbprint = localTrustedPeopleStore.Certificates.FirstOrDefault(c => c.Subject.Contains(certCN))?.Thumbprint;
-	Information("Cert thumbprint: " + certificateThumbprint ?? "null");
 
 	if (string.IsNullOrEmpty(certificateThumbprint))
 	{
@@ -100,7 +99,7 @@ Task("GenerateMsixCert")
 		req.CertificateExtensions.Add(new X509BasicConstraintsExtension(false, false, 0, false));
 		req.CertificateExtensions.Add(
 			new X509KeyUsageExtension(
-				X509KeyUsageFlags.DigitalSignature | X509KeyUsageFlags.NonRepudiation,
+				X509KeyUsageFlags.DigitalSignature,
 				false));
 
 		req.CertificateExtensions.Add(
@@ -120,6 +119,8 @@ Task("GenerateMsixCert")
 
 	localTrustedPeopleStore.Close();
 	currentUserMyStore.Close();
+
+	Information("Cert thumbprint: " + certificateThumbprint ?? "null");
 });
 
 Task("buildOnly")

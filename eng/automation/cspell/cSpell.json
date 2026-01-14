@@ -15,7 +15,13 @@
         "sourcegen",
         "Tizen",
         "darc",
-        "Darc"
+        "Darc",
+        "xcrun",
+        "simctl",
+        "screencap",
+        "mlaunch",
+        "devicectl",
+        "xcdevice"
     ],
     "ignoreWords": [],
     "patterns": [

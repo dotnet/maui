@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
@@ -12,7 +13,10 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
+using WContentPresenter = Microsoft.UI.Xaml.Controls.ContentPresenter;
+using WFrame = Microsoft.UI.Xaml.Controls.Frame;
 using WFrameworkElement = Microsoft.UI.Xaml.FrameworkElement;
+using WPage = Microsoft.UI.Xaml.Controls.Page;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 
 namespace Microsoft.Maui.DeviceTests
@@ -196,6 +200,40 @@ namespace Microsoft.Maui.DeviceTests
 					GetMauiNavigationView(tabbedPage),
 					tabText, iconColor, tabbedPage.FindMauiContext());
 			}
+		}
+
+		[Fact(DisplayName = "Issue 32824 - Tab Switch Clears Old Content To Prevent Crash")]
+		public async Task TabSwitchClearsOldContentToPreventCrash()
+		{
+			// https://github.com/dotnet/maui/issues/32824
+			// When switching tabs, the old ContentPresenter.Content must be cleared
+			// before navigation to prevent "Element is already the child of another element" crash.
+			SetupBuilder();
+
+			var page1 = new ContentPage { Title = "Tab 1", Content = new Label { Text = "Page 1" } };
+			var page2 = new ContentPage { Title = "Tab 2", Content = new Label { Text = "Page 2" } };
+			var tabbedPage = new TabbedPage { Children = { page1, page2 } };
+
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, handler =>
+			{
+				var frame = typeof(TabbedPage)
+					.GetField("_navigationFrame", BindingFlags.NonPublic | BindingFlags.Instance)
+					?.GetValue(tabbedPage) as WFrame;
+
+				Assert.NotNull(frame);
+
+				var oldPresenter = (frame.Content as WPage)?.Content as WContentPresenter;
+				Assert.NotNull(oldPresenter);
+				Assert.NotNull(oldPresenter.Content);
+
+				// Switch tabs - oldPresenter.Content should be cleared before navigation
+				tabbedPage.CurrentPage = page2;
+
+				//old presenter content must be null to prevent crash
+				Assert.Null(oldPresenter.Content);
+
+				return Task.CompletedTask;
+			});
 		}
 	}
 }

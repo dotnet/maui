@@ -47,10 +47,36 @@ variables:
 - template: /eng/common/templates/variables/pool-providers.yml@self
 - template: /eng/pipelines/common/variables.yml@self
 - template: /eng/pipelines/arcade/variables.yml@self
+# Include Helix access token for internal builds
+- ${{ if eq(variables['System.TeamProject'], 'internal') }}:
+  - group: DotNet-HelixApi-Access
 
 parameters:
 
-- name: windowsPool
+# Internal pools (dnceng)
+- name: windowsPoolInternal
+  type: object
+  default:
+    name: NetCore1ESPool-Internal
+    demands:
+        - ImageOverride -equals 1es-windows-2022
+    image: 1es-windows-2022
+    os: Windows
+
+- name: macOSTestPoolInternal
+  type: object
+  default:
+    name: Azure Pipelines
+    vmImage: macOS-15
+
+- name: macOSPoolInternal
+  type: object
+  default:
+    name: Azure Pipelines
+    vmImage: macOS-15
+
+# Public pools (dnceng-public)
+- name: windowsPoolPublic
   type: object
   default:
     name: NetCore-Public
@@ -59,17 +85,19 @@ parameters:
     image: 1es-windows-2022-open
     os: Windows
 
-- name: macOSTestPool
+- name: macOSTestPoolPublic
   type: object
   default:
     name: Azure Pipelines
     vmImage: macOS-15
 
-- name: macOSPool
+- name: macOSPoolPublic
   type: object
   default:
     name: MAUI
     vmImage: MAUI
+    demands:
+      - Agent.OSArchitecture -equals ARM64
 
 - name: targetFrameworkVersions
   type: object
@@ -82,11 +110,20 @@ stages:
   # Use Helix for iOS / Android / MacCatalyst / Windows Device Tests
   - template: /eng/pipelines/arcade/stage-device-tests.yml@self
     parameters:
-      buildPool: ${{ parameters.macOSPool }}
-      testPool: ${{ parameters.windowsPool }}
-      windowsBuildPool: ${{ parameters.windowsPool }}
-      windowsTestPool: ${{ parameters.windowsPool }}
-      runAsPublic: true
+      # Select pools based on pipeline - internal vs public
+      ${{ if eq(variables['System.TeamProject'], 'internal') }}:
+        buildPool: ${{ parameters.macOSPoolInternal }}
+        testPool: ${{ parameters.windowsPoolInternal }}
+        windowsBuildPool: ${{ parameters.windowsPoolInternal }}
+        windowsTestPool: ${{ parameters.windowsPoolInternal }}
+        runAsPublic: false
+        HelixAccessToken: $(HelixApiAccessToken)
+      ${{ else }}:
+        buildPool: ${{ parameters.macOSPoolPublic }}
+        testPool: ${{ parameters.windowsPoolPublic }}
+        windowsBuildPool: ${{ parameters.windowsPoolPublic }}
+        windowsTestPool: ${{ parameters.windowsPoolPublic }}
+        runAsPublic: true
       runWindowsTests: true
       TargetFrameworkVersion: ${{ targetFrameworkVersion.tfm }}
       prepareSteps:

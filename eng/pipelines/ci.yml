@@ -100,6 +100,22 @@ parameters:
     name: Azure Pipelines
     vmImage: $(HostedMacImage)
     os: macOS
+    label: macOS
+
+# ARM64 macOS pool (Apple Silicon)
+- name: MacOSPoolArm64
+  type: object
+  default:
+    name: Azure Pipelines
+    vmImage: macOS-15-arm64
+    os: macOS
+    label: macOS-arm64
+
+# Condition for MacOSPool comparison lanes (non-ARM64)
+# Runs on: (non-PR on main/net*.0/release/*/inflight/*) OR (PR targeting net*.0/release/*/inflight/*)
+- name: macOSPoolLaneCondition
+  type: string
+  default: or(and(ne(variables['Build.Reason'], 'PullRequest'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), and(startsWith(variables['Build.SourceBranch'], 'refs/heads/net'), endsWith(variables['Build.SourceBranch'], '.0')), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/inflight/'))), and(eq(variables['Build.Reason'], 'PullRequest'), or(and(startsWith(variables['System.PullRequest.TargetBranch'], 'net'), endsWith(variables['System.PullRequest.TargetBranch'], '.0')), startsWith(variables['System.PullRequest.TargetBranch'], 'release/'), startsWith(variables['System.PullRequest.TargetBranch'], 'inflight/'))))
 
 stages:
 
@@ -269,13 +285,84 @@ stages:
       testCategory: MultiProject
 
     # TODO: macOSTemplates and AOT template categories
-
     - name: mac_runandroid_tests
       pool: ${{ parameters.MacOSPool }}
       timeout: 240
       testCategory: RunOnAndroid
 
-    - name: mac_runios_tests
+    # RunOniOS - Individual test methods run in parallel
+    # ARM64 (Apple Silicon) lanes - using MacOSPoolArm64
+    - name: mac_runios_maui_debug_arm64
+      pool: ${{ parameters.MacOSPoolArm64 }}
+      timeout: 45
+      testName: RunOniOS_MauiDebug
+
+    - name: mac_runios_maui_release_arm64
+      pool: ${{ parameters.MacOSPoolArm64 }}
+      timeout: 45
+      testName: RunOniOS_MauiRelease
+
+    - name: mac_runios_maui_trim_arm64
+      pool: ${{ parameters.MacOSPoolArm64 }}
+      timeout: 45
+      testName: RunOniOS_MauiReleaseTrimFull
+
+    - name: mac_runios_blazor_debug_arm64
+      pool: ${{ parameters.MacOSPoolArm64 }}
+      timeout: 45
+      testName: RunOniOS_BlazorDebug
+
+    - name: mac_runios_blazor_release_arm64
+      pool: ${{ parameters.MacOSPoolArm64 }}
+      timeout: 45
+      testName: RunOniOS_BlazorRelease
+
+    # TODO: Re-enable once ASP.NET Core fixes trimmer warning IL2111 with Blazor Router.NotFoundPage
+    # Issue: https://github.com/dotnet/aspnetcore/issues/63951
+    # - name: mac_runios_blazor_trim_arm64
+    #   pool: ${{ parameters.MacOSPoolArm64 }}
+    #   timeout: 45
+    #   testName: RunOniOS_BlazorReleaseTrimFull
+
+    - name: mac_runios_nativeaot_arm64
+      pool: ${{ parameters.MacOSPoolArm64 }}
+      timeout: 45
+      testName: RunOniOS_MauiNativeAOT
+
+    # MacOSPool lanes - comparison with ARM64 pool
+    # Only run on: (non-PR on main/net*.0/release/*/inflight/*) OR (PR targeting net*.0/release/*/inflight/*)
+    - name: mac_runios_maui_debug
       pool: ${{ parameters.MacOSPool }}
-      timeout: 240
-      testCategory: RunOniOS
+      timeout: 45
+      testName: RunOniOS_MauiDebug
+      condition: ${{ parameters.macOSPoolLaneCondition }}
+
+    - name: mac_runios_maui_release
+      pool: ${{ parameters.MacOSPool }}
+      timeout: 45
+      testName: RunOniOS_MauiRelease
+      condition: ${{ parameters.macOSPoolLaneCondition }}
+
+    - name: mac_runios_maui_trim
+      pool: ${{ parameters.MacOSPool }}
+      timeout: 45
+      testName: RunOniOS_MauiReleaseTrimFull
+      condition: ${{ parameters.macOSPoolLaneCondition }}
+
+    - name: mac_runios_blazor_debug
+      pool: ${{ parameters.MacOSPool }}
+      timeout: 45
+      testName: RunOniOS_BlazorDebug
+      condition: ${{ parameters.macOSPoolLaneCondition }}
+
+    - name: mac_runios_blazor_release
+      pool: ${{ parameters.MacOSPool }}
+      timeout: 45
+      testName: RunOniOS_BlazorRelease
+      condition: ${{ parameters.macOSPoolLaneCondition }}
+
+    - name: mac_runios_nativeaot
+      pool: ${{ parameters.MacOSPool }}
+      timeout: 45
+      testName: RunOniOS_MauiNativeAOT
+      condition: ${{ parameters.macOSPoolLaneCondition }}
