@@ -107,10 +107,6 @@ static class CodeBehindCodeWriter
 		sb.AppendLine("{");
 		sb.AppendLine($"\t[global::Microsoft.Maui.Controls.Xaml.XamlFilePath(\"{projItem.RelativePath?.Replace("\\", "\\\\")}\")]");
 
-#if !_MAUIXAML_SOURCEGEN_BACKCOMPAT
-		if (addXamlCompilationAttribute && !alreadyHasXamlCompilationAttribute)
-			sb.AppendLine($"\t[global::Microsoft.Maui.Controls.Xaml.XamlCompilation(global::Microsoft.Maui.Controls.Xaml.XamlCompilationOptions.Compile)]");
-#endif
 		if (!addXamlCompilationAttribute && (xamlInflators & XamlInflator.XamlC) == 0 && !alreadyHasXamlCompilationAttribute)
 			sb.AppendLine($"\t[global::Microsoft.Maui.Controls.Xaml.XamlCompilation(global::Microsoft.Maui.Controls.Xaml.XamlCompilationOptions.Skip)]");
 
@@ -325,14 +321,12 @@ static class CodeBehindCodeWriter
 			return false;
 		}
 
-#if _MAUIXAML_SOURCEGEN_BACKCOMPAT
 		// if the following xml processing instruction is present
 		//
 		// <?xaml-comp compile="true" ?>
 		//
 		// we will generate a xaml.g.cs file with the default ctor calling InitializeComponent, and a XamlCompilation attribute
 		var hasXamlCompilationProcessingInstruction = GetXamlCompilationProcessingInstruction(root.OwnerDocument);
-#endif
 
 		var rootClass = root.Attributes["Class", XamlParser.X2006Uri]
 					 ?? root.Attributes["Class", XamlParser.X2009Uri];
@@ -341,12 +335,8 @@ static class CodeBehindCodeWriter
 		{
 			XmlnsHelper.ParseXmlns(rootClass.Value, out rootType, out rootClrNamespace, out _, out _);
 		}
-#if _MAUIXAML_SOURCEGEN_BACKCOMPAT
 		else if (hasXamlCompilationProcessingInstruction
 				&& (root.NamespaceURI == XamlParser.MauiUri || root.NamespaceURI == XamlParser.MauiGlobalUri))
-#else
-		else if (root.NamespaceURI == XamlParser.MauiUri || root.NamespaceURI == XamlParser.MauiGlobalUri)
-#endif
 		{
 			//make sure the base type can be resolved. if not, don't consider this as xaml, and move away
 			var typeArgs = GetAttributeValue(root, "TypeArguments", XamlParser.X2006Uri, XamlParser.X2009Uri);
@@ -387,7 +377,6 @@ static class CodeBehindCodeWriter
 		return true;
 	}
 
-#if _MAUIXAML_SOURCEGEN_BACKCOMPAT
 	//true, unless explicitely false
 	static bool GetXamlCompilationProcessingInstruction(XmlDocument xmlDoc)
 	{
@@ -401,7 +390,6 @@ static class CodeBehindCodeWriter
 
 		return true;
 	}
-#endif
 
 	internal static string GetWarningDisable(XmlDocument xmlDoc)
 	{

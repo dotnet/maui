@@ -202,7 +202,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 				using (var assemblyDefinition = AssemblyDefinition.ReadAssembly(IOPath.GetFullPath(Assembly), readerParameters))
 				{
-#if _MAUIXAML_SOURCEGEN_BACKCOMPAT
+#pragma warning disable CS0618 // Type or member is obsolete - backcompat for [XamlCompilation]
 					CustomAttribute xamlcAttr = null;
 					if (assemblyDefinition.HasCustomAttributes &&
 						(xamlcAttr =
@@ -217,14 +217,12 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					}
 
 					xamlcAttr = null;
-#endif
 
 					foreach (var module in assemblyDefinition.Modules)
 					{
 						var skipmodule = skipassembly;
 						(bool, XamlInflator)? moduleInflatorOptions = assemblyInflatorOptions;
 
-#if _MAUIXAML_SOURCEGEN_BACKCOMPAT
 						if (module.HasCustomAttributes &&
 							(xamlcAttr =
 								module.CustomAttributes.FirstOrDefault(
@@ -237,7 +235,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 								skipmodule = false;
 						}
 						xamlcAttr = null;
-#endif
+#pragma warning restore CS0618
 
 						LoggingHelper.LogMessage(Low, $"{new string(' ', 2)}Module: {module.Name}");
 						var resourcesToPrune = new List<EmbeddedResource>();
@@ -262,7 +260,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 							var skiptype = skipmodule;
 							(bool, XamlInflator)? typeInflatorOptions = moduleInflatorOptions;
 
-#if _MAUIXAML_SOURCEGEN_BACKCOMPAT
+#pragma warning disable CS0618 // Type or member is obsolete - backcompat for [XamlCompilation]
 							if (typeDef.HasCustomAttributes &&
 								(xamlcAttr =
 									typeDef.CustomAttributes.FirstOrDefault(
@@ -275,7 +273,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 									skiptype = false;
 							}
 							xamlcAttr = null;
-#endif
+#pragma warning restore CS0618
 
 							if (Type != null)
 								skiptype = !(Type == classname);
