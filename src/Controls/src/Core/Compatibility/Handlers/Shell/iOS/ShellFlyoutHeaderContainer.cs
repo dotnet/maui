@@ -37,10 +37,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void IPlatformMeasureInvalidationController.InvalidateAncestorsMeasuresWhenMovedToWindow() { }
 
-		void IPlatformMeasureInvalidationController.InvalidateMeasure(bool isPropagating)
+		bool IPlatformMeasureInvalidationController.InvalidateMeasure(bool isPropagating)
 		{
 			var size = SizeThatFits(new CGSize(Superview.Frame.Width, double.PositiveInfinity));
 			Frame = new CGRect(Frame.X, Frame.Y, size.Width, size.Height);
+			return false;
 		}
 
 		public override void LayoutSubviews()
