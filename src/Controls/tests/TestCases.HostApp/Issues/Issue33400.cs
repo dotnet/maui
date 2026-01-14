@@ -3,7 +3,7 @@ namespace Maui.Controls.Sample.Issues;
 [Issue(IssueTracker.Github, 33400, "Runtime Scrollbar visibility not updating correctly on Android platform", PlatformAffected.Android)]
 public class Issue33400 : ContentPage
 {
-	private readonly ScrollView scrollView;
+	readonly ScrollView scrollView;
 
 	public Issue33400()
 	{
