@@ -49,16 +49,22 @@
 
 	<!--
 		Enable Composite Partial R2R for Android CoreCLR Release builds by default.
+		
+		To customize:
+		- PublishReadyToRun=false                   Disable R2R entirely
+		- PublishReadyToRunComposite=false          Use non-composite R2R
+		- _MauiPartialReadyToRun=false              Use full R2R (AOT-compile all methods, not just profiled ones)
+		- _MauiUseDefaultReadyToRunPgoFiles=false   Don't include MAUI's default MIBC profiles
 	-->
 	<PropertyGroup Condition="'$(TargetPlatformIdentifier)' == 'android' and '$(UseMonoRuntime)' == 'false' and '$(Configuration)' == 'Release'">
 		<PublishReadyToRun Condition="'$(PublishReadyToRun)' == ''">true</PublishReadyToRun>
 		<PublishReadyToRunComposite Condition="'$(PublishReadyToRun)' == 'true' and '$(PublishReadyToRunComposite)' == ''">true</PublishReadyToRunComposite>
-		<PublishReadyToRunCrossgen2ExtraArgs Condition="'$(_MauiPartialReadyToRun)' == ''">$(PublishReadyToRunCrossgen2ExtraArgs) --partial</PublishReadyToRunCrossgen2ExtraArgs>
+		<PublishReadyToRunCrossgen2ExtraArgs Condition="'$(_MauiPartialReadyToRun)' != 'false'">$(PublishReadyToRunCrossgen2ExtraArgs) --partial</PublishReadyToRunCrossgen2ExtraArgs>
+		<_MauiUseDefaultReadyToRunPgoFiles Condition="'$(_MauiUseDefaultReadyToRunPgoFiles)' == ''">true</_MauiUseDefaultReadyToRunPgoFiles>
 	</PropertyGroup>
 
-	<ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'android' and '$(UseMonoRuntime)' == 'false' and '$(PublishReadyToRun)' == 'true'">
-    <_MauiUseDefaultReadyToRunPgoFiles Condition="'$(_MauiUseDefaultReadyToRunPgoFiles)' == ''">true</_MauiUseDefaultReadyToRunPgoFiles>
-		<_ReadyToRunPgoFiles Condition="'$(_MauiUseDefaultReadyToRunPgoFiles)' == 'true' and '$(_ReadyToRunPgoFiles)' == ''" Include="$(MSBuildThisFileDirectory)mibc\android\**\*.mibc" />
+	<ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'android' and '$(UseMonoRuntime)' == 'false' and '$(PublishReadyToRun)' == 'true' and '$(_MauiUseDefaultReadyToRunPgoFiles)' == 'true'">
+		<_ReadyToRunPgoFiles Include="$(MSBuildThisFileDirectory)mibc\android\**\*.mibc" />
 	</ItemGroup>
 
 	<!-- Check Tasks ABI and other validations -->
