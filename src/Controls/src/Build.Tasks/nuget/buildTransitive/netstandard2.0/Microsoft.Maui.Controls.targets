@@ -63,7 +63,7 @@
 		<_MauiUseDefaultReadyToRunPgoFiles Condition="'$(_MauiUseDefaultReadyToRunPgoFiles)' == ''">true</_MauiUseDefaultReadyToRunPgoFiles>
 	</PropertyGroup>
 
-	<ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'android' and '$(UseMonoRuntime)' == 'false' and '$(PublishReadyToRun)' == 'true' and '$(_MauiUseDefaultReadyToRunPgoFiles)' == 'true'">
+	<ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'android' and '$(UseMonoRuntime)' == 'false' and '$(Configuration)' == 'Release' and '$(PublishReadyToRun)' == 'true' and '$(_MauiUseDefaultReadyToRunPgoFiles)' == 'true'">
 		<_ReadyToRunPgoFiles Include="$(MSBuildThisFileDirectory)mibc\android\**\*.mibc" />
 	</ItemGroup>
 
