@@ -48,18 +48,16 @@
 	</ItemGroup>
 
 	<!--
-		Enable Composite Partial R2R for Android CoreCLR Release builds.
+		Enable Composite Partial R2R for Android CoreCLR Release builds by default.
 	-->
-	<PropertyGroup Condition="'$(TargetPlatformIdentifier)' == 'android' and '$(UseMonoRuntime)' == 'false' and '$(Configuration)' == 'Release' and '$(_MauiEnablePartialReadyToRunComposite)' != 'false'">
+	<PropertyGroup Condition="'$(TargetPlatformIdentifier)' == 'android' and '$(UseMonoRuntime)' == 'false' and '$(Configuration)' == 'Release' and '$(PublishReadyToRun)' == ''">
 		<PublishReadyToRun>true</PublishReadyToRun>
-    <PublishReadyToRunComposite>true</PublishReadyToRunComposite>
-    <!-- TODO: Marshal methods generation isn't supported for Android R2R builds https://github.com/dotnet/android/issues/10062 -->
-    <AndroidEnableMarshalMethods>false</AndroidEnableMarshalMethods>
-    <PublishReadyToRunCrossgen2ExtraArgs>$(PublishReadyToRunCrossgen2ExtraArgs) --partial</PublishReadyToRunCrossgen2ExtraArgs>
+		<PublishReadyToRunComposite Condition="'$(_MauiPublishReadyToRunComposite)' == ''">true</PublishReadyToRunComposite>
+		<PublishReadyToRunCrossgen2ExtraArgs Condition="'$(_MauiEnablePartialReadyToRun)' == ''">$(PublishReadyToRunCrossgen2ExtraArgs) --partial</PublishReadyToRunCrossgen2ExtraArgs>
 	</PropertyGroup>
 
 	<ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'android' and '$(UseMonoRuntime)' == 'false' and '$(PublishReadyToRun)' == 'true'">
-		<_ReadyToRunPgoFiles Include="$(MSBuildThisFileDirectory)mibc\android\**\*.mibc" />
+		<_ReadyToRunPgoFiles Condition="'$(_ReadyToRunPgoFiles)' == ''" Include="$(MSBuildThisFileDirectory)mibc\android\**\*.mibc" />
 	</ItemGroup>
 
 	<!-- Check Tasks ABI and other validations -->
