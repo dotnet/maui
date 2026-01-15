@@ -1,6 +1,6 @@
 # .NET Multi-platform App UI (.NET MAUI)
 
-[![Build Status](https://dev.azure.com/dnceng-public/_apis/build/status/maui-pr?repoName=dotnet%2Fmaui&branchName=main&label=Public)](https://dev.azure.com/dnceng-public/public/_build?definitionId=257) [![Build Status](https://devdiv.visualstudio.com/DevDiv/_apis/build/status/MAUI?repoName=dotnet%2Fmaui&branchName=main&label=Private)](https://devdiv.visualstudio.com/DevDiv/_build/latest?definitionId=13330&repoName=dotnet%2Fmaui&branchName=main)
+[![Build Status](https://dev.azure.com/dnceng-public/public/_apis/build/status%2Fdotnet%2Fmaui%2Fmaui-pr?branchName=main&label=Public)](https://dev.azure.com/dnceng-public/public/_build?definitionId=302) [![Build Status](https://devdiv.visualstudio.com/DevDiv/_apis/build/status/MAUI?repoName=dotnet%2Fmaui&branchName=main&label=Private)](https://devdiv.visualstudio.com/DevDiv/_build/latest?definitionId=13330&repoName=dotnet%2Fmaui&branchName=main)
 
 [.NET Multi-platform App UI (.NET MAUI)](https://dotnet.microsoft.com/en-us/apps/maui) is a cross-platform framework for creating mobile and desktop apps with C# and XAML. Using .NET MAUI, you can develop apps that can run on Android, iOS, iPadOS, macOS, and Windows from a single shared codebase.
 
