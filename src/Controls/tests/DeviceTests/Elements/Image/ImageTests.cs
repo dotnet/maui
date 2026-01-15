@@ -47,12 +47,12 @@ namespace Microsoft.Maui.DeviceTests
 				await image.WaitUntilLoaded();
 				
 #if WINDOWS
-				// Diagnostic logging for Helix
-				var platformView = handler.ToPlatform();
-				System.Diagnostics.Debug.WriteLine($"[ImageTest] Layout size: {layout.Width}x{layout.Height}");
-				System.Diagnostics.Debug.WriteLine($"[ImageTest] Image size: {image.Width}x{image.Height}");
-				System.Diagnostics.Debug.WriteLine($"[ImageTest] Platform view size: {platformView.ActualWidth}x{platformView.ActualHeight}");
-				System.Diagnostics.Debug.WriteLine($"[ImageTest] Image.IsLoaded: {image.IsLoaded}");
+				// In headless CI environments (like Helix), the layout may need extra time
+				// to complete after the image loads. Wait for the image to have non-zero dimensions.
+				await AssertionExtensions.AssertEventually(
+					() => image.Width > 0 && image.Height > 0,
+					timeout: 5000,
+					message: $"Timed out waiting for image to have non-zero dimensions. Current size: {image.Width}x{image.Height}");
 #endif
 				
 				await handler.ToPlatform().AssertContainsColor(Colors.Red, MauiContext);
