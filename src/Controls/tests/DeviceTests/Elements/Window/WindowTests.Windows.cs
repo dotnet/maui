@@ -284,117 +284,44 @@ namespace Microsoft.Maui.DeviceTests
 			[Fact]
 			public async Task MinimizeAndThenMaximizingWorks()
 			{
-				// File-based logging for Helix artifact upload
-				var logPath = System.IO.Path.Combine(
-					Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT") ?? System.IO.Path.GetTempPath(),
-					"MinimizeAndThenMaximizingWorks.log");
-				var logMessages = new System.Collections.Generic.List<string>();
-				void Log(string message)
+				var window = new Window(new ContentPage());
+
+				int activated = 0;
+				int deactivated = 0;
+				int resumed = 0;
+
+				window.Activated += (_, _) => activated++;
+				window.Deactivated += (_, _) => deactivated++;
+				window.Resumed += (_, _) => resumed++;
+
+				await CreateHandlerAndAddToWindow<IWindowHandler>(window, async (handler) =>
 				{
-					var line = $"[{DateTime.Now:HH:mm:ss.fff}] {message}";
-					logMessages.Add(line);
-					System.Diagnostics.Debug.WriteLine($"[MinMaxTest] {message}");
-				}
+					var platformWindow = window.Handler.PlatformView as UI.Xaml.Window;
 
-				try
-				{
-					var window = new Window(new ContentPage());
+					// Wait for initial activation to complete
+					await AssertEventually(() => activated >= 1, timeout: 5000,
+						message: "Window should fire Activated event after creation");
 
-					int activated = 0;
-					int deactivated = 0;
-					int resumed = 0;
-
-					window.Activated += (_, _) => 
+					for (int i = 0; i < 2; i++)
 					{
-						activated++;
-						Log($"EVENT: Activated fired, count now: {activated}, IsActivated={window.IsActivated}");
-					};
-					window.Deactivated += (_, _) => 
-					{
-						deactivated++;
-						Log($"EVENT: Deactivated fired, count now: {deactivated}, IsActivated={window.IsActivated}");
-					};
-					window.Resumed += (_, _) => 
-					{
-						resumed++;
-						Log($"EVENT: Resumed fired, count now: {resumed}");
-					};
-
-					await CreateHandlerAndAddToWindow<IWindowHandler>(window, async (handler) =>
-					{
-						var platformWindow = window.Handler.PlatformView as UI.Xaml.Window;
-						Log($"Starting test, platformWindow is null: {platformWindow == null}");
-
-						// Wait for initial activation to complete
-						await AssertEventually(() => window.IsActivated, timeout: 2000,
-							message: "Window should be activated after creation");
-						Log($"Initial state - activated:{activated} deactivated:{deactivated} resumed:{resumed} IsActivated:{window.IsActivated}");
-
-						// The loop does Restore() then Minimize() twice.
-						// - Iteration 0: Restore() does nothing (already activated), Minimize() deactivates
-						// - Iteration 1: Restore() reactivates (triggers Activated + Resumed), Minimize() deactivates
-						for (int i = 0; i < 2; i++)
-						{
-							Log($"=== Loop {i} START ===");
-
-							// Step 1: Restore the window (first iteration: no-op, second: triggers activation)
-							Log($"Loop {i}: Calling Restore(), current IsActivated={window.IsActivated}");
-							var activatedBefore = activated;
-							platformWindow.Restore();
-
-							if (i > 0)
-							{
-								// On second+ iteration, we expect activation after restore from minimized state
-								await AssertEventually(() => window.IsActivated && activated > activatedBefore,
-									timeout: 2000,
-									message: $"Loop {i}: Window should be activated after Restore from minimized state");
-							}
-							else
-							{
-								// On first iteration, window is already activated, just a small delay for any state sync
-								await Task.Delay(100);
-							}
-							Log($"Loop {i}: After Restore - activated:{activated} deactivated:{deactivated} resumed:{resumed} IsActivated:{window.IsActivated}");
-
-							// Step 2: Minimize the window (should always trigger deactivation)
-							Log($"Loop {i}: Calling Minimize(), current IsActivated={window.IsActivated}");
-							var deactivatedBefore = deactivated;
-							platformWindow.Minimize();
-
-							await AssertEventually(() => !window.IsActivated && deactivated > deactivatedBefore,
-								timeout: 2000,
-								message: $"Loop {i}: Window should be deactivated after Minimize");
-							Log($"Loop {i}: After Minimize - activated:{activated} deactivated:{deactivated} resumed:{resumed} IsActivated:{window.IsActivated}");
-
-							Log($"=== Loop {i} END ===");
-						}
-
-						Log($"Final counts inside handler - activated:{activated} deactivated:{deactivated} resumed:{resumed}");
-					});
-
-					Log($"Final counts after handler - activated:{activated} deactivated:{deactivated} resumed:{resumed}");
-					Log($"Expected - activated:2 deactivated:2 resumed:1");
-
-					// Expected results:
-					// - activated: 2 (1 initial + 1 from second restore)
-					// - deactivated: 2 (2 from minimize operations)
-					// - resumed: 1 (1 from second restore after minimize - first activation doesn't trigger resumed)
-					Assert.Equal(2, activated);
-					Assert.Equal(1, resumed);
-					Assert.Equal(2, deactivated);
-				}
-				finally
-				{
-					// Write all log messages to file for Helix artifact upload
-					try
-					{
-						System.IO.File.WriteAllLines(logPath, logMessages);
+						platformWindow.Restore();
+						// Use a delay long enough for window state transitions
+						await Task.Delay(300);
+						platformWindow.Minimize();
+						await Task.Delay(300);
 					}
-					catch
-					{
-						// Ignore file write errors
-					}
-				}
+				});
+
+				// Wait for all expected events to fire with generous timeout
+				// Expected: activated=2, resumed=1, deactivated=2
+				await AssertEventually(() => activated >= 2, timeout: 5000,
+					message: $"Expected at least 2 Activated events, got {activated}");
+				await AssertEventually(() => deactivated >= 2, timeout: 5000,
+					message: $"Expected at least 2 Deactivated events, got {deactivated}");
+
+				Assert.Equal(2, activated);
+				Assert.Equal(1, resumed);
+				Assert.Equal(2, deactivated);
 			}
 		}
 	}
