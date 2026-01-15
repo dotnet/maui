@@ -5,7 +5,7 @@
     <Message Text="Installing the workloads" Importance="high" />
     <!-- <MSBuild Projects="$(RepoRoot)src/DotNet/DotNet.csproj" Targets="Build" /> -->
     <Exec
-      Command="dotnet build $(RepoRoot)src/DotNet/DotNet.csproj -p:InstallDotNet=false"
+      Command=".dotnet/dotnet build $(RepoRoot)src/DotNet/DotNet.csproj -p:InstallDotNet=false"
       WorkingDirectory="$(RepoRoot)"
       EnvironmentVariables="DOTNET_MULTILEVEL_LOOKUP=0" />
 

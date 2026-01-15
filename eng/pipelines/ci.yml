@@ -235,10 +235,12 @@ stages:
         runAsPublic: false
       timeout: 120
       testCategory: Samples
+      buildScript: $(_buildScript)
     - name: mac_sample_tests
       pool: ${{ parameters.MacOSPool }}
       timeout: 240
       testCategory: Samples
+      buildScript: $(_buildScriptMacOS)
 
     - name: win_wintemplate_tests
       ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
@@ -249,6 +251,7 @@ stages:
         runAsPublic: false
       timeout: 120
       testCategory: WindowsTemplates
+      buildScript: $(_buildScript)
 
     # - name: mac_wintemplate_tests
     #   pool: ${{ parameters.MacOSPool }}
@@ -264,10 +267,12 @@ stages:
         runAsPublic: false
       timeout: 120
       testCategory: Build
+      buildScript: $(_buildScript)
     - name: mac_buildtemplate_tests
       pool: ${{ parameters.MacOSPool }}
       timeout: 240
       testCategory: Build
+      buildScript: $(_buildScriptMacOS)
 
     - name: win_blazortemplate_tests
       ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
@@ -278,10 +283,12 @@ stages:
         runAsPublic: false
       timeout: 120
       testCategory: Blazor
+      buildScript: $(_buildScript)
     - name: mac_blazortemplate_tests
       pool: ${{ parameters.MacOSPool }}
       timeout: 240
       testCategory: Blazor
+      buildScript: $(_buildScriptMacOS)
 
     - name: win_multitemplate_tests
       ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
@@ -292,16 +299,19 @@ stages:
         runAsPublic: false
       timeout: 120
       testCategory: MultiProject
+      buildScript: $(_buildScript)
     - name: mac_multitemplate_tests
       pool: ${{ parameters.MacOSPool }}
       timeout: 120
       testCategory: MultiProject
+      buildScript: $(_buildScriptMacOS)
 
     # TODO: macOSTemplates and AOT template categories
     - name: mac_runandroid_tests
       pool: ${{ parameters.MacOSPool }}
       timeout: 240
       testCategory: RunOnAndroid
+      buildScript: $(_buildScriptMacOS)
 
     # RunOniOS - Individual test methods run in parallel
     # ARM64 (Apple Silicon) lanes - using MacOSPoolArm64
@@ -309,26 +319,31 @@ stages:
       pool: ${{ parameters.MacOSPoolArm64 }}
       timeout: 45
       testName: RunOniOS_MauiDebug
+      buildScript: $(_buildScriptMacOS)
 
     - name: mac_runios_maui_release_arm64
       pool: ${{ parameters.MacOSPoolArm64 }}
       timeout: 45
       testName: RunOniOS_MauiRelease
+      buildScript: $(_buildScriptMacOS)
 
     - name: mac_runios_maui_trim_arm64
       pool: ${{ parameters.MacOSPoolArm64 }}
       timeout: 45
       testName: RunOniOS_MauiReleaseTrimFull
+      buildScript: $(_buildScriptMacOS)
 
     - name: mac_runios_blazor_debug_arm64
       pool: ${{ parameters.MacOSPoolArm64 }}
       timeout: 45
       testName: RunOniOS_BlazorDebug
+      buildScript: $(_buildScriptMacOS)
 
     - name: mac_runios_blazor_release_arm64
       pool: ${{ parameters.MacOSPoolArm64 }}
       timeout: 45
       testName: RunOniOS_BlazorRelease
+      buildScript: $(_buildScriptMacOS)
 
     # TODO: Re-enable once ASP.NET Core fixes trimmer warning IL2111 with Blazor Router.NotFoundPage
     # Issue: https://github.com/dotnet/aspnetcore/issues/63951
@@ -341,6 +356,7 @@ stages:
       pool: ${{ parameters.MacOSPoolArm64 }}
       timeout: 45
       testName: RunOniOS_MauiNativeAOT
+      buildScript: $(_buildScriptMacOS)
 
     # MacOSPool lanes - comparison with ARM64 pool
     # Only run on: (non-PR on main/net*.0/release/*/inflight/*) OR (PR targeting net*.0/release/*/inflight/*)
@@ -349,18 +365,21 @@ stages:
       timeout: 45
       testName: RunOniOS_MauiDebug
       condition: ${{ parameters.macOSPoolLaneCondition }}
+      buildScript: $(_buildScriptMacOS)
 
     - name: mac_runios_maui_release
       pool: ${{ parameters.MacOSPool }}
       timeout: 45
       testName: RunOniOS_MauiRelease
       condition: ${{ parameters.macOSPoolLaneCondition }}
+      buildScript: $(_buildScriptMacOS)
 
     - name: mac_runios_maui_trim
       pool: ${{ parameters.MacOSPool }}
       timeout: 45
       testName: RunOniOS_MauiReleaseTrimFull
       condition: ${{ parameters.macOSPoolLaneCondition }}
+      buildScript: $(_buildScriptMacOS)
 
     - name: mac_runios_blazor_debug
       pool: ${{ parameters.MacOSPool }}
@@ -373,9 +392,11 @@ stages:
       timeout: 45
       testName: RunOniOS_BlazorRelease
       condition: ${{ parameters.macOSPoolLaneCondition }}
+      buildScript: $(_buildScriptMacOS)
 
     - name: mac_runios_nativeaot
       pool: ${{ parameters.MacOSPool }}
       timeout: 45
       testName: RunOniOS_MauiNativeAOT
       condition: ${{ parameters.macOSPoolLaneCondition }}
+      buildScript: $(_buildScriptMacOS)

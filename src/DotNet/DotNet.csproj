@@ -125,32 +125,6 @@
     />
   </Target>
 
-  <!-- if we are building in the unified pipeline we want to install the runtimes from the props of the sdks -->
-  <Target Name="_GetExternalDotNetSdkVersions">
-    <XmlPeek
-        Condition="Exists('$(AndroidSrcPath)\eng\Versions.props')"
-        XmlInputPath="$(AndroidSrcPath)\eng\Versions.props"
-        Query="/Project/PropertyGroup/MicrosoftNETCoreAppRefPackageVersion/text()">
-      <Output TaskParameter="Result" PropertyName="VersionFromAndroid" />
-    </XmlPeek>
-    <XmlPeek
-        Condition="Exists('$(MaciosSrcPath)\eng\Versions.props')"
-        XmlInputPath="$(MaciosSrcPath)\eng\Versions.props"
-        Query="/Project/PropertyGroup/MicrosoftNETCoreAppRefPackageVersion/text()">
-      <Output TaskParameter="Result" PropertyName="VersionFromMacios" />
-    </XmlPeek>
-    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('windows'))">
-      <DotNetXARuntimeInstallCommand>&amp; '$(DotNetInstallScriptPath)' -Version $(VersionFromAndroid) -InstallDir '$(DotNetDirectory)' -Verbose -Runtime dotnet</DotNetXARuntimeInstallCommand>
-      <DotNetXMRuntimeInstallCommand>&amp; '$(DotNetInstallScriptPath)' -Version $(VersionFromMacios) -InstallDir '$(DotNetDirectory)' -Verbose -Runtime dotnet</DotNetXMRuntimeInstallCommand>
-      <DotNetXARuntimeInstallCommand>powershell -ExecutionPolicy ByPass -NoProfile -Command &quot;$(DotNetXARuntimeInstallCommand)&quot;</DotNetXARuntimeInstallCommand>
-      <DotNetXMRuntimeInstallCommand>powershell -ExecutionPolicy ByPass -NoProfile -Command &quot;$(DotNetXMRuntimeInstallCommand)&quot;</DotNetXMRuntimeInstallCommand>
-    </PropertyGroup>
-    <PropertyGroup Condition="!$([MSBuild]::IsOSPlatform('windows'))">
-      <DotNetXARuntimeInstallCommand>bash '$(DotNetInstallScriptPath)' --version $(VersionFromAndroid) --install-dir '$(DotNetDirectory)' --verbose -Runtime dotnet</DotNetXARuntimeInstallCommand>
-      <DotNetXMRuntimeInstallCommand>bash '$(DotNetInstallScriptPath)' --version $(VersionFromMacios) --install-dir '$(DotNetDirectory)' --verbose -Runtime dotnet</DotNetXMRuntimeInstallCommand>
-    </PropertyGroup>
-  </Target>
-
   <Target Name="_InstallDotNet"
       Inputs="$(_Inputs)"
       Outputs="$(DotNetDirectory).stamp"

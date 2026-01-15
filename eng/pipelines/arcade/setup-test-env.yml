@@ -39,11 +39,11 @@ steps:
       itemPattern: '**/*.nupkg'
       targetPath: ${{ parameters.mauiSourcePath }}/artifacts
 
-  - task: DotNetCoreCLI@2
-    displayName: Install dotnet preview without workloads
-    inputs:
-      projects: ${{ parameters.mauiSourcePath }}/src/DotNet/DotNet.csproj
-      arguments: '-p:InstallWorkloadPacks=false -c ${{ parameters.buildConfig }} -bl:${{ parameters.repoLogPath }}/install-dotnet.binlog'
+  # - task: DotNetCoreCLI@2
+  #   displayName: Install dotnet preview without workloads
+  #   inputs:
+  #     projects: ${{ parameters.mauiSourcePath }}/src/DotNet/DotNet.csproj
+  #     arguments: '-p:InstallWorkloadPacks=false -c ${{ parameters.buildConfig }} -bl:${{ parameters.repoLogPath }}/install-dotnet.binlog'
 
   - template: /eng/pipelines/common/run-dotnet-preview.yml
     parameters:
