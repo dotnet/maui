@@ -48,7 +48,7 @@ public class NLEmbeddingGeneratorDisposalTests : EmbeddingGeneratorDisposalTests
 		var embedding = NLEmbedding.GetSentenceEmbedding(NLLanguage.English);
 		Assert.NotNull(embedding);
 
-		var generator = embedding.AsEmbeddingGenerator();
+		var generator = embedding.AsIEmbeddingGenerator();
 
 		Assert.NotNull(generator);
 		Assert.IsType<NLEmbeddingGenerator>(generator);
