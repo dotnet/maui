@@ -27,6 +27,10 @@ stages:
         ${{ else }}:
           testFilter: 'Category=${{ job.testCategory }}'
           testIdentifier: ${{ job.testCategory }}
+      preSteps:
+      - checkout: self
+        fetchDepth: 1
+        clean: true
       steps:
       - script: ${{ job.buildScript }} -test -configuration ${{ parameters.buildConfig  }} -projects "${{ parameters.integrationTestsProjects }}" /p:ProvisioningMauiPacks=true /p:ArchiveTests=false /p:TreatWarningsAsErrors=$(TreatWarningsAsErrors) /p:TestRunnerAdditionalArguments="--filter \"$(testFilter)\" --logger trx --results-directory $(Agent.TempDirectory)/Microsoft.Maui.IntegrationTests" /bl:$(Build.Arcade.LogsPath)${{ parameters.buildConfig }}/buildtasks_os.binlog $(_OfficialBuildIdArgs)
         displayName: 🛠️ Run Integration Tests - $(testIdentifier) ${{ job.pool.os }}
