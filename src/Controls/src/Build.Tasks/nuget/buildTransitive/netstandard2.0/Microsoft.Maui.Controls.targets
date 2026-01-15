@@ -49,12 +49,6 @@
 
 	<!--
 		Enable Composite Partial R2R for Android CoreCLR Release builds by default.
-		
-		To customize:
-		- PublishReadyToRun=false                   Disable R2R entirely
-		- PublishReadyToRunComposite=false          Use non-composite R2R
-		- _MauiPartialReadyToRun=false              Use full R2R (AOT-compile all methods, not just profiled ones)
-		- _MauiUseDefaultReadyToRunPgoFiles=false   Don't include MAUI's default MIBC profiles
 	-->
 	<PropertyGroup Condition="'$(TargetPlatformIdentifier)' == 'android' and '$(UseMonoRuntime)' == 'false' and '$(Configuration)' == 'Release'">
 		<PublishReadyToRun Condition="'$(PublishReadyToRun)' == ''">true</PublishReadyToRun>
