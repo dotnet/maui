@@ -60,6 +60,16 @@ namespace Microsoft.Maui.Platform
 		{
 			if (CurrentView?.Handler is ElementHandler handler)
 			{
+				// Check if the window is being destroyed by verifying its handler is still connected.
+				// Window.Destroying() calls Handler?.DisconnectHandler() before DisposeWindowScope(),
+				// so checking window.Handler == null tells us if we're in the teardown phase.
+				var window = handler.MauiContext?.GetPlatformWindow()?.GetWindow();
+				if (window?.Handler == null)
+				{
+					// Window is being destroyed, skip theme update to avoid accessing disposed services
+					return;
+				}
+
 				try
 				{
 					var application = handler.GetRequiredService<IApplication>();
@@ -68,7 +78,8 @@ namespace Microsoft.Maui.Platform
 				}
 				catch (ObjectDisposedException)
 				{
-					// The service provider might have been disposed during shutdown
+					// Extra safety net in case we hit a race condition where the service provider
+					// is disposed between our check and the actual service access.
 				}
 			}
 
@@ -78,3 +89,4 @@ namespace Microsoft.Maui.Platform
 		}
 	}
 }
+
