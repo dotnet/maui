@@ -166,15 +166,9 @@ internal class ScreenshotCommand
             return null;
         }
 
-        try
-        {
-            var nugetFramework = NuGetFramework.Parse(framework);
-            return string.IsNullOrEmpty(nugetFramework.Platform) ? null : nugetFramework.Platform;
-        }
-        catch (ArgumentException)
-        {
-            return null;
-        }
+        // NuGetFramework.Parse() doesn't throw - it returns UnsupportedFramework for invalid inputs
+        var nugetFramework = NuGetFramework.Parse(framework);
+        return string.IsNullOrEmpty(nugetFramework.Platform) ? null : nugetFramework.Platform;
     }
 
     /// <summary>
