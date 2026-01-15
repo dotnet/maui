@@ -8,3 +8,5 @@ Microsoft.Maui.Controls.AppThemeBinding.AppThemeBinding() -> void
 ~Microsoft.Maui.Controls.AppThemeBinding.Default.set -> void
 ~Microsoft.Maui.Controls.AppThemeBinding.Light.get -> object
 ~Microsoft.Maui.Controls.AppThemeBinding.Light.set -> void
+~Microsoft.Maui.Controls.Style.LazyInitialization.set -> void
+~Microsoft.Maui.Controls.Style.Style(string assemblyQualifiedTargetTypeName) -> void

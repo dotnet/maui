@@ -145,13 +145,27 @@ class ElementNode(XmlType type, string namespaceURI, IXmlNamespaceResolver names
 		return false;
 	}
 
+	bool IsStyleContent(IXamlNodeVisitor visitor, INode parentNode)
+	{
+		if (parentNode is ElementNode parentElement &&
+			parentElement.Properties.TryGetValue(XmlName._StyleContent, out INode styleContent) &&
+			styleContent == this)
+			return true;
+		// Also check if parent is a Style (detected by visitor)
+		if (parentNode is ElementNode parentEl && visitor.IsStyle(parentEl))
+			return true;
+		return false;
+	}
+
 	protected bool SkipChildren(IXamlNodeVisitor visitor, INode node, INode parentNode) =>
 		   (visitor.StopOnDataTemplate && IsDataTemplate(parentNode))
 		|| (visitor.StopOnResourceDictionary && visitor.IsResourceDictionary(this))
+		|| (visitor.StopOnStyle && visitor.IsStyle(this))  // Skip children when THIS node is a Style
 		|| visitor.SkipChildren(node, parentNode);
 
 	protected bool SkipVisitNode(IXamlNodeVisitor visitor, INode parentNode) =>
-		!visitor.VisitNodeOnDataTemplate && IsDataTemplate(parentNode);
+		   (!visitor.VisitNodeOnDataTemplate && IsDataTemplate(parentNode))
+		|| (!visitor.VisitNodeOnStyle && IsStyleContent(visitor, parentNode));  // Skip visiting when parent is a Style
 
 	public override INode Clone()
 	{
