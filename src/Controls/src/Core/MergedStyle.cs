@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.Logging;
@@ -30,10 +31,12 @@ namespace Microsoft.Maui.Controls
 
 		IList<string> _styleClass;
 
+		readonly Type _targetType;
+
 		public MergedStyle(Type targetType, BindableObject target)
 		{
 			Target = target;
-			TargetType = targetType;
+			_targetType = targetType;
 			RegisterImplicitStyles();
 			Apply(Target);
 		}
@@ -45,8 +48,11 @@ namespace Microsoft.Maui.Controls
 			{
 				if (_style == value)
 					return;
-				if (value != null && !value.TargetType.IsAssignableFrom(TargetType))
-					Application.Current?.FindMauiContext()?.CreateLogger<Style>()?.LogWarning("Style TargetType {FullName} is not compatible with element target type {TargetType}", value.TargetType.FullName, TargetType);
+				if (value is not null && value.TryGetTargetType(out var styleTargetType))
+				{
+					if (!styleTargetType.IsAssignableFrom(_targetType))
+						Application.Current?.FindMauiContext()?.CreateLogger<Style>()?.LogWarning("Style TargetType {FullName} is not compatible with element target type {TargetType}", styleTargetType.FullName, _targetType);
+				}
 				SetStyle(ImplicitStyle, ClassStyles, value);
 			}
 		}
@@ -114,7 +120,11 @@ namespace Microsoft.Maui.Controls
 			Style?.Apply(bindable, new SetterSpecificity(SetterSpecificity.StyleLocal, 0, 0, 0));
 		}
 
-		public Type TargetType { get; }
+		public Type TargetType
+		{
+			[RequiresUnreferencedCode("Required by IStyle interface.")]
+			get => _targetType;
+		}
 
 		public void UnApply(BindableObject bindable)
 		{
@@ -127,7 +137,7 @@ namespace Microsoft.Maui.Controls
 
 		void OnClassStyleChanged()
 		{
-			ClassStyles = _classStyleProperties.Select(p => (Target.GetValue(p) as IList<Style>)?.FirstOrDefault(s => s.CanBeAppliedTo(TargetType))).ToList();
+			ClassStyles = _classStyleProperties.Select(p => (Target.GetValue(p) as IList<Style>)?.FirstOrDefault(s => s.CanBeAppliedTo(_targetType))).ToList();
 		}
 
 		void OnImplicitStyleChanged()
@@ -153,7 +163,7 @@ namespace Microsoft.Maui.Controls
 
 		void RegisterImplicitStyles()
 		{
-			Type type = TargetType;
+			Type type = _targetType;
 			while (true)
 			{
 				BindableProperty implicitStyleProperty = BindableProperty.Create(nameof(ImplicitStyle), typeof(Style), typeof(NavigableElement), default(Style),

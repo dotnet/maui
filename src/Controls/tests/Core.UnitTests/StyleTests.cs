@@ -1202,5 +1202,197 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(Label.TextProperty.DefaultValue, label.Text);
 
 		}
+
+		#region Lazy/Trimmable Style Tests
+
+		[Fact]
+		public void LazyStyleIsNotInitializedUntilApplied()
+		{
+			bool initializerCalled = false;
+			var style = new Style(
+				typeof(Label).AssemblyQualifiedName,
+				(s, target) =>
+				{
+					initializerCalled = true;
+					if (target is not Label)
+						return;
+					s.Setters.Add(new Setter { Property = Label.TextProperty, Value = "lazy" });
+				});
+
+			// Verify initializer not called yet
+			Assert.False(initializerCalled);
+
+			// Apply to element
+			var label = new Label { Style = style };
+
+			// Verify initializer was called
+			Assert.True(initializerCalled);
+			Assert.Equal("lazy", label.Text);
+		}
+
+		[Fact]
+		public void LazyStyleSettersAreAppliedCorrectly()
+		{
+			var style = new Style(
+				typeof(Label).AssemblyQualifiedName,
+				static (s, target) =>
+				{
+					if (target is not Label)
+						return;
+					s.Setters.Add(new Setter { Property = Label.TextProperty, Value = "test" });
+					s.Setters.Add(new Setter { Property = Label.TextColorProperty, Value = Colors.Red });
+				});
+
+			var label = new Label { Style = style };
+
+			Assert.Equal("test", label.Text);
+			Assert.Equal(Colors.Red, label.TextColor);
+		}
+
+		[Fact]
+		public void LazyStyleTargetTypeFullNameReturnsCorrectValue()
+		{
+			var style = new Style(
+				"Microsoft.Maui.Controls.Label, Microsoft.Maui.Controls",
+				static (s, target) => { });
+
+			Assert.Equal("Microsoft.Maui.Controls.Label", style.TargetTypeFullName.ToString());
+		}
+
+		[Fact]
+		public void LazyStyleCanBeAppliedToMatchingType()
+		{
+			var style = new Style(
+				typeof(Label).AssemblyQualifiedName,
+				static (s, target) =>
+				{
+					if (target is not Label)
+						return;
+					s.Setters.Add(new Setter { Property = Label.TextProperty, Value = "works" });
+				});
+
+			// Should not throw and should apply
+			var label = new Label { Style = style };
+			Assert.Equal("works", label.Text);
+		}
+
+		[Fact]
+		public void LazyStyleInitializerIsCalledOnlyOnce()
+		{
+			int callCount = 0;
+			var style = new Style(
+				typeof(Label).AssemblyQualifiedName,
+				(s, target) =>
+				{
+					callCount++;
+					if (target is not Label)
+						return;
+					s.Setters.Add(new Setter { Property = Label.TextProperty, Value = "once" });
+				});
+
+			// Apply to multiple labels
+			var label1 = new Label { Style = style };
+			var label2 = new Label { Style = style };
+			var label3 = new Label { Style = style };
+
+			// Initializer should only be called once (for the first label)
+			Assert.Equal(1, callCount);
+
+			// But all labels should have the style applied
+			Assert.Equal("once", label1.Text);
+			Assert.Equal("once", label2.Text);
+			Assert.Equal("once", label3.Text);
+		}
+
+		[Fact]
+		public void LazyStyleTryGetTargetTypeReturnsTrueForExistingType()
+		{
+			var style = new Style(
+				typeof(Label).AssemblyQualifiedName,
+				static (s, target) => { });
+
+			var result = ((IStyle)style).TryGetTargetType(out var targetType);
+
+			Assert.True(result);
+			Assert.Equal(typeof(Label), targetType);
+		}
+
+		[Fact]
+		public void RegularStyleTryGetTargetTypeReturnsTrue()
+		{
+			var style = new Style(typeof(Label));
+
+			var result = ((IStyle)style).TryGetTargetType(out var targetType);
+
+			Assert.True(result);
+			Assert.Equal(typeof(Label), targetType);
+		}
+
+		[Fact]
+		public void LazyStyleCanBeAddedToResourceDictionary()
+		{
+			var style = new Style(
+				typeof(Label).AssemblyQualifiedName,
+				static (s, target) =>
+				{
+					if (target is not Label)
+						return;
+					s.Setters.Add(new Setter { Property = Label.TextProperty, Value = "from RD" });
+				});
+
+			var rd = new ResourceDictionary();
+			rd.Add(style);
+
+			// Should be registered under the type's full name
+			Assert.Contains("Microsoft.Maui.Controls.Label", rd.Keys);
+		}
+
+		[Fact]
+		public void LazyStyleWithBehaviors()
+		{
+			var behavior = new MockBehavior<Entry>();
+			var style = new Style(
+				typeof(Entry).AssemblyQualifiedName,
+				(s, target) =>
+				{
+					if (target is not Entry)
+						return;
+					s.Setters.Add(new Setter { Property = Entry.TextProperty, Value = "with behavior" });
+					s.Behaviors.Add(behavior);
+				});
+
+			var entry = new Entry { Style = style };
+
+			Assert.Equal("with behavior", entry.Text);
+			Assert.True(behavior.attached);
+		}
+
+		[Fact]
+		public void LazyStyleWithTriggers()
+		{
+			var style = new Style(
+				typeof(Entry).AssemblyQualifiedName,
+				static (s, target) =>
+				{
+					if (target is not Entry)
+						return;
+					s.Setters.Add(new Setter { Property = Entry.TextProperty, Value = "default" });
+					s.Triggers.Add(new Trigger(typeof(Entry))
+					{
+						Property = Entry.IsPasswordProperty,
+						Value = true,
+						Setters = { new Setter { Property = Entry.TextProperty, Value = "password mode" } }
+					});
+				});
+
+			var entry = new Entry { Style = style };
+
+			Assert.Equal("default", entry.Text);
+
+			entry.IsPassword = true;
+			Assert.Equal("password mode", entry.Text);
+		}
+
+		#endregion
 	}
 }

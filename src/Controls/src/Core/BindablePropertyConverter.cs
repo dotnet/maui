@@ -21,6 +21,8 @@ namespace Microsoft.Maui.Controls
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
 			=> true;
 
+		[UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode",
+			Justification = "This converter is used at XAML parse time, not at runtime with trimmed types.")]
 		object IExtendedTypeConverter.ConvertFromInvariantString(string value, IServiceProvider serviceProvider)
 		{
 			if (string.IsNullOrWhiteSpace(value))
@@ -124,6 +126,8 @@ namespace Microsoft.Maui.Controls
 		static FieldInfo GetPropertyField(Type type, string fieldName)
 			=> type.GetField(fieldName, BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
 
+		[UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode",
+			Justification = "This method is used at XAML parse time, not at runtime with trimmed types.")]
 		Type FindTypeForVisualState(IProvideParentValues parentValueProvider, IXmlLineInfo lineInfo)
 		{
 			var parents = parentValueProvider.ParentObjects.ToList();

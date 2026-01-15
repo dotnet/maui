@@ -1,1 +1,2 @@
 #nullable enable
+~Microsoft.Maui.Controls.Style.Style(string assemblyQualifiedTargetTypeName, System.Action<Microsoft.Maui.Controls.Style, Microsoft.Maui.Controls.BindableObject> initializer) -> void
