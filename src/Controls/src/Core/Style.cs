@@ -61,13 +61,21 @@ namespace Microsoft.Maui.Controls
 		/// This constructor is intended for source generator use only.
 		/// </summary>
 		/// <param name="assemblyQualifiedTargetTypeName">The assembly-qualified type name of the target type.</param>
-		/// <param name="initializer">An action that populates the style's Setters, Behaviors, and Triggers when invoked.</param>
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public Style(string assemblyQualifiedTargetTypeName, Action<Style, BindableObject> initializer)
+		public Style(string assemblyQualifiedTargetTypeName)
 			: this()
 		{
 			_assemblyQualifiedTargetTypeName = assemblyQualifiedTargetTypeName ?? throw new ArgumentNullException(nameof(assemblyQualifiedTargetTypeName));
-			_initializer = initializer ?? throw new ArgumentNullException(nameof(initializer));
+		}
+
+		/// <summary>
+		/// Sets the initializer action that populates the style's Setters, Behaviors, and Triggers.
+		/// This property is intended for source generator use only.
+		/// </summary>
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public Action<Style, BindableObject> Initializer
+		{
+			set => _initializer = value;
 		}
 
 		/// <summary>

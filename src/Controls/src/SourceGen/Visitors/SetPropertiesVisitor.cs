@@ -11,10 +11,11 @@ using static LocationHelpers;
 
 class SetPropertiesVisitor : IXamlNodeVisitor
 {
-	public SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictionary = false)
+	public SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictionary = false, bool stopOnStyle = true)
 	{
 		Context = context;
 		StopOnResourceDictionary = stopOnResourceDictionary;
+		StopOnStyle = stopOnStyle;
 	}
 
 	SourceGenContext Context { get; }
@@ -35,8 +36,8 @@ class SetPropertiesVisitor : IXamlNodeVisitor
 	public TreeVisitingMode VisitingMode => TreeVisitingMode.BottomUp;
 	public bool StopOnDataTemplate => true;
 	public bool VisitNodeOnDataTemplate => true;
-	public bool StopOnStyle => false; // Don't stop - we need to process non-content properties (BasedOn, ApplyToDerivedTypes, etc.)
-	public bool VisitNodeOnStyle => true;
+	public bool StopOnStyle { get; } // Skip children by default; Style initializer can override
+	public bool VisitNodeOnStyle => true; // But still visit the Style node itself to generate the initializer
 	public bool SkipChildren(INode node, INode parentNode) => false;
 	public bool IsResourceDictionary(ElementNode node) => node.IsResourceDictionary(Context);
 	public bool IsStyle(ElementNode node) => node.IsStyle(Context);
@@ -218,6 +219,63 @@ class SetPropertiesVisitor : IXamlNodeVisitor
 				//FIXME error should be "propertyType does not support Add()"
 				Context.ReportDiagnostic(Diagnostic.Create(Descriptors.MemberResolution, location, localName));
 			}
+		}
+
+		// Handle Style content - generate the initializer lambda
+		// This runs after normal property handling, and only for Style nodes that have content
+		if (node.IsStyle(Context) && node.Properties.ContainsKey(XmlName._StyleContent))
+		{
+			GenerateStyleInitializer(node);
+		}
+	}
+
+	void GenerateStyleInitializer(ElementNode styleNode)
+	{
+		if (!Context.Variables.TryGetValue(styleNode, out var styleLocalValue))
+			return;
+		var styleVariable = (LocalVariable)styleLocalValue;
+
+		// Get the target type that was stored in CreateValuesVisitor
+		if (!Context.Types.TryGetValue(styleNode, out var targetType))
+			return;
+
+		// Generate the initializer assignment
+		Writer.WriteLine($"{styleVariable.ValueAccessor}.Initializer = static (__style, __target) =>");
+		using (PrePost.NewBlock(Writer, begin: "{", end: "};"))
+		{
+			// Generate type guard
+			Writer.WriteLine($"if (__target is not {targetType.ToFQDisplayString()}) return;");
+			Writer.WriteLine();
+
+			var styleContext = new SourceGenContext(Writer, Context.Compilation, Context.SourceProductionContext, Context.XmlnsCache, Context.TypeCache, Context.RootType!, null, Context.ProjectItem)
+			{
+				ParentContext = Context,
+			};
+
+			// Register __style as the Style variable in this context
+			var styleType = Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Style");
+			styleContext.Variables[styleNode] = new LocalVariable(styleType!, "__style");
+
+			// Visit Style's content nodes (Setters, Behaviors, Triggers, CollectionItems)
+			// We need to process:
+			// 1. Explicit Setters/Behaviors/Triggers properties
+			// 2. Implicit CollectionItems (which are Setters)
+			
+			// Remove the marker property so normal visitors don't try to process it
+			styleNode.Properties.Remove(XmlName._StyleContent);
+			
+			// Clear SkipProperties so the content properties are processed
+			var contentPropertyNames = new[] { new XmlName("", "Setters"), new XmlName("", "Behaviors"), new XmlName("", "Triggers") };
+			foreach (var propName in contentPropertyNames)
+			{
+				styleNode.SkipProperties.Remove(propName);
+			}
+
+			// Run the same visitor sequence as _CreateContent, but allow Style children to be visited.
+			styleNode.Accept(new CreateValuesVisitor(styleContext, stopOnStyle: false), null);
+			styleNode.Accept(new SetNamescopesAndRegisterNamesVisitor(styleContext, stopOnStyle: false), null);
+			styleNode.Accept(new SetResourcesVisitor(styleContext, stopOnStyle: false), null);
+			styleNode.Accept(new SetPropertiesVisitor(styleContext, stopOnResourceDictionary: true, stopOnStyle: false), null);
 		}
 	}
 

@@ -73,16 +73,25 @@ class SetNamescopesAndRegisterNamesVisitor : IXamlNodeVisitor
 			namesInNamescope = Context.Scopes[parentNode].namesInScope;
 		}
 
-		if (setNameScope && Context.Variables[node].Type.InheritsFrom(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindableObject")!, Context))
+		// Check if node exists in Variables before accessing
+		if (!Context.Variables.TryGetValue(node, out var nodeVariable))
+		{
+			// Node wasn't created by CreateValuesVisitor - this can happen for nodes inside Style
+			// when StopOnStyle is false and we're processing Style content
+			Context.Scopes[node] = (namescope, namesInNamescope);
+			return;
+		}
+
+		if (setNameScope && nodeVariable.Type.InheritsFrom(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindableObject")!, Context))
 			using (PrePost.NewConditional(Writer, "!_MAUIXAML_SG_NAMESCOPE_DISABLE"))
 			{
-				Writer.WriteLine($"global::Microsoft.Maui.Controls.Internals.NameScope.SetNameScope({Context.Variables[node].ValueAccessor}, {namescope.ValueAccessor});");
+				Writer.WriteLine($"global::Microsoft.Maui.Controls.Internals.NameScope.SetNameScope({nodeVariable.ValueAccessor}, {namescope.ValueAccessor});");
 			}
 		//workaround when VSM tries to apply state before parenting (https://github.com/dotnet/maui/issues/16208)
-		else if (Context.Variables.TryGetValue(node, out var variable) && variable.Type.InheritsFrom(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Element")!, Context))
+		else if (nodeVariable.Type.InheritsFrom(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Element")!, Context))
 			using (PrePost.NewConditional(Writer, "!_MAUIXAML_SG_NAMESCOPE_DISABLE"))
 			{
-				Writer.WriteLine($"{Context.Variables[node].ValueAccessor}.transientNamescope = {namescope.ValueAccessor};");
+				Writer.WriteLine($"{nodeVariable.ValueAccessor}.transientNamescope = {namescope.ValueAccessor};");
 			}
 
 		Context.Scopes[node] = (namescope, namesInNamescope);

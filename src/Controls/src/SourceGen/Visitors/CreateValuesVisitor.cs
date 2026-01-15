@@ -2,6 +2,7 @@ using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml;
 using Microsoft.CodeAnalysis;
 using Microsoft.Maui.Controls.Xaml;
 
@@ -42,6 +43,10 @@ class CreateValuesVisitor : IXamlNodeVisitor
 
 	public static void CreateValue(ElementNode node, IndentedTextWriter writer, IDictionary<INode, ILocalValue> variables, Compilation compilation, AssemblyAttributes xmlnsCache, SourceGenContext Context, Func<INode, ITypeSymbol, ILocalValue>? getNodeValue = null)
 	{
+		// Style initializer may pre-register the Style variable; skip re-creating it.
+		if (node.IsStyle(Context) && variables.ContainsKey(node))
+			return;
+
 		if (!node.XmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, Context.TypeCache, out var type) || type is null)
 			return;
 
@@ -385,7 +390,8 @@ class CreateValuesVisitor : IXamlNodeVisitor
 	/// <summary>
 	/// Creates a trimmable Style using the new constructor that takes an assembly-qualified type name string.
 	/// This allows the trimmer to remove the Style's target type if it's not used elsewhere.
-	/// The initializer lambda contains a type guard and all content (Setters, Behaviors, Triggers).
+	/// The Style's Setters/Behaviors/Triggers are marked to be skipped during normal traversal,
+	/// and SetPropertiesVisitor will generate the initializer lambda when visiting the Style node.
 	/// </summary>
 	static bool TryCreateTrimmableStyle(ElementNode node, IndentedTextWriter writer, IDictionary<INode, ILocalValue> variables, Compilation compilation, AssemblyAttributes xmlnsCache, SourceGenContext context)
 	{
@@ -431,160 +437,42 @@ class CreateValuesVisitor : IXamlNodeVisitor
 		// Create the Style variable with the trimmable constructor
 		var variableName = NamingHelpers.CreateUniqueVariableName(context, styleType);
 
-		// Store the target type for later use
+		// Store the target type for later use by SetPropertiesVisitor
 		context.Types[node] = targetType;
 
-		// Mark TargetType as processed
+		// Mark TargetType as processed (it's embedded in the AQN)
 		if (!node.SkipProperties.Contains(targetTypeXmlName))
 			node.SkipProperties.Add(targetTypeXmlName);
 
-		// Check if Style has content (Setters, Behaviors, Triggers) that needs to go in the initializer
-		var hasContent = node.CollectionItems.Count > 0 ||
-			node.Properties.ContainsKey(new XmlName("", "Setters")) ||
-			node.Properties.ContainsKey(new XmlName("", "Behaviors")) ||
-			node.Properties.ContainsKey(new XmlName("", "Triggers"));
-
-		// Properties that should be processed INSIDE the lambda (type-specific content)
-		var contentPropertyNames = new HashSet<XmlName>
+		// Check if Style has content that needs to go in the initializer
+		// Content properties: Setters, Behaviors, Triggers, or implicit Setters (CollectionItems)
+		var contentPropertyNames = new[] { new XmlName("", "Setters"), new XmlName("", "Behaviors"), new XmlName("", "Triggers") };
+		var hasExplicitContent = contentPropertyNames.Any(p => node.Properties.ContainsKey(p));
+		var hasImplicitContent = node.CollectionItems.Count > 0;
+		
+		if (hasExplicitContent || hasImplicitContent)
 		{
-			new XmlName("", "Setters"),
-			new XmlName("", "Behaviors"),
-			new XmlName("", "Triggers"),
-		};
-
-		if (!hasContent)
-		{
-			// No content - simple constructor without initializer
-			writer.WriteLine($"var {variableName} = new {styleType.ToFQDisplayString()}(\"{assemblyQualifiedName}\", null!);");
-		}
-		else
-		{
-			// Generate: var style0 = new Style("Assembly.Qualified.Name", static (__style, __target) =>
-			writer.WriteLine($"var {variableName} = new {styleType.ToFQDisplayString()}(\"{assemblyQualifiedName}\", static (__style, __target) =>");
-			using (PrePost.NewBlock(writer, begin: "{", end: "});"))
-			{
-				// Generate type guard: if (__target is not TargetType) return;
-				writer.WriteLine($"if (__target is not {targetType.ToFQDisplayString()}) return;");
-				writer.WriteLine();
-
-				// Create a new context for the lambda body
-				var styleContext = new SourceGenContext(writer, compilation, context.SourceProductionContext, xmlnsCache, context.TypeCache, context.RootType!, null, context.ProjectItem)
-				{
-					ParentContext = context,
-				};
-
-				// Register the style variable in the new context with __style accessor
-				styleContext.Variables[node] = new LocalVariable(styleType, "__style");
-
-				// Create a namescope for the Style node so that children can access it
-				var namescope = SetNamescopesAndRegisterNamesVisitor.CreateNamescope(writer, styleContext);
-				styleContext.Scopes[node] = (namescope, new Dictionary<string, ILocalValue>());
-
-				// Process ONLY content (Setters, Behaviors, Triggers) inside the lambda
-				// Other properties (BasedOn, ApplyToDerivedTypes, etc.) will be processed outside
-
-				// First, create values for all children (CollectionItems are implicit Setters)
-				foreach (var child in node.CollectionItems)
-				{
-					child.Accept(new CreateValuesVisitor(styleContext, stopOnStyle: false), node);
-				}
-				// Also create values for explicit content properties
-				foreach (var prop in node.Properties)
-				{
-					if (contentPropertyNames.Contains(prop.Key) && !node.SkipProperties.Contains(prop.Key))
-					{
-						prop.Value.Accept(new CreateValuesVisitor(styleContext, stopOnStyle: false), node);
-					}
-				}
-
-				// Then, set namescopes and register names
-				foreach (var child in node.CollectionItems)
-				{
-					child.Accept(new SetNamescopesAndRegisterNamesVisitor(styleContext, stopOnStyle: false), node);
-				}
-				foreach (var prop in node.Properties)
-				{
-					if (contentPropertyNames.Contains(prop.Key) && !node.SkipProperties.Contains(prop.Key))
-					{
-						prop.Value.Accept(new SetNamescopesAndRegisterNamesVisitor(styleContext, stopOnStyle: false), node);
-					}
-				}
-
-				// Set resources
-				foreach (var child in node.CollectionItems)
-				{
-					child.Accept(new SetResourcesVisitor(styleContext, stopOnStyle: false), node);
-				}
-				foreach (var prop in node.Properties)
-				{
-					if (contentPropertyNames.Contains(prop.Key) && !node.SkipProperties.Contains(prop.Key))
-					{
-						prop.Value.Accept(new SetResourcesVisitor(styleContext, stopOnStyle: false), node);
-					}
-				}
-
-				// Set properties and add to collections
-				foreach (var child in node.CollectionItems)
-				{
-					child.Accept(new SetPropertiesVisitor(styleContext, stopOnResourceDictionary: true), node);
-				}
-				foreach (var prop in node.Properties)
-				{
-					if (contentPropertyNames.Contains(prop.Key) && !node.SkipProperties.Contains(prop.Key))
-					{
-						prop.Value.Accept(new SetPropertiesVisitor(styleContext, stopOnResourceDictionary: true), node);
-					}
-				}
-			}
-
-			// Mark ONLY content properties as processed
-			// Other properties (BasedOn, x:Name, etc.) will be processed by normal visitors
-			node.CollectionItems.Clear();
+			// Mark content properties to be processed in the initializer (skip during normal traversal)
 			foreach (var propName in contentPropertyNames)
 			{
 				if (node.Properties.ContainsKey(propName) && !node.SkipProperties.Contains(propName))
 					node.SkipProperties.Add(propName);
 			}
+			
+			// Mark that this Style needs an initializer
+			node.Properties[XmlName._StyleContent] = new ValueNode("true", node.NamespaceResolver);
 		}
 
-		// Register the Style variable in the outer context BEFORE processing non-content properties
+		// Write the Style constructor
+		writer.WriteLine($"var {variableName} = new {styleType.ToFQDisplayString()}(\"{assemblyQualifiedName}\");");
+
+		// Register the Style variable
 		variables[node] = new LocalVariable(styleType, variableName);
-
-		// Now create values for non-content properties (BasedOn, ApplyToDerivedTypes, etc.) using the OUTER context
-		// These need to be created AFTER the Style variable is registered so they can reference it
-		foreach (var prop in node.Properties)
-		{
-			if (!contentPropertyNames.Contains(prop.Key) && !node.SkipProperties.Contains(prop.Key))
-			{
-				prop.Value.Accept(new CreateValuesVisitor(context, stopOnStyle: false), node);
-			}
-		}
 		node.RegisterSourceInfo(context, writer);
 
 		return true;
 	}
 
-	/// <summary>
-	/// Generate field assignments for Style x:Name properties.
-	/// This is called at the end of CreateValuesVisitor.Visit(ElementNode) for the root node.
-	/// </summary>
-	internal static void WriteStyleFieldAssignments(SourceGenContext context, IndentedTextWriter writer)
-	{
-		foreach (var kvp in context.Variables)
-		{
-			var styleNode = kvp.Key;
-			var variable = kvp.Value;
-			if (styleNode is not ElementNode elementNode)
-				continue;
-			if (!elementNode.IsStyle(context))
-				continue;
-			if (!elementNode.Properties.TryGetValue(XmlName.xName, out var xNameNode) || xNameNode is not ValueNode xNameValue)
-				continue;
-
-			var xName = (string)xNameValue.Value;
-			writer.WriteLine($"this.{GeneratorHelpers.EscapeIdentifier(xName)} = {variable.ValueAccessor};");
-		}
-	}
 
 	internal static bool IsXaml2009LanguagePrimitive(ElementNode node)
 	{
