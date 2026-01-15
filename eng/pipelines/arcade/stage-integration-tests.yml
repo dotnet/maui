@@ -32,7 +32,7 @@ stages:
         displayName: 🛠️ Run Integration Tests - $(testIdentifier) ${{ job.pool.os }}
         # Set IOS_TEST_DEVICE for all iOS-related tests (RunOniOS and RunOniOS_*)
         ${{ if or(eq(job.testCategory, 'RunOniOS'), startsWith(job.testName, 'RunOniOS')) }}:
-          envVariables:
+          env:
             IOS_TEST_DEVICE: ios-simulator-64_18.5
 
       - task: PublishTestResults@2
