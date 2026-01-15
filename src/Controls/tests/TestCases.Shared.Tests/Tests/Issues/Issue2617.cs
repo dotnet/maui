@@ -16,7 +16,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.ListView)]
-		[Category(UITestCategories.Compatibility)]
 		public void BindingToValuesTypesAndScrollingNoCrash()
 		{
 			Thread.Sleep(5000);

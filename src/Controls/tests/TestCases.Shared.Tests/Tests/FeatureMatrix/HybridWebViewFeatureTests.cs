@@ -5,20 +5,16 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-public class HybridWebViewFeatureTests : UITest
+public class HybridWebViewFeatureTests : _GalleryUITest
 {
 	public const string HybridWebViewFeatureMatrix = "HybridWebView Feature Matrix";
+
+	public override string GalleryPageName => HybridWebViewFeatureMatrix;
 
 
 	public HybridWebViewFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(HybridWebViewFeatureMatrix);
 	}
 
 	[Test, Order(1)]
