@@ -237,6 +237,9 @@ if ($Platform -eq "android") {
 # Capture test start time for iOS logs
 $testStartTime = Get-Date
 
+# Store app path for MacCatalyst validation (used in both pre-test and post-test)
+$appPath = $null
+
 # For MacCatalyst, launch the app BEFORE running tests so Appium finds the correct bundle
 # This is critical because both maui and maui2 repos may share the same bundle ID
 # MacCatalyst: Just ensure the app is ready - Appium will launch it with the test name
@@ -271,9 +274,9 @@ if ($Platform -eq "catalyst") {
     & chmod +x $executablePath
     
     # Write a marker file with build timestamp OUTSIDE the app bundle (doesn't affect code signing)
-    $markerFile = Join-Path $HostAppLogsDir "last-built-catalyst-app.txt"
+    $markerFile = Join-Path $HostAppLogsDir "last-built-catalyst-app.json"
     @{
-        RepoPath = $RepoRoot.Path
+        RepoPath = $RepoRoot.FullName
         AppPath = $appPath
         BuildTime = (Get-Date).ToString("O")
     } | ConvertTo-Json | Out-File -FilePath $markerFile -Encoding UTF8
@@ -359,11 +362,8 @@ if ($Platform -eq "android") {
     # Verify which app was actually launched by checking running processes
     Write-Info "Verifying which app bundle was launched..."
     
-    $arch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLower()
-    $rid = if ($arch -eq "arm64") { "maccatalyst-arm64" } else { "maccatalyst-x64" }
-    $expectedAppPath = Join-Path $PSScriptRoot "../../artifacts/bin/Controls.TestCases.HostApp/Debug/$TargetFramework/$rid/Controls.TestCases.HostApp.app"
-    $expectedAppPath = [System.IO.Path]::GetFullPath($expectedAppPath)
-    $expectedExecutable = Join-Path $expectedAppPath "Contents/MacOS/Controls.TestCases.HostApp"
+    # Reuse the app path from pre-test validation (lines 235-240)
+    $expectedExecutable = Join-Path $appPath "Contents/MacOS/Controls.TestCases.HostApp"
     
     # Find the running process by name
     $runningProcesses = Get-Process -Name "Controls.TestCases.HostApp" -ErrorAction SilentlyContinue
@@ -388,7 +388,7 @@ if ($Platform -eq "android") {
                 Write-Info "  Expected: $expectedExecutable"
                 Write-Info "  Actual:   $actualPath"
             } else {
-                Write-Warning "⚠️  WARNING: WRONG APP WAS LAUNCHED!"
+                Write-Warning "⚠️ WARNING: WRONG APP WAS LAUNCHED!"
                 Write-Warning "  Expected: $expectedExecutable"
                 Write-Warning "  Actual:   $actualPath"
                 Write-Warning ""
