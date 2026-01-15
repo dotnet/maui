@@ -28,7 +28,7 @@ stages:
           testFilter: 'Category=${{ job.testCategory }}'
           testIdentifier: ${{ job.testCategory }}
       steps:
-      - script: ${{ job.buildScript }} -restore -build -configuration ${{ parameters.buildConfig  }} -projects "${{ parameters.buildTaskProjects }}" /p:ArchiveTests=false /p:TreatWarningsAsErrors=$(TreatWarningsAsErrors) /bl:$(Build.Arcade.LogsPath)${{ parameters.buildConfig }}/buildtasks_os.binlog $(_OfficialBuildIdArgs)
+      - script: ${{ job.buildScript }} -restore -build -configuration ${{ parameters.buildConfig  }} -projects "${{ parameters.buildTaskProjects }}" /p:ProivioningMauiPacks=true /p:ArchiveTests=false /p:TreatWarningsAsErrors=$(TreatWarningsAsErrors) /bl:$(Build.Arcade.LogsPath)${{ parameters.buildConfig }}/buildtasks_os.binlog $(_OfficialBuildIdArgs)
         displayName: 🛠️ Build BuildTasks
 
       - template: /eng/pipelines/arcade/setup-test-env.yml
