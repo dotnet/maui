@@ -3,17 +3,22 @@
 
   <Target Name="InitInternalTooling" AfterTargets="Restore">
     <Message Text="Installing the workloads" Importance="high" />
+
+    <!-- No need to install .NET as Arcade does it automatically -->
     <!-- <MSBuild Projects="$(RepoRoot)src/DotNet/DotNet.csproj" Targets="Build" /> -->
+    
+    <!-- Install the .NET iOS and Android workloads -->
     <Exec
       Command="dotnet build $(RepoRoot)src/DotNet/DotNet.csproj -p:InstallDotNet=false"
       WorkingDirectory="$(RepoRoot)"
       EnvironmentVariables="DOTNET_MULTILEVEL_LOOKUP=0" /> 
 
+    <!-- Install the .NET MAUI workloads if requested -->
     <Exec
-      Command="dotnet build $(RepoRoot)src/DotNet/DotNet.csproj -t:Install -p:InstallDotNet=false" Condition="ProvisioningMauiPacks=='true'"
+      Command="dotnet build $(RepoRoot)src/DotNet/DotNet.csproj -t:Install -p:InstallDotNet=false"
+      Condition="$(ProvisioningMauiPacks)=='true'"
       WorkingDirectory="$(RepoRoot)"
       EnvironmentVariables="DOTNET_MULTILEVEL_LOOKUP=0" /> 
-
       
     <!-- <Message Text="Provisioning Java JDK..." Importance="high" />
     <Exec Command="dotnet build $(RepoRoot)src/Provisioning/Provisioning.csproj -t:ProvisionJdk -bl:&quot;$(LogDirectory)/provision-jdk.binlog&quot;" WorkingDirectory="$(RepoRoot)" />
