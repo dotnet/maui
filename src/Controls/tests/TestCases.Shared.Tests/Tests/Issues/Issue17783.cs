@@ -14,7 +14,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Editor)]
-		[Category(UITestCategories.Entry)]
 		public void TextShouldBeCut()
 		{
 			App.WaitForElement("PasteToEntryButton");

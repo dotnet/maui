@@ -14,7 +14,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.LifeCycle)]
-		[Category(UITestCategories.Compatibility)]
 		public void Bugzilla23942Test()
 		{
 			App.WaitForElement("success");

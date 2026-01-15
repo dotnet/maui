@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		// Test scenario: Tapping the GoBack link triggers a PopAsync 2500ms after the tap event.
 		//   Right before PopAsync is triggered, manually navigate back pressing the back arrow in the navigation bar
 
-		[Test]
+		[Test, Order(1)]
 		[Category(UITestCategories.Navigation)]
 		public void Issue59172Test()
 		{
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElementTillPageNavigationSettled("GoForward");
 		}
 
-		[Test]
+		[Test, Order(2)]
 		[Category(UITestCategories.Navigation)]
 		public void Issue59172RecoveryTest()
 		{

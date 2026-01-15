@@ -14,7 +14,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Picker)]
-		[Category(UITestCategories.Compatibility)]
 		public void Bugzilla38723Test()
 		{
 			App.WaitForElement("SELECT");

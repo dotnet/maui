@@ -84,13 +84,14 @@ namespace Microsoft.Maui.IntegrationTests
 			"TreatWarningsAsErrors=true",
 			// Detailed trimmer warnings, if present
 			"TrimmerSingleWarn=false",
+			// Allow skipping Xcode version validation via environment variable or TestConfig
+			$"ValidateXcodeVersion={!TestEnvironment.SkipXcodeVersionCheck}",
 		};
 
 
 		/// <summary>
 		/// Copy NuGet packages that are not installed as part of the workload and set up NuGet.config
 		/// See: `PrepareSeparateBuildContext` in `eng/cake/dotnet.cake`.
-		/// TODO: Should these be moved to a library-packs workload folder for testing?
 		/// </summary>
 		/// <exception cref="DirectoryNotFoundException"></exception>
 		[OneTimeSetUp]
@@ -106,7 +107,8 @@ namespace Microsoft.Maui.IntegrationTests
 				"Microsoft.AspNetCore.Components.WebView.*.nupkg",
 			};
 
-			var artifactDir = Path.Combine(TestEnvironment.GetMauiDirectory(), "artifacts");
+			var mauiDir = TestEnvironment.GetMauiDirectory();
+			var artifactDir = Path.Combine(mauiDir, "artifacts");
 			if (!Directory.Exists(artifactDir))
 				throw new DirectoryNotFoundException($"Build artifact directory '{artifactDir}' was not found.");
 
@@ -118,7 +120,30 @@ namespace Microsoft.Maui.IntegrationTests
 
 			foreach (var searchPattern in NuGetOnlyPackages)
 			{
-				foreach (var pack in Directory.GetFiles(artifactDir, searchPattern))
+				// First, try artifacts/ root (CI layout where packages are downloaded directly)
+				var packages = Directory.GetFiles(artifactDir, searchPattern).ToList();
+
+				// If not found and running locally, try artifacts/packages/*/Shipping/ (local dotnet cake build layout)
+				if (packages.Count == 0 && !TestEnvironment.IsRunningOnCI)
+				{
+					var packagesDir = Path.Combine(artifactDir, "packages");
+					if (Directory.Exists(packagesDir))
+					{
+						packages = Directory.GetFiles(packagesDir, searchPattern, SearchOption.AllDirectories).ToList();
+					}
+				}
+
+				// If still not found locally, try .dotnet/library-packs/ (installed workload packages)
+				if (packages.Count == 0 && !TestEnvironment.IsRunningOnCI)
+				{
+					var libraryPacksDir = Path.Combine(mauiDir, ".dotnet", "library-packs");
+					if (Directory.Exists(libraryPacksDir))
+					{
+						packages = Directory.GetFiles(libraryPacksDir, searchPattern).ToList();
+					}
+				}
+
+				foreach (var pack in packages)
 					File.Copy(pack, Path.Combine(extraPacksDir, Path.GetFileName(pack)));
 			}
 
@@ -142,10 +167,66 @@ namespace Microsoft.Maui.IntegrationTests
 		[TearDown]
 		public void BuildTestTearDown()
 		{
+			// Copy log files to the artifact publish location
+			CopyLogsToPublishDirectory();
+
 			// Attach test content and logs as artifacts
 			foreach (var log in Directory.GetFiles(Path.Combine(TestDirectory), "*log", SearchOption.AllDirectories))
 			{
 				TestContext.AddTestAttachment(log, Path.GetFileName(TestDirectory));
+			}
+		}
+
+		/// <summary>
+		/// Copies log files from the test directory to the artifact publish location.
+		/// Uses SYSTEM_JOBATTEMPT environment variable to create separate folders for each retry attempt.
+		/// </summary>
+		protected void CopyLogsToPublishDirectory()
+		{
+			try
+			{
+				// Azure DevOps sets SYSTEM_JOBATTEMPT to indicate which retry attempt this is (1 = first run, 2 = first retry, etc.)
+				var jobAttempt = Environment.GetEnvironmentVariable("SYSTEM_JOBATTEMPT") ?? "1";
+				var attemptFolder = $"attempt-{jobAttempt}";
+				var publishDir = Path.Combine(LogDirectory, attemptFolder);
+				
+				if (!Directory.Exists(publishDir))
+				{
+					Directory.CreateDirectory(publishDir);
+				}
+
+				if (Directory.Exists(TestDirectory))
+				{
+					// Copy all log, binlog, and txt files from test directory to publish directory
+					var logPatterns = new[] { "*.log", "*.binlog", "*.txt" };
+					foreach (var pattern in logPatterns)
+					{
+						var files = Directory.GetFiles(TestDirectory, pattern, SearchOption.AllDirectories);
+						foreach (var file in files)
+						{
+							try
+							{
+								var destFile = Path.Combine(publishDir, Path.GetFileName(file));
+								// If file with same name exists, add a unique suffix
+								if (File.Exists(destFile))
+								{
+									var nameWithoutExt = Path.GetFileNameWithoutExtension(file);
+									var ext = Path.GetExtension(file);
+									destFile = Path.Combine(publishDir, $"{nameWithoutExt}_{Guid.NewGuid():N}{ext}");
+								}
+								File.Copy(file, destFile, overwrite: true);
+							}
+							catch (Exception ex)
+							{
+								Console.WriteLine($"Failed to copy log file '{file}': {ex.Message}");
+							}
+						}
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"Failed to copy logs to publish directory: {ex.Message}");
 			}
 		}
 

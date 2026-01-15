@@ -11,7 +11,6 @@ public class Issue28208 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Slider)]
-	[Category(UITestCategories.Stepper)]
 	public void OneWayBindingWithMultiBindingConverterShouldReflecttInView()
 	{
 		App.WaitForElement("Button");
