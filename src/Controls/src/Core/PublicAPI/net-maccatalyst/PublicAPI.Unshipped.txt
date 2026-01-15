@@ -12,3 +12,4 @@ Microsoft.Maui.Controls.AppThemeBinding.AppThemeBinding() -> void
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewController.LoadView() -> void
 ~static Microsoft.Maui.Controls.VisualStateManager.GetVisualStateGroups(Microsoft.Maui.Controls.VisualElement visualElement) -> Microsoft.Maui.Controls.VisualStateGroupList
 *REMOVED*~static Microsoft.Maui.Controls.VisualStateManager.GetVisualStateGroups(Microsoft.Maui.Controls.VisualElement visualElement) -> System.Collections.Generic.IList<Microsoft.Maui.Controls.VisualStateGroup>
+~Microsoft.Maui.Controls.Style.Style(string assemblyQualifiedTargetTypeName, System.Action<Microsoft.Maui.Controls.Style, Microsoft.Maui.Controls.BindableObject> initializer) -> void
