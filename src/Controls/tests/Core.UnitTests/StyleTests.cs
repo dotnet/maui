@@ -1209,15 +1209,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void LazyStyleIsNotInitializedUntilApplied()
 		{
 			bool initializerCalled = false;
-			var style = new Style(
-				typeof(Label).AssemblyQualifiedName,
-				(s, target) =>
+			var style = new Style(typeof(Label).AssemblyQualifiedName)
+			{
+				Initializer = (s, target) =>
 				{
 					initializerCalled = true;
 					if (target is not Label)
 						return;
 					s.Setters.Add(new Setter { Property = Label.TextProperty, Value = "lazy" });
-				});
+				}
+			};
 
 			// Verify initializer not called yet
 			Assert.False(initializerCalled);
@@ -1233,15 +1234,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void LazyStyleSettersAreAppliedCorrectly()
 		{
-			var style = new Style(
-				typeof(Label).AssemblyQualifiedName,
-				static (s, target) =>
+			var style = new Style(typeof(Label).AssemblyQualifiedName)
+			{
+				Initializer = static (s, target) =>
 				{
 					if (target is not Label)
 						return;
 					s.Setters.Add(new Setter { Property = Label.TextProperty, Value = "test" });
 					s.Setters.Add(new Setter { Property = Label.TextColorProperty, Value = Colors.Red });
-				});
+				}
+			};
 
 			var label = new Label { Style = style };
 
@@ -1252,9 +1254,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void LazyStyleTargetTypeFullNameReturnsCorrectValue()
 		{
-			var style = new Style(
-				"Microsoft.Maui.Controls.Label, Microsoft.Maui.Controls",
-				static (s, target) => { });
+			var style = new Style("Microsoft.Maui.Controls.Label, Microsoft.Maui.Controls");
 
 			Assert.Equal("Microsoft.Maui.Controls.Label", style.TargetTypeFullName.ToString());
 		}
@@ -1262,14 +1262,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void LazyStyleCanBeAppliedToMatchingType()
 		{
-			var style = new Style(
-				typeof(Label).AssemblyQualifiedName,
-				static (s, target) =>
+			var style = new Style(typeof(Label).AssemblyQualifiedName)
+			{
+				Initializer = static (s, target) =>
 				{
 					if (target is not Label)
 						return;
 					s.Setters.Add(new Setter { Property = Label.TextProperty, Value = "works" });
-				});
+				}
+			};
 
 			// Should not throw and should apply
 			var label = new Label { Style = style };
@@ -1280,15 +1281,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void LazyStyleInitializerIsCalledOnlyOnce()
 		{
 			int callCount = 0;
-			var style = new Style(
-				typeof(Label).AssemblyQualifiedName,
-				(s, target) =>
+			var style = new Style(typeof(Label).AssemblyQualifiedName)
+			{
+				Initializer = (s, target) =>
 				{
 					callCount++;
 					if (target is not Label)
 						return;
 					s.Setters.Add(new Setter { Property = Label.TextProperty, Value = "once" });
-				});
+				}
+			};
 
 			// Apply to multiple labels
 			var label1 = new Label { Style = style };
@@ -1307,9 +1309,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void LazyStyleTryGetTargetTypeReturnsTrueForExistingType()
 		{
-			var style = new Style(
-				typeof(Label).AssemblyQualifiedName,
-				static (s, target) => { });
+			var style = new Style(typeof(Label).AssemblyQualifiedName);
 
 			var result = ((IStyle)style).TryGetTargetType(out var targetType);
 
@@ -1331,14 +1331,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void LazyStyleCanBeAddedToResourceDictionary()
 		{
-			var style = new Style(
-				typeof(Label).AssemblyQualifiedName,
-				static (s, target) =>
+			var style = new Style(typeof(Label).AssemblyQualifiedName)
+			{
+				Initializer = static (s, target) =>
 				{
 					if (target is not Label)
 						return;
 					s.Setters.Add(new Setter { Property = Label.TextProperty, Value = "from RD" });
-				});
+				}
+			};
 
 			var rd = new ResourceDictionary();
 			rd.Add(style);
@@ -1351,15 +1352,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void LazyStyleWithBehaviors()
 		{
 			var behavior = new MockBehavior<Entry>();
-			var style = new Style(
-				typeof(Entry).AssemblyQualifiedName,
-				(s, target) =>
+			var style = new Style(typeof(Entry).AssemblyQualifiedName)
+			{
+				Initializer = (s, target) =>
 				{
 					if (target is not Entry)
 						return;
 					s.Setters.Add(new Setter { Property = Entry.TextProperty, Value = "with behavior" });
 					s.Behaviors.Add(behavior);
-				});
+				}
+			};
 
 			var entry = new Entry { Style = style };
 
@@ -1370,9 +1372,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void LazyStyleWithTriggers()
 		{
-			var style = new Style(
-				typeof(Entry).AssemblyQualifiedName,
-				static (s, target) =>
+			var style = new Style(typeof(Entry).AssemblyQualifiedName)
+			{
+				Initializer = static (s, target) =>
 				{
 					if (target is not Entry)
 						return;
@@ -1383,7 +1385,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 						Value = true,
 						Setters = { new Setter { Property = Entry.TextProperty, Value = "password mode" } }
 					});
-				});
+				}
+			};
 
 			var entry = new Entry { Style = style };
 

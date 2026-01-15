@@ -133,7 +133,6 @@ class ElementNode(XmlType type, string namespaceURI, IXmlNamespaceResolver names
 
 		if (visitor.VisitingMode == TreeVisitingMode.BottomUp && !SkipVisitNode(visitor, parentNode))
 			visitor.Visit(this, parentNode);
-
 	}
 
 	bool IsDataTemplate(INode parentNode)
