@@ -171,7 +171,7 @@ internal class ScreenshotCommand
             var nugetFramework = NuGetFramework.Parse(framework);
             return string.IsNullOrEmpty(nugetFramework.Platform) ? null : nugetFramework.Platform;
         }
-        catch
+        catch (ArgumentException)
         {
             return null;
         }
@@ -323,7 +323,7 @@ internal class ScreenshotCommand
     private int ExecuteUnsupportedPlatform(string platform)
     {
         Log(TraceLevel.Error, $"Error: Platform '{platform}' is not supported for screenshot capture.");
-        Log(TraceLevel.Error, "Supported platforms: android, ios, maccatalyst, windows");
+        Log(TraceLevel.Error, "Supported platforms: android, ios, macos, maccatalyst, windows");
         return 1;
     }
 

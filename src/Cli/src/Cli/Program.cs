@@ -21,9 +21,11 @@ public class Program
         rootCommand.Options.Add(CommonOptions.FrameworkOption);
         rootCommand.Options.Add(CommonOptions.DeviceOption);
         rootCommand.Options.Add(CommonOptions.ProjectOption);
+        rootCommand.Options.Add(CommonOptions.VerboseOption);
         CommonOptions.FrameworkOption.Recursive = true;
         CommonOptions.DeviceOption.Recursive = true;
         CommonOptions.ProjectOption.Recursive = true;
+        CommonOptions.VerboseOption.Recursive = true;
 
         // Add commands
         rootCommand.Subcommands.Add(ScreenshotCommand.GetCommand());

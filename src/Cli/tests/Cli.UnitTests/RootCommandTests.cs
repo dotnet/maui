@@ -27,6 +27,7 @@ public class RootCommandTests
         Assert.Contains("-f, --framework", output);
         Assert.Contains("-d, --device", output);
         Assert.Contains("-p, --project", output);
+        Assert.Contains("--verbose", output);
     }
 
     [Fact]
