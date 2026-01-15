@@ -28,7 +28,7 @@ stages:
           testFilter: 'Category=${{ job.testCategory }}'
           testIdentifier: ${{ job.testCategory }}
       steps:
-      - script: ${{ job.buildScript }} -test -configuration ${{ parameters.buildConfig  }} -projects "${{ parameters.integrationTestsProjects }}" --filter "$(testFilter)" --logger trx --results-directory $(Agent.TempDirectory)/Microsoft.Maui.IntegrationTests /p:ProvisioningMauiPacks=true /p:ArchiveTests=false /p:TreatWarningsAsErrors=$(TreatWarningsAsErrors) /bl:$(Build.Arcade.LogsPath)${{ parameters.buildConfig }}/buildtasks_os.binlog $(_OfficialBuildIdArgs)
+      - script: ${{ job.buildScript }} -test -configuration ${{ parameters.buildConfig  }} -projects "${{ parameters.integrationTestsProjects }}" /p:ProvisioningMauiPacks=true /p:ArchiveTests=false /p:TreatWarningsAsErrors=$(TreatWarningsAsErrors) /p:TestRunnerAdditionalArguments="--filter \"$(testFilter)\" --logger trx --results-directory $(Agent.TempDirectory)/Microsoft.Maui.IntegrationTests" /bl:$(Build.Arcade.LogsPath)${{ parameters.buildConfig }}/buildtasks_os.binlog $(_OfficialBuildIdArgs)
         displayName: 🛠️ Run Integration Tests - $(testIdentifier) ${{ job.pool.os }}
         # Set IOS_TEST_DEVICE for all iOS-related tests (RunOniOS and RunOniOS_*)
         ${{ if or(eq(job.testCategory, 'RunOniOS'), startsWith(job.testName, 'RunOniOS')) }}:
