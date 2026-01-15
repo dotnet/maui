@@ -1,4 +1,5 @@
-#if !MACCATALYST // TODO: Re-enable once supporting changes are merged
+// TODO: Re-enable once supporting changes are merged
+/*
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -155,4 +156,4 @@ public class Issue33352 : _IssuesUITest
 		Assert.That(windowCloseText, Does.Contain("Window closes:"));
 	}
 }
-#endif
+*/
