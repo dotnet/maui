@@ -247,15 +247,15 @@ stages:
                       platform: 'iOS'
                       artifactName: 'uitest-snapshot-results-ios-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
-  - stage: ios_ui_tests_mono_cv2
-    displayName: iOS UITests Mono CollectionView2
+  - stage: ios_ui_tests_mono_cv1
+    displayName: iOS UITests Mono CollectionView1
     dependsOn: build_ui_tests
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.ios, '') }}:
           - ${{ each version in parameters.iosVersions }}:
             - ${{ if not(containsValue(project.iosVersionsExclude, version)) }}:
-              - job: CV2_ios_ui_tests_mono_${{ project.name }}_${{ replace(version, '.', '_') }}
+              - job: CV1_ios_ui_tests_mono_${{ project.name }}_${{ replace(version, '.', '_') }}
                 timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
@@ -281,24 +281,24 @@ stages:
                       runtimeVariant : "Mono"
                       testFilter: "CollectionView"
                       headless: ${{ parameters.headless }}
-                      testConfigurationArgs: "CollectionView2"
+                      testConfigurationArgs: "CollectionView1"
                       skipProvisioning: ${{ parameters.skipProvisioning }}
                   
-                  # Collect and publish iOS CV2 snapshot diffs
+                  # Collect and publish iOS CV1 snapshot diffs
                   - template: ui-tests-collect-snapshot-diffs.yml
                     parameters:
-                      platform: 'iOS CV2'
+                      platform: 'iOS CV1'
                       artifactName: 'uitest-snapshot-results-ios-cv2-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
-  - stage: ios_ui_tests_mono_carv2
-    displayName: iOS UITests Mono CarouselView2
+  - stage: ios_ui_tests_mono_carv1
+    displayName: iOS UITests Mono CarouselView1
     dependsOn: build_ui_tests
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.ios, '') }}:
           - ${{ each version in parameters.iosVersions }}:
             - ${{ if not(containsValue(project.iosVersionsExclude, version)) }}:
-              - job: CARV2_ios_ui_tests_mono_${{ project.name }}_${{ replace(version, '.', '_') }}
+              - job: CARV1_ios_ui_tests_mono_${{ project.name }}_${{ replace(version, '.', '_') }}
                 timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
@@ -323,7 +323,7 @@ stages:
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       runtimeVariant : "Mono"
                       testFilter: "CarouselView"
-                      testConfigurationArgs: "CollectionView2"
+                      testConfigurationArgs: "CollectionView1"
                       skipProvisioning: ${{ parameters.skipProvisioning }}
                   
                   # Collect and publish iOS CARV2 snapshot diffs

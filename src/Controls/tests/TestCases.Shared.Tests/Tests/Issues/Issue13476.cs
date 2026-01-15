@@ -18,7 +18,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Shell Title View Test";
 		[Test]
 		[Category(UITestCategories.Shell)]
-		[Category(UITestCategories.Compatibility)]
 		public void TitleViewHeightDoesntOverflow()
 		{
 			var titleView = App.WaitForElement("TitleViewId").GetRect();
