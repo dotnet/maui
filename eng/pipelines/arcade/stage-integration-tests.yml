@@ -5,7 +5,7 @@ parameters:
   buildConfig: Debug
   repoLogPath: $(Build.Arcade.LogsPath)
   publishTaskPrefix: '1ES.'
-  buildTaskProjects: '$(Build.SourcesDirectory)/Microsoft.Maui.BuildTasks.slnf'
+  integrationTestsProjects: '$(Build.SourcesDirectory)/src/TestUtils/src/Microsoft.Maui.IntegrationTests/Microsoft.Maui.IntegrationTests.csproj'
 
 stages:
 - stage: IntegrationTests
@@ -28,28 +28,12 @@ stages:
           testFilter: 'Category=${{ job.testCategory }}'
           testIdentifier: ${{ job.testCategory }}
       steps:
-      - script: ${{ job.buildScript }} -restore -build -configuration ${{ parameters.buildConfig  }} -projects "${{ parameters.buildTaskProjects }}" /p:ProivioningMauiPacks=true /p:ArchiveTests=false /p:TreatWarningsAsErrors=$(TreatWarningsAsErrors) /bl:$(Build.Arcade.LogsPath)${{ parameters.buildConfig }}/buildtasks_os.binlog $(_OfficialBuildIdArgs)
-        displayName: 🛠️ Build BuildTasks
-
-      - template: /eng/pipelines/arcade/setup-test-env.yml
-        parameters:
-          mauiSourcePath: ${{ parameters.mauiSourcePath }}
-          buildConfig: ${{ parameters.buildConfig }}
-          repoLogPath: ${{ parameters.repoLogPath }}
-
-      - template: /eng/pipelines/common/run-dotnet-preview.yml
-        parameters:
-          displayName: Run Integration Tests - $(testIdentifier) ${{ job.pool.os }}
-          mauiSourcePath: ${{ parameters.mauiSourcePath }}
-          command: test
-          project: ${{ parameters.mauiSourcePath }}/src/TestUtils/src/Microsoft.Maui.IntegrationTests/Microsoft.Maui.IntegrationTests.csproj
-          arguments: '-c ${{ parameters.buildConfig }} --filter "$(testFilter)" --logger trx --results-directory $(Agent.TempDirectory)/Microsoft.Maui.IntegrationTests'
-          useExitCodeForErrors: true
-          retryCountOnTaskFailure: 1
-          # Set IOS_TEST_DEVICE for all iOS-related tests (RunOniOS and RunOniOS_*)
-          ${{ if or(eq(job.testCategory, 'RunOniOS'), startsWith(job.testName, 'RunOniOS')) }}:
-            envVariables:
-              IOS_TEST_DEVICE: ios-simulator-64_18.5
+      - script: ${{ job.buildScript }} -test -configuration ${{ parameters.buildConfig  }} -projects "${{ parameters.integrationTestsProjects }}" --filter "$(testFilter)" --logger trx --results-directory $(Agent.TempDirectory)/Microsoft.Maui.IntegrationTests /p:ProivioningMauiPacks=true /p:ArchiveTests=false /p:TreatWarningsAsErrors=$(TreatWarningsAsErrors) /bl:$(Build.Arcade.LogsPath)${{ parameters.buildConfig }}/buildtasks_os.binlog $(_OfficialBuildIdArgs)
+        displayName: 🛠️ Run Integration Tests - $(testIdentifier) ${{ job.pool.os }}
+        # Set IOS_TEST_DEVICE for all iOS-related tests (RunOniOS and RunOniOS_*)
+        ${{ if or(eq(job.testCategory, 'RunOniOS'), startsWith(job.testName, 'RunOniOS')) }}:
+          envVariables:
+            IOS_TEST_DEVICE: ios-simulator-64_18.5
 
       - task: PublishTestResults@2
         inputs:
