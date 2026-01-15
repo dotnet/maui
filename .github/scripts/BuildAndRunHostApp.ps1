@@ -276,7 +276,7 @@ if ($Platform -eq "catalyst") {
     # Write a marker file with build timestamp OUTSIDE the app bundle (doesn't affect code signing)
     $markerFile = Join-Path $HostAppLogsDir "last-built-catalyst-app.json"
     @{
-        RepoPath = $RepoRoot.FullName
+        RepoPath = $RepoRoot.Path
         AppPath = $appPath
         BuildTime = (Get-Date).ToString("O")
     } | ConvertTo-Json | Out-File -FilePath $markerFile -Encoding UTF8
