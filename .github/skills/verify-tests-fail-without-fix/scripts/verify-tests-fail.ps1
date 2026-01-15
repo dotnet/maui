@@ -101,7 +101,7 @@ $TestPathPatterns = @(
 # Function to check if a file should be excluded from fix files
 function Test-IsTestFile {
     param([string]$FilePath)
-    
+
     foreach ($pattern in $TestPathPatterns) {
         if ($FilePath -like $pattern) {
             return $true
@@ -111,60 +111,253 @@ function Test-IsTestFile {
 }
 
 # ============================================================
-# AUTO-DETECT MODE: Check if there are fix files to revert
+# Find the merge-base commit (where current branch diverged from base)
+# This is more robust than tracking branch names/refs
+# For fork workflows: fetches directly from the PR's target repo URL
+# so it works even if the fork's main branch is out of sync
 # ============================================================
+function Find-MergeBase {
+    param([string]$ExplicitBaseBranch)
 
-# Try to detect base branch
-$BaseBranchDetected = $BaseBranch
-if (-not $BaseBranchDetected) {
-    $currentBranch = git rev-parse --abbrev-ref HEAD 2>$null
-    
-    # Try gh pr view without --repo first (works for PRs from forks to upstream)
-    $BaseBranchDetected = gh pr view --json baseRefName --jq '.baseRefName' 2>$null
-    
-    # If that fails, try with the origin remote's repo
-    if (-not $BaseBranchDetected) {
-        $remoteUrl = git remote get-url origin 2>$null
-        $repo = $null
-        if ($remoteUrl -match "github\.com[:/]([^/]+/[^/]+?)(\.git)?$") {
-            $repo = $matches[1]
-        }
-        
-        if ($repo) {
-            $BaseBranchDetected = gh pr view $currentBranch --repo $repo --json baseRefName --jq '.baseRefName' 2>$null
-        }
-    }
-}
-
-# Fetch the base branch from origin to ensure we have the latest
-# This ensures accurate diff detection even if local branch is stale
-$BaseBranchRef = $BaseBranchDetected
-if ($BaseBranchDetected) {
-    Write-Host "ℹ️  Fetching latest $BaseBranchDetected from origin..." -ForegroundColor Cyan
-    git fetch origin "${BaseBranchDetected}:${BaseBranchDetected}" 2>$null
-    if ($LASTEXITCODE -ne 0) {
-        # If direct fetch fails (e.g., currently on that branch), just fetch the ref
-        # In this case, use origin/$BaseBranchDetected for comparisons since local wasn't updated
-        git fetch origin $BaseBranchDetected 2>$null
-        $BaseBranchRef = "origin/$BaseBranchDetected"
-    }
-}
-
-# Check for fix files (non-test files that changed)
-$DetectedFixFiles = @()
-if ($BaseBranchDetected) {
-    $changedFiles = git diff $BaseBranchRef HEAD --name-only 2>$null
-    
-    if ($changedFiles) {
-        foreach ($file in $changedFiles) {
-            if (-not (Test-IsTestFile $file)) {
-                $DetectedFixFiles += $file
+    # 1. If explicit base branch provided, use it directly
+    if ($ExplicitBaseBranch) {
+        # Try with origin/ prefix first, then without
+        foreach ($ref in @("origin/$ExplicitBaseBranch", $ExplicitBaseBranch)) {
+            $mergeBase = git merge-base HEAD $ref 2>$null
+            if ($mergeBase) {
+                return @{ MergeBase = $mergeBase; BaseBranch = $ExplicitBaseBranch; Source = "explicit" }
             }
         }
     }
+
+    # 2. Try to get PR metadata including the TARGET repository
+    #    This is critical for fork workflows where origin points to the fork,
+    #    not the upstream repo. We fetch directly from the target repo URL.
+    #    The PR URL contains the target repo: https://github.com/OWNER/REPO/pull/123
+    $prJson = gh pr view --json baseRefName,url 2>$null
+    if ($prJson) {
+        $prInfo = $prJson | ConvertFrom-Json
+        $prBaseBranch = $prInfo.baseRefName
+        $prUrl = $prInfo.url
+
+        # Parse owner/repo from PR URL: https://github.com/OWNER/REPO/pull/123
+        $targetOwner = $null
+        $targetRepo = $null
+        if ($prUrl -match "github\.com/([^/]+)/([^/]+)/pull/") {
+            $targetOwner = $matches[1]
+            $targetRepo = $matches[2]
+        }
+
+        if ($prBaseBranch -and $targetOwner -and $targetRepo) {
+            # Construct the target repo URL and fetch directly from it
+            # This works even if the developer hasn't set up an 'upstream' remote
+            # and even if their fork's main is completely out of sync
+            $targetUrl = "https://github.com/$targetOwner/$targetRepo.git"
+            Write-Host "ℹ️  PR targets $targetOwner/$targetRepo - fetching $prBaseBranch from upstream..." -ForegroundColor Cyan
+            git fetch $targetUrl $prBaseBranch 2>$null
+
+            if ($LASTEXITCODE -eq 0) {
+                # FETCH_HEAD now points to the target repo's base branch
+                $mergeBase = git merge-base HEAD FETCH_HEAD 2>$null
+                if ($mergeBase) {
+                    return @{ MergeBase = $mergeBase; BaseBranch = $prBaseBranch; Source = "pr-target-repo"; TargetRepo = "$targetOwner/$targetRepo" }
+                }
+            }
+        }
+
+        # Fallback: try fetching from origin (works if origin IS the target repo)
+        if ($prBaseBranch) {
+            git fetch origin $prBaseBranch 2>$null
+            foreach ($ref in @("origin/$prBaseBranch", $prBaseBranch)) {
+                $mergeBase = git merge-base HEAD $ref 2>$null
+                if ($mergeBase) {
+                    return @{ MergeBase = $mergeBase; BaseBranch = $prBaseBranch; Source = "pr-metadata" }
+                }
+            }
+        }
+    }
+
+    # 3. Fallback: Find closest merge-base among common base branch patterns
+    #    The "correct" base is the one with fewest commits between merge-base and HEAD
+    Write-Host "ℹ️  No PR detected, scanning remote branches for closest base..." -ForegroundColor Cyan
+
+    # Fetch all remote refs to ensure we have latest
+    git fetch origin 2>$null
+
+    # Get remote branches matching common base branch patterns
+    $remoteBranches = git branch -r --format='%(refname:short)' 2>$null | Where-Object {
+        $_ -match '^origin/(main|master|net\d+\.\d+|release/.*)$'
+    }
+
+    $bestMatch = $null
+    $shortestDistance = [int]::MaxValue
+
+    foreach ($branch in $remoteBranches) {
+        $mergeBase = git merge-base HEAD $branch 2>$null
+        if ($mergeBase) {
+            $distance = [int](git rev-list --count "$mergeBase..HEAD" 2>$null)
+            if ($distance -lt $shortestDistance) {
+                $shortestDistance = $distance
+                $branchName = $branch -replace '^origin/', ''
+                $bestMatch = @{ MergeBase = $mergeBase; BaseBranch = $branchName; Source = "closest-merge-base"; Distance = $distance }
+            }
+        }
+    }
+
+    return $bestMatch
 }
 
-# Also check explicitly provided fix files
+# ============================================================
+# Auto-detect test filter from changed files
+# ============================================================
+function Get-AutoDetectedTestFilter {
+    param([string]$MergeBase)
+
+    $changedFiles = @()
+    if ($MergeBase) {
+        $changedFiles = git diff $MergeBase HEAD --name-only 2>$null
+    }
+
+    # If no merge-base, use git status to find unstaged/staged files
+    if (-not $changedFiles -or $changedFiles.Count -eq 0) {
+        $changedFiles = git diff --name-only 2>$null
+        if (-not $changedFiles -or $changedFiles.Count -eq 0) {
+            $changedFiles = git diff --cached --name-only 2>$null
+        }
+    }
+
+    # Find test files (files in test directories that are .cs files)
+    $testFiles = @()
+    foreach ($file in $changedFiles) {
+        if ($file -match "TestCases\.(Shared\.Tests|HostApp).*\.cs$" -and $file -notmatch "^_") {
+            $testFiles += $file
+        }
+    }
+
+    if ($testFiles.Count -eq 0) {
+        return $null
+    }
+
+    # Extract class names from test files
+    $testClassNames = @()
+    foreach ($file in $testFiles) {
+        if ($file -match "TestCases\.Shared\.Tests.*\.cs$") {
+            $fullPath = Join-Path $RepoRoot $file
+            if (Test-Path $fullPath) {
+                $content = Get-Content $fullPath -Raw
+                if ($content -match "public\s+(partial\s+)?class\s+(\w+)") {
+                    $className = $matches[2]
+                    if ($className -notmatch "^_" -and $testClassNames -notcontains $className) {
+                        $testClassNames += $className
+                    }
+                }
+            }
+        }
+    }
+
+    # Fallback: use file names without extension
+    if ($testClassNames.Count -eq 0) {
+        foreach ($file in $testFiles) {
+            $fileName = [System.IO.Path]::GetFileNameWithoutExtension($file)
+            if ($fileName -notmatch "^_" -and $testClassNames -notcontains $fileName) {
+                $testClassNames += $fileName
+            }
+        }
+    }
+
+    if ($testClassNames.Count -eq 0) {
+        return $null
+    }
+
+    return @{
+        Filter = if ($testClassNames.Count -eq 1) { $testClassNames[0] } else { $testClassNames -join "|" }
+        ClassNames = $testClassNames
+    }
+}
+
+# ============================================================
+# Parse test results from log file
+# ============================================================
+function Get-TestResultFromLog {
+    param([string]$LogFile)
+
+    if (-not (Test-Path $LogFile)) {
+        return @{ Passed = $false; Error = "Test output log not found: $LogFile" }
+    }
+
+    $content = Get-Content $LogFile -Raw
+
+    # Check for failures first - but only if count > 0
+    if ($content -match "Failed:\s*(\d+)") {
+        $failCount = [int]$matches[1]
+        if ($failCount -gt 0) {
+            return @{ Passed = $false; FailCount = $failCount }
+        }
+    }
+
+    # Check for passes
+    if ($content -match "Passed:\s*(\d+)") {
+        $passCount = [int]$matches[1]
+        if ($passCount -gt 0) {
+            return @{ Passed = $true; PassCount = $passCount }
+        }
+    }
+
+    return @{ Passed = $false; Error = "Could not parse test results" }
+}
+
+# ============================================================
+# AUTO-DETECT MODE: Find merge-base and fix files
+# ============================================================
+
+Write-Host ""
+Write-Host "🔍 Detecting base branch and merge point..." -ForegroundColor Cyan
+
+$baseInfo = Find-MergeBase -ExplicitBaseBranch $BaseBranch
+
+if (-not $baseInfo) {
+    Write-Host ""
+    Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Red
+    Write-Host "║         ERROR: COULD NOT FIND MERGE BASE                  ║" -ForegroundColor Red
+    Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Red
+    Write-Host "║  Could not determine where this branch diverged from.     ║" -ForegroundColor Red
+    Write-Host "║                                                           ║" -ForegroundColor Red
+    Write-Host "║  Tried:                                                   ║" -ForegroundColor Red
+    Write-Host "║  - PR metadata (gh pr view)                               ║" -ForegroundColor Red
+    Write-Host "║  - Common base branches (main, net*.0, release/*)         ║" -ForegroundColor Red
+    Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Red
+    Write-Host ""
+    Write-Host "To fix, specify -BaseBranch explicitly:" -ForegroundColor Cyan
+    Write-Host "  ./verify-tests-fail.ps1 -Platform android -BaseBranch main" -ForegroundColor White
+    exit 1
+}
+
+$MergeBase = $baseInfo.MergeBase
+$BaseBranchName = $baseInfo.BaseBranch
+
+if ($baseInfo.TargetRepo) {
+    Write-Host "✅ PR target: $($baseInfo.TargetRepo) ($BaseBranchName branch)" -ForegroundColor Green
+} else {
+    Write-Host "✅ Base branch: $BaseBranchName (via $($baseInfo.Source))" -ForegroundColor Green
+}
+Write-Host "✅ Merge base commit: $($MergeBase.Substring(0, 8))" -ForegroundColor Green
+if ($baseInfo.Distance) {
+    Write-Host "   ($($baseInfo.Distance) commits ahead of $BaseBranchName)" -ForegroundColor Gray
+}
+
+# Check for fix files (non-test files that changed since merge-base)
+$DetectedFixFiles = @()
+$changedFiles = git diff $MergeBase HEAD --name-only 2>$null
+
+if ($changedFiles) {
+    foreach ($file in $changedFiles) {
+        if (-not (Test-IsTestFile $file)) {
+            $DetectedFixFiles += $file
+        }
+    }
+}
+
+# Override with explicitly provided fix files
 if ($FixFiles -and $FixFiles.Count -gt 0) {
     $DetectedFixFiles = $FixFiles
 }
@@ -178,19 +371,18 @@ if ($DetectedFixFiles.Count -eq 0 -and $RequireFullVerification) {
     Write-Host "║  Full verification mode required but no fix files found.  ║" -ForegroundColor Red
     Write-Host "║                                                           ║" -ForegroundColor Red
     Write-Host "║  Possible causes:                                         ║" -ForegroundColor Red
-    Write-Host "║  - Base branch detection failed                           ║" -ForegroundColor Red
-    Write-Host "║  - No non-test files changed in this PR                   ║" -ForegroundColor Red
-    Write-Host "║  - Git fetch failed to update local branch                ║" -ForegroundColor Red
+    Write-Host "║  - No non-test files changed since merge-base             ║" -ForegroundColor Red
+    Write-Host "║  - All changes are in test directories                    ║" -ForegroundColor Red
     Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Red
     Write-Host ""
     Write-Host "Debug info:" -ForegroundColor Yellow
-    Write-Host "  Base branch detected: '$BaseBranchDetected'" -ForegroundColor Yellow
+    Write-Host "  Merge base: $MergeBase" -ForegroundColor Yellow
+    Write-Host "  Base branch: $BaseBranchName" -ForegroundColor Yellow
     Write-Host "  Current branch: $(git rev-parse --abbrev-ref HEAD)" -ForegroundColor Yellow
     Write-Host ""
     Write-Host "To fix, try one of:" -ForegroundColor Cyan
     Write-Host "  1. Specify fix files explicitly: -FixFiles @('path/to/fix.cs')" -ForegroundColor White
-    Write-Host "  2. Specify base branch: -BaseBranch 'main'" -ForegroundColor White
-    Write-Host "  3. Ensure you're on a PR branch with non-test file changes" -ForegroundColor White
+    Write-Host "  2. Remove -RequireFullVerification to run in failure-only mode" -ForegroundColor White
     exit 1
 }
 
@@ -203,97 +395,37 @@ if ($DetectedFixFiles.Count -eq 0) {
     Write-Host "║  No fix files detected - will only verify:                ║" -ForegroundColor Cyan
     Write-Host "║  1. Tests FAIL (proving they catch the bug)               ║" -ForegroundColor Cyan
     Write-Host "║                                                           ║" -ForegroundColor Cyan
-    Write-Host "║  Use this mode when creating tests before writing a fix. ║" -ForegroundColor Cyan
+    Write-Host "║  Use this mode when creating tests before writing a fix.  ║" -ForegroundColor Cyan
     Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
     Write-Host ""
-    
+
     # Auto-detect test filter if not provided
     if (-not $TestFilter) {
         Write-Host "🔍 Auto-detecting test filter from changed test files..." -ForegroundColor Cyan
-        
-        $changedFiles = @()
-        if ($BaseBranchRef) {
-            $changedFiles = git diff $BaseBranchRef HEAD --name-only 2>$null
-        }
-        
-        # If no base branch, use git status to find unstaged/staged files
-        if (-not $changedFiles -or $changedFiles.Count -eq 0) {
-            $changedFiles = git diff --name-only 2>$null
-            if ($changedFiles -and $changedFiles.Count -gt 0) {
-                $changedFiles = @($changedFiles)
-            } else {
-                $changedFiles = git diff --cached --name-only 2>$null
-            }
-        }
-        
-        # Find test files (files in test directories that are .cs files)
-        $testFiles = @()
-        foreach ($file in $changedFiles) {
-            if ($file -match "TestCases\.(Shared\.Tests|HostApp).*\.cs$" -and $file -notmatch "^_") {
-                $testFiles += $file
-            }
-        }
-        
-        if ($testFiles.Count -eq 0) {
+        $filterResult = Get-AutoDetectedTestFilter -MergeBase $MergeBase
+
+        if (-not $filterResult) {
             Write-Host "❌ Could not auto-detect test filter. No test files found in changed files." -ForegroundColor Red
             Write-Host "   Looking for files matching: TestCases.(Shared.Tests|HostApp)/*.cs" -ForegroundColor Yellow
             Write-Host "   Please provide -TestFilter parameter explicitly." -ForegroundColor Yellow
             exit 1
         }
-        
-        # Extract class names from test files
-        $testClassNames = @()
-        foreach ($file in $testFiles) {
-            if ($file -match "TestCases\.Shared\.Tests.*\.cs$") {
-                $fullPath = Join-Path $RepoRoot $file
-                if (Test-Path $fullPath) {
-                    $content = Get-Content $fullPath -Raw
-                    if ($content -match "public\s+(partial\s+)?class\s+(\w+)") {
-                        $className = $matches[2]
-                        if ($className -notmatch "^_" -and $testClassNames -notcontains $className) {
-                            $testClassNames += $className
-                        }
-                    }
-                }
-            }
-        }
-        
-        # Fallback: use file names without extension
-        if ($testClassNames.Count -eq 0) {
-            foreach ($file in $testFiles) {
-                $fileName = [System.IO.Path]::GetFileNameWithoutExtension($file)
-                if ($fileName -notmatch "^_" -and $testClassNames -notcontains $fileName) {
-                    $testClassNames += $fileName
-                }
-            }
-        }
-        
-        if ($testClassNames.Count -eq 0) {
-            Write-Host "❌ Could not extract test class names from changed files." -ForegroundColor Red
-            Write-Host "   Please provide -TestFilter parameter explicitly." -ForegroundColor Yellow
-            exit 1
-        }
-        
-        if ($testClassNames.Count -eq 1) {
-            $TestFilter = $testClassNames[0]
-        } else {
-            $TestFilter = $testClassNames -join "|"
-        }
-        
-        Write-Host "✅ Auto-detected $($testClassNames.Count) test class(es):" -ForegroundColor Green
-        foreach ($name in $testClassNames) {
+
+        $TestFilter = $filterResult.Filter
+        Write-Host "✅ Auto-detected $($filterResult.ClassNames.Count) test class(es):" -ForegroundColor Green
+        foreach ($name in $filterResult.ClassNames) {
             Write-Host "   - $name" -ForegroundColor White
         }
         Write-Host "   Filter: $TestFilter" -ForegroundColor Cyan
     }
-    
+
     # Create output directory
     $OutputPath = Join-Path $RepoRoot $OutputDir
     New-Item -ItemType Directory -Force -Path $OutputPath | Out-Null
-    
+
     $ValidationLog = Join-Path $OutputPath "verification-log.txt"
     $TestLog = Join-Path $OutputPath "test-failure-verification.log"
-    
+
     # Initialize log
     "" | Set-Content $ValidationLog
     "=========================================" | Add-Content $ValidationLog
@@ -301,41 +433,27 @@ if ($DetectedFixFiles.Count -eq 0) {
     "=========================================" | Add-Content $ValidationLog
     "Platform: $Platform" | Add-Content $ValidationLog
     "TestFilter: $TestFilter" | Add-Content $ValidationLog
+    "MergeBase: $MergeBase" | Add-Content $ValidationLog
     "" | Add-Content $ValidationLog
-    
+
     Write-Host "🧪 Running tests (expecting them to FAIL)..." -ForegroundColor Cyan
     Write-Host ""
-    
+
     # Use shared BuildAndRunHostApp.ps1 infrastructure with -Rebuild to ensure clean builds
     $buildScript = Join-Path $RepoRoot ".github/scripts/BuildAndRunHostApp.ps1"
     & $buildScript -Platform $Platform -TestFilter $TestFilter -Rebuild 2>&1 | Tee-Object -FilePath $TestLog
-    
-    # Parse test results
+
+    # Parse test results using shared function
     $testOutputLog = Join-Path $RepoRoot "CustomAgentLogsTmp/UITests/test-output.log"
-    $testResult = @{ Passed = $false; Error = $null }
-    
-    if (Test-Path $testOutputLog) {
-        $content = Get-Content $testOutputLog -Raw
-        if ($content -match "Failed:\s*(\d+)") {
-            $testResult.Passed = $false
-            $testResult.FailCount = [int]$matches[1]
-        } elseif ($content -match "Passed:\s*(\d+)") {
-            $testResult.Passed = $true
-            $testResult.PassCount = [int]$matches[1]
-        } else {
-            $testResult.Error = "Could not parse test results"
-        }
-    } else {
-        $testResult.Error = "Test output log not found: $testOutputLog"
-    }
-    
+    $testResult = Get-TestResultFromLog -LogFile $testOutputLog
+
     # Evaluate results
     Write-Host ""
     Write-Host "=========================================="
     Write-Host "VERIFICATION RESULTS"
     Write-Host "=========================================="
     Write-Host ""
-    
+
     if ($testResult.Error) {
         Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Red
         Write-Host "║              ERROR PARSING TEST RESULTS                   ║" -ForegroundColor Red
@@ -344,7 +462,7 @@ if ($DetectedFixFiles.Count -eq 0) {
         Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Red
         exit 1
     }
-    
+
     if (-not $testResult.Passed) {
         # Tests FAILED - this is what we want!
         Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Green
@@ -352,8 +470,8 @@ if ($DetectedFixFiles.Count -eq 0) {
         Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Green
         Write-Host "║  Tests FAILED as expected!                                ║" -ForegroundColor Green
         Write-Host "║                                                           ║" -ForegroundColor Green
-        Write-Host "║  This proves the tests correctly reproduce the bug.      ║" -ForegroundColor Green
-        Write-Host "║  You can now proceed to write the fix.                   ║" -ForegroundColor Green
+        Write-Host "║  This proves the tests correctly reproduce the bug.       ║" -ForegroundColor Green
+        Write-Host "║  You can now proceed to write the fix.                    ║" -ForegroundColor Green
         Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Green
         Write-Host ""
         Write-Host "Failed tests: $($testResult.FailCount)" -ForegroundColor Yellow
@@ -365,7 +483,7 @@ if ($DetectedFixFiles.Count -eq 0) {
         Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Red
         Write-Host "║  Tests PASSED but they should FAIL!                       ║" -ForegroundColor Red
         Write-Host "║                                                           ║" -ForegroundColor Red
-        Write-Host "║  This means your tests don't actually reproduce the bug. ║" -ForegroundColor Red
+        Write-Host "║  This means your tests don't actually reproduce the bug.  ║" -ForegroundColor Red
         Write-Host "║                                                           ║" -ForegroundColor Red
         Write-Host "║  Possible causes:                                         ║" -ForegroundColor Red
         Write-Host "║  1. Test scenario doesn't match the issue description     ║" -ForegroundColor Red
@@ -395,10 +513,8 @@ Write-Host "║  2. Tests PASS with fix                                   ║" -
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
 Write-Host ""
 
-$BaseBranch = $BaseBranchDetected
 $FixFiles = $DetectedFixFiles
 
-Write-Host "✅ Base branch: $BaseBranch (using ref: $BaseBranchRef)" -ForegroundColor Green
 Write-Host "✅ Fix files ($($FixFiles.Count)):" -ForegroundColor Green
 foreach ($file in $FixFiles) {
     Write-Host "   - $file" -ForegroundColor White
@@ -407,65 +523,18 @@ foreach ($file in $FixFiles) {
 # Auto-detect test filter from test files if not provided
 if (-not $TestFilter) {
     Write-Host "🔍 Auto-detecting test filter from changed test files..." -ForegroundColor Cyan
-    
-    $changedFiles = git diff $BaseBranchRef HEAD --name-only 2>$null
-    
-    # Find test files (files in test directories that are .cs files)
-    $testFiles = @()
-    foreach ($file in $changedFiles) {
-        if ($file -match "TestCases\.(Shared\.Tests|HostApp).*\.cs$" -and $file -notmatch "^_") {
-            $testFiles += $file
-        }
-    }
-    
-    if ($testFiles.Count -eq 0) {
+    $filterResult = Get-AutoDetectedTestFilter -MergeBase $MergeBase
+
+    if (-not $filterResult) {
         Write-Host "❌ Could not auto-detect test filter. No test files found in changed files." -ForegroundColor Red
         Write-Host "   Looking for files matching: TestCases.(Shared.Tests|HostApp)/*.cs" -ForegroundColor Yellow
         Write-Host "   Please provide -TestFilter parameter explicitly." -ForegroundColor Yellow
         exit 1
     }
-    
-    # Extract class names from test files
-    $testClassNames = @()
-    foreach ($file in $testFiles) {
-        if ($file -match "TestCases\.Shared\.Tests.*\.cs$") {
-            $fullPath = Join-Path $RepoRoot $file
-            if (Test-Path $fullPath) {
-                $content = Get-Content $fullPath -Raw
-                if ($content -match "public\s+(partial\s+)?class\s+(\w+)") {
-                    $className = $matches[2]
-                    if ($className -notmatch "^_" -and $testClassNames -notcontains $className) {
-                        $testClassNames += $className
-                    }
-                }
-            }
-        }
-    }
-    
-    # Fallback: use file names without extension
-    if ($testClassNames.Count -eq 0) {
-        foreach ($file in $testFiles) {
-            $fileName = [System.IO.Path]::GetFileNameWithoutExtension($file)
-            if ($fileName -notmatch "^_" -and $testClassNames -notcontains $fileName) {
-                $testClassNames += $fileName
-            }
-        }
-    }
-    
-    if ($testClassNames.Count -eq 0) {
-        Write-Host "❌ Could not extract test class names from changed files." -ForegroundColor Red
-        Write-Host "   Please provide -TestFilter parameter explicitly." -ForegroundColor Yellow
-        exit 1
-    }
-    
-    if ($testClassNames.Count -eq 1) {
-        $TestFilter = $testClassNames[0]
-    } else {
-        $TestFilter = $testClassNames -join "|"
-    }
-    
-    Write-Host "✅ Auto-detected $($testClassNames.Count) test class(es):" -ForegroundColor Green
-    foreach ($name in $testClassNames) {
+
+    $TestFilter = $filterResult.Filter
+    Write-Host "✅ Auto-detected $($filterResult.ClassNames.Count) test class(es):" -ForegroundColor Green
+    foreach ($name in $filterResult.ClassNames) {
         Write-Host "   - $name" -ForegroundColor White
     }
     Write-Host "   Filter: $TestFilter" -ForegroundColor Cyan
@@ -487,20 +556,7 @@ function Write-Log {
     Add-Content -Path $ValidationLog -Value $logLine
 }
 
-function Get-TestResult {
-    param([string]$LogFile)
-
-    if (Test-Path $LogFile) {
-        $content = Get-Content $LogFile -Raw
-        if ($content -match "Failed:\s*(\d+)") {
-            return @{ Passed = $false; FailCount = [int]$matches[1] }
-        }
-        if ($content -match "Passed:\s*(\d+)") {
-            return @{ Passed = $true; PassCount = [int]$matches[1] }
-        }
-    }
-    return @{ Passed = $false; Error = "Could not parse test results" }
-}
+# Reuse the Get-TestResultFromLog function defined earlier
 
 # Initialize log
 "" | Set-Content $ValidationLog
@@ -510,7 +566,8 @@ Write-Log "=========================================="
 Write-Log "Platform: $Platform"
 Write-Log "TestFilter: $TestFilter"
 Write-Log "FixFiles: $($FixFiles -join ', ')"
-Write-Log "BaseBranch: $BaseBranch"
+Write-Log "BaseBranch: $BaseBranchName"
+Write-Log "MergeBase: $MergeBase"
 Write-Log ""
 
 # Verify fix files exist
@@ -524,19 +581,19 @@ foreach ($file in $FixFiles) {
     Write-Log "  ✓ $file exists"
 }
 
-# Determine which files exist in the base branch (can be reverted)
+# Determine which files exist at the merge-base (can be reverted)
 Write-Log ""
-Write-Log "Checking which fix files exist in $BaseBranch..."
+Write-Log "Checking which fix files exist at merge-base ($($MergeBase.Substring(0, 8)))..."
 $RevertableFiles = @()
 $NewFiles = @()
 
 foreach ($file in $FixFiles) {
-    # Check if file exists in base branch
-    $existsInBase = git ls-tree -r $BaseBranchRef --name-only -- $file 2>$null
-    
+    # Check if file exists at merge-base commit
+    $existsInBase = git ls-tree -r $MergeBase --name-only -- $file 2>$null
+
     if ($existsInBase) {
         $RevertableFiles += $file
-        Write-Log "  ✓ $file (exists in $BaseBranch - will revert)"
+        Write-Log "  ✓ $file (exists at merge-base - will revert)"
     } else {
         $NewFiles += $file
         Write-Log "  ○ $file (new file - skipping revert)"
@@ -581,22 +638,22 @@ if ($uncommittedFiles.Count -gt 0) {
 
 Write-Log "  ✓ All revertable fix files are committed"
 
-# Step 1: Revert fix files to base branch
+# Step 1: Revert fix files to merge-base state
 Write-Log ""
 Write-Log "=========================================="
-Write-Log "STEP 1: Reverting fix files to $BaseBranch"
+Write-Log "STEP 1: Reverting fix files to merge-base ($($MergeBase.Substring(0, 8)))"
 Write-Log "=========================================="
 
 foreach ($file in $RevertableFiles) {
     Write-Log "  Reverting: $file"
-    git checkout $BaseBranchRef -- $file 2>&1 | Out-Null
+    git checkout $MergeBase -- $file 2>&1 | Out-Null
     if ($LASTEXITCODE -ne 0) {
-        Write-Log "  ERROR: Failed to revert $file from $BaseBranchRef"
+        Write-Log "  ERROR: Failed to revert $file from $MergeBase"
         exit 1
     }
 }
 
-Write-Log "  ✓ $($RevertableFiles.Count) fix file(s) reverted to $BaseBranch state"
+Write-Log "  ✓ $($RevertableFiles.Count) fix file(s) reverted to merge-base state"
 
 # Step 2: Run tests WITHOUT fix
 Write-Log ""
@@ -608,7 +665,7 @@ Write-Log "=========================================="
 $buildScript = Join-Path $RepoRoot ".github/scripts/BuildAndRunHostApp.ps1"
 & $buildScript -Platform $Platform -TestFilter $TestFilter -Rebuild 2>&1 | Tee-Object -FilePath $WithoutFixLog
 
-$withoutFixResult = Get-TestResult -LogFile (Join-Path $RepoRoot "CustomAgentLogsTmp/UITests/test-output.log")
+$withoutFixResult = Get-TestResultFromLog -LogFile (Join-Path $RepoRoot "CustomAgentLogsTmp/UITests/test-output.log")
 
 # Step 3: Restore fix files from current branch HEAD
 Write-Log ""
@@ -635,7 +692,7 @@ Write-Log "=========================================="
 
 & $buildScript -Platform $Platform -TestFilter $TestFilter -Rebuild 2>&1 | Tee-Object -FilePath $WithFixLog
 
-$withFixResult = Get-TestResult -LogFile (Join-Path $RepoRoot "CustomAgentLogsTmp/UITests/test-output.log")
+$withFixResult = Get-TestResultFromLog -LogFile (Join-Path $RepoRoot "CustomAgentLogsTmp/UITests/test-output.log")
 
 # Step 5: Evaluate results
 Write-Log ""
