@@ -72,7 +72,7 @@ internal class ScreenshotCommand
 
         command.Options.Add(OutputOption);
         command.Options.Add(WaitOption);
-        command.SetAction(Run);
+        command.SetAction(RunAsync);
 
         return command;
     }
@@ -80,7 +80,7 @@ internal class ScreenshotCommand
     /// <summary>
     /// Entry point for the screenshot command.
     /// </summary>
-    private static int Run(ParseResult result)
+    private static async Task<int> RunAsync(ParseResult result)
     {
         var outputPath = result.GetValue(OutputOption);
         var waitSeconds = result.GetValue(WaitOption);
@@ -98,7 +98,7 @@ internal class ScreenshotCommand
         }
 
         var command = new ScreenshotCommand(verbose);
-        return command.Execute(outputPath, waitSeconds, framework, device, project);
+        return await command.ExecuteAsync(outputPath, waitSeconds, framework, device, project);
     }
 
     /// <summary>
@@ -110,13 +110,13 @@ internal class ScreenshotCommand
     /// <param name="device">Target device identifier (optional).</param>
     /// <param name="project">Path to the .NET MAUI project (optional).</param>
     /// <returns>Exit code (0 for success, non-zero for failure).</returns>
-    public int Execute(string outputPath, int waitSeconds, string? framework, string? device, string? project)
+    public async Task<int> ExecuteAsync(string outputPath, int waitSeconds, string? framework, string? device, string? project)
     {
         // Wait if requested
         if (waitSeconds > 0)
         {
             Log(TraceLevel.Info, $"Waiting {waitSeconds} second(s) before capturing...");
-            Thread.Sleep(waitSeconds * 1000);
+            await Task.Delay(waitSeconds * 1000);
         }
 
         // Determine platform from framework
@@ -131,9 +131,9 @@ internal class ScreenshotCommand
 
         return platform.ToLowerInvariant() switch
         {
-            "android" => ExecuteAndroid(outputPath, device),
-            "ios" => ExecuteiOS(outputPath, device),
-            "macos" or "maccatalyst" => ExecuteMacOS(outputPath, device),
+            "android" => await ExecuteAndroidAsync(outputPath, device),
+            "ios" => await ExecuteiOSAsync(outputPath, device),
+            "macos" or "maccatalyst" => await ExecuteMacOSAsync(outputPath, device),
             "windows" => ExecuteWindows(outputPath, device),
             _ => ExecuteUnsupportedPlatform(platform)
         };
@@ -195,7 +195,7 @@ internal class ScreenshotCommand
     /// <summary>
     /// Captures a screenshot on Android using adb.
     /// </summary>
-    private int ExecuteAndroid(string outputPath, string? device)
+    private async Task<int> ExecuteAndroidAsync(string outputPath, string? device)
     {
         Log(TraceLevel.Info, $"Capturing Android screenshot to: {outputPath}");
 
@@ -238,14 +238,17 @@ internal class ScreenshotCommand
                 return 1;
             }
 
+            // Read stdout and stderr simultaneously to avoid deadlock when stderr buffer fills up
+            var stderrTask = process.StandardError.ReadToEndAsync();
+
             // Read binary screenshot data from stdout and write to file
             using (var fileStream = File.Create(outputPath))
             {
-                process.StandardOutput.BaseStream.CopyTo(fileStream);
+                await process.StandardOutput.BaseStream.CopyToAsync(fileStream);
             }
 
-            var stderr = process.StandardError.ReadToEnd();
-            process.WaitForExit();
+            var stderr = await stderrTask;
+            await process.WaitForExitAsync();
 
             if (process.ExitCode != 0)
             {
@@ -271,7 +274,7 @@ internal class ScreenshotCommand
     /// Captures a screenshot on iOS Simulator using simctl.
     /// Note: Physical iOS device screenshots are not currently supported.
     /// </summary>
-    private int ExecuteiOS(string outputPath, string? device)
+    private async Task<int> ExecuteiOSAsync(string outputPath, string? device)
     {
         // Check if this looks like a physical device (UDIDs are 40 hex characters or 25 characters with dashes for newer devices)
         // Simulator UDIDs are always formatted as standard GUIDs (8-4-4-4-12 format)
@@ -287,7 +290,7 @@ internal class ScreenshotCommand
 
         var deviceArg = string.IsNullOrEmpty(device) ? "booted" : device;
         var startInfo = CreateProcessStartInfo("xcrun", "simctl", "io", deviceArg, "screenshot", outputPath);
-        return RunProcess(startInfo, "xcrun simctl");
+        return await RunProcessAsync(startInfo, "xcrun simctl");
     }
 
     /// <summary>
@@ -304,14 +307,14 @@ internal class ScreenshotCommand
     /// <summary>
     /// Captures a screenshot on Mac Catalyst using screencapture.
     /// </summary>
-    private int ExecuteMacOS(string outputPath, string? device)
+    private async Task<int> ExecuteMacOSAsync(string outputPath, string? device)
     {
         Log(TraceLevel.Info, $"Capturing Mac Catalyst screenshot to: {outputPath}");
 
         // Mac Catalyst apps run natively on macOS, use screencapture
         // -o flag prevents the screenshot sound
         var startInfo = CreateProcessStartInfo("screencapture", "-o", outputPath);
-        return RunProcess(startInfo, "screencapture");
+        return await RunProcessAsync(startInfo, "screencapture");
     }
 
     /// <summary>
@@ -347,8 +350,9 @@ internal class ScreenshotCommand
 
     /// <summary>
     /// Runs an external process and handles output/errors.
+    /// Reads stdout and stderr simultaneously to avoid deadlock.
     /// </summary>
-    private int RunProcess(ProcessStartInfo startInfo, string toolName)
+    private async Task<int> RunProcessAsync(ProcessStartInfo startInfo, string toolName)
     {
         try
         {
@@ -359,9 +363,13 @@ internal class ScreenshotCommand
                 return 1;
             }
 
-            var stdout = process.StandardOutput.ReadToEnd();
-            var stderr = process.StandardError.ReadToEnd();
-            process.WaitForExit();
+            // Read stdout and stderr simultaneously to avoid deadlock when buffers fill up
+            var stdoutTask = process.StandardOutput.ReadToEndAsync();
+            var stderrTask = process.StandardError.ReadToEndAsync();
+
+            var stdout = await stdoutTask;
+            var stderr = await stderrTask;
+            await process.WaitForExitAsync();
 
             if (!string.IsNullOrWhiteSpace(stdout))
             {

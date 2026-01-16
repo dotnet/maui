@@ -6,11 +6,11 @@ namespace Microsoft.Maui.Cli;
 
 public class Program
 {
-    public static int Main(string[] args)
+    public static async Task<int> Main(string[] args)
     {
         var rootCommand = CreateRootCommand();
         ParseResult parseResult = rootCommand.Parse(args);
-        return parseResult.Invoke();
+        return await parseResult.InvokeAsync();
     }
 
     internal static RootCommand CreateRootCommand()

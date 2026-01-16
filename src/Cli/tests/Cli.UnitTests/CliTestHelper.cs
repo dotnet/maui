@@ -26,7 +26,7 @@ internal static class CliTestHelper
                 Console.SetOut(sw);
                 Console.SetError(sw);
 
-                var exitCode = Program.Main(args);
+                var exitCode = Program.Main(args).GetAwaiter().GetResult();
 
                 sw.Flush();
                 return (sw.ToString(), exitCode);
