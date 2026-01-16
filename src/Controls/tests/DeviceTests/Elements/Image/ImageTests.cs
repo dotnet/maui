@@ -41,20 +41,10 @@ namespace Microsoft.Maui.DeviceTests
 
 			layout.Add(image);
 
-			await InvokeOnMainThreadAsync(async () =>
+			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async handler =>
 			{
-				var handler = CreateHandler<LayoutHandler>(layout);
 				await image.WaitUntilLoaded();
-				
-#if WINDOWS
-				// In headless CI environments (like Helix), the layout may need extra time
-				// to complete after the image loads. Wait for the image to have non-zero dimensions.
-				await AssertionExtensions.AssertEventually(
-					() => image.Width > 0 && image.Height > 0,
-					timeout: 5000,
-					message: $"Timed out waiting for image to have non-zero dimensions. Current size: {image.Width}x{image.Height}");
-#endif
-				
+
 				await handler.ToPlatform().AssertContainsColor(Colors.Red, MauiContext);
 			});
 		}

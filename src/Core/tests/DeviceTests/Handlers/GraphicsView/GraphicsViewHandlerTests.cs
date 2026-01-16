@@ -28,7 +28,11 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidateHasColor(graphicsView, expected);
 		}
 
-		[Theory(DisplayName = "Can draw image loaded in background thread")]
+		[Theory(DisplayName = "Can draw image loaded in background thread"
+#if WINDOWS
+			, Skip = "Win2D image loading in background thread fails on Windows Helix CI"
+#endif
+		)]
 		[InlineData("red_raw.png", 0xFFFF0000)]
 		[InlineData("green_raw.png", 0xFF00FF00)]
 		[InlineData("blue_raw.png", 0xFF0000FF)]
@@ -55,7 +59,11 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidateHasColor(graphicsView, expected);
 		}
 
-		[Theory(DisplayName = "Can draw image loaded in draw loop")]
+		[Theory(DisplayName = "Can draw image loaded in draw loop"
+#if WINDOWS
+			, Skip = "Win2D image loading in draw loop fails on Windows Helix CI"
+#endif
+		)]
 		[InlineData("red_raw.png", 0xFFFF0000)]
 		[InlineData("green_raw.png", 0xFF00FF00)]
 		[InlineData("blue_raw.png", 0xFF0000FF)]

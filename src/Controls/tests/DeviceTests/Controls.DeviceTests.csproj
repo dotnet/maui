@@ -41,15 +41,6 @@
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
   </PropertyGroup>
 
-  <!-- Windows unpackaged build support -->
-  <PropertyGroup Condition="'$(WindowsPackageType)' == 'None' AND '$(OutputType)' == 'Exe'">
-    <DefineConstants>$(DefineConstants);UNPACKAGED</DefineConstants>
-    <!-- Include Windows App SDK native DLLs for unpackaged self-contained builds -->
-    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
-    <!-- Disable bootstrap UI prompt for self-contained apps (required for headless CI/Helix) -->
-    <WindowsAppSDKBootstrapAutoInitializeOptions_OnNoMatch_ShowUI>false</WindowsAppSDKBootstrapAutoInitializeOptions_OnNoMatch_ShowUI>
-  </PropertyGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\..\Core\tests\DeviceTests.Shared\Core.DeviceTests.Shared.csproj" />
     <ProjectReference Include="..\..\..\TestUtils\src\DeviceTests\TestUtils.DeviceTests.csproj" />
