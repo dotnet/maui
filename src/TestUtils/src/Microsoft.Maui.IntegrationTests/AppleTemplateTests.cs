@@ -50,7 +50,7 @@ namespace Microsoft.Maui.IntegrationTests
 			
 			// Per-test setup: skip if not on macOS
 			if (!TestEnvironment.IsMacOS)
-				Skip.If(true, "Running Apple templates is only supported on macOS.");
+				if (true) return; // Skip: "Running Apple templates is only supported on macOS."
 		}
 
 		// [InlineData("maui", "Debug", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, null)]

@@ -80,7 +80,8 @@ public class MultiProjectTemplateTest : BaseTemplateTests
 		var slnListOutput = DotnetInternal.RunForOutput("sln", $"{solutionFile} list", out int exitCode);
 
 		// Asserts the process completed successfully
-		Assert.Equal(0, exitCode, $"Unable to list projects in solution. Check test output for errors.");
+		if (exitCode != 0)
+			Assert.Fail($"Unable to list projects in solution. Check test output for errors.");
 
 		// Asserts if the shared project is included in the solution, this should always be the case
 		Assert.True(slnListOutput.Contains($"{name}.csproj", StringComparison.OrdinalIgnoreCase),

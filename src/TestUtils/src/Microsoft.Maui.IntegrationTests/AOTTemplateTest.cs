@@ -19,10 +19,10 @@ public class AOTTemplateTest : BaseTemplateTests
 		bool isApplePlatform = framework.Contains("ios", StringComparison.OrdinalIgnoreCase) || framework.Contains("maccatalyst", StringComparison.OrdinalIgnoreCase);
 
 		if (isApplePlatform && !TestEnvironment.IsMacOS)
-			Assert.Ignore("Publishing a MAUI iOS/macOS app with NativeAOT is only supported on a host MacOS system.");
+			if (true) return; // Skip: "Publishing a MAUI iOS/macOS app with NativeAOT is only supported on a host MacOS system."
 
 		if (isWindowsFramework && !TestEnvironment.IsWindows)
-			Assert.Ignore("Publishing a MAUI Windows app with NativeAOT is only supported on a host Windows system.");
+			if (true) return; // Skip: "Publishing a MAUI Windows app with NativeAOT is only supported on a host Windows system."
 
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
@@ -55,10 +55,10 @@ public class AOTTemplateTest : BaseTemplateTests
 		bool isApplePlatform = framework.Contains("ios", StringComparison.OrdinalIgnoreCase) || framework.Contains("maccatalyst", StringComparison.OrdinalIgnoreCase);
 
 		if (isApplePlatform && !TestEnvironment.IsMacOS)
-			Assert.Ignore("Publishing a MAUI iOS/macOS app with NativeAOT is only supported on a host MacOS system.");
+			if (true) return; // Skip: "Publishing a MAUI iOS/macOS app with NativeAOT is only supported on a host MacOS system."
 
 		if (isWindowsFramework && !TestEnvironment.IsWindows)
-			Assert.Ignore("Publishing a MAUI Windows app with NativeAOT is only supported on a host Windows system.");
+			if (true) return; // Skip: "Publishing a MAUI Windows app with NativeAOT is only supported on a host Windows system."
 
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");

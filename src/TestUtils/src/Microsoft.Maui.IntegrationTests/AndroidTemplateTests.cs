@@ -83,7 +83,7 @@ namespace Microsoft.Maui.IntegrationTests
 		[InlineData("maui-blazor", DotNetCurrent, "Debug", null)]
 		[InlineData("maui-blazor", DotNetCurrent, "Release", null)]
 		[InlineData("maui-blazor", DotNetCurrent, "Release", "full")]
-		public void RunOnAndroid(string id, string framework, string config, string trimMode)
+		public void RunOnAndroid(string id, string framework, string config, string? trimMode)
 		{
 			var projectDir = TestDirectory;
 			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");

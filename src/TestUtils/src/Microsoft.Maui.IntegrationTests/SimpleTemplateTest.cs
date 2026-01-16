@@ -335,8 +335,8 @@ public class SimpleTemplateTest : BaseTemplateTests
 			.Where(f => !f.Equals(expectedProjectFile, StringComparison.OrdinalIgnoreCase))
 			.ToArray();
 
-		Assert.Empty(incorrectFiles,
-			$"Found incorrectly named project files: {string.Join(", ", incorrectFiles.Select(Path.GetFileName))}. Only '{Path.GetFileName(expectedProjectFile)}' should exist.");
+		if (incorrectFiles.Any())
+			Assert.Fail($"Found incorrectly named project files: {string.Join(", ", incorrectFiles.Select(Path.GetFileName))}. Only '{Path.GetFileName(expectedProjectFile)}' should exist.");
 
 		// Verify the content is correct
 		Assert.True(File.Exists(Path.Combine(projectDir, "Extensions.cs")),

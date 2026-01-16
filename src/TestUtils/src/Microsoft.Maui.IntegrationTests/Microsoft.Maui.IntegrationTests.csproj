@@ -10,10 +10,6 @@
 
   <ItemGroup>
     <PackageReference Include="xunit" Version="2.9.0" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
     <PackageReference Include="MSBuild.StructuredLogger" Version="2.2.158" />
   </ItemGroup>
 

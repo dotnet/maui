@@ -1,5 +1,4 @@
 ﻿
-using System.Collections;
 using Newtonsoft.Json;
 
 namespace Microsoft.Maui.IntegrationTests
@@ -9,7 +8,7 @@ namespace Microsoft.Maui.IntegrationTests
 	{
 	public SampleTests(IntegrationTestFixture fixture, ITestOutputHelper output) : base(fixture, output) { }
 
-		public static IEnumerable SampleTestMatrix
+		public static IEnumerable<object[]> SampleTestMatrix
 		{
 			get
 			{
@@ -20,14 +19,14 @@ namespace Microsoft.Maui.IntegrationTests
 				{
 					foreach (var config in new[] { "Debug", "Release" })
 					{
-						yield return new TestCaseData(projectFile, config);
+						yield return new object[] { projectFile, config };
 					}
 				}
 			}
 		}
 
-		[Fact]
-		[TestCaseSource(nameof(SampleTestMatrix))]
+		[Theory]
+		[MemberData(nameof(SampleTestMatrix))]
 		public void Build(string relativeProj, string config)
 		{
 			var projectFile = Path.GetFullPath(Path.Combine(TestEnvironment.GetMauiDirectory(), relativeProj));

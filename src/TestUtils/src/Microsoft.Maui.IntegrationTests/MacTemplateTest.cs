@@ -38,14 +38,14 @@ public class MacTemplateTest : BaseTemplateTests
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
 
-	//[Test]
+	//[Theory]
 	//[InlineData("maui-blazor", "Debug", DotNetCurrent, true)]
 	//[InlineData("maui-blazor", "Release", DotNetCurrent, true)]
-	public void CheckEntitlementsForMauiBlazorOnMacCatalyst(string id, string config, string framework, bool sign)
+	private void CheckEntitlementsForMauiBlazorOnMacCatalyst(string id, string config, string framework, bool sign)
 	{
 		if (TestEnvironment.IsWindows)
 		{
-			Assert.Ignore("Running MacCatalyst templates is only supported on Mac.");
+			if (true) return; // Skip: "Running MacCatalyst templates is only supported on Mac."
 		}
 
 		var arch = System.Runtime.InteropServices.RuntimeInformation.OSArchitecture;
@@ -72,7 +72,7 @@ public class MacTemplateTest : BaseTemplateTests
 			new() { "com.apple.security.app-sandbox", "com.apple.security.network.client" };
 		List<string> foundEntitlements = Codesign.SearchForExpectedEntitlements(entitlementsPath, appLocation, expectedEntitlements);
 
-		CollectionAssert.Equal(expectedEntitlements, foundEntitlements, "Entitlements missing from executable.");
+		Assert.Equal(expectedEntitlements, foundEntitlements);
 	}
 
 	[Theory]
@@ -86,7 +86,7 @@ public class MacTemplateTest : BaseTemplateTests
 	{
 		if (TestEnvironment.IsWindows)
 		{
-			Assert.Ignore("Running iOS templates is only supported on Mac.");
+			if (true) return; // Skip: "Running iOS templates is only supported on Mac."
 		}
 
 		var arch = System.Runtime.InteropServices.RuntimeInformation.OSArchitecture;
