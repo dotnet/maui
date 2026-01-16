@@ -33,6 +33,11 @@ public partial class StyleTests : ContentPage
 		{
 			var layout = new StyleTests(inflator);
 			Style style = layout.style1;
+			
+			// For SourceGen, styles are lazy - force initialization before inspecting Setters
+			if (inflator == XamlInflator.SourceGen)
+				style.ForceInitialize();
+			
 			Setter setter;
 
 			//Test built-in conversions
@@ -65,6 +70,11 @@ public partial class StyleTests : ContentPage
 		{
 			var layout = new StyleTests(inflator);
 			Style style2 = layout.style2;
+			
+			// For SourceGen, styles are lazy - force initialization before inspecting Setters
+			if (inflator == XamlInflator.SourceGen)
+				style2.ForceInitialize();
+			
 			var s0 = style2.Setters[0];
 			var s1 = style2.Setters[1];
 			Assert.Equal(Label.TextProperty, s0.Property);
@@ -120,7 +130,8 @@ public partial class StyleTests : ContentPage
 				.RunMauiSourceGenerator(typeof(StyleTests));
 			Assert.False(result.Diagnostics.Any());
 			var initComp = result.GeneratedInitializeComponent();
-			Assert.Contains("new global::Microsoft.Maui.Controls.Style(typeof(global::Microsoft.Maui.Controls.Label))", initComp, StringComparison.InvariantCulture);
+			// Trimmable styles use string-based constructor for AOT compatibility
+			Assert.Contains("new global::Microsoft.Maui.Controls.Style(\"Microsoft.Maui.Controls.Label, Microsoft.Maui.Controls\")", initComp, StringComparison.InvariantCulture);
 		}
 	}
 }

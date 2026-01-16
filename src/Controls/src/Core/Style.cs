@@ -224,6 +224,17 @@ namespace Microsoft.Maui.Controls
 		internal bool IsLazyStyle => _assemblyQualifiedTargetTypeName is not null;
 
 		/// <summary>
+		/// Forces initialization of a lazy style without applying it to a real target.
+		/// This is primarily intended for testing scenarios where setters need to be inspected
+		/// before the style is applied to any element.
+		/// </summary>
+		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+		internal void ForceInitialize()
+		{
+			EnsureInitialized(new View());
+		}
+
+		/// <summary>
 		/// Ensures the lazy style is initialized for the given target.
 		/// </summary>
 		private void EnsureInitialized(BindableObject target)
