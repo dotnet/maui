@@ -32,7 +32,8 @@ stages:
         clean: true
 
       - pwsh: |
-          $testFilterArg = '--filter "$(testFilter)"'
+          $testFilterValue = '$(testFilter)'
+          $testFilterArg = "--filter `"$testFilterValue`""
           $args = @(
             '-test'
             '-configuration', '${{ parameters.buildConfig }}'
