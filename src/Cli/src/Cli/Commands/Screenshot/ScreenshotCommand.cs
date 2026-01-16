@@ -269,14 +269,36 @@ internal class ScreenshotCommand
 
     /// <summary>
     /// Captures a screenshot on iOS Simulator using simctl.
+    /// Note: Physical iOS device screenshots are not currently supported.
     /// </summary>
     private int ExecuteiOS(string outputPath, string? device)
     {
+        // Check if this looks like a physical device (UDIDs are 40 hex characters or 25 characters with dashes for newer devices)
+        // Simulator UDIDs are always formatted as standard GUIDs (8-4-4-4-12 format)
+        // "booted" is a special keyword recognized by simctl to target the currently running simulator
+        if (!string.IsNullOrEmpty(device) && !IsSimulatorUdid(device) && device != "booted")
+        {
+            Log(TraceLevel.Error, "Error: Screenshots from physical iOS devices are not currently supported.");
+            Log(TraceLevel.Error, "Please use an iOS Simulator instead, or omit --device to use the booted simulator.");
+            return 1;
+        }
+
         Log(TraceLevel.Info, $"Capturing iOS Simulator screenshot to: {outputPath}");
 
         var deviceArg = string.IsNullOrEmpty(device) ? "booted" : device;
         var startInfo = CreateProcessStartInfo("xcrun", "simctl", "io", deviceArg, "screenshot", outputPath);
         return RunProcess(startInfo, "xcrun simctl");
+    }
+
+    /// <summary>
+    /// Checks if the device identifier looks like a simulator UDID (standard GUID format).
+    /// Simulators use GUIDs like "12345678-1234-1234-1234-123456789ABC".
+    /// Physical devices use either 40-character hex strings or newer 25-character formats.
+    /// </summary>
+    private static bool IsSimulatorUdid(string device)
+    {
+        // Try to parse as a GUID - simulators use standard GUID format
+        return Guid.TryParse(device, out _);
     }
 
     /// <summary>
