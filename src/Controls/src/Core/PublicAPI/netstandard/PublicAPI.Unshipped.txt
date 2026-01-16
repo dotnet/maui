@@ -1,3 +1,3 @@
 #nullable enable
-~Microsoft.Maui.Controls.Style.Initializer.set -> void
+~Microsoft.Maui.Controls.Style.LazyInitialization.set -> void
 ~Microsoft.Maui.Controls.Style.Style(string assemblyQualifiedTargetTypeName) -> void
