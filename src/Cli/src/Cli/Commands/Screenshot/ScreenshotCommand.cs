@@ -173,18 +173,23 @@ internal class ScreenshotCommand
 
     /// <summary>
     /// Creates a ProcessStartInfo configured for capturing output.
+    /// Uses ArgumentList to avoid quoting issues.
     /// </summary>
-    private static ProcessStartInfo CreateProcessStartInfo(string fileName, string arguments)
+    private static ProcessStartInfo CreateProcessStartInfo(string fileName, params string[] args)
     {
-        return new ProcessStartInfo
+        var startInfo = new ProcessStartInfo
         {
             FileName = fileName,
-            Arguments = arguments,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,
             CreateNoWindow = true
         };
+        foreach (var arg in args)
+        {
+            startInfo.ArgumentList.Add(arg);
+        }
+        return startInfo;
     }
 
     /// <summary>
@@ -220,11 +225,9 @@ internal class ScreenshotCommand
             return 1;
         }
 
-        var args = string.IsNullOrEmpty(device)
-            ? "exec-out screencap -p"
-            : $"-s {device} exec-out screencap -p";
-
-        var startInfo = CreateProcessStartInfo(adbPath, args);
+        var startInfo = string.IsNullOrEmpty(device)
+            ? CreateProcessStartInfo(adbPath, "exec-out", "screencap", "-p")
+            : CreateProcessStartInfo(adbPath, "-s", device, "exec-out", "screencap", "-p");
 
         try
         {
@@ -272,8 +275,7 @@ internal class ScreenshotCommand
         Log(TraceLevel.Info, $"Capturing iOS Simulator screenshot to: {outputPath}");
 
         var deviceArg = string.IsNullOrEmpty(device) ? "booted" : device;
-        var args = $"simctl io {deviceArg} screenshot \"{outputPath}\"";
-        var startInfo = CreateProcessStartInfo("xcrun", args);
+        var startInfo = CreateProcessStartInfo("xcrun", "simctl", "io", deviceArg, "screenshot", outputPath);
         return RunProcess(startInfo, "xcrun simctl");
     }
 
@@ -285,8 +287,8 @@ internal class ScreenshotCommand
         Log(TraceLevel.Info, $"Capturing Mac Catalyst screenshot to: {outputPath}");
 
         // Mac Catalyst apps run natively on macOS, use screencapture
-        var args = $"-o \"{outputPath}\"";
-        var startInfo = CreateProcessStartInfo("screencapture", args);
+        // -o flag prevents the screenshot sound
+        var startInfo = CreateProcessStartInfo("screencapture", "-o", outputPath);
         return RunProcess(startInfo, "screencapture");
     }
 
