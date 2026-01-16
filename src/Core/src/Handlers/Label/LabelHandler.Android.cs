@@ -1,6 +1,8 @@
 using Android.Text;
 using Android.Views;
 using AndroidX.AppCompat.Widget;
+using Google.Android.Material.TextView;
+using Java.Lang;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Handlers
@@ -95,6 +97,43 @@ namespace Microsoft.Maui.Handlers
 		public static void MapLineHeight(ILabelHandler handler, ILabel label)
 		{
 			handler.PlatformView?.UpdateLineHeight(label);
+		}
+	}
+
+	// TODO: Material3 - make it public in .net 11
+	internal class LabelHandler2 : LabelHandler
+	{
+		protected override MauiMaterialTextView CreatePlatformView()
+		{
+			return new MauiMaterialTextView(Context);
+		}
+	}
+
+	// TODO: Material3 - make it public in .net 11
+	internal class MauiMaterialTextView : MaterialTextView
+	{
+		bool _isFormatted;
+
+		public MauiMaterialTextView(Context context) : base(MauiMaterialContextThemeWrapper.Create(context))
+		{
+		}
+
+		internal event EventHandler<LayoutChangedEventArgs>? LayoutChanged;
+
+		public override void SetText(ICharSequence? text, BufferType? type)
+		{
+			_isFormatted = text is not Java.Lang.String;
+			base.SetText(text, type);
+		}
+
+		protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
+		{
+			base.OnLayout(changed, left, top, right, bottom);
+
+			if (_isFormatted)
+			{
+				LayoutChanged?.Invoke(this, new LayoutChangedEventArgs(left, top, right, bottom));
+			}
 		}
 	}
 }
