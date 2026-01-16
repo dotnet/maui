@@ -8,17 +8,14 @@ using Microsoft.Maui.Controls.Internals;
 
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.FlyoutPage']/Docs/*" />
 	[ContentProperty(nameof(Detail))]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-#if IOS || MACCATALYST
 	[ElementHandler(typeof(Handlers.Compatibility.PhoneFlyoutPageRenderer))]
-#elif WINDOWS || ANDROID || TIZEN
-	[ElementHandler(typeof(FlyoutViewHandler))]
-#endif
 	public partial class FlyoutPage : Page, IFlyoutPageController, IElementConfiguration<FlyoutPage>, IFlyoutView
 	{
 		/// <summary>Bindable property for <see cref="IsGestureEnabled"/>.</summary>

@@ -17,19 +17,14 @@ using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shell']/Docs/*" />
 	[ContentProperty(nameof(Items))]
 	[DebuggerTypeProxy(typeof(ShellDebugView))]
-#if ANDROID || IOS || MACCATALYST
 	[ElementHandler(typeof(Handlers.Compatibility.ShellRenderer))]
-#elif WINDOWS
-	[ElementHandler(typeof(Handlers.ShellHandler))]
-#elif TIZEN
-	[ElementHandler(typeof(Handlers.ShellHandler))]
-#endif
 	public partial class Shell : Page, IShellController, IPropertyPropagationController, IPageContainer<Page>, IFlyoutView
 	{
 		/// <summary>
