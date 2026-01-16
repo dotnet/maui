@@ -8,6 +8,7 @@ public class GetTargetPlatformIdentifierTests
     [InlineData("net10.0-android", "android")]
     [InlineData("net10.0-ios", "ios")]
     [InlineData("net10.0-maccatalyst", "maccatalyst")]
+    [InlineData("net10.0-macos", "macos")]
     [InlineData("net10.0-windows", "windows")]
     [InlineData("net9.0-android", "android")]
     [InlineData("net8.0-ios", "ios")]

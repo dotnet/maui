@@ -154,7 +154,7 @@ internal class ScreenshotCommand
             if (OperatingSystem.IsWindows())
                 return "windows";
             if (OperatingSystem.IsMacOS())
-                return "maccatalyst";
+                return "macos";
             if (OperatingSystem.IsMacCatalyst())
                 return "maccatalyst";
             if (OperatingSystem.IsIOS())
