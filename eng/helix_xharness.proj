@@ -201,21 +201,36 @@
         </ItemGroup>
 
         <!-- Windows: Use HelixWorkItem with test runner script (not XHarness) -->
+        <!-- TEMPORARY: Only run Controls.DeviceTests with Lifecycle category to debug MinimizeAndThenMaximizingWorks -->
+        <ItemGroup Condition="'$(TargetOS)' == 'windows'">
+            <_WindowsControlsScenario Include="@(_MAUIScenarioSearch)" Condition="'%(_MAUIScenarioSearch.ScenarioDirectoryName)' == 'Controls.DeviceTests'" />
+            <HelixWorkItem Include="Controls.DeviceTests-Lifecycle-packaged">
+                <PayloadArchive>%(_WindowsControlsScenario.PayloadDirectory).zip</PayloadArchive>
+                <Command>call %HELIX_CORRELATION_PAYLOAD%\eng\devices\run-windows-devicetests.cmd Controls.DeviceTests packaged com.microsoft.maui.controls.devicetests $(TargetFrameworkToTest) Lifecycle</Command>
+                <Timeout>02:00:00</Timeout>
+            </HelixWorkItem>
+        </ItemGroup>
+        
+        <!-- TODO: Re-enable all scenarios after Lifecycle testing is complete
         <ItemGroup Condition="'$(TargetOS)' == 'windows'">
             <HelixWorkItem Include="%(_MAUIScenarioSearch.ScenarioDirectoryName)-packaged">
                 <PayloadArchive>%(_MAUIScenarioSearch.PayloadDirectory).zip</PayloadArchive>
                 <Command>call %HELIX_CORRELATION_PAYLOAD%\eng\devices\run-windows-devicetests.cmd %(_MAUIScenarioSearch.ScenarioDirectoryName) packaged %(_MAUIScenarioSearch.WindowsPackageId) $(TargetFrameworkToTest)</Command>
                 <Timeout>02:00:00</Timeout>
             </HelixWorkItem>
-            <!-- TODO: Unpackaged tests disabled - crash with 0xC000027B (Windows App SDK Bootstrap failure)
-                 on Helix. Investigating root cause. See PR #33328 for context.
+        </ItemGroup>
+        -->
+        
+        <!-- TODO: Unpackaged tests disabled - crash with 0xC000027B (Windows App SDK Bootstrap failure)
+             on Helix. Investigating root cause. See PR #33328 for context.
+        <ItemGroup Condition="'$(TargetOS)' == 'windows'">
             <HelixWorkItem Include="%(_MAUIScenarioSearch.ScenarioDirectoryName)-unpackaged">
                 <PayloadArchive>%(_MAUIScenarioSearch.PayloadDirectory).zip</PayloadArchive>
                 <Command>call %HELIX_CORRELATION_PAYLOAD%\eng\devices\run-windows-devicetests.cmd %(_MAUIScenarioSearch.ScenarioDirectoryName) unpackaged %(_MAUIScenarioSearch.WindowsPackageId) $(TargetFrameworkToTest)</Command>
                 <Timeout>02:00:00</Timeout>
             </HelixWorkItem>
-            -->
         </ItemGroup>
+        -->
 
         <Message Text="Created @(XHarnessAppBundleToTest->Count()) iOS work items" Importance="high" Condition="'$(TargetOS)' == 'ios'" />
         <Message Text="Created @(HelixWorkItem->Count()) Windows work items" Importance="high" Condition="'$(TargetOS)' == 'windows'" />

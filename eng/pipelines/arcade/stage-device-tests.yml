@@ -436,25 +436,27 @@ stages:
 
           # Build Windows device tests using Cake script (builds each project individually)
           # Packaged builds (MSIX)
-          - script: dotnet cake eng/devices/windows.cake --target=buildOnly --project="$(Build.SourcesDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj" --device=packaged --binlog="$(Build.SourcesDirectory)/artifacts/log" --configuration=Debug --packageid=com.microsoft.maui.controls.devicetests --verbosity=diagnostic
+          # TEMPORARY: Only build Controls.DeviceTests to test Lifecycle category
+          - script: dotnet cake eng/devices/windows.cake --target=buildOnly --project="$(Build.SourcesDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj" --device=packaged --binlog="$(Build.SourcesDirectory)/artifacts/log" --configuration=Release --packageid=com.microsoft.maui.controls.devicetests --verbosity=diagnostic
             displayName: Build Controls.DeviceTests (Windows Packaged)
             retryCountOnTaskFailure: 1
 
-          - script: dotnet cake eng/devices/windows.cake --target=buildOnly --project="$(Build.SourcesDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj" --device=packaged --binlog="$(Build.SourcesDirectory)/artifacts/log" --configuration=Debug --packageid=com.microsoft.maui.core.devicetests --verbosity=diagnostic
-            displayName: Build Core.DeviceTests (Windows Packaged)
-            retryCountOnTaskFailure: 1
+          # TEMPORARY: Disabled other projects while testing Lifecycle category
+          # - script: dotnet cake eng/devices/windows.cake --target=buildOnly --project="$(Build.SourcesDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj" --device=packaged --binlog="$(Build.SourcesDirectory)/artifacts/log" --configuration=Release --packageid=com.microsoft.maui.core.devicetests --verbosity=diagnostic
+          #   displayName: Build Core.DeviceTests (Windows Packaged)
+          #   retryCountOnTaskFailure: 1
 
-          - script: dotnet cake eng/devices/windows.cake --target=buildOnly --project="$(Build.SourcesDirectory)/src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj" --device=packaged --binlog="$(Build.SourcesDirectory)/artifacts/log" --configuration=Debug --packageid=com.microsoft.maui.graphics.devicetests --verbosity=diagnostic
-            displayName: Build Graphics.DeviceTests (Windows Packaged)
-            retryCountOnTaskFailure: 1
+          # - script: dotnet cake eng/devices/windows.cake --target=buildOnly --project="$(Build.SourcesDirectory)/src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj" --device=packaged --binlog="$(Build.SourcesDirectory)/artifacts/log" --configuration=Release --packageid=com.microsoft.maui.graphics.devicetests --verbosity=diagnostic
+          #   displayName: Build Graphics.DeviceTests (Windows Packaged)
+          #   retryCountOnTaskFailure: 1
 
-          - script: dotnet cake eng/devices/windows.cake --target=buildOnly --project="$(Build.SourcesDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj" --device=packaged --binlog="$(Build.SourcesDirectory)/artifacts/log" --configuration=Debug --packageid=com.microsoft.maui.essentials.devicetests --verbosity=diagnostic
-            displayName: Build Essentials.DeviceTests (Windows Packaged)
-            retryCountOnTaskFailure: 1
+          # - script: dotnet cake eng/devices/windows.cake --target=buildOnly --project="$(Build.SourcesDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj" --device=packaged --binlog="$(Build.SourcesDirectory)/artifacts/log" --configuration=Release --packageid=com.microsoft.maui.essentials.devicetests --verbosity=diagnostic
+          #   displayName: Build Essentials.DeviceTests (Windows Packaged)
+          #   retryCountOnTaskFailure: 1
 
-          - script: dotnet cake eng/devices/windows.cake --target=buildOnly --project="$(Build.SourcesDirectory)/src/BlazorWebView/tests/DeviceTests/MauiBlazorWebView.DeviceTests.csproj" --device=packaged --binlog="$(Build.SourcesDirectory)/artifacts/log" --configuration=Debug --packageid=Microsoft.Maui.MauiBlazorWebView.DeviceTests --verbosity=diagnostic
-            displayName: Build MauiBlazorWebView.DeviceTests (Windows Packaged)
-            retryCountOnTaskFailure: 1
+          # - script: dotnet cake eng/devices/windows.cake --target=buildOnly --project="$(Build.SourcesDirectory)/src/BlazorWebView/tests/DeviceTests/MauiBlazorWebView.DeviceTests.csproj" --device=packaged --binlog="$(Build.SourcesDirectory)/artifacts/log" --configuration=Release --packageid=Microsoft.Maui.MauiBlazorWebView.DeviceTests --verbosity=diagnostic
+          #   displayName: Build MauiBlazorWebView.DeviceTests (Windows Packaged)
+          #   retryCountOnTaskFailure: 1
 
           # TODO: Unpackaged builds disabled - apps crash on Helix with 0xC000027B
           # (Windows App SDK Bootstrap failure). Investigating root cause. See PR #33328.
@@ -476,13 +478,15 @@ stages:
 
           # Create zip archives for each device test project
           # The MSIX packages are built in the project's AppPackages directory, not artifacts/bin
+          # TEMPORARY: Only create Controls.DeviceTests archive for Lifecycle testing
           - pwsh: |
               $scenarios = @{
                 "Controls.DeviceTests" = "$(Build.SourcesDirectory)/src/Controls/tests/DeviceTests"
-                "Core.DeviceTests" = "$(Build.SourcesDirectory)/src/Core/tests/DeviceTests"
-                "Graphics.DeviceTests" = "$(Build.SourcesDirectory)/src/Graphics/tests/DeviceTests"
-                "Essentials.DeviceTests" = "$(Build.SourcesDirectory)/src/Essentials/test/DeviceTests"
-                "MauiBlazorWebView.DeviceTests" = "$(Build.SourcesDirectory)/src/BlazorWebView/tests/DeviceTests"
+                # TEMPORARY: Disabled other scenarios while testing Lifecycle category
+                # "Core.DeviceTests" = "$(Build.SourcesDirectory)/src/Core/tests/DeviceTests"
+                # "Graphics.DeviceTests" = "$(Build.SourcesDirectory)/src/Graphics/tests/DeviceTests"
+                # "Essentials.DeviceTests" = "$(Build.SourcesDirectory)/src/Essentials/test/DeviceTests"
+                # "MauiBlazorWebView.DeviceTests" = "$(Build.SourcesDirectory)/src/BlazorWebView/tests/DeviceTests"
               }
               
               # Ensure artifacts/bin directory exists
