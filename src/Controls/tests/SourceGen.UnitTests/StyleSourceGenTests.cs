@@ -84,13 +84,7 @@ static string EscapeSnippet(string text, int index)
 		var generatedCode = GetGeneratedCode(result);
 		Assert.Contains("new global::Microsoft.Maui.Controls.Style(\"Microsoft.Maui.Controls.Label, Microsoft.Maui.Controls\")", generatedCode, StringComparison.Ordinal);
 		Assert.Contains("Label.TextColorProperty", generatedCode, StringComparison.Ordinal);
-		Assert.Contains("style.LazyInitialization = styleInitializer", generatedCode, StringComparison.Ordinal);
-		
-		// Verify lazy behavior: Initializer is set but NOT called immediately
-		// The old eager pattern had: styleInitializer(style, new Label()); style.LazyInitialization = null!;
-		// The new lazy pattern just sets the Initializer and lets it run when style is applied
-		Assert.DoesNotContain("styleInitializer(style, new global::Microsoft.Maui.Controls.Label())", generatedCode, StringComparison.Ordinal);
-		Assert.DoesNotContain("style.LazyInitialization = null!", generatedCode, StringComparison.Ordinal);
+		Assert.Contains("style.LazyInitialization = (__style, __target) =>", generatedCode, StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -124,11 +118,7 @@ static string EscapeSnippet(string text, int index)
 		Assert.Contains("Label.TextColorProperty", generatedCode, StringComparison.Ordinal);
 		Assert.Contains("Label.FontSizeProperty", generatedCode, StringComparison.Ordinal);
 		Assert.Contains("Label.FontAttributesProperty", generatedCode, StringComparison.Ordinal);
-		Assert.Contains("style.LazyInitialization = styleInitializer", generatedCode, StringComparison.Ordinal);
-		
-		// Verify lazy behavior: Initializer is set but NOT called immediately
-		Assert.DoesNotContain("styleInitializer(style, new global::Microsoft.Maui.Controls.Label())", generatedCode, StringComparison.Ordinal);
-		Assert.DoesNotContain("style.LazyInitialization = null!", generatedCode, StringComparison.Ordinal);
+		Assert.Contains("style.LazyInitialization = (__style, __target) =>", generatedCode, StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -167,7 +157,7 @@ static string EscapeSnippet(string text, int index)
 #nullable enable
 #pragma warning disable CS0219 // Variable is assigned but its value is never used
 namespace Test;
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Maui.Controls.SourceGen, Version=10.0.0.0, Culture=neutral, PublicKeyToken=null", "10.0.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Maui.Controls.SourceGen, Version=11.0.0.0, Culture=neutral, PublicKeyToken=null", "11.0.0.0")]
 public partial class TestPage
 {
 	private partial void InitializeComponent()
@@ -216,7 +206,7 @@ public partial class TestPage
 	{
 		// This test verifies that when a Style with Setters is applied to an element,
 		// the Initializer is assigned BEFORE the SetValue(StyleProperty, style) call.
-		// This is critical because IStyle.Apply calls EnsureInitialized which needs
+		// This is critical because IStyle.Apply calls InitializeIfNeeded which needs
 		// the _initializer to be set, otherwise Setters won't be populated.
 		var xaml =
 """
@@ -245,12 +235,12 @@ public partial class TestPage
 		
 		// Verify key elements exist
 		Assert.Contains("new global::Microsoft.Maui.Controls.Style(\"Microsoft.Maui.Controls.Label, Microsoft.Maui.Controls\")", generatedCode, StringComparison.Ordinal);
-		Assert.Contains("style.LazyInitialization = styleInitializer", generatedCode, StringComparison.Ordinal);
+		Assert.Contains("style.LazyInitialization = (__style, __target) =>", generatedCode, StringComparison.Ordinal);
 		Assert.Contains("label.SetValue(global::Microsoft.Maui.Controls.VisualElement.StyleProperty, style)", generatedCode, StringComparison.Ordinal);
 		Assert.Contains("Label.TextColorProperty", generatedCode, StringComparison.Ordinal);
 		
 		// CRITICAL: Verify the ORDER - Initializer must be set BEFORE SetValue(StyleProperty)
-		var initializerSetIndex = generatedCode.IndexOf("style.LazyInitialization = styleInitializer", StringComparison.Ordinal);
+		var initializerSetIndex = generatedCode.IndexOf("style.LazyInitialization = (__style, __target) =>", StringComparison.Ordinal);
 		var setValueIndex = generatedCode.IndexOf("label.SetValue(global::Microsoft.Maui.Controls.VisualElement.StyleProperty, style)", StringComparison.Ordinal);
 		
 		Assert.True(initializerSetIndex >= 0, "style.LazyInitialization assignment not found in generated code");
@@ -259,10 +249,6 @@ public partial class TestPage
 			$"style.LazyInitialization must be set BEFORE label.SetValue(StyleProperty, style).\n" +
 			$"Initializer set at index {initializerSetIndex}, SetValue at index {setValueIndex}.\n" +
 			$"Generated code:\n{generatedCode}");
-		
-		// Verify lazy behavior: Initializer is NOT called immediately
-		Assert.DoesNotContain("styleInitializer(style, new global::Microsoft.Maui.Controls.Label())", generatedCode, StringComparison.Ordinal);
-		Assert.DoesNotContain("style.LazyInitialization = null!", generatedCode, StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -303,7 +289,7 @@ public partial class TestPage
 #nullable enable
 #pragma warning disable CS0219 // Variable is assigned but its value is never used
 namespace Test;
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Maui.Controls.SourceGen, Version=10.0.0.0, Culture=neutral, PublicKeyToken=null", "10.0.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Maui.Controls.SourceGen, Version=11.0.0.0, Culture=neutral, PublicKeyToken=null", "11.0.0.0")]
 public partial class TestPage
 {
 	private partial void InitializeComponent()
@@ -340,8 +326,9 @@ public partial class TestPage
 #if !_MAUIXAML_SG_NAMESCOPE_DISABLE
 		global::Microsoft.Maui.Controls.Internals.NameScope.SetNameScope(__root, iNameScope);
 #endif
-		global::System.Action<global::Microsoft.Maui.Controls.Style, global::Microsoft.Maui.Controls.BindableObject> styleInitializer = (__style, __target) =>
+		style.LazyInitialization = (__style, __target) =>
 		{
+			if (__target is not global::Microsoft.Maui.Controls.Label) return;
 #if !_MAUIXAML_SG_NAMESCOPE_DISABLE
 			global::Microsoft.Maui.Controls.Internals.INameScope iNameScope1 = new global::Microsoft.Maui.Controls.Internals.NameScope();
 #endif
@@ -355,7 +342,6 @@ public partial class TestPage
 			((global::System.Collections.Generic.ICollection<global::Microsoft.Maui.Controls.Setter>)__style.Setters).Add((global::Microsoft.Maui.Controls.Setter)setter);
 #line default
 		};
-		style.LazyInitialization = styleInitializer;
 		__root.Resources["TestStyle"] = style;
 	}
 }
