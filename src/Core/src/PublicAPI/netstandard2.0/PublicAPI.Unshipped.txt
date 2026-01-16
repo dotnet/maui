@@ -1,1 +1,2 @@
 #nullable enable
+Microsoft.Maui.IMauiHandlersFactory.GetConstructibleHandlerType(System.Type! iview) -> System.Type?
