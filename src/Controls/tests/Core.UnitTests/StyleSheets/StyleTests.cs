@@ -8,7 +8,9 @@ namespace Microsoft.Maui.Controls.StyleSheets.UnitTests
 {
 	using StackLayout = Microsoft.Maui.Controls.Compatibility.StackLayout;
 
-
+	// All CSS-related tests share this collection to prevent parallel execution,
+	// since CssDisabledTests modifies global AppContext state
+	[Collection("StyleSheet")]
 	public class StyleTests : BaseTestFixture
 	{
 		public StyleTests()
@@ -170,12 +172,21 @@ namespace Microsoft.Maui.Controls.StyleSheets.UnitTests
 
 	}
 
+	// All CSS-related tests share this collection to prevent parallel execution,
+	// since CssDisabledTests modifies global AppContext state
+	[Collection("StyleSheet")]
 	public class CssDisabledTests : BaseTestFixture
 	{
+		const string CssSwitchName = "Microsoft.Maui.RuntimeFeature.IsCssEnabled";
+		readonly bool _originalCssEnabled;
+
 		public CssDisabledTests()
 		{
+			// Save original value
+			AppContext.TryGetSwitch(CssSwitchName, out _originalCssEnabled);
+
 			// Disable CSS for these tests
-			AppContext.SetSwitch("Microsoft.Maui.RuntimeFeature.IsCssEnabled", false);
+			AppContext.SetSwitch(CssSwitchName, false);
 			ApplicationExtensions.CreateAndSetMockApplication();
 		}
 
@@ -183,8 +194,8 @@ namespace Microsoft.Maui.Controls.StyleSheets.UnitTests
 		{
 			if (disposing)
 			{
-				// Re-enable CSS
-				AppContext.SetSwitch("Microsoft.Maui.RuntimeFeature.IsCssEnabled", true);
+				// Restore original CSS setting
+				AppContext.SetSwitch(CssSwitchName, _originalCssEnabled);
 				Application.ClearCurrent();
 			}
 
