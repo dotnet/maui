@@ -4,11 +4,9 @@ using Newtonsoft.Json;
 
 namespace Microsoft.Maui.IntegrationTests
 {
-	[Trait("Category", "Samples")]
+	[Category(Categories.Samples)]
 	public class SampleTests : BaseBuildTest
 	{
-	public SampleTests(IntegrationTestFixture fixture, ITestOutputHelper output) : base(fixture, output) { }
-
 		public static IEnumerable SampleTestMatrix
 		{
 			get
@@ -26,7 +24,7 @@ namespace Microsoft.Maui.IntegrationTests
 			}
 		}
 
-		[Fact]
+		[Test]
 		[TestCaseSource(nameof(SampleTestMatrix))]
 		public void Build(string relativeProj, string config)
 		{
@@ -42,7 +40,7 @@ namespace Microsoft.Maui.IntegrationTests
 				"TrimmerSingleWarn=false",
 			};
 
-			Assert.True(DotnetInternal.Build(projectFile, config, properties: sampleProps, binlogPath: binlog),
+			Assert.IsTrue(DotnetInternal.Build(projectFile, config, properties: sampleProps, binlogPath: binlog),
 					$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 		}
 
