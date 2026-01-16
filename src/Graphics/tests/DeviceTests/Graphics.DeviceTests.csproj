@@ -29,13 +29,6 @@
     <!--<WindowsPackageType>None</WindowsPackageType>-->
   </PropertyGroup>
 
-  <!-- Unpackaged Windows builds need Windows App SDK DLLs bundled -->
-  <PropertyGroup Condition="'$(WindowsPackageType)' == 'None' AND '$(OutputType)' == 'Exe'">
-    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
-    <!-- Disable bootstrap UI prompt for self-contained apps (required for headless CI/Helix) -->
-    <WindowsAppSDKBootstrapAutoInitializeOptions_OnNoMatch_ShowUI>false</WindowsAppSDKBootstrapAutoInitializeOptions_OnNoMatch_ShowUI>
-  </PropertyGroup>
-
   <ItemGroup>
     <MauiIcon Include="Resources\appicon.svg" ForegroundFile="Resources\appiconfg.svg" Color="#512BD4" />
     <MauiSplashScreen Include="Resources\appiconfg.svg" Color="#512BD4" BaseSize="128,128" />
