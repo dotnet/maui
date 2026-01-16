@@ -1,6 +1,7 @@
 ---
 name: verify-tests-fail-without-fix
 description: Verifies UI tests catch the bug. Supports two modes - verify failure only (test creation) or full verification (test + fix validation).
+compatibility: Requires git, PowerShell, and .NET SDK for building and running tests.
 ---
 
 # Verify Tests Fail Without Fix
