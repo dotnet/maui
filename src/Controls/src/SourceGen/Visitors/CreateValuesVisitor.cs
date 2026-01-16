@@ -408,14 +408,8 @@ class CreateValuesVisitor : IXamlNodeVisitor
 		INamedTypeSymbol? targetType = null;
 		if (targetTypeNode is ValueNode targetTypeValueNode && targetTypeValueNode.Value is string targetTypeString)
 		{
-			// TargetType="Label" - resolve the type from string
-			var xmlType = new XmlType(node.NamespaceURI, targetTypeString, null);
-			if (!xmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, context.TypeCache, out targetType) || targetType is null)
-			{
-				// Try to resolve from default namespace
-				xmlType = new XmlType("http://schemas.microsoft.com/dotnet/2021/maui", targetTypeString, null);
-				xmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, context.TypeCache, out targetType);
-			}
+			// TargetType="Label" or TargetType="local:MyControl" - resolve the type from string
+			targetType = XmlTypeExtensions.GetTypeSymbol(targetTypeString, context, targetTypeValueNode);
 		}
 		else if (targetTypeNode is ElementNode targetTypeElementNode)
 		{
@@ -446,16 +440,16 @@ class CreateValuesVisitor : IXamlNodeVisitor
 
 		// Check if Style has content that needs to go in the initializer
 		// Content properties: Setters, Behaviors, Triggers, or implicit Setters (CollectionItems)
-		var contentPropertyNames = new[] { new XmlName("", "Setters"), new XmlName("", "Behaviors"), new XmlName("", "Triggers") };
-		var hasExplicitContent = contentPropertyNames.Any(p => node.Properties.ContainsKey(p));
+		var contentPropertyNames = new[] { "Setters", "Behaviors", "Triggers" };
+		var hasExplicitContent = node.Properties.Keys.Any(p => contentPropertyNames.Contains(p.LocalName));
 		var hasImplicitContent = node.CollectionItems.Count > 0;
 		
 		if (hasExplicitContent || hasImplicitContent)
 		{
 			// Mark content properties to be processed in the initializer (skip during normal traversal)
-			foreach (var propName in contentPropertyNames)
+			foreach (var propName in node.Properties.Keys.Where(p => contentPropertyNames.Contains(p.LocalName)))
 			{
-				if (node.Properties.ContainsKey(propName) && !node.SkipProperties.Contains(propName))
+				if (!node.SkipProperties.Contains(propName))
 					node.SkipProperties.Add(propName);
 			}
 			
