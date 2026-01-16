@@ -139,9 +139,6 @@ static class NodeSGExtensions
 
 	public static bool IsStyle(this ElementNode node, SourceGenContext context)
 	{
-		// Only treat nodes as lazy styles if lazy style codegen is enabled
-		if (!context.IsLazyStyleCodegenEnabled)
-			return false;
 		if (!node.XmlType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, context.TypeCache, out var type) || type is null)
 			return false;
 		var styleType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Style");

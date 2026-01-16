@@ -18,7 +18,9 @@ namespace Microsoft.Maui.Controls
 	{
 		internal const string StyleClassPrefix = "Microsoft.Maui.Controls.StyleClass.";
 
-		readonly BindableProperty _basedOnResourceProperty;
+		readonly BindableProperty _basedOnResourceProperty = BindableProperty.CreateAttached(
+			"BasedOnResource", typeof(Style), typeof(Style), default(Style),
+			propertyChanged: OnBasedOnResourceChanged);
 
 		readonly ConditionalWeakTable<BindableObject, object> _targets = new();
 
@@ -32,28 +34,17 @@ namespace Microsoft.Maui.Controls
 
 		// Fields for lazy/trimmable styles
 		readonly string _assemblyQualifiedTargetTypeName;
-		Action<Style, BindableObject> _initializer;
 		readonly object _initializerLock = new();
 		Type _targetType;
-
-		// TODO: Revisit this suppression - consider removing [RequiresUnreferencedCode] from TargetType as it causes cascading issues
-		[UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code.",
-			Justification = "The BindableProperty stores Style instances but the callback doesn't access TargetType directly. The analyzer warns because Style.TargetType has [RequiresUnreferencedCode].")]
-		Style()
-		{
-			_basedOnResourceProperty = BindableProperty.CreateAttached("BasedOnResource", typeof(Style), typeof(Style), default(Style),
-				propertyChanged: OnBasedOnResourceChanged);
-			Setters = new List<Setter>();
-		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Style"/> class.
 		/// </summary>
 		/// <param name="targetType">The type to which the style applies.</param>
 		public Style([System.ComponentModel.TypeConverter(typeof(TypeTypeConverter))][Parameter("TargetType")] Type targetType)
-			: this()
 		{
 			_targetType = targetType ?? throw new ArgumentNullException(nameof(targetType));
+			Setters = new List<Setter>();
 		}
 
 		/// <summary>
@@ -63,9 +54,9 @@ namespace Microsoft.Maui.Controls
 		/// <param name="assemblyQualifiedTargetTypeName">The assembly-qualified type name of the target type.</param>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Style(string assemblyQualifiedTargetTypeName)
-			: this()
 		{
 			_assemblyQualifiedTargetTypeName = assemblyQualifiedTargetTypeName ?? throw new ArgumentNullException(nameof(assemblyQualifiedTargetTypeName));
+			Setters = new List<Setter>();
 		}
 
 		/// <summary>
@@ -73,10 +64,7 @@ namespace Microsoft.Maui.Controls
 		/// This property is intended for source generator use only.
 		/// </summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public Action<Style, BindableObject> LazyInitialization
-		{
-			set => _initializer = value;
-		}
+		public Action<Style, BindableObject> LazyInitialization { private get; set; }
 
 		/// <summary>
 		/// Gets or sets whether the style can be applied to types derived from <see cref="TargetType"/>.
@@ -153,7 +141,7 @@ namespace Microsoft.Maui.Controls
 
 		void IStyle.Apply(BindableObject bindable, SetterSpecificity specificity)
 		{
-			EnsureInitialized(bindable);
+			InitializeIfNeeded(bindable);
 
 			lock (_targets)
 			{
@@ -173,20 +161,18 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets the type to which this style applies.
 		/// </summary>
-		public Type TargetType
-		{
-			[RequiresUnreferencedCode("TargetType may have been trimmed when using lazy styles. Use IStyleExtensions.TryGetTargetType for trim-safe access.")]
-			get
-			{
-				if (_targetType is not null)
-					return _targetType;
+		public Type TargetType => _targetType ??= ResolveTargetType();
 
-				// For lazy styles, resolve from AQN - type may have been trimmed
-				Debug.Assert(_assemblyQualifiedTargetTypeName is not null, "Either _targetType or _assemblyQualifiedTargetTypeName must be set");
-				_targetType = Type.GetType(_assemblyQualifiedTargetTypeName, throwOnError: false);
-				Debug.Assert(_targetType is not null, "TargetType was trimmed - callers should use TryGetTargetType for safe access");
-				return _targetType;
-			}
+		/// <summary>
+		/// Attempts to resolve the target type from the assembly-qualified name.
+		/// Returns null if the type was trimmed away.
+		/// </summary>
+		[UnconditionalSuppressMessage("Trimming", "IL2057:Unrecognized value passed to the parameter 'typeName' of method 'System.Type.GetType(String, Boolean)'",
+			Justification = "Lazy styles intentionally allow target types to be trimmed. When a type is trimmed, TargetType returns null and the style is skipped at runtime. This enables the trimmer to remove unused styles.")]
+		private Type ResolveTargetType()
+		{
+			Debug.Assert(_assemblyQualifiedTargetTypeName is not null, "Either _targetType or _assemblyQualifiedTargetTypeName must be set");
+			return Type.GetType(_assemblyQualifiedTargetTypeName, throwOnError: false);
 		}
 
 		/// <summary>
@@ -217,35 +203,21 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		// TODO: Try to remove this property if not needed after full implementation
 		/// <summary>
-		/// Returns true if this is a lazy style that hasn't been initialized yet.
-		/// </summary>
-		internal bool IsLazyStyle => _assemblyQualifiedTargetTypeName is not null;
-
-		/// <summary>
-		/// Forces initialization of a lazy style without applying it to a real target.
+		/// Initializes the lazy style if it hasn't been initialized yet.
 		/// This is primarily intended for testing scenarios where setters need to be inspected
 		/// before the style is applied to any element.
 		/// </summary>
-		[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
-		internal void ForceInitialize()
-		{
-			EnsureInitialized(new View());
-		}
-
-		/// <summary>
-		/// Ensures the lazy style is initialized for the given target.
-		/// </summary>
-		private void EnsureInitialized(BindableObject target)
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		internal void InitializeIfNeeded(BindableObject target)
 		{
 			lock (_initializerLock)
 			{
-				if (_initializer is null)
+				if (LazyInitialization is null)
 					return;
 
-				_initializer(this, target);
-				_initializer = null;
+				LazyInitialization(this, target);
+				LazyInitialization = null;
 			}
 		}
 
@@ -334,19 +306,21 @@ namespace Microsoft.Maui.Controls
 				((IStyle)basedOn).UnApply(bindable);
 		}
 
+		/// <summary>
+		/// Validates that BasedOn.TargetType is compatible with this style's TargetType.
+		/// Returns true if validation passes or cannot be performed (types trimmed).
+		/// </summary>
 		bool ValidateBasedOn(Style value)
 		{
 			if (value is null)
 				return true;
 
-			// If we can't get the target type (trimmed), validation fails.
-			// A type that exists can't be based on a trimmed type - if the base type existed,
-			// it wouldn't have been trimmed (all base types of preserved types are preserved).
-			if (!((IStyle)value).TryGetTargetType(out var basedOnTargetType))
-				return false;
+			// If either type was trimmed, we can't validate - allow it and let runtime handle it
+			var basedOnTargetType = value.TargetType;
+			var thisTargetType = TargetType;
 
-			if (!((IStyle)this).TryGetTargetType(out var thisTargetType))
-				return false;
+			if (basedOnTargetType is null || thisTargetType is null)
+				return true;
 
 			return basedOnTargetType.IsAssignableFrom(thisTargetType);
 		}

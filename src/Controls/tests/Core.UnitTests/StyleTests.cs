@@ -1307,24 +1307,24 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void LazyStyleTryGetTargetTypeReturnsTrueForExistingType()
+		public void LazyStyleTargetTypeReturnsTypeForExistingType()
 		{
 			var style = new Style(typeof(Label).AssemblyQualifiedName);
 
-			var result = ((IStyle)style).TryGetTargetType(out var targetType);
+			var targetType = ((IStyle)style).TargetType;
 
-			Assert.True(result);
+			Assert.NotNull(targetType);
 			Assert.Equal(typeof(Label), targetType);
 		}
 
 		[Fact]
-		public void RegularStyleTryGetTargetTypeReturnsTrue()
+		public void RegularStyleTargetTypeReturnsType()
 		{
 			var style = new Style(typeof(Label));
 
-			var result = ((IStyle)style).TryGetTargetType(out var targetType);
+			var targetType = ((IStyle)style).TargetType;
 
-			Assert.True(result);
+			Assert.NotNull(targetType);
 			Assert.Equal(typeof(Label), targetType);
 		}
 

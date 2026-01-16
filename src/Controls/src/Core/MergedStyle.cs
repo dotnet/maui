@@ -1,7 +1,6 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.Logging;
@@ -48,10 +47,9 @@ namespace Microsoft.Maui.Controls
 			{
 				if (_style == value)
 					return;
-				if (value is not null && value.TryGetTargetType(out var styleTargetType))
+				if (value?.TargetType is Type styleTargetType && !styleTargetType.IsAssignableFrom(_targetType))
 				{
-					if (!styleTargetType.IsAssignableFrom(_targetType))
-						Application.Current?.FindMauiContext()?.CreateLogger<Style>()?.LogWarning("Style TargetType {FullName} is not compatible with element target type {TargetType}", styleTargetType.FullName, _targetType);
+					Application.Current?.FindMauiContext()?.CreateLogger<Style>()?.LogWarning("Style TargetType {FullName} is not compatible with element target type {TargetType}", styleTargetType.FullName, _targetType);
 				}
 				SetStyle(ImplicitStyle, ClassStyles, value);
 			}
@@ -120,11 +118,7 @@ namespace Microsoft.Maui.Controls
 			Style?.Apply(bindable, new SetterSpecificity(SetterSpecificity.StyleLocal, 0, 0, 0));
 		}
 
-		public Type TargetType
-		{
-			[RequiresUnreferencedCode("Required by IStyle interface.")]
-			get => _targetType;
-		}
+		public Type TargetType => _targetType;
 
 		public void UnApply(BindableObject bindable)
 		{

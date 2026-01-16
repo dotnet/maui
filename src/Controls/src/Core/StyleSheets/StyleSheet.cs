@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -94,11 +93,7 @@ namespace Microsoft.Maui.Controls.StyleSheets
 			}
 		}
 
-		Type IStyle.TargetType
-		{
-			[RequiresUnreferencedCode("Required by IStyle interface.")]
-			get => typeof(VisualElement);
-		}
+		Type IStyle.TargetType => typeof(VisualElement);
 
 		void IStyle.Apply(BindableObject bindable, SetterSpecificity setterspecificity)
 		{
