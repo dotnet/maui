@@ -91,6 +91,19 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 
 		public async Task<string?> RunTestsAsync()
 		{
+			// File-based logging for Helix diagnostics
+			var logFile = Path.Combine(Path.GetDirectoryName(_resultsPath) ?? "", "maui-test-startup.log");
+			void LogToFile(string msg) 
+			{
+				try { File.AppendAllText(logFile, $"{DateTime.Now:HH:mm:ss.fff} {msg}{Environment.NewLine}"); } 
+				catch { }
+			}
+			
+			LogToFile("[MAUI-TEST] ControlsHeadlessTestRunner.RunTestsAsync starting...");
+			LogToFile($"[MAUI-TEST] LoopCount: {_loopCount}");
+			LogToFile($"[MAUI-TEST] ResultsPath: {_resultsPath}");
+			LogToFile($"[MAUI-TEST] CategoriesFilePath: {_categoriesFilePath}");
+			
 			TestsCompleted += OnTestsCompleted;
 
 			try
@@ -98,8 +111,13 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 				// Got called with -1 parameter, just discover the tests to run
 				if (_loopCount == -1)
 				{
+					LogToFile("[MAUI-TEST] Discovery mode (-1), discovering categories...");
 					var categories = DiscoverTestsInAssemblies();
+					LogToFile($"[MAUI-TEST] Found {categories.Count()} categories");
+					
+					LogToFile($"[MAUI-TEST] Writing categories to: {_categoriesFilePath}");
 					File.WriteAllLines(_categoriesFilePath, categories.ToArray());
+					LogToFile("[MAUI-TEST] Categories written successfully");
 
 					TerminateWithSuccess();
 					return null;

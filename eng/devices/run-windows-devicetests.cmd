@@ -198,10 +198,17 @@ if %IS_PACKAGED%==1 (
     if %IS_CONTROLS_TEST%==1 (
         REM Category-based test execution for Controls.DeviceTests
         echo Starting app for category discovery...
+        echo App URI: !APP_URI!
+        echo Test results file: %TEST_RESULTS_FILE%
+        echo Category file path: %CATEGORY_FILE%
         powershell -Command "Start-Process '!APP_URI!' -ArgumentList '\"%TEST_RESULTS_FILE%\"', '-1'"
         
         echo Waiting 10 seconds for category discovery...
         timeout /t 10 /nobreak >nul
+        
+        REM Check if the app process is running
+        echo Checking if app process is running...
+        powershell -Command "$processes = Get-Process | Where-Object { $_.ProcessName -like '*Controls.DeviceTests*' -or $_.ProcessName -like '*devicetests*' -or $_.ProcessName -like '*maui*' }; if ($processes) { $processes | Select-Object ProcessName, Id, StartTime, MainWindowTitle | Format-Table } else { Write-Host 'No matching app process found' }"
         
         if not exist "%CATEGORY_FILE%" (
             echo Category file not found after 10 seconds, waiting another 10 seconds...
@@ -210,12 +217,25 @@ if %IS_PACKAGED%==1 (
             echo Files in test results directory:
             dir "%TEST_RESULTS_DIR%" 2>nul
             
+            REM Check if any files were created in the upload directory
+            echo Files in upload root directory:
+            dir "%UPLOAD_ROOT%" 2>nul
+            
             REM Check Windows Event Log for crashes
             echo Checking Windows Event Log for application crashes...
             powershell -Command "Get-WinEvent -FilterHashtable @{LogName='Application';Level=2;StartTime=(Get-Date).AddMinutes(-5)} -MaxEvents 10 -ErrorAction SilentlyContinue | Select-Object TimeCreated, ProviderName, Message | Format-List"
             
+            REM Check Windows Event Log for any MAUI-related errors
+            echo Checking Windows Event Log for any .NET errors...
+            powershell -Command "Get-WinEvent -FilterHashtable @{LogName='Application';StartTime=(Get-Date).AddMinutes(-5)} -MaxEvents 20 -ErrorAction SilentlyContinue | Where-Object { $_.Message -like '*MAUI*' -or $_.Message -like '*devicetest*' -or $_.Message -like '*.NET*' -or $_.ProviderName -like '*.NET*' } | Select-Object TimeCreated, ProviderName, Message | Format-List"
+            
+            REM List all running processes to help debug
+            echo All running UWP/packaged app processes:
+            powershell -Command "Get-Process | Where-Object { $_.MainWindowTitle -ne '' } | Select-Object ProcessName, Id, MainWindowTitle | Format-Table"
+            
             if not exist "%CATEGORY_FILE%" (
                 echo ERROR: Test categories file was not created during discovery phase
+                echo Expected location: %CATEGORY_FILE%
                 set EXIT_CODE=1
                 goto :results
             )
@@ -335,6 +355,21 @@ echo.
 echo ========================================
 echo Processing Results
 echo ========================================
+
+REM Check for MAUI startup log file
+set MAUI_LOG_FILE=%TEST_RESULTS_DIR%\maui-test-startup.log
+if exist "%MAUI_LOG_FILE%" (
+    echo.
+    echo ========================================
+    echo MAUI Test Startup Log:
+    echo ========================================
+    type "%MAUI_LOG_FILE%"
+    echo ========================================
+    echo.
+) else (
+    echo NOTE: MAUI startup log file not found at %MAUI_LOG_FILE%
+    echo This means the app may not have started or the Loaded event never fired.
+)
 
 REM Clean up category file
 if exist "%CATEGORY_FILE%" del /f "%CATEGORY_FILE%"
