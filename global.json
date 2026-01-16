@@ -1,6 +1,6 @@
 {
   "tools": {
-    "dotnet": "10.0.103-servicing.26057.111"
+    "dotnet": "10.0.103-servicing.26065.102"
   },
   "sdk": {
     "paths": [
@@ -11,7 +11,7 @@
   "msbuild-sdks": {
     "MSBuild.Sdk.Extras": "3.0.44",
     "Microsoft.Build.NoTargets": "3.7.0",
-    "Microsoft.DotNet.Arcade.Sdk": "10.0.0-beta.26057.111",
-    "Microsoft.DotNet.Helix.Sdk": "10.0.0-beta.26057.111"
+    "Microsoft.DotNet.Arcade.Sdk": "10.0.0-beta.26065.102",
+    "Microsoft.DotNet.Helix.Sdk": "10.0.0-beta.26065.102"
   }
 }
