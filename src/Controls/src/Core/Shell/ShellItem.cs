@@ -17,6 +17,9 @@ namespace Microsoft.Maui.Controls
 	/// Represents a flyout menu item in a <see cref="Shell"/> application.
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Always)]
+#if WINDOWS || TIZEN
+	[ElementHandler(typeof(ShellItemHandler))]
+#endif
 	public class FlyoutItem : ShellItem
 	{
 		/// <summary>The style class for flyout item labels.</summary>
@@ -64,7 +67,6 @@ namespace Microsoft.Maui.Controls
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	[TypeConverter(typeof(ShellItemConverter))]
 	[DebuggerTypeProxy(typeof(ShellItemDebugView))]
-	[ElementHandler(typeof(Handlers.ShellItemHandler))]
 	public class ShellItem : ShellGroupItem, IShellItemController, IElementConfiguration<ShellItem>, IPropertyPropagationController, IVisualTreeElement
 	{
 		#region PropertyKeys

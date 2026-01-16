@@ -21,7 +21,11 @@ namespace Microsoft.Maui.Controls
 	/// <see cref="CarouselView"/> enforces single-item snap points and provides additional features like looping
 	/// and position tracking.
 	/// </remarks>
+#if IOS || MACCATALYST
 	[ElementHandler(typeof(Handlers.Items2.CarouselViewHandler2))]
+#else
+	[ElementHandler(typeof(Handlers.Items.CarouselViewHandler))]
+#endif
 	public class CarouselView : ItemsView
 	{
 		/// <summary>
