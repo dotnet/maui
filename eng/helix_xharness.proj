@@ -203,9 +203,8 @@
         <!-- Windows: Use HelixWorkItem with test runner script (not XHarness) -->
         <!-- TEMPORARY: Only run Controls.DeviceTests with Lifecycle category to debug MinimizeAndThenMaximizingWorks -->
         <ItemGroup Condition="'$(TargetOS)' == 'windows'">
-            <_WindowsControlsScenario Include="@(_MAUIScenarioSearch)" Condition="'%(_MAUIScenarioSearch.ScenarioDirectoryName)' == 'Controls.DeviceTests'" />
             <HelixWorkItem Include="Controls.DeviceTests-Lifecycle-packaged">
-                <PayloadArchive>%(_WindowsControlsScenario.PayloadDirectory).zip</PayloadArchive>
+                <PayloadArchive>$(ScenariosDir)Controls.DeviceTests.zip</PayloadArchive>
                 <Command>call %HELIX_CORRELATION_PAYLOAD%\eng\devices\run-windows-devicetests.cmd Controls.DeviceTests packaged com.microsoft.maui.controls.devicetests $(TargetFrameworkToTest) Lifecycle</Command>
                 <Timeout>02:00:00</Timeout>
             </HelixWorkItem>
