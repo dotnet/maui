@@ -44,7 +44,11 @@ internal class SetterValueProvider : IKnownMarkupValueProvider
 
 		var bpNode = (ValueNode)node.Properties[new XmlName("", "Property")];
 		IFieldSymbol? bpRef = bpNode.GetBindableProperty(context);
-		var (bpName, bpType) = GetBindablePropertyNameAndType(bpRef, bpNode, context);
+		if (!TryGetBindablePropertyNameAndType(bpRef, bpNode, context, out var bpName, out var bpType))
+		{
+			value = string.Empty;
+			return false;
+		}
 
 		string targetsetter;
 		if (node.Properties.TryGetValue(new XmlName("", "TargetName"), out var targetNode))
@@ -54,9 +58,20 @@ internal class SetterValueProvider : IKnownMarkupValueProvider
 
 		if (valueNode is ValueNode vn)
 		{
-			var valueString = bpRef != null
-				? vn.ConvertTo(bpRef, writer, context)
-				: (bpType != null ? vn.ConvertTo(bpType, null, writer, context) : string.Empty);
+			string valueString;
+			if (bpRef != null)
+			{
+				valueString = vn.ConvertTo(bpRef, writer, context);
+			}
+			else if (bpType != null)
+			{
+				valueString = vn.ConvertTo(bpType, null, writer, context);
+			}
+			else
+			{
+				value = string.Empty;
+				return false;
+			}
 			value = $"new global::Microsoft.Maui.Controls.Setter {{{targetsetter}Property = {bpName}, Value = {valueString}}}";
 			return true;
 		}
@@ -77,19 +92,18 @@ internal class SetterValueProvider : IKnownMarkupValueProvider
 		return false;
 	}
 
-	private static (string bpName, ITypeSymbol? bpType) GetBindablePropertyNameAndType(IFieldSymbol? bpRef, ValueNode bpNode, SourceGenContext context)
+	/// <summary>
+	/// Gets the bindable property name and type for a Setter's Property attribute.
+	/// Uses the resolved field symbol if available, otherwise uses heuristics for source-generated properties.
+	/// </summary>
+	/// <returns>True if the property could be resolved, false otherwise.</returns>
+	private static bool TryGetBindablePropertyNameAndType(IFieldSymbol? bpRef, ValueNode bpNode, SourceGenContext context, out string bpName, out ITypeSymbol? bpType)
 	{
 		if (bpRef != null)
-			return (bpRef.ToFQDisplayString(), bpRef.GetBPTypeAndConverter(context)?.type);
-
-		static ITypeSymbol? GetTargetTypeSymbol(INode node, SourceGenContext context)
 		{
-			var ttnode = (node as ElementNode)?.Properties[new XmlName("", "TargetType")];
-			if (ttnode is ValueNode { Value: string tt })
-				return XmlTypeExtensions.GetTypeSymbol(tt, context, node);
-			if (ttnode != null && context.Types.TryGetValue(ttnode, out var typeSymbol))
-				return typeSymbol;
-			return null;
+			bpName = bpRef.ToFQDisplayString();
+			bpType = bpRef.GetBPTypeAndConverter(context)?.type;
+			return true;
 		}
 
 		var propertyText = bpNode.Value as string ?? string.Empty;
@@ -103,7 +117,7 @@ internal class SetterValueProvider : IKnownMarkupValueProvider
 			propertyName = parts[0];
 			var parent = bpNode.Parent?.Parent as ElementNode ?? (bpNode.Parent?.Parent as IListNode)?.Parent as ElementNode;
 			if (parent?.XmlType.IsOfAnyType("Trigger", "DataTrigger", "MultiTrigger", "Style") == true)
-				targetType = GetTargetTypeSymbol(parent, context);
+				targetType = NodeSGExtensions.GetTargetTypeSymbol(parent, context);
 		}
 		else if (parts.Length == 2)
 		{
@@ -112,18 +126,22 @@ internal class SetterValueProvider : IKnownMarkupValueProvider
 		}
 		else
 		{
-			return ("null", null);
+			bpName = string.Empty;
+			bpType = null;
+			return false;
 		}
 
 		if (targetType != null && targetType.HasBindablePropertyHeuristic(propertyName, context, out var explicitPropertyName))
 		{
 			var bpFieldName = explicitPropertyName ?? $"{propertyName}Property";
-			var bpName = $"{targetType.ToFQDisplayString()}.{bpFieldName}";
-			var bpType = targetType.GetAllProperties(propertyName, context).FirstOrDefault()?.Type;
-			return (bpName, bpType);
+			bpName = $"{targetType.ToFQDisplayString()}.{bpFieldName}";
+			bpType = targetType.GetAllProperties(propertyName, context).FirstOrDefault()?.Type;
+			return true;
 		}
 
-		return ("null", null);
+		bpName = string.Empty;
+		bpType = null;
+		return false;
 	}
 
 	/// <summary>
