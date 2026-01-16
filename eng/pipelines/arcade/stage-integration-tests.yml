@@ -31,7 +31,7 @@ stages:
       - checkout: self
         clean: true
 
-      - script: ${{ job.buildScript }} -test -configuration ${{ parameters.buildConfig }} -projects "${{ parameters.integrationTestsProjects }}" /p:ProvisioningMauiPacks=true /p:ArchiveTests=false /p:TreatWarningsAsErrors=$(TreatWarningsAsErrors) /bl:$(Build.Arcade.LogsPath)${{ parameters.buildConfig }}/buildtasks_os.binlog $(_OfficialBuildIdArgs)
+      - script: ${{ job.buildScript }} -integrationTest -configuration ${{ parameters.buildConfig }} -projects "${{ parameters.integrationTestsProjects }}" /p:ProvisioningMauiPacks=true /p:ArchiveTests=false /p:TreatWarningsAsErrors=$(TreatWarningsAsErrors) /bl:$(Build.Arcade.LogsPath)${{ parameters.buildConfig }}/buildtasks_os.binlog $(_OfficialBuildIdArgs)
         displayName: 🛠️ Run Integration Tests - $(testIdentifier) ${{ job.pool.os }}
         env:
           TestRunnerAdditionalArguments: --filter $(testFilter)
