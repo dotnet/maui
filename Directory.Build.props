@@ -143,10 +143,6 @@
     <DefineConstants Condition="'$(IncludePreviousTfms)' == 'True'">$(DefineConstants);ENABLE_PREVIOUS_TFM_BUILDS</DefineConstants>
     <!-- <SymbolPackageFormat>snupkg</SymbolPackageFormat> -->
     <!-- <GenerateRuntimeConfigurationFiles>false</GenerateRuntimeConfigurationFiles> -->
-    <!-- HACK: WinUI seems to have issues without this -->
-    <GenerateLibraryLayout>true</GenerateLibraryLayout>
-    <DisableEmbeddedXbf>false</DisableEmbeddedXbf>
-    <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
   </PropertyGroup>
 
   <!-- TypeScript compilation -->
@@ -160,7 +156,12 @@
 
   <!-- Windows specific settings -->
   <PropertyGroup Condition="'$(_MauiTargetPlatformIsWindows)' == 'True'">
+    <AppxBundle>Never</AppxBundle>
     <WindowsSdkPackageVersion>10.0.19041.44</WindowsSdkPackageVersion>
+    <!-- HACK: WinUI seems to have issues without this -->
+    <GenerateLibraryLayout>true</GenerateLibraryLayout>
+    <DisableEmbeddedXbf>false</DisableEmbeddedXbf>
+    <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
   </PropertyGroup>
 
   <!-- version number information -->
@@ -240,10 +241,10 @@
     <MauiEmbeddingPlatforms Condition="'$(IncludeIosTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-ios;$(MauiEmbeddingPlatforms)</MauiEmbeddingPlatforms>
 
     <!-- App: Manual Test Sample TFMs (no Tizen yet) -->
-    <MauiManualTestsPlatforms Condition="'$(IncludeWindowsTargetFrameworks)' == 'true'">$(WindowsMauiPlatforms);$(MauiDeviceTestsPlatforms)</MauiManualTestsPlatforms>
-    <MauiManualTestsPlatforms Condition="'$(IncludeAndroidTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-android;$(MauiDeviceTestsPlatforms)</MauiManualTestsPlatforms>
-    <MauiManualTestsPlatforms Condition="'$(IncludeMacCatalystTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-maccatalyst;$(MauiDeviceTestsPlatforms)</MauiManualTestsPlatforms>
-    <MauiManualTestsPlatforms Condition="'$(IncludeIosTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-ios;$(MauiDeviceTestsPlatforms)</MauiManualTestsPlatforms>
+    <MauiManualTestsPlatforms Condition="'$(IncludeWindowsTargetFrameworks)' == 'true'">$(WindowsMauiPlatforms);$(MauiManualTestsPlatforms)</MauiManualTestsPlatforms>
+    <MauiManualTestsPlatforms Condition="'$(IncludeAndroidTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-android;$(MauiManualTestsPlatforms)</MauiManualTestsPlatforms>
+    <MauiManualTestsPlatforms Condition="'$(IncludeMacCatalystTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-maccatalyst;$(MauiManualTestsPlatforms)</MauiManualTestsPlatforms>
+    <MauiManualTestsPlatforms Condition="'$(IncludeIosTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-ios;$(MauiManualTestsPlatforms)</MauiManualTestsPlatforms>
     <MauiManualTestsPreviousPlatforms Condition="'$(IncludeTizenTargetFrameworks)' == 'true'">net$(_MauiPreviousDotNetVersion)-tizen;$(MauiManualTestsPreviousPlatforms)</MauiManualTestsPreviousPlatforms>
     <MauiManualTestsPreviousPlatforms Condition="'$(IncludeWindowsTargetFrameworks)' == 'true'">$(WindowsMauiPreviousPlatforms);$(MauiManualTestsPreviousPlatforms)</MauiManualTestsPreviousPlatforms>
     <MauiManualTestsPreviousPlatforms Condition="'$(IncludeAndroidTargetFrameworks)' == 'true'">net$(_MauiPreviousDotNetVersion)-android;$(MauiManualTestsPreviousPlatforms)</MauiManualTestsPreviousPlatforms>
