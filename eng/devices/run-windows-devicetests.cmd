@@ -1,10 +1,11 @@
 @echo off
 REM Windows Device Tests runner for Helix
-REM Usage: run-windows-devicetests.cmd <ScenarioName> <Device> <PackageId> <TargetFrameworkVersion>
+REM Usage: run-windows-devicetests.cmd <ScenarioName> <Device> <PackageId> <TargetFrameworkVersion> [CategoryFilter]
 REM   ScenarioName: Controls.DeviceTests, Core.DeviceTests, etc.
 REM   Device: packaged or unpackaged
 REM   PackageId: Package ID for the app
 REM   TargetFrameworkVersion: net10.0, etc.
+REM   CategoryFilter (optional): Name of single category to run (e.g., Lifecycle)
 REM
 REM This script runs Windows device tests directly without requiring Cake.
 REM It handles certificate import, MSIX installation, test execution, and result merging.
@@ -15,11 +16,12 @@ set SCENARIO_NAME=%1
 set DEVICE=%2
 set PACKAGE_ID=%3
 set TFM=%4
+set CATEGORY_FILTER=%~5
 set EXIT_CODE=0
 
 REM Configuration
 set WINDOWS_VERSION=10.0.19041.0
-set CONFIGURATION=Debug
+set CONFIGURATION=Release
 set CATEGORY_TIMEOUT_SECONDS=480
 
 echo ========================================
@@ -29,6 +31,7 @@ echo Scenario: %SCENARIO_NAME%
 echo Device: %DEVICE%
 echo Package ID: %PACKAGE_ID%
 echo Target Framework: %TFM%
+echo Category Filter: %CATEGORY_FILTER%
 echo Work Item Payload: %HELIX_WORKITEM_PAYLOAD%
 echo Upload Root: %HELIX_WORKITEM_UPLOAD_ROOT%
 echo Correlation Payload: %HELIX_CORRELATION_PAYLOAD%
@@ -218,17 +221,26 @@ if %IS_PACKAGED%==1 (
             )
         )
         
-        REM Read categories and run each one
+        REM Read categories and run each one (or just the filtered one)
         set CATEGORY_INDEX=0
         for /f "usebackq delims=" %%c in ("%CATEGORY_FILE%") do (
             set CATEGORY_NAME=%%c
             set EXPECTED_RESULT_FILE=%TEST_RESULTS_DIR%\TestResults-%PACKAGE_ID_SAFE%_!CATEGORY_NAME!.xml
             
-            echo Running category !CATEGORY_INDEX!: !CATEGORY_NAME!
-            powershell -Command "Start-Process '!APP_URI!' -ArgumentList '\"%TEST_RESULTS_FILE%\"', '!CATEGORY_INDEX!'"
-            
-            REM Wait for test results with timeout
-            call :wait_for_result "!EXPECTED_RESULT_FILE!" "!CATEGORY_NAME!"
+            REM If category filter is set, only run matching category
+            if defined CATEGORY_FILTER (
+                if /i "!CATEGORY_NAME!"=="%CATEGORY_FILTER%" (
+                    echo Running filtered category !CATEGORY_INDEX!: !CATEGORY_NAME!
+                    powershell -Command "Start-Process '!APP_URI!' -ArgumentList '\"%TEST_RESULTS_FILE%\"', '!CATEGORY_INDEX!'"
+                    call :wait_for_result "!EXPECTED_RESULT_FILE!" "!CATEGORY_NAME!"
+                ) else (
+                    echo Skipping category !CATEGORY_INDEX!: !CATEGORY_NAME! ^(filter: %CATEGORY_FILTER%^)
+                )
+            ) else (
+                echo Running category !CATEGORY_INDEX!: !CATEGORY_NAME!
+                powershell -Command "Start-Process '!APP_URI!' -ArgumentList '\"%TEST_RESULTS_FILE%\"', '!CATEGORY_INDEX!'"
+                call :wait_for_result "!EXPECTED_RESULT_FILE!" "!CATEGORY_NAME!"
+            )
             
             set /a CATEGORY_INDEX+=1
         )
