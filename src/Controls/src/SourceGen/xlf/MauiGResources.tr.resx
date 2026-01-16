@@ -122,7 +122,7 @@
     <comment>{0} is the error message</comment>
   </data>
   <data name="XamlParsingFailed" xml:space="preserve">
-    <value>XAML ayrıştırılamadı</value>
+    <value>XAML ayrıştırma başarısız oldu</value>
   </data>
   <data name="ExpressionNotClosed" xml:space="preserve">
     <value>İfade ‘}’ ile bitmelidir.</value>
