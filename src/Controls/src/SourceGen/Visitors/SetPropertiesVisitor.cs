@@ -130,7 +130,13 @@ class SetPropertiesVisitor : IXamlNodeVisitor
 		}
 
 		//IMarkupExtension or IValueProvider => ProvideValue()
-		node.TryProvideValue(Writer, Context, getNodeValue);
+		// For Setters, only inline-initialized instances should call TryProvideValue; otherwise
+		// the normal property assignments should remain intact.
+		if (StopOnStyle && node.IsStyle(Context) && node.Properties.ContainsKey(XmlName._StyleContent))
+			SetStyleNonContentProperties(node);
+		var isInlineInitializedSetter = IsInlineInitializedSetter(node, out var isSetter);
+		if (!isSetter || isInlineInitializedSetter)
+			node.TryProvideValue(Writer, Context, getNodeValue);
 
 		// Handle Style content - generate the initializer lambda BEFORE setting the Style property
 		// This ensures the Initializer is set before the Style is applied to any element
@@ -259,11 +265,11 @@ class SetPropertiesVisitor : IXamlNodeVisitor
 			styleNode.Properties.Remove(XmlName._StyleContent);
 			
 			// Clear SkipProperties so the content properties are processed
-		var contentPropertyNames = new[] { "Setters", "Behaviors", "Triggers" };
-		foreach (var propName in styleNode.SkipProperties.Where(p => contentPropertyNames.Contains(p.LocalName)).ToList())
-		{
-			styleNode.SkipProperties.Remove(propName);
-		}
+			var contentPropertyNames = new[] { "Setters", "Behaviors", "Triggers" };
+			foreach (var propName in styleNode.SkipProperties.Where(p => contentPropertyNames.Contains(p.LocalName)).ToList())
+			{
+				styleNode.SkipProperties.Remove(propName);
+			}
 
 			// Run the same visitor sequence as _CreateContent, but allow Style children to be visited.
 			styleNode.Accept(new CreateValuesVisitor(styleContext, stopOnStyle: false), null);
@@ -272,6 +278,72 @@ class SetPropertiesVisitor : IXamlNodeVisitor
 			styleNode.Accept(new SetPropertiesVisitor(styleContext, stopOnResourceDictionary: true, stopOnStyle: false), null);
 		}
 		Writer.WriteLine($"{styleVariable.ValueAccessor}.Initializer = {initializerVariableName};");
+	}
+
+	void SetStyleNonContentProperties(ElementNode styleNode)
+	{
+		if (!Context.Variables.TryGetValue(styleNode, out var styleLocalValue))
+			return;
+		var styleVariable = (LocalVariable)styleLocalValue;
+		var contentPropertyNames = new[] { "Setters", "Behaviors", "Triggers" };
+		var valueVisitor = new CreateValuesVisitor(Context, stopOnStyle: false);
+		var propertyVisitor = new SetPropertiesVisitor(Context, stopOnStyle: false);
+		foreach (var prop in styleNode.Properties.ToList())
+		{
+			var propName = prop.Key;
+			if (propName == XmlName._StyleContent)
+				continue;
+			if (contentPropertyNames.Contains(propName.LocalName))
+				continue;
+			if (skips.Contains(propName))
+				continue;
+			if (styleNode.SkipProperties.Contains(propName))
+				continue;
+			if (propName.Equals(XmlName.mcIgnorable))
+				continue;
+			prop.Value.Accept(valueVisitor, styleNode);
+			if (prop.Value is ElementNode elementValue)
+			{
+				foreach (var child in elementValue.Properties.Values.ToList())
+					child.Accept(propertyVisitor, elementValue);
+				foreach (var child in elementValue.CollectionItems.ToList())
+					child.Accept(propertyVisitor, elementValue);
+				elementValue.TryProvideValue(Writer, Context);
+			}
+			SetPropertyHelpers.SetPropertyValue(Writer, styleVariable, propName, prop.Value, Context);
+			styleNode.SkipProperties.Add(propName);
+		}
+	}
+
+	/// <summary>
+	/// Checks if a Setter node had its properties skipped for inline initialization.
+	/// This happens when CanProvideValue() returned true in CreateValuesVisitor.
+	/// For Setters, this only happens when Value is a simple ValueNode.
+	/// When Value is an ElementNode, CanProvideValue() returns false, so properties are NOT skipped.
+	/// </summary>
+	bool IsInlineInitializedSetter(ElementNode node, out bool isSetter)
+	{
+		// Check if this is a Setter
+		var setterType = Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Setter");
+		if (setterType == null || !Context.Variables.TryGetValue(node, out var variable))
+		{
+			isSetter = false;
+			return false;
+		}
+		
+		if (!variable.Type.Equals(setterType, SymbolEqualityComparer.Default))
+		{
+			isSetter = false;
+			return false;
+		}
+		
+		isSetter = true;
+		
+		// Check if Property was skipped (marked for inline initialization)
+		// When CanProvideValue() returns true, both Property and Value are skipped
+		var propertyXmlName = new XmlName("", "Property");
+		
+		return node.SkipProperties.Contains(propertyXmlName);
 	}
 
 	public void Visit(RootNode node, INode parentNode)
