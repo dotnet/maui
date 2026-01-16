@@ -74,7 +74,12 @@ namespace Microsoft.Maui.Controls.XamlC
 
 			static XmlType GetTargetTypeName(INode node)
 			{
-				var targetType = ((node as ElementNode).Properties[new XmlName("", "TargetType")] as ValueNode)?.Value as string;
+				var element = node as ElementNode;
+				string targetType = null;
+				if (element?.Properties.TryGetValue(new XmlName("", "TargetType"), out var targetTypeNode) == true)
+					targetType = (targetTypeNode as ValueNode)?.Value as string;
+				if (string.IsNullOrEmpty(targetType))
+					return null;
 				return TypeArgumentsParser.ParseSingle(targetType, node.NamespaceResolver, (IXmlLineInfo)node);
 			}
 		}
@@ -98,7 +103,12 @@ namespace Microsoft.Maui.Controls.XamlC
 			//4. target is now a Setter in a Style, or a VE
 			if (target.XmlType.IsOfAnyType(nameof(Setter)))
 			{
-				var targetType = ((target?.Parent as ElementNode)?.Properties[new XmlName("", "TargetType")] as ValueNode)?.Value as string;
+				var parentElement = target?.Parent as ElementNode;
+				string targetType = null;
+				if (parentElement?.Properties.TryGetValue(new XmlName("", "TargetType"), out var targetTypeNode) == true)
+					targetType = (targetTypeNode as ValueNode)?.Value as string;
+				if (string.IsNullOrEmpty(targetType))
+					return null;
 				return TypeArgumentsParser.ParseSingle(targetType, parent.NamespaceResolver, lineInfo);
 			}
 			else
