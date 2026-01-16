@@ -358,17 +358,31 @@ echo ========================================
 
 REM Check for MAUI startup log file
 set MAUI_LOG_FILE=%TEST_RESULTS_DIR%\maui-test-startup.log
+set MAUI_LOG_TEMP=%TEMP%\maui-test-startup.log
+
 if exist "%MAUI_LOG_FILE%" (
     echo.
     echo ========================================
-    echo MAUI Test Startup Log:
+    echo MAUI Test Startup Log (from results dir):
     echo ========================================
     type "%MAUI_LOG_FILE%"
     echo ========================================
     echo.
+) else if exist "%MAUI_LOG_TEMP%" (
+    echo.
+    echo ========================================
+    echo MAUI Test Startup Log (from TEMP dir):
+    echo ========================================
+    type "%MAUI_LOG_TEMP%"
+    echo ========================================
+    echo.
+    REM Copy to upload directory for artifact collection
+    copy "%MAUI_LOG_TEMP%" "%TEST_RESULTS_DIR%\maui-test-startup.log" >nul 2>&1
 ) else (
-    echo NOTE: MAUI startup log file not found at %MAUI_LOG_FILE%
-    echo This means the app may not have started or the Loaded event never fired.
+    echo NOTE: MAUI startup log file not found at:
+    echo   - %MAUI_LOG_FILE%
+    echo   - %MAUI_LOG_TEMP%
+    echo This means the app may not have started at all.
 )
 
 REM Clean up category file
