@@ -132,6 +132,13 @@ class SetPropertiesVisitor : IXamlNodeVisitor
 		//IMarkupExtension or IValueProvider => ProvideValue()
 		node.TryProvideValue(Writer, Context, getNodeValue);
 
+		// Handle Style content - generate the initializer lambda BEFORE setting the Style property
+		// This ensures the Initializer is set before the Style is applied to any element
+		if (node.IsStyle(Context) && node.Properties.ContainsKey(XmlName._StyleContent))
+		{
+			GenerateStyleInitializer(node);
+		}
+
 		if (propertyName != XmlName.Empty)
 		{
 			// if (skips.Contains(propertyName))
@@ -217,13 +224,6 @@ class SetPropertiesVisitor : IXamlNodeVisitor
 				Context.ReportDiagnostic(Diagnostic.Create(Descriptors.MemberResolution, location, localName));
 			}
 		}
-
-		// Handle Style content - generate the initializer lambda
-		// This runs after normal property handling, and only for Style nodes that have content
-		if (node.IsStyle(Context) && node.Properties.ContainsKey(XmlName._StyleContent))
-		{
-			GenerateStyleInitializer(node);
-		}
 	}
 
 	void GenerateStyleInitializer(ElementNode styleNode)
@@ -237,13 +237,10 @@ class SetPropertiesVisitor : IXamlNodeVisitor
 			return;
 
 		// Generate the initializer assignment
-		Writer.WriteLine($"{styleVariable.ValueAccessor}.Initializer = static (__style, __target) =>");
+		var initializerVariableName = $"{styleVariable.ValueAccessor}Initializer";
+		Writer.WriteLine($"global::System.Action<global::Microsoft.Maui.Controls.Style, global::Microsoft.Maui.Controls.BindableObject> {initializerVariableName} = (__style, __target) =>");
 		using (PrePost.NewBlock(Writer, begin: "{", end: "};"))
 		{
-			// Generate type guard
-			Writer.WriteLine($"if (__target is not {targetType.ToFQDisplayString()}) return;");
-			Writer.WriteLine();
-
 			var styleContext = new SourceGenContext(Writer, Context.Compilation, Context.SourceProductionContext, Context.XmlnsCache, Context.TypeCache, Context.RootType!, null, Context.ProjectItem)
 			{
 				ParentContext = Context,
@@ -262,11 +259,11 @@ class SetPropertiesVisitor : IXamlNodeVisitor
 			styleNode.Properties.Remove(XmlName._StyleContent);
 			
 			// Clear SkipProperties so the content properties are processed
-			var contentPropertyNames = new[] { new XmlName("", "Setters"), new XmlName("", "Behaviors"), new XmlName("", "Triggers") };
-			foreach (var propName in contentPropertyNames)
-			{
-				styleNode.SkipProperties.Remove(propName);
-			}
+		var contentPropertyNames = new[] { "Setters", "Behaviors", "Triggers" };
+		foreach (var propName in styleNode.SkipProperties.Where(p => contentPropertyNames.Contains(p.LocalName)).ToList())
+		{
+			styleNode.SkipProperties.Remove(propName);
+		}
 
 			// Run the same visitor sequence as _CreateContent, but allow Style children to be visited.
 			styleNode.Accept(new CreateValuesVisitor(styleContext, stopOnStyle: false), null);
@@ -274,6 +271,7 @@ class SetPropertiesVisitor : IXamlNodeVisitor
 			styleNode.Accept(new SetResourcesVisitor(styleContext, stopOnStyle: false), null);
 			styleNode.Accept(new SetPropertiesVisitor(styleContext, stopOnResourceDictionary: true, stopOnStyle: false), null);
 		}
+		Writer.WriteLine($"{styleVariable.ValueAccessor}.Initializer = {initializerVariableName};");
 	}
 
 	public void Visit(RootNode node, INode parentNode)
