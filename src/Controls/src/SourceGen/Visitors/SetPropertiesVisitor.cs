@@ -250,6 +250,9 @@ class SetPropertiesVisitor : IXamlNodeVisitor
 		Writer.WriteLine($"global::System.Action<global::Microsoft.Maui.Controls.Style, global::Microsoft.Maui.Controls.BindableObject> {initializerVariableName} = (__style, __target) =>");
 		using (PrePost.NewBlock(Writer, begin: "{", end: "};"))
 		{
+			// Add target type guard to enable trimming - if no code creates this type, the trimmer can remove this code path
+			Writer.WriteLine($"if (__target is not {targetType.ToFQDisplayString()}) return;");
+
 			var styleContext = new SourceGenContext(Writer, Context.Compilation, Context.SourceProductionContext, Context.XmlnsCache, Context.TypeCache, Context.RootType!, null, Context.ProjectItem, Context.IsLazyStyleCodegenEnabled)
 			{
 				ParentContext = Context,
