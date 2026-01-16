@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.0.31410.414
+# Visual Studio Version 18
+VisualStudioVersion = 18.3.11408.92 d18.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "src\Core\src\Core.csproj", "{95BA42B5-B00E-4986-B9B5-517140378452}"
 EndProject
@@ -209,8 +209,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.TestCases.HostApp"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Maui.IntegrationTests", "src\TestUtils\src\Microsoft.Maui.IntegrationTests\Microsoft.Maui.IntegrationTests.csproj", "{A6976D43-B3A4-47AF-89D9-FA388B56B52B}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Compatibility", "Compatibility", "{0AF0E771-4E09-4F05-B187-B43A2B9F62B0}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UITest.Core", "src\TestUtils\src\UITest.Core\UITest.Core.csproj", "{8F7B825D-24A8-4E09-AC5B-9117926B7BF3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UITest.Appium", "src\TestUtils\src\UITest.Appium\UITest.Appium.csproj", "{26379D0E-4D4D-48CA-94B1-A2C1972AB335}"
@@ -222,10 +220,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VisualTestUtils.MagickNet", "src\TestUtils\src\VisualTestUtils.MagickNet\VisualTestUtils.MagickNet.csproj", "{8E18E72E-9C53-4F20-B8C1-2677BF813DD3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SourceGen.UnitTests", "src\Controls\tests\SourceGen.UnitTests\SourceGen.UnitTests.csproj", "{06747B55-91DB-47F5-B7A2-56526C28A0D3}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{054C5BAC-3671-4F76-B32E-47CF4E64BB39}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.Core.UnitTests", "src\Compatibility\Core\tests\Compatibility.UnitTests\Compatibility.Core.UnitTests.csproj", "{1D950CD3-6778-4729-B6D9-446088093F34}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.TestCases.Shared.Tests", "src\Controls\tests\TestCases.Shared.Tests\Controls.TestCases.Shared.Tests.csproj", "{C450F8F4-C40F-4C15-978F-F43BA7DEA29D}"
 EndProject
@@ -268,6 +262,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UITest.Analyzers.Tests", "src\TestUtils\tests\UITest.Analyzers.Tests\UITest.Analyzers.Tests.csproj", "{5E0D0ACD-EA38-448D-B643-30B966A41922}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{50442BCE-D01E-36E8-5392-D3166C7E5B47}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Maui25871Library", "src\Controls\tests\Maui25871Library\Maui25871Library.csproj", "{8820D95F-EB6D-4B70-4985-759AAC83CF68}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -612,10 +608,6 @@ Global
 		{06747B55-91DB-47F5-B7A2-56526C28A0D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{06747B55-91DB-47F5-B7A2-56526C28A0D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{06747B55-91DB-47F5-B7A2-56526C28A0D3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1D950CD3-6778-4729-B6D9-446088093F34}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1D950CD3-6778-4729-B6D9-446088093F34}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1D950CD3-6778-4729-B6D9-446088093F34}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1D950CD3-6778-4729-B6D9-446088093F34}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C450F8F4-C40F-4C15-978F-F43BA7DEA29D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C450F8F4-C40F-4C15-978F-F43BA7DEA29D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C450F8F4-C40F-4C15-978F-F43BA7DEA29D}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -674,6 +666,10 @@ Global
 		{5E0D0ACD-EA38-448D-B643-30B966A41922}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5E0D0ACD-EA38-448D-B643-30B966A41922}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5E0D0ACD-EA38-448D-B643-30B966A41922}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8820D95F-EB6D-4B70-4985-759AAC83CF68}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8820D95F-EB6D-4B70-4985-759AAC83CF68}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8820D95F-EB6D-4B70-4985-759AAC83CF68}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8820D95F-EB6D-4B70-4985-759AAC83CF68}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -775,8 +771,6 @@ Global
 		{6840F154-F7E6-4E03-9767-D2722ECEA483} = {7AC28763-9C68-4BF9-A1BA-25CBFFD2D15C}
 		{8E18E72E-9C53-4F20-B8C1-2677BF813DD3} = {7AC28763-9C68-4BF9-A1BA-25CBFFD2D15C}
 		{06747B55-91DB-47F5-B7A2-56526C28A0D3} = {25D0D27A-C5FE-443D-8B65-D6C987F4A80E}
-		{054C5BAC-3671-4F76-B32E-47CF4E64BB39} = {0AF0E771-4E09-4F05-B187-B43A2B9F62B0}
-		{1D950CD3-6778-4729-B6D9-446088093F34} = {054C5BAC-3671-4F76-B32E-47CF4E64BB39}
 		{C450F8F4-C40F-4C15-978F-F43BA7DEA29D} = {25D0D27A-C5FE-443D-8B65-D6C987F4A80E}
 		{7042E8FF-472F-4CB5-8AAE-DAD87BA32207} = {25D0D27A-C5FE-443D-8B65-D6C987F4A80E}
 		{5DDA6439-CDE0-4BFE-8BF9-77962BC69ACA} = {25D0D27A-C5FE-443D-8B65-D6C987F4A80E}
@@ -796,6 +790,7 @@ Global
 		{1A031B27-6EE7-35A8-5C38-EB7370E6029E} = {6A5A18F7-8A4B-639B-2D50-68074424D750}
 		{5E0D0ACD-EA38-448D-B643-30B966A41922} = {1A031B27-6EE7-35A8-5C38-EB7370E6029E}
 		{50442BCE-D01E-36E8-5392-D3166C7E5B47} = {6A5A18F7-8A4B-639B-2D50-68074424D750}
+		{8820D95F-EB6D-4B70-4985-759AAC83CF68} = {25D0D27A-C5FE-443D-8B65-D6C987F4A80E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B8ABEAD-D2B5-4370-A187-62B5ABE4EE50}
