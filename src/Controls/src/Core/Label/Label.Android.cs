@@ -10,6 +10,7 @@ namespace Microsoft.Maui.Controls
 	public partial class Label
 	{
 		MauiTextView _mauiTextView;
+		MauiMaterialTextView _mauiMaterialTextView;
 
 		private protected override void OnHandlerChangedCore()
 		{
@@ -17,10 +18,18 @@ namespace Microsoft.Maui.Controls
 
 			if (Handler != null)
 			{
-				if (Handler is LabelHandler labelHandler && labelHandler.PlatformView is MauiTextView mauiTextView)
+				if (Handler is LabelHandler labelHandler)
 				{
-					_mauiTextView = mauiTextView;
-					_mauiTextView.LayoutChanged += OnLayoutChanged;
+					if (labelHandler.PlatformView is MauiTextView mauiTextView)
+					{
+						_mauiTextView = mauiTextView;
+						_mauiTextView.LayoutChanged += OnLayoutChanged;
+					}
+					else if (labelHandler.PlatformView is MauiMaterialTextView mauiMaterialTextView)
+					{
+						_mauiMaterialTextView = mauiMaterialTextView;
+						_mauiMaterialTextView.LayoutChanged += OnLayoutChanged;
+					}
 				}
 			}
 			else
@@ -29,6 +38,11 @@ namespace Microsoft.Maui.Controls
 				{
 					_mauiTextView.LayoutChanged -= OnLayoutChanged;
 					_mauiTextView = null;
+				}
+				else if (_mauiMaterialTextView is not null)
+				{
+					_mauiMaterialTextView.LayoutChanged -= OnLayoutChanged;
+					_mauiMaterialTextView = null;
 				}
 			}
 		}
@@ -54,19 +68,25 @@ namespace Microsoft.Maui.Controls
 		void OnLayoutChanged(object sender, LayoutChangedEventArgs args)
 		{
 			if (Handler is not ILabelHandler labelHandler)
+			{
 				return;
+			}
 
 			var platformView = labelHandler.PlatformView;
 			var virtualView = labelHandler.VirtualView as Label;
 
 			if (platformView == null || virtualView == null)
+			{
 				return;
+			}
 
 			var text = virtualView.FormattedText;
 
 			// don't attempt to layout if this is not a formatted text WITH some text
 			if (virtualView.TextType != TextType.Text || text?.Spans == null || text.Spans.Count == 0)
+			{
 				return;
+			}
 
 			var spannableString = virtualView.ToSpannableString();
 
