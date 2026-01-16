@@ -45,7 +45,8 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				await image.WaitUntilLoaded();
 
-				await handler.ToPlatform().AssertContainsColor(Colors.Red, MauiContext);
+				// Use handler.MauiContext to ensure the correct window is registered for the test service
+				await handler.ToPlatform().AssertContainsColor(Colors.Red, handler.MauiContext);
 			});
 		}
 
