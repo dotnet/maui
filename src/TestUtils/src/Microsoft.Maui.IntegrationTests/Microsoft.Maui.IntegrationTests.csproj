@@ -6,6 +6,8 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <RollForward>Major</RollForward>
+    <!-- Use VSTest runner for NUnit tests (Arcade defaults to XUnit) -->
+    <UseVSTestRunner>true</UseVSTestRunner>
   </PropertyGroup>
 
   <ItemGroup>

@@ -21,11 +21,12 @@ stages:
         condition: ${{ job.condition }}
       variables:
         # Build the filter based on whether testName or testCategory is provided
+        # Using VSTest filter syntax (NUnit tests run through VSTest adapter)
         ${{ if job.testName }}:
-          testFilter: 'Name=${{ job.testName }}'
+          testFilter: 'FullyQualifiedName~${{ job.testName }}'
           testIdentifier: ${{ job.testName }}
         ${{ else }}:
-          testFilter: 'Category=${{ job.testCategory }}'
+          testFilter: 'TestCategory=${{ job.testCategory }}'
           testIdentifier: ${{ job.testCategory }}
       steps:
       - checkout: self
