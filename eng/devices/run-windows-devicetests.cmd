@@ -237,9 +237,12 @@ if %IS_PACKAGED%==1 (
                 echo ERROR: Test categories file was not created during discovery phase
                 echo Expected location: %CATEGORY_FILE%
                 set EXIT_CODE=1
-                goto :results
+                set SKIP_TO_RESULTS=1
             )
         )
+        
+        REM Cannot goto from inside nested parentheses - check flag here
+        if defined SKIP_TO_RESULTS goto :results
         
         REM Read categories and run each one (or just the filtered one)
         set CATEGORY_INDEX=0
@@ -316,6 +319,11 @@ if %IS_PACKAGED%==1 (
             echo Checking if exe directory has the file...
             dir "!EXE_DIR!\*.txt" 2>nul
             set EXIT_CODE=1
+            set SKIP_TO_RESULTS=1
+        )
+        
+        REM Cannot goto from inside nested parentheses - check flag and popd here
+        if defined SKIP_TO_RESULTS (
             popd
             goto :results
         )
