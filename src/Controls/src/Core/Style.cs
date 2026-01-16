@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Controls
 		/// This property is intended for source generator use only.
 		/// </summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public Action<Style, BindableObject> Initializer
+		public Action<Style, BindableObject> LazyInitialization
 		{
 			set => _initializer = value;
 		}
