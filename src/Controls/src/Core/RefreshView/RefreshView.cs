@@ -10,7 +10,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls
 {
 	/// <summary>
-	/// Represents a view that provides pull-to-refresh functionality.
+	/// Represents a container that provides pull-to-refresh functionality for scrollable content.
 	/// </summary>
 	[ContentProperty(nameof(Content))]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
@@ -83,7 +83,7 @@ namespace Microsoft.Maui.Controls
 
 
 		/// <summary>
-		/// Gets or sets the command to invoke when the view is refreshed.
+		/// Gets or sets the command to execute when a refresh is triggered.
 		/// </summary>
 		public ICommand Command
 		{
@@ -100,7 +100,7 @@ namespace Microsoft.Maui.Controls
 				propertyChanged: CommandElement.OnCommandParameterChanged);
 
 		/// <summary>
-		/// Gets or sets the parameter to pass to the command.
+		/// Gets or sets the parameter to pass to the refresh command.
 		/// </summary>
 		public object CommandParameter
 		{
@@ -133,7 +133,7 @@ namespace Microsoft.Maui.Controls
 			if (bindable is RefreshView refreshView)
 			{
 				refreshView._isRefreshEnabledExplicit = (bool)value;
-				return refreshView._isRefreshEnabledExplicit && CommandElement.GetCanExecute(refreshView);
+				return refreshView._isRefreshEnabledExplicit && CommandElement.GetCanExecute(refreshView, CommandProperty);
 			}
 
 			return false;

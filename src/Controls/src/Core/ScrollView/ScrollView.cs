@@ -234,7 +234,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets the size of the content.
+		/// Gets the size of the scrollable content.
 		/// </summary>
 		public Size ContentSize
 		{
@@ -269,14 +269,18 @@ namespace Microsoft.Maui.Controls
 			private set { SetValue(ScrollYPropertyKey, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='HorizontalScrollBarVisibility']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the horizontal scroll bar visibility.
+		/// </summary>
 		public ScrollBarVisibility HorizontalScrollBarVisibility
 		{
 			get { return (ScrollBarVisibility)GetValue(HorizontalScrollBarVisibilityProperty); }
 			set { SetValue(HorizontalScrollBarVisibilityProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='VerticalScrollBarVisibility']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the vertical scroll bar visibility.
+		/// </summary>
 		public ScrollBarVisibility VerticalScrollBarVisibility
 		{
 			get { return (ScrollBarVisibility)GetValue(VerticalScrollBarVisibilityProperty); }
@@ -289,8 +293,8 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <remarks>
 		/// This property controls which edges of the scroll view should obey safe area insets.
-		/// Use SafeAreaRegions.None for edge-to-edge content, SafeAreaRegions.All to obey all safe area insets, 
-		/// SafeAreaRegions.Container for content that flows under keyboard but stays out of bars/notch, or SafeAreaRegions.SoftInput for keyboard-aware behavior.
+		/// Use SafeAreaEdges.None for edge-to-edge content, SafeAreaEdges.All to obey all safe area insets, 
+		/// SafeAreaEdges.Container for content that flows under keyboard but stays out of bars/notch, or SafeAreaEdges.SoftInput for keyboard-aware behavior.
 		/// </remarks>
 		public SafeAreaEdges SafeAreaEdges
 		{
@@ -298,7 +302,9 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(SafeAreaElement.SafeAreaEdgesProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="ScrollView"/> class.
+		/// </summary>
 		public ScrollView()
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<ScrollView>>(() => new PlatformConfigurationRegistry<ScrollView>(this));
@@ -312,7 +318,9 @@ namespace Microsoft.Maui.Controls
 			return _platformConfigurationRegistry.Value.On<T>();
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='ScrollToAsync'][1]/Docs/*" />
+		/// <summary>
+		/// Scrolls to the specified position asynchronously.
+		/// </summary>
 		public Task ScrollToAsync(double x, double y, bool animated)
 		{
 			if (Orientation == ScrollOrientation.Neither)
@@ -325,7 +333,9 @@ namespace Microsoft.Maui.Controls
 			return _scrollCompletionSource.Task;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='ScrollToAsync'][2]/Docs/*" />
+		/// <summary>
+		/// Scrolls to the specified element asynchronously.
+		/// </summary>
 		public Task ScrollToAsync(Element element, ScrollToPosition position, bool animated)
 		{
 			if (Orientation == ScrollOrientation.Neither)

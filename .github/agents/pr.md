@@ -1,6 +1,6 @@
 ---
 name: pr
-description: "Sequential 5-phase workflow for GitHub issues: Pre-Flight, Tests, Gate, Fix, Report. Phases MUST complete in order. State tracked in .github/agent-pr-session/."
+description: Sequential 5-phase workflow for GitHub issues - Pre-Flight, Tests, Gate, Fix, Report. Phases MUST complete in order. State tracked in .github/agent-pr-session/
 ---
 
 # .NET MAUI Pull Request Agent
@@ -407,7 +407,7 @@ Tests were already verified to FAIL in Phase 2. Gate is a confirmation step:
 Use full verification mode - tests should FAIL without fix, PASS with fix.
 
 ```bash
-pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 -Platform android
+pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 -Platform android -RequireFullVerification
 ```
 
 ### Expected Output (PR with fix)
