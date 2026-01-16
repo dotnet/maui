@@ -201,21 +201,38 @@
         </ItemGroup>
 
         <!-- Windows: Use HelixWorkItem with test runner script (not XHarness) -->
+        <!-- Split into two groups: stable tests and tests with known issues -->
+        
+        <!-- Windows Stable Tests: Controls, Graphics, Essentials, BlazorWebView -->
         <ItemGroup Condition="'$(TargetOS)' == 'windows'">
-            <HelixWorkItem Include="%(_MAUIScenarioSearch.ScenarioDirectoryName)-packaged">
-                <PayloadArchive>%(_MAUIScenarioSearch.PayloadDirectory).zip</PayloadArchive>
-                <Command>call %HELIX_CORRELATION_PAYLOAD%\eng\devices\run-windows-devicetests.cmd %(_MAUIScenarioSearch.ScenarioDirectoryName) packaged %(_MAUIScenarioSearch.WindowsPackageId) $(TargetFrameworkToTest)</Command>
+            <_WindowsStableScenarios Include="@(_MAUIScenarioSearch)" Condition="'%(_MAUIScenarioSearch.ScenarioDirectoryName)' != 'Core.DeviceTests'" />
+            <HelixWorkItem Include="%(_WindowsStableScenarios.ScenarioDirectoryName)-packaged">
+                <PayloadArchive>%(_WindowsStableScenarios.PayloadDirectory).zip</PayloadArchive>
+                <Command>call %HELIX_CORRELATION_PAYLOAD%\eng\devices\run-windows-devicetests.cmd %(_WindowsStableScenarios.ScenarioDirectoryName) packaged %(_WindowsStableScenarios.WindowsPackageId) $(TargetFrameworkToTest)</Command>
                 <Timeout>02:00:00</Timeout>
             </HelixWorkItem>
-            <!-- TODO: Unpackaged tests disabled - crash with 0xC000027B (Windows App SDK Bootstrap failure)
-                 on Helix. Investigating root cause. See PR #33328 for context.
+        </ItemGroup>
+        
+        <!-- Windows Tests with Known Issues: Core.DeviceTests (has GraphicsView bitmap capture issues) -->
+        <ItemGroup Condition="'$(TargetOS)' == 'windows'">
+            <_WindowsUnstableScenarios Include="@(_MAUIScenarioSearch)" Condition="'%(_MAUIScenarioSearch.ScenarioDirectoryName)' == 'Core.DeviceTests'" />
+            <HelixWorkItem Include="%(_WindowsUnstableScenarios.ScenarioDirectoryName)-packaged-unstable">
+                <PayloadArchive>%(_WindowsUnstableScenarios.PayloadDirectory).zip</PayloadArchive>
+                <Command>call %HELIX_CORRELATION_PAYLOAD%\eng\devices\run-windows-devicetests.cmd %(_WindowsUnstableScenarios.ScenarioDirectoryName) packaged %(_WindowsUnstableScenarios.WindowsPackageId) $(TargetFrameworkToTest)</Command>
+                <Timeout>02:00:00</Timeout>
+            </HelixWorkItem>
+        </ItemGroup>
+        
+        <!-- TODO: Unpackaged tests disabled - crash with 0xC000027B (Windows App SDK Bootstrap failure)
+             on Helix. Investigating root cause. See PR #33328 for context.
+        <ItemGroup Condition="'$(TargetOS)' == 'windows'">
             <HelixWorkItem Include="%(_MAUIScenarioSearch.ScenarioDirectoryName)-unpackaged">
                 <PayloadArchive>%(_MAUIScenarioSearch.PayloadDirectory).zip</PayloadArchive>
                 <Command>call %HELIX_CORRELATION_PAYLOAD%\eng\devices\run-windows-devicetests.cmd %(_MAUIScenarioSearch.ScenarioDirectoryName) unpackaged %(_MAUIScenarioSearch.WindowsPackageId) $(TargetFrameworkToTest)</Command>
                 <Timeout>02:00:00</Timeout>
             </HelixWorkItem>
-            -->
         </ItemGroup>
+        -->
 
         <Message Text="Created @(XHarnessAppBundleToTest->Count()) iOS work items" Importance="high" Condition="'$(TargetOS)' == 'ios'" />
         <Message Text="Created @(HelixWorkItem->Count()) Windows work items" Importance="high" Condition="'$(TargetOS)' == 'windows'" />
