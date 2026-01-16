@@ -280,7 +280,7 @@ class SetPropertiesVisitor : IXamlNodeVisitor
 			styleNode.Accept(new SetResourcesVisitor(styleContext, stopOnStyle: false), null);
 			styleNode.Accept(new SetPropertiesVisitor(styleContext, stopOnResourceDictionary: true, stopOnStyle: false), null);
 		}
-		Writer.WriteLine($"{styleVariable.ValueAccessor}.Initializer = {initializerVariableName};");
+		Writer.WriteLine($"{styleVariable.ValueAccessor}.LazyInitialization = {initializerVariableName};");
 	}
 
 	void SetStyleNonContentProperties(ElementNode styleNode)

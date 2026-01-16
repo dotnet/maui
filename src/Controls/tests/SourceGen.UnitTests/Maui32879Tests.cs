@@ -55,10 +55,10 @@ public partial class TestPage : ContentPage
 		Assert.Contains("AbsoluteLayout.LayoutBoundsProperty", generated, StringComparison.Ordinal);
 		Assert.Contains("BoundsTypeConverter().ConvertFromInvariantString(\"10,10,20,20\")", generated, StringComparison.Ordinal);
 		Assert.Contains("resourceDictionary[\"NetworkIndicator\"]", generated, StringComparison.Ordinal);
-		Assert.Contains("style.Initializer = styleInitializer", generated, StringComparison.Ordinal);
+		Assert.Contains("style.LazyInitialization = styleInitializer", generated, StringComparison.Ordinal);
 		
 		// Verify lazy behavior: Initializer is set but NOT called immediately
 		Assert.DoesNotContain("styleInitializer(style, new global::Microsoft.Maui.Controls.Label())", generated, StringComparison.Ordinal);
-		Assert.DoesNotContain("style.Initializer = null!", generated, StringComparison.Ordinal);
+		Assert.DoesNotContain("style.LazyInitialization = null!", generated, StringComparison.Ordinal);
 	}
 }
