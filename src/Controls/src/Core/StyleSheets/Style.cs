@@ -20,7 +20,10 @@ namespace Microsoft.Maui.Controls.StyleSheets
 		public static Style Parse(CssReader reader, char stopChar = '\0')
 		{
 			if (!RuntimeFeature.IsCssEnabled)
-				throw new NotSupportedException("Stylesheets are not enabled. To enable stylesheets, set the $(MauiCssEnabled) property to true in your project file.");
+				throw new NotSupportedException(
+					"CSS stylesheets are disabled because no MauiCss items were found in the project. " +
+					"To enable CSS support, add <MauiCssEnabled>true</MauiCssEnabled> to your project file, " +
+					"or add CSS files as MauiCss build items.");
 
 			Style style = new Style();
 			string propertyName = null, propertyValue = null;
@@ -66,7 +69,10 @@ namespace Microsoft.Maui.Controls.StyleSheets
 		public void Apply(VisualElement styleable, Selector.SelectorSpecificity selectorSpecificity = default, bool inheriting = false)
 		{
 			if (!RuntimeFeature.IsCssEnabled)
-				throw new NotSupportedException("Stylesheets are not enabled. To enable stylesheets, set the $(MauiCssEnabled) property to true in your project file.");
+				throw new NotSupportedException(
+					"CSS stylesheets are disabled because no MauiCss items were found in the project. " +
+					"To enable CSS support, add <MauiCssEnabled>true</MauiCssEnabled> to your project file, " +
+					"or add CSS files as MauiCss build items.");
 
 			if (styleable == null)
 				throw new ArgumentNullException(nameof(styleable));
