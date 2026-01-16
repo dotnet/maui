@@ -1,5 +1,4 @@
 #nullable disable
-using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
@@ -17,9 +16,6 @@ namespace Microsoft.Maui.Controls
 	{
 		BindableProperty IStylable.GetProperty(string key, bool inheriting)
 		{
-			if (!RuntimeFeature.IsCssEnabled)
-				throw new NotSupportedException("Stylesheets are not enabled. To enable stylesheets, set the $(MauiCssEnabled) property to true in your project file.");
-			
 			if (!Internals.Registrar.StyleProperties.TryGetValue(key, out var attrList))
 				return null;
 
