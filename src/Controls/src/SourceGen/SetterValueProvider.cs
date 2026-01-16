@@ -43,7 +43,8 @@ internal class SetterValueProvider : IKnownMarkupValueProvider
 		}
 
 		var bpNode = (ValueNode)node.Properties[new XmlName("", "Property")];
-		var bpRef = bpNode.GetBindableProperty(context);
+		IFieldSymbol? bpRef = bpNode.GetBindableProperty(context);
+		var (bpName, bpType) = GetBindablePropertyNameAndType(bpRef, bpNode, context);
 
 		string targetsetter;
 		if (node.Properties.TryGetValue(new XmlName("", "TargetName"), out var targetNode))
@@ -53,24 +54,76 @@ internal class SetterValueProvider : IKnownMarkupValueProvider
 
 		if (valueNode is ValueNode vn)
 		{
-			value = $"new global::Microsoft.Maui.Controls.Setter {{{targetsetter}Property = {bpRef.ToFQDisplayString()}, Value = {vn.ConvertTo(bpRef, writer, context)}}}";
+			var valueString = bpRef != null
+				? vn.ConvertTo(bpRef, writer, context)
+				: (bpType != null ? vn.ConvertTo(bpType, null, writer, context) : string.Empty);
+			value = $"new global::Microsoft.Maui.Controls.Setter {{{targetsetter}Property = {bpName}, Value = {valueString}}}";
 			return true;
 		}
 		else if (getNodeValue != null)
 		{
-			var lvalue = getNodeValue(valueNode, bpRef.Type);
-			value = $"new global::Microsoft.Maui.Controls.Setter {{{targetsetter}Property = {bpRef.ToFQDisplayString()}, Value = {lvalue.ValueAccessor}}}";
+			var lvalue = getNodeValue(valueNode, bpType ?? context.Compilation.ObjectType);
+			value = $"new global::Microsoft.Maui.Controls.Setter {{{targetsetter}Property = {bpName}, Value = {lvalue.ValueAccessor}}}";
 			return true;
 		}
 		else if (context.Variables.TryGetValue(valueNode, out var variable))
 		{
-			value = $"new global::Microsoft.Maui.Controls.Setter {{{targetsetter}Property = {bpRef.ToFQDisplayString()}, Value = {variable.ValueAccessor}}}";
+			value = $"new global::Microsoft.Maui.Controls.Setter {{{targetsetter}Property = {bpName}, Value = {variable.ValueAccessor}}}";
 			return true;
 		}
 
 		value = string.Empty;
 		//FIXME context.ReportDiagnostic
 		return false;
+	}
+
+	private static (string bpName, ITypeSymbol? bpType) GetBindablePropertyNameAndType(IFieldSymbol? bpRef, ValueNode bpNode, SourceGenContext context)
+	{
+		if (bpRef != null)
+			return (bpRef.ToFQDisplayString(), bpRef.GetBPTypeAndConverter(context)?.type);
+
+		static ITypeSymbol? GetTargetTypeSymbol(INode node, SourceGenContext context)
+		{
+			var ttnode = (node as ElementNode)?.Properties[new XmlName("", "TargetType")];
+			if (ttnode is ValueNode { Value: string tt })
+				return XmlTypeExtensions.GetTypeSymbol(tt, context, node);
+			if (ttnode != null && context.Types.TryGetValue(ttnode, out var typeSymbol))
+				return typeSymbol;
+			return null;
+		}
+
+		var propertyText = bpNode.Value as string ?? string.Empty;
+		var parts = propertyText.Split('.');
+
+		ITypeSymbol? targetType = null;
+		string propertyName;
+
+		if (parts.Length == 1)
+		{
+			propertyName = parts[0];
+			var parent = bpNode.Parent?.Parent as ElementNode ?? (bpNode.Parent?.Parent as IListNode)?.Parent as ElementNode;
+			if (parent?.XmlType.IsOfAnyType("Trigger", "DataTrigger", "MultiTrigger", "Style") == true)
+				targetType = GetTargetTypeSymbol(parent, context);
+		}
+		else if (parts.Length == 2)
+		{
+			targetType = XmlTypeExtensions.GetTypeSymbol(parts[0], context, bpNode);
+			propertyName = parts[1];
+		}
+		else
+		{
+			return ("null", null);
+		}
+
+		if (targetType != null && targetType.HasBindablePropertyHeuristic(propertyName, context, out var explicitPropertyName))
+		{
+			var bpFieldName = explicitPropertyName ?? $"{propertyName}Property";
+			var bpName = $"{targetType.ToFQDisplayString()}.{bpFieldName}";
+			var bpType = targetType.GetAllProperties(propertyName, context).FirstOrDefault()?.Type;
+			return (bpName, bpType);
+		}
+
+		return ("null", null);
 	}
 
 	/// <summary>
