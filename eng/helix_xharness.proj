@@ -115,7 +115,7 @@
                 <WorkItemTimeout>02:00:00</WorkItemTimeout>
                 <TestTimeout>01:15:00</TestTimeout>
                 <LaunchTimeout>00:10:00</LaunchTimeout>
-                <AppBundlePath>$([System.IO.Directory]::GetDirectories('$(ScenariosDir)Controls.DeviceTests/Release/net11.0-ios/', '*.app', System.IO.SearchOption.AllDirectories))</AppBundlePath>
+                <AppBundlePath>$([System.IO.Directory]::GetDirectories('$(ScenariosDir)Controls.DeviceTests/Release/$(TargetFrameworkToTest)-ios/', '*.app', System.IO.SearchOption.AllDirectories))</AppBundlePath>
                 <CustomCommands>xharness apple test --target "$target" --app "$app" --output-directory "$output_directory" --timeout "$timeout" --launch-timeout "$launch_timeout" --set-env="TestFilter=Category=%(Identity)"</CustomCommands>
             </XHarnessAppBundleToTest>
             <!-- Controls.DeviceTests - all other categories run as one work item -->
@@ -124,27 +124,27 @@
                 <WorkItemTimeout>02:00:00</WorkItemTimeout>
                 <TestTimeout>01:15:00</TestTimeout>
                 <LaunchTimeout>00:10:00</LaunchTimeout>
-                <AppBundlePath>$([System.IO.Directory]::GetDirectories('$(ScenariosDir)Controls.DeviceTests/Release/net11.0-ios/', '*.app', System.IO.SearchOption.AllDirectories))</AppBundlePath>
+                <AppBundlePath>$([System.IO.Directory]::GetDirectories('$(ScenariosDir)Controls.DeviceTests/Release/$(TargetFrameworkToTest)-ios/', '*.app', System.IO.SearchOption.AllDirectories))</AppBundlePath>
                 <CustomCommands>xharness apple test --target "$target" --app "$app" --output-directory "$output_directory" --timeout "$timeout" --launch-timeout "$launch_timeout" --set-env="TestFilter=SkipCategories=$(ControlsTestCategoriesToSkipForRestOfTests)"</CustomCommands>
             </XHarnessAppBundleToTest>
             <!-- Core.DeviceTests - single work item (no category splitting) -->
-            <XHarnessAppBundleToTest Include="$([System.IO.Directory]::GetDirectories('$(ScenariosDir)Core.DeviceTests/Release/net11.0-ios/', '*.app', System.IO.SearchOption.AllDirectories))">
+            <XHarnessAppBundleToTest Include="$([System.IO.Directory]::GetDirectories('$(ScenariosDir)Core.DeviceTests/Release/$(TargetFrameworkToTest)-ios/', '*.app', System.IO.SearchOption.AllDirectories))">
                 <TestTarget>ios-simulator-64</TestTarget>
                 <WorkItemTimeout>02:00:00</WorkItemTimeout>
                 <TestTimeout>01:00:00</TestTimeout>
             </XHarnessAppBundleToTest>
             <!-- Graphics, Essentials, BlazorWebView - single work item each -->
-            <XHarnessAppBundleToTest Include="$([System.IO.Directory]::GetDirectories('$(ScenariosDir)Graphics.DeviceTests/Release/net11.0-ios/', '*.app', System.IO.SearchOption.AllDirectories))">
+            <XHarnessAppBundleToTest Include="$([System.IO.Directory]::GetDirectories('$(ScenariosDir)Graphics.DeviceTests/Release/$(TargetFrameworkToTest)-ios/', '*.app', System.IO.SearchOption.AllDirectories))">
                 <TestTarget>ios-simulator-64</TestTarget>
                 <WorkItemTimeout>02:00:00</WorkItemTimeout>
                 <TestTimeout>01:00:00</TestTimeout>
             </XHarnessAppBundleToTest>
-            <XHarnessAppBundleToTest Include="$([System.IO.Directory]::GetDirectories('$(ScenariosDir)Essentials.DeviceTests/Release/net11.0-ios/', '*.app', System.IO.SearchOption.AllDirectories))">
+            <XHarnessAppBundleToTest Include="$([System.IO.Directory]::GetDirectories('$(ScenariosDir)Essentials.DeviceTests/Release/$(TargetFrameworkToTest)-ios/', '*.app', System.IO.SearchOption.AllDirectories))">
                 <TestTarget>ios-simulator-64</TestTarget>
                 <WorkItemTimeout>02:00:00</WorkItemTimeout>
                 <TestTimeout>01:00:00</TestTimeout>
             </XHarnessAppBundleToTest>
-            <XHarnessAppBundleToTest Include="$([System.IO.Directory]::GetDirectories('$(ScenariosDir)MauiBlazorWebView.DeviceTests/Release/net11.0-ios/', '*.app', System.IO.SearchOption.AllDirectories))">
+            <XHarnessAppBundleToTest Include="$([System.IO.Directory]::GetDirectories('$(ScenariosDir)MauiBlazorWebView.DeviceTests/Release/$(TargetFrameworkToTest)-ios/', '*.app', System.IO.SearchOption.AllDirectories))">
                 <TestTarget>ios-simulator-64</TestTarget>
                 <WorkItemTimeout>02:00:00</WorkItemTimeout>
                 <TestTimeout>01:00:00</TestTimeout>
@@ -153,7 +153,7 @@
 
         <!-- MacCatalyst and Android: Use the original MAUIScenario approach (no category splitting) -->
         <ItemGroup Condition="'$(TargetOS)' == 'maccatalyst'">
-            <XHarnessAppBundleToTest Include="$([System.IO.Directory]::GetDirectories('%(_MAUIScenarioSearch.PayloadDirectory)/Release/net11.0-maccatalyst/', '*.app', System.IO.SearchOption.AllDirectories))">
+            <XHarnessAppBundleToTest Include="$([System.IO.Directory]::GetDirectories('%(_MAUIScenarioSearch.PayloadDirectory)/Release/$(TargetFrameworkToTest)-maccatalyst/', '*.app', System.IO.SearchOption.AllDirectories))">
                 <TestTarget>maccatalyst</TestTarget>
                 <WorkItemTimeout>02:00:00</WorkItemTimeout>
                 <TestTimeout>01:00:00</TestTimeout>
@@ -163,7 +163,7 @@
 
         <!-- Android: All scenarios run as single work items (no category splitting) -->
         <ItemGroup Condition="'$(TargetOS)' == 'android'">
-            <_apks Include="%(_MAUIScenarioSearch.PayloadDirectory)/Release/net10.0-android/**/*Signed.apk" />
+            <_apks Include="%(_MAUIScenarioSearch.PayloadDirectory)/Release/$(TargetFrameworkToTest)-android/**/*Signed.apk" />
             <XHarnessApkToTest Include="@(_apks)">
                 <WorkItemTimeout>02:00:00</WorkItemTimeout>
                 <TestTimeout>01:00:00</TestTimeout>
