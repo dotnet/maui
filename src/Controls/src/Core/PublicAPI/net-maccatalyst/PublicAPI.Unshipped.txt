@@ -10,3 +10,4 @@ Microsoft.Maui.Controls.AppThemeBinding.AppThemeBinding() -> void
 ~Microsoft.Maui.Controls.AppThemeBinding.Light.set -> void
 ~Microsoft.Maui.Controls.Style.LazyInitialization.set -> void
 ~Microsoft.Maui.Controls.Style.Style(string assemblyQualifiedTargetTypeName) -> void
+~override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.ViewWillTransitionToSize(CoreGraphics.CGSize toSize, UIKit.IUIViewControllerTransitionCoordinator coordinator) -> void
