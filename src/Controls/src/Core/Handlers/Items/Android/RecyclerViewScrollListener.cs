@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		int _horizontalOffset, _verticalOffset;
 		TItemsView _itemsView;
 		readonly bool _getCenteredItemOnXAndY = false;
+		bool _isInitialLayout = true;
 
 		public RecyclerViewScrollListener(TItemsView itemsView, ItemsViewAdapter<TItemsView, TItemsViewSource> itemsViewAdapter) : this(itemsView, itemsViewAdapter, false)
 		{
@@ -28,6 +29,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		internal void UpdateAdapter(ItemsViewAdapter<TItemsView, TItemsViewSource> itemsViewAdapter)
 		{
 			ItemsViewAdapter = itemsViewAdapter;
+			_isInitialLayout = true;
 		}
 
 		public override void OnScrolled(RecyclerView recyclerView, int dx, int dy)
@@ -40,6 +42,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			// See https://stackoverflow.com/questions/27507715/android-how-to-get-the-current-x-offset-of-recyclerview
 			_horizontalOffset += dx;
 			_verticalOffset += dy;
+
+			// Filter the initial layout callback to prevent Scrolled event from firing on page load.
+			// RecyclerView calls OnScrolled(0,0) during initial layout even without user interaction.
+			if (_isInitialLayout && dx == 0 && dy == 0)
+			{
+				_isInitialLayout = false;
+				return;
+			}
+
+			// Clear the flag after first actual scroll to ensure subsequent events work normally
+			_isInitialLayout = false;
 
 			var (First, Center, Last) = GetVisibleItemsIndex(recyclerView);
 			var itemsViewScrolledEventArgs = new ItemsViewScrolledEventArgs
