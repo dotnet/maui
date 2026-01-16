@@ -96,9 +96,33 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected readonly ItemsView ItemsView;
 		public override int ItemCount => 1 + ((Header != null || HeaderTemplate != null) ? 1 : 0) + ((Footer != null || FooterTemplate != null) ? 1 : 0);
 
-		internal double RecyclerViewHeight { get; set; }
+		double _recyclerViewHeight;
+		internal double RecyclerViewHeight
+		{
+			get => _recyclerViewHeight;
+			set
+			{
+				if (Math.Abs(_recyclerViewHeight - value) > double.Epsilon)
+				{
+					_recyclerViewHeight = value;
+					InvalidateEmptyViewSize();
+				}
+			}
+		}
 
-		internal double RecyclerViewWidth { get; set; }
+		double _recyclerViewWidth;
+		internal double RecyclerViewWidth
+		{
+			get => _recyclerViewWidth;
+			set
+			{
+				if (Math.Abs(_recyclerViewWidth - value) > double.Epsilon)
+				{
+					_recyclerViewWidth = value;
+					InvalidateEmptyViewSize();
+				}
+			}
+		}
 
 		public EmptyViewAdapter(ItemsView itemsView)
 		{
@@ -360,6 +384,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 			// Default
 			return true;
+		}
+
+		void InvalidateEmptyViewSize()
+		{
+			if (EmptyView is null && EmptyViewTemplate is null)
+			{
+				return;
+			}
+
+			var emptyPosition = (Header is null && HeaderTemplate is null) ? 0 : 1;
+			NotifyItemChanged(emptyPosition);
 		}
 	}
 }
