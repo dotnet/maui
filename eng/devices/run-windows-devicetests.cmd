@@ -195,6 +195,9 @@ if %IS_PACKAGED%==1 (
     REM Build APP_URI once (escape ! as ^! due to delayed expansion)
     set "APP_URI=shell:AppsFolder\!PACKAGE_FAMILY_NAME!^!App"
     
+    REM NOTE: Labels cannot be inside if blocks in cmd.exe - causes "... was unexpected" error
+    REM Using goto to jump to labels that are outside the if block
+    
     if %IS_CONTROLS_TEST%==1 (
         REM Category-based test execution for Controls.DeviceTests
         echo Starting app for category discovery...
@@ -203,99 +206,18 @@ if %IS_PACKAGED%==1 (
         echo Category file path: %CATEGORY_FILE%
         powershell -Command "Start-Process '!APP_URI!' -ArgumentList '\"%TEST_RESULTS_FILE%\"', '-1'"
         
-        echo Waiting for category discovery (timeout: 60 seconds)...
-        
-        REM Wait loop - check every 10 seconds up to 60 seconds total
-        set WAIT_COUNT=0
-        :wait_for_categories
-        set /a WAIT_COUNT+=1
-        timeout /t 10 /nobreak >nul
-        
-        if exist "%CATEGORY_FILE%" (
-            echo Category file found after %WAIT_COUNT%0 seconds
-            goto :run_categories
-        )
-        
-        echo Category file not found after %WAIT_COUNT%0 seconds...
-        
-        REM Check if the app process is still running
-        powershell -Command "$processes = Get-Process | Where-Object { $_.ProcessName -like '*Controls.DeviceTests*' -or $_.ProcessName -like '*devicetests*' -or $_.ProcessName -like '*maui*' }; if ($processes) { $processes | Select-Object ProcessName, Id, StartTime, MainWindowTitle | Format-Table } else { Write-Host 'No matching app process found' }"
-        
-        if %WAIT_COUNT% LSS 6 goto :wait_for_categories
-        
-        REM After 60 seconds, gather diagnostics
-        echo Files in test results directory:
-        dir "%TEST_RESULTS_DIR%" 2>nul
-        
-        REM Check if any files were created in the upload directory
-        echo Files in upload root directory:
-        dir "%UPLOAD_ROOT%" 2>nul
-        
-        REM Check Windows Event Log for crashes
-        echo Checking Windows Event Log for application crashes...
-        powershell -Command "Get-WinEvent -FilterHashtable @{LogName='Application';Level=2;StartTime=(Get-Date).AddMinutes(-5)} -MaxEvents 10 -ErrorAction SilentlyContinue | Select-Object TimeCreated, ProviderName, Message | Format-List"
-        
-        REM Check Windows Event Log for any MAUI-related errors
-        echo Checking Windows Event Log for any .NET errors...
-        powershell -Command "Get-WinEvent -FilterHashtable @{LogName='Application';StartTime=(Get-Date).AddMinutes(-5)} -MaxEvents 20 -ErrorAction SilentlyContinue | Where-Object { $_.Message -like '*MAUI*' -or $_.Message -like '*devicetest*' -or $_.Message -like '*.NET*' -or $_.ProviderName -like '*.NET*' } | Select-Object TimeCreated, ProviderName, Message | Format-List"
-        
-        REM List all running processes to help debug
-        echo All running UWP/packaged app processes:
-        powershell -Command "Get-Process | Where-Object { $_.MainWindowTitle -ne '' } | Select-Object ProcessName, Id, MainWindowTitle | Format-Table"
-        
-        REM Display MAUI startup log if it exists
-        if exist "%TEST_RESULTS_DIR%\maui-test-startup.log" (
-            echo.
-            echo ========================================
-            echo MAUI Test Startup Log:
-            echo ========================================
-            type "%TEST_RESULTS_DIR%\maui-test-startup.log"
-            echo ========================================
-            echo.
-        )
-        
-        if not exist "%CATEGORY_FILE%" (
-            echo ERROR: Test categories file was not created during discovery phase
-            echo Expected location: %CATEGORY_FILE%
-            set EXIT_CODE=1
-            set SKIP_TO_RESULTS=1
-        )
-        
-        REM Cannot goto from inside nested parentheses - check flag here
-        if defined SKIP_TO_RESULTS goto :results
-        
-        :run_categories
-        
-        REM Read categories and run each one (or just the filtered one)
-        set CATEGORY_INDEX=0
-        for /f "usebackq delims=" %%c in ("%CATEGORY_FILE%") do (
-            set CATEGORY_NAME=%%c
-            set EXPECTED_RESULT_FILE=%TEST_RESULTS_DIR%\TestResults-%PACKAGE_ID_SAFE%_!CATEGORY_NAME!.xml
-            
-            REM If category filter is set, only run matching category
-            if defined CATEGORY_FILTER (
-                if /i "!CATEGORY_NAME!"=="%CATEGORY_FILTER%" (
-                    echo Running filtered category !CATEGORY_INDEX!: !CATEGORY_NAME!
-                    powershell -Command "Start-Process '!APP_URI!' -ArgumentList '\"%TEST_RESULTS_FILE%\"', '!CATEGORY_INDEX!'"
-                    call :wait_for_result "!EXPECTED_RESULT_FILE!" "!CATEGORY_NAME!"
-                ) else (
-                    echo Skipping category !CATEGORY_INDEX!: !CATEGORY_NAME! ^(filter: %CATEGORY_FILTER%^)
-                )
-            ) else (
-                echo Running category !CATEGORY_INDEX!: !CATEGORY_NAME!
-                powershell -Command "Start-Process '!APP_URI!' -ArgumentList '\"%TEST_RESULTS_FILE%\"', '!CATEGORY_INDEX!'"
-                call :wait_for_result "!EXPECTED_RESULT_FILE!" "!CATEGORY_NAME!"
-            )
-            
-            set /a CATEGORY_INDEX+=1
-        )
+        set DO_CONTROLS_WAIT=1
     ) else (
         REM Single test run for non-Controls projects
         echo Starting app for single test run...
         powershell -Command "Start-Process '!APP_URI!' -ArgumentList '\"%TEST_RESULTS_FILE%\"'"
         
         call :wait_for_result "%TEST_RESULTS_FILE%" "All Tests"
+        set DO_CONTROLS_WAIT=
     )
+    
+    REM Set flag so we can jump to wait loop after exiting the if block
+    REM (Cannot goto from inside nested parentheses in cmd.exe)
 ) else (
     REM ========================================
     REM Unpackaged Test Execution
@@ -376,6 +298,102 @@ if %IS_PACKAGED%==1 (
     
     popd
 )
+
+REM ========================================
+REM Jump to wait_for_categories if this is a packaged Controls test
+REM (Must be outside the if block to avoid "... was unexpected" cmd.exe error)
+REM ========================================
+if defined DO_CONTROLS_WAIT goto :wait_for_categories
+goto :results
+
+:wait_for_categories
+REM ========================================
+REM Wait for Category Discovery (Packaged Controls Tests)
+REM ========================================
+echo Waiting for category discovery (timeout: 60 seconds)...
+
+set WAIT_COUNT=0
+:wait_for_categories_loop
+set /a WAIT_COUNT+=1
+timeout /t 10 /nobreak >nul
+
+if exist "%CATEGORY_FILE%" (
+    echo Category file found after %WAIT_COUNT%0 seconds
+    goto :run_categories
+)
+
+echo Category file not found after %WAIT_COUNT%0 seconds...
+
+REM Check if the app process is still running
+powershell -Command "$processes = Get-Process | Where-Object { $_.ProcessName -like '*Controls.DeviceTests*' -or $_.ProcessName -like '*devicetests*' -or $_.ProcessName -like '*maui*' }; if ($processes) { $processes | Select-Object ProcessName, Id, StartTime, MainWindowTitle | Format-Table } else { Write-Host 'No matching app process found' }"
+
+if %WAIT_COUNT% LSS 6 goto :wait_for_categories_loop
+
+REM After 60 seconds, gather diagnostics
+echo Files in test results directory:
+dir "%TEST_RESULTS_DIR%" 2>nul
+
+REM Check if any files were created in the upload directory
+echo Files in upload root directory:
+dir "%UPLOAD_ROOT%" 2>nul
+
+REM Check Windows Event Log for crashes
+echo Checking Windows Event Log for application crashes...
+powershell -Command "Get-WinEvent -FilterHashtable @{LogName='Application';Level=2;StartTime=(Get-Date).AddMinutes(-5)} -MaxEvents 10 -ErrorAction SilentlyContinue | Select-Object TimeCreated, ProviderName, Message | Format-List"
+
+REM Check Windows Event Log for any MAUI-related errors
+echo Checking Windows Event Log for any .NET errors...
+powershell -Command "Get-WinEvent -FilterHashtable @{LogName='Application';StartTime=(Get-Date).AddMinutes(-5)} -MaxEvents 20 -ErrorAction SilentlyContinue | Where-Object { $_.Message -like '*MAUI*' -or $_.Message -like '*devicetest*' -or $_.Message -like '*.NET*' -or $_.ProviderName -like '*.NET*' } | Select-Object TimeCreated, ProviderName, Message | Format-List"
+
+REM List all running processes to help debug
+echo All running UWP/packaged app processes:
+powershell -Command "Get-Process | Where-Object { $_.MainWindowTitle -ne '' } | Select-Object ProcessName, Id, MainWindowTitle | Format-Table"
+
+REM Display MAUI startup log if it exists
+if exist "%TEST_RESULTS_DIR%\maui-test-startup.log" (
+    echo.
+    echo ========================================
+    echo MAUI Test Startup Log:
+    echo ========================================
+    type "%TEST_RESULTS_DIR%\maui-test-startup.log"
+    echo ========================================
+    echo.
+)
+
+if not exist "%CATEGORY_FILE%" (
+    echo ERROR: Test categories file was not created during discovery phase
+    echo Expected location: %CATEGORY_FILE%
+    set EXIT_CODE=1
+    goto :results
+)
+
+:run_categories
+REM ========================================
+REM Run Categories (Packaged Controls Tests)
+REM ========================================
+set CATEGORY_INDEX=0
+for /f "usebackq delims=" %%c in ("%CATEGORY_FILE%") do (
+    set CATEGORY_NAME=%%c
+    set EXPECTED_RESULT_FILE=%TEST_RESULTS_DIR%\TestResults-%PACKAGE_ID_SAFE%_!CATEGORY_NAME!.xml
+    
+    REM If category filter is set, only run matching category
+    if defined CATEGORY_FILTER (
+        if /i "!CATEGORY_NAME!"=="%CATEGORY_FILTER%" (
+            echo Running filtered category !CATEGORY_INDEX!: !CATEGORY_NAME!
+            powershell -Command "Start-Process '!APP_URI!' -ArgumentList '\"%TEST_RESULTS_FILE%\"', '!CATEGORY_INDEX!'"
+            call :wait_for_result "!EXPECTED_RESULT_FILE!" "!CATEGORY_NAME!"
+        ) else (
+            echo Skipping category !CATEGORY_INDEX!: !CATEGORY_NAME! ^(filter: %CATEGORY_FILTER%^)
+        )
+    ) else (
+        echo Running category !CATEGORY_INDEX!: !CATEGORY_NAME!
+        powershell -Command "Start-Process '!APP_URI!' -ArgumentList '\"%TEST_RESULTS_FILE%\"', '!CATEGORY_INDEX!'"
+        call :wait_for_result "!EXPECTED_RESULT_FILE!" "!CATEGORY_NAME!"
+    )
+    
+    set /a CATEGORY_INDEX+=1
+)
+goto :results
 
 :results
 REM ========================================
