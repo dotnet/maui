@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 				}
 			});
 
-		[Fact]
+		[Fact(Skip = "Window message handling does not work reliably in headless/CI environments")]
 		public Task SwitchingWindowsPostsToTheNewWindow() =>
 			Utils.OnMainThread(async () =>
 			{

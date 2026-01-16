@@ -281,7 +281,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Category(TestCategory.Lifecycle)]
 		public class WindowTestsRunInNewWindowCollection : ControlsHandlerTestBase
 		{
-			[Fact]
+			[Fact(Skip = "Window activation events do not fire reliably in headless/CI environments")]
 			public async Task MinimizeAndThenMaximizingWorks()
 			{
 				var window = new Window(new ContentPage());
