@@ -10,7 +10,7 @@ namespace Microsoft.Maui.IntegrationTests
 
 	public abstract class BaseBuildTest
 	{
-		public const string DotNetCurrent = "net10.0";
+		public const string DotNetCurrent = "net11.0";
 		public const string DotNetPrevious = "net10.0";
 
 		// Versions of .NET MAUI that are used when testing the <MauiVersion> property. These should preferrably
