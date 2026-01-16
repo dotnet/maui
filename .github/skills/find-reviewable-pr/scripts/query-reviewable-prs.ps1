@@ -374,7 +374,7 @@ function Get-PRCategory {
     }
     
     # Check if recent (within 2 weeks)
-    $createdDate = [DateTime]::Parse($pr.createdAt)
+    $createdDate = [DateTime]::Parse($pr.createdAt, [System.Globalization.CultureInfo]::InvariantCulture)
     if ($createdDate -gt (Get-Date).AddDays(-14)) {
         $categories += "recent"
     }
@@ -479,10 +479,10 @@ foreach ($pr in $allPRs) {
         Milestone = if ($pr.milestone) { $pr.milestone.title } else { "" }
         Categories = $categories
         Labels = $labelNames
-        CreatedAt = [DateTime]::Parse($pr.createdAt)
-        UpdatedAt = [DateTime]::Parse($pr.updatedAt)
-        Age = [Math]::Round(((Get-Date) - [DateTime]::Parse($pr.createdAt)).TotalDays)
-        Updated = [Math]::Round(((Get-Date) - [DateTime]::Parse($pr.updatedAt)).TotalDays)
+        CreatedAt = [DateTime]::Parse($pr.createdAt, [System.Globalization.CultureInfo]::InvariantCulture)
+        UpdatedAt = [DateTime]::Parse($pr.updatedAt, [System.Globalization.CultureInfo]::InvariantCulture)
+        Age = [Math]::Round(((Get-Date) - [DateTime]::Parse($pr.createdAt, [System.Globalization.CultureInfo]::InvariantCulture)).TotalDays)
+        Updated = [Math]::Round(((Get-Date) - [DateTime]::Parse($pr.updatedAt, [System.Globalization.CultureInfo]::InvariantCulture)).TotalDays)
         Files = $pr.changedFiles
         Additions = $pr.additions
         Deletions = $pr.deletions
@@ -519,10 +519,10 @@ foreach ($pr in $docsMauiPRs) {
         Milestone = if ($pr.milestone) { $pr.milestone.title } else { "" }
         Categories = $categories
         Labels = $labelNames
-        CreatedAt = [DateTime]::Parse($pr.createdAt)
-        UpdatedAt = [DateTime]::Parse($pr.updatedAt)
-        Age = [Math]::Round(((Get-Date) - [DateTime]::Parse($pr.createdAt)).TotalDays)
-        Updated = [Math]::Round(((Get-Date) - [DateTime]::Parse($pr.updatedAt)).TotalDays)
+        CreatedAt = [DateTime]::Parse($pr.createdAt, [System.Globalization.CultureInfo]::InvariantCulture)
+        UpdatedAt = [DateTime]::Parse($pr.updatedAt, [System.Globalization.CultureInfo]::InvariantCulture)
+        Age = [Math]::Round(((Get-Date) - [DateTime]::Parse($pr.createdAt, [System.Globalization.CultureInfo]::InvariantCulture)).TotalDays)
+        Updated = [Math]::Round(((Get-Date) - [DateTime]::Parse($pr.updatedAt, [System.Globalization.CultureInfo]::InvariantCulture)).TotalDays)
         Files = $pr.changedFiles
         Additions = $pr.additions
         Deletions = $pr.deletions
