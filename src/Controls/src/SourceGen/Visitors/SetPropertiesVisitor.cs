@@ -132,7 +132,7 @@ class SetPropertiesVisitor : IXamlNodeVisitor
 		//IMarkupExtension or IValueProvider => ProvideValue()
 		// For Setters, only inline-initialized instances should call TryProvideValue; otherwise
 		// the normal property assignments should remain intact.
-		if (StopOnStyle && node.IsStyle(Context) && node.Properties.ContainsKey(XmlName._StyleContent))
+		if (StopOnStyle && node.IsStyle(Context))
 			SetStyleNonContentProperties(node);
 		var isInlineInitializedSetter = IsInlineInitializedSetter(node, out var isSetter);
 		if (!isSetter || isInlineInitializedSetter)
