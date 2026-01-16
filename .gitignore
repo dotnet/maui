@@ -387,3 +387,8 @@ temp
 # TypeScript source map files (generated artifacts)
 # Note: CSS map files in templates (e.g., bootstrap) are intentionally tracked
 *.js.map
+
+# PR helper files (temporary)
+PR_DESCRIPTION.md
+CREATE_PR_INSTRUCTIONS.md
+create-pr.sh
