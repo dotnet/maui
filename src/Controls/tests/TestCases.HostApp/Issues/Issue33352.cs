@@ -617,7 +617,7 @@ public class Issue33352 : ContentPage
 			_exceptionOccurred = true;
 			_exceptionMessage = ex.Message;
 		}
-		catch (Exception)
+		catch (Exception ex)
 		{
 			_statusLabel.Text = $"Exception: {ex.GetType().Name}";
 			_resultLabel.Text = $"{ex.GetType().Name}: {ex.Message}";
