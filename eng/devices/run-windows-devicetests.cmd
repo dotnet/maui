@@ -411,7 +411,7 @@ set MAUI_LOG_TEMP=%TEMP%\maui-test-startup.log
 if exist "%MAUI_LOG_FILE%" (
     echo.
     echo ========================================
-    echo MAUI Test Startup Log (from results dir):
+    echo MAUI Test Startup Log ^(from results dir^):
     echo ========================================
     type "%MAUI_LOG_FILE%"
     echo ========================================
@@ -419,7 +419,7 @@ if exist "%MAUI_LOG_FILE%" (
 ) else if exist "%MAUI_LOG_TEMP%" (
     echo.
     echo ========================================
-    echo MAUI Test Startup Log (from TEMP dir):
+    echo MAUI Test Startup Log ^(from TEMP dir^):
     echo ========================================
     type "%MAUI_LOG_TEMP%"
     echo ========================================
