@@ -32,8 +32,19 @@ stages:
         clean: true
 
       - pwsh: |
-          $filter = "--filter `"$(testFilter)`""
-          & ${{ job.buildScript }} -test -configuration ${{ parameters.buildConfig }} -projects "${{ parameters.integrationTestsProjects }}" /p:ProvisioningMauiPacks=true /p:ArchiveTests=false /p:TreatWarningsAsErrors=$(TreatWarningsAsErrors) "/p:TestRunnerAdditionalArguments=$filter" /bl:$(Build.Arcade.LogsPath)${{ parameters.buildConfig }}/buildtasks_os.binlog $(_OfficialBuildIdArgs)
+          $testFilterArg = '--filter "$(testFilter)"'
+          $args = @(
+            '-test'
+            '-configuration', '${{ parameters.buildConfig }}'
+            '-projects', '${{ parameters.integrationTestsProjects }}'
+            '/p:ProvisioningMauiPacks=true'
+            '/p:ArchiveTests=false'
+            '/p:TreatWarningsAsErrors=$(TreatWarningsAsErrors)'
+            "/p:TestRunnerAdditionalArguments=$testFilterArg"
+            '/bl:$(Build.Arcade.LogsPath)${{ parameters.buildConfig }}/buildtasks_os.binlog'
+            '$(_OfficialBuildIdArgs)'
+          )
+          & ${{ job.buildScript }} @args
         displayName: 🛠️ Run Integration Tests - $(testIdentifier) ${{ job.pool.os }}
         ${{ if or(eq(job.testCategory, 'RunOniOS'), startsWith(job.testName, 'RunOniOS')) }}:
           env:
