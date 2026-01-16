@@ -13,7 +13,9 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../../docs/Microsoft.Maui.Controls/ShellContent.xml" path="Type[@FullName='Microsoft.Maui.Controls.ShellContent']/Docs/*" />
 	[ContentProperty(nameof(Content))]
 	[TypeConverter(typeof(ShellContentConverter))]
+#if WINDOWS
 	[ElementHandler(typeof(Handlers.ShellContentHandler))]
+#endif
 	public class ShellContent : BaseShellItem, IShellContentController, IVisualTreeElement
 	{
 		static readonly BindablePropertyKey MenuItemsPropertyKey =
