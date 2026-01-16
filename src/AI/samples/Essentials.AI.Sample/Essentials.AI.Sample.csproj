@@ -23,8 +23,32 @@
     <ApplicationId>com.microsoft.maui.essentials.ai</ApplicationId>
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>
-    <WindowsPackageType>None</WindowsPackageType>
+    <!-- Changed to MSIX to enable systemAIModels capability declaration -->
+    <WindowsPackageType>MSIX</WindowsPackageType>
   </PropertyGroup>
+
+  <!-- Windows Copilot Runtime requires packaged MSIX deployment -->
+  <PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">
+    <GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
+    <!-- Disable signing - we'll sign manually after build -->
+    <AppxPackageSigningEnabled>false</AppxPackageSigningEnabled>
+    <AppxAutoIncrementPackageRevision>true</AppxAutoIncrementPackageRevision>
+  </PropertyGroup>
+
+  <!-- Windows Copilot Runtime Limited Access Feature (LAF) Configuration -->
+  <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
+    <!-- LAF Token and Publisher ID can be set via environment variables:
+         LAF_TOKEN and LAF_PUBLISHER_ID
+         
+         These are OPTIONAL for development/testing if you have:
+         - The systemAIModels capability in Package.appxmanifest (required)
+         - Windows Copilot Runtime enabled on your Windows 11 24H2+ device
+         
+         For production/distribution, you may need to register with Microsoft
+         for LAF credentials and set these environment variables during build. -->
+    <AssemblyMetadata Include="LAF_TOKEN" Value="$(LAF_TOKEN)" Condition="'$(LAF_TOKEN)' != ''" />
+    <AssemblyMetadata Include="LAF_PUBLISHER_ID" Value="$(LAF_PUBLISHER_ID)" Condition="'$(LAF_PUBLISHER_ID)' != ''" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />

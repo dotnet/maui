@@ -74,6 +74,53 @@ public static class MauiProgram
 		builder.Services.AddSingleton<IEmbeddingGenerator<string, Embedding<float>>, NLEmbeddingGenerator>();
 
 #pragma warning restore CA1416
+#elif WINDOWS
+#pragma warning disable CA1416 // Validate platform compatibility - this sample requires Windows 10.0.26100.0+
+
+		// Register the base Phi Silica client
+		builder.Services.AddSingleton<PhiSilicaChatClient>();
+
+		// Register the Phi Silica client as IChatClient to allow direct use
+		builder.Services.AddSingleton<IChatClient>(sp =>
+		{
+			var phiClient = sp.GetRequiredService<PhiSilicaChatClient>();
+			var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
+			return phiClient
+				.AsBuilder()
+				.UseLogging(loggerFactory)
+				.Build();
+		});
+
+		// Register the Agent Framework wrapper as "local-model"
+		builder.Services.AddKeyedSingleton<IChatClient>("local-model", (sp, _) =>
+		{
+			var phiClient = sp.GetRequiredService<PhiSilicaChatClient>();
+			var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
+			return phiClient
+				.AsBuilder()
+				.UseLogging(loggerFactory)
+				// This prevents double tool invocation when using Microsoft Agent Framework
+				// TODO: workaround for https://github.com/dotnet/extensions/issues/7204
+				.Use(cc => new NonFunctionInvokingChatClient(cc, loggerFactory, sp))
+				.Build();
+		});
+
+		// Register "cloud-model" with buffering
+		builder.Services.AddKeyedSingleton<IChatClient>("cloud-model", (sp, _) =>
+		{
+			// TODO: Add OpenAI/Azure support for better translation quality
+			var phiClient = sp.GetRequiredService<PhiSilicaChatClient>();
+			var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
+			return phiClient
+				.AsBuilder()
+				.UseLogging(loggerFactory)
+				.Use(cc => new BufferedChatClient(cc))
+				.Build();
+		});
+
+		builder.Services.AddSingleton<IEmbeddingGenerator<string, Embedding<float>>, PhiSilicaEmbeddingGenerator>();
+
+#pragma warning restore CA1416
 #endif
 
 		// Register AI agents and workflow
