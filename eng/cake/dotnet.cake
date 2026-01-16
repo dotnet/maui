@@ -11,7 +11,7 @@ string MSBuildExe = Argument("msbuild", EnvironmentVariable("MSBUILD_EXE", ""));
 string nugetSource = Argument("nugetsource", "");
 string officialBuildId = Argument("officialbuildid", "");
 
-string DefaultDotnetVersion = Argument("targetFrameworkVersion", EnvironmentVariable("TARGET_FRAMEWORK_VERSION") ?? "net10.0");
+string DefaultDotnetVersion = Argument("targetFrameworkVersion", EnvironmentVariable("TARGET_FRAMEWORK_VERSION") ?? "net11.0");
 
 string testFilter = Argument("test-filter", EnvironmentVariable("TEST_FILTER"));
 

@@ -47,31 +47,62 @@ variables:
 - template: /eng/common/templates/variables/pool-providers.yml@self
 - template: /eng/pipelines/common/variables.yml@self
 - template: /eng/pipelines/arcade/variables.yml@self
+# Include Helix access token for internal builds
+- ${{ if eq(variables['System.TeamProject'], 'internal') }}:
+  - group: DotNet-HelixApi-Access
 
 parameters:
 
-- name: windowsPool
+# Internal pools (dnceng)
+- name: windowsPoolInternal
+  type: object
+  default:
+    name: NetCore1ESPool-Internal
+    demands:
+        - ImageOverride -equals 1es-windows-2022
+    image: 1es-windows-2022
+    os: Windows
+
+- name: macOSTestPoolInternal
   type: object
   default:
     name: Azure Pipelines
-    vmImage: windows-2022
+    vmImage: macOS-15
 
-- name: macOSTestPool
+- name: macOSPoolInternal
+  type: object
+  default:
+    name: Azure Pipelines
+    vmImage: macOS-15
+
+# Public pools (dnceng-public)
+- name: windowsPoolPublic
+  type: object
+  default:
+    name: NetCore-Public
+    demands:
+        - ImageOverride -equals 1es-windows-2022-open
+    image: 1es-windows-2022-open
+    os: Windows
+
+- name: macOSTestPoolPublic
   type: object
   default:
     name: MAUI
     vmImage: MAUI
 
-- name: macOSPool
+- name: macOSPoolPublic
   type: object
   default:
     name: MAUI
     vmImage: MAUI
+    demands:
+      - Agent.OSArchitecture -equals ARM64
 
 - name: targetFrameworkVersions
   type: object
   default:
-  - tfm: net10.0
+  - tfm: net11.0
 
 stages:
 - ${{ each targetFrameworkVersion in parameters.targetFrameworkVersions }}:
@@ -79,10 +110,17 @@ stages:
   # Use Helix for iOS / Android and MacCatalyst Device Tests
   - template: /eng/pipelines/arcade/stage-device-tests.yml@self
     parameters:
-      buildPool: ${{ parameters.macOSPool }}
-      testPool: ${{ parameters.macOSTestPool }}
-      runAsPublic: true
-      TargetFrameworkVersion: net11.0
+      # Select pools based on pipeline - internal vs public
+      ${{ if eq(variables['System.TeamProject'], 'internal') }}:
+        buildPool: ${{ parameters.macOSPoolInternal }}
+        testPool: ${{ parameters.windowsPoolInternal }}
+        runAsPublic: false
+        HelixAccessToken: $(HelixApiAccessToken)
+      ${{ else }}:
+        buildPool: ${{ parameters.macOSPoolPublic }}
+        testPool: ${{ parameters.windowsPoolPublic }}
+        runAsPublic: true
+      TargetFrameworkVersion: ${{ targetFrameworkVersion.tfm }}
       prepareSteps:
       - template: /eng/pipelines/common/provision.yml@self
         parameters:
@@ -99,7 +137,10 @@ stages:
   # Just use the old way for Windows Device Tests
   - template: common/device-tests.yml
     parameters:
-      windowsPool: ${{ parameters.windowsPool }}
+      ${{ if eq(variables['System.TeamProject'], 'internal') }}:
+        windowsPool: ${{ parameters.windowsPoolInternal }}
+      ${{ else }}:
+        windowsPool: ${{ parameters.windowsPoolPublic }}
       targetFrameworkVersion: ${{ targetFrameworkVersion }}
       windowsVersions: [ 'packaged', 'unpackaged' ]
       skipProvisioning: true

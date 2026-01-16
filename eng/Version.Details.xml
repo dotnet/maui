@@ -8,30 +8,30 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>7408f8cf31029ec836004ed244df7287beee2827</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="36.1.99-ci.main.77">
+    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="36.1.99-ci.main.92">
       <Uri>https://github.com/dotnet/android</Uri>
-      <Sha>92972825f422047de6d5eb45c6bf6ff8cd0dc022</Sha>
+      <Sha>097742b3d08fcf96472e20f05794779a4b05157a</Sha>
     </Dependency>
     <!-- Previous .NET Android version(s) -->
-    <Dependency Name="Microsoft.NET.Sdk.Android.Manifest-9.0.100" Version="35.0.105" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="Microsoft.NET.Sdk.Android.Manifest-10.0.100" Version="36.1.2" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/android</Uri>
-      <Sha>1dcfb6f8779c33b6f768c996495cb90ecd729329</Sha>
+      <Sha>01024bb616e7b80417a2c6d320885bfdb956f20a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.MacCatalyst.Sdk.net11.0_26.2" Version="26.2.11231-ci.net11-0">
+    <Dependency Name="Microsoft.MacCatalyst.Sdk.net11.0_26.2" Version="26.2.11233-ci.net11-0">
       <Uri>https://github.com/dotnet/macios</Uri>
-      <Sha>aced0a19fabe1174f8ceb2f96570eea356411a50</Sha>
+      <Sha>13be6a67ad7fb5968639d67a357bd04f892ed381</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.macOS.Sdk.net11.0_26.2" Version="26.2.11231-ci.net11-0">
+    <Dependency Name="Microsoft.macOS.Sdk.net11.0_26.2" Version="26.2.11233-ci.net11-0">
       <Uri>https://github.com/dotnet/macios</Uri>
-      <Sha>aced0a19fabe1174f8ceb2f96570eea356411a50</Sha>
+      <Sha>13be6a67ad7fb5968639d67a357bd04f892ed381</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.iOS.Sdk.net11.0_26.2" Version="26.2.11231-ci.net11-0">
+    <Dependency Name="Microsoft.iOS.Sdk.net11.0_26.2" Version="26.2.11233-ci.net11-0">
       <Uri>https://github.com/dotnet/macios</Uri>
-      <Sha>aced0a19fabe1174f8ceb2f96570eea356411a50</Sha>
+      <Sha>13be6a67ad7fb5968639d67a357bd04f892ed381</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.tvOS.Sdk.net11.0_26.2" Version="26.2.11231-ci.net11-0">
+    <Dependency Name="Microsoft.tvOS.Sdk.net11.0_26.2" Version="26.2.11233-ci.net11-0">
       <Uri>https://github.com/dotnet/macios</Uri>
-      <Sha>aced0a19fabe1174f8ceb2f96570eea356411a50</Sha>
+      <Sha>13be6a67ad7fb5968639d67a357bd04f892ed381</Sha>
     </Dependency>
     <!-- Previous .NET iOS version(s) -->
     <!-- This is a subscription of the .NET 10 latest stable versions of our packages -->
@@ -175,17 +175,17 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>7408f8cf31029ec836004ed244df7287beee2827</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Common" Version="10.0.0-prerelease.25575.2">
+    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Common" Version="11.0.0-prerelease.26062.2">
       <Uri>https://github.com/dotnet/xharness</Uri>
-      <Sha>bdf0f92540d68762bb028b8cb859146048f3c356</Sha>
+      <Sha>185cb0f85ff4c3cb06b26610b068a079565893aa</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Xunit" Version="10.0.0-prerelease.25575.2">
+    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Xunit" Version="11.0.0-prerelease.26062.2">
       <Uri>https://github.com/dotnet/xharness</Uri>
-      <Sha>bdf0f92540d68762bb028b8cb859146048f3c356</Sha>
+      <Sha>185cb0f85ff4c3cb06b26610b068a079565893aa</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XHarness.CLI" Version="10.0.0-prerelease.25575.2">
+    <Dependency Name="Microsoft.DotNet.XHarness.CLI" Version="11.0.0-prerelease.26062.2">
       <Uri>https://github.com/dotnet/xharness</Uri>
-      <Sha>bdf0f92540d68762bb028b8cb859146048f3c356</Sha>
+      <Sha>185cb0f85ff4c3cb06b26610b068a079565893aa</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
