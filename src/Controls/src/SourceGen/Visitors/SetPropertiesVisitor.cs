@@ -113,7 +113,7 @@ class SetPropertiesVisitor : IXamlNodeVisitor
 			Writer.WriteLine($"{variable.ValueAccessor}.LoadTemplate = () =>");
 			using (PrePost.NewBlock(Writer, begin: "{", end: "};"))
 			{
-				var templateContext = new SourceGenContext(Writer, Context.Compilation, Context.SourceProductionContext, Context.XmlnsCache, Context.TypeCache, Context.RootType!, null, Context.ProjectItem)
+				var templateContext = new SourceGenContext(Writer, Context.Compilation, Context.SourceProductionContext, Context.XmlnsCache, Context.TypeCache, Context.RootType!, null, Context.ProjectItem, Context.IsLazyStyleCodegenEnabled)
 				{
 					ParentContext = Context,
 				};
@@ -244,7 +244,7 @@ class SetPropertiesVisitor : IXamlNodeVisitor
 		Writer.WriteLine($"global::System.Action<global::Microsoft.Maui.Controls.Style, global::Microsoft.Maui.Controls.BindableObject> {initializerVariableName} = (__style, __target) =>");
 		using (PrePost.NewBlock(Writer, begin: "{", end: "};"))
 		{
-			var styleContext = new SourceGenContext(Writer, Context.Compilation, Context.SourceProductionContext, Context.XmlnsCache, Context.TypeCache, Context.RootType!, null, Context.ProjectItem)
+			var styleContext = new SourceGenContext(Writer, Context.Compilation, Context.SourceProductionContext, Context.XmlnsCache, Context.TypeCache, Context.RootType!, null, Context.ProjectItem, Context.IsLazyStyleCodegenEnabled)
 			{
 				ParentContext = Context,
 			};
