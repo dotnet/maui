@@ -8,6 +8,8 @@
     <MauiTestProject>true</MauiTestProject>
     <IsPackable>false</IsPackable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Enable CSS support even though this project doesn't have MauiCss items, since some tests use CSS -->
+    <MauiCssEnabled>true</MauiCssEnabled>
     <!-- On CI, build universal binaries for iOS/MacCatalyst to support both x64 and arm64 test agents -->
     <RuntimeIdentifiers Condition="$(TargetFramework.Contains('-maccatalyst')) and ('$(CI)' == 'true' or '$(TF_BUILD)' == 'true')">maccatalyst-x64;maccatalyst-arm64</RuntimeIdentifiers>
     <RuntimeIdentifiers Condition="$(TargetFramework.Contains('-ios')) and ('$(CI)' == 'true' or '$(TF_BUILD)' == 'true')">iossimulator-x64;iossimulator-arm64</RuntimeIdentifiers>
