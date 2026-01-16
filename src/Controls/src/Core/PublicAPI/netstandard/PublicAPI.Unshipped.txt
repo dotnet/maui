@@ -1,5 +1,5 @@
 #nullable enable
 ~static Microsoft.Maui.Controls.VisualStateManager.GetVisualStateGroups(Microsoft.Maui.Controls.VisualElement visualElement) -> Microsoft.Maui.Controls.VisualStateGroupList
 *REMOVED*~static Microsoft.Maui.Controls.VisualStateManager.GetVisualStateGroups(Microsoft.Maui.Controls.VisualElement visualElement) -> System.Collections.Generic.IList<Microsoft.Maui.Controls.VisualStateGroup>
-~Microsoft.Maui.Controls.Style.Initializer.set -> void
+~Microsoft.Maui.Controls.Style.LazyInitialization.set -> void
 ~Microsoft.Maui.Controls.Style.Style(string assemblyQualifiedTargetTypeName) -> void

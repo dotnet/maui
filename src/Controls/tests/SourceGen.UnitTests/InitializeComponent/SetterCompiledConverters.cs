@@ -52,11 +52,11 @@ public partial class TestPage : ContentPage
 		Assert.Contains("resourceDictionary[\"testStyle\"]", generated, StringComparison.Ordinal);
 		Assert.Contains("Label.FontSizeProperty", generated, StringComparison.Ordinal);
 		Assert.Contains("Label.TextColorProperty", generated, StringComparison.Ordinal);
-		Assert.Contains("style.Initializer = styleInitializer", generated, StringComparison.Ordinal);
+		Assert.Contains("style.LazyInitialization = styleInitializer", generated, StringComparison.Ordinal);
 		
 		// Verify lazy behavior: Initializer is set but NOT called immediately
 		Assert.DoesNotContain("styleInitializer(style, new global::Microsoft.Maui.Controls.Label())", generated, StringComparison.Ordinal);
-		Assert.DoesNotContain("style.Initializer = null!", generated, StringComparison.Ordinal);
+		Assert.DoesNotContain("style.LazyInitialization = null!", generated, StringComparison.Ordinal);
 		
 		// Explicitly verify that XamlTypeResolver is not used anywhere in the generated code
 		// This is critical because XamlTypeResolver is not AOT-compatible
