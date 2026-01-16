@@ -9,8 +9,9 @@ using static Microsoft.Maui.Controls.SourceGen.NodeSGExtensions;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
-class SourceGenContext(IndentedTextWriter writer, Compilation compilation, SourceProductionContext sourceProductionContext, AssemblyAttributes assemblyCaches, IDictionary<XmlType, INamedTypeSymbol> typeCache, ITypeSymbol rootType, ITypeSymbol? baseType, ProjectItem projectItem)
+class SourceGenContext(IndentedTextWriter writer, Compilation compilation, SourceProductionContext sourceProductionContext, AssemblyAttributes assemblyCaches, IDictionary<XmlType, INamedTypeSymbol> typeCache, ITypeSymbol rootType, ITypeSymbol? baseType, ProjectItem projectItem, bool isLazyStyleCodegenEnabled = true)
 {
+	public bool IsLazyStyleCodegenEnabled { get; } = isLazyStyleCodegenEnabled;
 	internal static SourceGenContext CreateNewForTests() => new SourceGenContext(
 		null!,
 		null!,
@@ -19,7 +20,8 @@ class SourceGenContext(IndentedTextWriter writer, Compilation compilation, Sourc
 		new Dictionary<XmlType, INamedTypeSymbol>(),
 		null!,
 		null,
-		null!);
+		null!,
+		isLazyStyleCodegenEnabled: true);
 
 	public SourceProductionContext SourceProductionContext => sourceProductionContext;
 	public IndentedTextWriter Writer => writer;
