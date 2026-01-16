@@ -44,6 +44,29 @@ namespace Microsoft.Maui.Hosting.Internal
 			=> GetHandler(typeof(T), context);
 
 		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+		public Type? GetConstructibleHandlerType(Type iview)
+		{
+			// Check if there is a handler registered for this EXACT type -- allows overriding the default handler
+			if (TryGetRegisteredHandlerType(iview, out Type? type))
+			{
+				return type;
+			}
+
+			if (TryGetElementHandlerAttribute(iview, out var elementHandlerAttribute))
+			{
+				throw new InvalidOperationException($"The handler type {elementHandlerAttribute.HandlerType} for {iview} cannot be constructed by the factory. " +
+					$"Handlers created via {nameof(ElementHandlerAttribute)} must be created using the attribute's {nameof(ElementHandlerAttribute.CreateHandler)} method.");
+			}
+
+			if (TryGetVirtualViewHandlerServiceType(iview) is Type serviceType
+				&& TryGetRegisteredHandlerType(serviceType, out type))
+			{
+				return type;
+			}
+
+			return null;
+		}
+
 		public Type? GetHandlerType(Type iview)
 		{
 			// Check if there is a handler registered for this EXACT type -- allows overriding the default handler
@@ -54,7 +77,7 @@ namespace Microsoft.Maui.Hosting.Internal
 
 			if (TryGetElementHandlerAttribute(iview, out var elementHandlerAttribute))
 			{
-				return GetHandlerType(elementHandlerAttribute);
+				return elementHandlerAttribute.HandlerType;
 			}
 
 			if (TryGetVirtualViewHandlerServiceType(iview) is Type serviceType
@@ -64,16 +87,6 @@ namespace Microsoft.Maui.Hosting.Internal
 			}
 
 			return null;
-
-			[UnconditionalSuppressMessage("ReflectionAnalysis", "IL2073",
-				Justification = "There is no need to create instances of the handlers for types with this attribute using reflection."
-					+ "We intentionally avoid annotating these handler types with DAM.")]
-			[UnconditionalSuppressMessage("TrimAnalysis", "IL2068",
-				Justification = "There is no need to create instances of the handlers for types with this attribute using reflection."
-					+ "We intentionally avoid annotating these handler types with DAM.")]
-			[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
-			static Type GetHandlerType(ElementHandlerAttribute elementHandlerAttribute)
-				=> elementHandlerAttribute.HandlerType;
 		}
 
 		private bool TryGetRegisteredHandlerType(Type serviceType, [NotNullWhen(returnValue: true)] out Type? handlerType)
