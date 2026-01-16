@@ -1,16 +1,13 @@
 #nullable disable
 using System;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <summary>A <see cref="MultiPage{T}"/> that displays an array of tabs across the top of the screen, each of which loads content onto the screen.</summary>
 	[ContentProperty(nameof(Children))]
-#if IOS || MACCATALYST
 	[ElementHandler(typeof(Handlers.Compatibility.NavigationRenderer))]
-#elif WINDOWS || ANDROID || TIZEN
-	[ElementHandler(typeof(TabbedViewHandler))]
-#endif
 	public partial class TabbedPage : MultiPage<Page>, IBarElement, IElementConfiguration<TabbedPage>, ITabbedView
 	{
 		/// <summary>Bindable property for <see cref="BarBackgroundColor"/>.</summary>

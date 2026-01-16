@@ -13,6 +13,8 @@ using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 
+using Microsoft.Maui.Handlers;
+
 namespace Microsoft.Maui.Controls
 {
 	/// <summary>

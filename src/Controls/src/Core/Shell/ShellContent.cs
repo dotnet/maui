@@ -6,6 +6,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Reflection;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
@@ -14,9 +15,7 @@ namespace Microsoft.Maui.Controls
 	/// </summary>
 	[ContentProperty(nameof(Content))]
 	[TypeConverter(typeof(ShellContentConverter))]
-#if WINDOWS
 	[ElementHandler(typeof(Handlers.ShellContentHandler))]
-#endif
 	public class ShellContent : BaseShellItem, IShellContentController, IVisualTreeElement
 	{
 		static readonly BindablePropertyKey MenuItemsPropertyKey =
