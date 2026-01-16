@@ -1,16 +1,13 @@
 #nullable disable
 using System;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/TabbedPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.TabbedPage']/Docs/*" />
 	[ContentProperty(nameof(Children))]
-#if IOS || MACCATALYST
 	[ElementHandler(typeof(Handlers.Compatibility.NavigationRenderer))]
-#elif WINDOWS || ANDROID || TIZEN
-	[ElementHandler(typeof(TabbedViewHandler))]
-#endif
 	public partial class TabbedPage : MultiPage<Page>, IBarElement, IElementConfiguration<TabbedPage>, ITabbedView
 	{
 		/// <summary>Bindable property for <see cref="BarBackgroundColor"/>.</summary>

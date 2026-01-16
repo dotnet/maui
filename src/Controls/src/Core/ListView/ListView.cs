@@ -12,21 +12,13 @@ using Microsoft.Maui.Controls.Xaml;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <summary>An <see cref="Microsoft.Maui.Controls.ItemsView{T}"/> that displays a collection of data as a vertical list.</summary>
 	[Obsolete("ListView is deprecated. Please use CollectionView instead.")]
-#if WINDOWS || IOS || MACCATALYST || TIZEN
-#pragma warning disable CS0618 // Type or member is obsolete
 	[ElementHandler(typeof(Handlers.Compatibility.ListViewRenderer))]
-#pragma warning restore CS0618 // Type or member is obsolete
-#endif
-#if ANDROID
-#pragma warning disable CS0618 // Type or member is obsolete
-	[ElementHandlerWithAndroidContext<Handlers.Compatibility.ListViewRenderer>]
-#pragma warning restore CS0618 // Type or member is obsolete
-#endif
 	public class ListView : ItemsView<Cell>, IListViewController, IElementConfiguration<ListView>, IVisualTreeElement
 	{
 		// The ListViewRenderer has some odd behavior with LogicalChildren
@@ -112,7 +104,9 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		bool _refreshAllowed = true;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="ListView"/> class.
+		/// </summary>
 		public ListView()
 		{
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -291,7 +285,9 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(SeparatorColorProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='RefreshControlColor']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the color of the refresh control.
+		/// </summary>
 		public Color RefreshControlColor
 		{
 			get { return (Color)GetValue(RefreshControlColorProperty); }
@@ -305,13 +301,17 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(SeparatorVisibilityProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='HorizontalScrollBarVisibility']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the horizontal scroll bar visibility.
+		/// </summary>
 		public ScrollBarVisibility HorizontalScrollBarVisibility
 		{
 			get { return (ScrollBarVisibility)GetValue(HorizontalScrollBarVisibilityProperty); }
 			set { SetValue(HorizontalScrollBarVisibilityProperty, value); }
 		}
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='VerticalScrollBarVisibility']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the vertical scroll bar visibility.
+		/// </summary>
 		public ScrollBarVisibility VerticalScrollBarVisibility
 		{
 			get { return (ScrollBarVisibility)GetValue(VerticalScrollBarVisibilityProperty); }
@@ -412,7 +412,9 @@ namespace Microsoft.Maui.Controls
 
 		public event EventHandler Refreshing;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='ScrollTo'][1]/Docs/*" />
+		/// <summary>
+		/// Scrolls to the specified item with the specified scroll position and animation setting.
+		/// </summary>
 		public void ScrollTo(object item, ScrollToPosition position, bool animated)
 		{
 			if (!Enum.IsDefined(typeof(ScrollToPosition), position))
@@ -425,7 +427,9 @@ namespace Microsoft.Maui.Controls
 				_pendingScroll = args;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='ScrollTo'][2]/Docs/*" />
+		/// <summary>
+		/// Scrolls to the specified item and group with the specified scroll position and animation setting.
+		/// </summary>
 		public void ScrollTo(object item, object group, ScrollToPosition position, bool animated)
 		{
 			if (!IsGroupingEnabled)
@@ -539,7 +543,9 @@ namespace Microsoft.Maui.Controls
 			return displayBinding;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='NotifyRowTapped'][2]/Docs/*" />
+		/// <summary>
+		/// Notifies that a row was tapped at the specified group and item index.
+		/// </summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void NotifyRowTapped(int groupIndex, int inGroupIndex, Cell cell = null)
 		{
@@ -565,7 +571,9 @@ namespace Microsoft.Maui.Controls
 			ItemTapped?.Invoke(this, new ItemTappedEventArgs(ItemsSource.Cast<object>().ElementAt(groupIndex), cell?.BindingContext, TemplatedItems.GetGlobalIndexOfItem(cell?.BindingContext)));
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='NotifyRowTapped'][4]/Docs/*" />
+		/// <summary>
+		/// Notifies that a row was tapped at the specified group and item index with context menu request state.
+		/// </summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void NotifyRowTapped(int groupIndex, int inGroupIndex, Cell cell, bool isContextMenuRequested)
 		{
@@ -605,7 +613,9 @@ namespace Microsoft.Maui.Controls
 					TemplatedItems.GetGlobalIndexOfItem(cell?.BindingContext)));
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='NotifyRowTapped'][1]/Docs/*" />
+		/// <summary>
+		/// Notifies that a row was tapped at the specified index.
+		/// </summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void NotifyRowTapped(int index, Cell cell = null)
 		{
@@ -620,7 +630,9 @@ namespace Microsoft.Maui.Controls
 				NotifyRowTapped(0, index, cell);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='NotifyRowTapped'][3]/Docs/*" />
+		/// <summary>
+		/// Notifies that a row was tapped at the specified index with context menu request state.
+		/// </summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void NotifyRowTapped(int index, Cell cell, bool isContextmenuRequested)
 		{
