@@ -169,4 +169,56 @@ namespace Microsoft.Maui.Controls.StyleSheets.UnitTests
 		}
 
 	}
+
+	public class CssDisabledTests : BaseTestFixture
+	{
+		public CssDisabledTests()
+		{
+			// Disable CSS for these tests
+			AppContext.SetSwitch("Microsoft.Maui.RuntimeFeature.IsCssEnabled", false);
+			ApplicationExtensions.CreateAndSetMockApplication();
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing)
+			{
+				// Re-enable CSS
+				AppContext.SetSwitch("Microsoft.Maui.RuntimeFeature.IsCssEnabled", true);
+				Application.ClearCurrent();
+			}
+
+			base.Dispose(disposing);
+		}
+
+		[Fact]
+		public void StyleParseThrowsWhenCssDisabled()
+		{
+			var styleString = @"background-color: #ff0000;";
+			Assert.Throws<NotSupportedException>(() => 
+				Style.Parse(new CssReader(new StringReader(styleString)), '}'));
+		}
+
+		[Fact]
+		public void SettingStyleClassDoesNotThrowWhenCssDisabled()
+		{
+			// This simulates what happens in the test host app when CSS is disabled
+			// Setting StyleClass should not throw even when CSS is disabled
+			var label = new Label();
+
+			// This should NOT throw - the app should work even when CSS is disabled
+			// and no CSS stylesheets are actually used
+			label.StyleClass = new[] { "myclass" };
+		}
+
+		[Fact]
+		public void GetPropertyThrowsWhenCssDisabled()
+		{
+			// When CSS is disabled, GetProperty should throw because CSS operations are not supported
+			var ve = new VisualElement();
+			var stylable = (IStylable)ve;
+
+			Assert.Throws<NotSupportedException>(() => stylable.GetProperty("background-color", false));
+		}
+	}
 }
