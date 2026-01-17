@@ -110,6 +110,14 @@
       <Uri>https://github.com/dotnet/templating</Uri>
       <Sha>3f4da9ced34942d83054e647f3b1d9d7dde281e8</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.Extensions.AI" Version="10.0.0">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>7b29526f2107416f68578bcb9deaca74fcfcf7f0</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.Extensions.AI.Abstractions" Version="10.0.0">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>7b29526f2107416f68578bcb9deaca74fcfcf7f0</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.Extensions.Configuration" Version="10.0.0">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>7b29526f2107416f68578bcb9deaca74fcfcf7f0</Sha>
