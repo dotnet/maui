@@ -41,11 +41,12 @@ namespace Microsoft.Maui.DeviceTests
 
 			layout.Add(image);
 
-			await InvokeOnMainThreadAsync(async () =>
+			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async handler =>
 			{
-				var handler = CreateHandler<LayoutHandler>(layout);
 				await image.WaitUntilLoaded();
-				await handler.ToPlatform().AssertContainsColor(Colors.Red, MauiContext);
+
+				// Use handler.MauiContext to ensure the correct window is registered for the test service
+				await handler.ToPlatform().AssertContainsColor(Colors.Red, handler.MauiContext);
 			});
 		}
 
