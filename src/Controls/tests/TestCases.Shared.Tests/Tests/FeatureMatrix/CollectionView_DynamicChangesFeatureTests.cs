@@ -40,7 +40,7 @@ public class CollectionView_DynamicChangesFeatureTests : _GalleryUITest
 	}
 
 #if TEST_FAILS_ON_ANDROID
-//Dynamic Updates to CollectionView Header/Footer and Templates Are Not Displayed Issue Link: https://github.com/dotnet/maui/issues/28676
+	//Dynamic Updates to CollectionView Header/Footer and Templates Are Not Displayed Issue Link: https://github.com/dotnet/maui/issues/28676
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void ValidateDynamicHeaderStringDisplayed()
