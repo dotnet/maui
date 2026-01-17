@@ -134,6 +134,14 @@ Update the state file:
 4. Change 🔧 Fix status to `✅ COMPLETE`
 5. Change 📋 Report status to `▶️ IN PROGRESS`
 
+**Post completion comment (if PR exists):**
+```bash
+pwsh .github/skills/pr-comment/scripts/post-pr-comment.ps1 \
+  -PRNumber XXXXX \
+  -Phase fix \
+  -StateFile .github/agent-pr-session/pr-XXXXX.md
+```
+
 ---
 
 ## 📋 REPORT: Final Report (Phase 5)
@@ -232,6 +240,14 @@ Update all phase statuses to complete.
 1. Change header status to final recommendation
 2. Update all phases to `✅ COMPLETE` or `✅ PASSED`
 3. Present final result to user
+
+**Post completion comment (if PR exists):**
+```bash
+pwsh .github/skills/pr-comment/scripts/post-pr-comment.ps1 \
+  -PRNumber XXXXX \
+  -Phase report \
+  -StateFile .github/agent-pr-session/pr-XXXXX.md
+```
 
 ---
 
