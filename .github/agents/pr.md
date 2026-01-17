@@ -326,6 +326,16 @@ The test result will be updated to `✅ PASS (Gate)` after Gate passes.
 3. Add edge cases and any disagreements (if PR exists)
 4. Change 🧪 Tests status to `▶️ IN PROGRESS`
 
+**Post completion comment (if PR exists):**
+```bash
+pwsh .github/skills/pr-comment/scripts/post-pr-comment.ps1 \
+  -PRNumber XXXXX \
+  -Phase pre-flight \
+  -StateFile .github/agent-pr-session/pr-XXXXX.md
+```
+
+This posts a formatted comment to the PR notifying that Pre-Flight is complete with a summary of findings and next steps.
+
 ---
 
 ## 🧪 TESTS: Create/Verify Reproduction Tests (Phase 2)
@@ -385,6 +395,14 @@ The script auto-detects mode based on git diff. If only test files changed, it v
 4. Change 🧪 Tests status to `✅ COMPLETE`
 5. Change 🚦 Gate status to `▶️ IN PROGRESS`
 
+**Post completion comment (if PR exists):**
+```bash
+pwsh .github/skills/pr-comment/scripts/post-pr-comment.ps1 \
+  -PRNumber XXXXX \
+  -Phase tests \
+  -StateFile .github/agent-pr-session/pr-XXXXX.md
+```
+
 ---
 
 ## 🚦 GATE: Verify Tests Catch the Issue (Phase 3)
@@ -431,6 +449,14 @@ pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 
 1. Fill in **Result**: `PASSED ✅`
 2. Change 🚦 Gate status to `✅ PASSED`
 3. Proceed to Phase 4
+
+**Post completion comment (if PR exists):**
+```bash
+pwsh .github/skills/pr-comment/scripts/post-pr-comment.ps1 \
+  -PRNumber XXXXX \
+  -Phase gate \
+  -StateFile .github/agent-pr-session/pr-XXXXX.md
+```
 
 ---
 
