@@ -98,7 +98,23 @@ namespace Microsoft.Maui.Platform
 		public void LoadHtml(string? html, string? baseUrl)
 		{
 			if (html != null)
-				LoadHtmlString(html, baseUrl == null ? new NSUrl(NSBundle.MainBundle.BundlePath, true) : new NSUrl(baseUrl, true));
+			{
+				if (!string.IsNullOrEmpty(baseUrl))
+				{
+					LoadHtmlString(html, new NSUrl(baseUrl, true));
+				}
+				else
+				{
+					// Create a unique data URL to ensure proper navigation history
+					// LoadHtmlString doesn't create entries in the back/forward list
+					// Using LoadRequest with a data URL ensures the HTML content appears in navigation history
+					var base64Html = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(html));
+					var dataUrl = $"data:text/html;charset=utf-8;base64,{base64Html}";
+
+					// Use LoadRequest with data URL for proper navigation history
+					LoadRequest(new NSUrlRequest(new NSUrl(dataUrl)));
+				}
+			}
 		}
 
 		async Task LoadUrlAsync(string? url)
