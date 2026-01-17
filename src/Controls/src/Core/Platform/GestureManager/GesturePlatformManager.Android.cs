@@ -282,7 +282,37 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			if (e.Event != null)
+			{
+				// Process the touch event for this view's gestures
 				OnTouchEvent(e.Event);
+
+				// Allow event bubbling when only drag/drop recognizers are present
+				// For other gestures, allow bubbling so parent behaviors (like item selection) work
+				if (ShouldAllowEventBubbling())
+				{
+					e.Handled = false;
+				}
+			}
+		}
+
+		bool ShouldAllowEventBubbling()
+		{
+			if (View == null)
+				return false;
+
+			var recognizers = View.GetCompositeGestureRecognizers();
+			if (recognizers == null || recognizers.Count == 0)
+				return false;
+
+			// Don't allow bubbling if there are other recognizers than drag and drop
+			foreach (var recognizer in recognizers)
+			{
+				if (recognizer is not DragGestureRecognizer && recognizer is not DropGestureRecognizer)
+					return false;
+			}
+
+			// Only drag/drop recognizers present, allow bubbling
+			return true;
 		}
 
 		void SetupElement(VisualElement? oldElement, VisualElement? newElement)
