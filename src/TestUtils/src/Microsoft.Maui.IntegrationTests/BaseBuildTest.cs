@@ -73,7 +73,7 @@ namespace Microsoft.Maui.IntegrationTests
 				}
 
 				foreach (var pack in packages)
-					File.Copy(pack, Path.Combine(extraPacksDir, Path.GetFileName(pack)));
+					File.Copy(pack, Path.Combine(extraPacksDir, Path.GetFileName(pack)), overwrite: true);
 			}
 
 			File.Copy(Path.Combine(TestEnvironment.GetMauiDirectory(), "NuGet.config"), TestNuGetConfig, true);
