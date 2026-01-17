@@ -806,5 +806,21 @@ public static class Test
 
 		public static string GetKey(bool rootTrans, bool rootCascade, bool nestedTrans, bool nestedCascade, bool trans, bool isClickable, bool isPassThru) =>
 			$"Root{(rootTrans ? "Trans" : "")}{(rootCascade ? "Cascade" : "")}Nested{(nestedTrans ? "Trans" : "")}{(nestedCascade ? "Cascade" : "")}Control{(trans ? "Trans" : "")}Is{(isClickable ? "" : "Not")}ClickableIs{(isPassThru ? "" : "Not")}PassThru";
+
+		public static readonly IReadOnlyDictionary<(bool RT, bool RC, bool T), (bool Clickable, bool PassThru)> SimpleStates =
+			new Dictionary<(bool, bool, bool), (bool, bool)>
+			{
+				[(truee, truee, truee)] = (false, truee),
+				[(truee, truee, false)] = (false, truee),
+				[(truee, false, truee)] = (false, truee),
+				[(truee, false, false)] = (truee, false),
+				[(false, truee, truee)] = (false, false),
+				[(false, truee, false)] = (truee, false),
+				[(false, false, truee)] = (false, false),
+				[(false, false, false)] = (truee, false),
+			};
+
+		public static string GetSimpleKey(string prefix, bool rootTrans, bool rootCascade, bool trans, bool isClickable, bool isPassThru) =>
+			$"{prefix}{(rootTrans ? "Trans" : "")}{(rootCascade ? "Cascade" : "")}Control{(trans ? "Trans" : "")}Is{(isClickable ? "" : "Not")}ClickableIs{(isPassThru ? "" : "Not")}PassThru";
 	}
 }

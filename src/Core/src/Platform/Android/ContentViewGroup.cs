@@ -12,12 +12,14 @@ using Rectangle = Microsoft.Maui.Graphics.Rect;
 
 namespace Microsoft.Maui.Platform
 {
-	public class ContentViewGroup : PlatformContentViewGroup, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable, IHandleWindowInsets
+	public class ContentViewGroup : PlatformContentViewGroup, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable, IHandleWindowInsets, IInputTransparentManagingView
 	{
 		IBorderStroke? _clip;
 		readonly Context _context;
 		bool _didSafeAreaEdgeConfigurationChange = true;
 		bool _isInsetListenerSet;
+
+		bool IInputTransparentManagingView.InputTransparent { get; set; }
 
 		public ContentViewGroup(Context context) : base(context)
 		{
@@ -168,6 +170,16 @@ namespace Microsoft.Maui.Platform
 			_didSafeAreaEdgeConfigurationChange = true;
 			// Ensure a layout pass so that OnLayout will trigger InvalidateWindowInsets
 			RequestLayout();
+		}
+
+		public override bool OnTouchEvent(MotionEvent? e)
+		{
+			if (((IInputTransparentManagingView)this).InputTransparent)
+			{
+				return false;
+			}
+
+			return base.OnTouchEvent(e);
 		}
 
 		internal IBorderStroke? Clip

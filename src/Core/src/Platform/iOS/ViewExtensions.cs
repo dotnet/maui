@@ -616,19 +616,21 @@ namespace Microsoft.Maui.Platform
 			// Interaction should not be disabled for an editor if it is set as read-only
 			// because this prevents users from scrolling the content inside an editor.
 			if (view is not IEditor && view is ITextInput textInput)
-			{
 				platformView.UpdateInputTransparent(textInput.IsReadOnly, view.InputTransparent);
-				return;
-			}
-
-			platformView.UserInteractionEnabled = !view.InputTransparent;
+			else
+				platformView.UpdateInputTransparent(view.InputTransparent);
 		}
 
-		public static void UpdateInputTransparent(this UIView platformView, bool isReadOnly, bool inputTransparent)
+		public static void UpdateInputTransparent(this UIView platformView, bool isReadOnly, bool inputTransparent) =>
+			platformView.UpdateInputTransparent(isReadOnly || inputTransparent);
+
+		internal static void UpdateInputTransparent(this UIView platformView, bool inputTransparent)
 		{
-			platformView.UserInteractionEnabled = !(isReadOnly || inputTransparent);
+			if (platformView is IInputTransparentManagingView itmv)
+				itmv.InputTransparent = inputTransparent;
+			else
+				platformView.UserInteractionEnabled = !inputTransparent;
 		}
-
 
 		internal static UIToolTipInteraction? GetToolTipInteraction(this UIView platformView)
 		{

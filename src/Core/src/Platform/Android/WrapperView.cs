@@ -10,7 +10,7 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Platform
 {
-	public partial class WrapperView : PlatformWrapperView
+	public partial class WrapperView : PlatformWrapperView, IInputTransparentManagingView
 	{
 		APath _currentPath;
 		SizeF _lastPathSize;
