@@ -232,13 +232,13 @@ stages:
                     parameters:
                       platform: ios
                       ${{ if eq(version, 'latest') }}:
-                        version: 18.5
+                        version: 26.0
                       ${{ if ne(version, 'latest') }}:
                         version: ${{ version }}
                       path: ${{ project.ios }}
                       app: ${{ project.app }}
                       ${{ if eq(version, 'latest') }}:
-                        device: ios-simulator-64
+                        device: ios-simulator-64_26.0
                       ${{ if ne(version, 'latest') }}:
                         device: ios-simulator-64_${{ version }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
@@ -275,13 +275,13 @@ stages:
                     parameters:
                       platform: ios
                       ${{ if eq(version, 'latest') }}:
-                        version: 18.5
+                        version: 26.0
                       ${{ if ne(version, 'latest') }}:
                         version: ${{ version }}
                       path: ${{ project.ios }}
                       app: ${{ project.app }}
                       ${{ if eq(version, 'latest') }}:
-                        device: ios-simulator-64
+                        device: ios-simulator-64_26.0
                       ${{ if ne(version, 'latest') }}:
                         device: ios-simulator-64_${{ version }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
@@ -319,13 +319,13 @@ stages:
                     parameters:
                       platform: ios
                       ${{ if eq(version, 'latest') }}:
-                        version: 18.5
+                        version: 26.0
                       ${{ if ne(version, 'latest') }}:
                         version: ${{ version }}
                       path: ${{ project.ios }}
                       app: ${{ project.app }}
                       ${{ if eq(version, 'latest') }}:
-                        device: ios-simulator-64
+                        device: ios-simulator-64_26.0
                       ${{ if ne(version, 'latest') }}:
                         device: ios-simulator-64_${{ version }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
@@ -369,13 +369,13 @@ stages:
                       parameters:
                         platform: ios
                         ${{ if eq(version, 'latest') }}:
-                          version: 18.5
+                          version: 26.0
                         ${{ if ne(version, 'latest') }}:
                           version: ${{ version }}
                         path: ${{ project.ios }}
                         app: ${{ project.app }}
                         ${{ if eq(version, 'latest') }}:
-                          device: ios-simulator-64
+                          device: ios-simulator-64_26.0
                         ${{ if ne(version, 'latest') }}:
                           device: ios-simulator-64_${{ version }}
                         provisionatorChannel: ${{ parameters.provisionatorChannel }}
