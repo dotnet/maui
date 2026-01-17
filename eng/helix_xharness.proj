@@ -201,16 +201,6 @@
         </ItemGroup>
 
         <!-- Windows: Use HelixWorkItem with test runner script (not XHarness) -->
-        <!-- TEMPORARY: Only run Controls.DeviceTests with Lifecycle category to debug MinimizeAndThenMaximizingWorks -->
-        <ItemGroup Condition="'$(TargetOS)' == 'windows'">
-            <HelixWorkItem Include="Controls.DeviceTests-Lifecycle-packaged">
-                <PayloadArchive>$(ScenariosDir)Controls.DeviceTests.zip</PayloadArchive>
-                <Command>call %HELIX_CORRELATION_PAYLOAD%\eng\devices\run-windows-devicetests.cmd Controls.DeviceTests packaged com.microsoft.maui.controls.devicetests $(TargetFrameworkToTest) Lifecycle</Command>
-                <Timeout>02:00:00</Timeout>
-            </HelixWorkItem>
-        </ItemGroup>
-        
-        <!-- TODO: Re-enable all scenarios after Lifecycle testing is complete
         <ItemGroup Condition="'$(TargetOS)' == 'windows'">
             <HelixWorkItem Include="%(_MAUIScenarioSearch.ScenarioDirectoryName)-packaged">
                 <PayloadArchive>%(_MAUIScenarioSearch.PayloadDirectory).zip</PayloadArchive>
@@ -218,7 +208,6 @@
                 <Timeout>02:00:00</Timeout>
             </HelixWorkItem>
         </ItemGroup>
-        -->
         
         <!-- TODO: Unpackaged tests disabled - crash with 0xC000027B (Windows App SDK Bootstrap failure)
              on Helix. Investigating root cause. See PR #33328 for context.
