@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -763,10 +764,39 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static UIView GetBackButton(this UINavigationBar uINavigationBar)
 		{
+			// Try to find UIButtonBarButton (pre-iOS 26)
 			var item = uINavigationBar.FindDescendantView<UIView>(result =>
 			{
 				return result.Class.Name?.Contains("UIButtonBarButton", StringComparison.OrdinalIgnoreCase) == true;
 			});
+
+			// iOS 26+ may use different class names, try alternative approaches
+			if (item is null)
+			{
+				// Look for _UIButtonBarButton or similar variants
+				item = uINavigationBar.FindDescendantView<UIView>(result =>
+				{
+					var className = result.Class.Name;
+					return className?.Contains("ButtonBar", StringComparison.OrdinalIgnoreCase) == true ||
+					       className?.Contains("BackButton", StringComparison.OrdinalIgnoreCase) == true;
+				});
+			}
+
+			// Fallback: look for a UIButton that's likely the back button (usually has a chevron image or "Back" text)
+			if (item is null)
+			{
+				item = uINavigationBar.FindDescendantView<UIButton>(result =>
+				{
+					// Check if this button looks like a back button
+					var label = result.FindDescendantView<UILabel>();
+					if (label?.Text != null && label.Text.Length > 0)
+						return true;
+					// Check for image (chevron) on UIButton
+					if (result is UIButton button && (button.CurrentImage != null || button.ImageView?.Image != null))
+						return true;
+					return false;
+				});
+			}
 
 			return item ?? throw new Exception("Unable to locate back button view");
 		}
@@ -888,17 +918,91 @@ namespace Microsoft.Maui.DeviceTests
 
 		static UIView GetTabItemView(this UITabBar tabBar, string tabText)
 		{
-			var tabBarItem = tabBar.Items?.Single(t => string.Equals(t.Title, tabText, StringComparison.OrdinalIgnoreCase));
+			// Check if Items is available
+			if (tabBar.Items is null || tabBar.Items.Length == 0)
+			{
+				// iOS 26+: Try finding tab item via subview search first
+				var fallbackView = FindTabBarButtonWithText(tabBar, tabText);
+				if (fallbackView is not null)
+					return fallbackView;
+				throw new Exception($"Unable to find tab bar item (no items): {tabText}");
+			}
+
+			var tabBarItem = tabBar.Items.SingleOrDefault(t => string.Equals(t.Title, tabText, StringComparison.OrdinalIgnoreCase));
 
 			if (tabBarItem is null)
+			{
+				// Try finding via subview search as fallback
+				var fallbackView = FindTabBarButtonWithText(tabBar, tabText);
+				if (fallbackView is not null)
+					return fallbackView;
 				throw new Exception($"Unable to find tab bar item: {tabText}");
+			}
 
+			// First try the ValueForKey approach (works on older iOS versions)
 			var tabBarItemView = tabBarItem.ValueForKey(new Foundation.NSString("view")) as UIView;
 
+			// If that fails (iOS 26+), search through the tab bar's subviews for buttons with matching accessibility label
 			if (tabBarItemView is null)
-				throw new Exception($"Unable to find tab bar item: {tabText}");
+			{
+				tabBarItemView = FindTabBarButtonWithText(tabBar, tabText);
+			}
+
+			if (tabBarItemView is null)
+				throw new Exception($"Unable to find tab bar item view: {tabText}");
 
 			return tabBarItemView;
+		}
+
+		static UIView? FindTabBarButtonWithText(UITabBar tabBar, string tabText)
+		{
+			// In iOS 26, UITabBar uses UITabBarButton subviews
+			// Look for a button that contains a label with the matching text
+			foreach (var subview in tabBar.Subviews)
+			{
+				// Check if this is a tab bar button (typically named UITabBarButton)
+				var typeName = subview.GetType().Name;
+				if (typeName.Contains("TabBarButton", StringComparison.OrdinalIgnoreCase) || typeName.Contains("Button", StringComparison.OrdinalIgnoreCase))
+				{
+					// Search for any UILabel within this button that matches our text
+					if (ContainsLabelWithText(subview, tabText))
+					{
+						return subview;
+					}
+				}
+			}
+
+			// Fallback: search all subviews for any that contain a matching label
+			foreach (var subview in tabBar.Subviews)
+			{
+				if (ContainsLabelWithText(subview, tabText))
+				{
+					return subview;
+				}
+			}
+
+			return null;
+		}
+
+		static bool ContainsLabelWithText(UIView view, string text)
+		{
+			// Check all descendant labels
+			return FindAllDescendantViews<UILabel>(view)
+				.Any(label => label.Text != null && 
+					(string.Equals(label.Text, text, StringComparison.OrdinalIgnoreCase) ||
+					 label.Text.Contains(text, StringComparison.OrdinalIgnoreCase)));
+		}
+
+		static IEnumerable<T> FindAllDescendantViews<T>(UIView view) where T : UIView
+		{
+			foreach (var subview in view.Subviews)
+			{
+				if (subview is T typed)
+					yield return typed;
+					
+				foreach (var descendant in FindAllDescendantViews<T>(subview))
+					yield return descendant;
+			}
 		}
 	}
 }
