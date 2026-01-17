@@ -41,6 +41,10 @@ namespace Microsoft.Maui.Controls
 			LabelHandler.Mapper.ModifyMapping<Label, ILabelHandler>(nameof(LineHeight), MapLineHeight);
 #endif
 
+#if IOS
+			LabelHandler.Mapper.AppendToMapping<Label, ILabelHandler>(nameof(ILabel.Font), MapHtmlText);
+#endif
+
 			// platform-specifics
 #if WINDOWS
 			LabelHandler.Mapper.ReplaceMapping<Label, ILabelHandler>(PlatformConfiguration.WindowsSpecific.InputView.DetectReadingOrderFromContentProperty.PropertyName, MapDetectReadingOrderFromContent);
