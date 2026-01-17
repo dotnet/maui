@@ -15,6 +15,7 @@ public static class AccessExpressionBuilder
 			Cast { TargetType: var targetType } => $"({previousExpression} as {CastTargetName(targetType)})",
 			ConditionalAccess conditionalAccess => ExtendExpression(previousExpression: $"{previousExpression}?", conditionalAccess.Part),
 			IndexAccess { Index: int numericIndex } => $"{previousExpression}[{numericIndex}]",
+			IndexAccess { Index: EnumIndex enumIndex } => $"{previousExpression}[{enumIndex.FullyQualifiedEnumValue}]",
 			IndexAccess { Index: string stringIndex } => $"{previousExpression}[\"{stringIndex}\"]",
 			MemberAccess { Kind: AccessorKind.Field, IsGetterInaccessible: true } memberAccess => $"{CreateUnsafeFieldAccessorMethodName(memberAccess.MemberName)}({previousExpression})",
 			MemberAccess { Kind: AccessorKind.Property, IsGetterInaccessible: true } memberAccess => $"{CreateUnsafePropertyAccessorGetMethodName(memberAccess.MemberName)}({previousExpression})",
