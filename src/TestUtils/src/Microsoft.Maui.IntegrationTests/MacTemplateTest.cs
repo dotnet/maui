@@ -14,6 +14,7 @@ public class MacTemplateTest : BaseTemplateTests
 	[InlineData("maui-blazor", "maccatalyst")]
 	public void BuildWithCustomBundleResource(string id, string framework)
 	{
+		SetTestIdentifier(id, framework);
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
@@ -84,6 +85,7 @@ public class MacTemplateTest : BaseTemplateTests
 	[InlineData("maui-multiproject", "Release", DotNetCurrent, false)]
 	public void CheckPrivacyManifestForiOS(string id, string config, string framework, bool sign)
 	{
+		SetTestIdentifier(id, config, framework, sign);
 		if (TestEnvironment.IsWindows)
 		{
 			if (true) return; // Skip: "Running iOS templates is only supported on Mac."

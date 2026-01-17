@@ -26,6 +26,7 @@ public class ResizetizerTests : BaseBuildTest
 	[InlineData("maui-blazor", "mauilib", false)] // net9.0-xxx
 	public void CollectsAssets(string id, string libid, bool unpackaged)
 	{
+		SetTestIdentifier(id, libid, unpackaged);
 		// TODO: fix the tests as they have been disabled too long!
 		if (!TestEnvironment.IsWindows)
 			if (true) return; // Skip: "Running Windows templates is only supported on Windows."

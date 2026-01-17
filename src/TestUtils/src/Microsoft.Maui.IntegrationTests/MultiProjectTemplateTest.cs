@@ -12,6 +12,7 @@ public class MultiProjectTemplateTest : BaseTemplateTests
 	[InlineData("Release", "MultiProject@Symbol & More")]
 	public void BuildMultiProject(string config, string projectName)
 	{
+		SetTestIdentifier(config, projectName);
 		var projectDir = Path.Combine(TestDirectory, projectName);
 		var name = Path.GetFileName(projectDir);
 		var solutionFile = Path.Combine(projectDir, $"{name}.sln");
@@ -44,6 +45,7 @@ public class MultiProjectTemplateTest : BaseTemplateTests
 	[InlineData("Debug", "--macos")]
 	public void BuildMultiProjectSinglePlatform(string config, string platformArg)
 	{
+		SetTestIdentifier(config, platformArg);
 		var projectDir = TestDirectory;
 		var name = Path.GetFileName(projectDir);
 		var solutionFile = Path.Combine(projectDir, $"{name}.sln");
@@ -70,6 +72,7 @@ public class MultiProjectTemplateTest : BaseTemplateTests
 				   // https://github.com/dotnet/maui/issues/28695
 	public void VerifyIncludedPlatformsInSln(string platformArg)
 	{
+		SetTestIdentifier(platformArg);
 		var projectDir = TestDirectory;
 		var name = Path.GetFileName(projectDir);
 		var solutionFile = Path.Combine(projectDir, $"{name}.sln");

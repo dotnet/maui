@@ -29,6 +29,7 @@ namespace Microsoft.Maui.IntegrationTests
 		[MemberData(nameof(SampleTestMatrix))]
 		public void Build(string relativeProj, string config)
 		{
+			SetTestIdentifier(relativeProj, config);
 			var projectFile = Path.GetFullPath(Path.Combine(TestEnvironment.GetMauiDirectory(), relativeProj));
 			var binlog = Path.Combine(LogDirectory, Path.Combine("sample.binlog"));
 			var sampleProps = new[]

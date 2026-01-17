@@ -15,6 +15,7 @@ public class AOTTemplateTest : BaseTemplateTests
 	[InlineData("maui", $"{DotNetCurrent}-windows10.0.19041.0", "win-arm64")]
 	public void PublishNativeAOT(string id, string framework, string runtimeIdentifier)
 	{
+		SetTestIdentifier(id, framework, runtimeIdentifier);
 		bool isWindowsFramework = framework.Contains("windows", StringComparison.OrdinalIgnoreCase);
 		bool isApplePlatform = framework.Contains("ios", StringComparison.OrdinalIgnoreCase) || framework.Contains("maccatalyst", StringComparison.OrdinalIgnoreCase);
 

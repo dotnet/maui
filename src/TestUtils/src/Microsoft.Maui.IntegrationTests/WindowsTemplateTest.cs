@@ -16,6 +16,7 @@ public class WindowsTemplateTest : BaseTemplateTests
 	[InlineData("maui-blazor", DotNetCurrent, "Release")]
 	public void BuildPackaged(string id, string framework, string config)
 	{
+		SetTestIdentifier(id, framework, config);
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
@@ -42,6 +43,7 @@ public class WindowsTemplateTest : BaseTemplateTests
 	[InlineData("maui", false, false, "MSIX")]
 	public void BuildWindowsAppSDKSelfContained(string id, bool wasdkself, bool netself, string packageType)
 	{
+		SetTestIdentifier(id, wasdkself, netself, packageType);
 		if (TestEnvironment.IsMacOS)
 		{
 			if (true) return; // Skip: "This test is designed for testing a windows build."
@@ -75,6 +77,7 @@ public class WindowsTemplateTest : BaseTemplateTests
 	[InlineData("maui", false, "MSIX")]
 	public void BuildWindowsRidGraph(string id, bool useRidGraph, string packageType)
 	{
+		SetTestIdentifier(id, useRidGraph, packageType);
 		if (TestEnvironment.IsMacOS)
 		{
 			if (true) return; // Skip: "This test is designed for testing a windows build."
@@ -107,6 +110,7 @@ public class WindowsTemplateTest : BaseTemplateTests
 	[InlineData("maui-blazor", DotNetPrevious, "Release", true)]
 	public void PublishUnpackaged(string id, string framework, string config, bool usesRidGraph)
 	{
+		SetTestIdentifier(id, framework, config, usesRidGraph);
 		if (!TestEnvironment.IsWindows)
 		{
 			if (true) return; // Skip: "Running Windows templates is only supported on Windows."
@@ -149,6 +153,7 @@ public class WindowsTemplateTest : BaseTemplateTests
 	[InlineData("maui-blazor", DotNetPrevious, "Release", true)]
 	public void PublishPackaged(string id, string framework, string config, bool usesRidGraph)
 	{
+		SetTestIdentifier(id, framework, config, usesRidGraph);
 		if (!TestEnvironment.IsWindows)
 		{
 			if (true) return; // Skip: "Running Windows templates is only supported on Windows."

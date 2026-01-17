@@ -44,6 +44,7 @@ public class BlazorTemplateTest : BaseTemplateTests
 	// [InlineData(DotNetCurrent, "Debug", "--interactivity Server --use-program-main", true)]
 	public void BuildMauiBlazorWebSolution(string framework, string config, string additionalDotNetNewParams, bool useTrickyProjectName, string additionalDotNetBuildParams)
 	{
+		SetTestIdentifier(framework, config, additionalDotNetNewParams, useTrickyProjectName, additionalDotNetBuildParams);
 		const string templateShortName = "maui-blazor-web";
 
 		var solutionProjectDir = TestDirectory;

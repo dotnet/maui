@@ -30,6 +30,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 	[InlineData("mauilib", DotNetCurrent, "Release", true, "", "TrimMode=partial")]
 	public void Build(string id, string framework, string config, bool shouldPack, string additionalDotNetNewParams, string additionalDotNetBuildParams)
 	{
+		SetTestIdentifier(id, framework, config, shouldPack, additionalDotNetNewParams, additionalDotNetBuildParams);
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 

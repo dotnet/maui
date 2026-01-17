@@ -137,6 +137,53 @@ namespace Microsoft.Maui.IntegrationTests
 			}
 		}
 
+		/// <summary>
+		/// Sets the test identifier based on test parameters.
+		/// Should be called at the start of each test method with the test parameters.
+		/// </summary>
+		protected void SetTestIdentifier(params object?[] parameters)
+		{
+			if (_testName != null)
+				return; // Already set
+
+			// Get method name from stack trace
+			var stackTrace = new System.Diagnostics.StackTrace();
+			var testMethod = stackTrace.GetFrames()
+				.Select(f => f.GetMethod())
+				.FirstOrDefault(m => m?.GetCustomAttribute<FactAttribute>() != null || m?.GetCustomAttribute<TheoryAttribute>() != null);
+
+			var methodName = testMethod?.Name ?? "Test";
+
+			// Build identifier from parameters
+			var parts = parameters
+				.Where(p => p != null)
+				.Select(p => p!.ToString()!)
+				.Where(s => !string.IsNullOrWhiteSpace(s));
+
+			var result = $"{methodName}_{string.Join("_", parts)}";
+			_testName = SanitizeTestName(result);
+		}
+
+		private string SanitizeTestName(string name)
+		{
+			var result = name;
+
+			// Replace invalid characters
+			foreach (var c in invalidChars.Concat(Path.GetInvalidPathChars().Concat(Path.GetInvalidFileNameChars())))
+			{
+				result = result.Replace(c, '_');
+			}
+			result = result.Replace("_", string.Empty, StringComparison.OrdinalIgnoreCase);
+
+			if (result.Length > 20)
+			{
+				// If the test name is too long, hash it to avoid path length issues
+				result = result.Substring(0, 15) + Convert.ToString(Math.Abs(string.GetHashCode(result.AsSpan(), StringComparison.Ordinal)), CultureInfo.InvariantCulture);
+			}
+
+			return result;
+		}
+
 		public string TestName
 		{
 			get
@@ -144,28 +191,16 @@ namespace Microsoft.Maui.IntegrationTests
 				if (_testName != null)
 					return _testName;
 
-				// In XUnit, we get test name from the call stack
+				// Fallback: If SetTestIdentifier wasn't called, generate from method name + GUID
 				var stackTrace = new System.Diagnostics.StackTrace();
 				var testMethod = stackTrace.GetFrames()
 					.Select(f => f.GetMethod())
 					.FirstOrDefault(m => m?.GetCustomAttribute<FactAttribute>() != null || m?.GetCustomAttribute<TheoryAttribute>() != null);
 
-				var result = testMethod?.Name ?? Guid.NewGuid().ToString("N");
-				
-				foreach (var c in invalidChars.Concat(Path.GetInvalidPathChars().Concat(Path.GetInvalidFileNameChars())))
-				{
-					result = result.Replace(c, '_');
-				}
-				result = result.Replace("_", string.Empty, StringComparison.OrdinalIgnoreCase);
-
-				if (result.Length > 20)
-				{
-					// If the test name is too long, hash it to avoid path length issues
-					result = result.Substring(0, 15) + Convert.ToString(Math.Abs(string.GetHashCode(result.AsSpan(), StringComparison.Ordinal)), CultureInfo.InvariantCulture);
-				}
-				
-				_testName = result;
-				return result;
+				var methodName = testMethod?.Name ?? "Test";
+				var result = $"{methodName}_{Guid.NewGuid():N}";
+				_testName = SanitizeTestName(result);
+				return _testName;
 			}
 		}
 
