@@ -21,6 +21,6 @@ public class Issue32016 : _IssuesUITest
 		App.EnterText("TestEntry", "1234567890x");
 
 		var text = App.FindElement("TestEntry").GetText();
-		Assert.That(text!.Length, Is.EqualTo(10), "Text should be exactly 10 characters");
+		Assert.That(text, Is.EqualTo("1234567890"), "Text should be '1234567890' - the 'x' should be blocked by MaxLength");
 	}
 }
