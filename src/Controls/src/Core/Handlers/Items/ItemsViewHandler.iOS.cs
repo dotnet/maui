@@ -18,6 +18,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			ItemsView.ScrollToRequested -= ScrollToRequested;
 			Controller?.Disconnect();
+			// Reset ScrollsToTop to default value when disconnecting
+			if (Controller?.CollectionView != null)
+				Controller.CollectionView.ScrollsToTop = false;
 			base.DisconnectHandler(platformView);
 		}
 
@@ -25,6 +28,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			base.ConnectHandler(platformView);
 			Controller.CollectionView.BackgroundColor = UIColor.Clear;
+			// Enable the native iOS "tap status bar to scroll to top" behavior
+			Controller.CollectionView.ScrollsToTop = true;
 			ItemsView.ScrollToRequested += ScrollToRequested;
 		}
 
