@@ -30,5 +30,8 @@
 	<string>Assets.xcassets/appicon.appiconset</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Access to your location is required for cool things to happen!</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Access to your camera is required for cool things to happen!</string>
+	
 </dict>
 </plist>
