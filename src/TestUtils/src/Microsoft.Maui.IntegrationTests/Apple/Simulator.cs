@@ -45,12 +45,12 @@ namespace Microsoft.Maui.IntegrationTests.Apple
 			{
 				var versionSuffix = $"{latestVersion.Major}.{latestVersion.Minor}";
 				var resolvedTarget = $"{baseTarget}_{versionSuffix}";
-				TestContext.WriteLine($"Auto-detected iOS target: {resolvedTarget}");
+				Console.WriteLine($"Auto-detected iOS target: {resolvedTarget}");
 				return resolvedTarget;
 			}
 
 			// Fallback to base target (may fail if XHarness can't find a match)
-			TestContext.WriteLine($"Warning: Could not auto-detect iOS version, using '{baseTarget}' which may fail.");
+			Console.WriteLine($"Warning: Could not auto-detect iOS version, using '{baseTarget}' which may fail.");
 			return baseTarget;
 		}
 
@@ -99,7 +99,7 @@ namespace Microsoft.Maui.IntegrationTests.Apple
 			}
 			catch (Exception ex)
 			{
-				TestContext.WriteLine($"Failed to detect iOS version: {ex.Message}");
+				Console.WriteLine($"Failed to detect iOS version: {ex.Message}");
 				return null;
 			}
 		}

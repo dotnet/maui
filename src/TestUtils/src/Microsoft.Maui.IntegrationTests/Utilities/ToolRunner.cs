@@ -24,7 +24,7 @@ namespace Microsoft.Maui.IntegrationTests
 			using (var p = new Process())
 			{
 				p.StartInfo = info;
-				TestContext.WriteLine($"[ToolRunner] Running: {p.StartInfo.FileName} {p.StartInfo.Arguments}");
+				Console.WriteLine($"[ToolRunner] Running: {p.StartInfo.FileName} {p.StartInfo.Arguments}");
 				p.StartInfo.CreateNoWindow = true;
 				p.StartInfo.UseShellExecute = false;
 				p.StartInfo.RedirectStandardOutput = true;
@@ -62,7 +62,7 @@ namespace Microsoft.Maui.IntegrationTests
 				if (p.WaitForExit(timeoutInSeconds * 1000))
 				{
 					exitCode = p.ExitCode;
-					TestContext.WriteLine($"[ToolRunner] Process '{Path.GetFileName(p.StartInfo.FileName)}' exited with code: {exitCode}");
+					Console.WriteLine($"[ToolRunner] Process '{Path.GetFileName(p.StartInfo.FileName)}' exited with code: {exitCode}");
 				}
 				else
 				{

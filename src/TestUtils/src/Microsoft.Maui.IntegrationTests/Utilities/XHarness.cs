@@ -55,8 +55,8 @@
 
 			if (!isSuccess)
 			{
-				TestContext.WriteLine($"XHarness failed with exit code {exitCode}");
-				TestContext.WriteLine(xhOutput);
+				Console.WriteLine($"XHarness failed with exit code {exitCode}");
+				Console.WriteLine(xhOutput);
 			}
 
 			return isSuccess;
@@ -79,7 +79,7 @@
 		{
 			var xhOutput = RunForOutput(args, out int exitCode, timeoutInSeconds);
 			if (exitCode != 0)
-				TestContext.WriteLine(xhOutput);
+				Console.WriteLine(xhOutput);
 
 			return exitCode == 0;
 		}
