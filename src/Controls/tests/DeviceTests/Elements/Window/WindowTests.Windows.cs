@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
@@ -281,6 +282,29 @@ namespace Microsoft.Maui.DeviceTests
 		[Category(TestCategory.Lifecycle)]
 		public class WindowTestsRunInNewWindowCollection : ControlsHandlerTestBase
 		{
+			static void LogToFile(string msg)
+			{
+				try
+				{
+					// Write to the same log file location used by App.xaml.cs
+					var cliArgs = Environment.GetCommandLineArgs();
+					string logFile;
+					if (cliArgs.Length > 1)
+					{
+						var resultsDir = Path.GetDirectoryName(cliArgs[1]);
+						logFile = !string.IsNullOrEmpty(resultsDir)
+							? Path.Combine(resultsDir, "maui-test-startup.log")
+							: Path.Combine(Path.GetTempPath(), "maui-test-startup.log");
+					}
+					else
+					{
+						logFile = Path.Combine(Path.GetTempPath(), "maui-test-startup.log");
+					}
+					File.AppendAllText(logFile, $"{DateTime.Now:HH:mm:ss.fff} [MINIMIZE-TEST] {msg}{Environment.NewLine}");
+				}
+				catch { }
+			}
+
 			[Fact]
 			public async Task MinimizeAndThenMaximizingWorks()
 			{
@@ -290,27 +314,54 @@ namespace Microsoft.Maui.DeviceTests
 				int deactivated = 0;
 				int resumed = 0;
 
-				window.Activated += (_, _) => activated++;
-				window.Deactivated += (_, _) => deactivated++;
-				window.Resumed += (_, _) => resumed++;
+				LogToFile("MinimizeAndThenMaximizingWorks starting");
+
+				window.Activated += (_, _) =>
+				{
+					activated++;
+					LogToFile($"Activated event fired, count now: {activated}");
+				};
+				window.Deactivated += (_, _) =>
+				{
+					deactivated++;
+					LogToFile($"Deactivated event fired, count now: {deactivated}");
+				};
+				window.Resumed += (_, _) =>
+				{
+					resumed++;
+					LogToFile($"Resumed event fired, count now: {resumed}");
+				};
 
 				await CreateHandlerAndAddToWindow<IWindowHandler>(window, async (handler) =>
 				{
 					var platformWindow = window.Handler.PlatformView as UI.Xaml.Window;
 
+					LogToFile($"Inside handler, platformWindow is null: {platformWindow is null}");
+
 					// Wait for initial activation to complete
 					await AssertEventually(() => activated >= 1, timeout: 5000,
 						message: "Window should fire Activated event after creation");
 
+					LogToFile($"After initial activation wait. activated={activated}, deactivated={deactivated}, resumed={resumed}");
+
 					for (int i = 0; i < 2; i++)
 					{
+						LogToFile($"Loop iteration {i}: calling Restore()");
 						platformWindow.Restore();
 						// Use a delay long enough for window state transitions
 						await Task.Delay(300);
+						LogToFile($"Loop iteration {i}: after Restore() delay. activated={activated}, deactivated={deactivated}, resumed={resumed}");
+
+						LogToFile($"Loop iteration {i}: calling Minimize()");
 						platformWindow.Minimize();
 						await Task.Delay(300);
+						LogToFile($"Loop iteration {i}: after Minimize() delay. activated={activated}, deactivated={deactivated}, resumed={resumed}");
 					}
+
+					LogToFile($"Exiting handler. activated={activated}, deactivated={deactivated}, resumed={resumed}");
 				});
+
+				LogToFile($"After handler completed. activated={activated}, deactivated={deactivated}, resumed={resumed}");
 
 				// Wait for all expected events to fire with generous timeout
 				// Expected: activated=2, resumed=1, deactivated=2
@@ -318,6 +369,8 @@ namespace Microsoft.Maui.DeviceTests
 					message: $"Expected at least 2 Activated events, got {activated}");
 				await AssertEventually(() => deactivated >= 2, timeout: 5000,
 					message: $"Expected at least 2 Deactivated events, got {deactivated}");
+
+				LogToFile($"Final counts before assert. activated={activated}, deactivated={deactivated}, resumed={resumed}");
 
 				Assert.Equal(2, activated);
 				Assert.Equal(1, resumed);
