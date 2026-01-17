@@ -73,8 +73,13 @@ namespace Microsoft.Maui.Handlers
 			}
 			else
 			{
-				handler.PlatformView?.UpdateBackground(button);
+				handler.PlatformView?.UpdateBackground(button.Background);
 			}
+		}
+#else
+		public static void MapBackground(IButtonHandler handler, IButton button)
+		{
+			handler.PlatformView?.UpdateBackground(button.Background);
 		}
 #endif
 
