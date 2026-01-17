@@ -66,22 +66,22 @@ public class BlazorTemplateTest : BaseTemplateTests
 		var mauiAppProjectDir = Path.Combine(solutionProjectDir, Path.GetFileName(solutionProjectDir));
 		var mauiAppProjectFile = Path.Combine(mauiAppProjectDir, $"{Path.GetFileName(mauiAppProjectDir)}.csproj");
 
-		Console.WriteLine($"Creating project in {solutionProjectDir}");
+		_output.WriteLine($"Creating project in {solutionProjectDir}");
 
 		Assert.True(DotnetInternal.New(templateShortName, outputDirectory: solutionProjectDir, framework: framework, additionalDotNetNewParams: additionalDotNetNewParams),
 			$"Unable to create template {templateShortName}. Check test output for errors.");
 
-		Console.WriteLine($"Solution directory: {solutionProjectDir} (exists? {Directory.Exists(solutionProjectDir)})");
-		Console.WriteLine($"Blazor Web app project directory: {webAppProjectDir} (exists? {Directory.Exists(webAppProjectDir)})");
-		Console.WriteLine($"Blazor Web app project file: {webAppProjectFile} (exists? {File.Exists(webAppProjectFile)})");
-		Console.WriteLine($"MAUI app project directory: {mauiAppProjectDir} (exists? {Directory.Exists(mauiAppProjectDir)})");
-		Console.WriteLine($"MAUI app project file: {mauiAppProjectFile} (exists? {File.Exists(mauiAppProjectFile)})");
+		_output.WriteLine($"Solution directory: {solutionProjectDir} (exists? {Directory.Exists(solutionProjectDir)})");
+		_output.WriteLine($"Blazor Web app project directory: {webAppProjectDir} (exists? {Directory.Exists(webAppProjectDir)})");
+		_output.WriteLine($"Blazor Web app project file: {webAppProjectFile} (exists? {File.Exists(webAppProjectFile)})");
+		_output.WriteLine($"MAUI app project directory: {mauiAppProjectDir} (exists? {Directory.Exists(mauiAppProjectDir)})");
+		_output.WriteLine($"MAUI app project file: {mauiAppProjectFile} (exists? {File.Exists(mauiAppProjectFile)})");
 
-		Console.WriteLine($"Building Blazor Web app: {webAppProjectFile}");
+		_output.WriteLine($"Building Blazor Web app: {webAppProjectFile}");
 		Assert.True(DotnetInternal.Build(webAppProjectFile, config, target: "", properties: BuildProps, msbuildWarningsAsErrors: true),
 			$"Project {Path.GetFileName(webAppProjectFile)} failed to build. Check test output/attachments for errors.");
 
-		Console.WriteLine($"Building .NET MAUI app: {mauiAppProjectFile} props: {buildProps}");
+		_output.WriteLine($"Building .NET MAUI app: {mauiAppProjectFile} props: {buildProps}");
 		Assert.True(DotnetInternal.Build(mauiAppProjectFile, config, target: "", properties: buildProps, msbuildWarningsAsErrors: true),
 			$"Project {Path.GetFileName(mauiAppProjectFile)} failed to build. Check test output/attachments for errors.");
 	}
