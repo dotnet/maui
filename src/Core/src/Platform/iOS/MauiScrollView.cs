@@ -105,6 +105,20 @@ namespace Microsoft.Maui.Platform
 		internal ICrossPlatformLayout? CrossPlatformLayout => ((ICrossPlatformLayoutBacking)this).CrossPlatformLayout;
 
 		/// <summary>
+		/// Called when the scroll orientation has changed to trigger proper RTL layout recalculation.
+		/// </summary>
+		internal void OnOrientationChanged()
+		{
+			// Reset the previous layout direction to force re-evaluation of RTL layout
+			if (_previousEffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft)
+			{
+				_previousEffectiveUserInterfaceLayoutDirection = null;
+				SetNeedsLayout();
+				LayoutIfNeeded();
+			}
+		}
+
+		/// <summary>
 		/// Initializes a new instance of the MauiScrollView class.
 		/// </summary>
 		public MauiScrollView()
