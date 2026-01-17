@@ -16,3 +16,9 @@ MAUIX2003 | XamlInflation | Error | Descriptors
 MAUIX2004 | XamlInflation | Error | Descriptors
 MAUIX2005 | XamlInflation | Warning | Descriptors
 MAUIX2006 | XamlParsing | Warning | PropertyElementWithAttribute
+MAUIG2024 | XamlInflation | Warning | BindingWithXDataTypeFromOuterScope
+MAUIG2041 | XamlInflation | Error | BindingIndexerNotClosed
+MAUIG2042 | XamlInflation | Error | BindingIndexerEmpty
+MAUIG2043 | XamlInflation | Error | BindingIndexerTypeUnsupported
+MAUIG2045 | XamlInflation | Warning | BindingPropertyNotFound
+MAUIG2064 | XamlInflation | Error | NamescopeDuplicate

@@ -446,10 +446,8 @@ internal class KnownMarkups
 
 			if (xDataTypeIsInOuterScope)
 			{
-				// TODO
-				context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, "Binding with x:DataType from outer scope"));
-				// _context.LoggingHelper.LogWarningOrError(BuildExceptionCode.BindingWithXDataTypeFromOuterScope, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, null);
-				// continue compilation
+				context.ReportDiagnostic(Diagnostic.Create(Descriptors.BindingWithXDataTypeFromOuterScope, location));
+				// continue compilation - this is a warning
 			}
 
 			if (dataTypeNode.RepresentsType(XamlParser.X2009Uri, "NullExtension"))

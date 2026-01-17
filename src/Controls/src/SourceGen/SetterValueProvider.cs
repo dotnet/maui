@@ -12,7 +12,7 @@ internal class SetterValueProvider : IKnownMarkupValueProvider
 	{
 		// Can only inline if all properties are simple ValueNodes (no markup extensions)
 		// We need to check both the properties and any collection items
-		
+
 		// Get the value node (shared logic with TryProvideValue)
 		var valueNode = GetValueNode(node);
 
