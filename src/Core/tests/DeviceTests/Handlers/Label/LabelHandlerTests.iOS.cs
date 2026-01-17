@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Foundation;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
@@ -14,6 +15,41 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class LabelHandlerTests
 	{
+		[Theory(DisplayName = "FormattedText HorizontalTextAlignment adjusts for FlowDirection")]
+		[InlineData(TextAlignment.Start, FlowDirection.LeftToRight, UITextAlignment.Left)]
+		[InlineData(TextAlignment.End, FlowDirection.LeftToRight, UITextAlignment.Right)]
+		[InlineData(TextAlignment.Start, FlowDirection.RightToLeft, UITextAlignment.Right)]
+		[InlineData(TextAlignment.End, FlowDirection.RightToLeft, UITextAlignment.Left)]
+		public async Task FormattedTextHorizontalTextAlignmentAdjustsForFlowDirection(TextAlignment alignment, FlowDirection flowDirection, UITextAlignment expected)
+		{
+			var formattedString = new FormattedString();
+			formattedString.Spans.Add(new Span { Text = "This is formatted TEXT!" });
+
+			var label = new LabelStub
+			{
+				FormattedText = formattedString,
+				HorizontalTextAlignment = alignment,
+				FlowDirection = flowDirection
+			};
+
+			var handler = await CreateHandlerAsync(label);
+			var platformLabel = GetPlatformLabel(handler);
+
+			var actualAlignment = await InvokeOnMainThreadAsync(() =>
+			{
+				// Get the alignment from the attributed text's paragraph style
+				var attributedText = platformLabel.AttributedText;
+				if (attributedText != null && attributedText.Length > 0)
+				{
+					var paragraphStyle = (NSParagraphStyle)attributedText.GetAttribute(UIStringAttributeKey.ParagraphStyle, 0, out _);
+					return paragraphStyle?.Alignment ?? platformLabel.TextAlignment;
+				}
+				return platformLabel.TextAlignment;
+			});
+
+			Assert.Equal(expected, actualAlignment);
+		}
+		
 		[Fact(DisplayName = "Horizontal TextAlignment Updates Correctly")]
 		public async Task HorizontalTextAlignmentInitializesCorrectly()
 		{
