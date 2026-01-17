@@ -338,11 +338,27 @@ namespace Microsoft.Maui.DeviceTests
 
 					LogToFile($"Inside handler, platformWindow is null: {platformWindow is null}");
 
+					// Get AppWindow for more detailed state info
+					AppWindow appWindow = null;
+					try
+					{
+						var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(platformWindow);
+						var windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hwnd);
+						appWindow = AppWindow.GetFromWindowId(windowId);
+						LogToFile($"AppWindow obtained. IsVisible: {appWindow.IsVisible}, Presenter.Kind: {appWindow.Presenter.Kind}");
+					}
+					catch (Exception ex)
+					{
+						LogToFile($"Failed to get AppWindow: {ex.Message}");
+					}
+
 					// Wait for initial activation to complete
 					await AssertEventually(() => activated >= 1, timeout: 5000,
 						message: "Window should fire Activated event after creation");
 
 					LogToFile($"After initial activation wait. activated={activated}, deactivated={deactivated}, resumed={resumed}");
+					if (appWindow != null)
+						LogToFile($"AppWindow state after activation: IsVisible={appWindow.IsVisible}, Presenter.Kind={appWindow.Presenter.Kind}");
 
 					for (int i = 0; i < 2; i++)
 					{
@@ -350,11 +366,15 @@ namespace Microsoft.Maui.DeviceTests
 						platformWindow.Restore();
 						// Use a delay long enough for window state transitions
 						await Task.Delay(300);
+						if (appWindow != null)
+							LogToFile($"Loop {i} after Restore: IsVisible={appWindow.IsVisible}, Presenter.Kind={appWindow.Presenter.Kind}");
 						LogToFile($"Loop iteration {i}: after Restore() delay. activated={activated}, deactivated={deactivated}, resumed={resumed}");
 
 						LogToFile($"Loop iteration {i}: calling Minimize()");
 						platformWindow.Minimize();
 						await Task.Delay(300);
+						if (appWindow != null)
+							LogToFile($"Loop {i} after Minimize: IsVisible={appWindow.IsVisible}, Presenter.Kind={appWindow.Presenter.Kind}");
 						LogToFile($"Loop iteration {i}: after Minimize() delay. activated={activated}, deactivated={deactivated}, resumed={resumed}");
 					}
 
