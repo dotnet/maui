@@ -37,7 +37,8 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IEntry.Text)] = MapText,
 			[nameof(IEntry.TextColor)] = MapTextColor,
 			[nameof(IEntry.CursorPosition)] = MapCursorPosition,
-			[nameof(IEntry.SelectionLength)] = MapSelectionLength
+			[nameof(IEntry.SelectionLength)] = MapSelectionLength,
+			[nameof(IEntry.UnderlineColor)] = MapUnderlineColor
 		};
 
 		public static CommandMapper<IEntry, IEntryHandler> CommandMapper = new(ViewCommandMapper)

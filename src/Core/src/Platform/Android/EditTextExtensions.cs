@@ -465,5 +465,43 @@ namespace Microsoft.Maui.Platform
 				return new global::Android.Graphics.Rect(leftEdge, topEdge, rightEdge, bottomEdge);
 			}
 		}
+
+		public static void UpdateUnderlineColor(this EditText editText, ITextInput textInput)
+		{
+			var underlineColor = textInput.UnderlineColor;
+			var background = editText.Background;
+
+			// If the background is a MauiLayerDrawable, it contains:
+			// - Layer 0: User's custom background (if any)
+			// - Layer 1: Material Design underline (abc_edit_text_material)
+			if (background is MauiLayerDrawable layerDrawable && layerDrawable.NumberOfLayers >= 2)
+			{
+				// Get the underline layer (should be the last layer)
+				var underlineLayer = layerDrawable.GetDrawable(layerDrawable.NumberOfLayers - 1);
+
+				if (underlineColor == null)
+				{
+					// Reset to default Material Design underline color
+					underlineLayer?.ClearColorFilter();
+				}
+				else
+				{
+					// Tint only the underline layer, not the user's background
+					underlineLayer?.SetColorFilter(underlineColor.ToPlatform(), FilterMode.SrcIn);
+				}
+			}
+			else if (background is not null)
+			{
+				// Fallback for cases where background is just the Material underline (no custom background)
+				if (underlineColor == null)
+				{
+					background.ClearColorFilter();
+				}
+				else
+				{
+					background.SetColorFilter(underlineColor.ToPlatform(), FilterMode.SrcIn);
+				}
+			}
+		}
 	}
 }
