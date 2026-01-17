@@ -338,6 +338,14 @@ namespace Microsoft.Maui.DeviceTests
 
 					LogToFile($"Inside handler, platformWindow is null: {platformWindow is null}");
 
+					// Subscribe to WinUI Activated event directly to see if it fires
+					int winuiActivatedCount = 0;
+					platformWindow.Activated += (s, args) =>
+					{
+						winuiActivatedCount++;
+						LogToFile($"[WINUI] Activated event fired: State={args.WindowActivationState}, count={winuiActivatedCount}");
+					};
+
 					// Get AppWindow for more detailed state info
 					AppWindow appWindow = null;
 					OverlappedPresenter overlappedPresenter = null;
@@ -376,7 +384,7 @@ namespace Microsoft.Maui.DeviceTests
 							LogToFile($"Loop {i} after Restore: IsVisible={appWindow.IsVisible}, Presenter.Kind={appWindow.Presenter.Kind}");
 						if (overlappedPresenter != null)
 							LogToFile($"Loop {i} after Restore: PresenterState={overlappedPresenter.State}");
-						LogToFile($"Loop iteration {i}: after Restore() delay. activated={activated}, deactivated={deactivated}, resumed={resumed}");
+						LogToFile($"Loop {i} after Restore: winuiActivated={winuiActivatedCount}, maui: activated={activated}, deactivated={deactivated}, resumed={resumed}");
 
 						LogToFile($"Loop iteration {i}: calling Minimize()");
 						platformWindow.Minimize();
@@ -385,7 +393,7 @@ namespace Microsoft.Maui.DeviceTests
 							LogToFile($"Loop {i} after Minimize: IsVisible={appWindow.IsVisible}, Presenter.Kind={appWindow.Presenter.Kind}");
 						if (overlappedPresenter != null)
 							LogToFile($"Loop {i} after Minimize: PresenterState={overlappedPresenter.State}");
-						LogToFile($"Loop iteration {i}: after Minimize() delay. activated={activated}, deactivated={deactivated}, resumed={resumed}");
+						LogToFile($"Loop {i} after Minimize: winuiActivated={winuiActivatedCount}, maui: activated={activated}, deactivated={deactivated}, resumed={resumed}");
 					}
 
 					LogToFile($"Exiting handler. activated={activated}, deactivated={deactivated}, resumed={resumed}");
