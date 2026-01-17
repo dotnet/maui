@@ -13,7 +13,7 @@ namespace Maui.Controls.Sample.Pages
 			InitializeComponent();
 		}
 
-		void OnSearchBarStyleButtonClicked(object sender, EventArgs e)
+		void OnSearchBarStyleButtonClicked(object? sender, EventArgs e)
 		{
 			switch (searchBar.On<iOS>().GetSearchBarStyle())
 			{
@@ -29,7 +29,7 @@ namespace Maui.Controls.Sample.Pages
 			}
 		}
 
-		void OnToggleBackgroundButtonClicked(object sender, EventArgs e)
+		void OnToggleBackgroundButtonClicked(object? sender, EventArgs e)
 		{
 			searchBar.BackgroundColor = (searchBar.BackgroundColor == Colors.Teal) ? Colors.Black : Colors.Teal;
 		}

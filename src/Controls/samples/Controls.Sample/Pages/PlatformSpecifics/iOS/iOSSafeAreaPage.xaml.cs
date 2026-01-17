@@ -10,7 +10,7 @@ namespace Maui.Controls.Sample.Pages
 			InitializeComponent();
 		}
 
-		void OnButtonClicked(object sender, EventArgs e)
+		void OnButtonClicked(object? sender, EventArgs e)
 		{
 			this.SafeAreaEdges = Microsoft.Maui.SafeAreaEdges.None;
 			(sender as Button)!.IsEnabled = false;

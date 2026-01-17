@@ -11,7 +11,9 @@ using Microsoft.Maui.Controls.Xaml;
 using Microsoft.Maui.Storage;
 using Xunit;
 
+#pragma warning disable CS0618 // XamlCompilation is obsolete
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
+#pragma warning restore CS0618
 
 namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 {
