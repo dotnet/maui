@@ -340,12 +340,16 @@ namespace Microsoft.Maui.DeviceTests
 
 					// Get AppWindow for more detailed state info
 					AppWindow appWindow = null;
+					OverlappedPresenter overlappedPresenter = null;
 					try
 					{
 						var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(platformWindow);
 						var windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hwnd);
 						appWindow = AppWindow.GetFromWindowId(windowId);
+						overlappedPresenter = appWindow.Presenter as OverlappedPresenter;
 						LogToFile($"AppWindow obtained. IsVisible: {appWindow.IsVisible}, Presenter.Kind: {appWindow.Presenter.Kind}");
+						if (overlappedPresenter != null)
+							LogToFile($"OverlappedPresenter: IsMinimizable={overlappedPresenter.IsMinimizable}, IsMaximizable={overlappedPresenter.IsMaximizable}, State={overlappedPresenter.State}");
 					}
 					catch (Exception ex)
 					{
@@ -359,6 +363,8 @@ namespace Microsoft.Maui.DeviceTests
 					LogToFile($"After initial activation wait. activated={activated}, deactivated={deactivated}, resumed={resumed}");
 					if (appWindow != null)
 						LogToFile($"AppWindow state after activation: IsVisible={appWindow.IsVisible}, Presenter.Kind={appWindow.Presenter.Kind}");
+					if (overlappedPresenter != null)
+						LogToFile($"OverlappedPresenter state: State={overlappedPresenter.State}");
 
 					for (int i = 0; i < 2; i++)
 					{
@@ -368,6 +374,8 @@ namespace Microsoft.Maui.DeviceTests
 						await Task.Delay(300);
 						if (appWindow != null)
 							LogToFile($"Loop {i} after Restore: IsVisible={appWindow.IsVisible}, Presenter.Kind={appWindow.Presenter.Kind}");
+						if (overlappedPresenter != null)
+							LogToFile($"Loop {i} after Restore: PresenterState={overlappedPresenter.State}");
 						LogToFile($"Loop iteration {i}: after Restore() delay. activated={activated}, deactivated={deactivated}, resumed={resumed}");
 
 						LogToFile($"Loop iteration {i}: calling Minimize()");
@@ -375,6 +383,8 @@ namespace Microsoft.Maui.DeviceTests
 						await Task.Delay(300);
 						if (appWindow != null)
 							LogToFile($"Loop {i} after Minimize: IsVisible={appWindow.IsVisible}, Presenter.Kind={appWindow.Presenter.Kind}");
+						if (overlappedPresenter != null)
+							LogToFile($"Loop {i} after Minimize: PresenterState={overlappedPresenter.State}");
 						LogToFile($"Loop iteration {i}: after Minimize() delay. activated={activated}, deactivated={deactivated}, resumed={resumed}");
 					}
 
