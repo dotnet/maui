@@ -103,7 +103,11 @@ namespace Microsoft.Maui.Controls
 		public string Route
 		{
 			get { return Routing.GetRoute(this); }
-			set { Routing.SetRoute(this, value); }
+			set
+			{
+				Routing.ValidateForDuplicates(this, value);
+				Routing.SetRoute(this, value);
+			}
 		}
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/BaseShellItem.xml" path="//Member[@MemberName='Title']/Docs/*" />
