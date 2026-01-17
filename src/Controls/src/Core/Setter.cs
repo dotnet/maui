@@ -78,6 +78,12 @@ namespace Microsoft.Maui.Controls
 				targetObject.SetDynamicResource(Property, dynamicResource.Key, specificity);
 			else if (Value is IList<VisualStateGroup> visualStateGroupCollection)
 				targetObject.SetValue(Property, visualStateGroupCollection.Clone(), specificity);
+			else if (Value is Style style)
+			{
+				// When setting a Style through a Setter (e.g., in VisualStateManager),
+				// we need to call the Style's Apply method to ensure all its setters are applied
+				((IStyle)style).Apply(targetObject, specificity);
+			}
 			else
 				targetObject.SetValue(Property, Value, specificity: specificity);
 		}
@@ -98,6 +104,12 @@ namespace Microsoft.Maui.Controls
 				targetObject.RemoveBinding(Property, specificity);
 			else if (Value is DynamicResource dynamicResource)
 				targetObject.RemoveDynamicResource(Property, specificity);
+			else if (Value is Style style)
+			{
+				// When un-applying a Style that was set through a Setter,
+				// we need to call the Style's UnApply method to properly clean up
+				((IStyle)style).UnApply(targetObject);
+			}
 			targetObject.ClearValue(Property, specificity);
 		}
 	}
