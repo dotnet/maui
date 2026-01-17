@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Controls
 			var targetObject = target;
 
 			if (!string.IsNullOrEmpty(TargetName) && target is Element element)
-				targetObject = element.FindByName(TargetName) as BindableObject ?? throw new XamlParseException($"Cannot resolve '{TargetName}' as Setter Target for '{target}'.");
+				targetObject = FindTargetByName(element, TargetName) ?? throw new XamlParseException($"Cannot resolve '{TargetName}' as Setter Target for '{target}'.");
 
 			if (Property == null)
 				return;
@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Controls
 			var targetObject = target;
 
 			if (!string.IsNullOrEmpty(TargetName) && target is Element element)
-				targetObject = element.FindByName(TargetName) as BindableObject ?? throw new ArgumentNullException(nameof(targetObject));
+				targetObject = FindTargetByName(element, TargetName) ?? throw new ArgumentNullException(nameof(targetObject));
 
 			if (Property == null)
 				return;
@@ -99,6 +99,26 @@ namespace Microsoft.Maui.Controls
 			else if (Value is DynamicResource dynamicResource)
 				targetObject.RemoveDynamicResource(Property, specificity);
 			targetObject.ClearValue(Property, specificity);
+		}
+
+		static BindableObject FindTargetByName(Element element, string name)
+		{
+			// Try standard lookup first (works for same or child namescopes)
+			if (element.FindByName(name) is BindableObject target)
+				return target;
+
+			// Walk up parent tree to handle ControlTemplate namescope boundaries
+			var current = element.Parent;
+			while (current != null)
+			{
+				var namescope = current.GetNameScope();
+				if (namescope?.FindByName(name) is BindableObject parentTarget)
+					return parentTarget;
+
+				current = current.Parent;
+			}
+
+			return null;
 		}
 	}
 }
