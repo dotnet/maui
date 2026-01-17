@@ -104,8 +104,10 @@ namespace Microsoft.Maui
 #endif
 
 #if ANDROID || IOS
+#pragma warning disable CS0618 // Type or member is obsolete
 			if (view is IBorder border && border.Border != null)
 				return true;
+#pragma warning restore CS0618 // Type or member is obsolete
 #endif
 
 #if WINDOWS || TIZEN
