@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Platform
 	/// and safe area handling. This view bridges the gap between iOS native UIView
 	/// and MAUI's cross-platform layout system.
 	/// </summary>
-	public abstract class MauiView : UIView, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable, IUIViewLifeCycleEvents, IPlatformMeasureInvalidationController
+	public abstract class MauiView : UIView, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable, IUIViewLifeCycleEvents, IPlatformMeasureInvalidationController, IInputTransparentManagingView
 	{
 		/// <summary>
 		/// Flag indicating that parent views should be invalidated when this view is moved to a window.
@@ -85,6 +85,8 @@ namespace Microsoft.Maui.Platform
 		/// Used to delegate measure and arrange operations to the cross-platform layout system.
 		/// </summary>
 		WeakReference<ICrossPlatformLayout>? _crossPlatformLayoutReference;
+
+		bool IInputTransparentManagingView.InputTransparent { get; set; }
 
 		/// <summary>
 		/// Gets or sets the cross-platform IView that this native view represents.
@@ -755,6 +757,35 @@ namespace Microsoft.Maui.Platform
 					view.IsFocused = false;
 				}
 			}
+		}
+
+		public override UIView? HitTest(CGPoint point, UIEvent? uievent)
+		{
+			var result = base.HitTest(point, uievent);
+
+			if (result is null)
+			{
+				return null;
+			}
+
+			if (((IInputTransparentManagingView)this).InputTransparent && Equals(result))
+			{
+				// If user interaction is disabled (IOW, if the corresponding View is InputTransparent),
+				// then we exclude the managing view itself from hit testing. But it's children are valid
+				// hit testing targets.
+
+				return null;
+			}
+
+			if (result is IInputTransparentManagingView v && v.InputTransparent)
+			{
+				// If the child is a managing view then we need to check the UserInteractionEnabledOverride
+				// since managing view instances always have user interaction enabled.
+
+				return null;
+			}
+
+			return result;
 		}
 	}
 }

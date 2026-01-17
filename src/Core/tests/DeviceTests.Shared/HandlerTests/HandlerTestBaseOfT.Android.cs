@@ -164,8 +164,13 @@ namespace Microsoft.Maui.DeviceTests
 
 			var handler = await CreateHandlerAsync(view);
 
-			if (handler is ViewHandler vh)
-				Assert.True(vh.NeedsContainer);
+			if (handler is not ViewHandler vh)
+				return;
+
+			if (handler.PlatformView is IInputTransparentManagingView)
+				Assert.False(vh.NeedsContainer, $"{view.GetType().Name} should NOT need a container because it uses a IInputTransparentManagingView platform view.");
+			else
+				Assert.True(vh.NeedsContainer, $"{view.GetType().Name} SHOULD need a container because it does NOT use a IInputTransparentManagingView platform view.");
 		}
 	}
 }

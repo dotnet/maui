@@ -1,2 +1,8 @@
 #nullable enable
 override Microsoft.Maui.Platform.MauiView.DidUpdateFocus(UIKit.UIFocusUpdateContext! context, UIKit.UIFocusAnimationCoordinator! coordinator) -> void
+*REMOVED*override Microsoft.Maui.Platform.LayoutView.UserInteractionEnabled.get -> bool
+*REMOVED*override Microsoft.Maui.Platform.LayoutView.UserInteractionEnabled.set -> void
+*REMOVED*override Microsoft.Maui.Platform.LayoutView.HitTest(CoreGraphics.CGPoint point, UIKit.UIEvent? uievent) -> UIKit.UIView?
+override Microsoft.Maui.Platform.MauiView.HitTest(CoreGraphics.CGPoint point, UIKit.UIEvent? uievent) -> UIKit.UIView?
+override Microsoft.Maui.Platform.MauiScrollView.HitTest(CoreGraphics.CGPoint point, UIKit.UIEvent? uievent) -> UIKit.UIView?
+*REMOVED*override Microsoft.Maui.Platform.MauiLabel.InvalidateIntrinsicContentSize() -> void

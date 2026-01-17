@@ -138,7 +138,7 @@ namespace Microsoft.Maui.Handlers
 		/// </summary>
 		public virtual bool NeedsContainer
 		{
-			get => VirtualView.NeedsContainer();
+			get => VirtualView.NeedsContainer(PlatformView);
 		}
 
 		/// <summary>
@@ -527,7 +527,7 @@ namespace Microsoft.Maui.Handlers
 			if (handler is ViewHandler viewHandler)
 				handler.HasContainer = viewHandler.NeedsContainer;
 			else
-				handler.HasContainer = view.NeedsContainer();
+				handler.HasContainer = view.NeedsContainer(handler.PlatformView as PlatformView);
 
 			if (hasContainerOldValue != handler.HasContainer)
 			{
@@ -604,7 +604,9 @@ namespace Microsoft.Maui.Handlers
 #if ANDROID
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
 
-			if (handler.ContainerView is WrapperView wrapper)
+			if (handler.PlatformView is IInputTransparentManagingView managing)
+				managing.InputTransparent = view.InputTransparent;
+			else if (handler.ContainerView is WrapperView wrapper)
 				wrapper.InputTransparent = view.InputTransparent;
 #else
 

@@ -87,29 +87,34 @@ namespace Microsoft.Maui
 			await Screenshot.Default.CaptureAsync(window);
 #endif
 
-#if !TIZEN
-		internal static bool NeedsContainer(this IView? view)
+		internal static bool NeedsContainer(this IView? view, PlatformView? platformView)
 		{
+#if !TIZEN
 			if (view?.Clip != null || view?.Shadow != null)
 				return true;
+#endif
 
 #if ANDROID
-			if (view?.InputTransparent == true)
+			// This is only here for Android because almost all Android views will require
+			// a wrapper when the view is InputTransparent. This is because Android does not
+			// have a concept of "not hit testable" so we have to emulate it intercepting the
+			// the touch events with a parent layout.
+			if (view?.InputTransparent == true && platformView is not IInputTransparentManagingView)
 				return true;
 #endif
 
 #if ANDROID || IOS
-#pragma warning disable CS0618 // Type or member is obsolete
 			if (view is IBorder border && border.Border != null)
 				return true;
-#pragma warning restore CS0618 // Type or member is obsolete
-#elif WINDOWS
+#endif
+
+#if WINDOWS || TIZEN
 			if (view is IBorderView border)
 				return border?.Shape != null || border?.Stroke != null;
 #endif
+
 			return false;
 		}
-#endif
-
+		
 	}
 }
