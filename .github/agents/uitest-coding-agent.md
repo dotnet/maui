@@ -46,6 +46,50 @@ pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform [android|ios|maccatalyst] 
 
 ---
 
+## 🚨 CRITICAL: Unique Issue Tracker Requirement
+
+**ONE test page per issue number** - Multiple test pages with the same issue number will cause crashes!
+
+```
+❌ CRASH ERROR:
+Please provide unique tracker + issue number combo: Github330080
+```
+
+**Why this happens**: The test infrastructure requires unique `[Issue(tracker, number)]` combinations across ALL test pages.
+
+**Solutions**:
+
+**✅ Option 1: Single comprehensive test page (PREFERRED)**
+```csharp
+// One test page testing multiple scenarios
+[Issue(IssueTracker.Github, 33008, "Multiple test scenarios", PlatformAffected.iOS)]
+public partial class Issue33008 : ContentPage
+{
+    // All test UI in one page
+    // Multiple SearchBars, buttons, etc.
+}
+
+// One test file with multiple [Test] methods
+public class Issue33008 : _IssuesUITest
+{
+    [Test] public void Scenario1() { }
+    [Test] public void Scenario2() { }
+    [Test] public void Scenario3() { }
+}
+```
+
+**❌ Option 2 WILL CRASH: Multiple test pages (DON'T DO THIS)**
+```csharp
+// ❌ WRONG: Multiple files with same issue number
+Issue33008SearchBar.xaml     // [Issue(Github, 33008, ...)]
+Issue33008SearchHandler.xaml  // [Issue(Github, 33008, ...)]
+// Result: CRASH - duplicate tracker combo
+```
+
+**Rule**: If you need multiple test scenarios for one issue, put them ALL in ONE test page with multiple test methods.
+
+---
+
 ## Two-Project Requirement
 
 **CRITICAL**: Every UI test requires code in TWO projects:
@@ -344,24 +388,69 @@ public void TestModifiesGlobalState()
 }
 ```
 
-### 5. Use Appropriate Waits
+### 5. Avoid Task.Delay Unless Necessary
+
+**⚠️ GUIDELINE**: Prefer Appium's built-in synchronization, but use delays when tests require them.
+
 ```csharp
-// ✅ Good: Wait for specific element
+// ✅ Preferred: Let Appium handle waiting
+App.Tap("SetTextButton");
+var status = App.FindElement("StatusLabel").GetText();
+
+// ⚠️ Use When Necessary: Some tests need explicit delays
+App.Tap("AnimateButton");
+Task.Delay(500).Wait();  // Animation takes time
+var position = App.FindElement("MovingElement").GetRect();
+```
+
+**When delays ARE needed**:
+- Animations must complete before measurement
+- Async operations without observable UI changes
+- Platform-specific timing requirements
+- Tests fail consistently without delay
+
+**When delays are NOT needed**:
+- Waiting for element to appear (use `App.WaitForElement()`)
+- Waiting for element to become interactive (use `App.WaitForElement()`)
+- Simple button taps and text updates (Appium waits automatically)
+
+**Rule of thumb**:
+1. Try without delay first
+2. If test fails consistently, add minimal delay
+3. Document WHY delay is needed
+
+```csharp
+// ✅ Good: Documented necessary delay
+App.Tap("StartAnimationButton");
+Task.Delay(500).Wait();  // Wait for animation to complete
+var finalPosition = App.FindElement("AnimatedElement").GetRect();
+
+// ❌ Bad: Unnecessary delay (FindElement waits automatically)
+App.Tap("Button");
+Task.Delay(500).Wait();
+var text = App.FindElement("Label").GetText();
+```
+
+### 6. Use Appropriate Waits (When Needed)
+```csharp
+// ✅ Good: Wait for specific element with custom timeout
 App.WaitForElement("ResultLabel", timeout: TimeSpan.FromSeconds(10));
 
-// ❌ Bad: Fixed sleep (timing-dependent)
-Thread.Sleep(5000);
+// ✅ Good: Standard wait (uses default timeout)
+App.WaitForElement("ResultLabel");
 ```
 
 ## Checklist Before Committing
 
 - [ ] Two files created (XAML + NUnit test)
 - [ ] File names match: `IssueXXXXX`
+- [ ] **UNIQUE** `[Issue()]` tracker+number combo (no duplicates across all test files)
 - [ ] `[Issue()]` attribute present with all parameters
 - [ ] Inherits from `_IssuesUITest`
 - [ ] ONE `[Category]` attribute from UITestCategories
 - [ ] All interactive elements have `AutomationId`
 - [ ] Test uses `App.WaitForElement()` before interactions
+- [ ] Delays (`Task.Delay()`) only used when necessary and documented
 - [ ] Test has meaningful assertions
 - [ ] Test method name is descriptive
 - [ ] No unnecessary platform directives
@@ -596,6 +685,37 @@ public partial class IssueXXXXX : ContentPage { }
 // ✅ Good
 [Issue(IssueTracker.Github, 12345, "Description", PlatformAffected.All)]
 public partial class IssueXXXXX : ContentPage { }
+```
+
+### Using Task.Delay or Thread.Sleep
+```csharp
+// ⚠️ Avoid when possible (try without delay first)
+App.Tap("Button");
+Task.Delay(500).Wait();
+var text = App.FindElement("Label").GetText();
+
+// ✅ Good: Use when necessary with explanation
+App.Tap("AnimateButton");
+Task.Delay(500).Wait();  // Animation duration requires wait
+var position = App.FindElement("Element").GetRect();
+
+// ✅ Better: Prefer Appium's synchronization when possible
+App.Tap("Button");
+var text = App.FindElement("Label").GetText();  // Waits automatically
+```
+
+**Guideline**: Try without delays first. Add only if tests fail consistently, and document why the delay is needed.
+
+### Duplicate Issue Tracker Numbers
+```
+// ❌ Bad: Multiple test pages with same issue number
+Issue33008SearchBar.xaml      [Issue(Github, 33008, ...)]
+Issue33008SearchHandler.xaml  [Issue(Github, 33008, ...)]
+// RESULT: App crashes with "unique tracker + issue number combo" error
+
+// ✅ Good: One test page with multiple test methods
+Issue33008.xaml               [Issue(Github, 33008, ...)]
+Issue33008.cs                 { Test1(), Test2(), Test3() }
 ```
 
 ## Troubleshooting
