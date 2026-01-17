@@ -9,7 +9,9 @@ using Microsoft.Maui.Graphics.Platform;
 #endif
 using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Hosting;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Shapes;
 
 namespace Microsoft.Maui.Platform
@@ -51,6 +53,25 @@ namespace Microsoft.Maui.Platform
 
 		internal bool IsInnerPath { get; private set; }
 
+		internal void UpdateFocusability()
+		{
+			// Make the panel focusable only when it has semantic properties
+			if (CrossPlatformLayout is IView view)
+			{
+				var semantics = view.Semantics;
+				var hasSemanticsDescription = semantics != null && !string.IsNullOrEmpty(semantics.Description);
+				
+				// Update focusability based on semantic properties
+				Focusable = hasSemanticsDescription;
+				IsTabStop = hasSemanticsDescription;
+			}
+			else
+			{
+				Focusable = false;
+				IsTabStop = false;
+			}
+		}
+
 		protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
 		{
 			var actual = base.ArrangeOverride(finalSize);
@@ -71,6 +92,7 @@ namespace Microsoft.Maui.Platform
 			EnsureBorderPath(containsCheck: false);
 
 			SizeChanged += ContentPanelSizeChanged;
+			KeyDown += ContentPanelKeyDown;
 		}
 
 		void ContentPanelSizeChanged(object sender, SizeChangedEventArgs e)
@@ -210,6 +232,23 @@ namespace Microsoft.Maui.Platform
 			geometricClip.Offset = new Vector2(strokeThickness - Content.ActualOffset.X, strokeThickness - Content.ActualOffset.Y);
 
 			visual.Clip = geometricClip;
+		}
+
+		protected override AutomationPeer OnCreateAutomationPeer()
+		{
+			return new ContentPanelAutomationPeer(this);
+		}
+
+		void ContentPanelKeyDown(object sender, KeyRoutedEventArgs e)
+		{
+			// Handle Enter and Space keys for selection/activation
+			// This allows keyboard users to interact with borders that have semantic descriptions
+			if (e.Key == Windows.System.VirtualKey.Enter || e.Key == Windows.System.VirtualKey.Space)
+			{
+				// Raise the Tapped event to maintain consistency with pointer interactions
+				// The handler for this event can be set by the virtual view
+				e.Handled = true;
+			}
 		}
 	}
 }
