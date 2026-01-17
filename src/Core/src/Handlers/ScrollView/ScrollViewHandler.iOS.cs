@@ -114,7 +114,7 @@ namespace Microsoft.Maui.Handlers
 				var minScrollVertical = Math.Clamp(request.VerticalOffset, 0, availableScrollHeight);
 				uiScrollView.SetContentOffset(new CGPoint(minScrollHorizontal, minScrollVertical), !request.Instant);
 
-				if (request.Instant)
+				if (request.Instant || (minScrollHorizontal == uiScrollView.ContentOffset.X && minScrollVertical == uiScrollView.ContentOffset.Y))
 				{
 					scrollView.ScrollFinished();
 				}
