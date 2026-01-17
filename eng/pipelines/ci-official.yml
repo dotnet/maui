@@ -82,7 +82,7 @@ extends:
         enableMicrobuild: true
         publishAssets: true
         sourceIndexParams:
-          sourceIndexBuildCommand: build.cmd -restore -build -ci /bl:$(Build.Arcade.LogsPath)sourceIndexBuild.binlog /p:OfficialBuildId=$(_BuildOfficalId) /p:_SkipUpdateBuildNumber=true
+          sourceIndexBuildCommand: build.cmd -restore -build -ci /bl:$(Build.Arcade.LogsPath)sourceIndexBuild.binlog /p:OfficialBuildId=$(_BuildOfficialId) /p:_SkipUpdateBuildNumber=true
           binlogPath: $(Build.Arcade.LogsPath)sourceIndexBuild.binlog
         prepareSteps:
         - template: /eng/pipelines/common/provision.yml@self
