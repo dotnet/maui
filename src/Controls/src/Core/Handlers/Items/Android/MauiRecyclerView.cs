@@ -372,6 +372,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (ItemsViewAdapter == null || ItemsView == null)
 				return;
 
+			if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepScrollOffset)
+			{
+				ScrollHelper.AddScrollListener();
+			}
+			else
+			{
+				ScrollHelper.RemoveScrollListener();
+			}
+
 			if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
 			{
 				// Keeping the current items in view is the default, so we don't need to watch for data changes
