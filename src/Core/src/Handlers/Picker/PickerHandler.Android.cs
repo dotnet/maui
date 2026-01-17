@@ -6,6 +6,7 @@ using Android.Graphics.Drawables;
 using Android.Text;
 using Android.Text.Style;
 using Google.Android.Material.Dialog;
+using Microsoft.Maui.Graphics;
 using AppCompatAlertDialog = AndroidX.AppCompat.App.AlertDialog;
 using AResource = Android.Resource;
 
@@ -220,6 +221,12 @@ namespace Microsoft.Maui.Handlers
 		static void Reload(IPickerHandler handler)
 		{
 			handler.PlatformView.UpdatePicker(handler.VirtualView);
+		}
+		
+		public override void PlatformArrange(Rect frame)
+		{
+			this.PrepareForTextViewArrange(frame);
+			base.PlatformArrange(frame);
 		}
 	}
 }

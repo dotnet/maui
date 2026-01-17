@@ -1,1 +1,3 @@
 #nullable enable
+override Microsoft.Maui.Handlers.EntryHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect frame) -> void
+override Microsoft.Maui.Handlers.PickerHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect frame) -> void
