@@ -16,7 +16,7 @@ using TranslucencyMode = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecif
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	public class TabbedRenderer : UITabBarController, IPlatformViewHandler
+	public class TabbedRenderer : UITabBarController, IPlatformViewHandler, IUIViewLifeCycleEvents
 	{
 		bool _barBackgroundColorWasSet;
 		bool _barTextColorWasSet;
@@ -30,6 +30,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		WeakReference<VisualElement> _element;
 
 		Brush _currentBarBackground;
+		EventHandler _movedToWindow;
 
 		IMauiContext MauiContext => _mauiContext;
 		public static IPropertyMapper<TabbedPage, TabbedRenderer> Mapper = new PropertyMapper<TabbedPage, TabbedRenderer>(TabbedViewHandler.ViewMapper);
@@ -120,12 +121,22 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			Page?.SendAppearing();
 			base.ViewDidAppear(animated);
+
+			if (View.Window is not null)
+			{
+				_movedToWindow?.Invoke(this, EventArgs.Empty);
+			}
 		}
 
 		public override void ViewDidDisappear(bool animated)
 		{
 			base.ViewDidDisappear(animated);
 			Page?.SendDisappearing();
+
+			if (View.Window is null)
+			{
+				_movedToWindow?.Invoke(this, EventArgs.Empty);
+			}
 		}
 
 		public override void ViewDidLayoutSubviews()
@@ -619,6 +630,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				tabbed.IsSet(TabbedPage.BarBackgroundColorProperty) ? tabbed.BarBackgroundColor : null,
 				tabbed.IsSet(TabbedPage.BarTextColorProperty) ? tabbed.BarTextColor : null,
 				tabbed.IsSet(TabbedPage.BarTextColorProperty) ? tabbed.BarTextColor : null);
+		}
+		event EventHandler IUIViewLifeCycleEvents.MovedToWindow
+		{
+			add => _movedToWindow += value;
+			remove => _movedToWindow -= value;
 		}
 
 		#region IPlatformViewHandler

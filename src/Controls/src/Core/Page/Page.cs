@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class Page : VisualElement, ILayout, IPageController, IElementConfiguration<Page>, IPaddingElement, ISafeAreaView2, IView, ITitledElement, IToolbarElement, ISafeAreaView, IConstrainedView
 #if IOS
-	,IiOSPageSpecifics
+	, IiOSPageSpecifics
 #endif
 	{
 		/// <summary>
@@ -768,15 +768,20 @@ namespace Microsoft.Maui.Controls
 			set => ToolbarElement.SetValue(ref _toolbar, value, Handler);
 		}
 
-		internal void SendNavigatedTo(NavigatedToEventArgs args)
+	internal void SendNavigatedTo(NavigatedToEventArgs args)
+	{
+		HasNavigatedTo = true;
+		NavigatedTo?.Invoke(this, args);
+		OnNavigatedTo(args);
+		
+		// Only propagate to current page if it hasn't already received NavigatedTo
+		// This prevents duplicate events when multiple navigation systems are involved
+		var currentPage = (this as IPageContainer<Page>)?.CurrentPage;
+		if (currentPage != null && !currentPage.HasNavigatedTo)
 		{
-			HasNavigatedTo = true;
-			NavigatedTo?.Invoke(this, args);
-			OnNavigatedTo(args);
-			(this as IPageContainer<Page>)?.CurrentPage?.SendNavigatedTo(args);
+			currentPage.SendNavigatedTo(args);
 		}
-
-		internal void SendNavigatingFrom(NavigatingFromEventArgs args)
+	}		internal void SendNavigatingFrom(NavigatingFromEventArgs args)
 		{
 			NavigatingFrom?.Invoke(this, args);
 			OnNavigatingFrom(args);
@@ -867,6 +872,162 @@ namespace Microsoft.Maui.Controls
 		{
 			var debugText = DebuggerDisplayHelpers.GetDebugText(nameof(BindingContext), BindingContext, nameof(Title), Title);
 			return $"{this.GetType().FullName}: {debugText}";
+		}
+#nullable enable
+		IDisposable? _navigationEventSubscription = null;
+
+		/// <summary>
+		/// Configures this page as the outgoing page during navigation, handling NavigatingFrom and NavigatedFrom events.
+		/// </summary>
+		/// <param name="incomingPage">The page being navigated to.</param>
+		/// <param name="navigationType">The type of navigation being performed.</param>
+		internal void ConfigureAsOutgoingPage(Page? incomingPage, NavigationType navigationType)
+		{
+			// Clean up any existing navigation event subscriptions to prevent duplicates
+			CleanupNavigationEventSubscription();
+
+			// Only fire NavigatingFrom if we previously fired NavigatedTo (to maintain event pairing)
+			if (HasNavigatedTo)
+			{
+				SendNavigatingFrom(new NavigatingFromEventArgs(incomingPage , navigationType));
+			}
+
+			if (IsLoaded)
+			{
+				// Schedule NavigatedFrom to fire when page unloads
+				_navigationEventSubscription = this.OnUnloaded(() =>
+				{
+					FireNavigatedFromAndCleanup(navigationType);
+				});
+			}
+			else
+			{
+				// Page is not loaded, fire NavigatedFrom immediately
+				FireNavigatedFromAndCleanup(navigationType);
+			}
+		}
+
+		/// <summary>
+		/// Configures this page as the incoming page during navigation, handling NavigatedTo events.
+		/// </summary>
+		/// <param name="outgoingPage">The page being navigated from.</param>
+		internal void ConfigureAsIncomingPage(Page? outgoingPage)
+		{
+			// Configure the outgoing page first (preventing potential duplicate event wiring)
+			outgoingPage?.ConfigureAsOutgoingPage(this, NavigationType.Replace);
+
+			// Clean up any existing navigation event subscriptions to prevent duplicates
+			CleanupNavigationEventSubscription();
+
+			if (!IsLoaded)
+			{
+				// Page is not yet loaded, wait for Loaded event before firing NavigatedTo
+				SetupLoadedEventHandling(outgoingPage);
+			}
+			else
+			{
+				// Page is already loaded, fire NavigatedTo immediately if not already fired
+				if (!HasNavigatedTo)
+				{
+					SendNavigatedTo(new NavigatedToEventArgs(outgoingPage, NavigationType.Replace));
+				}
+
+				// Set up handler for future unloaded events
+				SetupUnloadedEventHandling();
+			}
+		}
+
+		/// <summary>
+		/// Sets up event handling for when the page gets loaded.
+		/// </summary>
+		/// <param name="previousPage">The page that was navigated from.</param>
+		private void SetupLoadedEventHandling(Page? previousPage)
+		{
+			EventHandler? onPageLoaded = null;
+			onPageLoaded = (object? sender, EventArgs args) =>
+			{
+				if (sender is Page loadedPage && !loadedPage.HasNavigatedTo)
+				{
+					loadedPage.SendNavigatedTo(new NavigatedToEventArgs(previousPage, NavigationType.Replace));
+
+					// Remove the loaded event handler to prevent duplicate firing
+					if (onPageLoaded != null)
+					{
+						Loaded -= onPageLoaded;
+					}
+
+					// Set up handler for future unloaded events
+					SetupUnloadedEventHandling();
+				}
+			};
+
+			Loaded += onPageLoaded;
+
+			// Store subscription for cleanup
+			_navigationEventSubscription = new ActionDisposable(() =>
+			{
+				if (onPageLoaded != null)
+				{
+					Loaded -= onPageLoaded;
+				}
+			});
+		}
+
+		/// <summary>
+		/// Sets up event handling for when the page gets unloaded.
+		/// </summary>
+		private void SetupUnloadedEventHandling()
+		{
+			EventHandler? onPageUnloaded = null;
+			onPageUnloaded = (object? sender, EventArgs args) =>
+			{
+				if (sender is Page unloadedPage && unloadedPage.HasNavigatedTo)
+				{
+					// Fire navigation events when page unloads (ensure proper event pairing)
+					unloadedPage.SendNavigatedFrom(new NavigatedFromEventArgs(unloadedPage, NavigationType.Replace));
+				}
+
+				// Remove the unloaded event handler to prevent duplicate firing
+				if (onPageUnloaded != null)
+				{
+					Unloaded -= onPageUnloaded;
+				}
+			};
+
+			Unloaded += onPageUnloaded;
+
+			// Store subscription for cleanup
+			_navigationEventSubscription = new ActionDisposable(() =>
+			{
+				if (onPageUnloaded != null)
+				{
+					Unloaded -= onPageUnloaded;
+				}
+			});
+		}
+
+		/// <summary>
+		/// Fires the NavigatedFrom event and performs cleanup operations.
+		/// </summary>
+		/// <param name="navigationType">The type of navigation that occurred.</param>
+		private void FireNavigatedFromAndCleanup(NavigationType navigationType)
+		{
+			if (HasNavigatedTo)
+			{
+				SendNavigatedFrom(new NavigatedFromEventArgs(this, navigationType));
+			}
+
+			this.DisconnectHandlers();
+			CleanupNavigationEventSubscription();
+		}
+
+		/// <summary>
+		/// Cleans up navigation event subscriptions to prevent memory leaks.
+		/// </summary>
+		private void CleanupNavigationEventSubscription()
+		{
+			_navigationEventSubscription?.Dispose();
+			_navigationEventSubscription = null;
 		}
 	}
 }
