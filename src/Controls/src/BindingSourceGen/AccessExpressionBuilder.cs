@@ -16,8 +16,8 @@ public static class AccessExpressionBuilder
 			ConditionalAccess conditionalAccess => ExtendExpression(previousExpression: $"{previousExpression}?", conditionalAccess.Part),
 			IndexAccess { Index: int numericIndex } => $"{previousExpression}[{numericIndex}]",
 			IndexAccess { Index: string stringIndex } => $"{previousExpression}[\"{stringIndex}\"]",
-			MemberAccess { Kind: AccessorKind.Field, IsGetterInaccessible: true } memberAccess => $"{CreateUnsafeFieldAccessorMethodName(memberAccess.MemberName)}({previousExpression})",
-			MemberAccess { Kind: AccessorKind.Property, IsGetterInaccessible: true } memberAccess => $"{CreateUnsafePropertyAccessorGetMethodName(memberAccess.MemberName)}({previousExpression})",
+			MemberAccess { Kind: AccessorKind.Field, IsGetterAccessible: false } memberAccess => $"{CreateUnsafeFieldAccessorMethodName(memberAccess.MemberName)}({previousExpression})",
+			MemberAccess { Kind: AccessorKind.Property, IsGetterAccessible: false } memberAccess => $"{CreateUnsafePropertyAccessorGetMethodName(memberAccess.MemberName)}({previousExpression})",
 			MemberAccess memberAccess => $"{previousExpression}.{memberAccess.MemberName}",
 			_ => throw new NotSupportedException($"Unsupported path part type: {nextPart.GetType()}"),
 		};
