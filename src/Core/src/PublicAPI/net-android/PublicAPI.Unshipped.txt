@@ -1,1 +1,4 @@
 #nullable enable
+Microsoft.Maui.IEntry.HasBorder.get -> bool
+static Microsoft.Maui.Handlers.EntryHandler.MapHasBorder(Microsoft.Maui.Handlers.IEntryHandler! handler, Microsoft.Maui.IEntry! entry) -> void
+static Microsoft.Maui.Platform.EditTextExtensions.UpdateHasBorder(this Android.Widget.EditText! editText, Microsoft.Maui.IEntry! entry) -> void
