@@ -18,6 +18,14 @@ This skill uses `bash` together with `pwsh` (PowerShell 7+) to run the PowerShel
 - `dotnet` - .NET SDK with iOS workloads installed
 - Xcode with iOS simulators
 
+## Dependencies
+
+This skill uses shared infrastructure scripts:
+- `.github/scripts/shared/Start-Emulator.ps1` - Detects and boots iOS simulators
+- `.github/scripts/shared/shared-utils.ps1` - Common utility functions
+
+These are automatically loaded by the Run-DeviceTests.ps1 script.
+
 ## When to Use
 
 - User wants to run device tests locally
@@ -40,10 +48,10 @@ This skill uses `bash` together with `pwsh` (PowerShell 7+) to run the PowerShel
 
 All scripts are in `.github/skills/run-device-tests/scripts/`
 
-### 1. Run Device Tests (Full Workflow)
+### Run Device Tests (Full Workflow)
 
 ```bash
-# Run Controls device tests on default iOS simulator
+# Run Controls device tests on default iOS simulator (iPhone Xs with iOS 18.5)
 pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Controls
 
 # Run Core device tests on iOS 26
@@ -58,26 +66,26 @@ pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Graphi
 pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project BlazorWebView
 ```
 
-### 2. Build Only (No Test Run)
+### Build Only (No Test Run)
 
 ```bash
 pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Controls -BuildOnly
 ```
 
-### 3. List Available Simulators
+### List Available Simulators
 
 ```bash
-pwsh .github/skills/run-device-tests/scripts/List-Simulators.ps1
+# Use xcrun simctl directly to see available simulators
+xcrun simctl list devices available
 
-# Filter by iOS version
-pwsh .github/skills/run-device-tests/scripts/List-Simulators.ps1 -iOSVersion 26
+# Or use the shared Start-Emulator.ps1 which auto-detects best simulator
+# (iPhone Xs with iOS 18.5 by default)
 ```
 
 ## Workflow
 
-1. **List simulators** (optional): `scripts/List-Simulators.ps1` to see available iOS versions
-2. **Run tests**: `scripts/Run-DeviceTests.ps1 -Project <name>` builds and runs tests
-3. **Check results**: Look at the log output or `artifacts/log/` directory
+1. **Run tests**: `scripts/Run-DeviceTests.ps1 -Project <name>` automatically detects/boots simulator, builds, and runs tests
+2. **Check results**: Look at the console output or `artifacts/log/` directory for detailed test results
 
 ## Output
 
@@ -95,7 +103,7 @@ pwsh .github/skills/run-device-tests/scripts/List-Simulators.ps1 -iOSVersion 26
 ## Examples
 
 ```bash
-# Quick test run for Controls on default simulator
+# Quick test run for Controls on default simulator (iPhone Xs with iOS 18.5)
 pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Controls
 
 # Test on iOS 26 specifically
@@ -107,3 +115,10 @@ pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Contro
 # Build without running tests
 pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Core -BuildOnly
 ```
+
+## Notes
+
+- The script automatically detects and boots an iOS simulator using the shared Start-Emulator.ps1 infrastructure
+- Default simulator is iPhone Xs with iOS 18.5 (same as UI tests)
+- Simulator selection and boot logic is handled by `.github/scripts/shared/Start-Emulator.ps1`
+- xharness manages test execution and reporting

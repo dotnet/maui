@@ -96,6 +96,10 @@ if (-not $RepoRoot) {
     exit 1
 }
 
+# Import shared utilities
+$SharedScriptsDir = Join-Path $RepoRoot ".github/scripts/shared"
+. (Join-Path $SharedScriptsDir "shared-utils.ps1")
+
 Push-Location $RepoRoot
 
 try {
@@ -105,13 +109,23 @@ try {
     Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Cyan
     Write-Host ""
 
-    # Check for xharness
+    # Check for xharness (try local tool first, then global)
     $xharness = Get-Command "xharness" -ErrorAction SilentlyContinue
+    $useLocalXharness = $false
+    
     if (-not $xharness) {
-        Write-Error "xharness is not installed. Install with: dotnet tool install --global Microsoft.DotNet.XHarness.CLI"
-        exit 1
+        # Try dotnet tool (local tool manifest)
+        try {
+            $null = & dotnet xharness help 2>&1
+            Write-Host "✓ xharness found: local dotnet tool" -ForegroundColor Green
+            $useLocalXharness = $true
+        } catch {
+            Write-Error "xharness is not installed. Install with: dotnet tool install --global Microsoft.DotNet.XHarness.CLI"
+            exit 1
+        }
+    } else {
+        Write-Host "✓ xharness found: $($xharness.Source)" -ForegroundColor Green
     }
-    Write-Host "✓ xharness found: $($xharness.Source)" -ForegroundColor Green
 
     # Check for dotnet
     $dotnet = Get-Command "dotnet" -ErrorAction SilentlyContinue
@@ -187,6 +201,39 @@ try {
     # ═══════════════════════════════════════════════════════════
     # TEST PHASE
     # ═══════════════════════════════════════════════════════════
+    # ═══════════════════════════════════════════════════════════
+    # SIMULATOR SETUP
+    # ═══════════════════════════════════════════════════════════
+    Write-Host ""
+    Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Cyan
+    Write-Host "  Starting iOS Simulator" -ForegroundColor Cyan
+    Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Cyan
+    Write-Host ""
+
+    # Use Start-Emulator.ps1 to detect/boot iOS simulator
+    # This ensures the simulator is ready before xharness runs
+    if ($iOSVersion) {
+        Write-Info "Requesting iOS version: $iOSVersion"
+        # Note: Start-Emulator.ps1 doesn't support version filtering yet
+        # For now, we'll let xharness handle version targeting via --target flag
+    }
+    
+    # Call Start-Emulator.ps1 directly (not dot-sourced)
+    # This will export $env:DEVICE_UDID
+    $startEmulatorPath = Join-Path $SharedScriptsDir "Start-Emulator.ps1"
+    $SimulatorUdid = & pwsh -File $startEmulatorPath -Platform "ios"
+    
+    if (-not $SimulatorUdid) {
+        Write-Error "Failed to start iOS simulator"
+        exit 1
+    }
+    
+    Write-Host ""
+    Write-Host "✓ Simulator ready: $SimulatorUdid" -ForegroundColor Green
+
+    # ═══════════════════════════════════════════════════════════
+    # TEST PHASE
+    # ═══════════════════════════════════════════════════════════
     Write-Host ""
     Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Cyan
     Write-Host "  Running Tests with XHarness" -ForegroundColor Cyan
@@ -198,6 +245,7 @@ try {
     }
 
     # Determine target
+    # xharness will use its own simulator management, but we've ensured one is booted
     $target = "ios-simulator-64"
     if ($iOSVersion) {
         $target = "ios-simulator-64_$iOSVersion"
@@ -217,12 +265,22 @@ try {
         $xharnessArgs += "--set-env=TestFilter=$TestFilter"
     }
 
-    Write-Host "Running: xharness $($xharnessArgs -join ' ')" -ForegroundColor Gray
+    if ($useLocalXharness) {
+        $xharnessCommand = "dotnet xharness"
+    } else {
+        $xharnessCommand = "xharness"
+    }
+    
+    Write-Host "Running: $xharnessCommand $($xharnessArgs -join ' ')" -ForegroundColor Gray
     Write-Host ""
     Write-Host "Target: $target" -ForegroundColor Yellow
     Write-Host ""
 
-    & xharness @xharnessArgs
+    if ($useLocalXharness) {
+        & dotnet xharness @xharnessArgs
+    } else {
+        & xharness @xharnessArgs
+    }
 
     $testExitCode = $LASTEXITCODE
 
