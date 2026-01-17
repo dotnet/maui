@@ -184,5 +184,10 @@ jobs:
         testRunner: VSTest
         testResultsFiles: '$(build.artifactstagingdirectory)/**/*.trx'
         testRunTitle: ${{ RunPlatform.testName }} templates run tests
+
+    - task: PublishCodeCoverageResults@2
+      displayName: "Publish code coverage"
+      inputs:
+        summaryFileLocation: '$(Agent.TempDirectory)/**/coverage.cobertura.xml'
     # - template: /eng/pipelines/common/fail-on-issue.yml
 
