@@ -2532,5 +2532,220 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();
 		}
+
+		#region Issue 29459 - Dynamic binding switching tests
+
+		// Internal ViewModel for the custom control (matches the bug report pattern)
+		class Issue29459ControlViewModel : INotifyPropertyChanged
+		{
+			public event PropertyChangedEventHandler PropertyChanged;
+
+			private int _value;
+			public int Value
+			{
+				get => _value;
+				set
+				{
+					if (_value != value)
+					{
+						_value = value;
+						OnPropertyChanged();
+					}
+				}
+			}
+
+			public void Increase() => Value++;
+
+			protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+			{
+				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+			}
+		}
+
+		// Custom control with internal ViewModel that syncs with bindable property
+		// This matches the exact pattern from the bug report
+		class Issue29459CustomControl : ContentView
+		{
+			public Issue29459ControlViewModel ViewModel { get; } = new();
+
+			public Issue29459CustomControl()
+			{
+				// Sync ViewModel.Value -> BindableProperty Value (like the bug report)
+				ViewModel.PropertyChanged += (s, e) =>
+				{
+					if (e.PropertyName == nameof(Issue29459ControlViewModel.Value))
+					{
+						if (Value != ViewModel.Value)
+						{
+							Value = ViewModel.Value;
+						}
+					}
+				};
+			}
+
+			public static readonly BindableProperty ValueProperty = BindableProperty.Create(
+				propertyName: nameof(Value),
+				returnType: typeof(int),
+				declaringType: typeof(Issue29459CustomControl),
+				defaultValue: 0,
+				defaultBindingMode: BindingMode.TwoWay,
+				propertyChanged: OnValuePropertyChanged);
+
+			private static void OnValuePropertyChanged(BindableObject bindable, object oldValue, object newValue)
+			{
+				// Sync BindableProperty Value -> ViewModel.Value (like the bug report)
+				if (bindable is Issue29459CustomControl control && newValue is int newVal)
+				{
+					control.PropertyChangedCount++;
+					if (control.ViewModel.Value != newVal)
+					{
+						control.ViewModel.Value = newVal;
+					}
+				}
+			}
+
+			public int Value
+			{
+				get => (int)GetValue(ValueProperty);
+				set => SetValue(ValueProperty, value);
+			}
+
+			public int PropertyChangedCount { get; private set; }
+		}
+
+		class Issue29459ViewModel : INotifyPropertyChanged
+		{
+			public event PropertyChangedEventHandler PropertyChanged;
+
+			private int _a;
+			public int A
+			{
+				get => _a;
+				set
+				{
+					if (_a != value)
+					{
+						_a = value;
+						OnPropertyChanged();
+					}
+				}
+			}
+
+			private int _b;
+			public int B
+			{
+				get => _b;
+				set
+				{
+					if (_b != value)
+					{
+						_b = value;
+						OnPropertyChanged();
+					}
+				}
+			}
+
+			protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+			{
+				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+			}
+		}
+
+		[Fact]
+		public void Issue29459_SwitchingBindingTriggersPropertyChanged()
+		{
+			// Arrange: Create control and set up view model
+			var control = new Issue29459CustomControl();
+			var viewModel = new Issue29459ViewModel { A = 0, B = 100 };
+			control.BindingContext = viewModel;
+
+			// Act: Bind to property A
+			control.SetBinding(Issue29459CustomControl.ValueProperty, nameof(Issue29459ViewModel.A));
+
+			// Assert: Initial binding should have correct value
+			Assert.Equal(0, control.Value);
+			Assert.Equal(0, control.ViewModel.Value);
+
+			// Reset counter for clean measurement
+			int initialCount = control.PropertyChangedCount;
+
+			// Act: Switch to property B
+			control.SetBinding(Issue29459CustomControl.ValueProperty, nameof(Issue29459ViewModel.B));
+
+			// Assert: Switching binding should trigger property changed since value is different
+			Assert.Equal(100, control.Value);
+			Assert.Equal(100, control.ViewModel.Value);
+			Assert.True(control.PropertyChangedCount > initialCount,
+				"PropertyChanged should fire when switching to a binding with a different value");
+		}
+
+		[Fact]
+		public void Issue29459_SwitchingBindingAfterModifyingValueTriggersPropertyChanged()
+		{
+			// This test reproduces the exact scenario from issue #29459:
+			// A --> B (press Increase button on control) --> A (no changes) --> B (should show updated B value)
+			// The key is that the Increase button modifies the INTERNAL ViewModel, not the external one directly
+
+			var control = new Issue29459CustomControl();
+			var viewModel = new Issue29459ViewModel { A = 0, B = 100 };
+			control.BindingContext = viewModel;
+
+			// Step 1: Bind to A
+			control.SetBinding(Issue29459CustomControl.ValueProperty, nameof(Issue29459ViewModel.A));
+			Assert.Equal(0, control.Value);
+			Assert.Equal(0, control.ViewModel.Value);
+
+			// Step 2: Switch to B
+			control.SetBinding(Issue29459CustomControl.ValueProperty, nameof(Issue29459ViewModel.B));
+			Assert.Equal(100, control.Value);
+			Assert.Equal(100, control.ViewModel.Value);
+
+			// Step 3: Press Increase button (this modifies the INTERNAL ViewModel, which syncs to bindable property, which syncs to external viewModel.B)
+			control.ViewModel.Increase();
+			Assert.Equal(101, control.ViewModel.Value);
+			Assert.Equal(101, control.Value);
+			Assert.Equal(101, viewModel.B);
+
+			// Step 4: Switch back to A (without pressing Increase)
+			control.SetBinding(Issue29459CustomControl.ValueProperty, nameof(Issue29459ViewModel.A));
+			Assert.Equal(0, control.Value);
+			Assert.Equal(0, control.ViewModel.Value);
+
+			// Step 5: Switch back to B - THIS IS WHERE THE BUG MANIFESTS
+			// The issue reports that the control's Label shows 0 instead of 101
+			control.SetBinding(Issue29459CustomControl.ValueProperty, nameof(Issue29459ViewModel.B));
+
+			// The external viewModel.B should still be 101 (we didn't change it)
+			Assert.Equal(101, viewModel.B);
+			
+			// The control's Value (bindable property) should be 101
+			Assert.Equal(101, control.Value);
+			
+			// The internal ViewModel should also be synced to 101 - THIS IS THE BUG if it shows 0
+			Assert.Equal(101, control.ViewModel.Value);
+		}
+
+		[Fact]
+		public void Issue29459_SwitchingBindingToSameValueMaintainsCorrectValue()
+		{
+			// When switching bindings but the value remains the same,
+			// the value should still be correct
+
+			var control = new Issue29459CustomControl();
+			var viewModel = new Issue29459ViewModel { A = 50, B = 50 }; // Same values
+			control.BindingContext = viewModel;
+
+			// Bind to A
+			control.SetBinding(Issue29459CustomControl.ValueProperty, nameof(Issue29459ViewModel.A));
+			Assert.Equal(50, control.Value);
+			Assert.Equal(50, control.ViewModel.Value);
+
+			// Switch to B (same value)
+			control.SetBinding(Issue29459CustomControl.ValueProperty, nameof(Issue29459ViewModel.B));
+			Assert.Equal(50, control.Value);
+			Assert.Equal(50, control.ViewModel.Value);
+		}
+
+		#endregion
 	}
 }
