@@ -52,6 +52,36 @@ This ensures independent analysis rather than rubber-stamping the PR.
 
 ---
 
+## 🚨 CRITICAL: State File Update Pattern (ALL PHASES)
+
+**After completing EACH phase, you MUST update the state file in TWO places:**
+
+1. **Update the stage table** (lines 6-12) - Change phase status from `▶️ IN PROGRESS` to `✅ COMPLETE/PASSED`
+2. **Update the corresponding detailed section** - Change `**Status**: ⏳ PENDING` to `**Status**: ✅ COMPLETE` AND fill in all section content
+
+**Example for Tests Phase:**
+```markdown
+| Phase | Status |
+|-------|--------|
+| 🧪 Tests | ✅ COMPLETE |  ← UPDATE THIS
+
+<details>
+<summary><strong>🧪 Tests</strong></summary>
+
+**Status**: ✅ COMPLETE  ← UPDATE THIS TOO
+
+- [x] PR includes UI tests  ← FILL IN CHECKLIST
+- [x] Tests verified to FAIL (bug reproduced)  ← ADD FINDINGS
+
+**Test Files:**  ← POPULATE DETAILS
+- HostApp: `TestCases.HostApp/Issues/Issue12345.xaml`
+- NUnit: `TestCases.Shared.Tests/Tests/Issues/Issue12345.cs`
+```
+
+**If you only update the stage table but leave sections as `⏳ PENDING`, you create a DOCUMENTATION BUG.** Both must be updated together.
+
+---
+
 ## PRE-FLIGHT: Context Gathering (Phase 1)
 
 > **⚠️ SCOPE**: Document only. No code analysis. No fix opinions. No running tests.
@@ -209,7 +239,7 @@ fi
 
 ---
 
-**Next Step:** After Gate passes, read `.github/agents/pr/post-gate.md` and continue with phases 4-5.
+**Next Step:** [UPDATE THIS AFTER EACH PHASE - e.g., "Complete Tests phase", "Run Gate verification", "After Gate passes, read post-gate.md for phases 4-5", etc.]
 ```
 
 This file:
@@ -320,11 +350,16 @@ The test result will be updated to `✅ PASS (Gate)` after Gate passes.
 
 ### Step 5: Complete Pre-Flight
 
-**Update state file** - Change Pre-Flight status and populate with gathered context:
+**🚨 CRITICAL: Update state file in TWO places:**
+
+**A. Update the stage table** (top of file):
 1. Change Pre-Flight status from `▶️ IN PROGRESS` to `✅ COMPLETE`
-2. Fill in issue summary, platforms affected, regression info
-3. Add edge cases and any disagreements (if PR exists)
-4. Change 🧪 Tests status to `▶️ IN PROGRESS`
+2. Change 🧪 Tests status to `▶️ IN PROGRESS`
+
+**B. Update the detailed sections:**
+1. Fill in `<details><summary>📋 Issue Summary</summary>` with issue description, steps to reproduce, platforms affected, regression info
+2. Fill in `<details><summary>💬 PR Discussion Summary</summary>` with comments, disagreements, and edge cases (if PR exists)
+3. Remove `**Status**: ⏳ PENDING` from completed sections or keep it for sections not yet started
 
 ---
 
@@ -378,12 +413,17 @@ The script auto-detects mode based on git diff. If only test files changed, it v
 
 ### Complete 🧪 Tests
 
-**Update state file**:
-1. Check off completed items in the checklist
-2. Fill in test file paths
-3. Note: "Tests verified to FAIL (bug reproduced)"
-4. Change 🧪 Tests status to `✅ COMPLETE`
-5. Change 🚦 Gate status to `▶️ IN PROGRESS`
+**🚨 CRITICAL: Update state file in TWO places:**
+
+**A. Update the stage table** (top of file):
+1. Change 🧪 Tests status to `✅ COMPLETE`
+2. Change 🚦 Gate status to `▶️ IN PROGRESS`
+
+**B. Update the detailed `<details><summary>🧪 Tests</summary>` section:**
+1. Change `**Status**: ⏳ PENDING` to `**Status**: ✅ COMPLETE`
+2. Check off completed items in the checklist (e.g., `- [x] PR includes UI tests`)
+3. Fill in test file paths (HostApp, NUnit)
+4. Add note: "Tests verified to FAIL (bug reproduced)" or document any findings
 
 ---
 
@@ -427,10 +467,20 @@ pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 
 
 ### Complete 🚦 Gate
 
-**Update state file**:
-1. Fill in **Result**: `PASSED ✅`
-2. Change 🚦 Gate status to `✅ PASSED`
-3. Proceed to Phase 4
+**🚨 CRITICAL: Update state file in TWO places:**
+
+**A. Update the stage table** (top of file):
+1. Change 🚦 Gate status to `✅ PASSED`
+
+**B. Update the detailed `<details><summary>🚦 Gate - Test Verification</summary>` section:**
+1. Change `**Status**: ⏳ PENDING` to `**Status**: ✅ PASSED`
+2. Fill in `**Result**: PASSED ✅` with verification details
+3. Check off the checklist items:
+   - `- [x] Tests FAIL without fix (bug reproduced)`
+   - `- [x] Tests PASS with fix (bug resolved)` (if PR exists)
+
+**C. Proceed to Phase 4:**
+1. Read `.github/agents/pr/post-gate.md` for Phase 4-5 instructions
 
 ---
 
