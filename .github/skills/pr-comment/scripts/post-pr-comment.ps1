@@ -172,24 +172,34 @@ switch ($Phase) {
 <details>
 <summary>📝 <strong>Review Session $reviewNumber</strong> — $lastCommitLink</summary>
 
----
+<br>
 
 <details>
 <summary><strong>📋 Issue Summary</strong></summary>
+
+<br>
 
 $issueSummary
 
 </details>
 
+<br>
+
 <details>
 <summary><strong>📁 Files Changed</strong></summary>
+
+<br>
 
 $filesChanged
 
 </details>
 
+<br>
+
 <details>
 <summary><strong>💬 PR Discussion Summary</strong></summary>
+
+<br>
 
 $prDiscussion
 
@@ -204,11 +214,12 @@ $prDiscussion
         } else {
             $commentBody = @"
 $phaseMarker
+
 ## 🔍 Pre-Flight — Context & Validation
 
 **Last Pre-Flight Status:** ✅ **SUCCESS**
 
----
+<br>
 
 $newSessionContent
 "@
@@ -223,7 +234,7 @@ $newSessionContent
 <details>
 <summary>📝 <strong>Review Session $reviewNumber</strong> — $lastCommitLink</summary>
 
----
+<br>
 
 $testsContent
 
@@ -235,11 +246,12 @@ $testsContent
         } else {
             $commentBody = @"
 $phaseMarker
+
 ## 🧪 Tests — Verification
 
 **Last Tests Status:** ✅ **SUCCESS**
 
----
+<br>
 
 $newSessionContent
 "@
@@ -261,7 +273,7 @@ $newSessionContent
 <details>
 <summary>📝 <strong>Review Session $reviewNumber</strong> — $lastCommitLink</summary>
 
----
+<br>
 
 $gateContent
 
@@ -276,11 +288,12 @@ $gateContent
             $lastStatus = if ($gateResult -eq '✅ **PASSED**') { '✅ **SUCCESS**' } else { '❌ **FAILED**' }
             $commentBody = @"
 $phaseMarker
+
 ## 🚦 Gate — Test Validation
 
 **Last Gate Status:** $lastStatus
 
----
+<br>
 
 $newSessionContent
 "@
@@ -295,7 +308,7 @@ $newSessionContent
 <details>
 <summary>📝 <strong>Review Session $reviewNumber</strong> — $lastCommitLink</summary>
 
----
+<br>
 
 $fixContent
 
@@ -307,11 +320,12 @@ $fixContent
         } else {
             $commentBody = @"
 $phaseMarker
+
 ## 🔧 Fix — Analysis
 
 **Last Fix Status:** ✅ **SUCCESS**
 
----
+<br>
 
 $newSessionContent
 "@
@@ -347,7 +361,7 @@ $newSessionContent
 <details>
 <summary>📝 <strong>Review Session $reviewNumber</strong> — $lastCommitLink</summary>
 
----
+<br>
 
 ### Final Recommendation: $recommendationIcon **$recommendation**
 
@@ -372,11 +386,12 @@ $selectedFix
             }
             $commentBody = @"
 $phaseMarker
+
 ## 📋 Report — Complete
 
 **Last Report Status:** $lastStatus
 
----
+<br>
 
 $newSessionContent
 "@
