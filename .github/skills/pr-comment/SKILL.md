@@ -11,6 +11,8 @@ compatibility: Requires GitHub CLI (gh) authenticated with access to dotnet/maui
 
 This skill posts automated progress comments to GitHub Pull Requests during the PR review workflow. It notifies maintainers and contributors when specific review phases complete.
 
+**✨ Auto-Ordering Feature**: The skill automatically ensures all previous phase comments exist. If you post a Gate comment but Tests is missing, the script will post Tests → Gate in correct order.
+
 ## When to Use
 
 - After completing Pre-Flight phase (context gathering)
@@ -23,6 +25,8 @@ This skill posts automated progress comments to GitHub Pull Requests during the 
 - "Post Pre-Flight comment to PR #XXXXX"
 - "Comment on PR #XXXXX with Pre-Flight results"
 - "Update PR #XXXXX with progress"
+
+**🚨 CRITICAL**: Always post phase comments after completing each phase. The PR agent workflow mandates this.
 
 ## Supported Phases
 
@@ -95,8 +99,21 @@ Comments are formatted with:
 - **Phase badge** (🔍 Pre-Flight, 🧪 Tests, 🚦 Gate, 🔧 Fix, 📋 Report)
 - **Status indicator** (✅ Completed, ⚠️ Issues Found)
 - **Expandable review sessions** (each session is a collapsible section)
-- **Next steps** (what happens next)
-- **Timestamp**
+- **What's Next** (what phase happens next)
+
+### Auto-Ordering Feature
+
+**The script automatically enforces correct phase ordering:**
+
+```
+Example: You try to post Gate comment but Tests comment doesn't exist
+Result: Script posts Tests comment first, then Gate comment
+
+Example: You try to post Report but Pre-Flight, Tests, and Fix are missing
+Result: Script posts Pre-Flight → Tests → Gate → Fix → Report in order
+```
+
+This ensures PR comments ALWAYS appear in chronological phase order, even if you accidentally skip posting a phase comment.
 
 ### Multiple Review Sessions
 

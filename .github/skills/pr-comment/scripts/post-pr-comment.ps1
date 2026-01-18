@@ -49,6 +49,51 @@ Write-Host "╔═════════════════════�
 Write-Host "║  PR Comment - Phase: $($Phase.ToUpper().PadRight(35))║" -ForegroundColor Cyan
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
 
+# Check if previous phases have comments (enforce ordering)
+$phaseOrder = @("pre-flight", "tests", "gate", "fix", "report")
+$currentIndex = $phaseOrder.IndexOf($Phase)
+
+Write-Host "Checking if previous phases have comments..." -ForegroundColor Yellow
+
+$existingComments = gh api "/repos/dotnet/maui/issues/$PRNumber/comments" --jq '.[] | {id: .id, body: .body}' | ConvertFrom-Json
+
+$phasesWithComments = @{}
+foreach ($comment in $existingComments) {
+    foreach ($p in $phaseOrder) {
+        $marker = "<!-- PR-AGENT-PHASE: $p -->"
+        if ($comment.body -match [regex]::Escape($marker)) {
+            $phasesWithComments[$p] = $true
+        }
+    }
+}
+
+# Check all previous phases
+$missingPhases = @()
+for ($i = 0; $i -lt $currentIndex; $i++) {
+    $requiredPhase = $phaseOrder[$i]
+    if (-not $phasesWithComments.ContainsKey($requiredPhase)) {
+        $missingPhases += $requiredPhase
+    }
+}
+
+if ($missingPhases.Count -gt 0) {
+    Write-Host "⚠️  Missing comments for previous phases: $($missingPhases -join ', ')" -ForegroundColor Yellow
+    Write-Host "📝 Posting missing phase comments first..." -ForegroundColor Cyan
+    
+    foreach ($missingPhase in $missingPhases) {
+        Write-Host "   → Posting $missingPhase comment..." -ForegroundColor Gray
+        & $PSCommandPath -PRNumber $PRNumber -Phase $missingPhase -StateFile $StateFile
+        if ($LASTEXITCODE -ne 0) {
+            Write-Error "Failed to post $missingPhase comment"
+            exit 1
+        }
+    }
+    
+    Write-Host "✅ All previous phase comments posted" -ForegroundColor Green
+    Write-Host ""
+    Write-Host "Now posting $Phase comment..." -ForegroundColor Cyan
+}
+
 # Read state file
 $stateContent = Get-Content -Path $StateFile -Raw
 

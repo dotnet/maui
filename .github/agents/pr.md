@@ -320,19 +320,23 @@ The test result will be updated to `✅ PASS (Gate)` after Gate passes.
 
 ### Step 5: Complete Pre-Flight
 
+**🚨 MANDATORY: Update state file AND post comment**
+
 **Update state file** - Change Pre-Flight status and populate with gathered context:
 1. Change Pre-Flight status from `▶️ IN PROGRESS` to `✅ COMPLETE`
 2. Fill in issue summary, platforms affected, regression info
 3. Add edge cases and any disagreements (if PR exists)
 4. Change 🧪 Tests status to `▶️ IN PROGRESS`
 
-**Post completion comment (if PR exists):**
+**Post completion comment (if PR exists) - MANDATORY, DO NOT SKIP:**
 ```bash
 pwsh .github/skills/pr-comment/scripts/post-pr-comment.ps1 \
   -PRNumber XXXXX \
   -Phase pre-flight \
   -StateFile .github/agent-pr-session/pr-XXXXX.md
 ```
+
+**⚠️ The script automatically checks if previous phase comments exist. If you somehow skip a phase comment, the next phase will post the missing ones in order.**
 
 This posts a formatted comment to the PR notifying that Pre-Flight is complete with a summary of findings and next steps.
 
@@ -388,6 +392,8 @@ The script auto-detects mode based on git diff. If only test files changed, it v
 
 ### Complete 🧪 Tests
 
+**🚨 MANDATORY: Update state file AND post comment**
+
 **Update state file**:
 1. Check off completed items in the checklist
 2. Fill in test file paths
@@ -395,13 +401,15 @@ The script auto-detects mode based on git diff. If only test files changed, it v
 4. Change 🧪 Tests status to `✅ COMPLETE`
 5. Change 🚦 Gate status to `▶️ IN PROGRESS`
 
-**Post completion comment (if PR exists):**
+**Post completion comment (if PR exists) - MANDATORY, DO NOT SKIP:**
 ```bash
 pwsh .github/skills/pr-comment/scripts/post-pr-comment.ps1 \
   -PRNumber XXXXX \
   -Phase tests \
   -StateFile .github/agent-pr-session/pr-XXXXX.md
 ```
+
+**⚠️ The script automatically ensures Pre-Flight comment exists first. If missing, it posts Pre-Flight → Tests in order.**
 
 ---
 
@@ -445,18 +453,22 @@ pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 
 
 ### Complete 🚦 Gate
 
+**🚨 MANDATORY: Update state file AND post comment**
+
 **Update state file**:
 1. Fill in **Result**: `PASSED ✅`
 2. Change 🚦 Gate status to `✅ PASSED`
 3. Proceed to Phase 4
 
-**Post completion comment (if PR exists):**
+**Post completion comment (if PR exists) - MANDATORY, DO NOT SKIP:**
 ```bash
 pwsh .github/skills/pr-comment/scripts/post-pr-comment.ps1 \
   -PRNumber XXXXX \
   -Phase gate \
   -StateFile .github/agent-pr-session/pr-XXXXX.md
 ```
+
+**⚠️ The script automatically ensures Pre-Flight and Tests comments exist first. Missing comments are posted in order: Pre-Flight → Tests → Gate.**
 
 ---
 
