@@ -248,6 +248,8 @@ $commentBody = @"
 <details>
 <summary><strong>🔍 Phase 1: Pre-Flight — Context & Validation</strong></summary>
 
+---
+
 $allPreFlightSessions
 
 </details>
@@ -256,6 +258,8 @@ $allPreFlightSessions
 
 <details>
 <summary><strong>🧪 Phase 2: Tests — Verification</strong></summary>
+
+---
 
 $allTestsSessions
 
@@ -266,6 +270,8 @@ $allTestsSessions
 <details>
 <summary><strong>🚦 Phase 3: Gate — Test Verification</strong></summary>
 
+---
+
 $allGateSessions
 
 </details>
@@ -275,6 +281,8 @@ $allGateSessions
 <details>
 <summary><strong>🔧 Phase 4: Fix — Analysis & Comparison</strong></summary>
 
+---
+
 $allFixSessions
 
 </details>
@@ -283,6 +291,8 @@ $allFixSessions
 
 <details>
 <summary><strong>📋 Phase 5: Report — Final Recommendation</strong></summary>
+
+---
 
 $allReportSessions
 
