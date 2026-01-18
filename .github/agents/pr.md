@@ -330,13 +330,10 @@ The test result will be updated to `✅ PASS (Gate)` after Gate passes.
 
 **Post completion comment (if PR exists) - MANDATORY, DO NOT SKIP:**
 ```bash
-pwsh .github/skills/pr-comment/scripts/post-pr-comment.ps1 \
-  -PRNumber XXXXX \
-  -Phase pre-flight \
-  -StateFile .github/agent-pr-session/pr-XXXXX.md
+pwsh -c 'Get-Content .github/agent-pr-session/pr-XXXXX.md | .github/skills/pr-comment/scripts/post-pr-comment.ps1 -PRNumber XXXXX'
 ```
 
-**⚠️ The script automatically checks if previous phase comments exist. If you somehow skip a phase comment, the next phase will post the missing ones in order.**
+**⚠️ The script ALWAYS updates the ONE aggregated review comment with all phases. If the comment doesn't exist yet, it creates it.**
 
 This posts a formatted comment to the PR notifying that Pre-Flight is complete with a summary of findings and next steps.
 
@@ -403,13 +400,10 @@ The script auto-detects mode based on git diff. If only test files changed, it v
 
 **Post completion comment (if PR exists) - MANDATORY, DO NOT SKIP:**
 ```bash
-pwsh .github/skills/pr-comment/scripts/post-pr-comment.ps1 \
-  -PRNumber XXXXX \
-  -Phase tests \
-  -StateFile .github/agent-pr-session/pr-XXXXX.md
+pwsh -c 'Get-Content .github/agent-pr-session/pr-XXXXX.md | .github/skills/pr-comment/scripts/post-pr-comment.ps1 -PRNumber XXXXX'
 ```
 
-**⚠️ The script automatically ensures Pre-Flight comment exists first. If missing, it posts Pre-Flight → Tests in order.**
+**⚠️ The script ALWAYS updates the ONE aggregated review comment with all phases. If the comment doesn't exist yet, it creates it.**
 
 ---
 
@@ -462,13 +456,10 @@ pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 
 
 **Post completion comment (if PR exists) - MANDATORY, DO NOT SKIP:**
 ```bash
-pwsh .github/skills/pr-comment/scripts/post-pr-comment.ps1 \
-  -PRNumber XXXXX \
-  -Phase gate \
-  -StateFile .github/agent-pr-session/pr-XXXXX.md
+pwsh -c 'Get-Content .github/agent-pr-session/pr-XXXXX.md | .github/skills/pr-comment/scripts/post-pr-comment.ps1 -PRNumber XXXXX'
 ```
 
-**⚠️ The script automatically ensures Pre-Flight and Tests comments exist first. Missing comments are posted in order: Pre-Flight → Tests → Gate.**
+**⚠️ The script ALWAYS updates the ONE aggregated review comment with all phases. If the comment doesn't exist yet, it creates it.**
 
 ---
 
