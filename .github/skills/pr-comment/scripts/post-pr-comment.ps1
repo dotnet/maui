@@ -1,41 +1,35 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-    Posts or updates a phase completion comment on a GitHub Pull Request.
+    Posts or updates the PR agent review comment on a GitHub Pull Request.
 
 .DESCRIPTION
-    Each PR agent phase gets its own comment with collapsible Review Session details.
-    Comments use HTML markers (<!-- PR-AGENT-PHASE: phase-name -->) for identification.
-    Prevents duplicate comments and supports appending multiple review sessions.
+    Creates ONE comment for the entire PR review with all phases wrapped in an expandable section.
+    Uses HTML marker <!-- PR-AGENT-REVIEW --> for identification.
+    
+    Format:
+    ## 🤖 PR Agent Review — ✅ APPROVE
+    <details><summary>📊 Expand Full Review</summary>
+      Status table + all 5 phases as nested details
+    </details>
 
 .PARAMETER PRNumber
     The pull request number (required)
 
-.PARAMETER Phase
-    The phase: pre-flight, tests, gate, fix, or report (required)
-
 .PARAMETER Content
-    The content to post in the review session (required)
+    The full state file content (required) - script extracts all phase content from this
 
 .PARAMETER DryRun
     Print comment instead of posting
 
 .EXAMPLE
-    # Post pre-flight phase content
-    ./post-pr-comment.ps1 -PRNumber 12345 -Phase pre-flight -Content "Issue summary content..."
-    
-.EXAMPLE
-    # Dry run to preview
-    ./post-pr-comment.ps1 -PRNumber 12345 -Phase gate -Content "Test results..." -DryRun
+    # Post/update review comment
+    ./post-pr-comment.ps1 -PRNumber 12345 -Content "$(cat .github/agent-pr-session/pr-12345.md)"
 #>
 
 param(
     [Parameter(Mandatory=$true)]
     [int]$PRNumber,
-
-    [Parameter(Mandatory=$true)]
-    [ValidateSet("pre-flight", "tests", "gate", "fix", "report")]
-    [string]$Phase,
 
     [Parameter(Mandatory=$true)]
     [string]$Content,
@@ -47,384 +41,191 @@ param(
 $ErrorActionPreference = "Stop"
 
 Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║  PR Comment - Phase: $($Phase.ToUpper().PadRight(35))║" -ForegroundColor Cyan
+Write-Host "║  PR Agent Review Comment                                  ║" -ForegroundColor Cyan
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
 
-# Phase marker
-$phaseMarker = "<!-- PR-AGENT-PHASE: $Phase -->"
-
-# Fetch existing comments ONCE
-Write-Host "Fetching existing comments..." -ForegroundColor Yellow
-$existingComments = @()
-try {
-    $commentsJson = gh api "/repos/dotnet/maui/issues/$PRNumber/comments" 2>&1
-    if ($LASTEXITCODE -eq 0 -and $commentsJson) {
-        $existingComments = $commentsJson | ConvertFrom-Json
-    }
-} catch {
-    Write-Host "Could not fetch comments: $_" -ForegroundColor Yellow
+# Extract recommendation from state file
+$recommendation = "IN PROGRESS"
+if ($Content -match '##\s+✅\s+Final Recommendation:\s+APPROVE') {
+    $recommendation = "✅ APPROVE"
+} elseif ($Content -match '##\s+⚠️\s+Final Recommendation:\s+REQUEST CHANGES') {
+    $recommendation = "⚠️ REQUEST CHANGES"
+} elseif ($Content -match 'Final Recommendation:\s+APPROVE') {
+    $recommendation = "✅ APPROVE"
+} elseif ($Content -match 'Final Recommendation:\s+REQUEST CHANGES') {
+    $recommendation = "⚠️ REQUEST CHANGES"
 }
 
-# Check if this phase already has a comment
-$existingCommentId = $null
-$existingCommentBody = $null
-
-foreach ($comment in $existingComments) {
-    if ($comment.body -match [regex]::Escape($phaseMarker)) {
-        $existingCommentId = $comment.id
-        $existingCommentBody = $comment.body
-        
-        Write-Host "✓ Found existing $Phase comment (ID: $existingCommentId) - will append new session" -ForegroundColor Green
-        break
-    }
+# Extract phase statuses from state file
+$phaseStatuses = @{
+    "Pre-Flight" = "⏳ PENDING"
+    "Tests" = "⏳ PENDING"
+    "Gate" = "⏳ PENDING"
+    "Fix" = "⏳ PENDING"
+    "Report" = "⏳ PENDING"
 }
 
-# Check if previous phases have comments (enforce ordering)
-$phaseOrder = @("pre-flight", "tests", "gate", "fix", "report")
-$currentIndex = $phaseOrder.IndexOf($Phase)
-
-$phasesWithComments = @{}
-foreach ($comment in $existingComments) {
-    foreach ($p in $phaseOrder) {
-        $marker = "<!-- PR-AGENT-PHASE: $p -->"
-        if ($comment.body -match [regex]::Escape($marker)) {
-            $phasesWithComments[$p] = $comment.id
+# Parse phase status table
+if ($Content -match '\|\s*Phase\s*\|\s*Status\s*\|(.*?)\n\n') {
+    $tableContent = $Matches[1]
+    $tableContent -split '\n' | ForEach-Object {
+        if ($_ -match '\|\s*(.+?)\s*\|\s*(.+?)\s*\|') {
+            $phaseName = $Matches[1].Trim() -replace '^🔍\s*', '' -replace '^🧪\s*', '' -replace '^🚦\s*', '' -replace '^🔧\s*', '' -replace '^📋\s*', ''
+            $status = $Matches[2].Trim()
+            if ($phaseStatuses.ContainsKey($phaseName)) {
+                $phaseStatuses[$phaseName] = $status
+            }
         }
     }
 }
 
-# Check all previous phases
-$missingPhases = @()
-for ($i = 0; $i -lt $currentIndex; $i++) {
-    $requiredPhase = $phaseOrder[$i]
-    if (-not $phasesWithComments.ContainsKey($requiredPhase)) {
-        $missingPhases += $requiredPhase
-    }
-}
+# Get latest commit for Review Session header
+Write-Host "Fetching latest commit info..." -ForegroundColor Yellow
+$commitJson = gh api "repos/dotnet/maui/pulls/$PRNumber/commits" --jq '.[-1] | {message: .commit.message, sha: .sha}' | ConvertFrom-Json
+$commitTitle = ($commitJson.message -split "`n")[0]
+$commitSha = $commitJson.sha.Substring(0, 7)
+$commitUrl = "https://github.com/dotnet/maui/commit/$($commitJson.sha)"
 
-if ($missingPhases.Count -gt 0) {
-    Write-Host "⚠️  Missing comments for previous phases: $($missingPhases -join ', ')" -ForegroundColor Yellow
-    Write-Host "📝 Posting missing phase comments first..." -ForegroundColor Cyan
+# Extract phase content from state file
+function Extract-PhaseContent {
+    param([string]$StateContent, [string]$PhaseTitle)
     
-    foreach ($missingPhase in $missingPhases) {
-        Write-Host "   → Posting $missingPhase comment..." -ForegroundColor Gray
-        & $PSCommandPath -PRNumber $PRNumber -Phase $missingPhase -Content $Content
-        if ($LASTEXITCODE -ne 0) {
-            Write-Error "Failed to post $missingPhase comment"
-            exit 1
-        }
-    }
-    
-    Write-Host "✅ All previous phase comments posted" -ForegroundColor Green
-    Write-Host ""
-    Write-Host "Now posting $Phase comment..." -ForegroundColor Cyan
-}
-
-# Helper function to extract section from state file
-function Extract-Section {
-    param([string]$Content, [string]$SectionName)
-    
-    $pattern = "<details>\s*<summary><strong>$([regex]::Escape($SectionName))</strong></summary>(.*?)</details>"
-    $match = [regex]::Match($Content, $pattern, [System.Text.RegularExpressions.RegexOptions]::Singleline)
-    
-    if ($match.Success) {
-        return $match.Groups[1].Value.Trim()
+    $pattern = "(?s)<details>\s*<summary><strong>$PhaseTitle</strong></summary>(.*?)</details>\s*(?=<details>|---|\Z)"
+    if ($StateContent -match $pattern) {
+        return $Matches[1].Trim()
     }
     return $null
 }
 
-# Fetch latest commit title and SHA from PR
-$lastCommitTitle = "Unknown commit"
-$lastCommitLink = ""
-try {
-    $lastCommitJson = gh api "repos/dotnet/maui/pulls/$PRNumber/commits" --jq '.[-1] | {message: .commit.message, sha: .sha}' 2>&1
-    if ($LASTEXITCODE -eq 0 -and $lastCommitJson) {
-        $commitData = $lastCommitJson | ConvertFrom-Json
-        # Get first line of commit message only
-        $lastCommitTitle = ($commitData.message -split "`n")[0].Trim()
-        $lastCommitSha = $commitData.sha.Substring(0, 7)  # Short SHA
-        # Use HTML for summary tag (markdown doesn't work inside <summary>)
-        $lastCommitLink = "<strong>$lastCommitTitle</strong> · <a href=`"https://github.com/dotnet/maui/commit/$($commitData.sha)`"><code>$lastCommitSha</code></a>"
+$preFlightContent = Extract-PhaseContent -StateContent $Content -PhaseTitle "📋 Issue Summary"
+$testsContent = Extract-PhaseContent -StateContent $Content -PhaseTitle "🧪 Tests"
+$gateContent = Extract-PhaseContent -StateContent $Content -PhaseTitle "🚦 Gate - Test Verification"
+$fixContent = Extract-PhaseContent -StateContent $Content -PhaseTitle "🔧 Fix Candidates"
+$reportContent = Extract-PhaseContent -StateContent $Content -PhaseTitle "📋 Report"
+
+# Helper function to wrap phase content in Review Session
+function New-ReviewSession {
+    param([string]$PhaseContent, [string]$CommitTitle, [string]$CommitSha, [string]$CommitUrl)
+    
+    if ([string]::IsNullOrWhiteSpace($PhaseContent)) {
+        return ""
     }
-} catch {
-    Write-Host "Could not fetch commit info, using default" -ForegroundColor Yellow
-    $lastCommitLink = "<strong>$lastCommitTitle</strong>"
+    
+    return @"
+
+---
+
+<details>
+<summary>📝 <strong>Review Session</strong> — <strong>$CommitTitle</strong> · <a href="$CommitUrl"><code>$CommitSha</code></a></summary>
+
+---
+
+$PhaseContent
+
+</details>
+"@
 }
 
-# Build phase-specific content - extract from state file and store in comment
-$newSessionContent = ""
+# Build aggregated comment body
+$commentBody = @"
+<!-- PR-AGENT-REVIEW -->
 
-switch ($Phase) {
-    "pre-flight" {
-        # Extract sections from state file
-        $issueSummary = Extract-Section $Content "📋 Issue Summary"
-        $filesChanged = Extract-Section $Content "📁 Files Changed"
-        $prDiscussion = Extract-Section $Content "💬 PR Discussion Summary"
-        
-        $newSessionContent = @"
+## 🤖 PR Agent Review — $recommendation
+
 <details>
-<summary>📝 <strong>Review Session</strong> — $lastCommitLink</summary>
+<summary>📊 <strong>Expand Full Review</strong></summary>
+
+---
+
+**Status:** $recommendation
+
+| Phase | Status |
+|-------|--------|
+| 🔍 Pre-Flight | $($phaseStatuses['Pre-Flight']) |
+| 🧪 Tests | $($phaseStatuses['Tests']) |
+| 🚦 Gate | $($phaseStatuses['Gate']) |
+| 🔧 Fix | $($phaseStatuses['Fix']) |
+| 📋 Report | $($phaseStatuses['Report']) |
 
 ---
 
 <details>
-<summary><strong>📋 Issue Summary</strong></summary>
-
-<br>
-
-$issueSummary
-
+<summary><strong>🔍 Phase 1: Pre-Flight — Context & Validation</strong></summary>
+$(New-ReviewSession -PhaseContent $preFlightContent -CommitTitle $commitTitle -CommitSha $commitSha -CommitUrl $commitUrl)
 </details>
-
-<br>
-
-<details>
-<summary><strong>📁 Files Changed</strong></summary>
-
-<br>
-
-$filesChanged
-
-</details>
-
-<br>
-
-<details>
-<summary><strong>💬 PR Discussion Summary</strong></summary>
-
-<br>
-
-$prDiscussion
-
-</details>
-
-</details>
-"@
-
-        if ($existingCommentBody) {
-            # Append new session to existing comment
-            $commentBody = $existingCommentBody.TrimEnd() + "`n`n---`n`n$newSessionContent"
-        } else {
-            $commentBody = @"
-$phaseMarker
-
-## 🔍 Pre-Flight — Context & Validation
-
-**Last Pre-Flight Status:** ✅ **SUCCESS**
 
 ---
 
-$newSessionContent
-"@
-        }
-    }
-    
-    "tests" {
-        # Extract test section from state file
-        $testsContent = Extract-Section $Content "🧪 Tests"
-        
-        $newSessionContent = @"
 <details>
-<summary>📝 <strong>Review Session</strong> — $lastCommitLink</summary>
+<summary><strong>🧪 Phase 2: Tests — Verification</strong></summary>
+$(New-ReviewSession -PhaseContent $testsContent -CommitTitle $commitTitle -CommitSha $commitSha -CommitUrl $commitUrl)
+</details>
 
 ---
 
-$testsContent
+<details>
+<summary><strong>🚦 Phase 3: Gate — Test Verification</strong></summary>
+$(New-ReviewSession -PhaseContent $gateContent -CommitTitle $commitTitle -CommitSha $commitSha -CommitUrl $commitUrl)
+</details>
+
+---
+
+<details>
+<summary><strong>🔧 Phase 4: Fix — Analysis & Comparison</strong></summary>
+$(New-ReviewSession -PhaseContent $fixContent -CommitTitle $commitTitle -CommitSha $commitSha -CommitUrl $commitUrl)
+</details>
+
+---
+
+<details>
+<summary><strong>📋 Phase 5: Report — Final Recommendation</strong></summary>
+$(New-ReviewSession -PhaseContent $reportContent -CommitTitle $commitTitle -CommitSha $commitSha -CommitUrl $commitUrl)
+</details>
+
+---
+
+**Review Complete** — All phases passed. PR is ready for merge pending CI validation.
 
 </details>
 "@
 
-        if ($existingCommentBody) {
-            $commentBody = $existingCommentBody.TrimEnd() + "`n`n---`n`n$newSessionContent"
-        } else {
-            $commentBody = @"
-$phaseMarker
-
-## 🧪 Tests — Verification
-
-**Last Tests Status:** ✅ **SUCCESS**
-
----
-
-$newSessionContent
-"@
-        }
-    }
-    
-    "gate" {
-        # Extract gate section from state file
-        $gateContent = Extract-Section $Content "🚦 Gate - Test Verification"
-        
-        $gateResult = "PENDING"
-        if ($Content -match 'Result:\*\*\s*PASSED ✅') {
-            $gateResult = "✅ **PASSED**"
-        } elseif ($Content -match 'Result:\*\*\s*FAILED ❌') {
-            $gateResult = "❌ **FAILED**"
-        }
-        
-        $newSessionContent = @"
-<details>
-<summary>📝 <strong>Review Session</strong> — $lastCommitLink</summary>
-
----
-
-$gateContent
-
-**Result:** $gateResult
-
-</details>
-"@
-
-        if ($existingCommentBody) {
-            $commentBody = $existingCommentBody.TrimEnd() + "`n`n---`n`n$newSessionContent"
-        } else {
-            $lastStatus = if ($gateResult -eq '✅ **PASSED**') { '✅ **SUCCESS**' } else { '❌ **FAILED**' }
-            $commentBody = @"
-$phaseMarker
-
-## 🚦 Gate — Test Validation
-
-**Last Gate Status:** $lastStatus
-
----
-
-$newSessionContent
-"@
-        }
-    }
-    
-    "fix" {
-        # Extract fix candidates section from state file
-        $fixContent = Extract-Section $Content "🔧 Fix Candidates"
-        
-        $newSessionContent = @"
-<details>
-<summary>📝 <strong>Review Session</strong> — $lastCommitLink</summary>
-
----
-
-$fixContent
-
-</details>
-"@
-
-        if ($existingCommentBody) {
-            $commentBody = $existingCommentBody.TrimEnd() + "`n`n---`n`n$newSessionContent"
-        } else {
-            $commentBody = @"
-$phaseMarker
-
-## 🔧 Fix — Analysis
-
-**Last Fix Status:** ✅ **SUCCESS**
-
----
-
-$newSessionContent
-"@
-        }
-    }
-    
-    "report" {
-        # Extract recommendation
-        $recommendation = "PENDING"
-        if ($Content -match 'Final Recommendation:\s*(APPROVE|REQUEST CHANGES)') {
-            $recommendation = $matches[1]
-        }
-        
-        $recommendationIcon = switch ($recommendation) {
-            "APPROVE" { "✅" }
-            "REQUEST CHANGES" { "⚠️" }
-            default { "💬" }
-        }
-        
-        # Extract comparison analysis if exists
-        $comparisonAnalysis = ""
-        if ($Content -match '\*\*Comparison Analysis:\*\*(.*?)(?=\*\*(?:Exhausted|Selected Fix):|\Z)') {
-            $comparisonAnalysis = $matches[1].Trim()
-        }
-        
-        # Extract selected fix
-        $selectedFix = ""
-        if ($Content -match '\*\*Selected Fix:\*\*\s*(.+?)(?=\n\n|\</details>|\Z)') {
-            $selectedFix = $matches[1].Trim()
-        }
-        
-        $newSessionContent = @"
-<details>
-<summary>📝 <strong>Review Session</strong> — $lastCommitLink</summary>
-
----
-
-### Final Recommendation: $recommendationIcon **$recommendation**
-
-**Comparison Analysis:**
-
-$comparisonAnalysis
-
-**Selected Fix:**
-
-$selectedFix
-
-</details>
-"@
-
-        if ($existingCommentBody) {
-            $commentBody = $existingCommentBody.TrimEnd() + "`n`n---`n`n$newSessionContent"
-        } else {
-            $lastStatus = switch ($recommendation) {
-                "APPROVE" { "✅ **APPROVED**" }
-                "REQUEST CHANGES" { "❌ **CHANGES REQUESTED**" }
-                default { "💬 **COMMENT**" }
-            }
-            $commentBody = @"
-$phaseMarker
-
-## 📋 Report — Complete
-
-**Last Report Status:** $lastStatus
-
----
-
-$newSessionContent
-"@
-        }
-    }
-}
-
-# Post or update comment
 if ($DryRun) {
-    Write-Host "`n=== DRY RUN - Comment content ===" -ForegroundColor Magenta
+    Write-Host "`n=== COMMENT PREVIEW ===" -ForegroundColor Yellow
     Write-Host $commentBody
-    Write-Host "`n=== END ===" -ForegroundColor Magenta
+    Write-Host "`n=== END PREVIEW ===" -ForegroundColor Yellow
     exit 0
 }
 
-try {
-    if ($existingCommentId) {
-        Write-Host "Updating existing comment ID: $existingCommentId with session #$reviewNumber" -ForegroundColor Green
-        # Create JSON payload
-        $payload = @{ body = $commentBody } | ConvertTo-Json
-        $tempFile = [System.IO.Path]::GetTempFileName()
-        Set-Content -Path $tempFile -Value $payload -NoNewline
-        $result = gh api --method PATCH "repos/dotnet/maui/issues/comments/$existingCommentId" --input "$tempFile" 2>&1
-        Remove-Item $tempFile -Force -ErrorAction SilentlyContinue
-        if ($LASTEXITCODE -ne 0) {
-            throw "gh api failed with exit code $LASTEXITCODE : $result"
-        }
-        Write-Host "✅ Comment updated with new session" -ForegroundColor Green
+# Check if aggregated comment already exists
+Write-Host "Checking for existing review comment..." -ForegroundColor Yellow
+$existingComments = gh api "/repos/dotnet/maui/issues/$PRNumber/comments" --jq '.[] | select(.body | contains("<!-- PR-AGENT-REVIEW -->")) | {id: .id, body: .body}' | ConvertFrom-Json
+
+if ($existingComments) {
+    if ($existingComments -is [System.Array]) {
+        $commentToUpdate = $existingComments[0]
     } else {
-        Write-Host "Creating new comment for PR #$PRNumber" -ForegroundColor Green
-        $tempFile = [System.IO.Path]::GetTempFileName()
-        Set-Content -Path $tempFile -Value $commentBody -NoNewline
-        $result = gh pr comment $PRNumber --body-file $tempFile --repo dotnet/maui 2>&1
-        Remove-Item $tempFile -Force -ErrorAction SilentlyContinue
-        if ($LASTEXITCODE -ne 0) {
-            throw "gh pr comment failed with exit code $LASTEXITCODE : $result"
-        }
-        Write-Host "✅ Comment posted successfully" -ForegroundColor Green
+        $commentToUpdate = $existingComments
     }
-} catch {
-    Write-Error "Failed to post/update comment: $_"
-    exit 1
+    
+    Write-Host "✓ Found existing review comment (ID: $($commentToUpdate.id)) - updating..." -ForegroundColor Green
+    
+    # Create temp file for update
+    $tempFile = [System.IO.Path]::GetTempFileName()
+    @{ body = $commentBody } | ConvertTo-Json -Depth 10 | Set-Content -Path $tempFile -Encoding UTF8
+    
+    gh api --method PATCH "repos/dotnet/maui/issues/comments/$($commentToUpdate.id)" --input $tempFile | Out-Null
+    Remove-Item $tempFile
+    
+    Write-Host "✅ Review comment updated successfully" -ForegroundColor Green
+} else {
+    Write-Host "Creating new review comment..." -ForegroundColor Yellow
+    
+    # Create temp file for new comment
+    $tempFile = [System.IO.Path]::GetTempFileName()
+    @{ body = $commentBody } | ConvertTo-Json -Depth 10 | Set-Content -Path $tempFile -Encoding UTF8
+    
+    gh api --method POST "repos/dotnet/maui/issues/$PRNumber/comments" --input $tempFile | Out-Null
+    Remove-Item $tempFile
+    
+    Write-Host "✅ Review comment posted successfully" -ForegroundColor Green
 }
