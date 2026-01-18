@@ -167,7 +167,9 @@ switch ($Phase) {
         
         $newSessionContent = @"
 <details>
-<summary><strong>📝 Review Session $reviewNumber</strong> - $lastCommitTitle</summary>
+<summary><strong>📝 Review Session $reviewNumber</strong> — $lastCommitTitle</summary>
+
+---
 
 <details>
 <summary><strong>📋 Issue Summary</strong></summary>
@@ -199,9 +201,11 @@ $prDiscussion
         } else {
             $commentBody = @"
 $phaseMarker
-## 🔍 Pre-Flight: Context Gathering
+## 🔍 Pre-Flight — Context & Validation
 
-**Last Pre-Flight Status:** SUCCESS ✅
+**Last Pre-Flight Status:** ✅ **SUCCESS**
+
+---
 
 $newSessionContent
 "@
@@ -214,7 +218,9 @@ $newSessionContent
         
         $newSessionContent = @"
 <details>
-<summary><strong>📝 Review Session $reviewNumber</strong> - $lastCommitTitle</summary>
+<summary><strong>📝 Review Session $reviewNumber</strong> — $lastCommitTitle</summary>
+
+---
 
 $testsContent
 
@@ -226,9 +232,11 @@ $testsContent
         } else {
             $commentBody = @"
 $phaseMarker
-## 🧪 Tests: Verification
+## 🧪 Tests — Verification
 
-**Last Tests Status:** SUCCESS ✅
+**Last Tests Status:** ✅ **SUCCESS**
+
+---
 
 $newSessionContent
 "@
@@ -241,14 +249,16 @@ $newSessionContent
         
         $gateResult = "PENDING"
         if ($stateContent -match 'Result:\*\*\s*PASSED ✅') {
-            $gateResult = "✅ PASSED"
+            $gateResult = "✅ **PASSED**"
         } elseif ($stateContent -match 'Result:\*\*\s*FAILED ❌') {
-            $gateResult = "❌ FAILED"
+            $gateResult = "❌ **FAILED**"
         }
         
         $newSessionContent = @"
 <details>
-<summary><strong>📝 Review Session $reviewNumber</strong> - $lastCommitTitle</summary>
+<summary><strong>📝 Review Session $reviewNumber</strong> — $lastCommitTitle</summary>
+
+---
 
 $gateContent
 
@@ -260,12 +270,14 @@ $gateContent
         if ($existingCommentBody) {
             $commentBody = $existingCommentBody.TrimEnd() + "`n`n$newSessionContent"
         } else {
-            $lastStatus = if ($gateResult -eq '✅ PASSED') { 'SUCCESS ✅' } else { 'FAILED ❌' }
+            $lastStatus = if ($gateResult -eq '✅ **PASSED**') { '✅ **SUCCESS**' } else { '❌ **FAILED**' }
             $commentBody = @"
 $phaseMarker
-## 🚦 Gate: Test Validation
+## 🚦 Gate — Test Validation
 
 **Last Gate Status:** $lastStatus
+
+---
 
 $newSessionContent
 "@
@@ -278,7 +290,9 @@ $newSessionContent
         
         $newSessionContent = @"
 <details>
-<summary><strong>📝 Review Session $reviewNumber</strong> - $lastCommitTitle</summary>
+<summary><strong>📝 Review Session $reviewNumber</strong> — $lastCommitTitle</summary>
+
+---
 
 $fixContent
 
@@ -290,9 +304,11 @@ $fixContent
         } else {
             $commentBody = @"
 $phaseMarker
-## 🔧 Fix: Analysis
+## 🔧 Fix — Analysis
 
-**Last Fix Status:** SUCCESS ✅
+**Last Fix Status:** ✅ **SUCCESS**
+
+---
 
 $newSessionContent
 "@
@@ -326,9 +342,11 @@ $newSessionContent
         
         $newSessionContent = @"
 <details>
-<summary><strong>📝 Review Session $reviewNumber</strong> - $lastCommitTitle</summary>
+<summary><strong>📝 Review Session $reviewNumber</strong> — $lastCommitTitle</summary>
 
-### Final Recommendation: $recommendationIcon $recommendation
+---
+
+### Final Recommendation: $recommendationIcon **$recommendation**
 
 **Comparison Analysis:**
 
@@ -345,15 +363,17 @@ $selectedFix
             $commentBody = $existingCommentBody.TrimEnd() + "`n`n$newSessionContent"
         } else {
             $lastStatus = switch ($recommendation) {
-                "APPROVE" { "APPROVED ✅" }
-                "REQUEST CHANGES" { "CHANGES REQUESTED ❌" }
-                default { "COMMENT 💬" }
+                "APPROVE" { "✅ **APPROVED**" }
+                "REQUEST CHANGES" { "❌ **CHANGES REQUESTED**" }
+                default { "💬 **COMMENT**" }
             }
             $commentBody = @"
 $phaseMarker
-## 📋 Report: Complete
+## 📋 Report — Complete
 
 **Last Report Status:** $lastStatus
+
+---
 
 $newSessionContent
 "@
