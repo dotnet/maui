@@ -713,7 +713,7 @@ namespace Microsoft.Maui.Controls
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		BindablePropertyContext GetOrCreateContext(BindableProperty property)
 		{
-#if NETSTANDARD2_0
+#if NETSTANDARD
 			var context = GetContext(property);
 			if (context is null)
 			{
