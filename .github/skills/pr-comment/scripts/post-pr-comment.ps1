@@ -216,12 +216,7 @@ $newSessionContent
 <details>
 <summary><strong>📝 Review Session $reviewNumber</strong> - $lastCommitTitle</summary>
 
-<details>
-<summary><strong>🧪 Tests</strong></summary>
-
 $testsContent
-
-</details>
 
 </details>
 "@
@@ -255,14 +250,9 @@ $newSessionContent
 <details>
 <summary><strong>📝 Review Session $reviewNumber</strong> - $lastCommitTitle</summary>
 
-<details>
-<summary><strong>🚦 Gate - Test Verification</strong></summary>
-
 $gateContent
 
 **Result:** $gateResult
-
-</details>
 
 </details>
 "@
@@ -290,12 +280,7 @@ $newSessionContent
 <details>
 <summary><strong>📝 Review Session $reviewNumber</strong> - $lastCommitTitle</summary>
 
-<details>
-<summary><strong>🔧 Fix Candidates</strong></summary>
-
 $fixContent
-
-</details>
 
 </details>
 "@
@@ -343,23 +328,15 @@ $newSessionContent
 <details>
 <summary><strong>📝 Review Session $reviewNumber</strong> - $lastCommitTitle</summary>
 
-### Final Recommendation
+### Final Recommendation: $recommendationIcon $recommendation
 
-**$recommendationIcon $recommendation**
-
-<details>
-<summary><strong>Comparison Analysis</strong></summary>
+**Comparison Analysis:**
 
 $comparisonAnalysis
 
-</details>
-
-<details>
-<summary><strong>Selected Fix</strong></summary>
+**Selected Fix:**
 
 $selectedFix
-
-</details>
 
 </details>
 "@
