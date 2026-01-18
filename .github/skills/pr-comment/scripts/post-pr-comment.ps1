@@ -88,12 +88,12 @@ if ($Content -match '(?s)\|\s*Phase\s*\|\s*Status\s*\|.*?\n\|[\s-]+\|[\s-]+\|(.*
     }
 }
 
-# Get latest commit for Review Session header
+# Get latest commit for NEW Review Session header
 Write-Host "Fetching latest commit info..." -ForegroundColor Yellow
 $commitJson = gh api "repos/dotnet/maui/pulls/$PRNumber/commits" --jq '.[-1] | {message: .commit.message, sha: .sha}' | ConvertFrom-Json
-$commitTitle = ($commitJson.message -split "`n")[0]
-$commitSha = $commitJson.sha.Substring(0, 7)
-$commitUrl = "https://github.com/dotnet/maui/commit/$($commitJson.sha)"
+$latestCommitTitle = ($commitJson.message -split "`n")[0]
+$latestCommitSha = $commitJson.sha.Substring(0, 7)
+$latestCommitUrl = "https://github.com/dotnet/maui/commit/$($commitJson.sha)"
 
 # Extract phase content from state file
 function Extract-PhaseContent {
@@ -106,13 +106,77 @@ function Extract-PhaseContent {
     return $null
 }
 
+# Extract phase content from state file
+function Extract-PhaseContent {
+    param([string]$StateContent, [string]$PhaseTitle)
+    
+    $pattern = "(?s)<details>\s*<summary><strong>$PhaseTitle</strong></summary>(.*?)</details>\s*(?=<details>|---|\Z)"
+    if ($StateContent -match $pattern) {
+        return $Matches[1].Trim()
+    }
+    return $null
+}
+
+# Extract content from state file (for NEW review session)
 $preFlightContent = Extract-PhaseContent -StateContent $Content -PhaseTitle "📋 Issue Summary"
 $testsContent = Extract-PhaseContent -StateContent $Content -PhaseTitle "🧪 Tests"
 $gateContent = Extract-PhaseContent -StateContent $Content -PhaseTitle "🚦 Gate - Test Verification"
 $fixContent = Extract-PhaseContent -StateContent $Content -PhaseTitle "🔧 Fix Candidates"
-$reportContent = Extract-PhaseContent -StateContent $Content -PhaseTitle "📋 Report"
+$reportContent = Extract-PhaseContent -StateContent $Content -PhaseTitle "📋 Phase 5: Report — Final Recommendation"
 
-# Helper function to wrap phase content in Review Session
+# If Phase 5 not found with full title, try short title
+if ([string]::IsNullOrWhiteSpace($reportContent)) {
+    $reportContent = Extract-PhaseContent -StateContent $Content -PhaseTitle "📋 Report"
+}
+
+# Fetch existing comment to preserve old review sessions
+Write-Host "Checking for existing review comment..." -ForegroundColor Yellow
+$existingComment = gh api "repos/dotnet/maui/issues/$PRNumber/comments" --jq '.[] | select(.body | contains("<!-- PR-AGENT-REVIEW -->")) | {id: .id, body: .body}' | ConvertFrom-Json
+
+$existingPreFlightSessions = @()
+$existingTestsSessions = @()
+$existingGateSessions = @()
+$existingFixSessions = @()
+$existingReportSessions = @()
+
+if ($existingComment) {
+    Write-Host "✓ Found existing review comment (ID: $($existingComment.id)) - extracting review sessions..." -ForegroundColor Green
+    
+    # Extract existing sessions from each phase
+    if ($existingComment.body -match '(?s)<summary><strong>🔍 Phase 1: Pre-Flight.*?</strong></summary>(.*?)</details>\s*---\s*<details>') {
+        $existingPreFlightSessions = Get-ExistingReviewSessions -PhaseContent $Matches[1]
+    }
+    if ($existingComment.body -match '(?s)<summary><strong>🧪 Phase 2: Tests.*?</strong></summary>(.*?)</details>\s*---\s*<details>') {
+        $existingTestsSessions = Get-ExistingReviewSessions -PhaseContent $Matches[1]
+    }
+    if ($existingComment.body -match '(?s)<summary><strong>🚦 Phase 3: Gate.*?</strong></summary>(.*?)</details>\s*---\s*<details>') {
+        $existingGateSessions = Get-ExistingReviewSessions -PhaseContent $Matches[1]
+    }
+    if ($existingComment.body -match '(?s)<summary><strong>🔧 Phase 4: Fix.*?</strong></summary>(.*?)</details>\s*---\s*<details>') {
+        $existingFixSessions = Get-ExistingReviewSessions -PhaseContent $Matches[1]
+    }
+    if ($existingComment.body -match '(?s)<summary><strong>📋 Phase 5: Report.*?</strong></summary>(.*?)</details>\s*---\s*') {
+        $existingReportSessions = Get-ExistingReviewSessions -PhaseContent $Matches[1]
+    }
+} else {
+    Write-Host "✓ No existing comment found - creating new..." -ForegroundColor Yellow
+}
+
+# Create NEW review sessions from current state file
+$newPreFlightSession = New-ReviewSession -PhaseContent $preFlightContent -CommitTitle $latestCommitTitle -CommitSha $latestCommitSha -CommitUrl $latestCommitUrl
+$newTestsSession = New-ReviewSession -PhaseContent $testsContent -CommitTitle $latestCommitTitle -CommitSha $latestCommitSha -CommitUrl $latestCommitUrl
+$newGateSession = New-ReviewSession -PhaseContent $gateContent -CommitTitle $latestCommitTitle -CommitSha $latestCommitSha -CommitUrl $latestCommitUrl
+$newFixSession = New-ReviewSession -PhaseContent $fixContent -CommitTitle $latestCommitTitle -CommitSha $latestCommitSha -CommitUrl $latestCommitUrl
+$newReportSession = New-ReviewSession -PhaseContent $reportContent -CommitTitle $latestCommitTitle -CommitSha $latestCommitSha -CommitUrl $latestCommitUrl
+
+# Merge existing sessions with new session (if new content exists)
+$allPreFlightSessions = if ($newPreFlightSession) { Merge-ReviewSessions -ExistingSessions $existingPreFlightSessions -NewSession $newPreFlightSession } else { "" }
+$allTestsSessions = if ($newTestsSession) { Merge-ReviewSessions -ExistingSessions $existingTestsSessions -NewSession $newTestsSession } else { "" }
+$allGateSessions = if ($newGateSession) { Merge-ReviewSessions -ExistingSessions $existingGateSessions -NewSession $newGateSession } else { "" }
+$allFixSessions = if ($newFixSession) { Merge-ReviewSessions -ExistingSessions $existingFixSessions -NewSession $newFixSession } else { "" }
+$allReportSessions = if ($newReportSession) { Merge-ReviewSessions -ExistingSessions $existingReportSessions -NewSession $newReportSession } else { "" }
+
+# Helper function to create a NEW review session
 function New-ReviewSession {
     param([string]$PhaseContent, [string]$CommitTitle, [string]$CommitSha, [string]$CommitUrl)
     
@@ -121,9 +185,6 @@ function New-ReviewSession {
     }
     
     return @"
-
----
-
 <details>
 <summary>📝 <strong>Review Session</strong> — <strong>$CommitTitle</strong> · <a href="$CommitUrl"><code>$CommitSha</code></a></summary>
 
@@ -133,6 +194,43 @@ $PhaseContent
 
 </details>
 "@
+}
+
+# Helper function to extract existing review sessions from a phase
+function Get-ExistingReviewSessions {
+    param([string]$PhaseContent)
+    
+    if ([string]::IsNullOrWhiteSpace($PhaseContent)) {
+        return @()
+    }
+    
+    $sessions = @()
+    $pattern = '(?s)<details>\s*<summary>📝.*?</summary>.*?</details>'
+    $matches = [regex]::Matches($PhaseContent, $pattern)
+    
+    foreach ($match in $matches) {
+        $sessions += $match.Value
+    }
+    
+    return $sessions
+}
+
+# Helper function to combine existing sessions with new session
+function Merge-ReviewSessions {
+    param(
+        [string[]]$ExistingSessions,
+        [string]$NewSession
+    )
+    
+    if ([string]::IsNullOrWhiteSpace($NewSession)) {
+        return ""
+    }
+    
+    $allSessions = @()
+    $allSessions += $ExistingSessions
+    $allSessions += $NewSession
+    
+    return ($allSessions -join "`n`n---`n`n")
 }
 
 # Build aggregated comment body
@@ -160,35 +258,45 @@ $commentBody = @"
 
 <details>
 <summary><strong>🔍 Phase 1: Pre-Flight — Context & Validation</strong></summary>
-$(New-ReviewSession -PhaseContent $preFlightContent -CommitTitle $commitTitle -CommitSha $commitSha -CommitUrl $commitUrl)
+
+$allPreFlightSessions
+
 </details>
 
 ---
 
 <details>
 <summary><strong>🧪 Phase 2: Tests — Verification</strong></summary>
-$(New-ReviewSession -PhaseContent $testsContent -CommitTitle $commitTitle -CommitSha $commitSha -CommitUrl $commitUrl)
+
+$allTestsSessions
+
 </details>
 
 ---
 
 <details>
 <summary><strong>🚦 Phase 3: Gate — Test Verification</strong></summary>
-$(New-ReviewSession -PhaseContent $gateContent -CommitTitle $commitTitle -CommitSha $commitSha -CommitUrl $commitUrl)
+
+$allGateSessions
+
 </details>
 
 ---
 
 <details>
 <summary><strong>🔧 Phase 4: Fix — Analysis & Comparison</strong></summary>
-$(New-ReviewSession -PhaseContent $fixContent -CommitTitle $commitTitle -CommitSha $commitSha -CommitUrl $commitUrl)
+
+$allFixSessions
+
 </details>
 
 ---
 
 <details>
 <summary><strong>📋 Phase 5: Report — Final Recommendation</strong></summary>
-$(New-ReviewSession -PhaseContent $reportContent -CommitTitle $commitTitle -CommitSha $commitSha -CommitUrl $commitUrl)
+
+$allReportSessions
+
 </details>
 
 ---
