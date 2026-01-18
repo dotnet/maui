@@ -108,7 +108,7 @@ if ($missingPhases.Count -gt 0) {
     
     foreach ($missingPhase in $missingPhases) {
         Write-Host "   → Posting $missingPhase comment..." -ForegroundColor Gray
-        & $PSCommandPath -PRNumber $PRNumber -Phase $missingPhase -StateFile $StateFile
+        & $PSCommandPath -PRNumber $PRNumber -Phase $missingPhase -Content $Content
         if ($LASTEXITCODE -ne 0) {
             Write-Error "Failed to post $missingPhase comment"
             exit 1
@@ -203,7 +203,7 @@ $prDiscussion
 
         if ($existingCommentBody) {
             # Append new session to existing comment
-            $commentBody = $existingCommentBody.TrimEnd() + "`n`n$newSessionContent"
+            $commentBody = $existingCommentBody.TrimEnd() + "`n`n---`n`n$newSessionContent"
         } else {
             $commentBody = @"
 $phaseMarker
@@ -235,7 +235,7 @@ $testsContent
 "@
 
         if ($existingCommentBody) {
-            $commentBody = $existingCommentBody.TrimEnd() + "`n`n$newSessionContent"
+            $commentBody = $existingCommentBody.TrimEnd() + "`n`n---`n`n$newSessionContent"
         } else {
             $commentBody = @"
 $phaseMarker
@@ -276,7 +276,7 @@ $gateContent
 "@
 
         if ($existingCommentBody) {
-            $commentBody = $existingCommentBody.TrimEnd() + "`n`n$newSessionContent"
+            $commentBody = $existingCommentBody.TrimEnd() + "`n`n---`n`n$newSessionContent"
         } else {
             $lastStatus = if ($gateResult -eq '✅ **PASSED**') { '✅ **SUCCESS**' } else { '❌ **FAILED**' }
             $commentBody = @"
@@ -309,7 +309,7 @@ $fixContent
 "@
 
         if ($existingCommentBody) {
-            $commentBody = $existingCommentBody.TrimEnd() + "`n`n$newSessionContent"
+            $commentBody = $existingCommentBody.TrimEnd() + "`n`n---`n`n$newSessionContent"
         } else {
             $commentBody = @"
 $phaseMarker
@@ -370,7 +370,7 @@ $selectedFix
 "@
 
         if ($existingCommentBody) {
-            $commentBody = $existingCommentBody.TrimEnd() + "`n`n$newSessionContent"
+            $commentBody = $existingCommentBody.TrimEnd() + "`n`n---`n`n$newSessionContent"
         } else {
             $lastStatus = switch ($recommendation) {
                 "APPROVE" { "✅ **APPROVED**" }
