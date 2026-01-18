@@ -65,8 +65,8 @@ $phaseStatuses = @{
     "Report" = "⏳ PENDING"
 }
 
-# Parse phase status table
-if ($Content -match '\|\s*Phase\s*\|\s*Status\s*\|(.*?)\n\n') {
+# Parse phase status table - match any status format
+if ($Content -match '(?s)\|\s*Phase\s*\|\s*Status\s*\|.*?\n\|[\s-]+\|[\s-]+\|(.*?)(?=\n\n|---|\z)') {
     $tableContent = $Matches[1]
     $tableContent -split '\n' | ForEach-Object {
         if ($_ -match '\|\s*(.+?)\s*\|\s*(.+?)\s*\|') {
