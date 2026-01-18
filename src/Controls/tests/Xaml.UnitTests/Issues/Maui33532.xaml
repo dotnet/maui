@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			 x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui33532">
+	<!-- Test: NaN value in XAML should generate valid code with double.NaN -->
+	<StackLayout>
+		<Button x:Name="buttonNaN" Padding="NaN" Text="Padding = NaN"/>
+		<Button x:Name="buttonNaNComma" Padding="NaN,NaN" Text="Padding = NaN,NaN"/>
+		<Button x:Name="buttonNaNFull" Padding="NaN,NaN,NaN,NaN" Text="Padding = NaN,NaN,NaN,NaN"/>
+	</StackLayout>
+</ContentPage>
