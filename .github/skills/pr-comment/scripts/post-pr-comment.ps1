@@ -106,17 +106,6 @@ function Extract-PhaseContent {
     return $null
 }
 
-# Extract phase content from state file
-function Extract-PhaseContent {
-    param([string]$StateContent, [string]$PhaseTitle)
-    
-    $pattern = "(?s)<details>\s*<summary><strong>$PhaseTitle</strong></summary>(.*?)</details>\s*(?=<details>|---|\Z)"
-    if ($StateContent -match $pattern) {
-        return $Matches[1].Trim()
-    }
-    return $null
-}
-
 # Helper function to create a NEW review session
 function New-ReviewSession {
     param([string]$PhaseContent, [string]$CommitTitle, [string]$CommitSha, [string]$CommitUrl)
