@@ -167,6 +167,12 @@ function Merge-ReviewSessions {
         return ""
     }
     
+    $allSessions = @()
+    $allSessions += $ExistingSessions
+    $allSessions += $NewSession
+    
+    return ($allSessions -join "`n`n---`n`n")
+}
 
 # Extract content from state file (for NEW review session)
 $preFlightContent = Extract-PhaseContent -StateContent $Content -PhaseTitle "📋 Issue Summary"
