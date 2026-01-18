@@ -8,7 +8,7 @@ This document provides specific guidance for GitHub Copilot when working on the 
 
 ## Code Review Instructions
 
-When performing a code review, always run the pr-finalize skill to verify that the PR title and description accurately match the actual implementation. This ensures proper documentation and helps maintain high-quality commit messages.
+When performing a code review on PRs that change functional code, run the pr-finalize skill to verify that the PR title and description accurately match the actual implementation. This ensures proper documentation and helps maintain high-quality commit messages.
 
 ## Repository Overview
 
