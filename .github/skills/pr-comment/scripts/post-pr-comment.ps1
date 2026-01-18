@@ -143,16 +143,21 @@ function Extract-Section {
     return $null
 }
 
-# Fetch latest commit title from PR
+# Fetch latest commit title and SHA from PR
 $lastCommitTitle = "Unknown commit"
+$lastCommitLink = ""
 try {
-    $commitsJson = gh api "repos/dotnet/maui/pulls/$PRNumber/commits" --jq '.[-1].commit.message' 2>&1
-    if ($LASTEXITCODE -eq 0 -and $commitsJson) {
+    $lastCommitJson = gh api "repos/dotnet/maui/pulls/$PRNumber/commits" --jq '.[-1] | {message: .commit.message, sha: .sha}' 2>&1
+    if ($LASTEXITCODE -eq 0 -and $lastCommitJson) {
+        $commitData = $lastCommitJson | ConvertFrom-Json
         # Get first line of commit message only
-        $lastCommitTitle = ($commitsJson -split "`n")[0].Trim()
+        $lastCommitTitle = ($commitData.message -split "`n")[0].Trim()
+        $lastCommitSha = $commitData.sha.Substring(0, 7)  # Short SHA
+        $lastCommitLink = "[$lastCommitTitle](https://github.com/dotnet/maui/commit/$($commitData.sha))"
     }
 } catch {
-    Write-Host "Could not fetch commit title, using default" -ForegroundColor Yellow
+    Write-Host "Could not fetch commit info, using default" -ForegroundColor Yellow
+    $lastCommitLink = $lastCommitTitle
 }
 
 # Build phase-specific content - extract from state file and store in comment
@@ -167,7 +172,7 @@ switch ($Phase) {
         
         $newSessionContent = @"
 <details>
-<summary><strong>📝 Review Session $reviewNumber</strong> — $lastCommitTitle</summary>
+<summary><strong>📝 Review Session $reviewNumber</strong> — $lastCommitLink</summary>
 
 ---
 
@@ -218,7 +223,7 @@ $newSessionContent
         
         $newSessionContent = @"
 <details>
-<summary><strong>📝 Review Session $reviewNumber</strong> — $lastCommitTitle</summary>
+<summary><strong>📝 Review Session $reviewNumber</strong> — $lastCommitLink</summary>
 
 ---
 
@@ -256,7 +261,7 @@ $newSessionContent
         
         $newSessionContent = @"
 <details>
-<summary><strong>📝 Review Session $reviewNumber</strong> — $lastCommitTitle</summary>
+<summary><strong>📝 Review Session $reviewNumber</strong> — $lastCommitLink</summary>
 
 ---
 
@@ -290,7 +295,7 @@ $newSessionContent
         
         $newSessionContent = @"
 <details>
-<summary><strong>📝 Review Session $reviewNumber</strong> — $lastCommitTitle</summary>
+<summary><strong>📝 Review Session $reviewNumber</strong> — $lastCommitLink</summary>
 
 ---
 
@@ -342,7 +347,7 @@ $newSessionContent
         
         $newSessionContent = @"
 <details>
-<summary><strong>📝 Review Session $reviewNumber</strong> — $lastCommitTitle</summary>
+<summary><strong>📝 Review Session $reviewNumber</strong> — $lastCommitLink</summary>
 
 ---
 
