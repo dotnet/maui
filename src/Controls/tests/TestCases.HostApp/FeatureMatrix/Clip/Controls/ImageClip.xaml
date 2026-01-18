@@ -16,7 +16,8 @@
            WidthRequest="300"
            HeightRequest="300"
            Aspect="AspectFill"
-           AutomationId="TestControl"
-           Clip="{Binding Clip}"/>
+           Clip="{Binding Clip}"
+           Shadow="{Binding Shadow}"
+           AutomationId="TestControl"/>
   </Grid>
 </ContentPage>

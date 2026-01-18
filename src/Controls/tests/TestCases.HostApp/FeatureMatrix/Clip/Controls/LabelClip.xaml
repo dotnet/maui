@@ -12,15 +12,17 @@
 
   <Grid RowDefinitions="*,Auto"
         RowSpacing="15">
-    <Label Text="Sample Text for Clipping Test\nMultiple Lines\nTo Show Clip Effect"
-           FontSize="28"
+    <Label Text="Sample Text for Clipping Test Multiple Lines To Show Clip Effect"
            FontAttributes="Bold"
            BackgroundColor="LightBlue"
            HorizontalTextAlignment="Center"
            VerticalTextAlignment="Center"
            WidthRequest="300"
            HeightRequest="300"
-           AutomationId="TestControl"
-           Clip="{Binding Clip}"/>
+           Clip="{Binding Clip}"
+           FormattedText="{Binding FormattedText}"
+           FontSize="{Binding FontSize}"
+           Shadow="{Binding Shadow}"
+           AutomationId="TestControl"/>
   </Grid>
 </ContentPage>

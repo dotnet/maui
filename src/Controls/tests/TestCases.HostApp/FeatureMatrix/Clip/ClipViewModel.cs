@@ -6,7 +6,12 @@ namespace Maui.Controls.Sample;
 public class ClipViewModel : INotifyPropertyChanged
 {
 	private Color _color = Colors.Red;
+	private CornerRadius _cornerRadius;
 	private Geometry _clip = null;
+	private FormattedString _formattedText;
+	private double _fontSize = 28;
+	private string _imageSource = null;
+	private string _text = "Button";
 	private string _selectedControl = "Image";
 	private string _selectedClip = "null";
 	private IShape _strokeShape = new Rectangle();
@@ -27,6 +32,19 @@ public class ClipViewModel : INotifyPropertyChanged
 			}
 		}
 	}
+
+	public CornerRadius CornerRadius
+	{
+		get => _cornerRadius;
+		set
+		{
+			if (_cornerRadius != value)
+			{
+				_cornerRadius = value;
+				OnPropertyChanged();
+			}
+		}
+	}
 	public Geometry Clip
 	{
 		get => _clip;
@@ -35,6 +53,58 @@ public class ClipViewModel : INotifyPropertyChanged
 			if (_clip != value)
 			{
 				_clip = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+
+	public FormattedString FormattedText
+	{
+		get => _formattedText;
+		set
+		{
+			if (_formattedText != value)
+			{
+				_formattedText = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+
+	public double FontSize
+	{
+		get => _fontSize;
+		set
+		{
+			if (_fontSize != value)
+			{
+				_fontSize = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+
+	public string ImageSource
+	{
+		get => _imageSource;
+		set
+		{
+			if (_imageSource != value)
+			{
+				_imageSource = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+
+	public string Text
+	{
+		get => _text;
+		set
+		{
+			if (_text != value)
+			{
+				_text = value;
 				OnPropertyChanged();
 			}
 		}

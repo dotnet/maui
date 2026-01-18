@@ -11,10 +11,11 @@
 
   <Grid RowDefinitions="*,Auto"
         RowSpacing="15">
-    <Button Text="Test Button\nWith Clip"
+    <Button BackgroundColor="Orange"
             FontSize="20"
-            BackgroundColor="Orange"
-            TextColor="White"
+            ImageSource="{Binding ImageSource}"
+            Shadow="{Binding Shadow}"
+            Text="{Binding Text}"
             WidthRequest="300"
             HeightRequest="300"
             AutomationId="TestControl"

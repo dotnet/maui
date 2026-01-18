@@ -5,7 +5,7 @@
              Title="ClipControlPage">
 
         <!-- Control Type Selection -->
-        <VerticalStackLayout Spacing="10">
+        <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="10">
                 <Button Text="Border" Clicked="OnBorderPageClicked"/>
                 <Button Text="BoxView" Clicked="OnBoxViewPageClicked"/>
                 <Button Text="Button" Clicked="OnButtonPageClicked"/>

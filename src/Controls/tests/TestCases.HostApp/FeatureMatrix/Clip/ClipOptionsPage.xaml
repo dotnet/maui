@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:Maui.Controls.Sample"
              x:Class="Maui.Controls.Sample.ClipOptionsPage"
-             Title="SliderFeature">
+             Title="ClipFeature">
        <ContentPage.ToolbarItems>
               <ToolbarItem Text="Apply"
                            Clicked="ApplyButton_Clicked"
@@ -92,57 +92,95 @@
                                   CheckedChanged="ShapeChanged"/>
               </HorizontalStackLayout>
 
-              <Label FontAttributes="Bold"
-                     Text="Stroke Color"/>
-              <HorizontalStackLayout>
-                     <Button x:Name="BlueColorButton"
-                             Text="Blue"
-                             TextColor="White"
-                             BackgroundColor="Blue"
-                             Clicked="OnStrokeColorClicked"
-                             AutomationId="BlueColorButton"
-                             CommandParameter="Blue"/>
-                     <Button x:Name="GreenColorButton"
-                             Text="Green"
-                             TextColor="White"
-                             BackgroundColor="Green"
-                             Clicked="OnStrokeColorClicked"
-                             AutomationId="GreenColorButton"
-                             CommandParameter="Green"/>
+              <HorizontalStackLayout Spacing="2">
+                     <HorizontalStackLayout>
+                            <Label FontAttributes="Bold"
+                                   Text="StrokeColor: "
+                                   VerticalOptions="Center"/>
+                            <Button x:Name="BlueColorButton"
+                                    Text="Blue"
+                                    TextColor="White"
+                                    BackgroundColor="Blue"
+                                    Clicked="OnStrokeColorClicked"
+                                    AutomationId="BlueColorButton"/>
+                            <Button x:Name="GreenColorButton"
+                                    Text="Green"
+                                    TextColor="White"
+                                    BackgroundColor="Green"
+                                    Clicked="OnStrokeColorClicked"
+                                    AutomationId="GreenColorButton"/>
+                     </HorizontalStackLayout>
+
+                     <!-- BoxView -->
+                     <HorizontalStackLayout>
+                            <Label VerticalOptions="Center"
+                                   FontAttributes="Bold"
+                                   Text="BoxColor: "/>
+                            <Button Text="Green"
+                                    TextColor="White"
+                                    BackgroundColor="Green"
+                                    Clicked="OnBoxViewColorClicked"
+                                    AutomationId="GreenColorButton"/>
+                     </HorizontalStackLayout>
               </HorizontalStackLayout>
 
-              <Label VerticalOptions="Center"
-                     Text="Stroke Thickness"/>
-              <Entry x:Name="StrokeThicknessEntry"
-                     Text="5"
-                     TextChanged="OnStrokeThicknessChanged"
-                     AutomationId="StrokeThicknessEntry"
-                     Grid.Column="1"/>
+              <HorizontalStackLayout Spacing="5">
+                     <HorizontalStackLayout>
+                            <Label FontAttributes="Bold"
+                                   Text="Shadow:"
+                                   VerticalOptions="Center"/>
+                            <RadioButton x:Name="ShadowFalseRadio"
+                                         VerticalOptions="Center"
+                                         AutomationId="ShadowTrueRadioButton"
+                                         GroupName="Shadow"
+                                         Content="True"
+                                         CheckedChanged="OnShadowRadioButtonCheckedChanged"/>
+                     </HorizontalStackLayout>
+                     <HorizontalStackLayout>
+                            <Label FontAttributes="Bold"
+                                   VerticalOptions="Center"
+                                   Text="StrokeThickness: "/>
+                            <Entry x:Name="StrokeThicknessEntry"
+                                   Text="5"
+                                   TextChanged="OnStrokeThicknessChanged"
+                                   AutomationId="StrokeThicknessEntry"/>
+                     </HorizontalStackLayout>
+                     <HorizontalStackLayout>
+                            <Label FontAttributes="Bold"
+                                   VerticalOptions="Center"
+                                   Text="CornerRadius: "/>
+                            <Entry x:Name="CornerRadiusEntry"
+                                   Text="0"
+                                   TextChanged="OnCornerRadiusChanged"
+                                   AutomationId="CornerRadiusEntry"/>
+                     </HorizontalStackLayout>
+              </HorizontalStackLayout>
 
-              <Label Text="Shadow:"
-                     VerticalOptions="Center"/>
-              <RadioButton x:Name="ShadowFalseRadio"
-                           VerticalOptions="Center"
-                           AutomationId="ShadowTrueRadioButton"
-                           GroupName="Shadow"
-                           Content="True"
-                           CheckedChanged="OnShadowRadioButtonCheckedChanged"/>
+              <!-- Button -->
+              <HorizontalStackLayout>
+                     <Label Text="Text:"
+                            VerticalOptions="Center"/>
+                     <Entry Text="{Binding Text}"
+                            AutomationId="TextEntry"
+                            VerticalOptions="Center"/>
+                     <Button Text="ImageSource"
+                             Clicked="OnImageSourceClicked"/>
+              </HorizontalStackLayout>
 
+              <HorizontalStackLayout>
+                <Label Text="FormattedText"
+                       VerticalOptions="Center"/>
+                <CheckBox x:Name="FormattedTextCheckBox"
+                          CheckedChanged="OnFormattedTextChanged"
+                          AutomationId="FormattedText"/>
+            </HorizontalStackLayout>
 
-              <!-- BoxView -->
-              <Label FontAttributes="Bold"
-                     Text="Box Color"/>
-              <VerticalStackLayout>
-                     <RadioButton Content="Red"
-                                  Value="Red"
-                                  GroupName="Colors"
-                                  AutomationId="RedRadioButton"
-                                  CheckedChanged="OnColorRadioButtonChanged"/>
-                     <RadioButton Content="Green"
-                                  Value="Green"
-                                  GroupName="Colors"
-                                  AutomationId="GreenRadioButton"
-                                  CheckedChanged="OnColorRadioButtonChanged"/>
-              </VerticalStackLayout>
+            <VerticalStackLayout>
+                <Label Text="FontSize"/>
+                <Entry x:Name="FontSizeEntry"
+                       Placeholder="e.g., 24"
+                       TextChanged="OnFontSizeChanged"
+                       AutomationId="FontSizeEntry"/>
+            </VerticalStackLayout>
        </VerticalStackLayout>
 </ContentPage>

@@ -275,22 +275,53 @@ public partial class ClipOptionsPage : ContentPage
 	}
 
 	//BoxView
-	private void OnColorRadioButtonChanged(object sender, EventArgs e)
+	private void OnBoxViewColorClicked(object sender, EventArgs e)
 	{
-		if (sender is RadioButton radioButton && radioButton.IsChecked)
+		if (sender is Button button && button.BackgroundColor != Colors.Transparent)
 		{
-			switch (radioButton.Value.ToString())
+			_viewModel.Color = button.BackgroundColor;
+		}
+	}
+
+	//Button
+	private void OnImageSourceClicked(object sender, EventArgs e)
+	{
+		_viewModel.Text = null;
+		_viewModel.ImageSource = "oasis.jpg";
+	}
+
+	private void OnCornerRadiusChanged(object sender, TextChangedEventArgs e)
+	{
+		if (string.IsNullOrWhiteSpace(e.NewTextValue))
+			return;
+		if (double.TryParse(e.NewTextValue, out double result))
+		{
+			_viewModel.CornerRadius = new CornerRadius(result);
+		}
+	}
+
+	private void OnFormattedTextChanged(object sender, CheckedChangedEventArgs e)
+	{
+		if (e.Value)
+		{
+			_viewModel.FormattedText = new FormattedString
 			{
-				case "Red":
-					_viewModel.Color = Colors.Red;
-					break;
-				case "Green":
-					_viewModel.Color = Colors.Green;
-					break;
-				default:
-					_viewModel.Color = Colors.Transparent;
-					break;
+				Spans =
+			{
+				new Span { Text = "Lorem ipsum dolor sit amet consectetur adipis elit vivamus lacinia felis eu sagittis congue nibh urna malesuada orci at fringilla quam turpis eget nunc", FontAttributes = FontAttributes.Bold },
+				new Span { Text = "consectetur adipiscing elit", FontAttributes = FontAttributes.Italic },
+				new Span { Text = "Sed do eiusmod tempor.", FontAttributes = FontAttributes.Bold }
 			}
+			};
+		}
+	}
+
+	private void OnFontSizeChanged(object sender, TextChangedEventArgs e)
+	{
+		if (!string.IsNullOrWhiteSpace(FontSizeEntry?.Text) &&
+			double.TryParse(FontSizeEntry.Text, out double size))
+		{
+			_viewModel.FontSize = size;
 		}
 	}
 }
