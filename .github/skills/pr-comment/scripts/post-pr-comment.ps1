@@ -31,7 +31,7 @@ param(
     [Parameter(Mandatory=$true)]
     [int]$PRNumber,
 
-    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory=$false)]
     [string]$Content,
 
     [Parameter(Mandatory=$false)]
@@ -39,6 +39,15 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+
+# If Content is not provided as parameter, read from stdin
+if ([string]::IsNullOrWhiteSpace($Content)) {
+    $Content = $input | Out-String
+}
+
+if ([string]::IsNullOrWhiteSpace($Content)) {
+    throw "Content parameter is required (provide via -Content or stdin)"
+}
 
 Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
 Write-Host "║  PR Agent Review Comment                                  ║" -ForegroundColor Cyan
