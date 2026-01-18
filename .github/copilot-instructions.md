@@ -6,6 +6,10 @@ description: "Guidance for GitHub Copilot when working on the .NET MAUI reposito
 
 This document provides specific guidance for GitHub Copilot when working on the .NET MAUI repository. It serves as context for understanding the project structure, development workflow, and best practices.
 
+## Code Review Instructions
+
+When performing a code review, always run the pr-finalize skill to verify that the PR title and description accurately match the actual implementation. This ensures proper documentation and helps maintain high-quality commit messages.
+
 ## Repository Overview
 
 **.NET MAUI** is a cross-platform framework for creating mobile and desktop applications with C# and XAML. This repository contains the core framework code that enables development for Android, iOS, iPadOS, macOS, and Windows from a single shared codebase.
