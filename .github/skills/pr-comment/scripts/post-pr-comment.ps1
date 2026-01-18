@@ -117,6 +117,57 @@ function Extract-PhaseContent {
     return $null
 }
 
+# Helper function to create a NEW review session
+function New-ReviewSession {
+    param([string]$PhaseContent, [string]$CommitTitle, [string]$CommitSha, [string]$CommitUrl)
+    
+    if ([string]::IsNullOrWhiteSpace($PhaseContent)) {
+        return ""
+    }
+    
+    return @"
+<details>
+<summary>📝 <strong>Review Session</strong> — <strong>$CommitTitle</strong> · <a href="$CommitUrl"><code>$CommitSha</code></a></summary>
+
+---
+
+$PhaseContent
+
+</details>
+"@
+}
+
+# Helper function to extract existing review sessions from a phase
+function Get-ExistingReviewSessions {
+    param([string]$PhaseContent)
+    
+    if ([string]::IsNullOrWhiteSpace($PhaseContent)) {
+        return @()
+    }
+    
+    $sessions = @()
+    $pattern = '(?s)<details>\s*<summary>📝.*?</summary>.*?</details>'
+    $matches = [regex]::Matches($PhaseContent, $pattern)
+    
+    foreach ($match in $matches) {
+        $sessions += $match.Value
+    }
+    
+    return $sessions
+}
+
+# Helper function to combine existing sessions with new session
+function Merge-ReviewSessions {
+    param(
+        [string[]]$ExistingSessions,
+        [string]$NewSession
+    )
+    
+    if ([string]::IsNullOrWhiteSpace($NewSession)) {
+        return ""
+    }
+    
+
 # Extract content from state file (for NEW review session)
 $preFlightContent = Extract-PhaseContent -StateContent $Content -PhaseTitle "📋 Issue Summary"
 $testsContent = Extract-PhaseContent -StateContent $Content -PhaseTitle "🧪 Tests"
@@ -176,56 +227,6 @@ $allGateSessions = if ($newGateSession) { Merge-ReviewSessions -ExistingSessions
 $allFixSessions = if ($newFixSession) { Merge-ReviewSessions -ExistingSessions $existingFixSessions -NewSession $newFixSession } else { "" }
 $allReportSessions = if ($newReportSession) { Merge-ReviewSessions -ExistingSessions $existingReportSessions -NewSession $newReportSession } else { "" }
 
-# Helper function to create a NEW review session
-function New-ReviewSession {
-    param([string]$PhaseContent, [string]$CommitTitle, [string]$CommitSha, [string]$CommitUrl)
-    
-    if ([string]::IsNullOrWhiteSpace($PhaseContent)) {
-        return ""
-    }
-    
-    return @"
-<details>
-<summary>📝 <strong>Review Session</strong> — <strong>$CommitTitle</strong> · <a href="$CommitUrl"><code>$CommitSha</code></a></summary>
-
----
-
-$PhaseContent
-
-</details>
-"@
-}
-
-# Helper function to extract existing review sessions from a phase
-function Get-ExistingReviewSessions {
-    param([string]$PhaseContent)
-    
-    if ([string]::IsNullOrWhiteSpace($PhaseContent)) {
-        return @()
-    }
-    
-    $sessions = @()
-    $pattern = '(?s)<details>\s*<summary>📝.*?</summary>.*?</details>'
-    $matches = [regex]::Matches($PhaseContent, $pattern)
-    
-    foreach ($match in $matches) {
-        $sessions += $match.Value
-    }
-    
-    return $sessions
-}
-
-# Helper function to combine existing sessions with new session
-function Merge-ReviewSessions {
-    param(
-        [string[]]$ExistingSessions,
-        [string]$NewSession
-    )
-    
-    if ([string]::IsNullOrWhiteSpace($NewSession)) {
-        return ""
-    }
-    
     $allSessions = @()
     $allSessions += $ExistingSessions
     $allSessions += $NewSession
