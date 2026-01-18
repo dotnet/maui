@@ -14,10 +14,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[iOS] OnAppearing and OnNavigatedTo does not work when using extended Tabbar";
 
-		[Test]
-		[Category(UITestCategories.Shell)]
-		[Category(UITestCategories.Navigation)]
-		public void OnAppearingAndOnNavigatedToShouldBeCalles()
+[Test]
+[Category(UITestCategories.Shell)]
+public void OnAppearingAndOnNavigatedToShouldBeCalled()
 		{
 			App.WaitForElement("More");
 			App.Click("More");
