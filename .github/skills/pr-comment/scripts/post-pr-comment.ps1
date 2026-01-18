@@ -165,7 +165,7 @@ switch ($Phase) {
 <details>
 <summary>📝 <strong>Review Session</strong> — $lastCommitLink</summary>
 
-<br>
+---
 
 <details>
 <summary><strong>📋 Issue Summary</strong></summary>
@@ -212,7 +212,7 @@ $phaseMarker
 
 **Last Pre-Flight Status:** ✅ **SUCCESS**
 
-<br>
+---
 
 $newSessionContent
 "@
@@ -227,7 +227,7 @@ $newSessionContent
 <details>
 <summary>📝 <strong>Review Session</strong> — $lastCommitLink</summary>
 
-<br>
+---
 
 $testsContent
 
@@ -244,7 +244,7 @@ $phaseMarker
 
 **Last Tests Status:** ✅ **SUCCESS**
 
-<br>
+---
 
 $newSessionContent
 "@
@@ -266,7 +266,7 @@ $newSessionContent
 <details>
 <summary>📝 <strong>Review Session</strong> — $lastCommitLink</summary>
 
-<br>
+---
 
 $gateContent
 
@@ -286,7 +286,7 @@ $phaseMarker
 
 **Last Gate Status:** $lastStatus
 
-<br>
+---
 
 $newSessionContent
 "@
@@ -301,7 +301,7 @@ $newSessionContent
 <details>
 <summary>📝 <strong>Review Session</strong> — $lastCommitLink</summary>
 
-<br>
+---
 
 $fixContent
 
@@ -318,7 +318,7 @@ $phaseMarker
 
 **Last Fix Status:** ✅ **SUCCESS**
 
-<br>
+---
 
 $newSessionContent
 "@
@@ -354,7 +354,7 @@ $newSessionContent
 <details>
 <summary>📝 <strong>Review Session</strong> — $lastCommitLink</summary>
 
-<br>
+---
 
 ### Final Recommendation: $recommendationIcon **$recommendation**
 
@@ -384,7 +384,7 @@ $phaseMarker
 
 **Last Report Status:** $lastStatus
 
-<br>
+---
 
 $newSessionContent
 "@
