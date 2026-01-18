@@ -153,11 +153,12 @@ try {
         # Get first line of commit message only
         $lastCommitTitle = ($commitData.message -split "`n")[0].Trim()
         $lastCommitSha = $commitData.sha.Substring(0, 7)  # Short SHA
-        $lastCommitLink = "**$lastCommitTitle** · [``$lastCommitSha``](https://github.com/dotnet/maui/commit/$($commitData.sha))"
+        # Use HTML for summary tag (markdown doesn't work inside <summary>)
+        $lastCommitLink = "<strong>$lastCommitTitle</strong> · <a href=`"https://github.com/dotnet/maui/commit/$($commitData.sha)`"><code>$lastCommitSha</code></a>"
     }
 } catch {
     Write-Host "Could not fetch commit info, using default" -ForegroundColor Yellow
-    $lastCommitLink = "**$lastCommitTitle**"
+    $lastCommitLink = "<strong>$lastCommitTitle</strong>"
 }
 
 # Build phase-specific content - extract from state file and store in comment
