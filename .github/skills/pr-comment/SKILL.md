@@ -13,9 +13,10 @@ This skill posts automated progress comments to GitHub Pull Requests during the 
 
 **✨ Key Features**:
 - **Auto-Ordering**: Automatically ensures all previous phase comments exist
-- **Duplicate Prevention**: Checks if phase comment already exists before posting
-- **State File Mirroring**: Extracts actual content from state file sections (Issue Summary, Files Changed, PR Discussion, Fix Candidates table, etc.)
-- **No Update Mode**: Each phase gets exactly ONE comment (no updates - prevents noise)
+- **Duplicate Prevention**: Checks if phase comment already exists before posting  
+- **State File Independence**: Comments are self-contained - state file only needed at POST time, not READ time
+- **Review Session Support**: Tracks multiple review sessions with expandable details and commit links
+- **Direct Content Mode**: Can post content without state file (via `-Content` parameter)
 
 ## When to Use
 
@@ -79,7 +80,7 @@ Each phase completion unlocks the next phase in the workflow:
 - **History**: Multiple review sessions are tracked on the same PR
 - **Async workflow**: Reviewers can pick up where previous session left off
 
-### Post a Phase Completion Comment
+### Post a Phase Completion Comment (Using State File)
 
 ```bash
 pwsh .github/skills/pr-comment/scripts/post-pr-comment.ps1 \
@@ -88,10 +89,26 @@ pwsh .github/skills/pr-comment/scripts/post-pr-comment.ps1 \
   -StateFile .github/agent-pr-session/pr-12345.md
 ```
 
+### Post Custom Content (Without State File)
+
+```bash
+pwsh .github/skills/pr-comment/scripts/post-pr-comment.ps1 \
+  -PRNumber 12345 \
+  -Phase fix \
+  -Content "Alternative fix tested and validated..."
+```
+
 ### Parameters
 
 | Parameter | Required | Description | Example |
 |-----------|----------|-------------|---------|
+| `PRNumber` | Yes | Pull request number | `12345` |
+| `Phase` | Yes | Phase name: `pre-flight`, `tests`, `gate`, `fix`, or `report` | `pre-flight` |
+| `StateFile` | No* | Path to PR session state file | `.github/agent-pr-session/pr-12345.md` |
+| `Content` | No* | Direct content to post (alternative to StateFile) | `"Custom content..."` |
+| `DryRun` | No | Print comment instead of posting | |
+
+**\* Either `StateFile` or `Content` must be provided**
 | `PRNumber` | ✅ | Pull request number | `12345` |
 | `Phase` | ✅ | Phase name | `pre-flight`, `tests`, `gate`, `fix`, `report` |
 | `StateFile` | ✅ | Path to PR session state file | `.github/agent-pr-session/pr-12345.md` |

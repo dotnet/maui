@@ -15,13 +15,18 @@
     The phase: pre-flight, tests, gate, fix, or report (required)
 
 .PARAMETER StateFile
-    Path to the PR session state file (required)
+    Path to the PR session state file (optional - used for initial content extraction)
 
-.PARAMETER DryRun
-    Print comment instead of posting
+.PARAMETER Content
+    Direct content to post (alternative to extracting from StateFile)
 
 .EXAMPLE
-    ./post-pr-comment-v2.ps1 -PRNumber 12345 -Phase pre-flight -StateFile .github/agent-pr-session/pr-12345.md
+    # Using state file (initial post)
+    ./post-pr-comment.ps1 -PRNumber 12345 -Phase pre-flight -StateFile .github/agent-pr-session/pr-12345.md
+    
+.EXAMPLE
+    # Using direct content (manual update)
+    ./post-pr-comment.ps1 -PRNumber 12345 -Phase pre-flight -Content "New session content here"
 #>
 
 param(
@@ -32,8 +37,11 @@ param(
     [ValidateSet("pre-flight", "tests", "gate", "fix", "report")]
     [string]$Phase,
 
-    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory=$false)]
     [string]$StateFile,
+    
+    [Parameter(Mandatory=$false)]
+    [string]$Content,
 
     [Parameter(Mandatory=$false)]
     [switch]$DryRun
@@ -41,7 +49,13 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-if (-not (Test-Path $StateFile)) {
+# Validate that either StateFile or Content is provided
+if (-not $StateFile -and -not $Content) {
+    Write-Error "Either -StateFile or -Content must be provided"
+    exit 1
+}
+
+if ($StateFile -and -not (Test-Path $StateFile)) {
     Write-Error "State file not found: $StateFile"
     exit 1
 }
@@ -50,8 +64,16 @@ Write-Host "╔═════════════════════�
 Write-Host "║  PR Comment - Phase: $($Phase.ToUpper().PadRight(35))║" -ForegroundColor Cyan
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
 
-# Read state file
-$stateContent = Get-Content -Path $StateFile -Raw
+# Read state file content if provided
+$stateContent = ""
+if ($StateFile) {
+    $stateContent = Get-Content -Path $StateFile -Raw
+}
+
+# If Content parameter provided, use it directly
+if ($Content) {
+    $stateContent = $Content
+}
 
 # Phase marker
 $phaseMarker = "<!-- PR-AGENT-PHASE: $Phase -->"
