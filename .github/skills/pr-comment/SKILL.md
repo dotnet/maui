@@ -1,17 +1,21 @@
 ---
 name: pr-comment
-description: Posts progress comments to GitHub PRs during review phases. Use when a PR agent phase completes to notify maintainers and contributors.
+description: Posts progress comments to GitHub PRs during review phases. Mirrors state file structure and prevents duplicates. Use when a PR agent phase completes.
 metadata:
   author: dotnet-maui
-  version: "1.0"
+  version: "2.0"
 compatibility: Requires GitHub CLI (gh) authenticated with access to dotnet/maui repository.
 ---
 
 # PR Comment Skill
 
-This skill posts automated progress comments to GitHub Pull Requests during the PR review workflow. It notifies maintainers and contributors when specific review phases complete.
+This skill posts automated progress comments to GitHub Pull Requests during the PR review workflow. Comments **mirror the state file structure** with collapsible details sections, providing rich context to maintainers and contributors.
 
-**✨ Auto-Ordering Feature**: The skill automatically ensures all previous phase comments exist. If you post a Gate comment but Tests is missing, the script will post Tests → Gate in correct order.
+**✨ Key Features**:
+- **Auto-Ordering**: Automatically ensures all previous phase comments exist
+- **Duplicate Prevention**: Checks if phase comment already exists before posting
+- **State File Mirroring**: Extracts actual content from state file sections (Issue Summary, Files Changed, PR Discussion, Fix Candidates table, etc.)
+- **No Update Mode**: Each phase gets exactly ONE comment (no updates - prevents noise)
 
 ## When to Use
 
