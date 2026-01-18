@@ -320,11 +320,22 @@ The test result will be updated to `✅ PASS (Gate)` after Gate passes.
 
 ### Step 5: Complete Pre-Flight
 
+**🚨 MANDATORY: Update state file AND post comment**
+
 **Update state file** - Change Pre-Flight status and populate with gathered context:
 1. Change Pre-Flight status from `▶️ IN PROGRESS` to `✅ COMPLETE`
 2. Fill in issue summary, platforms affected, regression info
 3. Add edge cases and any disagreements (if PR exists)
 4. Change 🧪 Tests status to `▶️ IN PROGRESS`
+
+**Post completion comment (if PR exists) - MANDATORY, DO NOT SKIP:**
+```bash
+cat .github/agent-pr-session/pr-XXXXX.md | pwsh .github/skills/pr-comment/scripts/post-pr-comment.ps1 -PRNumber XXXXX
+```
+
+**⚠️ The script ALWAYS updates the ONE aggregated review comment with all phases. If the comment doesn't exist yet, it creates it.**
+
+This posts a formatted comment to the PR notifying that Pre-Flight is complete with a summary of findings and next steps.
 
 ---
 
@@ -378,12 +389,21 @@ The script auto-detects mode based on git diff. If only test files changed, it v
 
 ### Complete 🧪 Tests
 
+**🚨 MANDATORY: Update state file AND post comment**
+
 **Update state file**:
 1. Check off completed items in the checklist
 2. Fill in test file paths
 3. Note: "Tests verified to FAIL (bug reproduced)"
 4. Change 🧪 Tests status to `✅ COMPLETE`
 5. Change 🚦 Gate status to `▶️ IN PROGRESS`
+
+**Post completion comment (if PR exists) - MANDATORY, DO NOT SKIP:**
+```bash
+cat .github/agent-pr-session/pr-XXXXX.md | pwsh .github/skills/pr-comment/scripts/post-pr-comment.ps1 -PRNumber XXXXX
+```
+
+**⚠️ The script ALWAYS updates the ONE aggregated review comment with all phases. If the comment doesn't exist yet, it creates it.**
 
 ---
 
@@ -427,10 +447,19 @@ pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 
 
 ### Complete 🚦 Gate
 
+**🚨 MANDATORY: Update state file AND post comment**
+
 **Update state file**:
 1. Fill in **Result**: `PASSED ✅`
 2. Change 🚦 Gate status to `✅ PASSED`
 3. Proceed to Phase 4
+
+**Post completion comment (if PR exists) - MANDATORY, DO NOT SKIP:**
+```bash
+cat .github/agent-pr-session/pr-XXXXX.md | pwsh .github/skills/pr-comment/scripts/post-pr-comment.ps1 -PRNumber XXXXX
+```
+
+**⚠️ The script ALWAYS updates the ONE aggregated review comment with all phases. If the comment doesn't exist yet, it creates it.**
 
 ---
 
