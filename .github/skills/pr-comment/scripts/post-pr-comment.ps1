@@ -68,20 +68,13 @@ try {
 # Check if this phase already has a comment
 $existingCommentId = $null
 $existingCommentBody = $null
-$reviewNumber = 1
 
 foreach ($comment in $existingComments) {
     if ($comment.body -match [regex]::Escape($phaseMarker)) {
         $existingCommentId = $comment.id
         $existingCommentBody = $comment.body
         
-        # Count existing sessions to determine next session number
-        $sessionMatches = [regex]::Matches($existingCommentBody, '📝 Review Session (\d+)')
-        if ($sessionMatches.Count -gt 0) {
-            $reviewNumber = ([int]$sessionMatches[$sessionMatches.Count - 1].Groups[1].Value) + 1
-        }
-        
-        Write-Host "✓ Found existing $Phase comment (ID: $existingCommentId) - will append session #$reviewNumber" -ForegroundColor Green
+        Write-Host "✓ Found existing $Phase comment (ID: $existingCommentId) - will append new session" -ForegroundColor Green
         break
     }
 }
@@ -170,7 +163,7 @@ switch ($Phase) {
         
         $newSessionContent = @"
 <details>
-<summary>📝 <strong>Review Session $reviewNumber</strong> — $lastCommitLink</summary>
+<summary>📝 <strong>Review Session</strong> — $lastCommitLink</summary>
 
 <br>
 
@@ -232,7 +225,7 @@ $newSessionContent
         
         $newSessionContent = @"
 <details>
-<summary>📝 <strong>Review Session $reviewNumber</strong> — $lastCommitLink</summary>
+<summary>📝 <strong>Review Session</strong> — $lastCommitLink</summary>
 
 <br>
 
@@ -271,7 +264,7 @@ $newSessionContent
         
         $newSessionContent = @"
 <details>
-<summary>📝 <strong>Review Session $reviewNumber</strong> — $lastCommitLink</summary>
+<summary>📝 <strong>Review Session</strong> — $lastCommitLink</summary>
 
 <br>
 
@@ -306,7 +299,7 @@ $newSessionContent
         
         $newSessionContent = @"
 <details>
-<summary>📝 <strong>Review Session $reviewNumber</strong> — $lastCommitLink</summary>
+<summary>📝 <strong>Review Session</strong> — $lastCommitLink</summary>
 
 <br>
 
@@ -359,7 +352,7 @@ $newSessionContent
         
         $newSessionContent = @"
 <details>
-<summary>📝 <strong>Review Session $reviewNumber</strong> — $lastCommitLink</summary>
+<summary>📝 <strong>Review Session</strong> — $lastCommitLink</summary>
 
 <br>
 
