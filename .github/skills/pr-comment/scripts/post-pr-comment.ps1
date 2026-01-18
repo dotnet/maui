@@ -222,13 +222,6 @@ $allGateSessions = if ($newGateSession) { Merge-ReviewSessions -ExistingSessions
 $allFixSessions = if ($newFixSession) { Merge-ReviewSessions -ExistingSessions $existingFixSessions -NewSession $newFixSession } else { "" }
 $allReportSessions = if ($newReportSession) { Merge-ReviewSessions -ExistingSessions $existingReportSessions -NewSession $newReportSession } else { "" }
 
-    $allSessions = @()
-    $allSessions += $ExistingSessions
-    $allSessions += $NewSession
-    
-    return ($allSessions -join "`n`n---`n`n")
-}
-
 # Build aggregated comment body
 $commentBody = @"
 <!-- PR-AGENT-REVIEW -->
