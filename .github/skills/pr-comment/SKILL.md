@@ -1,22 +1,22 @@
 ---
 name: pr-comment
-description: Posts progress comments to GitHub PRs during review phases. Mirrors state file structure and prevents duplicates. Use when a PR agent phase completes.
+description: Posts progress comments to GitHub PRs during review phases. Self-contained comments with collapsible details. Use when a PR agent phase completes.
 metadata:
   author: dotnet-maui
-  version: "2.0"
+  version: "3.0"
 compatibility: Requires GitHub CLI (gh) authenticated with access to dotnet/maui repository.
 ---
 
 # PR Comment Skill
 
-This skill posts automated progress comments to GitHub Pull Requests during the PR review workflow. Comments **mirror the state file structure** with collapsible details sections, providing rich context to maintainers and contributors.
+This skill posts automated progress comments to GitHub Pull Requests during the PR review workflow. Comments are **self-contained** with collapsible Review Session details, providing rich context to maintainers and contributors.
 
 **✨ Key Features**:
 - **Auto-Ordering**: Automatically ensures all previous phase comments exist
 - **Duplicate Prevention**: Checks if phase comment already exists before posting  
-- **State File Independence**: Comments are self-contained - state file only needed at POST time, not READ time
+- **Self-Contained**: All content stored in comments - no external dependencies
 - **Review Session Support**: Tracks multiple review sessions with expandable details and commit links
-- **Direct Content Mode**: Can post content without state file (via `-Content` parameter)
+- **Simple Interface**: Just pass content - script handles everything else
 
 ## When to Use
 
@@ -80,22 +80,13 @@ Each phase completion unlocks the next phase in the workflow:
 - **History**: Multiple review sessions are tracked on the same PR
 - **Async workflow**: Reviewers can pick up where previous session left off
 
-### Post a Phase Completion Comment (Using State File)
+### Post a Phase Completion Comment
 
 ```bash
 pwsh .github/skills/pr-comment/scripts/post-pr-comment.ps1 \
   -PRNumber 12345 \
   -Phase pre-flight \
-  -StateFile .github/agent-pr-session/pr-12345.md
-```
-
-### Post Custom Content (Without State File)
-
-```bash
-pwsh .github/skills/pr-comment/scripts/post-pr-comment.ps1 \
-  -PRNumber 12345 \
-  -Phase fix \
-  -Content "Alternative fix tested and validated..."
+  -Content "<details>...</details>"
 ```
 
 ### Parameters
@@ -104,11 +95,8 @@ pwsh .github/skills/pr-comment/scripts/post-pr-comment.ps1 \
 |-----------|----------|-------------|---------|
 | `PRNumber` | Yes | Pull request number | `12345` |
 | `Phase` | Yes | Phase name: `pre-flight`, `tests`, `gate`, `fix`, or `report` | `pre-flight` |
-| `StateFile` | No* | Path to PR session state file | `.github/agent-pr-session/pr-12345.md` |
-| `Content` | No* | Direct content to post (alternative to StateFile) | `"Custom content..."` |
+| `Content` | Yes | Content to post (HTML with `<details>` sections) | `"<details>...</details>"` |
 | `DryRun` | No | Print comment instead of posting | |
-
-**\* Either `StateFile` or `Content` must be provided**
 | `PRNumber` | ✅ | Pull request number | `12345` |
 | `Phase` | ✅ | Phase name | `pre-flight`, `tests`, `gate`, `fix`, `report` |
 | `StateFile` | ✅ | Path to PR session state file | `.github/agent-pr-session/pr-12345.md` |

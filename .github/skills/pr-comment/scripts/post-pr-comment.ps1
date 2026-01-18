@@ -4,9 +4,9 @@
     Posts or updates a phase completion comment on a GitHub Pull Request.
 
 .DESCRIPTION
-    Each PR agent phase gets its own comment that mirrors the state file structure.
+    Each PR agent phase gets its own comment with collapsible Review Session details.
     Comments use HTML markers (<!-- PR-AGENT-PHASE: phase-name -->) for identification.
-    Prevents duplicate comments by checking existence before posting.
+    Prevents duplicate comments and supports appending multiple review sessions.
 
 .PARAMETER PRNumber
     The pull request number (required)
@@ -14,19 +14,19 @@
 .PARAMETER Phase
     The phase: pre-flight, tests, gate, fix, or report (required)
 
-.PARAMETER StateFile
-    Path to the PR session state file (optional - used for initial content extraction)
-
 .PARAMETER Content
-    Direct content to post (alternative to extracting from StateFile)
+    The content to post in the review session (required)
+
+.PARAMETER DryRun
+    Print comment instead of posting
 
 .EXAMPLE
-    # Using state file (initial post)
-    ./post-pr-comment.ps1 -PRNumber 12345 -Phase pre-flight -StateFile .github/agent-pr-session/pr-12345.md
+    # Post pre-flight phase content
+    ./post-pr-comment.ps1 -PRNumber 12345 -Phase pre-flight -Content "Issue summary content..."
     
 .EXAMPLE
-    # Using direct content (manual update)
-    ./post-pr-comment.ps1 -PRNumber 12345 -Phase pre-flight -Content "New session content here"
+    # Dry run to preview
+    ./post-pr-comment.ps1 -PRNumber 12345 -Phase gate -Content "Test results..." -DryRun
 #>
 
 param(
@@ -37,10 +37,7 @@ param(
     [ValidateSet("pre-flight", "tests", "gate", "fix", "report")]
     [string]$Phase,
 
-    [Parameter(Mandatory=$false)]
-    [string]$StateFile,
-    
-    [Parameter(Mandatory=$false)]
+    [Parameter(Mandatory=$true)]
     [string]$Content,
 
     [Parameter(Mandatory=$false)]
@@ -49,31 +46,9 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-# Validate that either StateFile or Content is provided
-if (-not $StateFile -and -not $Content) {
-    Write-Error "Either -StateFile or -Content must be provided"
-    exit 1
-}
-
-if ($StateFile -and -not (Test-Path $StateFile)) {
-    Write-Error "State file not found: $StateFile"
-    exit 1
-}
-
 Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
 Write-Host "║  PR Comment - Phase: $($Phase.ToUpper().PadRight(35))║" -ForegroundColor Cyan
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
-
-# Read state file content if provided
-$stateContent = ""
-if ($StateFile) {
-    $stateContent = Get-Content -Path $StateFile -Raw
-}
-
-# If Content parameter provided, use it directly
-if ($Content) {
-    $stateContent = $Content
-}
 
 # Phase marker
 $phaseMarker = "<!-- PR-AGENT-PHASE: $Phase -->"
@@ -189,9 +164,9 @@ $newSessionContent = ""
 switch ($Phase) {
     "pre-flight" {
         # Extract sections from state file
-        $issueSummary = Extract-Section $stateContent "📋 Issue Summary"
-        $filesChanged = Extract-Section $stateContent "📁 Files Changed"
-        $prDiscussion = Extract-Section $stateContent "💬 PR Discussion Summary"
+        $issueSummary = Extract-Section $Content "📋 Issue Summary"
+        $filesChanged = Extract-Section $Content "📁 Files Changed"
+        $prDiscussion = Extract-Section $Content "💬 PR Discussion Summary"
         
         $newSessionContent = @"
 <details>
@@ -242,7 +217,7 @@ $newSessionContent
     
     "tests" {
         # Extract test section from state file
-        $testsContent = Extract-Section $stateContent "🧪 Tests"
+        $testsContent = Extract-Section $Content "🧪 Tests"
         
         $newSessionContent = @"
 <details>
@@ -273,12 +248,12 @@ $newSessionContent
     
     "gate" {
         # Extract gate section from state file
-        $gateContent = Extract-Section $stateContent "🚦 Gate - Test Verification"
+        $gateContent = Extract-Section $Content "🚦 Gate - Test Verification"
         
         $gateResult = "PENDING"
-        if ($stateContent -match 'Result:\*\*\s*PASSED ✅') {
+        if ($Content -match 'Result:\*\*\s*PASSED ✅') {
             $gateResult = "✅ **PASSED**"
-        } elseif ($stateContent -match 'Result:\*\*\s*FAILED ❌') {
+        } elseif ($Content -match 'Result:\*\*\s*FAILED ❌') {
             $gateResult = "❌ **FAILED**"
         }
         
@@ -314,7 +289,7 @@ $newSessionContent
     
     "fix" {
         # Extract fix candidates section from state file
-        $fixContent = Extract-Section $stateContent "🔧 Fix Candidates"
+        $fixContent = Extract-Section $Content "🔧 Fix Candidates"
         
         $newSessionContent = @"
 <details>
@@ -346,7 +321,7 @@ $newSessionContent
     "report" {
         # Extract recommendation
         $recommendation = "PENDING"
-        if ($stateContent -match 'Final Recommendation:\s*(APPROVE|REQUEST CHANGES)') {
+        if ($Content -match 'Final Recommendation:\s*(APPROVE|REQUEST CHANGES)') {
             $recommendation = $matches[1]
         }
         
@@ -358,13 +333,13 @@ $newSessionContent
         
         # Extract comparison analysis if exists
         $comparisonAnalysis = ""
-        if ($stateContent -match '\*\*Comparison Analysis:\*\*(.*?)(?=\*\*(?:Exhausted|Selected Fix):|\Z)') {
+        if ($Content -match '\*\*Comparison Analysis:\*\*(.*?)(?=\*\*(?:Exhausted|Selected Fix):|\Z)') {
             $comparisonAnalysis = $matches[1].Trim()
         }
         
         # Extract selected fix
         $selectedFix = ""
-        if ($stateContent -match '\*\*Selected Fix:\*\*\s*(.+?)(?=\n\n|\</details>|\Z)') {
+        if ($Content -match '\*\*Selected Fix:\*\*\s*(.+?)(?=\n\n|\</details>|\Z)') {
             $selectedFix = $matches[1].Trim()
         }
         
