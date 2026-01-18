@@ -1,6 +1,7 @@
 ---
 name: try-fix
 description: Proposes ONE independent fix approach, applies it, runs tests, records result with failure analysis in state file, then reverts. Reads prior attempts to learn from failures. Returns exhausted=true when no more ideas. Max 5 attempts per session.
+compatibility: Requires git, PowerShell, and .NET SDK for building and running tests.
 ---
 
 # Try Fix Skill
@@ -31,14 +32,47 @@ Proposes and tests ONE independent fix approach per invocation. The agent invoke
 
 ## Inputs
 
-Before invoking this skill, ensure you have:
+| Input | Required | Source |
+|-------|----------|--------|
+| State file path | Yes | Agent workflow (e.g., `.github/agent-pr-session/pr-12345.md`) |
+| Test filter | Yes | From test files (e.g., `Issue12345`) |
+| Platform | Yes | From issue labels (`android` or `ios`) |
+| PR fix files | Yes | From Pre-Flight (files changed by PR, to revert) |
 
-| Input | Source | Example |
-|-------|--------|---------|
-| State file path | Agent workflow | `.github/agent-pr-session/pr-12345.md` |
-| Test filter | From test files | `Issue12345` |
-| Platform | From issue labels | `android` or `ios` |
-| PR fix files | From Pre-Flight | Files changed by PR (to revert) |
+## Outputs
+
+1. **State file update** - New row in Fix Candidates table with:
+   - Approach description
+   - Test result (PASS/FAIL)
+   - Failure analysis (if failed)
+
+2. **Return values** to agent:
+   - `approach`: Brief description of what was tried
+   - `test_result`: PASS or FAIL
+   - `exhausted`: true if no more ideas, false otherwise
+
+## Completion Criteria
+
+The skill is complete when:
+- [ ] Prior attempts reviewed and learned from
+- [ ] PR's fix reverted (working from broken baseline)
+- [ ] ONE independent fix proposed and implemented
+- [ ] Tests run and result captured
+- [ ] Failure analyzed (if failed)
+- [ ] State file updated with new candidate row
+- [ ] All changes reverted (except state file)
+- [ ] Result returned to agent
+
+## Error Handling
+
+| Situation | Action |
+|-----------|--------|
+| State file not found | Ask agent for correct path |
+| PR fix files unknown | Check state file "Files Changed" section |
+| Tests won't build | Report build error, revert, return to agent |
+| Tests timeout | Report timeout, revert, mark attempt as FAIL |
+| Can't revert cleanly | Run `git checkout -- .` to force clean state |
+| 5+ attempts already | Return `exhausted=true` immediately |
 
 ---
 

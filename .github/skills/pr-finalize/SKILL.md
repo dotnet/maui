@@ -1,6 +1,6 @@
 ---
 name: pr-finalize
-description: Finalizes any PR for merge by verifying title and description match actual implementation. Ensures commit message helps future agents understand the change. Use on any PR before merge, when description may be stale, or to review commit message quality.
+description: Verifies PR title and description match actual implementation. Works on any PR. Optionally updates agent session markdown if present.
 compatibility: Requires GitHub CLI (gh)
 ---
 
@@ -8,52 +8,165 @@ compatibility: Requires GitHub CLI (gh)
 
 Ensures PR title and description accurately reflect the implementation for a good commit message.
 
-**Standalone skill** - Can be used on any PR, not just PRs created by the pr agent.
+**Works on any PR** - Does not require agent involvement or session markdown.
+
+## Inputs
+
+| Input | Required | Source |
+|-------|----------|--------|
+| PR number | Yes | User provides |
+| Session markdown | Optional | `.github/agent-pr-session/issue-XXXXX.md` or `pr-XXXXX.md` |
+
+## Outputs
+
+1. **Recommended PR title** - Platform prefix, behavior-focused
+2. **Recommended PR description** - NOTE block + structured content
+3. **Session markdown updates** (only if file exists)
+
+## Completion Criteria
+
+- [ ] Reviewed PR diff to understand actual implementation
+- [ ] Verified title matches implementation (or recommended fix)
+- [ ] Verified description matches implementation (or recommended fix)
+- [ ] Checked for session markdown and updated if needed
 
 ## When to Use
 
-- "Finalize PR #XXXXX" 
-- "Check PR description for #XXXXX"
-- "Review commit message for PR #XXXXX"
 - Before merging any PR
-- When PR implementation changed during review
+- "Finalize PR #XXXXX"
+- "Check PR description for #XXXXX"
+- When implementation changed during review
 
-## Usage
+## When NOT to Use
+
+- ❌ For analyzing lessons learned (use `learn-from-pr` skill instead)
+- ❌ For writing or running tests (use `write-tests` or sandbox)
+- ❌ For investigating why PR build failed (use `pr-build-status`)
+
+## Constraints
+
+- **Don't change PR title/description directly** - Only recommend changes
+- **Don't modify code** - Only verify title/description accuracy
+- **Match existing style** - Follow PR template format
+- **Preserve user content** - Enhance, don't replace custom descriptions
+
+---
+
+## Workflow
+
+### Step 1: Get PR State
 
 ```bash
-# Get current state (no local checkout required)
-gh pr view XXXXX --json title,body
-gh pr view XXXXX --json files --jq '.files[].path'
-
-# Review commit messages (helpful for squash/merge commit quality)
-gh pr view XXXXX --json commits --jq '.commits[].messageHeadline'
-
-# Review actual code changes
+gh pr view XXXXX --json title,body,files
 gh pr diff XXXXX
-
-# Optional: if the PR branch is checked out locally
-git diff origin/main...HEAD
+gh pr view XXXXX --json commits --jq '.commits[].messageHeadline'
 ```
 
-Then produce:
-- Recommended PR title
-- Recommended PR description (including the required NOTE block)
-- Optional: suggestions to improve commit message quality (usually align PR title/body with the intended squash commit title/body)
+### Step 2: Analyze Implementation
 
-## Title Requirements
+Read the diff and understand:
+- What was actually changed (not what was planned)
+- Which platforms are affected
+- What the fix does
+
+### Step 3: Verify Title
 
 | Requirement | Good | Bad |
 |-------------|------|-----|
 | Platform prefix (if specific) | `[iOS] Fix Shell back button` | `Fix Shell back button` |
-| Describes behavior, not issue | `Fix long-press not triggering events` | `Fix #23892` |
+| Describes behavior | `Fix long-press not triggering events` | `Fix #23892` |
 | No noise prefixes | `[iOS] Fix...` | `[PR agent] Fix...` |
+
+### Step 4: Verify Description
+
+Must include:
+1. NOTE block (for testing PR artifacts)
+2. Description of Change (matches actual implementation)
+3. Issues Fixed
+
+Should include (for agent context):
+- Root cause
+- Fix approach
+- Key insight
+
+### Step 5: Session Markdown (If Exists)
+
+```bash
+ls .github/agent-pr-session/issue-XXXXX.md .github/agent-pr-session/pr-XXXXX.md 2>/dev/null
+```
+
+**If file exists:**
+- Check if "Selected Fix: [PENDING]" → update with actual fix
+- Add "ACTUAL IMPLEMENTED FIX" section if missing
+- Document lessons learned
+
+**If file doesn't exist:** Skip this step.
+
+### Step 6: Present Recommendations
+
+Output recommended title and description.
+
+---
+
+## Error Handling
+
+| Situation | Action |
+|-----------|--------|
+| PR not found | Ask user to verify PR number |
+| No session markdown | Proceed - only verify title/description |
+| Title already good | Confirm it's good, no change needed |
+| Description missing | Generate recommended description |
+
+---
+
+## Output Template
+
+```markdown
+# PR Finalize: #XXXXX
+
+## Title Assessment
+**Current:** [current title]
+**Recommendation:** [recommended title, or "✅ Current title is good"]
+
+## Description Assessment
+**Issues:**
+- [issue 1]
+- [issue 2]
+
+**Recommended Description:**
+
+<!-- Please let the below note in for people that find this PR -->
+> [!NOTE]
+> Are you waiting for the changes in this PR to be merged?
+> It would be very helpful if you could [test the resulting artifacts](https://github.com/dotnet/maui/wiki/Testing-PR-Builds) from this PR and let us know in a comment if this change resolves your issue. Thank you!
+
+### Description of Change
+
+[Brief summary matching implementation]
+
+**Root cause:** [Why bug occurred]
+
+**Fix:** [What code now does]
+
+### Issues Fixed
+
+Fixes #XXXXX
+
+## Session Markdown
+[Updated / No file exists / Already complete]
+```
+
+---
+
+## Title Requirements
+
+- **Platform prefix** if platform-specific: `[iOS]`, `[Android]`, `[Windows]`, `[MacCatalyst]`
+- **Behavior-focused** - Describe what changed, not issue number
+- **Concise** - Should fit in commit message subject line
 
 ## Description Requirements
 
-PR description should:
-1. Start with the required NOTE block (so users can test PR artifacts)
-2. Include the base sections from `.github/PULL_REQUEST_TEMPLATE.md` ("Description of Change" and "Issues Fixed"). The skill adds additional structured fields (Root cause, Fix, Key insight, etc.) as recommended enhancements for better agent context.
-3. Match the actual implementation
+### Required Sections
 
 ```markdown
 <!-- Please let the below note in for people that find this PR -->
@@ -68,63 +181,102 @@ PR description should:
 Fixes #XXXXX
 ```
 
-## Content for Future Agents
-
-Add these elements so future agents can understand the change:
+### Recommended Additions (for agent context)
 
 | Element | Purpose |
 |---------|---------|
 | **Root cause** | Why the bug occurred |
 | **Fix approach** | What the code now does |
-| **Key insight** | Non-obvious understanding that made fix work |
-| **What to avoid** | Patterns that would re-break it |
-| **Regression chain** | PRs that caused/affected this (if applicable) |
-| **Related issues** | Issues verified not to regress |
-
-## Common Issues
-
-| Problem | Cause | Solution |
-|---------|-------|----------|
-| Description doesn't match code | Implementation changed during review | Rewrite description from actual diff |
-| Missing root cause | Author focused on "what" not "why" | Add root cause from issue/analysis |
-| References wrong approach | Started with A, switched to B | Update to describe final approach |
-
-## Output Template
-
-```markdown
-# Recommended PR Title
-
-[Platform] Brief description of behavior fix
+| **Key insight** | Non-obvious understanding |
+| **What to avoid** | Patterns that would re-break |
 
 ---
 
-# Recommended PR Description
+## Session Markdown Updates (Optional)
 
-<!-- Please let the below note in for people that find this PR -->
-> [!NOTE]
-> Are you waiting for the changes in this PR to be merged?
-> It would be very helpful if you could [test the resulting artifacts](https://github.com/dotnet/maui/wiki/Testing-PR-Builds) from this PR and let us know in a comment if this change resolves your issue. Thank you!
+If session markdown exists and is incomplete, add:
 
-### Description of Change
+```markdown
+## ACTUAL IMPLEMENTED FIX
 
-[Brief summary]
+**Selected Fix:** [Brief description]
 
-**Root cause:** [Why bug occurred]
-
-**Fix:** [What code now does]
+**What was implemented:**
+1. [What changed]
+2. [Key files]
 
 **Key insight:** [Non-obvious understanding]
 
-**Regression chain:** (if applicable)
-| PR | What happened |
-|-----|---------------|
-| #XXXXX | Caused regression |
+## Lessons Learned
 
-**What to avoid:** [Patterns that would re-break]
-
-### Issues Fixed
-
-Fixes #XXXXX
-
-**Related:** #YYYYY (verified not regressed ✅)
+**What would have helped:**
+1. [Suggestion 1]
+2. [Suggestion 2]
 ```
+
+---
+
+## Common Issues
+
+| Problem | Solution |
+|---------|----------|
+| Description doesn't match code | Rewrite from actual diff |
+| Missing root cause | Add from issue/analysis |
+| References wrong approach | Update to describe final approach |
+| "Selected Fix: [PENDING]" | Document actual implementation |
+
+---
+
+## Example
+
+**PR #33352** - MacCatalyst crash on window disposal
+
+**Step 1: Get PR State**
+```bash
+gh pr view 33352 --json title,body,files
+# Title: "Fix ObjectDisposedException in PageViewController"
+# Files: PageViewController.cs
+```
+
+**Step 2: Analyze Implementation**
+- Fix adds null check for window.Handler before accessing services
+- Platform: MacCatalyst specific
+- Prevents crash during TraitCollectionDidChange when window disposed
+
+**Step 3: Verify Title**
+- Current: "Fix ObjectDisposedException in PageViewController"
+- Assessment: Missing platform prefix
+- Recommended: `[MacCatalyst] Fix ObjectDisposedException in PageViewController.TraitCollectionDidChange`
+
+**Step 4: Verify Description**
+- Missing NOTE block
+- Missing root cause explanation
+- Generate recommended description
+
+**Output:**
+```markdown
+# PR Finalize: #33352
+
+## Title Assessment
+**Current:** Fix ObjectDisposedException in PageViewController
+**Recommendation:** [MacCatalyst] Fix ObjectDisposedException in PageViewController.TraitCollectionDidChange
+
+## Description Assessment
+**Issues:**
+- Missing NOTE block for testing PR artifacts
+- Missing root cause explanation
+
+**Recommended Description:**
+[Full description with NOTE block, root cause, fix approach...]
+
+## Session Markdown
+Updated - Added "ACTUAL IMPLEMENTED FIX" section
+```
+
+---
+
+## Integration
+
+- **pr-finalize** → Verify PR ready to merge (this skill)
+- **learn-from-pr** → Extract lessons after finalization
+- **learn-from-pr agent** → Extract lessons AND apply improvements
