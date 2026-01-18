@@ -216,17 +216,24 @@ $newFixSession = New-ReviewSession -PhaseContent $fixContent -CommitTitle $lates
 $newReportSession = New-ReviewSession -PhaseContent $reportContent -CommitTitle $latestCommitTitle -CommitSha $latestCommitSha -CommitUrl $latestCommitUrl
 
 # Merge existing sessions with new session (if new content exists)
-$allPreFlightSessions = if ($newPreFlightSession) { Merge-ReviewSessions -ExistingSessions $existingPreFlightSessions -NewSession $newPreFlightSession } else { "" }
-$allTestsSessions = if ($newTestsSession) { Merge-ReviewSessions -ExistingSessions $existingTestsSessions -NewSession $newTestsSession } else { "" }
-$allGateSessions = if ($newGateSession) { Merge-ReviewSessions -ExistingSessions $existingGateSessions -NewSession $newGateSession } else { "" }
-$allFixSessions = if ($newFixSession) { Merge-ReviewSessions -ExistingSessions $existingFixSessions -NewSession $newFixSession } else { "" }
-$allReportSessions = if ($newReportSession) { Merge-ReviewSessions -ExistingSessions $existingReportSessions -NewSession $newReportSession } else { "" }
+$allPreFlightSessions = if ($newPreFlightSession) { Merge-ReviewSessions -ExistingSessions $existingPreFlightSessions -NewSession $newPreFlightSession } else { $existingPreFlightSessions -join "`n`n---`n`n" }
+$allTestsSessions = if ($newTestsSession) { Merge-ReviewSessions -ExistingSessions $existingTestsSessions -NewSession $newTestsSession } else { $existingTestsSessions -join "`n`n---`n`n" }
+$allGateSessions = if ($newGateSession) { Merge-ReviewSessions -ExistingSessions $existingGateSessions -NewSession $newGateSession } else { $existingGateSessions -join "`n`n---`n`n" }
+$allFixSessions = if ($newFixSession) { Merge-ReviewSessions -ExistingSessions $existingFixSessions -NewSession $newFixSession } else { $existingFixSessions -join "`n`n---`n`n" }
+$allReportSessions = if ($newReportSession) { Merge-ReviewSessions -ExistingSessions $existingReportSessions -NewSession $newReportSession } else { $existingReportSessions -join "`n`n---`n`n" }
+
+# Add placeholder for phases with no sessions
+if ([string]::IsNullOrWhiteSpace($allPreFlightSessions)) { $allPreFlightSessions = "_No review sessions yet_" }
+if ([string]::IsNullOrWhiteSpace($allTestsSessions)) { $allTestsSessions = "_No review sessions yet_" }
+if ([string]::IsNullOrWhiteSpace($allGateSessions)) { $allGateSessions = "_No review sessions yet_" }
+if ([string]::IsNullOrWhiteSpace($allFixSessions)) { $allFixSessions = "_No review sessions yet_" }
+if ([string]::IsNullOrWhiteSpace($allReportSessions)) { $allReportSessions = "_No review sessions yet_" }
 
 # Build aggregated comment body
 $commentBody = @"
 <!-- PR-AGENT-REVIEW -->
 
-## 🤖 PR Agent Review — $recommendation
+## 🤖 PR Agent Review
 
 <details>
 <summary>📊 <strong>Expand Full Review</strong></summary>
