@@ -153,11 +153,11 @@ try {
         # Get first line of commit message only
         $lastCommitTitle = ($commitData.message -split "`n")[0].Trim()
         $lastCommitSha = $commitData.sha.Substring(0, 7)  # Short SHA
-        $lastCommitLink = "[$lastCommitTitle](https://github.com/dotnet/maui/commit/$($commitData.sha))"
+        $lastCommitLink = "**$lastCommitTitle** · [``$lastCommitSha``](https://github.com/dotnet/maui/commit/$($commitData.sha))"
     }
 } catch {
     Write-Host "Could not fetch commit info, using default" -ForegroundColor Yellow
-    $lastCommitLink = $lastCommitTitle
+    $lastCommitLink = "**$lastCommitTitle**"
 }
 
 # Build phase-specific content - extract from state file and store in comment
@@ -172,7 +172,7 @@ switch ($Phase) {
         
         $newSessionContent = @"
 <details>
-<summary><strong>📝 Review Session $reviewNumber</strong> — $lastCommitLink</summary>
+<summary>📝 <strong>Review Session $reviewNumber</strong> — $lastCommitLink</summary>
 
 ---
 
@@ -223,7 +223,7 @@ $newSessionContent
         
         $newSessionContent = @"
 <details>
-<summary><strong>📝 Review Session $reviewNumber</strong> — $lastCommitLink</summary>
+<summary>📝 <strong>Review Session $reviewNumber</strong> — $lastCommitLink</summary>
 
 ---
 
@@ -261,7 +261,7 @@ $newSessionContent
         
         $newSessionContent = @"
 <details>
-<summary><strong>📝 Review Session $reviewNumber</strong> — $lastCommitLink</summary>
+<summary>📝 <strong>Review Session $reviewNumber</strong> — $lastCommitLink</summary>
 
 ---
 
@@ -295,7 +295,7 @@ $newSessionContent
         
         $newSessionContent = @"
 <details>
-<summary><strong>📝 Review Session $reviewNumber</strong> — $lastCommitLink</summary>
+<summary>📝 <strong>Review Session $reviewNumber</strong> — $lastCommitLink</summary>
 
 ---
 
@@ -347,7 +347,7 @@ $newSessionContent
         
         $newSessionContent = @"
 <details>
-<summary><strong>📝 Review Session $reviewNumber</strong> — $lastCommitLink</summary>
+<summary>📝 <strong>Review Session $reviewNumber</strong> — $lastCommitLink</summary>
 
 ---
 
