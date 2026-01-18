@@ -13,9 +13,12 @@ using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 
+using Microsoft.Maui.Handlers;
+
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="Type[@FullName='Microsoft.Maui.Controls.Application']/Docs/*" />
+	[ElementHandler(typeof(ApplicationHandler))]
 	public partial class Application : Element, IResourcesProvider, IApplicationController, IElementConfiguration<Application>, IVisualTreeElement, IApplication
 	{
 		readonly WeakEventManager _weakEventManager = new WeakEventManager();

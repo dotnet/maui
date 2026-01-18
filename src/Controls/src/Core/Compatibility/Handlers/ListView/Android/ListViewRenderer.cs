@@ -17,7 +17,7 @@ using AView = Android.Views.View;
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
 #pragma warning disable CS0618 // Type or member is obsolete
-	public class ListViewRenderer : ViewRenderer<ListView, AListView>
+	public class ListViewRenderer : ViewRenderer<ListView, AListView>, IElementHandlerWithAndroidContext<ListViewRenderer>
 #pragma warning restore CS0618 // Type or member is obsolete
 	{
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -47,6 +47,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		ScrollBarVisibility _defaultHorizontalScrollVisibility = 0;
 		ScrollBarVisibility _defaultVerticalScrollVisibility = 0;
+
+		static ListViewRenderer IElementHandlerWithAndroidContext<ListViewRenderer>.CreateHandler(Context context)
+		{
+			return new ListViewRenderer(context);
+		}
 
 		public ListViewRenderer(Context context) : base(context, Mapper, CommandMapper)
 		{
