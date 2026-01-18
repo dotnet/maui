@@ -70,10 +70,21 @@ try {
 
 # Check if this phase already has a comment
 $existingCommentId = $null
+$existingCommentBody = $null
+$reviewNumber = 1
+
 foreach ($comment in $existingComments) {
     if ($comment.body -match [regex]::Escape($phaseMarker)) {
         $existingCommentId = $comment.id
-        Write-Host "✓ Found existing $Phase comment (ID: $existingCommentId)" -ForegroundColor Green
+        $existingCommentBody = $comment.body
+        
+        # Count existing sessions to determine next session number
+        $sessionMatches = [regex]::Matches($existingCommentBody, '📝 Review Session (\d+)')
+        if ($sessionMatches.Count -gt 0) {
+            $reviewNumber = ([int]$sessionMatches[$sessionMatches.Count - 1].Groups[1].Value) + 1
+        }
+        
+        Write-Host "✓ Found existing $Phase comment (ID: $existingCommentId) - will append session #$reviewNumber" -ForegroundColor Green
         break
     }
 }
@@ -127,14 +138,25 @@ function Extract-Section {
     $match = [regex]::Match($Content, $pattern, [System.Text.RegularExpressions.RegexOptions]::Singleline)
     
     if ($match.Success) {
-        $sectionContent = $match.Groups[1].Value.Trim()
-        return "<details>`n<summary><strong>$SectionName</strong></summary>`n`n$sectionContent`n`n</details>"
+        return $match.Groups[1].Value.Trim()
     }
     return $null
 }
 
-# Build phase-specific content from state file
-$commentBody = ""
+# Fetch latest commit title from PR
+$lastCommitTitle = "Unknown commit"
+try {
+    $commitsJson = gh api "repos/dotnet/maui/pulls/$PRNumber/commits" --jq '.[-1].commit.message' 2>&1
+    if ($LASTEXITCODE -eq 0 -and $commitsJson) {
+        # Get first line of commit message only
+        $lastCommitTitle = ($commitsJson -split "`n")[0].Trim()
+    }
+} catch {
+    Write-Host "Could not fetch commit title, using default" -ForegroundColor Yellow
+}
+
+# Build phase-specific content - extract from state file and store in comment
+$newSessionContent = ""
 
 switch ($Phase) {
     "pre-flight" {
@@ -143,43 +165,84 @@ switch ($Phase) {
         $filesChanged = Extract-Section $stateContent "📁 Files Changed"
         $prDiscussion = Extract-Section $stateContent "💬 PR Discussion Summary"
         
-        $commentBody = @"
-$phaseMarker
-## 🔍 Pre-Flight: Context Gathering
+        $newSessionContent = @"
+<details>
+<summary><strong>📝 Review Session $reviewNumber</strong> - $lastCommitTitle</summary>
 
-**Status:** ✅ COMPLETE
+<details>
+<summary><strong>📋 Issue Summary</strong></summary>
 
 $issueSummary
 
+</details>
+
+<details>
+<summary><strong>📁 Files Changed</strong></summary>
+
 $filesChanged
+
+</details>
+
+<details>
+<summary><strong>💬 PR Discussion Summary</strong></summary>
 
 $prDiscussion
 
----
-*Phase completed - Tests phase next*
+</details>
+
+</details>
 "@
+
+        if ($existingCommentBody) {
+            # Append new session to existing comment
+            $commentBody = $existingCommentBody.TrimEnd() + "`n`n$newSessionContent"
+        } else {
+            $commentBody = @"
+$phaseMarker
+## 🔍 Pre-Flight: Context Gathering
+
+**Last Pre-Flight Status:** SUCCESS ✅
+
+$newSessionContent
+"@
+        }
     }
     
     "tests" {
         # Extract test section from state file
-        $testsSection = Extract-Section $stateContent "🧪 Tests"
+        $testsContent = Extract-Section $stateContent "🧪 Tests"
         
-        $commentBody = @"
+        $newSessionContent = @"
+<details>
+<summary><strong>📝 Review Session $reviewNumber</strong> - $lastCommitTitle</summary>
+
+<details>
+<summary><strong>🧪 Tests</strong></summary>
+
+$testsContent
+
+</details>
+
+</details>
+"@
+
+        if ($existingCommentBody) {
+            $commentBody = $existingCommentBody.TrimEnd() + "`n`n$newSessionContent"
+        } else {
+            $commentBody = @"
 $phaseMarker
 ## 🧪 Tests: Verification
 
-**Status:** ✅ COMPLETE
+**Last Tests Status:** SUCCESS ✅
 
-$testsSection
-
----
-*Phase completed - Gate phase next*
+$newSessionContent
 "@
+        }
     }
     
     "gate" {
         # Extract gate section from state file
-        $gateSection = Extract-Section $stateContent "🚦 Gate - Test Verification"
+        $gateContent = Extract-Section $stateContent "🚦 Gate - Test Verification"
         
         $gateResult = "PENDING"
         if ($stateContent -match 'Result:\*\*\s*PASSED ✅') {
@@ -188,34 +251,67 @@ $testsSection
             $gateResult = "❌ FAILED"
         }
         
-        $commentBody = @"
+        $newSessionContent = @"
+<details>
+<summary><strong>📝 Review Session $reviewNumber</strong> - $lastCommitTitle</summary>
+
+<details>
+<summary><strong>🚦 Gate - Test Verification</strong></summary>
+
+$gateContent
+
+**Result:** $gateResult
+
+</details>
+
+</details>
+"@
+
+        if ($existingCommentBody) {
+            $commentBody = $existingCommentBody.TrimEnd() + "`n`n$newSessionContent"
+        } else {
+            $lastStatus = if ($gateResult -eq '✅ PASSED') { 'SUCCESS ✅' } else { 'FAILED ❌' }
+            $commentBody = @"
 $phaseMarker
 ## 🚦 Gate: Test Validation
 
-**Status:** $gateResult
+**Last Gate Status:** $lastStatus
 
-$gateSection
-
----
-*Phase completed - Fix phase next*
+$newSessionContent
 "@
+        }
     }
     
     "fix" {
         # Extract fix candidates section from state file
-        $fixSection = Extract-Section $stateContent "🔧 Fix Candidates"
+        $fixContent = Extract-Section $stateContent "🔧 Fix Candidates"
         
-        $commentBody = @"
+        $newSessionContent = @"
+<details>
+<summary><strong>📝 Review Session $reviewNumber</strong> - $lastCommitTitle</summary>
+
+<details>
+<summary><strong>🔧 Fix Candidates</strong></summary>
+
+$fixContent
+
+</details>
+
+</details>
+"@
+
+        if ($existingCommentBody) {
+            $commentBody = $existingCommentBody.TrimEnd() + "`n`n$newSessionContent"
+        } else {
+            $commentBody = @"
 $phaseMarker
 ## 🔧 Fix: Analysis
 
-**Status:** ✅ COMPLETE
+**Last Fix Status:** SUCCESS ✅
 
-$fixSection
-
----
-*Phase completed - Report phase next*
+$newSessionContent
 "@
+        }
     }
     
     "report" {
@@ -237,32 +333,54 @@ $fixSection
             $comparisonAnalysis = $matches[1].Trim()
         }
         
-        $commentBody = @"
-$phaseMarker
-## 📋 Report: Final Recommendation
+        # Extract selected fix
+        $selectedFix = ""
+        if ($stateContent -match '\*\*Selected Fix:\*\*\s*(.+?)(?=\n\n|\</details>|\Z)') {
+            $selectedFix = $matches[1].Trim()
+        }
+        
+        $newSessionContent = @"
+<details>
+<summary><strong>📝 Review Session $reviewNumber</strong> - $lastCommitTitle</summary>
 
-**Status:** $recommendationIcon $recommendation
+### Final Recommendation
 
-### Review Summary
+**$recommendationIcon $recommendation**
 
-All phases completed:
-- ✅ Pre-Flight: Context gathered
-- ✅ Tests: Verified
-- ✅ Gate: Tests validated
-- ✅ Fix: Alternatives explored
-- ✅ Report: Recommendation generated
-
-### Comparison Analysis
+<details>
+<summary><strong>Comparison Analysis</strong></summary>
 
 $comparisonAnalysis
 
-### Recommendation
+</details>
 
-**$recommendation** - See state file for full details: `.github/agent-pr-session/pr-$PRNumber.md`
+<details>
+<summary><strong>Selected Fix</strong></summary>
 
----
-*Review complete!*
+$selectedFix
+
+</details>
+
+</details>
 "@
+
+        if ($existingCommentBody) {
+            $commentBody = $existingCommentBody.TrimEnd() + "`n`n$newSessionContent"
+        } else {
+            $lastStatus = switch ($recommendation) {
+                "APPROVE" { "APPROVED ✅" }
+                "REQUEST CHANGES" { "CHANGES REQUESTED ❌" }
+                default { "COMMENT 💬" }
+            }
+            $commentBody = @"
+$phaseMarker
+## 📋 Report: Complete
+
+**Last Report Status:** $lastStatus
+
+$newSessionContent
+"@
+        }
     }
 }
 
@@ -276,9 +394,17 @@ if ($DryRun) {
 
 try {
     if ($existingCommentId) {
-        Write-Host "⚠️  Comment already exists for $Phase phase - skipping duplicate" -ForegroundColor Yellow
-        Write-Host "   To update, delete comment ID $existingCommentId first" -ForegroundColor Gray
-        exit 0
+        Write-Host "Updating existing comment ID: $existingCommentId with session #$reviewNumber" -ForegroundColor Green
+        # Create JSON payload
+        $payload = @{ body = $commentBody } | ConvertTo-Json
+        $tempFile = [System.IO.Path]::GetTempFileName()
+        Set-Content -Path $tempFile -Value $payload -NoNewline
+        $result = gh api --method PATCH "repos/dotnet/maui/issues/comments/$existingCommentId" --input "$tempFile" 2>&1
+        Remove-Item $tempFile -Force -ErrorAction SilentlyContinue
+        if ($LASTEXITCODE -ne 0) {
+            throw "gh api failed with exit code $LASTEXITCODE : $result"
+        }
+        Write-Host "✅ Comment updated with new session" -ForegroundColor Green
     } else {
         Write-Host "Creating new comment for PR #$PRNumber" -ForegroundColor Green
         $tempFile = [System.IO.Path]::GetTempFileName()
