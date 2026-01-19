@@ -6,19 +6,13 @@ using Maui.Controls.Sample.ViewModels;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Essentials.AI;
 using System.ClientModel;
 
 #if ENABLE_OPENAI_CLIENT || ANDROID
 using OpenAI;
-using OpenAI.Embeddings;
-#endif
-
-#if ENABLE_OPENAI_CLIENT
 using OpenAI.Chat;
-#endif
-
-#if ANDROID
-using Microsoft.Maui.Essentials.AI;
+using OpenAI.Embeddings;
 #endif
 
 namespace Maui.Controls.Sample;
