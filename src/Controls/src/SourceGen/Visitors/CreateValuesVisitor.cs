@@ -280,7 +280,8 @@ class CreateValuesVisitor : IXamlNodeVisitor
 				{
 					var varName = NamingHelpers.CreateUniqueVariableName(Context, type);
 					variables[node] = new LocalVariable(type, varName);
-					EventTriggerValueProvider.GenerateCreateInstanceCall(node, Context);
+					writer.Write($"var {varName} = ");
+					EventTriggerValueProvider.GenerateCreateExpression(node, Context);
 					return;
 				}
 
