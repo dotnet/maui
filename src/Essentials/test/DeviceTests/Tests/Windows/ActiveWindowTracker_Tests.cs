@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 				}
 			});
 
-		[Fact(Skip = "Window message handling does not work reliably in headless/CI environments")]
+		[Fact]
 		public Task SwitchingWindowsPostsToTheNewWindow() =>
 			Utils.OnMainThread(async () =>
 			{
@@ -98,21 +98,32 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 				var window1 = new UI.Xaml.Window();
 				var window2 = new UI.Xaml.Window();
 
+				System.Diagnostics.Debug.WriteLine($"[TEST] window1 handle: {window1.GetWindowHandle()}");
+				System.Diagnostics.Debug.WriteLine($"[TEST] window2 handle: {window2.GetWindowHandle()}");
+
 				var wsm = new TestWindowStateManager();
 				var tracker = new ActiveWindowTracker(wsm);
 				tracker.Start();
 				tracker.WindowMessage += OnWindowMessage;
 
 				wsm.OnActivated(window1);
+				System.Diagnostics.Debug.WriteLine($"[TEST] Activated window1, active window: {wsm.GetActiveWindow()?.GetWindowHandle()}");
 				wsm.OnActivated(window2);
+				System.Diagnostics.Debug.WriteLine($"[TEST] Activated window2, active window: {wsm.GetActiveWindow()?.GetWindowHandle()}");
 
 				await PostTestMessageAsync(window2);
+				System.Diagnostics.Debug.WriteLine($"[TEST] Posted message to window2, received {messages.Count} messages");
+				foreach (var msg in messages)
+				{
+					System.Diagnostics.Debug.WriteLine($"[TEST]   Message: hwnd={msg.Item1}, msgId={msg.Item2}");
+				}
 
 				Assert.DoesNotContain((window1.GetWindowHandle(), TEST_MESSAGE), messages);
 				Assert.Contains((window2.GetWindowHandle(), TEST_MESSAGE), messages);
 
 				void OnWindowMessage(object? sender, WindowMessageEventArgs e)
 				{
+					System.Diagnostics.Debug.WriteLine($"[TEST] OnWindowMessage: hwnd={e.Hwnd}, msgId={e.MessageId}");
 					messages.Add((e.Hwnd, e.MessageId));
 				}
 			});

@@ -28,11 +28,7 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidateHasColor(graphicsView, expected);
 		}
 
-		[Theory(DisplayName = "Can draw image loaded in background thread"
-#if WINDOWS
-			, Skip = "Win2D image loading in background thread fails on Windows Helix CI"
-#endif
-		)]
+		[Theory(DisplayName = "Can draw image loaded in background thread")]
 		[InlineData("red_raw.png", 0xFFFF0000)]
 		[InlineData("green_raw.png", 0xFF00FF00)]
 		[InlineData("blue_raw.png", 0xFF0000FF)]
@@ -40,14 +36,21 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData("black_raw.png", 0xFF000000)]
 		public async Task GraphicsViewCanDrawBackgroundImage(string filename, uint color)
 		{
+			System.Diagnostics.Debug.WriteLine($"[TEST] GraphicsViewCanDrawBackgroundImage: loading {filename}");
 			var expected = Color.FromUint(color);
 
 			var image = await Task.Run(async () =>
 			{
+				System.Diagnostics.Debug.WriteLine($"[TEST] Background thread: loading image from {filename}");
 				var loading = new PlatformImageLoadingService();
 				using var stream = await FileSystem.OpenAppPackageFileAsync(filename);
-				return loading.FromStream(stream);
+				System.Diagnostics.Debug.WriteLine($"[TEST] Background thread: stream opened, length={stream?.Length}");
+				var result = loading.FromStream(stream);
+				System.Diagnostics.Debug.WriteLine($"[TEST] Background thread: image loaded, result={result}");
+				return result;
 			});
+
+			System.Diagnostics.Debug.WriteLine($"[TEST] Image loaded on background thread: {image}");
 
 			var graphicsView = new GraphicsViewStub()
 			{
@@ -59,11 +62,7 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidateHasColor(graphicsView, expected);
 		}
 
-		[Theory(DisplayName = "Can draw image loaded in draw loop"
-#if WINDOWS
-			, Skip = "Win2D image loading in draw loop fails on Windows Helix CI"
-#endif
-		)]
+		[Theory(DisplayName = "Can draw image loaded in draw loop")]
 		[InlineData("red_raw.png", 0xFFFF0000)]
 		[InlineData("green_raw.png", 0xFF00FF00)]
 		[InlineData("blue_raw.png", 0xFF0000FF)]
@@ -71,9 +70,11 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData("black_raw.png", 0xFF000000)]
 		public async Task GraphicsViewCanDrawInlineImage(string filename, uint color)
 		{
+			System.Diagnostics.Debug.WriteLine($"[TEST] GraphicsViewCanDrawInlineImage: loading {filename}");
 			var expected = Color.FromUint(color);
 
 			using var stream = await FileSystem.OpenAppPackageFileAsync(filename);
+			System.Diagnostics.Debug.WriteLine($"[TEST] Stream opened, length={stream?.Length}");
 
 			var graphicsView = new GraphicsViewStub()
 			{
