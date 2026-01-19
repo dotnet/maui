@@ -96,8 +96,31 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					uiTextField.Placeholder = arguments.Placeholder;
 					uiTextField.Text = arguments.InitialValue;
-					uiTextField.ShouldChangeCharacters = (field, range, replacementString) => arguments.MaxLength <= -1 || field.Text.Length + replacementString.Length - range.Length <= arguments.MaxLength;
 					uiTextField.ApplyKeyboard(arguments.Keyboard);
+
+					if (arguments.MaxLength > -1 && (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26)))
+					{
+						uiTextField.ShouldChangeCharactersInRanges = (textField, ranges, replacementString) =>
+						{
+							if (textField.Text is null)
+								return true;
+
+							var currentLength = textField.Text.Length;
+							var totalRangeLength = 0;
+							for (int i = 0; i < ranges.Length; i++)
+							{
+								var range = ranges[i].RangeValue;
+								totalRangeLength += (int)range.Length;
+							}
+
+							var newLength = currentLength - totalRangeLength + replacementString.Length;
+							return newLength <= arguments.MaxLength;
+						};
+					}
+					else
+					{
+						uiTextField.ShouldChangeCharacters = (field, range, replacementString) => arguments.MaxLength <= -1 || field.Text.Length + replacementString.Length - range.Length <= arguments.MaxLength;
+					}
 				});
 
 				var oldFrame = alert.View.Frame;
