@@ -1,3 +1,4 @@
+#if TEST_FAILS_ON_WINDOWS // Appium does not find the AutomationID for the layout on Windows.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -23,3 +24,4 @@ public class Issue31782 : _IssuesUITest
 			$"End-aligned label ({labelRect.Width}pt) should be narrower than container ({containerRect.Width}pt)");
 	}
 }
+#endif
