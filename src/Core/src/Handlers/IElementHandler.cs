@@ -53,7 +53,7 @@
 	}
 
 #if ANDROID
-	internal interface IElementHandlerWithAndroidContext<THandler>
+	public interface IElementHandlerWithAndroidContext<THandler>
 		where THandler : IElementHandler
 	{
 		static abstract THandler CreateHandler(global::Android.Content.Context? context);

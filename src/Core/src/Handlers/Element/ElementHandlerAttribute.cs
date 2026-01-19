@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.Maui.Handlers;
 
 [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
-internal class ElementHandlerAttribute : Attribute
+public class ElementHandlerAttribute : Attribute
 {
 	public ElementHandlerAttribute([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type handlerType)
 	{
@@ -34,7 +34,7 @@ internal class ElementHandlerAttribute : Attribute
 }
 
 #if ANDROID
-internal sealed class ElementHandlerWithAndroidContextAttribute<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] THandler>
+public sealed class ElementHandlerWithAndroidContextAttribute<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] THandler>
 	: ElementHandlerAttribute
 	where THandler : IElementHandler, IElementHandlerWithAndroidContext<THandler>
 {
