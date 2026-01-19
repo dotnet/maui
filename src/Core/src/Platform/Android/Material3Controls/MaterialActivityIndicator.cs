@@ -29,10 +29,10 @@ internal partial class MaterialActivityIndicator : CircularProgressIndicator
 
     protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
     {
-        // Intrinsic desired size (Material2-aligned)
+        // Calculate desired size including indicator size and padding
         var desiredSize =
             IndicatorSize +
-            PaddingLeft + PaddingRight;
+            Math.Max(PaddingLeft + PaddingRight, PaddingTop + PaddingBottom);
 
         var width = ResolveSize(desiredSize, widthMeasureSpec);
         var height = ResolveSize(desiredSize, heightMeasureSpec);
