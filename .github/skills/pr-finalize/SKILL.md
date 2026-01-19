@@ -1,6 +1,9 @@
 ---
 name: pr-finalize
 description: Verifies PR title and description match actual implementation. Works on any PR. Optionally updates agent session markdown if present.
+metadata:
+  author: dotnet-maui
+  version: "1.0"
 compatibility: Requires GitHub CLI (gh)
 ---
 
