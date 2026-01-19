@@ -84,6 +84,7 @@ namespace Microsoft.Maui.Handlers
 	// TODO: Material3 - make it public in .net 11
 	internal class MauiMaterialTextView : MaterialTextView
 	{
+		// Track text type to optimize layout events - FormattedText needs span recalculation, plain text doesn't
 		bool _isFormatted;
 
 		public MauiMaterialTextView(Context context) : base(MauiMaterialContextThemeWrapper.Create(context))
@@ -94,6 +95,7 @@ namespace Microsoft.Maui.Handlers
 
 		public override void SetText(ICharSequence? text, BufferType? type)
 		{
+			// Detect FormattedText (SpannableString) vs plain text to avoid unnecessary layout events
 			_isFormatted = text is not Java.Lang.String;
 			base.SetText(text, type);
 		}
@@ -102,6 +104,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.OnLayout(changed, left, top, right, bottom);
 
+			// Only notify for FormattedText - spans need position updates when layout changes
 			if (_isFormatted)
 			{
 				LayoutChanged?.Invoke(this, new LayoutChangedEventArgs(left, top, right, bottom));
