@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls.SourceGen;
 /// Provides AOT-safe EventTrigger creation using the EventTrigger.Create factory methods.
 /// 
 /// Unlike other value providers, EventTrigger is handled specially:
-/// - EmitDeclaration is called from CreateValuesVisitor to emit the declaration early
+/// - GenerateCreateInstanceCall is called from CreateValuesVisitor to emit the declaration early
 /// - TryProvideValue returns the pre-existing variable name
 /// 
 /// The declaration must happen in CreateValuesVisitor because EventTrigger has children
@@ -26,7 +26,7 @@ internal class EventTriggerValueProvider : IKnownMarkupValueProvider
 
 	public bool TryProvideValue(ElementNode node, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
 	{
-		// The variable was already declared via EmitDeclaration called from CreateValuesVisitor.
+		// The variable was already declared via GenerateCreateInstanceCall called from CreateValuesVisitor.
 		// Return true with the variable name to prevent any additional code generation.
 		if (context.Variables.TryGetValue(node, out var variable))
 		{
@@ -42,14 +42,13 @@ internal class EventTriggerValueProvider : IKnownMarkupValueProvider
 	}
 
 	/// <summary>
-	/// Emits the EventTrigger declaration. Must be called from CreateValuesVisitor
-	/// so the variable exists before children are processed.
+	/// Generates the EventTrigger.Create call (or fallback to new EventTrigger()).
+	/// Variable must already be registered in context.Variables before calling.
 	/// </summary>
-	internal static void EmitDeclaration(ElementNode node, ITypeSymbol type, SourceGenContext context)
+	internal static void GenerateCreateInstanceCall(ElementNode node, SourceGenContext context)
 	{
 		var writer = context.Writer;
-		var varName = NamingHelpers.CreateUniqueVariableName(context, type);
-		context.Variables[node] = new LocalVariable(type, varName);
+		var varName = context.Variables[node].ValueAccessor;
 		
 		// Get the Event property value
 		string? eventName = null;
