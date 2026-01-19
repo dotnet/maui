@@ -224,6 +224,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		internal void DisposePage()
 		{
+			if (_destroyed)
+			{
+				return;
+			}
 			Destroy();
 
 			if (_page is not null)
