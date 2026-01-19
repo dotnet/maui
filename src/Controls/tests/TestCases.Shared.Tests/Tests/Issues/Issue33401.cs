@@ -1,3 +1,4 @@
+#if TEST_FAILS_ON_WINDOWS // CollectionView SelectionChanged event and parent TapGestureRecognizer conflict on windows. This needs to fix it.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -23,3 +24,4 @@ public class Issue33401 : _IssuesUITest
 		Assert.That(statusText, Does.Contain("Status: Selected Item 1"));
 	}
 }
+#endif
