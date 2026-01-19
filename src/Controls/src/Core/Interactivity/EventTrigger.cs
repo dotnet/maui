@@ -1,5 +1,4 @@
 #nullable disable
-#pragma warning disable RS0036 // A public members return type changed from nullable-oblivious to nullable-aware
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
