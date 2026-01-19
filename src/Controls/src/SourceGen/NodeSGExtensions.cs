@@ -84,6 +84,7 @@ static class NodeSGExtensions
 		=> context.knownSGValueProviders ??= new(SymbolEqualityComparer.Default)
 	{
 		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Setter")!, new SetterValueProvider()},
+		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.EventTrigger")!, new EventTriggerValueProvider()},
 	};
 
 

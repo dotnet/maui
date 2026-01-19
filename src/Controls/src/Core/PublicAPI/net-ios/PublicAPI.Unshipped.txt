@@ -12,3 +12,5 @@ Microsoft.Maui.Controls.AppThemeBinding.AppThemeBinding() -> void
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewController.LoadView() -> void
 ~static Microsoft.Maui.Controls.VisualStateManager.GetVisualStateGroups(Microsoft.Maui.Controls.VisualElement visualElement) -> Microsoft.Maui.Controls.VisualStateGroupList
 *REMOVED*~static Microsoft.Maui.Controls.VisualStateManager.GetVisualStateGroups(Microsoft.Maui.Controls.VisualElement visualElement) -> System.Collections.Generic.IList<Microsoft.Maui.Controls.VisualStateGroup>
+static Microsoft.Maui.Controls.EventTrigger.Create<TBindable>(string! eventName, System.Action<TBindable!, System.EventHandler!>! addHandler, System.Action<TBindable!, System.EventHandler!>! removeHandler) -> Microsoft.Maui.Controls.EventTrigger!
+static Microsoft.Maui.Controls.EventTrigger.Create<TBindable, TEventArgs>(string! eventName, System.Action<TBindable!, System.EventHandler<TEventArgs!>!>! addHandler, System.Action<TBindable!, System.EventHandler<TEventArgs!>!>! removeHandler) -> Microsoft.Maui.Controls.EventTrigger!
