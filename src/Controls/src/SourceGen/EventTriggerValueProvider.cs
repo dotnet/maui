@@ -5,29 +5,36 @@ using Microsoft.Maui.Controls.Xaml;
 namespace Microsoft.Maui.Controls.SourceGen;
 
 /// <summary>
-/// Provides deferred creation for EventTrigger to avoid generating dead code.
+/// Provides AOT-safe EventTrigger creation using the EventTrigger.Create factory methods.
 /// 
-/// When an EventTrigger has an Event property, we defer its creation from CreateValuesVisitor
-/// to SetPropertiesVisitor so we can use the EventTrigger.Create factory method with the
-/// correct target type (which is only known after the parent element is processed).
+/// Unlike other value providers, EventTrigger is handled specially:
+/// - CreateValuesVisitor emits the declaration (either factory call or reflection-based)
+/// - This provider returns true with the pre-existing variable name
 /// 
-/// This approach:
-/// 1. Returns true from CanProvideValue so CreateValuesVisitor skips emitting "new EventTrigger()"
-/// 2. Registers a variable name so children can reference .Actions
-/// 3. SetEventTriggerEvent emits "var x = EventTrigger.Create&lt;T&gt;(...)" when Event property is set
+/// The declaration must happen in CreateValuesVisitor because EventTrigger has children
+/// (TriggerActions) that need the variable to exist before they're processed in 
+/// SetPropertiesVisitor (which uses bottom-up visiting order).
 /// </summary>
 internal class EventTriggerValueProvider : IKnownMarkupValueProvider
 {
 	public bool CanProvideValue(ElementNode node, SourceGenContext context)
 	{
-		// Defer creation if EventTrigger has an Event property.
-		// Without Event property, fall back to normal creation.
+		// Return true when Event property exists - CreateValuesVisitor will handle generation
 		return HasEventProperty(node);
 	}
 
 	public bool TryProvideValue(ElementNode node, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
 	{
-		// We don't provide a value here - SetEventTriggerEvent handles creation.
+		// The variable was already declared in CreateValuesVisitor.
+		// Return true with the variable name to prevent any additional code generation.
+		if (context.Variables.TryGetValue(node, out var variable))
+		{
+			returnType = variable.Type;
+			value = variable.ValueAccessor;
+			return true;
+		}
+		
+		// Shouldn't happen - CreateValuesVisitor always registers the variable
 		returnType = null;
 		value = string.Empty;
 		return false;

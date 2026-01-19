@@ -39,21 +39,26 @@ namespace Microsoft.Maui.Controls
 		/// Creates an AOT-safe EventTrigger for events using <see cref="EventHandler"/>.
 		/// </summary>
 		/// <typeparam name="TBindable">The type of the bindable object that owns the event.</typeparam>
+		/// <param name="eventName">The name of the event to respond to.</param>
 		/// <param name="addHandler">A static lambda to subscribe to the event.</param>
 		/// <param name="removeHandler">A static lambda to unsubscribe from the event.</param>
 		/// <returns>A new EventTrigger instance.</returns>
 		/// <example>
 		/// <code>
-		/// EventTrigger.Create&lt;Button&gt;(
+		/// EventTrigger.Create&lt;Button&gt;("Clicked",
 		///     static (b, h) =&gt; b.Clicked += h,
 		///     static (b, h) =&gt; b.Clicked -= h);
 		/// </code>
 		/// </example>
 		public static EventTrigger Create<TBindable>(
+			string eventName,
 			Action<TBindable, EventHandler> addHandler,
 			Action<TBindable, EventHandler> removeHandler) where TBindable : BindableObject
 		{
-			return new EventTrigger(trigger => new StaticStrategy<TBindable>(addHandler, removeHandler, trigger));
+			return new EventTrigger(trigger => new StaticStrategy<TBindable>(addHandler, removeHandler, trigger))
+			{
+				Event = eventName
+			};
 		}
 
 		/// <summary>
@@ -61,23 +66,28 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <typeparam name="TBindable">The type of the bindable object that owns the event.</typeparam>
 		/// <typeparam name="TEventArgs">The type of the event arguments.</typeparam>
+		/// <param name="eventName">The name of the event to respond to.</param>
 		/// <param name="addHandler">A static lambda to subscribe to the event.</param>
 		/// <param name="removeHandler">A static lambda to unsubscribe from the event.</param>
 		/// <returns>A new EventTrigger instance.</returns>
 		/// <example>
 		/// <code>
-		/// EventTrigger.Create&lt;Entry, TextChangedEventArgs&gt;(
+		/// EventTrigger.Create&lt;Entry, TextChangedEventArgs&gt;("TextChanged",
 		///     static (e, h) =&gt; e.TextChanged += h,
 		///     static (e, h) =&gt; e.TextChanged -= h);
 		/// </code>
 		/// </example>
 		public static EventTrigger Create<TBindable, TEventArgs>(
+			string eventName,
 			Action<TBindable, EventHandler<TEventArgs>> addHandler,
 			Action<TBindable, EventHandler<TEventArgs>> removeHandler)
 			where TBindable : BindableObject
 			where TEventArgs : EventArgs
 		{
-			return new EventTrigger(trigger => new StaticStrategy<TBindable, TEventArgs>(addHandler, removeHandler, trigger));
+			return new EventTrigger(trigger => new StaticStrategy<TBindable, TEventArgs>(addHandler, removeHandler, trigger))
+			{
+				Event = eventName
+			};
 		}
 #nullable disable
 
