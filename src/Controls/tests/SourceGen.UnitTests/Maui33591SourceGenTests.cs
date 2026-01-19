@@ -73,7 +73,7 @@ public class Maui33591SourceGenTests : SourceGenXamlInitializeComponentTestBase
 		// Key patterns to verify:
 		// 1. EventTrigger.Create<Button>() factory method (AOT-safe)
 		// 2. Static lambdas for event subscription
-		// 3. Event property still set for backward compatibility
+		// 3. Event name passed to factory method
 		// 4. NO new EventTrigger() - the factory method is used directly
 		const string expected =
 		"""
@@ -122,6 +122,7 @@ public class Maui33591SourceGenTests : SourceGenXamlInitializeComponentTestBase
 
 				var testTriggerAction = new global::Test.TestTriggerAction();
 				global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(testTriggerAction!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 11, 7);
+				var eventTrigger = global::Microsoft.Maui.Controls.EventTrigger.Create<global::Microsoft.Maui.Controls.Button>("Clicked", static (target, handler) => target.Clicked += handler, static (target, handler) => target.Clicked -= handler);
 				var button = new global::Microsoft.Maui.Controls.Button();
 				global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(button!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 8, 4);
 				var stackLayout = new global::Microsoft.Maui.Controls.StackLayout();
@@ -151,15 +152,14 @@ public class Maui33591SourceGenTests : SourceGenXamlInitializeComponentTestBase
 		#line NORMALIZED_LINE_DIRECTIVE
 				button.SetValue(global::Microsoft.Maui.Controls.Button.TextProperty, "Click Me");
 		#line default
-				var eventTrigger = global::Microsoft.Maui.Controls.EventTrigger.Create<global::Microsoft.Maui.Controls.Button>(
-				    static (target, handler) => target.Clicked += handler,
-				    static (target, handler) => target.Clicked -= handler);
-				eventTrigger.Event = "Clicked";
 		#line NORMALIZED_LINE_DIRECTIVE
 				((global::System.Collections.Generic.ICollection<global::Microsoft.Maui.Controls.TriggerAction>)eventTrigger.Actions).Add((global::Microsoft.Maui.Controls.TriggerAction)testTriggerAction);
 		#line default
+				var eventTrigger1 = eventTrigger;
+				if (global::Microsoft.Maui.VisualDiagnostics.GetSourceInfo(eventTrigger1!) == null)
+					global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(eventTrigger1!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 10, 6);
 		#line NORMALIZED_LINE_DIRECTIVE
-				((global::System.Collections.Generic.ICollection<global::Microsoft.Maui.Controls.TriggerBase>)((global::System.Collections.Generic.IList<global::Microsoft.Maui.Controls.TriggerBase>)button.GetValue(global::Microsoft.Maui.Controls.VisualElement.TriggersProperty))).Add((global::Microsoft.Maui.Controls.TriggerBase)eventTrigger);
+				((global::System.Collections.Generic.ICollection<global::Microsoft.Maui.Controls.TriggerBase>)((global::System.Collections.Generic.IList<global::Microsoft.Maui.Controls.TriggerBase>)button.GetValue(global::Microsoft.Maui.Controls.VisualElement.TriggersProperty))).Add((global::Microsoft.Maui.Controls.TriggerBase)eventTrigger1);
 		#line default
 		#line NORMALIZED_LINE_DIRECTIVE
 				((global::System.Collections.Generic.ICollection<global::Microsoft.Maui.IView>)stackLayout.Children).Add((global::Microsoft.Maui.IView)button);
