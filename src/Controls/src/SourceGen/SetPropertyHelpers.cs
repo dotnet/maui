@@ -37,13 +37,6 @@ static class SetPropertyHelpers
 			return;
 		}
 
-		// EventTrigger.Event property - generate AOT-safe code
-		if (!asCollectionItem && CanSetEventTriggerEvent(parentVar, localName, valueNode, context))
-		{
-			SetEventTriggerEvent(writer, parentVar, valueNode, context);
-			return;
-		}
-
 		//DynamicResource
 		if (!asCollectionItem && CanSetDynamicResource(bpFieldSymbol, valueNode, context, getNodeValue))
 		{
@@ -209,111 +202,6 @@ static class SetPropertyHelpers
 
 	static void SetDynamicResource(IndentedTextWriter writer, ILocalValue parentVar, IFieldSymbol fieldSymbol, INode valueNode, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate getNodeValue)
 		=> writer.WriteLine($"((global::Microsoft.Maui.Controls.Internals.IDynamicResourceHandler){parentVar.ValueAccessor}).SetDynamicResource({fieldSymbol.ToFQDisplayString()}, {(getNodeValue(valueNode, context.Compilation.ObjectType)).ValueAccessor}.Key);");
-
-	static bool CanSetEventTriggerEvent(ILocalValue parentVar, string localName, INode valueNode, SourceGenContext context)
-	{
-		// Check if property is "Event" and value is a string
-		if (localName != "Event" || valueNode is not ValueNode)
-			return false;
-
-		// Check if parent is the non-generic EventTrigger class
-		// (We want to replace non-generic EventTrigger with generic EventTrigger<TBindable> for AOT)
-		var eventTriggerType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.EventTrigger");
-		if (eventTriggerType == null)
-			return false;
-
-		return SymbolEqualityComparer.Default.Equals(parentVar.Type, eventTriggerType);
-	}
-
-	static void SetEventTriggerEvent(IndentedTextWriter writer, ILocalValue parentVar, INode valueNode, SourceGenContext context)
-	{
-		// Generate AOT-safe EventTrigger code using EventTrigger.Create<T>() factory.
-		// 
-		// This method is only called when processing the Event property, which means
-		// EventTriggerValueProvider.CanProvideValue returned true and no "new EventTrigger()"
-		// was emitted. We emit the variable declaration with the factory call here.
-		
-		var eventName = (string)((ValueNode)valueNode).Value;
-
-		// Find the target type by walking up the XAML tree from EventTrigger to the owning element
-		ITypeSymbol? targetType = null;
-		
-		var node = valueNode.Parent;
-		while (node != null)
-		{
-			if (node is ElementNode elementNode)
-			{
-				if (context.Variables.TryGetValue(node, out var elementVar))
-				{
-					var elementType = elementVar.Type;
-					// Skip if this is the EventTrigger we're processing
-					if (SymbolEqualityComparer.Default.Equals(elementType, parentVar.Type))
-					{
-						node = node.Parent;
-						continue;
-					}
-					
-					targetType = elementType;
-					break;
-				}
-			}
-			node = node.Parent;
-		}
-
-		if (targetType == null)
-		{
-			// Fallback: couldn't find target type, use reflection-based EventTrigger
-			writer.WriteLine($"var {parentVar.ValueAccessor} = new global::Microsoft.Maui.Controls.EventTrigger();");
-			writer.WriteLine($"{parentVar.ValueAccessor}.Event = \"{eventName}\";");
-			return;
-		}
-
-		// Look up event on target type
-		var eventSymbols = targetType.GetAllEvents(eventName, context).ToList();
-		if (eventSymbols.Count == 0)
-		{
-			writer.WriteLine($"var {parentVar.ValueAccessor} = new global::Microsoft.Maui.Controls.EventTrigger();");
-			writer.WriteLine($"{parentVar.ValueAccessor}.Event = \"{eventName}\";");
-			return;
-		}
-
-		var eventSymbol = eventSymbols.First();
-		var eventType = eventSymbol.Type;
-
-		// Determine EventHandler signature
-		var invoke = eventType.GetAllMethods("Invoke", context).FirstOrDefault();
-		if (invoke == null || invoke.Parameters.Length != 2)
-		{
-			writer.WriteLine($"var {parentVar.ValueAccessor} = new global::Microsoft.Maui.Controls.EventTrigger();");
-			writer.WriteLine($"{parentVar.ValueAccessor}.Event = \"{eventName}\";");
-			return;
-		}
-
-		var eventArgsType = invoke.Parameters[1].Type;
-		var isGenericEventHandler = !eventArgsType.Equals(
-			context.Compilation.GetTypeByMetadataName("System.EventArgs"), 
-			SymbolEqualityComparer.Default);
-
-		// Generate EventTrigger.Create<T>() factory call
-		var targetTypeName = targetType.ToFQDisplayString();
-		
-		if (isGenericEventHandler)
-		{
-			var eventArgsTypeName = eventArgsType.ToFQDisplayString();
-			writer.WriteLine($"var {parentVar.ValueAccessor} = global::Microsoft.Maui.Controls.EventTrigger.Create<{targetTypeName}, {eventArgsTypeName}>(");
-			writer.WriteLine($"    static (target, handler) => target.{eventName} += handler,");
-			writer.WriteLine($"    static (target, handler) => target.{eventName} -= handler);");
-		}
-		else
-		{
-			writer.WriteLine($"var {parentVar.ValueAccessor} = global::Microsoft.Maui.Controls.EventTrigger.Create<{targetTypeName}>(");
-			writer.WriteLine($"    static (target, handler) => target.{eventName} += handler,");
-			writer.WriteLine($"    static (target, handler) => target.{eventName} -= handler);");
-		}
-		
-		// Set the Event property for backward compatibility
-		writer.WriteLine($"{parentVar.ValueAccessor}.Event = \"{eventName}\";");
-	}
 
 	static bool CanConnectEvent(ILocalValue parentVar, string localName, INode valueNode, bool attached, SourceGenContext context)
 	{
