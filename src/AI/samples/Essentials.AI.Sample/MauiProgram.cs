@@ -7,9 +7,12 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.ClientModel;
+
+#if ENABLE_OPENAI_CLIENT
 using OpenAI;
 using OpenAI.Chat;
 using OpenAI.Embeddings;
+#endif
 
 namespace Maui.Controls.Sample;
 
@@ -19,8 +22,7 @@ public static class MauiProgram
 	{
 		var builder = MauiApp.CreateBuilder();
 
-		builder.Configuration
-			.AddJsonStream(GetUserSecretsStream() ?? throw new InvalidOperationException("User secrets file not found as embedded resource."));
+		builder.Configuration.AddUserSecrets();
 
 		builder.UseMauiApp<App>();
 
@@ -34,6 +36,52 @@ public static class MauiProgram
 			fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
 		});
 
+		// Register AI agents and workflow
+		builder.AddOpenAIServices();
+		builder.AddItineraryWorkflow();
+
+		// Register Pages
+		builder.Services.AddTransient<LandmarksPage>();
+		builder.Services.AddTransient<TripPlanningPage>();
+
+		// Register ViewModels
+		builder.Services.AddTransient<LandmarksViewModel>();
+		builder.Services.AddTransient<TripPlanningViewModel>();
+
+		// Register Services
+		builder.Services.AddSingleton<DataService>();
+		builder.Services.AddSingleton<LanguagePreferenceService>();
+		builder.Services.AddTransient<ItineraryService>();
+		builder.Services.AddTransient<TaggingService>();
+		builder.Services.AddHttpClient<WeatherService>();
+
+		// Configure Logging
+		builder.Services.AddLogging();
+		builder.Logging.AddDebug();
+		builder.Logging.AddConsole();
+#if DEBUG
+		builder.Logging.SetMinimumLevel(LogLevel.Debug);
+#else
+		builder.Logging.SetMinimumLevel(LogLevel.Information);
+#endif
+
+		return builder.Build();
+	}
+
+	private static Stream? AddUserSecrets(this ConfigurationManager manager)
+	{
+		var assembly = Assembly.GetExecutingAssembly();
+		var stream = assembly.GetManifestResourceStream("Maui.Essentials.AI.Sample.secrets.json");
+		if (stream is not null)
+		{
+			manager.AddJsonStream(stream);
+		}
+		return stream;
+	}
+
+	private static MauiAppBuilder AddOpenAIServices(this MauiAppBuilder builder)
+	{
+#if ENABLE_OPENAI_CLIENT
 		// Create AI clients
 		var aiSection = builder.Configuration.GetSection("AI");
 		var apikey = aiSection["ApiKey"] ?? throw new InvalidOperationException("API Key not found in user secrets.");
@@ -102,42 +150,8 @@ public static class MauiProgram
 				.Build();
 			return realClient;
 		});
-
-		// Register AI agents and workflow
-		builder.AddItineraryWorkflow();
-
-		// Register Pages
-		builder.Services.AddTransient<LandmarksPage>();
-		builder.Services.AddTransient<TripPlanningPage>();
-
-		// Register ViewModels
-		builder.Services.AddTransient<LandmarksViewModel>();
-		builder.Services.AddTransient<TripPlanningViewModel>();
-
-		// Register Services
-		builder.Services.AddSingleton<DataService>();
-		builder.Services.AddSingleton<LanguagePreferenceService>();
-		builder.Services.AddTransient<ItineraryService>();
-		builder.Services.AddTransient<TaggingService>();
-		builder.Services.AddHttpClient<WeatherService>();
-
-		// Configure Logging
-		builder.Services.AddLogging();
-		builder.Logging.AddDebug();
-		builder.Logging.AddConsole();
-#if DEBUG
-		builder.Logging.SetMinimumLevel(LogLevel.Debug);
-#else
-		builder.Logging.SetMinimumLevel(LogLevel.Information);
 #endif
 
-		return builder.Build();
-	}
-
-	private static Stream? GetUserSecretsStream()
-	{
-		var assembly = Assembly.GetExecutingAssembly();
-		var stream = assembly.GetManifestResourceStream("Maui.Essentials.AI.Sample.secrets.json");
-		return stream;
+		return builder;
 	}
 }

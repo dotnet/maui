@@ -1,93 +1,93 @@
 # Essentials.AI.Sample - Trip Planner
 
-AI-powered travel itinerary generator using Microsoft.Extensions.AI in .NET MAUI.
+AI-powered travel itinerary generator using Microsoft.Extensions.AI and Microsoft.Agents.AI in .NET MAUI.
 
 ## Overview
 
-This sample demonstrates how to integrate Large Language Models (LLMs) into a .NET MAUI application using Microsoft.Extensions.AI. The app generates personalized multi-day travel itineraries for famous landmarks worldwide, featuring:
+This sample demonstrates how to integrate Large Language Models (LLMs) into a .NET MAUI application using a multi-agent workflow architecture. The app generates personalized multi-day travel itineraries for famous landmarks worldwide, featuring:
 
+- **Multi-Agent Workflow**: 4 specialized AI agents that collaborate to generate itineraries
 - **Streaming AI Responses**: Real-time itinerary generation with incremental updates
 - **Structured JSON Output**: Uses JSON schema to ensure consistent, typed responses
-- **AI-Powered Tagging**: Automatic keyword extraction from landmark descriptions
+- **AI-Powered Tools**: Agents use function calling to discover points of interest
+- **Conditional Translation**: Automatic translation when non-English output is requested
 - **Cross-Platform**: Runs on iOS, Android, Windows, and macOS
+
+## Setup
+
+To run this sample, you need to configure Azure OpenAI credentials using user secrets.
+
+### Configure User Secrets
+
+1. Navigate to the sample directory:
+   ```bash
+   cd src/AI/samples/Essentials.AI.Sample
+   ```
+
+2. Initialize user secrets (if not already done):
+   ```bash
+   dotnet user-secrets init
+   ```
+
+3. Create a `secrets.json` file with your Azure OpenAI configuration:
+   ```json
+   {
+       "AI": {
+           "DeploymentName": "<your-chat-deployment-name>",
+           "EmbeddingDeploymentName": "<your-embedding-deployment-name>",
+           "Endpoint": "<your-azure-openai-endpoint>",
+           "ApiKey": "<your-azure-openai-api-key>"
+       }
+   }
+   ```
+
+   Replace the placeholders:
+   - `<your-chat-deployment-name>` - Your Azure OpenAI chat model deployment (e.g., `gpt-4o`)
+   - `<your-embedding-deployment-name>` - Your embedding model deployment (e.g., `text-embedding-3-small`)
+   - `<your-azure-openai-endpoint>` - Your Azure OpenAI endpoint URL
+   - `<your-azure-openai-api-key>` - Your Azure OpenAI API key
+
+4. The secrets file should be placed at the user secrets location or embedded as `secrets.json` in the project.
 
 ## How It Works
 
-1. **Chat Client Setup**: An AI chat client is registered as an `IChatClient` singleton in dependency injection
-2. **Landmark Selection**: Users browse landmarks organized by continent and select one for trip planning
-3. **Tag Generation**: The `TaggingService` extracts relevant tags from landmark descriptions using AI with JSON response format
-4. **Itinerary Generation**: The `ItineraryService` streams a structured 3-day itinerary using:
-   - System instructions that define the AI's role and constraints
-   - JSON schema validation to ensure properly formatted responses with required fields (title, days, activities, etc.)
-   - Real-time streaming updates displayed progressively in the UI
-5. **Display**: Generated itineraries show daily activities including sightseeing, dining, and lodging recommendations
+### Agent Workflow Architecture
+
+The app uses a 4-agent workflow registered via `AddItineraryWorkflow()`:
+
+1. **Travel Planner Agent** - Parses natural language input to extract destination, day count, and target language
+2. **Researcher Agent** - Finds the best matching landmark using the `getDestinations` tool
+3. **Itinerary Planner Agent** - Builds a detailed itinerary using the `findPointsOfInterest` tool with streaming output
+4. **Translator Agent** - Translates the itinerary if a non-English language was requested (conditional)
+
+The workflow uses a conditional branching pattern:
+- **English requests**: Travel Planner → Researcher → Itinerary Planner → Output
+- **Non-English requests**: Travel Planner → Researcher → Itinerary Planner → Translator → Output
+
+### Service Registration
+
+Multiple AI clients are registered in dependency injection:
+- `IChatClient` - Generic chat client for simple inference (e.g., `TaggingService`)
+- `IChatClient` keyed `"local-model"` - Chat client with function calling support
+- `IChatClient` keyed `"cloud-model"` - Chat client for high-quality output (translation)
+- `AIAgent` keyed `"itinerary-workflow-agent"` - The complete workflow as an invocable agent
+
+### User Flow
+
+1. **Landmark Selection**: Users browse landmarks organized by continent and select one for trip planning
+2. **Tag Generation**: The `TaggingService` extracts relevant tags from landmark descriptions using AI
+3. **Itinerary Generation**: The `ItineraryService` invokes the workflow agent which:
+   - Parses the user's request to extract intent
+   - Researches available destinations to find the best match
+   - Generates a structured itinerary with real places using tool calls
+   - Optionally translates the result if a non-English language was requested
+4. **Display**: Generated itineraries show daily activities including sightseeing, dining, and lodging recommendations with real-time streaming updates
 
 ### Key AI Patterns
 
-- **Structured Output**: Uses `ChatResponseFormat.ForJsonSchema()` to enforce response structure matching C# record types
+- **Workflow-as-Agent**: The multi-agent workflow is registered as a single `AIAgent` for clean invocation via `workflowAgent.RunStreamingAsync()`
+- **Structured Output**: Uses `ChatResponseFormat.ForJsonSchema<T>()` to enforce response structure matching C# record types
+- **Function Calling**: Agents use `AIFunctionFactory.Create()` to define tools that discover real places
 - **Streaming**: Implements `IAsyncEnumerable` to process AI responses incrementally as they arrive
-- **Schema Generation**: Uses `AIJsonUtilities.CreateJsonSchema()` with custom transforms to add enum constraints and property ordering
 - **Partial Deserialization**: Deserializes incomplete JSON during streaming to show progressive updates
-
-## Project Structure
-
-### Core Files
-
-- **`MauiProgram`**: Configures DI container and registers `IChatClient` and services
-- **`App`**: Application entry point, creates main window with `AppShell`
-- **`AppShell`**: Shell navigation structure, defines `LandmarksPage` as the initial route
-
-### Pages
-
-- **`Pages/LandmarksPage`**: Displays landmarks organized by continent with featured item
-- **`Pages/TripPlanningPage`**: Shows landmark details, AI-generated tags, and itinerary generation UI
-
-### ViewModels
-
-- **`ViewModels/LandmarksViewModel`**: Manages landmark data loading and grouping by continent
-- **`ViewModels/TripPlanningViewModel`**: Orchestrates itinerary generation, tag display, and loading states using `[QueryProperty]` for navigation parameters
-
-### Models
-
-- **`Models/Landmark`**: Represents a travel destination with coordinates, description, and metadata
-- **`Models/Itinerary`**: Structured itinerary with title, days, and activities; includes `ToJsonSchema()` method for AI response validation
-
-### Services
-
-- **`Services/ItineraryService`**: Streams AI-generated itineraries using `IChatClient.GetStreamingResponseAsync()` with JSON schema constraints
-- **`Services/TaggingService`**: Generates descriptive tags from text using AI with JSON response format
-- **`Services/DataService`**: Singleton service that loads landmark/POI data and generates embeddings for RAG search
-- **`Services/FindPointsOfInterestTool`**: Mock tool for AI function calling (demonstrates tool integration pattern, currently returns placeholder data)
-- **`Services/StreamingJsonDeserializer`**: Utility for deserializing incomplete JSON during streaming
-
-### Views
-
-**Landmarks:**
-- **`Views/Landmarks/LandmarkFeaturedItemView`**: Large featured landmark card display
-- **`Views/Landmarks/LandmarkHorizontalListView`**: Horizontal scrolling list of landmarks
-- **`Views/Landmarks/LandmarkListItemView`**: Individual landmark item template
-
-**Itinerary:**
-- **`Views/Itinerary/LandmarkTripView`**: Container view for trip planning interface
-- **`Views/Itinerary/LandmarkDescriptionView`**: Displays landmark details and AI-generated tags
-- **`Views/Itinerary/ItineraryPlanningView`**: Itinerary generation trigger and loading state
-- **`Views/Itinerary/ItineraryView`**: Complete itinerary display with title and days
-- **`Views/Itinerary/DayView`**: Single day plan view with activities
-- **`Views/Itinerary/ActivityListView`**: List of activities for a day
-- **`Views/Itinerary/MessageView`**: Error message display
-
-### Converters
-
-- **`Converters/InvertedBoolConverter`**: XAML converter to invert boolean values
-- **`Converters/IsNotNullConverter`**: XAML converter to check if value is not null
-- **`Converters/IsNotNullOrEmptyConverter`**: XAML converter to check if collection is not empty
-
-### Configuration
-
-- **`Essentials.AI.Sampleproj`**: Project file with Microsoft.Extensions.AI packages
-- **`Directory.Build.targets`**: Build configuration
-
-## Dependencies
-
-- **Microsoft.Extensions.AI**: Core AI abstractions and chat client interfaces
-- **CommunityToolkit.Mvvm**: MVVM helpers for data binding and commands
+- **Conditional Edges**: Workflow uses typed edge conditions to branch based on output (e.g., skip translation for English)
