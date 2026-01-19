@@ -146,7 +146,12 @@ namespace Microsoft.Maui.Controls
 
 		protected override void OnBindingContextChanged()
 		{
-			this.PropagateBindingContext(GestureRecognizers);
+			var gestureRecognizers = GestureRecognizers;
+			if (gestureRecognizers.Count > 0)
+			{
+				this.PropagateBindingContext(gestureRecognizers);
+			}
+
 			base.OnBindingContextChanged();
 		}
 
