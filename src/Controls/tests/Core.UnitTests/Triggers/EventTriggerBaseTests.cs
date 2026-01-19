@@ -44,6 +44,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Triggers
 		public void EventTrigger_Create_CanBeCreatedWithLambdas()
 		{
 			var trigger = EventTrigger.Create<Button>(
+				nameof(Button.Clicked),
 				static (b, h) => b.Clicked += h,
 				static (b, h) => b.Clicked -= h);
 			
@@ -61,6 +62,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Triggers
 			var button = new Button { Text = "Test" };
 			
 			var trigger = EventTrigger.Create<Button>(
+				nameof(Button.Clicked),
 				static (b, h) => b.Clicked += h,
 				static (b, h) => b.Clicked -= h);
 			
@@ -87,6 +89,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Triggers
 			var button = new Button { Text = "Test" };
 			
 			var trigger = EventTrigger.Create<Button>(
+				nameof(Button.Clicked),
 				static (b, h) => b.Clicked += h,
 				static (b, h) => b.Clicked -= h);
 			
@@ -116,6 +119,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Triggers
 			var entry = new Entry { Text = "Test" };
 			
 			var trigger = EventTrigger.Create<Entry, TextChangedEventArgs>(
+				nameof(Entry.TextChanged),
 				static (e, h) => e.TextChanged += h,
 				static (e, h) => e.TextChanged -= h);
 			
@@ -142,6 +146,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Triggers
 			var button2 = new Button { Text = "Button2" };
 			
 			var trigger = EventTrigger.Create<Button>(
+				nameof(Button.Clicked),
 				static (b, h) => b.Clicked += h,
 				static (b, h) => b.Clicked -= h);
 			
