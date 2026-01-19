@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	internal static class ItemsViewExtensions
 	{
-		internal static FrameworkElement RealizeEmptyViewTemplate(object bindingContext, DataTemplate? emptyViewTemplate, IMauiContext mauiContext, ref View? mauiEmptyView)
+		internal static FrameworkElement RealizeEmptyViewTemplate(object? bindingContext, DataTemplate? emptyViewTemplate, IMauiContext mauiContext, ref View? mauiEmptyView)
 		{
 			if (emptyViewTemplate is null)
 			{

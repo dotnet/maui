@@ -263,7 +263,7 @@
 
     <ControlTemplate x:Key="MauiItemsViewTemplate"
                      TargetType="local2:MauiItemsView">
-      <Grid>
+
         <controls:ScrollView x:Name="PART_ScrollView"
                              Background="{TemplateBinding Background}"
                              BorderBrush="{TemplateBinding BorderBrush}"
@@ -286,16 +286,18 @@
                                     HorizontalAlignment="Stretch"
                                     VerticalAlignment="Stretch"
                                     XYFocusKeyboardNavigation="{TemplateBinding XYFocusKeyboardNavigation}" />
-            
-            <ContentControl x:Name="FooterContentControl"
+
+
+        <ContentControl x:Name="EmptyViewContentControl"
+                        HorizontalContentAlignment="Stretch"
+                        VerticalContentAlignment="Stretch" />
+          
+        <ContentControl x:Name="FooterContentControl"
                             HorizontalContentAlignment="Stretch"
                             VerticalContentAlignment="Stretch" />
           </controls:StackPanel>
         </controls:ScrollView>
-        <ContentControl x:Name="EmptyViewContentControl"
-                        HorizontalContentAlignment="Stretch"
-                        VerticalContentAlignment="Stretch" />
-      </Grid>
+ 
     </ControlTemplate>
 
 
