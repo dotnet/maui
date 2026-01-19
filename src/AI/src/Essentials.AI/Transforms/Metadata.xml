@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <!-- Do not generate C# events for listener interfaces (we use TaskCompletionSource/Channel pattern) -->
+  <attr path="//interface[@name='ModelStatusListener']/method" name="eventName"></attr>
+  <attr path="//interface[@name='ModelWarmupListener']/method" name="eventName"></attr>
+  <attr path="//interface[@name='ContentGenerationListener']/method" name="eventName"></attr>
+  <attr path="//interface[@name='StreamContentGenerationListener']/method" name="eventName"></attr>
+  
+  <!-- Make generated types internal to avoid XML documentation requirements -->
+  <attr path="/api/package[@name='com.microsoft.maui.essentials.ai']//class" name="visibility">internal</attr>
+  <attr path="/api/package[@name='com.microsoft.maui.essentials.ai']//interface" name="visibility">internal</attr>
+</metadata>
+
