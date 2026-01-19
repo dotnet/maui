@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using Maui.Controls.Sample.Issues;
+using Microsoft.Extensions.Logging;
 
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
 
@@ -7,6 +8,15 @@ namespace Maui.Controls.Sample
 {
 	public static partial class MauiProgram
 	{
+		/// <summary>
+		/// Gets the file logging path from MAUI_LOG_FILE environment variable.
+		/// Returns null if not set (file logging disabled).
+		/// </summary>
+		static string GetFileLogPath()
+		{
+			return Environment.GetEnvironmentVariable("MAUI_LOG_FILE");
+		}
+
 		public static MauiApp CreateMauiApp()
 		{
 			var appBuilder = MauiApp.CreateBuilder();
@@ -14,6 +24,7 @@ namespace Maui.Controls.Sample
 #if IOS || ANDROID || MACCATALYST
 			appBuilder.UseMauiMaps();
 #endif
+
 			appBuilder.UseMauiApp<App>()
 				.ConfigureFonts(fonts =>
 				{
@@ -33,10 +44,9 @@ namespace Maui.Controls.Sample
 				.Issue25436RegisterNavigationService();
 
 #if IOS || MACCATALYST
-
 			appBuilder.ConfigureCollectionViewHandlers();
-
 #endif
+			
 			// Register the custom handler
 			appBuilder.ConfigureMauiHandlers(handlers =>
 			{
@@ -59,6 +69,14 @@ namespace Maui.Controls.Sample
 
 			appBuilder.Services.AddTransient<TransientPage>();
 			appBuilder.Services.AddScoped<ScopedPage>();
+
+			// Add file logging if MAUI_LOG_FILE environment variable is set
+			var logFilePath = GetFileLogPath();
+			if (!string.IsNullOrEmpty(logFilePath))
+			{
+				appBuilder.Logging.AddProvider(new FileLoggingProvider(logFilePath, LogLevel.Debug));
+			}
+
 			return appBuilder.Build();
 		}
 
