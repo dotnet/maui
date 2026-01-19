@@ -1,9 +1,7 @@
-using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
 
@@ -13,13 +11,6 @@ namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
 /// </summary>
 public class Maui33591SourceGenTests : SourceGenXamlInitializeComponentTestBase
 {
-	private readonly ITestOutputHelper _output;
-
-	public Maui33591SourceGenTests(ITestOutputHelper output)
-	{
-		_output = output;
-	}
-
 	[Fact]
 	public void EventTriggerGeneration_ProducesAOTSafeCode()
 	{
@@ -184,11 +175,6 @@ public class Maui33591SourceGenTests : SourceGenXamlInitializeComponentTestBase
 			generated!,
 			@"#line \d+ ""[^""]+""",
 			@"#line NORMALIZED_LINE_DIRECTIVE");
-
-		// Output the normalized generated code for review
-		_output.WriteLine("=== GENERATED CODE ===");
-		_output.WriteLine(normalizedGenerated);
-		_output.WriteLine("=== END GENERATED CODE ===");
 
 		Assert.Equal(expected.Trim(), normalizedGenerated.Trim(), ignoreLineEndingDifferences: true, ignoreWhiteSpaceDifferences: true);
 	}
