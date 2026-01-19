@@ -5,29 +5,41 @@ using Microsoft.Maui.Controls.Xaml;
 namespace Microsoft.Maui.Controls.SourceGen;
 
 /// <summary>
-/// Known value provider for EventTrigger that specializes to EventTrigger<T> based on parent context.
-/// Implements AOT-safe code generation for EventTrigger with static lambda-based event subscription.
+/// Provides deferred creation for EventTrigger to avoid generating dead code.
 /// 
-/// NOTE: This provider returns false for CanProvideValue because the generic EventTrigger<T> classes
-/// require constructor parameters (add/remove handler lambdas). Instead, the normal EventTrigger is created
-/// and then SetPropertyHelpers.SetEventTriggerEvent handles the Event property by generating the
-/// appropriate AOT-safe EventTrigger<T> replacement.
+/// When an EventTrigger has an Event property, we defer its creation from CreateValuesVisitor
+/// to SetPropertiesVisitor so we can use the EventTrigger.Create factory method with the
+/// correct target type (which is only known after the parent element is processed).
+/// 
+/// This approach:
+/// 1. Returns true from CanProvideValue so CreateValuesVisitor skips emitting "new EventTrigger()"
+/// 2. Registers a variable name so children can reference .Actions
+/// 3. SetEventTriggerEvent emits "var x = EventTrigger.Create&lt;T&gt;(...)" when Event property is set
 /// </summary>
 internal class EventTriggerValueProvider : IKnownMarkupValueProvider
 {
 	public bool CanProvideValue(ElementNode node, SourceGenContext context)
 	{
-		// Do not provide value here - let normal EventTrigger creation happen.
-		// SetPropertyHelpers.SetEventTriggerEvent will handle generating AOT-safe code
-		// when the Event property is set.
-		return false;
+		// Defer creation if EventTrigger has an Event property.
+		// Without Event property, fall back to normal creation.
+		return HasEventProperty(node);
 	}
 
 	public bool TryProvideValue(ElementNode node, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
 	{
-		// This should never be called since CanProvideValue returns false
+		// We don't provide a value here - SetEventTriggerEvent handles creation.
 		returnType = null;
 		value = string.Empty;
+		return false;
+	}
+
+	internal static bool HasEventProperty(ElementNode node)
+	{
+		foreach (var key in node.Properties.Keys)
+		{
+			if (key is XmlName xmlName && xmlName.LocalName == "Event")
+				return true;
+		}
 		return false;
 	}
 }
