@@ -187,11 +187,6 @@ namespace Microsoft.Maui.Controls
 					result.IsSet = pair.Key != SetterSpecificity.DefaultValue;
 					result.Value = (T)pair.Value;
 				}
-				else
-				{
-					result.IsSet = false;
-					result.Value = default(T);
-				}
 			}
 
 			return resultArray;
