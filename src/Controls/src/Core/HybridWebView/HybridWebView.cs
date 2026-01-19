@@ -6,14 +6,17 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Controls
 {
+
 	/// <summary>
 	/// A <see cref="View"/> that presents local HTML content in a web view and allows JavaScript and C# code to
 	/// communicate by using messages and by invoking methods.
 	/// </summary>
-	[UnconditionalSuppressMessage("Trimming", "IL2026")]
 	[ElementHandler(typeof(HybridWebViewHandler))]
 	public class HybridWebView : View, IHybridWebView
 	{
+		internal const string DynamicFeatures = "HybridWebView uses dynamic System.Text.Json serialization features.";
+		internal const string NotSupportedMessage = DynamicFeatures + " Enable the $(MauiHybridWebViewSupported) property in your .csproj file to use in a trimming unsafe manner.";
+
 		/// <summary>Bindable property for <see cref="DefaultFile"/>.</summary>
 		public static readonly BindableProperty DefaultFileProperty =
 			BindableProperty.Create(nameof(DefaultFile), typeof(string), typeof(HybridWebView), defaultValue: "index.html");
@@ -39,7 +42,6 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc/>
 		object? IHybridWebView.InvokeJavaScriptTarget { get; set; }
 
-		[UnconditionalSuppressMessage("Trimming", "IL2114", Justification = "Base type VisualElement specifies DynamicallyAccessedMemberTypes.NonPublicFields: https://github.com/dotnet/runtime/issues/108978#issuecomment-2420091986")]
 		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 		Type? _invokeJavaScriptType;
 
