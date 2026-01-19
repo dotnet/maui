@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
+    <PackAsTool>true</PackAsTool>
+    <RootNamespace>Microsoft.Maui.Cli</RootNamespace>
+    <PackageId>Microsoft.Maui.Cli</PackageId>
+    <IsPackable>true</IsPackable>
+    <AssemblyName>dotnet-maui</AssemblyName>
+    <ToolCommandName>dotnet-maui</ToolCommandName>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Description>dotnet-maui CLI - Tools for capturing screenshots, viewing logs, and inspecting .NET MAUI applications</Description>
+    <!-- 
+      CLI versioning: Always produce pre-release packages, even when stable-branded elsewhere.
+      Uses dotnet/arcade's SuppressFinalPackageVersion to keep -preview suffix on stable builds.
+      Local builds: 10.0.30-dev (dotnet/arcade default)
+      Stable builds: 10.0.30-preview.1.xxxxx (keeps PreReleaseVersionLabel)
+      https://github.com/dotnet/arcade/blob/5667a92ce546d811aa965747de78caee7ac6778a/Documentation/CorePackages/Versioning.md#package-version
+    -->
+    <SuppressFinalPackageVersion>true</SuppressFinalPackageVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Maui.Cli.UnitTests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NuGet.Frameworks" Version="6.12.4" />
+    <PackageReference Include="System.CommandLine" Version="2.0.1" />
+    <PackageReference Include="System.Drawing.Common" Version="9.0.0" />
+    <PackageReference Include="Xamarin.Android.Tools.AndroidSdk" Version="$(XamarinAndroidToolsAndroidSdkPackageVersion)" />
+  </ItemGroup>
+
+</Project>
