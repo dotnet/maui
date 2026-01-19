@@ -9,9 +9,9 @@ using Microsoft.Maui.Controls.StyleSheets;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="Type[@FullName='Microsoft.Maui.Controls.VisualElement']/Docs/*" />
-	[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.NonPublicFields)]
 	public partial class VisualElement : IStylable
 	{
+		[RequiresUnreferencedCode(StyleSheet.StyleSheetTrimmerWarning)]
 		BindableProperty IStylable.GetProperty(string key, bool inheriting)
 		{
 			if (!Internals.Registrar.StyleProperties.TryGetValue(key, out var attrList))

@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Xml;
@@ -8,6 +9,7 @@ using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.StyleSheets
 {
+	[RequiresUnreferencedCode(StyleSheet.StyleSheetTrimmerWarning)]
 	sealed class Style
 	{
 		Style()
