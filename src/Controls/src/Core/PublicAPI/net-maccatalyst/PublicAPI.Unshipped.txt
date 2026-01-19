@@ -8,4 +8,5 @@ Microsoft.Maui.Controls.AppThemeBinding.AppThemeBinding() -> void
 ~Microsoft.Maui.Controls.AppThemeBinding.Default.set -> void
 ~Microsoft.Maui.Controls.AppThemeBinding.Light.get -> object
 ~Microsoft.Maui.Controls.AppThemeBinding.Light.set -> void
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.ViewWillTransitionToSize(CoreGraphics.CGSize toSize, UIKit.IUIViewControllerTransitionCoordinator coordinator) -> void
+static Microsoft.Maui.Controls.EventTrigger.Create<TBindable>(string! eventName, System.Action<TBindable!, System.EventHandler!>! addHandler, System.Action<TBindable!, System.EventHandler!>! removeHandler) -> Microsoft.Maui.Controls.EventTrigger!
+static Microsoft.Maui.Controls.EventTrigger.Create<TBindable, TEventArgs>(string! eventName, System.Action<TBindable!, System.EventHandler<TEventArgs!>!>! addHandler, System.Action<TBindable!, System.EventHandler<TEventArgs!>!>! removeHandler) -> Microsoft.Maui.Controls.EventTrigger!
