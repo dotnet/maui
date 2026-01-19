@@ -42,13 +42,12 @@ internal class EventTriggerValueProvider : IKnownMarkupValueProvider
 	}
 
 	/// <summary>
-	/// Generates the EventTrigger.Create call (or fallback to new EventTrigger()).
-	/// Variable must already be registered in context.Variables before calling.
+	/// Generates the EventTrigger creation expression (without variable declaration).
+	/// Writes either "EventTrigger.Create&lt;...&gt;(...);" or "new EventTrigger { ... };".
 	/// </summary>
-	internal static void GenerateCreateInstanceCall(ElementNode node, SourceGenContext context)
+	internal static void GenerateCreateExpression(ElementNode node, SourceGenContext context)
 	{
 		var writer = context.Writer;
-		var varName = context.Variables[node].ValueAccessor;
 		
 		// Get the Event property value
 		string? eventName = null;
@@ -80,11 +79,11 @@ internal class EventTriggerValueProvider : IKnownMarkupValueProvider
 					if (isGenericEventHandler)
 					{
 						var eventArgsTypeName = eventArgsType.ToFQDisplayString();
-						writer.WriteLine($"var {varName} = global::Microsoft.Maui.Controls.EventTrigger.Create<{targetTypeName}, {eventArgsTypeName}>(\"{eventName}\", static (target, handler) => target.{eventName} += handler, static (target, handler) => target.{eventName} -= handler);");
+						writer.WriteLine($"global::Microsoft.Maui.Controls.EventTrigger.Create<{targetTypeName}, {eventArgsTypeName}>(\"{eventName}\", static (target, handler) => target.{eventName} += handler, static (target, handler) => target.{eventName} -= handler);");
 					}
 					else
 					{
-						writer.WriteLine($"var {varName} = global::Microsoft.Maui.Controls.EventTrigger.Create<{targetTypeName}>(\"{eventName}\", static (target, handler) => target.{eventName} += handler, static (target, handler) => target.{eventName} -= handler);");
+						writer.WriteLine($"global::Microsoft.Maui.Controls.EventTrigger.Create<{targetTypeName}>(\"{eventName}\", static (target, handler) => target.{eventName} += handler, static (target, handler) => target.{eventName} -= handler);");
 					}
 					
 					// Skip the Event property - it's already set by Create()
@@ -97,12 +96,12 @@ internal class EventTriggerValueProvider : IKnownMarkupValueProvider
 		// Fallback: use reflection-based EventTrigger
 		if (eventName != null)
 		{
-			writer.WriteLine($"var {varName} = new global::Microsoft.Maui.Controls.EventTrigger {{ Event = \"{eventName}\" }};");
+			writer.WriteLine($"new global::Microsoft.Maui.Controls.EventTrigger {{ Event = \"{eventName}\" }};");
 			node.SkipProperties.Add(new XmlName("", "Event"));
 		}
 		else
 		{
-			writer.WriteLine($"var {varName} = new global::Microsoft.Maui.Controls.EventTrigger();");
+			writer.WriteLine($"new global::Microsoft.Maui.Controls.EventTrigger();");
 		}
 	}
 
