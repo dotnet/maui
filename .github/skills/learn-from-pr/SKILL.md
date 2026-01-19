@@ -1,6 +1,9 @@
 ---
 name: learn-from-pr
-description: Analyzes completed PR to identify repository improvements. Use after PR finalized to extract lessons learned.
+description: Analyzes a completed PR to extract lessons learned from agent behavior. Use after any PR with agent involvement - whether the agent failed, succeeded slowly, or succeeded quickly. Identifies patterns to reinforce or fix, and generates actionable recommendations for instruction files, skills, and documentation.
+metadata:
+  author: dotnet-maui
+  version: "1.0"
 compatibility: Requires GitHub CLI (gh)
 ---
 
@@ -37,15 +40,16 @@ The skill is complete when you have:
 
 ## When to Use
 
-- After complex PR with non-obvious solution
-- After agent struggled to find the right fix
+- After agent failed to find the right fix
+- After agent succeeded but took many attempts
+- After agent succeeded quickly (to understand what worked)
 - When asked "what can we learn from PR #XXXXX?"
 
 ## When NOT to Use
 
 - Before PR is finalized (use `pr-finalize` first)
 - For trivial PRs (typo fixes, simple changes)
-- When no agent was involved (no learning to extract)
+- When no agent was involved (nothing to analyze)
 
 ---
 
@@ -62,12 +66,20 @@ gh pr diff XXXXX
 ls .github/agent-pr-session/issue-XXXXX.md .github/agent-pr-session/pr-XXXXX.md 2>/dev/null
 ```
 
-**If no session markdown exists:** Skip to Step 3 (analyze PR diff only).
-
-**Extract from session markdown (if exists):**
+**If session markdown exists, extract:**
 - Fix Candidates table (what was tried)
 - Files each attempt targeted
 - Why attempts failed
+
+**Analyzing without session markdown:**
+
+When no session file exists, you can still learn from:
+1. **PR discussion** - Comments reveal what was tried
+2. **Commit history** - Multiple commits may show iteration
+3. **Code complexity** - Non-obvious fixes suggest learning opportunities
+4. **Similar past issues** - Search for related bugs
+
+Focus on: "What would have helped an agent find this fix faster?"
 
 ### Step 2: Fix Location Analysis
 
@@ -89,17 +101,46 @@ gh pr view XXXXX --json files --jq '.files[].path' | grep -v test
 - Why did agent think that was the right file?
 - What search would have found the correct file?
 
-### Step 3: Identify Failure Modes
+### Step 3: Analyze Outcome
 
-Check for these common failure modes:
+Determine which scenario applies and look for the relevant patterns:
 
-| Failure Mode | Indicator |
-|--------------|-----------|
+#### Scenario A: Agent Failed
+
+| Pattern | Indicator |
+|---------|-----------|
 | **Wrong file entirely** | All attempts in File A, fix in File B |
 | **Tunnel vision** | Only looked at file mentioned in error |
 | **Trusted issue title** | Issue said "crash in X" so only looked at X |
 | **Pattern not generalized** | Fixed one instance, missed others |
 | **Didn't search codebase** | Never found similar code patterns |
+| **Missing platform knowledge** | Didn't know iOS/Android/Windows specifics |
+| **Wrong abstraction layer** | Fixed handler when problem was in core |
+| **Misread error message** | Error pointed to symptom, not cause |
+| **Incomplete context** | Didn't read enough surrounding code |
+| **Over-engineered** | Complex fix when simple one existed |
+
+#### Scenario B: Agent Succeeded Slowly (many attempts)
+
+| Pattern | Indicator |
+|---------|-----------|
+| **Correct file, wrong approach** | Found right file but tried wrong fixes first |
+| **Needed multiple iterations** | Each attempt got closer but wasn't quite right |
+| **Discovery was slow** | Eventually found it but search was inefficient |
+| **Missing domain knowledge** | Had to learn something that could be documented |
+
+**Key question:** What would have gotten agent to the solution faster?
+
+#### Scenario C: Agent Succeeded Quickly
+
+| Pattern | Indicator |
+|---------|-----------|
+| **Good search strategy** | Found right file immediately |
+| **Understood the pattern** | Recognized similar issues from past |
+| **Documentation helped** | Existing docs pointed to solution |
+| **Simple, minimal fix** | Didn't over-engineer |
+
+**Key question:** What made this work? Should we reinforce this pattern?
 
 ### Step 4: Find Improvement Locations
 
@@ -132,9 +173,32 @@ For each recommendation, provide:
 - Would future agents definitely hit this again?
 - How hard is it to implement?
 
+**Pattern-to-Improvement Mapping (Failures/Slow Success):**
+
+| Pattern | Likely Improvement |
+|---------|-------------------|
+| Wrong file entirely | Architecture doc explaining component relationships |
+| Tunnel vision | Instruction file: "Always search for pattern across codebase" |
+| Missing platform knowledge | Platform-specific instruction file |
+| Wrong abstraction layer | Architecture doc explaining layers |
+| Misread error message | Code comment explaining the real cause |
+| Over-engineered | Skill enhancement: "Try simplest fix first" |
+
+**Pattern-to-Improvement Mapping (Quick Success - reinforce):**
+
+| Pattern | Improvement |
+|---------|-------------|
+| Good search strategy | Document the search pattern that worked in skills |
+| Documentation helped | Note which docs were valuable, ensure they stay updated |
+| Recognized pattern | Add to instruction files as known pattern |
+
 ### Step 6: Present Findings
 
-Use the output template below to present your analysis.
+Present your analysis covering:
+- What happened and what made it hard
+- Where agent looked vs actual fix location
+- Which patterns applied and evidence
+- Prioritized recommendations with full details (category, priority, location, exact change, why it helps)
 
 ---
 
@@ -157,57 +221,6 @@ Use the output template below to present your analysis.
 
 ---
 
-## Output Template
-
-```markdown
-# Learning Analysis: PR #XXXXX
-
-## What Happened
-
-**Problem:** [Brief description]
-**Approaches Tried:** [From session markdown, or "N/A - no session file"]
-**Final Solution:** [What was implemented]
-**Key Challenge:** [What made this hard]
-
-## Fix Location Analysis
-
-| Aspect | Details |
-|--------|---------|
-| **Agent attempted** | [Files, or "N/A"] |
-| **Actual fix location** | [Files changed] |
-| **Location match?** | ✅ Same / ❌ Different |
-
-## Failure Modes Identified
-
-| Failure Mode | Evidence |
-|--------------|----------|
-| [Mode] | [Evidence] |
-
-## Recommendations
-
-### 🔴 High Priority
-
-#### 1. [Title]
-- **Category:** [Category]
-- **Location:** [File path]
-- **Change:** [Exact text]
-- **Why:** [Failure mode prevented]
-
-### 🟡 Medium Priority
-[Same structure]
-
-### 🟢 Low Priority
-[Same structure]
-
-## Summary
-
-**Total:** X high, Y medium, Z low
-**Highest Impact:** [Most important]
-**Quick Wins:** [Easiest valuable changes]
-```
-
----
-
 ## Examples
 
 ### Example: Wrong File Entirely
@@ -226,6 +239,42 @@ Use the output template below to present your analysis.
 - **Location:** `.github/instructions/ios-debugging.instructions.md`
 - **Change:** "When fixing iOS crashes, search for the PATTERN across all files, not just the file named in the error"
 - **Why:** Prevents tunnel vision on named file
+
+### Example: Slow Success
+
+**PR #34567** - CollectionView scroll position not preserved
+
+**What happened:**
+- Agent took 5 attempts to find fix
+- First 3 attempts were in wrong layer (handler vs core)
+- Eventually found it after reading more context
+- Final fix was simple once the right layer was identified
+
+**Pattern:** Wrong abstraction layer - fixed handler when problem was in core.
+
+**Recommendation:**
+- **Category:** Architecture Doc
+- **Location:** `.github/architecture/handler-vs-core.md`
+- **Change:** Document layer responsibilities - handlers map properties, core handles behavior
+- **Why:** Helps agent identify correct layer faster
+
+### Example: Quick Success
+
+**PR #35678** - Button disabled state not updating
+
+**What happened:**
+- Agent found fix in 1 attempt
+- Searched for "IsEnabled" pattern across codebase immediately
+- Found similar past fix in another control and applied same approach
+- Simple, minimal change
+
+**Pattern:** Good search strategy - recognized pattern from similar code.
+
+**Recommendation:**
+- **Category:** Skill Enhancement
+- **Location:** `.github/skills/try-fix/SKILL.md`
+- **Change:** Add to search strategy: "Search for same property pattern in other controls"
+- **Why:** Reinforces successful discovery technique
 
 ---
 
