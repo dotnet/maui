@@ -58,6 +58,24 @@ parameters:
 - name: runWindowsTests
   type: boolean
   default: false
+- name: windowsDeviceTestProjects
+  type: object
+  default:
+    - name: Controls.DeviceTests
+      path: src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj
+      packageId: com.microsoft.maui.controls.devicetests
+    - name: Core.DeviceTests
+      path: src/Core/tests/DeviceTests/Core.DeviceTests.csproj
+      packageId: com.microsoft.maui.core.devicetests
+    - name: Graphics.DeviceTests
+      path: src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj
+      packageId: com.microsoft.maui.graphics.devicetests
+    - name: Essentials.DeviceTests
+      path: src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
+      packageId: com.microsoft.maui.essentials.devicetests
+    - name: MauiBlazorWebView.DeviceTests
+      path: src/BlazorWebView/tests/DeviceTests/MauiBlazorWebView.DeviceTests.csproj
+      packageId: Microsoft.Maui.MauiBlazorWebView.DeviceTests
 
 stages:
 - stage: devicetests_build
@@ -434,87 +452,44 @@ stages:
           - script: dotnet cake --target=dotnet-buildtasks --configuration="Release"
             displayName: Build the MSBuild Tasks
 
-          # Build Windows device tests using Cake script (builds each project individually)
-          # Packaged builds (MSIX)
-          - script: dotnet cake eng/devices/windows.cake --target=buildOnly --project="$(Build.SourcesDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj" --device=packaged --binlog="$(Build.SourcesDirectory)/artifacts/log" --configuration=Release --packageid=com.microsoft.maui.controls.devicetests --verbosity=diagnostic
-            displayName: Build Controls.DeviceTests (Windows Packaged)
-            retryCountOnTaskFailure: 1
-
-          - script: dotnet cake eng/devices/windows.cake --target=buildOnly --project="$(Build.SourcesDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj" --device=packaged --binlog="$(Build.SourcesDirectory)/artifacts/log" --configuration=Release --packageid=com.microsoft.maui.core.devicetests --verbosity=diagnostic
-            displayName: Build Core.DeviceTests (Windows Packaged)
-            retryCountOnTaskFailure: 1
-
-          - script: dotnet cake eng/devices/windows.cake --target=buildOnly --project="$(Build.SourcesDirectory)/src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj" --device=packaged --binlog="$(Build.SourcesDirectory)/artifacts/log" --configuration=Release --packageid=com.microsoft.maui.graphics.devicetests --verbosity=diagnostic
-            displayName: Build Graphics.DeviceTests (Windows Packaged)
-            retryCountOnTaskFailure: 1
-
-          - script: dotnet cake eng/devices/windows.cake --target=buildOnly --project="$(Build.SourcesDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj" --device=packaged --binlog="$(Build.SourcesDirectory)/artifacts/log" --configuration=Release --packageid=com.microsoft.maui.essentials.devicetests --verbosity=diagnostic
-            displayName: Build Essentials.DeviceTests (Windows Packaged)
-            retryCountOnTaskFailure: 1
-
-          - script: dotnet cake eng/devices/windows.cake --target=buildOnly --project="$(Build.SourcesDirectory)/src/BlazorWebView/tests/DeviceTests/MauiBlazorWebView.DeviceTests.csproj" --device=packaged --binlog="$(Build.SourcesDirectory)/artifacts/log" --configuration=Release --packageid=Microsoft.Maui.MauiBlazorWebView.DeviceTests --verbosity=diagnostic
-            displayName: Build MauiBlazorWebView.DeviceTests (Windows Packaged)
-            retryCountOnTaskFailure: 1
-
+          # Build Windows device tests using Cake script (Packaged/MSIX builds)
           # TODO: Unpackaged builds disabled - apps crash on Helix with 0xC000027B
           # (Windows App SDK Bootstrap failure). Investigating root cause. See PR #33328.
-          # - script: dotnet cake eng/devices/windows.cake --target=buildOnly --project="$(Build.SourcesDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj" --device=unpackaged --binlog="$(Build.SourcesDirectory)/artifacts/log" --configuration=Debug --packageid=com.microsoft.maui.controls.devicetests --verbosity=diagnostic
-          #   displayName: Build Controls.DeviceTests (Windows Unpackaged)
-          #   retryCountOnTaskFailure: 1
-          # - script: dotnet cake eng/devices/windows.cake --target=buildOnly --project="$(Build.SourcesDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj" --device=unpackaged --binlog="$(Build.SourcesDirectory)/artifacts/log" --configuration=Debug --packageid=com.microsoft.maui.core.devicetests --verbosity=diagnostic
-          #   displayName: Build Core.DeviceTests (Windows Unpackaged)
-          #   retryCountOnTaskFailure: 1
-          # - script: dotnet cake eng/devices/windows.cake --target=buildOnly --project="$(Build.SourcesDirectory)/src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj" --device=unpackaged --binlog="$(Build.SourcesDirectory)/artifacts/log" --configuration=Debug --packageid=com.microsoft.maui.graphics.devicetests --verbosity=diagnostic
-          #   displayName: Build Graphics.DeviceTests (Windows Unpackaged)
-          #   retryCountOnTaskFailure: 1
-          # - script: dotnet cake eng/devices/windows.cake --target=buildOnly --project="$(Build.SourcesDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj" --device=unpackaged --binlog="$(Build.SourcesDirectory)/artifacts/log" --configuration=Debug --packageid=com.microsoft.maui.essentials.devicetests --verbosity=diagnostic
-          #   displayName: Build Essentials.DeviceTests (Windows Unpackaged)
-          #   retryCountOnTaskFailure: 1
-          # - script: dotnet cake eng/devices/windows.cake --target=buildOnly --project="$(Build.SourcesDirectory)/src/BlazorWebView/tests/DeviceTests/MauiBlazorWebView.DeviceTests.csproj" --device=unpackaged --binlog="$(Build.SourcesDirectory)/artifacts/log" --configuration=Debug --packageid=Microsoft.Maui.MauiBlazorWebView.DeviceTests --verbosity=diagnostic
-          #   displayName: Build MauiBlazorWebView.DeviceTests (Windows Unpackaged)
-          #   retryCountOnTaskFailure: 1
+          - ${{ each project in parameters.windowsDeviceTestProjects }}:
+            - script: dotnet cake eng/devices/windows.cake --target=buildOnly --project="$(Build.SourcesDirectory)/${{ project.path }}" --device=packaged --binlog="$(Build.SourcesDirectory)/artifacts/log" --configuration=Release --packageid=${{ project.packageId }} --verbosity=diagnostic
+              displayName: Build ${{ project.name }} (Windows Packaged)
+              retryCountOnTaskFailure: 1
 
           # Create zip archives for each device test project
           # The MSIX packages are built in the project's AppPackages directory, not artifacts/bin
           - pwsh: |
-              $scenarios = @{
-                "Controls.DeviceTests" = "$(Build.SourcesDirectory)/src/Controls/tests/DeviceTests"
-                "Core.DeviceTests" = "$(Build.SourcesDirectory)/src/Core/tests/DeviceTests"
-                "Graphics.DeviceTests" = "$(Build.SourcesDirectory)/src/Graphics/tests/DeviceTests"
-                "Essentials.DeviceTests" = "$(Build.SourcesDirectory)/src/Essentials/test/DeviceTests"
-                "MauiBlazorWebView.DeviceTests" = "$(Build.SourcesDirectory)/src/BlazorWebView/tests/DeviceTests"
-              }
-              
               # Ensure artifacts/bin directory exists
               $artifactsDir = "$(Build.SourcesDirectory)/artifacts/bin"
               New-Item -ItemType Directory -Force -Path $artifactsDir | Out-Null
               
-              foreach ($scenario in $scenarios.Keys) {
-                $projectDir = $scenarios[$scenario]
-                $appPackagesDir = "$projectDir/AppPackages"
-                $zipPath = "$artifactsDir/$scenario.zip"
+              # Archive each project's AppPackages directory
+              $projects = @(
+                @{ Name = "Controls.DeviceTests"; Dir = "$(Build.SourcesDirectory)/src/Controls/tests/DeviceTests" },
+                @{ Name = "Core.DeviceTests"; Dir = "$(Build.SourcesDirectory)/src/Core/tests/DeviceTests" },
+                @{ Name = "Graphics.DeviceTests"; Dir = "$(Build.SourcesDirectory)/src/Graphics/tests/DeviceTests" },
+                @{ Name = "Essentials.DeviceTests"; Dir = "$(Build.SourcesDirectory)/src/Essentials/test/DeviceTests" },
+                @{ Name = "MauiBlazorWebView.DeviceTests"; Dir = "$(Build.SourcesDirectory)/src/BlazorWebView/tests/DeviceTests" }
+              )
+              
+              foreach ($project in $projects) {
+                $appPackagesDir = "$($project.Dir)/AppPackages"
+                $zipPath = "$artifactsDir/$($project.Name).zip"
                 
                 if (Test-Path $appPackagesDir) {
-                  Write-Host "Creating archive for $scenario from $appPackagesDir..."
-                  # Archive the AppPackages folder which contains MSIX, dependencies, and cert
+                  Write-Host "Creating archive for $($project.Name) from $appPackagesDir..."
                   Compress-Archive -Path "$appPackagesDir" -DestinationPath $zipPath -Force
                   Write-Host "Created $zipPath"
                   
-                  # Verify the archive contains MSIX
-                  $zipContents = Get-ChildItem -Path $appPackagesDir -Recurse -Filter "*.msix" | Select-Object -First 1
-                  if ($zipContents) {
-                    Write-Host "  Archive contains MSIX: $($zipContents.Name)"
-                  } else {
-                    Write-Host "  WARNING: No MSIX found in archive!"
-                  }
+                  $msix = Get-ChildItem -Path $appPackagesDir -Recurse -Filter "*.msix" | Select-Object -First 1
+                  if ($msix) { Write-Host "  Contains MSIX: $($msix.Name)" }
+                  else { Write-Host "  WARNING: No MSIX found!" }
                 } else {
-                  Write-Host "Warning: $appPackagesDir not found"
-                  # Fallback: try artifacts/bin if it exists (legacy path)
-                  $legacyPath = "$artifactsDir/$scenario"
-                  if (Test-Path $legacyPath) {
-                    Write-Host "  Using legacy path: $legacyPath"
-                    Compress-Archive -Path "$legacyPath/*" -DestinationPath $zipPath -Force
-                  }
+                  Write-Host "Warning: $appPackagesDir not found for $($project.Name)"
                 }
               }
             displayName: Create payload archives
