@@ -1211,7 +1211,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			bool initializerCalled = false;
 			var style = new Style(typeof(Label).AssemblyQualifiedName)
 			{
-				Initializer = (s, target) =>
+				LazyInitialization = (s, target) =>
 				{
 					initializerCalled = true;
 					if (target is not Label)
@@ -1236,7 +1236,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var style = new Style(typeof(Label).AssemblyQualifiedName)
 			{
-				Initializer = static (s, target) =>
+				LazyInitialization = static (s, target) =>
 				{
 					if (target is not Label)
 						return;
@@ -1264,7 +1264,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var style = new Style(typeof(Label).AssemblyQualifiedName)
 			{
-				Initializer = static (s, target) =>
+				LazyInitialization = static (s, target) =>
 				{
 					if (target is not Label)
 						return;
@@ -1283,7 +1283,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			int callCount = 0;
 			var style = new Style(typeof(Label).AssemblyQualifiedName)
 			{
-				Initializer = (s, target) =>
+				LazyInitialization = (s, target) =>
 				{
 					callCount++;
 					if (target is not Label)
@@ -1333,7 +1333,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var style = new Style(typeof(Label).AssemblyQualifiedName)
 			{
-				Initializer = static (s, target) =>
+				LazyInitialization = static (s, target) =>
 				{
 					if (target is not Label)
 						return;
@@ -1354,7 +1354,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var behavior = new MockBehavior<Entry>();
 			var style = new Style(typeof(Entry).AssemblyQualifiedName)
 			{
-				Initializer = (s, target) =>
+				LazyInitialization = (s, target) =>
 				{
 					if (target is not Entry)
 						return;
@@ -1374,7 +1374,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var style = new Style(typeof(Entry).AssemblyQualifiedName)
 			{
-				Initializer = static (s, target) =>
+				LazyInitialization = static (s, target) =>
 				{
 					if (target is not Entry)
 						return;
