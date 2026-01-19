@@ -84,11 +84,27 @@ Review the provided context:
 
 ### Step 2: Establish Baseline (if specified)
 
-If a baseline is provided (e.g., "revert files X, Y, Z first"):
+Use the shared baseline script to revert fix files while preserving tests:
 
 ```bash
-# Example: revert specific files to create broken state
-git checkout HEAD~1 -- src/path/to/file.cs
+# Establish baseline - reverts fix files to merge-base state
+$baseline = pwsh .github/scripts/EstablishBrokenBaseline.ps1
+
+# Or with explicit options:
+$baseline = pwsh .github/scripts/EstablishBrokenBaseline.ps1 -BaseBranch main
+$baseline = pwsh .github/scripts/EstablishBrokenBaseline.ps1 -FixFiles @("src/path/to/file.cs")
+$baseline = pwsh .github/scripts/EstablishBrokenBaseline.ps1 -DryRun  # Preview without changes
+```
+
+The script:
+- Auto-detects merge-base from PR metadata or common branch patterns
+- Identifies fix files (non-test files that changed since merge-base)
+- Reverts only files that existed at merge-base (preserves new files)
+- Saves state for `-Restore` to undo later
+
+**CRITICAL:** Remember to restore in Step 9. If something fails mid-fix, run:
+```bash
+pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore
 ```
 
 If no baseline specified, work from current state.
@@ -169,11 +185,17 @@ git diff > /tmp/fix-attempt.diff
 
 ### Step 9: Restore Working Directory
 
-Revert all changes to restore original state:
+Restore the baseline (if established in Step 2) and revert any fix changes:
 
 ```bash
+# Restore files reverted by EstablishBrokenBaseline.ps1
+pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore
+
+# Revert any other changes made during the fix attempt
 git checkout -- .
 ```
+
+**Note:** The `-Restore` flag reads the saved state from Step 2 and restores only the files that were reverted. This ensures a clean return to the original state.
 
 ### Step 10: Report Results
 
