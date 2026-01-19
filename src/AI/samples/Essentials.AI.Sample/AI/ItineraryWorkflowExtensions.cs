@@ -23,10 +23,10 @@ public static class ItineraryWorkflowExtensions
 
 	/// <summary>
 	/// Registers the itinerary workflow with 4 specialized agents:
-	/// 1. Travel Planner - parses natural language, extracts intent (no tools)
-	/// 2. Researcher - finds best matching destination (tool: getDestinations)
-	/// 3. Itinerary Planner - builds the itinerary (tool: findPointsOfInterest)
-	/// 4. Translator - translates if non-English (conditional, no tools)
+	/// 1. Travel Planner - parses natural language, extracts intent (no tools, structured output)
+	/// 2. Researcher - uses RAG (semantic search) to find candidates, AI picks the best match
+	/// 3. Itinerary Planner - builds the itinerary with streaming (tool: findPointsOfInterest)
+	/// 4. Translator - translates if non-English with streaming (conditional, no tools)
 	/// </summary>
 	public static IHostApplicationBuilder AddItineraryWorkflow(this IHostApplicationBuilder builder)
 	{

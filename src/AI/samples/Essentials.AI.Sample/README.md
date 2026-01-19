@@ -55,10 +55,10 @@ To run this sample, you need to configure Azure OpenAI credentials using user se
 
 The app uses a 4-agent workflow registered via `AddItineraryWorkflow()`:
 
-1. **Travel Planner Agent** - Parses natural language input to extract destination, day count, and target language
-2. **Researcher Agent** - Finds the best matching landmark using the `getDestinations` tool
-3. **Itinerary Planner Agent** - Builds a detailed itinerary using the `findPointsOfInterest` tool with streaming output
-4. **Translator Agent** - Translates the itinerary if a non-English language was requested (conditional)
+1. **Travel Planner Agent** - Parses natural language input to extract destination, day count, and target language (no tools - just structured output)
+2. **Researcher Agent** - Uses semantic search (RAG with embeddings) to find candidate destinations, then AI selects the best match
+3. **Itinerary Planner Agent** - Builds a detailed itinerary using the `findPointsOfInterest` tool with streaming JSON output
+4. **Translator Agent** - Translates the itinerary if a non-English language was requested (conditional, streaming)
 
 The workflow uses a conditional branching pattern:
 - **English requests**: Travel Planner → Researcher → Itinerary Planner → Output
@@ -86,8 +86,9 @@ Multiple AI clients are registered in dependency injection:
 ### Key AI Patterns
 
 - **Workflow-as-Agent**: The multi-agent workflow is registered as a single `AIAgent` for clean invocation via `workflowAgent.RunStreamingAsync()`
+- **RAG (Retrieval-Augmented Generation)**: Researcher agent uses embedding-based semantic search to find candidate destinations before AI selection
 - **Structured Output**: Uses `ChatResponseFormat.ForJsonSchema<T>()` to enforce response structure matching C# record types
-- **Function Calling**: Agents use `AIFunctionFactory.Create()` to define tools that discover real places
-- **Streaming**: Implements `IAsyncEnumerable` to process AI responses incrementally as they arrive
-- **Partial Deserialization**: Deserializes incomplete JSON during streaming to show progressive updates
+- **Function Calling**: Itinerary Planner uses `AIFunctionFactory.Create()` to define the `findPointsOfInterest` tool
+- **Streaming**: Agents use `RunStreamingAsync()` to emit partial JSON as it's generated for progressive UI updates
+- **Partial Deserialization**: `StreamingJsonDeserializer` deserializes incomplete JSON during streaming to show progressive updates
 - **Conditional Edges**: Workflow uses typed edge conditions to branch based on output (e.g., skip translation for English)
