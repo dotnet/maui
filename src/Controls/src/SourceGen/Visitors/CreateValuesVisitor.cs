@@ -289,7 +289,9 @@ class CreateValuesVisitor : IXamlNodeVisitor
 				// to exist before they're processed. Emit the declaration here.
 				if (valueProvider is EventTriggerValueProvider)
 				{
-					EventTriggerValueProvider.EmitDeclaration(node, type, Context);
+					var varName = NamingHelpers.CreateUniqueVariableName(Context, type);
+					variables[node] = new LocalVariable(type, varName);
+					EventTriggerValueProvider.GenerateCreateInstanceCall(node, Context);
 					return;
 				}
 
