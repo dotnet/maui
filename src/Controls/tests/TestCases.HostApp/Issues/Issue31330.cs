@@ -1,4 +1,5 @@
 using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Layouts;
 
 namespace Maui.Controls.Sample.Issues;
 
@@ -7,20 +8,11 @@ public class Issue31330 : ContentPage
 {
     public Issue31330()
     {
-        var scrollView = new ScrollView
-        {
-            Orientation = ScrollOrientation.Both,
-            VerticalScrollBarVisibility = ScrollBarVisibility.Always,
-            HorizontalScrollBarVisibility = ScrollBarVisibility.Always,
-        };
-
+        var scrollView = new ScrollView();
         var grid = new Grid
         {
-            WidthRequest = 800,
-            HeightRequest = 600,
             BackgroundColor = Colors.LightGray,
             RowSpacing = 10,
-            Padding = 20
         };
 
         grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
@@ -31,7 +23,7 @@ public class Issue31330 : ContentPage
         // Instructions
         var instructions = new Label
         {
-            Text = "Test passes if:\n1. Red BoxView (height 1.2) is visible as a filled rectangle\n2. Blue Rectangle (height 1.2) is visible as a filled rectangle (not a thin line)\n3. Both should have similar appearance",
+            Text = "Test passes if:\n1. Green BoxView (height 1.2) is visible as a filled rectangle\n2. Blue Rectangle (height 1.2) is visible as a filled rectangle (not a thin line)\n3. Both should have similar appearance",
             FontAttributes = FontAttributes.Bold,
             AutomationId = "Instructions"
         };
@@ -45,7 +37,7 @@ public class Issue31330 : ContentPage
 
         var boxView = new BoxView
         {
-            Color = Colors.Red,
+            Color = Colors.Green,
             WidthRequest = 50,
             HeightRequest = 1.2,
             HorizontalOptions = LayoutOptions.Start,
@@ -74,29 +66,24 @@ public class Issue31330 : ContentPage
         grid.Children.Add(rectangle);
 
         // AbsoluteLayout test (from original issue report)
-        var absoluteLayout = new AbsoluteLayout
-        {
-            BackgroundColor = Colors.White,
-            AutomationId = "AbsoluteLayoutTest"
-        };
+        var absoluteLayout = new AbsoluteLayout();
         Grid.SetRow(absoluteLayout, 3);
         grid.Children.Add(absoluteLayout);
 
         double shapeWidth = 20;
         double shapeHeight = 1.2;
-        double centerX = 400;
-        double centerY = 200;
+        double shapeY = 10;
 
         // BoxView in AbsoluteLayout (reference)
         var absBoxView = new BoxView
         {
-            BackgroundColor = Colors.Red
+            BackgroundColor = Colors.Green
         };
         AbsoluteLayout.SetLayoutBounds(absBoxView, new Rect(
-            centerX - shapeWidth - 30,
-            centerY - (shapeHeight / 2),
-            shapeWidth,
-            shapeHeight
+           0,
+           shapeY,
+           shapeWidth,
+           shapeHeight
         ));
         AbsoluteLayout.SetLayoutFlags(absBoxView, AbsoluteLayoutFlags.None);
         absoluteLayout.Children.Add(absBoxView);
@@ -107,8 +94,8 @@ public class Issue31330 : ContentPage
             Fill = Colors.Blue
         };
         AbsoluteLayout.SetLayoutBounds(absRectangle, new Rect(
-            centerX + 30,
-            centerY - (shapeHeight / 2),
+            30,
+            shapeY,
             shapeWidth,
             shapeHeight
         ));
