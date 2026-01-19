@@ -275,65 +275,10 @@ class CreateValuesVisitor : IXamlNodeVisitor
 				valueProvider.CanProvideValue(node, Context))
 			{
 				// EventTrigger is special: it has children (TriggerActions) that need the variable
-				// to exist before they're processed. We emit the declaration here.
+				// to exist before they're processed. Emit the declaration here.
 				if (valueProvider is EventTriggerValueProvider)
 				{
-					var eventTriggerVarName = NamingHelpers.CreateUniqueVariableName(Context, type);
-					variables[node] = new LocalVariable(type, eventTriggerVarName);
-					
-					// Get the Event property value
-					string? eventName = null;
-					if (node.Properties.TryGetValue(new XmlName("", "Event"), out var eventNode) && eventNode is ValueNode eventValueNode)
-						eventName = (string)eventValueNode.Value;
-					
-					// Find target type from XAML tree (parent elements)
-					ITypeSymbol? targetType = FindTargetTypeFromXamlTree(node, Context);
-					
-					if (eventName != null && targetType != null)
-					{
-						// Look up event on target type
-						var eventSymbols = targetType.GetAllEvents(eventName, Context).ToList();
-						if (eventSymbols.Count > 0)
-						{
-							var eventSymbol = eventSymbols.First();
-							var eventType = eventSymbol.Type;
-							var invoke = eventType.GetAllMethods("Invoke", Context).FirstOrDefault();
-							
-							if (invoke != null && invoke.Parameters.Length == 2)
-							{
-								var eventArgsType = invoke.Parameters[1].Type;
-								var isGenericEventHandler = !eventArgsType.Equals(
-									Context.Compilation.GetTypeByMetadataName("System.EventArgs"), 
-									SymbolEqualityComparer.Default);
-								
-								var targetTypeName = targetType.ToFQDisplayString();
-								
-								if (isGenericEventHandler)
-								{
-									var eventArgsTypeName = eventArgsType.ToFQDisplayString();
-									writer.WriteLine($"var {eventTriggerVarName} = global::Microsoft.Maui.Controls.EventTrigger.Create<{targetTypeName}, {eventArgsTypeName}>(\"{eventName}\", static (target, handler) => target.{eventName} += handler, static (target, handler) => target.{eventName} -= handler);");
-								}
-								else
-								{
-									writer.WriteLine($"var {eventTriggerVarName} = global::Microsoft.Maui.Controls.EventTrigger.Create<{targetTypeName}>(\"{eventName}\", static (target, handler) => target.{eventName} += handler, static (target, handler) => target.{eventName} -= handler);");
-								}
-								
-								// Skip the Event property - it's already set by Create()
-								node.SkipProperties.Add(new XmlName("", "Event"));
-								return;
-							}
-						}
-					}
-					
-					// Fallback: use reflection-based EventTrigger
-					if (eventName != null)
-						writer.WriteLine($"var {eventTriggerVarName} = new global::Microsoft.Maui.Controls.EventTrigger {{ Event = \"{eventName}\" }};");
-					else
-						writer.WriteLine($"var {eventTriggerVarName} = new global::Microsoft.Maui.Controls.EventTrigger();");
-					
-					// Skip the Event property if we set it
-					if (eventName != null)
-						node.SkipProperties.Add(new XmlName("", "Event"));
+					EventTriggerValueProvider.EmitDeclaration(node, type, Context);
 					return;
 				}
 
@@ -458,39 +403,5 @@ class CreateValuesVisitor : IXamlNodeVisitor
 			valueString = string.Empty;
 
 		return NodeSGExtensions.ValueForLanguagePrimitive(valueString, toType: type, context, node);
-	}
-
-	/// <summary>
-	/// Finds the target type for an EventTrigger by walking up the XAML tree.
-	/// EventTrigger is typically inside: Element.Triggers -> Element (e.g., Button.Triggers -> Button)
-	/// </summary>
-	static ITypeSymbol? FindTargetTypeFromXamlTree(ElementNode eventTriggerNode, SourceGenContext context)
-	{
-		// Walk up: EventTrigger -> ListNode (Triggers) -> ElementNode (target)
-		// We need to go through the parent chain.
-		// The EventTrigger's parent should be a ListNode (for Button.Triggers collection)
-		// The ListNode's parent should be the actual element (Button)
-		
-		INode? current = eventTriggerNode;
-		
-		// Walk up until we find an ElementNode that's not EventTrigger itself
-		while (current != null)
-		{
-			current = current.Parent;
-			
-			// Skip ListNodes (they're the collection wrapper)
-			if (current is ListNode listNode)
-			{
-				current = listNode.Parent;
-			}
-			
-			// Found an ElementNode - this should be our target
-			if (current is ElementNode parentElement && parentElement != eventTriggerNode)
-			{
-				return parentElement.XmlType.GetTypeSymbol(context);
-			}
-		}
-		
-		return null;
 	}
 }
