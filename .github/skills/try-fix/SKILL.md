@@ -44,6 +44,7 @@ All inputs are provided by the invoker (CI, agent, or user).
 | Platform | Yes | Target platform (`android`, `ios`, `windows`, `maccatalyst`) |
 | Hints | Optional | Suggested approaches, prior attempts, or areas to focus on |
 | Baseline | Optional | Git ref or instructions for establishing broken state (default: current state) |
+| state_file | Optional | Path to PR agent state file (e.g., `.github/agent-pr-session/pr-12345.md`). If provided, try-fix will append its results to the Fix Candidates table. |
 
 ## Outputs
 
@@ -197,6 +198,31 @@ Provide structured output to the invoker:
 ```
 ```
 
+### Step 11: Update State File (if provided)
+
+If `state_file` input was provided and file exists:
+
+1. **Read current Fix Candidates table** from state file
+2. **Determine next attempt number** (count existing try-fix rows + 1)
+3. **Append new row** with this attempt's results:
+
+| # | Source | Approach | Test Result | Files Changed | Notes |
+|---|--------|----------|-------------|---------------|-------|
+| N | try-fix #N | [approach] | ✅ PASS / ❌ FAIL | [files] | [analysis] |
+
+4. **Commit state file:**
+```bash
+git add "$STATE_FILE" && git commit -m "try-fix: attempt #N"
+```
+
+**If no state file provided:** Skip this step (results returned to invoker only).
+
+**Ownership rule:** try-fix ONLY updates its own row. Never modify:
+- Phase status fields
+- "Exhausted" field
+- "Selected Fix" field
+- Other try-fix rows
+
 ---
 
 ## Error Handling
@@ -310,8 +336,10 @@ This skill does ONE attempt. The invoker (CI pipeline, agent, user) controls:
 |----------|--------------------------|
 | How many attempts | Invoke skill multiple times if needed |
 | When to stop | Interpret results and decide |
-| State persistence | Store results however needed |
+| State file path | Optionally provide for automatic recording |
 | Passing context between attempts | Provide updated hints on subsequent calls |
 | Success criteria | Evaluate the reported result |
+| Phase status | Update phase to COMPLETE when done |
+| Final selection | Set "Exhausted" and "Selected Fix" fields |
 
-The skill is stateless - it doesn't track attempts or decide when to give up.
+The skill records its own results when a state file is provided, but does NOT decide when to stop or which fix to select.

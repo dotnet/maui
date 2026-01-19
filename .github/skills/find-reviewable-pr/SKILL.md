@@ -133,7 +133,7 @@ Would you like me to review this PR?
 
 ### Step 5: Invoke PR Reviewer
 
-When user confirms, use the **pr-reviewer** agent:
+When user confirms, use the **pr** agent:
 - "Review PR #XXXXX"
 
 ## Complexity Levels
