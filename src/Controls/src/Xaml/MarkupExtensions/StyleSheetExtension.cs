@@ -13,6 +13,7 @@ namespace Microsoft.Maui.Controls.Xaml
 	[ContentProperty(nameof(Style))]
 	[ProvideCompiled("Microsoft.Maui.Controls.XamlC.StyleSheetProvider")]
 	[RequireService([typeof(IXmlLineInfoProvider), typeof(IRootObjectProvider)])]
+	[RequiresUnreferencedCode(StyleSheet.StyleSheetTrimmerWarning)]
 	public sealed class StyleSheetExtension : IValueProvider
 	{
 		/// <summary>
@@ -26,7 +27,6 @@ namespace Microsoft.Maui.Controls.Xaml
 		[System.ComponentModel.TypeConverter(typeof(UriTypeConverter))]
 		public Uri Source { get; set; }
 
-		[UnconditionalSuppressMessage("Trimming", "IL2026", Justification = StyleSheet.StyleSheetTrimmerWarning)]
 		object IValueProvider.ProvideValue(IServiceProvider serviceProvider)
 		{
 			IXmlLineInfo lineInfo;
