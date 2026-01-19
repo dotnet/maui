@@ -16,6 +16,12 @@ namespace Microsoft.Maui.Essentials.AI;
 [SupportedOSPlatform("tvos26.0")]
 public sealed class AppleIntelligenceChatClient : IChatClient
 {
+	/// <summary>The provider name for this chat client.</summary>
+	private const string ProviderName = "apple";
+
+	/// <summary>The default model identifier.</summary>
+	private const string DefaultModelId = "apple-intelligence";
+
 	// static AppleIntelligenceChatClient()
 	// {
 	// 	// Enable native logging for debugging purposes, this is quite verbose.
@@ -218,8 +224,8 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 		if (serviceType == typeof(ChatClientMetadata))
 		{
 			return _metadata ??= new ChatClientMetadata(
-				providerName: "apple",
-				defaultModelId: "apple-intelligence");
+				providerName: ProviderName,
+				defaultModelId: DefaultModelId);
 		}
 
 		if (serviceType.IsInstanceOfType(this))
