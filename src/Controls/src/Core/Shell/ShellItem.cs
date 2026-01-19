@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Always)]
 #if WINDOWS || TIZEN
-	[ElementHandler(typeof(ShellItemHandler))]
+	[ElementHandler(typeof(Handlers.ShellItemHandler))]
 #endif
 	public class FlyoutItem : ShellItem
 	{
