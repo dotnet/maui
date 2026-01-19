@@ -36,21 +36,14 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData("black_raw.png", 0xFF000000)]
 		public async Task GraphicsViewCanDrawBackgroundImage(string filename, uint color)
 		{
-			System.Diagnostics.Debug.WriteLine($"[TEST] GraphicsViewCanDrawBackgroundImage: loading {filename}");
 			var expected = Color.FromUint(color);
 
 			var image = await Task.Run(async () =>
 			{
-				System.Diagnostics.Debug.WriteLine($"[TEST] Background thread: loading image from {filename}");
 				var loading = new PlatformImageLoadingService();
 				using var stream = await FileSystem.OpenAppPackageFileAsync(filename);
-				System.Diagnostics.Debug.WriteLine($"[TEST] Background thread: stream opened, length={stream?.Length}");
-				var result = loading.FromStream(stream);
-				System.Diagnostics.Debug.WriteLine($"[TEST] Background thread: image loaded, result={result}");
-				return result;
+				return loading.FromStream(stream);
 			});
-
-			System.Diagnostics.Debug.WriteLine($"[TEST] Image loaded on background thread: {image}");
 
 			var graphicsView = new GraphicsViewStub()
 			{
@@ -70,11 +63,9 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData("black_raw.png", 0xFF000000)]
 		public async Task GraphicsViewCanDrawInlineImage(string filename, uint color)
 		{
-			System.Diagnostics.Debug.WriteLine($"[TEST] GraphicsViewCanDrawInlineImage: loading {filename}");
 			var expected = Color.FromUint(color);
 
 			using var stream = await FileSystem.OpenAppPackageFileAsync(filename);
-			System.Diagnostics.Debug.WriteLine($"[TEST] Stream opened, length={stream?.Length}");
 
 			var graphicsView = new GraphicsViewStub()
 			{
