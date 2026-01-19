@@ -280,10 +280,16 @@ namespace Microsoft.Maui.Controls.Shapes
 			//       since default GetBoundsByFlattening(0.001) returns incorrect results for curves
 			RectF pathBounds = path.GetBoundsByFlattening(1);
 
-			viewBounds.X += StrokeThickness / 2;
-			viewBounds.Y += StrokeThickness / 2;
-			viewBounds.Width -= StrokeThickness;
-			viewBounds.Height -= StrokeThickness;
+			// Only apply stroke inset if there is an actual stroke. 
+			// For shapes with no stroke shrinking the bounds by StrokeThickness was
+			// effectively collapsing very small heights into a barely visible line.
+			if (Stroke is not null && StrokeThickness > 0)
+			{
+				viewBounds.X += StrokeThickness / 2;
+				viewBounds.Y += StrokeThickness / 2;
+				viewBounds.Width -= StrokeThickness;
+				viewBounds.Height -= StrokeThickness;
+			}
 
 			Matrix3x2 transform;
 
