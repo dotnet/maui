@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
 using System.Xml;
@@ -25,6 +26,7 @@ namespace Microsoft.Maui.Controls.Xaml
 		[System.ComponentModel.TypeConverter(typeof(UriTypeConverter))]
 		public Uri Source { get; set; }
 
+		[UnconditionalSuppressMessage("Trimming", "IL2026", Justification = StyleSheet.StyleSheetTrimmerWarning)]
 		object IValueProvider.ProvideValue(IServiceProvider serviceProvider)
 		{
 			IXmlLineInfo lineInfo;
