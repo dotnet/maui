@@ -37,7 +37,7 @@ public partial class Maui22036
 			var pagewr = new WeakReference(new Maui22036(inflator));
 			await Task.Delay(10);
 			GC.Collect(2);
-			Assert.IsNull(pagewr.Target, "Page leaked");
+			Assert.Null(pagewr.Target);
 		}
 	}
 
