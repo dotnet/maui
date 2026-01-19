@@ -7,7 +7,7 @@ using Google.Android.Material.DatePicker;
 namespace Microsoft.Maui.Handlers;
 
 // TODO: material3 - make it public in .net 11
-internal partial class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMaterialDatePicker>
+internal class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMaterialDatePicker>
 {
     internal MaterialDatePicker? _dialog;
     internal bool _isUpdatingIsOpen;
@@ -27,6 +27,56 @@ internal partial class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMateria
                         [nameof(IDatePicker.IsOpen)] = MapIsOpen,
 
                     };
+
+    public static CommandMapper<IDatePicker, DatePickerHandler2> CommandMapper = new(ViewCommandMapper)
+    {
+    };
+
+    public DatePickerHandler2() : base(Mapper, CommandMapper)
+    {
+    }
+
+    protected override MauiMaterialDatePicker CreatePlatformView()
+    {
+        return new MauiMaterialDatePicker(Context);
+    }
+
+    protected override void ConnectHandler(MauiMaterialDatePicker platformView)
+    {
+        base.ConnectHandler(platformView);
+
+        _positiveButtonClickListener = new MaterialDatePickerPositiveButtonClickListener(this);
+        _dismissListener = new MaterialDatePickerDismissListener(this);
+
+        platformView.ShowPicker = ShowPickerDialog;
+        platformView.HidePicker = HidePickerDialog;
+    }
+
+    protected override void DisconnectHandler(MauiMaterialDatePicker platformView)
+    {
+        if (_dialog is not null)
+        {
+            RemoveListeners();
+
+            if (_dialog.IsAdded)
+            {
+                _dialog.DismissAllowingStateLoss();
+            }
+
+            _dialog = null;
+        }
+
+        _positiveButtonClickListener?.Dispose();
+        _positiveButtonClickListener = null;
+
+        _dismissListener?.Dispose();
+        _dismissListener = null;
+
+        platformView.ShowPicker = null;
+        platformView.HidePicker = null;
+
+        base.DisconnectHandler(platformView);
+    }
 
     static void MapBackground(DatePickerHandler2 handler, IDatePicker datePicker)
     {
@@ -86,71 +136,6 @@ internal partial class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMateria
     static void MapCharacterSpacing(DatePickerHandler2 handler, IDatePicker picker)
     {
         handler.PlatformView?.UpdateCharacterSpacing(picker);
-    }
-
-    public static CommandMapper<IDatePicker, IDatePickerHandler> CommandMapper = new(ViewCommandMapper)
-    {
-    };
-
-    public DatePickerHandler2() : base(Mapper, CommandMapper)
-    {
-    }
-
-    protected override MauiMaterialDatePicker CreatePlatformView()
-    {
-        return new MauiMaterialDatePicker(Context);
-    }
-
-    protected override void ConnectHandler(MauiMaterialDatePicker platformView)
-    {
-        base.ConnectHandler(platformView);
-
-        _positiveButtonClickListener = new MaterialDatePickerPositiveButtonClickListener(this);
-        _dismissListener = new MaterialDatePickerDismissListener(this);
-
-        platformView.ShowPicker = ShowPickerDialog;
-        platformView.HidePicker = HidePickerDialog;
-    }
-
-    protected override void DisconnectHandler(MauiMaterialDatePicker platformView)
-    {
-        if (_dialog is not null)
-        {
-            RemoveListeners();
-
-            if (_dialog.IsAdded)
-            {
-                _dialog.DismissAllowingStateLoss();
-            }
-
-            _dialog = null;
-        }
-
-        _positiveButtonClickListener?.Dispose();
-        _positiveButtonClickListener = null;
-
-        _dismissListener?.Dispose();
-        _dismissListener = null;
-
-        platformView.ShowPicker = null;
-        platformView.HidePicker = null;
-
-        base.DisconnectHandler(platformView);
-    }
-
-    void RemoveListeners()
-    {
-        if (_dialog is not null)
-        {
-            if (_dismissListener is not null)
-            {
-                _dialog.RemoveOnDismissListener(_dismissListener);
-            }
-            if (_positiveButtonClickListener is not null)
-            {
-                _dialog.RemoveOnPositiveButtonClickListener(_positiveButtonClickListener);
-            }
-        }
     }
 
     protected virtual MaterialDatePicker? CreateDatePickerDialog(int year, int month, int day)
@@ -282,6 +267,21 @@ internal partial class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMateria
 
         _dialog = null;
         UpdateIsOpenState(false);
+    }
+
+    void RemoveListeners()
+    {
+        if (_dialog is not null)
+        {
+            if (_dismissListener is not null)
+            {
+                _dialog.RemoveOnDismissListener(_dismissListener);
+            }
+            if (_positiveButtonClickListener is not null)
+            {
+                _dialog.RemoveOnPositiveButtonClickListener(_positiveButtonClickListener);
+            }
+        }
     }
 
     internal void UpdateIsOpenState(bool isOpen)
