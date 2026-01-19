@@ -52,13 +52,16 @@
 	-->
 	<PropertyGroup Condition="'$(TargetPlatformIdentifier)' == 'android' and '$(UseMonoRuntime)' == 'false' and '$(Configuration)' == 'Release'">
 		<PublishReadyToRun Condition="'$(PublishReadyToRun)' == ''">true</PublishReadyToRun>
-		<PublishReadyToRunComposite Condition="'$(PublishReadyToRun)' == 'true' and '$(PublishReadyToRunComposite)' == ''">true</PublishReadyToRunComposite>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(TargetPlatformIdentifier)' == 'android' and '$(UseMonoRuntime)' == 'false' and '$(Configuration)' == 'Release' and '$(PublishReadyToRun)' == 'true'">
+		<PublishReadyToRunComposite Condition="'$(PublishReadyToRunComposite)' == ''">true</PublishReadyToRunComposite>
 		<PublishReadyToRunCrossgen2ExtraArgs Condition="'$(_MauiPartialReadyToRun)' != 'false'">$(PublishReadyToRunCrossgen2ExtraArgs) --partial</PublishReadyToRunCrossgen2ExtraArgs>
 		<_MauiUseDefaultReadyToRunPgoFiles Condition="'$(_MauiUseDefaultReadyToRunPgoFiles)' == ''">true</_MauiUseDefaultReadyToRunPgoFiles>
 	</PropertyGroup>
 
-	<ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'android' and '$(UseMonoRuntime)' == 'false' and '$(Configuration)' == 'Release' and '$(PublishReadyToRun)' == 'true' and '$(_MauiUseDefaultReadyToRunPgoFiles)' == 'true'">
-		<_ReadyToRunPgoFiles Include="$(MSBuildThisFileDirectory)mibc\android\**\*.mibc" />
+	<ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'android' and '$(UseMonoRuntime)' == 'false' and '$(Configuration)' == 'Release' and '$(PublishReadyToRun)' == 'true'">
+		<_ReadyToRunPgoFiles Condition="'$(_MauiUseDefaultReadyToRunPgoFiles)' == 'true'" Include="$(MSBuildThisFileDirectory)mibc\android\**\*.mibc" />
 	</ItemGroup>
 
 	<!-- Check Tasks ABI and other validations -->
