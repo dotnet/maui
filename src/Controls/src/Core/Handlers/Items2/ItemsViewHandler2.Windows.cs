@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.Linq;
 using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
@@ -197,13 +200,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 						Source = TemplatedItemSourceFactory2.CreateGrouped(itemsSource, itemTemplate,
 							groupableItemsView.GroupHeaderTemplate, groupableItemsView.GroupFooterTemplate,
 							Element, mauiContext: MauiContext)
+							, IsSourceGrouped = false
 					};
 				}
 				else
 				{
+					var flattenedSource = itemsSource;
+					if (itemsSource is not null && IsItemsSourceGrouped(itemsSource))
+					{
+						flattenedSource = FlattenGroupedItemsSource(itemsSource);
+					}
 					return new CollectionViewSource
 					{
-						Source = TemplatedItemSourceFactory2.Create(itemsSource, itemTemplate, Element, mauiContext: MauiContext),
+						Source = TemplatedItemSourceFactory2.Create(flattenedSource, itemTemplate, Element, mauiContext: MauiContext),
 						IsSourceGrouped = false
 					};
 				}
@@ -215,6 +224,30 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				IsSourceGrouped = false
 			};
 		}
+
+		bool IsItemsSourceGrouped(object itemsSource)
+		{
+			if (itemsSource is IEnumerable enumerable)
+			{
+				foreach (var item in enumerable)
+				{
+					if (item is IEnumerable && item is not string)
+					{
+						return true;
+					}
+					break;
+				}
+			}
+			return false;
+		}
+
+		IEnumerable FlattenGroupedItemsSource(IEnumerable groupedSource)
+		{
+			return groupedSource.Cast<object>().
+				Where(group => group is IEnumerable && group is not string).
+				SelectMany(group => ((IEnumerable)group).Cast<object>());
+		}
+
 
 		protected virtual void UpdateItemsSource()
 		{
@@ -506,33 +539,42 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 
 			var emptyView = Element.EmptyView;
-
 			var emptyViewTemplate = Element.EmptyViewTemplate;
-			if (emptyViewTemplate is not null)
+
+			// Clear empty view
+			if (emptyView is null && emptyViewTemplate is null)
 			{
-				// If EmptyViewTemplate is provided, use it instead of EmptyView
-				_emptyView = ItemsViewExtensions.RealizeEmptyViewTemplate(emptyView, emptyViewTemplate, MauiContext!, ref _mauiEmptyView);
-			}
-			else if (emptyView is not null)
-			{
-				switch (emptyView)
+				if (_emptyViewDisplayed)
 				{
-					case string text:
-						_emptyView = new TextBlock
-						{
-							HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Center,
-							VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Center,
-							Text = text
-						};
-						break;
-					case View view:
-						_emptyView = ItemsViewExtensions.RealizeEmptyView(view, MauiContext!, ref _mauiEmptyView);
-						break;
-					default:
-						_emptyView = ItemsViewExtensions.RealizeEmptyViewTemplate(emptyView, null, MauiContext!, ref _mauiEmptyView);
-						break;
+					if (_emptyView != null && PlatformView is IEmptyView ev)
+						ev.EmptyViewVisibility = WVisibility.Collapsed;
+
+					if (_mauiEmptyView != null)
+						ItemsView.RemoveLogicalChild(_mauiEmptyView);
+
+					_emptyViewDisplayed = false;
 				}
+
+				_emptyView = null;
+				_mauiEmptyView = null;
+				(PlatformView as IEmptyView)?.SetEmptyView(null, null);
+				return;
 			}
+
+			// Resolve empty view
+			_emptyView = emptyViewTemplate != null
+				? ItemsViewExtensions.RealizeEmptyViewTemplate(emptyView, emptyViewTemplate, MauiContext!, ref _mauiEmptyView)
+				: emptyView switch
+				{
+					string text => new TextBlock
+					{
+						HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Center,
+						VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Center,
+						Text = text
+					},
+					View view => ItemsViewExtensions.RealizeEmptyView(view, MauiContext!, ref _mauiEmptyView),
+					_ => ItemsViewExtensions.RealizeEmptyViewTemplate(emptyView, null, MauiContext!, ref _mauiEmptyView)
+				};
 
 			(PlatformView as IEmptyView)?.SetEmptyView(_emptyView, _mauiEmptyView);
 			UpdateEmptyViewVisibility();
