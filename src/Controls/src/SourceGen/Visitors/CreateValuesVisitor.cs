@@ -274,6 +274,19 @@ class CreateValuesVisitor : IXamlNodeVisitor
 			if (NodeSGExtensions.GetKnownValueProviders(Context).TryGetValue(type, out var valueProvider) &&
 				valueProvider.CanProvideValue(node, Context))
 			{
+				// Check if this is a deferred EventTrigger (EventTriggerValueProvider with Event property)
+				// For deferred EventTriggers, we register a variable name but don't emit creation code.
+				// The actual creation happens in SetPropertiesVisitor.SetEventTriggerEvent.
+				if (valueProvider is EventTriggerValueProvider)
+				{
+					// Register variable with a real name (not placeholder) so children can reference it
+					var deferredVarName = NamingHelpers.CreateUniqueVariableName(Context, type);
+					variables[node] = new LocalVariable(type, deferredVarName);
+					// Don't skip properties - we need Event to be processed
+					// Don't emit any code - SetEventTriggerEvent will emit the factory call
+					return;
+				}
+				
 				// This element can be fully inlined without property assignments or variable creation.
 				// Skip setting all simple value properties since they'll be handled
 				// by inline initialization in TryProvideValue.
