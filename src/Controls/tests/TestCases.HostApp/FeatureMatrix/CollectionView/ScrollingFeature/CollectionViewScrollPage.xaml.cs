@@ -24,6 +24,7 @@ public partial class CollectionViewScrollPage : ContentPage
 
 	public void ResetScrollEventLabels()
 	{
+		collectionView.ScrollTo(0, position: ScrollToPosition.Start);
 		scrolledEventLabel.Text = "Not Fired";
 		scrollToRequestedLabel.Text = "Not Fired";
 		remainingItemsThresholdLabel.Text = "Not Fired";
