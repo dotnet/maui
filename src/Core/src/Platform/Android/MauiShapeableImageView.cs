@@ -14,11 +14,13 @@ namespace Microsoft.Maui.Platform
 		{
 		}
 
-		public MauiShapeableImageView(Context? context, IAttributeSet? attrs) : base(context, attrs)
+		public MauiShapeableImageView(Context? context, IAttributeSet? attrs) : base(MauiMaterialContextThemeWrapper.Create(
+			context ?? throw new ArgumentNullException(nameof(context))), attrs)
 		{
 		}
 
-		public MauiShapeableImageView(Context? context, IAttributeSet? attrs, int defStyle) : base(context, attrs, defStyle)
+		public MauiShapeableImageView(Context? context, IAttributeSet? attrs, int defStyle) : base(MauiMaterialContextThemeWrapper.Create(
+			context ?? throw new ArgumentNullException(nameof(context))), attrs, defStyle)
 		{
 		}
 
