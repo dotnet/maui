@@ -197,14 +197,21 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 				break;
 		}
 
-		var formsItemContentControls = PlatformView.GetChildren<ItemContentControl>();
-		foreach (var formsItemContentControl in formsItemContentControls)
+		UpdateVisualStates();
+	}
+
+	void UpdateVisualStates()
+	{
+		if (PlatformView is null || ItemsView is null)
+			return;
+
+		foreach (var itemcontainer in PlatformView.GetChildren<ItemContainer>())
 		{
-			if (formsItemContentControl is not null)
+			if (itemcontainer?.Child is ElementWrapper wrapper && wrapper.VirtualView is VisualElement visualElement)
 			{
-				bool isSelected = ItemsView.SelectedItem == formsItemContentControl.FormsDataContext ||
-					ItemsView.SelectedItems.Contains(formsItemContentControl.FormsDataContext);
-				formsItemContentControl.UpdateIsSelected(isSelected);
+				var actualItem = visualElement.BindingContext;
+				bool isSelected = ItemsView.SelectedItem == actualItem || ItemsView.SelectedItems.Contains(actualItem);
+				VisualStateManager.GoToState(visualElement, isSelected ? VisualStateManager.CommonStates.Selected : VisualStateManager.CommonStates.Normal);
 			}
 		}
 	}
@@ -228,16 +235,49 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 	{
 		ItemsView.SelectionChanged -= VirtualSelectionChanged;
 
-		var selection = new List<object>();
-		for (int index = 0; index < PlatformView.SelectedItems.Count; index++)
+		// Get current platform selection
+		var currentPlatformSelection = new HashSet<object>();
+		foreach (var item in PlatformView.SelectedItems)
 		{
-			var item = PlatformView.SelectedItems[index];
 			var selectedItem = item is ItemTemplateContext2 itc ? itc.Item : item;
 			if (selectedItem is not null)
-				selection.Add(selectedItem);
+				currentPlatformSelection.Add(selectedItem);
 		}
 
-		ItemsView.UpdateSelectedItems(selection);
+		// Get previous virtual selection
+		var previousSelection = new HashSet<object>(ItemsView.SelectedItems);
+
+		// Find newly selected items (in platform but not in virtual)
+		var newlySelected = new List<object>();
+		foreach (var item in PlatformView.SelectedItems)
+		{
+			var selectedItem = item is ItemTemplateContext2 itc ? itc.Item : item;
+			if (selectedItem is not null && !previousSelection.Contains(selectedItem))
+				newlySelected.Add(selectedItem);
+		}
+
+		// Build new selection: existing items still selected + newly selected items
+		var newSelection = new List<object>();
+
+		// Keep existing items that are still selected (maintains their order)
+		foreach (var existingItem in ItemsView.SelectedItems)
+		{
+			if (currentPlatformSelection.Contains(existingItem))
+			{
+				newSelection.Add(existingItem);
+			}
+		}
+
+		// Add newly selected items at the end (in selection order)
+		foreach (var item in newlySelected)
+		{
+			if (!newSelection.Contains(item))
+			{
+				newSelection.Add(item);
+			}
+		}
+
+		ItemsView.UpdateSelectedItems(newSelection);
 		ItemsView.SelectionChanged += VirtualSelectionChanged;
 	}
 
@@ -308,6 +348,7 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 		}
 
 		_ignorePlatformSelectionChange = false;
+		UpdateVisualStates();
 	}
 }
 
