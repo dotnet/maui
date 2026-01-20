@@ -27,10 +27,6 @@ internal partial class MaterialImageHandler : ViewHandler<IImage, ShapeableImage
     public virtual ImageSourcePartLoader SourceLoader =>
         _imageSourcePartLoader ??= new ImageSourcePartLoader(new ImageImageSourcePartSetter(this));
 
-    IImage IImageHandler.VirtualView => VirtualView;
-
-    ImageView IImageHandler.PlatformView => PlatformView;
-
     public MaterialImageHandler() : base(Mapper, CommandMapper)
     {
     }
@@ -64,6 +60,9 @@ internal partial class MaterialImageHandler : ViewHandler<IImage, ShapeableImage
     public override bool NeedsContainer =>
         VirtualView?.Background != null ||
         base.NeedsContainer;
+
+    // Explicit interface implementation to satisfy IImageHandler.PlatformView
+    ImageView IImageHandler.PlatformView => PlatformView;
 
     static void MapSource(MaterialImageHandler handler, IImage image)
     {
@@ -134,7 +133,20 @@ internal partial class MaterialImageHandler : ViewHandler<IImage, ShapeableImage
             return;
         }
 
-        ImageHandler.OnPlatformViewAttachedToWindow(this);
+        MaterialImageHandler.OnPlatformViewAttachedToWindow(this);
+    }
+
+    static void OnPlatformViewAttachedToWindow(MaterialImageHandler materialImageHandler)
+    {
+        // Glide will automatically clear out the image if the Fragment or Activity is destroyed
+        // So we want to reload the image here if it's supposed to have an image
+        if (materialImageHandler.SourceLoader.CheckForImageLoadedOnAttached &&
+            materialImageHandler.PlatformView.Drawable is null &&
+            materialImageHandler.VirtualView.Source is not null && !materialImageHandler.SourceLoader.SourceManager.IsLoading)
+        {
+            materialImageHandler.SourceLoader.CheckForImageLoadedOnAttached = false;
+            materialImageHandler.UpdateValue(nameof(IImage.Source));
+        }
     }
 
     partial class ImageImageSourcePartSetter : ImageSourcePartSetter<IImageHandler>
