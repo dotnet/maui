@@ -40,7 +40,8 @@ For each **High or Medium priority** recommendation:
 |----------|--------|
 | Instruction file | Edit existing or create new `.github/instructions/*.instructions.md` |
 | Skill enhancement | Edit `.github/skills/*/SKILL.md` |
-| Architecture doc | Create/edit `.github/architecture/*.md` |
+| Architecture doc | Edit `/docs/design/*.md` (detailed) or create quick-reference in `.github/architecture/` |
+| General AI guidance | Edit `.github/copilot-instructions.md` |
 | Code comment | Add comment to source file (don't modify behavior) |
 
 **Before each edit:**

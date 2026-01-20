@@ -148,14 +148,16 @@ Determine which scenario applies and look for the relevant patterns:
 # Discover where agent guidance lives
 find .github/instructions -name "*.instructions.md" 2>/dev/null
 find .github/skills -name "SKILL.md" 2>/dev/null
-ls .github/architecture/ 2>/dev/null
+ls docs/design/ 2>/dev/null
+ls .github/copilot-instructions.md 2>/dev/null
 ```
 
 | Location | When to Add Here |
 |----------|------------------|
-| `.github/instructions/*.instructions.md` | Domain-specific guidance |
-| `.github/skills/*/SKILL.md` | Skill needs new step or checklist |
-| `.github/architecture/*.md` | Architectural knowledge |
+| `.github/instructions/*.instructions.md` | Domain-specific AI guidance (testing patterns, platform rules) |
+| `.github/skills/*/SKILL.md` | Skill needs new step, checklist, or improved workflow |
+| `/docs/design/*.md` | Detailed architectural documentation |
+| `.github/copilot-instructions.md` | General AI workflow guidance |
 | Code comments | Non-obvious code behavior |
 
 ### Step 5: Generate Recommendations
@@ -177,10 +179,10 @@ For each recommendation, provide:
 
 | Pattern | Likely Improvement |
 |---------|-------------------|
-| Wrong file entirely | Architecture doc explaining component relationships |
+| Wrong file entirely | Check `/docs/design/` for component relationships |
 | Tunnel vision | Instruction file: "Always search for pattern across codebase" |
 | Missing platform knowledge | Platform-specific instruction file |
-| Wrong abstraction layer | Architecture doc explaining layers |
+| Wrong abstraction layer | Reference `/docs/design/HandlerResolution.md` |
 | Misread error message | Code comment explaining the real cause |
 | Over-engineered | Skill enhancement: "Try simplest fix first" |
 
