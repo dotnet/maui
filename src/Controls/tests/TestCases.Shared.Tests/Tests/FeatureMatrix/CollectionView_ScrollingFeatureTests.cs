@@ -48,7 +48,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.Tap(ItemSizingMeasureAllItems);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 #if TEST_FAILS_ON_WINDOWS // [Windows] NullReferenceException thrown When Toggling IsGrouped to True in ObservableCollection Binding Issue Link: https://github.com/dotnet/maui/issues/28824
@@ -66,7 +66,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.Tap(ItemsSourceGroupedList2);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 #endif
 
@@ -87,7 +87,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.Tap(ItemSizingMeasureFirstItem);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
@@ -104,7 +104,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.Tap(ItemsLayoutVerticalGrid);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
@@ -121,7 +121,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.Tap(ItemsSourceGroupedList2);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
@@ -138,7 +138,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.Tap(ItemsLayoutHorizontalGrid);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
@@ -155,7 +155,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.Tap(ItemsLayoutHorizontalList);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
@@ -172,7 +172,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.Tap(ItemsLayoutVerticalGrid);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
@@ -191,7 +191,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.Tap(ItemsLayoutVerticalGrid);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
@@ -210,7 +210,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.Tap(ItemsLayoutHorizontalGrid);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
@@ -229,7 +229,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.Tap(ItemsLayoutHorizontalList);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 #if TEST_FAILS_ON_ANDROID
@@ -249,7 +249,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.Tap(ItemsLayoutHorizontalGrid);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
@@ -266,7 +266,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.Tap(ItemsLayoutHorizontalList);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
@@ -285,7 +285,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.Tap(ItemsLayoutVerticalGrid);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
@@ -304,7 +304,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.Tap(ItemsLayoutHorizontalList);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
@@ -323,7 +323,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.Tap(ItemsLayoutHorizontalGrid);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 #endif
 #endif
@@ -335,8 +335,6 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyKeepItemsInViewWithObservableList()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsUpdatingKeepItemsInView);
@@ -358,8 +356,6 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyKeepItemsInViewWithGroupedList()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsSourceGroupedList3);
@@ -385,8 +381,6 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyKeepItemsInViewWithObservableListWhenVerticalGrid()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsUpdatingKeepItemsInView);
@@ -409,8 +403,6 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyKeepItemsInViewWithObservableListWhenHorizontalGrid()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsUpdatingKeepItemsInView);
@@ -433,8 +425,6 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyKeepItemsInViewWithObservableListWhenHorizontalList()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsUpdatingKeepItemsInView);
@@ -457,8 +447,6 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyKeepItemsInViewWithGroupedListWhenVerticalGrid()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsSourceGroupedList3);
@@ -485,8 +473,6 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyKeepItemsInViewWithGroupedListWhenHorizontalList()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsSourceGroupedList3);
@@ -513,8 +499,6 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyKeepItemsInViewWithGroupedListWhenHorizontalGrid()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsSourceGroupedList3);
@@ -701,8 +685,6 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyKeepScrollOffsetWithObservableList()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsUpdatingKeepScrollOffset);
@@ -727,8 +709,6 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyKeepScrollOffsetWithGroupedList()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsSourceGroupedList3);
@@ -763,8 +743,6 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyKeepScrollOffsetWithObservableListWhenVerticalGrid()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsUpdatingKeepScrollOffset);
@@ -790,8 +768,6 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyKeepScrollOffsetWithObservableListWhenHorizontalList()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsUpdatingKeepScrollOffset);
@@ -819,8 +795,6 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyKeepScrollOffsetWithObservableListWhenHorizontalGrid()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsUpdatingKeepScrollOffset);
@@ -847,8 +821,6 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyKeepScrollOffsetWithGroupedListWhenVerticalGrid()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsSourceGroupedList3);
@@ -878,8 +850,6 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyKeepScrollOffsetWithGroupedListWhenHorizontalList()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsSourceGroupedList3);
@@ -911,8 +881,6 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyKeepScrollOffsetWithGroupedListWhenHorizontalGrid()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsSourceGroupedList3);
@@ -942,12 +910,12 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 #endif
 
 	//Scrolled Event Tests
+#if TEST_FAILS_ON_ANDROID // Issue Link: https://github.com/dotnet/maui/issues/33333
+
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyScrolledEventWithVerticalList()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(Apply);
@@ -957,8 +925,10 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.ScrollDown("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
 		Assert.That(App.WaitForElement("ScrolledEventLabel").GetText(), Is.EqualTo("Fired"));
 	}
+#endif
 
-#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_IOS
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_IOS
+	//Issue Link: https://github.com/dotnet/maui/issues/33333
 	//CollectionView Fails to Preserve Scroll Offset with GridItemsLayout Using KeepScrollOffset Issue Link: https://github.com/dotnet/maui/issues/29202
 	//CollectionView ItemsLayout does not update while switch from LinearItemsLayout to GridItemsLayout Issue Link: https://github.com/dotnet/maui/issues/27946
 	//CollectionView CollectionView2 doesnot change ItemsLayout Issue Link: https://github.com/dotnet/maui/issues/28656
@@ -967,8 +937,6 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyScrolledEventWithVerticalGrid()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsLayoutVerticalGrid);
@@ -985,8 +953,6 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyScrolledEventWithHorizontalList()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsLayoutHorizontalList);
@@ -1003,8 +969,6 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyScrolledEventWithHorizontalGrid()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsLayoutHorizontalGrid);
@@ -1023,8 +987,6 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyDefaultScrollToRequested()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(Apply);
@@ -1036,7 +998,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.Tap("ScrollTo");
 		App.WaitForElement("ScrollToRequestedLabel");
 		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Fired"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	// ScrollTo By Index Tests
@@ -1044,8 +1006,6 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyScrollToByIndexWithMakeVisiblePositionAndVerticalList_Carrot()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("ScrollToByIndex");
@@ -1065,7 +1025,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Carrot");
 		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("15"));
 		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("15"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link: https://github.com/dotnet/maui/issues/33614
@@ -1074,8 +1034,6 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyScrollToByIndexWithStartPositionAndVerticalList_Carrot()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("ScrollToByIndex");
@@ -1095,7 +1053,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Carrot");
 		Assert.That(App.WaitForElement("FirstIndexLabel").GetText(), Is.EqualTo("15"));
 		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("15"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 #endif
 
@@ -1103,8 +1061,6 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyScrollToByIndexWithCenterPositionAndVerticalList_Carrot()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("ScrollToByIndex");
@@ -1124,15 +1080,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Carrot");
 		Assert.That(App.WaitForElement("CenterIndexLabel").GetText(), Is.EqualTo("15"));
 		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("15"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyScrollToByIndexWithEndPositionAndVerticalList_Carrot()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("ScrollToByIndex");
@@ -1152,7 +1106,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Carrot");
 		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("15"));
 		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("15"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	// ScrollTo By Item Tests
@@ -1160,8 +1114,6 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyScrollToByItemWithMakeVisiblePositionAndVerticalList_Carrot()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("ScrollToByItem");
@@ -1179,7 +1131,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Carrot");
 		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("15"));
 		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Carrot"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link: https://github.com/dotnet/maui/issues/33614
@@ -1188,8 +1140,6 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyScrollToByItemWithStartPositionAndVerticalList_Carrot()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("ScrollToByItem");
@@ -1209,7 +1159,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Carrot");
 		Assert.That(App.WaitForElement("FirstIndexLabel").GetText(), Is.EqualTo("15"));
 		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Carrot"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 #endif
 
@@ -1217,8 +1167,6 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyScrollToByItemWithCenterPositionAndVerticalList_Carrot()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("ScrollToByItem");
@@ -1238,15 +1186,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Carrot");
 		Assert.That(App.WaitForElement("CenterIndexLabel").GetText(), Is.EqualTo("15"));
 		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Carrot"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyScrollToByItemWithEndPositionAndVerticalList_Carrot()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("ScrollToByItem");
@@ -1266,7 +1212,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Carrot");
 		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("15"));
 		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Carrot"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	// Grouped ScrollTo By Index Tests
@@ -1276,8 +1222,6 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyGroupIndexScrollToByIndexWithMakeVisiblePositionAndVerticalList_Apricot()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsSourceGroupedList3);
@@ -1307,15 +1251,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("24"));
 		Assert.That(App.WaitForElement("GroupIndexLabel").GetText(), Is.EqualTo("0"));
 		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("23"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyGroupIndexScrollToByIndexWithStartPositionAndVerticalList_Carrot()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsSourceGroupedList3);
@@ -1345,15 +1287,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("FirstIndexLabel").GetText(), Is.EqualTo("27"));
 		Assert.That(App.WaitForElement("GroupIndexLabel").GetText(), Is.EqualTo("1"));
 		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("0"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyGroupIndexScrollToByIndexWithCenterPositionAndVerticalList_Potato()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsSourceGroupedList3);
@@ -1381,15 +1321,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("GroupIndexLabel").GetText(), Is.EqualTo("1"));
 		Assert.That(App.WaitForElement("CenterIndexLabel").GetText(), Is.EqualTo("30"));
 		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("3"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyGroupIndexScrollToByIndexWithEndPositionAndVerticalList_Papaya()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsSourceGroupedList3);
@@ -1417,7 +1355,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("GroupIndexLabel").GetText(), Is.EqualTo("0"));
 		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("12"));
 		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("11"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	//Grouped ScrollTo By Item Tests
@@ -1425,8 +1363,6 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyGroupItemScrollToByItemWithMakeVisiblePositionAndVerticalList_Apricot()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsSourceGroupedList3);
@@ -1451,15 +1387,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("24"));
 		Assert.That(App.WaitForElement("GroupLabel").GetText(), Is.EqualTo("Fruits"));
 		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Apricot"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyGroupItemScrollToByItemWithStartPositionAndVerticalList_Carrot()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsSourceGroupedList3);
@@ -1486,15 +1420,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("FirstIndexLabel").GetText(), Is.EqualTo("27"));
 		Assert.That(App.WaitForElement("GroupLabel").GetText(), Is.EqualTo("Vegetables"));
 		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Carrot"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyGroupItemScrollToByItemWithCenterPositionAndVerticalList_Potato()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsSourceGroupedList3);
@@ -1521,15 +1453,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("GroupLabel").GetText(), Is.EqualTo("Vegetables"));
 		Assert.That(App.WaitForElement("CenterIndexLabel").GetText(), Is.EqualTo("30"));
 		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Potato"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyGroupItemScrollToByItemWithEndPositionAndVerticalList_Papaya()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsSourceGroupedList3);
@@ -1554,7 +1484,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("GroupLabel").GetText(), Is.EqualTo("Fruits"));
 		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("12"));
 		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Papaya"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 #endif
 
@@ -1562,8 +1492,6 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyRemainingItemsThresholdReachedWithVerticalList()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(Apply);
@@ -1580,8 +1508,6 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyReorderCompletedWithVerticalList()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("CanReorderItemsTrue");
@@ -1606,8 +1532,6 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyScrollToByIndexWithMakeVisiblePositionAndVerticalGrid_Radish()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("ScrollToIndexEntry");
@@ -1626,15 +1550,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Radish");
 		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("27"));
 		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("27"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyScrollToByIndexWithMakeVisiblePositionAndHorizontalList_Kiwi()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("ScrollToIndexEntry");
@@ -1653,15 +1575,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Kiwi");
 		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("12"));
 		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("12"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyScrollToByIndexWithMakeVisiblePositionAndHorizontalGrid_Pear()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("ScrollToIndexEntry");
@@ -1680,15 +1600,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Pear");
 		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("13"));
 		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("13"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyScrollToByIndexWithStartPositionAndVerticalGrid_Mango()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("ScrollToPositionStart");
@@ -1709,15 +1627,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Mango");
 		Assert.That(App.WaitForElement("FirstIndexLabel").GetText(), Is.EqualTo("4"));
 		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("4"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyScrollToByIndexWithStartPositionAndHorizontalList_Kiwi()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("ScrollToPositionStart");
@@ -1738,15 +1654,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Kiwi");
 		Assert.That(App.WaitForElement("FirstIndexLabel").GetText(), Is.EqualTo("12"));
 		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("12"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyScrollToByIndexWithStartPositionAndHorizontalGrid_Kiwi()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("ScrollToPositionStart");
@@ -1767,15 +1681,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Kiwi");
 		Assert.That(App.WaitForElement("FirstIndexLabel").GetText(), Is.EqualTo("12"));
 		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("12"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyScrollToByIndexWithCenterPositionAndVerticalGrid_Kiwi()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("ScrollToPositionCenter");
@@ -1796,15 +1708,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Kiwi");
 		Assert.That(App.WaitForElement("CenterIndexLabel").GetText(), Is.EqualTo("12"));
 		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("12"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyScrollToByIndexWithCenterPositionAndHorizontalList_Kiwi()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("ScrollToPositionCenter");
@@ -1825,15 +1735,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Kiwi");
 		Assert.That(App.WaitForElement("CenterIndexLabel").GetText(), Is.EqualTo("12"));
 		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("12"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyScrollToByIndexWithCenterPositionAndHorizontalGrid_Kiwi()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("ScrollToPositionCenter");
@@ -1854,15 +1762,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Kiwi");
 		Assert.That(App.WaitForElement("CenterIndexLabel").GetText(), Is.EqualTo("12"));
 		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("12"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyScrollToByIndexWithEndPositionAndVerticalGrid_Radish()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("ScrollToPositionEnd");
@@ -1883,15 +1789,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Radish");
 		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("27"));
 		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("27"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyScrollToByIndexWithEndPositionAndHorizontalList_Kiwi()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("ScrollToPositionEnd");
@@ -1912,15 +1816,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Kiwi");
 		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("12"));
 		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("12"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyScrollToByIndexWithEndPositionAndHorizontalGrid_Pear()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("ScrollToPositionEnd");
@@ -1941,7 +1843,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Pear");
 		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("13"));
 		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("13"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	// ScrollTo By Item Tests
@@ -1949,8 +1851,6 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyScrollToByItemWithMakeVisiblePositionAndVerticalGrid_Radish()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("ScrollToByItem");
@@ -1971,15 +1871,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Radish");
 		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("27"));
 		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Radish"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyScrollToByItemWithMakeVisiblePositionAndHorizontalList_Kiwi()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("ScrollToByItem");
@@ -2000,15 +1898,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Kiwi");
 		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("12"));
 		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Kiwi"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyScrollToByItemWithMakeVisiblePositionAndHorizontalGrid_Pear()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("ScrollToByItem");
@@ -2029,15 +1925,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Pear");
 		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("13"));
 		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Pear"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyScrollToByItemWithStartPositionAndVerticalGrid_Mango()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("ScrollToByItem");
@@ -2060,15 +1954,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Mango");
 		Assert.That(App.WaitForElement("FirstIndexLabel").GetText(), Is.EqualTo("4"));
 		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Mango"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyScrollToByItemWithStartPositionAndHorizontalList_Kiwi()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("ScrollToByItem");
@@ -2091,15 +1983,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Kiwi");
 		Assert.That(App.WaitForElement("FirstIndexLabel").GetText(), Is.EqualTo("12"));
 		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Kiwi"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyScrollToByItemWithStartPositionAndHorizontalGrid_Kiwi()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("ScrollToByItem");
@@ -2122,15 +2012,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Kiwi");
 		Assert.That(App.WaitForElement("FirstIndexLabel").GetText(), Is.EqualTo("12"));
 		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Kiwi"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyScrollToByItemWithCenterPositionAndVerticalGrid_Kiwi()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("ScrollToByItem");
@@ -2153,15 +2041,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Kiwi");
 		Assert.That(App.WaitForElement("CenterIndexLabel").GetText(), Is.EqualTo("12"));
 		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Kiwi"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyScrollToByItemWithCenterPositionAndHorizontalList_Kiwi()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("ScrollToByItem");
@@ -2184,15 +2070,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Kiwi");
 		Assert.That(App.WaitForElement("CenterIndexLabel").GetText(), Is.EqualTo("12"));
 		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Kiwi"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyScrollToByItemWithCenterPositionAndHorizontalGrid_Kiwi()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("ScrollToByItem");
@@ -2215,15 +2099,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Kiwi");
 		Assert.That(App.WaitForElement("CenterIndexLabel").GetText(), Is.EqualTo("12"));
 		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Kiwi"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyScrollToByItemWithEndPositionAndVerticalGrid_Radish()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("ScrollToByItem");
@@ -2246,15 +2128,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Radish");
 		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("27"));
 		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Radish"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyScrollToByItemWithEndPositionAndHorizontalList_Kiwi()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("ScrollToByItem");
@@ -2277,15 +2157,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Kiwi");
 		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("12"));
 		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Kiwi"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyScrollToByItemWithEndPositionAndHorizontalGrid_Pear()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("ScrollToByItem");
@@ -2308,7 +2186,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Pear");
 		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("13"));
 		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Pear"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	// Group ScrollTo test by index
@@ -2316,8 +2194,6 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyGroupIndexScrollToByIndexWithMakeVisiblePositionAndVerticalGrid_Apricot()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsSourceGroupedList3);
@@ -2347,15 +2223,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Apricot");
 		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("24"));
 		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("23"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyGroupIndexScrollToByIndexWithMakeVisiblePositionAndHorizontalList_Kiwi()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsSourceGroupedList3);
@@ -2385,15 +2259,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Kiwi");
 		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("13"));
 		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("12"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyGroupIndexScrollToByIndexWithMakeVisiblePositionAndHorizontalGrid_Pear()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsSourceGroupedList3);
@@ -2423,15 +2295,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Pear");
 		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("14"));
 		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("13"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyGroupIndexScrollToByIndexWithStartPositionAndVerticalGrid_Carrot()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsSourceGroupedList3);
@@ -2461,15 +2331,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Carrot");
 		Assert.That(App.WaitForElement("FirstIndexLabel").GetText(), Is.EqualTo("27"));
 		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("0"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyGroupIndexScrollToByIndexWithStartPositionAndHorizontalList_Kiwi()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsSourceGroupedList3);
@@ -2499,15 +2367,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Kiwi");
 		Assert.That(App.WaitForElement("FirstIndexLabel").GetText(), Is.EqualTo("13"));
 		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("12"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyGroupIndexScrollToByIndexWithStartPositionAndHorizontalGrid_Kiwi()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsSourceGroupedList3);
@@ -2537,15 +2403,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Kiwi");
 		Assert.That(App.WaitForElement("FirstIndexLabel").GetText(), Is.EqualTo("13"));
 		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("12"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyGroupIndexScrollToByIndexWithCenterPositionAndVerticalGrid_Kiwi()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsSourceGroupedList3);
@@ -2575,15 +2439,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Kiwi");
 		Assert.That(App.WaitForElement("CenterIndexLabel").GetText(), Is.EqualTo("13"));
 		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("12"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyGroupIndexScrollToByIndexWithCenterPositionAndHorizontalList_Tomato()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsSourceGroupedList3);
@@ -2613,15 +2475,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Tomato");
 		Assert.That(App.WaitForElement("CenterIndexLabel").GetText(), Is.EqualTo("31"));
 		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("4"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyGroupIndexScrollToByIndexWithCenterPositionAndHorizontalGrid_Kiwi()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsSourceGroupedList3);
@@ -2651,15 +2511,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Kiwi");
 		Assert.That(App.WaitForElement("CenterIndexLabel").GetText(), Is.EqualTo("13"));
 		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("12"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyGroupIndexScrollToByIndexWithEndPositionAndVerticalGrid_Apricot()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsSourceGroupedList3);
@@ -2689,15 +2547,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Apricot");
 		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("24"));
 		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("23"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyGroupIndexScrollToByIndexWithEndPositionAndHorizontalList_Kiwi()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsSourceGroupedList3);
@@ -2727,15 +2583,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Kiwi");
 		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("13"));
 		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("12"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyGroupIndexScrollToByIndexWithEndPositionAndHorizontalGrid_Potato()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsSourceGroupedList3);
@@ -2765,7 +2619,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Potato");
 		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("30"));
 		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("3"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	// Group name ScrollTo test by item
@@ -2773,8 +2627,6 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyGroupItemScrollToByIndexWithMakeVisiblePositionAndVerticalGrid_Apricot()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsSourceGroupedList3);
@@ -2802,15 +2654,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("24"));
 		Assert.That(App.WaitForElement("GroupLabel").GetText(), Is.EqualTo("Fruits"));
 		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Apricot"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyGroupItemScrollToByIndexWithMakeVisiblePositionAndHorizontalList_Kiwi()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsSourceGroupedList3);
@@ -2838,15 +2688,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("13"));
 		Assert.That(App.WaitForElement("GroupLabel").GetText(), Is.EqualTo("Fruits"));
 		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Kiwi"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyGroupItemScrollToByIndexWithMakeVisiblePositionAndHorizontalGrid_Pear()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsSourceGroupedList3);
@@ -2874,15 +2722,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("14"));
 		Assert.That(App.WaitForElement("GroupLabel").GetText(), Is.EqualTo("Fruits"));
 		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Pear"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyGroupItemScrollToByIndexWithStartPositionAndVerticalGrid_Carrot()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsSourceGroupedList3);
@@ -2912,15 +2758,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("FirstIndexLabel").GetText(), Is.EqualTo("27"));
 		Assert.That(App.WaitForElement("GroupLabel").GetText(), Is.EqualTo("Vegetables"));
 		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Carrot"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyGroupItemScrollToByIndexWithStartPositionAndHorizontalList_Kiwi()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsSourceGroupedList3);
@@ -2950,15 +2794,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("FirstIndexLabel").GetText(), Is.EqualTo("13"));
 		Assert.That(App.WaitForElement("GroupLabel").GetText(), Is.EqualTo("Fruits"));
 		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Kiwi"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyGroupItemScrollToByIndexWithStartPositionAndHorizontalGrid_Kiwi()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsSourceGroupedList3);
@@ -2988,15 +2830,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("FirstIndexLabel").GetText(), Is.EqualTo("13"));
 		Assert.That(App.WaitForElement("GroupLabel").GetText(), Is.EqualTo("Fruits"));
 		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Kiwi"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyGroupItemScrollToByIndexWithCenterPositionAndVerticalGrid_Kiwi()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsSourceGroupedList3);
@@ -3026,15 +2866,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("CenterIndexLabel").GetText(), Is.EqualTo("13"));
 		Assert.That(App.WaitForElement("GroupLabel").GetText(), Is.EqualTo("Fruits"));
 		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Kiwi"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyGroupItemScrollToByIndexWithCenterPositionAndHorizontalList_Tomato()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsSourceGroupedList3);
@@ -3064,15 +2902,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("CenterIndexLabel").GetText(), Is.EqualTo("31"));
 		Assert.That(App.WaitForElement("GroupLabel").GetText(), Is.EqualTo("Vegetables"));
 		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Tomato"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyGroupItemScrollToByIndexWithCenterPositionAndHorizontalGrid_Kiwi()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsSourceGroupedList3);
@@ -3102,15 +2938,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("CenterIndexLabel").GetText(), Is.EqualTo("13"));
 		Assert.That(App.WaitForElement("GroupLabel").GetText(), Is.EqualTo("Fruits"));
 		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Kiwi"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyGroupItemScrollToByIndexWithEndPositionAndVerticalGrid_Apricot()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsSourceGroupedList3);
@@ -3140,15 +2974,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("24"));
 		Assert.That(App.WaitForElement("GroupLabel").GetText(), Is.EqualTo("Fruits"));
 		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Apricot"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyGroupItemScrollToByIndexWithEndPositionAndHorizontalList_Kiwi()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsSourceGroupedList3);
@@ -3178,15 +3010,13 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("13"));
 		Assert.That(App.WaitForElement("GroupLabel").GetText(), Is.EqualTo("Fruits"));
 		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Kiwi"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyGroupItemScrollToByIndexWithEndPositionAndHorizontalGrid_Potato()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsSourceGroupedList3);
@@ -3216,7 +3046,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("LastIndexLabel").GetText(), Is.EqualTo("30"));
 		Assert.That(App.WaitForElement("GroupLabel").GetText(), Is.EqualTo("Vegetables"));
 		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Potato"));
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	// RemainingItemsThresholdReached Event Tests
@@ -3224,8 +3054,6 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyRemainingItemsThresholdReachedWithVerticalGrid()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsLayoutVerticalGrid);
@@ -3244,8 +3072,6 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyRemainingItemsThresholdReachedWithHorizontalList()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsLayoutHorizontalList);
@@ -3265,8 +3091,6 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyRemainingItemsThresholdReachedWithHorizontalGrid()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsLayoutHorizontalGrid);
@@ -3286,8 +3110,6 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyReorderCompletedWithVerticalGrid()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("CanReorderItemsTrue");
@@ -3307,8 +3129,6 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyReorderCompletedWithHorizontalList()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("CanReorderItemsTrue");
@@ -3328,8 +3148,6 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyReorderCompletedWithHorizontalGrid()
 	{
-		App.WaitForElement("ScrollTo");
-		App.Tap("ScrollTo");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("CanReorderItemsTrue");
