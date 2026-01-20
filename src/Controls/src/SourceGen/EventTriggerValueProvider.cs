@@ -1,7 +1,9 @@
 using System.CodeDom.Compiler;
 using System.Linq;
+using System.Xml;
 using Microsoft.CodeAnalysis;
 using Microsoft.Maui.Controls.Xaml;
+using static Microsoft.Maui.Controls.SourceGen.LocationHelpers;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
@@ -49,10 +51,14 @@ internal class EventTriggerValueProvider : IKnownMarkupValueProvider
 	{
 		var writer = context.Writer;
 		
-		// Get the Event property value
+		// Get the Event property value and line info for diagnostics
 		string? eventName = null;
+		IXmlLineInfo? eventLineInfo = null;
 		if (node.Properties.TryGetValue(new XmlName("", "Event"), out var eventNode) && eventNode is ValueNode eventValueNode)
+		{
 			eventName = (string)eventValueNode.Value;
+			eventLineInfo = eventValueNode as IXmlLineInfo;
+		}
 		
 		// Find target type from XAML tree (parent elements)
 		ITypeSymbol? targetType = FindTargetType(node, context);
@@ -91,6 +97,9 @@ internal class EventTriggerValueProvider : IKnownMarkupValueProvider
 					return;
 				}
 			}
+
+			// Event not found on target type - report error
+			ReportEventNotFound(context, eventLineInfo ?? node, eventName, targetType);
 		}
 		
 		// Fallback: use reflection-based EventTrigger
@@ -103,6 +112,15 @@ internal class EventTriggerValueProvider : IKnownMarkupValueProvider
 		{
 			writer.WriteLine($"new global::Microsoft.Maui.Controls.EventTrigger();");
 		}
+	}
+
+	private static void ReportEventNotFound(SourceGenContext context, IXmlLineInfo lineInfo, string eventName, ITypeSymbol targetType)
+	{
+		context.ReportDiagnostic(Diagnostic.Create(
+			Descriptors.EventTriggerEventNotFound,
+			LocationCreate(context.ProjectItem.RelativePath!, lineInfo, eventName),
+			eventName,
+			targetType.ToFQDisplayString()));
 	}
 
 	/// <summary>

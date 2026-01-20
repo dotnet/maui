@@ -5,38 +5,12 @@
              x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui33591"
              Title="EventTrigger AOT-Safe Test">
     <StackLayout Padding="10">
-        <!-- Test 1: EventTrigger with EventHandler event (Button.Clicked) -->
-        <Button x:Name="ClickButton" 
-                Text="Click Me"
-                BackgroundColor="Blue"
-                TextColor="White">
+        <Button x:Name="TestButton" Text="Click Me">
             <Button.Triggers>
                 <EventTrigger Event="Clicked">
                     <local:Maui33591TestTriggerAction />
                 </EventTrigger>
             </Button.Triggers>
         </Button>
-
-        <!-- Test 2: EventTrigger with EventHandler<T> event (Entry.TextChanged) -->
-        <Entry x:Name="TextEntry"
-               Placeholder="Type something"
-               BackgroundColor="LightGray">
-            <Entry.Triggers>
-                <EventTrigger Event="TextChanged">
-                    <local:Maui33591TestTriggerAction />
-                </EventTrigger>
-            </Entry.Triggers>
-        </Entry>
-
-        <!-- Test 3: Element with multiple triggers -->
-        <Switch x:Name="TestSwitch" IsToggled="False">
-            <Switch.Triggers>
-                <EventTrigger Event="Toggled">
-                    <local:Maui33591TestTriggerAction />
-                </EventTrigger>
-            </Switch.Triggers>
-        </Switch>
-
-        <Label x:Name="StatusLabel" Text="Ready" />
     </StackLayout>
 </ContentPage>

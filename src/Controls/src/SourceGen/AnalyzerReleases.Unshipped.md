@@ -17,6 +17,7 @@ MAUIX2004 | XamlInflation | Error | Descriptors
 MAUIX2005 | XamlInflation | Warning | Descriptors
 MAUIX2006 | XamlParsing | Warning | PropertyElementWithAttribute
 MAUIX2014 | XamlInflation | Error | MissingEventHandler
+MAUIX2015 | XamlInflation | Error | EventTriggerEventNotFound
 MAUIG2024 | XamlInflation | Warning | BindingWithXDataTypeFromOuterScope
 MAUIG2041 | XamlInflation | Error | BindingIndexerNotClosed
 MAUIG2042 | XamlInflation | Error | BindingIndexerEmpty
