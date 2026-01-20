@@ -137,9 +137,9 @@ stages:
     - template: /eng/pipelines/common/provision.yml@self
       parameters:
         checkoutDirectory: '$(System.DefaultWorkingDirectory)'
-        skipJdk: false
-        skipAndroidCommonSdks: false
-        skipAndroidPlatformApis: false
+        skipJdk: true
+        skipAndroidCommonSdks: true
+        skipAndroidPlatformApis: true
         onlyAndroidPlatformDefaultApis: true
         skipAndroidEmulatorImages: true
         skipAndroidCreateAvds: true
