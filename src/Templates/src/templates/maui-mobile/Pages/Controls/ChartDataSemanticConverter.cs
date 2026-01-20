@@ -15,16 +15,18 @@ public class ChartDataSemanticConverter : IValueConverter
         {
             var items = categoryDataList.ToList();
             if (items.Count == 0)
-                return "No task categories";
+                return "Task Categories Chart with no categories.";
 
-            var sb = new StringBuilder("Task Categories Chart: ");
-            var descriptions = items.Select(c => $"{c.Title} {c.Count}");
+            var categoryLabel = items.Count == 1 ? "category" : "categories";
+            var sb = new StringBuilder($"Task Categories Chart with {items.Count} {categoryLabel}: ");
+            var descriptions = items.Select(c =>
+                $"{c.Title} has {c.Count} {(c.Count == 1 ? "task" : "tasks")}");
             sb.Append(string.Join(", ", descriptions));
 
             return sb.ToString();
         }
 
-        return "Task Categories Chart";
+        return "Task Categories Chart showing task categories.";
     }
 
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
