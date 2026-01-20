@@ -83,5 +83,5 @@ stages:
             - script: ${{ BuildPlatform.buildScript }} -restore -build -configuration ${{ BuildConfiguration }} -projects "${{ parameters.buildTaskProjects }}" /p:ArchiveTests=false /p:TreatWarningsAsErrors=$(TreatWarningsAsErrors) /bl:$(Build.Arcade.LogsPath)${{ BuildConfiguration }}/buildtasks_${{ BuildPlatform.os }}.binlog $(_OfficialBuildIdArgs)
               displayName: 🛠️ Build BuildTasks
 
-            - script: ${{ BuildPlatform.buildScript }} -restore -build -configuration ${{ BuildConfiguration }} -projects ${{ BuildPlatform.sln }} /p:ArchiveTests=false /p:TreatWarningsAsErrors=$(TreatWarningsAsErrors) /p:CodesignRequireProvisioningProfile=false /p:ValidateXcodeVersion=false /p:EnableWindowsTargeting=true /bl:$(Build.Arcade.LogsPath)${{ BuildConfiguration }}/build_${{ BuildPlatform.os }}.binlog $(_OfficialBuildIdArgs)
+            - script: ${{ BuildPlatform.buildScript }} -restore -build -configuration ${{ BuildConfiguration }} /p:ArchiveTests=false /p:TreatWarningsAsErrors=$(TreatWarningsAsErrors) /bl:$(Build.Arcade.LogsPath)${{ BuildConfiguration }}/build_${{ BuildPlatform.os }}.binlog $(_OfficialBuildIdArgs)
               displayName: 🛠️ Build Microsoft.Maui.sln

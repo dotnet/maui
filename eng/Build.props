@@ -12,5 +12,15 @@
          <AdditionalProperties>CodesignRequireProvisioningProfile=false</AdditionalProperties>
     </ProjectToBuild>
     <ProjectToBuild Include="$(RepoRoot)src/BlazorWebView/tests/DeviceTests/MauiBlazorWebView.DeviceTests.csproj" Condition="'$(BuildDeviceTests)' == 'true'" BuildInParallel="false" />
+    <ProjectToBuild Include="$(RepoRoot)eng/Microsoft.Maui.sln" Condition="'$(BuildDeviceTests)' != 'true'">
+        <AdditionalProperties>ValidateXcodeVersion=false</AdditionalProperties>
+        <AdditionalProperties>CodesignRequireProvisioningProfile=false</AdditionalProperties>
+        <AdditionalProperties>EnableWindowsTargeting=true</AdditionalProperties>
+    </ProjectToBuild>
+    <ProjectToBuild Include="$(RepoRoot)eng/Microsoft.Maui-mac.sln" Condition="'$(OS)' != 'Windows_NT' And '$(BuildDeviceTests)' != 'true'" >
+        <AdditionalProperties>ValidateXcodeVersion=false</AdditionalProperties>
+        <AdditionalProperties>CodesignRequireProvisioningProfile=false</AdditionalProperties>
+        <AdditionalProperties>EnableWindowsTargeting=true</AdditionalProperties>
+    </ProjectToBuild>
   </ItemGroup>
 </Project>
