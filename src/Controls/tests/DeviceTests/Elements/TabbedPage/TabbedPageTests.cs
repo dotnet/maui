@@ -378,10 +378,12 @@ namespace Microsoft.Maui.DeviceTests
 		}
 #endif
 
-#if IOS
+#if IOS 
 		[Theory(Skip = "Test doesn't work on iOS yet; probably because of https://github.com/dotnet/maui/issues/10591")]
 #elif WINDOWS
 		[Theory(Skip = "Test doesn't work on Windows")]
+#elif MACCATALYST
+		[Theory(Skip = "Test doesn't work on Catalyst macos 26")]
 #else
 		[Theory]
 #endif
