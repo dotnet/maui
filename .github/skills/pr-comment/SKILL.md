@@ -12,8 +12,8 @@ compatibility: Requires GitHub CLI (gh) authenticated with access to dotnet/maui
 This skill posts automated progress comments to GitHub Pull Requests during the PR review workflow. Comments are **self-contained** with collapsible Review Session details, providing rich context to maintainers and contributors.
 
 **✨ Key Features**:
-- **Auto-Ordering**: Automatically ensures all previous phase comments exist
-- **Duplicate Prevention**: Checks if phase comment already exists before posting  
+- **Single Aggregated Comment**: One comment for the entire review with all phases
+- **Duplicate Prevention**: Checks if review comment already exists before posting  
 - **Self-Contained**: All content stored in comments - no external dependencies
 - **Review Session Support**: Tracks multiple review sessions with expandable details and commit links
 - **Simple Interface**: Just pass content - script handles everything else
@@ -83,10 +83,9 @@ Each phase completion unlocks the next phase in the workflow:
 ### Post a Phase Completion Comment
 
 ```bash
-pwsh .github/skills/pr-comment/scripts/post-pr-comment.ps1 \
-  -PRNumber 12345 \
-  -Phase pre-flight \
-  -Content "<details>...</details>"
+# Pipe content via stdin or use -Content parameter
+cat .github/agent-pr-session/pr-12345.md | \
+  pwsh .github/skills/pr-comment/scripts/post-pr-comment.ps1 -PRNumber 12345
 ```
 
 ### Parameters
@@ -94,13 +93,9 @@ pwsh .github/skills/pr-comment/scripts/post-pr-comment.ps1 \
 | Parameter | Required | Description | Example |
 |-----------|----------|-------------|---------|
 | `PRNumber` | Yes | Pull request number | `12345` |
-| `Phase` | Yes | Phase name: `pre-flight`, `tests`, `gate`, `fix`, or `report` | `pre-flight` |
-| `Content` | Yes | Content to post (HTML with `<details>` sections) | `"<details>...</details>"` |
-| `DryRun` | No | Print comment instead of posting | |
-| `PRNumber` | ✅ | Pull request number | `12345` |
-| `Phase` | ✅ | Phase name | `pre-flight`, `tests`, `gate`, `fix`, `report` |
-| `StateFile` | ✅ | Path to PR session state file | `.github/agent-pr-session/pr-12345.md` |
-| `AdditionalNotes` | ❌ | Extra information to include | `Found 3 test files` |
+| `Content` | No | Full state file content (can be piped via stdin) | Content from state file |
+| `DryRun` | No | Print comment instead of posting | `-DryRun` |
+| `SkipValidation` | No | Skip validation checks (not recommended) | `-SkipValidation` |
 
 ## Comment Format
 
@@ -110,70 +105,40 @@ Comments are formatted with:
 - **Expandable review sessions** (each session is a collapsible section)
 - **What's Next** (what phase happens next)
 
-### Auto-Ordering Feature
+### Review Session Tracking
 
-**The script automatically enforces correct phase ordering:**
+When the same PR is reviewed multiple times (e.g., after new commits), the script **updates the single aggregated review comment** and adds a new expandable section for each commit-based review session. This keeps PR comments organized and prevents duplication.
 
-```
-Example: You try to post Gate comment but Tests comment doesn't exist
-Result: Script posts Tests comment first, then Gate comment
+**Example Comment Structure:**
 
-Example: You try to post Report but Pre-Flight, Tests, and Fix are missing
-Result: Script posts Pre-Flight → Tests → Gate → Fix → Report in order
-```
-
-This ensures PR comments ALWAYS appear in chronological phase order, even if you accidentally skip posting a phase comment.
-
-### Multiple Review Sessions
-
-When the same PR is reviewed multiple times (e.g., after new commits), the script **edits the existing phase comment** and adds a new expandable section for each review session. This keeps PR comments organized and prevents duplication.
-
-
-✅ **Status**: Phase completed successfully
-
-<details>
-<summary><strong>📝 Review Session #1</strong> - 2026-01-17 14:23:45 UTC</summary>
-
-### Summary
-- **Issue**: #33356 - CollectionView crash on iOS
-- **Platforms Affected**: iOS, MacCatalyst
-- **Files Changed**: 2 files
-
-### What Was Done
-✓ Analyzed issue description and reproduction steps  
-✓ Reviewed PR discussion and reviewer feedback  
-✓ Documented files changed and code modifications  
-✓ Identified platforms affected and scope of changes  
-
-</details>
-</details>
-
-### Next Steps
-→ **Phase 2: Tests** - Analyzing test files and coverage
-```
-
-**Second Review (comment is updated):**
 ```markdown
-## 🔍 Pre-Flight: Context Gathering
-
-✅ **Status**: Phase completed successfully
+## 🤖 PR Agent Review — ✅ APPROVE
 
 <details>
-<summary><strong>📝 Review Session #1</strong> - 2026-01-17 14:23:45 UTC</summary>
-...
+<summary>📊 Expand Full Review</summary>
+
+### Review Sessions
+
+<details>
+<summary>📝 Session: Fix CollectionView null reference - abc123d</summary>
+
+#### 🔍 Pre-Flight: Context Gathering
+✅ Analyzed issue #33356...
+
+#### 🧪 Tests: Verification
+✅ Found existing test coverage...
+
 </details>
 
 <details>
-<summary><strong>📝 Review Session #2</strong> - 2026-01-18 09:15:30 UTC</summary>
+<summary>📝 Session: Update after feedback - def456e</summary>
 
-### Summary
-- **Issue**: #33356 - CollectionView crash on iOS
-- **Platforms Affected**: iOS, MacCatalyst
-...
+#### 🔍 Pre-Flight: Context Gathering
+✅ Re-analyzed with latest changes...
+
 </details>
 
-### Next Steps
-→ **Phase 2: Tests** - Analyzing test files and coverage
+</details>
 ```
 
 ### Example Comment (Single Session)
@@ -203,8 +168,7 @@ When the same PR is reviewed multiple times (e.g., after new commits), the scrip
 
 ## Script Files
 
-- [`post-pr-comment.ps1`](scripts/post-pr-comment.ps1) - Posts phase completion comment
-- [`format-comment.ps1`](scripts/format-comment.ps1) - Formats comment markdown from state file
+- [`post-pr-comment.ps1`](scripts/post-pr-comment.ps1) - Posts or updates the aggregated PR agent review comment
 
 ## Workflow Integration
 
@@ -222,16 +186,18 @@ Phase 2: Tests
   └─ 📤 POST COMMENT (pr-comment skill)
 
 [... and so on for remaining phases]
-``Each phase has a unique HTML comment marker (e.g., `<!-- PR-AGENT-PHASE: pre-flight -->`)
-- The script checks for existing comments with the phase marker before posting
-- If an existing comment is found, it's **edited** (not replaced) to add a new review session
-- Review sessions are numbered sequentially (#1, #2, #3, etc.)
-- Comments use collapsible `<details>` sections for each review session
+```
+
+### Technical Details
+
+- A single aggregated PR review comment is identified by the HTML comment marker `<!-- PR-AGENT-REVIEW -->`
+- The script checks for an existing comment containing the review marker before posting
+- If an existing comment is found, the single aggregated review comment is **updated** to add a new commit-based review session
+- Review sessions are grouped by commit and labeled using the commit title and short SHA
+- Comments use collapsible `<details>` sections for each commit-based review session
 - Updates preserve all previous review sessions
 - Uses GitHub's markdown rendering for formatted output
 - API calls use `gh api` for editing existing comments
 - Comments are posted using GitHub CLI (`gh pr comment`)
-- State file is parsed to extract phase-specific information
-- Each phase has a unique comment format template
-- Comments are idempotent - posting again updates the previous comment
-- Uses GitHub's markdown rendering for formatted output
+- State file is parsed to extract all phase-specific information
+- Comments are idempotent - posting again updates the aggregated comment
