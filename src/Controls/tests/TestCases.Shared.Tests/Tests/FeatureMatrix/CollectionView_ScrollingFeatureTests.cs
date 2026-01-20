@@ -4,6 +4,7 @@ using UITest.Core;
 
 
 namespace Microsoft.Maui.TestCases.Tests;
+
 public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 {
 	public const string ScrollingFeatureMatrix = "CollectionView Feature Matrix";
@@ -1639,9 +1640,11 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		// VerifyScreenshot();
 	}
 
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link: https://github.com/dotnet/maui/issues/33614
+
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	public void VerifyScrollToByIndexWithStartPositionAndVerticalList_Carrot() // FirstIndex wrong in iOS
+	public void VerifyScrollToByIndexWithStartPositionAndVerticalList_Carrot()
 	{
 		App.WaitForElement("ScrollTo");
 		App.Tap("ScrollTo");
@@ -1666,6 +1669,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("IndexLabel").GetText(), Is.EqualTo("15"));
 		// VerifyScreenshot();
 	}
+#endif
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
@@ -1750,9 +1754,11 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		// VerifyScreenshot();
 	}
 
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link: https://github.com/dotnet/maui/issues/33614
+
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	public void VerifyScrollToByItemWithStartPositionAndVerticalList_Carrot() // FirstIndex wrong in iOS
+	public void VerifyScrollToByItemWithStartPositionAndVerticalList_Carrot()
 	{
 		App.WaitForElement("ScrollTo");
 		App.Tap("ScrollTo");
@@ -1777,6 +1783,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Carrot"));
 		// VerifyScreenshot();
 	}
+#endif
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
@@ -2509,8 +2516,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		// VerifyScreenshot();
 	}
 
-
-	// ScrollToByItem Tests
+	// ScrollTo By Item Tests
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyScrollToByItemWithMakeVisiblePositionAndVerticalGrid_Radish()
@@ -2877,8 +2883,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		// VerifyScreenshot();
 	}
 
-	// Group scrollto test by index
-
+	// Group ScrollTo test by index
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyGroupIndexScrollToByIndexWithMakeVisiblePositionAndVerticalGrid_Apricot()
@@ -3335,7 +3340,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		// VerifyScreenshot();
 	}
 
-	// Group name scrollto test by item
+	// Group name ScrollTo test by item
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyGroupItemScrollToByIndexWithMakeVisiblePositionAndVerticalGrid_Apricot()
