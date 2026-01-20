@@ -29,7 +29,7 @@
 
 .EXAMPLE
     # Post/update review comment with validation
-    ./post-pr-comment-improved.ps1 -PRNumber 12345 -Content "$(cat .github/agent-pr-session/pr-12345.md)"
+    ./post-pr-comment.ps1 -PRNumber 12345 -Content "$(cat .github/agent-pr-session/pr-12345.md)"
 #>
 
 param(
