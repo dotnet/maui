@@ -1,23 +1,23 @@
 namespace Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific
 {
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific/NavigationTransitionStyle.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific.NavigationTransitionStyle']/Docs/*" />
+	/// <summary>Enumerates navigation transition styles for macOS.</summary>
 	public enum NavigationTransitionStyle
 	{
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific/NavigationTransitionStyle.xml" path="//Member[@MemberName='None']/Docs/*" />
+		/// <summary>Indicates no transition animation.</summary>
 		None,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific/NavigationTransitionStyle.xml" path="//Member[@MemberName='Crossfade']/Docs/*" />
+		/// <summary>Indicates a crossfade transition.</summary>
 		Crossfade,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific/NavigationTransitionStyle.xml" path="//Member[@MemberName='SlideUp']/Docs/*" />
+		/// <summary>Indicates a slide-up transition.</summary>
 		SlideUp,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific/NavigationTransitionStyle.xml" path="//Member[@MemberName='SlideDown']/Docs/*" />
+		/// <summary>Indicates a slide-down transition.</summary>
 		SlideDown,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific/NavigationTransitionStyle.xml" path="//Member[@MemberName='SlideLeft']/Docs/*" />
+		/// <summary>Indicates a slide-left transition.</summary>
 		SlideLeft,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific/NavigationTransitionStyle.xml" path="//Member[@MemberName='SlideRight']/Docs/*" />
+		/// <summary>Indicates a slide-right transition.</summary>
 		SlideRight,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific/NavigationTransitionStyle.xml" path="//Member[@MemberName='SlideForward']/Docs/*" />
+		/// <summary>Indicates a slide-forward transition based on navigation direction.</summary>
 		SlideForward,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific/NavigationTransitionStyle.xml" path="//Member[@MemberName='SlideBackward']/Docs/*" />
+		/// <summary>Indicates a slide-backward transition based on navigation direction.</summary>
 		SlideBackward
 	}
 }

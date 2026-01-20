@@ -1,12 +1,11 @@
-
 namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 {
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/GroupHeaderStyle.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.GroupHeaderStyle']/Docs/*" />
+	/// <summary>Enumerates group header styles for iOS list views.</summary>
 	public enum GroupHeaderStyle
 	{
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/GroupHeaderStyle.xml" path="//Member[@MemberName='Plain']/Docs/*" />
+		/// <summary>Indicates a plain header style with sticky headers.</summary>
 		Plain,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/GroupHeaderStyle.xml" path="//Member[@MemberName='Grouped']/Docs/*" />
+		/// <summary>Indicates a grouped header style with non-sticky headers.</summary>
 		Grouped
 	}
 }

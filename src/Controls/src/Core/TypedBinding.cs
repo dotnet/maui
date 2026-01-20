@@ -11,7 +11,7 @@ using Microsoft.Maui.Dispatching;
 namespace Microsoft.Maui.Controls.Internals
 {
 	//FIXME: need a better name for this, and share with Binding, so we can share more unittests
-	/// <include file="../../docs/Microsoft.Maui.Controls.Internals/TypedBindingBase.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.TypedBindingBase']/Docs/*" />
+	/// <summary>Provides the base class for type-safe bindings with compile-time property access.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public abstract class TypedBindingBase : BindingBase
 	{
@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Internals
 		object _source;
 		string _updateSourceEventName;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/TypedBindingBase.xml" path="//Member[@MemberName='Converter']/Docs/*" />
+		/// <summary>Gets or sets the converter used to convert values between source and target.</summary>
 		public IValueConverter Converter
 		{
 			get { return _converter; }
@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/TypedBindingBase.xml" path="//Member[@MemberName='ConverterParameter']/Docs/*" />
+		/// <summary>Gets or sets the parameter passed to the converter.</summary>
 		public object ConverterParameter
 		{
 			get { return _converterParameter; }
@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/TypedBindingBase.xml" path="//Member[@MemberName='Source']/Docs/*" />
+		/// <summary>Gets or sets the source object for the binding.</summary>
 		public object Source
 		{
 			get { return _source; }

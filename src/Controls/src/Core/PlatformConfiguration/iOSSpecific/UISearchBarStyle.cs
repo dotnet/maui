@@ -1,17 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 {
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/UISearchBarStyle.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UISearchBarStyle']/Docs/*" />
+	/// <summary>Enumerates search bar styles for iOS.</summary>
 	public enum UISearchBarStyle
 	{
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/UISearchBarStyle.xml" path="//Member[@MemberName='Default']/Docs/*" />
+		/// <summary>Indicates the default search bar style.</summary>
 		Default,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/UISearchBarStyle.xml" path="//Member[@MemberName='Prominent']/Docs/*" />
+		/// <summary>Indicates a prominent search bar with an opaque background.</summary>
 		Prominent,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/UISearchBarStyle.xml" path="//Member[@MemberName='Minimal']/Docs/*" />
+		/// <summary>Indicates a minimal search bar with a translucent background.</summary>
 		Minimal
 	}
 }
