@@ -53,6 +53,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		protected abstract IItemsLayout Layout { get; }
 
+		bool IsLayoutHorizontal => Layout switch
+		{
+			LinearItemsLayout linearLayout => linearLayout.Orientation == ItemsLayoutOrientation.Horizontal,
+			GridItemsLayout gridLayout => gridLayout.Orientation == ItemsLayoutOrientation.Horizontal,
+			_ => false
+		};
+
 		public ItemsViewHandler2() : base(ItemsViewMapper)
 		{
 
@@ -375,8 +382,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				Layout = CreateItemsLayout()
 			};
 
-			if (Layout is LinearItemsLayout listItemsLayout &&
-				listItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal)
+			if (IsLayoutHorizontal)
 			{
 				ScrollViewer.SetHorizontalScrollMode(itemsView, UI.Xaml.Controls.ScrollMode.Enabled);
 				ScrollViewer.SetHorizontalScrollBarVisibility(itemsView, WASDKScrollBarVisibility.Visible);
@@ -384,14 +390,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				ScrollViewer.SetVerticalScrollMode(itemsView, UI.Xaml.Controls.ScrollMode.Disabled);
 				ScrollViewer.SetVerticalScrollBarVisibility(itemsView, WASDKScrollBarVisibility.Disabled);
 
-				// Set header/footer to horizontal layout
-				itemsView.SetLayoutOrientation(true);
 			}
 			else
 			{
-				// Set header/footer to vertical layout
-				itemsView.SetLayoutOrientation(false);
+				ScrollViewer.SetHorizontalScrollMode(itemsView, UI.Xaml.Controls.ScrollMode.Disabled);
+				ScrollViewer.SetHorizontalScrollBarVisibility(itemsView, WASDKScrollBarVisibility.Disabled);
+
+				ScrollViewer.SetVerticalScrollMode(itemsView, UI.Xaml.Controls.ScrollMode.Enabled);
+				ScrollViewer.SetVerticalScrollBarVisibility(itemsView, WASDKScrollBarVisibility.Visible);
 			}
+
+			itemsView.SetLayoutOrientation(IsLayoutHorizontal);
 			return itemsView;
 		}
 
@@ -406,10 +415,23 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			PlatformView.Layout = CreateItemsLayout();
 
+			bool isHorizontal = IsLayoutHorizontal;
+
 			// Update header/footer orientation
-			if (PlatformView is MauiItemsView mauiItemsView && Layout is LinearItemsLayout linearLayout)
+			if (PlatformView is MauiItemsView mauiItemsView)
 			{
-				mauiItemsView.SetLayoutOrientation(linearLayout.Orientation == ItemsLayoutOrientation.Horizontal);
+				if (IsLayoutHorizontal)
+				{
+					ScrollViewer.SetHorizontalScrollMode(mauiItemsView, UI.Xaml.Controls.ScrollMode.Enabled);
+					ScrollViewer.SetVerticalScrollMode(mauiItemsView, UI.Xaml.Controls.ScrollMode.Disabled);
+				}
+				else
+				{
+					ScrollViewer.SetHorizontalScrollMode(mauiItemsView, UI.Xaml.Controls.ScrollMode.Disabled);
+					ScrollViewer.SetVerticalScrollMode(mauiItemsView, UI.Xaml.Controls.ScrollMode.Enabled);
+				}
+
+				mauiItemsView.SetLayoutOrientation(IsLayoutHorizontal);
 			}
 
 			UpdateVerticalScrollBarVisibility();
