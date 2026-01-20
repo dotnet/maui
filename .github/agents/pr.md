@@ -337,6 +337,8 @@ The test result will be updated to `✅ PASS (Gate)` after Gate passes.
 
 ### Step 5: Complete Pre-Flight
 
+**🚨 MANDATORY: Update state file AND post comment**
+
 **Update state file** - Change Pre-Flight status and populate with gathered context:
 1. Change Pre-Flight status from `▶️ IN PROGRESS` to `✅ COMPLETE`
 2. Fill in issue summary, platforms affected, regression info
@@ -350,6 +352,15 @@ The test result will be updated to `✅ PASS (Gate)` after Gate passes.
 - [ ] PR Discussion Summary documented (if PR exists)
 - [ ] All [PENDING] placeholders replaced
 - [ ] State file committed
+
+**Post completion comment (if PR exists) - MANDATORY, DO NOT SKIP:**
+```bash
+cat .github/agent-pr-session/pr-XXXXX.md | pwsh .github/skills/pr-comment/scripts/post-pr-comment.ps1 -PRNumber XXXXX
+```
+
+**⚠️ The script ALWAYS updates the ONE aggregated review comment with all phases. If the comment doesn't exist yet, it creates it.**
+
+This posts a formatted comment to the PR notifying that Pre-Flight is complete with a summary of findings and next steps.
 
 ---
 
@@ -403,6 +414,8 @@ The script auto-detects mode based on git diff. If only test files changed, it v
 
 ### Complete 🧪 Tests
 
+**🚨 MANDATORY: Update state file AND post comment**
+
 **Update state file**:
 1. Check off completed items in the checklist
 2. Fill in test file paths
@@ -415,6 +428,13 @@ The script auto-detects mode based on git diff. If only test files changed, it v
 - [ ] "Tests verified to FAIL" note added
 - [ ] Test category identified
 - [ ] State file committed
+
+**Post completion comment (if PR exists) - MANDATORY, DO NOT SKIP:**
+```bash
+cat .github/agent-pr-session/pr-XXXXX.md | pwsh .github/skills/pr-comment/scripts/post-pr-comment.ps1 -PRNumber XXXXX
+```
+
+**⚠️ The script ALWAYS updates the ONE aggregated review comment with all phases. If the comment doesn't exist yet, it creates it.**
 
 ---
 
@@ -458,6 +478,8 @@ pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 
 
 ### Complete 🚦 Gate
 
+**🚨 MANDATORY: Update state file AND post comment**
+
 **Update state file**:
 1. Fill in **Result**: `PASSED ✅`
 2. Change 🚦 Gate status to `✅ PASSED`
@@ -468,6 +490,13 @@ pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 
 - [ ] Test behavior documented
 - [ ] Platform tested noted
 - [ ] State file committed
+
+**Post completion comment (if PR exists) - MANDATORY, DO NOT SKIP:**
+```bash
+cat .github/agent-pr-session/pr-XXXXX.md | pwsh .github/skills/pr-comment/scripts/post-pr-comment.ps1 -PRNumber XXXXX
+```
+
+**⚠️ The script ALWAYS updates the ONE aggregated review comment with all phases. If the comment doesn't exist yet, it creates it.**
 
 ---
 

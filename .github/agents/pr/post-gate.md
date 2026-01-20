@@ -155,6 +155,8 @@ Update the state file:
 
 ### Complete 🔧 Fix
 
+**🚨 MANDATORY: Update state file AND post comment**
+
 **Update state file**:
 1. Verify Fix Candidates table is complete with all attempts
 2. Verify failure analyses are documented for failed attempts
@@ -170,6 +172,13 @@ Update the state file:
 - [ ] "Selected Fix" populated with reasoning
 - [ ] No ⏳ PENDING markers remain in Fix section
 - [ ] State file committed
+
+**Post completion comment (if PR exists) - MANDATORY, DO NOT SKIP:**
+```bash
+cat .github/agent-pr-session/pr-XXXXX.md | pwsh .github/skills/pr-comment/scripts/post-pr-comment.ps1 -PRNumber XXXXX
+```
+
+**⚠️ The script ALWAYS updates the ONE aggregated review comment with all phases. If the comment doesn't exist yet, it creates it.**
 
 ---
 
@@ -265,6 +274,8 @@ Update all phase statuses to complete.
 
 ### Complete 📋 Report
 
+**🚨 MANDATORY: Update state file AND post comment**
+
 **Update state file**:
 1. Change header status to final recommendation
 2. Update all phases to `✅ COMPLETE` or `✅ PASSED`
@@ -276,6 +287,13 @@ Update all phase statuses to complete.
 - [ ] Key technical insights documented
 - [ ] Overall status changed to final recommendation
 - [ ] State file committed
+
+**Post completion comment (if PR exists) - MANDATORY, DO NOT SKIP:**
+```bash
+cat .github/agent-pr-session/pr-XXXXX.md | pwsh .github/skills/pr-comment/scripts/post-pr-comment.ps1 -PRNumber XXXXX
+```
+
+**⚠️ The script ALWAYS updates the ONE aggregated review comment with all phases. If the comment doesn't exist yet, it creates it.**
 
 ---
 
