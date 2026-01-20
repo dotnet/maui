@@ -1,5 +1,5 @@
 using System.Linq;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -23,36 +23,40 @@ public partial class Maui33591 : ContentPage
 		InitializeComponent();
 	}
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests
 	{
-		[Test]
-		public void EventTriggerHasEventPropertySet([Values] XamlInflator inflator)
+		[Theory]
+		[InlineData(XamlInflator.Runtime)]
+		[InlineData(XamlInflator.SourceGen)]
+		internal void EventTriggerHasEventPropertySet(XamlInflator inflator)
 		{
 			var page = new Maui33591(inflator);
 
 			var trigger = page.TestButton!.Triggers.OfType<EventTrigger>().Single();
-			Assert.That(trigger.Event, Is.EqualTo("Clicked"));
-			Assert.That(trigger.Actions.Count, Is.EqualTo(1));
+			Assert.Equal("Clicked", trigger.Event);
+			Assert.Single(trigger.Actions);
 		}
 
-		[Test]
-		public void EventTriggerFiresWhenEventOccurs([Values] XamlInflator inflator)
+		[Theory]
+		[InlineData(XamlInflator.Runtime)]
+		[InlineData(XamlInflator.SourceGen)]
+		internal void EventTriggerFiresWhenEventOccurs(XamlInflator inflator)
 		{
 			var page = new Maui33591(inflator);
 
 			var trigger = page.TestButton!.Triggers.OfType<EventTrigger>().Single();
 			var action = (Maui33591TestTriggerAction)trigger.Actions[0];
 
-			Assert.That(action.InvokeCount, Is.EqualTo(0), "Action should not be invoked yet");
+			Assert.Equal(0, action.InvokeCount);
 
 			page.TestButton.SendClicked();
 
-			Assert.That(action.InvokeCount, Is.EqualTo(1), "Action should be invoked once after click");
+			Assert.Equal(1, action.InvokeCount);
 
 			page.TestButton.SendClicked();
 
-			Assert.That(action.InvokeCount, Is.EqualTo(2), "Action should be invoked twice after second click");
+			Assert.Equal(2, action.InvokeCount);
 		}
 	}
 }
