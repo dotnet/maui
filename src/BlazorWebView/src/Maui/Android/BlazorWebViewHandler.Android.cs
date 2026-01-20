@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Android.Window;
 using Android.Webkit;
 using Android.Widget;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,6 +24,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		private AndroidWebKitWebViewManager? _webviewManager;
 		internal AndroidWebKitWebViewManager? WebviewManager => _webviewManager;
 		private AndroidLifecycle.OnBackPressed? _onBackPressedHandler;
+		BlazorWebViewPredictiveBackCallback? _predictiveBackCallback;
 
 		private ILogger? _logger;
 		internal ILogger Logger => _logger ??= Services!.GetService<ILogger<BlazorWebViewHandler>>() ?? NullLogger<BlazorWebViewHandler>.Instance;
@@ -127,12 +129,28 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				lifecycleService.AddEvent(nameof(AndroidLifecycle.OnBackPressed), handler);
 				_onBackPressedHandler = handler;
 			}
+
+			if (OperatingSystem.IsAndroidVersionAtLeast(33) && _predictiveBackCallback is null)
+			{
+				if (Microsoft.Maui.ApplicationModel.Platform.CurrentActivity is not null)
+				{
+					_predictiveBackCallback = new BlazorWebViewPredictiveBackCallback(this);
+					Microsoft.Maui.ApplicationModel.Platform.CurrentActivity?.OnBackInvokedDispatcher?.RegisterOnBackInvokedCallback(0, _predictiveBackCallback);
+				}
+			}
 		}
 
 		private const string AndroidFireAndForgetAsyncSwitch = "BlazorWebView.AndroidFireAndForgetAsync";
 
 		protected override void DisconnectHandler(AWebView platformView)
 		{
+			if (OperatingSystem.IsAndroidVersionAtLeast(33) && _predictiveBackCallback is not null)
+			{
+				Microsoft.Maui.ApplicationModel.Platform.CurrentActivity?.OnBackInvokedDispatcher?.UnregisterOnBackInvokedCallback(_predictiveBackCallback);
+				_predictiveBackCallback.Dispose();
+				_predictiveBackCallback = null;
+			}
+
 			// Clean up lifecycle event handler to prevent memory leaks
 			if (_onBackPressedHandler != null)
 			{
@@ -261,6 +279,44 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			}
 
 			return await _webviewManager.TryDispatchAsync(workItem);
+		}
+
+		sealed class BlazorWebViewPredictiveBackCallback : Java.Lang.Object, IOnBackInvokedCallback
+		{
+			WeakReference<BlazorWebViewHandler> _weakBlazorWebViewHandler;
+
+			public BlazorWebViewPredictiveBackCallback(BlazorWebViewHandler handler)
+			{
+				_weakBlazorWebViewHandler = new WeakReference<BlazorWebViewHandler>(handler);
+			}
+
+			public void OnBackInvoked()
+			{
+				// KeyDown for Back button is handled in BlazorAndroidWebView.
+				// Here we just need to check if it was handled there.
+				// If not, we propagate the back press to the Activity's OnBackPressedDispatcher.
+				if (_weakBlazorWebViewHandler is not null && _weakBlazorWebViewHandler.TryGetTarget(out var handler))
+				{
+					var webView = handler.PlatformView as BlazorAndroidWebView;
+					if (webView is not null)
+					{
+						var wasBackNavigationHandled = webView.BackNavigationHandled;
+						// reset immediately for next back event
+						webView.BackNavigationHandled = false;
+
+						if (!wasBackNavigationHandled)
+						{
+							if (webView.CanGoBack()) // If we can go back in WeView, Navigate back
+							{
+								webView.GoBack();
+								return;
+							}
+							// Otherwise propagate back press to Activity
+							(Microsoft.Maui.ApplicationModel.Platform.CurrentActivity as AndroidX.AppCompat.App.AppCompatActivity)?.OnBackPressedDispatcher?.OnBackPressed();
+						}
+					}
+				}
+			}
 		}
 	}
 }
