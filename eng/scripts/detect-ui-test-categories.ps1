@@ -19,7 +19,8 @@ if ([string]::IsNullOrWhiteSpace($TargetBranch)) {
 }
 
 if ([string]::IsNullOrWhiteSpace($TargetBranch)) {
-    Write-Warning "Unable to determine target branch for comparison. Falling back to running all categories."
+    Write-Host "##[warning]Unable to determine target branch for comparison."
+    Write-Host "##[section]FALLBACK: All UI test categories will run for this PR."
     return
 }
 
@@ -29,7 +30,8 @@ Write-Host "Fetching target branch 'origin/${targetBranch}' for diff analysis...
 try {
     git fetch origin "${targetBranch}" --no-tags --prune --depth=200 | Out-Null
 } catch {
-    Write-Warning "Failed to fetch origin/${targetBranch}: $($_.Exception.Message). Falling back to running all categories."
+    Write-Host "##[warning]Failed to fetch origin/${targetBranch}: $($_.Exception.Message)"
+    Write-Host "##[section]FALLBACK: All UI test categories will run for this PR."
     return
 }
 
@@ -37,12 +39,14 @@ $mergeBase = $null
 try {
     $mergeBase = (git merge-base HEAD "origin/${targetBranch}").Trim()
 } catch {
-    Write-Warning "Could not determine merge base with origin/${targetBranch}: $($_.Exception.Message). Falling back to running all categories."
+    Write-Host "##[warning]Could not determine merge base with origin/${targetBranch}: $($_.Exception.Message)"
+    Write-Host "##[section]FALLBACK: All UI test categories will run for this PR."
     return
 }
 
 if ([string]::IsNullOrWhiteSpace($mergeBase)) {
-    Write-Warning "Merge base calculation returned empty result. Falling back to running all categories."
+    Write-Host "##[warning]Merge base calculation returned empty result."
+    Write-Host "##[section]FALLBACK: All UI test categories will run for this PR."
     return
 }
 
@@ -73,8 +77,9 @@ foreach ($line in $diff -split "`n") {
             if ($rawValue -match 'nameof\(UITestCategories\.(?<name>[A-Za-z0-9_]+)\)') {
                 $category = $Matches['name']
             } else {
-                Write-Warning "Unrecognized category expression '$rawValue'. Falling back to running all categories."
-                return
+                $message = "Unrecognized category expression '$rawValue'. Expected formats: UITestCategories.<Name>, nameof(UITestCategories.<Name>), or a quoted string."
+                Write-Host "##[error]$message"
+                throw $message
             }
         }
 
