@@ -59,7 +59,7 @@ stages:
           vmImage: ubuntu-latest
         steps:
           - checkout: self
-            fetchDepth: 0
+            fetchDepth: 200
           - task: PowerShell@2
             name: DetectCategories
             displayName: Determine UI test categories for PRs

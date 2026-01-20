@@ -49,7 +49,7 @@ steps:
             $cat = $cat.Trim()
             foreach ($det in $detectedList) {
                 $det = $det.Trim()
-                if ($cat -eq $det) {
+                if ($cat -ieq $det) {
                     $hasMatch = $true
                     Write-Host "Match found: '$cat'"
                     break
@@ -212,6 +212,7 @@ steps:
     }
     
     # For PRs with detected categories, use only matching categories
+    # Note: The early check already verified this job should run, so we filter to matching categories only
     if ($isPR -and -not [string]::IsNullOrWhiteSpace($detectedCategories) -and -not [string]::IsNullOrWhiteSpace($testFilterParam)) {
         $categoryList = $testFilterParam -split ","
         $detectedList = $detectedCategories -split ","
@@ -221,7 +222,7 @@ steps:
             $cat = $cat.Trim()
             foreach ($det in $detectedList) {
                 $det = $det.Trim()
-                if ($cat -eq $det) {
+                if ($cat -ieq $det) {
                     $matchingCategories += $cat
                     break
                 }
