@@ -2,7 +2,7 @@ namespace Maui.Controls.Sample;
 
 public partial class VisualStateManagerControlPage : ContentPage
 {
-	bool _labelSelected;
+    bool _labelSelected;
     bool _labelDisabled;
 
     public VisualStateManagerControlPage()
@@ -32,15 +32,25 @@ public partial class VisualStateManagerControlPage : ContentPage
         VisualStateManager.GoToState(DemoButton, "Normal");
     }
 
+    // Button tap confirmation
+    async void OnDemoButtonClicked(object sender, EventArgs e)
+    {
+        if (!DemoButton.IsEnabled)
+            return;
+        await DisplayAlert("VisualStateManager", "Button tapped", "OK");
+    }
+
     // Button hover handlers for PointerOver
     void OnDemoButtonPointerEntered(object sender, PointerEventArgs e)
     {
+        DemoButton.IsEnabled = true;
         if (DemoButton.IsEnabled)
             VisualStateManager.GoToState(DemoButton, "PointerOver");
     }
 
     void OnDemoButtonPointerExited(object sender, PointerEventArgs e)
     {
+        DemoButton.IsEnabled = true;
         if (DemoButton.IsEnabled)
             VisualStateManager.GoToState(DemoButton, "Normal");
     }
@@ -59,7 +69,8 @@ public partial class VisualStateManagerControlPage : ContentPage
     // Label selection demo using container Grid style
     void OnToggleLabelSelected(object sender, EventArgs e)
     {
-        if (_labelDisabled) return;
+        if (_labelDisabled)
+            return;
         _labelSelected = !_labelSelected;
         VisualStateManager.GoToState(SelectableLabelContainer, _labelSelected ? "Selected" : "Normal");
     }
@@ -78,9 +89,28 @@ public partial class VisualStateManagerControlPage : ContentPage
     }
 
     // Navigate to the CollectionView sample page
-    async void OnOpenCollectionViewVsm(object sender, EventArgs e)
+    private async void OnOpenCollectionViewVsm(object sender, EventArgs e)
     {
-        await Shell.Current.GoToAsync("///CollectionViewVsmPage");
+        var targetPage = new VisualStateManagerCVPage();
+
+        // Prefer Shell navigation stack if present
+        var shellNav = Shell.Current?.Navigation;
+        if (shellNav != null)
+        {
+            await shellNav.PushAsync(targetPage);
+            return;
+        }
+
+        // Use the current page's Navigation stack if available
+        var nav = this.Navigation ?? Application.Current?.MainPage?.Navigation;
+        if (nav != null)
+        {
+            await nav.PushAsync(targetPage);
+            return;
+        }
+
+        // Fallback: present modally with its own Navigation stack
+        await Application.Current!.MainPage!.Navigation.PushModalAsync(new NavigationPage(targetPage));
     }
 
     // CheckBox demo controls

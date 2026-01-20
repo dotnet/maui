@@ -25,7 +25,7 @@
                         </VisualState>
                         <VisualState x:Name="Pressed">
                             <VisualState.Setters>
-                                <Setter Property="BackgroundColor" Value="#1E3A8A" />
+                                <Setter Property="BackgroundColor" Value="#FFE73C3C" />
                                 <Setter Property="Scale" Value="0.98" />
                                 <Setter Property="TranslationY" Value="1" />
                             </VisualState.Setters>
@@ -244,104 +244,90 @@
             <Label Text="Interact to see states: Pressed, Focused, Disabled, Selected." FontSize="14" />
 
             <!-- Button demo -->
-            <Frame BorderColor="#D1D5DB" Padding="12" CornerRadius="10">
-                <VerticalStackLayout Spacing="8">
-                    <Label Text="Button States (Normal / Pressed / PointerOver / Disabled)" FontAttributes="Bold" />
-                    <HorizontalStackLayout Spacing="10">
-                        <Button x:Name="DemoButton" Text="Press me" Style="{StaticResource VsmButtonStyle}"
-                                Pressed="OnDemoButtonPressed" Released="OnDemoButtonReleased">
-                            <Button.GestureRecognizers>
-                                <PointerGestureRecognizer PointerEntered="OnDemoButtonPointerEntered"
-                                                          PointerExited="OnDemoButtonPointerExited" />
-                            </Button.GestureRecognizers>
-                        </Button>
-                        <Button Text="Disable" Clicked="OnToggleButtonDisabled" />
-                        <Button Text="Reset" Clicked="OnResetButtonState" />
-                    </HorizontalStackLayout>
-                </VerticalStackLayout>
-            </Frame>
+            <VerticalStackLayout Padding="12" Spacing="8">
+                <Label Text="Button States (Normal / Pressed / PointerOver / Disabled)" FontAttributes="Bold" />
+                <HorizontalStackLayout Spacing="10">
+                    <Button x:Name="DemoButton" AutomationId="DemoButton" Text="Press me" Style="{StaticResource VsmButtonStyle}"
+                            Pressed="OnDemoButtonPressed" Released="OnDemoButtonReleased" Clicked="OnDemoButtonClicked">
+                        <Button.GestureRecognizers>
+                            <PointerGestureRecognizer PointerEntered="OnDemoButtonPointerEntered"
+                                                      PointerExited="OnDemoButtonPointerExited" />
+                        </Button.GestureRecognizers>
+                    </Button>
+                    <Button Text="Disable" Clicked="OnToggleButtonDisabled" />
+                    <Button Text="Reset" Clicked="OnResetButtonState" />
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
 
             <!-- Entry demo -->
-            <Frame BorderColor="#D1D5DB" Padding="12" CornerRadius="10">
-                <VerticalStackLayout Spacing="8">
-                    <Label Text="Entry States (Focused / Unfocused / Disabled)" FontAttributes="Bold" />
-                    <HorizontalStackLayout Spacing="10">
-                        <Entry x:Name="DemoEntry" Placeholder="Focus me" Style="{StaticResource VsmEntryStyle}" />
-                        <Button Text="Focus" Clicked="OnFocusEntry" />
-                        <Button Text="Disable" Clicked="OnToggleEntryDisabled" />
-                    </HorizontalStackLayout>
-                </VerticalStackLayout>
-            </Frame>
+            <VerticalStackLayout Padding="12" Spacing="8">
+                <Label Text="Entry States (Focused / Unfocused / Disabled)" FontAttributes="Bold" />
+                <HorizontalStackLayout Spacing="10">
+                    <Entry x:Name="DemoEntry" Placeholder="Focus me" Style="{StaticResource VsmEntryStyle}" />
+                    <Button Text="Focus" Clicked="OnFocusEntry" />
+                    <Button Text="Disable" Clicked="OnToggleEntryDisabled" />
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
 
             <!-- Label selection with TargetName -->
-            <Frame BorderColor="#D1D5DB" Padding="12" CornerRadius="10">
-                <VerticalStackLayout Spacing="8">
-                    <Label Text="Selectable Label (Normal / Selected / Disabled)" FontAttributes="Bold" />
-                    <Grid x:Name="SelectableLabelContainer" Style="{StaticResource SelectableLabelContainerStyle}">
-                        <Grid.GestureRecognizers>
-                            <TapGestureRecognizer Tapped="OnToggleLabelSelected" />
-                        </Grid.GestureRecognizers>
-                        <Label x:Name="ItemLabel" Text="Tap to select" HorizontalOptions="Center" VerticalOptions="Center" />
-                    </Grid>
-                    <HorizontalStackLayout Spacing="10">
-                        <Button Text="Disable" Clicked="OnToggleLabelDisabled" />
-                        <Button Text="Reset" Clicked="OnResetLabel" />
-                    </HorizontalStackLayout>
-                </VerticalStackLayout>
-            </Frame>
+            <VerticalStackLayout Padding="12" Spacing="8">
+                <Label Text="Selectable Label (Normal / Selected / Disabled)" FontAttributes="Bold" />
+                <Grid x:Name="SelectableLabelContainer" Style="{StaticResource SelectableLabelContainerStyle}">
+                    <Grid.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnToggleLabelSelected" />
+                    </Grid.GestureRecognizers>
+                    <Label x:Name="ItemLabel" Text="Tap to select" HorizontalOptions="Center" VerticalOptions="Center" />
+                </Grid>
+                <HorizontalStackLayout Spacing="10">
+                    <Button Text="Disable" Clicked="OnToggleLabelDisabled" />
+                    <Button Text="Reset" Clicked="OnResetLabel" />
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
 
             <!-- CollectionView item VSM sample hint -->
-            <Frame BorderColor="#D1D5DB" Padding="12" CornerRadius="10">
-                <VerticalStackLayout Spacing="8">
-                    <Label Text="See 'CollectionView VSM' page for item selection states." />
-                    <Button Text="Open CollectionView VSM" Clicked="OnOpenCollectionViewVsm" />
-                </VerticalStackLayout>
-            </Frame>
+            <VerticalStackLayout Padding="12" Spacing="8">
+                <Label Text="See 'CollectionView VSM' page for item selection states." />
+                <Button Text="Open CollectionView VSM" Clicked="OnOpenCollectionViewVsm" />
+            </VerticalStackLayout>
 
             <!-- CheckBox demo -->
-            <Frame BorderColor="#D1D5DB" Padding="12" CornerRadius="10">
-                <VerticalStackLayout Spacing="8">
-                    <Label Text="CheckBox States (Checked / Unchecked / Disabled)" FontAttributes="Bold" />
-                    <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
-                        <CheckBox x:Name="DemoCheckBox" Style="{StaticResource VsmCheckBoxStyle}" />
-                        <Label Text="Toggle the checkbox to see state changes." VerticalOptions="Center" />
-                    </HorizontalStackLayout>
-                    <HorizontalStackLayout Spacing="10">
-                        <Button Text="Disable" Clicked="OnToggleCheckBoxDisabled" />
-                        <Button Text="Reset" Clicked="OnResetCheckBox" />
-                    </HorizontalStackLayout>
-                </VerticalStackLayout>
-            </Frame>
+            <VerticalStackLayout Padding="12" Spacing="8">
+                <Label Text="CheckBox States (Checked / Unchecked / Disabled)" FontAttributes="Bold" />
+                <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
+                    <CheckBox x:Name="DemoCheckBox" Style="{StaticResource VsmCheckBoxStyle}" />
+                    <Label Text="Toggle the checkbox to see state changes." VerticalOptions="Center" />
+                </HorizontalStackLayout>
+                <HorizontalStackLayout Spacing="10">
+                    <Button Text="Disable" Clicked="OnToggleCheckBoxDisabled" />
+                    <Button Text="Reset" Clicked="OnResetCheckBox" />
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
 
             <!-- Switch demo -->
-            <Frame BorderColor="#D1D5DB" Padding="12" CornerRadius="10">
-                <VerticalStackLayout Spacing="8">
-                    <Label Text="Switch States (On / Off / Disabled)" FontAttributes="Bold" />
-                    <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
-                        <Switch x:Name="DemoSwitch" Style="{StaticResource VsmSwitchStyle}" />
-                        <Label Text="Toggle the switch to see thumb color changes." VerticalOptions="Center" />
-                    </HorizontalStackLayout>
-                    <HorizontalStackLayout Spacing="10">
-                        <Button Text="Disable" Clicked="OnToggleSwitchDisabled" />
-                        <Button Text="Reset" Clicked="OnResetSwitch" />
-                    </HorizontalStackLayout>
-                </VerticalStackLayout>
-            </Frame>
+            <VerticalStackLayout Padding="12" Spacing="8">
+                <Label Text="Switch States (On / Off / Disabled)" FontAttributes="Bold" />
+                <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
+                    <Switch x:Name="DemoSwitch" Style="{StaticResource VsmSwitchStyle}" />
+                    <Label Text="Toggle the switch to see thumb color changes." VerticalOptions="Center" />
+                </HorizontalStackLayout>
+                <HorizontalStackLayout Spacing="10">
+                    <Button Text="Disable" Clicked="OnToggleSwitchDisabled" />
+                    <Button Text="Reset" Clicked="OnResetSwitch" />
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
 
             <!-- Slider demo -->
-            <Frame BorderColor="#D1D5DB" Padding="12" CornerRadius="10">
-                <VerticalStackLayout Spacing="8">
-                    <Label Text="Slider States (Focused / Unfocused / Disabled)" FontAttributes="Bold" />
-                    <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
-                        <Slider x:Name="DemoSlider" Minimum="0" Maximum="100" Value="50" Style="{StaticResource VsmSliderStyle}" />
-                    </HorizontalStackLayout>
-                    <HorizontalStackLayout Spacing="10">
-                        <Button Text="Focus" Clicked="OnFocusSlider" />
-                        <Button Text="Disable" Clicked="OnToggleSliderDisabled" />
-                        <Button Text="Reset" Clicked="OnResetSlider" />
-                    </HorizontalStackLayout>
-                </VerticalStackLayout>
-            </Frame>
+            <VerticalStackLayout Padding="12" Spacing="8">
+                <Label Text="Slider States (Focused / Unfocused / Disabled)" FontAttributes="Bold" />
+                <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
+                    <Slider x:Name="DemoSlider" Minimum="0" Maximum="100" Value="50" Style="{StaticResource VsmSliderStyle}" />
+                </HorizontalStackLayout>
+                <HorizontalStackLayout Spacing="10">
+                    <Button Text="Focus" Clicked="OnFocusSlider" />
+                    <Button Text="Disable" Clicked="OnToggleSliderDisabled" />
+                    <Button Text="Reset" Clicked="OnResetSlider" />
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

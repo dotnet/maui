@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.VisualStateManagerCVPage"
+             Title="VisualStateManagerCVPage">
+        <ContentPage.Resources>
+        <Style TargetType="Grid" x:Key="CollectionItemStyle">
+            <Setter Property="Padding" Value="10" />
+            <Setter Property="BackgroundColor" Value="#FFFFFF" />
+            <Setter Property="VisualStateManager.VisualStateGroups">
+                <VisualStateGroupList>
+                    <VisualStateGroup x:Name="CommonStates">
+                        <VisualState x:Name="Normal">
+                            <VisualState.Setters>
+                                <Setter Property="BackgroundColor" Value="#FFFFFF" />
+                                <Setter TargetName="ItemLabel" Property="Label.TextColor" Value="#111827" />
+                                <Setter Property="Scale" Value="1" />
+                            </VisualState.Setters>
+                        </VisualState>
+                        <VisualState x:Name="Selected">
+                            <VisualState.Setters>
+                                <Setter Property="BackgroundColor" Value="#87CEFA" />
+                                <Setter Property="Scale" Value="1.05" />
+                                <Setter TargetName="ItemLabel" Property="Label.TextColor" Value="#0B1021" />
+                                <Setter TargetName="ItemLabel" Property="Label.FontAttributes" Value="Bold" />
+                            </VisualState.Setters>
+                        </VisualState>
+                        <VisualState x:Name="Disabled">
+                            <VisualState.Setters>
+                                <Setter Property="Opacity" Value="0.7" />
+                            </VisualState.Setters>
+                        </VisualState>
+                    </VisualStateGroup>
+                </VisualStateGroupList>
+            </Setter>
+        </Style>
+    </ContentPage.Resources>
+
+    <CollectionView ItemsSource="{Binding Items}" SelectionMode="Single" x:Name="MyCollectionView">
+        <CollectionView.ItemsLayout>
+            <GridItemsLayout Orientation="Vertical" Span="2" />
+        </CollectionView.ItemsLayout>
+        <CollectionView.ItemTemplate>
+            <DataTemplate>
+                <Grid Style="{StaticResource CollectionItemStyle}">
+                    <Label x:Name="ItemLabel" Text="{Binding Name}" VerticalOptions="Center" HorizontalOptions="Center" />
+                </Grid>
+            </DataTemplate>
+        </CollectionView.ItemTemplate>
+    </CollectionView>
+</ContentPage>
