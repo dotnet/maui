@@ -4,14 +4,14 @@ using System.Text;
 
 namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 {
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/UISearchBarStyle.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UISearchBarStyle']/Docs/*" />
+	/// <summary>Specifies the iOS UISearchBarStyle visual appearance.</summary>
 	public enum UISearchBarStyle
 	{
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/UISearchBarStyle.xml" path="//Member[@MemberName='Default']/Docs/*" />
+		/// <summary>Uses the system default search bar style.</summary>
 		Default,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/UISearchBarStyle.xml" path="//Member[@MemberName='Prominent']/Docs/*" />
+		/// <summary>Prominent style with solid background.</summary>
 		Prominent,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/UISearchBarStyle.xml" path="//Member[@MemberName='Minimal']/Docs/*" />
+		/// <summary>Minimal style with transparent background.</summary>
 		Minimal
 	}
 }
