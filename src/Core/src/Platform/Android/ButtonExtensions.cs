@@ -11,19 +11,19 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateBackground(this MaterialButton platformView, IButton button) =>
 			platformView.UpdateButtonBackground(button);
 
-		public static void UpdateTextColor(this MaterialButton platformButton, ITextStyle button)
+		// TODO: Make this public in .NET 11
+		internal static void UpdateTextColor(this MaterialButton platformButton, ITextStyle button)
 		{
 			var textColor = button.TextColor;
 
-			if (textColor != null)
+			if (textColor is not null)
 			{
 				platformButton.SetTextColor(textColor.ToPlatform());
 			}
-			else if (platformButton.Context is not null)
+			else if (platformButton is MauiMaterialButton mauiButton && mauiButton.DefaultTextColors is not null)
 			{
-				// Reset to default theme text color when null
-				using var tempButton = new MaterialButton(platformButton.Context);
-				platformButton.SetTextColor(tempButton.TextColors);
+				// Reset to default MaterialButton text colors that were cached at construction to restore the original ColorStateList
+				platformButton.SetTextColor(mauiButton.DefaultTextColors);
 			}
 		}
 

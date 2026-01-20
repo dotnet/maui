@@ -1,2 +1,1 @@
 #nullable enable
-static Microsoft.Maui.Platform.ButtonExtensions.UpdateTextColor(this Google.Android.Material.Button.MaterialButton! platformButton, Microsoft.Maui.ITextStyle! button) -> void
