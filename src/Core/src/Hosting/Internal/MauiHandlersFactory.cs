@@ -18,54 +18,107 @@ namespace Microsoft.Maui.Hosting.Internal
 			_registeredHandlerServiceTypeSet = RegisteredHandlerServiceTypeSet.GetInstance(collection);
 		}
 
-		public IElementHandler? GetHandler(Type type)
+		public IElementHandler? GetHandler(Type type, IMauiContext context)
 		{
-			if (TryGetVirtualViewHandlerServiceType(type) is Type serviceType
-				&& GetService(serviceType) is IElementHandler handler)
+			// Check if there is a handler registered for this EXACT type -- allows overriding the default handler
+			if (GetService(type) is IElementHandler exactRegisteredHandler)
 			{
-				return handler;
+				return exactRegisteredHandler;
 			}
 
 			if (TryGetElementHandlerAttribute(type, out var elementHandlerAttribute))
 			{
-				return elementHandlerAttribute.CreateHandler();
+				return elementHandlerAttribute.CreateHandler(context);
+			}
+
+			if (TryGetVirtualViewHandlerServiceType(type) is Type serviceType
+				&& GetService(serviceType) is IElementHandler inheritedRegisteredHandler)
+			{
+				return inheritedRegisteredHandler;
 			}
 
 			throw new HandlerNotFoundException($"Unable to find a {nameof(IElementHandler)} corresponding to {type}. Please register a handler for {type} using `Microsoft.Maui.Hosting.MauiHandlersCollectionExtensions.AddHandler` or `Microsoft.Maui.Hosting.MauiHandlersCollectionExtensions.TryAddHandler`");
 		}
 
-		public IElementHandler? GetHandler<T>() where T : IElement
-			=> GetHandler(typeof(T));
+		public IElementHandler? GetHandler<T>(IMauiContext context) where T : IElement
+			=> GetHandler(typeof(T), context);
 
 		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
-		public Type? GetHandlerType(Type iview)
+		public Type? GetConstructibleHandlerType(Type iview)
 		{
-			if (TryGetVirtualViewHandlerServiceType(iview) is Type serviceType
-				&& InternalCollection.TryGetService(serviceType, out ServiceDescriptor? serviceDescriptor)
-				&& serviceDescriptor?.ImplementationType is Type type)
+			// Check if there is a handler registered for this EXACT type -- allows overriding the default handler
+			if (TryGetRegisteredHandlerType(iview, out Type? type))
 			{
 				return type;
 			}
 
 			if (TryGetElementHandlerAttribute(iview, out var elementHandlerAttribute))
 			{
-				return GetHandlerType(elementHandlerAttribute);
+				throw new InvalidOperationException($"The handler type {elementHandlerAttribute.HandlerType} for {iview} cannot be constructed by the factory. " +
+					$"Handlers created via {nameof(ElementHandlerAttribute)} must be created using the attribute's {nameof(ElementHandlerAttribute.CreateHandler)} method.");
+			}
+
+			if (TryGetVirtualViewHandlerServiceType(iview) is Type serviceType
+				&& TryGetRegisteredHandlerType(serviceType, out type))
+			{
+				return type;
 			}
 
 			return null;
+		}
 
-			[UnconditionalSuppressMessage("ReflectionAnalysis", "IL2073",
-				Justification = "There is no need to create instances of the handlers for types with this attribute using reflection."
-					+ "We intentionally avoid annotating these handler types with DAM.")]
-			[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
-			static Type GetHandlerType(ElementHandlerAttribute elementHandlerAttribute)
-				=> elementHandlerAttribute.HandlerType;
+		public Type? GetHandlerType(Type iview)
+		{
+			// Check if there is a handler registered for this EXACT type -- allows overriding the default handler
+			if (TryGetRegisteredHandlerType(iview, out Type? type))
+			{
+				return type;
+			}
+
+			if (TryGetElementHandlerAttribute(iview, out var elementHandlerAttribute))
+			{
+				return elementHandlerAttribute.HandlerType;
+			}
+
+			if (TryGetVirtualViewHandlerServiceType(iview) is Type serviceType
+				&& TryGetRegisteredHandlerType(serviceType, out type))
+			{
+				return type;
+			}
+
+			return null;
+		}
+
+		private bool TryGetRegisteredHandlerType(Type serviceType, [NotNullWhen(returnValue: true)] out Type? handlerType)
+		{
+			if (InternalCollection.TryGetService(serviceType, out ServiceDescriptor? serviceDescriptor)
+				&& serviceDescriptor?.ImplementationType is Type type)
+			{
+				handlerType = type;
+				return true;
+			}
+
+			handlerType = null;
+			return handlerType is not null;
 		}
 
 		private static bool TryGetElementHandlerAttribute(Type viewType, [NotNullWhen(returnValue: true)] out ElementHandlerAttribute? elementHandlerAttribute)
 		{
-			elementHandlerAttribute = viewType.GetCustomAttribute<ElementHandlerAttribute>();
-			return elementHandlerAttribute is not null;
+			elementHandlerAttribute = null;
+			Type? type = viewType;
+
+			while (type is not null)
+			{
+				elementHandlerAttribute = type.GetCustomAttribute<ElementHandlerAttribute>();
+				if (elementHandlerAttribute is not null)
+				{
+					return true;
+				}
+
+				type = type.BaseType;
+			}
+
+			return false;
 		}
 
 		public IMauiHandlersCollection GetCollection() => (IMauiHandlersCollection)InternalCollection;

@@ -2,11 +2,13 @@
 using System;
 using System.ComponentModel;
 using System.Windows.Input;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/SwipeItemView.xml" path="Type[@FullName='Microsoft.Maui.Controls.SwipeItemView']/Docs/*" />
 	[ContentProperty(nameof(Content))]
+	[ElementHandler(typeof(SwipeItemViewHandler))]
 	public partial class SwipeItemView : ContentView, Controls.ISwipeItem, Maui.ISwipeItemView
 	{
 		/// <summary>Bindable property for <see cref="Command"/>.</summary>

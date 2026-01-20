@@ -2,10 +2,12 @@
 using System;
 using System.ComponentModel;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/SwipeItem.xml" path="Type[@FullName='Microsoft.Maui.Controls.SwipeItem']/Docs/*" />
+	[ElementHandler(typeof(SwipeItemMenuItemHandler))]
 	public partial class SwipeItem : MenuItem, Controls.ISwipeItem, Maui.ISwipeItemMenuItem
 	{
 		/// <summary>Bindable property for <see cref="BackgroundColor"/>.</summary>

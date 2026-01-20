@@ -44,14 +44,11 @@ using System.Runtime.ExceptionServices;
 
 namespace Microsoft.Maui.Handlers
 {
-	[RequiresUnreferencedCode(DynamicFeatures)]
-#if !NETSTANDARD
-	[RequiresDynamicCode(DynamicFeatures)]
-#endif
 	public partial class HybridWebViewHandler : IHybridWebViewHandler
 	{
 		internal const string DynamicFeatures = "HybridWebView uses dynamic System.Text.Json serialization features.";
-		internal const string NotSupportedMessage = DynamicFeatures + " Enable the $(MauiHybridWebViewSupported) property in your .csproj file to use in a trimming unsafe manner.";
+		internal const string TrimmingAotSuppressedBecauseIsHybridWebViewSupportedFeatureSwitch = "Users must explicitly enable the $(MauiHybridWebViewSupported) property; when disabled, the trimmer will remove this code.";
+		internal const string TrimmingAotSuppressedBecauseCalledOnlyFromInvokeDotNetAsync = "This method is only called from InvokeDotNetAsync which has [RequiresUnreferencedCode] and [RequiresDynamicCode] attributes.";
 
 		// Using an IP address means that the web view doesn't wait for any DNS resolution,
 		// making it substantially faster. Note that this isn't real HTTP traffic, since
@@ -184,6 +181,10 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		[RequiresUnreferencedCode(DynamicFeatures)]
+#if !NETSTANDARD
+		[RequiresDynamicCode(DynamicFeatures)]
+#endif
 		internal async Task<byte[]?> InvokeDotNetAsync(Stream? streamBody = null, string? stringBody = null)
 		{
 			try
@@ -225,6 +226,8 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		[UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingAotSuppressedBecauseCalledOnlyFromInvokeDotNetAsync)]
+		[UnconditionalSuppressMessage("AOT", "IL3050", Justification = TrimmingAotSuppressedBecauseCalledOnlyFromInvokeDotNetAsync)]
 		private static DotNetInvokeResult CreateInvokeResult(object? result)
 		{
 			// null invoke result means an empty result
@@ -262,6 +265,9 @@ namespace Microsoft.Maui.Handlers
 			};
 		}
 
+		[UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingAotSuppressedBecauseCalledOnlyFromInvokeDotNetAsync)]
+		[UnconditionalSuppressMessage("Trimming", "IL2075", Justification = TrimmingAotSuppressedBecauseCalledOnlyFromInvokeDotNetAsync)]
+		[UnconditionalSuppressMessage("AOT", "IL3050", Justification = TrimmingAotSuppressedBecauseCalledOnlyFromInvokeDotNetAsync)]
 		private static async Task<object?> InvokeDotNetMethodAsync(
 			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type targetType,
 			object jsInvokeTarget,
