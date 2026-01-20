@@ -106,8 +106,7 @@
                     Margin="0,0,0,15"
                     SelectedItems="{Binding SelectedTags, Mode=TwoWay}"
                     SelectionChangedCommand="{Binding SelectionChangedCommand}"
-                    SelectionChangedCommandParameter="{Binding SelectedTags}"
-                    SemanticProperties.Description="Tags Collection">
+                    SelectionChangedCommandParameter="{Binding SelectedTags}">
                     <CollectionView.ItemsLayout>
                         <LinearItemsLayout Orientation="Horizontal" ItemSpacing="{StaticResource LayoutSpacing}" />
                     </CollectionView.ItemsLayout>
