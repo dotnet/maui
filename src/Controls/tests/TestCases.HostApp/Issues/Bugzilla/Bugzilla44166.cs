@@ -14,9 +14,15 @@ public class Bugzilla44166 : TestContentPage
 		goButton.Clicked += (sender, args) => Application.Current.MainPage = new _44166MDP();
 
 		var gcButton = new Button { Text = "GC", AutomationId = "GC" };
-		gcButton.Clicked += (sender, args) =>
+		gcButton.Clicked += async (sender, args) =>
 		{
-			GarbageCollectionHelper.Collect();
+			// Try multiple GC cycles to ensure finalizers run
+			// Android GC can be less aggressive, so we need to retry
+			for (int i = 0; i < 10; i++)
+			{
+				GarbageCollectionHelper.Collect();
+				await Task.Delay(100);
+			}
 
 			if (_44166MDP.Counter > 0)
 			{
