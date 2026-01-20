@@ -187,8 +187,7 @@ internal class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMaterialDatePic
         {
             long maxMillis = GetUtcMilliseconds(maxDate.Value.Year, maxDate.Value.Month, maxDate.Value.Day);
             constraintsBuilder.SetEnd(maxMillis);
-            // Add 1 day (86400000 milliseconds) because Before() is exclusive, we want inclusive
-            validators.Add(DateValidatorPointBackward.Before(maxMillis + 86400000));
+            validators.Add(DateValidatorPointBackward.Before(maxMillis));
         }
 
         if (validators.Count > 0)
