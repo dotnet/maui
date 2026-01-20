@@ -17,6 +17,7 @@ parameters:
 steps:
 # EARLY CHECK: Determine if this category group should run tests
 # This runs FIRST to avoid wasting time on provisioning if no tests will run
+# Also calculates matching categories to avoid duplicating this logic later
 - pwsh: |
     $testFilterParam = $env:CATEGORY_GROUP
     $testFilterFallback = $env:TEST_FILTER_PARAM
@@ -38,35 +39,40 @@ steps:
     }
     
     $shouldRun = $true
+    $matchingCategoriesResult = $testFilterParam  # Default: use all categories from this group
     
     # For PRs with detected categories, check if this category group has any matches
     if ($isPR -and -not [string]::IsNullOrWhiteSpace($detectedCategories) -and -not [string]::IsNullOrWhiteSpace($testFilterParam)) {
         $categoryList = $testFilterParam -split ","
         $detectedList = $detectedCategories -split ","
-        $hasMatch = $false
+        $matchingCategories = @()
         
         foreach ($cat in $categoryList) {
             $cat = $cat.Trim()
             foreach ($det in $detectedList) {
                 $det = $det.Trim()
                 if ($cat -ieq $det) {
-                    $hasMatch = $true
+                    $matchingCategories += $cat
                     Write-Host "Match found: '$cat'"
                     break
                 }
             }
-            if ($hasMatch) { break }
         }
         
-        if (-not $hasMatch) {
+        if ($matchingCategories.Count -eq 0) {
             $shouldRun = $false
+            $matchingCategoriesResult = ""
             Write-Host "##[warning]No matching categories - SKIPPING all steps for this job"
             Write-Host "Category group '$testFilterParam' does not contain any detected categories: $detectedCategories"
+        } else {
+            $matchingCategoriesResult = $matchingCategories -join ","
+            Write-Host "Matching categories for this job: $matchingCategoriesResult"
         }
     }
     
     Write-Host "Should run tests: $shouldRun"
     Write-Host "##vso[task.setvariable variable=SHOULD_RUN_TESTS]$shouldRun"
+    Write-Host "##vso[task.setvariable variable=MATCHING_CATEGORIES]$matchingCategoriesResult"
   displayName: 'Check if category should run'
   env:
     CATEGORY_GROUP: $(CATEGORYGROUP)
@@ -197,43 +203,10 @@ steps:
     $testFilter = ""
     $testConfigrationArgs = "${{ parameters.testConfigurationArgs }}"
     
-    # Get test filter from environment variable (passed from matrix via env block)
-    $testFilterParam = $env:CATEGORY_GROUP
-    $detectedCategories = $env:DETECTED_CATEGORIES
-    $isPR = $env:BUILD_REASON -eq "PullRequest"
+    # Use MATCHING_CATEGORIES from early check (already filtered for PR category detection)
+    $testFilterParam = $env:MATCHING_CATEGORIES
     
-    Write-Host "Category Group from matrix: '$testFilterParam'"
-    Write-Host "Detected Categories: '$detectedCategories'"
-    
-    # Fallback to parameter for non-matrix builds
-    if (-not $testFilterParam) {
-      $testFilterParam = "${{ parameters.testFilter }}"
-      Write-Host "Using testFilter parameter: '$testFilterParam'"
-    }
-    
-    # For PRs with detected categories, use only matching categories
-    # Note: The early check already verified this job should run, so we filter to matching categories only
-    if ($isPR -and -not [string]::IsNullOrWhiteSpace($detectedCategories) -and -not [string]::IsNullOrWhiteSpace($testFilterParam)) {
-        $categoryList = $testFilterParam -split ","
-        $detectedList = $detectedCategories -split ","
-        $matchingCategories = @()
-        
-        foreach ($cat in $categoryList) {
-            $cat = $cat.Trim()
-            foreach ($det in $detectedList) {
-                $det = $det.Trim()
-                if ($cat -ieq $det) {
-                    $matchingCategories += $cat
-                    break
-                }
-            }
-        }
-        
-        $testFilterParam = $matchingCategories -join ","
-        Write-Host "Running matching categories: $testFilterParam"
-    }
-    
-    Write-Host "Final test filter: '$testFilterParam'"
+    Write-Host "Categories to run (from early check): '$testFilterParam'"
     
     if ($testFilterParam) {
       $testFilterParam.Split(",") | ForEach {
@@ -264,9 +237,7 @@ steps:
     retryCountOnTaskFailure: 1
   env:
     APPIUM_HOME: $(APPIUM_HOME)
-    CATEGORY_GROUP: $(CATEGORYGROUP)
-    DETECTED_CATEGORIES: $(DETECTED_CATEGORIES)
-    BUILD_REASON: $(Build.Reason)
+    MATCHING_CATEGORIES: $(MATCHING_CATEGORIES)
 
 - bash: |
     cat ${BASH_SOURCE[0]}
