@@ -1,1 +1,3 @@
-global using NUnit.Framework;
+global using Xunit;
+global using Xunit.Abstractions;
+global using Xunit.Sdk;
