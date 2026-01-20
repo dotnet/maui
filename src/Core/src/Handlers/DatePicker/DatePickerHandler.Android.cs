@@ -3,7 +3,6 @@ using Android.App;
 using Android.Content;
 using Android.Views;
 using Microsoft.Maui.Devices;
-using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Handlers
 {
