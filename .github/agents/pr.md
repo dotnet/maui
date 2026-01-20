@@ -39,6 +39,23 @@ After Gate passes, read `.github/agents/pr/post-gate.md` for **Phases 4-5**.
 └─────────────────────────────────────────┘     └─────────────────────────────────────────────┘
 ```
 
+---
+
+## Phase Completion Protocol (CRITICAL)
+
+**Before changing ANY phase status to ✅ COMPLETE:**
+
+1. **Read the state file section** for the phase you're completing
+2. **Find ALL ⏳ PENDING and [PENDING] fields** in that section
+3. **Fill in every field** with actual content
+4. **Verify no pending markers remain** in your section
+5. **Commit the state file** with complete content
+6. **Then change status** to ✅ COMPLETE
+
+**Rule:** Status ✅ means "documentation complete", not "I finished thinking about it"
+
+---
+
 ### 🚨 CRITICAL: Phase 4 Always Uses `try-fix` Skill
 
 **Even when a PR already has a fix**, Phase 4 requires running the `try-fix` skill to:
@@ -326,6 +343,14 @@ The test result will be updated to `✅ PASS (Gate)` after Gate passes.
 3. Add edge cases and any disagreements (if PR exists)
 4. Change 🧪 Tests status to `▶️ IN PROGRESS`
 
+**Before marking ✅ COMPLETE, verify state file contains:**
+- [ ] Issue summary filled (not [PENDING])
+- [ ] Platform checkboxes marked
+- [ ] Files Changed table populated (if PR exists)
+- [ ] PR Discussion Summary documented (if PR exists)
+- [ ] All [PENDING] placeholders replaced
+- [ ] State file committed
+
 ---
 
 ## 🧪 TESTS: Create/Verify Reproduction Tests (Phase 2)
@@ -385,6 +410,12 @@ The script auto-detects mode based on git diff. If only test files changed, it v
 4. Change 🧪 Tests status to `✅ COMPLETE`
 5. Change 🚦 Gate status to `▶️ IN PROGRESS`
 
+**Before marking ✅ COMPLETE, verify state file contains:**
+- [ ] Test file paths documented
+- [ ] "Tests verified to FAIL" note added
+- [ ] Test category identified
+- [ ] State file committed
+
 ---
 
 ## 🚦 GATE: Verify Tests Catch the Issue (Phase 3)
@@ -431,6 +462,12 @@ pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 
 1. Fill in **Result**: `PASSED ✅`
 2. Change 🚦 Gate status to `✅ PASSED`
 3. Proceed to Phase 4
+
+**Before marking ✅ PASSED, verify state file contains:**
+- [ ] Result shows PASSED ✅ or FAILED ❌
+- [ ] Test behavior documented
+- [ ] Platform tested noted
+- [ ] State file committed
 
 ---
 

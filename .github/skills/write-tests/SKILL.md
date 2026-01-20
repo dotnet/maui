@@ -1,6 +1,10 @@
 ---
 name: write-tests
 description: Creates UI tests for a GitHub issue and verifies they reproduce the bug. Iterates until tests actually fail (proving they catch the issue). Use when PR lacks tests or tests need to be created for an issue.
+metadata:
+  author: dotnet-maui
+  version: "1.0"
+compatibility: Requires git, PowerShell, .NET SDK, and Appium for UI test execution.
 ---
 
 # Write Tests Skill
