@@ -7,7 +7,9 @@ using Microsoft.Maui.Graphics.Converters;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PointCollectionConverter.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.PointCollectionConverter']/Docs/*" />
+	/// <summary>
+	/// A type converter that converts strings to <see cref="PointCollection"/> objects.
+	/// </summary>
 	public class PointCollectionConverter : TypeConverter
 	{
 		public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)

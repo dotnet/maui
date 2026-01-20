@@ -6,10 +6,14 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Path.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.Path']/Docs/*" />
+	/// <summary>
+	/// A shape that can draw complex geometries defined by a <see cref="PathGeometry"/>.
+	/// </summary>
 	public sealed partial class Path : Shape, IShape
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Path.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Path"/> class.
+		/// </summary>
 		public Path() : base()
 		{
 		}
@@ -29,7 +33,9 @@ namespace Microsoft.Maui.Controls.Shapes
 			BindableProperty.Create(nameof(RenderTransform), typeof(Transform), typeof(Path), null,
 				propertyChanged: OnTransformPropertyChanged);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Path.xml" path="//Member[@MemberName='Data']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the <see cref="Geometry"/> that specifies the shape to be drawn. This is a bindable property.
+		/// </summary>
 		[System.ComponentModel.TypeConverter(typeof(PathGeometryConverter))]
 		public Geometry Data
 		{
@@ -37,7 +43,9 @@ namespace Microsoft.Maui.Controls.Shapes
 			get { return (Geometry)GetValue(DataProperty); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Path.xml" path="//Member[@MemberName='RenderTransform']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the <see cref="Transform"/> applied to the path geometry. This is a bindable property.
+		/// </summary>
 		public Transform RenderTransform
 		{
 			set { SetValue(RenderTransformProperty, value); }
