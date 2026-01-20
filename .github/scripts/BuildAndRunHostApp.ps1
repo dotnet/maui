@@ -47,7 +47,7 @@
 [CmdletBinding(DefaultParameterSetName = "TestFilter")]
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet("android", "ios", "catalyst")]
+    [ValidateSet("android", "ios", "catalyst", "maccatalyst")]
     [string]$Platform,
 
     [Parameter(Mandatory = $true, ParameterSetName = "TestFilter")]
@@ -69,6 +69,11 @@ $ErrorActionPreference = "Stop"
 $RepoRoot = Resolve-Path "$PSScriptRoot/../.."
 $HostAppProject = Join-Path $RepoRoot "src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj"
 $HostAppLogsDir = Join-Path $RepoRoot "CustomAgentLogsTmp/UITests"
+
+# Normalize platform name (accept both "catalyst" and "maccatalyst")
+if ($Platform -eq "maccatalyst") {
+    $Platform = "catalyst"
+}
 
 # Import shared utilities
 . "$PSScriptRoot/shared/shared-utils.ps1"
@@ -93,18 +98,15 @@ if (-not (Test-Path $HostAppLogsDir)) {
     Write-Info "Created CustomAgentLogsTmp/UITests directory"
 }
 
-# Clean up old log files from previous runs
+# Clean up ALL old log files from previous runs to avoid confusion
 $deviceLogFile = Join-Path $HostAppLogsDir "$Platform-device.log"
 $testOutputFile = Join-Path $HostAppLogsDir "test-output.log"
 
-if (Test-Path $deviceLogFile) {
-    Remove-Item $deviceLogFile -Force
-    Write-Info "Cleaned up old $Platform-device.log"
-}
-
-if (Test-Path $testOutputFile) {
-    Remove-Item $testOutputFile -Force
-    Write-Info "Cleaned up old test-output.log"
+# Remove all files in the logs directory
+$existingFiles = Get-ChildItem -Path $HostAppLogsDir -File -ErrorAction SilentlyContinue
+if ($existingFiles) {
+    $existingFiles | Remove-Item -Force
+    Write-Info "Cleaned up $($existingFiles.Count) old log file(s) from previous runs"
 }
 
 # Check if dotnet is available
@@ -225,8 +227,8 @@ $testStartTime = Get-Date
 
 # For MacCatalyst, launch the app BEFORE running tests so Appium finds the correct bundle
 # This is critical because both maui and maui2 repos may share the same bundle ID
-# We use dotnet run with StandardOutputPath/StandardErrorPath to capture Console.WriteLine
-# See: https://github.com/dotnet/macios/blob/main/docs/building-apps/build-properties.md#runwithopen
+# MacCatalyst: Just ensure the app is ready - Appium will launch it with the test name
+# The app has built-in file logging that writes directly to MAUI_LOG_FILE path
 $catalystAppProcess = $null
 if ($Platform -eq "catalyst") {
     # Determine runtime identifier
@@ -238,8 +240,7 @@ if ($Platform -eq "catalyst") {
     $appPath = [System.IO.Path]::GetFullPath($appPath)
     
     if (Test-Path $appPath) {
-        Write-Info "Launching MacCatalyst app with dotnet run..."
-        Write-Info "App path: $appPath"
+        Write-Info "MacCatalyst app ready at: $appPath"
         
         # Make executable (like CI does)
         $executablePath = Join-Path $appPath "Contents/MacOS/Controls.TestCases.HostApp"
@@ -247,32 +248,14 @@ if ($Platform -eq "catalyst") {
             & chmod +x $executablePath
         }
         
-        # Use dotnet run with StandardOutputPath/StandardErrorPath
-        # This launches the app via 'open' but captures stdout/stderr to files
-        # Console.WriteLine on MacCatalyst goes to stderr
-        $stderrFile = "$deviceLogFile.stderr"
-        $hostAppProject = Join-Path $PSScriptRoot "../../src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj"
-        $hostAppProject = [System.IO.Path]::GetFullPath($hostAppProject)
-        
-        Write-Info "Starting app with dotnet run (logs to $stderrFile)..."
-        & dotnet run --project $hostAppProject -f $TargetFramework --no-build `
-            -p:StandardOutputPath=$deviceLogFile `
-            -p:StandardErrorPath=$stderrFile 2>&1 | Out-Null
-        
-        # dotnet run exits immediately when using 'open', give app time to launch
-        Start-Sleep -Seconds 3
-        
-        # Get app process ID for later cleanup
-        $catalystAppProcess = Get-Process -Name "Controls.TestCases.HostApp" -ErrorAction SilentlyContinue | Select-Object -First 1
-        if ($catalystAppProcess) {
-            Write-Success "MacCatalyst app launched (PID: $($catalystAppProcess.Id))"
-        } else {
-            Write-Success "MacCatalyst app launched with log capture"
-        }
+        Write-Success "MacCatalyst app prepared (Appium will launch with test name)"
     } else {
         Write-Warning "MacCatalyst app not found at: $appPath"
         Write-Warning "Test may use wrong app bundle if another version is registered"
     }
+    
+    # Set log file path directly - app will write ILogger output here
+    $env:MAUI_LOG_FILE = $deviceLogFile
 }
 
 Write-Info "Executing: dotnet test --filter `"$effectiveFilter`""
@@ -342,26 +325,13 @@ if ($Platform -eq "android") {
     
     Write-Info "iOS logs saved to: $deviceLogFile"
 } elseif ($Platform -eq "catalyst") {
-    # On macOS, Console.WriteLine goes to stderr, not stdout
-    # Stderr was captured to $deviceLogFile.stderr, stdout to $deviceLogFile
-    Write-Info "MacCatalyst logs captured via stdout/stderr redirect during test execution"
-    
-    # Check stderr first - this is where Console.WriteLine output goes on macOS
-    $stderrFile = "$deviceLogFile.stderr"
-    if ((Test-Path $stderrFile) -and ((Get-Item $stderrFile).Length -gt 0)) {
-        Write-Info "Console.WriteLine output found in stderr..."
-        # Copy stderr content to main log file (overwrite since stderr is the useful one)
-        Get-Content $stderrFile | Set-Content -Path $deviceLogFile -Encoding UTF8
-    }
-    
-    # If log file is still empty or small, try log show as fallback (for Debug.WriteLine via os_log)
-    $logFileSize = 0
-    if (Test-Path $deviceLogFile) {
-        $logFileSize = (Get-Item $deviceLogFile).Length
-    }
-    
-    if ($logFileSize -lt 100) {
-        Write-Info "Console output was minimal, using os_log fallback (captures Debug.WriteLine)..."
+    # App writes directly to $deviceLogFile via MAUI_LOG_FILE env var
+    # Just verify the file exists and has content
+    if ((Test-Path $deviceLogFile) -and ((Get-Item $deviceLogFile).Length -gt 0)) {
+        Write-Success "MacCatalyst logs written directly to: $deviceLogFile"
+    } else {
+        # Fall back to os_log if file logging didn't work
+        Write-Info "File logging output was minimal, using os_log fallback..."
         $logStartTimeStr = $testStartTime.AddMinutes(-1).ToString("yyyy-MM-dd HH:mm:ss")
         $catalystLogCommand = "log show --level debug --predicate 'process contains `"Controls.TestCases.HostApp`" OR processImagePath contains `"Controls.TestCases.HostApp`"' --start `"$logStartTimeStr`" --style compact"
         Invoke-Expression "$catalystLogCommand > `"$deviceLogFile`" 2>&1"
