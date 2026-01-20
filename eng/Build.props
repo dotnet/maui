@@ -17,7 +17,7 @@
         <AdditionalProperties>CodesignRequireProvisioningProfile=false</AdditionalProperties>
         <AdditionalProperties>EnableWindowsTargeting=true</AdditionalProperties>
     </ProjectToBuild>
-    <ProjectToBuild Include="$(RepoRoot)Microsoft.Maui-mac.sln" Condition="'$(OS)' != 'Windows_NT' And '$(BuildDeviceTests)' != 'true'" >
+    <ProjectToBuild Include="$(RepoRoot)Microsoft.Maui-mac.slnf" Condition="'$(OS)' != 'Windows_NT' And '$(BuildDeviceTests)' != 'true'" >
         <AdditionalProperties>ValidateXcodeVersion=false</AdditionalProperties>
         <AdditionalProperties>CodesignRequireProvisioningProfile=false</AdditionalProperties>
         <AdditionalProperties>EnableWindowsTargeting=true</AdditionalProperties>
