@@ -16,3 +16,4 @@ MAUIX2003 | XamlInflation | Error | Descriptors
 MAUIX2004 | XamlInflation | Error | Descriptors
 MAUIX2005 | XamlInflation | Warning | Descriptors
 MAUIX2006 | XamlParsing | Warning | PropertyElementWithAttribute
+MAUIX2007 | XamlInflation | Error | EventTriggerEventNotFound
