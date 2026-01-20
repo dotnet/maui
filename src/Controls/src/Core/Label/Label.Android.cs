@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls
 			// Detach from previous views
 			DetachLayoutChanged();
 
-			if (Handler is not LabelHandler { PlatformView: var platformView })
+			if (Handler is not ILabelHandler { PlatformView: var platformView })
 			{
 				return;
 			}

@@ -19,7 +19,8 @@ internal class MauiMaterialTextView : MaterialTextView
 
 	public override void SetText(ICharSequence? text, BufferType? type)
 	{
-		// Detect FormattedText (SpannableString) vs plain text to avoid unnecessary layout events
+		// FormattedText uses SpannableString, plain text uses string-based types
+		// Only formatted text needs layout event handling for span position recalculation  
 		_isFormatted = text is not Java.Lang.String;
 		base.SetText(text, type);
 	}
