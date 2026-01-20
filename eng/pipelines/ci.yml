@@ -147,7 +147,6 @@ stages:
     ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
       pool: ${{ parameters.WindowsPool.public }}
       runAsPublic: true
-      publishTaskPrefix: ''
     ${{ else }}:
       pool: ${{ parameters.WindowsPool.internal }}
       runAsPublic: false

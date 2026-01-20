@@ -28,9 +28,6 @@ parameters:
 - name: runAsPublic
   type: boolean
   default: true
-- name: publishTaskPrefix
-  type: string
-  default: '1ES.'
 
 stages:
 - stage: Pack
@@ -88,7 +85,7 @@ stages:
               */$(_BuildConfig)/*/*.resources.zip
             TargetFolder: '$(Agent.TempDirectory)/native-binaries'
 
-        - task: ${{ parameters.publishTaskPrefix }}PublishPipelineArtifact@1
+        - task: PublishPipelineArtifact@1
           displayName: Publish Native Binaries
           inputs:
             targetPath: '$(Agent.TempDirectory)/native-binaries'
@@ -116,7 +113,7 @@ stages:
               ${{ pair.key }}: ${{ pair.value }}
 
         # Download Mac native binaries built on macOS
-        - task: ${{ parameters.publishTaskPrefix }}DownloadPipelineArtifact@2
+        - task: DownloadPipelineArtifact@2
           displayName: Download Mac Native Binaries
           inputs:
             artifact: MacNativeArtifacts
