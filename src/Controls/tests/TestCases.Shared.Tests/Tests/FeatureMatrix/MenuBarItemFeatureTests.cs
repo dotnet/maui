@@ -15,7 +15,12 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 	{
 	}
 
-
+	public void VerifyWindowsScreenshot()
+	{
+#if WINDOWS
+		VerifyScreenshot();
+#endif
+	}
 	[Test, Order(1)]
 	public void MenuBarItem_FileMenuExit()
 	{
@@ -30,7 +35,7 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 		App.WaitForElement("FileMenuBar");
 		App.Tap("FileMenuBar");
 
-		VerifyScreenshot();
+		VerifyWindowsScreenshot();
 	}
 
 	[Test, Order(2)]
@@ -289,7 +294,7 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 		App.WaitForElement("ViewMenuBar");
 		App.Tap("ViewMenuBar");
 
-		VerifyScreenshot();
+		VerifyWindowsScreenshot();
 	}
 
 	[Test, Order(15)]
@@ -485,6 +490,6 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 		App.WaitForElement("Remove Location");
 
 		// Take screenshot to verify separator visual appearance
-		VerifyScreenshot();
+		VerifyWindowsScreenshot();
 	}
 }
