@@ -57,8 +57,7 @@ Invoke the `try-fix` skill repeatedly. The skill handles one fix attempt per inv
 state_file: .github/agent-pr-session/pr-XXXXX.md
 ```
 
-try-fix will automatically append rows to the Fix Candidates table. You remain responsible for:
-- Setting "Exhausted" field when done
+try-fix will automatically append rows to the Fix Candidates table and set the "Exhausted" field. You remain responsible for:
 - Setting "Selected Fix" field with reasoning
 - Updating phase status to ✅ COMPLETE
 

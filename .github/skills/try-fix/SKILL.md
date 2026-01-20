@@ -80,6 +80,13 @@ Review the provided context:
 - What files should be investigated?
 - Are there hints about what to try or avoid?
 
+**If state_file provided, review prior attempts:**
+1. Read the Fix Candidates table
+2. Note which approaches failed and WHY (the Notes column)
+3. Avoid repeating failed approaches
+4. Build on partial successes (if an approach was "close", try a variation)
+5. Use failure analysis to inform your approach
+
 **Do NOT search for additional context.** Work with what's provided.
 
 ### Step 2: Establish Baseline (if specified)
@@ -218,7 +225,26 @@ Provide structured output to the invoker:
 ```diff
 [The actual changes made]
 ```
+
+**Exhausted:** Yes/No
+**Reasoning:** [Why you believe there are/aren't more viable approaches]
 ```
+
+### Determining Exhaustion
+
+Before updating the state file, evaluate if you've exhausted viable approaches:
+
+**Set `exhausted=true` when:**
+- You've tried the same fundamental approach multiple times with variations
+- All hints have been explored without success
+- Failure analysis reveals the problem is outside the target files
+- No new ideas remain based on prior failure analyses
+
+**Set `exhausted=false` when:**
+- This is the first attempt
+- Failure analysis suggests a different approach within target files
+- Hints remain unexplored
+- The approach was close but needs refinement
 
 ### Step 11: Update State File (if provided)
 
@@ -232,16 +258,16 @@ If `state_file` input was provided and file exists:
 |---|--------|----------|-------------|---------------|-------|
 | N | try-fix #N | [approach] | ✅ PASS / ❌ FAIL | [files] | [analysis] |
 
-4. **Commit state file:**
+4. **Set exhausted status** based on your determination above
+5. **Commit state file:**
 ```bash
-git add "$STATE_FILE" && git commit -m "try-fix: attempt #N"
+git add "$STATE_FILE" && git commit -m "try-fix: attempt #N (exhausted=$EXHAUSTED)"
 ```
 
 **If no state file provided:** Skip this step (results returned to invoker only).
 
-**Ownership rule:** try-fix ONLY updates its own row. Never modify:
+**Ownership rule:** try-fix updates its own row AND the exhausted field. Never modify:
 - Phase status fields
-- "Exhausted" field
 - "Selected Fix" field
 - Other try-fix rows
 
@@ -357,11 +383,16 @@ This skill does ONE attempt. The invoker (CI pipeline, agent, user) controls:
 | Decision | Invoker's responsibility |
 |----------|--------------------------|
 | How many attempts | Invoke skill multiple times if needed |
-| When to stop | Interpret results and decide |
+| Max attempts | Configure loop limit (default: 5, can be set higher) |
+| Early termination | Stop when try-fix reports `exhausted=true` |
+| When to stop | Interpret results and decide (exhausted OR max reached) |
 | State file path | Optionally provide for automatic recording |
 | Passing context between attempts | Provide updated hints on subsequent calls |
 | Success criteria | Evaluate the reported result |
 | Phase status | Update phase to COMPLETE when done |
-| Final selection | Set "Exhausted" and "Selected Fix" fields |
+| Final selection | Set "Selected Fix" field when a fix passes |
 
-The skill records its own results when a state file is provided, but does NOT decide when to stop or which fix to select.
+The skill records its own results and exhausted status when a state file is provided. The loop should terminate when EITHER:
+1. A fix passes (success)
+2. `exhausted=true` is reported (no more viable approaches)
+3. Max attempts reached (configurable cap)
