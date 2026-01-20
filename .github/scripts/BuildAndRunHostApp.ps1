@@ -261,6 +261,10 @@ if ($Platform -eq "catalyst") {
 Write-Info "Executing: dotnet test --filter `"$effectiveFilter`""
 Write-Host ""
 
+# Set environment variables for the test
+$env:DEVICE_UDID = $DeviceUdid
+Write-Info "Set DEVICE_UDID environment variable: $DeviceUdid"
+
 try {
     # Run dotnet test and capture output
     $testOutput = & dotnet test $TestProject --filter $effectiveFilter --logger "console;verbosity=detailed" 2>&1

@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Xunit;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
@@ -278,6 +279,12 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "CancelButtonColor Initialize Correctly")]
 		public async Task CancelButtonColorInitializeCorrectly()
 		{
+#if IOS || MACCATALYST
+			// iOS 26 changed UISearchBar internal structure, making cancel button color verification unreliable
+			if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+				return;
+#endif
+
 			var searchBar = new SearchBarStub()
 			{
 				Text = "Search",
