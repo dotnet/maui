@@ -220,8 +220,18 @@ namespace Microsoft.Maui.Controls
 				: IEventSubscriptionStrategy
 				where TBindable : BindableObject
 		{
-			public void AttachHandlerTo(BindableObject target) => addHandler((TBindable)target, InvokeActions);
-			public void DetachHandlerFrom(BindableObject target) => removeHandler((TBindable)target, InvokeActions);
+			public void AttachHandlerTo(BindableObject target)
+			{
+				if (target is TBindable typedTarget)
+					addHandler(typedTarget, InvokeActions);
+			}
+
+			public void DetachHandlerFrom(BindableObject target)
+			{
+				if (target is TBindable typedTarget)
+					removeHandler(typedTarget, InvokeActions);
+			}
+
 			private void InvokeActions(object? sender, EventArgs e) => trigger.InvokeActions(sender);
 		}
 
@@ -233,8 +243,18 @@ namespace Microsoft.Maui.Controls
 				where TBindable : BindableObject
 				where TEventArgs : EventArgs
 		{
-			public void AttachHandlerTo(BindableObject target) => addHandler((TBindable)target, InvokeActions);
-			public void DetachHandlerFrom(BindableObject target) => removeHandler((TBindable)target, InvokeActions);
+			public void AttachHandlerTo(BindableObject target)
+			{
+				if (target is TBindable typedTarget)
+					addHandler(typedTarget, InvokeActions);
+			}
+
+			public void DetachHandlerFrom(BindableObject target)
+			{
+				if (target is TBindable typedTarget)
+					removeHandler(typedTarget, InvokeActions);
+			}
+
 			private void InvokeActions(object? sender, TEventArgs e) => trigger.InvokeActions(sender);
 		}
 	}
