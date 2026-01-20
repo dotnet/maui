@@ -9,7 +9,7 @@ namespace Microsoft.Maui.IntegrationTests
 		static readonly string DotnetTool = Path.Combine(DotnetRoot, "dotnet");
 		const int DEFAULT_TIMEOUT = 1800;
 
-		private static string ConstructBuildArgs(string projectFile, string config, string target = "", string framework = "", IEnumerable<string>? properties = null, string binlogPath = "", string runtimeIdentifier = "", bool isPublishing = false)
+		private static (string buildArgs, string binlogPath) ConstructBuildArgs(string projectFile, string config, string target = "", string framework = "", IEnumerable<string>? properties = null, string binlogPath = "", string runtimeIdentifier = "", bool isPublishing = false)
 		{
 			var buildArgs = $"\"{projectFile}\" -c {config}";
 
@@ -43,13 +43,13 @@ namespace Microsoft.Maui.IntegrationTests
 			}
 			buildArgs += $" -bl:\"{binlogPath}\"";
 
-			return buildArgs;
+			return (buildArgs, binlogPath);
 		}
 
 		public static bool Build(string projectFile, string config, string target = "", string framework = "", IEnumerable<string>? properties = null, string binlogPath = "", bool msbuildWarningsAsErrors = false, string runtimeIdentifier = "",
 			string[]? warningsToIgnore = null)
 		{
-			var buildArgs = ConstructBuildArgs(projectFile, config, target, framework, properties, binlogPath, runtimeIdentifier, false);
+			var (buildArgs, actualBinlogPath) = ConstructBuildArgs(projectFile, config, target, framework, properties, binlogPath, runtimeIdentifier, false);
 
 			if (msbuildWarningsAsErrors)
 			{
@@ -78,13 +78,29 @@ namespace Microsoft.Maui.IntegrationTests
 				buildArgs += $" -p:nowarn=\"{csWarnings}\"";
 			}
 
-			return Run("build", $"{buildArgs}");
+			var result = Run("build", $"{buildArgs}");
+			
+			// On failure, extract and output errors from the binlog for visibility in CI logs
+			if (!result)
+			{
+				BuildWarningsUtilities.OutputBuildErrorsFromBinLog(actualBinlogPath);
+			}
+			
+			return result;
 		}
 
 		public static bool Publish(string projectFile, string config, string target = "", string framework = "", IEnumerable<string>? properties = null, string binlogPath = "", string runtimeIdentifier = "")
 		{
-			var buildArgs = ConstructBuildArgs(projectFile, config, target, framework, properties, binlogPath, runtimeIdentifier, true);
-			return Run("publish", $"{buildArgs}");
+			var (buildArgs, actualBinlogPath) = ConstructBuildArgs(projectFile, config, target, framework, properties, binlogPath, runtimeIdentifier, true);
+			var result = Run("publish", $"{buildArgs}");
+			
+			// On failure, extract and output errors from the binlog for visibility in CI logs
+			if (!result)
+			{
+				BuildWarningsUtilities.OutputBuildErrorsFromBinLog(actualBinlogPath);
+			}
+			
+			return result;
 		}
 
 		public static bool New(string shortName, string outputDirectory, string framework = "", string? additionalDotNetNewParams = null)

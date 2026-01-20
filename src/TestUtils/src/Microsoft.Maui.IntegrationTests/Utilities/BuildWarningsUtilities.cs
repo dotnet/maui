@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.IO;
+using System.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging.StructuredLogger;
 
@@ -24,6 +25,49 @@ namespace Microsoft.Maui.IntegrationTests
 		private static bool CompareWarningsFilePaths(this string actual, string expected) => actual.Contains(expected, StringComparison.Ordinal);
 
 		private static string NormalizeFilePath(string file) => file.Replace("\\\\", "/", StringComparison.Ordinal).Replace('\\', '/');
+
+		/// <summary>
+		/// Reads build errors from a binlog file and outputs them to the console.
+		/// This makes errors visible in Azure DevOps logs instead of requiring artifact downloads.
+		/// </summary>
+		/// <param name="binLogFilePath">Path to the .binlog file</param>
+		/// <param name="maxErrors">Maximum number of errors to output (default 50)</param>
+		public static void OutputBuildErrorsFromBinLog(string binLogFilePath, int maxErrors = 50)
+		{
+			if (!File.Exists(binLogFilePath))
+			{
+				Console.WriteLine($"[BuildWarningsUtilities] Binlog file not found: {binLogFilePath}");
+				return;
+			}
+
+			var errors = new List<string>();
+			foreach (var record in new BinLogReader().ReadRecords(binLogFilePath))
+			{
+				if (record.Args is BuildErrorEventArgs error)
+				{
+					var file = NormalizeFilePath(error.File ?? "");
+					var location = error.LineNumber > 0 ? $"({error.LineNumber},{error.ColumnNumber})" : "";
+					errors.Add($"{file}{location}: error {error.Code}: {error.Message}");
+				}
+			}
+
+			if (errors.Count > 0)
+			{
+				Console.WriteLine();
+				Console.WriteLine("╔══════════════════════════════════════════════════════════════════════════════╗");
+				Console.WriteLine($"║ BUILD ERRORS FROM BINLOG ({errors.Count} total)");
+				Console.WriteLine("╚══════════════════════════════════════════════════════════════════════════════╝");
+				foreach (var error in errors.Take(maxErrors))
+				{
+					Console.WriteLine(error);
+				}
+				if (errors.Count > maxErrors)
+				{
+					Console.WriteLine($"... and {errors.Count - maxErrors} more errors (see binlog for full list)");
+				}
+				Console.WriteLine();
+			}
+		}
 
 		public static List<WarningsPerFile> ReadNativeAOTWarningsFromBinLog(string binLogFilePath)
 		{
