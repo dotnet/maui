@@ -57,6 +57,19 @@ This guidance assumes:
 - **MacCatalyst** specific code is inside folders named `MacCatalyst`
 - **Windows** specific code is inside folders named `Windows`
 
+#### Understanding Core vs Controls Layers
+
+.NET MAUI code is organized into layers with distinct responsibilities:
+
+- **Core layer** (`src/Core/`) - Fundamental page/view lifecycle for ALL platforms
+- **Controls layer** (`src/Controls/`) - Control-specific implementations
+- **Compatibility layer** (`src/Controls/.../Compatibility/`) - Legacy renderer system
+
+**Key principle**: Core functionality (theme changes, safe areas, etc.) should be implemented in the Core layer where it applies to ALL pages, not duplicated in Controls.
+
+📖 **See** `.github/architecture/core-vs-controls.md` for layer decision guidance.
+📖 **See** `.github/instructions/ios-debugging.instructions.md` for iOS debugging patterns including duplication detection.
+
 ### Platform-Specific File Extensions
 
 Platform-specific files use naming conventions to control compilation:

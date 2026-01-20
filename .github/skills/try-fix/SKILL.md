@@ -125,10 +125,41 @@ Read the target files to understand the code:
 cat src/path/to/TargetFile.cs
 ```
 
+**CRITICAL: Search for Duplicate Implementations**
+
+Before proceeding with a fix, search for duplicate implementations of the problematic method:
+
+```bash
+# If fixing a method override (e.g., TraitCollectionDidChange)
+# Search for ALL occurrences across the codebase
+grep -r "override.*MethodName" src/ | grep -v ".Designer.cs"
+
+# Example: Find all TraitCollectionDidChange implementations
+grep -r "TraitCollectionDidChange" src/ | grep -v test
+
+# Check multiple layers
+find src/Core src/Controls -name "*.cs" -exec grep -l "MethodName" {} \;
+```
+
+**Key insight from Issue #33352**: The bug was NOT in the file where it crashed. It was duplication between:
+- `src/Core/src/Platform/iOS/PageViewController.cs` (Core - affects ALL pages)
+- `src/Controls/.../ShellSectionRootRenderer.cs` (Controls - Shell-specific)
+
+The fix was to REMOVE the duplicate in Controls, not patch it.
+
+**Decision tree**:
+```
+Found same method in multiple files?
+  YES → Check if one is obsolete/duplicate
+    → Consider REMOVING instead of patching
+  NO  → Proceed with patching the single implementation
+```
+
 **Key questions:**
 - What is the root cause of this bug?
-- Where should the fix go?
-- What's the minimal change needed?
+- Where should the fix go? (Check for duplicates first!)
+- Is this functionality already provided in a different layer?
+- What's the minimal change needed? (Remove vs patch?)
 
 ### Step 4: Design ONE Fix
 

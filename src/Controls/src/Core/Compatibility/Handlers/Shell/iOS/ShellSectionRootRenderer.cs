@@ -12,6 +12,12 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
+	// CONTROLS LAYER: Shell-specific renderer (Compatibility layer)
+	// - Handles Shell-specific layout and navigation
+	// - DO NOT duplicate Core layer functionality here (e.g., theme changes, safe areas)
+	// - Core functionality is already provided by PageViewController which applies to ALL pages
+	// - Historical note: TraitCollectionDidChange was removed in PR #33353 (Issue #33352)
+	//   because it duplicated PageViewController functionality and caused race condition crashes
 	public class ShellSectionRootRenderer : UIViewController, IShellSectionRootRenderer, IDisconnectable
 	{
 		#region IShellSectionRootRenderer

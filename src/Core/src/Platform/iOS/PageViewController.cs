@@ -3,6 +3,10 @@ using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
+	// CORE LAYER: Base view controller for ALL pages in .NET MAUI (iOS/MacCatalyst)
+	// - Provides fundamental lifecycle for ALL pages (Shell, ContentPage, NavigationPage, etc.)
+	// - Handles platform integration: theme changes, safe areas, status bar
+	// - DO NOT duplicate functionality from here in Controls layer (see .github/architecture/core-vs-controls.md)
 	public class PageViewController : ContainerViewController
 	{
 		public PageViewController(IView page, IMauiContext mauiContext)
@@ -56,6 +60,11 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		// CORE LAYER: Theme change detection for ALL pages
+		// This method is called by iOS when the system theme changes (light/dark mode).
+		// Applies to ALL pages automatically - do not duplicate in Controls layer.
+		// Historical note: Issue #33352 was caused by duplicate implementation in ShellSectionRootRenderer
+		// which was removed in PR #33353 (the duplicate caused race conditions during disposal).
 		public override void TraitCollectionDidChange(UITraitCollection? previousTraitCollection)
 		{
 			if (CurrentView?.Handler is ElementHandler handler)
