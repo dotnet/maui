@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.IO;
+using Xunit.Abstractions;
 
 namespace Microsoft.Maui.IntegrationTests
 {
@@ -47,7 +48,7 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		public static bool Build(string projectFile, string config, string target = "", string framework = "", IEnumerable<string>? properties = null, string binlogPath = "", bool msbuildWarningsAsErrors = false, string runtimeIdentifier = "",
-			string[]? warningsToIgnore = null)
+			string[]? warningsToIgnore = null, ITestOutputHelper? output = null)
 		{
 			var (buildArgs, actualBinlogPath) = ConstructBuildArgs(projectFile, config, target, framework, properties, binlogPath, runtimeIdentifier, false);
 
@@ -78,32 +79,32 @@ namespace Microsoft.Maui.IntegrationTests
 				buildArgs += $" -p:nowarn=\"{csWarnings}\"";
 			}
 
-			var result = Run("build", $"{buildArgs}");
+			var result = Run("build", $"{buildArgs}", output: output);
 			
 			// On failure, extract and output errors from the binlog for visibility in CI logs
 			if (!result)
 			{
-				BuildWarningsUtilities.OutputBuildErrorsFromBinLog(actualBinlogPath);
+				BuildWarningsUtilities.OutputBuildErrorsFromBinLog(actualBinlogPath, output: output);
 			}
 			
 			return result;
 		}
 
-		public static bool Publish(string projectFile, string config, string target = "", string framework = "", IEnumerable<string>? properties = null, string binlogPath = "", string runtimeIdentifier = "")
+		public static bool Publish(string projectFile, string config, string target = "", string framework = "", IEnumerable<string>? properties = null, string binlogPath = "", string runtimeIdentifier = "", ITestOutputHelper? output = null)
 		{
 			var (buildArgs, actualBinlogPath) = ConstructBuildArgs(projectFile, config, target, framework, properties, binlogPath, runtimeIdentifier, true);
-			var result = Run("publish", $"{buildArgs}");
+			var result = Run("publish", $"{buildArgs}", output: output);
 			
 			// On failure, extract and output errors from the binlog for visibility in CI logs
 			if (!result)
 			{
-				BuildWarningsUtilities.OutputBuildErrorsFromBinLog(actualBinlogPath);
+				BuildWarningsUtilities.OutputBuildErrorsFromBinLog(actualBinlogPath, output: output);
 			}
 			
 			return result;
 		}
 
-		public static bool New(string shortName, string outputDirectory, string framework = "", string? additionalDotNetNewParams = null)
+		public static bool New(string shortName, string outputDirectory, string framework = "", string? additionalDotNetNewParams = null, ITestOutputHelper? output = null)
 		{
 			var args = $"{shortName} -o \"{outputDirectory}\"";
 
@@ -114,23 +115,23 @@ namespace Microsoft.Maui.IntegrationTests
 
 			args += $" {additionalDotNetNewParams}";
 
-			var output = RunForOutput("new", args, out int exitCode, timeoutInSeconds: 300);
-			Console.WriteLine(output);
+			var cmdOutput = RunForOutput("new", args, out int exitCode, timeoutInSeconds: 300, output: output);
+			output?.WriteLine(cmdOutput);
 			return exitCode == 0;
 		}
 
-		public static bool Run(string command, string args, int timeoutinSeconds = DEFAULT_TIMEOUT)
+		public static bool Run(string command, string args, int timeoutinSeconds = DEFAULT_TIMEOUT, ITestOutputHelper? output = null)
 		{
-			var runOutput = RunForOutput(command, args, out int exitCode, timeoutinSeconds);
-			Console.WriteLine($"Process exit code: {exitCode}");
-			Console.WriteLine($"-------- Process output start --------");
-			Console.WriteLine(runOutput);
-			Console.WriteLine($"-------- Process output end --------");
+			var runOutput = RunForOutput(command, args, out int exitCode, timeoutinSeconds, output: output);
+			output?.WriteLine($"Process exit code: {exitCode}");
+			output?.WriteLine($"-------- Process output start --------");
+			output?.WriteLine(runOutput);
+			output?.WriteLine($"-------- Process output end --------");
 
 			// Provide helpful messages for common errors
 			if (exitCode != 0)
 			{
-				CheckForCommonErrors(runOutput);
+				CheckForCommonErrors(runOutput, output);
 			}
 
 			return exitCode == 0;
@@ -139,43 +140,43 @@ namespace Microsoft.Maui.IntegrationTests
 		/// <summary>
 		/// Checks build output for common errors and provides helpful guidance.
 		/// </summary>
-		static void CheckForCommonErrors(string output)
+		static void CheckForCommonErrors(string cmdOutput, ITestOutputHelper? output)
 		{
 			// Check for Xcode version mismatch
-			if (output.Contains("requires Xcode", StringComparison.OrdinalIgnoreCase) && output.Contains("The current version of Xcode is", StringComparison.OrdinalIgnoreCase))
+			if (cmdOutput.Contains("requires Xcode", StringComparison.OrdinalIgnoreCase) && cmdOutput.Contains("The current version of Xcode is", StringComparison.OrdinalIgnoreCase))
 			{
 				// Extract the error message line for display
-				var errorLine = output.Split('\n')
+				var errorLine = cmdOutput.Split('\n')
 					.FirstOrDefault(line => line.Contains("requires Xcode", StringComparison.OrdinalIgnoreCase))
 					?.Trim() ?? "Xcode version mismatch";
 
-				Console.WriteLine("");
-				Console.WriteLine("╔══════════════════════════════════════════════════════════════════════════════╗");
-				Console.WriteLine("║ XCODE VERSION MISMATCH DETECTED                                              ║");
-				Console.WriteLine("╠══════════════════════════════════════════════════════════════════════════════╣");
-				Console.WriteLine($"  {errorLine}");
-				Console.WriteLine("╠══════════════════════════════════════════════════════════════════════════════╣");
-				Console.WriteLine("║ To skip Xcode version validation, you can:                                   ║");
-				Console.WriteLine("║                                                                              ║");
-				Console.WriteLine("║ 1. Set environment variable:                                                 ║");
-				Console.WriteLine("║    export SKIP_XCODE_VERSION_CHECK=true                                      ║");
-				Console.WriteLine("║                                                                              ║");
-				Console.WriteLine("║ 2. Or set SkipXcodeVersionCheck in TestEnvironment.cs                        ║");
-				Console.WriteLine("║    src/TestUtils/src/.../Utilities/TestEnvironment.cs                        ║");
-				Console.WriteLine("╚══════════════════════════════════════════════════════════════════════════════╝");
-				Console.WriteLine("");
+				output?.WriteLine("");
+				output?.WriteLine("╔══════════════════════════════════════════════════════════════════════════════╗");
+				output?.WriteLine("║ XCODE VERSION MISMATCH DETECTED                                              ║");
+				output?.WriteLine("╠══════════════════════════════════════════════════════════════════════════════╣");
+				output?.WriteLine($"  {errorLine}");
+				output?.WriteLine("╠══════════════════════════════════════════════════════════════════════════════╣");
+				output?.WriteLine("║ To skip Xcode version validation, you can:                                   ║");
+				output?.WriteLine("║                                                                              ║");
+				output?.WriteLine("║ 1. Set environment variable:                                                 ║");
+				output?.WriteLine("║    export SKIP_XCODE_VERSION_CHECK=true                                      ║");
+				output?.WriteLine("║                                                                              ║");
+				output?.WriteLine("║ 2. Or set SkipXcodeVersionCheck in TestEnvironment.cs                        ║");
+				output?.WriteLine("║    src/TestUtils/src/.../Utilities/TestEnvironment.cs                        ║");
+				output?.WriteLine("╚══════════════════════════════════════════════════════════════════════════════╝");
+				output?.WriteLine("");
 			}
 		}
 
-		public static string RunForOutput(string command, string args, out int exitCode, int timeoutInSeconds = DEFAULT_TIMEOUT)
+		public static string RunForOutput(string command, string args, out int exitCode, int timeoutInSeconds = DEFAULT_TIMEOUT, ITestOutputHelper? output = null)
 		{
-			Console.WriteLine($"Running: '{DotnetTool}' with '{command}'");
-			Console.WriteLine($"Args list: {args}");
+			output?.WriteLine($"Running: '{DotnetTool}' with '{command}'");
+			output?.WriteLine($"Args list: {args}");
 			var pinfo = new ProcessStartInfo(DotnetTool, $"{command} {args}");
 			pinfo.EnvironmentVariables["DOTNET_MULTILEVEL_LOOKUP"] = "0";
 			pinfo.EnvironmentVariables["DOTNET_ROOT"] = DotnetRoot;
 
-			return ToolRunner.Run(pinfo, out exitCode, timeoutInSeconds: timeoutInSeconds);
+			return ToolRunner.Run(pinfo, out exitCode, timeoutInSeconds: timeoutInSeconds, output: output);
 		}
 
 	}

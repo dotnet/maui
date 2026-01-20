@@ -2,6 +2,7 @@
 using System.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging.StructuredLogger;
+using Xunit.Abstractions;
 
 namespace Microsoft.Maui.IntegrationTests
 {
@@ -27,16 +28,17 @@ namespace Microsoft.Maui.IntegrationTests
 		private static string NormalizeFilePath(string file) => file.Replace("\\\\", "/", StringComparison.Ordinal).Replace('\\', '/');
 
 		/// <summary>
-		/// Reads build errors from a binlog file and outputs them to the console.
+		/// Reads build errors from a binlog file and outputs them to the test output.
 		/// This makes errors visible in Azure DevOps logs instead of requiring artifact downloads.
 		/// </summary>
 		/// <param name="binLogFilePath">Path to the .binlog file</param>
 		/// <param name="maxErrors">Maximum number of errors to output (default 50)</param>
-		public static void OutputBuildErrorsFromBinLog(string binLogFilePath, int maxErrors = 50)
+		/// <param name="output">Optional test output helper for logging</param>
+		public static void OutputBuildErrorsFromBinLog(string binLogFilePath, int maxErrors = 50, ITestOutputHelper? output = null)
 		{
 			if (!File.Exists(binLogFilePath))
 			{
-				Console.WriteLine($"[BuildWarningsUtilities] Binlog file not found: {binLogFilePath}");
+				output?.WriteLine($"[BuildWarningsUtilities] Binlog file not found: {binLogFilePath}");
 				return;
 			}
 
@@ -53,19 +55,19 @@ namespace Microsoft.Maui.IntegrationTests
 
 			if (errors.Count > 0)
 			{
-				Console.WriteLine();
-				Console.WriteLine("╔══════════════════════════════════════════════════════════════════════════════╗");
-				Console.WriteLine($"║ BUILD ERRORS FROM BINLOG ({errors.Count} total)");
-				Console.WriteLine("╚══════════════════════════════════════════════════════════════════════════════╝");
-				foreach (var error in errors.Take(maxErrors))
+				output?.WriteLine("");
+				output?.WriteLine("╔══════════════════════════════════════════════════════════════════════════════╗");
+				output?.WriteLine($"║ BUILD ERRORS FROM BINLOG ({errors.Count} total)");
+				output?.WriteLine("╚══════════════════════════════════════════════════════════════════════════════╝");
+				foreach (var err in errors.Take(maxErrors))
 				{
-					Console.WriteLine(error);
+					output?.WriteLine(err);
 				}
 				if (errors.Count > maxErrors)
 				{
-					Console.WriteLine($"... and {errors.Count - maxErrors} more errors (see binlog for full list)");
+					output?.WriteLine($"... and {errors.Count - maxErrors} more errors (see binlog for full list)");
 				}
-				Console.WriteLine();
+				output?.WriteLine("");
 			}
 		}
 
