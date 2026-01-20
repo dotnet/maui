@@ -49,6 +49,14 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(ContentViewGroup platformView)
 		{
+			// Disconnect the content's handler to break circular references and allow GC.
+			// This is important for memory leak prevention - when a ContentView (like Page)
+			// is being removed, its content (Frame, ListView, etc.) should also be disconnected.
+			if (VirtualView?.PresentedContent is IView content)
+			{
+				content.Handler?.DisconnectHandler();
+			}
+
 			// If we're being disconnected from the xplat element, then we should no longer be managing its children
 			platformView.CrossPlatformLayout = null;
 			platformView.RemoveAllViews();

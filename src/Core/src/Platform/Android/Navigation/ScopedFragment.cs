@@ -36,6 +36,15 @@ namespace Microsoft.Maui.Platform
 		{
 			base.OnDestroy();
 			IsDestroyed = true;
+
+			// Disconnect the handler to allow the view to be garbage collected
+			if (DetailView?.Handler is IPlatformViewHandler pvh)
+			{
+				pvh.DisconnectHandler();
+			}
+
+			// Clear the reference to allow GC
+			DetailView = null!;
 		}
 	}
 }

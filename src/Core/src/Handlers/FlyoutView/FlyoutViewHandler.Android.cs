@@ -70,27 +70,36 @@ namespace Microsoft.Maui.Handlers
 			if (context is null)
 				return;
 
-			if (VirtualView.Detail?.Handler is IPlatformViewHandler pvh)
-				pvh.DisconnectHandler();
+			// Disconnect the OLD detail's handler before replacing with the new one.
+			// This allows the old detail view to be garbage collected.
+			// Note: ScopedFragment.OnDestroy() also disconnects, but fragment destruction
+			// may be delayed, so we disconnect proactively here.
+			if (_detailViewFragment?.DetailView?.Handler is IPlatformViewHandler oldPvh)
+			{
+				oldPvh.DisconnectHandler();
+			}
+			// Clear our reference to the old fragment to help with GC
+			var oldFragment = _detailViewFragment;
+			_detailViewFragment = null;
 
 			var fragmentManager = MauiContext.GetFragmentManager();
 
 			if (VirtualView.Detail is null)
 			{
-				if (_detailViewFragment is not null)
+				if (oldFragment is not null)
 				{
 					_pendingFragment =
 						fragmentManager
 							.RunOrWaitForResume(context, (fm) =>
 							{
-								if (_detailViewFragment is null)
+								if (oldFragment is null)
 								{
 									return;
 								}
 
 								fm
 									.BeginTransactionEx()
-									.RemoveEx(_detailViewFragment)
+									.RemoveEx(oldFragment)
 									.SetReorderingAllowed(true)
 									.Commit();
 							});

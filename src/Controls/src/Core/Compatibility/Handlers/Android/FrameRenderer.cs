@@ -420,6 +420,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void IElementHandler.DisconnectHandler()
 		{
+			// Disconnect the content's handler to break circular references and allow GC.
+			// This is important for memory leak prevention - when a Frame is being removed,
+			// its content (ListView, etc.) should also be disconnected.
+			if (Element?.Content is IView content)
+			{
+				content.Handler?.DisconnectHandler();
+			}
+
 			_viewHandlerWrapper.DisconnectHandler();
 		}
 
