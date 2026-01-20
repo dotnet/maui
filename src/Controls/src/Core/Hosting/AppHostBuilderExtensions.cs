@@ -96,9 +96,9 @@ public static partial class AppHostBuilderExtensions
 		}
 
 #if ANDROID
-		if(RuntimeFeature.IsMaterial3Enabled)
+		if (RuntimeFeature.IsMaterial3Enabled)
 		{
-			handlersCollection.AddHandler<Image, MaterialImageHandler>();
+			handlersCollection.AddHandler<Image, ImageHandler2>();
 		}
 		else
 		{
