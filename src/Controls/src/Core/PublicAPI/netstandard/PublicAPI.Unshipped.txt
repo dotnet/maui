@@ -1,1 +1,4 @@
 #nullable enable
+Microsoft.Maui.Controls.TitleBar.TitleFontAttributes.get -> Microsoft.Maui.Controls.FontAttributes
+Microsoft.Maui.Controls.TitleBar.TitleFontAttributes.set -> void
+static readonly Microsoft.Maui.Controls.TitleBar.TitleFontAttributesProperty -> Microsoft.Maui.Controls.BindableProperty!
