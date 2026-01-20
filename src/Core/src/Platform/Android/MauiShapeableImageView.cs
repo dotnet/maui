@@ -1,4 +1,5 @@
-﻿using Android.Content;
+﻿using System;
+using Android.Content;
 using Android.Runtime;
 using Android.Util;
 using Google.Android.Material.ImageView;
@@ -7,7 +8,9 @@ namespace Microsoft.Maui.Platform
 {
 	public class MauiShapeableImageView : ShapeableImageView
 	{
-		public MauiShapeableImageView(Context? context) : base(context)
+
+		public MauiShapeableImageView(Context? context) : base(MauiMaterialContextThemeWrapper.Create(
+		context ?? throw new ArgumentNullException(nameof(context))))
 		{
 		}
 
