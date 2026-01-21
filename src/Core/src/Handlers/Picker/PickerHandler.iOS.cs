@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Handlers
 		UIPickerView? _pickerView;
 
 #if MACCATALYST
-		UIAlertController? pickerController;
+		UIAlertController? _pickerController;
 #endif
 
 #if !MACCATALYST
@@ -63,13 +63,13 @@ namespace Microsoft.Maui.Handlers
 
 			// The UIPickerView is displayed as a subview of the UIAlertController when an empty string is provided as the title, instead of using the VirtualView title. 
 			// This behavior deviates from the expected native macOS behavior.
-			pickerController = UIAlertController.Create("", "", UIAlertControllerStyle.ActionSheet);
+			_pickerController = UIAlertController.Create("", "", UIAlertControllerStyle.ActionSheet);
 
 			// needs translation
 			// Handle picker dismissal directly in the Done action instead of using EditingDidEnd event
 			// This simplifies the cleanup logic, avoids duplicate dismiss calls, and prevents VoiceOver issues
 			// Note: EditingDidEnd event breaks VoiceOver accessibility when dismissing the picker, which is why it hasn't been used
-			pickerController.AddAction(UIAlertAction.Create("Done",
+			_pickerController.AddAction(UIAlertAction.Create("Done",
 								UIAlertActionStyle.Default,
 								action =>
 								{
@@ -79,15 +79,15 @@ namespace Microsoft.Maui.Handlers
 								}
 							));
 
-			if (pickerController.View != null && pickerView != null)
+			if (_pickerController.View != null && pickerView != null)
 			{
-				pickerController.View.AddSubview(pickerView);
+				_pickerController.View.AddSubview(pickerView);
 				var doneButtonHeight = 90;
-				var height = NSLayoutConstraint.Create(pickerController.View, NSLayoutAttribute.Height, NSLayoutRelation.Equal, null, NSLayoutAttribute.NoAttribute, 1, pickerHeight + doneButtonHeight);
-				pickerController.View.AddConstraint(height);
+				var height = NSLayoutConstraint.Create(_pickerController.View, NSLayoutAttribute.Height, NSLayoutRelation.Equal, null, NSLayoutAttribute.NoAttribute, 1, pickerHeight + doneButtonHeight);
+				_pickerController.View.AddConstraint(height);
 			}
 
-			var popoverPresentation = pickerController.PopoverPresentationController;
+			var popoverPresentation = _pickerController.PopoverPresentationController;
 			if (popoverPresentation != null)
 			{
 				popoverPresentation.SourceView = uITextField;
@@ -103,7 +103,7 @@ namespace Microsoft.Maui.Handlers
 			var currentViewController = GetCurrentViewController(platformWindow.RootViewController);
 			platformWindow.BeginInvokeOnMainThread(() =>
 			{
-				currentViewController?.PresentViewControllerAsync(pickerController, true);
+				currentViewController?.PresentViewControllerAsync(_pickerController, true);
 			});
 		}
 
@@ -130,6 +130,14 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(MauiPicker platformView)
 		{
 			_proxy.Disconnect(platformView);
+
+#if MACCATALYST
+			if (_pickerController != null)
+			{
+				_pickerController.DismissViewController(false, null);
+				_pickerController = null;
+			}
+#endif
 
 			if (_pickerView != null)
 			{
@@ -161,9 +169,17 @@ namespace Microsoft.Maui.Handlers
 		internal static async void MapUnfocus(IPickerHandler handler, IPicker picker, object? args)
 		{
 			if (handler is PickerHandler pickerHandler && 
-				pickerHandler.pickerController is not null)
+				pickerHandler._pickerController is not null)
 			{
-				await pickerHandler.pickerController.DismissViewControllerAsync(true);
+				try
+				{
+					await pickerHandler._pickerController.DismissViewControllerAsync(true);
+				}
+				catch (ObjectDisposedException)
+				{
+					// Already dismissed - safe to ignore
+				}
+				
 				if (handler.VirtualView is IPicker virtualView)
 					virtualView.IsFocused = virtualView.IsOpen = false;
 			}
