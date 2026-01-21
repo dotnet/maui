@@ -327,7 +327,13 @@ namespace Microsoft.Maui.Controls
 					navPage.ChildAdded -= NavigationPageChildrenChanged;
 					navPage.ChildRemoved -= NavigationPageChildrenChanged;
 				}
+				// Clear the list to release references to NavigationPages
+				_navigationPagesStack.Clear();
 			}
+
+			// Clear page references to allow GC
+			_currentNavigationPage = null;
+			_currentPage = null;
 		}
 	}
 }
