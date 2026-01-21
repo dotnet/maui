@@ -246,9 +246,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			base.OnHiddenChanged(hidden);
 			
-			if (!hidden)
+			if (!hidden && _shellToolbar?.Handler != null)
 			{
-				_shellToolbar.Handler.UpdateValue("TitleView");
+				_shellToolbar.Handler.UpdateValue(nameof(Toolbar.TitleView));
 			}
 		}
 
