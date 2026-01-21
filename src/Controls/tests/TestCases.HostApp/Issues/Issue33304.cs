@@ -10,7 +10,6 @@ namespace Maui.Controls.Sample.Issues
 				Text = "TitleView",
 				AutomationId = "HomeTitleView"
 			});
-			// Shell.SetFlyoutBehavior(FlyoutBehavior.Disabled);
 			var tabBar = new TabBar();
 			tabBar.Route = "homePage";
 			// Home Tab
