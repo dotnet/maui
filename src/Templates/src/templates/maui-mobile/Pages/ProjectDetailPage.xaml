@@ -170,15 +170,22 @@
                         SemanticProperties.Description="Clean up"
                         />
                 </Grid>
-                <VerticalStackLayout 
-                    Spacing="{StaticResource LayoutSpacing}"
-                    BindableLayout.ItemsSource="{Binding Tasks}">
-                    <BindableLayout.ItemTemplate>
+                <CollectionView ItemsSource="{Binding Tasks}"
+                                x:Name="ProjectTasksCollectionView"
+                                SelectionMode="Single"
+                                SelectedItem="{Binding SelectedTask}"
+                                SelectionChangedCommand="{Binding NavigateToTaskCommand}"
+                                SelectionChangedCommandParameter="{Binding SelectedTask}">
+                    <CollectionView.ItemsLayout>
+                        <LinearItemsLayout Orientation="Vertical"
+                                           ItemSpacing="{StaticResource LayoutSpacing}"/>
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
                         <DataTemplate>
-                            <controls:TaskView TaskCompletedCommand="{Binding TaskCompletedCommand, Source={RelativeSource AncestorType={x:Type pageModels:ProjectDetailPageModel}}, x:DataType=pageModels:ProjectDetailPageModel}" />
+                            <controls:TaskView TaskCompletedCommand="{Binding TaskCompletedCommand, Source={RelativeSource AncestorType={x:Type pageModels:ProjectDetailPageModel}}, x:DataType=pageModels:ProjectDetailPageModel}"/>
                         </DataTemplate>
-                    </BindableLayout.ItemTemplate>
-                </VerticalStackLayout>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
             </VerticalStackLayout>
         </ScrollView>
 

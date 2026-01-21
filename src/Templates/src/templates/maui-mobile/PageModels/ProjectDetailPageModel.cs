@@ -56,6 +56,9 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 		new IconData { Icon = FluentUI.bot_24_regular, Description = "Bot Icon" }
 	};
 
+	[ObservableProperty]
+	private ProjectTask? selectedTask;
+
 	private bool _canDelete;
 
 	public bool CanDelete
