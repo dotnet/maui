@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 		public const string Toggle = "toggle";
 		/// <summary>Indicates a favorite, or star, UI.</summary>
 		public const string Favorite = "favorite";
-		/// <summary>Indicates an on/off UI.</summary>
+		/// <summary>Indicates an on/off toggle UI.</summary>
 		public const string OnOff = "on&off";
 		/// <summary>Indicates a small switch UI.</summary>
 		public const string Small = "small";

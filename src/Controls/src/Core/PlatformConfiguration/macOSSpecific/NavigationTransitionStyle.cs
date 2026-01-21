@@ -1,23 +1,23 @@
 namespace Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific
 {
-	/// <summary>Enumerates navigation transition styles for macOS.</summary>
+	/// <summary>Enumerates navigation transition animation styles for macOS.</summary>
 	public enum NavigationTransitionStyle
 	{
-		/// <summary>Indicates no transition animation.</summary>
+		/// <summary>No transition animation.</summary>
 		None,
-		/// <summary>Indicates a crossfade transition.</summary>
+		/// <summary>A crossfade transition animation.</summary>
 		Crossfade,
-		/// <summary>Indicates a slide-up transition.</summary>
+		/// <summary>A slide up transition animation.</summary>
 		SlideUp,
-		/// <summary>Indicates a slide-down transition.</summary>
+		/// <summary>A slide down transition animation.</summary>
 		SlideDown,
-		/// <summary>Indicates a slide-left transition.</summary>
+		/// <summary>A slide left transition animation.</summary>
 		SlideLeft,
-		/// <summary>Indicates a slide-right transition.</summary>
+		/// <summary>A slide right transition animation.</summary>
 		SlideRight,
-		/// <summary>Indicates a slide-forward transition based on navigation direction.</summary>
+		/// <summary>A slide forward transition animation that respects the current layout direction.</summary>
 		SlideForward,
-		/// <summary>Indicates a slide-backward transition based on navigation direction.</summary>
+		/// <summary>A slide backward transition animation that respects the current layout direction.</summary>
 		SlideBackward
 	}
 }

@@ -1,11 +1,11 @@
 namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 {
-	/// <summary>Enumerates group header styles for iOS list views.</summary>
+	/// <summary>Specifies the iOS UITableViewStyle for grouped ListView headers.</summary>
 	public enum GroupHeaderStyle
 	{
-		/// <summary>Indicates a plain header style with sticky headers.</summary>
+		/// <summary>Plain style headers that scroll with content and stick at the top.</summary>
 		Plain,
-		/// <summary>Indicates a grouped header style with non-sticky headers.</summary>
+		/// <summary>Grouped style headers with rounded corners and inset appearance.</summary>
 		Grouped
 	}
 }

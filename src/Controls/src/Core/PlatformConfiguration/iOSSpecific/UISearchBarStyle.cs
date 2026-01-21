@@ -1,13 +1,13 @@
 namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 {
-	/// <summary>Enumerates search bar styles for iOS.</summary>
+	/// <summary>Specifies the iOS UISearchBarStyle visual appearance.</summary>
 	public enum UISearchBarStyle
 	{
-		/// <summary>Indicates the default search bar style.</summary>
+		/// <summary>Uses the system default search bar style.</summary>
 		Default,
-		/// <summary>Indicates a prominent search bar with an opaque background.</summary>
+		/// <summary>Prominent style with solid background.</summary>
 		Prominent,
-		/// <summary>Indicates a minimal search bar with a translucent background.</summary>
+		/// <summary>Minimal style with transparent background.</summary>
 		Minimal
 	}
 }
