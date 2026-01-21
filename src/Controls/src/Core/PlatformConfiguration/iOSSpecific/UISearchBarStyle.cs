@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 {
 	/// <summary>Specifies the iOS UISearchBarStyle visual appearance.</summary>

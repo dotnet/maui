@@ -1,4 +1,3 @@
-
 namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 {
 	/// <summary>Specifies the iOS UITableViewStyle for grouped ListView headers.</summary>

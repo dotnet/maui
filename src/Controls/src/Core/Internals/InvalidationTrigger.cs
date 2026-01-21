@@ -3,24 +3,24 @@ using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls.Internals
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/InvalidationTrigger.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.InvalidationTrigger']/Docs/*" />
+	/// <summary>Flags indicating which property changes should trigger layout invalidation.</summary>
 	[Flags]
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public enum InvalidationTrigger
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/InvalidationTrigger.xml" path="//Member[@MemberName='Undefined']/Docs/*" />
+		/// <summary>No invalidation trigger specified.</summary>
 		Undefined = 0,
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/InvalidationTrigger.xml" path="//Member[@MemberName='MeasureChanged']/Docs/*" />
+		/// <summary>Invalidation due to a change in measured size.</summary>
 		MeasureChanged = 1 << 0,
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/InvalidationTrigger.xml" path="//Member[@MemberName='HorizontalOptionsChanged']/Docs/*" />
+		/// <summary>Invalidation due to a change in horizontal layout options.</summary>
 		HorizontalOptionsChanged = 1 << 1,
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/InvalidationTrigger.xml" path="//Member[@MemberName='VerticalOptionsChanged']/Docs/*" />
+		/// <summary>Invalidation due to a change in vertical layout options.</summary>
 		VerticalOptionsChanged = 1 << 2,
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/InvalidationTrigger.xml" path="//Member[@MemberName='SizeRequestChanged']/Docs/*" />
+		/// <summary>Invalidation due to a change in requested size.</summary>
 		SizeRequestChanged = 1 << 3,
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/InvalidationTrigger.xml" path="//Member[@MemberName='RendererReady']/Docs/*" />
+		/// <summary>Invalidation due to the renderer becoming ready.</summary>
 		RendererReady = 1 << 4,
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/InvalidationTrigger.xml" path="//Member[@MemberName='MarginChanged']/Docs/*" />
+		/// <summary>Invalidation due to a change in margin.</summary>
 		MarginChanged = 1 << 5
 	}
 }

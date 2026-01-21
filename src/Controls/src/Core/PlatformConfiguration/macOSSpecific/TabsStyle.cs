@@ -1,4 +1,3 @@
-using System;
 namespace Microsoft.Maui.Controls
 {
 	/// <summary>Enumerates the display styles for tabs in a <see cref="TabbedPage"/> on macOS.</summary>
