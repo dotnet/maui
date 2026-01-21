@@ -327,6 +327,21 @@ namespace Microsoft.Maui.Handlers
 			{
 				te.Toolbar?.Handler?.DisconnectHandler();
 			}
+
+			// Proactively disconnect the detail fragment's view to allow GC
+			// The fragment may not be destroyed immediately by the FragmentManager,
+			// so we clear the reference explicitly here.
+			_detailViewFragment?.DisconnectDetailView();
+
+			// Disconnect Detail handler to break circular references
+			VirtualView?.Detail?.Handler?.DisconnectHandler();
+
+			// Disconnect Flyout handler to break circular references
+			VirtualView?.Flyout?.Handler?.DisconnectHandler();
+
+			// Clear fragment and view references
+			_detailViewFragment = null;
+			_flyoutView = null;
 		}
 
 		void DrawerLayoutAttached(object? sender, View.ViewAttachedToWindowEventArgs e)

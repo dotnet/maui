@@ -21,6 +21,7 @@ namespace Microsoft.Maui.Platform
 		ScopedFragment? _viewFragment;
 		IToolbarElement? _toolbarElement;
 		CoordinatorLayout? _managedCoordinatorLayout;
+		IView? _currentView;
 
 		// TODO MAUI: temporary event to alert when rootview is ready
 		// handlers and various bits use this to start interacting with rootview
@@ -50,6 +51,13 @@ namespace Microsoft.Maui.Platform
 
 		internal void Connect(IView? view, IMauiContext? mauiContext = null)
 		{
+			// Disconnect all handlers in the old view tree to allow garbage collection.
+			// This recursively walks the visual tree and disconnects each handler,
+			// breaking circular references between managed and native objects.
+			// This is critical for memory leak prevention when Window.Page changes.
+			_currentView?.DisconnectHandlers();
+			_currentView = view;
+
 			ClearPlatformParts();
 
 			mauiContext = mauiContext ?? _mauiContext;
@@ -144,6 +152,11 @@ namespace Microsoft.Maui.Platform
 				MauiWindowInsetListener.RemoveViewWithLocalListener(_managedCoordinatorLayout);
 			}
 
+			// Disconnect all handlers in the view tree to allow garbage collection.
+			// This recursively walks the visual tree and disconnects each handler.
+			_currentView?.DisconnectHandlers();
+			_currentView = null;
+
 			ClearPlatformParts();
 			SetContentView(null);
 		}
@@ -152,6 +165,15 @@ namespace Microsoft.Maui.Platform
 		{
 			_pendingFragment?.Dispose();
 			_pendingFragment = null;
+			
+			// Clear the ContainerView's reference to the virtual view to allow GC.
+			// The ContainerView holds a reference to the IElement via CurrentView,
+			// and this must be cleared when the view is replaced.
+			if (_rootView is ContainerView cv)
+			{
+				cv.CurrentView = null;
+			}
+			
 			DrawerLayout = null;
 			_rootView = null;
 			_toolbarElement = null;
@@ -163,6 +185,16 @@ namespace Microsoft.Maui.Platform
 		{
 			_pendingFragment?.Dispose();
 			_pendingFragment = null;
+
+			// Disconnect the old view's handler to allow it to be garbage collected.
+			// This is important for memory leak prevention when Window.Page changes.
+			if (_viewFragment?.DetailView?.Handler is IPlatformViewHandler oldPvh)
+			{
+				oldPvh.DisconnectHandler();
+			}
+			// Clear the DetailView reference immediately to allow GC, rather than
+			// waiting for the fragment's OnDestroy which may be delayed.
+			_viewFragment?.DisconnectDetailView();
 
 			var context = _mauiContext.Context;
 			if (context is null)
