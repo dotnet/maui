@@ -30,14 +30,12 @@ namespace Microsoft.Maui.Controls.Handlers
         LinearLayout _rootLayout;
         FragmentContainerView _fragmentContainerView;
         BottomNavigationView _bottomNavigationView;
-        IShellSectionRenderer _currentSectionRenderer;
         IShellContext _shellContext;
         Fragment _parentFragment; // The wrapper fragment that hosts this handler
         IShellBottomNavViewAppearanceTracker _appearanceTracker;
         GenericNavigationItemSelectedListener _navigationListener;
         Dictionary<ShellSection, IShellSectionRenderer> _sectionRenderers = new Dictionary<ShellSection, IShellSectionRenderer>();
-        readonly Dictionary<Element, IShellObservableFragment> _fragmentMap = new Dictionary<Element, IShellObservableFragment>();
-        IShellObservableFragment _currentFragment;
+        IShellSectionRenderer _currentSectionRenderer;
         ShellSection _shellSection;
         Page _displayedPage;
 
@@ -227,15 +225,12 @@ namespace Microsoft.Maui.Controls.Handlers
 
         /// <summary>
         /// Switches to a new ShellSection.
+        /// With StackNavigationManager, each section manages its own NavHostFragment.
+        /// We just need to swap which section's fragment is displayed.
         /// </summary>
         internal void SwitchToSection(ShellSection newSection, bool animate)
         {
-            if (newSection is null || _fragmentContainerView is null)
-            {
-                return;
-            }
-
-            if (VirtualView is null)
+            if (newSection is null || _fragmentContainerView is null || VirtualView is null)
             {
                 return;
             }
@@ -246,20 +241,17 @@ namespace Microsoft.Maui.Controls.Handlers
             var fragmentManager = _parentFragment?.ChildFragmentManager;
             if (fragmentManager is null)
             {
-                System.Diagnostics.Debug.WriteLine($"ShellItemHandler: FragmentManager is null. ParentFragment: {_parentFragment}");
                 return;
             }
 
-            var previousRenderer = _currentSectionRenderer;
-
             // Reuse existing renderer if available, otherwise create new one
-            if (!_sectionRenderers.TryGetValue(newSection, out _currentSectionRenderer))
+            if (!_sectionRenderers.TryGetValue(newSection, out var newSectionRenderer))
             {
                 try
                 {
-                    _currentSectionRenderer = _shellContext.CreateShellSectionRenderer(newSection);
-                    _currentSectionRenderer.ShellSection = newSection;
-                    _sectionRenderers[newSection] = _currentSectionRenderer;
+                    newSectionRenderer = _shellContext.CreateShellSectionRenderer(newSection);
+                    newSectionRenderer.ShellSection = newSection;
+                    _sectionRenderers[newSection] = newSectionRenderer;
                 }
                 catch (Exception ex)
                 {
@@ -268,96 +260,49 @@ namespace Microsoft.Maui.Controls.Handlers
                 }
             }
 
-            // ShellSectionRenderer IS a Fragment, so we use the renderer directly
-            var sectionFragment = (_currentSectionRenderer as IShellObservableFragment)?.Fragment;
-
-            if (sectionFragment is null)
+            // Get the fragment for this section
+            var newSectionFragment = (newSectionRenderer as IShellObservableFragment)?.Fragment;
+            if (newSectionFragment is null)
             {
                 System.Diagnostics.Debug.WriteLine($"ShellItemHandler: Section fragment is null for {newSection.Title}");
                 return;
             }
 
+            // Begin fragment transaction
             var transaction = fragmentManager.BeginTransactionEx();
 
             if (animate)
                 transaction.SetTransitionEx((int)global::Android.App.FragmentTransit.FragmentOpen);
 
-            // Use the old renderer approach: query the previous section's stack to find its fragments
-            if (_shellSection is not null && _shellSection != newSection)
+            // Hide the previous section's fragment if switching sections
+            if (_currentSectionRenderer is not null && _currentSectionRenderer != newSectionRenderer)
             {
-                // Hide all pages in the previous section's navigation stack
-                foreach (var page in _shellSection.Stack)
+                var previousFragment = (_currentSectionRenderer as IShellObservableFragment)?.Fragment;
+                if (previousFragment is not null && fragmentManager.Contains(previousFragment))
                 {
-                    if (page is not null && _fragmentMap.TryGetValue(page, out var frag) && frag?.Fragment is not null && fragmentManager.Contains(frag.Fragment))
-                    {
-                        transaction.HideEx(frag.Fragment);
-                    }
-                }
-
-                // Also hide the section's base fragment
-                if (_fragmentMap.TryGetValue(_shellSection, out var sectionFrag) && sectionFrag?.Fragment is not null && fragmentManager.Contains(sectionFrag.Fragment))
-                {
-                    transaction.HideEx(sectionFrag.Fragment);
+                    transaction.HideEx(previousFragment);
                 }
 
                 UnhookChildEvents(_shellSection);
             }
 
-            // Ensure the new section's base fragment is in the fragment map
-            if (!_fragmentMap.ContainsKey(newSection))
+            // Show or add the new section's fragment
+            if (!fragmentManager.Contains(newSectionFragment))
             {
-                var sectionObservable = _currentSectionRenderer as IShellObservableFragment;
-                if (sectionObservable is not null)
-                {
-                    _fragmentMap[newSection] = sectionObservable;
-                }
+                transaction.AddEx(_fragmentContainerView.Id, newSectionFragment);
             }
-
-            // Determine which fragment to show based on the new section's navigation stack
-            IShellObservableFragment fragmentToShow = null;
-            var stack = newSection.Stack;
-
-            if (stack.Count > 1)
+            else
             {
-                // There are pushed pages, show the top one
-                var topPage = stack[stack.Count - 1];
-                if (_fragmentMap.TryGetValue(topPage, out var topFragment))
-                {
-                    fragmentToShow = topFragment;
-                }
-            }
-
-            // If no pushed pages or fragment not found, show the section's base fragment
-            if (fragmentToShow is null && _fragmentMap.TryGetValue(newSection, out var baseFrag))
-            {
-                fragmentToShow = baseFrag;
-            }
-
-            // Add or show the appropriate fragment
-            if (fragmentToShow?.Fragment is not null)
-            {
-                if (!fragmentManager.Contains(fragmentToShow.Fragment))
-                {
-                    transaction.AddEx(_fragmentContainerView.Id, fragmentToShow.Fragment);
-                }
-                else
-                {
-                    transaction.ShowEx(fragmentToShow.Fragment);
-                }
+                transaction.ShowEx(newSectionFragment);
             }
 
             transaction.SetReorderingAllowedEx(true);
             transaction.CommitAllowingStateLossEx();
 
-            // Note: Appearance is handled by IAppearanceObserver.OnAppearanceChanged
-            // which is called automatically by Shell when switching sections
-
-            // Don't dispose the previous renderer immediately - let Android's fragment lifecycle handle it
-            // Disposing immediately causes crashes when the fragment transaction is still being processed
-            // The renderer will be disposed when DisconnectHandler is called
+            _currentSectionRenderer = newSectionRenderer;
+            _shellSection = newSection;
 
             HookChildEvents(newSection);
-            _shellSection = newSection;
 
             // Track displayed page changes
             ((IShellSectionController)newSection).AddDisplayedPageObserver(this, UpdateDisplayedPage);
@@ -367,15 +312,12 @@ namespace Microsoft.Maui.Controls.Handlers
 
         /// <summary>
         /// Hook up navigation events for a shell section.
+        /// NOTE: Navigation is now handled by ShellSectionHandler's StackNavigationManager
+        /// We no longer need to subscribe to NavigationRequested at the ShellItem level
         /// </summary>
         protected virtual void HookChildEvents(ShellSection shellSection)
         {
-            if (shellSection is null)
-            {
-                return;
-            }
-
-            ((IShellSectionController)shellSection).NavigationRequested += OnNavigationRequested;
+            // No longer needed - ShellSectionHandler handles its own navigation
         }
 
         /// <summary>
@@ -388,16 +330,7 @@ namespace Microsoft.Maui.Controls.Handlers
                 return;
             }
 
-            ((IShellSectionController)shellSection).NavigationRequested -= OnNavigationRequested;
             ((IShellSectionController)shellSection).RemoveDisplayedPageObserver(this);
-        }
-
-        /// <summary>
-        /// Handles navigation requests (Push/Pop/etc).
-        /// </summary>
-        protected virtual void OnNavigationRequested(object sender, Internals.NavigationRequestedEventArgs e)
-        {
-            //e.Task = HandleFragmentUpdate((ShellNavigationSource)e.RequestType, (ShellSection)sender, e.Page, e.Animated);
         }
 
         /// <summary>
@@ -409,269 +342,8 @@ namespace Microsoft.Maui.Controls.Handlers
         }
 
         /// <summary>
-        /// Handles fragment updates for navigation (Push/Pop/PopToRoot/etc).
-        /// Adapted from ShellItemRendererBase.HandleFragmentUpdate.
-        /// </summary>
-        protected virtual Task<bool> HandleFragmentUpdate(ShellNavigationSource navSource, ShellSection shellSection, Page page, bool animated)
-        {
-            var result = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-
-            bool isForCurrentTab = shellSection == _shellSection;
-            bool initialUpdate = _fragmentMap.Count == 0;
-
-            if (!_fragmentMap.ContainsKey(shellSection))
-            {
-                _fragmentMap[shellSection] = GetOrCreateFragmentForTab(shellSection);
-            }
-
-            switch (navSource)
-            {
-                case ShellNavigationSource.Insert:
-                    // Insert: Add page to fragment map but don't display it
-                    if (!_fragmentMap.ContainsKey(page))
-                    {
-                        _fragmentMap[page] = CreateFragmentForPage(page);
-                    }
-                    if (!isForCurrentTab)
-                        return Task.FromResult(true);
-                    // Insert doesn't change displayed page, just adds to the map
-                    return Task.FromResult(true);
-
-                case ShellNavigationSource.Push:
-                    if (!_fragmentMap.ContainsKey(page))
-                    {
-                        _fragmentMap[page] = CreateFragmentForPage(page);
-                    }
-                    if (!isForCurrentTab)
-                        return Task.FromResult(true);
-                    break;
-
-                case ShellNavigationSource.Pop:
-                    if (_fragmentMap.TryGetValue(page, out var frag))
-                    {
-                        var fragmentManager = _parentFragment?.ChildFragmentManager;
-                        if (fragmentManager is not null && fragmentManager.Contains(frag.Fragment) && !isForCurrentTab)
-                            RemoveFragment(frag.Fragment);
-                        _fragmentMap.Remove(page);
-                    }
-                    if (!isForCurrentTab)
-                        return Task.FromResult(true);
-                    break;
-
-                case ShellNavigationSource.Remove:
-                    if (_fragmentMap.TryGetValue(page, out var removeFragment))
-                    {
-                        var fragmentManager = _parentFragment?.ChildFragmentManager;
-                        if (fragmentManager is not null && fragmentManager.Contains(removeFragment.Fragment) && !isForCurrentTab && removeFragment != _currentFragment)
-                            RemoveFragment(removeFragment.Fragment);
-                        _fragmentMap.Remove(page);
-                    }
-
-                    if (!isForCurrentTab && removeFragment != _currentFragment)
-                        return Task.FromResult(true);
-                    break;
-
-                case ShellNavigationSource.PopToRoot:
-                    RemoveAllPushedPages(shellSection, isForCurrentTab);
-                    if (!isForCurrentTab)
-                        return Task.FromResult(true);
-                    break;
-
-                case ShellNavigationSource.ShellSectionChanged:
-                    // Handled by SwitchToSection
-                    break;
-
-                default:
-                    throw new InvalidOperationException("Unexpected navigation type");
-            }
-
-            IReadOnlyList<Page> stack = shellSection.Stack;
-            Element targetElement = null;
-            IShellObservableFragment target = null;
-
-            if (stack.Count == 1 || navSource == ShellNavigationSource.PopToRoot)
-            {
-                target = _fragmentMap[shellSection];
-                targetElement = shellSection;
-            }
-            else
-            {
-                targetElement = stack[stack.Count - 1];
-                if (!_fragmentMap.ContainsKey(targetElement))
-                    _fragmentMap[targetElement] = CreateFragmentForPage(targetElement as Page);
-                target = _fragmentMap[targetElement];
-            }
-
-            if (target == _currentFragment)
-            {
-                return Task.FromResult(true);
-            }
-
-            var fragmentManager2 = _parentFragment?.ChildFragmentManager;
-
-            if (fragmentManager2 is null)
-            {
-                return Task.FromResult(false);
-            }
-
-            var t = fragmentManager2.BeginTransactionEx();
-
-            if (animated)
-                SetupAnimation(navSource, t, page);
-
-            IShellObservableFragment trackFragment = null;
-
-            switch (navSource)
-            {
-                case ShellNavigationSource.Push:
-                    trackFragment = target;
-
-                    if (_currentFragment is not null)
-                    {
-                        t.HideEx(_currentFragment.Fragment);
-                    }
-
-                    if (!fragmentManager2.Contains(target.Fragment))
-                    {
-                        t.AddEx(_fragmentContainerView.Id, target.Fragment);
-                    }
-                    t.ShowEx(target.Fragment);
-                    break;
-
-                case ShellNavigationSource.Pop:
-                case ShellNavigationSource.PopToRoot:
-                case ShellNavigationSource.Remove:
-                    trackFragment = _currentFragment;
-
-                    if (_currentFragment is not null)
-                    {
-                        t.RemoveEx(_currentFragment.Fragment);
-                    }
-
-                    if (!fragmentManager2.Contains(target.Fragment))
-                    {
-                        t.AddEx(_fragmentContainerView.Id, target.Fragment);
-                    }
-                    t.ShowEx(target.Fragment);
-                    break;
-
-                case ShellNavigationSource.Insert:
-                    // Insert doesn't change the displayed page, just adds to the fragment map
-                    if (!isForCurrentTab)
-                    {
-                        return Task.FromResult(true);
-                    }
-
-                    // Insert is handled by just making sure the page is in the fragment map
-                    // The page is added to the stack, but we don't need to show it
-                    result.TrySetResult(true);
-                    return result.Task;
-            }
-
-            _currentFragment = target;
-
-            if (trackFragment is not null)
-            {
-                void OnAnimationFinished(object sender, EventArgs e)
-                {
-                    trackFragment.AnimationFinished -= OnAnimationFinished;
-                    result.TrySetResult(true);
-                }
-
-                trackFragment.AnimationFinished += OnAnimationFinished;
-            }
-
-            t.SetReorderingAllowedEx(true);
-            t.CommitAllowingStateLossEx();
-
-            if (trackFragment is null)
-            {
-                result.TrySetResult(true);
-            }
-
-            return result.Task;
-        }
-
-        /// <summary>
-        /// Gets or creates a fragment for a shell section tab.
-        /// </summary>
-        protected virtual IShellObservableFragment GetOrCreateFragmentForTab(ShellSection shellSection)
-        {
-            if (_sectionRenderers.TryGetValue(shellSection, out var renderer))
-            {
-                return renderer;
-            }
-
-            renderer = _shellContext.CreateShellSectionRenderer(shellSection);
-            renderer.ShellSection = shellSection;
-            _sectionRenderers[shellSection] = renderer;
-            return renderer;
-        }
-
-        /// <summary>
-        /// Creates a fragment for a page in the navigation stack.
-        /// </summary>
-        protected virtual IShellObservableFragment CreateFragmentForPage(Page page)
-        {
-            return _shellContext.CreateFragmentForPage(page);
-        }
-
-        /// <summary>
-        /// Sets up animation for fragment transitions.
-        /// </summary>
-        protected virtual void SetupAnimation(ShellNavigationSource navSource, FragmentTransaction t, Page page)
-        {
-            switch (navSource)
-            {
-                case ShellNavigationSource.Push:
-                    t.SetTransitionEx((int)global::Android.App.FragmentTransit.FragmentOpen);
-                    break;
-                case ShellNavigationSource.Pop:
-                case ShellNavigationSource.PopToRoot:
-                    t.SetTransitionEx((int)global::Android.App.FragmentTransit.FragmentClose);
-                    break;
-            }
-        }
-
-        /// <summary>
-        /// Removes a fragment from the fragment manager.
-        /// </summary>
-        void RemoveFragment(Fragment fragment)
-        {
-            var fragmentManager = _parentFragment?.ChildFragmentManager;
-            if (fragmentManager is null || !fragmentManager.Contains(fragment))
-            {
-                return;
-            }
-
-            var t = fragmentManager.BeginTransactionEx();
-            t.RemoveEx(fragment);
-            t.CommitAllowingStateLossEx();
-        }
-
-        /// <summary>
-        /// Removes all pushed pages from a section's navigation stack.
-        /// </summary>
-        void RemoveAllPushedPages(ShellSection shellSection, bool isForCurrentTab)
-        {
-            var stack = shellSection.Stack;
-            for (int i = stack.Count - 1; i > 0; i--)
-            {
-                var page = stack[i];
-                if (_fragmentMap.TryGetValue(page, out var fragment))
-                {
-                    var fragmentManager = _parentFragment?.ChildFragmentManager;
-                    if (fragmentManager is not null && fragmentManager.Contains(fragment.Fragment) && isForCurrentTab)
-                    {
-                        RemoveFragment(fragment.Fragment);
-                    }
-                    _fragmentMap.Remove(page);
-                }
-            }
-        }
-
-        /// <summary>
         /// Handles the back button press. Returns true if navigation was handled, false otherwise.
+        /// Back navigation is delegated to the current section's StackNavigationManager.
         /// </summary>
         internal bool OnBackButtonPressed()
         {
@@ -726,6 +398,12 @@ namespace Microsoft.Maui.Controls.Handlers
         {
             base.ConnectHandler(platformView);
 
+            // Subscribe to ShellItem property changes to detect CurrentItem changes from navigation
+            if (VirtualView is not null)
+            {
+                VirtualView?.PropertyChanged += OnShellItemPropertyChanged;
+            }
+
             SetupBottomNavigation();
 
             // Initialize appearance tracker
@@ -744,24 +422,52 @@ namespace Microsoft.Maui.Controls.Handlers
             // to ensure the fragment manager is ready
         }
 
+        void OnShellItemPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == ShellItem.CurrentItemProperty.PropertyName)
+            {
+                // Update bottom navigation selection
+                UpdateBottomNavigationSelection();
+            }
+        }
+
+        void UpdateBottomNavigationSelection()
+        {
+            if (_bottomNavigationView is null || VirtualView is null)
+            {
+                return;
+            }
+
+            var items = ((IShellItemController)VirtualView).GetItems();
+            if (items is null)
+            {
+                return;
+            }
+
+            var currentIndex = items.IndexOf(VirtualView.CurrentItem);
+            if (currentIndex >= 0 && _bottomNavigationView.SelectedItemId != currentIndex)
+            {
+                _bottomNavigationView.SelectedItemId = currentIndex;
+            }
+        }
+
         /// <summary>
         /// Disconnects the handler from the platform view.
         /// Comprehensive cleanup of resources
         /// </summary>
         protected override void DisconnectHandler(AView platformView)
         {
+            if (VirtualView is not null)
+            {
+                VirtualView?.PropertyChanged -= OnShellItemPropertyChanged;
+            }
+
             if (_shellSection is not null)
             {
                 UnhookChildEvents(_shellSection);
                 _shellSection = null;
             }
 
-            foreach (var fragment in _fragmentMap.Values)
-            {
-                fragment?.Fragment?.Dispose();
-            }
-            _fragmentMap.Clear();
-            _currentFragment = null;
             _displayedPage = null;
 
             // Unregister appearance observer

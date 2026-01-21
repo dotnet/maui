@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Android.Content;
 using Android.OS;
 using Android.Views;
@@ -22,6 +23,9 @@ namespace Microsoft.Maui.Platform
 		FragmentManager? _fragmentManager;
 		FragmentContainerView? _fragmentContainerView;
 		Type _navigationViewFragmentType = typeof(NavigationViewFragment);
+		Queue<NavigationRequest> _navigationQueue = new Queue<NavigationRequest>();
+
+		bool _processingQueue;
 
 		internal IView? VirtualView { get; private set; }
 		internal IStackNavigation? NavigationView { get; private set; }
@@ -83,10 +87,10 @@ namespace Microsoft.Maui.Platform
 		{
 			if (IsNavigating && OnResumeRequestedArgs is null)
 			{
-				// This should really never fire for the developer. Our xplat code should be handling waiting for navigation to
-				// complete before requesting another navigation from Core
-				// Maybe some day we'll put a navigation queue into Core? For now we won't
-				throw new InvalidOperationException("Previous Navigation Request is still Processing");
+				// Queue the navigation request to be processed after the current one completes
+				System.Diagnostics.Debug.WriteLine($"[StackNavigationManager] Navigation in progress, queueing request. Queue size: {_navigationQueue.Count}");
+				_navigationQueue.Enqueue(args);
+				return;
 			}
 
 			if (args.NavigationStack.Count == 0)
@@ -253,6 +257,30 @@ namespace Microsoft.Maui.Platform
 			IsPopping = null;
 			ActiveRequestedArgs = null;
 			navigationView?.NavigationFinished(NavigationStack);
+
+			// Process queued navigation requests
+			ProcessNavigationQueue();
+		}
+
+		void ProcessNavigationQueue()
+		{
+			if (_processingQueue || _navigationQueue.Count == 0)
+				return;
+
+			_processingQueue = true;
+
+			try
+			{
+				while (_navigationQueue.Count > 0 && !IsNavigating)
+				{
+					var nextRequest = _navigationQueue.Dequeue();
+					ApplyNavigationRequest(nextRequest);
+				}
+			}
+			finally
+			{
+				_processingQueue = false;
+			}
 		}
 
 		// This occurs when the navigation page is first being renderer so we sync up the
@@ -319,9 +347,7 @@ namespace Microsoft.Maui.Platform
 			_fragmentNavigator = null;
 		}
 
-#pragma warning disable RS0016 // Add public types and members to the declared API
-		public virtual void Connect(IView navigationView, FragmentContainerView? fragmentContainerView = null)
-#pragma warning restore RS0016 // Add public types and members to the declared API
+		internal virtual void Connect(IView navigationView, FragmentContainerView? fragmentContainerView = null)
 		{
 			VirtualView = navigationView;
 			NavigationView = (IStackNavigation)navigationView;
@@ -342,11 +368,18 @@ namespace Microsoft.Maui.Platform
 			_ = _fragmentManager ?? throw new InvalidOperationException($"GetFragmentManager returned null");
 			_ = NavigationView ?? throw new InvalidOperationException($"VirtualView cannot be null");
 
-			var navHostFragment = _fragmentManager.FindFragmentById(Resource.Id.nav_host);
+			// Use the container's actual ID instead of hardcoded Resource.Id.nav_host
+			// This allows each Shell tab to have its own unique navigation container
+			var containerId = _fragmentContainerView?.Id ?? Resource.Id.nav_host;
+
+			var navHostFragment = _fragmentManager.FindFragmentById(containerId);
+
 			SetNavHost(navHostFragment as NavHostFragment);
 
-			if (_navHost == null)
+			if (_navHost is null)
+			{
 				throw new InvalidOperationException($"No NavHostFragment found");
+			}
 
 			if (_fragmentContainerView is not null)
 			{

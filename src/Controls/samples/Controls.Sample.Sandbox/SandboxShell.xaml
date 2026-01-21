@@ -4,17 +4,19 @@
     x:Class="Maui.Controls.Sample.SandboxShell"
     xmlns:local="clr-namespace:Maui.Controls.Sample"
     x:Name="shell"
+    Shell.FlyoutBehavior="Flyout"
     Title="Shell Handler Tests">
 
-    <ShellContent Title="Home"
+    <!-- <ShellContent Title="Home"
                   ContentTemplate="{DataTemplate local:MainPage}"
-                  Route="MainPage"/>
+                  Route="MainPage"/> -->
 
-    <!-- <TabBar Shell.TabBarForegroundColor="Green"
+    <TabBar Shell.TabBarForegroundColor="Green"
             Shell.TabBarUnselectedColor="Red">
 
 
-        <Tab Title="Home">
+        <Tab Title="Home"
+             Route="Home">
             <ShellContent Icon="groceries.png"
                           Title="Home"
                           ContentTemplate="{DataTemplate local:MainPage}"
@@ -22,7 +24,8 @@
         </Tab>
 
 
-        <Tab Title="Tests">
+        <Tab Title="Tests"
+             Route="Tests">
             <ShellContent Icon="dotnet_bot.png"
                           Title="Navigation"
                           ContentTemplate="{DataTemplate local:NavigationTestPage}"
@@ -38,7 +41,8 @@
         </Tab>
 
 
-        <Tab Title="Multi-Tab Test">
+        <Tab Title="Multi-Tab Test"
+             Route="MultiTab">
             <ShellContent Icon="groceries.png"
                           Title="Content 1"
                           ContentTemplate="{DataTemplate local:Content1Page}"
@@ -54,11 +58,37 @@
         </Tab>
 
 
-        <Tab Title="Settings">
+        <Tab Title="Settings"
+             Route="Settings">
             <ShellContent Icon="dotnet_bot.png"
                           Title="Settings"
                           ContentTemplate="{DataTemplate local:SettingsPage}"
                           Route="SettingsPage"/>
         </Tab>
-    </TabBar> -->
+    </TabBar>
+    <!-- 
+        <FlyoutItem Title="Home"
+                    Icon="groceries.png"
+                    Route="Home">
+                <ShellContent ContentTemplate="{DataTemplate local:MainPage}"
+                              Route="MainPage"/>
+        </FlyoutItem>
+        <FlyoutItem Title="Tests"
+                    Icon="dotnet_bot.png"
+                    Route="Tests">
+                <ShellContent ContentTemplate="{DataTemplate local:NavigationTestPage}"
+                              Route="NavigationTest"/>
+        </FlyoutItem>
+        <FlyoutItem Title="Multi-Tab Test"
+                    Icon="groceries.png"
+                    Route="MultiTab">
+                <ShellContent ContentTemplate="{DataTemplate local:Content1Page}"
+                              Route="Content1"/>
+        </FlyoutItem>
+        <FlyoutItem Title="Settings"
+                    Icon="dotnet_bot.png"
+                    Route="Settings">
+                <ShellContent ContentTemplate="{DataTemplate local:SettingsPage}"
+                              Route="SettingsPage"/>
+        </FlyoutItem> -->
 </Shell>
