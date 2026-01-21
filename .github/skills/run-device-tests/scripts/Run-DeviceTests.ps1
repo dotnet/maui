@@ -221,15 +221,51 @@ try {
     # Call Start-Emulator.ps1 directly (not dot-sourced)
     # This will export $env:DEVICE_UDID
     $startEmulatorPath = Join-Path $SharedScriptsDir "Start-Emulator.ps1"
-    $SimulatorUdid = & pwsh -File $startEmulatorPath -Platform "ios"
+    $emulatorOutput = & pwsh -File $startEmulatorPath -Platform "ios" 2>&1
     
-    if (-not $SimulatorUdid) {
-        Write-Error "Failed to start iOS simulator"
+    # Extract UDID from output (last line, trimmed)
+    # The script outputs logging via Write-Host and returns UDID via 'return'
+    $SimulatorUdid = ($emulatorOutput | Select-Object -Last 1).ToString().Trim()
+    
+    # Validate UDID format (should be a GUID-like string)
+    if (-not $SimulatorUdid -or $SimulatorUdid -notmatch '^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}$') {
+        Write-Error "Failed to get valid iOS simulator UDID. Got: $SimulatorUdid"
+        Write-Host "Full output:" -ForegroundColor Red
+        $emulatorOutput | ForEach-Object { Write-Host $_ }
         exit 1
     }
     
     Write-Host ""
     Write-Host "✓ Simulator ready: $SimulatorUdid" -ForegroundColor Green
+
+    # ═══════════════════════════════════════════════════════════
+    # EXTRACT iOS VERSION FROM SIMULATOR
+    # ═══════════════════════════════════════════════════════════
+    # Extract iOS version from the booted simulator for XHarness targeting
+    $DetectedIOSVersion = $null
+    if (-not $iOSVersion) {
+        Write-Host ""
+        Write-Host "Detecting iOS version from simulator..." -ForegroundColor Gray
+        
+        try {
+            $simListJson = xcrun simctl list devices available -j | ConvertFrom-Json
+            $simulatorInfo = $null
+            
+            foreach ($runtime in $simListJson.devices.PSObject.Properties) {
+                $device = $runtime.Value | Where-Object { $_.udid -eq $SimulatorUdid }
+                if ($device) {
+                    # Extract version from runtime key (e.g., "com.apple.CoreSimulator.SimRuntime.iOS-18-5" -> "18.5")
+                    if ($runtime.Name -match 'iOS-(\d+)-(\d+)') {
+                        $DetectedIOSVersion = "$($matches[1]).$($matches[2])"
+                        Write-Host "✓ Detected iOS version: $DetectedIOSVersion" -ForegroundColor Green
+                    }
+                    break
+                }
+            }
+        } catch {
+            Write-Warning "Could not detect iOS version from simulator. Continuing without version in target."
+        }
+    }
 
     # ═══════════════════════════════════════════════════════════
     # TEST PHASE
@@ -245,10 +281,11 @@ try {
     }
 
     # Determine target
-    # xharness will use its own simulator management, but we've ensured one is booted
+    # Use detected version if available, otherwise use provided version
+    $targetVersion = if ($iOSVersion) { $iOSVersion } else { $DetectedIOSVersion }
     $target = "ios-simulator-64"
-    if ($iOSVersion) {
-        $target = "ios-simulator-64_$iOSVersion"
+    if ($targetVersion) {
+        $target = "ios-simulator-64_$targetVersion"
     }
 
     # Build xharness arguments
@@ -256,6 +293,7 @@ try {
         "apple", "test"
         "--app", $appPath
         "--target", $target
+        "--device", $SimulatorUdid
         "-o", $OutputDirectory
         "--timeout", $Timeout
         "-v"
@@ -273,7 +311,8 @@ try {
     
     Write-Host "Running: $xharnessCommand $($xharnessArgs -join ' ')" -ForegroundColor Gray
     Write-Host ""
-    Write-Host "Target: $target" -ForegroundColor Yellow
+    Write-Host "Target:  $target" -ForegroundColor Yellow
+    Write-Host "Device:  $SimulatorUdid" -ForegroundColor Yellow
     Write-Host ""
 
     if ($useLocalXharness) {

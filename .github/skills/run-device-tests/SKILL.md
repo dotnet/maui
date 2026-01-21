@@ -122,3 +122,31 @@ pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Core -
 - Default simulator is iPhone Xs with iOS 18.5 (same as UI tests)
 - Simulator selection and boot logic is handled by `.github/scripts/shared/Start-Emulator.ps1`
 - xharness manages test execution and reporting
+
+## XHarness Device Detection
+
+The script automatically handles XHarness device targeting:
+
+1. **Simulator Boot**: Start-Emulator.ps1 detects and boots appropriate iOS simulator
+2. **UDID Extraction**: Script extracts simulator UDID from Start-Emulator.ps1 output
+3. **iOS Version Detection**: Script queries `xcrun simctl` to get iOS version from booted simulator
+4. **XHarness Targeting**: Passes both `--target ios-simulator-64_VERSION` and `--device UDID` to xharness for explicit targeting
+
+**Why both --target and --device?**
+- XHarness requires `--target ios-simulator-64` (or `ios-simulator-64_VERSION`) to specify platform type
+- Adding `--device UDID` explicitly tells xharness which simulator to use
+- This combination ensures reliable device selection even on ARM64 Macs where automatic detection can fail
+
+**Example xharness invocation:**
+```bash
+dotnet xharness apple test \
+  --app path/to/app \
+  --target ios-simulator-64_18.5 \
+  --device 56AE278D-60F7-4892-9DE0-6341357CA068 \
+  -o artifacts/log \
+  --timeout 01:00:00 \
+  -v \
+  --set-env=TestFilter=Category=Label
+```
+
+This ensures tests run on the correct simulator with proper version targeting.
