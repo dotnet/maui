@@ -4,8 +4,8 @@
 
 .DESCRIPTION
     Parses Azure DevOps build logs to extract Helix job IDs, then queries the Helix API
-    to get console logs for failed work items. This is essential for debugging device test
-    failures that run on Helix infrastructure.
+    to get console logs for failed work items. This is useful for debugging any test
+    failures that run on Helix infrastructure (device tests, integration tests, etc.).
 
 .PARAMETER BuildId
     The Azure DevOps build ID.
