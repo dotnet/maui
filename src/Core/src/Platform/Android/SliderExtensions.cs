@@ -137,7 +137,7 @@ namespace Microsoft.Maui.Platform
 
 		// TODO: Material3: Make it public in .NET 11
 		internal static async Task UpdateThumbImageSourceAsync(this MSlider mSlider, ISlider slider,
-   IImageSourceServiceProvider provider)
+			IImageSourceServiceProvider provider)
 		{
 			var context = mSlider.Context;
 
