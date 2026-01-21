@@ -23,30 +23,28 @@ public class Issue32932 : TestShell
 		{
 			Title = "Issue 32932 CollectionView Page";
 
-			var collectionView = new CollectionView2
-			{
-				AutomationId = "EmptyView",
-				ItemTemplate = new DataTemplate(() =>
-				{
-					var label = new Label();
-					label.SetBinding(Label.TextProperty, new Binding(".")); // bind to the string item
-					return label;
-				}),
+			var collectionView = new CollectionView2();
 
-				// EmptyView: ContentView -> VerticalStackLayout -> Label "No values found..."
-				EmptyView = new ContentView
+			collectionView.AutomationId = "EmptyCollectionView";
+			collectionView.ItemTemplate = new DataTemplate(() =>
+			{
+				var label = new Label();
+				label.SetBinding(Label.TextProperty, new Binding(".")); // bind to the string item
+				return label;
+			});
+
+			// EmptyView: ContentView -> VerticalStackLayout -> Label "No values found..."
+			collectionView.EmptyView = new ContentView
+			{
+				Content = new VerticalStackLayout
 				{
-					Content = new VerticalStackLayout
-					{
-						Children =
+					Children =
 						{
 							new Label { Text = "No values found..." , AutomationId= "EmptyViewLabel"}
 						}
-					}
 				}
 			};
-
-			collectionView.ItemsSource = null; // Null collection to trigger EmptyView
+			collectionView.ItemsSource = new ObservableCollection<string>();
 
 			// inner stack that contains the title and the CollectionView
 			var innerStack = new VerticalStackLayout
