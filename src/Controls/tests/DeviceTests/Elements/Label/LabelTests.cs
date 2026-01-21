@@ -307,6 +307,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		[Trait(TestCategory.SkipOnIOS26, "Font comparison may fail on iOS 26")]
 		public async Task ChangingTextTypeWithFormattedTextSwitchesTextSource()
 		{
 			SetupBuilder();
@@ -723,6 +724,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		[Trait(TestCategory.SkipOnIOS26, "Font comparison may fail on iOS 26")]
 		public async Task FontStuffAfterTextTypeIsCorrect()
 		{
 			// Note: this is specifically a Controls-level rule that's inherited from Forms
