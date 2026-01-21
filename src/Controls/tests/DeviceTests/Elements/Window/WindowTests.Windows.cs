@@ -284,61 +284,33 @@ namespace Microsoft.Maui.DeviceTests
 			[Fact]
 			public async Task MinimizeAndThenMaximizingWorks()
 			{
-				// This test validates that programmatic Minimize()/Restore() operations work correctly.
-				// Note: WinUI doesn't fire WindowActivationState.Deactivated for programmatic minimize
-				// operations (only when focus shifts to another window), so we validate PresenterState
-				// changes and that at least one activation cycle occurs.
-
 				var window = new Window(new ContentPage());
 
 				int activated = 0;
+				int deactivated = 0;
 				int resumed = 0;
 
 				window.Activated += (_, _) => activated++;
+				window.Deactivated += (_, _) => deactivated++;
 				window.Resumed += (_, _) => resumed++;
 
 				await CreateHandlerAndAddToWindow<IWindowHandler>(window, async (handler) =>
 				{
 					var platformWindow = window.Handler.PlatformView as UI.Xaml.Window;
-					Assert.NotNull(platformWindow);
 
-					// Get AppWindow for state verification
-					var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(platformWindow);
-					var windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hwnd);
-					var appWindow = AppWindow.GetFromWindowId(windowId);
-					var overlappedPresenter = appWindow.Presenter as OverlappedPresenter;
+					await Task.Yield();
 
-					Assert.NotNull(overlappedPresenter);
-					Assert.True(overlappedPresenter.IsMinimizable, "Window should be minimizable");
-
-					// Wait for initial activation to complete
-					await AssertEventually(() => activated >= 1, timeout: 5000,
-						message: "Window should fire Activated event after creation");
-
-					// Verify initial state is Restored
-					Assert.Equal(OverlappedPresenterState.Restored, overlappedPresenter.State);
-
-					// Test minimize/restore cycle
-					platformWindow.Minimize();
-					await Task.Delay(300);
-					Assert.Equal(OverlappedPresenterState.Minimized, overlappedPresenter.State);
-
-					platformWindow.Restore();
-					await Task.Delay(300);
-					Assert.Equal(OverlappedPresenterState.Restored, overlappedPresenter.State);
-
-					// Second cycle
-					platformWindow.Minimize();
-					await Task.Delay(300);
-					Assert.Equal(OverlappedPresenterState.Minimized, overlappedPresenter.State);
-
-					platformWindow.Restore();
-					await Task.Delay(300);
-					Assert.Equal(OverlappedPresenterState.Restored, overlappedPresenter.State);
+					for (int i = 0; i < 2; i++)
+					{
+						platformWindow.Restore();
+						await Task.Yield();
+						platformWindow.Minimize();
+					}
 				});
 
-				// Verify initial activation occurred
-				Assert.True(activated >= 1, $"Expected at least 1 Activated event, got {activated}");
+				Assert.Equal(2, activated);
+				Assert.Equal(1, resumed);
+				Assert.Equal(2, deactivated);
 			}
 		}
 	}
