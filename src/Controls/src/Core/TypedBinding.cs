@@ -294,6 +294,7 @@ namespace Microsoft.Maui.Controls.Internals
 			_hasDefaultValue = false;
 			_cachedDefaultValue = null;
 			_skipConvert = false;
+			_isTSource = false;
 
 #if (!DO_NOT_CHECK_FOR_BINDING_REUSE)
 			_weakSource.SetTarget(null);
@@ -572,22 +573,17 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 
 			readonly Action _applyAction;
-			IDispatcher _cachedDispatcher;
-			bool _dispatcherCached;
 
 			void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
 			{
 				if (!string.IsNullOrEmpty(e.PropertyName) && string.CompareOrdinal(e.PropertyName, PropertyName) != 0)
 					return;
 
-				// Cache dispatcher to avoid cast + property access on every call
-				if (!_dispatcherCached)
-				{
-					_cachedDispatcher = (sender as BindableObject)?.Dispatcher;
-					_dispatcherCached = true;
-				}
-
-				_cachedDispatcher.DispatchIfRequired(_applyAction);
+				// Note: sender is typically a ViewModel (INotifyPropertyChanged), not a BindableObject,
+				// so (sender as BindableObject)?.Dispatcher usually returns null.
+				// DispatchIfRequired handles null dispatcher via EnsureDispatcher fallback.
+				IDispatcher dispatcher = (sender as BindableObject)?.Dispatcher;
+				dispatcher.DispatchIfRequired(_applyAction);
 			}
 		}
 
