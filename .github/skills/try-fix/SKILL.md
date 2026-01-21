@@ -63,6 +63,7 @@ Results reported back to the invoker:
 The skill is complete when:
 - [ ] Problem understood from provided context
 - [ ] ONE fix approach designed and implemented
+- [ ] Compile errors resolved (iterated up to 3 times if needed)
 - [ ] Tests run and result captured
 - [ ] Analysis provided (success explanation or failure reasoning)
 - [ ] Results reported to invoker
@@ -154,6 +155,47 @@ git status --short
 # After editing, capture what changed
 git diff
 ```
+
+### Step 5.5: Work Through Compile Errors
+
+**CRITICAL: Do NOT give up on first compile error!**
+
+If your fix has compile errors, **iterate to fix them** before running tests:
+
+1. **Attempt the build** (often your test command will do this automatically)
+2. **If compile errors occur:**
+   - Read the error messages carefully (CS#### codes, line numbers)
+   - Diagnose the root cause
+   - Apply a fix for the compile error
+   - Rebuild
+3. **Iterate up to 3 times** to resolve compile errors
+4. **Only mark as FAIL** if you cannot get the code to compile after reasonable effort
+
+**Common compile error fixes:**
+
+| Error Pattern | Likely Cause | Solution |
+|--------------|--------------|----------|
+| `CS0234: namespace doesn't exist` | Missing using or namespace collision | Add using statement or type alias |
+| `CS0104: ambiguous reference` | Type exists in multiple namespaces | Use type alias (e.g., `using AView = Android.Views.View;`) |
+| `CS0103: name doesn't exist` | Missing reference or typo | Check spelling, add using statement |
+| `CS0246: type not found` | Missing assembly reference or using | Add using or check project references |
+| `CS1061: member doesn't exist` | Wrong type or API signature | Verify type and API documentation |
+
+**Example iteration:**
+
+```
+Attempt #1: Implement OnLayoutChangeListener
+  → Build: ❌ CS0104: 'View' is ambiguous reference
+  → Diagnose: Microsoft.Maui.Controls.View vs Android.Views.View collision
+  → Fix: Add `using AView = Android.Views.View;` at top of file
+  → Build: ✅ Success
+  → Continue to Step 6 (Run Tests)
+```
+
+**When to give up on compile errors:**
+- After 3 iterations of trying to fix compile errors
+- When the error indicates a fundamental flaw in the approach (not just a missing using)
+- When the fix requires changes outside the target files
 
 ### Step 6: Run Tests
 
