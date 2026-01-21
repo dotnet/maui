@@ -8,15 +8,20 @@ namespace Microsoft.Maui.Controls
 	/// </summary>
 	public class LongPressedEventArgs : EventArgs
 	{
+		readonly Func<IElement?, Point?>? _getPosition;
+
 		/// <summary>
 		/// Initializes a new instance of the <see cref="LongPressedEventArgs"/> class.
 		/// </summary>
 		/// <param name="parameter">The command parameter.</param>
-		/// <param name="position">The position where the long press occurred, if available.</param>
-		public LongPressedEventArgs(object? parameter, Point? position)
+		public LongPressedEventArgs(object? parameter)
 		{
 			Parameter = parameter;
-			Position = position;
+		}
+
+		internal LongPressedEventArgs(object? parameter, Func<IElement?, Point?>? getPosition) : this(parameter)
+		{
+			_getPosition = getPosition;
 		}
 
 		/// <summary>
@@ -25,8 +30,11 @@ namespace Microsoft.Maui.Controls
 		public object? Parameter { get; }
 
 		/// <summary>
-		/// Gets the position where the long press occurred, relative to the element.
+		/// Gets the position where the long press occurred, relative to the specified element.
 		/// </summary>
-		public Point? Position { get; }
+		/// <param name="relativeTo">The element to get the position relative to. Pass null to get the position relative to the containing window.</param>
+		/// <returns>The position of the long press relative to the specified element, or null if the position cannot be determined.</returns>
+		public virtual Point? GetPosition(Element? relativeTo) =>
+			_getPosition?.Invoke(relativeTo);
 	}
 }

@@ -17,12 +17,12 @@ Microsoft.Maui.Controls.LongPressGestureRecognizer.NumberOfTouchesRequired.get -
 Microsoft.Maui.Controls.LongPressGestureRecognizer.NumberOfTouchesRequired.set -> void
 Microsoft.Maui.Controls.LongPressGestureRecognizer.State.get -> Microsoft.Maui.GestureStatus
 Microsoft.Maui.Controls.LongPressedEventArgs
-Microsoft.Maui.Controls.LongPressedEventArgs.LongPressedEventArgs(object? parameter, Microsoft.Maui.Graphics.Point? position) -> void
+Microsoft.Maui.Controls.LongPressedEventArgs.LongPressedEventArgs(object? parameter) -> void
 Microsoft.Maui.Controls.LongPressedEventArgs.Parameter.get -> object?
-Microsoft.Maui.Controls.LongPressedEventArgs.Position.get -> Microsoft.Maui.Graphics.Point?
+virtual Microsoft.Maui.Controls.LongPressedEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
 Microsoft.Maui.Controls.LongPressingEventArgs
-Microsoft.Maui.Controls.LongPressingEventArgs.LongPressingEventArgs(Microsoft.Maui.GestureStatus status, Microsoft.Maui.Graphics.Point? position) -> void
-Microsoft.Maui.Controls.LongPressingEventArgs.Position.get -> Microsoft.Maui.Graphics.Point?
+Microsoft.Maui.Controls.LongPressingEventArgs.LongPressingEventArgs(Microsoft.Maui.GestureStatus status) -> void
+virtual Microsoft.Maui.Controls.LongPressingEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
 Microsoft.Maui.Controls.LongPressingEventArgs.Status.get -> Microsoft.Maui.GestureStatus
 static readonly Microsoft.Maui.Controls.LongPressGestureRecognizer.AllowableMovementProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.LongPressGestureRecognizer.CommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty!

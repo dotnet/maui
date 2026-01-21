@@ -119,22 +119,22 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Sends the long pressed event and executes the command.
 		/// </summary>
-		internal void SendLongPressed(View sender, Point? position = null)
+		internal void SendLongPressed(View sender, Func<IElement?, Point?>? getPosition = null)
 		{
 			var cmd = Command;
 			if (cmd != null && cmd.CanExecute(CommandParameter))
 				cmd.Execute(CommandParameter);
 
-			LongPressed?.Invoke(sender, new LongPressedEventArgs(CommandParameter, position));
+			LongPressed?.Invoke(sender, new LongPressedEventArgs(CommandParameter, getPosition));
 		}
 
 		/// <summary>
 		/// Sends the long pressing event with state information.
 		/// </summary>
-		internal void SendLongPressing(View sender, GestureStatus status, Point? position = null)
+		internal void SendLongPressing(View sender, GestureStatus status, Func<IElement?, Point?>? getPosition = null)
 		{
 			State = status;
-			LongPressing?.Invoke(sender, new LongPressingEventArgs(status, position));
+			LongPressing?.Invoke(sender, new LongPressingEventArgs(status, getPosition));
 		}
 	}
 }

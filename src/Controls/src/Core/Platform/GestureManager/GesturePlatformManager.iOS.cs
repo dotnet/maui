@@ -384,6 +384,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (recognizer is not LongPressGestureRecognizer longPressRecognizer)
 				return null;
 
+			WeakReference? weakPlatformRecognizer = null;
 			var longPressUiRecognizer = CreateLongPressRecognizer(r =>
 			{
 				var eventTracker = weakEventTracker.Target as GesturePlatformManager;
@@ -393,27 +394,28 @@ namespace Microsoft.Maui.Controls.Platform
 				if (lpRecognizer == null || view == null)
 					return;
 
-				var position = r.LocationInView(eventTracker?.PlatformView);
-				var point = new Point(position.X, position.Y);
+				var originPoint = r.LocationInView(eventTracker?.PlatformView);
+				Func<IElement?, Point?> getPosition = (relativeTo) => CalculatePosition(relativeTo, originPoint, weakPlatformRecognizer, weakEventTracker);
 
 				switch (r.State)
 				{
 					case UIGestureRecognizerState.Began:
-						lpRecognizer.SendLongPressing(view, GestureStatus.Started, point);
+						lpRecognizer.SendLongPressing(view, GestureStatus.Started, getPosition);
 						break;
 					case UIGestureRecognizerState.Changed:
-						lpRecognizer.SendLongPressing(view, GestureStatus.Running, point);
+						lpRecognizer.SendLongPressing(view, GestureStatus.Running, getPosition);
 						break;
 					case UIGestureRecognizerState.Ended:
-						lpRecognizer.SendLongPressed(view, point);
-						lpRecognizer.SendLongPressing(view, GestureStatus.Completed, point);
+						lpRecognizer.SendLongPressed(view, getPosition);
+						lpRecognizer.SendLongPressing(view, GestureStatus.Completed, getPosition);
 						break;
 					case UIGestureRecognizerState.Cancelled:
 					case UIGestureRecognizerState.Failed:
-						lpRecognizer.SendLongPressing(view, GestureStatus.Canceled, point);
+						lpRecognizer.SendLongPressing(view, GestureStatus.Canceled, getPosition);
 						break;
 				}
 			});
+			weakPlatformRecognizer = new WeakReference(longPressUiRecognizer);
 			return new List<UIGestureRecognizer?> { longPressUiRecognizer };
 		}
 

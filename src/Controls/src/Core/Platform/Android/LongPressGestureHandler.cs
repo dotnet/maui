@@ -36,16 +36,47 @@ namespace Microsoft.Maui.Controls.Platform
 			if (view == null)
 				return;
 
-			var position = new Point(e.GetX(), e.GetY());
+			var handler = _handlerGetter();
+			var originPoint = new Point(e.GetX(), e.GetY());
+			Func<IElement, Point?> getPosition = (relativeTo) => CalculatePosition(relativeTo, originPoint, handler);
 
 			foreach (var recognizer in LongPressGestureRecognizers())
 			{
 				// Android's native GestureDetector uses system default long press timeout
 				// (typically 400ms from ViewConfiguration.getLongPressTimeout()).
 				// The MinimumPressDuration property is ignored on Android due to platform limitations.
-				recognizer.SendLongPressed(view, position);
-				recognizer.SendLongPressing(view, GestureStatus.Completed, position);
+				recognizer.SendLongPressed(view, getPosition);
+				recognizer.SendLongPressing(view, GestureStatus.Completed, getPosition);
 			}
+		}
+
+		static Point? CalculatePosition(IElement relativeTo, Point originPoint, IViewHandler handler)
+		{
+			var virtualView = handler?.VirtualView as View;
+			if (virtualView == null)
+				return null;
+
+			// If relativeTo is null or same as the view, return position relative to the view
+			if (relativeTo == null || relativeTo == virtualView)
+				return originPoint;
+
+			// Calculate position relative to another element
+			var platformView = relativeTo.ToPlatform();
+			if (platformView == null)
+				return null;
+
+			var targetViewScreenLocation = virtualView.GetLocationOnScreen();
+			if (!targetViewScreenLocation.HasValue)
+				return null;
+
+			var windowX = targetViewScreenLocation.Value.X + originPoint.X;
+			var windowY = targetViewScreenLocation.Value.Y + originPoint.Y;
+
+			var relativeViewLocation = ((View)relativeTo).GetLocationOnScreen();
+			if (!relativeViewLocation.HasValue)
+				return null;
+
+			return new Point(windowX - relativeViewLocation.Value.X, windowY - relativeViewLocation.Value.Y);
 		}
 	}
 }
