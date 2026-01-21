@@ -137,9 +137,9 @@ stages:
     - template: /eng/pipelines/common/provision.yml@self
       parameters:
         checkoutDirectory: '$(System.DefaultWorkingDirectory)'
-        skipJdk: true
-        skipAndroidCommonSdks: true
-        skipAndroidPlatformApis: true
+        skipJdk: false
+        skipAndroidCommonSdks: false
+        skipAndroidPlatformApis: false
         onlyAndroidPlatformDefaultApis: true
         skipAndroidEmulatorImages: true
         skipAndroidCreateAvds: true
@@ -158,7 +158,7 @@ stages:
     - template: /eng/pipelines/common/provision.yml@self
       parameters:
         checkoutDirectory: '$(System.DefaultWorkingDirectory)'
-        skipJdk: true
+        skipJdk: false
         skipAndroidCommonSdks: false
         skipAndroidPlatformApis: false
         onlyAndroidPlatformDefaultApis: true
@@ -180,7 +180,7 @@ stages:
     - template: /eng/pipelines/common/provision.yml@self
       parameters:
         checkoutDirectory: '$(System.DefaultWorkingDirectory)'
-        skipJdk: true
+        skipJdk: false
         skipAndroidCommonSdks: false
         skipAndroidPlatformApis: false
         onlyAndroidPlatformDefaultApis: true
