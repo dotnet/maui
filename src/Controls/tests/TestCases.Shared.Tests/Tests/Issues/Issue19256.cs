@@ -1,4 +1,4 @@
-#if TEST_FAILS_ON_IOS // iOS DatePicker uses a wheel picker, not a calendar view - cannot verify disabled dates visually
+#if !IOS // iOS DatePicker uses a wheel picker, not a calendar view - cannot verify disabled dates visually
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
