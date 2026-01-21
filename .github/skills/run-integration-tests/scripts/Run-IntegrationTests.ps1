@@ -105,7 +105,7 @@ try {
         Write-Host "Step 1: Building and Packing MAUI..." -ForegroundColor Yellow
         Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Yellow
         
-        $buildCmd = ".\build.cmd"
+        $buildCmd = Join-Path $RepoRoot 'build.cmd'
         $buildArgs = @("-restore", "-pack", "-configuration", $Configuration)
         
         Write-Host "Running: $buildCmd $($buildArgs -join ' ')" -ForegroundColor Gray
@@ -233,7 +233,7 @@ try {
         throw "Either -Category or -TestFilter must be specified"
     }
     
-    $testProjectPath = "src\TestUtils\src\Microsoft.Maui.IntegrationTests\Microsoft.Maui.IntegrationTests.csproj"
+    $testProjectPath = Join-Path $RepoRoot "src/TestUtils/src/Microsoft.Maui.IntegrationTests/Microsoft.Maui.IntegrationTests.csproj"
     
     $testArgs = @(
         "test",
