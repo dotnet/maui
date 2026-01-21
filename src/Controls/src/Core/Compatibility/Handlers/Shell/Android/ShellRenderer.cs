@@ -218,6 +218,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		protected virtual void SwitchFragment(FragmentManager manager, AView targetView, ShellItem newItem, bool animate = true)
 		{
+			if (_disposed || targetView == null || !targetView.IsAttachedToWindow)
+				return;
+
 			var previousView = _currentView;
 			_currentView = CreateShellItemRenderer(newItem);
 			_currentView.ShellItem = newItem;
@@ -316,9 +319,39 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			_disposed = true;
 
-			Element.PropertyChanged -= OnElementPropertyChanged;
-			Element.SizeChanged -= OnElementSizeChanged;
-			((IShellController)Element).RemoveAppearanceObserver(this);
+			if (Element != null)
+			{
+				Element.PropertyChanged -= OnElementPropertyChanged;
+				Element.SizeChanged -= OnElementSizeChanged;
+				((IShellController)Element).RemoveAppearanceObserver(this);
+			}
+
+			// Execute any pending fragment transactions and remove the current fragment
+			// BEFORE the container is removed to prevent "No view found for id" crashes
+			try
+			{
+				var fragmentManager = Element?.FindMauiContext()?.GetFragmentManager();
+				if (fragmentManager != null && !fragmentManager.IsDestroyed)
+				{
+					fragmentManager.ExecutePendingTransactions();
+					
+					if (_currentView?.Fragment != null && _currentView.Fragment.IsAdded)
+					{
+						var transaction = fragmentManager.BeginTransactionEx();
+						transaction.RemoveEx(_currentView.Fragment);
+						transaction.CommitAllowingStateLossEx();
+						fragmentManager.ExecutePendingTransactions();
+					}
+				}
+			}
+			catch (Java.Lang.IllegalArgumentException)
+			{
+				// Fragment container may already be removed - ignore
+			}
+			catch (Java.Lang.IllegalStateException)
+			{
+				// Fragment manager may be in an invalid state - ignore
+			}
 
 			if (_flyoutView is ShellFlyoutRenderer sfr)
 				sfr.Disconnect();
@@ -328,7 +361,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (_currentView is ShellItemRendererBase sir)
 				sir.Disconnect();
 			else
-				_currentView.Dispose();
+				_currentView?.Dispose();
 
 			_currentView = null;
 
