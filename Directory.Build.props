@@ -23,6 +23,7 @@
     <SignAssembly>false</SignAssembly>
     <MauiRootDirectory>$(MSBuildThisFileDirectory)</MauiRootDirectory>
     <MauiSrcDirectory>$(MSBuildThisFileDirectory)src/</MauiSrcDirectory>
+    <MibcOptimizationDataDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'mibc'))</MibcOptimizationDataDir>
     <IncludePreviousTfms>false</IncludePreviousTfms>
     <IncludePreviousTfmsEssentials>false</IncludePreviousTfmsEssentials>
     <IncludePreviousTfmsGraphics>false</IncludePreviousTfmsGraphics>
