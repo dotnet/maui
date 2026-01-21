@@ -770,7 +770,7 @@ namespace Microsoft.Maui.Controls
 			UpdateDisplayedPage();
 		}
 
-		void InvokeNavigationRequest(NavigationRequestedEventArgs args)
+		internal void InvokeNavigationRequest(NavigationRequestedEventArgs args)
 		{
 			_navigationRequested?.Invoke(this, args);
 		}
@@ -836,34 +836,34 @@ namespace Microsoft.Maui.Controls
 			_navStack.Remove(page);
 			PresentedPageAppearing();
 
+#if ANDROID
 			// Try handler-based navigation first if handler exists
-			if (Handler != null && _handlerBasedNavigationCompletionSource == null)
+			// BUT: Skip handler-based navigation for ViewPager2 (multiple content) sections
+			// ViewPager2 mode: Each ShellContentViewPagerFragment has its own StackNavigationManager
+			// and handles navigation via IShellSectionController.NavigationRequested event
+			if (Handler is not null && _handlerBasedNavigationCompletionSource == null && Items?.Count == 1)
 			{
-				try
+				var navigationRequest = new NavigationRequest(Stack, animated);
+				((IStackNavigation)this).RequestNavigation(navigationRequest);
+				if (_handlerBasedNavigationCompletionSource?.Task is not null)
 				{
-					var navigationRequest = new NavigationRequest(Stack, animated);
-					((IStackNavigation)this).RequestNavigation(navigationRequest);
-					if (_handlerBasedNavigationCompletionSource?.Task != null)
-						await _handlerBasedNavigationCompletionSource.Task;
-				}
-				catch (Exception ex)
-				{
-					System.Diagnostics.Debug.WriteLine($"ShellSection: Handler-based Pop failed, falling back to legacy: {ex.Message}");
-					// Fallback to legacy navigation
-					InvokeNavigationRequest(args);
-					if (args.Task != null)
-						await args.Task;
-				}
-			}
-			else
-			{
-				// Fallback to legacy navigation
-				InvokeNavigationRequest(args);
-				if (args.Task != null)
-					await args.Task;
-
-				if (_handlerBasedNavigationCompletionSource?.Task != null)
 					await _handlerBasedNavigationCompletionSource.Task;
+				}
+
+				RemovePage(page);
+				return page;
+			}
+#endif
+			// Legacy navigation path (also used by ViewPager2 mode)
+			InvokeNavigationRequest(args);
+			if (args.Task is not null)
+			{
+				await args.Task;
+			}
+
+			if (_handlerBasedNavigationCompletionSource?.Task is not null)
+			{
+				await _handlerBasedNavigationCompletionSource.Task;
 			}
 
 			RemovePage(page);
@@ -897,34 +897,40 @@ namespace Microsoft.Maui.Controls
 			var oldStack = _navStack;
 			_navStack = new List<Page> { null };
 
+#if ANDROID
 			// Try handler-based navigation first if handler exists
-			if (Handler != null && _handlerBasedNavigationCompletionSource == null)
+			// BUT: Skip handler-based navigation for ViewPager2 (multiple content) sections
+			// ViewPager2 mode: Each ShellContentViewPagerFragment has its own StackNavigationManager
+			// and handles navigation via IShellSectionController.NavigationRequested event
+			if (Handler != null && _handlerBasedNavigationCompletionSource == null && Items?.Count == 1)
 			{
-				try
+				var navigationRequest = new NavigationRequest(Stack, animated);
+				((IStackNavigation)this).RequestNavigation(navigationRequest);
+				if (_handlerBasedNavigationCompletionSource?.Task is not null)
 				{
-					var navigationRequest = new NavigationRequest(Stack, animated);
-					((IStackNavigation)this).RequestNavigation(navigationRequest);
-					if (_handlerBasedNavigationCompletionSource?.Task != null)
-						await _handlerBasedNavigationCompletionSource.Task;
-				}
-				catch (Exception ex)
-				{
-					System.Diagnostics.Debug.WriteLine($"ShellSection: Handler-based PopToRoot failed, falling back to legacy: {ex.Message}");
-					// Fallback to legacy navigation
-					InvokeNavigationRequest(args);
-					if (args.Task != null)
-						await args.Task;
-				}
-			}
-			else
-			{
-				// Fallback to legacy navigation
-				InvokeNavigationRequest(args);
-				if (args.Task != null)
-					await args.Task;
-
-				if (_handlerBasedNavigationCompletionSource?.Task != null)
 					await _handlerBasedNavigationCompletionSource.Task;
+				}
+
+				for (int i = 1; i < oldStack.Count; i++)
+				{
+					oldStack[i].SendDisappearing();
+					RemovePage(oldStack[i]);
+				}
+
+				PresentedPageAppearing();
+				return;
+			}
+#endif
+			// Legacy navigation path (also used by ViewPager2 mode)
+			InvokeNavigationRequest(args);
+			if (args.Task is not null)
+			{
+				await args.Task;
+			}
+
+			if (_handlerBasedNavigationCompletionSource?.Task is not null)
+			{
+				await _handlerBasedNavigationCompletionSource.Task;
 			}
 
 			for (int i = 1; i < oldStack.Count; i++)
@@ -963,23 +969,18 @@ namespace Microsoft.Maui.Controls
 			AddPage(page);
 
 #if ANDROID
-
 			// Try handler-based navigation first if handler exists
-			if (Handler != null && _handlerBasedNavigationCompletionSource == null)
+			// BUT: Skip handler-based navigation for ViewPager2 (multiple content) sections
+			// ViewPager2 mode: Each ShellContentViewPagerFragment has its own StackNavigationManager
+			// and handles navigation via IShellSectionController.NavigationRequested event
+			if (Handler is not null && _handlerBasedNavigationCompletionSource is null && Items?.Count == 1)
 			{
-				try
-				{
-					var navigationRequest = new NavigationRequest(Stack, animated);
-					((IStackNavigation)this).RequestNavigation(navigationRequest);
-					return _handlerBasedNavigationCompletionSource?.Task ?? Task.CompletedTask;
-				}
-				catch (Exception ex)
-				{
-					System.Diagnostics.Debug.WriteLine($"ShellSection: Handler-based navigation failed, falling back to legacy: {ex.Message}");
-				}
+				var navigationRequest = new NavigationRequest(Stack, animated);
+				((IStackNavigation)this).RequestNavigation(navigationRequest);
+				return _handlerBasedNavigationCompletionSource?.Task ?? Task.CompletedTask;
 			}
 #endif
-			// Fallback to legacy navigation
+			// Legacy navigation path (also used by ViewPager2 mode)
 			InvokeNavigationRequest(args);
 
 			return args.Task ??
