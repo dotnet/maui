@@ -105,3 +105,4 @@ pwsh .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 -Test
 | "MAUI_PACKAGE_VERSION was not set" | Ensure build step completed successfully |
 | Template not found | Workload installation may have failed |
 | Build failures | Check `artifacts/log/` for detailed build logs |
+| "Cannot proceed with locked .dotnet folder" | Kill processes using `.dotnet`: `Get-Process \| Where-Object { $_.Path -like "*\.dotnet\*" } \| ForEach-Object { Stop-Process -Id $_.Id -Force }` |

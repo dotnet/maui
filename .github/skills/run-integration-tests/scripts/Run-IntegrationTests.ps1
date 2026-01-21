@@ -73,6 +73,31 @@ Push-Location $RepoRoot
 
 try {
     # ═══════════════════════════════════════════════════════════════════
+    # Pre-flight: Check for processes using .dotnet folder
+    # ═══════════════════════════════════════════════════════════════════
+    $dotnetFolder = Join-Path $RepoRoot ".dotnet"
+    $lockingProcesses = Get-Process | Where-Object { $_.Path -like "$dotnetFolder\*" } -ErrorAction SilentlyContinue
+    
+    if ($lockingProcesses) {
+        Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Red
+        Write-Host "⚠️  WARNING: Processes are using the .dotnet folder!" -ForegroundColor Red
+        Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Red
+        Write-Host ""
+        Write-Host "The following processes have locks on files in .dotnet:" -ForegroundColor Yellow
+        foreach ($proc in $lockingProcesses) {
+            Write-Host "  - PID: $($proc.Id) | Name: $($proc.ProcessName) | Path: $($proc.Path)" -ForegroundColor Gray
+        }
+        Write-Host ""
+        Write-Host "To fix this, run:" -ForegroundColor Cyan
+        Write-Host '  Get-Process | Where-Object { $_.Path -like "*\.dotnet\*" } | ForEach-Object { Stop-Process -Id $_.Id -Force }' -ForegroundColor White
+        Write-Host ""
+        throw "Cannot proceed with locked .dotnet folder. Kill the processes above and retry."
+    }
+    
+    Write-Host "✅ No processes locking .dotnet folder" -ForegroundColor Green
+    Write-Host ""
+
+    # ═══════════════════════════════════════════════════════════════════
     # Step 1: Build and Pack
     # ═══════════════════════════════════════════════════════════════════
     if (-not $SkipBuild) {
