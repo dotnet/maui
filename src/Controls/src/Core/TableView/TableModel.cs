@@ -6,11 +6,15 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Internals
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls.Internals/TableModel.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.TableModel']/Docs/*" />
+	/// <summary>
+	/// Abstract base class that provides the data model for a <see cref="TableView"/>.
+	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public abstract class TableModel : ITableModel
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/TableModel.xml" path="//Member[@MemberName='GetCell']/Docs/*" />
+		/// <summary>
+		/// Returns the cell for the specified section and row.
+		/// </summary>
 #pragma warning disable CS0618 // Type or member is obsolete
 		public virtual Cell GetCell(int section, int row)
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -27,7 +31,9 @@ namespace Microsoft.Maui.Controls.Internals
 #pragma warning restore CS0618 // Type or member is obsolete
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/TableModel.xml" path="//Member[@MemberName='GetHeaderCell']/Docs/*" />
+		/// <summary>
+		/// Returns the header cell for the specified section.
+		/// </summary>
 #pragma warning disable CS0618 // Type or member is obsolete
 		public virtual Cell GetHeaderCell(int section)
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -35,28 +41,40 @@ namespace Microsoft.Maui.Controls.Internals
 			return null;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/TableModel.xml" path="//Member[@MemberName='GetItem']/Docs/*" />
+		/// <summary>
+		/// Returns the data item for the specified section and row.
+		/// </summary>
 		public abstract object GetItem(int section, int row);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/TableModel.xml" path="//Member[@MemberName='GetRowCount']/Docs/*" />
+		/// <summary>
+		/// Returns the number of rows in the specified section.
+		/// </summary>
 		public abstract int GetRowCount(int section);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/TableModel.xml" path="//Member[@MemberName='GetSectionCount']/Docs/*" />
+		/// <summary>
+		/// Returns the total number of sections in the table.
+		/// </summary>
 		public abstract int GetSectionCount();
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/TableModel.xml" path="//Member[@MemberName='GetSectionIndexTitles']/Docs/*" />
+		/// <summary>
+		/// Returns an array of index titles for quick navigation between sections.
+		/// </summary>
 		public virtual string[] GetSectionIndexTitles()
 		{
 			return null;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/TableModel.xml" path="//Member[@MemberName='GetSectionTitle']/Docs/*" />
+		/// <summary>
+		/// Returns the title for the specified section.
+		/// </summary>
 		public virtual string GetSectionTitle(int section)
 		{
 			return null;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/TableModel.xml" path="//Member[@MemberName='GetSectionTextColor']/Docs/*" />
+		/// <summary>
+		/// Returns the text color for the specified section header.
+		/// </summary>
 		public virtual Color GetSectionTextColor(int section)
 		{
 			return null;
@@ -66,13 +84,17 @@ namespace Microsoft.Maui.Controls.Internals
 
 		public event EventHandler<EventArg<object>> ItemSelected;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/TableModel.xml" path="//Member[@MemberName='RowLongPressed'][2]/Docs/*" />
+		/// <summary>
+		/// Invokes the long-press event for the item at the specified section and row.
+		/// </summary>
 		public void RowLongPressed(int section, int row)
 		{
 			RowLongPressed(GetItem(section, row));
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/TableModel.xml" path="//Member[@MemberName='RowLongPressed'][1]/Docs/*" />
+		/// <summary>
+		/// Invokes the long-press event for the specified item.
+		/// </summary>
 		public void RowLongPressed(object item)
 		{
 			if (ItemLongPressed != null)
@@ -81,13 +103,17 @@ namespace Microsoft.Maui.Controls.Internals
 			OnRowLongPressed(item);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/TableModel.xml" path="//Member[@MemberName='RowSelected'][2]/Docs/*" />
+		/// <summary>
+		/// Invokes the selection event for the item at the specified section and row.
+		/// </summary>
 		public void RowSelected(int section, int row)
 		{
 			RowSelected(GetItem(section, row));
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/TableModel.xml" path="//Member[@MemberName='RowSelected'][1]/Docs/*" />
+		/// <summary>
+		/// Invokes the selection event for the specified item.
+		/// </summary>
 		public void RowSelected(object item)
 		{
 			if (ItemSelected != null)

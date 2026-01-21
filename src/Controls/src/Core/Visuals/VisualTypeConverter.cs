@@ -13,7 +13,9 @@ using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/VisualTypeConverter.xml" path="Type[@FullName='Microsoft.Maui.Controls.VisualTypeConverter']/Docs/*" />
+	/// <summary>
+	/// Converts between string representations and <see cref="IVisual"/> instances.
+	/// </summary>
 	public class VisualTypeConverter : TypeConverter
 	{
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)

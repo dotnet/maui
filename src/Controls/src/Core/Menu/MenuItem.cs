@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(CommandParameterProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/MenuItem.xml" path="//Member[@MemberName='IconImageSource']/Docs/*" />
+		/// <summary>Gets or sets the image displayed for the menu item. This is a bindable property.</summary>
 		public ImageSource IconImageSource
 		{
 			get => (ImageSource)GetValue(IconImageSourceProperty);

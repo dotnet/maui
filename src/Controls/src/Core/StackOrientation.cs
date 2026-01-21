@@ -1,11 +1,11 @@
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/StackOrientation.xml" path="Type[@FullName='Microsoft.Maui.Controls.StackOrientation']/Docs/*" />
+	/// <summary>Specifies the orientation of a stack layout.</summary>
 	public enum StackOrientation
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/StackOrientation.xml" path="//Member[@MemberName='Vertical']/Docs/*" />
+		/// <summary>Children are arranged vertically.</summary>
 		Vertical,
-		/// <include file="../../docs/Microsoft.Maui.Controls/StackOrientation.xml" path="//Member[@MemberName='Horizontal']/Docs/*" />
+		/// <summary>Children are arranged horizontally.</summary>
 		Horizontal
 	}
 }
