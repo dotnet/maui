@@ -116,11 +116,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			var position = new Point(10, 20);
-			longPress.SendLongPressed(view, position);
+			Func<IElement?, Point?> getPosition = (_) => position;
+			longPress.SendLongPressed(view, getPosition);
 
 			Assert.True(eventRaised);
 			Assert.NotNull(eventArgs);
-			Assert.Equal(position, eventArgs!.Position);
+			Assert.Equal(position, eventArgs!.GetPosition(null));
 		}
 
 		[Fact]
@@ -173,12 +174,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			var position = new Point(15, 25);
-			longPress.SendLongPressing(view, GestureStatus.Started, position);
+			Func<IElement?, Point?> getPosition = (_) => position;
+			longPress.SendLongPressing(view, GestureStatus.Started, getPosition);
 
 			Assert.True(eventRaised);
 			Assert.NotNull(eventArgs);
 			Assert.Equal(GestureStatus.Started, eventArgs!.Status);
-			Assert.Equal(position, eventArgs.Position);
+			Assert.Equal(position, eventArgs.GetPosition(null));
 		}
 
 		[Fact]
@@ -218,24 +220,22 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void LongPressedEventArgs_ConstructorSetsProperties()
 		{
 			var parameter = "Test";
-			var position = new Point(5, 10);
 
-			var eventArgs = new LongPressedEventArgs(parameter, position);
+			var eventArgs = new LongPressedEventArgs(parameter);
 
 			Assert.Equal(parameter, eventArgs.Parameter);
-			Assert.Equal(position, eventArgs.Position);
+			Assert.Null(eventArgs.GetPosition(null)); // No position function set in public constructor
 		}
 
 		[Fact]
 		public void LongPressingEventArgs_ConstructorSetsProperties()
 		{
 			var status = GestureStatus.Running;
-			var position = new Point(8, 12);
 
-			var eventArgs = new LongPressingEventArgs(status, position);
+			var eventArgs = new LongPressingEventArgs(status);
 
 			Assert.Equal(status, eventArgs.Status);
-			Assert.Equal(position, eventArgs.Position);
+			Assert.Null(eventArgs.GetPosition(null)); // No position function set in public constructor
 		}
 
 		[Fact]

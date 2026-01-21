@@ -137,13 +137,16 @@ namespace Microsoft.Maui.Controls.Platform
 
 						_isLongPressing = true;
 						
+						// Create position function that calculates relative position
+						Func<IElement?, MauiPoint?> getPosition = (relativeTo) => CalculatePosition(relativeTo, position, _handler);
+						
 						// Fire for ALL LongPress recognizers on this view
 						foreach (var r in view.GestureRecognizers)
 						{
 							if (r is LongPressGestureRecognizer lp)
 							{
-								lp.SendLongPressed(view, position);
-								lp.SendLongPressing(view, GestureStatus.Completed, position);
+								lp.SendLongPressed(view, getPosition);
+								lp.SendLongPressing(view, GestureStatus.Completed, getPosition);
 							}
 						}
 						
@@ -152,6 +155,31 @@ namespace Microsoft.Maui.Controls.Platform
 					_timer.Start();
 				}
 			}
+		}
+
+		static MauiPoint? CalculatePosition(IElement? relativeTo, MauiPoint originPoint, IPlatformViewHandler handler)
+		{
+			var virtualView = handler?.VirtualView as View;
+			if (virtualView == null)
+				return null;
+
+			// If relativeTo is null or same as the view, return position relative to the view
+			if (relativeTo == null || relativeTo == virtualView)
+				return originPoint;
+
+			// Calculate position relative to another element
+			var targetViewScreenLocation = virtualView.GetLocationOnScreen();
+			if (!targetViewScreenLocation.HasValue)
+				return null;
+
+			var windowX = targetViewScreenLocation.Value.X + originPoint.X;
+			var windowY = targetViewScreenLocation.Value.Y + originPoint.Y;
+
+			var relativeViewLocation = ((View)relativeTo).GetLocationOnScreen();
+			if (!relativeViewLocation.HasValue)
+				return new MauiPoint(windowX, windowY);
+
+			return new MauiPoint(windowX - relativeViewLocation.Value.X, windowY - relativeViewLocation.Value.Y);
 		}
 
 		void CancelTimer()

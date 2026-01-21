@@ -190,9 +190,11 @@ namespace Maui.Controls.Sample.Pages
 			stateLabel.Text = "State: Completed";
 			stateLabel.TextColor = Colors.Green;
 
-			if (e.Position.HasValue)
+			// Use GetPosition with sender to get position relative to the pressed element
+			var position = e.GetPosition(sender as Element);
+			if (position.HasValue)
 			{
-				positionLabel.Text = $"Position: {e.Position.Value.X:F0}, {e.Position.Value.Y:F0}";
+				positionLabel.Text = $"Position: {position.Value.X:F0}, {position.Value.Y:F0}";
 			}
 		}
 
@@ -208,9 +210,11 @@ namespace Maui.Controls.Sample.Pages
 				_ => Colors.Gray
 			};
 
-			if (e.Position.HasValue)
+			// Use GetPosition with sender to get position relative to the pressed element
+			var position = e.GetPosition(sender as Element);
+			if (position.HasValue)
 			{
-				positionLabel.Text = $"Position: {e.Position.Value.X:F0}, {e.Position.Value.Y:F0}";
+				positionLabel.Text = $"Position: {position.Value.X:F0}, {position.Value.Y:F0}";
 			}
 		}
 
