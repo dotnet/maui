@@ -8,6 +8,7 @@ parameters:
   provisionatorChannel: 'latest'
   configuration: "Release"
   runtimeVariant: "Mono"
+  useMaterial3: false # NEW PARAMETER - Enable Material3 build
   testFilter: ''
   headless: true
   testConfigurationArgs: ''
@@ -16,9 +17,14 @@ parameters:
 
 steps:
 - task: DownloadPipelineArtifact@2
-  condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'Mono'))
+  condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'Mono'), eq('${{ parameters.useMaterial3 }}', 'false'))
   inputs:
     artifact: ui-tests-samples
+
+- task: DownloadPipelineArtifact@2
+  condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'Mono'), eq('${{ parameters.useMaterial3 }}', 'true'))
+  inputs:
+    artifact: ui-tests-samples-material3
 
 - task: DownloadPipelineArtifact@2
   condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'NativeAOT'))
@@ -26,7 +32,7 @@ steps:
     artifact: ui-tests-samples-nativeaot
 
 - task: DownloadPipelineArtifact@2
-  condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'CoreCLR'))
+  condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'CoreCLR'), eq('${{ parameters.useMaterial3 }}', 'false'))
   inputs:
     artifact: ui-tests-samples-coreclr
 

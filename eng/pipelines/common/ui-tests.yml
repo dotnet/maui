@@ -245,12 +245,6 @@ stages:
                   REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                   APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
                 steps:
-                  # Download Material3-specific artifact
-                  - task: DownloadPipelineArtifact@2
-                    inputs:
-                      artifact: ui-tests-samples-material3
-                      path: $(System.DefaultWorkingDirectory)/artifacts/bin
-                  
                   - template: ui-tests-steps.yml
                     parameters:
                       platform: android
@@ -262,6 +256,7 @@ stages:
                       ${{ if not(eq(api, 27)) }}:
                         device: android-emulator-64_${{ api }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                      useMaterial3: true
                       testFilter: "Material3"
                       skipProvisioning: ${{ parameters.skipProvisioning }}
                   
