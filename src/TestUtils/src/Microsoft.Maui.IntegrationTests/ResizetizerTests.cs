@@ -34,13 +34,13 @@ public class ResizetizerTests : BaseBuildTest
 		// new app
 		var appDir = Path.Combine(TestDirectory, "theapp");
 		var appFile = Path.Combine(appDir, $"{Path.GetFileName(appDir)}.csproj");
-		Assert.True(DotnetInternal.New(id, appDir, DotNetCurrent),
+		Assert.True(DotnetInternal.New(id, appDir, DotNetCurrent, output: _output),
 			$"Unable to create template {id}. Check test output for errors.");
 
 		// new lib
 		var libDir = Path.Combine(TestDirectory, "thelib");
 		var libFile = Path.Combine(libDir, $"{Path.GetFileName(libDir)}.csproj");
-		Assert.True(DotnetInternal.New(libid, libDir, DotNetCurrent),
+		Assert.True(DotnetInternal.New(libid, libDir, DotNetCurrent, output: _output),
 			$"Unable to create template {libid}. Check test output for errors.");
 
 		// add a project reference
@@ -85,7 +85,7 @@ public class ResizetizerTests : BaseBuildTest
 			""");
 
 		// build
-		Assert.True(DotnetInternal.Build(appFile, "Debug", properties: BuildProps),
+		Assert.True(DotnetInternal.Build(appFile, "Debug", properties: BuildProps, output: _output),
 			$"Project {Path.GetFileName(appFile)} failed to build. Check test output/attachments for errors.");
 
 		// assert

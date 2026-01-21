@@ -89,7 +89,7 @@ namespace Microsoft.Maui.IntegrationTests
 			var projectDir = TestDirectory;
 			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-			Assert.True(DotnetInternal.New(id, projectDir, framework),
+			Assert.True(DotnetInternal.New(id, projectDir, framework, output: _output),
 				$"Unable to create template {id}. Check test output for errors.");
 
 			var buildProps = BuildProps;
@@ -101,7 +101,7 @@ namespace Microsoft.Maui.IntegrationTests
 
 			AddInstrumentation(projectDir);
 
-			Assert.True(DotnetInternal.Build(projectFile, config, target: "Install", framework: $"{framework}-android", properties: BuildProps),
+			Assert.True(DotnetInternal.Build(projectFile, config, target: "Install", framework: $"{framework}-android", properties: BuildProps, output: _output),
 				$"Project {Path.GetFileName(projectFile)} failed to install. Check test output/attachments for errors.");
 
 			// Write xh-results to the log directory for artifact collection
@@ -109,7 +109,7 @@ namespace Microsoft.Maui.IntegrationTests
 			Directory.CreateDirectory(xhResultsDir);
 
 			testPackage = $"com.companyname.{Path.GetFileName(projectDir).ToLowerInvariant()}";
-			Assert.True(XHarness.RunAndroid(testPackage, xhResultsDir, -1),
+			Assert.True(XHarness.RunAndroid(testPackage, xhResultsDir, -1, output: _output),
 				$"Project {Path.GetFileName(projectFile)} failed to run. Check test output/attachments for errors.");
 		}
 
