@@ -66,10 +66,7 @@ internal class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMaterialDatePic
             _dialog = null;
         }
 
-        _positiveButtonClickListener?.Dispose();
         _positiveButtonClickListener = null;
-
-        _dismissListener?.Dispose();
         _dismissListener = null;
 
         platformView.ShowPicker = null;
@@ -296,6 +293,7 @@ internal class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMaterialDatePic
     }
 }
 
+// TODO: material3 - make it public in .net 11
 internal class MaterialDatePickerPositiveButtonClickListener : Java.Lang.Object, IMaterialPickerOnPositiveButtonClickListener
 {
     readonly WeakReference<DatePickerHandler2> _handler;
@@ -326,6 +324,7 @@ internal class MaterialDatePickerPositiveButtonClickListener : Java.Lang.Object,
     }
 }
 
+// TODO: material3 - make it public in .net 11
 internal class MaterialDatePickerDismissListener : Java.Lang.Object, IDialogInterfaceOnDismissListener
 {
     readonly WeakReference<DatePickerHandler2> _handler;
