@@ -1,5 +1,4 @@
-﻿using System;
-using Android.Content;
+﻿using Android.Content;
 using Android.Runtime;
 using Android.Util;
 using Google.Android.Material.ImageView;
@@ -9,18 +8,17 @@ namespace Microsoft.Maui.Platform
 	public class MauiShapeableImageView : ShapeableImageView
 	{
 
-		public MauiShapeableImageView(Context? context) : base(MauiMaterialContextThemeWrapper.Create(
-		context ?? throw new ArgumentNullException(nameof(context))))
+		public MauiShapeableImageView(Context? context) : base(MauiMaterialContextThemeWrapper.Create(context))
 		{
 		}
 
 		public MauiShapeableImageView(Context? context, IAttributeSet? attrs) : base(MauiMaterialContextThemeWrapper.Create(
-			context ?? throw new ArgumentNullException(nameof(context))), attrs)
+			context), attrs)
 		{
 		}
 
 		public MauiShapeableImageView(Context? context, IAttributeSet? attrs, int defStyle) : base(MauiMaterialContextThemeWrapper.Create(
-			context ?? throw new ArgumentNullException(nameof(context))), attrs, defStyle)
+			context), attrs, defStyle)
 		{
 		}
 
