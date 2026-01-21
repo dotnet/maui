@@ -88,7 +88,6 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 				if (_loopCount == -1)
 				{
 					var categories = DiscoverTestsInAssemblies();
-					
 					File.WriteAllLines(_categoriesFilePath, categories.ToArray());
 
 					TerminateWithSuccess();
