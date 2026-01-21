@@ -5,7 +5,7 @@
   </ItemGroup>
 
   <!-- Pack only: Microsoft.Maui.Packages -->
-  <ItemGroup Condition="'$(BuildDeviceTests)' != 'true' and '$(DotNetBuildRepo)' == 'true'">
+  <ItemGroup Condition="'$(BuildDeviceTests)' != 'true' and '$(Pack)' == 'true'">
     <ProjectToBuild Include="$(RepoRoot)eng/Microsoft.Maui.Packages-mac.slnf" Condition="'$(OS)' != 'Windows_NT'">
         <AdditionalProperties>ValidateXcodeVersion=false</AdditionalProperties>
     </ProjectToBuild>
@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <!-- Full build: Microsoft.Maui.sln -->
-  <ItemGroup Condition="'$(BuildDeviceTests)' != 'true' and '$(DotNetBuildRepo)' != 'true'">
+  <ItemGroup Condition="'$(BuildDeviceTests)' != 'true' and '$(Pack)' != 'true'">
     <ProjectToBuild Include="$(RepoRoot)Microsoft.Maui.sln" Condition="'$(OS)' == 'Windows_NT'">
         <AdditionalProperties>ValidateXcodeVersion=false;CodesignRequireProvisioningProfile=false;EnableWindowsTargeting=true</AdditionalProperties>
     </ProjectToBuild>
