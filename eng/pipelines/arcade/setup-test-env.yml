@@ -14,7 +14,7 @@ steps:
 - template: /eng/pipelines/common/provision.yml@self
   parameters:
     checkoutDirectory: '$(System.DefaultWorkingDirectory)'
-    skipJdk: false
+    skipJdk: true
     skipAndroidCommonSdks: false
     skipAndroidPlatformApis: false
     onlyAndroidPlatformDefaultApis: true
