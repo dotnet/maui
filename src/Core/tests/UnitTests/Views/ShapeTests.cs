@@ -24,7 +24,7 @@ namespace Microsoft.Maui.UnitTests.Views
 			};
 
 			await Task.Yield();
-			GC.Collect(2);
+			GC.Collect();
 			GC.WaitForPendingFinalizers();
 			GC.KeepAlive(shape);
 
@@ -56,7 +56,7 @@ namespace Microsoft.Maui.UnitTests.Views
 			};
 
 			await Task.Yield();
-			GC.Collect(2);
+			GC.Collect();
 			GC.WaitForPendingFinalizers();
 			GC.KeepAlive(shape);
 

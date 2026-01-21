@@ -17,7 +17,7 @@
 		{
 			bool referencesCollected()
 			{
-				GC.Collect(2);
+				GC.Collect();
 				GC.WaitForPendingFinalizers();
 
 				foreach (var reference in references)
