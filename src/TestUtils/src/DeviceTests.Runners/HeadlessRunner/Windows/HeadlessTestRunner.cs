@@ -24,17 +24,6 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 			_options = options;
 			_resultsPath = TestResultsFile;
 			_logger = new();
-			
-			// Set the CaptureHelper log directory to the same directory as test results
-			// so logs will be uploaded as Helix artifacts
-			if (!string.IsNullOrEmpty(_resultsPath))
-			{
-				var logDir = Path.GetDirectoryName(_resultsPath);
-				if (!string.IsNullOrEmpty(logDir))
-				{
-					Microsoft.Maui.DeviceTests.CaptureHelper.LogDirectory = logDir;
-				}
-			}
 		}
 
 		protected override bool LogExcludedTests => true;

@@ -36,6 +36,10 @@
     <!-- <WindowsPackageType>None</WindowsPackageType> -->
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(WindowsPackageType)' == 'None'">
+    <DefineConstants>$(DefineConstants);UNPACKAGED</DefineConstants>
+  </PropertyGroup>
+
   <PropertyGroup>
     <!-- enable compilation of bindings with Source -->
     <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>

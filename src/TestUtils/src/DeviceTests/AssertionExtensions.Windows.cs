@@ -287,19 +287,9 @@ namespace Microsoft.Maui.DeviceTests
 
 				var device = CanvasDevice.GetSharedDevice();
 
-				// Log view state for debugging on Helix CI
-				System.Diagnostics.Debug.WriteLine($"[ToBitmap] View type: {view.GetType().Name}");
-				System.Diagnostics.Debug.WriteLine($"[ToBitmap] View ActualWidth: {view.ActualWidth}, ActualHeight: {view.ActualHeight}");
-				System.Diagnostics.Debug.WriteLine($"[ToBitmap] View Width: {view.Width}, Height: {view.Height}");
-				System.Diagnostics.Debug.WriteLine($"[ToBitmap] View IsLoaded: {view.IsLoaded}");
-				System.Diagnostics.Debug.WriteLine($"[ToBitmap] View Visibility: {view.Visibility}");
-				System.Diagnostics.Debug.WriteLine($"[ToBitmap] Window Content type: {window.Content?.GetType().Name}");
-
 				// Wait for view to have non-zero dimensions (layout may not have completed after Loaded event)
 				if (view.ActualWidth == 0 || view.ActualHeight == 0)
 				{
-					System.Diagnostics.Debug.WriteLine($"[ToBitmap] View has zero dimensions, waiting for layout...");
-					
 					// Force a layout pass
 					view.UpdateLayout();
 					
@@ -319,10 +309,7 @@ namespace Microsoft.Maui.DeviceTests
 						if (completed != sizeChangedTcs.Task)
 						{
 							view.SizeChanged -= OnSizeChanged;
-							System.Diagnostics.Debug.WriteLine($"[ToBitmap] Timeout waiting for SizeChanged event");
 						}
-						
-						System.Diagnostics.Debug.WriteLine($"[ToBitmap] After wait - ActualWidth: {view.ActualWidth}, ActualHeight: {view.ActualHeight}");
 					}
 				}
 
@@ -334,14 +321,12 @@ namespace Microsoft.Maui.DeviceTests
 				try
 				{
 					using var windowBitmap = await CaptureHelper.RenderAsync(window, device);
-					System.Diagnostics.Debug.WriteLine($"[ToBitmap] Window capture succeeded");
 				}
-				catch (PlatformNotSupportedException ex)
+				catch (PlatformNotSupportedException)
 				{
 					// On Helix CI VMs, window capture is not supported. 
 					// Continue without it - this may cause issues with DirectX controls like Win2D,
 					// but should work for standard XAML controls.
-					System.Diagnostics.Debug.WriteLine($"[ToBitmap] Window capture not supported: {ex.Message}");
 				}
 
 				var bmp = new RenderTargetBitmap();
@@ -349,8 +334,6 @@ namespace Microsoft.Maui.DeviceTests
 				var pixels = await bmp.GetPixelsAsync();
 				var width = bmp.PixelWidth;
 				var height = bmp.PixelHeight;
-
-				System.Diagnostics.Debug.WriteLine($"[ToBitmap] RenderTargetBitmap result: {width}x{height}, pixels length: {pixels.Length}");
 
 				return CanvasBitmap.CreateFromBytes(device, pixels, width, height, DirectXPixelFormat.B8G8R8A8UIntNormalized);
 			}, mauiContext);
