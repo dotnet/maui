@@ -4,7 +4,7 @@ using Google.Android.Material.Slider;
 namespace Microsoft.Maui.Handlers;
 
 // TODO: Material3: Make it public in .NET 11
-internal partial class SliderHandler2 : ViewHandler<ISlider, Slider>
+internal class SliderHandler2 : ViewHandler<ISlider, Slider>
 {
     public static PropertyMapper<ISlider, SliderHandler2> Mapper =
             new(ViewMapper)
@@ -127,7 +127,7 @@ internal partial class SliderHandler2 : ViewHandler<ISlider, Slider>
             return;
         }
 
-        if (VirtualView.Value != value)
+        if ((float)VirtualView.Value != value)
         {
             VirtualView.Value = value;
         }
