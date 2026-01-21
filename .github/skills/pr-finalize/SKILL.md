@@ -18,7 +18,7 @@ Ensures PR title and description accurately reflect the implementation for a goo
 | Input | Required | Source |
 |-------|----------|--------|
 | PR number | Yes | User provides |
-| Session markdown | Optional | `.github/agent-pr-session/issue-XXXXX.md` or `pr-XXXXX.md` |
+| Session markdown | Optional | `CustomAgentLogsTmp/PRState/issue-XXXXX.md` or `pr-XXXXX.md` |
 
 ## Outputs
 
@@ -95,7 +95,7 @@ Should include (for agent context):
 ### Step 5: Session Markdown (If Exists)
 
 ```bash
-ls .github/agent-pr-session/issue-XXXXX.md .github/agent-pr-session/pr-XXXXX.md 2>/dev/null
+ls CustomAgentLogsTmp/PRState/issue-XXXXX.md CustomAgentLogsTmp/PRState/pr-XXXXX.md 2>/dev/null
 ```
 
 **If file exists:**

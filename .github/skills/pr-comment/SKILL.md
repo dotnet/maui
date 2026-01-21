@@ -1,6 +1,6 @@
 ---
 name: pr-comment
-description: Posts progress comments to GitHub PRs during review phases. Self-contained comments with collapsible details. Use when a PR agent phase completes.
+description: Posts or updates automated progress comments on GitHub PRs. Use after completing any PR agent phase (pre-flight, tests, gate, fix, report). Triggers on 'post comment to PR', 'update PR progress', 'comment on PR with results', 'post pre-flight comment'. Creates single aggregated review comment with collapsible sections per commit.
 metadata:
   author: dotnet-maui
   version: "3.0"
@@ -18,21 +18,6 @@ This skill posts automated progress comments to GitHub Pull Requests during the 
 - **Review Session Support**: Tracks multiple review sessions with expandable details and commit links
 - **Simple Interface**: Just pass content - script handles everything else
 
-## When to Use
-
-- After completing Pre-Flight phase (context gathering)
-- After completing Tests phase (test verification)
-- After completing Gate phase (test validation)
-- After completing Fix phase (solution comparison)
-- After completing Report phase (final analysis)
-
-**Trigger phrases:**
-- "Post Pre-Flight comment to PR #XXXXX"
-- "Comment on PR #XXXXX with Pre-Flight results"
-- "Update PR #XXXXX with progress"
-
-**🚨 CRITICAL**: Always post phase comments after completing each phase. The PR agent workflow mandates this.
-
 ## Supported Phases
 
 | Phase | Description | When to Post | What This Enables Next |
@@ -45,46 +30,9 @@ This skill posts automated progress comments to GitHub Pull Requests during the 
 
 ## Usage
 
-### Understanding the Phase Progression
-
-Each phase completion unlocks the next phase in the workflow:
-
-```
-🔍 Pre-Flight
-   ↓
-   📤 Post comment → Context documented, test requirements identified
-   ↓
-🧪 Tests
-   ↓
-   📤 Post comment → Tests exist and reproduce the bug
-   ↓
-🚦 Gate
-   ↓
-   📤 Post comment → Tests verified to catch the fix
-   ↓
-🔧 Fix
-   ↓
-   📤 Post comment → Alternative fixes explored and compared
-   ↓
-📋 Report
-   ↓
-   📤 Post comment → Final recommendation ready
-   ↓
-✅ PR Decision (Approve/Merge or Request Changes)
-```
-
-**Why post after each phase?**
-- **Transparency**: Maintainers see progress in real-time
-- **Accountability**: Each phase result is documented
-- **Collaboration**: Contributors can provide input at any stage
-- **History**: Multiple review sessions are tracked on the same PR
-- **Async workflow**: Reviewers can pick up where previous session left off
-
-### Post a Phase Completion Comment
-
 ```bash
 # Pipe content via stdin or use -Content parameter
-cat .github/agent-pr-session/pr-12345.md | \
+cat CustomAgentLogsTmp/PRState/pr-12345.md | \
   pwsh .github/skills/pr-comment/scripts/post-pr-comment.ps1 -PRNumber 12345
 ```
 
@@ -107,41 +55,9 @@ Comments are formatted with:
 
 ### Review Session Tracking
 
-When the same PR is reviewed multiple times (e.g., after new commits), the script **updates the single aggregated review comment** and adds a new expandable section for each commit-based review session. This keeps PR comments organized and prevents duplication.
+When the same PR is reviewed multiple times (e.g., after new commits), the script **updates the single aggregated review comment** and adds a new expandable section for each commit-based review session.
 
-**Example Comment Structure:**
-
-```markdown
-## 🤖 PR Agent Review — ✅ APPROVE
-
-<details>
-<summary>📊 Expand Full Review</summary>
-
-### Review Sessions
-
-<details>
-<summary>📝 Session: Fix CollectionView null reference - abc123d</summary>
-
-#### 🔍 Pre-Flight: Context Gathering
-✅ Analyzed issue #33356...
-
-#### 🧪 Tests: Verification
-✅ Found existing test coverage...
-
-</details>
-
-<details>
-<summary>📝 Session: Update after feedback - def456e</summary>
-
-#### 🔍 Pre-Flight: Context Gathering
-✅ Re-analyzed with latest changes...
-
-</details>
-
-</details>
-```
-
-### Example Comment (Single Session)
+### Example Output
 
 ```markdown
 ## 🔍 Pre-Flight: Context Gathering Complete
@@ -170,34 +86,9 @@ When the same PR is reviewed multiple times (e.g., after new commits), the scrip
 
 - [`post-pr-comment.ps1`](scripts/post-pr-comment.ps1) - Posts or updates the aggregated PR agent review comment
 
-## Workflow Integration
+## Technical Details
 
-The PR agent should call this skill after completing each phase:
-
-```
-Phase 1: Pre-Flight
-  ├─ Gather context
-  ├─ Update state file
-  └─ 📤 POST COMMENT (pr-comment skill)
-
-Phase 2: Tests  
-  ├─ Analyze tests
-  ├─ Update state file
-  └─ 📤 POST COMMENT (pr-comment skill)
-
-[... and so on for remaining phases]
-```
-
-### Technical Details
-
-- A single aggregated PR review comment is identified by the HTML comment marker `<!-- PR-AGENT-REVIEW -->`
-- The script checks for an existing comment containing the review marker before posting
-- If an existing comment is found, the single aggregated review comment is **updated** to add a new commit-based review session
-- Review sessions are grouped by commit and labeled using the commit title and short SHA
-- Comments use collapsible `<details>` sections for each commit-based review session
-- Updates preserve all previous review sessions
-- Uses GitHub's markdown rendering for formatted output
-- API calls use `gh api` for editing existing comments
-- Comments are posted using GitHub CLI (`gh pr comment`)
-- State file is parsed to extract all phase-specific information
-- Comments are idempotent - posting again updates the aggregated comment
+- Comments identified by HTML marker `<!-- PR-AGENT-REVIEW -->`
+- Existing comments are updated (not duplicated) when posting again
+- Review sessions grouped by commit SHA
+- Uses `gh api` for create/update operations

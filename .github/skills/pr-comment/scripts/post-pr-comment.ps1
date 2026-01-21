@@ -29,7 +29,7 @@
 
 .EXAMPLE
     # Post/update review comment with validation
-    ./post-pr-comment.ps1 -PRNumber 12345 -Content "$(cat .github/agent-pr-session/pr-12345.md)"
+    ./post-pr-comment.ps1 -PRNumber 12345 -Content "$(cat CustomAgentLogsTmp/PRState/pr-12345.md)"
 #>
 
 param(
@@ -493,26 +493,17 @@ if ($DryRun) {
     exit 0
 }
 
-# Check if aggregated comment already exists
-Write-Host "Checking for existing review comment..." -ForegroundColor Yellow
-$existingComments = gh api "/repos/dotnet/maui/issues/$PRNumber/comments" --jq '.[] | select(.body | contains("<!-- PR-AGENT-REVIEW -->")) | {id: .id, body: .body}' | ConvertFrom-Json
-
-if ($existingComments) {
-    if ($existingComments -is [System.Array]) {
-        $commentToUpdate = $existingComments[0]
-    } else {
-        $commentToUpdate = $existingComments
-    }
-    
-    Write-Host "✓ Found existing review comment (ID: $($commentToUpdate.id)) - updating..." -ForegroundColor Green
+# Post or update comment (reuse $existingComment from earlier check)
+if ($existingComment) {
+    Write-Host "✓ Updating existing review comment (ID: $($existingComment.id))..." -ForegroundColor Green
     
     # Create temp file for update
     $tempFile = [System.IO.Path]::GetTempFileName()
     @{ body = $commentBody } | ConvertTo-Json -Depth 10 | Set-Content -Path $tempFile -Encoding UTF8
-    
-    gh api --method PATCH "repos/dotnet/maui/issues/comments/$($commentToUpdate.id)" --input $tempFile | Out-Null
+
+    gh api --method PATCH "repos/dotnet/maui/issues/comments/$($existingComment.id)" --input $tempFile | Out-Null
     Remove-Item $tempFile
-    
+
     Write-Host "✅ Review comment updated successfully" -ForegroundColor Green
 } else {
     Write-Host "Creating new review comment..." -ForegroundColor Yellow

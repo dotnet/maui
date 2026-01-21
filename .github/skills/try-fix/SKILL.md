@@ -18,20 +18,6 @@ Attempts ONE fix for a given problem. Receives all context upfront, tries a sing
 3. **Empirical**: Actually implement and test - don't just theorize
 4. **Informative**: Report what was tried, what happened, and why
 
-## When to Use
-
-- ✅ CI automation needs to attempt a fix
-- ✅ You have a clear problem description and test command
-- ✅ You want ONE attempt with full reporting
-
-## When NOT to Use
-
-- ❌ For writing tests (use `write-tests` skill)
-- ❌ For just running tests (use test commands directly)
-- ❌ When problem context is unclear (gather context first)
-
----
-
 ## Inputs
 
 All inputs are provided by the invoker (CI, agent, or user).
@@ -44,7 +30,7 @@ All inputs are provided by the invoker (CI, agent, or user).
 | Platform | Yes | Target platform (`android`, `ios`, `windows`, `maccatalyst`) |
 | Hints | Optional | Suggested approaches, prior attempts, or areas to focus on |
 | Baseline | Optional | Git ref or instructions for establishing broken state (default: current state) |
-| state_file | Optional | Path to PR agent state file (e.g., `.github/agent-pr-session/pr-12345.md`). If provided, try-fix will append its results to the Fix Candidates table. |
+| state_file | Optional | Path to PR agent state file (e.g., `CustomAgentLogsTmp/PRState/pr-12345.md`). If provided, try-fix will append its results to the Fix Candidates table. |
 
 ## Outputs
 
@@ -63,6 +49,7 @@ Results reported back to the invoker:
 The skill is complete when:
 - [ ] Problem understood from provided context
 - [ ] ONE fix approach designed and implemented
+- [ ] Compile errors resolved (iterated up to 3 times if needed)
 - [ ] Tests run and result captured
 - [ ] Analysis provided (success explanation or failure reasoning)
 - [ ] Results reported to invoker
@@ -154,6 +141,19 @@ git status --short
 # After editing, capture what changed
 git diff
 ```
+
+### Step 5.5: Work Through Compile Errors
+
+**CRITICAL: Do NOT give up on first compile error!**
+
+If your fix has compile errors, **iterate to fix them** before running tests:
+
+1. **Attempt the build** (often your test command will do this automatically)
+2. **If compile errors occur:** Read error messages (CS#### codes), diagnose, fix, rebuild
+3. **Iterate up to 3 times** to resolve compile errors
+4. **Only mark as FAIL** if you cannot get the code to compile after reasonable effort
+
+See `references/compile-errors.md` for common error patterns and resolution strategies.
 
 ### Step 6: Run Tests
 
@@ -335,44 +335,7 @@ hints: |
   - Focus on the Disconnect/Cleanup methods
 ```
 
-**Skill execution:**
-1. Reads context - understands it's a disposal timing issue on Android
-2. Analyzes target files - finds `DisconnectHandler` method
-3. Designs fix - add `IsDisposed` check before accessing adapter
-4. Applies fix - edits `CollectionViewHandler.Android.cs`
-5. Runs test - ✅ PASS
-6. Analyzes - "Adding IsDisposed check prevents access to disposed adapter during navigation"
-7. Captures diff
-8. Reverts changes
-9. Reports results
-
-**Output:**
-```markdown
-## Try-Fix Result
-
-**Approach:** Add IsDisposed check in DisconnectHandler before accessing adapter
-
-**Files Changed:**
-- `src/Controls/src/Core/Handlers/Items/CollectionViewHandler.Android.cs` (+3/-0 lines)
-
-**Result:** ✅ PASS
-
-**Analysis:**
-The ObjectDisposedException occurred because DisconnectHandler was called during
-navigation after the handler was already disposed. Adding an early return when
-IsDisposed is true prevents the null adapter access. This matches the pattern
-used in ListView's fix (as noted in hints).
-
-**Diff:**
-```diff
- protected override void DisconnectHandler(RecyclerView platformView)
- {
-+    if (IsDisposed)
-+        return;
-+
-     base.DisconnectHandler(platformView);
-```
-```
+**Skill execution:** Reads context → Analyzes target files → Designs fix (add IsDisposed check) → Applies fix → Runs test (PASS) → Reports result using Step 10 template → Reverts changes
 
 ---
 
