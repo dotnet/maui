@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues
 {
-	[Issue(IssueTracker.None, 5555, "Memory leak when SwitchCell or EntryCell", PlatformAffected.iOS)]
+	[Issue(IssueTracker.None, 5555, "Memory leak when SwitchCell or EntryCell", PlatformAffected.All)]
 	public class Issue5555 : NavigationPage
 	{
 		public Issue5555() : base(new TestPage())
