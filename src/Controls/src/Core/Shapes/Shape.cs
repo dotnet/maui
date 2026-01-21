@@ -7,11 +7,12 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls.Shapes
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Shape.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.Shape']/Docs/*" />
-	public abstract partial class Shape : View, IShapeView, IShape
+	public abstract partial class Shape : View, IShapeView, IShape, IVersionedShape
 	{
 		WeakBrushChangedProxy? _fillProxy = null;
 		WeakBrushChangedProxy? _strokeProxy = null;
 		EventHandler? _fillChanged, _strokeChanged;
+		int _version;
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Shape.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public Shape()
@@ -22,6 +23,20 @@ namespace Microsoft.Maui.Controls.Shapes
 		{
 			_fillProxy?.Unsubscribe();
 			_strokeProxy?.Unsubscribe();
+		}
+		
+		int IVersionedShape.Version => _version;
+
+		protected override void OnPropertyChanged(string? propertyName = null)
+		{
+			unchecked
+			{
+				// Increase the version before propagating the property changed notification
+				// so that any code responding to the notification can get the latest version.
+				++_version;
+			}
+
+			base.OnPropertyChanged(propertyName);
 		}
 
 		public abstract PathF GetPath();
