@@ -135,6 +135,41 @@ stages:
             skipXcode: false
             skipSimulatorSetup: false
 
+    # Run Windows unpackaged tests via Cake (unpackaged doesn't work on Helix)
+    - template: common/device-tests.yml
+      parameters:
+        windowsPool: ${{ parameters.windowsPool }}
+        targetFrameworkVersion: ${{ targetFrameworkVersion }}
+        windowsVersions: [ 'unpackaged' ]
+        platforms: [ 'windows' ]
+        skipProvisioning: true
+        projects:
+        - name: essentials
+          desc: Essentials
+          windowsConfiguration: 'Debug'
+          windowsPackageId: 'com.microsoft.maui.essentials.devicetests'
+          windows: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
+        - name: graphics
+          desc: Graphics
+          windowsConfiguration: 'Debug'
+          windowsPackageId: 'com.microsoft.maui.graphics.devicetests'
+          windows: $(System.DefaultWorkingDirectory)/src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj
+        - name: core
+          desc: Core
+          windowsConfiguration: 'Debug'
+          windowsPackageId: 'com.microsoft.maui.core.devicetests'
+          windows: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj
+        - name: controls
+          desc: Controls
+          windowsConfiguration: 'Debug'
+          windowsPackageId: 'com.microsoft.maui.controls.devicetests'
+          windows: $(System.DefaultWorkingDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj
+        - name: blazorwebview
+          desc: BlazorWebView
+          windowsConfiguration: 'Debug'
+          windowsPackageId: 'Microsoft.Maui.MauiBlazorWebView.DeviceTests'
+          windows: $(System.DefaultWorkingDirectory)/src/BlazorWebView/tests/DeviceTests/MauiBlazorWebView.DeviceTests.csproj
+
   # Run on xamarin public instance
   - ${{ else }}:
 
