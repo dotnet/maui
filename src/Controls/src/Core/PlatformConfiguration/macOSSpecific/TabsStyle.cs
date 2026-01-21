@@ -1,18 +1,17 @@
-using System;
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../../docs/Microsoft.Maui.Controls/TabsStyle.xml" path="Type[@FullName='Microsoft.Maui.Controls.TabsStyle']/Docs/*" />
+	/// <summary>Enumerates tab bar styles for macOS.</summary>
 	public enum TabsStyle
 	{
-		/// <include file="../../../../docs/Microsoft.Maui.Controls/TabsStyle.xml" path="//Member[@MemberName='Default']/Docs/*" />
+		/// <summary>Indicates the default tab style.</summary>
 		Default = 0,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls/TabsStyle.xml" path="//Member[@MemberName='Hidden']/Docs/*" />
+		/// <summary>Indicates that tabs are hidden.</summary>
 		Hidden = 1,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls/TabsStyle.xml" path="//Member[@MemberName='Icons']/Docs/*" />
+		/// <summary>Indicates tabs displayed as icons only.</summary>
 		Icons = 2,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls/TabsStyle.xml" path="//Member[@MemberName='OnNavigation']/Docs/*" />
+		/// <summary>Indicates tabs displayed in the navigation area.</summary>
 		OnNavigation = 3,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls/TabsStyle.xml" path="//Member[@MemberName='OnBottom']/Docs/*" />
+		/// <summary>Indicates tabs displayed at the bottom.</summary>
 		OnBottom = 4
 	}
 }
