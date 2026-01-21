@@ -20,11 +20,15 @@ public class Issue14142 : _IssuesUITest
 		App.WaitForElement("RunTestButton");
 		App.WaitForElement("StatusLabel");
 
+		// Check initial state - should show "Events subscribed" if OnNavigatedTo ran
+		var initialResult = App.WaitForElement("ResultLabel").GetText();
+		TestContext.WriteLine($"Initial ResultLabel: {initialResult}");
+
 		// Run the minimize/restore test
 		App.Tap("RunTestButton");
 
-		// Wait for test to complete (2 cycles * 300ms delays + overhead)
-		Task.Delay(3000).Wait();
+		// Wait for test to complete (2 cycles * 500ms delays + overhead)
+		Task.Delay(4000).Wait();
 
 		// Verify results
 		App.Tap("VerifyButton");
@@ -34,6 +38,9 @@ public class Issue14142 : _IssuesUITest
 		var resultText = resultLabel.GetText();
 		var statusLabel = App.WaitForElement("StatusLabel");
 		var statusText = statusLabel.GetText();
+
+		TestContext.WriteLine($"Status: {statusText}");
+		TestContext.WriteLine($"Result: {resultText}");
 
 		Assert.That(resultText, Does.Contain("PASSED"),
 			$"Test failed. Status: {statusText}, Result: {resultText}");

@@ -97,18 +97,24 @@ public class Issue14142 : ContentPage
 				verifyButton
 			}
 		};
+
+		// Subscribe to Loaded event to get window reference
+		this.Loaded += OnPageLoaded;
 	}
 
-	protected override void OnNavigatedTo(NavigatedToEventArgs args)
+	private void OnPageLoaded(object sender, EventArgs e)
 	{
-		base.OnNavigatedTo(args);
-		
 		_window = this.Window;
 		if (_window != null)
 		{
 			_window.Activated += OnWindowActivated;
 			_window.Deactivated += OnWindowDeactivated;
 			_window.Resumed += OnWindowResumed;
+			_resultLabel.Text = "Events subscribed";
+		}
+		else
+		{
+			_resultLabel.Text = "ERROR: Window is null in Loaded";
 		}
 	}
 
@@ -122,6 +128,7 @@ public class Issue14142 : ContentPage
 			_window.Deactivated -= OnWindowDeactivated;
 			_window.Resumed -= OnWindowResumed;
 		}
+		this.Loaded -= OnPageLoaded;
 	}
 
 	private void OnWindowActivated(object sender, EventArgs e)
@@ -196,23 +203,20 @@ public class Issue14142 : ContentPage
 		_resumed = 0;
 		UpdateStatus();
 
-		// Wait for initial activation to settle
-		await Task.Delay(500);
 		_resultLabel.Text = "Running test...";
 
 		// Run 2 minimize/restore cycles
+		// Each cycle: minimize (triggers deactivated) -> restore (triggers activated)
 		for (int i = 0; i < 2; i++)
 		{
-			ShowWindow(hwnd, SW_RESTORE);
-			await Task.Delay(300);
-
+			// Minimize first - this should trigger Deactivated
 			ShowWindow(hwnd, SW_MINIMIZE);
-			await Task.Delay(300);
-		}
+			await Task.Delay(500);
 
-		// Final restore
-		ShowWindow(hwnd, SW_RESTORE);
-		await Task.Delay(300);
+			// Restore - this should trigger Activated
+			ShowWindow(hwnd, SW_RESTORE);
+			await Task.Delay(500);
+		}
 
 		_resultLabel.Text = "Test complete - click Verify";
 #else
