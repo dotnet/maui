@@ -36,6 +36,8 @@ namespace Microsoft.Maui.Handlers
 #if ANDROID
 			[nameof(IPicker.Focus)] = MapFocus,
 			[nameof(IPicker.Unfocus)] = MapUnfocus
+#elif MACCATALYST
+			[nameof(IPicker.Unfocus)] = MapUnfocus
 #endif
 		};
 
