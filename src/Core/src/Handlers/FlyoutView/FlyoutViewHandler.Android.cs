@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Handlers
 		LinearLayoutCompat? _sideBySideView;
 		DrawerLayout DrawerLayout => (DrawerLayout)PlatformView;
 		ScopedFragment? _detailViewFragment;
+		bool _isDisconnected;
 
 		protected override View CreatePlatformView()
 		{
@@ -92,7 +93,9 @@ namespace Microsoft.Maui.Handlers
 						fragmentManager
 							.RunOrWaitForResume(context, (fm) =>
 							{
-								if (oldFragment is null)
+								// Check if the handler was disconnected while waiting.
+								// If so, skip the fragment transaction as the container no longer exists.
+								if (_isDisconnected || oldFragment is null)
 								{
 									return;
 								}
@@ -111,12 +114,31 @@ namespace Microsoft.Maui.Handlers
 					fragmentManager
 						.RunOrWaitForResume(context, (fm) =>
 						{
-							_detailViewFragment = new ScopedFragment(VirtualView.Detail, MauiContext);
-							fm
-								.BeginTransaction()
-								.Replace(Resource.Id.navigationlayout_content, _detailViewFragment)
-								.SetReorderingAllowed(true)
-								.Commit();
+							// Check if the handler was disconnected while waiting.
+							// If so, skip the fragment transaction as the container no longer exists.
+							if (_isDisconnected)
+							{
+								return;
+							}
+
+							try
+							{
+								_detailViewFragment = new ScopedFragment(VirtualView.Detail, MauiContext);
+								fm
+									.BeginTransaction()
+									.Replace(Resource.Id.navigationlayout_content, _detailViewFragment)
+									.SetReorderingAllowed(true)
+									// Use commitNowAllowingStateLoss to execute synchronously.
+									// This prevents crashes when the handler is disconnected between
+									// commit and execution, as the transaction runs immediately.
+									.CommitNowAllowingStateLoss();
+							}
+							catch (Java.Lang.IllegalArgumentException)
+							{
+								// Container view no longer exists - this can happen if the handler
+								// is disconnected while this callback was waiting to run.
+								// Safe to ignore as we're cleaning up anyway.
+							}
 						});
 			}
 		}
@@ -294,6 +316,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(View platformView)
 		{
+			_isDisconnected = false;
 			MauiWindowInsetListener.RegisterParentForChildViews(platformView);
 
 			if (_navigationRoot is CoordinatorLayout cl)
@@ -310,6 +333,43 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(View platformView)
 		{
+			// Mark as disconnected FIRST to prevent pending fragment transactions
+			// from executing after the view hierarchy is torn down.
+			_isDisconnected = true;
+
+			// Execute pending fragment transactions and remove the detail fragment BEFORE
+			// cleaning up the view hierarchy to prevent "No view found for id" crashes.
+			try
+			{
+				var fragmentManager = MauiContext?.GetFragmentManager();
+				if (fragmentManager != null && !fragmentManager.IsDestroyed)
+				{
+					fragmentManager.ExecutePendingTransactions();
+					
+					if (_detailViewFragment != null && _detailViewFragment.IsAdded)
+					{
+						fragmentManager
+							.BeginTransactionEx()
+							.RemoveEx(_detailViewFragment)
+							.CommitNowAllowingStateLoss();
+					}
+				}
+			}
+			catch (Java.Lang.IllegalArgumentException)
+			{
+				// Container may already be gone - ignore
+			}
+			catch (Java.Lang.IllegalStateException)
+			{
+				// FragmentManager may be in invalid state - ignore
+			}
+
+			// Cancel any pending fragment transactions.
+			// This prevents crashes where a delayed fragment transaction tries to add
+			// a fragment to a container that no longer exists in the view hierarchy.
+			_pendingFragment?.Dispose();
+			_pendingFragment = null;
+
 			MauiWindowInsetListener.UnregisterView(platformView);
 			if (_navigationRoot is CoordinatorLayout cl)
 			{
