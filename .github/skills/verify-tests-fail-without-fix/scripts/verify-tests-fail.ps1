@@ -97,6 +97,86 @@ $BaselineScript = Join-Path $RepoRoot ".github/scripts/EstablishBrokenBaseline.p
 . $BaselineScript
 
 # ============================================================
+# Generate Gate Section for PR Agent
+# ============================================================
+
+function Write-GateSectionMarkdown {
+    param(
+        [string]$OutputFile,
+        [bool]$VerificationPassed,
+        [bool]$FailedWithoutFix,
+        [bool]$PassedWithFix,
+        [string]$Platform,
+        [string]$TestFilter,
+        [hashtable]$WithoutFixResult,
+        [hashtable]$WithFixResult,
+        [string[]]$FixFiles
+    )
+    
+    # Determine status
+    $gateStatus = if ($VerificationPassed) { "✅ PASSED" } else { "❌ FAILED" }
+    $gateIcon = if ($VerificationPassed) { "✅" } else { "❌" }
+    
+    # Create the Gate section content matching PR agent format
+    $gateSection = @"
+<details>
+<summary><strong>🚦 Gate - Test Verification</strong></summary>
+
+**Status**: $gateStatus
+
+- [$(if ($FailedWithoutFix) { 'x' } else { ' ' })] Tests FAIL without fix (bug is present)
+- [$(if ($PassedWithFix) { 'x' } else { ' ' })] Tests PASS with fix (fix works)
+
+**Test Run:**
+``````
+Platform:     $($Platform.ToUpper())
+Test Filter:  $TestFilter
+Result:       $(if ($VerificationPassed) { "SUCCESS ✅" } else { "FAILED ❌" })
+``````
+
+**Test Summary:**
+
+| Test Run | Expected | Actual | Test Count | Result |
+|----------|----------|--------|------------|--------|
+| WITHOUT fix | FAIL | $(if ($FailedWithoutFix) { "FAIL" } else { "PASS" }) | Total=$($WithoutFixResult.Total), Failed=$($WithoutFixResult.Failed) | $(if ($FailedWithoutFix) { "✅" } else { "❌" }) |
+| WITH fix | PASS | $(if ($PassedWithFix) { "PASS" } else { "FAIL" }) | Total=$($WithFixResult.Total), Passed=$($WithFixResult.Passed) | $(if ($PassedWithFix) { "✅" } else { "❌" }) |
+
+**Fix Files Verified:**
+$(foreach ($file in $FixFiles) {
+    "- ``$file``"
+}) -join "`n")
+
+**Result:** $gateIcon$(if ($VerificationPassed) {
+    " - Tests correctly detect the issue and validate the fix works."
+} else {
+    " - Test verification failed."
+    if (-not $FailedWithoutFix) {
+        "`n`n⚠️ **Tests passed without the fix** - Tests don't actually detect the bug."
+    }
+    if (-not $PassedWithFix) {
+        "`n`n⚠️ **Tests failed with the fix** - Fix doesn't resolve the issue or tests are broken."
+    }
+})
+
+**Logs:** ``CustomAgentLogsTmp/TestValidation/verification-report.md``
+
+</details>
+"@
+    
+    # Ensure directory exists
+    $outputDir = Split-Path $OutputFile -Parent
+    if (-not (Test-Path $outputDir)) {
+        New-Item -ItemType Directory -Path $outputDir -Force | Out-Null
+    }
+    
+    # Write Gate section
+    $gateSection | Set-Content -Path $OutputFile -Encoding UTF8
+    Write-Host ""
+    Write-Host "📄 Gate section saved to: $OutputFile" -ForegroundColor Cyan
+    Write-Host "   This can be incorporated into the PR session markdown by the PR agent." -ForegroundColor Gray
+}
+
+# ============================================================
 # Auto-detect test filter from changed files
 # ============================================================
 function Get-AutoDetectedTestFilter {
@@ -436,6 +516,7 @@ New-Item -ItemType Directory -Force -Path $OutputPath | Out-Null
 $ValidationLog = Join-Path $OutputPath "verification-log.txt"
 $WithoutFixLog = Join-Path $OutputPath "test-without-fix.log"
 $WithFixLog = Join-Path $OutputPath "test-with-fix.log"
+$MarkdownReport = Join-Path $OutputPath "verification-report.md"
 
 function Write-Log {
     param([string]$Message)
@@ -443,6 +524,156 @@ function Write-Log {
     $logLine = "[$timestamp] $Message"
     Write-Host $logLine
     Add-Content -Path $ValidationLog -Value $logLine
+}
+
+function Write-MarkdownReport {
+    param(
+        [bool]$VerificationPassed,
+        [bool]$FailedWithoutFix,
+        [bool]$PassedWithFix,
+        [hashtable]$WithoutFixResult,
+        [hashtable]$WithFixResult
+    )
+    
+    $reportDate = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    $status = if ($VerificationPassed) { "✅ PASSED" } else { "❌ FAILED" }
+    $statusSymbol = if ($VerificationPassed) { "✅" } else { "❌" }
+    
+    $markdown = @"
+# Test Verification Report
+
+**Date:** $reportDate | **Platform:** $($Platform.ToUpper()) | **Status:** $status
+
+## Summary
+
+| Check | Expected | Actual | Result |
+|-------|----------|--------|--------|
+| Tests WITHOUT fix | FAIL | $(if ($FailedWithoutFix) { "FAIL" } else { "PASS" }) | $(if ($FailedWithoutFix) { "✅" } else { "❌" }) |
+| Tests WITH fix | PASS | $(if ($PassedWithFix) { "PASS" } else { "FAIL" }) | $(if ($PassedWithFix) { "✅" } else { "❌" }) |
+
+## $statusSymbol Final Verdict
+
+$(if ($VerificationPassed) {
+    @"
+**VERIFICATION PASSED** ✅
+
+The tests correctly detect the issue:
+- ✅ Tests **FAIL** without the fix (as expected - bug is present)
+- ✅ Tests **PASS** with the fix (as expected - bug is fixed)
+
+**Conclusion:** The tests properly validate the fix and catch the bug when it's present.
+"@
+} else {
+    @"
+**VERIFICATION FAILED** ❌
+
+$(if (-not $FailedWithoutFix) {
+    "❌ **Tests PASSED without fix** (should have failed)`n   - The tests don't actually detect the bug`n   - Tests may not be testing the right behavior`n"
+})$(if (-not $PassedWithFix) {
+    "❌ **Tests FAILED with fix** (should have passed)`n   - The fix doesn't resolve the issue`n   - Tests may be broken or testing something else`n"
+})
+**Possible causes:**
+1. Wrong fix files specified
+2. Tests don't actually test the fixed behavior  
+3. The issue was already fixed in base branch
+4. Build caching - try clean rebuild
+5. Test needs different setup or conditions
+"@
+})
+
+---
+
+## Configuration
+
+**Platform:** $Platform
+**Test Filter:** $TestFilter
+**Base Branch:** $BaseBranchName
+**Merge Base:** $($MergeBase.Substring(0, 8))
+
+### Fix Files
+
+$(foreach ($file in $RevertableFiles) {
+    "- ``$file``"
+}) -join "`n")
+
+$(if ($NewFiles.Count -gt 0) {
+    @"
+
+### New Files (Not Reverted)
+
+$(foreach ($file in $NewFiles) {
+    "- ``$file``"
+}) -join "`n")
+"@
+})
+
+---
+
+## Test Results Details
+
+### Test Run 1: WITHOUT Fix
+
+**Expected:** Tests should FAIL (bug is present)  
+**Actual:** Tests $(if ($FailedWithoutFix) { "FAILED" } else { "PASSED" }) $(if ($FailedWithoutFix) { "✅" } else { "❌" })
+
+**Test Summary:**
+- Total: $($WithoutFixResult.Total)
+- Passed: $($WithoutFixResult.Passed)
+- Failed: $($WithoutFixResult.Failed)
+- Skipped: $($WithoutFixResult.Skipped)
+
+$(if ($WithoutFixResult.FailureReason) {
+    "**Failure Reason:** ``$($WithoutFixResult.FailureReason)``"
+})
+
+<details>
+<summary>View full test output (without fix)</summary>
+
+``````
+$(Get-Content $WithoutFixLog -Raw)
+``````
+
+</details>
+
+---
+
+### Test Run 2: WITH Fix
+
+**Expected:** Tests should PASS (bug is fixed)  
+**Actual:** Tests $(if ($PassedWithFix) { "PASSED" } else { "FAILED" }) $(if ($PassedWithFix) { "✅" } else { "❌" })
+
+**Test Summary:**
+- Total: $($WithFixResult.Total)
+- Passed: $($WithFixResult.Passed)
+- Failed: $($WithFixResult.Failed)
+- Skipped: $($WithFixResult.Skipped)
+
+$(if ($WithFixResult.FailureReason) {
+    "**Failure Reason:** ``$($WithFixResult.FailureReason)``"
+})
+
+<details>
+<summary>View full test output (with fix)</summary>
+
+``````
+$(Get-Content $WithFixLog -Raw)
+``````
+
+</details>
+
+---
+
+## Logs
+
+- Full verification log: ``$ValidationLog``
+- Test output without fix: ``$WithoutFixLog``
+- Test output with fix: ``$WithFixLog``
+- UI test logs: ``CustomAgentLogsTmp/UITests/``
+"@
+
+    $markdown | Set-Content -Path $MarkdownReport -Encoding UTF8
+    Write-Host ""
+    Write-Host "📄 Markdown report saved to: $MarkdownReport" -ForegroundColor Cyan
 }
 
 # Reuse the Get-TestResultFromLog function defined earlier
@@ -613,6 +844,27 @@ Write-Log ""
 Write-Log "Summary:"
 Write-Log "  - Tests WITHOUT fix: $(if ($failedWithoutFix) { 'FAIL ✅ (expected)' } else { 'PASS ❌ (should fail!)' })"
 Write-Log "  - Tests WITH fix: $(if ($passedWithFix) { 'PASS ✅ (expected)' } else { 'FAIL ❌ (should pass!)' })"
+
+# Generate markdown report
+Write-MarkdownReport `
+    -VerificationPassed $verificationPassed `
+    -FailedWithoutFix $failedWithoutFix `
+    -PassedWithFix $passedWithFix `
+    -WithoutFixResult $withoutFixResult `
+    -WithFixResult $withFixResult
+
+# Generate Gate section for PR agent
+$gateReportPath = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/verification-report.md"
+Write-GateSectionMarkdown `
+    -OutputFile $gateReportPath `
+    -VerificationPassed $verificationPassed `
+    -FailedWithoutFix $failedWithoutFix `
+    -PassedWithFix $passedWithFix `
+    -Platform $Platform `
+    -TestFilter $TestFilter `
+    -WithoutFixResult $withoutFixResult `
+    -WithFixResult $withFixResult `
+    -FixFiles $RevertableFiles
 
 if ($verificationPassed) {
     Write-Host ""

@@ -91,7 +91,28 @@ The script auto-detects which mode to use based on whether fix files are present
 5. Runs tests (should FAIL without fix)
 6. Restores fix files
 7. Runs tests (should PASS with fix)
-8. Reports result
+8. **Generates markdown reports**:
+   - `CustomAgentLogsTmp/TestValidation/verification-report.md` - Full detailed report
+   - `CustomAgentLogsTmp/PRState/verification-report.md` - Gate section for PR agent
+9. Reports result
+
+## Output Files
+
+The skill generates several output files:
+
+| File | Description |
+|------|-------------|
+| `CustomAgentLogsTmp/PRState/verification-report.md` | **Gate section markdown** ready for PR agent to incorporate |
+| `CustomAgentLogsTmp/TestValidation/verification-report.md` | Comprehensive markdown report with test results and full logs |
+| `CustomAgentLogsTmp/TestValidation/verification-log.txt` | Text log of the verification process |
+| `CustomAgentLogsTmp/TestValidation/test-without-fix.log` | Full test output from run without fix |
+| `CustomAgentLogsTmp/TestValidation/test-with-fix.log` | Full test output from run with fix |
+
+**Plus UI test logs in** `CustomAgentLogsTmp/UITests/`:
+- `android-device.log` or `ios-device.log` - Device logs
+- `test-output.log` - NUnit test output
+
+**Note**: The Gate section (`CustomAgentLogsTmp/PRState/verification-report.md`) is formatted to match the PR agent's session markdown format and can be directly incorporated into `.github/agent-pr-session/pr-{number}.md`.
 
 ## Troubleshooting
 
