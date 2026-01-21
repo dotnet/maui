@@ -349,17 +349,6 @@ REM List all running processes to help debug
 echo All running UWP/packaged app processes:
 powershell -Command "Get-Process | Where-Object { $_.MainWindowTitle -ne '' } | Select-Object ProcessName, Id, MainWindowTitle | Format-Table"
 
-REM Display MAUI startup log if it exists
-if exist "%TEST_RESULTS_DIR%\maui-test-startup.log" (
-    echo.
-    echo ========================================
-    echo MAUI Test Startup Log:
-    echo ========================================
-    type "%TEST_RESULTS_DIR%\maui-test-startup.log"
-    echo ========================================
-    echo.
-)
-
 if not exist "%CATEGORY_FILE%" (
     echo ERROR: Test categories file was not created during discovery phase
     echo Expected location: %CATEGORY_FILE%
@@ -403,35 +392,6 @@ echo.
 echo ========================================
 echo Processing Results
 echo ========================================
-
-REM Check for MAUI startup log file
-set MAUI_LOG_FILE=%TEST_RESULTS_DIR%\maui-test-startup.log
-set MAUI_LOG_TEMP=%TEMP%\maui-test-startup.log
-
-if exist "%MAUI_LOG_FILE%" (
-    echo.
-    echo ========================================
-    echo MAUI Test Startup Log ^(from results dir^):
-    echo ========================================
-    type "%MAUI_LOG_FILE%"
-    echo ========================================
-    echo.
-) else if exist "%MAUI_LOG_TEMP%" (
-    echo.
-    echo ========================================
-    echo MAUI Test Startup Log ^(from TEMP dir^):
-    echo ========================================
-    type "%MAUI_LOG_TEMP%"
-    echo ========================================
-    echo.
-    REM Copy to upload directory for artifact collection
-    copy "%MAUI_LOG_TEMP%" "%TEST_RESULTS_DIR%\maui-test-startup.log" >nul 2>&1
-) else (
-    echo NOTE: MAUI startup log file not found at:
-    echo   - %MAUI_LOG_FILE%
-    echo   - %MAUI_LOG_TEMP%
-    echo This means the app may not have started at all.
-)
 
 REM Clean up category file
 if exist "%CATEGORY_FILE%" del /f "%CATEGORY_FILE%"
