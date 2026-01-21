@@ -1568,7 +1568,7 @@ namespace UITest.Appium
 				{ "isResetAfterEachTest", isResetAfterEachTest }
 			});
 		}
-		
+
 		/// <summary>
 		/// Send the currently running app for this session to the background.
 		/// </summary>
@@ -2201,11 +2201,32 @@ namespace UITest.Appium
 			return app switch
 			{
 				AppiumAndroidApp _ => AppiumQuery.ByXPath("//android.widget.ImageButton[@content-desc='Navigate up']"),
-				AppiumIOSApp _ => AppiumQuery.ByAccessibilityId("Back"),
+				AppiumIOSApp iOSApp => IsIOS26OrLower(iOSApp) ? AppiumQuery.ByAccessibilityId("BackButton") : AppiumQuery.ByAccessibilityId("Back"),
 				AppiumCatalystApp _ => AppiumQuery.ByAccessibilityId("Back"),
 				AppiumWindowsApp _ => AppiumQuery.ByAccessibilityId("NavigationViewBackButton"),
 				_ => throw new ArgumentException("Unsupported app type", nameof(app))
 			};
+		}
+
+		/// <summary>
+		/// Checks if the iOS app is running on iOS 26 or lower.
+		/// </summary>
+		/// <param name="iOSApp">The iOS app instance.</param>
+		/// <returns>True if running on iOS 26 or lower, false otherwise.</returns>
+		static bool IsIOS26OrLower(AppiumIOSApp iOSApp)
+		{
+			var platformVersion = (string?)iOSApp.Driver.Capabilities.GetCapability("platformVersion");
+			if (string.IsNullOrEmpty(platformVersion))
+				return false;
+
+			// Parse major version from strings like "26.0", "26", "17.2", etc.
+			var versionParts = platformVersion.Split('.');
+			if (versionParts.Length > 0 && int.TryParse(versionParts[0], out int majorVersion))
+			{
+				return majorVersion >= 26;
+			}
+
+			return false;
 		}
 
 		/// <summary>
