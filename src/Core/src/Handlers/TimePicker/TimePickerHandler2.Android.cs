@@ -60,10 +60,7 @@ internal partial class TimePickerHandler2 : ViewHandler<ITimePicker, MauiMateria
             _dialog = null;
         }
 
-        _positiveButtonClickListener?.Dispose();
         _positiveButtonClickListener = null;
-
-        _dismissListener?.Dispose();
         _dismissListener = null;
 
         platformView.ShowPicker = null;
