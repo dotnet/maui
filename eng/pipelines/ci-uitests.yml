@@ -74,7 +74,7 @@ parameters:
     default:
       name: NetCore1ESPool-Internal
       demands:
-        - ImageOverride -equals 1ESPT-Ubuntu22.04
+        - ImageOverride -equals 1es-ubuntu2204
 
   - name: iosPoolInternal
     type: object
