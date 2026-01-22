@@ -11,8 +11,6 @@ namespace Microsoft.Maui.Benchmarks
 	[MemoryDiagnoser]
 	public class BindingComparisonBenchmarker
 	{
-		const int Iterations = 100;
-
 		public class NotifyingObject : INotifyPropertyChanged
 		{
 			string _name = "Initial";
@@ -93,40 +91,30 @@ namespace Microsoft.Maui.Benchmarks
 			DispatcherProvider.SetCurrent(null);
 		}
 
+		static int _counter;
+
 		[Benchmark(Baseline = true)]
 		public void SetValue()
 		{
-			for (int i = 0; i < Iterations; i++)
-			{
-				TargetSetValue.SetValue(MyObject.NameProperty, $"Value{i}");
-			}
+			TargetSetValue.SetValue(MyObject.NameProperty, (++_counter).ToString());
 		}
 
 		[Benchmark]
 		public void Binding()
 		{
-			for (int i = 0; i < Iterations; i++)
-			{
-				SourceBinding.Name = $"Value{i}";
-			}
+			SourceBinding.Name = (++_counter).ToString();
 		}
 
 		[Benchmark]
 		public void TypedBinding()
 		{
-			for (int i = 0; i < Iterations; i++)
-			{
-				SourceTypedBinding.Name = $"Value{i}";
-			}
+			SourceTypedBinding.Name = (++_counter).ToString();
 		}
 
 		[Benchmark]
 		public void SourceGeneratedBinding()
 		{
-			for (int i = 0; i < Iterations; i++)
-			{
-				SourceSourceGenBinding.Name = $"Value{i}";
-			}
+			SourceSourceGenBinding.Name = (++_counter).ToString();
 		}
 	}
 }
