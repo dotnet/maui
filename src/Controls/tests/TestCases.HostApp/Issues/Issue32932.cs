@@ -1,60 +1,42 @@
 namespace Maui.Controls.Sample.Issues;
+
 using System.Collections.ObjectModel;
 
 [Issue(IssueTracker.Github, 32932, "[Android] EmptyView doesn’t display when CollectionView is placed inside a VerticalStackLayout", PlatformAffected.Android)]
 
-public class Issue32932 : TestShell
+public class Issue32932 : TestContentPage
 {
 	protected override void Init()
 	{
-		var shellContent = new ShellContent
+		var collectionView = new CollectionView2();
+
+		collectionView.AutomationId = "EmptyCollectionView";
+		collectionView.ItemTemplate = new DataTemplate(() =>
 		{
-			Title = "Home",
-			Route = "MainPage",
-			Content = new Issue32932CollectionViewPage() { Title = "Home" }
-		};
+			var label = new Label();
+			label.SetBinding(Label.TextProperty, new Binding(".")); // bind to the string item
+			return label;
+		});
 
-		Items.Add(shellContent);
-	}
-
-
-	class Issue32932CollectionViewPage : ContentPage
-	{
-		public Issue32932CollectionViewPage()
+		// EmptyView: ContentView -> VerticalStackLayout -> Label "No values found..."
+		collectionView.EmptyView = new ContentView
 		{
-			Title = "Issue 32932 CollectionView Page";
-
-			var collectionView = new CollectionView2();
-
-			collectionView.AutomationId = "EmptyCollectionView";
-			collectionView.ItemTemplate = new DataTemplate(() =>
+			Content = new VerticalStackLayout
 			{
-				var label = new Label();
-				label.SetBinding(Label.TextProperty, new Binding(".")); // bind to the string item
-				return label;
-			});
-
-			// EmptyView: ContentView -> VerticalStackLayout -> Label "No values found..."
-			collectionView.EmptyView = new ContentView
-			{
-				Content = new VerticalStackLayout
-				{
-					Children =
+				Children =
 						{
 							new Label { Text = "No values found..." , AutomationId= "EmptyViewLabel"}
 						}
-				}
-			};
-			collectionView.ItemsSource = new ObservableCollection<string>();
+			}
+		};
+		collectionView.ItemsSource = new ObservableCollection<string>();
 
-			// inner stack that contains the title and the CollectionView
-			var innerStack = new VerticalStackLayout
-			{
-				Children = { collectionView }
-			};
+		// inner stack that contains the title and the CollectionView
+		var innerStack = new VerticalStackLayout
+		{
+			Children = { collectionView }
+		};
 
-			Content = innerStack;
-		}
+		Content = innerStack;
 	}
 }
-
