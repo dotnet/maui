@@ -5,13 +5,13 @@
 
 .DESCRIPTION
     This script automates the complete workflow for testing MAUI issues:
-    1. Builds the Sandbox app for the target platform (Android, iOS, or MacCatalyst)
+    1. Builds the Sandbox app for the target platform (Android, iOS, MacCatalyst, or Windows)
     2. Starts Appium server if not already running
     3. Deploys and launches the app using Appium
     4. Runs the Appium test script to validate the issue
 
 .PARAMETER Platform
-    Target platform: "android", "ios", or "catalyst"
+    Target platform: "android", "ios", "catalyst", or "windows"
 
 .PARAMETER Configuration
     Build configuration: "Debug" or "Release" (default: Debug)
@@ -27,12 +27,15 @@
 
 .EXAMPLE
     ./BuildAndRunSandbox.ps1 -Platform android -DeviceUdid emulator-5554
+
+.EXAMPLE
+    ./BuildAndRunSandbox.ps1 -Platform windows
 #>
 
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet("android", "ios", "catalyst")]
+    [ValidateSet("android", "ios", "catalyst", "windows")]
     [string]$Platform,
 
     [ValidateSet("Debug", "Release")]
@@ -156,12 +159,18 @@ if ($Platform -eq "android") {
 } elseif ($Platform -eq "catalyst") {
     $TargetFramework = "net10.0-maccatalyst"
     $AppBundleId = "com.microsoft.maui.sandbox"
+} elseif ($Platform -eq "windows") {
+    $TargetFramework = "net10.0-windows10.0.19041.0"
+    $AppPackage = "com.microsoft.maui.sandbox"
 }
 
-# For catalyst, skip emulator detection - runs on host
+# For catalyst and windows, skip emulator detection - runs on host
 if ($Platform -eq "catalyst") {
     $DeviceUdid = "host"
     Write-Info "MacCatalyst runs on the host Mac - no device/emulator needed"
+} elseif ($Platform -eq "windows") {
+    $DeviceUdid = "host"
+    Write-Info "Windows runs on the host Windows - no device/emulator needed"
 } else {
     # Use shared Start-Emulator script to detect and start device
     $startEmulatorParams = @{
@@ -320,7 +329,7 @@ Write-Step "Running Appium test..."
 # Define device log file path based on platform
 $deviceLogFile = Join-Path $SandboxAppiumDir "$Platform-device.log"
 
-# Clear logs before test (skip for catalyst - already capturing stdout/stderr)
+# Clear logs before test (skip for catalyst and windows - already capturing stdout/stderr)
 if ($Platform -eq "android") {
     Write-Info "Clearing Android logcat buffer before test..."
     & adb -s $DeviceUdid logcat -c
@@ -328,6 +337,8 @@ if ($Platform -eq "android") {
     Write-Info "iOS logs will be captured from Appium during test execution..."
 } elseif ($Platform -eq "catalyst") {
     Write-Info "MacCatalyst logs are being captured via stdout/stderr redirect..."
+} elseif ($Platform -eq "windows") {
+    Write-Info "Windows logs will be captured from test output..."
 }
 
 Push-Location $SandboxAppiumDir
@@ -429,6 +440,8 @@ try {
             Write-Host "  iOS Simulator Logs (Filtered to Sandbox App)" -ForegroundColor Cyan
         } elseif ($Platform -eq "catalyst") {
             Write-Host "  MacCatalyst App Logs (Console.WriteLine output)" -ForegroundColor Cyan
+        } elseif ($Platform -eq "windows") {
+            Write-Host "  Windows App Logs (Console.WriteLine output)" -ForegroundColor Cyan
         }
         Write-Host "═══════════════════════════════════════════════════════" -ForegroundColor Cyan
         
@@ -449,6 +462,8 @@ try {
             if ($Platform -eq "android") {
                 Write-Info "All logs are from Sandbox app only (com.microsoft.maui.sandbox)"
             } elseif ($Platform -eq "catalyst") {
+                Write-Info "All logs are from Sandbox app only (Console.WriteLine output)"
+            } elseif ($Platform -eq "windows") {
                 Write-Info "All logs are from Sandbox app only (Console.WriteLine output)"
             } else {
                 Write-Info "All logs are from Sandbox app only (Maui.Controls.Sample.Sandbox)"
