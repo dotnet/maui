@@ -20,7 +20,7 @@
     Fix files and test filters are auto-detected from the git diff (non-test files that changed).
 
 .PARAMETER Platform
-    Target platform: "android", "ios", or "windows"
+    Target platform: "android", "ios", "catalyst" (MacCatalyst), or "windows"
 
 .PARAMETER TestFilter
     Test filter to pass to dotnet test (e.g., "FullyQualifiedName~Issue12345").
@@ -61,7 +61,7 @@
 
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet("android", "ios", "windows")]
+    [ValidateSet("android", "ios", "catalyst", "maccatalyst", "windows")]
     [string]$Platform,
 
     [Parameter(Mandatory = $false)]
@@ -82,6 +82,11 @@ param(
 
 $ErrorActionPreference = "Stop"
 $RepoRoot = git rev-parse --show-toplevel
+
+# Normalize platform name (accept both "catalyst" and "maccatalyst")
+if ($Platform -eq "maccatalyst") {
+    $Platform = "catalyst"
+}
 
 # ============================================================
 # Import shared baseline script for merge-base and file detection
