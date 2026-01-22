@@ -138,6 +138,7 @@ public class PlatformInterop {
         } else if (view instanceof TextInputLayout) {
             EditText editText = ((TextInputLayout) view).getEditText();
             if (editText instanceof TextInputEditText) {
+                // TextInputLayout wraps the EditText, but Appium cannot detect Entry directly during UI tests. Return the inner TextInputEditText so automation tools can properly interact with the control.
                 view = editText;
             }
         }
