@@ -5,6 +5,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
+	/// <summary>
+	/// Provides a XAML markup extension that creates a binding with different values for light and dark themes.
+	/// </summary>
 	[ContentProperty(nameof(Default))]
 	[RequireService(
 		[typeof(IProvideValueTarget),
@@ -20,6 +23,9 @@ namespace Microsoft.Maui.Controls.Xaml
 		object _dark;
 		bool _hasdark;
 
+		/// <summary>
+		/// Gets or sets the default value to use when no theme-specific value is set.
+		/// </summary>
 		public object Default
 		{
 			get => _default; set
@@ -28,6 +34,10 @@ namespace Microsoft.Maui.Controls.Xaml
 				_hasdefault = true;
 			}
 		}
+
+		/// <summary>
+		/// Gets or sets the value to use when the light theme is active.
+		/// </summary>
 		public object Light
 		{
 			get => _light; set
@@ -36,6 +46,10 @@ namespace Microsoft.Maui.Controls.Xaml
 				_haslight = true;
 			}
 		}
+
+		/// <summary>
+		/// Gets or sets the value to use when the dark theme is active.
+		/// </summary>
 		public object Dark
 		{
 			get => _dark; set
@@ -44,6 +58,10 @@ namespace Microsoft.Maui.Controls.Xaml
 				_hasdark = true;
 			}
 		}
+
+		/// <summary>
+		/// Gets the current value based on the active theme.
+		/// </summary>
 		public object Value { get; private set; }
 
 		public object ProvideValue(IServiceProvider serviceProvider) => (this as IMarkupExtension<BindingBase>).ProvideValue(serviceProvider);

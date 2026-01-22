@@ -3,11 +3,17 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
+	/// <summary>
+	/// Provides a XAML markup extension that creates a <see cref="DataTemplate"/> for a specified type.
+	/// </summary>
 	[ContentProperty(nameof(TypeName))]
 	[ProvideCompiled("Microsoft.Maui.Controls.Build.Tasks.DataTemplateExtension")]
 	[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
 	public sealed class DataTemplateExtension : IMarkupExtension<DataTemplate>
 	{
+		/// <summary>
+		/// Gets or sets the type name for which to create the data template.
+		/// </summary>
 		public string TypeName { get; set; }
 
 		public DataTemplate ProvideValue(IServiceProvider serviceProvider)
