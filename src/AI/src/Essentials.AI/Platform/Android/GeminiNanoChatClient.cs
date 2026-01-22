@@ -139,8 +139,10 @@ public sealed class GeminiNanoChatClient : IChatClient
 	/// <inheritdoc />
 	void IDisposable.Dispose()
 	{
-		// The model is either a singleton (Generation.Instance.Client) or externally owned
-		// In either case, we don't dispose it
+		if (_ownsModel)
+		{
+			_model.Dispose();
+		}
 	}
 
 	private static GenerateContentRequest ConvertToGenerateContentRequest(

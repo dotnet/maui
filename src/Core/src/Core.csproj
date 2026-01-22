@@ -58,6 +58,7 @@
     <AndroidGradleProject Include="../AndroidNative/build.gradle" ModuleName="maui" />
     <PackageReference Include="Xamarin.Android.Glide" />
     <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" />
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.Process" />
     <PackageReference Include="Xamarin.Google.Android.Material" />
     <PackageReference Include="Xamarin.AndroidX.SwipeRefreshLayout" />
     <PackageReference Include="Xamarin.AndroidX.Navigation.UI" />
