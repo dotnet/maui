@@ -64,12 +64,11 @@ stages:
         displayName: Pack macOS
         timeoutInMinutes: 240
         pool: ${{ parameters.macPool }}
-        templateContext:
-          outputs:
-          - output: pipelineArtifact
-            artifact: MacNativeArtifacts
-            path: $(Agent.TempDirectory)/native-binaries
-            condition: always()
+        outputs:
+        - output: pipelineArtifact
+          artifact: MacNativeArtifacts
+          path: $(Agent.TempDirectory)/native-binaries
+          condition: always()
         preSteps:
         - checkout: self
           fetchDepth: 1
