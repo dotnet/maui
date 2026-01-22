@@ -1,40 +1,21 @@
 ---
 name: try-fix
-description: Attempts ONE fix for a provided problem, tests it, and reports results. Use when CI or an agent needs to try fixing a bug with full context provided upfront. Invoke with problem description, test command, target files, and optional hints.
-metadata:
-  author: dotnet-maui
-  version: "2.0"
-compatibility: Requires git, PowerShell, and .NET SDK for building and running tests.
+description: Attempts ONE alternative fix for a bug, tests it empirically, and reports results. ALWAYS explores a DIFFERENT approach from existing PR fixes. Use when CI or an agent needs to try independent fix alternatives. Invoke with problem description, test command, target files, and optional hints.
 ---
 
 # Try Fix Skill
 
 Attempts ONE fix for a given problem. Receives all context upfront, tries a single approach, tests it, and reports what happened.
 
-## 🚨 Critical: When This Skill Runs
-
-**ALWAYS RUN when invoked.** This skill's purpose is to explore alternative fixes, not to judge whether alternatives are needed.
-
-**Every invocation MUST:**
-1. ✅ Review existing fixes (from PR changes or state file)
-2. ✅ Think of a DIFFERENT approach (don't repeat what already exists)
-3. ✅ Implement and test the alternative
-4. ✅ Report results
-
-**NEVER:**
-- ❌ Question whether a fix already exists
-- ❌ Ask if alternatives should be explored
-- ❌ Decide the skill "shouldn't run"
-
-**The invoker decides WHEN to run try-fix. The skill decides WHAT alternative to try.**
-
 ## Core Principles
 
-1. **Single-shot**: Each invocation = ONE fix idea, tested, reported
-2. **Context-driven**: All necessary information provided upfront by invoker
-3. **Alternative-focused**: Always propose something DIFFERENT from existing fixes
-4. **Empirical**: Actually implement and test - don't just theorize
-5. **Informative**: Report what was tried, what happened, and why
+1. **Always run** - Never question whether to run. The invoker decides WHEN, you decide WHAT alternative to try
+2. **Single-shot** - Each invocation = ONE fix idea, tested, reported
+3. **Alternative-focused** - Always propose something DIFFERENT from existing fixes (review PR changes first)
+4. **Empirical** - Actually implement and test, don't just theorize
+5. **Context-driven** - All information provided upfront; don't search for additional context
+
+**Every invocation:** Review existing fixes → Think of DIFFERENT approach → Implement and test → Report results
 
 ## Inputs
 
@@ -64,61 +45,9 @@ Results reported back to the invoker:
 
 ## Output Structure
 
-**All try-fix artifacts MUST be saved to:**
-```
-CustomAgentLogsTmp/PRState/<PRNumber>/try-fix/<attempt_number>/
-```
+Save artifacts to `CustomAgentLogsTmp/PRState/<PRNumber>/try-fix/attempt-<N>/` with files: `approach.md`, `fix.diff`, `test-output.log`, `result.txt`, `analysis.md`.
 
-**Required files per attempt:**
-
-| File | Description |
-|------|-------------|
-| `approach.md` | Brief description of the fix approach |
-| `fix.diff` | Git diff of the changes made |
-| `test-output.log` | Full test command output |
-| `result.txt` | PASS or FAIL |
-| `analysis.md` | Detailed analysis of why it worked/failed |
-
-**Example structure:**
-```
-CustomAgentLogsTmp/
-└── PRState/
-    └── 27847/
-        └── try-fix/
-            ├── attempt-1/
-            │   ├── approach.md
-            │   ├── fix.diff
-            │   ├── test-output.log
-            │   ├── result.txt
-            │   └── analysis.md
-            ├── attempt-2/
-            │   ├── approach.md
-            │   ├── fix.diff
-            │   ├── test-output.log
-            │   ├── result.txt
-            │   └── analysis.md
-            └── summary.md  # Overall summary of all attempts
-```
-
-**Auto-detecting PR number:**
-```bash
-# From branch name (e.g., pr-27847)
-PR_NUMBER=$(git branch --show-current | sed -n 's/^pr-\([0-9]\+\).*/\1/p')
-
-# Or use gh cli
-PR_NUMBER=$(gh pr view --json number -q .number 2>/dev/null)
-```
-
-**Creating output directory:**
-```bash
-# Determine attempt number (count existing attempts + 1)
-ATTEMPT_NUM=$(ls -d CustomAgentLogsTmp/PRState/$PR_NUMBER/try-fix/attempt-* 2>/dev/null | wc -l)
-ATTEMPT_NUM=$((ATTEMPT_NUM + 1))
-
-# Create output directory
-OUTPUT_DIR="CustomAgentLogsTmp/PRState/$PR_NUMBER/try-fix/attempt-$ATTEMPT_NUM"
-mkdir -p "$OUTPUT_DIR"
-```
+See [references/output-structure.md](references/output-structure.md) for setup commands and directory structure details.
 
 ## Completion Criteria
 
@@ -173,51 +102,19 @@ The skill is complete when:
 
 ### Step 2: Establish Baseline (MANDATORY)
 
-🚨 **ALWAYS use the EstablishBrokenBaseline.ps1 script - NEVER manually revert files.**
+🚨 **ALWAYS use EstablishBrokenBaseline.ps1 - NEVER manually revert files.**
 
 ```bash
-# REQUIRED: Establish baseline - reverts fix files to merge-base state
 pwsh .github/scripts/EstablishBrokenBaseline.ps1
 ```
 
-**Why this script is mandatory:**
-- ✅ **Systematically reverts fix files** to merge-base (broken) state
-- ✅ **Preserves test files** (doesn't touch them - tests stay on current branch)
-- ✅ **Tracks what was reverted** for proper restoration later
-- ✅ **Handles edge cases** (new files, deleted files, merge conflicts)
-- ❌ Manual `git checkout` is error-prone and may revert tests accidentally
+The script reverts fix files to merge-base state while preserving test files and tracking changes for restoration. Optional flags: `-BaseBranch main`, `-FixFiles @("path/to/file.cs")`, `-DryRun`.
 
-**Advanced usage (optional):**
-```bash
-# Specify base branch explicitly
-pwsh .github/scripts/EstablishBrokenBaseline.ps1 -BaseBranch main
-
-# Specify fix files manually (if auto-detection fails)
-pwsh .github/scripts/EstablishBrokenBaseline.ps1 -FixFiles @("src/path/to/file.cs")
-
-# Preview what would be reverted without making changes
-pwsh .github/scripts/EstablishBrokenBaseline.ps1 -DryRun
-```
-
-**The script automatically:**
-- Auto-detects merge-base from PR metadata or common branch patterns
-- Identifies fix files (non-test files that changed since merge-base)
-- Reverts only files that existed at merge-base (preserves new files)
-- Saves state to `.git/baseline-state.json` for `-Restore` to undo later
-
-**CRITICAL:** If something fails mid-attempt, always restore:
-```bash
-pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore
-```
+**If something fails mid-attempt:** `pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore`
 
 ### Step 3: Analyze Target Files
 
-Read the target files to understand the code:
-
-```bash
-# Read the files specified in inputs
-cat src/path/to/TargetFile.cs
-```
+Read the target files to understand the code.
 
 **Key questions:**
 - What is the root cause of this bug?
@@ -236,18 +133,7 @@ Based on your analysis and any provided hints, design a single fix approach:
 
 ### Step 5: Apply the Fix
 
-Implement your fix. Track what you change:
-
-```bash
-# Before editing, note current state
-git status --short
-
-# Apply your fix
-# [edit files]
-
-# After editing, capture what changed
-git diff
-```
+Implement your fix. Use `git status --short` and `git diff` to track changes.
 
 ### Step 5.5: Work Through Compile Errors
 
@@ -264,111 +150,30 @@ See `references/compile-errors.md` for common error patterns and resolution stra
 
 ### Step 6: Run Tests
 
-Run the provided test command and **save output to the attempt directory**:
+Run the provided test command, capturing output to `$OUTPUT_DIR/test-output.log`. Save result (PASS/FAIL) to `$OUTPUT_DIR/result.txt`.
+
+### Step 7: Capture Artifacts
+
+Before reverting, save all artifacts to `$OUTPUT_DIR/`:
+
+| File | Content |
+|------|---------|
+| `approach.md` | What was tried, strategy used, why different from existing fixes |
+| `fix.diff` | `git diff` output |
+| `analysis.md` | Result, hypothesis, what happened, why it worked/failed, insights for future |
+
+**Analysis quality matters.** Bad: "Didn't work". Good: "Fix attempted to reset state in OnPageSelected, but this fires after layout measurement. The cached value was already used."
+
+### Step 8: Restore Working Directory (MANDATORY)
+
+🚨 **ALWAYS restore, even if fix failed.**
 
 ```bash
-# Use the exact test command provided in inputs, capturing output
-pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform $PLATFORM -TestFilter "$TEST_FILTER" 2>&1 | tee "$OUTPUT_DIR/test-output.log"
-
-# Save test exit code
-TEST_EXIT_CODE=$?
-```
-
-**Capture the result:**
-- ✅ **PASS** - Fix works (test passes)
-- ❌ **FAIL** - Fix doesn't work (test fails or other issues)
-
-```bash
-# Save result to file
-if [ $TEST_EXIT_CODE -eq 0 ]; then
-    echo "PASS" > "$OUTPUT_DIR/result.txt"
-else
-    echo "FAIL" > "$OUTPUT_DIR/result.txt"
-fi
-```
-
-### Step 7: Analyze Result and Save Analysis
-
-**If PASS:**
-- Why did this fix work?
-- Is it the minimal change needed?
-- Any concerns or caveats?
-
-**If FAIL:**
-- What was your hypothesis?
-- What actually happened?
-- Why was the reasoning flawed?
-- What insight does this provide for future attempts?
-
-**Save your analysis:**
-```bash
-cat > "$OUTPUT_DIR/analysis.md" << 'EOF'
-# Fix Analysis
-
-## Result
-[PASS/FAIL]
-
-## Hypothesis
-[What you thought would happen]
-
-## What Actually Happened
-[Actual behavior observed]
-
-## Why
-[Explanation of success or failure]
-
-## Insights for Future Attempts
-[What was learned]
-EOF
-```
-
-### Step 8: Capture Diff and Approach
-
-Before reverting, save all artifacts:
-
-```bash
-# Save the approach description
-cat > "$OUTPUT_DIR/approach.md" << 'EOF'
-# Fix Approach
-
-[Brief description of what was tried]
-
-## Strategy
-[What approach/pattern was used]
-
-## Why Different from Existing Fixes
-[How this differs from PR changes or prior attempts]
-EOF
-
-# Save the diff
-git diff > "$OUTPUT_DIR/fix.diff"
-```
-```
-
-### Step 9: Restore Working Directory (MANDATORY)
-
-🚨 **ALWAYS use the EstablishBrokenBaseline.ps1 -Restore command - NEVER skip this step.**
-
-```bash
-# REQUIRED: Restore files reverted by EstablishBrokenBaseline.ps1 in Step 2
 pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore
-```
-
-**What this does:**
-- ✅ Reads the saved state from Step 2 (`.git/baseline-state.json`)
-- ✅ Restores ONLY the files that were reverted to merge-base
-- ✅ Preserves test files (they remain unchanged)
-- ✅ Returns working directory to exact pre-attempt state
-
-**After restoring baseline, revert your alternative fix changes:**
-```bash
-# Revert any changes made during the fix attempt
 git checkout -- .
 ```
 
-**CRITICAL:** Always run `-Restore` even if your fix attempt failed. This ensures proper cleanup for subsequent attempts.
-
-### Step 10: Report Results
+### Step 9: Report Results
 
 Provide structured output to the invoker:
 
@@ -394,23 +199,9 @@ Provide structured output to the invoker:
 **Reasoning:** [Why you believe there are/aren't more viable approaches]
 ```
 
-### Determining Exhaustion
+**Determining Exhaustion:** Set `exhausted=true` when you've tried the same fundamental approach multiple times, all hints have been explored, failure analysis reveals the problem is outside target files, or no new ideas remain. Set `exhausted=false` when this is the first attempt, failure analysis suggests a different approach, hints remain unexplored, or the approach was close but needs refinement.
 
-Before updating the state file, evaluate if you've exhausted viable approaches:
-
-**Set `exhausted=true` when:**
-- You've tried the same fundamental approach multiple times with variations
-- All hints have been explored without success
-- Failure analysis reveals the problem is outside the target files
-- No new ideas remain based on prior failure analyses
-
-**Set `exhausted=false` when:**
-- This is the first attempt
-- Failure analysis suggests a different approach within target files
-- Hints remain unexplored
-- The approach was close but needs refinement
-
-### Step 11: Update State File (if provided)
+### Step 10: Update State File (if provided)
 
 If `state_file` input was provided and file exists:
 
@@ -466,14 +257,6 @@ git add "$STATE_FILE" && git commit -m "try-fix: attempt #N (exhausted=$EXHAUSTE
 ❌ **Ignoring provided hints** - Hints exist for a reason
 ❌ **Multiple unrelated changes** - ONE focused fix per invocation
 
-### Failure Analysis Quality
-
-When a fix fails, analysis quality matters:
-
-**Bad:** "Didn't work"
-
-**Good:** "Fix attempted to reset state in OnPageSelected, but this fires after layout measurement. The cached MeasuredHeight value was already used. A fix needs to invalidate the cache BEFORE the layout pass, not after."
-
 ---
 
 ## Example Invocation
@@ -499,7 +282,7 @@ hints: |
   - Focus on the Disconnect/Cleanup methods
 ```
 
-**Skill execution:** Reads context → Analyzes target files → Designs fix (add IsDisposed check) → Applies fix → Runs test (PASS) → Reports result using Step 10 template → Reverts changes
+**Skill execution:** Reads context → Analyzes target files → Designs fix (add IsDisposed check) → Applies fix → Runs test (PASS) → Reports result → Reverts changes
 
 ---
 
