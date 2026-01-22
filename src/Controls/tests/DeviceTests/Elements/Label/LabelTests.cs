@@ -1,9 +1,11 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Threading.Tasks;
 #if __IOS__
 using Foundation;
 #endif
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
@@ -11,7 +13,6 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
-using System.Diagnostics;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -307,7 +308,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		[Trait(TestCategory.SkipOnIOS26, "Font comparison may fail on iOS 26")]
+		[SkipOnIOSVersion(26, "Font comparison may fail on iOS 26")]
 		public async Task ChangingTextTypeWithFormattedTextSwitchesTextSource()
 		{
 			SetupBuilder();
@@ -512,16 +513,9 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-#if __IOS__
-		[Trait(TestCategory.SkipOnIOS26, "Font comparison may fail on iOS 26")]
-#endif
+		[SkipOnIOSVersion(26, "Font comparison may fail on iOS 26")]
 		public async Task FontStuffAppliesEvenInHtmlMode()
 		{
-#if __IOS__
-			// iOS 26 may have font handling changes that affect HTML text rendering
-			if (OperatingSystem.IsIOSVersionAtLeast(26))
-				return;
-#endif
 			// Note: this is specifically a Controls-level rule that's inherited from Forms
 			// There's no reason other SDKs need to force font properties when dealing 
 			// with HTML text (since HTML can do that on its own)
@@ -724,7 +718,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		[Trait(TestCategory.SkipOnIOS26, "Font comparison may fail on iOS 26")]
+		[SkipOnIOSVersion(26, "Font comparison may fail on iOS 26")]
 		public async Task FontStuffAfterTextTypeIsCorrect()
 		{
 			// Note: this is specifically a Controls-level rule that's inherited from Forms
