@@ -106,3 +106,31 @@ pwsh .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 -Test
 | Template not found | Workload installation may have failed |
 | Build failures | Check `artifacts/log/` for detailed build logs |
 | "Cannot proceed with locked .dotnet folder" | Kill processes using `.dotnet`: `Get-Process \| Where-Object { $_.Path -like "*\.dotnet\*" } \| ForEach-Object { Stop-Process -Id $_.Id -Force }` |
+| Session times out / becomes invalid | Integration tests are long-running (15-60+ min). Run manually in a terminal window instead of via Copilot CLI |
+| Tests take too long | Start with `Build` category (fastest), then run others. Use `-SkipBuild -SkipInstall` if workloads are already installed |
+
+## Running Manually (Recommended for Long-Running Tests)
+
+Integration tests can take 15-60+ minutes depending on the category. For best results, run directly in a terminal:
+
+```powershell
+cd D:\repos\dotnet\maui
+
+# Option 1: Use the skill script
+pwsh .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 -Category "Build" -SkipBuild -SkipInstall
+
+# Option 2: Run dotnet test directly (if workloads already installed)
+$env:MAUI_PACKAGE_VERSION = (Get-ChildItem .dotnet\packs\Microsoft.Maui.Sdk -Directory | Sort-Object Name -Descending | Select-Object -First 1).Name
+.dotnet\dotnet test src\TestUtils\src\Microsoft.Maui.IntegrationTests --filter "Category=Build"
+```
+
+### Running All Categories Sequentially
+
+```powershell
+# Windows categories (run on Windows)
+$categories = @("Build", "WindowsTemplates", "Blazor", "MultiProject", "Samples")
+foreach ($cat in $categories) {
+    Write-Host "Running $cat..." -ForegroundColor Cyan
+    pwsh .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 -Category $cat -SkipBuild -SkipInstall
+}
+```
