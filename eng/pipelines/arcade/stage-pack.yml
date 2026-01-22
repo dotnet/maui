@@ -64,6 +64,12 @@ stages:
         displayName: Pack macOS
         timeoutInMinutes: 240
         pool: ${{ parameters.macPool }}
+        templateContext:
+          outputs:
+          - output: pipelineArtifact
+            artifact: MacNativeArtifacts
+            path: $(Agent.TempDirectory)/native-binaries
+            condition: always()
         preSteps:
         - checkout: self
           fetchDepth: 1
@@ -84,13 +90,6 @@ stages:
             Contents: |
               */$(_BuildConfig)/*/*.resources.zip
             TargetFolder: '$(Agent.TempDirectory)/native-binaries'
-
-        - task: PublishPipelineArtifact@1
-          displayName: Publish Native Binaries
-          inputs:
-            targetPath: '$(Agent.TempDirectory)/native-binaries'
-            artifact: MacNativeArtifacts
-          condition: always()
 
         - ${{ each step in parameters.postSteps }}:
           - ${{ each pair in step }}:
