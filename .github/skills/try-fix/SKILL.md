@@ -265,6 +265,67 @@ git add "$STATE_FILE" && git commit -m "try-fix: attempt #N (exhausted=$EXHAUSTE
 - "Selected Fix" field
 - Other try-fix rows
 
+### Step 11: Post PR Comment (MANDATORY)
+
+**ALWAYS post a collapsible comment to the PR documenting your attempt.**
+
+Use the `post-try-fix-comment.ps1` script:
+
+```powershell
+pwsh .github/skills/try-fix/scripts/post-try-fix-comment.ps1 `
+    -PRNumber <PR_NUMBER> `
+    -IssueNumber <ISSUE_NUMBER> `
+    -AttemptNumber <N> `
+    -Approach "Brief description of fix approach" `
+    -RootCause "Description of root cause identified" `
+    -FilesChanged "| File | Changes |`n|------|---------|`n| file.cs | +X/-Y |" `
+    -Status "Compiles|Pass|Fail" `
+    -CodeSnippet "optional code snippet" `
+    -Analysis "optional analysis of result"
+```
+
+**Comment format:**
+```markdown
+## 🔧 Try-Fix Attempts for Issue #XXXXX
+
+<!-- TRY-FIX-COMMENT -->
+
+<details>
+<summary>📊 <strong>Expand Full Details</strong></summary>
+
+**Issue:** [#XXXXX](link) - Description
+
+---
+
+<details>
+<summary><strong>🔧 Attempt #1: Approach Name</strong> ✅ Status</summary>
+... attempt details ...
+</details>
+
+<details>
+<summary><strong>🔧 Attempt #2: Different Approach</strong> ❌ Status</summary>
+... attempt details ...
+</details>
+
+---
+
+*This fix was developed independently.*
+
+</details>
+```
+
+**Key behaviors:**
+- First attempt creates a new comment with `<!-- TRY-FIX-COMMENT -->` marker
+- Subsequent attempts **edit the same comment** (no new comments)
+- Outer wrapper shows "📊 Expand Full Details" - keeps PR page clean
+- Each attempt is a nested collapsible `<details>` section inside the wrapper
+
+**Why this matters:**
+- Keeps PR discussion clean (one collapsed comment, not many)
+- Documents all attempts in one place for reviewers
+- Double-collapsible: outer wrapper hides everything, inner sections hide each attempt
+- Easy to compare different approaches tried
+
 ---
 
 ## Error Handling
