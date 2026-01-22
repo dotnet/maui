@@ -47,14 +47,6 @@ stages:
       publishAssetsImmediately: true
       enablePublishBuildArtifacts: true
       enablePublishTestResults: false
-      templateContext:
-        outputs:
-        - output: pipelineArtifact
-          artifact: APIScanFiles
-          path: $(Agent.TempDirectory)/APIScanFiles
-        - output: pipelineArtifact
-          artifact: Metadata
-          path: $(Agent.TempDirectory)/metadata
 
       workspace:
         clean: all
@@ -100,6 +92,13 @@ stages:
         - pack_net_macOS
         timeoutInMinutes: 240
         pool: ${{ parameters.pool }}
+        outputs:
+        - output: pipelineArtifact
+          artifact: APIScanFiles
+          path: $(Agent.TempDirectory)/APIScanFiles
+        - output: pipelineArtifact
+          artifact: Metadata
+          path: $(Agent.TempDirectory)/metadata
         preSteps:
         - checkout: self
           fetchDepth: 1
