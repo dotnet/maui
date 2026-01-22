@@ -220,8 +220,8 @@ public static class KeyboardAutoManagerScroll
 	static void SetAnimationDuration(this NSDictionary dict)
 	{
 		var durationObj = dict.FindValue("UIKeyboardAnimationDurationUserInfoKey");
-		var durationNum = (NSNumber)NSObject.FromObject(durationObj);
-		var num = (double)durationNum;
+		var durationNum = (NSNumber?)NSObject.FromObject(durationObj);
+		var num = (double?)durationNum ?? 0;
 		if (num != 0)
 		{
 			AnimationDuration = num;
