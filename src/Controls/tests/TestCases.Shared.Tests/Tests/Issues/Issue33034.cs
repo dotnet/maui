@@ -18,6 +18,8 @@ public class Issue33034 : _IssuesUITest
 	{
 		App.WaitForElement("EdgeLabel");
 		App.SetOrientationLandscape();
+		//Adding delay to allow for orientation change to complete
+		Thread.Sleep(2000);
 		var initialRect = App.WaitForElement("EdgeLabel").GetRect();
 
 		App.TapTab("Second Tab");
