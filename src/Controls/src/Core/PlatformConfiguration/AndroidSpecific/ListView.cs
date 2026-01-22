@@ -21,7 +21,9 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			return (bool)element.GetValue(IsFastScrollEnabledProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ListView.xml" path="//Member[@MemberName='SetIsFastScrollEnabled'][1]/Docs/*" />
+		/// <summary>Sets whether fast scrolling is enabled in the Android ListView.</summary>
+		/// <param name="element">The ListView element.</param>
+		/// <param name="value"><see langword="true"/> to enable fast scroll; otherwise, <see langword="false"/>.</param>
 		[Obsolete("With the deprecation of ListView, this property is obsolete. Please use CollectionView instead.")]
 		public static void SetIsFastScrollEnabled(BindableObject element, bool value)
 		{
@@ -39,7 +41,10 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			return GetIsFastScrollEnabled(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ListView.xml" path="//Member[@MemberName='SetIsFastScrollEnabled'][2]/Docs/*" />
+		/// <summary>Sets whether fast scrolling is enabled in the Android ListView.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <param name="value"><see langword="true"/> to enable fast scroll; otherwise, <see langword="false"/>.</param>
+		/// <returns>The platform configuration for fluent API chaining.</returns>
 #pragma warning disable CS0618 // Type or member is obsolete
 #pragma warning disable CS0618 // Type or member is obsolete
 		[Obsolete("With the deprecation of ListView, this property is obsolete. Please use CollectionView instead.")]

@@ -83,129 +83,13 @@ param(
 $ErrorActionPreference = "Stop"
 $RepoRoot = git rev-parse --show-toplevel
 
-# Test path patterns to exclude when auto-detecting fix files
-$TestPathPatterns = @(
-    "*/tests/*",
-    "*/test/*",
-    "*.Tests/*",
-    "*.UnitTests/*",
-    "*TestCases*",
-    "*snapshots*",
-    "*.png",
-    "*.jpg",
-    ".github/*",
-    "*.md",
-    "pr-*-review.md"
-)
-
-# Function to check if a file should be excluded from fix files
-function Test-IsTestFile {
-    param([string]$FilePath)
-
-    foreach ($pattern in $TestPathPatterns) {
-        if ($FilePath -like $pattern) {
-            return $true
-        }
-    }
-    return $false
-}
-
 # ============================================================
-# Find the merge-base commit (where current branch diverged from base)
-# This is more robust than tracking branch names/refs
-# For fork workflows: fetches directly from the PR's target repo URL
-# so it works even if the fork's main branch is out of sync
+# Import shared baseline script for merge-base and file detection
 # ============================================================
-function Find-MergeBase {
-    param([string]$ExplicitBaseBranch)
+$BaselineScript = Join-Path $RepoRoot ".github/scripts/EstablishBrokenBaseline.ps1"
 
-    # 1. If explicit base branch provided, use it directly
-    if ($ExplicitBaseBranch) {
-        # Try with origin/ prefix first, then without
-        foreach ($ref in @("origin/$ExplicitBaseBranch", $ExplicitBaseBranch)) {
-            $mergeBase = git merge-base HEAD $ref 2>$null
-            if ($mergeBase) {
-                return @{ MergeBase = $mergeBase; BaseBranch = $ExplicitBaseBranch; Source = "explicit" }
-            }
-        }
-    }
-
-    # 2. Try to get PR metadata including the TARGET repository
-    #    This is critical for fork workflows where origin points to the fork,
-    #    not the upstream repo. We fetch directly from the target repo URL.
-    #    The PR URL contains the target repo: https://github.com/OWNER/REPO/pull/123
-    $prJson = gh pr view --json baseRefName,url 2>$null
-    if ($prJson) {
-        $prInfo = $prJson | ConvertFrom-Json
-        $prBaseBranch = $prInfo.baseRefName
-        $prUrl = $prInfo.url
-
-        # Parse owner/repo from PR URL: https://github.com/OWNER/REPO/pull/123
-        $targetOwner = $null
-        $targetRepo = $null
-        if ($prUrl -match "github\.com/([^/]+)/([^/]+)/pull/") {
-            $targetOwner = $matches[1]
-            $targetRepo = $matches[2]
-        }
-
-        if ($prBaseBranch -and $targetOwner -and $targetRepo) {
-            # Construct the target repo URL and fetch directly from it
-            # This works even if the developer hasn't set up an 'upstream' remote
-            # and even if their fork's main is completely out of sync
-            $targetUrl = "https://github.com/$targetOwner/$targetRepo.git"
-            Write-Host "ℹ️  PR targets $targetOwner/$targetRepo - fetching $prBaseBranch from upstream..." -ForegroundColor Cyan
-            git fetch $targetUrl $prBaseBranch 2>$null
-
-            if ($LASTEXITCODE -eq 0) {
-                # FETCH_HEAD now points to the target repo's base branch
-                $mergeBase = git merge-base HEAD FETCH_HEAD 2>$null
-                if ($mergeBase) {
-                    return @{ MergeBase = $mergeBase; BaseBranch = $prBaseBranch; Source = "pr-target-repo"; TargetRepo = "$targetOwner/$targetRepo" }
-                }
-            }
-        }
-
-        # Fallback: try fetching from origin (works if origin IS the target repo)
-        if ($prBaseBranch) {
-            git fetch origin $prBaseBranch 2>$null
-            foreach ($ref in @("origin/$prBaseBranch", $prBaseBranch)) {
-                $mergeBase = git merge-base HEAD $ref 2>$null
-                if ($mergeBase) {
-                    return @{ MergeBase = $mergeBase; BaseBranch = $prBaseBranch; Source = "pr-metadata" }
-                }
-            }
-        }
-    }
-
-    # 3. Fallback: Find closest merge-base among common base branch patterns
-    #    The "correct" base is the one with fewest commits between merge-base and HEAD
-    Write-Host "ℹ️  No PR detected, scanning remote branches for closest base..." -ForegroundColor Cyan
-
-    # Fetch all remote refs to ensure we have latest
-    git fetch origin 2>$null
-
-    # Get remote branches matching common base branch patterns
-    $remoteBranches = git branch -r --format='%(refname:short)' 2>$null | Where-Object {
-        $_ -match '^origin/(main|master|net\d+\.\d+|release/.*)$'
-    }
-
-    $bestMatch = $null
-    $shortestDistance = [int]::MaxValue
-
-    foreach ($branch in $remoteBranches) {
-        $mergeBase = git merge-base HEAD $branch 2>$null
-        if ($mergeBase) {
-            $distance = [int](git rev-list --count "$mergeBase..HEAD" 2>$null)
-            if ($distance -lt $shortestDistance) {
-                $shortestDistance = $distance
-                $branchName = $branch -replace '^origin/', ''
-                $bestMatch = @{ MergeBase = $mergeBase; BaseBranch = $branchName; Source = "closest-merge-base"; Distance = $distance }
-            }
-        }
-    }
-
-    return $bestMatch
-}
+# Import Test-IsTestFile and Find-MergeBase from shared script
+. $BaselineScript
 
 # ============================================================
 # Auto-detect test filter from changed files

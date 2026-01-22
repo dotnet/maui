@@ -34,7 +34,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-		Assert.True(DotnetInternal.New(id, projectDir, framework, additionalDotNetNewParams),
+		Assert.True(DotnetInternal.New(id, projectDir, framework, additionalDotNetNewParams, output: _output),
 			$"Unable to create template {id}. Check test output for errors.");
 
 
@@ -57,7 +57,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 		}
 
 		string target = shouldPack ? "Pack" : "";
-		Assert.True(DotnetInternal.Build(projectFile, config, target: target, properties: buildProps, msbuildWarningsAsErrors: true),
+		Assert.True(DotnetInternal.Build(projectFile, config, target: target, properties: buildProps, msbuildWarningsAsErrors: true, output: _output),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
 
@@ -68,14 +68,14 @@ public class SimpleTemplateTest : BaseTemplateTests
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-		Assert.True(DotnetInternal.New(id, projectDir, framework),
+		Assert.True(DotnetInternal.New(id, projectDir, framework, output: _output),
 			$"Unable to create template {id}. Check test output for errors.");
 
 		FileUtilities.ReplaceInFile(projectFile,
 			"$(MauiVersion)",
 			MauiPackageVersion);
 
-		Assert.False(DotnetInternal.Build(projectFile, config, properties: BuildProps, msbuildWarningsAsErrors: true),
+		Assert.False(DotnetInternal.Build(projectFile, config, properties: BuildProps, msbuildWarningsAsErrors: true, output: _output),
 			$"Project {Path.GetFileName(projectFile)} built, but should not have. Check test output/attachments for why.");
 	}
 
@@ -92,7 +92,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 		var projectDir = Path.Combine(TestDirectory, projectName);
 		var projectFile = Path.Combine(projectDir, $"{projectName}.csproj");
 
-		Assert.True(DotnetInternal.New(id, projectDir, DotNetCurrent),
+		Assert.True(DotnetInternal.New(id, projectDir, DotNetCurrent, output: _output),
 			$"Unable to create template {id}. Check test output for errors.");
 
 		// libraries do not have application IDs
@@ -117,7 +117,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 			Assert.Equal(projectName, appTitle);
 		}
 
-		Assert.True(DotnetInternal.Build(projectFile, "Debug", properties: BuildProps, msbuildWarningsAsErrors: true),
+		Assert.True(DotnetInternal.Build(projectFile, "Debug", properties: BuildProps, msbuildWarningsAsErrors: true, output: _output),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
 
@@ -140,7 +140,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-		Assert.True(DotnetInternal.New(id, projectDir, framework),
+		Assert.True(DotnetInternal.New(id, projectDir, framework, output: _output),
 			$"Unable to create template {id}. Check test output for errors.");
 
 		if (shouldPack)
@@ -167,7 +167,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 		}
 
 		string target = shouldPack ? "Pack" : "";
-		Assert.True(DotnetInternal.Build(projectFile, config, target: target, binlogPath: binlogDir, properties: buildProps),
+		Assert.True(DotnetInternal.Build(projectFile, config, target: target, binlogPath: binlogDir, properties: buildProps, output: _output),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
 
@@ -184,7 +184,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-		Assert.True(DotnetInternal.New(id, projectDir, DotNetPrevious),
+		Assert.True(DotnetInternal.New(id, projectDir, DotNetPrevious, output: _output),
 			$"Unable to create template {id}. Check test output for errors.");
 
 		if (shouldPack)
@@ -204,7 +204,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 			""");
 
 		string target = shouldPack ? "Pack" : "";
-		Assert.True(DotnetInternal.Build(projectFile, config, target: target, properties: BuildProps),
+		Assert.True(DotnetInternal.Build(projectFile, config, target: target, properties: BuildProps, output: _output),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
 #endif
@@ -215,12 +215,12 @@ public class SimpleTemplateTest : BaseTemplateTests
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-		Assert.True(DotnetInternal.New("maui", projectDir, DotNetCurrent),
+		Assert.True(DotnetInternal.New("maui", projectDir, DotNetCurrent, output: _output),
 			$"Unable to create template maui. Check test output for errors.");
 
 		File.WriteAllText(Path.Combine(projectDir, "Resources", "Images", ".DS_Store"), "Boom!");
 
-		Assert.True(DotnetInternal.Build(projectFile, "Debug", properties: BuildProps, msbuildWarningsAsErrors: true),
+		Assert.True(DotnetInternal.Build(projectFile, "Debug", properties: BuildProps, msbuildWarningsAsErrors: true, output: _output),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
 
@@ -237,7 +237,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-		Assert.True(DotnetInternal.New(id, projectDir, framework),
+		Assert.True(DotnetInternal.New(id, projectDir, framework, output: _output),
 			$"Unable to create template {id}. Check test output for errors.");
 
 		var projectSectionsToReplace = new Dictionary<string, string>()
@@ -255,7 +255,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 		FileUtilities.ReplaceInFile(projectFile, projectSectionsToReplace);
 		Directory.Delete(Path.Combine(projectDir, "Platforms"), recursive: true);
 
-		Assert.True(DotnetInternal.Build(projectFile, config, properties: BuildProps, msbuildWarningsAsErrors: true),
+		Assert.True(DotnetInternal.Build(projectFile, config, properties: BuildProps, msbuildWarningsAsErrors: true, output: _output),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
 
@@ -268,7 +268,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-		Assert.True(DotnetInternal.New(id, projectDir, framework),
+		Assert.True(DotnetInternal.New(id, projectDir, framework, output: _output),
 			$"Unable to create template {id}. Check test output for errors.");
 
 		FileUtilities.ReplaceInFile(projectFile,
@@ -278,7 +278,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 			"<PackageReference Include=\"Microsoft.Maui.Controls\" Version=\"$(MauiVersion)\" />",
 			"");
 
-		Assert.True(DotnetInternal.Build(projectFile, config, properties: BuildProps, msbuildWarningsAsErrors: true),
+		Assert.True(DotnetInternal.Build(projectFile, config, properties: BuildProps, msbuildWarningsAsErrors: true, output: _output),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
 
@@ -294,7 +294,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-		Assert.True(DotnetInternal.New(id, projectDir),
+		Assert.True(DotnetInternal.New(id, projectDir, output: _output),
 			$"Unable to create template {id}. Check test output for errors.");
 
 		FileUtilities.ReplaceInFile(projectFile,
@@ -311,7 +311,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 			additionalDotNetBuildParams.Split(" ").ToList().ForEach(p => buildProps.Add(p));
 		}
 
-		Assert.True(DotnetInternal.Build(projectFile, config, properties: buildProps, msbuildWarningsAsErrors: true),
+		Assert.True(DotnetInternal.Build(projectFile, config, properties: buildProps, msbuildWarningsAsErrors: true, output: _output),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
 
@@ -324,7 +324,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 		var projectDir = Path.Combine(TestDirectory, projectName);
 		var expectedProjectFile = Path.Combine(projectDir, $"{projectName}.csproj");
 
-		Assert.True(DotnetInternal.New("maui-aspire-servicedefaults", projectDir, additionalDotNetNewParams: $"-n \"{projectName}\""),
+		Assert.True(DotnetInternal.New("maui-aspire-servicedefaults", projectDir, additionalDotNetNewParams: $"-n \"{projectName}\"", output: _output),
 			$"Unable to create template maui-aspire-servicedefaults. Check test output for errors.");
 
 		// Verify the project file was created with the correct name (this was the bug)

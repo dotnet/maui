@@ -14,14 +14,14 @@ namespace Microsoft.Maui.Controls.Internals
 		/// <summary>For internal use by platform renderers.</summary>
 		public bool Conditional;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/PreserveAttribute.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />
+		/// <summary>Creates a PreserveAttribute with the specified options.</summary>
 		public PreserveAttribute(bool allMembers, bool conditional)
 		{
 			AllMembers = allMembers;
 			Conditional = conditional;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/PreserveAttribute.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
+		/// <summary>Creates a default PreserveAttribute.</summary>
 		public PreserveAttribute()
 		{
 		}

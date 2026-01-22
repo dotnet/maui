@@ -178,7 +178,7 @@ namespace Microsoft.Maui.Controls
 			{ typeof(bool), new[] { typeof(string) } },
 		};
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableProperty.xml" path="//Member[@MemberName='UnsetValue']/Docs/*" />
+		/// <summary>A sentinel object used to indicate that a BindableProperty value has not been set.</summary>
 		public static readonly object UnsetValue = new object();
 
 		BindableProperty(string propertyName, [DynamicallyAccessedMembers(ReturnTypeMembers)] Type returnType, [DynamicallyAccessedMembers(DeclaringTypeMembers)] Type declaringType, object defaultValue, BindingMode defaultBindingMode = BindingMode.OneWay,

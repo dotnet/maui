@@ -25,7 +25,9 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return (bool)element.GetValue(AdjustsFontSizeToFitWidthProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Entry.xml" path="//Member[@MemberName='SetAdjustsFontSizeToFitWidth'][1]/Docs/*" />
+		/// <summary>Sets whether the Entry automatically adjusts font size to fit the width on iOS.</summary>
+		/// <param name="element">The element to set the value on.</param>
+		/// <param name="value"><see langword="true"/> to enable auto font size adjustment; otherwise, <see langword="false"/>.</param>
 		public static void SetAdjustsFontSizeToFitWidth(BindableObject element, bool value)
 		{
 			element.SetValue(AdjustsFontSizeToFitWidthProperty, value);
@@ -39,7 +41,10 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return GetAdjustsFontSizeToFitWidth(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Entry.xml" path="//Member[@MemberName='SetAdjustsFontSizeToFitWidth'][2]/Docs/*" />
+		/// <summary>Sets whether the Entry automatically adjusts font size to fit the width on iOS.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <param name="value"><see langword="true"/> to enable auto font size adjustment; otherwise, <see langword="false"/>.</param>
+		/// <returns>The updated platform configuration.</returns>
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetAdjustsFontSizeToFitWidth(
 			this IPlatformElementConfiguration<iOS, FormsElement> config, bool value)
 		{
@@ -67,25 +72,34 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return config;
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Entry.xml" path="//Member[@MemberName='GetCursorColor'][1]/Docs/*" />
+		/// <summary>Gets the cursor (caret) color for the Entry on iOS.</summary>
+		/// <param name="element">The element to get the value from.</param>
+		/// <returns>The cursor color.</returns>
 		public static Color GetCursorColor(BindableObject element)
 		{
 			return (Color)element.GetValue(CursorColorProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Entry.xml" path="//Member[@MemberName='SetCursorColor'][1]/Docs/*" />
+		/// <summary>Sets the cursor (caret) color for the Entry on iOS.</summary>
+		/// <param name="element">The element to set the value on.</param>
+		/// <param name="value">The cursor color to apply.</param>
 		public static void SetCursorColor(BindableObject element, Color value)
 		{
 			element.SetValue(CursorColorProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Entry.xml" path="//Member[@MemberName='GetCursorColor'][2]/Docs/*" />
+		/// <summary>Gets the cursor (caret) color for the Entry on iOS.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <returns>The cursor color.</returns>
 		public static Color GetCursorColor(this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{
 			return GetCursorColor(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Entry.xml" path="//Member[@MemberName='SetCursorColor'][2]/Docs/*" />
+		/// <summary>Sets the cursor (caret) color for the Entry on iOS.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <param name="value">The cursor color to apply.</param>
+		/// <returns>The updated platform configuration.</returns>
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetCursorColor(this IPlatformElementConfiguration<iOS, FormsElement> config, Color value)
 		{
 			SetCursorColor(config.Element, value);

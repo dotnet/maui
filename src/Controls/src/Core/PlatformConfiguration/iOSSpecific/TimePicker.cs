@@ -3,7 +3,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 {
 	using FormsElement = Microsoft.Maui.Controls.TimePicker;
 
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/TimePicker.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.TimePicker']/Docs/*" />
+	/// <summary>Provides iOS-specific configuration for TimePicker update behavior.</summary>
 	public static class TimePicker
 	{
 		/// <summary>Bindable property for <see cref="UpdateMode"/>.</summary>
@@ -13,25 +13,34 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			typeof(TimePicker),
 			default(UpdateMode));
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/TimePicker.xml" path="//Member[@MemberName='GetUpdateMode']/Docs/*" />
+		/// <summary>Gets when the selected time value is updated during user interaction on iOS.</summary>
+		/// <param name="element">The element to get the value from.</param>
+		/// <returns>The update mode.</returns>
 		public static UpdateMode GetUpdateMode(BindableObject element)
 		{
 			return (UpdateMode)element.GetValue(UpdateModeProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/TimePicker.xml" path="//Member[@MemberName='SetUpdateMode'][1]/Docs/*" />
+		/// <summary>Sets when the selected time value is updated during user interaction on iOS.</summary>
+		/// <param name="element">The element to set the value on.</param>
+		/// <param name="value">When to update: immediately while scrolling or after selection completes.</param>
 		public static void SetUpdateMode(BindableObject element, UpdateMode value)
 		{
 			element.SetValue(UpdateModeProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/TimePicker.xml" path="//Member[@MemberName='UpdateMode']/Docs/*" />
+		/// <summary>Gets when the selected time value is updated during user interaction on iOS.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <returns>The update mode.</returns>
 		public static UpdateMode UpdateMode(this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{
 			return GetUpdateMode(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/TimePicker.xml" path="//Member[@MemberName='SetUpdateMode'][2]/Docs/*" />
+		/// <summary>Sets when the selected time value is updated during user interaction on iOS.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <param name="value">When to update: immediately while scrolling or after selection completes.</param>
+		/// <returns>The updated platform configuration.</returns>
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetUpdateMode(this IPlatformElementConfiguration<iOS, FormsElement> config, UpdateMode value)
 		{
 			SetUpdateMode(config.Element, value);

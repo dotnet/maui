@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 	using Microsoft.Maui.Graphics;
 	using FormsElement = Maui.Controls.Cell;
 
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Cell.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Cell']/Docs/*" />
+	/// <summary>Provides iOS-specific configuration for Cell background color in ListView.</summary>
 	[Obsolete("With the deprecation of ListView, this class is obsolete. Please use CollectionView instead.")]
 	public static class Cell
 	{
@@ -18,7 +18,9 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		public static Color GetDefaultBackgroundColor(BindableObject element)
 			=> (Color)element.GetValue(DefaultBackgroundColorProperty);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Cell.xml" path="//Member[@MemberName='SetDefaultBackgroundColor'][1]/Docs/*" />
+		/// <summary>Sets the default background color for cells in ListView on iOS.</summary>
+		/// <param name="element">The element to set the value on.</param>
+		/// <param name="value">The background color to apply.</param>
 		[Obsolete("With the deprecation of ListView, this property is obsolete. Please use CollectionView instead.")]
 		public static void SetDefaultBackgroundColor(BindableObject element, Color value)
 			=> element.SetValue(DefaultBackgroundColorProperty, value);

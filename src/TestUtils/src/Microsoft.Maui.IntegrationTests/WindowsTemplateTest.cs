@@ -20,7 +20,7 @@ public class WindowsTemplateTest : BaseTemplateTests
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-		Assert.True(DotnetInternal.New(id, projectDir, framework),
+		Assert.True(DotnetInternal.New(id, projectDir, framework, output: _output),
 			$"Unable to create template {id}. Check test output for errors.");
 
 		// .NET 9 and later was Unpackaged, so we need to remove the line
@@ -28,7 +28,7 @@ public class WindowsTemplateTest : BaseTemplateTests
 			"<WindowsPackageType>None</WindowsPackageType>",
 			"");
 
-		Assert.True(DotnetInternal.Build(projectFile, config, properties: BuildProps, msbuildWarningsAsErrors: true),
+		Assert.True(DotnetInternal.Build(projectFile, config, properties: BuildProps, msbuildWarningsAsErrors: true, output: _output),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
 
@@ -52,7 +52,7 @@ public class WindowsTemplateTest : BaseTemplateTests
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-		Assert.True(DotnetInternal.New(id, projectDir, DotNetCurrent),
+		Assert.True(DotnetInternal.New(id, projectDir, DotNetCurrent, output: _output),
 			$"Unable to create template {id}. Check test output for errors.");
 
 		FileUtilities.ReplaceInFile(projectFile,
@@ -66,7 +66,7 @@ public class WindowsTemplateTest : BaseTemplateTests
 		var extendedBuildProps = BuildProps;
 		extendedBuildProps.Add($"TargetFramework={DotNetCurrent}-windows10.0.19041.0");
 
-		Assert.True(DotnetInternal.Build(projectFile, "Debug", properties: extendedBuildProps, msbuildWarningsAsErrors: true),
+		Assert.True(DotnetInternal.Build(projectFile, "Debug", properties: extendedBuildProps, msbuildWarningsAsErrors: true, output: _output),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
 
@@ -86,7 +86,7 @@ public class WindowsTemplateTest : BaseTemplateTests
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-		Assert.True(DotnetInternal.New(id, projectDir, DotNetCurrent),
+		Assert.True(DotnetInternal.New(id, projectDir, DotNetCurrent, output: _output),
 			$"Unable to create template {id}. Check test output for errors.");
 
 		FileUtilities.ReplaceInFile(projectFile,
@@ -99,7 +99,7 @@ public class WindowsTemplateTest : BaseTemplateTests
 		var extendedBuildProps = BuildProps;
 		extendedBuildProps.Add($"TargetFramework={DotNetCurrent}-windows10.0.19041.0");
 
-		Assert.True(DotnetInternal.Build(projectFile, "Debug", properties: extendedBuildProps, msbuildWarningsAsErrors: true),
+		Assert.True(DotnetInternal.Build(projectFile, "Debug", properties: extendedBuildProps, msbuildWarningsAsErrors: true, output: _output),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
 
@@ -119,14 +119,14 @@ public class WindowsTemplateTest : BaseTemplateTests
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-		Assert.True(DotnetInternal.New(id, projectDir, framework),
+		Assert.True(DotnetInternal.New(id, projectDir, framework, output: _output),
 			$"Unable to create template {id}. Check test output for errors.");
 
 		// .NET 9 is Unpackaged by default, so we don't have to do anything
 		FileUtilities.ShouldContainInFile(projectFile,
 			"<WindowsPackageType>None</WindowsPackageType>");
 
-		Assert.True(DotnetInternal.Publish(projectFile, config, framework: $"{framework}-windows10.0.19041.0", properties: BuildProps),
+		Assert.True(DotnetInternal.Publish(projectFile, config, framework: $"{framework}-windows10.0.19041.0", properties: BuildProps, output: _output),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 
 		var rid = usesRidGraph ? "win10-x64" : "win-x64";
@@ -163,7 +163,7 @@ public class WindowsTemplateTest : BaseTemplateTests
 		var name = Path.GetFileName(projectDir);
 		var projectFile = Path.Combine(projectDir, $"{name}.csproj");
 
-		Assert.True(DotnetInternal.New(id, projectDir, framework),
+		Assert.True(DotnetInternal.New(id, projectDir, framework, output: _output),
 			$"Unable to create template {id}. Check test output for errors.");
 
 		// .NET 9 and later was Unpackaged, so we need to remove the line
@@ -171,7 +171,7 @@ public class WindowsTemplateTest : BaseTemplateTests
 			"<WindowsPackageType>None</WindowsPackageType>",
 			"");
 
-		Assert.True(DotnetInternal.Publish(projectFile, config, framework: $"{framework}-windows10.0.19041.0", properties: BuildProps),
+		Assert.True(DotnetInternal.Publish(projectFile, config, framework: $"{framework}-windows10.0.19041.0", properties: BuildProps, output: _output),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 
 		var rid = usesRidGraph ? "win10-x64/" : "";
@@ -196,7 +196,7 @@ public class WindowsTemplateTest : BaseTemplateTests
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-		Assert.True(DotnetInternal.New("maui", projectDir, DotNetCurrent),
+		Assert.True(DotnetInternal.New("maui", projectDir, DotNetCurrent, output: _output),
 			$"Unable to create template maui. Check test output for errors.");
 
 		// .NET 9 and later was Unpackaged, so we need to remove the line
@@ -210,7 +210,7 @@ public class WindowsTemplateTest : BaseTemplateTests
 			</Project>
 			""");
 
-		Assert.True(DotnetInternal.Build(projectFile, "Debug", properties: BuildProps, msbuildWarningsAsErrors: true),
+		Assert.True(DotnetInternal.Build(projectFile, "Debug", properties: BuildProps, msbuildWarningsAsErrors: true, output: _output),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
 }

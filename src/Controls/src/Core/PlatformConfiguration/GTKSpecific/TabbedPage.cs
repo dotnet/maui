@@ -11,26 +11,35 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific
 			BindableProperty.Create("TabPosition", typeof(TabPosition),
 				typeof(TabbedPage), TabPosition.Default);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific/TabbedPage.xml" path="//Member[@MemberName='GetTabPosition'][1]/Docs/*" />
+		/// <summary>Gets the position of the tabs on the tabbed page.</summary>
+		/// <param name="element">The platform-specific element.</param>
+		/// <returns>The position of the tabs on the tabbed page.</returns>
 		public static TabPosition GetTabPosition(BindableObject element)
 		{
 			return (TabPosition)element.GetValue(TabPositionProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific/TabbedPage.xml" path="//Member[@MemberName='SetTabPosition'][1]/Docs/*" />
+		/// <summary>Sets the position of the tabs on the tabbed page.</summary>
+		/// <param name="element">The platform-specific element.</param>
+		/// <param name="tabPosition">The new tab position value.</param>
 		public static void SetTabPosition(BindableObject element, TabPosition tabPosition)
 		{
 			element.SetValue(TabPositionProperty, tabPosition);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific/TabbedPage.xml" path="//Member[@MemberName='GetTabPosition'][2]/Docs/*" />
+		/// <summary>Gets the position of the tabs on the tabbed page.</summary>
+		/// <param name="config">The platform-specific configuration.</param>
+		/// <returns>The position of the tabs on the tabbed page.</returns>
 		public static TabPosition GetTabPosition(
 			this IPlatformElementConfiguration<GTK, FormsElement> config)
 		{
 			return GetTabPosition(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific/TabbedPage.xml" path="//Member[@MemberName='SetTabPosition'][2]/Docs/*" />
+		/// <summary>Sets the position of the tabs on the tabbed page.</summary>
+		/// <param name="config">The platform-specific configuration.</param>
+		/// <param name="value">The new tab position value.</param>
+		/// <returns>The updated configuration object.</returns>
 		public static IPlatformElementConfiguration<GTK, FormsElement> SetTabPosition(
 			this IPlatformElementConfiguration<GTK, FormsElement> config, TabPosition value)
 		{

@@ -5,11 +5,11 @@ using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/GradientBrush.xml" path="Type[@FullName='Microsoft.Maui.Controls.GradientBrush']/Docs/*" />
+	/// <summary>Base class for brushes that paint an area with a gradient of multiple colors.</summary>
 	[ContentProperty(nameof(GradientStops))]
 	public abstract class GradientBrush : Brush
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/GradientBrush.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>Initializes a new instance of the <see cref="GradientBrush"/> class.</summary>
 		public GradientBrush()
 		{
 			GradientStops = new GradientStopCollection();
@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.Create(nameof(GradientStops), typeof(GradientStopCollection), typeof(GradientBrush), null,
 				propertyChanged: OnGradientStopsChanged);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/GradientBrush.xml" path="//Member[@MemberName='GradientStops']/Docs/*" />
+		/// <summary>Gets or sets the collection of <see cref="GradientStop"/> objects that define the gradient colors. This is a bindable property.</summary>
 		public GradientStopCollection GradientStops
 		{
 			get => (GradientStopCollection)GetValue(GradientStopsProperty);

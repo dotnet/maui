@@ -68,7 +68,7 @@ public class BlazorTemplateTest : BaseTemplateTests
 
 		_output.WriteLine($"Creating project in {solutionProjectDir}");
 
-		Assert.True(DotnetInternal.New(templateShortName, outputDirectory: solutionProjectDir, framework: framework, additionalDotNetNewParams: additionalDotNetNewParams),
+		Assert.True(DotnetInternal.New(templateShortName, outputDirectory: solutionProjectDir, framework: framework, additionalDotNetNewParams: additionalDotNetNewParams, output: _output),
 			$"Unable to create template {templateShortName}. Check test output for errors.");
 
 		_output.WriteLine($"Solution directory: {solutionProjectDir} (exists? {Directory.Exists(solutionProjectDir)})");
@@ -78,11 +78,11 @@ public class BlazorTemplateTest : BaseTemplateTests
 		_output.WriteLine($"MAUI app project file: {mauiAppProjectFile} (exists? {File.Exists(mauiAppProjectFile)})");
 
 		_output.WriteLine($"Building Blazor Web app: {webAppProjectFile}");
-		Assert.True(DotnetInternal.Build(webAppProjectFile, config, target: "", properties: BuildProps, msbuildWarningsAsErrors: true),
+		Assert.True(DotnetInternal.Build(webAppProjectFile, config, target: "", properties: BuildProps, msbuildWarningsAsErrors: true, output: _output),
 			$"Project {Path.GetFileName(webAppProjectFile)} failed to build. Check test output/attachments for errors.");
 
 		_output.WriteLine($"Building .NET MAUI app: {mauiAppProjectFile} props: {buildProps}");
-		Assert.True(DotnetInternal.Build(mauiAppProjectFile, config, target: "", properties: buildProps, msbuildWarningsAsErrors: true),
+		Assert.True(DotnetInternal.Build(mauiAppProjectFile, config, target: "", properties: buildProps, msbuildWarningsAsErrors: true, output: _output),
 			$"Project {Path.GetFileName(mauiAppProjectFile)} failed to build. Check test output/attachments for errors.");
 	}
 }

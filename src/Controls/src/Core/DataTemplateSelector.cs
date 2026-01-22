@@ -4,12 +4,17 @@ using System.Collections.Generic;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/DataTemplateSelector.xml" path="Type[@FullName='Microsoft.Maui.Controls.DataTemplateSelector']/Docs/*" />
+	/// <summary>
+	/// Selects a <see cref="DataTemplate"/> based on the data object and container. Override <see cref="OnSelectTemplate"/> to implement selection logic.
+	/// </summary>
 	public abstract class DataTemplateSelector : DataTemplate
 	{
 		Dictionary<Type, DataTemplate> _dataTemplates = new Dictionary<Type, DataTemplate>();
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/DataTemplateSelector.xml" path="//Member[@MemberName='SelectTemplate']/Docs/*" />
+		/// <summary>Returns a <see cref="DataTemplate"/> for the specified item and container.</summary>
+		/// <param name="item">The data object for which to select a template.</param>
+		/// <param name="container">The bindable object that will display the templated item.</param>
+		/// <returns>The selected <see cref="DataTemplate"/>.</returns>
 		public DataTemplate SelectTemplate(object item, BindableObject container)
 		{
 #pragma warning disable CS0618 // Type or member is obsolete

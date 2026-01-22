@@ -3,10 +3,13 @@ using System;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/ShellNavigatedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Controls.ShellNavigatedEventArgs']/Docs/*" />
+	/// <summary>Provides data for the <see cref="Shell.Navigated"/> event.</summary>
 	public class ShellNavigatedEventArgs : EventArgs
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellNavigatedEventArgs.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>Initializes a new instance of <see cref="ShellNavigatedEventArgs"/>.</summary>
+		/// <param name="previous">The navigation state before the navigation occurred.</param>
+		/// <param name="current">The navigation state after the navigation occurred.</param>
+		/// <param name="source">The source of the navigation event.</param>
 		public ShellNavigatedEventArgs(ShellNavigationState previous, ShellNavigationState current, ShellNavigationSource source)
 		{
 			Previous = previous;
@@ -14,11 +17,13 @@ namespace Microsoft.Maui.Controls
 			Source = source;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellNavigatedEventArgs.xml" path="//Member[@MemberName='Current']/Docs/*" />
+		/// <summary>Gets the navigation state after the navigation occurred.</summary>
 		public ShellNavigationState Current { get; }
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellNavigatedEventArgs.xml" path="//Member[@MemberName='Previous']/Docs/*" />
+
+		/// <summary>Gets the navigation state before the navigation occurred.</summary>
 		public ShellNavigationState Previous { get; }
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellNavigatedEventArgs.xml" path="//Member[@MemberName='Source']/Docs/*" />
+
+		/// <summary>Gets the source of the navigation event.</summary>
 		public ShellNavigationSource Source { get; }
 	}
 }

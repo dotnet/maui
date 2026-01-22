@@ -65,12 +65,13 @@ namespace Microsoft.Maui.Controls
 
 		bool _setForMaui;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
+		/// <summary>Initializes a new instance of the <see cref="NavigationPage"/> class.</summary>
 		public NavigationPage() : this(UseMauiHandler)
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />
+		/// <summary>Initializes a new instance of the <see cref="NavigationPage"/> class with the specified root page.</summary>
+		/// <param name="root">The root page of the navigation stack.</param>
 		public NavigationPage(Page root) : this(UseMauiHandler, root)
 		{
 		}
@@ -98,7 +99,7 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(BarElement.BarBackgroundColorProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='BarBackground']/Docs/*" />
+		/// <summary>Gets or sets the brush used to paint the navigation bar background. This is a bindable property.</summary>
 		public Brush BarBackground
 		{
 			get => (Brush)GetValue(BarElement.BarBackgroundProperty);
@@ -217,13 +218,16 @@ namespace Microsoft.Maui.Controls
 			return (Color)bindable.GetValue(IconColorProperty);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='PopAsync'][1]/Docs/*" />
+		/// <summary>Asynchronously removes the top page from the navigation stack.</summary>
+		/// <returns>A task that represents the asynchronous pop operation and contains the popped page.</returns>
 		public Task<Page> PopAsync()
 		{
 			return PopAsync(true);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='PopAsync'][2]/Docs/*" />
+		/// <summary>Asynchronously removes the top page from the navigation stack, with optional animation.</summary>
+		/// <param name="animated">Whether to animate the transition.</param>
+		/// <returns>A task that represents the asynchronous pop operation and contains the popped page.</returns>
 		public async Task<Page> PopAsync(bool animated)
 		{
 			// If Navigation interactions are being handled by the MAUI APIs
@@ -263,13 +267,16 @@ namespace Microsoft.Maui.Controls
 
 		public event EventHandler<NavigationEventArgs> PoppedToRoot;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='PopToRootAsync'][1]/Docs/*" />
+		/// <summary>Asynchronously pops all pages from the navigation stack except the root page.</summary>
+		/// <returns>A task that represents the asynchronous operation.</returns>
 		public Task PopToRootAsync()
 		{
 			return PopToRootAsync(true);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='PopToRootAsync'][2]/Docs/*" />
+		/// <summary>Asynchronously pops all pages from the navigation stack except the root page, with optional animation.</summary>
+		/// <param name="animated">Whether to animate the transition.</param>
+		/// <returns>A task that represents the asynchronous operation.</returns>
 		public async Task PopToRootAsync(bool animated)
 		{
 			// If Navigation interactions are being handled by the MAUI APIs
@@ -297,13 +304,18 @@ namespace Microsoft.Maui.Controls
 			await result;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='PushAsync'][1]/Docs/*" />
+		/// <summary>Asynchronously pushes a page onto the navigation stack.</summary>
+		/// <param name="page">The page to push onto the navigation stack.</param>
+		/// <returns>A task that represents the asynchronous push operation.</returns>
 		public Task PushAsync(Page page)
 		{
 			return PushAsync(page, true);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='PushAsync'][2]/Docs/*" />
+		/// <summary>Asynchronously pushes a page onto the navigation stack, with optional animation.</summary>
+		/// <param name="page">The page to push onto the navigation stack.</param>
+		/// <param name="animated">Whether to animate the transition.</param>
+		/// <returns>A task that represents the asynchronous push operation.</returns>
 		public async Task PushAsync(Page page, bool animated)
 		{
 			// If Navigation interactions are being handled by the MAUI APIs

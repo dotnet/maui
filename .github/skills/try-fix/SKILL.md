@@ -1,242 +1,291 @@
 ---
 name: try-fix
-description: Proposes ONE independent fix approach, applies it, runs tests, records result with failure analysis in state file, then reverts. Reads prior attempts to learn from failures. Returns exhausted=true when no more ideas. Max 5 attempts per session.
+description: Attempts ONE fix for a provided problem, tests it, and reports results. Use when CI or an agent needs to try fixing a bug with full context provided upfront. Invoke with problem description, test command, target files, and optional hints.
+metadata:
+  author: dotnet-maui
+  version: "2.0"
+compatibility: Requires git, PowerShell, and .NET SDK for building and running tests.
 ---
 
 # Try Fix Skill
 
-Proposes and tests ONE independent fix approach per invocation. The agent invokes this skill repeatedly to explore multiple alternatives.
+Attempts ONE fix for a given problem. Receives all context upfront, tries a single approach, tests it, and reports what happened.
 
 ## Core Principles
 
-1. **Single-shot**: Each invocation = ONE fix idea, tested, recorded, reverted
-2. **Independent**: Generate fix ideas WITHOUT looking at or being influenced by the PR's fix
+1. **Single-shot**: Each invocation = ONE fix idea, tested, reported
+2. **Context-driven**: All necessary information provided upfront by invoker
 3. **Empirical**: Actually implement and test - don't just theorize
-4. **Learning**: When a fix fails, analyze WHY and record the flawed reasoning
+4. **Informative**: Report what was tried, what happened, and why
 
 ## When to Use
 
-- ✅ After Gate passes - you have a verified reproduction test
-- ✅ When exploring independent fix alternatives (even if PR already has a fix)
-- ✅ When the agent needs to iterate through multiple fix attempts
+- ✅ CI automation needs to attempt a fix
+- ✅ You have a clear problem description and test command
+- ✅ You want ONE attempt with full reporting
 
 ## When NOT to Use
 
-- ❌ Before Gate passes (you need a test that catches the bug first)
 - ❌ For writing tests (use `write-tests` skill)
-- ❌ For just running tests (use `BuildAndRunHostApp.ps1` directly)
-- ❌ To test the PR's existing fix (Gate already validated that)
+- ❌ For just running tests (use test commands directly)
+- ❌ When problem context is unclear (gather context first)
 
 ---
 
 ## Inputs
 
-Before invoking this skill, ensure you have:
+All inputs are provided by the invoker (CI, agent, or user).
 
-| Input | Source | Example |
-|-------|--------|---------|
-| State file path | Agent workflow | `.github/agent-pr-session/pr-12345.md` |
-| Test filter | From test files | `Issue12345` |
-| Platform | From issue labels | `android` or `ios` |
-| PR fix files | From Pre-Flight | Files changed by PR (to revert) |
+| Input | Required | Description |
+|-------|----------|-------------|
+| Problem | Yes | Description of the bug/issue to fix |
+| Test command | Yes | Command to verify if fix works (e.g., `pwsh BuildAndRunHostApp.ps1 -Platform android -TestFilter "Issue12345"`) |
+| Target files | Yes | Files to investigate for the fix |
+| Platform | Yes | Target platform (`android`, `ios`, `windows`, `maccatalyst`) |
+| Hints | Optional | Suggested approaches, prior attempts, or areas to focus on |
+| Baseline | Optional | Git ref or instructions for establishing broken state (default: current state) |
+| state_file | Optional | Path to PR agent state file (e.g., `.github/agent-pr-session/pr-12345.md`). If provided, try-fix will append its results to the Fix Candidates table. |
+
+## Outputs
+
+Results reported back to the invoker:
+
+| Field | Description |
+|-------|-------------|
+| `approach` | What fix was attempted (brief description) |
+| `files_changed` | Which files were modified |
+| `result` | `PASS` or `FAIL` |
+| `analysis` | Why it worked, or why it failed and what was learned |
+| `diff` | The actual code changes made (for review) |
+
+## Completion Criteria
+
+The skill is complete when:
+- [ ] Problem understood from provided context
+- [ ] ONE fix approach designed and implemented
+- [ ] Tests run and result captured
+- [ ] Analysis provided (success explanation or failure reasoning)
+- [ ] Results reported to invoker
+- [ ] Working directory restored to original state
 
 ---
 
 ## Workflow
 
-### Step 1: Read State File and Learn from Prior Attempts
+### Step 1: Understand the Problem
 
-Read the state file to find prior attempts:
+Review the provided context:
+- What is the bug/issue?
+- What test command verifies the fix?
+- What files should be investigated?
+- Are there hints about what to try or avoid?
+
+**If state_file provided, review prior attempts:**
+1. Read the Fix Candidates table
+2. Note which approaches failed and WHY (the Notes column)
+3. Avoid repeating failed approaches
+4. Build on partial successes (if an approach was "close", try a variation)
+5. Use failure analysis to inform your approach
+
+**Do NOT search for additional context.** Work with what's provided.
+
+### Step 2: Establish Baseline (if specified)
+
+Use the shared baseline script to revert fix files while preserving tests:
 
 ```bash
-cat .github/agent-pr-session/pr-XXXXX.md
+# Establish baseline - reverts fix files to merge-base state
+$baseline = pwsh .github/scripts/EstablishBrokenBaseline.ps1
+
+# Or with explicit options:
+$baseline = pwsh .github/scripts/EstablishBrokenBaseline.ps1 -BaseBranch main
+$baseline = pwsh .github/scripts/EstablishBrokenBaseline.ps1 -FixFiles @("src/path/to/file.cs")
+$baseline = pwsh .github/scripts/EstablishBrokenBaseline.ps1 -DryRun  # Preview without changes
 ```
 
-Look for the **Fix Candidates** table. For each prior attempt:
-- What approach was tried?
-- Did it pass or fail?
-- **If it failed, WHY did it fail?** (This is critical for learning)
+The script:
+- Auto-detects merge-base from PR metadata or common branch patterns
+- Identifies fix files (non-test files that changed since merge-base)
+- Reverts only files that existed at merge-base (preserves new files)
+- Saves state for `-Restore` to undo later
 
-**Use failure analysis to avoid repeating mistakes:**
-- If attempt #1 failed because "too late in lifecycle" → don't try other late-lifecycle fixes
-- If attempt #2 failed because "trigger wasn't enough, calculation logic needed fixing" → focus on calculation logic
-
-### Step 2: Revert PR's Fix (Get Broken Baseline)
-
-**🚨 CRITICAL: You must work from a broken state where the bug exists.**
-
+**CRITICAL:** Remember to restore in Step 9. If something fails mid-fix, run:
 ```bash
-# Identify the PR's fix files from the state file "Files Changed" section
-# Revert ALL fix files (not test files)
-git checkout HEAD~1 -- src/path/to/fix1.cs src/path/to/fix2.cs
-
-# Verify the bug is present (test should FAIL)
-# This is your baseline
+pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore
 ```
 
-**Why?** You're testing whether YOUR fix works, independent of the PR's fix.
+If no baseline specified, work from current state.
 
-### Step 3: Check if Exhausted
+### Step 3: Analyze Target Files
 
-Before proposing a new fix, evaluate:
-
-1. **Count prior try-fix attempts** - If 5+ attempts already recorded, return `exhausted=true`
-2. **Review what's been tried and WHY it failed** - Can you think of a meaningfully different approach?
-3. **If no new ideas** - Return `exhausted=true`
-
-**Signs you're exhausted:**
-- All obvious approaches have been tried
-- Remaining ideas are variations of failed attempts (same root flaw)
-- You keep coming back to approaches similar to what failed
-- The problem requires architectural changes beyond scope
-
-If exhausted, **stop here** and return to the agent with `exhausted=true`.
-
-### Step 4: Analyze the Code (Independent of PR's Fix)
-
-**🚨 DO NOT look at the PR's fix implementation.** Generate your own ideas.
-
-Research the bug to propose a NEW approach:
+Read the target files to understand the code:
 
 ```bash
-# Find the affected code
-grep -r "SymptomOrClassName" src/Controls/src/ --include="*.cs" -l
-
-# Look at the implementation
-cat path/to/affected/File.cs
-
-# Check git history for context (but NOT the PR's commits)
-git log --oneline -10 -- path/to/affected/File.cs
+# Read the files specified in inputs
+cat src/path/to/TargetFile.cs
 ```
 
 **Key questions:**
 - What is the root cause of this bug?
-- Where in the code should a fix go?
+- Where should the fix go?
 - What's the minimal change needed?
-- How is this different from prior failed attempts?
 
-### Step 5: Propose ONE Fix
+### Step 4: Design ONE Fix
 
-Design an approach that is:
-- **Independent** - NOT influenced by the PR's solution
-- **Different** from prior attempts in the state file
-- **Informed** by WHY prior attempts failed
-- **Minimal** - smallest change that fixes the issue
+Based on your analysis and any provided hints, design a single fix approach:
 
-Document your approach before implementing:
 - Which file(s) to change
 - What the change is
 - Why you think this will work
-- How it differs from prior failed attempts
 
-### Step 6: Apply the Fix
+**If hints suggest specific approaches**, prioritize those.
 
-Edit the necessary files to implement your fix.
+### Step 5: Apply the Fix
 
-**Track which files you modify** - you'll need to revert them later.
+Implement your fix. Track what you change:
 
 ```bash
-# Note the files you're about to change
+# Before editing, note current state
 git status --short
+
+# Apply your fix
+# [edit files]
+
+# After editing, capture what changed
+git diff
 ```
 
-### Step 7: Run Tests
+### Step 6: Run Tests
 
-Run the reproduction test to see if your fix works:
+Run the provided test command:
 
 ```bash
+# Use the exact test command provided in inputs
 pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform $PLATFORM -TestFilter "$TEST_FILTER"
 ```
 
 **Capture the result:**
-- ✅ **PASS** - Your fix works (test now passes)
-- ❌ **FAIL** - Your fix doesn't work (test still fails, or other tests broke)
+- ✅ **PASS** - Fix works (test passes)
+- ❌ **FAIL** - Fix doesn't work (test fails or other issues)
 
-### Step 8: If Failed - Analyze WHY
+### Step 7: Analyze Result
 
-**🚨 CRITICAL: This step is required for failed attempts.**
+**If PASS:**
+- Why did this fix work?
+- Is it the minimal change needed?
+- Any concerns or caveats?
 
-When your fix fails, analyze:
+**If FAIL:**
+- What was your hypothesis?
+- What actually happened?
+- Why was the reasoning flawed?
+- What insight does this provide for future attempts?
 
-1. **What was your hypothesis?** Why did you think this would work?
-2. **What actually happened?** What did the test output show?
-3. **Why was your reasoning flawed?** What did you misunderstand about the bug?
-4. **What would be needed instead?** What insight does this failure provide?
+### Step 8: Capture Diff
 
-This analysis helps future try-fix invocations avoid the same mistake.
-
-### Step 9: Update State File
-
-Add a new row to the **Fix Candidates** table in the state file:
-
-**For PASSING fixes:**
-```markdown
-| # | Source | Approach | Test Result | Files Changed | Model | Notes |
-|---|--------|----------|-------------|---------------|-------|-------|
-| N | try-fix | [Your approach] | ✅ PASS | `file.cs` (+X) | [Model Name] | Works! [any observations] |
-```
-
-**For FAILING fixes (include failure analysis):**
-```markdown
-| # | Source | Approach | Test Result | Files Changed | Model | Notes |
-|---|--------|----------|-------------|---------------|-------|-------|
-| N | try-fix | [Your approach] | ❌ FAIL | `file.cs` (+X) | [Model Name] | **Why failed:** [Analysis of flawed reasoning and what you learned] |
-```
-
-### Step 10: Revert Everything
-
-**Always revert** to restore the PR's original state:
+Before reverting, capture the diff for reporting:
 
 ```bash
-# Revert ALL changes (your fix AND the PR revert from Step 2)
+git diff > /tmp/fix-attempt.diff
+# or just include inline in your report
+```
+
+### Step 9: Restore Working Directory
+
+Restore the baseline (if established in Step 2) and revert any fix changes:
+
+```bash
+# Restore files reverted by EstablishBrokenBaseline.ps1
+pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore
+
+# Revert any other changes made during the fix attempt
 git checkout -- .
 ```
 
-**Do NOT revert the state file** - the new candidate row should persist.
+**Note:** The `-Restore` flag reads the saved state from Step 2 and restores only the files that were reverted. This ensures a clean return to the original state.
 
-### Step 11: Return to Agent
+### Step 10: Report Results
 
-Report back to the agent with:
+Provide structured output to the invoker:
 
-| Field | Value |
-|-------|-------|
-| `approach` | Brief description of what was tried |
-| `test_result` | PASS or FAIL |
-| `exhausted` | true if no more ideas, false otherwise |
+```markdown
+## Try-Fix Result
+
+**Approach:** [Brief description of what was tried]
+
+**Files Changed:**
+- `path/to/file.cs` (+X/-Y lines)
+
+**Result:** ✅ PASS / ❌ FAIL
+
+**Analysis:**
+[Why it worked, or why it failed and what was learned]
+
+**Diff:**
+```diff
+[The actual changes made]
+```
+
+**Exhausted:** Yes/No
+**Reasoning:** [Why you believe there are/aren't more viable approaches]
+```
+
+### Determining Exhaustion
+
+Before updating the state file, evaluate if you've exhausted viable approaches:
+
+**Set `exhausted=true` when:**
+- You've tried the same fundamental approach multiple times with variations
+- All hints have been explored without success
+- Failure analysis reveals the problem is outside the target files
+- No new ideas remain based on prior failure analyses
+
+**Set `exhausted=false` when:**
+- This is the first attempt
+- Failure analysis suggests a different approach within target files
+- Hints remain unexplored
+- The approach was close but needs refinement
+
+### Step 11: Update State File (if provided)
+
+If `state_file` input was provided and file exists:
+
+1. **Read current Fix Candidates table** from state file
+2. **Determine next attempt number** (count existing try-fix rows + 1)
+3. **Append new row** with this attempt's results:
+
+| # | Source | Approach | Test Result | Files Changed | Notes |
+|---|--------|----------|-------------|---------------|-------|
+| N | try-fix #N | [approach] | ✅ PASS / ❌ FAIL | [files] | [analysis] |
+
+4. **Set exhausted status** based on your determination above
+5. **Commit state file:**
+```bash
+git add "$STATE_FILE" && git commit -m "try-fix: attempt #N (exhausted=$EXHAUSTED)"
+```
+
+**If no state file provided:** Skip this step (results returned to invoker only).
+
+**Ownership rule:** try-fix updates its own row AND the exhausted field. Never modify:
+- Phase status fields
+- "Selected Fix" field
+- Other try-fix rows
 
 ---
 
-## Fix Candidates Table Format
+## Error Handling
 
-The state file should have this section:
-
-```markdown
-## Fix Candidates
-
-| # | Source | Approach | Test Result | Files Changed | Model | Notes |
-|---|--------|----------|-------------|---------------|-------|-------|
-| 1 | try-fix | Fix in TabbedPageManager | ❌ FAIL | `TabbedPageManager.cs` (+5) | Claude 3.5 Sonnet | **Why failed:** Too late in lifecycle - by the time OnPageSelected fires, layout already measured with stale values |
-| 2 | try-fix | RequestApplyInsets only | ❌ FAIL | `ToolbarExtensions.cs` (+2) | Claude 3.5 Sonnet | **Why failed:** Trigger alone insufficient - calculation logic still used cached values |
-| 3 | try-fix | Reset cache + RequestApplyInsets | ✅ PASS | `ToolbarExtensions.cs`, `InsetListener.cs` (+8) | Claude 3.5 Sonnet | Works! Similar to PR's approach |
-| PR | PR #XXXXX | [PR's approach] | ✅ PASS (Gate) | [files] | Author | Original PR - validated by Gate |
-
-**Exhausted:** Yes
-**Selected Fix:** #3 or PR - both work, compare for simplicity
-```
-
-**Note:** The PR's fix is recorded as reference (validated by Gate) but is NOT tested by try-fix.
+| Situation | Action |
+|-----------|--------|
+| Problem unclear | Report "insufficient context" - specify what's missing |
+| Test command fails to run | Report build/setup error with details |
+| Test times out | Report timeout, include partial output |
+| Can't determine fix approach | Report "no viable approach identified" with reasoning |
+| Git state unrecoverable | Run `git checkout -- .` and `git clean -fd` if needed |
 
 ---
 
 ## Guidelines for Proposing Fixes
-
-### Independence is Critical
-
-🚨 **DO NOT look at the PR's fix code when generating ideas.**
-
-The goal is to see if you can independently arrive at the same solution (validating the PR's approach) or find a better alternative.
-
-If your independent fix matches the PR's approach, that's strong validation. If you find a simpler/better approach, that's valuable feedback.
 
 ### Good Fix Approaches
 
@@ -248,94 +297,102 @@ If your independent fix matches the PR's approach, that's strong validation. If 
 
 ### Approaches to Avoid
 
-❌ **Looking at the PR's fix first** - Generate ideas independently
-❌ **Duplicating prior failed attempts** - Check the table and learn from failures
-❌ **Variations of failed approaches with same root flaw** - If timing was wrong, a different timing approach is needed
 ❌ **Massive refactors** - Keep changes minimal
 ❌ **Suppressing symptoms** - Fix root cause, not symptoms
+❌ **Ignoring provided hints** - Hints exist for a reason
+❌ **Multiple unrelated changes** - ONE focused fix per invocation
 
-### Learning from Failures
+### Failure Analysis Quality
 
-When a fix fails, the failure analysis is crucial:
+When a fix fails, analysis quality matters:
 
-**Bad note:** "Didn't work"
-**Good note:** "**Why failed:** RequestApplyInsets triggers recalculation, but MeasuredHeight was still cached from previous layout pass. Need to also invalidate the cached measurement."
+**Bad:** "Didn't work"
 
-This helps the next try-fix invocation avoid the same mistake.
-
----
-
-## Example Session
-
-**State file before (after Gate passed):**
-```markdown
-## Fix Candidates
-
-| # | Source | Approach | Test Result | Files Changed | Model | Notes |
-|---|--------|----------|-------------|---------------|-------|-------|
-| PR | PR #33359 | RequestApplyInsets + reset appBarHasContent | ✅ PASS (Gate) | 2 files | Author | Original PR |
-
-**Exhausted:** No
-**Selected Fix:** [PENDING]
-```
-
-**try-fix invocation #1:**
-1. Reads state → sees PR's fix passed Gate, no try-fix attempts yet
-2. Reverts PR's fix files → now bug exists
-3. Analyzes code independently → proposes: "Fix in TabbedPageManager.OnPageSelected"
-4. Applies fix → edits `TabbedPageManager.cs`
-5. Runs tests → ❌ FAIL
-6. Analyzes failure → "Too late in lifecycle, layout already measured"
-7. Updates state file → adds try-fix Candidate #1 with failure analysis
-8. Reverts everything (including restoring PR's fix)
-9. Returns `{approach: "Fix in TabbedPageManager", test_result: FAIL, exhausted: false}`
-
-**State file after invocation #1:**
-```markdown
-## Fix Candidates
-
-| # | Source | Approach | Test Result | Files Changed | Model | Notes |
-|---|--------|----------|-------------|---------------|-------|-------|
-| 1 | try-fix | Fix in TabbedPageManager.OnPageSelected | ❌ FAIL | `TabbedPageManager.cs` (+5) | Claude 3.5 Sonnet | **Why failed:** Too late in lifecycle - OnPageSelected fires after layout measured |
-| PR | PR #33359 | RequestApplyInsets + reset appBarHasContent | ✅ PASS (Gate) | 2 files | Author | Original PR |
-
-**Exhausted:** No
-**Selected Fix:** [PENDING]
-```
-
-**try-fix invocation #2:**
-1. Reads state → sees attempt #1 failed because "too late in lifecycle"
-2. Reverts PR's fix → bug exists
-3. Learns from #1 → needs earlier timing, proposes: "Trigger in UpdateIsVisible"
-4. Applies fix → edits `ToolbarExtensions.cs`
-5. Runs tests → ✅ PASS
-6. Updates state file → adds Candidate #2
-7. Reverts everything
-8. Returns `{approach: "Trigger in UpdateIsVisible", test_result: PASS, exhausted: false}`
-
-**State file after invocation #2:**
-```markdown
-## Fix Candidates
-
-| # | Source | Approach | Test Result | Files Changed | Model | Notes |
-|---|--------|----------|-------------|---------------|-------|-------|
-| 1 | try-fix | Fix in TabbedPageManager.OnPageSelected | ❌ FAIL | `TabbedPageManager.cs` (+5) | Claude 3.5 Sonnet | **Why failed:** Too late in lifecycle |
-| 2 | try-fix | RequestApplyInsets in UpdateIsVisible | ✅ PASS | `ToolbarExtensions.cs` (+2) | Claude 3.5 Sonnet | Works! Simpler than PR (1 file vs 2) |
-| PR | PR #33359 | RequestApplyInsets + reset appBarHasContent | ✅ PASS (Gate) | 2 files | Author | Original PR |
-
-**Exhausted:** No
-**Selected Fix:** [PENDING]
-```
-
-**Agent decides:** Found a passing alternative (#2). Can continue to find more, or stop and compare #2 vs PR.
+**Good:** "Fix attempted to reset state in OnPageSelected, but this fires after layout measurement. The cached MeasuredHeight value was already used. A fix needs to invalidate the cache BEFORE the layout pass, not after."
 
 ---
 
-## Constraints
+## Example Invocation
 
-- **Max 5 try-fix attempts** per session (PR's fix is NOT counted - it was validated by Gate)
-- **Always revert** after each attempt (restore PR's original state)
-- **Always update state file** before reverting
-- **Never skip testing** - every fix must be validated empirically
-- **Never look at PR's fix** when generating ideas - stay independent
-- **Always analyze failures** - record WHY fixes didn't work
+**Inputs provided:**
+```yaml
+problem: |
+  CollectionView throws ObjectDisposedException when navigating back
+  from a page with a CollectionView on Android.
+
+test_command: |
+  pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "Issue54321"
+
+target_files:
+  - src/Controls/src/Core/Handlers/Items/ItemsViewHandler.Android.cs
+  - src/Controls/src/Core/Handlers/Items/CollectionViewHandler.Android.cs
+
+platform: android
+
+hints: |
+  - The issue seems related to disposal timing
+  - Similar issue was fixed in ListView by checking IsDisposed before accessing adapter
+  - Focus on the Disconnect/Cleanup methods
+```
+
+**Skill execution:**
+1. Reads context - understands it's a disposal timing issue on Android
+2. Analyzes target files - finds `DisconnectHandler` method
+3. Designs fix - add `IsDisposed` check before accessing adapter
+4. Applies fix - edits `CollectionViewHandler.Android.cs`
+5. Runs test - ✅ PASS
+6. Analyzes - "Adding IsDisposed check prevents access to disposed adapter during navigation"
+7. Captures diff
+8. Reverts changes
+9. Reports results
+
+**Output:**
+```markdown
+## Try-Fix Result
+
+**Approach:** Add IsDisposed check in DisconnectHandler before accessing adapter
+
+**Files Changed:**
+- `src/Controls/src/Core/Handlers/Items/CollectionViewHandler.Android.cs` (+3/-0 lines)
+
+**Result:** ✅ PASS
+
+**Analysis:**
+The ObjectDisposedException occurred because DisconnectHandler was called during
+navigation after the handler was already disposed. Adding an early return when
+IsDisposed is true prevents the null adapter access. This matches the pattern
+used in ListView's fix (as noted in hints).
+
+**Diff:**
+```diff
+ protected override void DisconnectHandler(RecyclerView platformView)
+ {
++    if (IsDisposed)
++        return;
++
+     base.DisconnectHandler(platformView);
+```
+```
+
+---
+
+## What the Invoker Controls
+
+This skill does ONE attempt. The invoker (CI pipeline, agent, user) controls:
+
+| Decision | Invoker's responsibility |
+|----------|--------------------------|
+| How many attempts | Invoke skill multiple times if needed |
+| Max attempts | Configure loop limit (default: 5, can be set higher) |
+| Early termination | Stop when try-fix reports `exhausted=true` |
+| When to stop | Interpret results and decide (exhausted OR max reached) |
+| State file path | Optionally provide for automatic recording |
+| Passing context between attempts | Provide updated hints on subsequent calls |
+| Success criteria | Evaluate the reported result |
+| Phase status | Update phase to COMPLETE when done |
+| Final selection | Set "Selected Fix" field when a fix passes |
+
+The skill records its own results and exhausted status when a state file is provided. The loop should terminate when EITHER:
+1. A fix passes (success)
+2. `exhausted=true` is reported (no more viable approaches)
+3. Max attempts reached (configurable cap)

@@ -6,6 +6,10 @@ description: "Guidance for GitHub Copilot when working on the .NET MAUI reposito
 
 This document provides specific guidance for GitHub Copilot when working on the .NET MAUI repository. It serves as context for understanding the project structure, development workflow, and best practices.
 
+## Code Review Instructions
+
+When performing a code review on PRs that change functional code, run the pr-finalize skill to verify that the PR title and description accurately match the actual implementation. This ensures proper documentation and helps maintain high-quality commit messages.
+
 ## Repository Overview
 
 **.NET MAUI** is a cross-platform framework for creating mobile and desktop applications with C# and XAML. This repository contains the core framework code that enables development for Android, iOS, iPadOS, macOS, and Windows from a single shared codebase.
@@ -177,9 +181,18 @@ Always put that at the top, without the block quotes. Without it, users will NOT
 
 
 
-## Custom Agents
+## Custom Agents and Skills
 
-The repository includes specialized custom agents for specific tasks. These agents are available to GitHub Copilot and can be invoked for their respective specializations:
+The repository includes specialized custom agents and reusable skills for specific tasks.
+
+### Skills vs Agents
+
+| Aspect | Skills | Agents |
+|--------|--------|--------|
+| **Invoke** | `/skill-name` or direct request | Delegate to agent |
+| **Output** | Analysis, recommendations | Actions, changes applied |
+| **Interaction** | Interactive discussion | Autonomous workflow |
+| **Example** | `/learn-from-pr` → recommendations | learn-from-pr agent → applies changes |
 
 ### Available Custom Agents
 
@@ -200,15 +213,65 @@ The repository includes specialized custom agents for specific tasks. These agen
    - **Trigger phrases**: "test this PR", "validate PR #XXXXX in Sandbox", "reproduce issue #XXXXX", "try out in Sandbox"
    - **Do NOT use for**: Code review (use pr agent), writing automated tests (use uitest-coding-agent)
 
+4. **learn-from-pr** - Extracts lessons from PRs and applies improvements to the repository
+   - **Use when**: After complex PR, want to improve instruction files/skills based on lessons learned
+   - **Capabilities**: Analyzes PR, identifies failure modes, applies improvements to instruction files, skills, code comments
+   - **Trigger phrases**: "learn from PR #XXXXX and apply improvements", "improve repo based on what we learned", "update skills based on PR"
+   - **Output**: Applied changes to instruction files, skills, architecture docs, code comments
+   - **Do NOT use for**: Analysis only without applying changes → Use `/learn-from-pr` skill instead
+
 ### Reusable Skills
 
 Skills are modular capabilities that can be invoked directly or used by agents. Located in `.github/skills/`:
 
+#### User-Facing Skills
+
 1. **issue-triage** (`.github/skills/issue-triage/SKILL.md`)
    - **Purpose**: Query and triage open issues that need milestones, labels, or investigation
-   - **Trigger phrases**: "find issues to triage", "show me old Android issues", "what issues need attention", "triage Android issues"
+   - **Trigger phrases**: "find issues to triage", "show me old Android issues", "what issues need attention"
    - **Scripts**: `init-triage-session.ps1`, `query-issues.ps1`, `record-triage.ps1`
-   - **Used by**: Any agent or direct invocation
+
+2. **find-reviewable-pr** (`.github/skills/find-reviewable-pr/SKILL.md`)
+   - **Purpose**: Finds open PRs in dotnet/maui and dotnet/docs-maui that need review
+   - **Trigger phrases**: "find PRs to review", "show milestoned PRs", "find partner PRs"
+   - **Scripts**: `query-reviewable-prs.ps1`
+   - **Categories**: P/0, milestoned, partner, community, recent, docs-maui
+
+3. **pr-finalize** (`.github/skills/pr-finalize/SKILL.md`)
+   - **Purpose**: Verifies PR title and description match actual implementation. Works on any PR. Optionally updates agent session markdown if present.
+   - **Trigger phrases**: "finalize PR #XXXXX", "check PR description for #XXXXX", "review commit message"
+   - **Used by**: Before merging any PR, when description may be stale
+   - **Note**: Does NOT require agent involvement or session markdown - works on any PR
+
+4. **learn-from-pr** (`.github/skills/learn-from-pr/SKILL.md`)
+   - **Purpose**: Analyzes completed PR to identify repository improvements (analysis only, no changes applied)
+   - **Trigger phrases**: "what can we learn from PR #XXXXX?", "how can we improve agents based on PR #XXXXX?"
+   - **Used by**: After complex PRs, when agent struggled to find solution
+   - **Output**: Prioritized recommendations for instruction files, skills, code comments
+   - **Note**: For applying changes automatically, use the learn-from-pr agent instead
+
+5. **write-tests** (`.github/skills/write-tests/SKILL.md`)
+   - **Purpose**: Creates UI tests for GitHub issues and verifies they reproduce the bug
+   - **Trigger phrases**: "write tests for #XXXXX", "create test for issue", "add UI test coverage"
+   - **Output**: Test files that fail without fix, pass with fix
+
+6. **verify-tests-fail-without-fix** (`.github/skills/verify-tests-fail-without-fix/SKILL.md`)
+   - **Purpose**: Verifies UI tests catch the bug before fix and pass with fix
+   - **Two modes**: Verify failure only (test creation) or full verification (test + fix)
+   - **Used by**: After creating tests, before considering PR complete
+
+7. **pr-build-status** (`.github/skills/pr-build-status/SKILL.md`)
+   - **Purpose**: Retrieves Azure DevOps build information for PRs (build IDs, stage status, failed jobs)
+   - **Trigger phrases**: "check build for PR #XXXXX", "why did PR build fail", "get build status"
+   - **Used by**: When investigating CI failures
+
+#### Internal Skills (Used by Agents)
+
+8. **try-fix** (`.github/skills/try-fix/SKILL.md`)
+   - **Purpose**: Proposes ONE independent fix approach, applies it, tests, records result with failure analysis, then reverts
+   - **Used by**: pr agent Phase 3 (Fix phase) - rarely invoked directly by users
+   - **Behavior**: Reads prior attempts to learn from failures. Max 5 attempts per session.
+   - **Output**: Updates session markdown with attempt results and failure analysis
 
 ### Using Custom Agents
 

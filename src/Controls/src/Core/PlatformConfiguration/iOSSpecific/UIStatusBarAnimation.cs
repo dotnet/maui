@@ -1,13 +1,13 @@
 namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 {
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/UIStatusBarAnimation.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIStatusBarAnimation']/Docs/*" />
+	/// <summary>Specifies the iOS status bar hide/show animation style.</summary>
 	public enum UIStatusBarAnimation
 	{
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/UIStatusBarAnimation.xml" path="//Member[@MemberName='None']/Docs/*" />
+		/// <summary>No animation when hiding or showing.</summary>
 		None,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/UIStatusBarAnimation.xml" path="//Member[@MemberName='Slide']/Docs/*" />
+		/// <summary>Slides the status bar in or out.</summary>
 		Slide,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/UIStatusBarAnimation.xml" path="//Member[@MemberName='Fade']/Docs/*" />
+		/// <summary>Fades the status bar in or out.</summary>
 		Fade
 	}
 }

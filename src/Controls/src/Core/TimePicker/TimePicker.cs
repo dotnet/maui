@@ -149,7 +149,10 @@ namespace Microsoft.Maui.Controls
 		public event EventHandler<TimePickerOpenedEventArgs> Opened;
 		public event EventHandler<TimePickerClosedEventArgs> Closed;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/TimePicker.xml" path="//Member[@MemberName='UpdateFormsText']/Docs/*" />
+		/// <summary>Applies the specified text transformation to the input string.</summary>
+		/// <param name="source">The source text.</param>
+		/// <param name="textTransform">The text transformation to apply.</param>
+		/// <returns>The transformed text.</returns>
 		public virtual string UpdateFormsText(string source, TextTransform textTransform)
 			=> TextTransformUtilities.GetTransformedText(source, textTransform);
 
