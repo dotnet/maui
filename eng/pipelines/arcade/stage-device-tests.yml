@@ -456,7 +456,7 @@ stages:
           # TODO: Unpackaged builds disabled - apps crash on Helix with 0xC000027B
           # (Windows App SDK Bootstrap failure). Investigating root cause. See PR #33328.
           - ${{ each project in parameters.windowsDeviceTestProjects }}:
-            - script: dotnet cake eng/devices/windows.cake --target=buildOnly --project="$(Build.SourcesDirectory)/${{ project.path }}" --device=packaged --binlog="$(Build.SourcesDirectory)/artifacts/log" --configuration=Release --packageid=${{ project.packageId }} --verbosity=diagnostic
+            - script: dotnet cake eng/devices/windows.cake --target=buildOnly --project="$(Build.SourcesDirectory)/${{ project.path }}" --device=packaged --binlog="$(Build.SourcesDirectory)/artifacts/log/Debug" --configuration=Release --packageid=${{ project.packageId }} --verbosity=diagnostic
               displayName: Build ${{ project.name }} (Windows Packaged)
               retryCountOnTaskFailure: 1
 
