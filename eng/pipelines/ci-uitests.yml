@@ -72,9 +72,9 @@ parameters:
   - name: androidPoolLinuxInternal
     type: object
     default:
-      name: NetCore1ESPool-Internal
+      name: MAUI-DNCENG
       demands:
-        - ImageOverride -equals 1es-ubuntu-2204
+        - ImageOverride -equals 1ESPT-Ubuntu22.04
 
   - name: iosPoolInternal
     type: object
