@@ -24,7 +24,7 @@ All inputs are provided by the invoker (CI, agent, or user).
 | Input | Required | Description |
 |-------|----------|-------------|
 | Problem | Yes | Description of the bug/issue to fix |
-| Test command | Yes | Command to verify if fix works (e.g., `pwsh BuildAndRunHostApp.ps1 -Platform android -TestFilter "Issue12345"`) |
+| Test command | Yes | **Repository-specific script** to build, deploy, and test (e.g., `pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "Issue12345"`). **ALWAYS use this script - NEVER manually build/compile.** |
 | Target files | Yes | Files to investigate for the fix |
 | Platform | Yes | Target platform (`android`, `ios`, `windows`, `maccatalyst`) |
 | Hints | Optional | Suggested approaches, prior attempts, or areas to focus on |
@@ -54,10 +54,19 @@ See [references/output-structure.md](references/output-structure.md) for setup c
 The skill is complete when:
 - [ ] Problem understood from provided context
 - [ ] ONE fix approach designed and implemented
-- [ ] Compile errors resolved (iterated up to 3 times if needed)
-- [ ] Tests run and result captured
-- [ ] Analysis provided (success explanation or failure reasoning)
+- [ ] Fix tested with provided test command (iterated up to 3 times if errors/failures)
+- [ ] Either: Tests PASS ✅, or exhausted attempts and documented why approach won't work ❌
+- [ ] Analysis provided (success explanation or failure reasoning with evidence)
+- [ ] Artifacts saved to output directory
+- [ ] Baseline restored (working directory clean)
 - [ ] Results reported to invoker
+
+**Exhaustion criteria:** Stop after 3 iterations if:
+1. Code compiles but tests consistently fail for same reason
+2. Root cause analysis reveals fundamental flaw in approach
+3. Alternative fixes would require completely different strategy
+
+**Never stop due to:** Compile errors (fix them), infrastructure blame (debug your code), giving up too early.
 - [ ] Working directory restored to original state
 
 ---
@@ -135,22 +144,51 @@ Based on your analysis and any provided hints, design a single fix approach:
 
 Implement your fix. Use `git status --short` and `git diff` to track changes.
 
-### Step 5.5: Work Through Compile Errors
+### Step 6: Test and Iterate (MANDATORY)
 
-**CRITICAL: Do NOT give up on first compile error!**
+🚨 **CRITICAL: ALWAYS use the provided test command script - NEVER manually build/compile.**
 
-If your fix has compile errors, **iterate to fix them** before running tests:
+**For .NET MAUI repository:** Use `BuildAndRunHostApp.ps1` which handles:
+- Building the project
+- Deploying to device/simulator
+- Running tests
+- Capturing logs
 
-1. **Attempt the build** (often your test command will do this automatically)
-2. **If compile errors occur:** Read error messages (CS#### codes), diagnose, fix, rebuild
-3. **Iterate up to 3 times** to resolve compile errors
-4. **Only mark as FAIL** if you cannot get the code to compile after reasonable effort
+```bash
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform <platform> -TestFilter "<filter>"
+```
 
-See `references/compile-errors.md` for common error patterns and resolution strategies.
+**Testing Loop (Iterate until SUCCESS or exhausted):**
 
-### Step 6: Run Tests
+1. **Run the test command** - It will build, deploy, and test automatically
+2. **Check the result:**
+   - ✅ **Tests PASS** → Move to Step 7 (Capture Artifacts)
+   - ❌ **Compile errors** → Fix compilation issues (see below), go to step 1
+   - ❌ **Tests FAIL (runtime)** → Analyze failure, fix code, go to step 1
+3. **Maximum 3 iterations** - If still failing after 3 attempts, analyze if approach is fundamentally flawed
+4. **Document why** - If exhausted, explain what you learned and why the approach won't work
 
-Run the provided test command, capturing output to `$OUTPUT_DIR/test-output.log`. Save result (PASS/FAIL) to `$OUTPUT_DIR/result.txt`.
+**Handling Compile Errors:**
+- Read error messages (CS#### codes)
+- Fix the issue in your code
+- DO NOT manually build - rerun the test command script
+- Compile errors mean "work harder" - not "give up"
+
+**Handling Test Failures:**
+- ⚠️ **NEVER blame "test infrastructure"** - assume YOUR fix has a bug
+- Read test output carefully - what timeout? what exception?
+- `TimeoutException` usually means app crashed or didn't launch properly
+- Analyze your code for runtime bugs (null references, invalid calculations, etc.)
+- Fix the bug and rerun the test command
+
+**Example iteration:**
+```
+Iteration 1: Test command → Compile error CS1061 → Fix method name → Rerun
+Iteration 2: Test command → TimeoutException → Found double-scaling bug → Fix → Rerun  
+Iteration 3: Test command → Tests PASS ✅
+```
+
+See `references/compile-errors.md` for common error patterns.
 
 ### Step 7: Capture Artifacts
 
