@@ -125,8 +125,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (visibleItems)
 			{
-				firstVisibleItemIndex = GetFirstVisibleIndexPath(collectionView) ?? indexPathsForVisibleItems.First();
-				centerItemIndex = GetCenteredIndexPath(collectionView);
+				firstVisibleItemIndex = GetIndexPathAtPoint(collectionView, isCenterItem: false);
+				centerItemIndex = GetIndexPathAtPoint(collectionView, isCenterItem: true);
 				lastVisibleItemIndex = indexPathsForVisibleItems.Last();
 			}
 
@@ -163,31 +163,29 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			return index;
 		}
 
-		static NSIndexPath GetFirstVisibleIndexPath(UICollectionView collectionView)
+		static NSIndexPath GetIndexPathAtPoint(UICollectionView collectionView, bool isCenterItem)
 		{
-			var contentOffset = collectionView.ContentOffset;
-			var contentInset = collectionView.ContentInset;
-
-			// Find the item at the top-left corner of the visible area (with small offset to be inside the cell)
-			var firstPoint = new CGPoint(contentOffset.X + contentInset.Left, contentOffset.Y + contentInset.Top);
-			return collectionView.IndexPathForItemAtPoint(firstPoint);
-		}
-
-		static NSIndexPath GetCenteredIndexPath(UICollectionView collectionView)
-		{
-			NSIndexPath centerItemIndex = null;
+			NSIndexPath itemIndex = null;
+			CGPoint point;
 
 			var indexPathsForVisibleItems = collectionView.IndexPathsForVisibleItems.OrderBy(x => x.Row).ToList();
 
 			if (indexPathsForVisibleItems.Count == 0)
-				return centerItemIndex;
+				return itemIndex;
 
 			var firstVisibleItemIndex = indexPathsForVisibleItems.First();
+			if (isCenterItem)
+			{
+				point = new CGPoint(collectionView.Center.X + collectionView.ContentOffset.X, collectionView.Center.Y + collectionView.ContentOffset.Y);
+			}
+			else
+			{
+				point = new CGPoint(collectionView.ContentOffset.X + collectionView.ContentInset.Left, collectionView.ContentOffset.Y + collectionView.ContentInset.Top);
+			}
 
-			var centerPoint = new CGPoint(collectionView.Center.X + collectionView.ContentOffset.X, collectionView.Center.Y + collectionView.ContentOffset.Y);
-			var centerIndexPath = collectionView.IndexPathForItemAtPoint(centerPoint);
-			centerItemIndex = centerIndexPath ?? firstVisibleItemIndex;
-			return centerItemIndex;
+			var indexPath = collectionView.IndexPathForItemAtPoint(point);
+			itemIndex = indexPath ?? firstVisibleItemIndex;
+			return itemIndex;
 		}
 
 		// public override CGSize GetSizeForItem(UICollectionView collectionView, UICollectionViewLayout layout, NSIndexPath indexPath)
