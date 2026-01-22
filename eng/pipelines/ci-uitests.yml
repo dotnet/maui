@@ -100,7 +100,7 @@ parameters:
     type: object
     default:
       name: Azure Pipelines
-      vmImage: macOS-15-arm64
+      vmImage: macOS-14
 
   # Public pools (dnceng-public)
   - name: androidPoolPublic
