@@ -100,10 +100,7 @@ namespace Microsoft.Maui.Controls.Platform
 					{
 						uiTextField.ShouldChangeCharactersInRanges = (textField, ranges, replacementString) =>
 						{
-							if (textField.Text is null)
-								return true;
-
-							var currentLength = textField.Text.Length;
+							var currentLength = textField.Text?.Length ?? 0;
 							var totalRangeLength = 0;
 							for (int i = 0; i < ranges.Length; i++)
 							{
