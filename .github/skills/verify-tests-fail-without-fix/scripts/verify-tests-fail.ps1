@@ -74,7 +74,7 @@ param(
     [string]$BaseBranch,
 
     [Parameter(Mandatory = $false)]
-    [string]$OutputDir = "CustomAgentLogsTmp/TestValidation",
+    [string]$PRNumber,
 
     [Parameter(Mandatory = $false)]
     [switch]$RequireFullVerification
@@ -89,92 +89,43 @@ if ($Platform -eq "maccatalyst") {
 }
 
 # ============================================================
+# Detect PR number if not provided
+# ============================================================
+if (-not $PRNumber) {
+    # Try to get PR number from branch name (e.g., pr-27847)
+    $currentBranch = git branch --show-current 2>$null
+    if ($currentBranch -match "^pr-(\d+)") {
+        $PRNumber = $matches[1]
+        Write-Host "✅ Auto-detected PR #$PRNumber from branch name" -ForegroundColor Green
+    } else {
+        # Try gh cli
+        try {
+            $prInfo = gh pr view --json number 2>$null | ConvertFrom-Json
+            if ($prInfo.number) {
+                $PRNumber = $prInfo.number
+                Write-Host "✅ Auto-detected PR #$PRNumber from gh cli" -ForegroundColor Green
+            }
+        } catch {
+            Write-Host "⚠️  Could not auto-detect PR number - using 'unknown' folder" -ForegroundColor Yellow
+            $PRNumber = "unknown"
+        }
+    }
+}
+
+# Set output directory based on PR number
+$OutputDir = "CustomAgentLogsTmp/PRState/$PRNumber/verify-tests-fail"
+Write-Host "📁 Output directory: $OutputDir" -ForegroundColor Cyan
+
+$ErrorActionPreference = "Stop"
+$RepoRoot = git rev-parse --show-toplevel
+
+# ============================================================
 # Import shared baseline script for merge-base and file detection
 # ============================================================
 $BaselineScript = Join-Path $RepoRoot ".github/scripts/EstablishBrokenBaseline.ps1"
 
 # Import Test-IsTestFile and Find-MergeBase from shared script
 . $BaselineScript
-
-# ============================================================
-# Generate Gate Section for PR Agent
-# ============================================================
-
-function Write-GateSectionMarkdown {
-    param(
-        [string]$OutputFile,
-        [bool]$VerificationPassed,
-        [bool]$FailedWithoutFix,
-        [bool]$PassedWithFix,
-        [string]$Platform,
-        [string]$TestFilter,
-        [hashtable]$WithoutFixResult,
-        [hashtable]$WithFixResult,
-        [string[]]$FixFiles
-    )
-    
-    # Determine status
-    $gateStatus = if ($VerificationPassed) { "✅ PASSED" } else { "❌ FAILED" }
-    $gateIcon = if ($VerificationPassed) { "✅" } else { "❌" }
-    
-    # Create the Gate section content matching PR agent format
-    $gateSection = @"
-<details>
-<summary><strong>🚦 Gate - Test Verification</strong></summary>
-
-**Status**: $gateStatus
-
-- [$(if ($FailedWithoutFix) { 'x' } else { ' ' })] Tests FAIL without fix (bug is present)
-- [$(if ($PassedWithFix) { 'x' } else { ' ' })] Tests PASS with fix (fix works)
-
-**Test Run:**
-``````
-Platform:     $($Platform.ToUpper())
-Test Filter:  $TestFilter
-Result:       $(if ($VerificationPassed) { "SUCCESS ✅" } else { "FAILED ❌" })
-``````
-
-**Test Summary:**
-
-| Test Run | Expected | Actual | Test Count | Result |
-|----------|----------|--------|------------|--------|
-| WITHOUT fix | FAIL | $(if ($FailedWithoutFix) { "FAIL" } else { "PASS" }) | Total=$($WithoutFixResult.Total), Failed=$($WithoutFixResult.Failed) | $(if ($FailedWithoutFix) { "✅" } else { "❌" }) |
-| WITH fix | PASS | $(if ($PassedWithFix) { "PASS" } else { "FAIL" }) | Total=$($WithFixResult.Total), Passed=$($WithFixResult.Passed) | $(if ($PassedWithFix) { "✅" } else { "❌" }) |
-
-**Fix Files Verified:**
-$(foreach ($file in $FixFiles) {
-    "- ``$file``"
-}) -join "`n")
-
-**Result:** $gateIcon$(if ($VerificationPassed) {
-    " - Tests correctly detect the issue and validate the fix works."
-} else {
-    " - Test verification failed."
-    if (-not $FailedWithoutFix) {
-        "`n`n⚠️ **Tests passed without the fix** - Tests don't actually detect the bug."
-    }
-    if (-not $PassedWithFix) {
-        "`n`n⚠️ **Tests failed with the fix** - Fix doesn't resolve the issue or tests are broken."
-    }
-})
-
-**Logs:** ``CustomAgentLogsTmp/TestValidation/verification-report.md``
-
-</details>
-"@
-    
-    # Ensure directory exists
-    $outputDir = Split-Path $OutputFile -Parent
-    if (-not (Test-Path $outputDir)) {
-        New-Item -ItemType Directory -Path $outputDir -Force | Out-Null
-    }
-    
-    # Write Gate section
-    $gateSection | Set-Content -Path $OutputFile -Encoding UTF8
-    Write-Host ""
-    Write-Host "📄 Gate section saved to: $OutputFile" -ForegroundColor Cyan
-    Write-Host "   This can be incorporated into the PR session markdown by the PR agent." -ForegroundColor Gray
-}
 
 # ============================================================
 # Auto-detect test filter from changed files
@@ -852,19 +803,6 @@ Write-MarkdownReport `
     -PassedWithFix $passedWithFix `
     -WithoutFixResult $withoutFixResult `
     -WithFixResult $withFixResult
-
-# Generate Gate section for PR agent
-$gateReportPath = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/verification-report.md"
-Write-GateSectionMarkdown `
-    -OutputFile $gateReportPath `
-    -VerificationPassed $verificationPassed `
-    -FailedWithoutFix $failedWithoutFix `
-    -PassedWithFix $passedWithFix `
-    -Platform $Platform `
-    -TestFilter $TestFilter `
-    -WithoutFixResult $withoutFixResult `
-    -WithFixResult $withFixResult `
-    -FixFiles $RevertableFiles
 
 if ($verificationPassed) {
     Write-Host ""
