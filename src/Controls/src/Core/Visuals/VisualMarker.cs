@@ -24,7 +24,6 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		public static IVisual Default { get; } = new DefaultVisual();
 
-		// /// <include file="../../../docs/Microsoft.Maui.Controls/VisualMarker.xml" path="//Member[@MemberName='Material']/Docs/*" />
 		internal static IVisual Material { get; } = new MaterialVisual();
 
 		internal static void RegisterMaterial() => _isMaterialRegistered = true;
