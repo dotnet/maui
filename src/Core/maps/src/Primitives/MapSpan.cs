@@ -55,8 +55,8 @@ namespace Microsoft.Maui.Maps
 		/// <summary>
 		/// Creates a new <see cref="MapSpan"/> with latitude clamped to the specified bounds.
 		/// </summary>
-		/// <param name="north">The northern boundary (0 to 90).</param>
-		/// <param name="south">The southern boundary (-90 to 0).</param>
+		/// <param name="north">The northern boundary (will be clamped to 0 to 90).</param>
+		/// <param name="south">The southern boundary (will be clamped to -90 to 0).</param>
 		/// <returns>A new <see cref="MapSpan"/> with the clamped latitude.</returns>
 		public MapSpan ClampLatitude(double north, double south)
 		{
