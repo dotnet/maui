@@ -71,6 +71,28 @@ namespace UITest.Appium
 					{ "bundleId", _app.GetAppId() },
 					{ "environment", args},
 				});
+
+				// For Mac apps with multi-window (UIApplicationSceneManifest), we need to
+				// activate the app and switch to its window for element lookup to work
+				try
+				{
+					// Activate the app to bring it to foreground
+					_app.Driver.ExecuteScript("macos: activateApp", new Dictionary<string, object>
+					{
+						{ "bundleId", _app.GetAppId() },
+					});
+					
+					// Switch to the first available window
+					var windowHandles = _app.Driver.WindowHandles;
+					if (windowHandles.Count > 0)
+					{
+						_app.Driver.SwitchTo().Window(windowHandles.First());
+					}
+				}
+				catch
+				{
+					// Continue if activation fails - element lookup might still work
+				}
 			}
 			else if (_app.Driver is WindowsDriver windowsDriver)
 			{

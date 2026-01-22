@@ -51,6 +51,65 @@ namespace UITest.Appium
 			}
 		}
 
+		// Override to avoid XPath queries which fail on mac2 driver with multi-window apps.
+		// XPath causes XQueryError:6 "invalid type" when UIApplicationSceneManifest is configured.
+		// Use non-XPath lookup methods instead.
+
+		// On Mac Catalyst, AutomationId maps to accessibilityIdentifier.
+		// Override to use AccessibilityId lookup which is more reliable than MobileBy.Id.
+		public override IUIElement FindElement(string id)
+		{
+			// Try accessibility identifier first (AutomationId maps to this on Mac)
+			var byAccessibility = AppiumQuery.ByAccessibilityId(id).FindElement(this);
+			if (byAccessibility != null)
+				return byAccessibility;
+
+			// Fall back to standard Id lookup
+			return Query.ById(id).FirstOrDefault()!;
+		}
+
+		public override IReadOnlyCollection<IUIElement> FindElements(string id)
+		{
+			// Try accessibility identifier first
+			var byAccessibility = AppiumQuery.ByAccessibilityId(id).FindElements(this);
+			if (byAccessibility != null && byAccessibility.Count > 0)
+				return byAccessibility;
+
+			// Fall back to standard Id lookup
+			return Query.ById(id);
+		}
+
+		public override IUIElement FindElementByText(string text)
+		{
+			// Try accessibility identifier first (most reliable for AutomationId)
+			var byAccessibility = AppiumQuery.ByAccessibilityId(text).FindElement(this);
+			if (byAccessibility != null)
+				return byAccessibility;
+
+			// Try name lookup (maps to accessibility label on macOS)
+			var byName = AppiumQuery.ByName(text).FindElement(this);
+			if (byName != null)
+				return byName;
+
+			// Return null if not found - avoid XPath fallback
+			return null!;
+		}
+
+		public override IReadOnlyCollection<IUIElement> FindElementsByText(string text)
+		{
+			// Try accessibility identifier first
+			var byAccessibility = AppiumQuery.ByAccessibilityId(text).FindElements(this);
+			if (byAccessibility != null && byAccessibility.Count > 0)
+				return byAccessibility;
+
+			// Try name lookup
+			var byName = AppiumQuery.ByName(text).FindElements(this);
+			if (byName != null && byName.Count > 0)
+				return byName;
+
+			return new List<IUIElement>();
+		}
+
 		private static AppiumOptions GetOptions(IConfig config)
 		{
 			config.SetProperty("PlatformName", "mac");

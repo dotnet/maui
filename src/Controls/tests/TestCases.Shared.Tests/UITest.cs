@@ -544,7 +544,8 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			// Since the Appium screenshot on Mac (unlike Windows) is of the entire screen, not just the app,
 			// we are going to crop the screenshot to the app window bounds, including rounded corners.
-			var windowBounds = App.FindElement(AppiumQuery.ByXPath("//XCUIElementTypeWindow")).GetRect();
+			// Use ByClass instead of ByXPath to avoid XQueryError with multi-window apps (UIApplicationSceneManifest)
+			var windowBounds = App.FindElement(AppiumQuery.ByClass("XCUIElementTypeWindow")).GetRect();
 
 			var x = windowBounds.X;
 			var y = windowBounds.Y;
