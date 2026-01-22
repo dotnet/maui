@@ -28,7 +28,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("TapAndLongPressFrame");
 
 			// Quick tap should only fire Tap
-			App.Tap("TapAndLongPressFrame");
+			// Use TapElement helper which uses TapCoordinates - see UtilExtensions for details
+			App.TapElement("TapAndLongPressFrame");
 			App.WaitForElement("TapLabel");
 
 			var tapLabel = App.FindElement("TapLabel").GetText();
