@@ -552,3 +552,91 @@ stages:
               IncludeDotNetCli: true
               DisplayNamePrefix: DeviceTestsWindows
               WorkItemTimeout: 04:00:00
+
+  # Windows Unpackaged Tests via Cake (unpackaged doesn't work on Helix)
+  # This runs separately from Helix using the existing Cake infrastructure
+  - ${{ if eq(parameters.runWindowsTests, true) }}:
+    - stage: devicetests_windows_unpackaged
+      displayName: ${{ parameters.TargetFrameworkVersion }} Windows Unpackaged Tests (Cake)
+      dependsOn: []
+      jobs:
+      - template: /eng/pipelines/common/device-tests-jobs.yml@self
+        parameters:
+          platform: windows
+          timeoutInMinutes: 240
+          pool: ${{ parameters.windowsTestPool }}
+          versions: [ 'unpackaged' ]
+          targetFrameworkVersion:
+            tfm: ${{ parameters.TargetFrameworkVersion }}
+            dependsOn: ''
+          project:
+            name: essentials_unpackaged
+            desc: Essentials unpackaged
+            path: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
+            packageid: com.microsoft.maui.essentials.devicetests
+            configuration: Debug
+          skipProvisioning: true
+      - template: /eng/pipelines/common/device-tests-jobs.yml@self
+        parameters:
+          platform: windows
+          timeoutInMinutes: 240
+          pool: ${{ parameters.windowsTestPool }}
+          versions: [ 'unpackaged' ]
+          targetFrameworkVersion:
+            tfm: ${{ parameters.TargetFrameworkVersion }}
+            dependsOn: ''
+          project:
+            name: graphics_unpackaged
+            desc: Graphics unpackaged
+            path: $(System.DefaultWorkingDirectory)/src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj
+            packageid: com.microsoft.maui.graphics.devicetests
+            configuration: Debug
+          skipProvisioning: true
+      - template: /eng/pipelines/common/device-tests-jobs.yml@self
+        parameters:
+          platform: windows
+          timeoutInMinutes: 240
+          pool: ${{ parameters.windowsTestPool }}
+          versions: [ 'unpackaged' ]
+          targetFrameworkVersion:
+            tfm: ${{ parameters.TargetFrameworkVersion }}
+            dependsOn: ''
+          project:
+            name: core_unpackaged
+            desc: Core unpackaged
+            path: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj
+            packageid: com.microsoft.maui.core.devicetests
+            configuration: Debug
+          skipProvisioning: true
+      - template: /eng/pipelines/common/device-tests-jobs.yml@self
+        parameters:
+          platform: windows
+          timeoutInMinutes: 240
+          pool: ${{ parameters.windowsTestPool }}
+          versions: [ 'unpackaged' ]
+          targetFrameworkVersion:
+            tfm: ${{ parameters.TargetFrameworkVersion }}
+            dependsOn: ''
+          project:
+            name: controls_unpackaged
+            desc: Controls unpackaged
+            path: $(System.DefaultWorkingDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj
+            packageid: com.microsoft.maui.controls.devicetests
+            configuration: Debug
+          skipProvisioning: true
+      - template: /eng/pipelines/common/device-tests-jobs.yml@self
+        parameters:
+          platform: windows
+          timeoutInMinutes: 240
+          pool: ${{ parameters.windowsTestPool }}
+          versions: [ 'unpackaged' ]
+          targetFrameworkVersion:
+            tfm: ${{ parameters.TargetFrameworkVersion }}
+            dependsOn: ''
+          project:
+            name: blazorwebview_unpackaged
+            desc: BlazorWebView unpackaged
+            path: $(System.DefaultWorkingDirectory)/src/BlazorWebView/tests/DeviceTests/MauiBlazorWebView.DeviceTests.csproj
+            packageid: Microsoft.Maui.MauiBlazorWebView.DeviceTests
+            configuration: Debug
+          skipProvisioning: true
