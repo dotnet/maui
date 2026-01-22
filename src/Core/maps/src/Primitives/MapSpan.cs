@@ -3,11 +3,20 @@ using Microsoft.Maui.Devices.Sensors;
 
 namespace Microsoft.Maui.Maps
 {
+	/// <summary>
+	/// Represents a rectangular region on the map, defined by a center point and span.
+	/// </summary>
 	public sealed class MapSpan
 	{
 		const double EarthCircumferenceKm = GeographyUtils.EarthRadiusKm * 2 * Math.PI;
 		const double MinimumRangeDegrees = 0.001 / EarthCircumferenceKm * 360; // 1 meter
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="MapSpan"/> class with the specified center and span in degrees.
+		/// </summary>
+		/// <param name="center">The center location of the span.</param>
+		/// <param name="latitudeDegrees">The latitude span in degrees.</param>
+		/// <param name="longitudeDegrees">The longitude span in degrees.</param>
 		public MapSpan(Location center, double latitudeDegrees, double longitudeDegrees)
 		{
 			Center = center;
@@ -15,12 +24,24 @@ namespace Microsoft.Maui.Maps
 			LongitudeDegrees = Math.Min(Math.Max(longitudeDegrees, MinimumRangeDegrees), 180.0);
 		}
 
+		/// <summary>
+		/// Gets the center location of this span.
+		/// </summary>
 		public Location Center { get; }
 
+		/// <summary>
+		/// Gets the latitude span in degrees.
+		/// </summary>
 		public double LatitudeDegrees { get; }
 
+		/// <summary>
+		/// Gets the longitude span in degrees.
+		/// </summary>
 		public double LongitudeDegrees { get; }
 
+		/// <summary>
+		/// Gets the approximate radius of the span.
+		/// </summary>
 		public Distance Radius
 		{
 			get
@@ -31,6 +52,12 @@ namespace Microsoft.Maui.Maps
 			}
 		}
 
+		/// <summary>
+		/// Creates a new <see cref="MapSpan"/> with latitude clamped to the specified bounds.
+		/// </summary>
+		/// <param name="north">The northern boundary (0 to 90).</param>
+		/// <param name="south">The southern boundary (-90 to 0).</param>
+		/// <returns>A new <see cref="MapSpan"/> with the clamped latitude.</returns>
 		public MapSpan ClampLatitude(double north, double south)
 		{
 			north = Math.Min(Math.Max(north, 0), 90);
@@ -40,6 +67,7 @@ namespace Microsoft.Maui.Maps
 			return new MapSpan(new Location(lat, Center.Longitude), Math.Min(LatitudeDegrees, maxDLat), LongitudeDegrees);
 		}
 
+		/// <inheritdoc/>
 		public override bool Equals(object? obj)
 		{
 			if (obj is null)
@@ -49,11 +77,18 @@ namespace Microsoft.Maui.Maps
 			return obj is MapSpan && Equals((MapSpan)obj);
 		}
 
+		/// <summary>
+		/// Creates a new <see cref="MapSpan"/> from a center location and radius.
+		/// </summary>
+		/// <param name="center">The center location of the span.</param>
+		/// <param name="radius">The radius of the span.</param>
+		/// <returns>A new <see cref="MapSpan"/> instance.</returns>
 		public static MapSpan FromCenterAndRadius(Location center, Distance radius)
 		{
 			return new MapSpan(center, 2 * DistanceToLatitudeDegrees(radius), 2 * DistanceToLongitudeDegrees(center, radius));
 		}
 
+		/// <inheritdoc/>
 		public override int GetHashCode()
 		{
 			unchecked
@@ -65,16 +100,33 @@ namespace Microsoft.Maui.Maps
 			}
 		}
 
+		/// <summary>
+		/// Determines whether two <see cref="MapSpan"/> instances are equal.
+		/// </summary>
+		/// <param name="left">The first span.</param>
+		/// <param name="right">The second span.</param>
+		/// <returns><see langword="true"/> if the spans are equal; otherwise, <see langword="false"/>.</returns>
 		public static bool operator ==(MapSpan? left, MapSpan? right)
 		{
 			return Equals(left, right);
 		}
 
+		/// <summary>
+		/// Determines whether two <see cref="MapSpan"/> instances are not equal.
+		/// </summary>
+		/// <param name="left">The first span.</param>
+		/// <param name="right">The second span.</param>
+		/// <returns><see langword="true"/> if the spans are not equal; otherwise, <see langword="false"/>.</returns>
 		public static bool operator !=(MapSpan? left, MapSpan? right)
 		{
 			return !Equals(left, right);
 		}
 
+		/// <summary>
+		/// Creates a new <see cref="MapSpan"/> with the specified zoom factor applied.
+		/// </summary>
+		/// <param name="zoomFactor">The zoom factor. Values greater than 1 zoom in, values less than 1 zoom out.</param>
+		/// <returns>A new <see cref="MapSpan"/> with the zoom applied.</returns>
 		public MapSpan WithZoom(double zoomFactor)
 		{
 			double maxDLat = Math.Min(90 - Center.Latitude, 90 + Center.Latitude) * 2;
@@ -113,6 +165,7 @@ namespace Microsoft.Maui.Maps
 			return latCircumference * longitudeDegrees / 360;
 		}
 
+		/// <inheritdoc/>
 		public override string ToString()
 		{
 			return $"{Center}, {LatitudeDegrees}, {LongitudeDegrees}";
