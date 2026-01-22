@@ -1,4 +1,5 @@
 namespace Maui.Controls.Sample.Issues;
+using System.Collections.ObjectModel;
 
 [Issue(IssueTracker.Github, 32932, "[Android] EmptyView doesn’t display when CollectionView is placed inside a VerticalStackLayout", PlatformAffected.Android)]
 
