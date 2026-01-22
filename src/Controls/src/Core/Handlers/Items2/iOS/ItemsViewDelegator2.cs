@@ -125,7 +125,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (visibleItems)
 			{
-				firstVisibleItemIndex = indexPathsForVisibleItems.First();
+				firstVisibleItemIndex = GetFirstVisibleIndexPath(collectionView) ?? indexPathsForVisibleItems.First();
 				centerItemIndex = GetCenteredIndexPath(collectionView);
 				lastVisibleItemIndex = indexPathsForVisibleItems.Last();
 			}
@@ -161,6 +161,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 
 			return index;
+		}
+
+		static NSIndexPath GetFirstVisibleIndexPath(UICollectionView collectionView)
+		{
+			var contentOffset = collectionView.ContentOffset;
+			var contentInset = collectionView.ContentInset;
+
+			// Find the item at the top-left corner of the visible area (with small offset to be inside the cell)
+			var firstPoint = new CGPoint(contentOffset.X + contentInset.Left, contentOffset.Y + contentInset.Top);
+			return collectionView.IndexPathForItemAtPoint(firstPoint);
 		}
 
 		static NSIndexPath GetCenteredIndexPath(UICollectionView collectionView)
