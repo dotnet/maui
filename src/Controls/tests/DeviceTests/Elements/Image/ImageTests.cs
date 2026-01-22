@@ -41,13 +41,22 @@ namespace Microsoft.Maui.DeviceTests
 
 			layout.Add(image);
 
+#if WINDOWS
+			// On Windows, use CreateHandlerAndAddToWindow to ensure the correct window context
 			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async handler =>
 			{
 				await image.WaitUntilLoaded();
-
-				// Use handler.MauiContext to ensure the correct window is registered for the test service
 				await handler.ToPlatform().AssertContainsColor(Colors.Red, handler.MauiContext);
 			});
+#else
+			// On iOS/MacCatalyst, use the original approach to avoid timeout issues
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<LayoutHandler>(layout);
+				await image.WaitUntilLoaded();
+				await handler.ToPlatform().AssertContainsColor(Colors.Red, MauiContext);
+			});
+#endif
 		}
 
 		[Fact]
