@@ -8,7 +8,7 @@ public class Issue32932 : TestContentPage
 {
 	protected override void Init()
 	{
-		var collectionView = new CollectionView2();
+		var collectionView = new CollectionView();
 
 		collectionView.AutomationId = "EmptyCollectionView";
 		collectionView.ItemTemplate = new DataTemplate(() =>
