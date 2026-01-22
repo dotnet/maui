@@ -40,8 +40,8 @@
     <TargetPlatformMinVersion>10.0</TargetPlatformMinVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(_MauiTargetPlatformIsMacCatalyst)' == 'True'">
-    <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
-    <TargetPlatformMinVersion>15.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>17.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion>17.0</TargetPlatformMinVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(_MauiTargetPlatformIsmacOS)' == 'True'">
     <SupportedOSPlatformVersion>12.0</SupportedOSPlatformVersion>
