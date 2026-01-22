@@ -67,6 +67,7 @@ The skill is complete when:
 3. Alternative fixes would require completely different strategy
 
 **Never stop due to:** Compile errors (fix them), infrastructure blame (debug your code), giving up too early.
+- [ ] Working directory restored to original state
 
 ---
 
@@ -116,7 +117,9 @@ The skill is complete when:
 pwsh .github/scripts/EstablishBrokenBaseline.ps1
 ```
 
-The script reverts fix files to merge-base state while preserving test files and tracking changes for restoration. Optional flags: `-BaseBranch main`, `-FixFiles @("path/to/file.cs")`, `-DryRun`.
+The script auto-detects and reverts fix files to merge-base state while preserving test files. **Will fail fast if no fix files detected** - you must be on the actual PR branch. Optional flags: `-BaseBranch main`, `-DryRun`.
+
+**If the script fails with "No fix files detected":** You're likely on the wrong branch. Checkout the actual PR branch with `gh pr checkout <PR#>` and try again.
 
 **If something fails mid-attempt:** `pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore`
 
