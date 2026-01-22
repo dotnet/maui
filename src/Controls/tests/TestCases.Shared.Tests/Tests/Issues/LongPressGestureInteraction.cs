@@ -10,6 +10,16 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "LongPress Gesture Interaction Tests";
 
+		// Helper method for long press - TouchAndHold not supported on Mac Catalyst
+		void PerformLongPress(string elementId)
+		{
+#if MACCATALYST
+			App.LongPress(elementId);
+#else
+			App.TouchAndHold(elementId);
+#endif
+		}
+
 		[Test]
 		[Category(UITestCategories.Gestures)]
 		public void LongPressWithTap_BothFireIndependently()
@@ -27,8 +37,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			Assert.That(tapLabel, Is.EqualTo("Tap Count: 1"), "Tap should fire on quick tap");
 			Assert.That(longPressLabel, Is.EqualTo("Long Press Count: 0"), "LongPress should NOT fire on quick tap");
 
-			// Long press should fire LongPress (TouchAndHold holds for 2 seconds by default)
-			App.TouchAndHold("TapAndLongPressFrame");
+			// Long press should fire LongPress
+			PerformLongPress("TapAndLongPressFrame");
 			App.WaitForElement("LongPressLabel");
 
 			longPressLabel = App.FindElement("LongPressLabel").GetText();
@@ -41,8 +51,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("SwipeAndLongPressFrame");
 
-			// Swipe left - should fire swipe but NOT long press
-			App.SwipeLeftToRight("SwipeAndLongPressFrame");
+			// Swipe left (right to left) - should fire swipe but NOT long press
+			App.SwipeRightToLeft("SwipeAndLongPressFrame");
 			App.WaitForElement("SwipeLabel");
 
 			var swipeLabel = App.FindElement("SwipeLabel").GetText();
@@ -58,8 +68,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("LongPressInScrollFrame");
 
-			// Hold still - should fire LongPress (TouchAndHold holds for 2 seconds by default)
-			App.TouchAndHold("LongPressInScrollFrame");
+			// Hold still - should fire LongPress
+			PerformLongPress("LongPressInScrollFrame");
 			App.WaitForElement("LongPress3Label");
 
 			var label = App.FindElement("LongPress3Label").GetText();
@@ -73,8 +83,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("LongPress1");
 			App.WaitForElement("LongPress2");
 
-			// Long press first frame (TouchAndHold holds for 2 seconds by default)
-			App.TouchAndHold("LongPress1");
+			// Long press first frame
+			PerformLongPress("LongPress1");
 			App.WaitForElement("LongPress4Label");
 
 			var label1 = App.FindElement("LongPress4Label").GetText();
@@ -83,8 +93,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			Assert.That(label1, Is.EqualTo("LongPress1 Count: 1"), "First LongPress should fire");
 			Assert.That(label2, Is.EqualTo("LongPress2 Count: 0"), "Second LongPress should NOT fire");
 
-			// Long press second frame (TouchAndHold holds for 2 seconds by default)
-			App.TouchAndHold("LongPress2");
+			// Long press second frame
+			PerformLongPress("LongPress2");
 			App.WaitForElement("LongPress5Label");
 
 			label1 = App.FindElement("LongPress4Label").GetText();
