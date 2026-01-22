@@ -12,15 +12,15 @@ public class Issue32984 : ContentPage
 
 		Picker issue32984Picker = new Picker
 		{
-			AutomationId= "issue32984Picker",	
+			AutomationId = "issue32984Picker",	
 			Title = "Select an item",
 			HorizontalOptions = LayoutOptions.Fill,
-			ItemsSource = new List<string> { "Item1", "Item2", "Item3"}
+			ItemsSource = new List<string> { "Item1", "Item2", "Item3" }
 		};
 
 		Button button = new Button
 		{
-			AutomationId= "issue32984Button",
+			AutomationId = "issue32984Button",
 			Text = "Click me",
 			HorizontalOptions = LayoutOptions.Fill
 		};
