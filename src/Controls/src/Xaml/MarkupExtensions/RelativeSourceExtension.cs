@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Xaml
 		}
 
 		/// <summary>
-		/// Gets or sets the level of ancestor to look for when Mode is FindAncestor.
+		/// Gets or sets the level of ancestor to look for when Mode is FindAncestor or FindAncestorBindingContext.
 		/// </summary>
 		public int AncestorLevel
 		{
