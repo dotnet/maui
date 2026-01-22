@@ -218,7 +218,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		protected virtual void SwitchFragment(FragmentManager manager, AView targetView, ShellItem newItem, bool animate = true)
 		{
-			if (_disposed || targetView == null || !targetView.IsAttachedToWindow)
+			if (_disposed || targetView == null)
 				return;
 
 			var previousView = _currentView;
