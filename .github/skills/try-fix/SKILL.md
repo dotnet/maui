@@ -67,7 +67,6 @@ The skill is complete when:
 3. Alternative fixes would require completely different strategy
 
 **Never stop due to:** Compile errors (fix them), infrastructure blame (debug your code), giving up too early.
-- [ ] Working directory restored to original state
 
 ---
 
