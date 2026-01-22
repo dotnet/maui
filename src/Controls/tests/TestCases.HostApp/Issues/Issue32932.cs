@@ -11,6 +11,12 @@ public class Issue32932 : TestContentPage
 		var collectionView = new CollectionView();
 
 		collectionView.AutomationId = "EmptyCollectionView";
+		collectionView.Header = new Label
+		{
+			Text = "CollectionView Header",
+			FontSize = 18,
+			HorizontalOptions = LayoutOptions.Center
+		};
 		collectionView.ItemTemplate = new DataTemplate(() =>
 		{
 			var label = new Label();
