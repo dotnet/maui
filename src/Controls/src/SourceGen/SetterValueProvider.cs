@@ -16,6 +16,11 @@ internal class SetterValueProvider : IKnownMarkupValueProvider
 		// Get the value node (shared logic with TryProvideValue)
 		var valueNode = GetValueNode(node);
 
+		// Must have a value node to provide a value
+		// This can be null when OnPlatform removes the Value property (no matching platform, no Default)
+		if (valueNode == null)
+			return false;
+
 		// Value must be a simple ValueNode (not a MarkupNode or ElementNode)
 		if (valueNode is MarkupNode or ElementNode)
 			return false;
