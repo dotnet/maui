@@ -3,20 +3,30 @@ using System;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/SwipedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Controls.SwipedEventArgs']/Docs/*" />
+	/// <summary>
+	/// Provides data for the <see cref="SwipeGestureRecognizer.Swiped"/> event.
+	/// </summary>
 	public class SwipedEventArgs : EventArgs
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipedEventArgs.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="SwipedEventArgs"/> class.
+		/// </summary>
+		/// <param name="parameter">The command parameter associated with the swipe.</param>
+		/// <param name="direction">The direction of the swipe gesture.</param>
 		public SwipedEventArgs(object parameter, SwipeDirection direction)
 		{
 			Parameter = parameter;
 			Direction = direction;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipedEventArgs.xml" path="//Member[@MemberName='Parameter']/Docs/*" />
+		/// <summary>
+		/// Gets the command parameter associated with the swipe gesture.
+		/// </summary>
 		public object Parameter { get; private set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipedEventArgs.xml" path="//Member[@MemberName='Direction']/Docs/*" />
+		/// <summary>
+		/// Gets the direction of the swipe gesture.
+		/// </summary>
 		public SwipeDirection Direction { get; private set; }
 	}
 }

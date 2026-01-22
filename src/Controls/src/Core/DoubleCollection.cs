@@ -4,11 +4,11 @@ using System.Collections.ObjectModel;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/DoubleCollection.xml" path="Type[@FullName='Microsoft.Maui.Controls.DoubleCollection']/Docs/*" />
+	/// <summary>An observable collection of <see cref="double"/> values, used for stroke dash patterns and similar properties.</summary>
 	[System.ComponentModel.TypeConverter(typeof(DoubleCollectionConverter))]
 	public sealed class DoubleCollection : ObservableCollection<double>
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/DoubleCollection.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
+		/// <summary>Initializes a new empty <see cref="DoubleCollection"/>.</summary>
 		public DoubleCollection()
 		{ }
 

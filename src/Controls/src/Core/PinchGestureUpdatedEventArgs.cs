@@ -4,33 +4,33 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <summary>Event arguments for the <see cref="Microsoft.Maui.Controls.PinchGestureRecognizer.PinchUpdated"/> event.</summary>
+	/// <summary>Event arguments for the <see cref="PinchGestureRecognizer.PinchUpdated"/> event.</summary>
 	public class PinchGestureUpdatedEventArgs : EventArgs
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/PinchGestureUpdatedEventArgs.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />
+		/// <summary>Initializes a new instance of the <see cref="PinchGestureUpdatedEventArgs"/> class with scale and origin data.</summary>
+		/// <param name="status">The gesture status.</param>
+		/// <param name="scale">The relative scale of the pinch.</param>
+		/// <param name="origin">The origin point of the pinch gesture.</param>
 		public PinchGestureUpdatedEventArgs(GestureStatus status, double scale, Point origin) : this(status)
 		{
 			ScaleOrigin = origin;
 			Scale = scale;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/PinchGestureUpdatedEventArgs.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
+		/// <summary>Initializes a new instance of the <see cref="PinchGestureUpdatedEventArgs"/> class.</summary>
+		/// <param name="status">The gesture status.</param>
 		public PinchGestureUpdatedEventArgs(GestureStatus status)
 		{
 			Status = status;
 		}
 
-		/// <summary>The relative size of the user's pinch gesture since the last update was received.</summary>
-		/// <remarks>The initial value of the</remarks>
+		/// <summary>Gets the relative scale of the pinch gesture since the last update. Default is 1.</summary>
 		public double Scale { get; } = 1;
 
-		/// <summary>The updated origin of the pinch gesture.</summary>
-		/// <remarks>The origin of the pinch is the center of the pinch gesture, and changes if the user translates their pinch while they scale. Application developers may want to store the pinch origin when the gesture begins and use it for all scaling operations for that gesture.</remarks>
+		/// <summary>Gets the origin point of the pinch gesture, which is the center between the two touch points.</summary>
 		public Point ScaleOrigin { get; }
 
-		/// <summary>Whether the gesture started, is running, or has finished.</summary>
-		/// <remarks>The origin of the pinch,
-		/// The initial value of the</remarks>
+		/// <summary>Gets a value indicating whether the gesture started, is running, or has finished.</summary>
 		public GestureStatus Status { get; }
 	}
 }

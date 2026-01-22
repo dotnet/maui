@@ -1,11 +1,17 @@
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/SweepDirection.xml" path="Type[@FullName='Microsoft.Maui.Controls.SweepDirection']/Docs/*" />
+	/// <summary>
+	/// Specifies the direction in which an arc is drawn.
+	/// </summary>
 	public enum SweepDirection
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/SweepDirection.xml" path="//Member[@MemberName='CounterClockwise']/Docs/*" />
+		/// <summary>
+		/// The arc is drawn in a counterclockwise direction.
+		/// </summary>
 		CounterClockwise,
-		/// <include file="../../docs/Microsoft.Maui.Controls/SweepDirection.xml" path="//Member[@MemberName='Clockwise']/Docs/*" />
+		/// <summary>
+		/// The arc is drawn in a clockwise direction.
+		/// </summary>
 		Clockwise
 	}
 }

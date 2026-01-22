@@ -5,16 +5,23 @@ using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/VisualMarker.xml" path="Type[@FullName='Microsoft.Maui.Controls.VisualMarker']/Docs/*" />
+	/// <summary>
+	/// Provides static marker instances for built-in <see cref="IVisual"/> types.
+	/// </summary>
 	public static class VisualMarker
 	{
 		static bool _isMaterialRegistered = false;
 		static bool _warnedAboutMaterial = false;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/VisualMarker.xml" path="//Member[@MemberName='MatchParent']/Docs/*" />
+		/// <summary>
+		/// Gets a visual marker that indicates the control should inherit its visual from its parent.
+		/// </summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static IVisual MatchParent { get; } = new MatchParentVisual();
-		/// <include file="../../../docs/Microsoft.Maui.Controls/VisualMarker.xml" path="//Member[@MemberName='Default']/Docs/*" />
+
+		/// <summary>
+		/// Gets the default visual marker.
+		/// </summary>
 		public static IVisual Default { get; } = new DefaultVisual();
 
 		// /// <include file="../../../docs/Microsoft.Maui.Controls/VisualMarker.xml" path="//Member[@MemberName='Material']/Docs/*" />

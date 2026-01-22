@@ -4,7 +4,9 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/TableSectionBase.xml" path="Type[@FullName='Microsoft.Maui.Controls.TableSectionBase']/Docs/*" />
+	/// <summary>
+	/// Abstract base class for a section in a <see cref="TableView"/>.
+	/// </summary>
 	public abstract class TableSectionBase : BindableObject
 	{
 		/// <summary>Bindable property for <see cref="Title"/>.</summary>
@@ -13,14 +15,14 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty TextColorProperty = BindableProperty.Create(nameof(TextColor), typeof(Color), typeof(TableSectionBase), null);
 
 		/// <summary>
-		///     Constructs a Section without an empty header.
+		/// Creates a new <see cref="TableSectionBase"/> with default values.
 		/// </summary>
 		protected TableSectionBase()
 		{
 		}
 
 		/// <summary>
-		///     Constructs a Section with the specified header.
+		/// Creates a new <see cref="TableSectionBase"/> with the specified title.
 		/// </summary>
 		protected TableSectionBase(string title)
 		{
@@ -30,14 +32,18 @@ namespace Microsoft.Maui.Controls
 			Title = title;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/TableSectionBase.xml" path="//Member[@MemberName='Title']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the title for the section. This is a bindable property.
+		/// </summary>
 		public string Title
 		{
 			get { return (string)GetValue(TitleProperty); }
 			set { SetValue(TitleProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/TableSectionBase.xml" path="//Member[@MemberName='TextColor']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the text color for the section header. This is a bindable property.
+		/// </summary>
 		public Color TextColor
 		{
 			get { return (Color)GetValue(TextColorProperty); }
