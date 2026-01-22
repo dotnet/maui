@@ -543,18 +543,14 @@ $(if (-not $FailedWithoutFix) {
 
 ### Fix Files
 
-$(foreach ($file in $RevertableFiles) {
-    "- ``$file``"
-}) -join "`n")
+$(($RevertableFiles | ForEach-Object { "- ``$_``" }) -join "`n")
 
 $(if ($NewFiles.Count -gt 0) {
-    @"
+@"
 
 ### New Files (Not Reverted)
 
-$(foreach ($file in $NewFiles) {
-    "- ``$file``"
-}) -join "`n")
+$(($NewFiles | ForEach-Object { "- ``$_``" }) -join "`n")
 "@
 })
 
