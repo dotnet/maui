@@ -6,7 +6,7 @@ using Microsoft.Maui;
 namespace Microsoft.Maui.Controls.Design
 {
 	/// <summary>
-	/// Provides design-time type conversion for SafeAreaRegions values.
+	/// Provides design-time type conversion for SafeAreaEdges values.
 	/// </summary>
 	public class SafeAreaEdgesTypeDesignConverter : StringConverter
 	{
