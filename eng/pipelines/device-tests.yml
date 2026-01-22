@@ -135,7 +135,9 @@ stages:
             skipXcode: false
             skipSimulatorSetup: false
 
-    # Run Windows unpackaged tests via Cake (unpackaged doesn't work on Helix)
+  # Run Windows unpackaged tests via Cake (unpackaged doesn't work on Helix)
+  # This is a separate conditional to ensure it gets processed
+  - ${{ if eq(variables['Build.DefinitionName'], 'maui-pr-devicetests') }}:
     - template: common/device-tests.yml
       parameters:
         windowsPool: ${{ parameters.windowsPool }}
