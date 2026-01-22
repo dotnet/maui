@@ -85,6 +85,74 @@ When the same PR is reviewed multiple times (e.g., after new commits), the scrip
 ## Script Files
 
 - [`post-pr-comment.ps1`](scripts/post-pr-comment.ps1) - Posts or updates the aggregated PR agent review comment
+- [`post-try-fix-comment.ps1`](scripts/post-try-fix-comment.ps1) - Posts or updates try-fix attempts comment
+
+## Try-Fix Comment Script
+
+The `post-try-fix-comment.ps1` script creates a separate collapsible comment for documenting try-fix attempts.
+
+### Usage
+
+```powershell
+pwsh .github/skills/pr-comment/scripts/post-try-fix-comment.ps1 `
+    -PRNumber 20133 `
+    -IssueNumber 19806 `
+    -AttemptNumber 1 `
+    -Approach "LayoutExtensions Width Constraint" `
+    -RootCause "ComputeFrame only constrains width for Fill alignment" `
+    -FilesChanged "| File | Changes |`n|------|---------|`n| LayoutExtensions.cs | +17/-3 |" `
+    -Status "Compiles" `
+    -CodeSnippet "else if (!hasExplicitWidth) { ... }" `
+    -Analysis "Core project compiles successfully"
+```
+
+### Parameters
+
+| Parameter | Required | Description |
+|-----------|----------|-------------|
+| `PRNumber` | Yes | Pull request number |
+| `IssueNumber` | Yes | Related issue number |
+| `AttemptNumber` | Yes | Attempt number (1, 2, 3, etc.) |
+| `Approach` | Yes | Brief description of fix approach |
+| `RootCause` | Yes | Description of root cause identified |
+| `FilesChanged` | Yes | Markdown table of files changed |
+| `Status` | Yes | "Compiles", "Pass", or "Fail" |
+| `CodeSnippet` | No | Code snippet showing the fix |
+| `Analysis` | No | Analysis of why it worked/failed |
+| `DryRun` | No | Print comment instead of posting |
+
+### Comment Format
+
+```markdown
+## 🔧 Try-Fix Attempts for Issue #XXXXX
+
+<!-- TRY-FIX-COMMENT -->
+
+<details>
+<summary>📊 <strong>Expand Full Details</strong></summary>
+
+**Issue:** [#XXXXX](link)
+
+---
+
+<details>
+<summary><strong>🔧 Attempt #1: Approach Name</strong> ✅ Status</summary>
+... attempt details ...
+</details>
+
+---
+
+*This fix was developed independently.*
+
+</details>
+```
+
+### Key Behaviors
+
+- First attempt creates new comment with `<!-- TRY-FIX-COMMENT -->` marker
+- Subsequent attempts **edit the same comment** (no new comments)
+- Outer wrapper shows "📊 Expand Full Details" - keeps PR page clean
+- Each attempt is a nested collapsible section inside the wrapper
 
 ## Technical Details
 

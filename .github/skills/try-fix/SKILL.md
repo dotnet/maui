@@ -60,6 +60,7 @@ The skill is complete when:
 - [ ] Artifacts saved to output directory
 - [ ] Baseline restored (working directory clean)
 - [ ] Results reported to invoker
+- [ ] **User asked if they want PR comment posted** (show preview with `-DryRun` first)
 
 **Exhaustion criteria:** Stop after 3 iterations if:
 1. Code compiles but tests consistently fail for same reason
@@ -265,14 +266,15 @@ git add "$STATE_FILE" && git commit -m "try-fix: attempt #N (exhausted=$EXHAUSTE
 - "Selected Fix" field
 - Other try-fix rows
 
-### Step 11: Post PR Comment (MANDATORY)
+### Step 11: Offer to Post PR Comment
 
-**ALWAYS post a collapsible comment to the PR documenting your attempt.**
+**Ask the user if they want to post a comment to the PR documenting the attempt.**
 
-Use the `post-try-fix-comment.ps1` script:
+Before posting, show a preview using `-DryRun` and ask for confirmation:
 
 ```powershell
-pwsh .github/skills/try-fix/scripts/post-try-fix-comment.ps1 `
+# First, show preview
+pwsh .github/skills/pr-comment/scripts/post-try-fix-comment.ps1 `
     -PRNumber <PR_NUMBER> `
     -IssueNumber <ISSUE_NUMBER> `
     -AttemptNumber <N> `
@@ -281,8 +283,13 @@ pwsh .github/skills/try-fix/scripts/post-try-fix-comment.ps1 `
     -FilesChanged "| File | Changes |`n|------|---------|`n| file.cs | +X/-Y |" `
     -Status "Compiles|Pass|Fail" `
     -CodeSnippet "optional code snippet" `
-    -Analysis "optional analysis of result"
+    -Analysis "optional analysis of result" `
+    -DryRun
 ```
+
+Then ask: **"Would you like me to post this comment to PR #XXXXX?"**
+
+If user confirms, run without `-DryRun` to post.
 
 **Comment format:**
 ```markdown
