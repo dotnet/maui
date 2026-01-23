@@ -86,11 +86,12 @@ namespace Microsoft.Maui
 				{
 					foreach (var k in s.Keys)
 					{
-						var key = k?.ToString();
-						var val = s?[k]?.ToString();
+						if (k is null)
+							continue;
 
+						var key = k.ToString();
 						if (key is not null)
-							state[key] = val;
+							state[key] = s?[k]?.ToString();
 					}
 				}
 			}

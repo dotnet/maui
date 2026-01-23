@@ -266,7 +266,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			public override void DecidePolicy(WKWebView webView, WKNavigationAction navigationAction, Action<WKNavigationActionPolicy> decisionHandler)
 			{
 				var requestUrl = navigationAction.Request.Url;
-				var uri = new Uri(requestUrl.ToString());
+				if (requestUrl?.ToString() is not string requestUrlString)
+				{
+					decisionHandler(WKNavigationActionPolicy.Cancel);
+					return;
+				}
+				var uri = new Uri(requestUrlString);
 
 				UrlLoadingStrategy strategy;
 
