@@ -52,6 +52,9 @@ parameters:
 - name: checkoutDirectory
   type: string
   default: $(System.DefaultWorkingDirectory)
+- name: HelixInternal
+  type: string
+  default: ''
 - name: HelixAccessToken
   type: string
   default: ''
