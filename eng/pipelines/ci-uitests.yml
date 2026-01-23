@@ -170,10 +170,10 @@ stages:
       RunNativeAOT: ${{ parameters.RunNativeAOT }}
       ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
         androidApiLevels: [ 30 ]
-        iosVersions: [ '18.4' ]
+        iosVersions: [ '18.5', 'latest' ]
       ${{ else }}:
         androidApiLevels: [ 30 ]
-        iosVersions: [ '18.4' ]
+        iosVersions: [ 'latest' ]
       projects:
         - name: controls
           desc: Controls
