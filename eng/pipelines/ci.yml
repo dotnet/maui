@@ -252,7 +252,7 @@ stages:
       timeout: 120
       testCategory: Build
     - name: mac_buildtemplate_tests
-      pool: ${{ parameters.MacOSPoolArm64 }}
+      pool: ${{ parameters.MacOSPool }}
       timeout: 240
       testCategory: Build
 
@@ -286,7 +286,7 @@ stages:
 
     # TODO: macOSTemplates and AOT template categories
     - name: mac_runandroid_tests
-      pool: ${{ parameters.MacOSPoolArm64 }}
+      pool: ${{ parameters.MacOSPool }}
       timeout: 240
       testCategory: RunOnAndroid
 
