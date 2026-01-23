@@ -74,7 +74,7 @@ param(
     [string]$BaseBranch,
 
     [Parameter(Mandatory = $false)]
-    [string]$OutputDir = "CustomAgentLogsTmp/TestValidation",
+    [string]$PRNumber,
 
     [Parameter(Mandatory = $false)]
     [switch]$RequireFullVerification
@@ -87,6 +87,37 @@ $RepoRoot = git rev-parse --show-toplevel
 if ($Platform -eq "maccatalyst") {
     $Platform = "catalyst"
 }
+
+# ============================================================
+# Detect PR number if not provided
+# ============================================================
+if (-not $PRNumber) {
+    # Try to get PR number from branch name (e.g., pr-27847)
+    $currentBranch = git branch --show-current 2>$null
+    if ($currentBranch -match "^pr-(\d+)") {
+        $PRNumber = $matches[1]
+        Write-Host "✅ Auto-detected PR #$PRNumber from branch name" -ForegroundColor Green
+    } else {
+        # Try gh cli
+        try {
+            $prInfo = gh pr view --json number 2>$null | ConvertFrom-Json
+            if ($prInfo.number) {
+                $PRNumber = $prInfo.number
+                Write-Host "✅ Auto-detected PR #$PRNumber from gh cli" -ForegroundColor Green
+            }
+        } catch {
+            Write-Host "⚠️  Could not auto-detect PR number - using 'unknown' folder" -ForegroundColor Yellow
+            $PRNumber = "unknown"
+        }
+    }
+}
+
+# Set output directory based on PR number
+$OutputDir = "CustomAgentLogsTmp/PRState/$PRNumber/verify-tests-fail"
+Write-Host "📁 Output directory: $OutputDir" -ForegroundColor Cyan
+
+$ErrorActionPreference = "Stop"
+$RepoRoot = git rev-parse --show-toplevel
 
 # ============================================================
 # Import shared baseline script for merge-base and file detection
@@ -436,6 +467,7 @@ New-Item -ItemType Directory -Force -Path $OutputPath | Out-Null
 $ValidationLog = Join-Path $OutputPath "verification-log.txt"
 $WithoutFixLog = Join-Path $OutputPath "test-without-fix.log"
 $WithFixLog = Join-Path $OutputPath "test-with-fix.log"
+$MarkdownReport = Join-Path $OutputPath "verification-report.md"
 
 function Write-Log {
     param([string]$Message)
@@ -443,6 +475,152 @@ function Write-Log {
     $logLine = "[$timestamp] $Message"
     Write-Host $logLine
     Add-Content -Path $ValidationLog -Value $logLine
+}
+
+function Write-MarkdownReport {
+    param(
+        [bool]$VerificationPassed,
+        [bool]$FailedWithoutFix,
+        [bool]$PassedWithFix,
+        [hashtable]$WithoutFixResult,
+        [hashtable]$WithFixResult
+    )
+    
+    $reportDate = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    $status = if ($VerificationPassed) { "✅ PASSED" } else { "❌ FAILED" }
+    $statusSymbol = if ($VerificationPassed) { "✅" } else { "❌" }
+    
+    $markdown = @"
+# Test Verification Report
+
+**Date:** $reportDate | **Platform:** $($Platform.ToUpper()) | **Status:** $status
+
+## Summary
+
+| Check | Expected | Actual | Result |
+|-------|----------|--------|--------|
+| Tests WITHOUT fix | FAIL | $(if ($FailedWithoutFix) { "FAIL" } else { "PASS" }) | $(if ($FailedWithoutFix) { "✅" } else { "❌" }) |
+| Tests WITH fix | PASS | $(if ($PassedWithFix) { "PASS" } else { "FAIL" }) | $(if ($PassedWithFix) { "✅" } else { "❌" }) |
+
+## $statusSymbol Final Verdict
+
+$(if ($VerificationPassed) {
+    @"
+**VERIFICATION PASSED** ✅
+
+The tests correctly detect the issue:
+- ✅ Tests **FAIL** without the fix (as expected - bug is present)
+- ✅ Tests **PASS** with the fix (as expected - bug is fixed)
+
+**Conclusion:** The tests properly validate the fix and catch the bug when it's present.
+"@
+} else {
+    @"
+**VERIFICATION FAILED** ❌
+
+$(if (-not $FailedWithoutFix) {
+    "❌ **Tests PASSED without fix** (should have failed)`n   - The tests don't actually detect the bug`n   - Tests may not be testing the right behavior`n"
+})$(if (-not $PassedWithFix) {
+    "❌ **Tests FAILED with fix** (should have passed)`n   - The fix doesn't resolve the issue`n   - Tests may be broken or testing something else`n"
+})
+**Possible causes:**
+1. Wrong fix files specified
+2. Tests don't actually test the fixed behavior  
+3. The issue was already fixed in base branch
+4. Build caching - try clean rebuild
+5. Test needs different setup or conditions
+"@
+})
+
+---
+
+## Configuration
+
+**Platform:** $Platform
+**Test Filter:** $TestFilter
+**Base Branch:** $BaseBranchName
+**Merge Base:** $($MergeBase.Substring(0, 8))
+
+### Fix Files
+
+$(($RevertableFiles | ForEach-Object { "- ``$_``" }) -join "`n")
+
+$(if ($NewFiles.Count -gt 0) {
+@"
+
+### New Files (Not Reverted)
+
+$(($NewFiles | ForEach-Object { "- ``$_``" }) -join "`n")
+"@
+})
+
+---
+
+## Test Results Details
+
+### Test Run 1: WITHOUT Fix
+
+**Expected:** Tests should FAIL (bug is present)  
+**Actual:** Tests $(if ($FailedWithoutFix) { "FAILED" } else { "PASSED" }) $(if ($FailedWithoutFix) { "✅" } else { "❌" })
+
+**Test Summary:**
+- Total: $($WithoutFixResult.Total)
+- Passed: $($WithoutFixResult.Passed)
+- Failed: $($WithoutFixResult.Failed)
+- Skipped: $($WithoutFixResult.Skipped)
+
+$(if ($WithoutFixResult.FailureReason) {
+    "**Failure Reason:** ``$($WithoutFixResult.FailureReason)``"
+})
+
+<details>
+<summary>View full test output (without fix)</summary>
+
+``````
+$(Get-Content $WithoutFixLog -Raw)
+``````
+
+</details>
+
+---
+
+### Test Run 2: WITH Fix
+
+**Expected:** Tests should PASS (bug is fixed)  
+**Actual:** Tests $(if ($PassedWithFix) { "PASSED" } else { "FAILED" }) $(if ($PassedWithFix) { "✅" } else { "❌" })
+
+**Test Summary:**
+- Total: $($WithFixResult.Total)
+- Passed: $($WithFixResult.Passed)
+- Failed: $($WithFixResult.Failed)
+- Skipped: $($WithFixResult.Skipped)
+
+$(if ($WithFixResult.FailureReason) {
+    "**Failure Reason:** ``$($WithFixResult.FailureReason)``"
+})
+
+<details>
+<summary>View full test output (with fix)</summary>
+
+``````
+$(Get-Content $WithFixLog -Raw)
+``````
+
+</details>
+
+---
+
+## Logs
+
+- Full verification log: ``$ValidationLog``
+- Test output without fix: ``$WithoutFixLog``
+- Test output with fix: ``$WithFixLog``
+- UI test logs: ``CustomAgentLogsTmp/UITests/``
+"@
+
+    $markdown | Set-Content -Path $MarkdownReport -Encoding UTF8
+    Write-Host ""
+    Write-Host "📄 Markdown report saved to: $MarkdownReport" -ForegroundColor Cyan
 }
 
 # Reuse the Get-TestResultFromLog function defined earlier
@@ -613,6 +791,14 @@ Write-Log ""
 Write-Log "Summary:"
 Write-Log "  - Tests WITHOUT fix: $(if ($failedWithoutFix) { 'FAIL ✅ (expected)' } else { 'PASS ❌ (should fail!)' })"
 Write-Log "  - Tests WITH fix: $(if ($passedWithFix) { 'PASS ✅ (expected)' } else { 'FAIL ❌ (should pass!)' })"
+
+# Generate markdown report
+Write-MarkdownReport `
+    -VerificationPassed $verificationPassed `
+    -FailedWithoutFix $failedWithoutFix `
+    -PassedWithFix $passedWithFix `
+    -WithoutFixResult $withoutFixResult `
+    -WithFixResult $withFixResult
 
 if ($verificationPassed) {
     Write-Host ""

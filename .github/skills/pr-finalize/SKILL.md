@@ -1,175 +1,97 @@
 ---
 name: pr-finalize
-description: Verifies PR title and description match actual implementation. Works on any PR. Optionally updates agent session markdown if present.
-metadata:
-  author: dotnet-maui
-  version: "1.0"
-compatibility: Requires GitHub CLI (gh)
+description: Finalizes any PR for merge by verifying title and description match actual implementation. Reviews existing description quality before suggesting changes. Use when asked to "finalize PR", "check PR description", "review commit message", before merging any PR, or when PR implementation changed during review. Do NOT use for extracting lessons (use learn-from-pr), writing tests (use write-tests), or investigating build failures (use pr-build-status).
 ---
 
 # PR Finalize
 
 Ensures PR title and description accurately reflect the implementation for a good commit message.
 
-**Works on any PR** - Does not require agent involvement or session markdown.
+**Standalone skill** - Can be used on any PR, not just PRs created by the pr agent.
 
-## Inputs
+## Core Principle: Preserve Quality
 
-| Input | Required | Source |
-|-------|----------|--------|
-| PR number | Yes | User provides |
-| Session markdown | Optional | `.github/agent-pr-session/issue-XXXXX.md` or `pr-XXXXX.md` |
+**Review existing description BEFORE suggesting changes.** Many PR authors write excellent, detailed descriptions. Your job is to:
 
-## Outputs
+1. **Evaluate first** - Is the existing description good? Better than a template?
+2. **Preserve quality** - Don't replace a thorough description with a generic template
+3. **Enhance, don't replace** - Add missing required elements (NOTE block, issue links) without rewriting good content
+4. **Only rewrite if needed** - When description is stale, inaccurate, or missing key information
 
-1. **Recommended PR title** - Platform prefix, behavior-focused
-2. **Recommended PR description** - NOTE block + structured content
-3. **Session markdown updates** (only if file exists)
-
-## Completion Criteria
-
-- [ ] Reviewed PR diff to understand actual implementation
-- [ ] Verified title matches implementation (or recommended fix)
-- [ ] Verified description matches implementation (or recommended fix)
-- [ ] Checked for session markdown and updated if needed
-
-## When to Use
-
-- Before merging any PR
-- "Finalize PR #XXXXX"
-- "Check PR description for #XXXXX"
-- When implementation changed during review
-
-## When NOT to Use
-
-- ❌ For analyzing lessons learned (use `learn-from-pr` skill instead)
-- ❌ For writing or running tests (use `write-tests` or sandbox)
-- ❌ For investigating why PR build failed (use `pr-build-status`)
-
-## Constraints
-
-- **Don't change PR title/description directly** - Only recommend changes
-- **Don't modify code** - Only verify title/description accuracy
-- **Match existing style** - Follow PR template format
-- **Preserve user content** - Enhance, don't replace custom descriptions
-
----
-
-## Workflow
-
-### Step 1: Get PR State
+## Usage
 
 ```bash
-gh pr view XXXXX --json title,body,files
-gh pr diff XXXXX
+# Get current state (no local checkout required)
+gh pr view XXXXX --json title,body
+gh pr view XXXXX --json files --jq '.files[].path'
+
+# Review commit messages (helpful for squash/merge commit quality)
 gh pr view XXXXX --json commits --jq '.commits[].messageHeadline'
+
+# Review actual code changes
+gh pr diff XXXXX
+
+# Optional: if the PR branch is checked out locally
+git diff origin/main...HEAD
 ```
 
-### Step 2: Analyze Implementation
+## Evaluation Workflow
 
-Read the diff and understand:
-- What was actually changed (not what was planned)
-- Which platforms are affected
-- What the fix does
+### Step 1: Review Existing Description Quality
 
-### Step 3: Verify Title
+Before suggesting changes, evaluate the current description:
+
+| Quality Indicator | Look For |
+|-------------------|----------|
+| **Structure** | Clear sections, headers, organized flow |
+| **Technical depth** | File-by-file changes, specific code references |
+| **Scanability** | Easy to find what changed and where |
+| **Accuracy** | Matches actual diff - not stale or incorrect |
+| **Completeness** | Platforms, breaking changes, testing info |
+
+### Step 2: Compare to Template
+
+Ask: "Is the existing description better than what my template would produce?"
+
+- **If YES**: Keep existing, only add missing required elements
+- **If NO**: Suggest improvements or replacement
+
+### Step 3: Produce Output
+
+- Recommended PR title (if change needed)
+- Assessment of existing description
+- Specific additions needed (e.g., "Add NOTE block at top")
+- Only full replacement if description is inadequate
+
+## Title Requirements
+
+**The title becomes the commit message headline.** Make it searchable and informative.
 
 | Requirement | Good | Bad |
 |-------------|------|-----|
 | Platform prefix (if specific) | `[iOS] Fix Shell back button` | `Fix Shell back button` |
-| Describes behavior | `Fix long-press not triggering events` | `Fix #23892` |
+| Describes behavior, not issue | `[iOS] SafeArea: Return Empty for non-ISafeAreaView views` | `Fix #23892` |
+| Captures the "what" | `Return Empty for non-ISafeAreaView` | `Fix SafeArea bug` |
+| Notes model change if applicable | `(opt-in model)` | (omitted) |
 | No noise prefixes | `[iOS] Fix...` | `[PR agent] Fix...` |
 
-### Step 4: Verify Description
+### Title Formula
 
-Must include:
-1. NOTE block (for testing PR artifacts)
-2. Description of Change (matches actual implementation)
-3. Issues Fixed
-
-Should include (for agent context):
-- Root cause
-- Fix approach
-- Key insight
-
-### Step 5: Session Markdown (If Exists)
-
-```bash
-ls .github/agent-pr-session/issue-XXXXX.md .github/agent-pr-session/pr-XXXXX.md 2>/dev/null
+```
+[Platform] Component: What changed (model change if any)
 ```
 
-**If file exists:**
-- Check if "Selected Fix: [PENDING]" → update with actual fix
-- Add "ACTUAL IMPLEMENTED FIX" section if missing
-- Document lessons learned
-
-**If file doesn't exist:** Skip this step.
-
-### Step 6: Present Recommendations
-
-Output recommended title and description.
-
----
-
-## Error Handling
-
-| Situation | Action |
-|-----------|--------|
-| PR not found | Ask user to verify PR number |
-| No session markdown | Proceed - only verify title/description |
-| Title already good | Confirm it's good, no change needed |
-| Description missing | Generate recommended description |
-
----
-
-## Output Template
-
-```markdown
-# PR Finalize: #XXXXX
-
-## Title Assessment
-**Current:** [current title]
-**Recommendation:** [recommended title, or "✅ Current title is good"]
-
-## Description Assessment
-**Issues:**
-- [issue 1]
-- [issue 2]
-
-**Recommended Description:**
-
-<!-- Please let the below note in for people that find this PR -->
-> [!NOTE]
-> Are you waiting for the changes in this PR to be merged?
-> It would be very helpful if you could [test the resulting artifacts](https://github.com/dotnet/maui/wiki/Testing-PR-Builds) from this PR and let us know in a comment if this change resolves your issue. Thank you!
-
-### Description of Change
-
-[Brief summary matching implementation]
-
-**Root cause:** [Why bug occurred]
-
-**Fix:** [What code now does]
-
-### Issues Fixed
-
-Fixes #XXXXX
-
-## Session Markdown
-[Updated / No file exists / Already complete]
-```
-
----
-
-## Title Requirements
-
-- **Platform prefix** if platform-specific: `[iOS]`, `[Android]`, `[Windows]`, `[MacCatalyst]`
-- **Behavior-focused** - Describe what changed, not issue number
-- **Concise** - Should fit in commit message subject line
+Examples:
+- `[iOS] SafeArea: Return Empty for non-ISafeAreaView views (opt-in model)`
+- `[Android] CollectionView: Fix scroll position reset on item update`
+- `[Windows] Shell: Use NavigationView instead of custom flyout`
 
 ## Description Requirements
 
-### Required Sections
+PR description should:
+1. Start with the required NOTE block (so users can test PR artifacts)
+2. Include the base sections from `.github/PULL_REQUEST_TEMPLATE.md` ("Description of Change" and "Issues Fixed"). The skill adds additional structured fields (Root cause, Fix, Key insight, etc.) as recommended enhancements for better agent context.
+3. Match the actual implementation
 
 ```markdown
 <!-- Please let the below note in for people that find this PR -->
@@ -184,102 +106,178 @@ Fixes #XXXXX
 Fixes #XXXXX
 ```
 
-### Recommended Additions (for agent context)
+## Content for Future Agents
 
-| Element | Purpose |
-|---------|---------|
-| **Root cause** | Why the bug occurred |
-| **Fix approach** | What the code now does |
-| **Key insight** | Non-obvious understanding |
-| **What to avoid** | Patterns that would re-break |
+**The title and description become the commit message.** Future agents searching git history will use this to understand:
+- What changed and why
+- What patterns to follow or avoid
+- How this change affects related code
 
----
+### Required Elements for Agent Success
 
-## Session Markdown Updates (Optional)
+| Element | Purpose | Example |
+|---------|---------|---------|
+| **Root cause** | Why the bug occurred | "Non-ISafeAreaView views falling through to return baseSafeArea" |
+| **Fix approach** | What the code now does | "Return SafeAreaPadding.Empty for views without interface" |
+| **Philosophy/model change** | If behavior model changed | "Before: opt-out. After: opt-in via interface" |
+| **Key interfaces/types** | Types agents need to know | "ISafeAreaView, ISafeAreaView2 = opt-in contract" |
+| **What NOT to do** | Failed approaches to avoid | "Don't use Element type in Platform layer" |
+| **Architectural constraints** | Layer boundaries, type availability | "Platform layer cannot reference Controls types" |
+| **Edge cases** | Known limitations or risks | "Legacy layouts are [Obsolete], custom views need interface" |
 
-If session markdown exists and is incomplete, add:
+### "What NOT to Do" Section (Critical)
+
+When try-fix or debugging revealed failed approaches, document them:
 
 ```markdown
-## ACTUAL IMPLEMENTED FIX
+### What NOT to Do (for future agents)
 
-**Selected Fix:** [Brief description]
-
-**What was implemented:**
-1. [What changed]
-2. [Key files]
-
-**Key insight:** [Non-obvious understanding]
-
-## Lessons Learned
-
-**What would have helped:**
-1. [Suggestion 1]
-2. [Suggestion 2]
+- ❌ **Don't use [Type] in [Layer]** - [Why it fails]
+- ❌ **Don't use [Pattern]** - [Why it's brittle/wrong]
+- ❌ **Don't [Approach]** - [Why it doesn't work]
 ```
 
----
+This prevents future agents from repeating failed experiments.
+
+### Philosophy/Model Changes
+
+When a fix changes the behavioral model (not just fixing a bug), call it out explicitly:
+
+```markdown
+**This is a philosophy change:**
+- **Before:** [Old behavior model]
+- **After:** [New behavior model]
+```
+
+Example: "Before: Safe area applied by default (opt-out). After: Only views implementing ISafeAreaView get safe area (opt-in)."
 
 ## Common Issues
 
-| Problem | Solution |
-|---------|----------|
-| Description doesn't match code | Rewrite from actual diff |
-| Missing root cause | Add from issue/analysis |
-| References wrong approach | Update to describe final approach |
-| "Selected Fix: [PENDING]" | Document actual implementation |
+| Problem | Cause | Solution |
+|---------|-------|----------|
+| Description doesn't match code | Implementation changed during review | Update description to match actual diff |
+| Missing root cause | Author focused on "what" not "why" | Add root cause from issue/analysis |
+| References wrong approach | Started with A, switched to B | Update to describe final approach |
+| Missing NOTE block | Author didn't use template | Prepend NOTE block, keep rest |
+| Good description replaced | Agent used template blindly | Evaluate existing quality first |
 
----
+## Output Format
 
-## Example
+### When Existing Description is Good
 
-**PR #33352** - MacCatalyst crash on window disposal
-
-**Step 1: Get PR State**
-```bash
-gh pr view 33352 --json title,body,files
-# Title: "Fix ObjectDisposedException in PageViewController"
-# Files: PageViewController.cs
-```
-
-**Step 2: Analyze Implementation**
-- Fix adds null check for window.Handler before accessing services
-- Platform: MacCatalyst specific
-- Prevents crash during TraitCollectionDidChange when window disposed
-
-**Step 3: Verify Title**
-- Current: "Fix ObjectDisposedException in PageViewController"
-- Assessment: Missing platform prefix
-- Recommended: `[MacCatalyst] Fix ObjectDisposedException in PageViewController.TraitCollectionDidChange`
-
-**Step 4: Verify Description**
-- Missing NOTE block
-- Missing root cause explanation
-- Generate recommended description
-
-**Output:**
 ```markdown
-# PR Finalize: #33352
+## PR #XXXXX Finalization Review
 
-## Title Assessment
-**Current:** Fix ObjectDisposedException in PageViewController
-**Recommendation:** [MacCatalyst] Fix ObjectDisposedException in PageViewController.TraitCollectionDidChange
+### ✅ Title: [Good / Needs Update]
+**Current:** "Existing title"
+**Recommended:** "[Platform] Improved title" (if needed)
 
-## Description Assessment
-**Issues:**
-- Missing NOTE block for testing PR artifacts
-- Missing root cause explanation
+### ✅ Description: Excellent - Keep As-Is
 
-**Recommended Description:**
-[Full description with NOTE block, root cause, fix approach...]
+**Quality assessment:**
+- Structure: ✅ Clear sections with headers
+- Technical depth: ✅ File-by-file breakdown
+- Accuracy: ✅ Matches implementation
+- Completeness: ✅ Platforms, breaking changes noted
 
-## Session Markdown
-Updated - Added "ACTUAL IMPLEMENTED FIX" section
+**Only addition needed:**
+- ❌ Missing NOTE block - prepend to top
+
+**Action:** Add NOTE block, preserve everything else.
 ```
 
----
+### When Description Needs Rewrite
 
-## Integration
+Use structured template only when existing description is inadequate:
 
-- **pr-finalize** → Verify PR ready to merge (this skill)
-- **learn-from-pr** → Extract lessons after finalization
-- **learn-from-pr agent** → Extract lessons AND apply improvements
+```markdown
+<!-- Please let the below note in for people that find this PR -->
+> [!NOTE]
+> Are you waiting for the changes in this PR to be merged?
+> It would be very helpful if you could [test the resulting artifacts](https://github.com/dotnet/maui/wiki/Testing-PR-Builds) from this PR and let us know in a comment if this change resolves your issue. Thank you!
+
+### Root Cause
+
+[Why the bug occurred - be specific about the code path]
+
+### Description of Change
+
+[What the code now does]
+
+**This is a philosophy change:** (if applicable)
+- **Before:** [Old model]
+- **After:** [New model]
+
+[Cross-platform alignment notes if relevant]
+
+### Key Technical Details
+
+**[Relevant interfaces/types]:**
+- `InterfaceA` - [What it does]
+- `InterfaceB` - [What it does]
+
+**[Category] that [work/don't work]:**
+- List of types/views affected
+
+### What NOT to Do (for future agents)
+
+- ❌ **Don't [approach 1]** - [Why it fails]
+- ❌ **Don't [approach 2]** - [Why it's wrong]
+- ❌ **Don't [approach 3]** - [Constraint that prevents it]
+
+### Edge Cases
+
+| Scenario | Risk | Mitigation |
+|----------|------|------------|
+| [Case 1] | Low/Medium/High | [How to handle] |
+| [Case 2] | Low/Medium/High | [How to handle] |
+
+### Issues Fixed
+
+Fixes #XXXXX
+
+### Platforms Tested
+
+- [x] iOS
+- [x] Android
+- [ ] Windows
+- [ ] Mac
+```
+
+## Quality Comparison Examples
+
+### Good Existing Description (KEEP)
+
+```markdown
+## Changes Made
+
+### 1. **PickerHandler.iOS.cs** - MacCatalyst-specific improvements
+
+#### Added UIAlertController instance field
+- Declared `UIAlertController? pickerController` as instance field...
+
+#### Improved picker dismiss logic
+- Moved picker dismiss logic from event handler to "Done" button action
+- Removed `EditingDidEnd` event handler causing duplicate dismiss calls
+
+## Platforms Affected
+- **MacCatalyst** (primary)
+- iOS (no behavior changes, shared code)
+
+## Breaking Changes
+None
+```
+
+**Verdict:** Excellent - file-by-file breakdown, specific changes, platforms, breaking changes. Keep it.
+
+### Poor Existing Description (REWRITE)
+
+```markdown
+Fixed the issue mentioned in #30897
+```
+
+**Verdict:** Inadequate - no detail on what changed. Use template.
+
+## Complete Example
+
+See [references/complete-example.md](references/complete-example.md) for a full agent-optimized PR description showing all elements above applied to a real SafeArea fix.
