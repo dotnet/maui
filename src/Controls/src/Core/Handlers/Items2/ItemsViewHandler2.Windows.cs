@@ -411,6 +411,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			_defaultHorizontalScrollVisibility = null;
 			_defaultVerticalScrollVisibility = null;
 
+			// Unsubscribe from the old layout's property changes and subscribe to the new layout
+			_layoutPropertyChangedProxy?.Unsubscribe();
+			_layoutPropertyChangedProxy = null;
+
+			if (Layout is not null)
+			{
+				_layoutPropertyChanged ??= LayoutPropertyChanged;
+				_layoutPropertyChangedProxy = new WeakNotifyPropertyChangedProxy(Layout, _layoutPropertyChanged);
+			}
+
 			UpdateItemsSource();
 
 			PlatformView.Layout = CreateItemsLayout();
