@@ -73,7 +73,7 @@ stages:
 
           - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
             displayName: 'Add .NET to PATH'
-            
+
           # List all available simulators/emulators
           - script: |
               echo "=== Listing Available Simulators/Emulators ==="
@@ -86,12 +86,17 @@ stages:
               # List iOS simulators using xharness
               echo ""
               echo "=== iOS Simulators (xharness) ==="
-              dotnet xharness apple device --list || echo "xharness apple device list failed"
+              dotnet xharness apple simulators list --installed || echo "xharness apple simulators list failed"
               
-              # List Android emulators using xharness
+              # Show Apple device state
               echo ""
-              echo "=== Android Emulators (xharness) ==="
-              dotnet xharness android device --list || echo "xharness android device list failed"
+              echo "=== Apple Device State (xharness) ==="
+              dotnet xharness apple state || echo "xharness apple state failed"
+              
+              # Show Android device state
+              echo ""
+              echo "=== Android Device State (xharness) ==="
+              dotnet xharness android state || echo "xharness android state failed"
               
               # List Android AVDs
               echo ""
