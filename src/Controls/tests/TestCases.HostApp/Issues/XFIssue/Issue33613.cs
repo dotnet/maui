@@ -57,8 +57,6 @@ public class Issue33613 : ContentPage
 	public Issue33613()
 	{
 		Title = "Issue 33613";
-		
-		// Create TitleView
 		var titleViewGrid = new Grid
 		{
 			BackgroundColor = Colors.LightBlue,
@@ -79,27 +77,10 @@ public class Issue33613 : ContentPage
 		
 		titleViewGrid.Children.Add(titleLabel);
 		NavigationPage.SetTitleView(this, titleViewGrid);
-		
-		// Create page content
-		var goBackButton = new Button
-		{
-			Text = "Go Back",
-			AutomationId = "GoBackButton"
-		};
-		
-		goBackButton.Clicked += async (s, e) =>
-		{
-			await Navigation.PopAsync();
-		};
-		
 		Content = new VerticalStackLayout
 		{
 			Padding = 20,
 			Spacing = 10,
-			Children =
-			{
-				goBackButton
-			}
 		};
 	}
 }
