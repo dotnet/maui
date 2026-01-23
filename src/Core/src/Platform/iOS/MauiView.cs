@@ -127,8 +127,9 @@ namespace Microsoft.Maui.Platform
 			// To prevent this, we ignore safe area calculations on child views when they are inside a scroll view.
 			// The scrollview itself is responsible for applying the correct insets, and child views should not apply additional safe area logic.
 			//
-			// EXCEPTION: CollectionView/CarouselView items should always respond to safe area even though they're inside UICollectionView (UIScrollView).
-			// CollectionView cells need to handle their own safe area because the collection view doesn't apply safe area to individual cells.
+			// EXCEPTION: CollectionView items must handle their own safe area because UICollectionView (which inherits from UIScrollView)
+			// does not automatically apply safe area insets to individual cells. Without this exception, CollectionView content
+			// would render under the notch and home indicator.
 			//
 			// For more details and implementation specifics, see MauiScrollView.cs, which contains the logic for safe area management
 			// within scroll views and explains how this interacts with the overall layout system.
@@ -304,9 +305,9 @@ namespace Microsoft.Maui.Platform
 
 		SafeAreaPadding GetAdjustedSafeAreaInsets()
 		{
-			// For CollectionView/CarouselView items, use Window's SafeAreaInsets instead of the cell's own SafeAreaInsets
-			// because cells might not have correct insets during initial layout, especially in landscape orientation.
-			// The Window always has the correct safe area values.
+			// CollectionView cells don't receive SafeAreaInsetsDidChange notifications, so their SafeAreaInsets
+			// property may be stale during layout (especially after rotation). Use Window.SafeAreaInsets instead,
+			// which always reflects the current device orientation and safe area state.
 			var baseSafeArea = _collectionViewDescendant == true && Window is not null
 				? Window.SafeAreaInsets.ToSafeAreaInsets()
 				: SafeAreaInsets.ToSafeAreaInsets();
