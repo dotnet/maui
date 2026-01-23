@@ -24,15 +24,11 @@ parameters:
         - Agent.OS -equals Darwin
 
 variables:
-  # - template: /eng/pipelines/common/variables.yml@self
+  - template: /eng/pipelines/common/variables.yml@self
   - name: Codeql.Enabled
     value: false
   - name: Codeql.SkipTaskAutoInjection
     value: true
-  - name: DOTNET_VERSION
-    value: 10.0.100
-  - name: REQUIRED_XCODE
-    value: 26.0.1
 
 stages:
   - stage: ReviewPR
