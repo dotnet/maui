@@ -74,11 +74,87 @@ stages:
           - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
             displayName: 'Add .NET to PATH'
 
+          # Verify environment is ready
+          - script: |
+              echo "=== Verifying Build Environment ==="
+              ERRORS=""
+              
+              # Check .NET SDK
+              echo "Checking .NET SDK..."
+              if ! dotnet --version; then
+                ERRORS="${ERRORS}\n- .NET SDK not available"
+              else
+                echo "✓ .NET SDK: $(dotnet --version)"
+              fi
+              
+              # Check workloads
+              echo "Checking MAUI workloads..."
+              if ! dotnet workload list | grep -q maui; then
+                ERRORS="${ERRORS}\n- MAUI workload not installed"
+              else
+                echo "✓ MAUI workload installed"
+              fi
+              
+              # Check Android SDK
+              echo "Checking Android SDK..."
+              if [ -z "$ANDROID_HOME" ] && [ -z "$ANDROID_SDK_ROOT" ]; then
+                ERRORS="${ERRORS}\n- ANDROID_HOME/ANDROID_SDK_ROOT not set"
+              else
+                SDK_PATH="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+                if [ ! -d "$SDK_PATH" ]; then
+                  ERRORS="${ERRORS}\n- Android SDK directory not found: $SDK_PATH"
+                else
+                  echo "✓ Android SDK: $SDK_PATH"
+                fi
+              fi
+              
+              # Check Xcode (macOS only)
+              if [ "$(uname)" = "Darwin" ]; then
+                echo "Checking Xcode..."
+                if ! xcodebuild -version; then
+                  ERRORS="${ERRORS}\n- Xcode not available"
+                else
+                  echo "✓ Xcode available"
+                fi
+                
+                # Check iOS simulators
+                echo "Checking iOS simulators..."
+                if ! xcrun simctl list devices available | grep -q "iPhone"; then
+                  ERRORS="${ERRORS}\n- No iOS simulators available"
+                else
+                  echo "✓ iOS simulators available"
+                fi
+              fi
+              
+              # Check Java/JDK
+              echo "Checking JDK..."
+              if ! java -version 2>&1; then
+                ERRORS="${ERRORS}\n- JDK not available"
+              else
+                echo "✓ JDK available"
+              fi
+              
+              # Report errors
+              if [ -n "$ERRORS" ]; then
+                echo ""
+                echo "##vso[task.logissue type=error]=== Environment Verification FAILED ==="
+                echo -e "Missing dependencies:$ERRORS"
+                echo "##vso[task.logissue type=error]Build environment is not properly configured. See above for details."
+                exit 1
+              fi
+              
+              echo ""
+              echo "=== Environment Verification PASSED ==="
+            displayName: 'Verify Build Environment'
+
           - script: |
               echo "Installing Node.js 22..."
               brew install node@22
               brew link --overwrite node@22
-              node --version
+              if ! node --version; then
+                echo "##vso[task.logissue type=error]Failed to install Node.js"
+                exit 1
+              fi
               npm --version
               echo "Node.js installed successfully"
             displayName: 'Install Node.js'
@@ -86,14 +162,24 @@ stages:
           - script: |
               echo "Installing GitHub CLI..."
               brew install gh
-              gh --version
+              if ! gh --version; then
+                echo "##vso[task.logissue type=error]Failed to install GitHub CLI"
+                exit 1
+              fi
               echo "GitHub CLI installed successfully"
             displayName: 'Install GitHub CLI'
 
           - script: |
               echo "Authenticating with GitHub CLI..."
+              if [ -z "$(GH_CLI_TOKEN)" ]; then
+                echo "##vso[task.logissue type=error]GH_CLI_TOKEN is not set. Please configure the pipeline variable."
+                exit 1
+              fi
               echo "$(GH_CLI_TOKEN)" | gh auth login --with-token
-              gh auth status
+              if ! gh auth status; then
+                echo "##vso[task.logissue type=error]GitHub CLI authentication failed"
+                exit 1
+              fi
             displayName: 'Authenticate GitHub CLI'
             env:
               GH_CLI_TOKEN: $(GH_CLI_TOKEN)
@@ -101,12 +187,19 @@ stages:
           - script: |
               echo "Installing GitHub Copilot CLI..."
               npm install -g @github/copilot
+              if ! which copilot; then
+                echo "##vso[task.logissue type=error]Failed to install GitHub Copilot CLI"
+                exit 1
+              fi
               echo "Copilot CLI installed successfully"
             displayName: 'Install GitHub Copilot CLI'
 
           - script: |
               echo "Fetching PR #${{ parameters.PRNumber }}..."
-              git fetch origin pull/${{ parameters.PRNumber }}/head:pr-${{ parameters.PRNumber }}
+              if ! git fetch origin pull/${{ parameters.PRNumber }}/head:pr-${{ parameters.PRNumber }}; then
+                echo "##vso[task.logissue type=error]Failed to fetch PR #${{ parameters.PRNumber }}. Check that the PR exists."
+                exit 1
+              fi
               git checkout pr-${{ parameters.PRNumber }}
               echo "Checked out PR branch successfully"
               git log -1 --oneline
@@ -116,12 +209,54 @@ stages:
               echo "Running Copilot PR Reviewer Agent..."
               echo "Reviewing PR #${{ parameters.PRNumber }}..."
               
-              # Invoke the PR reviewer agent using Copilot CLI in programmatic mode
-              # --allow-all-tools allows Copilot to execute commands without manual approval
-              # Capture output to a file for posting as PR comment
-              copilot --agent pr -p "Review PR #${{ parameters.PRNumber }} you are already on the correct branch so don't switch branches. Please think through every phase you need for doing this review and then execute all the way until the end unless any of the phases fail" --yolo 2>&1 | tee $(Build.ArtifactStagingDirectory)/copilot_review_output.md
+              # Create artifacts directory for Copilot outputs
+              mkdir -p $(Build.ArtifactStagingDirectory)/copilot-logs
               
-              echo "Review output saved to $(Build.ArtifactStagingDirectory)/copilot_review_output.md"
+              # Invoke the PR reviewer agent using Copilot CLI in programmatic mode
+              # Capture exit code to check for failures
+              set +e
+              copilot --agent pr -p "Review PR #${{ parameters.PRNumber }} you are already on the correct branch so don't switch branches. Please think through every phase you need for doing this review and then execute all the way until the end unless any of the phases fail" --yolo 2>&1 | tee $(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md
+              COPILOT_EXIT_CODE=$?
+              set -e
+              
+              echo "Copilot exit code: $COPILOT_EXIT_CODE"
+              
+              # Copy any Copilot session files
+              if [ -d "$HOME/.copilot" ]; then
+                echo "Copying Copilot session state..."
+                cp -r "$HOME/.copilot" $(Build.ArtifactStagingDirectory)/copilot-logs/copilot-session-state || true
+              fi
+              
+              # Copy CustomAgentLogsTmp if it exists
+              if [ -d "CustomAgentLogsTmp" ]; then
+                echo "Copying CustomAgentLogsTmp..."
+                cp -r CustomAgentLogsTmp $(Build.ArtifactStagingDirectory)/copilot-logs/ || true
+              fi
+              
+              # Copy any Review_Feedback files
+              find . -name "Review_Feedback_*.md" -type f -exec cp {} $(Build.ArtifactStagingDirectory)/copilot-logs/ \; 2>/dev/null || true
+              
+              # Copy any .github/agent-pr-session files
+              if [ -d ".github/agent-pr-session" ]; then
+                echo "Copying agent-pr-session..."
+                cp -r .github/agent-pr-session $(Build.ArtifactStagingDirectory)/copilot-logs/ || true
+              fi
+              
+              # Check for failure indicators in output
+              if [ $COPILOT_EXIT_CODE -ne 0 ]; then
+                echo "##vso[task.logissue type=error]Copilot CLI exited with code $COPILOT_EXIT_CODE"
+                # Don't exit yet - let artifacts be published first
+                echo "##vso[task.setvariable variable=CopilotFailed]true"
+              fi
+              
+              # Check output for common failure patterns
+              if grep -qi "error\|failed\|exception" $(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md 2>/dev/null; then
+                if grep -qi "simulator.*not\|emulator.*not\|workload.*not\|sdk.*not found" $(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md 2>/dev/null; then
+                  echo "##vso[task.logissue type=warning]Copilot encountered environment issues. Check artifacts for details."
+                fi
+              fi
+              
+              echo "Review output saved to $(Build.ArtifactStagingDirectory)/copilot-logs/"
             displayName: 'Run PR Reviewer Agent'
             env:
               GITHUB_TOKEN: $(COPILOT_TOKEN)
@@ -130,11 +265,11 @@ stages:
               echo "Posting review comment to PR..."
               
               # Check for the captured output file first
-              REVIEW_FILE="$(Build.ArtifactStagingDirectory)/copilot_review_output.md"
-              CLEANED_FILE="$(Build.ArtifactStagingDirectory)/copilot_review_cleaned.md"
+              REVIEW_FILE="$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md"
+              CLEANED_FILE="$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_cleaned.md"
               
               # Also check if Copilot created a Review_Feedback file
-              FEEDBACK_FILE=$(find . -name "Review_Feedback_*.md" -type f | head -1)
+              FEEDBACK_FILE=$(find $(Build.ArtifactStagingDirectory)/copilot-logs -name "Review_Feedback_*.md" -type f | head -1)
               
               if [ -n "$FEEDBACK_FILE" ]; then
                 echo "Found review feedback file: $FEEDBACK_FILE"
@@ -144,18 +279,26 @@ stages:
               if [ -f "$REVIEW_FILE" ] && [ -s "$REVIEW_FILE" ]; then
                 echo "Cleaning up review output..."
                 
-                # Remove intro lines like "I'll review PR #XXXXX for you." and "The code review for PR #XXXXX is complete."
-                # Remove stats at the end (Total usage est, Total duration, Usage by model, etc.)
-                sed -n '/^## /,$p' "$REVIEW_FILE" | \
-                  sed '/^Total usage est:/,$d' | \
+                # Clean up the content:
+                # 1. Strip all ANSI escape codes (color codes like [37m, [39m, etc.)
+                # 2. Start from the first markdown header (## or #)
+                # 3. Remove stats at the end (Total usage est, API time, Total session, etc.)
+                sed 's/\x1b\[[0-9;]*m//g' "$REVIEW_FILE" | \
+                  sed -n '/^#/,$p' | \
+                  sed '/^Total usage est/,$d' | \
+                  sed '/^API time spent/d' | \
+                  sed '/^Total session time/d' | \
                   sed '/^Total duration/d' | \
                   sed '/^Total code changes/d' | \
-                  sed '/^Usage by model/,$d' > "$CLEANED_FILE"
+                  sed '/^Breakdown by AI model/,$d' | \
+                  sed '/^Usage by model/,$d' | \
+                  sed '/^ *claude-/d' | \
+                  sed '/^ *gpt-/d' > "$CLEANED_FILE"
                 
-                # If cleaning removed everything, fall back to original
+                # If cleaning removed everything, fall back to original without ANSI codes
                 if [ ! -s "$CLEANED_FILE" ]; then
-                  echo "Cleaned file is empty, using original"
-                  cp "$REVIEW_FILE" "$CLEANED_FILE"
+                  echo "Cleaned file is empty, using original without ANSI codes"
+                  sed 's/\x1b\[[0-9;]*m//g' "$REVIEW_FILE" > "$CLEANED_FILE"
                 fi
                 
                 echo "Posting review from: $CLEANED_FILE"
@@ -172,17 +315,36 @@ stages:
                   echo "Review content is available in the published artifacts."
                 fi
               else
-                echo "No review output found or file is empty"
+                echo "##vso[task.logissue type=warning]No review output found or file is empty"
               fi
             displayName: 'Post Review Comment'
             env:
               GITHUB_TOKEN: $(GH_COMMENT_TOKEN)
             condition: succeededOrFailed()
 
+          # Publish Copilot logs and session artifacts
           - task: PublishPipelineArtifact@1
-            displayName: 'Publish Review Artifacts'
+            displayName: 'Publish Copilot Logs'
             inputs:
-              targetPath: '$(System.DefaultWorkingDirectory)'
-              artifact: 'ReviewOutput'
+              targetPath: '$(Build.ArtifactStagingDirectory)/copilot-logs'
+              artifact: 'CopilotLogs'
               publishLocation: 'pipeline'
+            condition: succeededOrFailed()
+
+          # Publish build logs if they exist
+          - task: PublishPipelineArtifact@1
+            displayName: 'Publish Build Logs'
+            inputs:
+              targetPath: '$(LogDirectory)'
+              artifact: 'BuildLogs'
+              publishLocation: 'pipeline'
+            condition: and(succeededOrFailed(), ne(variables['LogDirectory'], ''))
+
+          # Fail the pipeline if Copilot failed
+          - script: |
+              if [ "$(CopilotFailed)" = "true" ]; then
+                echo "##vso[task.logissue type=error]Copilot PR review failed. Check CopilotLogs artifact for details."
+                exit 1
+              fi
+            displayName: 'Check Copilot Result'
             condition: succeededOrFailed()
