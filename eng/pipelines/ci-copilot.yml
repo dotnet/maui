@@ -29,6 +29,10 @@ variables:
     value: false
   - name: Codeql.SkipTaskAutoInjection
     value: true
+  - name: DOTNET_VERSION
+    value: 10.0.100
+  - name: REQUIRED_XCODE
+    value: 26.0.1
 
 stages:
   - stage: ReviewPR
@@ -38,8 +42,6 @@ stages:
         displayName: 'Run Copilot PR Reviewer Agent'
         pool: ${{ parameters.pool }}
         timeoutInMinutes: 120
-        variables:
-          REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
         steps:
           - checkout: self
             fetchDepth: 0
