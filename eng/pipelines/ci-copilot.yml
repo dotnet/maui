@@ -24,8 +24,11 @@ parameters:
         - Agent.OS -equals Darwin
 
 variables:
-  Codeql.Enabled: false
-  Codeql.SkipTaskAutoInjection: true
+  - template: /eng/pipelines/common/variables.yml@self
+  - name: Codeql.Enabled
+    value: false
+  - name: Codeql.SkipTaskAutoInjection
+    value: true
 
 stages:
   - stage: ReviewPR
@@ -34,6 +37,9 @@ stages:
       - job: CopilotReview
         displayName: 'Run Copilot PR Reviewer Agent'
         pool: ${{ parameters.pool }}
+        timeoutInMinutes: 120
+        variables:
+          REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
         steps:
           - checkout: self
             fetchDepth: 0
@@ -47,6 +53,27 @@ stages:
               fi
               echo "PR Number: ${{ parameters.PRNumber }}"
             displayName: 'Validate Parameters'
+
+          # Provision environment (Xcode, .NET SDK, Android SDK, etc.)
+          - template: common/provision.yml
+            parameters:
+              skipXcode: false
+              skipProvisionator: true
+              skipAndroidCommonSdks: false
+              skipAndroidPlatformApis: false
+              skipJdk: false
+              skipSimulatorSetup: false
+
+          # Install .NET and workloads via build.ps1
+          - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
+            displayName: 'Install .NET and workloads'
+            retryCountOnTaskFailure: 2
+            env:
+              DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+              PRIVATE_BUILD: $(PrivateBuild)
+
+          - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
+            displayName: 'Add .NET to PATH'
 
           - script: |
               echo "Installing Node.js 22..."
