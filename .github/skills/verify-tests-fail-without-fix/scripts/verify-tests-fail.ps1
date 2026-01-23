@@ -116,9 +116,6 @@ if (-not $PRNumber) {
 $OutputDir = "CustomAgentLogsTmp/PRState/$PRNumber/verify-tests-fail"
 Write-Host "📁 Output directory: $OutputDir" -ForegroundColor Cyan
 
-$ErrorActionPreference = "Stop"
-$RepoRoot = git rev-parse --show-toplevel
-
 # ============================================================
 # Import shared baseline script for merge-base and file detection
 # ============================================================
@@ -539,7 +536,7 @@ $(if (-not $FailedWithoutFix) {
 **Platform:** $Platform
 **Test Filter:** $TestFilter
 **Base Branch:** $BaseBranchName
-**Merge Base:** $($MergeBase.Substring(0, 8))
+**Merge Base:** $(if ($MergeBase -and $MergeBase.Length -ge 8) { $MergeBase.Substring(0, 8) } else { $MergeBase })
 
 ### Fix Files
 

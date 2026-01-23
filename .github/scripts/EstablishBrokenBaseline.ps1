@@ -398,7 +398,7 @@ if ($detectedFixFiles.Count -eq 0) {
     Write-Host "" -ForegroundColor Red
     Write-Host "This means the script could not find any non-test files that changed between:" -ForegroundColor Yellow
     Write-Host "  - HEAD (current state)" -ForegroundColor White
-    Write-Host "  - Merge-base: $($MergeBase.Substring(0, 8))" -ForegroundColor White
+    Write-Host "  - Merge-base: $(if ($MergeBase -and $MergeBase.Length -ge 8) { $MergeBase.Substring(0, 8) } else { $MergeBase })" -ForegroundColor White
     Write-Host "" -ForegroundColor Yellow
     Write-Host "Possible causes:" -ForegroundColor Yellow
     Write-Host "  1. You're on the wrong branch (not the actual PR branch)" -ForegroundColor White
