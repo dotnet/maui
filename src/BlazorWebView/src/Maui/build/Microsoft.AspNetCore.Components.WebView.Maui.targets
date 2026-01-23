@@ -121,14 +121,15 @@
     </ItemGroup>
   </Target>
 
-  <!-- Make sure we include all static web assets in the single-file bundle.  -->
+  <!-- Include static web assets in the single-file bundle. Only include items under wwwroot\ to avoid
+       bundling unrelated MauiAsset items (e.g., Resources\Raw\**). -->
   <Target Name="_IncludeStaticWebAssetsInSingleFileBundle"
           AfterTargets="_ComputeFilesToBundle"
           BeforeTargets="PrepareForBundle"
           Condition="'$(PublishSingleFile)' == 'true'">
 
     <ItemGroup>
-      <_FilesToBundle Include="@(MauiAsset)" Condition="'%(MauiAsset.TargetPath)' != ''">
+      <_FilesToBundle Include="@(MauiAsset)" Condition="$([System.String]::Copy('%(MauiAsset.TargetPath)').StartsWith('wwwroot'))">
         <RelativePath>%(MauiAsset.TargetPath)</RelativePath>
       </_FilesToBundle>
     </ItemGroup>
