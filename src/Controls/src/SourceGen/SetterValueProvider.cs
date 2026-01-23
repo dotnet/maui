@@ -43,8 +43,11 @@ internal class SetterValueProvider : IKnownMarkupValueProvider
 		var valueNode = GetValueNode(node);
 		if (valueNode == null)
 		{
+			// The value was removed (e.g., OnPlatform with no matching platform and no Default)
+			// Signal to skip this Setter entirely by returning true with null returnType and empty value
+			returnType = null;
 			value = string.Empty;
-			return false;
+			return true;
 		}
 
 		var bpNode = (ValueNode)node.Properties[new XmlName("", "Property")];

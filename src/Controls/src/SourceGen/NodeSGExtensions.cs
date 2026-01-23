@@ -548,6 +548,15 @@ static class NodeSGExtensions
 		if (GetKnownValueProviders(context).TryGetValue(variable.Type, out var valueProvider)
 			&& valueProvider.TryProvideValue(node, writer, context, getNodeValue, out returnType0, out value))
 		{
+			// Check for "skip this node" sentinel: returnType is null and value is empty
+			// This happens when a Setter has no value (e.g., OnPlatform with no matching platform)
+			if (returnType0 is null && string.IsNullOrEmpty(value))
+			{
+				// Remove from Variables so it won't be added to any collection
+				context.Variables.Remove(node);
+				return true;
+			}
+
 			var variableName = NamingHelpers.CreateUniqueVariableName(context, returnType0 ?? context.Compilation.ObjectType);
 			context.Writer.WriteLine($"var {variableName} = {value};");
 			context.Variables[node] = new LocalVariable(returnType0 ?? context.Compilation.ObjectType, variableName);
