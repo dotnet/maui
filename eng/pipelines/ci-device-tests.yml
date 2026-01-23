@@ -107,19 +107,25 @@ parameters:
 stages:
 - ${{ each targetFrameworkVersion in parameters.targetFrameworkVersions }}:
 
-  # Use Helix for iOS / Android and MacCatalyst Device Tests
+  # Use Helix for iOS / Android / MacCatalyst / Windows Device Tests
   - template: /eng/pipelines/arcade/stage-device-tests.yml@self
     parameters:
       # Select pools based on pipeline - internal vs public
       ${{ if eq(variables['System.TeamProject'], 'internal') }}:
         buildPool: ${{ parameters.macOSPoolInternal }}
         testPool: ${{ parameters.windowsPoolInternal }}
+        windowsBuildPool: ${{ parameters.windowsPoolInternal }}
+        windowsTestPool: ${{ parameters.windowsPoolInternal }}
         runAsPublic: false
         HelixAccessToken: $(HelixApiAccessToken)
+        HelixInternal: true
       ${{ else }}:
         buildPool: ${{ parameters.macOSPoolPublic }}
         testPool: ${{ parameters.windowsPoolPublic }}
+        windowsBuildPool: ${{ parameters.windowsPoolPublic }}
+        windowsTestPool: ${{ parameters.windowsPoolPublic }}
         runAsPublic: true
+      runWindowsTests: true
       TargetFrameworkVersion: ${{ targetFrameworkVersion.tfm }}
       prepareSteps:
       - template: /eng/pipelines/common/provision.yml@self
@@ -134,41 +140,4 @@ stages:
           skipProvisioning: true
           skipXcode: false
           skipSimulatorSetup: false
-  # Just use the old way for Windows Device Tests
-  - template: common/device-tests.yml
-    parameters:
-      ${{ if eq(variables['System.TeamProject'], 'internal') }}:
-        windowsPool: ${{ parameters.windowsPoolInternal }}
-      ${{ else }}:
-        windowsPool: ${{ parameters.windowsPoolPublic }}
-      targetFrameworkVersion: ${{ targetFrameworkVersion }}
-      windowsVersions: [ 'packaged', 'unpackaged' ]
-      skipProvisioning: true
-      projects:
-      - name: essentials
-        desc: Essentials
-        windowsConfiguration: 'Debug'
-        windowsPackageId: 'com.microsoft.maui.essentials.devicetests'
-        windows: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
-      - name: graphics
-        desc: Graphics
-        windowsConfiguration: 'Debug'
-        windowsPackageId: 'com.microsoft.maui.graphics.devicetests'
-        windows: $(System.DefaultWorkingDirectory)/src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj
-      - name: core
-        desc: Core
-        windowsConfiguration: 'Debug'
-        windowsPackageId: 'com.microsoft.maui.core.devicetests'
-        windows: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj
-      - name: controls
-        desc: Controls
-        windowsConfiguration: 'Debug'
-        windowsPackageId: 'com.microsoft.maui.controls.devicetests'
-        windows: $(System.DefaultWorkingDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj
-      - name: blazorwebview
-        desc: BlazorWebView
-        windowsConfiguration: 'Debug'
-        windowsPackageId: 'Microsoft.Maui.MauiBlazorWebView.DeviceTests'
-        windows: $(System.DefaultWorkingDirectory)/src/BlazorWebView/tests/DeviceTests/MauiBlazorWebView.DeviceTests.csproj
-      platforms:
-      - windows
+
