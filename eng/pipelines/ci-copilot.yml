@@ -65,6 +65,7 @@ stages:
               skipAndroidPlatformApis: false
               skipJdk: false
               skipSimulatorSetup: false
+              skipCertificates: true
 
           # Install .NET and workloads via build.ps1
           - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
