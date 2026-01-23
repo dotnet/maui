@@ -57,7 +57,7 @@ parameters:
   default: ''
 - name: HelixAccessToken
   type: string
-  default: ''s
+  default: ''
 - name: runWindowsTests
   type: boolean
   default: false
