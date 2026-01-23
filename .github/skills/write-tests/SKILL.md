@@ -143,6 +143,41 @@ The script auto-detects that only test files exist (no fix files) and runs in "v
 
 **Do NOT mark this skill complete until tests FAIL.**
 
+### Step 6: Offer to Post Issue Comment
+
+**Ask the user if they want to post a comment documenting the tests created.**
+
+Before posting, show a preview using `-DryRun` and ask for confirmation:
+
+```powershell
+# First, show preview
+pwsh .github/skills/pr-comment/scripts/post-write-tests-comment.ps1 `
+    -IssueNumber <ISSUE_NUMBER> `
+    -TestDescription "Brief description of what the test verifies" `
+    -HostAppFile "src/Controls/tests/TestCases.HostApp/Issues/IssueXXXXX.cs" `
+    -TestFile "src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/IssueXXXXX.cs" `
+    -TestMethod "TestMethodName" `
+    -Category "CategoryName" `
+    -VerificationStatus "Verified" `
+    -Platforms "All" `
+    -Notes "optional notes" `
+    -DryRun
+```
+
+Then ask: **"Would you like me to post this comment to issue #XXXXX?"**
+
+If user confirms, run without `-DryRun` to post.
+
+**VerificationStatus options:**
+- `Verified` - Tests fail without fix (correct behavior)
+- `Unverified` - Tests not yet run
+- `Inconclusive` - See notes for details
+
+**Key behaviors:**
+- Uses `<!-- WRITE-TESTS-COMMENT -->` marker for identification
+- If an existing write-tests comment exists, it will be **edited** (not duplicated)
+- Documents test files, method name, category, and verification status
+
 ## Output
 
 After completion (tests verified to fail), report:
