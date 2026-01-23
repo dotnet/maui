@@ -53,16 +53,24 @@ namespace UITest.Appium
 
 		// Override to avoid XPath queries which fail on mac2 driver with multi-window apps.
 		// XPath causes XQueryError:6 "invalid type" when UIApplicationSceneManifest is configured.
-		// Use non-XPath lookup methods instead.
 
 		// On Mac Catalyst, AutomationId maps to accessibilityIdentifier.
-		// Override to use AccessibilityId lookup which is more reliable than MobileBy.Id.
+		// First search normally, then try searching within the window context for multi-window apps.
 		public override IUIElement FindElement(string id)
 		{
 			// Try accessibility identifier first (AutomationId maps to this on Mac)
 			var byAccessibility = AppiumQuery.ByAccessibilityId(id).FindElement(this);
 			if (byAccessibility != null)
 				return byAccessibility;
+
+			// Try finding within window context for multi-window apps
+			var window = FindWindow();
+			if (window != null)
+			{
+				var byWindowSearch = window.FindElements(MobileBy.AccessibilityId(id)).FirstOrDefault();
+				if (byWindowSearch != null)
+					return new AppiumDriverElement((AppiumElement)byWindowSearch, this);
+			}
 
 			// Fall back to standard Id lookup
 			return Query.ById(id).FirstOrDefault()!;
@@ -74,6 +82,15 @@ namespace UITest.Appium
 			var byAccessibility = AppiumQuery.ByAccessibilityId(id).FindElements(this);
 			if (byAccessibility != null && byAccessibility.Count > 0)
 				return byAccessibility;
+
+			// Try finding within window context for multi-window apps
+			var window = FindWindow();
+			if (window != null)
+			{
+				var byWindowSearch = window.FindElements(MobileBy.AccessibilityId(id));
+				if (byWindowSearch != null && byWindowSearch.Count > 0)
+					return byWindowSearch.Select(e => new AppiumDriverElement((AppiumElement)e, this)).ToList();
+			}
 
 			// Fall back to standard Id lookup
 			return Query.ById(id);
@@ -91,6 +108,19 @@ namespace UITest.Appium
 			if (byName != null)
 				return byName;
 
+			// Try finding within window context for multi-window apps
+			var window = FindWindow();
+			if (window != null)
+			{
+				var byWindowAccessibilityId = window.FindElements(MobileBy.AccessibilityId(text)).FirstOrDefault();
+				if (byWindowAccessibilityId != null)
+					return new AppiumDriverElement((AppiumElement)byWindowAccessibilityId, this);
+
+				var byWindowName = window.FindElements(MobileBy.Name(text)).FirstOrDefault();
+				if (byWindowName != null)
+					return new AppiumDriverElement((AppiumElement)byWindowName, this);
+			}
+
 			// Return null if not found - avoid XPath fallback
 			return null!;
 		}
@@ -107,7 +137,34 @@ namespace UITest.Appium
 			if (byName != null && byName.Count > 0)
 				return byName;
 
+			// Try finding within window context for multi-window apps
+			var window = FindWindow();
+			if (window != null)
+			{
+				var byWindowAccessibilityId = window.FindElements(MobileBy.AccessibilityId(text));
+				if (byWindowAccessibilityId != null && byWindowAccessibilityId.Count > 0)
+					return byWindowAccessibilityId.Select(e => new AppiumDriverElement((AppiumElement)e, this)).ToList();
+
+				var byWindowName = window.FindElements(MobileBy.Name(text));
+				if (byWindowName != null && byWindowName.Count > 0)
+					return byWindowName.Select(e => new AppiumDriverElement((AppiumElement)e, this)).ToList();
+			}
+
 			return new List<IUIElement>();
+		}
+
+		// Helper to find the main window element for window-scoped searches
+		private AppiumElement? FindWindow()
+		{
+			try
+			{
+				// Find window by class - works better with multi-window apps
+				return (AppiumElement?)Driver.FindElements(MobileBy.ClassName("XCUIElementTypeWindow")).FirstOrDefault();
+			}
+			catch
+			{
+				return null;
+			}
 		}
 
 		private static AppiumOptions GetOptions(IConfig config)
