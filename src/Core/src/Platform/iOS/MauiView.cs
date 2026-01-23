@@ -121,9 +121,14 @@ namespace Microsoft.Maui.Platform
 			// To prevent this, we ignore safe area calculations on child views when they are inside a scroll view.
 			// The scrollview itself is responsible for applying the correct insets, and child views should not apply additional safe area logic.
 			//
+			// EXCEPTION: CollectionView/CarouselView items should always respond to safe area even though they're inside UICollectionView (UIScrollView).
+			// CollectionView cells need to handle their own safe area because the collection view doesn't apply safe area to individual cells.
+			//
 			// For more details and implementation specifics, see MauiScrollView.cs, which contains the logic for safe area management
 			// within scroll views and explains how this interacts with the overall layout system.
-			_scrollViewDescendant = this.GetParentOfType<UIScrollView>() is not null;
+			var scrollViewParent = this.GetParentOfType<UIScrollView>();
+			_scrollViewDescendant = scrollViewParent is not null && scrollViewParent is not UICollectionView;
+			
 			return !_scrollViewDescendant.Value;
 		}
 
@@ -290,7 +295,14 @@ namespace Microsoft.Maui.Platform
 
 		SafeAreaPadding GetAdjustedSafeAreaInsets()
 		{
-			var baseSafeArea = SafeAreaInsets.ToSafeAreaInsets();
+			// For CollectionView/CarouselView items, use Window's SafeAreaInsets instead of the cell's own SafeAreaInsets
+			// because cells might not have correct insets during initial layout, especially in landscape orientation.
+			// The Window always has the correct safe area values.
+			var isCollectionViewChild = this.GetParentOfType<UIKit.UICollectionView>() is not null;
+			var baseSafeArea = isCollectionViewChild && Window is not null
+				? Window.SafeAreaInsets.ToSafeAreaInsets()
+				: SafeAreaInsets.ToSafeAreaInsets();
+
 
 			// Check if keyboard-aware safe area adjustments are needed
 			if (View is ISafeAreaView2 safeAreaPage && _isKeyboardShowing)
@@ -483,6 +495,13 @@ namespace Microsoft.Maui.Platform
 		/// <param name="bounds">The bounds rectangle to arrange within</param>
 		void CrossPlatformArrange(CGRect bounds)
 		{
+			// CRITICAL: Force safe area revalidation to ensure _appliesSafeAreaAdjustments flag is current
+			// This is especially important after CollectionView.InvalidateLayout() which triggers arrange
+			// but doesn't automatically trigger LayoutSubviews() or SafeAreaInsetsDidChange()
+			// We set _safeAreaInvalidated = true to force ValidateSafeArea to actually check instead of returning early
+			_safeAreaInvalidated = true;
+			ValidateSafeArea();
+
 			if (_appliesSafeAreaAdjustments)
 			{
 				bounds = AdjustForSafeArea(bounds);

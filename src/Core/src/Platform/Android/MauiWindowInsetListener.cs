@@ -101,8 +101,10 @@ namespace Microsoft.Maui.Platform
 				// Skip setting listener on views inside nested scroll containers or AppBarLayout (except MaterialToolbar)
 				// We want the layout listener logic to get applied to the MaterialToolbar itself
 				// But we don't want any layout listeners to get applied to the children of MaterialToolbar (like the TitleView)
+				// CollectionView/CarouselView items are not excluded to enable per-item SafeAreaEdges control.
+				// Performance overhead is negligible due to early pass-through for items without insets.
 				if (view is not MaterialToolbar &&
-					(parent is AppBarLayout || parent is MauiScrollView || parent is IMauiRecyclerView))
+					(parent is AppBarLayout || parent is MauiScrollView))
 				{
 					return null;
 				}
