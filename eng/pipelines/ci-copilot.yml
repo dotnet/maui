@@ -93,7 +93,7 @@ stages:
               # Invoke the PR reviewer agent using Copilot CLI in programmatic mode
               # --allow-all-tools allows Copilot to execute commands without manual approval
               # Capture output to a file for posting as PR comment
-              copilot --agent pr -p "Review PR #${{ parameters.PRNumber }}" you are already on the correct branch so don't switch branches. Please think through every phase you need for doing this review and then execute all the way until the end unless any of the phases fail --yolo 2>&1 | tee $(Build.ArtifactStagingDirectory)/copilot_review_output.md
+              copilot --agent pr -p "Review PR #${{ parameters.PRNumber }}" you are already on the correct branch so don't switch branches. Please think through every phase you need for doing this review and then execute all the way until the end unless any of the phases fail" --yolo 2>&1 | tee $(Build.ArtifactStagingDirectory)/copilot_review_output.md
               
               echo "Review output saved to $(Build.ArtifactStagingDirectory)/copilot_review_output.md"
             displayName: 'Run PR Reviewer Agent'
