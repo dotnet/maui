@@ -20,6 +20,39 @@ namespace UITest.Appium
 			_commandExecutor.AddCommandGroup(new AppiumCatalystThemeChangeAction());
 			_commandExecutor.AddCommandGroup(new AppiumCatalystVirtualKeyboardActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumCatalystScrollActions(this));
+
+			// For multi-window apps (UIApplicationSceneManifest), we need to explicitly
+			// activate the app and switch to its window for element lookup to work.
+			// Without this, XCTest only sees the menu bar, not the window content.
+			ActivateAppWindow(config);
+		}
+
+		// Activates the app and switches to its main window for multi-window scene-based apps
+		private void ActivateAppWindow(IConfig config)
+		{
+			try
+			{
+				var appId = config.GetProperty<string>("AppId");
+				if (string.IsNullOrWhiteSpace(appId))
+					return;
+
+				// Activate the application
+				_driver?.ExecuteScript("macos: activateApp", new Dictionary<string, object>
+				{
+					{ "bundleId", appId }
+				});
+
+				// Switch to the app's window context
+				var windowHandles = _driver?.WindowHandles;
+				if (windowHandles != null && windowHandles.Count > 0)
+				{
+					_driver?.SwitchTo().Window(windowHandles[0]);
+				}
+			}
+			catch (Exception)
+			{
+				// Ignore activation errors - app may already be active or not support multi-window
+			}
 		}
 
 		public override ApplicationState AppState
