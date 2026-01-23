@@ -7,7 +7,7 @@ public class Issue33614 : ContentPage
 {
     public ObservableCollection<string> Items { get; set; }
     private Label _firstIndexLabel;
-    private CollectionView _collectionView;
+    private CollectionView2 _collectionView;
     public Issue33614()
     {
         Items = new ObservableCollection<string>();
@@ -30,7 +30,7 @@ public class Issue33614 : ContentPage
         };
         scrollToButton.Clicked += OnScrollToButtonClicked;
 
-        _collectionView = new CollectionView
+        _collectionView = new CollectionView2
         {
             AutomationId = "TestCollectionView",
             ItemsSource = Items,
