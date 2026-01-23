@@ -73,7 +73,41 @@ stages:
 
           - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
             displayName: 'Add .NET to PATH'
-
+            
+          # List all available simulators/emulators
+          - script: |
+              echo "=== Listing Available Simulators/Emulators ==="
+              
+              # List iOS simulators using xcrun
+              echo ""
+              echo "=== iOS Simulators (xcrun simctl) ==="
+              xcrun simctl list devices available
+              
+              # List iOS simulators using xharness
+              echo ""
+              echo "=== iOS Simulators (xharness) ==="
+              dotnet xharness apple device --list || echo "xharness apple device list failed"
+              
+              # List Android emulators using xharness
+              echo ""
+              echo "=== Android Emulators (xharness) ==="
+              dotnet xharness android device --list || echo "xharness android device list failed"
+              
+              # List Android AVDs
+              echo ""
+              echo "=== Android AVDs (avdmanager) ==="
+              if [ -n "$ANDROID_HOME" ]; then
+                "$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager" list avd 2>/dev/null || echo "avdmanager not available"
+              elif [ -n "$ANDROID_SDK_ROOT" ]; then
+                "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager" list avd 2>/dev/null || echo "avdmanager not available"
+              else
+                echo "ANDROID_HOME/ANDROID_SDK_ROOT not set"
+              fi
+              
+              echo ""
+              echo "=== Simulator/Emulator listing complete ==="
+            displayName: 'List Simulators and Emulators'
+            
           # Verify environment is ready
           - script: |
               echo "=== Verifying Build Environment ==="
@@ -139,40 +173,7 @@ stages:
               echo "=== Environment Verification PASSED ==="
             displayName: 'Verify Build Environment'
 
-          # List all available simulators/emulators
-          - script: |
-              echo "=== Listing Available Simulators/Emulators ==="
-              
-              # List iOS simulators using xcrun
-              echo ""
-              echo "=== iOS Simulators (xcrun simctl) ==="
-              xcrun simctl list devices available
-              
-              # List iOS simulators using xharness
-              echo ""
-              echo "=== iOS Simulators (xharness) ==="
-              dotnet xharness apple device --list || echo "xharness apple device list failed"
-              
-              # List Android emulators using xharness
-              echo ""
-              echo "=== Android Emulators (xharness) ==="
-              dotnet xharness android device --list || echo "xharness android device list failed"
-              
-              # List Android AVDs
-              echo ""
-              echo "=== Android AVDs (avdmanager) ==="
-              if [ -n "$ANDROID_HOME" ]; then
-                "$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager" list avd 2>/dev/null || echo "avdmanager not available"
-              elif [ -n "$ANDROID_SDK_ROOT" ]; then
-                "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager" list avd 2>/dev/null || echo "avdmanager not available"
-              else
-                echo "ANDROID_HOME/ANDROID_SDK_ROOT not set"
-              fi
-              
-              echo ""
-              echo "=== Simulator/Emulator listing complete ==="
-            displayName: 'List Simulators and Emulators'
-            
+
           # Restore .NET tools (includes xharness)
           - script: |
               echo "Restoring .NET tools..."
