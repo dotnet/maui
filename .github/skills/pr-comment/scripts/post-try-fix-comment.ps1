@@ -1,28 +1,31 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-    Posts or updates a try-fix attempts comment on a GitHub Pull Request.
+    Posts or updates a try-fix attempts comment on a GitHub Issue or Pull Request.
 
 .DESCRIPTION
-    Creates ONE comment for all try-fix attempts wrapped in a collapsible "Expand Full Details" section.
+    Creates ONE comment for all try-fix attempts with each attempt in a collapsible section.
     Uses HTML marker <!-- TRY-FIX-COMMENT --> for identification.
     
-    If an existing try-fix comment exists, it will be updated with the new attempt.
+    If an existing try-fix comment exists, it will be EDITED with the new attempt added.
     Otherwise, a new comment will be created.
     
     Format:
-    ## 🔧 Try-Fix Attempts for Issue #XXXXX
+    ## 🔧 Try-Fix Analysis for Issue #XXXXX
     <!-- TRY-FIX-COMMENT -->
+    
     <details>
-    <summary>📊 Expand Full Details</summary>
-      Issue link + all attempts as nested <details> sections
+    <summary><b>Attempt #1: Approach Name ✅ PASS</b></summary>
+    ... attempt details ...
+    </details>
+    
+    <details>
+    <summary><b>Attempt #2: Different Approach ❌ FAIL</b></summary>
+    ... attempt details ...
     </details>
 
-.PARAMETER PRNumber
-    The pull request number (required)
-
 .PARAMETER IssueNumber
-    The related issue number (required)
+    The issue number to post comment on (required)
 
 .PARAMETER AttemptNumber
     The attempt number (1, 2, 3, etc.) (required)
@@ -31,7 +34,7 @@
     Brief description of the fix approach (required)
 
 .PARAMETER RootCause
-    Description of the root cause identified (required)
+    Description of the root cause identified (optional for failed attempts)
 
 .PARAMETER FilesChanged
     Markdown table or list of files changed (required)
@@ -49,17 +52,14 @@
     Print comment instead of posting
 
 .EXAMPLE
-    ./post-try-fix-comment.ps1 -PRNumber 20133 -IssueNumber 19806 -AttemptNumber 1 `
-        -Approach "LayoutExtensions Width Constraint" `
-        -RootCause "ComputeFrame only constrains width for Fill alignment" `
-        -FilesChanged "| File | Changes |`n|------|---------|`n| LayoutExtensions.cs | +17/-3 |" `
-        -Status "Compiles"
+    ./post-try-fix-comment.ps1 -IssueNumber 19560 -AttemptNumber 1 `
+        -Approach "Change Shadow base class to StyleableElement" `
+        -RootCause "Shadow inherits from Element which lacks styling support" `
+        -FilesChanged "| File | Changes |`n|------|---------|`n| Shadow.cs | +1/-1 |" `
+        -Status "Pass"
 #>
 
 param(
-    [Parameter(Mandatory=$true)]
-    [int]$PRNumber,
-
     [Parameter(Mandatory=$true)]
     [int]$IssueNumber,
 
@@ -69,7 +69,7 @@ param(
     [Parameter(Mandatory=$true)]
     [string]$Approach,
 
-    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory=$false)]
     [string]$RootCause,
 
     [Parameter(Mandatory=$true)]
@@ -97,29 +97,32 @@ Write-Host "╚═════════════════════�
 
 # Status emoji mapping
 $statusEmoji = switch ($Status) {
-    "Pass" { "✅ Pass" }
-    "Fail" { "❌ Fail" }
+    "Pass" { "✅ PASS" }
+    "Fail" { "❌ FAIL" }
     "Compiles" { "✅ Compiles" }
     default { $Status }
 }
 
-# Build the new attempt section
+# Build the new attempt section (single-level collapsible)
 $attemptSection = @"
 <details>
-<summary><strong>🔧 Attempt #$AttemptNumber`: $Approach</strong> $statusEmoji</summary>
-
-### Root Cause (Independently Identified)
-
-$RootCause
+<summary><b>Attempt #$AttemptNumber`: $Approach $statusEmoji</b></summary>
 
 "@
 
+if (-not [string]::IsNullOrWhiteSpace($RootCause)) {
+    $attemptSection += @"
+### Root Cause
+$RootCause
+
+"@
+}
+
 if (-not [string]::IsNullOrWhiteSpace($CodeSnippet)) {
     $attemptSection += @"
+### Fix
 
-### Fix Approach
-
-``````csharp
+``````diff
 $CodeSnippet
 ``````
 
@@ -127,16 +130,16 @@ $CodeSnippet
 }
 
 $attemptSection += @"
-
 ### Files Changed
+
 $FilesChanged
 
-### Status
-- $statusEmoji
+### Result
+$statusEmoji
 "@
 
 if (-not [string]::IsNullOrWhiteSpace($Analysis)) {
-    $attemptSection += "`n- $Analysis"
+    $attemptSection += "`n`n$Analysis"
 }
 
 $attemptSection += @"
@@ -144,56 +147,63 @@ $attemptSection += @"
 </details>
 "@
 
-# Check for existing try-fix comment
-Write-Host "`nChecking for existing try-fix comment..." -ForegroundColor Yellow
-$existingComment = $null
+# Check for existing try-fix comment on the issue
+Write-Host "`nChecking for existing try-fix comment on issue #$IssueNumber..." -ForegroundColor Yellow
 $existingCommentId = $null
 $existingBody = ""
 
 try {
-    $comments = gh api "repos/dotnet/maui/issues/$PRNumber/comments" --jq '.[] | select(.body | contains("<!-- TRY-FIX-COMMENT -->")) | {id: .id, body: .body}' 2>$null
-    if ($comments) {
-        $existingComment = $comments | ConvertFrom-Json
-        if ($existingComment) {
-            $existingCommentId = $existingComment.id
-            $existingBody = $existingComment.body
+    # Get all comments and find one with our marker
+    $commentsJson = gh api "repos/dotnet/maui/issues/$IssueNumber/comments" 2>$null
+    $comments = $commentsJson | ConvertFrom-Json
+    
+    foreach ($comment in $comments) {
+        if ($comment.body -match "<!-- TRY-FIX-COMMENT -->") {
+            $existingCommentId = $comment.id
+            $existingBody = $comment.body
             Write-Host "✓ Found existing try-fix comment (ID: $existingCommentId)" -ForegroundColor Green
+            break
         }
     }
+    
+    if (-not $existingCommentId) {
+        Write-Host "✓ No existing try-fix comment found - will create new" -ForegroundColor Yellow
+    }
 } catch {
-    Write-Host "✓ No existing try-fix comment found" -ForegroundColor Yellow
+    Write-Host "✓ No existing try-fix comment found - will create new" -ForegroundColor Yellow
 }
 
 if ($existingCommentId) {
-    # Update existing comment - replace or add attempt section
-    $attemptPattern = "(?s)<details>\s*<summary><strong>🔧 Attempt #$AttemptNumber`:.*?</details>"
+    # Update existing comment - add new attempt or replace existing one with same number
+    $attemptPattern = "(?s)<details>\s*<summary><b>Attempt #$AttemptNumber`:.*?</details>"
     
     if ($existingBody -match $attemptPattern) {
         # Replace existing attempt with same number
         Write-Host "Replacing existing Attempt #$AttemptNumber..." -ForegroundColor Yellow
         $newBody = $existingBody -replace $attemptPattern, $attemptSection
     } else {
-        # Add new attempt before the closing note (inside the outer wrapper)
+        # Add new attempt before the footer section
         Write-Host "Adding new Attempt #$AttemptNumber..." -ForegroundColor Yellow
-        # Match the closing pattern: "---\n\n*This fix was developed independently.*\n\n</details>"
-        $closingPattern = "(?s)---\s*\n\s*\*This fix was developed independently\.\*\s*\n\s*</details>\s*$"
-        if ($existingBody -match $closingPattern) {
-            $replacement = @"
+        
+        # Remove old recommendation section if present (legacy cleanup)
+        $recPattern = "(?s)---\s*\n+### Recommendation\s*\n+.*?(?=---|\z)"
+        $newBody = $existingBody -replace $recPattern, ""
+        
+        # Remove footer
+        $footerPattern = "(?s)---\s*\n+<sub>.*?</sub>\s*$"
+        $newBody = $newBody -replace $footerPattern, ""
+        
+        # Add the new attempt and footer
+        $newBody = $newBody.TrimEnd() + "`n`n" + $attemptSection
+    }
+    
+    # Ensure footer is present
+    if ($newBody -notmatch "<sub>.*Generated by Copilot CLI") {
+        $newBody = $newBody.TrimEnd() + @"
+
 ---
-
-$attemptSection
-
----
-
-*This fix was developed independently.*
-
-</details>
+<sub>🤖 Generated by Copilot CLI try-fix skill</sub>
 "@
-            $newBody = $existingBody -replace $closingPattern, $replacement
-        } else {
-            # Fallback: insert before final </details>
-            $newBody = $existingBody -replace "</details>\s*$", "$attemptSection`n`n---`n`n*This fix was developed independently.*`n`n</details>"
-        }
     }
     
     $commentBody = $newBody
@@ -201,26 +211,14 @@ $attemptSection
     # Create new comment
     Write-Host "Creating new try-fix comment..." -ForegroundColor Yellow
     $commentBody = @"
-## 🔧 Try-Fix Attempts for Issue #$IssueNumber
+## 🔧 Try-Fix Analysis for Issue #$IssueNumber
 
 <!-- TRY-FIX-COMMENT -->
-
-<details>
-<summary>📊 <strong>Expand Full Details</strong></summary>
-
----
-
-**Issue:** [#$IssueNumber](https://github.com/dotnet/maui/issues/$IssueNumber)
-
----
 
 $attemptSection
 
 ---
-
-*This fix was developed independently.*
-
-</details>
+<sub>🤖 Generated by Copilot CLI try-fix skill</sub>
 "@
 }
 
@@ -240,8 +238,8 @@ if ($existingCommentId) {
     $result = gh api --method PATCH "repos/dotnet/maui/issues/comments/$existingCommentId" --input $tempFile --jq '.html_url'
     Write-Host "✅ Comment updated: $result" -ForegroundColor Green
 } else {
-    Write-Host "Posting new comment..." -ForegroundColor Yellow
-    $result = gh api --method POST "repos/dotnet/maui/issues/$PRNumber/comments" --input $tempFile --jq '.html_url'
+    Write-Host "Posting new comment to issue #$IssueNumber..." -ForegroundColor Yellow
+    $result = gh api --method POST "repos/dotnet/maui/issues/$IssueNumber/comments" --input $tempFile --jq '.html_url'
     Write-Host "✅ Comment posted: $result" -ForegroundColor Green
 }
 
