@@ -16,7 +16,10 @@ namespace UITest.Appium
 			{
 				if (_app.Driver.IsKeyboardShown())
 				{
-					_app.Driver.HideKeyboard("return");
+					var keyboard = _app.Driver.FindElements(By.XPath("//XCUIElementTypeKeyboard")).FirstOrDefault(k => k.Displayed && k.Enabled);
+					// Look for button with name='Return' within keyboard
+					var returnElements = keyboard?.FindElement(By.XPath(".//XCUIElementTypeButton[@name='Return']"));
+					returnElements?.Click();
 				}
 			}
 			catch (InvalidElementStateException)
