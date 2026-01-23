@@ -121,4 +121,17 @@
     </ItemGroup>
   </Target>
 
+  <!-- Make sure we include all static web assets in the single-file bundle.  -->
+  <Target Name="_IncludeStaticWebAssetsInSingleFileBundle"
+          AfterTargets="_ComputeFilesToBundle"
+          BeforeTargets="PrepareForBundle"
+          Condition="'$(PublishSingleFile)' == 'true'">
+
+    <ItemGroup>
+      <_FilesToBundle Include="@(MauiAsset)" Condition="'%(MauiAsset.TargetPath)' != ''">
+        <RelativePath>%(MauiAsset.TargetPath)</RelativePath>
+      </_FilesToBundle>
+    </ItemGroup>
+  </Target>
+
 </Project>
