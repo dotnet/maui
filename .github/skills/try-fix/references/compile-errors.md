@@ -1,6 +1,6 @@
 # Common Compile Error Patterns
 
-Reference guide for resolving compile errors during fix attempts.
+Reference guide for resolving compile errors and test failures during fix attempts.
 
 ## Error Pattern Quick Reference
 
@@ -12,8 +12,28 @@ Reference guide for resolving compile errors during fix attempts.
 | `CS0246: type not found` | Missing assembly reference or using | Add using or check project references |
 | `CS1061: member doesn't exist` | Wrong type or API signature | Verify type and API documentation |
 
+## Handling Compile Errors
+
+- Read error messages (CS#### codes)
+- Fix the issue in your code
+- DO NOT manually build - rerun the test command script
+
+## Handling Test Failures
+
+- Read test output carefully - what timeout? what exception?
+- `TimeoutException` usually means app crashed or didn't launch properly
+- Analyze your code for runtime bugs (null references, invalid calculations, etc.)
+- Fix the bug and rerun the test command
+
 ## Example Iteration
 
+```
+Iteration 1: Test command → Compile error CS1061 → Fix method name → Rerun
+Iteration 2: Test command → TimeoutException → Found double-scaling bug → Fix → Rerun  
+Iteration 3: Test command → Tests PASS ✅
+```
+
+**Another example:**
 ```
 Attempt #1: Implement OnLayoutChangeListener
   → Build: ❌ CS0104: 'View' is ambiguous reference
