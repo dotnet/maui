@@ -20,8 +20,6 @@ parameters:
     default:
       name: Azure Pipelines
       vmImage: macOS-15
-      demands:
-        - Agent.OS -equals Darwin
 
 variables:
   - template: /eng/pipelines/common/variables.yml@self
