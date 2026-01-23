@@ -39,7 +39,6 @@ namespace Microsoft.Maui.Platform
 			if (datePickerDialog is not null)
 			{
 				// Reset to 0 first to force Android to accept the new value.
-				// See: https://stackoverflow.com/questions/19616575
 				datePickerDialog.DatePicker.MinDate = 0;
 
 				if (datePicker.MinimumDate is null)
@@ -65,7 +64,6 @@ namespace Microsoft.Maui.Platform
 			if (datePickerDialog is not null)
 			{
 				// Reset to a large value first to force Android to accept the new value.
-				// See: https://stackoverflow.com/questions/19616575
 				datePickerDialog.DatePicker.MaxDate = long.MaxValue;
 
 				if (datePicker.MaximumDate is null)

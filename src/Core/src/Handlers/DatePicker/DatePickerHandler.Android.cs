@@ -189,8 +189,8 @@ namespace Microsoft.Maui.Handlers
 				{
 					PlatformView?.UpdateMinimumDate(VirtualView, _dialog);
 					PlatformView?.UpdateMaximumDate(VirtualView, _dialog);
+					_dialog.ShowEvent -= updateMinMaxDates;
 				}
-				_dialog!.ShowEvent -= updateMinMaxDates;
 			};
 			_dialog.ShowEvent += updateMinMaxDates;
 
