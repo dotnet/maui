@@ -139,13 +139,6 @@ stages:
               echo "=== Environment Verification PASSED ==="
             displayName: 'Verify Build Environment'
 
-          # Restore .NET tools (includes xharness)
-          - script: |
-              echo "Restoring .NET tools..."
-              dotnet tool restore
-              echo "Tools restored successfully"
-            displayName: 'Restore .NET Tools'
-
           # List all available simulators/emulators
           - script: |
               echo "=== Listing Available Simulators/Emulators ==="
@@ -179,6 +172,15 @@ stages:
               echo ""
               echo "=== Simulator/Emulator listing complete ==="
             displayName: 'List Simulators and Emulators'
+            
+          # Restore .NET tools (includes xharness)
+          - script: |
+              echo "Restoring .NET tools..."
+              dotnet tool restore
+              echo "Tools restored successfully"
+            displayName: 'Restore .NET Tools'
+
+
 
           - script: |
               echo "Installing Node.js 22..."
