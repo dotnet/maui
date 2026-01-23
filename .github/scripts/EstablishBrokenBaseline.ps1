@@ -335,6 +335,35 @@ if ($Restore) {
     }
 }
 
+# ============================================================
+# FAIL-FAST: Require clean working directory
+# ============================================================
+# This check ensures every successful baseline establishment started from a clean state.
+# If this script completes without error, the baseline was valid - no checkpoint logging needed.
+
+$dirtyFiles = git status --porcelain --untracked-files=no 2>$null
+if ($dirtyFiles) {
+    Write-Host "" -ForegroundColor Red
+    Write-Host "╔═══════════════════════════════════════════════════════════════════╗" -ForegroundColor Red
+    Write-Host "║  ERROR: DIRTY WORKING DIRECTORY - Cannot establish baseline       ║" -ForegroundColor Red
+    Write-Host "╚═══════════════════════════════════════════════════════════════════╝" -ForegroundColor Red
+    Write-Host ""
+    Write-Host "The following files have uncommitted changes:" -ForegroundColor Yellow
+    Write-Host ""
+    $dirtyFiles -split "`n" | ForEach-Object { Write-Host "  $_" -ForegroundColor White }
+    Write-Host ""
+    Write-Host "This usually means a previous try-fix attempt did not restore properly." -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host "To fix:" -ForegroundColor Cyan
+    Write-Host "  1. Run 'git status' to review the changes" -ForegroundColor White
+    Write-Host "  2. Either commit them: git add . && git commit -m 'Save changes'" -ForegroundColor White
+    Write-Host "  3. Or discard them:   git checkout -- ." -ForegroundColor White
+    Write-Host "  4. Then retry this script" -ForegroundColor White
+    Write-Host ""
+    
+    throw "EstablishBrokenBaseline.ps1 failed: Working directory is not clean. Clean up before establishing baseline."
+}
+
 # Find merge-base
 Write-Host "Detecting base branch and merge point..." -ForegroundColor Cyan
 
