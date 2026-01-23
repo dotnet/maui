@@ -72,6 +72,12 @@ namespace Microsoft.Maui.Platform
 		// Null means not yet determined. Invalidated when view hierarchy changes.
 		bool? _parentHandlesSafeArea;
 
+		// Cached UICollectionView parent detection to avoid repeated hierarchy checks.
+		bool? _collectionViewDescendant;
+
+		// Cached Window safe area insets for CollectionView children to detect changes.
+		UIEdgeInsets _lastWindowSafeAreaInsets;
+
 		// Keyboard tracking
 		CGRect _keyboardFrame = CGRect.Empty;
 		bool _isKeyboardShowing;
@@ -132,6 +138,9 @@ namespace Microsoft.Maui.Platform
 			// within scroll views and explains how this interacts with the overall layout system.
 			var scrollViewParent = this.GetParentOfType<UIScrollView>();
 			_scrollViewDescendant = scrollViewParent is not null && scrollViewParent is not UICollectionView;
+			
+			// Cache whether this view is inside a UICollectionView for use in CrossPlatformArrange()
+			_collectionViewDescendant = scrollViewParent is UICollectionView;
 			
 			return !_scrollViewDescendant.Value;
 		}
@@ -302,8 +311,7 @@ namespace Microsoft.Maui.Platform
 			// For CollectionView/CarouselView items, use Window's SafeAreaInsets instead of the cell's own SafeAreaInsets
 			// because cells might not have correct insets during initial layout, especially in landscape orientation.
 			// The Window always has the correct safe area values.
-			var isCollectionViewChild = this.GetParentOfType<UIKit.UICollectionView>() is not null;
-			var baseSafeArea = isCollectionViewChild && Window is not null
+			var baseSafeArea = _collectionViewDescendant == true && Window is not null
 				? Window.SafeAreaInsets.ToSafeAreaInsets()
 				: SafeAreaInsets.ToSafeAreaInsets();
 
@@ -536,13 +544,18 @@ namespace Microsoft.Maui.Platform
 		/// <param name="bounds">The bounds rectangle to arrange within</param>
 		void CrossPlatformArrange(CGRect bounds)
 		{
-			// CRITICAL: Force safe area revalidation to ensure _appliesSafeAreaAdjustments flag is current
-			// This is especially important after CollectionView.InvalidateLayout() which triggers arrange
-			// but doesn't automatically trigger LayoutSubviews() or SafeAreaInsetsDidChange()
-			// We set _safeAreaInvalidated = true to force ValidateSafeArea to actually check instead of returning early
-			_safeAreaInvalidated = true;
-			ValidateSafeArea();
-
+			// Force safe area revalidation for CollectionView cells when Window safe area changes.
+			if (View is ISafeAreaView or ISafeAreaView2 && _collectionViewDescendant == true && Window is not null)
+			{
+				var currentWindowInsets = Window.SafeAreaInsets;
+				if (!currentWindowInsets.Equals(_lastWindowSafeAreaInsets))
+				{
+					_lastWindowSafeAreaInsets = currentWindowInsets;
+					_safeAreaInvalidated = true;
+					ValidateSafeArea();
+				}
+			}
+			
 			if (_appliesSafeAreaAdjustments)
 			{
 				bounds = AdjustForSafeArea(bounds);
@@ -787,6 +800,8 @@ namespace Microsoft.Maui.Platform
 
 			_scrollViewDescendant = null;
 			_parentHandlesSafeArea = null;
+			_collectionViewDescendant = null;
+			_lastWindowSafeAreaInsets = UIEdgeInsets.Zero;
 
 			// Notify any subscribers that this view has been moved to a window
 			_movedToWindow?.Invoke(this, EventArgs.Empty);
