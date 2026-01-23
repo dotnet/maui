@@ -1,4 +1,4 @@
-#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS // This test is specific to Mac Catalyst window maximize/restore behavior
+#if TEST_FAILS_ON_WINDOWS // TitleView is not rendered at its full width on the Windows platform during the initial render.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -13,27 +13,23 @@ public class Issue33613 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Navigation)]
-	public void TitleViewLayoutIsCorrectWithBackButton()
+	public void Issue33613Test()
 	{
 		App.WaitForElement("NavigateButton");
 		App.Tap("NavigateButton");
-		App.WaitForElement("TitleLabel");
-		var titleLabelRect = App.WaitForElement("TitleLabel").GetRect();
+		App.WaitForElement("TitleViewGrid");
+		var titleLabelRect = App.WaitForElement("TitleViewGrid").GetRect();
 		var previousWidth = titleLabelRect.Width;
-		
+#if MACCATALYST || WINDOWS
 		App.EnterFullScreen();
+#elif ANDROID || IOS
+		App.SetOrientationLandscape();
+#endif
 		Thread.Sleep(1000); // Wait for the animation to complete
-		
-		var newTitleLabelRect = App.WaitForElement("TitleLabel").GetRect();
+		var newTitleLabelRect = App.WaitForElement("TitleViewGrid").GetRect();
 		var newWidth = newTitleLabelRect.Width;
-		
-		// Test passes if the TitleView width increases when entering full screen
-		// This verifies the TitleView properly expands to fill the available navigation bar space
 		Assert.That(newWidth, Is.GreaterThan(previousWidth), 
 			$"TitleView should expand when window is maximized. Previous: {previousWidth}, New: {newWidth}");
-		
-		App.Tap("GoBackButton");
-		App.WaitForElement("NavigateButton");
 	}
 }
 #endif
