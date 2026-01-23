@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
@@ -371,6 +372,19 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
+		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
+		{
+			base.OnPropertyChanged(propertyName);
+			if (propertyName == BorderColorProperty.PropertyName)
+			{
+				Handler?.UpdateValue(nameof(IRadioButton.StrokeColor));
+			}
+			else if (propertyName == BorderWidthProperty.PropertyName)
+			{
+				Handler?.UpdateValue(nameof(IRadioButton.StrokeThickness));
+			}
+		}
+
 		bool IBorderElement.IsCornerRadiusSet() => IsSet(BorderElement.CornerRadiusProperty);
 		bool IBorderElement.IsBackgroundColorSet() => IsSet(BackgroundColorProperty);
 		bool IBorderElement.IsBackgroundSet() => IsSet(BackgroundProperty);
@@ -702,7 +716,7 @@ namespace Microsoft.Maui.Controls
 		Font ITextStyle.Font => this.ToFont();
 
 #if ANDROID
-		object IContentView.Content 
+		object IContentView.Content
 		{
 			get
 			{
