@@ -12,16 +12,50 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Layout)]
-		public void VerifyGridRowAndColumnSizeInvalidatedCorrectly()
+		public void GridRowDefinitionResizeWithShortSyntax()
 		{
-			var resizeRowButton = App.WaitForElement("resizeRowButton");
-			var resizeColumnButton = App.WaitForElement("resizeColumnButton");
+			// Wait for page to load and get initial blue label rect
+			App.WaitForElement("resizeColumnResultLabel");
+			var initialRect = App.WaitForElement("resizeColumnResultLabel").GetRect();
+			var initialHeight = initialRect.Height;
 
-			resizeRowButton.Click();
-			resizeColumnButton.Click();
+			// Click resize row button - increases row height by 100
+			App.Tap("resizeRowButton");
+
+			// Wait for layout to update
 			Task.Delay(500).Wait();
 
-			VerifyScreenshot();
+			// Get new rect - blue label should be taller if grid invalidated correctly
+			var newRect = App.WaitForElement("resizeColumnResultLabel").GetRect();
+			var newHeight = newRect.Height;
+
+			// Verify the blue label got taller (row definition change took effect)
+			Assert.That(newHeight, Is.GreaterThan(initialHeight), 
+				$"Expected blue label height to increase after row resize. Initial: {initialHeight}, New: {newHeight}");
+		}
+
+		[Test]
+		[Category(UITestCategories.Layout)]
+		public void GridColumnDefinitionResizeWithShortSyntax()
+		{
+			// Wait for page to load and get initial blue label rect
+			App.WaitForElement("resizeColumnResultLabel");
+			var initialRect = App.WaitForElement("resizeColumnResultLabel").GetRect();
+			var initialWidth = initialRect.Width;
+
+			// Click resize column button - increases column width by 100
+			App.Tap("resizeColumnButton");
+
+			// Wait for layout to update
+			Task.Delay(500).Wait();
+
+			// Get new rect - blue label should be wider if grid invalidated correctly
+			var newRect = App.WaitForElement("resizeColumnResultLabel").GetRect();
+			var newWidth = newRect.Width;
+
+			// Verify the blue label got wider (column definition change took effect)
+			Assert.That(newWidth, Is.GreaterThan(initialWidth), 
+				$"Expected blue label width to increase after column resize. Initial: {initialWidth}, New: {newWidth}");
 		}
 	}
 }
