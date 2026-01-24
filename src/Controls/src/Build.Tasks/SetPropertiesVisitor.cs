@@ -720,12 +720,21 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 																	&& pd.GetMethod != null
 																	&& TypeRefComparer.Default.Equals(pd.GetMethod.Parameters[0].ParameterType.ResolveGenericParameters(previousPartTypeRef), module.ImportReference(context.Cache, ("mscorlib", "System", "Object")))
 																	&& pd.GetMethod.IsPublic, out indexerDeclTypeRef);
+					// Try to find an indexer with an enum parameter type
+					indexer ??= previousPartTypeRef.GetProperty(context.Cache,
+																	pd => pd.Name == indexerName
+																	&& pd.GetMethod != null
+																	&& pd.GetMethod.Parameters[0].ParameterType.ResolveGenericParameters(previousPartTypeRef).ResolveCached(context.Cache)?.IsEnum == true
+																	&& pd.GetMethod.IsPublic, out indexerDeclTypeRef);
 
 					properties.Add((indexer, indexerDeclTypeRef, indexArg));
 					if (indexer != null) //the case when we index on an array, not a list
 					{
 						var indexType = indexer.GetMethod.Parameters[0].ParameterType.ResolveGenericParameters(indexerDeclTypeRef);
-						if (!TypeRefComparer.Default.Equals(indexType, module.TypeSystem.String) && !TypeRefComparer.Default.Equals(indexType, module.TypeSystem.Int32))
+						var indexTypeDef = indexType.ResolveCached(context.Cache);
+						if (!TypeRefComparer.Default.Equals(indexType, module.TypeSystem.String) 
+							&& !TypeRefComparer.Default.Equals(indexType, module.TypeSystem.Int32)
+							&& indexTypeDef?.IsEnum != true)
 							throw new BuildException(BindingIndexerTypeUnsupported, lineInfo, null, indexType.FullName);
 						previousPartTypeRef = indexer.PropertyType.ResolveGenericParameters(indexerDeclTypeRef);
 					}
@@ -743,7 +752,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			return true;
 		}
 
-		static IEnumerable<Instruction> DigProperties(IEnumerable<(PropertyDefinition property, TypeReference propDeclTypeRef, string indexArg)> properties, Dictionary<TypeReference, VariableDefinition> locs, Func<Instruction> fallback, IXmlLineInfo lineInfo, ModuleDefinition module)
+		static IEnumerable<Instruction> DigProperties(IEnumerable<(PropertyDefinition property, TypeReference propDeclTypeRef, string indexArg)> properties, Dictionary<TypeReference, VariableDefinition> locs, Func<Instruction> fallback, IXmlLineInfo lineInfo, ModuleDefinition module, XamlCache cache = null)
 		{
 			var first = true;
 
@@ -781,7 +790,25 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 						else if (TypeRefComparer.Default.Equals(indexType, module.TypeSystem.Int32) && int.TryParse(indexArg, out index))
 							yield return Create(Ldc_I4, index);
 						else
-							throw new BuildException(BindingIndexerParse, lineInfo, null, indexArg, property.Name);
+						{
+							// Try to handle enum types
+							var indexTypeDef = cache != null ? indexType.ResolveCached(cache) : indexType.Resolve();
+							if (indexTypeDef?.IsEnum == true)
+							{
+								// Find the enum field with the matching name
+								var enumField = indexTypeDef.Fields.FirstOrDefault(f => f.IsStatic && f.Name == indexArg);
+								if (enumField != null)
+								{
+									// Load the enum value as an integer constant
+									var enumValue = Convert.ToInt32(enumField.Constant);
+									yield return Create(Ldc_I4, enumValue);
+								}
+								else
+									throw new BuildException(BindingIndexerParse, lineInfo, null, indexArg, property.Name);
+							}
+							else
+								throw new BuildException(BindingIndexerParse, lineInfo, null, indexArg, property.Name);
+						}
 					}
 				}
 
@@ -860,7 +887,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 						pop = Create(Pop);
 
 					return pop;
-				}, node as IXmlLineInfo, module));
+				}, node as IXmlLineInfo, module, context.Cache));
 
 				foreach (var loc in locs.Values)
 					getter.Body.Variables.Add(loc);
@@ -950,7 +977,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					pop = Create(Pop);
 
 				return pop;
-			}, node as IXmlLineInfo, module));
+			}, node as IXmlLineInfo, module, context.Cache));
 
 			foreach (var loc in locs.Values)
 				setter.Body.Variables.Add(loc);
@@ -1076,7 +1103,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					il.Emit(Ldarg_0);
 				var lastGetterTypeRef = properties[i - 1].property?.PropertyType;
 				var locs = new Dictionary<TypeReference, VariableDefinition>();
-				il.Append(DigProperties(properties.Take(i), locs, null, node as IXmlLineInfo, module));
+				il.Append(DigProperties(properties.Take(i), locs, null, node as IXmlLineInfo, module, context.Cache));
 				foreach (var loc in locs.Values)
 					partGetter.Body.Variables.Add(loc);
 				if (lastGetterTypeRef != null && lastGetterTypeRef.IsValueType)
