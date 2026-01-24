@@ -1,1 +1,3 @@
 #nullable enable
+override Microsoft.Maui.Platform.MauiHybridWebView.OnSizeChanged(int width, int height, int oldWidth, int oldHeight) -> void
+override Microsoft.Maui.Platform.MauiWebView.OnSizeChanged(int width, int height, int oldWidth, int oldHeight) -> void
