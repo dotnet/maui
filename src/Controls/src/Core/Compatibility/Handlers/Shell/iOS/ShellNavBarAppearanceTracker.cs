@@ -101,8 +101,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				navigationBarAppearance.ConfigureWithTransparentBackground();
 				navBar.Translucent = true;
 			}
-			else
+			else if (!OperatingSystem.IsIOSVersionAtLeast(26) || appearance.BackgroundColor is not null)
 			{
+				// iOS 26 introduced Liquid Glass design with translucent nav bars by default.
+				// Only force opaque appearance if background color is explicitly set.
 				navigationBarAppearance.ConfigureWithOpaqueBackground();
 				navBar.Translucent = false;
 			}
