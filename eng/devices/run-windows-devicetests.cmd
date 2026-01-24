@@ -223,8 +223,13 @@ if %IS_PACKAGED%==1 (
     REM Unpackaged Test Execution
     REM ========================================
     
+    REM List contents to see what we have
+    echo Listing %SCENARIO_DIR% contents:
+    dir /s /b "%SCENARIO_DIR%" 2>nul | findstr /i "\.exe"
+    
     REM Find the executable - look for Microsoft.Maui.{SCENARIO}.exe specifically
     REM to avoid matching RestartAgent.exe or other helper executables
+    REM The exe should be in the Unpackaged subfolder from the archive
     set TEST_EXE=
     set EXPECTED_EXE_NAME=Microsoft.Maui.%SCENARIO_NAME%.exe
     echo Looking for executable: !EXPECTED_EXE_NAME!
@@ -236,6 +241,8 @@ if %IS_PACKAGED%==1 (
     if not defined TEST_EXE (
         echo WARNING: Could not find !EXPECTED_EXE_NAME!, listing available executables:
         dir /s /b "%SCENARIO_DIR%\*.exe" 2>nul
+        echo Listing all files in scenario dir:
+        dir /s "%SCENARIO_DIR%" 2>nul
         echo ERROR: No executable found for unpackaged tests
         exit /b 1
     )

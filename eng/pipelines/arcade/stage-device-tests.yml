@@ -463,37 +463,78 @@ stages:
               displayName: Build ${{ project.name }} (Windows Packaged)
               retryCountOnTaskFailure: 1
 
+          # Build Unpackaged tests (self-contained .exe for direct execution)
+          - ${{ each project in parameters.windowsDeviceTestProjects }}:
+            - script: dotnet cake eng/devices/windows.cake --target=buildOnly --project="$(Build.SourcesDirectory)/${{ project.path }}" --device=unpackaged --binlog="$(Build.SourcesDirectory)/artifacts/log/Debug" --configuration=Release --packageid=${{ project.packageId }} --verbosity=diagnostic
+              displayName: Build ${{ project.name }} (Windows Unpackaged)
+              retryCountOnTaskFailure: 1
+
           # Create zip archives for each device test project
-          # The MSIX packages are built in the project's AppPackages directory, not artifacts/bin
+          # Include both packaged (AppPackages with MSIX) and unpackaged (publish folder with .exe)
           - pwsh: |
               # Ensure artifacts/bin directory exists
               $artifactsDir = "$(Build.SourcesDirectory)/artifacts/bin"
               New-Item -ItemType Directory -Force -Path $artifactsDir | Out-Null
               
-              # Archive each project's AppPackages directory
+              # Project configurations with artifact bin paths
               $projects = @(
-                @{ Name = "Controls.DeviceTests"; Dir = "$(Build.SourcesDirectory)/src/Controls/tests/DeviceTests" },
-                @{ Name = "Core.DeviceTests"; Dir = "$(Build.SourcesDirectory)/src/Core/tests/DeviceTests" },
-                @{ Name = "Graphics.DeviceTests"; Dir = "$(Build.SourcesDirectory)/src/Graphics/tests/DeviceTests" },
-                @{ Name = "Essentials.DeviceTests"; Dir = "$(Build.SourcesDirectory)/src/Essentials/test/DeviceTests" },
-                @{ Name = "MauiBlazorWebView.DeviceTests"; Dir = "$(Build.SourcesDirectory)/src/BlazorWebView/tests/DeviceTests" }
+                @{ Name = "Controls.DeviceTests"; ProjectDir = "$(Build.SourcesDirectory)/src/Controls/tests/DeviceTests"; ArtifactDir = "$(Build.SourcesDirectory)/artifacts/bin/Controls.DeviceTests" },
+                @{ Name = "Core.DeviceTests"; ProjectDir = "$(Build.SourcesDirectory)/src/Core/tests/DeviceTests"; ArtifactDir = "$(Build.SourcesDirectory)/artifacts/bin/Core.DeviceTests" },
+                @{ Name = "Graphics.DeviceTests"; ProjectDir = "$(Build.SourcesDirectory)/src/Graphics/tests/DeviceTests"; ArtifactDir = "$(Build.SourcesDirectory)/artifacts/bin/Graphics.DeviceTests" },
+                @{ Name = "Essentials.DeviceTests"; ProjectDir = "$(Build.SourcesDirectory)/src/Essentials/test/DeviceTests"; ArtifactDir = "$(Build.SourcesDirectory)/artifacts/bin/Essentials.DeviceTests" },
+                @{ Name = "MauiBlazorWebView.DeviceTests"; ProjectDir = "$(Build.SourcesDirectory)/src/BlazorWebView/tests/DeviceTests"; ArtifactDir = "$(Build.SourcesDirectory)/artifacts/bin/MauiBlazorWebView.DeviceTests" }
               )
               
               foreach ($project in $projects) {
-                $appPackagesDir = "$($project.Dir)/AppPackages"
+                $appPackagesDir = "$($project.ProjectDir)/AppPackages"
                 $zipPath = "$artifactsDir/$($project.Name).zip"
                 
+                # Create a temp folder to consolidate packaged and unpackaged outputs
+                $tempDir = "$artifactsDir/temp_$($project.Name)"
+                New-Item -ItemType Directory -Force -Path $tempDir | Out-Null
+                
+                $hasContent = $false
+                
+                # Copy packaged output (AppPackages with MSIX)
                 if (Test-Path $appPackagesDir) {
-                  Write-Host "Creating archive for $($project.Name) from $appPackagesDir..."
-                  Compress-Archive -Path "$appPackagesDir" -DestinationPath $zipPath -Force
-                  Write-Host "Created $zipPath"
-                  
-                  $msix = Get-ChildItem -Path $appPackagesDir -Recurse -Filter "*.msix" | Select-Object -First 1
-                  if ($msix) { Write-Host "  Contains MSIX: $($msix.Name)" }
-                  else { Write-Host "  WARNING: No MSIX found!" }
+                  Write-Host "Copying packaged output from $appPackagesDir..."
+                  Copy-Item -Path $appPackagesDir -Destination "$tempDir/AppPackages" -Recurse
+                  $msix = Get-ChildItem -Path "$tempDir/AppPackages" -Recurse -Filter "*.msix" | Select-Object -First 1
+                  if ($msix) { 
+                    Write-Host "  Contains MSIX: $($msix.Name)" 
+                    $hasContent = $true
+                  }
                 } else {
-                  Write-Host "Warning: $appPackagesDir not found for $($project.Name)"
+                  Write-Host "Warning: AppPackages not found at $appPackagesDir"
                 }
+                
+                # Copy unpackaged output (publish folder with .exe)
+                # Look for publish folder in artifacts/bin - the dotnet publish output location
+                $publishDir = Get-ChildItem -Path "$($project.ArtifactDir)" -Filter "publish" -Recurse -Directory | Select-Object -First 1
+                if ($publishDir) {
+                  Write-Host "Copying unpackaged output from $($publishDir.FullName)..."
+                  Copy-Item -Path $publishDir.FullName -Destination "$tempDir/Unpackaged" -Recurse
+                  $exe = Get-ChildItem -Path "$tempDir/Unpackaged" -Filter "*.exe" | Where-Object { $_.Name -like "Microsoft.Maui.*" } | Select-Object -First 1
+                  if ($exe) { 
+                    Write-Host "  Contains EXE: $($exe.Name)"
+                    $hasContent = $true
+                  }
+                } else {
+                  Write-Host "Warning: Publish folder not found in $($project.ArtifactDir)"
+                  # List what's in the artifact dir to debug
+                  Get-ChildItem -Path "$($project.ArtifactDir)" -Recurse -Depth 3 2>$null | ForEach-Object { Write-Host "  Found: $($_.FullName)" }
+                }
+                
+                if ($hasContent) {
+                  Write-Host "Creating archive $zipPath..."
+                  Compress-Archive -Path "$tempDir/*" -DestinationPath $zipPath -Force
+                  Write-Host "Created $zipPath"
+                } else {
+                  Write-Host "ERROR: No content found for $($project.Name)"
+                }
+                
+                # Cleanup temp folder
+                Remove-Item -Path $tempDir -Recurse -Force
               }
             displayName: Create payload archives
 
