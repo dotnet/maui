@@ -209,8 +209,7 @@
             </HelixWorkItem>
         </ItemGroup>
         
-        <!-- TODO: Unpackaged tests disabled - crash with 0xC000027B (Windows App SDK Bootstrap failure)
-             on Helix. Investigating root cause. See PR #33328 for context.
+        <!-- Windows Unpackaged tests -->
         <ItemGroup Condition="'$(TargetOS)' == 'windows'">
             <HelixWorkItem Include="%(_MAUIScenarioSearch.ScenarioDirectoryName)-unpackaged">
                 <PayloadArchive>%(_MAUIScenarioSearch.PayloadDirectory).zip</PayloadArchive>
@@ -218,7 +217,6 @@
                 <Timeout>02:00:00</Timeout>
             </HelixWorkItem>
         </ItemGroup>
-        -->
 
         <Message Text="Created @(XHarnessAppBundleToTest->Count()) iOS work items" Importance="high" Condition="'$(TargetOS)' == 'ios'" />
         <Message Text="Created @(HelixWorkItem->Count()) Windows work items" Importance="high" Condition="'$(TargetOS)' == 'windows'" />
