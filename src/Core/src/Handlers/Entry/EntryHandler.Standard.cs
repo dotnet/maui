@@ -36,5 +36,6 @@ namespace Microsoft.Maui.Handlers
 		public static void MapCharacterSpacing(IEntryHandler handler, IEntry entry) { }
 		public static void MapCursorPosition(IEntryHandler handler, IEntry entry) { }
 		public static void MapSelectionLength(IEntryHandler handler, IEntry entry) { }
+		public static void MapUnderlineColor(IEntryHandler handler, IEntry entry) { }
 	}
 }

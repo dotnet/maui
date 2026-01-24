@@ -126,6 +126,9 @@ namespace Microsoft.Maui.Handlers
 		public static void MapSelectionLength(IEditorHandler handler, IEditor editor) =>
 			handler.PlatformView?.UpdateSelectionLength(editor);
 
+		public static void MapUnderlineColor(IEditorHandler handler, IEditor editor) =>
+			handler.PlatformView?.UpdateUnderlineColor(editor);
+
 		public static void MapKeyboard(IEditorHandler handler, IEditor editor) =>
 			handler.PlatformView?.UpdateKeyboard(editor);
 

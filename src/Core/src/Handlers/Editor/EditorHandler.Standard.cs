@@ -34,5 +34,6 @@ namespace Microsoft.Maui.Handlers
 		public static void MapKeyboard(IEditorHandler handler, IEditor editor) { }
 		public static void MapCursorPosition(IEditorHandler handler, ITextInput editor) { }
 		public static void MapSelectionLength(IEditorHandler handler, ITextInput editor) { }
+		public static void MapUnderlineColor(IEditorHandler handler, IEditor editor) { }
 	}
 }

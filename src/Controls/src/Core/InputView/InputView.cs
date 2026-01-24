@@ -54,6 +54,9 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="SelectionLength"/>.</summary>
 		public static readonly BindableProperty SelectionLengthProperty = BindableProperty.Create(nameof(SelectionLength), typeof(int), typeof(InputView), 0, validateValue: (b, v) => (int)v >= 0);
 
+		/// <summary>Bindable property for <see cref="UnderlineColor"/>.</summary>
+		public static readonly BindableProperty UnderlineColorProperty = BindableProperty.Create(nameof(UnderlineColor), typeof(Color), typeof(InputView), null);
+
 		public static readonly BindableProperty FontFamilyProperty = FontElement.FontFamilyProperty;
 
 		public static readonly BindableProperty FontSizeProperty = FontElement.FontSizeProperty;
@@ -235,6 +238,22 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
+		/// Gets or sets the underline color for the text input.
+		/// This is a bindable property.
+		/// </summary>
+		/// <remarks>
+		/// On Android, this controls the Material Design underline color.
+		/// On iOS/MacCatalyst, this creates a custom underline layer.
+		/// On Windows, this property has no effect as TextBox uses borders.
+		/// Set to <see cref="Colors.Transparent"/> to hide the underline, or <see langword="null"/> to use platform defaults.
+		/// </remarks>
+		public Color UnderlineColor
+		{
+			get { return (Color)GetValue(UnderlineColorProperty); }
+			set { SetValue(UnderlineColorProperty, value); }
+		}
+
+		/// <summary>
 		/// Gets or sets a value that indicates whether the font for the text of this entry is bold, italic, or neither.
 		/// This is a bindable property.
 		/// </summary>
@@ -314,6 +333,8 @@ namespace Microsoft.Maui.Controls
 			get => Text;
 			set => SetValue(TextProperty, value, SetterSpecificity.FromHandler);
 		}
+
+		Color ITextInput.UnderlineColor => UnderlineColor;
 
 		private protected override string GetDebuggerDisplay()
 		{

@@ -1,1 +1,2 @@
 #nullable enable
+Microsoft.Maui.ITextInput.UnderlineColor.get -> Microsoft.Maui.Graphics.Color?

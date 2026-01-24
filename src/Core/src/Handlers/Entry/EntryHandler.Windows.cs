@@ -106,6 +106,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapSelectionLength(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateSelectionLength(entry);
 
+		public static void MapUnderlineColor(IEntryHandler handler, IEntry entry)
+		{
+			// No-op on Windows - TextBox uses borders, not underlines
+		}
+
 		void OnPlatformTextChanged(object sender, TextChangedEventArgs args)
 		{
 			if (PlatformView is MauiPasswordTextBox passwordBox)

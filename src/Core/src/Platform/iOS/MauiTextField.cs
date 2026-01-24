@@ -84,5 +84,13 @@ namespace Microsoft.Maui.Platform
 		public event EventHandler? TextPropertySet;
 		[UnconditionalSuppressMessage("Memory", "MEM0001", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		internal event EventHandler? SelectionChanged;
+
+		public override void LayoutSubviews()
+		{
+			base.LayoutSubviews();
+
+			// Reposition underline layer if it exists
+			TextFieldExtensions.UpdateUnderlineLayerFrame(this);
+		}
 	}
 }

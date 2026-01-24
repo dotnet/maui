@@ -67,8 +67,11 @@ namespace Microsoft.Maui.Handlers
 			PlatformView.UpdateReturnType(VirtualView);
 		}
 
-		public static void MapBackground(IEntryHandler handler, IEntry entry) =>
+		public static void MapBackground(IEntryHandler handler, IEntry entry)
+		{
 			handler.PlatformView?.UpdateBackground(entry);
+			handler.PlatformView?.UpdateUnderlineColor(entry);
+		}
 
 		public static void MapText(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateText(entry);
@@ -142,6 +145,9 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapSelectionLength(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateSelectionLength(entry);
+
+		public static void MapUnderlineColor(IEntryHandler handler, IEntry entry) =>
+			handler.PlatformView?.UpdateUnderlineColor(entry);
 
 		public static void MapClearButtonVisibility(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateClearButtonVisibility(entry);
