@@ -58,10 +58,11 @@ namespace UITest.Appium
 				return CommandResponse.FailedEmptyResponse;
 
 			if (_app.GetTestDevice() == TestDevice.Mac)
-			{		
+			{
 				var args = _app.Config.GetProperty<Dictionary<string, string>>("TestConfigurationArgs") ?? new Dictionary<string, string>();
 
-				if (args.ContainsKey("test") && parameters.ContainsKey("testName") && parameters["testName"] is string testName && !string.IsNullOrEmpty(testName))
+				// Always set test name if provided - this is how tests navigate to specific pages
+				if (parameters.ContainsKey("testName") && parameters["testName"] is string testName && !string.IsNullOrEmpty(testName))
 				{
 					args["test"] = testName;
 				}
@@ -72,22 +73,13 @@ namespace UITest.Appium
 					{ "environment", args},
 				});
 
-				// For Mac apps with multi-window (UIApplicationSceneManifest), we need to
-				// activate the app and switch to its window for element lookup to work
+				// Activate the app to bring it to foreground
 				try
 				{
-					// Activate the app to bring it to foreground
 					_app.Driver.ExecuteScript("macos: activateApp", new Dictionary<string, object>
 					{
 						{ "bundleId", _app.GetAppId() },
 					});
-					
-					// Switch to the first available window
-					var windowHandles = _app.Driver.WindowHandles;
-					if (windowHandles.Count > 0)
-					{
-						_app.Driver.SwitchTo().Window(windowHandles.First());
-					}
 				}
 				catch
 				{
