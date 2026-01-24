@@ -1,4 +1,8 @@
-﻿namespace Maui.Controls.Sample
+using System;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui;
+
+namespace Maui.Controls.Sample
 {
 	internal class InputTransparencyGalleryPage : CoreGalleryBasePage
 	{
@@ -144,7 +148,51 @@
 
 				AddNesting(rt, rc, nt, nc, t, clickable, passthru);
 			}
+
+			// Tests for a content view (content view, button) with some variations to ensure
+			// that all combinations are correctly clickable
+			foreach (var state in Test.InputTransparencyMatrix.SimpleStates)
+			{
+				var (rt, rc, t) = state.Key;
+				var (clickable, passthru) = state.Value;
+
+				AddSimpleNesting<ContentView>(rt, rc, t, clickable, passthru);
+			}
+
+			// Tests for a scroll view (scroll view, button) with some variations to ensure
+			// that all combinations are correctly clickable
+			foreach (var state in Test.InputTransparencyMatrix.SimpleStates)
+			{
+				var (rt, rc, t) = state.Key;
+				var (clickable, passthru) = state.Value;
+
+				AddSimpleNesting<ScrollView>(rt, rc, t, clickable, passthru);
+			}
 		}
+
+		void AddSimpleNesting<T>(bool rootTrans, bool rootCascade, bool trans, bool isClickable, bool isPassThru) where T : Microsoft.Maui.Controls.Compatibility.Layout, IContentView, new() =>
+			Add(Test.InputTransparencyMatrix.GetSimpleKey(typeof(T).Name, rootTrans, rootCascade, trans, isClickable, isPassThru), () =>
+			{
+				var bottom = new Button { Text = "Bottom Button" };
+				var top = new Button
+				{
+					InputTransparent = trans,
+					Text = "Click Me!"
+				};
+				var root = new T
+				{
+					InputTransparent = rootTrans,
+					CascadeInputTransparent = rootCascade,
+				};
+				root.GetType().GetProperty("Content").SetValue(root, top);
+				var grid = new Grid
+				{
+					new Grid { bottom },
+					root
+				};
+				return (grid, new { Bottom = bottom, Top = top });
+			})
+			.With(t => WithAssert(isClickable, isPassThru, t.ViewContainer, t.Additional.Bottom, Annotate(t.Additional.Top, t.ViewContainer.View)));
 
 		void AddNesting(bool rootTrans, bool rootCascade, bool nestedTrans, bool nestedCascade, bool trans, bool isClickable, bool isPassThru) =>
 			Add(Test.InputTransparencyMatrix.GetKey(rootTrans, rootCascade, nestedTrans, nestedCascade, trans, isClickable, isPassThru), () =>
@@ -175,16 +223,15 @@
 				};
 				return (grid, new { Bottom = bottom, Top = top });
 			})
-			.With(t =>
-			{
-				var v = t.ViewContainer.View;
-				var bottom = t.Additional.Bottom;
-				var top = Annotate(t.Additional.Top, v);
+			.With(t => WithAssert(isClickable, isPassThru, t.ViewContainer, t.Additional.Bottom, Annotate(t.Additional.Top, t.ViewContainer.View)));
+
+		private static void WithAssert(bool isClickable, bool isPassThru, ExpectedEventViewContainer<View> viewContainer, Button bottom, Button top)
+		{
 				if (isClickable)
 				{
 					// if the button is clickable, then it should be clickable
-					bottom.Clicked += (s, e) => t.ViewContainer.ReportFailEvent();
-					top.Clicked += (s, e) => t.ViewContainer.ReportSuccessEvent();
+					bottom.Clicked += (s, e) => viewContainer.ReportFailEvent();
+					top.Clicked += (s, e) => viewContainer.ReportSuccessEvent();
 				}
 				else if (!isPassThru)
 				{
@@ -193,20 +240,20 @@
 #if ANDROID
 					// TODO: Android is broken with everything passing through
 					// https://github.com/dotnet/maui/issues/10252
-					bottom.Clicked += (s, e) => t.ViewContainer.ReportSuccessEvent();
-					top.Clicked += (s, e) => t.ViewContainer.ReportFailEvent();
+					bottom.Clicked += (s, e) => viewContainer.ReportSuccessEvent();
+					top.Clicked += (s, e) => viewContainer.ReportFailEvent();
 #else
-					bottom.Clicked += (s, e) => t.ViewContainer.ReportFailEvent();
-					top.Clicked += (s, e) => t.ViewContainer.ReportFailEvent();
+					bottom.Clicked += (s, e) => viewContainer.ReportFailEvent();
+					top.Clicked += (s, e) => viewContainer.ReportFailEvent();
 #endif
 				}
 				else
 				{
 					// otherwise, the tap should go through
-					bottom.Clicked += (s, e) => t.ViewContainer.ReportSuccessEvent();
-					top.Clicked += (s, e) => t.ViewContainer.ReportFailEvent();
+					bottom.Clicked += (s, e) => viewContainer.ReportSuccessEvent();
+					top.Clicked += (s, e) => viewContainer.ReportFailEvent();
 				}
-			});
+		}
 
 		(ExpectedEventViewContainer<View> ViewContainer, T Additional) Add<T>(Test.InputTransparency test, Func<(View View, T Additional)> func) =>
 			Add(test.ToString(), func);

@@ -334,14 +334,6 @@ namespace Microsoft.Maui.Platform
 			return disposable;
 		}
 
-		internal static bool NeedsContainer(this IView? view)
-		{
-			if (view is IBorderView border)
-				return border?.Shape != null || border?.Stroke != null;
-
-			return false;
-		}
-
 		internal static T? GetChildAt<T>(this NView view, int index) where T : NView
 		{
 			return (T?)view.Children[index];

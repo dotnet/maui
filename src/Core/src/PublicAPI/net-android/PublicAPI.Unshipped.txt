@@ -1,1 +1,2 @@
 #nullable enable
+override Microsoft.Maui.Platform.ContentViewGroup.OnTouchEvent(Android.Views.MotionEvent? e) -> bool

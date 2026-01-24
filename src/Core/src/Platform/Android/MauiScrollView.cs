@@ -13,7 +13,7 @@ using AndroidX.Core.Widget;
 
 namespace Microsoft.Maui.Platform
 {
-	public class MauiScrollView : NestedScrollView, IScrollBarView, NestedScrollView.IOnScrollChangeListener, ICrossPlatformLayoutBacking, IHandleWindowInsets
+	public class MauiScrollView : NestedScrollView, IScrollBarView, NestedScrollView.IOnScrollChangeListener, ICrossPlatformLayoutBacking, IHandleWindowInsets, IInputTransparentManagingView
 	{
 		View? _content;
 		readonly Context _context;
@@ -31,6 +31,8 @@ namespace Microsoft.Maui.Platform
 
 		internal bool ShouldSkipOnTouch;
 		internal int HorizontalScrollOffset => _hScrollView?.ScrollX ?? 0;
+		
+		bool IInputTransparentManagingView.InputTransparent { get; set; }
 
 		public MauiScrollView(Context context) : base(context)
 		{
@@ -203,10 +205,13 @@ namespace Microsoft.Maui.Platform
 
 		public override bool OnInterceptTouchEvent(MotionEvent? ev)
 		{
-			// See also MauiHorizontalScrollView notes in OnInterceptTouchEvent
-
 			if (ev == null)
 				return false;
+
+			if (((IInputTransparentManagingView)this).InputTransparent)
+			{
+				return false;
+			}
 
 			// set the start point for the bidirectional scroll; 
 			// Down is swallowed by other controls, so we'll just sneak this in here without actually preventing
@@ -225,6 +230,11 @@ namespace Microsoft.Maui.Platform
 			if (ev == null || !Enabled || _scrollOrientation == ScrollOrientation.Neither)
 				return false;
 
+			if (((IInputTransparentManagingView)this).InputTransparent)
+			{
+				return false;
+			}
+
 			if (ShouldSkipOnTouch)
 			{
 				ShouldSkipOnTouch = false;
@@ -236,7 +246,7 @@ namespace Microsoft.Maui.Platform
 			// We'll fall through to the base event so we still get the fling from the ScrollViews.
 			// We have to do this in both ScrollViews, since a single gesture will be owned by one or the other, depending
 			// on the initial direction of movement (i.e., horizontal/vertical).
-			if (_isBidirectional) // // See also MauiHorizontalScrollView notes in OnInterceptTouchEvent
+			if (_isBidirectional)
 			{
 				float dX = LastX - ev.RawX;
 
@@ -454,11 +464,6 @@ namespace Microsoft.Maui.Platform
 		{
 			if (ev == null || _parentScrollView == null)
 				return false;
-
-			// TODO ezhart 2021-07-12 The previous version of this checked _renderer.Element.InputTransparent; we don't have acces to that here,
-			// and I'm not sure it even applies. We need to determine whether touch events will get here at all if we've marked the ScrollView InputTransparent
-			// We _should_ be able to deal with it at the handler level by force-setting an OnTouchListener for the PlatformView that always returns false; then we
-			// can just stop worrying about it here because the touches _can't_ reach this.
 
 			// set the start point for the bidirectional scroll; 
 			// Down is swallowed by other controls, so we'll just sneak this in here without actually preventing

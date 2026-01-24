@@ -13,9 +13,11 @@ namespace Microsoft.Maui.Platform
 	/// for .NET MAUI applications on iOS. This class handles the bridge between MAUI's cross-platform layout
 	/// system and iOS's native UIScrollView behavior.
 	/// </summary>
-	public class MauiScrollView : UIScrollView, IUIViewLifeCycleEvents, ICrossPlatformLayoutBacking, IPlatformMeasureInvalidationController
+	public class MauiScrollView : UIScrollView, IUIViewLifeCycleEvents, ICrossPlatformLayoutBacking, IPlatformMeasureInvalidationController, IInputTransparentManagingView
 	{
 		internal const nint ContentTag = 0x845fed;
+
+		bool IInputTransparentManagingView.InputTransparent { get; set; }
 
 		/// <summary>
 		/// Flag indicating whether the parent view hierarchy should be invalidated when this view is moved to a window.
@@ -681,6 +683,35 @@ namespace Microsoft.Maui.Platform
 				_invalidateParentWhenMovedToWindow = false;
 				this.InvalidateAncestorsMeasures();
 			}
+		}
+		
+		public override UIView? HitTest(CGPoint point, UIEvent? uievent)
+		{
+			var result = base.HitTest(point, uievent);
+
+			if (result is null)
+			{
+				return null;
+			}
+
+			if (((IInputTransparentManagingView)this).InputTransparent && Equals(result))
+			{
+				// If user interaction is disabled (IOW, if the corresponding View is InputTransparent),
+				// then we exclude the managing view itself from hit testing. But it's children are valid
+				// hit testing targets.
+
+				return null;
+			}
+
+			if (result is IInputTransparentManagingView v && v.InputTransparent)
+			{
+				// If the child is a managing view then we need to check the InputTransparent
+				// since managing view instances always have user interaction enabled.
+
+				return null;
+			}
+
+			return result;
 		}
 	}
 }

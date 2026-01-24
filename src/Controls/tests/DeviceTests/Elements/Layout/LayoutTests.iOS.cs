@@ -160,8 +160,8 @@ namespace Microsoft.Maui.DeviceTests
 			var platformView = view.ToPlatform(MauiContext);
 
 			bool value = platformView.UserInteractionEnabled;
-			if (platformView is LayoutView lv)
-				value = lv.UserInteractionEnabledOverride;
+			if (platformView is IInputTransparentManagingView lv)
+				value = !lv.InputTransparent;
 
 			Assert.True(view.InputTransparent == !value,
 				$"InputTransparent: {view.InputTransparent}. UserInteractionEnabled: {platformView.UserInteractionEnabled}");
