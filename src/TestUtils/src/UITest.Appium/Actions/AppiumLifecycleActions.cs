@@ -62,9 +62,24 @@ namespace UITest.Appium
 				var args = _app.Config.GetProperty<Dictionary<string, string>>("TestConfigurationArgs") ?? new Dictionary<string, string>();
 
 				// Always set test name if provided - this is how tests navigate to specific pages
+				// This overrides any previous test name in args (important for subsequent test classes)
 				if (parameters.ContainsKey("testName") && parameters["testName"] is string testName && !string.IsNullOrEmpty(testName))
 				{
 					args["test"] = testName;
+					
+					// Environment variables only apply on fresh app launch, so terminate first
+					// to ensure the new test name is used when navigating to the test page
+					try
+					{
+						_app.Driver.ExecuteScript("macos: terminateApp", new Dictionary<string, object>
+						{
+							{ "bundleId", _app.GetAppId() },
+						});
+					}
+					catch
+					{
+						// App may not be running yet, which is fine
+					}
 				}
 
 				_app.Driver.ExecuteScript("macos: launchApp", new Dictionary<string, object>
