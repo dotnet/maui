@@ -45,7 +45,7 @@ static class GeneratorHelpers
 		return projectItem.Kind == "None" ? null : projectItem;
 	}
 
-    public static XamlProjectItemForIC? ComputeXamlProjectItemForIC((ProjectItem?, AssemblyAttributes) itemAndCaches, CancellationToken cancellationToken)
+	public static XamlProjectItemForIC? ComputeXamlProjectItemForIC((ProjectItem?, AssemblyAttributes) itemAndCaches, CancellationToken cancellationToken)
 	{
 		var (projectItem, assemblyCaches) = itemAndCaches;
 		var text = projectItem?.AdditionalText.GetText(cancellationToken);
@@ -204,9 +204,9 @@ static class GeneratorHelpers
 		INamedTypeSymbol? allowImplicitXmlnsAttribute = compilation.GetTypesByMetadataName(typeof(Xaml.Internals.AllowImplicitXmlnsDeclarationAttribute).FullName)
 			.FirstOrDefault(t => t.ContainingAssembly.Identity.Name == "Microsoft.Maui.Controls");
 
-		if (xmlnsDefinitonAttribute is null || internalsVisibleToAttribute is null)		
+		if (xmlnsDefinitonAttribute is null || internalsVisibleToAttribute is null)
 			return AssemblyAttributes.Empty;
-		
+
 
 		var xmlnsDefinitions = new List<XmlnsDefinitionAttribute>();
 		var internalsVisible = new List<IAssemblySymbol>();
@@ -389,7 +389,7 @@ static class GeneratorHelpers
 			reportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, e.Message));
 		}
 		return (code, xamlItem, diagnostics);
-    }
+	}
 
 	/// <summary>
 	/// Formats a value as a culture-independent C# literal for source generation.
