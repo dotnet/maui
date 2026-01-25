@@ -10,6 +10,9 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Xunit;
+#if IOS || MACCATALYST
+using NavigationViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer;
+#endif
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -196,12 +199,89 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedHeight, parentLayout.Height, 2.0);
 		}
 
+		[Fact(DisplayName = "Test call ScrollToAsync within NavigatedTo event")]
+		public async Task TestCallScrollToAsyncWithinNavigatedToEvent()
+		{
+			SetupBuilder();
+			var page1 = new ContentPage();
+			var page2 = new ContentPage();
+			var page3 = new ContentPage();
+			var scrollView = new ScrollView()
+			{
+				Orientation = ScrollOrientation.Vertical,
+				Content = new Grid
+				{
+					WidthRequest = 300,
+					HeightRequest = 1000
+				}
+			};
+			page2.Content = scrollView;
+			page2.NavigatedTo += async (_, __) =>
+			{
+				double expectedPositionX = 0;
+				double expectedPositionY = 200;
+				await scrollView.ScrollToAsync(expectedPositionX, expectedPositionY, true);
+				Assert.Equal(expectedPositionX, scrollView.ScrollX);
+				Assert.Equal(expectedPositionY, scrollView.ScrollY);
+			};
+			var navPage = new NavigationPage(page1);
+
+			await CreateHandlerAndAddToWindow<NavigationViewHandler>(navPage, async (handler) =>
+			{
+				await page1.Navigation.PushAsync(page2);
+				await page2.Navigation.PushAsync(page3);
+				await page3.Navigation.PopAsync();
+			});
+		}
+
+		[Fact(DisplayName = "Test call ScrollToAsync within Appearing event")]
+		public async Task TestCallScrollToAsyncWithinAppearingEvent()
+		{
+			SetupBuilder();
+			var page1 = new ContentPage();
+			var page2 = new ContentPage();
+			var page3 = new ContentPage();
+			var scrollView = new ScrollView()
+			{
+				Orientation = ScrollOrientation.Vertical,
+				Content = new Grid
+				{
+					WidthRequest = 300,
+					HeightRequest = 1000
+				}
+			};
+			page2.Content = scrollView;
+			page2.Appearing += async (_, __) =>
+			{
+				double expectedPositionX = 0;
+				double expectedPositionY = 200;
+				await scrollView.ScrollToAsync(expectedPositionX, expectedPositionY, true);
+				Assert.Equal(expectedPositionX, scrollView.ScrollX);
+				Assert.Equal(expectedPositionY, scrollView.ScrollY);
+			};
+			var navPage = new NavigationPage(page1);
+
+			await CreateHandlerAndAddToWindow<NavigationViewHandler>(navPage, async (handler) =>
+			{
+				await page1.Navigation.PushAsync(page2);
+				await page2.Navigation.PushAsync(page3);
+				await page3.Navigation.PopAsync();
+			});
+		}
+
 		void SetupBuilder()
 		{
 			EnsureHandlerCreated(builder =>
 			{
 				builder.ConfigureMauiHandlers(handlers =>
 				{
+					handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
+#if IOS || MACCATALYST
+					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+#else
+					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+#endif
+					handlers.AddHandler<Page, PageHandler>();
 					handlers.AddHandler<Label, LabelHandler>();
 					handlers.AddHandler<IScrollView, ScrollViewHandler>();
 					handlers.AddHandler<Grid, LayoutHandler>();
