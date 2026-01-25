@@ -11,8 +11,8 @@
     <RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst')) and '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'arm64'">maccatalyst-arm64</RuntimeIdentifier>
     <RuntimeIdentifiers Condition="$(TargetFramework.Contains('-android'))">android-arm64;android-x64</RuntimeIdentifiers>
     <ExcludeMicrosoftNetTestSdk>true</ExcludeMicrosoftNetTestSdk>
-    <!-- Enable self-contained Windows App SDK for unpackaged deployment on Helix -->
-    <WindowsAppSDKSelfContained Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">true</WindowsAppSDKSelfContained>
+    <!-- Enable self-contained Windows App SDK for unpackaged deployment on Helix (CI only, not local dev) -->
+    <WindowsAppSDKSelfContained Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows' and ('$(CI)' == 'true' or '$(TF_BUILD)' == 'true')">true</WindowsAppSDKSelfContained>
   </PropertyGroup>
 
   <PropertyGroup>

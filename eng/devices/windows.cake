@@ -172,8 +172,10 @@ Task("buildOnly")
 	else
 	{
 		// Apply correct build properties for unpackaged builds
-		// Note: WindowsAppSDKSelfContained must be set in project files (not here) to avoid
-		// propagating to library project dependencies which don't support this property.
+		// Note: WindowsAppSDKSelfContained is set in project files with CI condition because:
+		// 1. SDK default only applies to WinExe, but device tests use OutputType=Exe
+		// 2. Setting here would propagate to library dependencies causing architecture errors
+		// 3. CI condition ensures local dev experience is unchanged
 		// See Controls.DeviceTests.csproj and other device test projects.
 		s.MSBuildSettings.Properties.Add("SelfContained", new List<string> { "True" });
 		s.MSBuildSettings.Properties.Add("WindowsPackageType", new List<string> { "None" });
