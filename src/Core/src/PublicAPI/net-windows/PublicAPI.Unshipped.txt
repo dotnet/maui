@@ -1,1 +1,4 @@
 #nullable enable
+Microsoft.Maui.IEntry.HasBorder.get -> bool
+static Microsoft.Maui.Handlers.EntryHandler.MapHasBorder(Microsoft.Maui.Handlers.IEntryHandler! handler, Microsoft.Maui.IEntry! entry) -> void
+static Microsoft.Maui.Platform.TextBoxExtensions.UpdateHasBorder(this Microsoft.UI.Xaml.Controls.TextBox! textBox, Microsoft.Maui.IEntry! entry) -> void
