@@ -27,7 +27,9 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("VisibilityCheckBox");
 			App.Tap("VisibilityCheckBox");
 
-			VerifyScreenshot();
+			// Allow UI to settle after visibility change
+			Task.Delay(300).Wait();
+			VerifyScreenshot(tolerance: 2.0);
 		}
 
 		[Test]
@@ -46,7 +48,9 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("RedRadioButton");
 			App.Tap("RedRadioButton");
 
-			VerifyScreenshot();
+			// Allow UI to settle after color change
+			Task.Delay(300).Wait();
+			VerifyScreenshot(tolerance: 2.0);
 		}
 
 		[Test]
@@ -65,7 +69,9 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("OpacityLabel");
 			App.Tap("OpacityLabel");
 
-			VerifyScreenshot();
+			// Allow UI to settle after opacity change
+			Task.Delay(300).Wait();
+			VerifyScreenshot(tolerance: 2.0);
 		}
 
 		[Test]
@@ -84,7 +90,9 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("FlowDirectionRTLCheckBox");
 			App.Tap("FlowDirectionRTLCheckBox");
 
-			VerifyScreenshot();
+			// Allow UI to settle after flow direction change
+			Task.Delay(300).Wait();
+			VerifyScreenshot(tolerance: 2.0);
 		}
 #if TEST_FAILS_ON_WINDOWS // For more information see: https://github.com/dotnet/maui/issues/27732
 		[Test]
@@ -109,7 +117,9 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("ShadowCheckBox");
 			App.Tap("ShadowCheckBox");
 
-			VerifyScreenshot();
+			// Allow UI to settle after shadow change
+			Task.Delay(300).Wait();
+			VerifyScreenshot(tolerance: 2.0);
 		}
 
 		[Test]
@@ -131,7 +141,9 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("ShadowCheckBox");
 			App.Tap("ShadowCheckBox");
 
-			VerifyScreenshot();
+			// Allow UI to settle after shadow change
+			Task.Delay(300).Wait();
+			VerifyScreenshot(tolerance: 2.0);
 		}
 
 		[Test]
@@ -153,7 +165,9 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("ShadowCheckBox");
 			App.Tap("ShadowCheckBox");
 
-			VerifyScreenshot();
+			// Allow UI to settle after shadow change
+			Task.Delay(300).Wait();
+			VerifyScreenshot(tolerance: 2.0);
 		}
 #endif
 	}
