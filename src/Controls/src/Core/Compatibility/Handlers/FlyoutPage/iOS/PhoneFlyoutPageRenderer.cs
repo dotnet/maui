@@ -381,7 +381,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (IsRTL && !FlyoutOverlapsDetailsInPopoverMode)
 			{
-				flyoutFrame.X = (int)(flyoutFrame.Width * .25);
+				flyoutFrame.X = (int)(frame.Width - flyoutFrame.Width);
 			}
 
 			var detailsFrame = frame;
