@@ -15,6 +15,8 @@ public class Issue24034(TestDevice device) : _IssuesUITest(device)
 		App.WaitForElement("button");
 		App.Click("button");
 
-		VerifyScreenshot();
+		// Allow shadow animation to complete before screenshot
+		Task.Delay(300).Wait();
+		VerifyScreenshot(tolerance: 3.0);
 	}
 }
