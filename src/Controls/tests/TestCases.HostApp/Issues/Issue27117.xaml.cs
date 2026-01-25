@@ -12,7 +12,7 @@ namespace Maui.Controls.Sample.Issues
 			InitializeComponent();
 		}
 
-		private void CollectionView_Loaded(object sender, EventArgs e)
+		private void ScrollToFirstItem_Clicked(object sender, EventArgs e)
 		{
 			collectionView.ScrollTo(0, position: ScrollToPosition.Start, animate: false);
 		}
