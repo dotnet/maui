@@ -9,8 +9,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateStrokeColor(this UIButton platformButton, IButtonStroke buttonStroke)
 		{
-			if (buttonStroke.StrokeColor is not null)
-				platformButton.Layer.BorderColor = buttonStroke.StrokeColor.ToCGColor();
+			platformButton.Layer.BorderColor = buttonStroke?.StrokeColor?.ToCGColor() ?? UIColor.Clear.CGColor;
 		}
 
 		public static void UpdateStrokeThickness(this UIButton platformButton, IButtonStroke buttonStroke)
