@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
@@ -223,6 +224,9 @@ namespace Microsoft.Maui.Controls
 		public void ScrollTo(int index, int groupIndex = -1,
 			ScrollToPosition position = ScrollToPosition.MakeVisible, bool animate = true)
 		{
+			if (DismissScroll())
+				return;
+
 			OnScrollToRequested(new ScrollToRequestEventArgs(index, groupIndex, position, animate));
 		}
 
@@ -236,6 +240,9 @@ namespace Microsoft.Maui.Controls
 		public void ScrollTo(object item, object group = null,
 			ScrollToPosition position = ScrollToPosition.MakeVisible, bool animate = true)
 		{
+			if (DismissScroll())
+				return;
+
 			OnScrollToRequested(new ScrollToRequestEventArgs(item, group, position, animate));
 		}
 
@@ -311,6 +318,11 @@ namespace Microsoft.Maui.Controls
 		{
 			var itemsSourceText = DebuggerDisplayHelpers.GetDebugText(nameof(ItemsSource), ItemsSource?.GetType());
 			return $"{base.GetDebuggerDisplay()}, {itemsSourceText}";
+		}
+
+		private bool DismissScroll()
+		{
+			return ItemsSource is null || (ItemsSource is IEnumerable<object> items && !items.Any());
 		}
 	}
 }
