@@ -15,8 +15,8 @@
     <RuntimeIdentifiers Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">android-arm64;android-x64</RuntimeIdentifiers>
     <IsTestProject>true</IsTestProject>
     <ExcludeMicrosoftNetTestSdk>true</ExcludeMicrosoftNetTestSdk>
-    <!-- Enable self-contained Windows App SDK for unpackaged deployment on Helix (CI only, not local dev) -->
-    <WindowsAppSDKSelfContained Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows' and ('$(CI)' == 'true' or '$(TF_BUILD)' == 'true')">true</WindowsAppSDKSelfContained>
+    <!-- Enable self-contained Windows App SDK for unpackaged builds (when WindowsPackageType=None is passed) -->
+    <WindowsAppSDKSelfContained Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows' and '$(WindowsPackageType)' == 'None'">true</WindowsAppSDKSelfContained>
   </PropertyGroup>
 
   <PropertyGroup>
