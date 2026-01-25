@@ -25,23 +25,37 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void Issue10563OpenSwipeViewTest()
 		{
 			Exception? exception = null;
+			
+			// Test Left SwipeItems
 			App.WaitForElement(OpenLeftId);
 			App.Tap(OpenLeftId);
+			// Wait for swipe animation to complete - the SwipeItem text becomes visible
+			App.WaitForElement("Issue 10563");
 			VerifyScreenshotOrSetException(ref exception, "Left_SwipeItems");
 			App.Tap(CloseId);
+			// Wait for close animation to complete - the SwipeItem text disappears
+			App.WaitForNoElement("Issue 10563");
 
+			// Test Right SwipeItems
 			App.WaitForElement(OpenRightId);
 			App.Tap(OpenRightId);
+			App.WaitForElement("Issue 10563");
 			VerifyScreenshotOrSetException(ref exception, "Right_SwipeItems");
 			App.Tap(CloseId);
+			App.WaitForNoElement("Issue 10563");
 
+			// Test Top SwipeItems
 			App.WaitForElement(OpenTopId);
 			App.Tap(OpenTopId);
+			App.WaitForElement("Issue 10563");
 			VerifyScreenshotOrSetException(ref exception, "Top_SwipeItems");
 			App.Tap(CloseId);
+			App.WaitForNoElement("Issue 10563");
 
+			// Test Bottom SwipeItems
 			App.WaitForElement(OpenBottomId);
 			App.Tap(OpenBottomId);
+			App.WaitForElement("Issue 10563");
 			VerifyScreenshotOrSetException(ref exception, "Bottom_SwipeItems");
 			App.Tap(CloseId);
 

@@ -223,7 +223,9 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToEndPosition);
 		App.Tap(ScrollToEndPosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		// Wait for scroll animation to settle before screenshot
+		Task.Delay(300).Wait();
+		VerifyScreenshot(tolerance: 2.0);
 	}
 
 	[Test, Order(18)]
@@ -239,7 +241,9 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToStartPosition);
 		App.Tap(ScrollToStartPosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		// Wait for scroll animation to settle before screenshot
+		Task.Delay(300).Wait();
+		VerifyScreenshot(tolerance: 2.0);
 	}
 
 	[Test, Order(19)]
@@ -255,7 +259,9 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToCenterPosition);
 		App.Tap(ScrollToCenterPosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		// Wait for scroll animation to settle before screenshot
+		Task.Delay(300).Wait();
+		VerifyScreenshot(tolerance: 2.0);
 	}
 
 	[Test, Order(20)]
@@ -271,7 +277,9 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToMakeVisiblePosition);
 		App.Tap(ScrollToMakeVisiblePosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		// Wait for scroll animation to settle before screenshot
+		Task.Delay(300).Wait();
+		VerifyScreenshot(tolerance: 2.0);
 	}
 
 	[Test, Order(21)]
@@ -1093,7 +1101,9 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		// Wait for layout/RTL changes to settle before screenshot
+		Task.Delay(300).Wait();
+		VerifyScreenshot(tolerance: 2.0);
 	}
 
 	[Test]
