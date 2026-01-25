@@ -547,6 +547,10 @@ namespace Microsoft.Maui.Graphics.Platform
 		protected override void PlatformDrawPath(PathF aPath)
 		{
 			var platformPath = aPath.AsAndroidPath();
+			if (_shader != null)
+			{
+				CurrentState.StrokePaintWithAlpha.SetShader(_shader);
+			}
 			_canvas.DrawPath(platformPath, CurrentState.StrokePaintWithAlpha);
 			platformPath.Dispose();
 		}
