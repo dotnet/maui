@@ -9,17 +9,23 @@
         <local:_27117MainViewModel/>
     </ContentPage.BindingContext>
 
-    <Grid>
-        <cv2:CollectionView2 AutomationId="collectionView"
+    <Grid RowDefinitions="Auto,*">
+        <Button Grid.Row="0" 
+                Text="Scroll to First Item" 
+                AutomationId="ScrollToFirstItemButton"
+                Clicked="ScrollToFirstItem_Clicked"/>
+        
+        <cv2:CollectionView2 Grid.Row="1"
+                             AutomationId="collectionView"
                              x:Name="collectionView"
                              x:DataType="local:_27117MainViewModel"
                              ItemsSource="{Binding _27117People}"
-                             Loaded="CollectionView_Loaded"
                              BackgroundColor="DarkGray">
             <cv2:CollectionView2.Header>
                 <StackLayout BackgroundColor="LightGray">
                     <Label Margin="10,0,0,0"
                            Text="People"
+                           AutomationId="HeaderLabel"
                            FontSize="Header"
                            FontAttributes="Bold"/>
                 </StackLayout>
@@ -29,6 +35,7 @@
                 <DataTemplate x:DataType="local:_27117Person">
                     <VerticalStackLayout>
                         <Label Text="{Binding Name}"
+                               AutomationId="{Binding Name}"
                                FontSize="Medium"/>
                         <Rectangle HeightRequest="2"
                                    BackgroundColor="Black"/>
