@@ -550,7 +550,11 @@ stages:
           - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/steps/send-to-helix.yml', '/eng/common/templates-official/steps/send-to-helix.yml@self') }}
             parameters:
               HelixProjectPath: ${{ parameters.helixProject }}
-              HelixProjectArguments: /p:TargetOS=windows /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsWindows_
+              ${{ if eq(parameters.runAsPublic, true) }}:
+                HelixProjectArguments: /p:TargetOS=windows /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsWindows_ /p:HelixInternal=False
+              ${{ else }}:
+                HelixProjectArguments: /p:TargetOS=windows /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsWindows_ /p:HelixInternal=True
+              HelixAccessToken: ${{ parameters.HelixAccessToken }}
               HelixConfiguration: $(_BuildConfig)
               IncludeDotNetCli: true
               DisplayNamePrefix: DeviceTestsWindows
