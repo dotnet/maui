@@ -446,7 +446,7 @@ internal static class LayoutFactory2
 			return false;
 		}
 	}
-	class CustomUICollectionViewCompositionalLayout : UICollectionViewCompositionalLayout
+	internal class CustomUICollectionViewCompositionalLayout : UICollectionViewCompositionalLayout
 	{
 		LayoutSnapInfo _snapInfo;
 		ItemsUpdatingScrollMode _itemsUpdatingScrollMode;
@@ -594,6 +594,11 @@ internal static class LayoutFactory2
 
 			return Items.SnapHelpers.AdjustContentOffset(CollectionView.ContentOffset, currentItem.Frame, viewport, alignment,
 				Configuration.ScrollDirection);
+		}
+
+		public void UpdateItemsUpdatingScrollMode(ItemsUpdatingScrollMode itemsUpdatingScrollMode)
+		{
+			_itemsUpdatingScrollMode = itemsUpdatingScrollMode;
 		}
 	}
 
