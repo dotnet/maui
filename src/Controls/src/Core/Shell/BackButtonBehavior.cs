@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(TextOverrideProperty, value); }
 		}
 
-		bool IsEnabledCore { set => SetValue(IsEnabledProperty, value); }
+		bool IsEnabledCore { set => SetValue(IsEnabledProperty, value && IsEnabled); }
 
 		static void OnCommandChanged(BindableObject bindable, object oldValue, object newValue)
 		{
