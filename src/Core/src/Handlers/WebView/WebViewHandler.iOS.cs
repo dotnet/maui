@@ -104,10 +104,10 @@ namespace Microsoft.Maui.Handlers
 
 			var set = false;
 
-			var width = widthConstraint;
-			var height = heightConstraint;
+			var width = size.Width;
+			var height = size.Height;
 
-			if (size.Width == 0)
+			if (width == 0)
 			{
 				if (widthConstraint <= 0 || double.IsInfinity(widthConstraint))
 				{
@@ -116,7 +116,7 @@ namespace Microsoft.Maui.Handlers
 				}
 			}
 
-			if (size.Height == 0)
+			if (height == 0)
 			{
 				if (heightConstraint <= 0 || double.IsInfinity(heightConstraint))
 				{
