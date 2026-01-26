@@ -78,6 +78,9 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 
 		void SetUp([CallerMemberName] string testName = null)
 		{
+			// Skip MSBuild tests on Helix where source files are not available
+			Skip.IfNot(AssemblyInfoTests.CanRunMSBuildTests(), "MSBuild tests require source files from the MAUI repository. Skipping on Helix.");
+
 			// Sanitize test name for use in path
 			var sanitizedName = testName
 				.Replace('"', '_')
@@ -254,7 +257,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			Assert.False(File.Exists(path), $"{path} should *not* exist!");
 		}
 
-		[Fact]
+		[SkippableFact]
 		public void BuildAProject()
 		{
 			SetUp();
@@ -268,7 +271,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			AssertExists(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
 		}
 
-		[Theory]
+		[SkippableTheory]
 		[InlineData("Debug")]
 		[InlineData("Release")]
 		public void HotReloadSupportForXSG(string configuration)
@@ -300,7 +303,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		}
 
 		// Tests the MauiXamlCValidateOnly=True MSBuild property
-		[Theory]
+		[SkippableTheory]
 		[InlineData("Debug")]
 		[InlineData("Release")]
 		[InlineData("ReleaseProd")]
@@ -346,7 +349,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		/// <summary>
 		/// Tests that XamlG and XamlC targets skip, as well as checking IncrementalClean doesn't delete generated files
 		/// </summary>
-		[Fact]
+		[SkippableFact]
 		public void TargetsShouldSkip()
 		{
 			SetUp();
@@ -372,7 +375,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		/// <summary>
 		/// Checks that XamlG and XamlC files are cleaned
 		/// </summary>
-		[Fact]
+		[SkippableFact]
 		public void Clean()
 		{
 			SetUp();
@@ -394,7 +397,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			AssertDoesNotExist(xamlCStamp);
 		}
 
-		[Fact]
+		[SkippableFact]
 		public void LinkedFile()
 		{
 			SetUp();
@@ -418,7 +421,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 
 		//https://github.com/dotnet/project-system/blob/master/docs/design-time-builds.md
 		//https://daveaglick.com/posts/running-a-design-time-build-with-msbuild-apis
-		[Fact]
+		[SkippableFact]
 		public void DesignTimeBuild()
 		{
 			SetUp();
@@ -447,7 +450,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 
 		}
 
-		[Fact]
+		[SkippableFact]
 		public void AddNewFile()
 		{
 			SetUp();
@@ -500,7 +503,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			Assert.NotEqual(expectedXamlC, actualXamlC);
 		}
 
-		[Fact]
+		[SkippableFact]
 		public void RandomXml()
 		{
 			SetUp();
@@ -514,7 +517,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			AssertExists(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
 		}
 
-		// [Fact]
+		// [SkippableFact]
 		// public void InvalidXml()
 		// {
 		// 	SetUp();
@@ -525,7 +528,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		// 	Assert.Throws<XunitException>(() => Build(projectFile));
 		// }
 
-		[Fact]
+		[SkippableFact]
 		public void RandomEmbeddedResource()
 		{
 			SetUp();
@@ -541,7 +544,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			AssertExists(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
 		}
 
-		[Fact]
+		[SkippableFact]
 		public void NoXamlFiles()
 		{
 			SetUp();
@@ -555,7 +558,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		/// <summary>
 		/// Tests that the SingleProject Before targets respect custom CodesignEntitlements properties
 		/// </summary>
-		[Fact]
+		[SkippableFact]
 		public void SingleProject_CodesignEntitlementsRespected()
 		{
 			SetUp();
@@ -605,7 +608,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		/// <summary>
 		/// Tests that the SingleProject Before targets use default Entitlements.plist when no custom CodesignEntitlements is set
 		/// </summary>
-		[Fact]
+		[SkippableFact]
 		public void SingleProject_DefaultEntitlementsUsedWhenNoCustomSet()
 		{
 			SetUp();

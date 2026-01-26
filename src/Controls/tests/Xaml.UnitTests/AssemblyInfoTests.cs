@@ -105,6 +105,26 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			return fileFromRoot;
 		}
 
+		/// <summary>
+		/// Checks if MSBuild tests can run in the current environment.
+		/// Returns false when running outside the MAUI repo (e.g., on Helix).
+		/// </summary>
+		internal static bool CanRunMSBuildTests()
+		{
+			var fileFromRoot = IOPath.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "src", "Controls", "tests", "Xaml.UnitTests", "MSBuild", "_Directory.Build.props");
+			if (File.Exists(fileFromRoot))
+				return true;
+
+			var sourcesDirectory = Environment.GetEnvironmentVariable("BUILD_SOURCESDIRECTORY");
+			if (!string.IsNullOrEmpty(sourcesDirectory))
+			{
+				fileFromRoot = IOPath.Combine(sourcesDirectory, "src", "Controls", "tests", "Xaml.UnitTests", "MSBuild", "_Directory.Build.props");
+				return File.Exists(fileFromRoot);
+			}
+			return false;
+		}
+
+
 		internal static string GetFileFromRoot(string file)
 		{
 			var fileFromRootpath = GetFilePathFromRoot(file);
