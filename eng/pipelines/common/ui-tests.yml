@@ -12,6 +12,9 @@ parameters:
   skipProvisioning: true
   BuildNativeAOT: false # Parameter to control whether NativeAOT artifacts should be built
   RunNativeAOT: false # Parameter to control whether NativeAOT UI tests should run
+  # Smart detection: for PRs, only run tests matching changed files
+  # Set to false to always run all tests (useful for debugging)
+  enableSmartDetection: true
   categoryGroupsToTest:
     # Make sure that this list is always up-to-date with src/Controls/tests/TestCases.Shared.Tests/UITestCategories.cs
     # we might want to improve this somehow depending on how much the categories change over time
@@ -49,6 +52,61 @@ parameters:
       app: /optional/path/to/app.csproj
 
 stages:
+  # =============================================================================
+  # SMART DETECTION STAGE (PR only)
+  # Analyzes changed files to determine which test categories to run.
+  # Skipped for regular CI builds (non-PR).
+  # =============================================================================
+  - stage: detect_uitests
+    displayName: '🔍 Detect UI Tests'
+    dependsOn: []
+    condition: and(eq(variables['Build.Reason'], 'PullRequest'), eq('${{ parameters.enableSmartDetection }}', 'true'))
+    jobs:
+      - job: analyze
+        displayName: 'Analyze Changed Files'
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - checkout: self
+            fetchDepth: 0
+
+          - task: PowerShell@2
+            name: detection
+            displayName: 'Detect Test Categories'
+            inputs:
+              targetType: 'filePath'
+              filePath: 'eng/scripts/Detect-UITestCategories.ps1'
+              arguments: >
+                -BaseBranch "$(System.PullRequest.TargetBranch)"
+                -PRNumber "$(System.PullRequest.PullRequestNumber)"
+                -GitHubToken "$(System.AccessToken)"
+                -Repository "$(Build.Repository.Name)"
+            env:
+              SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+
+          - pwsh: |
+              $runAll = "$(detection.RunAllTests)"
+              $categories = "$(detection.DetectedCategories)"
+              $groupCount = "$(detection.DetectedGroupCount)"
+              $reason = "$(detection.DetectionReason)"
+              
+              Write-Host "##[section]📊 UI Test Detection Summary"
+              Write-Host ""
+              
+              if ($runAll -eq "true") {
+                  Write-Host "##[warning]⚠️ Running ALL UI tests"
+                  Write-Host "Reason: $reason"
+              } else {
+                  Write-Host "✅ Smart Detection Active"
+                  Write-Host "   Categories: $categories"
+                  Write-Host "   Category Groups: $groupCount of 23"
+                  Write-Host "   Reason: $reason"
+              }
+            displayName: 'Print Summary'
+
+  # =============================================================================
+  # BUILD STAGES
+  # =============================================================================
   - stage: build_ui_tests
     displayName: Build UITests Sample App
     dependsOn: []
@@ -117,7 +175,18 @@ stages:
 
   - stage: android_ui_tests
     displayName: Android UITests
-    dependsOn: build_ui_tests
+    dependsOn: 
+      - build_ui_tests
+      - detect_uitests
+    # Run if: (1) detection stage was skipped (non-PR), OR (2) detection completed
+    condition: |
+      and(
+        not(failed('build_ui_tests')),
+        or(
+          eq(dependencies.detect_uitests.result, 'Skipped'),
+          eq(dependencies.detect_uitests.result, 'Succeeded')
+        )
+      )
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.android, '') }}:
@@ -130,6 +199,14 @@ stages:
                       ${{ categoryGroup }}:
                         CATEGORYGROUP: ${{ categoryGroup }}
                 timeoutInMinutes: 240 # how long to run the job before automatically cancelling
+                # Skip this job if smart detection is active and this category wasn't detected
+                condition: |
+                  or(
+                    ne(variables['Build.Reason'], 'PullRequest'),
+                    ne('${{ parameters.enableSmartDetection }}', 'true'),
+                    eq(stageDependencies.detect_uitests.analyze.outputs['detection.RunAllTests'], 'true'),
+                    contains(stageDependencies.detect_uitests.analyze.outputs['detection.DetectedCategoryGroups'], variables['CATEGORYGROUP'])
+                  )
                 workspace:
                   clean: all
                 displayName: ${{ coalesce(project.desc, project.name) }} (API ${{ api }})
@@ -161,7 +238,17 @@ stages:
 
   - stage: android_ui_tests_coreclr
     displayName: Android UITests CoreClr
-    dependsOn: build_ui_tests_coreclr
+    dependsOn: 
+      - build_ui_tests_coreclr
+      - detect_uitests
+    condition: |
+      and(
+        not(failed('build_ui_tests_coreclr')),
+        or(
+          eq(dependencies.detect_uitests.result, 'Skipped'),
+          eq(dependencies.detect_uitests.result, 'Succeeded')
+        )
+      )
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.android, '') }}:
@@ -174,6 +261,13 @@ stages:
                       ${{ categoryGroup }}:
                         CATEGORYGROUP: ${{ categoryGroup }}
                 timeoutInMinutes: 240 # how long to run the job before automatically cancelling
+                condition: |
+                  or(
+                    ne(variables['Build.Reason'], 'PullRequest'),
+                    ne('${{ parameters.enableSmartDetection }}', 'true'),
+                    eq(stageDependencies.detect_uitests.analyze.outputs['detection.RunAllTests'], 'true'),
+                    contains(stageDependencies.detect_uitests.analyze.outputs['detection.DetectedCategoryGroups'], variables['CATEGORYGROUP'])
+                  )
                 workspace:
                   clean: all
                 displayName: ${{ coalesce(project.desc, project.name) }} (API ${{ api }})
@@ -207,7 +301,17 @@ stages:
 
   - stage: ios_ui_tests_mono
     displayName: iOS UITests Mono
-    dependsOn: build_ui_tests
+    dependsOn: 
+      - build_ui_tests
+      - detect_uitests
+    condition: |
+      and(
+        not(failed('build_ui_tests')),
+        or(
+          eq(dependencies.detect_uitests.result, 'Skipped'),
+          eq(dependencies.detect_uitests.result, 'Succeeded')
+        )
+      )
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.ios, '') }}:
@@ -220,6 +324,13 @@ stages:
                       ${{ categoryGroup }}:
                         CATEGORYGROUP: ${{ categoryGroup }}
                 timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
+                condition: |
+                  or(
+                    ne(variables['Build.Reason'], 'PullRequest'),
+                    ne('${{ parameters.enableSmartDetection }}', 'true'),
+                    eq(stageDependencies.detect_uitests.analyze.outputs['detection.RunAllTests'], 'true'),
+                    contains(stageDependencies.detect_uitests.analyze.outputs['detection.DetectedCategoryGroups'], variables['CATEGORYGROUP'])
+                  )
                 workspace:
                   clean: all
                 displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
@@ -255,7 +366,23 @@ stages:
 
   - stage: ios_ui_tests_mono_cv1
     displayName: iOS UITests Mono CollectionView1
-    dependsOn: build_ui_tests
+    dependsOn: 
+      - build_ui_tests
+      - detect_uitests
+    # CV1 stage runs only CollectionView tests, so check if that category was detected
+    condition: |
+      and(
+        not(failed('build_ui_tests')),
+        or(
+          eq(dependencies.detect_uitests.result, 'Skipped'),
+          eq(dependencies.detect_uitests.result, 'Succeeded')
+        ),
+        or(
+          ne(variables['Build.Reason'], 'PullRequest'),
+          eq(dependencies.detect_uitests.outputs['analyze.detection.RunAllTests'], 'true'),
+          contains(dependencies.detect_uitests.outputs['analyze.detection.DetectedCategories'], 'CollectionView')
+        )
+      )
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.ios, '') }}:
@@ -299,7 +426,23 @@ stages:
 
   - stage: ios_ui_tests_mono_carv1
     displayName: iOS UITests Mono CarouselView1
-    dependsOn: build_ui_tests
+    dependsOn: 
+      - build_ui_tests
+      - detect_uitests
+    # CARV1 stage runs only CarouselView tests, so check if that category was detected
+    condition: |
+      and(
+        not(failed('build_ui_tests')),
+        or(
+          eq(dependencies.detect_uitests.result, 'Skipped'),
+          eq(dependencies.detect_uitests.result, 'Succeeded')
+        ),
+        or(
+          ne(variables['Build.Reason'], 'PullRequest'),
+          eq(dependencies.detect_uitests.outputs['analyze.detection.RunAllTests'], 'true'),
+          contains(dependencies.detect_uitests.outputs['analyze.detection.DetectedCategories'], 'CarouselView')
+        )
+      )
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.ios, '') }}:
@@ -344,7 +487,17 @@ stages:
   - ${{ if and(eq(parameters.BuildNativeAOT, true), eq(parameters.RunNativeAOT, true)) }}:
     - stage: ios_ui_tests_nativeaot
       displayName: iOS UITests NativeAOT
-      dependsOn: build_ui_tests_nativeaot
+      dependsOn: 
+        - build_ui_tests_nativeaot
+        - detect_uitests
+      condition: |
+        and(
+          not(failed('build_ui_tests_nativeaot')),
+          or(
+            eq(dependencies.detect_uitests.result, 'Skipped'),
+            eq(dependencies.detect_uitests.result, 'Succeeded')
+          )
+        )
       jobs:
         - ${{ each project in parameters.projects }}:
           - ${{ if ne(project.ios, '') }}:
@@ -357,6 +510,13 @@ stages:
                         ${{ categoryGroup }}:
                           CATEGORYGROUP: ${{ categoryGroup }}
                   timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
+                  condition: |
+                    or(
+                      ne(variables['Build.Reason'], 'PullRequest'),
+                      ne('${{ parameters.enableSmartDetection }}', 'true'),
+                      eq(stageDependencies.detect_uitests.analyze.outputs['detection.RunAllTests'], 'true'),
+                      contains(stageDependencies.detect_uitests.analyze.outputs['detection.DetectedCategoryGroups'], variables['CATEGORYGROUP'])
+                    )
                   workspace:
                     clean: all
                   displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
@@ -386,7 +546,17 @@ stages:
 
   - stage: winui_ui_tests
     displayName: WinUI UITests
-    dependsOn: build_ui_tests_windows
+    dependsOn: 
+      - build_ui_tests_windows
+      - detect_uitests
+    condition: |
+      and(
+        not(failed('build_ui_tests_windows')),
+        or(
+          eq(dependencies.detect_uitests.result, 'Skipped'),
+          eq(dependencies.detect_uitests.result, 'Succeeded')
+        )
+      )
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.winui, '') }}:
@@ -397,6 +567,13 @@ stages:
                       ${{ categoryGroup }}:
                         CATEGORYGROUP: ${{ categoryGroup }}
                 timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
+                condition: |
+                  or(
+                    ne(variables['Build.Reason'], 'PullRequest'),
+                    ne('${{ parameters.enableSmartDetection }}', 'true'),
+                    eq(stageDependencies.detect_uitests.analyze.outputs['detection.RunAllTests'], 'true'),
+                    contains(stageDependencies.detect_uitests.analyze.outputs['detection.DetectedCategoryGroups'], variables['CATEGORYGROUP'])
+                  )
                 workspace:
                   clean: all
                 displayName: ${{ coalesce(project.desc, project.name) }}
@@ -423,7 +600,17 @@ stages:
 
   - stage: mac_ui_tests
     displayName: macOS UITests
-    dependsOn: build_ui_tests
+    dependsOn: 
+      - build_ui_tests
+      - detect_uitests
+    condition: |
+      and(
+        not(failed('build_ui_tests')),
+        or(
+          eq(dependencies.detect_uitests.result, 'Skipped'),
+          eq(dependencies.detect_uitests.result, 'Succeeded')
+        )
+      )
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.mac, '') }}:
@@ -434,6 +621,13 @@ stages:
                       ${{ categoryGroup }}:
                         CATEGORYGROUP: ${{ categoryGroup }}
                 timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
+                condition: |
+                  or(
+                    ne(variables['Build.Reason'], 'PullRequest'),
+                    ne('${{ parameters.enableSmartDetection }}', 'true'),
+                    eq(stageDependencies.detect_uitests.analyze.outputs['detection.RunAllTests'], 'true'),
+                    contains(stageDependencies.detect_uitests.analyze.outputs['detection.DetectedCategoryGroups'], variables['CATEGORYGROUP'])
+                  )
                 workspace:
                   clean: all
                 displayName: ${{ coalesce(project.desc, project.name) }}
