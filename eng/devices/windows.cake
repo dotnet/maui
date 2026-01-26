@@ -172,8 +172,11 @@ Task("buildOnly")
 	else
 	{
 		// Apply correct build properties for unpackaged builds
-		// WindowsAppSDKSelfContained is automatically set to true by the MAUI SDK
-		// when WindowsPackageType=None (see Microsoft.Maui.Sdk.Windows.targets)
+		// WindowsAppSDKSelfContained must be explicitly set in device test csproj files
+		// with the condition: WindowsPackageType == None
+		// Note: The MAUI SDK's default in Microsoft.Maui.Sdk.Windows.targets only applies
+		// to OutputType=WinExe, but the Before.targets Exe->WinExe conversion happens
+		// too late in the build process for device tests, so we need explicit csproj properties.
 		s.MSBuildSettings.Properties.Add("SelfContained", new List<string> { "True" });
 		s.MSBuildSettings.Properties.Add("WindowsPackageType", new List<string> { "None" });
 		s.MSBuildSettings.Properties.Add("ExtraDefineConstants", new List<string> { "UNPACKAGED" });

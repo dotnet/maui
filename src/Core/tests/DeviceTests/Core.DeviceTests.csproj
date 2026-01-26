@@ -15,6 +15,8 @@
     <RuntimeIdentifiers Condition="$(TargetFramework.Contains('-android'))">android-arm64;android-x64</RuntimeIdentifiers>
     <IsTestProject>true</IsTestProject>
     <ExcludeMicrosoftNetTestSdk>true</ExcludeMicrosoftNetTestSdk>
+    <!-- Required for unpackaged Windows deployment on Helix - bundle Windows App SDK instead of relying on installed runtime -->
+    <WindowsAppSDKSelfContained Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows' and '$(WindowsPackageType)' == 'None'">true</WindowsAppSDKSelfContained>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(CI)' == 'true' or '$(TF_BUILD)' == 'true' ">
