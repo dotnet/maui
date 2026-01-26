@@ -11,6 +11,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
+using Xunit;
 
 #nullable enable
 
@@ -50,15 +51,34 @@ public static class MockSourceGenerator
 		return RunMauiSourceGenerator(compilation, new AdditionalXamlFile(resourcePath, new StreamReader(resourceStream!).ReadToEnd(), TargetFramework: targetFramework));
 	}
 
-	static string GetTopDirRecursive(string searchDirectory, int maxSearchDepth = 7)
+	static string? GetTopDirRecursive(string searchDirectory, int maxSearchDepth = 7)
 	{
 		if (File.Exists(Path.Combine(searchDirectory, "Microsoft.Maui.sln")))
 			return searchDirectory;
 
 		if (maxSearchDepth <= 0)
-			throw new DirectoryNotFoundException("Unable to locate root maui directory!");
+			return null; // Return null instead of throwing when running outside repo (e.g., Helix)
 
 		return GetTopDirRecursive(Directory.GetParent(searchDirectory)?.FullName ?? "", --maxSearchDepth);
+	}
+
+	/// <summary>
+	/// Checks if the SourceGen tests can run in the current environment.
+	/// Returns false when running outside the MAUI repo (e.g., on Helix).
+	/// </summary>
+	public static bool CanRunSourceGenTests()
+	{
+		var top = GetTopDirRecursive(Directory.GetCurrentDirectory());
+		if (top == null)
+			return false;
+
+#if DEBUG
+		var config = "Debug";
+#else
+		var config = "Release";
+#endif
+		var path = Path.Combine(top, "artifacts", "bin", "Controls.SourceGen", config, "netstandard2.0", "Microsoft.Maui.Controls.SourceGen.dll");
+		return File.Exists(path);
 	}
 
 	public static GeneratorDriverRunResult RunMauiSourceGenerator(this Compilation compilation, params AdditionalFile[] additionalFiles)
@@ -70,7 +90,20 @@ public static class MockSourceGenerator
 #endif
 
 		var top = GetTopDirRecursive(Directory.GetCurrentDirectory());
+		if (top == null)
+		{
+			Assert.Skip("SourceGen tests require running from within the MAUI repository. Skipping on Helix.");
+			return null!; // Never reached, but needed for compilation
+		}
+		
 		var path = System.IO.Path.Combine(top, "artifacts", "bin", "Controls.SourceGen", config, "netstandard2.0", "Microsoft.Maui.Controls.SourceGen.dll");
+		
+		if (!File.Exists(path))
+		{
+			Assert.Skip($"SourceGen DLL not found at {path}. Build Controls.SourceGen first or skip on Helix.");
+			return null!; // Never reached, but needed for compilation
+		}
+		
 		var analyzerAssembly = Assembly.LoadFrom(path);
 
 		var generatorType = analyzerAssembly?.GetType("Microsoft.Maui.Controls.SourceGen.XamlGenerator")!;
