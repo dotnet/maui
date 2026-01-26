@@ -182,6 +182,13 @@ namespace Microsoft.Maui.Platform
 			}
 
 			var visual = ElementCompositionPreview.GetElementVisual(Content);
+
+			// Prevent clip collision: When ContentView is inside Border, let WrapperView handle 
+			// clipping to avoid Border overwriting ContentView's clip geometry during SizeChanged.
+			if (visual.Clip != null && Content.Parent is WrapperView)
+			{
+				return;
+			}
 			var compositor = visual.Compositor;
 
 			PathF? clipPath;
