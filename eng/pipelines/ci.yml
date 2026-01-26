@@ -342,6 +342,32 @@ stages:
       timeout: 45
       testName: RunOniOS_MauiNativeAOT
 
+    # CoreCLR test variants - ARM64 (Apple Silicon) lanes
+    - name: mac_runios_maui_debug_coreclr_arm64
+      pool: ${{ parameters.MacOSPoolArm64 }}
+      timeout: 45
+      testName: RunOniOS_MauiDebug_CoreCLR
+
+    - name: mac_runios_maui_release_coreclr_arm64
+      pool: ${{ parameters.MacOSPoolArm64 }}
+      timeout: 45
+      testName: RunOniOS_MauiRelease_CoreCLR
+
+    - name: mac_runios_maui_trim_coreclr_arm64
+      pool: ${{ parameters.MacOSPoolArm64 }}
+      timeout: 45
+      testName: RunOniOS_MauiReleaseTrimFull_CoreCLR
+
+    - name: mac_runios_blazor_debug_coreclr_arm64
+      pool: ${{ parameters.MacOSPoolArm64 }}
+      timeout: 45
+      testName: RunOniOS_BlazorDebug_CoreCLR
+
+    - name: mac_runios_blazor_release_coreclr_arm64
+      pool: ${{ parameters.MacOSPoolArm64 }}
+      timeout: 45
+      testName: RunOniOS_BlazorRelease_CoreCLR
+
     # MacOSPool lanes - comparison with ARM64 pool
     # Only run on: (non-PR on main/net*.0/release/*/inflight/*) OR (PR targeting net*.0/release/*/inflight/*)
     - name: mac_runios_maui_debug
@@ -378,4 +404,35 @@ stages:
       pool: ${{ parameters.MacOSPool }}
       timeout: 45
       testName: RunOniOS_MauiNativeAOT
+      condition: ${{ parameters.macOSPoolLaneCondition }}
+
+    # CoreCLR test variants - MacOSPool lanes
+    - name: mac_runios_maui_debug_coreclr
+      pool: ${{ parameters.MacOSPool }}
+      timeout: 45
+      testName: RunOniOS_MauiDebug_CoreCLR
+      condition: ${{ parameters.macOSPoolLaneCondition }}
+
+    - name: mac_runios_maui_release_coreclr
+      pool: ${{ parameters.MacOSPool }}
+      timeout: 45
+      testName: RunOniOS_MauiRelease_CoreCLR
+      condition: ${{ parameters.macOSPoolLaneCondition }}
+
+    - name: mac_runios_maui_trim_coreclr
+      pool: ${{ parameters.MacOSPool }}
+      timeout: 45
+      testName: RunOniOS_MauiReleaseTrimFull_CoreCLR
+      condition: ${{ parameters.macOSPoolLaneCondition }}
+
+    - name: mac_runios_blazor_debug_coreclr
+      pool: ${{ parameters.MacOSPool }}
+      timeout: 45
+      testName: RunOniOS_BlazorDebug_CoreCLR
+      condition: ${{ parameters.macOSPoolLaneCondition }}
+
+    - name: mac_runios_blazor_release_coreclr
+      pool: ${{ parameters.MacOSPool }}
+      timeout: 45
+      testName: RunOniOS_BlazorRelease_CoreCLR
       condition: ${{ parameters.macOSPoolLaneCondition }}
