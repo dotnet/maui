@@ -1607,7 +1607,24 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				base.ViewWillTransitionToSize(toSize, coordinator);
 
 				if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad)
+				{
 					UpdateLeftBarButtonItem();
+
+					// For iOS 26+, force TitleView to re-layout on window size changes (iPad Stage Manager)
+					if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+					{
+						coordinator.AnimateAlongsideTransition(_ =>
+						{
+							// Update Container frame during the animation for smooth resizing
+							if (NavigationItem.TitleView is Container container && NavigationController?.NavigationBar is UINavigationBar navigationBar)
+							{
+								var navBarFrame = navigationBar.Frame;
+								container.Frame = new CGRect(0, 0, navBarFrame.Width, navBarFrame.Height);
+								container.LayoutIfNeeded();
+							}
+						}, null);
+					}
+				}
 			}
 
 			public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
