@@ -52,7 +52,7 @@ parameters:
 
 stages:
 - stage: devicetests_build
-  displayName: ${{ parameters.TargetFrameworkVersion }} ios/catalyst/android Helix Tests (Mono)
+  displayName: ${{ parameters.TargetFrameworkVersion }} Mono ios/catalyst/android Helix Tests
   dependsOn: []
   jobs:
   - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
@@ -106,7 +106,7 @@ stages:
           artifact: ${{ parameters.appArtifactName }}_failed_$(System.JobAttempt)
 
 - stage: devicetests_ios
-  displayName: ${{ parameters.TargetFrameworkVersion }} iOS Helix Tests (Mono)
+  displayName: ${{ parameters.TargetFrameworkVersion }} Mono iOS Helix Tests
   dependsOn: 
     - devicetests_build
   jobs:
@@ -160,7 +160,7 @@ stages:
             XUnitWorkItemTimeout: 04:00:00
 
 - stage: devicetests_catalyst
-  displayName: ${{ parameters.TargetFrameworkVersion }} MacCatalyst Helix Tests (Mono)
+  displayName: ${{ parameters.TargetFrameworkVersion }} Mono MacCatalyst Helix Tests
   dependsOn: 
     - devicetests_build
   jobs:
@@ -212,7 +212,7 @@ stages:
             DisplayNamePrefix: DeviceTestsMacCatalyst
 
 - stage: devicetests_android
-  displayName: ${{ parameters.TargetFrameworkVersion }} Android Helix Tests (Mono)
+  displayName: ${{ parameters.TargetFrameworkVersion }} Mono Android Helix Tests
   dependsOn: 
     - devicetests_build
   jobs:
@@ -265,7 +265,7 @@ stages:
 
 # CoreCLR Device Tests Stages
 - stage: devicetests_build_coreclr
-  displayName: ${{ parameters.TargetFrameworkVersion }} ios/catalyst/android CoreCLR Helix Tests
+  displayName: ${{ parameters.TargetFrameworkVersion }} CoreCLR ios/catalyst/android Helix Tests
   dependsOn: []
   jobs:
   - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
@@ -319,7 +319,7 @@ stages:
           artifact: ${{ parameters.appArtifactName }}_coreclr_failed_$(System.JobAttempt)
 
 - stage: devicetests_android_coreclr
-  displayName: ${{ parameters.TargetFrameworkVersion }} Android CoreCLR Helix Tests
+  displayName: ${{ parameters.TargetFrameworkVersion }} CoreCLR Android Helix Tests
   dependsOn: 
     - devicetests_build_coreclr
   jobs:
@@ -371,7 +371,7 @@ stages:
             DisplayNamePrefix: DeviceTestsAndroid_CoreCLR
 
 - stage: devicetests_ios_coreclr
-  displayName: ${{ parameters.TargetFrameworkVersion }} iOS CoreCLR Helix Tests
+  displayName: ${{ parameters.TargetFrameworkVersion }} CoreCLR iOS Helix Tests
   dependsOn: 
     - devicetests_build_coreclr
   jobs:
@@ -421,7 +421,7 @@ stages:
             XUnitWorkItemTimeout: 04:00:00
 
 - stage: devicetests_catalyst_coreclr
-  displayName: ${{ parameters.TargetFrameworkVersion }} MacCatalyst CoreCLR Helix Tests
+  displayName: ${{ parameters.TargetFrameworkVersion }} CoreCLR MacCatalyst Helix Tests
   dependsOn: 
     - devicetests_build_coreclr
   jobs:
