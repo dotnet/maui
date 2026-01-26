@@ -43,12 +43,10 @@ stages:
           arguments: '-c ${{ parameters.buildConfig }} --filter "$(testFilter)" --logger trx --results-directory $(Agent.TempDirectory)/Microsoft.Maui.IntegrationTests'
           useExitCodeForErrors: true
           retryCountOnTaskFailure: 1
-          # Set SKIP_XCODE_VERSION_CHECK for all macOS jobs that may build iOS/MacCatalyst projects
-          ${{ if eq(job.pool.os, 'macOS') }}:
-            envVariables:
-              SKIP_XCODE_VERSION_CHECK: 'true'
-          # Set IOS_TEST_DEVICE only for iOS-related tests (RunOniOS and RunOniOS_*)
-          ${{ if or(eq(job.testCategory, 'RunOniOS'), startsWith(job.testName, 'RunOniOS')) }}:
+          # Set environment variables for macOS jobs
+          # - SKIP_XCODE_VERSION_CHECK: For all macOS jobs (iOS/MacCatalyst builds)
+          # - IOS_TEST_DEVICE: Only for RunOniOS tests
+          ${{ if and(eq(job.pool.os, 'macOS'), or(eq(job.testCategory, 'RunOniOS'), startsWith(job.testName, 'RunOniOS'))) }}:
             envVariables:
               SKIP_XCODE_VERSION_CHECK: 'true'
               IOS_TEST_DEVICE: ios-simulator-64_18.5
