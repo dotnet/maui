@@ -304,6 +304,27 @@ namespace Microsoft.Maui.Controls
 
 		void OnItemsSourceChanged(IList oldValue, IList newValue)
 		{
+			if (oldValue is not null)
+			{
+				foreach (var item in oldValue)
+				{
+					if (item is INotifyPropertyChanged npc)
+					{
+						npc.PropertyChanged -= OnPickerItemPropertyChanged;
+					}
+				}
+			}
+			if (newValue is not null && ItemDisplayBinding is not null)
+			{
+				foreach (var item in newValue)
+				{
+					if (item is INotifyPropertyChanged npc)
+					{
+						npc.PropertyChanged += OnPickerItemPropertyChanged;
+					}
+				}
+			}
+
 			var oldObservable = oldValue as INotifyCollectionChanged;
 			if (oldObservable != null)
 				oldObservable.CollectionChanged -= CollectionChanged;
@@ -363,9 +384,40 @@ namespace Microsoft.Maui.Controls
 			else
 				picker.Closed?.Invoke(picker, PickerClosedEventArgs.Empty);
 		}
+		void OnPickerItemPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			if (ItemDisplayBinding is Binding binding && !string.IsNullOrEmpty(binding.Path))
+			{
+				if (e.PropertyName == binding.Path)
+				{
+					ResetItems();
+				}
+			}
+		}
 
 		void CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
+			if (e.OldItems is not null)
+			{
+				foreach (var item in e.OldItems)
+				{
+					if (item is INotifyPropertyChanged npc)
+					{
+						npc.PropertyChanged -= OnPickerItemPropertyChanged;
+					}
+				}
+			}
+			if (e.NewItems is not null && ItemDisplayBinding is not null)
+			{
+				foreach (var item in e.NewItems)
+				{
+					if (item is INotifyPropertyChanged npc)
+					{
+						npc.PropertyChanged += OnPickerItemPropertyChanged;
+					}
+				}
+			}
+			
 			switch (e.Action)
 			{
 				case NotifyCollectionChangedAction.Add:
