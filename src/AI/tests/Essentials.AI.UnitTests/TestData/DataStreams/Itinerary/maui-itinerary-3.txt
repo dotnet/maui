@@ -1,0 +1,55 @@
+{"title":"Volcano Vacation in Maui
+","days":[{"subtitle":"
+Explore Haleakalā National Park and relax at a
+ beachfront hotel","destination":"Mau
+i","activities":[{"title":"
+Visit Haleakalā National Park","description":"
+Witness the breathtaking sunrise views from Haleakalā'
+s summit.","type":"H
+otelAndLodging"},{"title":"
+Stay at a beachfront hotel","description":"
+Enjoy relaxation and ocean views from your hotel room.
+","type":"HotelAndLodging
+"},{"title":"Dine at
+ a local restaurant","description":"Savor
+ fresh seafood and island flavors at a nearby eatery
+.","type":"FoodAndDining
+"}],"title":"Relax and unwind at
+ a beachfront hotel"},{"subtitle":"
+Discover the Road to Hana and snorkel at Molok
+ini Crater","destination":"Maui
+","activities":[{"title":"Drive
+ the Road to Hana","description":"Explore
+ the scenic drive through rainforests and waterfalls.","type":"
+HotelAndLodging"},{"title":"
+Visit Molokini Crater for snorkeling","description":"
+Snorkel among vibrant coral reefs and marine life
+.","type":"FoodAndDining
+"},{"title":"Stay at a beachfront hotel
+","description":"Relax and enjoy ocean views
+ from your hotel room.","type":"Hotel
+AndLodging
+"}],"title":"Scenic drives and underwater adventures"},{"subtitle":"
+Experience Haleakalā's unique ecosystems and cultural
+ sites","destination":"Maui
+","activities":[{"title":"Visit Hale
+akalā National Park","description":"Explore
+ the crater's unique ecosystems and stargazing
+ opportunities.","type":"HotelAnd
+Lodging"},{"title":"Learn about
+ Hawaiian culture at a museum","description":"
+Discover the rich history and traditions of the Hawaiian people
+.","type":"FoodAndDining
+"},{"title":"Dine at a local restaurant
+","description":"Enjoy traditional Hawaiian cuisine.
+","type":"FoodAndDining
+"}],"title":"Cultural exploration and natural wonders
+"}],"rationale":"This itinerary offers
+ a perfect blend of adventure, relaxation, and cultural
+ immersion in Maui, allowing you to experience the island
+'s diverse landscapes and rich heritage.","description":"
+This itinerary offers a perfect blend of adventure, relaxation
+, and cultural immersion in Maui, allowing you to
+ experience the island's diverse landscapes and rich heritage
+.","destinationName":"Maui
+"}

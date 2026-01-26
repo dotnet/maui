@@ -1,0 +1,46 @@
+plugins {
+    id 'com.android.library'
+    id 'org.jetbrains.kotlin.android'
+}
+
+android {
+    compileSdk 36
+    namespace "com.microsoft.maui.essentials.ai"
+
+    defaultConfig {
+        minSdk 26
+        targetSdk 36
+        versionCode 1
+        versionName '1.0'
+        setProperty('archivesBaseName', 'essentialsai')
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
+    afterEvaluate {
+        tasks.withType(com.android.build.gradle.tasks.BundleAar).configureEach { task ->
+            task.archiveFileName.set("essentialsai.aar")
+        }
+    }
+}
+
+dependencies {
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
+    
+    implementation("com.google.mlkit:genai-prompt:1.0.0-alpha1")
+}
