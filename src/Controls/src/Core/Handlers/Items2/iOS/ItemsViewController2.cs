@@ -225,11 +225,35 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (invalidatedCells is not null)
 			{
+				// Workaround for Apple bug in iPadOS 18+ with UICollectionViewCompositionalLayout
+				// Self-sizing cells cause scroll position jumps during invalidation
+				if (ShouldApplyCellReConfiguration())
+				{
+					UIView.PerformWithoutAnimation(() =>
+					{
+						// Use ReconfigureItems (iOS 15+) which is designed for size changes
+						// without full cell recreation - more efficient than ReloadItems
+						collectionView.ReconfigureItems(invalidatedCells.Select(CollectionView.IndexPathForCell).ToArray());
+					});
+
+					return;
+				}
+
 				var layoutInvalidationContext = new UICollectionViewLayoutInvalidationContext();
 				layoutInvalidationContext.InvalidateItems(invalidatedCells.Select(CollectionView.IndexPathForCell).ToArray());
 				collectionView.CollectionViewLayout.InvalidateLayout(layoutInvalidationContext);
 			}
 		}
+
+		static bool ShouldApplyCellReConfiguration()
+        {
+            if (!OperatingSystem.IsIOSVersionAtLeast(15))
+            {
+                return false;
+            }
+ 
+            return UIDevice.CurrentDevice?.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad;
+        }
 
 		private void MovedToWindow(object sender, EventArgs e)
 		{
