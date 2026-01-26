@@ -147,7 +147,34 @@ if (!TestEnvironment.IsWindows)
 
 ## Running Tests Locally
 
-### Prerequisites
+### 🚨 ALWAYS Use the Skill
+
+**When asked to run integration tests, ALWAYS use the `run-integration-tests` skill:**
+
+```powershell
+# macOS examples
+pwsh .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 -Category "macOSTemplates" -SkipBuild -SkipInstall -SkipXcodeVersionCheck
+pwsh .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 -Category "RunOniOS" -SkipBuild -SkipInstall -SkipXcodeVersionCheck
+pwsh .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 -Category "RunOnAndroid" -SkipBuild -SkipInstall
+
+# Windows examples
+pwsh .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 -Category "WindowsTemplates" -SkipBuild -SkipInstall
+pwsh .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 -Category "Build" -SkipBuild -SkipInstall
+```
+
+The skill handles:
+- ✅ Environment variable setup (`MAUI_PACKAGE_VERSION`, `SKIP_XCODE_VERSION_CHECK`)
+- ✅ Cross-platform support (Windows and macOS)
+- ✅ Test results in TRX format
+- ✅ Proper error reporting
+
+See `.github/skills/run-integration-tests/SKILL.md` for full documentation.
+
+---
+
+### Prerequisites (Manual Setup)
+
+If the skill reports missing prerequisites, provision the local SDK:
 
 1. **Provision the local SDK and workloads** - The `.dotnet/` folder must contain a fully provisioned .NET SDK with MAUI workloads. Run:
 
@@ -168,12 +195,9 @@ if (!TestEnvironment.IsWindows)
    ls .dotnet/packs/Microsoft.Maui.Sdk
    ```
 
-2. **Set `MAUI_PACKAGE_VERSION` environment variable** - If missing, tests will fail with "MAUI_PACKAGE_VERSION was not set."
-   ```bash
-   export MAUI_PACKAGE_VERSION=$(ls .dotnet/packs/Microsoft.Maui.Sdk | head -1)
-   ```
+### Environment Variables (Reference)
 
-### Environment Variables
+The skill sets these automatically, but for manual runs:
 
 | Variable | Required | Purpose |
 |----------|----------|---------|
@@ -181,9 +205,15 @@ if (!TestEnvironment.IsWindows)
 | `IOS_TEST_DEVICE` | No | iOS simulator target (e.g., `ios-simulator-64_18.5`) |
 | `SKIP_XCODE_VERSION_CHECK` | No | Set to `true` to bypass Xcode version validation |
 
-### Run Commands
+### Manual Run Commands (Fallback Only)
+
+**⚠️ Only use these if the skill is unavailable:**
 
 ```bash
+# Set environment first
+export MAUI_PACKAGE_VERSION=$(ls .dotnet/packs/Microsoft.Maui.Sdk | head -1)
+export SKIP_XCODE_VERSION_CHECK=true
+
 # Run specific category
 dotnet test src/TestUtils/src/Microsoft.Maui.IntegrationTests \
   --filter "Category=Build"
@@ -191,11 +221,6 @@ dotnet test src/TestUtils/src/Microsoft.Maui.IntegrationTests \
 # Run specific test
 dotnet test src/TestUtils/src/Microsoft.Maui.IntegrationTests \
   --filter "FullyQualifiedName~AppleTemplateTests.RunOniOS"
-
-# With iOS device and Xcode skip
-export IOS_TEST_DEVICE="ios-simulator-64_18.5"
-export SKIP_XCODE_VERSION_CHECK=true
-dotnet test ... --filter "Category=RunOniOS"
 ```
 
 ## Common Pitfalls

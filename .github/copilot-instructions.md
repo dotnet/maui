@@ -265,9 +265,15 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
    - **Trigger phrases**: "check build for PR #XXXXX", "why did PR build fail", "get build status"
    - **Used by**: When investigating CI failures
 
+8. **run-integration-tests** (`.github/skills/run-integration-tests/SKILL.md`)
+   - **Purpose**: Build, pack, and run .NET MAUI integration tests locally
+   - **Trigger phrases**: "run integration tests", "test templates locally", "run macOSTemplates tests", "run RunOniOS tests"
+   - **Categories**: Build, WindowsTemplates, macOSTemplates, Blazor, MultiProject, Samples, AOT, RunOnAndroid, RunOniOS
+   - **Note**: **ALWAYS use this skill** instead of manual `dotnet test` commands for integration tests
+
 #### Internal Skills (Used by Agents)
 
-8. **try-fix** (`.github/skills/try-fix/SKILL.md`)
+9. **try-fix** (`.github/skills/try-fix/SKILL.md`)
    - **Purpose**: Proposes ONE independent fix approach, applies it, tests, records result with failure analysis, then reverts
    - **Used by**: pr agent Phase 3 (Fix phase) - rarely invoked directly by users
    - **Behavior**: Reads prior attempts to learn from failures. Max 5 attempts per session.
