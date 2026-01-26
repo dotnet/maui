@@ -51,6 +51,9 @@ pwsh .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 -Test
 
 # Skip build step (if already built)
 pwsh .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 -Category "Build" -SkipBuild
+
+# macOS: Skip Xcode version check (for version mismatches)
+pwsh .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 -Category "macOSTemplates" -SkipBuild -SkipInstall -SkipXcodeVersionCheck
 ```
 
 ## Parameters
@@ -62,6 +65,7 @@ pwsh .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 -Cate
 | `-Configuration` | No | Debug | Build configuration (Debug/Release) |
 | `-SkipBuild` | No | false | Skip build/pack step if already done |
 | `-SkipInstall` | No | false | Skip workload installation if already done |
+| `-SkipXcodeVersionCheck` | No | false | Skip Xcode version validation (macOS) |
 | `-ResultsDirectory` | No | artifacts/integration-tests | Directory for test results |
 
 ## Workflow Steps
@@ -88,9 +92,10 @@ pwsh .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 -Test
 
 ## Prerequisites
 
-- Windows for WindowsTemplates
+- Windows for WindowsTemplates, macOS for macOSTemplates/RunOniOS/RunOnAndroid
 - .NET SDK (version from global.json)
 - Sufficient disk space for build artifacts
+- For macOS: Local workloads provisioned via `./build.sh --target=dotnet && dotnet cake --target=dotnet-local-workloads`
 
 ## Output
 

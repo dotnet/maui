@@ -149,9 +149,29 @@ if (!TestEnvironment.IsWindows)
 
 ### Prerequisites
 
-1. Verify `.dotnet/` folder exists (local SDK). If missing, stop and tell user to run `dotnet cake` to provision locally.
-2. Set `MAUI_PACKAGE_VERSION` environment variable. If missing, tests will fail with "MAUI_PACKAGE_VERSION was not set."
-   - Example: `export MAUI_PACKAGE_VERSION=$(ls .dotnet/packs/Microsoft.Maui.Sdk | head -1)`
+1. **Provision the local SDK and workloads** - The `.dotnet/` folder must contain a fully provisioned .NET SDK with MAUI workloads. Run:
+
+   ```bash
+   # Step 1: Download the .NET SDK (creates .dotnet/dotnet binary)
+   ./build.sh --target=dotnet
+   
+   # Step 2: Install MAUI workloads into the local SDK (takes ~5 minutes)
+   ./build.sh --target=dotnet-local-workloads
+   ```
+
+   **Verification**: After provisioning, verify the setup:
+   ```bash
+   # Check dotnet binary exists
+   ls .dotnet/dotnet
+   
+   # Check MAUI workloads are installed
+   ls .dotnet/packs/Microsoft.Maui.Sdk
+   ```
+
+2. **Set `MAUI_PACKAGE_VERSION` environment variable** - If missing, tests will fail with "MAUI_PACKAGE_VERSION was not set."
+   ```bash
+   export MAUI_PACKAGE_VERSION=$(ls .dotnet/packs/Microsoft.Maui.Sdk | head -1)
+   ```
 
 ### Environment Variables
 

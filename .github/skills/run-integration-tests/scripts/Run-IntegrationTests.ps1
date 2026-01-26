@@ -53,17 +53,23 @@ param(
     [switch]$SkipInstall,
 
     [Parameter()]
+    [switch]$SkipXcodeVersionCheck,
+
+    [Parameter()]
     [string]$ResultsDirectory = "artifacts/integration-tests"
 )
 
 $ErrorActionPreference = "Stop"
 $RepoRoot = (Get-Item $PSScriptRoot).Parent.Parent.Parent.Parent.FullName
+$RunningOnWindows = $IsWindows -or $env:OS -eq 'Windows_NT'
+$RunningOnMacOS = $IsMacOS -or ((Get-Command uname -ErrorAction SilentlyContinue) -and ((uname) -eq 'Darwin'))
 
 Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
 Write-Host "║       .NET MAUI Integration Tests Runner                  ║" -ForegroundColor Cyan
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Repository Root: $RepoRoot"
+Write-Host "Platform:        $(if ($RunningOnWindows) { 'Windows' } elseif ($RunningOnMacOS) { 'macOS' } else { 'Linux' })"
 Write-Host "Configuration:   $Configuration"
 Write-Host "Category:        $(if ($Category) { $Category } else { 'Custom filter' })"
 Write-Host "Skip Build:      $SkipBuild"
@@ -73,28 +79,34 @@ Push-Location $RepoRoot
 
 try {
     # ═══════════════════════════════════════════════════════════════════
-    # Pre-flight: Check for processes using .dotnet folder
+    # Pre-flight: Check for processes using .dotnet folder (Windows only)
     # ═══════════════════════════════════════════════════════════════════
     $dotnetFolder = Join-Path $RepoRoot ".dotnet"
-    $lockingProcesses = Get-Process | Where-Object { $_.Path -like "$dotnetFolder\*" } -ErrorAction SilentlyContinue
     
-    if ($lockingProcesses) {
-        Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Red
-        Write-Host "⚠️  WARNING: Processes are using the .dotnet folder!" -ForegroundColor Red
-        Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Red
-        Write-Host ""
-        Write-Host "The following processes have locks on files in .dotnet:" -ForegroundColor Yellow
-        foreach ($proc in $lockingProcesses) {
-            Write-Host "  - PID: $($proc.Id) | Name: $($proc.ProcessName) | Path: $($proc.Path)" -ForegroundColor Gray
+    if ($RunningOnWindows) {
+        $lockingProcesses = Get-Process | Where-Object { $_.Path -like "$dotnetFolder\*" } -ErrorAction SilentlyContinue
+        
+        if ($lockingProcesses) {
+            Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Red
+            Write-Host "⚠️  WARNING: Processes are using the .dotnet folder!" -ForegroundColor Red
+            Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Red
+            Write-Host ""
+            Write-Host "The following processes have locks on files in .dotnet:" -ForegroundColor Yellow
+            foreach ($proc in $lockingProcesses) {
+                Write-Host "  - PID: $($proc.Id) | Name: $($proc.ProcessName) | Path: $($proc.Path)" -ForegroundColor Gray
+            }
+            Write-Host ""
+            Write-Host "To fix this, run:" -ForegroundColor Cyan
+            Write-Host '  Get-Process | Where-Object { $_.Path -like "*\.dotnet\*" } | ForEach-Object { Stop-Process -Id $_.Id -Force }' -ForegroundColor White
+            Write-Host ""
+            throw "Cannot proceed with locked .dotnet folder. Kill the processes above and retry."
         }
-        Write-Host ""
-        Write-Host "To fix this, run:" -ForegroundColor Cyan
-        Write-Host '  Get-Process | Where-Object { $_.Path -like "*\.dotnet\*" } | ForEach-Object { Stop-Process -Id $_.Id -Force }' -ForegroundColor White
-        Write-Host ""
-        throw "Cannot proceed with locked .dotnet folder. Kill the processes above and retry."
+        
+        Write-Host "✅ No processes locking .dotnet folder" -ForegroundColor Green
     }
-    
-    Write-Host "✅ No processes locking .dotnet folder" -ForegroundColor Green
+    else {
+        Write-Host "✅ Skipping process lock check (not Windows)" -ForegroundColor Green
+    }
     Write-Host ""
 
     # ═══════════════════════════════════════════════════════════════════
@@ -105,12 +117,18 @@ try {
         Write-Host "Step 1: Building and Packing MAUI..." -ForegroundColor Yellow
         Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Yellow
         
-        $buildCmd = Join-Path $RepoRoot 'build.cmd'
-        $buildArgs = @("-restore", "-pack", "-configuration", $Configuration)
-        
-        Write-Host "Running: $buildCmd $($buildArgs -join ' ')" -ForegroundColor Gray
-        
-        & $buildCmd @buildArgs
+        if ($RunningOnWindows) {
+            $buildCmd = Join-Path $RepoRoot 'build.cmd'
+            $buildArgs = @("-restore", "-pack", "-configuration", $Configuration)
+            Write-Host "Running: $buildCmd $($buildArgs -join ' ')" -ForegroundColor Gray
+            & $buildCmd @buildArgs
+        }
+        else {
+            $buildCmd = Join-Path $RepoRoot 'build.sh'
+            $buildArgs = @("-restore", "-pack", "-configuration", $Configuration)
+            Write-Host "Running: $buildCmd $($buildArgs -join ' ')" -ForegroundColor Gray
+            & bash $buildCmd @buildArgs
+        }
         
         if ($LASTEXITCODE -ne 0) {
             throw "Build and pack failed with exit code $LASTEXITCODE"
@@ -129,10 +147,14 @@ try {
     # ═══════════════════════════════════════════════════════════════════
     # Step 2: Install Workloads
     # ═══════════════════════════════════════════════════════════════════
-    $dotnetPath = Join-Path $RepoRoot ".dotnet\dotnet.exe"
+    $dotnetPath = if ($RunningOnWindows) { 
+        Join-Path $RepoRoot ".dotnet\dotnet.exe" 
+    } else { 
+        Join-Path $RepoRoot ".dotnet/dotnet" 
+    }
     
     if (-not (Test-Path $dotnetPath)) {
-        throw "Local .dotnet SDK not found at: $dotnetPath. Run build first."
+        throw "Local .dotnet SDK not found at: $dotnetPath. Run build first or provision with: ./build.sh --target=dotnet && dotnet cake --target=dotnet-local-workloads"
     }
 
     if (-not $SkipInstall) {
@@ -172,7 +194,7 @@ try {
     Write-Host "Step 3: Extracting MAUI Package Version..." -ForegroundColor Yellow
     Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Yellow
     
-    $packsPath = Join-Path $RepoRoot ".dotnet\packs\Microsoft.Maui.Sdk"
+    $packsPath = Join-Path $RepoRoot ".dotnet/packs/Microsoft.Maui.Sdk"
     
     if (-not (Test-Path $packsPath)) {
         throw "Microsoft.Maui.Sdk packs not found at: $packsPath"
@@ -204,6 +226,12 @@ try {
     
     $mauiPackageVersion = $versionFolder.Name
     $env:MAUI_PACKAGE_VERSION = $mauiPackageVersion
+    
+    # Set Xcode version skip if requested
+    if ($SkipXcodeVersionCheck) {
+        $env:SKIP_XCODE_VERSION_CHECK = "true"
+        Write-Host "SKIP_XCODE_VERSION_CHECK: true" -ForegroundColor Yellow
+    }
     
     Write-Host "MAUI_PACKAGE_VERSION: $mauiPackageVersion" -ForegroundColor Green
     Write-Host "✅ Environment variable set" -ForegroundColor Green
