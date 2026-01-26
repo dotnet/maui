@@ -168,6 +168,9 @@ Task("buildOnly")
 		s.MSBuildSettings.Properties.Add("AppxPackageSigningEnabled", new List<string> { "True" });
 		s.MSBuildSettings.Properties.Add("SelfContained", new List<string> { "True" });
 		s.MSBuildSettings.Properties.Add("ExtraDefineConstants", new List<string> { "PACKAGED" });
+		Information("=== PACKAGED BUILD PROPERTIES ===");
+		Information("  SelfContained=True");
+		Information("  PackageCertificateThumbprint={0}", certificateThumbprint);
 	}
 	else
 	{
@@ -179,7 +182,13 @@ Task("buildOnly")
 		// too late in the build process for device tests, so we need explicit csproj properties.
 		s.MSBuildSettings.Properties.Add("SelfContained", new List<string> { "True" });
 		s.MSBuildSettings.Properties.Add("WindowsPackageType", new List<string> { "None" });
+		// DIAGNOSTIC: Also explicitly pass WindowsAppSDKSelfContained to ensure it's set
+		s.MSBuildSettings.Properties.Add("WindowsAppSDKSelfContained", new List<string> { "True" });
 		s.MSBuildSettings.Properties.Add("ExtraDefineConstants", new List<string> { "UNPACKAGED" });
+		Information("=== UNPACKAGED BUILD PROPERTIES ===");
+		Information("  SelfContained=True");
+		Information("  WindowsPackageType=None");
+		Information("  WindowsAppSDKSelfContained=True");
 	}
 
 	// Set correct launchSettings.json setting for packaged/unpackaged

@@ -519,6 +519,19 @@ stages:
                     Write-Host "  Contains EXE: $($exe.Name)"
                     $hasContent = $true
                   }
+                  
+                  # DIAGNOSTIC: Check for Windows App SDK DLLs (indicates WindowsAppSDKSelfContained=true was applied)
+                  Write-Host "  DIAGNOSTIC: Checking for Windows App SDK DLLs in publish output..."
+                  $wasdk = Get-ChildItem -Path "$tempDir/Unpackaged" -Filter "Microsoft.WindowsAppRuntime*.dll" 2>$null
+                  if ($wasdk) {
+                    Write-Host "  OK: Found $($wasdk.Count) Windows App SDK DLLs:"
+                    $wasdk | ForEach-Object { Write-Host "    - $($_.Name)" }
+                  } else {
+                    Write-Host "  WARNING: No Microsoft.WindowsAppRuntime DLLs found!"
+                    Write-Host "  This indicates WindowsAppSDKSelfContained may not have been applied during build."
+                    Write-Host "  Listing all DLLs in output:"
+                    Get-ChildItem -Path "$tempDir/Unpackaged" -Filter "*.dll" | Select-Object -First 20 | ForEach-Object { Write-Host "    - $($_.Name)" }
+                  }
                 } else {
                   Write-Host "Warning: Publish folder not found in $($project.ArtifactDir)"
                   # List what's in the artifact dir to debug
