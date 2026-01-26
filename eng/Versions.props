@@ -152,6 +152,7 @@
     <XunitAssertPackageVersion>2.9.0</XunitAssertPackageVersion>
     <XUnitAnalyzersPackageVersion>1.15.0</XUnitAnalyzersPackageVersion>
     <XunitAbstractionsPackageVersion>2.0.3</XunitAbstractionsPackageVersion>
+    <XunitSkippableFactPackageVersion>1.4.13</XunitSkippableFactPackageVersion>
     <NSubstitutePackageVersion>5.1.0</NSubstitutePackageVersion>
     <CoverletCollectorPackageVersion>6.0.0</CoverletCollectorPackageVersion>
     <!-- Additional packages for cgmanifest.json -->

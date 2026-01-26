@@ -90,19 +90,11 @@ public static class MockSourceGenerator
 #endif
 
 		var top = GetTopDirRecursive(Directory.GetCurrentDirectory());
-		if (top == null)
-		{
-			Assert.Skip("SourceGen tests require running from within the MAUI repository. Skipping on Helix.");
-			return null!; // Never reached, but needed for compilation
-		}
+		Skip.If(top == null, "SourceGen tests require running from within the MAUI repository. Skipping on Helix.");
 		
-		var path = System.IO.Path.Combine(top, "artifacts", "bin", "Controls.SourceGen", config, "netstandard2.0", "Microsoft.Maui.Controls.SourceGen.dll");
+		var path = System.IO.Path.Combine(top!, "artifacts", "bin", "Controls.SourceGen", config, "netstandard2.0", "Microsoft.Maui.Controls.SourceGen.dll");
 		
-		if (!File.Exists(path))
-		{
-			Assert.Skip($"SourceGen DLL not found at {path}. Build Controls.SourceGen first or skip on Helix.");
-			return null!; // Never reached, but needed for compilation
-		}
+		Skip.IfNot(File.Exists(path), $"SourceGen DLL not found at {path}. Build Controls.SourceGen first or skip on Helix.");
 		
 		var analyzerAssembly = Assembly.LoadFrom(path);
 
