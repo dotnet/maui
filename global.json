@@ -1,6 +1,6 @@
 {
   "tools": {
-    "dotnet": "11.0.100-preview.1.26071.101"
+    "dotnet": "11.0.100-preview.1.26073.123"
   },
   "sdk": {
     "paths": [
@@ -11,7 +11,7 @@
   "msbuild-sdks": {
     "MSBuild.Sdk.Extras": "3.0.44",
     "Microsoft.Build.NoTargets": "3.7.0",
-    "Microsoft.DotNet.Arcade.Sdk": "11.0.0-beta.26071.101",
-    "Microsoft.DotNet.Helix.Sdk": "11.0.0-beta.26071.101"
+    "Microsoft.DotNet.Arcade.Sdk": "11.0.0-beta.26073.123",
+    "Microsoft.DotNet.Helix.Sdk": "11.0.0-beta.26073.123"
   }
 }
