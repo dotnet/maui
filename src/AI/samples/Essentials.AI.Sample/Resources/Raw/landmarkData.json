@@ -1,0 +1,222 @@
+[
+    {
+        "name": "Sahara Desert",
+        "continent": "Africa",
+        "id": 1001,
+        "placeID": "IC6C65CA81B4B2772",
+        "longitude": 10.33569,
+        "latitude": 23.90013,
+        "span": 40.0,
+        "description": "The sprawling Sahara Desert spans more than 3.5 million square miles and is the largest hot desert in the world. Covering much of northern Africa, it reaches three major bodies of water: the Atlantic Ocean in the west, the Red Sea in the east, and the Mediterranean Sea to the north. To the south is the Sahei region. The Sahara’s harsh environment is characterized by vast sand dunes, arid plains, and rocky plateaus. The tallest sand dune is located in the Erg Chebbi region of southeastern Morocco and reaches a height of roughly 330 feet. The desert plays an important role in shaping climate patterns and ecological systems.\n\nFormed over the course of millions of years and dating back to the Precambrian era, the Sahara was once a lush, verdant landscape with lakes and rivers. Over many years, wind erosion has sculpted towering cliffs, rock arches, deep canyons and many striking and picturesque landforms. Beneath a surface composed of gravel plains and sand seas lies vast underground aquifers that store ancient water, hidden remnants of a time when the Sahara was a much more hospitable place.\n\nWhile the Sahara experiences extreme temperatures and has scarce rainfall, it supports a variety of plant and animal life that have adapted to the harsh conditions. The sparse vegetation includes drought-tolerant varieties such as desert grasses such as Lovegrass that can store water in their roots and help prevent soil erosion. Other vegetation includes Acacia trees, date palms, and olive trees. Animal life has also adapted to be able to endure the extreme heat and extended periods of time with little or no water. Fennec foxes, camels, addax, and scorpions are some examples of the species found in the Sahara. Many animals have made nocturnal adaptations in order to remain hidden during the high daytime temperatures. Many migratory birds pass through the region and take advantage of seasonal water sources and oases.",
+        "shortDescription": "Covering much of northern Africa, it reaches three major bodies of water: the Atlantic Ocean in the west, the Red Sea in the east, and the Mediterranean Sea to the north."
+    },
+    {
+        "name": "Serengeti",
+        "continent": "Africa",
+        "id": 1002,
+        "placeID": "IB3A0184A4D301279",
+        "longitude": 34.88159,
+        "latitude": -2.45469,
+        "span": 10.0,
+        "description": "Located in northern Tanzania and southwestern Kenya, the Serengeti is a mix of riparian forests, acacia woodlands, and grasslands that covers nearly 12,000 square miles. With open plains that stretch seemingly forever, it creates a breathtaking backdrop for one of the most spectacular wildlife events on Earth: the awe-inspiring Great Migration.\n\nVolcano activity from the nearby Ngorongoro Highlands shaped much of the region, depositing nutrient-rich soil as a result of past eruptions. The Serengeti sits atop Precambrian rock formations and supports vast herds of herbivores with abundant grasses. The Mara and Grumeti rivers carve their way through he plains, providing crucial water supplies to sustain wildlife year-round.\n\nThe Serengeti is home to one of Africa’s highest concentrations of large mammal species, including elephants, giraffes, hyenas, lions, and zebras. Every year, more than a million wildebeest make a circular migration across the Serengeti Plains, following seasonal rains. Their grazing and trampling of grass allow new grasses to grow, while their wast helps fertilize the soil.",
+        "shortDescription": "Located in northern Tanzania and southwestern Kenya, the Serengeti is a mix of riparian forests, acacia woodlands, and grasslands that covers nearly 12,000 square miles."
+    },
+    {
+        "name": "Deadvlei",
+        "continent": "Africa",
+        "id": 1003,
+        "placeID": "IBD2966F32E73D261",
+        "longitude": 15.29429,
+        "latitude": -24.7629,
+        "span": 10.0,
+        "description": "An otherworldly landscape of contrasting bleached white claypan ground, blackened camel thorn trees, and fiery red-orange dunes, Deadvlei is located in Namibia’s Namib-Naukluft National Park. Over 900 years ago, Deadvlei was a thriving marshland, but dried up as shifting sand dunes cut off its water supply. Despite it’s remote location, Deadvlei has become a renown tourist attraction, especially for photographers, enticing visitors from around the world to witness it’s unique beauty.\n\nHome to some of highest dunes in the world — some reaching up to 1100 feet — are sculpted into graceful ever-changing shapes. The vibrant hue of the dunes is a result of the iron oxide content in the sand and shift with the sunlight.\n\nDue to extreme arid conditions, the dead camel trees don’t decompose, leaving behind ghostly reminders of a vibrant ecosystem dating back a millennia. Even with the harsh environment, some plant species such as nara melons and salsola have adapted and survive off the morning mist and rare rainfall.",
+        "shortDescription": "An otherworldly landscape of contrasting bleached white claypan ground, blackened camel thorn trees, and fiery red-orange dunes, Deadvlei is located in Namibia’s Namib-Naukluft National Park."
+    },
+    {
+        "name": "Grand Canyon",
+        "continent": "North America",
+        "id": 1004,
+        "placeID": "I55488B3D1D9B2D4B",
+        "longitude": -113.16096,
+        "latitude": 36.21904,
+        "span": 10.0,
+        "description": "When you look down from the rim of the Grand Canyon, you are looking at a visual story of Earth’s ancient past. Carved over millions of years by the Colorado River, the canyon stretches 277 miles in length, spans widths up to 18 miles, and reaches depths of over a mile (6,093 feet). The vibrant house of the canyon, ranging from deep reds and oranges to subtle shades of purple, it is an iconic natural wonder.\n\nThe geological story that the canyon tells spans nearly two billion years. Vishnu Schist at the bottom of the Inner Gorge is estimated to be 1.7 billion years old. The much younger Kaibab Limestone formation on the rim is the canyon’s top most rock layer, dating back a mere 270 million years. Between these two extremes, wind and water erosion have sculpted stunning cliffs, mesas, and buttes to create an intricate landscape of canyons within canyons. Every year, the seasonal variations in the Colorado River’s flow continue to carve the canyons deeper and deeper.\n\nJust as the geology story shifts with the altitude change, the plant and animal diversity changes dramatically. Flora ranges from desert species such as cacti and junipers to high-elevation forests of spruce fir or ponderosa pine, groundsels, yarrow, and lupine. Bighorn sheep, mule deer, and the elusive mountain lion are just some of the wildlife species that make their home in this ecological treasure.",
+        "shortDescription": "Carved over millions of years by the Colorado River, the canyon stretches 277 miles in length, spans widths up to 18 miles, and reaches depths of over a mile (6,093 feet)."
+    },
+    {
+        "name": "Niagara Falls",
+        "continent": "North America",
+        "id": 1005,
+        "placeID": "I433E22BD30C61C40",
+        "longitude": -79.07401,
+        "latitude": 43.07792,
+        "span": 4.0,
+        "description": "Niagara Falls is comprised of three separate falls, Horseshoe Falls, American Falls, and Bridal Veil Falls. It lies at the border between Canada and the United States. The millions of gallons of water that plunge over its edge originates from Lake Erie in the Great Lakes. The flow of water produces a roaring cascade, fills the air with mist, and creates vibrant rainbows. It is one of the most famous and powerful waterfalls in the world.\n\nThe Falls began to form at the end of the last Ice Age, taking more than 12,000 years to fully develop. The process continues today as the flow of water continues to erode sedimentary layers of rock to shape and reshape the landscape. Preservation work has been done to preserve the Falls, and the volume of water has reduced due to diversion for hydroelectric power, which generates nearly 4.9 million kilowatts of power.\n\nA dynamic ecosystem exists around the Falls. Fish life thrives in the Niagara River, including species such as bass and sturgeon. Gulls, bald eagles, and peregrine falcons are some of the avian wildlife that can be seen flying above the Falls, while lush vegetation grows along the riverbanks.",
+        "shortDescription": "Niagara Falls is comprised of three separate falls, Horseshoe Falls, American Falls, and Bridal Veil Falls. It lies at the border between Canada and the United States. The millions of gallons of water that plunge over its edge originates from Lake Erie in the Great Lakes. The flow of water produces a roaring cascade, fills the air with mist, and creates vibrant rainbows."
+    },
+    {
+        "name": "Joshua Tree",
+        "continent": "North America",
+        "id": 1006,
+        "placeID": "I34674B3D3B032AA2",
+        "longitude": -115.80826,
+        "latitude": 33.88752,
+        "span": 10.0,
+        "description": "Spanning more than 1,200 square miles, Joshua Tree National Park is located in Southern California not far from Palm Springs. The park spans both the Mojave and Colorado deserts and is most known for the rugged rock formations and the spiky, twisted Joshua trees. The two deserts have distinct characteristics. On the western side of the park, the higher and cooler Mojave is a high desert ecosystem while the eastern side’s Colorado is a low desert climate.\n\nAncient volcanic activity, erosion, and tectonic fault movement shaped the park’s dramatic landscape. Surreal formations of massive granite boulders, rock hills (known as inselbergs), hidden canyons, and the unique Joshua trees create an otherworldly beauty.\n\nDespite the harsh desert climates, a variety of resilient wildlife and plant life can be found. Larger mammals such as coyote, desert bighorn sheep, mountain lion often burrow or stay in caves during the hot day time hours, becoming more active at night. Ancient bristlecone pines, creosote bush, and ephemeral spring wildflowers are some of the more than 1,000 species of plant found Joshua Tree.",
+        "shortDescription": "Spanning more than 1,200 square miles, Joshua Tree National Park is located in Southern California, not far from Palm Springs."
+    },
+    {
+        "name": "Rocky Mountains",
+        "continent": "North America",
+        "id": 1007,
+        "placeID": "IBD757C9B53C92D9E",
+        "longitude": -112.99872,
+        "latitude": 47.62596,
+        "span": 16.0,
+        "description": "Stretching 3,000 miles from northwest Canada to southwest United States, the Rocky Mountains are the setting for some of North America’s most stunning scenery. With soaring peaks, jagged summits, pastoral alpine meadows, dense forests, and crystal clear lakes, the Rockies are home to a wide range of flora and fauna. The mountain habitats support a wide range wildlife including wolves, elk, moose, bighorn sheep, grizzly bears, and wolverines. The variety of plants found in the Rocky Mountains is similarly diverse including over 900 species of wildflowers and conifers such as pine, spruce, and fir. Deciduous trees, known for their brilliant colorful autumn leaves contribute to some of the most biologically diverse habitats in the Rocky Mountain National Park. All of these ecological elements and waterways provide an important habitat for North America migratory birds.\n\nThe geological history of the Rocky Mountains dates back approximately 60 to 70 million years when several tectonic plates began shifting under the North American plate. The result was a long, broad belt of mountains running along western North America. The dramatic peaks and valleys we see today were further formed by tectonic activity and erosion by glaciers. The majority of the highest peaks are found in Colorado. Numerous public parks protect much of the mountain range, providing tourists plenty of year-round activities.",
+        "shortDescription": "Stretching 3,000 miles from northwest Canada to southwest United States, the Rocky Mountains are the setting for some of North America’s most stunning scenery."
+    },
+    {
+        "name": "Monument Valley",
+        "continent": "North America",
+        "id": 1008,
+        "placeID": "IAB1F0D2360FAAD29",
+        "longitude": -110.348,
+        "latitude": 36.874,
+        "span": 10.0,
+        "description": "Presenting a spectacular display of towering sandstone buttes, vibrant red rock formations, and expansive open plains, Monument Valley is an iconic landscape of the Colorado Plateau, located near the Arizona-Utah border. The stratified buttes rise dramatically from the valley floor reaching heights up to 1,000 feet. Formed by rivers, wind, and ice, the valley is comprised largely of siltstone and sand deposits. Softer material eroded away, leaving the massive sandstone buttes that remain today.\n\nVegetation in Monument Valley is sparse but beautiful. Contributing to an interesting palette, plants like purple sage complement the red rock formations with splashes of purple flowers and white or gray leaves. Rabbitbrush brings in yellow flowers and green leaves. Mojave yucca plants have fine hairs and a wax coating to trap moisture and reflect sunlight to help it survive.\n\nAnimal life is diverse, with large mammals like the mountain lions, coyotes, and jackrabbits. Reptiles include lizards such as the long-nose leopard lizard as well as iguanas and various snakes. With watchful eyes soaring above all of this are red-tailed hawks, tree sparrows, and more.",
+        "shortDescription": "Presenting a spectacular display of towering sandstone buttes, vibrant red rock formations, and expansive open plains, Monument Valley is an iconic landscape of the Colorado Plateau, located near the Arizona-Utah border."
+    },
+    {
+        "name": "Muir Woods",
+        "continent": "North America",
+        "id": 1009,
+        "placeID": "I907589547EB05261",
+        "longitude": -122.57482,
+        "latitude": 37.8922,
+        "span": 2.0,
+        "description": "Frequently shrouded in coastal marine layer fog from the Pacific Ocean, Muir Woods National Monument is an old-growth redwood forest. Located 12 miles north of San Francisco, covering 558 acres, and containing 6 miles of gorgeous hiking trails, Muir Woods is part of the Golden Gate National Recreation Area.\n\nThe moist environment promotes a rich community of interesting plants, organized into three layers. The lowest layer is the herbaceous layer and is full of shade-loving life. The next layer is the understory, where shrubs and tress such as the California bay and tan oak grow. Providing shelter and platforms for various tree-dwelling species is the topmost layer, or canopy.\n\nWithin the multilayered, dense habitat, it’s easy for wildlife to remain unseen, making the forest sometimes appear empty. Looks, however, are deceiving. Muir Wood hosts over 50 species of birds including spotted owls and pileated woodpeckers. Mammals range in size from the small American shrew mole to the black-tailed mule deer. Most mammals are nocturnal or burrowing animals, contributing to the sense of emptiness in the forest.",
+        "shortDescription": "Located 12 miles north of San Francisco, covering 558 acres, and containing 6 miles of gorgeous hiking trails, Muir Woods is part of the Golden Gate National Recreation Area."
+    },
+    {
+        "name": "Amazon Rainforest",
+        "continent": "South America",
+        "id": 1010,
+        "placeID": "I76A1045FB9294971",
+        "longitude": -62.80802,
+        "latitude": -3.50879,
+        "span": 30.0,
+        "description": "As a member of an elite club of natural landmarks that cover more than one percent of the planet’s surface, the Amazon rainforest covers approximately 2.3 million square miles. The majority of the rainforest is in Brazil, but it spills over into other neighboring countries including Peru, Bolivia, and Columbia. While it’s common to think of a rainforest as being sparsely populated, an estimated 30 million people live in the Amazon.\n\nWith the highest diversity of plant life on Earth, the Amazon may contain as many as 80,000 plant species. An astounding 75 percent of those species are endemic to the area, not being found anywhere else, including 16,000 trees species. Other unique species include giant Amazon water lily, rubber trees, and cacao trees.\n\nHundreds of animal species are also found in the rainforest. Notably, the Amazon is one of Earth’s last refuges for jaguars, harpy eagles, and pink river dolphins. Many other large animals live in the Amazon including cougars, the black caiman, and even the Caquetá titi monkey which purrs like a cat.",
+        "shortDescription": "As a member of an elite club of natural landmarks that cover more than one percent of the planet’s surface, the Amazon rainforest covers approximately 2.3 million square miles."
+    },
+    {
+        "name": "Lençóis Maranhenses",
+        "continent": "South America",
+        "id": 1011,
+        "placeID": "I292A37DAC754D6A0",
+        "longitude": -43.03345,
+        "latitude": -2.57812,
+        "span": 10.0,
+        "description": "Lençóis Maranhenses National Park covers approximately 380,000 acres on the northeastern coast of Brazil, including 43 miles of coastline along the Atlantic Ocean. The interior of the park is composed of rolling sand dunes that reach as high as 130 feet.\n\nDespite looking like a desert environment, the area receives about 47 inches of rain per year. During the rainy seasons, the spaces between the dune peaks fill with freshwater lagoons.\n\nWith desert-like but wet locale, a unique and diverse ecosystem has evolved. Vegetation adapted to coastal and freshwater environments such as Restinga and mangrove are found here. Four endangered species of animals reside in the park: the scarlet ibis, neotropical otter, oncilla, and West Indian manatee. The wolf fish is a unique species that burrows into wet mud during the dry season.",
+        "shortDescription": "Lençóis Maranhenses National Park covers approximately 380,000 acres on the northeastern coast of Brazil, including 43 miles of coastline along the Atlantic Ocean."
+    },
+    {
+        "name": "Uyuni Salt Flat",
+        "continent": "South America",
+        "id": 1012,
+        "placeID": "ID903C9A78EB0CAAD",
+        "longitude": -67.48914,
+        "latitude": -20.13378,
+        "span": 10.0,
+        "description": "At an elevation of nearly 12,000 feet above sea level near the crest of the Andes mountain range in southwestern Bolivia, the Salar de Uyuni is the world’s largest salt flat. Extraordinarily flat, with elevation variation no more than one meter over the nearly 4,000 square mile area, the Salar was formed by several prehistoric lakes evaporating over the last 40,000 years. The resulting salt crust is several meters thick and rich in lithium.\n\nDespite its prehistoric origin, modern technology has found an important use for the Uyuni. Because salt flats are large, stable surfaces, they are ideal for satellite calibration. Uyuni is especially well suited for this task due to the lack of industry, long low rain periods, and very clear dry air. During the rainy season, the flat turns into a shallow lake with a glass-like surface and becomes the world’s largest natural mirror.\n\nThe salt flat has few forms of plant life, which includes the giant cacti, Echinopsis pasacana and Echinopsis tarijensis, which tower up to 40 feet over the Uyuni flats. Other plants found in Uyuni include pitaya (or dragon fruit), quinoa plants, and queñua bushes.",
+        "shortDescription": "At an elevation of nearly 12,000 feet above sea level near the crest of the Andes mountain range in southwestern Bolivia, the Salar de Uyuni is the world’s largest salt flat."
+    },
+    {
+        "name": "White Cliffs of Dover",
+        "continent": "Europe",
+        "id": 1014,
+        "placeID": "I77B160572D5A2EB1",
+        "longitude": 1.36351,
+        "latitude": 51.13641,
+        "span": 4.0,
+        "description": "Standing guard over the narrowest part of the English Channel, the White Cliffs of Dover present a striking façade of chalk streaked with accents of black flint. Over millions of years, skeletons of tiny algae and other sea creatures settled into the white mud under the sea. After these deposits compacted to form chalk, a major mountain building event forced the undersea masses above sea level to form the cliffs.\n\nAbove the cliffs, a chalk grassland supports many species of wildflowers, butterflies, and birds. Orchids, rock samphire, and the unusual oxtongue broomrape are found here. In spring and autumn, the rare Adonis blue butterfly can be seen in the grasslands, as can the similar looking chalk hill blue. Many migratory birds use the cliffs as their first landing point after crossing the English Channel. Peregrine falcons and the skylark are some of the birds that make their homes along the cliffs.",
+        "shortDescription": "Standing guard over the narrowest part of the English Channel, the White Cliffs of Dover present a striking façade of chalk streaked with accents of black flint."
+    },
+    {
+        "name": "Alps",
+        "continent": "Europe",
+        "id": 1015,
+        "placeID": "IE380E71D265F97C0",
+        "longitude": 10.54773,
+        "latitude": 46.77367,
+        "span": 6.0,
+        "description": "Extending nearly 750 miles from Nice, France in the west to Trieste, Italy in the east, the Alps stretch across eight different countries. The mountains formed over tens of millions of years as tectonic plates collided, forcing sedimentary rock to rise into mountain peaks. Mont Blanc is the tallest mountain in Europe, soaring over 15,700 feet. The high altitude and sheer size of the mountains have an effect on the climate in Europe.\n\nDiverse and unique flora has developed in the Alps by adapting to a high-altitude environment. The iconic Edelweiss is an alpine flower that thrives in rocky limestone. Mountain cranberry and bluets are rare and fragile plants found above treelike. Dwarf willow is a resilient plant that does well in places where snow lingers into spring.\n\nLarge mammals like the red deer, ibex, Eurasian lynx, and chamois are all found in low and high altitude regions. Many rodents such as voles and the Alpine marmot live underground and burrow in the Alps. Some reptiles including adders and vipers live near the snow line, but because they cannot tolerate the cold temperatures they hibernate underground and soak up warmth on rocky ledges.",
+        "shortDescription": "Extending nearly 750 miles from Nice, France in the west to Trieste, Italy in the east, the Alps stretch across eight different countries."
+    },
+    {
+        "name": "Mount Fuji",
+        "continent": "Asia",
+        "id": 1016,
+        "placeID": "I2CC1DF519EDD7ACD",
+        "longitude": 138.72744,
+        "latitude": 35.36072,
+        "span": 10.0,
+        "description": "When seen at a distance, Mount Fuji presents a beautiful, nearly symmetric, often snow-capped profile and is Japan’s tallest and most iconic mountain. The volcanic cone rises gracefully up to slightly more than 12,000 feet. On clear days, the mountain is visible as far away as Tokyo. Despite its seemingly peaceful distant existence, Mount Fuji is an active volcano. Its last eruption was in 1707.\n\nSimilar to other exceptionally tall mountains, Fuji-san is home to many ecological zones from its base to its summit. In the lower elevations, deciduous and coniferous trees such as the Japanese oak and cedars are common. As you climb in elevation, the climate becomes harsher and plant life transitions to alpine plants and shrubs that have adapted to colder temperatures. At the highest altitudes, a volcanic desert environment exists.\n\nMany mammals and birds are found in the forests on Mount Fuji. Black bears live there, although squirrels and fox are more likely to be seen. The Japanese serow is a rare and protected species of goat-antelope that roams secretively through dense forests. High altitude birds such as the Iwahibari and Hoshigarasu are found above 8,200 feet, while several species of warblers, flycatchers, and Ural and scops owls live in lower altitudes.",
+        "shortDescription": "When seen at a distance, Mount Fuji presents a beautiful, nearly symmetric, often snow-capped profile and is Japan’s tallest and most iconic mountain."
+    },
+    {
+        "name": "Wulingyuan",
+        "continent": "Asia",
+        "id": 1017,
+        "placeID": "I818C4BA5FE11BDD6",
+        "longitude": 110.45242,
+        "latitude": 29.35106,
+        "span": 10.0,
+        "description": "Featuring more than 3,000 sandstone pillars and peaks, Wulingyuan is a scenic and historic site in China’s Hunan Province. Often shrouded in mist, the surreal landscape of pillars surrounded by forests spans over 100 square miles. Among the picturesque lakes, rivers, and waterfalls, the site also contains 40 caves and one of the world’s highest natural bridges, named Tianqiashengkong.\n\nWith plentiful rainfall and dense forests, Wulingyuan has created a good environment for varied animal and plant life. Unique species like the clouded leopard, Chinese giant salamander, Asiatic wild dog, and Asiatic black bear live among the forests. Other animals include various monkeys — including rhesus monkeys — as well as deer, birds, and reptiles. Notable plant species include the dove tree and ginkgo.",
+        "shortDescription": "Featuring more than 3,000 sandstone pillars and peaks, Wulingyuan is a scenic and historic site in China’s Hunan Province."
+    },
+    {
+        "name": "Mount Everest",
+        "continent": "Asia",
+        "id": 1018,
+        "placeID": "IE16B9C217B9B0DC1",
+        "longitude": 86.9251,
+        "latitude": 27.98816,
+        "span": 10.0,
+        "description": "In addition to perhaps being the world’s most well-known mountain, Mount Everest is the world’s tallest above sea level. With an altitude just over 29,031 feet, the mountain attracts climbers and experienced mountaineers from all over the world. Everest’s icy peaks pierce the sky, surrounded by swirling clouds and intensely strong winds.\n\nGeologically, Mount Everest is part of the Himalayan mountain range which is formed by the Eurasian and Indian tectonic plates. Movement of these plates began around 50 million years ago and continues to push Everest even higher. Layers of metamorphic and sedimentary rock are topped by marine limestone that was once at the bottom of the ocean remind us of the Earth’s dynamic history.\n\nDespite the extreme conditions found at the high altitudes on Everest, the mountain is home to a unique high-altitude ecosystem. Mosses and lichens can survive the extreme climate along with high altitude plants such as the Himalayan juniper, dwarf rhododendrons, and the snow lotus. Animals found in the lower elevations include the Himalayan tahr, snow leopard, Himalayan black bear, and the red panda.",
+        "shortDescription": "With an altitude just over 29,031 feet, the mountain attracts climbers and experienced mountaineers from all over the world."
+    },
+    {
+        "name": "Great Barrier Reef",
+        "continent": "Australia/Oceana",
+        "id": 1019,
+        "placeID": "IF436B51611F3F9D1",
+        "longitude": 145.97842,
+        "latitude": -16.7599,
+        "span": 16.0,
+        "description": "Comprised of over 2,900 individual reefs, 900 islands, and spanning a monumental 133,000 square miles, the Great Barrier Reef is the world’s largest coral reef system. Situated in the Coral Sea just off the coast of Queensland, Australia, the Great Barrier Reef is the world’s largest single structure made by living organisms. It’s large enough to be seen from space.\n\nThe reef system supports a dizzying range of diverse life, including many species that are vulnerable or endangered, and some are endemic to the area. Dozens of cetaceans including dwarf minke whale, Indo-Pacific humpback dolphin, and the humpback whale live here. Clownfish, snapper, and coral trout are just some of the 1,500 fish species found in the waters surrounding the reef.\n\nSometimes overshadowed by the magnificent aquatic animal life, the Great Barrier Reef is home to over 2,000 species of native plants. Seagrass meadows are one of the most fundamental parts of the flora found in the reef system.  Eelgrass or Turtle grass meadows thrive in the shallow coastal waters and help to maintain the biodiversity, stability, and productivity of the reef.",
+        "shortDescription": "Comprised of over 2,900 individual reefs, 900 islands, and spanning a monumental 133,000 square miles, the Great Barrier Reef is the world’s largest coral reef system."
+    },
+    {
+        "name": "Maui",
+        "continent": "Australia/Oceana",
+        "id": 1020,
+        "placeID": "I8F3C2D4A1E5B6789",
+        "longitude": -156.33170,
+        "latitude": 20.79838,
+        "span": 8.0,
+        "description": "The second-largest island in Hawaii, Maui offers a stunning tapestry of volcanic landscapes, lush rainforests, pristine beaches, and dramatic coastal cliffs. Known as the \"Valley Isle,\" Maui is dominated by two massive volcanoes: the dormant Haleakalā in the east and the older, eroded West Maui Mountains. Haleakalā National Park features a massive volcanic crater that reaches over 10,000 feet in elevation, offering breathtaking sunrise views and unique high-altitude ecosystems.\n\nThe island's diverse geography creates distinct climate zones, from arid leeward coasts to verdant windward rainforests receiving over 400 inches of annual rainfall. The famous Road to Hana winds through tropical paradise, passing countless waterfalls, bamboo forests, and dramatic ocean vistas. Maui's volcanic soil supports rich agriculture, including sugarcane, pineapple, coffee, and exotic tropical fruits.\n\nMarine life thrives in Maui's warm Pacific waters. Humpback whales migrate to the shallow channels between the Hawaiian islands from December to May, making Maui one of the world's premier whale-watching destinations. Hawaiian green sea turtles, spinner dolphins, and vibrant coral reefs attract snorkelers and divers year-round. The island's beaches range from golden sand to unique red and black volcanic shores. Native Hawaiian plants such as the silversword, which grows only on Haleakalā's slopes, and endemic bird species like the nēnē (Hawaiian goose) highlight the island's ecological significance and ongoing conservation efforts.",
+        "shortDescription": "The second-largest island in Hawaii, Maui offers a stunning tapestry of volcanic landscapes, lush rainforests, pristine beaches, and dramatic coastal cliffs."
+    },
+    {
+        "name": "South Shetland Islands",
+        "continent": "Antarctica",
+        "id": 1021,
+        "placeID": "I1AAF5FE1DF954A59",
+        "longitude": -58.70703,
+        "latitude": -61.79436,
+        "span": 20.0,
+        "description": "The South Shetland Islands consist of 11 major islands and several minor ones, making up more than 1,400 square miles of land area. The Antarctic island chain is located in the Drake Passage. Almost all of the land area is permanently covered by glaciers.  Active geothermal vents and hot springs provide balance the two contrasting extremes of fire and ice.\n\nVarious plants have adapted to the harsh conditions, including two flowering plants — the Antarctic hair grass and Antarctic pearlwort. Other examples of adapted plants include mosses, liverworts, lichens, and fungi. Notable penguin species include Adélie, Chinstrap, and Gentoo. Crabeater, Leopard, Weddell, and fur seals are some of the island’s other inhabitants.",
+        "shortDescription": "The South Shetland Islands consist of 11 major islands and several minor ones, making up more than 1,400 square miles of land area."
+    }
+]
