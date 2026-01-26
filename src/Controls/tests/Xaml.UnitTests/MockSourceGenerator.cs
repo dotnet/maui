@@ -12,6 +12,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
 using Xunit;
+using Xunit.Sdk;
 
 #nullable enable
 
@@ -83,24 +84,17 @@ public static class MockSourceGenerator
 
 	public static GeneratorDriverRunResult RunMauiSourceGenerator(this Compilation compilation, params AdditionalFile[] additionalFiles)
 	{
+		// Skip test gracefully if SourceGen tests can't run (e.g., on Helix)
+		Skip.If(!CanRunSourceGenTests(), "SourceGen tests require running from within the MAUI repository with built Controls.SourceGen.");
+
 #if DEBUG
 		var config = "Debug";
 #else
 		var config = "Release";
 #endif
 
-		var top = GetTopDirRecursive(Directory.GetCurrentDirectory());
-		if (top == null)
-		{
-			throw new InvalidOperationException("SourceGen tests require running from within the MAUI repository. Call CanRunSourceGenTests() first to check if this test should run.");
-		}
-		
+		var top = GetTopDirRecursive(Directory.GetCurrentDirectory())!;
 		var path = System.IO.Path.Combine(top, "artifacts", "bin", "Controls.SourceGen", config, "netstandard2.0", "Microsoft.Maui.Controls.SourceGen.dll");
-		
-		if (!File.Exists(path))
-		{
-			throw new InvalidOperationException($"SourceGen DLL not found at {path}. Build Controls.SourceGen first. Call CanRunSourceGenTests() first to check if this test should run.");
-		}
 		
 		var analyzerAssembly = Assembly.LoadFrom(path);
 
