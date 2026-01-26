@@ -145,12 +145,11 @@ namespace Microsoft.Maui.Platform
 				platformWindow.Activated -= OnWindowActivated;
 			}
 
-			SetToolbar(null);
-
 			if (_rootView.Content is RootNavigationView navView)
 				navView.Content = null;
 
 			_rootView.Content = null;
+			SetToolbar(null);
 			_disconnected = true;
 		}
 
