@@ -175,6 +175,20 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			cell.SetAccessibilityProperties(context);
 
+			// If the view's FlowDirection is MatchParent, inherit from Shell
+			// This ensures UpdateFlowDirection can properly resolve the flow direction
+			if (cell.View.FlowDirection == FlowDirection.MatchParent)
+			{
+				cell.View.FlowDirection = _context.Shell.FlowDirection;
+			}
+
+			// Apply flow direction to the cell's platform view
+			// This respects any explicit FlowDirection set in the item template
+			if (cell.View.Handler?.PlatformView is UIView platformView)
+			{
+				platformView.UpdateFlowDirection(cell.View);
+			}
+
 			_cells[context] = cell;
 			cell.TableView = tableView;
 			cell.IndexPath = indexPath;
