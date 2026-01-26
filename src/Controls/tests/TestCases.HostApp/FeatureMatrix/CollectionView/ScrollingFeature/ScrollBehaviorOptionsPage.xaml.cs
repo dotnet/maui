@@ -67,6 +67,21 @@ public partial class ScrollBehaviorOptionsPage : ContentPage
 		}
 	}
 
+	private void OnGroupNameChanged(object sender, CheckedChangedEventArgs e)
+	{
+		if (!(sender is RadioButton radioButton) || !e.Value)
+			return;
+
+		if (radioButton == FruitGroup)
+		{
+			_viewModel.GroupName = "Fruits";
+		}
+		else if (radioButton == VegetableGroup)
+		{
+			_viewModel.GroupName = "Vegetables";
+		}
+	}
+
 	private void OnItemsLayoutChanged(object sender, CheckedChangedEventArgs e)
 	{
 		if (ItemsLayoutVerticalList.IsChecked)
@@ -84,6 +99,68 @@ public partial class ScrollBehaviorOptionsPage : ContentPage
 		else if (ItemsLayoutHorizontalGrid.IsChecked)
 		{
 			_viewModel.ItemsLayout = new GridItemsLayout(2, ItemsLayoutOrientation.Horizontal); // 2 rows
+		}
+	}
+
+	private void OnScrollToPositionChanged(object sender, CheckedChangedEventArgs e)
+	{
+		if (!(sender is RadioButton radioButton) || !e.Value)
+			return;
+
+		if (radioButton == ScrollToPositionMakeVisible)
+			_viewModel.ScrollToPosition = ScrollToPosition.MakeVisible;
+		else if (radioButton == ScrollToPositionStart)
+			_viewModel.ScrollToPosition = ScrollToPosition.Start;
+		else if (radioButton == ScrollToPositionCenter)
+			_viewModel.ScrollToPosition = ScrollToPosition.Center;
+		else if (radioButton == ScrollToPositionEnd)
+			_viewModel.ScrollToPosition = ScrollToPosition.End;
+	}
+
+	private void ScrollToIndexItemChanged(object sender, CheckedChangedEventArgs e)
+	{
+		if (!(sender is RadioButton radioButton) || !e.Value)
+			return;
+		if (radioButton == ScrollToByIndex)
+		{
+			_viewModel.ScrollToByIndexOrItem = "Index";
+		}
+		else if (radioButton == ScrollToByItem)
+		{
+			_viewModel.ScrollToByIndexOrItem = "Item";
+		}
+	}
+
+	private void ScrollToIndexEntry_TextChanged(object sender, TextChangedEventArgs e)
+	{
+		if (int.TryParse(ScrollToIndexEntry.Text, out int index))
+		{
+			_viewModel.ScrollToIndex = index;
+		}
+	}
+
+	private void GroupIndexEntry_TextChanged(object sender, TextChangedEventArgs e)
+	{
+		if (int.TryParse(GroupIndexEntry.Text, out int groupIndex))
+		{
+			_viewModel.GroupIndex = groupIndex;
+		}
+	}
+
+	private void ScrollToItemEntry_TextChanged(object sender, TextChangedEventArgs e)
+	{
+		_viewModel.ScrollToItem = ScrollToItemEntry.Text;
+	}
+
+	private void OnCanReorderItemsChanged(object sender, CheckedChangedEventArgs e)
+	{
+		if (CanReorderItemsTrue.IsChecked)
+		{
+			_viewModel.CanReorderItems = true;
+		}
+		else if (CanReorderItemsFalse.IsChecked)
+		{
+			_viewModel.CanReorderItems = false;
 		}
 	}
 }
