@@ -1,5 +1,6 @@
 using System.Linq;
 using Xunit;
+using Xunit.Sdk;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
@@ -12,7 +13,7 @@ public partial class DuplicateXArgumentsElements : BindableObject
 	[Collection("Xaml Inflation")]
 	public class Tests : BaseTestFixture
 	{
-		[Theory]
+		[SkippableTheory]
 		[InlineData(XamlInflator.Runtime)]
 		[InlineData(XamlInflator.XamlC)]
 		[InlineData(XamlInflator.SourceGen)]

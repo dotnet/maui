@@ -1,6 +1,7 @@
 using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Xunit;
+using Xunit.Sdk;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -25,7 +26,7 @@ public partial class Maui2418 : ContentPage
 			RuntimeFeature.EnableMauiDiagnostics = enableDiagnosticsInitialState;
 		}
 
-		[Theory]
+		[SkippableTheory]
 		[InlineData(XamlInflator.Runtime)]
 		[InlineData(XamlInflator.SourceGen)]
 		internal void SourceInfoIsRelative(XamlInflator inflator)

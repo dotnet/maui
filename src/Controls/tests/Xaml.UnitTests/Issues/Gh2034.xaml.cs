@@ -1,4 +1,5 @@
 using Xunit;
+using Xunit.Sdk;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -9,7 +10,7 @@ public partial class Gh2034 : ContentPage
 	[Collection("Issue")]
 	public class Tests
 	{
-		[Theory]
+		[SkippableTheory]
 		[InlineData(XamlInflator.XamlC)]
 		[InlineData(XamlInflator.SourceGen)]
 		internal void Compiles(XamlInflator inflator)

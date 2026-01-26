@@ -5,6 +5,7 @@ using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
 using Xunit;
+using Xunit.Sdk;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -29,7 +30,7 @@ public partial class HotReload : ContentPage
 		}
 
 #if DEBUG
-		[Theory]
+		[SkippableTheory]
 		[InlineData(XamlInflator.Runtime)]
 		[InlineData(XamlInflator.SourceGen)]
 		internal void HotReloadWorks(XamlInflator inflator)

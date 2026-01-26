@@ -4,6 +4,7 @@ using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
 using Xunit;
+using Xunit.Sdk;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -22,7 +23,7 @@ public partial class Maui22714
 
 		public void Dispose() => AppInfo.SetCurrent(null);
 
-		[Theory]
+		[SkippableTheory]
 		[InlineData(XamlInflator.XamlC, true)]
 		[InlineData(XamlInflator.XamlC, false)]
 		[InlineData(XamlInflator.SourceGen, false)]

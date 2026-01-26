@@ -18,7 +18,7 @@ public partial class Maui17461 : ContentPage
 
 		public void Dispose() => AppInfo.SetCurrent(null);
 
-		[Theory]
+		[SkippableTheory]
 		[InlineData("net7.0-ios", XamlInflator.XamlC)]
 		[InlineData("net7.0-android", XamlInflator.XamlC)]
 		[InlineData("net7.0-macos", XamlInflator.XamlC)]

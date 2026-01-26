@@ -3,6 +3,7 @@ using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
 using Xunit;
+using Xunit.Sdk;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -32,7 +33,7 @@ public partial class HotReloadStaticResourceException : ContentPage
 		}
 
 #if DEBUG
-		[Theory]
+		[SkippableTheory]
 		[InlineData(XamlInflator.Runtime)]
 		[InlineData(XamlInflator.SourceGen)]
 		internal void MissingResourceExceptionAreHandled(XamlInflator inflator)

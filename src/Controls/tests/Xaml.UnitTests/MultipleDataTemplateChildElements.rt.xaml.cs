@@ -1,4 +1,5 @@
 using Xunit;
+using Xunit.Sdk;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
@@ -9,7 +10,7 @@ public partial class MultipleDataTemplateChildElements : BindableObject
 {
 	public class Tests : BaseTestFixture
 	{
-		[Theory]
+		[SkippableTheory]
 		[XamlInflatorData]
 		internal void ThrowXamlParseException(XamlInflator inflator)
 		{

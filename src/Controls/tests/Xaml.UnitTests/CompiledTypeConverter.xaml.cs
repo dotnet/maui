@@ -6,6 +6,7 @@ using Microsoft.Maui.Graphics;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Xunit;
+using Xunit.Sdk;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
@@ -77,7 +78,7 @@ public partial class CompiledTypeConverter : ContentPage
 	[Collection("Xaml Inflation")]
 	public class Tests : BaseTestFixture
 	{
-		[Theory]
+		[SkippableTheory]
 		[InlineData(XamlInflator.Runtime)]
 		[InlineData(XamlInflator.XamlC)]
 		[InlineData(XamlInflator.SourceGen)]
@@ -131,7 +132,7 @@ public partial class CompiledTypeConverter : ContentPage
 			}
 			select new object[] { inflator, converterType };
 
-		[Theory]
+		[SkippableTheory]
 		[MemberData(nameof(ConverterTestData))]
 		internal void ConvertersAreReplaced(XamlInflator inflator, Type converterType)
 		{
@@ -155,6 +156,7 @@ using Microsoft.Maui.Graphics;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Xunit;
+using Xunit.Sdk;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 

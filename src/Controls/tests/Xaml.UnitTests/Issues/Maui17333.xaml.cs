@@ -2,6 +2,7 @@ using System;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Xunit;
+using Xunit.Sdk;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -15,7 +16,7 @@ public partial class Maui17333 : ResourceDictionary
 		public Test() => AppInfo.SetCurrent(new MockAppInfo());
 		public void Dispose() => AppInfo.SetCurrent(null);
 
-		[Theory]
+		[SkippableTheory]
 		[InlineData(XamlInflator.XamlC)]
 		[InlineData(XamlInflator.SourceGen)]
 		internal void CompilerDoesntThrowOnOnPlatform(XamlInflator inflator)

@@ -2,6 +2,7 @@ using System;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
 using Xunit;
+using Xunit.Sdk;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -32,7 +33,7 @@ public partial class Gh10803 : ContentPage
 			failures = 0;
 		}
 
-		[Theory]
+		[SkippableTheory]
 		[InlineData(XamlInflator.Runtime)]
 		[InlineData(XamlInflator.SourceGen)]
 		internal void SourceInfoForElementsInDT(XamlInflator inflator)

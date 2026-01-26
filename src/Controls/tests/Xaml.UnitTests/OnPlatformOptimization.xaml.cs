@@ -2,6 +2,7 @@ using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Xunit;
+using Xunit.Sdk;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
@@ -13,7 +14,7 @@ public partial class OnPlatformOptimization : ContentPage
 	[Collection("Xaml Inflation")]
 	public class Tests : BaseTestFixture
 	{
-		[Theory]
+		[SkippableTheory]
 		[InlineData("net7.0-ios", XamlInflator.XamlC)]
 		[InlineData("net7.0-ios", XamlInflator.SourceGen)]
 		[InlineData("net7.0-android", XamlInflator.XamlC)]
@@ -38,6 +39,7 @@ using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Xunit;
+using Xunit.Sdk;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
@@ -57,7 +59,7 @@ public partial class OnPlatformOptimization : ContentPage
 			}
 		}
 
-		[Theory]
+		[SkippableTheory]
 		[InlineData(XamlInflator.Runtime)]
 		[InlineData(XamlInflator.XamlC)]
 		[InlineData(XamlInflator.SourceGen)]

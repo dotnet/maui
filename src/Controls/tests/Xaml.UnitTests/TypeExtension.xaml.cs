@@ -4,6 +4,7 @@ using System.Windows.Input;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
 using Xunit;
+using Xunit.Sdk;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
@@ -64,7 +65,7 @@ public partial class TypeExtension : ContentPage
 			Assert.Equal(typeof(TypeExtension), button.CommandParameter);
 		}
 
-		[Fact]
+		[SkippableFact]
 		internal void ExtensionsAreReplaced()
 		{
 			var result = CreateMauiCompilation()

@@ -25,7 +25,7 @@ public partial class Maui21757
 
 		public void Dispose() => AppInfo.SetCurrent(null);
 
-		[Theory]
+		[SkippableTheory]
 		[XamlInflatorData]
 		internal void TypeLiteralAndXTypeCanBeUsedInterchangeably(XamlInflator inflator)
 		{

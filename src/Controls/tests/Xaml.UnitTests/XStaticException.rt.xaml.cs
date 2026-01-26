@@ -1,6 +1,7 @@
 using System.Linq;
 using Microsoft.Maui.Controls.Build.Tasks;
 using Xunit;
+using Xunit.Sdk;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
@@ -23,7 +24,7 @@ public partial class XStaticException : ContentPage
 		// - An enumeration value
 		// All other cases should throw
 
-		[Theory]
+		[SkippableTheory]
 		[InlineData(XamlInflator.Runtime)]
 		[InlineData(XamlInflator.XamlC)]
 		[InlineData(XamlInflator.SourceGen)]

@@ -1,6 +1,7 @@
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Xunit;
+using Xunit.Sdk;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
@@ -9,7 +10,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 [Collection("Xaml Inflation")]
 public class UnclosedTagErrorTests : BaseTestFixture
 {
-	[Fact]
+	[SkippableFact]
 	public void UnclosedTagReportsErrorDiagnostic()
 	{
 		// XAML with an unclosed Label tag (missing > or />)
