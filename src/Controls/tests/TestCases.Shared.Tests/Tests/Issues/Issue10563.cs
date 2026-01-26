@@ -31,7 +31,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap(OpenLeftId);
 			// Wait for swipe animation to complete - the SwipeItem text becomes visible
 			App.WaitForElement("Issue 10563");
-			VerifyScreenshotOrSetException(ref exception, "Left_SwipeItems", tolerance: 4.0);
+			VerifyScreenshotOrSetException(ref exception, "Left_SwipeItems");
 			App.Tap(CloseId);
 			// Wait for close animation to complete - the SwipeItem text disappears
 			App.WaitForNoElement("Issue 10563");
@@ -40,7 +40,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement(OpenRightId);
 			App.Tap(OpenRightId);
 			App.WaitForElement("Issue 10563");
-			VerifyScreenshotOrSetException(ref exception, "Right_SwipeItems", tolerance: 4.0);
+			VerifyScreenshotOrSetException(ref exception, "Right_SwipeItems");
 			App.Tap(CloseId);
 			App.WaitForNoElement("Issue 10563");
 
@@ -48,7 +48,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement(OpenTopId);
 			App.Tap(OpenTopId);
 			App.WaitForElement("Issue 10563");
-			VerifyScreenshotOrSetException(ref exception, "Top_SwipeItems", tolerance: 4.0);
+			VerifyScreenshotOrSetException(ref exception, "Top_SwipeItems");
 			App.Tap(CloseId);
 			App.WaitForNoElement("Issue 10563");
 
@@ -56,8 +56,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement(OpenBottomId);
 			App.Tap(OpenBottomId);
 			App.WaitForElement("Issue 10563");
-			VerifyScreenshotOrSetException(ref exception, "Bottom_SwipeItems", tolerance: 4.0);
+			VerifyScreenshotOrSetException(ref exception, "Bottom_SwipeItems");
 			App.Tap(CloseId);
+			App.WaitForNoElement("Issue 10563");
 
 			if (exception != null)
 			{

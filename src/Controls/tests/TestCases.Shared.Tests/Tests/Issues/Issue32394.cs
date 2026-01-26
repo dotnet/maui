@@ -20,9 +20,8 @@ public class Issue32394 : _IssuesUITest
 		App.WaitForElement("Issue32394SetPositionButton");
 		App.Tap("Issue32394SetPositionButton");
 		App.SetOrientationLandscape();
-		// Allow orientation change to complete before screenshot
-		Task.Delay(500).Wait();
-		VerifyScreenshot(tolerance: 2.0);
+		// Use retryTimeout to allow orientation change to complete
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 }
 #endif
