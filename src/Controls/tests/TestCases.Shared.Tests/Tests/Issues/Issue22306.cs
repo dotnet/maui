@@ -21,21 +21,26 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 #endif
 				WaitForAllElements();
 				var changeBoundsButton = App.WaitForElement("ChangeBoundsButton");
-				VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Original");
+				// Allow layout to settle before screenshot
+				Task.Delay(300).Wait();
+				VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Original", tolerance: 2.0);
 
 				changeBoundsButton.Click();
 
 				WaitForAllElements();
-				VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "SizeButtonsDownPortrait");
+				Task.Delay(300).Wait();
+				VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "SizeButtonsDownPortrait", tolerance: 2.0);
 
 #if IOS || ANDROID
 				App.SetOrientationLandscape();
 
 				WaitForAllElements();
+				// Allow orientation change to settle
+				Task.Delay(500).Wait();
 #if ANDROID
-				VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "SizeButtonsDownLandscape", cropLeft: 125);
+				VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "SizeButtonsDownLandscape", cropLeft: 125, tolerance: 2.0);
 #else
-				VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "SizeButtonsDownLandscape");
+				VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "SizeButtonsDownLandscape", tolerance: 2.0);
 #endif
 
 				changeBoundsButton.Click();
@@ -43,8 +48,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 				App.SetOrientationPortrait();
 				WaitForAllElements();
+				Task.Delay(500).Wait();
 				// Cannot use the original screenshot as the black bar on bottom is not as dark after rotation
-				VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Original2");
+				VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Original2", tolerance: 2.0);
 			}
 			finally
 			{

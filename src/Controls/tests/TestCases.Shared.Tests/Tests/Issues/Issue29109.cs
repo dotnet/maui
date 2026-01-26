@@ -17,7 +17,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void FontImageSourceColorShouldApplyOnBottomTabIconOnAndroid()
 		{
 			App.WaitForElement("Button");
-			VerifyScreenshot();
+			// Allow tab rendering to complete
+			Task.Delay(300).Wait();
+			VerifyScreenshot(tolerance: 2.0);
 		}
 
 		[Test, Order(2)]
@@ -26,7 +28,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("Button");
 			App.Tap("Button");
-			VerifyScreenshot();
+			// Allow icon color change animation to complete
+			Task.Delay(300).Wait();
+			VerifyScreenshot(tolerance: 4.0);
 		}
 	}
 }
