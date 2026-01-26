@@ -484,7 +484,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void ScrollToPosition(int goToPosition, int carouselPosition, bool animate, bool forceScroll = false)
 		{
+			if (goToPosition < 0)
+			{
+				System.Diagnostics.Debug.WriteLine($"CarouselViewController.ScrollToPosition: Skipping scroll due to invalid goToPosition ({goToPosition})");
+				return;
+			}
+
 			if (ItemsView is not CarouselView carousel)
+			{
+				return;
+			}
+
+			if (ItemsSource is null || ItemsSource.ItemCount == 0 || goToPosition >= ItemsSource.ItemCount)
 			{
 				return;
 			}
