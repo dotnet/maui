@@ -75,5 +75,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		public const string GraphicsView = "GraphicsView";
 		public const string Fonts = "Fonts";
 		public const string SafeAreaEdges = "SafeAreaEdges";
+		public const string Essentials = "Essentials";
 	}
 }
