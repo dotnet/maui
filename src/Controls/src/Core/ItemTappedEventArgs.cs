@@ -6,7 +6,10 @@ namespace Microsoft.Maui.Controls
 	/// <summary>Event arguments for the <see cref="Microsoft.Maui.Controls.ListView.ItemTapped"/> event.</summary>
 	public class ItemTappedEventArgs : EventArgs
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/ItemTappedEventArgs.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />
+		/// <summary>Creates a new <see cref="ItemTappedEventArgs"/> with the specified group, item, and index.</summary>
+		/// <param name="group">The group containing the tapped item.</param>
+		/// <param name="item">The tapped item.</param>
+		/// <param name="itemIndex">The index of the tapped item.</param>
 		public ItemTappedEventArgs(object group, object item, int itemIndex)
 		{
 			Group = group;
@@ -20,7 +23,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>The visual element that the user tapped.</summary>
 		public object Item { get; private set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ItemTappedEventArgs.xml" path="//Member[@MemberName='ItemIndex']/Docs/*" />
+		/// <summary>Gets the index of the tapped item within the items source.</summary>
 		public int ItemIndex { get; private set; }
 	}
 }

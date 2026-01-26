@@ -16,7 +16,7 @@ Extracts lessons learned from a completed PR to improve repository documentation
 | Input | Required | Source |
 |-------|----------|--------|
 | PR number or Issue number | Yes | User provides (e.g., "PR #33352" or "issue 33352") |
-| Session markdown | Optional | `.github/agent-pr-session/issue-XXXXX.md` or `pr-XXXXX.md` |
+| Session markdown | Optional | `CustomAgentLogsTmp/PRState/issue-XXXXX.md` or `pr-XXXXX.md` |
 
 ## Outputs
 
@@ -63,7 +63,7 @@ gh pr view XXXXX --json title,body,files
 gh pr diff XXXXX
 
 # Check for session markdown
-ls .github/agent-pr-session/issue-XXXXX.md .github/agent-pr-session/pr-XXXXX.md 2>/dev/null
+ls CustomAgentLogsTmp/PRState/issue-XXXXX.md CustomAgentLogsTmp/PRState/pr-XXXXX.md 2>/dev/null
 ```
 
 **If session markdown exists, extract:**

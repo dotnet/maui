@@ -86,6 +86,10 @@ namespace Microsoft.Maui.Platform
 			{
 				title.Foreground = brush;
 			}
+			else
+			{
+				title.ClearValue(CommandBar.ForegroundProperty);
+			}
 
 			_menuBarForeground = brush;
 			UpdateMenuBarForeground();

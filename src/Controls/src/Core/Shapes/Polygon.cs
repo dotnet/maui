@@ -4,10 +4,14 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Polygon.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.Polygon']/Docs/*" />
+	/// <summary>
+	/// A shape that draws a closed polygon from a series of connected lines.
+	/// </summary>
 	public sealed partial class Polygon : Shape, IShape
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Polygon.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Polygon"/> class.
+		/// </summary>
 		public Polygon() : base()
 		{
 		}
@@ -25,14 +29,18 @@ namespace Microsoft.Maui.Controls.Shapes
 		public static readonly BindableProperty FillRuleProperty =
 			BindableProperty.Create(nameof(FillRule), typeof(FillRule), typeof(Polygon), FillRule.EvenOdd);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Polygon.xml" path="//Member[@MemberName='Points']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the vertices of the polygon. This is a bindable property.
+		/// </summary>
 		public PointCollection Points
 		{
 			set { SetValue(PointsProperty, value); }
 			get { return (PointCollection)GetValue(PointsProperty); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Polygon.xml" path="//Member[@MemberName='FillRule']/Docs/*" />
+		/// <summary>
+		/// Gets or sets a value that specifies how the interior of the polygon is determined. This is a bindable property.
+		/// </summary>
 		public FillRule FillRule
 		{
 			set { SetValue(FillRuleProperty, value); }

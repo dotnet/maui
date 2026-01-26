@@ -36,7 +36,7 @@ namespace Microsoft.Maui.IntegrationTests
 		/// <param name="output">Optional test output helper for logging</param>
 		public static void OutputBuildErrorsFromBinLog(string binLogFilePath, int maxErrors = 50, ITestOutputHelper? output = null)
 		{
-			if (!File.Exists(binLogFilePath))
+			if (!System.IO.File.Exists(binLogFilePath))
 			{
 				output?.WriteLine($"[BuildWarningsUtilities] Binlog file not found: {binLogFilePath}");
 				return;

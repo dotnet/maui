@@ -1,16 +1,24 @@
 #nullable disable
 namespace Microsoft.Maui.Controls.Shapes
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/TranslateTransform.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.TranslateTransform']/Docs/*" />
+	/// <summary>
+	/// A transform that translates (moves) an element by a specified offset.
+	/// </summary>
 	public class TranslateTransform : Transform
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/TranslateTransform.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="TranslateTransform"/> class with no offset.
+		/// </summary>
 		public TranslateTransform()
 		{
 
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/TranslateTransform.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="TranslateTransform"/> class with the specified offsets.
+		/// </summary>
+		/// <param name="x">The horizontal translation offset.</param>
+		/// <param name="y">The vertical translation offset.</param>
 		public TranslateTransform(double x, double y)
 		{
 			X = x;
@@ -27,14 +35,18 @@ namespace Microsoft.Maui.Controls.Shapes
 			BindableProperty.Create(nameof(Y), typeof(double), typeof(TranslateTransform), 0.0,
 				propertyChanged: OnTransformPropertyChanged);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/TranslateTransform.xml" path="//Member[@MemberName='X']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the horizontal translation offset. This is a bindable property.
+		/// </summary>
 		public double X
 		{
 			set { SetValue(XProperty, value); }
 			get { return (double)GetValue(XProperty); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/TranslateTransform.xml" path="//Member[@MemberName='Y']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the vertical translation offset. This is a bindable property.
+		/// </summary>
 		public double Y
 		{
 			set { SetValue(YProperty, value); }

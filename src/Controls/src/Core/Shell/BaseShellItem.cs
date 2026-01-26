@@ -12,7 +12,9 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/BaseShellItem.xml" path="Type[@FullName='Microsoft.Maui.Controls.BaseShellItem']/Docs/*" />
+	/// <summary>
+	/// Base class for Shell navigation items providing common properties like Title, Icon, and Route.
+	/// </summary>
 	[DebuggerDisplay("Title = {Title}, Route = {Route}")]
 	[DebuggerTypeProxy(typeof(BaseShellItemDebugView))]
 	public class BaseShellItem : NavigableElement, IPropertyPropagationController, IVisualController, IFlowDirectionController, IWindowController
@@ -75,52 +77,68 @@ namespace Microsoft.Maui.Controls
 			};
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/BaseShellItem.xml" path="//Member[@MemberName='FlyoutIcon']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the icon displayed for this item in the flyout. This is a bindable property.
+		/// </summary>
 		public ImageSource FlyoutIcon
 		{
 			get { return (ImageSource)GetValue(FlyoutIconProperty); }
 			set { SetValue(FlyoutIconProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/BaseShellItem.xml" path="//Member[@MemberName='Icon']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the icon displayed for this item in the tab bar. This is a bindable property.
+		/// </summary>
 		public ImageSource Icon
 		{
 			get { return (ImageSource)GetValue(IconProperty); }
 			set { SetValue(IconProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/BaseShellItem.xml" path="//Member[@MemberName='IsChecked']/Docs/*" />
+		/// <summary>
+		/// Gets a value indicating whether this item is currently selected. This is a bindable property.
+		/// </summary>
 		public bool IsChecked => (bool)GetValue(IsCheckedProperty);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/BaseShellItem.xml" path="//Member[@MemberName='IsEnabled']/Docs/*" />
+		/// <summary>
+		/// Gets or sets a value indicating whether this item is enabled. This is a bindable property.
+		/// </summary>
 		public bool IsEnabled
 		{
 			get { return (bool)GetValue(IsEnabledProperty); }
 			set { SetValue(IsEnabledProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/BaseShellItem.xml" path="//Member[@MemberName='Route']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the route used for URI-based Shell navigation.
+		/// </summary>
 		public string Route
 		{
 			get { return Routing.GetRoute(this); }
 			set { Routing.SetRoute(this, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/BaseShellItem.xml" path="//Member[@MemberName='Title']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the title displayed in the UI for this item. This is a bindable property.
+		/// </summary>
 		public string Title
 		{
 			get { return (string)GetValue(TitleProperty); }
 			set { SetValue(TitleProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/BaseShellItem.xml" path="//Member[@MemberName='IsVisible']/Docs/*" />
+		/// <summary>
+		/// Gets or sets a value indicating whether this item is visible in the Shell UI. This is a bindable property.
+		/// </summary>
 		public bool IsVisible
 		{
 			get => (bool)GetValue(IsVisibleProperty);
 			set => SetValue(IsVisibleProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/BaseShellItem.xml" path="//Member[@MemberName='FlyoutItemIsVisible']/Docs/*" />
+		/// <summary>
+		/// Gets or sets a value indicating whether this item is visible in the flyout menu. This is a bindable property.
+		/// </summary>
 		public bool FlyoutItemIsVisible
 		{
 			get => (bool)GetValue(FlyoutItemIsVisibleProperty);

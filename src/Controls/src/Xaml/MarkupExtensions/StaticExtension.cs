@@ -6,12 +6,18 @@ using System.Xml;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
+	/// <summary>
+	/// Provides a XAML markup extension that returns the value of a static field or property.
+	/// </summary>
 	[ContentProperty(nameof(Member))]
 	[ProvideCompiled("Microsoft.Maui.Controls.Build.Tasks.StaticExtension")]
 	[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
 	[RequireService([typeof(IXamlTypeResolver)])]
 	public class StaticExtension : IMarkupExtension
 	{
+		/// <summary>
+		/// Gets or sets the name of the static member in the form [prefix:]typeName.memberName.
+		/// </summary>
 		public string Member { get; set; }
 
 		public object ProvideValue(IServiceProvider serviceProvider)

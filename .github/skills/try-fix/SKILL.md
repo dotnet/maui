@@ -1,10 +1,6 @@
 ---
 name: try-fix
-description: Attempts ONE fix for a provided problem, tests it, and reports results. Use when CI or an agent needs to try fixing a bug with full context provided upfront. Invoke with problem description, test command, target files, and optional hints.
-metadata:
-  author: dotnet-maui
-  version: "2.0"
-compatibility: Requires git, PowerShell, and .NET SDK for building and running tests.
+description: Attempts ONE alternative fix for a bug, tests it empirically, and reports results. ALWAYS explores a DIFFERENT approach from existing PR fixes. Use when CI or an agent needs to try independent fix alternatives. Invoke with problem description, test command, target files, and optional hints.
 ---
 
 # Try Fix Skill
@@ -13,24 +9,13 @@ Attempts ONE fix for a given problem. Receives all context upfront, tries a sing
 
 ## Core Principles
 
-1. **Single-shot**: Each invocation = ONE fix idea, tested, reported
-2. **Context-driven**: All necessary information provided upfront by invoker
-3. **Empirical**: Actually implement and test - don't just theorize
-4. **Informative**: Report what was tried, what happened, and why
+1. **Always run** - Never question whether to run. The invoker decides WHEN, you decide WHAT alternative to try
+2. **Single-shot** - Each invocation = ONE fix idea, tested, reported
+3. **Alternative-focused** - Always propose something DIFFERENT from existing fixes (review PR changes first)
+4. **Empirical** - Actually implement and test, don't just theorize
+5. **Context-driven** - All information provided upfront; don't search for additional context
 
-## When to Use
-
-- ✅ CI automation needs to attempt a fix
-- ✅ You have a clear problem description and test command
-- ✅ You want ONE attempt with full reporting
-
-## When NOT to Use
-
-- ❌ For writing tests (use `write-tests` skill)
-- ❌ For just running tests (use test commands directly)
-- ❌ When problem context is unclear (gather context first)
-
----
+**Every invocation:** Review existing fixes → Think of DIFFERENT approach → Implement and test → Report results
 
 ## Inputs
 
@@ -39,12 +24,12 @@ All inputs are provided by the invoker (CI, agent, or user).
 | Input | Required | Description |
 |-------|----------|-------------|
 | Problem | Yes | Description of the bug/issue to fix |
-| Test command | Yes | Command to verify if fix works (e.g., `pwsh BuildAndRunHostApp.ps1 -Platform android -TestFilter "Issue12345"`) |
+| Test command | Yes | **Repository-specific script** to build, deploy, and test (e.g., `pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "Issue12345"`). **ALWAYS use this script - NEVER manually build/compile.** |
 | Target files | Yes | Files to investigate for the fix |
 | Platform | Yes | Target platform (`android`, `ios`, `windows`, `maccatalyst`) |
 | Hints | Optional | Suggested approaches, prior attempts, or areas to focus on |
 | Baseline | Optional | Git ref or instructions for establishing broken state (default: current state) |
-| state_file | Optional | Path to PR agent state file (e.g., `.github/agent-pr-session/pr-12345.md`). If provided, try-fix will append its results to the Fix Candidates table. |
+| state_file | Optional | Path to PR agent state file (e.g., `CustomAgentLogsTmp/PRState/pr-12345.md`). If provided, try-fix will append its results to the Fix Candidates table. |
 
 ## Outputs
 
@@ -58,72 +43,86 @@ Results reported back to the invoker:
 | `analysis` | Why it worked, or why it failed and what was learned |
 | `diff` | The actual code changes made (for review) |
 
+## Output Structure
+
+Save artifacts to `CustomAgentLogsTmp/PRState/<PRNumber>/try-fix/attempt-<N>/` with files: `approach.md`, `fix.diff`, `test-output.log`, `result.txt`, `analysis.md`.
+
+See [references/output-structure.md](references/output-structure.md) for setup commands and directory structure details.
+
 ## Completion Criteria
 
 The skill is complete when:
 - [ ] Problem understood from provided context
 - [ ] ONE fix approach designed and implemented
-- [ ] Tests run and result captured
-- [ ] Analysis provided (success explanation or failure reasoning)
+- [ ] Fix tested with provided test command (iterated up to 3 times if errors/failures)
+- [ ] Either: Tests PASS ✅, or exhausted attempts and documented why approach won't work ❌
+- [ ] Analysis provided (success explanation or failure reasoning with evidence)
+- [ ] Artifacts saved to output directory
+- [ ] Baseline restored (working directory clean)
 - [ ] Results reported to invoker
-- [ ] Working directory restored to original state
+
+**Exhaustion criteria:** Stop after 3 iterations if:
+1. Code compiles but tests consistently fail for same reason
+2. Root cause analysis reveals fundamental flaw in approach
+3. Alternative fixes would require completely different strategy
+
+**Never stop due to:** Compile errors (fix them), infrastructure blame (debug your code), giving up too early.
 
 ---
 
 ## Workflow
 
-### Step 1: Understand the Problem
+### Step 1: Understand the Problem and Review Existing Fixes
 
-Review the provided context:
+**MANDATORY:** Review what has already been tried:
+
+1. **Check for existing PR changes:**
+   ```bash
+   git diff origin/main HEAD --name-only
+   ```
+   - Review what files were changed
+   - Read the actual code changes to understand the current fix approach
+
+2. **If state_file provided, review prior attempts:**
+   - Read the Fix Candidates table
+   - Note which approaches failed and WHY (the Notes column)
+   - Note which approaches partially succeeded
+
+3. **Identify what makes your approach DIFFERENT:**
+   - Don't repeat the same logic/pattern as existing fixes
+   - Think of alternative approaches: different algorithm, different location, different strategy
+   - If existing fix modifies X, consider modifying Y instead
+   - If existing fix adds logic, consider removing/simplifying instead
+
+**Examples of alternatives:**
+- Existing fix: Add caching → Alternative: Change when updates happen
+- Existing fix: Fix in handler → Alternative: Fix in platform layer
+
+**Review the provided context:**
 - What is the bug/issue?
 - What test command verifies the fix?
 - What files should be investigated?
 - Are there hints about what to try or avoid?
 
-**If state_file provided, review prior attempts:**
-1. Read the Fix Candidates table
-2. Note which approaches failed and WHY (the Notes column)
-3. Avoid repeating failed approaches
-4. Build on partial successes (if an approach was "close", try a variation)
-5. Use failure analysis to inform your approach
-
 **Do NOT search for additional context.** Work with what's provided.
 
-### Step 2: Establish Baseline (if specified)
+### Step 2: Establish Baseline (MANDATORY)
 
-Use the shared baseline script to revert fix files while preserving tests:
+🚨 **ALWAYS use EstablishBrokenBaseline.ps1 - NEVER manually revert files.**
 
 ```bash
-# Establish baseline - reverts fix files to merge-base state
-$baseline = pwsh .github/scripts/EstablishBrokenBaseline.ps1
-
-# Or with explicit options:
-$baseline = pwsh .github/scripts/EstablishBrokenBaseline.ps1 -BaseBranch main
-$baseline = pwsh .github/scripts/EstablishBrokenBaseline.ps1 -FixFiles @("src/path/to/file.cs")
-$baseline = pwsh .github/scripts/EstablishBrokenBaseline.ps1 -DryRun  # Preview without changes
+pwsh .github/scripts/EstablishBrokenBaseline.ps1
 ```
 
-The script:
-- Auto-detects merge-base from PR metadata or common branch patterns
-- Identifies fix files (non-test files that changed since merge-base)
-- Reverts only files that existed at merge-base (preserves new files)
-- Saves state for `-Restore` to undo later
+The script auto-detects and reverts fix files to merge-base state while preserving test files. **Will fail fast if no fix files detected** - you must be on the actual PR branch. Optional flags: `-BaseBranch main`, `-DryRun`.
 
-**CRITICAL:** Remember to restore in Step 9. If something fails mid-fix, run:
-```bash
-pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore
-```
+**If the script fails with "No fix files detected":** You're likely on the wrong branch. Checkout the actual PR branch with `gh pr checkout <PR#>` and try again.
 
-If no baseline specified, work from current state.
+**If something fails mid-attempt:** `pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore`
 
 ### Step 3: Analyze Target Files
 
-Read the target files to understand the code:
-
-```bash
-# Read the files specified in inputs
-cat src/path/to/TargetFile.cs
-```
+Read the target files to understand the code.
 
 **Key questions:**
 - What is the root cause of this bug?
@@ -142,69 +141,61 @@ Based on your analysis and any provided hints, design a single fix approach:
 
 ### Step 5: Apply the Fix
 
-Implement your fix. Track what you change:
+Implement your fix. Use `git status --short` and `git diff` to track changes.
+
+### Step 6: Test and Iterate (MANDATORY)
+
+🚨 **CRITICAL: ALWAYS use the provided test command script - NEVER manually build/compile.**
+
+**For .NET MAUI repository:** Use `BuildAndRunHostApp.ps1` which handles:
+- Building the project
+- Deploying to device/simulator
+- Running tests
+- Capturing logs
 
 ```bash
-# Before editing, note current state
-git status --short
-
-# Apply your fix
-# [edit files]
-
-# After editing, capture what changed
-git diff
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform <platform> -TestFilter "<filter>"
 ```
 
-### Step 6: Run Tests
+**Testing Loop (Iterate until SUCCESS or exhausted):**
 
-Run the provided test command:
+1. **Run the test command** - It will build, deploy, and test automatically
+2. **Check the result:**
+   - ✅ **Tests PASS** → Move to Step 7 (Capture Artifacts)
+   - ❌ **Compile errors** → Fix compilation issues (see below), go to step 1
+   - ❌ **Tests FAIL (runtime)** → Analyze failure, fix code, go to step 1
+3. **Maximum 3 iterations** - If still failing after 3 attempts, analyze if approach is fundamentally flawed
+4. **Document why** - If exhausted, explain what you learned and why the approach won't work
 
-```bash
-# Use the exact test command provided in inputs
-pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform $PLATFORM -TestFilter "$TEST_FILTER"
-```
+**Behavioral constraints:**
+- ⚠️ **NEVER blame "test infrastructure"** - assume YOUR fix has a bug
+- Compile errors mean "work harder" - not "give up"
+- DO NOT manually build - always rerun the test command script
 
-**Capture the result:**
-- ✅ **PASS** - Fix works (test passes)
-- ❌ **FAIL** - Fix doesn't work (test fails or other issues)
+See [references/compile-errors.md](references/compile-errors.md) for error patterns and iteration examples.
 
-### Step 7: Analyze Result
+### Step 7: Capture Artifacts
 
-**If PASS:**
-- Why did this fix work?
-- Is it the minimal change needed?
-- Any concerns or caveats?
+Before reverting, save all artifacts to `$OUTPUT_DIR/`:
 
-**If FAIL:**
-- What was your hypothesis?
-- What actually happened?
-- Why was the reasoning flawed?
-- What insight does this provide for future attempts?
+| File | Content |
+|------|---------|
+| `approach.md` | What was tried, strategy used, why different from existing fixes |
+| `fix.diff` | `git diff` output |
+| `analysis.md` | Result, hypothesis, what happened, why it worked/failed, insights for future |
 
-### Step 8: Capture Diff
+**Analysis quality matters.** Bad: "Didn't work". Good: "Fix attempted to reset state in OnPageSelected, but this fires after layout measurement. The cached value was already used."
 
-Before reverting, capture the diff for reporting:
+### Step 8: Restore Working Directory (MANDATORY)
 
-```bash
-git diff > /tmp/fix-attempt.diff
-# or just include inline in your report
-```
-
-### Step 9: Restore Working Directory
-
-Restore the baseline (if established in Step 2) and revert any fix changes:
+🚨 **ALWAYS restore, even if fix failed.**
 
 ```bash
-# Restore files reverted by EstablishBrokenBaseline.ps1
 pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore
-
-# Revert any other changes made during the fix attempt
 git checkout -- .
 ```
 
-**Note:** The `-Restore` flag reads the saved state from Step 2 and restores only the files that were reverted. This ensures a clean return to the original state.
-
-### Step 10: Report Results
+### Step 9: Report Results
 
 Provide structured output to the invoker:
 
@@ -230,23 +221,9 @@ Provide structured output to the invoker:
 **Reasoning:** [Why you believe there are/aren't more viable approaches]
 ```
 
-### Determining Exhaustion
+**Determining Exhaustion:** Set `exhausted=true` when you've tried the same fundamental approach multiple times, all hints have been explored, failure analysis reveals the problem is outside target files, or no new ideas remain. Set `exhausted=false` when this is the first attempt, failure analysis suggests a different approach, hints remain unexplored, or the approach was close but needs refinement.
 
-Before updating the state file, evaluate if you've exhausted viable approaches:
-
-**Set `exhausted=true` when:**
-- You've tried the same fundamental approach multiple times with variations
-- All hints have been explored without success
-- Failure analysis reveals the problem is outside the target files
-- No new ideas remain based on prior failure analyses
-
-**Set `exhausted=false` when:**
-- This is the first attempt
-- Failure analysis suggests a different approach within target files
-- Hints remain unexplored
-- The approach was close but needs refinement
-
-### Step 11: Update State File (if provided)
+### Step 10: Update State File (if provided)
 
 If `state_file` input was provided and file exists:
 
@@ -271,8 +248,6 @@ git add "$STATE_FILE" && git commit -m "try-fix: attempt #N (exhausted=$EXHAUSTE
 - "Selected Fix" field
 - Other try-fix rows
 
----
-
 ## Error Handling
 
 | Situation | Action |
@@ -291,108 +266,16 @@ git add "$STATE_FILE" && git commit -m "try-fix: attempt #N (exhausted=$EXHAUSTE
 
 ✅ **Null/state checks** - Guard against unexpected null or state
 ✅ **Lifecycle timing** - Move code to correct lifecycle event
-✅ **Platform-specific handling** - Add platform check if needed
-✅ **Event ordering** - Fix race conditions or ordering issues
 ✅ **Cache invalidation** - Reset stale cached values
 
 ### Approaches to Avoid
 
 ❌ **Massive refactors** - Keep changes minimal
 ❌ **Suppressing symptoms** - Fix root cause, not symptoms
-❌ **Ignoring provided hints** - Hints exist for a reason
 ❌ **Multiple unrelated changes** - ONE focused fix per invocation
 
-### Failure Analysis Quality
-
-When a fix fails, analysis quality matters:
-
-**Bad:** "Didn't work"
-
-**Good:** "Fix attempted to reset state in OnPageSelected, but this fires after layout measurement. The cached MeasuredHeight value was already used. A fix needs to invalidate the cache BEFORE the layout pass, not after."
-
 ---
 
-## Example Invocation
+See [references/example-invocation.md](references/example-invocation.md) for a complete example with sample inputs.
 
-**Inputs provided:**
-```yaml
-problem: |
-  CollectionView throws ObjectDisposedException when navigating back
-  from a page with a CollectionView on Android.
 
-test_command: |
-  pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "Issue54321"
-
-target_files:
-  - src/Controls/src/Core/Handlers/Items/ItemsViewHandler.Android.cs
-  - src/Controls/src/Core/Handlers/Items/CollectionViewHandler.Android.cs
-
-platform: android
-
-hints: |
-  - The issue seems related to disposal timing
-  - Similar issue was fixed in ListView by checking IsDisposed before accessing adapter
-  - Focus on the Disconnect/Cleanup methods
-```
-
-**Skill execution:**
-1. Reads context - understands it's a disposal timing issue on Android
-2. Analyzes target files - finds `DisconnectHandler` method
-3. Designs fix - add `IsDisposed` check before accessing adapter
-4. Applies fix - edits `CollectionViewHandler.Android.cs`
-5. Runs test - ✅ PASS
-6. Analyzes - "Adding IsDisposed check prevents access to disposed adapter during navigation"
-7. Captures diff
-8. Reverts changes
-9. Reports results
-
-**Output:**
-```markdown
-## Try-Fix Result
-
-**Approach:** Add IsDisposed check in DisconnectHandler before accessing adapter
-
-**Files Changed:**
-- `src/Controls/src/Core/Handlers/Items/CollectionViewHandler.Android.cs` (+3/-0 lines)
-
-**Result:** ✅ PASS
-
-**Analysis:**
-The ObjectDisposedException occurred because DisconnectHandler was called during
-navigation after the handler was already disposed. Adding an early return when
-IsDisposed is true prevents the null adapter access. This matches the pattern
-used in ListView's fix (as noted in hints).
-
-**Diff:**
-```diff
- protected override void DisconnectHandler(RecyclerView platformView)
- {
-+    if (IsDisposed)
-+        return;
-+
-     base.DisconnectHandler(platformView);
-```
-```
-
----
-
-## What the Invoker Controls
-
-This skill does ONE attempt. The invoker (CI pipeline, agent, user) controls:
-
-| Decision | Invoker's responsibility |
-|----------|--------------------------|
-| How many attempts | Invoke skill multiple times if needed |
-| Max attempts | Configure loop limit (default: 5, can be set higher) |
-| Early termination | Stop when try-fix reports `exhausted=true` |
-| When to stop | Interpret results and decide (exhausted OR max reached) |
-| State file path | Optionally provide for automatic recording |
-| Passing context between attempts | Provide updated hints on subsequent calls |
-| Success criteria | Evaluate the reported result |
-| Phase status | Update phase to COMPLETE when done |
-| Final selection | Set "Selected Fix" field when a fix passes |
-
-The skill records its own results and exhausted status when a state file is provided. The loop should terminate when EITHER:
-1. A fix passes (success)
-2. `exhausted=true` is reported (no more viable approaches)
-3. Max attempts reached (configurable cap)

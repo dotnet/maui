@@ -8,6 +8,7 @@
         xmlns:models="clr-namespace:MauiApp._1.Models"
         x:Class="MauiApp._1.Pages.Controls.CategoryChart"
         x:DataType="pageModels:MainPageModel"
+        SemanticProperties.Description="{Binding TodoCategoryData, Converter={controls:ChartDataSemanticConverter}}"
         HeightRequest="{OnIdiom 300, Phone=200}"
         Margin="0, 12"
         Style="{StaticResource CardStyle}">

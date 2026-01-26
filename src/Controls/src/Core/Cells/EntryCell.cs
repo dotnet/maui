@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(TextAlignmentElement.HorizontalTextAlignmentProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/EntryCell.xml" path="//Member[@MemberName='VerticalTextAlignment']/Docs/*" />
+		/// <summary>Gets or sets the vertical alignment of the Text property. This is a bindable property.</summary>
 		public TextAlignment VerticalTextAlignment
 		{
 			get { return (TextAlignment)GetValue(TextAlignmentElement.VerticalTextAlignmentProperty); }

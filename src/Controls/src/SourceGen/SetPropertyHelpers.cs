@@ -71,6 +71,10 @@ static class SetPropertyHelpers
 			return;
 		}
 
+		// If the node was removed from Variables (e.g., Setter with no value due to OnPlatform), skip silently
+		if (valueNode is ElementNode en && !context.Variables.ContainsKey(en))
+			return;
+
 		var location = LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)valueNode, localName);
 		context.ReportDiagnostic(Diagnostic.Create(Descriptors.MemberResolution, location, localName));
 	}
