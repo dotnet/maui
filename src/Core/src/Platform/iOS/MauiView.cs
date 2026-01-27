@@ -380,6 +380,17 @@ namespace Microsoft.Maui.Platform
 				&& SafeAreaEdges.IsSoftInput(safeAreaView2.GetSafeAreaRegionsForEdge(3))) is not null;
 		}
 
+		/// <summary>
+		/// Checks if any parent MauiView is already applying safe area adjustments.
+		/// This prevents multiple views in the hierarchy from applying conflicting safe area logic.
+		/// </summary>
+		/// <returns>True if a parent is already handling safe area adjustments, false otherwise</returns>
+		bool IsParentHandlingSafeArea()
+		{
+			return this.FindParent(x => x is MauiView mv
+				&& mv._appliesSafeAreaAdjustments
+				&& mv.View is ISafeAreaView or ISafeAreaView2) is not null;
+		}
 
 		/// <summary>
 		/// Checks if the current measure information is still valid for the given constraints.
@@ -609,7 +620,10 @@ namespace Microsoft.Maui.Platform
 			_safeArea = GetAdjustedSafeAreaInsets();
 
 			var oldApplyingSafeAreaAdjustments = _appliesSafeAreaAdjustments;
-			_appliesSafeAreaAdjustments = RespondsToSafeArea() && !_safeArea.IsEmpty;
+
+			// Check if parent is already handling safe area - if so, don't apply adjustments here
+			var parentHandlingSafeArea = IsParentHandlingSafeArea();
+			_appliesSafeAreaAdjustments = !parentHandlingSafeArea && RespondsToSafeArea() && !_safeArea.IsEmpty;
 
 			// Return whether the way safe area interacts with our view has changed
 			return oldApplyingSafeAreaAdjustments == _appliesSafeAreaAdjustments &&
