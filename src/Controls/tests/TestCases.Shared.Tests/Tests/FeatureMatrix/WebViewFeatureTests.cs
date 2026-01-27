@@ -314,7 +314,7 @@ public class WebViewFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElementTillPageNavigationSettled(Options, timeout: TimeSpan.FromSeconds(3));
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 }

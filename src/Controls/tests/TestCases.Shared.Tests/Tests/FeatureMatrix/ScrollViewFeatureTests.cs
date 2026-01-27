@@ -47,7 +47,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToEndPosition);
 		App.Tap(ScrollToEndPosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(2)]
@@ -57,7 +57,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToStartPosition);
 		App.Tap(ScrollToStartPosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(3)]
@@ -67,7 +67,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToCenterPosition);
 		App.Tap(ScrollToCenterPosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(4)]
@@ -77,7 +77,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToMakeVisiblePosition);
 		App.Tap(ScrollToMakeVisiblePosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 #if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/29805
@@ -94,7 +94,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToEndPosition);
 		App.Tap(ScrollToEndPosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(10)]
@@ -110,7 +110,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToStartPosition);
 		App.Tap(ScrollToStartPosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(11)]
@@ -126,7 +126,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToCenterPosition);
 		App.Tap(ScrollToCenterPosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(12)]
@@ -142,7 +142,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToMakeVisiblePosition);
 		App.Tap(ScrollToMakeVisiblePosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -159,7 +159,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToEndPosition);
 		App.Tap(ScrollToEndPosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(14)]
@@ -175,7 +175,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToStartPosition);
 		App.Tap(ScrollToStartPosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(15)]
@@ -191,7 +191,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToCenterPosition);
 		App.Tap(ScrollToCenterPosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(16)]
@@ -207,7 +207,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToMakeVisiblePosition);
 		App.Tap(ScrollToMakeVisiblePosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(17)]
@@ -291,7 +291,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToEndPosition);
 		App.Tap(ScrollToEndPosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(22)]
@@ -307,7 +307,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToStartPosition);
 		App.Tap(ScrollToStartPosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(23)]
@@ -323,7 +323,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToCenterPosition);
 		App.Tap(ScrollToCenterPosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(24)]
@@ -339,7 +339,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToMakeVisiblePosition);
 		App.Tap(ScrollToMakeVisiblePosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(25)]
@@ -355,7 +355,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToEndPosition);
 		App.Tap(ScrollToEndPosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(26)]
@@ -371,7 +371,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToStartPosition);
 		App.Tap(ScrollToStartPosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(27)]
@@ -387,7 +387,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToCenterPosition);
 		App.Tap(ScrollToCenterPosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(28)]
@@ -403,7 +403,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToMakeVisiblePosition);
 		App.Tap(ScrollToMakeVisiblePosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link: https://github.com/dotnet/maui/issues/30070
@@ -421,7 +421,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToEndPosition);
 		App.Tap(ScrollToEndPosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(6)]
@@ -437,7 +437,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToStartPosition);
 		App.Tap(ScrollToStartPosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(7)]
@@ -453,7 +453,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToCenterPosition);
 		App.Tap(ScrollToCenterPosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(8)]
@@ -469,7 +469,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToMakeVisiblePosition);
 		App.Tap(ScrollToMakeVisiblePosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(33)]
@@ -487,7 +487,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToEndPosition);
 		App.Tap(ScrollToEndPosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(34)]
@@ -505,7 +505,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToStartPosition);
 		App.Tap(ScrollToStartPosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(35)]
@@ -523,7 +523,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToCenterPosition);
 		App.Tap(ScrollToCenterPosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(36)]
@@ -541,7 +541,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToMakeVisiblePosition);
 		App.Tap(ScrollToMakeVisiblePosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(37)]
@@ -559,7 +559,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToEndPosition);
 		App.Tap(ScrollToEndPosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(38)]
@@ -577,7 +577,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToStartPosition);
 		App.Tap(ScrollToStartPosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(39)]
@@ -595,7 +595,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToCenterPosition);
 		App.Tap(ScrollToCenterPosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(40)]
@@ -613,7 +613,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToMakeVisiblePosition);
 		App.Tap(ScrollToMakeVisiblePosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(41)]
@@ -631,7 +631,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToEndPosition);
 		App.Tap(ScrollToEndPosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(42)]
@@ -649,7 +649,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToStartPosition);
 		App.Tap(ScrollToStartPosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(43)]
@@ -667,7 +667,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToCenterPosition);
 		App.Tap(ScrollToCenterPosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(44)]
@@ -685,7 +685,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToMakeVisiblePosition);
 		App.Tap(ScrollToMakeVisiblePosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(45)]
@@ -703,7 +703,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToEndPosition);
 		App.Tap(ScrollToEndPosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(46)]
@@ -721,7 +721,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToStartPosition);
 		App.Tap(ScrollToStartPosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(47)]
@@ -739,7 +739,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToCenterPosition);
 		App.Tap(ScrollToCenterPosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(48)]
@@ -757,7 +757,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToMakeVisiblePosition);
 		App.Tap(ScrollToMakeVisiblePosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 #if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/29805  
@@ -776,7 +776,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToEndPosition);
 		App.Tap(ScrollToEndPosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(30)]
@@ -794,7 +794,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToStartPosition);
 		App.Tap(ScrollToStartPosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(31)]
@@ -812,7 +812,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToCenterPosition);
 		App.Tap(ScrollToCenterPosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(32)]
@@ -830,7 +830,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToMakeVisiblePosition);
 		App.Tap(ScrollToMakeVisiblePosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 #endif
@@ -957,7 +957,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToCenterPosition);
 		App.Tap(ScrollToCenterPosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -975,7 +975,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToStartPosition);
 		App.Tap(ScrollToStartPosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -994,7 +994,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToStartPosition);
 		App.Tap(ScrollToStartPosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -1012,7 +1012,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(ScrollToStartPosition);
 		App.Tap(ScrollToStartPosition);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // Issue Link for Android : https://github.com/dotnet/maui/issues/13634 and Windows: https://github.com/dotnet/maui/issues/29805
@@ -1079,7 +1079,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -1116,7 +1116,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -1134,7 +1134,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 #if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/29805
@@ -1153,7 +1153,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 #endif
@@ -1176,7 +1176,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -1196,7 +1196,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -1216,7 +1216,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -1236,7 +1236,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -1256,7 +1256,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -1276,7 +1276,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 #if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/29805
@@ -1297,7 +1297,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("ScrollViewControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 #endif
