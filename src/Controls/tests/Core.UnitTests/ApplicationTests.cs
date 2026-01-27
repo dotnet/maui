@@ -239,6 +239,46 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal($"Either set {nameof(Application.MainPage)} or override {nameof(IApplication.CreateWindow)}.", ex.Message);
 		}
 
+		[Fact]
+		public void RemoveMainPageWindowAllowsRecreation()
+		{
+			// Simulates Android back button scenario where:
+			// 1. App starts with MainPage set
+			// 2. Window is created
+			// 3. User presses back button, which calls RemoveWindow
+			// 4. User reopens app, which creates a new window
+			// 
+			// The bug: RemoveWindow had an early return that prevented the MainPage window
+			// from being removed, leaving _singleWindowMainPage set and the window in _windows.
+			// The fix: Allow the MainPage window to be removed and clear _singleWindowMainPage.
+			
+			var app = new Application();
+			var iapp = app as IApplication;
+			var page = new ContentPage();
+
+			app.MainPage = page;
+
+			// Create initial window
+			var window = (Window)iapp.CreateWindow(null);
+			Assert.Single(app.Windows);
+			Assert.Equal(page, window.Page);
+
+			// Simulate back button - RemoveWindow should actually remove the window
+			// Previously this did nothing due to early return
+			app.RemoveWindow(window);
+			
+			// This is the key assertion - the fix allows the window to be removed
+			Assert.Empty(app.Windows);
+
+			// After proper removal, app can restart with new page
+			var newPage = new ContentPage();
+			app.MainPage = newPage;
+			var newWindow = (Window)iapp.CreateWindow(null);
+
+			Assert.Single(app.Windows);
+			Assert.Equal(newPage, newWindow.Page);
+		}
+
 		class StubApp : Application
 		{
 			public int OnStartCount { get; private set; }
