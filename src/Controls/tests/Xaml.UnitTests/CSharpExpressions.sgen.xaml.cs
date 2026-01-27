@@ -79,6 +79,7 @@ public partial class CSharpExpressions : ContentPage
 	public bool IsDataLoaded => true;
 	public bool HasProducts => true;
 	public bool IsEmpty => false;
+	public bool HasError => false;
 
 	// Properties for TypedBinding tests
 	public string LocalProperty => "From Local";
@@ -94,7 +95,13 @@ public partial class CSharpExpressions : ContentPage
 	public object? LastSender { get; private set; }
 	public string? LastNewText { get; private set; }
 
-	public string GetText() => "Method Result";
+	// Local method call tracking
+	public int GetTextCallCount { get; private set; }
+	public string GetText()
+	{
+		GetTextCallCount++;
+		return "Method Result";
+	}
 	public char GetChar(char c) => c;
 
 	// Lambda event handlers
@@ -119,6 +126,21 @@ public partial class CSharpExpressions : ContentPage
 		{
 			var page = new CSharpExpressions(XamlInflator.SourceGen);
 			Assert.Equal("Method Result", page.methodCallLabel.Text);
+		}
+
+		[Fact]
+		public void LocalMethodCalledOnceAtInit()
+		{
+			var page = new CSharpExpressions(XamlInflator.SourceGen);
+			
+			// Method should have been called exactly twice during initialization
+			// (once for methodCallLabel, once for interpolationMethodLabel)
+			Assert.Equal(2, page.GetTextCallCount);
+			
+			// Access the properties again - should NOT call the method again (values are captured)
+			_ = page.methodCallLabel.Text;
+			_ = page.interpolationMethodLabel.Text;
+			Assert.Equal(2, page.GetTextCallCount);
 		}
 
 		[Fact]
