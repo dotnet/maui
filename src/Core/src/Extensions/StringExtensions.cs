@@ -27,11 +27,8 @@ namespace Microsoft.Maui
 
 		public static int LastIndexOfChar(this string toSearch, char character)
 		{
-#if NETSTANDARD2_0
+			// char version of LastIndexOf doesn't need StringComparison - it's always ordinal
 			return toSearch.LastIndexOf(character);
-#else
-			return toSearch.LastIndexOf(character, StringComparison.Ordinal);
-#endif
 		}
 	}
 }
