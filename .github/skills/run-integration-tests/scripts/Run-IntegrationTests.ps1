@@ -119,13 +119,15 @@ try {
         
         if ($RunningOnWindows) {
             $buildCmd = Join-Path $RepoRoot 'build.cmd'
-            $buildArgs = @("-restore", "-pack", "-configuration", $Configuration)
+            # Use -warnAsError false to match dotnet cake behavior (warnings don't fail the build)
+            $buildArgs = @("-restore", "-pack", "-configuration", $Configuration, "-warnAsError", "false")
             Write-Host "Running: $buildCmd $($buildArgs -join ' ')" -ForegroundColor Gray
             & $buildCmd @buildArgs
         }
         else {
             $buildCmd = Join-Path $RepoRoot 'build.sh'
-            $buildArgs = @("-restore", "-pack", "-configuration", $Configuration)
+            # Use -warnAsError false to match dotnet cake behavior (warnings don't fail the build)
+            $buildArgs = @("-restore", "-pack", "-configuration", $Configuration, "-warnAsError", "false")
             Write-Host "Running: $buildCmd $($buildArgs -join ' ')" -ForegroundColor Gray
             & bash $buildCmd @buildArgs
         }
