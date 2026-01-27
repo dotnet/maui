@@ -22,6 +22,19 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("Red");
 			App.WaitForElement("Green");
 			App.DragAndDrop("Red", "Green");
+
+#if MACCATALYST // In CI DragAndDrop does not effective sometimes so retry once before failing to resolve the flakiness.
+
+			try
+			{
+				App.WaitForElement("DropResultLabel");
+			}
+			catch (TimeoutException)
+			{
+				App.DragAndDrop("Red", "Green");
+			}
+#endif
+			App.WaitForElement("DropResultLabel");
 			var dropResultLabel = App.FindElement("DropResultLabel").GetText();
 			Assert.That(dropResultLabel, Is.EqualTo("Success"));
 		}

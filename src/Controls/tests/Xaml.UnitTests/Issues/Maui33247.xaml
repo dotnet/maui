@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests"
+    x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui33247"
+    x:DataType="local:Maui33247">
+    <!-- Test: RelativeSource AncestorType with Path=. should return the ContentPage itself -->
+    <Grid x:Name="MainGrid" BackgroundColor="Blue">
+        <Grid.GestureRecognizers>
+            <TapGestureRecognizer x:Name="DirectTapGesture" 
+                Command="{Binding Navigate}"
+                CommandParameter="{Binding Path=., Source={RelativeSource AncestorType={x:Type local:Maui33247}}}" />
+        </Grid.GestureRecognizers>
+        <Label Text="Direct binding test" />
+    </Grid>
+</ContentPage>

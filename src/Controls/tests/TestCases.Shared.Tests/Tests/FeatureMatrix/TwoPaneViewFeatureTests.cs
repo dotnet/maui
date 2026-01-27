@@ -5,19 +5,14 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests
 {
-	public class TwoPaneViewFeatureTests : UITest
+	public class TwoPaneViewFeatureTests : _GalleryUITest
 	{
 		public const string TwoPaneViewFeatureMatrix = "TwoPaneView Feature Matrix";
+		public override string GalleryPageName => TwoPaneViewFeatureMatrix;
 
 		public TwoPaneViewFeatureTests(TestDevice device)
 			: base(device)
 		{
-		}
-
-		protected override void FixtureSetup()
-		{
-			base.FixtureSetup();
-			App.NavigateToGallery(TwoPaneViewFeatureMatrix);
 		}
 
 		// The test cases below are divided based on platform-specific UI behaviors and layout logic.
@@ -37,7 +32,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 #if MACCATALYST || WINDOWS
 
-        [Test]
+        [Test, Order(16)]
         [Category(UITestCategories.Layout)]
         public void TwoPaneView_RTLFlowDirection()
         {
@@ -53,7 +48,7 @@ namespace Microsoft.Maui.TestCases.Tests
             VerifyScreenshot();
         }
 
-        [Test]
+        [Test, Order(1)]
         [Category(UITestCategories.Layout)]
         public void TwoPaneView_WideMode()
         {
@@ -66,7 +61,7 @@ namespace Microsoft.Maui.TestCases.Tests
             VerifyScreenshot();
         }
 
-        [Test]
+        [Test, Order(2)]
         [Category(UITestCategories.Layout)]
         public void TwoPaneView_IsTall_UsingRect()
         {
@@ -87,7 +82,7 @@ namespace Microsoft.Maui.TestCases.Tests
             Assert.That(App.WaitForElement("CurrentModeLabel").GetText(), Is.EqualTo("Tall Mode"), "CurrentModeLabel should display 'Tall Mode'");
         }
 
-        [Test]
+        [Test, Order(3)]
         [Category(UITestCategories.Layout)]
         public void TwoPaneView_Wide_UsingRect()
         {
@@ -105,7 +100,7 @@ namespace Microsoft.Maui.TestCases.Tests
             Assert.That(App.WaitForElement("CurrentModeLabel").GetText(), Is.EqualTo("Wide Mode"));
         }
 
-        [Test]
+        [Test, Order(17)]
         [Category(UITestCategories.Layout)]
         public void TwoPaneView_IsWideWithRTL_UsingRect()
         {
@@ -129,7 +124,7 @@ namespace Microsoft.Maui.TestCases.Tests
             Assert.That(App.WaitForElement("CurrentModeLabel").GetText(), Is.EqualTo("Wide Mode"), "CurrentModeLabel should display 'Wide Mode'");
         }
 
-        [Test]
+        [Test, Order(4)]
         [Category(UITestCategories.Layout)]
         public void TwoPaneView_TallMode()
         {
@@ -145,7 +140,7 @@ namespace Microsoft.Maui.TestCases.Tests
             VerifyScreenshot();
         }
 
-        [Test]
+        [Test, Order(5)]
         [Category(UITestCategories.Layout)]
         public void TwoPaneView_Pane1Priority()
         {
@@ -164,7 +159,7 @@ namespace Microsoft.Maui.TestCases.Tests
             VerifyScreenshot();
         }
 
-        [Test]
+        [Test, Order(6)]
         [Category(UITestCategories.Layout)]
         public void TwoPaneView_Pane2Priority()
         {
@@ -186,7 +181,7 @@ namespace Microsoft.Maui.TestCases.Tests
             VerifyScreenshot();
         }
 
-        [Test]
+        [Test, Order(7)]
         [Category(UITestCategories.Layout)]
         public void TwoPaneView_Pane1SizeIncrease_WithTallMode()
         {
@@ -205,7 +200,7 @@ namespace Microsoft.Maui.TestCases.Tests
             VerifyScreenshot();
         }
 
-        [Test]
+        [Test, Order(8)]
         [Category(UITestCategories.Layout)]
         public void TwoPaneView_Pane2SizeIncrease_WithTallMode()
         {
@@ -225,7 +220,7 @@ namespace Microsoft.Maui.TestCases.Tests
         }
 
 #endif
-		[Test]
+		[Test, Order(15)]
 		[Category(UITestCategories.Layout)]
 		public void TwoPaneView_IsVisible()
 		{
@@ -241,7 +236,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Test]
+		[Test, Order(14)]
 		[Category(UITestCategories.Layout)]
 		public void TwoPaneView_ZIsShadowEnabled()
 		{
@@ -257,7 +252,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Test]
+		[Test, Order(13)]
 		[Category(UITestCategories.Layout)]
 		public void TwoPaneView_Pane1SizeIncrease()
 		{
@@ -275,7 +270,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Test]
+		[Test, Order(12)]
 		[Category(UITestCategories.Layout)]
 		public void TwoPaneView_Pane2SizeIncrease()
 		{
@@ -295,7 +290,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 #if ANDROID || IOS
 
-		[Test]
+		[Test, Order(1)]
 		[Category(UITestCategories.Layout)]
 		public void TwoPaneView_IsTall_UsingRect()
 		{
@@ -307,7 +302,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(App.WaitForElement("CurrentModeLabel").GetText(), Is.EqualTo("Tall Mode"), "CurrentModeLabel should display 'Tall Mode'");
 		}
 
-		[Test]
+		[Test, Order(2)]
 		[Category(UITestCategories.Layout)]
 		public void TwoPaneView_IsWide_UsingRect()
 		{
@@ -331,7 +326,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		}
 
-		[Test]
+		[Test, Order(3)]
 		[Category(UITestCategories.Layout)]
 		public void TwoPaneView_IsWideWithRTL_UsingRect()
 		{
@@ -357,7 +352,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(App.WaitForElement("CurrentModeLabel").GetText(), Is.EqualTo("Wide Mode"), "CurrentModeLabel should display 'Wide Mode'");
 		}
 
-		[Test]
+		[Test, Order(4)]
 		[Category(UITestCategories.Layout)]
 		public void TwoPaneView_TallMode()
 		{
@@ -370,7 +365,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Test]
+		[Test, Order(5)]
 		[Category(UITestCategories.Layout)]
 		public void TwoPaneView_WideMode()
 		{
@@ -388,7 +383,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Test]
+		[Test, Order(6)]
 		[Category(UITestCategories.Layout)]
 		public void TwoPaneView_Pane1SizeIncrease_WithWideMode()
 		{
@@ -411,7 +406,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Test]
+		[Test, Order(7)]
 		[Category(UITestCategories.Layout)]
 		public void TwoPaneView_Pane2SizeIncrease_WithWideMode()
 		{
@@ -434,7 +429,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Test]
+		[Test, Order(8)]
 		[Category(UITestCategories.Layout)]
 		public void TwoPaneView_ShadowWithWideMode()
 		{
@@ -455,7 +450,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Test]
+		[Test, Order(9)]
 		[Category(UITestCategories.Layout)]
 		public void TwoPaneView_RTLFlowDirection()
 		{
@@ -477,7 +472,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 
-		[Test]
+		[Test, Order(10)]
 		[Category(UITestCategories.Layout)]
 		public void TwoPaneView_Pane1Priority()
 		{
@@ -493,7 +488,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Test]
+		[Test, Order(11)]
 		[Category(UITestCategories.Layout)]
 		public void TwoPaneView_Pane2Priority()
 		{

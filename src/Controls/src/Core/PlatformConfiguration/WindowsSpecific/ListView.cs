@@ -17,21 +17,27 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 			BindableProperty.CreateAttached("WindowsSelectionMode", typeof(ListViewSelectionMode),
 				typeof(ListView), ListViewSelectionMode.Accessible);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/ListView.xml" path="//Member[@MemberName='GetSelectionMode'][1]/Docs/*" />
+		/// <summary>Gets the selection mode that controls accessibility vs tap gesture behavior on Windows.</summary>
+		/// <param name="element">The element to query.</param>
+		/// <returns>The current selection mode.</returns>
 		[Obsolete("With the deprecation of ListView, this property is obsolete. Please use CollectionView instead.")]
 		public static ListViewSelectionMode GetSelectionMode(BindableObject element)
 		{
 			return (ListViewSelectionMode)element.GetValue(SelectionModeProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/ListView.xml" path="//Member[@MemberName='SetSelectionMode'][1]/Docs/*" />
+		/// <summary>Sets the selection mode that controls accessibility vs tap gesture behavior on Windows.</summary>
+		/// <param name="element">The element to configure.</param>
+		/// <param name="value">The selection mode to set.</param>
 		[Obsolete("With the deprecation of ListView, this property is obsolete. Please use CollectionView instead.")]
 		public static void SetSelectionMode(BindableObject element, ListViewSelectionMode value)
 		{
 			element.SetValue(SelectionModeProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/ListView.xml" path="//Member[@MemberName='GetSelectionMode'][2]/Docs/*" />
+		/// <summary>Gets the selection mode that controls accessibility vs tap gesture behavior on Windows.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <returns>The current selection mode.</returns>
 #pragma warning disable CS0618 // Type or member is obsolete
 		[Obsolete("With the deprecation of ListView, this property is obsolete. Please use CollectionView instead.")]
 		public static ListViewSelectionMode GetSelectionMode(this IPlatformElementConfiguration<Windows, FormsElement> config)
@@ -40,7 +46,10 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 			return (ListViewSelectionMode)config.Element.GetValue(SelectionModeProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/ListView.xml" path="//Member[@MemberName='SetSelectionMode'][2]/Docs/*" />
+		/// <summary>Sets the selection mode that controls accessibility vs tap gesture behavior on Windows.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <param name="value">The selection mode to set.</param>
+		/// <returns>The updated platform configuration.</returns>
 #pragma warning disable CS0618 // Type or member is obsolete
 		[Obsolete("With the deprecation of ListView, this property is obsolete. Please use CollectionView instead.")]
 		public static IPlatformElementConfiguration<Windows, FormsElement> SetSelectionMode(

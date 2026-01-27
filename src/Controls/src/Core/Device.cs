@@ -96,22 +96,32 @@ namespace Microsoft.Maui.Controls
 		public static void BeginInvokeOnMainThread(Action action) =>
 			Application.Current.FindDispatcher().Dispatch(action);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='InvokeOnMainThreadAsync&lt;T&gt;'][2]/Docs/*" />
+		/// <summary>Invokes an async function on the main thread and returns the result.</summary>
+		/// <typeparam name="T">The return type of the function.</typeparam>
+		/// <param name="func">The function to invoke.</param>
+		/// <returns>A task containing the result of the function.</returns>
 		[Obsolete("Use BindableObject.Dispatcher.DispatchAsync() instead.")]
 		public static Task<T> InvokeOnMainThreadAsync<T>(Func<T> func) =>
 			Application.Current.FindDispatcher().DispatchAsync(func);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='InvokeOnMainThreadAsync'][1]/Docs/*" />
+		/// <summary>Invokes an action on the main thread asynchronously.</summary>
+		/// <param name="action">The action to invoke.</param>
+		/// <returns>A task representing the async operation.</returns>
 		[Obsolete("Use BindableObject.Dispatcher.DispatchAsync() instead.")]
 		public static Task InvokeOnMainThreadAsync(Action action) =>
 			Application.Current.FindDispatcher().DispatchAsync(action);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='InvokeOnMainThreadAsync&lt;T&gt;'][1]/Docs/*" />
+		/// <summary>Invokes an async task-returning function on the main thread and returns the result.</summary>
+		/// <typeparam name="T">The return type of the task.</typeparam>
+		/// <param name="funcTask">The async function to invoke.</param>
+		/// <returns>A task containing the result of the async function.</returns>
 		[Obsolete("Use BindableObject.Dispatcher.DispatchAsync() instead.")]
 		public static Task<T> InvokeOnMainThreadAsync<T>(Func<Task<T>> funcTask) =>
 			Application.Current.FindDispatcher().DispatchAsync(funcTask);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='InvokeOnMainThreadAsync'][2]/Docs/*" />
+		/// <summary>Invokes an async task-returning function on the main thread.</summary>
+		/// <param name="funcTask">The async function to invoke.</param>
+		/// <returns>A task representing the async operation.</returns>
 		[Obsolete("Use BindableObject.Dispatcher.DispatchAsync() instead.")]
 		public static Task InvokeOnMainThreadAsync(Func<Task> funcTask) =>
 			Application.Current.FindDispatcher().DispatchAsync(funcTask);
@@ -122,14 +132,20 @@ namespace Microsoft.Maui.Controls
 		public static Task<SynchronizationContext> GetMainThreadSynchronizationContextAsync() =>
 			Application.Current.FindDispatcher().GetSynchronizationContextAsync();
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='GetNamedSize'][2]/Docs/*" />
+		/// <summary>Returns the named font size for the specified element type.</summary>
+		/// <param name="size">The named size to retrieve.</param>
+		/// <param name="targetElement">The element to get the named size for.</param>
+		/// <returns>The font size value.</returns>
 		[Obsolete]
 		public static double GetNamedSize(NamedSize size, Element targetElement)
 		{
 			return GetNamedSize(size, targetElement.GetType());
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='GetNamedSize'][1]/Docs/*" />
+		/// <summary>Returns the named font size for the specified element type.</summary>
+		/// <param name="size">The named size to retrieve.</param>
+		/// <param name="targetElementType">The element type to get the named size for.</param>
+		/// <returns>The font size value.</returns>
 		[Obsolete]
 		public static double GetNamedSize(NamedSize size, Type targetElementType)
 		{
@@ -151,7 +167,11 @@ namespace Microsoft.Maui.Controls
 			dispatcher.StartTimer(interval, callback);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='GetNamedSize'][3]/Docs/*" />
+		/// <summary>Returns the named font size for the specified element type.</summary>
+		/// <param name="size">The named size to retrieve.</param>
+		/// <param name="targetElementType">The element type to get the named size for.</param>
+		/// <param name="useOldSizes">Whether to use legacy font sizes.</param>
+		/// <returns>The font size value.</returns>
 		[Obsolete]
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes) =>

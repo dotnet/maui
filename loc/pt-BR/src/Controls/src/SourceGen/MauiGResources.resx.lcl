@@ -230,7 +230,7 @@
         <Str Cat="Text">
           <Val><![CDATA[An error occured while parsing Xaml: {0}.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Erro ao analisar Xaml: {0}.]]></Val>
+            <Val><![CDATA[Erro ao analisar o XAML: {0}.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

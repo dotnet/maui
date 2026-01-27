@@ -7,19 +7,15 @@ namespace Microsoft.Maui.TestCases.Tests;
 
 [Category(UITestCategories.ScrollView)]
 
-public class ScrollView_DynamicGridWithChildrenFeatureTests : UITest
+public class ScrollView_DynamicGridWithChildrenFeatureTests : _GalleryUITest
 {
 
 	public const string ScrollViewDynamicGridWithChildrenFeatureTests = "ScrollView With LayoutOptions Feature Matrix";
+	public override string GalleryPageName => ScrollViewDynamicGridWithChildrenFeatureTests;
+
 	public ScrollView_DynamicGridWithChildrenFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(ScrollViewDynamicGridWithChildrenFeatureTests);
 	}
 
 	[Test, Order(1)]

@@ -5,13 +5,13 @@
 
 .DESCRIPTION
     This script automates the complete workflow for testing MAUI issues:
-    1. Builds the Sandbox app for the target platform (Android or iOS)
+    1. Builds the Sandbox app for the target platform (Android, iOS, MacCatalyst, or Windows)
     2. Starts Appium server if not already running
     3. Deploys and launches the app using Appium
     4. Runs the Appium test script to validate the issue
 
 .PARAMETER Platform
-    Target platform: "android" or "ios"
+    Target platform: "android", "ios", "catalyst", or "windows"
 
 .PARAMETER Configuration
     Build configuration: "Debug" or "Release" (default: Debug)
@@ -23,13 +23,19 @@
     ./BuildAndRunSandbox.ps1 -Platform android
     
 .EXAMPLE
+    ./BuildAndRunSandbox.ps1 -Platform catalyst
+
+.EXAMPLE
     ./BuildAndRunSandbox.ps1 -Platform android -DeviceUdid emulator-5554
+
+.EXAMPLE
+    ./BuildAndRunSandbox.ps1 -Platform windows
 #>
 
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet("android", "ios")]
+    [ValidateSet("android", "ios", "catalyst", "windows")]
     [string]$Platform,
 
     [ValidateSet("Debug", "Release")]
@@ -150,22 +156,37 @@ if ($Platform -eq "android") {
 } elseif ($Platform -eq "ios") {
     $TargetFramework = "net10.0-ios"
     $AppBundleId = "com.microsoft.maui.sandbox"
+} elseif ($Platform -eq "catalyst") {
+    $TargetFramework = "net10.0-maccatalyst"
+    $AppBundleId = "com.microsoft.maui.sandbox"
+} elseif ($Platform -eq "windows") {
+    $TargetFramework = "net10.0-windows10.0.19041.0"
+    $AppPackage = "com.microsoft.maui.sandbox"
 }
 
-# Use shared Start-Emulator script to detect and start device
-$startEmulatorParams = @{
-    Platform = $Platform
-}
+# For catalyst and windows, skip emulator detection - runs on host
+if ($Platform -eq "catalyst") {
+    $DeviceUdid = "host"
+    Write-Info "MacCatalyst runs on the host Mac - no device/emulator needed"
+} elseif ($Platform -eq "windows") {
+    $DeviceUdid = "host"
+    Write-Info "Windows runs on the host Windows - no device/emulator needed"
+} else {
+    # Use shared Start-Emulator script to detect and start device
+    $startEmulatorParams = @{
+        Platform = $Platform
+    }
 
-if ($DeviceUdid) {
-    $startEmulatorParams.DeviceUdid = $DeviceUdid
-}
+    if ($DeviceUdid) {
+        $startEmulatorParams.DeviceUdid = $DeviceUdid
+    }
 
-$DeviceUdid = & "$PSScriptRoot/shared/Start-Emulator.ps1" @startEmulatorParams
+    $DeviceUdid = & "$PSScriptRoot/shared/Start-Emulator.ps1" @startEmulatorParams
 
-if ($LASTEXITCODE -ne 0) {
-    Write-Error "Failed to start or detect device"
-    exit 1
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "Failed to start or detect device"
+        exit 1
+    }
 }
 
 #endregion
@@ -181,7 +202,7 @@ $buildDeployParams = @{
     DeviceUdid = $DeviceUdid
 }
 
-if ($Platform -eq "ios") {
+if ($Platform -eq "ios" -or $Platform -eq "catalyst") {
     $buildDeployParams.BundleId = $AppBundleId
 }
 
@@ -190,6 +211,55 @@ if ($Platform -eq "ios") {
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Build or deployment failed"
     exit 1
+}
+
+# For MacCatalyst, launch the app BEFORE Appium test (similar to BuildAndRunHostApp.ps1)
+# We use dotnet run with StandardOutputPath/StandardErrorPath to capture Console.WriteLine
+# See: https://github.com/dotnet/macios/blob/main/docs/building-apps/build-properties.md#runwithopen
+$catalystAppProcess = $null
+if ($Platform -eq "catalyst") {
+    # Determine runtime identifier
+    $arch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLower()
+    $rid = if ($arch -eq "arm64") { "maccatalyst-arm64" } else { "maccatalyst-x64" }
+    
+    # Build app path
+    $appPath = Join-Path $RepoRoot "artifacts/bin/Maui.Controls.Sample.Sandbox/$Configuration/$TargetFramework/$rid/Sandbox.app"
+    
+    if (Test-Path $appPath) {
+        Write-Info "Launching MacCatalyst Sandbox app with dotnet run..."
+        Write-Info "App path: $appPath"
+        
+        # Make executable
+        $executablePath = Join-Path $appPath "Contents/MacOS/Maui.Controls.Sample.Sandbox"
+        if (Test-Path $executablePath) {
+            & chmod +x $executablePath
+        }
+        
+        # Use dotnet run with StandardOutputPath/StandardErrorPath
+        # This launches the app via 'open' but captures stdout/stderr to files
+        # Console.WriteLine on MacCatalyst goes to stderr
+        $deviceLogFile = Join-Path $SandboxAppiumDir "catalyst-device.log"
+        $stderrFile = "$deviceLogFile.stderr"
+        $sandboxProject = Join-Path $RepoRoot "src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj"
+        
+        Write-Info "Starting app with dotnet run (logs to $stderrFile)..."
+        & dotnet run --project $sandboxProject -f $TargetFramework --no-build `
+            -p:StandardOutputPath=$deviceLogFile `
+            -p:StandardErrorPath=$stderrFile 2>&1 | Out-Null
+        
+        # dotnet run exits immediately when using 'open', give app time to launch
+        Start-Sleep -Seconds 3
+        
+        # Get app process ID for later cleanup
+        $catalystAppProcess = Get-Process -Name "Maui.Controls.Sample.Sandbox" -ErrorAction SilentlyContinue | Select-Object -First 1
+        if ($catalystAppProcess) {
+            Write-Success "MacCatalyst Sandbox app launched (PID: $($catalystAppProcess.Id))"
+        } else {
+            Write-Success "MacCatalyst Sandbox app launched with log capture"
+        }
+    } else {
+        Write-Warning "MacCatalyst Sandbox app not found at: $appPath"
+    }
 }
 
 #endregion
@@ -259,17 +329,24 @@ Write-Step "Running Appium test..."
 # Define device log file path based on platform
 $deviceLogFile = Join-Path $SandboxAppiumDir "$Platform-device.log"
 
-# Clear logs before test
+# Clear logs before test (skip for catalyst and windows - already capturing stdout/stderr)
 if ($Platform -eq "android") {
     Write-Info "Clearing Android logcat buffer before test..."
     & adb -s $DeviceUdid logcat -c
 } elseif ($Platform -eq "ios") {
     Write-Info "iOS logs will be captured from Appium during test execution..."
+} elseif ($Platform -eq "catalyst") {
+    Write-Info "MacCatalyst logs are being captured via stdout/stderr redirect..."
+} elseif ($Platform -eq "windows") {
+    Write-Info "Windows logs will be captured from test output..."
 }
 
 Push-Location $SandboxAppiumDir
 
 try {
+    # Set DEVICE_UDID environment variable for the test script
+    $env:DEVICE_UDID = $DeviceUdid
+    
     Write-Info "Executing: dotnet run RunWithAppiumTest.cs"
     Write-Info "Test will connect to device: $DeviceUdid"
     Write-Host ""
@@ -324,14 +401,47 @@ try {
         Write-Info "iOS logs saved to: $deviceLogFile"
     }
     
+    # Capture MacCatalyst logs after test completes
+    if ($Platform -eq "catalyst") {
+        Write-Host ""
+        Write-Info "Processing MacCatalyst logs..."
+        
+        # On macOS, Console.WriteLine goes to stderr, not stdout
+        $stderrFile = "$deviceLogFile.stderr"
+        if ((Test-Path $stderrFile) -and ((Get-Item $stderrFile).Length -gt 0)) {
+            Write-Info "Console.WriteLine output found in stderr..."
+            # Copy stderr content to main log file (stderr is where Console.WriteLine goes on macOS)
+            Get-Content $stderrFile | Set-Content -Path $deviceLogFile -Encoding UTF8
+        }
+        
+        # If log file is still empty or small, try log show as fallback
+        $logFileSize = 0
+        if (Test-Path $deviceLogFile) {
+            $logFileSize = (Get-Item $deviceLogFile).Length
+        }
+        
+        if ($logFileSize -lt 100) {
+            Write-Info "Console output was minimal, using os_log fallback..."
+            $logStartTime = (Get-Date).AddMinutes(-2).ToString("yyyy-MM-dd HH:mm:ss")
+            $catalystLogCommand = "log show --level debug --predicate 'process contains `"Maui.Controls.Sample.Sandbox`" OR processImagePath contains `"Maui.Controls.Sample.Sandbox`"' --start `"$logStartTime`" --style compact"
+            Invoke-Expression "$catalystLogCommand > `"$deviceLogFile`" 2>&1"
+        }
+        
+        Write-Info "MacCatalyst logs saved to: $deviceLogFile"
+    }
+    
     # Show device logs
     if (Test-Path $deviceLogFile) {
         Write-Host ""
         Write-Host "═══════════════════════════════════════════════════════" -ForegroundColor Cyan
         if ($Platform -eq "android") {
             Write-Host "  Android Logcat Output (Filtered to Sandbox App)" -ForegroundColor Cyan
-        } else {
+        } elseif ($Platform -eq "ios") {
             Write-Host "  iOS Simulator Logs (Filtered to Sandbox App)" -ForegroundColor Cyan
+        } elseif ($Platform -eq "catalyst") {
+            Write-Host "  MacCatalyst App Logs (Console.WriteLine output)" -ForegroundColor Cyan
+        } elseif ($Platform -eq "windows") {
+            Write-Host "  Windows App Logs (Console.WriteLine output)" -ForegroundColor Cyan
         }
         Write-Host "═══════════════════════════════════════════════════════" -ForegroundColor Cyan
         
@@ -351,6 +461,10 @@ try {
             Write-Info "Full device log saved to: $deviceLogFile"
             if ($Platform -eq "android") {
                 Write-Info "All logs are from Sandbox app only (com.microsoft.maui.sandbox)"
+            } elseif ($Platform -eq "catalyst") {
+                Write-Info "All logs are from Sandbox app only (Console.WriteLine output)"
+            } elseif ($Platform -eq "windows") {
+                Write-Info "All logs are from Sandbox app only (Console.WriteLine output)"
             } else {
                 Write-Info "All logs are from Sandbox app only (Maui.Controls.Sample.Sandbox)"
             }
@@ -403,6 +517,15 @@ try {
         Remove-Job $logcatJob
     }
     
+    # Stop MacCatalyst app if we started it
+    if ($catalystAppProcess) {
+        $runningApp = Get-Process -Id $catalystAppProcess.Id -ErrorAction SilentlyContinue
+        if ($runningApp -and -not $runningApp.HasExited) {
+            Write-Info "Stopping MacCatalyst Sandbox app (we started it)..."
+            Stop-Process -Id $catalystAppProcess.Id -Force -ErrorAction SilentlyContinue
+        }
+    }
+    
     # Stop Appium if we started it
     if ($appiumJob -and -not $appiumWasRunning) {
         Write-Info "Stopping Appium server (we started it)..."
@@ -420,6 +543,17 @@ Pop-Location
 #endregion
 
 #region Cleanup
+
+# Stop MacCatalyst app if we started it
+if ($catalystAppProcess) {
+    $runningApp = Get-Process -Id $catalystAppProcess.Id -ErrorAction SilentlyContinue
+    if ($runningApp -and -not $runningApp.HasExited) {
+        Write-Host ""
+        Write-Info "Stopping MacCatalyst Sandbox app (PID: $($catalystAppProcess.Id))..."
+        Stop-Process -Id $catalystAppProcess.Id -Force -ErrorAction SilentlyContinue
+        Write-Success "MacCatalyst Sandbox app stopped"
+    }
+}
 
 # Stop Appium if we started it
 if ($appiumJob -and -not $appiumWasRunning) {

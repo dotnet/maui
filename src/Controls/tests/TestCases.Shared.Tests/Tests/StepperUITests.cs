@@ -10,6 +10,8 @@ namespace Microsoft.Maui.TestCases.Tests
 	{
 		public const string StepperGallery = "Stepper Gallery";
 
+		public override string GalleryPageName => StepperGallery;
+		
 		public StepperUITests(TestDevice device)
 			: base(device)
 		{
@@ -21,7 +23,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test]
-		[Category(UITestCategories.Stepper)]
 		[Description("Increase the Stepper value")]
 		public void IncreaseStepper()
 		{
@@ -44,7 +45,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test]
-		[Category(UITestCategories.Stepper)]
 		[Description("Decrease the Stepper value")]
 		public void DecreaseStepper()
 		{

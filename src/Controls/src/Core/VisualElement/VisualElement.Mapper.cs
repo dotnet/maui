@@ -5,7 +5,9 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="Type[@FullName='Microsoft.Maui.Controls.VisualElement']/Docs/*" />
+	/// <summary>
+	/// Provides the base class for all visual elements in .NET MAUI.
+	/// </summary>
 	public partial class VisualElement
 	{
 		static VisualElement() => RemapIfNeeded();

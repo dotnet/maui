@@ -156,7 +156,7 @@ stages:
                   - template: ui-tests-collect-snapshot-diffs.yml
                     parameters:
                       platform: 'Android'
-                      artifactName: 'uitest-snapshot-results-android-$(System.JobName)-$(System.JobAttempt)'
+                      artifactName: 'uitest-snapshot-results-android-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
 
   - stage: android_ui_tests_coreclr
@@ -203,7 +203,7 @@ stages:
                   - template: ui-tests-collect-snapshot-diffs.yml
                     parameters:
                       platform: 'Android'
-                      artifactName: 'uitest-snapshot-results-android-$(System.JobName)-$(System.JobAttempt)'
+                      artifactName: 'uitest-snapshot-results-android-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
   - stage: ios_ui_tests_mono
     displayName: iOS UITests Mono
@@ -251,17 +251,17 @@ stages:
                   - template: ui-tests-collect-snapshot-diffs.yml
                     parameters:
                       platform: 'iOS'
-                      artifactName: 'uitest-snapshot-results-ios-$(System.JobName)-$(System.JobAttempt)'
+                      artifactName: 'uitest-snapshot-results-ios-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
-  - stage: ios_ui_tests_mono_cv2
-    displayName: iOS UITests Mono CollectionView2
+  - stage: ios_ui_tests_mono_cv1
+    displayName: iOS UITests Mono CollectionView1
     dependsOn: build_ui_tests
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.ios, '') }}:
           - ${{ each version in parameters.iosVersions }}:
             - ${{ if not(containsValue(project.iosVersionsExclude, version)) }}:
-              - job: CV2_ios_ui_tests_mono_${{ project.name }}_${{ replace(version, '.', '_') }}
+              - job: CV1_ios_ui_tests_mono_${{ project.name }}_${{ replace(version, '.', '_') }}
                 timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
@@ -288,24 +288,24 @@ stages:
                       runtimeVariant : "Mono"
                       testFilter: "CollectionView"
                       headless: ${{ parameters.headless }}
-                      testConfigurationArgs: "CollectionView2"
+                      testConfigurationArgs: "CollectionView1"
                       skipProvisioning: ${{ parameters.skipProvisioning }}
                   
-                  # Collect and publish iOS CV2 snapshot diffs
+                  # Collect and publish iOS CV1 snapshot diffs
                   - template: ui-tests-collect-snapshot-diffs.yml
                     parameters:
-                      platform: 'iOS CV2'
-                      artifactName: 'uitest-snapshot-results-ios-cv2-$(System.JobName)-$(System.JobAttempt)'
+                      platform: 'iOS CV1'
+                      artifactName: 'uitest-snapshot-results-ios-cv2-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
-  - stage: ios_ui_tests_mono_carv2
-    displayName: iOS UITests Mono CarouselView2
+  - stage: ios_ui_tests_mono_carv1
+    displayName: iOS UITests Mono CarouselView1
     dependsOn: build_ui_tests
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.ios, '') }}:
           - ${{ each version in parameters.iosVersions }}:
             - ${{ if not(containsValue(project.iosVersionsExclude, version)) }}:
-              - job: CARV2_ios_ui_tests_mono_${{ project.name }}_${{ replace(version, '.', '_') }}
+              - job: CARV1_ios_ui_tests_mono_${{ project.name }}_${{ replace(version, '.', '_') }}
                 timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
@@ -331,14 +331,14 @@ stages:
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       runtimeVariant : "Mono"
                       testFilter: "CarouselView"
-                      testConfigurationArgs: "CollectionView2"
+                      testConfigurationArgs: "CollectionView1"
                       skipProvisioning: ${{ parameters.skipProvisioning }}
                   
                   # Collect and publish iOS CARV2 snapshot diffs
                   - template: ui-tests-collect-snapshot-diffs.yml
                     parameters:
                       platform: 'iOS CARV2'
-                      artifactName: 'uitest-snapshot-results-ios-carv2-$(System.JobName)-$(System.JobAttempt)'
+                      artifactName: 'uitest-snapshot-results-ios-carv2-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
   # NativeAOT iOS UI tests stage - only run when both BuildNativeAOT and RunNativeAOT parameters are true
   - ${{ if and(eq(parameters.BuildNativeAOT, true), eq(parameters.RunNativeAOT, true)) }}:
@@ -419,7 +419,7 @@ stages:
                   - template: ui-tests-collect-snapshot-diffs.yml
                     parameters:
                       platform: 'Windows'
-                      artifactName: 'uitest-snapshot-results-windows-$(System.JobName)-$(System.JobAttempt)'
+                      artifactName: 'uitest-snapshot-results-windows-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
   - stage: mac_ui_tests
     displayName: macOS UITests
@@ -457,4 +457,4 @@ stages:
                   - template: ui-tests-collect-snapshot-diffs.yml
                     parameters:
                       platform: 'Mac'
-                      artifactName: 'uitest-snapshot-results-mac-$(System.JobName)-$(System.JobAttempt)'
+                      artifactName: 'uitest-snapshot-results-mac-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'

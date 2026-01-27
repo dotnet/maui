@@ -71,6 +71,10 @@ static class SetPropertyHelpers
 			return;
 		}
 
+		// If the node was removed from Variables (e.g., Setter with no value due to OnPlatform), skip silently
+		if (valueNode is ElementNode en && !context.Variables.ContainsKey(en))
+			return;
+
 		var location = LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)valueNode, localName);
 		context.ReportDiagnostic(Diagnostic.Create(Descriptors.MemberResolution, location, localName));
 	}
@@ -106,6 +110,10 @@ static class SetPropertyHelpers
 		var nodeType = getNodeValue(node, context.Compilation.ObjectType).Type;
 		if (collectionType.GetAllMethods("Add", context).FirstOrDefault(m => m.Parameters.Length == 1 && m.Parameters[0].Type.Equals(nodeType, SymbolEqualityComparer.Default)) != null)
 			return true;
+
+		// No x:Key and no typed Add() overload - report error
+		var missingKeyLocation = LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)node, "");
+		context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, missingKeyLocation, "Resources in ResourceDictionary require a x:Key attribute"));
 		return false;
 	}
 

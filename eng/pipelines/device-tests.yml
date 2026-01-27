@@ -111,12 +111,15 @@ stages:
   # Run on dnceng-public (Helix)
   - ${{ if eq(variables['Build.DefinitionName'], 'maui-pr-devicetests') }}:
 
-    # Use Helix for iOS / Android and MacCatalyst Device Tests
+    # Use Helix for iOS / Android / MacCatalyst / Windows Device Tests
     - template: /eng/pipelines/arcade/stage-device-tests.yml@self
       parameters:
         buildPool: ${{ parameters.macOSHelixPool }}
         testPool: ${{ parameters.macOSPool }}
+        windowsBuildPool: ${{ parameters.windowsPool }}
+        windowsTestPool: ${{ parameters.windowsPool }}
         runAsPublic: true
+        runWindowsTests: true
         TargetFrameworkVersion: ${{ targetFrameworkVersion.tfm }}
         prepareSteps:
         - template: /eng/pipelines/common/provision.yml@self
@@ -132,42 +135,6 @@ stages:
             skipXcode: false
             skipSimulatorSetup: false
 
-    # Just use the old way for Windows Device Tests
-    - template: common/device-tests.yml
-      parameters:
-        windowsPool: ${{ parameters.windowsPool }}
-        targetFrameworkVersion: ${{ targetFrameworkVersion }}
-        windowsVersions: [ 'packaged', 'unpackaged' ]
-        skipProvisioning: true
-        projects:
-        - name: essentials
-          desc: Essentials
-          windowsConfiguration: 'Debug'
-          windowsPackageId: 'com.microsoft.maui.essentials.devicetests'
-          windows: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
-        - name: graphics
-          desc: Graphics
-          windowsConfiguration: 'Debug'
-          windowsPackageId: 'com.microsoft.maui.graphics.devicetests'
-          windows: $(System.DefaultWorkingDirectory)/src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj
-        - name: core
-          desc: Core
-          windowsConfiguration: 'Debug'
-          windowsPackageId: 'com.microsoft.maui.core.devicetests'
-          windows: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj
-        - name: controls
-          desc: Controls
-          windowsConfiguration: 'Debug'
-          windowsPackageId: 'com.microsoft.maui.controls.devicetests'
-          windows: $(System.DefaultWorkingDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj
-        - name: blazorwebview
-          desc: BlazorWebView
-          windowsConfiguration: 'Debug'
-          windowsPackageId: 'Microsoft.Maui.MauiBlazorWebView.DeviceTests'
-          windows: $(System.DefaultWorkingDirectory)/src/BlazorWebView/tests/DeviceTests/MauiBlazorWebView.DeviceTests.csproj
-        platforms:
-        - windows
-
   # Run on xamarin public instance
   - ${{ else }}:
 
@@ -180,13 +147,13 @@ stages:
         targetFrameworkVersion: ${{ targetFrameworkVersion }}
         ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
           androidApiLevels: [ 36, 35, 33, 30, 29, 27, 26, 25, 24, 23 ]
-          iosVersions: [ 'simulator-18.4' ]
+          iosVersions: [ 'simulator-18.4', 'simulator-26.0' ]
           catalystVersions: [ 'latest' ]
           windowsVersions: [ 'packaged', 'unpackaged' ]
           skipProvisioning: ${{ or(not(parameters.UseProvisionator), false) }}
         ${{ else }}:
           androidApiLevels: [ 33, 23 ]
-          iosVersions: [ 'simulator-18.4' ]
+          iosVersions: [ 'simulator-18.4', 'simulator-26.0' ]
           catalystVersions: [ 'latest' ]
           windowsVersions: [ 'packaged', 'unpackaged' ]
           skipProvisioning: ${{ not(parameters.UseProvisionator) }}

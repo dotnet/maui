@@ -4,19 +4,14 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-public class RefreshViewFeatureTests : UITest
+public class RefreshViewFeatureTests : _GalleryUITest
 {
 	public const string RefreshViewFeatureMatrix = "RefreshView Feature Matrix";
+	public override string GalleryPageName => RefreshViewFeatureMatrix;
 
 	public RefreshViewFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(RefreshViewFeatureMatrix);
 	}
 
 	[Test, Order(1)]

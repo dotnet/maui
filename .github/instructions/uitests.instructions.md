@@ -167,46 +167,35 @@ grep -E "public const string [A-Za-z]+ = " src/Controls/tests/TestCases.Shared.T
 
 ### Default Behavior
 
-**DO NOT** use platform-specific conditional compilation directives (`#if ANDROID`, `#if IOS`, `#if WINDOWS`, `#if MACCATALYST`, etc.) unless there is a specific reason.
+Tests should run on all applicable platforms by default. The test infrastructure handles platform detection automatically.
 
-Tests in the `TestCases.Shared.Tests` project should run on all applicable platforms by default. The test infrastructure automatically handles platform detection.
+### No Inline #if Directives in Test Methods
 
-### When Platform Directives Are Acceptable
+**Do NOT use `#if ANDROID`, `#if IOS`, etc. directly in test methods.** Platform-specific behavior must be hidden behind extension methods for readability.
 
-Only use platform-specific directives when:
+**Note:** This rule is about **code cleanliness**, not platform scope. Using `#if ANDROID ... #else ...` still compiles for all platforms - the issue is that inline directives make test logic hard to read and maintain.
 
-1. **Platform-specific API is being tested** - The test validates behavior that only exists on one platform
-2. **Known platform limitation** - There is a documented bug or limitation that prevents the test from running on a specific platform
-3. **Different expected behavior** - The platforms are expected to behave differently for valid reasons
-
-### Examples
-
-**✅ Correct - Runs on all platforms:**
 ```csharp
+// ❌ BAD - inline #if in test method (hard to read)
 [Test]
-[Category(UITestCategories.SafeAreaEdges)]
-public void SoftInputBehaviorTest()
+public void MyTest()
 {
-    // This test runs on all applicable platforms
-    App.WaitForElement("ContentGrid");
-    // Test code...
-}
-```
-
-**❌ Incorrect - Unnecessarily limits to one platform:**
-```csharp
 #if ANDROID
-[Test]
-[Category(UITestCategories.SafeAreaEdges)]
-public void SoftInputBehaviorTest()
-{
-    // This unnecessarily limits the test to Android only
-    // Unless there's a specific reason, tests should run on all platforms
-    App.WaitForElement("ContentGrid");
-    // Test code...
-}
+    App.TapCoordinates(100, 200);
+#else
+    App.Tap("MyElement");
 #endif
+}
+
+// ✅ GOOD - platform logic in extension method (clean test)
+[Test]
+public void MyTest()
+{
+    App.TapElementCrossPlatform("MyElement");
+}
 ```
+
+Move platform-specific logic to extension methods to keep test code clean and readable.
 
 ## Running UI Tests Locally
 
@@ -330,9 +319,8 @@ Verify the following checklist before committing UI tests:
 - [ ] Ensure file names follow the `IssueXXXXX` pattern and match between projects
 - [ ] Ensure test methods have descriptive names
 - [ ] Verify test inherits from `_IssuesUITest`
-- [ ] Confirm only ONE `[Category]` attribute is used per test
-- [ ] Verify tests run on all applicable platforms (iOS, Android, Windows, MacCatalyst) unless platform-specific
-- [ ] Document any platform-specific limitations with clear comments
+- [ ] Confirm only ONE `[Category]` attribute per test
+- [ ] No inline `#if` directives in test code (use extension methods)
 - [ ] Test passes locally on at least one platform
 
 ### Test State Management

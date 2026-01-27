@@ -23,7 +23,9 @@ namespace Microsoft.Maui
 				savedInstanceState,
 				AllowFragmentRestore,
 				Resource.Attribute.maui_splash,
-				Resource.Style.Maui_MainTheme_NoActionBar);
+				RuntimeFeature.IsMaterial3Enabled
+				? Resource.Style.Maui_Material3_Theme_NoActionBar
+				: Resource.Style.Maui_MainTheme_NoActionBar);
 
 			base.OnCreate(savedInstanceState);
 			WindowCompat.SetDecorFitsSystemWindows(Window, false);

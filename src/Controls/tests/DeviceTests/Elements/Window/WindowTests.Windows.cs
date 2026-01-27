@@ -69,11 +69,9 @@ namespace Microsoft.Maui.DeviceTests
 					window.Close();
 				}
 
-				GC.Collect();
-				GC.WaitForPendingFinalizers();
-				GC.WaitForFullGCComplete();
-
-				Assert.True(weakReferences.Count(r => r.IsAlive) == 0);
+				// Use the standard WaitForGC pattern which tries up to 40 GC cycles with Task.Yield
+				// This is the same approach used by all other memory leak tests in the repo
+				await AssertionExtensions.WaitForGC(weakReferences.ToArray());
 			});
 		}
 
@@ -279,41 +277,8 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
-		[Category(TestCategory.Lifecycle)]
-		public class WindowTestsRunInNewWindowCollection : ControlsHandlerTestBase
-		{
-			[Fact]
-			public async Task MinimizeAndThenMaximizingWorks()
-			{
-				var window = new Window(new ContentPage());
-
-				int activated = 0;
-				int deactivated = 0;
-				int resumed = 0;
-
-				window.Activated += (_, _) => activated++;
-				window.Deactivated += (_, _) => deactivated++;
-				window.Resumed += (_, _) => resumed++;
-
-				await CreateHandlerAndAddToWindow<IWindowHandler>(window, async (handler) =>
-				{
-					var platformWindow = window.Handler.PlatformView as UI.Xaml.Window;
-
-					await Task.Yield();
-
-					for (int i = 0; i < 2; i++)
-					{
-						platformWindow.Restore();
-						await Task.Yield();
-						platformWindow.Minimize();
-					}
-				});
-
-				Assert.Equal(2, activated);
-				Assert.Equal(1, resumed);
-				Assert.Equal(2, deactivated);
-			}
-		}
+		// MinimizeAndThenMaximizingWorks test moved to UI tests (Issue14142) because 
+		// window activation events don't fire reliably on Helix VMs which run in 
+		// non-interactive Windows sessions.
 	}
 }

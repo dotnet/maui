@@ -1,15 +1,15 @@
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/Stretch.xml" path="Type[@FullName='Microsoft.Maui.Controls.Stretch']/Docs/*" />
+	/// <summary>Specifies how content is scaled to fill its allocated space.</summary>
 	public enum Stretch
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/Stretch.xml" path="//Member[@MemberName='None']/Docs/*" />
+		/// <summary>Content preserves its original size.</summary>
 		None,
-		/// <include file="../../docs/Microsoft.Maui.Controls/Stretch.xml" path="//Member[@MemberName='Fill']/Docs/*" />
+		/// <summary>Content is resized to fill the destination, aspect ratio is not preserved.</summary>
 		Fill,
-		/// <include file="../../docs/Microsoft.Maui.Controls/Stretch.xml" path="//Member[@MemberName='Uniform']/Docs/*" />
+		/// <summary>Content is resized to fit the destination while preserving aspect ratio.</summary>
 		Uniform,
-		/// <include file="../../docs/Microsoft.Maui.Controls/Stretch.xml" path="//Member[@MemberName='UniformToFill']/Docs/*" />
+		/// <summary>Content is resized to fill the destination while preserving aspect ratio, clipping if necessary.</summary>
 		UniformToFill
 	}
 }

@@ -22,6 +22,12 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "ForegroundColor sets icon and title color sets title")]
 		public async Task ForegroundColorSetsIconAndTitleColorSetsTitle()
 		{
+#if IOS || MACCATALYST
+			// Skip on iOS 26+ due to UITabBar internal API changes
+			// See: https://github.com/dotnet/maui/issues/33004
+			if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+				return;
+#endif
 			SetupBuilder();
 
 			var titleColor = Color.FromArgb("#FFFF0000");
@@ -47,6 +53,12 @@ namespace Microsoft.Maui.DeviceTests
 
 		public async Task ShellTabBarTitleColorInitializesCorrectly(string colorHex)
 		{
+#if IOS || MACCATALYST
+			// Skip on iOS 26+ due to UITabBar internal API changes
+			// See: https://github.com/dotnet/maui/issues/33004
+			if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+				return;
+#endif
 			SetupBuilder();
 
 			var expectedColor = Color.FromArgb(colorHex);
@@ -65,6 +77,12 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData("#FF00FF00")]
 		public async Task ShellTabBarForegroundInitializesCorrectly(string colorHex)
 		{
+#if IOS || MACCATALYST
+			// Skip on iOS 26+ due to UITabBar internal API changes
+			// See: https://github.com/dotnet/maui/issues/33004
+			if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+				return;
+#endif
 			var expectedColor = Color.FromArgb(colorHex);
 			await RunShellTabBarTests(shell => Shell.SetTabBarForegroundColor(shell, expectedColor),
 				async (shell) =>
@@ -81,6 +99,12 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData("#00FF00")]
 		public async Task ShellTabBarUnselectedColorInitializesCorrectly(string colorHex)
 		{
+#if IOS || MACCATALYST
+			// Skip on iOS 26+ due to UITabBar internal API changes
+			// See: https://github.com/dotnet/maui/issues/33004
+			if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+				return;
+#endif
 			var expectedColor = Color.FromArgb(colorHex);
 			await RunShellTabBarTests(shell => Shell.SetTabBarUnselectedColor(shell, expectedColor),
 				async (shell) =>

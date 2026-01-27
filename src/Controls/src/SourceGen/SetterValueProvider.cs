@@ -12,9 +12,14 @@ internal class SetterValueProvider : IKnownMarkupValueProvider
 	{
 		// Can only inline if all properties are simple ValueNodes (no markup extensions)
 		// We need to check both the properties and any collection items
-		
+
 		// Get the value node (shared logic with TryProvideValue)
 		var valueNode = GetValueNode(node);
+
+		// Must have a value node to provide a value
+		// This can be null when OnPlatform removes the Value property (no matching platform, no Default)
+		if (valueNode == null)
+			return false;
 
 		// Value must be a simple ValueNode (not a MarkupNode or ElementNode)
 		if (valueNode is MarkupNode or ElementNode)
@@ -38,8 +43,11 @@ internal class SetterValueProvider : IKnownMarkupValueProvider
 		var valueNode = GetValueNode(node);
 		if (valueNode == null)
 		{
+			// The value was removed (e.g., OnPlatform with no matching platform and no Default)
+			// Signal to skip this Setter entirely by returning true with null returnType and empty value
+			returnType = null;
 			value = string.Empty;
-			return false;
+			return true;
 		}
 
 		var bpNode = (ValueNode)node.Properties[new XmlName("", "Property")];
