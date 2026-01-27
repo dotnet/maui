@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 
 namespace Maui.Controls.Sample.Issues;
 
@@ -56,12 +57,12 @@ public class Issue33307ContentPage : ContentPage
 		};
 	}
 
-	async void ButtonPage1_Clicked(object? sender, EventArgs e)
+	async void ButtonPage1_Clicked(object sender, EventArgs e)
 	{
 		await Navigation.PushAsync(new Issue33307Page1(mainData));
 	}
 
-	async void ButtonPage2_Clicked(object? sender, EventArgs e)
+	async void ButtonPage2_Clicked(object sender, EventArgs e)
 	{
 		await Navigation.PushAsync(new Issue33307Page2(mainData));
 	}
@@ -92,9 +93,9 @@ public class Issue33307ClassC : INotifyPropertyChanged
 	public string name { get; set; } = string.Empty;
 	public ObservableCollection<Issue33307ClassB> itemsB { get; set; } = new();
 
-	public event PropertyChangedEventHandler? PropertyChanged;
+	public event PropertyChangedEventHandler PropertyChanged;
 
-	public Issue33307ClassB? selected_item
+	public Issue33307ClassB selected_item
 	{
 		get
 		{
@@ -264,7 +265,7 @@ public class Issue33307Page1 : ContentPage
 		Content = mainGrid;
 	}
 
-	void ButtonAddRow_Clicked(object? sender, EventArgs e)
+	void ButtonAddRow_Clicked(object sender, EventArgs e)
 	{
 		var itemB1 = new Issue33307ClassB
 		{
@@ -288,7 +289,7 @@ public class Issue33307Page1 : ContentPage
 		mainData.itemsB.Add(itemB3);
 	}
 
-	async void ButtonDeleteRow_Clicked(object? sender, EventArgs e)
+	async void ButtonDeleteRow_Clicked(object sender, EventArgs e)
 	{
 		if (mainData.itemsB.Count > 1)
 		{
@@ -461,6 +462,7 @@ public class Issue33307Page2 : ContentPage
 		selectedItemLabel = new Label
 		{
 			Text = "Last Selected: None",
+			AutomationId = "StatusLabel",
 			VerticalOptions = LayoutOptions.Center,
 			TextColor = Colors.DarkBlue,
 			FontAttributes = FontAttributes.Bold
@@ -501,7 +503,7 @@ public class Issue33307Page2 : ContentPage
 		Content = mainGrid;
 	}
 
-	async void ButtonDeleteRow_Clicked(object? sender, EventArgs e)
+	async void ButtonDeleteRow_Clicked(object sender, EventArgs e)
 	{
 		foreach (var itemC in mainData.itemsC)
 		{
@@ -516,7 +518,7 @@ public class Issue33307Page2 : ContentPage
 		}
 	}
 
-	void ButtonAddRow_Clicked(object? sender, EventArgs e)
+	void ButtonAddRow_Clicked(object sender, EventArgs e)
 	{
 		var itemC = new Issue33307ClassC
 		{
