@@ -121,6 +121,9 @@
             <!-- Mixed local+binding: Price from VM, TaxRate from this (auto-detected) -->
             <Label x:Name="mixedExprLabel" Text="{(Price * TaxRate).ToString('F2')}" />
             
+            <!-- Mixed for capture test: binding + local method -->
+            <Label x:Name="captureTestLabel" Text="{$'{Price} x {GetMultiplier()}'}" />
+            
             <!-- Duplicate capture: two bindings using same local member with explicit this. prefix -->
             <Label x:Name="mixedExprLabel2" Text="{(Quantity * this.TaxRate).ToString('F2')}" />
             <Label x:Name="mixedExprLabel3" Text="{(Price * this.TaxRate).ToString('F2')}" />

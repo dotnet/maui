@@ -31,20 +31,24 @@ internal readonly struct BindingHandler
 /// </summary>
 internal readonly struct LocalCapture
 {
-	/// <summary>The original expression (e.g., "this.TaxRate").</summary>
+	/// <summary>The original expression in the XAML (e.g., "this.TaxRate" or "this.GetMultiplier()").</summary>
 	public string OriginalExpression { get; }
 	
 	/// <summary>The capture variable name (e.g., "__capture_TaxRate").</summary>
 	public string CaptureVariable { get; }
 	
-	/// <summary>The member name being captured (e.g., "TaxRate").</summary>
+	/// <summary>The member name being captured (e.g., "TaxRate" or "GetMultiplier").</summary>
 	public string MemberName { get; }
 
-	public LocalCapture(string originalExpression, string captureVariable, string memberName)
+	/// <summary>The full invocation expression (e.g., "TaxRate" or "GetMultiplier()").</summary>
+	public string InvocationExpression { get; }
+
+	public LocalCapture(string originalExpression, string captureVariable, string memberName, string? invocationExpression = null)
 	{
 		OriginalExpression = originalExpression;
 		CaptureVariable = captureVariable;
 		MemberName = memberName;
+		InvocationExpression = invocationExpression ?? memberName;
 	}
 }
 
@@ -105,13 +109,126 @@ internal static class ExpressionAnalyzer
 	}
 
 	/// <summary>
+	/// Extracts the full method invocation including arguments (e.g., "this.GetMultiplier()" or "this.Calculate(x, y)").
+	/// </summary>
+	private static (string fullExpression, string invocationPart) ExtractMethodInvocation(Match match, string text)
+	{
+		var memberName = match.Groups[1].Value;
+		var afterMatch = match.Index + match.Length;
+		
+		// Skip whitespace
+		while (afterMatch < text.Length && char.IsWhiteSpace(text[afterMatch]))
+			afterMatch++;
+		
+		if (afterMatch >= text.Length || text[afterMatch] != '(')
+		{
+			// Not a method call, shouldn't happen but handle gracefully
+			return (match.Value, memberName);
+		}
+		
+		// Find the matching closing parenthesis
+		var parenStart = afterMatch;
+		var depth = 1;
+		var pos = parenStart + 1;
+		
+		while (pos < text.Length && depth > 0)
+		{
+			var c = text[pos];
+			if (c == '(') depth++;
+			else if (c == ')') depth--;
+			else if (c == '\'' || c == '"')
+			{
+				// Skip string literals
+				var quote = c;
+				pos++;
+				while (pos < text.Length && text[pos] != quote)
+				{
+					if (text[pos] == '\\') pos++; // Skip escaped char
+					pos++;
+				}
+			}
+			pos++;
+		}
+		
+		// Extract the full expression and invocation part
+		var fullExpression = text.Substring(match.Index, pos - match.Index);
+		var invocationPart = memberName + text.Substring(parenStart, pos - parenStart);
+		
+		return (fullExpression, invocationPart);
+	}
+
+	/// <summary>
+	/// Finds bare method calls (without 'this.' prefix) that exist on rootType but not on dataType,
+	/// and returns captures for them.
+	/// </summary>
+	private static List<LocalCapture> CaptureLocalMethods(string expression, ITypeSymbol rootType, ITypeSymbol? dataType, HashSet<string> alreadyCaptured)
+	{
+		var captures = new List<LocalCapture>();
+		
+		// Parse as an expression and walk the syntax tree
+		var tree = CSharpSyntaxTree.ParseText(expression, new CSharpParseOptions(kind: SourceCodeKind.Script));
+		var root = tree.GetRoot();
+		
+		foreach (var node in root.DescendantNodes())
+		{
+			// Look for standalone method invocations (not member access like obj.Method())
+			if (node is InvocationExpressionSyntax invocation && 
+				invocation.Expression is IdentifierNameSyntax identifier)
+			{
+				var methodName = identifier.Identifier.Text;
+				
+				// Skip if already captured (e.g., via this.Method())
+				if (alreadyCaptured.Contains(methodName))
+					continue;
+				
+				// Skip if this is a method on the DataType (will be transformed to __source.X)
+				if (dataType != null && HasMethod(dataType, methodName))
+					continue;
+				
+				// Check if method exists on rootType (local page/view method)
+				if (HasMethod(rootType, methodName))
+				{
+					// Extract the full invocation text including arguments
+					var invocationText = invocation.ToString();
+					var captureVar = $"__capture_{methodName}";
+					
+					// The invocation expression is the full call (e.g., "GetMultiplier()")
+					captures.Add(new LocalCapture(invocationText, captureVar, methodName, invocationText));
+					alreadyCaptured.Add(methodName);
+				}
+			}
+		}
+		
+		return captures;
+	}
+
+	/// <summary>
+	/// Checks if a type has a method with the given name.
+	/// </summary>
+	private static bool HasMethod(ITypeSymbol type, string methodName)
+	{
+		var currentType = type;
+		while (currentType != null)
+		{
+			foreach (var member in currentType.GetMembers(methodName))
+			{
+				if (member is IMethodSymbol)
+					return true;
+			}
+			currentType = currentType.BaseType;
+		}
+		return false;
+	}
+
+	/// <summary>
 	/// Analyzes an expression for mixed local+binding scenarios.
 	/// </summary>
 	/// <param name="expression">The C# expression (e.g., "Price * this.TaxRate")</param>
 	/// <param name="sourceParameterName">The lambda parameter name (e.g., "__source")</param>
 	/// <param name="dataType">Optional DataType symbol to filter handlers (only include members on this type)</param>
+	/// <param name="rootType">Optional root type (page/view) to identify local members that need capturing</param>
 	/// <returns>Analysis result with handlers, captures, and transformed expression</returns>
-	public static ExpressionAnalysisResult Analyze(string expression, string sourceParameterName = "__source", ITypeSymbol? dataType = null)
+	public static ExpressionAnalysisResult Analyze(string expression, string sourceParameterName = "__source", ITypeSymbol? dataType = null, ITypeSymbol? rootType = null)
 	{
 		var captures = new List<LocalCapture>();
 		var transformedExpression = expression;
@@ -135,28 +252,45 @@ internal static class ExpressionAnalyzer
 			transformedExpression = trimmed.Substring("BindingContext.".Length);
 		}
 
-		// Find all this.X patterns (excluding method calls) and replace with __capture_X
+		// Find all this.X patterns and replace with __capture_X
 		var matches = ThisPrefixPattern.Matches(transformedExpression);
 		var seenCaptures = new HashSet<string>();
 		
 		foreach (Match match in matches)
 		{
-			// Skip method calls - they can't be captured as they return values, not references
-			if (IsMethodCall(match, transformedExpression))
+			var memberName = match.Groups[1].Value;
+			if (!seenCaptures.Add(memberName))
 				continue;
 				
-			var memberName = match.Groups[1].Value;
-			if (seenCaptures.Add(memberName))
+			var captureVar = $"__capture_{memberName}";
+			
+			// Check if this is a method call - if so, extract the full invocation including arguments
+			if (IsMethodCall(match, transformedExpression))
 			{
-				var captureVar = $"__capture_{memberName}";
+				var invocation = ExtractMethodInvocation(match, transformedExpression);
+				captures.Add(new LocalCapture(invocation.fullExpression, captureVar, memberName, invocation.invocationPart));
+			}
+			else
+			{
 				captures.Add(new LocalCapture(match.Value, captureVar, memberName));
 			}
 		}
 
-		// Replace this.X with __capture_X in the expression
+		// Replace this.X(...) or this.X with __capture_X in the expression
 		foreach (var capture in captures)
 		{
 			transformedExpression = transformedExpression.Replace(capture.OriginalExpression, capture.CaptureVariable);
+		}
+
+		// Capture bare local method calls (without 'this.' prefix) that exist on rootType but not on dataType
+		if (rootType != null)
+		{
+			var localMethodCaptures = CaptureLocalMethods(transformedExpression, rootType, dataType, seenCaptures);
+			foreach (var capture in localMethodCaptures)
+			{
+				captures.Add(capture);
+				transformedExpression = transformedExpression.Replace(capture.OriginalExpression, capture.CaptureVariable);
+			}
 		}
 
 		// Extract handlers from the transformed expression (which no longer has this.X)

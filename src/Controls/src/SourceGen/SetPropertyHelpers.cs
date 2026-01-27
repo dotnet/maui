@@ -670,7 +670,7 @@ static class SetPropertyHelpers
 		}
 
 		// Analyze the expression for mixed local+binding scenarios
-		var analysis = ExpressionAnalyzer.Analyze(expression.Code, "__source", dataTypeSymbol);
+		var analysis = ExpressionAnalyzer.Analyze(expression.Code, "__source", dataTypeSymbol, context.RootType);
 
 		// Check for ambiguity first - resolve the expression
 		var resolution = MemberResolver.Resolve(expression.Code, context.RootType, dataTypeSymbol, context.Compilation);
@@ -746,7 +746,7 @@ static class SetPropertyHelpers
 		var targetTypeName = targetType.ToFQDisplayString();
 
 		// Analyze expression for mixed local+binding scenarios
-		var analysis = ExpressionAnalyzer.Analyze(expression, "__source", dataTypeSymbol);
+		var analysis = ExpressionAnalyzer.Analyze(expression, "__source", dataTypeSymbol, context.RootType);
 		var handlers = analysis.Handlers;
 
 		// Wrap in scoped block if we have captures to avoid duplicate variable names
@@ -756,10 +756,10 @@ static class SetPropertyHelpers
 		{
 			writer.WriteLine("{");
 			writer.Indent++;
-			// Generate capture statements for local values (this.X)
+			// Generate capture statements for local values (this.X or this.Method())
 			foreach (var capture in analysis.Captures)
 			{
-				writer.WriteLine($"var {capture.CaptureVariable} = this.{capture.MemberName};");
+				writer.WriteLine($"var {capture.CaptureVariable} = this.{capture.InvocationExpression};");
 			}
 		}
 

@@ -104,6 +104,14 @@ public partial class CSharpExpressions : ContentPage
 	}
 	public char GetChar(char c) => c;
 
+	// Capture test method - only used by captureTestLabel
+	public int GetMultiplierCallCount { get; private set; }
+	public decimal GetMultiplier()
+	{
+		GetMultiplierCallCount++;
+		return 1.5m;
+	}
+
 	// Lambda event handlers
 	public void OnButtonClicked() => ButtonClicked = true;
 	public void OnButtonClickedWithSender(object? sender) => LastSender = sender;
@@ -131,16 +139,28 @@ public partial class CSharpExpressions : ContentPage
 		[Fact]
 		public void LocalMethodCalledOnceAtInit()
 		{
-			var page = new CSharpExpressions(XamlInflator.SourceGen);
-			
-			// Method should have been called exactly twice during initialization
-			// (once for methodCallLabel, once for interpolationMethodLabel)
-			Assert.Equal(2, page.GetTextCallCount);
-			
-			// Access the properties again - should NOT call the method again (values are captured)
-			_ = page.methodCallLabel.Text;
-			_ = page.interpolationMethodLabel.Text;
-			Assert.Equal(2, page.GetTextCallCount);
+			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+			try
+			{
+				var page = new CSharpExpressions(XamlInflator.SourceGen);
+				var vm = new SimpleViewModel { Price = 100m };
+				page.BindingContext = vm;
+				
+				// Method should have been called exactly once during initialization
+				Assert.Equal(1, page.GetMultiplierCallCount);
+				
+				// Verify initial value contains "100" and "1" and "5"
+				Assert.StartsWith("100 x 1", page.captureTestLabel.Text, StringComparison.Ordinal);
+				
+				// Change the binding source - binding updates but local method NOT called again
+				vm.Price = 200m;
+				Assert.StartsWith("200 x 1", page.captureTestLabel.Text, StringComparison.Ordinal);
+				Assert.Equal(1, page.GetMultiplierCallCount); // Still 1!
+			}
+			finally
+			{
+				DispatcherProvider.SetCurrent(null);
+			}
 		}
 
 		[Fact]
