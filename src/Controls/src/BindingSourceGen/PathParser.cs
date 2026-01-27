@@ -87,7 +87,7 @@ internal class PathParser
 		pathPart = null;
 
 		// Check for RelayCommand-generated properties
-		if (expressionType.TryGetRelayCommandPropertyType(memberName, _context.SemanticModel.Compilation, out var commandType) 
+		if (expressionType.TryGetRelayCommandPropertyType(memberName, _context.SemanticModel.Compilation, out var commandType)
 			&& commandType != null)
 		{
 			var memberType = commandType.CreateTypeDescription(_enabledNullable);
@@ -101,6 +101,25 @@ internal class PathParser
 				Kind: AccessorKind.Property,
 				IsGetterAccessible: true, // Assume generated property is accessible
 				IsSetterAccessible: false);  // Commands are typically read-only
+
+			return true;
+		}
+
+		// Check for ObservableProperty-generated properties
+		if (expressionType.TryGetObservablePropertyType(memberName, _context.SemanticModel.Compilation, out var propertyType)
+			&& propertyType != null)
+		{
+			var memberType = propertyType.CreateTypeDescription(_enabledNullable);
+			var containingType = expressionType.CreateTypeDescription(_enabledNullable);
+
+			pathPart = new MemberAccess(
+				MemberName: memberName,
+				IsValueType: !propertyType.IsReferenceType,
+				ContainingType: containingType,
+				MemberType: memberType,
+				Kind: AccessorKind.Property,
+				IsGetterInaccessible: false, // Assume generated property is accessible
+				IsSetterInaccessible: false); // ObservableProperty properties have setters
 
 			return true;
 		}

@@ -3,11 +3,15 @@ using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls.Internals
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls.Internals/DataTemplateExtensions.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.DataTemplateExtensions']/Docs/*" />
+	/// <summary>Extension methods for <see cref="DataTemplate"/> that support template selection.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class DataTemplateExtensions
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/DataTemplateExtensions.xml" path="//Member[@MemberName='SelectDataTemplate']/Docs/*" />
+		/// <summary>Returns the appropriate template, invoking selector logic if the template is a <see cref="DataTemplateSelector"/>.</summary>
+		/// <param name="self">The template or selector.</param>
+		/// <param name="item">The data item.</param>
+		/// <param name="container">The container that will display the item.</param>
+		/// <returns>The selected <see cref="DataTemplate"/>.</returns>
 		public static DataTemplate SelectDataTemplate(this DataTemplate self, object item, BindableObject container)
 		{
 			var selector = self as DataTemplateSelector;
@@ -17,7 +21,11 @@ namespace Microsoft.Maui.Controls.Internals
 			return selector.SelectTemplate(item, container);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/DataTemplateExtensions.xml" path="//Member[@MemberName='CreateContent']/Docs/*" />
+		/// <summary>Selects the appropriate template and creates its content for the specified item.</summary>
+		/// <param name="self">The template or selector.</param>
+		/// <param name="item">The data item.</param>
+		/// <param name="container">The container that will display the item.</param>
+		/// <returns>The created content object.</returns>
 		public static object CreateContent(this DataTemplate self, object item, BindableObject container)
 		{
 			return self.SelectDataTemplate(item, container).CreateContent();

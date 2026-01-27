@@ -1,15 +1,17 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-    Builds and deploys a .NET MAUI project to Android or iOS device/simulator.
+    Builds and deploys a .NET MAUI project to Android, iOS device/simulator, or Windows.
 
 .DESCRIPTION
-    Handles building and deployment for both Android and iOS platforms.
+    Handles building and deployment for Android, iOS, MacCatalyst, and Windows platforms.
     - Android: Uses dotnet build with -t:Run target
     - iOS: Builds app, then installs to simulator using xcrun simctl
+    - MacCatalyst: Builds app (runs on host Mac)
+    - Windows: Builds app (runs on host Windows)
 
 .PARAMETER Platform
-    Target platform: "android" or "ios"
+    Target platform: "android", "ios", "catalyst", or "windows"
 
 .PARAMETER ProjectPath
     Full path to the .csproj file to build
@@ -35,7 +37,7 @@
 
 param(
     [Parameter(Mandatory=$true)]
-    [ValidateSet("android", "ios", "catalyst")]
+    [ValidateSet("android", "ios", "catalyst", "windows")]
     [string]$Platform,
     
     [Parameter(Mandatory=$true)]
@@ -223,6 +225,38 @@ if ($Platform -eq "android") {
     # MacCatalyst apps run directly on the Mac - no install step needed
     # The test framework (Appium) will launch the app directly
     Write-Success "MacCatalyst app ready (runs on host Mac)"
+    
+    #endregion
+} elseif ($Platform -eq "windows") {
+    #region Windows Build (no deploy step - runs on host)
+    
+    Write-Step "Building $projectName for Windows..."
+    
+    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration)
+    if ($Rebuild) {
+        $buildArgs += "--no-incremental"
+    }
+    
+    Write-Info "Build command: dotnet build $($buildArgs -join ' ')"
+    
+    $buildStartTime = Get-Date
+    
+    # Build app
+    & dotnet build @buildArgs
+    
+    $buildExitCode = $LASTEXITCODE
+    $buildDuration = (Get-Date) - $buildStartTime
+    
+    if ($buildExitCode -ne 0) {
+        Write-Error "Build failed with exit code $buildExitCode"
+        exit $buildExitCode
+    }
+    
+    Write-Success "Build completed in $($buildDuration.TotalSeconds) seconds"
+    
+    # Windows apps run directly on the host - no install step needed
+    # The test framework (Appium/WinAppDriver) will launch the app directly
+    Write-Success "Windows app ready (runs on host Windows)"
     
     #endregion
 }

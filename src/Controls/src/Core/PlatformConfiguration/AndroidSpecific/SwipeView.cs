@@ -3,31 +3,40 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 {
 	using FormsElement = Maui.Controls.SwipeView;
 
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/SwipeView.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.SwipeView']/Docs/*" />
+	/// <summary>Controls the swipe transition animation mode for SwipeView on Android.</summary>
 	public static class SwipeView
 	{
 		/// <summary>Bindable property for <see cref="SwipeTransitionMode"/>.</summary>
 		public static readonly BindableProperty SwipeTransitionModeProperty = BindableProperty.Create("SwipeTransitionMode", typeof(SwipeTransitionMode), typeof(SwipeView), SwipeTransitionMode.Reveal);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/SwipeView.xml" path="//Member[@MemberName='GetSwipeTransitionMode'][1]/Docs/*" />
+		/// <summary>Gets the swipe transition animation mode on Android.</summary>
+		/// <param name="element">The SwipeView element.</param>
+		/// <returns>The swipe transition mode (Reveal or Drag).</returns>
 		public static SwipeTransitionMode GetSwipeTransitionMode(BindableObject element)
 		{
 			return (SwipeTransitionMode)element.GetValue(SwipeTransitionModeProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/SwipeView.xml" path="//Member[@MemberName='SetSwipeTransitionMode'][1]/Docs/*" />
+		/// <summary>Sets the swipe transition animation mode on Android.</summary>
+		/// <param name="element">The SwipeView element.</param>
+		/// <param name="value">The swipe transition mode (Reveal or Drag).</param>
 		public static void SetSwipeTransitionMode(BindableObject element, SwipeTransitionMode value)
 		{
 			element.SetValue(SwipeTransitionModeProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/SwipeView.xml" path="//Member[@MemberName='GetSwipeTransitionMode'][2]/Docs/*" />
+		/// <summary>Gets the swipe transition animation mode on Android.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <returns>The swipe transition mode (Reveal or Drag).</returns>
 		public static SwipeTransitionMode GetSwipeTransitionMode(this IPlatformElementConfiguration<Android, FormsElement> config)
 		{
 			return GetSwipeTransitionMode(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/SwipeView.xml" path="//Member[@MemberName='SetSwipeTransitionMode'][2]/Docs/*" />
+		/// <summary>Sets the swipe transition animation mode on Android.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <param name="value">The swipe transition mode (Reveal or Drag).</param>
+		/// <returns>The platform configuration for fluent API chaining.</returns>
 		public static IPlatformElementConfiguration<Android, FormsElement> SetSwipeTransitionMode(this IPlatformElementConfiguration<Android, FormsElement> config, SwipeTransitionMode value)
 		{
 			SetSwipeTransitionMode(config.Element, value);

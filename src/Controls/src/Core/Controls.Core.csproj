@@ -12,6 +12,7 @@
     <MauiGenerateResourceDesigner>true</MauiGenerateResourceDesigner>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);RS0041;RS0026;RS0027;RS0022</NoWarn>
+    <WarningsAsErrors>$(WarningsAsErrors);CS1591</WarningsAsErrors>
     <NoWarn Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen' or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">$(NoWarn);CA1420</NoWarn>
   </PropertyGroup>
 

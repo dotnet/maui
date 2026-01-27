@@ -5,8 +5,12 @@ using Controls.Core.Design;
 
 namespace Microsoft.Maui.Controls.Design
 {
+	/// <summary>
+	/// Provides design-time type conversion for CornerRadius values.
+	/// </summary>
 	public class CornerRadiusDesignTypeConverter : StringConverter
 	{
+		/// <inheritdoc/>
 		public override bool IsValid(ITypeDescriptorContext context, object value)
 		{
 			// MUST MATCH CornerRadiusTypeConverter.ConvertFrom

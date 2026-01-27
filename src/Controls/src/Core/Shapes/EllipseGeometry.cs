@@ -4,16 +4,25 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/EllipseGeometry.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.EllipseGeometry']/Docs/*" />
+	/// <summary>
+	/// Represents the geometry of an ellipse or circle.
+	/// </summary>
 	public class EllipseGeometry : Geometry
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/EllipseGeometry.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="EllipseGeometry"/> class.
+		/// </summary>
 		public EllipseGeometry()
 		{
 
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/EllipseGeometry.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="EllipseGeometry"/> class with the specified center point and radii.
+		/// </summary>
+		/// <param name="center">The center point of the ellipse.</param>
+		/// <param name="radiusX">The x-radius of the ellipse.</param>
+		/// <param name="radiusY">The y-radius of the ellipse.</param>
 		public EllipseGeometry(Point center, double radiusX, double radiusY)
 		{
 			Center = center;
@@ -33,21 +42,27 @@ namespace Microsoft.Maui.Controls.Shapes
 		public static readonly BindableProperty RadiusYProperty =
 			BindableProperty.Create(nameof(RadiusY), typeof(double), typeof(EllipseGeometry), 0.0);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/EllipseGeometry.xml" path="//Member[@MemberName='Center']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the center point of the ellipse. This is a bindable property.
+		/// </summary>
 		public Point Center
 		{
 			set { SetValue(CenterProperty, value); }
 			get { return (Point)GetValue(CenterProperty); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/EllipseGeometry.xml" path="//Member[@MemberName='RadiusX']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the x-radius of the ellipse. This is a bindable property.
+		/// </summary>
 		public double RadiusX
 		{
 			set { SetValue(RadiusXProperty, value); }
 			get { return (double)GetValue(RadiusXProperty); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/EllipseGeometry.xml" path="//Member[@MemberName='RadiusY']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the y-radius of the ellipse. This is a bindable property.
+		/// </summary>
 		public double RadiusY
 		{
 			set { SetValue(RadiusYProperty, value); }

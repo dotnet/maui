@@ -4,14 +4,17 @@
         <HelixBuild Condition="'$(HelixBuild)' == ''">$(BUILD_BUILDNUMBER)</HelixBuild>
         <HelixBuild Condition="'$(HelixBuild)' == ''">default</HelixBuild>
         <!-- Public queues (default) -->
-        <HelixTargetQueues Condition="'$(TargetOS)' == 'ios' and '$(HelixInternal)' != 'True'">osx.15.arm64.maui.open</HelixTargetQueues>
-        <HelixTargetQueues Condition="'$(TargetOS)' == 'maccatalyst' and '$(HelixInternal)' != 'True'">osx.15.arm64.maui.open</HelixTargetQueues>
-        <HelixTargetQueues Condition="'$(TargetOS)' == 'android' and '$(HelixInternal)' != 'True'">ubuntu.2204.amd64.android.33.open</HelixTargetQueues>
+        <HelixTargetQueues Condition="'$(TargetOS)' == 'ios'">osx.15.arm64.maui.open;osx.26.arm64.open</HelixTargetQueues>
+        <HelixTargetQueues Condition="'$(TargetOS)' == 'maccatalyst'">osx.15.arm64.maui.open;osx.26.arm64.open</HelixTargetQueues>
+        <HelixTargetQueues Condition="'$(TargetOS)' == 'android'">ubuntu.2204.amd64.android.33.open</HelixTargetQueues>
+        <HelixTargetQueues Condition="'$(TargetOS)' == 'windows'">windows.11.amd64.client.open</HelixTargetQueues>
         <!-- Internal queues -->
         <HelixTargetQueues Condition="'$(TargetOS)' == 'ios' and '$(HelixInternal)' == 'True'">osx.15.arm64.iphone.maui</HelixTargetQueues>
         <HelixTargetQueues Condition="'$(TargetOS)' == 'maccatalyst' and '$(HelixInternal)' == 'True'">osx.15.arm64.iphone.maui</HelixTargetQueues>
         <HelixTargetQueues Condition="'$(TargetOS)' == 'android' and '$(HelixInternal)' == 'True'">ubuntu.2204.amd64.android.33</HelixTargetQueues>
+        <HelixTargetQueues Condition="'$(TargetOS)' == 'windows' and '$(HelixInternal)' == 'True'">windows.11.amd64.client</HelixTargetQueues>
         <TargetsAppleMobile Condition="'$(TargetOS)' == 'ios'">true</TargetsAppleMobile>
+        <TargetsWindows Condition="'$(TargetOS)' == 'windows'">true</TargetsWindows>
         <Creator Condition="'$(HelixAccessToken)' == ''">maui</Creator>
         <IncludeDotNetCli>true</IncludeDotNetCli>
         <DotNetCliPackageType>sdk</DotNetCliPackageType>
@@ -34,6 +37,7 @@
 
     <!-- Local build outside of Azure Pipeline -->
     <PropertyGroup Condition="'$(SYSTEM_ACCESSTOKEN)' == ''">
+        <RepoRoot Condition="'$(RepoRoot)' == ''">$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)../'))</RepoRoot>
         <ScenariosDir>$(RepoRoot)artifacts/bin/</ScenariosDir>
         <HelixTargetQueues Condition="'$(HelixTargetQueues)' == ''">
             Windows.10.Amd64.Open;OSX.1200.Amd64.Open;OSX.1200.ARM64.Open;Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-20.04-helix-sqlserver-amd64</HelixTargetQueues>
@@ -43,12 +47,15 @@
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(SYSTEM_ACCESSTOKEN)' != ''">
+        <RepoRoot Condition="'$(RepoRoot)' == ''">$(BUILD_SOURCESDIRECTORY)/</RepoRoot>
         <ScenariosDir>$(BUILD_SOURCESDIRECTORY)/artifacts/bin/</ScenariosDir>
        
     </PropertyGroup>
 
     <PropertyGroup>
         <IncludeXHarnessCli>true</IncludeXHarnessCli>
+        <!-- Windows doesn't use XHarness, so disable it for Windows -->
+        <IncludeXHarnessCli Condition="'$(TargetsWindows)' == 'true'">false</IncludeXHarnessCli>
         <!-- Optional: Specific version of Xcode to use. If omitted, xcode-select is used to
         determine the version -->
         <!-- <XHarnessXcodeVersion>16.3</XHarnessXcodeVersion> -->
@@ -59,6 +66,13 @@
         <HelixPreCommand Include="export XHARNESS_LOG_WITH_TIMESTAMPS=true" />
     </ItemGroup>
 
+    <!-- Windows: Include eng folder as correlation payload for the test runner script and Versions.props -->
+    <ItemGroup Condition="'$(TargetsWindows)' == 'true'">
+        <HelixCorrelationPayload Include="$(RepoRoot)eng">
+            <Destination>eng</Destination>
+        </HelixCorrelationPayload>
+    </ItemGroup>
+
     <ItemGroup>
 
         <MAUIScenario Include="Controls">
@@ -66,6 +80,8 @@
             <PayloadDirectory>$(ScenariosDir)Controls.DeviceTests</PayloadDirectory>
             <IPAName>Microsoft.Maui.Controls.DeviceTests</IPAName>
             <PackageName>com.microsoft.maui.controls.devicetests</PackageName>
+            <WindowsPackageId>com.microsoft.maui.controls.devicetests</WindowsPackageId>
+            <WindowsProjectPath>src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj</WindowsProjectPath>
         </MAUIScenario>
 
        <MAUIScenario Include="Core">
@@ -73,6 +89,8 @@
             <PayloadDirectory>$(ScenariosDir)Core.DeviceTests</PayloadDirectory>
             <IPAName>Microsoft.Maui.Core.DeviceTests</IPAName>
             <PackageName>com.microsoft.maui.core.devicetests</PackageName>
+            <WindowsPackageId>com.microsoft.maui.core.devicetests</WindowsPackageId>
+            <WindowsProjectPath>src/Core/tests/DeviceTests/Core.DeviceTests.csproj</WindowsProjectPath>
         </MAUIScenario>
 
         <MAUIScenario Include="Graphics">
@@ -80,6 +98,8 @@
             <PayloadDirectory>$(ScenariosDir)Graphics.DeviceTests</PayloadDirectory>
             <IPAName>Microsoft.Maui.Graphics.DeviceTests</IPAName>
             <PackageName>com.microsoft.maui.graphics.devicetests</PackageName>
+            <WindowsPackageId>com.microsoft.maui.graphics.devicetests</WindowsPackageId>
+            <WindowsProjectPath>src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj</WindowsProjectPath>
         </MAUIScenario>
 
         <MAUIScenario Include="Essentials">
@@ -87,6 +107,8 @@
             <PayloadDirectory>$(ScenariosDir)Essentials.DeviceTests</PayloadDirectory>
             <IPAName>Microsoft.Maui.Essentials.DeviceTests</IPAName>
             <PackageName>com.microsoft.maui.essentials.devicetests</PackageName>
+            <WindowsPackageId>com.microsoft.maui.essentials.devicetests</WindowsPackageId>
+            <WindowsProjectPath>src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj</WindowsProjectPath>
         </MAUIScenario>
 
         <MAUIScenario Include="MauiBlazorWebView">
@@ -94,6 +116,8 @@
             <PayloadDirectory>$(ScenariosDir)MauiBlazorWebView.DeviceTests</PayloadDirectory>
             <IPAName>Microsoft.Maui.MauiBlazorWebView.DeviceTests</IPAName>
             <PackageName>com.microsoft.maui.mauiblazorwebview.devicetests</PackageName>
+            <WindowsPackageId>Microsoft.Maui.MauiBlazorWebView.DeviceTests</WindowsPackageId>
+            <WindowsProjectPath>src/BlazorWebView/tests/DeviceTests/MauiBlazorWebView.DeviceTests.csproj</WindowsProjectPath>
         </MAUIScenario>
     </ItemGroup>
 
@@ -176,7 +200,28 @@
             </XHarnessApkToTest>
         </ItemGroup>
 
+        <!-- Windows: Use HelixWorkItem with test runner script (not XHarness) -->
+        <ItemGroup Condition="'$(TargetOS)' == 'windows'">
+            <HelixWorkItem Include="%(_MAUIScenarioSearch.ScenarioDirectoryName)-packaged">
+                <PayloadArchive>%(_MAUIScenarioSearch.PayloadDirectory).zip</PayloadArchive>
+                <Command>call %HELIX_CORRELATION_PAYLOAD%\eng\devices\run-windows-devicetests.cmd %(_MAUIScenarioSearch.ScenarioDirectoryName) packaged %(_MAUIScenarioSearch.WindowsPackageId) $(TargetFrameworkToTest)</Command>
+                <Timeout>02:00:00</Timeout>
+            </HelixWorkItem>
+        </ItemGroup>
+        
+        <!-- TODO: Unpackaged tests disabled - crash with 0xC000027B (Windows App SDK Bootstrap failure)
+             on Helix. Investigating root cause. See PR #33328 for context.
+        <ItemGroup Condition="'$(TargetOS)' == 'windows'">
+            <HelixWorkItem Include="%(_MAUIScenarioSearch.ScenarioDirectoryName)-unpackaged">
+                <PayloadArchive>%(_MAUIScenarioSearch.PayloadDirectory).zip</PayloadArchive>
+                <Command>call %HELIX_CORRELATION_PAYLOAD%\eng\devices\run-windows-devicetests.cmd %(_MAUIScenarioSearch.ScenarioDirectoryName) unpackaged %(_MAUIScenarioSearch.WindowsPackageId) $(TargetFrameworkToTest)</Command>
+                <Timeout>02:00:00</Timeout>
+            </HelixWorkItem>
+        </ItemGroup>
+        -->
+
         <Message Text="Created @(XHarnessAppBundleToTest->Count()) iOS work items" Importance="high" Condition="'$(TargetOS)' == 'ios'" />
+        <Message Text="Created @(HelixWorkItem->Count()) Windows work items" Importance="high" Condition="'$(TargetOS)' == 'windows'" />
     </Target>
 
 
