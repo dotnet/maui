@@ -6,14 +6,18 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Shape.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.Shape']/Docs/*" />
+	/// <summary>
+	/// Base class for shape elements, such as <see cref="Ellipse"/>, <see cref="Line"/>, <see cref="Polygon"/>, <see cref="Polyline"/>, and <see cref="Rectangle"/>.
+	/// </summary>
 	public abstract partial class Shape : View, IShapeView, IShape
 	{
 		WeakBrushChangedProxy? _fillProxy = null;
 		WeakBrushChangedProxy? _strokeProxy = null;
 		EventHandler? _fillChanged, _strokeChanged;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Shape.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Shape"/> class.
+		/// </summary>
 		public Shape()
 		{
 		}
@@ -86,63 +90,81 @@ namespace Microsoft.Maui.Controls.Shapes
 		public static readonly BindableProperty AspectProperty =
 			BindableProperty.Create(nameof(Aspect), typeof(Stretch), typeof(Shape), Stretch.None);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Shape.xml" path="//Member[@MemberName='Fill']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the <see cref="Brush"/> used to paint the shape's interior. This is a bindable property.
+		/// </summary>
 		public Brush Fill
 		{
 			set { SetValue(FillProperty, value); }
 			get { return (Brush)GetValue(FillProperty); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Shape.xml" path="//Member[@MemberName='Stroke']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the <see cref="Brush"/> used to paint the shape's outline. This is a bindable property.
+		/// </summary>
 		public Brush Stroke
 		{
 			set { SetValue(StrokeProperty, value); }
 			get { return (Brush)GetValue(StrokeProperty); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Shape.xml" path="//Member[@MemberName='StrokeThickness']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the width of the shape's outline. This is a bindable property.
+		/// </summary>
 		public double StrokeThickness
 		{
 			set { SetValue(StrokeThicknessProperty, value); }
 			get { return (double)GetValue(StrokeThicknessProperty); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Shape.xml" path="//Member[@MemberName='StrokeDashArray']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the collection of values that specify the pattern of dashes and gaps in the shape's outline. This is a bindable property.
+		/// </summary>
 		public DoubleCollection StrokeDashArray
 		{
 			set { SetValue(StrokeDashArrayProperty, value); }
 			get { return (DoubleCollection)GetValue(StrokeDashArrayProperty); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Shape.xml" path="//Member[@MemberName='StrokeDashOffset']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the distance within the dash pattern where a dash begins. This is a bindable property.
+		/// </summary>
 		public double StrokeDashOffset
 		{
 			set { SetValue(StrokeDashOffsetProperty, value); }
 			get { return (double)GetValue(StrokeDashOffsetProperty); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Shape.xml" path="//Member[@MemberName='StrokeLineCap']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the type of cap used at the start and end of the shape's outline. This is a bindable property.
+		/// </summary>
 		public PenLineCap StrokeLineCap
 		{
 			set { SetValue(StrokeLineCapProperty, value); }
 			get { return (PenLineCap)GetValue(StrokeLineCapProperty); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Shape.xml" path="//Member[@MemberName='StrokeLineJoin']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the type of join used at the vertices of the shape's outline. This is a bindable property.
+		/// </summary>
 		public PenLineJoin StrokeLineJoin
 		{
 			set { SetValue(StrokeLineJoinProperty, value); }
 			get { return (PenLineJoin)GetValue(StrokeLineJoinProperty); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Shape.xml" path="//Member[@MemberName='StrokeMiterLimit']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the limit on the ratio of the miter length to half the stroke thickness. This is a bindable property.
+		/// </summary>
 		public double StrokeMiterLimit
 		{
 			set { SetValue(StrokeMiterLimitProperty, value); }
 			get { return (double)GetValue(StrokeMiterLimitProperty); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Shape.xml" path="//Member[@MemberName='Aspect']/Docs/*" />
+		/// <summary>
+		/// Gets or sets how the shape is stretched to fill its allocated space. This is a bindable property.
+		/// </summary>
 		public Stretch Aspect
 		{
 			set { SetValue(AspectProperty, value); }

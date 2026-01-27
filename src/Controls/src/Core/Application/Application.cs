@@ -15,7 +15,9 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="Type[@FullName='Microsoft.Maui.Controls.Application']/Docs/*" />
+	/// <summary>
+	/// Represents the main application class that provides lifecycle management, resources, and theming.
+	/// </summary>
 	public partial class Application : Element, IResourcesProvider, IApplicationController, IElementConfiguration<Application>, IVisualTreeElement, IApplication
 	{
 		readonly WeakEventManager _weakEventManager = new WeakEventManager();
@@ -30,7 +32,9 @@ namespace Microsoft.Maui.Controls
 
 		static readonly SemaphoreSlim SaveSemaphore = new SemaphoreSlim(1, 1);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Application"/> class.
+		/// </summary>
 		public Application() : this(true)
 		{
 		}
@@ -58,13 +62,17 @@ namespace Microsoft.Maui.Controls
 			_lastAppTheme = _platformAppTheme;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='Quit']/Docs/*" />
+		/// <summary>
+		/// Terminates the application.
+		/// </summary>
 		public void Quit()
 		{
 			Handler?.Invoke(ApplicationHandler.TerminateCommandKey);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='AppLinks']/Docs/*" />
+		/// <summary>
+		/// Gets the <see cref="IAppLinks"/> for deep linking and app indexing.
+		/// </summary>
 		public IAppLinks AppLinks
 		{
 			get
@@ -77,16 +85,22 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='SetCurrentApplication']/Docs/*" />
+		/// <summary>
+		/// Sets the current application instance.
+		/// </summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void SetCurrentApplication(Application value) => Current = value;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='Current']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the current application instance.
+		/// </summary>
 		public static Application? Current { get; set; }
 
 		Page? _singleWindowMainPage;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='MainPage']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the root page of the application.
+		/// </summary>
 		public Page? MainPage
 		{
 			[Obsolete("This property has been deprecated. For single-window applications, use Windows[0].Page. For multi-window applications, identify and use the appropriate Window object to access the desired Page. Additionally, each element features a Window property, accessible when it's part of the current window.")]
@@ -127,13 +141,17 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='NavigationProxy']/Docs/*" />
+		/// <summary>
+		/// Gets the navigation proxy for this application.
+		/// </summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public NavigationProxy? NavigationProxy { get; private set; }
 
 		internal IResourceDictionary? SystemResources => _systemResources.Value;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='SetAppIndexingProvider']/Docs/*" />
+		/// <summary>
+		/// Sets the provider for app indexing and deep linking.
+		/// </summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SetAppIndexingProvider(IAppIndexingProvider provider)
 		{
@@ -143,7 +161,9 @@ namespace Microsoft.Maui.Controls
 		ResourceDictionary? _resources;
 		bool IResourcesProvider.IsResourcesCreated => _resources != null;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='Resources']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the resource dictionary for this application.
+		/// </summary>
 		public ResourceDictionary Resources
 		{
 			get
@@ -170,7 +190,9 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='UserAppTheme']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the user's preferred app theme, overriding the platform theme.
+		/// </summary>
 		public AppTheme UserAppTheme
 		{
 			get => _userAppTheme;
@@ -199,7 +221,9 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='RequestedTheme']/Docs/*" />
+		/// <summary>
+		/// Gets the current theme, returning <see cref="UserAppTheme"/> if set, otherwise <see cref="PlatformAppTheme"/>.
+		/// </summary>
 		public AppTheme RequestedTheme =>
 			UserAppTheme != AppTheme.Unspecified
 				? UserAppTheme
@@ -359,7 +383,9 @@ namespace Microsoft.Maui.Controls
 			OnResourcesChanged(changedResources);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='SendOnAppLinkRequestReceived']/Docs/*" />
+		/// <summary>
+		/// Sends the app link request to <see cref="OnAppLinkRequestReceived"/>.
+		/// </summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendOnAppLinkRequestReceived(Uri uri)
 		{

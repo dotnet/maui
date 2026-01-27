@@ -1,15 +1,24 @@
 #nullable disable
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/WebNavigatingEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Controls.WebNavigatingEventArgs']/Docs/*" />
+	/// <summary>
+	/// Event arguments for the <see cref="WebView.Navigating"/> event, raised before navigation begins.
+	/// </summary>
 	public class WebNavigatingEventArgs : WebNavigationEventArgs
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/WebNavigatingEventArgs.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="WebNavigatingEventArgs"/> class.
+		/// </summary>
+		/// <param name="navigationEvent">The type of navigation event.</param>
+		/// <param name="source">The source of the web view content.</param>
+		/// <param name="url">The URL being navigated to.</param>
 		public WebNavigatingEventArgs(WebNavigationEvent navigationEvent, WebViewSource source, string url) : base(navigationEvent, source, url)
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/WebNavigatingEventArgs.xml" path="//Member[@MemberName='Cancel']/Docs/*" />
+		/// <summary>
+		/// Gets or sets a value indicating whether to cancel the navigation.
+		/// </summary>
 		public bool Cancel { get; set; }
 	}
 }

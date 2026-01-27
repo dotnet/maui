@@ -3,20 +3,22 @@ using System;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/ScrolledEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Controls.ScrolledEventArgs']/Docs/*" />
+	/// <summary>Event arguments for the <see cref="ScrollView.Scrolled"/> event.</summary>
 	public class ScrolledEventArgs : EventArgs
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/ScrolledEventArgs.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>Creates a new <see cref="ScrolledEventArgs"/> with the specified scroll positions.</summary>
+		/// <param name="x">The horizontal scroll position.</param>
+		/// <param name="y">The vertical scroll position.</param>
 		public ScrolledEventArgs(double x, double y)
 		{
 			ScrollX = x;
 			ScrollY = y;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ScrolledEventArgs.xml" path="//Member[@MemberName='ScrollX']/Docs/*" />
+		/// <summary>Gets the current horizontal scroll position.</summary>
 		public double ScrollX { get; private set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ScrolledEventArgs.xml" path="//Member[@MemberName='ScrollY']/Docs/*" />
+		/// <summary>Gets the current vertical scroll position.</summary>
 		public double ScrollY { get; private set; }
 	}
 }

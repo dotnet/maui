@@ -4,7 +4,7 @@ using System.Globalization;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/DoubleCollectionConverter.xml" path="Type[@FullName='Microsoft.Maui.Controls.DoubleCollectionConverter']/Docs/*" />
+	/// <summary>Converts a space or comma-separated string of numbers to a <see cref="DoubleCollection"/>.</summary>
 	public class DoubleCollectionConverter : TypeConverter
 	{
 		public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)

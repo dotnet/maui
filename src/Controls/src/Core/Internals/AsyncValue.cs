@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Controls.Internals
 			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 	}
 
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/AsyncValueExtensions.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.AsyncValueExtensions']/Docs/*" />
+	/// <summary>Extension methods for creating AsyncValue instances.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class AsyncValueExtensions
 	{

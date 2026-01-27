@@ -294,7 +294,12 @@ namespace Microsoft.Maui.Media
 							await rotatedStream.CopyToAsync(fileStream);
 						}
 						
-						rotatedResults.Add(new FileResult(tempFilePath, result.FileName));
+						var rotatedResult = new FileResult(tempFilePath)
+						{
+							FileName = result.FileName,
+							ContentType = result.ContentType
+						};
+						rotatedResults.Add(rotatedResult);
 					}
 					catch
 					{

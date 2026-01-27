@@ -55,7 +55,7 @@ public class Issue2894 : _IssuesUITest
 	void PerformGestureActionForSecondSpan(Rectangle target)
 	{
 #if ANDROID // Calculate points vary on Android and other platforms.
-		App.TapCoordinates(target.X + target.Width / 2, target.Y + 2);
+		App.TapCoordinates((target.X + target.Width / 2) + 5, target.Y + 2);
 #else
 		PerformGestureAction(target.X + target.Width - 10, target.Y + 2);
 #endif

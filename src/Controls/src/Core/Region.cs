@@ -7,7 +7,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/Region.xml" path="Type[@FullName='Microsoft.Maui.Controls.Region']/Docs/*" />
+	/// <summary>Represents a region composed of one or more rectangles.</summary>
 	public struct Region : IEquatable<Region>
 	{
 		// While Regions are currently rectangular, they could in the future be transformed into any shape.
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls
 			return new Region(list);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Region.xml" path="//Member[@MemberName='FromLines']/Docs/*" />
+		/// <summary>Creates a region from line heights and positions.</summary>
 		public static Region FromLines(double[] lineHeights, double maxWidth, double startX, double endX, double startY)
 		{
 			var positions = new List<Rect>();
@@ -60,13 +60,13 @@ namespace Microsoft.Maui.Controls
 			return new Region(positions);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Region.xml" path="//Member[@MemberName='Contains'][1]/Docs/*" />
+		/// <summary>Determines whether the region contains the specified point.</summary>
 		public bool Contains(Point pt)
 		{
 			return Contains(pt.X, pt.Y);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Region.xml" path="//Member[@MemberName='Contains'][2]/Docs/*" />
+		/// <summary>Determines whether the region contains the specified coordinates.</summary>
 		public bool Contains(double x, double y)
 		{
 			if (Regions == null)
@@ -79,7 +79,7 @@ namespace Microsoft.Maui.Controls
 			return false;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Region.xml" path="//Member[@MemberName='Deflate']/Docs/*" />
+		/// <summary>Deflates the region by reversing any previous inflation.</summary>
 		public Region Deflate()
 		{
 			if (_inflation == null)
@@ -88,13 +88,13 @@ namespace Microsoft.Maui.Controls
 			return Inflate(_inflation.Value.Left * -1, _inflation.Value.Top * -1, _inflation.Value.Right * -1, _inflation.Value.Bottom * -1);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Region.xml" path="//Member[@MemberName='Inflate'][1]/Docs/*" />
+		/// <summary>Inflates the region uniformly by the specified size.</summary>
 		public Region Inflate(double size)
 		{
 			return Inflate(size, size, size, size);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Region.xml" path="//Member[@MemberName='Inflate'][2]/Docs/*" />
+		/// <summary>Inflates the region by the specified amounts on each side.</summary>
 		public Region Inflate(double left, double top, double right, double bottom)
 		{
 			if (Regions == null)

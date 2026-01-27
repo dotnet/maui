@@ -66,23 +66,21 @@ parameters:
   - name: androidPoolInternal
     type: object
     default:
-      name: MAUI
-      vmImage: MAUI
-      demands:
-        - Agent.OSArchitecture -equals ARM64
+      name: Azure Pipelines
+      vmImage: macOS-15-arm64
   
   - name: androidPoolLinuxInternal
     type: object
     default:
-      name: NetCore1ESPool-Internal
+      name: MAUI-DNCENG
       demands:
         - ImageOverride -equals 1ESPT-Ubuntu22.04
 
   - name: iosPoolInternal
     type: object
     default:
-      name: MAUI
-      vmImage: MAUI
+      name: Azure Pipelines
+      vmImage: macOS-15-arm64
   
   - name: windowsBuildPoolInternal
     type: object
@@ -102,7 +100,7 @@ parameters:
     type: object
     default:
       name: Azure Pipelines
-      vmImage: macOS-15
+      vmImage: macOS-14
 
   # Public pools (dnceng-public)
   - name: androidPoolPublic

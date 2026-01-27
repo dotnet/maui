@@ -1,15 +1,15 @@
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutHeaderBehavior.xml" path="Type[@FullName='Microsoft.Maui.Controls.FlyoutHeaderBehavior']/Docs/*" />
+	/// <summary>Specifies how the flyout header behaves when scrolling.</summary>
 	public enum FlyoutHeaderBehavior
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutHeaderBehavior.xml" path="//Member[@MemberName='Default']/Docs/*" />
+		/// <summary>Header uses platform-specific default scroll behavior.</summary>
 		Default,
-		/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutHeaderBehavior.xml" path="//Member[@MemberName='Fixed']/Docs/*" />
+		/// <summary>Header remains fixed and does not scroll.</summary>
 		Fixed,
-		/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutHeaderBehavior.xml" path="//Member[@MemberName='Scroll']/Docs/*" />
+		/// <summary>Header scrolls with the flyout content.</summary>
 		Scroll,
-		/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutHeaderBehavior.xml" path="//Member[@MemberName='CollapseOnScroll']/Docs/*" />
+		/// <summary>Header collapses as the user scrolls down.</summary>
 		CollapseOnScroll,
 	}
 }
