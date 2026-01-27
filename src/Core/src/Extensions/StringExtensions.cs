@@ -24,5 +24,14 @@ namespace Microsoft.Maui
 			return toSearch.IndexOf(character, StringComparison.Ordinal);
 #endif
 		}
+
+		public static int LastIndexOfChar(this string toSearch, char character)
+		{
+#if NETSTANDARD2_0
+			return toSearch.LastIndexOf(character);
+#else
+			return toSearch.LastIndexOf(character, StringComparison.Ordinal);
+#endif
+		}
 	}
 }

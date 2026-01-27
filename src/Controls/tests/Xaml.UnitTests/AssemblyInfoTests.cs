@@ -5,6 +5,8 @@ using System.Reflection;
 using Xunit;
 using IOPath = System.IO.Path;
 
+#nullable enable
+
 namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 {
 	[Collection("Xaml Inflation")]
@@ -38,12 +40,12 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		public void AssemblyVersion(string assemblyName)
 		{
 			Assembly testAssembly = System.Reflection.Assembly.Load(assemblyName);
-			Version actual = testAssembly.GetName().Version;
+			Version? actual = testAssembly.GetName().Version;
 			// Currently we keep the assembly verison at 10.0.0.0
-			Assert.Equal(10, actual.Major);
-			Assert.Equal(0, actual.Minor);
-			Assert.Equal(0, actual.Build);
-			Assert.Equal(0, actual.Revision);
+			Assert.Equal(10, actual?.Major);
+			Assert.Equal(0, actual?.Minor);
+			Assert.Equal(0, actual?.Build);
+			Assert.Equal(0, actual?.Revision);
 		}
 
 		// [Theory]
@@ -81,6 +83,22 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 
 		internal static string GetFilePathFromRoot(string file)
 		{
+			// First, check Helix correlation payload (HELIX_CORRELATION_PAYLOAD environment variable)
+			var helixPayload = Environment.GetEnvironmentVariable("HELIX_CORRELATION_PAYLOAD");
+			if (!string.IsNullOrEmpty(helixPayload))
+			{
+				// The MSBuild test files are copied to msbuild/ in the Helix payload
+				// Map paths like "src/Controls/tests/Xaml.UnitTests/MSBuild/X" to "msbuild/X"
+				var msbuildPrefix = "src/Controls/tests/Xaml.UnitTests/MSBuild/";
+				if (file.StartsWith(msbuildPrefix, StringComparison.OrdinalIgnoreCase) || file.Replace('\\', '/').StartsWith(msbuildPrefix, StringComparison.OrdinalIgnoreCase))
+				{
+					var relativePath = file.Replace('\\', '/').Substring(msbuildPrefix.Length);
+					var helixPath = IOPath.Combine(helixPayload, "msbuild", relativePath);
+					if (File.Exists(helixPath))
+						return helixPath;
+				}
+			}
+
 			var fileFromRoot = IOPath.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", file);
 			if (!File.Exists(fileFromRoot))
 			{
@@ -93,13 +111,13 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 					if (!File.Exists(fileFromRoot))
 					{
 						Assert.Fail($"Unable to find {file} at path: {fileFromRoot}");
-						return null;
+						return null!;
 					}
 				}
 				else
 				{
 					Assert.Fail($"Unable to find {file} at path: {fileFromRoot}");
-					return null;
+					return null!;
 				}
 			}
 			return fileFromRoot;
@@ -107,21 +125,88 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 
 		/// <summary>
 		/// Checks if MSBuild tests can run in the current environment.
-		/// Returns false when running outside the MAUI repo (e.g., on Helix).
+		/// Returns false when running outside the MAUI repo (e.g., on Helix) without the proper payload.
+		/// MSBuild tests need: Directory.Build.props, Directory.Build.targets, AND Maui.InTree.props
 		/// </summary>
 		internal static bool CanRunMSBuildTests()
 		{
+			var msbuildPath = GetMSBuildTestsPath();
+			if (msbuildPath == null)
+				return false;
+			
+			// MSBuild tests also need Maui.InTree.props which isn't included in Helix payload
+			// Check if it exists relative to the MSBuild test directory
+			var directoryBuildProps = IOPath.Combine(msbuildPath, "_Directory.Build.props");
+			if (!File.Exists(directoryBuildProps))
+				return false;
+			
+			// Read the props file to find MauiSrcDirectory reference
+			// It references $(MauiSrcDirectory)Maui.InTree.props which needs to exist
+			var propsContent = File.ReadAllText(directoryBuildProps);
+			if (propsContent.Contains("Maui.InTree.props", StringComparison.Ordinal))
+			{
+				// Check if we can find Maui.InTree.props from the repo root
+				var repoRoot = GetTopDirRecursive(AppContext.BaseDirectory);
+				if (repoRoot == null)
+					return false; // Running on Helix without full repo - skip
+				
+				var inTreePath = IOPath.Combine(repoRoot, "src", "Maui.InTree.props");
+				if (!File.Exists(inTreePath))
+					return false;
+			}
+			
+			return true;
+		}
+
+		/// <summary>
+		/// Find the repo root by looking for Microsoft.Maui.sln
+		/// </summary>
+		static string? GetTopDirRecursive(string searchDirectory, int maxSearchDepth = 7)
+		{
+			if (string.IsNullOrEmpty(searchDirectory))
+				return null;
+			
+			if (File.Exists(IOPath.Combine(searchDirectory, "Microsoft.Maui.sln")))
+				return searchDirectory;
+
+			if (maxSearchDepth <= 0)
+				return null;
+
+			var parent = Directory.GetParent(searchDirectory);
+			if (parent == null)
+				return null;
+				
+			return GetTopDirRecursive(parent.FullName, --maxSearchDepth);
+		}
+
+		/// <summary>
+		/// Gets the path to the MSBuild test files, checking both local repo and Helix payload locations.
+		/// </summary>
+		internal static string? GetMSBuildTestsPath()
+		{
+			// First, check Helix correlation payload (HELIX_CORRELATION_PAYLOAD environment variable)
+			var helixPayload = Environment.GetEnvironmentVariable("HELIX_CORRELATION_PAYLOAD");
+			if (!string.IsNullOrEmpty(helixPayload))
+			{
+				var helixPath = IOPath.Combine(helixPayload, "msbuild", "_Directory.Build.props");
+				if (File.Exists(helixPath))
+					return IOPath.GetDirectoryName(helixPath);
+			}
+
+			// Check relative path from AppContext.BaseDirectory
 			var fileFromRoot = IOPath.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "src", "Controls", "tests", "Xaml.UnitTests", "MSBuild", "_Directory.Build.props");
 			if (File.Exists(fileFromRoot))
-				return true;
+				return IOPath.GetDirectoryName(fileFromRoot);
 
+			// Check BUILD_SOURCESDIRECTORY environment variable (Azure DevOps)
 			var sourcesDirectory = Environment.GetEnvironmentVariable("BUILD_SOURCESDIRECTORY");
 			if (!string.IsNullOrEmpty(sourcesDirectory))
 			{
 				fileFromRoot = IOPath.Combine(sourcesDirectory, "src", "Controls", "tests", "Xaml.UnitTests", "MSBuild", "_Directory.Build.props");
-				return File.Exists(fileFromRoot);
+				if (File.Exists(fileFromRoot))
+					return IOPath.GetDirectoryName(fileFromRoot);
 			}
-			return false;
+			return null;
 		}
 
 
@@ -131,7 +216,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			if (string.IsNullOrEmpty(fileFromRootpath))
 			{
 				Assert.Fail($"Unable to find {file} at path: {fileFromRootpath}");
-				return null;
+				return null!;
 			}
 			return File.ReadAllText(fileFromRootpath);
 		}

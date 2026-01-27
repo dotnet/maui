@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			if (string.IsNullOrEmpty(Member) || Member.IndexOf(".", StringComparison.Ordinal) == -1)
 				throw new XamlParseException("Syntax for x:Static is [Member=][prefix:]typeName.staticMemberName", serviceProvider);
 
-			var dotIdx = Member.LastIndexOf('.');
+			var dotIdx = Member.LastIndexOf(".", StringComparison.Ordinal);
 			var typename = Member.Substring(0, dotIdx);
 			var membername = Member.Substring(dotIdx + 1);
 
