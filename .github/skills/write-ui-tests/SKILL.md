@@ -1,13 +1,13 @@
 ---
-name: write-tests
+name: write-ui-tests
 description: Creates UI tests for a GitHub issue and verifies they reproduce the bug. Iterates until tests actually fail (proving they catch the issue). Use when PR lacks tests or tests need to be created for an issue.
 metadata:
   author: dotnet-maui
-  version: "1.0"
+  version: "1.1"
 compatibility: Requires git, PowerShell, .NET SDK, and Appium for UI test execution.
 ---
 
-# Write Tests Skill
+# Write UI Tests Skill
 
 Creates UI tests that reproduce a GitHub issue, following .NET MAUI conventions. **Verifies the tests actually fail before completing.**
 
@@ -114,7 +114,7 @@ public partial class IssueXXXXX : ContentPage
 **Location:** `src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/IssueXXXXX.cs`
 
 ```csharp
-namespace Microsoft.Maui.TestCases.Shared.Tests.Tests.Issues;
+namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class IssueXXXXX : _IssuesUITest
 {
@@ -274,6 +274,49 @@ public void PickerDismissResetsIsOpen()
     // ...
 }
 ```
+
+## iOS Device Selection
+
+When running tests on iOS, you may need to target a specific device or iOS version:
+
+```bash
+# Default: iPhone Xs with iOS 18.5
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "Issue12345"
+
+# Find iPhone Xs with iOS 18.5 and get its UDID
+UDID=$(xcrun simctl list devices available --json | jq -r '
+  .devices | to_entries 
+  | map(select(.key | contains("iOS-18-5"))) 
+  | map(.value) | flatten 
+  | map(select(.name == "iPhone Xs")) | first | .udid')
+
+# Run with specific device
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "Issue12345" -DeviceUdid "$UDID"
+```
+
+**Finding different device/version combinations:**
+```bash
+# iPhone 16 Pro with any iOS version
+UDID=$(xcrun simctl list devices available --json | jq -r '
+  .devices[][] | select(.name == "iPhone 16 Pro") | .udid' | head -1)
+
+# Any device with iOS 18.0
+UDID=$(xcrun simctl list devices available --json | jq -r '
+  .devices | to_entries 
+  | map(select(.key | contains("iOS-18-0"))) 
+  | map(.value) | flatten | .[0].udid')
+```
+
+## Pre-Run Checklist
+
+Before running `verify-tests-fail.ps1`, confirm:
+
+- [ ] HostApp file exists: `TestCases.HostApp/Issues/IssueXXXXX.cs`
+- [ ] NUnit test file exists: `TestCases.Shared.Tests/Tests/Issues/IssueXXXXX.cs`
+- [ ] `[Issue()]` attribute present with all parameters
+- [ ] All `AutomationId` values match between HostApp and test
+- [ ] Test inherits from `_IssuesUITest`
+- [ ] ONE `[Category()]` attribute from `UITestCategories.cs`
 
 ## References
 

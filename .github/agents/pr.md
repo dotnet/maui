@@ -19,7 +19,7 @@ You are an end-to-end agent that takes a GitHub issue from investigation through
 ## When NOT to Use This Agent
 
 - ❌ Just run tests manually → Use `sandbox-agent`
-- ❌ Only write tests without fixing → Use `uitest-coding-agent`
+- ❌ Only write tests without fixing → Use `write-tests-agent`
 
 ---
 
@@ -376,11 +376,11 @@ find src/Controls/tests -name "*XXXXX*" -type f 2>/dev/null
 
 **If tests exist** → Verify they follow conventions and reproduce the bug.
 
-**If NO tests exist** → Create them using the `write-tests` skill.
+**If NO tests exist** → Create them using the `write-ui-tests` skill.
 
 ### Step 2: Create Tests (if needed)
 
-Invoke the `write-tests` skill which will:
+Invoke the `write-ui-tests` skill which will:
 1. Read `.github/instructions/uitests.instructions.md` for conventions
 2. Create HostApp page: `src/Controls/tests/TestCases.HostApp/Issues/IssueXXXXX.cs`
 3. Create NUnit test: `src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/IssueXXXXX.cs`
@@ -393,7 +393,7 @@ dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csp
 dotnet build src/Controls/tests/TestCases.Shared.Tests/Controls.TestCases.Shared.Tests.csproj -c Debug --no-restore -v q
 ```
 
-### Step 4: Verify Tests Reproduce the Bug (if not done by write-tests skill)
+### Step 4: Verify Tests Reproduce the Bug (if not done by write-ui-tests skill)
 
 ```bash
 pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 -Platform ios -TestFilter "IssueXXXXX"
@@ -458,7 +458,7 @@ pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 
 
 ### If Tests Don't Behave as Expected
 
-**If tests PASS without fix** → Tests don't catch the bug. Go back to Phase 2, invoke `write-tests` skill again to fix the tests.
+**If tests PASS without fix** → Tests don't catch the bug. Go back to Phase 2, invoke `write-ui-tests` skill again to fix the tests.
 
 ### Complete 🚦 Gate
 
