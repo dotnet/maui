@@ -8,63 +8,69 @@ public class WebViewHelperTests
 	[Fact]
 	public void EscapeJsString_NullInput_ReturnsNull()
 	{
-		const string input = null;
-		var result = WebViewHelper.EscapeJsString(input);
+		var result = WebViewHelper.EscapeJsString(null);
 		Assert.Null(result);
 	}
 
 	[Fact]
-	public void EscapeJsString_NoSingleQuote_ReturnsSameString()
+	public void EscapeJsString_NoSpecialChars_ReturnsSameString()
 	{
+		// No backslashes or single quotes - returns unchanged
 		const string input = """console.log("Hello, world!");""";
 		var result = WebViewHelper.EscapeJsString(input);
 		Assert.Equal(input, result);
 	}
 
 	[Fact]
-	public void EscapeJsString_UnescapedQuote_EscapesCorrectly()
+	public void EscapeJsString_SingleQuote_EscapesCorrectly()
 	{
-		// Each unescaped single quote should be preceded by one backslash.
+		// Single quotes should be escaped
 		const string input = """console.log('Hello, world!');""";
-		// Expected: each occurrence of "'" becomes "\'"
 		const string expected = """console.log(\'Hello, world!\');""";
 		var result = WebViewHelper.EscapeJsString(input);
 		Assert.Equal(expected, result);
 	}
 
 	[Fact]
-	public void EscapeJsString_AlreadyEscapedQuote_EscapesFurther()
+	public void EscapeJsString_Backslash_EscapesCorrectly()
 	{
-		const string input = """var str = 'Don\'t do that';""";
-		const string expected = """var str = \'Don\\\'t do that\';""";
+		// Backslashes should be escaped to prevent double-evaluation in eval()
+		const string input = @"console.log(""Hello\\World"");";
+		const string expected = @"console.log(""Hello\\\\World"");";
 		var result = WebViewHelper.EscapeJsString(input);
 		Assert.Equal(expected, result);
 	}
 
 	[Fact]
-	public void EscapeJsString_MultipleLinesAndMixedQuotes()
+	public void EscapeJsString_BackslashAndQuote_EscapesBothCorrectly()
 	{
-		const string input = """
-			function test() {
-				console.log('Test "string" with a single quote');
-				var example = 'It\\'s tricky!';
-			}
-			""";
-		const string expected = """
-			function test() {
-				console.log(\'Test "string" with a single quote\');
-				var example = \'It\\\\\'s tricky!\';
-			}
-			""";
+		// Both backslashes and single quotes must be escaped
+		// Backslashes first, then quotes
+		const string input = @"var str = 'Don\'t do that';";
+		// \ -> \\, then ' -> \'
+		// Input has: ' D o n \ ' t   (quote, backslash, quote)
+		// After escaping \: ' D o n \\ ' t
+		// After escaping ': \' D o n \\ \' t
+		const string expected = @"var str = \'Don\\\'t do that\';";
 		var result = WebViewHelper.EscapeJsString(input);
 		Assert.Equal(expected, result);
 	}
 
 	[Fact]
-	public void EscapeJsString_MultipleBackslashesBeforeQuote()
+	public void EscapeJsString_MultipleBackslashes()
 	{
-		const string input = @"var tricky = 'Backslash: \\\' tricky!';";
-		const string expected = @"var tricky = \'Backslash: \\\\\\\' tricky!\';";
+		// Multiple backslashes should each be doubled
+		const string input = @"path\\to\\file";
+		const string expected = @"path\\\\to\\\\file";
+		var result = WebViewHelper.EscapeJsString(input);
+		Assert.Equal(expected, result);
+	}
+
+	[Fact]
+	public void EscapeJsString_XssAttackPrevention()
+	{
+		const string input = """console.log("\\");alert('xss');(\\"");""";
+		const string expected = """console.log("\\\\");alert(\'xss\');(\\\\"");""";
 		var result = WebViewHelper.EscapeJsString(input);
 		Assert.Equal(expected, result);
 	}
@@ -97,11 +103,30 @@ public class WebViewHelperTests
 	}
 
 	[Fact]
-	public void EscapeJsString_RepeatedEscapedQuotes()
+	public void EscapeJsString_OnlyBackslash()
 	{
-		const string input = @"'Quote' and again \'Quote\'";
-		const string expected = @"\'Quote\' and again \\\'Quote\\\'";
+		const string input = @"\";
+		const string expected = @"\\";
 		var result = WebViewHelper.EscapeJsString(input);
 		Assert.Equal(expected, result);
+	}
+
+	[Fact]
+	public void EscapeJsString_TrailingBackslashBeforeQuote()
+	{
+		// Edge case: backslash immediately before quote
+		const string input = @"test\'";
+		// \ -> \\, then ' -> \'
+		const string expected = @"test\\\'";
+		var result = WebViewHelper.EscapeJsString(input);
+		Assert.Equal(expected, result);
+	}
+
+	[Fact]
+	public void EscapeJsString_EmptyString_ReturnsSameString()
+	{
+		const string input = "";
+		var result = WebViewHelper.EscapeJsString(input);
+		Assert.Equal(input, result);
 	}
 }

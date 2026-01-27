@@ -1,36 +1,41 @@
 ﻿namespace Microsoft.Maui.Handlers;
 
 using System;
-using System.Text.RegularExpressions;
 
 internal static partial class WebViewHelper
 {
-	internal static string? EscapeJsString(string js)
+	/// <summary>
+	/// Escapes a JavaScript string for safe inclusion in a single-quoted string literal.
+	/// </summary>
+	internal static string? EscapeJsString(string? js)
 	{
 		if (js == null)
 			return null;
 
 #if NET6_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
-		if (!js.Contains('\'', StringComparison.Ordinal))
+		bool hasBackslash = js.Contains('\\', StringComparison.Ordinal);
+		bool hasSingleQuote = js.Contains('\'', StringComparison.Ordinal);
 #else
-		if (js.IndexOf('\'') == -1)
+		bool hasBackslash = js.IndexOf('\\') != -1;
+		bool hasSingleQuote = js.IndexOf('\'') != -1;
 #endif
+
+		if (!hasBackslash && !hasSingleQuote)
 			return js;
 
-		return EscapeJsStringRegex().Replace(js, m =>
-		{
-			int count = m.Groups[1].Value.Length;
-			// Replace with doubled backslashes plus one extra backslash, then the quote.
-			return new string('\\', (count * 2) + 1) + "'";
-		});
-	}
-
-#if NET6_0_OR_GREATER
-	[GeneratedRegex(@"(\\*)'")]
-	private static partial Regex EscapeJsStringRegex();
+		var result = js;
+#if NET6_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+		if (hasBackslash)
+			result = result.Replace("\\", "\\\\", StringComparison.Ordinal);
+		if (hasSingleQuote)
+			result = result.Replace("'", "\\'", StringComparison.Ordinal);
 #else
-	static Regex? EscapeJsStringRegexCached;
-	private static Regex EscapeJsStringRegex() =>
-		EscapeJsStringRegexCached ??= new Regex(@"(\\*)'", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+		if (hasBackslash)
+			result = result.Replace("\\", "\\\\");
+		if (hasSingleQuote)
+			result = result.Replace("'", "\\'");
 #endif
+
+		return result;
+	}
 }
