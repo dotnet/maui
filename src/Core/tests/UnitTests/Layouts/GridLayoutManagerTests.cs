@@ -3252,9 +3252,9 @@ SetLocation(grid, view, row: 0, col: 0, colSpan: 3);
 var manager = new GridLayoutManager(grid);
 var measure = manager.Measure(200, double.PositiveInfinity);
 
-// Cell spans all 3 columns: auto(20) + *(100) + auto(20) + spacing(6*2) = 152
-// Without fix: would be 140 (missing 12px of spacing)
-view.Received().Measure(Arg.Is<double>(width => width == 152), Arg.Any<double>());
+// Cell spans all 3 columns: should get full grid width of 200px
+// Without fix: gets 188px (missing spacing in calculation)
+view.Received().Measure(Arg.Is<double>(width => width == 200), Arg.Any<double>());
 }
 
 [Fact]
@@ -3274,9 +3274,9 @@ SetLocation(grid, view, row: 0, col: 0, rowSpan: 3);
 var manager = new GridLayoutManager(grid);
 var measure = manager.Measure(double.PositiveInfinity, 200);
 
-// Cell spans all 3 rows: auto(20) + *(100) + auto(20) + spacing(6*2) = 152
-// Without fix: would be 140 (missing 12px of spacing)
-view.Received().Measure(Arg.Any<double>(), Arg.Is<double>(height => height == 152));
+// Cell spans all 3 rows: should get full grid width of 200px
+// Without fix: gets 188px (missing spacing in calculation)
+view.Received().Measure(Arg.Any<double>(), Arg.Is<double>(height => height == 200));
 }
 }
 }
