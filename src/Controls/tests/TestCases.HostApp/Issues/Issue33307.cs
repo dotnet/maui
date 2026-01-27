@@ -410,7 +410,7 @@ public class Issue33307Page2 : ContentPage
 				rowPicker.SetBinding(Picker.SelectedItemProperty, "selected_item");
 				rowPicker.SelectedIndexChanged += (s, e) =>
 				{
-					if (rowPicker.SelectedItem is ClassB selectedItem)
+					if (rowPicker.SelectedItem is Issue33307ClassB selectedItem)
 					{
 						if (selectedItemLabel != null)
 							selectedItemLabel.Text = selectedItem.name.ToString();
