@@ -26,6 +26,10 @@ namespace UITest.Appium
 			{
 				return CommandResponse.FailedEmptyResponse;
 			}
+			catch (NoSuchElementException)
+			{
+				return CommandResponse.FailedEmptyResponse;
+			}
 
 			return CommandResponse.SuccessEmptyResponse;
 		}
