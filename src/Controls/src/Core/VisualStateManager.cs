@@ -17,10 +17,16 @@ namespace Microsoft.Maui.Controls
 		{
 			public const string Normal = "Normal";
 			public const string Disabled = "Disabled";
-			public const string Focused = "Focused";
+			public const string Focused = FocusStates.Focused;
 			public const string Selected = "Selected";
 			public const string PointerOver = "PointerOver";
-			internal const string Unfocused = "Unfocused";
+		}
+
+		// TODO: .NET 10 - make public
+		internal class FocusStates
+		{
+			public const string Focused = "Focused";
+			public const string Unfocused = "Unfocused";
 		}
 
 		/// <summary>Bindable property for attached property <c>VisualStateGroups</c>.</summary>
