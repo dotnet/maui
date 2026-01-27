@@ -1,5 +1,5 @@
 ---
-name: pr-comment
+name: ai-summary-comment
 description: Posts or updates automated progress comments on GitHub PRs. Use after completing any PR agent phase (pre-flight, tests, gate, fix, report). Triggers on 'post comment to PR', 'update PR progress', 'comment on PR with results', 'post pre-flight comment'. Creates single aggregated review comment with collapsible sections per commit.
 metadata:
   author: dotnet-maui
@@ -67,10 +67,10 @@ The `post-pr-finalize-comment.ps1` script posts a **separate comment** identifie
 
 | Section | Script | Location |
 |---------|--------|----------|
-| `PR-REVIEW` | `post-pr-comment.ps1` | `.github/skills/pr-comment/scripts/` |
-| `TRY-FIX` | `post-try-fix-comment.ps1` | `.github/skills/pr-comment/scripts/` |
-| `WRITE-TESTS` | `post-write-tests-comment.ps1` | `.github/skills/pr-comment/scripts/` |
-| `VERIFY-TESTS` | `post-verify-tests-comment.ps1` | `.github/skills/pr-comment/scripts/` |
+| `PR-REVIEW` | `post-ai-summary-comment.ps1` | `.github/skills/ai-summary-comment/scripts/` |
+| `TRY-FIX` | `post-try-fix-comment.ps1` | `.github/skills/ai-summary-comment/scripts/` |
+| `WRITE-TESTS` | `post-write-tests-comment.ps1` | `.github/skills/ai-summary-comment/scripts/` |
+| `VERIFY-TESTS` | `post-verify-tests-comment.ps1` | `.github/skills/ai-summary-comment/scripts/` |
 
 ### Separate Comments
 
@@ -94,20 +94,20 @@ The `post-pr-finalize-comment.ps1` script posts a **separate comment** identifie
 
 ```bash
 # Auto-loads CustomAgentLogsTmp/PRState/pr-27246.md
-pwsh .github/skills/pr-comment/scripts/post-pr-comment.ps1 -PRNumber 27246
+pwsh .github/skills/ai-summary-comment/scripts/post-ai-summary-comment.ps1 -PRNumber 27246
 ```
 
 ### With explicit state file path
 
 ```bash
 # PRNumber auto-extracted from filename (pr-27246.md → 27246)
-pwsh .github/skills/pr-comment/scripts/post-pr-comment.ps1 -StateFile CustomAgentLogsTmp/PRState/pr-27246.md
+pwsh .github/skills/ai-summary-comment/scripts/post-ai-summary-comment.ps1 -StateFile CustomAgentLogsTmp/PRState/pr-27246.md
 ```
 
 ### Legacy: Provide content directly
 
 ```bash
-pwsh .github/skills/pr-comment/scripts/post-pr-comment.ps1 -PRNumber 12345 -Content "$(cat CustomAgentLogsTmp/PRState/pr-12345.md)"
+pwsh .github/skills/ai-summary-comment/scripts/post-ai-summary-comment.ps1 -PRNumber 12345 -Content "$(cat CustomAgentLogsTmp/PRState/pr-12345.md)"
 ```
 
 ### Parameters
@@ -118,7 +118,7 @@ pwsh .github/skills/pr-comment/scripts/post-pr-comment.ps1 -PRNumber 12345 -Cont
 | `StateFile` | No* | Path to state file (PRNumber auto-extracted from `pr-XXXXX.md` naming) | `CustomAgentLogsTmp/PRState/pr-27246.md` |
 | `Content` | No* | Full state file content (legacy, can be piped via stdin) | Content from state file |
 | `DryRun` | No | Preview changes in local file instead of posting to GitHub | `-DryRun` |
-| `PreviewFile` | No | Path to local preview file for DryRun mode (default: `CustomAgentLogsTmp/PRState/{PRNumber}/pr-comment-preview.md`) | `-PreviewFile ./preview.md` |
+| `PreviewFile` | No | Path to local preview file for DryRun mode (default: `CustomAgentLogsTmp/PRState/{PRNumber}/ai-summary-comment-preview.md`) | `-PreviewFile ./preview.md` |
 | `SkipValidation` | No | Skip validation checks (not recommended) | `-SkipValidation` |
 
 *At least one of PRNumber, StateFile, or Content is required. The script will:
@@ -132,17 +132,17 @@ Use `-DryRun` to preview the combined comment before posting to GitHub. Each scr
 
 ```bash
 # Step 1: Run verify-tests script (creates preview file)
-pwsh .github/skills/pr-comment/scripts/post-verify-tests-comment.ps1 -PRNumber 32891 -DryRun
+pwsh .github/skills/ai-summary-comment/scripts/post-verify-tests-comment.ps1 -PRNumber 32891 -DryRun
 
 # Step 2: Run try-fix script (updates same preview file)
-pwsh .github/skills/pr-comment/scripts/post-try-fix-comment.ps1 -IssueNumber 32891 -DryRun
+pwsh .github/skills/ai-summary-comment/scripts/post-try-fix-comment.ps1 -IssueNumber 32891 -DryRun
 
 # Step 3: Review the combined preview
-open CustomAgentLogsTmp/PRState/32891/pr-comment-preview.md
+open CustomAgentLogsTmp/PRState/32891/ai-summary-comment-preview.md
 
 # Step 4: Post for real (remove -DryRun)
-pwsh .github/skills/pr-comment/scripts/post-verify-tests-comment.ps1 -PRNumber 32891
-pwsh .github/skills/pr-comment/scripts/post-try-fix-comment.ps1 -IssueNumber 32891
+pwsh .github/skills/ai-summary-comment/scripts/post-verify-tests-comment.ps1 -PRNumber 32891
+pwsh .github/skills/ai-summary-comment/scripts/post-try-fix-comment.ps1 -IssueNumber 32891
 ```
 
 **Key behavior:** The preview file exactly matches what will be posted to GitHub. Multiple scripts accumulate their sections in the same file.
@@ -161,7 +161,7 @@ Each section is wrapped with markers like `<!-- SECTION:TRY-FIX -->` and `<!-- /
 
 To reset the preview file for a fresh start:
 ```bash
-rm CustomAgentLogsTmp/PRState/{PRNumber}/pr-comment-preview.md
+rm CustomAgentLogsTmp/PRState/{PRNumber}/ai-summary-comment-preview.md
 ```
 
 ### Prerequisites
@@ -210,7 +210,7 @@ When the same PR is reviewed multiple times (e.g., after new commits), the scrip
 
 ## Script Files
 
-- [`post-pr-comment.ps1`](scripts/post-pr-comment.ps1) - Posts or updates the aggregated PR agent review comment
+- [`post-ai-summary-comment.ps1`](scripts/post-ai-summary-comment.ps1) - Posts or updates the aggregated PR agent review comment
 - [`post-try-fix-comment.ps1`](scripts/post-try-fix-comment.ps1) - Posts or updates try-fix attempts comment
 
 ## Try-Fix Comment Script
@@ -225,7 +225,7 @@ The `post-try-fix-comment.ps1` script updates the `<!-- SECTION:TRY-FIX -->` sec
 
 ```powershell
 # All parameters auto-loaded from directory structure
-pwsh .github/skills/pr-comment/scripts/post-try-fix-comment.ps1 `
+pwsh .github/skills/ai-summary-comment/scripts/post-try-fix-comment.ps1 `
     -TryFixDir CustomAgentLogsTmp/PRState/27246/try-fix/attempt-1
 ```
 
@@ -233,13 +233,13 @@ pwsh .github/skills/pr-comment/scripts/post-try-fix-comment.ps1 `
 
 ```powershell
 # Auto-discovers and posts latest attempt from CustomAgentLogsTmp/PRState/27246/try-fix/
-pwsh .github/skills/pr-comment/scripts/post-try-fix-comment.ps1 -IssueNumber 27246
+pwsh .github/skills/ai-summary-comment/scripts/post-try-fix-comment.ps1 -IssueNumber 27246
 ```
 
 #### Legacy: Manual parameters
 
 ```powershell
-pwsh .github/skills/pr-comment/scripts/post-try-fix-comment.ps1 `
+pwsh .github/skills/ai-summary-comment/scripts/post-try-fix-comment.ps1 `
     -IssueNumber 19806 `
     -AttemptNumber 1 `
     -Approach "LayoutExtensions Width Constraint" `
@@ -329,13 +329,13 @@ The `post-verify-tests-comment.ps1` script updates the `<!-- SECTION:VERIFY-TEST
 
 ```powershell
 # Auto-loads from CustomAgentLogsTmp/PRState/{PRNumber}/verify-tests-fail/
-pwsh .github/skills/pr-comment/scripts/post-verify-tests-comment.ps1 -PRNumber 32891
+pwsh .github/skills/ai-summary-comment/scripts/post-verify-tests-comment.ps1 -PRNumber 32891
 ```
 
 #### With explicit report file
 
 ```powershell
-pwsh .github/skills/pr-comment/scripts/post-verify-tests-comment.ps1 `
+pwsh .github/skills/ai-summary-comment/scripts/post-verify-tests-comment.ps1 `
     -PRNumber 32891 `
     -ReportFile CustomAgentLogsTmp/PRState/32891/verify-tests-fail/verification-report.md
 ```
@@ -376,7 +376,7 @@ The `post-write-tests-comment.ps1` script updates the `<!-- SECTION:WRITE-TESTS 
 
 ```powershell
 # All parameters auto-loaded from directory structure
-pwsh .github/skills/pr-comment/scripts/post-write-tests-comment.ps1 `
+pwsh .github/skills/ai-summary-comment/scripts/post-write-tests-comment.ps1 `
     -TestDir CustomAgentLogsTmp/PRState/27246/write-tests/attempt-1
 ```
 
@@ -384,13 +384,13 @@ pwsh .github/skills/pr-comment/scripts/post-write-tests-comment.ps1 `
 
 ```powershell
 # Auto-discovers and posts latest attempt from CustomAgentLogsTmp/PRState/27246/write-tests/
-pwsh .github/skills/pr-comment/scripts/post-write-tests-comment.ps1 -IssueNumber 27246
+pwsh .github/skills/ai-summary-comment/scripts/post-write-tests-comment.ps1 -IssueNumber 27246
 ```
 
 #### Legacy: Manual parameters
 
 ```powershell
-pwsh .github/skills/pr-comment/scripts/post-write-tests-comment.ps1 `
+pwsh .github/skills/ai-summary-comment/scripts/post-write-tests-comment.ps1 `
     -IssueNumber 33331 `
     -AttemptNumber 1 `
     -TestDescription "Verifies Picker.IsOpen property changes correctly" `

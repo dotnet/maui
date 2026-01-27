@@ -34,15 +34,15 @@
 
 .EXAMPLE
     # Simplest: just provide PR number, state file auto-loaded
-    ./post-pr-comment.ps1 -PRNumber 12345
+    ./post-ai-summary-comment.ps1 -PRNumber 12345
 
 .EXAMPLE
     # Provide state file directly (PR number auto-extracted from filename)
-    ./post-pr-comment.ps1 -StateFile CustomAgentLogsTmp/PRState/pr-27246.md
+    ./post-ai-summary-comment.ps1 -StateFile CustomAgentLogsTmp/PRState/pr-27246.md
 
 .EXAMPLE
     # Legacy: provide content directly
-    ./post-pr-comment.ps1 -PRNumber 12345 -Content "$(cat CustomAgentLogsTmp/PRState/pr-12345.md)"
+    ./post-ai-summary-comment.ps1 -PRNumber 12345 -Content "$(cat CustomAgentLogsTmp/PRState/pr-12345.md)"
 #>
 
 param(
@@ -125,13 +125,13 @@ if ([string]::IsNullOrWhiteSpace($Content)) {
     Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Red
     Write-Host ""
     Write-Host "Usage options:" -ForegroundColor Yellow
-    Write-Host "  1. ./post-pr-comment.ps1 -PRNumber 12345" -ForegroundColor Gray
+    Write-Host "  1. ./post-ai-summary-comment.ps1 -PRNumber 12345" -ForegroundColor Gray
     Write-Host "     (auto-loads CustomAgentLogsTmp/PRState/pr-12345.md)" -ForegroundColor Gray
     Write-Host ""
-    Write-Host "  2. ./post-pr-comment.ps1 -StateFile path/to/pr-12345.md" -ForegroundColor Gray
+    Write-Host "  2. ./post-ai-summary-comment.ps1 -StateFile path/to/pr-12345.md" -ForegroundColor Gray
     Write-Host "     (loads specified file, extracts PRNumber from name)" -ForegroundColor Gray
     Write-Host ""
-    Write-Host "  3. ./post-pr-comment.ps1 -PRNumber 12345 -Content `"...`"" -ForegroundColor Gray
+    Write-Host "  3. ./post-ai-summary-comment.ps1 -PRNumber 12345 -Content `"...`"" -ForegroundColor Gray
     Write-Host "     (legacy: provide content directly)" -ForegroundColor Gray
     Write-Host ""
     throw "Content is required. See usage options above."
@@ -720,7 +720,7 @@ $commentBody = $commentBody -replace "`n{4,}", "`n`n`n"
 if ($DryRun) {
     # File-based DryRun: mirrors GitHub comment behavior using a local file
     if ([string]::IsNullOrWhiteSpace($PreviewFile)) {
-        $PreviewFile = "CustomAgentLogsTmp/PRState/$PRNumber/pr-comment-preview.md"
+        $PreviewFile = "CustomAgentLogsTmp/PRState/$PRNumber/ai-summary-comment-preview.md"
     }
     
     # Ensure directory exists

@@ -2,7 +2,7 @@
 
 ## Summary of Changes
 
-The `post-pr-comment.ps1` script has been significantly improved to make posting PR review comments easier and more flexible using **dynamic section extraction**.
+The `post-ai-summary-comment.ps1` script has been significantly improved to make posting PR review comments easier and more flexible using **dynamic section extraction**.
 
 ## Key Improvements
 
@@ -88,7 +88,7 @@ Enable detailed extraction information:
 
 ```powershell
 $DebugPreference = 'Continue'
-./post-pr-comment.ps1 -PRNumber 12345
+./post-ai-summary-comment.ps1 -PRNumber 12345
 ```
 
 **Shows:**
@@ -152,22 +152,22 @@ function Get-SectionByPattern {
 
 ### Basic Usage (unchanged)
 ```powershell
-pwsh .github/skills/pr-comment/scripts/post-pr-comment.ps1 -PRNumber 27340
+pwsh .github/skills/ai-summary-comment/scripts/post-ai-summary-comment.ps1 -PRNumber 27340
 ```
 
 ### With Debug Mode (recommended when troubleshooting)
 ```powershell
-pwsh -Command '$DebugPreference = "Continue"; ./.github/skills/pr-comment/scripts/post-pr-comment.ps1 -PRNumber 27340'
+pwsh -Command '$DebugPreference = "Continue"; ./.github/skills/ai-summary-comment/scripts/post-ai-summary-comment.ps1 -PRNumber 27340'
 ```
 
 ### Skip Validation
 ```powershell
-pwsh .github/skills/pr-comment/scripts/post-pr-comment.ps1 -PRNumber 27340 -SkipValidation
+pwsh .github/skills/ai-summary-comment/scripts/post-ai-summary-comment.ps1 -PRNumber 27340 -SkipValidation
 ```
 
 ### Dry Run
 ```powershell
-pwsh .github/skills/pr-comment/scripts/post-pr-comment.ps1 -PRNumber 27340 -DryRun
+pwsh .github/skills/ai-summary-comment/scripts/post-ai-summary-comment.ps1 -PRNumber 27340 -DryRun
 ```
 
 ---
@@ -247,7 +247,7 @@ Any title matching `'📋.*Report'` or `'Final Report'`:
 
 **Step 1:** Enable debug mode to see what was found
 ```powershell
-pwsh -Command '$DebugPreference = "Continue"; ./post-pr-comment.ps1 -PRNumber XXXXX'
+pwsh -Command '$DebugPreference = "Continue"; ./post-ai-summary-comment.ps1 -PRNumber XXXXX'
 ```
 
 **Look for:**
@@ -410,7 +410,7 @@ Found 2 warning(s) (non-critical):
 
 ```powershell
 $DebugPreference = 'Continue'
-./post-pr-comment.ps1 -PRNumber 12345
+./post-ai-summary-comment.ps1 -PRNumber 12345
 ```
 
 **Debug output shows:**
@@ -473,23 +473,23 @@ Found 1 validation error(s):
 
 ### Basic Usage (unchanged)
 ```powershell
-pwsh .github/skills/pr-comment/scripts/post-pr-comment.ps1 -PRNumber 27340
+pwsh .github/skills/ai-summary-comment/scripts/post-ai-summary-comment.ps1 -PRNumber 27340
 ```
 
 ### With Debug Mode
 ```powershell
 $DebugPreference = 'Continue'
-pwsh .github/skills/pr-comment/scripts/post-pr-comment.ps1 -PRNumber 27340
+pwsh .github/skills/ai-summary-comment/scripts/post-ai-summary-comment.ps1 -PRNumber 27340
 ```
 
 ### Skip Validation (when needed)
 ```powershell
-pwsh .github/skills/pr-comment/scripts/post-pr-comment.ps1 -PRNumber 27340 -SkipValidation
+pwsh .github/skills/ai-summary-comment/scripts/post-ai-summary-comment.ps1 -PRNumber 27340 -SkipValidation
 ```
 
 ### Dry Run (preview only)
 ```powershell
-pwsh .github/skills/pr-comment/scripts/post-pr-comment.ps1 -PRNumber 27340 -DryRun
+pwsh .github/skills/ai-summary-comment/scripts/post-ai-summary-comment.ps1 -PRNumber 27340 -DryRun
 ```
 
 ---
@@ -560,12 +560,12 @@ Your report content here...
 **Solution 2:** Use debug mode to see what's happening
 ```powershell
 $DebugPreference = 'Continue'
-./post-pr-comment.ps1 -PRNumber XXXXX
+./post-ai-summary-comment.ps1 -PRNumber XXXXX
 ```
 
 **Solution 3:** Use `-SkipValidation` if content is definitely there
 ```powershell
-./post-pr-comment.ps1 -PRNumber XXXXX -SkipValidation
+./post-ai-summary-comment.ps1 -PRNumber XXXXX -SkipValidation
 ```
 
 ---

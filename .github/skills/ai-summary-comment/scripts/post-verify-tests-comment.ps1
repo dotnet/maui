@@ -271,7 +271,7 @@ $verifySection
 if ($DryRun) {
     # File-based DryRun: mirrors GitHub comment behavior using a local file
     if ([string]::IsNullOrWhiteSpace($PreviewFile)) {
-        $PreviewFile = "CustomAgentLogsTmp/PRState/$PRNumber/pr-comment-preview.md"
+        $PreviewFile = "CustomAgentLogsTmp/PRState/$PRNumber/ai-summary-comment-preview.md"
     }
     
     # Ensure directory exists

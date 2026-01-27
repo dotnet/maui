@@ -424,7 +424,7 @@ $writeTestsSection
 if ($DryRun) {
     # File-based DryRun: mirrors GitHub comment behavior using a local file
     if ([string]::IsNullOrWhiteSpace($PreviewFile)) {
-        $PreviewFile = "CustomAgentLogsTmp/PRState/$IssueNumber/pr-comment-preview.md"
+        $PreviewFile = "CustomAgentLogsTmp/PRState/$IssueNumber/ai-summary-comment-preview.md"
     }
     
     # Ensure directory exists
