@@ -545,11 +545,12 @@ namespace Microsoft.Maui.TestCases.Tests
 			// Since the Appium screenshot on Mac (unlike Windows) is of the entire screen, not just the app,
 			// we are going to crop the screenshot to the app window bounds, including rounded corners.
 			// In multi-window apps (UIApplicationSceneManifest), there may be multiple windows.
-			// Use XPath to find only top-level SceneWindow elements, not nested windows.
+			System.Drawing.Rectangle windowBounds = default;
+			
+			// Find the SceneWindow (used in multi-window apps) or fallback to any window
 			var windows = App.FindElements(AppiumQuery.ByXPath("//XCUIElementTypeWindow[@identifier='SceneWindow']"));
 			if (windows.Count == 0)
 			{
-				// Fallback to finding any window if no SceneWindow found
 				windows = App.FindElements(AppiumQuery.ByClass("XCUIElementTypeWindow"));
 			}
 			
@@ -559,7 +560,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 			
 			// Find the largest window by area (most likely to be the main content window)
-			System.Drawing.Rectangle windowBounds = default;
 			int maxArea = 0;
 			foreach (var window in windows)
 			{
@@ -584,40 +584,25 @@ namespace Microsoft.Maui.TestCases.Tests
 				throw new InvalidOperationException("Could not determine window bounds for screenshot");
 			}
 
-			// Take the screenshot first to determine if we need to scale
-			var bytes = App.Screenshot();
-			using var fullScreenImage = new MagickImage(bytes);
-			
-			// Mac Catalyst on Retina displays: screenshot is in physical pixels (2x),
-			// but window bounds from Appium are in logical points. Detect and apply scaling.
-			// The screen resolution from the screenshot tells us if it's Retina.
-			int screenWidth = (int)fullScreenImage.Width;
-			
-			// Typical Mac Catalyst test runs on screens that are 1728 logical pixels wide (3456 physical for Retina)
-			// or 1920+ for larger displays. If the screenshot is larger than expected, we're on Retina.
-			int scaleFactor = screenWidth > 2000 ? 2 : 1;
-			
-			var x = windowBounds.X * scaleFactor;
-			var y = windowBounds.Y * scaleFactor;
-			var width = windowBounds.Width * scaleFactor;
-			var height = windowBounds.Height * scaleFactor;
+			var x = windowBounds.X;
+			var y = windowBounds.Y;
+			var width = windowBounds.Width;
+			var height = windowBounds.Height;
 			const int cornerRadius = 12;
+
+			// Take the screenshot
+			var bytes = App.Screenshot();
 
 			// Draw a rounded rectangle with the app window bounds as mask
 			using var surface = new MagickImage(MagickColors.Transparent, width, height);
 			new Drawables()
-				.RoundRectangle(0, 0, width, height, cornerRadius * scaleFactor, cornerRadius * scaleFactor)
+				.RoundRectangle(0, 0, width, height, cornerRadius, cornerRadius)
 				.FillColor(MagickColors.Black)
 				.Draw(surface);
 
 			// Composite the screenshot with the mask
-			surface.Composite(fullScreenImage, -x, -y, CompositeOperator.SrcAtop);
-			
-			// If we scaled up, scale back down to logical pixels for consistent comparison
-			if (scaleFactor > 1)
-			{
-				surface.Resize(new MagickGeometry(windowBounds.Width, windowBounds.Height) { IgnoreAspectRatio = true });
-			}
+			using var image = new MagickImage(bytes);
+			surface.Composite(image, -x, -y, CompositeOperator.SrcAtop);
 
 			return surface.ToByteArray(MagickFormat.Png);
 		}
