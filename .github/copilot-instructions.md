@@ -202,9 +202,9 @@ The repository includes specialized custom agents and reusable skills for specif
    - **Trigger phrases**: "review PR #XXXXX", "work on PR #XXXXX", "fix issue #XXXXX", "continue PR #XXXXX"
    - **Do NOT use for**: Just running tests manually → Use `sandbox-agent`
 
-2. **write-tests-agent** - Agent for writing tests. Determines test type and invokes appropriate skill (currently UI tests via write-ui-tests)
+2. **write-tests-agent** - Agent for writing tests. Determines test type (UI vs XAML) and invokes the appropriate skill (`write-ui-tests`, `write-xaml-tests`)
    - **Use when**: Creating new tests for issues or PRs
-   - **Capabilities**: Test type determination, skill invocation, test verification
+   - **Capabilities**: Test type determination (UI and XAML), skill invocation, test verification
    - **Trigger phrases**: "write tests for #XXXXX", "create tests", "add test coverage"
 
 3. **sandbox-agent** - Specialized agent for working with the Sandbox app for testing, validation, and experimentation

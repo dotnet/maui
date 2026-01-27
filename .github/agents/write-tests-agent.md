@@ -63,7 +63,7 @@ The skill will:
 2. Create XAML and code-behind files
 3. Build and run the test
 
-**🛑 CRITICAL:** The skill enforces that tests must FAIL before reporting success. A passing test does NOT prove it catches the bug.
+**🛑 CRITICAL (UI Tests):** The `write-ui-tests` skill enforces that tests must FAIL before reporting success. A passing test does NOT prove it catches the bug. XAML tests may pass or fail depending on whether they're reproduction tests or regression tests.
 
 ### Step 4: Report Results
 
