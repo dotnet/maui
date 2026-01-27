@@ -656,7 +656,39 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		private protected virtual void AttachingToWindow()
 		{
-
+			// In scene-based apps, the window attaches after the initial measure pass.
+			// If the CollectionView was measured with 0 size (no cells could be created),
+			// we need to schedule a layout update for the next pass.
+			if (CollectionView?.Bounds.Height == 0 || CollectionView?.Bounds.Width == 0)
+			{
+				// Schedule multiple invalidations to catch different timing scenarios
+				// First at 100ms (after initial layout)
+				ItemsView?.Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(100), InvalidateForSceneWindow);
+				// Then at 200ms (after any animations)
+				ItemsView?.Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(200), InvalidateForSceneWindow);
+			}
+		}
+		
+		private void InvalidateForSceneWindow()
+		{
+			if (CollectionView == null || ItemsView == null)
+				return;
+				
+			// Reset previous content size to force remeasure
+			_previousContentSize = CGSize.Empty;
+			
+			// Force layout invalidation
+			CollectionView.CollectionViewLayout?.InvalidateLayout();
+			Layout?.InvalidateLayout();
+			
+			// Walk up the view hierarchy and invalidate each parent
+			IView view = ItemsView;
+			while (view?.Parent is IView parent)
+			{
+				parent.InvalidateMeasure();
+				view = parent;
+			}
+			ItemsView?.InvalidateMeasure();
 		}
 
 		private protected virtual void DetachingFromWindow()

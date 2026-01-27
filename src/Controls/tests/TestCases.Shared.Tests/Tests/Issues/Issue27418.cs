@@ -15,6 +15,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void CarouselItemsShouldRenderProperly()
 		{
 			App.WaitForElement("CarouselView");
+#if MACCATALYST
+			// Wait for scene-based window layout to complete
+			// Multi-window apps need extra time for the layout to stabilize
+			// The CarouselView layout requires multiple passes to settle
+			Thread.Sleep(3000);
+#endif
 #if WINDOWS
             Thread.Sleep(2000); // Wait for scrollbar to disappear to avoid flaky test failures in CI
 #endif

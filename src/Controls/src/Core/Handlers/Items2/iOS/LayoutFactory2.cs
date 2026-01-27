@@ -279,6 +279,10 @@ internal static class LayoutFactory2
 		NSCollectionLayoutDimension groupWidth = NSCollectionLayoutDimension.CreateFractionalWidth(1);
 		NSCollectionLayoutDimension groupHeight = NSCollectionLayoutDimension.CreateFractionalHeight(1);
 		NSCollectionLayoutGroup group = null;
+		
+		// Track the maximum valid container height we've seen to avoid layout oscillation
+		// in scene-based apps where container height can temporarily shrink during layout cycles
+		nfloat maxSeenContainerHeight = 0;
 
 		var layout = new UICollectionViewCompositionalLayout((sectionIndex, environment) =>
 		{
@@ -296,7 +300,10 @@ internal static class LayoutFactory2
 			{
 				sectionMargin = peekAreaInsets.VerticalThickness / 2;
 				var newGroupHeight = environment.Container.ContentSize.Height - peekAreaInsets.VerticalThickness;
-				groupHeight = NSCollectionLayoutDimension.CreateAbsolute((nfloat)newGroupHeight);
+				// Use estimated height if container height is 0 (can happen in scene-based apps before window attachment)
+				groupHeight = newGroupHeight > 0 
+					? NSCollectionLayoutDimension.CreateAbsolute((nfloat)newGroupHeight)
+					: NSCollectionLayoutDimension.CreateEstimated(300);
 				groupWidth = NSCollectionLayoutDimension.CreateFractionalWidth(1);
 			}
 			else
@@ -304,7 +311,32 @@ internal static class LayoutFactory2
 				sectionMargin = peekAreaInsets.HorizontalThickness / 2;
 				var newGroupWidth = environment.Container.ContentSize.Width - peekAreaInsets.HorizontalThickness;
 				groupWidth = NSCollectionLayoutDimension.CreateAbsolute((nfloat)newGroupWidth);
-				groupHeight = NSCollectionLayoutDimension.CreateFractionalHeight(1);
+				
+				// Track container height and use the max we've seen to avoid oscillation
+				// During layout cycles in scene-based apps, container height can temporarily shrink
+				var containerHeight = environment.Container.ContentSize.Height;
+				if (containerHeight > maxSeenContainerHeight)
+				{
+					maxSeenContainerHeight = containerHeight;
+				}
+				
+				// Use the max seen height, not the current (potentially shrunken) height
+				var effectiveHeight = maxSeenContainerHeight;
+
+				if (effectiveHeight <= 0)
+				{
+					// No valid container height yet (before window attachment)
+					// Use estimated sizing to allow cells to self-size
+					groupHeight = NSCollectionLayoutDimension.CreateEstimated(300);
+					itemHeight = NSCollectionLayoutDimension.CreateEstimated(300);
+				}
+				else
+				{
+					// Valid container height - use absolute height based on max seen
+					// This prevents oscillation during layout cycles
+					groupHeight = NSCollectionLayoutDimension.CreateAbsolute(effectiveHeight);
+					itemHeight = NSCollectionLayoutDimension.CreateFractionalHeight(1);
+				}
 			}
 
 			// Each item has a size
