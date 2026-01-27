@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 		/// <summary>Bindable property for attached property <c>CollapsedPaneWidth</c>.</summary>
 		public static readonly BindableProperty CollapsedPaneWidthProperty =
 			BindableProperty.CreateAttached("CollapsedPaneWidth", typeof(double),
-				typeof(FlyoutPage), 48d, validateValue: (bindable, value) => (double)value >= 0);
+				typeof(FlyoutPage), 48d, validateValue: (bindable, value) => (double)value >= 0, propertyChanged : OnCollapsedPaneWidthChanged);
 
 		/// <summary>Gets the width of the collapsed flyout pane on Windows.</summary>
 		/// <param name="element">The element to get the collapsed pane width from.</param>
@@ -75,6 +75,13 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 		public static double GetCollapsedPaneWidth(BindableObject element)
 		{
 			return (double)element.GetValue(CollapsedPaneWidthProperty);
+		}
+
+		{
+			if (bindable is Microsoft.Maui.Controls.FlyoutPage flyoutPage && flyoutPage.Handler is not null)
+			{
+				flyoutPage.Handler.UpdateValue(nameof(CollapsedPaneWidthProperty));
+			}
 		}
 
 		/// <summary>Sets the width of the collapsed flyout pane on Windows.</summary>
