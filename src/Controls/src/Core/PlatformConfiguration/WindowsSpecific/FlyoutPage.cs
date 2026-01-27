@@ -77,6 +77,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 			return (double)element.GetValue(CollapsedPaneWidthProperty);
 		}
 
+		static void OnCollapsedPaneWidthChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			if (bindable is Microsoft.Maui.Controls.FlyoutPage flyoutPage && flyoutPage.Handler is not null)
 			{
