@@ -125,37 +125,43 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 
 		/// <summary>
 		/// Checks if MSBuild tests can run in the current environment.
-		/// Returns false when running outside the MAUI repo (e.g., on Helix) without the proper payload.
-		/// MSBuild tests need: Directory.Build.props, Directory.Build.targets, AND Maui.InTree.props
+		/// Returns false when running on Helix (MSBuild tests require ~100MB buildtasks folder which is impractical).
+		/// MSBuild tests need: Directory.Build.props, Directory.Build.targets, buildtasks, AND Maui.InTree.props
 		/// </summary>
 		internal static bool CanRunMSBuildTests()
 		{
+			// MSBuild tests are NOT supported on Helix due to large payload requirements (~100MB buildtasks)
+			var helixPayload = Environment.GetEnvironmentVariable("HELIX_CORRELATION_PAYLOAD");
+			if (!string.IsNullOrEmpty(helixPayload))
+			{
+				return false;
+			}
+			
 			var msbuildPath = GetMSBuildTestsPath();
 			if (msbuildPath == null)
 				return false;
 			
-			// MSBuild tests also need Maui.InTree.props which isn't included in Helix payload
-			// Check if it exists relative to the MSBuild test directory
+			// MSBuild tests also need Maui.InTree.props
 			var directoryBuildProps = IOPath.Combine(msbuildPath, "_Directory.Build.props");
 			if (!File.Exists(directoryBuildProps))
 				return false;
 			
-			// Read the props file to find MauiSrcDirectory reference
-			// It references $(MauiSrcDirectory)Maui.InTree.props which needs to exist
-			var propsContent = File.ReadAllText(directoryBuildProps);
-			if (propsContent.Contains("Maui.InTree.props", StringComparison.Ordinal))
-			{
-				// Check if we can find Maui.InTree.props from the repo root
-				var repoRoot = GetTopDirRecursive(AppContext.BaseDirectory);
-				if (repoRoot == null)
-					return false; // Running on Helix without full repo - skip
-				
-				var inTreePath = IOPath.Combine(repoRoot, "src", "Maui.InTree.props");
-				if (!File.Exists(inTreePath))
-					return false;
-			}
+			// Check if we can find Maui.InTree.props from the repo root
+			var repoRoot = GetTopDirRecursive(AppContext.BaseDirectory);
+			if (repoRoot == null)
+				return false;
 			
-			return true;
+			var inTreePath = IOPath.Combine(repoRoot, "src", "Maui.InTree.props");
+			return File.Exists(inTreePath);
+		}
+
+		/// <summary>
+		/// Returns true if running on Helix (any Helix environment)
+		/// </summary>
+		internal static bool IsRunningOnHelix()
+		{
+			var helixPayload = Environment.GetEnvironmentVariable("HELIX_CORRELATION_PAYLOAD");
+			return !string.IsNullOrEmpty(helixPayload);
 		}
 
 		/// <summary>

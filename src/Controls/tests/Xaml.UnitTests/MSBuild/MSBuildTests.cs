@@ -78,8 +78,8 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 
 		void SetUp([CallerMemberName] string testName = null)
 		{
-			// Skip MSBuild tests on Helix where source files are not available
-			Skip.IfNot(AssemblyInfoTests.CanRunMSBuildTests(), "MSBuild tests require source files from the MAUI repository. Skipping on Helix.");
+			// Skip MSBuild tests on Helix where full repo structure is not available
+			Skip.IfNot(AssemblyInfoTests.CanRunMSBuildTests(), "MSBuild tests require full repo structure (~100MB buildtasks). Skipping on Helix.");
 
 			// Sanitize test name for use in path
 			var sanitizedName = testName
