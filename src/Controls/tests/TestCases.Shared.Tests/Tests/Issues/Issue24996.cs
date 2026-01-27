@@ -15,16 +15,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Layout)]
-		public async Task ChangingTranslationShouldNotCauseLayoutPassOnAncestors()
+		public void ChangingTranslationShouldNotCauseLayoutPassOnAncestors()
 		{
 			App.WaitForElement("Stats");
 			// Tries to translate the element in different positions, on-screen and off-screen.
 			for (int i = 0; i < 4; i++)
 			{
 				App.Tap("Stats");
-				// Allow more time for translation animation and UI to settle on slower CI machines
-				await Task.Delay(300);
-				// Re-query element after tap to avoid stale reference
+				// Re-query element after tap to avoid stale reference and wait for UI to settle
 				var element = App.WaitForElement("Stats");
 				ClassicAssert.True(element.GetText()!.StartsWith("Lvl1[0/0]"));
 			}
