@@ -1,16 +1,23 @@
 #nullable disable
 namespace Microsoft.Maui.Controls.Shapes
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PolyLineSegment.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.PolyLineSegment']/Docs/*" />
+	/// <summary>
+	/// A path segment that draws a series of connected straight lines.
+	/// </summary>
 	public class PolyLineSegment : PathSegment
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PolyLineSegment.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="PolyLineSegment"/> class with an empty point collection.
+		/// </summary>
 		public PolyLineSegment()
 		{
 			Points = new PointCollection();
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PolyLineSegment.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="PolyLineSegment"/> class with the specified points.
+		/// </summary>
+		/// <param name="points">The endpoints of the line segments.</param>
 		public PolyLineSegment(PointCollection points)
 		{
 			Points = points;
@@ -20,7 +27,9 @@ namespace Microsoft.Maui.Controls.Shapes
 		public static readonly BindableProperty PointsProperty =
 			BindableProperty.Create(nameof(Points), typeof(PointCollection), typeof(PolyLineSegment), null);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PolyLineSegment.xml" path="//Member[@MemberName='Points']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the endpoints of the line segments. This is a bindable property.
+		/// </summary>
 		public PointCollection Points
 		{
 			set { SetValue(PointsProperty, value); }

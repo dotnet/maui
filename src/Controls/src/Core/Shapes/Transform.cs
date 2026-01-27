@@ -1,7 +1,9 @@
 #nullable disable
 namespace Microsoft.Maui.Controls.Shapes
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Transform.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.Transform']/Docs/*" />
+	/// <summary>
+	/// Base class for all transforms that can be applied to shapes.
+	/// </summary>
 	[System.ComponentModel.TypeConverter(typeof(TransformTypeConverter))]
 	public class Transform : BindableObject
 	{
@@ -9,7 +11,9 @@ namespace Microsoft.Maui.Controls.Shapes
 		public static readonly BindableProperty ValueProperty =
 		   BindableProperty.Create(nameof(Value), typeof(Matrix), typeof(Transform), new Matrix());
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Transform.xml" path="//Member[@MemberName='Value']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the transformation matrix. This is a bindable property.
+		/// </summary>
 		public Matrix Value
 		{
 			set { SetValue(ValueProperty, value); }

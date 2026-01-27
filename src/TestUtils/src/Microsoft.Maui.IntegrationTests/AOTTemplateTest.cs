@@ -28,13 +28,13 @@ public class AOTTemplateTest : BaseTemplateTests
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-		Assert.True(DotnetInternal.New(id, projectDir, DotNetCurrent),
+		Assert.True(DotnetInternal.New(id, projectDir, DotNetCurrent, output: _output),
 			$"Unable to create template {id}. Check test output for errors.");
 
 		var extendedBuildProps = isWindowsFramework ? PrepareNativeAotBuildPropsWindows(runtimeIdentifier) : PrepareNativeAotBuildProps();
 
 		string binLogFilePath = $"publish-{DateTime.UtcNow.ToFileTimeUtc()}.binlog";
-		Assert.True(DotnetInternal.Build(projectFile, "Release", framework: framework, properties: extendedBuildProps, runtimeIdentifier: runtimeIdentifier, binlogPath: binLogFilePath),
+		Assert.True(DotnetInternal.Build(projectFile, "Release", framework: framework, properties: extendedBuildProps, runtimeIdentifier: runtimeIdentifier, binlogPath: binLogFilePath, output: _output),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 
 		var actualWarnings = BuildWarningsUtilities.ReadNativeAOTWarningsFromBinLog(binLogFilePath);
@@ -64,7 +64,7 @@ public class AOTTemplateTest : BaseTemplateTests
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-		Assert.True(DotnetInternal.New(id, projectDir, DotNetCurrent),
+		Assert.True(DotnetInternal.New(id, projectDir, DotNetCurrent, output: _output),
 			$"Unable to create template {id}. Check test output for errors.");
 
 		var extendedBuildProps = isWindowsFramework ? PrepareNativeAotBuildPropsWindows(runtimeIdentifier) : PrepareNativeAotBuildProps();
@@ -91,7 +91,7 @@ public class AOTTemplateTest : BaseTemplateTests
 			""");
 
 		string binLogFilePath = $"publish-{DateTime.UtcNow.ToFileTimeUtc()}.binlog";
-		Assert.True(DotnetInternal.Build(projectFile, "Release", framework: framework, properties: extendedBuildProps, runtimeIdentifier: runtimeIdentifier, binlogPath: binLogFilePath),
+		Assert.True(DotnetInternal.Build(projectFile, "Release", framework: framework, properties: extendedBuildProps, runtimeIdentifier: runtimeIdentifier, binlogPath: binLogFilePath, output: _output),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 
 		var actualWarnings = BuildWarningsUtilities.ReadNativeAOTWarningsFromBinLog(binLogFilePath);

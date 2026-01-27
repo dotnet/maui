@@ -2,21 +2,21 @@
 using System;
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/ExportFontAttribute.xml" path="Type[@FullName='Microsoft.Maui.Controls.ExportFontAttribute']/Docs/*" />
+	/// <summary>Registers a font file for use in the application.</summary>
 	[Internals.Preserve(AllMembers = true)]
 	[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
 	public class ExportFontAttribute : Attribute
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/ExportFontAttribute.xml" path="//Member[@MemberName='Alias']/Docs/*" />
+		/// <summary>Gets or sets an optional alias used to reference the font.</summary>
 		public string Alias { get; set; }
 
-		/// <param name="fontFileName">The fontFileName parameter.</param>
+		/// <summary>Creates a new <see cref="ExportFontAttribute"/> for the specified font file.</summary>
 		public ExportFontAttribute(string fontFileName)
 		{
 			FontFileName = fontFileName;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ExportFontAttribute.xml" path="//Member[@MemberName='FontFileName']/Docs/*" />
+		/// <summary>Gets the font file name.</summary>
 		public string FontFileName { get; }
 	}
 }

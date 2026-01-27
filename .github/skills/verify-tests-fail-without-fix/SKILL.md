@@ -1,6 +1,10 @@
 ---
 name: verify-tests-fail-without-fix
 description: Verifies UI tests catch the bug. Supports two modes - verify failure only (test creation) or full verification (test + fix validation).
+metadata:
+  author: dotnet-maui
+  version: "1.0"
+compatibility: Requires git, PowerShell, and .NET SDK for building and running tests.
 ---
 
 # Verify Tests Fail Without Fix
@@ -87,7 +91,46 @@ The script auto-detects which mode to use based on whether fix files are present
 5. Runs tests (should FAIL without fix)
 6. Restores fix files
 7. Runs tests (should PASS with fix)
-8. Reports result
+8. **Generates markdown reports**:
+   - `CustomAgentLogsTmp/TestValidation/verification-report.md` - Full detailed report
+   - `CustomAgentLogsTmp/PRState/verification-report.md` - Gate section for PR agent
+9. Reports result
+
+## Output Files
+
+The skill generates output files under `CustomAgentLogsTmp/PRState/<PRNumber>/verify-tests-fail/`:
+
+| File | Description |
+|------|-------------|
+| `verification-report.md` | Comprehensive markdown report with test results and full logs |
+| `verification-log.txt` | Text log of the verification process |
+| `test-without-fix.log` | Full test output from run without fix |
+| `test-with-fix.log` | Full test output from run with fix |
+
+**Plus UI test logs in** `CustomAgentLogsTmp/UITests/`:
+- `android-device.log` or `ios-device.log` - Device logs
+- `test-output.log` - NUnit test output
+
+**Example structure:**
+```
+CustomAgentLogsTmp/
+├── UITests/                           # Shared UI test logs
+│   ├── android-device.log
+│   └── test-output.log
+└── PRState/
+    └── 27847/
+        └── verify-tests-fail/
+            ├── verification-report.md  # Full detailed report
+            ├── verification-log.txt
+            ├── test-without-fix.log
+            └── test-with-fix.log
+```
+
+**PR Number Detection:**
+- Auto-detected from branch name (e.g., `pr-27847`)
+- Falls back to `gh pr view` command
+- Uses "unknown" if detection fails
+- Can be manually specified with `-PRNumber` parameter
 
 ## Troubleshooting
 

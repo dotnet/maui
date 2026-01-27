@@ -3,31 +3,40 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 {
 	using FormsElement = Maui.Controls.SwipeView;
 
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/SwipeView.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.SwipeView']/Docs/*" />
+	/// <summary>Provides iOS-specific configuration for SwipeView transition animations.</summary>
 	public static class SwipeView
 	{
 		/// <summary>Bindable property for <see cref="SwipeTransitionMode"/>.</summary>
 		public static readonly BindableProperty SwipeTransitionModeProperty = BindableProperty.Create("SwipeTransitionMode", typeof(SwipeTransitionMode), typeof(SwipeView), SwipeTransitionMode.Reveal);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/SwipeView.xml" path="//Member[@MemberName='GetSwipeTransitionMode'][1]/Docs/*" />
+		/// <summary>Gets the swipe transition mode on iOS.</summary>
+		/// <param name="element">The element to get the value from.</param>
+		/// <returns>The swipe transition mode.</returns>
 		public static SwipeTransitionMode GetSwipeTransitionMode(BindableObject element)
 		{
 			return (SwipeTransitionMode)element.GetValue(SwipeTransitionModeProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/SwipeView.xml" path="//Member[@MemberName='SetSwipeTransitionMode'][1]/Docs/*" />
+		/// <summary>Sets the swipe transition mode on iOS.</summary>
+		/// <param name="element">The element to set the value on.</param>
+		/// <param name="value">The swipe transition mode to apply.</param>
 		public static void SetSwipeTransitionMode(BindableObject element, SwipeTransitionMode value)
 		{
 			element.SetValue(SwipeTransitionModeProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/SwipeView.xml" path="//Member[@MemberName='GetSwipeTransitionMode'][2]/Docs/*" />
+		/// <summary>Gets the swipe transition mode on iOS.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <returns>The swipe transition mode.</returns>
 		public static SwipeTransitionMode GetSwipeTransitionMode(this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{
 			return GetSwipeTransitionMode(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/SwipeView.xml" path="//Member[@MemberName='SetSwipeTransitionMode'][2]/Docs/*" />
+		/// <summary>Sets the swipe transition mode on iOS.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <param name="value">The swipe transition mode to apply.</param>
+		/// <returns>The updated platform configuration.</returns>
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetSwipeTransitionMode(this IPlatformElementConfiguration<iOS, FormsElement> config, SwipeTransitionMode value)
 		{
 			SetSwipeTransitionMode(config.Element, value);

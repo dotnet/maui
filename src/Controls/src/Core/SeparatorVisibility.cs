@@ -1,11 +1,11 @@
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/SeparatorVisibility.xml" path="Type[@FullName='Microsoft.Maui.Controls.SeparatorVisibility']/Docs/*" />
+	/// <summary>Specifies the visibility of separators between items in a <see cref="ListView"/>.</summary>
 	public enum SeparatorVisibility
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/SeparatorVisibility.xml" path="//Member[@MemberName='Default']/Docs/*" />
+		/// <summary>Use the platform default separator visibility.</summary>
 		Default = 0,
-		/// <include file="../../docs/Microsoft.Maui.Controls/SeparatorVisibility.xml" path="//Member[@MemberName='None']/Docs/*" />
+		/// <summary>Hide separators between items.</summary>
 		None = 1
 	}
 }
