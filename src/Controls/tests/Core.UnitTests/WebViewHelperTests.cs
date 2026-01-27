@@ -129,4 +129,31 @@ public class WebViewHelperTests
 		var result = WebViewHelper.EscapeJsString(input);
 		Assert.Equal(input, result);
 	}
+
+	[Fact]
+	public void EscapeJsString_Newlines_EscapesCorrectly()
+	{
+		const string input = "line1\nline2\rline3";
+		const string expected = "line1\\nline2\\rline3";
+		var result = WebViewHelper.EscapeJsString(input);
+		Assert.Equal(expected, result);
+	}
+
+	[Fact]
+	public void EscapeJsString_UnicodeLineSeparators_EscapesCorrectly()
+	{
+		const string input = "line1\u2028line2\u2029line3";
+		const string expected = "line1\\u2028line2\\u2029line3";
+		var result = WebViewHelper.EscapeJsString(input);
+		Assert.Equal(expected, result);
+	}
+
+	[Fact]
+	public void EscapeJsString_MultilineWithQuotesAndBackslashes()
+	{
+		const string input = "var x = 'test\\path';\nalert('done');";
+		const string expected = "var x = \\'test\\\\path\\';\\nalert(\\'done\\');";
+		var result = WebViewHelper.EscapeJsString(input);
+		Assert.Equal(expected, result);
+	}
 }
