@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -3235,5 +3235,48 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			AssertArranged(smallerView, new Rect(0, 0, expectedWidth, heightConstraint));
 			AssertArranged(largerView, new Rect(expectedWidth, 0, expectedWidth, heightConstraint));
 		}
-	}
+[Fact]
+public void SpannedCellMeasurementIncludesColumnSpacingIssue26633()
+{
+// Issue: https://github.com/dotnet/maui/issues/26633
+// Grid cells spanning multiple columns with ColumnSpacing > 0 have incorrect measurement
+
+var grid = CreateGridLayout(columns: "auto, *, auto", colSpacing: 6);
+var view = CreateTestView(new Size(50, 50));
+
+SubstituteExtensions.ReturnsForAnyArgs(view.DesiredSize, new Size(50, 50));
+
+SubstituteChildren(grid, view);
+SetLocation(grid, view, row: 0, col: 0, colSpan: 3);
+
+var manager = new GridLayoutManager(grid);
+var measure = manager.Measure(200, double.PositiveInfinity);
+
+// Cell spans all 3 columns: auto(20) + *(100) + auto(20) + spacing(6*2) = 152
+// Without fix: would be 140 (missing 12px of spacing)
+view.Received().Measure(Arg.Is<double>(width => width == 152), Arg.Any<double>());
+}
+
+[Fact]
+public void SpannedCellMeasurementIncludesRowSpacingIssue26633()
+{
+// Issue: https://github.com/dotnet/maui/issues/26633  
+// Grid cells spanning multiple rows with RowSpacing > 0 have incorrect measurement
+
+var grid = CreateGridLayout(rows: "auto, *, auto", rowSpacing: 6);
+var view = CreateTestView(new Size(50, 50));
+
+SubstituteExtensions.ReturnsForAnyArgs(view.DesiredSize, new Size(50, 50));
+
+SubstituteChildren(grid, view);
+SetLocation(grid, view, row: 0, col: 0, rowSpan: 3);
+
+var manager = new GridLayoutManager(grid);
+var measure = manager.Measure(double.PositiveInfinity, 200);
+
+// Cell spans all 3 rows: auto(20) + *(100) + auto(20) + spacing(6*2) = 152
+// Without fix: would be 140 (missing 12px of spacing)
+view.Received().Measure(Arg.Any<double>(), Arg.Is<double>(height => height == 152));
+}
+}
 }
