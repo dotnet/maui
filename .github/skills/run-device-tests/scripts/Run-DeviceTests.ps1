@@ -138,6 +138,15 @@ $AppNames = @{
     "BlazorWebView" = "Microsoft.Maui.MauiBlazorWebView.DeviceTests"
 }
 
+# Android package names (lowercase)
+$AndroidPackageNames = @{
+    "Controls"      = "com.microsoft.maui.controls.devicetests"
+    "Core"          = "com.microsoft.maui.core.devicetests"
+    "Essentials"    = "com.microsoft.maui.essentials.devicetests"
+    "Graphics"      = "com.microsoft.maui.graphics.devicetests"
+    "BlazorWebView" = "com.microsoft.maui.mauiblazorwebview.devicetests"
+}
+
 # Platform-specific configurations
 $PlatformConfigs = @{
     "ios" = @{
@@ -486,10 +495,11 @@ try {
                 )
             }
             "android" {
+                $androidPackageName = $AndroidPackageNames[$Project]
                 $xharnessArgs = @(
                     "android", "test"
                     "--app", $appPath
-                    "--package-name", $appName
+                    "--package-name", $androidPackageName
                     "--device-id", $deviceUdidToUse
                     "-o", $OutputDirectory
                     "--timeout", $Timeout
@@ -499,7 +509,13 @@ try {
         }
 
         if ($TestFilter) {
-            $xharnessArgs += "--set-env=TestFilter=$TestFilter"
+            if ($Platform -eq "android") {
+                # Android uses --arg for instrumentation arguments
+                $xharnessArgs += "--arg", "TestFilter=$TestFilter"
+            } else {
+                # iOS/MacCatalyst uses --set-env
+                $xharnessArgs += "--set-env=TestFilter=$TestFilter"
+            }
         }
 
         if ($useLocalXharness) {
