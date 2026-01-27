@@ -52,14 +52,18 @@ namespace Microsoft.Maui.Controls.Platform
 			LineBreakMode lineBreakMode)
 		{
 			if (formattedString == null)
+			{
 				return new NSAttributedString(string.Empty);
+			}
 
 			var attributed = new NSMutableAttributedString();
 			for (int i = 0; i < formattedString.Spans.Count; i++)
 			{
 				Span span = formattedString.Spans[i];
 				if (span.Text == null)
+				{
 					continue;
+				}
 
 				attributed.Append(span.ToNSAttributedString(fontManager, defaultLineHeight, defaultHorizontalAlignment,
 					defaultFont, defaultColor, defaultTextTransform, lineBreakMode));
@@ -94,7 +98,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var text = TextTransformUtilities.GetTransformedText(span.Text, transform);
 			if (text is null)
+			{
 				return new NSAttributedString(string.Empty);
+			}
 
 			var style = new NSMutableParagraphStyle();
 			var lineHeight = span.LineHeight >= 0
@@ -137,6 +143,12 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var platformFont = font.IsDefault ? null : font.ToUIFont(fontManager);
 
+			// CharacterSpacing with validation
+			var characterSpacing = span.IsSet(Span.CharacterSpacingProperty) 
+				? span.CharacterSpacing 
+				: defaultCharacterSpacing;
+			characterSpacing = Math.Max(0, characterSpacing);
+
 #if !MACOS
 			var attrString = new NSAttributedString(
 				text,
@@ -146,7 +158,7 @@ namespace Microsoft.Maui.Controls.Platform
 				underlineStyle: hasUnderline ? NSUnderlineStyle.Single : NSUnderlineStyle.None,
 				strikethroughStyle: hasStrikethrough ? NSUnderlineStyle.Single : NSUnderlineStyle.None,
 				paragraphStyle: style,
-				kerning: (float)span.CharacterSpacing);
+				kerning: (float)characterSpacing);
 #else
 			var attrString = new NSAttributedString(
 				text,
@@ -156,7 +168,7 @@ namespace Microsoft.Maui.Controls.Platform
 				underlineStyle: hasUnderline ? NSUnderlineStyle.Single : NSUnderlineStyle.None,
 				strikethroughStyle: hasStrikethrough ? NSUnderlineStyle.Single : NSUnderlineStyle.None,
 				paragraphStyle: style,
-				kerningAdjustment: (float)span.CharacterSpacing);
+				kerningAdjustment: (float)characterSpacing);
 #endif
 
 			return attrString;
