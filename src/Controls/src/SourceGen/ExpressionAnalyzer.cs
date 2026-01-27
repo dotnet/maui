@@ -164,11 +164,13 @@ internal static class ExpressionAnalyzer
 	private static List<LocalCapture> CaptureLocalMethods(string expression, ITypeSymbol rootType, ITypeSymbol? dataType, HashSet<string> alreadyCaptured)
 	{
 		var captures = new List<LocalCapture>();
+		var capturedInvocations = new HashSet<string>(StringComparer.Ordinal);
 		
 		// Parse as an expression and walk the syntax tree
 		var tree = CSharpSyntaxTree.ParseText(expression, new CSharpParseOptions(kind: SourceCodeKind.Script));
 		var root = tree.GetRoot();
 		
+		var captureIndex = 0;
 		foreach (var node in root.DescendantNodes())
 		{
 			// Look for standalone method invocations (not member access like obj.Method())
@@ -177,7 +179,7 @@ internal static class ExpressionAnalyzer
 			{
 				var methodName = identifier.Identifier.Text;
 				
-				// Skip if already captured (e.g., via this.Method())
+				// Skip if this method name was captured via this.Method() syntax
 				if (alreadyCaptured.Contains(methodName))
 					continue;
 				
@@ -190,13 +192,28 @@ internal static class ExpressionAnalyzer
 				{
 					// Extract the full invocation text including arguments
 					var invocationText = invocation.ToString();
-					var captureVar = $"__capture_{methodName}";
+					
+					// Skip if this exact invocation was already captured
+					if (!capturedInvocations.Add(invocationText))
+						continue;
+					
+					// Use indexed capture variable to handle same method with different args
+					// e.g., GetValue(1) -> __capture_GetValue_0, GetValue(2) -> __capture_GetValue_1
+					var captureVar = captureIndex == 0 
+						? $"__capture_{methodName}" 
+						: $"__capture_{methodName}_{captureIndex}";
+					captureIndex++;
 					
 					// The invocation expression is the full call (e.g., "GetMultiplier()")
 					captures.Add(new LocalCapture(invocationText, captureVar, methodName, invocationText));
-					alreadyCaptured.Add(methodName);
 				}
 			}
+		}
+		
+		// Mark method names as captured for downstream processing
+		foreach (var capture in captures)
+		{
+			alreadyCaptured.Add(capture.MemberName);
 		}
 		
 		return captures;

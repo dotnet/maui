@@ -112,6 +112,9 @@ public partial class CSharpExpressions : ContentPage
 		return 1.5m;
 	}
 
+	// Multi-arg capture test - same method called with different args
+	public string GetFormattedValue(int value) => $"Value{value}";
+
 	// Lambda event handlers
 	public void OnButtonClicked() => ButtonClicked = true;
 	public void OnButtonClickedWithSender(object? sender) => LastSender = sender;
@@ -156,6 +159,25 @@ public partial class CSharpExpressions : ContentPage
 				vm.Price = 200m;
 				Assert.StartsWith("200 x 1", page.captureTestLabel.Text, StringComparison.Ordinal);
 				Assert.Equal(1, page.GetMultiplierCallCount); // Still 1!
+			}
+			finally
+			{
+				DispatcherProvider.SetCurrent(null);
+			}
+		}
+
+		[Fact]
+		public void SameMethodDifferentArgs_EachCapturedSeparately()
+		{
+			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+			try
+			{
+				var page = new CSharpExpressions(XamlInflator.SourceGen);
+				var vm = new SimpleViewModel { Price = 99m };
+				page.BindingContext = vm;
+				
+				// GetFormattedValue(1) and GetFormattedValue(2) should both be captured
+				Assert.Equal("99: Value1 and Value2", page.multiMethodArgsLabel.Text);
 			}
 			finally
 			{

@@ -124,6 +124,9 @@
             <!-- Mixed for capture test: binding + local method -->
             <Label x:Name="captureTestLabel" Text="{$'{Price} x {GetMultiplier()}'}" />
             
+            <!-- Same method with different args in mixed expression: each invocation captured separately -->
+            <Label x:Name="multiMethodArgsLabel" Text="{$'{Price}: {GetFormattedValue(1)} and {GetFormattedValue(2)}'}" />
+            
             <!-- Duplicate capture: two bindings using same local member with explicit this. prefix -->
             <Label x:Name="mixedExprLabel2" Text="{(Quantity * this.TaxRate).ToString('F2')}" />
             <Label x:Name="mixedExprLabel3" Text="{(Price * this.TaxRate).ToString('F2')}" />
