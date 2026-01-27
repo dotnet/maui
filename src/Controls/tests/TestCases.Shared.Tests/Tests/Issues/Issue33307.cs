@@ -24,7 +24,7 @@ public class Issue33307 : _IssuesUITest
 		App.Tap("Delete");
 		App.TapBackArrow();
 		App.Tap("Page2");
-		App.WaitForElement("Label");
-		Assert.That(App.FindElement("Label").GetText(), Is.EqualTo("None"));
+		App.WaitForElement("StatusLabel");
+		Assert.That(App.FindElement("StatusLabel").GetText(), Is.EqualTo("None"));
 	}
 }
