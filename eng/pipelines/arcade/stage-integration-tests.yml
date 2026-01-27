@@ -49,7 +49,7 @@ stages:
           ${{ if and(eq(job.pool.os, 'macOS'), or(eq(job.testCategory, 'RunOniOS'), startsWith(job.testName, 'RunOniOS'))) }}:
             envVariables:
               SKIP_XCODE_VERSION_CHECK: 'true'
-              IOS_TEST_DEVICE: ios-simulator-64_18.5
+              IOS_TEST_DEVICE: ios-simulator-64
 
       - task: PublishTestResults@2
         inputs:
