@@ -418,4 +418,197 @@ public partial class ExplicitMarkupPage : ContentPage
 		// No MAUIX2007 warning because we used explicit x: prefix
 		Assert.DoesNotContain(result.Diagnostics, d => d.Id == "MAUIX2007");
 	}
+
+	[Fact]
+	public void ComplexExpression_OnTwoWayProperty_ReportsMAUIX2010()
+	{
+		// Complex expressions cannot generate a setter, so binding to a two-way property
+		// like Entry.Text should emit MAUIX2010 warning
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:TestApp"
+             x:Class="TestApp.TwoWayWarningPage"
+             x:DataType="local:TwoWayViewModel">
+    <Entry Text="{FirstName + ' ' + LastName}" />
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+using System.ComponentModel;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace TestApp;
+
+public class TwoWayViewModel : INotifyPropertyChanged
+{
+	public string FirstName { get; set; } = "John";
+	public string LastName { get; set; } = "Doe";
+	public event PropertyChangedEventHandler? PropertyChanged;
+}
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class TwoWayWarningPage : ContentPage
+{
+	public TwoWayWarningPage() => InitializeComponent();
+}
+""";
+
+		var (result, _) = RunGenerator(xaml, codeBehind);
+
+		// Should report MAUIX2010 warning about complex expression on two-way property
+		Assert.Contains(result.Diagnostics, d => d.Id == "MAUIX2010");
+	}
+
+	[Fact]
+	public void SimplePropertyBinding_OnTwoWayProperty_NoWarning()
+	{
+		// Simple property bindings CAN generate a setter, so no warning
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:TestApp"
+             x:Class="TestApp.TwoWayNoWarningPage"
+             x:DataType="local:TwoWayViewModel">
+    <Entry Text="{FirstName}" />
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+using System.ComponentModel;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace TestApp;
+
+public class TwoWayViewModel : INotifyPropertyChanged
+{
+	public string FirstName { get; set; } = "John";
+	public event PropertyChangedEventHandler? PropertyChanged;
+}
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class TwoWayNoWarningPage : ContentPage
+{
+	public TwoWayNoWarningPage() => InitializeComponent();
+}
+""";
+
+		var (result, _) = RunGenerator(xaml, codeBehind);
+
+		// No MAUIX2010 warning because simple property can be two-way
+		Assert.DoesNotContain(result.Diagnostics, d => d.Id == "MAUIX2010");
+	}
+
+	[Fact]
+	public void AsyncLambdaEventHandler_ReportsMAUIX2013()
+	{
+		// Async lambdas are not supported for event handlers
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TestApp.AsyncLambdaPage">
+    <Button Clicked="{async (s, e) => await Task.Delay(100)}" />
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+using System.Threading.Tasks;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace TestApp;
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class AsyncLambdaPage : ContentPage
+{
+	public AsyncLambdaPage() => InitializeComponent();
+}
+""";
+
+		var (result, _) = RunGenerator(xaml, codeBehind);
+
+		// Should report MAUIX2013 error about async lambda not supported
+		Assert.Contains(result.Diagnostics, d => d.Id == "MAUIX2013");
+	}
+
+	[Fact]
+	public void SyncLambdaEventHandler_NoError()
+	{
+		// Sync lambdas are supported
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TestApp.SyncLambdaPage">
+    <Button Clicked="{(s, e) => Count++}" />
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace TestApp;
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class SyncLambdaPage : ContentPage
+{
+	public int Count { get; set; }
+	public SyncLambdaPage() => InitializeComponent();
+}
+""";
+
+		var (result, _) = RunGenerator(xaml, codeBehind);
+
+		// No MAUIX2013 error
+		Assert.DoesNotContain(result.Diagnostics, d => d.Id == "MAUIX2013");
+	}
+
+	[Fact]
+	public void CSharpExpression_WithoutPreviewFeatures_ReportsMAUIX2012()
+	{
+		// C# expressions require EnablePreviewFeatures=true
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TestApp.NoPreviewPage">
+    <Label Text="{GetText()}" />
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace TestApp;
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class NoPreviewPage : ContentPage
+{
+	public string GetText() => "Hello";
+	public NoPreviewPage() => InitializeComponent();
+}
+""";
+
+		var (result, _) = RunGenerator(xaml, codeBehind, enablePreviewFeatures: false);
+
+		// Should report MAUIX2012 error about preview features required
+		Assert.Contains(result.Diagnostics, d => d.Id == "MAUIX2012");
+	}
 }
