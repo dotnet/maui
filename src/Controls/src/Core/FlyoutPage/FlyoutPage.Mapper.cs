@@ -15,6 +15,7 @@ namespace Microsoft.Maui.Controls
 #endif
 #if WINDOWS
 			FlyoutViewHandler.Mapper.ReplaceMapping<IFlyoutView, IFlyoutViewHandler>(nameof(PlatformConfiguration.WindowsSpecific.FlyoutPage.CollapseStyleProperty), MapCollapseStyle);
+			FlyoutViewHandler.Mapper.ReplaceMapping<IFlyoutView, IFlyoutViewHandler>(nameof(PlatformConfiguration.WindowsSpecific.FlyoutPage.CollapsedPaneWidthProperty), MapCollapsedPaneWidth);
 #endif
 		}
 
@@ -38,7 +39,6 @@ namespace Microsoft.Maui.Controls
 #if WINDOWS
 		internal static void MapCollapseStyle(IFlyoutViewHandler handler, IFlyoutView view)
 		{
-			var flyoutLayoutBehavior = (view as FlyoutPage)?.FlyoutLayoutBehavior;
 			if (view is BindableObject bindable && handler.PlatformView is Microsoft.Maui.Platform.RootNavigationView navigationView && flyoutLayoutBehavior is FlyoutLayoutBehavior.Popover)
 			{
 				var collapseStyle = PlatformConfiguration.WindowsSpecific.FlyoutPage.GetCollapseStyle(bindable);
@@ -54,8 +54,12 @@ namespace Microsoft.Maui.Controls
 						navigationView.PaneDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewPaneDisplayMode.LeftMinimal;
 						break;
 				}
+		internal static void MapCollapsedPaneWidth(IFlyoutViewHandler handler, IFlyoutView view)
+		{
+			{
+				var collapsedPaneWidth = PlatformConfiguration.WindowsSpecific.FlyoutPage.GetCollapsedPaneWidth(bindable);
+				navigationView.CompactPaneLength = collapsedPaneWidth;
 			}
 		}
-#endif
 	}
 }
