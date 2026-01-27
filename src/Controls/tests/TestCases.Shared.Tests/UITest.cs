@@ -153,6 +153,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			ref Exception? exception,
 			string? name = null,
 			TimeSpan? retryDelay = null,
+			TimeSpan? retryTimeout = null,
 			int cropLeft = 0,
 			int cropRight = 0,
 			int cropTop = 0,
@@ -165,7 +166,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			try
 			{
-				VerifyScreenshot(name, retryDelay, cropLeft, cropRight, cropTop, cropBottom, tolerance
+				VerifyScreenshot(name, retryDelay, retryTimeout, cropLeft, cropRight, cropTop, cropBottom, tolerance
 #if MACUITEST || WINTEST
 				, includeTitleBar
 #endif
@@ -181,7 +182,9 @@ namespace Microsoft.Maui.TestCases.Tests
 		/// Verifies a screenshot by comparing it against a baseline image and throws an exception if verification fails.
 		/// </summary>
 		/// <param name="name">Optional name for the screenshot. If not provided, a default name will be used.</param>
-		/// <param name="retryDelay">Optional delay between retry attempts when verification fails.</param>
+		/// <param name="retryDelay">Optional delay between retry attempts when verification fails. Default is 500ms.</param>
+		/// <param name="retryTimeout">Optional total time to keep retrying before giving up. If not specified, only one retry is attempted.
+		/// Use this for animations with variable completion times (e.g., retryTimeout: TimeSpan.FromSeconds(2)).</param>
 		/// <param name="cropLeft">Number of pixels to crop from the left of the screenshot.</param>
 		/// <param name="cropRight">Number of pixels to crop from the right of the screenshot.</param>
 		/// <param name="cropTop">Number of pixels to crop from the top of the screenshot.</param>
@@ -205,6 +208,9 @@ namespace Microsoft.Maui.TestCases.Tests
 		/// // Allow 5% difference for animations or slight rendering variations
 		/// VerifyScreenshot("ButtonHoverState", tolerance: 5.0);
 		/// 
+		/// // Keep retrying for up to 2 seconds (useful for animations)
+		/// VerifyScreenshot("AnimatedElement", retryTimeout: TimeSpan.FromSeconds(2));
+		/// 
 		/// // Combined with cropping and tolerance
 		/// VerifyScreenshot("HeaderSection", cropTop: 50, cropBottom: 100, tolerance: 3.0);
 		/// </code>
@@ -212,6 +218,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		public void VerifyScreenshot(
 			string? name = null,
 			TimeSpan? retryDelay = null,
+			TimeSpan? retryTimeout = null,
 			int cropLeft = 0,
 			int cropRight = 0,
 			int cropTop = 0,
@@ -223,15 +230,53 @@ namespace Microsoft.Maui.TestCases.Tests
 		)
 		{
 			retryDelay ??= TimeSpan.FromMilliseconds(500);
-			// Retry the verification once in case the app is in a transient state
-			try
+			
+			// If retryTimeout is specified, keep retrying until timeout expires
+			// Otherwise, just retry once (backward compatible behavior)
+			if (retryTimeout.HasValue)
 			{
-				Verify(name);
+				var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+				Exception? lastException = null;
+				
+				while (stopwatch.Elapsed < retryTimeout.Value)
+				{
+					try
+					{
+						Verify(name);
+						return; // Success
+					}
+					catch (Exception ex)
+					{
+						lastException = ex;
+						if (stopwatch.Elapsed + retryDelay.Value < retryTimeout.Value)
+						{
+							Thread.Sleep(retryDelay.Value);
+						}
+					}
+				}
+				
+				// Final attempt after timeout
+				try
+				{
+					Verify(name);
+				}
+				catch
+				{
+					throw lastException ?? new InvalidOperationException("Screenshot verification failed");
+				}
 			}
-			catch
+			else
 			{
-				Thread.Sleep(retryDelay.Value);
-				Verify(name);
+				// Original behavior: retry once
+				try
+				{
+					Verify(name);
+				}
+				catch
+				{
+					Thread.Sleep(retryDelay.Value);
+					Verify(name);
+				}
 			}
 
 			void Verify(string? name)
@@ -451,8 +496,8 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			var message = ex.Message;
 
-			// Extract percentage from pattern: "X,XX% difference"
-			var match = Regex.Match(message, @"(\d+,\d+)%\s*difference", RegexOptions.IgnoreCase);
+			// Extract percentage from pattern: "X.XX% difference" or "X,XX% difference"
+			var match = Regex.Match(message, @"(\d+[.,]\d+)%\s*difference", RegexOptions.IgnoreCase);
 			if (match.Success)
 			{
 				var percentageString = match.Groups[1].Value.Replace(',', '.');

@@ -1,6 +1,6 @@
 ---
 name: pr-finalize
-description: Finalizes any PR for merge by verifying title and description match actual implementation. Reviews existing description quality before suggesting changes. Use when asked to "finalize PR", "check PR description", "review commit message", before merging any PR, or when PR implementation changed during review. Do NOT use for extracting lessons (use learn-from-pr), writing tests (use write-tests), or investigating build failures (use pr-build-status).
+description: Finalizes any PR for merge by verifying title and description match actual implementation. Reviews existing description quality before suggesting changes. Use when asked to "finalize PR", "check PR description", "review commit message", before merging any PR, or when PR implementation changed during review. Do NOT use for extracting lessons (use learn-from-pr), writing tests (use write-tests-agent), or investigating build failures (use pr-build-status).
 ---
 
 # PR Finalize
