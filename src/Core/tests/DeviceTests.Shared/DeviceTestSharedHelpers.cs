@@ -43,14 +43,7 @@ namespace Microsoft.Maui.DeviceTests
 			}
 #elif ANDROID
 			// Read TestFilter from instrumentation arguments
-			var instrumentation = MauiTestInstrumentation.Current;
-			Console.WriteLine($"[GetExcludedTestCategories] MauiTestInstrumentation.Current is null: {instrumentation == null}");
-			if (instrumentation != null)
-			{
-				Console.WriteLine($"[GetExcludedTestCategories] Arguments is null: {instrumentation.Arguments == null}");
-				filterValue = instrumentation.Arguments?.GetString("TestFilter");
-				Console.WriteLine($"[GetExcludedTestCategories] TestFilter from args: '{filterValue ?? "(null)"}'");
-			}
+			filterValue = MauiTestInstrumentation.Current?.Arguments?.GetString("TestFilter");
 #endif
 
 			if (!string.IsNullOrEmpty(filterValue))
