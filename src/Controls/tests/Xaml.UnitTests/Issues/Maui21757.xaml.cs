@@ -6,7 +6,6 @@ using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
 using Xunit;
-using Xunit.Sdk;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -25,7 +24,7 @@ public partial class Maui21757
 
 		public void Dispose() => AppInfo.SetCurrent(null);
 
-		[SkippableTheory]
+		[Theory]
 		[XamlInflatorData]
 		internal void TypeLiteralAndXTypeCanBeUsedInterchangeably(XamlInflator inflator)
 		{

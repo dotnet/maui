@@ -4,7 +4,6 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Build.Tasks;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Xunit;
-using Xunit.Sdk;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
@@ -50,7 +49,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				base.TearDown();
 			}
 
-			[SkippableTheory]
+			[Theory]
 			[InlineData(XamlInflator.Runtime)]
 			[InlineData(XamlInflator.XamlC)]
 			[InlineData(XamlInflator.SourceGen)]
@@ -75,7 +74,6 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Build.Tasks;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Xunit;
-using Xunit.Sdk;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 

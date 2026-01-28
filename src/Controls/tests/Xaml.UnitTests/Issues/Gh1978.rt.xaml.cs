@@ -1,6 +1,5 @@
 using Microsoft.Maui.Controls.Build.Tasks;
 using Xunit;
-using Xunit.Sdk;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
@@ -13,7 +12,7 @@ public partial class Gh1978 : ContentPage
 	[Collection("Issue")]
 	public class Tests
 	{
-		[SkippableTheory]
+		[Theory]
 		[InlineData(XamlInflator.XamlC)]
 		[InlineData(XamlInflator.SourceGen)]
 		internal void ReportError(XamlInflator inflator)

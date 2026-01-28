@@ -2,7 +2,6 @@ using System;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Xunit;
-using Xunit.Sdk;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -18,7 +17,7 @@ public partial class Maui17461 : ContentPage
 
 		public void Dispose() => AppInfo.SetCurrent(null);
 
-		[SkippableTheory]
+		[Theory]
 		[InlineData("net7.0-ios", XamlInflator.XamlC)]
 		[InlineData("net7.0-android", XamlInflator.XamlC)]
 		[InlineData("net7.0-macos", XamlInflator.XamlC)]

@@ -8,7 +8,6 @@ using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using Xunit;
-using Xunit.Sdk;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -22,7 +21,7 @@ public partial class Maui17222 : ContentPage
 	public class Test
 	{
 #if DEBUG
-		[SkippableTheory]
+		[Theory]
 		[InlineData(XamlInflator.Runtime)]
 		[InlineData(XamlInflator.SourceGen)]
 		internal void GetsourceInfo(XamlInflator inflator)

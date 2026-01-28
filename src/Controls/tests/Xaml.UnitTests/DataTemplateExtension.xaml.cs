@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using Xunit;
-using Xunit.Sdk;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
@@ -29,7 +28,7 @@ public partial class DataTemplateExtension : ContentPage
 			Assert.IsType<DataTemplateExtension>(obj);
 		}
 
-		[SkippableFact]
+		[Fact]
 		internal void ExtensionsAreReplaced()
 		{
 			var result = CreateMauiCompilation()

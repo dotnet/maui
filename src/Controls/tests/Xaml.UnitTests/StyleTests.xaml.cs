@@ -3,7 +3,6 @@ using System.Linq;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
 using Xunit;
-using Xunit.Sdk;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
@@ -101,7 +100,7 @@ public partial class StyleTests : ContentPage
 			Assert.Equal(Colors.Red, label.TextColor);
 		}
 
-		[SkippableFact]
+		[Fact]
 		internal void StyleCtorIsInvokedWithType()
 		{
 			var result = CreateMauiCompilation()

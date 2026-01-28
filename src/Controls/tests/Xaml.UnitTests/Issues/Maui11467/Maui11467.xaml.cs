@@ -2,7 +2,6 @@ using System;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Xunit;
-using Xunit.Sdk;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -16,7 +15,7 @@ public partial class Maui11467 : ParentButton
 		public Test() => AppInfo.SetCurrent(new MockAppInfo());
 		public void Dispose() => AppInfo.SetCurrent(null);
 
-		[SkippableTheory]
+		[Theory]
 		[InlineData(XamlInflator.Runtime)]
 		[InlineData(XamlInflator.XamlC)]
 		[InlineData(XamlInflator.SourceGen)]

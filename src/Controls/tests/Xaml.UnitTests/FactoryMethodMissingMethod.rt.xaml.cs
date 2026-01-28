@@ -3,7 +3,6 @@ using System.IO;
 using System.Linq;
 using Microsoft.Maui.Controls.Build.Tasks;
 using Xunit;
-using Xunit.Sdk;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
@@ -16,7 +15,7 @@ public partial class FactoryMethodMissingMethod : MockView
 	[Collection("Xaml Inflation")]
 	public class Tests : BaseTestFixture
 	{
-		[SkippableTheory]
+		[Theory]
 		[InlineData(XamlInflator.Runtime)]
 		[InlineData(XamlInflator.XamlC)]
 		[InlineData(XamlInflator.SourceGen)]

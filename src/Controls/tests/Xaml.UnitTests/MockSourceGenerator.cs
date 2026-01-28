@@ -12,7 +12,6 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
 using Xunit;
-using Xunit.Sdk;
 
 #nullable enable
 
@@ -102,8 +101,12 @@ public static class MockSourceGenerator
 
 	public static GeneratorDriverRunResult RunMauiSourceGenerator(this Compilation compilation, params AdditionalFile[] additionalFiles)
 	{
-		// Skip test gracefully if SourceGen tests can't run (e.g., on Helix without payload)
-		Skip.If(!CanRunSourceGenTests(), "SourceGen tests require running from within the MAUI repository with built Controls.SourceGen.");
+		// SourceGen DLL is now included in Helix payload, so this should always succeed.
+		// Fail fast with clear error if the DLL is missing (misconfiguration).
+		if (!CanRunSourceGenTests())
+			throw new InvalidOperationException(
+				"SourceGen tests require the Microsoft.Maui.Controls.SourceGen.dll. " +
+				"Ensure the DLL is built locally (artifacts/bin/Controls.SourceGen/) or included in HELIX_CORRELATION_PAYLOAD/sourcegen/.");
 
 		var path = GetSourceGenDllPath()!;
 		var analyzerAssembly = Assembly.LoadFrom(path);

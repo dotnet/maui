@@ -3,7 +3,6 @@ using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Xunit;
-using Xunit.Sdk;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
@@ -16,7 +15,7 @@ public partial class FontSize : ContentPage
 	[Collection("Xaml Inflation")]
 	public class Tests
 	{
-		[SkippableTheory]
+		[Theory]
 		[InlineData(XamlInflator.XamlC)]
 		[InlineData(XamlInflator.SourceGen)]
 		internal void FontSizeExtensionsAreReplaced(XamlInflator inflator)
@@ -56,7 +55,7 @@ public partial class FontSize : ContentPage
 			return true;
 		}
 
-		[SkippableTheory]
+		[Theory]
 		[XamlInflatorData]
 		internal void CorrectFontSizes(XamlInflator inflator)
 		{

@@ -1,6 +1,5 @@
 using Microsoft.Maui.Controls.Xaml.UnitTests.Issues.Maui14158;
 using Xunit;
-using Xunit.Sdk;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests.Maui14158;
 
@@ -11,7 +10,7 @@ public partial class WithSuffix : ContentPage
 	[Collection("Issue")]
 	public class Tests : BaseTestFixture
 	{
-		[SkippableTheory]
+		[Theory]
 		[InlineData(XamlInflator.Runtime)]
 		[InlineData(XamlInflator.XamlC)]
 		[InlineData(XamlInflator.SourceGen)]
