@@ -1,4 +1,5 @@
-#if !IOS // iOS DatePicker uses a wheel picker, not a calendar view - cannot verify disabled dates visually
+// Android specific scenario
+#if ANDROID
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -7,14 +8,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue19256 : _IssuesUITest
 {
-#if ANDROID
-	const string DismissDatePicker = "Cancel";
-#elif WINDOWS
-	const string DismissDatePicker = "25"; // Tap the enabled MinimumDate to close
-#elif MACCATALYST
-	const string DismissDatePicker = "SetEarlierDateButton"; // Tap another element to dismiss/unfocus
-#endif
-
 	public Issue19256(TestDevice device) : base(device)
 	{
 	}
@@ -40,7 +33,7 @@ public class Issue19256 : _IssuesUITest
 		VerifyScreenshotOrSetException(ref exception, "DatePickerMinimumDateShouldUpdateDynamically_FutureDate");
 
 		// Dismiss the dialog
-		App.Tap(DismissDatePicker);
+		App.Tap("Cancel");
 
 		// Step 3: Set LEFT to earlier date (June 20) - RIGHT MinimumDate should become June 20
 		App.Tap("SetEarlierDateButton");
