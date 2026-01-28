@@ -43,7 +43,7 @@ steps:
   - template: ../../common/templates-official/steps/enable-internal-sources.yml
     parameters:
       legacyCredential: $(dn-bot-dnceng-artifact-feeds-rw)
-      
+
   - template: ../../common/templates-official/steps/enable-internal-runtimes.yml
     parameters:
       federatedServiceConnection: ${{ parameters.federatedServiceConnection }}
@@ -51,11 +51,10 @@ steps:
       expiryInHours: ${{ parameters.expiryInHours }}
       base64Encode: ${{ parameters.base64Encode }}
 
-
 ##################################################
 #               Provisioning macOS               #
 ##################################################
-  
+
 #check if the _tool directory exists and remove it
 - pwsh: |
     $dotnetToolsPath = "$(Agent.ToolsDirectory)/dotnet"
@@ -104,49 +103,57 @@ steps:
       # XCODE variable is in major.minor format (e.g., 26.1)
       XCODE_MAJOR_MINOR=$(XCODE)
       echo "XCODE variable (major.minor): ${XCODE_MAJOR_MINOR}"
-      
+
       # Parse major and minor versions
       MAJOR=$(echo "$XCODE_MAJOR_MINOR" | cut -d'.' -f1)
       MINOR=$(echo "$XCODE_MAJOR_MINOR" | cut -d'.' -f2)
       PREV_MINOR=$((MINOR - 1))
-      
-      # Build list of versions to try: major.minor.1, major.minor.0, major.(minor-1).1, major.(minor-1).0
-      VERSIONS_TO_TRY=(
-        "${MAJOR}.${MINOR}.1"
-        "${MAJOR}.${MINOR}.0"
-        "${MAJOR}.${PREV_MINOR}.1"
-        "${MAJOR}.${PREV_MINOR}.0"
-      )
-      
-      echo "Will try Xcode versions in order: ${VERSIONS_TO_TRY[*]}"
-      
-      XCODE_VERSION=""
-      XCODE_PATH=""
-      
-      for VERSION in "${VERSIONS_TO_TRY[@]}"; do
-        CANDIDATE_PATH="/Applications/Xcode_${VERSION}.app"
-        echo "Checking for Xcode ${VERSION} at ${CANDIDATE_PATH}..."
-        if [[ -d "$CANDIDATE_PATH" ]]; then
-          echo "Found Xcode version ${VERSION} at ${CANDIDATE_PATH}"
-          XCODE_VERSION="$VERSION"
-          XCODE_PATH="$CANDIDATE_PATH"
-          break
-        else
-          echo "Xcode version ${VERSION} not found"
-        fi
-      done
-      
+
+      # First, check for a non-symlinked Xcode_major.minor.app (e.g., Xcode_26.2.app)
+      GENERIC_PATH="/Applications/Xcode_${MAJOR}.${MINOR}.app"
+      if [[ -d "$GENERIC_PATH" && ! -L "$GENERIC_PATH" ]]; then
+        echo "Found non-symlinked Xcode at ${GENERIC_PATH}"
+        XCODE_VERSION="${MAJOR}.${MINOR}"
+        XCODE_PATH="$GENERIC_PATH"
+      else
+        # Build list of versions to try: major.minor.1, major.minor.0, major.(minor-1).1, major.(minor-1).0
+        VERSIONS_TO_TRY=(
+          "${MAJOR}.${MINOR}.1"
+          "${MAJOR}.${MINOR}.0"
+          "${MAJOR}.${PREV_MINOR}.1"
+          "${MAJOR}.${PREV_MINOR}.0"
+        )
+
+        echo "Will try Xcode versions in order: ${VERSIONS_TO_TRY[*]}"
+
+        XCODE_VERSION=""
+        XCODE_PATH=""
+
+        for VERSION in "${VERSIONS_TO_TRY[@]}"; do
+          CANDIDATE_PATH="/Applications/Xcode_${VERSION}.app"
+          echo "Checking for Xcode ${VERSION} at ${CANDIDATE_PATH}..."
+          if [[ -d "$CANDIDATE_PATH" ]]; then
+            echo "Found Xcode version ${VERSION} at ${CANDIDATE_PATH}"
+            XCODE_VERSION="$VERSION"
+            XCODE_PATH="$CANDIDATE_PATH"
+            break
+          else
+            echo "Xcode version ${VERSION} not found"
+          fi
+        done
+      fi
+
       if [[ -z "$XCODE_PATH" ]]; then
-        echo "ERROR: None of the Xcode versions were found: ${VERSIONS_TO_TRY[*]}"
+        echo "ERROR: No suitable Xcode version found."
         exit 1
       fi
-      
+
       echo "Selected Xcode version: ${XCODE_VERSION} at ${XCODE_PATH}"
       sudo xcode-select -s "$XCODE_PATH"
       xcrun xcode-select --print-path
       xcodebuild -version
       sudo xcodebuild -license accept
-     
+
       sudo xcodebuild -runFirstLaunch
     displayName: Select Xcode Version
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
@@ -159,7 +166,7 @@ steps:
         XCODE_MAJOR_MINOR=$(XCODE)
         MAJOR=$(echo "$XCODE_MAJOR_MINOR" | cut -d'.' -f1)
         MINOR=$(echo "$XCODE_MAJOR_MINOR" | cut -d'.' -f2)
-        
+
         # if we're using Xcode 26.0[.?], then explicitly install the iOS 26.0 simulator (the iOS 26.0.1 simulator doesn't work for us)
         # also install the universal simulator version, so that this bot can run x64 apps in the simulator.
         if [[ "${MAJOR}" == "26" && "${MINOR}" == "0" ]]; then
