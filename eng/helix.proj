@@ -26,14 +26,26 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <XUnitProject Include="$(RepoRoot)src/Controls/tests/Xaml.UnitTests/Controls.Xaml.UnitTests.csproj" />
     <XUnitProject Include="$(RepoRoot)src/Controls/tests/Core.UnitTests/Controls.Core.UnitTests.csproj" />
     <XUnitProject Include="$(RepoRoot)src/Controls/tests/BindingSourceGen.UnitTests/Controls.BindingSourceGen.UnitTests.csproj" />
     <XUnitProject Include="$(RepoRoot)src/Controls/tests/SourceGen.UnitTests/SourceGen.UnitTests.csproj" />
     <XUnitProject Include="$(RepoRoot)src/Core/tests/UnitTests/Core.UnitTests.csproj" />
     <XUnitProject Include="$(RepoRoot)src/Essentials/test/UnitTests/Essentials.UnitTests.csproj" />
+    <XUnitProject Include="$(RepoRoot)src/SingleProject/Resizetizer/test/UnitTests/Resizetizer.UnitTests.csproj" />
+  </ItemGroup>
 
-    <!-- <XUnitProject Include="$(RepoRoot)/src/SingleProject/Resizetizer/test/UnitTests/Resizetizer.UnitTests.csproj" /> -->
-
+  <!-- Include payloads for XAML tests -->
+  <ItemGroup>
+    <!-- SourceGen DLL for SourceGen tests -->
+    <HelixCorrelationPayload Include="$(RepoRoot)artifacts/bin/Controls.SourceGen/$(Configuration)/netstandard2.0">
+      <Destination>sourcegen</Destination>
+    </HelixCorrelationPayload>
+    <!-- 
+      Note: MSBuild tests require the full .buildtasks folder (~100MB) and repo structure.
+      These tests run locally and in CI where the full repo is available.
+      They are skipped on Helix via AssemblyInfoTests.CanRunMSBuildTests().
+    -->
   </ItemGroup>
 
 </Project>
