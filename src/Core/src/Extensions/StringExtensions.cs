@@ -27,8 +27,12 @@ namespace Microsoft.Maui
 
 		public static int LastIndexOfChar(this string toSearch, char character)
 		{
-			// char version of LastIndexOf doesn't need StringComparison - it's always ordinal
+			// The char overload of LastIndexOf doesn't have a StringComparison parameter.
+			// Unlike IndexOf and Contains, there's no LastIndexOf(char, StringComparison).
+			// The char comparison is always ordinal.
+#pragma warning disable CA1307 // Specify StringComparison for clarity
 			return toSearch.LastIndexOf(character);
+#pragma warning restore CA1307
 		}
 	}
 }
