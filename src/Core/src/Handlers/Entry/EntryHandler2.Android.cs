@@ -230,7 +230,8 @@ internal class EntryHandler2 : ViewHandler<IEntry, MauiMaterialTextInputLayout>
 	{
 		if (args is FocusRequest request)
 		{
-			handler.PlatformView.Focus(request);
+			// Focus the EditText directly, not the TextInputLayout container
+			handler.PlatformView.EditText?.Focus(request);
 		}
 	}
 
@@ -275,7 +276,7 @@ internal class EntryHandler2 : ViewHandler<IEntry, MauiMaterialTextInputLayout>
 		{
 			var actionId = e.ActionId;
 			var evt = e.Event;
-			ImeAction currentInputImeFlag = PlatformView.EditText!.ImeOptions;
+			ImeAction currentInputImeFlag = PlatformView.EditText?.ImeOptions ?? ImeAction.None;
 
 			// On API 34 it looks like they fixed the issue where the actionId is ImeAction.ImeNull when using a keyboard
 			// so I'm just setting the actionId here to the current ImeOptions so the logic can all be simplified
@@ -297,7 +298,7 @@ internal class EntryHandler2 : ViewHandler<IEntry, MauiMaterialTextInputLayout>
 			else if (evt?.KeyCode is null && (actionId == ImeAction.Done || actionId == currentInputImeFlag))
 			{
 				VirtualView?.Completed();
-				// In case of Search, Go, Send the EditorAction will be invoked for KeyEventActions which will cause Completed to inovke twice
+				// In case of Search, Go, Send the EditorAction will be invoked for KeyEventActions which will cause Completed to invoke twice
 				//So for these setting handled to true
 				if (actionId == ImeAction.Search ||
 				 actionId == ImeAction.Go ||
