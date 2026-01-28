@@ -25,6 +25,29 @@ namespace Microsoft.Maui.TestCases.Tests
 		string _defaultiOSVersion = "18.5";
 
 		protected const int SetupMaxRetries = 1;
+		protected const int InstrumentationCrashMaxRetries = 1;
+
+		/// <summary>
+		/// Detects if an exception indicates an Android UiAutomator2 instrumentation crash
+		/// or other infrastructure failure that requires session recreation.
+		/// </summary>
+		private static bool IsInstrumentationCrash(Exception e)
+		{
+			var message = e.ToString(); // Includes InnerException
+			return
+				message.Contains("instrumentation process is not running", StringComparison.OrdinalIgnoreCase) ||
+				message.Contains("socket hang up", StringComparison.OrdinalIgnoreCase) ||
+				message.Contains("Can't find service: package", StringComparison.OrdinalIgnoreCase) ||
+				message.Contains("Could not proxy command to remote server", StringComparison.OrdinalIgnoreCase) ||
+				message.Contains("ECONNRESET", StringComparison.OrdinalIgnoreCase) ||
+				message.Contains("ECONNREFUSED", StringComparison.OrdinalIgnoreCase) ||
+				message.Contains("Connection refused", StringComparison.OrdinalIgnoreCase) ||
+				message.Contains("InvalidSessionIdException", StringComparison.OrdinalIgnoreCase) ||
+				message.Contains("NoSuchDriverException", StringComparison.OrdinalIgnoreCase) ||
+				message.Contains("session is either terminated or not started", StringComparison.OrdinalIgnoreCase) ||
+				message.Contains("UiAutomator2 server", StringComparison.OrdinalIgnoreCase) ||
+				message.Contains("device offline", StringComparison.OrdinalIgnoreCase);
+		}
 		readonly VisualRegressionTester _visualRegressionTester;
 		readonly IImageEditorFactory _imageEditorFactory;
 		readonly VisualTestContext _visualTestContext;
@@ -153,6 +176,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			ref Exception? exception,
 			string? name = null,
 			TimeSpan? retryDelay = null,
+			TimeSpan? retryTimeout = null,
 			int cropLeft = 0,
 			int cropRight = 0,
 			int cropTop = 0,
@@ -165,7 +189,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			try
 			{
-				VerifyScreenshot(name, retryDelay, cropLeft, cropRight, cropTop, cropBottom, tolerance
+				VerifyScreenshot(name, retryDelay, retryTimeout, cropLeft, cropRight, cropTop, cropBottom, tolerance
 #if MACUITEST || WINTEST
 				, includeTitleBar
 #endif
@@ -181,7 +205,9 @@ namespace Microsoft.Maui.TestCases.Tests
 		/// Verifies a screenshot by comparing it against a baseline image and throws an exception if verification fails.
 		/// </summary>
 		/// <param name="name">Optional name for the screenshot. If not provided, a default name will be used.</param>
-		/// <param name="retryDelay">Optional delay between retry attempts when verification fails.</param>
+		/// <param name="retryDelay">Optional delay between retry attempts when verification fails. Default is 500ms.</param>
+		/// <param name="retryTimeout">Optional total time to keep retrying before giving up. If not specified, only one retry is attempted.
+		/// Use this for animations with variable completion times (e.g., retryTimeout: TimeSpan.FromSeconds(2)).</param>
 		/// <param name="cropLeft">Number of pixels to crop from the left of the screenshot.</param>
 		/// <param name="cropRight">Number of pixels to crop from the right of the screenshot.</param>
 		/// <param name="cropTop">Number of pixels to crop from the top of the screenshot.</param>
@@ -205,6 +231,9 @@ namespace Microsoft.Maui.TestCases.Tests
 		/// // Allow 5% difference for animations or slight rendering variations
 		/// VerifyScreenshot("ButtonHoverState", tolerance: 5.0);
 		/// 
+		/// // Keep retrying for up to 2 seconds (useful for animations)
+		/// VerifyScreenshot("AnimatedElement", retryTimeout: TimeSpan.FromSeconds(2));
+		/// 
 		/// // Combined with cropping and tolerance
 		/// VerifyScreenshot("HeaderSection", cropTop: 50, cropBottom: 100, tolerance: 3.0);
 		/// </code>
@@ -212,6 +241,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		public void VerifyScreenshot(
 			string? name = null,
 			TimeSpan? retryDelay = null,
+			TimeSpan? retryTimeout = null,
 			int cropLeft = 0,
 			int cropRight = 0,
 			int cropTop = 0,
@@ -223,15 +253,53 @@ namespace Microsoft.Maui.TestCases.Tests
 		)
 		{
 			retryDelay ??= TimeSpan.FromMilliseconds(500);
-			// Retry the verification once in case the app is in a transient state
-			try
+			
+			// If retryTimeout is specified, keep retrying until timeout expires
+			// Otherwise, just retry once (backward compatible behavior)
+			if (retryTimeout.HasValue)
 			{
-				Verify(name);
+				var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+				Exception? lastException = null;
+				
+				while (stopwatch.Elapsed < retryTimeout.Value)
+				{
+					try
+					{
+						Verify(name);
+						return; // Success
+					}
+					catch (Exception ex)
+					{
+						lastException = ex;
+						if (stopwatch.Elapsed + retryDelay.Value < retryTimeout.Value)
+						{
+							Thread.Sleep(retryDelay.Value);
+						}
+					}
+				}
+				
+				// Final attempt after timeout
+				try
+				{
+					Verify(name);
+				}
+				catch
+				{
+					throw lastException ?? new InvalidOperationException("Screenshot verification failed");
+				}
 			}
-			catch
+			else
 			{
-				Thread.Sleep(retryDelay.Value);
-				Verify(name);
+				// Original behavior: retry once
+				try
+				{
+					Verify(name);
+				}
+				catch
+				{
+					Thread.Sleep(retryDelay.Value);
+					Verify(name);
+				}
 			}
 
 			void Verify(string? name)
@@ -451,8 +519,8 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			var message = ex.Message;
 
-			// Extract percentage from pattern: "X,XX% difference"
-			var match = Regex.Match(message, @"(\d+,\d+)%\s*difference", RegexOptions.IgnoreCase);
+			// Extract percentage from pattern: "X.XX% difference" or "X,XX% difference"
+			var match = Regex.Match(message, @"(\d+[.,]\d+)%\s*difference", RegexOptions.IgnoreCase);
 			if (match.Success)
 			{
 				var percentageString = match.Groups[1].Value.Replace(',', '.');
@@ -488,6 +556,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		protected override void FixtureSetup()
 		{
 			int retries = 0;
+			int instrumentationCrashRetries = 0;
 			while (true)
 			{
 				try
@@ -503,6 +572,26 @@ namespace Microsoft.Maui.TestCases.Tests
 				catch (Exception e)
 				{
 					TestContext.Error.WriteLine($">>>>> {DateTime.Now} The FixtureSetup threw an exception. Attempt {retries}/{SetupMaxRetries}.{Environment.NewLine}Exception details: {e}");
+
+					// Check for instrumentation/infrastructure crash that requires session recreation
+					if (IsInstrumentationCrash(e) && instrumentationCrashRetries++ < InstrumentationCrashMaxRetries)
+					{
+						TestContext.Error.WriteLine($">>>>> {DateTime.Now} Detected instrumentation crash, attempting session recreation (attempt {instrumentationCrashRetries}/{InstrumentationCrashMaxRetries})...");
+						try
+						{
+							// Call base.Reset() which disposes and recreates the driver
+							// (NOT this.Reset() which just does App.ResetApp())
+							base.Reset();
+							TestContext.Error.WriteLine($">>>>> {DateTime.Now} Session recreation successful, retrying FixtureSetup...");
+							continue; // Retry the whole FixtureSetup with fresh session
+						}
+						catch (Exception resetEx)
+						{
+							TestContext.Error.WriteLine($">>>>> {DateTime.Now} Session recreation failed: {resetEx.Message}");
+							// Fall through to standard retry logic
+						}
+					}
+
 					if (retries++ < SetupMaxRetries)
 					{
 						App.Back();
@@ -529,10 +618,27 @@ namespace Microsoft.Maui.TestCases.Tests
 				{
 					App.SetOrientationPortrait();
 				}
-				catch
+				catch (Exception e)
 				{
-					// The app might not be ready
-					// Probably reduce this value if this works
+					// Check for instrumentation crash that requires session recreation
+					if (IsInstrumentationCrash(e))
+					{
+						TestContext.Error.WriteLine($">>>>> {DateTime.Now} Detected instrumentation crash in TestSetup, attempting session recreation...");
+						try
+						{
+							base.Reset(); // Recreate the driver session
+							TestContext.Error.WriteLine($">>>>> {DateTime.Now} Session recreation successful in TestSetup");
+							App.SetOrientationPortrait();
+							return;
+						}
+						catch (Exception resetEx)
+						{
+							TestContext.Error.WriteLine($">>>>> {DateTime.Now} Session recreation failed in TestSetup: {resetEx.Message}");
+							throw;
+						}
+					}
+
+					// The app might not be ready - original retry logic
 					Thread.Sleep(1000);
 					App.SetOrientationPortrait();
 				}

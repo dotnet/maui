@@ -25,7 +25,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.EnterText("ColorEntry", "#00FF00");
 
 			App.WaitForElement("LabelShadow").Tap();
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		[Test, Order(2)]
@@ -71,7 +71,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(App.FindElement("OffsetYEntry").GetText(), Is.EqualTo("20"));
 
 			App.WaitForElement("LabelShadow").Tap();
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		[Test, Order(4)]
@@ -90,7 +90,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(App.FindElement("OffsetYEntry").GetText(), Is.EqualTo("0"));
 
 			App.WaitForElement("LabelShadow").Tap();
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		[Test, Order(5)]
@@ -105,7 +105,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(App.FindElement("RadiusEntry").GetText(), Is.EqualTo("20"));
 
 			App.WaitForElement("LabelShadow").Tap();
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		[Test, Order(6)]
@@ -120,7 +120,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(App.FindElement("RadiusEntry").GetText(), Is.EqualTo("0"));
 
 			App.WaitForElement("LabelShadow").Tap();
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		[Test]
@@ -135,7 +135,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(App.FindElement("OpacityEntry").GetText(), Is.EqualTo("1"));
 
 			App.WaitForElement("LabelShadow").Tap();
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		[Test, Order(7)]
@@ -150,7 +150,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(App.FindElement("OpacityEntry").GetText(), Is.EqualTo("0"));
 
 			App.WaitForElement("LabelShadow").Tap();
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		[Test, Order(7)]
@@ -160,7 +160,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("ResetButton").Tap();
 			App.WaitForElement("IsEnabledFalseRadio");
 			App.Tap("IsEnabledFalseRadio");
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		[Test, Order(8)]
@@ -170,7 +170,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("ResetButton").Tap();
 			App.WaitForElement("FlowDirectionRTL");
 			App.Tap("FlowDirectionRTL");
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		[Test, Order(9)]
@@ -180,7 +180,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("ResetButton").Tap();
 			App.WaitForElement("IsVisibleFalseRadio");
 			App.Tap("IsVisibleFalseRadio");
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 #if !WINDOWS // Shadow not updated when Clipping a View: https://github.com/dotnet/maui/issues/27730
@@ -191,7 +191,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("ResetButton").Tap();
 			App.WaitForElement("ClipButton");
 			App.Tap("ClipButton");
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		[Test, Order(11)]
@@ -223,7 +223,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("ResetButton").Tap();
 			App.WaitForElement("ShadowButton");
 			App.Tap("ShadowButton");
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		[Test]

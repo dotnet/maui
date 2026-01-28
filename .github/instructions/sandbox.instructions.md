@@ -162,7 +162,7 @@ Work with the Sandbox app for manual testing, PR validation, issue reproduction,
 ## When NOT to Use Sandbox
 
 - ❌ User asks to "review PR #XXXXX" → Use **pr** agent for code review
-- ❌ User asks to "write UI tests" or "create automated tests" → Use **uitest-coding-agent**
+- ❌ User asks to "write tests" or "create automated tests" → Use **write-tests-agent**
 - ❌ User asks to "validate the UI tests" or "verify test quality" → Review test code instead
 - ❌ User asks to "fix issue #XXXXX" (no PR exists) → Suggest `/delegate` command
 - ❌ PR only adds documentation (no code changes to test)

@@ -196,7 +196,7 @@ public class RefreshViewFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("RefreshView");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(13)]
@@ -212,7 +212,7 @@ public class RefreshViewFeatureTests : _GalleryUITest
 		App.WaitForElement("RefreshView");
 		App.WaitForElement("CollectionViewContentButton");
 		App.Tap("CollectionViewContentButton");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 }

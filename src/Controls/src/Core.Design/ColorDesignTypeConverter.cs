@@ -5,8 +5,14 @@ using System.Text.RegularExpressions;
 
 namespace Microsoft.Maui.Controls.Design
 {
+	/// <summary>
+	/// Provides design-time type conversion for Color values.
+	/// </summary>
 	public class ColorDesignTypeConverter : KnownValuesDesignTypeConverter
 	{
+		/// <summary>
+		/// Initializes a new instance of the <see cref="ColorDesignTypeConverter"/> class.
+		/// </summary>
 		public ColorDesignTypeConverter()
 		{ }
 
@@ -173,6 +179,7 @@ namespace Microsoft.Maui.Controls.Design
 			knowValuesSet.Add("Default");
 		}
 
+		/// <inheritdoc/>
 		protected override string[] KnownValues => knownValues;
 
 		// #rgb, #rrggbb, #aarrggbb are all valid 
@@ -188,6 +195,7 @@ namespace Microsoft.Maui.Controls.Design
 		const string RxFuncPattern = "^(?<func>rgba|argb|rgb|hsla|hsl|hsva|hsv)\\(((?<v>\\d%?),){2}((?<v>\\d%?)|(?<v>\\d%?),(?<v>\\d%?))\\);?$";
 		static readonly Lazy<Regex> RxFuncExpr = new(() => new Regex(RxFuncPattern, RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace | RegexOptions.Singleline));
 
+		/// <inheritdoc/>
 		public override bool IsValid(ITypeDescriptorContext context, object value)
 		{
 			var str = value?.ToString();

@@ -54,7 +54,7 @@ Invoke the `try-fix` skill repeatedly. The skill handles one fix attempt per inv
 
 **IMPORTANT:** Always pass the `state_file` parameter so try-fix can record its results:
 ```
-state_file: .github/agent-pr-session/pr-XXXXX.md
+state_file: CustomAgentLogsTmp/PRState/pr-XXXXX.md
 ```
 
 try-fix will automatically append rows to the Fix Candidates table and set the "Exhausted" field. You remain responsible for:
@@ -68,7 +68,7 @@ try-fix will automatically append rows to the Fix Candidates table and set the "
 │                                                             │
 │  attempts = 0                                               │
 │  max_attempts = 5                                           │
-│  state_file = ".github/agent-pr-session/pr-XXXXX.md"        │
+│  state_file = "CustomAgentLogsTmp/PRState/pr-XXXXX.md"        │
 │                                                             │
 │  while (attempts < max_attempts):                           │
 │      result = invoke try-fix skill (with state_file)        │
@@ -154,6 +154,8 @@ Update the state file:
 - Commit the changes
 
 ### Complete 🔧 Fix
+
+**🚨 MANDATORY: Update state file**
 
 **Update state file**:
 1. Verify Fix Candidates table is complete with all attempts
@@ -264,6 +266,8 @@ or
 Update all phase statuses to complete.
 
 ### Complete 📋 Report
+
+**🚨 MANDATORY: Update state file**
 
 **Update state file**:
 1. Change header status to final recommendation

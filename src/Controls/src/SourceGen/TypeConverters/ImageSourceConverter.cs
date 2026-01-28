@@ -21,13 +21,13 @@ class ImageSourceConverter : ISGTypeConverter
 
 			var imageSourceType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ImageSource")!;
 			var uriType = context.Compilation.GetTypeByMetadataName("System.Uri")!;
-			
+
 			return Uri.TryCreate(value, UriKind.Absolute, out Uri uri) && uri.Scheme != "file" ?
-				$"{imageSourceType.ToFQDisplayString()}.FromUri(new {uriType.ToFQDisplayString()}(\"{uri}\"))" : 
+				$"{imageSourceType.ToFQDisplayString()}.FromUri(new {uriType.ToFQDisplayString()}(\"{uri}\"))" :
 				$"{imageSourceType.ToFQDisplayString()}.FromFile(\"{value}\")";
 		}
 
-		context.ReportConversionFailed( xmlLineInfo, value, toType, Descriptors.ConversionFailed);
+		context.ReportConversionFailed(xmlLineInfo, value, toType, Descriptors.ConversionFailed);
 		return "default";
 	}
 }

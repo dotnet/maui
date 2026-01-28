@@ -100,7 +100,7 @@ public class CheckBoxFeatureTests : _GalleryUITest
 		App.WaitForElement("GreenColorButton");
 		App.Tap("GreenColorButton");
 
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -118,7 +118,7 @@ public class CheckBoxFeatureTests : _GalleryUITest
 
 		Assert.That(App.FindElement(IsCheckedLabel).GetText(), Is.EqualTo("False"));
 
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]

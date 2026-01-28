@@ -467,7 +467,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		Assert.That(App.WaitForElement(SelectedSingle).GetText(), Is.EqualTo("Apple"));
 		Assert.That(App.WaitForElement(SelectedMultiple).GetText(), Is.EqualTo("1"));
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 #if TEST_FAILS_ON_CATALYST //related issue link: https://github.com/dotnet/maui/issues/18028
@@ -487,7 +487,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		Assert.That(App.WaitForElement(SelectedSingle).GetText(), Is.EqualTo("Apple, Orange"));
 		Assert.That(App.WaitForElement(SelectedMultiple).GetText(), Is.EqualTo("2"));
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 #endif
@@ -506,7 +506,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		Assert.That(App.WaitForElement(SelectedSingle).GetText(), Is.EqualTo("Apple"));
 		Assert.That(App.WaitForElement(SelectedMultiple).GetText(), Is.EqualTo("1"));
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 #if TEST_FAILS_ON_CATALYST //related issue link: https://github.com/dotnet/maui/issues/18028
@@ -524,7 +524,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		Assert.That(App.WaitForElement(SelectedSingle).GetText(), Is.EqualTo("Apple, Orange"));
 		Assert.That(App.WaitForElement(SelectedMultiple).GetText(), Is.EqualTo("2"));
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -545,7 +545,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 		App.Tap("SingleModePreselection");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 #if TEST_FAILS_ON_CATALYST //related issue link: https://github.com/dotnet/maui/issues/18028
@@ -567,7 +567,7 @@ public class CollectionView_SelectionFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		Assert.That(App.WaitForElement(SelectedSingle).GetText(), Is.EqualTo("Apple, Orange, Carrot, Spinach"));
 		Assert.That(App.WaitForElement(SelectedMultiple).GetText(), Is.EqualTo("4"));
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 #endif

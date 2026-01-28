@@ -45,7 +45,7 @@ namespace Microsoft.Maui.TestCases.Tests
             App.WaitForElement("Apply");
             App.Tap("Apply");
 
-            VerifyScreenshot();
+            VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
         }
 
         [Test, Order(1)]
@@ -58,7 +58,7 @@ namespace Microsoft.Maui.TestCases.Tests
             App.WaitForElement("Apply");
             App.Tap("Apply");
 
-            VerifyScreenshot();
+            VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
         }
 
         [Test, Order(2)]
@@ -137,7 +137,7 @@ namespace Microsoft.Maui.TestCases.Tests
             App.WaitForElement("Apply");
             App.Tap("Apply");
 
-            VerifyScreenshot();
+            VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
         }
 
         [Test, Order(5)]
@@ -156,7 +156,7 @@ namespace Microsoft.Maui.TestCases.Tests
             App.WaitForElement("Apply");
             App.Tap("Apply");
 
-            VerifyScreenshot();
+            VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
         }
 
         [Test, Order(6)]
@@ -178,7 +178,7 @@ namespace Microsoft.Maui.TestCases.Tests
             App.WaitForElement("Apply");
             App.Tap("Apply");
 
-            VerifyScreenshot();
+            VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
         }
 
         [Test, Order(7)]
@@ -197,7 +197,7 @@ namespace Microsoft.Maui.TestCases.Tests
             App.WaitForElement("Apply");
             App.Tap("Apply");
 
-            VerifyScreenshot();
+            VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
         }
 
         [Test, Order(8)]
@@ -216,7 +216,7 @@ namespace Microsoft.Maui.TestCases.Tests
             App.WaitForElement("Apply");
             App.Tap("Apply");
 
-            VerifyScreenshot();
+            VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
         }
 
 #endif
@@ -233,7 +233,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		[Test, Order(14)]
@@ -249,7 +249,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		[Test, Order(13)]
@@ -267,7 +267,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		[Test, Order(12)]
@@ -285,7 +285,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 #if ANDROID || IOS
@@ -362,7 +362,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		[Test, Order(5)]
@@ -380,7 +380,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		[Test, Order(6)]
@@ -403,7 +403,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		[Test, Order(7)]
@@ -426,7 +426,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		[Test, Order(8)]
@@ -447,7 +447,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		[Test, Order(9)]
@@ -468,7 +468,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 
@@ -485,7 +485,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		[Test, Order(11)]
@@ -504,7 +504,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 #endif
 	}

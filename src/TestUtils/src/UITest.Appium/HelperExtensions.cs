@@ -68,6 +68,34 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// Closes a picker dialog using platform-specific dismiss actions.
+		/// For Android, taps the "Cancel" button.
+		/// For iOS/MacCatalyst, taps the "Done" button.
+		/// For Windows, either taps coordinates (if provided) or the "Cancel" button.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="x">Optional X coordinate for Windows tap. Default is 0.</param>
+		/// <param name="y">Optional Y coordinate for Windows tap. Default is 0.</param>
+		public static void ClosePicker(this IApp app, int windowsTapx = 0, int windowsTapy = 0)
+		{
+			if (app is AppiumAndroidApp)
+			{
+				app.Tap("Cancel");
+			}
+			else if (app is AppiumIOSApp || app is AppiumCatalystApp)
+			{
+				app.Tap("Done");
+			}
+			else if (app is AppiumWindowsApp)
+			{
+				if (windowsTapx != 0 || windowsTapy != 0)
+				{
+					app.TapCoordinates(windowsTapx, windowsTapy);
+				}
+			}
+		}
+
+		/// <summary>
 		/// Performs a down/press on the matched element, without a matching release
 		/// </summary>
 		/// <param name="app"></param>
