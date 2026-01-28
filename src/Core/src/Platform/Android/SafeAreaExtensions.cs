@@ -158,13 +158,9 @@ internal static class SafeAreaExtensions
 
 					if (viewExtendsBeyondScreen)
 					{
-						// Only request insets if we don't already have a pending request for this view.
-						// This prevents infinite loops when views are intentionally positioned off-screen
-						// (e.g., inactive tabs in TabbedPage). Issue #33731
-						// 
-						// We keep the view in the pending set until it's properly positioned on screen.
-						// This means we only request insets ONCE for off-screen views, avoiding the
-						// infinite loop that caused continuous GC.
+						// Use HashSet to track pending requests and prevent infinite loop (Issue #33731)
+						// When a view extends beyond screen bounds (e.g., inactive TabbedPage tabs), we only
+						// request insets once until the view is repositioned or the request completes.
 						var viewId = view.GetHashCode();
 						if (!_pendingInsetRequests.Contains(viewId))
 						{
@@ -174,8 +170,7 @@ internal static class SafeAreaExtensions
 					}
 					else
 					{
-						// View is now properly positioned on screen - remove from pending set
-						// so future off-screen transitions can request insets again
+						// Clear the tracking when view is back on screen
 						_pendingInsetRequests.Remove(view.GetHashCode());
 					}
 

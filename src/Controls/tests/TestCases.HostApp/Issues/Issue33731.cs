@@ -1,128 +1,187 @@
+#nullable enable
 namespace Maui.Controls.Sample.Issues;
 
+/// <summary>
+/// Test for Issue #33731 - Continuous GC logs on TabbedPage in MAUI 10.0.30.
+/// 
+/// The bug causes an infinite loop of RequestApplyInsets calls when Tab 2's content
+/// is positioned off-screen (at x=screenWidth). This creates continuous lambda
+/// allocations (~60/sec), triggering GC every ~5-6 seconds.
+/// 
+/// This test monitors GC.CollectionCount(0) to detect excessive GC activity.
+/// WITH BUG: 5+ GC events in 30 seconds
+/// WITH FIX: 0-1 GC events in 30 seconds
+/// </summary>
 [Issue(IssueTracker.Github, 33731, "Continuous GC logs on TabbedPage in MAUI 10.0.30", PlatformAffected.Android)]
 public class Issue33731 : TabbedPage
 {
-	private Label _insetCountLabel;
-	private IDispatcherTimer _updateTimer;
-	private int _layoutPassCount = 0;
+	private readonly Label _gcCountLabel;
+	private readonly Label _statusLabel;
+	private int _lastGcCount;
+	private int _gcEventsDetected;
+	private DateTime _startTime;
+	private IDispatcherTimer? _timer;
 
 	public Issue33731()
 	{
 		AutomationId = "TabbedPageRoot";
 
-		// Label to show layout pass count (updated via timer)
-		_insetCountLabel = new Label
+		// Force initial GC to establish baseline
+		GC.Collect();
+		GC.WaitForPendingFinalizers();
+		GC.Collect();
+
+		_lastGcCount = GC.CollectionCount(0);
+		_gcEventsDetected = 0;
+		_startTime = DateTime.UtcNow;
+
+		// Create the monitoring UI on Tab 1
+		_gcCountLabel = new Label
 		{
-			Text = "LayoutCount: 0",
-			AutomationId = "LayoutCountLabel",
+			AutomationId = "GCCountLabel",
+			Text = "GCCount: 0",
+			FontSize = 24,
+			FontAttributes = FontAttributes.Bold,
 			BackgroundColor = Colors.Yellow,
 			HorizontalOptions = LayoutOptions.Center,
-			VerticalOptions = LayoutOptions.Start,
-			Padding = new Thickness(10),
-			FontSize = 18
+			Padding = new Thickness(10)
 		};
 
-		// Create first tab with Grid (matching the exact repro from the issue)
-		var tab1Content = new Grid
+		_statusLabel = new Label
 		{
-			Children =
+			AutomationId = "StatusLabel",
+			Text = "Monitoring...",
+			FontSize = 16,
+			HorizontalOptions = LayoutOptions.Center
+		};
+
+		var tab1 = new ContentPage
+		{
+			Title = "GC Monitor",
+			Content = new VerticalStackLayout
 			{
-				new VerticalStackLayout
+				Padding = 20,
+				Spacing = 10,
+				Children =
 				{
-					Spacing = 10,
-					Children =
+					new Label 
+					{ 
+						Text = "Issue #33731 - TabbedPage GC Monitor", 
+						AutomationId = "Tab1Label",
+						FontSize = 18, 
+						FontAttributes = FontAttributes.Bold, 
+						HorizontalOptions = LayoutOptions.Center 
+					},
+					new BoxView { HeightRequest = 2, Color = Colors.Gray },
+					_gcCountLabel,
+					_statusLabel,
+					new Label
 					{
-						_insetCountLabel,
-						new Label
-						{
-							Text = "Tab 1 - Watch LayoutCount above",
-							AutomationId = "Tab1Label",
-							HorizontalOptions = LayoutOptions.Center,
-							VerticalOptions = LayoutOptions.Center,
-							FontSize = 20
-						},
-						new Label
-						{
-							Text = "Bug: Count keeps increasing (infinite loop)",
-							HorizontalOptions = LayoutOptions.Center,
-							FontSize = 14,
-							TextColor = Colors.Red
-						}
+						Text = "WITH BUG: GCCount increases rapidly (5+ in 30s)\n" +
+						       "WITH FIX: GCCount stays at 0-1",
+						FontSize = 12,
+						HorizontalOptions = LayoutOptions.Center,
+						Margin = new Thickness(0, 20, 0, 0)
 					}
 				}
 			}
 		};
 
-		var tab1 = new ContentPage
-		{
-			Title = "Tab 1",
-			Content = tab1Content
-		};
-
 		// Create second tab with Grid (matching the exact repro from the issue)
-		var tab2Content = new Grid
+		var tab2 = new ContentPage
 		{
-			Children =
+			Title = "Tab 2",
+			Content = new Grid
 			{
-				new Label
+				Children =
 				{
-					Text = "Tab 2",
-					AutomationId = "Tab2Label",
-					HorizontalOptions = LayoutOptions.Center,
-					VerticalOptions = LayoutOptions.Center,
-					FontSize = 24
+					new Label
+					{
+						Text = "Tab 2 - Inactive tab",
+						AutomationId = "Tab2Label",
+						HorizontalOptions = LayoutOptions.Center,
+						VerticalOptions = LayoutOptions.Center,
+						FontSize = 24
+					}
 				}
 			}
 		};
 
-		var tab2 = new ContentPage
+		// Create third tab (more tabs = higher likelihood of bug triggering)
+		var tab3 = new ContentPage
 		{
-			Title = "Tab 2",
-			Content = tab2Content
-		};
-
-		// Hook into layout events on the content to detect excessive layouts
-		// The bug causes Tab 2's content to continuously trigger layout due to inset thrashing
-		tab2Content.SizeChanged += (s, e) => 
-		{
-			_layoutPassCount++;
-			System.Diagnostics.Debug.WriteLine($"[Issue33731] Tab2 SizeChanged #{_layoutPassCount}");
-		};
-
-#if ANDROID
-		// Monitor the platform view's layout requests
-		tab2.HandlerChanged += (s, e) =>
-		{
-			if (tab2.Handler?.PlatformView is Android.Views.View platformView)
+			Title = "Tab 3",
+			Content = new Grid
 			{
-				platformView.ViewTreeObserver.GlobalLayout += (sender, args) =>
+				Children =
 				{
-					_layoutPassCount++;
-				};
+					new Label
+					{
+						Text = "Tab 3 - Another inactive tab",
+						HorizontalOptions = LayoutOptions.Center,
+						VerticalOptions = LayoutOptions.Center,
+						FontSize = 24
+					}
+				}
 			}
 		};
-#endif
 
-		// Add tabs to TabbedPage
 		Children.Add(tab1);
 		Children.Add(tab2);
+		Children.Add(tab3);
 
-		// Start a timer to update the layout count display
-		_updateTimer = Application.Current.Dispatcher.CreateTimer();
-		_updateTimer.Interval = TimeSpan.FromMilliseconds(100);
-		_updateTimer.Tick += OnTimerTick;
-		_updateTimer.Start();
+		// Start GC monitoring timer
+		_timer = Application.Current?.Dispatcher.CreateTimer();
+		if (_timer != null)
+		{
+			_timer.Interval = TimeSpan.FromMilliseconds(500);
+			_timer.Tick += OnTimerTick;
+			_timer.Start();
+		}
 	}
 
-	private void OnTimerTick(object sender, EventArgs e)
+	private void OnTimerTick(object? sender, EventArgs e)
 	{
-		_insetCountLabel.Text = $"LayoutCount: {_layoutPassCount}";
+		int currentGcCount = GC.CollectionCount(0);
+
+		if (currentGcCount > _lastGcCount)
+		{
+			int newGCs = currentGcCount - _lastGcCount;
+			_gcEventsDetected += newGCs;
+			_lastGcCount = currentGcCount;
+		}
+
+		// Update UI - format must match what the test expects: "GCCount: X"
+		_gcCountLabel.Text = $"GCCount: {_gcEventsDetected}";
+
+		// Calculate elapsed time
+		double elapsedSeconds = (DateTime.UtcNow - _startTime).TotalSeconds;
+
+		// Update status based on results
+		if (elapsedSeconds >= 30)
+		{
+			if (_gcEventsDetected >= 5)
+			{
+				_statusLabel.Text = $"BUG DETECTED: {_gcEventsDetected} GCs in {elapsedSeconds:F0}s";
+			}
+			else if (_gcEventsDetected <= 1)
+			{
+				_statusLabel.Text = $"PASS: Only {_gcEventsDetected} GCs in {elapsedSeconds:F0}s";
+			}
+			else
+			{
+				_statusLabel.Text = $"BORDERLINE: {_gcEventsDetected} GCs in {elapsedSeconds:F0}s";
+			}
+		}
+		else
+		{
+			_statusLabel.Text = $"Monitoring... {elapsedSeconds:F0}s elapsed";
+		}
 	}
 
 	protected override void OnDisappearing()
 	{
 		base.OnDisappearing();
-		_updateTimer?.Stop();
+		_timer?.Stop();
 	}
 }

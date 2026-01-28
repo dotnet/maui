@@ -12,51 +12,55 @@ public class Issue33731 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.TabbedPage)]
-	public void TabbedPageShouldNotContinuouslyTriggerLayout()
+	public void TabbedPageShouldNotCauseExcessiveGC()
 	{
 		// Wait for the TabbedPage to load
-		App.WaitForElement("LayoutCountLabel");
+		App.WaitForElement("GCCountLabel");
 		App.WaitForElement("Tab1Label");
 
-		// Wait a moment for initial layout to complete
-		Task.Delay(500).Wait();
+		// Wait a moment for initial layout and GC baseline to stabilize
+		Task.Delay(1000).Wait();
 
-		// Get initial layout count
-		var initialStatus = App.FindElement("LayoutCountLabel").GetText() ?? "";
+		// Get initial GC count
+		var initialStatus = App.FindElement("GCCountLabel").GetText() ?? "";
 		int initialCount = GetCountFromStatus(initialStatus);
-		
-		System.Diagnostics.Debug.WriteLine($"Initial LayoutCount: {initialCount}");
 
-		// Wait 3 seconds while idle
-		// If the bug is present, layout/inset requests happen in an infinite loop
-		Task.Delay(3000).Wait();
+		System.Diagnostics.Debug.WriteLine($"Initial GCCount: {initialCount}");
+
+		// Wait 10 seconds while idle
+		// If the bug is present, GC happens every ~5-6 seconds due to lambda allocations
+		// from the infinite RequestApplyInsets loop
+		Task.Delay(10000).Wait();
 
 		// Get the count after waiting
-		var afterWaitStatus = App.FindElement("LayoutCountLabel").GetText() ?? "";
+		var afterWaitStatus = App.FindElement("GCCountLabel").GetText() ?? "";
 		int afterWaitCount = GetCountFromStatus(afterWaitStatus);
 
-		System.Diagnostics.Debug.WriteLine($"After 3s LayoutCount: {afterWaitCount}");
+		System.Diagnostics.Debug.WriteLine($"After 10s GCCount: {afterWaitCount}");
 
-		// Calculate how many layout events happened during idle time
-		int layoutsDuringIdle = afterWaitCount - initialCount;
+		// Calculate how many GC events happened during idle time
+		int gcsDuringIdle = afterWaitCount - initialCount;
 
-		// The bug causes an infinite loop of RequestApplyInsets calls, which triggers
-		// continuous GC (every ~5-6 seconds). This test monitors GlobalLayout events
-		// as an indirect indicator. Normal TabbedPage layout produces ~50-200 events
-		// during idle due to animation-related layouts.
+		// If the bug is present:
+		// - Lambda allocations from view.Post(() => RequestApplyInsets) ~60 times/sec
+		// - This causes GC every ~5-6 seconds
+		// - In 10 seconds, we'd see 1-2 GC events
 		// 
-		// With the bug (infinite loop), we'd see much higher activity AND continuous GC.
-		// We use a threshold of 500 to detect extreme layout thrashing while allowing
-		// for normal TabbedPage behavior. The real verification is via logcat GC analysis.
-		Assert.That(layoutsDuringIdle, Is.LessThan(500),
-			$"Layout activity is abnormally high. " +
-			$"Initial: {initialCount}, After 3s: {afterWaitCount}, Layouts during idle: {layoutsDuringIdle}. " +
-			$"Check logcat for continuous GC events every 5-6 seconds (the actual bug symptom).");
+		// If fixed:
+		// - No lambda allocations in the loop
+		// - 0 GC events during idle
+		// 
+		// We use a threshold of 2 to detect the bug while allowing for minimal GC
+		// from normal app activity
+		Assert.That(gcsDuringIdle, Is.LessThan(2),
+			$"TabbedPage should not cause excessive GC. " +
+			$"Initial: {initialCount}, After 10s: {afterWaitCount}, GCs during idle: {gcsDuringIdle}. " +
+			$"Excessive GC indicates infinite RequestApplyInsets loop from PR #33285.");
 	}
 
 	private static int GetCountFromStatus(string status)
 	{
-		// Format: "LayoutCount: X"
+		// Format: "GCCount: X"
 		var parts = status.Split(':');
 		if (parts.Length >= 2 && int.TryParse(parts[1].Trim(), out int count))
 		{
