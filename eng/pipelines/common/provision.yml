@@ -43,7 +43,7 @@ steps:
   - template: ../../common/templates-official/steps/enable-internal-sources.yml
     parameters:
       legacyCredential: $(dn-bot-dnceng-artifact-feeds-rw)
-      
+
   - template: ../../common/templates-official/steps/enable-internal-runtimes.yml
     parameters:
       federatedServiceConnection: ${{ parameters.federatedServiceConnection }}
@@ -51,11 +51,10 @@ steps:
       expiryInHours: ${{ parameters.expiryInHours }}
       base64Encode: ${{ parameters.base64Encode }}
 
-
 ##################################################
 #               Provisioning macOS               #
 ##################################################
-  
+
 #check if the _tool directory exists and remove it
 - pwsh: |
     $dotnetToolsPath = "$(Agent.ToolsDirectory)/dotnet"
@@ -95,7 +94,8 @@ steps:
       sw_vers -productVersion
       echo
       echo Installed Xcode versions:
-      ls -la /Applications | grep 'Xcode'
+      XCODE_LIST=($(ls -1 /Applications | grep '^Xcode_' | sed 's/^Xcode_//;s/.app$//'))
+      for v in "${XCODE_LIST[@]}"; do echo "  $v"; done
       echo
       echo currently selected xcode:
       xcrun xcode-select --print-path
@@ -107,7 +107,7 @@ steps:
       else
         XCODE_VERSION=$(XCODE)
       fi
-      
+
       # Check if the specified Xcode version exists, if not try fallback
       XCODE_PATH="/Applications/Xcode_${XCODE_VERSION}.app"
       if [[ ! -d "$XCODE_PATH" ]]; then
@@ -132,12 +132,12 @@ steps:
       else
         echo "Found Xcode version ${XCODE_VERSION} at ${XCODE_PATH}"
       fi
-      
+
       sudo xcode-select -s "$XCODE_PATH"
       xcrun xcode-select --print-path
       xcodebuild -version
       sudo xcodebuild -license accept
-     
+
       sudo xcodebuild -runFirstLaunch
     displayName: Select Xcode Version
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
