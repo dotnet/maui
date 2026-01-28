@@ -25,6 +25,29 @@ namespace Microsoft.Maui.TestCases.Tests
 		string _defaultiOSVersion = "18.5";
 
 		protected const int SetupMaxRetries = 1;
+		protected const int InstrumentationCrashMaxRetries = 1;
+
+		/// <summary>
+		/// Detects if an exception indicates an Android UiAutomator2 instrumentation crash
+		/// or other infrastructure failure that requires session recreation.
+		/// </summary>
+		private static bool IsInstrumentationCrash(Exception e)
+		{
+			var message = e.ToString(); // Includes InnerException
+			return
+				message.Contains("instrumentation process is not running", StringComparison.OrdinalIgnoreCase) ||
+				message.Contains("socket hang up", StringComparison.OrdinalIgnoreCase) ||
+				message.Contains("Can't find service: package", StringComparison.OrdinalIgnoreCase) ||
+				message.Contains("Could not proxy command to remote server", StringComparison.OrdinalIgnoreCase) ||
+				message.Contains("ECONNRESET", StringComparison.OrdinalIgnoreCase) ||
+				message.Contains("ECONNREFUSED", StringComparison.OrdinalIgnoreCase) ||
+				message.Contains("Connection refused", StringComparison.OrdinalIgnoreCase) ||
+				message.Contains("InvalidSessionIdException", StringComparison.OrdinalIgnoreCase) ||
+				message.Contains("NoSuchDriverException", StringComparison.OrdinalIgnoreCase) ||
+				message.Contains("session is either terminated or not started", StringComparison.OrdinalIgnoreCase) ||
+				message.Contains("UiAutomator2 server", StringComparison.OrdinalIgnoreCase) ||
+				message.Contains("device offline", StringComparison.OrdinalIgnoreCase);
+		}
 		readonly VisualRegressionTester _visualRegressionTester;
 		readonly IImageEditorFactory _imageEditorFactory;
 		readonly VisualTestContext _visualTestContext;
@@ -533,6 +556,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		protected override void FixtureSetup()
 		{
 			int retries = 0;
+			int instrumentationCrashRetries = 0;
 			while (true)
 			{
 				try
@@ -548,6 +572,26 @@ namespace Microsoft.Maui.TestCases.Tests
 				catch (Exception e)
 				{
 					TestContext.Error.WriteLine($">>>>> {DateTime.Now} The FixtureSetup threw an exception. Attempt {retries}/{SetupMaxRetries}.{Environment.NewLine}Exception details: {e}");
+
+					// Check for instrumentation/infrastructure crash that requires session recreation
+					if (IsInstrumentationCrash(e) && instrumentationCrashRetries++ < InstrumentationCrashMaxRetries)
+					{
+						TestContext.Error.WriteLine($">>>>> {DateTime.Now} Detected instrumentation crash, attempting session recreation (attempt {instrumentationCrashRetries}/{InstrumentationCrashMaxRetries})...");
+						try
+						{
+							// Call base.Reset() which disposes and recreates the driver
+							// (NOT this.Reset() which just does App.ResetApp())
+							base.Reset();
+							TestContext.Error.WriteLine($">>>>> {DateTime.Now} Session recreation successful, retrying FixtureSetup...");
+							continue; // Retry the whole FixtureSetup with fresh session
+						}
+						catch (Exception resetEx)
+						{
+							TestContext.Error.WriteLine($">>>>> {DateTime.Now} Session recreation failed: {resetEx.Message}");
+							// Fall through to standard retry logic
+						}
+					}
+
 					if (retries++ < SetupMaxRetries)
 					{
 						App.Back();
@@ -574,10 +618,27 @@ namespace Microsoft.Maui.TestCases.Tests
 				{
 					App.SetOrientationPortrait();
 				}
-				catch
+				catch (Exception e)
 				{
-					// The app might not be ready
-					// Probably reduce this value if this works
+					// Check for instrumentation crash that requires session recreation
+					if (IsInstrumentationCrash(e))
+					{
+						TestContext.Error.WriteLine($">>>>> {DateTime.Now} Detected instrumentation crash in TestSetup, attempting session recreation...");
+						try
+						{
+							base.Reset(); // Recreate the driver session
+							TestContext.Error.WriteLine($">>>>> {DateTime.Now} Session recreation successful in TestSetup");
+							App.SetOrientationPortrait();
+							return;
+						}
+						catch (Exception resetEx)
+						{
+							TestContext.Error.WriteLine($">>>>> {DateTime.Now} Session recreation failed in TestSetup: {resetEx.Message}");
+							throw;
+						}
+					}
+
+					// The app might not be ready - original retry logic
 					Thread.Sleep(1000);
 					App.SetOrientationPortrait();
 				}
