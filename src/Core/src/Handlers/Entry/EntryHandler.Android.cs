@@ -89,12 +89,12 @@ namespace Microsoft.Maui.Handlers
 
 			handler.PlatformView?.UpdateIsPassword(entry);
 		}
-
-		public static void MapHasBorder(IEntryHandler handler, IEntry entry)
+		
+		public static void MapBorderStyle(IEntryHandler handler, IEntry entry)
 		{
 			handler.UpdateValue(nameof(IEntry.Text));
 
-			handler.PlatformView?.UpdateHasBorder(entry);
+			handler.PlatformView?.UpdateBorderStyle(entry);
 		}
 
 		public static void MapHorizontalTextAlignment(IEntryHandler handler, IEntry entry) =>

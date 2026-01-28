@@ -196,9 +196,9 @@ namespace Microsoft.Maui.Platform
 			return end;
 		}
 
-		public static void UpdateHasBorder(this UITextField textField, IEntry entry)
+		public static void UpdateBorderStyle(this UITextField textField, IEntry entry)
 		{
-			if (entry.HasBorder)
+			if (entry.BorderStyle is BorderStyle.Default)
 			{
 				textField.BorderStyle = UITextBorderStyle.RoundedRect;
 			}

@@ -348,18 +348,18 @@ namespace Microsoft.Maui.DeviceTests
 			return compoundsValidWhenFocused && compoundsValidWhenUnfocused;
 		}
 
-		bool GetNativeHasBorder(EntryHandler entryHandler)
+		BorderStyle GetNativeBorderStyle(EntryHandler entryHandler)
 		{
 			var editText = GetNativeEntry(entryHandler);
 
 			var tintList = editText.BackgroundTintList;
 			if (tintList is null)
-				return true;
+				return BorderStyle.Default;
 
 			var defaultColor = tintList.DefaultColor;
 			var transparentColor = Colors.Transparent.ToPlatform();
 
-			return defaultColor != transparentColor;
+			return defaultColor != transparentColor ? BorderStyle.Default : BorderStyle.None;
 		}
 
 		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]

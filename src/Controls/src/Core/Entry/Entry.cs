@@ -38,9 +38,9 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty IsPasswordProperty = BindableProperty.Create(nameof(IsPassword), typeof(bool), typeof(Entry), default(bool));
 
 		/// <summary>
-		/// Backing store for the <see cref="HasBorder"/> property.
+		/// Backing store for the <see cref="BorderStyle"/> property.
 		/// </summary>
-		public static readonly BindableProperty HasBorderProperty = BindableProperty.Create(nameof(HasBorder), typeof(bool), typeof(Entry), true);
+		public static readonly BindableProperty BorderStyleProperty = BindableProperty.Create(nameof(BorderStyle), typeof(BorderStyle), typeof(Entry), BorderStyle.Default);
 
 		/// <inheritdoc cref="InputView.TextProperty"/>
 		public new static readonly BindableProperty TextProperty = InputView.TextProperty;
@@ -131,14 +131,13 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets or sets a value that indicating if the Entry has a border displayed. This is a bindable property.
+		/// Gets or sets the border style of the Entry. This is a bindable property.
 		/// </summary>
-		public bool HasBorder
+		public BorderStyle BorderStyle
 		{
-			get { return (bool)GetValue(HasBorderProperty); }
-			set { SetValue(HasBorderProperty, value); }
+			get { return (BorderStyle)GetValue(BorderStyleProperty); }
+			set { SetValue(BorderStyleProperty, value); }
 		}
-
 
 		/// <summary>
 		/// Determines what the return key on the on-screen keyboard should look like. This is a bindable property.

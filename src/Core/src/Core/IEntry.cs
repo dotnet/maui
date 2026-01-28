@@ -11,9 +11,9 @@
 		bool IsPassword { get; }
 
 		/// <summary>
-		/// Gets a value that indicates if the Entry has a border displayed.
+		/// Gets a value that controls the border style of the Entry.
 		/// </summary>
-		bool HasBorder { get; }
+		BorderStyle BorderStyle { get; }
 
 		/// <summary>
 		/// Gets an enumeration value that controls the appearance of the return button.

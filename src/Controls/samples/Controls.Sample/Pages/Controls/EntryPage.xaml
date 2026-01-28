@@ -43,27 +43,31 @@
             <VerticalStackLayout Padding="12">
                 <Button Margin="5" x:Name="ShowSoftInputAsyncButton" Clicked="ShowSoftInputAsyncButton_Clicked" Text="Show Soft Input for Placeholder Button" />
                 <Button Margin="5" x:Name="HideSoftInputAsyncButton" Clicked="HideSoftInputAsyncButton_Clicked" Text="Hide Soft Input" />
-                <Label
-                    Text="Basic"
-                    Style="{StaticResource Headline}" />
-                <Entry />
+                <VerticalStackLayout Spacing="4">
+                    <Label
+                        Text="Basic"
+                        Style="{StaticResource Headline}" />
+                    <Entry />
+                </VerticalStackLayout>
+                <VerticalStackLayout Spacing="4">
+                    <Label
+                        Text="Without Border"
+                        Style="{StaticResource Headline}" />
+                    <Entry 
+                        Text="Text"
+                        BorderStyle="None" />
+                </VerticalStackLayout>
                 <Label
                     Text="Disabled"
                     Style="{StaticResource Headline}" />
-                <Entry 
-                    IsEnabled="False"/>
-                <Label 
-                    Text="Without Border"
-                    Style="{StaticResource Headline}" />
-                <Entry 
-                    Text="Text"
-                    HasBorder="False" />
+                <Entry
+                    IsEnabled="False" />
                 <Label
                     Text="Using TextColor"
                     Style="{StaticResource Headline}" />
                 <Entry 
                     Text="Text"
-                    TextColor="Purple"/>
+                    TextColor="Purple" />
                 <Label
                     Text="Using TextColor (for the text color and the clear button color)"
                     Style="{StaticResource Headline}" />

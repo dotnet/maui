@@ -1,4 +1,4 @@
-#nullable enable
-Microsoft.Maui.Controls.Entry.HasBorder.get -> bool
-Microsoft.Maui.Controls.Entry.HasBorder.set -> void
-~static readonly Microsoft.Maui.Controls.Entry.HasBorderProperty -> Microsoft.Maui.Controls.BindableProperty
+﻿#nullable enable
+Microsoft.Maui.Controls.Entry.BorderStyle.get -> Microsoft.Maui.BorderStyle
+Microsoft.Maui.Controls.Entry.BorderStyle.set -> void
+~static readonly Microsoft.Maui.Controls.Entry.BorderStyleProperty -> Microsoft.Maui.Controls.BindableProperty

@@ -105,8 +105,8 @@ namespace Microsoft.Maui.Handlers
 		public static void MapClearButtonVisibility(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateClearButtonVisibility(entry);
 
-		public static void MapHasBorder(IEntryHandler handler, IEntry entry) =>
-			handler.PlatformView?.UpdateHasBorder(entry);
+		public static void MapBorderStyle(IEntryHandler handler, IEntry entry) =>
+			handler.PlatformView?.UpdateBorderStyle(entry);
 
 		public static void MapFormatting(IEntryHandler handler, IEntry entry)
 		{

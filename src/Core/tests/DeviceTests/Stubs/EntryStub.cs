@@ -29,7 +29,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public bool IsReadOnly { get; set; }
 
-		public bool HasBorder { get; set; } = true;
+		public BorderStyle BorderStyle { get; set; } = true;
 
 		public Font Font { get; set; }
 

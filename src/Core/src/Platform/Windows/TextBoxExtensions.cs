@@ -50,9 +50,9 @@ namespace Microsoft.Maui.Platform
 			"TextControlBackgroundDisabled",
 		};
 
-		public static void UpdateHasBorder(this TextBox textBox, IEntry entry)
+		public static void UpdateBorderStyle(this TextBox textBox, IEntry entry)
 		{
-			if (entry.HasBorder)
+			if (entry.BorderStyle is BorderStyle.Default)
 			{
 				textBox.Resources.RemoveKeys(BorderThicknessResourceKeys);
 				textBox.ClearValue(Control.BorderThicknessProperty);

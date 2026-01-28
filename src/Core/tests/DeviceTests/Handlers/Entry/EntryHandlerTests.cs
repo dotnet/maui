@@ -675,118 +675,118 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(platformAlignment, values.PlatformViewValue);
 		}
 
-		[Theory(DisplayName = "HasBorder Initializes Correctly")]
-		[InlineData(true)]
-		[InlineData(false)]
-		public async Task HasBorderInitializesCorrectly(bool hasBorder)
+		[Theory(DisplayName = "BorderStyle Initializes Correctly")]
+		[InlineData(BorderStyle.Default)]
+		[InlineData(BorderStyle.None)]
+		public async Task BorderStyleInitializesCorrectly(BorderStyle borderStyle)
 		{
 			var entry = new EntryStub()
 			{
-				HasBorder = hasBorder
+				BorderStyle = borderStyle
 			};
 
-			await ValidatePropertyInitValue(entry, () => entry.HasBorder, GetNativeHasBorder, hasBorder);
+			await ValidatePropertyInitValue(entry, () => entry.BorderStyle, GetNativeBorderStyle, borderStyle);
 		}
 
-		[Theory(DisplayName = "HasBorder Updates Correctly")]
-		[InlineData(true, true)]
-		[InlineData(true, false)]
-		[InlineData(false, true)]
-		[InlineData(false, false)]
-		public async Task HasBorderUpdatesCorrectly(bool setValue, bool unsetValue)
+		[Theory(DisplayName = "BorderStyle Updates Correctly")]
+		[InlineData(BorderStyle.Default, BorderStyle.Default)]
+		[InlineData(BorderStyle.Default, BorderStyle.None)]
+		[InlineData(BorderStyle.None, BorderStyle.Default)]
+		[InlineData(BorderStyle.None, BorderStyle.None)]
+		public async Task BorderStyleUpdatesCorrectly(BorderStyle setValue, BorderStyle unsetValue)
 		{
 			var entry = new EntryStub();
 
 			await ValidatePropertyUpdatesValue(
 				entry,
-				nameof(IEntry.HasBorder),
-				GetNativeHasBorder,
+				nameof(IEntry.BorderStyle),
+				GetNativeBorderStyle,
 				setValue,
 				unsetValue);
 		}
 
-		[Theory(DisplayName = "Updating HasBorder Does Not Affect Text")]
-		[InlineData(true, false)]
-		[InlineData(false, true)]
-		public async Task HasBorderDoesNotAffectText(bool initialHasBorder, bool newHasBorder)
+		[Theory(DisplayName = "Updating BorderStyle Does Not Affect Text")]
+		[InlineData(BorderStyle.Default, BorderStyle.None)]
+		[InlineData(BorderStyle.None, BorderStyle.Default)]
+		public async Task BorderStyleDoesNotAffectText(BorderStyle initialBorderStyle, BorderStyle newBorderStyle)
 		{
 			var entry = new EntryStub
 			{
 				Text = "Test Text",
-				HasBorder = initialHasBorder
+				BorderStyle = initialBorderStyle
 			};
 
 			await ValidateUnrelatedPropertyUnaffected(
 				entry,
 				GetNativeText,
-				nameof(IEntry.HasBorder),
-				() => entry.HasBorder = newHasBorder);
+				nameof(IEntry.BorderStyle),
+				() => entry.BorderStyle = newBorderStyle);
 		}
 
-		[Theory(DisplayName = "Updating HasBorder Does Not Affect TextColor")]
-		[InlineData(true, false)]
-		[InlineData(false, true)]
-		public async Task HasBorderDoesNotAffectTextColor(bool initialHasBorder, bool newHasBorder)
+		[Theory(DisplayName = "Updating BorderStyle Does Not Affect TextColor")]
+		[InlineData(BorderStyle.Default, BorderStyle.None)]
+		[InlineData(BorderStyle.None, BorderStyle.Default)]
+		public async Task BorderStyleDoesNotAffectTextColor(BorderStyle initialBorderStyle, BorderStyle newBorderStyle)
 		{
 			var entry = new EntryStub
 			{
 				Text = "Test",
 				TextColor = Colors.Red,
-				HasBorder = initialHasBorder
+				BorderStyle = initialBorderStyle
 			};
 
 			await ValidateUnrelatedPropertyUnaffected(
 				entry,
 				GetNativeTextColor,
-				nameof(IEntry.HasBorder),
-				() => entry.HasBorder = newHasBorder);
+				nameof(IEntry.BorderStyle),
+				() => entry.BorderStyle = newBorderStyle);
 		}
 
-		[Theory(DisplayName = "Updating HasBorder Does Not Affect Placeholder")]
-		[InlineData(true, false)]
-		[InlineData(false, true)]
-		public async Task HasBorderDoesNotAffectPlaceholder(bool initialHasBorder, bool newHasBorder)
+		[Theory(DisplayName = "Updating BorderStyle Does Not Affect Placeholder")]
+		[InlineData(BorderStyle.Default, BorderStyle.None)]
+		[InlineData(BorderStyle.None, BorderStyle.Default)]
+		public async Task BorderStyleDoesNotAffectPlaceholder(BorderStyle initialBorderStyle, BorderStyle newBorderStyle)
 		{
 			var entry = new EntryStub
 			{
 				Placeholder = "Enter text",
-				HasBorder = initialHasBorder
+				BorderStyle = initialBorderStyle
 			};
 
 			await ValidateUnrelatedPropertyUnaffected(
 				entry,
 				GetNativePlaceholder,
-				nameof(IEntry.HasBorder),
-				() => entry.HasBorder = newHasBorder);
+				nameof(IEntry.BorderStyle),
+				() => entry.BorderStyle = newBorderStyle);
 		}
 
-		[Theory(DisplayName = "Updating Text Does Not Affect HasBorder")]
+		[Theory(DisplayName = "Updating Text Does Not Affect BorderStyle")]
 		[InlineData("Short", "Longer Text")]
 		[InlineData("Long text here", "Short")]
-		public async Task TextDoesNotAffectHasBorder(string initialText, string newText)
+		public async Task TextDoesNotAffectBorderStyle(string initialText, string newText)
 		{
 			var entry = new EntryStub
 			{
 				Text = initialText,
-				HasBorder = true
+				BorderStyle = BorderStyle.Default
 			};
 
 			await ValidateUnrelatedPropertyUnaffected(
 				entry,
-				GetNativeHasBorder,
+				GetNativeBorderStyle,
 				nameof(IEntry.Text),
 				() => entry.Text = newText);
 		}
 
-		[Theory(DisplayName = "Updating TextColor Does Not Affect HasBorder")]
+		[Theory(DisplayName = "Updating TextColor Does Not Affect BorderStyle")]
 		[InlineData(0xFFFF0000, 0xFF0000FF)]
 		[InlineData(0xFF0000FF, 0xFFFF0000)]
-		public async Task TextColorDoesNotAffectHasBorder(uint setValue, uint unsetValue)
+		public async Task TextColorDoesNotAffectBorderStyle(uint setValue, uint unsetValue)
 		{
 			var entry = new EntryStub
 			{
 				Text = "Test",
-				HasBorder = true
+				BorderStyle = BorderStyle.Default
 			};
 
 			var setColor = Color.FromUint(setValue);
@@ -794,20 +794,20 @@ namespace Microsoft.Maui.DeviceTests
 
 			await ValidateUnrelatedPropertyUnaffected(
 				entry,
-				GetNativeHasBorder,
+				GetNativeBorderStyle,
 				nameof(IEntry.TextColor),
 				() => entry.TextColor = setColor);
 		}
 
-		[Theory(DisplayName = "HasBorder Works Correctly with Background")]
-		[InlineData(true)]
-		[InlineData(false)]
-		public async Task HasBorderWorksCorrectlyWithBackground(bool hasBorder)
+		[Theory(DisplayName = "BorderStyle Works Correctly with Background")]
+		[InlineData(BorderStyle.Default)]
+		[InlineData(BorderStyle.None)]
+		public async Task BorderStyleWorksCorrectlyWithBackground(BorderStyle borderStyle)
 		{
 			var entry = new EntryStub
 			{
 				Text = "Test",
-				HasBorder = hasBorder,
+				BorderStyle = borderStyle,
 				Background = new SolidPaintStub(Colors.Red)
 			};
 
@@ -816,7 +816,7 @@ namespace Microsoft.Maui.DeviceTests
 				await AssertEventually(() => handler.PlatformView.IsLoaded());
 			});
 
-			await ValidatePropertyInitValue(entry, () => entry.HasBorder, GetNativeHasBorder, hasBorder);
+			await ValidatePropertyInitValue(entry, () => entry.BorderStyle, GetNativeBorderStyle, borderStyle);
 
 			var hasBackground = await GetValueAsync(entry, handler =>
 			{
@@ -826,42 +826,42 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(hasBackground);
 		}
 
-		[Theory(DisplayName = "Updating Background Does Not Affect HasBorder")]
-		[InlineData(true)]
-		[InlineData(false)]
-		public async Task BackgroundDoesNotAffectHasBorder(bool hasBorder)
+		[Theory(DisplayName = "Updating Background Does Not Affect BorderStyle")]
+		[InlineData(BorderStyle.Default)]
+		[InlineData(BorderStyle.None)]
+		public async Task BackgroundDoesNotAffectBorderStyle(BorderStyle borderStyle)
 		{
 			var entry = new EntryStub
 			{
 				Text = "Test",
-				HasBorder = hasBorder,
+				BorderStyle = borderStyle,
 				Background = new SolidPaintStub(Colors.Yellow)
 			};
 
 			await ValidateUnrelatedPropertyUnaffected(
 				entry,
-				GetNativeHasBorder,
+				GetNativeBorderStyle,
 				nameof(IEntry.Background),
 				() => entry.Background = new SolidPaintStub(Colors.Red));
 		}
 
-		[Theory(DisplayName = "Updating HasBorder Does Not Affect Background")]
-		[InlineData(true, false)]
-		[InlineData(false, true)]
-		public async Task HasBorderDoesNotAffectBackground(bool initialHasBorder, bool newHasBorder)
+		[Theory(DisplayName = "Updating BorderStyle Does Not Affect Background")]
+		[InlineData(BorderStyle.Default, BorderStyle.None)]
+		[InlineData(BorderStyle.None, BorderStyle.Default)]
+		public async Task BorderStyleDoesNotAffectBackground(BorderStyle initialBorderStyle, BorderStyle newBorderStyle)
 		{
 			var entry = new EntryStub
 			{
 				Text = "Test",
-				HasBorder = initialHasBorder,
+				BorderStyle = initialBorderStyle,
 				Background = new SolidPaintStub(Colors.Blue)
 			};
-			
+
 			await AttachAndRun(entry, async (handler) =>
 			{
 				await AssertEventually(() => handler.PlatformView.IsLoaded());
-				
-				entry.HasBorder = newHasBorder;
+
+				entry.BorderStyle = newBorderStyle;
 
 				Assert.NotNull(handler.PlatformView);
 			});

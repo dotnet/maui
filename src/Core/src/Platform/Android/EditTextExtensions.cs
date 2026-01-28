@@ -73,9 +73,9 @@ namespace Microsoft.Maui.Platform
 			editText.SetInputType(entry);
 		}
 
-		public static void UpdateHasBorder(this EditText editText, IEntry entry)
+		public static void UpdateBorderStyle(this EditText editText, IEntry entry)
 		{
-			if (entry.HasBorder)
+			if (entry.BorderStyle is BorderStyle.Default)
 			{
 				if (OperatingSystem.IsAndroidVersionAtLeast(23) && editText.Context?.Theme is Resources.Theme theme)
 				{
