@@ -1,10 +1,17 @@
 ﻿using System.Text.Json;
+using Xunit.Abstractions;
 
 namespace Microsoft.Maui.IntegrationTests.Apple
 {
 	public class Simulator
 	{
 		readonly string XCRunTool = "xcrun";
+		readonly ITestOutputHelper? _output;
+
+		public Simulator(ITestOutputHelper? output = null)
+		{
+			_output = output;
+		}
 
 		string? _xharnessID;
 		
@@ -45,12 +52,12 @@ namespace Microsoft.Maui.IntegrationTests.Apple
 			{
 				var versionSuffix = $"{latestVersion.Major}.{latestVersion.Minor}";
 				var resolvedTarget = $"{baseTarget}_{versionSuffix}";
-				Console.WriteLine($"Auto-detected iOS target: {resolvedTarget}");
+				_output?.WriteLine($"Auto-detected iOS target: {resolvedTarget}");
 				return resolvedTarget;
 			}
 
 			// Fallback to base target (may fail if XHarness can't find a match)
-			Console.WriteLine($"Warning: Could not auto-detect iOS version, using '{baseTarget}' which may fail.");
+			_output?.WriteLine($"Warning: Could not auto-detect iOS version, using '{baseTarget}' which may fail.");
 			return baseTarget;
 		}
 
@@ -62,7 +69,7 @@ namespace Microsoft.Maui.IntegrationTests.Apple
 		{
 			try
 			{
-				var output = ToolRunner.Run(XCRunTool, "simctl list runtimes --json", out int exitCode, timeoutInSeconds: 30);
+				var output = ToolRunner.Run(XCRunTool, "simctl list runtimes --json", out int exitCode, timeoutInSeconds: 30, output: _output);
 				if (exitCode != 0 || string.IsNullOrEmpty(output))
 					return null;
 
@@ -99,7 +106,7 @@ namespace Microsoft.Maui.IntegrationTests.Apple
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine($"Failed to detect iOS version: {ex.Message}");
+				_output?.WriteLine($"Failed to detect iOS version: {ex.Message}");
 				return null;
 			}
 		}
@@ -110,7 +117,7 @@ namespace Microsoft.Maui.IntegrationTests.Apple
 			if (!string.IsNullOrEmpty(_udid))
 				return _udid;
 
-			var xharnessOutput = XHarness.GetSimulatorUDID(XHarnessID).Trim();
+			var xharnessOutput = XHarness.GetSimulatorUDID(XHarnessID, output: _output).Trim();
 			
 			// XHarness returns a UDID on success, or an error message on failure.
 			// A valid UDID is a UUID format (e.g., "DE87D078-70D4-47F6-9F21-82612D9D4F7E")
@@ -132,7 +139,7 @@ namespace Microsoft.Maui.IntegrationTests.Apple
 
 		public bool Launch()
 		{
-			var output = ToolRunner.Run(XCRunTool, $"simctl boot {GetUDID()}", out int exitCode, timeoutInSeconds: 30);
+			var output = ToolRunner.Run(XCRunTool, $"simctl boot {GetUDID()}", out int exitCode, timeoutInSeconds: 30, output: _output);
 			// Exit code 0 = successfully booted
 			// Exit code 149 with "current state: Booted" = already running (also success)
 			return exitCode == 0 || (exitCode == 149 && output.Contains("current state: Booted", StringComparison.Ordinal));
@@ -140,13 +147,13 @@ namespace Microsoft.Maui.IntegrationTests.Apple
 
 		public bool Shutdown()
 		{
-			ToolRunner.Run(XCRunTool, $"simctl shutdown {GetUDID()}", out int exitCode, timeoutInSeconds: 60);
+			ToolRunner.Run(XCRunTool, $"simctl shutdown {GetUDID()}", out int exitCode, timeoutInSeconds: 60, output: _output);
 			return exitCode == 0;
 		}
 
 		public bool ShowWindow()
 		{
-			ToolRunner.Run("open", $"-a Simulator", out int exitCode, timeoutInSeconds: 30);
+			ToolRunner.Run("open", $"-a Simulator", out int exitCode, timeoutInSeconds: 30, output: _output);
 			return exitCode == 0;
 		}
 	}

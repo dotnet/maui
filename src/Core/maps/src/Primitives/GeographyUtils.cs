@@ -5,14 +5,32 @@ using Microsoft.Maui.Devices.Sensors;
 
 namespace Microsoft.Maui.Maps
 {
+	/// <summary>
+	/// Provides geography-related utility methods.
+	/// </summary>
 	public static class GeographyUtils
 	{
 		internal const double EarthRadiusKm = 6371;
 
+		/// <summary>
+		/// Converts degrees to radians.
+		/// </summary>
+		/// <param name="degrees">The value in degrees.</param>
+		/// <returns>The value in radians.</returns>
 		public static double ToRadians(this double degrees) => degrees * Math.PI / 180.0;
 
+		/// <summary>
+		/// Converts radians to degrees.
+		/// </summary>
+		/// <param name="radians">The value in radians.</param>
+		/// <returns>The value in degrees.</returns>
 		public static double ToDegrees(this double radians) => radians / Math.PI * 180.0;
 
+		/// <summary>
+		/// Calculates the circumference positions that form the boundary of a circle on the map.
+		/// </summary>
+		/// <param name="circle">The circle element to calculate positions for.</param>
+		/// <returns>A list of positions that approximate the circle's circumference.</returns>
 		public static List<Location> ToCircumferencePositions(this ICircleMapElement circle)
 		{
 			var positions = new List<Location>();

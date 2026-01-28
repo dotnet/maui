@@ -98,4 +98,4 @@ stages:
           artifact: Logs - Unit Tests ${{ job.testOS }} $(System.JobAttempt)
         condition: always()
 
-      # - template: /eng/pipelines/common/fail-on-issue.yml
+      - template: /eng/pipelines/common/fail-on-issue.yml

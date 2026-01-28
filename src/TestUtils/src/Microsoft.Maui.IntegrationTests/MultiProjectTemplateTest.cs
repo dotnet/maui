@@ -17,7 +17,7 @@ public class MultiProjectTemplateTest : BaseTemplateTests
 		var name = Path.GetFileName(projectDir);
 		var solutionFile = Path.Combine(projectDir, $"{name}.sln");
 
-		Assert.True(DotnetInternal.New("maui-multiproject", projectDir, DotNetCurrent),
+		Assert.True(DotnetInternal.New("maui-multiproject", projectDir, DotNetCurrent, output: _output),
 			$"Unable to create template maui-multiproject. Check test output for errors.");
 
 		// Always remove WinUI project if the project name contains special characters that cause WinRT source generator issues
@@ -26,7 +26,7 @@ public class MultiProjectTemplateTest : BaseTemplateTests
 
 		if (!TestEnvironment.IsWindows || containsSpecialChars)
 		{
-			Assert.True(DotnetInternal.Run("sln", $"\"{solutionFile}\" remove \"{projectDir}/{name}.WinUI/{name}.WinUI.csproj\""),
+			Assert.True(DotnetInternal.Run("sln", $"\"{solutionFile}\" remove \"{projectDir}/{name}.WinUI/{name}.WinUI.csproj\"", output: _output),
 				$"Unable to remove WinUI project from solution. Check test output for errors.");
 		}
 
@@ -34,7 +34,7 @@ public class MultiProjectTemplateTest : BaseTemplateTests
 		var buildProps = BuildProps;
 		buildProps.Add("ResizetizerErrorOnDuplicateOutputFilename=false");
 
-		Assert.True(DotnetInternal.Build(solutionFile, config, properties: buildProps, msbuildWarningsAsErrors: true),
+		Assert.True(DotnetInternal.Build(solutionFile, config, properties: buildProps, msbuildWarningsAsErrors: true, output: _output),
 			$"Solution {name} failed to build. Check test output/attachments for errors.");
 	}
 
@@ -50,16 +50,16 @@ public class MultiProjectTemplateTest : BaseTemplateTests
 		var name = Path.GetFileName(projectDir);
 		var solutionFile = Path.Combine(projectDir, $"{name}.sln");
 
-		Assert.True(DotnetInternal.New($"maui-multiproject {platformArg}", projectDir, DotNetCurrent),
+		Assert.True(DotnetInternal.New($"maui-multiproject {platformArg}", projectDir, DotNetCurrent, output: _output),
 			$"Unable to create template maui-multiproject. Check test output for errors.");
 
 		if (!TestEnvironment.IsWindows)
 		{
-			Assert.True(DotnetInternal.Run("sln", $"{solutionFile} remove {projectDir}/{name}.WinUI/{name}.WinUI.csproj"),
+			Assert.True(DotnetInternal.Run("sln", $"{solutionFile} remove {projectDir}/{name}.WinUI/{name}.WinUI.csproj", output: _output),
 				$"Unable to remove WinUI project from solution. Check test output for errors.");
 		}
 
-		Assert.True(DotnetInternal.Build(solutionFile, config, properties: BuildProps, msbuildWarningsAsErrors: true),
+		Assert.True(DotnetInternal.Build(solutionFile, config, properties: BuildProps, msbuildWarningsAsErrors: true, output: _output),
 			$"Solution {name} failed to build. Check test output/attachments for errors.");
 	}
 
@@ -77,10 +77,10 @@ public class MultiProjectTemplateTest : BaseTemplateTests
 		var name = Path.GetFileName(projectDir);
 		var solutionFile = Path.Combine(projectDir, $"{name}.sln");
 
-		Assert.True(DotnetInternal.New($"maui-multiproject {platformArg}", projectDir, DotNetCurrent),
+		Assert.True(DotnetInternal.New($"maui-multiproject {platformArg}", projectDir, DotNetCurrent, output: _output),
 			$"Unable to create template maui-multiproject. Check test output for errors.");
 
-		var slnListOutput = DotnetInternal.RunForOutput("sln", $"{solutionFile} list", out int exitCode);
+		var slnListOutput = DotnetInternal.RunForOutput("sln", $"{solutionFile} list", out int exitCode, output: _output);
 
 		// Asserts the process completed successfully
 		if (exitCode != 0)

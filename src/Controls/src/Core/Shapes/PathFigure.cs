@@ -6,11 +6,15 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathFigure.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.PathFigure']/Docs/*" />
+	/// <summary>
+	/// Represents a subsection of a geometry, containing a collection of path segments.
+	/// </summary>
 	[ContentProperty("Segments")]
 	public sealed class PathFigure : BindableObject, IAnimatable
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathFigure.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="PathFigure"/> class.
+		/// </summary>
 		public PathFigure()
 		{
 			Segments = new PathSegmentCollection();
@@ -38,28 +42,36 @@ namespace Microsoft.Maui.Controls.Shapes
 		public static readonly BindableProperty IsFilledProperty =
 			BindableProperty.Create(nameof(IsFilled), typeof(bool), typeof(PathFigure), true);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathFigure.xml" path="//Member[@MemberName='Segments']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the collection of path segments that define this figure. This is a bindable property.
+		/// </summary>
 		public PathSegmentCollection Segments
 		{
 			set { SetValue(SegmentsProperty, value); }
 			get { return (PathSegmentCollection)GetValue(SegmentsProperty); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathFigure.xml" path="//Member[@MemberName='StartPoint']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the point where this figure starts. This is a bindable property.
+		/// </summary>
 		public Point StartPoint
 		{
 			set { SetValue(StartPointProperty, value); }
 			get { return (Point)GetValue(StartPointProperty); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathFigure.xml" path="//Member[@MemberName='IsClosed']/Docs/*" />
+		/// <summary>
+		/// Gets or sets a value indicating whether to connect the last segment to the start point. This is a bindable property.
+		/// </summary>
 		public bool IsClosed
 		{
 			set { SetValue(IsClosedProperty, value); }
 			get { return (bool)GetValue(IsClosedProperty); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathFigure.xml" path="//Member[@MemberName='IsFilled']/Docs/*" />
+		/// <summary>
+		/// Gets or sets a value indicating whether to fill the interior of this figure. This is a bindable property.
+		/// </summary>
 		public bool IsFilled
 		{
 			set { SetValue(IsFilledProperty, value); }
@@ -68,13 +80,13 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		internal event EventHandler InvalidatePathSegmentRequested;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathFigure.xml" path="//Member[@MemberName='BatchBegin']/Docs/*" />
+		/// <inheritdoc/>
 		public void BatchBegin()
 		{
 
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathFigure.xml" path="//Member[@MemberName='BatchCommit']/Docs/*" />
+		/// <inheritdoc/>
 		public void BatchCommit()
 		{
 

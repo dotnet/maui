@@ -15,6 +15,21 @@ If Gate is not passed, go back to `.github/agents/pr.md` and complete phases 1-3
 
 ---
 
+## Phase Completion Protocol (CRITICAL)
+
+**Before changing ANY phase status to ✅ COMPLETE:**
+
+1. **Read the state file section** for the phase you're completing
+2. **Find ALL ⏳ PENDING and [PENDING] fields** in that section
+3. **Fill in every field** with actual content
+4. **Verify no pending markers remain** in your section
+5. **Commit the state file** with complete content
+6. **Then change status** to ✅ COMPLETE
+
+**Rule:** Status ✅ means "documentation complete", not "I finished thinking about it"
+
+---
+
 ## 🔧 FIX: Explore and Select Fix (Phase 4)
 
 > **SCOPE**: Explore independent fix alternatives using `try-fix` skill, compare with PR's fix, select the best approach.
@@ -37,6 +52,15 @@ The purpose of Phase 4 is NOT to re-test the PR's fix, but to:
 
 Invoke the `try-fix` skill repeatedly. The skill handles one fix attempt per invocation.
 
+**IMPORTANT:** Always pass the `state_file` parameter so try-fix can record its results:
+```
+state_file: CustomAgentLogsTmp/PRState/pr-XXXXX.md
+```
+
+try-fix will automatically append rows to the Fix Candidates table and set the "Exhausted" field. You remain responsible for:
+- Setting "Selected Fix" field with reasoning
+- Updating phase status to ✅ COMPLETE
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │  Agent orchestration loop                                   │
@@ -44,18 +68,21 @@ Invoke the `try-fix` skill repeatedly. The skill handles one fix attempt per inv
 │                                                             │
 │  attempts = 0                                               │
 │  max_attempts = 5                                           │
+│  state_file = "CustomAgentLogsTmp/PRState/pr-XXXXX.md"        │
 │                                                             │
 │  while (attempts < max_attempts):                           │
-│      result = invoke try-fix skill                          │
+│      result = invoke try-fix skill (with state_file)        │
 │      attempts++                                             │
 │                                                             │
 │      if result.exhausted:                                   │
 │          break  # try-fix has no more ideas                 │
 │                                                             │
 │      # result.passed indicates if this attempt worked       │
+│      # try-fix already recorded to state file               │
 │      # Continue loop to explore more alternatives           │
 │                                                             │
 │  # After loop: compare all try-fix results vs PR's fix      │
+│  # Update "Exhausted" and "Selected Fix" fields             │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -73,8 +100,9 @@ Each `try-fix` invocation:
 3. Proposes ONE new independent fix idea
 4. Implements and tests it
 5. Records result (with failure analysis if it failed)
-6. Reverts all changes (restores PR's fix)
-7. Returns `{passed: bool, exhausted: bool}`
+6. **Updates state file** (appends row to Fix Candidates table if state_file provided)
+7. Reverts all changes (restores PR's fix)
+8. Returns `{passed: bool, exhausted: bool}`
 
 See `.github/skills/try-fix/SKILL.md` for full details.
 
@@ -127,12 +155,23 @@ Update the state file:
 
 ### Complete 🔧 Fix
 
+**🚨 MANDATORY: Update state file**
+
 **Update state file**:
 1. Verify Fix Candidates table is complete with all attempts
 2. Verify failure analyses are documented for failed attempts
 3. Verify Selected Fix is documented with reasoning
 4. Change 🔧 Fix status to `✅ COMPLETE`
 5. Change 📋 Report status to `▶️ IN PROGRESS`
+
+**Before marking ✅ COMPLETE, verify state file contains:**
+- [ ] Root Cause Analysis filled in (if applicable)
+- [ ] Fix Candidates table has numbered rows for each try-fix attempt
+- [ ] Each row has: approach, test result, files changed, notes
+- [ ] "Exhausted" field set (Yes/No)
+- [ ] "Selected Fix" populated with reasoning
+- [ ] No ⏳ PENDING markers remain in Fix section
+- [ ] State file committed
 
 ---
 
@@ -228,10 +267,19 @@ Update all phase statuses to complete.
 
 ### Complete 📋 Report
 
+**🚨 MANDATORY: Update state file**
+
 **Update state file**:
 1. Change header status to final recommendation
 2. Update all phases to `✅ COMPLETE` or `✅ PASSED`
 3. Present final result to user
+
+**Before marking ✅ COMPLETE, verify state file contains:**
+- [ ] Final recommendation (APPROVE/REQUEST_CHANGES/COMMENT)
+- [ ] Summary of findings
+- [ ] Key technical insights documented
+- [ ] Overall status changed to final recommendation
+- [ ] State file committed
 
 ---
 

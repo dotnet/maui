@@ -1,6 +1,6 @@
 ---
 name: pr
-description: Sequential 5-phase workflow for GitHub issues - Pre-Flight, Tests, Gate, Fix, Report. Phases MUST complete in order. State tracked in .github/agent-pr-session/
+description: Sequential 5-phase workflow for GitHub issues - Pre-Flight, Tests, Gate, Fix, Report. Phases MUST complete in order. State tracked in CustomAgentLogsTmp/PRState/
 ---
 
 # .NET MAUI Pull Request Agent
@@ -38,6 +38,23 @@ After Gate passes, read `.github/agents/pr/post-gate.md` for **Phases 4-5**.
 │                     MUST PASS            │     │  (Only read after Gate ✅ PASSED)           │
 └─────────────────────────────────────────┘     └─────────────────────────────────────────────┘
 ```
+
+---
+
+## Phase Completion Protocol (CRITICAL)
+
+**Before changing ANY phase status to ✅ COMPLETE:**
+
+1. **Read the state file section** for the phase you're completing
+2. **Find ALL ⏳ PENDING and [PENDING] fields** in that section
+3. **Fill in every field** with actual content
+4. **Verify no pending markers remain** in your section
+5. **Commit the state file** with complete content
+6. **Then change status** to ✅ COMPLETE
+
+**Rule:** Status ✅ means "documentation complete", not "I finished thinking about it"
+
+---
 
 ### 🚨 CRITICAL: Phase 4 Always Uses `try-fix` Skill
 
@@ -78,7 +95,7 @@ This ensures independent analysis rather than rubber-stamping the PR.
 
 ### Step 0: Check for Existing State File or Create New One
 
-**State file location**: `.github/agent-pr-session/pr-XXXXX.md`
+**State file location**: `CustomAgentLogsTmp/PRState/pr-XXXXX.md`
 
 **Naming convention:**
 - If starting from **PR #12345** → Name file `pr-12345.md` (use PR number)
@@ -87,10 +104,10 @@ This ensures independent analysis rather than rubber-stamping the PR.
 
 ```bash
 # Check if state file exists
-mkdir -p .github/agent-pr-session
-if [ -f ".github/agent-pr-session/pr-XXXXX.md" ]; then
+mkdir -p CustomAgentLogsTmp/PRState
+if [ -f "CustomAgentLogsTmp/PRState/pr-XXXXX.md" ]; then
     echo "State file exists - resuming session"
-    cat .github/agent-pr-session/pr-XXXXX.md
+    cat CustomAgentLogsTmp/PRState/pr-XXXXX.md
 else
     echo "Creating new state file"
 fi
@@ -216,7 +233,7 @@ This file:
 - Serves as your TODO list for all phases
 - Tracks progress if interrupted
 - Must exist before you start gathering context
-- **Always include when committing changes** (to `.github/agent-pr-session/`)
+- **Always include when committing changes** (to `CustomAgentLogsTmp/PRState/`)
 - **Phases 4-5 sections are added AFTER Gate passes** (see `pr/post-gate.md`)
 
 **Then gather context and update the file as you go.**
@@ -283,7 +300,7 @@ gh pr view XXXXX --json comments --jq '.comments[] | select(.body | contains("Fi
 
 ### Step 3: Document Key Findings
 
-Update the state file `.github/agent-pr-session/pr-XXXXX.md`:
+Update the state file `CustomAgentLogsTmp/PRState/pr-XXXXX.md`:
 
 **If PR exists** - Document disagreements and reviewer feedback:
 | File:Line | Reviewer Says | Author Says | Status |
@@ -320,11 +337,21 @@ The test result will be updated to `✅ PASS (Gate)` after Gate passes.
 
 ### Step 5: Complete Pre-Flight
 
+**🚨 MANDATORY: Update state file**
+
 **Update state file** - Change Pre-Flight status and populate with gathered context:
 1. Change Pre-Flight status from `▶️ IN PROGRESS` to `✅ COMPLETE`
 2. Fill in issue summary, platforms affected, regression info
 3. Add edge cases and any disagreements (if PR exists)
 4. Change 🧪 Tests status to `▶️ IN PROGRESS`
+
+**Before marking ✅ COMPLETE, verify state file contains:**
+- [ ] Issue summary filled (not [PENDING])
+- [ ] Platform checkboxes marked
+- [ ] Files Changed table populated (if PR exists)
+- [ ] PR Discussion Summary documented (if PR exists)
+- [ ] All [PENDING] placeholders replaced
+- [ ] State file committed
 
 ---
 
@@ -378,12 +405,20 @@ The script auto-detects mode based on git diff. If only test files changed, it v
 
 ### Complete 🧪 Tests
 
+**🚨 MANDATORY: Update state file**
+
 **Update state file**:
 1. Check off completed items in the checklist
 2. Fill in test file paths
 3. Note: "Tests verified to FAIL (bug reproduced)"
 4. Change 🧪 Tests status to `✅ COMPLETE`
 5. Change 🚦 Gate status to `▶️ IN PROGRESS`
+
+**Before marking ✅ COMPLETE, verify state file contains:**
+- [ ] Test file paths documented
+- [ ] "Tests verified to FAIL" note added
+- [ ] Test category identified
+- [ ] State file committed
 
 ---
 
@@ -427,10 +462,18 @@ pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 
 
 ### Complete 🚦 Gate
 
+**🚨 MANDATORY: Update state file**
+
 **Update state file**:
 1. Fill in **Result**: `PASSED ✅`
 2. Change 🚦 Gate status to `✅ PASSED`
 3. Proceed to Phase 4
+
+**Before marking ✅ PASSED, verify state file contains:**
+- [ ] Result shows PASSED ✅ or FAILED ❌
+- [ ] Test behavior documented
+- [ ] Platform tested noted
+- [ ] State file committed
 
 ---
 

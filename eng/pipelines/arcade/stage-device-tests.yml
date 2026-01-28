@@ -10,6 +10,12 @@ parameters:
   type: object
 - name: testPool
   type: object
+- name: windowsBuildPool
+  type: object
+  default: {}
+- name: windowsTestPool
+  type: object
+  default: {}
 - name: enableSourceBuild
   type: boolean
   default: false
@@ -46,9 +52,33 @@ parameters:
 - name: checkoutDirectory
   type: string
   default: $(System.DefaultWorkingDirectory)
+- name: HelixInternal
+  type: string
+  default: ''
 - name: HelixAccessToken
   type: string
   default: ''
+- name: runWindowsTests
+  type: boolean
+  default: false
+- name: windowsDeviceTestProjects
+  type: object
+  default:
+    - name: Controls.DeviceTests
+      path: src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj
+      packageId: com.microsoft.maui.controls.devicetests
+    - name: Core.DeviceTests
+      path: src/Core/tests/DeviceTests/Core.DeviceTests.csproj
+      packageId: com.microsoft.maui.core.devicetests
+    - name: Graphics.DeviceTests
+      path: src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj
+      packageId: com.microsoft.maui.graphics.devicetests
+    - name: Essentials.DeviceTests
+      path: src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
+      packageId: com.microsoft.maui.essentials.devicetests
+    - name: MauiBlazorWebView.DeviceTests
+      path: src/BlazorWebView/tests/DeviceTests/MauiBlazorWebView.DeviceTests.csproj
+      packageId: Microsoft.Maui.MauiBlazorWebView.DeviceTests
 
 stages:
 - stage: devicetests_build
@@ -467,3 +497,251 @@ stages:
             HelixConfiguration: $(_BuildConfig)
             IncludeDotNetCli: true
             DisplayNamePrefix: DeviceTestsMacCatalyst_CoreCLR
+
+# Windows Device Tests Stages
+- ${{ if eq(parameters.runWindowsTests, true) }}:
+  - stage: devicetests_build_windows
+    displayName: ${{ parameters.TargetFrameworkVersion }} Windows Helix Tests - Build
+    dependsOn: []
+    jobs:
+    - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
+      parameters:
+        helixRepo: dotnet/maui
+        pool: ${{ parameters.windowsBuildPool }}
+        enableMicrobuild: ${{ parameters.enableMicrobuild }}
+        enablePublishUsingPipelines: true
+        enablePublishBuildAssets: ${{ parameters.publishAssets }}
+        enableTelemetry: true
+        enableSourceBuild: ${{ parameters.enableSourceBuild }}
+        enableSourceIndex: ${{ parameters.enableSourceIndex }}
+        sourceIndexParams: ${{ parameters.sourceIndexParams }}
+        publishAssetsImmediately: true
+        enablePublishBuildArtifacts: true
+        enablePublishTestResults: false
+        workspace:
+          clean: all
+        jobs:
+        - job: builddevice_tests_windows
+          displayName: Build Device Tests (Windows)
+          timeoutInMinutes: 90
+          variables:
+          - name: _BuildConfig
+            value: Debug
+          preSteps:
+          - checkout: self
+            fetchDepth: 1
+            clean: true
+
+          steps:
+          # Restore dotnet tools (required for dotnet cake)
+          - script: dotnet tool restore
+            displayName: 'Restore .NET tools'
+            retryCountOnTaskFailure: 3
+
+          # Install .NET SDK
+          - script: dotnet cake --target=dotnet --configuration="Release" --verbosity=diagnostic
+            displayName: 'Install .NET'
+            retryCountOnTaskFailure: 3
+            env:
+              DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+              PRIVATE_BUILD: $(PrivateBuild)
+
+          - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
+            displayName: 'Add .NET to PATH'
+
+          # Build BuildTasks first
+          - script: dotnet cake --target=dotnet-buildtasks --configuration="Release"
+            displayName: Build the MSBuild Tasks
+
+          # Build Windows device tests using Cake script (Packaged/MSIX builds)
+          # TODO: Unpackaged builds disabled - apps crash on Helix with 0xC000027B
+          # (Windows App SDK Bootstrap failure). Investigating root cause. See PR #33328.
+          - ${{ each project in parameters.windowsDeviceTestProjects }}:
+            - script: dotnet cake eng/devices/windows.cake --target=buildOnly --project="$(Build.SourcesDirectory)/${{ project.path }}" --device=packaged --binlog="$(Build.SourcesDirectory)/artifacts/log/Debug" --configuration=Release --packageid=${{ project.packageId }} --verbosity=diagnostic
+              displayName: Build ${{ project.name }} (Windows Packaged)
+              retryCountOnTaskFailure: 1
+
+          # Create zip archives for each device test project
+          # The MSIX packages are built in the project's AppPackages directory, not artifacts/bin
+          - pwsh: |
+              # Ensure artifacts/bin directory exists
+              $artifactsDir = "$(Build.SourcesDirectory)/artifacts/bin"
+              New-Item -ItemType Directory -Force -Path $artifactsDir | Out-Null
+              
+              # Archive each project's AppPackages directory
+              $projects = @(
+                @{ Name = "Controls.DeviceTests"; Dir = "$(Build.SourcesDirectory)/src/Controls/tests/DeviceTests" },
+                @{ Name = "Core.DeviceTests"; Dir = "$(Build.SourcesDirectory)/src/Core/tests/DeviceTests" },
+                @{ Name = "Graphics.DeviceTests"; Dir = "$(Build.SourcesDirectory)/src/Graphics/tests/DeviceTests" },
+                @{ Name = "Essentials.DeviceTests"; Dir = "$(Build.SourcesDirectory)/src/Essentials/test/DeviceTests" },
+                @{ Name = "MauiBlazorWebView.DeviceTests"; Dir = "$(Build.SourcesDirectory)/src/BlazorWebView/tests/DeviceTests" }
+              )
+              
+              foreach ($project in $projects) {
+                $appPackagesDir = "$($project.Dir)/AppPackages"
+                $zipPath = "$artifactsDir/$($project.Name).zip"
+                
+                if (Test-Path $appPackagesDir) {
+                  Write-Host "Creating archive for $($project.Name) from $appPackagesDir..."
+                  Compress-Archive -Path "$appPackagesDir" -DestinationPath $zipPath -Force
+                  Write-Host "Created $zipPath"
+                  
+                  $msix = Get-ChildItem -Path $appPackagesDir -Recurse -Filter "*.msix" | Select-Object -First 1
+                  if ($msix) { Write-Host "  Contains MSIX: $($msix.Name)" }
+                  else { Write-Host "  WARNING: No MSIX found!" }
+                } else {
+                  Write-Host "Warning: $appPackagesDir not found for $($project.Name)"
+                }
+              }
+            displayName: Create payload archives
+
+          - publish: ${{ parameters.checkoutDirectory }}/artifacts/bin
+            displayName: Publish Succeeded Artifacts Directory
+            condition: succeeded()
+            artifact: ${{ parameters.appArtifactName }}_windows
+
+          - publish: ${{ parameters.checkoutDirectory }}/artifacts/bin
+            displayName: Publish Failed Artifacts Directory
+            condition: not(succeeded())
+            artifact: ${{ parameters.appArtifactName }}_windows_failed_$(System.JobAttempt)
+
+  - stage: devicetests_windows
+    displayName: ${{ parameters.TargetFrameworkVersion }} Windows Helix Tests
+    dependsOn: 
+      - devicetests_build_windows
+    jobs:
+    - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
+      parameters:
+        helixRepo: dotnet/maui
+        pool: ${{ parameters.windowsTestPool }}
+        enableMicrobuild: ${{ parameters.enableMicrobuild }}
+        enablePublishUsingPipelines: true
+        enablePublishBuildAssets: ${{ parameters.publishAssets }}
+        enableTelemetry: true
+        enableSourceBuild: ${{ parameters.enableSourceBuild }}
+        enableSourceIndex: ${{ parameters.enableSourceIndex }}
+        sourceIndexParams: ${{ parameters.sourceIndexParams }}
+        publishAssetsImmediately: true
+        enablePublishBuildArtifacts: true
+        enablePublishTestResults: false
+        workspace:
+          clean: all
+        jobs:
+        - job: device_tests_windows
+          displayName: Run DeviceTests Windows
+          timeoutInMinutes: 240
+          variables:
+          - name: _BuildConfig
+            value: Debug
+          preSteps:
+          - checkout: self
+            fetchDepth: 1
+            clean: true
+
+          - task: DownloadPipelineArtifact@2
+            displayName: 'Download Build'
+            condition: succeeded()
+            inputs:
+              artifactName: ${{ parameters.appArtifactName }}_windows
+              targetPath: ${{ parameters.checkoutDirectory }}/artifacts/bin
+
+          - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/steps/send-to-helix.yml', '/eng/common/templates-official/steps/send-to-helix.yml@self') }}
+            parameters:
+              HelixProjectPath: ${{ parameters.helixProject }}
+              ${{ if eq(parameters.runAsPublic, true) }}:
+                HelixProjectArguments: /p:TargetOS=windows /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsWindows_ /p:HelixInternal=False
+              ${{ else }}:
+                HelixProjectArguments: /p:TargetOS=windows /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsWindows_ /p:HelixInternal=True
+              HelixAccessToken: ${{ parameters.HelixAccessToken }}
+              HelixConfiguration: $(_BuildConfig)
+              IncludeDotNetCli: true
+              DisplayNamePrefix: DeviceTestsWindows
+              WorkItemTimeout: 04:00:00
+
+  # Windows Unpackaged Tests via Cake (unpackaged doesn't work on Helix)
+  # This runs separately from Helix using the existing Cake infrastructure
+  - ${{ if eq(parameters.runWindowsTests, true) }}:
+    - stage: devicetests_windows_unpackaged
+      displayName: ${{ parameters.TargetFrameworkVersion }} Windows Unpackaged Tests (Cake)
+      dependsOn: []
+      jobs:
+      - template: /eng/pipelines/common/device-tests-jobs.yml@self
+        parameters:
+          platform: windows
+          timeoutInMinutes: 240
+          pool: ${{ parameters.windowsTestPool }}
+          versions: [ 'unpackaged' ]
+          targetFrameworkVersion:
+            tfm: ${{ parameters.TargetFrameworkVersion }}
+            dependsOn: ''
+          project:
+            name: essentials_unpackaged
+            desc: Essentials unpackaged
+            path: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
+            packageid: com.microsoft.maui.essentials.devicetests
+            configuration: Debug
+          skipProvisioning: true
+      - template: /eng/pipelines/common/device-tests-jobs.yml@self
+        parameters:
+          platform: windows
+          timeoutInMinutes: 240
+          pool: ${{ parameters.windowsTestPool }}
+          versions: [ 'unpackaged' ]
+          targetFrameworkVersion:
+            tfm: ${{ parameters.TargetFrameworkVersion }}
+            dependsOn: ''
+          project:
+            name: graphics_unpackaged
+            desc: Graphics unpackaged
+            path: $(System.DefaultWorkingDirectory)/src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj
+            packageid: com.microsoft.maui.graphics.devicetests
+            configuration: Debug
+          skipProvisioning: true
+      - template: /eng/pipelines/common/device-tests-jobs.yml@self
+        parameters:
+          platform: windows
+          timeoutInMinutes: 240
+          pool: ${{ parameters.windowsTestPool }}
+          versions: [ 'unpackaged' ]
+          targetFrameworkVersion:
+            tfm: ${{ parameters.TargetFrameworkVersion }}
+            dependsOn: ''
+          project:
+            name: core_unpackaged
+            desc: Core unpackaged
+            path: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj
+            packageid: com.microsoft.maui.core.devicetests
+            configuration: Debug
+          skipProvisioning: true
+      - template: /eng/pipelines/common/device-tests-jobs.yml@self
+        parameters:
+          platform: windows
+          timeoutInMinutes: 240
+          pool: ${{ parameters.windowsTestPool }}
+          versions: [ 'unpackaged' ]
+          targetFrameworkVersion:
+            tfm: ${{ parameters.TargetFrameworkVersion }}
+            dependsOn: ''
+          project:
+            name: controls_unpackaged
+            desc: Controls unpackaged
+            path: $(System.DefaultWorkingDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj
+            packageid: com.microsoft.maui.controls.devicetests
+            configuration: Debug
+          skipProvisioning: true
+      - template: /eng/pipelines/common/device-tests-jobs.yml@self
+        parameters:
+          platform: windows
+          timeoutInMinutes: 240
+          pool: ${{ parameters.windowsTestPool }}
+          versions: [ 'unpackaged' ]
+          targetFrameworkVersion:
+            tfm: ${{ parameters.TargetFrameworkVersion }}
+            dependsOn: ''
+          project:
+            name: blazorwebview_unpackaged
+            desc: BlazorWebView unpackaged
+            path: $(System.DefaultWorkingDirectory)/src/BlazorWebView/tests/DeviceTests/MauiBlazorWebView.DeviceTests.csproj
+            packageid: Microsoft.Maui.MauiBlazorWebView.DeviceTests
+            configuration: Debug
+          skipProvisioning: true

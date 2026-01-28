@@ -4,16 +4,22 @@ using System.Globalization;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/CompareStateTrigger.xml" path="Type[@FullName='Microsoft.Maui.Controls.CompareStateTrigger']/Docs/*" />
+	/// <summary>
+	/// A state trigger that activates when <see cref="Property"/> equals <see cref="Value"/>.
+	/// </summary>
 	public sealed class CompareStateTrigger : StateTriggerBase
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/CompareStateTrigger.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="CompareStateTrigger"/> class.
+		/// </summary>
 		public CompareStateTrigger()
 		{
 			UpdateState();
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/CompareStateTrigger.xml" path="//Member[@MemberName='Property']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the property value to compare against <see cref="Value"/>. This is a bindable property.
+		/// </summary>
 		public object Property
 		{
 			get => GetValue(PropertyProperty);
@@ -30,7 +36,9 @@ namespace Microsoft.Maui.Controls
 			((CompareStateTrigger)bindable).UpdateState();
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/CompareStateTrigger.xml" path="//Member[@MemberName='Value']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the value to compare against <see cref="Property"/>. This is a bindable property.
+		/// </summary>
 		public object Value
 		{
 			get => GetValue(ValueProperty);
