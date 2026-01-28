@@ -21,6 +21,8 @@ namespace Microsoft.Maui.Platform
 		ScopedFragment? _viewFragment;
 		IToolbarElement? _toolbarElement;
 		CoordinatorLayout? _managedCoordinatorLayout;
+		IView? _currentView;
+		bool _isDisconnected;
 
 		// TODO MAUI: temporary event to alert when rootview is ready
 		// handlers and various bits use this to start interacting with rootview
@@ -50,6 +52,15 @@ namespace Microsoft.Maui.Platform
 
 		internal void Connect(IView? view, IMauiContext? mauiContext = null)
 		{
+			_isDisconnected = false;
+
+			// Disconnect all handlers in the old view tree to allow garbage collection.
+			// This recursively walks the visual tree and disconnects each handler,
+			// breaking circular references between managed and native objects.
+			// This is critical for memory leak prevention when Window.Page changes.
+			_currentView?.DisconnectHandlers();
+			_currentView = view;
+
 			ClearPlatformParts();
 
 			mauiContext = mauiContext ?? _mauiContext;
@@ -138,11 +149,49 @@ namespace Microsoft.Maui.Platform
 
 		public virtual void Disconnect()
 		{
+			// Mark as disconnected FIRST to prevent pending fragment transactions
+			// from executing after the view hierarchy is torn down.
+			_isDisconnected = true;
+
+			// Execute any pending fragment transactions immediately.
+			// This prevents crashes when transactions execute after their containers are removed.
+			try
+			{
+				var context = _mauiContext?.Context;
+				if (context != null && !FragmentManager.IsDestroyed(context))
+				{
+					FragmentManager.ExecutePendingTransactions();
+					
+					// Remove the fragment synchronously if it exists
+					if (_viewFragment != null && _viewFragment.IsAdded)
+					{
+						FragmentManager
+							.BeginTransaction()
+							.Remove(_viewFragment)
+							.CommitNowAllowingStateLoss();
+						_viewFragment = null;
+					}
+				}
+			}
+			catch (Java.Lang.IllegalArgumentException)
+			{
+				// Container may already be gone - ignore
+			}
+			catch (Java.Lang.IllegalStateException)
+			{
+				// FragmentManager may be in invalid state - ignore
+			}
+
 			// Clean up the coordinator layout and local listener first
 			if (_managedCoordinatorLayout is not null)
 			{
 				MauiWindowInsetListener.RemoveViewWithLocalListener(_managedCoordinatorLayout);
 			}
+
+			// Disconnect all handlers in the view tree to allow garbage collection.
+			// This recursively walks the visual tree and disconnects each handler.
+			_currentView?.DisconnectHandlers();
+			_currentView = null;
 
 			ClearPlatformParts();
 			SetContentView(null);
@@ -152,6 +201,15 @@ namespace Microsoft.Maui.Platform
 		{
 			_pendingFragment?.Dispose();
 			_pendingFragment = null;
+			
+			// Clear the ContainerView's reference to the virtual view to allow GC.
+			// The ContainerView holds a reference to the IElement via CurrentView,
+			// and this must be cleared when the view is replaced.
+			if (_rootView is ContainerView cv)
+			{
+				cv.CurrentView = null;
+			}
+			
 			DrawerLayout = null;
 			_rootView = null;
 			_toolbarElement = null;
@@ -163,6 +221,16 @@ namespace Microsoft.Maui.Platform
 		{
 			_pendingFragment?.Dispose();
 			_pendingFragment = null;
+
+			// Disconnect the old view's handler to allow it to be garbage collected.
+			// This is important for memory leak prevention when Window.Page changes.
+			if (_viewFragment?.DetailView?.Handler is IPlatformViewHandler oldPvh)
+			{
+				oldPvh.DisconnectHandler();
+			}
+			// Clear the DetailView reference immediately to allow GC, rather than
+			// waiting for the fragment's OnDestroy which may be delayed.
+			_viewFragment?.DisconnectDetailView();
 
 			var context = _mauiContext.Context;
 			if (context is null)
@@ -179,11 +247,21 @@ namespace Microsoft.Maui.Platform
 								if (_viewFragment is null)
 									return;
 
-								fm
-									.BeginTransaction()
-									.Remove(_viewFragment)
-									.SetReorderingAllowed(true)
-									.Commit();
+								try
+								{
+									fm
+										.BeginTransaction()
+										.Remove(_viewFragment)
+										.SetReorderingAllowed(true)
+										// Use CommitNowAllowingStateLoss for synchronous execution.
+										// This prevents crashes when the container is removed before
+										// the posted transaction executes.
+										.CommitNowAllowingStateLoss();
+								}
+								catch (Java.Lang.IllegalArgumentException)
+								{
+									// Container view no longer exists - safe to ignore
+								}
 
 								_viewFragment = null;
 							});
@@ -201,17 +279,36 @@ namespace Microsoft.Maui.Platform
 					FragmentManager
 						.RunOrWaitForResume(context, fm =>
 						{
-							_viewFragment =
-								new ElementBasedFragment(
-									view,
-									_mauiContext,
-									OnWindowContentPlatformViewCreated);
+							// Check if disconnected while waiting.
+							// If so, skip the fragment transaction as the container no longer exists.
+							if (_isDisconnected)
+							{
+								return;
+							}
 
-							fm
-								.BeginTransactionEx()
-								.ReplaceEx(Resource.Id.navigationlayout_content, _viewFragment)
-								.SetReorderingAllowed(true)
-								.Commit();
+							try
+							{
+								_viewFragment =
+									new ElementBasedFragment(
+										view,
+										_mauiContext,
+										OnWindowContentPlatformViewCreated);
+
+								fm
+									.BeginTransactionEx()
+									.ReplaceEx(Resource.Id.navigationlayout_content, _viewFragment)
+									.SetReorderingAllowed(true)
+									// Use CommitNowAllowingStateLoss to execute synchronously.
+									// This prevents crashes when the handler is disconnected between
+									// commit and execution, as the transaction runs immediately.
+									.CommitNowAllowingStateLoss();
+							}
+							catch (Java.Lang.IllegalArgumentException)
+							{
+								// Container view no longer exists - this can happen if disconnected
+								// while this callback was waiting to run.
+								// Safe to ignore as we're cleaning up anyway.
+							}
 						});
 			}
 		}
