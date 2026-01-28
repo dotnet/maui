@@ -125,6 +125,50 @@ $BaselineScript = Join-Path $RepoRoot ".github/scripts/EstablishBrokenBaseline.p
 . $BaselineScript
 
 # ============================================================
+# Label management for verification results
+# ============================================================
+$LabelConfirmed = "s/ai-reproduction-confirmed"
+$LabelFailed = "s/ai-reproduction-failed"
+
+function Update-VerificationLabels {
+    param(
+        [Parameter(Mandatory = $true)]
+        [bool]$ReproductionConfirmed,
+        
+        [Parameter(Mandatory = $false)]
+        [string]$PR = $PRNumber
+    )
+    
+    if ($PR -eq "unknown" -or -not $PR) {
+        Write-Host "⚠️  Cannot update labels: PR number not available" -ForegroundColor Yellow
+        return
+    }
+    
+    $labelToAdd = if ($ReproductionConfirmed) { $LabelConfirmed } else { $LabelFailed }
+    $labelToRemove = if ($ReproductionConfirmed) { $LabelFailed } else { $LabelConfirmed }
+    
+    Write-Host ""
+    Write-Host "🏷️  Updating verification labels on PR #$PR..." -ForegroundColor Cyan
+    
+    # Remove the opposite label if it exists
+    $existingLabels = gh pr view $PR --json labels --jq '.labels[].name' 2>$null
+    if ($existingLabels -contains $labelToRemove) {
+        Write-Host "   Removing: $labelToRemove" -ForegroundColor Yellow
+        gh pr edit $PR --remove-label $labelToRemove 2>$null
+    }
+    
+    # Add the appropriate label
+    Write-Host "   Adding: $labelToAdd" -ForegroundColor Green
+    gh pr edit $PR --add-label $labelToAdd 2>$null
+    
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "✅ Labels updated successfully" -ForegroundColor Green
+    } else {
+        Write-Host "⚠️  Failed to update labels (may not have permission)" -ForegroundColor Yellow
+    }
+}
+
+# ============================================================
 # Auto-detect test filter from changed files
 # ============================================================
 function Get-AutoDetectedTestFilter {
@@ -392,6 +436,7 @@ if ($DetectedFixFiles.Count -eq 0) {
         Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Green
         Write-Host ""
         Write-Host "Failed tests: $($testResult.FailCount)" -ForegroundColor Yellow
+        Update-VerificationLabels -ReproductionConfirmed $true
         exit 0
     } else {
         # Tests PASSED - this is bad!
@@ -412,6 +457,7 @@ if ($DetectedFixFiles.Count -eq 0) {
         Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Red
         Write-Host ""
         Write-Host "Passed tests: $($testResult.PassCount)" -ForegroundColor Yellow
+        Update-VerificationLabels -ReproductionConfirmed $false
         exit 1
     }
 }
@@ -806,6 +852,7 @@ if ($verificationPassed) {
     Write-Host "║  - FAIL without fix (as expected)                         ║" -ForegroundColor Green
     Write-Host "║  - PASS with fix (as expected)                            ║" -ForegroundColor Green
     Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Green
+    Update-VerificationLabels -ReproductionConfirmed $true
     exit 0
 } else {
     Write-Host ""
@@ -827,5 +874,6 @@ if ($verificationPassed) {
     Write-Host "║  3. The issue was already fixed in base branch            ║" -ForegroundColor Red
     Write-Host "║  4. Build caching - try clean rebuild                     ║" -ForegroundColor Red
     Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Red
+    Update-VerificationLabels -ReproductionConfirmed $false
     exit 1
 }
