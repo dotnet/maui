@@ -422,8 +422,10 @@ static class CSharpExpressionHelpers
 					else
 					{
 						// String literal - convert to double quotes
+						// Escape any unescaped double quotes in the content
+						var escapedContent = contentStr.Replace("\"", "\\\"");
 						result.Append('"');
-						result.Append(contentStr);
+						result.Append(escapedContent);
 						result.Append('"');
 					}
 				}

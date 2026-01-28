@@ -115,8 +115,11 @@
             <!-- Nested property binding -->
             <Label x:Name="nestedLabel" Text="{User.DisplayName}" />
             
-            <!-- Method call on BindingContext -->
+            <!-- Method call on BindingContext with explicit dot prefix -->
             <Label x:Name="vmMethodLabel" Text="{.GetDisplayName()}" />
+            
+            <!-- Method call on BindingContext without prefix (should auto-resolve) -->
+            <Label x:Name="vmMethodBareLabel" Text="{GetDisplayName()}" />
             
             <!-- Mixed local+binding: Price from VM, TaxRate from this (auto-detected) -->
             <Label x:Name="mixedExprLabel" Text="{(Price * TaxRate).ToString('F2')}" />

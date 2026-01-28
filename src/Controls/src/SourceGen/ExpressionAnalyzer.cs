@@ -150,6 +150,9 @@ internal static class ExpressionAnalyzer
 			pos++;
 		}
 		
+		// Cap pos to text.Length to handle unterminated strings gracefully
+		if (pos > text.Length) pos = text.Length;
+		
 		// Extract the full expression and invocation part
 		var fullExpression = text.Substring(match.Index, pos - match.Index);
 		var invocationPart = memberName + text.Substring(parenStart, pos - parenStart);

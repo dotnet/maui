@@ -514,6 +514,17 @@ public partial class CSharpExpressions : ContentPage
 		}
 
 		[Fact]
+		public void TypedBinding_BareMethodCall()
+		{
+			// Test that {GetDisplayName()} without prefix resolves to DataType method
+			var page = new CSharpExpressions(XamlInflator.SourceGen);
+			var vm = new SimpleViewModel();
+			page.BindingContext = vm;
+			
+			Assert.Equal("Display: From ViewModel", page.vmMethodBareLabel.Text);
+		}
+
+		[Fact]
 		public void TypedBinding_MixedLocalAndBinding()
 		{
 			var page = new CSharpExpressions(XamlInflator.SourceGen);
