@@ -96,8 +96,6 @@ parameters:
   default:
     name: Azure Pipelines
     vmImage: macOS-15-arm64
-    demands:
-      - Agent.OSArchitecture -equals ARM64
 
 - name: targetFrameworkVersions
   type: object
