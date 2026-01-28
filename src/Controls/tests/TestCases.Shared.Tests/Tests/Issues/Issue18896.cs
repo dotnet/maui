@@ -24,10 +24,8 @@ public class Issue18896 : _IssuesUITest
 
 		App.ScrollUp(ListView);
 
-		// Load images and hide scrollbar.
-		Thread.Sleep(2000);
-
 		// The test passes if you are able to see the image, name, and location of each monkey.
-		VerifyScreenshot();
+		// Use retryTimeout to wait for images to load and scrollbar to hide
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 }
