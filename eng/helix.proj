@@ -42,19 +42,19 @@
     -->
   </ItemGroup>
 
-  <!-- Prepare the staging directory for MSBuild test payloads -->
-  <Target Name="PrepareMauiHelixPayload" BeforeTargets="Test">
+  <!-- Prepare the staging directory for MSBuild test payloads - runs early during Restore -->
+  <Target Name="PrepareMauiHelixPayload" BeforeTargets="Restore;Build;Test">
     <MakeDir Directories="$(MauiHelixPayloadDir)src/Workload/Microsoft.Maui.Sdk/Sdk" />
     
     <!-- Copy Maui.InTree.props and targets -->
-    <Copy SourceFiles="$(RepoRoot)src/Maui.InTree.props" DestinationFolder="$(MauiHelixPayloadDir)src" />
-    <Copy SourceFiles="$(RepoRoot)src/Maui.InTree.targets" DestinationFolder="$(MauiHelixPayloadDir)src" />
+    <Copy SourceFiles="$(RepoRoot)src/Maui.InTree.props" DestinationFolder="$(MauiHelixPayloadDir)src" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(RepoRoot)src/Maui.InTree.targets" DestinationFolder="$(MauiHelixPayloadDir)src" SkipUnchangedFiles="true" />
     
     <!-- Copy Workload SDK files -->
     <ItemGroup>
       <WorkloadSdkFiles Include="$(RepoRoot)src/Workload/Microsoft.Maui.Sdk/Sdk/*.*" />
     </ItemGroup>
-    <Copy SourceFiles="@(WorkloadSdkFiles)" DestinationFolder="$(MauiHelixPayloadDir)src/Workload/Microsoft.Maui.Sdk/Sdk" />
+    <Copy SourceFiles="@(WorkloadSdkFiles)" DestinationFolder="$(MauiHelixPayloadDir)src/Workload/Microsoft.Maui.Sdk/Sdk" SkipUnchangedFiles="true" />
     
     <Message Text="Prepared MSBuild test payload at $(MauiHelixPayloadDir)" Importance="high" />
   </Target>
