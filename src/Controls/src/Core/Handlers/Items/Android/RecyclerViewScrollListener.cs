@@ -29,7 +29,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		internal void UpdateAdapter(ItemsViewAdapter<TItemsView, TItemsViewSource> itemsViewAdapter)
 		{
 			ItemsViewAdapter = itemsViewAdapter;
-			_isInitialLayout = true;
+		}
+
+		internal void MarkLayoutComplete()
+		{
+			_isInitialLayout = false;
 		}
 
 		public override void OnScrolled(RecyclerView recyclerView, int dx, int dy)
@@ -43,16 +47,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_horizontalOffset += dx;
 			_verticalOffset += dy;
 
-			// Filter the initial layout callback to prevent Scrolled event from firing on page load.
-			// RecyclerView calls OnScrolled(0,0) during initial layout even without user interaction.
+			// Suppress initial OnScrolled(0,0) during page load; MauiRecyclerView calls
+			// MarkLayoutComplete() after first layout to allow subsequent scroll events.
 			if (_isInitialLayout && dx == 0 && dy == 0)
 			{
 				_isInitialLayout = false;
 				return;
 			}
-
-			// Clear the flag after first actual scroll to ensure subsequent events work normally
-			_isInitialLayout = false;
 
 			var (First, Center, Last) = GetVisibleItemsIndex(recyclerView);
 			var itemsViewScrolledEventArgs = new ItemsViewScrolledEventArgs
