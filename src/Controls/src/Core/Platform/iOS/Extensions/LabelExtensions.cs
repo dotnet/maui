@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Platform
 					// will be just disappear once we switch.
 					CoreFoundation.DispatchQueue.MainQueue.DispatchAsync(() =>
 					{
-						platformLabel.UpdateTextHtml(text);
+						platformLabel.UpdateTextHtml(label);
 
 						if (label.Handler is LabelHandler labelHandler)
 							Label.MapFormatting(labelHandler, label);
