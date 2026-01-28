@@ -99,6 +99,25 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+# Check for GitHub CLI prerequisite
+try {
+    $null = Get-Command gh -ErrorAction Stop
+} catch {
+    Write-Host ""
+    Write-Host "❌ GitHub CLI (gh) is not installed" -ForegroundColor Red
+    Write-Host ""
+    Write-Host "The issue-triage skill requires GitHub CLI for querying issues." -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host "Installation:" -ForegroundColor Cyan
+    Write-Host "  Windows:  winget install --id GitHub.cli" -ForegroundColor White
+    Write-Host "  macOS:    brew install gh" -ForegroundColor White
+    Write-Host "  Linux:    See https://cli.github.com/manual/installation" -ForegroundColor White
+    Write-Host ""
+    Write-Host "After installation, authenticate with: gh auth login" -ForegroundColor Cyan
+    Write-Host ""
+    exit 1
+}
+
 Write-Host "Querying GitHub issues..." -ForegroundColor Cyan
 
 # Labels to exclude from triage results

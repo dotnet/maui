@@ -40,6 +40,28 @@ Write-Host "╔═════════════════════�
 Write-Host "║           Initializing Triage Session                     ║" -ForegroundColor Cyan
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
 
+# Check for GitHub CLI prerequisite
+Write-Host ""
+Write-Host "Checking prerequisites..." -ForegroundColor Cyan
+try {
+    $ghPath = (Get-Command gh -ErrorAction Stop).Source
+    Write-Host "  ✅ GitHub CLI found: $ghPath" -ForegroundColor Green
+} catch {
+    Write-Host ""
+    Write-Host "  ❌ GitHub CLI (gh) is not installed" -ForegroundColor Red
+    Write-Host ""
+    Write-Host "  The issue-triage skill requires GitHub CLI for querying issues." -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host "  Installation:" -ForegroundColor Cyan
+    Write-Host "    Windows:  winget install --id GitHub.cli" -ForegroundColor White
+    Write-Host "    macOS:    brew install gh" -ForegroundColor White
+    Write-Host "    Linux:    See https://cli.github.com/manual/installation" -ForegroundColor White
+    Write-Host ""
+    Write-Host "  After installation, authenticate with: gh auth login" -ForegroundColor Cyan
+    Write-Host ""
+    exit 1
+}
+
 # Create output directory
 if (-not (Test-Path $OutputDir)) {
     New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null
@@ -62,11 +84,9 @@ Write-Host "Fetching open milestones..." -ForegroundColor Cyan
 
 $milestones = @()
 try {
-    $msResult = gh api repos/dotnet/maui/milestones --jq '.[] | {number, title, due_on, open_issues}' 2>&1
-    $msLines = $msResult -split "`n" | Where-Object { $_ -match "^\{" }
+    $msData = Invoke-RestMethod -Uri "https://api.github.com/repos/dotnet/maui/milestones?state=open&per_page=100"
     
-    foreach ($line in $msLines) {
-        $ms = $line | ConvertFrom-Json
+    foreach ($ms in $msData) {
         $milestones += [PSCustomObject]@{
             Number = $ms.number
             Title = $ms.title
