@@ -6,7 +6,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/ShellAppearance.xml" path="Type[@FullName='Microsoft.Maui.Controls.ShellAppearance']/Docs/*" />
+	/// <summary>Stores the appearance values for a Shell, including colors for background, foreground, tab bar, and title.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class ShellAppearance : IShellAppearanceElement
 	{
@@ -39,37 +39,37 @@ namespace Microsoft.Maui.Controls
 		Brush[] _brushArray = new Brush[s_ingestBrushArray.Length];
 		double[] _doubleArray = new double[s_ingestDoubleArray.Length];
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellAppearance.xml" path="//Member[@MemberName='BackgroundColor']/Docs/*" />
+		/// <summary>Gets the background color of the Shell.</summary>
 		public Color BackgroundColor => _colorArray[0];
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellAppearance.xml" path="//Member[@MemberName='DisabledColor']/Docs/*" />
+		/// <summary>Gets the color for disabled items in the Shell.</summary>
 		public Color DisabledColor => _colorArray[1];
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellAppearance.xml" path="//Member[@MemberName='ForegroundColor']/Docs/*" />
+		/// <summary>Gets the foreground color of the Shell.</summary>
 		public Color ForegroundColor => _colorArray[2];
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellAppearance.xml" path="//Member[@MemberName='TabBarBackgroundColor']/Docs/*" />
+		/// <summary>Gets the background color of the tab bar.</summary>
 		public Color TabBarBackgroundColor => _colorArray[3];
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellAppearance.xml" path="//Member[@MemberName='TabBarDisabledColor']/Docs/*" />
+		/// <summary>Gets the color for disabled items in the tab bar.</summary>
 		public Color TabBarDisabledColor => _colorArray[4];
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellAppearance.xml" path="//Member[@MemberName='TabBarForegroundColor']/Docs/*" />
+		/// <summary>Gets the foreground color of the tab bar.</summary>
 		public Color TabBarForegroundColor => _colorArray[5];
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellAppearance.xml" path="//Member[@MemberName='TabBarTitleColor']/Docs/*" />
+		/// <summary>Gets the title color of the tab bar.</summary>
 		public Color TabBarTitleColor => _colorArray[6];
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellAppearance.xml" path="//Member[@MemberName='TabBarUnselectedColor']/Docs/*" />
+		/// <summary>Gets the color for unselected items in the tab bar.</summary>
 		public Color TabBarUnselectedColor => _colorArray[7];
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellAppearance.xml" path="//Member[@MemberName='TitleColor']/Docs/*" />
+		/// <summary>Gets the title color of the Shell.</summary>
 		public Color TitleColor => _colorArray[8];
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellAppearance.xml" path="//Member[@MemberName='UnselectedColor']/Docs/*" />
+		/// <summary>Gets the color for unselected items in the Shell.</summary>
 		public Color UnselectedColor => _colorArray[9];
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellAppearance.xml" path="//Member[@MemberName='FlyoutBackdrop']/Docs/*" />
+		/// <summary>Gets the backdrop brush for the Shell flyout.</summary>
 		public Brush FlyoutBackdrop => _brushArray[0];
 		public double FlyoutWidth => _doubleArray[0];
 		public double FlyoutHeight => _doubleArray[1];
@@ -98,7 +98,7 @@ namespace Microsoft.Maui.Controls
 				_doubleArray[i] = -1;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellAppearance.xml" path="//Member[@MemberName='Equals']/Docs/*" />
+		/// <inheritdoc/>
 		public override bool Equals(object obj)
 		{
 			if (!(obj is ShellAppearance appearance))
@@ -125,7 +125,7 @@ namespace Microsoft.Maui.Controls
 			return true;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellAppearance.xml" path="//Member[@MemberName='GetHashCode']/Docs/*" />
+		/// <inheritdoc/>
 		public override int GetHashCode()
 		{
 			var hashCode = -1988429770;
@@ -141,7 +141,9 @@ namespace Microsoft.Maui.Controls
 			return hashCode;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellAppearance.xml" path="//Member[@MemberName='Ingest']/Docs/*" />
+		/// <summary>Ingests appearance values from the specified element into this instance.</summary>
+		/// <param name="pivot">The element to read appearance values from.</param>
+		/// <returns><see langword="true"/> if any values were ingested; otherwise, <see langword="false"/>.</returns>
 		public bool Ingest(Element pivot)
 		{
 			bool anySet = false;
@@ -179,7 +181,7 @@ namespace Microsoft.Maui.Controls
 			return anySet;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellAppearance.xml" path="//Member[@MemberName='MakeComplete']/Docs/*" />
+		/// <summary>Marks the appearance as complete by filling any remaining null values.</summary>
 		public void MakeComplete()
 		{
 			for (int i = 0; i < s_ingestArray.Length; i++)

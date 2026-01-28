@@ -3,23 +3,37 @@ using System;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/SkewTransform.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.SkewTransform']/Docs/*" />
+	/// <summary>
+	/// A transform that skews (shears) an element by the specified angles.
+	/// </summary>
 	public class SkewTransform : Transform
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/SkewTransform.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="SkewTransform"/> class.
+		/// </summary>
 		public SkewTransform()
 		{
 
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/SkewTransform.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="SkewTransform"/> class with the specified skew angles.
+		/// </summary>
+		/// <param name="angleX">The x-axis skew angle in degrees.</param>
+		/// <param name="angleY">The y-axis skew angle in degrees.</param>
 		public SkewTransform(double angleX, double angleY)
 		{
 			AngleX = angleX;
 			AngleY = angleY;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/SkewTransform.xml" path="//Member[@MemberName='.ctor'][3]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="SkewTransform"/> class with the specified skew angles and center point.
+		/// </summary>
+		/// <param name="angleX">The x-axis skew angle in degrees.</param>
+		/// <param name="angleY">The y-axis skew angle in degrees.</param>
+		/// <param name="centerX">The x-coordinate of the skew center point.</param>
+		/// <param name="centerY">The y-coordinate of the skew center point.</param>
 		public SkewTransform(double angleX, double angleY, double centerX, double centerY)
 		{
 			AngleX = angleX;
@@ -48,28 +62,36 @@ namespace Microsoft.Maui.Controls.Shapes
 			BindableProperty.Create(nameof(CenterY), typeof(double), typeof(SkewTransform), 0.0,
 				propertyChanged: OnTransformPropertyChanged);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/SkewTransform.xml" path="//Member[@MemberName='AngleX']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the x-axis skew angle in degrees. This is a bindable property.
+		/// </summary>
 		public double AngleX
 		{
 			set { SetValue(AngleXProperty, value); }
 			get { return (double)GetValue(AngleXProperty); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/SkewTransform.xml" path="//Member[@MemberName='AngleY']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the y-axis skew angle in degrees. This is a bindable property.
+		/// </summary>
 		public double AngleY
 		{
 			set { SetValue(AngleYProperty, value); }
 			get { return (double)GetValue(AngleYProperty); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/SkewTransform.xml" path="//Member[@MemberName='CenterX']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the x-coordinate of the skew origin. This is a bindable property.
+		/// </summary>
 		public double CenterX
 		{
 			set { SetValue(CenterXProperty, value); }
 			get { return (double)GetValue(CenterXProperty); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/SkewTransform.xml" path="//Member[@MemberName='CenterY']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the y-coordinate of the skew origin. This is a bindable property.
+		/// </summary>
 		public double CenterY
 		{
 			set { SetValue(CenterYProperty, value); }

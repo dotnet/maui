@@ -3,22 +3,26 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/LinearGradientBrush.xml" path="Type[@FullName='Microsoft.Maui.Controls.LinearGradientBrush']/Docs/*" />
+	/// <summary>A <see cref="GradientBrush"/> that paints an area with a linear gradient.</summary>
 	public class LinearGradientBrush : GradientBrush
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/LinearGradientBrush.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
+		/// <summary>Initializes a new instance of the <see cref="LinearGradientBrush"/> class.</summary>
 		public LinearGradientBrush()
 		{
 
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/LinearGradientBrush.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />
+		/// <summary>Initializes a new instance of the <see cref="LinearGradientBrush"/> class with the specified gradient stops.</summary>
+		/// <param name="gradientStops">The collection of gradient stops.</param>
 		public LinearGradientBrush(GradientStopCollection gradientStops)
 		{
 			GradientStops = gradientStops;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/LinearGradientBrush.xml" path="//Member[@MemberName='.ctor'][3]/Docs/*" />
+		/// <summary>Initializes a new instance of the <see cref="LinearGradientBrush"/> class with the specified gradient stops and points.</summary>
+		/// <param name="gradientStops">The collection of gradient stops.</param>
+		/// <param name="startPoint">The starting point of the gradient.</param>
+		/// <param name="endPoint">The ending point of the gradient.</param>
 		public LinearGradientBrush(GradientStopCollection gradientStops, Point startPoint, Point endPoint)
 		{
 			GradientStops = gradientStops;
@@ -32,7 +36,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty StartPointProperty = BindableProperty.Create(
 			nameof(StartPoint), typeof(Point), typeof(LinearGradientBrush), new Point(0, 0));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/LinearGradientBrush.xml" path="//Member[@MemberName='StartPoint']/Docs/*" />
+		/// <summary>Gets or sets the starting point of the gradient. This is a bindable property.</summary>
 		public Point StartPoint
 		{
 			get => (Point)GetValue(StartPointProperty);
@@ -43,7 +47,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty EndPointProperty = BindableProperty.Create(
 			nameof(EndPoint), typeof(Point), typeof(LinearGradientBrush), new Point(1, 1));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/LinearGradientBrush.xml" path="//Member[@MemberName='EndPoint']/Docs/*" />
+		/// <summary>Gets or sets the ending point of the gradient. This is a bindable property.</summary>
 		public Point EndPoint
 		{
 			get => (Point)GetValue(EndPointProperty);

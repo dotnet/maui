@@ -3,54 +3,77 @@ using Microsoft.Maui.IntegrationTests.Apple;
 
 namespace Microsoft.Maui.IntegrationTests
 {
-	[Category(Categories.RunOniOS)]
+	// Collection fixture for iOS simulator management
+	[CollectionDefinition("iOS Simulator Tests")]
+	public class IOSSimulatorCollection : ICollectionFixture<IOSSimulatorFixture>
+	{
+		// This class has no code, and is never created. Its purpose is simply
+		// to be the place to apply [CollectionDefinition] and all the
+		// ICollectionFixture<> interfaces.
+	}
+
+	// Fixture to manage iOS simulator lifecycle across all iOS tests
+	public class IOSSimulatorFixture : IDisposable
+	{
+		public Simulator TestSimulator { get; } = new Simulator();
+
+		public IOSSimulatorFixture()
+		{
+			// One-time setup: boot simulator for all tests
+			if (TestEnvironment.IsMacOS)
+			{
+				TestSimulator.Shutdown();
+				TestSimulator.Launch();
+			}
+		}
+
+		public void Dispose()
+		{
+			// One-time teardown: shutdown simulator after all tests
+			if (TestEnvironment.IsMacOS)
+			{
+				TestSimulator.Shutdown();
+			}
+		}
+	}
+
+	[Collection("iOS Simulator Tests")]
+	[Trait("Category", "RunOniOS")]
 	public class AppleTemplateTests : BaseBuildTest
 	{
-		Simulator TestSimulator = new Simulator();
+		private readonly IOSSimulatorFixture _simulatorFixture;
 
-		[SetUp]
-		public void AppleTemplateSetup()
+		public AppleTemplateTests(IntegrationTestFixture fixture, ITestOutputHelper output, IOSSimulatorFixture simulatorFixture) 
+			: base(fixture, output)
 		{
+			_simulatorFixture = simulatorFixture;
+			
+			// Per-test setup: skip if not on macOS
 			if (!TestEnvironment.IsMacOS)
-				Assert.Ignore("Running Apple templates is only supported on macOS.");
-
-			// Pre-boot the simulator before XHarness runs.
-			// This ensures the full timeout is available for install + run, not consumed by boot time.
-			// Without this, booting a shutdown simulator (~30-35s on CI) can exhaust the timeout
-			// before the app even gets installed.
-			TestSimulator.Shutdown();
-			Assert.IsTrue(TestSimulator.Launch(), 
-				$"Failed to boot simulator. Target: {TestSimulator.XHarnessID}, UDID: {TestSimulator.GetUDID()}");
+				if (true) return; // Skip: "Running Apple templates is only supported on macOS."
 		}
 
-		[OneTimeTearDown]
-		public void AppleTemplateFxtTearDown()
-		{
-			// Shutdown simulator after all tests complete to clean up resources.
-			TestSimulator.Shutdown();
-		}
-
-		// [TestCase("maui", "Debug", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, null)]
-		// [TestCase("maui", "Release", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, null)]
-		// [TestCase("maui-blazor", "Debug", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, null)]
-		// [TestCase("maui-blazor", "Release", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, null)]
+		// [InlineData("maui", "Debug", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, null)]
+		// [InlineData("maui", "Release", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, null)]
+		// [InlineData("maui-blazor", "Debug", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, null)]
+		// [InlineData("maui-blazor", "Release", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, null)]
 		
 
 		// Individual test methods for each configuration to enable parallel CI runs
 		// CI uses --filter "Name=TestMethodName" to run each test in a separate job
-		[Test]
+		[Fact]
 		public void RunOniOS_MauiDebug() => RunOniOS("maui", "Debug", DotNetCurrent, RuntimeVariant.Mono, null);
 
-		[Test]
+		[Fact]
 		public void RunOniOS_MauiRelease() => RunOniOS("maui", "Release", DotNetCurrent, RuntimeVariant.Mono, null);
 
-		[Test]
+		[Fact]
 		public void RunOniOS_MauiReleaseTrimFull() => RunOniOS("maui", "Release", DotNetCurrent, RuntimeVariant.Mono, "full");
 
-		[Test]
+		[Fact]
 		public void RunOniOS_BlazorDebug() => RunOniOS("maui-blazor", "Debug", DotNetCurrent, RuntimeVariant.Mono, null);
 
-		[Test]
+		[Fact]
 		public void RunOniOS_BlazorRelease() => RunOniOS("maui-blazor", "Release", DotNetCurrent, RuntimeVariant.Mono, null);
 
 		// TODO: Re-enable once ASP.NET Core fixes trimmer warning IL2111 with Blazor Router.NotFoundPage
@@ -69,7 +92,7 @@ namespace Microsoft.Maui.IntegrationTests
 		// [Test, Category(Categories.RunOniOS)]
 		// public void RunOniOS_BlazorReleaseTrimFull() => RunOniOS("maui-blazor", "Release", DotNetCurrent, RuntimeVariant.Mono, "full");
 
-		[Test]
+		[Fact]
 		public void RunOniOS_MauiNativeAOT() => RunOniOS("maui", "Release", DotNetCurrent, RuntimeVariant.NativeAOT, null);
 
 		void RunOniOS(string id, string config, string framework, RuntimeVariant runtimeVariant, string? trimMode)
@@ -77,7 +100,7 @@ namespace Microsoft.Maui.IntegrationTests
 			var projectDir = TestDirectory;
 			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-			Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
+			Assert.True(DotnetInternal.New(id, projectDir, framework, output: _output),
 				$"Unable to create template {id}. Check test output for errors.");
 
 			var buildProps = BuildProps;
@@ -103,7 +126,7 @@ namespace Microsoft.Maui.IntegrationTests
 				buildProps.Add("TrimmerSingleWarn=false"); // Disable trimmer warnings for iOS full trimming builds due to ObjCRuntime issues
 			}
 
-			Assert.IsTrue(DotnetInternal.Build(projectFile, config, framework: $"{framework}-ios", properties: buildProps, runtimeIdentifier: runtimeIdentifier),
+			Assert.True(DotnetInternal.Build(projectFile, config, framework: $"{framework}-ios", properties: buildProps, runtimeIdentifier: runtimeIdentifier, output: _output),
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 
 			// Find the .app bundle - it may be in the bin folder with or without a RID subfolder depending on build settings
@@ -119,7 +142,7 @@ namespace Microsoft.Maui.IntegrationTests
 			// Let XHarness find the simulator based on target (e.g., ios-simulator-64_18.5).
 			// Don't pass a specific UDID - this gives XHarness full control over the simulator
 			// lifecycle and avoids race conditions with watchdog disabling.
-			Assert.IsTrue(XHarness.RunAppleForTimeout(appFile, xhResultsDir, TestSimulator.XHarnessID),
+			Assert.True(XHarness.RunAppleForTimeout(appFile, xhResultsDir, _simulatorFixture.TestSimulator.XHarnessID, output: _output),
 				$"Project {Path.GetFileName(projectFile)} failed to run. Check test output/attachments for errors.");
 		}
 	}

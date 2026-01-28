@@ -202,7 +202,7 @@ stages:
       buildscript: $(_buildScript)
     - name: mac_unit_tests
       displayName: macOS Unit Tests
-      pool: ${{ parameters.MacOSPool }}
+      pool: ${{ parameters.MacOSPoolArm64 }}
       timeout: 90
       testOS: macOS
       buildscript: $(_buildScriptMacOS)
@@ -223,7 +223,7 @@ stages:
       timeout: 120
       testCategory: Samples
     - name: mac_sample_tests
-      pool: ${{ parameters.MacOSPool }}
+      pool: ${{ parameters.MacOSPoolArm64 }}
       timeout: 240
       testCategory: Samples
 
@@ -266,7 +266,7 @@ stages:
       timeout: 120
       testCategory: Blazor
     - name: mac_blazortemplate_tests
-      pool: ${{ parameters.MacOSPool }}
+      pool: ${{ parameters.MacOSPoolArm64 }}
       timeout: 240
       testCategory: Blazor
 
@@ -280,7 +280,7 @@ stages:
       timeout: 120
       testCategory: MultiProject
     - name: mac_multitemplate_tests
-      pool: ${{ parameters.MacOSPool }}
+      pool: ${{ parameters.MacOSPoolArm64 }}
       timeout: 120
       testCategory: MultiProject
 

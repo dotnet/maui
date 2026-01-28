@@ -6,13 +6,20 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/RelativeBindingSource.xml" path="Type[@FullName='Microsoft.Maui.Controls.RelativeBindingSource']/Docs/*" />
+	/// <summary>
+	/// Specifies a relative source for a binding, such as Self, TemplatedParent, or FindAncestor.
+	/// </summary>
 	public sealed class RelativeBindingSource
 	{
 		static RelativeBindingSource _self;
 		static RelativeBindingSource _templatedParent;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RelativeBindingSource.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Creates a new <see cref="RelativeBindingSource"/> with the specified mode, ancestor type, and level.
+		/// </summary>
+		/// <param name="mode">The relative binding source mode.</param>
+		/// <param name="ancestorType">The type of ancestor to find. Required for FindAncestor modes.</param>
+		/// <param name="ancestorLevel">The level of ancestor to find (1-based). Default is 1.</param>
 		public RelativeBindingSource(
 			RelativeBindingSourceMode mode,
 			Type ancestorType = null,
@@ -33,25 +40,33 @@ namespace Microsoft.Maui.Controls
 			AncestorLevel = ancestorLevel;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RelativeBindingSource.xml" path="//Member[@MemberName='Mode']/Docs/*" />
+		/// <summary>
+		/// Gets the relative binding source mode.
+		/// </summary>
 		public RelativeBindingSourceMode Mode
 		{
 			get;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RelativeBindingSource.xml" path="//Member[@MemberName='AncestorType']/Docs/*" />
+		/// <summary>
+		/// Gets the ancestor type to find when using FindAncestor or FindAncestorBindingContext modes.
+		/// </summary>
 		public Type AncestorType
 		{
 			get;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RelativeBindingSource.xml" path="//Member[@MemberName='AncestorLevel']/Docs/*" />
+		/// <summary>
+		/// Gets the 1-based level of ancestor to find.
+		/// </summary>
 		public int AncestorLevel
 		{
 			get;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RelativeBindingSource.xml" path="//Member[@MemberName='Self']/Docs/*" />
+		/// <summary>
+		/// Gets a <see cref="RelativeBindingSource"/> that binds to the element itself.
+		/// </summary>
 		public static RelativeBindingSource Self
 		{
 			get
@@ -60,7 +75,9 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RelativeBindingSource.xml" path="//Member[@MemberName='TemplatedParent']/Docs/*" />
+		/// <summary>
+		/// Gets a <see cref="RelativeBindingSource"/> that binds to the templated parent.
+		/// </summary>
 		public static RelativeBindingSource TemplatedParent
 		{
 			get

@@ -6,7 +6,9 @@ using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/PropertyCondition.xml" path="Type[@FullName='Microsoft.Maui.Controls.PropertyCondition']/Docs/*" />
+	/// <summary>
+	/// A condition that is satisfied when a property has a specified value.
+	/// </summary>
 	public sealed class PropertyCondition : Condition
 	{
 		readonly BindableProperty _stateProperty;
@@ -14,13 +16,17 @@ namespace Microsoft.Maui.Controls
 		BindableProperty _property;
 		object _triggerValue;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/PropertyCondition.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="PropertyCondition"/> class.
+		/// </summary>
 		public PropertyCondition()
 		{
 			_stateProperty = BindableProperty.CreateAttached("State", typeof(bool), typeof(PropertyCondition), false, propertyChanged: OnStatePropertyChanged);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/PropertyCondition.xml" path="//Member[@MemberName='Property']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the bindable property whose value is evaluated for this condition.
+		/// </summary>
 		public BindableProperty Property
 		{
 			get { return _property; }
@@ -51,7 +57,9 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/PropertyCondition.xml" path="//Member[@MemberName='Value']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the value that satisfies this condition when matched by the property.
+		/// </summary>
 		public object Value
 		{
 			get { return _triggerValue; }

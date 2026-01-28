@@ -1,15 +1,15 @@
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/ScrollToPosition.xml" path="Type[@FullName='Microsoft.Maui.Controls.ScrollToPosition']/Docs/*" />
+	/// <summary>Specifies the position to scroll an item to within a list or scroll view.</summary>
 	public enum ScrollToPosition
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollToPosition.xml" path="//Member[@MemberName='MakeVisible']/Docs/*" />
+		/// <summary>Scroll the minimum amount to make the item visible.</summary>
 		MakeVisible = 0,
-		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollToPosition.xml" path="//Member[@MemberName='Start']/Docs/*" />
+		/// <summary>Scroll to position the item at the start of the viewport.</summary>
 		Start = 1,
-		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollToPosition.xml" path="//Member[@MemberName='Center']/Docs/*" />
+		/// <summary>Scroll to position the item at the center of the viewport.</summary>
 		Center = 2,
-		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollToPosition.xml" path="//Member[@MemberName='End']/Docs/*" />
+		/// <summary>Scroll to position the item at the end of the viewport.</summary>
 		End = 3
 	}
 }
