@@ -166,5 +166,19 @@
         <Label x:Name="cdataInterpolationLabel">
             <Label.Text><![CDATA[{$"Hello {FirstName}!"}]]></Label.Text>
         </Label>
+        
+        <!-- Test nested this. - method that takes another this. value -->
+        <Label x:Name="nestedThisLabel" Text="{this.CalculateWithRate(this.TaxRate).ToString()}" />
+        
+        <!-- CODE REVIEW EDGE CASE TESTS -->
+        
+        <!-- Test: Escaped double quotes inside single-quoted string -->
+        <Label x:Name="escapedDoubleQuotesLabel" Text="{value ?? 'he said \&quot;hi\&quot;'}" />
+        
+        <!-- Test: Escaped newline char literal -->
+        <Label x:Name="escapedNewlineLabel" Text="{GetChar('\n').ToString()}" />
+        
+        <!-- Test: Escaped tab char literal -->
+        <Label x:Name="escapedTabLabel" Text="{GetChar('\t').ToString()}" />
     </VerticalStackLayout>
 </ContentPage>

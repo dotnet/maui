@@ -368,6 +368,7 @@ static class CSharpExpressionHelpers
 				i++; // Skip opening quote
 
 				var content = new StringBuilder();
+				var isEscapeSequence = false;  // Track if content is a single escape sequence
 				while (i < code.Length)
 				{
 					if (code[i] == '\\' && i + 1 < code.Length)
@@ -381,7 +382,7 @@ static class CSharpExpressionHelpers
 						}
 						else if (escaped == '"')
 						{
-							// \" stays as \" in double-quoted
+							// \" stays as \" in double-quoted (already escaped)
 							content.Append("\\\"");
 						}
 						else
@@ -389,6 +390,9 @@ static class CSharpExpressionHelpers
 							// Other escapes (\n, \t, \\, etc.) - keep as-is
 							content.Append(code[i]);
 							content.Append(code[i + 1]);
+							// If this is the first content and it's an escape, mark it
+							if (content.Length == 2)
+								isEscapeSequence = true;
 						}
 						i += 2;
 					}
@@ -410,9 +414,13 @@ static class CSharpExpressionHelpers
 					
 					var contentStr = content.ToString();
 
-					// Single character (not an escape sequence) = char literal, keep as is
-					// Multiple characters or escape sequences = string literal, convert to double quotes
-					if (contentStr.Length == 1)
+					// Char literal detection:
+					// - Single character (length 1), OR
+					// - Single escape sequence like \n, \t, \\ (length 2 starting with \)
+					bool isCharLiteral = contentStr.Length == 1 || 
+						(isEscapeSequence && contentStr.Length == 2 && contentStr[0] == '\\');
+					
+					if (isCharLiteral)
 					{
 						// Char literal - keep single quotes
 						result.Append('\'');
@@ -422,10 +430,32 @@ static class CSharpExpressionHelpers
 					else
 					{
 						// String literal - convert to double quotes
-						// Escape any unescaped double quotes in the content
-						var escapedContent = contentStr.Replace("\"", "\\\"");
+						// Don't escape already-escaped quotes (\" is already in content as \")
+						// Only escape raw " characters (not preceded by \)
+						var sb = new StringBuilder();
+						for (int j = 0; j < contentStr.Length; j++)
+						{
+							if (contentStr[j] == '"')
+							{
+								// Check if preceded by backslash (already escaped)
+								if (j > 0 && contentStr[j - 1] == '\\')
+								{
+									// Already escaped, just append
+									sb.Append('"');
+								}
+								else
+								{
+									// Raw quote, escape it
+									sb.Append("\\\"");
+								}
+							}
+							else
+							{
+								sb.Append(contentStr[j]);
+							}
+						}
 						result.Append('"');
-						result.Append(escapedContent);
+						result.Append(sb);
 						result.Append('"');
 					}
 				}

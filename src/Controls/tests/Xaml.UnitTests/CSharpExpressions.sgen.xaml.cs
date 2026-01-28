@@ -85,6 +85,9 @@ public partial class CSharpExpressions : ContentPage
 	public string LocalProperty => "From Local";
 	public decimal TaxRate => 0.1m;  // 10% tax rate
 
+	// Nested this. test - method that takes a local value
+	public decimal CalculateWithRate(decimal rate) => 100m * rate;
+
 	// Bindable properties for Binding tests
 	public string BindableText { get; set; } = "Bindable Value";
 	public string MixedText { get; set; } = "Mixed Value";
@@ -726,6 +729,39 @@ public partial class CSharpExpressions : ContentPage
 			// Tests CDATA with string interpolation using double quotes
 			var page = new CSharpExpressions(XamlInflator.SourceGen);
 			Assert.Equal("Hello John!", page.cdataInterpolationLabel.Text); // $"Hello {FirstName}!"
+		}
+
+		[Fact]
+		public void NestedThisExpressions()
+		{
+			// Tests that nested this. expressions work: this.Method(this.Property)
+			var page = new CSharpExpressions(XamlInflator.SourceGen);
+			// CalculateWithRate(TaxRate) = 100 * 0.1 = 10
+			Assert.StartsWith("10", page.nestedThisLabel.Text, StringComparison.Ordinal);
+		}
+
+		[Fact]
+		public void EscapedDoubleQuotesInSingleQuotedString()
+		{
+			// Tests that \" inside single quotes becomes " in the output (not \\")
+			var page = new CSharpExpressions(XamlInflator.SourceGen);
+			Assert.Equal("he said \"hi\"", page.escapedDoubleQuotesLabel.Text);
+		}
+
+		[Fact]
+		public void EscapedCharLiterals_Newline()
+		{
+			// Tests that '\n' stays as char literal, not converted to string
+			var page = new CSharpExpressions(XamlInflator.SourceGen);
+			Assert.Equal("\n", page.escapedNewlineLabel.Text);
+		}
+
+		[Fact]
+		public void EscapedCharLiterals_Tab()
+		{
+			// Tests that '\t' stays as char literal, not converted to string
+			var page = new CSharpExpressions(XamlInflator.SourceGen);
+			Assert.Equal("\t", page.escapedTabLabel.Text);
 		}
 	}
 }
