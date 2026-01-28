@@ -130,7 +130,7 @@ public static partial class AppHostBuilderExtensions
 		}
 
 #if ANDROID
-		if(RuntimeFeature.IsMaterial3Enabled)
+		if (RuntimeFeature.IsMaterial3Enabled)
 		{
 			handlersCollection.AddHandler<DatePicker, DatePickerHandler2>();
 		}
