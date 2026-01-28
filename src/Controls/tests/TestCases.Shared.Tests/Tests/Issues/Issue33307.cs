@@ -10,7 +10,7 @@ public class Issue33307 : _IssuesUITest
 	public override string Issue => "The Picker is still binding to the property and reacts to data changes after the page is closed.";
 	[Test]
 	[Category(UITestCategories.Picker)]
-	public void VerifyBackButtonTitleUpdates()
+	public void VerifyPickerItemsinNavigation()
 	{
 		App.WaitForElement("Page1");
 		App.Tap("Page1");
