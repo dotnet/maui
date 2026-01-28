@@ -1,0 +1,82 @@
+<Project>
+
+  <!-- 
+    This targets file provides shared logic for projects that use XcodeProject items
+    to build Apple native frameworks. It handles:
+    1. Conditional XcodeProject building (macOS only)
+    2. Pre-built artifact inclusion for Windows CI builds
+    3. IntelliSense support for locally generated binding files
+  -->
+
+  <PropertyGroup>
+    <!-- Determine if we should use pre-built native artifacts instead of building from XcodeProject -->
+    <_UsePrebuiltAppleArtifacts Condition="'$(_UsePrebuiltAppleArtifacts)' == '' and (('$(CI)' == 'true' or '$(TF_BUILD)' == 'true') and '$([MSBuild]::IsOSPlatform(OSX))' != 'true')">true</_UsePrebuiltAppleArtifacts>
+    <_UsePrebuiltAppleArtifacts Condition="'$(_UsePrebuiltAppleArtifacts)' == ''">false</_UsePrebuiltAppleArtifacts>
+  </PropertyGroup>
+
+  <!-- 
+    Remove XcodeProject items when using pre-built artifacts (Windows CI).
+    XcodeProject can only build on macOS, so on Windows CI we skip the build and use artifacts instead.
+  -->
+  <Target Name="_RemoveXcodeProjectsOnWindowsCI" BeforeTargets="BeforeBuild" Condition="'$(_UsePrebuiltAppleArtifacts)' == 'true'">
+    <ItemGroup>
+      <XcodeProject Remove="@(XcodeProject)" />
+    </ItemGroup>
+  </Target>
+
+  <!--
+    Include pre-built .resources.zip files from artifacts when building on Windows CI.
+    This runs during evaluation and adds None items for each target framework.
+  -->
+  <ItemGroup Condition="'$(_UsePrebuiltAppleArtifacts)' == 'true' and ('$(TargetPlatformIdentifier)' == 'ios' Or '$(TargetPlatformIdentifier)' == 'maccatalyst' Or '$(TargetPlatformIdentifier)' == 'macos')">
+    <None
+      Include="$(MauiRootDirectory)artifacts\bin\$(ProjectName)\$(Configuration)\$(TargetFramework)\$(AssemblyName).resources.zip"
+      Pack="True"
+      PackagePath="lib\$(TargetFramework)\$(AssemblyName).resources.zip" />
+  </ItemGroup>
+
+  <!--
+    IntelliSense support: Include generated binding files for local development.
+    These files are generated in the obj directory during XcodeProject builds.
+  -->
+  
+  <!-- iOS platform IntelliSense -->
+  <ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'ios'">
+    <_AppleBindingFilesForIntellisense
+      Include="$(MauiRootDirectory)artifacts\obj\$(ProjectName)\$(Configuration)\$(TargetFramework)\iOS\**\*.cs"
+      Link="Platform\iOS\generated\%(RecursiveDir)%(Filename)%(Extension)"
+      Condition="Exists('$(MauiRootDirectory)artifacts\obj\$(ProjectName)\$(Configuration)\$(TargetFramework)\iOS\ObjCRuntime\Messaging.g.cs')" />
+  </ItemGroup>
+
+  <!-- MacCatalyst platform IntelliSense -->
+  <ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'maccatalyst'">
+    <_AppleBindingFilesForIntellisense
+      Include="$(MauiRootDirectory)artifacts\obj\$(ProjectName)\$(Configuration)\$(TargetFramework)\MacCatalyst\**\*.cs"
+      Link="Platform\MacCatalyst\generated\%(RecursiveDir)%(Filename)%(Extension)"
+      Condition="Exists('$(MauiRootDirectory)artifacts\obj\$(ProjectName)\$(Configuration)\$(TargetFramework)\MacCatalyst\ObjCRuntime\Messaging.g.cs')" />
+  </ItemGroup>
+
+  <!-- macOS platform IntelliSense -->
+  <ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'macos'">
+    <_AppleBindingFilesForIntellisense
+      Include="$(MauiRootDirectory)artifacts\obj\$(ProjectName)\$(Configuration)\$(TargetFramework)\macOS\**\*.cs"
+      Link="Platform\Mac\generated\%(RecursiveDir)%(Filename)%(Extension)"
+      Condition="Exists('$(MauiRootDirectory)artifacts\obj\$(ProjectName)\$(Configuration)\$(TargetFramework)\macOS\ObjCRuntime\Messaging.g.cs')" />
+  </ItemGroup>
+
+  <!-- Include IntelliSense files in compilation for local non-CI builds only -->
+  <ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'ios' Or '$(TargetPlatformIdentifier)' == 'maccatalyst' Or '$(TargetPlatformIdentifier)' == 'macos'">
+    <_AppleBindingFilesForIntellisense Include="@(ObjcBindingCoreSource)" />
+    <Compile Include="@(_AppleBindingFilesForIntellisense)" Condition="'$(CI)' != 'true' and '$(TF_BUILD)' != 'true'" />
+  </ItemGroup>
+
+  <!-- Remove generated IntelliSense files before source generation to avoid conflicts -->
+  <Target Name="_RemoveAppleBindingGeneratedFiles"
+          BeforeTargets="_CollectGeneratedSources"
+          Condition="'$(TargetPlatformIdentifier)' == 'ios' Or '$(TargetPlatformIdentifier)' == 'maccatalyst' Or '$(TargetPlatformIdentifier)' == 'macos'">
+    <ItemGroup>
+      <Compile Remove="@(_AppleBindingFilesForIntellisense)" />
+    </ItemGroup>
+  </Target>
+
+</Project>
