@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>$(MauiDeviceTestsPlatforms)</TargetFrameworks>
@@ -15,6 +15,16 @@
     <RuntimeIdentifiers Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">android-arm64;android-x64</RuntimeIdentifiers>
     <IsTestProject>true</IsTestProject>
     <ExcludeMicrosoftNetTestSdk>true</ExcludeMicrosoftNetTestSdk>
+    <!--
+      NOTE: WindowsAppSDKSelfContained is now set in Directory.Build.props (not here).
+      
+      This is CRITICAL for unpackaged builds on Helix - the Windows App SDK NuGet package
+      reads WindowsAppSDKSelfContained in its .props file, which is imported BEFORE the
+      csproj body is evaluated. Setting it in the csproj was too late - the native DLLs
+      weren't being bundled, causing exit code 0xC000027B on Helix.
+      
+      See Directory.Build.props "Windows specific settings" section for the actual setting.
+    -->
   </PropertyGroup>
 
   <PropertyGroup>

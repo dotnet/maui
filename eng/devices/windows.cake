@@ -168,15 +168,38 @@ Task("buildOnly")
 		s.MSBuildSettings.Properties.Add("AppxPackageSigningEnabled", new List<string> { "True" });
 		s.MSBuildSettings.Properties.Add("SelfContained", new List<string> { "True" });
 		s.MSBuildSettings.Properties.Add("ExtraDefineConstants", new List<string> { "PACKAGED" });
+		Information("=== PACKAGED BUILD PROPERTIES ===");
+		Information("  SelfContained=True");
+		Information("  PackageCertificateThumbprint={0}", certificateThumbprint);
 	}
 	else
 	{
 		// Apply correct build properties for unpackaged builds
-		// Note: WindowsAppSDKSelfContained is set in project files (not here) to avoid
-		// propagating to library project dependencies which don't support this property
+		// 
+		// IMPORTANT: WindowsAppSDKSelfContained bundles Windows App SDK native DLLs with the app.
+		// This is REQUIRED for unpackaged builds on Helix - without it, the app crashes with
+		// exit code 0xC000027B (Windows App SDK bootstrap failure).
+		//
+		// HOW IT WORKS:
+		// 1. MauiUnpackagedBuild=true is set here (only for unpackaged builds)
+		// 2. Directory.Build.props reads MauiUnpackagedBuild and sets WindowsAppSDKSelfContained=true
+		// 3. WindowsAppSDKSelfContained MUST be set in Directory.Build.props (not csproj) because
+		//    the Windows App SDK NuGet package reads this property in its .props file, which is
+		//    imported BEFORE the csproj body is evaluated
+		//
+		// PREVIOUS FAILED APPROACHES:
+		// - Setting WindowsAppSDKSelfContained in csproj: Too late - SDK props already evaluated
+		// - Passing WindowsAppSDKSelfContained via command line: Propagates to ALL projects
+		// - Using WindowsPackageType=None condition: MSBuild evaluation timing issues
+		//
 		s.MSBuildSettings.Properties.Add("SelfContained", new List<string> { "True" });
 		s.MSBuildSettings.Properties.Add("WindowsPackageType", new List<string> { "None" });
+		s.MSBuildSettings.Properties.Add("MauiUnpackagedBuild", new List<string> { "true" });
 		s.MSBuildSettings.Properties.Add("ExtraDefineConstants", new List<string> { "UNPACKAGED" });
+		Information("=== UNPACKAGED BUILD PROPERTIES ===");
+		Information("  SelfContained=True");
+		Information("  WindowsPackageType=None");
+		Information("  MauiUnpackagedBuild=true (triggers WindowsAppSDKSelfContained in Directory.Build.props)");
 	}
 
 	// Set correct launchSettings.json setting for packaged/unpackaged

@@ -15,6 +15,7 @@
     <RuntimeIdentifiers Condition="$(TargetFramework.Contains('-android'))">android-arm64;android-x64</RuntimeIdentifiers>
     <IsTestProject>true</IsTestProject>
     <ExcludeMicrosoftNetTestSdk>true</ExcludeMicrosoftNetTestSdk>
+    <!-- WindowsAppSDKSelfContained is now set in Directory.Build.props for proper MSBuild evaluation timing -->
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(CI)' == 'true' or '$(TF_BUILD)' == 'true' ">

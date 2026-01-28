@@ -149,13 +149,13 @@ stages:
           androidApiLevels: [ 36, 35, 33, 30, 29, 27, 26, 25, 24, 23 ]
           iosVersions: [ 'simulator-18.4', 'simulator-26.0' ]
           catalystVersions: [ 'latest' ]
-          windowsVersions: [ 'packaged', 'unpackaged' ]
+          windowsVersions: []  # Disabled - Windows device tests now run on Helix (see stage-device-tests.yml)
           skipProvisioning: ${{ or(not(parameters.UseProvisionator), false) }}
         ${{ else }}:
           androidApiLevels: [ 33, 23 ]
           iosVersions: [ 'simulator-18.4', 'simulator-26.0' ]
           catalystVersions: [ 'latest' ]
-          windowsVersions: [ 'packaged', 'unpackaged' ]
+          windowsVersions: []  # Disabled - Windows device tests now run on Helix (see stage-device-tests.yml)
           skipProvisioning: ${{ not(parameters.UseProvisionator) }}
         projects:
         - name: essentials
