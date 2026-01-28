@@ -9,38 +9,6 @@ Ensures PR title and description accurately reflect the implementation for a goo
 
 **Standalone skill** - Can be used on any PR, not just PRs created by the pr agent.
 
----
-
-## 🚨 MANDATORY: Save Summary File
-
-**This is NOT optional. Complete this step EVERY time you run this skill.**
-
-Before presenting results to the user, you MUST save the summary:
-
-```bash
-# Create directory
-mkdir -p CustomAgentLogsTmp/PRState/<PRNumber>/pr-finalize
-
-# Save summary to: CustomAgentLogsTmp/PRState/<PRNumber>/pr-finalize/pr-finalize-summary.md
-```
-
-**The summary file must include:**
-- PR number, title, author, date reviewed
-- Verdict (✅ No Changes Needed / ⚠️ Needs Updates)
-- Title assessment (current vs recommended)
-- Description quality assessment with table
-- Issues found table
-- Changed files coverage
-- Recommended description (if changes needed)
-- Action items checklist
-
-**Why this matters:** Skills are complete workflows, not just reference material. Saving the summary ensures:
-1. Traceability of what was reviewed
-2. User can reference findings later
-3. Consistent output format across runs
-
----
-
 ## Core Principle: Preserve Quality
 
 **Review existing description BEFORE suggesting changes.** Many PR authors write excellent, detailed descriptions. Your job is to:
