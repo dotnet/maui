@@ -142,22 +142,6 @@ internal static class SafeAreaExtensions
 					var screenWidth = realMetrics.WidthPixels;
 					var screenHeight = realMetrics.HeightPixels;
 
-					// Check if view extends beyond screen bounds - this indicates the view
-					// is still being positioned (e.g., during Shell fragment transitions).
-					// In this case, consume all insets to prevent children from processing
-					// invalid data, and request a re-apply after the view settles.
-					bool viewExtendsBeyondScreen = viewRight > screenWidth || viewBottom > screenHeight ||
-												   viewLeft < 0 || viewTop < 0;
-
-					if (viewExtendsBeyondScreen)
-					{
-						// Request insets to be reapplied after the next layout pass
-						// when the view should be properly positioned.
-						// Don't return early - let processing continue with current insets
-						// to avoid visual popping, the re-apply will correct any issues.
-						view.Post(() => ViewCompat.RequestApplyInsets(view));
-					}
-
 					// Calculate actual overlap for each edge
 					// Top: how much the view extends into the top safe area
 					// If the viewTop is < 0 that means that it's most likely
