@@ -13,9 +13,7 @@
     <!-- Disable multi-RID builds to workaround a parallel build issue -->
     <RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst'))">maccatalyst-x64</RuntimeIdentifier>
     <RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst')) and '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'arm64'">maccatalyst-arm64</RuntimeIdentifier>
-    <!-- Bundle Windows App SDK for unpackaged Helix builds to avoid 0xC000027B bootstrap failures.
-         MauiUnpackagedBuild is set by Cake only for unpackaged builds. See Controls.DeviceTests.csproj for full explanation. -->
-    <WindowsAppSDKSelfContained Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows' and '$(MauiUnpackagedBuild)' == 'true'">true</WindowsAppSDKSelfContained>
+    <!-- WindowsAppSDKSelfContained is now set in Directory.Build.props for proper MSBuild evaluation timing -->
   </PropertyGroup>
 
   <PropertyGroup>

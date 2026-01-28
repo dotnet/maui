@@ -176,31 +176,21 @@ Task("buildOnly")
 	{
 		// Apply correct build properties for unpackaged builds
 		// 
-		// IMPORTANT: WindowsAppSDKSelfContained enables bundling the Windows App SDK DLLs with
-		// the app instead of relying on the installed runtime. This is REQUIRED for unpackaged
-		// builds on Helix because the Windows App SDK runtime may not be installed, causing
+		// IMPORTANT: WindowsAppSDKSelfContained bundles Windows App SDK native DLLs with the app.
+		// This is REQUIRED for unpackaged builds on Helix - without it, the app crashes with
 		// exit code 0xC000027B (Windows App SDK bootstrap failure).
 		//
-		// WHY WE USE MauiUnpackagedBuild INSTEAD OF OTHER CONDITIONS:
+		// HOW IT WORKS:
+		// 1. MauiUnpackagedBuild=true is set here (only for unpackaged builds)
+		// 2. Directory.Build.props reads MauiUnpackagedBuild and sets WindowsAppSDKSelfContained=true
+		// 3. WindowsAppSDKSelfContained MUST be set in Directory.Build.props (not csproj) because
+		//    the Windows App SDK NuGet package reads this property in its .props file, which is
+		//    imported BEFORE the csproj body is evaluated
 		//
-		// 1. Cannot pass WindowsAppSDKSelfContained via MSBuild command line:
-		//    Command-line properties propagate to ALL projects in the build graph (including
-		//    library dependencies like Graphics.csproj), causing "WindowsAppSDKSelfContained
-		//    requires a supported Windows architecture" errors on non-app projects.
-		//
-		// 2. Cannot use WindowsPackageType=None condition in csproj:
-		//    Although we pass WindowsPackageType=None here, there's an MSBuild evaluation timing
-		//    issue where the property isn't available when the csproj condition is evaluated.
-		//
-		// 3. Cannot rely on MAUI SDK automatic defaults (Microsoft.Maui.Sdk.Windows.targets):
-		//    The SDK sets WindowsAppSDKSelfContained=true when WindowsPackageType=None AND
-		//    OutputType=WinExe. However, device test projects have OutputType=Exe which gets
-		//    converted to WinExe by Before.targets AFTER the SDK targets evaluate, so the
-		//    condition never matches.
-		//
-		// SOLUTION: Use a custom property MauiUnpackagedBuild that we control, which the csproj
-		// can reliably condition on. This property is ONLY set for unpackaged builds, ensuring
-		// WindowsAppSDKSelfContained=true only applies to unpackaged builds (not packaged MSIX).
+		// PREVIOUS FAILED APPROACHES:
+		// - Setting WindowsAppSDKSelfContained in csproj: Too late - SDK props already evaluated
+		// - Passing WindowsAppSDKSelfContained via command line: Propagates to ALL projects
+		// - Using WindowsPackageType=None condition: MSBuild evaluation timing issues
 		//
 		s.MSBuildSettings.Properties.Add("SelfContained", new List<string> { "True" });
 		s.MSBuildSettings.Properties.Add("WindowsPackageType", new List<string> { "None" });
@@ -209,7 +199,7 @@ Task("buildOnly")
 		Information("=== UNPACKAGED BUILD PROPERTIES ===");
 		Information("  SelfContained=True");
 		Information("  WindowsPackageType=None");
-		Information("  MauiUnpackagedBuild=true (triggers WindowsAppSDKSelfContained in csproj)");
+		Information("  MauiUnpackagedBuild=true (triggers WindowsAppSDKSelfContained in Directory.Build.props)");
 	}
 
 	// Set correct launchSettings.json setting for packaged/unpackaged

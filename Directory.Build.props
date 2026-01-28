@@ -162,6 +162,18 @@
   <!-- Windows specific settings -->
   <PropertyGroup Condition="'$(_MauiTargetPlatformIsWindows)' == 'True'">
     <WindowsSdkPackageVersion>10.0.19041.44</WindowsSdkPackageVersion>
+    <!--
+      WindowsAppSDKSelfContained bundles the Windows App SDK native DLLs with the app.
+      This is REQUIRED for unpackaged builds on Helix (exit code 0xC000027B without it).
+      
+      CRITICAL: This property MUST be set in Directory.Build.props, NOT in csproj.
+      The Windows App SDK NuGet package reads this property in its .props file, which is
+      imported BEFORE the csproj body is evaluated. If set in csproj, it's too late -
+      the Windows App SDK will have already decided not to include native DLLs.
+      
+      MauiUnpackagedBuild is set by Cake only for unpackaged device test builds.
+    -->
+    <WindowsAppSDKSelfContained Condition="'$(MauiUnpackagedBuild)' == 'true'">true</WindowsAppSDKSelfContained>
   </PropertyGroup>
 
   <!-- version number information -->

@@ -15,9 +15,7 @@
     <RuntimeIdentifiers Condition="$(TargetFramework.Contains('-android'))">android-arm64;android-x64</RuntimeIdentifiers>
     <IsTestProject>true</IsTestProject>
     <ExcludeMicrosoftNetTestSdk>true</ExcludeMicrosoftNetTestSdk>
-    <!-- Bundle Windows App SDK for unpackaged Helix builds to avoid 0xC000027B bootstrap failures.
-         MauiUnpackagedBuild is set by Cake only for unpackaged builds. See Controls.DeviceTests.csproj for full explanation. -->
-    <WindowsAppSDKSelfContained Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows' and '$(MauiUnpackagedBuild)' == 'true'">true</WindowsAppSDKSelfContained>
+    <!-- WindowsAppSDKSelfContained is now set in Directory.Build.props for proper MSBuild evaluation timing -->
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(CI)' == 'true' or '$(TF_BUILD)' == 'true' ">
