@@ -460,5 +460,101 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			rd0.Add("foo", "Foo");
 			Assert.Equal("Foo", label.Text);
 		}
+
+		[Fact]
+		public void AddFactorySharedInvokesOnce()
+		{
+			var rd = new ResourceDictionary();
+			int invokeCount = 0;
+			rd.AddFactory("test", () => { invokeCount++; return "value"; }, shared: true);
+
+			Assert.Equal(0, invokeCount); // not invoked until accessed
+
+			var value1 = rd["test"];
+			Assert.Equal(1, invokeCount);
+			Assert.Equal("value", value1);
+
+			var value2 = rd["test"];
+			Assert.Equal(1, invokeCount); // still 1, cached
+			Assert.Equal("value", value2);
+		}
+
+		[Fact]
+		public void AddFactoryNotSharedInvokesEveryTime()
+		{
+			var rd = new ResourceDictionary();
+			int invokeCount = 0;
+			rd.AddFactory("test", () => { invokeCount++; return $"value{invokeCount}"; }, shared: false);
+
+			var value1 = rd["test"];
+			Assert.Equal(1, invokeCount);
+			Assert.Equal("value1", value1);
+
+			var value2 = rd["test"];
+			Assert.Equal(2, invokeCount);
+			Assert.Equal("value2", value2);
+		}
+
+		[Fact]
+		public void AddFactoryTryGetValueResolvesLazy()
+		{
+			var rd = new ResourceDictionary();
+			int invokeCount = 0;
+			rd.AddFactory("test", () => { invokeCount++; return "resolved"; }, shared: true);
+
+			Assert.True(rd.TryGetValue("test", out var value));
+			Assert.Equal("resolved", value);
+			Assert.Equal(1, invokeCount);
+		}
+
+		[Fact]
+		public void AddFactoryValuesIteratorResolvesLazy()
+		{
+			var rd = new ResourceDictionary();
+			int invokeCount = 0;
+			rd.AddFactory("test", () => { invokeCount++; return "resolved"; }, shared: true);
+
+			var values = rd.Values.ToList();
+			Assert.Single(values);
+			Assert.Equal("resolved", values[0]);
+			Assert.Equal(1, invokeCount);
+		}
+
+		[Fact]
+		public void AddFactoryEnumeratorResolvesLazy()
+		{
+			var rd = new ResourceDictionary();
+			int invokeCount = 0;
+			rd.AddFactory("test", () => { invokeCount++; return "resolved"; }, shared: true);
+
+			var pairs = rd.ToList();
+			Assert.Single(pairs);
+			Assert.Equal("test", pairs[0].Key);
+			Assert.Equal("resolved", pairs[0].Value);
+			Assert.Equal(1, invokeCount);
+		}
+
+		[Fact]
+		public void AddFactoryKeysDoesNotInvokeFactory()
+		{
+			var rd = new ResourceDictionary();
+			int invokeCount = 0;
+			rd.AddFactory("test", () => { invokeCount++; return "value"; }, shared: true);
+
+			var keys = rd.Keys.ToList();
+			Assert.Single(keys);
+			Assert.Equal("test", keys[0]);
+			Assert.Equal(0, invokeCount); // factory NOT invoked
+		}
+
+		[Fact]
+		public void AddFactoryStyleImplicit()
+		{
+			var rd = new ResourceDictionary();
+			rd.AddFactory(() => new Style(typeof(Label)) { Setters = { new Setter { Property = Label.TextProperty, Value = "styled" } } });
+
+			Assert.True(rd.TryGetValue(typeof(Label).FullName, out var value));
+			Assert.IsType<Style>(value);
+		}
 	}
 }

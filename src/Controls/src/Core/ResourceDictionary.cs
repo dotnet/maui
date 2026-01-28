@@ -15,6 +15,35 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <summary>Internal wrapper for lazy resource factories.</summary>
+	internal sealed class LazyResource
+	{
+		readonly Func<object> _factory;
+		readonly bool _shared;
+		object _cachedValue;
+		bool _isResolved;
+
+		public LazyResource(Func<object> factory, bool shared)
+		{
+			_factory = factory ?? throw new ArgumentNullException(nameof(factory));
+			_shared = shared;
+		}
+
+		public object GetValue()
+		{
+			if (_shared)
+			{
+				if (!_isResolved)
+				{
+					_cachedValue = _factory();
+					_isResolved = true;
+				}
+				return _cachedValue;
+			}
+			return _factory();
+		}
+	}
+
 	/// <summary>A dictionary that maps identifier strings to arbitrary resource objects.</summary>
 	public class ResourceDictionary : IResourceDictionary, IDictionary<string, object>
 	{
@@ -200,7 +229,11 @@ namespace Microsoft.Maui.Controls
 
 		void ICollection<KeyValuePair<string, object>>.CopyTo(KeyValuePair<string, object>[] array, int arrayIndex)
 		{
-			((ICollection<KeyValuePair<string, object>>)_innerDictionary).CopyTo(array, arrayIndex);
+			int i = arrayIndex;
+			foreach (var kvp in _innerDictionary)
+			{
+				array[i++] = new KeyValuePair<string, object>(kvp.Key, ResolveIfLazy(kvp.Value));
+			}
 		}
 
 		/// <summary>Gets the number of entries in the dictionary.</summary>
@@ -246,8 +279,8 @@ namespace Microsoft.Maui.Controls
 		{
 			get
 			{
-				if (_innerDictionary.ContainsKey(index))
-					return _innerDictionary[index];
+				if (_innerDictionary.TryGetValue(index, out var rawValue))
+					return ResolveIfLazy(rawValue);
 				if (_mergedInstance != null && _mergedInstance.ContainsKey(index))
 					return _mergedInstance[index];
 				if (_mergedDictionaries != null)
@@ -297,11 +330,13 @@ namespace Microsoft.Maui.Controls
 		{
 			get
 			{
+				if (_mergedInstance is null && _innerDictionary.Count == 0)
+					return Array.Empty<object>();
 				if (_mergedInstance is null)
-					return _innerDictionary.Values;
+					return new ReadOnlyCollection<object>(_innerDictionary.Values.Select(ResolveIfLazy).ToList());
 				if (_innerDictionary.Count == 0)
 					return _mergedInstance.Values;
-				return new ReadOnlyCollection<object>(_innerDictionary.Values.Concat(_mergedInstance.Values).ToList());
+				return new ReadOnlyCollection<object>(_innerDictionary.Values.Select(ResolveIfLazy).Concat(_mergedInstance.Values).ToList());
 			}
 		}
 
@@ -314,7 +349,8 @@ namespace Microsoft.Maui.Controls
 		/// <returns>An enumerator for the dictionary.</returns>
 		public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
 		{
-			return _innerDictionary.GetEnumerator();
+			foreach (var kvp in _innerDictionary)
+				yield return new KeyValuePair<string, object>(kvp.Key, ResolveIfLazy(kvp.Value));
 		}
 
 		internal IEnumerable<KeyValuePair<string, object>> MergedResources
@@ -334,8 +370,8 @@ namespace Microsoft.Maui.Controls
 				if (_mergedInstance != null)
 					foreach (var r in _mergedInstance.MergedResources)
 						yield return r;
-				foreach (var r in _innerDictionary)
-					yield return r;
+				foreach (var kvp in _innerDictionary)
+					yield return new KeyValuePair<string, object>(kvp.Key, ResolveIfLazy(kvp.Value));
 			}
 		}
 
@@ -349,10 +385,20 @@ namespace Microsoft.Maui.Controls
 		internal bool TryGetValueAndSource(string key, out object value, out ResourceDictionary source)
 		{
 			source = this;
-			return _innerDictionary.TryGetValue(key, out value)
-				|| (_mergedInstance != null && _mergedInstance.TryGetValueAndSource(key, out value, out source))
-				|| (_mergedDictionaries != null && TryGetMergedDictionaryValue(key, out value, out source));
+			if (_innerDictionary.TryGetValue(key, out value))
+			{
+				value = ResolveIfLazy(value);
+				return true;
+			}
+			if (_mergedInstance != null && _mergedInstance.TryGetValueAndSource(key, out value, out source))
+				return true;
+			if (_mergedDictionaries != null && TryGetMergedDictionaryValue(key, out value, out source))
+				return true;
+			return false;
 		}
+
+		static object ResolveIfLazy(object value)
+			=> value is LazyResource lazy ? lazy.GetValue() : value;
 
 		bool TryGetMergedDictionaryValue(string key, out object value, out ResourceDictionary source)
 		{
@@ -400,6 +446,60 @@ namespace Microsoft.Maui.Controls
 		public void Add(ResourceDictionary mergedResourceDictionary)
 		{
 			MergedDictionaries.Add(mergedResourceDictionary);
+		}
+
+		/// <summary>For internal use by the MAUI platform. Adds a lazy resource factory.</summary>
+		/// <param name="key">The identifier for the resource.</param>
+		/// <param name="factory">A factory function that creates the resource on demand.</param>
+		/// <param name="shared">If true (default), the factory is invoked once and cached. If false, a new instance is created on each access.</param>
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void AddFactory(string key, Func<object> factory, bool shared = true)
+		{
+			if (ContainsKey(key))
+				throw new ArgumentException($"A resource with the key '{key}' is already present in the ResourceDictionary.");
+			_innerDictionary.Add(key, new LazyResource(factory, shared));
+			// Don't fire OnValueChanged - the value hasn't been resolved yet
+		}
+
+		/// <summary>For internal use by the MAUI platform. Adds a lazy implicit style factory.</summary>
+		/// <param name="factory">A factory function that creates the style on demand.</param>
+		/// <param name="shared">If true (default), the factory is invoked once and cached. If false, a new instance is created on each access.</param>
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void AddFactory(Func<Style> factory, bool shared = true)
+		{
+			// We need to invoke the factory to get the style's key (TargetType or Class)
+			// For implicit styles, we must know the key upfront, so we invoke immediately
+			var style = factory();
+			if (string.IsNullOrEmpty(style.Class))
+			{
+				var key = style.TargetType.FullName;
+				if (shared)
+				{
+					// Already resolved, just store the value
+					if (ContainsKey(key))
+						throw new ArgumentException($"A resource with the key '{key}' is already present in the ResourceDictionary.");
+					_innerDictionary.Add(key, style);
+					OnValueChanged(key, style);
+				}
+				else
+				{
+					// Not shared - store factory for future invocations
+					if (ContainsKey(key))
+						throw new ArgumentException($"A resource with the key '{key}' is already present in the ResourceDictionary.");
+					_innerDictionary.Add(key, new LazyResource(() => factory(), shared: false));
+				}
+			}
+			else
+			{
+				// Class styles - same logic as Add(Style)
+				var classKey = Style.StyleClassPrefix + style.Class;
+				IList<Style> classes;
+				object outclasses;
+				if (!TryGetValue(classKey, out outclasses) || (classes = outclasses as IList<Style>) == null)
+					classes = new List<Style>();
+				classes.Add(style);
+				this[classKey] = classes;
+			}
 		}
 
 		/// <summary>Adds a style sheet to the dictionary.</summary>

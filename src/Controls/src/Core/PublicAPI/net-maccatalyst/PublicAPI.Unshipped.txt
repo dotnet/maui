@@ -1,3 +1,5 @@
 #nullable enable
 ~override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.ViewWillTransitionToSize(CoreGraphics.CGSize toSize, UIKit.IUIViewControllerTransitionCoordinator coordinator) -> void
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewController.LoadView() -> void
+~Microsoft.Maui.Controls.ResourceDictionary.AddFactory(string key, System.Func<object> factory, bool shared = true) -> void
+~Microsoft.Maui.Controls.ResourceDictionary.AddFactory(System.Func<Microsoft.Maui.Controls.Style> factory, bool shared = true) -> void

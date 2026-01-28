@@ -1,1 +1,3 @@
 #nullable enable
+~Microsoft.Maui.Controls.ResourceDictionary.AddFactory(string key, System.Func<object> factory, bool shared = true) -> void
+~Microsoft.Maui.Controls.ResourceDictionary.AddFactory(System.Func<Microsoft.Maui.Controls.Style> factory, bool shared = true) -> void
