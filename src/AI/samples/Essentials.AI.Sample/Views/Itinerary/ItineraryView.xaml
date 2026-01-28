@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:models="clr-namespace:Maui.Controls.Sample.Models"
+    xmlns:viewModels="clr-namespace:Maui.Controls.Sample.ViewModels"
+    xmlns:views="clr-namespace:Maui.Controls.Sample.Views.Itinerary"
+    x:Class="Maui.Controls.Sample.Views.Itinerary.ItineraryView"
+    x:DataType="viewModels:TripPlanningViewModel">
+
+    <VerticalStackLayout Padding="20" Spacing="20">
+        <VerticalStackLayout Spacing="10">
+            <Label Text="{Binding Itinerary.Title}" FontSize="32" FontAttributes="Bold" />
+            <Label Text="{Binding Itinerary.Description}" FontSize="16"
+                   TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray400}}" />
+        </VerticalStackLayout>
+        
+        <Border Padding="15" StrokeShape="RoundRectangle 12" StrokeThickness="0"
+                BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray900}}">
+            <Grid ColumnSpacing="10" ColumnDefinitions="Auto, *">
+                <Label Text="✨" FontSize="20" VerticalOptions="Start" />
+                <Label
+                    Text="{Binding Itinerary.Rationale}" FontSize="14" LineBreakMode="WordWrap" Grid.Column="1"
+                    TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray400}}" />
+            </Grid>
+        </Border>
+        
+        <VerticalStackLayout BindableLayout.ItemsSource="{Binding Itinerary.Days}" Spacing="20">
+            <BindableLayout.ItemTemplate>
+                <DataTemplate x:DataType="viewModels:DayPlanViewModel">
+                    <views:DayView />
+                </DataTemplate>
+            </BindableLayout.ItemTemplate>
+        </VerticalStackLayout>
+    </VerticalStackLayout>
+
+</ContentView>
