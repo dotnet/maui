@@ -98,14 +98,34 @@ if (-not $PRNumber) {
         $PRNumber = $matches[1]
         Write-Host "✅ Auto-detected PR #$PRNumber from branch name" -ForegroundColor Green
     } else {
-        # Try gh cli
+        $foundPR = $false
+        # Try gh cli - first try 'gh pr view' for current branch
         try {
             $prInfo = gh pr view --json number 2>$null | ConvertFrom-Json
-            if ($prInfo.number) {
+            if ($prInfo -and $prInfo.number) {
                 $PRNumber = $prInfo.number
-                Write-Host "✅ Auto-detected PR #$PRNumber from gh cli" -ForegroundColor Green
+                $foundPR = $true
+                Write-Host "✅ Auto-detected PR #$PRNumber from gh cli (pr view)" -ForegroundColor Green
             }
         } catch {
+            # gh pr view failed, will try fallback
+        }
+        
+        # Fallback: search for PRs with this branch as head (works across forks)
+        if (-not $foundPR) {
+            try {
+                $prList = gh pr list --head $currentBranch --json number --limit 1 2>$null | ConvertFrom-Json
+                if ($prList -and $prList.Count -gt 0 -and $prList[0].number) {
+                    $PRNumber = $prList[0].number
+                    $foundPR = $true
+                    Write-Host "✅ Auto-detected PR #$PRNumber from gh cli (pr list --head)" -ForegroundColor Green
+                }
+            } catch {
+                # gh pr list also failed
+            }
+        }
+        
+        if (-not $foundPR) {
             Write-Host "⚠️  Could not auto-detect PR number - using 'unknown' folder" -ForegroundColor Yellow
             $PRNumber = "unknown"
         }
@@ -150,21 +170,21 @@ function Update-VerificationLabels {
     Write-Host ""
     Write-Host "🏷️  Updating verification labels on PR #$PR..." -ForegroundColor Cyan
     
-    # Remove the opposite label if it exists
+    # Remove the opposite label if it exists (using REST API to avoid GraphQL deprecation issues)
     $existingLabels = gh pr view $PR --json labels --jq '.labels[].name' 2>$null
     if ($existingLabels -contains $labelToRemove) {
         Write-Host "   Removing: $labelToRemove" -ForegroundColor Yellow
-        gh pr edit $PR --remove-label $labelToRemove 2>$null
+        gh api "repos/dotnet/maui/issues/$PR/labels/$labelToRemove" --method DELETE 2>$null | Out-Null
     }
     
-    # Add the appropriate label
+    # Add the appropriate label (using REST API to avoid GraphQL deprecation issues)
     Write-Host "   Adding: $labelToAdd" -ForegroundColor Green
-    gh pr edit $PR --add-label $labelToAdd 2>$null
+    $result = gh api "repos/dotnet/maui/issues/$PR/labels" --method POST -f "labels[]=$labelToAdd" 2>&1
     
     if ($LASTEXITCODE -eq 0) {
         Write-Host "✅ Labels updated successfully" -ForegroundColor Green
     } else {
-        Write-Host "⚠️  Failed to update labels (may not have permission)" -ForegroundColor Yellow
+        Write-Host "⚠️  Failed to update labels: $result" -ForegroundColor Yellow
     }
 }
 
@@ -756,9 +776,10 @@ Write-Log "=========================================="
 
 foreach ($file in $RevertableFiles) {
     Write-Log "  Reverting: $file"
-    git checkout $MergeBase -- $file 2>&1 | Out-Null
+    $gitOutput = git checkout $MergeBase -- $file 2>&1
     if ($LASTEXITCODE -ne 0) {
         Write-Log "  ERROR: Failed to revert $file from $MergeBase"
+        Write-Log "  Git output: $gitOutput"
         exit 1
     }
 }
@@ -785,9 +806,10 @@ Write-Log "=========================================="
 
 foreach ($file in $RevertableFiles) {
     Write-Log "  Restoring: $file"
-    git checkout HEAD -- $file 2>&1 | Out-Null
+    $gitOutput = git checkout HEAD -- $file 2>&1
     if ($LASTEXITCODE -ne 0) {
         Write-Log "  ERROR: Failed to restore $file from HEAD"
+        Write-Log "  Git output: $gitOutput"
         exit 1
     }
 }
