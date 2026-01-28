@@ -94,56 +94,47 @@ steps:
       sw_vers -productVersion
       echo
       echo Installed Xcode versions:
-      ls -la /Applications | grep 'Xcode'
+      XCODE_LIST=($(ls -1 /Applications | grep '^Xcode_' | sed 's/^Xcode_//;s/.app$//'))
+      for v in "${XCODE_LIST[@]}"; do echo "  $v"; done
       echo
       echo currently selected xcode:
       xcrun xcode-select --print-path
       echo
-      echo selecting latest xcode...
-      # XCODE variable is in major.minor format (e.g., 26.1)
-      XCODE_MAJOR_MINOR=$(XCODE)
-      echo "XCODE variable (major.minor): ${XCODE_MAJOR_MINOR}"
+      echo selecting best available xcode...
+      XCODE_REQUESTED=$(XCODE)
+      echo "Requested Xcode: ${XCODE_REQUESTED}"
 
-      # Parse major and minor versions
-      MAJOR=$(echo "$XCODE_MAJOR_MINOR" | cut -d'.' -f1)
-      MINOR=$(echo "$XCODE_MAJOR_MINOR" | cut -d'.' -f2)
-      PREV_MINOR=$((MINOR - 1))
-
-
-      # Build list of versions to try: major.minor.1, major.minor.0, major.(minor-1).1, major.(minor-1).0
-      VERSIONS_TO_TRY=(
-        "${MAJOR}.${MINOR}.1"
-        "${MAJOR}.${MINOR}.0"
-        "${MAJOR}.${PREV_MINOR}.1"
-        "${MAJOR}.${PREV_MINOR}.0"
-      )
-
-      echo "Will try Xcode versions in order: ${VERSIONS_TO_TRY[*]}"
-
-      XCODE_VERSION=""
-      XCODE_PATH=""
-
-      for VERSION in "${VERSIONS_TO_TRY[@]}"; do
-        CANDIDATE_PATH="/Applications/Xcode_${VERSION}.app"
-        echo "Checking for Xcode ${VERSION} at ${CANDIDATE_PATH}..."
-        if [[ -d "$CANDIDATE_PATH" ]]; then
-          echo "Found Xcode version ${VERSION} at ${CANDIDATE_PATH}"
-          XCODE_VERSION="$VERSION"
-          XCODE_PATH="$CANDIDATE_PATH"
+      # Try exact match first
+      for v in "${XCODE_LIST[@]}"; do
+        if [[ "$v" == "$XCODE_REQUESTED" ]]; then
+          XCODE_VERSION="$v"
+          XCODE_PATH="/Applications/Xcode_${v}.app"
           break
-        else
-          echo "Xcode version ${VERSION} not found"
         fi
       done
 
-      # If no patch version found, fallback to non-symlinked Xcode_major.minor.app (e.g., Xcode_26.0.app)
+      # If not found, try major.minor match (e.g., want 26.0.1, fallback to 26.0)
       if [[ -z "$XCODE_PATH" ]]; then
-        GENERIC_PATH="/Applications/Xcode_${MAJOR}.${MINOR}.app"
-        if [[ -d "$GENERIC_PATH" && ! -L "$GENERIC_PATH" ]]; then
-          echo "Fallback: Found non-symlinked Xcode at ${GENERIC_PATH}"
-          XCODE_VERSION="${MAJOR}.${MINOR}"
-          XCODE_PATH="$GENERIC_PATH"
-        fi
+        REQ_MAJOR_MINOR=$(echo "$XCODE_REQUESTED" | awk -F. '{print $1 "." $2}')
+        for v in "${XCODE_LIST[@]}"; do
+          if [[ "$v" == "$REQ_MAJOR_MINOR" ]]; then
+            XCODE_VERSION="$v"
+            XCODE_PATH="/Applications/Xcode_${v}.app"
+            break
+          fi
+        done
+      fi
+
+      # If still not found, try just major match (e.g., want 26.0.1, fallback to 26)
+      if [[ -z "$XCODE_PATH" ]]; then
+        REQ_MAJOR=$(echo "$XCODE_REQUESTED" | awk -F. '{print $1}')
+        for v in "${XCODE_LIST[@]}"; do
+          if [[ "$v" == "$REQ_MAJOR" ]]; then
+            XCODE_VERSION="$v"
+            XCODE_PATH="/Applications/Xcode_${v}.app"
+            break
+          fi
+        done
       fi
 
       if [[ -z "$XCODE_PATH" ]]; then
