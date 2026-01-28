@@ -1,11 +1,11 @@
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/FlyoutDisplayOptions.xml" path="Type[@FullName='Microsoft.Maui.Controls.FlyoutDisplayOptions']/Docs/*" />
+	/// <summary>Specifies how items are displayed in the flyout.</summary>
 	public enum FlyoutDisplayOptions
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlyoutDisplayOptions.xml" path="//Member[@MemberName='AsSingleItem']/Docs/*" />
+		/// <summary>The item appears as a single entry in the flyout.</summary>
 		AsSingleItem,
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlyoutDisplayOptions.xml" path="//Member[@MemberName='AsMultipleItems']/Docs/*" />
+		/// <summary>The item's children appear as separate entries in the flyout.</summary>
 		AsMultipleItems,
 	}
 }

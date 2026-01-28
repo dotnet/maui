@@ -11,7 +11,7 @@
     4. Captures all device logs and test output
 
 .PARAMETER Platform
-    Target platform: "android", "ios", or "catalyst" (MacCatalyst)
+    Target platform: "android", "ios", "catalyst" (MacCatalyst), or "windows"
 
 .PARAMETER TestFilter
     Test filter to pass to dotnet test (e.g., "FullyQualifiedName~Issue12345")
@@ -42,12 +42,15 @@
     
 .EXAMPLE
     ./BuildAndRunHostApp.ps1 -Platform catalyst -TestFilter "Issue12345"
+    
+.EXAMPLE
+    ./BuildAndRunHostApp.ps1 -Platform windows -TestFilter "Issue12345"
 #>
 
 [CmdletBinding(DefaultParameterSetName = "TestFilter")]
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet("android", "ios", "catalyst", "maccatalyst")]
+    [ValidateSet("android", "ios", "catalyst", "maccatalyst", "windows")]
     [string]$Platform,
 
     [Parameter(Mandatory = $true, ParameterSetName = "TestFilter")]
@@ -132,10 +135,13 @@ if ($Platform -eq "android") {
 } elseif ($Platform -eq "catalyst") {
     $TargetFramework = "net10.0-maccatalyst"
     $AppBundleId = "com.microsoft.maui.uitests"
+} elseif ($Platform -eq "windows") {
+    $TargetFramework = "net10.0-windows10.0.19041.0"
+    $AppPackage = "com.microsoft.maui.uitests"
 }
 
-# Start emulator/simulator (skip for catalyst - runs on desktop)
-if ($Platform -ne "catalyst") {
+# Start emulator/simulator (skip for catalyst and windows - runs on desktop)
+if ($Platform -ne "catalyst" -and $Platform -ne "windows") {
     # Use shared Start-Emulator script to detect and start device
     $startEmulatorParams = @{
         Platform = $Platform
@@ -151,6 +157,10 @@ if ($Platform -ne "catalyst") {
         Write-Error "Failed to start or detect device"
         exit 1
     }
+} elseif ($Platform -eq "windows") {
+    # Windows runs directly on the host - use "host" as placeholder
+    $DeviceUdid = "host"
+    Write-Success "Windows will run on host (no device needed)"
 } else {
     # MacCatalyst runs directly on the Mac - use "host" as placeholder
     $DeviceUdid = "host"
@@ -194,6 +204,8 @@ if ($Platform -eq "android") {
     $TestProject = Join-Path $RepoRoot "src/Controls/tests/TestCases.iOS.Tests/Controls.TestCases.iOS.Tests.csproj"
 } elseif ($Platform -eq "catalyst") {
     $TestProject = Join-Path $RepoRoot "src/Controls/tests/TestCases.Mac.Tests/Controls.TestCases.Mac.Tests.csproj"
+} elseif ($Platform -eq "windows") {
+    $TestProject = Join-Path $RepoRoot "src/Controls/tests/TestCases.WinUI.Tests/Controls.TestCases.WinUI.Tests.csproj"
 }
 
 if (-not (Test-Path $TestProject)) {
@@ -260,6 +272,10 @@ if ($Platform -eq "catalyst") {
 
 Write-Info "Executing: dotnet test --filter `"$effectiveFilter`""
 Write-Host ""
+
+# Set environment variables for the test
+$env:DEVICE_UDID = $DeviceUdid
+Write-Info "Set DEVICE_UDID environment variable: $DeviceUdid"
 
 try {
     # Run dotnet test and capture output
@@ -338,6 +354,18 @@ if ($Platform -eq "android") {
     }
     
     Write-Info "MacCatalyst logs saved to: $deviceLogFile"
+} elseif ($Platform -eq "windows") {
+    # Windows logs - use Event Log or console output
+    # For now, collect from test output since WinAppDriver doesn't provide separate device logs
+    Write-Info "Windows platform - logs captured from test output"
+    
+    if ((Test-Path $deviceLogFile) -and ((Get-Item $deviceLogFile).Length -gt 0)) {
+        Write-Success "Windows logs written to: $deviceLogFile"
+    } else {
+        # Create a minimal log file indicating Windows was tested
+        "Windows UI Test run at $(Get-Date)" | Out-File $deviceLogFile
+        Write-Info "Windows device log created: $deviceLogFile"
+    }
 }
 
 #endregion

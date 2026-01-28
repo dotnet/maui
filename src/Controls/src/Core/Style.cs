@@ -7,7 +7,9 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/Style.xml" path="Type[@FullName='Microsoft.Maui.Controls.Style']/Docs/*" />
+	/// <summary>
+	/// Groups property setters that can be shared between multiple visual elements.
+	/// </summary>
 	[ContentProperty(nameof(Setters))]
 	public sealed class Style : IStyle
 	{
@@ -26,17 +28,24 @@ namespace Microsoft.Maui.Controls
 
 		IList<TriggerBase> _triggers;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Style.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Style"/> class.
+		/// </summary>
+		/// <param name="targetType">The type to which the style applies.</param>
 		public Style([System.ComponentModel.TypeConverter(typeof(TypeTypeConverter))][Parameter("TargetType")] Type targetType)
 		{
 			TargetType = targetType ?? throw new ArgumentNullException(nameof(targetType));
 			Setters = new List<Setter>();
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Style.xml" path="//Member[@MemberName='ApplyToDerivedTypes']/Docs/*" />
+		/// <summary>
+		/// Gets or sets whether the style can be applied to types derived from <see cref="TargetType"/>.
+		/// </summary>
 		public bool ApplyToDerivedTypes { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Style.xml" path="//Member[@MemberName='BasedOn']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the style from which this style inherits.
+		/// </summary>
 		public Style BasedOn
 		{
 			get { return _basedOnStyle; }
@@ -54,7 +63,9 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Style.xml" path="//Member[@MemberName='BaseResourceKey']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the resource key for the base style.
+		/// </summary>
 		public string BaseResourceKey
 		{
 			get { return _baseResourceKey; }
@@ -75,19 +86,29 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Style.xml" path="//Member[@MemberName='Behaviors']/Docs/*" />
+		/// <summary>
+		/// Gets the collection of <see cref="Behavior"/> objects attached to this style.
+		/// </summary>
 		public IList<Behavior> Behaviors => _behaviors ??= new AttachedCollection<Behavior>();
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Style.xml" path="//Member[@MemberName='CanCascade']/Docs/*" />
+		/// <summary>
+		/// Gets or sets whether this style can cascade to nested elements.
+		/// </summary>
 		public bool CanCascade { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Style.xml" path="//Member[@MemberName='Class']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the class name for the style.
+		/// </summary>
 		public string Class { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Style.xml" path="//Member[@MemberName='Setters']/Docs/*" />
+		/// <summary>
+		/// Gets the collection of <see cref="Setter"/> objects that define the property values for this style.
+		/// </summary>
 		public IList<Setter> Setters { get; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Style.xml" path="//Member[@MemberName='Triggers']/Docs/*" />
+		/// <summary>
+		/// Gets the collection of <see cref="TriggerBase"/> objects attached to this style.
+		/// </summary>
 		public IList<TriggerBase> Triggers => _triggers ??= new AttachedCollection<TriggerBase>();
 
 		void IStyle.Apply(BindableObject bindable, SetterSpecificity specificity)
@@ -107,7 +128,9 @@ namespace Microsoft.Maui.Controls
 			ApplyCore(bindable, BasedOn ?? GetBasedOnResource(bindable), specificity);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Style.xml" path="//Member[@MemberName='TargetType']/Docs/*" />
+		/// <summary>
+		/// Gets the type to which this style applies.
+		/// </summary>
 		public Type TargetType { get; }
 
 		void IStyle.UnApply(BindableObject bindable)

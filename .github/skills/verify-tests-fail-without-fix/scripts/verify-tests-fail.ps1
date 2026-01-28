@@ -20,7 +20,7 @@
     Fix files and test filters are auto-detected from the git diff (non-test files that changed).
 
 .PARAMETER Platform
-    Target platform: "android" or "ios"
+    Target platform: "android", "ios", "catalyst" (MacCatalyst), or "windows"
 
 .PARAMETER TestFilter
     Test filter to pass to dotnet test (e.g., "FullyQualifiedName~Issue12345").
@@ -61,7 +61,7 @@
 
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet("android", "ios")]
+    [ValidateSet("android", "ios", "catalyst", "maccatalyst", "windows")]
     [string]$Platform,
 
     [Parameter(Mandatory = $false)]
@@ -74,7 +74,7 @@ param(
     [string]$BaseBranch,
 
     [Parameter(Mandatory = $false)]
-    [string]$OutputDir = "CustomAgentLogsTmp/TestValidation",
+    [string]$PRNumber,
 
     [Parameter(Mandatory = $false)]
     [switch]$RequireFullVerification
@@ -83,129 +83,46 @@ param(
 $ErrorActionPreference = "Stop"
 $RepoRoot = git rev-parse --show-toplevel
 
-# Test path patterns to exclude when auto-detecting fix files
-$TestPathPatterns = @(
-    "*/tests/*",
-    "*/test/*",
-    "*.Tests/*",
-    "*.UnitTests/*",
-    "*TestCases*",
-    "*snapshots*",
-    "*.png",
-    "*.jpg",
-    ".github/*",
-    "*.md",
-    "pr-*-review.md"
-)
-
-# Function to check if a file should be excluded from fix files
-function Test-IsTestFile {
-    param([string]$FilePath)
-
-    foreach ($pattern in $TestPathPatterns) {
-        if ($FilePath -like $pattern) {
-            return $true
-        }
-    }
-    return $false
+# Normalize platform name (accept both "catalyst" and "maccatalyst")
+if ($Platform -eq "maccatalyst") {
+    $Platform = "catalyst"
 }
 
 # ============================================================
-# Find the merge-base commit (where current branch diverged from base)
-# This is more robust than tracking branch names/refs
-# For fork workflows: fetches directly from the PR's target repo URL
-# so it works even if the fork's main branch is out of sync
+# Detect PR number if not provided
 # ============================================================
-function Find-MergeBase {
-    param([string]$ExplicitBaseBranch)
-
-    # 1. If explicit base branch provided, use it directly
-    if ($ExplicitBaseBranch) {
-        # Try with origin/ prefix first, then without
-        foreach ($ref in @("origin/$ExplicitBaseBranch", $ExplicitBaseBranch)) {
-            $mergeBase = git merge-base HEAD $ref 2>$null
-            if ($mergeBase) {
-                return @{ MergeBase = $mergeBase; BaseBranch = $ExplicitBaseBranch; Source = "explicit" }
+if (-not $PRNumber) {
+    # Try to get PR number from branch name (e.g., pr-27847)
+    $currentBranch = git branch --show-current 2>$null
+    if ($currentBranch -match "^pr-(\d+)") {
+        $PRNumber = $matches[1]
+        Write-Host "✅ Auto-detected PR #$PRNumber from branch name" -ForegroundColor Green
+    } else {
+        # Try gh cli
+        try {
+            $prInfo = gh pr view --json number 2>$null | ConvertFrom-Json
+            if ($prInfo.number) {
+                $PRNumber = $prInfo.number
+                Write-Host "✅ Auto-detected PR #$PRNumber from gh cli" -ForegroundColor Green
             }
+        } catch {
+            Write-Host "⚠️  Could not auto-detect PR number - using 'unknown' folder" -ForegroundColor Yellow
+            $PRNumber = "unknown"
         }
     }
-
-    # 2. Try to get PR metadata including the TARGET repository
-    #    This is critical for fork workflows where origin points to the fork,
-    #    not the upstream repo. We fetch directly from the target repo URL.
-    #    The PR URL contains the target repo: https://github.com/OWNER/REPO/pull/123
-    $prJson = gh pr view --json baseRefName,url 2>$null
-    if ($prJson) {
-        $prInfo = $prJson | ConvertFrom-Json
-        $prBaseBranch = $prInfo.baseRefName
-        $prUrl = $prInfo.url
-
-        # Parse owner/repo from PR URL: https://github.com/OWNER/REPO/pull/123
-        $targetOwner = $null
-        $targetRepo = $null
-        if ($prUrl -match "github\.com/([^/]+)/([^/]+)/pull/") {
-            $targetOwner = $matches[1]
-            $targetRepo = $matches[2]
-        }
-
-        if ($prBaseBranch -and $targetOwner -and $targetRepo) {
-            # Construct the target repo URL and fetch directly from it
-            # This works even if the developer hasn't set up an 'upstream' remote
-            # and even if their fork's main is completely out of sync
-            $targetUrl = "https://github.com/$targetOwner/$targetRepo.git"
-            Write-Host "ℹ️  PR targets $targetOwner/$targetRepo - fetching $prBaseBranch from upstream..." -ForegroundColor Cyan
-            git fetch $targetUrl $prBaseBranch 2>$null
-
-            if ($LASTEXITCODE -eq 0) {
-                # FETCH_HEAD now points to the target repo's base branch
-                $mergeBase = git merge-base HEAD FETCH_HEAD 2>$null
-                if ($mergeBase) {
-                    return @{ MergeBase = $mergeBase; BaseBranch = $prBaseBranch; Source = "pr-target-repo"; TargetRepo = "$targetOwner/$targetRepo" }
-                }
-            }
-        }
-
-        # Fallback: try fetching from origin (works if origin IS the target repo)
-        if ($prBaseBranch) {
-            git fetch origin $prBaseBranch 2>$null
-            foreach ($ref in @("origin/$prBaseBranch", $prBaseBranch)) {
-                $mergeBase = git merge-base HEAD $ref 2>$null
-                if ($mergeBase) {
-                    return @{ MergeBase = $mergeBase; BaseBranch = $prBaseBranch; Source = "pr-metadata" }
-                }
-            }
-        }
-    }
-
-    # 3. Fallback: Find closest merge-base among common base branch patterns
-    #    The "correct" base is the one with fewest commits between merge-base and HEAD
-    Write-Host "ℹ️  No PR detected, scanning remote branches for closest base..." -ForegroundColor Cyan
-
-    # Fetch all remote refs to ensure we have latest
-    git fetch origin 2>$null
-
-    # Get remote branches matching common base branch patterns
-    $remoteBranches = git branch -r --format='%(refname:short)' 2>$null | Where-Object {
-        $_ -match '^origin/(main|master|net\d+\.\d+|release/.*)$'
-    }
-
-    $bestMatch = $null
-    $shortestDistance = [int]::MaxValue
-
-    foreach ($branch in $remoteBranches) {
-        $mergeBase = git merge-base HEAD $branch 2>$null
-        if ($mergeBase) {
-            $distance = [int](git rev-list --count "$mergeBase..HEAD" 2>$null)
-            if ($distance -lt $shortestDistance) {
-                $shortestDistance = $distance
-                $branchName = $branch -replace '^origin/', ''
-                $bestMatch = @{ MergeBase = $mergeBase; BaseBranch = $branchName; Source = "closest-merge-base"; Distance = $distance }
-            }
-        }
-    }
-
-    return $bestMatch
 }
+
+# Set output directory based on PR number
+$OutputDir = "CustomAgentLogsTmp/PRState/$PRNumber/verify-tests-fail"
+Write-Host "📁 Output directory: $OutputDir" -ForegroundColor Cyan
+
+# ============================================================
+# Import shared baseline script for merge-base and file detection
+# ============================================================
+$BaselineScript = Join-Path $RepoRoot ".github/scripts/EstablishBrokenBaseline.ps1"
+
+# Import Test-IsTestFile and Find-MergeBase from shared script
+. $BaselineScript
 
 # ============================================================
 # Auto-detect test filter from changed files
@@ -547,6 +464,7 @@ New-Item -ItemType Directory -Force -Path $OutputPath | Out-Null
 $ValidationLog = Join-Path $OutputPath "verification-log.txt"
 $WithoutFixLog = Join-Path $OutputPath "test-without-fix.log"
 $WithFixLog = Join-Path $OutputPath "test-with-fix.log"
+$MarkdownReport = Join-Path $OutputPath "verification-report.md"
 
 function Write-Log {
     param([string]$Message)
@@ -554,6 +472,152 @@ function Write-Log {
     $logLine = "[$timestamp] $Message"
     Write-Host $logLine
     Add-Content -Path $ValidationLog -Value $logLine
+}
+
+function Write-MarkdownReport {
+    param(
+        [bool]$VerificationPassed,
+        [bool]$FailedWithoutFix,
+        [bool]$PassedWithFix,
+        [hashtable]$WithoutFixResult,
+        [hashtable]$WithFixResult
+    )
+    
+    $reportDate = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    $status = if ($VerificationPassed) { "✅ PASSED" } else { "❌ FAILED" }
+    $statusSymbol = if ($VerificationPassed) { "✅" } else { "❌" }
+    
+    $markdown = @"
+# Test Verification Report
+
+**Date:** $reportDate | **Platform:** $($Platform.ToUpper()) | **Status:** $status
+
+## Summary
+
+| Check | Expected | Actual | Result |
+|-------|----------|--------|--------|
+| Tests WITHOUT fix | FAIL | $(if ($FailedWithoutFix) { "FAIL" } else { "PASS" }) | $(if ($FailedWithoutFix) { "✅" } else { "❌" }) |
+| Tests WITH fix | PASS | $(if ($PassedWithFix) { "PASS" } else { "FAIL" }) | $(if ($PassedWithFix) { "✅" } else { "❌" }) |
+
+## $statusSymbol Final Verdict
+
+$(if ($VerificationPassed) {
+    @"
+**VERIFICATION PASSED** ✅
+
+The tests correctly detect the issue:
+- ✅ Tests **FAIL** without the fix (as expected - bug is present)
+- ✅ Tests **PASS** with the fix (as expected - bug is fixed)
+
+**Conclusion:** The tests properly validate the fix and catch the bug when it's present.
+"@
+} else {
+    @"
+**VERIFICATION FAILED** ❌
+
+$(if (-not $FailedWithoutFix) {
+    "❌ **Tests PASSED without fix** (should have failed)`n   - The tests don't actually detect the bug`n   - Tests may not be testing the right behavior`n"
+})$(if (-not $PassedWithFix) {
+    "❌ **Tests FAILED with fix** (should have passed)`n   - The fix doesn't resolve the issue`n   - Tests may be broken or testing something else`n"
+})
+**Possible causes:**
+1. Wrong fix files specified
+2. Tests don't actually test the fixed behavior  
+3. The issue was already fixed in base branch
+4. Build caching - try clean rebuild
+5. Test needs different setup or conditions
+"@
+})
+
+---
+
+## Configuration
+
+**Platform:** $Platform
+**Test Filter:** $TestFilter
+**Base Branch:** $BaseBranchName
+**Merge Base:** $(if ($MergeBase -and $MergeBase.Length -ge 8) { $MergeBase.Substring(0, 8) } else { $MergeBase })
+
+### Fix Files
+
+$(($RevertableFiles | ForEach-Object { "- ``$_``" }) -join "`n")
+
+$(if ($NewFiles.Count -gt 0) {
+@"
+
+### New Files (Not Reverted)
+
+$(($NewFiles | ForEach-Object { "- ``$_``" }) -join "`n")
+"@
+})
+
+---
+
+## Test Results Details
+
+### Test Run 1: WITHOUT Fix
+
+**Expected:** Tests should FAIL (bug is present)  
+**Actual:** Tests $(if ($FailedWithoutFix) { "FAILED" } else { "PASSED" }) $(if ($FailedWithoutFix) { "✅" } else { "❌" })
+
+**Test Summary:**
+- Total: $($WithoutFixResult.Total)
+- Passed: $($WithoutFixResult.Passed)
+- Failed: $($WithoutFixResult.Failed)
+- Skipped: $($WithoutFixResult.Skipped)
+
+$(if ($WithoutFixResult.FailureReason) {
+    "**Failure Reason:** ``$($WithoutFixResult.FailureReason)``"
+})
+
+<details>
+<summary>View full test output (without fix)</summary>
+
+``````
+$(Get-Content $WithoutFixLog -Raw)
+``````
+
+</details>
+
+---
+
+### Test Run 2: WITH Fix
+
+**Expected:** Tests should PASS (bug is fixed)  
+**Actual:** Tests $(if ($PassedWithFix) { "PASSED" } else { "FAILED" }) $(if ($PassedWithFix) { "✅" } else { "❌" })
+
+**Test Summary:**
+- Total: $($WithFixResult.Total)
+- Passed: $($WithFixResult.Passed)
+- Failed: $($WithFixResult.Failed)
+- Skipped: $($WithFixResult.Skipped)
+
+$(if ($WithFixResult.FailureReason) {
+    "**Failure Reason:** ``$($WithFixResult.FailureReason)``"
+})
+
+<details>
+<summary>View full test output (with fix)</summary>
+
+``````
+$(Get-Content $WithFixLog -Raw)
+``````
+
+</details>
+
+---
+
+## Logs
+
+- Full verification log: ``$ValidationLog``
+- Test output without fix: ``$WithoutFixLog``
+- Test output with fix: ``$WithFixLog``
+- UI test logs: ``CustomAgentLogsTmp/UITests/``
+"@
+
+    $markdown | Set-Content -Path $MarkdownReport -Encoding UTF8
+    Write-Host ""
+    Write-Host "📄 Markdown report saved to: $MarkdownReport" -ForegroundColor Cyan
 }
 
 # Reuse the Get-TestResultFromLog function defined earlier
@@ -724,6 +788,14 @@ Write-Log ""
 Write-Log "Summary:"
 Write-Log "  - Tests WITHOUT fix: $(if ($failedWithoutFix) { 'FAIL ✅ (expected)' } else { 'PASS ❌ (should fail!)' })"
 Write-Log "  - Tests WITH fix: $(if ($passedWithFix) { 'PASS ✅ (expected)' } else { 'FAIL ❌ (should pass!)' })"
+
+# Generate markdown report
+Write-MarkdownReport `
+    -VerificationPassed $verificationPassed `
+    -FailedWithoutFix $failedWithoutFix `
+    -PassedWithFix $passedWithFix `
+    -WithoutFixResult $withoutFixResult `
+    -WithFixResult $withFixResult
 
 if ($verificationPassed) {
     Write-Host ""
