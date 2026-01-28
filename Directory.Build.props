@@ -172,14 +172,16 @@
       the Windows App SDK will have already decided not to include native DLLs.
       
       ALSO CRITICAL: MauiUnpackagedBuild propagates to ALL projects in the build graph
-      (including library dependencies like Graphics.csproj). We must ALSO condition on
-      OutputType to ensure only EXE projects get WindowsAppSDKSelfContained. Library
-      projects don't have a RuntimeIdentifier and would fail with "WindowsAppSDKSelfContained
-      requires a supported Windows architecture" error.
+      (including library dependencies like Graphics.csproj). We can NOT condition on
+      OutputType because it's set in the csproj body which isn't evaluated yet.
+      Instead, we detect DeviceTests projects by checking if the project path contains
+      "DeviceTests". This ensures only the actual device test apps get WindowsAppSDKSelfContained,
+      not library dependencies which would fail with "requires a supported Windows architecture".
       
       MauiUnpackagedBuild is set by Cake only for unpackaged device test builds.
     -->
-    <WindowsAppSDKSelfContained Condition="'$(MauiUnpackagedBuild)' == 'true' and '$(OutputType)' == 'Exe'">true</WindowsAppSDKSelfContained>
+    <_IsDeviceTestsProject>$([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[\\/]DeviceTests[\\/]?$'))</_IsDeviceTestsProject>
+    <WindowsAppSDKSelfContained Condition="'$(MauiUnpackagedBuild)' == 'true' and '$(_IsDeviceTestsProject)' == 'True'">true</WindowsAppSDKSelfContained>
   </PropertyGroup>
 
   <!-- version number information -->
