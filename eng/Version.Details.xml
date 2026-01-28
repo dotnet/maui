@@ -8,14 +8,14 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>bac69806be267e5c3fbd02ea60d69f6bdc0356ae</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="36.1.99-ci.main.92">
+    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="36.1.99-ci.main.119">
       <Uri>https://github.com/dotnet/android</Uri>
-      <Sha>097742b3d08fcf96472e20f05794779a4b05157a</Sha>
+      <Sha>20bd3833a584f61aa87d73bd99da8ced6375dedd</Sha>
     </Dependency>
     <!-- Previous .NET Android version(s) -->
-    <Dependency Name="Microsoft.NET.Sdk.Android.Manifest-10.0.100" Version="36.1.2" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="Microsoft.NET.Sdk.Android.Manifest-10.0.100" Version="36.1.12" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/android</Uri>
-      <Sha>01024bb616e7b80417a2c6d320885bfdb956f20a</Sha>
+      <Sha>d611c1210ffde26280ee0faddd04e7621af41f1e</Sha>
     </Dependency>
     <Dependency Name="Microsoft.MacCatalyst.Sdk.net11.0_26.2" Version="26.2.11244-ci.net11-0">
       <Uri>https://github.com/dotnet/macios</Uri>
