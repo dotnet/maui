@@ -130,13 +130,17 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		/// </summary>
 		internal static bool CanRunMSBuildTests()
 		{
-			// MSBuild tests are NOT supported on Helix due to large payload requirements (~100MB buildtasks)
 			var helixPayload = Environment.GetEnvironmentVariable("HELIX_CORRELATION_PAYLOAD");
+			
+			// On Helix, check if the buildtasks payload was included
 			if (!string.IsNullOrEmpty(helixPayload))
 			{
-				return false;
+				var buildTasksPath = IOPath.Combine(helixPayload, "buildtasks", "Microsoft.Maui.Controls.Build.Tasks.dll");
+				var inTreePropsPath = IOPath.Combine(helixPayload, "src", "Maui.InTree.props");
+				return File.Exists(buildTasksPath) && File.Exists(inTreePropsPath);
 			}
 			
+			// Local development - check repo structure
 			var msbuildPath = GetMSBuildTestsPath();
 			if (msbuildPath == null)
 				return false;

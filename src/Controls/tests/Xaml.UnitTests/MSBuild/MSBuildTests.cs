@@ -78,9 +78,6 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 
 		void SetUp([CallerMemberName] string testName = null)
 		{
-			// Skip MSBuild tests on Helix where full repo structure is not available
-			Skip.IfNot(AssemblyInfoTests.CanRunMSBuildTests(), "MSBuild tests require full repo structure (~100MB buildtasks). Skipping on Helix.");
-
 			// Sanitize test name for use in path
 			var sanitizedName = testName
 				.Replace('"', '_')
@@ -91,15 +88,31 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			intermediateDirectory = IOPath.Combine(tempDirectory, "obj", "Debug", GetTfm());
 			Directory.CreateDirectory(tempDirectory);
 
-			//copy _Directory.Build.[props|targets] in test/
-			var props = AssemblyInfoTests.GetFilePathFromRoot(IOPath.Combine("src", "Controls", "tests", "Xaml.UnitTests", "MSBuild", "_Directory.Build.props"));
-			var targets = AssemblyInfoTests.GetFilePathFromRoot(IOPath.Combine("src", "Controls", "tests", "Xaml.UnitTests", "MSBuild", "_Directory.Build.targets"));
+			// On Helix, use the Helix-specific Directory.Build files that reference HELIX_CORRELATION_PAYLOAD
+			var isHelix = AssemblyInfoTests.IsRunningOnHelix();
+			var propsFileName = isHelix ? "_Directory.Build.Helix.props" : "_Directory.Build.props";
+			var targetsFileName = isHelix ? "_Directory.Build.Helix.targets" : "_Directory.Build.targets";
+
+			string props, targets;
+			if (isHelix)
+			{
+				// On Helix, the test DLL directory contains the MSBuild folder with our files
+				var msbuildDir = IOPath.Combine(testDirectory, "MSBuild");
+				props = IOPath.Combine(msbuildDir, propsFileName);
+				targets = IOPath.Combine(msbuildDir, targetsFileName);
+			}
+			else
+			{
+				// Local development - find from repo root
+				props = AssemblyInfoTests.GetFilePathFromRoot(IOPath.Combine("src", "Controls", "tests", "Xaml.UnitTests", "MSBuild", propsFileName));
+				targets = AssemblyInfoTests.GetFilePathFromRoot(IOPath.Combine("src", "Controls", "tests", "Xaml.UnitTests", "MSBuild", targetsFileName));
+			}
 
 			if (!File.Exists(props))
 			{
 				//NOTE: VSTS may be running tests in a staging directory, so we can use an environment variable to find the source
 				//https://docs.microsoft.com/en-us/vsts/build-release/concepts/definitions/build/variables?view=vsts&tabs=batch#buildsourcesdirectory
-				throw new FileNotFoundException("Unable to find _Directory.Build.props at path: " + props);
+				throw new FileNotFoundException($"Unable to find {propsFileName} at path: {props}");
 			}
 
 			File.Copy(props, IOPath.Combine(tempDirectory, "Directory.Build.props"), true);
@@ -257,7 +270,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			Assert.False(File.Exists(path), $"{path} should *not* exist!");
 		}
 
-		[SkippableFact]
+		[Fact]
 		public void BuildAProject()
 		{
 			SetUp();
@@ -271,7 +284,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			AssertExists(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
 		}
 
-		[SkippableTheory]
+		[Theory]
 		[InlineData("Debug")]
 		[InlineData("Release")]
 		public void HotReloadSupportForXSG(string configuration)
@@ -303,7 +316,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		}
 
 		// Tests the MauiXamlCValidateOnly=True MSBuild property
-		[SkippableTheory]
+		[Theory]
 		[InlineData("Debug")]
 		[InlineData("Release")]
 		[InlineData("ReleaseProd")]
@@ -349,7 +362,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		/// <summary>
 		/// Tests that XamlG and XamlC targets skip, as well as checking IncrementalClean doesn't delete generated files
 		/// </summary>
-		[SkippableFact]
+		[Fact]
 		public void TargetsShouldSkip()
 		{
 			SetUp();
@@ -375,7 +388,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		/// <summary>
 		/// Checks that XamlG and XamlC files are cleaned
 		/// </summary>
-		[SkippableFact]
+		[Fact]
 		public void Clean()
 		{
 			SetUp();
@@ -397,7 +410,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			AssertDoesNotExist(xamlCStamp);
 		}
 
-		[SkippableFact]
+		[Fact]
 		public void LinkedFile()
 		{
 			SetUp();
@@ -421,7 +434,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 
 		//https://github.com/dotnet/project-system/blob/master/docs/design-time-builds.md
 		//https://daveaglick.com/posts/running-a-design-time-build-with-msbuild-apis
-		[SkippableFact]
+		[Fact]
 		public void DesignTimeBuild()
 		{
 			SetUp();
@@ -450,7 +463,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 
 		}
 
-		[SkippableFact]
+		[Fact]
 		public void AddNewFile()
 		{
 			SetUp();
@@ -503,7 +516,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			Assert.NotEqual(expectedXamlC, actualXamlC);
 		}
 
-		[SkippableFact]
+		[Fact]
 		public void RandomXml()
 		{
 			SetUp();
@@ -517,7 +530,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			AssertExists(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
 		}
 
-		// [SkippableFact]
+		// [Fact]
 		// public void InvalidXml()
 		// {
 		// 	SetUp();
@@ -528,7 +541,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		// 	Assert.Throws<XunitException>(() => Build(projectFile));
 		// }
 
-		[SkippableFact]
+		[Fact]
 		public void RandomEmbeddedResource()
 		{
 			SetUp();
@@ -544,7 +557,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			AssertExists(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
 		}
 
-		[SkippableFact]
+		[Fact]
 		public void NoXamlFiles()
 		{
 			SetUp();
@@ -558,7 +571,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		/// <summary>
 		/// Tests that the SingleProject Before targets respect custom CodesignEntitlements properties
 		/// </summary>
-		[SkippableFact]
+		[Fact]
 		public void SingleProject_CodesignEntitlementsRespected()
 		{
 			SetUp();
@@ -608,7 +621,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		/// <summary>
 		/// Tests that the SingleProject Before targets use default Entitlements.plist when no custom CodesignEntitlements is set
 		/// </summary>
-		[SkippableFact]
+		[Fact]
 		public void SingleProject_DefaultEntitlementsUsedWhenNoCustomSet()
 		{
 			SetUp();

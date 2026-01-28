@@ -90,6 +90,11 @@
 
   <ItemGroup>
     <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+    <!-- MSBuild test support files - copy to output for Helix -->
+    <Content Include="MSBuild\_Directory.Build.props" CopyToOutputDirectory="PreserveNewest" Link="MSBuild\_Directory.Build.props" />
+    <Content Include="MSBuild\_Directory.Build.targets" CopyToOutputDirectory="PreserveNewest" Link="MSBuild\_Directory.Build.targets" />
+    <Content Include="MSBuild\_Directory.Build.Helix.props" CopyToOutputDirectory="PreserveNewest" Link="MSBuild\_Directory.Build.Helix.props" />
+    <Content Include="MSBuild\_Directory.Build.Helix.targets" CopyToOutputDirectory="PreserveNewest" Link="MSBuild\_Directory.Build.Helix.targets" />
   </ItemGroup>
 
 </Project>

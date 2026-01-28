@@ -1,0 +1,9 @@
+<Project>
+
+  <!-- 
+    This file is used when running MSBuild tests on Helix.
+    It uses HELIX_CORRELATION_PAYLOAD to find the build tasks and repo files.
+  -->
+  <Import Project="$(MauiSrcDirectory)Maui.InTree.targets" />
+
+</Project>

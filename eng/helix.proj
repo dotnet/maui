@@ -12,6 +12,9 @@
     <DotNetCliVersion>$(MicrosoftNETSdkPackageVersion)</DotNetCliVersion>
     <!-- For local testing with .NET 11 SDK when repo is configured for .NET 10 -->
     <DotNetCliVersion Condition="'$(SYSTEM_ACCESSTOKEN)' == '' And '$(MicrosoftNETSdkPackageVersion)' == '10.0.100-rtm.25523.113'">11.0.100-alpha.1.26057.107</DotNetCliVersion>
+    
+    <!-- Staging directory for MSBuild test payloads -->
+    <MauiHelixPayloadDir>$(RepoRoot)artifacts/helix-payload/</MauiHelixPayloadDir>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -39,17 +42,40 @@
     -->
   </ItemGroup>
 
+  <!-- Prepare the staging directory for MSBuild test payloads -->
+  <Target Name="PrepareMauiHelixPayload" BeforeTargets="Test">
+    <MakeDir Directories="$(MauiHelixPayloadDir)src/Workload/Microsoft.Maui.Sdk/Sdk" />
+    
+    <!-- Copy Maui.InTree.props and targets -->
+    <Copy SourceFiles="$(RepoRoot)src/Maui.InTree.props" DestinationFolder="$(MauiHelixPayloadDir)src" />
+    <Copy SourceFiles="$(RepoRoot)src/Maui.InTree.targets" DestinationFolder="$(MauiHelixPayloadDir)src" />
+    
+    <!-- Copy Workload SDK files -->
+    <ItemGroup>
+      <WorkloadSdkFiles Include="$(RepoRoot)src/Workload/Microsoft.Maui.Sdk/Sdk/*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(WorkloadSdkFiles)" DestinationFolder="$(MauiHelixPayloadDir)src/Workload/Microsoft.Maui.Sdk/Sdk" />
+    
+    <Message Text="Prepared MSBuild test payload at $(MauiHelixPayloadDir)" Importance="high" />
+  </Target>
+
   <!-- Include payloads for XAML tests -->
   <ItemGroup>
     <!-- SourceGen DLL for SourceGen tests -->
     <HelixCorrelationPayload Include="$(RepoRoot)artifacts/bin/Controls.SourceGen/$(Configuration)/netstandard2.0">
       <Destination>sourcegen</Destination>
     </HelixCorrelationPayload>
-    <!-- 
-      Note: MSBuild tests require the full .buildtasks folder (~100MB) and repo structure.
-      These tests run locally and in CI where the full repo is available.
-      They are skipped on Helix via AssemblyInfoTests.CanRunMSBuildTests().
-    -->
+    
+    <!-- MSBuild tests payloads -->
+    <!-- .buildtasks folder with all MSBuild targets/props and build task DLLs -->
+    <HelixCorrelationPayload Include="$(RepoRoot).buildtasks">
+      <Destination>buildtasks</Destination>
+    </HelixCorrelationPayload>
+    
+    <!-- MSBuild test support files (Maui.InTree.props/targets and Workload SDK) -->
+    <HelixCorrelationPayload Include="$(MauiHelixPayloadDir)src">
+      <Destination>src</Destination>
+    </HelixCorrelationPayload>
   </ItemGroup>
 
 </Project>
