@@ -19,7 +19,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			VerifyInternetConnectivity();
 			for (int i = 0; i < 10; i++)
 			{
-				App.WaitForElement("Success", $"Failied on: {i}");
+				// WebView loading and cookie evaluation can take time, especially on slow networks
+				App.WaitForElement("Success", $"Failed on iteration: {i}", timeout: TimeSpan.FromSeconds(30));
 				App.Tap("LoadNewWebView");
 			}
 		}
