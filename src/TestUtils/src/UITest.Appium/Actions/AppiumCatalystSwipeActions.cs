@@ -19,7 +19,7 @@ namespace UITest.Appium
 			int endX = (int)(position.X + (size.Width * swipePercentage));
 			int endY = startY;
 
-			var finger = new PointerInputDevice(PointerKind.Mouse);
+			var finger = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Mouse);
 			var sequence = new ActionSequence(finger, 0);
 
 			sequence.AddAction(finger.CreatePointerMove(CoordinateOrigin.Viewport, startX, startY,
@@ -44,7 +44,7 @@ namespace UITest.Appium
 			int endX = (int)(position.X + (size.Width * 0.05));
 			int endY = startY;
 
-			var finger = new PointerInputDevice(PointerKind.Mouse);
+			var finger = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Mouse);
 			var sequence = new ActionSequence(finger, 0);
 
 			sequence.AddAction(finger.CreatePointerMove(CoordinateOrigin.Viewport, startX, startY,
