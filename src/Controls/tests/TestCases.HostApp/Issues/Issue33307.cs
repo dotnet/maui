@@ -461,7 +461,7 @@ public class Issue33307Page2 : ContentPage
 
 		selectedItemLabel = new Label
 		{
-			Text = "Last Selected: None",
+			Text = "None",
 			AutomationId = "StatusLabel",
 			VerticalOptions = LayoutOptions.Center,
 			TextColor = Colors.DarkBlue,
