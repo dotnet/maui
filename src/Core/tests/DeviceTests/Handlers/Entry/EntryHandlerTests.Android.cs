@@ -416,5 +416,43 @@ namespace Microsoft.Maui.DeviceTests
 				GetNativeButton(CreateHandler<ButtonHandler>(button)).PerformClick();
 			});
 		}
+
+		[Fact(DisplayName = "IsPassword Does Not Truncate Text Over 5000 Characters")]
+		public async Task IsPasswordDoesNotTruncateTextOver5000Characters()
+		{
+			// Create text with over 5000 characters
+			var longText = new string('A', 6000);
+			
+			var entry = new EntryStub()
+			{
+				Text = longText,
+				MaxLength = 7000, // MaxLength should be respected, not Android's default 5000
+				IsPassword = true
+			};
+
+			await ValidatePropertyInitValue(entry, () => entry.Text, GetNativeText, longText);
+		}
+
+		[Fact(DisplayName = "IsPassword And MaxLength Work Together For Long Text")]
+		public async Task IsPasswordAndMaxLengthWorkTogetherForLongText()
+		{
+			// Create text with over 5000 characters but under MaxLength
+			var longText = new string('B', 5500);
+			var maxLength = 6000;
+			
+			var entry = new EntryStub()
+			{
+				Text = longText,
+				MaxLength = maxLength,
+				IsPassword = true
+			};
+
+			var actualText = await GetValueAsync(entry, GetNativeText);
+			Assert.Equal(longText, actualText);
+			
+			// Also verify that IsPassword is actually set
+			var isPassword = await GetValueAsync(entry, GetNativeIsPassword);
+			Assert.True(isPassword);
+		}
 	}
 }
