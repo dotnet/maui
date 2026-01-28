@@ -168,12 +168,12 @@ internal static class ExpressionAnalyzer
 	{
 		var captures = new List<LocalCapture>();
 		var capturedInvocations = new HashSet<string>(StringComparer.Ordinal);
+		var methodIndexes = new Dictionary<string, int>(StringComparer.Ordinal);
 		
 		// Parse as an expression and walk the syntax tree
 		var tree = CSharpSyntaxTree.ParseText(expression, new CSharpParseOptions(kind: SourceCodeKind.Script));
 		var root = tree.GetRoot();
 		
-		var captureIndex = 0;
 		foreach (var node in root.DescendantNodes())
 		{
 			// Look for standalone method invocations (not member access like obj.Method())
@@ -200,12 +200,21 @@ internal static class ExpressionAnalyzer
 					if (!capturedInvocations.Add(invocationText))
 						continue;
 					
-					// Use indexed capture variable to handle same method with different args
-					// e.g., GetValue(1) -> __capture_GetValue_0, GetValue(2) -> __capture_GetValue_1
-					var captureVar = captureIndex == 0 
+					// Use per-method indexed capture variable
+					// e.g., GetA() -> __capture_GetA, GetB() -> __capture_GetB, GetA() again -> __capture_GetA_1
+					if (!methodIndexes.TryGetValue(methodName, out var index))
+					{
+						index = 0;
+						methodIndexes[methodName] = 1;
+					}
+					else
+					{
+						methodIndexes[methodName] = index + 1;
+					}
+					
+					var captureVar = index == 0 
 						? $"__capture_{methodName}" 
-						: $"__capture_{methodName}_{captureIndex}";
-					captureIndex++;
+						: $"__capture_{methodName}_{index}";
 					
 					// The invocation expression is the full call (e.g., "GetMultiplier()")
 					captures.Add(new LocalCapture(invocationText, captureVar, methodName, invocationText));
