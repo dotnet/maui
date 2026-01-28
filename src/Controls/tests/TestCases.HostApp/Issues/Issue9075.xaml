@@ -2,15 +2,26 @@
 <ContentPage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    x:Class="Maui.Controls.Sample.Issues.Issue9075">
+    x:Class="Maui.Controls.Sample.Issues.Issue9075"
+    AutomationId="Issue9075Page">
   <ScrollView>
     <Grid 
       BackgroundColor="LightCoral">
       <Grid.RowDefinitions>
+        <RowDefinition Height="Auto"/>
         <RowDefinition Height="410"/>
         <RowDefinition Height="60"/>
       </Grid.RowDefinitions>
-      <CarouselView 
+      <Label 
+        Grid.Row="0"
+        AutomationId="TestStatusLabel"
+        Text="Issue 9075 - FlexLayout Cycle Test"
+        Padding="12"
+        BackgroundColor="Black"
+        TextColor="White"/>
+      <CarouselView
+        Grid.Row="1"
+        AutomationId="TestCarouselView" 
         ItemsSource="{Binding CarouselGrids}" 
         IndicatorView="indic"
         HorizontalOptions="Center"
@@ -66,7 +77,7 @@
         </CarouselView.ItemTemplate>
       </CarouselView>
       <IndicatorView
-        Grid.Row="1" 
+        Grid.Row="2" 
         HorizontalOptions="Center" 
         IndicatorSize="22" 
         IndicatorsShape="Circle"

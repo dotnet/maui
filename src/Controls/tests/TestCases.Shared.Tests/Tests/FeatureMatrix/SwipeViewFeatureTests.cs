@@ -69,7 +69,7 @@ public class SwipeViewFeatureTests : _GalleryUITest
 #endif
 #endif
 
-#if TEST_FAILS_ON_WINDOWS //related issue link:  https://github.com/dotnet/maui/issues/14777
+#if TEST_FAILS_ON_WINDOWS //related issue link:  https://github.com/dotnet/maui/issues/14777 (Windows)
 	[Test, Order(4)]
 	public void VerifySwipeViewWhenLabelContentAndProgrammaticActions()
 	{

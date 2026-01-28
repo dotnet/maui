@@ -1,4 +1,5 @@
 #nullable disable
+using System;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Graphics;
@@ -17,6 +18,27 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		}
 
 		private protected override Size GetMeasureConstraints(UICollectionViewLayoutAttributes preferredAttributes)
-			=> preferredAttributes.Size.ToSize();
+		{
+			var size = preferredAttributes.Size.ToSize();
+			
+			var virtualView = PlatformHandler?.VirtualView;
+			var parent = virtualView?.Parent;
+			var handler = parent?.Handler;
+			var isUnconstrained = handler is IItemsViewHandler2 { IsHeightConstrained: false };
+			
+			// Get the CarouselView to check its layout orientation
+			var carouselView = parent as CarouselView;
+			var isHorizontalCarousel = carouselView?.ItemsLayout?.Orientation == ItemsLayoutOrientation.Horizontal;
+			
+			// In scene-based apps, the CarouselView may initially measure with 0 height
+			// When the parent has unconstrained height (e.g., horizontal CarouselView in StackLayout),
+			// we should use infinite height to allow cells to self-size based on content
+			if (isHorizontalCarousel && isUnconstrained)
+			{
+				size.Height = double.PositiveInfinity;
+			}
+			
+			return size;
+		}
 	}
 }

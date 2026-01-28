@@ -237,6 +237,9 @@ if ($Platform -eq "android") {
 # Capture test start time for iOS logs
 $testStartTime = Get-Date
 
+# Store app path for MacCatalyst validation (used in both pre-test and post-test)
+$appPath = $null
+
 # For MacCatalyst, launch the app BEFORE running tests so Appium finds the correct bundle
 # This is critical because both maui and maui2 repos may share the same bundle ID
 # MacCatalyst: Just ensure the app is ready - Appium will launch it with the test name
@@ -251,20 +254,35 @@ if ($Platform -eq "catalyst") {
     $appPath = Join-Path $PSScriptRoot "../../artifacts/bin/Controls.TestCases.HostApp/Debug/$TargetFramework/$rid/Controls.TestCases.HostApp.app"
     $appPath = [System.IO.Path]::GetFullPath($appPath)
     
-    if (Test-Path $appPath) {
-        Write-Info "MacCatalyst app ready at: $appPath"
-        
-        # Make executable (like CI does)
-        $executablePath = Join-Path $appPath "Contents/MacOS/Controls.TestCases.HostApp"
-        if (Test-Path $executablePath) {
-            & chmod +x $executablePath
-        }
-        
-        Write-Success "MacCatalyst app prepared (Appium will launch with test name)"
-    } else {
-        Write-Warning "MacCatalyst app not found at: $appPath"
-        Write-Warning "Test may use wrong app bundle if another version is registered"
+    if (-not (Test-Path $appPath)) {
+        Write-Error "MacCatalyst app not found at expected path: $appPath"
+        Write-Error "This means the app was not built correctly, or you're in a different repo"
+        Write-Error "Appium would launch a DIFFERENT app bundle with the same ID from another location"
+        exit 1
     }
+    
+    Write-Info "MacCatalyst app ready at: $appPath"
+    
+    # Verify the executable exists and make it executable (like CI does)
+    $executablePath = Join-Path $appPath "Contents/MacOS/Controls.TestCases.HostApp"
+    if (-not (Test-Path $executablePath)) {
+        Write-Error "MacCatalyst app executable not found at: $executablePath"
+        Write-Error "App bundle is incomplete"
+        exit 1
+    }
+    
+    & chmod +x $executablePath
+    
+    # Write a marker file with build timestamp OUTSIDE the app bundle (doesn't affect code signing)
+    $markerFile = Join-Path $HostAppLogsDir "last-built-catalyst-app.json"
+    @{
+        RepoPath = $RepoRoot.Path
+        AppPath = $appPath
+        BuildTime = (Get-Date).ToString("O")
+    } | ConvertTo-Json | Out-File -FilePath $markerFile -Encoding UTF8
+    Write-Info "Wrote build marker to: $markerFile"
+    
+    Write-Success "MacCatalyst app prepared (Appium will launch with test name)"
     
     # Set log file path directly - app will write ILogger output here
     $env:MAUI_LOG_FILE = $deviceLogFile
@@ -341,6 +359,51 @@ if ($Platform -eq "android") {
     
     Write-Info "iOS logs saved to: $deviceLogFile"
 } elseif ($Platform -eq "catalyst") {
+    # Verify which app was actually launched by checking running processes
+    Write-Info "Verifying which app bundle was launched..."
+    
+    # Reuse the app path from pre-test validation (lines 235-240)
+    $expectedExecutable = Join-Path $appPath "Contents/MacOS/Controls.TestCases.HostApp"
+    
+    # Find the running process by name
+    $runningProcesses = Get-Process -Name "Controls.TestCases.HostApp" -ErrorAction SilentlyContinue
+    
+    if ($runningProcesses) {
+        $actualPath = $null
+        foreach ($proc in $runningProcesses) {
+            try {
+                # Get the full path of the executable
+                $actualPath = $proc.Path
+                if ($actualPath) {
+                    break
+                }
+            } catch {
+                # Process may have exited
+            }
+        }
+        
+        if ($actualPath) {
+            if ($actualPath -eq $expectedExecutable) {
+                Write-Success "✅ Verified: Correct app was launched"
+                Write-Info "  Expected: $expectedExecutable"
+                Write-Info "  Actual:   $actualPath"
+            } else {
+                Write-Warning "⚠️ WARNING: WRONG APP WAS LAUNCHED!"
+                Write-Warning "  Expected: $expectedExecutable"
+                Write-Warning "  Actual:   $actualPath"
+                Write-Warning ""
+                Write-Warning "  This means macOS launched an app from a DIFFERENT repo folder."
+                Write-Warning "  Your test results are NOT from the code in this repo!"
+                Write-Warning ""
+                Write-Warning "  To fix: Uninstall the wrong app or ensure this repo's app is built last."
+            }
+        } else {
+            Write-Info "Could not determine app path (process may have exited)"
+        }
+    } else {
+        Write-Info "App process not running (may have already exited)"
+    }
+    
     # App writes directly to $deviceLogFile via MAUI_LOG_FILE env var
     # Just verify the file exists and has content
     if ((Test-Path $deviceLogFile) -and ((Get-Item $deviceLogFile).Length -gt 0)) {
@@ -349,7 +412,7 @@ if ($Platform -eq "android") {
         # Fall back to os_log if file logging didn't work
         Write-Info "File logging output was minimal, using os_log fallback..."
         $logStartTimeStr = $testStartTime.AddMinutes(-1).ToString("yyyy-MM-dd HH:mm:ss")
-        $catalystLogCommand = "log show --level debug --predicate 'process contains `"Controls.TestCases.HostApp`" OR processImagePath contains `"Controls.TestCases.HostApp`"' --start `"$logStartTimeStr`" --style compact"
+        $catalystLogCommand = "log show --predicate 'process contains `"Controls.TestCases.HostApp`" OR processImagePath contains `"Controls.TestCases.HostApp`"' --start `"$logStartTimeStr`" --style compact"
         Invoke-Expression "$catalystLogCommand > `"$deviceLogFile`" 2>&1"
     }
     

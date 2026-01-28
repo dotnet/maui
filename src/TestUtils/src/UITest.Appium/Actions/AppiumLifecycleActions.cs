@@ -58,12 +58,28 @@ namespace UITest.Appium
 				return CommandResponse.FailedEmptyResponse;
 
 			if (_app.GetTestDevice() == TestDevice.Mac)
-			{		
+			{
 				var args = _app.Config.GetProperty<Dictionary<string, string>>("TestConfigurationArgs") ?? new Dictionary<string, string>();
 
-				if (args.ContainsKey("test") && parameters.ContainsKey("testName") && parameters["testName"] is string testName && !string.IsNullOrEmpty(testName))
+				// Always set test name if provided - this is how tests navigate to specific pages
+				// This overrides any previous test name in args (important for subsequent test classes)
+				if (parameters.ContainsKey("testName") && parameters["testName"] is string testName && !string.IsNullOrEmpty(testName))
 				{
 					args["test"] = testName;
+					
+					// Environment variables only apply on fresh app launch, so terminate first
+					// to ensure the new test name is used when navigating to the test page
+					try
+					{
+						_app.Driver.ExecuteScript("macos: terminateApp", new Dictionary<string, object>
+						{
+							{ "bundleId", _app.GetAppId() },
+						});
+					}
+					catch
+					{
+						// App may not be running yet, which is fine
+					}
 				}
 
 				_app.Driver.ExecuteScript("macos: launchApp", new Dictionary<string, object>
@@ -71,6 +87,19 @@ namespace UITest.Appium
 					{ "bundleId", _app.GetAppId() },
 					{ "environment", args},
 				});
+
+				// Activate the app to bring it to foreground
+				try
+				{
+					_app.Driver.ExecuteScript("macos: activateApp", new Dictionary<string, object>
+					{
+						{ "bundleId", _app.GetAppId() },
+					});
+				}
+				catch
+				{
+					// Continue if activation fails - element lookup might still work
+				}
 			}
 			else if (_app.Driver is WindowsDriver windowsDriver)
 			{
