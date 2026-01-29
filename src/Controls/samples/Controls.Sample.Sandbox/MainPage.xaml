@@ -2,4 +2,45 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.MainPage"
              xmlns:local="clr-namespace:Maui.Controls.Sample">
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="10">
+            <Label Text="Issue #33731: TabbedPage GC Monitor" 
+                   FontSize="20" FontAttributes="Bold" 
+                   HorizontalOptions="Center"/>
+            
+            <Label Text="This test monitors GC behavior with TabbedPage to detect the infinite RequestApplyInsets loop bug."
+                   FontSize="12" HorizontalOptions="Center"/>
+            
+            <BoxView HeightRequest="2" Color="Gray"/>
+            
+            <!-- GC Collection Count -->
+            <Label Text="GC Collections (Gen 0):" FontAttributes="Bold"/>
+            <Label x:Name="GCCountLabel" Text="0" FontSize="16" AutomationId="GCCountLabel"/>
+            
+            <!-- GC Rate per Second -->
+            <Label Text="GC Rate (per second):" FontAttributes="Bold"/>
+            <Label x:Name="GCRateLabel" Text="0.00" FontSize="16" AutomationId="GCRateLabel"/>
+            
+            <!-- Total Allocated Memory -->
+            <Label Text="Total Allocated (MB):" FontAttributes="Bold"/>
+            <Label x:Name="TotalAllocatedLabel" Text="0.00" FontSize="16" AutomationId="TotalAllocatedLabel"/>
+            
+            <!-- Allocation Rate -->
+            <Label Text="Allocation Rate (MB/sec):" FontAttributes="Bold"/>
+            <Label x:Name="AllocationRateLabel" Text="0.00" FontSize="16" AutomationId="AllocationRateLabel"/>
+            
+            <!-- Test Status -->
+            <Label Text="Test Status:" FontAttributes="Bold"/>
+            <Label x:Name="StatusLabel" Text="Initializing..." FontSize="16" AutomationId="StatusLabel"/>
+            
+            <!-- Verdict -->
+            <Label Text="Verdict:" FontAttributes="Bold"/>
+            <Label x:Name="VerdictLabel" Text="Testing..." FontSize="18" FontAttributes="Bold" AutomationId="VerdictLabel"/>
+            
+            <BoxView HeightRequest="2" Color="Gray"/>
+            
+            <Button Text="Start Test" Clicked="OnStartTestClicked" x:Name="StartButton" AutomationId="StartButton"/>
+            <Button Text="View TabbedPage" Clicked="OnViewTabbedPageClicked" AutomationId="ViewTabbedPageButton"/>
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>

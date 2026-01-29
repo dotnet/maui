@@ -8,6 +8,8 @@ namespace Microsoft.Maui.Platform;
 
 internal static class SafeAreaExtensions
 {
+
+
 	internal static ISafeAreaView2? GetSafeAreaView2(object? layout) =>
 		layout switch
 		{
@@ -151,11 +153,20 @@ internal static class SafeAreaExtensions
 
 					if (viewExtendsBeyondScreen)
 					{
-						// Request insets to be reapplied after the next layout pass
-						// when the view should be properly positioned.
-						// Don't return early - let processing continue with current insets
-						// to avoid visual popping, the re-apply will correct any issues.
-						view.Post(() => ViewCompat.RequestApplyInsets(view));
+						// Check if view is completely off-screen (no intersection with visible area).
+						// If completely off-screen (e.g., inactive TabbedPage tabs), skip RequestApplyInsets
+						// to avoid infinite lambda allocations and GC pressure. (Issue #33731)
+						bool isCompletelyOffScreen = viewLeft >= screenWidth || viewRight <= 0 ||
+													 viewTop >= screenHeight || viewBottom <= 0;
+
+						if (!isCompletelyOffScreen)
+						{
+							// Request insets to be reapplied after the next layout pass
+							// when the view should be properly positioned.
+							// Don't return early - let processing continue with current insets
+							// to avoid visual popping, the re-apply will correct any issues.
+							view.Post(() => ViewCompat.RequestApplyInsets(view));
+						}
 					}
 
 					// Calculate actual overlap for each edge
