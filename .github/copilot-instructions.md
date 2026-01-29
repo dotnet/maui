@@ -200,12 +200,6 @@ The repository includes specialized custom agents for specific tasks. These agen
    - **Trigger phrases**: "test this PR", "validate PR #XXXXX in Sandbox", "reproduce issue #XXXXX", "try out in Sandbox"
    - **Do NOT use for**: Code review (use pr agent), writing automated tests (use uitest-coding-agent)
 
-4. **env-setup** - Specialized agent for validating and configuring .NET MAUI development environments
-   - **Use when**: User needs to check, validate, setup, or fix their development environment
-   - **Capabilities**: .NET SDK validation, workload installation, Android SDK setup, Java JDK verification, Xcode validation (macOS), environment diagnostics, automatic fixing of missing components
-   - **Trigger phrases**: "check my environment", "setup my dev environment", "fix my MAUI environment", "validate environment", "install Android SDK", "check workloads", "environment health check"
-   - **Do NOT use for**: Building/running code, writing tests, PR reviews
-
 ### Using Custom Agents
 
 **Delegation Policy**: When user request matches agent trigger phrases, **ALWAYS delegate to the appropriate agent immediately**. Do not ask for permission or explain alternatives unless the request is ambiguous.
@@ -215,8 +209,6 @@ The repository includes specialized custom agents for specific tasks. These agen
 - User: "Test this PR" → Immediately invoke **sandbox-agent**
 - User: "Fix issue #67890" (no PR exists) → Suggest using `/delegate` command
 - User: "Write UI test for CollectionView" → Immediately invoke **uitest-coding-agent**
-- User: "Check my environment" → Immediately invoke **env-setup** agent
-- User: "Setup Android SDK" → Immediately invoke **env-setup** agent
 
 **When NOT to delegate**:
 - User asks "What does PR #12345 do?" → Informational query, handle yourself
