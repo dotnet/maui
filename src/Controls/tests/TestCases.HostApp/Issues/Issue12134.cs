@@ -48,11 +48,7 @@ namespace Maui.Controls.Sample.Issues
 
 		private async void WebViewOnNavigated(object sender, WebNavigatedEventArgs e)
 		{
-#if ANDROID
-			var result = await Task.FromResult(Android.Webkit.CookieManager.Instance?.GetCookie("https://dotnet.microsoft.com"));
-#else
 			var result = await ((WebView)sender).EvaluateJavaScriptAsync("document.cookie");
-#endif
 			_label.Text = result.Contains(_guid.ToString(), StringComparison.OrdinalIgnoreCase) ? "Success" : "Failed";
 		}
 
