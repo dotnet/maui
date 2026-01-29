@@ -185,14 +185,13 @@
       - src/TestUtils/src/DeviceTests/*.csproj (shared utilities)
       - src/Core/tests/DeviceTests.Shared/*.csproj (shared test code)
     
-    MauiUnpackagedBuild is set by Cake only for unpackaged device test builds.
+    MauiUnpackagedBuild is set by Cake only for unpackaged Windows device test builds.
     
-    NOTE: We check TargetFramework directly (not _MauiTargetPlatformIsWindows) because
-    the PropertyGroup with _MauiTargetPlatformIsWindows condition may not evaluate correctly
-    during early MSBuild evaluation on CI. The TargetFramework is passed via command line
-    so it's always available.
+    NOTE: MauiUnpackagedBuild is ONLY set for Windows unpackaged builds (via windows.cake),
+    so we don't need to check the TargetFramework here. The property is never set for 
+    Android/iOS/MacCatalyst builds.
   -->
-  <PropertyGroup Condition="'$(MauiUnpackagedBuild)' == 'true' and $(TargetFramework.Contains('windows'))">
+  <PropertyGroup Condition="'$(MauiUnpackagedBuild)' == 'true'">
     <_IsDeviceTestsProject>$([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[\\/]tests?[\\/]DeviceTests[\\/]?$'))</_IsDeviceTestsProject>
     <WindowsAppSDKSelfContained Condition="'$(_IsDeviceTestsProject)' == 'True'">true</WindowsAppSDKSelfContained>
   </PropertyGroup>
