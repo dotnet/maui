@@ -1,8 +1,11 @@
 ﻿using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using Android.Widget;
 using AndroidX.RecyclerView.Widget;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Items;
+using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Platform;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -92,6 +95,35 @@ namespace Microsoft.Maui.DeviceTests
 			}
 
 			return true;
+		}
+
+		[Fact(DisplayName = "IndicatorView Provides Correct TalkBack Accessibility Description")]
+		public async Task IndicatorViewProvidesCorrectTalkBackAccessibilityDescription()
+		{
+			SetupBuilder();
+
+			var carouselView = new CarouselView
+			{
+				ItemsSource = new[] { "Item 1", "Item 2", "Item 3" }
+			};
+
+			var indicatorView = new IndicatorView();
+			carouselView.IndicatorView = indicatorView;
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler>(carouselView, async (handler) =>
+			{
+				await handler.PlatformView.WaitForLayoutOrNonZeroSize();
+
+				var indicatorHandler = CreateHandler<IndicatorViewHandler>(indicatorView);
+				var mauiPageControl = indicatorHandler.PlatformView as MauiPageControl;
+				
+				Assert.NotNull(mauiPageControl);
+				Assert.True(mauiPageControl.ChildCount > 0);
+
+				var firstIndicator = mauiPageControl.GetChildAt(0) as ImageView;
+				Assert.NotNull(firstIndicator);
+				Assert.Equal("Item 1 of 3, selected", firstIndicator.ContentDescription);
+			});
 		}
 	}
 }
