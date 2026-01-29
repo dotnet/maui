@@ -102,6 +102,26 @@ The skill is complete when:
 - [ ] Baseline restored (working directory clean)
 - [ ] Results reported to invoker
 
+🚨 **CRITICAL: What counts as "Pass" vs "Fail"**
+
+| Scenario | Result | Explanation |
+|----------|--------|-------------|
+| Test command runs, tests pass | ✅ **Pass** | Actual validation |
+| Test command runs, tests fail | ❌ **Fail** | Fix didn't work |
+| Code compiles but no device available | ❌ **Fail** | CANNOT claim Pass without running tests |
+| Code compiles but test command errors | ❌ **Fail** | Infrastructure issue is still a failure |
+| Code doesn't compile | ❌ **Fail** | Fix is broken |
+
+**NEVER claim "Pass" based on:**
+- ❌ "Code compiles successfully" alone
+- ❌ "Code review validates the logic"
+- ❌ "The approach is sound"
+- ❌ "Device was unavailable but fix looks correct"
+
+**Pass REQUIRES:** The test command executed AND reported test success.
+
+**If device/emulator is unavailable:** Report `result.txt` = `Blocked` with explanation. Do NOT manufacture a Pass.
+
 **Exhaustion criteria:** Stop after 3 iterations if:
 1. Code compiles but tests consistently fail for same reason
 2. Root cause analysis reveals fundamental flaw in approach
