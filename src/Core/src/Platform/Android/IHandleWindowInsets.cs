@@ -22,4 +22,19 @@ namespace Microsoft.Maui.Platform
 		/// <param name="view">The view to reset</param>
 		void ResetWindowInsets(AView view);
 	}
+
+	/// <summary>
+	/// Interface for views that need window insets to be re-applied after layout transitions.
+	/// Views implementing this interface will have RequestApplyInsets posted when they extend
+	/// beyond screen bounds (e.g., during fragment transitions).
+	/// </summary>
+	/// <remarks>
+	/// This is primarily used by Shell to handle fragment transitions where views are temporarily
+	/// positioned off-screen. Without this, views might get incorrect safe area calculations
+	/// during the transition. TabbedPage and other views that intentionally position content
+	/// off-screen should NOT implement this interface to avoid infinite inset request loops.
+	/// </remarks>
+	internal interface IRequestInsetsOnTransition
+	{
+	}
 }

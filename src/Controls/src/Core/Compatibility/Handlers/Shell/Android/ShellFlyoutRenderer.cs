@@ -17,7 +17,7 @@ using Paint = Android.Graphics.Paint;
 
 namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
-	public class ShellFlyoutRenderer : DrawerLayout, IShellFlyoutRenderer, IFlyoutBehaviorObserver, IAppearanceObserver
+	public class ShellFlyoutRenderer : DrawerLayout, IShellFlyoutRenderer, IFlyoutBehaviorObserver, IAppearanceObserver, Microsoft.Maui.Platform.IRequestInsetsOnTransition
 	{
 		#region IAppearanceObserver
 
