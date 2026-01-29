@@ -23,9 +23,16 @@ public class Issue889 : _IssuesUITest
 		App.WaitForElement("PushedPageLabel");
 
 #if IOS || MACCATALYST
-		var initialPageQuery = AppiumQuery.ByName("Initial Page");
-		App.WaitForElement(initialPageQuery);
-		App.Tap(initialPageQuery);
+		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+		{
+			App.TapBackArrow();
+		}
+		else
+		{
+			var initialPageQuery = AppiumQuery.ByName("Initial Page");
+			App.WaitForElement(initialPageQuery);
+			App.Tap(initialPageQuery);
+		}
 #else
 
 #if WINDOWS

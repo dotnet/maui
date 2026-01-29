@@ -21,6 +21,13 @@ public class Issue7856 : _IssuesUITest
 		App.WaitForElement("Navigate again");
 		App.Tap("Navigate again");
 		App.WaitForElementTillPageNavigationSettled("Hello");
-		App.TapBackArrow("Test");
+		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+		{
+			App.TapBackArrow();
+		}
+		else
+		{
+			App.TapBackArrow("Test");
+		}
 	}
 }
