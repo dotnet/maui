@@ -185,12 +185,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		protected override void DisconnectHandler(WItemsView platformView)
 		{
-			base.DisconnectHandler(platformView);
+			// Unsubscribe from LayoutUpdated before disconnecting to prevent exceptions
+			if (_scrollUpdatePending)
+			{
+				platformView.LayoutUpdated -= OnLayoutUpdated;
+				_scrollUpdatePending = false;
+			}
 
 			_layoutPropertyChangedProxy?.Unsubscribe();
 			_layoutPropertyChangedProxy = null;
 
-			VirtualView.ScrollToRequested -= ScrollToRequested;
+			if (VirtualView is not null)
+			{
+				VirtualView.ScrollToRequested -= ScrollToRequested;
+			}
+
+			base.DisconnectHandler(platformView);
 		}
 
 		CollectionViewSource CreateCollectionViewSource()
@@ -320,7 +330,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				}
 			}
 
-			if (VirtualView?.ItemsSource is null)
+			if (VirtualView?.ItemsSource is null && PlatformView is not null)
 			{
 				PlatformView.ItemsSource = null;
 			}
@@ -328,6 +338,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		void ItemsChanged(object? sender, NotifyCollectionChangedEventArgs e)
 		{
+			// Skip if handler is disconnected
+			if (PlatformView is null || VirtualView is null)
+			{
+				return;
+			}
+
 			UpdateEmptyViewVisibility();
 
 			if(e.Action == NotifyCollectionChangedAction.Add || e.Action == NotifyCollectionChangedAction.Reset )
@@ -344,6 +360,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		}
 		void OnLayoutUpdated(object? s, object args)
 		{
+			if (PlatformView is null)
+			{
+				_scrollUpdatePending = false;
+				return;
+			}
+
 			PlatformView.LayoutUpdated -= OnLayoutUpdated;
 			_scrollUpdatePending = false;
 			ApplyItemsUpdatingScrollMode();
@@ -351,6 +373,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		void ApplyItemsUpdatingScrollMode()
 		{
+			if (PlatformView is null || VirtualView is null)
+			{
+				return;
+			}
+
 			if (_itemsSource is null || _itemsSource.Count == 0 || _collectionViewSource?.View?.Count <= 1)
 			{
 				return;
@@ -490,6 +517,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		void FindScrollViewer()
 		{
+			if (PlatformView is null)
+			{
+				return;
+			}
+
 			if (PlatformView.ScrollView is not null)
 			{
 				OnScrollViewerFound();
@@ -508,7 +540,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		void OnScrollViewerFound()
 		{
-			if (PlatformView.ScrollView is null)
+			if (PlatformView is null || PlatformView.ScrollView is null)
 			{
 				return;
 			}
@@ -614,6 +646,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		void UpdateEmptyViewVisibility()
 		{
+			if (PlatformView is null || VirtualView is null)
+			{
+				return;
+			}
+
 			// Check both CollectionViewSource.View and the underlying _itemsSource
 			// After a Reset action, CollectionViewSource.View.Count might not be immediately updated
 			bool isEmpty = (_collectionViewSource?.View?.Count ?? 0) == 0 && (_itemsSource?.Count ?? 0) == 0;
@@ -882,6 +919,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		void PointerScrollChanged(object sender, PointerRoutedEventArgs e)
 		{
+			if (PlatformView?.ScrollView is null)
+				return;
+
 			if (PlatformView.ScrollView.ComputedHorizontalScrollMode == ScrollingScrollMode.Enabled)
 			{
 				PlatformView.ScrollView.AddScrollVelocity(new(e.GetCurrentPoint(PlatformView.ScrollView).Properties.MouseWheelDelta, 0), null);
@@ -890,6 +930,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		void ScrollViewChanged(UI.Xaml.Controls.ScrollView sender, object args)
 		{
+			if (PlatformView?.ScrollView?.ScrollPresenter is null)
+				return;
+
 			HandleScroll(PlatformView.ScrollView.ScrollPresenter);
 		}
 
@@ -963,6 +1006,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			int firstVisibleItemIndex = -1;
 			int lastVisibleItemIndex = -1;
 
+			if (PlatformView is null)
+			{
+				return (firstVisibleItemIndex, lastVisibleItemIndex, -1);
+			}
+
 			PlatformView.TryGetItemIndex(0, 0, out firstVisibleItemIndex);
 			PlatformView.TryGetItemIndex(1, 1, out lastVisibleItemIndex);
 
@@ -980,29 +1028,33 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				index = FindItemIndex(args.Item);
 			}
 
-			if (index >= 0)
+			// Validate index is within bounds
+			var itemCount = _collectionViewSource?.View?.Count ?? 0;
+			if (index < 0 || index >= itemCount)
 			{
-				float offset = 0.0f;
-				switch (args.ScrollToPosition)
-				{
-					case ScrollToPosition.Start:
-						offset = 0.0f;
-						break;
-					case ScrollToPosition.Center:
-						offset = 0.5f;
-						break;
-					case ScrollToPosition.End:
-						offset = 1.0f;
-						break;
-				}
-
-				PlatformView.StartBringItemIntoView(index, new BringIntoViewOptions()
-				{
-					AnimationDesired = args.IsAnimated,
-					VerticalAlignmentRatio = offset,
-					HorizontalAlignmentRatio = offset
-				});
+				return;
 			}
+
+			float offset = 0.0f;
+			switch (args.ScrollToPosition)
+			{
+				case ScrollToPosition.Start:
+					offset = 0.0f;
+					break;
+				case ScrollToPosition.Center:
+					offset = 0.5f;
+					break;
+				case ScrollToPosition.End:
+					offset = 1.0f;
+					break;
+			}
+
+			PlatformView.StartBringItemIntoView(index, new BringIntoViewOptions()
+			{
+				AnimationDesired = args.IsAnimated,
+				VerticalAlignmentRatio = offset,
+				HorizontalAlignmentRatio = offset
+			});
 		}
 
 		int FindItemIndex(object item)
