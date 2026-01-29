@@ -35,7 +35,7 @@ public class Bugzilla45926 : _IssuesUITest
 #endif
 		if (iOS26OrHigher)
 		{
-			App.TapBackArrow();
+			App.TapBackArrow(); // In iOS 26, the previous page title is not shown along with the back arrow, so we use the default back arrow
 		}
 		else
 		{
@@ -44,7 +44,7 @@ public class Bugzilla45926 : _IssuesUITest
 		App.WaitForElementTillPageNavigationSettled("Intermediate Page");
 		if (iOS26OrHigher)
 		{
-			App.TapBackArrow();
+			App.TapBackArrow(); // In iOS 26, the previous page title is not shown along with the back arrow, so we use the default back arrow
 		}
 		else
 		{
