@@ -47,6 +47,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			nativeToolbar.LayoutParameters = lp;
+			AndroidX.Core.View.ViewCompat.RequestApplyInsets(nativeToolbar);
 		}
 
 		public static void UpdateTitleIcon(this AToolbar nativeToolbar, Toolbar toolbar)
