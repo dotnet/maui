@@ -20,8 +20,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("WaitForStubControl");
 			App.Tap("UpdateAspect");
 
-			Thread.Sleep(1000);
-			VerifyScreenshot(retryDelay: TimeSpan.FromSeconds(2));
+			// Use retryTimeout to wait for aspect change to render
+			VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 		}
 	}
 }
