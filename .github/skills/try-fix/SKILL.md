@@ -66,7 +66,7 @@ Results reported back to the invoker:
 **FIRST STEP: Create output directory before doing anything else.**
 
 ```powershell
-# Detect issue/PR number from branch name or use provided number
+# Set issue/PR number explicitly (from branch name, PR context, or manual input)
 $IssueNumber = "<ISSUE_OR_PR_NUMBER>"  # Replace with actual number
 
 # Find next attempt number
@@ -127,7 +127,7 @@ The skill is complete when:
 |----------|--------|-------------|
 | Test command runs, tests pass | ✅ **Pass** | Actual validation |
 | Test command runs, tests fail | ❌ **Fail** | Fix didn't work |
-| Code compiles but no device available | ❌ **Fail** | CANNOT claim Pass without running tests |
+| Code compiles but no device available | ⚠️ **Blocked** | Device/emulator unavailable - report with explanation |
 | Code compiles but test command errors | ❌ **Fail** | Infrastructure issue is still a failure |
 | Code doesn't compile | ❌ **Fail** | Fix is broken |
 
@@ -192,7 +192,7 @@ The skill is complete when:
 
 ```powershell
 # Capture baseline output as proof it was run
-pwsh .github/scripts/EstablishBrokenBaseline.ps1 2>&1 | Tee-Object -FilePath "$OUTPUT_DIR/baseline.log"
+pwsh .github/scripts/EstablishBrokenBaseline.ps1 *>&1 | Tee-Object -FilePath "$OUTPUT_DIR/baseline.log"
 ```
 
 The script auto-detects and reverts fix files to merge-base state while preserving test files. **Will fail fast if no fix files detected** - you must be on the actual PR branch. Optional flags: `-BaseBranch main`, `-DryRun`.
@@ -254,7 +254,7 @@ Implement your fix. Use `git status --short` and `git diff` to track changes.
 
 ```powershell
 # Capture output to test-output.log while also displaying it
-pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform <platform> -TestFilter "<filter>" 2>&1 | Tee-Object -FilePath "$OUTPUT_DIR/test-output.log"
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform <platform> -TestFilter "<filter>" *>&1 | Tee-Object -FilePath "$OUTPUT_DIR/test-output.log"
 ```
 
 **Testing Loop (Iterate until SUCCESS or exhausted):**
@@ -292,7 +292,7 @@ git diff | Set-Content "$OUTPUT_DIR/fix.diff"
 @"
 ## Analysis
 
-**Result:** Pass/Fail
+**Result:** Pass/Fail/Blocked
 
 **What happened:** [Description of test results]
 
@@ -304,7 +304,7 @@ git diff | Set-Content "$OUTPUT_DIR/fix.diff"
 
 **Verify all required files exist:**
 ```powershell
-@("baseline.log", "approach.md", "result.txt", "fix.diff", "analysis.md") | ForEach-Object {
+@("baseline.log", "approach.md", "result.txt", "fix.diff", "analysis.md", "test-output.log") | ForEach-Object {
     if (Test-Path "$OUTPUT_DIR/$_") { Write-Host "✅ $_" } 
     else { Write-Host "❌ MISSING: $_" }
 }
