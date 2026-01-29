@@ -56,10 +56,11 @@ Most scripts post to the **same single comment** identified by `<!-- AI Summary 
 
 ### Separate PR Finalization Comment
 
-The `post-pr-finalize-comment.ps1` script posts a **separate comment** identified by `<!-- PR-FINALIZE-COMMENT -->`. This is intentional because:
-- Finalization reviews can happen multiple times (after each commit)
-- Each review is numbered (Review 1, Review 2, etc.)
-- Keeps finalization reviews distinct from automated analysis
+The `post-pr-finalize-comment.ps1` script posts a **separate comment** identified by `<!-- PR-FINALIZE-COMMENT -->`. This comment contains two sections:
+- **Title**: Shows the suggested PR title with comparison to current
+- **Description**: Shows the suggested PR description
+
+If an existing finalize comment exists, it will be replaced with the updated Title and Description sections. This keeps finalization reviews distinct from automated analysis.
 
 ## Section Scripts
 
