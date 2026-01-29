@@ -62,6 +62,17 @@ try {
     exit 1
 }
 
+# Verify GitHub CLI authentication
+$authStatus = gh auth status 2>&1
+if ($LASTEXITCODE -ne 0) {
+    Write-Host ""
+    Write-Host "  ❌ GitHub CLI (gh) is not authenticated" -ForegroundColor Red
+    Write-Host "  Run: gh auth login" -ForegroundColor Cyan
+    Write-Host ""
+    exit 1
+}
+Write-Host "  ✅ GitHub CLI authenticated" -ForegroundColor Green
+
 # Create output directory
 if (-not (Test-Path $OutputDir)) {
     New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null
