@@ -41,7 +41,8 @@ public class EditorFeatureTests : _GalleryUITest
 		App.WaitForElement("TestEditor");
 		App.Tap("TestEditor");
 		App.PressEnter();
-		App.DismissKeyboard();
+		App.WaitForElement("EditorControlTitleLabel");
+		App.Tap("EditorControlTitleLabel");
 		Assert.That(App.WaitForElement("CompletedLabel").GetText(), Is.EqualTo("Completed: Event Triggered"));
 	}
 
@@ -84,7 +85,8 @@ public class EditorFeatureTests : _GalleryUITest
 		App.WaitForElement("SelectionLengthEntry");
 		App.Tap("SelectionLengthEntry");
 		await Task.Delay(100);
-		App.DismissKeyboard();
+		App.WaitForElement("EditorControlTitleLabel");
+		App.Tap("EditorControlTitleLabel");
 		Assert.That(App.WaitForElement("UnfocusedLabel").GetText(), Is.EqualTo("Unfocused: Event Triggered"));
 	}
 
