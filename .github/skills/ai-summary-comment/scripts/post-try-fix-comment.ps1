@@ -252,19 +252,19 @@ if ([string]::IsNullOrWhiteSpace($FilesChanged)) {
     $FilesChanged = "_No files changed information available_"
 }
 
-# Status indicator mapping (ASCII-safe)
-$statusIndicator = switch ($Status) {
-    "Pass" { "[PASS]" }
-    "Fail" { "[FAIL]" }
-    "Compiles" { "[COMPILES]" }
-    default { "[?]" }
+# Status emoji mapping
+$statusEmoji = switch ($Status) {
+    "Pass" { "✅" }
+    "Fail" { "❌" }
+    "Compiles" { "🔨" }
+    default { "⚪" }
 }
 
 # Build the new attempt section - compact format
 # Note: blank line after </summary> is required for proper markdown rendering
 $attemptSection = @"
 <details>
-<summary>$statusIndicator Fix $AttemptNumber</summary>
+<summary>$statusEmoji Fix $AttemptNumber</summary>
 
 "@
 
@@ -326,7 +326,7 @@ try {
 }
 
 # Build the try-fix section content
-$tryFixHeader = "### Try-Fix Analysis`n`n"
+$tryFixHeader = "### 🔧 Try-Fix Analysis`n`n"
 
 # Extract existing try-fix section to preserve previous attempts
 $existingTryFixContent = ""
@@ -344,8 +344,8 @@ if ($existingTryFixContent -match $attemptPattern) {
     $tryFixContent = $existingTryFixContent -replace $attemptPattern, $attemptSection
 } elseif (-not [string]::IsNullOrWhiteSpace($existingTryFixContent)) {
     Write-Host "Adding new Fix $AttemptNumber..." -ForegroundColor Yellow
-    # Remove header if present to avoid duplication (match any emoji or no emoji)
-    $existingTryFixContent = $existingTryFixContent -replace "^###\s*[^\n]*Try-Fix Analysis[^\n]*`n*", ""
+    # Remove header if present to avoid duplication
+    $existingTryFixContent = $existingTryFixContent -replace "^### 🔧 (Try-Fix Analysis|Fix Attempts)\s*`n*", ""
     $tryFixContent = $tryFixHeader + $existingTryFixContent.TrimEnd() + "`n`n" + $attemptSection
 } else {
     Write-Host "Creating first fix..." -ForegroundColor Yellow
@@ -378,7 +378,7 @@ if ($existingComment) {
     $commentBody = @"
 $MAIN_MARKER
 
-## AI Summary
+## 🤖 AI Summary
 
 $tryFixSection
 "@
@@ -410,31 +410,9 @@ if ($DryRun) {
     $TRY_FIX_END_MARKER = "<!-- /SECTION:TRY-FIX -->"
     
     if ($existingPreview -match [regex]::Escape($TRY_FIX_MARKER)) {
-        # Extract existing TRY-FIX content to preserve previous attempts (same logic as GitHub comment path)
-        $startPattern = [regex]::Escape($TRY_FIX_MARKER)
-        $endPattern = [regex]::Escape($TRY_FIX_END_MARKER)
-        $existingTryFixPreview = ""
-        if ($existingPreview -match "(?s)$startPattern(.*?)$endPattern") {
-            $existingTryFixPreview = $Matches[1].Trim()
-        }
-        
-        # Check if this attempt already exists - replace it, otherwise append
-        $attemptPatternPreview = "(?s)<details>\s*<summary>.*?(Attempt $AttemptNumber`:|Fix $AttemptNumber).*?</details>"
-        if ($existingTryFixPreview -match $attemptPatternPreview) {
-            Write-Host "Replacing existing Fix $AttemptNumber in preview..." -ForegroundColor Yellow
-            $updatedTryFixContent = $existingTryFixPreview -replace $attemptPatternPreview, $attemptSection
-            $tryFixSectionUpdated = "$SECTION_START`n$tryFixHeader$updatedTryFixContent`n$SECTION_END"
-        } else {
-            Write-Host "Adding Fix $AttemptNumber to preview..." -ForegroundColor Yellow
-            # Remove header if present to avoid duplication (match any emoji or no emoji)
-            $existingTryFixPreview = $existingTryFixPreview -replace "^###\s*[^\n]*Try-Fix Analysis[^\n]*`n*", ""
-            $updatedTryFixContent = $tryFixHeader + $existingTryFixPreview.TrimEnd() + "`n`n" + $attemptSection
-            $tryFixSectionUpdated = "$SECTION_START`n$updatedTryFixContent`n$SECTION_END"
-        }
-        
-        # Replace the section in the preview
+        # Replace existing TRY-FIX section
         $pattern = [regex]::Escape($TRY_FIX_MARKER) + "[\s\S]*?" + [regex]::Escape($TRY_FIX_END_MARKER)
-        $finalComment = $existingPreview -replace $pattern, $tryFixSectionUpdated
+        $finalComment = $existingPreview -replace $pattern, $tryFixSection
     } elseif (-not [string]::IsNullOrWhiteSpace($existingPreview)) {
         # Append TRY-FIX section to existing content
         $finalComment = $existingPreview.TrimEnd() + "`n`n" + $tryFixSection
