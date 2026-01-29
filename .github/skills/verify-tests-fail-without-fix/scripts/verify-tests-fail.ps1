@@ -170,19 +170,29 @@ function Update-VerificationLabels {
     Write-Host ""
     Write-Host "🏷️  Updating verification labels on PR #$PR..." -ForegroundColor Cyan
     
+    # Track success for both operations
+    $removeSuccess = $true
+    
     # Remove the opposite label if it exists (using REST API to avoid GraphQL deprecation issues)
     $existingLabels = gh pr view $PR --json labels --jq '.labels[].name' 2>$null
     if ($existingLabels -contains $labelToRemove) {
         Write-Host "   Removing: $labelToRemove" -ForegroundColor Yellow
         gh api "repos/dotnet/maui/issues/$PR/labels/$labelToRemove" --method DELETE 2>$null | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            $removeSuccess = $false
+            Write-Host "   ⚠️  Failed to remove label: $labelToRemove" -ForegroundColor Yellow
+        }
     }
     
     # Add the appropriate label (using REST API to avoid GraphQL deprecation issues)
     Write-Host "   Adding: $labelToAdd" -ForegroundColor Green
     $result = gh api "repos/dotnet/maui/issues/$PR/labels" --method POST -f "labels[]=$labelToAdd" 2>&1
+    $addSuccess = $LASTEXITCODE -eq 0
     
-    if ($LASTEXITCODE -eq 0) {
+    if ($addSuccess -and $removeSuccess) {
         Write-Host "✅ Labels updated successfully" -ForegroundColor Green
+    } elseif ($addSuccess) {
+        Write-Host "⚠️  Label added but failed to remove old label" -ForegroundColor Yellow
     } else {
         Write-Host "⚠️  Failed to update labels: $result" -ForegroundColor Yellow
     }
