@@ -252,19 +252,19 @@ if ([string]::IsNullOrWhiteSpace($FilesChanged)) {
     $FilesChanged = "_No files changed information available_"
 }
 
-# Status emoji mapping
-$statusEmoji = switch ($Status) {
-    "Pass" { "✅" }
-    "Fail" { "❌" }
-    "Compiles" { "🔨" }
-    default { "⚪" }
+# Status indicator mapping (ASCII-safe)
+$statusIndicator = switch ($Status) {
+    "Pass" { "[PASS]" }
+    "Fail" { "[FAIL]" }
+    "Compiles" { "[COMPILES]" }
+    default { "[?]" }
 }
 
 # Build the new attempt section - compact format
 # Note: blank line after </summary> is required for proper markdown rendering
 $attemptSection = @"
 <details>
-<summary>$statusEmoji Fix $AttemptNumber</summary>
+<summary>$statusIndicator Fix $AttemptNumber</summary>
 
 "@
 
