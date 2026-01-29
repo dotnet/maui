@@ -416,8 +416,18 @@ namespace Microsoft.Maui.Controls
 							}
 							else
 							{
-								var castValue = Convert.ChangeType(value, prop.PropertyType);
-								prop.SetValue(content, castValue);
+								// Handle nullable types
+								Type targetType = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
+								
+								if (value == null)
+								{
+									prop.SetValue(content, null);
+								}
+								else
+								{
+									var castValue = Convert.ChangeType(value, targetType);
+									prop.SetValue(content, castValue);
+								}
 							}
 						}
 					}
