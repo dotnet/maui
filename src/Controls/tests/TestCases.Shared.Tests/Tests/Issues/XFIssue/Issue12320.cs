@@ -19,7 +19,7 @@ public class Issue12320 : _IssuesUITest
 		App.WaitForElementTillPageNavigationSettled("TestReady");
 		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
 		{
-			App.Back();
+			App.Back(); // In iOS 26, the AutomationID set on the Back button is not found by Appium, so the Back method is used for iOS 26.
 		}
 		else
 		{
