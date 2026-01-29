@@ -45,6 +45,7 @@
   <!-- Prepare the staging directory for MSBuild test payloads - runs early during Restore -->
   <Target Name="PrepareMauiHelixPayload" BeforeTargets="Restore;Build;Test">
     <MakeDir Directories="$(MauiHelixPayloadDir)src/Workload/Microsoft.Maui.Sdk/Sdk" />
+    <MakeDir Directories="$(MauiHelixPayloadDir)src/Controls/src/Build.Tasks/nuget/buildTransitive/netstandard2.0" />
     
     <!-- Copy Maui.InTree.props and targets -->
     <Copy SourceFiles="$(RepoRoot)src/Maui.InTree.props" DestinationFolder="$(MauiHelixPayloadDir)src" SkipUnchangedFiles="true" />
@@ -55,6 +56,12 @@
       <WorkloadSdkFiles Include="$(RepoRoot)src/Workload/Microsoft.Maui.Sdk/Sdk/*.*" />
     </ItemGroup>
     <Copy SourceFiles="@(WorkloadSdkFiles)" DestinationFolder="$(MauiHelixPayloadDir)src/Workload/Microsoft.Maui.Sdk/Sdk" SkipUnchangedFiles="true" />
+    
+    <!-- Copy Build.Tasks nuget files needed by MSBuild tests -->
+    <ItemGroup>
+      <BuildTasksNugetFiles Include="$(RepoRoot)src/Controls/src/Build.Tasks/nuget/buildTransitive/netstandard2.0/*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(BuildTasksNugetFiles)" DestinationFolder="$(MauiHelixPayloadDir)src/Controls/src/Build.Tasks/nuget/buildTransitive/netstandard2.0" SkipUnchangedFiles="true" />
     
     <Message Text="Prepared MSBuild test payload at $(MauiHelixPayloadDir)" Importance="high" />
   </Target>

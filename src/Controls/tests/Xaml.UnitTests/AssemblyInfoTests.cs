@@ -87,13 +87,24 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			var helixPayload = Environment.GetEnvironmentVariable("HELIX_CORRELATION_PAYLOAD");
 			if (!string.IsNullOrEmpty(helixPayload))
 			{
+				var normalizedFile = file.Replace('\\', '/');
+				
 				// The MSBuild test files are copied to msbuild/ in the Helix payload
 				// Map paths like "src/Controls/tests/Xaml.UnitTests/MSBuild/X" to "msbuild/X"
 				var msbuildPrefix = "src/Controls/tests/Xaml.UnitTests/MSBuild/";
-				if (file.StartsWith(msbuildPrefix, StringComparison.OrdinalIgnoreCase) || file.Replace('\\', '/').StartsWith(msbuildPrefix, StringComparison.OrdinalIgnoreCase))
+				if (normalizedFile.StartsWith(msbuildPrefix, StringComparison.OrdinalIgnoreCase))
 				{
-					var relativePath = file.Replace('\\', '/').Substring(msbuildPrefix.Length);
+					var relativePath = normalizedFile.Substring(msbuildPrefix.Length);
 					var helixPath = IOPath.Combine(helixPayload, "msbuild", relativePath);
+					if (File.Exists(helixPath))
+						return helixPath;
+				}
+				
+				// Files from src/ folder are in the "src" correlation payload
+				// Map paths like "src/Controls/src/Build.Tasks/nuget/..." directly to "src/..." in payload
+				if (normalizedFile.StartsWith("src/", StringComparison.OrdinalIgnoreCase))
+				{
+					var helixPath = IOPath.Combine(helixPayload, normalizedFile);
 					if (File.Exists(helixPath))
 						return helixPath;
 				}
