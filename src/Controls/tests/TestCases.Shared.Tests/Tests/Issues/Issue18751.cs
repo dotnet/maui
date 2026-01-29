@@ -17,8 +17,8 @@ public class Issue18751 : _IssuesUITest
 	public void Issue18751Test()
 	{
 		App.WaitForElement("WaitForStubControl");
-
+		// Load images and hide scrollbar.
 		// The test passes if you are able to see the image, name, and location of each monkey.
-		VerifyScreenshot();
+		VerifyScreenshot(retryDelay: TimeSpan.FromSeconds(2));
 	}
 }
