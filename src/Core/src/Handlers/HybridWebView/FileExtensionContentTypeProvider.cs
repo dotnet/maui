@@ -10,6 +10,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Maui;
 
 namespace Microsoft.Maui.Handlers;
 
@@ -458,7 +459,7 @@ internal sealed class FileExtensionContentTypeProvider
 			return null;
 		}
 
-		int index = path.LastIndexOf('.');
+		int index = path.LastIndexOfChar('.');
 		if (index < 0)
 		{
 			return null;

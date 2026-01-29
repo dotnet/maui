@@ -88,15 +88,31 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			intermediateDirectory = IOPath.Combine(tempDirectory, "obj", "Debug", GetTfm());
 			Directory.CreateDirectory(tempDirectory);
 
-			//copy _Directory.Build.[props|targets] in test/
-			var props = AssemblyInfoTests.GetFilePathFromRoot(IOPath.Combine("src", "Controls", "tests", "Xaml.UnitTests", "MSBuild", "_Directory.Build.props"));
-			var targets = AssemblyInfoTests.GetFilePathFromRoot(IOPath.Combine("src", "Controls", "tests", "Xaml.UnitTests", "MSBuild", "_Directory.Build.targets"));
+			// On Helix, use the Helix-specific Directory.Build files that reference HELIX_CORRELATION_PAYLOAD
+			var isHelix = AssemblyInfoTests.IsRunningOnHelix();
+			var propsFileName = isHelix ? "_Directory.Build.Helix.props" : "_Directory.Build.props";
+			var targetsFileName = isHelix ? "_Directory.Build.Helix.targets" : "_Directory.Build.targets";
+
+			string props, targets;
+			if (isHelix)
+			{
+				// On Helix, the test DLL directory contains the MSBuild folder with our files
+				var msbuildDir = IOPath.Combine(testDirectory, "MSBuild");
+				props = IOPath.Combine(msbuildDir, propsFileName);
+				targets = IOPath.Combine(msbuildDir, targetsFileName);
+			}
+			else
+			{
+				// Local development - find from repo root
+				props = AssemblyInfoTests.GetFilePathFromRoot(IOPath.Combine("src", "Controls", "tests", "Xaml.UnitTests", "MSBuild", propsFileName));
+				targets = AssemblyInfoTests.GetFilePathFromRoot(IOPath.Combine("src", "Controls", "tests", "Xaml.UnitTests", "MSBuild", targetsFileName));
+			}
 
 			if (!File.Exists(props))
 			{
 				//NOTE: VSTS may be running tests in a staging directory, so we can use an environment variable to find the source
 				//https://docs.microsoft.com/en-us/vsts/build-release/concepts/definitions/build/variables?view=vsts&tabs=batch#buildsourcesdirectory
-				throw new FileNotFoundException("Unable to find _Directory.Build.props at path: " + props);
+				throw new FileNotFoundException($"Unable to find {propsFileName} at path: {props}");
 			}
 
 			File.Copy(props, IOPath.Combine(tempDirectory, "Directory.Build.props"), true);

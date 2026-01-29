@@ -107,7 +107,7 @@ namespace Microsoft.Maui
 
 			string currentString = "";
 			char lastCharacter = ' ';
-			var index = fontFamily.LastIndexOf('-');
+			var index = fontFamily.LastIndexOfChar('-');
 			bool multipleCaps = false;
 			var cleansedString = index > 0 ? fontFamily.Substring(0, index) : fontFamily;
 			foreach (var c in cleansedString)
