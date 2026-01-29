@@ -650,7 +650,45 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			// Since the Appium screenshot on Mac (unlike Windows) is of the entire screen, not just the app,
 			// we are going to crop the screenshot to the app window bounds, including rounded corners.
-			var windowBounds = App.FindElement(AppiumQuery.ByXPath("//XCUIElementTypeWindow")).GetRect();
+			// In multi-window apps (UIApplicationSceneManifest), there may be multiple windows.
+			System.Drawing.Rectangle windowBounds = default;
+			
+			// Find the SceneWindow (used in multi-window apps) or fallback to any window
+			var windows = App.FindElements(AppiumQuery.ByXPath("//XCUIElementTypeWindow[@identifier='SceneWindow']"));
+			if (windows.Count == 0)
+			{
+				windows = App.FindElements(AppiumQuery.ByClass("XCUIElementTypeWindow"));
+			}
+			
+			if (windows.Count == 0)
+			{
+				throw new InvalidOperationException("No windows found for screenshot");
+			}
+			
+			// Find the largest window by area (most likely to be the main content window)
+			int maxArea = 0;
+			foreach (var window in windows)
+			{
+				try
+				{
+					var rect = window.GetRect();
+					int area = rect.Width * rect.Height;
+					if (area > maxArea)
+					{
+						maxArea = area;
+						windowBounds = rect;
+					}
+				}
+				catch
+				{
+					// Skip windows that can't be measured
+				}
+			}
+			
+			if (maxArea == 0)
+			{
+				throw new InvalidOperationException("Could not determine window bounds for screenshot");
+			}
 
 			var x = windowBounds.X;
 			var y = windowBounds.Y;

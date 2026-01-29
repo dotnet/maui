@@ -20,6 +20,23 @@ namespace UITest.Appium
 			_commandExecutor.AddCommandGroup(new AppiumCatalystThemeChangeAction());
 			_commandExecutor.AddCommandGroup(new AppiumCatalystVirtualKeyboardActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumCatalystScrollActions(this));
+
+			// Activate the app to bring it to foreground
+			try
+			{
+				var appId = config.GetProperty<string>("AppId");
+				if (!string.IsNullOrWhiteSpace(appId))
+				{
+					_driver?.ExecuteScript("macos: activateApp", new Dictionary<string, object>
+					{
+						{ "bundleId", appId }
+					});
+				}
+			}
+			catch (Exception)
+			{
+				// Ignore activation errors - app may already be active
+			}
 		}
 
 		public override ApplicationState AppState
@@ -49,6 +66,59 @@ namespace UITest.Appium
 					return ApplicationState.Unknown;
 				}
 			}
+		}
+
+		// Override to avoid XPath queries which can fail on mac2 driver.
+		// On Mac Catalyst, AutomationId maps to accessibilityIdentifier.
+		// NOTE: Window-scoped searches were removed because they cause StaleElementReferenceException
+		// when window elements expire from Appium's cache. Driver-level search works reliably.
+
+		public override IUIElement FindElement(string id)
+		{
+			// Use driver-level search - window-scoped search causes StaleElementReferenceException
+			var byAccessibility = AppiumQuery.ByAccessibilityId(id).FindElement(this);
+			if (byAccessibility != null)
+				return byAccessibility;
+
+			return Query.ById(id).FirstOrDefault()!;
+		}
+
+		public override IReadOnlyCollection<IUIElement> FindElements(string id)
+		{
+			// Use driver-level search - window-scoped search causes StaleElementReferenceException
+			var byAccessibility = AppiumQuery.ByAccessibilityId(id).FindElements(this);
+			if (byAccessibility != null && byAccessibility.Count > 0)
+				return byAccessibility;
+
+			return Query.ById(id);
+		}
+
+		public override IUIElement FindElementByText(string text)
+		{
+			// Use driver-level search - window-scoped search causes StaleElementReferenceException
+			var byAccessibility = AppiumQuery.ByAccessibilityId(text).FindElement(this);
+			if (byAccessibility != null)
+				return byAccessibility;
+
+			var byName = AppiumQuery.ByName(text).FindElement(this);
+			if (byName != null)
+				return byName;
+
+			return null!;
+		}
+
+		public override IReadOnlyCollection<IUIElement> FindElementsByText(string text)
+		{
+			// Use driver-level search - window-scoped search causes StaleElementReferenceException
+			var byAccessibility = AppiumQuery.ByAccessibilityId(text).FindElements(this);
+			if (byAccessibility != null && byAccessibility.Count > 0)
+				return byAccessibility;
+
+			var byName = AppiumQuery.ByName(text).FindElements(this);
+			if (byName != null && byName.Count > 0)
+				return byName;
+
+			return new List<IUIElement>();
 		}
 
 		private static AppiumOptions GetOptions(IConfig config)

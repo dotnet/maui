@@ -157,6 +157,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			var constraints = ScrollDirection == UICollectionViewScrollDirection.Vertical
 				? new Size(preferredAttributes.Size.Width, double.PositiveInfinity)
 				: new Size(double.PositiveInfinity, preferredAttributes.Size.Height);
+
+			// For horizontal scrolling views in unconstrained height containers (e.g., CarouselView in StackLayout),
+			// use infinite height to allow cells to self-size based on content
+			var virtualView = PlatformHandler?.VirtualView;
+			var parent = virtualView?.Parent;
+			var handler = parent?.Handler;
+
+			if (ScrollDirection == UICollectionViewScrollDirection.Horizontal &&
+				handler is IItemsViewHandler2 { IsHeightConstrained: false })
+			{
+				constraints.Height = double.PositiveInfinity;
+			}
+
 			return constraints;
 		}
 

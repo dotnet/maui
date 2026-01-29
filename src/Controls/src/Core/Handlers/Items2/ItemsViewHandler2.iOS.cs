@@ -11,8 +11,19 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
 {
-	public abstract partial class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, UIView> where TItemsView : ItemsView
+	internal interface IItemsViewHandler2
 	{
+		bool IsHeightConstrained { get; }
+		bool HasHadConstrainedMeasure { get; }
+	}
+
+	public abstract partial class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, UIView>, IItemsViewHandler2 where TItemsView : ItemsView
+	{
+		bool IItemsViewHandler2.IsHeightConstrained => !double.IsInfinity(_lastHeightConstraint);
+		bool IItemsViewHandler2.HasHadConstrainedMeasure => _hasHadConstrainedMeasure;
+		double _lastHeightConstraint;
+		bool _hasHadConstrainedMeasure;
+		
 		public ItemsViewHandler2() : base(ItemsViewMapper)
 		{
 
@@ -182,6 +193,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			var width = contentSize.Width <= widthConstraint ? contentSize.Width : widthConstraint;
 			var height = contentSize.Height <= heightConstraint ? contentSize.Height : heightConstraint;
 
+			_lastHeightConstraint = heightConstraint;
+			
+			// Track if we've ever had a properly constrained measure
+			if (!double.IsInfinity(heightConstraint) && heightConstraint > 0)
+			{
+				_hasHadConstrainedMeasure = true;
+			}
+
 			IView virtualView = VirtualView;
 
 			width = ViewHandlerExtensions.ResolveConstraints(width, virtualView.Width, virtualView.MinimumWidth, virtualView.MaximumWidth);
@@ -210,6 +229,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				{
 					contentSize.Width = desiredSize.Width;
 				}
+			}
+
+			// For horizontal scrolling views in unbounded height containers (e.g., CarouselView in StackLayout),
+			// if the height is still 0 after the above check, we need to provide a reasonable estimate
+			// so the parent layout gives us space. This is especially important in scene-based apps
+			// where the window attaches after the initial measure pass.
+			if (contentSize.Height == 0 && double.IsInfinity(heightConstraint))
+			{
+				// Use a fallback to allow cells to be created
+				contentSize.Height = 300;
+			}
+			if (contentSize.Width == 0 && double.IsInfinity(widthConstraint))
+			{
+				contentSize.Width = 300;
 			}
 
 			return contentSize;

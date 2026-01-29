@@ -205,4 +205,17 @@ $testFailures = ($uniqueResults | Where-Object { $_.Type -eq "TestFailure" }).Co
 
 Write-Host "`nSummary: $buildErrors build error(s), $testFailures test failure(s)" -ForegroundColor Cyan
 
-$uniqueResults
+# Output with full details - Format-List works better for long error messages
+# When piped, the caller can format as desired. When run directly, show table.
+if ($uniqueResults.Count -gt 0) {
+    # Set column widths to prevent truncation
+    $tableFormat = @(
+        @{Label="Type"; Expression={$_.Type}; Width=12},
+        @{Label="Source"; Expression={$_.Source}; Width=60},
+        @{Label="Message"; Expression={$_.Message}; Width=50}
+    )
+    $uniqueResults | Format-Table $tableFormat -Wrap
+    
+    # Also output the raw objects for pipeline use
+    Write-Output $uniqueResults
+}
