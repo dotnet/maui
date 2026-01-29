@@ -25,6 +25,19 @@ internal static class SafeAreaExtensions
 			_ => null
 		};
 
+	/// <summary>
+	/// Checks if the layout is associated with a ContentView (which includes ContentPage).
+	/// This is used to limit the transition inset re-application to content pages only,
+	/// avoiding the infinite loop issue with other view types like TabbedPage tabs.
+	/// </summary>
+	internal static bool IsContentViewLayout(object? layout) =>
+		layout switch
+		{
+			IContentView => true,
+			IElementHandler { VirtualView: IContentView } => true,
+			_ => false
+		};
+
 
 	internal static SafeAreaRegions GetSafeAreaRegionForEdge(int edge, ICrossPlatformLayout crossPlatformLayout)
 	{
@@ -150,10 +163,10 @@ internal static class SafeAreaExtensions
 					bool viewExtendsBeyondScreen = viewRight > screenWidth || viewBottom > screenHeight ||
 												   viewLeft < 0 || viewTop < 0;
 
-					if (viewExtendsBeyondScreen)
+						if (viewExtendsBeyondScreen)
 					{
-						// Only request re-apply for views that opt-in via IRequestInsetsOnTransition
-						// AND are not completely off-screen (double safety check).
+						// Only request re-apply for ContentView types (includes ContentPage) that
+						// opt-in via IRequestInsetsOnTransition AND are not completely off-screen.
 						// 
 						// IRequestInsetsOnTransition is used by Shell for fragment transitions where
 						// views are temporarily off-screen. For other scenarios like TabbedPage inactive
@@ -163,19 +176,27 @@ internal static class SafeAreaExtensions
 						// The isCompletelyOffScreen check is an additional safety net - even for Shell,
 						// if a view has no intersection with the visible screen, there's no need to
 						// request inset re-application.
+						//
+						// The IsContentViewLayout check limits this behavior to ContentView/ContentPage
+						// types, which are the primary use case for Shell fragment transitions.
 						bool isCompletelyOffScreen = viewLeft >= screenWidth || viewRight <= 0 ||
 													 viewTop >= screenHeight || viewBottom <= 0;
 
 						// Use the listener's cached method to check for IRequestInsetsOnTransition
 						bool shouldRequestInsets = globalWindowInsetsListener?.ShouldRequestInsetsOnTransition(view) == true;
+						
+						// Only apply to ContentView types (ContentPage, etc.)
+						bool isContentView = IsContentViewLayout(layout);
 
-						if (!isCompletelyOffScreen && shouldRequestInsets)
+						if (!isCompletelyOffScreen && shouldRequestInsets && isContentView && globalWindowInsetsListener is not null)
 						{
 							// Request insets to be reapplied after the next layout pass
 							// when the view should be properly positioned.
 							// Don't return early - let processing continue with current insets
 							// to avoid visual popping, the re-apply will correct any issues.
-							view.Post(() => ViewCompat.RequestApplyInsets(view));
+							// Use cached action to avoid lambda allocation on each call.
+							var requestInsetsAction = globalWindowInsetsListener.GetRequestInsetsAction(view);
+							view.Post(requestInsetsAction);
 						}
 					}
 

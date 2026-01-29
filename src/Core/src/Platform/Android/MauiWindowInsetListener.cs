@@ -37,6 +37,11 @@ namespace Microsoft.Maui.Platform
 		// null = not yet computed, true/false = cached result
 		bool? _shouldRequestInsetsOnTransition;
 
+		// Cached action for requesting insets re-application to avoid lambda allocations.
+		// Each view that needs deferred inset re-application gets its action cached here.
+		Action? _requestInsetsAction;
+		WeakReference<AView>? _requestInsetsViewRef;
+
 		/// <summary>
 		/// Gets whether views in this listener's hierarchy should have insets re-applied during transitions.
 		/// This is determined by checking if any parent implements IRequestInsetsOnTransition.
@@ -64,6 +69,35 @@ namespace Microsoft.Maui.Platform
 
 			_shouldRequestInsetsOnTransition = result;
 			return result;
+		}
+
+		/// <summary>
+		/// Gets a cached Action that requests insets for the given view.
+		/// This avoids lambda allocations on each call, which can cause GC pressure
+		/// when called frequently (e.g., during animations).
+		/// </summary>
+		internal Action GetRequestInsetsAction(AView view)
+		{
+			// Check if we have a cached action for this view
+			if (_requestInsetsAction != null && _requestInsetsViewRef != null)
+			{
+				if (_requestInsetsViewRef.TryGetTarget(out var cachedView) && cachedView == view)
+				{
+					return _requestInsetsAction;
+				}
+			}
+
+			// Create and cache a new action for this view
+			_requestInsetsViewRef = new WeakReference<AView>(view);
+			_requestInsetsAction = () =>
+			{
+				if (_requestInsetsViewRef.TryGetTarget(out var targetView))
+				{
+					ViewCompat.RequestApplyInsets(targetView);
+				}
+			};
+
+			return _requestInsetsAction;
 		}
 
 		// Static tracking for views that have local inset listeners.
