@@ -532,6 +532,16 @@ stages:
                     Write-Host "  Listing all DLLs in output:"
                     Get-ChildItem -Path "$tempDir/Unpackaged" -Filter "*.dll" | Select-Object -First 20 | ForEach-Object { Write-Host "    - $($_.Name)" }
                   }
+                  
+                  # CRITICAL DIAGNOSTIC: Check for Microsoft.ui.xaml.dll (the main WinUI3 native DLL)
+                  $winui = Get-ChildItem -Path "$tempDir/Unpackaged" -Filter "Microsoft.ui.xaml.dll" 2>$null
+                  if ($winui) {
+                    Write-Host "  CRITICAL OK: Found Microsoft.ui.xaml.dll"
+                  } else {
+                    Write-Host "  CRITICAL WARNING: Microsoft.ui.xaml.dll NOT found!"
+                    Write-Host "  This is the native WinUI3 DLL. Without it, the app will crash with 0xC000027B."
+                    Write-Host "  Total DLL count: $($(Get-ChildItem -Path "$tempDir/Unpackaged" -Filter "*.dll" 2>$null).Count)"
+                  }
                 } else {
                   Write-Host "Warning: Publish folder not found in $($project.ArtifactDir)"
                   # List what's in the artifact dir to debug
