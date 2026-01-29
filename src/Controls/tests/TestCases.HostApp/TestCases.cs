@@ -238,6 +238,11 @@ namespace Maui.Controls.Sample
 				if (issue == null)
 					return false;
 
+				// Log GC state when navigating to a test page
+#if ANDROID
+				GCMonitoringService.OnTestPageNavigated(name);
+#endif
+
 				issue.Action();
 				return true;
 			}
@@ -256,7 +261,17 @@ namespace Maui.Controls.Sample
 			public Page TryToGetTestPage(string name)
 			{
 				var issue = _issues.SingleOrDefault(x => string.Equals(x.Description, name, StringComparison.OrdinalIgnoreCase));
-				return issue?.PageFactory?.Invoke();
+				var page = issue?.PageFactory?.Invoke();
+				
+				// Log GC state when navigating to a test page
+#if ANDROID
+				if (page != null)
+				{
+					GCMonitoringService.OnTestPageNavigated(name);
+				}
+#endif
+				
+				return page;
 			}
 
 			public void FilterIssues(string filter = null)

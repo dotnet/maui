@@ -19,6 +19,11 @@ namespace Maui.Controls.Sample
 
 		public static MauiApp CreateMauiApp()
 		{
+			// Initialize GC monitoring at app startup (logs to Console.WriteLine/logcat)
+#if ANDROID
+			GCMonitoringService.Initialize();
+#endif
+
 			var appBuilder = MauiApp.CreateBuilder();
 
 #if IOS || ANDROID || MACCATALYST

@@ -12,7 +12,7 @@ public class Issue33768 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Layout)]
-	public void ScrollableContentShouldNotCauseExcessiveGC()
+	public void NegativeMarginCollectionViewShouldNotCauseExcessiveGC()
 	{
 		// Wait for the page to load
 		App.WaitForElement("GCCountLabel");
@@ -28,8 +28,8 @@ public class Issue33768 : _IssuesUITest
 		System.Diagnostics.Debug.WriteLine($"Initial GCCount: {initialCount}");
 
 		// Wait 10 seconds while idle
-		// If a regression occurs, views positioned beyond screen bounds would trigger
-		// continuous RequestApplyInsets calls, causing lambda allocations and GC
+		// If bug is present, the negative margin causes viewExtendsBeyondScreen to be true,
+		// which triggers continuous RequestApplyInsets calls, causing lambda allocations and GC
 		Task.Delay(10000).Wait();
 
 		// Get the count after waiting
@@ -41,19 +41,21 @@ public class Issue33768 : _IssuesUITest
 		// Calculate how many GC events happened during idle time
 		int gcsDuringIdle = afterWaitCount - initialCount;
 
-		// This test verifies that scrollable content doesn't trigger excessive GC.
-		// Issue #33768 was closed as duplicate of #33731, both caused by PR #33285's
-		// viewExtendsBeyondScreen check. The fix ensures that:
-		// 1. Views outside Shell don't get transition inset re-application
-		// 2. Views completely off-screen are skipped entirely
+		// This test uses a CollectionView with Margin=-50 (negative margin).
+		// The negative margin causes native view bounds to extend beyond screen edges.
 		// 
-		// We use a threshold of 2 to detect regressions while allowing for minimal GC
-		// from normal app activity
+		// WITHOUT FIX: viewExtendsBeyondScreen check in SafeAreaExtensions.cs would
+		// trigger infinite RequestApplyInsets loop, causing ~60 allocations/sec
+		// and 5+ GCs in 30 seconds.
+		//
+		// WITH FIX: The IRequestInsetsOnTransition guard ensures only Shell fragments
+		// during transitions get the re-apply behavior, so no infinite loop occurs.
+		// 
+		// Threshold of 2 allows for minimal GC from normal app activity
 		Assert.That(gcsDuringIdle, Is.LessThan(2),
-			$"Scrollable content should not cause excessive GC. " +
+			$"CollectionView with negative margin should not cause excessive GC. " +
 			$"Initial: {initialCount}, After 10s: {afterWaitCount}, GCs during idle: {gcsDuringIdle}. " +
-			$"Excessive GC may indicate a regression in RequestApplyInsets handling.");
-	}
+			$"Excessive GC indicates regression in RequestApplyInsets handling (Issue #33768).");
 	}
 
 	private static int GetCountFromStatus(string status)

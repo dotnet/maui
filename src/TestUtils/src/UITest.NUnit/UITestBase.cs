@@ -35,6 +35,7 @@ namespace UITest.Appium.NUnit
 		public virtual void TestTearDown()
 		{
 			RecordTestTeardown();
+			LogGCCountFromDeviceLogs();
 			UITestBaseTearDown();
 			if (ResetAfterEachTest)
 			{
@@ -46,6 +47,65 @@ namespace UITest.Appium.NUnit
 		{
 			var name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
 			TestContext.Progress.WriteLine($">>>>> {DateTime.Now} {name} Stop");
+		}
+
+		/// <summary>
+		/// Parse [MAUI_GC] entries from device logs and log the GC count for this test.
+		/// This helps track GC activity across all UI tests to detect regressions.
+		/// </summary>
+		void LogGCCountFromDeviceLogs()
+		{
+			try
+			{
+				var types = App.GetLogTypes().ToArray();
+				if (!types.Contains("logcat", StringComparer.InvariantCultureIgnoreCase))
+					return;
+
+				var entries = App.GetLogEntries("logcat");
+				
+				// Look for [MAUI_GC] entries and extract the latest Gen0 count
+				int? latestGen0 = null;
+				string? testPage = null;
+				
+				foreach (var entry in entries)
+				{
+					if (!entry.Contains("[MAUI_GC]", StringComparison.Ordinal))
+						continue;
+					
+					// Parse entries like: [MAUI_GC] TestPage=Issue33731, Gen0=5, Gen1=0, Gen2=0
+					// or: [MAUI_GC] State=..., Gen0=5, Gen1=0, Gen2=0, ElapsedSec=10.5
+					var match = System.Text.RegularExpressions.Regex.Match(entry, @"Gen0=(\d+)");
+					if (match.Success && int.TryParse(match.Groups[1].Value, out int gen0))
+					{
+						latestGen0 = gen0;
+					}
+					
+					// Also capture test page name if present
+					var pageMatch = System.Text.RegularExpressions.Regex.Match(entry, @"TestPage=([^,]+)");
+					if (pageMatch.Success)
+					{
+						testPage = pageMatch.Groups[1].Value;
+					}
+				}
+				
+				if (latestGen0.HasValue)
+				{
+					var name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
+					var pageInfo = testPage != null ? $" (page: {testPage})" : "";
+					TestContext.Progress.WriteLine($">>>>> [GC] {name}{pageInfo}: Gen0={latestGen0.Value} collections during test");
+					
+					// Log a warning if GC count seems high (potential regression)
+					if (latestGen0.Value >= 5)
+					{
+						TestContext.Progress.WriteLine($">>>>> [GC WARNING] High GC count ({latestGen0.Value}) may indicate a memory issue!");
+					}
+				}
+			}
+			catch (Exception e)
+			{
+				// Don't fail tests due to GC logging issues
+				TestContext.Progress.WriteLine($">>>>> [GC] Unable to parse GC logs: {e.Message}");
+			}
 		}
 
 		protected virtual void FixtureSetup()

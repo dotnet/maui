@@ -4,18 +4,19 @@ namespace Maui.Controls.Sample.Issues;
 /// <summary>
 /// Test for Issue #33768 - Performance degradation caused by infinite RequestApplyInsets loop.
 /// 
-/// This is a regression test to verify that pages with large scrollable content do not
-/// trigger excessive GC activity. Issue #33768 was closed as a duplicate of #33731,
-/// as both had the same root cause: PR #33285's viewExtendsBeyondScreen check causing
-/// infinite RequestApplyInsets loops.
+/// This test reproduces the bug by using a CollectionView with a NEGATIVE MARGIN (-50).
+/// The negative margin causes the native view bounds to extend beyond the screen edges,
+/// which triggers the viewExtendsBeyondScreen check in SafeAreaExtensions.cs.
 /// 
-/// This test uses a ScrollView with many items to verify that normal scrollable content
-/// doesn't cause the infinite loop. While the TabbedPage scenario (#33731) is the primary
-/// reproduction case (ViewPager positions inactive tabs off-screen), this test ensures
-/// that general scrollable content also works correctly.
+/// WITHOUT FIX: The check triggers view.Post(() => RequestApplyInsets(view)), which
+/// causes an infinite loop because the bounds never change, leading to ~60 allocations/sec
+/// and triggering GC every 5-6 seconds.
 /// 
-/// WITH BUG: Potential for excessive GC due to views positioned beyond screen bounds
-/// WITH FIX: No excessive GC activity for normal scrollable content
+/// WITH FIX: The IRequestInsetsOnTransition guard ensures only Shell fragments during
+/// transitions get the re-apply behavior, preventing the infinite loop.
+/// 
+/// WITH BUG: 5+ GC events in 30 seconds
+/// WITH FIX: 0-1 GC events in 30 seconds
 /// </summary>
 [Issue(IssueTracker.Github, 33768, "Performance degradation on Android caused by Infinite Layout Loop (RequestApplyInsets)", PlatformAffected.Android)]
 public class Issue33768 : ContentPage
@@ -69,39 +70,50 @@ public class Issue33768 : ContentPage
 			HorizontalOptions = LayoutOptions.Center
 		};
 
-		// Create a ScrollView with a very tall VerticalStackLayout
-		// The native VerticalStackLayout view will have bounds extending beyond screenHeight
-		// This is the exact scenario described in Issue #33768
-		var scrollContent = new VerticalStackLayout
+		// Create a CollectionView with NEGATIVE MARGIN
+		// This is the key reproduction scenario from Issue #33768:
+		// "Add a heavily populated CollectionView with a negative margin to force
+		// some of the scrolling off-screen"
+		// The negative margin causes native view bounds to extend beyond screen edges
+		var collectionView = new CollectionView
 		{
-			Spacing = 10,
-			Padding = 10
+			AutomationId = "TestCollectionView",
+			Margin = new Thickness(-50), // NEGATIVE MARGIN - triggers viewExtendsBeyondScreen
+			BackgroundColor = Colors.LightBlue,
+			ItemTemplate = new DataTemplate(() =>
+			{
+				var grid = new Grid { Padding = 10, HeightRequest = 80 };
+				var border = new Border
+				{
+					Stroke = Colors.DarkBlue,
+					StrokeThickness = 2,
+					BackgroundColor = Colors.White,
+					Padding = 10
+				};
+				var stack = new VerticalStackLayout();
+				var titleLabel = new Label { FontAttributes = FontAttributes.Bold, FontSize = 16 };
+				titleLabel.SetBinding(Label.TextProperty, "Title");
+				var descLabel = new Label { FontSize = 12, TextColor = Colors.Gray };
+				descLabel.SetBinding(Label.TextProperty, "Description");
+				stack.Children.Add(titleLabel);
+				stack.Children.Add(descLabel);
+				border.Content = stack;
+				grid.Children.Add(border);
+				return grid;
+			})
 		};
 
-		// Add many items to make the content extend well beyond screen height
-		// The issue mentions: "for Scrollable Content (like ScrollView, CollectionView, 
-		// or VerticalStackLayout inside a ScrollView), extending beyond screenHeight 
-		// is a valid and permanent state"
-		for (int i = 0; i < 100; i++)
+		// Populate with 100 items
+		var items = new List<CollectionItem>();
+		for (int i = 1; i <= 100; i++)
 		{
-			scrollContent.Children.Add(new Border
+			items.Add(new CollectionItem
 			{
-				Padding = 10,
-				BackgroundColor = i % 2 == 0 ? Colors.LightGray : Colors.White,
-				StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 5 },
-				Content = new Label
-				{
-					Text = $"Item {i + 1} - This content extends the VerticalStackLayout beyond screen bounds",
-					FontSize = 14
-				}
+				Title = $"Item {i}",
+				Description = "CollectionView with Margin=-50 extends native bounds beyond screen"
 			});
 		}
-
-		var scrollView = new ScrollView
-		{
-			AutomationId = "TestScrollView",
-			Content = scrollContent
-		};
+		collectionView.ItemsSource = items;
 
 		Content = new Grid
 		{
@@ -114,49 +126,11 @@ public class Issue33768 : ContentPage
 			Children =
 			{
 				// Header with monitoring UI
-				new VerticalStackLayout
-				{
-					Padding = 20,
-					Spacing = 10,
-					BackgroundColor = Colors.LightBlue,
-					Children =
-					{
-						new Label
-						{
-							Text = "Issue #33768 - ScrollView Content Loop Test",
-							AutomationId = "TitleLabel",
-							FontSize = 18,
-							FontAttributes = FontAttributes.Bold,
-							HorizontalOptions = LayoutOptions.Center
-						},
-						new BoxView { HeightRequest = 2, Color = Colors.Gray },
-						_gcCountLabel,
-						_statusLabel,
-						new Label
-						{
-							Text = "ScrollView contains 100 items.\n" +
-							       "WITH BUG: GCCount increases rapidly\n" +
-							       "WITH FIX: GCCount stays at 0-1",
-							FontSize = 12,
-							HorizontalOptions = LayoutOptions.Center
-						}
-					}
-				}.Apply(v => Grid.SetRow((BindableObject)v, 0)),
-
-				// ScrollView in the middle
-				scrollView.Apply(v => Grid.SetRow((BindableObject)v, 1)),
-
+				CreateHeader(),
+				// CollectionView with negative margin in the middle
+				CreateMiddle(collectionView),
 				// Footer with verdict
-				new VerticalStackLayout
-				{
-					Padding = 10,
-					BackgroundColor = Colors.LightGreen,
-					Children =
-					{
-						new Label { Text = "Verdict:", FontAttributes = FontAttributes.Bold },
-						_verdictLabel
-					}
-				}.Apply(v => Grid.SetRow((BindableObject)v, 2))
+				CreateFooter()
 			}
 		};
 
@@ -168,6 +142,62 @@ public class Issue33768 : ContentPage
 			_timer.Tick += OnTimerTick;
 			_timer.Start();
 		}
+	}
+
+	private View CreateHeader()
+	{
+		var header = new VerticalStackLayout
+		{
+			Padding = 20,
+			Spacing = 10,
+			BackgroundColor = Colors.LightBlue,
+			Children =
+			{
+				new Label
+				{
+					Text = "Issue #33768 - Negative Margin GC Test",
+					AutomationId = "TitleLabel",
+					FontSize = 18,
+					FontAttributes = FontAttributes.Bold,
+					HorizontalOptions = LayoutOptions.Center
+				},
+				new BoxView { HeightRequest = 2, Color = Colors.Gray },
+				_gcCountLabel,
+				_statusLabel,
+				new Label
+				{
+					Text = "CollectionView has Margin=-50.\n" +
+					       "WITH BUG: GCCount increases rapidly (5+ in 30s)\n" +
+					       "WITH FIX: GCCount stays at 0-1",
+					FontSize = 12,
+					HorizontalOptions = LayoutOptions.Center
+				}
+			}
+		};
+		Grid.SetRow(header, 0);
+		return header;
+	}
+
+	private View CreateMiddle(CollectionView collectionView)
+	{
+		Grid.SetRow(collectionView, 1);
+		return collectionView;
+	}
+
+	private View CreateFooter()
+	{
+		var footer = new VerticalStackLayout
+		{
+			Padding = 10,
+			BackgroundColor = Colors.LightGreen,
+			Children =
+			{
+				new Label { Text = "Verdict:", FontAttributes = FontAttributes.Bold },
+				_verdictLabel
+			}
+		};
+		Grid.SetRow(footer, 2);
+		return footer;
 	}
 
 	private void OnTimerTick(object? sender, EventArgs e)
@@ -193,7 +223,7 @@ public class Issue33768 : ContentPage
 			{
 				_verdictLabel.Text = $"FAIL: {_gcEventsDetected} GCs in {elapsedSeconds:F0}s";
 				_verdictLabel.TextColor = Colors.Red;
-				_statusLabel.Text = "BUG DETECTED: Infinite loop likely occurring";
+				_statusLabel.Text = "BUG DETECTED: Infinite loop occurring";
 			}
 			else
 			{
@@ -213,14 +243,11 @@ public class Issue33768 : ContentPage
 		base.OnDisappearing();
 		_timer?.Stop();
 	}
-}
 
-// Extension method to allow fluent Grid.SetRow in object initializers
-file static class ViewExtensions
-{
-	public static T Apply<T>(this T view, Action<T> action)
+	// Simple data class for CollectionView items
+	private class CollectionItem
 	{
-		action(view);
-		return view;
+		public string Title { get; set; } = string.Empty;
+		public string Description { get; set; } = string.Empty;
 	}
 }
