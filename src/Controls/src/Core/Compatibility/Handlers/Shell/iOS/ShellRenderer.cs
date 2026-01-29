@@ -364,7 +364,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			if (Shell.CurrentItem == null)
 			{
-				return;
+				throw new InvalidOperationException($"Content not found for active {Shell}. Title: {Shell.Title}. Route: {Shell.Route}.");
 			}
 			else if (_currentShellItemRenderer == null)
 			{
