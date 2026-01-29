@@ -43,11 +43,52 @@ Results reported back to the invoker:
 | `analysis` | Why it worked, or why it failed and what was learned |
 | `diff` | The actual code changes made (for review) |
 
-## Output Structure
+## Output Structure (MANDATORY)
 
-Save artifacts to `CustomAgentLogsTmp/PRState/<PRNumber>/try-fix/attempt-<N>/` with files: `approach.md`, `fix.diff`, `test-output.log`, `result.txt`, `analysis.md`.
+🚨 **FIRST STEP: Create output directory before doing anything else.**
 
-See [references/output-structure.md](references/output-structure.md) for setup commands and directory structure details.
+```powershell
+# Detect issue/PR number from branch name or use provided number
+$IssueNumber = "<ISSUE_OR_PR_NUMBER>"  # Replace with actual number
+
+# Find next attempt number
+$tryFixDir = "CustomAgentLogsTmp/PRState/$IssueNumber/try-fix"
+$existingAttempts = (Get-ChildItem "$tryFixDir/attempt-*" -Directory -ErrorAction SilentlyContinue).Count
+$attemptNum = $existingAttempts + 1
+
+# Create output directory
+$OUTPUT_DIR = "$tryFixDir/attempt-$attemptNum"
+New-Item -ItemType Directory -Path $OUTPUT_DIR -Force | Out-Null
+
+Write-Host "Output directory: $OUTPUT_DIR"
+```
+
+**Required files to create in `$OUTPUT_DIR`:**
+
+| File | When to Create | Content |
+|------|----------------|---------|
+| `approach.md` | After Step 4 (Design) | What fix you're attempting and why it's different from existing fixes |
+| `result.txt` | After Step 6 (Test) | Single word: `Pass` or `Fail` |
+| `fix.diff` | After Step 6 (Test) | Output of `git diff` showing your changes |
+| `test-output.log` | After Step 6 (Test) | Full output from test command |
+| `analysis.md` | After Step 6 (Test) | Why it worked/failed, insights learned |
+
+**Example approach.md:**
+```markdown
+## Approach: Geometric Off-Screen Check
+
+Skip RequestApplyInsets for views completely off-screen using simple bounds check:
+`viewLeft >= screenWidth || viewRight <= 0 || viewTop >= screenHeight || viewBottom <= 0`
+
+**Different from existing fix:** Current fix uses HashSet tracking. This approach uses pure geometry with no state.
+```
+
+**Example result.txt:**
+```
+Pass
+```
+
+See [references/output-structure.md](references/output-structure.md) for full directory structure details.
 
 ## Completion Criteria
 
@@ -139,6 +180,18 @@ Based on your analysis and any provided hints, design a single fix approach:
 
 **If hints suggest specific approaches**, prioritize those.
 
+🚨 **IMMEDIATELY create `approach.md`** in your output directory:
+
+```powershell
+@"
+## Approach: [Brief Name]
+
+[Description of what you're changing and why]
+
+**Different from existing fix:** [How this differs from PR's current approach]
+"@ | Set-Content "$OUTPUT_DIR/approach.md"
+```
+
 ### Step 5: Apply the Fix
 
 Implement your fix. Use `git status --short` and `git diff` to track changes.
@@ -174,15 +227,41 @@ pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform <platform> -TestFilter "<f
 
 See [references/compile-errors.md](references/compile-errors.md) for error patterns and iteration examples.
 
-### Step 7: Capture Artifacts
+### Step 7: Capture Artifacts (MANDATORY)
 
-Before reverting, save all artifacts to `$OUTPUT_DIR/`:
+🚨 **Before reverting, save ALL required files to `$OUTPUT_DIR`:**
 
-| File | Content |
-|------|---------|
-| `approach.md` | What was tried, strategy used, why different from existing fixes |
-| `fix.diff` | `git diff` output |
-| `analysis.md` | Result, hypothesis, what happened, why it worked/failed, insights for future |
+```powershell
+# 1. Save result (MUST be exactly "Pass" or "Fail")
+"Pass" | Set-Content "$OUTPUT_DIR/result.txt"  # or "Fail"
+
+# 2. Save the diff
+git diff | Set-Content "$OUTPUT_DIR/fix.diff"
+
+# 3. Save test output (should already exist from Step 6)
+# Copy-Item "path/to/test-output.log" "$OUTPUT_DIR/test-output.log"
+
+# 4. Save analysis
+@"
+## Analysis
+
+**Result:** Pass/Fail
+
+**What happened:** [Description of test results]
+
+**Why it worked/failed:** [Root cause analysis]
+
+**Insights:** [What was learned that could help future attempts]
+"@ | Set-Content "$OUTPUT_DIR/analysis.md"
+```
+
+**Verify all required files exist:**
+```powershell
+@("approach.md", "result.txt", "fix.diff", "analysis.md") | ForEach-Object {
+    if (Test-Path "$OUTPUT_DIR/$_") { Write-Host "✅ $_" } 
+    else { Write-Host "❌ MISSING: $_" }
+}
+```
 
 **Analysis quality matters.** Bad: "Didn't work". Good: "Fix attempted to reset state in OnPageSelected, but this fires after layout measurement. The cached value was already used."
 
