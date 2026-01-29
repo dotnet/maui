@@ -2,6 +2,8 @@
 
 .NET MAUI requires **Microsoft Build of OpenJDK** for Android development. Other JDK distributions (Oracle, Azul, Amazon Corretto, etc.) are **not supported**.
 
+> **⚠️ TEMPORARY**: Recommend JDK 21 (not 17) until WorkloadDependencies.json is updated in a future Android workload release. If WorkloadDependencies suggests ≤21, use 21. If it suggests >21, use that value.
+
 ## Why Microsoft OpenJDK Only?
 
 - **Tested and validated** with .NET MAUI toolchain
@@ -19,8 +21,8 @@
 ```
 
 **Examples:**
-- `/Library/Java/JavaVirtualMachines/microsoft-17.jdk/Contents/Home`
 - `/Library/Java/JavaVirtualMachines/microsoft-21.jdk/Contents/Home`
+- `/Library/Java/JavaVirtualMachines/microsoft-17.jdk/Contents/Home`
 
 **Detection commands:**
 ```bash
@@ -31,7 +33,7 @@ ls -d /Library/Java/JavaVirtualMachines/microsoft-*.jdk 2>/dev/null
 /usr/libexec/java_home -V 2>&1 | grep -i microsoft
 
 # Get specific version path
-/usr/libexec/java_home -v 17 2>/dev/null
+/usr/libexec/java_home -v 21 2>/dev/null
 ```
 
 **Identification:** Look for `"Microsoft"` in the vendor string or `microsoft-` prefix in directory name.
@@ -46,8 +48,8 @@ C:\Program Files (x86)\Microsoft\jdk-{VERSION}\  (32-bit, rare)
 ```
 
 **Examples:**
-- `C:\Program Files\Microsoft\jdk-17.0.14+7\`
 - `C:\Program Files\Microsoft\jdk-21.0.5+11\`
+- `C:\Program Files\Microsoft\jdk-17.0.14+7\`
 
 **Registry keys:**
 ```
@@ -263,11 +265,12 @@ fi
 
 ## Installation Commands
 
+> **⚠️ TEMPORARY**: Install JDK 21 until WorkloadDependencies.json is updated.
+
 ### macOS
 
 ```bash
-# Homebrew (recommended)
-brew install --cask microsoft-openjdk@17
+# Homebrew (recommended) - Use JDK 21
 brew install --cask microsoft-openjdk@21
 
 # Or download PKG from:
@@ -277,8 +280,7 @@ brew install --cask microsoft-openjdk@21
 ### Windows
 
 ```powershell
-# Using winget (recommended)
-winget install Microsoft.OpenJDK.17
+# Using winget (recommended) - Use JDK 21
 winget install Microsoft.OpenJDK.21
 
 # Or download EXE/MSI from:
@@ -293,10 +295,8 @@ wget https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-mi
 sudo dpkg -i packages-microsoft-prod.deb
 rm packages-microsoft-prod.deb
 
-# Install
+# Install - Use JDK 21
 sudo apt update
-sudo apt install msopenjdk-17
-# or
 sudo apt install msopenjdk-21
 ```
 
@@ -306,9 +306,7 @@ sudo apt install msopenjdk-21
 # Add Microsoft repository
 sudo rpm -Uvh https://packages.microsoft.com/config/rhel/8/packages-microsoft-prod.rpm
 
-# Install
-sudo dnf install msopenjdk-17
-# or
+# Install - Use JDK 21
 sudo dnf install msopenjdk-21
 ```
 
@@ -369,16 +367,16 @@ export JAVA_HOME=/Library/Java/JavaVirtualMachines/microsoft-17.jdk/Contents/Hom
 $env:JAVA_HOME = "C:\Program Files\Microsoft\jdk-17.0.14+7"
 
 # Permanent (requires admin)
-[Environment]::SetEnvironmentVariable("JAVA_HOME", "C:\Program Files\Microsoft\jdk-17.0.14+7", "Machine")
+[Environment]::SetEnvironmentVariable("JAVA_HOME", "C:\Program Files\Microsoft\jdk-21.0.5+11", "Machine")
 ```
 
 **Linux:**
 ```bash
 # Use update-java-alternatives (preferred)
-sudo update-java-alternatives --set msopenjdk-17-amd64
+sudo update-java-alternatives --set msopenjdk-21-amd64
 
 # Or set JAVA_HOME manually
-export JAVA_HOME=/usr/lib/jvm/msopenjdk-17
+export JAVA_HOME=/usr/lib/jvm/msopenjdk-21
 ```
 
 ### Multiple JDKs Installed

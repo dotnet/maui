@@ -111,6 +111,8 @@ dotnet workload list
 
 **CRITICAL: Only Microsoft Build of OpenJDK is supported.** Other JDK vendors (Oracle, Azul, Amazon Corretto, Temurin, etc.) are NOT supported for .NET MAUI development.
 
+> **⚠️ TEMPORARY**: Recommend JDK 21 (not 17) until WorkloadDependencies.json is updated in a future Android workload release.
+
 See `microsoft-openjdk.md` for complete installation paths and detection scripts.
 
 ### Why Microsoft OpenJDK Only?
@@ -122,9 +124,7 @@ See `microsoft-openjdk.md` for complete installation paths and detection scripts
 ### macOS
 
 ```bash
-# Homebrew (recommended)
-brew install --cask microsoft-openjdk@17
-# or
+# Homebrew (recommended) - Use JDK 21
 brew install --cask microsoft-openjdk@21
 
 # Verify it's Microsoft JDK
@@ -136,9 +136,7 @@ java -version 2>&1 | grep -i microsoft
 ### Windows
 
 ```powershell
-# Using winget (recommended)
-winget install Microsoft.OpenJDK.17
-# or
+# Using winget (recommended) - Use JDK 21
 winget install Microsoft.OpenJDK.21
 
 # Verify it's Microsoft JDK
@@ -155,10 +153,8 @@ wget https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-mi
 sudo dpkg -i packages-microsoft-prod.deb
 rm packages-microsoft-prod.deb
 
-# Install
+# Install - Use JDK 21
 sudo apt update
-sudo apt install msopenjdk-17
-# or
 sudo apt install msopenjdk-21
 
 # Verify it's Microsoft JDK
@@ -173,9 +169,7 @@ java -version 2>&1 | grep -i microsoft
 # Add Microsoft repository
 sudo rpm -Uvh https://packages.microsoft.com/config/rhel/8/packages-microsoft-prod.rpm
 
-# Install
-sudo dnf install msopenjdk-17
-# or
+# Install - Use JDK 21
 sudo dnf install msopenjdk-21
 
 # Verify it's Microsoft JDK
@@ -538,8 +532,8 @@ winget install Microsoft.DotNet.SDK.Preview  # Or specific version
 # Workloads (with explicit version)
 dotnet workload install maui android --version $WORKLOAD_VERSION
 
-# JDK (version from WorkloadDependencies.json jdk.recommendedVersion)
-winget install Microsoft.OpenJDK.17
+# JDK (recommend 21 until WorkloadDependencies.json is updated)
+winget install Microsoft.OpenJDK.21
 
 # Android SDK
 if ($USE_HELPER_TOOLS) {
@@ -586,12 +580,12 @@ export PATH="$PATH:$HOME/.dotnet"
 # Workloads (Android only on Linux - use maui-android, NOT maui)
 dotnet workload install maui-android android --version $WORKLOAD_VERSION
 
-# JDK (Microsoft OpenJDK)
+# JDK (Microsoft OpenJDK - recommend 21 until WorkloadDependencies.json is updated)
 wget https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
 sudo dpkg -i packages-microsoft-prod.deb
 rm packages-microsoft-prod.deb
 sudo apt update
-sudo apt install -y msopenjdk-17
+sudo apt install -y msopenjdk-21
 
 # Android SDK
 if [ "$USE_HELPER_TOOLS" = "yes" ]; then

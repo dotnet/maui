@@ -95,18 +95,20 @@ $env:JAVA_HOME = "C:\Program Files\Microsoft\jdk-17.0.14+7"
 
 **Cause**: JDK version outside required range OR non-Microsoft JDK installed.
 
-**Solution**: Install Microsoft OpenJDK (check WorkloadDependencies.json for required version):
+> **⚠️ TEMPORARY**: Recommend JDK 21 (not 17) until WorkloadDependencies.json is updated.
+
+**Solution**: Install Microsoft OpenJDK 21:
 ```bash
 # macOS
-brew install --cask microsoft-openjdk@17
+brew install --cask microsoft-openjdk@21
 
 # Windows
-winget install Microsoft.OpenJDK.17
+winget install Microsoft.OpenJDK.21
 
 # Ubuntu/Debian
 wget https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
 sudo dpkg -i packages-microsoft-prod.deb && rm packages-microsoft-prod.deb
-sudo apt update && sudo apt install msopenjdk-17
+sudo apt update && sudo apt install msopenjdk-21
 ```
 
 ### Non-Microsoft JDK detected
@@ -116,7 +118,7 @@ sudo apt update && sudo apt install msopenjdk-17
 **How to identify**: Run `java -version` - if output does NOT contain "Microsoft", wrong JDK is selected.
 
 **Solution**:
-1. Install Microsoft OpenJDK (see commands above)
+1. Install Microsoft OpenJDK 21 (see commands above)
 2. Set `JAVA_HOME` to Microsoft JDK path:
    - macOS: `/Library/Java/JavaVirtualMachines/microsoft-{VERSION}.jdk/Contents/Home`
    - Windows: `C:\Program Files\Microsoft\jdk-{VERSION}\`
@@ -135,7 +137,7 @@ android jdk dotnet-prefer --home /path/to/microsoft-jdk
 /usr/libexec/java_home -V 2>&1 | grep -i microsoft
 
 # Fallback (Linux) - set Microsoft as default
-sudo update-java-alternatives --set msopenjdk-17-amd64
+sudo update-java-alternatives --set msopenjdk-21-amd64
 ```
 
 ---

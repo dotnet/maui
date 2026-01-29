@@ -77,7 +77,9 @@ Query NuGet for workload manifest → extract `WorkloadDependencies.json` → ge
 
 **Only Microsoft OpenJDK supported.** See `references/microsoft-openjdk.md` for paths and detection.
 
-Verify `java -version` output contains "Microsoft". Validate against `jdk.version` range from Task 4.
+Verify `java -version` output contains "Microsoft".
+
+> **⚠️ TEMPORARY WORKAROUND**: The `jdk.recommendedVersion` from WorkloadDependencies.json currently returns 17, but **recommend JDK 21 instead**. This will be fixed in a future Android workload update. Rule: If WorkloadDependencies suggests ≤21, recommend 21. If it suggests >21, use that value.
 
 ### Task 6: Validate Android SDK
 
@@ -131,6 +133,7 @@ Highly recommended to simplify and make validation and remediation more reliable
 
 - **Linux workloads**: Use `maui-android` + `android` (NOT `maui`)
 - **JDK**: Only Microsoft OpenJDK. Look for "Microsoft" in `java -version`.
+- **JDK Version**: ⚠️ Recommend JDK 21 (not 17) until WorkloadDependencies.json is updated.
 - **JAVA_HOME**: Not required. Only problematic if set to non-Microsoft JDK.
 
 ---
