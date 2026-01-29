@@ -21,7 +21,8 @@
         "screencap",
         "mlaunch",
         "devicectl",
-        "xcdevice"
+        "xcdevice",
+        "MAUIX"
     ],
     "ignoreWords": [],
     "patterns": [
