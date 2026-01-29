@@ -98,14 +98,34 @@ if (-not $PRNumber) {
         $PRNumber = $matches[1]
         Write-Host "✅ Auto-detected PR #$PRNumber from branch name" -ForegroundColor Green
     } else {
-        # Try gh cli
+        $foundPR = $false
+        # Try gh cli - first try 'gh pr view' for current branch
         try {
             $prInfo = gh pr view --json number 2>$null | ConvertFrom-Json
-            if ($prInfo.number) {
+            if ($prInfo -and $prInfo.number) {
                 $PRNumber = $prInfo.number
-                Write-Host "✅ Auto-detected PR #$PRNumber from gh cli" -ForegroundColor Green
+                $foundPR = $true
+                Write-Host "✅ Auto-detected PR #$PRNumber from gh cli (pr view)" -ForegroundColor Green
             }
         } catch {
+            # gh pr view failed, will try fallback
+        }
+        
+        # Fallback: search for PRs with this branch as head (works across forks)
+        if (-not $foundPR) {
+            try {
+                $prList = gh pr list --head $currentBranch --json number --limit 1 2>$null | ConvertFrom-Json
+                if ($prList -and $prList.Count -gt 0 -and $prList[0].number) {
+                    $PRNumber = $prList[0].number
+                    $foundPR = $true
+                    Write-Host "✅ Auto-detected PR #$PRNumber from gh cli (pr list --head)" -ForegroundColor Green
+                }
+            } catch {
+                # gh pr list also failed
+            }
+        }
+        
+        if (-not $foundPR) {
             Write-Host "⚠️  Could not auto-detect PR number - using 'unknown' folder" -ForegroundColor Yellow
             $PRNumber = "unknown"
         }
@@ -123,6 +143,60 @@ $BaselineScript = Join-Path $RepoRoot ".github/scripts/EstablishBrokenBaseline.p
 
 # Import Test-IsTestFile and Find-MergeBase from shared script
 . $BaselineScript
+
+# ============================================================
+# Label management for verification results
+# ============================================================
+$LabelConfirmed = "s/ai-reproduction-confirmed"
+$LabelFailed = "s/ai-reproduction-failed"
+
+function Update-VerificationLabels {
+    param(
+        [Parameter(Mandatory = $true)]
+        [bool]$ReproductionConfirmed,
+        
+        [Parameter(Mandatory = $false)]
+        [string]$PR = $PRNumber
+    )
+    
+    if ($PR -eq "unknown" -or -not $PR) {
+        Write-Host "⚠️  Cannot update labels: PR number not available" -ForegroundColor Yellow
+        return
+    }
+    
+    $labelToAdd = if ($ReproductionConfirmed) { $LabelConfirmed } else { $LabelFailed }
+    $labelToRemove = if ($ReproductionConfirmed) { $LabelFailed } else { $LabelConfirmed }
+    
+    Write-Host ""
+    Write-Host "🏷️  Updating verification labels on PR #$PR..." -ForegroundColor Cyan
+    
+    # Track success for both operations
+    $removeSuccess = $true
+    
+    # Remove the opposite label if it exists (using REST API to avoid GraphQL deprecation issues)
+    $existingLabels = gh pr view $PR --json labels --jq '.labels[].name' 2>$null
+    if ($existingLabels -contains $labelToRemove) {
+        Write-Host "   Removing: $labelToRemove" -ForegroundColor Yellow
+        gh api "repos/dotnet/maui/issues/$PR/labels/$labelToRemove" --method DELETE 2>$null | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            $removeSuccess = $false
+            Write-Host "   ⚠️  Failed to remove label: $labelToRemove" -ForegroundColor Yellow
+        }
+    }
+    
+    # Add the appropriate label (using REST API to avoid GraphQL deprecation issues)
+    Write-Host "   Adding: $labelToAdd" -ForegroundColor Green
+    $result = gh api "repos/dotnet/maui/issues/$PR/labels" --method POST -f "labels[]=$labelToAdd" 2>&1
+    $addSuccess = $LASTEXITCODE -eq 0
+    
+    if ($addSuccess -and $removeSuccess) {
+        Write-Host "✅ Labels updated successfully" -ForegroundColor Green
+    } elseif ($addSuccess) {
+        Write-Host "⚠️  Label added but failed to remove old label" -ForegroundColor Yellow
+    } else {
+        Write-Host "⚠️  Failed to update labels: $result" -ForegroundColor Yellow
+    }
+}
 
 # ============================================================
 # Auto-detect test filter from changed files
@@ -392,6 +466,7 @@ if ($DetectedFixFiles.Count -eq 0) {
         Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Green
         Write-Host ""
         Write-Host "Failed tests: $($testResult.FailCount)" -ForegroundColor Yellow
+        Update-VerificationLabels -ReproductionConfirmed $true
         exit 0
     } else {
         # Tests PASSED - this is bad!
@@ -412,6 +487,7 @@ if ($DetectedFixFiles.Count -eq 0) {
         Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Red
         Write-Host ""
         Write-Host "Passed tests: $($testResult.PassCount)" -ForegroundColor Yellow
+        Update-VerificationLabels -ReproductionConfirmed $false
         exit 1
     }
 }
@@ -710,9 +786,10 @@ Write-Log "=========================================="
 
 foreach ($file in $RevertableFiles) {
     Write-Log "  Reverting: $file"
-    git checkout $MergeBase -- $file 2>&1 | Out-Null
+    $gitOutput = git checkout $MergeBase -- $file 2>&1
     if ($LASTEXITCODE -ne 0) {
         Write-Log "  ERROR: Failed to revert $file from $MergeBase"
+        Write-Log "  Git output: $gitOutput"
         exit 1
     }
 }
@@ -739,9 +816,10 @@ Write-Log "=========================================="
 
 foreach ($file in $RevertableFiles) {
     Write-Log "  Restoring: $file"
-    git checkout HEAD -- $file 2>&1 | Out-Null
+    $gitOutput = git checkout HEAD -- $file 2>&1
     if ($LASTEXITCODE -ne 0) {
         Write-Log "  ERROR: Failed to restore $file from HEAD"
+        Write-Log "  Git output: $gitOutput"
         exit 1
     }
 }
@@ -806,6 +884,7 @@ if ($verificationPassed) {
     Write-Host "║  - FAIL without fix (as expected)                         ║" -ForegroundColor Green
     Write-Host "║  - PASS with fix (as expected)                            ║" -ForegroundColor Green
     Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Green
+    Update-VerificationLabels -ReproductionConfirmed $true
     exit 0
 } else {
     Write-Host ""
@@ -827,5 +906,6 @@ if ($verificationPassed) {
     Write-Host "║  3. The issue was already fixed in base branch            ║" -ForegroundColor Red
     Write-Host "║  4. Build caching - try clean rebuild                     ║" -ForegroundColor Red
     Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Red
+    Update-VerificationLabels -ReproductionConfirmed $false
     exit 1
 }
