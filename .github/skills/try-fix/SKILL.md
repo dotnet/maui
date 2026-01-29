@@ -1,6 +1,7 @@
 ---
 name: try-fix
 description: Attempts ONE alternative fix for a bug, tests it empirically, and reports results. ALWAYS explores a DIFFERENT approach from existing PR fixes. Use when CI or an agent needs to try independent fix alternatives. Invoke with problem description, test command, target files, and optional hints.
+compatibility: Requires PowerShell, git, .NET MAUI build environment, Android/iOS device or emulator
 ---
 
 # Try Fix Skill
@@ -56,13 +57,13 @@ Results reported back to the invoker:
 |-------|-------------|
 | `approach` | What fix was attempted (brief description) |
 | `files_changed` | Which files were modified |
-| `result` | `PASS` or `FAIL` |
+| `result` | `Pass`, `Fail`, or `Blocked` |
 | `analysis` | Why it worked, or why it failed and what was learned |
 | `diff` | The actual code changes made (for review) |
 
 ## Output Structure (MANDATORY)
 
-🚨 **FIRST STEP: Create output directory before doing anything else.**
+**FIRST STEP: Create output directory before doing anything else.**
 
 ```powershell
 # Detect issue/PR number from branch name or use provided number
@@ -86,7 +87,7 @@ Write-Host "Output directory: $OUTPUT_DIR"
 |------|----------------|---------|
 | `baseline.log` | After Step 2 (Baseline) | Output from EstablishBrokenBaseline.ps1 proving baseline was established |
 | `approach.md` | After Step 4 (Design) | What fix you're attempting and why it's different from existing fixes |
-| `result.txt` | After Step 6 (Test) | Single word: `Pass` or `Fail` |
+| `result.txt` | After Step 6 (Test) | Single word: `Pass`, `Fail`, or `Blocked` |
 | `fix.diff` | After Step 6 (Test) | Output of `git diff` showing your changes |
 | `test-output.log` | After Step 6 (Test) | Full output from test command |
 | `analysis.md` | After Step 6 (Test) | Why it worked/failed, insights learned |
@@ -106,7 +107,7 @@ Skip RequestApplyInsets for views completely off-screen using simple bounds chec
 Pass
 ```
 
-See [references/output-structure.md](references/output-structure.md) for full directory structure details.
+
 
 ## Completion Criteria
 
@@ -225,7 +226,7 @@ Based on your analysis and any provided hints, design a single fix approach:
 
 **If hints suggest specific approaches**, prioritize those.
 
-🚨 **IMMEDIATELY create `approach.md`** in your output directory:
+**IMMEDIATELY create `approach.md`** in your output directory:
 
 ```powershell
 @"
@@ -251,8 +252,9 @@ Implement your fix. Use `git status --short` and `git diff` to track changes.
 - Running tests
 - Capturing logs
 
-```bash
-pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform <platform> -TestFilter "<filter>"
+```powershell
+# Capture output to test-output.log while also displaying it
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform <platform> -TestFilter "<filter>" 2>&1 | Tee-Object -FilePath "$OUTPUT_DIR/test-output.log"
 ```
 
 **Testing Loop (Iterate until SUCCESS or exhausted):**
@@ -274,10 +276,10 @@ See [references/compile-errors.md](references/compile-errors.md) for error patte
 
 ### Step 7: Capture Artifacts (MANDATORY)
 
-🚨 **Before reverting, save ALL required files to `$OUTPUT_DIR`:**
+**Before reverting, save ALL required files to `$OUTPUT_DIR`:**
 
 ```powershell
-# 1. Save result (MUST be exactly "Pass" or "Fail")
+# 1. Save result (MUST be exactly "Pass", "Fail", or "Blocked")
 "Pass" | Set-Content "$OUTPUT_DIR/result.txt"  # or "Fail"
 
 # 2. Save the diff
@@ -312,7 +314,7 @@ git diff | Set-Content "$OUTPUT_DIR/fix.diff"
 
 ### Step 8: Restore Working Directory (MANDATORY)
 
-🚨 **ALWAYS restore, even if fix failed.**
+**ALWAYS restore, even if fix failed.**
 
 ```bash
 pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore
