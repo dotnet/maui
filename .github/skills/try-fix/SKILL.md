@@ -17,6 +17,23 @@ Attempts ONE fix for a given problem. Receives all context upfront, tries a sing
 
 **Every invocation:** Review existing fixes → Think of DIFFERENT approach → Implement and test → Report results
 
+## ⚠️ CRITICAL: Sequential Execution Only
+
+🚨 **Try-fix runs MUST be executed ONE AT A TIME - NEVER in parallel.**
+
+**Why:** Each try-fix run:
+- Modifies the same source files (SafeAreaExtensions.cs, etc.)
+- Uses the same device/emulator for testing
+- Runs EstablishBrokenBaseline.ps1 which reverts files to a known state
+
+**If run in parallel:**
+- Multiple agents will overwrite each other's code changes
+- Device tests will interfere with each other
+- Baseline script will conflict, causing unpredictable file states
+- Results will be corrupted and unreliable
+
+**Correct pattern:** Run attempt-1, wait for completion, then run attempt-2, etc.
+
 ## Inputs
 
 All inputs are provided by the invoker (CI, agent, or user).
