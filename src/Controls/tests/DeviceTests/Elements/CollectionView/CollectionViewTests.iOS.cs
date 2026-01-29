@@ -319,5 +319,65 @@ namespace Microsoft.Maui.DeviceTests
 
 			return cellContent.ToPlatform().GetParentOfType<UIKit.UICollectionViewCell>().GetBoundingBox();
 		}
+
+		[Fact(DisplayName = "CarouselView ScrollBar Visibility should Update")]
+		public async Task CheckCarouselViewScrollBarVisibilityUpdates()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<CarouselView, CarouselViewHandler2>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
+
+			var carouselView = new CarouselView
+			{
+				ItemsSource = new List<string> { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" },
+				ItemTemplate = new DataTemplate(() => new Label { WidthRequest = 200 })
+			};
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler2>(carouselView, async handler =>
+			{
+				await Task.Delay(100); // Allow layout to complete
+				var nativeCollectionView = handler.Controller?.CollectionView;
+				Assert.NotNull(nativeCollectionView);
+
+				// CarouselView should use CompositionalLayout
+				Assert.IsType<UICollectionViewCompositionalLayout>(nativeCollectionView.CollectionViewLayout);
+
+				// Test ScrollBarVisibility.Always
+				carouselView.HorizontalScrollBarVisibility = ScrollBarVisibility.Always;
+				carouselView.VerticalScrollBarVisibility = ScrollBarVisibility.Always;
+
+				var internalScrollView = FindInternalScrollView(nativeCollectionView);
+				if (internalScrollView != null)
+				{
+					Assert.True(internalScrollView.ShowsHorizontalScrollIndicator == true);
+					Assert.True(internalScrollView.ShowsVerticalScrollIndicator == true);
+				}
+
+				// Test ScrollBarVisibility.Never
+				carouselView.HorizontalScrollBarVisibility = ScrollBarVisibility.Never;
+				carouselView.VerticalScrollBarVisibility = ScrollBarVisibility.Never;
+
+				Assert.True(nativeCollectionView.ShowsHorizontalScrollIndicator == false);
+				Assert.True(internalScrollView.ShowsVerticalScrollIndicator == false);
+			});
+		}
+
+		private static UIScrollView FindInternalScrollView(UICollectionView collectionView)
+		{
+			// In CV2 the scroll indicators are managed by an internal UIScrollView.
+			foreach (var subview in collectionView.Subviews)
+			{
+				if (subview is UIScrollView scrollView && scrollView != collectionView)
+				{
+					return scrollView;
+				}
+			}
+			return null;
+		}
 	}
 }
