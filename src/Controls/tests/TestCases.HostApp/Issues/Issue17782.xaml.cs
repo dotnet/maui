@@ -10,6 +10,14 @@ namespace Maui.Controls.Sample.Issues
 		public Issue17782()
 		{
 			InitializeComponent();
+			if (OperatingSystem.IsIOSVersionAtLeast(26))
+			{
+				verticalStack.Spacing = 0;
+			}
+			else
+			{
+				verticalStack.Spacing = 10;
+			}
 		}
 
 		private void OnAddEditorTextClicked(object sender, EventArgs e)
