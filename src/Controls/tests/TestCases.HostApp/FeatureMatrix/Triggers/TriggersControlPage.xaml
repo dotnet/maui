@@ -1,0 +1,604 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.TriggersControlMainPage"
+             x:DataType="local:TriggersViewModel"
+             Title="TriggersControlPage">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <!-- Converters -->
+            <local:InverseBooleanConverter x:Key="inverseBooleanConverter"/>
+
+            <!-- Style with State Triggers for Grid -->
+            <Style x:Key="CheckableGridStyle"
+                   TargetType="Grid">
+                <Setter Property="VisualStateManager.VisualStateGroups">
+                    <VisualStateGroupList>
+                        <VisualStateGroup>
+                            <VisualState x:Name="Checked">
+                                <VisualState.StateTriggers>
+                                    <StateTrigger IsActive="{Binding IsToggled}"/>
+                                </VisualState.StateTriggers>
+                                <VisualState.Setters>
+                                    <Setter Property="BackgroundColor"
+                                            Value="Black"/>
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Unchecked">
+                                <VisualState.StateTriggers>
+                                    <StateTrigger IsActive="{Binding IsToggled, Converter={StaticResource inverseBooleanConverter}}"/>
+                                </VisualState.StateTriggers>
+                                <VisualState.Setters>
+                                    <Setter Property="BackgroundColor"
+                                            Value="White"/>
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateGroupList>
+                </Setter>
+            </Style>
+
+            <!-- Adaptive Trigger Style for StackLayout -->
+            <Style x:Key="AdaptiveStackLayoutStyle"
+                   TargetType="StackLayout">
+                <Setter Property="VisualStateManager.VisualStateGroups">
+                    <VisualStateGroupList>
+                        <VisualStateGroup>
+                            <VisualState x:Name="Vertical">
+                                <VisualState.StateTriggers>
+                                    <AdaptiveTrigger MinWindowWidth="0"/>
+                                </VisualState.StateTriggers>
+                                <VisualState.Setters>
+                                    <Setter Property="Orientation"
+                                            Value="Vertical"/>
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Horizontal">
+                                <VisualState.StateTriggers>
+                                    <AdaptiveTrigger MinWindowWidth="800"/>
+                                </VisualState.StateTriggers>
+                                <VisualState.Setters>
+                                    <Setter Property="Orientation"
+                                            Value="Horizontal"/>
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateGroupList>
+                </Setter>
+            </Style>
+
+            <!-- Compare State Trigger Style for Grid -->
+            <Style x:Key="CompareStateGridStyle"
+                   TargetType="Grid">
+                <Setter Property="VisualStateManager.VisualStateGroups">
+                    <VisualStateGroupList>
+                        <VisualStateGroup>
+                            <VisualState x:Name="CheckedState">
+                                <VisualState.StateTriggers>
+                                    <CompareStateTrigger Property="{Binding Source={x:Reference compareCheckBox}, Path=IsChecked}"
+                                                         Value="True"/>
+                                </VisualState.StateTriggers>
+                                <VisualState.Setters>
+                                    <Setter Property="BackgroundColor"
+                                            Value="DarkGreen"/>
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="UncheckedState">
+                                <VisualState.StateTriggers>
+                                    <CompareStateTrigger Property="{Binding Source={x:Reference compareCheckBox}, Path=IsChecked}"
+                                                         Value="False"/>
+                                </VisualState.StateTriggers>
+                                <VisualState.Setters>
+                                    <Setter Property="BackgroundColor"
+                                            Value="LightGray"/>
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateGroupList>
+                </Setter>
+            </Style>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Options"
+                     Clicked="NavigateToOptionsPage_Clicked"
+                     AutomationId="Options"/>
+    </ContentPage.ToolbarItems>
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="20"
+                             Padding="20">
+
+            <!-- 1. Property Trigger Section -->
+            <Border x:Name="PropertyTriggerSection"
+                    IsVisible="{Binding ShowPropertyTrigger}"
+                    Stroke="DarkBlue"
+                    Padding="15"
+                    StrokeShape="RoundRectangle 10"
+                    AutomationId="PropertyTriggerSection">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="1. Property Trigger"
+                           FontSize="18"
+                           FontAttributes="Bold"
+                           TextColor="DarkBlue"
+                           AutomationId="PropertyTriggerTitle"/>
+
+                    <Label Text="Test: Focus on entry to see background change to yellow"
+                           FontSize="12"
+                           TextColor="Gray"/>
+
+                    <Entry x:Name="propertyTriggerEntry"
+                           Placeholder="Click here to focus"
+                           AutomationId="PropertyTriggerEntry">
+                        <Entry.Triggers>
+                            <Trigger TargetType="Entry"
+                                     Property="IsFocused"
+                                     Value="True">
+                                <Setter Property="BackgroundColor"
+                                        Value="Yellow"/>
+                                <Setter Property="TextColor"
+                                        Value="DarkRed"/>
+                            </Trigger>
+                        </Entry.Triggers>
+                    </Entry>
+
+                    <Label Text="Tests: IsFocused property, multiple setters"
+                           FontSize="11"
+                           TextColor="Green"
+                           AutomationId="PropertyTriggerInfo"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- 2. Data Trigger Section -->
+            <Border x:Name="DataTriggerSection"
+                    IsVisible="{Binding ShowDataTrigger}"
+                    Stroke="DarkGreen"
+                    Padding="15"
+                    StrokeShape="RoundRectangle 10"
+                    AutomationId="DataTriggerSection">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="2. Data Trigger"
+                           FontSize="18"
+                           FontAttributes="Bold"
+                           TextColor="DarkGreen"
+                           AutomationId="DataTriggerTitle"/>
+
+                    <Label Text="Test: Button is disabled when Entry is empty"
+                           FontSize="12"
+                           TextColor="Gray"/>
+
+                    <Entry x:Name="dataEntry"
+                           Text="{Binding DataEntryText}"
+                           Placeholder="Enter text to enable button"
+                           AutomationId="DataTriggerEntry"/>
+
+                    <Button x:Name="saveButton"
+                            Text="Save"
+                            BackgroundColor="LightGreen"
+                            IsEnabled="{Binding IsSaveButtonEnabled}"
+                            AutomationId="DataTriggerSaveButton">
+                        <Button.Triggers>
+                            <DataTrigger TargetType="Button"
+                                         Binding="{Binding IsSaveButtonEnabled}"
+                                         Value="False">
+                                <Setter Property="Opacity"
+                                        Value="0.5"/>
+                            </DataTrigger>
+                            <DataTrigger TargetType="Button"
+                                         Binding="{Binding IsSaveButtonEnabled}"
+                                         Value="True">
+                                <Setter Property="Opacity"
+                                        Value="1.0"/>
+                            </DataTrigger>
+                        </Button.Triggers>
+                    </Button>
+
+                    <Label Text="Tests: DataTrigger, binding-based condition"
+                           FontSize="11"
+                           TextColor="Green"
+                           AutomationId="DataTriggerInfo"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- 3. Event Trigger Section -->
+            <Border x:Name="EventTriggerSection"
+                    IsVisible="{Binding ShowEventTrigger}"
+                    Stroke="DarkOrange"
+                    Padding="15"
+                    StrokeShape="RoundRectangle 10"
+                    AutomationId="EventTriggerSection">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="3. Event Trigger"
+                           FontSize="18"
+                           FontAttributes="Bold"
+                           TextColor="DarkOrange"
+                           AutomationId="EventTriggerTitle"/>
+
+                    <Label Text="Test: Type numbers only (text turns red if invalid)"
+                           FontSize="12"
+                           TextColor="Gray"/>
+
+                    <Entry x:Name="numericEntry"
+                           Placeholder="Enter a number"
+                           Keyboard="Numeric"
+                           AutomationId="EventTriggerEntry">
+                        <Entry.Triggers>
+                            <EventTrigger Event="TextChanged">
+
+                            </EventTrigger>
+                        </Entry.Triggers>
+                    </Entry>
+
+                    <Label Text="Tests: TextChanged event, custom TriggerAction"
+                           FontSize="11"
+                           TextColor="Green"
+                           AutomationId="EventTriggerInfo"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- 4. Multi Trigger Section -->
+            <Border x:Name="MultiTriggerSection"
+                    IsVisible="{Binding ShowMultiTrigger}"
+                    Stroke="DarkRed"
+                    Padding="15"
+                    StrokeShape="RoundRectangle 10"
+                    AutomationId="MultiTriggerSection">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="4. Multi Trigger"
+                           FontSize="18"
+                           FontAttributes="Bold"
+                           TextColor="DarkRed"
+                           AutomationId="MultiTriggerTitle"/>
+
+                    <Label Text="Test: Button is enabled when both fields have text"
+                           FontSize="12"
+                           TextColor="Gray"/>
+
+                    <Entry x:Name="emailEntry"
+                           Text="{Binding EmailEntryText}"
+                           Placeholder="Enter email"
+                           AutomationId="MultiTriggerEmailEntry"/>
+
+                    <Entry x:Name="phoneEntry"
+                           Text="{Binding PhoneEntryText}"
+                           Placeholder="Enter phone"
+                           AutomationId="MultiTriggerPhoneEntry"/>
+
+                    <Button x:Name="submitButton"
+                            Text="Submit"
+                            BackgroundColor="LightCoral"
+                            IsEnabled="{Binding IsSubmitButtonEnabled}"
+                            AutomationId="MultiTriggerSubmitButton">
+                        <Button.Triggers>
+                            <DataTrigger TargetType="Button"
+                                         Binding="{Binding IsSubmitButtonEnabled}"
+                                         Value="False">
+                                <Setter Property="Opacity"
+                                        Value="0.5"/>
+                            </DataTrigger>
+                            <DataTrigger TargetType="Button"
+                                         Binding="{Binding IsSubmitButtonEnabled}"
+                                         Value="True">
+                                <Setter Property="Opacity"
+                                        Value="1.0"/>
+                            </DataTrigger>
+                        </Button.Triggers>
+                    </Button>
+
+                    <Label Text="Tests: Multiple conditions, combined logic"
+                           FontSize="11"
+                           TextColor="Green"
+                           AutomationId="MultiTriggerInfo"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- 5. EnterActions and ExitActions Section -->
+            <Border x:Name="EnterExitActionsSection"
+                    IsVisible="{Binding ShowEnterExitActions}"
+                    Stroke="Purple"
+                    Padding="15"
+                    StrokeShape="RoundRectangle 10"
+                    AutomationId="EnterExitActionsSection">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="5. EnterActions and ExitActions"
+                           FontSize="18"
+                           FontAttributes="Bold"
+                           TextColor="Purple"
+                           AutomationId="EnterExitActionsTitle"/>
+
+                    <Label Text="Test: Focus/unfocus to see fade animation"
+                           FontSize="12"
+                           TextColor="Gray"/>
+
+                    <Entry Placeholder="Focus here to see fade effect"
+                           AutomationId="EnterExitActionsEntry">
+                        <Entry.Triggers>
+                            <Trigger TargetType="Entry"
+                                     Property="IsFocused"
+                                     Value="True">
+                                <Trigger.EnterActions>
+                                    <local:FadeTriggerAction StartsFrom="0"/>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <local:FadeTriggerAction StartsFrom="1"/>
+                                </Trigger.ExitActions>
+                            </Trigger>
+                        </Entry.Triggers>
+                    </Entry>
+
+                    <Label Text="Tests: EnterActions, ExitActions, animations"
+                           FontSize="11"
+                           TextColor="Green"
+                           AutomationId="EnterExitActionsInfo"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- 6. State Trigger Section -->
+            <Border x:Name="StateTriggerSection"
+                    IsVisible="{Binding ShowStateTrigger}"
+                    Stroke="DarkCyan"
+                    Padding="15"
+                    StrokeShape="RoundRectangle 10"
+                    AutomationId="StateTriggerSection">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="6. State Trigger"
+                           FontSize="18"
+                           FontAttributes="Bold"
+                           TextColor="DarkCyan"
+                           AutomationId="StateTriggerTitle"/>
+
+                    <Label Text="Test: Toggle switch to change grid background"
+                           FontSize="12"
+                           TextColor="Gray"/>
+
+                    <Grid Style="{StaticResource CheckableGridStyle}"
+                          Padding="20"
+                          HeightRequest="100"
+                          AutomationId="StateTriggerGrid">
+                        <Label Text="Grid background changes based on switch"
+                               TextColor="Gray"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center"
+                               AutomationId="StateTriggerGridLabel"/>
+                    </Grid>
+
+                    <Switch x:Name="stateSwitch"
+                            IsToggled="{Binding IsToggled}"
+                            HorizontalOptions="Center"
+                            AutomationId="StateTriggerSwitch"/>
+
+                    <Label Text="Tests: StateTrigger with IsActive binding"
+                           FontSize="11"
+                           TextColor="Green"
+                           AutomationId="StateTriggerInfo"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- 7. Adaptive Trigger Section -->
+            <Border x:Name="AdaptiveTriggerSection"
+                    IsVisible="{Binding ShowAdaptiveTrigger}"
+                    Stroke="DarkMagenta"
+                    Padding="15"
+                    StrokeShape="RoundRectangle 10"
+                    AutomationId="AdaptiveTriggerSection">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="7. Adaptive Trigger"
+                           FontSize="18"
+                           FontAttributes="Bold"
+                           TextColor="DarkMagenta"
+                           AutomationId="AdaptiveTriggerTitle"/>
+
+                    <Label Text="Test: Resize window to see orientation change at 800px width"
+                           FontSize="12"
+                           TextColor="Gray"/>
+
+                    <StackLayout Style="{StaticResource AdaptiveStackLayoutStyle}"
+                                 Spacing="10"
+                                 AutomationId="AdaptiveStackLayout">
+                        <BoxView Color="Red"
+                                 WidthRequest="100"
+                                 HeightRequest="100"
+                                 AutomationId="AdaptiveBoxRed"/>
+                        <BoxView Color="Green"
+                                 WidthRequest="100"
+                                 HeightRequest="100"
+                                 AutomationId="AdaptiveBoxGreen"/>
+                        <BoxView Color="Blue"
+                                 WidthRequest="100"
+                                 HeightRequest="100"
+                                 AutomationId="AdaptiveBoxBlue"/>
+                    </StackLayout>
+
+                    <Label x:Name="windowSizeLabel"
+                           Text="Window size will be displayed here"
+                           FontSize="11"
+                           TextColor="Gray"
+                           AutomationId="WindowSizeLabel"/>
+
+                    <Label Text="Tests: MinWindowWidth, responsive layout"
+                           FontSize="11"
+                           TextColor="Green"
+                           AutomationId="AdaptiveTriggerInfo"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- 8. Compare State Trigger Section -->
+            <Border x:Name="CompareStateTriggerSection"
+                    IsVisible="{Binding ShowCompareStateTrigger}"
+                    Stroke="Brown"
+                    Padding="15"
+                    StrokeShape="RoundRectangle 10"
+                    AutomationId="CompareStateTriggerSection">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="8. Compare State Trigger"
+                           FontSize="18"
+                           FontAttributes="Bold"
+                           TextColor="Brown"
+                           AutomationId="CompareStateTriggerTitle"/>
+
+                    <Label Text="Test: Check the box to change grid background"
+                           FontSize="12"
+                           TextColor="Gray"/>
+
+                    <Grid Style="{StaticResource CompareStateGridStyle}"
+                          Padding="20"
+                          HeightRequest="100"
+                          AutomationId="CompareStateTriggerGrid">
+                        <HorizontalStackLayout HorizontalOptions="Center"
+                                               VerticalOptions="Center">
+                            <CheckBox x:Name="compareCheckBox"
+                                      VerticalOptions="Center"
+                                      AutomationId="CompareStateCheckBox"/>
+                            <Label Text="Check to change background"
+                                   VerticalOptions="Center"
+                                   AutomationId="CompareStateLabel"/>
+                        </HorizontalStackLayout>
+                    </Grid>
+
+                    <Label Text="Tests: CompareStateTrigger with Property binding"
+                           FontSize="11"
+                           TextColor="Green"
+                           AutomationId="CompareStateTriggerInfo"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- 9. Device State Trigger Section -->
+            <Border x:Name="DeviceStateTriggerSection"
+                    IsVisible="{Binding ShowDeviceStateTrigger}"
+                    Stroke="Indigo"
+                    Padding="15"
+                    StrokeShape="RoundRectangle 10"
+                    AutomationId="DeviceStateTriggerSection">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="9. Device State Trigger"
+                           FontSize="18"
+                           FontAttributes="Bold"
+                           TextColor="Indigo"
+                           AutomationId="DeviceStateTriggerTitle"/>
+
+                    <Label Text="Test: Background changes based on platform"
+                           FontSize="12"
+                           TextColor="Gray"/>
+
+                    <Grid Padding="20"
+                          HeightRequest="100"
+                          AutomationId="DeviceStateTriggerGrid">
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup>
+                                <VisualState x:Name="iOSState">
+                                    <VisualState.StateTriggers>
+                                        <DeviceStateTrigger Device="iOS"/>
+                                    </VisualState.StateTriggers>
+                                    <VisualState.Setters>
+                                        <Setter Property="BackgroundColor"
+                                                Value="#F0F0F0"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="AndroidState">
+                                    <VisualState.StateTriggers>
+                                        <DeviceStateTrigger Device="Android"/>
+                                    </VisualState.StateTriggers>
+                                    <VisualState.Setters>
+                                        <Setter Property="BackgroundColor"
+                                                Value="#E8F5E9"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="WinUIState">
+                                    <VisualState.StateTriggers>
+                                        <DeviceStateTrigger Device="WinUI"/>
+                                    </VisualState.StateTriggers>
+                                    <VisualState.Setters>
+                                        <Setter Property="BackgroundColor"
+                                                Value="#E3F2FD"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="MacCatalystState">
+                                    <VisualState.StateTriggers>
+                                        <DeviceStateTrigger Device="MacCatalyst"/>
+                                    </VisualState.StateTriggers>
+                                    <VisualState.Setters>
+                                        <Setter Property="BackgroundColor"
+                                                Value="#FFF3E0"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                        <Label x:Name="platformLabel"
+                               FontSize="14"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center"
+                               FontAttributes="Bold"
+                               AutomationId="PlatformLabel"/>
+                    </Grid>
+
+                    <Label Text="Tests: DeviceStateTrigger for iOS, Android, WinUI, MacCatalyst"
+                           FontSize="11"
+                           TextColor="Green"
+                           AutomationId="DeviceStateTriggerInfo"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- 10. Orientation State Trigger Section -->
+            <Border x:Name="OrientationStateTriggerSection"
+                    IsVisible="{Binding ShowOrientationStateTrigger}"
+                    Stroke="Teal"
+                    Padding="15"
+                    StrokeShape="RoundRectangle 10"
+                    AutomationId="OrientationStateTriggerSection">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="10. Orientation State Trigger"
+                           FontSize="18"
+                           FontAttributes="Bold"
+                           TextColor="Teal"
+                           AutomationId="OrientationStateTriggerTitle"/>
+
+                    <Label Text="Test: Rotate device to see background color change"
+                           FontSize="12"
+                           TextColor="Gray"/>
+
+                    <Grid Padding="20"
+                          HeightRequest="100"
+                          AutomationId="OrientationStateTriggerGrid">
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup>
+                                <VisualState x:Name="PortraitState">
+                                    <VisualState.StateTriggers>
+                                        <OrientationStateTrigger Orientation="Portrait"/>
+                                    </VisualState.StateTriggers>
+                                    <VisualState.Setters>
+                                        <Setter Property="BackgroundColor"
+                                                Value="LightBlue"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="LandscapeState">
+                                    <VisualState.StateTriggers>
+                                        <OrientationStateTrigger Orientation="Landscape"/>
+                                    </VisualState.StateTriggers>
+                                    <VisualState.Setters>
+                                        <Setter Property="BackgroundColor"
+                                                Value="LightGreen"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                        <Label x:Name="orientationLabel"
+                               FontSize="14"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center"
+                               FontAttributes="Bold"
+                               AutomationId="OrientationLabel"/>
+                    </Grid>
+
+                    <Label Text="Tests: OrientationStateTrigger for Portrait/Landscape"
+                           FontSize="11"
+                           TextColor="Green"
+                           AutomationId="OrientationStateTriggerInfo"/>
+                </VerticalStackLayout>
+            </Border>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
