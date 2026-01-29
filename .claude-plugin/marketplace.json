@@ -1,0 +1,17 @@
+{
+  "name": "dotnet-maui-skills",
+  "description": "Official Marketplace for .NET MAUI development - C#, XAML, cross-platform mobile (iOS, Android) and desktop (MacCatalyst, Windows) apps",
+  "owner": {
+    "name": "Microsoft",
+    "url": "https://github.com/dotnet/maui"
+  },
+  "repository": "https://github.com/dotnet/maui",
+  "plugins": [
+    {
+      "name": "dotnet-maui-skills",
+      "source": "./",
+      "version": "1.0.0",
+      "description": ".NET MAUI development toolkit with specialized skills agents covering C#, XAML, MVVM, UI Testing, performance optimization, and cross-platform best practices."
+    }
+  ]
+}
