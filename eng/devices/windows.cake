@@ -150,7 +150,12 @@ Task("buildOnly")
 	{
 		ArgumentCustomization = args => args.Append("/bl:" + binlog),
 	};
-	s.MSBuildSettings.Properties.Add("RuntimeIdentifierOverride", new List<string> { "win-x64" });
+	// Set the RuntimeIdentifier to win-x64 for proper Windows App SDK native DLL inclusion.
+	// IMPORTANT: This MUST be RuntimeIdentifier (not RuntimeIdentifierOverride) because
+	// the Windows App SDK's GetWindowsAppSDKNativePlatform target checks $(RuntimeIdentifier)
+	// to determine the correct architecture for the native DLLs.
+	// Without this, NativePlatform stays as 'Invalid' and the MSIX extraction fails.
+	s.Runtime = "win-x64";
 	
 	var launchSettingsNeedle = "Project";
 	var launchSettingsReplacement = "MsixPackage";
