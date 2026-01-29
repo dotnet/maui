@@ -36,7 +36,14 @@ public class Issue26598 : _IssuesUITest
 		App.WaitForElement("Issue26589NonTab");
 
 		// Case 3 - Navigate back to the HomeTab, the TabBar should be visible
-		App.TapBackArrow(back);
+		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+		{
+			App.TapBackArrow();
+		}
+		else
+		{
+			App.TapBackArrow(back);
+		}
 		App.WaitForElement("RecentTab");
 		App.Click("RecentTab");
 		App.WaitForElement("HomeTab");

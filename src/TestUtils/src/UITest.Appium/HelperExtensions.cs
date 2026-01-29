@@ -2327,7 +2327,7 @@ namespace UITest.Appium
 			return app switch
 			{
 				AppiumAndroidApp _ => AppiumQuery.ByXPath("//android.widget.ImageButton[@content-desc='Navigate up']"),
-				AppiumIOSApp iOSApp => IsIOS26OrLower(iOSApp) ? AppiumQuery.ByAccessibilityId("BackButton") : AppiumQuery.ByAccessibilityId("Back"),
+				AppiumIOSApp iOSApp => IsIOS26OrHigher(iOSApp) ? AppiumQuery.ByAccessibilityId("BackButton") : AppiumQuery.ByAccessibilityId("Back"),
 				AppiumCatalystApp _ => AppiumQuery.ByAccessibilityId("Back"),
 				AppiumWindowsApp _ => AppiumQuery.ByAccessibilityId("NavigationViewBackButton"),
 				_ => throw new ArgumentException("Unsupported app type", nameof(app))
@@ -2335,11 +2335,11 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
-		/// Checks if the iOS app is running on iOS 26 or lower.
+		/// Checks if the iOS app is running on iOS 26 or higher.
 		/// </summary>
 		/// <param name="iOSApp">The iOS app instance.</param>
-		/// <returns>True if running on iOS 26 or lower, false otherwise.</returns>
-		static bool IsIOS26OrLower(AppiumIOSApp iOSApp)
+		/// <returns>True if running on iOS 26 or higher, false otherwise.</returns>
+		public static bool IsIOS26OrHigher(AppiumIOSApp iOSApp)
 		{
 			var platformVersion = (string?)iOSApp.Driver.Capabilities.GetCapability("platformVersion");
 			if (string.IsNullOrEmpty(platformVersion))

@@ -21,7 +21,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("SecondPageLabel");
 #if IOS || MACCATALYST
 			App.WaitForElement("HomePage");
-			App.TapBackArrow("HomePage");
+			if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+			{
+				App.TapBackArrow();
+			}
+			else
+			{
+				App.TapBackArrow("HomePage");
+			}
 #endif
 #if ANDROID || WINDOWS
 			App.TapBackArrow();

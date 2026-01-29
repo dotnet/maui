@@ -17,7 +17,14 @@ public class Issue12320 : _IssuesUITest
 	public void PopLogicExecutesWhenUsingBackButtonBehavior()
 	{
 		App.WaitForElementTillPageNavigationSettled("TestReady");
-		App.TapBackArrow("BackButtonImage");
+		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+		{
+			App.Back();
+		}
+		else
+		{
+			App.TapBackArrow("BackButtonImage");
+		}
 		App.WaitForElement("Tab 1");
 	}
 }
