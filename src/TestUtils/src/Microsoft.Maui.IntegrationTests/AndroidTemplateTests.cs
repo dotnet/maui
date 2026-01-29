@@ -73,13 +73,15 @@ namespace Microsoft.Maui.IntegrationTests
 
 
 		[Theory]
-		[InlineData("maui", DotNetPrevious, "Debug", null)]
-		[InlineData("maui", DotNetPrevious, "Release", null)]
+		// TODO: Re-enable net9.0 tests - see https://github.com/dotnet/maui/issues/XXXXX
+		// net9.0 tests use Xcode 26.0, net10.0 uses Xcode 26.2 - can't have both on same machine
+		// [InlineData("maui", DotNetPrevious, "Debug", null)]
+		// [InlineData("maui", DotNetPrevious, "Release", null)]
 		[InlineData("maui", DotNetCurrent, "Debug", null)]
 		[InlineData("maui", DotNetCurrent, "Release", null)]
 		[InlineData("maui", DotNetCurrent, "Release", "full")]
-		[InlineData("maui-blazor", DotNetPrevious, "Debug", null)]
-		[InlineData("maui-blazor", DotNetPrevious, "Release", null)]
+		// [InlineData("maui-blazor", DotNetPrevious, "Debug", null)]
+		// [InlineData("maui-blazor", DotNetPrevious, "Release", null)]
 		[InlineData("maui-blazor", DotNetCurrent, "Debug", null)]
 		[InlineData("maui-blazor", DotNetCurrent, "Release", null)]
 		[InlineData("maui-blazor", DotNetCurrent, "Release", "full")]
