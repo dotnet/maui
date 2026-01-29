@@ -33,6 +33,39 @@ namespace Microsoft.Maui.Platform
 
 		AView? _pendingView;
 
+		// Cached value for whether this listener's view hierarchy supports transition inset re-application.
+		// null = not yet computed, true/false = cached result
+		bool? _shouldRequestInsetsOnTransition;
+
+		/// <summary>
+		/// Gets whether views in this listener's hierarchy should have insets re-applied during transitions.
+		/// This is determined by checking if any parent implements IRequestInsetsOnTransition.
+		/// The result is cached for performance and reset when the listener is disposed.
+		/// </summary>
+		internal bool ShouldRequestInsetsOnTransition(AView view)
+		{
+			if (_shouldRequestInsetsOnTransition.HasValue)
+			{
+				return _shouldRequestInsetsOnTransition.Value;
+			}
+
+			// Walk parent hierarchy looking for IRequestInsetsOnTransition
+			bool result = false;
+			var parent = view.Parent;
+			while (parent != null)
+			{
+				if (parent is IRequestInsetsOnTransition)
+				{
+					result = true;
+					break;
+				}
+				parent = (parent as AView)?.Parent;
+			}
+
+			_shouldRequestInsetsOnTransition = result;
+			return result;
+		}
+
 		// Static tracking for views that have local inset listeners.
 		// This registry allows child views to find their appropriate listener without
 		// relying on a global activity-level listener.

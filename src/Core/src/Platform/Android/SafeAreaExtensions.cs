@@ -1,5 +1,4 @@
 using System;
-using System.Runtime.CompilerServices;
 using Android.Content;
 using Android.Views;
 using AndroidX.Core.View;
@@ -9,46 +8,6 @@ namespace Microsoft.Maui.Platform;
 
 internal static class SafeAreaExtensions
 {
-	// Cache for ShouldRequestInsetsOnTransition results.
-	// ConditionalWeakTable automatically removes entries when views are GC'd.
-	static readonly ConditionalWeakTable<View, TransitionInsetsCacheEntry> _transitionInsetsCache = new();
-
-	sealed class TransitionInsetsCacheEntry
-	{
-		public bool ShouldRequestInsetsOnTransition { get; set; }
-	}
-
-	/// <summary>
-	/// Checks if a view is inside a container that implements IRequestInsetsOnTransition.
-	/// Results are cached per-view and automatically cleaned up when the view is GC'd.
-	/// </summary>
-	static bool ShouldRequestInsetsOnTransition(View view)
-	{
-		// Check cache first
-		if (_transitionInsetsCache.TryGetValue(view, out var cached))
-		{
-			return cached.ShouldRequestInsetsOnTransition;
-		}
-
-		// Walk parent hierarchy looking for IRequestInsetsOnTransition
-		bool result = false;
-		var parent = view.Parent;
-		while (parent != null)
-		{
-			if (parent is IRequestInsetsOnTransition)
-			{
-				result = true;
-				break;
-			}
-			parent = (parent as View)?.Parent;
-		}
-
-		// Cache the result
-		_transitionInsetsCache.AddOrUpdate(view, new TransitionInsetsCacheEntry { ShouldRequestInsetsOnTransition = result });
-
-		return result;
-	}
-
 
 	internal static ISafeAreaView2? GetSafeAreaView2(object? layout) =>
 		layout switch
@@ -207,7 +166,10 @@ internal static class SafeAreaExtensions
 						bool isCompletelyOffScreen = viewLeft >= screenWidth || viewRight <= 0 ||
 													 viewTop >= screenHeight || viewBottom <= 0;
 
-						if (!isCompletelyOffScreen && ShouldRequestInsetsOnTransition(view))
+						// Use the listener's cached method to check for IRequestInsetsOnTransition
+						bool shouldRequestInsets = globalWindowInsetsListener?.ShouldRequestInsetsOnTransition(view) == true;
+
+						if (!isCompletelyOffScreen && shouldRequestInsets)
 						{
 							// Request insets to be reapplied after the next layout pass
 							// when the view should be properly positioned.
