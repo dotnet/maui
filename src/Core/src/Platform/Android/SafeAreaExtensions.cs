@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Android.Content;
 using Android.Views;
 using AndroidX.Core.View;
@@ -9,10 +8,6 @@ namespace Microsoft.Maui.Platform;
 
 internal static class SafeAreaExtensions
 {
-	// Track views that have a pending RequestApplyInsets to prevent infinite loops (Issue #33731)
-	// When a view extends beyond screen bounds (e.g., inactive TabbedPage tabs), we only
-	// request insets once until the view is repositioned or the request completes.
-	static readonly HashSet<int> _pendingInsetRequests = new();
 
 
 	internal static ISafeAreaView2? GetSafeAreaView2(object? layout) =>
@@ -158,20 +153,20 @@ internal static class SafeAreaExtensions
 
 					if (viewExtendsBeyondScreen)
 					{
-						// Use HashSet to track pending requests and prevent infinite loop (Issue #33731)
-						// When a view extends beyond screen bounds (e.g., inactive TabbedPage tabs), we only
-						// request insets once until the view is repositioned or the request completes.
-						var viewId = view.GetHashCode();
-						if (!_pendingInsetRequests.Contains(viewId))
+						// Check if view is completely off-screen (no intersection with visible area).
+						// If completely off-screen (e.g., inactive TabbedPage tabs), skip RequestApplyInsets
+						// to avoid infinite lambda allocations and GC pressure. (Issue #33731)
+						bool isCompletelyOffScreen = viewLeft >= screenWidth || viewRight <= 0 ||
+													 viewTop >= screenHeight || viewBottom <= 0;
+
+						if (!isCompletelyOffScreen)
 						{
-							_pendingInsetRequests.Add(viewId);
+							// Request insets to be reapplied after the next layout pass
+							// when the view should be properly positioned.
+							// Don't return early - let processing continue with current insets
+							// to avoid visual popping, the re-apply will correct any issues.
 							view.Post(() => ViewCompat.RequestApplyInsets(view));
 						}
-					}
-					else
-					{
-						// Clear the tracking when view is back on screen
-						_pendingInsetRequests.Remove(view.GetHashCode());
 					}
 
 					// Calculate actual overlap for each edge
