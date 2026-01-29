@@ -549,8 +549,11 @@ namespace Microsoft.Maui.Controls
 			var mauiContext = Handler?.MauiContext as MauiContext;
 			Handler?.DisconnectHandler();
 
-			// Dispose the window-scoped service scope
+#if !ANDROID
+			// Desktop platforms dispose scope as windows are independently created and destroyed.
+			// Android skips disposal as windows are reused in single-Activity model.
 			mauiContext?.DisposeWindowScope();
+#endif
 		}
 
 		void IWindow.Resumed()
