@@ -32,7 +32,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("Click Back Button");
 			if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
 			{
-				App.TapBackArrow();
+				App.TapBackArrow(); // In iOS 26, the previous page title is not shown along with the back arrow, so we use the default back arrow
 			}
 			else
 			{

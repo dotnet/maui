@@ -43,7 +43,7 @@ public class Bugzilla38731 : _IssuesUITest
 		App.WaitForElementTillPageNavigationSettled("FinalPage");
 		if (iOS26OrHigher)
 		{
-			App.TapBackArrow();
+			App.TapBackArrow(); // In iOS 26, the previous page title is not shown along with the back arrow, so we use the default back arrow
 		}
 		else
 		{
@@ -52,7 +52,7 @@ public class Bugzilla38731 : _IssuesUITest
 		App.WaitForElementTillPageNavigationSettled(btn3);
 		if (iOS26OrHigher)
 		{
-			App.TapBackArrow();
+			App.TapBackArrow(); // In iOS 26, the previous page title is not shown along with the back arrow, so we use the default back arrow
 		}
 		else
 		{
@@ -61,7 +61,7 @@ public class Bugzilla38731 : _IssuesUITest
 		App.WaitForElementTillPageNavigationSettled(btn2);
 		if (iOS26OrHigher)
 		{
-			App.TapBackArrow();
+			App.TapBackArrow(); // In iOS 26, the previous page title is not shown along with the back arrow, so we use the default back arrow
 		}
 		else
 		{
