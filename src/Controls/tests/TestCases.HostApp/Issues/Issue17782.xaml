@@ -5,7 +5,7 @@
              xmlns:ns="clr-namespace:Maui.Controls.Sample.Issues"
              Title="Issue 17782">
 
-  <VerticalStackLayout x:Name="verticalStack" Spacing="{OnPlatform Default=10, iOS=0}">
+  <VerticalStackLayout x:Name="verticalStack">
 
     <!-- Case 1: Add text to the editor with initial CharacterSpacing set to 10.
          The Button click updates the text to a predefined value. -->
