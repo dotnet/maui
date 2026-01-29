@@ -56,6 +56,9 @@ param(
     [switch]$SkipXcodeVersionCheck,
 
     [Parameter()]
+    [switch]$AutoProvision,
+
+    [Parameter()]
     [string]$ResultsDirectory = "artifacts/integration-tests"
 )
 
@@ -156,7 +159,38 @@ try {
     }
     
     if (-not (Test-Path $dotnetPath)) {
-        throw "Local .dotnet SDK not found at: $dotnetPath. Run build first or provision with: ./build.sh --target=dotnet && dotnet cake --target=dotnet-local-workloads"
+        if ($AutoProvision) {
+            Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Yellow
+            Write-Host "Auto-provisioning local .NET SDK and MAUI workloads..." -ForegroundColor Yellow
+            Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Yellow
+            
+            # Restore dotnet tools first
+            Write-Host "Restoring dotnet tools..." -ForegroundColor Gray
+            & dotnet tool restore
+            if ($LASTEXITCODE -ne 0) {
+                throw "Failed to restore dotnet tools"
+            }
+            
+            # Provision local SDK
+            Write-Host "Provisioning local SDK (dotnet cake --target=dotnet)..." -ForegroundColor Gray
+            & dotnet cake --target=dotnet
+            if ($LASTEXITCODE -ne 0) {
+                throw "Failed to provision local SDK"
+            }
+            
+            # Install workloads
+            Write-Host "Installing MAUI workloads (dotnet cake --target=dotnet-local-workloads)..." -ForegroundColor Gray
+            & dotnet cake --target=dotnet-local-workloads
+            if ($LASTEXITCODE -ne 0) {
+                throw "Failed to install MAUI workloads"
+            }
+            
+            Write-Host "✅ Auto-provisioning completed successfully" -ForegroundColor Green
+            Write-Host ""
+        }
+        else {
+            throw "Local .dotnet SDK not found at: $dotnetPath. Run with -AutoProvision to automatically provision, or manually run: dotnet tool restore && dotnet cake --target=dotnet && dotnet cake --target=dotnet-local-workloads"
+        }
     }
 
     if (-not $SkipInstall) {

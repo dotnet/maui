@@ -54,6 +54,9 @@ pwsh .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 -Cate
 
 # macOS: Skip Xcode version check (for version mismatches)
 pwsh .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 -Category "macOSTemplates" -SkipBuild -SkipInstall -SkipXcodeVersionCheck
+
+# Auto-provision SDK if not found (first-time setup)
+pwsh .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 -Category "Build" -AutoProvision
 ```
 
 ## Parameters
@@ -66,6 +69,7 @@ pwsh .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 -Cate
 | `-SkipBuild` | No | false | Skip build/pack step if already done |
 | `-SkipInstall` | No | false | Skip workload installation if already done |
 | `-SkipXcodeVersionCheck` | No | false | Skip Xcode version validation (macOS) |
+| `-AutoProvision` | No | false | Automatically provision local SDK if not found |
 | `-ResultsDirectory` | No | artifacts/integration-tests | Directory for test results |
 
 ## Workflow Steps
@@ -95,7 +99,33 @@ pwsh .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 -Test
 - Windows for WindowsTemplates, macOS for macOSTemplates/RunOniOS/RunOnAndroid
 - .NET SDK (version from global.json)
 - Sufficient disk space for build artifacts
-- For macOS: Local workloads provisioned via `./build.sh --target=dotnet && dotnet cake --target=dotnet-local-workloads`
+- Local SDK and workloads must be provisioned first
+
+### Provisioning the Local SDK (Required First Time)
+
+Before running integration tests, you must provision the local .NET SDK and MAUI workloads:
+
+```bash
+# Step 1: Restore dotnet tools
+dotnet tool restore
+
+# Step 2: Provision local SDK and install workloads (~5 minutes)
+dotnet cake --target=dotnet
+
+# Step 3: Install MAUI local workloads
+dotnet cake --target=dotnet-local-workloads
+```
+
+**Verification:**
+```bash
+# Check SDK exists
+ls .dotnet/dotnet
+
+# Check MAUI SDK version
+ls .dotnet/packs/Microsoft.Maui.Sdk
+```
+
+> **Note:** The old `./build.sh --target=dotnet` syntax no longer works. Use `dotnet cake` directly.
 
 ## Output
 
@@ -108,11 +138,14 @@ pwsh .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 -Test
 | Issue | Solution |
 |-------|----------|
 | "MAUI_PACKAGE_VERSION was not set" | Ensure build step completed successfully |
+| "Local .dotnet SDK not found" | Run `dotnet tool restore && dotnet cake --target=dotnet && dotnet cake --target=dotnet-local-workloads` |
 | Template not found | Workload installation may have failed |
 | Build failures | Check `artifacts/log/` for detailed build logs |
 | "Cannot proceed with locked .dotnet folder" | Kill processes using `.dotnet`: `Get-Process \| Where-Object { $_.Path -like "*\.dotnet\*" } \| ForEach-Object { Stop-Process -Id $_.Id -Force }` |
 | Session times out / becomes invalid | Integration tests are long-running (15-60+ min). Run manually in a terminal window instead of via Copilot CLI |
 | Tests take too long | Start with `Build` category (fastest), then run others. Use `-SkipBuild -SkipInstall` if workloads are already installed |
+| iOS tests fail with "mlaunch exited with 1" | Simulator state issue. Run individual tests instead of the whole category (see below) |
+| iOS simulator state errors (code 137/149) | Reset simulator: `xcrun simctl shutdown all && xcrun simctl erase all` or run tests individually |
 
 ## Running Manually (Recommended for Long-Running Tests)
 
@@ -137,5 +170,30 @@ $categories = @("Build", "WindowsTemplates", "Blazor", "MultiProject", "Samples"
 foreach ($cat in $categories) {
     Write-Host "Running $cat..." -ForegroundColor Cyan
     pwsh .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 -Category $cat -SkipBuild -SkipInstall
+}
+```
+
+### Running Individual iOS Tests (Recommended)
+
+Running all iOS tests together (`-Category "RunOniOS"`) can cause simulator state issues. For better reliability, run tests individually:
+
+```powershell
+# Available iOS tests
+$iosTests = @(
+    "RunOniOS_MauiDebug",
+    "RunOniOS_MauiRelease",
+    "RunOniOS_MauiReleaseTrimFull",
+    "RunOniOS_BlazorDebug",
+    "RunOniOS_BlazorRelease",
+    "RunOniOS_MauiNativeAOT"
+)
+
+# Run a specific iOS test
+pwsh .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 -TestFilter "FullyQualifiedName~RunOniOS_MauiDebug" -SkipBuild -SkipInstall -SkipXcodeVersionCheck
+
+# Run all iOS tests individually (more reliable than running category)
+foreach ($test in $iosTests) {
+    Write-Host "Running $test..." -ForegroundColor Cyan
+    pwsh .github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1 -TestFilter "FullyQualifiedName~$test" -SkipBuild -SkipInstall -SkipXcodeVersionCheck
 }
 ```
