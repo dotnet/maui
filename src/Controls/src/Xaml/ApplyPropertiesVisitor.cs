@@ -281,10 +281,8 @@ namespace Microsoft.Maui.Controls.Xaml
 			}
 			catch (Exception e)
 			{
-				if (Context.ExceptionHandler != null)
-					Context.ExceptionHandler(e);
-				else
-					throw e;
+				Context.ExceptionHandler?.Invoke(e);
+				throw;
 			}
 		}
 
