@@ -85,7 +85,14 @@ namespace Microsoft.Maui.Controls
 			else if (Value is DynamicResource dynamicResource)
 				targetObject.SetDynamicResource(Property, dynamicResource.Key, specificity);
 			else if (Value is IList<VisualStateGroup> visualStateGroupCollection)
+			{
+				//Check if the target has already any visual states
+				if (targetObject.GetValue(Property) is VisualStateGroupList parentVisualStateGroups)
+				{
+					visualStateGroupCollection.MergeWithParent(parentVisualStateGroups);
+				}
 				targetObject.SetValue(Property, visualStateGroupCollection.Clone(), specificity);
+			}
 			else
 				targetObject.SetValue(Property, Value, specificity: specificity);
 		}
