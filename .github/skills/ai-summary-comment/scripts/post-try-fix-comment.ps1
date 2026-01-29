@@ -326,7 +326,7 @@ try {
 }
 
 # Build the try-fix section content
-$tryFixHeader = "### 🔧 Try-Fix Analysis`n`n"
+$tryFixHeader = "### Try-Fix Analysis`n`n"
 
 # Extract existing try-fix section to preserve previous attempts
 $existingTryFixContent = ""
@@ -344,8 +344,8 @@ if ($existingTryFixContent -match $attemptPattern) {
     $tryFixContent = $existingTryFixContent -replace $attemptPattern, $attemptSection
 } elseif (-not [string]::IsNullOrWhiteSpace($existingTryFixContent)) {
     Write-Host "Adding new Fix $AttemptNumber..." -ForegroundColor Yellow
-    # Remove header if present to avoid duplication
-    $existingTryFixContent = $existingTryFixContent -replace "^### 🔧 (Try-Fix Analysis|Fix Attempts)\s*`n*", ""
+    # Remove header if present to avoid duplication (match any emoji or no emoji)
+    $existingTryFixContent = $existingTryFixContent -replace "^###\s*[^\n]*Try-Fix Analysis[^\n]*`n*", ""
     $tryFixContent = $tryFixHeader + $existingTryFixContent.TrimEnd() + "`n`n" + $attemptSection
 } else {
     Write-Host "Creating first fix..." -ForegroundColor Yellow
@@ -378,7 +378,7 @@ if ($existingComment) {
     $commentBody = @"
 $MAIN_MARKER
 
-## 🤖 AI Summary
+## AI Summary
 
 $tryFixSection
 "@
@@ -426,8 +426,8 @@ if ($DryRun) {
             $tryFixSectionUpdated = "$SECTION_START`n$tryFixHeader$updatedTryFixContent`n$SECTION_END"
         } else {
             Write-Host "Adding Fix $AttemptNumber to preview..." -ForegroundColor Yellow
-            # Remove header if present to avoid duplication
-            $existingTryFixPreview = $existingTryFixPreview -replace "^### � (Try-Fix Analysis|Fix Attempts)\s*`n*", ""
+            # Remove header if present to avoid duplication (match any emoji or no emoji)
+            $existingTryFixPreview = $existingTryFixPreview -replace "^###\s*[^\n]*Try-Fix Analysis[^\n]*`n*", ""
             $updatedTryFixContent = $tryFixHeader + $existingTryFixPreview.TrimEnd() + "`n`n" + $attemptSection
             $tryFixSectionUpdated = "$SECTION_START`n$updatedTryFixContent`n$SECTION_END"
         }
