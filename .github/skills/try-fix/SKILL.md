@@ -67,6 +67,7 @@ Write-Host "Output directory: $OUTPUT_DIR"
 
 | File | When to Create | Content |
 |------|----------------|---------|
+| `baseline.log` | After Step 2 (Baseline) | Output from EstablishBrokenBaseline.ps1 proving baseline was established |
 | `approach.md` | After Step 4 (Design) | What fix you're attempting and why it's different from existing fixes |
 | `result.txt` | After Step 6 (Test) | Single word: `Pass` or `Fail` |
 | `fix.diff` | After Step 6 (Test) | Output of `git diff` showing your changes |
@@ -171,11 +172,18 @@ The skill is complete when:
 
 🚨 **ALWAYS use EstablishBrokenBaseline.ps1 - NEVER manually revert files.**
 
-```bash
-pwsh .github/scripts/EstablishBrokenBaseline.ps1
+```powershell
+# Capture baseline output as proof it was run
+pwsh .github/scripts/EstablishBrokenBaseline.ps1 2>&1 | Tee-Object -FilePath "$OUTPUT_DIR/baseline.log"
 ```
 
 The script auto-detects and reverts fix files to merge-base state while preserving test files. **Will fail fast if no fix files detected** - you must be on the actual PR branch. Optional flags: `-BaseBranch main`, `-DryRun`.
+
+**Verify baseline was established:**
+```powershell
+# baseline.log should contain "Baseline established" and list of reverted files
+Select-String -Path "$OUTPUT_DIR/baseline.log" -Pattern "Baseline established"
+```
 
 **If the script fails with "No fix files detected":** You're likely on the wrong branch. Checkout the actual PR branch with `gh pr checkout <PR#>` and try again.
 
@@ -277,7 +285,7 @@ git diff | Set-Content "$OUTPUT_DIR/fix.diff"
 
 **Verify all required files exist:**
 ```powershell
-@("approach.md", "result.txt", "fix.diff", "analysis.md") | ForEach-Object {
+@("baseline.log", "approach.md", "result.txt", "fix.diff", "analysis.md") | ForEach-Object {
     if (Test-Path "$OUTPUT_DIR/$_") { Write-Host "✅ $_" } 
     else { Write-Host "❌ MISSING: $_" }
 }
