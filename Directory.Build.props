@@ -162,31 +162,39 @@
   <!-- Windows specific settings -->
   <PropertyGroup Condition="'$(_MauiTargetPlatformIsWindows)' == 'True'">
     <WindowsSdkPackageVersion>10.0.19041.44</WindowsSdkPackageVersion>
-    <!--
-      WindowsAppSDKSelfContained bundles the Windows App SDK native DLLs with the app.
-      This is REQUIRED for unpackaged builds on Helix (exit code 0xC000027B without it).
-      
-      CRITICAL: This property MUST be set in Directory.Build.props, NOT in csproj.
-      The Windows App SDK NuGet package reads this property in its .props file, which is
-      imported BEFORE the csproj body is evaluated. If set in csproj, it's too late -
-      the Windows App SDK will have already decided not to include native DLLs.
-      
-      ALSO CRITICAL: MauiUnpackagedBuild propagates to ALL projects in the build graph
-      (including library dependencies like TestUtils.DeviceTests.csproj). We can NOT condition on
-      OutputType because it's set in the csproj body which isn't evaluated yet.
-      
-      Instead, we detect actual device test EXE projects by checking if the project path ends with
-      "tests/DeviceTests" or "test/DeviceTests". This pattern matches the EXE projects:
-        - src/*/tests/DeviceTests/*.csproj (Controls, Core, Graphics, BlazorWebView)
-        - src/*/test/DeviceTests/*.csproj (Essentials)
-      But NOT the library projects:
-        - src/TestUtils/src/DeviceTests/*.csproj (shared utilities)
-        - src/Core/tests/DeviceTests.Shared/*.csproj (shared test code)
-      
-      MauiUnpackagedBuild is set by Cake only for unpackaged device test builds.
-    -->
+  </PropertyGroup>
+
+  <!--
+    WindowsAppSDKSelfContained bundles the Windows App SDK native DLLs with the app.
+    This is REQUIRED for unpackaged builds on Helix (exit code 0xC000027B without it).
+    
+    CRITICAL: This property MUST be set in Directory.Build.props, NOT in csproj.
+    The Windows App SDK NuGet package reads this property in its .props file, which is
+    imported BEFORE the csproj body is evaluated. If set in csproj, it's too late -
+    the Windows App SDK will have already decided not to include native DLLs.
+    
+    ALSO CRITICAL: MauiUnpackagedBuild propagates to ALL projects in the build graph
+    (including library dependencies like TestUtils.DeviceTests.csproj). We can NOT condition on
+    OutputType because it's set in the csproj body which isn't evaluated yet.
+    
+    Instead, we detect actual device test EXE projects by checking if the project path ends with
+    "tests/DeviceTests" or "test/DeviceTests". This pattern matches the EXE projects:
+      - src/*/tests/DeviceTests/*.csproj (Controls, Core, Graphics, BlazorWebView)
+      - src/*/test/DeviceTests/*.csproj (Essentials)
+    But NOT the library projects:
+      - src/TestUtils/src/DeviceTests/*.csproj (shared utilities)
+      - src/Core/tests/DeviceTests.Shared/*.csproj (shared test code)
+    
+    MauiUnpackagedBuild is set by Cake only for unpackaged device test builds.
+    
+    NOTE: We check TargetFramework directly (not _MauiTargetPlatformIsWindows) because
+    the PropertyGroup with _MauiTargetPlatformIsWindows condition may not evaluate correctly
+    during early MSBuild evaluation on CI. The TargetFramework is passed via command line
+    so it's always available.
+  -->
+  <PropertyGroup Condition="'$(MauiUnpackagedBuild)' == 'true' and $(TargetFramework.Contains('windows'))">
     <_IsDeviceTestsProject>$([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[\\/]tests?[\\/]DeviceTests[\\/]?$'))</_IsDeviceTestsProject>
-    <WindowsAppSDKSelfContained Condition="'$(MauiUnpackagedBuild)' == 'true' and '$(_IsDeviceTestsProject)' == 'True'">true</WindowsAppSDKSelfContained>
+    <WindowsAppSDKSelfContained Condition="'$(_IsDeviceTestsProject)' == 'True'">true</WindowsAppSDKSelfContained>
   </PropertyGroup>
 
   <!-- version number information -->
