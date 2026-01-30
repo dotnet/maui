@@ -3,9 +3,9 @@ using System;
 namespace Maui.Controls.Sample.Issues
 {
     [Issue(IssueTracker.None, 0, "Material3 CheckBox Testing", PlatformAffected.Android)]
-    public partial class IssueMaterial3CheckBox : ContentPage
+    public partial class Material3CheckBoxDefaultAppearance : ContentPage
     {
-        public IssueMaterial3CheckBox()
+        public Material3CheckBoxDefaultAppearance()
         {
             InitializeComponent();
         }

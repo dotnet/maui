@@ -5,9 +5,9 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-    public class IssueMaterial3CheckBoxTest : _IssuesUITest
+    public class Material3CheckBoxDefaultAppearanceTest : _IssuesUITest
     {
-        public IssueMaterial3CheckBoxTest(TestDevice testDevice) : base(testDevice)
+        public Material3CheckBoxDefaultAppearanceTest(TestDevice testDevice) : base(testDevice)
         {
         }
 
