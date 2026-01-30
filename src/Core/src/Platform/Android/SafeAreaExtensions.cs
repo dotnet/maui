@@ -29,7 +29,6 @@ internal static class SafeAreaExtensions
 	/// Checks if the layout is associated with a ContentPage specifically.
 	/// This is used to limit the transition inset re-application to content pages only,
 	/// avoiding the infinite loop issue with other view types like TabbedPage tabs.
-	/// We check the type name since IPage is not available in Core.
 	/// </summary>
 	internal static bool IsContentPageLayout(object? layout)
 	{
@@ -39,9 +38,9 @@ internal static class SafeAreaExtensions
 			_ => layout
 		};
 
-		// Check if the virtual view's type name ends with "ContentPage"
-		// This handles Microsoft.Maui.Controls.ContentPage and any derived types
-		return virtualView?.GetType().Name.EndsWith("ContentPage", StringComparison.Ordinal) == true;
+		// Check if the virtual view implements IContentPageController (marker interface)
+		// Only ContentPage implements this interface on Android
+		return virtualView is IContentPageController;
 	}
 
 

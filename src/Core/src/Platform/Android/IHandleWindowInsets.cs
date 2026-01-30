@@ -37,4 +37,19 @@ namespace Microsoft.Maui.Platform
 	internal interface IRequestInsetsOnTransition
 	{
 	}
+
+	/// <summary>
+	/// Marker interface for ContentPage to indicate it should receive transition inset updates.
+	/// This is separate from IRequestInsetsOnTransition (which is for Shell hierarchy) because
+	/// we need to check that the actual view being processed is a ContentPage, not just that
+	/// it's under a Shell.
+	/// </summary>
+	/// <remarks>
+	/// Only ContentPage should implement this interface. Other content views like ContentView,
+	/// ScrollView, Border, etc. should NOT implement this to avoid the infinite loop issue
+	/// when they are positioned off-screen (e.g., in TabbedPage inactive tabs).
+	/// </remarks>
+	internal interface IContentPageController
+	{
+	}
 }
