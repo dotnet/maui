@@ -282,7 +282,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			catch (Exception e)
 			{
 				Context.ExceptionHandler?.Invoke(e);
-				throw e;
+				throw;
 			}
 		}
 
