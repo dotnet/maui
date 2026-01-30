@@ -13,6 +13,15 @@ namespace Microsoft.Maui.Controls.Maps
 
 		void IMap.Clicked(Location location) => MapClicked?.Invoke(this, new MapClickedEventArgs(location));
 
+		bool IMap.ClusterClicked(IReadOnlyList<IMapPin> pins, Location location)
+		{
+			// Convert IMapPin to Pin for the event args
+			var controlPins = pins.OfType<Pin>().ToList();
+			var args = new ClusterClickedEventArgs(controlPins, location);
+			ClusterClicked?.Invoke(this, args);
+			return args.Handled;
+		}
+
 		MapSpan? IMap.VisibleRegion
 		{
 			get

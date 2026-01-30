@@ -19,6 +19,8 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		public static void MapIsShowingUser(IMapHandler handler, IMap map) => throw new NotImplementedException();
 
+		public static void MapIsClusteringEnabled(IMapHandler handler, IMap map) => throw new NotImplementedException();
+
 		public static void MapMoveToRegion(IMapHandler handler, IMap map, object? arg) => throw new NotImplementedException();
 
 		public static void MapPins(IMapHandler handler, IMap map) => throw new NotImplementedException();

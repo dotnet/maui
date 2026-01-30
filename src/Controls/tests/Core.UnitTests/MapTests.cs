@@ -477,5 +477,115 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Items = itemsSource;
 			}
 		}
+
+		[Fact]
+		public void IsClusteringEnabledDefaultValue()
+		{
+			var map = new Map();
+			Assert.False(map.IsClusteringEnabled);
+		}
+
+		[Fact]
+		public void IsClusteringEnabledCanBeSet()
+		{
+			var map = new Map();
+			map.IsClusteringEnabled = true;
+			Assert.True(map.IsClusteringEnabled);
+		}
+
+		[Fact]
+		public void ClusteringIdentifierDefaultValue()
+		{
+			var pin = new Pin { Label = "Test" };
+			Assert.Equal(Pin.DefaultClusteringIdentifier, pin.ClusteringIdentifier);
+			Assert.Equal("maui_default_cluster", pin.ClusteringIdentifier);
+		}
+
+		[Fact]
+		public void ClusteringIdentifierCanBeSet()
+		{
+			var pin = new Pin { Label = "Test", ClusteringIdentifier = "restaurants" };
+			Assert.Equal("restaurants", pin.ClusteringIdentifier);
+		}
+
+		[Fact]
+		public void ClusterClickedEventRaises()
+		{
+			var map = new Map();
+			bool eventRaised = false;
+			ClusterClickedEventArgs receivedArgs = null;
+
+			map.ClusterClicked += (sender, args) =>
+			{
+				eventRaised = true;
+				receivedArgs = args;
+			};
+
+			// Simulate cluster click via IMap interface
+			var pins = new List<Pin>
+			{
+				new Pin { Label = "Pin 1", Location = new Location(0, 0) },
+				new Pin { Label = "Pin 2", Location = new Location(0.1, 0.1) }
+			};
+			var location = new Location(0.05, 0.05);
+
+			var handled = ((IMap)map).ClusterClicked(pins.Cast<IMapPin>().ToList(), location);
+
+			Assert.True(eventRaised);
+			Assert.NotNull(receivedArgs);
+			Assert.Equal(2, receivedArgs.Pins.Count);
+			Assert.Equal(location, receivedArgs.Location);
+			Assert.False(handled); // Default is not handled
+		}
+
+		[Fact]
+		public void ClusterClickedEventCanBeHandled()
+		{
+			var map = new Map();
+			map.ClusterClicked += (sender, args) =>
+			{
+				args.Handled = true;
+			};
+
+			var pins = new List<Pin>
+			{
+				new Pin { Label = "Pin 1", Location = new Location(0, 0) }
+			};
+			var location = new Location(0.05, 0.05);
+
+			var handled = ((IMap)map).ClusterClicked(pins.Cast<IMapPin>().ToList(), location);
+
+			Assert.True(handled);
+		}
+
+		[Fact]
+		public void ClusterClickedEventArgsContainsCorrectData()
+		{
+			var pins = new List<Pin>
+			{
+				new Pin { Label = "Pin 1", Location = new Location(1, 2), Address = "Address 1" },
+				new Pin { Label = "Pin 2", Location = new Location(3, 4), Address = "Address 2" },
+				new Pin { Label = "Pin 3", Location = new Location(5, 6), Address = "Address 3" }
+			};
+			var location = new Location(2, 3);
+
+			var args = new ClusterClickedEventArgs(pins, location);
+
+			Assert.Equal(3, args.Pins.Count);
+			Assert.Equal("Pin 1", args.Pins[0].Label);
+			Assert.Equal("Pin 2", args.Pins[1].Label);
+			Assert.Equal("Pin 3", args.Pins[2].Label);
+			Assert.Equal(2, args.Location.Latitude);
+			Assert.Equal(3, args.Location.Longitude);
+			Assert.False(args.Handled);
+		}
+
+		[Fact]
+		public void PinClusteringIdentifierImplementsIMapPin()
+		{
+			var pin = new Pin { Label = "Test", ClusteringIdentifier = "custom_cluster" };
+			IMapPin mapPin = pin;
+			Assert.Equal("custom_cluster", mapPin.ClusteringIdentifier);
+		}
 	}
 }

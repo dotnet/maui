@@ -108,6 +108,16 @@ namespace Microsoft.Maui.Maps.Handlers
 			googleMap?.UpdateIsZoomEnabled(map);
 		}
 
+		public static void MapIsClusteringEnabled(IMapHandler handler, IMap map)
+		{
+			// TODO: Android clustering requires the android-maps-utils library (ClusterManager)
+			// For now, log a warning that clustering is not supported on Android
+			if (map.IsClusteringEnabled)
+			{
+				System.Diagnostics.Debug.WriteLine("Pin clustering is not yet supported on Android. Consider using a third-party library like android-maps-utils.");
+			}
+		}
+
 		public static void MapMoveToRegion(IMapHandler handler, IMap map, object? arg)
 		{
 			MapSpan? newRegion = arg as MapSpan;

@@ -23,6 +23,12 @@ namespace Microsoft.Maui.Maps
 		/// </summary>
 		Location Location { get; }
 
+		/// <summary>
+		/// Gets the clustering identifier for this pin.
+		/// Pins with the same identifier will be grouped together when clustering is enabled.
+		/// </summary>
+		string ClusteringIdentifier { get; }
+
 		object? MarkerId { get; set; }
 
 		bool SendMarkerClick();

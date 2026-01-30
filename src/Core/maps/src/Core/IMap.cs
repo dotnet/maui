@@ -39,6 +39,11 @@ namespace Microsoft.Maui.Maps
 		bool IsTrafficEnabled { get; }
 
 		/// <summary>
+		/// Gets whether pin clustering is enabled for this map.
+		/// </summary>
+		bool IsClusteringEnabled { get; }
+
+		/// <summary>
 		/// The pins that are to be shown on this Map.
 		/// </summary>
 		IList<IMapPin> Pins { get; }
@@ -52,6 +57,14 @@ namespace Microsoft.Maui.Maps
 		/// Method called by the handler when user clicks on the Map.
 		/// </summary>
 		void Clicked(Location position);
+
+		/// <summary>
+		/// Method called by the handler when a cluster is clicked.
+		/// </summary>
+		/// <param name="pins">The pins in the cluster.</param>
+		/// <param name="location">The location of the cluster.</param>
+		/// <returns><see langword="true"/> if the click was handled and default behavior should be suppressed; otherwise <see langword="false"/>.</returns>
+		bool ClusterClicked(IReadOnlyList<IMapPin> pins, Location location);
 
 		/// <summary>
 		/// Moves the map so that it displays the specified <see cref="MapSpan"/> region.

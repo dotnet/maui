@@ -30,6 +30,9 @@ namespace Microsoft.Maui.Controls.Maps
 		/// <summary>Bindable property for <see cref="IsZoomEnabled"/>.</summary>
 		public static readonly BindableProperty IsZoomEnabledProperty = BindableProperty.Create(nameof(IsZoomEnabled), typeof(bool), typeof(Map), true);
 
+		/// <summary>Bindable property for <see cref="IsClusteringEnabled"/>.</summary>
+		public static readonly BindableProperty IsClusteringEnabledProperty = BindableProperty.Create(nameof(IsClusteringEnabled), typeof(bool), typeof(Map), default(bool));
+
 		/// <summary>Bindable property for <see cref="ItemsSource"/>.</summary>
 		public static readonly BindableProperty ItemsSourceProperty = BindableProperty.Create(nameof(ItemsSource), typeof(IEnumerable), typeof(Map), default(IEnumerable),
 			propertyChanged: (b, o, n) => ((Map)b).OnItemsSourcePropertyChanged((IEnumerable)o, (IEnumerable)n));
@@ -112,6 +115,21 @@ namespace Microsoft.Maui.Controls.Maps
 		}
 
 		/// <summary>
+		/// Gets or sets a value that indicates if pin clustering is enabled. Default value is <see langword="false"/>.
+		/// This is a bindable property.
+		/// </summary>
+		/// <remarks>
+		/// When enabled, pins that are close together will be grouped into clusters.
+		/// As the user zooms in, clusters will expand to show individual pins.
+		/// Use <see cref="Pin.ClusteringIdentifier"/> to control which pins cluster together.
+		/// </remarks>
+		public bool IsClusteringEnabled
+		{
+			get => (bool)GetValue(IsClusteringEnabledProperty);
+			set => SetValue(IsClusteringEnabledProperty, value);
+		}
+
+		/// <summary>
 		/// Gets or sets the style of the map. Default value is <see cref="MapType.Street"/>. 
 		/// This is a bindable property.
 		/// </summary>
@@ -168,6 +186,15 @@ namespace Microsoft.Maui.Controls.Maps
 		/// Occurs when the user clicks/taps on the map control.
 		/// </summary>
 		public event EventHandler<MapClickedEventArgs>? MapClicked;
+
+		/// <summary>
+		/// Occurs when a pin cluster is clicked/tapped.
+		/// </summary>
+		/// <remarks>
+		/// This event only fires when <see cref="IsClusteringEnabled"/> is set to true.
+		/// The event provides information about the cluster including the pins it contains.
+		/// </remarks>
+		public event EventHandler<ClusterClickedEventArgs>? ClusterClicked;
 
 		/// <summary>
 		/// Gets the currently visible region of the map.

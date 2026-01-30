@@ -10,6 +10,11 @@ namespace Microsoft.Maui.Controls.Maps
 	/// </summary>
 	public partial class Pin : Element
 	{
+		/// <summary>
+		/// The default clustering identifier used when <see cref="ClusteringIdentifier"/> is not set.
+		/// </summary>
+		public const string DefaultClusteringIdentifier = "maui_default_cluster";
+
 		/// <summary>Bindable property for <see cref="Type"/>.</summary>
 		public static readonly BindableProperty TypeProperty = BindableProperty.Create(nameof(Type), typeof(PinType), typeof(Pin), default(PinType));
 
@@ -21,6 +26,10 @@ namespace Microsoft.Maui.Controls.Maps
 
 		/// <summary>Bindable property for <see cref="Label"/>.</summary>
 		public static readonly BindableProperty LabelProperty = BindableProperty.Create(nameof(Label), typeof(string), typeof(Pin), default(string));
+
+		/// <summary>Bindable property for <see cref="ClusteringIdentifier"/>.</summary>
+		public static readonly BindableProperty ClusteringIdentifierProperty = BindableProperty.Create(nameof(ClusteringIdentifier), typeof(string), typeof(Pin), DefaultClusteringIdentifier);
+
 		private object? _markerId;
 
 		/// <inheritdoc />
@@ -42,6 +51,23 @@ namespace Microsoft.Maui.Controls.Maps
 		{
 			get { return (Location)GetValue(LocationProperty); }
 			set { SetValue(LocationProperty, value); }
+		}
+
+		/// <summary>
+		/// Gets or sets the clustering identifier for this pin.
+		/// Pins with the same identifier will be grouped together when clustering is enabled.
+		/// Default value is <see cref="DefaultClusteringIdentifier"/>.
+		/// This is a bindable property.
+		/// </summary>
+		/// <remarks>
+		/// Use different clustering identifiers to create separate groups of pins that 
+		/// cluster independently. For example, you might have one identifier for restaurants
+		/// and another for hotels, so they cluster within their own categories.
+		/// </remarks>
+		public string ClusteringIdentifier
+		{
+			get { return (string)GetValue(ClusteringIdentifierProperty); }
+			set { SetValue(ClusteringIdentifierProperty, value); }
 		}
 
 		/// <summary>

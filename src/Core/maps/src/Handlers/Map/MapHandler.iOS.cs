@@ -74,6 +74,13 @@ namespace Microsoft.Maui.Maps.Handlers
 			handler.PlatformView.ZoomEnabled = map.IsZoomEnabled;
 		}
 
+		public static void MapIsClusteringEnabled(IMapHandler handler, IMap map)
+		{
+			handler.PlatformView.IsClusteringEnabled = map.IsClusteringEnabled;
+			// Re-add pins to apply clustering changes
+			handler.PlatformView.AddPins((IList)map.Pins);
+		}
+
 		public static void MapPins(IMapHandler handler, IMap map)
 		{
 			handler.PlatformView.AddPins((IList)map.Pins);

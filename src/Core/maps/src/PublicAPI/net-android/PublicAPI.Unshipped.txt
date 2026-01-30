@@ -1,1 +1,5 @@
 #nullable enable
+Microsoft.Maui.Maps.IMap.ClusterClicked(System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Maps.IMapPin!>! pins, Microsoft.Maui.Devices.Sensors.Location! location) -> bool
+Microsoft.Maui.Maps.IMap.IsClusteringEnabled.get -> bool
+Microsoft.Maui.Maps.IMapPin.ClusteringIdentifier.get -> string!
+static Microsoft.Maui.Maps.Handlers.MapHandler.MapIsClusteringEnabled(Microsoft.Maui.Maps.Handlers.IMapHandler! handler, Microsoft.Maui.Maps.IMap! map) -> void
