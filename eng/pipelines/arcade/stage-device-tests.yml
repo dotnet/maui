@@ -554,7 +554,8 @@ stages:
                 if ($hasContent) {
                   # Count total files before archive
                   $totalFiles = (Get-ChildItem -Path "$tempDir" -Recurse -File).Count
-                  Write-Host "Total files to archive: $totalFiles"
+                  $dllCount = (Get-ChildItem -Path "$tempDir/Unpackaged" -Filter "*.dll" -Recurse 2>$null).Count
+                  Write-Host "Total files to archive: $totalFiles (including $dllCount DLLs in Unpackaged)"
                   
                   Write-Host "Creating archive $zipPath..."
                   Compress-Archive -Path "$tempDir/*" -DestinationPath $zipPath -Force
@@ -562,6 +563,24 @@ stages:
                   # Report archive size
                   $archiveSize = (Get-Item $zipPath).Length
                   Write-Host "Created $zipPath - Size: $([math]::Round($archiveSize / 1MB, 2)) MB"
+                  
+                  # VERIFY archive contains Microsoft.ui.xaml.dll by extracting and checking
+                  $verifyDir = "$artifactsDir/verify_$($project.Name)"
+                  New-Item -ItemType Directory -Force -Path $verifyDir | Out-Null
+                  Expand-Archive -Path $zipPath -DestinationPath $verifyDir -Force
+                  
+                  $verifyWinui = Get-ChildItem -Path "$verifyDir/Unpackaged" -Filter "Microsoft.ui.xaml.dll" -Recurse 2>$null
+                  $verifyDllCount = (Get-ChildItem -Path "$verifyDir/Unpackaged" -Filter "*.dll" -Recurse 2>$null).Count
+                  
+                  if ($verifyWinui) {
+                    Write-Host "  ARCHIVE VERIFY: Microsoft.ui.xaml.dll is in archive ($([math]::Round($verifyWinui.Length / 1MB, 2)) MB)"
+                  } else {
+                    Write-Host "  ARCHIVE VERIFY ERROR: Microsoft.ui.xaml.dll NOT FOUND in archive!"
+                  }
+                  Write-Host "  ARCHIVE VERIFY: $verifyDllCount DLLs in extracted Unpackaged folder"
+                  
+                  # Cleanup verify folder
+                  Remove-Item -Path $verifyDir -Recurse -Force
                 } else {
                   Write-Host "ERROR: No content found for $($project.Name)"
                 }
