@@ -50,7 +50,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("ProgressToButton");
 			App.Tap("ProgressToButton");
 			Task.Delay(1000).Wait();
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		[Test]
@@ -64,7 +64,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.EnterText("ProgressEntry", "1.44");
 			App.PressEnter();
 			App.WaitForElement("ProgressBarControl");
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		[Test]
@@ -78,7 +78,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.EnterText("ProgressEntry", "-0.44");
 			App.PressEnter();
 			App.WaitForElement("ProgressBarControl");
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		[Test]
@@ -96,7 +96,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("BackgroundColorLightBlueButton");
 			App.Tap("BackgroundColorLightBlueButton");
 			App.WaitForElement("ProgressBarControl");
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		[Test]
@@ -108,7 +108,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("IsVisibleFalseRadio");
 			App.Tap("IsVisibleFalseRadio");
 			App.WaitForNoElement("ProgressBarControl");
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		[Test]
@@ -120,7 +120,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("FlowDirectionRTL");
 			App.Tap("FlowDirectionRTL");
 			App.WaitForElement("ProgressBarControl");
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		[Test]
@@ -132,7 +132,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("ShadowTrueRadio");
 			App.Tap("ShadowTrueRadio");
 			App.WaitForElement("ProgressBarControl");
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 	}
 }

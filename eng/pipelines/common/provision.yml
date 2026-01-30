@@ -94,7 +94,8 @@ steps:
       sw_vers -productVersion
       echo
       echo Installed Xcode versions:
-      ls -la /Applications | grep 'Xcode'
+      XCODE_LIST=($(ls -1 /Applications | grep '^Xcode_' | sed 's/^Xcode_//;s/.app$//'))
+      for v in "${XCODE_LIST[@]}"; do echo "  $v"; done
       echo
       echo currently selected xcode:
       xcrun xcode-select --print-path
@@ -116,39 +117,48 @@ steps:
         XCODE_VERSION="${MAJOR}.${MINOR}"
         XCODE_PATH="$GENERIC_PATH"
       else
-        # Build list of versions to try: major.minor.1, major.minor.0, major.(minor-1).1, major.(minor-1).0
-        VERSIONS_TO_TRY=(
-          "${MAJOR}.${MINOR}.1"
-          "${MAJOR}.${MINOR}.0"
-          "${MAJOR}.${PREV_MINOR}.1"
-          "${MAJOR}.${PREV_MINOR}.0"
-        )
-
-        echo "Will try Xcode versions in order: ${VERSIONS_TO_TRY[*]}"
-
-        XCODE_VERSION=""
-        XCODE_PATH=""
-
-        for VERSION in "${VERSIONS_TO_TRY[@]}"; do
-          CANDIDATE_PATH="/Applications/Xcode_${VERSION}.app"
-          echo "Checking for Xcode ${VERSION} at ${CANDIDATE_PATH}..."
-          if [[ -d "$CANDIDATE_PATH" ]]; then
-            echo "Found Xcode version ${VERSION} at ${CANDIDATE_PATH}"
-            XCODE_VERSION="$VERSION"
-            XCODE_PATH="$CANDIDATE_PATH"
-            break
-          else
-            echo "Xcode version ${VERSION} not found"
-          fi
-        done
+        XCODE_VERSION=$(XCODE)
       fi
 
+      # Check if the specified Xcode version exists, if not try fallbacks
+      # Fallback order: exact version -> major.minor -> major
+      XCODE_PATH=""
+      ORIGINAL_VERSION="$XCODE_VERSION"
+
+      # Build list of versions to try
+      VERSIONS_TO_TRY=("$XCODE_VERSION")
+
+      # Add major.minor fallback (e.g., 26.0.1 -> 26.0)
+      if [[ "$XCODE_VERSION" =~ ^([0-9]+\.[0-9]+)\.[0-9]+$ ]]; then
+        VERSIONS_TO_TRY+=("${BASH_REMATCH[1]}")
+      fi
+
+      # Add major fallback (e.g., 26.0.1 or 26.0 -> 26)
+      if [[ "$XCODE_VERSION" =~ ^([0-9]+)\. ]]; then
+        VERSIONS_TO_TRY+=("${BASH_REMATCH[1]}")
+      fi
+
+      echo "Will try Xcode versions in order: ${VERSIONS_TO_TRY[*]}"
+
+      for VERSION in "${VERSIONS_TO_TRY[@]}"; do
+        CANDIDATE_PATH="/Applications/Xcode_${VERSION}.app"
+        echo "Checking for Xcode ${VERSION} at ${CANDIDATE_PATH}..."
+        if [[ -d "$CANDIDATE_PATH" ]]; then
+          echo "Found Xcode version ${VERSION} at ${CANDIDATE_PATH}"
+          XCODE_VERSION="$VERSION"
+          XCODE_PATH="$CANDIDATE_PATH"
+          break
+        else
+          echo "Xcode version ${VERSION} not found"
+        fi
+      done
+
       if [[ -z "$XCODE_PATH" ]]; then
-        echo "ERROR: No suitable Xcode version found."
+        echo "ERROR: No suitable Xcode version found for requested version ${ORIGINAL_VERSION}"
+        echo "Tried: ${VERSIONS_TO_TRY[*]}"
         exit 1
       fi
 
-      echo "Selected Xcode version: ${XCODE_VERSION} at ${XCODE_PATH}"
       sudo xcode-select -s "$XCODE_PATH"
       xcrun xcode-select --print-path
       xcodebuild -version

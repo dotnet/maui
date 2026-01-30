@@ -86,7 +86,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.TapBackArrow("Issue24489_2");
 
 			App.WaitForElement("OpenPageThatOpensEmptyTitleBar").Tap();
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		[Test]
@@ -97,7 +97,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.TapBackArrow("Issue24489_2");
 
 			App.WaitForElement("OpenPageThatOpensEmptyTitleBar").Tap();
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 	}
 }

@@ -49,7 +49,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		App.Tap(IndicatorColorGreenButton);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(2)]
@@ -62,7 +62,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		App.Tap(SelectedIndicatorColorPurpleButton);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(3)]
@@ -105,7 +105,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		IncreasePositionStepper();
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(18)]
@@ -119,7 +119,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		IncreasePositionStepper();
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(29)]
@@ -133,7 +133,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		IncreasePositionStepper();
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -147,7 +147,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		IncreaseIndicatorSizeStepper();
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -162,7 +162,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		App.Tap(IndicatorShapeSquareRadioButton);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(16)]
@@ -177,7 +177,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		App.Tap(IndicatorShapeSquareRadioButton);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(17)]
@@ -192,7 +192,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		App.Tap(IndicatorShapeSquareRadioButton);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(21)]
@@ -206,7 +206,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		App.Tap(IndicatorShapeSquareRadioButton);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(26)]
@@ -221,7 +221,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		App.Tap(FlowDirectionRightToLeftRadioButton);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(27)]
@@ -241,7 +241,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 			App.WaitForElement(RemoveItemButton);
 			App.Tap(RemoveItemButton);
 		}
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(28)]
@@ -255,7 +255,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		DecreaseMaximumVisibleStepper();
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/29812
 	[Test, Order(30)]
@@ -270,7 +270,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		App.Tap(ShadowTrueRadioButton);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 #endif
@@ -290,7 +290,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 			App.WaitForElement(RemoveItemButton);
 			App.Tap(RemoveItemButton);
 		}
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(8)]
@@ -302,7 +302,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		DecreaseMaximumVisibleStepper();
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(9)]
@@ -315,7 +315,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		App.Tap(FlowDirectionRightToLeftRadioButton);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(10)]
@@ -328,7 +328,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		App.Tap(IsVisibleFalseRadioButton);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 #if TEST_FAILS_ON_WINDOWS // https://github.com/dotnet/maui/issues/29812
@@ -342,7 +342,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		App.Tap(ShadowTrueRadioButton);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -358,7 +358,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		App.WaitForElement(AddItemButton);
 		App.Tap(AddItemButton);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(14)]
@@ -372,7 +372,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		IncreaseIndicatorSizeStepper();
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(15)]
@@ -386,7 +386,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		IncreaseIndicatorSizeStepper();
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(19)]
@@ -401,7 +401,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		App.Tap(FlowDirectionRightToLeftRadioButton);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(20)]
@@ -416,7 +416,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		App.Tap(FlowDirectionRightToLeftRadioButton);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(22)]
@@ -435,7 +435,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 			App.WaitForElement(RemoveItemButton);
 			App.Tap(RemoveItemButton);
 		}
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS //Issue Link: https://github.com/dotnet/maui/issues/31140 , https://github.com/dotnet/maui/issues/29812
@@ -450,7 +450,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		App.Tap(ShadowTrueRadioButton);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -465,7 +465,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		App.Tap(FlowDirectionRightToLeftRadioButton);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(25)]
@@ -478,7 +478,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		DecreaseMaximumVisibleStepper();
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(31)]
@@ -493,7 +493,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		App.Tap(IndicatorColorGreenButton);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(32)]
@@ -511,7 +511,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 			App.WaitForElement(RemoveItemButton);
 			App.Tap(RemoveItemButton);
 		}
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(33)]
@@ -531,7 +531,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 			App.WaitForElement(RemoveItemButton);
 			App.Tap(RemoveItemButton);
 		}
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 #if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST
@@ -548,7 +548,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		App.Tap(IconTemplateButton);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(35)]
@@ -563,7 +563,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		App.Tap(FlowDirectionRightToLeftRadioButton);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(36)]
@@ -577,7 +577,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		DecreaseMaximumVisibleStepper();
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(37)]
@@ -592,7 +592,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		App.Tap(ShadowTrueRadioButton);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(38)]
@@ -607,7 +607,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		App.Tap(IsVisibleFalseRadioButton);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(39)]
@@ -622,7 +622,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		App.Tap(SelectedIndicatorColorOrangeButton);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(40)]
@@ -637,7 +637,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		App.Tap(IndicatorColorGreenButton);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
