@@ -193,29 +193,48 @@
   -->
   <PropertyGroup Condition="'$(MauiUnpackagedBuild)' == 'true'">
     <_IsDeviceTestsProject>$([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[\\/]tests?[\\/]DeviceTests[\\/]?$'))</_IsDeviceTestsProject>
+    <!--
+      Windows Unpackaged Self-Contained Device Tests Configuration
+      ==============================================================
+      
+      For unpackaged self-contained Windows apps, we need specific Windows App SDK settings.
+      See: https://learn.microsoft.com/en-us/windows/apps/package-and-deploy/project-properties
+      
+      There are TWO deployment models for unpackaged Windows App SDK apps:
+      
+      1. FRAMEWORK-DEPENDENT: App relies on system-installed Windows App Runtime
+         - Requires: WindowsAppSdkBootstrapInitialize=true (to find system runtime)
+         - NOT what we want for Helix (no runtime installed on agents)
+      
+      2. SELF-CONTAINED: App bundles all Windows App SDK DLLs with itself
+         - Requires: WindowsAppSDKSelfContained=true (bundle DLLs)
+         - Requires: WindowsAppSdkBootstrapInitialize=false (DON'T look for system runtime)
+         - Requires: WindowsAppSdkUndockedRegFreeWinRTInitialize=true (enable WinRT activation)
+         - This IS what we need for Helix!
+      
+      Per Microsoft docs: "For a self-contained app, you don't need the bootstrapper/dynamic
+      dependencies auto-initializer because those apps don't use the framework."
+    -->
     <WindowsAppSDKSelfContained Condition="'$(_IsDeviceTestsProject)' == 'True'">true</WindowsAppSDKSelfContained>
     <!--
-      CRITICAL: Also enable WindowsAppSdkBootstrapInitialize for unpackaged self-contained builds.
+      CRITICAL: Explicitly DISABLE the bootstrapper for self-contained apps.
       
-      The Microsoft.Maui.Sdk.Windows.targets file sets WindowsAppSdkBootstrapInitialize=false when:
-      - EnableMsixTooling=true (default for MAUI apps)
-      - OutputType != WinExe (DeviceTests use OutputType=Exe)
+      The bootstrapper is for framework-dependent apps - it looks for system-installed
+      Windows App Runtime. For self-contained apps, we bundle everything and don't need it.
+      Enabling it causes FailFast (0xC0000602) because it can't find system runtime.
       
-      This disables the auto-initialization of the Windows App SDK bootstrapper, causing the app
-      to crash with exit code 0xC000027B (Windows App SDK bootstrap failure).
-      
-      For self-contained unpackaged apps, we NEED the bootstrapper to initialize so the app can
-      find the bundled Windows App SDK DLLs instead of looking for system-installed runtime.
+      Note: Microsoft.Maui.Sdk.Windows.targets may set this to false anyway for Exe output,
+      but we explicitly set it to be clear about our intent.
     -->
-    <WindowsAppSdkBootstrapInitialize Condition="'$(_IsDeviceTestsProject)' == 'True'">true</WindowsAppSdkBootstrapInitialize>
+    <WindowsAppSdkBootstrapInitialize Condition="'$(_IsDeviceTestsProject)' == 'True'">false</WindowsAppSdkBootstrapInitialize>
     <!--
-      ALSO CRITICAL: Enable UndockedRegFreeWinRT initialization for registration-free WinRT activation.
+      CRITICAL: Enable UndockedRegFreeWinRT initialization for registration-free WinRT activation.
       
-      This is needed for unpackaged self-contained apps to properly activate WinRT components
-      without requiring the Windows App Runtime to be registered system-wide.
+      This is REQUIRED for unpackaged self-contained apps to properly activate WinRT components
+      (like Microsoft.UI.Xaml.*) without requiring Windows App Runtime to be registered system-wide.
       
-      While this should default to true when WindowsAppSDKSelfContained=true and WindowsPackageType=None
-      and OutputType=Exe, we explicitly set it to ensure it takes effect during MSBuild evaluation.
+      This defaults to true when: WindowsAppSDKSelfContained=true AND WindowsPackageType=None 
+      AND OutputType is Exe/WinExe. But we set it explicitly to ensure it takes effect.
     -->
     <WindowsAppSdkUndockedRegFreeWinRTInitialize Condition="'$(_IsDeviceTestsProject)' == 'True'">true</WindowsAppSdkUndockedRegFreeWinRTInitialize>
   </PropertyGroup>
