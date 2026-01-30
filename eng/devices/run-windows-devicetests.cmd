@@ -294,6 +294,24 @@ if %IS_PACKAGED%==1 (
     echo Listing all Windows App SDK related files:
     dir "!EXE_DIR!\*WindowsApp*" 2>nul
     dir "!EXE_DIR!\*WinRT*" 2>nul
+    echo.
+    echo DIAGNOSTIC: Checking for Visual C++ Runtime DLLs ^(required for Windows App SDK^):
+    echo Looking for vcruntime, msvcp, ucrtbase DLLs:
+    powershell -Command "Get-ChildItem -Path '!EXE_DIR!' -Filter 'vcruntime*.dll' -Recurse 2>$null | Select-Object -First 5 | ForEach-Object { Write-Host $_.FullName }"
+    powershell -Command "Get-ChildItem -Path '!EXE_DIR!' -Filter 'msvcp*.dll' -Recurse 2>$null | Select-Object -First 5 | ForEach-Object { Write-Host $_.FullName }"
+    powershell -Command "Get-ChildItem -Path '!EXE_DIR!' -Filter 'ucrtbase.dll' -Recurse 2>$null | Select-Object -First 5 | ForEach-Object { Write-Host $_.FullName }"
+    echo.
+    echo DIAGNOSTIC: Checking system VC++ Runtime availability:
+    where vcruntime140.dll 2>nul
+    if !ERRORLEVEL! NEQ 0 (
+        echo WARNING: vcruntime140.dll not found in PATH
+        echo Checking if app-local VC++ runtime is present:
+        dir "!EXE_DIR!\vcruntime*.dll" 2>nul
+        if !ERRORLEVEL! NEQ 0 (
+            echo CRITICAL: No VC++ Runtime DLLs found in app directory!
+            echo This may cause 0xC000027B crash on machines without VS installed.
+        )
+    )
     echo ========================================
     echo.
     
