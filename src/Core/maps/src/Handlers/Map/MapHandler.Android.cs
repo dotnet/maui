@@ -62,6 +62,9 @@ namespace Microsoft.Maui.Maps.Handlers
 			if (Map != null)
 			{
 				Map.SetOnCameraMoveListener(null);
+				Map.SetOnPolygonClickListener(null);
+				Map.SetOnCircleClickListener(null);
+				Map.SetOnPolylineClickListener(null);
 				Map.MarkerClick -= OnMarkerClick;
 				Map.InfoWindowClick -= OnInfoWindowClick;
 				Map.MapClick -= OnMapClick;
@@ -283,6 +286,9 @@ namespace Microsoft.Maui.Maps.Handlers
 			Map = map;
 
 			map.SetOnCameraMoveListener(_mapReady);
+			map.SetOnPolygonClickListener(_mapReady);
+			map.SetOnCircleClickListener(_mapReady);
+			map.SetOnPolylineClickListener(_mapReady);
 
 			map.MarkerClick += OnMarkerClick;
 			map.InfoWindowClick += OnInfoWindowClick;
@@ -529,6 +535,7 @@ namespace Microsoft.Maui.Maps.Handlers
 				var nativePolyline = map.AddPolyline(options);
 
 				polyline.MapElementId = nativePolyline.Id;
+				nativePolyline.Clickable = true;
 
 				_polylines.Add(nativePolyline);
 			}
@@ -551,6 +558,7 @@ namespace Microsoft.Maui.Maps.Handlers
 			var nativePolygon = map.AddPolygon(options);
 
 			polygon.MapElementId = nativePolygon.Id;
+			nativePolygon.Clickable = true;
 
 			_polygons.Add(nativePolygon);
 		}
@@ -572,12 +580,13 @@ namespace Microsoft.Maui.Maps.Handlers
 			var nativeCircle = map.AddCircle(options);
 
 			circle.MapElementId = nativeCircle.Id;
+			nativeCircle.Clickable = true;
 
 			_circles.Add(nativeCircle);
 		}
 	}
 
-	class MapCallbackHandler : Java.Lang.Object, GoogleMap.IOnCameraMoveListener, IOnMapReadyCallback
+	class MapCallbackHandler : Java.Lang.Object, GoogleMap.IOnCameraMoveListener, IOnMapReadyCallback, GoogleMap.IOnPolygonClickListener, GoogleMap.IOnCircleClickListener, GoogleMap.IOnPolylineClickListener
 	{
 		MapHandler? _handler;
 		GoogleMap? _googleMap;
@@ -610,6 +619,18 @@ namespace Microsoft.Maui.Maps.Handlers
 			}
 
 			base.Dispose(disposing);
+		}
+
+		public void OnCircleClick(ACircle circle) => SendElementClickEvent(circle.Id);
+
+		public void OnPolygonClick(APolygon polygon) => SendElementClickEvent(polygon.Id);
+
+		public void OnPolylineClick(APolyline polyline) => SendElementClickEvent(polyline.Id);
+
+		void SendElementClickEvent(string elementId)
+		{
+			var element = _handler?.VirtualView.Elements.FirstOrDefault(x => x.MapElementId?.ToString() == elementId);
+			element?.Clicked();
 		}
 	}
 

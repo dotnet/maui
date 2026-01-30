@@ -334,6 +334,65 @@ namespace Microsoft.Maui.Maps.Platform
 
 			if (mauiMkMapView._handlerRef.TryGetTarget(out IMapHandler? handler))
 				handler?.VirtualView.Clicked(new Devices.Sensors.Location(tapGPS.Latitude, tapGPS.Longitude));
+
+			void SendClickEvent(IMKOverlay overlay)
+			{
+				handler?.VirtualView.Elements
+				.FirstOrDefault(x => x.MapElementId == overlay)?
+				.Clicked();
+			}
+
+			foreach (var overlay in mauiMkMapView.Overlays)
+			{
+				if (overlay is MKCircle circle)
+				{
+					var center = new CLLocation(circle.Coordinate.Latitude, circle.Coordinate.Longitude);
+					var touch = new CLLocation(tapGPS.Latitude, tapGPS.Longitude);
+					var distance = center.DistanceFrom(touch);
+
+					if (distance <= circle.Radius)
+					{
+						SendClickEvent(overlay);
+						break;
+					}
+				}
+				else if (overlay is MKPolygon polygon)
+				{
+					var tapCoord = new CLLocationCoordinate2D(tapGPS.Latitude, tapGPS.Longitude);
+					var renderer = mauiMkMapView.GetViewForOverlayDelegate(mauiMkMapView, polygon) as MKPolygonRenderer;
+
+					if (renderer?.Path is not null)
+					{
+						var mapPoint = MKMapPoint.FromCoordinate(tapCoord);
+						var pointInRenderer = renderer.PointForMapPoint(mapPoint);
+
+						if (renderer.Path.ContainsPoint(pointInRenderer, true))
+						{
+							SendClickEvent(overlay);
+							break;
+						}
+					}
+				}
+				else if (overlay is MKPolyline polyline)
+				{
+					var renderer = mauiMkMapView.GetViewForOverlayDelegate(mauiMkMapView, polyline) as MKPolylineRenderer;
+
+					if (renderer?.Path is not null)
+					{
+						var tapCoord = new CLLocationCoordinate2D(tapGPS.Latitude, tapGPS.Longitude);
+						var mapPoint = MKMapPoint.FromCoordinate(tapCoord);
+						var pointInRenderer = renderer.PointForMapPoint(mapPoint);
+
+						// Check if tap is within stroke width of the polyline path
+						using var strokedPath = renderer.Path.CopyByStrokingPath(renderer.StrokeColor is not null ? renderer.LineWidth : 44, CoreGraphics.CGLineCap.Round, CoreGraphics.CGLineJoin.Round, 1);
+						if (strokedPath?.ContainsPoint(pointInRenderer, true) == true)
+						{
+							SendClickEvent(overlay);
+							break;
+						}
+					}
+				}
+			}
 		}
 	}
 }

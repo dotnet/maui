@@ -9,5 +9,10 @@
 		/// Gets or sets the platform counterpart of this map element.
 		/// </summary>
 		object? MapElementId { get; set; }
+
+		/// <summary>
+		/// Method called by the handler when user clicks on the element.
+		/// </summary>
+		void Clicked();
 	}
 }
