@@ -194,6 +194,20 @@
   <PropertyGroup Condition="'$(MauiUnpackagedBuild)' == 'true'">
     <_IsDeviceTestsProject>$([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[\\/]tests?[\\/]DeviceTests[\\/]?$'))</_IsDeviceTestsProject>
     <WindowsAppSDKSelfContained Condition="'$(_IsDeviceTestsProject)' == 'True'">true</WindowsAppSDKSelfContained>
+    <!--
+      CRITICAL: Also enable WindowsAppSdkBootstrapInitialize for unpackaged self-contained builds.
+      
+      The Microsoft.Maui.Sdk.Windows.targets file sets WindowsAppSdkBootstrapInitialize=false when:
+      - EnableMsixTooling=true (default for MAUI apps)
+      - OutputType != WinExe (DeviceTests use OutputType=Exe)
+      
+      This disables the auto-initialization of the Windows App SDK bootstrapper, causing the app
+      to crash with exit code 0xC000027B (Windows App SDK bootstrap failure).
+      
+      For self-contained unpackaged apps, we NEED the bootstrapper to initialize so the app can
+      find the bundled Windows App SDK DLLs instead of looking for system-installed runtime.
+    -->
+    <WindowsAppSdkBootstrapInitialize Condition="'$(_IsDeviceTestsProject)' == 'True'">true</WindowsAppSdkBootstrapInitialize>
   </PropertyGroup>
 
   <!-- version number information -->
