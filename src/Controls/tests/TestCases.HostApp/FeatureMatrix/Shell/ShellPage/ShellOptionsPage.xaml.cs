@@ -25,11 +25,11 @@ namespace Maui.Controls.Sample
         {
             if (sender is Button button)
             {
-                _viewModel.ShellBackgroundColor = button.Text switch
+                _viewModel.BackgroundColor = button.Text switch
                 {
                     "SkyBlue" => Colors.SkyBlue,
                     "LightGreen" => Colors.LightGreen,
-                    _ => _viewModel.ShellBackgroundColor
+                    _ => _viewModel.BackgroundColor
                 };
             }
         }
@@ -39,11 +39,11 @@ namespace Maui.Controls.Sample
         {
             if (sender is Button button)
             {
-                _viewModel.ShellForegroundColor = button.Text switch
+                _viewModel.ForegroundColor = button.Text switch
                 {
                     "Brown" => Colors.Brown,
                     "Magenta" => Colors.Magenta,
-                    _ => _viewModel.ShellForegroundColor
+                    _ => _viewModel.ForegroundColor
                 };
             }
         }
@@ -53,11 +53,11 @@ namespace Maui.Controls.Sample
         {
             if (sender is Button button)
             {
-                _viewModel.ShellTitleColor = button.Text switch
+                _viewModel.TitleColor = button.Text switch
                 {
                     "Red" => Colors.Red,
                     "Green" => Colors.Green,
-                    _ => _viewModel.ShellTitleColor
+                    _ => _viewModel.TitleColor
                 };
             }
         }
@@ -67,11 +67,11 @@ namespace Maui.Controls.Sample
         {
             if (sender is Button button)
             {
-                _viewModel.ShellDisabledColor = button.Text switch
+                _viewModel.DisabledColor = button.Text switch
                 {
                     "Gold" => Colors.Gold,
                     "Violet" => Colors.Violet,
-                    _ => _viewModel.ShellDisabledColor
+                    _ => _viewModel.DisabledColor
                 };
             }
         }
@@ -81,27 +81,16 @@ namespace Maui.Controls.Sample
         {
             if (sender is Button button)
             {
-                _viewModel.ShellUnselectedColor = button.Text switch
+                _viewModel.UnselectedColor = button.Text switch
                 {
                     "Maroon" => Colors.Maroon,
                     "Blue" => Colors.Blue,
-                    _ => _viewModel.ShellUnselectedColor
+                    _ => _viewModel.UnselectedColor
                 };
             }
         }
 
-        // NavBarIsVisible
-        void OnNavBarVisibleClicked(object sender, EventArgs e)
-        {
-            _viewModel.ShellNavBarIsVisible = true;
-        }
 
-        void OnNavBarHiddenClicked(object sender, EventArgs e)
-        {
-            _viewModel.ShellNavBarIsVisible = false;
-        }
-
-        // NavBarHasShadow
         void OnNavBarHasShadowTrueClicked(object sender, EventArgs e)
         {
             _viewModel.NavBarHasShadow = true;
@@ -112,32 +101,34 @@ namespace Maui.Controls.Sample
             _viewModel.NavBarHasShadow = false;
         }
 
-        // PresentationMode
-        void OnPresentationModeClicked(object sender, EventArgs e)
+        private void OnIsEnabledChanged(object sender, CheckedChangedEventArgs e)
         {
-            if (sender is Button button)
+            if (sender is RadioButton radioButton && e.Value)
             {
-                _viewModel.PresentationMode = button.Text switch
-                {
-                    "Animated" => PresentationMode.Animated,
-                    "NotAnimated" => PresentationMode.NotAnimated,
-                    "Modal" => PresentationMode.Modal,
-                    "ModalAnimated" => PresentationMode.ModalAnimated,
-                    "ModalNotAnimated" => PresentationMode.ModalNotAnimated,
-                    _ => _viewModel.PresentationMode
-                };
+                _viewModel.IsEnabled = radioButton.Content.ToString() == "True";
             }
         }
 
-        // NavBarVisibilityAnimationEnabled
-        void OnNavBarAnimTrueClicked(object sender, EventArgs e)
+        private void OnIsVisibleChanged(object sender, CheckedChangedEventArgs e)
         {
-            _viewModel.NavBarVisibilityAnimationEnabled = true;
+            if (sender is RadioButton radioButton && e.Value)
+            {
+                _viewModel.IsVisible = radioButton.Content.ToString() == "True";
+            }
         }
 
-        void OnNavBarAnimFalseClicked(object sender, EventArgs e)
+        private void OnFlowDirectionChanged(object sender, CheckedChangedEventArgs e)
         {
-            _viewModel.NavBarVisibilityAnimationEnabled = false;
+            if (sender is RadioButton radioButton && e.Value)
+            {
+                _viewModel.FlowDirection = radioButton.Content?.ToString() == "LTR" ? FlowDirection.LeftToRight : FlowDirection.RightToLeft;
+            }
         }
+
+        private async void OnGoBackClicked(object sender, EventArgs e)
+        {
+            await Microsoft.Maui.Controls.Shell.Current.GoToAsync("..");
+        }
+
     }
 }

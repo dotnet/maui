@@ -14,37 +14,40 @@ public class ShellViewModel : INotifyPropertyChanged
     bool _navBarHasShadow = true;
     bool _navBarVisibilityAnimationEnabled = true;
     PresentationMode _presentationMode = PresentationMode.Animated;
-    public Color ShellBackgroundColor
+    bool _isEnabled = true;
+    bool _isVisible = true;
+    FlowDirection _flowDirection = FlowDirection.LeftToRight;
+    public Color BackgroundColor
     {
         get => _backgroundColor;
         set { _backgroundColor = value; OnPropertyChanged(); }
     }
 
-    public Color ShellForegroundColor
+    public Color ForegroundColor
     {
         get => _foregroundColor;
         set { _foregroundColor = value; OnPropertyChanged(); }
     }
 
-    public Color ShellTitleColor
+    public Color TitleColor
     {
         get => _titleColor;
         set { _titleColor = value; OnPropertyChanged(); }
     }
 
-    public Color ShellDisabledColor
+    public Color DisabledColor
     {
         get => _disabledColor;
         set { _disabledColor = value; OnPropertyChanged(); }
     }
 
-    public Color ShellUnselectedColor
+    public Color UnselectedColor
     {
         get => _unselectedColor;
         set { _unselectedColor = value; OnPropertyChanged(); }
     }
 
-    public bool ShellNavBarIsVisible
+    public bool NavBarIsVisible
     {
         get => _navBarVisible;
         set { _navBarVisible = value; OnPropertyChanged(); }
@@ -68,7 +71,23 @@ public class ShellViewModel : INotifyPropertyChanged
         set { _presentationMode = value; OnPropertyChanged(); }
     }
 
-    
+    public bool IsEnabled
+    {
+        get => _isEnabled;
+        set { _isEnabled = value; OnPropertyChanged(); }
+    }
+
+    public bool IsVisible
+    {
+        get => _isVisible;
+        set { _isVisible = value; OnPropertyChanged(); }
+    }
+
+    public FlowDirection FlowDirection
+    {
+        get => _flowDirection;
+        set { _flowDirection = value; OnPropertyChanged(); }
+    }
 
     public event PropertyChangedEventHandler PropertyChanged;
     void OnPropertyChanged([CallerMemberName] string name = null)

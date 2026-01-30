@@ -1,127 +1,95 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage
-    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:local="clr-namespace:Maui.Controls.Sample"
-    x:Class="Maui.Controls.Sample.ShellOptionsPage"
-    x:DataType="local:ShellViewModel"
-    Title="Shell Options">
-
-    <ContentPage.ToolbarItems>
-        <ToolbarItem Text="Apply"
-                     Clicked="OnApplyClicked"/>
-    </ContentPage.ToolbarItems>
-
-    
-        <VerticalStackLayout Spacing="1">
-
+        xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+        xmlns:local="clr-namespace:Maui.Controls.Sample"
+        x:Class="Maui.Controls.Sample.ShellOptionsPage"
+        x:DataType="local:ShellViewModel"
+        Title="ShellOptionsPage">
+    <ScrollView>
+        <VerticalStackLayout Padding="20"  >
+            
+            <!-- Apply Button -->
+            <Button Text="Apply" Clicked="OnApplyClicked" 
+                    AutomationId="Apply"
+                    BackgroundColor="DodgerBlue" TextColor="White"
+                    Margin="0,0,0,10"/>
+       
             <!-- BackgroundColor -->
-            <Grid RowDefinitions="Auto,Auto">
-                <Label Text="BackgroundColor" FontAttributes="Bold"/>
-                <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="10">
-                    <Button Text="SkyBlue" HeightRequest="40"
-                            Clicked="OnBackgroundColorClicked"/>
-                    <Button Grid.Column="1" Text="LightGreen" HeightRequest="40"
-                            Clicked="OnBackgroundColorClicked"/>
-                </Grid>
+            <Label Text="BackgroundColor" FontAttributes="Bold"/>
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                <Button Grid.Column="0" Text="SkyBlue" AutomationId="SkyBlueBackgroundColor" Clicked="OnBackgroundColorClicked"/>
+                <Button Grid.Column="1" Text="LightGreen" AutomationId="LightGreenBackgroundColor" Clicked="OnBackgroundColorClicked"/>
             </Grid>
 
             <!-- ForegroundColor -->
-            <Grid RowDefinitions="Auto,Auto">
-                <Label Text="ForegroundColor" FontAttributes="Bold"/>
-                <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="10">
-                    <Button Text="Brown" HeightRequest="40"
-                            Clicked="OnForegroundColorClicked"/>
-                    <Button Grid.Column="1" Text="Magenta" HeightRequest="40"
-                            Clicked="OnForegroundColorClicked"/>
-                </Grid>
+            <Label Text="ForegroundColor" FontAttributes="Bold"  />
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                <Button Grid.Column="0" Text="Brown" AutomationId="BrownForegroundColor" Clicked="OnForegroundColorClicked"/>
+                <Button Grid.Column="1" Text="Magenta" AutomationId="MagentaForegroundColor" Clicked="OnForegroundColorClicked"/>
             </Grid>
 
             <!-- TitleColor -->
-            <Grid RowDefinitions="Auto,Auto">
-                <Label Text="TitleColor" FontAttributes="Bold"/>
-                <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="10">
-                    <Button Text="Red" HeightRequest="40"
-                            Clicked="OnTitleColorClicked"/>
-                    <Button Grid.Column="1" Text="Green" HeightRequest="40"
-                            Clicked="OnTitleColorClicked"/>
-                </Grid>
+            <Label Text="TitleColor" FontAttributes="Bold"  />
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                <Button Grid.Column="0" Text="Red" AutomationId="RedTitleColor" Clicked="OnTitleColorClicked"/>
+                <Button Grid.Column="1" Text="Green" AutomationId="GreenTitleColor" Clicked="OnTitleColorClicked"/>
             </Grid>
 
             <!-- DisabledColor -->
-            <Grid RowDefinitions="Auto,Auto">
-                <Label Text="DisabledColor" FontAttributes="Bold"/>
-                <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="10">
-                    <Button Text="Gold" HeightRequest="40"
-                            Clicked="OnDisabledColorClicked"/>
-                    <Button Grid.Column="1" Text="Violet" HeightRequest="40"
-                            Clicked="OnDisabledColorClicked"/>
-                </Grid>
+            <Label Text="DisabledColor" FontAttributes="Bold"  />
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                <Button Grid.Column="0" Text="Gold" AutomationId="GoldDisabledColor" Clicked="OnDisabledColorClicked"/>
+                <Button Grid.Column="1" Text="Violet" AutomationId="VioletDisabledColor" Clicked="OnDisabledColorClicked"/>
             </Grid>
 
             <!-- UnselectedColor -->
-            <Grid RowDefinitions="Auto,Auto">
-                <Label Text="UnselectedColor" FontAttributes="Bold"/>
-                <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="10">
-                    <Button Text="Maroon" HeightRequest="40"
-                            Clicked="OnUnselectedColorClicked"/>
-                    <Button Grid.Column="1" Text="Blue" HeightRequest="40"
-                            Clicked="OnUnselectedColorClicked"/>
-                </Grid>
-            </Grid>
-
-            <!-- NavBarIsVisible -->
-            <Grid RowDefinitions="Auto,Auto">
-                <Label Text="NavBarIsVisible" FontAttributes="Bold"/>
-                <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="10">
-                    <Button Text="Show" HeightRequest="40"
-                            Clicked="OnNavBarVisibleClicked"/>
-                    <Button Grid.Column="1" Text="Hide" HeightRequest="40"
-                            Clicked="OnNavBarHiddenClicked"/>
-                </Grid>
+            <Label Text="UnselectedColor" FontAttributes="Bold"  />
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                <Button Grid.Column="0" Text="Maroon" AutomationId="MaroonUnselectedColor" Clicked="OnUnselectedColorClicked"/>
+                <Button Grid.Column="1" Text="Blue" AutomationId="BlueUnselectedColor" Clicked="OnUnselectedColorClicked"/>
             </Grid>
 
             <!-- NavBarHasShadow -->
-            <Grid RowDefinitions="Auto,Auto">
-                <Label Text="NavBarHasShadow" FontAttributes="Bold"/>
-                <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="10">
-                    <Button Text="True" HeightRequest="40"
-                            Clicked="OnNavBarHasShadowTrueClicked"/>
-                    <Button Grid.Column="1" Text="False" HeightRequest="40"
-                            Clicked="OnNavBarHasShadowFalseClicked"/>
-                </Grid>
+            <Label Text="NavBarHasShadow" FontAttributes="Bold"  />
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                <Button Grid.Column="0" Text="True" AutomationId="ShadowTrue" Clicked="OnNavBarHasShadowTrueClicked"/>
+                <Button Grid.Column="1" Text="False" AutomationId="ShadowFalse" Clicked="OnNavBarHasShadowFalseClicked"/>
             </Grid>
 
-            <!-- PresentationMode -->
-            <Grid RowDefinitions="Auto,Auto">
-                <Label Text="PresentationMode" FontAttributes="Bold"/>
-                <Grid Grid.Row="1"
-                      ColumnDefinitions="*,*,*,*,*"
-                      ColumnSpacing="8">
-                    <Button Text="Animated" HeightRequest="40"
-                            Clicked="OnPresentationModeClicked"/>
-                    <Button Grid.Column="1" Text="NotAnimated" HeightRequest="40"
-                            Clicked="OnPresentationModeClicked"/>
-                    <Button Grid.Column="2" Text="Modal" HeightRequest="40"
-                            Clicked="OnPresentationModeClicked"/>
-                    <Button Grid.Column="3" Text="ModalAnimated" HeightRequest="40"
-                            Clicked="OnPresentationModeClicked"/>
-                    <Button Grid.Column="4" Text="ModalNotAnimated" HeightRequest="40"
-                            Clicked="OnPresentationModeClicked"/>
-                </Grid>
+            <!-- Shell Properties Section -->
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="20"  >
+                <VerticalStackLayout Grid.Column="0"  >
+                    <Label Text="IsEnabled" FontAttributes="Bold" AutomationId="IsEnabledLabel"/>
+                    <HorizontalStackLayout Spacing="10">
+                        <RadioButton Content="True" IsChecked="True" GroupName="IsEnabled" CheckedChanged="OnIsEnabledChanged" AutomationId="IsEnabledTrue"/>
+                        <RadioButton Content="False" GroupName="IsEnabled" CheckedChanged="OnIsEnabledChanged" AutomationId="IsEnabledFalse"/>
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+                <VerticalStackLayout Grid.Column="1"  >
+                    <Label Text="IsVisible" FontAttributes="Bold" AutomationId="IsVisibleLabel"/>
+                    <HorizontalStackLayout Spacing="10">
+                        <RadioButton Content="True" IsChecked="True" GroupName="IsVisible" CheckedChanged="OnIsVisibleChanged" AutomationId="IsVisibleTrue"/>
+                        <RadioButton Content="False" GroupName="IsVisible" CheckedChanged="OnIsVisibleChanged" AutomationId="IsVisibleFalse"/>
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
             </Grid>
 
-            <!-- NavBarVisibilityAnimationEnabled -->
-            <Grid RowDefinitions="Auto,Auto">
-                <Label Text="NavBarVisibilityAnimationEnabled"
-                       FontAttributes="Bold"/>
-                <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="10">
-                    <Button Text="True" HeightRequest="40"
-                            Clicked="OnNavBarAnimTrueClicked"/>
-                    <Button Grid.Column="1" Text="False" HeightRequest="40"
-                            Clicked="OnNavBarAnimFalseClicked"/>
-                </Grid>
+            <!-- FlowDirection -->
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="20"  >
+                <VerticalStackLayout Grid.Column="0"  >
+            <Label Text="FlowDirection" FontAttributes="Bold"  />
+            <HorizontalStackLayout Spacing="10" >
+                <RadioButton Content="LTR" IsChecked="True" GroupName="FlowDirection" CheckedChanged="OnFlowDirectionChanged" AutomationId="FlowDirectionLTR"/>
+                <RadioButton Content="RTL" GroupName="FlowDirection" CheckedChanged="OnFlowDirectionChanged" AutomationId="FlowDirectionRTL"/>
+            </HorizontalStackLayout>
+                </VerticalStackLayout>
             </Grid>
+            <!-- Go Back Button -->
+            <Button Text="Go Back" Clicked="OnGoBackClicked" 
+                    AutomationId="GoBackButton"
+                    BackgroundColor="Gray" TextColor="White"/>
 
         </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>
