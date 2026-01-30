@@ -26,17 +26,23 @@ internal static class SafeAreaExtensions
 		};
 
 	/// <summary>
-	/// Checks if the layout is associated with a ContentView (which includes ContentPage).
+	/// Checks if the layout is associated with a ContentPage specifically.
 	/// This is used to limit the transition inset re-application to content pages only,
 	/// avoiding the infinite loop issue with other view types like TabbedPage tabs.
+	/// We check the type name since IPage is not available in Core.
 	/// </summary>
-	internal static bool IsContentViewLayout(object? layout) =>
-		layout switch
+	internal static bool IsContentPageLayout(object? layout)
+	{
+		var virtualView = layout switch
 		{
-			IContentView => true,
-			IElementHandler { VirtualView: IContentView } => true,
-			_ => false
+			IElementHandler handler => handler.VirtualView,
+			_ => layout
 		};
+
+		// Check if the virtual view's type name ends with "ContentPage"
+		// This handles Microsoft.Maui.Controls.ContentPage and any derived types
+		return virtualView?.GetType().Name.EndsWith("ContentPage", StringComparison.Ordinal) == true;
+	}
 
 
 	internal static SafeAreaRegions GetSafeAreaRegionForEdge(int edge, ICrossPlatformLayout crossPlatformLayout)
@@ -177,18 +183,18 @@ internal static class SafeAreaExtensions
 						// if a view has no intersection with the visible screen, there's no need to
 						// request inset re-application.
 						//
-						// The IsContentViewLayout check limits this behavior to ContentView/ContentPage
-						// types, which are the primary use case for Shell fragment transitions.
+						// The IsContentPageLayout check limits this behavior to ContentPage types only,
+						// which are the primary use case for Shell fragment transitions.
 						bool isCompletelyOffScreen = viewLeft >= screenWidth || viewRight <= 0 ||
 													 viewTop >= screenHeight || viewBottom <= 0;
 
 						// Use the listener's cached method to check for IRequestInsetsOnTransition
 						bool shouldRequestInsets = globalWindowInsetsListener?.ShouldRequestInsetsOnTransition(view) == true;
 						
-						// Only apply to ContentView types (ContentPage, etc.)
-						bool isContentView = IsContentViewLayout(layout);
+						// Only apply to ContentPage types
+						bool isContentPage = IsContentPageLayout(layout);
 
-						if (!isCompletelyOffScreen && shouldRequestInsets && isContentView && globalWindowInsetsListener is not null)
+						if (!isCompletelyOffScreen && shouldRequestInsets && isContentPage && globalWindowInsetsListener is not null)
 						{
 							// Request insets to be reapplied after the next layout pass
 							// when the view should be properly positioned.
