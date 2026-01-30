@@ -357,7 +357,7 @@ $innerAttempts = $innerAttempts -replace "(?s)^(<br>\s*)+", ""
 $innerAttempts = $innerAttempts.TrimStart()
 
 # Count existing attempts (only count inner <details> that are Fix attempts)
-$existingAttemptCount = ([regex]::Matches($innerAttempts, '<details>\s*<summary>[✅❌🔨]')).Count
+$existingAttemptCount = ([regex]::Matches($innerAttempts, '<details>\s*<summary>[✅❌🔨⚪]')).Count
 $passCount = ([regex]::Matches($innerAttempts, '<details>\s*<summary>✅')).Count
 $failCount = ([regex]::Matches($innerAttempts, '<details>\s*<summary>❌')).Count
 
@@ -368,16 +368,16 @@ if ($innerAttempts -match $attemptPattern) {
     $tryFixInnerContent = $innerAttempts -replace $attemptPattern, $attemptSection
 } elseif (-not [string]::IsNullOrWhiteSpace($innerAttempts)) {
     Write-Host "Adding new Fix $AttemptNumber..." -ForegroundColor Yellow
-    $tryFixInnerContent =  $innerAttempts.TrimEnd() + "`n`n" + $attemptSection
-    # Update counts for new attempt
-    $existingAttemptCount++
-    if ($Status -eq "Pass") { $passCount++ } else { $failCount++ }
+    $tryFixInnerContent = $innerAttempts.TrimEnd() + "`n`n" + $attemptSection
 } else {
     Write-Host "Creating first fix..." -ForegroundColor Yellow
     $tryFixInnerContent = $attemptSection
-    $existingAttemptCount = 1
-    if ($Status -eq "Pass") { $passCount = 1 } else { $failCount = 1 }
 }
+
+# Recalculate attempt statistics from the final content to ensure consistency
+$totalAttemptCount = ([regex]::Matches($tryFixInnerContent, '<details>\s*<summary>[✅❌🔨⚪]')).Count
+$passCount = ([regex]::Matches($tryFixInnerContent, '<details>\s*<summary>✅')).Count
+$failCount = ([regex]::Matches($tryFixInnerContent, '<details>\s*<summary>❌')).Count
 
 # Build summary line with counts
 $summaryStatus = if ($passCount -gt 0) { "✅ $passCount passed" } else { "" }
@@ -385,7 +385,7 @@ if ($failCount -gt 0) {
     if ($summaryStatus -ne "") { $summaryStatus += ", " }
     $summaryStatus += "❌ $failCount failed"
 }
-if ($summaryStatus -eq "") { $summaryStatus = "$existingAttemptCount attempt(s)" }
+if ($summaryStatus -eq "") { $summaryStatus = "$totalAttemptCount attempt(s)" }
 
 # Wrap everything in a single collapsible section
 $tryFixContent = @"
