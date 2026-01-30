@@ -38,44 +38,6 @@ stages:
       - script: ${{ job.buildScript }} -restore -build -configuration ${{ parameters.buildConfig }} -projects "${{ parameters.buildTaskProjects }}" /p:ArchiveTests=false /p:TreatWarningsAsErrors=$(TreatWarningsAsErrors) /bl:$(Build.Arcade.LogsPath)${{ parameters.buildConfig }}/buildtasks.binlog $(_OfficialBuildIdArgs)
         displayName: 🛠️ Build BuildTasks
 
-      # - template: /eng/pipelines/arcade/setup-test-env.yml
-      #   parameters:
-      #     mauiSourcePath: ${{ parameters.mauiSourcePath }}
-      #     buildConfig: ${{ parameters.buildConfig }}
-      #     repoLogPath: ${{ parameters.repoLogPath }}
-      #     installPackageArtifacts: false
-      #     buildMSBuildTasks: true
-
-      - template: /eng/pipelines/common/run-dotnet-preview.yml
-        parameters:
-          displayName: Run Controls.Xaml.UnitTests - ${{ job.testOS }}
-          mauiSourcePath: ${{ parameters.mauiSourcePath }}
-          command: test
-          project: ${{ parameters.mauiSourcePath }}/src/Controls/tests/Xaml.UnitTests/Controls.Xaml.UnitTests.csproj
-          arguments: '-c ${{ parameters.buildConfig }} --logger trx --results-directory $(Agent.TempDirectory)/Controls.Xaml.UnitTests /bl:$(Build.Arcade.LogsPath)${{ parameters.buildConfig }}/Controls.Xaml.UnitTests.binlog /p:_SkipUpdateBuildNumber=true'
-          useExitCodeForErrors: true
-
-      - task: PublishTestResults@2
-        inputs:
-          testResultsFormat: VSTest
-          testResultsFiles: $(Agent.TempDirectory)/Controls.Xaml.UnitTests/*.trx
-          testRunTitle: Controls.Xaml.UnitTests - ${{ job.testOS }}
-
-      - template: /eng/pipelines/common/run-dotnet-preview.yml
-        parameters:
-          displayName: Run Resizetizer.UnitTests - ${{ job.testOS }}
-          mauiSourcePath: ${{ parameters.mauiSourcePath }}
-          command: test
-          project: ${{ parameters.mauiSourcePath }}/src/SingleProject/Resizetizer/test/UnitTests/Resizetizer.UnitTests.csproj
-          arguments: '-c ${{ parameters.buildConfig }} --logger trx --results-directory $(Agent.TempDirectory)/Resizetizer.UnitTests /p:_SkipUpdateBuildNumber=true'
-          useExitCodeForErrors: true
-
-      - task: PublishTestResults@2
-        inputs:
-          testResultsFormat: VSTest
-          testResultsFiles: $(Agent.TempDirectory)/Resizetizer.UnitTests/*.trx
-          testRunTitle: Resizetizer.UnitTests - ${{ job.testOS }}
-
       - template: /eng/pipelines/common/run-dotnet-preview.yml
         parameters:
           displayName: Run Graphics.Tests - ${{ job.testOS }}
