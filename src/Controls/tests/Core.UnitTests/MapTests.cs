@@ -477,5 +477,56 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Items = itemsSource;
 			}
 		}
+
+		[Fact]
+		public void MapLongClickedEventFires()
+		{
+			var map = new Map();
+			var expectedLocation = new Location(37.79752, -122.40183);
+
+			bool eventFired = false;
+			Location receivedLocation = null;
+			map.MapLongClicked += (s, e) =>
+			{
+				eventFired = true;
+				receivedLocation = e.Location;
+			};
+
+			((IMap)map).LongClicked(expectedLocation);
+
+			Assert.True(eventFired);
+			Assert.Equal(expectedLocation.Latitude, receivedLocation.Latitude);
+			Assert.Equal(expectedLocation.Longitude, receivedLocation.Longitude);
+		}
+
+		[Fact]
+		public void MapLongClickedEventSenderIsMap()
+		{
+			var map = new Map();
+
+			object sender = null;
+			map.MapLongClicked += (s, e) => sender = s;
+
+			((IMap)map).LongClicked(new Location(37.79752, -122.40183));
+
+			Assert.Same(map, sender);
+		}
+
+		[Fact]
+		public void MapLongClickedEventArgsContainsLocation()
+		{
+			var map = new Map();
+			var expectedLocation = new Location(47.6062, -122.3321);
+
+			MapClickedEventArgs eventArgs = null;
+			map.MapLongClicked += (s, e) => eventArgs = e;
+
+			((IMap)map).LongClicked(expectedLocation);
+
+			Assert.NotNull(eventArgs);
+			Assert.NotNull(eventArgs.Location);
+			Assert.Equal(expectedLocation.Latitude, eventArgs.Location.Latitude);
+			Assert.Equal(expectedLocation.Longitude, eventArgs.Location.Longitude);
+		}
 	}
 }
