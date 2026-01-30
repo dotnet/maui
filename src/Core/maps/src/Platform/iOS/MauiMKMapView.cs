@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using CoreLocation;
 using MapKit;
@@ -15,6 +16,7 @@ namespace Microsoft.Maui.Maps.Platform
 		WeakReference<IMapHandler> _handlerRef;
 		object? _lastTouchedView;
 		UITapGestureRecognizer? _mapClickedGestureRecognizer;
+		bool _isClusteringEnabled;
 
 		public MauiMKMapView(IMapHandler handler)
 		{
@@ -22,6 +24,15 @@ namespace Microsoft.Maui.Maps.Platform
 			OverlayRenderer = GetViewForOverlayDelegate;
 			// Assign custom annotation view delegate to enable gesture recognition on annotation callouts.
 			base.GetViewForAnnotation = GetViewForAnnotation;
+		}
+
+		/// <summary>
+		/// Gets or sets whether pin clustering is enabled.
+		/// </summary>
+		public bool IsClusteringEnabled
+		{
+			get => _isClusteringEnabled;
+			set => _isClusteringEnabled = value;
 		}
 
 		internal IMapHandler? Handler
@@ -83,6 +94,12 @@ namespace Microsoft.Maui.Maps.Platform
 			if (userLocationAnnotation != null)
 				return null!;
 
+			// Handle cluster annotations
+			if (annotation is MKClusterAnnotation clusterAnnotation)
+			{
+				return GetViewForClusterAnnotation(mapView, clusterAnnotation);
+			}
+
 			const string defaultPinId = "defaultPin";
 			mapPin = mapView.DequeueReusableAnnotation(defaultPinId);
 			if (mapPin == null)
@@ -108,9 +125,119 @@ namespace Microsoft.Maui.Maps.Platform
 			}
 
 			mapPin.Annotation = annotation;
+			
+			// Set clustering identifier if clustering is enabled
+			if (_isClusteringEnabled && OperatingSystem.IsIOSVersionAtLeast(11))
+			{
+				// Get the clustering identifier from the pin
+				var pin = GetPinForAnnotation(annotation);
+				if (pin != null)
+				{
+					mapPin.ClusteringIdentifier = pin.ClusteringIdentifier;
+				}
+			}
+			else if (OperatingSystem.IsIOSVersionAtLeast(11))
+			{
+				// Clear clustering identifier when disabled
+				mapPin.ClusteringIdentifier = null;
+			}
+			
 			AttachGestureToPin(mapPin, annotation);
 
 			return mapPin;
+		}
+
+		MKAnnotationView GetViewForClusterAnnotation(MKMapView mapView, MKClusterAnnotation clusterAnnotation)
+		{
+			const string clusterId = "clusterPin";
+			var clusterView = mapView.DequeueReusableAnnotation(clusterId) as MKMarkerAnnotationView;
+			
+			if (clusterView == null)
+			{
+				clusterView = new MKMarkerAnnotationView(clusterAnnotation, clusterId);
+				clusterView.CanShowCallout = true;
+			}
+			
+			clusterView.Annotation = clusterAnnotation;
+			
+			// Display the count of pins in the cluster
+			var count = clusterAnnotation.MemberAnnotations?.Length ?? 0;
+			clusterView.GlyphText = count.ToString();
+			
+			// Attach click handler for cluster
+			AttachGestureToCluster(clusterView, clusterAnnotation);
+			
+			return clusterView;
+		}
+
+		void AttachGestureToCluster(MKAnnotationView clusterView, MKClusterAnnotation clusterAnnotation)
+		{
+			var recognizers = clusterView.GestureRecognizers;
+			if (recognizers != null)
+			{
+				foreach (var recognizer in recognizers.OfType<UITapGestureRecognizer>().ToArray())
+				{
+					clusterView.RemoveGestureRecognizer(recognizer);
+				}
+			}
+
+			var tapRecognizer = new UITapGestureRecognizer(() => OnClusterClicked(clusterAnnotation));
+			clusterView.AddGestureRecognizer(tapRecognizer);
+		}
+
+		void OnClusterClicked(MKClusterAnnotation clusterAnnotation)
+		{
+			if (!_handlerRef.TryGetTarget(out var handler) || handler?.VirtualView == null)
+				return;
+
+			var memberAnnotations = clusterAnnotation.MemberAnnotations;
+			if (memberAnnotations == null || memberAnnotations.Length == 0)
+				return;
+
+			// Convert member annotations to IMapPin list
+			var pins = new List<IMapPin>();
+			foreach (var memberAnnotation in memberAnnotations)
+			{
+				var pin = GetPinForAnnotation(memberAnnotation);
+				if (pin != null)
+				{
+					pins.Add(pin);
+				}
+			}
+
+			var coordinate = clusterAnnotation.Coordinate;
+			var location = new Devices.Sensors.Location(coordinate.Latitude, coordinate.Longitude);
+
+			// Call the handler's ClusterClicked method
+			var handled = handler.VirtualView.ClusterClicked(pins, location);
+
+			// If not handled, zoom to show all pins in the cluster
+			if (!handled)
+			{
+				ZoomToShowClusterPins(memberAnnotations);
+			}
+		}
+
+		void ZoomToShowClusterPins(IMKAnnotation[] annotations)
+		{
+			if (annotations.Length == 0)
+				return;
+
+			var rect = MKMapRect.Null;
+			foreach (var annotation in annotations)
+			{
+				var point = MKMapPoint.FromCoordinate(annotation.Coordinate);
+				rect = MKMapRect.Union(rect, new MKMapRect(point.X, point.Y, 0.1, 0.1));
+			}
+
+			// Add some padding
+			var paddedRect = new MKMapRect(
+				rect.MinX - rect.Width * 0.1,
+				rect.MinY - rect.Height * 0.1,
+				rect.Width * 1.2,
+				rect.Height * 1.2);
+
+			SetVisibleMapRect(paddedRect, true);
 		}
 
 		internal void AddPins(IList pins)
