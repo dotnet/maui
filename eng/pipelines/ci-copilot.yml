@@ -106,8 +106,9 @@ stages:
               mkdir -p $(Build.ArtifactStagingDirectory)/finalize-logs
               
               # Invoke the pr-finalize skill using Copilot CLI
+              # Note: Explicitly instruct to post comment automatically without asking
               set +e
-              copilot -p "use a skill pr-finalize to check the description and title of this pr" --yolo 2>&1 | tee $(Build.ArtifactStagingDirectory)/finalize-logs/pr_finalize_output.md
+              copilot -p "use a skill pr-finalize to check the description and title of this pr. This is running in non-interactive mode, so automatically post the comment without asking for confirmation." --yolo 2>&1 | tee $(Build.ArtifactStagingDirectory)/finalize-logs/pr_finalize_output.md
               FINALIZE_EXIT_CODE=$?
               set -e
               
@@ -128,8 +129,9 @@ stages:
               mkdir -p $(Build.ArtifactStagingDirectory)/finalize-logs
               
               # Use Copilot CLI to post a comment
+              # Fallback in case pr-finalize didn't post automatically
               set +e
-              copilot -p "now use a skill to post a PR Finalize Comment" --yolo 2>&1 | tee $(Build.ArtifactStagingDirectory)/finalize-logs/post_comment_output.md
+              copilot -p "use a skill to post a comment about the pr-finalize results. Post the comment immediately without asking for confirmation." --yolo 2>&1 | tee $(Build.ArtifactStagingDirectory)/finalize-logs/post_comment_output.md
               COMMENT_EXIT_CODE=$?
               set -e
               
@@ -138,7 +140,7 @@ stages:
               if [ $COMMENT_EXIT_CODE -ne 0 ]; then
                 echo "##vso[task.logissue type=warning]Post comment skill exited with code $COMMENT_EXIT_CODE"
               fi
-            displayName: 'Post Comment Using Skill'
+            displayName: 'Post Comment Using Skill (Fallback)'
             env:
               GITHUB_TOKEN: $(COPILOT_TOKEN)
             condition: succeeded()
