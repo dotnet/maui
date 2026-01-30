@@ -528,5 +528,75 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(expectedLocation.Latitude, eventArgs.Location.Latitude);
 			Assert.Equal(expectedLocation.Longitude, eventArgs.Location.Longitude);
 		}
+
+		[Fact]
+		public void MapClickedAndLongClickedCanCoexist()
+		{
+			var map = new Map();
+			var clickLocation = new Location(37.7749, -122.4194);
+			var longClickLocation = new Location(47.6062, -122.3321);
+
+			bool clickFired = false;
+			bool longClickFired = false;
+			map.MapClicked += (s, e) => clickFired = true;
+			map.MapLongClicked += (s, e) => longClickFired = true;
+
+			// Fire click - only click handler should respond
+			((IMap)map).Clicked(clickLocation);
+			Assert.True(clickFired);
+			Assert.False(longClickFired);
+
+			// Reset and fire long click - only long click handler should respond
+			clickFired = false;
+			((IMap)map).LongClicked(longClickLocation);
+			Assert.False(clickFired);
+			Assert.True(longClickFired);
+		}
+
+		[Fact]
+		public void MapLongClickedDoesNotFireWithoutHandler()
+		{
+			var map = new Map();
+			
+			// Should not throw when no handler is attached
+			var exception = Record.Exception(() => ((IMap)map).LongClicked(new Location(37.7749, -122.4194)));
+			
+			Assert.Null(exception);
+		}
+
+		[Fact]
+		public void MapLongClickedMultipleHandlersAllFire()
+		{
+			var map = new Map();
+			var location = new Location(37.7749, -122.4194);
+
+			int handler1Count = 0;
+			int handler2Count = 0;
+			map.MapLongClicked += (s, e) => handler1Count++;
+			map.MapLongClicked += (s, e) => handler2Count++;
+
+			((IMap)map).LongClicked(location);
+
+			Assert.Equal(1, handler1Count);
+			Assert.Equal(1, handler2Count);
+		}
+
+		[Fact]
+		public void MapLongClickedHandlerCanBeRemoved()
+		{
+			var map = new Map();
+			var location = new Location(37.7749, -122.4194);
+
+			int fireCount = 0;
+			EventHandler<MapClickedEventArgs> handler = (s, e) => fireCount++;
+			
+			map.MapLongClicked += handler;
+			((IMap)map).LongClicked(location);
+			Assert.Equal(1, fireCount);
+
+			map.MapLongClicked -= handler;
+			((IMap)map).LongClicked(location);
+			Assert.Equal(1, fireCount); // Should still be 1, not 2
+		}
 	}
 }
