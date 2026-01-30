@@ -106,8 +106,9 @@ parameters:
   - name: androidPoolPublic
     type: object
     default:
-      name: MAUI
-      vmImage: MAUI
+      name: AcesShared
+      demands:
+        - ImageOverride -equals ACES_VM_SharedPool_Tahoe
   
   - name: androidPoolLinuxPublic
     type: object
@@ -119,10 +120,9 @@ parameters:
   - name: iosPoolPublic
     type: object
     default:
-      name: MAUI
-      vmImage: MAUI      
+      name: AcesShared
       demands:
-        - Agent.OSArchitecture -equals ARM64
+        - ImageOverride -equals ACES_VM_SharedPool_Tahoe
   
   - name: windowsBuildPoolPublic
     type: object
@@ -141,8 +141,9 @@ parameters:
   - name: macosPoolPublic
     type: object
     default:
-      name: Azure Pipelines
-      vmImage: macOS-14
+      name: AcesShared
+      demands:
+        - ImageOverride -equals ACES_VM_SharedPool_Tahoe
 
 stages:
 
