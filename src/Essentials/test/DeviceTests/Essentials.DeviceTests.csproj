@@ -3,6 +3,8 @@
   <PropertyGroup>
     <TargetFrameworks>$(MauiDeviceTestsPlatforms)</TargetFrameworks>
     <OutputType>Exe</OutputType>
+    <!-- Use WinExe for Windows to enable Windows App SDK self-contained mode (see Controls.DeviceTests.csproj for details) -->
+    <OutputType Condition="$(TargetFramework.Contains('-windows'))">WinExe</OutputType>
     <SingleProject>true</SingleProject>
     <RootNamespace>Microsoft.Maui.Essentials.DeviceTests</RootNamespace>
     <AssemblyName>Microsoft.Maui.Essentials.DeviceTests</AssemblyName>
