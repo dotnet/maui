@@ -106,6 +106,14 @@ public class TriggersViewModel : INotifyPropertyChanged
 	public bool ShowDeviceStateTrigger => SelectedTriggerType == TriggerType.DeviceStateTrigger;
 	public bool ShowOrientationStateTrigger => SelectedTriggerType == TriggerType.OrientationStateTrigger;
 
+	public void Reset()
+	{
+		IsToggled = false;
+		DataEntryText = string.Empty;
+		EmailEntryText = string.Empty;
+		PhoneEntryText = string.Empty;
+	}
+
 	protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
 	{
 		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

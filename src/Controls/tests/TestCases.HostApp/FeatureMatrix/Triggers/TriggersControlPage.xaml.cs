@@ -14,6 +14,7 @@ public class TriggersControlPage : NavigationPage
 public partial class TriggersControlMainPage : ContentPage
 {
 	private TriggersViewModel _viewModel;
+	private bool _isReturningFromOptions = false;
 
 	public TriggersControlMainPage(TriggersViewModel viewModel)
 	{
@@ -34,11 +35,57 @@ public partial class TriggersControlMainPage : ContentPage
 	{
 		base.OnAppearing();
 
+		// Reset entry values and focus only when returning from options page
+		if (_isReturningFromOptions)
+		{
+			// Use async delay to ensure UI is ready before clearing
+			Dispatcher.Dispatch(async () =>
+			{
+				await Task.Delay(50); // Small delay for page transition to complete
+				_viewModel.Reset();
+				ClearAndUnfocusAllEntries();
+			});
+			_isReturningFromOptions = false;
+		}
+
 		// Update orientation when page appears
 		UpdateOrientationLabel();
 
 		// Subscribe to orientation changes
 		DeviceDisplay.Current.MainDisplayInfoChanged += OnMainDisplayInfoChanged;
+	}
+
+	private void ClearAndUnfocusAllEntries()
+	{
+		// Force focus to content page first to ensure entries lose focus
+		this.Focus();
+
+		// Directly clear text and unfocus all entry controls
+		if (propertyTriggerEntry != null)
+		{
+			propertyTriggerEntry.Text = string.Empty;
+			propertyTriggerEntry.Unfocus();
+		}
+		if (dataEntry != null)
+		{
+			dataEntry.Text = string.Empty;
+			dataEntry.Unfocus();
+		}
+		if (numericEntry != null)
+		{
+			numericEntry.Text = string.Empty;
+			numericEntry.Unfocus();
+		}
+		if (emailEntry != null)
+		{
+			emailEntry.Text = string.Empty;
+			emailEntry.Unfocus();
+		}
+		if (phoneEntry != null)
+		{
+			phoneEntry.Text = string.Empty;
+			phoneEntry.Unfocus();
+		}
 	}
 
 	protected override void OnDisappearing()
@@ -77,6 +124,7 @@ public partial class TriggersControlMainPage : ContentPage
 
 	private async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)
 	{
+		_isReturningFromOptions = true;
 		await Navigation.PushAsync(new TriggersOptionsPage(_viewModel));
 	}
 }
