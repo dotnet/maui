@@ -4,9 +4,9 @@ using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
-public class Issue99999 : _IssuesUITest
+public class Issue33785 : _IssuesUITest
 {
-	public Issue99999(TestDevice device) : base(device) { }
+	public Issue33785(TestDevice device) : base(device) { }
 
 	public override string Issue => "[Windows] FlyoutPage CollapsedPaneWidth Not Working";
 	[Test]

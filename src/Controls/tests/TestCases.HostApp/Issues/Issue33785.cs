@@ -3,14 +3,14 @@ using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 99999, "[Windows] FlyoutPage CollapsedPaneWidth Not Working", PlatformAffected.UWP)]
-public class Issue99999 : TestFlyoutPage
+[Issue(IssueTracker.Github, 33785, "[Windows] FlyoutPage CollapsedPaneWidth Not Working", PlatformAffected.UWP)]
+public class Issue33785 : TestFlyoutPage
 {
-	Microsoft.Maui.Controls.Label _button;
+	Microsoft.Maui.Controls.Label _label;
 	protected override void Init()
 	{
 		this.On<Microsoft.Maui.Controls.PlatformConfiguration.Windows>().SetCollapseStyle(CollapseStyle.Partial);
-		this.On<Microsoft.Maui.Controls.PlatformConfiguration.Windows>().CollapsedPaneWidth(100);
+		this.On<Microsoft.Maui.Controls.PlatformConfiguration.Windows>().CollapsedPaneWidth(50);
 
 		// Set the flyout page properties
 		FlyoutLayoutBehavior = FlyoutLayoutBehavior.Popover;
@@ -31,7 +31,8 @@ public class Issue99999 : TestFlyoutPage
 		};
 		page1Button.Clicked += (s, e) =>
 		{
-			this.On<Microsoft.Maui.Controls.PlatformConfiguration.Windows>().CollapsedPaneWidth(300);
+			this.On<Microsoft.Maui.Controls.PlatformConfiguration.Windows>().CollapsedPaneWidth(100);
+			_label.Text = "CollapsedPaneWidth set to 100";
 		};
 
 		flyoutPage.Content = new VerticalStackLayout
@@ -46,10 +47,12 @@ public class Issue99999 : TestFlyoutPage
 			BackgroundColor = Colors.LightYellow
 		};
 
-		_button = new Microsoft.Maui.Controls.Label
+		_label = new Microsoft.Maui.Controls.Label
 		{
 			Text = "Test for CollapsedPaneWidth",
 			AutomationId = "CollapsedPaneLabel",
+			HorizontalOptions = LayoutOptions.Center,
+			HorizontalTextAlignment = TextAlignment.Center,
 		};
 
 		detailPage.Content = new VerticalStackLayout
@@ -62,7 +65,7 @@ public class Issue99999 : TestFlyoutPage
 					HorizontalOptions = LayoutOptions.Center,
 					VerticalOptions = LayoutOptions.Center
 				},
-				_button
+				_label
 			}
 		};
 
