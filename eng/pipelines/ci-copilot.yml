@@ -251,10 +251,20 @@ stages:
               # Create artifacts directory for Copilot outputs
               mkdir -p $(Build.ArtifactStagingDirectory)/copilot-logs
               
+              # Load prompt from file and substitute PR number
+              PROMPT_FILE="eng/pipelines/prompts/pr-review-prompt.md"
+              if [ ! -f "$PROMPT_FILE" ]; then
+                echo "##vso[task.logissue type=error]Prompt file not found: $PROMPT_FILE"
+                exit 1
+              fi
+              
+              # Read prompt and replace placeholder with actual PR number
+              PROMPT=$(sed "s/\${PR_NUMBER}/${{ parameters.PRNumber }}/g" "$PROMPT_FILE")
+              
               # Invoke the PR reviewer agent using Copilot CLI in programmatic mode
               # Capture exit code to check for failures
               set +e
-              copilot --agent pr -p "Review PR #${{ parameters.PRNumber }} you are already on the correct branch so don't switch branches. Execute all 5 phases sequentially: Phase 1 (Understanding), Phase 2 (Test Review), Phase 3 (Fix Exploration), Phase 4 (Alternative Comparison), and Phase 5 (Final Review). Complete all phases unless any of them fail." --yolo 2>&1 | tee $(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md
+              copilot --agent pr -p "$PROMPT" --yolo 2>&1 | tee $(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md
               COPILOT_EXIT_CODE=$?
               set -e
               
