@@ -1,4 +1,4 @@
-#if WINDOWS
+#if WINDOWS		//CollapsedPaneWidth is Windows Specific API
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
