@@ -9,6 +9,9 @@ namespace Microsoft.Maui.Handlers
 	{
 		readonly MauiPickerProxy _proxy = new();
 		UIPickerView? _pickerView;
+#if MACCATALYST
+		UIAlertController? _currentPickerController;
+#endif
 
 #if !MACCATALYST
 		protected override MauiPicker CreatePlatformView()
@@ -59,7 +62,8 @@ namespace Microsoft.Maui.Handlers
 
 			// The UIPickerView is displayed as a subview of the UIAlertController when an empty string is provided as the title, instead of using the VirtualView title. 
 			// This behavior deviates from the expected native macOS behavior.
-			var pickerController = UIAlertController.Create("", "", UIAlertControllerStyle.ActionSheet);
+			_currentPickerController = UIAlertController.Create("", "", UIAlertControllerStyle.ActionSheet);
+			var pickerController = _currentPickerController;
 
 			// needs translation
 			pickerController.AddAction(UIAlertAction.Create("Done",
@@ -84,11 +88,13 @@ namespace Microsoft.Maui.Handlers
 
 			EventHandler? editingDidEndHandler = null;
 
-			editingDidEndHandler = async (s, e) =>
+			editingDidEndHandler = (s, e) =>
 			{
-				await pickerController.DismissViewControllerAsync(true);
 				if (VirtualView is IPicker virtualView)
 					virtualView.IsFocused = virtualView.IsOpen = false;
+				
+				_currentPickerController = null;
+				
 				uITextField.EditingDidEnd -= editingDidEndHandler;
 			};
 
@@ -201,6 +207,32 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.PlatformView?.UpdateIsOpen(picker);
 		}
+
+#if MACCATALYST
+		internal static void MapFocus(IPickerHandler handler, IPicker picker, object? args)
+		{
+			if (handler.IsConnected() && handler is PickerHandler)
+			{
+				ViewHandler.MapFocus(handler, picker, args);
+			}
+		}
+
+		internal static void MapUnfocus(IPickerHandler handler, IPicker picker, object? args)
+		{
+			if (handler.IsConnected() && handler is PickerHandler pickerHandler)
+			{
+				// Dismiss the picker controller when Unfocus() is explicitly called
+				if (pickerHandler._currentPickerController != null)
+				{
+					var controller = pickerHandler._currentPickerController;
+					pickerHandler._currentPickerController = null;
+					controller.DismissViewController(true, null);
+				}
+				
+				ViewHandler.MapUnfocus(handler, picker, args);
+			}
+		}
+#endif
 
 		void UpdatePickerFromPickerSource(PickerSource? pickerSource)
 		{
