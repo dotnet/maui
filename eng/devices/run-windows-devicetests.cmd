@@ -270,8 +270,26 @@ if %IS_PACKAGED%==1 (
     echo Looking for Microsoft.Windows.SDK.NET.dll in !EXE_DIR!
     dir "!EXE_DIR!\Microsoft.Windows.SDK.NET.dll" 2>nul
     echo.
+    echo CRITICAL: Looking for Microsoft.ui.xaml.dll ^(native WinUI3 DLL, ~14 MB^):
+    dir "!EXE_DIR!\Microsoft.ui.xaml.dll" 2>nul
+    if !ERRORLEVEL! NEQ 0 (
+        echo CRITICAL ERROR: Microsoft.ui.xaml.dll NOT FOUND!
+        echo This DLL is required for Windows App SDK SelfContained mode.
+        echo Without it, the app WILL crash with 0xC000027B.
+        echo Checking recursively in case it's in a subdirectory:
+        powershell -Command "Get-ChildItem -Path '!EXE_DIR!' -Filter 'Microsoft.ui.xaml.dll' -Recurse | ForEach-Object { Write-Host $_.FullName }"
+    ) else (
+        echo OK: Microsoft.ui.xaml.dll found
+    )
+    echo.
     echo Total DLL count in output directory:
     powershell -Command "(Get-ChildItem -Path '!EXE_DIR!' -Filter '*.dll').Count"
+    echo.
+    echo Total file count in output directory:
+    powershell -Command "(Get-ChildItem -Path '!EXE_DIR!' -File).Count"
+    echo.
+    echo Payload root total file count ^(including Unpackaged and AppPackages^):
+    powershell -Command "(Get-ChildItem -Path '%SCENARIO_DIR%' -File -Recurse).Count"
     echo.
     echo Listing all Windows App SDK related files:
     dir "!EXE_DIR!\*WindowsApp*" 2>nul
