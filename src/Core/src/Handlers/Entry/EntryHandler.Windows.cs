@@ -97,6 +97,9 @@ namespace Microsoft.Maui.Handlers
 		public static void MapCharacterSpacing(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateCharacterSpacing(entry);
 
+		public static void MapBorderStyle(IEntryHandler handler, IEntry entry) =>
+			handler.PlatformView?.UpdateBorderStyle(entry);
+
 		public static void MapKeyboard(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateKeyboard(entry);
 

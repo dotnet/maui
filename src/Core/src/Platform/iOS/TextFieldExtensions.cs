@@ -196,6 +196,18 @@ namespace Microsoft.Maui.Platform
 			return end;
 		}
 
+		public static void UpdateBorderStyle(this UITextField textField, IEntry entry)
+		{
+			if (entry.BorderStyle is BorderStyle.Default)
+			{
+				textField.BorderStyle = UITextBorderStyle.RoundedRect;
+			}
+			else
+			{
+				textField.BorderStyle = UITextBorderStyle.None;
+			}
+		}
+
 		public static void UpdateClearButtonVisibility(this UITextField textField, IEntry entry)
 		{
 			if (entry.ClearButtonVisibility == ClearButtonVisibility.WhileEditing)

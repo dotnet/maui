@@ -1,10 +1,10 @@
 ﻿<views:BasePage
+    x:Class="Maui.Controls.Sample.Pages.EntryPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    x:Class="Maui.Controls.Sample.Pages.EntryPage"
     xmlns:controls="clr-namespace:Maui.Controls.Sample.Pages"
-    xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
     xmlns:viewmodels="clr-namespace:Maui.Controls.Sample.ViewModels"
+    xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
     Title="Entry">
     <views:BasePage.Resources>
         <ResourceDictionary>
@@ -15,12 +15,12 @@
                         <VisualStateGroup x:Name="CommonStates">
                             <VisualState x:Name="Normal">
                                 <VisualState.Setters>
-                                    <Setter Property="BackgroundColor" Value="Pink"/>
+                                    <Setter Property="BackgroundColor" Value="Pink" />
                                 </VisualState.Setters>
                             </VisualState>
                             <VisualState x:Name="Focused">
                                 <VisualState.Setters>
-                                    <Setter Property="BackgroundColor" Value="Yellow"/>
+                                    <Setter Property="BackgroundColor" Value="Yellow" />
                                 </VisualState.Setters>
                             </VisualState>
                             <VisualState x:Name="Disabled">
@@ -43,40 +43,50 @@
             <VerticalStackLayout Padding="12">
                 <Button Margin="5" x:Name="ShowSoftInputAsyncButton" Clicked="ShowSoftInputAsyncButton_Clicked" Text="Show Soft Input for Placeholder Button" />
                 <Button Margin="5" x:Name="HideSoftInputAsyncButton" Clicked="HideSoftInputAsyncButton_Clicked" Text="Hide Soft Input" />
-                <Label
-                    Text="Basic"
-                    Style="{StaticResource Headline}" />
-                <Entry />
+                <VerticalStackLayout Spacing="4">
+                    <Label
+                        Text="Basic"
+                        Style="{StaticResource Headline}" />
+                    <Entry />
+                </VerticalStackLayout>
+                <VerticalStackLayout Spacing="4">
+                    <Label
+                        Text="Without Border"
+                        Style="{StaticResource Headline}" />
+                    <Entry 
+                        Text="Text"
+                        BorderStyle="None" />
+                </VerticalStackLayout>
                 <Label
                     Text="Disabled"
                     Style="{StaticResource Headline}" />
-                <Entry 
-                    IsEnabled="False"/>
+                <Entry
+                    IsEnabled="False" />
                 <Label
                     Text="Using TextColor"
                     Style="{StaticResource Headline}" />
                 <Entry 
                     Text="Text"
-                    TextColor="Purple"/>
+                    TextColor="Purple" />
                 <Label
                     Text="Using TextColor (for the text color and the clear button color)"
                     Style="{StaticResource Headline}" />
                 <Entry 
                     ClearButtonVisibility="WhileEditing"
                     Text="Text"
-                    TextColor="Red"/>
+                    TextColor="Red" />
                 <Label
                     Text="With Placeholder"
                     Style="{StaticResource Headline}" />
                 <Entry 
                     x:Name="PlaceholderEntryItem"
-                    Placeholder="Placeholder"/>
+                    Placeholder="Placeholder" />
                 <Label
                     Text="Using PlaceholderColor"
                     Style="{StaticResource Headline}" />
                 <Entry 
                     PlaceholderColor="Purple"
-                    Placeholder="Placeholder"/>
+                    Placeholder="Placeholder" />
                 <Label
                     Text="Password"
                     Style="{StaticResource Headline}" />
@@ -86,7 +96,7 @@
                         IsChecked="true" />
                     <Label 
                         Text="Is Password" 
-                        VerticalOptions="Center"/>
+                        VerticalOptions="Center" />
                 </HorizontalStackLayout>
                 <Entry
                     x:Name="pwdPassword"
@@ -99,53 +109,53 @@
                     Text="With Text"
                     Style="{StaticResource Headline}" />
                 <Entry 
-                    Text="Text"/>
+                    Text="Text" />
                 <Label
                     Text="ClearButtonVisibility = Never"
                     Style="{StaticResource Headline}" />
                 <Entry 
                     Text="Text"
-                    ClearButtonVisibility="Never"/>
+                    ClearButtonVisibility="Never" />
                 <Label
                     Text="ClearButtonVisibility = WhileEditing"
                     Style="{StaticResource Headline}" />
                 <Entry 
                     Text="Text"
-                    ClearButtonVisibility="WhileEditing"/>
+                    ClearButtonVisibility="WhileEditing" />
                 <Label
                     Text="Read-only"
                     Style="{StaticResource Headline}" />
                 <Entry 
                     Text="I am read only" 
-                    IsReadOnly="True"/>
+                    IsReadOnly="True" />
                 <Label
                     Text="SpellCheck (True), TextPrediction (True)" 
                     Style="{StaticResource Headline}" />
                 <Entry 
                     Text="Whats new" 
                     IsSpellCheckEnabled="True"
-                    IsTextPredictionEnabled="True"/>
+                    IsTextPredictionEnabled="True" />
                 <Label
                     Text="SpellCheck (False), TextPrediction (True)" 
                     Style="{StaticResource Headline}" />
                 <Entry 
                     Text="Whats new" 
                     IsSpellCheckEnabled="False"
-                    IsTextPredictionEnabled="True"/>
+                    IsTextPredictionEnabled="True" />
                 <Label
                     Text="SpellCheck (True), TextPrediction (False)" 
                     Style="{StaticResource Headline}" />
                 <Entry 
                     Text="Whats new" 
                     IsSpellCheckEnabled="True"
-                    IsTextPredictionEnabled="False"/>
+                    IsTextPredictionEnabled="False" />
                 <Label
                     Text="SpellCheck (False), TextPrediction (False)" 
                     Style="{StaticResource Headline}" />
                 <Entry 
                     Text="Whats new" 
                     IsSpellCheckEnabled="False"
-                    IsTextPredictionEnabled="False"/>
+                    IsTextPredictionEnabled="False" />
                 <Label
                     Text="ReturnType (Search)"
                     Style="{StaticResource Headline}" />
@@ -156,47 +166,47 @@
                     Style="{StaticResource Headline}" />
                 <Entry 
                     x:Name="ReturnTypeEntry"
-                    TextChanged="OnReturnTypeEntryTextChanged"/>
+                    TextChanged="OnReturnTypeEntryTextChanged" />
                 <Label
                     Text="Return Command"
                     Style="{StaticResource Headline}" />
                 <Entry 
                     ReturnCommand="{Binding ReturnCommand}"
-                    ReturnCommandParameter="ReturnCommandParameter"/>
+                    ReturnCommandParameter="ReturnCommandParameter" />
                 <Label
                     Text="Focus"
                     Style="{StaticResource Headline}" />
                 <Entry 
-                    Focused="OnEntryFocused"/>
+                    Focused="OnEntryFocused" />
                 <Label
                     Text="Unfocus"
                     Style="{StaticResource Headline}" />
                 <Entry 
-                    Unfocused="OnEntryUnfocused"/>
+                    Unfocused="OnEntryUnfocused" />
                 <Label
                     Text="Completed"
                     Style="{StaticResource Headline}" />
                 <Entry 
-                    Completed="OnEntryCompleted"/>
+                    Completed="OnEntryCompleted" />
                 <Label
                     Text="BackgroundColor"
                     Style="{StaticResource Headline}" />
                 <Entry 
                     Text="BackgroundColor"
-                    BackgroundColor="Orange"/>
+                    BackgroundColor="Orange" />
                 <Label
                    Text="BackgroundColor"
                    Style="{StaticResource Headline}" />
                 <Entry 
-                    x:Name="BackgroundColorEntry"/>
+                    x:Name="BackgroundColorEntry" />
                 <Button
                     x:Name="UpdateBackgroundColorButton"
                     Text="Update Background Color"
-                    Clicked="OnUpdateBackgroundColorButtonClicked"/>
+                    Clicked="OnUpdateBackgroundColorButtonClicked" />
                 <Button
                     x:Name="ClearBackgroundColorButton"
                     Text="Clear Background Color"
-                    Clicked="OnClearBackgroundColorButtonClicked"/>
+                    Clicked="OnClearBackgroundColorButtonClicked" />
                 <Label
                     Text="Background"
                     Style="{StaticResource Headline}" />
@@ -215,15 +225,15 @@
                     Text="Background"
                     Style="{StaticResource Headline}" />
                 <Entry 
-                    x:Name="BackgroundEntry"/>
+                    x:Name="BackgroundEntry" />
                 <Button
                     x:Name="UpdateBackgroundButton"
                     Text="Update Background"
-                    Clicked="OnUpdateBackgroundButtonClicked"/>
+                    Clicked="OnUpdateBackgroundButtonClicked" />
                 <Button
                     x:Name="ClearBackgroundButton"
                     Text="Clear Background"
-                    Clicked="OnClearBackgroundButtonClicked"/>
+                    Clicked="OnClearBackgroundButtonClicked" />
                 <Label
                     Text="Updating Background using VisualStates"
                     Style="{StaticResource Headline}" />
@@ -238,7 +248,7 @@
                     Style="{StaticResource Headline}" />
                 <Entry 
                     Text="123"
-                    Keyboard="Numeric"/>
+                    Keyboard="Numeric" />
                 <Label
                     Text="HorizontalTextAlignment"
                     Style="{StaticResource Headline}" />
@@ -251,30 +261,30 @@
                 <Entry 
                     VerticalTextAlignment="End"
                     Text="This should be on the bottom"
-                    HeightRequest="100"/>
+                    HeightRequest="100" />
                 <HorizontalStackLayout>
                     <Label
                         x:Name="lblCursor"
                         Text="CursorPosition = 4"
                         Style="{StaticResource Headline}" />
-                    <Slider x:Name="sldCursorPosition" ValueChanged="OnSlideCursorPositionValueChanged" WidthRequest="100"/>
+                    <Slider x:Name="sldCursorPosition" ValueChanged="OnSlideCursorPositionValueChanged" WidthRequest="100" />
                 </HorizontalStackLayout>
                 <Entry
                     x:Name="entryCursor"
                     Text="Cursor"
-                    CursorPosition="4"/>
+                    CursorPosition="4" />
                 <HorizontalStackLayout>
                     <Label
                     x:Name="lblSelection"
                     Text="SelectionLength = 4"
                     Style="{StaticResource Headline}" />
-                    <Slider x:Name="sldSelection" ValueChanged="OnSlideSelectionValueChanged" WidthRequest="100"/>
+                    <Slider x:Name="sldSelection" ValueChanged="OnSlideSelectionValueChanged" WidthRequest="100" />
                 </HorizontalStackLayout>
                 <Entry
                     x:Name="entrySelection"
                     Text="Selection"
                     CursorPosition="2"
-                    SelectionLength="4"/>
+                    SelectionLength="4" />
                 <Label
                     Text="Platform Specific (Search ImeOptions)"
                     Style="{StaticResource Headline}" />

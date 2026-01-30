@@ -9,6 +9,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapText(IEntryHandler handler, IEntry entry) { }
 		public static void MapTextColor(IEntryHandler handler, IEntry entry) { }
 		public static void MapIsPassword(IEntryHandler handler, IEntry entry) { }
+		public static void MapHasBorder(IEntryHandler handler, IEntry entry) { }
 		public static void MapHorizontalTextAlignment(IEntryHandler handler, IEntry entry) { }
 		public static void MapVerticalTextAlignment(IEntryHandler handler, IEntry entry) { }
 

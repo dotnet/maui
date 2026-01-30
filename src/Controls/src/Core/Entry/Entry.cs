@@ -37,6 +37,11 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		public static readonly BindableProperty IsPasswordProperty = BindableProperty.Create(nameof(IsPassword), typeof(bool), typeof(Entry), default(bool));
 
+		/// <summary>
+		/// Backing store for the <see cref="BorderStyle"/> property.
+		/// </summary>
+		public static readonly BindableProperty BorderStyleProperty = BindableProperty.Create(nameof(BorderStyle), typeof(BorderStyle), typeof(Entry), BorderStyle.Default);
+
 		/// <inheritdoc cref="InputView.TextProperty"/>
 		public new static readonly BindableProperty TextProperty = InputView.TextProperty;
 
@@ -123,6 +128,15 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (bool)GetValue(IsPasswordProperty); }
 			set { SetValue(IsPasswordProperty, value); }
+		}
+
+		/// <summary>
+		/// Gets or sets the border style of the Entry. This is a bindable property.
+		/// </summary>
+		public BorderStyle BorderStyle
+		{
+			get { return (BorderStyle)GetValue(BorderStyleProperty); }
+			set { SetValue(BorderStyleProperty, value); }
 		}
 
 		/// <summary>

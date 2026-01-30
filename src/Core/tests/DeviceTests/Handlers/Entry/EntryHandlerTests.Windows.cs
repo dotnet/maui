@@ -157,6 +157,16 @@ namespace Microsoft.Maui.DeviceTests
 		bool GetNativeClearButtonVisibility(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).GetClearButtonVisibility();
 
+		BorderStyle GetNativeBorderStyle(EntryHandler entryHandler)
+		{
+			var textBox = GetNativeEntry(entryHandler);
+
+			var borderThickness = textBox.BorderThickness;
+			var hasBorder = borderThickness.Top != 0 || borderThickness.Left != 0 ||
+							borderThickness.Right != 0 || borderThickness.Bottom != 0;
+			return hasBorder ? BorderStyle.Default : BorderStyle.None;
+		}
+
 		NativeTextAlignment GetNativeHorizontalTextAlignment(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).TextAlignment;
 

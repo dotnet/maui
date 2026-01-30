@@ -11,6 +11,11 @@
 		bool IsPassword { get; }
 
 		/// <summary>
+		/// Gets a value that controls the border style of the Entry.
+		/// </summary>
+		BorderStyle BorderStyle { get; }
+
+		/// <summary>
 		/// Gets an enumeration value that controls the appearance of the return button.
 		/// </summary>
 		ReturnType ReturnType { get; }

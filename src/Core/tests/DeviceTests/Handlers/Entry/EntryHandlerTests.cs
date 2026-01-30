@@ -675,6 +675,198 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(platformAlignment, values.PlatformViewValue);
 		}
 
+		[Theory(DisplayName = "BorderStyle Initializes Correctly")]
+		[InlineData(BorderStyle.Default)]
+		[InlineData(BorderStyle.None)]
+		public async Task BorderStyleInitializesCorrectly(BorderStyle borderStyle)
+		{
+			var entry = new EntryStub()
+			{
+				BorderStyle = borderStyle
+			};
+
+			await ValidatePropertyInitValue(entry, () => entry.BorderStyle, GetNativeBorderStyle, borderStyle);
+		}
+
+		[Theory(DisplayName = "BorderStyle Updates Correctly")]
+		[InlineData(BorderStyle.Default, BorderStyle.Default)]
+		[InlineData(BorderStyle.Default, BorderStyle.None)]
+		[InlineData(BorderStyle.None, BorderStyle.Default)]
+		[InlineData(BorderStyle.None, BorderStyle.None)]
+		public async Task BorderStyleUpdatesCorrectly(BorderStyle setValue, BorderStyle unsetValue)
+		{
+			var entry = new EntryStub();
+
+			await ValidatePropertyUpdatesValue(
+				entry,
+				nameof(IEntry.BorderStyle),
+				GetNativeBorderStyle,
+				setValue,
+				unsetValue);
+		}
+
+		[Theory(DisplayName = "Updating BorderStyle Does Not Affect Text")]
+		[InlineData(BorderStyle.Default, BorderStyle.None)]
+		[InlineData(BorderStyle.None, BorderStyle.Default)]
+		public async Task BorderStyleDoesNotAffectText(BorderStyle initialBorderStyle, BorderStyle newBorderStyle)
+		{
+			var entry = new EntryStub
+			{
+				Text = "Test Text",
+				BorderStyle = initialBorderStyle
+			};
+
+			await ValidateUnrelatedPropertyUnaffected(
+				entry,
+				GetNativeText,
+				nameof(IEntry.BorderStyle),
+				() => entry.BorderStyle = newBorderStyle);
+		}
+
+		[Theory(DisplayName = "Updating BorderStyle Does Not Affect TextColor")]
+		[InlineData(BorderStyle.Default, BorderStyle.None)]
+		[InlineData(BorderStyle.None, BorderStyle.Default)]
+		public async Task BorderStyleDoesNotAffectTextColor(BorderStyle initialBorderStyle, BorderStyle newBorderStyle)
+		{
+			var entry = new EntryStub
+			{
+				Text = "Test",
+				TextColor = Colors.Red,
+				BorderStyle = initialBorderStyle
+			};
+
+			await ValidateUnrelatedPropertyUnaffected(
+				entry,
+				GetNativeTextColor,
+				nameof(IEntry.BorderStyle),
+				() => entry.BorderStyle = newBorderStyle);
+		}
+
+		[Theory(DisplayName = "Updating BorderStyle Does Not Affect Placeholder")]
+		[InlineData(BorderStyle.Default, BorderStyle.None)]
+		[InlineData(BorderStyle.None, BorderStyle.Default)]
+		public async Task BorderStyleDoesNotAffectPlaceholder(BorderStyle initialBorderStyle, BorderStyle newBorderStyle)
+		{
+			var entry = new EntryStub
+			{
+				Placeholder = "Enter text",
+				BorderStyle = initialBorderStyle
+			};
+
+			await ValidateUnrelatedPropertyUnaffected(
+				entry,
+				GetNativePlaceholder,
+				nameof(IEntry.BorderStyle),
+				() => entry.BorderStyle = newBorderStyle);
+		}
+
+		[Theory(DisplayName = "Updating Text Does Not Affect BorderStyle")]
+		[InlineData("Short", "Longer Text")]
+		[InlineData("Long text here", "Short")]
+		public async Task TextDoesNotAffectBorderStyle(string initialText, string newText)
+		{
+			var entry = new EntryStub
+			{
+				Text = initialText,
+				BorderStyle = BorderStyle.Default
+			};
+
+			await ValidateUnrelatedPropertyUnaffected(
+				entry,
+				GetNativeBorderStyle,
+				nameof(IEntry.Text),
+				() => entry.Text = newText);
+		}
+
+		[Theory(DisplayName = "Updating TextColor Does Not Affect BorderStyle")]
+		[InlineData(0xFFFF0000, 0xFF0000FF)]
+		[InlineData(0xFF0000FF, 0xFFFF0000)]
+		public async Task TextColorDoesNotAffectBorderStyle(uint setValue, uint unsetValue)
+		{
+			var entry = new EntryStub
+			{
+				Text = "Test",
+				BorderStyle = BorderStyle.Default
+			};
+
+			var setColor = Color.FromUint(setValue);
+			var unsetColor = Color.FromUint(unsetValue);
+
+			await ValidateUnrelatedPropertyUnaffected(
+				entry,
+				GetNativeBorderStyle,
+				nameof(IEntry.TextColor),
+				() => entry.TextColor = setColor);
+		}
+
+		[Theory(DisplayName = "BorderStyle Works Correctly with Background")]
+		[InlineData(BorderStyle.Default)]
+		[InlineData(BorderStyle.None)]
+		public async Task BorderStyleWorksCorrectlyWithBackground(BorderStyle borderStyle)
+		{
+			var entry = new EntryStub
+			{
+				Text = "Test",
+				BorderStyle = borderStyle,
+				Background = new SolidPaintStub(Colors.Red)
+			};
+
+			await AttachAndRun(entry, async (handler) =>
+			{
+				await AssertEventually(() => handler.PlatformView.IsLoaded());
+			});
+
+			await ValidatePropertyInitValue(entry, () => entry.BorderStyle, GetNativeBorderStyle, borderStyle);
+
+			var hasBackground = await GetValueAsync(entry, handler =>
+			{
+				return handler.PlatformView != null;
+			});
+
+			Assert.True(hasBackground);
+		}
+
+		[Theory(DisplayName = "Updating Background Does Not Affect BorderStyle")]
+		[InlineData(BorderStyle.Default)]
+		[InlineData(BorderStyle.None)]
+		public async Task BackgroundDoesNotAffectBorderStyle(BorderStyle borderStyle)
+		{
+			var entry = new EntryStub
+			{
+				Text = "Test",
+				BorderStyle = borderStyle,
+				Background = new SolidPaintStub(Colors.Yellow)
+			};
+
+			await ValidateUnrelatedPropertyUnaffected(
+				entry,
+				GetNativeBorderStyle,
+				nameof(IEntry.Background),
+				() => entry.Background = new SolidPaintStub(Colors.Red));
+		}
+
+		[Theory(DisplayName = "Updating BorderStyle Does Not Affect Background")]
+		[InlineData(BorderStyle.Default, BorderStyle.None)]
+		[InlineData(BorderStyle.None, BorderStyle.Default)]
+		public async Task BorderStyleDoesNotAffectBackground(BorderStyle initialBorderStyle, BorderStyle newBorderStyle)
+		{
+			var entry = new EntryStub
+			{
+				Text = "Test",
+				BorderStyle = initialBorderStyle,
+				Background = new SolidPaintStub(Colors.Blue)
+			};
+
+			await AttachAndRun(entry, async (handler) =>
+			{
+				await AssertEventually(() => handler.PlatformView.IsLoaded());
+
+				entry.BorderStyle = newBorderStyle;
+
+				Assert.NotNull(handler.PlatformView);
+			});
+		}
+
 		[Category(TestCategory.Entry)]
 		public class EntryTextStyleTests : TextStyleHandlerTests<EntryHandler, EntryStub>
 		{

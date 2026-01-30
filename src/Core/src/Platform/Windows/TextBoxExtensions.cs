@@ -50,6 +50,27 @@ namespace Microsoft.Maui.Platform
 			"TextControlBackgroundDisabled",
 		};
 
+		public static void UpdateBorderStyle(this TextBox textBox, IEntry entry)
+		{
+			if (entry.BorderStyle is BorderStyle.Default)
+			{
+				textBox.Resources.RemoveKeys(BorderThicknessResourceKeys);
+				textBox.ClearValue(Control.BorderThicknessProperty);
+			}
+			else
+			{
+				textBox.Resources.SetValueForAllKey(BorderThicknessResourceKeys, WinUIHelpers.CreateThickness(0));
+			}
+
+			textBox.RefreshThemeResources();
+		}
+
+		static readonly string[] BorderThicknessResourceKeys =
+		{
+			"TextControlBorderThemeThickness",
+			"TextControlBorderThemeThicknessFocused"
+		};
+
 		public static void UpdateTextColor(this TextBox textBox, ITextStyle textStyle)
 		{
 			var brush = textStyle.TextColor?.ToPlatform();

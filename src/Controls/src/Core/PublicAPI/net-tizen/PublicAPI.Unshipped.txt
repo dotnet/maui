@@ -1,4 +1,7 @@
 #nullable enable
+Microsoft.Maui.Controls.Entry.HasBorder.get -> bool
+Microsoft.Maui.Controls.Entry.HasBorder.set -> void
+~static readonly Microsoft.Maui.Controls.Entry.HasBorderProperty -> Microsoft.Maui.Controls.BindableProperty
 Microsoft.Maui.Controls.AppThemeBinding
 Microsoft.Maui.Controls.AppThemeBinding.AppThemeBinding() -> void
 ~const Microsoft.Maui.Controls.AppThemeBinding.AppThemeResource = "__MAUI_ApplicationTheme__" -> string
