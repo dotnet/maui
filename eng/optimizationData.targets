@@ -6,9 +6,8 @@
   -->
 
   <ItemGroup>
-    <!-- TODO: Use android MIBC profile once available. -->
-    <MIBCPackageDef Include="optimization.linux-arm64.MIBC.Runtime"
-                    Version="$(optimizationlinuxarm64MIBCRuntimePackageVersion)"
+    <MIBCPackageDef Include="optimization.android-x64.MIBC.Runtime"
+                    Version="$(optimizationandroidx64MIBCRuntimePackageVersion)"
                     TargetPlatform="android" />
 
     <!-- Restore all MIBC packages (distinct by identity) -->
