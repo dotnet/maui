@@ -328,7 +328,7 @@ namespace Microsoft.Maui.Platform
 
 			var lengthDifference = passwordText.Length - realText.Length;
 			if (lengthDifference > 0)
-				realText = realText.Insert(start - lengthDifference, new string(ObfuscationCharacter, lengthDifference));
+				realText = realText.Insert(Math.Max(0, start - lengthDifference), new string(ObfuscationCharacter, lengthDifference));
 			else if (lengthDifference < 0)
 				realText = realText.Remove(start, -lengthDifference);
 
