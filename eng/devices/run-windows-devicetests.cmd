@@ -223,8 +223,13 @@ if %IS_PACKAGED%==1 (
     REM Unpackaged Test Execution
     REM ========================================
     
+    REM List contents to see what we have
+    echo Listing %SCENARIO_DIR% contents:
+    dir /s /b "%SCENARIO_DIR%" 2>nul | findstr /i "\.exe"
+    
     REM Find the executable - look for Microsoft.Maui.{SCENARIO}.exe specifically
     REM to avoid matching RestartAgent.exe or other helper executables
+    REM The exe should be in the Unpackaged subfolder from the archive
     set TEST_EXE=
     set EXPECTED_EXE_NAME=Microsoft.Maui.%SCENARIO_NAME%.exe
     echo Looking for executable: !EXPECTED_EXE_NAME!
@@ -236,6 +241,8 @@ if %IS_PACKAGED%==1 (
     if not defined TEST_EXE (
         echo WARNING: Could not find !EXPECTED_EXE_NAME!, listing available executables:
         dir /s /b "%SCENARIO_DIR%\*.exe" 2>nul
+        echo Listing all files in scenario dir:
+        dir /s "%SCENARIO_DIR%" 2>nul
         echo ERROR: No executable found for unpackaged tests
         exit /b 1
     )
@@ -245,6 +252,51 @@ if %IS_PACKAGED%==1 (
     REM Set working directory to executable directory for unpackaged apps
     for %%i in ("!TEST_EXE!") do set EXE_DIR=%%~dpi
     echo Executable directory: !EXE_DIR!
+    
+    REM ========================================
+    REM DIAGNOSTIC: Check for Windows App SDK DLLs
+    REM If WindowsAppSDKSelfContained=true was applied, these should exist
+    REM ========================================
+    echo.
+    echo ========================================
+    echo DIAGNOSTIC: Checking for Windows App SDK DLLs
+    echo ========================================
+    echo Looking for Microsoft.WindowsAppRuntime.*.dll in !EXE_DIR!
+    dir "!EXE_DIR!\Microsoft.WindowsAppRuntime*.dll" 2>nul
+    if !ERRORLEVEL! NEQ 0 (
+        echo WARNING: No Microsoft.WindowsAppRuntime DLLs found!
+        echo This indicates WindowsAppSDKSelfContained may not have been applied during build.
+    )
+    echo Looking for Microsoft.Windows.SDK.NET.dll in !EXE_DIR!
+    dir "!EXE_DIR!\Microsoft.Windows.SDK.NET.dll" 2>nul
+    echo.
+    echo CRITICAL: Looking for Microsoft.ui.xaml.dll ^(native WinUI3 DLL, ~14 MB^):
+    dir "!EXE_DIR!\Microsoft.ui.xaml.dll" 2>nul
+    if !ERRORLEVEL! NEQ 0 (
+        echo CRITICAL ERROR: Microsoft.ui.xaml.dll NOT FOUND!
+        echo This DLL is required for Windows App SDK SelfContained mode.
+        echo Without it, the app WILL crash with 0xC000027B.
+        echo Checking recursively in case it's in a subdirectory:
+        powershell -Command "Get-ChildItem -Path '!EXE_DIR!' -Filter 'Microsoft.ui.xaml.dll' -Recurse | ForEach-Object { Write-Host $_.FullName }"
+    ) else (
+        echo OK: Microsoft.ui.xaml.dll found
+    )
+    echo.
+    echo Total DLL count in output directory:
+    powershell -Command "(Get-ChildItem -Path '!EXE_DIR!' -Filter '*.dll').Count"
+    echo.
+    echo Total file count in output directory:
+    powershell -Command "(Get-ChildItem -Path '!EXE_DIR!' -File).Count"
+    echo.
+    echo Payload root total file count ^(including Unpackaged and AppPackages^):
+    powershell -Command "(Get-ChildItem -Path '%SCENARIO_DIR%' -File -Recurse).Count"
+    echo.
+    echo Listing all Windows App SDK related files:
+    dir "!EXE_DIR!\*WindowsApp*" 2>nul
+    dir "!EXE_DIR!\*WinRT*" 2>nul
+    echo ========================================
+    echo.
+    
     pushd "!EXE_DIR!"
     
     if %IS_CONTROLS_TEST%==1 (
@@ -254,6 +306,24 @@ if %IS_PACKAGED%==1 (
         start "" /wait "!TEST_EXE!" "%TEST_RESULTS_FILE%" -1
         set LAUNCH_ERRORLEVEL=!ERRORLEVEL!
         echo App exited with code: !LAUNCH_ERRORLEVEL!
+        
+        REM Check if app crashed with Windows App SDK bootstrap error
+        if "!LAUNCH_ERRORLEVEL!"=="-1073741189" (
+            echo.
+            echo ========================================
+            echo ERROR: Exit code -1073741189 = 0xC000027B
+            echo This is the Windows App SDK Bootstrap failure error.
+            echo The app could not find the Windows App SDK runtime.
+            echo.
+            echo Possible causes:
+            echo   1. WindowsAppSDKSelfContained=true was NOT applied during build
+            echo   2. Windows App SDK DLLs were not included in publish output
+            echo   3. Architecture mismatch between app and Windows App SDK
+            echo.
+            echo Check the DLL listing above to verify Windows App SDK DLLs are present.
+            echo ========================================
+            echo.
+        )
         
         echo Waiting 10 seconds for category discovery...
         timeout /t 10 /nobreak >nul
