@@ -1,4 +1,3 @@
-using System;
 
 namespace Maui.Controls.Sample.Issues
 {
