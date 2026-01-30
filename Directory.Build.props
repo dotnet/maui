@@ -208,6 +208,16 @@
       find the bundled Windows App SDK DLLs instead of looking for system-installed runtime.
     -->
     <WindowsAppSdkBootstrapInitialize Condition="'$(_IsDeviceTestsProject)' == 'True'">true</WindowsAppSdkBootstrapInitialize>
+    <!--
+      ALSO CRITICAL: Enable UndockedRegFreeWinRT initialization for registration-free WinRT activation.
+      
+      This is needed for unpackaged self-contained apps to properly activate WinRT components
+      without requiring the Windows App Runtime to be registered system-wide.
+      
+      While this should default to true when WindowsAppSDKSelfContained=true and WindowsPackageType=None
+      and OutputType=Exe, we explicitly set it to ensure it takes effect during MSBuild evaluation.
+    -->
+    <WindowsAppSdkUndockedRegFreeWinRTInitialize Condition="'$(_IsDeviceTestsProject)' == 'True'">true</WindowsAppSdkUndockedRegFreeWinRTInitialize>
   </PropertyGroup>
 
   <!-- version number information -->
