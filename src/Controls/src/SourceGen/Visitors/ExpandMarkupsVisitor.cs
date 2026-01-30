@@ -35,6 +35,47 @@ class ExpandMarkupsVisitor(SourceGenContext context) : IXamlNodeVisitor
 
 	public void Visit(ValueNode node, INode parentNode)
 	{
+		// Skip escaped values (e.g., Text="{}{Foo}" - the {} prefix means "treat as literal")
+		if (node.IsEscaped)
+			return;
+
+		// Handle C# expressions in element content (e.g., CDATA or plain text)
+		// Example: <Label.IsVisible><![CDATA[{A && B}]]></Label.IsVisible>
+		if (node.Value is not string valueString)
+			return;
+
+		var trimmed = valueString.Trim();
+		if (trimmed.Length < 3 || trimmed[0] != '{' || trimmed[trimmed.Length - 1] != '}')
+			return;
+
+		// Check if this is in a property context
+		if (!node.TryGetPropertyName(parentNode, out var propertyName))
+			return;
+		if (Skips.Contains(propertyName))
+			return;
+
+		// Check if it's a C# expression
+		if (CSharpExpressionHelpers.IsExpression(trimmed, name => TryResolveMarkupExtensionType(name, node.NamespaceResolver)))
+		{
+			if (!Context.ProjectItem.EnablePreviewFeatures)
+			{
+				var location = LocationHelpers.LocationCreate(Context.ProjectItem.RelativePath!, node, trimmed);
+				Context.ReportDiagnostic(Diagnostic.Create(Descriptors.CSharpExpressionsRequirePreviewFeatures, location));
+				return;
+			}
+
+			// Async lambda event handlers are not supported
+			if (CSharpExpressionHelpers.IsAsyncLambdaEventHandler(trimmed))
+			{
+				var location = LocationHelpers.LocationCreate(Context.ProjectItem.RelativePath!, node, trimmed);
+				Context.ReportDiagnostic(Diagnostic.Create(Descriptors.AsyncLambdaNotSupported, location));
+				return;
+			}
+
+			// Element content doesn't need quote transformation - natural C# syntax allowed
+			var expressionCode = CSharpExpressionHelpers.GetExpressionCode(trimmed, transformQuotes: false);
+			node.Value = new Expression(expressionCode, TransformQuotes: false);
+		}
 	}
 
 	public void Visit(MarkupNode markupnode, INode parentNode)
@@ -47,11 +88,137 @@ class ExpandMarkupsVisitor(SourceGenContext context) : IXamlNodeVisitor
 			return;
 
 		var markupString = markupnode.MarkupString;
-		if (ParseExpression(ref markupString, markupnode.NamespaceResolver, markupnode, markupnode, parentNode) is ElementNode node)
+		INode? node = null;
+
+		// Get thisType and dataType for ambiguity checking
+		ITypeSymbol? thisType = null;
+		ITypeSymbol? dataType = null;
+		if (Context.ProjectItem.EnablePreviewFeatures)
 		{
-			((ElementNode)parentNode).Properties[propertyName] = node;
+			// Try to get the page/view type (this)
+			var rootElement = GetRootElement(parentElement);
+			if (rootElement?.XmlType.TryResolveTypeSymbol(null, Context.Compilation, Context.XmlnsCache, Context.TypeCache, out var resolvedThisType) == true)
+				thisType = resolvedThisType;
+			
+			// Try to get x:DataType
+			XDataTypeResolver.TryGetXDataType(parentElement, Context, out dataType);
+		}
+
+		// Check if this is a C# expression (consolidates all detection logic)
+		var classification = CSharpExpressionHelpers.ClassifyExpression(
+			markupString, 
+			name => TryResolveMarkupExtensionType(name, markupnode.NamespaceResolver),
+			name => CanResolveAsProperty(name, thisType, dataType));
+
+		// Report ambiguity warning if both markup extension and property exist
+		if (classification.IsAmbiguous && classification.Name != null && Context.ProjectItem.EnablePreviewFeatures)
+		{
+			var location = LocationHelpers.LocationCreate(Context.ProjectItem.RelativePath!, markupnode, markupString);
+			Context.ReportDiagnostic(Diagnostic.Create(
+				Descriptors.AmbiguousExpressionOrMarkup, 
+				location, 
+				classification.Name));
+		}
+
+		if (classification.IsExpression)
+		{
+			// C# expressions require EnablePreviewFeatures
+			if (!Context.ProjectItem.EnablePreviewFeatures)
+			{
+				var location = LocationHelpers.LocationCreate(Context.ProjectItem.RelativePath!, markupnode, markupString);
+				Context.ReportDiagnostic(Diagnostic.Create(Descriptors.CSharpExpressionsRequirePreviewFeatures, location));
+				// Fall through to parse as markup extension (will likely fail, but gives better error context)
+			}
+			// Async lambda event handlers are not supported
+			else if (CSharpExpressionHelpers.IsAsyncLambdaEventHandler(markupString))
+			{
+				var location = LocationHelpers.LocationCreate(Context.ProjectItem.RelativePath!, markupnode, markupString);
+				Context.ReportDiagnostic(Diagnostic.Create(Descriptors.AsyncLambdaNotSupported, location));
+				return;
+			}
+			else
+			{
+				// Extract expression code but DON'T transform quotes yet
+				// Quote transformation happens in SetPropertyHelpers where we have semantic context
+				var expressionCode = CSharpExpressionHelpers.GetExpressionCode(markupString, transformQuotes: false);
+				node = new ValueNode(new Expression(expressionCode, TransformQuotes: true), markupnode.NamespaceResolver, markupnode.LineNumber, markupnode.LinePosition);
+			}
+		}
+
+		// If not an expression, parse as markup extension
+		node ??= ParseExpression(ref markupString, markupnode.NamespaceResolver, markupnode, markupnode, parentNode);
+
+		if (node != null)
+		{
+			parentElement.Properties[propertyName] = node;
 			node.Parent = parentNode;
 		}
+	}
+
+	/// <summary>
+	/// Checks if a bare identifier can be resolved as a property on thisType or dataType.
+	/// </summary>
+	bool CanResolveAsProperty(string name, ITypeSymbol? thisType, ITypeSymbol? dataType)
+	{
+		if (thisType != null && HasMember(thisType, name))
+			return true;
+		if (dataType != null && HasMember(dataType, name))
+			return true;
+		return false;
+	}
+
+	/// <summary>
+	/// Checks if a type has a property or field with the given name.
+	/// </summary>
+	static bool HasMember(ITypeSymbol type, string memberName)
+	{
+		var currentType = type;
+		while (currentType != null)
+		{
+			foreach (var member in currentType.GetMembers(memberName))
+			{
+				if (member is IPropertySymbol || member is IFieldSymbol)
+					return true;
+			}
+			currentType = currentType.BaseType;
+		}
+		return false;
+	}
+
+	/// <summary>
+	/// Gets the root element (page/view) from an element node.
+	/// </summary>
+	static ElementNode? GetRootElement(ElementNode node)
+	{
+		ElementNode current = node;
+		while (true)
+		{
+			var parent = current.Parent;
+			if (parent is null)
+				return current;
+			if (parent is ElementNode parentElement)
+				current = parentElement;
+			else if (parent is ListNode listNode && listNode.Parent is ElementNode listParent)
+				current = listParent;
+			else
+				return current;
+		}
+	}
+
+	bool TryResolveMarkupExtensionType(string name, IXmlNamespaceResolver nsResolver)
+	{
+		// Try to resolve FooExtension first, then Foo
+		var namespaceUri = nsResolver.LookupNamespace("") ?? "";
+		
+		var xmlTypeExt = new XmlType(namespaceUri, name + "Extension", null);
+		if (xmlTypeExt.TryResolveTypeSymbol(null, Context.Compilation, Context.XmlnsCache, Context.TypeCache, out _))
+			return true;
+
+		var xmlType = new XmlType(namespaceUri, name, null);
+		if (xmlType.TryResolveTypeSymbol(null, Context.Compilation, Context.XmlnsCache, Context.TypeCache, out _))
+			return true;
+
+		return false;
 	}
 
 	public void Visit(ElementNode node, INode parentNode)
