@@ -65,6 +65,7 @@ namespace Microsoft.Maui.Maps.Handlers
 				Map.MarkerClick -= OnMarkerClick;
 				Map.InfoWindowClick -= OnInfoWindowClick;
 				Map.MapClick -= OnMapClick;
+				Map.MyLocationChange -= OnMyLocationChange;
 			}
 
 			_mapReady = null;
@@ -287,6 +288,7 @@ namespace Microsoft.Maui.Maps.Handlers
 			map.MarkerClick += OnMarkerClick;
 			map.InfoWindowClick += OnInfoWindowClick;
 			map.MapClick += OnMapClick;
+			map.MyLocationChange += OnMyLocationChange;
 
 			if (VirtualView != null)
 			{
@@ -406,6 +408,14 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		void OnMapClick(object? sender, GoogleMap.MapClickEventArgs e) =>
 			VirtualView.Clicked(new Devices.Sensors.Location(e.Point.Latitude, e.Point.Longitude));
+
+		void OnMyLocationChange(object? sender, GoogleMap.MyLocationChangeEventArgs e)
+		{
+			if (e.Location != null && VirtualView != null)
+			{
+				VirtualView.UserLocationUpdated(new Devices.Sensors.Location(e.Location.Latitude, e.Location.Longitude));
+			}
+		}
 
 		void AddPins(IList pins)
 		{

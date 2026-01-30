@@ -190,6 +190,7 @@ namespace Microsoft.Maui.Maps.Platform
 		{
 			RegionChanged += MkMapViewOnRegionChanged;
 			DidSelectAnnotationView += MkMapViewOnAnnotationViewSelected;
+			DidUpdateUserLocation += MkMapViewOnUserLocationUpdated;
 
 			AddGestureRecognizer(_mapClickedGestureRecognizer = new UITapGestureRecognizer(OnMapClicked)
 			{
@@ -207,6 +208,7 @@ namespace Microsoft.Maui.Maps.Platform
 			}
 			RegionChanged -= MkMapViewOnRegionChanged;
 			DidSelectAnnotationView -= MkMapViewOnAnnotationViewSelected;
+			DidUpdateUserLocation -= MkMapViewOnUserLocationUpdated;
 		}
 
 		void MkMapViewOnAnnotationViewSelected(object? sender, MKAnnotationViewEventArgs e)
@@ -229,6 +231,20 @@ namespace Microsoft.Maui.Maps.Platform
 		{
 			if (_handlerRef.TryGetTarget(out IMapHandler? handler) && handler?.VirtualView != null)
 				handler.VirtualView.VisibleRegion = new MapSpan(new Devices.Sensors.Location(Region.Center.Latitude, Region.Center.Longitude), Region.Span.LatitudeDelta, Region.Span.LongitudeDelta);
+		}
+
+		void MkMapViewOnUserLocationUpdated(object? sender, MKUserLocationEventArgs e)
+		{
+			if (e.UserLocation?.Location == null)
+				return;
+
+			if (_handlerRef.TryGetTarget(out IMapHandler? handler) && handler?.VirtualView != null)
+			{
+				var location = new Devices.Sensors.Location(
+					e.UserLocation.Location.Coordinate.Latitude,
+					e.UserLocation.Location.Coordinate.Longitude);
+				handler.VirtualView.UserLocationUpdated(location);
+			}
 		}
 
 		IMapPin GetPinForAnnotation(IMKAnnotation annotation)
