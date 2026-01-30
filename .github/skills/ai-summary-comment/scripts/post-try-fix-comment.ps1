@@ -410,9 +410,31 @@ if ($DryRun) {
     $TRY_FIX_END_MARKER = "<!-- /SECTION:TRY-FIX -->"
     
     if ($existingPreview -match [regex]::Escape($TRY_FIX_MARKER)) {
-        # Replace existing TRY-FIX section
+        # Extract existing TRY-FIX content to preserve previous attempts (same logic as GitHub comment path)
+        $startPattern = [regex]::Escape($TRY_FIX_MARKER)
+        $endPattern = [regex]::Escape($TRY_FIX_END_MARKER)
+        $existingTryFixPreview = ""
+        if ($existingPreview -match "(?s)$startPattern(.*?)$endPattern") {
+            $existingTryFixPreview = $Matches[1].Trim()
+        }
+        
+        # Check if this attempt already exists - replace it, otherwise append
+        $attemptPatternPreview = "(?s)<details>\s*<summary>.*?(Attempt $AttemptNumber`:|Fix $AttemptNumber).*?</details>"
+        if ($existingTryFixPreview -match $attemptPatternPreview) {
+            Write-Host "Replacing existing Fix $AttemptNumber in preview..." -ForegroundColor Yellow
+            $updatedTryFixContent = $existingTryFixPreview -replace $attemptPatternPreview, $attemptSection
+            $tryFixSectionUpdated = "$SECTION_START`n$tryFixHeader$updatedTryFixContent`n$SECTION_END"
+        } else {
+            Write-Host "Adding Fix $AttemptNumber to preview..." -ForegroundColor Yellow
+            # Remove header if present to avoid duplication
+            $existingTryFixPreview = $existingTryFixPreview -replace "^### � (Try-Fix Analysis|Fix Attempts)\s*`n*", ""
+            $updatedTryFixContent = $tryFixHeader + $existingTryFixPreview.TrimEnd() + "`n`n" + $attemptSection
+            $tryFixSectionUpdated = "$SECTION_START`n$updatedTryFixContent`n$SECTION_END"
+        }
+        
+        # Replace the section in the preview
         $pattern = [regex]::Escape($TRY_FIX_MARKER) + "[\s\S]*?" + [regex]::Escape($TRY_FIX_END_MARKER)
-        $finalComment = $existingPreview -replace $pattern, $tryFixSection
+        $finalComment = $existingPreview -replace $pattern, $tryFixSectionUpdated
     } elseif (-not [string]::IsNullOrWhiteSpace($existingPreview)) {
         # Append TRY-FIX section to existing content
         $finalComment = $existingPreview.TrimEnd() + "`n`n" + $tryFixSection

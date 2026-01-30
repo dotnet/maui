@@ -174,7 +174,6 @@
     <!-- Android SDK package versions and info -->
     <!-- Build Tools and CmdLine Tools versions -->
     <AndroidSdkPlatformToolsVersion>35.0.2</AndroidSdkPlatformToolsVersion>
-    <AndroidSdkBuildToolsVersion>33.0.0</AndroidSdkBuildToolsVersion>
     <AndroidSdkCmdLineToolsVersion>13.0</AndroidSdkCmdLineToolsVersion>
     <!-- Device Type for creating AVD's -->
     <AndroidSdkAvdDeviceType>Nexus 5X</AndroidSdkAvdDeviceType>
@@ -193,7 +192,7 @@
     <AndroidSdkApiLevels Include="32" SystemImageType="google_apis_playstore" DeviceType="$(AndroidSdkAvdDeviceType)" />
     <AndroidSdkApiLevels Include="33" SystemImageType="google_apis_playstore" DeviceType="$(AndroidSdkAvdDeviceType)" />
     <AndroidSdkApiLevels Include="34" SystemImageType="google_apis_playstore" DeviceType="$(AndroidSdkAvdDeviceType)" />
-    <AndroidSdkApiLevels Include="35" SystemImageType="google_apis_playstore" DeviceType="$(AndroidSdkAvdDeviceType)" IsDefault="True" />
+    <AndroidSdkApiLevels Include="35" SystemImageType="google_apis_playstore" DeviceType="$(AndroidSdkAvdDeviceType)" />
     <AndroidSdkApiLevels Include="36" SystemImageType="google_apis_playstore" DeviceType="$(AndroidSdkAvdDeviceType)" IsDefault="True" />
   </ItemGroup>
   <PropertyGroup>
