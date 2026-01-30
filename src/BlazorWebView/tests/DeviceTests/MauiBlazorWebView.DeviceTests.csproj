@@ -5,8 +5,6 @@
   <PropertyGroup>
     <TargetFrameworks>$(MauiDeviceTestsPlatforms)</TargetFrameworks>
     <OutputType>Exe</OutputType>
-    <!-- Use WinExe for Windows to enable Windows App SDK self-contained mode (see Controls.DeviceTests.csproj for details) -->
-    <OutputType Condition="$(TargetFramework.Contains('-windows'))">WinExe</OutputType>
     <SingleProject>true</SingleProject>
     <RootNamespace>Microsoft.Maui.MauiBlazorWebView.DeviceTests</RootNamespace>
     <AssemblyName>Microsoft.Maui.MauiBlazorWebView.DeviceTests</AssemblyName>
@@ -15,6 +13,12 @@
     <!-- Disable multi-RID builds to workaround a parallel build issue -->
     <RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst'))">maccatalyst-x64</RuntimeIdentifier>
     <RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst')) and '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'arm64'">maccatalyst-arm64</RuntimeIdentifier>
+    <!-- Required for unpackaged Windows deployment on Helix - bundle Windows App SDK instead of relying on installed runtime.
+         This is set unconditionally for Windows builds because:
+         1. For packaged (MSIX) builds, this property is ignored - MSIX handles Windows App SDK differently
+         2. For unpackaged builds, this bundles the Windows App SDK DLLs with the app
+         3. Using WindowsPackageType condition doesn't work reliably due to MSBuild evaluation timing -->
+    <WindowsAppSDKSelfContained Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">true</WindowsAppSDKSelfContained>
   </PropertyGroup>
 
   <PropertyGroup>

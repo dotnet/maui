@@ -150,16 +150,6 @@ Task("buildOnly")
 	{
 		ArgumentCustomization = args => args.Append("/bl:" + binlog),
 	};
-	// DO NOT use s.Runtime or RuntimeIdentifier here - it propagates to library dependencies
-	// and causes NU1102 errors (Microsoft.NETCore.App.Runtime.Mono.win-x64 not found).
-	//
-	// Instead, set Platform=x64 to inform Windows App SDK's GetWindowsAppSDKNativePlatform target
-	// which checks $(Platform) first (lines 63-67 in SelfContained.targets):
-	//   <NativePlatform Condition="'$(Platform)' == 'x64'">x64</NativePlatform>
-	//
-	// This enables the Windows App SDK to extract native DLLs from the MSIX without
-	// affecting dependency restore.
-	s.MSBuildSettings.Properties.Add("Platform", new List<string> { "x64" });
 	s.MSBuildSettings.Properties.Add("RuntimeIdentifierOverride", new List<string> { "win-x64" });
 	
 	var launchSettingsNeedle = "Project";
@@ -178,15 +168,25 @@ Task("buildOnly")
 		s.MSBuildSettings.Properties.Add("AppxPackageSigningEnabled", new List<string> { "True" });
 		s.MSBuildSettings.Properties.Add("SelfContained", new List<string> { "True" });
 		s.MSBuildSettings.Properties.Add("ExtraDefineConstants", new List<string> { "PACKAGED" });
+		Information("=== PACKAGED BUILD PROPERTIES ===");
+		Information("  SelfContained=True");
+		Information("  PackageCertificateThumbprint={0}", certificateThumbprint);
 	}
 	else
 	{
 		// Apply correct build properties for unpackaged builds
-		// Note: WindowsAppSDKSelfContained is set in project files (not here) to avoid
-		// propagating to library project dependencies which don't support this property
+		// IMPORTANT: WindowsAppSDKSelfContained MUST be set in device test csproj files,
+		// NOT passed via command line. Passing it via command line propagates to ALL projects
+		// (including library dependencies like Graphics.csproj) causing architecture errors.
+		// The csproj condition ensures it only applies to the device test project itself:
+		//   <WindowsAppSDKSelfContained Condition="...windows... and WindowsPackageType=None">true</WindowsAppSDKSelfContained>
 		s.MSBuildSettings.Properties.Add("SelfContained", new List<string> { "True" });
 		s.MSBuildSettings.Properties.Add("WindowsPackageType", new List<string> { "None" });
 		s.MSBuildSettings.Properties.Add("ExtraDefineConstants", new List<string> { "UNPACKAGED" });
+		Information("=== UNPACKAGED BUILD PROPERTIES ===");
+		Information("  SelfContained=True");
+		Information("  WindowsPackageType=None");
+		Information("  WindowsAppSDKSelfContained set in csproj (not command line)");
 	}
 
 	// Set correct launchSettings.json setting for packaged/unpackaged
