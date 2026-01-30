@@ -141,9 +141,8 @@ parameters:
   - name: macosPoolPublic
     type: object
     default:
-      name: AcesShared
-      demands:
-        - ImageOverride -equals ACES_VM_SharedPool_Tahoe
+      name: Azure Pipelines
+      vmImage: macOS-14
 
 stages:
 
