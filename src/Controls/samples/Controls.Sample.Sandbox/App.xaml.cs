@@ -9,17 +9,6 @@ public partial class App : Application
 
 	protected override Window CreateWindow(IActivationState? activationState)
 	{
-		// To test Issue #33731 TabbedPage GC behavior
-		// Change this to test different scenarios:
-		// - true: Use TabbedPage to test GC monitoring
-		// - false: Use regular MainPage
-		bool useTabbedPage = true;
-
-		if (useTabbedPage)
-		{
-			return new Window(new Issue33731TabbedPage());
-		}
-		
 		// To test shell scenarios, change this to true
 		bool useShell = false;
 
