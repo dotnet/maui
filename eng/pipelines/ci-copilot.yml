@@ -129,7 +129,7 @@ stages:
               
               # Use Copilot CLI to post a comment
               set +e
-              copilot -p "now use a skill to post a comment" --yolo 2>&1 | tee $(Build.ArtifactStagingDirectory)/finalize-logs/post_comment_output.md
+              copilot -p "now use a skill to post a PR Finalize Comment" --yolo 2>&1 | tee $(Build.ArtifactStagingDirectory)/finalize-logs/post_comment_output.md
               COMMENT_EXIT_CODE=$?
               set -e
               
