@@ -451,20 +451,12 @@ Invoke the `task` agent with agent_type: "task" and this prompt:
 - TestFilter: 'IssueXXXXX'
 - RequireFullVerification: true
 
-Wait for FULL completion (5-10+ minutes). The skill does TWO test runs:
-1. Reverts fix → runs tests (should FAIL)
-2. Restores fix → runs tests (should PASS)
-
-Report back:
-1. Did tests FAIL without fix? (Yes/No)
-2. Did tests PASS with fix? (Yes/No)
-3. Final status: VERIFICATION PASSED or VERIFICATION FAILED
-4. Any errors or issues encountered"
+Report back: Did tests FAIL without fix? Did tests PASS with fix? Final status?"
 ```
 
 **Why task agent?** Running inline allows substituting commands and fabricating results. Task agent runs in isolation and reports exactly what happened.
 
-**⚠️ Do NOT run Gate verification inline - always use task agent with the skill.**
+See `.github/skills/verify-tests-fail-without-fix/SKILL.md` for full skill documentation.
 
 ### Expected Output (PR with fix)
 
