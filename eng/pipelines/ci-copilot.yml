@@ -254,7 +254,7 @@ stages:
               # Invoke the PR reviewer agent using Copilot CLI in programmatic mode
               # Capture exit code to check for failures
               set +e
-              copilot --agent pr -p "Review PR #${{ parameters.PRNumber }} you are already on the correct branch so don't switch branches. Please think through every phase you need for doing this review and then execute all the way until the end unless any of the phases fail" --yolo 2>&1 | tee $(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md
+              copilot --agent pr -p "Review PR #${{ parameters.PRNumber }} you are already on the correct branch so don't switch branches. Execute all 5 phases sequentially: Phase 1 (Understanding), Phase 2 (Test Review), Phase 3 (Fix Exploration), Phase 4 (Alternative Comparison), and Phase 5 (Final Review). Complete all phases unless any of them fail." --yolo 2>&1 | tee $(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md
               COPILOT_EXIT_CODE=$?
               set -e
               
@@ -301,7 +301,30 @@ stages:
               GITHUB_TOKEN: $(COPILOT_TOKEN)
 
           - script: |
-              echo "Posting review comment to PR..."
+              echo "Posting review comment using skill..."
+              
+              # Create artifacts directory if not exists
+              mkdir -p $(Build.ArtifactStagingDirectory)/copilot-logs
+              
+              # Use Copilot CLI to invoke the post-comment skill
+              set +e
+              copilot -p "Use a skill to post the review feedback as a comment on PR #${{ parameters.PRNumber }}. The review output should be in the CustomAgentLogsTmp or .github/agent-pr-session directories. Clean up ANSI codes and stats before posting." --yolo 2>&1 | tee $(Build.ArtifactStagingDirectory)/copilot-logs/copilot_post_comment_output.md
+              POST_COMMENT_EXIT_CODE=$?
+              set -e
+              
+              echo "Post comment exit code: $POST_COMMENT_EXIT_CODE"
+              
+              if [ $POST_COMMENT_EXIT_CODE -ne 0 ]; then
+                echo "##vso[task.logissue type=warning]Copilot post-comment skill exited with code $POST_COMMENT_EXIT_CODE"
+                echo "##vso[task.setvariable variable=PostCommentFailed]true"
+              fi
+            displayName: 'Post Review Comment Using Skill'
+            env:
+              GITHUB_TOKEN: $(COPILOT_TOKEN)
+            condition: succeededOrFailed()
+
+          - script: |
+              echo "Posting review comment to PR (fallback)..."
               
               # Check for the captured output file first
               REVIEW_FILE="$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md"
@@ -356,10 +379,10 @@ stages:
               else
                 echo "##vso[task.logissue type=warning]No review output found or file is empty"
               fi
-            displayName: 'Post Review Comment'
+            displayName: 'Post Review Comment (Fallback)'
             env:
               GITHUB_TOKEN: $(GH_COMMENT_TOKEN)
-            condition: succeededOrFailed()
+            condition: and(succeededOrFailed(), eq(variables['PostCommentFailed'], 'true'))
 
           # Publish Copilot logs and session artifacts
           - task: PublishPipelineArtifact@1
