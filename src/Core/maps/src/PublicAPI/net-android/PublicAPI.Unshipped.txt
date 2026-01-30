@@ -2,6 +2,7 @@
 #nullable enable
 Microsoft.Maui.Maps.IMap.ClusterClicked(System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Maps.IMapPin!>! pins, Microsoft.Maui.Devices.Sensors.Location! location) -> bool
 Microsoft.Maui.Maps.IMap.IsClusteringEnabled.get -> bool
+Microsoft.Maui.Maps.IMap.LongClicked(Microsoft.Maui.Devices.Sensors.Location! position) -> void
 Microsoft.Maui.Maps.IMapElement.Clicked() -> void
 Microsoft.Maui.Maps.IMapElement.IsVisible.get -> bool
 Microsoft.Maui.Maps.IMapElement.ZIndex.get -> int

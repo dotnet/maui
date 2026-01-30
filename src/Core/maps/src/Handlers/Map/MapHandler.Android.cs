@@ -75,6 +75,7 @@ namespace Microsoft.Maui.Maps.Handlers
 				Map.MarkerClick -= OnMarkerClick;
 				Map.InfoWindowClick -= OnInfoWindowClick;
 				Map.MapClick -= OnMapClick;
+				Map.MapLongClick -= OnMapLongClick;
 			}
 
 			_clusters?.Clear();
@@ -413,6 +414,7 @@ namespace Microsoft.Maui.Maps.Handlers
 			map.MarkerClick += OnMarkerClick;
 			map.InfoWindowClick += OnInfoWindowClick;
 			map.MapClick += OnMapClick;
+			map.MapLongClick += OnMapLongClick;
 
 			if (VirtualView != null)
 			{
@@ -590,6 +592,9 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		void OnMapClick(object? sender, GoogleMap.MapClickEventArgs e) =>
 			VirtualView.Clicked(new Devices.Sensors.Location(e.Point.Latitude, e.Point.Longitude));
+
+		void OnMapLongClick(object? sender, GoogleMap.MapLongClickEventArgs e) =>
+			VirtualView.LongClicked(new Devices.Sensors.Location(e.Point.Latitude, e.Point.Longitude));
 
 		void AddPins(IList pins)
 		{

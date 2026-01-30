@@ -18,6 +18,8 @@ namespace Microsoft.Maui.Maps.Platform
 		UITapGestureRecognizer? _mapClickedGestureRecognizer;
 		bool _isClusteringEnabled;
 
+		UILongPressGestureRecognizer? _mapLongClickedGestureRecognizer;
+
 		public MauiMKMapView(IMapHandler handler)
 		{
 			_handlerRef = new WeakReference<IMapHandler>(handler);
@@ -306,6 +308,11 @@ namespace Microsoft.Maui.Maps.Platform
 			{
 				ShouldReceiveTouch = OnShouldReceiveMapTouch
 			});
+
+			AddGestureRecognizer(_mapLongClickedGestureRecognizer = new UILongPressGestureRecognizer(OnMapLongClicked)
+			{
+				ShouldReceiveTouch = OnShouldReceiveMapTouch
+			});
 		}
 
 		void Cleanup()
@@ -315,6 +322,12 @@ namespace Microsoft.Maui.Maps.Platform
 				RemoveGestureRecognizer(_mapClickedGestureRecognizer);
 				_mapClickedGestureRecognizer.Dispose();
 				_mapClickedGestureRecognizer = null;
+			}
+			if (_mapLongClickedGestureRecognizer != null)
+			{
+				RemoveGestureRecognizer(_mapLongClickedGestureRecognizer);
+				_mapLongClickedGestureRecognizer.Dispose();
+				_mapLongClickedGestureRecognizer = null;
 			}
 			RegionChanged -= MkMapViewOnRegionChanged;
 			DidSelectAnnotationView -= MkMapViewOnAnnotationViewSelected;
@@ -516,6 +529,22 @@ namespace Microsoft.Maui.Maps.Platform
 					}
 				}
 			}
+		}
+
+		static void OnMapLongClicked(UILongPressGestureRecognizer recognizer)
+		{
+			// Only trigger on the began state to avoid multiple callbacks
+			if (recognizer.State != UIGestureRecognizerState.Began)
+				return;
+
+			if (recognizer.View is not MauiMKMapView mauiMkMapView)
+				return;
+
+			var tapPoint = recognizer.LocationInView(mauiMkMapView);
+			var tapGPS = mauiMkMapView.ConvertPoint(tapPoint, mauiMkMapView);
+
+			if (mauiMkMapView._handlerRef.TryGetTarget(out IMapHandler? handler))
+				handler?.VirtualView.LongClicked(new Devices.Sensors.Location(tapGPS.Latitude, tapGPS.Longitude));
 		}
 	}
 }
