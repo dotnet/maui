@@ -11,6 +11,8 @@ namespace Microsoft.Maui.Controls.Maps
 
 		IList<IMapPin> IMap.Pins => _pins.Cast<IMapPin>().ToList();
 
+		Location? IMap.LastUserLocation => _lastUserLocation;
+
 		void IMap.Clicked(Location location) => MapClicked?.Invoke(this, new MapClickedEventArgs(location));
 
 		bool IMap.ClusterClicked(IReadOnlyList<IMapPin> pins, Location location)
@@ -20,6 +22,11 @@ namespace Microsoft.Maui.Controls.Maps
 			var args = new ClusterClickedEventArgs(controlPins, location);
 			ClusterClicked?.Invoke(this, args);
 			return args.Handled;
+
+		void IMap.UserLocationUpdated(Location location)
+		{
+			_lastUserLocation = location;
+			UserLocationChanged?.Invoke(this, new UserLocationChangedEventArgs(location));
 		}
 
 		void IMap.LongClicked(Location location) => MapLongClicked?.Invoke(this, new MapClickedEventArgs(location));
