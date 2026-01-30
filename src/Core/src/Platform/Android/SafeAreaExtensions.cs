@@ -65,8 +65,6 @@ internal static class SafeAreaExtensions
 			var globalWindowInsetsListener = MauiWindowInsetListener.FindListenerForView(view);
 			bool hasTrackedViews = globalWindowInsetsListener?.HasTrackedView == true;
 
-
-
 			// If this view has no safe area padding to apply, pass insets through to children
 			// instead of consuming them. This allows child views with SafeAreaEdges set
 			// to properly handle the insets even when the parent has SafeAreaEdges.None
@@ -130,11 +128,6 @@ internal static class SafeAreaExtensions
 				// If the Width and Height aren't set it means the layout pass hasn't happen yet
 				if (view.Width > 0 && view.Height > 0)
 				{
-					var oldViewTop = viewTop;
-					var oldViewLeft = viewLeft;
-					var oldViewRight = viewRight;
-					var oldViewBottom = viewBottom;
-
 					viewTop = Math.Max(0, viewTop - (int)context.ToPixels(margins.Top));
 					viewLeft = Math.Max(0, viewLeft - (int)context.ToPixels(margins.Left));
 					viewRight += (int)context.ToPixels(margins.Right);
@@ -149,12 +142,6 @@ internal static class SafeAreaExtensions
 					windowManager.DefaultDisplay.GetRealMetrics(realMetrics);
 					var screenWidth = realMetrics.WidthPixels;
 					var screenHeight = realMetrics.HeightPixels;
-
-
-					var originalTop = top;
-					var originalBottom = bottom;
-					var originalLeft = left;
-					var originalRight = right;
 
 					// Calculate actual overlap for each edge
 					// Top: how much the view extends into the top safe area

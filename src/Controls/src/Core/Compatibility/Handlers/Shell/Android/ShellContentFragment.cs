@@ -30,15 +30,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			View?.SetLayerType(LayerType.None, null);
 			AnimationFinished?.Invoke(this, EventArgs.Empty);
 			_isAnimating = false;
-
-			// Request insets to be reapplied after animation completes
-			_root?.Post(() =>
-			{
-				if (_root != null)
-				{
-					ViewCompat.RequestApplyInsets(_root);
-				}
-			});
 		}
 
 		public override void OnResume()
@@ -47,15 +38,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (!_isAnimating)
 			{
 				AnimationFinished?.Invoke(this, EventArgs.Empty);
-
-				// Request insets when fragment resumes without animation
-				_root?.Post(() =>
-				{
-					if (_root != null)
-					{
-						ViewCompat.RequestApplyInsets(_root);
-					}
-				});
 			}
 		}
 
@@ -147,7 +129,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public override AView OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
 		{
-
 			if (_shellContent != null)
 			{
 				_page = ((IShellContentController)_shellContent).GetOrCreateContent();

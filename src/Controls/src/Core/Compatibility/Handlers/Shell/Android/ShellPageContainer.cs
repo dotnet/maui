@@ -39,32 +39,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			AddView(child.PlatformView);
 		}
 
-		protected override void OnAttachedToWindow()
-		{
-			base.OnAttachedToWindow();
-
-			// Log position
-			var location = new int[2];
-			GetLocationOnScreen(location);
-
-			// Request insets after being attached
-			Post(() =>
-			{
-				var locationAfter = new int[2];
-				GetLocationOnScreen(locationAfter);
-
-				if (Child?.PlatformView is AView childView)
-				{
-					ViewCompat.RequestApplyInsets(childView);
-				}
-			});
-		}
-
-		protected override void OnDetachedFromWindow()
-		{
-			base.OnDetachedFromWindow();
-		}
-
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
 		{
 			var width = r - l;
