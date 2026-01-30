@@ -155,7 +155,7 @@ namespace Microsoft.Maui.Maps.Platform
 			if (clusterView == null)
 			{
 				clusterView = new MKMarkerAnnotationView(clusterAnnotation, clusterId);
-				clusterView.CanShowCallout = true;
+				clusterView.CanShowCallout = false; // Don't show callout for clusters
 			}
 			
 			clusterView.Annotation = clusterAnnotation;
@@ -164,25 +164,7 @@ namespace Microsoft.Maui.Maps.Platform
 			var count = clusterAnnotation.MemberAnnotations?.Length ?? 0;
 			clusterView.GlyphText = count.ToString();
 			
-			// Attach click handler for cluster
-			AttachGestureToCluster(clusterView, clusterAnnotation);
-			
 			return clusterView;
-		}
-
-		void AttachGestureToCluster(MKAnnotationView clusterView, MKClusterAnnotation clusterAnnotation)
-		{
-			var recognizers = clusterView.GestureRecognizers;
-			if (recognizers != null)
-			{
-				foreach (var recognizer in recognizers.OfType<UITapGestureRecognizer>().ToArray())
-				{
-					clusterView.RemoveGestureRecognizer(recognizer);
-				}
-			}
-
-			var tapRecognizer = new UITapGestureRecognizer(() => OnClusterClicked(clusterAnnotation));
-			clusterView.AddGestureRecognizer(tapRecognizer);
 		}
 
 		void OnClusterClicked(MKClusterAnnotation clusterAnnotation)
@@ -339,6 +321,16 @@ namespace Microsoft.Maui.Maps.Platform
 		void MkMapViewOnAnnotationViewSelected(object? sender, MKAnnotationViewEventArgs e)
 		{
 			var annotation = e.View.Annotation;
+			
+			// Handle cluster annotation selection
+			if (annotation is MKClusterAnnotation clusterAnnotation)
+			{
+				OnClusterClicked(clusterAnnotation);
+				// Deselect the cluster annotation to allow re-selection
+				DeselectAnnotation(annotation, false);
+				return;
+			}
+			
 			var pin = GetPinForAnnotation(annotation!);
 
 			if (pin == null)
