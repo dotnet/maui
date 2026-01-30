@@ -39,7 +39,7 @@
     <SystemTextEncodingsWebPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</SystemTextEncodingsWebPackageVersion>
     <MicrosoftBclAsyncInterfacesPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</MicrosoftBclAsyncInterfacesPackageVersion>
     <!-- dotnet-optimization -->
-    <optimizationlinuxarm64MIBCRuntimePackageVersion>1.0.0-prerelease.25502.1</optimizationlinuxarm64MIBCRuntimePackageVersion>
+    <optimizationandroidx64MIBCRuntimePackageVersion>1.0.0-prerelease.26080.1</optimizationandroidx64MIBCRuntimePackageVersion>
     <!-- Microsoft/Extensions -->
     <SystemCodeDomPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</SystemCodeDomPackageVersion>
     <MicrosoftExtensionsConfigurationVersion>11.0.0-preview.1.26079.116</MicrosoftExtensionsConfigurationVersion>
