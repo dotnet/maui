@@ -13,7 +13,11 @@
 		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 		<!-- ILRepack this assembly and add a strong name and version -->
 		<ILRepackBeforePack>true</ILRepackBeforePack>
+		<!-- MIBC optimization data for R2R -->
+		<MibcOptimizationDataDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'mibc'))</MibcOptimizationDataDir>
 	</PropertyGroup>
+
+	<Import Project="$(MauiRootDirectory)eng\optimizationData.targets" />
 
 	<PropertyGroup>
 		<!-- NuGet package information -->
