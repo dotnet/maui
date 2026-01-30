@@ -4,16 +4,23 @@ using Rect = Microsoft.Maui.Graphics.Rect;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/RectangleGeometry.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.RectangleGeometry']/Docs/*" />
+	/// <summary>
+	/// Represents the geometry of a rectangle.
+	/// </summary>
 	public class RectangleGeometry : Geometry
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/RectangleGeometry.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="RectangleGeometry"/> class.
+		/// </summary>
 		public RectangleGeometry()
 		{
 
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/RectangleGeometry.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="RectangleGeometry"/> class with the specified rectangle bounds.
+		/// </summary>
+		/// <param name="rect">The rectangle bounds for the geometry.</param>
 		public RectangleGeometry(Rect rect)
 		{
 			Rect = rect;
@@ -23,7 +30,9 @@ namespace Microsoft.Maui.Controls.Shapes
 		public static readonly BindableProperty RectProperty =
 			BindableProperty.Create(nameof(Rect), typeof(Rect), typeof(RectangleGeometry), new Rect());
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/RectangleGeometry.xml" path="//Member[@MemberName='Rect']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the rectangle bounds for this geometry. This is a bindable property.
+		/// </summary>
 		public Rect Rect
 		{
 			set { SetValue(RectProperty, value); }

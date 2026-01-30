@@ -74,8 +74,9 @@ parameters:
     os: Windows
     buildScript: $(_buildScript)
     sln: '$(Build.SourcesDirectory)/Microsoft.Maui.sln'
-  - name: MAUI
-    vmImage: MAUI
+  - name: AcesShared
+    demands:
+        - ImageOverride -equals ACES_VM_SharedPool_Tahoe
     os: macOS
     buildScript: $(_buildScriptMacOS)
     sln: '$(Build.SourcesDirectory)/Microsoft.Maui-mac.slnf'
@@ -98,8 +99,9 @@ parameters:
 - name: MacOSPool
   type: object
   default:
-    name: MAUI
-    vmImage: MAUI
+    name: AcesShared
+    demands:
+        - ImageOverride -equals ACES_VM_SharedPool_Tahoe
     os: macOS
     label: macOS
 # Switch back to this once XCode 26.2 is available on Azure Pipelines
@@ -112,15 +114,11 @@ parameters:
 - name: MacOSPoolArm64
   type: object
   default:
-    name: MAUI
-    vmImage: MAUI
+    name: AcesShared
+    demands:
+        - ImageOverride -equals ACES_VM_SharedPool_Tahoe
     os: macOS
     label: macOS-arm64
-# Switch back to this once XCode 26.2 is available on Azure Pipelines
-#     name: Azure Pipelines
-#     vmImage: macOS-15-arm64
-#     os: macOS
-#     label: macOS-arm64
 
 # Condition for MacOSPool comparison lanes (non-ARM64)
 # Currently disabled - both pools use MAUI self-hosted since Xcode 26.2 isn't available on Azure Pipelines x64.
@@ -215,7 +213,7 @@ stages:
       buildscript: $(_buildScript)
     - name: mac_unit_tests
       displayName: macOS Unit Tests
-      pool: ${{ parameters.MacOSPool }}
+      pool: ${{ parameters.MacOSPoolArm64 }}
       timeout: 90
       testOS: macOS
       buildscript: $(_buildScriptMacOS)
@@ -236,7 +234,7 @@ stages:
       timeout: 120
       testCategory: Samples
     - name: mac_sample_tests
-      pool: ${{ parameters.MacOSPool }}
+      pool: ${{ parameters.MacOSPoolArm64 }}
       timeout: 240
       testCategory: Samples
 
@@ -279,7 +277,7 @@ stages:
       timeout: 120
       testCategory: Blazor
     - name: mac_blazortemplate_tests
-      pool: ${{ parameters.MacOSPool }}
+      pool: ${{ parameters.MacOSPoolArm64 }}
       timeout: 240
       testCategory: Blazor
 
@@ -293,7 +291,7 @@ stages:
       timeout: 120
       testCategory: MultiProject
     - name: mac_multitemplate_tests
-      pool: ${{ parameters.MacOSPool }}
+      pool: ${{ parameters.MacOSPoolArm64 }}
       timeout: 120
       testCategory: MultiProject
 

@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/Routing.xml" path="Type[@FullName='Microsoft.Maui.Controls.Routing']/Docs/*" />
+	/// <summary>Provides methods and properties to manage URI-based navigation routes in Shell applications.</summary>
 	public static class Routing
 	{
 		static int s_routeCount = 0;
@@ -174,7 +174,9 @@ namespace Microsoft.Maui.Controls
 			return result;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Routing.xml" path="//Member[@MemberName='GetRoute']/Docs/*" />
+		/// <summary>Gets the route string for the specified <see cref="BindableObject"/>.</summary>
+		/// <param name="obj">The object to get the route from.</param>
+		/// <returns>The route string associated with the object.</returns>
 		public static string GetRoute(BindableObject obj)
 		{
 			return (string)obj.GetValue(RouteProperty);
@@ -189,20 +191,26 @@ namespace Microsoft.Maui.Controls
 			return $"{source}/";
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Routing.xml" path="//Member[@MemberName='FormatRoute'][1]/Docs/*" />
+		/// <summary>Formats a list of route segments into a single route string.</summary>
+		/// <param name="segments">The route segments to format.</param>
+		/// <returns>The formatted route string.</returns>
 		public static string FormatRoute(List<string> segments)
 		{
 			var route = FormatRoute(String.Join(PathSeparator, segments));
 			return route;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Routing.xml" path="//Member[@MemberName='FormatRoute'][2]/Docs/*" />
+		/// <summary>Formats a route string.</summary>
+		/// <param name="route">The route string to format.</param>
+		/// <returns>The formatted route string.</returns>
 		public static string FormatRoute(string route)
 		{
 			return route;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Routing.xml" path="//Member[@MemberName='RegisterRoute'][2]/Docs/*" />
+		/// <summary>Registers a route with a custom factory for creating navigation content.</summary>
+		/// <param name="route">The route string to register.</param>
+		/// <param name="factory">The factory that creates elements for this route.</param>
 		public static void RegisterRoute(string route, RouteFactory factory)
 		{
 			if (!String.IsNullOrWhiteSpace(route))
@@ -213,7 +221,8 @@ namespace Microsoft.Maui.Controls
 			s_routeKeys = null;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Routing.xml" path="//Member[@MemberName='UnRegisterRoute']/Docs/*" />
+		/// <summary>Removes a previously registered route.</summary>
+		/// <param name="route">The route string to unregister.</param>
 		public static void UnRegisterRoute(string route)
 		{
 			if (s_routes.Remove(route))
@@ -222,7 +231,9 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Routing.xml" path="//Member[@MemberName='RegisterRoute'][1]/Docs/*" />
+		/// <summary>Registers a route with a type that will be instantiated for navigation.</summary>
+		/// <param name="route">The route string to register.</param>
+		/// <param name="type">The type to instantiate when navigating to this route.</param>
 		public static void RegisterRoute(
 			string route,
 			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type type)
@@ -230,7 +241,9 @@ namespace Microsoft.Maui.Controls
 			RegisterRoute(route, new TypeRouteFactory(type));
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Routing.xml" path="//Member[@MemberName='SetRoute']/Docs/*" />
+		/// <summary>Sets the route string for the specified <see cref="Element"/>.</summary>
+		/// <param name="obj">The element to set the route on.</param>
+		/// <param name="value">The route string to set.</param>
 		public static void SetRoute(Element obj, string value)
 		{
 			obj.SetValue(RouteProperty, value);

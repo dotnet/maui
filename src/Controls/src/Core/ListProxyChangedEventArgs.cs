@@ -4,16 +4,18 @@ using System.Collections.Generic;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/ListProxyChangedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Controls.ListProxyChangedEventArgs']/Docs/*" />
+	/// <summary>Event arguments for when the internal list proxy changes.</summary>
 	public class ListProxyChangedEventArgs : EventArgs
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListProxyChangedEventArgs.xml" path="//Member[@MemberName='OldList']/Docs/*" />
+		/// <summary>Gets the previous list proxy.</summary>
 		public IReadOnlyCollection<object> OldList { get; }
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListProxyChangedEventArgs.xml" path="//Member[@MemberName='NewList']/Docs/*" />
+
+		/// <summary>Gets the new list proxy.</summary>
 		public IReadOnlyCollection<object> NewList { get; }
 
-		/// <param name="oldList">The oldList parameter.</param>
-		/// <param name="newList">The newList parameter.</param>
+		/// <summary>Creates a new <see cref="ListProxyChangedEventArgs"/> with the specified lists.</summary>
+		/// <param name="oldList">The previous list proxy.</param>
+		/// <param name="newList">The new list proxy.</param>
 		public ListProxyChangedEventArgs(IReadOnlyCollection<object> oldList, IReadOnlyCollection<object> newList)
 		{
 			OldList = oldList;

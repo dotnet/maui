@@ -277,6 +277,11 @@ namespace Microsoft.Maui.DeviceTests
 		[ClassData(typeof(ShellFlyoutHeaderScrollTestCases))]
 		public async Task FlyoutHeaderScroll(FlyoutHeaderBehavior flyoutHeaderBehavior, string contentType)
                 {
+                        // Skip on iOS 26+ due to FlyoutHeader collapse behavior changes
+                        // See: https://github.com/dotnet/maui/issues/33004
+                        if (OperatingSystem.IsIOSVersionAtLeast(26))
+                                return;
+
                         var headerRequestedHeight = 250;
                         var headerMinHeight = 100;
 

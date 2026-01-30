@@ -8,7 +8,9 @@ using Microsoft.Maui.Controls.Xaml.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/ReferenceTypeConverter.xml" path="Type[@FullName='Microsoft.Maui.Controls.ReferenceTypeConverter']/Docs/*" />
+	/// <summary>
+	/// Converts a string name reference (x:Name) into the referenced object in XAML.
+	/// </summary>
 	[RequireService([typeof(IReferenceProvider), typeof(IProvideParentValues)])]
 	public sealed class ReferenceTypeConverter : TypeConverter, IExtendedTypeConverter
 	{

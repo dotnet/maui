@@ -4,7 +4,9 @@ using System.Globalization;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathGeometryConverter.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.PathGeometryConverter']/Docs/*" />
+	/// <summary>
+	/// A type converter that converts path markup syntax strings to <see cref="Geometry"/> objects.
+	/// </summary>
 	public class PathGeometryConverter : TypeConverter
 	{
 		public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)

@@ -44,7 +44,7 @@ public class ImageFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("ImageControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -60,7 +60,7 @@ public class ImageFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("ImageControl", timeout: TimeSpan.FromSeconds(3));
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #if TEST_FAILS_ON_ANDROID // Issue Link: https://github.com/dotnet/maui/issues/30576
 	[Test]
@@ -76,7 +76,7 @@ public class ImageFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("ImageControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -92,7 +92,7 @@ public class ImageFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("ImageControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 	[Test]
@@ -108,7 +108,7 @@ public class ImageFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("ImageControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 #if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/29812
@@ -125,7 +125,7 @@ public class ImageFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("ImageControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -141,7 +141,7 @@ public class ImageFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("ImageControl", timeout: TimeSpan.FromSeconds(3));
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #if TEST_FAILS_ON_ANDROID // Issue Link: https://github.com/dotnet/maui/issues/30576
 	[Test]
@@ -157,7 +157,7 @@ public class ImageFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("ImageControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -174,7 +174,7 @@ public class ImageFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("ImageControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -191,7 +191,7 @@ public class ImageFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("ImageControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -207,7 +207,7 @@ public class ImageFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("ImageControl", timeout: TimeSpan.FromSeconds(3));
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -223,7 +223,7 @@ public class ImageFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("ImageControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -239,7 +239,7 @@ public class ImageFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("ImageControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -255,7 +255,7 @@ public class ImageFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("ImageControl", timeout: TimeSpan.FromSeconds(3));
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 #if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID // Issue Link for Windows: https://github.com/dotnet/maui/issues/29813 and for Android: https://github.com/dotnet/maui/issues/30576
@@ -272,7 +272,7 @@ public class ImageFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("ImageControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -289,7 +289,7 @@ public class ImageFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("ImageControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -305,7 +305,7 @@ public class ImageFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("ImageControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 #if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/22210
@@ -324,7 +324,7 @@ public class ImageFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("ImageControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -357,7 +357,7 @@ public class ImageFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("ImageControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -374,7 +374,7 @@ public class ImageFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("ImageControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]

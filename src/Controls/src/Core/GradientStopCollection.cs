@@ -2,7 +2,7 @@ using System.Collections.ObjectModel;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/GradientStopCollection.xml" path="Type[@FullName='Microsoft.Maui.Controls.GradientStopCollection']/Docs/*" />
+	/// <summary>A collection of <see cref="GradientStop"/> objects used by <see cref="GradientBrush"/>.</summary>
 	public sealed class GradientStopCollection : ObservableCollection<GradientStop>
 	{
 
