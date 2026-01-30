@@ -229,6 +229,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_toolbarTracker = null;
 			_tablayout = null;
 			_toolbar = null;
+			_shellToolbar = null;
 			_viewPager = null;
 			_rootView = null;
 
