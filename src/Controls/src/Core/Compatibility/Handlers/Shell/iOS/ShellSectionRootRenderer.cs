@@ -378,6 +378,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					RemoveNonVisibleRenderers();
 				}
+
+				// RemoveNonVisibleRenderers was called after animation completed,which delayed page title updates. 
+				// Updating page before animation ensures immediate title display.
+				if (newContent is IShellContentController scc)
+				{
+					_tracker.Page = scc.Page;
+				}
 			}
 		}
 
@@ -445,8 +452,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					foreach (var remove in removeMe)
 						_renderers.Remove(remove);
 				}
-
-				_tracker.Page = scc.Page;
 			}
 
 			_isAnimatingOut = null;

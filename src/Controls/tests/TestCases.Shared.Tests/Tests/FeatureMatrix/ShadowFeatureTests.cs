@@ -21,6 +21,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			App.WaitForElement("ResetButton").Tap();
 			App.WaitForElement("ColorEntry");
+			App.ClearText("ColorEntry");
 			App.EnterText("ColorEntry", "#00FF00");
 
 			App.WaitForElement("LabelShadow").Tap();

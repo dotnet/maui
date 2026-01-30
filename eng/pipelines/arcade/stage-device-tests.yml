@@ -46,10 +46,13 @@ parameters:
 - name: checkoutDirectory
   type: string
   default: $(System.DefaultWorkingDirectory)
+- name: HelixAccessToken
+  type: string
+  default: ''
 
 stages:
 - stage: devicetests_build
-  displayName: ${{ parameters.TargetFrameworkVersion }} ios/catalyst/android Helix Tests (Mono)
+  displayName: ${{ parameters.TargetFrameworkVersion }} Mono ios/catalyst/android Helix Tests
   dependsOn: []
   jobs:
   - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
@@ -71,7 +74,7 @@ stages:
       jobs:
       - job: builddevice_tests
         displayName: Build Device Tests (Mono)
-        timeoutInMinutes: 60
+        timeoutInMinutes: 120
         variables:
         - name: _BuildConfig
           value: ${{ parameters.BuildConfiguration }}
@@ -103,7 +106,7 @@ stages:
           artifact: ${{ parameters.appArtifactName }}_failed_$(System.JobAttempt)
 
 - stage: devicetests_ios
-  displayName: ${{ parameters.TargetFrameworkVersion }} iOS Helix Tests (Mono)
+  displayName: ${{ parameters.TargetFrameworkVersion }} Mono iOS Helix Tests
   dependsOn: 
     - devicetests_build
   jobs:
@@ -145,7 +148,11 @@ stages:
         - template: /eng/common/templates-official/steps/send-to-helix.yml
           parameters:
             HelixProjectPath: ${{ parameters.helixProject }}
-            HelixProjectArguments: /p:TargetOS=ios /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsIOS_
+            ${{ if eq(parameters.runAsPublic, true) }}:
+              HelixProjectArguments: /p:TargetOS=ios /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsIOS_ /p:HelixInternal=False
+            ${{ else }}:
+              HelixProjectArguments: /p:TargetOS=ios /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsIOS_ /p:HelixInternal=True
+            HelixAccessToken: ${{ parameters.HelixAccessToken }}
             HelixConfiguration: $(_BuildConfig)
             IncludeDotNetCli: true
             DisplayNamePrefix: DeviceTestsIOS
@@ -153,7 +160,7 @@ stages:
             XUnitWorkItemTimeout: 04:00:00
 
 - stage: devicetests_catalyst
-  displayName: ${{ parameters.TargetFrameworkVersion }} MacCatalyst Helix Tests (Mono)
+  displayName: ${{ parameters.TargetFrameworkVersion }} Mono MacCatalyst Helix Tests
   dependsOn: 
     - devicetests_build
   jobs:
@@ -176,7 +183,7 @@ stages:
       jobs:
       - job: device_tests_maccatalyst
         displayName: Run DeviceTests MacCatalyst (Mono)
-        timeoutInMinutes: 60
+        timeoutInMinutes: 240
         variables:
         - name: _BuildConfig
           value: ${{ parameters.BuildConfiguration }}
@@ -195,13 +202,17 @@ stages:
         - template: /eng/common/templates-official/steps/send-to-helix.yml
           parameters:
             HelixProjectPath: ${{ parameters.helixProject }}
-            HelixProjectArguments: /p:TargetOS=maccatalyst /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsMacCatalyst_
+            ${{ if eq(parameters.runAsPublic, true) }}:
+              HelixProjectArguments: /p:TargetOS=maccatalyst /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsMacCatalyst_ /p:HelixInternal=False
+            ${{ else }}:
+              HelixProjectArguments: /p:TargetOS=maccatalyst /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsMacCatalyst_ /p:HelixInternal=True
+            HelixAccessToken: ${{ parameters.HelixAccessToken }}
             HelixConfiguration: $(_BuildConfig)
             IncludeDotNetCli: true
             DisplayNamePrefix: DeviceTestsMacCatalyst
 
 - stage: devicetests_android
-  displayName: ${{ parameters.TargetFrameworkVersion }} Android Helix Tests (Mono)
+  displayName: ${{ parameters.TargetFrameworkVersion }} Mono Android Helix Tests
   dependsOn: 
     - devicetests_build
   jobs:
@@ -243,14 +254,18 @@ stages:
         - template: /eng/common/templates-official/steps/send-to-helix.yml
           parameters:
             HelixProjectPath: ${{ parameters.helixProject }}
-            HelixProjectArguments: /p:TargetOS=android /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsAndroid_
+            ${{ if eq(parameters.runAsPublic, true) }}:
+              HelixProjectArguments: /p:TargetOS=android /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsAndroid_ /p:HelixInternal=False
+            ${{ else }}:
+              HelixProjectArguments: /p:TargetOS=android /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsAndroid_ /p:HelixInternal=True
+            HelixAccessToken: ${{ parameters.HelixAccessToken }}
             HelixConfiguration: $(_BuildConfig)
             IncludeDotNetCli: true
             DisplayNamePrefix: DeviceTestsAndroid
 
-# CoreCLR Device Tests Stages (Android only)
+# CoreCLR Device Tests Stages
 - stage: devicetests_build_coreclr
-  displayName: ${{ parameters.TargetFrameworkVersion }} Android CoreCLR Helix Tests
+  displayName: ${{ parameters.TargetFrameworkVersion }} CoreCLR ios/catalyst/android Helix Tests
   dependsOn: []
   jobs:
   - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
@@ -272,7 +287,7 @@ stages:
       jobs:
       - job: builddevice_tests_coreclr
         displayName: Build Device Tests (CoreCLR)
-        timeoutInMinutes: 60
+        timeoutInMinutes: 120
         variables:
         - name: _BuildConfig
           value: ${{ parameters.BuildConfiguration }}
@@ -290,7 +305,7 @@ stages:
         - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/Microsoft.Maui.BuildTasks.slnf' /bl:BuildBuildTasks.binlog $(_OfficialBuildIdArgs)
           displayName: Build BuildTasks
 
-        - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) /p:BuildDeviceTests=true /p:UseMonoRuntime=false /p:IncludeIosTargetFrameworks=false /p:IncludeMacCatalystTargetFrameworks=false /bl:BuildDeviceTests.binlog
+        - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) /p:BuildDeviceTests=true /p:UseMonoRuntime=false /bl:BuildDeviceTests.binlog
           displayName: Build DeviceTests (CoreCLR)
 
         - publish: ${{ parameters.checkoutDirectory }}/artifacts/bin
@@ -304,7 +319,7 @@ stages:
           artifact: ${{ parameters.appArtifactName }}_coreclr_failed_$(System.JobAttempt)
 
 - stage: devicetests_android_coreclr
-  displayName: ${{ parameters.TargetFrameworkVersion }} Android CoreCLR Helix Tests
+  displayName: ${{ parameters.TargetFrameworkVersion }} CoreCLR Android Helix Tests
   dependsOn: 
     - devicetests_build_coreclr
   jobs:
@@ -346,7 +361,109 @@ stages:
         - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/steps/send-to-helix.yml', '/eng/common/templates-official/steps/send-to-helix.yml@self') }}
           parameters:
             HelixProjectPath: ${{ parameters.helixProject }}
-            HelixProjectArguments: /p:TargetOS=android /p:TestRunNameSuffix=_$(_BuildConfig)_CoreCLR /p:TestRunNamePrefix=DeviceTestsAndroid_CoreCLR_
+            ${{ if eq(parameters.runAsPublic, true) }}:
+              HelixProjectArguments: /p:TargetOS=android /p:TestRunNameSuffix=_$(_BuildConfig)_CoreCLR /p:TestRunNamePrefix=DeviceTestsAndroid_CoreCLR_ /p:HelixInternal=False
+            ${{ else }}:
+              HelixProjectArguments: /p:TargetOS=android /p:TestRunNameSuffix=_$(_BuildConfig)_CoreCLR /p:TestRunNamePrefix=DeviceTestsAndroid_CoreCLR_ /p:HelixInternal=True
+            HelixAccessToken: ${{ parameters.HelixAccessToken }}
             HelixConfiguration: $(_BuildConfig)
             IncludeDotNetCli: true
             DisplayNamePrefix: DeviceTestsAndroid_CoreCLR
+
+- stage: devicetests_ios_coreclr
+  displayName: ${{ parameters.TargetFrameworkVersion }} CoreCLR iOS Helix Tests
+  dependsOn: 
+    - devicetests_build_coreclr
+  jobs:
+  - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
+    parameters:
+      helixRepo: dotnet/maui
+      pool: ${{ parameters.testPool }}
+      enableMicrobuild: false
+      enablePublishUsingPipelines: true
+      enablePublishBuildAssets: ${{ parameters.publishAssets }}
+      enableTelemetry: true
+      enableSourceBuild: ${{ parameters.enableSourceBuild }}
+      enableSourceIndex: ${{ parameters.enableSourceIndex }}
+      sourceIndexParams: ${{ parameters.sourceIndexParams }}
+      publishAssetsImmediately: true
+      enablePublishBuildArtifacts: true
+      enablePublishTestResults: false
+      workspace:
+        clean: all
+      jobs:
+      - job: device_tests_ios_coreclr
+        displayName: Run DeviceTests iOS (CoreCLR)
+        timeoutInMinutes: 240
+        variables:
+        - name: _BuildConfig
+          value: ${{ parameters.BuildConfiguration }}
+        preSteps:
+        - checkout: self
+          fetchDepth: 1
+          clean: true
+
+        - task: DownloadPipelineArtifact@2
+          displayName: 'Download Build'
+          condition: succeeded()
+          inputs:
+            artifactName: ${{ parameters.appArtifactName }}_coreclr
+            targetPath: ${{ parameters.checkoutDirectory }}/artifacts/bin
+
+        - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/steps/send-to-helix.yml', '/eng/common/templates-official/steps/send-to-helix.yml@self') }}
+          parameters:
+            HelixProjectPath: ${{ parameters.helixProject }}
+            HelixProjectArguments: /p:TargetOS=ios /p:TestRunNameSuffix=_$(_BuildConfig)_CoreCLR /p:TestRunNamePrefix=DeviceTestsIOS_CoreCLR_
+            HelixConfiguration: $(_BuildConfig)
+            IncludeDotNetCli: true
+            DisplayNamePrefix: DeviceTestsIOS_CoreCLR
+            WorkItemTimeout: 04:00:00
+            XUnitWorkItemTimeout: 04:00:00
+
+- stage: devicetests_catalyst_coreclr
+  displayName: ${{ parameters.TargetFrameworkVersion }} CoreCLR MacCatalyst Helix Tests
+  dependsOn: 
+    - devicetests_build_coreclr
+  jobs:
+  - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
+    parameters:
+      helixRepo: dotnet/maui
+      pool: ${{ parameters.testPool }}
+      enableMicrobuild: false
+      enablePublishUsingPipelines: true
+      enablePublishBuildAssets: ${{ parameters.publishAssets }}
+      enableTelemetry: true
+      enableSourceBuild: ${{ parameters.enableSourceBuild }}
+      enableSourceIndex: ${{ parameters.enableSourceIndex }}
+      sourceIndexParams: ${{ parameters.sourceIndexParams }}
+      publishAssetsImmediately: true
+      enablePublishBuildArtifacts: true
+      enablePublishTestResults: false
+      workspace:
+        clean: all
+      jobs:
+      - job: device_tests_maccatalyst_coreclr
+        displayName: Run DeviceTests MacCatalyst (CoreCLR)
+        timeoutInMinutes: 60
+        variables:
+        - name: _BuildConfig
+          value: ${{ parameters.BuildConfiguration }}
+        preSteps:
+        - checkout: self
+          fetchDepth: 1
+          clean: true
+
+        - task: DownloadPipelineArtifact@2
+          displayName: 'Download Build'
+          condition: succeeded()
+          inputs:
+            artifactName: ${{ parameters.appArtifactName }}_coreclr
+            targetPath: ${{ parameters.checkoutDirectory }}/artifacts/bin
+
+        - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/steps/send-to-helix.yml', '/eng/common/templates-official/steps/send-to-helix.yml@self') }}
+          parameters:
+            HelixProjectPath: ${{ parameters.helixProject }}
+            HelixProjectArguments: /p:TargetOS=maccatalyst /p:TestRunNameSuffix=_$(_BuildConfig)_CoreCLR /p:TestRunNamePrefix=DeviceTestsMacCatalyst_CoreCLR_
+            HelixConfiguration: $(_BuildConfig)
+            IncludeDotNetCli: true
+            DisplayNamePrefix: DeviceTestsMacCatalyst_CoreCLR

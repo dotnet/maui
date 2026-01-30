@@ -10,7 +10,7 @@ parameters:
   useArtifacts: false
   cakeArgs: ''
   buildAndTest: true
-  useCoreClr: false # Use CoreCLR for Android builds
+  useCoreClr: false # Use CoreCLR for Android, iOS, and Catalyst builds
   targetFrameworkVersion:
     tfm: ''
     dependsOn: ''
@@ -30,8 +30,6 @@ jobs:
       clean: all
     displayName: Build ${{ parameters.platform }} ${{ parameters.project.desc }} ${{ iif(eq(parameters.useCoreClr, 'true'), ' (CoreCLR)', '(Mono)') }}
     pool: ${{ parameters.pool }}
-    variables:
-      REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
     steps:
     - template: device-tests-steps.yml
       parameters:
@@ -60,8 +58,6 @@ jobs:
         clean: all
       displayName: Run ${{ parameters.platform }} ${{ parameters.project.desc }} ${{ version }}  ${{ iif(eq(parameters.useCoreClr, 'true'), ' (CoreCLR)', '(Mono)') }}
       pool: ${{ parameters.pool }}
-      variables:
-        REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
       steps:
       - template: device-tests-steps.yml
         parameters:

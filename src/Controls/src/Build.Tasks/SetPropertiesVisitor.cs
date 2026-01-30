@@ -670,7 +670,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				var lbIndex = p.IndexOf('[');
 				if (lbIndex != -1)
 				{
+#pragma warning disable CA1307 // Specify StringComparison for clarity - char overload doesn't support StringComparison
 					var rbIndex = p.LastIndexOf(']');
+#pragma warning restore CA1307 // Specify StringComparison for clarity
 					if (rbIndex == -1)
 						throw new BuildException(BindingIndexerNotClosed, lineInfo, null);
 

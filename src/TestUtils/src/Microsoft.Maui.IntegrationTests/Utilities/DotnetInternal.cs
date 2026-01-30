@@ -99,25 +99,62 @@ namespace Microsoft.Maui.IntegrationTests
 			args += $" {additionalDotNetNewParams}";
 
 			var output = RunForOutput("new", args, out int exitCode, timeoutInSeconds: 300);
-			TestContext.WriteLine(output);
+			Console.WriteLine(output);
 			return exitCode == 0;
 		}
 
 		public static bool Run(string command, string args, int timeoutinSeconds = DEFAULT_TIMEOUT)
 		{
 			var runOutput = RunForOutput(command, args, out int exitCode, timeoutinSeconds);
-			TestContext.WriteLine($"Process exit code: {exitCode}");
-			TestContext.WriteLine($"-------- Process output start --------");
-			TestContext.WriteLine(runOutput);
-			TestContext.WriteLine($"-------- Process output end --------");
+			Console.WriteLine($"Process exit code: {exitCode}");
+			Console.WriteLine($"-------- Process output start --------");
+			Console.WriteLine(runOutput);
+			Console.WriteLine($"-------- Process output end --------");
+
+			// Provide helpful messages for common errors
+			if (exitCode != 0)
+			{
+				CheckForCommonErrors(runOutput);
+			}
 
 			return exitCode == 0;
 		}
 
+		/// <summary>
+		/// Checks build output for common errors and provides helpful guidance.
+		/// </summary>
+		static void CheckForCommonErrors(string output)
+		{
+			// Check for Xcode version mismatch
+			if (output.Contains("requires Xcode", StringComparison.OrdinalIgnoreCase) && output.Contains("The current version of Xcode is", StringComparison.OrdinalIgnoreCase))
+			{
+				// Extract the error message line for display
+				var errorLine = output.Split('\n')
+					.FirstOrDefault(line => line.Contains("requires Xcode", StringComparison.OrdinalIgnoreCase))
+					?.Trim() ?? "Xcode version mismatch";
+
+				Console.WriteLine("");
+				Console.WriteLine("╔══════════════════════════════════════════════════════════════════════════════╗");
+				Console.WriteLine("║ XCODE VERSION MISMATCH DETECTED                                              ║");
+				Console.WriteLine("╠══════════════════════════════════════════════════════════════════════════════╣");
+				Console.WriteLine($"  {errorLine}");
+				Console.WriteLine("╠══════════════════════════════════════════════════════════════════════════════╣");
+				Console.WriteLine("║ To skip Xcode version validation, you can:                                   ║");
+				Console.WriteLine("║                                                                              ║");
+				Console.WriteLine("║ 1. Set environment variable:                                                 ║");
+				Console.WriteLine("║    export SKIP_XCODE_VERSION_CHECK=true                                      ║");
+				Console.WriteLine("║                                                                              ║");
+				Console.WriteLine("║ 2. Or set SkipXcodeVersionCheck in TestEnvironment.cs                        ║");
+				Console.WriteLine("║    src/TestUtils/src/.../Utilities/TestEnvironment.cs                        ║");
+				Console.WriteLine("╚══════════════════════════════════════════════════════════════════════════════╝");
+				Console.WriteLine("");
+			}
+		}
+
 		public static string RunForOutput(string command, string args, out int exitCode, int timeoutInSeconds = DEFAULT_TIMEOUT)
 		{
-			TestContext.WriteLine($"Running: '{DotnetTool}' with '{command}'");
-			TestContext.WriteLine($"Args list: {args}");
+			Console.WriteLine($"Running: '{DotnetTool}' with '{command}'");
+			Console.WriteLine($"Args list: {args}");
 			var pinfo = new ProcessStartInfo(DotnetTool, $"{command} {args}");
 			pinfo.EnvironmentVariables["DOTNET_MULTILEVEL_LOOKUP"] = "0";
 			pinfo.EnvironmentVariables["DOTNET_ROOT"] = DotnetRoot;

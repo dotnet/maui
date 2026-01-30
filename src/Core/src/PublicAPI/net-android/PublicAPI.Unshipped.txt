@@ -1,7 +1,8 @@
-﻿#nullable enable
+#nullable enable
 Microsoft.Maui.BorderStyle
 Microsoft.Maui.BorderStyle.Default = 0 -> Microsoft.Maui.BorderStyle
 Microsoft.Maui.BorderStyle.None = 1 -> Microsoft.Maui.BorderStyle
 Microsoft.Maui.IEntry.BorderStyle.get -> Microsoft.Maui.BorderStyle
 static Microsoft.Maui.Handlers.EntryHandler.MapBorderStyle(Microsoft.Maui.Handlers.IEntryHandler! handler, Microsoft.Maui.IEntry! entry) -> void
 static Microsoft.Maui.Platform.EditTextExtensions.UpdateBorderStyle(this Android.Widget.EditText! editText, Microsoft.Maui.IEntry! entry) -> void
+static Microsoft.Maui.GridLength.implicit operator Microsoft.Maui.GridLength(string! value) -> Microsoft.Maui.GridLength

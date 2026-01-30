@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 Microsoft.Maui.BorderStyle
 Microsoft.Maui.BorderStyle.Default = 0 -> Microsoft.Maui.BorderStyle
 Microsoft.Maui.BorderStyle.None = 1 -> Microsoft.Maui.BorderStyle
@@ -6,3 +6,4 @@ Microsoft.Maui.IEntry.BorderStyle.get -> Microsoft.Maui.BorderStyle
 override Microsoft.Maui.Platform.MauiView.DidUpdateFocus(UIKit.UIFocusUpdateContext! context, UIKit.UIFocusAnimationCoordinator! coordinator) -> void
 static Microsoft.Maui.Handlers.EntryHandler.MapBorderStyle(Microsoft.Maui.Handlers.IEntryHandler! handler, Microsoft.Maui.IEntry! entry) -> void
 static Microsoft.Maui.Platform.TextFieldExtensions.UpdateBorderStyle(this UIKit.UITextField! textField, Microsoft.Maui.IEntry! entry) -> void
+static Microsoft.Maui.GridLength.implicit operator Microsoft.Maui.GridLength(string! value) -> Microsoft.Maui.GridLength

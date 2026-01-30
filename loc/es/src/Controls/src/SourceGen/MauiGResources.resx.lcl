@@ -230,7 +230,7 @@
         <Str Cat="Text">
           <Val><![CDATA[An error occured while parsing Xaml: {0}.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Error al analizar Xaml: {0}.]]></Val>
+            <Val><![CDATA[Error al analizar el Xaml: {0}.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -239,7 +239,7 @@
         <Str Cat="Text">
           <Val><![CDATA[XAML parsing failed]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Error de análisis de XAML]]></Val>
+            <Val><![CDATA[Error al analizar XAML]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

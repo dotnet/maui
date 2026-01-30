@@ -2,3 +2,12 @@
 Microsoft.Maui.Controls.Entry.HasBorder.get -> bool
 Microsoft.Maui.Controls.Entry.HasBorder.set -> void
 ~static readonly Microsoft.Maui.Controls.Entry.HasBorderProperty -> Microsoft.Maui.Controls.BindableProperty
+Microsoft.Maui.Controls.AppThemeBinding
+Microsoft.Maui.Controls.AppThemeBinding.AppThemeBinding() -> void
+~const Microsoft.Maui.Controls.AppThemeBinding.AppThemeResource = "__MAUI_ApplicationTheme__" -> string
+~Microsoft.Maui.Controls.AppThemeBinding.Dark.get -> object
+~Microsoft.Maui.Controls.AppThemeBinding.Dark.set -> void
+~Microsoft.Maui.Controls.AppThemeBinding.Default.get -> object
+~Microsoft.Maui.Controls.AppThemeBinding.Default.set -> void
+~Microsoft.Maui.Controls.AppThemeBinding.Light.get -> object
+~Microsoft.Maui.Controls.AppThemeBinding.Light.set -> void
