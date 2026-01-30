@@ -98,6 +98,35 @@ Always format code before committing:
 dotnet format Microsoft.Maui.sln --no-restore --exclude Templates/src --exclude-diagnostics CA1822
 ```
 
+### Code Style Anti-Patterns
+
+**🚨 NEVER use these patterns:**
+
+| Anti-Pattern | Why It's Bad | Correct Approach |
+|--------------|--------------|------------------|
+| `obj.GetType().Name` | Fragile, breaks with refactoring, violates OOP | Use marker interfaces |
+| `obj.GetType() == typeof(X)` | Same issues, also breaks inheritance | Use `is` operator with interfaces |
+| `typeName.EndsWith("Page")` | String-based type checking is error-prone | Create internal marker interface |
+| `obj.GetType().FullName.Contains("...")` | Extremely fragile, namespace changes break it | Use interfaces or base classes |
+
+**Correct pattern for type-specific behavior:**
+
+```csharp
+// ❌ BAD - Never do this
+if (obj.GetType().Name.EndsWith("ContentPage"))
+
+// ✅ GOOD - Use marker interface
+internal interface IContentPageController { }
+public partial class ContentPage : IContentPageController { }
+
+if (obj is IContentPageController)
+```
+
+When you need platform-specific type checking:
+1. Create an internal marker interface in `src/Core/src/Platform/{Platform}/`
+2. Have the specific type implement the interface (use platform-specific partial if needed)
+3. Check for the interface using `is` operator
+
 ## Contribution Guidelines
 
 ### Handling Existing PRs for Assigned Issues
