@@ -2,6 +2,7 @@
 using Android.Content;
 using Android.Views;
 using AndroidX.Core.Content;
+using AndroidX.Core.View;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
@@ -36,6 +37,32 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 			child.PlatformView.RemoveFromParent();
 			AddView(child.PlatformView);
+		}
+
+		protected override void OnAttachedToWindow()
+		{
+			base.OnAttachedToWindow();
+
+			// Log position
+			var location = new int[2];
+			GetLocationOnScreen(location);
+
+			// Request insets after being attached
+			Post(() =>
+			{
+				var locationAfter = new int[2];
+				GetLocationOnScreen(locationAfter);
+
+				if (Child?.PlatformView is AView childView)
+				{
+					ViewCompat.RequestApplyInsets(childView);
+				}
+			});
+		}
+
+		protected override void OnDetachedFromWindow()
+		{
+			base.OnDetachedFromWindow();
 		}
 
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
