@@ -152,8 +152,12 @@ if (-not [string]::IsNullOrWhiteSpace($ReportFile)) {
     
     # Use report content as summary if not provided
     if ([string]::IsNullOrWhiteSpace($Summary)) {
-        # Extract key results from report
-        $Summary = $reportContent
+        # Extract key results from report, excluding verbose "Test Results Details" section
+        if ($reportContent -match '(?s)^(.*?)(?=####\s*Test Results Details)') {
+            $Summary = $Matches[1].TrimEnd()
+        } else {
+            $Summary = $reportContent
+        }
     }
 }
 
@@ -181,19 +185,13 @@ _Run `verify-tests-fail.ps1` for full details._
 }
 
 # Status emoji
-$statusEmoji = if ($Status -eq "Passed") { "✅ PASSED" } else { "❌ FAILED" }
+$statusEmoji = if ($Status -eq "Passed") { "✅ passed" } else { "❌ failed" }
 $modeDesc = if ($Mode -eq "FullVerification") { "Full Verification" } else { "Failure Only" }
 
-# Build verification section content
+# Build verification section content - wrapped in collapsible with status in summary
 $verifyContent = @"
-### 🚦 Test Verification
-
-**Result**: $statusEmoji
-**Mode**: $modeDesc
-**Platform**: $Platform
-
 <details>
-<summary>Expand Details</summary>
+<summary><b>🚦 Test Verification: $statusEmoji</b></summary>
 
 $Summary
 
