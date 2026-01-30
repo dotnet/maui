@@ -164,53 +164,6 @@
     <WindowsSdkPackageVersion>10.0.19041.44</WindowsSdkPackageVersion>
   </PropertyGroup>
 
-  <!--
-    WindowsAppSDKSelfContained bundles the Windows App SDK native DLLs with the app.
-    This is REQUIRED for unpackaged builds on Helix (exit code 0xC000027B without it).
-    
-    CRITICAL: This property MUST be set in Directory.Build.props, NOT in csproj.
-    The Windows App SDK NuGet package reads this property in its .props file, which is
-    imported BEFORE the csproj body is evaluated. If set in csproj, it's too late -
-    the Windows App SDK will have already decided not to include native DLLs.
-    
-    ALSO CRITICAL: MauiUnpackagedBuild propagates to ALL projects in the build graph
-    (including library dependencies like TestUtils.DeviceTests.csproj). We can NOT condition on
-    OutputType because it's set in the csproj body which isn't evaluated yet.
-    
-    Instead, we detect actual device test EXE projects by checking if the project path ends with
-    "tests/DeviceTests" or "test/DeviceTests". This pattern matches the EXE projects:
-      - src/*/tests/DeviceTests/*.csproj (Controls, Core, Graphics, BlazorWebView)
-      - src/*/test/DeviceTests/*.csproj (Essentials)
-    But NOT the library projects:
-      - src/TestUtils/src/DeviceTests/*.csproj (shared utilities)
-      - src/Core/tests/DeviceTests.Shared/*.csproj (shared test code)
-    
-    MauiUnpackagedBuild is set by Cake only for unpackaged Windows device test builds.
-    
-    NOTE: MauiUnpackagedBuild is ONLY set for Windows unpackaged builds (via windows.cake),
-    so we don't need to check the TargetFramework here. The property is never set for 
-    Android/iOS/MacCatalyst builds.
-  -->
-  <PropertyGroup Condition="'$(MauiUnpackagedBuild)' == 'true'">
-    <_IsDeviceTestsProject>$([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectDirectory), '[\\/]tests?[\\/]DeviceTests[\\/]?$'))</_IsDeviceTestsProject>
-    <!--
-      Windows Unpackaged Self-Contained Device Tests Configuration
-      ==============================================================
-      
-      For unpackaged Windows DeviceTests running on Helix, we need Windows App SDK 
-      self-contained mode to bundle all DLLs with the app (no system-installed runtime).
-      
-      With OutputType=WinExe set in the csproj files (Windows TFM only), the MAUI SDK
-      automatically enables WindowsAppSDKSelfContained and proper bootstrapper initialization.
-      See Microsoft.Maui.Sdk.Windows.targets.
-      
-      We explicitly set WindowsAppSDKSelfContained here as a safety net, since it needs
-      to be set early (before Windows App SDK .props are imported) for the native DLL
-      extraction to work correctly.
-    -->
-    <WindowsAppSDKSelfContained Condition="'$(_IsDeviceTestsProject)' == 'True'">true</WindowsAppSDKSelfContained>
-  </PropertyGroup>
-
   <!-- version number information -->
   <PropertyGroup>
     <!-- Default versions from the SDKs (update when there is a new TFM version) -->

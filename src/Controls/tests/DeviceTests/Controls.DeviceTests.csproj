@@ -1,28 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>$(MauiDeviceTestsPlatforms)</TargetFrameworks>
     <OutputType>Exe</OutputType>
-    <!--
-      WINDOWS-SPECIFIC: Use WinExe instead of Exe for Windows builds.
-      
-      The Windows App SDK and MAUI SDK have special logic that only works correctly
-      with OutputType=WinExe. Specifically:
-      
-      1. WindowsAppSDKSelfContained defaults to true only when OutputType=WinExe
-         (see Microsoft.Maui.Sdk.Windows.targets line 7)
-      
-      2. WindowsAppSdkBootstrapInitialize is disabled when OutputType != WinExe
-         (see Microsoft.Maui.Sdk.Windows.targets line 9)
-      
-      Using Exe causes the bootstrapper to be disabled, which leads to crash
-      0xC000027B (Windows App SDK bootstrap failure) on Helix where there's
-      no system-installed Windows App Runtime.
-      
-      WinExe vs Exe difference is minimal for test apps - WinExe just means
-      no console window is created, but our tests capture output via files anyway.
-    -->
-    <OutputType Condition="$(TargetFramework.Contains('-windows'))">WinExe</OutputType>
     <SingleProject>true</SingleProject>
     <MauiTestProject>true</MauiTestProject>
     <RootNamespace>Microsoft.Maui.DeviceTests</RootNamespace>
@@ -35,6 +15,12 @@
     <RuntimeIdentifiers Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">android-arm64;android-x64</RuntimeIdentifiers>
     <IsTestProject>true</IsTestProject>
     <ExcludeMicrosoftNetTestSdk>true</ExcludeMicrosoftNetTestSdk>
+    <!-- Required for unpackaged Windows deployment on Helix - bundle Windows App SDK instead of relying on installed runtime.
+         This is set unconditionally for Windows builds because:
+         1. For packaged (MSIX) builds, this property is ignored - MSIX handles Windows App SDK differently
+         2. For unpackaged builds, this bundles the Windows App SDK DLLs with the app
+         3. Using WindowsPackageType condition doesn't work reliably due to MSBuild evaluation timing -->
+    <WindowsAppSDKSelfContained Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">true</WindowsAppSDKSelfContained>
   </PropertyGroup>
 
   <PropertyGroup>
