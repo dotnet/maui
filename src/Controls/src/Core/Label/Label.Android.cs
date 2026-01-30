@@ -10,26 +10,45 @@ namespace Microsoft.Maui.Controls
 	public partial class Label
 	{
 		MauiTextView _mauiTextView;
+		MauiMaterialTextView _mauiMaterialTextView;
 
 		private protected override void OnHandlerChangedCore()
 		{
 			base.OnHandlerChangedCore();
 
-			if (Handler != null)
+			// Detach from previous views
+			DetachLayoutChanged();
+
+			if (Handler is not ILabelHandler { PlatformView: var platformView })
 			{
-				if (Handler is LabelHandler labelHandler && labelHandler.PlatformView is MauiTextView mauiTextView)
-				{
-					_mauiTextView = mauiTextView;
-					_mauiTextView.LayoutChanged += OnLayoutChanged;
-				}
+				return;
 			}
-			else
+
+			switch (platformView)
 			{
-				if (_mauiTextView != null)
-				{
-					_mauiTextView.LayoutChanged -= OnLayoutChanged;
-					_mauiTextView = null;
-				}
+				case MauiTextView textView:
+					_mauiTextView = textView;
+					_mauiTextView.LayoutChanged += OnLayoutChanged;
+					break;
+				case MauiMaterialTextView materialTextView:
+					_mauiMaterialTextView = materialTextView;
+					_mauiMaterialTextView.LayoutChanged += OnLayoutChanged;
+					break;
+			}
+		}
+
+		void DetachLayoutChanged()
+		{
+			if (_mauiTextView is not null)
+			{
+				_mauiTextView.LayoutChanged -= OnLayoutChanged;
+				_mauiTextView = null;
+			}
+
+			if (_mauiMaterialTextView is not null)
+			{
+				_mauiMaterialTextView.LayoutChanged -= OnLayoutChanged;
+				_mauiMaterialTextView = null;
 			}
 		}
 
@@ -54,19 +73,25 @@ namespace Microsoft.Maui.Controls
 		void OnLayoutChanged(object sender, LayoutChangedEventArgs args)
 		{
 			if (Handler is not ILabelHandler labelHandler)
+			{
 				return;
+			}
 
 			var platformView = labelHandler.PlatformView;
 			var virtualView = labelHandler.VirtualView as Label;
 
 			if (platformView == null || virtualView == null)
+			{
 				return;
+			}
 
 			var text = virtualView.FormattedText;
 
 			// don't attempt to layout if this is not a formatted text WITH some text
 			if (virtualView.TextType != TextType.Text || text?.Spans == null || text.Spans.Count == 0)
+			{
 				return;
+			}
 
 			var spannableString = virtualView.ToSpannableString();
 
