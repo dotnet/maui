@@ -165,6 +165,38 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
+		void UpdateTabBarItemEnabled(UITabBarItem tabBarItem, bool isEnabled)
+		{
+			tabBarItem.Enabled = isEnabled;
+
+			var disabledColor = Shell.GetTabBarDisabledColor(_context.Shell)?.ToPlatform();
+			if (disabledColor is null)
+				return;
+
+			// Per-item text attributes needed for dynamic enable/disable changes
+			var textAttributes = isEnabled ? null : new UIStringAttributes { ForegroundColor = disabledColor };
+			tabBarItem.SetTitleTextAttributes(textAttributes, UIControlState.Disabled);
+
+			// Tint icon image since UITabBarAppearance.Disabled.IconColor doesn't work
+			if (tabBarItem.Image is not null)
+			{
+				tabBarItem.Image = isEnabled
+					? tabBarItem.Image.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate)
+					: CreateTintedImage(tabBarItem.Image, disabledColor).ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
+			}
+		}
+
+		UIImage CreateTintedImage(UIImage image, UIColor color)
+		{
+			var renderer = new UIGraphicsImageRenderer(image.Size, new UIGraphicsImageRendererFormat { Opaque = false, Scale = image.CurrentScale });
+			return renderer.CreateImage(ctx =>
+			{
+				image.Draw(new CGRect(CGPoint.Empty, image.Size));
+				color.SetFill();
+				ctx.FillRect(new CGRect(CGPoint.Empty, image.Size), CGBlendMode.SourceIn);
+			});
+		}
+
 		void IDisconnectable.Disconnect()
 		{
 			if (_sectionRenderers != null)
@@ -308,38 +340,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
-		void UpdateTabBarItemEnabled(UITabBarItem tabBarItem, bool isEnabled)
-		{
-			tabBarItem.Enabled = isEnabled;
-
-			var disabledColor = Shell.GetTabBarDisabledColor(_context.Shell)?.ToPlatform();
-			if (disabledColor is null)
-				return;
-
-			// Per-item text attributes needed for dynamic enable/disable changes
-			var textAttributes = isEnabled ? null : new UIStringAttributes { ForegroundColor = disabledColor };
-			tabBarItem.SetTitleTextAttributes(textAttributes, UIControlState.Normal);
-			tabBarItem.SetTitleTextAttributes(textAttributes, UIControlState.Disabled);
-
-			// Tint icon image since UITabBarAppearance.Disabled.IconColor doesn't work
-			if (tabBarItem.Image is not null)
-			{
-				tabBarItem.Image = isEnabled
-					? tabBarItem.Image.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate)
-					: CreateTintedImage(tabBarItem.Image, disabledColor).ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
-			}
-		}
-
-		UIImage CreateTintedImage(UIImage image, UIColor color)
-		{
-			var renderer = new UIGraphicsImageRenderer(image.Size, new UIGraphicsImageRendererFormat { Opaque = false, Scale = image.CurrentScale });
-			return renderer.CreateImage(ctx =>
-			{
-				image.Draw(new CGRect(CGPoint.Empty, image.Size));
-				color.SetFill();
-				ctx.FillRect(new CGRect(CGPoint.Empty, image.Size), CGBlendMode.SourceIn);
-			});
-		}
 
 		protected virtual void UpdateShellAppearance(ShellAppearance appearance)
 		{

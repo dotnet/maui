@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			IShellAppearanceElement appearanceElement = appearance;
 			var backgroundColor = appearanceElement.EffectiveTabBarBackgroundColor;
-			var foregroundColor = appearanceElement.EffectiveTabBarForegroundColor; // Currently unused
+			var foregroundColor = appearanceElement.EffectiveTabBarForegroundColor;
 			var disabledColor = appearanceElement.EffectiveTabBarDisabledColor;
 			var unselectedColor = appearanceElement.EffectiveTabBarUnselectedColor;
 			var titleColor = appearanceElement.EffectiveTabBarTitleColor;
