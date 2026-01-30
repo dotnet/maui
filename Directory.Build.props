@@ -197,40 +197,18 @@
       Windows Unpackaged Self-Contained Device Tests Configuration
       ==============================================================
       
-      For unpackaged self-contained Windows apps, we need specific Windows App SDK settings.
-      See: https://learn.microsoft.com/en-us/windows/apps/windows-app-sdk/use-windows-app-sdk-run-time
+      For unpackaged Windows DeviceTests running on Helix, we need Windows App SDK 
+      self-contained mode to bundle all DLLs with the app (no system-installed runtime).
       
-      Key insight: Even for self-contained apps, the BOOTSTRAPPER is still needed to initialize
-      the Windows App SDK runtime. The difference is that self-contained apps bundle the runtime
-      DLLs locally instead of looking for a system-installed framework package.
+      With OutputType=WinExe set in the csproj files (Windows TFM only), the MAUI SDK
+      automatically enables WindowsAppSDKSelfContained and proper bootstrapper initialization.
+      See Microsoft.Maui.Sdk.Windows.targets.
       
-      The bootstrapper API (MddBootstrapInitialize2) does the heavy lifting to find the 
-      Windows App SDK and enable the current process to use it.
+      We explicitly set WindowsAppSDKSelfContained here as a safety net, since it needs
+      to be set early (before Windows App SDK .props are imported) for the native DLL
+      extraction to work correctly.
     -->
     <WindowsAppSDKSelfContained Condition="'$(_IsDeviceTestsProject)' == 'True'">true</WindowsAppSDKSelfContained>
-    <!--
-      Enable the bootstrapper auto-initializer for unpackaged apps.
-      
-      Per Microsoft docs: "If your app isn't installed by using MSIX (unpackaged), then you 
-      must initialize the Windows App SDK for use before you can call Windows App SDK features."
-      
-      The bootstrapper is what finds and loads the Windows App SDK runtime (whether from
-      a system framework package OR from locally bundled DLLs in self-contained mode).
-    -->
-    <WindowsAppSdkBootstrapInitialize Condition="'$(_IsDeviceTestsProject)' == 'True'">true</WindowsAppSdkBootstrapInitialize>
-    <!--
-      Disable FailFast on bootstrap error so we can see what's actually happening.
-      By default, if bootstrapper fails it calls FailFast which gives us exit code 0xC0000602
-      but no useful information about WHY it failed. Disabling this may give us better diagnostics.
-    -->
-    <WindowsAppSDKBootstrapAutoInitializeOptions_OnError_FailFast Condition="'$(_IsDeviceTestsProject)' == 'True'">false</WindowsAppSDKBootstrapAutoInitializeOptions_OnError_FailFast>
-    <!--
-      Enable UndockedRegFreeWinRT initialization for registration-free WinRT activation.
-      
-      This is REQUIRED for unpackaged self-contained apps to properly activate WinRT components
-      (like Microsoft.UI.Xaml.*) without requiring Windows App Runtime to be registered system-wide.
-    -->
-    <WindowsAppSdkUndockedRegFreeWinRTInitialize Condition="'$(_IsDeviceTestsProject)' == 'True'">true</WindowsAppSdkUndockedRegFreeWinRTInitialize>
   </PropertyGroup>
 
   <!-- version number information -->
