@@ -49,14 +49,10 @@
 
 	<!--
 		Enable Composite Partial R2R for Android CoreCLR Release builds by default.
+		Note: PublishReadyToRun and PublishReadyToRunComposite are already set by the Android workload.
 	-->
-	<PropertyGroup Condition="'$(TargetPlatformIdentifier)' == 'android' and '$(UseMonoRuntime)' == 'false' and '$(Configuration)' == 'Release'">
-		<PublishReadyToRun Condition="'$(PublishReadyToRun)' == ''">true</PublishReadyToRun>
-	</PropertyGroup>
-
 	<PropertyGroup Condition="'$(TargetPlatformIdentifier)' == 'android' and '$(UseMonoRuntime)' == 'false' and '$(Configuration)' == 'Release' and '$(PublishReadyToRun)' == 'true'">
-		<PublishReadyToRunComposite Condition="'$(PublishReadyToRunComposite)' == ''">true</PublishReadyToRunComposite>
-		<PublishReadyToRunCrossgen2ExtraArgs Condition="'$(_MauiPartialReadyToRun)' != 'false'">$(PublishReadyToRunCrossgen2ExtraArgs) --partial</PublishReadyToRunCrossgen2ExtraArgs>
+		<PublishReadyToRunCrossgen2ExtraArgs Condition="'$(_MauiPublishReadyToRunPartial)' != 'false'">$(PublishReadyToRunCrossgen2ExtraArgs) --partial</PublishReadyToRunCrossgen2ExtraArgs>
 		<_MauiUseDefaultReadyToRunPgoFiles Condition="'$(_MauiUseDefaultReadyToRunPgoFiles)' == ''">true</_MauiUseDefaultReadyToRunPgoFiles>
 	</PropertyGroup>
 
