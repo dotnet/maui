@@ -534,13 +534,16 @@ stages:
                   }
                   
                   # CRITICAL DIAGNOSTIC: Check for Microsoft.ui.xaml.dll (the main WinUI3 native DLL)
-                  $winui = Get-ChildItem -Path "$tempDir/Unpackaged" -Filter "Microsoft.ui.xaml.dll" 2>$null
+                  # Use -Recurse to check subdirectories too
+                  $winui = Get-ChildItem -Path "$tempDir/Unpackaged" -Filter "Microsoft.ui.xaml.dll" -Recurse 2>$null
                   if ($winui) {
-                    Write-Host "  CRITICAL OK: Found Microsoft.ui.xaml.dll"
+                    Write-Host "  CRITICAL OK: Found Microsoft.ui.xaml.dll at $($winui.FullName)"
                   } else {
                     Write-Host "  CRITICAL WARNING: Microsoft.ui.xaml.dll NOT found!"
                     Write-Host "  This is the native WinUI3 DLL. Without it, the app will crash with 0xC000027B."
-                    Write-Host "  Total DLL count: $($(Get-ChildItem -Path "$tempDir/Unpackaged" -Filter "*.dll" 2>$null).Count)"
+                    Write-Host "  Total DLL count (recursive): $($(Get-ChildItem -Path "$tempDir/Unpackaged" -Filter "*.dll" -Recurse 2>$null).Count)"
+                    Write-Host "  Directory structure:"
+                    Get-ChildItem -Path "$tempDir/Unpackaged" -Directory 2>$null | ForEach-Object { Write-Host "    - $($_.Name)/" }
                   }
                 } else {
                   Write-Host "Warning: Publish folder not found in $($project.ArtifactDir)"
@@ -549,9 +552,16 @@ stages:
                 }
                 
                 if ($hasContent) {
+                  # Count total files before archive
+                  $totalFiles = (Get-ChildItem -Path "$tempDir" -Recurse -File).Count
+                  Write-Host "Total files to archive: $totalFiles"
+                  
                   Write-Host "Creating archive $zipPath..."
                   Compress-Archive -Path "$tempDir/*" -DestinationPath $zipPath -Force
-                  Write-Host "Created $zipPath"
+                  
+                  # Report archive size
+                  $archiveSize = (Get-Item $zipPath).Length
+                  Write-Host "Created $zipPath - Size: $([math]::Round($archiveSize / 1MB, 2)) MB"
                 } else {
                   Write-Host "ERROR: No content found for $($project.Name)"
                 }
