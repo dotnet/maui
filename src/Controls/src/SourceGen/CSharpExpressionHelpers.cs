@@ -535,15 +535,23 @@ static class CSharpExpressionHelpers
 					{
 						if (contentStr[j] == '"')
 						{
-							// Check if preceded by backslash (already escaped)
-							if (j > 0 && contentStr[j - 1] == '\\')
+							// Count preceding backslashes to determine if quote is escaped
+							// An odd number means the quote is escaped, even means it's not
+							// e.g., \" = escaped quote, \\" = escaped backslash + unescaped quote
+							int backslashCount = 0;
+							for (int k = j - 1; k >= 0 && contentStr[k] == '\\'; k--)
 							{
-								// Already escaped, just append
+								backslashCount++;
+							}
+							
+							if (backslashCount % 2 == 1)
+							{
+								// Odd backslashes: quote is already escaped
 								sb.Append('"');
 							}
 							else
 							{
-								// Raw quote, escape it
+								// Even backslashes (including 0): quote is not escaped
 								sb.Append("\\\"");
 							}
 						}

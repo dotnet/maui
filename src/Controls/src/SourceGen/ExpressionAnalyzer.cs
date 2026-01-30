@@ -393,7 +393,7 @@ internal static class ExpressionAnalyzer
 			// Member access: "User.Name" - check both parts
 			MemberAccessExpressionSyntax memberAccess => 
 				IsSettableExpression(memberAccess.Expression) && memberAccess.Name is IdentifierNameSyntax,
-			// Null-conditional access: "User?.Name" - settable in C# 14+ (guaranteed on .NET 10+)
+			// Null-conditional access: "User?.Name" - settable in C# 13+ (guaranteed on .NET 10+)
 			ConditionalAccessExpressionSyntax conditionalAccess =>
 				IsSettableExpression(conditionalAccess.Expression) && IsSettableWhenAccessed(conditionalAccess.WhenNotNull),
 			// Anything else (operators, method calls, etc.) is not settable
