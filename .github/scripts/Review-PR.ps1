@@ -1,10 +1,9 @@
 <#
 .SYNOPSIS
-    Runs the PR Agent workflow to review a GitHub Pull Request using Copilot CLI.
+    Prepares the environment for a PR review using the PR Agent workflow.
 
 .DESCRIPTION
-    This script invokes GitHub Copilot CLI with the PR agent to perform a comprehensive
-    5-phase review of a pull request:
+    This script prepares the environment for a comprehensive 5-phase PR review:
     
     Phase 1: Pre-Flight - Context gathering
     Phase 2: Tests - Verify test existence
@@ -12,7 +11,13 @@
     Phase 4: Fix - Multi-model exploration of alternatives
     Phase 5: Report - Final recommendation
     
-    The script uses the plan template at .github/agents/pr/PLAN-TEMPLATE.md.
+    Since Copilot CLI is interactive, this script:
+    - Validates prerequisites (gh CLI, PR exists)
+    - Optionally checks out the PR branch
+    - Creates the state directory
+    - Outputs structured context for the agent to use
+    
+    Run this script, then ask Copilot CLI to "review PR #XXXXX using the pr agent"
 
 .PARAMETER PRNumber
     The GitHub PR number to review (e.g., 33687)
@@ -25,25 +30,23 @@
     If specified, skips checking out the PR branch (useful if already on the branch)
 
 .PARAMETER DryRun
-    If specified, shows what would be done without actually invoking Copilot CLI
+    If specified, shows what would be done without making changes
 
 .EXAMPLE
     .\Review-PR.ps1 -PRNumber 33687
-    Reviews PR #33687 using the default platform (android)
+    Prepares to review PR #33687 using the default platform (android)
 
 .EXAMPLE
-    .\Review-PR.ps1 -PRNumber 33687 -Platform ios
-    Reviews PR #33687 using iOS for testing
-
-.EXAMPLE
-    .\Review-PR.ps1 -PRNumber 33687 -SkipCheckout
-    Reviews PR #33687 without checking out (assumes already on correct branch)
+    .\Review-PR.ps1 -PRNumber 33687 -Platform ios -SkipCheckout
+    Prepares to review PR #33687 on iOS without checking out
 
 .NOTES
     Prerequisites:
-    - GitHub Copilot CLI installed and authenticated
     - GitHub CLI (gh) installed and authenticated
     - For testing: Appropriate platform tools (Appium, emulators, etc.)
+    
+    After running this script, tell Copilot CLI:
+    "Review PR #XXXXX using the pr agent. Platform: <platform>"
 #>
 
 [CmdletBinding()]
@@ -91,17 +94,8 @@ if (-not $ghVersion) {
 }
 Write-Host "  ✅ GitHub CLI: $ghVersion" -ForegroundColor Green
 
-# Check Copilot CLI
-$copilotVersion = ghcs --version 2>$null
-if (-not $copilotVersion) {
-    # Try alternative command
-    $copilotVersion = gh copilot --version 2>$null
-    if (-not $copilotVersion) {
-        Write-Error "GitHub Copilot CLI is not installed. Install with: gh extension install github/gh-copilot"
-        exit 1
-    }
-}
-Write-Host "  ✅ Copilot CLI available" -ForegroundColor Green
+# Check Copilot CLI - informational only
+Write-Host "  ℹ️  Note: After this script, tell Copilot CLI to review the PR" -ForegroundColor Gray
 
 # Check PR exists
 Write-Host "  🔍 Verifying PR #$PRNumber exists..." -ForegroundColor Gray
@@ -145,65 +139,41 @@ if (-not (Test-Path $stateDir)) {
 # Step 4: Build the prompt for Copilot CLI
 $planTemplatePath = ".github/agents/pr/PLAN-TEMPLATE.md"
 
-$prompt = @"
-Review PR #$PRNumber using the PR agent workflow.
-
-**Instructions:**
-1. Read the plan template at `$planTemplatePath` for the 5-phase workflow
-2. Read `.github/agents/pr.md` for Phases 1-3 instructions
-3. Follow ALL critical rules, especially:
-   - STOP on environment blockers and ask before continuing
-   - Use task agent for Gate verification
-   - Run multi-model try-fix in Phase 4
-
-**Platform for testing:** $Platform
-
-**Start with Phase 1: Pre-Flight**
-- Create state file: CustomAgentLogsTmp/PRState/pr-$PRNumber.md
-- Gather context from PR #$PRNumber
-- Proceed through all 5 phases
-
-Begin the review now.
-"@
-
-Write-Host ""
-Write-Host "🤖 Launching Copilot CLI with PR agent..." -ForegroundColor Yellow
 Write-Host ""
 Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor DarkGray
 Write-Host ""
 
 if ($DryRun) {
-    Write-Host "[DRY RUN] Would invoke Copilot CLI with prompt:" -ForegroundColor Magenta
-    Write-Host ""
-    Write-Host $prompt -ForegroundColor Gray
-    Write-Host ""
-    Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor DarkGray
+    Write-Host "[DRY RUN] Would prepare environment with:" -ForegroundColor Magenta
+    Write-Host "  PR: #$PRNumber" -ForegroundColor Gray
+    Write-Host "  Platform: $Platform" -ForegroundColor Gray
+    Write-Host "  State file: CustomAgentLogsTmp/PRState/pr-$PRNumber.md" -ForegroundColor Gray
     Write-Host ""
     Write-Host "To run for real, remove the -DryRun flag" -ForegroundColor Yellow
 } else {
-    # Invoke Copilot CLI
-    # Note: The exact command may vary based on Copilot CLI version
-    # Using ghcs (GitHub Copilot Shell) or gh copilot
-    
-    # Write prompt to temp file to avoid escaping issues
-    $promptFile = Join-Path $env:TEMP "copilot-pr-review-prompt.txt"
-    $prompt | Out-File -FilePath $promptFile -Encoding utf8
-    
-    Write-Host "Prompt saved to: $promptFile" -ForegroundColor Gray
+    # Output structured context that can be used by the agent
+    Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Green
+    Write-Host "║  ENVIRONMENT READY                                        ║" -ForegroundColor Green
+    Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Green
     Write-Host ""
-    Write-Host "Run the following command to start the review:" -ForegroundColor Yellow
+    Write-Host "PR Review Context:" -ForegroundColor Cyan
+    Write-Host "  PR_NUMBER:      $PRNumber" -ForegroundColor White
+    Write-Host "  PLATFORM:       $Platform" -ForegroundColor White
+    Write-Host "  STATE_FILE:     CustomAgentLogsTmp/PRState/pr-$PRNumber.md" -ForegroundColor White
+    Write-Host "  PLAN_TEMPLATE:  $planTemplatePath" -ForegroundColor White
+    Write-Host "  CURRENT_BRANCH: $(git branch --show-current)" -ForegroundColor White
+    Write-Host "  PR_TITLE:       $($prInfo.title)" -ForegroundColor White
     Write-Host ""
-    Write-Host "  ghcs `"Review PR #$PRNumber using the pr agent. Platform: $Platform`"" -ForegroundColor Cyan
+    Write-Host "─────────────────────────────────────────────────────────────" -ForegroundColor DarkGray
     Write-Host ""
-    Write-Host "Or copy this full prompt:" -ForegroundColor Yellow
+    Write-Host "Next step - Tell Copilot CLI:" -ForegroundColor Yellow
     Write-Host ""
-    Write-Host $prompt -ForegroundColor White
+    Write-Host "  Review PR #$PRNumber using the pr agent. Platform: $Platform" -ForegroundColor Cyan
     Write-Host ""
-    Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor DarkGray
-    
-    # Optionally, try to invoke directly (may not work in all environments)
-    # Uncomment below to auto-launch:
-    # ghcs $prompt
+    Write-Host "Or for the full workflow:" -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host "  @pr Review PR #$PRNumber following .github/agents/pr/PLAN-TEMPLATE.md" -ForegroundColor Cyan
+    Write-Host ""
 }
 
 Write-Host ""
