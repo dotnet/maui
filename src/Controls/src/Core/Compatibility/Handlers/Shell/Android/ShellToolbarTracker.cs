@@ -644,10 +644,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			var menu = toolbar.Menu;
 			SearchHandler = Shell.GetSearchHandler(page);
-			if (SearchHandler != null && SearchHandler.SearchBoxVisibility != SearchBoxVisibility.Hidden)
+			if (SearchHandler is not null && SearchHandler.SearchBoxVisibility != SearchBoxVisibility.Hidden)
 			{
 				var context = ShellContext.AndroidContext;
-				if (_searchView == null)
+				if (_searchView is null)
 				{
 					_searchView = GetSearchView(context);
 					_searchView.SearchHandler = SearchHandler;
@@ -673,21 +673,31 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						icon.SetColorFilter(TintColor.ToPlatform(Colors.White), FilterMode.SrcAtop);
 					item.SetShowAsAction(ShowAsAction.IfRoom | ShowAsAction.CollapseActionView);
 
-					if (_searchView.View.Parent != null)
+					if (_searchView.View.Parent is not null)
+					{
 						_searchView.View.RemoveFromParent();
+					}
 
 					item.SetActionView(_searchView.View);
 					item.Dispose();
 				}
 				else if (SearchHandler.SearchBoxVisibility == SearchBoxVisibility.Expanded)
 				{
+					// Remove the placeholsder menu item, if it exists, added for collapsible mode.
+					if (menu.FindItem(_placeholderMenuItemId) is not null)
+					{
+						menu.RemoveItem(_placeholderMenuItemId);
+					}
+
 					if (_searchView.View.Parent != _platformToolbar)
+					{
 						_platformToolbar.AddView(_searchView.View);
+					}
 				}
 			}
 			else
 			{
-				if (_searchView != null)
+				if (_searchView is not null)
 				{
 					_searchView.View.RemoveFromParent();
 					_searchView.View.ViewAttachedToWindow -= OnSearchViewAttachedToWindow;
