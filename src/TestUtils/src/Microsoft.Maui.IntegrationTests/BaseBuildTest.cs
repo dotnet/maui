@@ -102,6 +102,33 @@ namespace Microsoft.Maui.IntegrationTests
 				FileUtilities.ReplaceInFile(TestNuGetConfig, "<add key=\"nuget-only\" value=\"true\" />", "");
 				FileUtilities.ReplaceInFile(TestNuGetConfig, "NUGET_ONLY_PLACEHOLDER", extraPacksDir);
 
+				// Create a Directory.Build.props in the test directory root to prevent MSBuild from
+				// walking up and inheriting the MAUI repo's Arcade SDK settings. This ensures test
+				// projects use their own local obj/bin folders instead of the repo's artifacts folder.
+				var testDirBuildProps = Path.Combine(TestEnvironment.GetTestDirectoryRoot(), "Directory.Build.props");
+				if (!File.Exists(testDirBuildProps))
+				{
+					File.WriteAllText(testDirBuildProps, """
+						<Project>
+						  <!-- This file stops MSBuild from walking up the directory tree and inheriting
+						       the MAUI repo's Directory.Build.props and Arcade SDK settings.
+						       This ensures test projects use their own local obj/bin folders. -->
+						</Project>
+						""");
+				}
+
+				// Also create Directory.Build.targets to prevent target inheritance
+				var testDirBuildTargets = Path.Combine(TestEnvironment.GetTestDirectoryRoot(), "Directory.Build.targets");
+				if (!File.Exists(testDirBuildTargets))
+				{
+					File.WriteAllText(testDirBuildTargets, """
+						<Project>
+						  <!-- This file stops MSBuild from walking up the directory tree and inheriting
+						       the MAUI repo's Directory.Build.targets. -->
+						</Project>
+						""");
+				}
+
 				_isSetupComplete = true;
 			}
 		}

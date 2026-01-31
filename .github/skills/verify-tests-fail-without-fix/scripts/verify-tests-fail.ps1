@@ -564,18 +564,18 @@ function Write-MarkdownReport {
     $statusSymbol = if ($VerificationPassed) { "✅" } else { "❌" }
     
     $markdown = @"
-# Test Verification Report
+### Test Verification Report
 
 **Date:** $reportDate | **Platform:** $($Platform.ToUpper()) | **Status:** $status
 
-## Summary
+#### Summary
 
 | Check | Expected | Actual | Result |
 |-------|----------|--------|--------|
 | Tests WITHOUT fix | FAIL | $(if ($FailedWithoutFix) { "FAIL" } else { "PASS" }) | $(if ($FailedWithoutFix) { "✅" } else { "❌" }) |
 | Tests WITH fix | PASS | $(if ($PassedWithFix) { "PASS" } else { "FAIL" }) | $(if ($PassedWithFix) { "✅" } else { "❌" }) |
 
-## $statusSymbol Final Verdict
+#### $statusSymbol Final Verdict
 
 $(if ($VerificationPassed) {
     @"
@@ -607,7 +607,7 @@ $(if (-not $FailedWithoutFix) {
 
 ---
 
-## Configuration
+#### Configuration
 
 **Platform:** $Platform
 **Test Filter:** $TestFilter
@@ -629,7 +629,7 @@ $(($NewFiles | ForEach-Object { "- ``$_``" }) -join "`n")
 
 ---
 
-## Test Results Details
+#### Test Results Details
 
 ### Test Run 1: WITHOUT Fix
 
@@ -683,7 +683,7 @@ $(Get-Content $WithFixLog -Raw)
 
 ---
 
-## Logs
+#### Logs
 
 - Full verification log: ``$ValidationLog``
 - Test output without fix: ``$WithoutFixLog``

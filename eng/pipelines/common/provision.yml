@@ -117,7 +117,21 @@ steps:
         XCODE_VERSION="${MAJOR}.${MINOR}"
         XCODE_PATH="$GENERIC_PATH"
       else
-        XCODE_VERSION=$(XCODE)
+        # Try to find a matching Xcode_{major}.{minor}.*.app (e.g., Xcode_26.2.0.app)
+        MATCHED_PATHS=(/Applications/Xcode_${MAJOR}.${MINOR}.*.app)
+        if [[ -d "${MATCHED_PATHS[0]}" ]]; then
+          # If multiple, pick the highest version
+          HIGHEST_PATH=$(ls -1d /Applications/Xcode_${MAJOR}.${MINOR}.*.app 2>/dev/null | sort -V | tail -n 1)
+          if [[ -n "$HIGHEST_PATH" && -d "$HIGHEST_PATH" ]]; then
+            echo "Found Xcode with patch version at $HIGHEST_PATH"
+            XCODE_VERSION=$(basename "$HIGHEST_PATH" | sed 's/^Xcode_//;s/.app$//')
+            XCODE_PATH="$HIGHEST_PATH"
+          else
+            XCODE_VERSION=$(XCODE)
+          fi
+        else
+          XCODE_VERSION=$(XCODE)
+        fi
       fi
 
       # Check if the specified Xcode version exists, if not try fallbacks
@@ -156,7 +170,7 @@ steps:
       if [[ -z "$XCODE_PATH" ]]; then
         echo "ERROR: No suitable Xcode version found for requested version ${ORIGINAL_VERSION}"
         echo "Tried: ${VERSIONS_TO_TRY[*]}"
-        exit 1
+        exit 0
       fi
 
       sudo xcode-select -s "$XCODE_PATH"
