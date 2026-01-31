@@ -60,21 +60,26 @@ Run the `try-fix` skill **5 times sequentially**, once with each model:
 
 | Order | Model | Invocation |
 |-------|-------|------------|
-| 1 | `claude-sonnet-4.5` | `task` agent with `model: "claude-sonnet-4.5"` |
-| 2 | `claude-opus-4.5` | `task` agent with `model: "claude-opus-4.5"` |
-| 3 | `gpt-5.2` | `task` agent with `model: "gpt-5.2"` |
-| 4 | `gpt-5.2-codex` | `task` agent with `model: "gpt-5.2-codex"` |
-| 5 | `gemini-3-pro-preview` | `task` agent with `model: "gemini-3-pro-preview"` |
+| 1 | `claude-sonnet-4.5` | `task` tool with `model: "claude-sonnet-4.5"` parameter |
+| 2 | `claude-opus-4.5` | `task` tool with `model: "claude-opus-4.5"` parameter |
+| 3 | `gpt-5.2` | `task` tool with `model: "gpt-5.2"` parameter |
+| 4 | `gpt-5.2-codex` | `task` tool with `model: "gpt-5.2-codex"` parameter |
+| 5 | `gemini-3-pro-preview` | `task` tool with `model: "gemini-3-pro-preview"` parameter |
+
+**Note:** The `model` parameter is passed to the `task` tool, which supports model selection. This is separate from agent YAML frontmatter (which is VS Code-only).
 
 **For each model**, invoke the try-fix skill:
 ```
 Invoke the try-fix skill for PR #XXXXX:
-- Platform: [android/ios]
-- TestFilter: "IssueXXXXX"
+- problem: [Description of the bug from issue/PR - what's broken and expected behavior]
+- platform: [android/ios]
+- test_command: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform [android/ios] -TestFilter "IssueXXXXX"
+- target_files:
+  - src/[area]/[likely-affected-file-1].cs
+  - src/[area]/[likely-affected-file-2].cs
 - state_file: CustomAgentLogsTmp/PRState/pr-XXXXX.md
 
-Generate ONE independent fix idea and test it empirically.
-Do NOT look at the PR's fix - generate ideas independently.
+Generate ONE independent fix idea. Review the PR's fix first to ensure your approach is DIFFERENT.
 ```
 
 **Wait for each to complete before starting the next.**
@@ -83,6 +88,11 @@ Do NOT look at the PR's fix - generate ideas independently.
 
 After Round 1 completes, share ALL results with ALL 5 models and ask for NEW ideas:
 
+**⚠️ Summary Size Limit**: To stay within Copilot CLI's 30,000 char prompt limit, keep attempt summaries bounded:
+- Max 3-4 bullet points per attempt
+- Focus on: approach name, result (✅/❌), one-line key learning
+- Omit verbose stack traces or full code diffs
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │  Cross-Pollination Loop                                     │
@@ -90,10 +100,10 @@ After Round 1 completes, share ALL results with ALL 5 models and ask for NEW ide
 │                                                             │
 │  LOOP until no new ideas:                                   │
 │                                                             │
-│    1. Compile summary of ALL try-fix attempts so far:       │
-│       - Approach tried                                      │
+│    1. Compile BOUNDED summary of ALL try-fix attempts:      │
+│       - Attempt #, approach (1 line)                        │
 │       - Pass/Fail result                                    │
-│       - Key learnings (why it worked or failed)             │
+│       - Key learning (1 line - why it worked or failed)     │
 │                                                             │
 │    2. Share summary with ALL 5 models, ask each:            │
 │       "Given these results, do you have any NEW fix ideas   │
@@ -106,10 +116,12 @@ After Round 1 completes, share ALL results with ALL 5 models and ask for NEW ide
 │    4. If ANY new ideas were tested → repeat loop            │
 │       If NO new ideas from ANY model → exit loop            │
 │                                                             │
+│  MAX ROUNDS: 3 (to prevent infinite loops)                  │
+│                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-**Exhaustion criteria**: The loop exits when ALL 5 models confirm they have no new ideas to try.
+**Coordination loop stop condition**: Exit when a full round completes and NO model proposes any new fix ideas. This is separate from the per-invocation `Exhausted` flag that each `try-fix` run sets in the state file.
 
 #### try-fix Invocation Details
 
@@ -203,6 +215,7 @@ Update the state file:
 - [ ] Each row has: approach, test result, files changed, notes
 - [ ] "Exhausted" field set to Yes (all models confirmed no new ideas)
 - [ ] "Selected Fix" populated with reasoning
+- [ ] Root cause analysis documented for the selected fix (to be surfaced in 📋 Report phase "### Root Cause" section)
 - [ ] No ⏳ PENDING markers remain in Fix section
 - [ ] State file committed
 
