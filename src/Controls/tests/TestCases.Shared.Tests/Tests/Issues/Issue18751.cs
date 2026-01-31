@@ -15,17 +15,16 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public async Task Issue18751Test()
+		public void Issue18751Test()
 		{
 			VerifyInternetConnectivity();
 
 			App.WaitForElement("WaitForStubControl");
 
-			// Load images.
-			await Task.Delay(1000);
-
-			// The test passes if you are able to see the image, name, and location of each monkey.
-			VerifyScreenshot();
+			// CollectionView uses virtualization which loads images synchronously once items are visible.
+			// Unlike ListView (Issue18896) which may have variable height row rendering delays,
+			// CollectionView's image loading completes quickly so retryTimeout handles any timing variance.
+			VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 		}
 	}
 }
