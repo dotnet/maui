@@ -87,6 +87,14 @@ stages:
           - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
             displayName: 'Add .NET to PATH'
 
+          # Build MSBuild tasks (required for MAUI builds)
+          - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="Release" --verbosity=diagnostic
+            displayName: 'Build MSBuild Tasks'
+            retryCountOnTaskFailure: 1
+            env:
+              DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+              PRIVATE_BUILD: $(PrivateBuild)
+
           # List all available simulators/emulators
           - script: |
               echo "=== Listing Available Simulators/Emulators ==="
