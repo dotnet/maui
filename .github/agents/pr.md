@@ -56,6 +56,24 @@ After Gate passes, read `.github/agents/pr/post-gate.md` for **Phases 4-5**.
 
 ---
 
+### 🚨 CRITICAL: Follow Templates EXACTLY
+
+When creating state files, use the EXACT format from this document:
+- **Do NOT add attributes** like `open` to `<details>` tags
+- **Do NOT "improve"** the template format
+- **Do NOT deviate** from documented structure
+- Downstream scripts depend on exact formatting (regex patterns expect specific structure)
+
+### 🚨 CRITICAL: Use Skills' Scripts - Don't Bypass
+
+When a skill provides a PowerShell script:
+- **Run the script** - don't interpret what it does and do it manually
+- **Fix inputs if script fails** - don't bypass with manual `gh` commands
+- **Use `-DryRun` to debug** - see what the script would produce before posting
+- Scripts handle formatting, API calls, and section management correctly
+
+---
+
 ### 🚨 CRITICAL: Phase 4 Uses Multi-Model try-fix
 
 **Even when a PR already has a fix**, Phase 4 requires running the `try-fix` skill with **5 different AI models** to:
