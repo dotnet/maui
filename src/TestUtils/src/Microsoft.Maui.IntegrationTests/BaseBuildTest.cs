@@ -302,8 +302,15 @@ namespace Microsoft.Maui.IntegrationTests
 
 				if (Directory.Exists(TestDirectory))
 				{
-					// Copy all log, binlog, and txt files from test directory to publish directory
-					var logPatterns = new[] { "*.log", "*.binlog", "*.txt" };
+					// Copy all log, binlog, and specific txt files from test directory to publish directory
+					var logPatterns = new[] { 
+						"*.log", 
+						"*.binlog", 
+						"acw-map.txt",
+						"custom-linker-options*.txt",
+						"aot-compiler-path*.txt",
+						"customview-map.txt"
+					};
 					foreach (var pattern in logPatterns)
 					{
 						var files = Directory.GetFiles(TestDirectory, pattern, SearchOption.AllDirectories);
