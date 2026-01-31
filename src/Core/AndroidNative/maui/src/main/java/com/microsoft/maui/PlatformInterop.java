@@ -2,6 +2,7 @@ package com.microsoft.maui;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.res.ColorStateList;
 import android.graphics.BlendMode;
 import android.graphics.BlendModeColorFilter;
@@ -363,6 +364,10 @@ public class PlatformInterop {
     }
 
     public static void loadImageFromFile(Context context, String file, ImageLoaderCallback callback) {
+        if (isContextDestroyed(context)) {
+            callback.onComplete(false, null, null);
+            return;
+        }
         RequestBuilder<Drawable> builder = Glide
             .with(context)
             .load(file);
@@ -370,6 +375,10 @@ public class PlatformInterop {
     }
 
     public static void loadImageFromUri(Context context, String uri, boolean cachingEnabled, ImageLoaderCallback callback) {
+        if (isContextDestroyed(context)) {
+            callback.onComplete(false, null, null);
+            return;
+        }
         Uri androidUri = Uri.parse(uri);
         if (androidUri == null) {
             callback.onComplete(false, null, null);
@@ -382,6 +391,10 @@ public class PlatformInterop {
     }
 
     public static void loadImageFromStream(Context context, InputStream inputStream, ImageLoaderCallback callback) {
+        if (isContextDestroyed(context)) {
+            callback.onComplete(false, null, null);
+            return;
+        }
         RequestBuilder<Drawable> builder = Glide
             .with(context)
             .load(inputStream);
@@ -389,6 +402,10 @@ public class PlatformInterop {
     }
 
     public static void loadImageFromFont(Context context, @ColorInt int color, String glyph, Typeface typeface, float textSize, ImageLoaderCallback callback) {
+        if (isContextDestroyed(context)) {
+            callback.onComplete(false, null, null);
+            return;
+        }
         FontModel fontModel = new FontModel(color, glyph, textSize, typeface);
         RequestBuilder<Drawable> builder = Glide
             .with(context)
@@ -703,5 +720,40 @@ public class PlatformInterop {
      */
     public static void setClipBounds(@NonNull View view, int left, int top, int right, int bottom) {
         view.setClipBounds(new Rect(left, top, right, bottom));
+    }
+
+    /**
+     * Checks if the provided context's underlying Activity is destroyed or finishing.
+     * This is used to prevent Glide crashes when attempting to load images after activity destruction.
+     * @param context The context to check
+     * @return true if the context is destroyed, false otherwise
+     */
+    private static boolean isContextDestroyed(Context context) {
+        Activity activity = getActivity(context);
+        if (activity != null) {
+            if (activity.isFinishing() || activity.isDestroyed()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Extracts the Activity from a Context, handling ContextWrapper chains.
+     * @param context The context to extract the Activity from
+     * @return The Activity if found, null otherwise
+     */
+    private static Activity getActivity(Context context) {
+        if (context == null) {
+            return null;
+        }
+        if (context instanceof Activity) {
+            return (Activity) context;
+        }
+        if (context instanceof ContextWrapper) {
+            Context baseContext = ((ContextWrapper) context).getBaseContext();
+            return getActivity(baseContext);
+        }
+        return null;
     }
 }
