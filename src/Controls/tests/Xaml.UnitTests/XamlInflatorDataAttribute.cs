@@ -27,7 +27,7 @@ public class XamlInflatorPairDataAttribute : DataAttribute
 	public override IEnumerable<object[]> GetData(MethodInfo testMethod)
 	{
 		var inflators = Enum.GetValues<XamlInflator>();
-		
+
 		foreach (var from in inflators)
 		{
 			foreach (var rd in inflators)
@@ -63,7 +63,7 @@ public static class XamlInflatorTestData
 		get
 		{
 			var inflators = Enum.GetValues<XamlInflator>();
-			
+
 			foreach (var from in inflators)
 			{
 				foreach (var rd in inflators)
