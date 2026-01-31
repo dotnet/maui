@@ -72,6 +72,55 @@ When a skill provides a PowerShell script:
 - **Use `-DryRun` to debug** - see what the script would produce before posting
 - Scripts handle formatting, API calls, and section management correctly
 
+### 🚨 CRITICAL: Stop on Environment Blockers
+
+If you encounter an environment or system setup blocker that prevents completing a phase:
+
+**STOP IMMEDIATELY. Do NOT continue to the next phase.**
+
+**Common blockers:**
+- Missing Appium drivers (Windows, iOS, Android)
+- WinAppDriver not installed
+- Xcode/iOS simulators not available (on Windows)
+- Android emulator not running or not configured
+- Developer Mode not enabled
+- Port conflicts (e.g., 4723 in use)
+- Missing SDKs or tools
+
+**When blocked, you MUST:**
+1. **Stop all work** - Do not proceed to the next phase
+2. **Report the blocker** clearly:
+   - What step failed
+   - What tool/driver/device is missing
+   - What error message was shown
+3. **Ask the user** how to proceed:
+   - Install the missing component?
+   - Switch to a different platform?
+   - Skip this phase with documented limitations?
+4. **Wait for user response** - Do not assume or work around
+
+**Example blocker report:**
+```
+⛔ BLOCKED: Cannot complete Gate phase
+
+**What failed:** Running verify-tests-fail-without-fix skill
+**Missing:** Appium Windows driver not installed
+**Error:** "Could not find a driver for automationName 'Windows'"
+
+**Options:**
+1. Install Windows Appium driver: `appium driver install windows`
+2. Switch to Android platform (if available)
+3. Skip automated verification (note limitation in report)
+
+Which would you like me to do?
+```
+
+**Never:**
+- ❌ Mark a phase as ⚠️ BLOCKED and continue to the next phase
+- ❌ Claim "verification passed" when tests couldn't actually run
+- ❌ Skip device/emulator testing and proceed with code review only
+- ❌ Assume the user wants you to install things without asking
+
 ---
 
 ### 🚨 CRITICAL: Phase 4 Uses Multi-Model try-fix
