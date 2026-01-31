@@ -249,29 +249,91 @@ if ($Platform -eq "android") {
         Write-Info "Auto-detecting iOS simulator..."
         $simList = xcrun simctl list devices available --json | ConvertFrom-Json
         
-        # Find iPhone Xs with iOS 18.5 (default for UI tests)
-        $iPhoneXs = $simList.devices.PSObject.Properties | 
-            Where-Object { $_.Name -match "iOS-18-5" } |
-            ForEach-Object { 
-                $_.Value | Where-Object { $_.name -eq "iPhone Xs" }
-            } | 
-            Select-Object -First 1
+        # Preferred devices in order of priority
+        $preferredDevices = @("iPhone 16 Pro", "iPhone 15 Pro", "iPhone 14 Pro", "iPhone Xs")
+        # Preferred iOS versions in order (newest first)
+        $preferredVersions = @("iOS-18", "iOS-17", "iOS-26")
         
-        if (-not $iPhoneXs) {
-            Write-Error "No iPhone Xs simulator found with iOS 18.5. Please create one in Xcode."
-            Write-Info "Available iOS 18.5 simulators:"
-            $simList.devices.PSObject.Properties | 
-                Where-Object { $_.Name -match "iOS-18-5" } |
-                ForEach-Object { 
-                    $_.Value | ForEach-Object { Write-Info "  - $($_.name) ($($_.udid))" }
+        $selectedDevice = $null
+        $selectedVersion = $null
+        
+        # Try each preferred version
+        foreach ($version in $preferredVersions) {
+            if ($selectedDevice) { break }
+            
+            # Get all runtimes matching this version prefix
+            $matchingRuntimes = $simList.devices.PSObject.Properties | 
+                Where-Object { $_.Name -match $version }
+            
+            if ($matchingRuntimes) {
+                # Try each preferred device
+                foreach ($deviceName in $preferredDevices) {
+                    $device = $matchingRuntimes | ForEach-Object { 
+                        $_.Value | Where-Object { $_.name -eq $deviceName -and $_.isAvailable -eq $true }
+                    } | Select-Object -First 1
+                    
+                    if ($device) {
+                        $selectedDevice = $device
+                        $selectedVersion = ($matchingRuntimes | Select-Object -First 1).Name
+                        Write-Info "Found preferred device: $deviceName on $selectedVersion"
+                        break
+                    }
                 }
+                
+                # If no preferred device found, take first available iPhone
+                if (-not $selectedDevice) {
+                    $anyiPhone = $matchingRuntimes | ForEach-Object { 
+                        $_.Value | Where-Object { $_.name -match "iPhone" -and $_.isAvailable -eq $true }
+                    } | Select-Object -First 1
+                    
+                    if ($anyiPhone) {
+                        $selectedDevice = $anyiPhone
+                        $selectedVersion = ($matchingRuntimes | Select-Object -First 1).Name
+                        Write-Info "Using available iPhone: $($anyiPhone.name) on $selectedVersion"
+                    }
+                }
+            }
+        }
+        
+        # Last resort: find ANY available iPhone simulator
+        if (-not $selectedDevice) {
+            $allDevices = $simList.devices.PSObject.Properties | ForEach-Object { 
+                $runtime = $_.Name
+                $_.Value | Where-Object { $_.name -match "iPhone" -and $_.isAvailable -eq $true } | 
+                    ForEach-Object { $_ | Add-Member -NotePropertyName "runtime" -NotePropertyValue $runtime -PassThru }
+            }
+            
+            if ($allDevices) {
+                $selectedDevice = $allDevices | Select-Object -First 1
+                $selectedVersion = $selectedDevice.runtime
+                Write-Info "Fallback: Using $($selectedDevice.name) on $selectedVersion"
+            }
+        }
+        
+        if (-not $selectedDevice) {
+            Write-Error "No iPhone simulator found. Please create one in Xcode."
+            Write-Info "Available simulators:"
+            $simList.devices.PSObject.Properties | ForEach-Object { 
+                $runtime = $_.Name
+                $_.Value | Where-Object { $_.isAvailable -eq $true } | ForEach-Object { 
+                    Write-Info "  - $($_.name) ($runtime) - $($_.udid)" 
+                }
+            }
             exit 1
         }
         
-        $DeviceUdid = $iPhoneXs.udid
+        $DeviceUdid = $selectedDevice.udid
     }
     
-    Write-Success "iOS simulator: $DeviceUdid (iOS 18.5)"
+    # Get device name for display
+    $simState = xcrun simctl list devices --json | ConvertFrom-Json
+    $deviceInfo = $simState.devices.PSObject.Properties.Value | 
+        ForEach-Object { $_ } | 
+        Where-Object { $_.udid -eq $DeviceUdid } | 
+        Select-Object -First 1
+    $deviceName = if ($deviceInfo) { $deviceInfo.name } else { "Unknown" }
+    
+    Write-Success "iOS simulator: $deviceName ($DeviceUdid)"
     
     # Boot simulator if not already booted
     Write-Info "Booting simulator (if not already running)..."
