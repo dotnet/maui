@@ -64,10 +64,12 @@ After Gate passes, read `.github/agents/pr/post-gate.md` for **Phases 4-5**.
 3. **Ensure exhaustive exploration** - Only stop when ALL models confirm "no new ideas"
 
 **The multi-model workflow:**
-- **Round 1**: Run try-fix 5 times sequentially with: `claude-sonnet-4.5`, `claude-opus-4.5`, `gpt-5.2`, `gpt-5.2-codex`, `gemini-3-pro-preview`
+- **Round 1**: Run try-fix 5 times sequentially using the `task` agent with `model` parameter: `claude-sonnet-4.5`, `claude-opus-4.5`, `gpt-5.2`, `gpt-5.2-codex`, `gemini-3-pro-preview`
 - **Round 2+**: Share all results with all 5 models, run try-fix for any new ideas, repeat until exhaustion
 
 **⚠️ SEQUENTIAL ONLY**: try-fix runs modify the same files and use the same device. Never run in parallel.
+
+**Note:** The `model` parameter is passed to the `task` tool, which supports model selection. This is separate from agent YAML frontmatter (which is VS Code-only).
 
 See `post-gate.md` for detailed Phase 4 instructions.
 
