@@ -29,11 +29,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			App.ScrollUp(ListView);
 
-			// Load images and hide scrollbar.
-			Thread.Sleep(2000);
-
-			// The test passes if you are able to see the image, name, and location of each monkey.
-			VerifyScreenshot(retryDelay: TimeSpan.FromSeconds(2));
+			// ListView with HasUnevenRows may have variable height row rendering that requires
+			// additional time for images to load and scrollbar to disappear.
+			// Use retryTimeout to adaptively wait for the UI to stabilize.
+			VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(3));
 		}
 	}
 }
