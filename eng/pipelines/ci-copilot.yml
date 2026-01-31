@@ -50,6 +50,21 @@ stages:
               echo "PR Number: ${{ parameters.PRNumber }}"
             displayName: 'Validate Parameters'
 
+          # Load prompt file before checking out PR branch (file may not exist on PR branch)
+          - script: |
+              echo "Loading prompt file..."
+              PROMPT_FILE="eng/pipelines/prompts/pr-review-prompt.md"
+              if [ ! -f "$PROMPT_FILE" ]; then
+                echo "##vso[task.logissue type=error]Prompt file not found: $PROMPT_FILE"
+                exit 1
+              fi
+              
+              # Copy prompt to a safe location before branch checkout
+              mkdir -p /tmp/copilot-prompts
+              cp "$PROMPT_FILE" /tmp/copilot-prompts/pr-review-prompt.md
+              echo "Prompt file cached to /tmp/copilot-prompts/pr-review-prompt.md"
+            displayName: 'Cache Prompt File'
+
           # Provision environment (Xcode, .NET SDK, Android SDK, etc.)
           - template: common/provision.yml
             parameters:
@@ -251,10 +266,10 @@ stages:
               # Create artifacts directory for Copilot outputs
               mkdir -p $(Build.ArtifactStagingDirectory)/copilot-logs
               
-              # Load prompt from file and substitute PR number
-              PROMPT_FILE="eng/pipelines/prompts/pr-review-prompt.md"
+              # Load prompt from cached file (saved before PR checkout)
+              PROMPT_FILE="/tmp/copilot-prompts/pr-review-prompt.md"
               if [ ! -f "$PROMPT_FILE" ]; then
-                echo "##vso[task.logissue type=error]Prompt file not found: $PROMPT_FILE"
+                echo "##vso[task.logissue type=error]Cached prompt file not found: $PROMPT_FILE"
                 exit 1
               fi
               
