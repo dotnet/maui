@@ -48,61 +48,92 @@ The purpose of Phase 4 is NOT to re-test the PR's fix, but to:
 
 **Do NOT let the PR's fix influence your thinking.** Generate ideas as if you hadn't seen the PR.
 
-### Step 1: Agent Orchestrates try-fix Loop
+### Step 1: Multi-Model try-fix Exploration
 
-Invoke the `try-fix` skill repeatedly. The skill handles one fix attempt per invocation.
+Phase 4 uses a **multi-model approach** to maximize fix diversity. Each AI model brings different perspectives and may find solutions others miss.
 
-**IMPORTANT:** Always pass the `state_file` parameter so try-fix can record its results:
+**⚠️ SEQUENTIAL ONLY**: try-fix runs MUST execute one at a time. They modify the same files and use the same test device. Never run try-fix attempts in parallel.
+
+#### Round 1: Run try-fix with Each Model
+
+Run the `try-fix` skill **5 times sequentially**, once with each model:
+
+| Order | Model | Invocation |
+|-------|-------|------------|
+| 1 | `claude-sonnet-4.5` | `task` agent with `model: "claude-sonnet-4.5"` |
+| 2 | `claude-opus-4.5` | `task` agent with `model: "claude-opus-4.5"` |
+| 3 | `gpt-5.2` | `task` agent with `model: "gpt-5.2"` |
+| 4 | `gpt-5.2-codex` | `task` agent with `model: "gpt-5.2-codex"` |
+| 5 | `gemini-3-pro-preview` | `task` agent with `model: "gemini-3-pro-preview"` |
+
+**For each model**, invoke the try-fix skill:
 ```
-state_file: CustomAgentLogsTmp/PRState/pr-XXXXX.md
+Invoke the try-fix skill for PR #XXXXX:
+- Platform: [android/ios]
+- TestFilter: "IssueXXXXX"
+- state_file: CustomAgentLogsTmp/PRState/pr-XXXXX.md
+
+Generate ONE independent fix idea and test it empirically.
+Do NOT look at the PR's fix - generate ideas independently.
 ```
 
-try-fix will automatically append rows to the Fix Candidates table and set the "Exhausted" field. You remain responsible for:
-- Setting "Selected Fix" field with reasoning
-- Updating phase status to ✅ COMPLETE
+**Wait for each to complete before starting the next.**
+
+#### Round 2+: Cross-Pollination Loop
+
+After Round 1 completes, share ALL results with ALL 5 models and ask for NEW ideas:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  Agent orchestration loop                                   │
+│  Cross-Pollination Loop                                     │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
-│  attempts = 0                                               │
-│  max_attempts = 5                                           │
-│  state_file = "CustomAgentLogsTmp/PRState/pr-XXXXX.md"        │
+│  LOOP until no new ideas:                                   │
 │                                                             │
-│  while (attempts < max_attempts):                           │
-│      result = invoke try-fix skill (with state_file)        │
-│      attempts++                                             │
+│    1. Compile summary of ALL try-fix attempts so far:       │
+│       - Approach tried                                      │
+│       - Pass/Fail result                                    │
+│       - Key learnings (why it worked or failed)             │
 │                                                             │
-│      if result.exhausted:                                   │
-│          break  # try-fix has no more ideas                 │
+│    2. Share summary with ALL 5 models, ask each:            │
+│       "Given these results, do you have any NEW fix ideas   │
+│        that haven't been tried? If yes, describe briefly."  │
 │                                                             │
-│      # result.passed indicates if this attempt worked       │
-│      # try-fix already recorded to state file               │
-│      # Continue loop to explore more alternatives           │
+│    3. For each model with a new idea:                       │
+│       → Run try-fix with that model (SEQUENTIAL)            │
+│       → Wait for completion before next                     │
 │                                                             │
-│  # After loop: compare all try-fix results vs PR's fix      │
-│  # Update "Exhausted" and "Selected Fix" fields             │
+│    4. If ANY new ideas were tested → repeat loop            │
+│       If NO new ideas from ANY model → exit loop            │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-**Stop the loop when:**
-- `try-fix` returns `exhausted=true` (no more ideas)
-- 5 try-fix attempts have been made
-- User requests to stop
+**Exhaustion criteria**: The loop exits when ALL 5 models confirm they have no new ideas to try.
+
+#### try-fix Invocation Details
+
+Each `try-fix` invocation (via task agent):
+- Reads state file to learn from prior attempts
+- Reverts PR's fix to get broken baseline
+- Proposes and implements ONE fix idea
+- Runs tests to validate
+- Records result with failure analysis
+- Reverts changes (restores PR's fix)
+- Updates state file with attempt results
+
+See `.github/skills/try-fix/SKILL.md` for full details.
 
 ### What try-fix Does (Each Invocation)
 
-Each `try-fix` invocation:
+Each `try-fix` invocation (run via task agent with specific model):
 1. Reads state file to learn from prior failed attempts
 2. Reverts PR's fix to get a broken baseline
 3. Proposes ONE new independent fix idea
 4. Implements and tests it
 5. Records result (with failure analysis if it failed)
-6. **Updates state file** (appends row to Fix Candidates table if state_file provided)
+6. **Updates state file** (appends row to Fix Candidates table)
 7. Reverts all changes (restores PR's fix)
-8. Returns `{passed: bool, exhausted: bool}`
 
 See `.github/skills/try-fix/SKILL.md` for full details.
 
@@ -143,6 +174,7 @@ Update the state file:
 - **try-fix found a simpler/better alternative** → Request changes with suggestion
 - **try-fix found same solution independently** → Strong validation, approve PR
 - **All try-fix attempts failed** → PR's fix is the only working solution, approve PR
+- **Multiple passing alternatives** → Select simplest/most robust
 
 ### Step 4: Apply Selected Fix (if different from PR)
 
@@ -165,10 +197,11 @@ Update the state file:
 5. Change 📋 Report status to `▶️ IN PROGRESS`
 
 **Before marking ✅ COMPLETE, verify state file contains:**
-- [ ] Root Cause Analysis filled in (if applicable)
+- [ ] Round 1 completed: All 5 models ran try-fix
+- [ ] Cross-pollination completed: All 5 models confirmed "no new ideas"
 - [ ] Fix Candidates table has numbered rows for each try-fix attempt
 - [ ] Each row has: approach, test result, files changed, notes
-- [ ] "Exhausted" field set (Yes/No)
+- [ ] "Exhausted" field set to Yes (all models confirmed no new ideas)
 - [ ] "Selected Fix" populated with reasoning
 - [ ] No ⏳ PENDING markers remain in Fix section
 - [ ] State file committed
@@ -287,8 +320,11 @@ Update all phase statuses to complete.
 
 - ❌ **Looking at PR's fix before generating ideas** - Generate fix ideas independently first
 - ❌ **Re-testing the PR's fix in try-fix** - Gate already validated it; try-fix tests YOUR ideas
-- ❌ **Skipping the try-fix loop** - Always explore at least one independent alternative
+- ❌ **Skipping models in Round 1** - All 5 models must run try-fix before cross-pollination
+- ❌ **Running try-fix in parallel** - SEQUENTIAL ONLY - they modify same files and use same device
+- ❌ **Stopping before cross-pollination** - Must share results and check for new ideas
 - ❌ **Not analyzing why fixes failed** - Record the flawed reasoning to help future attempts
 - ❌ **Selecting a failing fix** - Only select from passing candidates
 - ❌ **Forgetting to revert between attempts** - Each try-fix must start from broken baseline, end with PR restored
+- ❌ **Declaring exhaustion prematurely** - All 5 models must confirm "no new ideas"
 - ❌ **Rushing the report** - Take time to write clear justification
