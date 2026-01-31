@@ -56,16 +56,20 @@ After Gate passes, read `.github/agents/pr/post-gate.md` for **Phases 4-5**.
 
 ---
 
-### 🚨 CRITICAL: Phase 4 Always Uses `try-fix` Skill
+### 🚨 CRITICAL: Phase 4 Uses Multi-Model try-fix
 
-**Even when a PR already has a fix**, Phase 4 requires running the `try-fix` skill to:
-1. **Independently explore alternative solutions** - Generate fix ideas WITHOUT looking at the PR's solution
-2. **Test alternatives empirically** - Actually implement and run tests, don't just theorize
-3. **Compare with PR's fix** - PR's fix is already validated by Gate; try-fix explores if there's something better
+**Even when a PR already has a fix**, Phase 4 requires running the `try-fix` skill with **5 different AI models** to:
+1. **Maximize fix diversity** - Each model brings different perspectives
+2. **Cross-pollinate ideas** - Share results between models to spark new ideas
+3. **Ensure exhaustive exploration** - Only stop when ALL models confirm "no new ideas"
 
-The PR's fix is NOT tested by try-fix (Gate already did that). try-fix generates and tests YOUR independent ideas.
+**The multi-model workflow:**
+- **Round 1**: Run try-fix 5 times sequentially with: `claude-sonnet-4.5`, `claude-opus-4.5`, `gpt-5.2`, `gpt-5.2-codex`, `gemini-3-pro-preview`
+- **Round 2+**: Share all results with all 5 models, run try-fix for any new ideas, repeat until exhaustion
 
-This ensures independent analysis rather than rubber-stamping the PR.
+**⚠️ SEQUENTIAL ONLY**: try-fix runs modify the same files and use the same device. Never run in parallel.
+
+See `post-gate.md` for detailed Phase 4 instructions.
 
 ---
 
