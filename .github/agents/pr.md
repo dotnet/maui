@@ -441,9 +441,22 @@ Tests were already verified to FAIL in Phase 2. Gate is a confirmation step:
 **If starting from a PR (fix exists):**
 Use full verification mode - tests should FAIL without fix, PASS with fix.
 
-```bash
-pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 -Platform android -RequireFullVerification
+**🚨 MUST invoke as a task agent** to prevent command substitution:
+
+```markdown
+Invoke the `task` agent with agent_type: "task" and this prompt:
+
+"Invoke the verify-tests-fail-without-fix skill for this PR:
+- Platform: android (or ios)
+- TestFilter: 'IssueXXXXX'
+- RequireFullVerification: true
+
+Report back: Did tests FAIL without fix? Did tests PASS with fix? Final status?"
 ```
+
+**Why task agent?** Running inline allows substituting commands and fabricating results. Task agent runs in isolation and reports exactly what happened.
+
+See `.github/skills/verify-tests-fail-without-fix/SKILL.md` for full skill documentation.
 
 ### Expected Output (PR with fix)
 
@@ -493,3 +506,17 @@ pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 
 - ❌ **Running tests during Pre-Flight** - That's Phase 3
 - ❌ **Not creating state file first** - ALWAYS create state file before gathering context
 - ❌ **Skipping to Phase 4** - Gate MUST pass first
+
+## Common Gate Mistakes
+
+- ❌ **Running Gate verification inline** - Use task agent to prevent command substitution
+- ❌ **Using `BuildAndRunHostApp.ps1` for Gate** - That only runs ONE direction; the skill does TWO runs
+- ❌ **Using manual `dotnet test` commands** - Doesn't revert/restore fix files automatically
+- ❌ **Claiming "fails both ways" from a single test run** - That's fabrication; you need the script's TWO runs
+- ❌ **Not waiting for task agent completion** - Script takes 5-10+ minutes; wait for task to return
+
+**🚨 The verify-tests-fail.ps1 script does TWO test runs automatically:**
+1. Reverts fix → runs tests (should FAIL)
+2. Restores fix → runs tests (should PASS)
+
+Never run Gate inline. Always invoke as task agent.

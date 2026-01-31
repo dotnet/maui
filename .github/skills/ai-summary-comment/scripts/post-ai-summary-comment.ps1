@@ -289,7 +289,8 @@ function Extract-AllSections {
     $sections = @{}
     
     # Pattern to find all <details><summary><strong>TITLE</strong></summary>...content...</details> blocks
-    $pattern = '(?s)<details>\s*<summary><strong>([^<]+)</strong></summary>(.*?)</details>'
+    # Note: [^>]* handles optional attributes like "open" in <details open>
+    $pattern = '(?s)<details[^>]*>\s*<summary><strong>([^<]+)</strong></summary>(.*?)</details>'
     $matches = [regex]::Matches($StateContent, $pattern)
     
     if ($Debug) {
