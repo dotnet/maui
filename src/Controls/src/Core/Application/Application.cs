@@ -507,13 +507,16 @@ namespace Microsoft.Maui.Controls
 
 		internal void RemoveWindow(Window window)
 		{
-			// Do not attempt to close the "MainPage" window
-			if (_singleWindowMainPage != null && window.Page == _singleWindowMainPage)
-				return;
-
 			// Window was closed, stop tracking it
 			if (window is null)
 				return;
+
+			// If this is the MainPage window being removed (e.g., back button on Android),
+			// clear _singleWindowMainPage to allow fresh window creation on app restart.
+			if (_singleWindowMainPage != null && window.Page == _singleWindowMainPage)
+			{
+				_singleWindowMainPage = null;
+			}
 
 			if (window is NavigableElement ne)
 				ne.NavigationProxy.Inner = null;
