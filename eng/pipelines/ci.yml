@@ -202,7 +202,7 @@ stages:
       displayName: macOS Unit Tests
       ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
         pool: ${{ parameters.MacOSPool.public }}
-      ${{ else }}:  
+      ${{ else }}:
         pool: ${{ parameters.MacOSPool.internal }}
       timeout: 90
       testOS: macOS
