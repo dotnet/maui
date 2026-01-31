@@ -194,6 +194,41 @@ steps:
         else
           sudo xcodebuild -downloadPlatform iOS
         fi
+        
+        # Create iPhone Xs simulator with iOS 18.5 (required for UI tests)
+        echo ""
+        echo "=== Creating iPhone Xs simulator with iOS 18.5 ==="
+        
+        # Find iOS 18.5 runtime (or fallback to iOS 18.x)
+        IOS_RUNTIME=$(xcrun simctl list runtimes -j | jq -r '.runtimes[] | select(.name | contains("iOS 18.5")) | .identifier' | head -1)
+        if [[ -z "$IOS_RUNTIME" ]]; then
+          IOS_RUNTIME=$(xcrun simctl list runtimes -j | jq -r '.runtimes[] | select(.name | contains("iOS 18")) | .identifier' | head -1)
+        fi
+        
+        if [[ -n "$IOS_RUNTIME" ]]; then
+          echo "Found iOS runtime: $IOS_RUNTIME"
+          IPHONE_XS_TYPE=$(xcrun simctl list devicetypes -j | jq -r '.devicetypes[] | select(.name == "iPhone Xs") | .identifier' | head -1)
+          
+          if [[ -n "$IPHONE_XS_TYPE" ]]; then
+            # Check if already exists
+            EXISTING=$(xcrun simctl list devices -j | jq -r --arg rt "$IOS_RUNTIME" '.devices[$rt][]? | select(.name == "iPhone Xs") | .udid' | head -1)
+            if [[ -n "$EXISTING" ]]; then
+              echo "iPhone Xs simulator already exists: $EXISTING"
+            else
+              UDID=$(xcrun simctl create "iPhone Xs" "$IPHONE_XS_TYPE" "$IOS_RUNTIME" 2>&1) && \
+                echo "Created iPhone Xs simulator: $UDID" || \
+                echo "Note: Could not create iPhone Xs simulator"
+            fi
+          else
+            echo "Note: iPhone Xs device type not available"
+          fi
+        else
+          echo "Note: iOS 18.x runtime not found"
+        fi
+        
+        echo ""
+        echo "=== Available iPhone simulators ==="
+        xcrun simctl list devices available | grep -i iphone | head -10
       displayName: Install Simulator Runtimes
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
       continueOnError: true
