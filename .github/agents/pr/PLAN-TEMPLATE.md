@@ -48,12 +48,18 @@ If ANY phase cannot complete due to missing tools/drivers/devices:
 Which would you like me to do?
 ```
 
-### Rule 2: Gate via Task Agent Only
+### Rule 2: Do NOT Switch Branches
+**Never checkout or switch branches during a PR review.**
+- Work on the **current branch** as-is
+- Use `git diff` or `gh pr diff` to see changes
+- Never run: `git checkout`, `git switch`, `gh pr checkout`, `git stash`
+
+### Rule 3: Gate via Task Agent Only
 Gate verification MUST run as a `task` agent invocation, NOT inline commands.
 - The script does TWO test runs (revert fix → test, restore fix → test)
 - Running inline allows fabrication of results
 
-### Rule 3: Multi-Model try-fix (Phase 4)
+### Rule 4: Multi-Model try-fix (Phase 4)
 Run try-fix with 5 different models SEQUENTIALLY:
 1. `claude-sonnet-4.5`
 2. `claude-opus-4.5`
@@ -63,12 +69,12 @@ Run try-fix with 5 different models SEQUENTIALLY:
 
 Then cross-pollinate: Share ALL results with ALL models, ask for NEW ideas, repeat until exhaustion.
 
-### Rule 4: Follow Templates Exactly
+### Rule 5: Follow Templates Exactly
 - Do NOT add attributes like `open` to `<details>` tags
 - Do NOT "improve" template formats
 - Downstream scripts depend on exact regex patterns
 
-### Rule 5: Use Skills' Scripts
+### Rule 6: Use Skills' Scripts
 - Run the provided PowerShell scripts, don't bypass with manual commands
 - If script fails, fix inputs rather than using manual `gh` commands
 

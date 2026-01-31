@@ -64,6 +64,26 @@ When creating state files, use the EXACT format from this document:
 - **Do NOT deviate** from documented structure
 - Downstream scripts depend on exact formatting (regex patterns expect specific structure)
 
+### 🚨 CRITICAL: Do NOT Switch Branches
+
+**Never checkout or switch branches during a PR review.**
+
+The user or script has already set up the correct branch. Switching branches:
+- Loses uncommitted changes
+- Creates confusion about which code is being reviewed
+- Can stash/lose work in progress
+
+**What to do instead:**
+- Work on the **current branch** as-is
+- If you need to see the PR's changes, use `git diff` or `gh pr diff`
+- If you need to see specific file versions, use `git show <ref>:<path>`
+
+**Never run these commands:**
+- ❌ `git checkout <branch>`
+- ❌ `git switch <branch>`
+- ❌ `gh pr checkout <number>`
+- ❌ `git stash` (to switch branches)
+
 ### 🚨 CRITICAL: Use Skills' Scripts - Don't Bypass
 
 When a skill provides a PowerShell script:
