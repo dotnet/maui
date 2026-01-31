@@ -346,7 +346,7 @@ if ($Platform -eq "android") {
         
         # Preferred devices in order of priority
         $preferredDevices = @("iPhone 16 Pro", "iPhone 15 Pro", "iPhone 14 Pro", "iPhone Xs")
-        # Preferred iOS versions in order (stable preferred, beta fallback)
+        # Preferred iOS versions in order (newest first)
         $preferredVersions = @("iOS-18", "iOS-17", "iOS-26")
         
         $selectedDevice = $null
@@ -363,20 +363,13 @@ if ($Platform -eq "android") {
             if ($matchingRuntimes) {
                 # Try each preferred device
                 foreach ($deviceName in $preferredDevices) {
-                    $device = $null
-                    $deviceRuntime = $null
-                    foreach ($rt in $matchingRuntimes) {
-                        $found = $rt.Value | Where-Object { $_.name -eq $deviceName -and $_.isAvailable -eq $true } | Select-Object -First 1
-                        if ($found) {
-                            $device = $found
-                            $deviceRuntime = $rt.Name
-                            break
-                        }
-                    }
+                    $device = $matchingRuntimes | ForEach-Object { 
+                        $_.Value | Where-Object { $_.name -eq $deviceName -and $_.isAvailable -eq $true }
+                    } | Select-Object -First 1
                     
                     if ($device) {
                         $selectedDevice = $device
-                        $selectedVersion = $deviceRuntime
+                        $selectedVersion = ($matchingRuntimes | Select-Object -First 1).Name
                         Write-Info "Found preferred device: $deviceName on $selectedVersion"
                         break
                     }
@@ -384,20 +377,13 @@ if ($Platform -eq "android") {
                 
                 # If no preferred device found, take first available iPhone
                 if (-not $selectedDevice) {
-                    $anyiPhone = $null
-                    $iphoneRuntime = $null
-                    foreach ($rt in $matchingRuntimes) {
-                        $found = $rt.Value | Where-Object { $_.name -match "iPhone" -and $_.isAvailable -eq $true } | Select-Object -First 1
-                        if ($found) {
-                            $anyiPhone = $found
-                            $iphoneRuntime = $rt.Name
-                            break
-                        }
-                    }
+                    $anyiPhone = $matchingRuntimes | ForEach-Object { 
+                        $_.Value | Where-Object { $_.name -match "iPhone" -and $_.isAvailable -eq $true }
+                    } | Select-Object -First 1
                     
                     if ($anyiPhone) {
                         $selectedDevice = $anyiPhone
-                        $selectedVersion = $iphoneRuntime
+                        $selectedVersion = ($matchingRuntimes | Select-Object -First 1).Name
                         Write-Info "Using available iPhone: $($anyiPhone.name) on $selectedVersion"
                     }
                 }
