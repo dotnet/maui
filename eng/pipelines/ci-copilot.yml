@@ -249,15 +249,48 @@ stages:
             displayName: 'Install GitHub Copilot CLI'
 
           - script: |
-              echo "Fetching PR #${{ parameters.PRNumber }}..."
+              echo "Fetching PR #${{ parameters.PRNumber }} changes..."
               if ! git fetch origin pull/${{ parameters.PRNumber }}/head:pr-${{ parameters.PRNumber }}; then
                 echo "##vso[task.logissue type=error]Failed to fetch PR #${{ parameters.PRNumber }}. Check that the PR exists."
                 exit 1
               fi
-              git checkout pr-${{ parameters.PRNumber }}
-              echo "Checked out PR branch successfully"
+              
+              # Get the merge base between current branch and PR branch
+              CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+              echo "Current branch: $CURRENT_BRANCH"
+              
+              MERGE_BASE=$(git merge-base HEAD pr-${{ parameters.PRNumber }})
+              echo "Merge base: $MERGE_BASE"
+              
+              # Get the list of commits in the PR (from merge-base to PR head)
+              PR_COMMITS=$(git rev-list --reverse $MERGE_BASE..pr-${{ parameters.PRNumber }})
+              COMMIT_COUNT=$(echo "$PR_COMMITS" | grep -c . || echo "0")
+              echo "Found $COMMIT_COUNT commit(s) to cherry-pick"
+              
+              if [ "$COMMIT_COUNT" -eq "0" ]; then
+                echo "##vso[task.logissue type=warning]No commits found in PR #${{ parameters.PRNumber }} relative to current branch"
+                echo "PR may already be merged or branch is up to date"
+              else
+                # Cherry-pick each commit from the PR onto the current branch
+                echo "Cherry-picking PR commits onto $CURRENT_BRANCH..."
+                for COMMIT in $PR_COMMITS; do
+                  echo "Cherry-picking commit: $(git log -1 --oneline $COMMIT)"
+                  if ! git cherry-pick --no-commit $COMMIT; then
+                    echo "##vso[task.logissue type=error]Failed to cherry-pick commit $COMMIT"
+                    echo "Attempting to show conflict details..."
+                    git status
+                    git diff --name-only --diff-filter=U
+                    exit 1
+                  fi
+                done
+                
+                echo "Successfully applied $COMMIT_COUNT commit(s) from PR #${{ parameters.PRNumber }}"
+              fi
+              
+              echo "Current state:"
               git log -1 --oneline
-            displayName: 'Checkout PR Branch'
+              git status --short
+            displayName: 'Cherry-pick PR Changes'
 
           - script: |
               echo "Running Copilot PR Reviewer Agent..."
