@@ -80,46 +80,65 @@ If you encounter an environment or system setup blocker that prevents completing
 
 **Common blockers:**
 - Missing Appium drivers (Windows, iOS, Android)
-- WinAppDriver not installed
+- WinAppDriver not installed or returning errors
 - Xcode/iOS simulators not available (on Windows)
 - Android emulator not running or not configured
 - Developer Mode not enabled
 - Port conflicts (e.g., 4723 in use)
 - Missing SDKs or tools
+- Server errors (500, timeout, "unknown error occurred")
+
+**Retry Limits - STRICT ENFORCEMENT:**
+
+| Blocker Type | Max Retries | Then Do |
+|--------------|-------------|---------|
+| Missing tool/driver | 1 install attempt | STOP and ask user |
+| Server errors (500, timeout) | 0 | STOP immediately and report |
+| Port conflicts | 1 (kill process) | STOP and ask user |
+| Configuration issues | 1 fix attempt | STOP and ask user |
 
 **When blocked, you MUST:**
 1. **Stop all work** - Do not proceed to the next phase
-2. **Report the blocker** clearly:
+2. **Do NOT keep troubleshooting** - After the retry limit, STOP
+3. **Report the blocker** clearly:
    - What step failed
    - What tool/driver/device is missing
    - What error message was shown
-3. **Ask the user** how to proceed:
+   - What you already tried (if any retries were used)
+4. **Ask the user** how to proceed:
    - Install the missing component?
    - Switch to a different platform?
    - Skip this phase with documented limitations?
-4. **Wait for user response** - Do not assume or work around
+5. **Wait for user response** - Do not assume or work around
 
 **Example blocker report:**
 ```
 ⛔ BLOCKED: Cannot complete Gate phase
 
 **What failed:** Running verify-tests-fail-without-fix skill
-**Missing:** Appium Windows driver not installed
-**Error:** "Could not find a driver for automationName 'Windows'"
+**Blocker:** WinAppDriver returns 500 errors
+**Error:** "WinAppDriver server fails to respond with proper status"
 
-**Options:**
-1. Install Windows Appium driver: `appium driver install windows`
-2. Switch to Android platform (if available)
-3. Skip automated verification (note limitation in report)
+**What I tried:**
+- Ran Appium provisioning script
+- Updated Windows driver to v5.1.8
+
+**I am STOPPING here. Options:**
+1. User investigates WinAppDriver setup manually
+2. Switch to Android/iOS platform
+3. Accept Sandbox manual verification as sufficient
+4. Skip automated verification (note limitation in report)
 
 Which would you like me to do?
 ```
 
 **Never:**
+- ❌ Keep trying different fixes after retry limit exceeded
 - ❌ Mark a phase as ⚠️ BLOCKED and continue to the next phase
 - ❌ Claim "verification passed" when tests couldn't actually run
 - ❌ Skip device/emulator testing and proceed with code review only
-- ❌ Assume the user wants you to install things without asking
+- ❌ Install multiple tools/drivers without asking between each
+- ❌ Spend more than 2-3 tool calls troubleshooting the same blocker
 
 ---
 

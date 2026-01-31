@@ -15,11 +15,38 @@ This is a **reusable template** for reviewing PRs using the 5-phase PR Agent wor
 ### Rule 1: Stop on Environment Blockers
 If ANY phase cannot complete due to missing tools/drivers/devices:
 1. **STOP immediately** - Do NOT continue to next phase
-2. **Report the blocker** - What failed, what's missing, error message
-3. **Ask user** for resolution options
-4. **Wait for response** - Do not assume or work around
+2. **Do NOT keep troubleshooting** - Strict retry limits apply
+3. **Report the blocker** - What failed, what's missing, error message
+4. **Ask user** for resolution options
+5. **Wait for response** - Do not assume or work around
 
-**Common blockers:** Appium drivers, WinAppDriver, Xcode, emulators, Developer Mode, port conflicts, SDKs
+**Retry Limits (STRICT):**
+| Blocker Type | Max Retries | Then Do |
+|--------------|-------------|---------|
+| Missing tool/driver | 1 install attempt | STOP and ask |
+| Server errors (500, timeout) | 0 retries | STOP immediately |
+| Port conflicts | 1 (kill process) | STOP and ask |
+| Configuration issues | 1 fix attempt | STOP and ask |
+
+**Common blockers:** Appium drivers, WinAppDriver errors, Xcode, emulators, Developer Mode, port conflicts, SDKs
+
+**Blocker Report Template:**
+```
+⛔ BLOCKED: Cannot complete [Phase Name]
+
+**What failed:** [Step/skill that failed]
+**Blocker:** [Tool/driver/error type]
+**Error:** "[Exact error message]"
+
+**What I tried:** [List retry attempts, max 1-2]
+
+**I am STOPPING here. Options:**
+1. [Option for user]
+2. [Alternative platform]
+3. [Skip with documented limitation]
+
+Which would you like me to do?
+```
 
 ### Rule 2: Gate via Task Agent Only
 Gate verification MUST run as a `task` agent invocation, NOT inline commands.
