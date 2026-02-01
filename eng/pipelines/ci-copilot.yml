@@ -69,7 +69,7 @@ stages:
           - template: common/provision.yml
             parameters:
               skipXcode: false
-              skipProvisionator: true
+              skipProvisionator: false
               skipAndroidCommonSdks: false
               skipAndroidPlatformApis: false
               skipJdk: false
