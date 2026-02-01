@@ -96,7 +96,14 @@ Generate ONE independent fix idea. Review the PR's fix first to ensure your appr
 
 #### Round 2+: Cross-Pollination Loop
 
-After Round 1 completes, share ALL results with ALL 5 models and ask for NEW ideas:
+**🚨 MANDATORY - DO NOT SKIP THIS STEP**
+
+After Round 1 completes, you MUST invoke each of the 5 models to ask for new ideas. This is NOT optional.
+
+**❌ WRONG**: Using `explore` or `glob` to "check if approaches are exhausted"
+**❌ WRONG**: Declaring exhaustion without invoking each model
+**❌ WRONG**: Assuming "comprehensive coverage" means no new ideas exist
+**✅ CORRECT**: Invoke EACH model via task agent and ask explicitly for new ideas
 
 **⚠️ Summary Size Limit**: To stay within Copilot CLI's 30,000 char prompt limit, keep attempt summaries bounded:
 - Max 3-4 bullet points per attempt
@@ -105,8 +112,10 @@ After Round 1 completes, share ALL results with ALL 5 models and ask for NEW ide
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  Cross-Pollination Loop                                     │
+│  Cross-Pollination Loop - MANDATORY                         │
 ├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  🚨 You MUST invoke each model - no shortcuts allowed       │
 │                                                             │
 │  LOOP until no new ideas:                                   │
 │                                                             │
@@ -115,23 +124,50 @@ After Round 1 completes, share ALL results with ALL 5 models and ask for NEW ide
 │       - Pass/Fail result                                    │
 │       - Key learning (1 line - why it worked or failed)     │
 │                                                             │
-│    2. Share summary with ALL 5 models, ask each:            │
-│       "Given these results, do you have any NEW fix ideas   │
-│        that haven't been tried? If yes, describe briefly."  │
+│    2. Invoke EACH of the 5 models via task agent:           │
+│       prompt: "Review these fix attempts for PR #XXXXX:     │
+│                [summary of all attempts]                    │
+│                Do you have any NEW fix ideas not tried?     │
+│                Reply: 'NEW IDEA: [description]' or          │
+│                       'NO NEW IDEAS'"                       │
 │                                                             │
-│    3. For each model with a new idea:                       │
+│    3. Record each model's response in state file:           │
+│       | Model | Response |                                  │
+│       | claude-sonnet-4.5 | NO NEW IDEAS |                  │
+│       | claude-opus-4.5 | NEW IDEA: ... |                   │
+│       | ... | ... |                                         │
+│                                                             │
+│    4. For each model with a new idea:                       │
 │       → Run try-fix with that model (SEQUENTIAL)            │
 │       → Wait for completion before next                     │
 │                                                             │
-│    4. If ANY new ideas were tested → repeat loop            │
-│       If NO new ideas from ANY model → exit loop            │
+│    5. If ANY new ideas were tested → repeat loop            │
+│       If ALL 5 models said "NO NEW IDEAS" → exit loop       │
 │                                                             │
 │  MAX ROUNDS: 3 (to prevent infinite loops)                  │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-**Coordination loop stop condition**: Exit when a full round completes and NO model proposes any new fix ideas. This is separate from the per-invocation `Exhausted` flag that each `try-fix` run sets in the state file.
+**Cross-Pollination Invocation Template:**
+```
+Invoke task agent with model parameter:
+  agent_type: "task"
+  model: "[model-name]"
+  prompt: "Review PR #XXXXX fix attempts:
+    - Attempt 1 (claude-sonnet-4.5): [approach] - ✅/❌
+    - Attempt 2 (claude-opus-4.5): [approach] - ✅/❌
+    - ...
+    
+    Do you have any NEW fix ideas that haven't been tried?
+    Reply with EXACTLY one of:
+    - 'NEW IDEA: [brief description]'
+    - 'NO NEW IDEAS'
+    
+    Only propose ideas that are fundamentally different from above."
+```
+
+**Coordination loop stop condition**: Exit when ALL 5 models explicitly respond "NO NEW IDEAS" in the same round. This requires actual task agent invocations - not code exploration or assumptions.
 
 #### try-fix Invocation Details
 
@@ -220,7 +256,16 @@ Update the state file:
 
 **Before marking ✅ COMPLETE, verify state file contains:**
 - [ ] Round 1 completed: All 5 models ran try-fix
-- [ ] Cross-pollination completed: All 5 models confirmed "no new ideas"
+- [ ] **Cross-pollination table exists** with responses from ALL 5 models:
+  ```
+  | Model | Round 2 Response |
+  |-------|------------------|
+  | claude-sonnet-4.5 | NO NEW IDEAS |
+  | claude-opus-4.5 | NO NEW IDEAS |
+  | gpt-5.2 | NO NEW IDEAS |
+  | gpt-5.2-codex | NO NEW IDEAS |
+  | gemini-3-pro-preview | NO NEW IDEAS |
+  ```
 - [ ] Fix Candidates table has numbered rows for each try-fix attempt
 - [ ] Each row has: approach, test result, files changed, notes
 - [ ] "Exhausted" field set to Yes (all models confirmed no new ideas)
@@ -228,6 +273,8 @@ Update the state file:
 - [ ] Root cause analysis documented for the selected fix (to be surfaced in 📋 Report phase "### Root Cause" section)
 - [ ] No ⏳ PENDING markers remain in Fix section
 - [ ] State file committed
+
+**🚨 If cross-pollination table is missing, you skipped Round 2. Go back and invoke each model.**
 
 ---
 
@@ -346,8 +393,11 @@ Update all phase statuses to complete.
 - ❌ **Skipping models in Round 1** - All 5 models must run try-fix before cross-pollination
 - ❌ **Running try-fix in parallel** - SEQUENTIAL ONLY - they modify same files and use same device
 - ❌ **Stopping before cross-pollination** - Must share results and check for new ideas
+- ❌ **Using explore/glob instead of invoking models** - Cross-pollination requires ACTUAL task agent invocations with each model, not code searches
+- ❌ **Assuming "comprehensive coverage" = exhausted** - Only exhausted when all 5 models explicitly say "NO NEW IDEAS"
+- ❌ **Not recording cross-pollination responses** - State file must have table showing each model's Round 2 response
 - ❌ **Not analyzing why fixes failed** - Record the flawed reasoning to help future attempts
 - ❌ **Selecting a failing fix** - Only select from passing candidates
 - ❌ **Forgetting to revert between attempts** - Each try-fix must start from broken baseline, end with PR restored
-- ❌ **Declaring exhaustion prematurely** - All 5 models must confirm "no new ideas"
+- ❌ **Declaring exhaustion prematurely** - All 5 models must confirm "no new ideas" via actual invocation
 - ❌ **Rushing the report** - Take time to write clear justification
