@@ -5,7 +5,7 @@ parameters:
   # .NET NuGet caches
   clearCaches: true
   # Provisionator / Xcode
-  skipProvisionator: false
+  skipProvisionator: true
   checkoutDirectory: $(System.DefaultWorkingDirectory)
   provisionatorXCodePath: $(provisionator.xcode)
   provisionatorChannel: 'latest'
