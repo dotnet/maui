@@ -141,14 +141,20 @@ Then cross-pollinate: Share ALL results with ALL models, ask for NEW ideas, repe
 - [ ] ⛔ **If environment blocker on any attempt**: STOP, report, ask user
 - [ ] Record each: approach, test result, files changed, failure analysis
 
-**Round 2+: Cross-Pollination Loop**
-- [ ] Share bounded summary of ALL attempts with ALL 5 models
-- [ ] Ask each: "Any NEW fix ideas not yet tried?"
+**Round 2+: Cross-Pollination Loop (MANDATORY - DO NOT SKIP)**
+- [ ] **Invoke EACH model via task agent** (not explore/glob):
+  - [ ] claude-sonnet-4.5: "Any NEW fix ideas?" → Response: ___
+  - [ ] claude-opus-4.5: "Any NEW fix ideas?" → Response: ___
+  - [ ] gpt-5.2: "Any NEW fix ideas?" → Response: ___
+  - [ ] gpt-5.2-codex: "Any NEW fix ideas?" → Response: ___
+  - [ ] gemini-3-pro-preview: "Any NEW fix ideas?" → Response: ___
+- [ ] Record responses in Cross-Pollination table in state file
 - [ ] For each new idea: Run try-fix with that model
-- [ ] Repeat until NO model proposes new ideas (max 3 rounds)
+- [ ] Repeat until ALL 5 models say "NO NEW IDEAS" (max 3 rounds)
 
 **Completion:**
-- [ ] Mark Exhausted: Yes (all models confirm no new ideas)
+- [ ] Cross-Pollination table exists with all 5 model responses
+- [ ] Mark Exhausted: Yes (all models confirmed no new ideas via invocation)
 - [ ] Compare passing candidates with PR's fix
 - [ ] Select best fix (test results → simplicity → robustness → style)
 - [ ] Update state file: Fix → ✅ COMPLETE
