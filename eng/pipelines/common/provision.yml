@@ -65,17 +65,6 @@ steps:
 
 # Provisioning macOS - Xcode
 - ${{ if ne(parameters.skipXcode, 'true') }}:
-  - ${{ if ne(parameters.skipProvisionator, true) }}:
-    - task: xamops.azdevex.provisionator-task.provisionator@3
-      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
-      displayName: 'Provision Xcode'
-      inputs:
-        provisionator_uri: ${{ parameters.provisionatorUri }}
-        provisioning_script: ${{ parameters.checkoutDirectory }}/${{ parameters.provisionatorXCodePath }}
-        provisioning_extra_args: ${{ parameters.provisionatorExtraArguments }}
-        github_token: ${{ parameters.gitHubToken }}
-      env:
-        PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
 
   - script: |
       echo Remove old Xamarin Settings
