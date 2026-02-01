@@ -172,8 +172,8 @@ Review PR #$PRNumber using the pr agent workflow.
 $platformInstruction
 
 **Instructions:**
-1. Read the plan template at `$planTemplatePath` for the 5-phase workflow
-2. Read `.github/agents/pr.md` for Phases 1-3 instructions
+1. Read the plan template at ``$planTemplatePath`` for the 5-phase workflow
+2. Read ``.github/agents/pr.md`` for Phases 1-3 instructions
 3. Follow ALL critical rules, especially:
    - STOP on environment blockers and ask before continuing
    - Use task agent for Gate verification
