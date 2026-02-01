@@ -1,0 +1,156 @@
+# Pipeline for running GitHub Copilot PR Reviewer Agent
+# This pipeline installs the Copilot CLI and invokes the PR reviewer agent
+# to conduct automated code reviews on pull requests.
+#
+# For more information, see:
+# https://github.com/dotnet/maui/wiki/PR-Reviewer-Agent
+
+trigger: none  # No CI trigger on commits
+
+# Trigger on PR creation and updates (including title/description changes)
+pr:
+  branches:
+    include:
+      - main
+
+parameters:
+  - name: PRNumber
+    displayName: 'Pull Request Number'
+    type: string
+    default: ''
+
+  - name: pool
+    type: object
+    default:
+      name: Azure Pipelines
+      vmImage: macOS-15
+
+variables:
+  - template: /eng/pipelines/common/variables.yml@self
+  - name: Codeql.Enabled
+    value: false
+  - name: Codeql.SkipTaskAutoInjection
+    value: true
+  # Use System.PullRequest.PullRequestNumber for PR triggers, fall back to parameter for manual runs
+  - name: EffectivePRNumber
+    ${{ if ne(variables['System.PullRequest.PullRequestNumber'], '') }}:
+      value: $(System.PullRequest.PullRequestNumber)
+    ${{ else }}:
+      value: ${{ parameters.PRNumber }}
+
+stages:
+  - stage: FinalizePR
+    displayName: 'Finalize Pull Request'
+    jobs:
+      - job: FinalizeJob
+        displayName: 'Finalize PR with Copilot'
+        pool: ${{ parameters.pool }}
+        timeoutInMinutes: 30
+        steps:
+          - checkout: self
+            fetchDepth: 0
+            persistCredentials: true
+
+          - script: |
+              echo "Installing Node.js 22..."
+              brew install node@22
+              brew link --overwrite node@22
+              if ! node --version; then
+                echo "##vso[task.logissue type=error]Failed to install Node.js"
+                exit 1
+              fi
+              npm --version
+              echo "Node.js installed successfully"
+            displayName: 'Install Node.js'
+
+          - script: |
+              echo "Installing GitHub CLI..."
+              brew install gh
+              if ! gh --version; then
+                echo "##vso[task.logissue type=error]Failed to install GitHub CLI"
+                exit 1
+              fi
+              echo "GitHub CLI installed successfully"
+            displayName: 'Install GitHub CLI'
+
+          - script: |
+              echo "Authenticating with GitHub CLI..."
+              if [ -z "$(GH_CLI_TOKEN)" ]; then
+                echo "##vso[task.logissue type=error]GH_CLI_TOKEN is not set. Please configure the pipeline variable."
+                exit 1
+              fi
+              echo "$(GH_CLI_TOKEN)" | gh auth login --with-token
+              if ! gh auth status; then
+                echo "##vso[task.logissue type=error]GitHub CLI authentication failed"
+                exit 1
+              fi
+            displayName: 'Authenticate GitHub CLI'
+            env:
+              GH_CLI_TOKEN: $(GH_CLI_TOKEN)
+
+          - script: |
+              echo "Installing GitHub Copilot CLI..."
+              npm install -g @github/copilot
+              if ! which copilot; then
+                echo "##vso[task.logissue type=error]Failed to install GitHub Copilot CLI"
+                exit 1
+              fi
+              echo "Copilot CLI installed successfully"
+            displayName: 'Install GitHub Copilot CLI'
+
+          - script: |
+              PR_NUMBER="$(EffectivePRNumber)"
+              if [ -z "$PR_NUMBER" ]; then
+                echo "##vso[task.logissue type=error]PR number not available. Either run via PR trigger or specify PRNumber parameter."
+                exit 1
+              fi
+              echo "Fetching PR #$PR_NUMBER..."
+              if ! git fetch origin pull/$PR_NUMBER/head:pr-$PR_NUMBER; then
+                echo "##vso[task.logissue type=error]Failed to fetch PR #$PR_NUMBER. Check that the PR exists."
+                exit 1
+              fi
+              git checkout pr-$PR_NUMBER
+              echo "Checked out PR branch successfully"
+              git log -1 --oneline
+            displayName: 'Checkout PR Branch'
+
+          - script: |
+              echo "Running pr-finalize skill..."
+              
+              # Create artifacts directory for Copilot outputs
+              mkdir -p $(Build.ArtifactStagingDirectory)/finalize-logs
+              
+              # Invoke the pr-finalize skill using Copilot CLI
+              # Note: Explicitly instruct to post comment automatically without asking
+              set +e
+              copilot -p "Use the pr-finalize skill to review the PR title and description, then post the PR-finalize comment using the ai-summary-comments skill. This runs in non-interactive mode, so post the comment automatically without asking for confirmation." --yolo 2>&1 | tee $(Build.ArtifactStagingDirectory)/finalize-logs/pr_finalize_output.md
+              FINALIZE_EXIT_CODE=$?
+              set -e
+              
+              echo "pr-finalize exit code: $FINALIZE_EXIT_CODE"
+              
+              if [ $FINALIZE_EXIT_CODE -ne 0 ]; then
+                echo "##vso[task.logissue type=error]pr-finalize skill failed with code $FINALIZE_EXIT_CODE"
+                echo "##vso[task.setvariable variable=FinalizeFailed]true"
+              fi
+            displayName: 'Run pr-finalize Skill'
+            env:
+              GITHUB_TOKEN: $(COPILOT_TOKEN)
+
+          # Publish finalize logs
+          - task: PublishPipelineArtifact@1
+            displayName: 'Publish Finalize Logs'
+            inputs:
+              targetPath: '$(Build.ArtifactStagingDirectory)/finalize-logs'
+              artifact: 'FinalizeLogs'
+              publishLocation: 'pipeline'
+            condition: succeededOrFailed()
+
+          # Fail the stage if finalize failed
+          - script: |
+              if [ "$(FinalizeFailed)" = "true" ]; then
+                echo "##vso[task.logissue type=error]PR finalization failed. Check FinalizeLogs artifact for details."
+                exit 1
+              fi
+            displayName: 'Check Finalize Result'
+            condition: succeededOrFailed()
