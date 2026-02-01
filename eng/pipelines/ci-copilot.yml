@@ -94,45 +94,6 @@ stages:
             env:
               DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
               PRIVATE_BUILD: $(PrivateBuild)
-
-          # List all available simulators/emulators
-          - script: |
-              echo "=== Listing Available Simulators/Emulators ==="
-              
-              # List iOS simulators using xcrun
-              echo ""
-              echo "=== iOS Simulators (xcrun simctl) ==="
-              xcrun simctl list devices available
-              
-              # List iOS simulators using xharness
-              echo ""
-              echo "=== iOS Simulators (xharness) ==="
-              dotnet xharness apple simulators list --installed || echo "xharness apple simulators list failed"
-              
-              # Show Apple device state
-              echo ""
-              echo "=== Apple Device State (xharness) ==="
-              dotnet xharness apple state || echo "xharness apple state failed"
-              
-              # Show Android device state
-              echo ""
-              echo "=== Android Device State (xharness) ==="
-              dotnet xharness android state || echo "xharness android state failed"
-              
-              # List Android AVDs
-              echo ""
-              echo "=== Android AVDs (avdmanager) ==="
-              if [ -n "$ANDROID_HOME" ]; then
-                "$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager" list avd 2>/dev/null || echo "avdmanager not available"
-              elif [ -n "$ANDROID_SDK_ROOT" ]; then
-                "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager" list avd 2>/dev/null || echo "avdmanager not available"
-              else
-                echo "ANDROID_HOME/ANDROID_SDK_ROOT not set"
-              fi
-              
-              echo ""
-              echo "=== Simulator/Emulator listing complete ==="
-            displayName: 'List Simulators and Emulators'
             
           # Verify environment is ready
           - script: |
