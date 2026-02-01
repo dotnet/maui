@@ -13,6 +13,8 @@ namespace Microsoft.Maui.Controls.Maps
 
 		void IMap.Clicked(Location location) => MapClicked?.Invoke(this, new MapClickedEventArgs(location));
 
+		void IMap.LongClicked(Location location) => MapLongClicked?.Invoke(this, new MapClickedEventArgs(location));
+
 		MapSpan? IMap.VisibleRegion
 		{
 			get

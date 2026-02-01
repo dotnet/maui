@@ -54,6 +54,11 @@ namespace Microsoft.Maui.Maps
 		void Clicked(Location position);
 
 		/// <summary>
+		/// Method called by the handler when user long-presses on the Map.
+		/// </summary>
+		void LongClicked(Location position);
+
+		/// <summary>
 		/// Moves the map so that it displays the specified <see cref="MapSpan"/> region.
 		/// </summary>
 		void MoveToRegion(MapSpan region);

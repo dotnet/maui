@@ -1,1 +1,2 @@
 #nullable enable
+Microsoft.Maui.Maps.IMap.LongClicked(Microsoft.Maui.Devices.Sensors.Location! position) -> void

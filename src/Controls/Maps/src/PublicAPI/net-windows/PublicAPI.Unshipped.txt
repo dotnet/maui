@@ -1,1 +1,2 @@
 #nullable enable
+Microsoft.Maui.Controls.Maps.Map.MapLongClicked -> System.EventHandler<Microsoft.Maui.Controls.Maps.MapClickedEventArgs!>?
