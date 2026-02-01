@@ -166,6 +166,10 @@ static class NodeSGExtensions
 
 	public static bool CanConvertTo(this ValueNode valueNode, ITypeSymbol toType, ITypeSymbol? converter, SourceGenContext context)
 	{
+		// C# expressions can be assigned to any type - trust the user's code
+		if (valueNode.Value is Expression)
+			return true;
+
 		var stringValue = (string)valueNode.Value;
 
 		//if there's a typeconverter, assume we can convert
@@ -252,6 +256,14 @@ static class NodeSGExtensions
 
 	public static string ConvertTo(this ValueNode valueNode, ITypeSymbol toType, ITypeSymbol? typeConverter, IndentedTextWriter writer, SourceGenContext context, ILocalValue? parentVar = null)
 	{
+		// C# expressions are emitted directly without conversion, but need quote transformation
+		if (valueNode.Value is Expression expression)
+		{
+			// Transform quotes with semantic context - char literals stay as char only if target expects char
+			return CSharpExpressionHelpers.TransformQuotesWithSemantics(
+				expression.Code, context.Compilation, context.RootType);
+		}
+
 		var valueString = valueNode.Value as string ?? string.Empty;
 
 		if (typeConverter is not null && GetKnownSGTypeConverters(context).TryGetValue(typeConverter, out var converterAndReturnType))
