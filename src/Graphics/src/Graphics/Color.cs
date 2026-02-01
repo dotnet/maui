@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Graphics
 	/// </summary>
 	[DebuggerDisplay("Red={Red}, Green={Green}, Blue={Blue}, Alpha={Alpha}")]
 	[TypeConverter(typeof(Converters.ColorTypeConverter))]
+	[ImmutableObject(true)]
 	public class Color
 	{
 		/// <summary>
