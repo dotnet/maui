@@ -136,29 +136,31 @@ When working with public API changes:
 
 1. **NEVER commit directly to `main`** - Always create a feature branch for your work. Direct commits to `main` are strictly prohibited.
 
-2. **Do NOT rebase, squash, or force-push** unless explicitly requested by the user. These operations rewrite git history and can cause problems for other contributors. Default behavior should be regular commits and pushes.
+2. **NEVER force push (`git push --force` or `git push -f`)** - Force pushing rewrites git history and can cause problems for other contributors. Always use regular `git push` and add new commits instead of amending/rebasing.
 
-3. **When amending an existing PR, do NOT automatically push** - After making changes to an existing PR branch, ask the user before pushing. This allows the user to review the changes locally first. Exception: If the user's instructions explicitly include pushing, proceed without asking.
+3. **Do NOT rebase, squash, or amend commits** unless explicitly requested by the user. These operations rewrite git history. Default behavior should be regular commits with `git commit` (not `git commit --amend`).
+
+4. **When amending an existing PR, do NOT automatically push** - After making changes to an existing PR branch, ask the user before pushing. This allows the user to review the changes locally first. Exception: If the user's instructions explicitly include pushing, proceed without asking.
 
 **Safe Git Workflow:**
 ```bash
 # Create a feature branch (NEVER work directly on main)
 git checkout -b feature/issue-12345
 
-# Make commits normally
+# Make commits normally (NEVER use --amend)
 git add .
 git commit -m "Fix: Description of the change"
 
 # Push to remote (for new branches)
 git push -u origin feature/issue-12345
 
-# For subsequent pushes on the same branch
+# For subsequent pushes on the same branch (NEVER use --force)
 git push
 ```
 
 **When asked to update an existing PR:**
 1. Make the requested changes
-2. Stage and commit the changes
+2. Stage and commit the changes as a NEW commit (not --amend)
 3. **STOP and ask the user** before pushing: "Changes are committed locally. Would you like me to push these changes to the PR?"
 
 ### Documentation

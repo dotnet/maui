@@ -164,6 +164,22 @@
     <WindowsSdkPackageVersion>10.0.19041.44</WindowsSdkPackageVersion>
   </PropertyGroup>
 
+  <!--
+    Windows Unpackaged Device Tests - Self-Contained Windows App SDK
+    ==================================================================
+    
+    When MauiWindowsUnpackagedBuild=True is passed (by windows.cake for unpackaged builds),
+    we enable WindowsAppSDKSelfContained to bundle Windows App SDK DLLs with the app.
+    This is required for Helix where no system Windows App Runtime is installed.
+    
+    CRITICAL: This MUST be set here in Directory.Build.props, NOT in csproj files.
+    The Windows App SDK NuGet package reads this property in its .props file, which is
+    imported before the csproj body is evaluated. Setting it in csproj is too late.
+  -->
+  <PropertyGroup Condition="'$(MauiWindowsUnpackagedBuild)' == 'True'">
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+  </PropertyGroup>
+
   <!-- version number information -->
   <PropertyGroup>
     <!-- Default versions from the SDKs (update when there is a new TFM version) -->
