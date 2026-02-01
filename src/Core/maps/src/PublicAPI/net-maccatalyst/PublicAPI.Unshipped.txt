@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.Maui.Maps.IMap.LastUserLocation.get -> Microsoft.Maui.Devices.Sensors.Location?
+Microsoft.Maui.Maps.IMap.UserLocationUpdated(Microsoft.Maui.Devices.Sensors.Location! location) -> void
