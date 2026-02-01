@@ -11,6 +11,8 @@
     <ExcludeMicrosoftNetTestSdk>true</ExcludeMicrosoftNetTestSdk>
     <DisableArcadeTestFramework>true</DisableArcadeTestFramework>
     <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
+    <!-- This project uses deprecated Frame controls - use Runtime inflation -->
+    <MauiXamlInflator>Runtime</MauiXamlInflator>
   </PropertyGroup>
 
   <ItemGroup>

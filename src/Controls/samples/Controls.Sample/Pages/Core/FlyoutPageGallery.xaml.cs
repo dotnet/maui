@@ -15,7 +15,7 @@ namespace Maui.Controls.Sample.Pages
 			flyoutBehaviorPicker.SelectedIndexChanged += OnFlyoutBehaviorPickerSelectedIndexChanged;
 		}
 
-		void OnGestureEnabledCheckChanged(object sender, CheckedChangedEventArgs e)
+		void OnGestureEnabledCheckChanged(object? sender, CheckedChangedEventArgs e)
 		{
 			if (FlyoutPage == null)
 				return;
@@ -62,14 +62,14 @@ namespace Maui.Controls.Sample.Pages
 			FlyoutPage.FlyoutLayoutBehavior = (FlyoutLayoutBehavior)behavior;
 		}
 
-		void ShowFlyout(object sender, EventArgs e)
+		void ShowFlyout(object? sender, EventArgs e)
 		{
 			if (FlyoutPage == null)
 				return;
 			FlyoutPage.IsPresented = true;
 		}
 
-		void CloseFlyout(object sender, EventArgs e)
+		void CloseFlyout(object? sender, EventArgs e)
 		{
 			if (FlyoutPage == null)
 				return;
