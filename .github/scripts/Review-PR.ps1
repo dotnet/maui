@@ -13,7 +13,8 @@
     
     The script:
     - Validates prerequisites (gh CLI, PR exists)
-    - Optionally checks out the PR branch
+    - Validates current branch is not protected (main, release/*, net*.0)
+    - Merges the PR into the current branch (for isolated testing)
     - Creates the state directory
     - Invokes Copilot CLI with the pr agent
 
@@ -24,8 +25,8 @@
     The platform to use for testing. Default is 'android'.
     Valid values: android, ios, windows, maccatalyst
 
-.PARAMETER SkipCheckout
-    If specified, skips checking out the PR branch (useful if already on the branch)
+.PARAMETER SkipMerge
+    If specified, skips merging the PR into the current branch (useful if already merged)
 
 .PARAMETER Interactive
     If specified, starts Copilot in interactive mode with the prompt (default).
@@ -43,8 +44,8 @@
     Reviews PR #33687 interactively using the default platform (android)
 
 .EXAMPLE
-    .\Review-PR.ps1 -PRNumber 33687 -Platform ios -SkipCheckout
-    Reviews PR #33687 on iOS without checking out, in interactive mode
+    .\Review-PR.ps1 -PRNumber 33687 -Platform ios -SkipMerge
+    Reviews PR #33687 on iOS without merging (assumes already merged), in interactive mode
 
 .EXAMPLE
     .\Review-PR.ps1 -PRNumber 33687 -NoInteractive
@@ -67,7 +68,7 @@ param(
     [string]$Platform,  # Optional - agent will determine appropriate platform if not specified
 
     [Parameter(Mandatory = $false)]
-    [switch]$SkipCheckout,
+    [switch]$SkipMerge,
 
     [Parameter(Mandatory = $false)]
     [switch]$NoInteractive,
@@ -127,26 +128,84 @@ if (-not $prInfo) {
 Write-Host "  ✅ PR: $($prInfo.title)" -ForegroundColor Green
 Write-Host "  ✅ State: $($prInfo.state)" -ForegroundColor Green
 
-# Step 2: Checkout PR (unless skipped)
-if (-not $SkipCheckout) {
+# Step 2: Validate current branch and merge PR
+Write-Host ""
+$currentBranch = git branch --show-current
+Write-Host "📍 Current branch: $currentBranch" -ForegroundColor Yellow
+
+# Check if on a protected branch (main, release/*, net*.0)
+$protectedBranches = @('main', 'master')
+$isProtected = $protectedBranches -contains $currentBranch -or 
+               $currentBranch -match '^release/' -or 
+               $currentBranch -match '^net\d+\.0$'
+
+if ($isProtected) {
     Write-Host ""
-    Write-Host "📥 Checking out PR #$PRNumber..." -ForegroundColor Yellow
+    Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Red
+    Write-Host "║  ERROR: Cannot run on protected branch!                   ║" -ForegroundColor Red
+    Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Red
+    Write-Host "║  Current branch: $currentBranch" -ForegroundColor Red
+    Write-Host "║                                                           ║" -ForegroundColor Red
+    Write-Host "║  This script merges the PR into the current branch.      ║" -ForegroundColor Red
+    Write-Host "║  Protected branches: main, release/*, net*.0             ║" -ForegroundColor Red
+    Write-Host "║                                                           ║" -ForegroundColor Red
+    Write-Host "║  Please checkout a working branch first:                  ║" -ForegroundColor Red
+    Write-Host "║    git checkout -b pr-review-$PRNumber                        ║" -ForegroundColor Red
+    Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Red
+    Write-Host ""
+    exit 1
+}
+
+Write-Host "  ✅ Branch '$currentBranch' is not protected" -ForegroundColor Green
+
+# Merge the PR into the current branch (unless skipped)
+if (-not $SkipMerge) {
+    Write-Host ""
+    Write-Host "🔀 Merging PR #$PRNumber into current branch..." -ForegroundColor Yellow
     
     if ($DryRun) {
-        Write-Host "  [DRY RUN] Would run: gh pr checkout $PRNumber" -ForegroundColor Magenta
+        Write-Host "  [DRY RUN] Would fetch and merge PR #$PRNumber" -ForegroundColor Magenta
     } else {
-        gh pr checkout $PRNumber
+        # Fetch the PR ref and merge it
+        Write-Host "  📥 Fetching PR #$PRNumber..." -ForegroundColor Gray
+        git fetch origin pull/$PRNumber/head:temp-pr-$PRNumber 2>$null
         if ($LASTEXITCODE -ne 0) {
-            Write-Error "Failed to checkout PR #$PRNumber"
+            # Try fetching from the PR's head repository (for fork PRs)
+            $prDetails = gh pr view $PRNumber --json headRepositoryOwner,headRefName 2>$null | ConvertFrom-Json
+            if ($prDetails) {
+                $forkOwner = $prDetails.headRepositoryOwner.login
+                $headRef = $prDetails.headRefName
+                Write-Host "  📥 PR is from fork: $forkOwner, fetching..." -ForegroundColor Gray
+                git fetch "https://github.com/$forkOwner/maui.git" "${headRef}:temp-pr-$PRNumber"
+                if ($LASTEXITCODE -ne 0) {
+                    Write-Error "Failed to fetch PR #$PRNumber from fork"
+                    exit 1
+                }
+            } else {
+                Write-Error "Failed to fetch PR #$PRNumber"
+                exit 1
+            }
+        }
+        
+        Write-Host "  🔀 Merging into '$currentBranch'..." -ForegroundColor Gray
+        git merge "temp-pr-$PRNumber" --no-edit
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host ""
+            Write-Host "⚠️  Merge conflict detected!" -ForegroundColor Red
+            Write-Host "  Please resolve conflicts manually and re-run the script with -SkipMerge" -ForegroundColor Yellow
+            git merge --abort 2>$null
+            git branch -D "temp-pr-$PRNumber" 2>$null
             exit 1
         }
-        Write-Host "  ✅ Checked out PR branch" -ForegroundColor Green
+        
+        # Clean up temp branch
+        git branch -D "temp-pr-$PRNumber" 2>$null
+        
+        Write-Host "  ✅ PR #$PRNumber merged into '$currentBranch'" -ForegroundColor Green
     }
 } else {
     Write-Host ""
-    Write-Host "⏭️  Skipping checkout (using current branch)" -ForegroundColor Yellow
-    $currentBranch = git branch --show-current
-    Write-Host "  Current branch: $currentBranch" -ForegroundColor Gray
+    Write-Host "⏭️  Skipping merge (assuming PR is already merged)" -ForegroundColor Yellow
 }
 
 # Step 3: Ensure state directory exists
