@@ -4,6 +4,16 @@ parameters:
   skipSimulatorSetup: true
   # .NET NuGet caches
   clearCaches: true
+  # Android - JDK
+  skipJdk: false
+  # Android - SDK Packages
+  skipAndroidCommonSdks: false
+  onlyAndroidPlatformDefaultApis: false
+  skipAndroidPlatformApis: false
+  # Android - Emulators
+  androidEmulatorApiLevel: ''
+  skipAndroidEmulatorImages: true # For most builds we won't need these
+  skipAndroidCreateAvds: true # For most builds we won't need these
   # Provisionator / Xcode
   skipProvisionator: true
   checkoutDirectory: $(System.DefaultWorkingDirectory)
@@ -262,3 +272,56 @@ steps:
 - script: |
     dotnet tool restore --verbosity diag
   displayName: 'Restore .NET Tools'
+
+##################################################
+#              Provisioning Android              #
+##################################################
+
+# Provisioning Android - JDK
+- ${{ if ne(parameters.skipJdk, 'true') }}:
+  - pwsh: dotnet build -t:ProvisionJdk -bl:"$(LogDirectory)/provision-jdk.binlog" ${{ parameters.checkoutDirectory }}/src/Provisioning/Provisioning.csproj -v:detailed
+    displayName: 'Provision JDK'
+    condition: succeeded()
+
+# Provisioning Android - Android SDK common packages (eg: cmdline-tools, emulator, platform-tools, build-tools)
+- ${{ if ne(parameters.skipAndroidCommonSdks, 'true') }}:
+  - pwsh: dotnet build -t:ProvisionAndroidSdkCommonPackages -bl:"$(LogDirectory)/provision-androidsdk-common.binlog" ${{ parameters.checkoutDirectory }}/src/Provisioning/Provisioning.csproj -v:detailed
+    displayName: 'Provision Android SDK - Common Packages'
+    condition: succeeded()
+
+# Provisioning Android - Android environment variables
+- ${{ if ne(parameters.skipAndroidCommonSdks, 'true') }}:
+  - pwsh: |
+      echo "Setting ANDROID_SDK_ROOT and ANDROID_HOME..."
+      $jsonOutput = & dotnet android sdk info --format=Json | ConvertFrom-Json
+      $preferredSdk = $jsonOutput.SdkInfo.Path
+      echo "##vso[task.setvariable variable=ANDROID_SDK_ROOT]$preferredSdk"
+      echo "ANDROID_SDK_ROOT set to '$preferredSdk'"
+      echo "##vso[task.setvariable variable=ANDROID_HOME]$preferredSdk"
+      echo "ANDROID_HOME set to '$preferredSdk'"
+    displayName: 'Provision Android SDK - Environment variables'
+    condition: succeeded()
+
+# Provisioning Android - Android SDK platform APIs (eg: platforms;android-29, platforms;android-30)
+- ${{ if ne(parameters.skipAndroidPlatformApis, 'true') }}:
+  - pwsh: dotnet build -t:ProvisionAndroidSdkPlatformApiPackages -p:AndroidSdkProvisionDefaultApiLevelsOnly="$Env:AndroidSdkProvisionDefaultApiLevelsOnly" -bl:"$(LogDirectory)/provision-androidsdk-platform-apis.binlog" ${{ parameters.checkoutDirectory }}/src/Provisioning/Provisioning.csproj -v:detailed
+    displayName: 'Provision Android SDK - Platform APIs'
+    condition: succeeded()
+    env:
+      AndroidSdkProvisionDefaultApiLevelsOnly: ${{ parameters.onlyAndroidPlatformDefaultApis }}
+
+# Provisioning Android - Emulator images (eg: system-images;android-34;google_apis;aarch64)
+- ${{ if ne(parameters.skipAndroidEmulatorImages, 'true') }}:
+  - pwsh: dotnet build -t:ProvisionAndroidSdkEmulatorImagePackages -p:AndroidSdkProvisionApiLevel="$Env:AndroidSdkProvisionApiLevel" -bl:"$(LogDirectory)/provision-androidsdk-emulator-images.binlog" ${{ parameters.checkoutDirectory }}/src/Provisioning/Provisioning.csproj -v:detailed
+    displayName: 'Provision Android SDK - Emulator Images'
+    condition: succeeded()
+    env:
+      AndroidSdkProvisionApiLevel: ${{ parameters.androidEmulatorApiLevel }}
+
+# Provisioning Android - Android AVDs (actual emulator virtual devices)
+- ${{ if ne(parameters.skipAndroidCreateAvds, 'true') }}:
+  - pwsh: dotnet build -t:ProvisionAndroidSdkAvdCreateAvds -p:AndroidSdkProvisionApiLevel="$Env:AndroidSdkProvisionApiLevel" -bl:"$(LogDirectory)/provision-androidsdk-create-avds.binlog" ${{ parameters.checkoutDirectory }}/src/Provisioning/Provisioning.csproj -v:detailed
+    displayName: 'Provision Android SDK - Create AVDs'
+    condition: succeeded()
+    env:
+      AndroidSdkProvisionApiLevel: ${{ parameters.androidEmulatorApiLevel }}
