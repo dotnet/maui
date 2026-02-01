@@ -15,9 +15,6 @@
     <RuntimeIdentifiers Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">android-arm64;android-x64</RuntimeIdentifiers>
     <IsTestProject>true</IsTestProject>
     <ExcludeMicrosoftNetTestSdk>true</ExcludeMicrosoftNetTestSdk>
-    <!-- For unpackaged Windows builds on Helix, bundle Windows App SDK DLLs with the app.
-         MauiWindowsUnpackagedBuild is set by windows.cake when building unpackaged tests. -->
-    <WindowsAppSDKSelfContained Condition="'$(MauiWindowsUnpackagedBuild)' == 'True'">true</WindowsAppSDKSelfContained>
   </PropertyGroup>
 
   <PropertyGroup>
