@@ -47,6 +47,19 @@
 		<AndroidAotProfile Include="$(MSBuildThisFileDirectory)maui-blazor.aotprofile" />
 	</ItemGroup>
 
+	<!--
+		Enable Composite Partial R2R for Android CoreCLR Release builds by default.
+		Note: PublishReadyToRun and PublishReadyToRunComposite are already set by the Android workload.
+	-->
+	<PropertyGroup Condition="'$(TargetPlatformIdentifier)' == 'android' and '$(UseMonoRuntime)' == 'false' and '$(Configuration)' == 'Release' and '$(PublishReadyToRun)' == 'true'">
+		<PublishReadyToRunCrossgen2ExtraArgs Condition="'$(_MauiPublishReadyToRunPartial)' != 'false'">$(PublishReadyToRunCrossgen2ExtraArgs) --partial</PublishReadyToRunCrossgen2ExtraArgs>
+		<_MauiUseDefaultReadyToRunPgoFiles Condition="'$(_MauiUseDefaultReadyToRunPgoFiles)' == ''">true</_MauiUseDefaultReadyToRunPgoFiles>
+	</PropertyGroup>
+
+	<ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'android' and '$(UseMonoRuntime)' == 'false' and '$(Configuration)' == 'Release' and '$(PublishReadyToRun)' == 'true'">
+		<_ReadyToRunPgoFiles Condition="'$(_MauiUseDefaultReadyToRunPgoFiles)' == 'true'" Include="$(MSBuildThisFileDirectory)mibc\android\**\*.mibc" />
+	</ItemGroup>
+
 	<!-- Check Tasks ABI and other validations -->
 	<PropertyGroup>
 		<_MauiTargetsImportedAgain Condition="'$(_MauiTargetsImported)'=='True'">True</_MauiTargetsImportedAgain>
