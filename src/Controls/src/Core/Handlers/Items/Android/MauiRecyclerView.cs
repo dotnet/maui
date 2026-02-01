@@ -31,6 +31,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		SnapManager _snapManager;
 		ScrollHelper _scrollHelper;
 		protected RecyclerView.OnScrollListener RecyclerViewScrollListener;
+		bool _isInitialLayoutCompleted;
 
 		EmptyViewAdapter _emptyViewAdapter;
 		readonly DataChangeObserver _emptyCollectionObserver;
@@ -531,6 +532,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			AViewCompat.SetClipBounds(this, new ARect(0, 0, Width, Height));
 #pragma warning restore CS0618 // Obsolete
 
+			// Track layout completion to distinguish initial load from ItemsSource changes.
+			_isInitialLayoutCompleted = true;
+
 			// After a direct (non-animated) scroll operation, we may need to make adjustments
 			// to align the target item; if an adjustment is pending, execute it here.
 			// (Deliberately checking the private member here rather than the property accessor; the accessor will
@@ -645,6 +649,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			RemoveScrollListener();
 
 			RecyclerViewScrollListener = CreateScrollListener();
+
+			// If OnLayout has already been called (i.e., ItemsSource changed after view displayed),
+			// mark layout as complete so the scroll event fires.
+			if (_isInitialLayoutCompleted && RecyclerViewScrollListener is RecyclerViewScrollListener<TItemsView, TItemsViewSource> typedListener)
+			{
+				typedListener.MarkLayoutComplete();
+			}
+
 			AddOnScrollListener(RecyclerViewScrollListener);
 		}
 
