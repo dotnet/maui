@@ -226,13 +226,8 @@ if ($DryRun) {
         "--stream", "on"  # Enable streaming for real-time output
     )
     
-    # Deny branch-switching commands - agent should work on current branch
-    $copilotArgs += @(
-        "--deny-tool", "shell(git checkout*)",
-        "--deny-tool", "shell(git switch*)",
-        "--deny-tool", "shell(git stash*)",
-        "--deny-tool", "shell(gh pr checkout*)"
-    )
+    # NOTE: --deny-tool does NOT work with --allow-all (allow-all takes precedence)
+    # Branch switching prevention relies on agent instructions in pr.md only
     
     # Create log directory for this PR
     $prLogDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/copilot-logs"
