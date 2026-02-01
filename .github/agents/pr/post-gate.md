@@ -82,8 +82,8 @@ Run the `try-fix` skill **5 times sequentially**, once with each model:
 ```
 Invoke the try-fix skill for PR #XXXXX:
 - problem: [Description of the bug from issue/PR - what's broken and expected behavior]
-- platform: [android/ios]
-- test_command: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform [android/ios] -TestFilter "IssueXXXXX"
+- platform: [Use platform selected in Gate phase - must be affected by the bug AND available on host]
+- test_command: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform [same platform] -TestFilter "IssueXXXXX"
 - target_files:
   - src/[area]/[likely-affected-file-1].cs
   - src/[area]/[likely-affected-file-2].cs

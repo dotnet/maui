@@ -553,13 +553,42 @@ Tests were already verified to FAIL in Phase 2. Gate is a confirmation step:
 **If starting from a PR (fix exists):**
 Use full verification mode - tests should FAIL without fix, PASS with fix.
 
+### Platform Selection for Gate
+
+**🚨 CRITICAL: Choose a platform that is BOTH affected by the bug AND available on the current host.**
+
+**Step 1: Identify affected platforms** from Pre-Flight:
+- Check the "Platforms Affected" checkboxes in the state file
+- Check issue labels (e.g., `platform/iOS`, `platform/Android`)
+- Check which platform-specific files the PR modifies
+
+**Step 2: Match to available platforms on current host:**
+
+| Host OS | Available Platforms |
+|---------|---------------------|
+| Windows | Android, Windows |
+| macOS | Android, iOS, MacCatalyst |
+
+**Step 3: Select the best match:**
+1. Pick a platform that IS affected by the bug
+2. That IS available on the current host
+3. Prefer the platform most directly impacted by the PR's code changes
+
+**Example decisions:**
+- Bug affects iOS/Windows/MacCatalyst, host is Windows → Test on **Windows**
+- Bug affects iOS only, host is Windows → **STOP** - cannot test (ask user)
+- Bug affects Android only → Test on **Android** (works on any host)
+- Bug affects all platforms → Pick based on host (Windows on Windows, iOS on macOS)
+
+**⚠️ Do NOT test on a platform that isn't affected by the bug** - the test will pass regardless of whether the fix works.
+
 **🚨 MUST invoke as a task agent** to prevent command substitution:
 
 ```markdown
 Invoke the `task` agent with agent_type: "task" and this prompt:
 
 "Invoke the verify-tests-fail-without-fix skill for this PR:
-- Platform: android (or ios)
+- Platform: [selected platform from Platform Selection above]
 - TestFilter: 'IssueXXXXX'
 - RequireFullVerification: true
 

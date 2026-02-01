@@ -108,10 +108,14 @@ Then cross-pollinate: Share ALL results with ALL models, ask for NEW ideas, repe
 ### Phase 3: Gate - Verify Tests Catch Bug ⛔
 **🚨 BLOCKER PHASE - Cannot continue if Gate fails**
 
+- [ ] **Select platform:** Choose platform that is BOTH affected by the bug AND available on host
+  - Check "Platforms Affected" from Pre-Flight
+  - Match to host: Windows → (Android, Windows), macOS → (Android, iOS, MacCatalyst)
+  - If no affected platform is available → STOP and ask user
 - [ ] Invoke verification via **task agent** (NOT inline):
   ```
   Invoke task agent with: "Run verify-tests-fail-without-fix skill
-  - Platform: [android/ios/windows]
+  - Platform: [selected platform]
   - TestFilter: 'IssueXXXXX'
   - RequireFullVerification: true
   Report: Did tests FAIL without fix? PASS with fix? Final status?"
