@@ -50,21 +50,6 @@ stages:
               echo "PR Number: ${{ parameters.PRNumber }}"
             displayName: 'Validate Parameters'
 
-          # Load prompt file before checking out PR branch (file may not exist on PR branch)
-          - script: |
-              echo "Loading prompt file..."
-              PROMPT_FILE="eng/pipelines/prompts/pr-review-prompt.md"
-              if [ ! -f "$PROMPT_FILE" ]; then
-                echo "##vso[task.logissue type=error]Prompt file not found: $PROMPT_FILE"
-                exit 1
-              fi
-              
-              # Copy prompt to a safe location before branch checkout
-              mkdir -p /tmp/copilot-prompts
-              cp "$PROMPT_FILE" /tmp/copilot-prompts/pr-review-prompt.md
-              echo "Prompt file cached to /tmp/copilot-prompts/pr-review-prompt.md"
-            displayName: 'Cache Prompt File'
-
           # Provision environment (Xcode, .NET SDK, Android SDK, etc.)
           - template: common/provision.yml
             parameters:
@@ -218,74 +203,21 @@ stages:
             displayName: 'Install GitHub Copilot CLI'
 
           - script: |
-              echo "Fetching PR #${{ parameters.PRNumber }} changes..."
-              if ! git fetch origin pull/${{ parameters.PRNumber }}/head:pr-${{ parameters.PRNumber }}; then
-                echo "##vso[task.logissue type=error]Failed to fetch PR #${{ parameters.PRNumber }}. Check that the PR exists."
-                exit 1
-              fi
-              
-              # Get the merge base between current branch and PR branch
-              CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-              echo "Current branch: $CURRENT_BRANCH"
-              
-              MERGE_BASE=$(git merge-base HEAD pr-${{ parameters.PRNumber }})
-              echo "Merge base: $MERGE_BASE"
-              
-              # Get the list of commits in the PR (from merge-base to PR head)
-              PR_COMMITS=$(git rev-list --reverse $MERGE_BASE..pr-${{ parameters.PRNumber }})
-              COMMIT_COUNT=$(echo "$PR_COMMITS" | grep -c . || echo "0")
-              echo "Found $COMMIT_COUNT commit(s) to cherry-pick"
-              
-              if [ "$COMMIT_COUNT" -eq "0" ]; then
-                echo "##vso[task.logissue type=warning]No commits found in PR #${{ parameters.PRNumber }} relative to current branch"
-                echo "PR may already be merged or branch is up to date"
-              else
-                # Cherry-pick each commit from the PR onto the current branch
-                echo "Cherry-picking PR commits onto $CURRENT_BRANCH..."
-                for COMMIT in $PR_COMMITS; do
-                  echo "Cherry-picking commit: $(git log -1 --oneline $COMMIT)"
-                  if ! git cherry-pick --no-commit $COMMIT; then
-                    echo "##vso[task.logissue type=error]Failed to cherry-pick commit $COMMIT"
-                    echo "Attempting to show conflict details..."
-                    git status
-                    git diff --name-only --diff-filter=U
-                    exit 1
-                  fi
-                done
-                
-                echo "Successfully applied $COMMIT_COUNT commit(s) from PR #${{ parameters.PRNumber }}"
-              fi
-              
-              echo "Current state:"
-              git log -1 --oneline
-              git status --short
-            displayName: 'Cherry-pick PR Changes'
-
-          - script: |
-              echo "Running Copilot PR Reviewer Agent..."
+              echo "Running Copilot PR Reviewer Agent via Review-PR.ps1..."
               echo "Reviewing PR #${{ parameters.PRNumber }}..."
               
               # Create artifacts directory for Copilot outputs
               mkdir -p $(Build.ArtifactStagingDirectory)/copilot-logs
               
-              # Load prompt from cached file (saved before PR checkout)
-              PROMPT_FILE="/tmp/copilot-prompts/pr-review-prompt.md"
-              if [ ! -f "$PROMPT_FILE" ]; then
-                echo "##vso[task.logissue type=error]Cached prompt file not found: $PROMPT_FILE"
-                exit 1
-              fi
-              
-              # Read prompt and replace placeholder with actual PR number
-              PROMPT=$(sed "s/\${PR_NUMBER}/${{ parameters.PRNumber }}/g" "$PROMPT_FILE")
-              
-              # Invoke the PR reviewer agent using Copilot CLI in programmatic mode
-              # Capture exit code to check for failures
+              # Invoke the PR reviewer using our PowerShell script
+              # The script will merge the PR into the current branch
+              # -NoInteractive for CI mode (exits after completion)
               set +e
-              copilot --agent pr -p "$PROMPT" --yolo 2>&1 | tee $(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md
+              pwsh .github/scripts/Review-PR.ps1 -PRNumber ${{ parameters.PRNumber }} -NoInteractive 2>&1 | tee $(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md
               COPILOT_EXIT_CODE=$?
               set -e
               
-              echo "Copilot exit code: $COPILOT_EXIT_CODE"
+              echo "Review-PR.ps1 exit code: $COPILOT_EXIT_CODE"
               
               # Copy any Copilot session files
               if [ -d "$HOME/.copilot" ]; then
@@ -310,7 +242,7 @@ stages:
               
               # Check for failure indicators in output
               if [ $COPILOT_EXIT_CODE -ne 0 ]; then
-                echo "##vso[task.logissue type=error]Copilot CLI exited with code $COPILOT_EXIT_CODE"
+                echo "##vso[task.logissue type=error]Review-PR.ps1 exited with code $COPILOT_EXIT_CODE"
                 # Don't exit yet - let artifacts be published first
                 echo "##vso[task.setvariable variable=CopilotFailed]true"
               fi
