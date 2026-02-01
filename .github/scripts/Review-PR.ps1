@@ -64,7 +64,7 @@ param(
 
     [Parameter(Mandatory = $false)]
     [ValidateSet('android', 'ios', 'windows', 'maccatalyst')]
-    [string]$Platform = 'android',
+    [string]$Platform,  # Optional - agent will determine appropriate platform if not specified
 
     [Parameter(Mandatory = $false)]
     [switch]$SkipCheckout,
@@ -90,7 +90,11 @@ Write-Host "╔═════════════════════�
 Write-Host "║           PR Review with Copilot CLI                      ║" -ForegroundColor Cyan
 Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Cyan
 Write-Host "║  PR:        #$PRNumber                                          ║" -ForegroundColor Cyan
-Write-Host "║  Platform:  $Platform                                        ║" -ForegroundColor Cyan
+if ($Platform) {
+    Write-Host "║  Platform:  $Platform                                        ║" -ForegroundColor Cyan
+} else {
+    Write-Host "║  Platform:  (agent will determine)                        ║" -ForegroundColor Cyan
+}
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
 Write-Host ""
 
@@ -155,10 +159,17 @@ if (-not (Test-Path $stateDir)) {
 # Step 4: Build the prompt for Copilot CLI
 $planTemplatePath = ".github/agents/pr/PLAN-TEMPLATE.md"
 
+# Build platform instruction
+$platformInstruction = if ($Platform) {
+    "**Platform for testing:** $Platform"
+} else {
+    "**Platform for testing:** Determine the appropriate platform(s) based on the PR's affected code paths and the current host OS."
+}
+
 $prompt = @"
 Review PR #$PRNumber using the pr agent workflow.
 
-**Platform for testing:** $Platform
+$platformInstruction
 
 **Instructions:**
 1. Read the plan template at `$planTemplatePath` for the 5-phase workflow
@@ -186,7 +197,7 @@ if ($DryRun) {
     Write-Host "  Agent: pr" -ForegroundColor Gray
     Write-Host "  Mode: $(if ($NoInteractive) { 'Non-interactive (-p)' } else { 'Interactive (-i)' })" -ForegroundColor Gray
     Write-Host "  PR: #$PRNumber" -ForegroundColor Gray
-    Write-Host "  Platform: $Platform" -ForegroundColor Gray
+    Write-Host "  Platform: $(if ($Platform) { $Platform } else { '(agent will determine)' })" -ForegroundColor Gray
     Write-Host ""
     Write-Host "Prompt:" -ForegroundColor Gray
     Write-Host $prompt -ForegroundColor DarkGray
@@ -199,7 +210,7 @@ if ($DryRun) {
     Write-Host ""
     Write-Host "PR Review Context:" -ForegroundColor Cyan
     Write-Host "  PR_NUMBER:      $PRNumber" -ForegroundColor White
-    Write-Host "  PLATFORM:       $Platform" -ForegroundColor White
+    Write-Host "  PLATFORM:       $(if ($Platform) { $Platform } else { '(agent will determine)' })" -ForegroundColor White
     Write-Host "  STATE_FILE:     CustomAgentLogsTmp/PRState/pr-$PRNumber.md" -ForegroundColor White
     Write-Host "  PLAN_TEMPLATE:  $planTemplatePath" -ForegroundColor White
     Write-Host "  CURRENT_BRANCH: $(git branch --show-current)" -ForegroundColor White
@@ -211,12 +222,32 @@ if ($DryRun) {
     
     # Build the copilot command arguments
     $copilotArgs = @(
-        "--agent", "pr"
+        "--agent", "pr",
+        "--stream", "on"  # Enable streaming for real-time output
     )
+    
+    # Deny branch-switching commands - agent should work on current branch
+    $copilotArgs += @(
+        "--deny-tool", "shell(git checkout*)",
+        "--deny-tool", "shell(git switch*)",
+        "--deny-tool", "shell(git stash*)",
+        "--deny-tool", "shell(gh pr checkout*)"
+    )
+    
+    # Create log directory for this PR
+    $prLogDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/copilot-logs"
+    if (-not (Test-Path $prLogDir)) {
+        New-Item -ItemType Directory -Path $prLogDir -Force | Out-Null
+    }
+    
+    # Add logging options
+    $copilotArgs += @("--log-dir", $prLogDir, "--log-level", "info")
     
     if ($NoInteractive) {
         # Non-interactive mode: -p with --allow-all
-        $copilotArgs += @("-p", $prompt, "--allow-all")
+        # Also save session to markdown for review
+        $sessionFile = Join-Path $prLogDir "session-$(Get-Date -Format 'yyyyMMdd-HHmmss').md"
+        $copilotArgs += @("-p", $prompt, "--allow-all", "--share", $sessionFile)
     } else {
         # Interactive mode: -i to start with prompt
         $copilotArgs += @("-i", $prompt)
@@ -242,4 +273,10 @@ if ($DryRun) {
 Write-Host ""
 Write-Host "📝 State file: CustomAgentLogsTmp/PRState/pr-$PRNumber.md" -ForegroundColor Gray
 Write-Host "📋 Plan template: $planTemplatePath" -ForegroundColor Gray
+if (-not $DryRun) {
+    Write-Host "📁 Copilot logs: CustomAgentLogsTmp/PRState/$PRNumber/copilot-logs/" -ForegroundColor Gray
+    if ($NoInteractive) {
+        Write-Host "📄 Session markdown: $sessionFile" -ForegroundColor Gray
+    }
+}
 Write-Host ""
