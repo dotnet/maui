@@ -1,1 +1,4 @@
 #nullable enable
+Microsoft.Maui.Controls.Maps.Circle.CircleClicked -> System.EventHandler?
+Microsoft.Maui.Controls.Maps.Polygon.PolygonClicked -> System.EventHandler?
+Microsoft.Maui.Controls.Maps.Polyline.PolylineClicked -> System.EventHandler?
