@@ -109,7 +109,6 @@ if ($Platform -eq "android") {
     # Detect host architecture for simulator builds
     $hostArch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLower()
     $runtimeId = if ($hostArch -eq "x64") { "iossimulator-x64" } else { "iossimulator-arm64" }
-    $simArch = if ($hostArch -eq "x64") { "x64" } else { "arm64" }
     Write-Info "Host architecture: $hostArch, RuntimeIdentifier: $runtimeId"
     
     $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-r", $runtimeId)
@@ -175,6 +174,28 @@ if ($Platform -eq "android") {
     }
     
     Write-Info "Searching for app bundle in: $artifactsDir"
+    
+    # Detect simulator architecture to pick the correct app bundle
+    $simArch = "arm64"  # Default to arm64 for Apple Silicon
+    try {
+        # Get the simulator's device type to determine architecture
+        $deviceInfo = xcrun simctl list devices --json | ConvertFrom-Json
+        $simDevice = $deviceInfo.devices.PSObject.Properties.Value | 
+            ForEach-Object { $_ } | 
+            Where-Object { $_.udid -eq $DeviceUdid } | 
+            Select-Object -First 1
+        
+        if ($simDevice) {
+            # Check if the host machine is x64 or arm64
+            $hostArch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLower()
+            if ($hostArch -eq "x64") {
+                $simArch = "x64"
+            }
+            Write-Info "Host architecture: $hostArch, using simulator arch: $simArch"
+        }
+    } catch {
+        Write-Info "Could not detect architecture, defaulting to arm64"
+    }
     
     $appPath = Get-ChildItem -Path $artifactsDir -Filter "*.app" -Recurse -ErrorAction SilentlyContinue | 
         Where-Object { 
