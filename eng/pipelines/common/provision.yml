@@ -1,7 +1,7 @@
 parameters:
   # Xcode
   skipXcode: false
-  skipSimulatorSetup: false
+  skipSimulatorSetup: true
   # .NET NuGet caches
   clearCaches: true
   # Provisionator / Xcode
@@ -244,19 +244,6 @@ steps:
     inputs:
       provisioningProfileLocation: 'secureFiles'
       provProfileSecureFile: '${{ parameters.provisioningProfileName }}'
-  ##################################################
-  #              Provisioning Windows              #
-  ##################################################
-
-  # Provisioning Windows - Set dump file location
-- pwsh: |
-    $errorPath = "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps"
-    New-ItemProperty -Path $errorPath -Name DumpFolder -PropertyType String -Value "$(Build.ArtifactStagingDirectory)/crash-dumps" -Force
-    New-ItemProperty -Path $errorPath -Name DumpType -PropertyType DWORD -Value 2 -Force
-  displayName: 'Set dump file location'
-  condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
-  continueOnError: true
-  timeoutInMinutes: 5
 
 ##################################################
 #               Provisioning .NET                #
