@@ -140,7 +140,8 @@ namespace Microsoft.Maui.Controls.Platform
 				new PanGestureHandler(() => View),
 				new SwipeGestureHandler(() => View),
 				InitializeDragAndDropHandler(),
-				pointerHandler
+				pointerHandler,
+				new LongPressGestureHandler(() => _handler, () => View)
 			);
 
 			var detector = new TapAndPanGestureDetector(context, listener);
