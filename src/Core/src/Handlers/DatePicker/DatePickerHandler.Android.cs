@@ -179,6 +179,21 @@ namespace Microsoft.Maui.Handlers
 				_dialog.DismissEvent += OnDialogDismiss;
 			}
 
+			// Always update min/max dates in ShowEvent to ensure they are applied
+			// after Android's internal DatePicker initialization (fixes Android bug where
+			// setMinDate/setMaxDate don't update properly on reused dialogs)
+			EventHandler? updateMinMaxDates = null;
+			updateMinMaxDates = (sender, e) =>
+			{
+				if (VirtualView is not null && _dialog is not null)
+				{
+					PlatformView?.UpdateMinimumDate(VirtualView, _dialog);
+					PlatformView?.UpdateMaximumDate(VirtualView, _dialog);
+					_dialog.ShowEvent -= updateMinMaxDates;
+				}
+			};
+			_dialog.ShowEvent += updateMinMaxDates;
+
 			_dialog.Show();
 		}
 
