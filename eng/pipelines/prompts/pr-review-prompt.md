@@ -2,18 +2,31 @@ Review PR #${PR_NUMBER}
 
 Follow the 5-phase PR Agent workflow, but leverage the existing agent review state:
 
-1. **Import prior agent state** instead of re-doing completed phases
-2. **Verify the Gate phase** empirically (run tests to confirm FAIL without fix, PASS with fix)
-3. **Phase 4 (Fix)** - EXHAUSTIVE exploration:
+1. **Phase 1: Gate** - Run tests FIRST. If gate fails, STOP IMMEDIATELY. Do not proceed.
+2. **Phase 2: Pre-Flight** - Import prior agent state instead of re-doing completed phases
+3. **Phase 3: Tests** - Verify reproduction tests exist
+4. **Phase 4: Fix** - EXHAUSTIVE exploration:
    - Consult 5+ different AI models for diverse fix ideas
    - Run try-fix skill with Opus 4.5 for EACH unique idea
    - Keep iterating until completely out of alternatives
    - Compare ALL candidates to determine best approach
-4. **Phase 5 (Report)** - Generate final recommendation with full comparison
+5. **Phase 5: Report** - Generate final recommendation with full comparison
 
 ## Work Plan
 
-### Phase 1: Pre-Flight (Context Gathering)
+### Phase 1: Gate (Test Verification) - MUST PASS FIRST ⛔
+**THIS IS A BLOCKING GATE - If tests don't behave correctly, STOP ALL WORK IMMEDIATELY.**
+
+- [ ] Run verification script with `-RequireFullVerification`:
+  ```bash
+  pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 -Platform android -RequireFullVerification
+  ```
+- [ ] Confirm tests FAIL without fix (bug reproduced)
+- [ ] Confirm tests PASS with fix (bug fixed)
+- [ ] **IF GATE FAILS**: Stop immediately, do not proceed to any other phase. Report failure and exit.
+- [ ] Mark Gate ✅ PASSED (or ❌ FAILED and STOP)
+
+### Phase 2: Pre-Flight (Context Gathering)
 - [ ] Checkout PR branch (`pr-33687`)
 - [ ] Gather PR metadata (title, body, labels, files)
 - [ ] Read linked issue #19256
@@ -22,22 +35,13 @@ Follow the 5-phase PR Agent workflow, but leverage the existing agent review sta
 - [ ] Create local state file importing prior agent's findings
 - [ ] Mark Pre-Flight COMPLETE
 
-### Phase 2: Tests (Verify Reproduction Tests Exist)
+### Phase 3: Tests (Verify Reproduction Tests Exist)
 - [ ] Confirm PR includes UI tests (already present per file list)
 - [ ] Verify test file locations:
   - HostApp: `src/Controls/tests/TestCases.HostApp/Issues/Issue19256.cs`
   - NUnit: `src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue19256.cs`
 - [ ] Verify tests follow naming convention (`Issue19256`)
 - [ ] Mark Tests COMPLETE
-
-### Phase 3: Gate (Test Verification) - MUST PASS
-- [ ] Run verification script with `-RequireFullVerification`:
-  ```bash
-  pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 -Platform android -RequireFullVerification
-  ```
-- [ ] Confirm tests FAIL without fix (bug reproduced)
-- [ ] Confirm tests PASS with fix (bug fixed)
-- [ ] Mark Gate PASSED (or FAILED if tests don't behave correctly)
 
 ### Phase 4: Fix (EXHAUSTIVE Independent Analysis)
 
