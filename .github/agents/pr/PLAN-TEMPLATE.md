@@ -48,11 +48,12 @@ If ANY phase cannot complete due to missing tools/drivers/devices:
 Which would you like me to do?
 ```
 
-### Rule 2: Do NOT Switch Branches
-**Never checkout or switch branches during a PR review.**
-- Work on the **current branch** as-is
-- Use `git diff` or `gh pr diff` to see changes
-- Never run: `git checkout`, `git switch`, `gh pr checkout`, `git stash`
+### Rule 2: No Direct Git Commands
+**Never run git commands directly during a PR review.**
+- All git operations are handled by the PowerShell scripts (verify-tests-fail.ps1, etc.)
+- Use `gh pr diff` or `gh pr view` to see PR info (read-only)
+- ❌ Never run: `git checkout`, `git switch`, `git stash`, `git reset`, `git revert`
+- ✅ Scripts handle file manipulation internally
 
 ### Rule 3: Gate via Task Agent Only
 Gate verification MUST run as a `task` agent invocation, NOT inline commands.
