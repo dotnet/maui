@@ -175,18 +175,18 @@ Task("buildOnly")
 	else
 	{
 		// Apply correct build properties for unpackaged builds
-		// IMPORTANT: WindowsAppSDKSelfContained MUST be set in device test csproj files,
-		// NOT passed via command line. Passing it via command line propagates to ALL projects
-		// (including library dependencies like Graphics.csproj) causing architecture errors.
-		// The csproj condition ensures it only applies to the device test project itself:
-		//   <WindowsAppSDKSelfContained Condition="...windows... and WindowsPackageType=None">true</WindowsAppSDKSelfContained>
+		// MauiWindowsUnpackagedBuild signals to csproj files that this is an unpackaged build,
+		// so they can set WindowsAppSDKSelfContained=true to bundle Windows App SDK DLLs.
+		// NOTE: We do NOT pass WindowsAppSDKSelfContained via command line because it would
+		// propagate to ALL projects (including library dependencies) causing architecture errors.
 		s.MSBuildSettings.Properties.Add("SelfContained", new List<string> { "True" });
 		s.MSBuildSettings.Properties.Add("WindowsPackageType", new List<string> { "None" });
+		s.MSBuildSettings.Properties.Add("MauiWindowsUnpackagedBuild", new List<string> { "True" });
 		s.MSBuildSettings.Properties.Add("ExtraDefineConstants", new List<string> { "UNPACKAGED" });
 		Information("=== UNPACKAGED BUILD PROPERTIES ===");
 		Information("  SelfContained=True");
 		Information("  WindowsPackageType=None");
-		Information("  WindowsAppSDKSelfContained set in csproj (not command line)");
+		Information("  MauiWindowsUnpackagedBuild=True (triggers WindowsAppSDKSelfContained in csproj)");
 	}
 
 	// Set correct launchSettings.json setting for packaged/unpackaged
