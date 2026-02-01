@@ -55,6 +55,7 @@ variables:
   value: none
 
 - group: MAUI # This is the main MAUI variable group that contains secrets for the apple certificate
+- group: maui-provisionator # Required for provisionator to install Xcode
 
 # Variable groups required for all builds
 # - ${{ if and(ne(variables['Build.DefinitionName'], 'maui-pr'), ne(variables['Build.DefinitionName'], 'dotnet-maui'),  ne(variables['Build.DefinitionName'], 'maui-pr-devicetests'),  ne(variables['Build.DefinitionName'], 'maui-pr-uitests')) }}:
