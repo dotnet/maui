@@ -60,6 +60,10 @@ stages:
               skipJdk: false
               skipSimulatorSetup: false
               skipCertificates: true
+              # Android emulator setup
+              skipAndroidEmulatorImages: false
+              skipAndroidCreateAvds: false
+              androidEmulatorApiLevel: '34'
 
           # Install .NET and workloads via build.ps1
           - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
@@ -153,7 +157,17 @@ stages:
               echo "Tools restored successfully"
             displayName: 'Restore .NET Tools'
 
-
+          # Boot Android emulator for UI tests
+          - pwsh: |
+              Write-Host "=== Booting Android Emulator ==="
+              # Use the cake script to boot the emulator
+              ./build.ps1 -Script eng/devices/android.cake --target=boot --device="android-emulator-64_34" --verbosity=diagnostic
+            displayName: 'Boot Android Emulator'
+            continueOnError: true
+            timeoutInMinutes: 10
+            env:
+              ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
+              JAVA_HOME: $(JAVA_HOME_17_X64)
 
           - script: |
               echo "Installing Node.js 22..."
