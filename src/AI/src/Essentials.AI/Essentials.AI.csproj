@@ -10,6 +10,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsBindingProject>true</IsBindingProject>
+    <!-- MLKit GenAI requires API level 26 -->
+    <SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-android'))">26.0</SupportedOSPlatformVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- NuGet package information -->
@@ -29,6 +31,8 @@
     <Compile Remove="Platform\*.cs" />
   </ItemGroup>
   <ItemGroup Condition=" $(TargetFramework.Contains('-android')) ">
+    <AndroidGradleProject Include="../AndroidNative/build.gradle" ModuleName="essentialsai" />
+    <PackageReference Include="Xamarin.Google.MLKit.GenAI.Prompt" />
   </ItemGroup>
   <ItemGroup Condition=" $(TargetFramework.Contains('-ios')) or $(TargetFramework.Contains('-maccatalyst')) or $(TargetFramework.Contains('-macos')) ">
     <XcodeProject Include="..\AppleNative\EssentialsAI\EssentialsAI.xcodeproj">
