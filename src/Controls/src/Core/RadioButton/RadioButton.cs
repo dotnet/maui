@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <value>The string "Checked".</value>
 		public const string CheckedVisualState = "Checked";
-		
+
 		/// <summary>
 		/// The visual state name for when the radio button is unchecked.
 		/// </summary>
@@ -38,13 +38,13 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <value>The string "Root".</value>
 		public const string TemplateRootName = "Root";
-		
+
 		/// <summary>
 		/// The name of the checked indicator element in the control template.
 		/// </summary>
 		/// <value>The string "CheckedIndicator".</value>
 		public const string CheckedIndicator = "CheckedIndicator";
-		
+
 		/// <summary>
 		/// The name of the unchecked button element in the control template.
 		/// </summary>
@@ -686,12 +686,15 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <returns>The string representation of the content, or the result of <c>ToString()</c> if content is not a string.</returns>
 		/// <remarks>
-		/// If <see cref="Content"/> is a <see cref="View"/>, a warning is logged and the <c>ToString()</c> representation is used instead.
+		/// If <see cref="Content"/> is a <see cref="View"/> and no <see cref="ControlTemplate"/> is set, a warning is logged 
+		/// and the <c>ToString()</c> representation is used instead. When a ControlTemplate is applied, View content is supported.
 		/// </remarks>
 		public string ContentAsString()
 		{
 			var content = Content;
-			if (content is View)
+			// Only log warning if Content is a View AND no ControlTemplate is set
+			// When ControlTemplate is set, View content IS supported (per documentation)
+			if (content is View && ResolveControlTemplate() == null)
 			{
 				Application.Current?.FindMauiContext()?.CreateLogger<RadioButton>()?.LogWarning("Warning - {RuntimePlatform} does not support View as the {PropertyName} property of RadioButton; the return value of the ToString() method will be displayed instead.", DeviceInfo.Platform, ContentProperty.PropertyName);
 			}
