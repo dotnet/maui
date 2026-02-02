@@ -14,15 +14,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			if (emptyViewTemplate is null)
 			{
-				return new TextBlock
-				{
-					HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Center,
-					VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Center,
-					Text = bindingContext?.ToString() ?? string.Empty
-				};
+				return CreateDefaultEmptyViewTextBlock(bindingContext);
 			}
 
 			var template = emptyViewTemplate.SelectDataTemplate(bindingContext, null);
+
 			var view = template.CreateContent() as View;
 			if (view is not null)
 			{
@@ -32,6 +28,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return RealizeEmptyView(view, mauiContext, ref mauiEmptyView);
 		}
 
+		static TextBlock CreateDefaultEmptyViewTextBlock(object? bindingContext)
+		{
+			return new TextBlock
+			{
+				HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Center,
+				VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Center,
+				Text = bindingContext?.ToString() ?? string.Empty
+			};
+		}
 		internal static FrameworkElement RealizeEmptyView(View? view, IMauiContext mauiContext, ref View? mauiEmptyView)
 		{
 			mauiEmptyView = view ?? throw new ArgumentNullException(nameof(view));
