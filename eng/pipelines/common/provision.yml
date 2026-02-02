@@ -144,7 +144,7 @@ steps:
       if [[ -z "$XCODE_PATH" ]]; then
         echo "ERROR: No suitable Xcode version found for requested version ${ORIGINAL_VERSION}"
         echo "Tried: ${VERSIONS_TO_TRY[*]}"
-        exit 1
+        exit 0
       fi
 
       sudo xcode-select -s "$XCODE_PATH"

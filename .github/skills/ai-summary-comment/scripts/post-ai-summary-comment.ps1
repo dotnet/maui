@@ -289,7 +289,8 @@ function Extract-AllSections {
     $sections = @{}
     
     # Pattern to find all <details><summary><strong>TITLE</strong></summary>...content...</details> blocks
-    $pattern = '(?s)<details>\s*<summary><strong>([^<]+)</strong></summary>(.*?)</details>'
+    # Note: [^>]* handles optional attributes like "open" in <details open>
+    $pattern = '(?s)<details[^>]*>\s*<summary><strong>([^<]+)</strong></summary>(.*?)</details>'
     $matches = [regex]::Matches($StateContent, $pattern)
     
     if ($Debug) {
@@ -399,9 +400,9 @@ if (-not $SkipValidation) {
             Write-Host "  ✅ $($phase.Name): Valid" -ForegroundColor Green
         } else {
             Write-Host "  ❌ $($phase.Name): INVALID" -ForegroundColor Red
-            foreach ($error in $result.Errors) {
-                Write-Host "     - $error" -ForegroundColor Red
-                $allValidationErrors += "$($phase.Name): $error"
+            foreach ($err in $result.Errors) {
+                Write-Host "     - $err" -ForegroundColor Red
+                $allValidationErrors += "$($phase.Name): $err"
             }
         }
         
@@ -435,8 +436,8 @@ if (-not $SkipValidation) {
         Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Red
         Write-Host ""
         Write-Host "Found $($allValidationErrors.Count) validation error(s):" -ForegroundColor Red
-        foreach ($error in $allValidationErrors) {
-            Write-Host "  - $error" -ForegroundColor Red
+        foreach ($err in $allValidationErrors) {
+            Write-Host "  - $err" -ForegroundColor Red
         }
         Write-Host ""
         Write-Host "💡 Fix these issues in the state file before posting the review comment." -ForegroundColor Cyan
