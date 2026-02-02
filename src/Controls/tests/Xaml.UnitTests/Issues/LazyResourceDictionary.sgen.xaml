@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.LazyResourceDictionary">
+    <ContentPage.Resources>
+        <Color x:Key="PrimaryColor">Blue</Color>
+        <Thickness x:Key="StandardPadding">10</Thickness>
+        <Style x:Key="MyLabelStyle" TargetType="Label">
+            <Setter Property="TextColor" Value="{StaticResource PrimaryColor}"/>
+        </Style>
+        <!-- x:Shared="false" means each access returns a new instance -->
+        <x:Object x:Key="Handle" x:Shared="false"/>
+        <!-- Implicit style - applies to all Buttons automatically -->
+        <Style TargetType="Button">
+            <Setter Property="BackgroundColor" Value="Green"/>
+            <Setter Property="Padding" Value="{StaticResource StandardPadding}"/>
+        </Style>
+    </ContentPage.Resources>
+    
+    <StackLayout>
+        <Label x:Name="label1" Text="Test Label" Style="{StaticResource MyLabelStyle}"/>
+    </StackLayout>
+</ContentPage>

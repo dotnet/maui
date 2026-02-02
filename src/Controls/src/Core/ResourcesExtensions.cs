@@ -55,6 +55,42 @@ namespace Microsoft.Maui.Controls
 			return resources;
 		}
 
+		/// <summary>
+		/// Gets all merged resource keys without resolving lazy values.
+		/// Used for resource change propagation where values are looked up on-demand.
+		/// </summary>
+		public static IEnumerable<string> GetMergedResourceKeys(this IElementDefinition element)
+		{
+			HashSet<string> keys = null;
+			while (element != null)
+			{
+				var ve = element as IResourcesProvider;
+				if (ve != null && ve.IsResourcesCreated)
+				{
+					keys = keys ?? new(StringComparer.Ordinal);
+					foreach (string key in ve.Resources.MergedResourcesKeys)
+					{
+						keys.Add(key);
+					}
+				}
+				var app = element as Application;
+				if (app != null && app.SystemResources != null)
+				{
+					keys = keys ?? new(StringComparer.Ordinal);
+					foreach (var kvp in app.SystemResources)
+						keys.Add(kvp.Key);
+				}
+				if (app != null)
+				{
+					keys = keys ?? new(StringComparer.Ordinal);
+					keys.Add(AppThemeBinding.AppThemeResource);
+				}
+
+				element = element.Parent;
+			}
+			return keys;
+		}
+
 		public static bool TryGetResource(this IElementDefinition element, string key, out object value)
 		{
 			while (element != null)
