@@ -150,6 +150,152 @@ static class SetPropertyHelpers
 		writer.WriteLine($"{parentVar.ValueAccessor}.Add({getNodeValue(node, context.Compilation.ObjectType).ValueAccessor});");
 	}
 
+	/// <summary>
+	/// Adds a lazy resource to the ResourceDictionary using AddFactory.
+	/// The resource is created inside a lambda function for on-demand instantiation.
+	/// </summary>
+	public static void AddLazyResourceToResourceDictionary(IndentedTextWriter writer, ILocalValue parentVar, ElementNode node, SourceGenContext context)
+	{
+		// Get the type of the resource
+		if (!node.XmlType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, context.TypeCache, out var type) || type is null)
+			return;
+
+		// Determine if this is an implicit style
+		bool hasKey = node.Properties.TryGetValue(XmlName.xKey, out var keyNode);
+		bool isImplicitStyle = !hasKey && node.XmlType.Name == "Style";
+
+		// Validate x:Key if present (same validation as CanAddToResourceDictionary)
+		string? key = null;
+		if (hasKey)
+		{
+			if (keyNode is not ValueNode vKeyNode || vKeyNode.Value is not string keyStr)
+			{
+				context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)keyNode!, ""), "x:Key must be a string literal"));
+				return;
+			}
+			key = keyStr;
+
+			// Check for duplicate keys
+			if (!context.KeysInRD.TryGetValue(parentVar, out var keysInUse))
+			{
+				context.KeysInRD[parentVar] = keysInUse = [];
+			}
+			if (keysInUse.Contains(key))
+			{
+				var location = LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)keyNode, key);
+				context.ReportDiagnostic(Diagnostic.Create(Descriptors.DuplicateKeyInRD, location, key));
+				return;
+			}
+			keysInUse.Add(key);
+		}
+
+		// Get the x:Shared attribute (default is true)
+		bool shared = true;
+		if (node.Properties.TryGetValue(XmlName.xShared, out var sharedNode))
+		{
+			if (sharedNode is ValueNode vn && vn.Value is string sharedStr)
+			{
+				shared = !sharedStr.Equals("false", StringComparison.OrdinalIgnoreCase);
+			}
+		}
+
+		// Generate the AddFactory call
+		if (isImplicitStyle)
+		{
+			// Get TargetType from Style
+			var targetTypeExpr = GetStyleTargetTypeExpression(node, context);
+			if (targetTypeExpr == null)
+			{
+				context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)node, ""), "Implicit style requires a TargetType"));
+				return;
+			}
+			
+			writer.WriteLine($"{parentVar.ValueAccessor}.AddFactory({targetTypeExpr}, () =>");
+		}
+		else
+		{
+			writer.WriteLine($"{parentVar.ValueAccessor}.AddFactory(\"{key}\", () =>");
+		}
+		
+		using (PrePost.NewBlock(writer, begin: "{", end: $"}}, shared: {shared.ToString().ToLowerInvariant()});"))
+		{
+			// Create a temporary context for generating the lambda body
+			var lambdaContext = new SourceGenContext(
+				writer, 
+				context.Compilation, 
+				context.SourceProductionContext, 
+				context.XmlnsCache, 
+				context.TypeCache, 
+				context.RootType, 
+				null, 
+				context.ProjectItem)
+			{
+				ParentContext = context
+			};
+
+			// First pass: Create all values (node and its descendants) using CreateValuesVisitor
+			// This mirrors the normal flow: CreateValuesVisitor walks the entire tree first
+			node.Accept(new CreateValuesVisitor(lambdaContext), null);
+
+			// Second pass: Set properties on all nodes using SetPropertiesVisitor
+			// stopOnResourceDictionary=true prevents infinite recursion if there are nested RDs
+			node.Accept(new SetPropertiesVisitor(lambdaContext, stopOnResourceDictionary: true), null);
+
+			// Return the created object
+			if (lambdaContext.Variables.TryGetValue(node, out var nodeVar))
+			{
+				writer.WriteLine($"return {nodeVar.ValueAccessor};");
+			}
+			else
+			{
+				// Fallback - shouldn't happen
+				writer.WriteLine($"return null!;");
+			}
+		}
+	}
+
+	/// <summary>
+	/// Gets the TargetType expression for a Style node.
+	/// </summary>
+	static string? GetStyleTargetTypeExpression(ElementNode node, SourceGenContext context)
+	{
+		if (!node.Properties.TryGetValue(new XmlName("", "TargetType"), out var targetTypeNode))
+			return null;
+
+		// Case 1: String value - TargetType="Label"
+		if (targetTypeNode is ValueNode valueNode && valueNode.Value is string typeName)
+		{
+			var typeSymbol = typeName.GetTypeSymbol(context, node);
+			if (typeSymbol != null)
+				return $"typeof({typeSymbol.ToFQDisplayString()})";
+			return null;
+		}
+
+		// Case 2: TypeExtension markup - TargetType="{x:Type Label}"
+		if (targetTypeNode is ElementNode elementNode && 
+			(elementNode.XmlType.Name == "TypeExtension" || elementNode.XmlType.Name == "Type"))
+		{
+			// TypeExtension can have TypeName as property or positional argument
+			if (elementNode.Properties.TryGetValue(new XmlName("", "TypeName"), out var typeNameNode) && 
+				typeNameNode is ValueNode tn)
+			{
+				var typeNameStr = tn.Value as string;
+				var typeSymbol = typeNameStr!.GetTypeSymbol(context, node);
+				if (typeSymbol != null)
+					return $"typeof({typeSymbol.ToFQDisplayString()})";
+			}
+			else if (elementNode.CollectionItems.Count > 0 && elementNode.CollectionItems[0] is ValueNode positionalArg)
+			{
+				var typeNameStr = positionalArg.Value as string;
+				var typeSymbol = typeNameStr!.GetTypeSymbol(context, node);
+				if (typeSymbol != null)
+					return $"typeof({typeSymbol.ToFQDisplayString()})";
+			}
+		}
+
+		return null;
+	}
+
 	static bool CanSet(ILocalValue parentVar, string localName, INode node, SourceGenContext context)
 	{
 		if (parentVar.Type.GetAllProperties(localName, context).FirstOrDefault() is not IPropertySymbol property)
