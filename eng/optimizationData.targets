@@ -17,6 +17,7 @@
   <!-- IBC data packages don't follow NuGet conventions.  -->
   <Target Name="GetMIBCData"
           AfterTargets="Restore"
+          BeforeTargets="_GetPackageFiles"
           Condition="'@(MIBCPackageDef)' != ''">
 
     <ItemGroup>
@@ -39,6 +40,12 @@
           DestinationFiles="@(_optimizationMibcDestinationFile)"
           SkipUnchangedFiles="true"
           UseHardlinksIfPossible="true" />
+
+    <!-- Add mibc files to pack after they've been copied -->
+    <ItemGroup>
+      <_MibcFilesToPack Include="$(MibcOptimizationDataDir)**\*.mibc" />
+      <None Include="@(_MibcFilesToPack)" Visible="false" Pack="true" PackagePath="buildTransitive/netstandard2.0/mibc/" />
+    </ItemGroup>
 
   </Target>
 
