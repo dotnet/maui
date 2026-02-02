@@ -309,7 +309,10 @@ stages:
       timeout: 120
       testCategory: AOT
     - name: mac_aot_tests
-      pool: ${{ parameters.MacOSPoolArm64 }}
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:
+        pool: ${{ parameters.MacOSPool.internal }}
       timeout: 240
       testCategory: AOT
 
