@@ -39,14 +39,13 @@ stages:
     parameters:
       helixRepo: dotnet/maui
       pool: ${{ parameters.macPool }}
-      enableMicrobuild: ${{ parameters.enableMicrobuild }}
-      enablePublishUsingPipelines: true
-      enablePublishBuildAssets: ${{ parameters.publishAssets }}
+      enableMicrobuild: false
+      enablePublishUsingPipelines: false
+      enablePublishBuildAssets: false
       enableTelemetry: true
-      enableSourceBuild: ${{ parameters.enableSourceBuild }}
-      enableSourceIndex: ${{ parameters.enableSourceIndex }}
-      sourceIndexParams: ${{ parameters.sourceIndexParams }}
-      publishAssetsImmediately: true
+      enableSourceBuild: false
+      enableSourceIndex: false
+      publishAssetsImmediately: false
       enablePublishBuildArtifacts: true
       enablePublishTestResults: false
       templateContext:
