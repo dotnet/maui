@@ -185,6 +185,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		protected override void DisconnectHandler(WItemsView platformView)
 		{
+			if(_collectionViewSource?.Source is INotifyCollectionChanged incc)
+			{
+				incc.CollectionChanged -= ItemsChanged;
+			}
+
 			// Unsubscribe from LayoutUpdated before disconnecting to prevent exceptions
 			if (_scrollUpdatePending)
 			{
@@ -619,6 +624,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					_emptyViewDisplayed = false;
 				}
 
+				_emptyView = null;
+				_mauiEmptyView = null;
+				(PlatformView as IEmptyView)?.SetEmptyView(null, null);
+				return;
+			}
+
+			if (emptyViewTemplate is DataTemplateSelector && emptyView is null)
+			{
 				_emptyView = null;
 				_mauiEmptyView = null;
 				(PlatformView as IEmptyView)?.SetEmptyView(null, null);
