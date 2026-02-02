@@ -1901,6 +1901,38 @@ namespace Microsoft.Maui.Controls
 			UpdatePlatformUnloadedLoadedWiring(Window);
 		}
 
+		private protected override void OnHandlerChangingCore(HandlerChangingEventArgs args)
+		{
+			base.OnHandlerChangingCore(args);
+
+			if (Application.Current is null)
+				return;
+
+			// Unsubscribe when handler is being removed
+			if (args.NewHandler is null || args.OldHandler is not null)
+				Application.Current.RequestedThemeChanged -= HandleRequestedThemeChanged;
+
+			// Subscribe when handler is being added for the first time
+			if (args.NewHandler is not null && args.OldHandler is null)
+				Application.Current.RequestedThemeChanged += HandleRequestedThemeChanged;
+		}
+
+		void HandleRequestedThemeChanged(object? sender, AppThemeChangedEventArgs e)
+		{
+			OnRequestedThemeChanged(e);
+		}
+
+		/// <summary>
+		/// Called when the application's requested theme changes.
+		/// Override this method to respond to theme changes and update visual properties.
+		/// </summary>
+		/// <param name="e">The event arguments containing the new theme.</param>
+		protected virtual void OnRequestedThemeChanged(AppThemeChangedEventArgs e)
+		{
+			// Base implementation does nothing.
+			// Derived classes can override to refresh theme-dependent properties.
+		}
+
 		/// <inheritdoc/>
 		Paint? IView.Background
 		{

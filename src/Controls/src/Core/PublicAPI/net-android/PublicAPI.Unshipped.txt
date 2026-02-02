@@ -1,1 +1,4 @@
 #nullable enable
+virtual Microsoft.Maui.Controls.VisualElement.OnRequestedThemeChanged(Microsoft.Maui.Controls.AppThemeChangedEventArgs! e) -> void
+~override Microsoft.Maui.Controls.Picker.OnRequestedThemeChanged(Microsoft.Maui.Controls.AppThemeChangedEventArgs e) -> void
+~override Microsoft.Maui.Controls.SearchBar.OnRequestedThemeChanged(Microsoft.Maui.Controls.AppThemeChangedEventArgs e) -> void

@@ -1,3 +1,4 @@
 #nullable enable
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.ViewWillTransitionToSize(CoreGraphics.CGSize toSize, UIKit.IUIViewControllerTransitionCoordinator coordinator) -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewController.LoadView() -> void
+virtual Microsoft.Maui.Controls.VisualElement.OnRequestedThemeChanged(Microsoft.Maui.Controls.AppThemeChangedEventArgs! e) -> void
+~override Microsoft.Maui.Controls.Picker.OnRequestedThemeChanged(Microsoft.Maui.Controls.AppThemeChangedEventArgs e) -> void
+~override Microsoft.Maui.Controls.SearchBar.OnRequestedThemeChanged(Microsoft.Maui.Controls.AppThemeChangedEventArgs e) -> void

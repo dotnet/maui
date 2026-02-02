@@ -353,26 +353,13 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		private protected override void OnHandlerChangingCore(HandlerChangingEventArgs args)
+		/// <summary>
+		/// Called when the application's requested theme changes.
+		/// Triggers property change notifications to refresh theme-dependent properties on Windows.
+		/// </summary>
+		protected override void OnRequestedThemeChanged(AppThemeChangedEventArgs e)
 		{
-			base.OnHandlerChangingCore(args);
-
-			if (Application.Current is null)
-			{
-				return;
-			}
-
-			if (args.NewHandler is null || args.OldHandler is not null)
-				Application.Current.RequestedThemeChanged -= OnRequestedThemeChanged;
-
-			if (args.NewHandler is not null && args.OldHandler is null)
-			{
-				Application.Current.RequestedThemeChanged += OnRequestedThemeChanged;
-			}
-		}
-
-		void OnRequestedThemeChanged(object sender, AppThemeChangedEventArgs e)
-		{
+			base.OnRequestedThemeChanged(e);
 			OnPropertyChanged(nameof(Background));
 			OnPropertyChanged(nameof(TextColor));
 		}

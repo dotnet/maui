@@ -191,21 +191,13 @@ namespace Microsoft.Maui.Controls
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<SearchBar>>(() => new PlatformConfigurationRegistry<SearchBar>(this));
 		}
 
-		private protected override void OnHandlerChangingCore(HandlerChangingEventArgs args)
+		/// <summary>
+		/// Called when the application's requested theme changes.
+		/// Triggers property change notifications to refresh theme-dependent properties on Windows.
+		/// </summary>
+		protected override void OnRequestedThemeChanged(AppThemeChangedEventArgs e)
 		{
-			base.OnHandlerChangingCore(args);
-
-			if (Application.Current == null)
-				return;
-
-			if (args.NewHandler == null || args.OldHandler is not null)
-				Application.Current.RequestedThemeChanged -= OnRequestedThemeChanged;
-			if (args.NewHandler != null && args.OldHandler == null)
-				Application.Current.RequestedThemeChanged += OnRequestedThemeChanged;
-		}
-
-		private void OnRequestedThemeChanged(object sender, AppThemeChangedEventArgs e)
-		{
+			base.OnRequestedThemeChanged(e);
 			OnPropertyChanged(nameof(PlaceholderColor));
 			OnPropertyChanged(nameof(TextColor));
 			OnPropertyChanged(nameof(CancelButtonColor));
