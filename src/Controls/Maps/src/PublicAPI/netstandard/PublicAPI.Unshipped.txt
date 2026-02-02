@@ -18,6 +18,8 @@ Microsoft.Maui.Controls.Maps.MapElement.ZIndex.get -> int
 Microsoft.Maui.Controls.Maps.MapElement.ZIndex.set -> void
 Microsoft.Maui.Controls.Maps.Pin.ClusteringIdentifier.get -> string!
 Microsoft.Maui.Controls.Maps.Pin.ClusteringIdentifier.set -> void
+Microsoft.Maui.Controls.Maps.Pin.ImageSource.get -> Microsoft.Maui.Controls.ImageSource?
+Microsoft.Maui.Controls.Maps.Pin.ImageSource.set -> void
 Microsoft.Maui.Controls.Maps.Polygon.PolygonClicked -> System.EventHandler?
 Microsoft.Maui.Controls.Maps.Polyline.PolylineClicked -> System.EventHandler?
 const Microsoft.Maui.Controls.Maps.Pin.DefaultClusteringIdentifier = "maui_default_cluster" -> string!
@@ -26,3 +28,4 @@ static readonly Microsoft.Maui.Controls.Maps.Map.RegionProperty -> Microsoft.Mau
 static readonly Microsoft.Maui.Controls.Maps.MapElement.IsVisibleProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Maps.MapElement.ZIndexProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Maps.Pin.ClusteringIdentifierProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.Maps.Pin.ImageSourceProperty -> Microsoft.Maui.Controls.BindableProperty!
