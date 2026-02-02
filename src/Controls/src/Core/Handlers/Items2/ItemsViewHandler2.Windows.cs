@@ -80,6 +80,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			[Controls.ItemsView.EmptyViewTemplateProperty.PropertyName] = MapEmptyViewTemplate,
 			[Controls.ItemsView.FlowDirectionProperty.PropertyName] = MapFlowDirection,
 			[Controls.ItemsView.IsVisibleProperty.PropertyName] = MapIsVisible,
+			[Controls.ItemsView.ItemsUpdatingScrollModeProperty.PropertyName] = MapItemsUpdatingScrollMode,
 			[Controls.StructuredItemsView.ItemsLayoutProperty.PropertyName] = MapItemsLayout,
 			[Controls.StructuredItemsView.HeaderProperty.PropertyName] = MapHeader,
 			[Controls.StructuredItemsView.HeaderTemplateProperty.PropertyName] = MapHeaderTemplate,
@@ -87,13 +88,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			[Controls.StructuredItemsView.FooterTemplateProperty.PropertyName] = MapFooterTemplate,
 		};
 
-
-
 		private bool _scrollUpdatePending;
 
 		public static void MapItemsSource(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
 		{
 			handler.UpdateItemsSource();
+		}
+
+		public static void MapItemsUpdatingScrollMode(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
+		{
 		}
 
 		public static void MapHorizontalScrollBarVisibility(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
