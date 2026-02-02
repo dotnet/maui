@@ -202,6 +202,9 @@ internal static class SafeAreaExtensions
 					// Left: how much the view extends into the left safe area
 					// Similar to top, during animation the view may be shifted right (viewLeft > 0)
 					// but will settle at X=0. Detect animation by checking if view extends beyond screen.
+					// Note: We also check viewBottom > screenHeight because in landscape orientation,
+					// Shell navigation transitions can slide views vertically while affecting left safe area.
+					// Without this check, the left inset would be incorrectly set to 0 during these animations.
 					var viewIsAnimatingHorizontally = viewLeft > 0 && (viewRight > screenWidth || viewBottom > screenHeight);
 
 					if (left > 0 && viewLeft < left)
@@ -211,7 +214,9 @@ internal static class SafeAreaExtensions
 					}
 					else if (left > 0 && viewIsAnimatingHorizontally && viewLeft > left)
 					{
-						// View is animating - keep full left inset
+						// View is animating and has been shifted beyond the left safe area edge (viewLeft > left).
+						// This happens during Shell navigation when the view slides in from the right.
+						// Keep the full left inset since the view will eventually settle at X=0.
 					}
 					else
 					{
