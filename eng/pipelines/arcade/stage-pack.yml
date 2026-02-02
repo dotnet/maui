@@ -34,9 +34,11 @@ stages:
   displayName: Pack .NET MAUI
   dependsOn: []
   jobs:
+  # macOS job with its own templateContext.outputs
   - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
     parameters:
       helixRepo: dotnet/maui
+      pool: ${{ parameters.macPool }}
       enableMicrobuild: ${{ parameters.enableMicrobuild }}
       enablePublishUsingPipelines: true
       enablePublishBuildAssets: ${{ parameters.publishAssets }}
@@ -47,6 +49,12 @@ stages:
       publishAssetsImmediately: true
       enablePublishBuildArtifacts: true
       enablePublishTestResults: false
+      templateContext:
+        outputs:
+        - output: pipelineArtifact
+          artifact: MacNativeArtifacts
+          path: $(Agent.TempDirectory)/native-binaries
+          condition: always()
 
       workspace:
         clean: all
@@ -55,13 +63,6 @@ stages:
       - job: pack_net_macOS
         displayName: Pack macOS
         timeoutInMinutes: 240
-        pool: ${{ parameters.macPool }}
-        templateContext:
-          outputs:
-          - output: pipelineArtifact
-            artifact: MacNativeArtifacts
-            path: $(Agent.TempDirectory)/native-binaries
-            condition: always()
         preSteps:
         - checkout: self
           fetchDepth: 1
@@ -87,20 +88,39 @@ stages:
           - ${{ each pair in step }}:
               ${{ pair.key }}: ${{ pair.value }}
 
+  # Windows job with its own templateContext.outputs
+  - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
+    parameters:
+      helixRepo: dotnet/maui
+      pool: ${{ parameters.pool }}
+      enableMicrobuild: ${{ parameters.enableMicrobuild }}
+      enablePublishUsingPipelines: true
+      enablePublishBuildAssets: ${{ parameters.publishAssets }}
+      enableTelemetry: true
+      enableSourceBuild: ${{ parameters.enableSourceBuild }}
+      enableSourceIndex: ${{ parameters.enableSourceIndex }}
+      sourceIndexParams: ${{ parameters.sourceIndexParams }}
+      publishAssetsImmediately: true
+      enablePublishBuildArtifacts: true
+      enablePublishTestResults: false
+      templateContext:
+        outputs:
+        - output: pipelineArtifact
+          artifact: APIScanFiles
+          path: $(Agent.TempDirectory)/APIScanFiles
+        - output: pipelineArtifact
+          artifact: Metadata
+          path: $(Agent.TempDirectory)/metadata
+
+      workspace:
+        clean: all
+
+      jobs:
       - job: pack_net_Windows
         displayName: Pack Windows
         dependsOn:
         - pack_net_macOS
         timeoutInMinutes: 240
-        pool: ${{ parameters.pool }}
-        templateContext:
-          outputs:
-          - output: pipelineArtifact
-            artifact: APIScanFiles
-            path: $(Agent.TempDirectory)/APIScanFiles
-          - output: pipelineArtifact
-            artifact: Metadata
-            path: $(Agent.TempDirectory)/metadata
         preSteps:
         - checkout: self
           fetchDepth: 1
