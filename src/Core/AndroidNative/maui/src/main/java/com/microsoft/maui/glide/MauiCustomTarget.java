@@ -82,7 +82,13 @@ public class MauiCustomTarget extends CustomTarget<Drawable> implements MauiTarg
         handler.post(runnable);
     }
 
-    private static boolean isContextDestroyed(Context context) {
+    /**
+     * Checks if the provided context's underlying Activity is destroyed or finishing.
+     * This is used to prevent Glide crashes when attempting to load images after activity destruction.
+     * @param context The context to check
+     * @return true if the context is destroyed, false otherwise
+     */
+    public static boolean isContextDestroyed(Context context) {
         Activity activity = getActivity(context);
         if (activity != null) {
             if (activity.isFinishing() || activity.isDestroyed()) {
