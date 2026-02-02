@@ -143,12 +143,13 @@ stages:
 
 - template: /eng/pipelines/arcade/stage-pack.yml@self
   parameters:
-    macPool: ${{ parameters.MacOSPool }}
     ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
       pool: ${{ parameters.WindowsPool.public }}
+      macPool: ${{ parameters.MacOSPool.public }}
       runAsPublic: true
     ${{ else }}:
       pool: ${{ parameters.WindowsPool.internal }}
+      macPool: ${{ parameters.MacOSPool.internal }}
       runAsPublic: false
     prepareSteps:
     - template: /eng/pipelines/common/provision.yml@self
