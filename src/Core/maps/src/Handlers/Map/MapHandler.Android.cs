@@ -304,7 +304,9 @@ namespace Microsoft.Maui.Maps.Handlers
 			// Cluster radius in degrees, adjusted based on zoom level
 			// At zoom 0 (world view), cluster radius is large
 			// At zoom 21 (street level), cluster radius is tiny
-			double clusterRadius = 180.0 / Math.Pow(2, zoom) * 2;
+			// The divisor controls how aggressively pins cluster - smaller = less clustering
+			// 50 pixels on screen ≈ cluster if pins would overlap at this zoom
+			double clusterRadius = 50.0 / Math.Pow(2, zoom);
 
 			// Group pins by their clustering identifier
 			var pinsByIdentifier = new Dictionary<string, List<IMapPin>>();
@@ -371,6 +373,7 @@ namespace Microsoft.Maui.Maps.Handlers
 			Map = map;
 
 			map.SetOnCameraMoveListener(_mapReady);
+			map.SetOnCameraIdleListener(_mapReady);
 
 			map.MarkerClick += OnMarkerClick;
 			map.InfoWindowClick += OnInfoWindowClick;
@@ -386,6 +389,28 @@ namespace Microsoft.Maui.Maps.Handlers
 			}
 
 			InitialUpdate();
+		}
+
+		/// <summary>
+		/// Recalculates clusters based on current zoom level.
+		/// Called when camera becomes idle after zooming.
+		/// </summary>
+		internal void ReclusterPins()
+		{
+			if (!_isClusteringEnabled || Map == null || VirtualView == null)
+				return;
+
+			// Clear existing markers
+			if (_markers != null)
+			{
+				for (int i = 0; i < _markers.Count; i++)
+					_markers[i].Remove();
+				_markers = null;
+			}
+			_clusterMarkers?.Clear();
+
+			// Re-add pins to trigger reclustering at new zoom level
+			AddPins((IList)VirtualView.Pins);
 		}
 
 		internal void UpdateVisibleRegion(LatLng pos)
@@ -808,10 +833,11 @@ namespace Microsoft.Maui.Maps.Handlers
 		}
 	}
 
-	class MapCallbackHandler : Java.Lang.Object, GoogleMap.IOnCameraMoveListener, IOnMapReadyCallback
+	class MapCallbackHandler : Java.Lang.Object, GoogleMap.IOnCameraMoveListener, GoogleMap.IOnCameraIdleListener, IOnMapReadyCallback
 	{
 		MapHandler? _handler;
 		GoogleMap? _googleMap;
+		float _lastClusterZoom = -1;
 
 		public MapCallbackHandler(MapHandler mapHandler)
 		{
@@ -830,6 +856,20 @@ namespace Microsoft.Maui.Maps.Handlers
 				return;
 
 			_handler?.UpdateVisibleRegion(_googleMap.CameraPosition.Target);
+		}
+
+		void GoogleMap.IOnCameraIdleListener.OnCameraIdle()
+		{
+			if (_googleMap == null || _handler == null)
+				return;
+
+			// Recalculate clusters when zoom level changes significantly
+			var currentZoom = _googleMap.CameraPosition.Zoom;
+			if (Math.Abs(currentZoom - _lastClusterZoom) > 0.5f)
+			{
+				_lastClusterZoom = currentZoom;
+				_handler.ReclusterPins();
+			}
 		}
 
 		protected override void Dispose(bool disposing)
