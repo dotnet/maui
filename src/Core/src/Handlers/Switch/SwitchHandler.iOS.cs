@@ -69,6 +69,7 @@ namespace Microsoft.Maui.Handlers
 
 			NSObject? _willEnterForegroundObserver;
 			NSObject? _windowDidBecomeKeyObserver;
+			IUITraitChangeRegistration? _traitChangeRegistration;
 
 			public void Connect(ISwitch virtualView, UISwitch platformView)
 			{
@@ -83,6 +84,7 @@ namespace Microsoft.Maui.Handlers
 						if (PlatformView is not null)
 						{
 							UpdateTrackOffColor(PlatformView);
+							UpdateThumbColor(PlatformView);
 						}
 					});
 #elif IOS
@@ -95,6 +97,20 @@ namespace Microsoft.Maui.Handlers
 						}
 					});
 #endif
+
+				// iOS/MacCatalyst 26+ resets ThumbTintColor when theme changes (light/dark mode).
+				// Register for trait changes to re-apply ThumbColor after UIKit completes its styling.
+				if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+				{
+					_traitChangeRegistration = platformView.RegisterForTraitChanges<UITraitUserInterfaceStyle>(
+						(IUITraitEnvironment view, UITraitCollection _) =>
+						{
+							if (view is UISwitch uiSwitch)
+							{
+								UpdateThumbColor(uiSwitch);
+							}
+						});
+				}
 			}
 
 			// Ensures the Switch track "OFF" color is updated correctly after system-level UI resets.
@@ -116,6 +132,17 @@ namespace Microsoft.Maui.Handlers
 				});
 			}
 
+			void UpdateThumbColor(UISwitch platformView)
+			{
+				DispatchQueue.MainQueue.DispatchAsync(async () =>
+				{
+					if (VirtualView is ISwitch view && view.ThumbColor is not null)
+					{
+						platformView.ThumbTintColor = view.ThumbColor.ToPlatform();
+					}
+				});
+			}
+
 			public void Disconnect(UISwitch platformView)
 			{
 				platformView.ValueChanged -= OnControlValueChanged;
@@ -129,6 +156,11 @@ namespace Microsoft.Maui.Handlers
 				{
 					NSNotificationCenter.DefaultCenter.RemoveObserver(_windowDidBecomeKeyObserver);
 					_windowDidBecomeKeyObserver = null;
+				}
+				if (_traitChangeRegistration is not null)
+				{
+					platformView.UnregisterForTraitChanges(_traitChangeRegistration);
+					_traitChangeRegistration = null;
 				}
 			}
 
