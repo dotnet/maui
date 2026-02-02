@@ -140,6 +140,7 @@
     <FizzlerPackageVersion>1.3.0</FizzlerPackageVersion>
     <TizenUIExtensionsVersion>0.9.0</TizenUIExtensionsVersion>
     <ExCSSPackageVersion>4.2.3</ExCSSPackageVersion>
+    <XamarinGoogleMLKitGenAIPromptPackageVersion>1.0.0.1-alpha1</XamarinGoogleMLKitGenAIPromptPackageVersion>
     <SystemDrawingCommonPackageVersion>9.0.0</SystemDrawingCommonPackageVersion>
     <MicrosoftDotNetBuildTasksFeedVersion>10.0.0-beta.25523.113</MicrosoftDotNetBuildTasksFeedVersion>
     <MicrosoftDotNetBuildTasksInstallersPackageVersion>10.0.0-beta.25523.113</MicrosoftDotNetBuildTasksInstallersPackageVersion>

@@ -6,9 +6,10 @@ using Maui.Controls.Sample.ViewModels;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Essentials.AI;
 using System.ClientModel;
 
-#if ENABLE_OPENAI_CLIENT
+#if ENABLE_OPENAI_CLIENT || ANDROID
 using OpenAI;
 using OpenAI.Chat;
 using OpenAI.Embeddings;
@@ -37,7 +38,11 @@ public static class MauiProgram
 		});
 
 		// Register AI agents and workflow
+#if ANDROID
+		builder.AddGeminiNanoServices();
+#else
 		builder.AddOpenAIServices();
+#endif
 		builder.AddItineraryWorkflow();
 
 		// Register Pages
@@ -78,6 +83,76 @@ public static class MauiProgram
 		}
 		return stream;
 	}
+
+#if ANDROID
+	private static MauiAppBuilder AddGeminiNanoServices(this MauiAppBuilder builder)
+	{
+		// Register the base Gemini Nano client
+		builder.Services.AddSingleton<GeminiNanoChatClient>();
+
+		// Register the Gemini Nano client as IChatClient to allow direct use
+		builder.Services.AddSingleton<IChatClient>(sp =>
+		{
+			var geminiClient = sp.GetRequiredService<GeminiNanoChatClient>();
+			var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
+			return geminiClient
+				.AsBuilder()
+				.UseLogging(loggerFactory)
+				.Build();
+		});
+
+		// Register the Agent Framework wrapper as "local-model"
+		builder.Services.AddKeyedSingleton<IChatClient>("local-model", (sp, _) =>
+		{
+			var geminiClient = sp.GetRequiredService<GeminiNanoChatClient>();
+			var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
+			return geminiClient
+				.AsBuilder()
+				.UseLogging(loggerFactory)
+				// This prevents double tool invocation when using Microsoft Agent Framework
+				// TODO: workaround for https://github.com/dotnet/extensions/issues/7204
+				.Use(cc => new NonFunctionInvokingChatClient(cc, loggerFactory, sp))
+				.Build();
+		});
+
+		// Register "cloud-model" with buffering
+		builder.Services.AddKeyedSingleton<IChatClient>("cloud-model", (sp, _) =>
+		{
+			// TODO: Add OpenAI/Azure support for better translation quality
+			var geminiClient = sp.GetRequiredService<GeminiNanoChatClient>();
+			var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
+			return geminiClient
+				.AsBuilder()
+				.UseLogging(loggerFactory)
+				.Use(cc => new BufferedChatClient(cc))
+				.Build();
+		});
+
+		// Register embedding generator using OpenAI (Android/Google doesn't have a local embeddings generator)
+		var aiSection = builder.Configuration.GetSection("AI");
+		var apikey = aiSection["ApiKey"] ?? throw new InvalidOperationException("API Key not found in user secrets.");
+		var endpoint = new Uri(aiSection["Endpoint"] ?? throw new InvalidOperationException("Endpoint not found in user secrets."));
+		var embeddingModel = aiSection["EmbeddingDeploymentName"] ?? throw new InvalidOperationException("Embedding Deployment Name not found in user secrets.");
+		var embeddings = new EmbeddingClient(
+			credential: new ApiKeyCredential(apikey),
+			model: embeddingModel,
+			options: new OpenAIClientOptions()
+			{
+				Endpoint = endpoint,
+			});
+
+		builder.Services.AddSingleton<IEmbeddingGenerator<string, Embedding<float>>>(sp =>
+		{
+			var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
+			return embeddings.AsIEmbeddingGenerator()
+				.AsBuilder()
+				.UseLogging(loggerFactory)
+				.Build();
+		});
+
+		return builder;
+	}
+#endif
 
 	private static MauiAppBuilder AddOpenAIServices(this MauiAppBuilder builder)
 	{

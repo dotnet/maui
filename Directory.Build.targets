@@ -48,8 +48,8 @@
     <TargetPlatformMinVersion>12.0</TargetPlatformMinVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(_MauiTargetPlatformIsAndroid)' == 'True'">
-    <SupportedOSPlatformVersion>21.0</SupportedOSPlatformVersion>
-    <TargetPlatformMinVersion>21.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion Condition="'$(SupportedOSPlatformVersion)' == ''">23.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion Condition="'$(TargetPlatformMinVersion)' == ''">23.0</TargetPlatformMinVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(_MauiTargetPlatformIsTizen)' == 'True'">
     <SupportedOSPlatformVersion>6.5</SupportedOSPlatformVersion>
@@ -125,5 +125,43 @@
   <!-- Don't add any outputs to any item group, we are embedding things manually -->
   <Target Name="GetTypeScriptOutputForPublishing" />
   <Target Name="GetTypeScriptCopyToOutputDirectoryItems" />
+
+  <!-- 
+    Workaround for duplicate AAR entries in Xamarin.Google.MLKit.* NuGet packages.
+    These packages include AARs in both lib/ folder AND download the same AARs via 
+    XamarinBuildDownload. This causes "namespace used in multiple modules" errors.
+    
+    The fix: Remove XamarinBuildDownload AAR items for packages that already have
+    AARs included from their lib/ folders.
+    
+    See: https://github.com/AzureAD/microsoft-identity-web/issues/2598 (similar issue)
+  -->
+  <Target Name="_RemoveDuplicateXamarinBuildDownloadAars" 
+          BeforeTargets="_XamarinBuildDownloadAarInclude"
+          Condition="'$(_MauiTargetPlatformIsAndroid)' == 'True'">
+    <!-- 
+      These packages have AARs in both lib/ folder (NuGet resolution) and 
+      XamarinBuildDownload cache. Remove the download items to avoid duplicates.
+    -->
+    <ItemGroup>
+      <XamarinBuildDownloadAndroidAarLibrary Remove="@(XamarinBuildDownloadAndroidAarLibrary)" 
+        Condition="$([System.String]::Copy('%(Identity)').Contains('XamarinBuildDownload'))" />
+    </ItemGroup>
+  </Target>
+
+  <!--
+    Workaround for duplicate classes in Xamarin.AndroidX.Compose.Runtime.Annotation packages.
+    Both .Android (AAR) and .Jvm (JAR) packages contain the same classes, causing D8 errors.
+    We remove the JVM JAR since the Android AAR is preferred for Android builds.
+    Hook into _GetLibraryImports which processes AndroidJavaLibrary items.
+  -->
+  <Target Name="_RemoveDuplicateComposeRuntimeAnnotationJar"
+          BeforeTargets="_GetLibraryImports"
+          Condition="'$(_MauiTargetPlatformIsAndroid)' == 'True' and '$(AndroidApplication)' == 'true'">
+    <ItemGroup>
+      <AndroidJavaLibrary Remove="@(AndroidJavaLibrary)" 
+        Condition="'%(Filename)' == 'runtime-annotation-jvm'" />
+    </ItemGroup>
+  </Target>
 
 </Project>
