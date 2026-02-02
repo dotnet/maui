@@ -188,21 +188,36 @@ if ($Platform -eq "android") {
             Write-Info "Starting emulator: $selectedAvd"
             Write-Info "This may take 1-2 minutes..."
             
-            # Use swiftshader for software rendering (more reliable on CI without GPU)
-            # Redirect output to a log file for debugging
-            $emulatorLog = Join-Path ([System.IO.Path]::GetTempPath()) "emulator-$selectedAvd.log"
-            
+            # CRITICAL: Must use nohup to properly detach emulator process
+            # This prevents STDIO stream inheritance issues in CI environments
             if ($IsWindows) {
                 Start-Process $emulatorBin -ArgumentList "-avd", $selectedAvd, "-no-snapshot-load", "-no-boot-anim", "-gpu", "swiftshader_indirect" -WindowStyle Hidden
             }
             else {
-                # macOS/Linux: Use nohup to detach from terminal
-                # Use -no-snapshot (not -no-snapshot-load) to ensure clean emulator state for CI/testing.
-                # This disables both snapshot load and save, so each boot is a cold boot.
-                # Trade-off: slower boots, but guarantees no stale state between test runs.
-                $startScript = "nohup '$emulatorBin' -avd '$selectedAvd' -no-window -no-snapshot -no-audio -no-boot-anim -gpu swiftshader_indirect > '$emulatorLog' 2>&1 &"
+                # macOS/Linux: Use nohup to fully detach the emulator process
+                # This ensures the process doesn't inherit STDIO streams and can run independently
+                $androidHome = $env:ANDROID_HOME
+                if (-not $androidHome) {
+                    $androidHome = $env:ANDROID_SDK_ROOT
+                }
+                if (-not $androidHome) {
+                    $androidHome = "$env:HOME/Library/Android/sdk"
+                }
+                
+                $emulatorBin = Join-Path $androidHome "emulator/emulator"
+                
+                if (-not (Test-Path $emulatorBin)) {
+                    Write-Error "Emulator binary not found at: $emulatorBin"
+                    Write-Info "Please ensure ANDROID_HOME or ANDROID_SDK_ROOT is set correctly."
+                    exit 1
+                }
+                
+                # Use nohup to fully detach the emulator process from the terminal
+                # Redirect all output to /dev/null to prevent STDIO inheritance issues
+                $startScript = "nohup '$emulatorBin' -avd '$selectedAvd' -no-snapshot -no-audio -no-boot-anim > /dev/null 2>&1 &"
                 bash -c $startScript
-                Write-Info "Emulator started in background. Log file: $emulatorLog"
+                
+                Write-Info "Emulator started in background (fully detached with nohup)"
             }
             
             # Give the emulator process time to start

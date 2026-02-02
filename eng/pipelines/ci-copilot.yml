@@ -158,13 +158,38 @@ stages:
             displayName: 'Restore .NET Tools'
 
           # Boot Android emulator for UI tests
-          - pwsh: |
-              Write-Host "=== Booting Android Emulator ==="
-              # Use the cake script to boot the emulator
-              ./build.ps1 -Script eng/devices/android.cake --target=boot --device="android-emulator-64_34" --verbosity=diagnostic
+          - script: |
+              echo "=== Booting Android Emulator ==="
+              
+              # Start emulator in background, detached from terminal
+              nohup $ANDROID_SDK_ROOT/emulator/emulator -avd Emulator_34 -no-window -no-snapshot -no-audio -no-boot-anim > /dev/null 2>&1 &
+              EMULATOR_PID=$!
+              echo "Emulator started with PID: $EMULATOR_PID"
+              
+              # Wait for device to appear
+              echo "Waiting for emulator device..."
+              adb wait-for-device
+              
+              # Wait for boot_completed
+              echo "Waiting for emulator to finish booting..."
+              timeout=120
+              waited=0
+              while [ "$(adb shell getprop sys.boot_completed 2>/dev/null)" != "1" ]; do
+                sleep 2
+                waited=$((waited + 2))
+                echo "Waiting for boot... ($waited/$timeout seconds)"
+                if [ $waited -ge $timeout ]; then
+                  echo "##vso[task.logissue type=error]Emulator did not boot in time"
+                  adb devices -l
+                  exit 1
+                fi
+              done
+              
+              echo "=== Emulator booted successfully! ==="
+              adb devices -l
             displayName: 'Boot Android Emulator'
             continueOnError: true
-            timeoutInMinutes: 10
+            timeoutInMinutes: 15
             env:
               ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
               JAVA_HOME: $(JAVA_HOME_17_X64)
@@ -180,6 +205,23 @@ stages:
               npm --version
               echo "Node.js installed successfully"
             displayName: 'Install Node.js'
+
+          - script: |
+              echo "Installing Appium and UiAutomator2 driver..."
+              npm install -g appium
+              appium driver install uiautomator2
+              
+              # Verify installation
+              if ! which appium; then
+                echo "##vso[task.logissue type=error]Failed to install Appium"
+                exit 1
+              fi
+              
+              echo "Appium version: $(appium --version)"
+              echo "Appium drivers installed:"
+              appium driver list --installed
+              echo "Appium installed successfully"
+            displayName: 'Install Appium'
 
           - script: |
               echo "Installing GitHub CLI..."
