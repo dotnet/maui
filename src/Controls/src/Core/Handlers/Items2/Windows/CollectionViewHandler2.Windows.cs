@@ -28,7 +28,7 @@ public partial class CollectionViewHandler2
 		[SelectableItemsView.SelectedItemProperty.PropertyName] = MapSelectedItem,
 		[SelectableItemsView.SelectedItemsProperty.PropertyName] = MapSelectedItems,
 		[SelectableItemsView.SelectionModeProperty.PropertyName] = MapSelectionMode,
-		[StructuredItemsView.ItemSizingStrategyProperty.PropertyName] = MapItemsUpdatingScrollMode,
+		[StructuredItemsView.ItemSizingStrategyProperty.PropertyName] = MapItemSizingStrategy,
 		
 	};
 }
@@ -60,7 +60,7 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 		handler.UpdateItemsSource();
 	}
 
-	public static void MapItemsUpdatingScrollMode(CollectionViewHandler2 handler, ItemsView itemsView)
+	public static void MapItemSizingStrategy(CollectionViewHandler2 handler, ItemsView itemsView)
 	{
 		handler.InvalidateFirstItemSize();
 		handler.UpdateItemsSource();
