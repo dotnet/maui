@@ -13,10 +13,8 @@ namespace Microsoft.Maui.Controls.SourceGen;
 /// Represents a C# expression to be emitted directly in generated code.
 /// Used as the Value of a ValueNode when the value is a C# expression rather than a literal string.
 /// </summary>
-/// <param name="Code">The C# expression code to emit.</param>
-/// <param name="TransformQuotes">Whether single quotes should be transformed to double quotes. 
-/// True for attribute values (XML requires escaping), false for element content/CDATA (natural C# allowed).</param>
-internal sealed record Expression(string Code, bool TransformQuotes = true);
+/// <param name="Code">The C# expression code to emit (already has single quotes transformed to double quotes).</param>
+internal sealed record Expression(string Code);
 
 /// <summary>
 /// Helper methods for detecting and transforming C# expressions embedded in XAML.
@@ -357,13 +355,12 @@ static class CSharpExpressionHelpers
 	}
 
 	/// <summary>
-	/// Extracts the C# code from an expression value and optionally transforms quotes.
+	/// Extracts the C# code from an expression value and transforms quotes.
+	/// Single-quoted strings are always transformed to double-quoted strings since C# doesn't support single-quoted strings.
 	/// </summary>
 	/// <param name="value">The raw XAML value including braces.</param>
-	/// <param name="transformQuotes">Whether to transform single quotes to double quotes. 
-	/// True for attribute values, false for element content/CDATA.</param>
 	/// <returns>The C# code ready to be emitted.</returns>
-	public static string GetExpressionCode(string value, bool transformQuotes = true)
+	public static string GetExpressionCode(string value)
 	{
 		var trimmed = value.Trim();
 		
@@ -383,8 +380,10 @@ static class CSharpExpressionHelpers
 		// Transform operator aliases (AND -> &&, OR -> ||) to avoid XML escaping
 		code = TransformOperatorAliases(code);
 
-		// Transform single-quoted strings to double-quoted strings (only for attribute values)
-		return transformQuotes ? TransformQuotes(code) : code;
+		// Always transform single-quoted strings to double-quoted strings
+		// C# doesn't support single-quoted strings, only char literals
+		// TransformQuotesWithSemantics will later convert back to char where appropriate
+		return TransformQuotes(code);
 	}
 
 	/// <summary>
@@ -581,44 +580,45 @@ static class CSharpExpressionHelpers
 	}
 
 	/// <summary>
-	/// Transforms single-quoted literals to double-quoted strings based on semantic context.
-	/// Uses Roslyn to analyze the expression and determine if each char literal should be a string.
+	/// Analyzes double-quoted string literals and converts single-character strings to char literals
+	/// where the target type expects a char (e.g., method parameters).
 	/// </summary>
-	/// <param name="code">The C# expression code with single quotes</param>
+	/// <param name="code">The C# expression code with double-quoted strings (after TransformQuotes)</param>
 	/// <param name="compilation">The compilation for type lookups</param>
 	/// <param name="contextTypes">Types to search for method signatures (dataType, thisType, etc.)</param>
-	/// <returns>Code with char literals converted to strings where the target expects string</returns>
+	/// <returns>Code with single-char strings converted to char literals where appropriate</returns>
 	public static string TransformQuotesWithSemantics(string code, Compilation compilation, params ITypeSymbol?[] contextTypes)
 	{
-		// Parse the expression to find char literals and their contexts
+		// Parse the expression to find string literals
 		var tree = CSharpSyntaxTree.ParseText(code, new CSharpParseOptions(kind: SourceCodeKind.Script));
 		var root = tree.GetRoot();
 
-		// Find all char literals and determine which should become strings
-		var charLiterals = root.DescendantNodes()
+		// Find all string literals that are single characters (candidates for char conversion)
+		var stringLiterals = root.DescendantNodes()
 			.OfType<LiteralExpressionSyntax>()
-			.Where(l => l.IsKind(SyntaxKind.CharacterLiteralExpression))
+			.Where(l => l.IsKind(SyntaxKind.StringLiteralExpression))
+			.Where(l => IsSingleCharStringLiteral(l))
 			.ToList();
 
-		if (charLiterals.Count == 0)
-			return code; // No char literals to transform
+		if (stringLiterals.Count == 0)
+			return code; // No single-char strings to potentially convert
 
-		// Collect positions that need transformation (char -> string)
+		// Collect positions that need transformation (string -> char)
 		var transformPositions = new List<(int start, int length, string replacement)>();
 
-		foreach (var literal in charLiterals)
+		foreach (var literal in stringLiterals)
 		{
 			var expectedType = DetermineExpectedType(literal, compilation, contextTypes);
 			
-			// If expected type is string (or unknown and length > 1), transform to string
-			bool shouldBeString = expectedType?.SpecialType == SpecialType.System_String;
+			// If expected type is char, convert back to char literal
+			bool shouldBeChar = expectedType?.SpecialType == SpecialType.System_Char;
 			
-			if (shouldBeString)
+			if (shouldBeChar)
 			{
-				// Get the char content and create a string literal
-				var charText = literal.Token.ValueText;
-				var stringLiteral = $"\"{EscapeForString(charText)}\"";
-				transformPositions.Add((literal.SpanStart, literal.Span.Length, stringLiteral));
+				// Get the string content and create a char literal
+				var stringText = literal.Token.ValueText;
+				var charLiteral = $"'{EscapeForChar(stringText)}'";
+				transformPositions.Add((literal.SpanStart, literal.Span.Length, charLiteral));
 			}
 		}
 
@@ -630,6 +630,35 @@ static class CSharpExpressionHelpers
 		}
 
 		return result;
+	}
+
+	/// <summary>
+	/// Checks if a string literal is a single character (candidate for char conversion).
+	/// </summary>
+	static bool IsSingleCharStringLiteral(LiteralExpressionSyntax literal)
+	{
+		var valueText = literal.Token.ValueText;
+		return valueText.Length == 1;
+	}
+
+	/// <summary>
+	/// Escapes a character for use in a C# char literal.
+	/// </summary>
+	static string EscapeForChar(string value)
+	{
+		if (value.Length != 1)
+			return value;
+		
+		return value[0] switch
+		{
+			'\'' => "\\'",
+			'\\' => "\\\\",
+			'\n' => "\\n",
+			'\r' => "\\r",
+			'\t' => "\\t",
+			'\0' => "\\0",
+			_ => value
+		};
 	}
 
 	/// <summary>

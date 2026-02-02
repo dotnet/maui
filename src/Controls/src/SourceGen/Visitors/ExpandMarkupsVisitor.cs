@@ -72,9 +72,9 @@ class ExpandMarkupsVisitor(SourceGenContext context) : IXamlNodeVisitor
 				return;
 			}
 
-			// Element content doesn't need quote transformation - natural C# syntax allowed
-			var expressionCode = CSharpExpressionHelpers.GetExpressionCode(trimmed, transformQuotes: false);
-			node.Value = new Expression(expressionCode, TransformQuotes: false);
+			// Extract expression code - single quotes are always transformed to double quotes
+			var expressionCode = CSharpExpressionHelpers.GetExpressionCode(trimmed);
+			node.Value = new Expression(expressionCode);
 		}
 	}
 
@@ -138,10 +138,9 @@ class ExpandMarkupsVisitor(SourceGenContext context) : IXamlNodeVisitor
 			}
 			else
 			{
-				// Extract expression code but DON'T transform quotes yet
-				// Quote transformation happens in SetPropertyHelpers where we have semantic context
-				var expressionCode = CSharpExpressionHelpers.GetExpressionCode(markupString, transformQuotes: false);
-				node = new ValueNode(new Expression(expressionCode, TransformQuotes: true), markupnode.NamespaceResolver, markupnode.LineNumber, markupnode.LinePosition);
+				// Extract expression code - single quotes are always transformed to double quotes
+				var expressionCode = CSharpExpressionHelpers.GetExpressionCode(markupString);
+				node = new ValueNode(new Expression(expressionCode), markupnode.NamespaceResolver, markupnode.LineNumber, markupnode.LinePosition);
 			}
 		}
 
