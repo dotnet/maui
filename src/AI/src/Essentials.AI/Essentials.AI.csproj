@@ -12,7 +12,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- NuGet package information -->
-    <IsPackable>false</IsPackable>
+    <IsPackable>true</IsPackable>
     <PackageId>Microsoft.Maui.Essentials.AI</PackageId>
     <PackageTags>$(DefaultPackageTags);essentials;ai</PackageTags>
     <Description>.NET Multi-platform App UI (.NET MAUI) is a cross-platform framework for creating native mobile and desktop apps with C# and XAML. This package contains a collection of cross-platform APIs for working with device AI and local models.</Description>
@@ -32,6 +32,7 @@
   <ItemGroup Condition=" $(TargetFramework.Contains('-ios')) or $(TargetFramework.Contains('-maccatalyst')) or $(TargetFramework.Contains('-macos')) ">
   </ItemGroup>
   <ItemGroup Condition=" $(TargetFramework.Contains('-windows')) ">
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
   </ItemGroup>
   <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
   <Import Project="$(MauiSrcDirectory)Workload\Shared\LibraryPacks.targets" />
