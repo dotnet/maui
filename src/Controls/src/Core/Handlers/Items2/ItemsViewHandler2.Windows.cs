@@ -1038,10 +1038,30 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		void ScrollToRequested(object? sender, ScrollToRequestEventArgs args)
 		{
-			var index = args.Index;
-			if (args.Mode == ScrollToMode.Element)
+			// Use base.PlatformView to avoid InvalidOperationException
+			if (base.PlatformView is not WItemsView platformView)
+			{
+				return;
+			}
+
+			int index;
+
+			// Handle grouped scrolling by position
+			if (args.Mode == ScrollToMode.Position &&
+				ItemsView is GroupableItemsView groupableItemsView &&
+				groupableItemsView.IsGrouped &&
+				args.GroupIndex >= 0)
+			{
+				index = FindGroupedItemIndex(args.GroupIndex, args.Index);
+			}
+			else if (args.Mode == ScrollToMode.Element)
 			{
 				index = FindItemIndex(args.Item);
+			}
+			else
+			{
+				// Non-grouped position-based scroll
+				index = args.Index;
 			}
 
 			// Validate index is within bounds
@@ -1065,7 +1085,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					break;
 			}
 
-			PlatformView.StartBringItemIntoView(index, new BringIntoViewOptions()
+			platformView.StartBringItemIntoView(index, new BringIntoViewOptions()
 			{
 				AnimationDesired = args.IsAnimated,
 				VerticalAlignmentRatio = offset,
@@ -1073,6 +1093,78 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			});
 		}
 
+		/// <summary>
+		/// Finds the flat index in the flattened grouped collection for the specified group and item index.
+		/// </summary>
+		int FindGroupedItemIndex(int groupIndex, int itemIndex)
+		{
+			if (_collectionViewSource is null)
+			{
+				return -1;
+			}
+
+			if (ItemsView is not GroupableItemsView groupableItemsView)
+			{
+				return -1;
+			}
+
+			var itemsSource = groupableItemsView.ItemsSource;
+			if (itemsSource is null)
+			{
+				return -1;
+			}
+
+			var hasGroupHeader = groupableItemsView.GroupHeaderTemplate is not null;
+			var hasGroupFooter = groupableItemsView.GroupFooterTemplate is not null;
+
+			int flatIndex = 0;
+			int currentGroupIndex = 0;
+
+			foreach (var group in itemsSource)
+			{
+				if (group is IList groupList)
+				{
+					if (currentGroupIndex == groupIndex)
+					{
+						// Found the target group
+						if (hasGroupHeader)
+						{
+							flatIndex++; // Skip group header
+						}
+
+						// Check if itemIndex is within bounds of this group
+						if (itemIndex < 0 || itemIndex >= groupList.Count)
+						{
+							return -1;
+						}
+
+						// Return the calculated flat index
+						return flatIndex + itemIndex;
+					}
+
+					// Count items in this group to move to next group
+					if (hasGroupHeader)
+					{
+						flatIndex++;
+					}
+					flatIndex += groupList.Count;
+					if (hasGroupFooter)
+					{
+						flatIndex++;
+					}
+				}
+
+				currentGroupIndex++;
+			}
+
+			// Group index not found
+			return -1;
+		}
+
+		/// <summary>
+		/// Finds the index of an item in the collection view by searching through the flattened list.
+		/// Used for non-grouped ScrollToMode.Element requests.
+		/// </summary>
 		int FindItemIndex(object item)
 		{
 			if (_collectionViewSource is null)
@@ -1082,12 +1174,29 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			for (int index = 0; index < _collectionViewSource.View.Count; index++)
 			{
-				if (_collectionViewSource.View[index] is ItemTemplateContext pair)
+				var viewItem = _collectionViewSource.View[index];
+
+				// Check for ItemTemplateContext (non-grouped templated items)
+				if (viewItem is ItemTemplateContext pair)
 				{
-					if (pair.Item == item)
+					if (Equals(pair.Item, item))
 					{
 						return index;
 					}
+				}
+				// Check for ItemTemplateContext2 (grouped templated items)
+				else if (viewItem is ItemTemplateContext2 pair2)
+				{
+					// Skip headers and footers, only match actual items
+					if (!pair2.IsHeader && !pair2.IsFooter && Equals(pair2.Item, item))
+					{
+						return index;
+					}
+				}
+				// Check for non-templated items (direct equality)
+				else if (Equals(viewItem, item))
+				{
+					return index;
 				}
 			}
 
