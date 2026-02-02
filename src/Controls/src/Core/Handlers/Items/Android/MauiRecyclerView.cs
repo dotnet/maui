@@ -531,7 +531,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			AViewCompat.SetClipBounds(this, new ARect(0, 0, Width, Height));
 #pragma warning restore CS0618 // Obsolete
 
-
 			// After a direct (non-animated) scroll operation, we may need to make adjustments
 			// to align the target item; if an adjustment is pending, execute it here.
 			// (Deliberately checking the private member here rather than the property accessor; the accessor will
@@ -646,7 +645,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			RemoveScrollListener();
 
 			RecyclerViewScrollListener = CreateScrollListener();
-
 			AddOnScrollListener(RecyclerViewScrollListener);
 		}
 
