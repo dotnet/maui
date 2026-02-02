@@ -28,7 +28,7 @@ public partial class CollectionViewHandler2
 		[SelectableItemsView.SelectedItemProperty.PropertyName] = MapSelectedItem,
 		[SelectableItemsView.SelectedItemsProperty.PropertyName] = MapSelectedItems,
 		[SelectableItemsView.SelectionModeProperty.PropertyName] = MapSelectionMode,
-		[StructuredItemsView.ItemSizingStrategyProperty.PropertyName] = MapItemsUpdatingScrollMode,
+		[StructuredItemsView.ItemSizingStrategyProperty.PropertyName] = MapItemSizingStrategy,
 		
 	};
 }
@@ -60,7 +60,7 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 		handler.UpdateItemsSource();
 	}
 
-	public static void MapItemsUpdatingScrollMode(CollectionViewHandler2 handler, ItemsView itemsView)
+	public static void MapItemSizingStrategy(CollectionViewHandler2 handler, ItemsView itemsView)
 	{
 		handler.InvalidateFirstItemSize();
 		handler.UpdateItemsSource();
@@ -218,21 +218,24 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 
 	void UpdateVirtualSingleSelection()
 	{
+		if (PlatformView is null || ItemsView is null)
+			return;
+
 		var selectedItem = PlatformView.SelectedItem is ItemTemplateContext2 itemPair
 			? itemPair.Item
 			: PlatformView.SelectedItem;
 
-		if (ItemsView is not null)
-		{
-			ItemsView.SelectionChanged -= VirtualSelectionChanged;
-			ItemsView.SelectedItem = selectedItem;
+		ItemsView.SelectionChanged -= VirtualSelectionChanged;
+		ItemsView.SelectedItem = selectedItem;
 
-			ItemsView.SelectionChanged += VirtualSelectionChanged;
-		}
+		ItemsView.SelectionChanged += VirtualSelectionChanged;
 	}
 
 	void UpdateVirtualMultipleSelection()
 	{
+		if (PlatformView is null || ItemsView is null)
+			return;
+
 		ItemsView.SelectionChanged -= VirtualSelectionChanged;
 
 		// Get current platform selection
@@ -283,6 +286,11 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 
 	void UpdatePlatformSelection()
 	{
+		if (PlatformView is null || ItemsView is null)
+		{
+			return;
+		}
+
 		_ignorePlatformSelectionChange = true;
 
 		var itemList = PlatformView.ItemsSource as ICollectionView;
