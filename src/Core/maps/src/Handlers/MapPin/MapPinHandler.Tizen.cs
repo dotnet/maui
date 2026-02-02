@@ -9,5 +9,7 @@ namespace Microsoft.Maui.Maps.Handlers
 		public static void MapLabel(IMapPinHandler handler, IMapPin mapPin) { }
 
 		public static void MapAddress(IMapPinHandler handler, IMapPin mapPin) { }
+
+		public static void MapImageSource(IMapPinHandler handler, IMapPin mapPin) { }
 	}
 }

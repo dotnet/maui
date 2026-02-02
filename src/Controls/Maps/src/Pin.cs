@@ -21,6 +21,10 @@ namespace Microsoft.Maui.Controls.Maps
 
 		/// <summary>Bindable property for <see cref="Label"/>.</summary>
 		public static readonly BindableProperty LabelProperty = BindableProperty.Create(nameof(Label), typeof(string), typeof(Pin), default(string));
+
+		/// <summary>Bindable property for <see cref="ImageSource"/>.</summary>
+		public static readonly BindableProperty ImageSourceProperty = BindableProperty.Create(nameof(ImageSource), typeof(ImageSource), typeof(Pin), default(ImageSource));
+
 		private object? _markerId;
 
 		/// <inheritdoc />
@@ -53,6 +57,21 @@ namespace Microsoft.Maui.Controls.Maps
 		{
 			get { return (PinType)GetValue(TypeProperty); }
 			set { SetValue(TypeProperty, value); }
+		}
+
+		/// <summary>
+		/// Gets or sets the custom image source for this pin's icon.
+		/// When set, this image will be used instead of the default platform pin icon.
+		/// This is a bindable property.
+		/// </summary>
+		/// <remarks>
+		/// Supported image sources include file-based images, embedded resources, URIs, and streams.
+		/// The image will be displayed at its natural size; consider using appropriately sized images.
+		/// </remarks>
+		public ImageSource? ImageSource
+		{
+			get { return (ImageSource?)GetValue(ImageSourceProperty); }
+			set { SetValue(ImageSourceProperty, value); }
 		}
 
 		/// <summary>

@@ -20,6 +20,10 @@ using Microsoft.Maui.Platform;
 using ACircle = Android.Gms.Maps.Model.Circle;
 using APolygon = Android.Gms.Maps.Model.Polygon;
 using APolyline = Android.Gms.Maps.Model.Polyline;
+using ABitmap = Android.Graphics.Bitmap;
+using ACanvas = Android.Graphics.Canvas;
+using ADrawable = Android.Graphics.Drawables.Drawable;
+using ABitmapDrawable = Android.Graphics.Drawables.BitmapDrawable;
 using Math = System.Math;
 
 namespace Microsoft.Maui.Maps.Handlers
@@ -420,23 +424,96 @@ namespace Microsoft.Maui.Maps.Handlers
 			foreach (var p in pins)
 			{
 				IMapPin pin = (IMapPin)p;
-				Marker? marker;
-
-				var pinHandler = pin.ToHandler(MauiContext);
-				if (pinHandler is IMapPinHandler iMapPinHandler)
-				{
-					marker = Map.AddMarker(iMapPinHandler.PlatformView);
-					if (marker == null)
-					{
-						throw new System.Exception("Map.AddMarker returned null");
-					}
-					// associate pin with marker for later lookup in event handlers
-					pin.MarkerId = marker.Id;
-					_markers.Add(marker!);
-				}
-
+				AddPinAsync(pin).FireAndForget();
 			}
 			_pins = null;
+		}
+
+		async System.Threading.Tasks.Task AddPinAsync(IMapPin pin)
+		{
+			if (Map == null || MauiContext == null)
+				return;
+
+			var pinHandler = pin.ToHandler(MauiContext);
+			if (pinHandler is not IMapPinHandler iMapPinHandler)
+				return;
+
+			var markerOptions = iMapPinHandler.PlatformView;
+
+			// Load custom image if specified
+			if (pin.ImageSource != null)
+			{
+				try
+				{
+					var result = await pin.ImageSource.GetPlatformImageAsync(MauiContext);
+					if (result?.Value is ADrawable drawable)
+					{
+						var bitmap = DrawableToBitmap(drawable);
+						if (bitmap != null)
+						{
+							markerOptions.SetIcon(BitmapDescriptorFactory.FromBitmap(bitmap));
+						}
+					}
+				}
+				catch
+				{
+					// If image loading fails, use default pin icon
+				}
+			}
+
+			var marker = Map.AddMarker(markerOptions);
+			if (marker == null)
+			{
+				throw new System.Exception("Map.AddMarker returned null");
+			}
+			// associate pin with marker for later lookup in event handlers
+			pin.MarkerId = marker.Id;
+			
+			if (_markers == null)
+				_markers = new List<Marker>();
+			_markers.Add(marker);
+		}
+
+		static ABitmap? DrawableToBitmap(ADrawable drawable)
+		{
+			if (drawable is ABitmapDrawable bitmapDrawable && bitmapDrawable.Bitmap != null)
+			{
+				return ScaleBitmap(bitmapDrawable.Bitmap, 64, 64);  // 64dp for Android (2x density)
+			}
+
+			int width = drawable.IntrinsicWidth;
+			int height = drawable.IntrinsicHeight;
+
+			if (width <= 0 || height <= 0)
+			{
+				width = 64;
+				height = 64;
+			}
+
+			var bitmap = ABitmap.CreateBitmap(width, height, ABitmap.Config.Argb8888!);
+			if (bitmap == null)
+				return null;
+
+			var canvas = new ACanvas(bitmap);
+			drawable.SetBounds(0, 0, canvas.Width, canvas.Height);
+			drawable.Draw(canvas);
+
+			return ScaleBitmap(bitmap, 64, 64);
+		}
+
+		static ABitmap ScaleBitmap(ABitmap source, int targetWidth, int targetHeight)
+		{
+			int width = source.Width;
+			int height = source.Height;
+
+			float widthRatio = (float)targetWidth / width;
+			float heightRatio = (float)targetHeight / height;
+			float ratio = Math.Min(widthRatio, heightRatio);
+
+			int newWidth = (int)(width * ratio);
+			int newHeight = (int)(height * ratio);
+
+			return ABitmap.CreateScaledBitmap(source, newWidth, newHeight, true)!;
 		}
 
 		protected IMapPin? GetPinForMarker(Marker marker)

@@ -26,5 +26,12 @@ namespace Microsoft.Maui.Maps.Handlers
 			if (handler.PlatformView is MKPointAnnotation mKPointAnnotation)
 				mKPointAnnotation.Subtitle = mapPin.Address;
 		}
+
+		// Note: ImageSource is handled in MauiMKMapView.GetViewForAnnotation
+		// because the image is set on the MKAnnotationView, not on the IMKAnnotation
+		public static void MapImageSource(IMapPinHandler handler, IMapPin mapPin)
+		{
+			// No-op: Image is applied when the annotation view is created in GetViewForAnnotation
+		}
 	}
 }
