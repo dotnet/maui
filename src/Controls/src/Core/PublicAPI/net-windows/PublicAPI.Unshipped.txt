@@ -9,13 +9,17 @@ Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.ItemsView.
 Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.ItemsViewHandler2() -> void
 Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.ItemsViewHandler2(Microsoft.Maui.PropertyMapper? mapper = null) -> void
 Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.UpdateItemsLayout() -> void
+Microsoft.Maui.Controls.Handlers.Items2.ReorderableItemsViewHandler2<TItemsView>
+Microsoft.Maui.Controls.Handlers.Items2.ReorderableItemsViewHandler2<TItemsView>.ReorderableItemsViewHandler2(Microsoft.Maui.PropertyMapper? mapper = null) -> void
 override Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2.ConnectHandler(Microsoft.UI.Xaml.Controls.ItemsView! platformView) -> void
 override Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2.DisconnectHandler(Microsoft.UI.Xaml.Controls.ItemsView! platformView) -> void
-override Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2.Layout.get -> Microsoft.Maui.Controls.IItemsLayout!
 override Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2.UpdateItemsSource() -> void
 override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.ConnectHandler(Microsoft.UI.Xaml.Controls.ItemsView! platformView) -> void
 override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.CreatePlatformView() -> Microsoft.UI.Xaml.Controls.ItemsView!
 override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.DisconnectHandler(Microsoft.UI.Xaml.Controls.ItemsView! platformView) -> void
+override Microsoft.Maui.Controls.Handlers.Items2.ReorderableItemsViewHandler2<TItemsView>.ConnectHandler(Microsoft.UI.Xaml.Controls.ItemsView! platformView) -> void
+override Microsoft.Maui.Controls.Handlers.Items2.ReorderableItemsViewHandler2<TItemsView>.DisconnectHandler(Microsoft.UI.Xaml.Controls.ItemsView! platformView) -> void
+override Microsoft.Maui.Controls.Handlers.Items2.ReorderableItemsViewHandler2<TItemsView>.Layout.get -> Microsoft.Maui.Controls.IItemsLayout!
 static Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2.MapCanReorderItems(Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2! handler, Microsoft.Maui.Controls.ReorderableItemsView! itemsView) -> void
 static Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2.MapGroupFooterTemplate(Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2! handler, Microsoft.Maui.Controls.GroupableItemsView! itemsView) -> void
 static Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2.MapGroupHeaderTemplate(Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2! handler, Microsoft.Maui.Controls.GroupableItemsView! itemsView) -> void
@@ -42,3 +46,4 @@ static Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.Map
 static Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.MapFooter(Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView!>! handler, Microsoft.Maui.Controls.ItemsView! itemsView) -> void
 static Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.MapFooterTemplate(Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView!>! handler, Microsoft.Maui.Controls.ItemsView! itemsView) -> void
 virtual Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.UpdateItemsSource() -> void
+~static Microsoft.Maui.Controls.Handlers.Items2.ReorderableItemsViewHandler2<TItemsView>.MapCanReorderItems(Microsoft.Maui.Controls.Handlers.Items2.ReorderableItemsViewHandler2<TItemsView> handler, Microsoft.Maui.Controls.ReorderableItemsView itemsView) -> void

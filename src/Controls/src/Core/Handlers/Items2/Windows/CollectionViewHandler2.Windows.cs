@@ -32,17 +32,20 @@ public partial class CollectionViewHandler2
 		
 	};
 }
-public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItemsView>
+public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<ReorderableItemsView>
 {
 	bool _ignorePlatformSelectionChange;
-
-	protected override IItemsLayout Layout { get => ItemsView.ItemsLayout; }
+	bool _isDisconnected;
 
 	// Cache for MeasureFirstItem optimization
 	global::Windows.Foundation.Size _firstItemMeasuredSize = global::Windows.Foundation.Size.Empty;
 
 	public static void MapCanReorderItems(CollectionViewHandler2 handler, ReorderableItemsView itemsView)
 	{
+		if (handler.PlatformView is MauiItemsView mauiItemsView)
+		{
+			mauiItemsView.UpdateCanReorderItems(itemsView.CanReorderItems);
+		}
 	}
 
 	public static void MapIsGrouped(CollectionViewHandler2 handler, GroupableItemsView itemsView)
@@ -94,6 +97,7 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 		{
 			return _firstItemMeasuredSize;
 		}
+
 		return global::Windows.Foundation.Size.Empty;
 	}
 
@@ -138,6 +142,8 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 
 	protected override void DisconnectHandler(WItemsView platformView)
 	{
+		_isDisconnected = true;
+
 		var oldListViewBase = platformView;
 
 		if (oldListViewBase is not null)
@@ -202,7 +208,7 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 
 	void UpdateVisualStates()
 	{
-		if (PlatformView is null || ItemsView is null)
+		if (_isDisconnected || PlatformView is null || ItemsView is null)
 			return;
 
 		foreach (var itemcontainer in PlatformView.GetChildren<ItemContainer>())

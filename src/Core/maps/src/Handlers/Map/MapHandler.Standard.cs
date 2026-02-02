@@ -5,7 +5,6 @@ namespace Microsoft.Maui.Maps.Handlers
 {
 	public partial class MapHandler : ViewHandler<IMap, object>
 	{
-
 		protected override object CreatePlatformView() => throw new NotImplementedException();
 
 		public static void MapMapType(IMapHandler handler, IMap map) => throw new NotImplementedException();

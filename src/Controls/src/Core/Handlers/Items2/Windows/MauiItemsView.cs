@@ -1,7 +1,13 @@
-﻿using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using WDataTransfer = Windows.ApplicationModel.DataTransfer;
 using WApp = Microsoft.UI.Xaml.Application;
 using WControlTemplate = Microsoft.UI.Xaml.Controls.ControlTemplate;
 using WVisibility = Microsoft.UI.Xaml.Visibility;
@@ -10,7 +16,7 @@ using WScrollView = Microsoft.UI.Xaml.Controls.ScrollView;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
 {
-	internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
+	internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, Platform.IEmptyView
 	{
 		ContentControl? _emptyViewContentControl;
 		FrameworkElement? _emptyView;
@@ -25,7 +31,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		View? _mauiFooter;
 
 		WStackPanel? _containerPanel;
-		FrameworkElement? _itemsRepeater;
+		ItemsRepeater? _itemsRepeater;
 		bool _isHorizontalLayout;
 		WScrollView? _scrollView;
 
@@ -140,8 +146,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			_headerContentControl = GetTemplateChild("HeaderContentControl") as ContentControl;
 			_footerContentControl = GetTemplateChild("FooterContentControl") as ContentControl;
 			_containerPanel = GetTemplateChild("PART_ContainerGrid") as WStackPanel;
-			_itemsRepeater = GetTemplateChild("PART_ItemsRepeater") as FrameworkElement;
+			_itemsRepeater = GetTemplateChild("PART_ItemsRepeater") as ItemsRepeater;
 			_scrollView = GetTemplateChild("PART_ScrollView") as WScrollView;
+
+			// Wire up drag/drop events now that _scrollView is available
+			if (_canReorderItems && _scrollView is not null)
+			{
+				WireUpDragDropEvents();
+			}
 
 			if (_emptyView is not null && _emptyViewContentControl is not null)
 			{
@@ -163,52 +175,56 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			
 			// Apply orientation if it was set before template was applied
 			ApplyLayoutOrientation();
+			
+			// Wire up drag/drop events if reordering is enabled
+			WireUpDragDropEvents();
+
 		}
-		
+
 		public void SetLayoutOrientation(bool isHorizontal)
 		{
 			_isHorizontalLayout = isHorizontal;
 			ApplyLayoutOrientation();
 		}
 
-		void ApplyLayoutOrientation()
-		{
-			if (_containerPanel is null || _headerContentControl is null || _footerContentControl is null || _itemsRepeater is null)
-			{
-				return;
-			}
+        void ApplyLayoutOrientation()
+        {
+            if (_containerPanel is null || _headerContentControl is null || _footerContentControl is null || _itemsRepeater is null)
+            {
+                return;
+            }
 
-			if (_isHorizontalLayout)
-			{
-				_containerPanel.Orientation = Orientation.Horizontal;
-				_itemsRepeater.VerticalAlignment = UI.Xaml.VerticalAlignment.Top;
-				_itemsRepeater.HorizontalAlignment = UI.Xaml.HorizontalAlignment.Left;
-				_headerContentControl.VerticalContentAlignment = UI.Xaml.VerticalAlignment.Top;
-				_headerContentControl.HorizontalContentAlignment = UI.Xaml.HorizontalAlignment.Left;
-				_footerContentControl.VerticalContentAlignment = UI.Xaml.VerticalAlignment.Top;
-				_footerContentControl.HorizontalContentAlignment = UI.Xaml.HorizontalAlignment.Left;
+            if (_isHorizontalLayout)
+            {
+                _containerPanel.Orientation = Orientation.Horizontal;
+                _itemsRepeater.VerticalAlignment = UI.Xaml.VerticalAlignment.Top;
+                _itemsRepeater.HorizontalAlignment = UI.Xaml.HorizontalAlignment.Left;
+                _headerContentControl.VerticalContentAlignment = UI.Xaml.VerticalAlignment.Top;
+                _headerContentControl.HorizontalContentAlignment = UI.Xaml.HorizontalAlignment.Left;
+                _footerContentControl.VerticalContentAlignment = UI.Xaml.VerticalAlignment.Top;
+                _footerContentControl.HorizontalContentAlignment = UI.Xaml.HorizontalAlignment.Left;
 
-				if (_scrollView is not null)
-				{
-					_scrollView.ContentOrientation = UI.Xaml.Controls.ScrollingContentOrientation.Horizontal;
-				}
- 			}
-			else
-			{
-				_containerPanel.Orientation = Orientation.Vertical;
-				_itemsRepeater.VerticalAlignment = UI.Xaml.VerticalAlignment.Top;
-				_itemsRepeater.HorizontalAlignment = UI.Xaml.HorizontalAlignment.Stretch;
-				_headerContentControl.VerticalContentAlignment = UI.Xaml.VerticalAlignment.Top;
-				_headerContentControl.HorizontalContentAlignment = UI.Xaml.HorizontalAlignment.Stretch;
-				_footerContentControl.VerticalContentAlignment = UI.Xaml.VerticalAlignment.Top;
-				_footerContentControl.HorizontalContentAlignment = UI.Xaml.HorizontalAlignment.Stretch;
+                if (_scrollView is not null)
+                {
+                   // _scrollView.ContentOrientation = UI.Xaml.Controls.ScrollingContentOrientation.Horizontal;
+                }
+            }
+            else
+            {
+                _containerPanel.Orientation = Orientation.Vertical;
+                _itemsRepeater.VerticalAlignment = UI.Xaml.VerticalAlignment.Top;
+                _itemsRepeater.HorizontalAlignment = UI.Xaml.HorizontalAlignment.Stretch;
+                _headerContentControl.VerticalContentAlignment = UI.Xaml.VerticalAlignment.Top;
+                _headerContentControl.HorizontalContentAlignment = UI.Xaml.HorizontalAlignment.Stretch;
+                _footerContentControl.VerticalContentAlignment = UI.Xaml.VerticalAlignment.Top;
+                _footerContentControl.HorizontalContentAlignment = UI.Xaml.HorizontalAlignment.Stretch;
 
-				if(_scrollView is not null)
-				{
-					_scrollView.ContentOrientation = UI.Xaml.Controls.ScrollingContentOrientation.Vertical;
-				}
-			}
-		}
+                if (_scrollView is not null)
+                {
+                    //_scrollView.ContentOrientation = UI.Xaml.Controls.ScrollingContentOrientation.Vertical;
+                }
+            }
+        }
 
 		protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
 		{

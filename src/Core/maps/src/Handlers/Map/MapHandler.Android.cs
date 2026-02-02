@@ -269,8 +269,13 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		public static void MapElements(IMapHandler handler, IMap map)
 		{
-			(handler as MapHandler)?.ClearMapElements();
-			(handler as MapHandler)?.AddMapElements((IList)map.Elements);
+			if (handler is MapHandler mapHandler)
+			{
+				mapHandler.PlatformView?.Post(() =>
+				{
+					mapHandler.SyncMapElements((IList)map.Elements);
+				});
+			}
 		}
 
 		internal void OnMapReady(GoogleMap map)
@@ -459,30 +464,105 @@ namespace Microsoft.Maui.Maps.Handlers
 			return targetPin;
 		}
 
-		void ClearMapElements()
+		void SyncMapElements(IList mapElements)
 		{
+			// Build a set of element IDs from the new collection
+			var newElementIds = new HashSet<string>();
+			foreach (var element in mapElements)
+			{
+				if (element is IMapElement mapElement && mapElement.MapElementId is string id)
+				{
+					newElementIds.Add(id);
+				}
+			}
+
+			// Remove elements that are no longer in the collection
 			if (_polylines != null)
 			{
-				for (int i = 0; i < _polylines.Count; i++)
-					_polylines[i].Remove();
-
-				_polylines = null;
+				for (int i = _polylines.Count - 1; i >= 0; i--)
+				{
+					var polyline = _polylines[i];
+					if (polyline.Id is not null && !newElementIds.Contains(polyline.Id))
+					{
+						_polylines[i].Remove();
+						_polylines.RemoveAt(i);
+					}
+				}
+				if (_polylines.Count == 0)
+					_polylines = null;
 			}
 
 			if (_polygons != null)
 			{
-				for (int i = 0; i < _polygons.Count; i++)
-					_polygons[i].Remove();
-
-				_polygons = null;
+				for (int i = _polygons.Count - 1; i >= 0; i--)
+				{
+					if (!newElementIds.Contains(_polygons[i].Id))
+					{
+						_polygons[i].Remove();
+						_polygons.RemoveAt(i);
+					}
+				}
+				if (_polygons.Count == 0)
+					_polygons = null;
 			}
 
 			if (_circles != null)
 			{
-				for (int i = 0; i < _circles.Count; i++)
-					_circles[i].Remove();
+				for (int i = _circles.Count - 1; i >= 0; i--)
+				{
+					if (!newElementIds.Contains(_circles[i].Id))
+					{
+						_circles[i].Remove();
+						_circles.RemoveAt(i);
+					}
+				}
+				if (_circles.Count == 0)
+					_circles = null;
+			}
 
-				_circles = null;
+			// Build a set of existing element IDs
+			var existingIds = new HashSet<string>();
+			if (_polylines != null)
+			{
+				foreach (var p in _polylines)
+					existingIds.Add(p.Id);
+			}
+			if (_polygons != null)
+			{
+				foreach (var p in _polygons)
+					existingIds.Add(p.Id);
+			}
+			if (_circles != null)
+			{
+				foreach (var c in _circles)
+					existingIds.Add(c.Id);
+			}
+
+			// Add only new elements
+			foreach (var element in mapElements)
+			{
+				if (element is IMapElement mapElement)
+				{
+					// Skip if already exists
+					if (mapElement.MapElementId is string id && existingIds.Contains(id))
+						continue;
+				}
+
+				if (element is IGeoPathMapElement geoPath)
+				{
+					if (element is IFilledMapElement)
+					{
+						AddPolygon(geoPath);
+					}
+					else
+					{
+						AddPolyline(geoPath);
+					}
+				}
+				else if (element is ICircleMapElement circle)
+				{
+					AddCircle(circle);
+				}
 			}
 		}
 
