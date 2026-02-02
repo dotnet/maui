@@ -15,28 +15,14 @@ If Gate is not passed, go back to `.github/agents/pr.md` and complete phases 1-3
 
 ---
 
-## Phase Completion Protocol (CRITICAL)
+## 🚨 Critical Rules
 
-**Before changing ANY phase status to ✅ COMPLETE:**
+**All rules from `.github/agents/pr/SHARED-RULES.md` apply here**, including:
+- Phase Completion Protocol (fill ALL pending fields before marking complete)
+- Stop on Environment Blockers (STOP and ask user, don't continue)
+- Multi-Model Configuration (5 models, SEQUENTIAL only)
 
-1. **Read the state file section** for the phase you're completing
-2. **Find ALL ⏳ PENDING and [PENDING] fields** in that section
-3. **Fill in every field** with actual content
-4. **Verify no pending markers remain** in your section
-5. **Commit the state file** with complete content
-6. **Then change status** to ✅ COMPLETE
-
-**Rule:** Status ✅ means "documentation complete", not "I finished thinking about it"
-
-### 🚨 CRITICAL: Stop on Environment Blockers (Applies to Phase 4)
-
-The same "Stop on Environment Blockers" rule from `pr.md` applies here. If try-fix cannot run due to:
-- Missing Appium drivers
-- Device/emulator not available
-- WinAppDriver not installed
-- Platform tools missing
-
-**STOP and ask the user** before continuing. Do NOT mark try-fix attempts as "BLOCKED" and continue. Either fix the environment issue or get explicit user permission to skip.
+If try-fix cannot run due to environment issues, **STOP and ask the user**. Do NOT mark attempts as "BLOCKED" and continue.
 
 ---
 
@@ -66,17 +52,7 @@ Phase 4 uses a **multi-model approach** to maximize fix diversity. Each AI model
 
 #### Round 1: Run try-fix with Each Model
 
-Run the `try-fix` skill **5 times sequentially**, once with each model:
-
-| Order | Model | Invocation |
-|-------|-------|------------|
-| 1 | `claude-sonnet-4.5` | `task` tool with `model: "claude-sonnet-4.5"` parameter |
-| 2 | `claude-opus-4.5` | `task` tool with `model: "claude-opus-4.5"` parameter |
-| 3 | `gpt-5.2` | `task` tool with `model: "gpt-5.2"` parameter |
-| 4 | `gpt-5.2-codex` | `task` tool with `model: "gpt-5.2-codex"` parameter |
-| 5 | `gemini-3-pro-preview` | `task` tool with `model: "gemini-3-pro-preview"` parameter |
-
-**Note:** The `model` parameter is passed to the `task` tool, which supports model selection. This is separate from agent YAML frontmatter (which is VS Code-only).
+Run the `try-fix` skill **5 times sequentially**, once with each model (see `SHARED-RULES.md` for model list).
 
 **For each model**, invoke the try-fix skill:
 ```
@@ -94,95 +70,34 @@ Generate ONE independent fix idea. Review the PR's fix first to ensure your appr
 
 **Wait for each to complete before starting the next.**
 
-#### Round 2+: Cross-Pollination Loop
+#### Round 2+: Cross-Pollination Loop (MANDATORY)
 
-**🚨 MANDATORY - DO NOT SKIP THIS STEP**
+After Round 1, invoke EACH of the 5 models to ask for new ideas. **No shortcuts allowed.**
 
-After Round 1 completes, you MUST invoke each of the 5 models to ask for new ideas. This is NOT optional.
+**❌ WRONG**: Using `explore`/`glob`, declaring exhaustion without invoking each model
+**✅ CORRECT**: Invoke EACH model via task agent and ask explicitly
 
-**❌ WRONG**: Using `explore` or `glob` to "check if approaches are exhausted"
-**❌ WRONG**: Declaring exhaustion without invoking each model
-**❌ WRONG**: Assuming "comprehensive coverage" means no new ideas exist
-**✅ CORRECT**: Invoke EACH model via task agent and ask explicitly for new ideas
+**Steps (repeat until all 5 say "NO NEW IDEAS", max 3 rounds):**
 
-**⚠️ Summary Size Limit**: To stay within Copilot CLI's 30,000 char prompt limit, keep attempt summaries bounded:
-- Max 3-4 bullet points per attempt
-- Focus on: approach name, result (✅/❌), one-line key learning
-- Omit verbose stack traces or full code diffs
+1. **Compile bounded summary** (max 3-4 bullets per attempt):
+   - Attempt #, approach (1 line), result (✅/❌), key learning (1 line)
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│  Cross-Pollination Loop - MANDATORY                         │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  🚨 You MUST invoke each model - no shortcuts allowed       │
-│                                                             │
-│  LOOP until no new ideas:                                   │
-│                                                             │
-│    1. Compile BOUNDED summary of ALL try-fix attempts:      │
-│       - Attempt #, approach (1 line)                        │
-│       - Pass/Fail result                                    │
-│       - Key learning (1 line - why it worked or failed)     │
-│                                                             │
-│    2. Invoke EACH of the 5 models via task agent:           │
-│       prompt: "Review these fix attempts for PR #XXXXX:     │
-│                [summary of all attempts]                    │
-│                Do you have any NEW fix ideas not tried?     │
-│                Reply: 'NEW IDEA: [description]' or          │
-│                       'NO NEW IDEAS'"                       │
-│                                                             │
-│    3. Record each model's response in state file:           │
-│       | Model | Response |                                  │
-│       | claude-sonnet-4.5 | NO NEW IDEAS |                  │
-│       | claude-opus-4.5 | NEW IDEA: ... |                   │
-│       | ... | ... |                                         │
-│                                                             │
-│    4. For each model with a new idea:                       │
-│       → Run try-fix with that model (SEQUENTIAL)            │
-│       → Wait for completion before next                     │
-│                                                             │
-│    5. If ANY new ideas were tested → repeat loop            │
-│       If ALL 5 models said "NO NEW IDEAS" → exit loop       │
-│                                                             │
-│  MAX ROUNDS: 3 (to prevent infinite loops)                  │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
-```
+2. **Invoke each model via task agent:**
+   ```
+   agent_type: "task", model: "[model-name]"
+   prompt: "Review PR #XXXXX fix attempts:
+     - Attempt 1: [approach] - ✅/❌
+     - Attempt 2: [approach] - ✅/❌
+     Do you have any NEW fix ideas? Reply: 'NEW IDEA: [desc]' or 'NO NEW IDEAS'"
+   ```
 
-**Cross-Pollination Invocation Template:**
-```
-Invoke task agent with model parameter:
-  agent_type: "task"
-  model: "[model-name]"
-  prompt: "Review PR #XXXXX fix attempts:
-    - Attempt 1 (claude-sonnet-4.5): [approach] - ✅/❌
-    - Attempt 2 (claude-opus-4.5): [approach] - ✅/❌
-    - ...
-    
-    Do you have any NEW fix ideas that haven't been tried?
-    Reply with EXACTLY one of:
-    - 'NEW IDEA: [brief description]'
-    - 'NO NEW IDEAS'
-    
-    Only propose ideas that are fundamentally different from above."
-```
+3. **Record each model's response** in state file Cross-Pollination table
 
-**Coordination loop stop condition**: Exit when ALL 5 models explicitly respond "NO NEW IDEAS" in the same round. This requires actual task agent invocations - not code exploration or assumptions.
+4. **For each new idea**: Run try-fix with that model (SEQUENTIAL, wait for completion)
 
-#### try-fix Invocation Details
+5. **Exit when**: ALL 5 models say "NO NEW IDEAS" in the same round
 
-Each `try-fix` invocation (via task agent):
-- Reads state file to learn from prior attempts
-- Reverts PR's fix to get broken baseline
-- Proposes and implements ONE fix idea
-- Runs tests to validate
-- Records result with failure analysis
-- Reverts changes (restores PR's fix)
-- Updates state file with attempt results
-
-See `.github/skills/try-fix/SKILL.md` for full details.
-
-### What try-fix Does (Each Invocation)
+#### try-fix Behavior
 
 Each `try-fix` invocation (run via task agent with specific model):
 1. Reads state file to learn from prior failed attempts
@@ -241,7 +156,7 @@ Update the state file:
 
 **If a try-fix alternative was selected:**
 - Re-implement the fix (you documented the approach in the table)
-- Commit the changes
+- Apply the changes to files (do not commit - user handles git)
 
 ### Complete 🔧 Fix
 
@@ -272,7 +187,7 @@ Update the state file:
 - [ ] "Selected Fix" populated with reasoning
 - [ ] Root cause analysis documented for the selected fix (to be surfaced in 📋 Report phase "### Root Cause" section)
 - [ ] No ⏳ PENDING markers remain in Fix section
-- [ ] State file committed
+- [ ] State file saved
 
 **🚨 If cross-pollination table is missing, you skipped Round 2. Go back and invoke each model.**
 
@@ -298,41 +213,23 @@ If reviewing an existing PR, check if title/description need updates and include
 
 ### If Starting from Issue (No PR) - Create PR
 
-1. **Ensure selected fix is applied and committed**:
-   ```bash
-   git add -A
-   git commit -m "Fix #XXXXX: [Description of fix]"
-   ```
-
-2. **Create a feature branch** (if not already on one):
-   ```bash
-   git checkout -b fix/issue-XXXXX
-   ```
-
-3. **⛔ STOP: Ask user for confirmation before creating PR**:
+1. **⛔ STOP: Ask user to commit and create PR**:
    
-   Present a summary to the user and wait for explicit approval:
-   > "I'm ready to create a PR for issue #XXXXX. Here's what will be included:
-   > - **Branch**: fix/issue-XXXXX
+   Present a summary to the user and wait for them to handle git operations:
+   > "I've implemented the fix for issue #XXXXX. Here's what needs to be committed:
    > - **Selected fix**: Candidate #N - [approach]
    > - **Files changed**: [list files]
    > - **Tests added**: [list test files]
    > - **Other candidates considered**: [brief summary]
    > 
-   > Would you like me to push and create the PR?"
+   > Please commit these changes and create a PR when ready.
+   > Suggested PR title: `[Platform] Brief description of behavior fix`
+   > 
+   > Use the pr-finalize skill output for the PR body."
    
-   **Do NOT proceed until user confirms.**
+   **Do NOT run git commands. User handles commit/push/PR creation.**
 
-4. **Push and create PR** (after user confirmation):
-
-   ```bash
-   git push -u origin fix/issue-XXXXX
-   gh pr create --title "[Platform] Brief description of behavior fix" --body "<pr-finalize skill output>"
-   ```
-   
-   Use the `pr-finalize` skill output as the `--body` argument.
-
-5. **Update state file** with PR link
+2. **Update state file** with PR link once user provides it
 
 ### If Starting from PR - Write Review
 
@@ -345,6 +242,7 @@ Determine your recommendation based on the Fix phase:
 **If an alternative fix was selected:**
 - Recommend: `⚠️ REQUEST CHANGES`
 - Justification: Suggest the better approach from try-fix Candidate #N
+- **Tell user:** "I've applied the alternative fix locally. Please review the changes and commit/push to update the PR."
 
 **If PR's fix failed tests:**
 - Recommend: `⚠️ REQUEST CHANGES`
@@ -382,7 +280,7 @@ Update all phase statuses to complete.
 - [ ] Summary of findings
 - [ ] Key technical insights documented
 - [ ] Overall status changed to final recommendation
-- [ ] State file committed
+- [ ] State file saved
 
 ---
 

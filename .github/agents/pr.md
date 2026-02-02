@@ -41,142 +41,23 @@ After Gate passes, read `.github/agents/pr/post-gate.md` for **Phases 4-5**.
 
 ---
 
-## Phase Completion Protocol (CRITICAL)
+## 🚨 Critical Rules
 
-**Before changing ANY phase status to ✅ COMPLETE:**
+**Read `.github/agents/pr/SHARED-RULES.md` for complete details on:**
+- Phase Completion Protocol (fill ALL pending fields before marking complete)
+- Follow Templates EXACTLY (no `open` attributes, no "improvements")
+- No Direct Git Commands (use `gh pr diff/view`, let scripts handle files)
+- Use Skills' Scripts (don't bypass with manual commands)
+- Stop on Environment Blockers (strict retry limits, report and ask user)
+- Multi-Model Configuration (5 models for Phase 4)
+- Platform Selection (must be affected AND available on host)
 
-1. **Read the state file section** for the phase you're completing
-2. **Find ALL ⏳ PENDING and [PENDING] fields** in that section
-3. **Fill in every field** with actual content
-4. **Verify no pending markers remain** in your section
-5. **Commit the state file** with complete content
-6. **Then change status** to ✅ COMPLETE
+**Key points:**
+- ❌ Never run `git checkout`, `git switch`, `git stash`, `git reset` - agent is always on correct branch
+- ❌ Never continue after environment blocker - STOP and ask user
+- ❌ Never mark phase ✅ with [PENDING] fields remaining
 
-**Rule:** Status ✅ means "documentation complete", not "I finished thinking about it"
-
----
-
-### 🚨 CRITICAL: Follow Templates EXACTLY
-
-When creating state files, use the EXACT format from this document:
-- **Do NOT add attributes** like `open` to `<details>` tags
-- **Do NOT "improve"** the template format
-- **Do NOT deviate** from documented structure
-- Downstream scripts depend on exact formatting (regex patterns expect specific structure)
-
-### 🚨 CRITICAL: No Direct Git Commands
-
-**Never run git commands directly during a PR review.**
-
-The user or script has already set up the correct branch. All git operations are handled by the PowerShell scripts (verify-tests-fail.ps1, try-fix, etc.).
-
-**What to do instead:**
-- Use `gh pr diff` or `gh pr view` to see PR info (read-only GitHub CLI)
-- Use `gh pr diff <number> --name-only` to list changed files
-- Let scripts handle all file manipulation internally
-
-**Never run these commands:**
-- ❌ `git checkout` (any form)
-- ❌ `git switch`
-- ❌ `git stash`
-- ❌ `git reset`
-- ❌ `git revert`
-- ❌ `gh pr checkout`
-
-### 🚨 CRITICAL: Use Skills' Scripts - Don't Bypass
-
-When a skill provides a PowerShell script:
-- **Run the script** - don't interpret what it does and do it manually
-- **Fix inputs if script fails** - don't bypass with manual `gh` commands
-- **Use `-DryRun` to debug** - see what the script would produce before posting
-- Scripts handle formatting, API calls, and section management correctly
-
-### 🚨 CRITICAL: Stop on Environment Blockers
-
-If you encounter an environment or system setup blocker that prevents completing a phase:
-
-**STOP IMMEDIATELY. Do NOT continue to the next phase.**
-
-**Common blockers:**
-- Missing Appium drivers (Windows, iOS, Android)
-- WinAppDriver not installed or returning errors
-- Xcode/iOS simulators not available (on Windows)
-- Android emulator not running or not configured
-- Developer Mode not enabled
-- Port conflicts (e.g., 4723 in use)
-- Missing SDKs or tools
-- Server errors (500, timeout, "unknown error occurred")
-
-**Retry Limits - STRICT ENFORCEMENT:**
-
-| Blocker Type | Max Retries | Then Do |
-|--------------|-------------|---------|
-| Missing tool/driver | 1 install attempt | STOP and ask user |
-| Server errors (500, timeout) | 0 | STOP immediately and report |
-| Port conflicts | 1 (kill process) | STOP and ask user |
-| Configuration issues | 1 fix attempt | STOP and ask user |
-
-**When blocked, you MUST:**
-1. **Stop all work** - Do not proceed to the next phase
-2. **Do NOT keep troubleshooting** - After the retry limit, STOP
-3. **Report the blocker** clearly:
-   - What step failed
-   - What tool/driver/device is missing
-   - What error message was shown
-   - What you already tried (if any retries were used)
-4. **Ask the user** how to proceed:
-   - Install the missing component?
-   - Switch to a different platform?
-   - Skip this phase with documented limitations?
-5. **Wait for user response** - Do not assume or work around
-
-**Example blocker report:**
-```
-⛔ BLOCKED: Cannot complete Gate phase
-
-**What failed:** Running verify-tests-fail-without-fix skill
-**Blocker:** WinAppDriver returns 500 errors
-**Error:** "WinAppDriver server fails to respond with proper status"
-
-**What I tried:**
-- Ran Appium provisioning script
-- Updated Windows driver to v5.1.8
-
-**I am STOPPING here. Options:**
-1. User investigates WinAppDriver setup manually
-2. Switch to Android/iOS platform
-3. Accept Sandbox manual verification as sufficient
-4. Skip automated verification (note limitation in report)
-
-Which would you like me to do?
-```
-
-**Never:**
-- ❌ Keep trying different fixes after retry limit exceeded
-- ❌ Mark a phase as ⚠️ BLOCKED and continue to the next phase
-- ❌ Claim "verification passed" when tests couldn't actually run
-- ❌ Skip device/emulator testing and proceed with code review only
-- ❌ Install multiple tools/drivers without asking between each
-- ❌ Spend more than 2-3 tool calls troubleshooting the same blocker
-
----
-
-### 🚨 CRITICAL: Phase 4 Uses Multi-Model try-fix
-
-**Even when a PR already has a fix**, Phase 4 requires running the `try-fix` skill with **5 different AI models** to:
-1. **Maximize fix diversity** - Each model brings different perspectives
-2. **Cross-pollinate ideas** - Share results between models to spark new ideas
-3. **Ensure exhaustive exploration** - Only stop when ALL models confirm "no new ideas"
-
-**The multi-model workflow:**
-- **Round 1**: Run try-fix 5 times sequentially using the `task` agent with `model` parameter: `claude-sonnet-4.5`, `claude-opus-4.5`, `gpt-5.2`, `gpt-5.2-codex`, `gemini-3-pro-preview`
-- **Round 2+**: Share all results with all 5 models, run try-fix for any new ideas, repeat until exhaustion
-
-**⚠️ SEQUENTIAL ONLY**: try-fix runs modify the same files and use the same device. Never run in parallel.
-
-**Note:** The `model` parameter is passed to the `task` tool, which supports model selection. This is separate from agent YAML frontmatter (which is VS Code-only).
-
-See `post-gate.md` for detailed Phase 4 instructions.
+Phase 4 uses a 5-model exploration workflow. See `post-gate.md` for detailed instructions after Gate passes.
 
 ---
 
@@ -344,7 +225,7 @@ This file:
 - Serves as your TODO list for all phases
 - Tracks progress if interrupted
 - Must exist before you start gathering context
-- **Always include when committing changes** (to `CustomAgentLogsTmp/PRState/`)
+- **Always include when saving changes** (to `CustomAgentLogsTmp/PRState/`)
 - **Phases 4-5 sections are added AFTER Gate passes** (see `pr/post-gate.md`)
 
 **Then gather context and update the file as you go.**
@@ -353,11 +234,7 @@ This file:
 
 **If starting from a PR:**
 ```bash
-# Checkout the PR
-git fetch origin pull/XXXXX/head:pr-XXXXX
-git checkout pr-XXXXX
-
-# Fetch PR metadata
+# Fetch PR metadata (agent is already on correct branch)
 gh pr view XXXXX --json title,body,url,author,labels,files
 
 # Find and read linked issue
@@ -367,7 +244,6 @@ gh issue view ISSUE_NUMBER --json title,body,comments
 
 **If starting from an Issue (no PR exists):**
 ```bash
-# Stay on current branch - do NOT checkout anything
 # Fetch issue details directly
 gh issue view XXXXX --json title,body,comments,labels
 ```
@@ -462,7 +338,7 @@ The test result will be updated to `✅ PASS (Gate)` after Gate passes.
 - [ ] Files Changed table populated (if PR exists)
 - [ ] PR Discussion Summary documented (if PR exists)
 - [ ] All [PENDING] placeholders replaced
-- [ ] State file committed
+- [ ] State file saved
 
 ---
 
@@ -529,7 +405,7 @@ The script auto-detects mode based on git diff. If only test files changed, it v
 - [ ] Test file paths documented
 - [ ] "Tests verified to FAIL" note added
 - [ ] Test category identified
-- [ ] State file committed
+- [ ] State file saved
 
 ---
 
@@ -626,7 +502,7 @@ See `.github/skills/verify-tests-fail-without-fix/SKILL.md` for full skill docum
 - [ ] Result shows PASSED ✅ or FAILED ❌
 - [ ] Test behavior documented
 - [ ] Platform tested noted
-- [ ] State file committed
+- [ ] State file saved
 
 ---
 
