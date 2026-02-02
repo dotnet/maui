@@ -25,8 +25,8 @@
         <PackagePath>$(NuGetPackageRoot)%(MIBCPackageDef.Identity)/%(MIBCPackageDef.Version)</PackagePath>
       </MIBCPackageDef>
       <_optimizationMibcFile Include="%(MIBCPackageDef.PackagePath)/**/*.mibc" SubdirectoryName="%(MIBCPackageDef.TargetPlatform)" />
-      <_optimizationMibcDestinationFile Include="@(_optimizationMibcFile->'$(MibcOptimizationDataDir)%(SubdirectoryName)/%(RecursiveDir)%(Filename)%(Extension)')" />
-      <ExcessFilesCurrentlyPresent Include="$(MibcOptimizationDataDir)/**" 
+      <_optimizationMibcDestinationFile Include="@(_optimizationMibcFile->'$(_MibcOptimizationDataDir)%(SubdirectoryName)/%(RecursiveDir)%(Filename)%(Extension)')" />
+      <ExcessFilesCurrentlyPresent Include="$(_MibcOptimizationDataDir)/**" 
                                    Exclude="@(_optimizationMibcDestinationFile)"/>
     </ItemGroup>
 
@@ -43,7 +43,7 @@
 
     <!-- Add mibc files to pack after they've been copied -->
     <ItemGroup>
-      <_MibcFilesToPack Include="$(MibcOptimizationDataDir)**\*.mibc" />
+      <_MibcFilesToPack Include="$(_MibcOptimizationDataDir)**\*.mibc" />
       <None Include="@(_MibcFilesToPack)" Visible="false" Pack="true" PackagePath="buildTransitive/netstandard2.0/mibc/" />
     </ItemGroup>
 
