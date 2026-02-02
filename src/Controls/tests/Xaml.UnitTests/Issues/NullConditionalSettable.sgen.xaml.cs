@@ -39,18 +39,18 @@ public partial class NullConditionalSettable : ContentPage
 	[Collection("Issue")]
 	public class Tests
 	{
-		[Theory]
-		[XamlInflatorData]
-		internal void NullConditionalAccessIsSettable(XamlInflator inflator)
+		[Fact]
+		internal void NullConditionalAccessIsSettable()
 		{
 			// This test verifies that null-conditional access (?.) works in two-way bindings.
 			// In C# 14+ (default for .NET 10+), expressions like "user?.Name = value" are valid.
+			// C# Expressions only work with SourceGen, not Runtime or XamlC.
 			var viewModel = new NullConditionalViewModel
 			{
 				User = new NullConditionalUser { Name = "Initial" }
 			};
 
-			var page = new NullConditionalSettable(inflator);
+			var page = new NullConditionalSettable(XamlInflator.SourceGen);
 			page.BindingContext = viewModel;
 
 			Assert.NotNull(page);
