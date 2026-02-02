@@ -1,13 +1,13 @@
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/SearchBoxVisibility.xml" path="Type[@FullName='Microsoft.Maui.Controls.SearchBoxVisibility']/Docs/*" />
+	/// <summary>Specifies the visibility behavior of a search box in a <see cref="SearchHandler"/>.</summary>
 	public enum SearchBoxVisibility
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBoxVisibility.xml" path="//Member[@MemberName='Hidden']/Docs/*" />
+		/// <summary>The search box is hidden.</summary>
 		Hidden,
-		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBoxVisibility.xml" path="//Member[@MemberName='Collapsible']/Docs/*" />
+		/// <summary>The search box can be collapsed and expanded by the user.</summary>
 		Collapsible,
-		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBoxVisibility.xml" path="//Member[@MemberName='Expanded']/Docs/*" />
+		/// <summary>The search box is always expanded and visible.</summary>
 		Expanded
 	}
 }

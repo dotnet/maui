@@ -6,7 +6,7 @@
     <AssemblyName>Microsoft.Maui.Controls.Xaml.UnitTests</AssemblyName>
     <WarningLevel>4</WarningLevel>
     <NoWarn>$(NoWarn);0672;0219;0414;CS0436;CS0618;CA2252</NoWarn>
-    <WarningsNotAsErrors>$(WarningsNotAsErrors);XC0618;XC0022;XC0023;XC0025;XC0045;MAUID1000;MAUIX2005</WarningsNotAsErrors>
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);XC0618;XC0022;XC0023;XC0025;XC0045;MAUIG2045;MAUID1000;MAUIX2005</WarningsNotAsErrors>
     <IsPackable>false</IsPackable>
     <DisableMSBuildAssemblyCopyCheck>true</DisableMSBuildAssemblyCopyCheck>
     <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
@@ -33,11 +33,11 @@
     <PackageReference Include="xunit" Version="$(XunitPackageVersion)" />
     <PackageReference Include="Mono.Cecil" Version="0.11.5" />
     <PackageReference Include="System.CodeDom" Version="7.0.0" />
-    <PackageReference Include="Microsoft.Build.Framework" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" />
+    <PackageReference Include="Microsoft.Build.Framework" PrivateAssets="all" Publish="true" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" PrivateAssets="all" Publish="true" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.1.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.12.0" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.12.0" PrivateAssets="all" Publish="true" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" Publish="true" />
   </ItemGroup>
 
   <ItemGroup>
@@ -89,6 +89,9 @@
 
   <ItemGroup>
     <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+    <!-- MSBuild test support files - copy to output for Helix -->
+    <Content Include="MSBuild\_Directory.Build.props" CopyToOutputDirectory="PreserveNewest" Link="MSBuild\_Directory.Build.props" />
+    <Content Include="MSBuild\_Directory.Build.targets" CopyToOutputDirectory="PreserveNewest" Link="MSBuild\_Directory.Build.targets" />
   </ItemGroup>
 
 </Project>

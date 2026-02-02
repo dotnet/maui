@@ -130,9 +130,161 @@ VerifyScreenshot();
 // With custom name
 VerifyScreenshot("CustomTestName");
 
+// With tolerance (0.0-100.0 percentage) - use sparingly
+VerifyScreenshot(tolerance: 0.5); // Allow 0.5% difference for cross-machine rendering variance
+
+// PREFERRED: Keep retrying for up to 2 seconds (for animations)
+VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
+
+// Combined: tolerance for rendering variance + retryTimeout for timing
+VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+
 // Manual screenshot for debugging
 App.Screenshot("TestStep1");
 ```
+
+**CRITICAL - VerifyScreenshot() Built-in Features:**
+
+`VerifyScreenshot()` **already includes** stability mechanisms. Do NOT add redundant delays:
+
+| Feature | Behavior | Parameter |
+|---------|----------|-----------|
+| **Android delay** | Automatic 350ms wait for animations | Built-in, cannot override |
+| **Retry logic** | Default: retries once; with retryTimeout: keeps retrying | Built-in |
+| **Retry delay** | 500ms delay between retry attempts | `retryDelay: TimeSpan` (customizable) |
+| **Retry timeout** | Total time to keep retrying | `retryTimeout: TimeSpan` (PREFERRED for flaky tests) |
+| **Tolerance** | Allow percentage difference (0-100) | `tolerance: double` (default: 0.0) |
+
+**When to customize:**
+- ✅ Use `retryTimeout` parameter for animations with variable timing (PREFERRED approach)
+- ✅ Use small `tolerance` (0.5%) for cross-machine rendering variance, NOT to hide timing issues
+- ✅ Use `retryDelay` if you need to change the delay between retry attempts
+- ❌ **DO NOT** add `Task.Delay()` or `Thread.Sleep()` before `VerifyScreenshot()` - use `retryTimeout` instead
+
+## Writing Robust UI Tests
+
+### Best Practices for Screenshot Tests
+
+When writing tests that use `VerifyScreenshot()`, follow these patterns to avoid flakiness:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ 1. UNDERSTAND TEST INFRASTRUCTURE                               │
+│    - Read UITest.cs base class implementation                   │
+│    - Understand built-in retry/delay/tolerance mechanisms       │
+│    - Check what helpers/extensions already exist                │
+├─────────────────────────────────────────────────────────────────┤
+│ 2. USE PROPER WAITING PATTERNS                                  │
+│    - Use WaitForElement before interacting with elements        │
+│    - Use retryTimeout for screenshots after animations          │
+│    - Never use arbitrary Task.Delay() before VerifyScreenshot   │
+├─────────────────────────────────────────────────────────────────┤
+│ 3. APPLY MINIMAL TOLERANCES                                     │
+│    - Use retryTimeout for timing issues (preferred)             │
+│    - Use small tolerance (0.5%) only for rendering variance     │
+│    - Never use tolerance > 5% without justification             │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Common Flaky Test Patterns
+
+| Symptom | Root Cause | Fix Pattern | Anti-Pattern |
+|---------|------------|-------------|--------------|
+| **Visual diff in screenshot** | Animation not finished | `VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2))` | ❌ Adding `Task.Delay()` before |
+| **Element not found** | Element not rendered yet | `App.WaitForElement("Id", timeout: TimeSpan.FromSeconds(10))` | ❌ `Thread.Sleep()` then `FindElement()` |
+| **Timeout on interaction** | Page not fully loaded | Wait for specific element that indicates ready state | ❌ Arbitrary 3-second delay |
+| **Inconsistent rect/position** | Layout not settled | Multiple `GetRect()` calls with comparison | ❌ Single `GetRect()` after delay |
+| **WebView failures** | External URL/network | Use mock URLs instead of external URLs | ❌ Adding longer timeouts |
+
+### Anti-Patterns (DO NOT DO)
+
+| Anti-Pattern | Why It's Wrong | Better Alternative |
+|--------------|----------------|-------------------|
+| ❌ `Task.Delay(500).Wait()` before `VerifyScreenshot()` | VerifyScreenshot already has built-in retry; use retryTimeout instead | Use `VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2))` |
+| ❌ `Thread.Sleep(2000)` before element interaction | Arbitrary wait; doesn't guarantee element is ready | `App.WaitForElement("Id", timeout: ...)` |
+| ❌ Adding tolerance > 5% without justification | Hides real bugs; too permissive | Use `retryTimeout` for timing issues; small tolerance (0.5%) for rendering variance |
+| ❌ Using external URLs in WebView tests | External dependency; unreliable | Use mock URLs or local content |
+| ❌ Fixing symptoms without understanding infrastructure | Redundant fixes; doesn't address root cause | Read `UITest.cs` first (step 1 above) |
+
+### When to Use What
+
+**VerifyScreenshot() parameters (preferred):**
+```csharp
+// Animation timing issues - keep retrying for up to 2 seconds
+// This is the PREFERRED approach for flaky screenshot tests
+VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
+
+// Small tolerance for cross-machine rendering variance + retryTimeout for timing
+// Use 0.5% tolerance as safety margin, NOT to hide timing issues
+VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+
+// Legacy: retryDelay only changes delay BETWEEN retries (default 500ms)
+// retryTimeout is preferred because it keeps trying until success
+VerifyScreenshot(retryDelay: TimeSpan.FromSeconds(1));
+```
+
+**Key difference: retryDelay vs retryTimeout:**
+- `retryDelay`: Delay between retry attempts (default 500ms). Only retries ONCE.
+- `retryTimeout`: Total time to keep retrying. Retries every `retryDelay` until timeout.
+- **Prefer `retryTimeout`** for animations with variable completion times.
+
+**WaitForElement (for element readiness):**
+```csharp
+// Wait up to 10 seconds for element to appear
+App.WaitForElement("ButtonId", timeout: TimeSpan.FromSeconds(10));
+
+// Then interact
+App.Tap("ButtonId");
+```
+
+**Task.Delay/Thread.Sleep (avoid if possible):**
+```csharp
+// AVOID: With retryTimeout, you rarely need explicit delays anymore
+// 
+// Old pattern (before retryTimeout):
+// Task.Delay(300).Wait();
+// VerifyScreenshot(tolerance: 2.0);
+//
+// New pattern (preferred):
+VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+
+// ONLY use explicit delays when:
+// 1. Waiting for non-element state with no screenshot (rare)
+// 2. External system delay that can't be detected otherwise
+// 3. After exhausting other options AND documenting why
+```
+
+### Understanding Test Infrastructure
+
+**Key files to understand when writing UI tests:**
+
+1. **UITest.cs** - Base class with `VerifyScreenshot()` implementation
+   - Path: `src/Controls/tests/TestCases.Shared.Tests/UITest.cs`
+   - Contains: retry logic, tolerance parsing, platform-specific delays
+
+2. **_IssuesUITest.cs** - Issues test base class
+   - Path: `src/Controls/tests/TestCases.Shared.Tests/_IssuesUITest.cs`
+   - Contains: Navigation helpers, common patterns
+
+3. **Extension methods** - Platform-specific helpers
+   - Path: `src/Controls/tests/TestCases.Shared.Tests/` (various extension files)
+   - Contains: Existing helpers for common operations
+
+**Find existing patterns:**
+```bash
+# See VerifyScreenshot implementation (including retryTimeout)
+grep -A 30 "public void VerifyScreenshot" src/Controls/tests/TestCases.Shared.Tests/UITest.cs
+
+# Find existing tests using retryTimeout (preferred pattern)
+grep -r "retryTimeout" src/Controls/tests/TestCases.Shared.Tests/Tests/
+
+# Find existing tolerance patterns
+grep -r "tolerance:" src/Controls/tests/TestCases.Shared.Tests/Tests/
+```
+
+### Infrastructure Notes
+
+**Tolerance regex handles multiple locales:** The tolerance parsing uses regex pattern `\d+[.,]\d+` to match both `.` and `,` as decimal separators (e.g., "2.5%" or "2,5%"). If tolerance appears to not be applied, verify the regex patterns in `UITest.cs` `VerifyWithTolerance()` method.
 
 ## Test Categories
 
@@ -171,9 +323,9 @@ Tests should run on all applicable platforms by default. The test infrastructure
 
 ### No Inline #if Directives in Test Methods
 
-**Do NOT use `#if ANDROID`, `#if IOS`, etc. inside test method bodies.** Platform-specific behavior must be hidden behind extension methods for readability.
+**Do NOT use `#if ANDROID`, `#if IOS`, etc. directly in test methods.** Platform-specific behavior must be hidden behind extension methods for readability.
 
-**Note:** File-level `#if` (to exclude entire files) or wrapping entire test methods is acceptable. This rule targets inline conditionals within test logic that make code hard to read and maintain.
+**Note:** This rule is about **code cleanliness**, not platform scope. Using `#if ANDROID ... #else ...` still compiles for all platforms - the issue is that inline directives make test logic hard to read and maintain.
 
 ```csharp
 // ❌ BAD - inline #if in test method (hard to read)
