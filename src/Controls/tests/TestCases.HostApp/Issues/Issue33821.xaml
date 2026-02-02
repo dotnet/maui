@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue33821">
+    <VerticalStackLayout Spacing="20"
+                         Padding="20"
+                         HorizontalOptions="Center"
+                         VerticalOptions="Center">
+        <Label Text="Picker Theme Test"
+               FontSize="24"
+               TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+        
+        <Picker AutomationId="TestPicker"
+                Title="Select an item"
+                WidthRequest="200">
+            <Picker.ItemsSource>
+                <x:Array Type="{x:Type x:String}">
+                    <x:String>Option 1</x:String>
+                    <x:String>Option 2</x:String>
+                    <x:String>Option 3</x:String>
+                </x:Array>
+            </Picker.ItemsSource>
+        </Picker>
+        
+        <HorizontalStackLayout Spacing="10"
+                               HorizontalOptions="Center">
+            <Button AutomationId="LightThemeButton"
+                    Text="Light Theme"
+                    Clicked="OnLightThemeButtonClicked"/>
+            <Button AutomationId="DarkThemeButton"
+                    Text="Dark Theme"
+                    Clicked="OnDarkThemeButtonClicked"/>
+        </HorizontalStackLayout>
+        
+        <Label AutomationId="ThemeLabel"
+               TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+    </VerticalStackLayout>
+</ContentPage>
