@@ -42,6 +42,7 @@ namespace Microsoft.Maui.Controls.Platform
 			=> ToNSAttributedString(formattedString, fontManager, defaultLineHeight, defaultHorizontalAlignment, defaultFont, defaultColor, defaultTextTransform, defaultCharacterSpacing: 0d);
 
 		// Private overload that supports CharacterSpacing inheritance
+		// TODO: Make this method public in .NET 11
 		static NSAttributedString ToNSAttributedString(
 			this FormattedString formattedString,
 			IFontManager fontManager,
@@ -84,6 +85,7 @@ namespace Microsoft.Maui.Controls.Platform
 			=> ToNSAttributedString(span, fontManager, defaultLineHeight, defaultHorizontalAlignment, defaultFont, defaultColor, defaultTextTransform, defaultCharacterSpacing: 0d);
 
 		// Private overload that supports CharacterSpacing inheritance
+		// TODO: Make this method public in .NET 11
 		static NSAttributedString ToNSAttributedString(
 			this Span span,
 			IFontManager fontManager,
