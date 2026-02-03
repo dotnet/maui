@@ -9,6 +9,24 @@ Ensures PR title and description accurately reflect the implementation for a goo
 
 **Standalone skill** - Can be used on any PR, not just PRs created by the pr agent.
 
+---
+
+## 🚨 CRITICAL: NEVER Approve or Request Changes
+
+**AI agents must NEVER use `--approve` or `--request-changes` flags.**
+
+| Action | Allowed? | Why |
+|--------|----------|-----|
+| `gh pr review --approve` | ❌ **NEVER** | Approval is a human decision |
+| `gh pr review --request-changes` | ❌ **NEVER** | Blocking PRs is a human decision |
+
+**Only humans can approve or block PRs.** The agent's role is to:
+1. Analyze and provide findings
+2. Post comments with recommendations
+3. Let humans make the final decision
+
+---
+
 ## Core Principle: Preserve Quality
 
 **Review existing description BEFORE suggesting changes.** Many PR authors write excellent, detailed descriptions. Your job is to:
