@@ -65,15 +65,42 @@ stages:
               skipAndroidCreateAvds: false
               androidEmulatorApiLevel: '34'
 
-          # Start Android Emulator EARLY (boots in background while other steps run)
-          # This saves ~2-3 minutes by parallelizing boot with .NET install and build tasks
-          - script: |
-              echo "=== Starting Android Emulator (background) ==="
-              nohup $ANDROID_SDK_ROOT/emulator/emulator -avd Emulator_34 -no-window -no-snapshot -no-audio -no-boot-anim > /dev/null 2>&1 &
-              echo "Emulator starting in background (PID: $!)"
-              echo "Boot will complete while other steps run..."
-            displayName: 'Start Android Emulator (Background)'
-            continueOnError: true
+          # Start Android Emulator EARLY (using Start-Emulator.ps1 script)
+          - pwsh: |
+              Write-Host "=== Starting Android Emulator ==="
+              Write-Host "Working directory: $(Get-Location)"
+              Write-Host "ANDROID_SDK_ROOT: $env:ANDROID_SDK_ROOT"
+              Write-Host "JAVA_HOME: $env:JAVA_HOME"
+              
+              $scriptPath = ".github/scripts/shared/Start-Emulator.ps1"
+              Write-Host "Script path: $scriptPath"
+              
+              if (-not (Test-Path $scriptPath)) {
+                Write-Host "##vso[task.logissue type=error]Script not found: $scriptPath"
+                exit 1
+              }
+              Write-Host "Script exists: OK"
+              
+              $ErrorActionPreference = "Continue"
+              try {
+                Write-Host "Invoking Start-Emulator.ps1 -Platform android..."
+                & "./$scriptPath" -Platform android 2>&1 | ForEach-Object { Write-Host $_ }
+                $exitCode = $LASTEXITCODE
+                Write-Host "Script returned exit code: $exitCode"
+              } catch {
+                Write-Host "##vso[task.logissue type=error]Exception: $_"
+                Write-Host $_.ScriptStackTrace
+                $exitCode = 1
+              }
+              
+              if ($exitCode -ne 0) {
+                Write-Host "##vso[task.logissue type=error]Start-Emulator failed with code $exitCode"
+                exit $exitCode
+              }
+              
+              Write-Host "=== Android Emulator Started Successfully ==="
+            displayName: 'Start Android Emulator'
+            timeoutInMinutes: 10
             env:
               ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
               JAVA_HOME: $(JAVA_HOME_17_X64)
@@ -170,46 +197,14 @@ stages:
               echo "Tools restored successfully"
             displayName: 'Restore .NET Tools'
 
-          # # Boot Android emulator for UI tests
-          # - script: |
-          #     echo "=== Booting Android Emulator ==="
-              
-          #     # Start emulator in background, detached from terminal
-          #     nohup $ANDROID_SDK_ROOT/emulator/emulator -avd Emulator_34 -no-window -no-snapshot -no-audio -no-boot-anim > /dev/null 2>&1 &
-          #     EMULATOR_PID=$!
-          #     echo "Emulator started with PID: $EMULATOR_PID"
-              
-          #     # Wait for device to appear
-          #     echo "Waiting for emulator device..."
-          #     adb wait-for-device
-              
-          #     # Wait for boot_completed
-          #     echo "Waiting for emulator to finish booting..."
-          #     timeout=120
-          #     waited=0
-          #     while [ "$(adb shell getprop sys.boot_completed 2>/dev/null)" != "1" ]; do
-          #       sleep 2
-          #       waited=$((waited + 2))
-          #       echo "Waiting for boot... ($waited/$timeout seconds)"
-          #       if [ $waited -ge $timeout ]; then
-          #         echo "##vso[task.logissue type=error]Emulator did not boot in time"
-          #         adb devices -l
-          #         exit 1
-          #       fi
-          #     done
-              
-          #     echo "=== Emulator booted successfully! ==="
-          #     adb devices -l
-          #   displayName: 'Boot Android Emulator'
-          #   continueOnError: true
-          #   timeoutInMinutes: 15
-          #   env:
-          #     ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
-          #     JAVA_HOME: $(JAVA_HOME_17_X64)
-
-          # Wait for Android Emulator to finish booting (started earlier in background)
+          # Boot Android emulator for UI tests
           - script: |
-              echo "=== Waiting for Android Emulator to be ready ==="
+              echo "=== Booting Android Emulator ==="
+              
+              # Start emulator in background, detached from terminal
+              nohup $ANDROID_SDK_ROOT/emulator/emulator -avd Emulator_34 -no-window -no-snapshot -no-audio -no-boot-anim > /dev/null 2>&1 &
+              EMULATOR_PID=$!
+              echo "Emulator started with PID: $EMULATOR_PID"
               
               # Wait for device to appear
               echo "Waiting for emulator device..."
@@ -232,9 +227,9 @@ stages:
               
               echo "=== Emulator booted successfully! ==="
               adb devices -l
-            displayName: 'Wait for Android Emulator'
+            displayName: 'Boot Android Emulator'
             continueOnError: true
-            timeoutInMinutes: 5
+            timeoutInMinutes: 15
             env:
               ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
               JAVA_HOME: $(JAVA_HOME_17_X64)
