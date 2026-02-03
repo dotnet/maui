@@ -254,8 +254,8 @@
                                                       PointerExited="OnDemoButtonPointerExited" />
                         </Button.GestureRecognizers>
                     </Button>
-                    <Button Text="Disable" Clicked="OnToggleButtonDisabled" />
-                    <Button Text="Reset" Clicked="OnResetButtonState" />
+                    <Button Text="Disable" AutomationId="ButtonDisable" Clicked="OnToggleButtonDisabled" />
+                    <Button Text="Reset" AutomationId="ButtonReset" Clicked="OnResetButtonState" />
                 </HorizontalStackLayout>
             </VerticalStackLayout>
 
@@ -263,43 +263,43 @@
             <VerticalStackLayout Padding="12" Spacing="8">
                 <Label Text="Entry States (Focused / Unfocused / Disabled)" FontAttributes="Bold" />
                 <HorizontalStackLayout Spacing="10">
-                    <Entry x:Name="DemoEntry" Placeholder="Focus me" Style="{StaticResource VsmEntryStyle}" />
-                    <Button Text="Focus" Clicked="OnFocusEntry" />
-                    <Button Text="Disable" Clicked="OnToggleEntryDisabled" />
+                    <Entry x:Name="DemoEntry" AutomationId="DemoEntry" Placeholder="Focus me" Style="{StaticResource VsmEntryStyle}" />
+                    <Button Text="Focus" AutomationId="EntryFocus" Clicked="OnFocusEntry" />
+                    <Button Text="Disable" AutomationId="EntryDisable" Clicked="OnToggleEntryDisabled" />
                 </HorizontalStackLayout>
             </VerticalStackLayout>
 
             <!-- Label selection with TargetName -->
             <VerticalStackLayout Padding="12" Spacing="8">
                 <Label Text="Selectable Label (Normal / Selected / Disabled)" FontAttributes="Bold" />
-                <Grid x:Name="SelectableLabelContainer" Style="{StaticResource SelectableLabelContainerStyle}">
+                <Grid x:Name="SelectableLabelContainer" AutomationId="SelectableLabelContainer" Style="{StaticResource SelectableLabelContainerStyle}">
                     <Grid.GestureRecognizers>
                         <TapGestureRecognizer Tapped="OnToggleLabelSelected" />
                     </Grid.GestureRecognizers>
                     <Label x:Name="ItemLabel" Text="Tap to select" HorizontalOptions="Center" VerticalOptions="Center" />
                 </Grid>
                 <HorizontalStackLayout Spacing="10">
-                    <Button Text="Disable" Clicked="OnToggleLabelDisabled" />
-                    <Button Text="Reset" Clicked="OnResetLabel" />
+                    <Button Text="Disable" AutomationId="LabelDisable" Clicked="OnToggleLabelDisabled" />
+                    <Button Text="Reset" AutomationId="LabelReset" Clicked="OnResetLabel" />
                 </HorizontalStackLayout>
             </VerticalStackLayout>
 
             <!-- CollectionView item VSM sample hint -->
             <VerticalStackLayout Padding="12" Spacing="8">
                 <Label Text="See 'CollectionView VSM' page for item selection states." />
-                <Button Text="Open CollectionView VSM" Clicked="OnOpenCollectionViewVsm" />
+                <Button Text="Open CollectionView VSM" AutomationId="OpenCollectionViewVsm" Clicked="OnOpenCollectionViewVsm" />
             </VerticalStackLayout>
 
             <!-- CheckBox demo -->
             <VerticalStackLayout Padding="12" Spacing="8">
                 <Label Text="CheckBox States (Checked / Unchecked / Disabled)" FontAttributes="Bold" />
                 <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
-                    <CheckBox x:Name="DemoCheckBox" Style="{StaticResource VsmCheckBoxStyle}" />
+                    <CheckBox x:Name="DemoCheckBox" AutomationId="DemoCheckBox" Style="{StaticResource VsmCheckBoxStyle}" />
                     <Label Text="Toggle the checkbox to see state changes." VerticalOptions="Center" />
                 </HorizontalStackLayout>
                 <HorizontalStackLayout Spacing="10">
-                    <Button Text="Disable" Clicked="OnToggleCheckBoxDisabled" />
-                    <Button Text="Reset" Clicked="OnResetCheckBox" />
+                    <Button Text="Disable" AutomationId="CheckBoxDisable" Clicked="OnToggleCheckBoxDisabled" />
+                    <Button Text="Reset" AutomationId="CheckBoxReset" Clicked="OnResetCheckBox" />
                 </HorizontalStackLayout>
             </VerticalStackLayout>
 
@@ -307,12 +307,12 @@
             <VerticalStackLayout Padding="12" Spacing="8">
                 <Label Text="Switch States (On / Off / Disabled)" FontAttributes="Bold" />
                 <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
-                    <Switch x:Name="DemoSwitch" Style="{StaticResource VsmSwitchStyle}" />
+                    <Switch x:Name="DemoSwitch" AutomationId="DemoSwitch" Style="{StaticResource VsmSwitchStyle}" />
                     <Label Text="Toggle the switch to see thumb color changes." VerticalOptions="Center" />
                 </HorizontalStackLayout>
                 <HorizontalStackLayout Spacing="10">
-                    <Button Text="Disable" Clicked="OnToggleSwitchDisabled" />
-                    <Button Text="Reset" Clicked="OnResetSwitch" />
+                    <Button Text="Disable" AutomationId="SwitchDisable" Clicked="OnToggleSwitchDisabled" />
+                    <Button Text="Reset" AutomationId="SwitchReset" Clicked="OnResetSwitch" />
                 </HorizontalStackLayout>
             </VerticalStackLayout>
 
@@ -320,12 +320,12 @@
             <VerticalStackLayout Padding="12" Spacing="8">
                 <Label Text="Slider States (Focused / Unfocused / Disabled)" FontAttributes="Bold" />
                 <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
-                    <Slider x:Name="DemoSlider" Minimum="0" Maximum="100" Value="50" Style="{StaticResource VsmSliderStyle}" />
+                    <Slider x:Name="DemoSlider" AutomationId="DemoSlider" Minimum="0" Maximum="100" Value="50" Style="{StaticResource VsmSliderStyle}" />
                 </HorizontalStackLayout>
                 <HorizontalStackLayout Spacing="10">
-                    <Button Text="Focus" Clicked="OnFocusSlider" />
-                    <Button Text="Disable" Clicked="OnToggleSliderDisabled" />
-                    <Button Text="Reset" Clicked="OnResetSlider" />
+                    <Button Text="Focus" AutomationId="SliderFocus" Clicked="OnFocusSlider" />
+                    <Button Text="Disable" AutomationId="SliderDisable" Clicked="OnToggleSliderDisabled" />
+                    <Button Text="Reset" AutomationId="SliderReset" Clicked="OnResetSlider" />
                 </HorizontalStackLayout>
             </VerticalStackLayout>
         </VerticalStackLayout>
