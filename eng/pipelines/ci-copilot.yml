@@ -194,6 +194,25 @@ stages:
               ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
               JAVA_HOME: $(JAVA_HOME_17_X64)
 
+          # Verify UI tests fail without fix (on Android emulator)
+          - pwsh: |
+              Write-Host "=== Verifying UI Tests Fail Without Fix ==="
+              
+              # Run the verify-tests-fail script on Android
+              $result = & pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 -Platform android -PRNumber ${{ parameters.PRNumber }}
+              
+              Write-Host "Verification script completed with exit code: $LASTEXITCODE"
+              
+              if ($LASTEXITCODE -ne 0) {
+                Write-Host "##vso[task.logissue type=warning]verify-tests-fail script exited with code $LASTEXITCODE"
+              }
+            displayName: 'Verify UI Tests Fail Without Fix'
+            continueOnError: true
+            timeoutInMinutes: 30
+            env:
+              ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
+              JAVA_HOME: $(JAVA_HOME_17_X64)
+
           - script: |
               echo "Installing Node.js 22..."
               brew install node@22
