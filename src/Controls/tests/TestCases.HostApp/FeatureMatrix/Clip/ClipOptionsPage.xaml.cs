@@ -231,22 +231,7 @@ public partial class ClipOptionsPage : ContentPage
 		if (!e.Value || !(sender is RadioButton rb) || !(BindingContext is ClipViewModel vm))
 			return;
 
-		vm.StrokeShape = rb.Content.ToString() switch
-		{
-			"RoundRectangle" => new RoundRectangle { CornerRadius = new CornerRadius(40) },
-			"Polygon" => new Polygon
-			{
-				Points = new PointCollection
-				{
-					new Point(150, 0),
-					new Point(250, 70),
-					new Point(210, 180),
-					new Point(85, 180),
-					new Point(40, 70)
-				}
-			},
-			_ => new Rectangle()
-		};
+		vm.StrokeShape = new RoundRectangle { CornerRadius = new CornerRadius(40) };
 	}
 
 	private void OnStrokeColorClicked(object sender, EventArgs e)

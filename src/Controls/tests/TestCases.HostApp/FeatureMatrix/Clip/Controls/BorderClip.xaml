@@ -19,14 +19,14 @@
                 BackgroundColor="Purple"
                 WidthRequest="300"
                 HeightRequest="300"
-                AutomationId="TestControl"
+                AutomationId="BorderControl"
                 Clip="{Binding Clip}">
             <Label Text="Border Content With Clipping"
                    TextColor="White"
                    FontSize="24"
                    FontAttributes="Bold"
-                   HorizontalOptions="Center"
-                   VerticalOptions="Center"/>
+                   HorizontalTextAlignment="Center"
+                   VerticalTextAlignment="Center"/>
         </Border>
     </Grid>
 </ContentPage>

@@ -17,7 +17,7 @@
              Shadow="{Binding Shadow}"
              WidthRequest="300"
              HeightRequest="300"
-             AutomationId="TestControl"
+             AutomationId="BoxViewControl"
              Clip="{Binding Clip}"/>
   </Grid>
 </ContentPage>

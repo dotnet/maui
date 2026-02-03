@@ -18,6 +18,6 @@
            Aspect="AspectFill"
            Clip="{Binding Clip}"
            Shadow="{Binding Shadow}"
-           AutomationId="TestControl"/>
+           AutomationId="ImageControl"/>
   </Grid>
 </ContentPage>

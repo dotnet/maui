@@ -23,6 +23,6 @@
            FormattedText="{Binding FormattedText}"
            FontSize="{Binding FontSize}"
            Shadow="{Binding Shadow}"
-           AutomationId="TestControl"/>
+           AutomationId="LabelControl"/>
   </Grid>
 </ContentPage>

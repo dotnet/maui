@@ -5,11 +5,23 @@
              Title="ClipControlPage">
 
         <!-- Control Type Selection -->
-        <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="10">
-                <Button Text="Border" Clicked="OnBorderPageClicked"/>
-                <Button Text="BoxView" Clicked="OnBoxViewPageClicked"/>
-                <Button Text="Button" Clicked="OnButtonPageClicked"/>
-                <Button Text="Image" Clicked="OnImagePageClicked"/>
-                <Button Text="Label" Clicked="OnLabelPageClicked"/>
+        <VerticalStackLayout HorizontalOptions="Center"
+                             VerticalOptions="Center"
+                             Spacing="10">
+                <Button Text="Border"
+                        Clicked="OnBorderPageClicked"
+                        AutomationId="BorderButton"/>
+                <Button Text="BoxView"
+                        Clicked="OnBoxViewPageClicked"
+                        AutomationId="BoxViewButton"/>
+                <Button Text="Button"
+                        Clicked="OnButtonPageClicked"
+                        AutomationId="ButtonId"/>
+                <Button Text="Image"
+                        Clicked="OnImagePageClicked"
+                        AutomationId="ImageButton"/>
+                <Button Text="Label"
+                        Clicked="OnLabelPageClicked"
+                        AutomationId="LabelButton"/>
         </VerticalStackLayout>
 </ContentPage>

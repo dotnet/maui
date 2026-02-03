@@ -9,33 +9,38 @@
                            Clicked="ApplyButton_Clicked"
                            AutomationId="Apply"/>
        </ContentPage.ToolbarItems>
-       <VerticalStackLayout Padding="10"
-                            Spacing="4">
+       <VerticalStackLayout Padding="2,0,0,0"
+                            Spacing="1">
 
               <Label Text="Clip Geometry"
                      FontAttributes="Bold"
-                     FontSize="14"/>
+                     FontSize="12"/>
               <HorizontalStackLayout>
-                     <RadioButton Content="None"
+                     <RadioButton FontSize="11"
+                                  Content="None"
                                   IsChecked="True"
                                   GroupName="ClipGroup"
                                   CheckedChanged="ClipRadio_CheckedChanged"
                                   AutomationId="ClipNone"/>
-                     <RadioButton Content="Rectangle"
+                     <RadioButton FontSize="11"
+                                  Content="Rectangle"
                                   GroupName="ClipGroup"
                                   CheckedChanged="ClipRadio_CheckedChanged"
                                   AutomationId="RectangleGeometry"/>
-                     <RadioButton Content="Ellipse"
+                     <RadioButton FontSize="11"
+                                  Content="Ellipse"
                                   GroupName="ClipGroup"
                                   CheckedChanged="ClipRadio_CheckedChanged"
                                   AutomationId="EllipseGeometry"/>
-                     <RadioButton Content="RoundRectangle"
+                     <RadioButton FontSize="11"
+                                  Content="RoundRectangle"
                                   GroupName="ClipGroup"
                                   CheckedChanged="ClipRadio_CheckedChanged"
                                   AutomationId="RoundRectangleGeometry"/>
               </HorizontalStackLayout>
               <HorizontalStackLayout>
-                     <RadioButton Content="GeometryGroup"
+                     <RadioButton FontSize="11"
+                                  Content="GeometryGroup"
                                   GroupName="ClipGroup"
                                   CheckedChanged="ClipRadio_CheckedChanged"
                                   AutomationId="GeometryGroup"/>
@@ -43,67 +48,67 @@
 
               <Label Text="PathGeometry Segment: "
                      FontAttributes="Bold"
-                     FontSize="14"/>
+                     FontSize="12"/>
               <HorizontalStackLayout>
-                     <RadioButton Content="Line"
+                     <RadioButton FontSize="11"
+                                  Content="Line"
                                   GroupName="ClipGroup"
                                   CheckedChanged="PathTypeRadio_CheckedChanged"
                                   AutomationId="LineSegment"/>
-                     <RadioButton Content="Arc"
+                     <RadioButton FontSize="11"
+                                  Content="Arc"
                                   GroupName="ClipGroup"
                                   CheckedChanged="PathTypeRadio_CheckedChanged"
                                   AutomationId="ArcSegment"/>
-                     <RadioButton Content="Bezier"
+                     <RadioButton FontSize="11"
+                                  Content="Bezier"
                                   GroupName="ClipGroup"
                                   CheckedChanged="PathTypeRadio_CheckedChanged"
                                   AutomationId="BezierSegment"/>
-                     <RadioButton Content="PolyQuadraticBezier"
+                     <RadioButton FontSize="11"
+                                  Content="PolyQuadraticBezier"
                                   GroupName="ClipGroup"
                                   CheckedChanged="PathTypeRadio_CheckedChanged"
                                   AutomationId="PolyQuadraticBezierSegment"/>
               </HorizontalStackLayout>
               <HorizontalStackLayout>
-                     <RadioButton Content="QuadraticBezier"
+                     <RadioButton FontSize="11"
+                                  Content="QuadraticBezier"
                                   GroupName="ClipGroup"
                                   CheckedChanged="PathTypeRadio_CheckedChanged"
                                   AutomationId="QuadraticBezierSegment"/>
-                     <RadioButton Content="PolyLine"
+                     <RadioButton FontSize="11"
+                                  Content="PolyLine"
                                   GroupName="ClipGroup"
                                   CheckedChanged="PathTypeRadio_CheckedChanged"
                                   AutomationId="PolyLineSegment"/>
-                     <RadioButton Content="PolyBezier"
+                     <RadioButton FontSize="11"
+                                  Content="PolyBezier"
                                   GroupName="ClipGroup"
                                   CheckedChanged="PathTypeRadio_CheckedChanged"
                                   AutomationId="PolyBezierSegment"/>
               </HorizontalStackLayout>
 
-              <Label FontAttributes="Bold"
-                     Text="Stroke Shape"/>
-              <HorizontalStackLayout>
-                     <RadioButton x:Name="RoundRectangleShapeRadio"
-                                  Content="RoundRectangle"
-                                  GroupName="Shape"
-                                  AutomationId="RoundRectangleShapeRadio"
-                                  CheckedChanged="ShapeChanged"/>
-                     <RadioButton x:Name="PolygonShapeRadio"
-                                  Content="Polygon"
-                                  GroupName="Shape"
-                                  AutomationId="PolygonShapeRadio"
-                                  CheckedChanged="ShapeChanged"/>
-              </HorizontalStackLayout>
-
-              <HorizontalStackLayout Spacing="2">
+              <!-- Border -->
+              <Label FontSize="14"
+                     FontAttributes="Bold"
+                     Text="Border Control"/>
+              <HorizontalStackLayout Spacing="5">
+                     <!-- Stroke -->
                      <HorizontalStackLayout>
-                            <Label FontAttributes="Bold"
-                                   Text="StrokeColor: "
+                            <Label FontSize="12"
+                                   FontAttributes="Bold"
+                                   Text="Stroke: "
                                    VerticalOptions="Center"/>
                             <Button x:Name="BlueColorButton"
+                                    FontSize="12"
                                     Text="Blue"
                                     TextColor="White"
                                     BackgroundColor="Blue"
                                     Clicked="OnStrokeColorClicked"
                                     AutomationId="BlueColorButton"/>
                             <Button x:Name="GreenColorButton"
+                                    FontSize="12"
                                     Text="Green"
                                     TextColor="White"
                                     BackgroundColor="Green"
@@ -111,33 +116,10 @@
                                     AutomationId="GreenColorButton"/>
                      </HorizontalStackLayout>
 
-                     <!-- BoxView -->
+                     <!-- StrokeThickness -->
                      <HorizontalStackLayout>
-                            <Label VerticalOptions="Center"
+                            <Label FontSize="12"
                                    FontAttributes="Bold"
-                                   Text="BoxColor: "/>
-                            <Button Text="Green"
-                                    TextColor="White"
-                                    BackgroundColor="Green"
-                                    Clicked="OnBoxViewColorClicked"
-                                    AutomationId="GreenColorButton"/>
-                     </HorizontalStackLayout>
-              </HorizontalStackLayout>
-
-              <HorizontalStackLayout Spacing="5">
-                     <HorizontalStackLayout>
-                            <Label FontAttributes="Bold"
-                                   Text="Shadow:"
-                                   VerticalOptions="Center"/>
-                            <RadioButton x:Name="ShadowFalseRadio"
-                                         VerticalOptions="Center"
-                                         AutomationId="ShadowTrueRadioButton"
-                                         GroupName="Shadow"
-                                         Content="True"
-                                         CheckedChanged="OnShadowRadioButtonCheckedChanged"/>
-                     </HorizontalStackLayout>
-                     <HorizontalStackLayout>
-                            <Label FontAttributes="Bold"
                                    VerticalOptions="Center"
                                    Text="StrokeThickness: "/>
                             <Entry x:Name="StrokeThicknessEntry"
@@ -145,8 +127,46 @@
                                    TextChanged="OnStrokeThicknessChanged"
                                    AutomationId="StrokeThicknessEntry"/>
                      </HorizontalStackLayout>
+              </HorizontalStackLayout>
+
+              <!-- Stroke Shape -->
+              <HorizontalStackLayout>
+                     <Label FontSize="12"
+                            FontAttributes="Bold"
+                            Text="Stroke Shape: "
+                            VerticalOptions="Center"/>
+                     <RadioButton x:Name="RoundRectangleShapeRadio"
+                                  FontSize="11"
+                                  Content="RoundRectangle"
+                                  GroupName="Shape"
+                                  AutomationId="RoundRectangleShapeRadio"
+                                  CheckedChanged="ShapeChanged"/>
+              </HorizontalStackLayout>
+
+              <!-- BoxView -->
+              <Label FontSize="14"
+                     FontAttributes="Bold"
+                     Text="BoxView Control"/>
+              <HorizontalStackLayout Spacing="5">
+
+                     <!-- BoxView Color -->
                      <HorizontalStackLayout>
-                            <Label FontAttributes="Bold"
+                            <Label VerticalOptions="Center"
+                                   FontSize="12"
+                                   FontAttributes="Bold"
+                                   Text="BoxColor: "/>
+                            <Button Text="Green"
+                                    FontSize="12"
+                                    TextColor="White"
+                                    BackgroundColor="Green"
+                                    Clicked="OnBoxViewColorClicked"
+                                    AutomationId="GreenColorButton"/>
+                     </HorizontalStackLayout>
+
+                     <!-- BoxView CornerRadius -->
+                     <HorizontalStackLayout>
+                            <Label FontSize="12"
+                                   FontAttributes="Bold"
                                    VerticalOptions="Center"
                                    Text="CornerRadius: "/>
                             <Entry x:Name="CornerRadiusEntry"
@@ -157,30 +177,76 @@
               </HorizontalStackLayout>
 
               <!-- Button -->
-              <HorizontalStackLayout>
-                     <Label Text="Text:"
-                            VerticalOptions="Center"/>
-                     <Entry Text="{Binding Text}"
-                            AutomationId="TextEntry"
-                            VerticalOptions="Center"/>
-                     <Button Text="ImageSource"
-                             Clicked="OnImageSourceClicked"/>
+              <Label FontSize="14"
+                     FontAttributes="Bold"
+                     Text="Button Control"/>
+              <HorizontalStackLayout Spacing="5">
+
+                     <!-- Button Text -->
+                     <HorizontalStackLayout>
+                            <Label FontSize="12"
+                                   FontAttributes="Bold"
+                                   Text="Text:"
+                                   VerticalOptions="Center"/>
+                            <Entry Text="{Binding Text}"
+                                   AutomationId="TextEntry"
+                                   VerticalOptions="Center"/>
+                     </HorizontalStackLayout>
+
+                     <!-- Button ImageSource -->
+                     <HorizontalStackLayout>
+                            <Label FontSize="12"
+                                   FontAttributes="Bold"
+                                   Text="ImageSource:"
+                                   VerticalOptions="Center"/>
+                            <Button Text="ImageSource"
+                                    Clicked="OnImageSourceClicked"/>
+                     </HorizontalStackLayout>
+              </HorizontalStackLayout>
+
+              <!-- Label -->
+              <Label FontSize="14"
+                     FontAttributes="Bold"
+                     Text="Label Control"/>
+              <HorizontalStackLayout Spacing="5">
+                     <HorizontalStackLayout>
+
+                            <!-- Label FormattedText -->
+                            <Label FontAttributes="Bold"
+                                   FontSize="12"
+                                   Text="FormattedText:"
+                                   VerticalOptions="Center"/>
+                            <CheckBox x:Name="FormattedTextCheckBox"
+                                      CheckedChanged="OnFormattedTextChanged"
+                                      AutomationId="FormattedText"/>
+                     </HorizontalStackLayout>
+
+                     <HorizontalStackLayout>
+
+                            <!-- Label FontSize -->
+                            <Label FontAttributes="Bold"
+                                   FontSize="12"
+                                   Text="FontSize:"
+                                   VerticalOptions="Center"/>
+                            <Entry x:Name="FontSizeEntry"
+                                   Placeholder="e.g., 24"
+                                   TextChanged="OnFontSizeChanged"
+                                   AutomationId="FontSizeEntry"/>
+                     </HorizontalStackLayout>
               </HorizontalStackLayout>
 
               <HorizontalStackLayout>
-                <Label Text="FormattedText"
-                       VerticalOptions="Center"/>
-                <CheckBox x:Name="FormattedTextCheckBox"
-                          CheckedChanged="OnFormattedTextChanged"
-                          AutomationId="FormattedText"/>
-            </HorizontalStackLayout>
-
-            <VerticalStackLayout>
-                <Label Text="FontSize"/>
-                <Entry x:Name="FontSizeEntry"
-                       Placeholder="e.g., 24"
-                       TextChanged="OnFontSizeChanged"
-                       AutomationId="FontSizeEntry"/>
-            </VerticalStackLayout>
+                     <Label FontSize="12"
+                            FontAttributes="Bold"
+                            Text="Shadow:"
+                            VerticalOptions="Center"/>
+                     <RadioButton x:Name="ShadowFalseRadio"
+                                  FontSize="12"
+                                  VerticalOptions="Center"
+                                  AutomationId="ShadowTrueRadioButton"
+                                  GroupName="Shadow"
+                                  Content="True"
+                                  CheckedChanged="OnShadowRadioButtonCheckedChanged"/>
+              </HorizontalStackLayout>
        </VerticalStackLayout>
 </ContentPage>

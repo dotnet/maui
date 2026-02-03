@@ -1,0 +1,514 @@
+using NUnit.Framework;
+using UITest.Appium;
+using UITest.Core;
+
+
+namespace Microsoft.Maui.TestCases.Tests;
+
+public class ClipFeatureTests : _GalleryUITest
+{
+	public const string ClipFeatureMatrix = "Clip Feature Matrix";
+	public const string Options = "Options";
+	public const string Apply = "Apply";
+	public const string BorderControl = "BorderControl";
+	public const string BoxViewControl = "BoxViewControl";
+	public const string ButtonControl = "ButtonControl";
+	public const string ImageControl = "ImageControl";
+	public const string LabelControl = "LabelControl";
+	public const string RectangleGeometry = "RectangleGeometry";
+	public const string EllipseGeometry = "EllipseGeometry";
+	public const string RoundRectangleGeometry = "RoundRectangleGeometry";
+	public const string GeometryGroup = "GeometryGroup";
+	public const string LineSegment = "LineSegment";
+	public const string ArcSegment = "ArcSegment";
+	public const string BezierSegment = "BezierSegment";
+	public const string PolyLineSegment = "PolyLineSegment";
+	public const string PolyBezierSegment = "PolyBezierSegment";
+	public const string QuadraticBezierSegment = "QuadraticBezierSegment";
+	public const string PolyQuadraticBezierSegment = "PolyQuadraticBezierSegment";
+
+	public override string GalleryPageName => ClipFeatureMatrix;
+
+	public ClipFeatureTests(TestDevice device)
+		: base(device)
+	{
+	}
+
+	// ==================== Border Tests ====================
+
+	[Test, Order(2)]
+	[Category(UITestCategories.Border)]
+	public void Border_ClipWithStrokeThickness()
+	{
+		App.WaitForElement("BorderButton");
+		App.Tap("BorderButton");
+
+		App.WaitForElement(BorderControl);
+
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement(RectangleGeometry);
+		App.Tap(RectangleGeometry);
+
+		App.WaitForElement("StrokeThicknessEntry");
+		App.ClearText("StrokeThicknessEntry");
+		App.EnterText("StrokeThicknessEntry", "10");
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(BorderControl);
+		VerifyScreenshot();
+	}
+
+	[Test, Order(3)]
+	[Category(UITestCategories.Border)]
+	public void Border_ClipWithStrokeColorBlue()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement(EllipseGeometry);
+		App.Tap(EllipseGeometry);
+
+		App.WaitForElement("BlueColorButton");
+		App.Tap("BlueColorButton");
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(BorderControl);
+		VerifyScreenshot();
+	}
+
+	[Test, Order(4)]
+	[Category(UITestCategories.Border)]
+	public void Border_ClipWithStrokeColorGreen()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement(RoundRectangleGeometry);
+		App.Tap(RoundRectangleGeometry);
+
+		App.WaitForElement("GreenColorButton");
+		App.Tap("GreenColorButton");
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(BorderControl);
+		VerifyScreenshot();
+	}
+
+	[Test, Order(5)]
+	[Category(UITestCategories.Border)]
+	public void Border_ClipWithStrokeShapeRoundRectangle()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement(GeometryGroup);
+		App.Tap(GeometryGroup);
+
+		App.WaitForElement("RoundRectangleShapeRadio");
+		App.Tap("RoundRectangleShapeRadio");
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(BorderControl);
+		VerifyScreenshot();
+	}
+
+	[Test, Order(7)]
+	[Category(UITestCategories.Border)]
+	public void Border_ClipWithShadow()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement(ArcSegment);
+		App.Tap(ArcSegment);
+
+		App.WaitForElement("ShadowTrueRadioButton");
+		App.Tap("ShadowTrueRadioButton");
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(BorderControl);
+		VerifyScreenshot();
+	}
+
+	// ==================== BoxView Tests ====================
+
+	[Test, Order(9)]
+	[Category(UITestCategories.BoxView)]
+	public void BoxView_ClipWithColorGreen()
+	{
+		App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
+		App.WaitForElement("BoxViewButton");
+		App.Tap("BoxViewButton");
+
+		App.WaitForElement(BoxViewControl);
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement(RectangleGeometry);
+		App.Tap(RectangleGeometry);
+
+		App.WaitForElement("GreenColorButton");
+		App.Tap("GreenColorButton");
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(BoxViewControl);
+		VerifyScreenshot();
+	}
+
+	[Test, Order(10)]
+	[Category(UITestCategories.BoxView)]
+	public void BoxView_ClipWithCornerRadius()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement(EllipseGeometry);
+		App.Tap(EllipseGeometry);
+
+		App.WaitForElement("CornerRadiusEntry");
+		App.ClearText("CornerRadiusEntry");
+		App.EnterText("CornerRadiusEntry", "30");
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(BoxViewControl);
+		VerifyScreenshot();
+	}
+
+	[Test, Order(11)]
+	[Category(UITestCategories.BoxView)]
+	public void BoxView_ClipWithShadow()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement(RoundRectangleGeometry);
+		App.Tap(RoundRectangleGeometry);
+
+		App.WaitForElement("ShadowTrueRadioButton");
+		App.Tap("ShadowTrueRadioButton");
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(BoxViewControl);
+		VerifyScreenshot();
+	}
+
+	// ==================== Button Tests ====================
+
+	[Test, Order(13)]
+	[Category(UITestCategories.Button)]
+	public void Button_ClipWithImageSource()
+	{
+		App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
+		App.WaitForElement("ButtonId");
+		App.Tap("ButtonId");
+
+		App.WaitForElement(ButtonControl);
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement(RectangleGeometry);
+		App.Tap(RectangleGeometry);
+
+		App.WaitForElement("ImageSource");
+		App.Tap("ImageSource");
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(ButtonControl);
+		VerifyScreenshot();
+	}
+
+	[Test, Order(14)]
+	[Category(UITestCategories.Button)]
+	public void Button_ClipWithText()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement(EllipseGeometry);
+		App.Tap(EllipseGeometry);
+
+		App.WaitForElement("TextEntry");
+		App.ClearText("TextEntry");
+		App.EnterText("TextEntry", "Clipped Button");
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(ButtonControl);
+		VerifyScreenshot();
+	}
+
+	[Test, Order(15)]
+	[Category(UITestCategories.Button)]
+	public void Button_ClipWithShadow()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement(RoundRectangleGeometry);
+		App.Tap(RoundRectangleGeometry);
+
+		App.WaitForElement("ShadowTrueRadioButton");
+		App.Tap("ShadowTrueRadioButton");
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(ButtonControl);
+		VerifyScreenshot();
+	}
+
+	// ==================== Image Tests (Geometry Variations) ====================
+
+	[Test, Order(17)]
+	[Category(UITestCategories.Image)]
+	public void Image_ClipWithRectangleGeometry()
+	{
+		App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
+		App.WaitForElement("ImageButton");
+		App.Tap("ImageButton");
+
+		App.WaitForElement(ImageControl);
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement(RectangleGeometry);
+		App.Tap(RectangleGeometry);
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(ImageControl);
+		VerifyScreenshot();
+	}
+
+	[Test, Order(18)]
+	[Category(UITestCategories.Image)]
+	public void Image_ClipWithEllipseGeometry()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement(EllipseGeometry);
+		App.Tap(EllipseGeometry);
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(ImageControl);
+		VerifyScreenshot();
+	}
+
+	[Test, Order(19)]
+	[Category(UITestCategories.Image)]
+	public void Image_ClipWithRoundRectangleGeometry()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement(RoundRectangleGeometry);
+		App.Tap(RoundRectangleGeometry);
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(ImageControl);
+		VerifyScreenshot();
+	}
+
+	[Test, Order(20)]
+	[Category(UITestCategories.Image)]
+	public void Image_ClipWithGeometryGroup()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement(GeometryGroup);
+		App.Tap(GeometryGroup);
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(ImageControl);
+		VerifyScreenshot();
+	}
+
+	[Test, Order(21)]
+	[Category(UITestCategories.Image)]
+	public void Image_ClipWithLineSegmentPath()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement(LineSegment);
+		App.Tap(LineSegment);
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(ImageControl);
+		VerifyScreenshot();
+	}
+
+	[Test, Order(22)]
+	[Category(UITestCategories.Image)]
+	public void Image_ClipWithArcSegmentPath()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement(ArcSegment);
+		App.Tap(ArcSegment);
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(ImageControl);
+		VerifyScreenshot();
+	}
+
+	[Test, Order(23)]
+	[Category(UITestCategories.Image)]
+	public void Image_ClipWithBezierSegmentPath()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement(BezierSegment);
+		App.Tap(BezierSegment);
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(ImageControl);
+		VerifyScreenshot();
+	}
+
+	[Test, Order(24)]
+	[Category(UITestCategories.Image)]
+	public void Image_ClipWithPolyLineSegmentPath()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement(PolyLineSegment);
+		App.Tap(PolyLineSegment);
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(ImageControl);
+		VerifyScreenshot();
+	}
+
+	[Test, Order(25)]
+	[Category(UITestCategories.Image)]
+	public void Image_ClipWithPolyBezierSegmentPath()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement(PolyBezierSegment);
+		App.Tap(PolyBezierSegment);
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(ImageControl);
+		VerifyScreenshot();
+	}
+
+	[Test, Order(26)]
+	[Category(UITestCategories.Image)]
+	public void Image_ClipWithQuadraticBezierSegmentPath()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement(QuadraticBezierSegment);
+		App.Tap(QuadraticBezierSegment);
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(ImageControl);
+		VerifyScreenshot();
+	}
+
+	[Test, Order(27)]
+	[Category(UITestCategories.Image)]
+	public void Image_ClipWithPolyQuadraticBezierSegmentPath()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement(PolyQuadraticBezierSegment);
+		App.Tap(PolyQuadraticBezierSegment);
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(ImageControl);
+		VerifyScreenshot();
+	}
+
+	// ==================== Label Tests ====================
+
+	[Test, Order(29)]
+	[Category(UITestCategories.Label)]
+	public void Label_ClipWithLongText() // all clip in iOS not working
+	{
+		App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
+		App.WaitForElement("LabelButton");
+		App.Tap("LabelButton");
+
+		App.WaitForElement(LabelControl);
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement(RectangleGeometry);
+		App.Tap(RectangleGeometry);
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(LabelControl);
+		VerifyScreenshot();
+	}
+
+	[Test, Order(30)]
+	[Category(UITestCategories.Label)]
+	public void Label_ClipWithDifferentFontSize()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement(RoundRectangleGeometry);
+		App.Tap(RoundRectangleGeometry);
+
+		App.WaitForElement("FontSizeEntry");
+		App.ClearText("FontSizeEntry");
+		App.EnterText("FontSizeEntry", "36");
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(LabelControl);
+		VerifyScreenshot();
+	}
+
+	[Test, Order(31)]
+	[Category(UITestCategories.Label)]
+	public void Label_ClipWithFormattedText()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement(EllipseGeometry);
+		App.Tap(EllipseGeometry);
+
+		App.WaitForElement("FormattedText");
+		App.Tap("FormattedText");
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(LabelControl);
+		VerifyScreenshot();
+	}
+}
