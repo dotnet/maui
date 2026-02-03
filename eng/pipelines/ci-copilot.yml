@@ -122,7 +122,7 @@ stages:
               
               Write-Host "=== Android Emulator Started Successfully ==="
             displayName: 'Start Android Emulator'
-            timeoutInMinutes: 15
+            timeoutInMinutes: 35
             env:
               ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
               JAVA_HOME: $(JAVA_HOME_17_X64)
