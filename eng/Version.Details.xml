@@ -51,7 +51,7 @@
       <Uri>https://github.com/dotnet/macios</Uri>
       <Sha>e5afbf5332820488c4a2d26dad02df88c0110136</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsAppSDK" Version="1.8.260101001">
+    <Dependency Name="Microsoft.WindowsAppSDK" Version="0.0.1">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/ProjectReunionInternal</Uri>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Authorization" Version="10.0.0">
