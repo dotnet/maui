@@ -1,5 +1,5 @@
 ---
-applyTo: "eng/helix_xharness.proj,eng/pipelines/**/device-tests*.yml,eng/pipelines/**/stage-device-tests.yml,src/**/DeviceTests/**"
+applyTo: "eng/helix_xharness.proj,eng/pipelines/**/stage-device-tests.yml,src/**/DeviceTests/**"
 description: "Guidelines for running and configuring .NET MAUI device tests on Helix infrastructure"
 ---
 

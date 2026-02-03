@@ -4,9 +4,7 @@ This document describes the .NET MAUI release process, which uses the Arcade SDK
 
 ## Overview
 
-The .NET MAUI release process consists of two main phases:
-1. Building and packing using `azure-pipelines-internal.yml`
-2. Publishing to NuGet.org and Workload Set channels using `maui-release-internal.yml`
+The .NET MAUI release process uses `azure-pipelines-internal.yml` for building, packing, and publishing packages.
 
 This process leverages the [.NET Arcade infrastructure](https://github.com/dotnet/arcade), which is a set of shared tools and services used across the .NET ecosystem to standardize build processes, dependency management, and package publishing.
 
@@ -36,36 +34,9 @@ The `azure-pipelines-internal.yml` pipeline is responsible for building, packing
 - BAR IDs assigned to builds are used to track package assets throughout the release process
 - Arcade provides dependency management, build orchestration, and signing services
 
-## Release Pipeline (`maui-release-internal.yml`)
+## Release and Publishing
 
-The `maui-release-internal.yml` pipeline is responsible for taking the packed artifacts and publishing them to the appropriate channels. This pipeline is not automatically triggered and must be manually run. Like the build pipeline, it also runs in the internal Azure DevOps environment where it has access to the necessary API keys and secured resources.
-
-### Key Steps in Release Pipeline
-
-1. **Publish to Workload Set Channel**: 
-   - Takes the commit hash of the build to be released
-   - Retrieves the Build Asset Registry (BAR) ID for that commit
-   - Publishes the workload set to the appropriate .NET SDK workload channel (.NET 8, 9, or 10 Workload Release)
-   - This allows the .NET SDK to consume the .NET MAUI workloads
-
-2. **Release Packs**:
-   - Requires manual approval
-   - Takes the packages (excluding manifest packages) from the build
-   - Pushes them to NuGet.org with retry logic and quota management
-
-3. **Release Manifests**:
-   - Requires separate manual approval
-   - Takes only the manifest packages from the build
-   - Pushes them to NuGet.org with retry logic and quota management
-
-### Important Parameters
-
-The release pipeline accepts several parameters:
-- `commitHash`: The commit hash to download NuGet packages from
-- `pushWorkloadSet`: Whether to publish to the Workload Set channel
-- `pushNugetOrg`: Whether to push to NuGet.org
-- `pushPackages`: Controls if packages are actually pushed (allows for dry runs)
-- `nugetIncludeFilters` and `nugetExcludeFilters`: Filters for controlling which packages are published
+The `azure-pipelines-internal.yml` pipeline handles both building and publishing to the appropriate channels. Publishing happens automatically after successful build and signing, with packages being published to internal feeds and registered in the Build Asset Registry (BAR) using Darc.
 
 ## Release Flow
 
@@ -75,26 +46,14 @@ The complete release process follows these steps:
    - This happens automatically on the main branch and release branches
    - The build produces NuGet packages and workload manifests
    - The build is assigned a BAR ID in Maestro
-   - All assets are published to internal feeds and registered in the BAR using darc
+   - All assets are published to internal feeds and registered in the BAR using Darc
 
-2. Determine the commit hash of the build to be released
+2. Packages are published to appropriate channels:
+   - Published to internal feeds for consumption by other .NET repositories
+   - The workload set is published to the appropriate .NET SDK workload channel
+   - After required approvals, packages are published to NuGet.org
 
-3. Run the `maui-release-internal.yml` pipeline with:
-   - The commit hash of the build to release
-   - Parameters to control which stages to run
-   - Parameters to control which packages to include or exclude
-
-4. The release pipeline uses Darc to:
-   - Find the BAR ID associated with the specified commit
-   - Gather all the packages and assets from internal channel
-   - Publish the workload set to the appropriate .NET SDK workload channel
-
-5. The release pipeline will then:
-   - Publish the workload set to the appropriate .NET SDK workload channel
-   - After manual approval, publish the NuGet packages to NuGet.org
-   - After a separate manual approval, publish the manifest packages to NuGet.org
-
-6. The packages are now available for consumption via:
+3. The packages are now available for consumption via:
    - NuGet.org for developers directly referencing the packages
    - .NET SDK's workload installation for the complete .NET MAUI development experience
 
@@ -111,7 +70,7 @@ The .NET MAUI release process operates using two repositories:
    - An internal mirror of the GitHub repository
    - Used for official builds, signing, and release processes
    - Contains the same code but runs in a secured environment with access to signing certificates and internal resources
-   - The `azure-pipelines-internal.yml` and `maui-release-internal.yml` pipelines run against this mirror
+   - The `azure-pipelines-internal.yml` pipeline runs against this mirror
 
 The use of the internal mirror ensures that the signing process and access to internal feeds are properly secured while still maintaining an open-source development model in the public repository. Changes are synchronized from the public repository to the internal mirror, ensuring that the released packages contain the same code that is publicly visible.
 
@@ -146,25 +105,15 @@ Maestro is the service that maintains the Build Asset Registry (BAR), which serv
 
 ### Publishing Process Flow with Darc
 
-The `maui-release-internal.yml` pipeline uses Darc to:
+Darc is used during the build process to:
 
-1. **Find the Build**: Using the commit hash parameter, Darc identifies the corresponding build in the BAR.
-   ```powershell
-   $buildJson = & $darc get-build --ci --repo "${{ parameters.ghRepo }}" --commit "$(COMMIT)" --output-format json
-   $barId = $buildJson | ConvertFrom-Json | Select-Object -ExpandProperty "id" -First 1
-   ```
+1. **Track the Build**: Each build is assigned a unique BAR ID that catalogs all assets produced.
 
-2. **Gather Assets**: Once the BAR ID is obtained, Darc collects all the packages from internal feeds.
-   ```powershell
-   & $darc gather-drop --ci --id $barId -o "$(Build.StagingDirectory)\nupkgs" --azdev-pat $(System.AccessToken) --verbose
-   ```
+2. **Publish Assets**: All packages are published to internal feeds and registered in the BAR.
 
-3. **Channel Association**: For workload sets, Darc adds the build to the appropriate workload channel.
-   ```powershell
-   & $darc add-build-to-channel --ci --channel "$workloadSetsChannel" --id "$barId" --skip-assets-publishing
-   ```
+3. **Channel Association**: Builds are added to the appropriate workload channel (e.g., ".NET 8 Workload Release", ".NET 9 Workload Release").
 
-4. **Publishing**: The gathered packages are then published to NuGet.org and other appropriate channels based on pipeline parameters.
+4. **Downstream Distribution**: The gathered packages are then published to NuGet.org and other appropriate channels as part of the build pipeline.
 
 ## Notes
 
