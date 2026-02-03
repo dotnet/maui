@@ -111,9 +111,9 @@ if ($Platform -eq "android") {
         Write-Info "Emulator process started (PIDs: $emulatorProcs)"
         
         # Wait for device to appear with timeout (don't use adb wait-for-device - it can hang forever)
-        # Increased timeout to 180s as emulator on CI can take 2+ minutes to boot
+        # Increased timeout to 300s as emulator on CI can take 2-5 minutes to boot on slow hardware
         Write-Info "Waiting for emulator device to appear..."
-        $deviceTimeout = 180
+        $deviceTimeout = 300
         $deviceWaited = 0
         $DeviceUdid = $null
         
