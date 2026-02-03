@@ -1,6 +1,6 @@
 # MAUI Dev Tools Client — Product Specification
 
-**Version**: 1.0-draft  
+**Version**: 1.1-draft  
 **Status**: Proposal  
 **Last Updated**: 2026-02-03
 
@@ -24,6 +24,15 @@
 14. [Rollout Plan](#14-rollout-plan)
 15. [Open Questions & Risks](#15-open-questions--risks)
 16. [Appendix](#16-appendix)
+
+---
+
+## Revision History
+
+| Version | Date | Changes |
+|---------|------|---------|
+| 1.1-draft | 2026-02-03 | Added: Exit code standardization, Windows management, offline/proxy support, container environments, migration strategy, concurrency model, permission storage, ARM64 considerations |
+| 1.0-draft | 2026-02-03 | Initial draft |
 
 ---
 
@@ -222,14 +231,17 @@ This tool eliminates that friction by providing a single, authoritative source f
 | FR-D1 | Detect .NET SDK version and MAUI workload installation status | P0 |
 | FR-D2 | Detect Android SDK location and installed components | P0 |
 | FR-D3 | Detect Android build-tools, platform-tools, and emulator presence | P0 |
-| FR-D4 | Detect Xcode installation, version, and selected developer directory | P0 |
+| FR-D4 | Detect Xcode installation (full Xcode.app, not just CLI Tools), version, and selected developer directory | P0 |
 | FR-D5 | Detect installed iOS/macOS runtimes and simulators | P0 |
-| FR-D6 | Detect Windows SDK installation (on Windows) | P1 |
-| FR-D7 | Produce human-readable output with color-coded status | P0 |
+| FR-D6 | Detect Windows SDK installation and Developer Mode status (on Windows) | P1 |
+| FR-D7 | Produce human-readable output with color-coded status (with text fallback for accessibility) | P0 |
 | FR-D8 | Produce machine-readable JSON output with stable schema | P0 |
 | FR-D9 | Provide `--fix` flag to automatically remediate fixable issues | P0 |
 | FR-D10 | Prompt for confirmation before downloads >100MB | P0 |
-| FR-D11 | Support `--target` filter (android, ios, windows, maccatalyst) | P1 |
+| FR-D11 | Support `--platform` filter (android, ios, windows, maccatalyst) — multiple allowed | P1 |
+| FR-D12 | Verify available disk space before attempting large downloads | P0 |
+| FR-D13 | Support `--fix <issue-id>` for targeted fixes | P1 |
+| FR-D14 | Detect multiple SDK installations and report conflicts | P1 |
 
 ### 5.2 Android Management
 
@@ -265,8 +277,21 @@ This tool eliminates that friction by providing a single, authoritative source f
 | FR-X10 | Stream simulator/device logs | P1 |
 | FR-X11 | Validate basic signing prerequisites (team ID, certificate presence) | P2 |
 | FR-X12 | Open Simulator.app with specific device | P1 |
+| FR-X13 | Handle multiple Xcode versions (detect all, use `xcode-select` default) | P1 |
+| FR-X14 | Detect Xcode beta installations at `/Applications/Xcode-beta.app` | P2 |
 
-### 5.4 Cross-Platform Screenshot
+### 5.4 Windows Management
+
+| ID | Requirement | Priority |
+|----|-------------|----------|
+| FR-W1 | Detect Windows SDK installation and version | P1 |
+| FR-W2 | Detect Developer Mode enabled status | P0 |
+| FR-W3 | Guide user to enable Developer Mode if disabled | P0 |
+| FR-W4 | Detect Visual Studio installation and MAUI workload | P1 |
+| FR-W5 | Detect Hyper-V availability for Android emulation | P1 |
+| FR-W6 | Detect Windows App SDK dependencies | P2 |
+
+### 5.5 Cross-Platform Screenshot
 
 | ID | Requirement | Priority |
 |----|-------------|----------|
@@ -318,6 +343,12 @@ This tool eliminates that friction by providing a single, authoritative source f
 | NFR-P2 | Device list must complete in <2s |
 | NFR-P3 | Daemon mode must respond to health checks in <100ms |
 | NFR-P4 | Downloaded artifacts must be cached locally |
+| NFR-P5 | Read operations must use direct file parsing (not CLI wrappers) for performance |
+
+**Performance Implementation Notes**:
+- Android SDK detection: Parse `package.xml` and `source.properties` directly instead of invoking `sdkmanager --list` (which has 3-10s JVM startup time)
+- iOS simulator list: Use `xcrun simctl list -j` (fast native tool)
+- Fall back to CLI tools only for write operations (install, create, etc.)
 
 ### 6.4 Security
 
@@ -343,6 +374,34 @@ This tool eliminates that friction by providing a single, authoritative source f
 | NFR-A1 | CLI output must work with screen readers (avoid relying solely on color) |
 | NFR-A2 | All status indicators must have text equivalents |
 | NFR-A3 | IDE integration must follow platform accessibility guidelines |
+
+### 6.7 Network & Offline Support
+
+| ID | Requirement |
+|----|-------------|
+| NFR-N1 | Respect system proxy settings (`HTTP_PROXY`, `HTTPS_PROXY`, `NO_PROXY`) |
+| NFR-N2 | Support custom CA certificates for corporate SSL inspection |
+| NFR-N3 | Provide `--offline` mode for doctor to skip network checks |
+| NFR-N4 | Support `--local-source <path>` for installing from pre-downloaded artifacts |
+| NFR-N5 | Large downloads must support HTTP Range requests for resumability |
+| NFR-N6 | Cache downloaded installers with configurable location and size limits |
+
+### 6.8 Container & Headless Environments
+
+| Environment | Android Emulator | iOS Simulator | Doctor | SDK Install |
+|-------------|------------------|---------------|--------|-------------|
+| macOS native | ✓ | ✓ | ✓ | ✓ |
+| Windows native | ✓ | — | ✓ | ✓ |
+| Docker (Linux) | ✓ (with KVM) | — | ✓ | ✓ |
+| Docker (macOS) | ❌ No nested virt | ❌ No CoreSimulator | Partial | Partial |
+| GitHub Actions macOS | ✓ | ✓ | ✓ | ✓ |
+| GitHub Actions Windows | ✓ (with HAXM) | — | ✓ | ✓ |
+| Azure DevOps Hosted | ✓ | ✓ (macOS only) | ✓ | ✓ |
+| WSL2 | ✓ (experimental) | — | Partial | ✓ |
+
+When emulator/simulator unavailable:
+- `maui doctor` reports capability with reason (e.g., "emulator: unavailable (virtualization disabled)")
+- `maui android avd start` fails fast with `E2010` "Hardware acceleration unavailable"
 
 ---
 
@@ -532,8 +591,57 @@ User: maui doctor --json
 1. IDE sends request to well-known socket/pipe
 2. If no daemon running, extension spawns `maui daemon --background`
 3. Daemon responds to requests
-4. After 5 minutes idle, daemon self-terminates
+4. After 5 minutes idle (configurable via `--idle-timeout`), daemon self-terminates
 5. Next request restarts daemon
+
+**Well-Known Paths**:
+- macOS: `/tmp/maui-devtools.sock` (Unix domain socket)
+- Windows: `\\.\pipe\MauiDevTools` (named pipe)
+
+### 7.6 Concurrency Model
+
+| Aspect | Behavior |
+|--------|----------|
+| Read Operations | Parallelized (multiple simultaneous queries allowed) |
+| Write Operations | Serialized (single writer at a time) |
+| Lock File | `$TMPDIR/maui-devtools.lock` prevents duplicate daemon instances |
+| Request Timeout | Requests waiting >30s for lock rejected with `E5010` |
+| Progress Notifications | Buffered with backpressure; slow consumers receive "progress.dropped" notification |
+
+**Race Condition Prevention**:
+- Multiple IDE instances requesting daemon start simultaneously are handled via lock file
+- First acquirer starts daemon; others connect to existing instance
+- Socket/pipe creation is atomic
+
+### 7.7 SDK Conflict Resolution
+
+When multiple SDK installations are detected:
+
+**Android SDK Precedence** (first match wins):
+1. `ANDROID_HOME` environment variable
+2. `ANDROID_SDK_ROOT` environment variable  
+3. Visual Studio configured path (Windows)
+4. Android Studio configured path (`~/.android/sdk` or registry)
+5. Default location (`~/Library/Android/sdk` on macOS, `%LOCALAPPDATA%\Android\Sdk` on Windows)
+
+**Conflict Handling**:
+- `maui doctor` reports all detected SDKs with recommendation
+- `maui config set android-sdk-path <path>` to override
+- `--sdk-path` flag available on all android commands for one-off override
+
+**Android Studio Coexistence**:
+- Detect Android Studio installation
+- Warn if both AS and tool would manage same SDK
+- Offer to adopt AS's SDK rather than installing duplicate
+
+### 7.8 Migration from Existing Setups
+
+When an existing SDK is detected:
+
+1. **Validate** existing SDK health before offering modifications
+2. **Adopt or Fresh**: Offer "adopt existing" vs "install fresh" options
+3. **Non-Destructive**: Never delete or modify user's existing SDK without explicit consent
+4. **Override Support**: `--sdk-path` for non-standard locations
 
 ---
 
@@ -546,42 +654,46 @@ User: maui doctor --json
 ```
 maui
 ├── doctor                    # Check environment health
-│   ├── --fix                 # Auto-fix detected issues
-│   ├── --target <platform>   # Filter: android, ios, windows, maccatalyst
+│   ├── --fix [issue-id]      # Auto-fix all or specific issue
+│   ├── --platform <p>        # Filter: android, ios, windows, maccatalyst (repeatable)
 │   ├── --json                # Output as JSON
-│   └── --non-interactive     # No prompts (for CI)
+│   ├── --non-interactive     # No prompts (for CI)
+│   └── --offline             # Skip network checks
 │
 ├── device
 │   ├── list                  # List all devices
 │   │   ├── --platform        # Filter by platform
 │   │   └── --json            # Output as JSON
-│   └── screenshot            # Capture screenshot
-│       ├── --device <id>     # Target device
-│       ├── --output <path>   # Output file
-│       ├── --wait <ms>       # Delay before capture
-│       └── --format <fmt>    # png, jpg
+│   ├── screenshot            # Capture screenshot
+│   │   ├── --device <id>     # Target device
+│   │   ├── --output <path>   # Output file
+│   │   ├── --wait <ms>       # Delay before capture
+│   │   └── --format <fmt>    # png, jpg
+│   └── logs                  # Stream logs from device
+│       ├── --device          # Device identifier
+│       └── --filter          # Filter expression
 │
 ├── android
 │   ├── sdk
 │   │   ├── list              # List installed packages
 │   │   ├── list-available    # List available packages
-│   │   └── install <pkg>     # Install package
+│   │   ├── install <pkg>     # Install package
+│   │   └── uninstall <pkg>   # Uninstall package
 │   ├── avd
 │   │   ├── list              # List AVDs
 │   │   ├── create            # Create AVD
 │   │   │   ├── --name        # AVD name
 │   │   │   ├── --device      # Device profile
-│   │   │   ├── --image       # System image
+│   │   │   ├── --image       # System image (prefers arm64 on Apple Silicon)
 │   │   │   └── --force       # Overwrite existing
 │   │   ├── start             # Start AVD
 │   │   │   ├── --name        # AVD name (or --avd)
 │   │   │   ├── --cold-boot   # Fresh boot
 │   │   │   └── --wait        # Wait for boot
-│   │   └── stop              # Stop emulator
-│   │       └── --device      # Emulator serial
-│   ├── logcat                # Stream logs
-│   │   ├── --device          # Target device
-│   │   └── --filter          # Tag filter
+│   │   ├── stop              # Stop emulator
+│   │   │   └── --device      # Emulator serial
+│   │   └── delete            # Delete AVD
+│   │       └── --name        # AVD name
 │   └── install               # Install APK
 │       ├── --device          # Target device
 │       └── <apk-path>        # APK file
@@ -597,22 +709,20 @@ maui
 │   │   │   ├── --runtime     # Runtime identifier
 │   │   │   └── --device-type # Device type identifier
 │   │   ├── boot              # Boot simulator
-│   │   │   └── --udid        # Simulator UDID (or name)
+│   │   │   └── --udid        # Simulator UDID (or --name)
 │   │   ├── shutdown          # Shutdown simulator
 │   │   │   └── --udid        # Simulator UDID
 │   │   └── delete            # Delete simulator
 │   │       └── --udid        # Simulator UDID
-│   ├── runtime
-│   │   ├── list              # List runtimes
-│   │   └── install           # Install runtime (guidance)
-│   │       └── --version     # Runtime version
-│   └── logs                  # Stream device logs
-│       └── --udid            # Simulator UDID
+│   └── runtime
+│       ├── list              # List runtimes
+│       └── install           # Install runtime (guidance)
+│           └── --version     # Runtime version
 │
-├── logs
-│   └── stream                # Stream logs from device
-│       ├── --device          # Device identifier
-│       └── --filter          # Filter expression
+├── config                    # Configuration management
+│   ├── list                  # List all config values
+│   ├── get <key>             # Get config value
+│   └── set <key> <value>     # Set config value
 │
 ├── diagnostic-bundle         # Export diagnostic info
 │   └── --output <path>       # Output zip file
@@ -625,30 +735,54 @@ maui
 └── --version                 # Show version
 ```
 
+#### Exit Code Standard
+
+All commands follow a consistent exit code scheme:
+
+| Code | Meaning | When Used |
+|------|---------|-----------|
+| 0 | Success / Healthy | Operation completed successfully |
+| 1 | Partial success / Issues found | `doctor` found issues; operation completed with warnings |
+| 2 | Operation failed | Command failed (network error, invalid input, etc.) |
+| 3 | Permission denied | Elevation required but not granted |
+| 4 | User canceled | User declined confirmation prompt |
+| 5 | Resource not found | Requested device/AVD/simulator not found |
+| 126 | Command not executable | Binary not found or not executable |
+| 127 | Command not found | Unknown subcommand |
+
 #### Command Table
 
 | Command | Description | Inputs | Output | Exit Codes |
 |---------|-------------|--------|--------|------------|
-| `doctor` | Check environment health | `--fix`, `--target`, `--json` | Status report | 0=healthy, 1=issues, 2=error |
+| `doctor` | Check environment health | `--fix`, `--platform`, `--json` | Status report | 0=healthy, 1=issues, 2=error |
 | `device list` | List available devices | `--platform`, `--json` | Device list | 0=success, 2=error |
-| `device screenshot` | Capture screenshot | `--device`, `--output`, `--wait` | File path | 0=success, 1=no device, 2=error |
+| `device screenshot` | Capture screenshot | `--device`, `--output`, `--wait` | File path | 0=success, 5=no device, 2=error |
 | `android sdk list` | List SDK packages | `--json` | Package list | 0=success, 2=error |
-| `android sdk install` | Install SDK package | `<package>`, `--accept-licenses` | Progress, result | 0=success, 1=not found, 2=error |
+| `android sdk install` | Install SDK package | `<package>`, `--accept-licenses` | Progress, result | 0=success, 5=not found, 2=error |
 | `android avd create` | Create emulator | `--name`, `--device`, `--image` | AVD name | 0=success, 1=exists, 2=error |
-| `android avd start` | Start emulator | `--name`, `--wait`, `--cold-boot` | Device serial | 0=success, 1=not found, 2=error |
+| `android avd start` | Start emulator | `--name`, `--wait`, `--cold-boot` | Device serial | 0=success, 5=not found, 2=error |
 | `apple simulator list` | List simulators | `--runtime`, `--device-type`, `--state` | Simulator list | 0=success, 2=error |
-| `apple simulator boot` | Boot simulator | `--udid` or name | UDID | 0=success, 1=not found, 2=error |
+| `apple simulator boot` | Boot simulator | `--udid` or `--name` | UDID | 0=success, 5=not found, 2=error |
 | `apple runtime list` | List iOS runtimes | `--json` | Runtime list | 0=success, 2=error |
+| `config set` | Set configuration | `<key>`, `<value>` | Confirmation | 0=success, 2=error |
 
 ### 8.2 JSON-RPC API
 
 **Transport**: JSON-RPC 2.0 over stdio (primary) or named pipes/Unix sockets (daemon mode)
+
+**Transport Details**:
+- **stdio mode**: Newline-delimited JSON (NDJSON) — one JSON object per line, requests on stdin, responses on stdout
+- **Named pipes** (Windows): `\\.\pipe\MauiDevTools`
+- **Unix sockets** (macOS): `/tmp/maui-devtools.sock`
+- **Line protocol**: Each message is a complete JSON object followed by `\n`
+- **Encoding**: UTF-8
 
 **Why JSON-RPC**: 
 - Language-agnostic (works with any IDE/agent)
 - Simple request/response model
 - Well-defined error handling
 - Supports notifications for streaming (logs, progress)
+- Familiar to IDE developers (same as LSP)
 
 #### Method Reference
 
@@ -663,7 +797,7 @@ Check environment health.
   "id": 1,
   "method": "doctor.status",
   "params": {
-    "targets": ["android", "ios"]
+    "platforms": ["android", "ios"]
   }
 }
 ```
@@ -1393,6 +1527,61 @@ AI agent calls are sandboxed:
 - Cannot execute arbitrary commands
 - Limited to defined API surface
 - All actions logged with agent identifier
+
+**Safe Paths** (agents may read/write only within):
+- Project root directory
+- Temp directory (`$TMPDIR` / `%TEMP%`)
+- SDK directories (Android SDK, Xcode Developer directory)
+- Tool cache directory (`~/.maui-devtools/`)
+
+**Path Validation**:
+- Reject paths containing `..`
+- Reject absolute paths outside safe paths
+- Validate in CLI Layer before dispatching to services
+
+### 11.5 Permission Storage
+
+| Context | Storage Location | Lifetime |
+|---------|------------------|----------|
+| IDE Session | In-memory | Until IDE closes |
+| Terminal | Per-command | Single invocation |
+| CI | Environment variable `MAUI_DEVTOOLS_ALLOW_MODIFY=1` | Pipeline run |
+| Persistent | `~/.config/maui-devtools/permissions.json` | Until revoked |
+
+**Persistent Permission Schema**:
+```json
+{
+  "schema_version": 1,
+  "agents": {
+    "github-copilot": {
+      "environment.modify": "allow",
+      "device.create": "prompt",
+      "device.capture": "allow"
+    },
+    "default": {
+      "environment.modify": "prompt",
+      "device.create": "prompt",
+      "device.capture": "prompt"
+    }
+  }
+}
+```
+
+**Permission Values**:
+- `allow`: Permitted without prompt
+- `prompt`: Requires user confirmation each time
+- `deny`: Blocked (agent receives permission error)
+
+### 11.6 Elevation Handling
+
+When an operation requires elevation:
+
+| Platform | Mechanism | User Experience |
+|----------|-----------|-----------------|
+| macOS | `sudo` prompt in terminal; Authorization Services in GUI | System password dialog |
+| Windows | UAC prompt | Standard elevation dialog |
+
+**For AI Agents**: Elevated operations cannot be auto-approved. Agent receives error `E5001` with message explaining elevation requirement. User must run command manually or through IDE's privileged execution path.
 
 ---
 
