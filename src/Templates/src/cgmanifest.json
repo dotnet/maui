@@ -96,7 +96,7 @@
         "type": "nuget",
         "nuget": {
           "name": "Microsoft.Windows.SDK.BuildTools",
-          "version": "10.0.22621.756"
+          "version": "10.0.26100.4654"
         }
       }
     },
@@ -105,7 +105,7 @@
         "type": "nuget",
         "nuget": {
           "name": "Microsoft.WindowsAppSDK",
-          "version": "1.7.250909003"
+          "version": "1.8.251106002"
         }
       }
     },

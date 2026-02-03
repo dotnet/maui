@@ -1,6 +1,6 @@
 ---
 name: pr-finalize
-description: Finalizes any PR for merge by verifying title and description match actual implementation. Reviews existing description quality before suggesting changes. Use when asked to "finalize PR", "check PR description", "review commit message", before merging any PR, or when PR implementation changed during review. Do NOT use for extracting lessons (use learn-from-pr), writing tests (use write-tests), or investigating build failures (use pr-build-status).
+description: Finalizes any PR for merge by verifying title and description match actual implementation. Reviews existing description quality before suggesting changes. Use when asked to "finalize PR", "check PR description", "review commit message", before merging any PR, or when PR implementation changed during review. Do NOT use for extracting lessons (use learn-from-pr), writing tests (use write-tests-agent), or investigating build failures (use pr-build-status).
 ---
 
 # PR Finalize
@@ -8,38 +8,6 @@ description: Finalizes any PR for merge by verifying title and description match
 Ensures PR title and description accurately reflect the implementation for a good commit message.
 
 **Standalone skill** - Can be used on any PR, not just PRs created by the pr agent.
-
----
-
-## 🚨 MANDATORY: Save Summary File
-
-**This is NOT optional. Complete this step EVERY time you run this skill.**
-
-Before presenting results to the user, you MUST save the summary:
-
-```bash
-# Create directory
-mkdir -p CustomAgentLogsTmp/PRState/<PRNumber>/pr-finalize
-
-# Save summary to: CustomAgentLogsTmp/PRState/<PRNumber>/pr-finalize/pr-finalize-summary.md
-```
-
-**The summary file must include:**
-- PR number, title, author, date reviewed
-- Verdict (✅ No Changes Needed / ⚠️ Needs Updates)
-- Title assessment (current vs recommended)
-- Description quality assessment with table
-- Issues found table
-- Changed files coverage
-- Recommended description (if changes needed)
-- Action items checklist
-
-**Why this matters:** Skills are complete workflows, not just reference material. Saving the summary ensures:
-1. Traceability of what was reviewed
-2. User can reference findings later
-3. Consistent output format across runs
-
----
 
 ## Core Principle: Preserve Quality
 

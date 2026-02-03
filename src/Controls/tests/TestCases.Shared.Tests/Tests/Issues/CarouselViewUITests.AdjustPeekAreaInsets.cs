@@ -17,7 +17,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.CarouselView)]
 		public void ChangePeekAreaInsetsInOnSizeAllocatedTest()
 		{
-			App.WaitForElement("CarouselId");
+			// Use longer timeout for CarouselView which can be slow to render on CI
+			App.WaitForElement("CarouselId", timeout: TimeSpan.FromSeconds(30));
 		}
 	}
 }

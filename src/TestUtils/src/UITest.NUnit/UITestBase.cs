@@ -10,6 +10,12 @@ namespace UITest.Appium.NUnit
 	{
 		protected virtual bool ResetAfterEachTest => false;
 
+		// Store paths of diagnostic files captured during OneTimeSetUp failure
+		// so they can be re-attached to individual test results in TearDown
+		// (NUnit doesn't attach files from OneTimeSetUp to individual test results in Azure DevOps)
+		private readonly List<string> _fixtureSetupDiagnosticFiles = new();
+		private bool _fixtureSetupFailed = false;
+
 		public UITestBase(TestDevice testDevice)
 			: base(testDevice)
 		{
@@ -36,6 +42,21 @@ namespace UITest.Appium.NUnit
 		{
 			RecordTestTeardown();
 			UITestBaseTearDown();
+
+			// If the fixture setup failed, re-attach diagnostic files to each individual test
+			// so they appear in Azure DevOps test results (NUnit doesn't do this automatically
+			// for files attached during OneTimeSetUp)
+			if (_fixtureSetupFailed)
+			{
+				foreach (var filePath in _fixtureSetupDiagnosticFiles)
+				{
+					if (File.Exists(filePath))
+					{
+						AddTestAttachment(filePath, $"[FixtureSetup] {Path.GetFileName(filePath)}");
+					}
+				}
+			}
+
 			if (ResetAfterEachTest)
 			{
 				Reset();
@@ -122,8 +143,9 @@ namespace UITest.Appium.NUnit
 			}
 			catch
 			{
-				SaveDeviceDiagnosticInfo();
-				SaveUIDiagnosticInfo();
+				_fixtureSetupFailed = true;
+				SaveDeviceDiagnosticInfo(storeForReattachment: true);
+				SaveUIDiagnosticInfo(storeForReattachment: true);
 				throw;
 			}
 		}
@@ -146,7 +168,7 @@ namespace UITest.Appium.NUnit
 			FixtureOneTimeTearDown();
 		}
 
-		void SaveDeviceDiagnosticInfo([CallerMemberName] string? note = null)
+		void SaveDeviceDiagnosticInfo([CallerMemberName] string? note = null, bool storeForReattachment = false)
 		{
 			try
 			{
@@ -165,6 +187,12 @@ namespace UITest.Appium.NUnit
 						File.WriteAllLines(logsPath, entries);
 
 						AddTestAttachment(logsPath, Path.GetFileName(logsPath));
+
+						// Store path for re-attachment to individual tests if this is from fixture setup
+						if (storeForReattachment)
+						{
+							_fixtureSetupDiagnosticFiles.Add(logsPath);
+						}
 					}
 				}
 			}
@@ -175,7 +203,7 @@ namespace UITest.Appium.NUnit
 			}
 		}
 
-		protected bool SaveUIDiagnosticInfo([CallerMemberName] string? note = null)
+		protected bool SaveUIDiagnosticInfo([CallerMemberName] string? note = null, bool storeForReattachment = false)
 		{
 			if (App.AppState != ApplicationState.Running)
 				return false;
@@ -186,6 +214,12 @@ namespace UITest.Appium.NUnit
 				_ = App.Screenshot(screenshotPath);
 
 				AddTestAttachment(screenshotPath, Path.GetFileName(screenshotPath));
+
+				// Store path for re-attachment to individual tests if this is from fixture setup
+				if (storeForReattachment)
+				{
+					_fixtureSetupDiagnosticFiles.Add(screenshotPath);
+				}
 			}
 
 			var pageSourcePath = GetGeneratedFilePath("PageSource.txt", note);
@@ -194,6 +228,12 @@ namespace UITest.Appium.NUnit
 				File.WriteAllText(pageSourcePath, App.ElementTree);
 
 				AddTestAttachment(pageSourcePath, Path.GetFileName(pageSourcePath));
+
+				// Store path for re-attachment to individual tests if this is from fixture setup
+				if (storeForReattachment)
+				{
+					_fixtureSetupDiagnosticFiles.Add(pageSourcePath);
+				}
 			}
 
 			return true;

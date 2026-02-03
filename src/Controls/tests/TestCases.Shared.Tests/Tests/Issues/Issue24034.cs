@@ -15,6 +15,7 @@ public class Issue24034(TestDevice device) : _IssuesUITest(device)
 		App.WaitForElement("button");
 		App.Click("button");
 
-		VerifyScreenshot();
+		// Use retryTimeout to allow shadow animation to complete
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 }
