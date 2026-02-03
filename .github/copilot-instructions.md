@@ -238,7 +238,7 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
    - **Categories**: P/0, milestoned, partner, community, recent, docs-maui
 
 3. **pr-finalize** (`.github/skills/pr-finalize/SKILL.md`)
-   - **Purpose**: Verifies PR title and description match actual implementation. Works on any PR. Optionally updates agent session markdown if present.
+   - **Purpose**: Verifies PR title and description match actual implementation, AND performs multi-model code review (5 models) for best practices before merge.
    - **Trigger phrases**: "finalize PR #XXXXX", "check PR description for #XXXXX", "review commit message"
    - **Used by**: Before merging any PR, when description may be stale
    - **Note**: Does NOT require agent involvement or session markdown - works on any PR

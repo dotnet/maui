@@ -1,15 +1,24 @@
 ---
 name: pr-finalize
-description: Finalizes any PR for merge by verifying title and description match actual implementation. Reviews existing description quality before suggesting changes. Use when asked to "finalize PR", "check PR description", "review commit message", before merging any PR, or when PR implementation changed during review. Do NOT use for extracting lessons (use learn-from-pr), writing tests (use write-tests-agent), or investigating build failures (use pr-build-status).
+description: Finalizes any PR for merge by verifying title/description match implementation AND performing multi-model code review for best practices. Use when asked to "finalize PR", "check PR description", "review commit message", before merging any PR, or when PR implementation changed during review. Do NOT use for extracting lessons (use learn-from-pr), writing tests (use write-tests-agent), or investigating build failures (use pr-build-status).
 ---
 
 # PR Finalize
 
-Ensures PR title and description accurately reflect the implementation for a good commit message.
+Ensures PR title and description accurately reflect the implementation, and performs a **multi-model code review** for best practices before merge.
 
 **Standalone skill** - Can be used on any PR, not just PRs created by the pr agent.
 
-## Core Principle: Preserve Quality
+## Two-Phase Workflow
+
+1. **Title & Description Review** - Verify PR metadata matches implementation
+2. **Multi-Model Code Review** - Get consensus from 5 models on best practices
+
+---
+
+## Phase 1: Title & Description
+
+### Core Principle: Preserve Quality
 
 **Review existing description BEFORE suggesting changes.** Many PR authors write excellent, detailed descriptions. Your job is to:
 
@@ -277,6 +286,120 @@ Fixed the issue mentioned in #30897
 ```
 
 **Verdict:** Inadequate - no detail on what changed. Use template.
+
+---
+
+## Phase 2: Multi-Model Code Review
+
+After verifying title/description, perform a **multi-model code review** to catch best practice violations and edge cases before merge.
+
+### Why Multi-Model?
+
+Different models catch different issues. Consensus from 5 models provides:
+- Higher confidence in findings (multiple models agree)
+- Broader coverage of edge cases
+- Reduced false positives (single-model quirks filtered out)
+
+### Models to Consult
+
+Use 5 diverse models for best coverage:
+
+| Model | Strengths |
+|-------|-----------|
+| `claude-sonnet-4` | Balanced analysis, good code patterns |
+| `claude-opus-4.5` | Deep reasoning, edge cases |
+| `gpt-5.2` | Practical recommendations |
+| `gpt-5.2-codex` | Code-specific expertise |
+| `gemini-3-pro-preview` | Alternative perspective |
+
+### Review Prompt Template
+
+Send the same prompt to all 5 models via `task` tool with `model` parameter:
+
+```
+Review the following code changes from PR #XXXXX for best practices. Focus on:
+1. Code quality and maintainability
+2. Error handling and edge cases  
+3. Performance implications
+4. Any potential improvements
+
+[Include relevant code snippets from PR diff]
+
+Provide specific, actionable recommendations. Be concise.
+```
+
+### Execution
+
+```csharp
+// Invoke 5 models in parallel using task tool
+task(agent_type: "general-purpose", model: "claude-sonnet-4", prompt: "<review prompt>")
+task(agent_type: "general-purpose", model: "claude-opus-4.5", prompt: "<review prompt>")
+task(agent_type: "general-purpose", model: "gpt-5.2", prompt: "<review prompt>")
+task(agent_type: "general-purpose", model: "gpt-5.2-codex", prompt: "<review prompt>")
+task(agent_type: "general-purpose", model: "gemini-3-pro-preview", prompt: "<review prompt>")
+```
+
+### Synthesize Consensus
+
+After receiving all 5 responses, synthesize findings by agreement level:
+
+| Agreement | Classification | Action |
+|-----------|----------------|--------|
+| **4-5 models agree** | 🔴 Critical | Must fix before merge |
+| **3 models agree** | 🟡 High Priority | Should fix |
+| **2 models agree** | 🟢 Minor | Nice to have |
+| **1 model only** | ⚪ Skip | Likely false positive |
+
+### Output Format
+
+```markdown
+## Multi-Model Code Review Consensus
+
+### 🔴 Critical Issues (4+ models agree)
+
+**[Issue Title]**
+- **Models:** claude-sonnet-4, claude-opus-4.5, gpt-5.2, gemini-3-pro-preview
+- **Problem:** [Description]
+- **Recommendation:** [Code fix]
+
+### 🟡 High Priority (3 models agree)
+
+**[Issue Title]**
+- **Models:** [List]
+- **Problem:** [Description]  
+- **Recommendation:** [Code fix]
+
+### 🟢 Minor Improvements (2 models agree)
+
+- [Improvement 1]
+- [Improvement 2]
+
+### ✅ Positive Feedback (all models agree)
+
+- [Good practice 1]
+- [Good practice 2]
+```
+
+### When to Post Review
+
+- **Critical issues found**: Post review requesting changes with consensus findings
+- **Only minor issues**: Approve with suggestions in comment
+- **No issues**: Approve, note that multi-model review passed
+
+### Example gh CLI Commands
+
+```bash
+# Request changes (critical issues found)
+gh pr review XXXXX --repo dotnet/maui --request-changes --body "$reviewBody"
+
+# Approve with comments (minor issues only)
+gh pr review XXXXX --repo dotnet/maui --approve --body "$reviewBody"
+
+# Comment without approval/rejection
+gh pr review XXXXX --repo dotnet/maui --comment --body "$reviewBody"
+```
+
+---
 
 ## Complete Example
 
