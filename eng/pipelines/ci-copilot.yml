@@ -197,18 +197,148 @@ stages:
           # Verify UI tests fail without fix (on Android emulator)
           - pwsh: |
               Write-Host "=== Verifying UI Tests Fail Without Fix ==="
+              Write-Host "Working directory: $(Get-Location)"
+              Write-Host "Script path: .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1"
+              
+              # Check script exists
+              if (-not (Test-Path ".github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1")) {
+                Write-Host "##vso[task.logissue type=error]Script not found!"
+                exit 1
+              }
               
               # Run the verify-tests-fail script on Android
-              $result = & pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 -Platform android -PRNumber ${{ parameters.PRNumber }}
-              
-              Write-Host "Verification script completed with exit code: $LASTEXITCODE"
-              
-              if ($LASTEXITCODE -ne 0) {
-                Write-Host "##vso[task.logissue type=warning]verify-tests-fail script exited with code $LASTEXITCODE"
+              # Use Invoke-Expression to run in same process and capture all output
+              $ErrorActionPreference = "Continue"
+              try {
+                & "./.github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1" -Platform android -PRNumber "${{ parameters.PRNumber }}" 2>&1 | ForEach-Object { Write-Host $_ }
+                $exitCode = $LASTEXITCODE
+              } catch {
+                Write-Host "##vso[task.logissue type=error]Exception: $_"
+                Write-Host $_.ScriptStackTrace
+                $exitCode = 1
               }
+              
+              Write-Host "Verification script completed with exit code: $exitCode"
+              
+              if ($exitCode -ne 0) {
+                Write-Host "##vso[task.logissue type=warning]verify-tests-fail script exited with code $exitCode"
+              }
+              exit $exitCode
             displayName: 'Verify UI Tests Fail Without Fix'
             continueOnError: true
             timeoutInMinutes: 30
+            env:
+              ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
+              JAVA_HOME: $(JAVA_HOME_17_X64)
+
+          # Start Android Emulator (verbose logging)
+          - pwsh: |
+              Write-Host "=== Starting Android Emulator ==="
+              Write-Host "Working directory: $(Get-Location)"
+              
+              $scriptPath = ".github/scripts/shared/Start-Emulator.ps1"
+              if (-not (Test-Path $scriptPath)) {
+                Write-Host "##vso[task.logissue type=error]Script not found: $scriptPath"
+                exit 1
+              }
+              
+              $ErrorActionPreference = "Continue"
+              try {
+                & "./$scriptPath" -Platform android -Verbose 2>&1 | ForEach-Object { Write-Host $_ }
+                $exitCode = $LASTEXITCODE
+              } catch {
+                Write-Host "##vso[task.logissue type=error]Exception: $_"
+                Write-Host $_.ScriptStackTrace
+                $exitCode = 1
+              }
+              
+              Write-Host "Start-Emulator completed with exit code: $exitCode"
+              if ($exitCode -ne 0) {
+                Write-Host "##vso[task.logissue type=warning]Start-Emulator failed with code $exitCode"
+              }
+              exit $exitCode
+            displayName: 'Start Android Emulator (Verbose)'
+            continueOnError: true
+            timeoutInMinutes: 10
+            env:
+              ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
+              JAVA_HOME: $(JAVA_HOME_17_X64)
+
+          # Build and Deploy HostApp (verbose logging)
+          - pwsh: |
+              Write-Host "=== Building and Deploying HostApp ==="
+              Write-Host "Working directory: $(Get-Location)"
+              
+              $scriptPath = ".github/scripts/shared/Build-AndDeploy.ps1"
+              if (-not (Test-Path $scriptPath)) {
+                Write-Host "##vso[task.logissue type=error]Script not found: $scriptPath"
+                exit 1
+              }
+              
+              # Get emulator UDID
+              $udid = (adb devices | Select-String -Pattern "^(emulator-\d+)" | ForEach-Object { $_.Matches[0].Groups[1].Value } | Select-Object -First 1)
+              if (-not $udid) {
+                Write-Host "##vso[task.logissue type=error]No Android emulator found"
+                adb devices -l
+                exit 1
+              }
+              Write-Host "Using emulator: $udid"
+              
+              $ErrorActionPreference = "Continue"
+              try {
+                & "./$scriptPath" -Platform android `
+                  -ProjectPath "src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj" `
+                  -TargetFramework "net10.0-android" `
+                  -DeviceUdid $udid `
+                  -Verbose 2>&1 | ForEach-Object { Write-Host $_ }
+                $exitCode = $LASTEXITCODE
+              } catch {
+                Write-Host "##vso[task.logissue type=error]Exception: $_"
+                Write-Host $_.ScriptStackTrace
+                $exitCode = 1
+              }
+              
+              Write-Host "Build-AndDeploy completed with exit code: $exitCode"
+              if ($exitCode -ne 0) {
+                Write-Host "##vso[task.logissue type=warning]Build-AndDeploy failed with code $exitCode"
+              }
+              exit $exitCode
+            displayName: 'Build and Deploy HostApp (Verbose)'
+            continueOnError: true
+            timeoutInMinutes: 30
+            env:
+              ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
+              JAVA_HOME: $(JAVA_HOME_17_X64)
+
+          # Build and Run HostApp with Tests (verbose logging)
+          - pwsh: |
+              Write-Host "=== Building and Running HostApp ==="
+              Write-Host "Working directory: $(Get-Location)"
+              
+              $scriptPath = ".github/scripts/BuildAndRunHostApp.ps1"
+              if (-not (Test-Path $scriptPath)) {
+                Write-Host "##vso[task.logissue type=error]Script not found: $scriptPath"
+                exit 1
+              }
+              
+              $ErrorActionPreference = "Continue"
+              try {
+                & "./$scriptPath" -Platform android -Verbose 2>&1 | ForEach-Object { Write-Host $_ }
+                $exitCode = $LASTEXITCODE
+              } catch {
+                Write-Host "##vso[task.logissue type=error]Exception: $_"
+                Write-Host $_.ScriptStackTrace
+                $exitCode = 1
+              }
+              
+              Write-Host "BuildAndRunHostApp completed with exit code: $exitCode"
+              if ($exitCode -ne 0) {
+                Write-Host "##vso[task.logissue type=warning]BuildAndRunHostApp failed with code $exitCode"
+              }
+              exit $exitCode
+            displayName: 'Build and Run HostApp (Verbose)'
+            continueOnError: true
+            timeoutInMinutes: 45
             env:
               ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
               JAVA_HOME: $(JAVA_HOME_17_X64)
