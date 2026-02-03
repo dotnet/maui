@@ -65,6 +65,28 @@ stages:
               skipAndroidCreateAvds: false
               androidEmulatorApiLevel: '34'
 
+          # Disable hardware acceleration in AVD config (HVF not available on Azure hosted agents)
+          - script: |
+              echo "=== Disabling hardware acceleration in AVD config ==="
+              AVD_CONFIG="$HOME/.android/avd/Emulator_34.avd/config.ini"
+              if [ -f "$AVD_CONFIG" ]; then
+                echo "Found AVD config: $AVD_CONFIG"
+                echo "Current config:"
+                cat "$AVD_CONFIG"
+                echo ""
+                echo "Adding hw.cpu.ncore=2 and removing any accelerator settings..."
+                # Remove any existing accelerator settings and add our own
+                grep -v "hw.accelerator" "$AVD_CONFIG" > "$AVD_CONFIG.tmp" && mv "$AVD_CONFIG.tmp" "$AVD_CONFIG"
+                echo "hw.cpu.ncore=2" >> "$AVD_CONFIG"
+                echo ""
+                echo "Updated config:"
+                cat "$AVD_CONFIG"
+              else
+                echo "##vso[task.logissue type=warning]AVD config not found at: $AVD_CONFIG"
+                ls -la "$HOME/.android/avd/" 2>/dev/null || echo "AVD directory not found"
+              fi
+            displayName: 'Configure AVD for Software Emulation'
+
           # Start Android Emulator EARLY (using Start-Emulator.ps1 script)
           - pwsh: |
               Write-Host "=== Starting Android Emulator ==="
@@ -201,11 +223,11 @@ stages:
           - script: |
               echo "=== Booting Android Emulator ==="
               
-              # Use -accel off to disable hardware acceleration (HVF not available on Azure hosted ARM64 agents)
+              # Use -qemu -accel tcg to force TCG (software) emulation (HVF not available on Azure hosted ARM64 agents)
               # Use swiftshader for software rendering (more reliable on CI without GPU)
               # Start emulator in background with logging for debugging
               EMULATOR_LOG="/tmp/emulator-boot.log"
-              nohup $ANDROID_SDK_ROOT/emulator/emulator -avd Emulator_34 -no-window -no-snapshot -no-audio -no-boot-anim -accel off -gpu swiftshader_indirect > "$EMULATOR_LOG" 2>&1 &
+              nohup $ANDROID_SDK_ROOT/emulator/emulator -avd Emulator_34 -no-window -no-snapshot -no-audio -no-boot-anim -gpu swiftshader_indirect -qemu -accel tcg > "$EMULATOR_LOG" 2>&1 &
               EMULATOR_PID=$!
               echo "Emulator started with PID: $EMULATOR_PID"
               
