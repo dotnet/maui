@@ -4,30 +4,97 @@
              Title="Main Page"
              xmlns:local="clr-namespace:Maui.Controls.Sample">
 
+        <ScrollView>
+                <VerticalStackLayout Spacing="15"
+                                     Padding="30,20"
+                                     VerticalOptions="Start">
+                        <Label Text="Home Tab (Single Content Mode)"
+                               FontSize="20"
+                               FontAttributes="Bold"
+                               HorizontalOptions="Center"/>
 
-        <VerticalStackLayout Spacing="25"
-                             Padding="30,0"
-                             VerticalOptions="Center">
-                <Label Text="Welcome to .NET MAUI!"
-                       AutomationId="WelcomeLabel"
-                       VerticalOptions="Center"
-                       HorizontalOptions="Center"/>
-                <Button Text="Go to Navigation Page Sample"
-                        AutomationId="NavigateButton"
-                        Clicked="Button_Clicked"
-                        VerticalOptions="Center"
-                        HorizontalOptions="Center"/>
+                        <Label Text="This tab has only 1 ShellContent"
+                               FontSize="12"
+                               TextColor="Gray"
+                               HorizontalOptions="Center"/>
 
-                <Button Text="Toggle Flyout"
-                        AutomationId="ToggleFlyoutButton"
-                        Clicked="ToggleFlyoutButton_Clicked"
-                        VerticalOptions="Center"
-                        HorizontalOptions="Center"/>
+                        <BoxView HeightRequest="1"
+                                 Color="LightGray"
+                                 Margin="0,10"/>
 
-                <Button Text="Change Flyout Background"
-                        AutomationId="ChangeFlyoutBackgroundButton"
-                        Clicked="ChangeFlyoutBackgroundButton_Clicked"
-                        VerticalOptions="Center"
-                        HorizontalOptions="Center"/>
-        </VerticalStackLayout>
-</ContentPage>
+                        <Label Text="Navigation Tests"
+                               FontSize="16"
+                               FontAttributes="Bold"/>
+
+                        <Button Text="Push Page (Navigation.PushAsync)"
+                                AutomationId="NavigateButton"
+                                Clicked="Button_Clicked"
+                                HorizontalOptions="Fill"/>
+
+                        <BoxView HeightRequest="1"
+                                 Color="LightGray"
+                                 Margin="0,10"/>
+
+                        <Label Text="GoToAsync Tests (Single Content → Other Tabs)"
+                               FontSize="16"
+                               FontAttributes="Bold"/>
+
+                        <Button Text="GoToAsync → Settings Tab"
+                                AutomationId="GoToSettingsButton"
+                                Clicked="GoToSettings_Clicked"
+                                HorizontalOptions="Fill"/>
+
+                        <Button Text="GoToAsync → Multi-Tab/Content1"
+                                AutomationId="GoToMultiTab1Button"
+                                Clicked="GoToMultiTab1_Clicked"
+                                HorizontalOptions="Fill"/>
+
+                        <Button Text="GoToAsync → Multi-Tab/Content2"
+                                AutomationId="GoToMultiTab2Button"
+                                Clicked="GoToMultiTab2_Clicked"
+                                HorizontalOptions="Fill"/>
+
+                        <Button Text="GoToAsync → Tests/NavigationTest"
+                                AutomationId="GoToTestsButton"
+                                Clicked="GoToTests_Clicked"
+                                HorizontalOptions="Fill"/>
+
+                        <BoxView HeightRequest="1"
+                                 Color="LightGray"
+                                 Margin="0,10"/>
+
+                        <Label Text="Flyout Tests"
+                               FontSize="16"
+                               FontAttributes="Bold"/>
+
+                        <Button Text="Toggle Flyout"
+                                AutomationId="ToggleFlyoutButton"
+                                Clicked="ToggleFlyoutButton_Clicked"
+                                HorizontalOptions="Fill"/>
+
+                        <Button Text="Change Flyout Background"
+                                AutomationId="ChangeFlyoutBackgroundButton"
+                                Clicked="ChangeFlyoutBackgroundButton_Clicked"
+                                HorizontalOptions="Fill"/>
+
+                        <BoxView HeightRequest="1"
+                                 Color="LightGray"
+                                 Margin="0,10"/>
+
+                        <Label Text="TabbedPage Test (BottomNavigationManager)"
+                               FontSize="16"
+                               FontAttributes="Bold"/>
+
+                        <Label Text="Test the shared BottomNavigationManager between Shell and TabbedPage"
+                               FontSize="12"
+                               TextColor="Gray"/>
+
+                        <Button Text="🧪 Open TabbedPage Test"
+                                AutomationId="OpenTabbedPageTestButton"
+                                Clicked="OpenTabbedPageTest_Clicked"
+                                BackgroundColor="#6200EE"
+                                TextColor="White"
+                                HorizontalOptions="Fill"/>
+                </VerticalStackLayout>
+        </ScrollView>
+</ContentPage> 

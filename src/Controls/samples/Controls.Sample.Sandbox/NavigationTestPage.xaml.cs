@@ -42,7 +42,7 @@ namespace Maui.Controls.Sample
 
         private async void OnNavigateToSettingsClicked(object sender, EventArgs e)
         {
-            await Shell.Current.GoToAsync("//SettingsPage");
+            await Shell.Current.GoToAsync("//Settings");
         }
 
         private async void OnGoToMainAsyncClicked(object sender, EventArgs e)
@@ -52,7 +52,7 @@ namespace Maui.Controls.Sample
 
         private async void OnGoToSettingsAsyncClicked(object sender, EventArgs e)
         {
-            await Shell.Current.GoToAsync("//SettingsPage");
+            await Shell.Current.GoToAsync("//Settings");
         }
 
         private async void OnGoToWithQueryClicked(object sender, EventArgs e)
@@ -96,6 +96,7 @@ namespace Maui.Controls.Sample
                 {
                     new Label { Text = "Detail Page", FontSize = 24, FontAttributes = FontAttributes.Bold },
                     new Button { Text = "Go Back", Command = new Command(async () => await Navigation.PopAsync()) },
+                    new Button { Text = "Pop Modal", Command = new Command(async () => await Navigation.PopModalAsync()) },
                     new Button { Text = "Push Another", Command = new Command(async () => await Navigation.PushAsync(new DetailPage())) }
                 }
             };

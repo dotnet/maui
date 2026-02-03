@@ -1,16 +1,152 @@
 ﻿<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.SettingsPage"
-             Title="Settings Page">
-        <VerticalStackLayout>
-                <Label Text="Welcome to Settings page"
-                       HorizontalOptions="Center"
-                       VerticalOptions="Center"
-                       FontSize="18"/>
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             Title="Search Test">
 
-                <Button Text="Pop to Root"
-                        Clicked="Button_Clicked"
-                        HorizontalOptions="Center"
-                        VerticalOptions="Center"/>
-        </VerticalStackLayout>
+        <!-- Custom SearchHandler attached to this page -->
+        <Shell.SearchHandler>
+                <local:SandboxSearchHandler x:Name="searchHandler"
+                                            Placeholder="Search items..."
+                                            ShowsResults="True"
+                                            SearchBoxVisibility="Expanded"
+                                            BackgroundColor="#E3F2FD"
+                                            TextColor="#1565C0"
+                                            PlaceholderColor="#64B5F6"
+                                            CancelButtonColor="#1976D2">
+                        <local:SandboxSearchHandler.ItemTemplate>
+                                <DataTemplate>
+                                        <Grid Padding="10">
+                                                <Label Text="{Binding Name}"
+                                                       FontSize="16"
+                                                       VerticalOptions="Center"/>
+                                        </Grid>
+                                </DataTemplate>
+                        </local:SandboxSearchHandler.ItemTemplate>
+                </local:SandboxSearchHandler>
+        </Shell.SearchHandler>
+
+        <ScrollView>
+                <VerticalStackLayout Spacing="15"
+                                     Padding="30,20">
+                        <Label Text="SearchHandler Test"
+                               FontSize="20"
+                               FontAttributes="Bold"
+                               HorizontalOptions="Center"/>
+
+                        <Label Text="Tap the search icon in the toolbar to test SearchHandler"
+                               FontSize="12"
+                               TextColor="Gray"
+                               HorizontalOptions="Center"
+                               HorizontalTextAlignment="Center"/>
+
+                        <BoxView HeightRequest="1"
+                                 Color="LightGray"
+                                 Margin="0,10"/>
+
+                        <Label Text="SearchHandler Properties"
+                               FontSize="16"
+                               FontAttributes="Bold"/>
+
+                        <Grid ColumnDefinitions="Auto,*"
+                              RowDefinitions="Auto,Auto,Auto,Auto,Auto"
+                              ColumnSpacing="10"
+                              RowSpacing="5">
+                                <Label Text="SearchBoxVisibility:"
+                                       Grid.Row="0"
+                                       Grid.Column="0"/>
+                                <Picker x:Name="visibilityPicker"
+                                        Grid.Row="0"
+                                        Grid.Column="1"
+                                        SelectedIndexChanged="OnVisibilityChanged">
+                                        <Picker.ItemsSource>
+                                                <x:Array Type="{x:Type x:String}">
+                                                        <x:String>Collapsible</x:String>
+                                                        <x:String>Expanded</x:String>
+                                                        <x:String>Hidden</x:String>
+                                                </x:Array>
+                                        </Picker.ItemsSource>
+                                </Picker>
+
+                                <Label Text="ShowsResults:"
+                                       Grid.Row="1"
+                                       Grid.Column="0"/>
+                                <Switch x:Name="showsResultsSwitch"
+                                        Grid.Row="1"
+                                        Grid.Column="1"
+                                        IsToggled="True"
+                                        Toggled="OnShowsResultsToggled"/>
+
+                                <Label Text="IsSearchEnabled:"
+                                       Grid.Row="2"
+                                       Grid.Column="0"/>
+                                <Switch x:Name="isEnabledSwitch"
+                                        Grid.Row="2"
+                                        Grid.Column="1"
+                                        IsToggled="True"
+                                        Toggled="OnIsEnabledToggled"/>
+
+                                <Label Text="Current Query:"
+                                       Grid.Row="3"
+                                       Grid.Column="0"/>
+                                <Label x:Name="currentQueryLabel"
+                                       Grid.Row="3"
+                                       Grid.Column="1"
+                                       Text="(empty)"/>
+
+                                <Label Text="Current Colors:"
+                                       Grid.Row="4"
+                                       Grid.Column="0"/>
+                                <Label x:Name="currentColorsLabel"
+                                       Grid.Row="4"
+                                       Grid.Column="1"
+                                       Text="Blue theme"
+                                       TextColor="#1565C0"/>
+                        </Grid>
+
+                        <Button Text="🎨 Randomize SearchHandler Colors"
+                                Clicked="OnRandomizeColorsClicked"
+                                BackgroundColor="#7C4DFF"
+                                TextColor="White"
+                                HorizontalOptions="Fill"/>
+
+                        <BoxView HeightRequest="1"
+                                 Color="LightGray"
+                                 Margin="0,10"/>
+
+                        <Label Text="Search Results Log"
+                               FontSize="16"
+                               FontAttributes="Bold"/>
+
+                        <Border Stroke="LightGray"
+                                Padding="10">
+                                <ScrollView HeightRequest="150">
+                                        <Label x:Name="logLabel"
+                                               Text="Search events will appear here..."
+                                               FontSize="12"
+                                               TextColor="Gray"/>
+                                </ScrollView>
+                        </Border>
+
+                        <Button Text="Clear Log"
+                                Clicked="OnClearLogClicked"
+                                HorizontalOptions="Start"/>
+
+                        <BoxView HeightRequest="1"
+                                 Color="LightGray"
+                                 Margin="0,10"/>
+
+                        <Label Text="Navigation Tests"
+                               FontSize="16"
+                               FontAttributes="Bold"/>
+
+                        <Button Text="Pop to Root"
+                                Clicked="Button_Clicked"
+                                HorizontalOptions="Fill"/>
+
+                        <Button Text="Push Details Page"
+                                Clicked="OnPushDetailsClicked"
+                                HorizontalOptions="Fill"/>
+                </VerticalStackLayout>
+        </ScrollView>
 </ContentPage>
