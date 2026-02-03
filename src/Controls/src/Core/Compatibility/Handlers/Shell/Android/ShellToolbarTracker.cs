@@ -683,7 +683,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 				else if (SearchHandler.SearchBoxVisibility == SearchBoxVisibility.Expanded)
 				{
-					// Remove the placeholsder menu item, if it exists, added for collapsible mode.
+					// Remove the placeholder menu item, if it exists, added for collapsible mode.
 					if (menu.FindItem(_placeholderMenuItemId) is not null)
 					{
 						menu.RemoveItem(_placeholderMenuItemId);
