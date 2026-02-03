@@ -66,6 +66,7 @@ file class Issue33688SecondPage : ContentPage
 		// Use a ViewModel pattern with binding - this is the scenario from the issue
 		var viewModel = new Issue33688ViewModel();
 		BindingContext = viewModel;
+		Title = "Issue33688SecondPage";
 
 		// BackButtonBehavior with BOUND Command (key to reproduction)
 		var backButtonBehavior = new BackButtonBehavior();
