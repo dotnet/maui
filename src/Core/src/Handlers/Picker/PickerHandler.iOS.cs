@@ -43,6 +43,13 @@ namespace Microsoft.Maui.Handlers
 
 		void DisplayAlert(MauiPicker uITextField, int selectedIndex)
 		{
+			// Guard against multiple picker controllers being displayed simultaneously
+			if (_currentPickerController != null)
+			{
+				_currentPickerController.DismissViewController(true, null);
+				_currentPickerController = null;
+			}
+
 			var paddingTitle = 0;
 			if (!string.IsNullOrEmpty(VirtualView.Title))
 				paddingTitle += 25;
