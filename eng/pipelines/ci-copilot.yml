@@ -126,6 +126,7 @@ stages:
             env:
               ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
               JAVA_HOME: $(JAVA_HOME_17_X64)
+              QEMU_ACCEL: tcg
 
           # Install .NET and workloads via build.ps1
           - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
@@ -283,6 +284,7 @@ stages:
             env:
               ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
               JAVA_HOME: $(JAVA_HOME_17_X64)
+              QEMU_ACCEL: tcg
 
           # Cherry-pick PR changes to current branch
           - script: |
