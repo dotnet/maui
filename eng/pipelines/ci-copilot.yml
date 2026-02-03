@@ -227,6 +227,45 @@ stages:
               ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
               JAVA_HOME: $(JAVA_HOME_17_X64)
 
+          # Cherry-pick PR changes to current branch
+          - script: |
+              echo "=== Cherry-picking PR #${{ parameters.PRNumber }} changes ==="
+              
+              # Configure git
+              git config user.email "copilot@microsoft.com"
+              git config user.name "GitHub Copilot"
+              
+              # Fetch the PR
+              echo "Fetching PR #${{ parameters.PRNumber }}..."
+              git fetch origin pull/${{ parameters.PRNumber }}/head:pr-${{ parameters.PRNumber }}
+              
+              # Get the merge base between main and the PR
+              MERGE_BASE=$(git merge-base origin/main pr-${{ parameters.PRNumber }})
+              echo "Merge base: $MERGE_BASE"
+              
+              # Get list of commits in the PR (from merge base to PR head)
+              COMMITS=$(git rev-list --reverse $MERGE_BASE..pr-${{ parameters.PRNumber }})
+              COMMIT_COUNT=$(echo "$COMMITS" | wc -l | tr -d ' ')
+              echo "Found $COMMIT_COUNT commits to cherry-pick"
+              
+              # Cherry-pick each commit
+              for COMMIT in $COMMITS; do
+                echo "Cherry-picking commit: $COMMIT"
+                git cherry-pick --no-commit $COMMIT || {
+                  echo "##vso[task.logissue type=warning]Cherry-pick conflict for $COMMIT, attempting to continue..."
+                  git checkout --theirs . 2>/dev/null || true
+                  git add -A
+                }
+              done
+              
+              # Show what changed
+              echo "=== Files changed from PR ==="
+              git status --short
+              
+              echo "=== Cherry-pick complete ==="
+            displayName: 'Cherry-pick PR Changes'
+            continueOnError: false
+
           # Verify UI tests fail without fix (on Android emulator)
           - pwsh: |
               Write-Host "=== Verifying UI Tests Fail Without Fix ==="

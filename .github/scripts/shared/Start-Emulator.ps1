@@ -99,7 +99,29 @@ if ($Platform -eq "android") {
                 exit 1
             }
             
-            # Get list of available AVDs (if not already set from parameter)
+            # Get list of available AVDs
+            # Force array even with single result to avoid string indexing issues
+            $avdList = @(emulator -list-avds)
+            
+            if (-not $avdList -or $avdList.Count -eq 0) {
+                Write-Error "No Android emulators found. Please create an Android Virtual Device (AVD) using Android Studio."
+                Write-Info "To create an AVD:"
+                Write-Info "  1. Open Android Studio"
+                Write-Info "  2. Go to Tools > Device Manager"
+                Write-Info "  3. Click 'Create Device' and follow the wizard"
+                exit 1
+            }
+            
+            Write-Info "Available emulators: $($avdList -join ', ')"
+            
+            # Selection priority:
+            # 1. API 30 Nexus device
+            # 2. Any API 30 device
+            # 3. Any Nexus device
+            # 4. First available device
+            
+            # $selectedAvd may already be set if AVD name was provided
+            # Only run auto-selection if not already set
             if (-not $selectedAvd) {
                 $avdList = emulator -list-avds 2>$null
                 
