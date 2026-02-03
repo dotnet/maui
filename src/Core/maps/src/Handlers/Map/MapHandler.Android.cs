@@ -271,10 +271,17 @@ namespace Microsoft.Maui.Maps.Handlers
 		{
 			if (handler is MapHandler mapHandler)
 			{
-				mapHandler.PlatformView?.Post(() =>
+				if (mapHandler.Map != null)
+				{
+					mapHandler.PlatformView?.Post(() =>
+					{
+						mapHandler.SyncMapElements((IList)map.Elements);
+					});
+				}
+				else
 				{
 					mapHandler.SyncMapElements((IList)map.Elements);
-				});
+				}
 			}
 		}
 
@@ -481,9 +488,10 @@ namespace Microsoft.Maui.Maps.Handlers
 			{
 				for (int i = _polylines.Count - 1; i >= 0; i--)
 				{
-					if (!newElementIds.Contains(_polylines[i].Id))
+					var polyline = _polylines[i];
+					if (polyline.Id is not null && !newElementIds.Contains(polyline.Id))
 					{
-						_polylines[i].Remove();
+						polyline.Remove();
 						_polylines.RemoveAt(i);
 					}
 				}
@@ -495,9 +503,10 @@ namespace Microsoft.Maui.Maps.Handlers
 			{
 				for (int i = _polygons.Count - 1; i >= 0; i--)
 				{
-					if (!newElementIds.Contains(_polygons[i].Id))
+					var polygon = _polygons[i];
+					if (polygon.Id is not null && !newElementIds.Contains(polygon.Id))
 					{
-						_polygons[i].Remove();
+						polygon.Remove();
 						_polygons.RemoveAt(i);
 					}
 				}
@@ -509,9 +518,10 @@ namespace Microsoft.Maui.Maps.Handlers
 			{
 				for (int i = _circles.Count - 1; i >= 0; i--)
 				{
-					if (!newElementIds.Contains(_circles[i].Id))
+					var circle = _circles[i];
+					if (circle.Id is not null && !newElementIds.Contains(circle.Id))
 					{
-						_circles[i].Remove();
+						circle.Remove();
 						_circles.RemoveAt(i);
 					}
 				}
