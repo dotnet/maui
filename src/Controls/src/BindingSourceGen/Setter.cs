@@ -20,11 +20,15 @@ public sealed record Setter(string[] PatternMatchingExpressions, string Assignme
 			accessAccumulator = tmpVariableName;
 		}
 
-		foreach (var part in path)
+		// Convert to list once to allow indexed access and avoid repeated enumeration
+		var pathList = path.ToList();
+		
+		for (int i = 0; i < pathList.Count; i++)
 		{
+			var part = pathList[i];
 			var skipConditionalAccess = skipNextConditionalAccess;
 			skipNextConditionalAccess = false;
-			bool isLastPart = part == path.Last();
+			bool isLastPart = i == pathList.Count - 1;
 
 			if (part is Cast { TargetType: var targetType })
 			{
@@ -61,11 +65,9 @@ public sealed record Setter(string[] PatternMatchingExpressions, string Assignme
 				
 				if (innerIsValueType && !isLastPart)
 				{
-					var pathList = path.ToList();
-					int currentIndex = pathList.IndexOf(part);
-					bool nextPartIsLast = currentIndex >= 0 && currentIndex == pathList.Count - 2;
-					bool nextPartAddsPatternMatch = currentIndex + 1 < pathList.Count && 
-						(pathList[currentIndex + 1] is ConditionalAccess or Cast);
+					bool nextPartIsLast = i == pathList.Count - 2;
+					bool nextPartAddsPatternMatch = i + 1 < pathList.Count && 
+						(pathList[i + 1] is ConditionalAccess or Cast);
 					
 					if (nextPartIsLast && !nextPartAddsPatternMatch)
 					{
@@ -91,7 +93,7 @@ public sealed record Setter(string[] PatternMatchingExpressions, string Assignme
 
 		return new Setter(
 			patternMatchingExpressions.ToArray(),
-			AssignmentStatement: BuildAssignmentStatement(accessAccumulator, path.Any() ? path.Last() : null, assignedValueExpression));
+			AssignmentStatement: BuildAssignmentStatement(accessAccumulator, pathList.Count > 0 ? pathList[pathList.Count - 1] : null, assignedValueExpression));
 	}
 
 	public static string BuildAssignmentStatement(string accessAccumulator, IPathPart? lastPart, string assignedValueExpression = "value") =>
