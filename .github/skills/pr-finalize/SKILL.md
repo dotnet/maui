@@ -16,6 +16,22 @@ Ensures PR title and description accurately reflect the implementation, and perf
 
 ---
 
+## 🚨 CRITICAL: NEVER Approve or Request Changes
+
+**AI agents must NEVER use `--approve` or `--request-changes` flags.**
+
+| Action | Allowed? | Why |
+|--------|----------|-----|
+| `gh pr review --approve` | ❌ **NEVER** | Approval is a human decision |
+| `gh pr review --request-changes` | ❌ **NEVER** | Blocking PRs is a human decision |
+
+**Only humans can approve or block PRs.** The agent's role is to:
+1. Analyze and provide findings
+2. Post comments with recommendations
+3. Let humans make the final decision
+
+---
+
 ## Phase 1: Title & Description
 
 ### Core Principle: Preserve Quality
