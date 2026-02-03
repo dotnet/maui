@@ -544,14 +544,16 @@ namespace Microsoft.Maui.Controls
 			OnDestroying();
 
 			AlertManager.Unsubscribe();
-			Application?.RemoveWindow(this);
-			
+			// On Android, preserve window in collection to enable reuse when Activity is recreated
+#if !ANDROID
+			Application?.RemoveWindow(this);	
+#endif
+
 			var mauiContext = Handler?.MauiContext as MauiContext;
 			Handler?.DisconnectHandler();
 
+			// On Android, preserve window scope to enable reuse when Activity is recreated
 #if !ANDROID
-			// Desktop platforms dispose scope as windows are independently created and destroyed.
-			// Android skips disposal as windows are reused in single-Activity model.
 			mauiContext?.DisposeWindowScope();
 #endif
 		}
