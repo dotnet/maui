@@ -211,7 +211,7 @@ if ($Platform -eq "android") {
             # CRITICAL: Must use nohup to properly detach emulator process
             # This prevents STDIO stream inheritance issues in CI environments
             if ($IsWindows) {
-                Start-Process $emulatorBin -ArgumentList "-avd", $selectedAvd, "-no-snapshot-load", "-no-boot-anim", "-gpu", "swiftshader_indirect" -WindowStyle Hidden
+                Start-Process "emulator" -ArgumentList "-avd", $selectedAvd, "-no-window", "-no-snapshot", "-no-audio", "-no-boot-anim" -WindowStyle Hidden
             }
             else {
                 # macOS/Linux: Use nohup to fully detach the emulator process
@@ -233,132 +233,69 @@ if ($Platform -eq "android") {
                 }
                 
                 # Use nohup to fully detach the emulator process from the terminal
+                # Include -no-window for headless CI environments
                 # Redirect all output to /dev/null to prevent STDIO inheritance issues
-                $startScript = "nohup '$emulatorBin' -avd '$selectedAvd' -no-snapshot -no-audio -no-boot-anim > /dev/null 2>&1 &"
+                $startScript = "nohup '$emulatorBin' -avd '$selectedAvd' -no-window -no-snapshot -no-audio -no-boot-anim > /dev/null 2>&1 &"
                 bash -c $startScript
                 
                 Write-Info "Emulator started in background (fully detached with nohup)"
             }
             
-            # Wait for emulator to appear in adb devices
-            Write-Info "Waiting for emulator to start..."
-            $timeout = 600
+            # Use adb wait-for-device first (like the working bash script)
+            Write-Info "Waiting for emulator device to appear..."
+            adb wait-for-device
+            
+            # Wait for emulator to appear in adb devices with proper state
+            Write-Info "Waiting for emulator to be ready..."
+            $timeout = 120
             $elapsed = 0
             $emulatorStarted = $false
             
-            # Check if emulator process is running
-            if ($IsWindows) {
-                $emulatorProcs = (Get-Process -Name "emulator*","qemu*" -ErrorAction SilentlyContinue | 
-                    Where-Object { $_.CommandLine -match [regex]::Escape($selectedAvd) }).Id -join "`n"
-            } else {
-                $emulatorProcs = bash -c "pgrep -f 'qemu.*$selectedAvd' || pgrep -f 'emulator.*$selectedAvd' || true" 2>&1
-            }
-            if ([string]::IsNullOrWhiteSpace($emulatorProcs)) {
-                Write-Error "Emulator process did not start. Checking log..."
-                if (Test-Path $emulatorLog) {
-                    Get-Content $emulatorLog | Select-Object -Last 50 | ForEach-Object { Write-Info "  $_" }
-                }
-                exit 1
-            }
-            Write-Info "Emulator process started (PIDs: $emulatorProcs)"
-            
-            # Wait for device to appear with timeout
-            # Timeout of 120s (2 min) - if the emulator hasn't registered an ADB device by then, it's not going to
-            Write-Info "Waiting for emulator device to appear..."
-            $deviceTimeout = 120
-            $deviceWaited = 0
-            
-            while ($deviceWaited -lt $deviceTimeout) {
-                # Match any emulator device line
-                $devices = adb devices | Select-String "^emulator-\d+\s+device"
+            while ($elapsed -lt $timeout) {
+                $devices = adb devices | Select-String "emulator.*device$"
                 if ($devices.Count -gt 0) {
                     $DeviceUdid = ($devices[0].Line -split '\s+')[0]
                     Write-Info "Emulator detected: $DeviceUdid"
                     break
                 }
                 
-                # Check for offline state
-                $offlineDevices = adb devices | Select-String "^emulator-\d+\s+offline"
-                if ($offlineDevices.Count -gt 0) {
-                    Write-Info "Device found but offline, waiting..."
-                }
+                Start-Sleep -Seconds 2
+                $elapsed += 2
                 
-                Start-Sleep -Seconds 5
-                $deviceWaited += 5
-                
-                if ($deviceWaited % 30 -eq 0) {
-                    Write-Info "Still waiting... ($deviceWaited seconds elapsed)"
-                    # Show emulator log tail if taking too long
-                    if ((Test-Path $emulatorLog)) {
-                        Write-Info "Emulator log (last 5 lines):"
-                        Get-Content $emulatorLog | Select-Object -Last 5 | ForEach-Object { Write-Info "  $_" }
-                    }
+                if ($elapsed % 10 -eq 0) {
+                    Write-Info "Still waiting... ($elapsed seconds elapsed)"
                 }
             }
             
-            if (-not $DeviceUdid) {
-                Write-Error "Emulator failed to start within $deviceTimeout seconds. Please try starting it manually."
-                Write-Info "Current adb devices:"
+            if (-not $emulatorStarted) {
+                Write-Error "Emulator failed to start within $timeout seconds. Please try starting it manually."
                 adb devices -l
-                if (Test-Path $emulatorLog) {
-                    Write-Info "Emulator log (last 30 lines):"
-                    Get-Content $emulatorLog | Select-Object -Last 30 | ForEach-Object { Write-Info "  $_" }
-                }
                 exit 1
             }
             
-            # Wait for boot to complete
+            # Wait for boot to complete (poll sys.boot_completed like bash script)
             Write-Info "Waiting for emulator to finish booting..."
             $bootTimeout = 600
             $bootElapsed = 0
             
             while ($bootElapsed -lt $bootTimeout) {
-                $bootStatus = adb -s $DeviceUdid shell getprop sys.boot_completed 2>$null
+                $bootStatus = adb shell getprop sys.boot_completed 2>$null
                 if ($bootStatus -match "1") {
                     Write-Success "Emulator fully booted: $DeviceUdid"
                     break
                 }
                 
-                Start-Sleep -Seconds 5
-                $bootElapsed += 5
+                Start-Sleep -Seconds 2
+                $bootElapsed += 2
                 
-                if ($bootElapsed % 30 -eq 0) {
-                    Write-Info "Still booting... ($bootElapsed seconds elapsed)"
+                if ($bootElapsed % 10 -eq 0) {
+                    Write-Info "Waiting for boot... ($bootElapsed/$bootTimeout seconds)"
                 }
             }
             
-            if ($bootElapsed -ge $bootTimeout) {
+            if (-not $bootCompleted) {
                 Write-Error "Emulator failed to complete boot within $bootTimeout seconds."
-                Write-Info "You can check status with: adb -s $DeviceUdid shell getprop sys.boot_completed"
-                if (Test-Path $emulatorLog) {
-                    Write-Info "Emulator log (last 30 lines):"
-                    Get-Content $emulatorLog | Select-Object -Last 30 | ForEach-Object { Write-Info "  $_" }
-                }
-                exit 1
-            }
-            
-            # Wait for package manager service to be available (critical for app installation)
-            Write-Info "Waiting for package manager service..."
-            $pmTimeout = 120
-            $pmWaited = 0
-            
-            while ($pmWaited -lt $pmTimeout) {
-                $pmOutput = adb -s $DeviceUdid shell pm list packages 2>$null
-                if ($pmOutput -match "package:") {
-                    Write-Info "Package manager service is ready"
-                    break
-                }
-                Start-Sleep -Seconds 3
-                $pmWaited += 3
-                if ($pmWaited % 15 -eq 0) {
-                    Write-Info "Waiting for package manager... ($pmWaited seconds elapsed)"
-                }
-            }
-            
-            if ($pmWaited -ge $pmTimeout) {
-                Write-Error "Package manager service did not start within $pmTimeout seconds."
-                Write-Info "Checking services:"
-                adb -s $DeviceUdid shell service list 2>$null | Select-Object -First 20 | ForEach-Object { Write-Info "  $_" }
+                adb devices -l
                 exit 1
             }
         }
