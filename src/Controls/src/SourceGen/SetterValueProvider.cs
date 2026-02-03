@@ -54,6 +54,10 @@ internal class SetterValueProvider : IKnownMarkupValueProvider
 		IFieldSymbol? bpRef = bpNode.GetBindableProperty(context);
 		if (!TryGetBindablePropertyNameAndType(bpRef, bpNode, context, out var bpName, out var bpType))
 		{
+			// Report diagnostic when bindable property cannot be resolved
+			var propertyText = bpNode.Value as string ?? string.Empty;
+			var location = LocationHelpers.LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)bpNode, propertyText);
+			context.ReportDiagnostic(Diagnostic.Create(Descriptors.MemberResolution, location, propertyText));
 			value = string.Empty;
 			return false;
 		}
