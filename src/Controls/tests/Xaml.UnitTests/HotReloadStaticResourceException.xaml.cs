@@ -56,5 +56,29 @@ public partial class HotReloadStaticResourceException : ContentPage
 		[Fact(Skip = "This test runs only in debug")]
 		public void MissingResourceExceptionAreHandled() { }
 #endif
+
+		[Theory]
+		[InlineData(XamlInflator.Runtime)]
+		[InlineData(XamlInflator.SourceGen)]
+		internal void MissingResourceThrowsEvenWithExceptionHandler(XamlInflator inflator)
+		{
+			// Issue #23903: StaticResourceExtension should always throw when resource is not found,
+			// regardless of whether an exception handler is present. This ensures consistent behavior
+			// across debug/release and prevents crashes when relaunching apps.
+			bool handlerCalled = false;
+			Controls.Internals.ResourceLoader.ExceptionHandler2 = (ex) =>
+			{
+				handlerCalled = true;
+			};
+
+			// Exception should be thrown even though handler is present
+			var exception = Assert.Throws<XamlParseException>(() => new HotReloadStaticResourceException(inflator));
+
+			// Verify handler was called (for logging purposes)
+			Assert.True(handlerCalled, "Exception handler should be called before throwing");
+
+			// Verify the exception contains the expected message
+			Assert.Contains("StaticResource not found for key", exception.Message, System.StringComparison.Ordinal);
+		}
 	}
 }
