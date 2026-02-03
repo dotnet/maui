@@ -19,7 +19,7 @@ parameters:
     type: object
     default:
       name: Azure Pipelines
-      vmImage: macOS-15-arm64
+      vmImage: macOS-15
 
 variables:
   - template: /eng/pipelines/common/variables.yml@self
@@ -126,7 +126,6 @@ stages:
             env:
               ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
               JAVA_HOME: $(JAVA_HOME_17_X64)
-              QEMU_ACCEL: tcg
 
           # Install .NET and workloads via build.ps1
           - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
@@ -224,11 +223,11 @@ stages:
           - script: |
               echo "=== Booting Android Emulator ==="
               
-              # Use -qemu -accel tcg to force TCG (software) emulation (HVF not available on Azure hosted ARM64 agents)
+              # Use swiftshader for software graphics rendering (HVF not available on Azure hosted ARM64 agents)
               # Use swiftshader for software rendering (more reliable on CI without GPU)
               # Start emulator in background with logging for debugging
               EMULATOR_LOG="/tmp/emulator-boot.log"
-              nohup $ANDROID_SDK_ROOT/emulator/emulator -avd Emulator_34 -no-window -no-snapshot -no-audio -no-boot-anim -gpu swiftshader_indirect -qemu -accel tcg > "$EMULATOR_LOG" 2>&1 &
+              nohup $ANDROID_SDK_ROOT/emulator/emulator -avd Emulator_34 -no-window -no-snapshot -no-audio -no-boot-anim -gpu swiftshader_indirect > "$EMULATOR_LOG" 2>&1 &
               EMULATOR_PID=$!
               echo "Emulator started with PID: $EMULATOR_PID"
               
@@ -284,7 +283,6 @@ stages:
             env:
               ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
               JAVA_HOME: $(JAVA_HOME_17_X64)
-              QEMU_ACCEL: tcg
 
           # Cherry-pick PR changes to current branch
           - script: |
