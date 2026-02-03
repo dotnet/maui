@@ -100,7 +100,7 @@ stages:
               
               Write-Host "=== Android Emulator Started Successfully ==="
             displayName: 'Start Android Emulator'
-            timeoutInMinutes: 15
+            timeoutInMinutes: 10
             env:
               ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
               JAVA_HOME: $(JAVA_HOME_17_X64)
@@ -201,14 +201,39 @@ stages:
           - script: |
               echo "=== Booting Android Emulator ==="
               
-              # Start emulator in background, detached from terminal
-              nohup $ANDROID_SDK_ROOT/emulator/emulator -avd Emulator_34 -no-window -no-snapshot -no-audio -no-boot-anim > /dev/null 2>&1 &
+              # Use swiftshader for software rendering (more reliable on CI without GPU)
+              # Start emulator in background with logging for debugging
+              EMULATOR_LOG="/tmp/emulator-boot.log"
+              nohup $ANDROID_SDK_ROOT/emulator/emulator -avd Emulator_34 -no-window -no-snapshot -no-audio -no-boot-anim -gpu swiftshader_indirect > "$EMULATOR_LOG" 2>&1 &
               EMULATOR_PID=$!
               echo "Emulator started with PID: $EMULATOR_PID"
               
-              # Wait for device to appear
+              # Give emulator a moment to start and verify process is running
+              sleep 3
+              if ! pgrep -f 'qemu-system' > /dev/null; then
+                echo "##vso[task.logissue type=error]Emulator process did not start"
+                echo "=== Emulator Log ==="
+                cat "$EMULATOR_LOG" 2>/dev/null || echo "No log available"
+                exit 1
+              fi
+              echo "Emulator process verified running"
+              
+              # Wait for device to appear with timeout (don't use adb wait-for-device - can hang forever)
               echo "Waiting for emulator device..."
-              adb wait-for-device
+              device_timeout=60
+              device_waited=0
+              while ! adb devices | grep -q "emulator.*device"; do
+                sleep 2
+                device_waited=$((device_waited + 2))
+                if [ $device_waited -ge $device_timeout ]; then
+                  echo "##vso[task.logissue type=error]Emulator device did not appear in time"
+                  echo "=== Emulator Log (last 50 lines) ==="
+                  tail -50 "$EMULATOR_LOG" 2>/dev/null || echo "No log available"
+                  adb devices -l
+                  exit 1
+                fi
+              done
+              echo "Emulator device detected"
               
               # Wait for boot_completed
               echo "Waiting for emulator to finish booting..."
@@ -220,6 +245,8 @@ stages:
                 echo "Waiting for boot... ($waited/$timeout seconds)"
                 if [ $waited -ge $timeout ]; then
                   echo "##vso[task.logissue type=error]Emulator did not boot in time"
+                  echo "=== Emulator Log (last 50 lines) ==="
+                  tail -50 "$EMULATOR_LOG" 2>/dev/null || echo "No log available"
                   adb devices -l
                   exit 1
                 fi
@@ -229,7 +256,7 @@ stages:
               adb devices -l
             displayName: 'Boot Android Emulator'
             continueOnError: true
-            timeoutInMinutes: 15
+            timeoutInMinutes: 10
             env:
               ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
               JAVA_HOME: $(JAVA_HOME_17_X64)
