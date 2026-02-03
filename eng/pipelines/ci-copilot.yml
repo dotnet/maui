@@ -55,8 +55,8 @@ stages:
             parameters:
               skipXcode: false
               skipProvisionator: false
-              skipAndroidCommonSdks: false
-              skipAndroidPlatformApis: false
+              skipAndroidCommonSdks: true
+              skipAndroidPlatformApis: true
               skipJdk: false
               skipSimulatorSetup: false
               skipCertificates: true
