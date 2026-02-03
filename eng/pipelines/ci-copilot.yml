@@ -208,7 +208,16 @@ stages:
 
           - script: |
               echo "Installing Appium and UiAutomator2 driver..."
+              
+              # Get npm global bin directory and add to PATH
+              NPM_BIN=$(npm config get prefix)/bin
+              echo "NPM global bin directory: $NPM_BIN"
+              export PATH="$NPM_BIN:$PATH"
+              
+              # Install Appium globally
               npm install -g appium
+              
+              # Install UiAutomator2 driver for Android
               appium driver install uiautomator2
               
               # Verify installation
@@ -217,9 +226,15 @@ stages:
                 exit 1
               fi
               
+              APPIUM_PATH=$(which appium)
+              echo "Appium path: $APPIUM_PATH"
               echo "Appium version: $(appium --version)"
               echo "Appium drivers installed:"
               appium driver list --installed
+              
+              # Export PATH for subsequent steps (Azure DevOps specific)
+              echo "##vso[task.prependpath]$NPM_BIN"
+              
               echo "Appium installed successfully"
             displayName: 'Install Appium'
 

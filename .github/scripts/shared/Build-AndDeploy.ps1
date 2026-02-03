@@ -85,11 +85,46 @@ if ($Platform -eq "android") {
     Write-Info "Build command: dotnet build $($buildArgs -join ' ')"
     
     $buildStartTime = Get-Date
+    $maxRetries = 2
+    $retryCount = 0
+    $buildExitCode = 1
     
-    # Build and deploy in one step (Run target handles both)
-    & dotnet build @buildArgs
+    while ($retryCount -lt $maxRetries -and $buildExitCode -ne 0) {
+        if ($retryCount -gt 0) {
+            Write-Info "Retry attempt $retryCount of $($maxRetries - 1)..."
+            Write-Info "Restarting ADB server before retry..."
+            adb kill-server 2>$null
+            Start-Sleep -Seconds 2
+            adb start-server 2>$null
+            Start-Sleep -Seconds 3
+            
+            # Verify device is still connected
+            $deviceCheck = adb -s $DeviceUdid shell echo "ping" 2>&1
+            if ($deviceCheck -notmatch "ping") {
+                Write-Error "Device $DeviceUdid not responding after ADB restart"
+                exit 1
+            }
+            Write-Success "ADB connection restored, retrying build..."
+        }
+        
+        # Build and deploy in one step (Run target handles both)
+        $buildOutput = & dotnet build @buildArgs 2>&1
+        $buildOutput | ForEach-Object { Write-Host $_ }
+        
+        $buildExitCode = $LASTEXITCODE
+        $retryCount++
+        
+        # Check for broken pipe error - retry if found
+        if ($buildExitCode -ne 0) {
+            $brokenPipe = $buildOutput | Select-String -Pattern "Broken pipe|ADB0010|InstallFailedException" -Quiet
+            if (-not $brokenPipe) {
+                # Not a broken pipe error, don't retry
+                break
+            }
+            Write-Warning "Detected ADB broken pipe error, will attempt recovery..."
+        }
+    }
     
-    $buildExitCode = $LASTEXITCODE
     $buildDuration = (Get-Date) - $buildStartTime
     
     if ($buildExitCode -ne 0) {

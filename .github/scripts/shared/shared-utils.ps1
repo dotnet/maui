@@ -24,7 +24,7 @@ function Write-Success {
     Write-Host "✅ $Message" -ForegroundColor Green
 }
 
-function Write-Warn {
+function Write-Warning {
     param([string]$Message)
     Write-Host "⚠️  $Message" -ForegroundColor Yellow
 }
