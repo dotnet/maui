@@ -71,7 +71,6 @@ parameters:
     vmImage: $(iosDeviceTestsVmImage)
     demands:
     - macOS.Name -equals Sequoia
-    - Agent.OSVersion -equals 15.6
 
 - name: catalystPool
   type: object
@@ -80,7 +79,6 @@ parameters:
     vmImage: $(iosDeviceTestsVmImage)
     demands:
     - macOS.Name -equals Sequoia
-    - Agent.OSVersion -equals 15.6
 
 - name: windowsPool
   type: object

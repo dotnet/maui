@@ -202,16 +202,16 @@ The repository includes specialized custom agents and reusable skills for specif
    - **Trigger phrases**: "review PR #XXXXX", "work on PR #XXXXX", "fix issue #XXXXX", "continue PR #XXXXX"
    - **Do NOT use for**: Just running tests manually → Use `sandbox-agent`
 
-2. **uitest-coding-agent** - Specialized agent for writing new UI tests for .NET MAUI with proper syntax, style, and conventions
-   - **Use when**: Creating new UI tests or updating existing ones
-   - **Capabilities**: UI test authoring, Appium WebDriver usage, NUnit test patterns
-   - **Trigger phrases**: "write UI test for #XXXXX", "create UI tests", "add test coverage"
+2. **write-tests-agent** - Agent for writing tests. Determines test type (UI vs XAML) and invokes the appropriate skill (`write-ui-tests`, `write-xaml-tests`)
+   - **Use when**: Creating new tests for issues or PRs
+   - **Capabilities**: Test type determination (UI and XAML), skill invocation, test verification
+   - **Trigger phrases**: "write tests for #XXXXX", "create tests", "add test coverage"
 
 3. **sandbox-agent** - Specialized agent for working with the Sandbox app for testing, validation, and experimentation
    - **Use when**: User wants to manually test PR functionality or reproduce issues
    - **Capabilities**: Sandbox app setup, Appium-based manual testing, PR functional validation
    - **Trigger phrases**: "test this PR", "validate PR #XXXXX in Sandbox", "reproduce issue #XXXXX", "try out in Sandbox"
-   - **Do NOT use for**: Code review (use pr agent), writing automated tests (use uitest-coding-agent)
+   - **Do NOT use for**: Code review (use pr agent), writing automated tests (use write-tests-agent)
 
 4. **learn-from-pr** - Extracts lessons from PRs and applies improvements to the repository
    - **Use when**: After complex PR, want to improve instruction files/skills based on lessons learned
@@ -250,24 +250,35 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
    - **Output**: Prioritized recommendations for instruction files, skills, code comments
    - **Note**: For applying changes automatically, use the learn-from-pr agent instead
 
-5. **write-tests** (`.github/skills/write-tests/SKILL.md`)
+5. **write-ui-tests** (`.github/skills/write-ui-tests/SKILL.md`)
    - **Purpose**: Creates UI tests for GitHub issues and verifies they reproduce the bug
-   - **Trigger phrases**: "write tests for #XXXXX", "create test for issue", "add UI test coverage"
+   - **Trigger phrases**: "write UI tests for #XXXXX", "create UI test for issue", "add UI test coverage"
    - **Output**: Test files that fail without fix, pass with fix
 
-6. **verify-tests-fail-without-fix** (`.github/skills/verify-tests-fail-without-fix/SKILL.md`)
+6. **write-xaml-tests** (`.github/skills/write-xaml-tests/SKILL.md`)
+   - **Purpose**: Creates XAML unit tests for XAML parsing, compilation, and source generation
+   - **Trigger phrases**: "write XAML tests for #XXXXX", "test XamlC behavior", "reproduce XAML parsing bug"
+   - **Output**: Test files for Controls.Xaml.UnitTests
+
+7. **verify-tests-fail-without-fix** (`.github/skills/verify-tests-fail-without-fix/SKILL.md`)
    - **Purpose**: Verifies UI tests catch the bug before fix and pass with fix
    - **Two modes**: Verify failure only (test creation) or full verification (test + fix)
    - **Used by**: After creating tests, before considering PR complete
 
-7. **pr-build-status** (`.github/skills/pr-build-status/SKILL.md`)
+8. **pr-build-status** (`.github/skills/pr-build-status/SKILL.md`)
    - **Purpose**: Retrieves Azure DevOps build information for PRs (build IDs, stage status, failed jobs)
    - **Trigger phrases**: "check build for PR #XXXXX", "why did PR build fail", "get build status"
    - **Used by**: When investigating CI failures
 
+8. **run-integration-tests** (`.github/skills/run-integration-tests/SKILL.md`)
+   - **Purpose**: Build, pack, and run .NET MAUI integration tests locally
+   - **Trigger phrases**: "run integration tests", "test templates locally", "run macOSTemplates tests", "run RunOniOS tests"
+   - **Categories**: Build, WindowsTemplates, macOSTemplates, Blazor, MultiProject, Samples, AOT, RunOnAndroid, RunOniOS
+   - **Note**: **ALWAYS use this skill** instead of manual `dotnet test` commands for integration tests
+
 #### Internal Skills (Used by Agents)
 
-8. **try-fix** (`.github/skills/try-fix/SKILL.md`)
+9. **try-fix** (`.github/skills/try-fix/SKILL.md`)
    - **Purpose**: Proposes ONE independent fix approach, applies it, tests, records result with failure analysis, then reverts
    - **Used by**: pr agent Phase 3 (Fix phase) - rarely invoked directly by users
    - **Behavior**: Reads prior attempts to learn from failures. Max 5 attempts per session.
@@ -281,7 +292,7 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
 - User: "Review PR #12345" → Immediately invoke **pr** agent
 - User: "Test this PR" → Immediately invoke **sandbox-agent**
 - User: "Fix issue #67890" (no PR exists) → Suggest using `/delegate` command
-- User: "Write UI test for CollectionView" → Immediately invoke **uitest-coding-agent**
+- User: "Write tests for issue #12345" → Immediately invoke **write-tests-agent**
 
 **When NOT to delegate**:
 - User asks "What does PR #12345 do?" → Informational query, handle yourself
