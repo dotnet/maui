@@ -194,6 +194,39 @@ stages:
           #     ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
           #     JAVA_HOME: $(JAVA_HOME_17_X64)
 
+          # Start Android Emulator (verbose logging)
+          - pwsh: |
+              Write-Host "=== Starting Android Emulator ==="
+              Write-Host "Working directory: $(Get-Location)"
+              
+              $scriptPath = ".github/scripts/shared/Start-Emulator.ps1"
+              if (-not (Test-Path $scriptPath)) {
+                Write-Host "##vso[task.logissue type=error]Script not found: $scriptPath"
+                exit 1
+              }
+              
+              $ErrorActionPreference = "Continue"
+              try {
+                & "./$scriptPath" -Platform android -Verbose 2>&1 | ForEach-Object { Write-Host $_ }
+                $exitCode = $LASTEXITCODE
+              } catch {
+                Write-Host "##vso[task.logissue type=error]Exception: $_"
+                Write-Host $_.ScriptStackTrace
+                $exitCode = 1
+              }
+              
+              Write-Host "Start-Emulator completed with exit code: $exitCode"
+              if ($exitCode -ne 0) {
+                Write-Host "##vso[task.logissue type=warning]Start-Emulator failed with code $exitCode"
+              }
+              exit $exitCode
+            displayName: 'Start Android Emulator (Verbose)'
+            continueOnError: true
+            timeoutInMinutes: 10
+            env:
+              ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
+              JAVA_HOME: $(JAVA_HOME_17_X64)
+
           # Verify UI tests fail without fix (on Android emulator)
           - pwsh: |
               Write-Host "=== Verifying UI Tests Fail Without Fix ==="
@@ -227,39 +260,6 @@ stages:
             displayName: 'Verify UI Tests Fail Without Fix'
             continueOnError: true
             timeoutInMinutes: 30
-            env:
-              ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
-              JAVA_HOME: $(JAVA_HOME_17_X64)
-
-          # Start Android Emulator (verbose logging)
-          - pwsh: |
-              Write-Host "=== Starting Android Emulator ==="
-              Write-Host "Working directory: $(Get-Location)"
-              
-              $scriptPath = ".github/scripts/shared/Start-Emulator.ps1"
-              if (-not (Test-Path $scriptPath)) {
-                Write-Host "##vso[task.logissue type=error]Script not found: $scriptPath"
-                exit 1
-              }
-              
-              $ErrorActionPreference = "Continue"
-              try {
-                & "./$scriptPath" -Platform android -Verbose 2>&1 | ForEach-Object { Write-Host $_ }
-                $exitCode = $LASTEXITCODE
-              } catch {
-                Write-Host "##vso[task.logissue type=error]Exception: $_"
-                Write-Host $_.ScriptStackTrace
-                $exitCode = 1
-              }
-              
-              Write-Host "Start-Emulator completed with exit code: $exitCode"
-              if ($exitCode -ne 0) {
-                Write-Host "##vso[task.logissue type=warning]Start-Emulator failed with code $exitCode"
-              }
-              exit $exitCode
-            displayName: 'Start Android Emulator (Verbose)'
-            continueOnError: true
-            timeoutInMinutes: 10
             env:
               ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
               JAVA_HOME: $(JAVA_HOME_17_X64)

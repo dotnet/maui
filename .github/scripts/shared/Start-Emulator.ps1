@@ -218,8 +218,11 @@ if ($Platform -eq "android") {
                 Write-Info "Emulator started in background (fully detached with nohup)"
             }
             
-            # Give the emulator process time to start
-            Start-Sleep -Seconds 5
+            # Wait for emulator to appear in adb devices
+            Write-Info "Waiting for emulator to start..."
+            $timeout = 600
+            $elapsed = 0
+            $emulatorStarted = $false
             
             # Check if emulator process is running
             if ($IsWindows) {
