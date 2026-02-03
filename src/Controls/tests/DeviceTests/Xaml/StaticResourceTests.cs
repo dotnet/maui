@@ -7,13 +7,8 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests;
 
 [Category(TestCategory.Xaml)]
-public class StaticResourceTests : IDisposable
+public class StaticResourceTests
 {
-    public void Dispose()
-    {
-        Controls.Internals.ResourceLoader.ExceptionHandler2 = null;
-    }
-
     [Fact("Issue #23903: Missing ControlTemplate with exception handler should throw")]
     [RequiresUnreferencedCode("XAML parsing may require unreferenced code")]
     public void MissingControlTemplate_WithExceptionHandler_ShouldThrow()
