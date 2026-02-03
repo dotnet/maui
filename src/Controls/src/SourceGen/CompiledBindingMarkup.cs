@@ -273,7 +273,12 @@ internal struct CompiledBindingMarkup
 		var bindingPathParts = new List<IPathPart>();
 
 		var previousPartType = sourceType;
-		var previousPartIsNullable = sourceType.IsTypeNullable(enabledNullable: true);
+		// Track if the previous part is a reference type.
+		// For XAML bindings, we need to add null checks for intermediate reference type properties
+		// to prevent NullReferenceException when they are null at runtime.
+		// We don't wrap the first property access (from source) because the binding infrastructure
+		// already handles null source. We only wrap intermediate property accesses.
+		var previousPartIsReferenceType = false; // Start as false, first part doesn't need wrap
 
 		foreach (var part in parts)
 		{
@@ -328,7 +333,7 @@ internal struct CompiledBindingMarkup
 				isNullable |= memberIsNullable;
 
 				IPathPart memberAccess = new MemberAccess(p, currentPropertyType.IsValueType);
-				if (previousPartIsNullable)
+				if (previousPartIsReferenceType)
 				{
 					memberAccess = new ConditionalAccess(memberAccess);
 				}
@@ -345,7 +350,7 @@ internal struct CompiledBindingMarkup
 					AcceptsNullValue: memberIsNullable);
 
 				previousPartType = currentPropertyType;
-				previousPartIsNullable = memberIsNullable;
+				previousPartIsReferenceType = !currentPropertyType.IsValueType;
 			}
 
 			if (indexArg != null)
@@ -363,7 +368,7 @@ internal struct CompiledBindingMarkup
 					index = indexArgInt;
 
 					IPathPart indexAccess = new IndexAccess("", index, arrayType.ElementType.IsValueType);
-					if (previousPartIsNullable)
+					if (previousPartIsReferenceType)
 					{
 						indexAccess = new ConditionalAccess(indexAccess);
 					}
@@ -457,7 +462,7 @@ internal struct CompiledBindingMarkup
 						// PropertyChanged events use (e.g., "CustomName[3]" not "this[][3]")
 						var actualIndexerName = indexer.MetadataName;
 						IPathPart indexAccess = new IndexAccess(actualIndexerName, index, indexer.Type.IsValueType);
-						if (previousPartIsNullable)
+						if (previousPartIsReferenceType)
 						{
 							indexAccess = new ConditionalAccess(indexAccess);
 						}

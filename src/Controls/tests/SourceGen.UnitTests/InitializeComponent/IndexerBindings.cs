@@ -75,7 +75,9 @@ public class IndexedModel
 		Assert.DoesNotContain("\"Item[3]\"", generated, StringComparison.Ordinal);
 
 		// Verify the getter and setter use the indexer correctly
-		Assert.Contains("source.Model[3]", generated, StringComparison.Ordinal);
+		// The indexer access is wrapped in conditional access (Model?[3]) because Model is a reference type
+		// that could be null at runtime
+		Assert.Contains("source.Model?[3]", generated, StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -141,7 +143,8 @@ public class IndexedModel
 		Assert.Contains("\"Item[2]\"", generated, StringComparison.Ordinal);
 
 		// Verify the getter and setter use the indexer correctly
-		Assert.Contains("source.Model[2]", generated, StringComparison.Ordinal);
+		// The indexer access is wrapped in conditional access because Model is a reference type
+		Assert.Contains("source.Model?[2]", generated, StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -195,8 +198,8 @@ public class TestViewModel
 		// Verify the generated TypedBinding uses string, not object (from typed List<string> indexer)
 		Assert.Contains("TypedBinding<global::Test.TestViewModel, string>", generated, StringComparison.Ordinal);
 
-		// Verify the getter uses the indexer
-		Assert.Contains("source.Items[0]", generated, StringComparison.Ordinal);
+		// Verify the getter uses the indexer (with conditional access since Items is a reference type)
+		Assert.Contains("source.Items?[0]", generated, StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -250,8 +253,8 @@ public class TestViewModel
 		// Verify the generated TypedBinding uses int (the value type of Dictionary<string, int>)
 		Assert.Contains("TypedBinding<global::Test.TestViewModel, int>", generated, StringComparison.Ordinal);
 
-		// Verify the getter uses the indexer with string key
-		Assert.Contains("source.Data[\"key1\"]", generated, StringComparison.Ordinal);
+		// Verify the getter uses the indexer with string key (with conditional access since Data is a reference type)
+		Assert.Contains("source.Data?[\"key1\"]", generated, StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -304,8 +307,8 @@ public class TestViewModel
 		// Verify the generated TypedBinding uses string (element type of string[])
 		Assert.Contains("TypedBinding<global::Test.TestViewModel, string>", generated, StringComparison.Ordinal);
 
-		// Verify the getter uses array indexer
-		Assert.Contains("source.Names[1]", generated, StringComparison.Ordinal);
+		// Verify the getter uses array indexer (with conditional access since Names is a reference type)
+		Assert.Contains("source.Names?[1]", generated, StringComparison.Ordinal);
 
 		// For arrays, the handler should use empty string for indexer name (no property to listen to on the array itself)
 		// The array itself can't notify about element changes - only the containing property can
@@ -374,7 +377,8 @@ public class Item
 		Assert.Contains("TypedBinding<global::Test.TestViewModel, string>", generated, StringComparison.Ordinal);
 
 		// Verify the getter navigates through the path correctly
-		Assert.Contains("source.Model.Items[0].Name", generated, StringComparison.Ordinal);
+		// All intermediate reference type accesses use conditional access for null safety
+		Assert.Contains("source.Model?.Items?[0]?.Name", generated, StringComparison.Ordinal);
 
 		// Verify handlers for each part of the path
 		Assert.Contains("\"Model\"", generated, StringComparison.Ordinal);
@@ -432,8 +436,9 @@ public class TestViewModel
 		Assert.Empty(result.Diagnostics.Where(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error));
 		Assert.NotNull(generated);
 
-		// Verify setter is generated for two-way binding
-		Assert.Contains("source.Values[0] = value", generated, StringComparison.Ordinal);
+		// Verify setter is generated for two-way binding with null check pattern matching
+		// The setter uses pattern matching to safely access the indexer on a reference type
+		Assert.Contains("p0[0] = value", generated, StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -544,8 +549,8 @@ public class SettingsCollection
 		Assert.Empty(result.Diagnostics.Where(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error));
 		Assert.NotNull(generated);
 
-		// Verify the getter uses string indexer
-		Assert.Contains("source.Settings[\"theme\"]", generated, StringComparison.Ordinal);
+		// Verify the getter uses string indexer (with conditional access since Settings is a reference type)
+		Assert.Contains("source.Settings?[\"theme\"]", generated, StringComparison.Ordinal);
 
 		// Verify handlers include the indexer with string key
 		Assert.Contains("\"Item[theme]\"", generated, StringComparison.Ordinal);

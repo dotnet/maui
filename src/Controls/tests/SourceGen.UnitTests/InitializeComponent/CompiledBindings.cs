@@ -123,20 +123,21 @@ public partial class TestPage
 		{
 			global::System.Action<global::Test.TestPage, string>? setter = static (source, value) =>
 			{
-				if (source.Foo.Bar is {} p0)
+				if (source.Foo is {} p0
+					&& p0.Bar is {} p1)
 				{
-					p0.Title = value;
+					p1.Title = value;
 				}
 			};
 
 			return new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::Test.TestPage, string>(
-				getter: source => (source.Foo.Bar.Title, true),
+				getter: source => (source.Foo?.Bar.Title, true),
 				setter,
 				handlers: new global::System.Tuple<global::System.Func<global::Test.TestPage, object?>, string>[]
 				{
 					new(static source => source, "Foo"),
 					new(static source => source.Foo, "Bar"),
-					new(static source => source.Foo.Bar, "Title"),
+					new(static source => source.Foo?.Bar, "Title"),
 				})
 				{
 					Mode = extension.Mode,
