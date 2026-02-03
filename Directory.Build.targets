@@ -48,8 +48,9 @@
     <TargetPlatformMinVersion>12.0</TargetPlatformMinVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(_MauiTargetPlatformIsAndroid)' == 'True'">
-    <SupportedOSPlatformVersion>23.0</SupportedOSPlatformVersion>
-    <TargetPlatformMinVersion>23.0</TargetPlatformMinVersion>
+    <!-- Set minimum Android SDK to 23 (required by AndroidX), but allow projects to set higher values -->
+    <SupportedOSPlatformVersion Condition="'$(SupportedOSPlatformVersion)' == '' or $([MSBuild]::VersionLessThan('$(SupportedOSPlatformVersion)', '23.0'))">23.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion Condition="'$(TargetPlatformMinVersion)' == '' or $([MSBuild]::VersionLessThan('$(TargetPlatformMinVersion)', '23.0'))">23.0</TargetPlatformMinVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(_MauiTargetPlatformIsTizen)' == 'True'">
     <SupportedOSPlatformVersion>6.5</SupportedOSPlatformVersion>
