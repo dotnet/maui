@@ -1,6 +1,6 @@
 # MAUI Dev Tools Client — Product Specification
 
-**Version**: 1.1-draft  
+**Version**: 1.2-draft  
 **Status**: Proposal  
 **Last Updated**: 2026-02-03
 
@@ -31,6 +31,7 @@
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 1.2-draft | 2026-02-03 | Added: MSBuild integration alignment with dotnet/sdk spec, `dotnet run` pipeline integration, `--list-devices` convention, deploy step, AI agent considerations |
 | 1.1-draft | 2026-02-03 | Added: Exit code standardization, Windows management, offline/proxy support, container environments, migration strategy, concurrency model, permission storage, ARM64 considerations |
 | 1.0-draft | 2026-02-03 | Initial draft |
 
@@ -719,6 +720,12 @@ maui
 │       └── install           # Install runtime (guidance)
 │           └── --version     # Runtime version
 │
+├── deploy                    # Deploy app to device (without running)
+│   ├── --device <id>         # Target device
+│   ├── --project <path>      # Project file (default: current dir)
+│   ├── --configuration       # Build configuration
+│   └── --framework           # Target framework
+│
 ├── config                    # Configuration management
 │   ├── list                  # List all config values
 │   ├── get <key>             # Get config value
@@ -734,6 +741,15 @@ maui
 │
 └── --version                 # Show version
 ```
+
+#### Global Options (Available on All Commands)
+
+| Option | Description |
+|--------|-------------|
+| `--json` | Output as JSON (machine-readable) |
+| `--verbose` | Enable verbose logging |
+| `--non-interactive` | Disable prompts; fail if input needed |
+| `--correlation-id` | Set correlation ID for tracing |
 
 #### Exit Code Standard
 
@@ -1587,7 +1603,161 @@ When an operation requires elevation:
 
 ## 12. Extensibility
 
-### 12.1 Plugin Model for Platform Providers
+### 12.1 Alignment with `dotnet run` Pipeline
+
+This tool is designed to complement and integrate with the `dotnet run` extensibility spec ([dotnet/sdk#51337](https://github.com/dotnet/sdk/pull/51337)). The SDK spec introduces MSBuild targets that workloads can implement for device discovery and deployment.
+
+**Key MSBuild Integration Points**:
+
+| MSBuild Target | SDK Responsibility | MAUI DevTools Role |
+|----------------|-------------------|-------------------|
+| `ComputeAvailableDevices` | Called by `dotnet run` to get device list | DevTools can invoke same target OR provide faster cached results |
+| `DeployToDevice` | Called by `dotnet run` after build | DevTools wraps this for standalone deploy scenarios |
+| `ComputeRunArguments` | Sets `$(RunCommand)` and `$(RunArguments)` | DevTools uses these for consistent launch behavior |
+
+**Device Item Schema** (aligned with SDK spec):
+
+```xml
+<ItemGroup>
+  <!-- Android examples -->
+  <Devices Include="emulator-5554"  Description="Pixel 7 - API 35" Type="Emulator" Status="Online" />
+  <Devices Include="0A041FDD400327" Description="Pixel 7 Pro"      Type="Device"   Status="Online" />
+  <!-- iOS examples -->
+  <Devices Include="FBF5DCE8-EE2B-4215-8118-3A2190DE1AD7" Description="iPhone 14 - iOS 18.0" Type="Simulator" Status="Booted" />
+  <Devices Include="AF40CC64-2CDB-5F16-9651-86BCDF380881" Description="My iPhone 15"         Type="Device"    Status="Paired" />
+</ItemGroup>
+```
+
+**Metadata Specification**:
+
+| Metadata | Required | Values | Description |
+|----------|----------|--------|-------------|
+| `Description` | Yes | Free text | Human-readable device name |
+| `Type` | Yes | `Device`, `Emulator`, `Simulator` | Device category |
+| `Status` | Yes | `Online`, `Offline`, `Booted`, `Shutdown`, `Paired`, `Unavailable` | Current state |
+| `Platform` | No | `android`, `ios`, `maccatalyst`, `windows` | Inferred from TFM if not specified |
+| `OSVersion` | No | Version string | e.g., "14", "18.0" |
+
+### 12.2 Interactive Prompting Alignment
+
+Following the SDK spec pattern, MAUI DevTools supports interactive prompting with graceful non-interactive fallback:
+
+**Interactive Mode** (terminal with TTY):
+```
+$ maui device list
+? Select target framework:
+  ❯ net10.0-android
+    net10.0-ios
+    net10.0-maccatalyst
+    net10.0-windows10.0.19041.0
+
+? Select device:
+  ❯ emulator-5554 (Pixel 7 - API 35) [Online]
+    0A041FDD400327 (Pixel 7 Pro) [Online]
+```
+
+**Non-Interactive Mode** (CI, piped, `--non-interactive`):
+```
+$ maui device list --non-interactive
+Error: Multiple target frameworks available. Use --platform to specify:
+  --platform android
+  --platform ios
+  --platform maccatalyst
+  --platform windows
+
+$ maui device screenshot --non-interactive
+Error: Multiple devices available. Use --device to specify:
+  --device emulator-5554  # Pixel 7 - API 35 [Online]
+  --device 0A041FDD400327 # Pixel 7 Pro [Online]
+```
+
+### 12.3 `--list-devices` Convention
+
+Aligned with `dotnet run --list-devices`, this tool provides:
+
+```bash
+# List devices for current project context
+maui device list
+
+# List devices for specific platform
+maui device list --platform android
+
+# Equivalent to dotnet run --list-devices (when in project directory)
+dotnet run --list-devices
+```
+
+**Output Format** (aligned with SDK expectations):
+
+```
+Available devices for net10.0-android:
+
+  ID                 DESCRIPTION           TYPE       STATUS
+  emulator-5554      Pixel 7 - API 35      Emulator   Online
+  0A041FDD400327     Pixel 7 Pro           Device     Online
+
+Run with: dotnet run --device <ID>
+      or: maui device screenshot --device <ID>
+```
+
+### 12.4 Deploy Step Support
+
+The SDK spec introduces a `deploy` step in the `dotnet run` pipeline. MAUI DevTools provides standalone access:
+
+```bash
+# Deploy without running (useful for testing)
+maui deploy --device emulator-5554
+
+# This invokes the DeployToDevice MSBuild target
+```
+
+**JSON-RPC Method**:
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "deploy",
+  "params": {
+    "project_path": "/path/to/MyApp.csproj",
+    "device_id": "emulator-5554",
+    "configuration": "Debug",
+    "framework": "net10.0-android"
+  }
+}
+```
+
+### 12.5 AI Agent Considerations
+
+The SDK spec explicitly mentions AI agents:
+
+> "This has become more relevant in the AI era, as someone is going to expect AIs in 'agent mode' to build and run their app."
+
+MAUI DevTools is designed with AI agents as first-class consumers:
+
+| Requirement | How DevTools Addresses It |
+|-------------|---------------------------|
+| Structured output | All commands support `--json` with stable schema |
+| Discoverability | `--list-devices` provides machine-parseable device list |
+| Non-interactive | `--non-interactive` mode with helpful error messages |
+| Deterministic | Same inputs produce same outputs; idempotent operations |
+| Permission gates | Explicit confirmation for modifications (see §11.3) |
+
+**AI Agent Workflow Example**:
+
+```python
+# 1. Discover available devices
+devices = run("maui device list --platform android --json")
+
+# 2. Select appropriate device (first online emulator)
+device = next(d for d in devices if d["status"] == "Online" and d["type"] == "Emulator")
+
+# 3. Build and deploy (with user confirmation via IDE)
+run(f"maui deploy --device {device['id']} --project ./MyApp.csproj")
+
+# 4. Capture screenshot for verification
+run(f"maui device screenshot --device {device['id']} --output ./screenshot.png")
+```
+
+### 12.6 Plugin Model for Platform Providers
 
 New platform providers can be added by implementing `IPlatformProvider`:
 
@@ -1600,12 +1770,16 @@ public interface IPlatformProvider
     Task<IReadOnlyList<Issue>> GetIssuesAsync(CancellationToken ct);
     Task<FixResult> FixIssueAsync(string issueId, CancellationToken ct);
     Task<IReadOnlyList<Device>> GetDevicesAsync(CancellationToken ct);
+    
+    // New: MSBuild target integration
+    bool HasMSBuildTarget(string targetName);
+    Task<MSBuildResult> InvokeMSBuildTargetAsync(string targetName, IDictionary<string, string> properties, CancellationToken ct);
 }
 ```
 
 Providers are discovered via assembly scanning or explicit registration.
 
-### 12.2 Adding New Subcommands
+### 12.7 Adding New Subcommands
 
 New commands are added by:
 1. Creating a new `Command` class with `System.CommandLine`
@@ -1613,7 +1787,7 @@ New commands are added by:
 3. Registering the command in the root command builder
 4. Adding corresponding JSON-RPC method if needed
 
-### 12.3 Versioning Strategy
+### 12.8 Versioning Strategy
 
 **CLI Versioning**:
 - Follows SemVer: `MAJOR.MINOR.PATCH`
