@@ -122,7 +122,7 @@ stages:
               
               Write-Host "=== Android Emulator Started Successfully ==="
             displayName: 'Start Android Emulator'
-            timeoutInMinutes: 35
+            timeoutInMinutes: 15
             env:
               ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
               JAVA_HOME: $(JAVA_HOME_17_X64)
@@ -280,128 +280,6 @@ stages:
             displayName: 'Boot Android Emulator'
             continueOnError: true
             timeoutInMinutes: 15
-            env:
-              ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
-              JAVA_HOME: $(JAVA_HOME_17_X64)
-
-          # Cherry-pick PR changes to current branch
-          - script: |
-              echo "=== Cherry-picking PR #${{ parameters.PRNumber }} changes ==="
-              
-              # Configure git
-              git config user.email "copilot@microsoft.com"
-              git config user.name "GitHub Copilot"
-              
-              # Fetch the PR
-              echo "Fetching PR #${{ parameters.PRNumber }}..."
-              git fetch origin pull/${{ parameters.PRNumber }}/head:pr-${{ parameters.PRNumber }}
-              
-              # Get the merge base between main and the PR
-              MERGE_BASE=$(git merge-base origin/main pr-${{ parameters.PRNumber }})
-              echo "Merge base: $MERGE_BASE"
-              
-              # Get list of commits in the PR (from merge base to PR head)
-              COMMITS=$(git rev-list --reverse $MERGE_BASE..pr-${{ parameters.PRNumber }})
-              COMMIT_COUNT=$(echo "$COMMITS" | wc -l | tr -d ' ')
-              echo "Found $COMMIT_COUNT commits to cherry-pick"
-              
-              # Cherry-pick each commit
-              for COMMIT in $COMMITS; do
-                echo "Cherry-picking commit: $COMMIT"
-                git cherry-pick --no-commit $COMMIT || {
-                  echo "##vso[task.logissue type=warning]Cherry-pick conflict for $COMMIT, attempting to continue..."
-                  git checkout --theirs . 2>/dev/null || true
-                  git add -A
-                }
-              done
-              
-              # Show what changed
-              echo "=== Files changed from PR ==="
-              git status --short
-              
-              echo "=== Cherry-pick complete ==="
-            displayName: 'Cherry-pick PR Changes'
-            continueOnError: false
-
-          # Verify UI tests fail without fix (on Android emulator)
-          - pwsh: |
-              Write-Host "=== Verifying UI Tests Fail Without Fix ==="
-              Write-Host "Working directory: $(Get-Location)"
-              Write-Host "Script path: .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1"
-              
-              # Check script exists
-              if (-not (Test-Path ".github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1")) {
-                Write-Host "##vso[task.logissue type=error]Script not found!"
-                exit 1
-              }
-              
-              # Run the verify-tests-fail script on Android
-              # Use Invoke-Expression to run in same process and capture all output
-              $ErrorActionPreference = "Continue"
-              try {
-                & "./.github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1" -Platform android -PRNumber "${{ parameters.PRNumber }}" 2>&1 | ForEach-Object { Write-Host $_ }
-                $exitCode = $LASTEXITCODE
-              } catch {
-                Write-Host "##vso[task.logissue type=error]Exception: $_"
-                Write-Host $_.ScriptStackTrace
-                $exitCode = 1
-              }
-              
-              Write-Host "Verification script completed with exit code: $exitCode"
-              
-              if ($exitCode -ne 0) {
-                Write-Host "##vso[task.logissue type=warning]verify-tests-fail script exited with code $exitCode"
-              }
-              exit $exitCode
-            displayName: 'Verify UI Tests Fail Without Fix'
-            continueOnError: true
-            timeoutInMinutes: 30
-            env:
-              ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
-              JAVA_HOME: $(JAVA_HOME_17_X64)
-
-          # Build and Deploy HostApp (verbose logging)
-          - pwsh: |
-              Write-Host "=== Building and Deploying HostApp ==="
-              Write-Host "Working directory: $(Get-Location)"
-              
-              $scriptPath = ".github/scripts/shared/Build-AndDeploy.ps1"
-              if (-not (Test-Path $scriptPath)) {
-                Write-Host "##vso[task.logissue type=error]Script not found: $scriptPath"
-                exit 1
-              }
-              
-              # Get emulator UDID
-              $udid = (adb devices | Select-String -Pattern "^(emulator-\d+)" | ForEach-Object { $_.Matches[0].Groups[1].Value } | Select-Object -First 1)
-              if (-not $udid) {
-                Write-Host "##vso[task.logissue type=error]No Android emulator found"
-                adb devices -l
-                exit 1
-              }
-              Write-Host "Using emulator: $udid"
-              
-              $ErrorActionPreference = "Continue"
-              try {
-                & "./$scriptPath" -Platform android `
-                  -ProjectPath "src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj" `
-                  -TargetFramework "net10.0-android" `
-                  -DeviceUdid $udid `
-                  -Verbose 2>&1 | ForEach-Object { Write-Host $_ }
-                $exitCode = $LASTEXITCODE
-              } catch {
-                Write-Host "##vso[task.logissue type=error]Exception: $_"
-                Write-Host $_.ScriptStackTrace
-                $exitCode = 1
-              }
-              
-              Write-Host "Build-AndDeploy completed with exit code: $exitCode"
-              if ($exitCode -ne 0) {
-                Write-Host "##vso[task.logissue type=warning]Build-AndDeploy failed with code $exitCode"
-              }
-              exit $exitCode
-            displayName: 'Build and Deploy HostApp (Verbose)'
-            continueOnError: true
-            timeoutInMinutes: 30
             env:
               ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
               JAVA_HOME: $(JAVA_HOME_17_X64)
