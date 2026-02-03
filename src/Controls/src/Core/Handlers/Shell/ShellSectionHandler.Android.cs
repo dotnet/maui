@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Android.OS;
 using Android.Views;
+using Android.Widget;
 using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Fragment.App;
 using AndroidX.ViewPager2.Adapter;
@@ -30,27 +31,63 @@ namespace Microsoft.Maui.Controls.Handlers
 {
     /// <summary>
     /// Handler for ShellSection on Android using NavigationViewHandler pattern.
+    /// Returns FragmentContainerView (same as NavigationViewHandler).
+    /// Toolbar is now managed at ShellItem level.
+    /// TabLayout appearance is managed here for multiple content mode.
     /// </summary>
-    public partial class ShellSectionHandler : ViewHandler<ShellSection, AView>, IAppearanceObserver, IStackNavigation
+    public partial class ShellSectionHandler : ViewHandler<ShellSection, AView>, IStackNavigation, IAppearanceObserver
     {
-        CoordinatorLayout _rootLayout;
-        AppBarLayout _appBarLayout;
-        internal Toolbar _shellToolbar; // Virtual Toolbar view that has ToolbarHandler
-        AToolbar _toolbar; // Native platform toolbar
         Fragment _parentFragment; // The wrapper fragment that hosts this handler
         IShellContext _shellContext;
-        internal IShellToolbarTracker _toolbarTracker;
-        IShellToolbarAppearanceTracker _toolbarAppearanceTracker;
         IShellTabLayoutAppearanceTracker _tabLayoutAppearanceTracker;
 
         // Navigation support via StackNavigationManager (single content mode)
         internal StackNavigationManager _stackNavigationManager;
         internal FragmentContainerView _navigationContainer; // Container for navigation stack
+        internal int _navigationContainerId; // Cached container ID to ensure consistency across fragment lifecycle
 
-        // Multiple content support (ViewPager2 mode)
+        // Multiple content support (ViewPager2 mode) - requires its own layout structure
         ViewPager2 _viewPager;
         internal TabLayout _contentTabLayout;
         ShellContentFragmentAdapter _adapter;
+
+        // For multiple content mode, we need our own CoordinatorLayout structure
+        // since the toolbar/AppBarLayout is at ShellItem level
+
+        AppBarLayout _multiContentAppBarLayout;
+
+        /// <summary>
+        /// Gets the toolbar tracker from the parent ShellItemHandler.
+        /// The toolbar is now managed at ShellItem level.
+        /// </summary>
+        internal IShellToolbarTracker ToolbarTracker
+        {
+            get
+            {
+                var shellItem = VirtualView?.FindParentOfType<ShellItem>();
+                if (shellItem?.Handler is ShellItemHandler itemHandler)
+                {
+                    return itemHandler._toolbarTracker;
+                }
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the virtual toolbar from the parent ShellItemHandler.
+        /// </summary>
+        internal Toolbar ShellToolbar
+        {
+            get
+            {
+                var shellItem = VirtualView?.FindParentOfType<ShellItem>();
+                if (shellItem?.Handler is ShellItemHandler itemHandler)
+                {
+                    return itemHandler._shellToolbar;
+                }
+                return null;
+            }
+        }
 
         /// <summary>
         /// Property mapper for ShellSection properties.
@@ -85,16 +122,13 @@ namespace Microsoft.Maui.Controls.Handlers
 
         /// <summary>
         /// Called when the parent fragment's view is created and ready.
-        /// This is when we can safely setup ViewPager2 with ChildFragmentManager (for multiple content items).
+        /// Note: For multiple content mode, CreateMultiContentView is now called directly from the wrapper fragment.
+        /// This method is kept for backward compatibility but may not be called in all cases.
         /// </summary>
         internal void OnParentFragmentViewCreated()
         {
-            // If we have multiple content items, setup ViewPager2 for switching between them
-            // Each content item will still use StackNavigationManager for its own navigation
-            if (VirtualView?.Items?.Count > 1 && _viewPager is null && _parentFragment is not null)
-            {
-                SetupViewPager();
-            }
+            // Multiple content mode is now handled by CreateMultiContentView called from wrapper fragment
+            // This method is kept for potential future use or backward compatibility
         }
 
         /// <summary>
@@ -114,7 +148,14 @@ namespace Microsoft.Maui.Controls.Handlers
 
         public StackNavigationManager StackNavigationManager
         {
-            get => _stackNavigationManager ??= CreateNavigationManager();
+            get
+            {
+                if (_stackNavigationManager is null)
+                {
+                    EnsureStackNavigationManagerCreated();
+                }
+                return _stackNavigationManager;
+            }
             set
             {
                 if (_stackNavigationManager is not null && _stackNavigationManager != value)
@@ -122,60 +163,35 @@ namespace Microsoft.Maui.Controls.Handlers
                     throw new InvalidOperationException("StackNavigationManager cannot be assigned to new instance");
                 }
 
-                _stackNavigationManager = value ?? CreateNavigationManager();
+                _stackNavigationManager = value;
             }
-        }
-
-        StackNavigationManager CreateNavigationManager()
-        {
-            _ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
-
-            return _stackNavigationManager ??= new StackNavigationManager(MauiContext);
         }
 
 
         /// <summary>
-        /// Creates the platform element with CoordinatorLayout structure.
-        /// Structure: CoordinatorLayout > AppBarLayout > (Toolbar + TabLayout) + (ViewPager2 or FrameLayout)
+        /// Creates the platform element - just a FragmentContainerView for navigation stack.
+        /// This matches NavigationViewHandler's return type.
+        /// The toolbar/AppBarLayout is now managed at the ShellItem level.
         /// </summary>
         protected override AView CreatePlatformView()
         {
             var context = MauiContext?.Context ?? throw new InvalidOperationException("MauiContext cannot be null");
 
-            // Create root CoordinatorLayout
-            _rootLayout = new CoordinatorLayout(context)
-            {
-                LayoutParameters = new LP(LP.MatchParent, LP.MatchParent)
-            };
-
-            // Setup window insets listener for safe area handling
-            // This ensures the AppBarLayout appears below the status bar
-            MauiWindowInsetListener.SetupViewWithLocalListener(_rootLayout);
-
-            // Create AppBarLayout for toolbar and tabs
-            _appBarLayout = new AppBarLayout(context)
-            {
-                LayoutParameters = new CoordinatorLayout.LayoutParams(LP.MatchParent, LP.WrapContent)
-            };
-
-            _rootLayout.AddView(_appBarLayout);
-
             // Create FragmentContainerView for navigation stack (same pattern as NavigationViewHandler)
             // This will host the NavHostFragment managed by StackNavigationManager
             // CRITICAL: Each ShellSection needs its own unique ID to prevent view contamination
-            var uniqueId = GenerateUniqueViewId();
+            // Cache the ID to ensure consistency across fragment lifecycle (important for ViewPager2)
+            if (_navigationContainerId == 0)
+            {
+                _navigationContainerId = AView.GenerateViewId();
+            }
             _navigationContainer = new FragmentContainerView(context)
             {
-                Id = uniqueId,
-                LayoutParameters = new CoordinatorLayout.LayoutParams(LP.MatchParent, LP.MatchParent)
-                {
-                    Behavior = new AppBarLayout.ScrollingViewBehavior()
-                }
+                Id = _navigationContainerId,
+                LayoutParameters = new LP(LP.MatchParent, LP.MatchParent)
             };
 
-            _rootLayout.AddView(_navigationContainer);
-
-            return _rootLayout;
+            return _navigationContainer;
         }
 
         /// <summary>
@@ -184,10 +200,12 @@ namespace Microsoft.Maui.Controls.Handlers
         /// </summary>
         int GenerateUniqueViewId()
         {
-            // Use the ShellSection's hash code as a unique identifier
-            // This ensures each tab has its own navigation container ID
-            var id = VirtualView?.GetHashCode() ?? AView.GenerateViewId();
-            return id;
+            // Use the cached ID if available, otherwise generate a new one
+            if (_navigationContainerId == 0)
+            {
+                _navigationContainerId = AView.GenerateViewId();
+            }
+            return _navigationContainerId;
         }
 
         protected override void ConnectHandler(AView platformView)
@@ -207,49 +225,22 @@ namespace Microsoft.Maui.Controls.Handlers
             // and each ShellContent's page handles its own navigation
             if (VirtualView?.Items?.Count == 1)
             {
-                // Initialize StackNavigationManager but don't Connect() yet
-                // Connect will happen when the view is attached to window
-                _stackNavigationManager = new StackNavigationManager(MauiContext);
-
+                // DON'T initialize StackNavigationManager here - wait until parent fragment is set
+                // This ensures we can create a scoped MauiContext with ChildFragmentManager
                 // Subscribe to view attached event to connect when ready
                 _navigationContainer.ViewAttachedToWindow += OnNavigationContainerAttachedToWindow;
 
-                // Try to connect immediately if the view is already attached
+                // Try to connect immediately if the view is already attached AND parent fragment is set
                 // This handles the case where ConnectHandler is called after the view is already in the window
-                if (_navigationContainer.IsAttachedToWindow)
+                if (_navigationContainer.IsAttachedToWindow && _parentFragment is not null)
                 {
+                    EnsureStackNavigationManagerCreated();
                     ConnectStackNavigationManager();
                 }
             }
 
-            // Create Toolbar virtual view with proper context
-            _shellToolbar = new Toolbar(VirtualView);
-            var shell = VirtualView.FindParentOfType<Shell>();
-
-            if (shell is not null)
-            {
-                ShellToolbarTracker.ApplyToolbarChanges(shell.Toolbar, _shellToolbar);
-
-                //_appBarLayout.RemoveView(_toolbar);
-                _toolbar = (AToolbar)_shellToolbar.ToPlatform(shell.Handler.MauiContext);
-
-                _appBarLayout.AddView(_toolbar);
-
-                // Register as appearance observer
-                ((IShellController)shell).AddAppearanceObserver(this, VirtualView);
-            }
-
-            // Set up toolbar tracker
-            _toolbarTracker = _shellContext.CreateTrackerForToolbar(_toolbar);
-            _toolbarAppearanceTracker = _shellContext.CreateToolbarAppearanceTracker();
-
-            // Set the toolbar reference, but DON'T set the Page yet
-            // The Page will be set in NavigationFinished after navigation is properly initialized
-            // This ensures FlyoutBehavior and other page-level settings are respected
-            if (_toolbarTracker is not null && _shellToolbar is not null)
-            {
-                _toolbarTracker.SetToolbar(_shellToolbar);
-            }
+            // Note: Toolbar is now managed at ShellItem level (ShellItemHandler)
+            // This handler just manages the navigation container
         }
 
         void OnNavigationContainerAttachedToWindow(object sender, AView.ViewAttachedToWindowEventArgs e)
@@ -257,7 +248,33 @@ namespace Microsoft.Maui.Controls.Handlers
             // Unsubscribe - we only need this once
             _navigationContainer.ViewAttachedToWindow -= OnNavigationContainerAttachedToWindow;
 
+            // Ensure StackNavigationManager is created with proper scoped context
+            EnsureStackNavigationManagerCreated();
             ConnectStackNavigationManager();
+        }
+
+        /// <summary>
+        /// Ensures the StackNavigationManager is created with a properly scoped MauiContext.
+        /// When nested inside ViewPager2, we need to use ChildFragmentManager from the parent fragment.
+        /// </summary>
+        void EnsureStackNavigationManagerCreated()
+        {
+            if (_stackNavigationManager is not null)
+                return;
+
+            // Create a scoped MauiContext with the parent fragment's ChildFragmentManager
+            // This is critical for proper fragment management when nested in ViewPager2
+            IMauiContext scopedContext;
+            if (_parentFragment is not null)
+            {
+                scopedContext = MauiContext.MakeScoped(fragmentManager: _parentFragment.ChildFragmentManager);
+            }
+            else
+            {
+                scopedContext = MauiContext;
+            }
+
+            _stackNavigationManager = new StackNavigationManager(scopedContext);
         }
 
         internal void ConnectStackNavigationManager()
@@ -268,8 +285,19 @@ namespace Microsoft.Maui.Controls.Handlers
                 return;
             }
 
-            // Create NavHostFragment synchronously BEFORE Connect()
-            var fragmentManager = MauiContext.GetFragmentManager();
+            // CRITICAL: Use ChildFragmentManager from the parent wrapper fragment if available.
+            // When nested inside ViewPager2, we must use ChildFragmentManager to manage child fragments.
+            // Using Activity-level fragment manager causes container ID conflicts across different pages.
+            FragmentManager fragmentManager;
+            if (_parentFragment is not null)
+            {
+                fragmentManager = _parentFragment.ChildFragmentManager;
+            }
+            else
+            {
+                fragmentManager = MauiContext.GetFragmentManager();
+            }
+
             if (fragmentManager is null)
             {
                 return;
@@ -363,12 +391,6 @@ namespace Microsoft.Maui.Controls.Handlers
                 collectionChanged.CollectionChanged -= OnItemsCollectionChanged;
             }
 
-            // Remove window insets listener
-            if (_rootLayout is not null)
-            {
-                MauiWindowInsetListener.RemoveViewWithLocalListener(_rootLayout);
-            }
-
             // Cleanup ViewPager2 resources
             _adapter = null;
 
@@ -385,11 +407,14 @@ namespace Microsoft.Maui.Controls.Handlers
             }
             _contentTabLayout = null;
 
+            // Cleanup multiple content layout
+            _multiContentAppBarLayout = null;
+
             // Disconnect navigation manager
             _stackNavigationManager?.Disconnect();
             _stackNavigationManager = null;
 
-            // Unregister appearance observer
+            // Unregister appearance observer (for TabLayout in multiple content mode)
             var shell = VirtualView?.FindParentOfType<Shell>();
             if (shell is not null)
             {
@@ -399,15 +424,11 @@ namespace Microsoft.Maui.Controls.Handlers
             // Navigation container cleanup handled by StackNavigationManager
             _navigationContainer = null;
 
-            // Dispose trackers
-            _toolbarAppearanceTracker?.Dispose();
-            _toolbarAppearanceTracker = null;
-
+            // Dispose TabLayout appearance tracker
             _tabLayoutAppearanceTracker?.Dispose();
             _tabLayoutAppearanceTracker = null;
 
-            _toolbarTracker?.Dispose();
-            _toolbarTracker = null;
+            // Note: Toolbar trackers are now managed at ShellItem level
 
             _shellContext = null;
 
@@ -416,6 +437,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
         /// <summary>
         /// Maps CurrentItem property changes.
+        /// Handles both single content mode (StackNavigationManager) and multiple content mode (ViewPager2).
         /// </summary>
         public static void MapCurrentItem(ShellSectionHandler handler, ShellSection shellSection)
         {
@@ -424,6 +446,27 @@ namespace Microsoft.Maui.Controls.Handlers
                 return;
             }
 
+            // MULTIPLE CONTENT MODE: Use ViewPager2 to switch tabs
+            if (handler._viewPager is not null)
+            {
+                var items = shellSection.Items;
+                var currentItem = shellSection.CurrentItem;
+
+                if (items is not null && currentItem is not null)
+                {
+                    var targetIndex = items.IndexOf(currentItem);
+                    if (targetIndex >= 0 && handler._viewPager.CurrentItem != targetIndex)
+                    {
+                        // Update ViewPager2 to show the correct page
+                        // This will trigger OnPageSelected which updates toolbar and appearance
+                        handler._viewPager.CurrentItem = targetIndex;
+                        Console.WriteLine($"SHELL: MapCurrentItem (ViewPager2) - Switched to index {targetIndex}");
+                    }
+                }
+                return;
+            }
+
+            // SINGLE CONTENT MODE: Use StackNavigationManager
             // Only navigate if StackNavigationManager is ready (NavHost exists)
             // Initial navigation will be handled in ConnectHandler
             if (handler._stackNavigationManager is null || !handler._stackNavigationManager.HasNavHost)
@@ -441,23 +484,30 @@ namespace Microsoft.Maui.Controls.Handlers
             }
         }
 
-        #region IAppearanceObserver
+        #region IAppearanceObserver - TabLayout Appearance Only
 
+        /// <summary>
+        /// Called when Shell appearance changes.
+        /// ONLY updates TabLayout appearance for multiple content mode.
+        /// NOTE: Toolbar appearance is handled by ShellItemHandler's IAppearanceObserver.
+        /// Both handlers are registered as observers - no forwarding needed.
+        /// </summary>
         void IAppearanceObserver.OnAppearanceChanged(ShellAppearance appearance)
         {
-            if (_toolbar is not null && _toolbarAppearanceTracker is not null && _toolbarTracker is not null)
+            // Update TabLayout appearance ONLY (for multiple content mode)
+            if (_tabLayoutAppearanceTracker is not null && _contentTabLayout is not null)
             {
                 if (appearance is not null)
                 {
-                    _toolbarAppearanceTracker.SetAppearance(_toolbar, _toolbarTracker, appearance);
-                    _tabLayoutAppearanceTracker?.SetAppearance(_contentTabLayout, appearance);
+                    _tabLayoutAppearanceTracker.SetAppearance(_contentTabLayout, appearance);
                 }
                 else
                 {
-                    _toolbarAppearanceTracker.ResetAppearance(_toolbar, _toolbarTracker);
-                    _tabLayoutAppearanceTracker?.ResetAppearance(_contentTabLayout);
+                    _tabLayoutAppearanceTracker.ResetAppearance(_contentTabLayout);
                 }
             }
+            // NOTE: Do NOT forward to ShellItemHandler - it's already an IAppearanceObserver
+            // Shell notifies all observers when appearance changes
         }
 
         #endregion IAppearanceObserver
@@ -513,7 +563,7 @@ namespace Microsoft.Maui.Controls.Handlers
             handler._stackNavigationManager?.RequestNavigation(request);
 
             // Force update back button visibility, similar to NavigationPage
-            handler._shellToolbar?.Handler?.UpdateValue(nameof(IToolbar.BackButtonVisible));
+            handler.ShellToolbar?.Handler?.UpdateValue(nameof(IToolbar.BackButtonVisible));
         }
 
         /// <summary>
@@ -523,7 +573,27 @@ namespace Microsoft.Maui.Controls.Handlers
         {
             _stackNavigationManager?.RequestNavigation(eventArgs);
 
-            _shellToolbar.Handler?.UpdateValue(nameof(IToolbar.BackButtonVisible));
+            ShellToolbar?.Handler?.UpdateValue(nameof(IToolbar.BackButtonVisible));
+        }
+
+        /// <summary>
+        /// Checks if this ShellSection is currently the active one in the Shell hierarchy.
+        /// This is used to prevent stale fragments from updating the shared toolbar.
+        /// </summary>
+        internal bool IsCurrentlyActiveSection()
+        {
+            if (VirtualView is null)
+                return false;
+
+            var shellItem = VirtualView.FindParentOfType<ShellItem>();
+            if (shellItem is null || shellItem.CurrentItem != VirtualView)
+                return false;
+
+            var shell = shellItem.FindParentOfType<Shell>();
+            if (shell is null || shell.CurrentItem != shellItem)
+                return false;
+
+            return true;
         }
 
         /// <summary>
@@ -531,10 +601,18 @@ namespace Microsoft.Maui.Controls.Handlers
         /// </summary>
         public void NavigationFinished(IReadOnlyList<IView> newStack)
         {
+            // CRITICAL: Only update toolbar if this section is currently active
+            // When switching sections, the old section's NavigationFinished may still fire
+            // and incorrectly update the shared toolbar
+            if (!IsCurrentlyActiveSection())
+                return;
+
             // Update toolbar if needed
             if (newStack.Count > 0 && newStack[newStack.Count - 1] is Page page)
             {
-                if (_toolbarTracker is not null && _shellToolbar is not null)
+                var toolbarTracker = ToolbarTracker;
+                var shellToolbar = ShellToolbar;
+                if (toolbarTracker is not null && shellToolbar is not null)
                 {
                     // Determine if we can navigate back based on the stack
                     // The current page is the last one in the stack
@@ -544,17 +622,34 @@ namespace Microsoft.Maui.Controls.Handlers
                     // CRITICAL: Set CanNavigateBack BEFORE setting Page
                     // This ensures ShellToolbarTracker.UpdateLeftBarButtonItem has correct state
                     // when it's triggered by the Page property change
-                    _toolbarTracker.CanNavigateBack = canNavigateBack;
+                    toolbarTracker.CanNavigateBack = canNavigateBack;
 
                     // Only update the Page if it's different to avoid unnecessary updates
-                    if (_toolbarTracker.Page != page)
+                    if (toolbarTracker.Page != page)
                     {
-                        _toolbarTracker.Page = page;
+                        toolbarTracker.Page = page;
                     }
 
                     // Update back button visibility to refresh hamburger/back icon
                     // This ensures the toolbar shows hamburger at root or back arrow when deeper
-                    _shellToolbar.Handler?.UpdateValue(nameof(IToolbar.BackButtonVisible));
+                    shellToolbar.Handler?.UpdateValue(nameof(IToolbar.BackButtonVisible));
+
+                    // Force ShellToolbar to update title and other properties
+                    // This is needed because Shell.GetCurrentShellPage() may not return
+                    // the correct page at the time OnPageChanged is called
+                    var shell = VirtualView?.FindParentOfType<Shell>();
+                    if (shell?.Toolbar is ShellToolbar st)
+                    {
+                        st.ApplyChanges();
+                    }
+
+                    // CRITICAL FIX: Trigger appearance update for the new page
+                    // This ensures toolbar colors update based on per-page Shell.BackgroundColor settings
+                    // The appearance system walks from the page up to find Shell appearance properties
+                    if (shell is not null)
+                    {
+                        ((IShellController)shell).AppearanceChanged(page, false);
+                    }
                 }
             }
         }
@@ -598,73 +693,70 @@ namespace Microsoft.Maui.Controls.Handlers
 
         #region Multiple Content Support - ViewPager2
 
-        void SetupViewPager()
+        /// <summary>
+        /// Creates the view for multiple content mode (ShellSection with multiple ShellContents).
+        /// This creates a LinearLayout with TabLayout + ViewPager2.
+        /// </summary>
+        internal AView CreateMultiContentView(Fragment parentFragment)
         {
-            // Check if already setup (OnParentFragmentViewCreated can be called multiple times)
             if (_viewPager is not null)
             {
-                return;
+                // Already created, return the existing layout
+                return _viewPager.Parent as AView;
             }
 
-            var fragmentManager = MauiContext.GetFragmentManager();
-
-            // ViewPager2 requires a parent fragment with lifecycle - delay setup until fragment is created
-            if (fragmentManager is null || _parentFragment is null)
+            var context = MauiContext?.Context;
+            if (context is null)
             {
-                return;
+                return null;
             }
 
-            // Remove navigation container if it was added (we're switching to ViewPager mode)
-            if (_navigationContainer is not null && _navigationContainer.Parent is not null)
+            _shellContext ??= GetShellContext();
+
+            // Create a LinearLayout to hold TabLayout + ViewPager2
+            var contentLayout = new LinearLayout(context)
             {
-                _rootLayout.RemoveView(_navigationContainer);
-            }
+                Orientation = Orientation.Vertical,
+                LayoutParameters = new LP(LP.MatchParent, LP.MatchParent)
+            };
 
-            // Remove any orphaned ViewPager2 from _rootLayout (can happen after DisconnectHandler)
-            for (int i = _rootLayout.ChildCount - 1; i >= 0; i--)
+            // Create AppBarLayout for the content TabLayout
+            _multiContentAppBarLayout = new AppBarLayout(context)
             {
-                var child = _rootLayout.GetChildAt(i);
-                if (child is ViewPager2)
-                {
-                    _rootLayout.RemoveView(child);
-                }
-            }
+                LayoutParameters = new LinearLayout.LayoutParams(LP.MatchParent, LP.WrapContent)
+            };
+            contentLayout.AddView(_multiContentAppBarLayout);
 
-            // Remove any orphaned TabLayout from _appBarLayout (TabLayout is added to AppBar, not root)
-            for (int i = _appBarLayout.ChildCount - 1; i >= 0; i--)
-            {
-                var child = _appBarLayout.GetChildAt(i);
-                if (child is TabLayout)
-                {
-                    _appBarLayout.RemoveView(child);
-                }
-            }
-
-            var pagerContext = MauiContext.MakeScoped(fragmentManager: _parentFragment.ChildFragmentManager);
+            var pagerContext = MauiContext.MakeScoped(fragmentManager: parentFragment.ChildFragmentManager);
 
             // Create adapter with parent fragment's lifecycle
-            _adapter = new ShellContentFragmentAdapter(VirtualView, _parentFragment, pagerContext)
+            _adapter = new ShellContentFragmentAdapter(VirtualView, parentFragment, pagerContext)
             {
                 Handler = this
             };
 
             // Setup TabLayout for content tabs
-            // Note: CreateShellTabLayout already adds the TabLayout to AppBarLayout
-            int actionBarHeight = MauiContext.Context.GetActionBarHeight();
-            _contentTabLayout = PlatformInterop.CreateShellTabLayout(MauiContext.Context, _appBarLayout, actionBarHeight);
+            int actionBarHeight = context.GetActionBarHeight();
+            _contentTabLayout = PlatformInterop.CreateShellTabLayout(context, _multiContentAppBarLayout, actionBarHeight);
 
-            // Create page change callback
-            var pageChangedCallback = new ViewPagerPageChangeCallback(this);
+            // Create ViewPager2 for the content
+            _viewPager = new ViewPager2(context)
+            {
+                LayoutParameters = new LinearLayout.LayoutParams(LP.MatchParent, 0) { Weight = 1 }
+            };
+            _viewPager.Adapter = _adapter;
+            contentLayout.AddView(_viewPager);
 
-            // Use PlatformInterop to create ViewPager2 with TabLayout integration
-            // This handles ViewPager2 creation, TabLayoutMediator setup, and page change callback registration
-            _viewPager = PlatformInterop.CreateShellViewPager(
-                MauiContext.Context,
-                _rootLayout,
+            // Setup TabLayoutMediator
+            var mediator = new TabLayoutMediator(
                 _contentTabLayout,
-                new ShellTabConfigurationStrategy(VirtualView),
-                _adapter,
-                pageChangedCallback);
+                _viewPager,
+                new ShellTabConfigurationStrategy(VirtualView));
+            mediator.Attach();
+
+            // Register page change callback
+            var pageChangedCallback = new ViewPagerPageChangeCallback(this);
+            _viewPager.RegisterOnPageChangeCallback(pageChangedCallback);
 
             // Get current page and set ViewPager to current index
             Page currentPage = null;
@@ -684,14 +776,16 @@ namespace Microsoft.Maui.Controls.Handlers
                 _viewPager.CurrentItem = currentIndex;
             }
 
-            // Update toolbar tracker with current page
-            if (_toolbarTracker is not null && _shellToolbar is not null && currentPage is not null)
+            // Update toolbar tracker with current page (toolbar is at ShellItem level)
+            var toolbarTracker = ToolbarTracker;
+            var shellToolbar = ShellToolbar;
+            if (toolbarTracker is not null && shellToolbar is not null && currentPage is not null)
             {
-                _toolbarTracker.SetToolbar(_shellToolbar);
-                _toolbarTracker.Page = currentPage;
+                toolbarTracker.SetToolbar(shellToolbar);
+                toolbarTracker.Page = currentPage;
             }
 
-            // Update TabLayout visibility (hide if only 1 content)
+            // Update TabLayout visibility (hide if only 1 content - shouldn't happen in this method)
             if (items is not null && items.Count == 1)
             {
                 _contentTabLayout.Visibility = ViewStates.Gone;
@@ -700,13 +794,38 @@ namespace Microsoft.Maui.Controls.Handlers
             // Setup TabLayout appearance tracker to apply Shell colors
             _tabLayoutAppearanceTracker = _shellContext.CreateTabLayoutAppearanceTracker(VirtualView);
 
-            // Trigger appearance update now that tracker is created
-            // This ensures initial appearance is applied immediately
+            // Register as appearance observer for TabLayout updates
             var shell = VirtualView.FindParentOfType<Shell>();
             if (shell is not null)
             {
-                ((IShellController)shell).AppearanceChanged(VirtualView, false);
+                ((IShellController)shell).AddAppearanceObserver(this, VirtualView);
             }
+
+            // Trigger appearance update for the current page
+            // CRITICAL: Use the actual current page, not the ShellSection, so toolbar colors are correct
+            if (shell is not null && currentPage is not null)
+            {
+                ((IShellController)shell).AppearanceChanged(currentPage, false);
+            }
+
+            return contentLayout;
+        }
+
+        /// <summary>
+        /// Legacy method kept for backward compatibility.
+        /// Multiple content mode is now handled by CreateMultiContentView.
+        /// </summary>
+        [Obsolete("Use CreateMultiContentView instead")]
+        void SetupViewPager()
+        {
+            // This method is no longer used - CreateMultiContentView handles everything
+            // Kept for backward compatibility in case any external code calls it
+            if (_viewPager is not null || _parentFragment is null)
+            {
+                return;
+            }
+
+            CreateMultiContentView(_parentFragment);
         }
 
         void OnItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -716,7 +835,7 @@ namespace Microsoft.Maui.Controls.Handlers
                 _adapter.NotifyDataSetChanged();
 
                 // Update TabLayout visibility
-                _contentTabLayout.Visibility = VirtualView.Items.Count > 1 ? ViewStates.Visible : ViewStates.Gone;
+                _contentTabLayout?.Visibility = VirtualView.Items.Count > 1 ? ViewStates.Visible : ViewStates.Gone;
             }
         }
 
@@ -792,7 +911,8 @@ namespace Microsoft.Maui.Controls.Handlers
     }
 
     /// <summary>
-    /// ViewPager2 page change callback to update toolbar when swiping between pages
+    /// ViewPager2 page change callback to update toolbar when swiping between content tabs.
+    /// This handles title updates and triggers appearance change ONCE.
     /// </summary>
     internal class ViewPagerPageChangeCallback : ViewPager2.OnPageChangeCallback
     {
@@ -807,24 +927,38 @@ namespace Microsoft.Maui.Controls.Handlers
         {
             base.OnPageSelected(position);
 
-            // Update the ShellSection's CurrentItem when user swipes to a different page
-            if (_handler.VirtualView is not null && position < _handler.VirtualView.Items.Count)
-            {
-                var newCurrentItem = _handler.VirtualView.Items[position];
-                if (_handler.VirtualView.CurrentItem != newCurrentItem)
-                {
-                    _handler.VirtualView.CurrentItem = newCurrentItem;
-                }
+            if (_handler.VirtualView is null || position >= _handler.VirtualView.Items.Count)
+                return;
 
-                // Update toolbar with the new page
-                if (_handler._toolbarTracker is not null)
-                {
-                    var page = ((IShellContentController)newCurrentItem).GetOrCreateContent();
-                    if (page is not null)
-                    {
-                        _handler._toolbarTracker.Page = page;
-                    }
-                }
+            // CRITICAL: Only update toolbar if this section is currently active in the Shell hierarchy
+            // This prevents stale sections from updating the shared toolbar when switching bottom nav tabs
+            if (!_handler.IsCurrentlyActiveSection())
+                return;
+
+            var newCurrentItem = _handler.VirtualView.Items[position];
+            var page = ((IShellContentController)newCurrentItem).GetOrCreateContent();
+
+            if (page is null)
+                return;
+
+            // Update toolbar title BEFORE setting CurrentItem
+            // This ensures ShellToolbarTracker has the correct Page reference
+            var toolbarTracker = _handler.ToolbarTracker;
+            toolbarTracker?.Page = page;
+
+            // Update CurrentItem
+            if (_handler.VirtualView.CurrentItem != newCurrentItem)
+            {
+                _handler.VirtualView.CurrentItem = newCurrentItem;
+            }
+
+            // Trigger appearance update ONCE - observers handle the rest
+            // ShellItemHandler will update toolbar colors via its IAppearanceObserver
+            // ShellSectionHandler will update TabLayout colors via its IAppearanceObserver
+            var shell = _handler.VirtualView.FindParentOfType<Shell>();
+            if (shell is not null)
+            {
+                ((IShellController)shell).AppearanceChanged(page, false);
             }
         }
     }
@@ -841,6 +975,7 @@ namespace Microsoft.Maui.Controls.Handlers
         StackNavigationManager _stackNavigationManager;
         FragmentContainerView _navigationContainer;
         Page _rootPage;
+        int _navigationContainerId; // Cache the ID for consistency
 
         public ShellContentViewPagerFragment(ShellContent shellContent, IMauiContext mauiContext, ShellSectionHandler handler)
         {
@@ -849,10 +984,37 @@ namespace Microsoft.Maui.Controls.Handlers
             _handler = handler;
         }
 
+        public override void OnCreate(Bundle savedInstanceState)
+        {
+            // Don't call base with saved state - this prevents Android from
+            // automatically restoring child fragments with stale container IDs.
+            // When hosted in ViewPager2, child fragment restoration causes crashes
+            // because the container IDs are dynamically generated.
+            base.OnCreate(null);
+        }
+
         public override AView OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
         {
             if (_navigationContainer is not null)
             {
+                // Check if child fragments still exist - they may have been destroyed
+                var childFm = ChildFragmentManager;
+                var existingNavHost = childFm.FindFragmentById(_navigationContainerId);
+
+                if (existingNavHost is null && _stackNavigationManager is not null)
+                {
+                    // NavHostFragment was destroyed, recreate it
+                    var recreatedNavHost = new MauiNavHostFragment()
+                    {
+                        StackNavigationManager = _stackNavigationManager
+                    };
+
+                    childFm
+                        .BeginTransactionEx()
+                        .AddEx(_navigationContainerId, recreatedNavHost)
+                        .CommitNowAllowingStateLoss();
+                }
+
                 return _navigationContainer;
             }
 
@@ -864,10 +1026,16 @@ namespace Microsoft.Maui.Controls.Handlers
             }
 
             // Create a FragmentContainerView to host the NavHostFragment for this content
+            // Cache the ID to ensure consistency across fragment lifecycle
+            if (_navigationContainerId == 0)
+            {
+                _navigationContainerId = AView.GenerateViewId();
+            }
+
             var context = _mauiContext.Context;
             _navigationContainer = new FragmentContainerView(context)
             {
-                Id = AView.GenerateViewId(),
+                Id = _navigationContainerId,
                 LayoutParameters = new LP(LP.MatchParent, LP.MatchParent)
             };
 
@@ -885,7 +1053,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
             fragmentManager
                 .BeginTransactionEx()
-                .AddEx(_navigationContainer.Id, navHostFragment)
+                .AddEx(_navigationContainerId, navHostFragment)
                 .CommitNowAllowingStateLoss();
 
             // Wait for the navigation container to be attached to the window before connecting
@@ -932,8 +1100,19 @@ namespace Microsoft.Maui.Controls.Handlers
 
         void OnNavigationRequested(object sender, NavigationRequestedEventArgs e)
         {
-            // Only handle navigation if this fragment is currently visible
+            // Only handle navigation if:
+            // 1. This fragment is currently visible
+            // 2. This ShellContent is the CURRENT item in the ShellSection
+            // This prevents other content fragments from incorrectly handling navigation
             if (!IsVisible || _stackNavigationManager is null)
+            {
+                return;
+            }
+
+            // CRITICAL: Only handle navigation for THIS specific ShellContent
+            // Other content fragments should not handle navigation meant for the current tab
+            var shellSection = _shellContent?.Parent as ShellSection;
+            if (shellSection is null || shellSection.CurrentItem != _shellContent)
             {
                 return;
             }
@@ -955,7 +1134,7 @@ namespace Microsoft.Maui.Controls.Handlers
             switch (e.RequestType)
             {
                 case NavigationRequestType.Push:
-                    // Add the new page to the current stack
+                    // For Push, add the new page to the current stack
                     var pushStack = new List<IView>(currentStack);
                     if (e.Page is not null)
                     {
@@ -964,35 +1143,44 @@ namespace Microsoft.Maui.Controls.Handlers
                     return pushStack;
 
                 case NavigationRequestType.Pop:
-                    // Remove the last page from current stack
+                    // For Pop, remove the last page from the current stack
                     if (currentStack.Count > 1)
                     {
                         var popStack = new List<IView>(currentStack);
                         popStack.RemoveAt(popStack.Count - 1);
                         return popStack;
                     }
-                    else
-                    {
-                        return currentStack.ToList();
-                    }
+                    return currentStack.ToList();
 
                 case NavigationRequestType.PopToRoot:
                     // Keep only the first page (root)
                     if (currentStack.Count > 0)
                     {
-                        var rootStack = new List<IView> { currentStack[0] };
-                        return rootStack;
+                        return new List<IView> { currentStack[0] };
                     }
                     break;
 
                 case NavigationRequestType.Insert:
                 case NavigationRequestType.Remove:
-                    // For insert/remove, use ShellSection.Stack as the source of truth
+                    // For Insert/Remove, use ShellSection.Stack as the source of truth
+                    // BUT: Replace null at index 0 with the fragment's root page
                     var section = _shellContent.Parent as ShellSection;
                     if (section is not null)
                     {
-                        var stack = section.Stack.Cast<IView>().Where(p => p is not null).ToList();
-                        return stack;
+                        var resultStack = new List<IView>();
+                        foreach (var page in section.Stack)
+                        {
+                            if (page is null)
+                            {
+                                // Replace null placeholder with the actual root page
+                                resultStack.Add(_rootPage);
+                            }
+                            else
+                            {
+                                resultStack.Add(page);
+                            }
+                        }
+                        return resultStack;
                     }
                     break;
             }
@@ -1014,14 +1202,50 @@ namespace Microsoft.Maui.Controls.Handlers
                 return;
             }
 
-            // Update toolbar with current page
+            // CRITICAL: Only update toolbar if this content is currently active in the Shell hierarchy
+            // When switching sections via bottom nav, the old section's content fragments
+            // may still have IsVisible=true and incorrectly update the shared toolbar
+            var shellSection = _shellContent?.Parent as ShellSection;
+            var shellItem = shellSection?.Parent as ShellItem;
+            var shell = shellItem?.Parent as Shell;
+
+            // Check if this content is part of the currently active section
+            if (shellSection is null || shellItem is null || shell is null)
+                return;
+            if (shell.CurrentItem != shellItem)
+                return;
+            if (shellItem.CurrentItem != shellSection)
+                return;
+            if (shellSection.CurrentItem != _shellContent)
+                return;
+
+            // Update toolbar with current page (toolbar is at ShellItem level)
             if (newStack.Count > 0 && newStack[newStack.Count - 1] is Page currentPage)
             {
-                if (_handler._toolbarTracker is not null && _handler._shellToolbar is not null)
+                var toolbarTracker = _handler.ToolbarTracker;
+                var shellToolbar = _handler.ShellToolbar;
+                if (toolbarTracker is not null && shellToolbar is not null)
                 {
-                    _handler._toolbarTracker.CanNavigateBack = newStack.Count > 1;
-                    // _handler._toolbarTracker.Page = currentPage;
-                    _handler._shellToolbar.Handler?.UpdateValue(nameof(IToolbar.BackButtonVisible));
+                    toolbarTracker.CanNavigateBack = newStack.Count > 1;
+
+                    // Update the Page so toolbar items and title are updated
+                    if (toolbarTracker.Page != currentPage)
+                    {
+                        toolbarTracker.Page = currentPage;
+                    }
+
+                    shellToolbar.Handler?.UpdateValue(nameof(IToolbar.BackButtonVisible));
+
+                    // Force ShellToolbar to update title and other properties
+                    // Use the shell variable we already obtained above
+                    if (shell?.Toolbar is ShellToolbar st)
+                    {
+                        st.ApplyChanges();
+                    }
+
+                    // CRITICAL FIX: Trigger appearance update for the new page
+                    // This ensures toolbar colors update based on per-page Shell.BackgroundColor settings
+                    ((IShellController)shell).AppearanceChanged(currentPage, false);
                 }
             }
 
@@ -1236,6 +1460,7 @@ namespace Microsoft.Maui.Controls.Handlers
         {
             readonly ShellSectionHandler _handler;
             AView _view;
+            AView _multiContentView; // Separate view for multiple content mode
 
             public ShellSectionWrapperFragment(ShellSectionHandler handler)
             {
@@ -1244,51 +1469,113 @@ namespace Microsoft.Maui.Controls.Handlers
                 _handler.SetParentFragment(this);
             }
 
+            public override void OnCreate(Bundle savedInstanceState)
+            {
+                // Don't call base with saved state - this prevents Android from
+                // automatically restoring child fragments with stale container IDs.
+                // When hosted in ViewPager2, child fragment restoration causes crashes
+                // because the container IDs are dynamically generated.
+                base.OnCreate(null);
+            }
+
             public override AView OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
             {
-                // Get or create the handler's platform view
-                if (_view is null)
+                // Check if we need multiple content mode
+                bool needsMultipleContentMode = _handler.VirtualView?.Items?.Count > 1;
+
+                if (needsMultipleContentMode)
                 {
-                    _view = _handler.PlatformView ?? _handler.ToPlatform();
+                    // For multiple content mode, create the ViewPager2 layout now
+                    // and return that instead of the navigation container
+                    if (_multiContentView is null)
+                    {
+                        _multiContentView = _handler.CreateMultiContentView(this);
+                    }
+                    else if (_multiContentView.Parent is ViewGroup parent)
+                    {
+                        parent.RemoveView(_multiContentView);
+                    }
+                    return _multiContentView;
                 }
                 else
                 {
-                    // When reusing the view, check if child fragments still exist
-                    // Android may have destroyed them when this fragment was detached
-                    if (_handler._navigationContainer is not null && _handler._stackNavigationManager is not null)
+                    // Single content mode - use the navigation container as before
+                    if (_view is null)
                     {
-                        var fragmentManager = ChildFragmentManager;
-                        var existingNavHost = fragmentManager.FindFragmentById(_handler._navigationContainer.Id);
-
-                        // If NavHostFragment is missing, we need to recreate it
-                        if (existingNavHost is null)
+                        _view = _handler.PlatformView ?? _handler.ToPlatform();
+                    }
+                    else
+                    {
+                        // When reusing the view, check if child fragments still exist
+                        // Android may have destroyed them when this fragment was detached
+                        if (_handler._navigationContainer is not null && _handler._stackNavigationManager is not null)
                         {
-                            // Disconnect and reconnect to recreate the NavHostFragment
-                            // This ensures the navigation stack is properly restored
-                            _handler._stackNavigationManager.Disconnect();
-                            _handler.ConnectStackNavigationManager();
+                            var fragmentManager = ChildFragmentManager;
+                            var existingNavHost = fragmentManager.FindFragmentById(_handler._navigationContainer.Id);
+
+                            // If NavHostFragment is missing, we need to recreate it
+                            if (existingNavHost is null)
+                            {
+                                // Disconnect and reconnect to recreate the NavHostFragment
+                                // This ensures the navigation stack is properly restored
+                                _handler._stackNavigationManager.Disconnect();
+                                _handler.ConnectStackNavigationManager();
+                            }
                         }
                     }
+
+                    // Remove from parent if it has one (fragment recreation scenario)
+                    // This is required when OnCreateView is called multiple times (e.g., back navigation, config change)
+                    if (_view.Parent is ViewGroup parent)
+                    {
+                        parent.RemoveView(_view);
+                    }
+
+                    return _view;
                 }
-
-                // Remove from parent if it has one (fragment recreation scenario)
-                // This is required when OnCreateView is called multiple times (e.g., back navigation, config change)
-                if (_view.Parent is ViewGroup parent)
-                {
-                    parent.RemoveView(_view);
-                }
-
-                // Now that fragment is attached and view is being created, setup ViewPager2 if needed
-                _handler.OnParentFragmentViewCreated();
-
-                return _view;
             }
+
+            public override void OnResume()
+            {
+                base.OnResume();
+
+                // When the fragment becomes visible again (e.g., switching back to this tab),
+                // trigger appearance update ONCE - observers handle the rest
+                if (_handler.VirtualView is null)
+                    return;
+
+                // CRITICAL: Only update toolbar if this section is currently active
+                // ViewPager2 may call OnResume for offscreen pages during transitions
+                if (!_handler.IsCurrentlyActiveSection())
+                    return;
+
+                var shell = _handler.VirtualView.FindParentOfType<Shell>();
+                var currentContent = _handler.VirtualView.CurrentItem;
+
+                if (shell is null || currentContent is null)
+                    return;
+
+                var page = ((IShellContentController)currentContent).GetOrCreateContent();
+                if (page is null)
+                    return;
+
+                // Update toolbar title (may have changed while this fragment was hidden)
+                var toolbarTracker = _handler.ToolbarTracker;
+                toolbarTracker?.Page = page;
+
+                // Trigger appearance update ONCE - observers handle the rest
+                // ShellItemHandler will update toolbar colors via its IAppearanceObserver
+                // ShellSectionHandler will update TabLayout colors via its IAppearanceObserver
+                ((IShellController)shell).AppearanceChanged(page, false);
+            }
+
 
             protected override void Dispose(bool disposing)
             {
                 if (disposing)
                 {
                     _view = null;
+                    _multiContentView = null;
                 }
                 base.Dispose(disposing);
             }
