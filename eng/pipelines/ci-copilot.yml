@@ -65,6 +65,19 @@ stages:
               skipAndroidCreateAvds: false
               androidEmulatorApiLevel: '34'
 
+          # Start Android Emulator EARLY (boots in background while other steps run)
+          # This saves ~2-3 minutes by parallelizing boot with .NET install and build tasks
+          - script: |
+              echo "=== Starting Android Emulator (background) ==="
+              nohup $ANDROID_SDK_ROOT/emulator/emulator -avd Emulator_34 -no-window -no-snapshot -no-audio -no-boot-anim > /dev/null 2>&1 &
+              echo "Emulator starting in background (PID: $!)"
+              echo "Boot will complete while other steps run..."
+            displayName: 'Start Android Emulator (Background)'
+            continueOnError: true
+            env:
+              ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
+              JAVA_HOME: $(JAVA_HOME_17_X64)
+
           # Install .NET and workloads via build.ps1
           - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
             displayName: 'Install .NET and workloads'
@@ -194,35 +207,34 @@ stages:
           #     ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
           #     JAVA_HOME: $(JAVA_HOME_17_X64)
 
-          # Start Android Emulator (verbose logging)
-          - pwsh: |
-              Write-Host "=== Starting Android Emulator ==="
-              Write-Host "Working directory: $(Get-Location)"
+          # Wait for Android Emulator to finish booting (started earlier in background)
+          - script: |
+              echo "=== Waiting for Android Emulator to be ready ==="
               
-              $scriptPath = ".github/scripts/shared/Start-Emulator.ps1"
-              if (-not (Test-Path $scriptPath)) {
-                Write-Host "##vso[task.logissue type=error]Script not found: $scriptPath"
-                exit 1
-              }
+              # Wait for device to appear
+              echo "Waiting for emulator device..."
+              adb wait-for-device
               
-              $ErrorActionPreference = "Continue"
-              try {
-                & "./$scriptPath" -Platform android -Verbose 2>&1 | ForEach-Object { Write-Host $_ }
-                $exitCode = $LASTEXITCODE
-              } catch {
-                Write-Host "##vso[task.logissue type=error]Exception: $_"
-                Write-Host $_.ScriptStackTrace
-                $exitCode = 1
-              }
+              # Wait for boot_completed
+              echo "Waiting for emulator to finish booting..."
+              timeout=120
+              waited=0
+              while [ "$(adb shell getprop sys.boot_completed 2>/dev/null)" != "1" ]; do
+                sleep 2
+                waited=$((waited + 2))
+                echo "Waiting for boot... ($waited/$timeout seconds)"
+                if [ $waited -ge $timeout ]; then
+                  echo "##vso[task.logissue type=error]Emulator did not boot in time"
+                  adb devices -l
+                  exit 1
+                fi
+              done
               
-              Write-Host "Start-Emulator completed with exit code: $exitCode"
-              if ($exitCode -ne 0) {
-                Write-Host "##vso[task.logissue type=warning]Start-Emulator failed with code $exitCode"
-              }
-              exit $exitCode
-            displayName: 'Start Android Emulator (Verbose)'
+              echo "=== Emulator booted successfully! ==="
+              adb devices -l
+            displayName: 'Wait for Android Emulator'
             continueOnError: true
-            timeoutInMinutes: 10
+            timeoutInMinutes: 5
             env:
               ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
               JAVA_HOME: $(JAVA_HOME_17_X64)
