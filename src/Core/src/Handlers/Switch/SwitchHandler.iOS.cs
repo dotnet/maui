@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using CoreFoundation;
 using Foundation;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
@@ -84,7 +85,11 @@ namespace Microsoft.Maui.Handlers
 						if (PlatformView is not null)
 						{
 							UpdateTrackOffColor(PlatformView);
-							UpdateThumbColor(PlatformView);
+							// MacCatalyst 26+ resets ThumbColor when window becomes active
+							if (OperatingSystem.IsMacCatalystVersionAtLeast(26))
+							{
+								UpdateThumbColor(PlatformView);
+							}
 						}
 					});
 #elif IOS
@@ -134,11 +139,11 @@ namespace Microsoft.Maui.Handlers
 
 			void UpdateThumbColor(UISwitch platformView)
 			{
-				DispatchQueue.MainQueue.DispatchAsync(async () =>
+				DispatchQueue.MainQueue.DispatchAsync(() =>
 				{
 					if (VirtualView is ISwitch view && view.ThumbColor is not null)
 					{
-						platformView.ThumbTintColor = view.ThumbColor.ToPlatform();
+						platformView.UpdateThumbColor(view);
 					}
 				});
 			}
