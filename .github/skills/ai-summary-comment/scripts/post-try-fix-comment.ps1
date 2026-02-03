@@ -261,7 +261,6 @@ $statusEmoji = switch ($Status) {
 }
 
 # Build the new attempt section - compact format
-# Note: blank line after </summary> is required for proper markdown rendering
 $attemptSection = @"
 <details>
 <summary>$statusEmoji Fix $AttemptNumber</summary>
@@ -270,7 +269,7 @@ $attemptSection = @"
 
 # Show brief approach description
 if (-not [string]::IsNullOrWhiteSpace($Approach)) {
-    $attemptSection += "$Approach`n`n"
+    $attemptSection += "`n$Approach`n`n"
 }
 
 # Only show diff if available
@@ -326,7 +325,10 @@ try {
 }
 
 # Build the try-fix section content
-$tryFixHeader = "### 🔧 Try-Fix Analysis`n`n"
+# Count existing attempts to show in summary
+$existingAttemptCount = 0
+$passCount = 0
+$failCount = 0
 
 # Extract existing try-fix section to preserve previous attempts
 $existingTryFixContent = ""
@@ -336,21 +338,63 @@ if ($existingBody -match "(?s)$startPattern(.*?)$endPattern") {
     $existingTryFixContent = $Matches[1].Trim()
 }
 
+# Extract just the inner attempt details (strip outer wrapper and headers)
+$innerAttempts = ""
+if ($existingTryFixContent -match '(?s)<details>\s*<summary><b>🔧 Try-Fix Analysis.*?</summary>\s*(.*?)\s*</details>\s*$') {
+    # New format - extract content inside the outer details
+    $innerAttempts = $Matches[1].Trim()
+} elseif ($existingTryFixContent -match '(?s)### 🔧.*?`n`n(.*)') {
+    # Old header format
+    $innerAttempts = $Matches[1].Trim()
+} else {
+    # Just use as-is but strip any stray headers
+    $innerAttempts = $existingTryFixContent -replace "(?s)^### 🔧[^\n]*\n+", ""
+}
+
+# Strip any leading horizontal rules, <br> tags, or whitespace before the first <details>
+$innerAttempts = $innerAttempts -replace "(?s)^\s*---\s*\n+", ""
+$innerAttempts = $innerAttempts -replace "(?s)^(<br>\s*)+", ""
+$innerAttempts = $innerAttempts.TrimStart()
+
+# Count existing attempts (only count inner <details> that are Fix attempts)
+$existingAttemptCount = ([regex]::Matches($innerAttempts, '<details>\s*<summary>[✅❌🔨⚪]')).Count
+$passCount = ([regex]::Matches($innerAttempts, '<details>\s*<summary>✅')).Count
+$failCount = ([regex]::Matches($innerAttempts, '<details>\s*<summary>❌')).Count
+
 # Check if this attempt number already exists and replace it, or add new
-# Match both old format (Attempt N:) and new format (Fix N)
-$attemptPattern = "(?s)<details>\s*<summary>.*?(Attempt $AttemptNumber`:|Fix $AttemptNumber).*?</details>"
-if ($existingTryFixContent -match $attemptPattern) {
+$attemptPattern = "(?s)<details>\s*<summary>[✅❌🔨⚪]\s*Fix $AttemptNumber</summary>.*?</details>"
+if ($innerAttempts -match $attemptPattern) {
     Write-Host "Replacing existing Fix $AttemptNumber..." -ForegroundColor Yellow
-    $tryFixContent = $existingTryFixContent -replace $attemptPattern, $attemptSection
-} elseif (-not [string]::IsNullOrWhiteSpace($existingTryFixContent)) {
+    $tryFixInnerContent = $innerAttempts -replace $attemptPattern, $attemptSection
+} elseif (-not [string]::IsNullOrWhiteSpace($innerAttempts)) {
     Write-Host "Adding new Fix $AttemptNumber..." -ForegroundColor Yellow
-    # Remove header if present to avoid duplication
-    $existingTryFixContent = $existingTryFixContent -replace "^### 🔧 (Try-Fix Analysis|Fix Attempts)\s*`n*", ""
-    $tryFixContent = $tryFixHeader + $existingTryFixContent.TrimEnd() + "`n`n" + $attemptSection
+    $tryFixInnerContent = $innerAttempts.TrimEnd() + "`n`n" + $attemptSection
 } else {
     Write-Host "Creating first fix..." -ForegroundColor Yellow
-    $tryFixContent = $tryFixHeader + $attemptSection
+    $tryFixInnerContent = $attemptSection
 }
+
+# Recalculate attempt statistics from the final content to ensure consistency
+$totalAttemptCount = ([regex]::Matches($tryFixInnerContent, '<details>\s*<summary>[✅❌🔨⚪]')).Count
+$passCount = ([regex]::Matches($tryFixInnerContent, '<details>\s*<summary>✅')).Count
+$failCount = ([regex]::Matches($tryFixInnerContent, '<details>\s*<summary>❌')).Count
+
+# Build summary line with counts
+$summaryStatus = if ($passCount -gt 0) { "✅ $passCount passed" } else { "" }
+if ($failCount -gt 0) {
+    if ($summaryStatus -ne "") { $summaryStatus += ", " }
+    $summaryStatus += "❌ $failCount failed"
+}
+if ($summaryStatus -eq "") { $summaryStatus = "$totalAttemptCount attempt(s)" }
+
+# Wrap everything in a single collapsible section
+$tryFixContent = @"
+<details>
+<summary><b>🔧 Try-Fix Analysis: $summaryStatus</b></summary><br>
+$tryFixInnerContent
+
+</details>
+"@
 
 # Build the section with markers
 $tryFixSection = @"
@@ -410,9 +454,31 @@ if ($DryRun) {
     $TRY_FIX_END_MARKER = "<!-- /SECTION:TRY-FIX -->"
     
     if ($existingPreview -match [regex]::Escape($TRY_FIX_MARKER)) {
-        # Replace existing TRY-FIX section
+        # Extract existing TRY-FIX content to preserve previous attempts (same logic as GitHub comment path)
+        $startPattern = [regex]::Escape($TRY_FIX_MARKER)
+        $endPattern = [regex]::Escape($TRY_FIX_END_MARKER)
+        $existingTryFixPreview = ""
+        if ($existingPreview -match "(?s)$startPattern(.*?)$endPattern") {
+            $existingTryFixPreview = $Matches[1].Trim()
+        }
+        
+        # Check if this attempt already exists - replace it, otherwise append
+        $attemptPatternPreview = "(?s)<details>\s*<summary>.*?(Attempt $AttemptNumber`:|Fix $AttemptNumber).*?</details>"
+        if ($existingTryFixPreview -match $attemptPatternPreview) {
+            Write-Host "Replacing existing Fix $AttemptNumber in preview..." -ForegroundColor Yellow
+            $updatedTryFixContent = $existingTryFixPreview -replace $attemptPatternPreview, $attemptSection
+            $tryFixSectionUpdated = "$SECTION_START`n$tryFixHeader$updatedTryFixContent`n$SECTION_END"
+        } else {
+            Write-Host "Adding Fix $AttemptNumber to preview..." -ForegroundColor Yellow
+            # Remove header if present to avoid duplication
+            $existingTryFixPreview = $existingTryFixPreview -replace "^### � (Try-Fix Analysis|Fix Attempts)\s*`n*", ""
+            $updatedTryFixContent = $tryFixHeader + $existingTryFixPreview.TrimEnd() + "`n`n" + $attemptSection
+            $tryFixSectionUpdated = "$SECTION_START`n$updatedTryFixContent`n$SECTION_END"
+        }
+        
+        # Replace the section in the preview
         $pattern = [regex]::Escape($TRY_FIX_MARKER) + "[\s\S]*?" + [regex]::Escape($TRY_FIX_END_MARKER)
-        $finalComment = $existingPreview -replace $pattern, $tryFixSection
+        $finalComment = $existingPreview -replace $pattern, $tryFixSectionUpdated
     } elseif (-not [string]::IsNullOrWhiteSpace($existingPreview)) {
         # Append TRY-FIX section to existing content
         $finalComment = $existingPreview.TrimEnd() + "`n`n" + $tryFixSection

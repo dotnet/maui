@@ -74,8 +74,9 @@ parameters:
     os: Windows
     buildScript: $(_buildScript)
     sln: '$(Build.SourcesDirectory)/Microsoft.Maui.sln'
-  - name: Azure Pipelines
-    vmImage: $(HostedMacImage)
+  - name: AcesShared
+    demands:
+        - ImageOverride -equals ACES_VM_SharedPool_Tahoe
     os: macOS
     buildScript: $(_buildScriptMacOS)
     sln: '$(Build.SourcesDirectory)/Microsoft.Maui-mac.slnf'
@@ -97,19 +98,16 @@ parameters:
 - name: MacOSPool
   type: object
   default:
-    name: Azure Pipelines
-    vmImage: $(HostedMacImage)
-    os: macOS
-    label: macOS
+    internal:
+      name: Azure Pipelines
+      vmImage: $(HostedMacImage)
+      label: macOS
+    public:
+      name: AcesShared
+      demands:
+        - ImageOverride -equals ACES_VM_SharedPool_Tahoe
+      label: macOS
 
-# ARM64 macOS pool (Apple Silicon)
-- name: MacOSPoolArm64
-  type: object
-  default:
-    name: Azure Pipelines
-    vmImage: macOS-15-arm64
-    os: macOS
-    label: macOS-arm64
 
 # Condition for MacOSPool comparison lanes (non-ARM64)
 # Runs on: (non-PR on main/net*.0/release/*/inflight/*) OR (PR targeting net*.0/release/*/inflight/*)
@@ -202,7 +200,10 @@ stages:
       buildscript: $(_buildScript)
     - name: mac_unit_tests
       displayName: macOS Unit Tests
-      pool: ${{ parameters.MacOSPoolArm64 }}
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:
+        pool: ${{ parameters.MacOSPool.internal }}
       timeout: 90
       testOS: macOS
       buildscript: $(_buildScriptMacOS)
@@ -223,7 +224,10 @@ stages:
       timeout: 120
       testCategory: Samples
     - name: mac_sample_tests
-      pool: ${{ parameters.MacOSPoolArm64 }}
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
       timeout: 240
       testCategory: Samples
 
@@ -252,7 +256,10 @@ stages:
       timeout: 120
       testCategory: Build
     - name: mac_buildtemplate_tests
-      pool: ${{ parameters.MacOSPool }}
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
       timeout: 240
       testCategory: Build
 
@@ -266,7 +273,10 @@ stages:
       timeout: 120
       testCategory: Blazor
     - name: mac_blazortemplate_tests
-      pool: ${{ parameters.MacOSPoolArm64 }}
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
       timeout: 240
       testCategory: Blazor
 
@@ -280,40 +290,61 @@ stages:
       timeout: 120
       testCategory: MultiProject
     - name: mac_multitemplate_tests
-      pool: ${{ parameters.MacOSPoolArm64 }}
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
       timeout: 120
       testCategory: MultiProject
 
     # TODO: macOSTemplates and AOT template categories
     - name: mac_runandroid_tests
-      pool: ${{ parameters.MacOSPool }}
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
       timeout: 240
       testCategory: RunOnAndroid
 
     # RunOniOS - Individual test methods run in parallel
     # ARM64 (Apple Silicon) lanes - using MacOSPoolArm64
     - name: mac_runios_maui_debug_arm64
-      pool: ${{ parameters.MacOSPoolArm64 }}
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
       timeout: 45
       testName: RunOniOS_MauiDebug
 
     - name: mac_runios_maui_release_arm64
-      pool: ${{ parameters.MacOSPoolArm64 }}
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
       timeout: 45
       testName: RunOniOS_MauiRelease
 
     - name: mac_runios_maui_trim_arm64
-      pool: ${{ parameters.MacOSPoolArm64 }}
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
       timeout: 45
       testName: RunOniOS_MauiReleaseTrimFull
 
     - name: mac_runios_blazor_debug_arm64
-      pool: ${{ parameters.MacOSPoolArm64 }}
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
       timeout: 45
       testName: RunOniOS_BlazorDebug
 
     - name: mac_runios_blazor_release_arm64
-      pool: ${{ parameters.MacOSPoolArm64 }}
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
       timeout: 45
       testName: RunOniOS_BlazorRelease
 
@@ -325,44 +356,65 @@ stages:
     #   testName: RunOniOS_BlazorReleaseTrimFull
 
     - name: mac_runios_nativeaot_arm64
-      pool: ${{ parameters.MacOSPoolArm64 }}
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
       timeout: 45
       testName: RunOniOS_MauiNativeAOT
 
     # MacOSPool lanes - comparison with ARM64 pool
     # Only run on: (non-PR on main/net*.0/release/*/inflight/*) OR (PR targeting net*.0/release/*/inflight/*)
     - name: mac_runios_maui_debug
-      pool: ${{ parameters.MacOSPool }}
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
       timeout: 45
       testName: RunOniOS_MauiDebug
       condition: ${{ parameters.macOSPoolLaneCondition }}
 
     - name: mac_runios_maui_release
-      pool: ${{ parameters.MacOSPool }}
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
       timeout: 45
       testName: RunOniOS_MauiRelease
       condition: ${{ parameters.macOSPoolLaneCondition }}
 
     - name: mac_runios_maui_trim
-      pool: ${{ parameters.MacOSPool }}
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
       timeout: 45
       testName: RunOniOS_MauiReleaseTrimFull
       condition: ${{ parameters.macOSPoolLaneCondition }}
 
     - name: mac_runios_blazor_debug
-      pool: ${{ parameters.MacOSPool }}
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
       timeout: 45
       testName: RunOniOS_BlazorDebug
       condition: ${{ parameters.macOSPoolLaneCondition }}
 
     - name: mac_runios_blazor_release
-      pool: ${{ parameters.MacOSPool }}
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
       timeout: 45
       testName: RunOniOS_BlazorRelease
       condition: ${{ parameters.macOSPoolLaneCondition }}
 
     - name: mac_runios_nativeaot
-      pool: ${{ parameters.MacOSPool }}
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
       timeout: 45
       testName: RunOniOS_MauiNativeAOT
       condition: ${{ parameters.macOSPoolLaneCondition }}
