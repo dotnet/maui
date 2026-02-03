@@ -15,7 +15,7 @@ MAUIX2002 | XamlInflation | Error | Descriptors
 MAUIX2003 | XamlInflation | Error | Descriptors
 MAUIX2004 | XamlInflation | Error | Descriptors
 MAUIX2005 | XamlInflation | Warning | Descriptors
-MAUIX2006 | XamlParsing | Warning | PropertyElementWithAttribute
+MAUIX2006 | XamlParsing | Error | PropertyElementWithAttribute
 MAUIG2024 | XamlInflation | Warning | BindingWithXDataTypeFromOuterScope
 MAUIG2041 | XamlInflation | Error | BindingIndexerNotClosed
 MAUIG2042 | XamlInflation | Error | BindingIndexerEmpty

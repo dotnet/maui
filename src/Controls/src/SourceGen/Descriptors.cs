@@ -257,7 +257,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 			title: "Property element has attributes",
 			messageFormat: "{0}",
 			category: "XamlParsing",
-			defaultSeverity: DiagnosticSeverity.Warning,
+			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
 
 		// public static BuildExceptionCode TypeResolution = new BuildExceptionCode("XC", 0000, nameof(TypeResolution), "");
