@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<TabbedPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+            xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+            xmlns:local="clr-namespace:Maui.Controls.Sample"
+            xmlns:android="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;assembly=Microsoft.Maui.Controls"
+            x:Class="Maui.Controls.Sample.TabbedPageTopTabsTestPage"
+            Title="TabbedPage Test (Top Tabs)"
+            BarBackgroundColor="#2196F3"
+            BarTextColor="White"
+            SelectedTabColor="#FFEB3B"
+            UnselectedTabColor="#90CAF9"
+            android:TabbedPage.ToolbarPlacement="Top"
+            android:TabbedPage.IsSwipePagingEnabled="True">
+
+    <local:TabbedPageTopTabsTestPage.ToolbarItems>
+        <ToolbarItem Text="Info"
+                     Clicked="OnInfoClicked"/>
+    </local:TabbedPageTopTabsTestPage.ToolbarItems>
+
+    <!-- Tab 1: Home -->
+    <ContentPage Title="Home"
+                 IconImageSource="dotnet_bot.png">
+        <ScrollView>
+            <VerticalStackLayout Spacing="15"
+                                 Padding="20">
+                <Label Text="TabbedPage Test - Top Tabs"
+                       FontSize="24"
+                       FontAttributes="Bold"
+                       HorizontalOptions="Center"/>
+
+                <Label Text="Testing TabLayout (Top Tab Placement)"
+                       FontSize="14"
+                       TextColor="Gray"
+                       HorizontalOptions="Center"/>
+
+                <BoxView HeightRequest="1"
+                         Color="LightGray"
+                         Margin="0,10"/>
+
+                <Label Text="Top Tabs use TabLayout (not BottomNavigationManager)"
+                       FontSize="14"
+                       FontAttributes="Bold"
+                       TextColor="#2196F3"/>
+
+                <Label Text="TabbedPageManager handles both placements:"
+                       FontSize="14"/>
+                <Label Text="• Top: Uses TabLayout + TabLayoutMediator"
+                       FontSize="14"/>
+                <Label Text="• Bottom: Uses BottomNavigationManager"
+                       FontSize="14"/>
+
+                <BoxView HeightRequest="1"
+                         Color="LightGray"
+                         Margin="0,10"/>
+
+                <Label Text="Color Properties"
+                       FontSize="16"
+                       FontAttributes="Bold"/>
+
+                <Grid ColumnDefinitions="Auto,*"
+                      RowDefinitions="Auto,Auto,Auto"
+                      RowSpacing="8"
+                      ColumnSpacing="15">
+                    <Label Text="BarBackgroundColor:"
+                           Grid.Row="0"
+                           Grid.Column="0"
+                           VerticalOptions="Center"/>
+                    <Label Text="#2196F3 (Blue)"
+                           Grid.Row="0"
+                           Grid.Column="1"
+                           TextColor="#2196F3"
+                           VerticalOptions="Center"/>
+
+                    <Label Text="SelectedTabColor:"
+                           Grid.Row="1"
+                           Grid.Column="0"
+                           VerticalOptions="Center"/>
+                    <Label Text="#FFEB3B (Yellow)"
+                           Grid.Row="1"
+                           Grid.Column="1"
+                           TextColor="#FFEB3B"
+                           BackgroundColor="#333"
+                           Padding="5,2"
+                           VerticalOptions="Center"/>
+
+                    <Label Text="UnselectedTabColor:"
+                           Grid.Row="2"
+                           Grid.Column="0"
+                           VerticalOptions="Center"/>
+                    <Label Text="#90CAF9 (Light Blue)"
+                           Grid.Row="2"
+                           Grid.Column="1"
+                           TextColor="#90CAF9"
+                           VerticalOptions="Center"/>
+                </Grid>
+
+                <BoxView HeightRequest="1"
+                         Color="LightGray"
+                         Margin="0,10"/>
+
+                <Label Text="Tab Placement (Android)"
+                       FontSize="16"
+                       FontAttributes="Bold"/>
+
+                <HorizontalStackLayout Spacing="10"
+                        HorizontalOptions="Fill">
+                    <Button Text="📍 Bottom Tabs"
+                            Clicked="OnBottomTabsClicked"
+                            BackgroundColor="#FF5722"
+                            TextColor="White"
+                            HorizontalOptions="FillAndExpand"/>
+                    <Button Text="📍 Top Tabs"
+                            Clicked="OnTopTabsClicked"
+                            BackgroundColor="#2196F3"
+                            TextColor="White"
+                            HorizontalOptions="FillAndExpand"/>
+                </HorizontalStackLayout>
+
+                <BoxView HeightRequest="1"
+                         Color="LightGray"
+                         Margin="0,10"/>
+
+                <Button Text="Change Bar Background Color"
+                        Clicked="OnChangeBarColorClicked"
+                        BackgroundColor="#2196F3"
+                        TextColor="White"/>
+
+                <Button Text="Change Tab Colors"
+                        Clicked="OnChangeTabColorsClicked"
+                        BackgroundColor="#FFEB3B"
+                        TextColor="Black"/>
+
+                <Button Text="Back to Shell"
+                        Clicked="OnBackToShellClicked"
+                        BackgroundColor="#CF6679"
+                        TextColor="White"/>
+            </VerticalStackLayout>
+        </ScrollView>
+    </ContentPage>
+
+    <!-- Tab 2: Settings -->
+    <ContentPage Title="Settings"
+                 IconImageSource="groceries.png">
+        <ScrollView>
+            <VerticalStackLayout Spacing="15"
+                                 Padding="20">
+                <Label Text="Settings Tab (Top)"
+                       FontSize="24"
+                       FontAttributes="Bold"
+                       HorizontalOptions="Center"/>
+
+                <Label Text="Top tabs use TabLayout with TabLayoutMediator"
+                       FontSize="14"
+                       TextColor="Gray"
+                       HorizontalOptions="Center"
+                       HorizontalTextAlignment="Center"/>
+
+                <BoxView HeightRequest="1"
+                         Color="LightGray"
+                         Margin="0,10"/>
+
+                <Label Text="TabLayout Features:"
+                       FontSize="16"
+                       FontAttributes="Bold"/>
+
+                <Label Text="• Scrollable tabs (many tabs supported)"
+                       FontSize="14"/>
+                <Label Text="• Tab indicator animation"
+                       FontSize="14"/>
+                <Label Text="• Swipe between tabs"
+                       FontSize="14"/>
+                <Label Text="• Text-based tabs (icons optional)"
+                       FontSize="14"/>
+            </VerticalStackLayout>
+        </ScrollView>
+    </ContentPage>
+
+    <!-- Tab 3: Profile -->
+    <ContentPage Title="Profile"
+                 IconImageSource="dotnet_bot.png">
+        <ScrollView>
+            <VerticalStackLayout Spacing="15"
+                                 Padding="20">
+                <Label Text="Profile Tab (Top)"
+                       FontSize="24"
+                       FontAttributes="Bold"
+                       HorizontalOptions="Center"/>
+
+                <Label Text="Third tab for comparison"
+                       FontSize="14"
+                       TextColor="Gray"
+                       HorizontalOptions="Center"/>
+
+                <BoxView HeightRequest="1"
+                         Color="LightGray"
+                         Margin="0,10"/>
+
+                <Border BackgroundColor="#E3F2FD"
+                        Padding="15"
+                        StrokeShape="RoundRectangle 10">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="Comparison: Top vs Bottom Tabs"
+                               FontSize="16"
+                               FontAttributes="Bold"/>
+                        <Label Text="Top: TabLayout + TabLayoutMediator"
+                               FontSize="14"/>
+                        <Label Text="Bottom: BottomNavigationManager (shared)"
+                               FontSize="14"/>
+                        <Label Text="Both use ViewPager2 for content"
+                               FontSize="14"/>
+                    </VerticalStackLayout>
+                </Border>
+            </VerticalStackLayout>
+        </ScrollView>
+    </ContentPage>
+
+    <!-- Tab 4: More -->
+    <ContentPage Title="More"
+                 IconImageSource="groceries.png">
+        <ScrollView>
+            <VerticalStackLayout Spacing="15"
+                                 Padding="20">
+                <Label Text="More Tab (Top)"
+                       FontSize="24"
+                       FontAttributes="Bold"
+                       HorizontalOptions="Center"/>
+
+                <Label Text="Top tabs can have unlimited tabs (scrollable)"
+                       FontSize="14"
+                       TextColor="Gray"
+                       HorizontalOptions="Center"
+                       HorizontalTextAlignment="Center"/>
+
+                <BoxView HeightRequest="1"
+                         Color="LightGray"
+                         Margin="0,10"/>
+
+                <Label Text="Note: Unlike bottom tabs (max 5), top tabs using TabLayout can display many tabs with horizontal scrolling."
+                       FontSize="14"
+                       TextColor="DimGray"/>
+            </VerticalStackLayout>
+        </ScrollView>
+    </ContentPage>
+
+</TabbedPage>
