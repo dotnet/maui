@@ -1,6 +1,6 @@
 # MAUI Dev Tools Client — Product Specification
 
-**Version**: 1.2-draft  
+**Version**: 1.3-draft  
 **Status**: Proposal  
 **Last Updated**: 2026-02-03
 
@@ -31,6 +31,7 @@
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 1.3-draft | 2026-02-03 | Added: Copilot-assisted troubleshooting (§9.3), MCP tool integration, escalation hierarchy, context handoff schema |
 | 1.2-draft | 2026-02-03 | Added: MSBuild integration alignment with dotnet/sdk spec, `dotnet run` pipeline integration, `--list-devices` convention, deploy step, AI agent considerations |
 | 1.1-draft | 2026-02-03 | Added: Exit code standardization, Windows management, offline/proxy support, container environments, migration strategy, concurrency model, permission storage, ARM64 considerations |
 | 1.0-draft | 2026-02-03 | Initial draft |
@@ -1399,9 +1400,215 @@ Total download size: 10.7 GB
 ? Proceed? [Y/n]
 ```
 
----
+### 9.3 Copilot-Assisted Troubleshooting
 
-## 10. Telemetry & Diagnostics
+When automated fixes fail or issues are too complex for deterministic resolution, the tool can escalate to GitHub Copilot for AI-assisted troubleshooting. This provides a graceful fallback that combines structured diagnostics with conversational problem-solving.
+
+#### Escalation Triggers
+
+The tool escalates to Copilot when:
+
+| Trigger | Example | Escalation Action |
+|---------|---------|-------------------|
+| Fix failed | SDK install fails with network error | Offer "Ask Copilot for help" |
+| Unknown issue | Unrecognized error code from `adb` | Auto-suggest Copilot assistance |
+| Complex diagnosis | Multiple interrelated issues | Recommend Copilot review |
+| User request | User clicks "Get AI Help" | Open Copilot with context |
+
+#### Context Handoff
+
+When escalating to Copilot, the tool provides structured context:
+
+```json
+{
+  "escalation_type": "fix_failed",
+  "tool_version": "1.2.0",
+  "doctor_report": { /* full doctor.status output */ },
+  "failed_operation": {
+    "command": "android.sdk.install",
+    "params": { "packages": ["platforms;android-34"] },
+    "error": {
+      "code": "E4001",
+      "message": "Download failed: Connection reset",
+      "details": "Failed after 3 retries to dl.google.com"
+    }
+  },
+  "environment": {
+    "os": "macOS 15.0",
+    "proxy_configured": true,
+    "network_type": "corporate"
+  },
+  "attempted_fixes": [
+    { "action": "retry_download", "result": "failed" },
+    { "action": "clear_cache", "result": "failed" }
+  ]
+}
+```
+
+#### IDE Integration (VS Code)
+
+```
+┌────────────────────────────────────────────────────────────┐
+│  ✖ Fix Failed                                              │
+├────────────────────────────────────────────────────────────┤
+│                                                            │
+│  Unable to install Android SDK automatically.              │
+│                                                            │
+│  Error: Connection reset while downloading from            │
+│  dl.google.com (E4001)                                     │
+│                                                            │
+│  Attempted:                                                │
+│    • Retry download (3 times)                              │
+│    • Clear download cache                                  │
+│                                                            │
+│  This may be caused by:                                    │
+│    • Corporate proxy/firewall blocking Google domains      │
+│    • Network connectivity issues                           │
+│    • SSL inspection interfering with downloads             │
+│                                                            │
+│  ─────────────────────────────────────────────────────────│
+│  [Ask Copilot for Help]  [View Logs]  [Retry]  [Cancel]   │
+└────────────────────────────────────────────────────────────┘
+```
+
+**"Ask Copilot for Help" Flow**:
+
+1. User clicks button or types `/maui-help` in Copilot Chat
+2. Extension sends diagnostic context to Copilot
+3. Copilot receives structured data + conversation prompt:
+
+```
+The MAUI Dev Tools detected an issue it couldn't fix automatically.
+
+**Issue**: Android SDK installation failed (E4001 - Connection reset)
+**Environment**: macOS 15.0, corporate network with proxy
+**Attempted**: 3 download retries, cache clear
+
+The diagnostic bundle is attached. Please help the user resolve this issue.
+Common causes for this error include proxy configuration, firewall rules,
+or SSL inspection. Ask clarifying questions if needed.
+```
+
+4. Copilot engages in conversational troubleshooting
+5. Copilot can suggest manual steps or request tool actions with user approval
+
+#### CLI Integration
+
+```bash
+$ maui doctor --fix
+...
+✖ Failed to install Android SDK
+
+Error: Connection reset while downloading (E4001)
+
+Attempted fixes:
+  • Retry download (3 times) - failed
+  • Clear download cache - failed
+
+Would you like to get help from Copilot? [Y/n] y
+
+Opening Copilot with diagnostic context...
+Run: gh copilot explain "MAUI SDK install failure E4001"
+
+Or copy this diagnostic summary:
+  maui diagnostic-bundle --output /tmp/maui-diag.zip
+  gh copilot explain --file /tmp/maui-diag.zip
+```
+
+#### Copilot Tool Actions (MCP Integration)
+
+When running as an MCP server, the tool exposes actions that Copilot can invoke (with user approval):
+
+```json
+{
+  "tools": [
+    {
+      "name": "maui_doctor_status",
+      "description": "Check MAUI development environment health",
+      "requires_approval": false
+    },
+    {
+      "name": "maui_doctor_fix",
+      "description": "Attempt to fix detected environment issues",
+      "requires_approval": true
+    },
+    {
+      "name": "maui_diagnostic_bundle",
+      "description": "Generate diagnostic bundle for troubleshooting",
+      "requires_approval": false
+    },
+    {
+      "name": "maui_config_set",
+      "description": "Update tool configuration (e.g., proxy settings)",
+      "requires_approval": true
+    }
+  ]
+}
+```
+
+**Example Copilot Conversation**:
+
+```
+User: My MAUI Android build keeps failing with SDK errors
+
+Copilot: Let me check your MAUI environment.
+         [Calling maui_doctor_status...]
+
+         I found several issues:
+         1. ❌ Android SDK not found at expected location
+         2. ⚠️ ANDROID_HOME environment variable not set
+
+         It looks like the Android SDK may not be installed, or it's
+         installed in a non-standard location.
+
+         Would you like me to:
+         a) Install the Android SDK to the default location
+         b) Help you configure ANDROID_HOME to point to an existing SDK
+
+User: Install it please
+
+Copilot: I'll install the Android SDK with recommended components.
+         [Requesting approval for maui_doctor_fix...]
+
+         ✓ User approved
+
+         [Calling maui_doctor_fix with issue_id="ANDROID_SDK_MISSING"...]
+
+         ✓ Android SDK installed successfully
+         ✓ ANDROID_HOME configured
+
+         Your environment is now ready. Try building again!
+```
+
+#### Fallback Hierarchy
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ 1. Automated Fix (maui doctor --fix)                        │
+│    Tool attempts deterministic fix based on known patterns  │
+├─────────────────────────────────────────────────────────────┤
+│ 2. Guided Manual Fix                                        │
+│    Tool provides step-by-step instructions for user         │
+├─────────────────────────────────────────────────────────────┤
+│ 3. Copilot-Assisted Troubleshooting                         │
+│    AI helps diagnose complex/unknown issues conversationally│
+├─────────────────────────────────────────────────────────────┤
+│ 4. Community/Support Escalation                             │
+│    Link to GitHub issues, docs, or support channels         │
+└─────────────────────────────────────────────────────────────┘
+```
+
+#### Privacy Considerations
+
+When escalating to Copilot:
+
+- **Opt-in**: User must explicitly request Copilot assistance
+- **Data minimization**: Only relevant diagnostic data shared
+- **Redaction**: PII (paths, device names) redacted per §10.3 rules
+- **Transparency**: User can view exact data being shared before sending
+- **Local option**: `--offline-diagnosis` generates report without sending to Copilot
+
+---
 
 ### 10.1 Telemetry Events
 
