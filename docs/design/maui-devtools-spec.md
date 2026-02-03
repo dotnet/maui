@@ -1,6 +1,6 @@
 # MAUI Dev Tools Client — Product Specification
 
-**Version**: 1.3-draft  
+**Version**: 1.4-draft  
 **Status**: Proposal  
 **Last Updated**: 2026-02-03
 
@@ -31,6 +31,7 @@
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 1.4-draft | 2026-02-03 | Changed CLI to `dotnet maui` pattern; kept `apple` for Apple platform commands; added `windows` subcommand |
 | 1.3-draft | 2026-02-03 | Added: Copilot-assisted troubleshooting (§9.3), MCP tool integration, escalation hierarchy, context handoff schema |
 | 1.2-draft | 2026-02-03 | Added: MSBuild integration alignment with dotnet/sdk spec, `dotnet run` pipeline integration, `--list-devices` convention, deploy step, AI agent considerations |
 | 1.1-draft | 2026-02-03 | Added: Exit code standardization, Windows management, offline/proxy support, container environments, migration strategy, concurrency model, permission storage, ARM64 considerations |
@@ -149,7 +150,7 @@ This tool eliminates that friction by providing a single, authoritative source f
 **Profile**: Marcus, building an iOS app. He has Xcode installed but outdated simulators.
 
 **Journey**:
-1. Marcus runs `maui doctor` in terminal
+1. Marcus runs `dotnet maui doctor` in terminal
 2. Output shows:
    ```
    ✓ .NET SDK 9.0.100
@@ -159,7 +160,7 @@ This tool eliminates that friction by providing a single, authoritative source f
    ⚠ iOS 18.0 runtime not installed (iOS 17.4 available)
    ⚠ No iPhone 16 simulator available
    ```
-3. He runs `maui doctor --fix`
+3. He runs `dotnet maui doctor --fix`
 4. Tool prompts: "Install iOS 18.0 runtime? (requires 8GB download) [Y/n]"
 5. After confirmation, runtime installs and simulator is created
 
@@ -178,7 +179,7 @@ This tool eliminates that friction by providing a single, authoritative source f
    - name: Setup MAUI Environment
      run: |
        dotnet tool install -g Microsoft.Maui.DevTools
-       maui doctor --fix --non-interactive --json > setup-report.json
+       dotnet maui doctor --fix --non-interactive --json > setup-report.json
    ```
 2. Tool runs silently, installs missing components, outputs JSON report
 3. If any unfixable issues exist, tool exits with non-zero code
@@ -196,7 +197,7 @@ This tool eliminates that friction by providing a single, authoritative source f
 
 **Journey**:
 1. User asks: "My Android build is failing with 'SDK not found'"
-2. Agent invokes: `maui doctor --json --target android`
+2. Agent invokes: `dotnet maui doctor --json --platform android`
 3. Agent receives structured response:
    ```json
    {
@@ -207,7 +208,7 @@ This tool eliminates that friction by providing a single, authoritative source f
          "severity": "error",
          "message": "Android SDK not found",
          "fixable": true,
-         "fix_command": "maui android sdk install --recommended"
+         "fix_command": "dotnet maui android sdk install --recommended"
        }
      ]
    }
@@ -402,8 +403,8 @@ This tool eliminates that friction by providing a single, authoritative source f
 | WSL2 | ✓ (experimental) | — | Partial | ✓ |
 
 When emulator/simulator unavailable:
-- `maui doctor` reports capability with reason (e.g., "emulator: unavailable (virtualization disabled)")
-- `maui android avd start` fails fast with `E2010` "Hardware acceleration unavailable"
+- `dotnet maui doctor` reports capability with reason (e.g., "emulator: unavailable (virtualization disabled)")
+- `dotnet maui android avd start` fails fast with `E2010` "Hardware acceleration unavailable"
 
 ---
 
@@ -627,8 +628,8 @@ When multiple SDK installations are detected:
 5. Default location (`~/Library/Android/sdk` on macOS, `%LOCALAPPDATA%\Android\Sdk` on Windows)
 
 **Conflict Handling**:
-- `maui doctor` reports all detected SDKs with recommendation
-- `maui config set android-sdk-path <path>` to override
+- `dotnet maui doctor` reports all detected SDKs with recommendation
+- `dotnet maui config set android-sdk-path <path>` to override
 - `--sdk-path` flag available on all android commands for one-off override
 
 **Android Studio Coexistence**:
@@ -651,10 +652,12 @@ When an existing SDK is detected:
 
 ### 8.1 CLI Commands
 
+The tool is invoked as `dotnet maui <command>`, integrating naturally with the .NET CLI. Platform-specific commands use the target framework moniker pattern (`ios`, `android`, `maccatalyst`, `windows`).
+
 #### Command Hierarchy
 
 ```
-maui
+dotnet maui
 ├── doctor                    # Check environment health
 │   ├── --fix [issue-id]      # Auto-fix all or specific issue
 │   ├── --platform <p>        # Filter: android, ios, windows, maccatalyst (repeatable)
@@ -663,7 +666,7 @@ maui
 │   └── --offline             # Skip network checks
 │
 ├── device
-│   ├── list                  # List all devices
+│   ├── list                  # List all devices across platforms
 │   │   ├── --platform        # Filter by platform
 │   │   └── --json            # Output as JSON
 │   ├── screenshot            # Capture screenshot
@@ -675,7 +678,7 @@ maui
 │       ├── --device          # Device identifier
 │       └── --filter          # Filter expression
 │
-├── android
+├── android                   # Android-specific commands
 │   ├── sdk
 │   │   ├── list              # List installed packages
 │   │   ├── list-available    # List available packages
@@ -696,11 +699,14 @@ maui
 │   │   │   └── --device      # Emulator serial
 │   │   └── delete            # Delete AVD
 │   │       └── --name        # AVD name
-│   └── install               # Install APK
+│   ├── install               # Install APK
+│   │   ├── --device          # Target device
+│   │   └── <apk-path>        # APK file
+│   └── logcat                # Stream Android logs
 │       ├── --device          # Target device
-│       └── <apk-path>        # APK file
+│       └── --filter          # Tag filter (e.g., "MainActivity:V *:S")
 │
-├── apple
+├── apple                     # Apple platform commands (macOS only)
 │   ├── simulator
 │   │   ├── list              # List simulators
 │   │   │   ├── --runtime     # Filter by runtime
@@ -717,9 +723,16 @@ maui
 │   │   └── delete            # Delete simulator
 │   │       └── --udid        # Simulator UDID
 │   └── runtime
-│       ├── list              # List runtimes
+│       ├── list              # List installed iOS/macOS runtimes
 │       └── install           # Install runtime (guidance)
 │           └── --version     # Runtime version
+│
+├── windows                   # Windows-specific commands (Windows only)
+│   ├── sdk
+│   │   └── list              # List Windows SDK installations
+│   └── developer-mode
+│       ├── status            # Check Developer Mode status
+│       └── enable            # Guide to enable Developer Mode
 │
 ├── deploy                    # Deploy app to device (without running)
 │   ├── --device <id>         # Target device
@@ -741,6 +754,29 @@ maui
 │   └── status                # Check daemon status
 │
 └── --version                 # Show version
+```
+
+**Command Examples**:
+```bash
+# Cross-platform commands
+dotnet maui doctor
+dotnet maui doctor --fix
+dotnet maui device list
+dotnet maui device screenshot --device emulator-5554
+
+# Android-specific
+dotnet maui android sdk install platforms;android-34
+dotnet maui android avd create --name Pixel_8 --device pixel_8
+dotnet maui android avd start --name Pixel_8 --wait
+dotnet maui android logcat --device emulator-5554
+
+# Apple-specific (macOS only)
+dotnet maui apple simulator list
+dotnet maui apple simulator boot --name "iPhone 16 Pro"
+dotnet maui apple runtime list
+
+# Windows-specific
+dotnet maui windows developer-mode status
 ```
 
 #### Global Options (Available on All Commands)
@@ -771,17 +807,17 @@ All commands follow a consistent exit code scheme:
 
 | Command | Description | Inputs | Output | Exit Codes |
 |---------|-------------|--------|--------|------------|
-| `doctor` | Check environment health | `--fix`, `--platform`, `--json` | Status report | 0=healthy, 1=issues, 2=error |
-| `device list` | List available devices | `--platform`, `--json` | Device list | 0=success, 2=error |
-| `device screenshot` | Capture screenshot | `--device`, `--output`, `--wait` | File path | 0=success, 5=no device, 2=error |
-| `android sdk list` | List SDK packages | `--json` | Package list | 0=success, 2=error |
-| `android sdk install` | Install SDK package | `<package>`, `--accept-licenses` | Progress, result | 0=success, 5=not found, 2=error |
-| `android avd create` | Create emulator | `--name`, `--device`, `--image` | AVD name | 0=success, 1=exists, 2=error |
-| `android avd start` | Start emulator | `--name`, `--wait`, `--cold-boot` | Device serial | 0=success, 5=not found, 2=error |
-| `apple simulator list` | List simulators | `--runtime`, `--device-type`, `--state` | Simulator list | 0=success, 2=error |
-| `apple simulator boot` | Boot simulator | `--udid` or `--name` | UDID | 0=success, 5=not found, 2=error |
-| `apple runtime list` | List iOS runtimes | `--json` | Runtime list | 0=success, 2=error |
-| `config set` | Set configuration | `<key>`, `<value>` | Confirmation | 0=success, 2=error |
+| `dotnet maui doctor` | Check environment health | `--fix`, `--platform`, `--json` | Status report | 0=healthy, 1=issues, 2=error |
+| `dotnet maui device list` | List available devices | `--platform`, `--json` | Device list | 0=success, 2=error |
+| `dotnet maui device screenshot` | Capture screenshot | `--device`, `--output`, `--wait` | File path | 0=success, 5=no device, 2=error |
+| `dotnet maui android sdk list` | List SDK packages | `--json` | Package list | 0=success, 2=error |
+| `dotnet maui android sdk install` | Install SDK package | `<package>`, `--accept-licenses` | Progress, result | 0=success, 5=not found, 2=error |
+| `dotnet maui android avd create` | Create emulator | `--name`, `--device`, `--image` | AVD name | 0=success, 1=exists, 2=error |
+| `dotnet maui android avd start` | Start emulator | `--name`, `--wait`, `--cold-boot` | Device serial | 0=success, 5=not found, 2=error |
+| `dotnet maui apple simulator list` | List simulators | `--runtime`, `--device-type`, `--state` | Simulator list | 0=success, 2=error |
+| `dotnet maui apple simulator boot` | Boot simulator | `--udid` or `--name` | UDID | 0=success, 5=not found, 2=error |
+| `dotnet maui apple runtime list` | List iOS runtimes | `--json` | Runtime list | 0=success, 2=error |
+| `dotnet maui config set` | Set configuration | `<key>`, `<value>` | Confirmation | 0=success, 2=error |
 
 ### 8.2 JSON-RPC API
 
@@ -1254,19 +1290,19 @@ Stream logs from device (uses JSON-RPC notifications).
 |---------|---------|-------|-------------------|
 | `doctor` | ✓ | ✓ | No |
 | `doctor --fix` | ✓ | ✓ | Sometimes* |
-| `device list` | ✓ | ✓ | No |
-| `device screenshot` | ✓ | ✓ | No |
-| `android sdk list` | ✓ | ✓ | No |
-| `android sdk install` | ✓ | ✓ | No |
-| `android avd create` | ✓ | ✓ | No |
-| `android avd start` | ✓ | ✓ | No |
-| `android logcat` | ✓ | ✓ | No |
-| `apple simulator list` | — | ✓ | No |
-| `apple simulator boot` | — | ✓ | No |
-| `apple simulator create` | — | ✓ | No |
-| `apple runtime list` | — | ✓ | No |
-| `apple runtime install` | — | ✓ | Yes (admin) |
-| `logs stream` | ✓ | ✓ | No |
+| `dotnet maui device list` | ✓ | ✓ | No |
+| `dotnet maui device screenshot` | ✓ | ✓ | No |
+| `dotnet maui android sdk list` | ✓ | ✓ | No |
+| `dotnet maui android sdk install` | ✓ | ✓ | No |
+| `dotnet maui android avd create` | ✓ | ✓ | No |
+| `dotnet maui android avd start` | ✓ | ✓ | No |
+| `dotnet maui android logcat` | ✓ | ✓ | No |
+| `dotnet maui apple simulator list` | — | ✓ | No |
+| `dotnet maui apple simulator boot` | — | ✓ | No |
+| `dotnet maui apple simulator create` | — | ✓ | No |
+| `dotnet maui apple runtime list` | — | ✓ | No |
+| `dotnet maui apple runtime install` | — | ✓ | Yes (admin) |
+| `dotnet maui device logs` | ✓ | ✓ | No |
 
 *Elevation required for: installing Android SDK to system locations, installing Xcode runtimes
 
@@ -2163,64 +2199,73 @@ Run 'dotnet tool update -g Microsoft.Maui.DevTools' to update.
 #### Doctor Commands
 ```bash
 # Basic health check
-maui doctor
+dotnet maui doctor
 
 # Health check with JSON output
-maui doctor --json
+dotnet maui doctor --json
 
 # Check and fix automatically
-maui doctor --fix
+dotnet maui doctor --fix
 
 # Check only Android components
-maui doctor --target android
+dotnet maui doctor --platform android
 
 # Non-interactive mode for CI
-maui doctor --fix --non-interactive
+dotnet maui doctor --fix --non-interactive
 ```
 
 #### Android Commands
 ```bash
-# List connected devices
-maui android device list
+# List connected devices and emulators
+dotnet maui device list --platform android
 
 # Install recommended SDK packages
-maui android sdk install --recommended
+dotnet maui android sdk install --recommended
 
 # Install specific packages
-maui android sdk install "platforms;android-34" "build-tools;34.0.0"
+dotnet maui android sdk install "platforms;android-34" "build-tools;34.0.0"
 
 # Create AVD
-maui android avd create --name "Test_Pixel_5" --device pixel_5 --image "system-images;android-34;google_apis;x86_64"
+dotnet maui android avd create --name "Test_Pixel_5" --device pixel_5 --image "system-images;android-34;google_apis;x86_64"
 
 # Start emulator and wait for boot
-maui android avd start --name "Test_Pixel_5" --wait
+dotnet maui android avd start --name "Test_Pixel_5" --wait
 
 # Stream logcat
-maui android logcat --device emulator-5554 --filter "Microsoft.Maui:V *:S"
+dotnet maui android logcat --device emulator-5554 --filter "Microsoft.Maui:V *:S"
 
 # Take screenshot
-maui device screenshot --device emulator-5554 --output ./screenshot.png
+dotnet maui device screenshot --device emulator-5554 --output ./screenshot.png
 ```
 
-#### Apple Commands
+#### iOS Commands
 ```bash
 # List all simulators
-maui apple simulator list
+dotnet maui apple simulator list
 
 # List only booted iPhone simulators
-maui apple simulator list --device-type iPhone --state booted
+dotnet maui apple simulator list --device-type iPhone --state booted
 
 # Boot specific simulator
-maui apple simulator boot --udid A1B2C3D4-E5F6-7890-ABCD-EF1234567890
+dotnet maui apple simulator boot --udid A1B2C3D4-E5F6-7890-ABCD-EF1234567890
 
 # Create new simulator
-maui apple simulator create --name "Test iPhone 16" --device-type "iPhone 16 Pro" --runtime "iOS 18.0"
+dotnet maui apple simulator create --name "Test iPhone 16" --device-type "iPhone 16 Pro" --runtime "iOS 18.0"
 
 # List available runtimes
-maui apple runtime list
+dotnet maui apple runtime list
 
 # Take screenshot from simulator
-maui device screenshot --device A1B2C3D4-E5F6-7890-ABCD-EF1234567890 --output ./sim-screenshot.png
+dotnet maui device screenshot --device A1B2C3D4-E5F6-7890-ABCD-EF1234567890 --output ./sim-screenshot.png
+```
+
+#### Windows Commands
+```bash
+# Check Developer Mode status
+dotnet maui windows developer-mode status
+
+# List Windows SDK installations
+dotnet maui windows sdk list
 ```
 
 ### 16.2 JSON Output Examples
@@ -2367,20 +2412,20 @@ maui device screenshot --device A1B2C3D4-E5F6-7890-ABCD-EF1234567890 --output ./
 
 | Code | Category | Message | Resolution |
 |------|----------|---------|------------|
-| `E1001` | General | Unknown command | Check command spelling; run `maui --help` |
+| `E1001` | General | Unknown command | Check command spelling; run `dotnet maui --help` |
 | `E1002` | General | Missing required argument | Provide required argument or use interactive mode |
 | `E1003` | General | Invalid argument value | Check allowed values in help |
-| `E2001` | Android | Android SDK not found | Run `maui android sdk install --recommended` |
+| `E2001` | Android | Android SDK not found | Run `dotnet maui android sdk install --recommended` |
 | `E2002` | Android | ADB not found | Install platform-tools via SDK manager |
 | `E2003` | Android | Emulator not found | Install emulator package |
-| `E2004` | Android | AVD not found | Create AVD with `maui android avd create` |
+| `E2004` | Android | AVD not found | Create AVD with `dotnet maui android avd create` |
 | `E2005` | Android | System image not found | Install required system image |
 | `E2006` | Android | Device offline | Reconnect device or restart emulator |
 | `E2007` | Android | APK installation failed | Check device storage; verify APK is valid |
 | `E3001` | Apple | Xcode not found | Install Xcode from App Store |
 | `E3002` | Apple | Xcode CLI tools not found | Run `xcode-select --install` |
 | `E3003` | Apple | Runtime not found | Install via Xcode > Settings > Platforms |
-| `E3004` | Apple | Simulator not found | Create simulator with `maui apple simulator create` |
+| `E3004` | Apple | Simulator not found | Create simulator with `dotnet maui apple simulator create` |
 | `E3005` | Apple | Simulator failed to boot | Check runtime compatibility; try different device |
 | `E3006` | Apple | Developer directory not set | Run `sudo xcode-select -s /Applications/Xcode.app` |
 | `E4001` | Network | Download failed | Check internet connection; retry |
