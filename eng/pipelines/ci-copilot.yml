@@ -19,7 +19,7 @@ parameters:
     type: object
     default:
       name: Azure Pipelines
-      vmImage: macOS-15
+      vmImage: macOS-15-arm64
 
 variables:
   - template: /eng/pipelines/common/variables.yml@self
