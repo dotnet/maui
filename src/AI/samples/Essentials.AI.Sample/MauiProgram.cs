@@ -6,8 +6,11 @@ using Maui.Controls.Sample.ViewModels;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.Maui.Essentials.AI;
 using System.ClientModel;
+
+#if ANDROID
+using Microsoft.Maui.Essentials.AI;
+#endif
 
 #if ENABLE_OPENAI_CLIENT || ANDROID
 using OpenAI;
