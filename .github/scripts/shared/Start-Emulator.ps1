@@ -87,12 +87,13 @@ if ($Platform -eq "android") {
         Write-Info $avdListOutput
         
         Write-Info "Starting emulator: $avdName"
-        Write-Info "Emulator command: $emulatorBin -avd $avdName -no-window -no-snapshot -no-audio -no-boot-anim -gpu swiftshader_indirect"
+        Write-Info "Emulator command: $emulatorBin -avd $avdName -no-window -no-snapshot -no-audio -no-boot-anim -accel off -gpu swiftshader_indirect"
         
+        # Use -accel off to disable hardware acceleration (HVF not available on Azure hosted ARM64 agents)
         # Use swiftshader for software rendering (more reliable on CI without GPU)
         # Redirect output to a log file for debugging
         $emulatorLog = "/tmp/emulator-$avdName.log"
-        $startScript = "nohup '$emulatorBin' -avd '$avdName' -no-window -no-snapshot -no-audio -no-boot-anim -gpu swiftshader_indirect > '$emulatorLog' 2>&1 &"
+        $startScript = "nohup '$emulatorBin' -avd '$avdName' -no-window -no-snapshot -no-audio -no-boot-anim -accel off -gpu swiftshader_indirect > '$emulatorLog' 2>&1 &"
         bash -c $startScript
         
         # Give the emulator process time to start

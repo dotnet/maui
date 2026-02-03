@@ -201,10 +201,11 @@ stages:
           - script: |
               echo "=== Booting Android Emulator ==="
               
+              # Use -accel off to disable hardware acceleration (HVF not available on Azure hosted ARM64 agents)
               # Use swiftshader for software rendering (more reliable on CI without GPU)
               # Start emulator in background with logging for debugging
               EMULATOR_LOG="/tmp/emulator-boot.log"
-              nohup $ANDROID_SDK_ROOT/emulator/emulator -avd Emulator_34 -no-window -no-snapshot -no-audio -no-boot-anim -gpu swiftshader_indirect > "$EMULATOR_LOG" 2>&1 &
+              nohup $ANDROID_SDK_ROOT/emulator/emulator -avd Emulator_34 -no-window -no-snapshot -no-audio -no-boot-anim -accel off -gpu swiftshader_indirect > "$EMULATOR_LOG" 2>&1 &
               EMULATOR_PID=$!
               echo "Emulator started with PID: $EMULATOR_PID"
               
