@@ -18,12 +18,27 @@ using LP = Android.Views.ViewGroup.LayoutParams;
 
 namespace Microsoft.Maui.Controls.Handlers
 {
-    public partial class ShellHandler : ViewHandler<Shell, AView>, IShellContext, IAppearanceObserver
+    /// <summary>
+    /// Shell handler that uses MauiDrawerLayout (same infrastructure as FlyoutViewHandler).
+    /// This replaces the old ShellFlyoutRenderer-based approach.
+    /// </summary>
+    public partial class ShellHandler : ViewHandler<Shell, MauiDrawerLayout>, IShellContext, IAppearanceObserver
     {
-        DrawerLayout _drawerLayout;
-        IShellFlyoutRenderer _flyoutRenderer;
-        FrameLayout _frameLayout;
+        // MauiDrawerLayout is now the PlatformView (same as FlyoutViewHandler)
+        MauiDrawerLayout MauiDrawerLayout => PlatformView;
+
+        // Content frame that hosts ShellItem views
+        FrameLayout _contentFrame;
+
+        // Flyout content view (Shell's flyout menu)
+        AView _flyoutContentView;
+        IShellFlyoutContentRenderer _flyoutContentRenderer;
+
+        // Current shell item renderer
         IShellItemRenderer _currentShellItemRenderer;
+
+        // Track flyout behavior for IShellContext
+        FlyoutBehavior _currentBehavior = FlyoutBehavior.Flyout;
 
         public static PropertyMapper<Shell, ShellHandler> Mapper =
             new PropertyMapper<Shell, ShellHandler>(ElementMapper)
@@ -55,26 +70,25 @@ namespace Microsoft.Maui.Controls.Handlers
         {
         }
 
-        protected override AView CreatePlatformView()
+        protected override MauiDrawerLayout CreatePlatformView()
         {
-            // Create the flyout renderer (which IS the DrawerLayout)
-            _flyoutRenderer = CreateShellFlyoutRenderer();
-            _drawerLayout = _flyoutRenderer.AndroidView as DrawerLayout;
+            // Create MauiDrawerLayout (same as FlyoutViewHandler)
+            var drawerLayout = new MauiDrawerLayout(Context);
 
             // Create the content frame that will host shell items
-            _frameLayout = new FrameLayout(Context)
+            _contentFrame = new FrameLayout(Context)
             {
                 LayoutParameters = new LP(LP.MatchParent, LP.MatchParent),
                 Id = AView.GenerateViewId(),
             };
 
-            // Attach the flyout - this adds the content to the drawer
-            _flyoutRenderer.AttachFlyout(this, _frameLayout);
+            // Set the content frame as the main content
+            drawerLayout.SetContentView(_contentFrame);
 
-            return _drawerLayout;
+            return drawerLayout;
         }
 
-        protected override void ConnectHandler(AView platformView)
+        protected override void ConnectHandler(MauiDrawerLayout platformView)
         {
             base.ConnectHandler(platformView);
 
@@ -83,14 +97,22 @@ namespace Microsoft.Maui.Controls.Handlers
             // Add appearance observer similar to ShellRenderer
             ((IShellController)VirtualView).AddAppearanceObserver(this, VirtualView);
 
+            // Subscribe to drawer state changes
+            platformView.OnPresentedChanged += OnFlyoutPresentedChanged;
+
+            // Initialize flyout behavior
+            var behavior = (VirtualView as IFlyoutView)?.FlyoutBehavior ?? FlyoutBehavior.Flyout;
+            _currentBehavior = behavior;
+            UpdateFlyoutBehaviorInternal(behavior);
+
             // Initialize with current item if it exists
-            if (VirtualView.CurrentItem != null)
+            if (VirtualView.CurrentItem is not null)
             {
                 SwitchToItem(VirtualView.CurrentItem, animate: false);
             }
         }
 
-        protected override void DisconnectHandler(AView platformView)
+        protected override void DisconnectHandler(MauiDrawerLayout platformView)
         {
             if (VirtualView is not null)
             {
@@ -98,17 +120,31 @@ namespace Microsoft.Maui.Controls.Handlers
                 ((IShellController)VirtualView).RemoveAppearanceObserver(this);
             }
 
+            platformView.OnPresentedChanged -= OnFlyoutPresentedChanged;
+
             _currentShellItemRenderer?.Dispose();
             _currentShellItemRenderer = null;
 
-            if (_flyoutRenderer is IDisposable disposable)
+            if (_flyoutContentRenderer is IDisposable disposable)
             {
                 disposable.Dispose();
             }
+            _flyoutContentRenderer = null;
+            _flyoutContentView = null;
 
-            _flyoutRenderer = null;
+            // Disconnect MauiDrawerLayout
+            platformView.Disconnect();
 
             base.DisconnectHandler(platformView);
+        }
+
+        void OnFlyoutPresentedChanged(bool isPresented)
+        {
+            // Sync the Shell's FlyoutIsPresented property with actual drawer state
+            if (_currentBehavior == FlyoutBehavior.Flyout)
+            {
+                VirtualView.SetValueFromRenderer(Shell.FlyoutIsPresentedProperty, isPresented);
+            }
         }
 
         void OnShellPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -124,7 +160,7 @@ namespace Microsoft.Maui.Controls.Handlers
             }
 
             var fragmentManager = VirtualView.FindMauiContext()?.GetFragmentManager();
-            if (fragmentManager is null || _frameLayout is null)
+            if (fragmentManager is null || _contentFrame is null)
             {
                 return;
             }
@@ -142,11 +178,14 @@ namespace Microsoft.Maui.Controls.Handlers
                 transaction.SetTransitionEx((int)global::Android.App.FragmentTransit.FragmentOpen);
             }
 
-            transaction.ReplaceEx(_frameLayout.Id, fragment);
+            transaction.ReplaceEx(_contentFrame.Id, fragment);
             transaction.SetReorderingAllowedEx(true);
             transaction.CommitAllowingStateLossEx();
 
-            if (previousRenderer != null)
+            // Force the fragment transaction to complete synchronously
+            fragmentManager.ExecutePendingTransactions();
+
+            if (previousRenderer is not null)
             {
                 void OnDestroyed(object sender, EventArgs args)
                 {
@@ -164,148 +203,191 @@ namespace Microsoft.Maui.Controls.Handlers
 
         public static void MapFlyoutIsPresented(ShellHandler handler, Shell shell)
         {
-            // Update drawer state directly
-            if (handler._drawerLayout != null)
+            // Use MauiDrawerLayout's open/close methods
+            if (handler.MauiDrawerLayout is not null)
             {
-                // Check if the drawer actually has a drawer view before manipulating it
-                // TabBar shells don't have drawer views, only FlyoutItem shells do
-                var drawerView = handler._drawerLayout.GetChildAt(1);
-                if (drawerView != null)
+                if (shell.FlyoutIsPresented)
                 {
-                    if (shell.FlyoutIsPresented)
-                        handler._drawerLayout.OpenDrawer((int)GravityFlags.Start);
-                    else
-                        handler._drawerLayout.CloseDrawer((int)GravityFlags.Start);
+                    handler.MauiDrawerLayout.OpenFlyout();
+                }
+                else
+                {
+                    handler.MauiDrawerLayout.CloseFlyout();
                 }
             }
         }
 
         public static void MapFlyoutBehavior(ShellHandler handler, Shell shell)
         {
-            // Update flyout behavior (drawer lock mode)
-            if (handler._drawerLayout != null)
+            var behavior = (shell as IFlyoutView).FlyoutBehavior;
+            handler.UpdateFlyoutBehaviorInternal(behavior);
+        }
+
+        void UpdateFlyoutBehaviorInternal(FlyoutBehavior behavior)
+        {
+            _currentBehavior = behavior;
+
+            // Ensure flyout content is added for non-disabled behaviors
+            if (behavior != FlyoutBehavior.Disabled)
             {
-                var behavior = (shell as IFlyoutView).FlyoutBehavior;
-                var lockMode = behavior == FlyoutBehavior.Locked
-                    ? DrawerLayout.LockModeLockedClosed
-                    : DrawerLayout.LockModeUnlocked;
-                handler._drawerLayout.SetDrawerLockMode(lockMode);
+                EnsureFlyoutContentCreated();
+            }
+
+            // Use MauiDrawerLayout's SetBehavior method
+            MauiDrawerLayout?.SetBehavior(behavior);
+
+            // Update content padding for locked mode
+            if (behavior == FlyoutBehavior.Locked && _contentFrame is not null)
+            {
+                var padding = MauiDrawerLayout?.GetLockedContentPadding() ?? 0;
+                _contentFrame.SetPadding(padding, _contentFrame.PaddingTop, _contentFrame.PaddingRight, _contentFrame.PaddingBottom);
+            }
+            else
+            {
+                _contentFrame?.SetPadding(0, _contentFrame.PaddingTop, _contentFrame.PaddingRight, _contentFrame.PaddingBottom);
+            }
+
+            // Sync Shell property
+            if (behavior == FlyoutBehavior.Locked)
+            {
+                VirtualView?.SetValueFromRenderer(Shell.FlyoutIsPresentedProperty, true);
+            }
+            else if (behavior == FlyoutBehavior.Disabled)
+            {
+                VirtualView?.SetValueFromRenderer(Shell.FlyoutIsPresentedProperty, false);
             }
         }
+
+        void EnsureFlyoutContentCreated()
+        {
+            if (_flyoutContentView is not null)
+                return;
+
+            // Create the flyout content renderer
+            _flyoutContentRenderer = CreateShellFlyoutContentRenderer();
+            _flyoutContentView = _flyoutContentRenderer.AndroidView;
+
+            if (_flyoutContentView is not null)
+            {
+                // Set flyout width from MauiDrawerLayout's default calculation
+                var flyoutWidth = VirtualView.FlyoutWidth;
+                if (flyoutWidth == -1)
+                {
+                    flyoutWidth = MauiDrawerLayout.DefaultFlyoutWidth;
+                }
+                else
+                {
+                    flyoutWidth = Context.ToPixels(flyoutWidth);
+                }
+
+                MauiDrawerLayout.FlyoutWidth = flyoutWidth;
+                MauiDrawerLayout.SetFlyoutView(_flyoutContentView);
+            }
+        }
+
         public static void MapFlyoutWidth(ShellHandler handler, Shell shell)
         {
-            // Update the flyout width when it changes
-            if (handler._flyoutRenderer is ShellFlyoutRenderer shellFlyoutRenderer)
+            // Update the flyout width using MauiDrawerLayout
+            if (handler.MauiDrawerLayout is not null)
             {
-                shellFlyoutRenderer.UpdateFlyoutSize(shell.FlyoutWidth, -1); // -1 means keep current height
+                var width = shell.FlyoutWidth;
+                if (width == -1)
+                {
+                    width = handler.MauiDrawerLayout.DefaultFlyoutWidth;
+                }
+                else
+                {
+                    width = handler.Context.ToPixels(width);
+                }
+
+                handler.MauiDrawerLayout.FlyoutWidth = width;
+
+                // Update the flyout view's layout params
+                if (handler._flyoutContentView?.LayoutParameters is not null)
+                {
+                    handler._flyoutContentView.LayoutParameters.Width = (int)width;
+                    handler._flyoutContentView.RequestLayout();
+                }
             }
         }
+
         public static void MapFlowDirection(ShellHandler handler, Shell shell)
         {
-            // Update the flow direction when it changes
-            if (handler._flyoutRenderer is ShellFlyoutRenderer shellFlyoutRenderer)
+            // Update the flow direction on the MauiDrawerLayout
+            if (handler.MauiDrawerLayout is null)
             {
-                shellFlyoutRenderer.UpdateFlowDirection();
+                return;
             }
+
+            handler.MauiDrawerLayout.LayoutDirection = shell.FlowDirection.ToLayoutDirection();
         }
 
         public static void MapFlyoutBackdrop(ShellHandler handler, Shell shell)
         {
-            // Update the flyout backdrop (scrim) when it changes
-            if (handler._flyoutRenderer is ShellFlyoutRenderer shellFlyoutRenderer)
-            {
-                shellFlyoutRenderer.UpdateFlyoutBackdrop(shell.FlyoutBackdrop);
-            }
+            // TODO: Implement scrim/backdrop for MauiDrawerLayout
+            // For now, use default DrawerLayout scrim
         }
+
         public static void MapFlyoutBackground(ShellHandler handler, Shell shell)
         {
             // Update the flyout content renderer when background changes
-            if (handler._flyoutRenderer is ShellFlyoutRenderer shellFlyoutRenderer)
+            if (handler._flyoutContentRenderer is ShellFlyoutTemplatedContentRenderer templatedRenderer)
             {
-                // Access the flyout content renderer directly
-                var contentRenderer = shellFlyoutRenderer.FlyoutContentRenderer;
-                if (contentRenderer is ShellFlyoutTemplatedContentRenderer templatedRenderer)
-                {
-                    templatedRenderer.UpdateFlyoutBackground();
-                }
+                templatedRenderer.UpdateFlyoutBackground();
             }
         }
 
         public static void MapFlyoutBackgroundImage(ShellHandler handler, Shell shell)
         {
             // Update the flyout content renderer when background image changes
-            if (handler._flyoutRenderer is ShellFlyoutRenderer shellFlyoutRenderer)
+            if (handler._flyoutContentRenderer is ShellFlyoutTemplatedContentRenderer templatedRenderer)
             {
-                var contentRenderer = shellFlyoutRenderer.FlyoutContentRenderer;
-                if (contentRenderer is ShellFlyoutTemplatedContentRenderer templatedRenderer)
-                {
-                    templatedRenderer.UpdateFlyoutBackground();
-                }
+                templatedRenderer.UpdateFlyoutBackground();
             }
         }
 
         public static void MapFlyoutHeader(ShellHandler handler, Shell shell)
         {
             // Update the flyout header when it changes
-            if (handler._flyoutRenderer is ShellFlyoutRenderer shellFlyoutRenderer)
+            if (handler._flyoutContentRenderer is ShellFlyoutTemplatedContentRenderer templatedRenderer)
             {
-                var contentRenderer = shellFlyoutRenderer.FlyoutContentRenderer;
-                if (contentRenderer is ShellFlyoutTemplatedContentRenderer templatedRenderer)
-                {
-                    templatedRenderer.UpdateFlyoutHeader();
-                }
+                templatedRenderer.UpdateFlyoutHeader();
             }
         }
 
         public static void MapFlyoutFooter(ShellHandler handler, Shell shell)
         {
             // Update the flyout footer when it changes
-            if (handler._flyoutRenderer is ShellFlyoutRenderer shellFlyoutRenderer)
+            if (handler._flyoutContentRenderer is ShellFlyoutTemplatedContentRenderer templatedRenderer)
             {
-                var contentRenderer = shellFlyoutRenderer.FlyoutContentRenderer;
-                if (contentRenderer is ShellFlyoutTemplatedContentRenderer templatedRenderer)
-                {
-                    templatedRenderer.UpdateFlyoutFooter();
-                }
+                templatedRenderer.UpdateFlyoutFooter();
             }
         }
 
         public static void MapFlyoutHeaderBehavior(ShellHandler handler, Shell shell)
         {
             // Update the flyout header behavior when it changes
-            if (handler._flyoutRenderer is ShellFlyoutRenderer shellFlyoutRenderer)
+            if (handler._flyoutContentRenderer is ShellFlyoutTemplatedContentRenderer templatedRenderer)
             {
-                var contentRenderer = shellFlyoutRenderer.FlyoutContentRenderer;
-                if (contentRenderer is ShellFlyoutTemplatedContentRenderer templatedRenderer)
-                {
-                    templatedRenderer.UpdateFlyoutHeaderBehavior();
-                }
+                templatedRenderer.UpdateFlyoutHeaderBehavior();
             }
         }
 
         public static void MapFlyoutVerticalScrollMode(ShellHandler handler, Shell shell)
         {
             // Update the flyout vertical scroll mode when it changes
-            if (handler._flyoutRenderer is ShellFlyoutRenderer shellFlyoutRenderer)
+            if (handler._flyoutContentRenderer is ShellFlyoutTemplatedContentRenderer templatedRenderer)
             {
-                var contentRenderer = shellFlyoutRenderer.FlyoutContentRenderer;
-                if (contentRenderer is ShellFlyoutTemplatedContentRenderer templatedRenderer)
-                {
-                    templatedRenderer.UpdateVerticalScrollMode();
-                }
+                templatedRenderer.UpdateVerticalScrollMode();
             }
         }
 
         public static void MapFlyoutContent(ShellHandler handler, Shell shell)
         {
             // Update the flyout content when it changes
-            if (handler._flyoutRenderer is ShellFlyoutRenderer shellFlyoutRenderer)
+            if (handler._flyoutContentRenderer is ShellFlyoutTemplatedContentRenderer templatedRenderer)
             {
-                var contentRenderer = shellFlyoutRenderer.FlyoutContentRenderer;
-                if (contentRenderer is ShellFlyoutTemplatedContentRenderer templatedRenderer)
-                {
-                    templatedRenderer.UpdateFlyoutContent();
-                }
+                templatedRenderer.UpdateFlyoutContent();
             }
         }
 
@@ -320,15 +402,18 @@ namespace Microsoft.Maui.Controls.Handlers
             return new ShellItemHandlerAdapter(handler, MauiContext);
         }
 
-        protected virtual IShellFlyoutRenderer CreateShellFlyoutRenderer()
+        protected virtual IShellFlyoutContentRenderer CreateShellFlyoutContentRenderer()
         {
-            return new ShellFlyoutRenderer(this, Context);
+            return new ShellFlyoutTemplatedContentRenderer(this);
         }
 
         #region IShellContext Implementation
 
         Context IShellContext.AndroidContext => Context;
-        DrawerLayout IShellContext.CurrentDrawerLayout => _drawerLayout;
+
+        // Return MauiDrawerLayout (which IS a DrawerLayout)
+        DrawerLayout IShellContext.CurrentDrawerLayout => MauiDrawerLayout;
+
         Shell IShellContext.Shell => VirtualView;
 
         IShellObservableFragment IShellContext.CreateFragmentForPage(Page page)
@@ -357,7 +442,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
         IShellToolbarTracker IShellContext.CreateTrackerForToolbar(AToolbar toolbar)
         {
-            return new ShellToolbarTracker(this, toolbar, _drawerLayout);
+            return new ShellToolbarTracker(this, toolbar, MauiDrawerLayout);
         }
 
         IShellToolbarAppearanceTracker IShellContext.CreateToolbarAppearanceTracker()

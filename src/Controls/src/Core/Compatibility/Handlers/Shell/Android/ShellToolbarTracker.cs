@@ -698,6 +698,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 			else
 			{
+				// BUG FIX: Remove the collapsible search menu item when navigating to a page without SearchHandler
+				// Previously, only _searchView was cleaned up, but the menu item remained visible
+				if (menu.FindItem(_placeholderMenuItemId) is not null)
+				{
+					menu.RemoveItem(_placeholderMenuItemId);
+				}
+
 				if (_searchView != null)
 				{
 					_searchView.View.RemoveFromParent();

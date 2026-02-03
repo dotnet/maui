@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	[TypeConverter(typeof(ShellSectionTypeConverter))]
 	[DebuggerTypeProxy(typeof(ShellSectionDebugView))]
-	public partial class ShellSection : ShellGroupItem, IShellSectionController, IPropertyPropagationController, IVisualTreeElement, IStackNavigation, IStackNavigationView // For testing purpose only added IStackNavigationView here. Need to find is there any other way to make it work.
+	public partial class ShellSection : ShellGroupItem, IShellSectionController, IPropertyPropagationController, IVisualTreeElement, IStackNavigation, IStackNavigationView
 	{
 		#region PropertyKeys
 

@@ -9,31 +9,38 @@ using AndroidX.Core.View;
 using AndroidX.DrawerLayout.Widget;
 using AndroidX.Fragment.App;
 using AndroidX.Lifecycle;
+using Microsoft.Maui.Platform;
 
+#pragma warning disable RS0016 // Add public types and members to the declared API
 namespace Microsoft.Maui.Handlers
 {
-	public partial class FlyoutViewHandler : ViewHandler<IFlyoutView, View>
+	public partial class FlyoutViewHandler : ViewHandler<IFlyoutView, MauiDrawerLayout>
 	{
 		View? _flyoutView;
 		const uint DefaultScrimColor = 0x99000000;
 		View? _navigationRoot;
-		LinearLayoutCompat? _sideBySideView;
-		DrawerLayout DrawerLayout => (DrawerLayout)PlatformView;
 		ScopedFragment? _detailViewFragment;
 
-		protected override View CreatePlatformView()
+		// MauiDrawerLayout provides: _sideBySideView, layout methods, lock modes
+		MauiDrawerLayout MauiDrawerLayout => PlatformView;
+
+		protected override MauiDrawerLayout CreatePlatformView()
 		{
 			var li = MauiContext?.GetLayoutInflater();
 			_ = li ?? throw new InvalidOperationException($"LayoutInflater cannot be null");
 
-			var dl = li.Inflate(Resource.Layout.drawer_layout, null)
-				.JavaCast<DrawerLayout>()
-				?? throw new InvalidOperationException($"Resource.Layout.drawer_layout missing");
+			// Create MauiDrawerLayout instead of raw DrawerLayout
+			var dl = new MauiDrawerLayout(Context);
 
+			// Create navigation root from XML
 			_navigationRoot = li.Inflate(Resource.Layout.navigationlayout, null)
 				?? throw new InvalidOperationException($"Resource.Layout.navigationlayout missing");
 
 			_navigationRoot.Id = View.GenerateViewId();
+
+			// Set navigation root as content view in MauiDrawerLayout
+			dl.SetContentView(_navigationRoot);
+
 			return dl;
 		}
 
@@ -138,127 +145,44 @@ namespace Microsoft.Maui.Handlers
 				_flyoutView.SetBackgroundColor(new global::Android.Graphics.Color(colors.GetColor(0, 0)));
 			}
 
-			LayoutViews();
+			// Use MauiDrawerLayout to set the flyout view
+			MauiDrawerLayout.FlyoutWidth = FlyoutWidth;
+			MauiDrawerLayout.SetFlyoutView(_flyoutView);
+
+			// Set layout mode based on behavior
+			UpdateFlyoutBehavior();
 		}
 
 		void LayoutViews()
 		{
+			// Layout is now handled by MauiDrawerLayout internally
+			// Just ensure behavior is set correctly
 			if (_flyoutView == null)
 				return;
 
-			if (VirtualView.FlyoutBehavior == FlyoutBehavior.Locked)
-				LayoutSideBySide();
-			else
-				LayoutAsFlyout();
-		}
+			MauiDrawerLayout.FlyoutLayoutModeValue = VirtualView.FlyoutBehavior == FlyoutBehavior.Locked
+				? MauiDrawerLayout.FlyoutLayoutMode.SideBySide
+				: MauiDrawerLayout.FlyoutLayoutMode.Flyout;
 
-		void LayoutSideBySide()
-		{
-			var flyoutView = _flyoutView;
-			if (MauiContext == null || _navigationRoot == null || flyoutView == null)
-				return;
-
-			if (_sideBySideView == null)
-			{
-				_sideBySideView = new LinearLayoutCompat(Context)
-				{
-					Orientation = LinearLayoutCompat.Horizontal,
-					LayoutParameters = new DrawerLayout.LayoutParams(
-						DrawerLayout.LayoutParams.MatchParent,
-						DrawerLayout.LayoutParams.MatchParent)
-				};
-			}
-
-			if (_navigationRoot.Parent != _sideBySideView)
-			{
-				_navigationRoot.RemoveFromParent();
-
-				var layoutParameters =
-					new LinearLayoutCompat.LayoutParams(
-						LinearLayoutCompat.LayoutParams.MatchParent,
-						LinearLayoutCompat.LayoutParams.MatchParent,
-						1);
-
-				_sideBySideView.AddView(_navigationRoot, layoutParameters);
-				UpdateDetailsFragmentView();
-			}
-
-			if (flyoutView.Parent != _sideBySideView)
-			{
-				// When the Flyout is acting as a flyout Android will set the Visibility to GONE when it's off screen
-				// This makes sure it's visible
-				flyoutView.Visibility = ViewStates.Visible;
-				flyoutView.RemoveFromParent();
-				var layoutParameters =
-					new LinearLayoutCompat.LayoutParams(
-						(int)FlyoutWidth,
-						LinearLayoutCompat.LayoutParams.MatchParent,
-						0);
-
-				_sideBySideView.AddView(flyoutView, 0, layoutParameters);
-			}
-
-			if (_sideBySideView.Parent != PlatformView)
-				DrawerLayout.AddView(_sideBySideView);
-			else
-				UpdateDetailsFragmentView();
-
-			if (VirtualView is IToolbarElement te && te.Toolbar?.Handler is ToolbarHandler th)
-				th.SetupWithDrawerLayout(null);
-		}
-
-		void LayoutAsFlyout()
-		{
-			var flyoutView = _flyoutView;
-			if (MauiContext == null || _navigationRoot == null || flyoutView == null)
-				return;
-
-			_sideBySideView?.RemoveAllViews();
-			_sideBySideView?.RemoveFromParent();
-
-			if (_navigationRoot.Parent != PlatformView)
-			{
-				_navigationRoot.RemoveFromParent();
-
-				var layoutParameters =
-					new LinearLayoutCompat.LayoutParams(
-						LinearLayoutCompat.LayoutParams.MatchParent,
-						LinearLayoutCompat.LayoutParams.MatchParent);
-
-				DrawerLayout.AddView(_navigationRoot, 0, layoutParameters);
-			}
-
+			// Update fragment view after layout
 			UpdateDetailsFragmentView();
 
-			if (flyoutView.Parent != PlatformView)
-			{
-				flyoutView.RemoveFromParent();
-
-				var layoutParameters =
-					new DrawerLayout.LayoutParams(
-						(int)FlyoutWidth,
-						DrawerLayout.LayoutParams.MatchParent,
-						(int)GravityFlags.Start);
-
-				// Flyout has to get added after the content otherwise clicking anywhere
-				// on the flyout will cause it to close and gesture
-				// recognizers inside the flyout won't fire
-				DrawerLayout.AddView(flyoutView, layoutParameters);
-			}
-
+			// Update toolbar integration
 			if (VirtualView is IToolbarElement te && te.Toolbar?.Handler is ToolbarHandler th)
-				th.SetupWithDrawerLayout(DrawerLayout);
+			{
+				th.SetupWithDrawerLayout(VirtualView.FlyoutBehavior == FlyoutBehavior.Locked ? null : MauiDrawerLayout);
+			}
 		}
+
+		// LayoutSideBySide and LayoutAsFlyout are now handled by MauiDrawerLayout
 
 		void UpdateIsPresented()
 		{
-			if (_flyoutView?.Parent == DrawerLayout)
-			{
-				if (VirtualView.IsPresented)
-					DrawerLayout.OpenDrawer(_flyoutView);
-				else
-					DrawerLayout.CloseDrawer(_flyoutView);
-			}
+			// Use MauiDrawerLayout's open/close methods
+			if (VirtualView.IsPresented)
+				MauiDrawerLayout.OpenFlyout();
+			else
+				MauiDrawerLayout.CloseFlyout();
 		}
 
 		void UpdateFlyoutBehavior()
@@ -270,20 +194,17 @@ namespace Microsoft.Maui.Handlers
 			// Important to create the layout views before setting the lock mode
 			LayoutViews();
 
-			switch (behavior)
+			// Use MauiDrawerLayout's SetBehavior method for consistent behavior handling
+			MauiDrawerLayout.SetBehavior(behavior);
+
+			// Also set gesture enabled state
+			if (behavior == FlyoutBehavior.Flyout)
 			{
-				case FlyoutBehavior.Disabled:
-				case FlyoutBehavior.Locked:
-					DrawerLayout.CloseDrawers();
-					DrawerLayout.SetDrawerLockMode(DrawerLayout.LockModeLockedClosed);
-					break;
-				case FlyoutBehavior.Flyout:
-					DrawerLayout.SetDrawerLockMode(VirtualView.IsGestureEnabled ? DrawerLayout.LockModeUnlocked : DrawerLayout.LockModeLockedClosed);
-					break;
+				MauiDrawerLayout.SetGestureEnabled(VirtualView.IsGestureEnabled);
 			}
 		}
 
-		protected override void ConnectHandler(View platformView)
+		protected override void ConnectHandler(MauiDrawerLayout platformView)
 		{
 			MauiWindowInsetListener.RegisterParentForChildViews(platformView);
 
@@ -292,14 +213,12 @@ namespace Microsoft.Maui.Handlers
 				MauiWindowInsetListener.SetupViewWithLocalListener(cl);
 			}
 
-			if (platformView is DrawerLayout dl)
-			{
-				dl.DrawerStateChanged += OnDrawerStateChanged;
-				dl.ViewAttachedToWindow += DrawerLayoutAttached;
-			}
+			// Subscribe to MauiDrawerLayout events
+			platformView.OnPresentedChanged += HandlePresentedChanged;
+			platformView.ViewAttachedToWindow += DrawerLayoutAttached;
 		}
 
-		protected override void DisconnectHandler(View platformView)
+		protected override void DisconnectHandler(MauiDrawerLayout platformView)
 		{
 			MauiWindowInsetListener.UnregisterView(platformView);
 			if (_navigationRoot is CoordinatorLayout cl)
@@ -308,11 +227,12 @@ namespace Microsoft.Maui.Handlers
 				_navigationRoot = null;
 			}
 
-			if (platformView is DrawerLayout dl)
-			{
-				dl.DrawerStateChanged -= OnDrawerStateChanged;
-				dl.ViewAttachedToWindow -= DrawerLayoutAttached;
-			}
+			// Unsubscribe from MauiDrawerLayout events
+			platformView.OnPresentedChanged -= HandlePresentedChanged;
+			platformView.ViewAttachedToWindow -= DrawerLayoutAttached;
+
+			// Use MauiDrawerLayout's Disconnect method for cleanup
+			platformView.Disconnect();
 
 			if (VirtualView is IToolbarElement te)
 			{
@@ -325,10 +245,11 @@ namespace Microsoft.Maui.Handlers
 			UpdateDetailsFragmentView();
 		}
 
-		void OnDrawerStateChanged(object? sender, DrawerLayout.DrawerStateChangedEventArgs e)
+		void HandlePresentedChanged(bool isPresented)
 		{
-			if (e.NewState == DrawerLayout.StateIdle && VirtualView.FlyoutBehavior == FlyoutBehavior.Flyout && _flyoutView != null)
-				VirtualView.IsPresented = DrawerLayout.IsDrawerVisible(_flyoutView);
+			// Sync the virtual view's IsPresented property with the actual drawer state
+			if (VirtualView.FlyoutBehavior == FlyoutBehavior.Flyout)
+				VirtualView.IsPresented = isPresented;
 		}
 
 		public static void MapDetail(IFlyoutViewHandler handler, IFlyoutView flyoutView)
@@ -376,7 +297,7 @@ namespace Microsoft.Maui.Handlers
 				handler.VirtualView is IToolbarElement te &&
 				te.Toolbar?.Handler is ToolbarHandler th)
 			{
-				th.SetupWithDrawerLayout(platformHandler.DrawerLayout);
+				th.SetupWithDrawerLayout(platformHandler.MauiDrawerLayout);
 			}
 		}
 

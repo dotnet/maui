@@ -1,1 +1,7 @@
 #nullable enable
+*REMOVED*override Microsoft.Maui.Handlers.FlyoutViewHandler.ConnectHandler(Android.Views.View! platformView) -> void
+*REMOVED*override Microsoft.Maui.Handlers.FlyoutViewHandler.CreatePlatformView() -> Android.Views.View!
+*REMOVED*override Microsoft.Maui.Handlers.FlyoutViewHandler.DisconnectHandler(Android.Views.View! platformView) -> void
+override Microsoft.Maui.Handlers.FlyoutViewHandler.CreatePlatformView() -> Microsoft.Maui.Platform.MauiDrawerLayout!
+override Microsoft.Maui.Handlers.FlyoutViewHandler.ConnectHandler(Microsoft.Maui.Platform.MauiDrawerLayout! platformView) -> void
+override Microsoft.Maui.Handlers.FlyoutViewHandler.DisconnectHandler(Microsoft.Maui.Platform.MauiDrawerLayout! platformView) -> void
