@@ -157,42 +157,42 @@ stages:
               echo "Tools restored successfully"
             displayName: 'Restore .NET Tools'
 
-          # Boot Android emulator for UI tests
-          - script: |
-              echo "=== Booting Android Emulator ==="
+          # # Boot Android emulator for UI tests
+          # - script: |
+          #     echo "=== Booting Android Emulator ==="
               
-              # Start emulator in background, detached from terminal
-              nohup $ANDROID_SDK_ROOT/emulator/emulator -avd Emulator_34 -no-window -no-snapshot -no-audio -no-boot-anim > /dev/null 2>&1 &
-              EMULATOR_PID=$!
-              echo "Emulator started with PID: $EMULATOR_PID"
+          #     # Start emulator in background, detached from terminal
+          #     nohup $ANDROID_SDK_ROOT/emulator/emulator -avd Emulator_34 -no-window -no-snapshot -no-audio -no-boot-anim > /dev/null 2>&1 &
+          #     EMULATOR_PID=$!
+          #     echo "Emulator started with PID: $EMULATOR_PID"
               
-              # Wait for device to appear
-              echo "Waiting for emulator device..."
-              adb wait-for-device
+          #     # Wait for device to appear
+          #     echo "Waiting for emulator device..."
+          #     adb wait-for-device
               
-              # Wait for boot_completed
-              echo "Waiting for emulator to finish booting..."
-              timeout=120
-              waited=0
-              while [ "$(adb shell getprop sys.boot_completed 2>/dev/null)" != "1" ]; do
-                sleep 2
-                waited=$((waited + 2))
-                echo "Waiting for boot... ($waited/$timeout seconds)"
-                if [ $waited -ge $timeout ]; then
-                  echo "##vso[task.logissue type=error]Emulator did not boot in time"
-                  adb devices -l
-                  exit 1
-                fi
-              done
+          #     # Wait for boot_completed
+          #     echo "Waiting for emulator to finish booting..."
+          #     timeout=120
+          #     waited=0
+          #     while [ "$(adb shell getprop sys.boot_completed 2>/dev/null)" != "1" ]; do
+          #       sleep 2
+          #       waited=$((waited + 2))
+          #       echo "Waiting for boot... ($waited/$timeout seconds)"
+          #       if [ $waited -ge $timeout ]; then
+          #         echo "##vso[task.logissue type=error]Emulator did not boot in time"
+          #         adb devices -l
+          #         exit 1
+          #       fi
+          #     done
               
-              echo "=== Emulator booted successfully! ==="
-              adb devices -l
-            displayName: 'Boot Android Emulator'
-            continueOnError: true
-            timeoutInMinutes: 15
-            env:
-              ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
-              JAVA_HOME: $(JAVA_HOME_17_X64)
+          #     echo "=== Emulator booted successfully! ==="
+          #     adb devices -l
+          #   displayName: 'Boot Android Emulator'
+          #   continueOnError: true
+          #   timeoutInMinutes: 15
+          #   env:
+          #     ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
+          #     JAVA_HOME: $(JAVA_HOME_17_X64)
 
           # Verify UI tests fail without fix (on Android emulator)
           - pwsh: |
