@@ -29,27 +29,23 @@
     If specified, skips merging the PR into the current branch (useful if already merged)
 
 .PARAMETER Interactive
-    If specified, starts Copilot in interactive mode with the prompt (default).
-    Use -NoInteractive for non-interactive mode that exits after completion.
-
-.PARAMETER NoInteractive
-    If specified, runs in non-interactive mode (exits after completion).
-    Requires --allow-all for tool permissions.
+    If specified, starts Copilot in interactive mode with the prompt.
+    Default is non-interactive mode (exits after completion).
 
 .PARAMETER DryRun
     If specified, shows what would be done without making changes
 
 .EXAMPLE
     .\Review-PR.ps1 -PRNumber 33687
-    Reviews PR #33687 interactively using the default platform (android)
+    Reviews PR #33687 in non-interactive mode (default) using auto-detected platform
 
 .EXAMPLE
     .\Review-PR.ps1 -PRNumber 33687 -Platform ios -SkipMerge
-    Reviews PR #33687 on iOS without merging (assumes already merged), in interactive mode
+    Reviews PR #33687 on iOS without merging (assumes already merged)
 
 .EXAMPLE
-    .\Review-PR.ps1 -PRNumber 33687 -NoInteractive
-    Reviews PR #33687 in non-interactive mode (exits after completion)
+    .\Review-PR.ps1 -PRNumber 33687 -Interactive
+    Reviews PR #33687 in interactive mode (stays open for follow-up questions)
 
 .NOTES
     Prerequisites:
@@ -71,7 +67,7 @@ param(
     [switch]$SkipMerge,
 
     [Parameter(Mandatory = $false)]
-    [switch]$NoInteractive,
+    [switch]$Interactive,
 
     [Parameter(Mandatory = $false)]
     [switch]$DryRun
@@ -254,7 +250,7 @@ if ($DryRun) {
     Write-Host "[DRY RUN] Would invoke Copilot CLI with:" -ForegroundColor Magenta
     Write-Host ""
     Write-Host "  Agent: pr" -ForegroundColor Gray
-    Write-Host "  Mode: $(if ($NoInteractive) { 'Non-interactive (-p)' } else { 'Interactive (-i)' })" -ForegroundColor Gray
+    Write-Host "  Mode: $(if ($Interactive) { 'Interactive (-i)' } else { 'Non-interactive (-p)' })" -ForegroundColor Gray
     Write-Host "  PR: #$PRNumber" -ForegroundColor Gray
     Write-Host "  Platform: $(if ($Platform) { $Platform } else { '(agent will determine)' })" -ForegroundColor Gray
     Write-Host ""
@@ -274,7 +270,7 @@ if ($DryRun) {
     Write-Host "  PLAN_TEMPLATE:  $planTemplatePath" -ForegroundColor White
     Write-Host "  CURRENT_BRANCH: $(git branch --show-current)" -ForegroundColor White
     Write-Host "  PR_TITLE:       $($prInfo.title)" -ForegroundColor White
-    Write-Host "  MODE:           $(if ($NoInteractive) { 'Non-interactive' } else { 'Interactive' })" -ForegroundColor White
+    Write-Host "  MODE:           $(if ($Interactive) { 'Interactive' } else { 'Non-interactive' })" -ForegroundColor White
     Write-Host ""
     Write-Host "─────────────────────────────────────────────────────────────" -ForegroundColor DarkGray
     Write-Host ""
@@ -297,14 +293,14 @@ if ($DryRun) {
     # Add logging options
     $copilotArgs += @("--log-dir", $prLogDir, "--log-level", "info")
     
-    if ($NoInteractive) {
-        # Non-interactive mode: -p with --allow-all
+    if ($Interactive) {
+        # Interactive mode: -i to start with prompt
+        $copilotArgs += @("-i", $prompt)
+    } else {
+        # Non-interactive mode (default): -p with --allow-all
         # Also save session to markdown for review
         $sessionFile = Join-Path $prLogDir "session-$(Get-Date -Format 'yyyyMMdd-HHmmss').md"
         $copilotArgs += @("-p", $prompt, "--allow-all", "--share", $sessionFile)
-    } else {
-        # Interactive mode: -i to start with prompt
-        $copilotArgs += @("-i", $prompt)
     }
     
     Write-Host "🚀 Starting Copilot CLI..." -ForegroundColor Yellow
@@ -329,7 +325,7 @@ Write-Host "📝 State file: CustomAgentLogsTmp/PRState/pr-$PRNumber.md" -Foregr
 Write-Host "📋 Plan template: $planTemplatePath" -ForegroundColor Gray
 if (-not $DryRun) {
     Write-Host "📁 Copilot logs: CustomAgentLogsTmp/PRState/$PRNumber/copilot-logs/" -ForegroundColor Gray
-    if ($NoInteractive) {
+    if (-not $Interactive) {
         Write-Host "📄 Session markdown: $sessionFile" -ForegroundColor Gray
     }
 }
