@@ -2,9 +2,9 @@ using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
-namespace Maui.Controls.TestCases.Shared.Tests
+namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-	public class Issue32650Tests : _IssueTestBase
+	public class Issue32650Tests : _IssuesUITest
 	{
 		public Issue32650Tests(TestDevice device) : base(device)
 		{
