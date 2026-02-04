@@ -1,8 +1,8 @@
 # MAUI Dev Tools Client — Product Specification
 
-**Version**: 1.4-draft  
+**Version**: 1.5-draft  
 **Status**: Proposal  
-**Last Updated**: 2026-02-03
+**Last Updated**: 2026-02-04
 
 ---
 
@@ -31,6 +31,7 @@
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 1.5-draft | 2026-02-04 | Added: Design Principles (DP1: delegate to native tools, DP2: consolidate VS repositories); added NG6 for no custom download logic |
 | 1.4-draft | 2026-02-03 | Changed CLI to `dotnet maui` pattern; kept `apple` for Apple platform commands; added `windows` subcommand |
 | 1.3-draft | 2026-02-03 | Added: Copilot-assisted troubleshooting (§9.3), MCP tool integration, escalation hierarchy, context handoff schema |
 | 1.2-draft | 2026-02-03 | Added: MSBuild integration alignment with dotnet/sdk spec, `dotnet run` pipeline integration, `--list-devices` convention, deploy step, AI agent considerations |
@@ -115,6 +116,56 @@ This tool eliminates that friction by providing a single, authoritative source f
 | NG3 | Linux host support (MVP) | MAUI mobile development requires Windows or macOS |
 | NG4 | Physical iOS device provisioning | Requires Apple Developer account; out of scope for MVP |
 | NG5 | Manage Visual Studio installation | VS has its own installer; we detect, not manage |
+| NG6 | Implement custom download/installation logic | Delegate to native platform tools; avoid reinventing package management |
+
+### Design Principles
+
+#### DP1: Delegate to Native Toolchains — Do Not Reimplement
+
+**This tool MUST NOT implement custom logic to download, install, or configure platform components.** Instead, it delegates all such operations to the native platform tools:
+
+| Platform | Native Tools Used | What They Handle |
+|----------|-------------------|------------------|
+| Android | `sdkmanager`, `avdmanager`, `adb`, `emulator` | SDK packages, AVDs, device communication, emulator lifecycle |
+| Apple | `xcrun simctl`, `xcode-select`, `xcodebuild` | Simulators, runtimes, Xcode selection, build tools |
+| Windows | Windows SDK installer, VS Build Tools | Windows SDK components |
+
+**Rationale**:
+- Native tools are **authoritative** and always up-to-date with platform changes
+- Avoids **maintenance burden** of tracking repository URLs, package formats, and installation procedures
+- Reduces **security risk** from implementing custom download/verification logic
+- Ensures **consistency** between manual and automated installations
+- Leverages **existing testing** of platform tools by their maintainers
+
+**Example**:
+```
+❌ WRONG: Download android-sdk-*.zip from Google, extract, configure PATH
+✅ RIGHT: Invoke `sdkmanager "platform-tools" "platforms;android-34"` and parse output
+```
+
+This tool's value is in **orchestration, detection, and unified UX**—not in reimplementing what the platform tools already do well.
+
+#### DP2: Consolidate Existing Visual Studio Acquisition Repositories
+
+This tool enables **consolidation of existing Visual Studio repositories** that currently implement Android acquisition separately:
+
+| Repository | Current Function | Future State |
+|------------|------------------|--------------|
+| [ClientTools.android-acquisition](https://devdiv.visualstudio.com/DevDiv/_git/ClientTools.android-acquisition) | Android SDK acquisition for VS | **Deprecate**: Use `dotnet maui android sdk install` |
+| [android-platform-support](https://devdiv.visualstudio.com/DevDiv/_git/android-platform-support) | Android platform support for VS | **Deprecate**: Use `dotnet maui android` commands |
+
+**Benefits of Consolidation**:
+- **Single codebase** for Android tooling across VS, VS Code, CLI, and CI
+- **Reduced duplication** of detection and installation logic
+- **Consistent behavior** across all Microsoft developer tools
+- **Shared bug fixes** and improvements
+- **Simplified maintenance** with one team owning the tooling
+
+**Migration Path**:
+1. Visual Studio installer integrates `dotnet maui` tool
+2. VS Android features call `dotnet maui android` commands instead of internal libraries
+3. Internal repositories enter maintenance mode
+4. After VS release cycle, internal repositories are archived
 
 ---
 
