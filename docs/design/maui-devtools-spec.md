@@ -1,6 +1,6 @@
 # MAUI Dev Tools Client — Product Specification
 
-**Version**: 2.1-draft  
+**Version**: 2.5-draft  
 **Status**: Proposal  
 **Last Updated**: 2026-02-04
 
@@ -18,40 +18,7 @@
 8. [Public API Surface](#8-public-api-surface)
 9. [User Experience](#9-user-experience)
 10. [Telemetry & Diagnostics](#10-telemetry--diagnostics)
-11. [Security Model](#11-security-model)
-12. [Extensibility](#12-extensibility)
-13. [Testing Strategy](#13-testing-strategy)
-14. [Rollout Plan](#14-rollout-plan)
-15. [Open Questions & Risks](#15-open-questions--risks)
-16. [Appendix](#16-appendix)
-17. [MVP vs vNext Features](#17-mvp-vs-vnext-features)
-18. [Acceptance Criteria](#18-acceptance-criteria)
-19. [Implementation References & Prior Art](#19-implementation-references--prior-art)
-20. [Future Subcommands (Roadmap)](#20-future-subcommands-roadmap)
-
----
-
-## Related Documents
-
-| Document | Description |
-|----------|-------------|
-| [AI Agent Integration](./maui-devtools-ai-integration.md) | Copilot integration, permission model, MCP tools |
-| [IDE Integration](./maui-devtools-ide-integration.md) | VS Code and Visual Studio UI flows |
-
----
-
-## Revision History
-
-| Version | Date | Changes |
-|---------|------|---------|
-| 2.1-draft | 2026-02-04 | **Document restructuring**: Extracted AI integration and IDE integration to separate documents; Removed JSON-RPC API section (use CLI with `--json` instead) |
-| 2.0-draft | 2026-02-04 | **Major revision from multi-model review**: Added DP3 (stateless-first), DP4 (machine-first output); Added Error Contract Specification (§7.9); Added Bootstrap State Machine (§5.6) with JDK installation; Clarified deploy vs run semantics; Added `--json`, `--dry-run`, `--ci` flags; Added JDK management commands; Defined default installation paths per platform; Added Implementation References (§19) with AndroidSdk.Tools, AppleDev.Tools, MAUI.Sherpa, and official SDK targets |
-| 1.5-draft | 2026-02-04 | Added: Design Principles (DP1: delegate to native tools, DP2: consolidate VS repositories); added NG6 for no custom download logic |
-| 1.4-draft | 2026-02-03 | Changed CLI to `dotnet maui` pattern; kept `apple` for Apple platform commands; added `windows` subcommand |
-| 1.3-draft | 2026-02-03 | Added: Copilot-assisted troubleshooting (§9.3), MCP tool integration, escalation hierarchy, context handoff schema |
-| 1.2-draft | 2026-02-03 | Added: MSBuild integration alignment with dotnet/sdk spec, `dotnet run` pipeline integration, `--list-devices` convention, deploy step, AI agent considerations |
-| 1.1-draft | 2026-02-03 | Added: Exit code standardization, Windows management, offline/proxy support, container environments, migration strategy, concurrency model, permission storage, ARM64 considerations |
-| 1.0-draft | 2026-02-03 | Initial draft |
+11. [MVP vs vNext Features](#11-mvp-vs-vnext-features)
 
 ---
 
@@ -118,9 +85,8 @@ This tool eliminates that friction by providing a single, authoritative source f
 | G1 | Reduce MAUI setup time to under 10 minutes | Time-to-first-build < 10 min for 90% of users |
 | G2 | Provide a single "doctor" command that identifies all issues | 100% coverage of common setup issues |
 | G3 | Enable one-click/one-command fixes for detected issues | >80% of issues auto-fixable |
-| G4 | Expose structured APIs for IDE and AI agent consumption | JSON-RPC API with stable schema |
+| G4 | Expose structured APIs for IDE and AI agent consumption | JSON output with stable schema |
 | G5 | Support headless operation for CI environments | All commands runnable non-interactively |
-| G6 | Unify Android and Apple device/simulator management | Single CLI surface for both platforms |
 
 ### Non-Goals
 
@@ -131,7 +97,6 @@ This tool eliminates that friction by providing a single, authoritative source f
 | NG3 | Linux host support (MVP) | MAUI mobile development requires Windows or macOS |
 | NG4 | Physical iOS device provisioning | Requires Apple Developer account; out of scope for MVP |
 | NG5 | Manage Visual Studio installation | VS has its own installer; we detect, not manage |
-| NG6 | Implement custom download/installation logic | Delegate to native platform tools; avoid reinventing package management |
 
 ### Design Principles
 
@@ -182,19 +147,13 @@ This tool enables **consolidation of existing Visual Studio repositories** that 
 3. Internal repositories enter maintenance mode
 4. After VS release cycle, internal repositories are archived
 
-#### DP3: Stateless-First Architecture
+#### DP3: Stateless Architecture
 
-**The CLI MUST operate statelessly by default.** No background daemon is required for core functionality.
-
-| Mode | When to Use | Characteristics |
-|------|-------------|-----------------|
-| **Stateless (default)** | CLI invocations, CI/CD, AI agents | Each command reads state, acts, exits; no process coordination |
-| **Daemon (optional, v2+)** | IDE performance optimization only | Explicit opt-in via `dotnet maui daemon start` |
+**The CLI operates statelessly.** Each command reads state, acts, and exits.
 
 **Rationale**:
-- Daemon lifecycle (orphaned processes, stale state, port conflicts) is a major source of tooling bugs
 - Stateless commands are easier to debug, test, and reason about
-- AI agents prefer deterministic request/response over managing socket connections
+- AI agents prefer deterministic request/response
 - Performance bottleneck is native tool execution, not process spin-up
 
 **State Caching**:
@@ -537,36 +496,6 @@ This command:
 | `NO_DEV_MODE` | Developer Mode disabled | Guide user to enable (requires Settings app) |
 | `READY` | SDK present, Developer Mode enabled | Operational |
 
-### 5.7 Deploy vs Run Semantics
-
-**Critical clarification**: The spec distinguishes between deployment operations:
-
-| Operation | Command | Behavior | Returns |
-|-----------|---------|----------|---------|
-| **Install Only** | `dotnet maui deploy --install-only` | Copy app to device, do not launch | Exit 0 on success |
-| **Launch** | `dotnet maui deploy` | Install and launch app | Exit 0 when app starts |
-| **Run to Completion** | `dotnet maui deploy --wait` | Install, launch, wait for exit | App exit code |
-| **Debug Attach** | `dotnet maui deploy --debug` | Install, launch with debugger attached | Blocks until detach |
-
-**Lifecycle Detection**:
-The tool MUST detect "app successfully started" per platform:
-- **Android**: `adb shell am start` returns 0 + activity launched
-- **iOS Simulator**: `xcrun simctl launch` returns 0 + process appears
-- **Windows**: Process starts and main window appears
-
-**App Lifecycle Events** (JSON output):
-```json
-{
-  "operation": "deploy",
-  "events": [
-    { "type": "installing", "timestamp": "..." },
-    { "type": "installed", "timestamp": "..." },
-    { "type": "launching", "timestamp": "..." },
-    { "type": "launched", "pid": 12345, "timestamp": "..." },
-    { "type": "exited", "exit_code": 0, "timestamp": "..." }
-  ]
-}
-
 ---
 
 ## 6. Non-Functional Requirements
@@ -595,9 +524,8 @@ The tool MUST detect "app successfully started" per platform:
 |----|-------------|
 | NFR-P1 | `doctor` command must complete in <5s when no network calls needed |
 | NFR-P2 | Device list must complete in <2s |
-| NFR-P3 | Daemon mode must respond to health checks in <100ms |
-| NFR-P4 | Downloaded artifacts must be cached locally |
-| NFR-P5 | Read operations must use direct file parsing (not CLI wrappers) for performance |
+| NFR-P3 | Downloaded artifacts must be cached locally |
+| NFR-P4 | Read operations must use direct file parsing (not CLI wrappers) for performance |
 
 **Performance Implementation Notes**:
 - Android SDK detection: Parse `package.xml` and `source.properties` directly instead of invoking `sdkmanager --list` (which has 3-10s JVM startup time)
@@ -671,18 +599,18 @@ When emulator/simulator unavailable:
 │  (Human)    │  Extension  │   Studio    │  (Copilot)  │   Pipeline      │
 └──────┬──────┴──────┬──────┴──────┬──────┴──────┬──────┴────────┬────────┘
        │             │             │             │               │
-       │ CLI         │ JSON-RPC    │ JSON-RPC    │ JSON-RPC      │ CLI
-       │             │ (stdio)     │ (named pipe)│ (stdio)       │
+       │ CLI         │ CLI         │ CLI         │ CLI           │ CLI
+       │             │ (--json)    │ (--json)    │ (--json)      │
        ▼             ▼             ▼             ▼               ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                        MAUI Dev Tools Client                            │
 ├─────────────────────────────────────────────────────────────────────────┤
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐                      │
-│  │  CLI Layer  │  │  JSON-RPC   │  │  Daemon     │                      │
-│  │  (Parsing)  │  │  Server     │  │  (Optional) │                      │
-│  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘                      │
-│         │                │                │                             │
-│         ▼                ▼                ▼                             │
+│  ┌─────────────────────────────────────────────────────────────┐        │
+│  │                       CLI Layer                              │        │
+│  │  (Argument parsing, output formatting, --json support)       │        │
+│  └──────────────────────────────┬──────────────────────────────┘        │
+│                                 │                                       │
+│                                 ▼                                       │
 │  ┌──────────────────────────────────────────────────────────────┐       │
 │  │                      Core Services                           │       │
 │  ├──────────────┬──────────────┬──────────────┬─────────────────┤       │
@@ -715,21 +643,8 @@ When emulator/simulator unavailable:
 - Parses command-line arguments using `System.CommandLine`
 - Maps commands to core service calls
 - Formats output for human consumption (colors, tables, progress bars)
-- Entry point: `maui` command
-
-#### JSON-RPC Server
-- Implements JSON-RPC 2.0 over multiple transports:
-  - **stdio**: For AI agents and simple integrations
-  - **Named pipes**: For high-performance IDE integration (Windows)
-  - **Unix domain sockets**: For high-performance IDE integration (macOS)
-- Stateless request/response model
-- Streaming support for logs and progress
-
-#### Daemon (Optional)
-- Long-running background process for faster IDE interactions
-- Maintains cached state (device list, SDK components)
-- Auto-starts on first IDE request; auto-terminates after idle timeout
-- Not required for CLI usage
+- Supports `--json` for machine-readable output
+- Entry point: `dotnet maui` command
 
 #### Core Services
 
@@ -797,86 +712,16 @@ User: maui doctor --json
 
 **Summary**: IDEs spawn `dotnet maui` as a child process, invoke `dotnet maui doctor --json` on workspace open, display issues in their problems/error list panels, and provide commands for environment setup with progress notifications.
 
-### 7.5 Stateless-First Architecture with Optional Daemon
-
-> **Design Decision (from multi-model review)**: The tool operates statelessly by default. Daemon mode is an optional optimization for IDE performance, NOT a requirement.
-
-#### Why Stateless-First?
-
-| Concern | Daemon Problem | Stateless Solution |
-|---------|----------------|-------------------|
-| Orphaned processes | Daemon crashes, leaves socket locked | No persistent process to orphan |
-| Stale state | Daemon caches outdated SDK state | Read fresh state each invocation |
-| Multiple IDEs | Port conflicts, duplicate daemons | No coordination needed |
-| Debugging | Hidden process state hard to inspect | CLI behavior is fully observable |
-| CI/CD | Daemon unnecessary overhead | Clean process per command |
-
-#### On-Demand Mode (Default)
-
-| Aspect | Behavior |
-|--------|----------|
-| Startup | New process per command |
-| Latency | ~200ms cold start (acceptable for most use cases) |
-| State | Reads from file cache (`~/.maui/cache/`), always current |
-| Best for | CI, terminal, scripts, AI agents |
-
-**File Cache Structure**:
-```
-~/.maui/cache/
-├── devices.json          # TTL: 30 seconds
-├── android-sdk.json      # TTL: 5 minutes  
-├── apple-runtimes.json   # TTL: 5 minutes
-└── doctor-report.json    # TTL: 1 minute
-```
-
-#### Daemon Mode (Optional, v2+)
-
-Daemon is an **explicit opt-in** for IDE performance optimization only:
-
-```bash
-# Explicit daemon control
-dotnet maui daemon start    # Start daemon
-dotnet maui daemon stop     # Stop daemon
-dotnet maui daemon status   # Check if running
-
-# Daemon-aware commands (use daemon if running, fallback to direct)
-dotnet maui device list     # Uses daemon if available, else direct
-```
-
-| Aspect | Behavior |
-|--------|----------|
-| Startup | Single long-running process |
-| Latency | <50ms response |
-| State | In-memory cache with file persistence |
-| Best for | IDE integration requiring sub-100ms response |
-
-**Daemon Lifecycle**:
-1. User or IDE explicitly starts daemon with `dotnet maui daemon start`
-2. Daemon listens on well-known socket/pipe
-3. CLI commands check for daemon; use if running, else execute directly
-4. After 5 minutes idle (configurable via `--idle-timeout`), daemon self-terminates
-5. IDE can restart daemon when needed
-
-**Well-Known Paths**:
-- macOS: `/tmp/maui-devtools.sock` (Unix domain socket)
-- Windows: `\\.\pipe\MauiDevTools` (named pipe)
-
-### 7.6 Concurrency Model
+### 7.5 Concurrency Model
 
 | Aspect | Behavior |
 |--------|----------|
 | Read Operations | Parallelized (multiple simultaneous queries allowed) |
 | Write Operations | Serialized (single writer at a time) |
-| Lock File | `$TMPDIR/maui-devtools.lock` prevents duplicate daemon instances |
+| Lock File | `$TMPDIR/maui-devtools.lock` prevents concurrent writes |
 | Request Timeout | Requests waiting >30s for lock rejected with `E5010` |
-| Progress Notifications | Buffered with backpressure; slow consumers receive "progress.dropped" notification |
 
-**Race Condition Prevention**:
-- Multiple IDE instances requesting daemon start simultaneously are handled via lock file
-- First acquirer starts daemon; others connect to existing instance
-- Socket/pipe creation is atomic
-
-### 7.7 SDK Conflict Resolution
+### 7.6 SDK Conflict Resolution
 
 When multiple SDK installations are detected:
 
@@ -897,7 +742,7 @@ When multiple SDK installations are detected:
 - Warn if both AS and tool would manage same SDK
 - Offer to adopt AS's SDK rather than installing duplicate
 
-### 7.8 Migration from Existing Setups
+### 7.7 Migration from Existing Setups
 
 When an existing SDK is detected:
 
@@ -906,7 +751,7 @@ When an existing SDK is detected:
 3. **Non-Destructive**: Never delete or modify user's existing SDK without explicit consent
 4. **Override Support**: `--sdk-path` for non-standard locations
 
-### 7.9 Error Contract Specification
+### 7.8 Error Contract Specification
 
 **This is the highest-priority architectural element.** Every consumer (AI agents, CI pipelines, IDEs, humans) depends on predictable error handling.
 
@@ -1159,11 +1004,6 @@ dotnet maui
 ├── diagnostic-bundle         # Export diagnostic info
 │   └── --output <path>       # Output zip file
 │
-├── daemon                    # Daemon management
-│   ├── start                 # Start daemon
-│   ├── stop                  # Stop daemon
-│   └── status                # Check daemon status
-│
 └── --version                 # Show version
 ```
 
@@ -1172,7 +1012,9 @@ dotnet maui
 # Cross-platform commands
 dotnet maui doctor
 dotnet maui doctor --fix
-dotnet maui device list
+dotnet maui device list                              # List all devices (physical + emulators + simulators)
+dotnet maui device list --platform android           # Android devices and emulators
+dotnet maui device list --platform ios               # iOS simulators and physical devices
 dotnet maui device screenshot --device emulator-5554
 
 # Android-specific
@@ -1416,607 +1258,8 @@ maui-diag/
 
 ---
 
-## 11. Security Model
 
-### 11.1 Principle of Least Privilege
-
-| Action | Privilege Level | Justification |
-|--------|-----------------|---------------|
-| Query status | User | Read-only operations |
-| Install SDK to user directory | User | Default SDK location |
-| Install SDK to system directory | Admin | System-wide installation |
-| Create/start emulator | User | User-space operation |
-| Install Xcode runtime | Admin | System component |
-| Capture screenshot | User | Device already authorized |
-
-### 11.2 Download Verification
-
-All downloads are verified before installation:
-
-1. **HTTPS only**: All downloads use HTTPS
-2. **Checksum verification**: SHA-256 checksums verified against known-good values
-3. **Signature verification**: Where available (Android SDK, Xcode components)
-4. **Source allowlist**: Only download from:
-   - `dl.google.com` (Android SDK)
-   - `developer.apple.com` (Xcode components)
-   - `aka.ms` / `dotnetcli.azureedge.net` (.NET components)
-
-### 11.3 AI Agent Security
-
-> **See [AI Agent Integration](./maui-devtools-ai-integration.md)** for detailed permission gates, sandbox boundaries, permission storage schema, and elevation handling for AI agents.
-
-**Summary**: AI agent calls are sandboxed with permission gates requiring user confirmation for modifications. Safe paths are restricted to project root, temp, SDK directories, and tool cache. Elevated operations cannot be auto-approved by agents.
-
----
-
-## 12. Extensibility
-
-### 12.1 Alignment with `dotnet run` Pipeline
-
-This tool is designed to complement and integrate with the `dotnet run` extensibility spec ([dotnet/sdk#51337](https://github.com/dotnet/sdk/pull/51337)). The SDK spec introduces MSBuild targets that workloads can implement for device discovery and deployment.
-
-**Key MSBuild Integration Points**:
-
-| MSBuild Target | SDK Responsibility | MAUI DevTools Role |
-|----------------|-------------------|-------------------|
-| `ComputeAvailableDevices` | Called by `dotnet run` to get device list | DevTools can invoke same target OR provide faster cached results |
-| `DeployToDevice` | Called by `dotnet run` after build | DevTools wraps this for standalone deploy scenarios |
-| `ComputeRunArguments` | Sets `$(RunCommand)` and `$(RunArguments)` | DevTools uses these for consistent launch behavior |
-
-**Device Item Schema** (aligned with SDK spec):
-
-```xml
-<ItemGroup>
-  <!-- Android examples -->
-  <Devices Include="emulator-5554"  Description="Pixel 7 - API 35" Type="Emulator" Status="Online" />
-  <Devices Include="0A041FDD400327" Description="Pixel 7 Pro"      Type="Device"   Status="Online" />
-  <!-- iOS examples -->
-  <Devices Include="FBF5DCE8-EE2B-4215-8118-3A2190DE1AD7" Description="iPhone 14 - iOS 18.0" Type="Simulator" Status="Booted" />
-  <Devices Include="AF40CC64-2CDB-5F16-9651-86BCDF380881" Description="My iPhone 15"         Type="Device"    Status="Paired" />
-</ItemGroup>
-```
-
-**Metadata Specification**:
-
-| Metadata | Required | Values | Description |
-|----------|----------|--------|-------------|
-| `Description` | Yes | Free text | Human-readable device name |
-| `Type` | Yes | `Device`, `Emulator`, `Simulator` | Device category |
-| `Status` | Yes | `Online`, `Offline`, `Booted`, `Shutdown`, `Paired`, `Unavailable` | Current state |
-| `Platform` | No | `android`, `ios`, `maccatalyst`, `windows` | Inferred from TFM if not specified |
-| `OSVersion` | No | Version string | e.g., "14", "18.0" |
-
-### 12.2 Interactive Prompting Alignment
-
-Following the SDK spec pattern, MAUI DevTools supports interactive prompting with graceful non-interactive fallback:
-
-**Interactive Mode** (terminal with TTY):
-```
-$ maui device list
-? Select target framework:
-  ❯ net10.0-android
-    net10.0-ios
-    net10.0-maccatalyst
-    net10.0-windows10.0.19041.0
-
-? Select device:
-  ❯ emulator-5554 (Pixel 7 - API 35) [Online]
-    0A041FDD400327 (Pixel 7 Pro) [Online]
-```
-
-**Non-Interactive Mode** (CI, piped, `--non-interactive`):
-```
-$ maui device list --non-interactive
-Error: Multiple target frameworks available. Use --platform to specify:
-  --platform android
-  --platform ios
-  --platform maccatalyst
-  --platform windows
-
-$ maui device screenshot --non-interactive
-Error: Multiple devices available. Use --device to specify:
-  --device emulator-5554  # Pixel 7 - API 35 [Online]
-  --device 0A041FDD400327 # Pixel 7 Pro [Online]
-```
-
-### 12.3 `--list-devices` Convention
-
-Aligned with `dotnet run --list-devices`, this tool provides:
-
-```bash
-# List devices for current project context
-maui device list
-
-# List devices for specific platform
-maui device list --platform android
-
-# Equivalent to dotnet run --list-devices (when in project directory)
-dotnet run --list-devices
-```
-
-**Output Format** (aligned with SDK expectations):
-
-```
-Available devices for net10.0-android:
-
-  ID                 DESCRIPTION           TYPE       STATUS
-  emulator-5554      Pixel 7 - API 35      Emulator   Online
-  0A041FDD400327     Pixel 7 Pro           Device     Online
-
-Run with: dotnet run --device <ID>
-      or: maui device screenshot --device <ID>
-```
-
-### 12.4 Deploy Step Support
-
-The SDK spec introduces a `deploy` step in the `dotnet run` pipeline. MAUI DevTools provides standalone access:
-
-```bash
-# Deploy without running (useful for testing)
-maui deploy --device emulator-5554
-
-# This invokes the DeployToDevice MSBuild target
-```
-
-**JSON-RPC Method**:
-```json
-{
-  "jsonrpc": "2.0",
-  "id": 1,
-  "method": "deploy",
-  "params": {
-    "project_path": "/path/to/MyApp.csproj",
-    "device_id": "emulator-5554",
-    "configuration": "Debug",
-    "framework": "net10.0-android"
-  }
-}
-```
-
-### 12.5 AI Agent Considerations
-
-> **See [AI Agent Integration](./maui-devtools-ai-integration.md)** for detailed AI agent design principles, workflow examples, and error contract specifications.
-
-**Summary**: MAUI DevTools is designed with AI agents as first-class consumers. All commands support `--json` for structured output, `--non-interactive` mode, and `--dry-run` for predictable behavior. Permission gates ensure user confirmation for modifications.
-
-### 12.6 Plugin Model for Platform Providers
-
-New platform providers can be added by implementing `IPlatformProvider`:
-
-```csharp
-public interface IPlatformProvider
-{
-    string PlatformId { get; }  // e.g., "android", "ios", "windows"
-    
-    Task<HealthCheckResult> CheckHealthAsync(CancellationToken ct);
-    Task<IReadOnlyList<Issue>> GetIssuesAsync(CancellationToken ct);
-    Task<FixResult> FixIssueAsync(string issueId, CancellationToken ct);
-    Task<IReadOnlyList<Device>> GetDevicesAsync(CancellationToken ct);
-    
-    // New: MSBuild target integration
-    bool HasMSBuildTarget(string targetName);
-    Task<MSBuildResult> InvokeMSBuildTargetAsync(string targetName, IDictionary<string, string> properties, CancellationToken ct);
-}
-```
-
-Providers are discovered via assembly scanning or explicit registration.
-
-### 12.7 Adding New Subcommands
-
-New commands are added by:
-1. Creating a new `Command` class with `System.CommandLine`
-2. Implementing the handler using core services
-3. Registering the command in the root command builder
-4. Adding corresponding JSON-RPC method if needed
-
-### 12.8 Versioning Strategy
-
-**CLI Versioning**:
-- Follows SemVer: `MAJOR.MINOR.PATCH`
-- MAJOR: Breaking changes to CLI arguments or behavior
-- MINOR: New commands or options
-- PATCH: Bug fixes
-
-**API Versioning**:
-- JSON-RPC methods include version in response
-- Schema version included in all JSON output
-- Breaking changes require new method names (e.g., `doctor.status` → `doctor.status.v2`)
-
-**Capability Negotiation**:
-```json
-{
-  "jsonrpc": "2.0",
-  "id": 1,
-  "method": "initialize",
-  "params": {
-    "client_version": "1.0.0",
-    "capabilities": ["streaming", "progress"]
-  }
-}
-```
-
-Response includes server capabilities:
-```json
-{
-  "jsonrpc": "2.0",
-  "id": 1,
-  "result": {
-    "server_version": "1.2.0",
-    "schema_version": "1.1",
-    "capabilities": ["streaming", "progress", "daemon"],
-    "platforms": ["android", "ios", "windows", "maccatalyst"]
-  }
-}
-```
-
----
-
-## 13. Testing Strategy
-
-### 13.1 Unit Tests
-
-| Component | Coverage Target | Approach |
-|-----------|-----------------|----------|
-| CLI argument parsing | 100% | Test all commands, options, combinations |
-| JSON-RPC serialization | 100% | Schema validation tests |
-| Issue detection logic | 90% | Mock file system and tool outputs |
-| Fix execution logic | 80% | Mock tool invocations |
-
-### 13.2 Integration Tests
-
-| Scenario | Environment | Frequency |
-|----------|-------------|-----------|
-| Doctor on clean Windows | Windows VM | Every PR |
-| Doctor on clean macOS | macOS VM | Every PR |
-| SDK installation | Isolated environment | Nightly |
-| AVD creation/start | Android emulator | Nightly |
-| Simulator management | macOS with Xcode | Nightly |
-
-### 13.3 Device Farm / Emulator Tests
-
-| Test | Infrastructure | Frequency |
-|------|----------------|-----------|
-| Screenshot capture | Helix (Android emulator) | Weekly |
-| Screenshot capture | Helix (iOS simulator) | Weekly |
-| Logcat streaming | Helix (Android emulator) | Weekly |
-| Full doctor + fix flow | Dedicated VMs | Release |
-
-### 13.4 Test Environments
-
-```yaml
-# CI Matrix
-test-matrix:
-  - os: windows-latest
-    tests: [unit, integration-windows]
-  - os: macos-14
-    tests: [unit, integration-macos, integration-xcode]
-  - os: ubuntu-latest
-    tests: [unit]  # Limited to non-platform-specific
-```
-
----
-
-## 14. Rollout Plan
-
-### 14.1 Release Channels
-
-| Channel | Stability | Update Frequency | Audience |
-|---------|-----------|------------------|----------|
-| Preview | Experimental | Weekly | Early adopters, feedback |
-| Release Candidate | Stable | Bi-weekly | Broader testing |
-| Stable | Production | Monthly | General availability |
-
-### 14.2 Packaging
-
-**dotnet tool**:
-```
-Package ID: Microsoft.Maui.DevTools
-Install: dotnet tool install -g Microsoft.Maui.DevTools [--prerelease]
-Update: dotnet tool update -g Microsoft.Maui.DevTools
-```
-
-**IDE Bundling**:
-- VS Code extension bundles specific version
-- Visual Studio includes in MAUI workload
-- Can override with global tool if newer version needed
-
-### 14.3 Backwards Compatibility
-
-| Aspect | Guarantee |
-|--------|-----------|
-| CLI arguments | No breaking changes within major version |
-| JSON output schema | Additive changes only; new fields don't break clients |
-| JSON-RPC methods | Methods never removed; deprecated methods return warnings |
-| Exit codes | Stable within major version |
-
-### 14.4 Update Strategy
-
-**Auto-update notification**:
-```
-$ maui doctor
-A new version of MAUI Dev Tools is available (1.2.0 → 1.3.0)
-Run 'dotnet tool update -g Microsoft.Maui.DevTools' to update.
-
-[Current output continues...]
-```
-
-**IDE handling**:
-- Check for updates on extension activation
-- Prompt to update if major version behind
-- Auto-update patch versions silently
-
----
-
-## 15. Open Questions & Risks
-
-### 15.1 Open Questions
-
-| ID | Question | Options | Recommendation |
-|----|----------|---------|----------------|
-| OQ1 | Should we support Linux for Android-only development? | Yes/No | Defer to vNext; validate demand first |
-| OQ2 | How to handle multiple Xcode versions? | Detect all / Use xcode-select | Use xcode-select default; allow override |
-| OQ3 | Should daemon auto-start on login? | Yes/No/Optional | No; start on first IDE request |
-| OQ4 | How to handle Apple Silicon vs Intel for simulators? | Auto-detect / Require flag | Auto-detect from `uname -m` |
-| OQ5 | Should we cache SDK installers? | Yes/No/Configurable | Yes, with configurable cache location |
-
-### 15.2 Risks
-
-| ID | Risk | Likelihood | Impact | Mitigation |
-|----|------|------------|--------|------------|
-| R1 | Android SDK license changes break auto-install | Low | High | Monitor Google announcements; have manual fallback |
-| R2 | Xcode CLI tools break with updates | Medium | Medium | Version-specific handling; quick patch releases |
-| R3 | IDE teams don't adopt | Medium | High | Early engagement; joint design reviews |
-| R4 | Performance issues with large SDK installations | Low | Medium | Progress UI; resumable downloads |
-| R5 | Security vulnerabilities in downloaded components | Low | Critical | Checksum verification; CVE monitoring |
-
----
-
-## 16. Appendix
-
-### 16.1 Command Examples
-
-#### Doctor Commands
-```bash
-# Basic health check
-dotnet maui doctor
-
-# Health check with JSON output
-dotnet maui doctor --json
-
-# Check and fix automatically
-dotnet maui doctor --fix
-
-# Check only Android components
-dotnet maui doctor --platform android
-
-# Non-interactive mode for CI
-dotnet maui doctor --fix --non-interactive
-```
-
-#### Android Commands
-```bash
-# List connected devices and emulators
-dotnet maui device list --platform android
-
-# Install recommended SDK packages
-dotnet maui android sdk install --recommended
-
-# Install specific packages
-dotnet maui android sdk install "platforms;android-34" "build-tools;34.0.0"
-
-# Create AVD
-dotnet maui android avd create --name "Test_Pixel_5" --device pixel_5 --image "system-images;android-34;google_apis;x86_64"
-
-# Start emulator and wait for boot
-dotnet maui android avd start --name "Test_Pixel_5" --wait
-
-# Stream logcat
-dotnet maui android logcat --device emulator-5554 --filter "Microsoft.Maui:V *:S"
-
-# Take screenshot
-dotnet maui device screenshot --device emulator-5554 --output ./screenshot.png
-```
-
-#### iOS Commands
-```bash
-# List all simulators
-dotnet maui apple simulator list
-
-# List only booted iPhone simulators
-dotnet maui apple simulator list --device-type iPhone --state booted
-
-# Boot specific simulator
-dotnet maui apple simulator boot --udid A1B2C3D4-E5F6-7890-ABCD-EF1234567890
-
-# Create new simulator
-dotnet maui apple simulator create --name "Test iPhone 16" --device-type "iPhone 16 Pro" --runtime "iOS 18.0"
-
-# List available runtimes
-dotnet maui apple runtime list
-
-# Take screenshot from simulator
-dotnet maui device screenshot --device A1B2C3D4-E5F6-7890-ABCD-EF1234567890 --output ./sim-screenshot.png
-```
-
-#### Windows Commands
-```bash
-# Check Developer Mode status
-dotnet maui windows developer-mode status
-
-# List Windows SDK installations
-dotnet maui windows sdk list
-```
-
-### 16.2 JSON Output Examples
-
-#### Doctor Output (Healthy)
-```json
-{
-  "schema_version": "1.0",
-  "correlation_id": "diag-2026-02-03-174500-abc123",
-  "timestamp": "2026-02-03T17:45:00.000Z",
-  "status": "healthy",
-  "checks": [
-    {
-      "category": "dotnet",
-      "name": ".NET SDK",
-      "status": "ok",
-      "details": {
-        "version": "9.0.100",
-        "path": "/usr/local/share/dotnet",
-        "architecture": "arm64"
-      }
-    },
-    {
-      "category": "dotnet",
-      "name": "MAUI Workload",
-      "status": "ok",
-      "details": {
-        "version": "9.0.0",
-        "installed_packs": [
-          "Microsoft.Maui.Sdk",
-          "Microsoft.Maui.Controls",
-          "Microsoft.Maui.Core"
-        ]
-      }
-    },
-    {
-      "category": "android",
-      "name": "Android SDK",
-      "status": "ok",
-      "details": {
-        "path": "/Users/dev/Library/Android/sdk",
-        "build_tools": ["34.0.0", "33.0.2"],
-        "platforms": ["android-34", "android-33"],
-        "emulator_version": "34.1.9"
-      }
-    },
-    {
-      "category": "apple",
-      "name": "Xcode",
-      "status": "ok",
-      "details": {
-        "version": "16.0",
-        "path": "/Applications/Xcode.app",
-        "developer_dir": "/Applications/Xcode.app/Contents/Developer"
-      }
-    }
-  ],
-  "summary": {
-    "total": 8,
-    "ok": 8,
-    "warning": 0,
-    "error": 0
-  }
-}
-```
-
-#### Doctor Output (Issues Found)
-```json
-{
-  "schema_version": "1.0",
-  "correlation_id": "diag-2026-02-03-174600-def456",
-  "timestamp": "2026-02-03T17:46:00.000Z",
-  "status": "unhealthy",
-  "checks": [
-    {
-      "category": "android",
-      "name": "Android SDK",
-      "status": "error",
-      "message": "Android SDK not found at expected locations",
-      "issue": {
-        "id": "ANDROID_SDK_MISSING",
-        "severity": "error",
-        "description": "Android SDK is required for Android development",
-        "fixable": true,
-        "fix": {
-          "description": "Install Android SDK to default location",
-          "command": "maui android sdk install --recommended",
-          "rpc_method": "android.sdk.install",
-          "rpc_params": { "packages": ["recommended"] },
-          "estimated_size_bytes": 2800000000,
-          "requires_confirmation": true
-        }
-      }
-    }
-  ],
-  "summary": {
-    "total": 8,
-    "ok": 5,
-    "warning": 1,
-    "error": 2
-  }
-}
-```
-
-#### Device List Output
-```json
-{
-  "schema_version": "1.0",
-  "devices": [
-    {
-      "id": "emulator-5554",
-      "name": "Pixel_5_API_34",
-      "platform": "android",
-      "type": "emulator",
-      "state": "online",
-      "os_version": "14",
-      "architecture": "x86_64",
-      "details": {
-        "avd_name": "Pixel_5_API_34",
-        "api_level": 34,
-        "skin": "pixel_5",
-        "snapshot": true
-      }
-    },
-    {
-      "id": "A1B2C3D4-E5F6-7890-ABCD-EF1234567890",
-      "name": "iPhone 16 Pro",
-      "platform": "ios",
-      "type": "simulator",
-      "state": "booted",
-      "os_version": "18.0",
-      "architecture": "arm64",
-      "details": {
-        "udid": "A1B2C3D4-E5F6-7890-ABCD-EF1234567890",
-        "runtime": "com.apple.CoreSimulator.SimRuntime.iOS-18-0",
-        "device_type": "com.apple.CoreSimulator.SimDeviceType.iPhone-16-Pro"
-      }
-    }
-  ]
-}
-```
-
-### 16.3 Error Code Catalog
-
-| Code | Category | Message | Resolution |
-|------|----------|---------|------------|
-| `E1001` | General | Unknown command | Check command spelling; run `dotnet maui --help` |
-| `E1002` | General | Missing required argument | Provide required argument or use interactive mode |
-| `E1003` | General | Invalid argument value | Check allowed values in help |
-| `E2001` | Android | Android SDK not found | Run `dotnet maui android sdk install --recommended` |
-| `E2002` | Android | ADB not found | Install platform-tools via SDK manager |
-| `E2003` | Android | Emulator not found | Install emulator package |
-| `E2004` | Android | AVD not found | Create AVD with `dotnet maui android avd create` |
-| `E2005` | Android | System image not found | Install required system image |
-| `E2006` | Android | Device offline | Reconnect device or restart emulator |
-| `E2007` | Android | APK installation failed | Check device storage; verify APK is valid |
-| `E3001` | Apple | Xcode not found | Install Xcode from App Store |
-| `E3002` | Apple | Xcode CLI tools not found | Run `xcode-select --install` |
-| `E3003` | Apple | Runtime not found | Install via Xcode > Settings > Platforms |
-| `E3004` | Apple | Simulator not found | Create simulator with `dotnet maui apple simulator create` |
-| `E3005` | Apple | Simulator failed to boot | Check runtime compatibility; try different device |
-| `E3006` | Apple | Developer directory not set | Run `sudo xcode-select -s /Applications/Xcode.app` |
-| `E4001` | Network | Download failed | Check internet connection; retry |
-| `E4002` | Network | Checksum verification failed | Re-download; report if persistent |
-| `E4003` | Network | Connection timeout | Retry; check firewall/proxy settings |
-| `E5001` | Permission | Elevation required | Run with administrator/sudo |
-| `E5002` | Permission | Access denied | Check file/directory permissions |
-| `E5003` | Permission | Agent permission denied | Approve action in IDE prompt |
-
----
-
-## 17. MVP vs vNext Features
+## 11. MVP vs vNext Features
 
 ### MVP (v1.0)
 
@@ -2027,10 +1270,9 @@ dotnet maui windows sdk list
 | P0 | Android SDK detection and installation |
 | P0 | Android AVD creation and management |
 | P0 | iOS simulator listing and boot/shutdown |
-| P0 | Unified `device list` command |
+| P0 | Unified `device list` command (emulators, simulators, physical devices) |
 | P0 | `device screenshot` command |
 | P0 | JSON output for all commands |
-| P0 | JSON-RPC API for IDE integration |
 | P0 | VS Code extension integration |
 | P1 | Logcat streaming |
 | P1 | iOS runtime listing |
@@ -2041,7 +1283,6 @@ dotnet maui windows sdk list
 | Priority | Feature |
 |----------|---------|
 | P1 | Visual Studio extension integration |
-| P1 | Daemon mode for faster IDE interactions |
 | P1 | iOS runtime installation guidance |
 | P1 | APK install/uninstall |
 | P2 | AVD snapshot management |
@@ -2049,161 +1290,30 @@ dotnet maui windows sdk list
 | P2 | Windows SDK management |
 | P2 | Linux host support (Android only) |
 | P2 | Physical iOS device support (requires signing) |
-| P2 | `tree` command for dependency visualization |
-| P2 | `archive` command for app packaging |
 | Future | MCP server integration for AI agents |
 | Future | Cloud-hosted device support |
 
 ---
 
-## 18. Acceptance Criteria
+## Related Documents
 
-The following criteria must be met for v1.0 release:
-
-1. **AC1**: `maui doctor` completes in <5 seconds on a healthy system and correctly identifies all missing MAUI prerequisites.
-
-2. **AC2**: `maui doctor --fix` can install Android SDK, build-tools, emulator, and system images without manual intervention (license acceptance via `--accept-licenses`).
-
-3. **AC3**: `maui android avd create` creates a functional emulator that can boot and run a MAUI app.
-
-4. **AC4**: `maui apple simulator list` returns all available simulators with runtime and state information matching `xcrun simctl list`.
-
-5. **AC5**: `maui device list` returns a unified list of all Android devices/emulators and iOS simulators with consistent schema.
-
-6. **AC6**: `maui device screenshot` captures screenshots from both Android emulator and iOS simulator, saving to specified path.
-
-7. **AC7**: All commands support `--json` output with stable schema documented in spec.
-
-8. **AC8**: JSON-RPC server responds to all documented methods over stdio transport.
-
-9. **AC9**: VS Code extension can invoke `doctor.status`, display results, and trigger fixes via `doctor.fix`.
-
-10. **AC10**: Running `maui doctor --fix --non-interactive` in CI completes without prompts and returns appropriate exit codes.
-
-11. **AC11**: All downloads verify SHA-256 checksums before installation.
-
-12. **AC12**: AI agent permission gates prevent unauthorized modifications; all fix operations require explicit IDE confirmation.
-
-13. **AC13**: `diagnostic-bundle` produces a zip file containing all relevant diagnostic information with PII redacted.
-
-14. **AC14**: Tool runs correctly on Windows 10+ (x64/arm64) and macOS 13+ (arm64).
-
-15. **AC15**: Full test suite passes with >80% code coverage on unit tests.
+| Document | Description |
+|----------|-------------|
+| [AI Agent Integration](./maui-devtools-ai-integration.md) | Copilot integration, permission model, MCP tools |
+| [IDE Integration](./maui-devtools-ide-integration.md) | VS Code and Visual Studio UI flows |
 
 ---
 
-## 19. Implementation References & Prior Art
+## Revision History
 
-The following existing repositories and code contain reusable logic, patterns, and prior art that should be leveraged for implementation:
-
-### 19.1 Community Tools (Redth)
-
-| Repository | Description | Reusable Components |
-|------------|-------------|---------------------|
-| [AndroidSdk.Tools](https://github.com/Redth/AndroidSdk.Tools/) | C# library for Android SDK management | SDK detection, package installation, AVD management, emulator control, `adb` wrapper |
-| [AppleDev.Tools](https://github.com/Redth/AppleDev.Tools) | C# library for Apple development tools | Xcode detection, simulator management, `xcrun` wrapper, provisioning profile handling |
-| [MAUI.Sherpa](https://github.com/Redth/MAUI.Sherpa) | MAUI development environment helper | Doctor-style diagnostics, environment validation, fix suggestions |
-
-**Recommendation**: These libraries are production-tested and can be directly referenced or their patterns adopted. Consider contributing improvements back upstream.
-
-### 19.2 Official .NET SDK Targets
-
-| File | Description | Relevant Code |
-|------|-------------|---------------|
-| [Microsoft.Android.Sdk.Application.targets](https://github.com/dotnet/android/blob/main/src/Xamarin.Android.Build.Tasks/Microsoft.Android.Sdk/targets/Microsoft.Android.Sdk.Application.targets#L42) | Android SDK build targets | Device detection via `_ResolveAndroidDevice`, deployment logic, `adb` integration |
-| [Microsoft.Sdk.Mobile.targets](https://github.com/dotnet/macios/blob/e79838c4de379be59f4038117c713d4dd3963a62/dotnet/targets/Microsoft.Sdk.Mobile.targets#L146) | iOS/macOS SDK mobile targets | Simulator detection, `xcrun` integration, deployment to devices |
-
-**Key MSBuild Patterns to Adopt**:
-
-```xml
-<!-- From Microsoft.Android.Sdk.Application.targets -->
-<Target Name="_ResolveAndroidDevice" 
-        Condition="'$(AndroidDevice)' != '' or '$(AndroidAvdName)' != ''">
-  <!-- Device resolution logic -->
-</Target>
-
-<!-- From Microsoft.Sdk.Mobile.targets -->
-<Target Name="_ComputeAvailableDevices">
-  <!-- Returns @(Devices) items with metadata -->
-</Target>
-```
-
-### 19.3 Integration Strategy
-
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                    MAUI Dev Tools Client                                │
-├─────────────────────────────────────────────────────────────────────────┤
-│                                                                         │
-│  ┌─────────────────────────────────────────────────────────────────┐   │
-│  │                      Core Services                               │   │
-│  └─────────────────────────────────────────────────────────────────┘   │
-│                              │                                          │
-│           ┌──────────────────┼──────────────────┐                      │
-│           ▼                  ▼                  ▼                      │
-│  ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐          │
-│  │ Android Provider│ │  Apple Provider │ │ Windows Provider│          │
-│  ├─────────────────┤ ├─────────────────┤ ├─────────────────┤          │
-│  │ REUSE:          │ │ REUSE:          │ │                 │          │
-│  │ AndroidSdk.Tools│ │ AppleDev.Tools  │ │ (New impl)      │          │
-│  └─────────────────┘ └─────────────────┘ └─────────────────┘          │
-│                                                                         │
-└─────────────────────────────────────────────────────────────────────────┘
-```
-
-### 19.4 Code Patterns to Extract
-
-**From AndroidSdk.Tools**:
-- `SdkManager` class for package management
-- `AvdManager` class for AVD lifecycle
-- `Adb` class for device communication
-- `Emulator` class for emulator control
-- SDK path detection logic (environment variables, standard paths)
-
-**From AppleDev.Tools**:
-- `Simctl` class for simulator management
-- `XcodeSelect` class for Xcode detection
-- Runtime/device type enumeration
-- Provisioning profile parsing
-
-**From MAUI.Sherpa**:
-- Doctor check architecture
-- Issue categorization and severity
-- Fix recommendation engine
-- Progress reporting patterns
-
-**From Official SDK Targets**:
-- MSBuild target integration patterns
-- `ComputeAvailableDevices` output schema
-- Device selection logic
-- Deployment pipeline hooks
-
-### 19.5 Consolidation Roadmap
-
-| Phase | Action | Repositories Affected |
-|-------|--------|----------------------|
-| 1 | Reference AndroidSdk.Tools and AppleDev.Tools as dependencies | New tool |
-| 2 | Contribute improvements (JSON output, new commands) upstream | Redth repos |
-| 3 | Integrate with MSBuild targets via `ComputeAvailableDevices` | dotnet/android, dotnet/macios |
-| 4 | Deprecate internal VS repos | ClientTools.android-acquisition, android-platform-support |
-| 5 | Consider merging community tools into dotnet org (with maintainer agreement) | Long-term |
-
----
-
-## 20. Future Subcommands (Roadmap)
-
-Inspired by MAUI CLI TODOs and community requests:
-
-| Command | Description | Inspiration |
-|---------|-------------|-------------|
-| `maui logs` | Stream unified logs from device/simulator | MAUI CLI TODO |
-| `maui tree` | Display dependency tree for MAUI project | MAUI CLI TODO |
-| `maui archive` | Build and package app for distribution | MAUI CLI TODO |
-| `maui deploy` | Deploy to connected device | MAUI CLI TODO |
-| `maui clean` | Clean MAUI build artifacts and caches | Common request |
-| `maui template` | Scaffold new MAUI projects (delegate to dotnet new) | Convenience |
-| `maui perf` | Performance profiling helpers | Future |
-| `maui test` | Run device tests (delegate to dotnet test with device targeting) | Future |
+| Version | Date | Changes |
+|---------|------|---------|
+| 2.5-draft | 2026-02-04 | Removed §11 Security, §12 Extensibility; Added physical device support to device list |
+| 2.4-draft | 2026-02-04 | Removed §13 Testing Strategy, §14 Rollout Plan |
+| 2.3-draft | 2026-02-04 | Removed §15-20 (Open Questions, Appendix, Acceptance Criteria, etc.) |
+| 2.2-draft | 2026-02-04 | Removed daemon mode, §5.7 Deploy vs Run, G6, NG6 |
+| 2.1-draft | 2026-02-04 | Extracted AI/IDE integration to separate documents; Removed JSON-RPC API |
+| 1.0-draft | 2026-02-03 | Initial draft |
 
 ---
 
