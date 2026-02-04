@@ -63,9 +63,14 @@ if ($Platform -eq "android") {
     }
     
     # Check for already running device
-    $runningDevices = adb devices | Select-String "emulator.*device$"
+    # Note: adb devices output can be:
+    #   emulator-5554	device    (basic)
+    #   emulator-5554          device product:... model:...    (with -l flag or some environments)
+    # We match any line starting with emulator- and containing "device" as the state
+    $runningDevices = adb devices | Select-String "^emulator-\d+\s+device"
     if ($runningDevices.Count -gt 0) {
-        $DeviceUdid = ($runningDevices[0] -split '\s+')[0]
+        # Extract just the emulator-XXXX part (first column)
+        $DeviceUdid = ($runningDevices[0].Line -split '\s+')[0]
         Write-Success "Found running Android device: $DeviceUdid"
     }
     else {
@@ -118,10 +123,14 @@ if ($Platform -eq "android") {
         $DeviceUdid = $null
         
         while ($deviceWaited -lt $deviceTimeout) {
-            $runningDevices = adb devices | Select-String "emulator"
+            # Match any emulator device line
+            $runningDevices = adb devices | Select-String "^emulator-\d+"
             if ($runningDevices.Count -gt 0) {
-                $firstDevice = ($runningDevices[0] -split '\s+')[0]
-                $deviceState = ($runningDevices[0] -split '\s+')[1]
+                # Use .Line to get the actual string content
+                $line = $runningDevices[0].Line
+                $parts = $line -split '\s+'
+                $firstDevice = $parts[0]
+                $deviceState = $parts[1]
                 if ($deviceState -eq "device") {
                     $DeviceUdid = $firstDevice
                     break
