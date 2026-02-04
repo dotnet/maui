@@ -54,8 +54,8 @@ stages:
             parameters:
               skipXcode: false
               skipProvisionator: false
-              skipAndroidCommonSdks: true
-              skipAndroidPlatformApis: true
+              skipAndroidCommonSdks: false  # Install base Android SDK (cmdline-tools, emulator, platform-tools)
+              skipAndroidPlatformApis: false  # Install platform APIs
               skipJdk: false
               skipSimulatorSetup: false
               skipCertificates: true
