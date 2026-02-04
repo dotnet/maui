@@ -185,11 +185,25 @@ namespace Microsoft.Maui.Handlers
 			EventHandler? updateMinMaxDates = null;
 			updateMinMaxDates = (sender, e) =>
 			{
-				if (VirtualView is not null && _dialog is not null)
+				var dialog = _dialog; // Capture locally to avoid race conditions
+				try
 				{
-					PlatformView?.UpdateMinimumDate(VirtualView, _dialog);
-					PlatformView?.UpdateMaximumDate(VirtualView, _dialog);
-					_dialog.ShowEvent -= updateMinMaxDates;
+					if (VirtualView is not null && dialog is not null)
+					{
+						dialog.DatePicker.MinDate = 0;
+						dialog.DatePicker.MaxDate = long.MaxValue;
+
+						PlatformView?.UpdateMinimumDate(VirtualView, dialog);
+						PlatformView?.UpdateMaximumDate(VirtualView, dialog);
+					}
+				}
+				finally
+				{
+					// Always unsubscribe to prevent memory leaks
+					if (dialog is not null)
+					{
+						dialog.ShowEvent -= updateMinMaxDates;
+					}
 				}
 			};
 			_dialog.ShowEvent += updateMinMaxDates;
