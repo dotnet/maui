@@ -466,9 +466,9 @@ stages:
               
               # Invoke the PR reviewer using our PowerShell script
               # The script will merge the PR into the current branch
-              # -NoInteractive for CI mode (exits after completion)
+              # -PostSummaryComment and -RunFinalize handle posting comments
               set +e
-              pwsh .github/scripts/Review-PR.ps1 -PRNumber ${{ parameters.PRNumber }} -NoInteractive 2>&1 | tee $(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md
+              pwsh .github/scripts/Review-PR.ps1 -PRNumber ${{ parameters.PRNumber }} -Platform android -RunFinalize -PostSummaryComment 2>&1 | tee $(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md
               COPILOT_EXIT_CODE=$?
               set -e
               
@@ -513,90 +513,6 @@ stages:
             displayName: 'Run PR Reviewer Agent'
             env:
               GITHUB_TOKEN: $(COPILOT_TOKEN)
-
-          - script: |
-              echo "Posting review comment using skill..."
-              
-              # Create artifacts directory if not exists
-              mkdir -p $(Build.ArtifactStagingDirectory)/copilot-logs
-              
-              # Use Copilot CLI to invoke the post-comment skill
-              set +e
-              copilot -p "Use a skill to post the review feedback as a comment on PR #${{ parameters.PRNumber }}. The review output should be in the CustomAgentLogsTmp or .github/agent-pr-session directories. Clean up ANSI codes and stats before posting." --yolo 2>&1 | tee $(Build.ArtifactStagingDirectory)/copilot-logs/copilot_post_comment_output.md
-              POST_COMMENT_EXIT_CODE=$?
-              set -e
-              
-              echo "Post comment exit code: $POST_COMMENT_EXIT_CODE"
-              
-              if [ $POST_COMMENT_EXIT_CODE -ne 0 ]; then
-                echo "##vso[task.logissue type=warning]Copilot post-comment skill exited with code $POST_COMMENT_EXIT_CODE"
-                echo "##vso[task.setvariable variable=PostCommentFailed]true"
-              fi
-            displayName: 'Post Review Comment Using Skill'
-            env:
-              GITHUB_TOKEN: $(COPILOT_TOKEN)
-            condition: succeededOrFailed()
-
-          - script: |
-              echo "Posting review comment to PR (fallback)..."
-              
-              # Check for the captured output file first
-              REVIEW_FILE="$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md"
-              CLEANED_FILE="$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_cleaned.md"
-              
-              # Also check if Copilot created a Review_Feedback file
-              FEEDBACK_FILE=$(find $(Build.ArtifactStagingDirectory)/copilot-logs -name "Review_Feedback_*.md" -type f | head -1)
-              
-              if [ -n "$FEEDBACK_FILE" ]; then
-                echo "Found review feedback file: $FEEDBACK_FILE"
-                REVIEW_FILE="$FEEDBACK_FILE"
-              fi
-              
-              if [ -f "$REVIEW_FILE" ] && [ -s "$REVIEW_FILE" ]; then
-                echo "Cleaning up review output..."
-                
-                # Clean up the content:
-                # 1. Strip all ANSI escape codes (color codes like [37m, [39m, etc.)
-                # 2. Start from the first markdown header (## or #)
-                # 3. Remove stats at the end (Total usage est, API time, Total session, etc.)
-                sed 's/\x1b\[[0-9;]*m//g' "$REVIEW_FILE" | \
-                  sed -n '/^#/,$p' | \
-                  sed '/^Total usage est/,$d' | \
-                  sed '/^API time spent/d' | \
-                  sed '/^Total session time/d' | \
-                  sed '/^Total duration/d' | \
-                  sed '/^Total code changes/d' | \
-                  sed '/^Breakdown by AI model/,$d' | \
-                  sed '/^Usage by model/,$d' | \
-                  sed '/^ *claude-/d' | \
-                  sed '/^ *gpt-/d' > "$CLEANED_FILE"
-                
-                # If cleaning removed everything, fall back to original without ANSI codes
-                if [ ! -s "$CLEANED_FILE" ]; then
-                  echo "Cleaned file is empty, using original without ANSI codes"
-                  sed 's/\x1b\[[0-9;]*m//g' "$REVIEW_FILE" > "$CLEANED_FILE"
-                fi
-                
-                echo "Posting review from: $CLEANED_FILE"
-                echo "--- Review Content Preview ---"
-                head -50 "$CLEANED_FILE"
-                echo "--- End Preview ---"
-                
-                # Post the review as a comment on the PR
-                # Note: GH_COMMENT_TOKEN needs 'repo' scope or 'pull_requests:write' permission
-                if gh pr comment ${{ parameters.PRNumber }} --repo dotnet/maui --body-file "$CLEANED_FILE"; then
-                  echo "Review comment posted successfully"
-                else
-                  echo "##vso[task.logissue type=warning]Failed to post comment. Check that GH_COMMENT_TOKEN has 'repo' or 'pull_requests:write' scope."
-                  echo "Review content is available in the published artifacts."
-                fi
-              else
-                echo "##vso[task.logissue type=warning]No review output found or file is empty"
-              fi
-            displayName: 'Post Review Comment (Fallback)'
-            env:
-              GITHUB_TOKEN: $(GH_COMMENT_TOKEN)
-            condition: and(succeededOrFailed(), eq(variables['PostCommentFailed'], 'true'))
 
           # Publish Copilot logs and session artifacts
           - task: PublishPipelineArtifact@1
