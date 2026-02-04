@@ -48,6 +48,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		WeakNotifyPropertyChangedProxy? _layoutPropertyChangedProxy;
 		PropertyChangedEventHandler? _layoutPropertyChanged;
 		bool _isScrollingForItemsUpdate;
+		int _pendingScrollToIndex = -1;
 		protected TItemsView ItemsView => VirtualView;
 		protected TItemsView Element => VirtualView;
 
@@ -388,27 +389,77 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
-			if (_itemsSource is null || _itemsSource.Count == 0 || _collectionViewSource?.View?.Count <= 1)
+			if (_itemsSource is null || _itemsSource.Count == 0)
 			{
 				return;
 			}
 
-			if (PlatformView.Layout is UniformGridLayout layout)
+			// Get the actual count from the CollectionView's view
+			var viewCount = _collectionViewSource?.View?.Count ?? 0;
+			if (viewCount == 0)
 			{
-				PlatformView.UpdateLayout();
+				return;
 			}
 
+			// Force layout update to ensure items are properly positioned
+			PlatformView.UpdateLayout();
 
 			if (VirtualView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
 			{
 				_isScrollingForItemsUpdate = true;
-				// Keeps the first item in the list displayed when new items are added.
-				PlatformView.StartBringItemIntoView(0, new BringIntoViewOptions() { AnimationDesired = false });
+				
+				// Use dispatcher to ensure the scroll happens after layout is fully complete
+				VirtualView.Dispatcher.Dispatch(() =>
+				{
+					if (PlatformView is null)
+					{
+						return;
+					}
+
+					// Keeps the first item in the list displayed when new items are added.
+					PlatformView.StartBringItemIntoView(0, new BringIntoViewOptions() 
+					{ 
+						AnimationDesired = false,
+						VerticalAlignmentRatio = 0.0,
+						HorizontalAlignmentRatio = 0.0
+					});
+				});
 			}
 			else if (VirtualView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
 			{
-				// Adjusts the scroll offset to keep the last item in the list displayed when new items are added.
-				PlatformView.StartBringItemIntoView(_itemsSource.Count - 1, new BringIntoViewOptions() { AnimationDesired = false });
+				_isScrollingForItemsUpdate = true;
+				
+				// Use the view count to ensure we're scrolling to the correct last item
+				var lastIndex = viewCount - 1;
+				if (lastIndex >= 0)
+				{
+					_pendingScrollToIndex = lastIndex;
+					
+					// Use dispatcher to ensure the scroll happens after layout is fully complete
+					VirtualView.Dispatcher.Dispatch(() =>
+					{
+						if (PlatformView is null || _pendingScrollToIndex < 0)
+						{
+							_pendingScrollToIndex = -1;
+							return;
+						}
+
+						var currentViewCount = _collectionViewSource?.View?.Count ?? 0;
+						var scrollIndex = Math.Min(_pendingScrollToIndex, currentViewCount - 1);
+						
+						if (scrollIndex >= 0)
+						{
+							PlatformView.StartBringItemIntoView(scrollIndex, new BringIntoViewOptions() 
+							{ 
+								AnimationDesired = false,
+								VerticalAlignmentRatio = 1.0,
+								HorizontalAlignmentRatio = 1.0
+							});
+						}
+						
+						_pendingScrollToIndex = -1;
+					});
+				}
 			}
 		}
 
