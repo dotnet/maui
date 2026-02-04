@@ -89,15 +89,6 @@ public partial class MainPage : ContentPage
 		Console.WriteLine("SANDBOX: GoToAsync → Tests/NavigationTest");
 		await Shell.Current.GoToAsync("//Tests/NavigationTest");
 	}
-
-	void OpenTabbedPageTest_Clicked(object sender, EventArgs e)
-	{
-		Console.WriteLine("SANDBOX: Opening TabbedPage Test (BottomNavigationManager test)");
-		if (Application.Current?.Windows.Count > 0)
-		{
-			Application.Current.Windows[0].Page = new TabbedPageTestPage();
-		}
-	}
 }
 
 public partial class DetailsPage : ContentPage
@@ -227,12 +218,6 @@ public partial class DetailsPage : ContentPage
 			Console.WriteLine("SANDBOX: Insert before button clicked");
 			try
 			{
-				var button = new Button();
-				button.Text = "Go Back (Pop)";
-				button.Clicked += async (s, e) =>
-				{
-					await Navigation.PopAsync();
-				};
 
 				var label = new Label
 				{
@@ -248,7 +233,7 @@ public partial class DetailsPage : ContentPage
 					{
 						Spacing = 20,
 						Padding = new Thickness(30, 0),
-						Children = { label, button }
+						Children = { label }
 					}
 
 

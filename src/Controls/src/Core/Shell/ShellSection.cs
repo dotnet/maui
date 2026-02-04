@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	[TypeConverter(typeof(ShellSectionTypeConverter))]
 	[DebuggerTypeProxy(typeof(ShellSectionDebugView))]
-	public partial class ShellSection : ShellGroupItem, IShellSectionController, IPropertyPropagationController, IVisualTreeElement, IStackNavigation, IStackNavigationView
+	public partial class ShellSection : ShellGroupItem, IShellSectionController, IPropertyPropagationController, IVisualTreeElement, IStackNavigation
 	{
 		#region PropertyKeys
 
@@ -836,25 +836,6 @@ namespace Microsoft.Maui.Controls
 			_navStack.Remove(page);
 			PresentedPageAppearing();
 
-#if ANDROID
-			// Try handler-based navigation first if handler exists
-			// BUT: Skip handler-based navigation for ViewPager2 (multiple content) sections
-			// ViewPager2 mode: Each ShellContentViewPagerFragment has its own StackNavigationManager
-			// and handles navigation via IShellSectionController.NavigationRequested event
-			if (Handler is not null && _handlerBasedNavigationCompletionSource == null && Items?.Count == 1)
-			{
-				var navigationRequest = new NavigationRequest(Stack, animated);
-				((IStackNavigation)this).RequestNavigation(navigationRequest);
-				if (_handlerBasedNavigationCompletionSource?.Task is not null)
-				{
-					await _handlerBasedNavigationCompletionSource.Task;
-				}
-
-				RemovePage(page);
-				return page;
-			}
-#endif
-			// Legacy navigation path (also used by ViewPager2 mode)
 			InvokeNavigationRequest(args);
 			if (args.Task is not null)
 			{
@@ -897,32 +878,8 @@ namespace Microsoft.Maui.Controls
 			var oldStack = _navStack;
 			_navStack = new List<Page> { null };
 
-#if ANDROID
-			// Try handler-based navigation first if handler exists
-			// BUT: Skip handler-based navigation for ViewPager2 (multiple content) sections
-			// ViewPager2 mode: Each ShellContentViewPagerFragment has its own StackNavigationManager
-			// and handles navigation via IShellSectionController.NavigationRequested event
-			if (Handler != null && _handlerBasedNavigationCompletionSource == null && Items?.Count == 1)
-			{
-				var navigationRequest = new NavigationRequest(Stack, animated);
-				((IStackNavigation)this).RequestNavigation(navigationRequest);
-				if (_handlerBasedNavigationCompletionSource?.Task is not null)
-				{
-					await _handlerBasedNavigationCompletionSource.Task;
-				}
-
-				for (int i = 1; i < oldStack.Count; i++)
-				{
-					oldStack[i].SendDisappearing();
-					RemovePage(oldStack[i]);
-				}
-
-				PresentedPageAppearing();
-				return;
-			}
-#endif
-			// Legacy navigation path (also used by ViewPager2 mode)
 			InvokeNavigationRequest(args);
+
 			if (args.Task is not null)
 			{
 				await args.Task;
@@ -968,19 +925,6 @@ namespace Microsoft.Maui.Controls
 			PresentedPageAppearing();
 			AddPage(page);
 
-#if ANDROID
-			// Try handler-based navigation first if handler exists
-			// BUT: Skip handler-based navigation for ViewPager2 (multiple content) sections
-			// ViewPager2 mode: Each ShellContentViewPagerFragment has its own StackNavigationManager
-			// and handles navigation via IShellSectionController.NavigationRequested event
-			if (Handler is not null && _handlerBasedNavigationCompletionSource is null && Items?.Count == 1)
-			{
-				var navigationRequest = new NavigationRequest(Stack, animated);
-				((IStackNavigation)this).RequestNavigation(navigationRequest);
-				return _handlerBasedNavigationCompletionSource?.Task ?? Task.CompletedTask;
-			}
-#endif
-			// Legacy navigation path (also used by ViewPager2 mode)
 			InvokeNavigationRequest(args);
 
 			return args.Task ??
@@ -1355,104 +1299,6 @@ namespace Microsoft.Maui.Controls
 		internal Task? PendingNavigationTask => _handlerBasedNavigationCompletionSource?.Task;
 
 #pragma warning disable RS0016 // Add public types and members to the declared API
-
-		// IView implementation forwarded to handler
-		// This was added for temporary compatibility while migrating Shell to handlers
-		// Need to remove this later
-		public FlowDirection FlowDirection => throw new NotImplementedException();
-
-
-		public Primitives.LayoutAlignment HorizontalLayoutAlignment => throw new NotImplementedException();
-
-		public Primitives.LayoutAlignment VerticalLayoutAlignment => throw new NotImplementedException();
-
-		public Semantics? Semantics => throw new NotImplementedException();
-
-		public IShape? Clip => throw new NotImplementedException();
-
-		public IShadow? Shadow => throw new NotImplementedException();
-
-		public bool IsFocused { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-
-		public Visibility Visibility => throw new NotImplementedException();
-
-		public double Opacity => throw new NotImplementedException();
-
-		public Paint? Background => throw new NotImplementedException();
-
-		public Rect Frame { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-
-		public double Width => throw new NotImplementedException();
-
-		public double MinimumWidth => throw new NotImplementedException();
-
-		public double MaximumWidth => throw new NotImplementedException();
-
-		public double Height => throw new NotImplementedException();
-
-		public double MinimumHeight => throw new NotImplementedException();
-
-		public double MaximumHeight => throw new NotImplementedException();
-
-		public Thickness Margin => throw new NotImplementedException();
-
-		public Size DesiredSize => throw new NotImplementedException();
-
-		public int ZIndex => throw new NotImplementedException();
-
-		IViewHandler? IView.Handler { get => throw new NotImplementedException(); set => Handler = value; }
-
-		public bool InputTransparent => throw new NotImplementedException();
-
-		public double TranslationX => throw new NotImplementedException();
-
-		public double TranslationY => throw new NotImplementedException();
-
-		public double Scale => throw new NotImplementedException();
-
-		public double ScaleX => throw new NotImplementedException();
-
-		public double ScaleY => throw new NotImplementedException();
-
-		public double Rotation => throw new NotImplementedException();
-
-		public double RotationX => throw new NotImplementedException();
-
-		public double RotationY => throw new NotImplementedException();
-
-		public double AnchorX => throw new NotImplementedException();
-
-		public double AnchorY => throw new NotImplementedException();
-
-		public Size Arrange(Rect bounds)
-		{
-			throw new NotImplementedException();
-		}
-
-		public Size Measure(double widthConstraint, double heightConstraint)
-		{
-			throw new NotImplementedException();
-		}
-
-		public void InvalidateMeasure()
-		{
-			throw new NotImplementedException();
-		}
-
-		public void InvalidateArrange()
-		{
-			throw new NotImplementedException();
-		}
-
-		public bool Focus()
-		{
-			throw new NotImplementedException();
-		}
-
-		public void Unfocus()
-		{
-			throw new NotImplementedException();
-		}
 
 		void IStackNavigation.RequestNavigation(NavigationRequest eventArgs)
 		{

@@ -7,12 +7,12 @@
     Shell.FlyoutBehavior="Flyout"
     Title="Shell Handler Tests">
 
-    <!-- <ShellContent Title="Home"
+    <ShellContent Title="Home"
                   ContentTemplate="{DataTemplate local:MainPage}"
-                  Route="MainPage"/> -->
+                  Route="MainPage"/>
 
 
-    <TabBar Shell.TabBarForegroundColor="Green"
+    <!-- <TabBar Shell.TabBarForegroundColor="Green"
             Shell.TabBarUnselectedColor="Red">
 
 
@@ -66,7 +66,7 @@
                           ContentTemplate="{DataTemplate local:SettingsPage}"
                           Route="SettingsPage"/>
         </Tab>
-    </TabBar>
+    </TabBar> -->
     <!-- 
         <FlyoutItem Title="Home"
                     Icon="groceries.png"
