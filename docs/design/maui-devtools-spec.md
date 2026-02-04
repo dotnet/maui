@@ -24,6 +24,10 @@
 14. [Rollout Plan](#14-rollout-plan)
 15. [Open Questions & Risks](#15-open-questions--risks)
 16. [Appendix](#16-appendix)
+17. [MVP vs vNext Features](#17-mvp-vs-vnext-features)
+18. [Acceptance Criteria](#18-acceptance-criteria)
+19. [Implementation References & Prior Art](#19-implementation-references--prior-art)
+20. [Future Subcommands (Roadmap)](#20-future-subcommands-roadmap)
 
 ---
 
@@ -31,7 +35,7 @@
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 2.0-draft | 2026-02-04 | **Major revision from multi-model review**: Added DP3 (stateless-first), DP4 (machine-first output); Added Error Contract Specification (§7.9); Added Bootstrap State Machine (§5.6) with JDK installation; Clarified deploy vs run semantics; Added `--json`, `--dry-run`, `--ci` flags; Added JDK management commands; Defined default installation paths per platform |
+| 2.0-draft | 2026-02-04 | **Major revision from multi-model review**: Added DP3 (stateless-first), DP4 (machine-first output); Added Error Contract Specification (§7.9); Added Bootstrap State Machine (§5.6) with JDK installation; Clarified deploy vs run semantics; Added `--json`, `--dry-run`, `--ci` flags; Added JDK management commands; Defined default installation paths per platform; Added Implementation References (§19) with AndroidSdk.Tools, AppleDev.Tools, MAUI.Sherpa, and official SDK targets |
 | 1.5-draft | 2026-02-04 | Added: Design Principles (DP1: delegate to native tools, DP2: consolidate VS repositories); added NG6 for no custom download logic |
 | 1.4-draft | 2026-02-03 | Changed CLI to `dotnet maui` pattern; kept `apple` for Apple platform commands; added `windows` subcommand |
 | 1.3-draft | 2026-02-03 | Added: Copilot-assisted troubleshooting (§9.3), MCP tool integration, escalation hierarchy, context handoff schema |
@@ -2996,7 +3000,105 @@ The following criteria must be met for v1.0 release:
 
 ---
 
-## 19. Future Subcommands (Roadmap)
+## 19. Implementation References & Prior Art
+
+The following existing repositories and code contain reusable logic, patterns, and prior art that should be leveraged for implementation:
+
+### 19.1 Community Tools (Redth)
+
+| Repository | Description | Reusable Components |
+|------------|-------------|---------------------|
+| [AndroidSdk.Tools](https://github.com/Redth/AndroidSdk.Tools/) | C# library for Android SDK management | SDK detection, package installation, AVD management, emulator control, `adb` wrapper |
+| [AppleDev.Tools](https://github.com/Redth/AppleDev.Tools) | C# library for Apple development tools | Xcode detection, simulator management, `xcrun` wrapper, provisioning profile handling |
+| [MAUI.Sherpa](https://github.com/Redth/MAUI.Sherpa) | MAUI development environment helper | Doctor-style diagnostics, environment validation, fix suggestions |
+
+**Recommendation**: These libraries are production-tested and can be directly referenced or their patterns adopted. Consider contributing improvements back upstream.
+
+### 19.2 Official .NET SDK Targets
+
+| File | Description | Relevant Code |
+|------|-------------|---------------|
+| [Microsoft.Android.Sdk.Application.targets](https://github.com/dotnet/android/blob/main/src/Xamarin.Android.Build.Tasks/Microsoft.Android.Sdk/targets/Microsoft.Android.Sdk.Application.targets#L42) | Android SDK build targets | Device detection via `_ResolveAndroidDevice`, deployment logic, `adb` integration |
+| [Microsoft.Sdk.Mobile.targets](https://github.com/dotnet/macios/blob/e79838c4de379be59f4038117c713d4dd3963a62/dotnet/targets/Microsoft.Sdk.Mobile.targets#L146) | iOS/macOS SDK mobile targets | Simulator detection, `xcrun` integration, deployment to devices |
+
+**Key MSBuild Patterns to Adopt**:
+
+```xml
+<!-- From Microsoft.Android.Sdk.Application.targets -->
+<Target Name="_ResolveAndroidDevice" 
+        Condition="'$(AndroidDevice)' != '' or '$(AndroidAvdName)' != ''">
+  <!-- Device resolution logic -->
+</Target>
+
+<!-- From Microsoft.Sdk.Mobile.targets -->
+<Target Name="_ComputeAvailableDevices">
+  <!-- Returns @(Devices) items with metadata -->
+</Target>
+```
+
+### 19.3 Integration Strategy
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    MAUI Dev Tools Client                                │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │                      Core Services                               │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                              │                                          │
+│           ┌──────────────────┼──────────────────┐                      │
+│           ▼                  ▼                  ▼                      │
+│  ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐          │
+│  │ Android Provider│ │  Apple Provider │ │ Windows Provider│          │
+│  ├─────────────────┤ ├─────────────────┤ ├─────────────────┤          │
+│  │ REUSE:          │ │ REUSE:          │ │                 │          │
+│  │ AndroidSdk.Tools│ │ AppleDev.Tools  │ │ (New impl)      │          │
+│  └─────────────────┘ └─────────────────┘ └─────────────────┘          │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### 19.4 Code Patterns to Extract
+
+**From AndroidSdk.Tools**:
+- `SdkManager` class for package management
+- `AvdManager` class for AVD lifecycle
+- `Adb` class for device communication
+- `Emulator` class for emulator control
+- SDK path detection logic (environment variables, standard paths)
+
+**From AppleDev.Tools**:
+- `Simctl` class for simulator management
+- `XcodeSelect` class for Xcode detection
+- Runtime/device type enumeration
+- Provisioning profile parsing
+
+**From MAUI.Sherpa**:
+- Doctor check architecture
+- Issue categorization and severity
+- Fix recommendation engine
+- Progress reporting patterns
+
+**From Official SDK Targets**:
+- MSBuild target integration patterns
+- `ComputeAvailableDevices` output schema
+- Device selection logic
+- Deployment pipeline hooks
+
+### 19.5 Consolidation Roadmap
+
+| Phase | Action | Repositories Affected |
+|-------|--------|----------------------|
+| 1 | Reference AndroidSdk.Tools and AppleDev.Tools as dependencies | New tool |
+| 2 | Contribute improvements (JSON output, new commands) upstream | Redth repos |
+| 3 | Integrate with MSBuild targets via `ComputeAvailableDevices` | dotnet/android, dotnet/macios |
+| 4 | Deprecate internal VS repos | ClientTools.android-acquisition, android-platform-support |
+| 5 | Consider merging community tools into dotnet org (with maintainer agreement) | Long-term |
+
+---
+
+## 20. Future Subcommands (Roadmap)
 
 Inspired by MAUI CLI TODOs and community requests:
 
