@@ -16,7 +16,9 @@ Ensures PR title and description accurately reflect the implementation, and perf
 
 ---
 
-## 🚨 CRITICAL: NEVER Approve or Request Changes
+## 🚨 CRITICAL RULES
+
+### 1. NEVER Approve or Request Changes
 
 **AI agents must NEVER use `--approve` or `--request-changes` flags.**
 
@@ -25,10 +27,21 @@ Ensures PR title and description accurately reflect the implementation, and perf
 | `gh pr review --approve` | ❌ **NEVER** | Approval is a human decision |
 | `gh pr review --request-changes` | ❌ **NEVER** | Blocking PRs is a human decision |
 
-**Only humans can approve or block PRs.** The agent's role is to:
-1. Analyze and provide findings
-2. Post comments with recommendations
-3. Let humans make the final decision
+### 2. NEVER Post Comments Directly
+
+**This skill is ANALYSIS ONLY.** Never post comments using `gh` commands.
+
+| Action | Allowed? | Why |
+|--------|----------|-----|
+| `gh pr review --comment` | ❌ **NEVER** | Use ai-summary-comment skill instead |
+| `gh pr comment` | ❌ **NEVER** | Use ai-summary-comment skill instead |
+| Analyze and report findings | ✅ **YES** | This is the skill's purpose |
+
+**Correct workflow:**
+1. **This skill**: Analyze PR, produce findings in your response to the user
+2. **User explicitly asks to post comment**: Then invoke `ai-summary-comment` skill
+
+**Only humans control when comments are posted.** Your job is to analyze and present findings.
 
 ---
 
@@ -352,19 +365,21 @@ gh pr diff XXXXX -- path/to/file.cs
 - [Positive observation 2]
 ```
 
-### When to Post Review
+### 🚨 CRITICAL: Do NOT Post Comments Directly
 
-Post a **comment** with your findings. Never approve or request changes - that's a human decision.
+**The pr-finalize skill is ANALYSIS ONLY.** Never post comments using `gh pr review` or `gh pr comment`.
 
-- **Issues found**: Post comment with findings for human review
-- **No issues**: Post comment noting code review passed
+| Action | Allowed? | Why |
+|--------|----------|-----|
+| `gh pr review --comment` | ❌ **NEVER** | Use ai-summary-comment skill instead |
+| `gh pr comment` | ❌ **NEVER** | Use ai-summary-comment skill instead |
+| Analyze and report findings | ✅ **YES** | This is the skill's purpose |
 
-### Example gh CLI Command
+**Workflow:**
+1. **This skill**: Analyze PR, produce findings in your response
+2. **User asks to post**: Then invoke `ai-summary-comment` skill to post
 
-```bash
-# Post review comment (NEVER use --approve or --request-changes)
-gh pr review XXXXX --repo dotnet/maui --comment --body "$reviewBody"
-```
+The user controls when comments are posted. Your job is to analyze and present findings.
 
 ---
 
