@@ -56,10 +56,10 @@
     <MicrosoftNETSdkAndroidManifest100100PackageVersion>36.1.30</MicrosoftNETSdkAndroidManifest100100PackageVersion>
     <AndroidNetPreviousVersion>$(MicrosoftNetSdkAndroidManifest100100PackageVersion)</AndroidNetPreviousVersion>
     <!-- xamarin/xamarin-macios -->
-    <MicrosoftMacCatalystSdknet110_262PackageVersion>26.2.11313-net11-p1</MicrosoftMacCatalystSdknet110_262PackageVersion>
-    <MicrosoftmacOSSdknet110_262PackageVersion>26.2.11313-net11-p1</MicrosoftmacOSSdknet110_262PackageVersion>
-    <MicrosoftiOSSdknet110_262PackageVersion>26.2.11313-net11-p1</MicrosoftiOSSdknet110_262PackageVersion>
-    <MicrosofttvOSSdknet110_262PackageVersion>26.2.11313-net11-p1</MicrosofttvOSSdknet110_262PackageVersion>
+    <MicrosoftMacCatalystSdknet110_262PackageVersion>26.2.11314-net11-p1</MicrosoftMacCatalystSdknet110_262PackageVersion>
+    <MicrosoftmacOSSdknet110_262PackageVersion>26.2.11314-net11-p1</MicrosoftmacOSSdknet110_262PackageVersion>
+    <MicrosoftiOSSdknet110_262PackageVersion>26.2.11314-net11-p1</MicrosoftiOSSdknet110_262PackageVersion>
+    <MicrosofttvOSSdknet110_262PackageVersion>26.2.11314-net11-p1</MicrosofttvOSSdknet110_262PackageVersion>
     <!-- This is a subscription of the .NET 10 latest stable versions of our packages -->
     <MicrosoftMacCatalystSdknet100_262PackageVersion>26.2.10196</MicrosoftMacCatalystSdknet100_262PackageVersion>
     <MicrosoftmacOSSdknet100_262PackageVersion>26.2.10196</MicrosoftmacOSSdknet100_262PackageVersion>
