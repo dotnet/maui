@@ -35,13 +35,13 @@
 .PARAMETER DryRun
     If specified, shows what would be done without making changes
 
-.PARAMETER PostSummaryComment
-    If specified, runs the ai-summary-comment skill after the PR agent completes
-    to post a summary comment on the PR.
-
 .PARAMETER RunFinalize
     If specified, runs the pr-finalize skill after the PR agent completes
-    to verify PR title/description match the implementation and post a comment.
+    to verify PR title/description match the implementation.
+
+.PARAMETER PostSummaryComment
+    If specified, runs the ai-summary-comment skill after all other phases complete
+    to post a combined summary comment on the PR from all phases.
 
 .EXAMPLE
     .\Review-PR.ps1 -PRNumber 33687
@@ -274,7 +274,7 @@ if ($DryRun) {
     Write-Host "To run for real, remove the -DryRun flag" -ForegroundColor Yellow
 } else {
     Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Green
-    Write-Host "║  LAUNCHING COPILOT CLI                                    ║" -ForegroundColor Green
+    Write-Host "║  PHASE 1: PR AGENT REVIEW                                 ║" -ForegroundColor Green
     Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Green
     Write-Host ""
     Write-Host "PR Review Context:" -ForegroundColor Cyan
@@ -285,6 +285,15 @@ if ($DryRun) {
     Write-Host "  CURRENT_BRANCH: $(git branch --show-current)" -ForegroundColor White
     Write-Host "  PR_TITLE:       $($prInfo.title)" -ForegroundColor White
     Write-Host "  MODE:           $(if ($Interactive) { 'Interactive' } else { 'Non-interactive' })" -ForegroundColor White
+    Write-Host ""
+    Write-Host "Workflow:" -ForegroundColor Cyan
+    Write-Host "  1. PR Agent Review (this phase)" -ForegroundColor White
+    if ($RunFinalize) {
+        Write-Host "  2. pr-finalize skill (queued)" -ForegroundColor White
+    }
+    if ($PostSummaryComment) {
+        Write-Host "  3. ai-summary-comment skill (queued)" -ForegroundColor White
+    }
     Write-Host ""
     Write-Host "─────────────────────────────────────────────────────────────" -ForegroundColor DarkGray
     Write-Host ""
@@ -336,15 +345,15 @@ if ($DryRun) {
     # Post-completion skills (only run if main agent completed successfully)
     if ($exitCode -eq 0) {
         
-        # Run pr-finalize skill if requested
+        # Phase 2: Run pr-finalize skill if requested
         if ($RunFinalize) {
             Write-Host ""
             Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Magenta
-            Write-Host "║  RUNNING PR-FINALIZE SKILL                                ║" -ForegroundColor Magenta
+            Write-Host "║  PHASE 2: PR-FINALIZE SKILL                               ║" -ForegroundColor Magenta
             Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
             Write-Host ""
             
-            $finalizePrompt = "Run the pr-finalize skill for PR #$PRNumber. Verify the PR title and description match the actual implementation, then post a comment with any suggested updates."
+            $finalizePrompt = "Run the pr-finalize skill for PR #$PRNumber. Verify the PR title and description match the actual implementation. Do NOT post a comment - just update the state file at CustomAgentLogsTmp/PRState/pr-$PRNumber.md with your findings."
             
             $finalizeArgs = @(
                 "-p", $finalizePrompt,
@@ -363,15 +372,15 @@ if ($DryRun) {
             }
         }
         
-        # Run ai-summary-comment skill if requested
+        # Phase 3: Run ai-summary-comment skill if requested (posts combined results)
         if ($PostSummaryComment) {
             Write-Host ""
             Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Magenta
-            Write-Host "║  POSTING SUMMARY COMMENT                                  ║" -ForegroundColor Magenta
+            Write-Host "║  PHASE 3: POST SUMMARY COMMENT                            ║" -ForegroundColor Magenta
             Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
             Write-Host ""
             
-            $commentPrompt = "Use the ai-summary-comment skill to post the review feedback as a comment on PR #$PRNumber. The review output should be in CustomAgentLogsTmp/PRState/pr-$PRNumber.md. Clean up any ANSI codes and stats before posting."
+            $commentPrompt = "Use the ai-summary-comment skill to post a review comment on PR #$PRNumber. Read the state file at CustomAgentLogsTmp/PRState/pr-$PRNumber.md which contains results from both the PR agent review and pr-finalize phases. Post a single combined summary comment to the PR."
             
             $commentArgs = @(
                 "-p", $commentPrompt,
