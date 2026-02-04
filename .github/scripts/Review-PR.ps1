@@ -240,6 +240,12 @@ Review PR #$PRNumber using the pr agent workflow.
 
 $platformInstruction
 
+🚨 **CRITICAL - NEVER CHECKOUT BRANCHES:**
+- NEVER run ``git checkout``, ``git switch``, ``git fetch``, ``git stash``, or ``git reset``
+- You are ALWAYS on the correct branch already - the script handles this
+- If the state file says "wrong branch", that's stale state - delete it and start fresh
+- If you think you need to checkout a branch, you are WRONG - ask the user instead
+
 **Instructions:**
 1. Read the plan template at ``$planTemplatePath`` for the 5-phase workflow
 2. Read ``.github/agents/pr.md`` for Phases 1-3 instructions
