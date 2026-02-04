@@ -1,18 +1,18 @@
 ---
 name: pr-finalize
-description: Finalizes any PR for merge by verifying title/description match implementation AND performing multi-model code review for best practices. Use when asked to "finalize PR", "check PR description", "review commit message", before merging any PR, or when PR implementation changed during review. Do NOT use for extracting lessons (use learn-from-pr), writing tests (use write-tests-agent), or investigating build failures (use pr-build-status).
+description: Finalizes any PR for merge by verifying title/description match implementation AND performing code review for best practices. Use when asked to "finalize PR", "check PR description", "review commit message", before merging any PR, or when PR implementation changed during review. Do NOT use for extracting lessons (use learn-from-pr), writing tests (use write-tests-agent), or investigating build failures (use pr-build-status).
 ---
 
 # PR Finalize
 
-Ensures PR title and description accurately reflect the implementation, and performs a **multi-model code review** for best practices before merge.
+Ensures PR title and description accurately reflect the implementation, and performs a **code review** for best practices before merge.
 
 **Standalone skill** - Can be used on any PR, not just PRs created by the pr agent.
 
 ## Two-Phase Workflow
 
 1. **Title & Description Review** - Verify PR metadata matches implementation
-2. **Multi-Model Code Review** - Get consensus from 5 models on best practices
+2. **Code Review** - Review code for best practices and potential issues
 
 ---
 
@@ -305,113 +305,64 @@ Fixed the issue mentioned in #30897
 
 ---
 
-## Phase 2: Multi-Model Code Review
+## Phase 2: Code Review
 
-After verifying title/description, perform a **multi-model code review** to catch best practice violations and edge cases before merge.
+After verifying title/description, perform a **code review** to catch best practice violations and potential issues before merge.
 
-### Why Multi-Model?
+### Review Focus Areas
 
-Different models catch different issues. Consensus from 5 models provides:
-- Higher confidence in findings (multiple models agree)
-- Broader coverage of edge cases
-- Reduced false positives (single-model quirks filtered out)
+When reviewing code changes, focus on:
 
-### Models to Consult
+1. **Code quality and maintainability** - Clean code, good naming, appropriate abstractions
+2. **Error handling and edge cases** - Null checks, exception handling, boundary conditions
+3. **Performance implications** - Unnecessary allocations, N+1 queries, blocking calls
+4. **Platform-specific concerns** - iOS/Android/Windows differences, platform APIs
+5. **Breaking changes** - API changes, behavior changes that affect existing code
 
-Use 5 diverse models for best coverage:
+### How to Review
 
-| Model | Strengths |
-|-------|-----------|
-| `claude-sonnet-4` | Balanced analysis, good code patterns |
-| `claude-opus-4.5` | Deep reasoning, edge cases |
-| `gpt-5.2` | Practical recommendations |
-| `gpt-5.2-codex` | Code-specific expertise |
-| `gemini-3-pro-preview` | Alternative perspective |
+```bash
+# Get the PR diff
+gh pr diff XXXXX
 
-### Review Prompt Template
-
-Send the same prompt to all 5 models via `task` tool with `model` parameter:
-
+# Review specific files
+gh pr diff XXXXX -- path/to/file.cs
 ```
-Review the following code changes from PR #XXXXX for best practices. Focus on:
-1. Code quality and maintainability
-2. Error handling and edge cases  
-3. Performance implications
-4. Any potential improvements
-
-[Include relevant code snippets from PR diff]
-
-Provide specific, actionable recommendations. Be concise.
-```
-
-### Execution
-
-```csharp
-// Invoke 5 models in parallel using task tool
-task(agent_type: "general-purpose", model: "claude-sonnet-4", prompt: "<review prompt>")
-task(agent_type: "general-purpose", model: "claude-opus-4.5", prompt: "<review prompt>")
-task(agent_type: "general-purpose", model: "gpt-5.2", prompt: "<review prompt>")
-task(agent_type: "general-purpose", model: "gpt-5.2-codex", prompt: "<review prompt>")
-task(agent_type: "general-purpose", model: "gemini-3-pro-preview", prompt: "<review prompt>")
-```
-
-### Synthesize Consensus
-
-After receiving all 5 responses, synthesize findings by agreement level:
-
-| Agreement | Classification | Action |
-|-----------|----------------|--------|
-| **4-5 models agree** | 🔴 Critical | Must fix before merge |
-| **3 models agree** | 🟡 High Priority | Should fix |
-| **2 models agree** | 🟢 Minor | Nice to have |
-| **1 model only** | ⚪ Skip | Likely false positive |
 
 ### Output Format
 
 ```markdown
-## Multi-Model Code Review Consensus
+## Code Review Findings
 
-### 🔴 Critical Issues (4+ models agree)
+### 🔴 Critical Issues
 
 **[Issue Title]**
-- **Models:** claude-sonnet-4, claude-opus-4.5, gpt-5.2, gemini-3-pro-preview
+- **File:** [path/to/file.cs]
 - **Problem:** [Description]
-- **Recommendation:** [Code fix]
+- **Recommendation:** [Code fix or approach]
 
-### 🟡 High Priority (3 models agree)
+### 🟡 Suggestions
 
-**[Issue Title]**
-- **Models:** [List]
-- **Problem:** [Description]  
-- **Recommendation:** [Code fix]
+- [Suggestion 1]
+- [Suggestion 2]
 
-### 🟢 Minor Improvements (2 models agree)
+### ✅ Looks Good
 
-- [Improvement 1]
-- [Improvement 2]
-
-### ✅ Positive Feedback (all models agree)
-
-- [Good practice 1]
-- [Good practice 2]
+- [Positive observation 1]
+- [Positive observation 2]
 ```
 
 ### When to Post Review
 
-- **Critical issues found**: Post review requesting changes with consensus findings
-- **Only minor issues**: Approve with suggestions in comment
-- **No issues**: Approve, note that multi-model review passed
+Post a **comment** with your findings. Never approve or request changes - that's a human decision.
 
-### Example gh CLI Commands
+- **Issues found**: Post comment with findings for human review
+- **No issues**: Post comment noting code review passed
+
+### Example gh CLI Command
 
 ```bash
-# Request changes (critical issues found)
-gh pr review XXXXX --repo dotnet/maui --request-changes --body "$reviewBody"
-
-# Approve with comments (minor issues only)
-gh pr review XXXXX --repo dotnet/maui --approve --body "$reviewBody"
-
-# Comment without approval/rejection
+# Post review comment (NEVER use --approve or --request-changes)
 gh pr review XXXXX --repo dotnet/maui --comment --body "$reviewBody"
 ```
 
