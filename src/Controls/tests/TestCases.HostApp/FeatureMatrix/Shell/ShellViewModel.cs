@@ -39,6 +39,15 @@ public class ShellViewModel : INotifyPropertyChanged
     private bool _tabBarIsVisible = true;
     private bool _isEnabled = true;
     private bool _isVisible = true;
+    private Color _backgroundColor;
+    private Color _foregroundColor;
+    private Color _titleColor;
+    private Color _disabledColor;
+    private Color _unselectedColor;
+    private bool _navBarVisible = true;
+    private bool _navBarHasShadow = true;
+    private bool _navBarVisibilityAnimationEnabled = true;
+    private PresentationMode _presentationMode = PresentationMode.Animated;
 
     public FlyoutDisplayOptions FlyoutDisplayOptions
     {
@@ -289,18 +298,7 @@ public class ShellViewModel : INotifyPropertyChanged
             return label;
         });
     }
-     Color _backgroundColor ;
-    Color _foregroundColor;
-    Color _titleColor ;
-    Color _disabledColor ;
-    Color _unselectedColor ;
-    bool _navBarVisible = true;
-    bool _navBarHasShadow = true;
-    bool _navBarVisibilityAnimationEnabled = true;
-    PresentationMode _presentationMode = PresentationMode.Animated;
-    bool _isEnabled = true;
-    bool _isVisible = true;
-    FlowDirection _flowDirection = FlowDirection.LeftToRight;
+    
     public Color BackgroundColor
     {
         get => _backgroundColor;
@@ -353,24 +351,6 @@ public class ShellViewModel : INotifyPropertyChanged
     {
         get => _presentationMode;
         set { _presentationMode = value; OnPropertyChanged(); }
-    }
-
-    public bool IsEnabled
-    {
-        get => _isEnabled;
-        set { _isEnabled = value; OnPropertyChanged(); }
-    }
-
-    public bool IsVisible
-    {
-        get => _isVisible;
-        set { _isVisible = value; OnPropertyChanged(); }
-    }
-
-    public FlowDirection FlowDirection
-    {
-        get => _flowDirection;
-        set { _flowDirection = value; OnPropertyChanged(); }
     }
 
     public event PropertyChangedEventHandler PropertyChanged;
