@@ -52,7 +52,7 @@ stages:
         inputs:
           testResultsFormat: VSTest
           testResultsFiles: '$(Agent.TempDirectory)/Microsoft.Maui.IntegrationTests/**/*.trx'
-          testRunTitle: Integration Tests - $(testIdentifier)${{ if job.arch }} ${{ job.arch }}${{ endif }}
+          testRunTitle: Integration Tests - $(testIdentifier) ${{ coalesce(job.arch, '') }}
           failTaskOnMissingResultsFile: true
         condition: always()
 
@@ -60,7 +60,7 @@ stages:
         displayName: Publish Logs
         inputs:
           targetPath: ${{ parameters.repoLogPath }}
-          artifact: Logs - Integration Tests $(testIdentifier)${{ if job.arch }} ${{ job.arch }}${{ endif }} $(System.JobAttempt)
+          artifact: Logs - Integration Tests $(testIdentifier) ${{ coalesce(job.arch, '') }} $(System.JobAttempt)
         condition: always()
 
       - template: /eng/pipelines/common/fail-on-issue.yml
