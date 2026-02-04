@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.VisualStateManagerEntryPage"
+             Title="VisualStateManagerEntryPage">
+    <ContentPage.Resources>
+        <!-- Entry VSM demo -->
+        <Style TargetType="Entry"
+                x:Key="VsmEntryStyle">
+            <Setter Property="BackgroundColor"
+                    Value="#F3F4F6"/>
+            <Setter Property="TextColor"
+                    Value="#111827"/>
+            <Setter Property="Margin"
+                    Value="0,6"/>
+            <Setter Property="VisualStateManager.VisualStateGroups">
+                <VisualStateGroupList>
+                    <VisualStateGroup x:Name="CommonStates">
+                        <VisualState x:Name="Normal">
+                            <VisualState.Setters>
+                                <Setter Property="BackgroundColor"
+                                        Value="#F3F4F6"/>
+                                <Setter Property="TextColor"
+                                        Value="#111827"/>
+                            </VisualState.Setters>
+                        </VisualState>
+                        <VisualState x:Name="Disabled">
+                            <VisualState.Setters>
+                                <Setter Property="BackgroundColor"
+                                        Value="#E5E7EB"/>
+                                <Setter Property="TextColor"
+                                        Value="#6B7280"/>
+                                <Setter Property="Opacity"
+                                        Value="0.7"/>
+                            </VisualState.Setters>
+                        </VisualState>
+                    </VisualStateGroup>
+                    <VisualStateGroup x:Name="FocusStates">
+                        <VisualState x:Name="Focused">
+                            <VisualState.Setters>
+                                <Setter Property="BackgroundColor"
+                                        Value="#DBEAFE"/>
+                            </VisualState.Setters>
+                        </VisualState>
+                        <VisualState x:Name="Unfocused">
+                            <VisualState.Setters>
+                                <Setter Property="BackgroundColor"
+                                        Value="#F3F4F6"/>
+                            </VisualState.Setters>
+                        </VisualState>
+                    </VisualStateGroup>
+                </VisualStateGroupList>
+            </Setter>
+        </Style>
+    </ContentPage.Resources>
+
+    <VerticalStackLayout Padding="20"
+            Spacing="16">
+        <Label Text="Entry VisualStateManager"
+                FontSize="20"/>
+
+        <VerticalStackLayout Padding="12"
+                Spacing="8">
+            <Label Text="Entry States (Focused / Unfocused / Disabled)"
+                    FontAttributes="Bold"/>
+
+            <Entry x:Name="DemoEntry"
+                   AutomationId="DemoEntry"
+                   Placeholder="Focus me"
+                   Style="{StaticResource VsmEntryStyle}"
+                   Focused="OnEntryFocused"
+                   Unfocused="OnEntryUnfocused"/>
+
+            <!-- State output label -->
+            <Label x:Name="EntryState"
+                   AutomationId="EntryState"
+                   Text="State: Unfocused"
+                   FontSize="14"
+                   TextColor="#111827"/>
+
+            <HorizontalStackLayout Spacing="10">
+                <Button Text="Focus"
+                        AutomationId="EntryFocus"
+                        Clicked="OnFocusEntry"/>
+                <Button Text="Disable"
+                        AutomationId="EntryDisable"
+                        Clicked="OnToggleEntryDisabled"/>
+            </HorizontalStackLayout>
+        </VerticalStackLayout>
+    </VerticalStackLayout>
+</ContentPage>

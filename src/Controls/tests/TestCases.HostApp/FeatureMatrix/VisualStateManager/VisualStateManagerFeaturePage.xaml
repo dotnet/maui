@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.VisualStateManagerFeatureMainPage"
+             Title="VisualStateManagerFeaturePage">
+    <VerticalStackLayout>
+        <Button Text="VSM Button"
+                Clicked="OnVSMButtonClicked"
+                HorizontalOptions="Center"
+                AutomationId="VSMButton"
+                WidthRequest="400"/>
+
+        <Button Text="VSM CheckBox"
+                Clicked="OnVSMCheckBoxClicked"
+                HorizontalOptions="Center"
+                AutomationId="VSMCheckBoxButton"
+                WidthRequest="400"/>
+
+        <Button Text="VSM CollectionView"
+                Clicked="OnVSMCollectionViewClicked"
+                HorizontalOptions="Center"
+                AutomationId="VSMCollectionViewButton"
+                WidthRequest="400"/>
+
+        <Button Text="VSM Entry"
+                Clicked="OnVSMEntryClicked"
+                HorizontalOptions="Center"
+                AutomationId="VSMEntryButton"
+                WidthRequest="400"/>
+
+        <Button Text="VSM Label"
+                Clicked="OnVSMLabelClicked"
+                HorizontalOptions="Center"
+                AutomationId="VSMLabelButton"
+                WidthRequest="400"/>
+
+        <Button Text="VSM Slider"
+                Clicked="OnVSMSliderClicked"
+                HorizontalOptions="Center"
+                AutomationId="VSMSliderButton"
+                WidthRequest="400"/>
+
+        <Button Text="VSM Switch"
+                Clicked="OnVSMSwitchClicked"
+                HorizontalOptions="Center"
+                AutomationId="VSMSwitchButton"
+                WidthRequest="400"/>
+
+    </VerticalStackLayout>
+</ContentPage>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.VisualStateManagerSwitchPage"
+             Title="VisualStateManagerSwitchPage">
+    <ContentPage.Resources>
+        <!-- Switch VSM demo -->
+        <Style TargetType="Switch" x:Key="VsmSwitchStyle">
+            <Setter Property="ThumbColor" Value="#FFFFFF" />
+            <Setter Property="VisualStateManager.VisualStateGroups">
+                <VisualStateGroupList>
+                    <VisualStateGroup x:Name="CommonStates">
+                        <VisualState x:Name="Normal">
+                            <VisualState.Setters>
+                                <Setter Property="Opacity" Value="1" />
+                                <Setter Property="Scale" Value="1" />
+                                <Setter Property="ThumbColor" Value="#FFFFFF" />
+                            </VisualState.Setters>
+                        </VisualState>
+                        <VisualState x:Name="Disabled">
+                            <VisualState.Setters>
+                                <Setter Property="Opacity" Value="0.6" />
+                            </VisualState.Setters>
+                        </VisualState>
+                    </VisualStateGroup>
+                    <VisualStateGroup x:Name="OnOffStates">
+                        <VisualState x:Name="On">
+                            <VisualState.Setters>
+                                <Setter Property="ThumbColor" Value="#22C55E" />
+                                <Setter Property="Scale" Value="1.05" />
+                            </VisualState.Setters>
+                        </VisualState>
+                        <VisualState x:Name="Off">
+                            <VisualState.Setters>
+                                <Setter Property="ThumbColor" Value="#EF4444" />
+                                <Setter Property="Scale" Value="1" />
+                            </VisualState.Setters>
+                        </VisualState>
+                    </VisualStateGroup>
+                </VisualStateGroupList>
+            </Setter>
+        </Style>
+    </ContentPage.Resources>
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="16">
+            <Label Text="Switch VisualStateManager" FontSize="20" />
+            <Label Text="Interact to see states: On, Off, Disabled." FontSize="14" />
+
+            <VerticalStackLayout Padding="12" Spacing="8">
+                <Label Text="Switch States (On / Off / Disabled)" FontAttributes="Bold" />
+                <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
+                    <Switch x:Name="DemoSwitch" AutomationId="DemoSwitch" Style="{StaticResource VsmSwitchStyle}" Toggled="OnSwitchToggled" />
+                    <Label x:Name="SwitchState" AutomationId="SwitchState" Text="State: Off" VerticalOptions="Center" />
+                </HorizontalStackLayout>
+                <HorizontalStackLayout Spacing="10">
+                    <Button Text="Disable" AutomationId="SwitchDisable" Clicked="OnToggleSwitchDisabled" />
+                    <Button Text="Reset" AutomationId="SwitchReset" Clicked="OnResetSwitch" />
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
