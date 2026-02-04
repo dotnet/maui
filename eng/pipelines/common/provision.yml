@@ -1,7 +1,7 @@
 parameters:
   # Xcode
   skipXcode: false
-  skipSimulatorSetup: false
+  skipSimulatorSetup: true
   # .NET NuGet caches
   clearCaches: true
   # Android - JDK
@@ -32,6 +32,7 @@ parameters:
   expiryInHours: 1
   base64Encode: false
   skipInternalFeeds: true
+  skipCertificates: false
 
 steps:
 
@@ -74,17 +75,6 @@ steps:
 
 # Provisioning macOS - Xcode
 - ${{ if ne(parameters.skipXcode, 'true') }}:
-  - ${{ if ne(parameters.skipProvisionator, true) }}:
-    - task: xamops.azdevex.provisionator-task.provisionator@3
-      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
-      displayName: 'Provision Xcode'
-      inputs:
-        provisionator_uri: ${{ parameters.provisionatorUri }}
-        provisioning_script: ${{ parameters.checkoutDirectory }}/${{ parameters.provisionatorXCodePath }}
-        provisioning_extra_args: ${{ parameters.provisionatorExtraArguments }}
-        github_token: ${{ parameters.gitHubToken }}
-      env:
-        PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
 
   - script: |
       echo Remove old Xamarin Settings
@@ -193,13 +183,66 @@ steps:
         else
           sudo xcodebuild -downloadPlatform iOS
         fi
+        
+        # Create iPhone Xs simulator with appropriate iOS version (required for UI tests)
+        echo ""
+        echo "=== Creating iPhone Xs simulator ==="
+        
+        # For Xcode 26.x, we need iOS 26.x simulator; for others use iOS 18.5
+        # Use REQUIRED_XCODE for devdiv team project or if CollectionUri contains xamarin, XCODE for others
+        if [[ "$(System.TeamProject)" == "devdiv" || "$(System.CollectionUri)" == *"xamarin"* ]]; then
+          XCODE_VERSION=$(REQUIRED_XCODE)
+        else
+          XCODE_VERSION=$(XCODE)
+        fi
+        
+        if [[ "${XCODE_VERSION}" =~ ^26[.].*$ ]]; then
+          echo "Using Xcode 26.x - looking for iOS 26.x runtime"
+          # For Xcode 26.x, prefer iOS 26.0 (most compatible), then iOS 26.x
+          IOS_RUNTIME=$(xcrun simctl list runtimes -j | jq -r '.runtimes[] | select(.name == "iOS 26.0") | .identifier' | head -1)
+          if [[ -z "$IOS_RUNTIME" ]]; then
+            IOS_RUNTIME=$(xcrun simctl list runtimes -j | jq -r '.runtimes[] | select(.name | contains("iOS 26")) | .identifier' | head -1)
+          fi
+        else
+          echo "Using Xcode ${XCODE_VERSION} - looking for iOS 18.5 runtime"
+          # Find iOS 18.5 runtime (or fallback to iOS 18.x)
+          IOS_RUNTIME=$(xcrun simctl list runtimes -j | jq -r '.runtimes[] | select(.name | contains("iOS 18.5")) | .identifier' | head -1)
+          if [[ -z "$IOS_RUNTIME" ]]; then
+            IOS_RUNTIME=$(xcrun simctl list runtimes -j | jq -r '.runtimes[] | select(.name | contains("iOS 18")) | .identifier' | head -1)
+          fi
+        fi
+        
+        if [[ -n "$IOS_RUNTIME" ]]; then
+          echo "Found iOS runtime: $IOS_RUNTIME"
+          IPHONE_XS_TYPE=$(xcrun simctl list devicetypes -j | jq -r '.devicetypes[] | select(.name == "iPhone Xs") | .identifier' | head -1)
+          
+          if [[ -n "$IPHONE_XS_TYPE" ]]; then
+            # Check if already exists
+            EXISTING=$(xcrun simctl list devices -j | jq -r --arg rt "$IOS_RUNTIME" '.devices[$rt][]? | select(.name == "iPhone Xs") | .udid' | head -1)
+            if [[ -n "$EXISTING" ]]; then
+              echo "iPhone Xs simulator already exists: $EXISTING"
+            else
+              UDID=$(xcrun simctl create "iPhone Xs" "$IPHONE_XS_TYPE" "$IOS_RUNTIME" 2>&1) && \
+                echo "Created iPhone Xs simulator: $UDID" || \
+                echo "Note: Could not create iPhone Xs simulator"
+            fi
+          else
+            echo "Note: iPhone Xs device type not available"
+          fi
+        else
+          echo "Note: iOS 18.x runtime not found"
+        fi
+        
+        echo ""
+        echo "=== Available iPhone simulators ==="
+        xcrun simctl list devices available | grep -i iphone | head -10
       displayName: Install Simulator Runtimes
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
       continueOnError: true
       timeoutInMinutes: 30
 
 # Provision Additional Software
-- ${{ if or(eq(variables['System.TeamProject'], 'DevDiv'), ne(parameters.skipProvisionator, true)) }}:
+- ${{ if ne(parameters.skipCertificates, 'true') }}:
   # Prepare macOS
   - task: InstallAppleCertificate@2
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
@@ -218,19 +261,6 @@ steps:
     inputs:
       provisioningProfileLocation: 'secureFiles'
       provProfileSecureFile: '${{ parameters.provisioningProfileName }}'
-  ##################################################
-  #              Provisioning Windows              #
-  ##################################################
-
-  # Provisioning Windows - Set dump file location
-- pwsh: |
-    $errorPath = "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps"
-    New-ItemProperty -Path $errorPath -Name DumpFolder -PropertyType String -Value "$(Build.ArtifactStagingDirectory)/crash-dumps" -Force
-    New-ItemProperty -Path $errorPath -Name DumpType -PropertyType DWORD -Value 2 -Force
-  displayName: 'Set dump file location'
-  condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
-  continueOnError: true
-  timeoutInMinutes: 5
 
 ##################################################
 #               Provisioning .NET                #
@@ -260,56 +290,3 @@ steps:
 - script: |
     dotnet tool restore --verbosity diag
   displayName: 'Restore .NET Tools'
-
-##################################################
-#              Provisioning Android              #
-##################################################
-
-# Provisioning Android - JDK
-- ${{ if ne(parameters.skipJdk, 'true') }}:
-  - pwsh: dotnet build -t:ProvisionJdk -bl:"$(LogDirectory)/provision-jdk.binlog" ${{ parameters.checkoutDirectory }}/src/Provisioning/Provisioning.csproj -v:detailed
-    displayName: 'Provision JDK'
-    condition: succeeded()
-
-# Provisioning Android - Android SDK common packages (eg: cmdline-tools, emulator, platform-tools, build-tools)
-- ${{ if ne(parameters.skipAndroidCommonSdks, 'true') }}:
-  - pwsh: dotnet build -t:ProvisionAndroidSdkCommonPackages -bl:"$(LogDirectory)/provision-androidsdk-common.binlog" ${{ parameters.checkoutDirectory }}/src/Provisioning/Provisioning.csproj -v:detailed
-    displayName: 'Provision Android SDK - Common Packages'
-    condition: succeeded()
-
-# Provisioning Android - Android environment variables
-- ${{ if ne(parameters.skipAndroidCommonSdks, 'true') }}:
-  - pwsh: |
-      echo "Setting ANDROID_SDK_ROOT and ANDROID_HOME..."
-      $jsonOutput = & dotnet android sdk info --format=Json | ConvertFrom-Json
-      $preferredSdk = $jsonOutput.SdkInfo.Path
-      echo "##vso[task.setvariable variable=ANDROID_SDK_ROOT]$preferredSdk"
-      echo "ANDROID_SDK_ROOT set to '$preferredSdk'"
-      echo "##vso[task.setvariable variable=ANDROID_HOME]$preferredSdk"
-      echo "ANDROID_HOME set to '$preferredSdk'"
-    displayName: 'Provision Android SDK - Environment variables'
-    condition: succeeded()
-
-# Provisioning Android - Android SDK platform APIs (eg: platforms;android-29, platforms;android-30)
-- ${{ if ne(parameters.skipAndroidPlatformApis, 'true') }}:
-  - pwsh: dotnet build -t:ProvisionAndroidSdkPlatformApiPackages -p:AndroidSdkProvisionDefaultApiLevelsOnly="$Env:AndroidSdkProvisionDefaultApiLevelsOnly" -bl:"$(LogDirectory)/provision-androidsdk-platform-apis.binlog" ${{ parameters.checkoutDirectory }}/src/Provisioning/Provisioning.csproj -v:detailed
-    displayName: 'Provision Android SDK - Platform APIs'
-    condition: succeeded()
-    env:
-      AndroidSdkProvisionDefaultApiLevelsOnly: ${{ parameters.onlyAndroidPlatformDefaultApis }}
-
-# Provisioning Android - Emulator images (eg: system-images;android-34;google_apis;aarch64)
-- ${{ if ne(parameters.skipAndroidEmulatorImages, 'true') }}:
-  - pwsh: dotnet build -t:ProvisionAndroidSdkEmulatorImagePackages -p:AndroidSdkProvisionApiLevel="$Env:AndroidSdkProvisionApiLevel" -bl:"$(LogDirectory)/provision-androidsdk-emulator-images.binlog" ${{ parameters.checkoutDirectory }}/src/Provisioning/Provisioning.csproj -v:detailed
-    displayName: 'Provision Android SDK - Emulator Images'
-    condition: succeeded()
-    env:
-      AndroidSdkProvisionApiLevel: ${{ parameters.androidEmulatorApiLevel }}
-
-# Provisioning Android - Android AVDs (actual emulator virtual devices)
-- ${{ if ne(parameters.skipAndroidCreateAvds, 'true') }}:
-  - pwsh: dotnet build -t:ProvisionAndroidSdkAvdCreateAvds -p:AndroidSdkProvisionApiLevel="$Env:AndroidSdkProvisionApiLevel" -bl:"$(LogDirectory)/provision-androidsdk-create-avds.binlog" ${{ parameters.checkoutDirectory }}/src/Provisioning/Provisioning.csproj -v:detailed
-    displayName: 'Provision Android SDK - Create AVDs'
-    condition: succeeded()
-    env:
-      AndroidSdkProvisionApiLevel: ${{ parameters.androidEmulatorApiLevel }}

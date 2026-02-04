@@ -1,0 +1,163 @@
+# Simplified pipeline for testing verify-tests-fail script
+trigger: none
+pr: none
+
+parameters:
+  - name: PRNumber
+    displayName: 'Pull Request Number'
+    type: string
+    default: '20537'
+  - name: pool
+    type: object
+    default:
+      name: Azure Pipelines
+      vmImage: macOS-15
+
+variables:
+  - template: /eng/pipelines/common/variables.yml@self
+  - name: Codeql.Enabled
+    value: false
+
+stages:
+  - stage: VerifyTests
+    displayName: 'Verify Tests Fail Without Fix'
+    jobs:
+      - job: RunVerifyScript
+        displayName: 'Run verify-tests-fail.ps1'
+        pool: ${{ parameters.pool }}
+        timeoutInMinutes: 60
+        steps:
+          - checkout: self
+            fetchDepth: 0
+
+          - script: echo "Testing PR Number ${{ parameters.PRNumber }}"
+            displayName: 'Show Parameters'
+
+          # Provision environment
+          - template: common/provision.yml
+            parameters:
+              skipXcode: false
+              skipProvisionator: false
+              skipAndroidCommonSdks: true
+              skipAndroidPlatformApis: true
+              skipJdk: true
+              skipSimulatorSetup: false
+              skipCertificates: true
+              skipAndroidEmulatorImages: true
+              skipAndroidCreateAvds: true
+
+          # Install .NET and workloads
+          - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
+            displayName: 'Install .NET and workloads'
+            retryCountOnTaskFailure: 2
+            env:
+              DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+              PRIVATE_BUILD: $(PrivateBuild)
+
+          - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
+            displayName: 'Add .NET to PATH'
+
+          # Build MSBuild tasks
+          - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="Release" --verbosity=diagnostic
+            displayName: 'Build MSBuild Tasks'
+            retryCountOnTaskFailure: 2
+
+          # Boot iOS Simulator
+          - script: |
+              echo "=== Booting iOS Simulator ==="
+              
+              # Find and boot a suitable simulator
+              UDID=$(xcrun simctl list devices available --json | jq -r '
+                .devices | to_entries | 
+                map(select(.key | test("iOS"))) | 
+                sort_by(.key) | reverse | 
+                .[0].value | 
+                map(select(.name | test("iPhone (Xs|14|15)"))) | 
+                .[0].udid // empty
+              ')
+              
+              if [ -z "$UDID" ]; then
+                echo "No preferred simulator found, using first available iPhone"
+                UDID=$(xcrun simctl list devices available --json | jq -r '
+                  .devices | to_entries | 
+                  map(.value) | flatten | 
+                  map(select(.name | test("iPhone"))) | 
+                  .[0].udid
+                ')
+              fi
+              
+              echo "Booting simulator: $UDID"
+              xcrun simctl boot "$UDID" 2>/dev/null || echo "Simulator may already be booted"
+              sleep 10
+              
+              echo "Booted simulators:"
+              xcrun simctl list devices booted
+              
+              echo "##vso[task.setvariable variable=IOS_SIMULATOR_UDID]$UDID"
+            displayName: 'Boot iOS Simulator'
+            timeoutInMinutes: 5
+
+          # Install Node.js
+          - script: |
+              echo "Installing Node.js..."
+              brew install node@22 || brew link --overwrite node@22
+              node --version
+              npm --version
+            displayName: 'Install Node.js'
+
+          # Install Appium
+          - script: |
+              echo "Installing Appium..."
+              NPM_BIN=$(npm config get prefix)/bin
+              export PATH="$NPM_BIN:$PATH"
+              npm install -g appium
+              appium driver install xcuitest
+              echo "##vso[task.prependpath]$NPM_BIN"
+              echo "Appium version: $(appium --version)"
+              appium driver list --installed
+            displayName: 'Install Appium'
+
+          # Run verify-tests-fail script
+          - pwsh: |
+              Write-Host "=== Running verify-tests-fail.ps1 ==="
+              Write-Host "PR Number: ${{ parameters.PRNumber }}"
+              Write-Host "Platform: ios"
+              Write-Host "TestFilter: Issue18832"
+              
+              $ErrorActionPreference = "Continue"
+              
+              # Fix files for PR #20537 (Button CharacterSpacing Fix)
+              $fixFiles = @(
+                "src/Controls/src/Core/Button/Button.iOS.cs",
+                "src/Core/src/Handlers/Button/ButtonHandler.iOS.cs",
+                "src/Core/src/Platform/iOS/ButtonExtensions.cs"
+              )
+              
+              # Run the verification script with explicit parameters
+              & "./.github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1" `
+                -Platform ios `
+                -PRNumber "${{ parameters.PRNumber }}" `
+                -TestFilter "Issue18832" `
+                -FixFiles $fixFiles `
+                -Verbose 2>&1 | Tee-Object -FilePath "CustomAgentLogsTmp/verify-tests-output.log"
+              
+              $exitCode = $LASTEXITCODE
+              Write-Host "verify-tests-fail.ps1 exit code: $exitCode"
+              
+              # Always show what happened
+              if (Test-Path "CustomAgentLogsTmp/verify-tests-output.log") {
+                Write-Host "=== Full Log Output ==="
+                Get-Content "CustomAgentLogsTmp/verify-tests-output.log" | Select-Object -Last 200
+              }
+              
+              exit $exitCode
+            displayName: 'Run verify-tests-fail.ps1'
+            timeoutInMinutes: 30
+
+          # Publish logs
+          - task: PublishPipelineArtifact@1
+            displayName: 'Publish Test Logs'
+            inputs:
+              targetPath: 'CustomAgentLogsTmp'
+              artifact: 'VerifyTestsLogs'
+            condition: succeededOrFailed()

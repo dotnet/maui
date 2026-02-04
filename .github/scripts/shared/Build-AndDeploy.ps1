@@ -57,7 +57,10 @@ param(
     [string]$BundleId,
 
     [Parameter(Mandatory=$false)]
-    [switch]$Rebuild
+    [switch]$Rebuild,
+
+    [Parameter(Mandatory=$false)]
+    [string[]]$AdditionalBuildArgs = @()
 )
 
 # Import shared utilities
@@ -106,9 +109,31 @@ if ($Platform -eq "android") {
     
     Write-Step "Building $projectName for iOS..."
     
-    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration)
+    # Detect host architecture for simulator builds
+    # Use 'sysctl hw.optional.arm64' to detect Apple Silicon hardware reliably
+    # This works even when PowerShell is running under Rosetta 2
+    $isAppleSilicon = $false
+    try {
+        $sysctl = (sysctl -n hw.optional.arm64 2>$null).Trim()
+        $isAppleSilicon = $sysctl -eq "1"
+    } catch {
+        # Fallback: if sysctl fails, try arch command
+        $archOutput = (arch 2>$null).Trim()
+        $isAppleSilicon = $archOutput -eq "arm64"
+    }
+    
+    $runtimeId = if ($isAppleSilicon) { "iossimulator-arm64" } else { "iossimulator-x64" }
+    Write-Info "Detected Apple Silicon: $isAppleSilicon, RuntimeIdentifier: $runtimeId"
+    
+    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-r", $runtimeId)
     if ($Rebuild) {
         $buildArgs += "--no-incremental"
+    }
+    
+    # Add additional build args (e.g., for skipping code signing in CI)
+    if ($AdditionalBuildArgs -and $AdditionalBuildArgs.Count -gt 0) {
+        $buildArgs += $AdditionalBuildArgs
+        Write-Info "Additional build args: $($AdditionalBuildArgs -join ' ')"
     }
     
     Write-Info "Build command: dotnet build $($buildArgs -join ' ')"
@@ -148,8 +173,15 @@ if ($Platform -eq "android") {
     Write-Success "Simulator is booted"
     
     # Find the built app bundle - search from project directory upwards for artifacts
-    $searchPath = Split-Path -Parent $ProjectPath
+    # Resolve to full path first to handle relative paths correctly
+    $fullProjectPath = Resolve-Path $ProjectPath -ErrorAction SilentlyContinue
+    if (-not $fullProjectPath) {
+        $fullProjectPath = Join-Path (Get-Location) $ProjectPath
+    }
+    $searchPath = Split-Path -Parent $fullProjectPath
     $artifactsDir = $null
+    
+    Write-Info "Searching for artifacts starting from: $searchPath"
     
     # Walk up directory tree to find artifacts folder
     while ($searchPath -and -not $artifactsDir) {
@@ -169,13 +201,39 @@ if ($Platform -eq "android") {
     }
     
     Write-Info "Searching for app bundle in: $artifactsDir"
+    
+    # Detect simulator architecture to pick the correct app bundle
+    # Use 'sysctl hw.optional.arm64' to detect Apple Silicon hardware reliably
+    $isAppleSilicon = $false
+    try {
+        $sysctl = (sysctl -n hw.optional.arm64 2>$null).Trim()
+        $isAppleSilicon = $sysctl -eq "1"
+    } catch {
+        $archOutput = (arch 2>$null).Trim()
+        $isAppleSilicon = $archOutput -eq "arm64"
+    }
+    $simArch = if ($isAppleSilicon) { "arm64" } else { "x64" }
+    Write-Info "Detected Apple Silicon: $isAppleSilicon, using simulator arch: $simArch"
+    
     $appPath = Get-ChildItem -Path $artifactsDir -Filter "*.app" -Recurse -ErrorAction SilentlyContinue | 
         Where-Object { 
-            $_.FullName -match "$Configuration.*iossimulator.*$projectName" -and 
+            $_.FullName -match "$Configuration.*iossimulator-$simArch.*$projectName" -and 
             $_.FullName -notmatch "\\obj\\" -and 
             $_.FullName -notmatch "/obj/"
         } |
         Select-Object -First 1
+    
+    # Fallback: try any iossimulator build if specific arch not found
+    if (-not $appPath) {
+        Write-Info "Specific arch ($simArch) not found, trying any iossimulator build..."
+        $appPath = Get-ChildItem -Path $artifactsDir -Filter "*.app" -Recurse -ErrorAction SilentlyContinue | 
+            Where-Object { 
+                $_.FullName -match "$Configuration.*iossimulator.*$projectName" -and 
+                $_.FullName -notmatch "\\obj\\" -and 
+                $_.FullName -notmatch "/obj/"
+            } |
+            Select-Object -First 1
+    }
     
     if (-not $appPath) {
         Write-Error "Could not find built app bundle in artifacts directory"
