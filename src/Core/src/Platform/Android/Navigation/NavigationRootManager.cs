@@ -22,7 +22,6 @@ namespace Microsoft.Maui.Platform
 		IToolbarElement? _toolbarElement;
 		CoordinatorLayout? _managedCoordinatorLayout;
 		IView? _currentView;
-		bool _isDisconnected;
 
 		// TODO MAUI: temporary event to alert when rootview is ready
 		// handlers and various bits use this to start interacting with rootview
@@ -52,13 +51,11 @@ namespace Microsoft.Maui.Platform
 
 		internal void Connect(IView? view, IMauiContext? mauiContext = null)
 		{
-			_isDisconnected = false;
-
-			// Disconnect all handlers in the old view tree to allow garbage collection.
-			// This recursively walks the visual tree and disconnects each handler,
-			// breaking circular references between managed and native objects.
-			// This is critical for memory leak prevention when Window.Page changes.
-			_currentView?.DisconnectHandlers();
+			// NOTE: We intentionally do NOT call DisconnectHandlers() here.
+			// Window.OnPageChanged() already handles disconnecting the old page's handlers
+			// at the appropriate time (after OnUnloaded for loaded pages).
+			// Calling DisconnectHandlers() here would break lifecycle events because
+			// handlers would be disconnected before the new view is fully set up.
 			_currentView = view;
 
 			ClearPlatformParts();
@@ -149,10 +146,6 @@ namespace Microsoft.Maui.Platform
 
 		public virtual void Disconnect()
 		{
-			// Mark as disconnected FIRST to prevent pending fragment transactions
-			// from executing after the view hierarchy is torn down.
-			_isDisconnected = true;
-
 			// Execute any pending fragment transactions immediately.
 			// This prevents crashes when transactions execute after their containers are removed.
 			try
@@ -222,15 +215,10 @@ namespace Microsoft.Maui.Platform
 			_pendingFragment?.Dispose();
 			_pendingFragment = null;
 
-			// Disconnect the old view's handler to allow it to be garbage collected.
-			// This is important for memory leak prevention when Window.Page changes.
-			if (_viewFragment?.DetailView?.Handler is IPlatformViewHandler oldPvh)
-			{
-				oldPvh.DisconnectHandler();
-			}
-			// Clear the DetailView reference immediately to allow GC, rather than
-			// waiting for the fragment's OnDestroy which may be delayed.
-			_viewFragment?.DisconnectDetailView();
+			// NOTE: We intentionally do NOT call DisconnectHandler() on the old view here.
+			// The fragment's OnDestroy will handle cleanup, and Window.OnPageChanged()
+			// handles disconnecting the MAUI page's handlers at the appropriate time.
+			// Early disconnection would break lifecycle events for the new view.
 
 			var context = _mauiContext.Context;
 			if (context is null)
@@ -274,42 +262,44 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
+				var fm = context.GetFragmentManager();
+				if (fm is null || fm.IsDestroyed)
+					return;
 
-				_pendingFragment =
-					FragmentManager
-						.RunOrWaitForResume(context, fm =>
-						{
-							// Check if disconnected while waiting.
-							// If so, skip the fragment transaction as the container no longer exists.
-							if (_isDisconnected)
-							{
-								return;
-							}
+				// Execute any pending fragment transactions to ensure clean state
+				try
+				{
+					fm.ExecutePendingTransactions();
+				}
+				catch (Java.Lang.IllegalStateException)
+				{
+					// Fragment manager may be in an invalid state - continue anyway
+				}
 
-							try
-							{
-								_viewFragment =
-									new ElementBasedFragment(
-										view,
-										_mauiContext,
-										OnWindowContentPlatformViewCreated);
+				try
+				{
+					_viewFragment =
+						new ElementBasedFragment(
+							view,
+							_mauiContext,
+							OnWindowContentPlatformViewCreated);
 
-								fm
-									.BeginTransactionEx()
-									.ReplaceEx(Resource.Id.navigationlayout_content, _viewFragment)
-									.SetReorderingAllowed(true)
-									// Use CommitNowAllowingStateLoss to execute synchronously.
-									// This prevents crashes when the handler is disconnected between
-									// commit and execution, as the transaction runs immediately.
-									.CommitNowAllowingStateLoss();
-							}
-							catch (Java.Lang.IllegalArgumentException)
-							{
-								// Container view no longer exists - this can happen if disconnected
-								// while this callback was waiting to run.
-								// Safe to ignore as we're cleaning up anyway.
-							}
-						});
+					fm
+						.BeginTransactionEx()
+						.ReplaceEx(Resource.Id.navigationlayout_content, _viewFragment)
+						.SetReorderingAllowed(true)
+						// Use CommitNowAllowingStateLoss to execute synchronously even if state is saved.
+						// This is critical for proper lifecycle events when swapping root pages.
+						.CommitNowAllowingStateLoss();
+				}
+				catch (Java.Lang.IllegalArgumentException)
+				{
+					// Container view no longer exists - safe to ignore
+				}
+				catch (Java.Lang.IllegalStateException)
+				{
+					// Fragment manager may be in an invalid state - safe to ignore
+				}
 			}
 		}
 
