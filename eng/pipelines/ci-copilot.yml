@@ -381,6 +381,82 @@ stages:
               echo "Copilot CLI installed successfully"
             displayName: 'Install GitHub Copilot CLI'
 
+          # Restart Android emulator to ensure it's fresh before PR Reviewer runs
+          # The emulator can become unstable after running for a long time
+          - script: |
+              echo "=== Restarting Android Emulator for PR Reviewer ==="
+              
+              # Kill any existing emulator
+              echo "Killing existing emulator..."
+              pkill -f 'qemu-system' 2>/dev/null || true
+              sleep 5
+              
+              # Restart ADB server
+              echo "Restarting ADB server..."
+              adb kill-server
+              sleep 2
+              adb start-server
+              sleep 2
+              
+              # Start fresh emulator
+              EMULATOR_LOG="/tmp/emulator-fresh.log"
+              echo "Starting fresh emulator..."
+              nohup $ANDROID_SDK_ROOT/emulator/emulator -avd Emulator_34 -no-window -no-snapshot -no-audio -no-boot-anim -gpu swiftshader_indirect > "$EMULATOR_LOG" 2>&1 &
+              EMULATOR_PID=$!
+              echo "Emulator started with PID: $EMULATOR_PID"
+              
+              # Wait for device to appear
+              echo "Waiting for emulator device..."
+              device_timeout=300
+              device_waited=0
+              while ! adb devices | grep -q "emulator.*device"; do
+                sleep 5
+                device_waited=$((device_waited + 5))
+                if [ $device_waited -ge $device_timeout ]; then
+                  echo "##vso[task.logissue type=error]Emulator device did not appear in time"
+                  cat "$EMULATOR_LOG" 2>/dev/null | tail -30
+                  exit 1
+                fi
+                echo "Waiting for device... ($device_waited/$device_timeout seconds)"
+              done
+              echo "Emulator device detected"
+              
+              # Wait for boot_completed
+              echo "Waiting for boot_completed..."
+              boot_timeout=180
+              boot_waited=0
+              while [ "$(adb shell getprop sys.boot_completed 2>/dev/null)" != "1" ]; do
+                sleep 5
+                boot_waited=$((boot_waited + 5))
+                if [ $boot_waited -ge $boot_timeout ]; then
+                  echo "##vso[task.logissue type=error]Emulator did not boot in time"
+                  exit 1
+                fi
+              done
+              echo "Boot completed"
+              
+              # Wait for package manager
+              echo "Waiting for package manager service..."
+              pm_timeout=120
+              pm_waited=0
+              while ! adb shell pm list packages 2>/dev/null | grep -q "package:"; do
+                sleep 5
+                pm_waited=$((pm_waited + 5))
+                if [ $pm_waited -ge $pm_timeout ]; then
+                  echo "##vso[task.logissue type=error]Package manager service did not start"
+                  adb shell service list 2>/dev/null | head -20
+                  exit 1
+                fi
+                echo "Waiting for package manager... ($pm_waited/$pm_timeout seconds)"
+              done
+              
+              echo "=== Fresh Android Emulator Ready! ==="
+              adb devices -l
+            displayName: 'Restart Android Emulator (Fresh)'
+            timeoutInMinutes: 15
+            env:
+              ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
+
           - script: |
               echo "Running Copilot PR Reviewer Agent via Review-PR.ps1..."
               echo "Reviewing PR #${{ parameters.PRNumber }}..."
