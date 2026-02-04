@@ -18,8 +18,7 @@ parameters:
   - name: pool
     type: object
     default:
-      name: Azure Pipelines
-      vmImage: macOS-14
+      name: AcesShared
 
 variables:
   - template: /eng/pipelines/common/variables.yml@self
