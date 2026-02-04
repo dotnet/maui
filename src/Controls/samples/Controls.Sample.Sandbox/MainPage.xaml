@@ -80,21 +80,6 @@
                         <BoxView HeightRequest="1"
                                  Color="LightGray"
                                  Margin="0,10"/>
-
-                        <Label Text="TabbedPage Test (BottomNavigationManager)"
-                               FontSize="16"
-                               FontAttributes="Bold"/>
-
-                        <Label Text="Test the shared BottomNavigationManager between Shell and TabbedPage"
-                               FontSize="12"
-                               TextColor="Gray"/>
-
-                        <Button Text="🧪 Open TabbedPage Test"
-                                AutomationId="OpenTabbedPageTestButton"
-                                Clicked="OpenTabbedPageTest_Clicked"
-                                BackgroundColor="#6200EE"
-                                TextColor="White"
-                                HorizontalOptions="Fill"/>
                 </VerticalStackLayout>
         </ScrollView>
 </ContentPage> 
