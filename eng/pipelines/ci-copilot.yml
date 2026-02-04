@@ -274,6 +274,24 @@ stages:
                   exit 1
                 fi
               done
+              echo "Boot completed flag set"
+              
+              # Wait for package manager service to be available (critical for app installation)
+              echo "Waiting for package manager service..."
+              pm_timeout=120
+              pm_waited=0
+              while ! adb shell pm list packages 2>/dev/null | grep -q "package:"; do
+                sleep 3
+                pm_waited=$((pm_waited + 3))
+                echo "Waiting for package manager... ($pm_waited/$pm_timeout seconds)"
+                if [ $pm_waited -ge $pm_timeout ]; then
+                  echo "##vso[task.logissue type=error]Package manager service did not start"
+                  echo "=== Checking services ==="
+                  adb shell service list 2>/dev/null | head -20 || echo "Cannot list services"
+                  exit 1
+                fi
+              done
+              echo "Package manager service is ready"
               
               echo "=== Emulator booted successfully! ==="
               adb devices -l

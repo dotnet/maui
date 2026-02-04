@@ -176,6 +176,32 @@ if ($Platform -eq "android") {
             }
             exit 1
         }
+        
+        Write-Info "Boot completed flag set"
+        
+        # Wait for package manager service to be available (critical for app installation)
+        Write-Info "Waiting for package manager service..."
+        $pmTimeout = 120
+        $pmWaited = 0
+        
+        while ($pmWaited -lt $pmTimeout) {
+            $pmOutput = adb -s $DeviceUdid shell pm list packages 2>$null
+            if ($pmOutput -match "package:") {
+                break
+            }
+            Start-Sleep -Seconds 3
+            $pmWaited += 3
+            Write-Info "Waiting for package manager... ($pmWaited/$pmTimeout seconds)"
+        }
+        
+        if ($pmWaited -ge $pmTimeout) {
+            Write-Error "Package manager service did not start"
+            Write-Info "Checking services:"
+            adb -s $DeviceUdid shell service list 2>$null | Select-Object -First 20 | ForEach-Object { Write-Info "  $_" }
+            exit 1
+        }
+        
+        Write-Info "Package manager service is ready"
     }
     
     Write-Success "=== Emulator booted successfully! ==="
