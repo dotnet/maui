@@ -7,7 +7,7 @@
         x:DataType="local:ShellViewModel"
         Title="ShellOptionsPage">
     <ScrollView>
-        <VerticalStackLayout Padding="20"  >
+        <VerticalStackLayout Padding="20" Spacing="5" >
             
             <!-- Apply Button -->
             <Button Text="Apply" Clicked="OnApplyClicked" 
@@ -17,44 +17,42 @@
        
             <!-- BackgroundColor -->
             <Label Text="BackgroundColor" FontAttributes="Bold"/>
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="10">
                 <Button Grid.Column="0" Text="SkyBlue" AutomationId="SkyBlueBackgroundColor" Clicked="OnBackgroundColorClicked"/>
                 <Button Grid.Column="1" Text="LightGreen" AutomationId="LightGreenBackgroundColor" Clicked="OnBackgroundColorClicked"/>
+                <Button Grid.Column="2" Text="White" AutomationId="WhiteBackgroundColor" Clicked="OnBackgroundColorClicked"/>
             </Grid>
 
             <!-- ForegroundColor -->
             <Label Text="ForegroundColor" FontAttributes="Bold"  />
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="10">
                 <Button Grid.Column="0" Text="Brown" AutomationId="BrownForegroundColor" Clicked="OnForegroundColorClicked"/>
                 <Button Grid.Column="1" Text="Magenta" AutomationId="MagentaForegroundColor" Clicked="OnForegroundColorClicked"/>
+                <Button Grid.Column="2" Text="Purple" AutomationId="PurpleForegroundColor" Clicked="OnForegroundColorClicked"/>
             </Grid>
 
             <!-- TitleColor -->
             <Label Text="TitleColor" FontAttributes="Bold"  />
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="10">
                 <Button Grid.Column="0" Text="Red" AutomationId="RedTitleColor" Clicked="OnTitleColorClicked"/>
                 <Button Grid.Column="1" Text="Green" AutomationId="GreenTitleColor" Clicked="OnTitleColorClicked"/>
+                <Button Grid.Column="2" Text="Navy" AutomationId="NavyTitleColor" Clicked="OnTitleColorClicked"/>
             </Grid>
 
             <!-- DisabledColor -->
             <Label Text="DisabledColor" FontAttributes="Bold"  />
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="10">
                 <Button Grid.Column="0" Text="Gold" AutomationId="GoldDisabledColor" Clicked="OnDisabledColorClicked"/>
                 <Button Grid.Column="1" Text="Violet" AutomationId="VioletDisabledColor" Clicked="OnDisabledColorClicked"/>
+                <Button Grid.Column="2" Text="Silver" AutomationId="SilverDisabledColor" Clicked="OnDisabledColorClicked"/>
             </Grid>
 
             <!-- UnselectedColor -->
             <Label Text="UnselectedColor" FontAttributes="Bold"  />
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="10">
                 <Button Grid.Column="0" Text="Maroon" AutomationId="MaroonUnselectedColor" Clicked="OnUnselectedColorClicked"/>
                 <Button Grid.Column="1" Text="Blue" AutomationId="BlueUnselectedColor" Clicked="OnUnselectedColorClicked"/>
-            </Grid>
-
-            <!-- NavBarHasShadow -->
-            <Label Text="NavBarHasShadow" FontAttributes="Bold"  />
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
-                <Button Grid.Column="0" Text="True" AutomationId="ShadowTrue" Clicked="OnNavBarHasShadowTrueClicked"/>
-                <Button Grid.Column="1" Text="False" AutomationId="ShadowFalse" Clicked="OnNavBarHasShadowFalseClicked"/>
+                <Button Grid.Column="2" Text="Indigo" AutomationId="IndigoUnselectedColor" Clicked="OnUnselectedColorClicked"/>
             </Grid>
 
             <!-- Shell Properties Section -->
@@ -85,11 +83,6 @@
             </HorizontalStackLayout>
                 </VerticalStackLayout>
             </Grid>
-            <!-- Go Back Button -->
-            <Button Text="Go Back" Clicked="OnGoBackClicked" 
-                    AutomationId="GoBackButton"
-                    BackgroundColor="Gray" TextColor="White"/>
-
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

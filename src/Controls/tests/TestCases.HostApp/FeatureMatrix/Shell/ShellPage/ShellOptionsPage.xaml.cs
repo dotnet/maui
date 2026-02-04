@@ -19,7 +19,7 @@ namespace Maui.Controls.Sample
         {
             Navigation.PopAsync();
         }
-
+          
         // BackgroundColor
         void OnBackgroundColorClicked(object sender, EventArgs e)
         {
@@ -29,6 +29,7 @@ namespace Maui.Controls.Sample
                 {
                     "SkyBlue" => Colors.SkyBlue,
                     "LightGreen" => Colors.LightGreen,
+                    "White" => Colors.White,
                     _ => _viewModel.BackgroundColor
                 };
             }
@@ -43,6 +44,7 @@ namespace Maui.Controls.Sample
                 {
                     "Brown" => Colors.Brown,
                     "Magenta" => Colors.Magenta,
+                    "Purple" => Colors.Purple,
                     _ => _viewModel.ForegroundColor
                 };
             }
@@ -57,6 +59,7 @@ namespace Maui.Controls.Sample
                 {
                     "Red" => Colors.Red,
                     "Green" => Colors.Green,
+                    "Navy" => Colors.Navy,
                     _ => _viewModel.TitleColor
                 };
             }
@@ -71,6 +74,7 @@ namespace Maui.Controls.Sample
                 {
                     "Gold" => Colors.Gold,
                     "Violet" => Colors.Violet,
+                    "Silver" => Colors.Silver,
                     _ => _viewModel.DisabledColor
                 };
             }
@@ -85,22 +89,11 @@ namespace Maui.Controls.Sample
                 {
                     "Maroon" => Colors.Maroon,
                     "Blue" => Colors.Blue,
+                    "Indigo" => Colors.Indigo,
                     _ => _viewModel.UnselectedColor
                 };
             }
         }
-
-
-        void OnNavBarHasShadowTrueClicked(object sender, EventArgs e)
-        {
-            _viewModel.NavBarHasShadow = true;
-        }
-
-        void OnNavBarHasShadowFalseClicked(object sender, EventArgs e)
-        {
-            _viewModel.NavBarHasShadow = false;
-        }
-
         private void OnIsEnabledChanged(object sender, CheckedChangedEventArgs e)
         {
             if (sender is RadioButton radioButton && e.Value)
@@ -123,11 +116,6 @@ namespace Maui.Controls.Sample
             {
                 _viewModel.FlowDirection = radioButton.Content?.ToString() == "LTR" ? FlowDirection.LeftToRight : FlowDirection.RightToLeft;
             }
-        }
-
-        private async void OnGoBackClicked(object sender, EventArgs e)
-        {
-            await Microsoft.Maui.Controls.Shell.Current.GoToAsync("..");
         }
 
     }

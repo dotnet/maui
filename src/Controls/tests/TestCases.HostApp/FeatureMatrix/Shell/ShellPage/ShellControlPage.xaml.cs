@@ -17,73 +17,63 @@ public partial class ShellControlPage : Shell
         InitializeComponent();
         _viewModel = new ShellViewModel();
         BindingContext = _viewModel;
-
-        // Register the TestPage route for navigation
-        Routing.RegisterRoute(nameof(ShellOptionsPage), typeof(ShellOptionsPage));
+        Routing.RegisterRoute("notanimated", typeof(NotAnimatedPresentationPage));
+        Routing.RegisterRoute("animated", typeof(AnimatedPresentationPage));
+        Routing.RegisterRoute("modal", typeof(ModalPresentationPage));
+        Routing.RegisterRoute("modalanimated", typeof(ModalAnimatedPresentationPage));
+        Routing.RegisterRoute("modalnotanimated", typeof(ModalNotAnimatedPresentationPage));
     }
-
     async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)
     {
         BindingContext = _viewModel = new ShellViewModel();
         await Navigation.PushAsync(new ShellOptionsPage(_viewModel));
     }
-
     void OnNavBarAnimTrueClicked(object sender, EventArgs e)
     {
-        Shell.SetNavBarIsVisible(this, true);
+        Shell.SetNavBarVisibilityAnimationEnabled(this, true);
     }
-
     void OnNavBarAnimFalseClicked(object sender, EventArgs e)
     {
-        Shell.SetNavBarIsVisible(this, false);
+        Shell.SetNavBarVisibilityAnimationEnabled(this, false);
     }
-
     void OnNavBarVisibleClicked(object sender, EventArgs e)
     {
         Shell.SetNavBarIsVisible(this, true);
     }
-
     void OnNavBarHiddenClicked(object sender, EventArgs e)
     {
         Shell.SetNavBarIsVisible(this, false);
     }
-
+    void OnNavBarHasShadowTrueClicked(object sender, EventArgs e)
+    {
+        Shell.SetNavBarHasShadow(this, true);
+    }
+    void OnNavBarHasShadowFalseClicked(object sender, EventArgs e)
+    {
+        Shell.SetNavBarHasShadow(this, false);
+    }
     private async void OnGoToNotAnimated(object sender, EventArgs e)
-    {
-        var page = new ShellOptionsPage(_viewModel);
-        Shell.SetPresentationMode(page, PresentationMode.NotAnimated);
-        await Navigation.PushAsync(page);
-    }
-    private async void OnGoToAnimated(object sender, EventArgs e)
-    {
-        var page = new ShellOptionsPage(_viewModel);
-        Shell.SetPresentationMode(page, PresentationMode.Animated);
-        await Navigation.PushAsync(page);
-    }
-    private async void OnGoToModal(object sender, EventArgs e)
-    {
-        var page = new ShellOptionsPage(_viewModel);
-        Shell.SetPresentationMode(page, PresentationMode.Modal);
-        await Navigation.PushModalAsync(page, false);
-    }
-    private async void OnGoToModalAnimated(object sender, EventArgs e)
-    {
-        var page = new ShellOptionsPage(_viewModel);
-        Shell.SetPresentationMode(page, PresentationMode.ModalAnimated);
-        await Navigation.PushModalAsync(page, true);
-    }
-    private async void OnGoToModalNotAnimated(object sender, EventArgs e)
-    {
-        var page = new ShellOptionsPage(_viewModel);
-        Shell.SetPresentationMode(page, PresentationMode.ModalNotAnimated);
-        await Navigation.PushModalAsync(page, false);
-    }
+        => await Shell.Current.GoToAsync("notanimated");
 
+    private async void OnGoToAnimated(object sender, EventArgs e)
+        => await Shell.Current.GoToAsync("animated");
+
+    private async void OnGoToModal(object sender, EventArgs e)
+        => await Shell.Current.GoToAsync("modal");
+
+    private async void OnGoToModalAnimated(object sender, EventArgs e)
+        => await Shell.Current.GoToAsync("modalanimated");
+
+    private async void OnGoToModalNotAnimated(object sender, EventArgs e)
+        => await Shell.Current.GoToAsync("modalnotanimated");
     private async void OnGoToHomeClicked(object sender, EventArgs e)
     {
         this.CurrentItem = this.homePage;
     }
-
+    private async void OnGoBackClicked(object sender, EventArgs e)
+    {
+        await Shell.Current.GoToAsync("..");
+    }
     private void SetTitleView()
     {
         var grid = new Grid
@@ -120,20 +110,89 @@ public partial class ShellControlPage : Shell
 
         Shell.SetTitleView(this, grid);
     }
-
     private void RemoveTitleView()
     {
         Shell.SetTitleView(this, null);
     }
-
     private void OnShowTitleViewClicked(object sender, EventArgs e)
     {
         SetTitleView();
     }
-
     private void OnHideTitleViewClicked(object sender, EventArgs e)
     {
         RemoveTitleView();
+    }
+
+    private abstract class PresentationModePage : ContentPage
+    {
+        protected PresentationModePage(string title, PresentationMode mode)
+        {
+            Title = title;
+            BackgroundColor = Colors.White;
+            Shell.SetPresentationMode(this, mode);
+
+            var backButton = new Button
+            {
+                Text = "Go Back",
+                AutomationId = "GoBackButton",
+                BackgroundColor = Color.FromArgb("F5F5F5"),
+                TextColor = Colors.Black
+            };
+            backButton.Clicked += async (_, __) => await Shell.Current.GoToAsync("..");
+
+            Content = new VerticalStackLayout
+            {
+                Padding = 20,
+                Spacing = 20,
+                VerticalOptions = LayoutOptions.Center,
+                HorizontalOptions = LayoutOptions.Center,
+                Children =
+                {
+                    new Label { Text = title, HorizontalOptions = LayoutOptions.Center },
+                    backButton
+                }
+            };
+        }
+    }
+
+    private sealed class NotAnimatedPresentationPage : PresentationModePage
+    {
+        public NotAnimatedPresentationPage()
+            : base("NotAnimated Page", PresentationMode.NotAnimated)
+        {
+        }
+    }
+
+    private sealed class AnimatedPresentationPage : PresentationModePage
+    {
+        public AnimatedPresentationPage()
+            : base("Animated Page", PresentationMode.Animated)
+        {
+        }
+    }
+
+    private sealed class ModalPresentationPage : PresentationModePage
+    {
+        public ModalPresentationPage()
+            : base("Modal Page", PresentationMode.Modal)
+        {
+        }
+    }
+
+    private sealed class ModalAnimatedPresentationPage : PresentationModePage
+    {
+        public ModalAnimatedPresentationPage()
+            : base("ModalAnimated Page", PresentationMode.ModalAnimated)
+        {
+        }
+    }
+
+    private sealed class ModalNotAnimatedPresentationPage : PresentationModePage
+    {
+        public ModalNotAnimatedPresentationPage()
+            : base("ModalNotAnimated Page", PresentationMode.ModalNotAnimated)
+        {
+        }
     }
 
 }

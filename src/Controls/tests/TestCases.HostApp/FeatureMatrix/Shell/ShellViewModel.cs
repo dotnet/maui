@@ -3,20 +3,21 @@ using System.Runtime.CompilerServices;
 using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample;
+
 public class ShellViewModel : INotifyPropertyChanged
 {
-    Color _backgroundColor ;
-    Color _foregroundColor;
-    Color _titleColor ;
-    Color _disabledColor ;
-    Color _unselectedColor ;
-    bool _navBarVisible = true;
-    bool _navBarHasShadow = true;
-    bool _navBarVisibilityAnimationEnabled = true;
-    PresentationMode _presentationMode = PresentationMode.Animated;
-    bool _isEnabled = true;
-    bool _isVisible = true;
-    FlowDirection _flowDirection = FlowDirection.LeftToRight;
+    private Color _backgroundColor;
+    private Color _foregroundColor;
+    private Color _titleColor;
+    private Color _disabledColor;
+    private Color _unselectedColor;
+    private bool _navBarVisible = true;
+    private bool _navBarHasShadow = true;
+    private bool _navBarVisibilityAnimationEnabled = true;
+    private PresentationMode _presentationMode = PresentationMode.Animated;
+    private bool _isEnabled = true;
+    private bool _isVisible = true;
+    private FlowDirection _flowDirection = FlowDirection.LeftToRight;
     public Color BackgroundColor
     {
         get => _backgroundColor;
