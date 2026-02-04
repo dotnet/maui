@@ -1,8 +1,10 @@
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Media;
+using Maui.Controls.Sample;
 
 namespace Maui.Controls.Sample.Issues
 {
+	[Issue(IssueTracker.Github, 32650, "MediaPicker.PickPhotosAsync does not preserve image orientation", PlatformAffected.iOS | PlatformAffected.Android)]
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class Issue32650 : ContentPage
 	{

@@ -52,7 +52,8 @@ internal static partial class ImageProcessor
 			}
 
 		// Apply EXIF orientation correction with the actual orientation value
-		Bitmap? rotatedBitmap = ApplyExifOrientation(originalBitmap, orientation);		if (rotatedBitmap is null)
+		Bitmap? rotatedBitmap = ApplyExifOrientation(originalBitmap, orientation);
+		if (rotatedBitmap is null)
 		{
 			return new MemoryStream(bytes);
 		}
@@ -60,7 +61,8 @@ internal static partial class ImageProcessor
 		// Clean up the original bitmap if we created a new one
 		if (rotatedBitmap != originalBitmap)
 		{
-			originalBitmap.Recycle();			}
+			originalBitmap.Recycle();
+		}
 
 			// Convert the rotated bitmap back to a stream
 			var resultStream = new MemoryStream();
@@ -148,30 +150,55 @@ internal static partial class ImageProcessor
 	{
 		try
 		{
-			// Convert EXIF orientation to rotation angle
-			// EXIF orientation values: 1=normal, 3=180°, 6=90° CW, 8=90° CCW
+			// Convert EXIF orientation to rotation angle and flip
+			// EXIF Orientation values:
+			// 1 = normal
+			// 2 = flip horizontal
+			// 3 = rotate 180°
+			// 4 = flip vertical
+			// 5 = rotate 90° CW + flip horizontal
+			// 6 = rotate 90° CW
+			// 7 = rotate 90° CCW + flip horizontal
+			// 8 = rotate 90° CCW
+			
+			bool flipH = false;
 			int rotationAngle = orientation switch
 			{
+				2 => 0,     // flip horizontal only
 				3 => 180,
+				4 => 0,     // flip vertical (rotate 180° then flip horizontal)
+				5 => 90,    // rotate 90° CW + flip horizontal
 				6 => 90,
+				7 => 270,   // rotate 270° CW + flip horizontal
 				8 => 270,
-				_ => 0  // 1 and other values mean no rotation needed
+				_ => 0      // 1 and other values mean no rotation needed
 			};
+			
+			// Determine if we need to flip
+			flipH = orientation is 2 or 4 or 5 or 7;
 
-			// If no rotation needed, return original bitmap
-			if (rotationAngle == 0)
+			// If no rotation and no flip needed, return original bitmap
+			if (rotationAngle == 0 && !flipH)
 			{
 				return bitmap;
 			}
 
-			// Apply rotation using a transformation matrix
-			var matrix = new Matrix();
-			matrix.PostRotate(rotationAngle);
-			
-			// Create rotated bitmap
-			var rotatedBitmap = Bitmap.CreateBitmap(bitmap, 0, 0, bitmap.Width, bitmap.Height, matrix, true);
-			
-			return rotatedBitmap;
+			// Apply rotation and/or flip using a transformation matrix
+			using (var matrix = new Matrix())
+			{
+				// Apply scaling for flip if needed
+				if (flipH)
+					matrix.PostScale(-1, 1);
+				
+				// Apply rotation
+				if (rotationAngle != 0)
+					matrix.PostRotate(rotationAngle);
+				
+				// Create transformed bitmap
+				var transformedBitmap = Bitmap.CreateBitmap(bitmap, 0, 0, bitmap.Width, bitmap.Height, matrix, true);
+				
+				return transformedBitmap;
+			}
 		}
 		catch (Exception ex)
 		{
