@@ -163,7 +163,7 @@ if ($Platform -eq "android") {
         
         # Wait for boot_completed (exactly like CI)
         Write-Info "Waiting for emulator to finish booting..."
-        $timeout = 180
+        $timeout = 600
         $waited = 0
         
         while ($waited -lt $timeout) {

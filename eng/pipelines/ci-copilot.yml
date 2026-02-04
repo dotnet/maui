@@ -260,7 +260,7 @@ stages:
               
               # Wait for boot_completed
               echo "Waiting for emulator to finish booting..."
-              timeout=120
+              timeout=600
               waited=0
               while [ "$(adb shell getprop sys.boot_completed 2>/dev/null)" != "1" ]; do
                 sleep 2
@@ -423,7 +423,7 @@ stages:
               
               # Wait for boot_completed
               echo "Waiting for boot_completed..."
-              boot_timeout=180
+              boot_timeout=600
               boot_waited=0
               while [ "$(adb shell getprop sys.boot_completed 2>/dev/null)" != "1" ]; do
                 sleep 5
