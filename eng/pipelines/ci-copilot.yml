@@ -105,8 +105,8 @@ stages:
               
               $ErrorActionPreference = "Continue"
               try {
-                Write-Host "Invoking Start-Emulator.ps1 -Platform android..."
-                & "./$scriptPath" -Platform android 2>&1 | ForEach-Object { Write-Host $_ }
+                Write-Host "Invoking Start-Emulator.ps1 -Platform android -DeviceUdid Emulator_34..."
+                & "./$scriptPath" -Platform android -DeviceUdid Emulator_34 2>&1 | ForEach-Object { Write-Host $_ }
                 $exitCode = $LASTEXITCODE
                 Write-Host "Script returned exit code: $exitCode"
               } catch {
