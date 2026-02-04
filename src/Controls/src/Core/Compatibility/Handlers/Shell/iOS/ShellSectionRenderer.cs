@@ -130,8 +130,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (tracker.Value.ViewController == TopViewController)
 				{
 					var behavior = Shell.GetBackButtonBehavior(tracker.Value.Page);
+					var enabled = behavior.GetPropertyIfSet(BackButtonBehavior.IsEnabledProperty, true);
 					var command = behavior.GetPropertyIfSet<ICommand>(BackButtonBehavior.CommandProperty, null);
 					var commandParameter = behavior.GetPropertyIfSet<object>(BackButtonBehavior.CommandParameterProperty, null);
+
+					if (!enabled)
+					{
+						return false;
+					}
 
 					if (command != null)
 					{
