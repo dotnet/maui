@@ -1,6 +1,6 @@
 # MAUI Dev Tools Client — Product Specification
 
-**Version**: 2.5-draft  
+**Version**: 2.6-draft  
 **Status**: Proposal  
 **Last Updated**: 2026-02-04
 
@@ -10,15 +10,14 @@
 
 1. [Executive Summary](#1-executive-summary)
 2. [Problem Statement](#2-problem-statement)
-3. [Goals / Non-Goals](#3-goals--non-goals)
-4. [Personas & User Journeys](#4-personas--user-journeys)
-5. [Functional Requirements](#5-functional-requirements)
-6. [Non-Functional Requirements](#6-non-functional-requirements)
-7. [Architecture](#7-architecture)
-8. [Public API Surface](#8-public-api-surface)
-9. [User Experience](#9-user-experience)
-10. [Telemetry & Diagnostics](#10-telemetry--diagnostics)
-11. [MVP vs vNext Features](#11-mvp-vs-vnext-features)
+3. [Goals, Non-Goals & Personas](#3-goals-non-goals--personas)
+4. [Functional Requirements](#4-functional-requirements)
+5. [Non-Functional Requirements](#5-non-functional-requirements)
+6. [Architecture](#6-architecture)
+7. [Public API Surface](#7-public-api-surface)
+8. [User Experience](#8-user-experience)
+9. [Telemetry & Diagnostics](#9-telemetry--diagnostics)
+10. [MVP vs vNext Features](#10-mvp-vs-vnext-features)
 
 ---
 
@@ -76,7 +75,7 @@ This tool eliminates that friction by providing a single, authoritative source f
 
 ---
 
-## 3. Goals / Non-Goals
+## 3. Goals, Non-Goals & Personas
 
 ### Goals
 
@@ -100,189 +99,30 @@ This tool eliminates that friction by providing a single, authoritative source f
 
 ### Design Principles
 
-#### DP1: Delegate to Native Toolchains — Do Not Reimplement
+**DP1: Delegate to Native Toolchains** — Do not reimplement. Use `sdkmanager`, `avdmanager`, `adb`, `emulator` for Android; `xcrun simctl`, `xcode-select` for Apple; Windows SDK installer for Windows. Native tools are authoritative, reduce maintenance burden, and ensure consistency.
 
-**This tool MUST NOT implement custom logic to download, install, or configure platform components.** Instead, it delegates all such operations to the native platform tools:
+**DP2: Consolidate Existing VS Repositories** — Replace `ClientTools.android-acquisition` and `android-platform-support` with unified `dotnet maui android` commands across VS, VS Code, CLI, and CI.
 
-| Platform | Native Tools Used | What They Handle |
-|----------|-------------------|------------------|
-| Android | `sdkmanager`, `avdmanager`, `adb`, `emulator` | SDK packages, AVDs, device communication, emulator lifecycle |
-| Apple | `xcrun simctl`, `xcode-select`, `xcodebuild` | Simulators, runtimes, Xcode selection, build tools |
-| Windows | Windows SDK installer, VS Build Tools | Windows SDK components |
+**DP3: Stateless Architecture** — Each command reads state, acts, and exits. Uses file-system caching (`~/.maui/cache/`) with TTLs for performance.
 
-**Rationale**:
-- Native tools are **authoritative** and always up-to-date with platform changes
-- Avoids **maintenance burden** of tracking repository URLs, package formats, and installation procedures
-- Reduces **security risk** from implementing custom download/verification logic
-- Ensures **consistency** between manual and automated installations
-- Leverages **existing testing** of platform tools by their maintainers
+**DP4: Machine-First Output** — Every command supports `--json` with stable schema. Priority: AI agents > CI/CD > humans. Required flags: `--json`, `--dry-run`, `--ci`.
 
-**Example**:
-```
-❌ WRONG: Download android-sdk-*.zip from Google, extract, configure PATH
-✅ RIGHT: Invoke `sdkmanager "platform-tools" "platforms;android-34"` and parse output
-```
+### Target Personas
 
-This tool's value is in **orchestration, detection, and unified UX**—not in reimplementing what the platform tools already do well.
+| Persona | Profile | Key Need |
+|---------|---------|----------|
+| **Windows Developer** | .NET dev, new to Android | One-click install of all Android dependencies |
+| **macOS Developer** | Building iOS apps, has Xcode | Detection of runtime/simulator state, guided fixes |
+| **CI Engineer** | DevOps configuring pipelines | `--non-interactive`, JSON output, deterministic exit codes |
+| **AI Agent** | GitHub Copilot, IDE assistants | Structured JSON for diagnosis, permission-gated fixes |
 
-#### DP2: Consolidate Existing Visual Studio Acquisition Repositories
-
-This tool enables **consolidation of existing Visual Studio repositories** that currently implement Android acquisition separately:
-
-| Repository | Current Function | Future State |
-|------------|------------------|--------------|
-| [ClientTools.android-acquisition](https://devdiv.visualstudio.com/DevDiv/_git/ClientTools.android-acquisition) | Android SDK acquisition for VS | **Deprecate**: Use `dotnet maui android sdk install` |
-| [android-platform-support](https://devdiv.visualstudio.com/DevDiv/_git/android-platform-support) | Android platform support for VS | **Deprecate**: Use `dotnet maui android` commands |
-
-**Benefits of Consolidation**:
-- **Single codebase** for Android tooling across VS, VS Code, CLI, and CI
-- **Reduced duplication** of detection and installation logic
-- **Consistent behavior** across all Microsoft developer tools
-- **Shared bug fixes** and improvements
-- **Simplified maintenance** with one team owning the tooling
-
-**Migration Path**:
-1. Visual Studio installer integrates `dotnet maui` tool
-2. VS Android features call `dotnet maui android` commands instead of internal libraries
-3. Internal repositories enter maintenance mode
-4. After VS release cycle, internal repositories are archived
-
-#### DP3: Stateless Architecture
-
-**The CLI operates statelessly.** Each command reads state, acts, and exits.
-
-**Rationale**:
-- Stateless commands are easier to debug, test, and reason about
-- AI agents prefer deterministic request/response
-- Performance bottleneck is native tool execution, not process spin-up
-
-**State Caching**:
-Stateless does not mean slow. The tool uses file-system caching:
-```
-~/.maui/cache/
-├── devices.json          # TTL: 30 seconds
-├── android-sdk-state.json # TTL: 5 minutes
-├── apple-runtimes.json   # TTL: 5 minutes
-└── doctor-report.json    # TTL: 1 minute
-```
-
-Commands read from cache if fresh, otherwise invoke native tools and update cache.
-
-#### DP4: Machine-First Output — The User is the AI
-
-**Every command MUST support `--json` output with a stable, versioned schema.**
-
-This tool is designed for three consumers in priority order:
-1. **AI Agents** (GitHub Copilot, IDE assistants) — need structured data to reason about
-2. **CI/CD Pipelines** — need deterministic exit codes and parseable output
-3. **Human Developers** — need readable summaries with color and formatting
-
-**Implication**: If an error message is ambiguous plain text, AI agents will fail to use the tool reliably. Every failure must be expressed as structured data.
-
-```bash
-# Human-friendly (default)
-dotnet maui doctor
-# ✓ .NET SDK 9.0.100
-# ✗ Android SDK not found
-
-# Machine-friendly (for AI/CI)
-dotnet maui doctor --json
-# { "status": "unhealthy", "checks": [...], "errors": [...] }
-```
-
-**Required flags for all commands**:
-| Flag | Purpose |
-|------|---------|
-| `--json` | Output structured JSON instead of human-readable text |
-| `--dry-run` | Show what would be done without executing (enables "what will this do?" UX) |
-| `--ci` | Strict mode: no interactive prompts, non-zero exit on warnings, machine-readable only |
+> **See [AI Agent Integration](./maui-devtools-ai-integration.md)** for detailed AI agent personas and permission model.
 
 ---
 
-## 4. Personas & User Journeys
+## 4. Functional Requirements
 
-### 4.1 MAUI Developer on Windows
-
-**Profile**: Sarah, a .NET developer building a cross-platform app. She has Visual Studio installed but has never done Android development.
-
-**Journey**:
-1. Sarah installs the .NET MAUI workload via `dotnet workload install maui`
-2. She opens her project in VS Code and sees a notification: "MAUI environment issues detected"
-3. She clicks "View Details" and sees a structured list:
-   - ❌ Android SDK not found
-   - ❌ Android emulator not installed
-   - ❌ No Android system images available
-4. She clicks "Fix All" and watches a progress panel:
-   - Installing Android SDK... ✓
-   - Installing build-tools 34.0.0... ✓
-   - Installing emulator... ✓
-   - Installing system-images;android-34;google_apis;x86_64... ✓
-   - Creating default AVD "Pixel_5_API_34"... ✓
-5. She presses F5 and her app launches in the emulator
-
-**Key Requirements**:
-- Clear, actionable error messages
-- One-click installation of all dependencies
-- Progress indication for long-running operations
-- No prior Android knowledge required
-
-### 4.2 MAUI Developer on macOS
-
-**Profile**: Marcus, building an iOS app. He has Xcode installed but outdated simulators.
-
-**Journey**:
-1. Marcus runs `dotnet maui doctor` in terminal
-2. Output shows:
-   ```
-   ✓ .NET SDK 9.0.100
-   ✓ MAUI workload 9.0.0
-   ✓ Xcode 16.0 (/Applications/Xcode.app)
-   ✓ Android SDK (/Users/marcus/Library/Android/sdk)
-   ⚠ iOS 18.0 runtime not installed (iOS 17.4 available)
-   ⚠ No iPhone 16 simulator available
-   ```
-3. He runs `dotnet maui doctor --fix`
-4. Tool prompts: "Install iOS 18.0 runtime? (requires 8GB download) [Y/n]"
-5. After confirmation, runtime installs and simulator is created
-
-**Key Requirements**:
-- Detection of Xcode and simulator state
-- Clear prompts for large downloads
-- Respect for user's existing configuration
-
-### 4.3 CI Engineer
-
-**Profile**: DevOps engineer configuring GitHub Actions for a MAUI project.
-
-**Journey**:
-1. Engineer adds step to workflow:
-   ```yaml
-   - name: Setup MAUI Environment
-     run: |
-       dotnet tool install -g Microsoft.Maui.DevTools
-       dotnet maui doctor --fix --non-interactive --json > setup-report.json
-   ```
-2. Tool runs silently, installs missing components, outputs JSON report
-3. If any unfixable issues exist, tool exits with non-zero code
-4. Subsequent build step succeeds
-
-**Key Requirements**:
-- `--non-interactive` flag for unattended operation
-- Deterministic exit codes
-- JSON output for pipeline integration
-- Idempotent execution (safe to run multiple times)
-
-### 4.4 AI Agent Invoked from IDE
-
-> **See [AI Agent Integration](./maui-devtools-ai-integration.md)** for detailed AI agent personas, Copilot-assisted troubleshooting, and permission model.
-
-**Summary**: AI agents (GitHub Copilot, IDE assistants) can invoke `dotnet maui doctor --json` to diagnose environment issues, receive structured responses with fix commands, and execute fixes with user permission gates.
-
----
-
-## 5. Functional Requirements
-
-### 5.1 Doctor Capability
+### 4.1 Doctor Capability
 
 | ID | Requirement | Priority |
 |----|-------------|----------|
@@ -301,7 +141,7 @@ dotnet maui doctor --json
 | FR-D13 | Support `--fix <issue-id>` for targeted fixes | P1 |
 | FR-D14 | Detect multiple SDK installations and report conflicts | P1 |
 
-### 5.2 Android Management
+### 4.2 Android Management
 
 | ID | Requirement | Priority |
 |----|-------------|----------|
@@ -323,7 +163,7 @@ dotnet maui doctor --json
 | FR-A16 | Install OpenJDK if missing (version 17 default, 21 supported) | P0 |
 | FR-A17 | Use platform-appropriate default paths when env vars not set | P0 |
 
-### 5.3 Apple (Xcode) Management
+### 4.3 Apple (Xcode) Management
 
 | ID | Requirement | Priority |
 |----|-------------|----------|
@@ -342,7 +182,7 @@ dotnet maui doctor --json
 | FR-X13 | Handle multiple Xcode versions (detect all, use `xcode-select` default) | P1 |
 | FR-X14 | Detect Xcode beta installations at `/Applications/Xcode-beta.app` | P2 |
 
-### 5.4 Windows Management
+### 4.4 Windows Management
 
 | ID | Requirement | Priority |
 |----|-------------|----------|
@@ -353,7 +193,7 @@ dotnet maui doctor --json
 | FR-W5 | Detect Hyper-V availability for Android emulation | P1 |
 | FR-W6 | Detect Windows App SDK dependencies | P2 |
 
-### 5.5 Cross-Platform Screenshot
+### 4.5 Cross-Platform Screenshot
 
 | ID | Requirement | Priority |
 |----|-------------|----------|
@@ -365,7 +205,7 @@ dotnet maui doctor --json
 | FR-S6 | Support `--format` flag (png, jpg) | P2 |
 | FR-S7 | Return file path in JSON output | P0 |
 
-### 5.5 Device Listing (Unified)
+### 4.5 Device Listing (Unified)
 
 | ID | Requirement | Priority |
 |----|-------------|----------|
@@ -375,7 +215,7 @@ dotnet maui doctor --json
 | FR-DL4 | Support `--platform` filter | P1 |
 | FR-DL5 | Support `--json` output | P0 |
 
-### 5.6 Bootstrap State Machine
+### 4.6 Bootstrap State Machine
 
 **Critical**: The tool must handle the "bootstrap gap" — the chicken-and-egg problem where native tools (sdkmanager, xcrun) don't exist yet.
 
@@ -498,9 +338,9 @@ This command:
 
 ---
 
-## 6. Non-Functional Requirements
+## 5. Non-Functional Requirements
 
-### 6.1 Reliability
+### 5.1 Reliability
 
 | ID | Requirement |
 |----|-------------|
@@ -509,7 +349,7 @@ This command:
 | NFR-R3 | Partial failures during multi-step operations must leave system in consistent state |
 | NFR-R4 | Tool must gracefully handle missing permissions |
 
-### 6.2 Observability
+### 5.2 Observability
 
 | ID | Requirement |
 |----|-------------|
@@ -518,7 +358,7 @@ This command:
 | NFR-O3 | Long-running operations must emit progress events |
 | NFR-O4 | `diagnostic-bundle` command must collect all relevant logs and state |
 
-### 6.3 Performance
+### 5.3 Performance
 
 | ID | Requirement |
 |----|-------------|
@@ -532,7 +372,7 @@ This command:
 - iOS simulator list: Use `xcrun simctl list -j` (fast native tool)
 - Fall back to CLI tools only for write operations (install, create, etc.)
 
-### 6.4 Security
+### 5.4 Security
 
 | ID | Requirement |
 |----|-------------|
@@ -541,7 +381,7 @@ This command:
 | NFR-S3 | Elevation must be requested explicitly with clear justification |
 | NFR-S4 | AI agent calls must respect permission gates (see Security Model) |
 
-### 6.5 Privacy
+### 5.5 Privacy
 
 | ID | Requirement |
 |----|-------------|
@@ -549,7 +389,7 @@ This command:
 | NFR-PR2 | File paths must be redacted in telemetry (keep structure only) |
 | NFR-PR3 | Telemetry must be opt-in with clear disclosure |
 
-### 6.6 Accessibility
+### 5.6 Accessibility
 
 | ID | Requirement |
 |----|-------------|
@@ -557,7 +397,7 @@ This command:
 | NFR-A2 | All status indicators must have text equivalents |
 | NFR-A3 | IDE integration must follow platform accessibility guidelines |
 
-### 6.7 Network & Offline Support
+### 5.7 Network & Offline Support
 
 | ID | Requirement |
 |----|-------------|
@@ -568,7 +408,7 @@ This command:
 | NFR-N5 | Large downloads must support HTTP Range requests for resumability |
 | NFR-N6 | Cache downloaded installers with configurable location and size limits |
 
-### 6.8 Container & Headless Environments
+### 5.8 Container & Headless Environments
 
 | Environment | Android Emulator | iOS Simulator | Doctor | SDK Install |
 |-------------|------------------|---------------|--------|-------------|
@@ -587,9 +427,9 @@ When emulator/simulator unavailable:
 
 ---
 
-## 7. Architecture
+## 6. Architecture
 
-### 7.1 High-Level Components
+### 6.1 High-Level Components
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
@@ -637,7 +477,7 @@ When emulator/simulator unavailable:
 └───────────────────┴───────────────────┴─────────────────────────────────┘
 ```
 
-### 7.2 Component Descriptions
+### 6.2 Component Descriptions
 
 #### CLI Layer
 - Parses command-line arguments using `System.CommandLine`
@@ -663,7 +503,7 @@ When emulator/simulator unavailable:
 | Apple Provider | Wraps `xcrun simctl`, `xcode-select`, `xcodebuild` |
 | Windows Provider | Wraps Windows SDK detection and VS build tools |
 
-### 7.3 Data Flow: Doctor Command
+### 6.3 Data Flow: Doctor Command
 
 ```
 User: maui doctor --json
@@ -706,13 +546,13 @@ User: maui doctor --json
                              └─────────────┘
 ```
 
-### 7.4 IDE Extension Integration
+### 6.4 IDE Extension Integration
 
 > **See [IDE Integration](./maui-devtools-ide-integration.md)** for detailed VS Code and Visual Studio UI flows, status panels, and menu integrations.
 
 **Summary**: IDEs spawn `dotnet maui` as a child process, invoke `dotnet maui doctor --json` on workspace open, display issues in their problems/error list panels, and provide commands for environment setup with progress notifications.
 
-### 7.5 Concurrency Model
+### 6.5 Concurrency Model
 
 | Aspect | Behavior |
 |--------|----------|
@@ -721,7 +561,7 @@ User: maui doctor --json
 | Lock File | `$TMPDIR/maui-devtools.lock` prevents concurrent writes |
 | Request Timeout | Requests waiting >30s for lock rejected with `E5010` |
 
-### 7.6 SDK Conflict Resolution
+### 6.6 SDK Conflict Resolution
 
 When multiple SDK installations are detected:
 
@@ -742,7 +582,7 @@ When multiple SDK installations are detected:
 - Warn if both AS and tool would manage same SDK
 - Offer to adopt AS's SDK rather than installing duplicate
 
-### 7.7 Migration from Existing Setups
+### 6.7 Migration from Existing Setups
 
 When an existing SDK is detected:
 
@@ -751,7 +591,7 @@ When an existing SDK is detected:
 3. **Non-Destructive**: Never delete or modify user's existing SDK without explicit consent
 4. **Override Support**: `--sdk-path` for non-standard locations
 
-### 7.8 Error Contract Specification
+### 6.8 Error Contract Specification
 
 **This is the highest-priority architectural element.** Every consumer (AI agents, CI pipelines, IDEs, humans) depends on predictable error handling.
 
@@ -886,9 +726,9 @@ dotnet maui doctor --ci
 
 ---
 
-## 8. Public API Surface
+## 7. Public API Surface
 
-### 8.1 CLI Commands
+### 7.1 CLI Commands
 
 The tool is invoked as `dotnet maui <command>`, integrating naturally with the .NET CLI. Platform-specific commands use the target framework moniker pattern (`ios`, `android`, `maccatalyst`, `windows`).
 
@@ -1098,7 +938,7 @@ All commands follow a consistent exit code scheme:
 | `dotnet maui apple runtime list` | List iOS runtimes | `--json` | Runtime list | 0=success, 2=error |
 | `dotnet maui config set` | Set configuration | `<key>`, `<value>` | Confirmation | 0=success, 2=error |
 
-### 8.2 Capabilities Model
+### 7.2 Capabilities Model
 
 | Command | Windows | macOS | Requires Elevation |
 |---------|---------|-------|-------------------|
@@ -1122,13 +962,13 @@ All commands follow a consistent exit code scheme:
 
 ---
 
-## 9. User Experience
+## 8. User Experience
 
-### 9.1 IDE UI Flows
+### 8.1 IDE UI Flows
 
 > **See [IDE Integration](./maui-devtools-ide-integration.md)** for detailed VS Code status bars, environment panels, fix progress dialogs, and Visual Studio menu integration.
 
-### 9.2 Interactive Prompting
+### 8.2 Interactive Prompting
 
 When running in interactive mode (terminal), the tool prompts for missing information:
 
@@ -1172,7 +1012,7 @@ Total download size: 10.7 GB
 ? Proceed? [Y/n]
 ```
 
-### 9.3 Copilot-Assisted Troubleshooting
+### 8.3 Copilot-Assisted Troubleshooting
 
 > **See [AI Agent Integration](./maui-devtools-ai-integration.md)** for detailed Copilot escalation triggers, context handoff schema, MCP tool integration, and example conversations.
 
@@ -1180,9 +1020,9 @@ Total download size: 10.7 GB
 
 ---
 
-## 10. Telemetry & Diagnostics
+## 9. Telemetry & Diagnostics
 
-### 10.1 Telemetry Events
+### 9.1 Telemetry Events
 
 | Event | Data Collected | Purpose |
 |-------|----------------|---------|
@@ -1191,7 +1031,7 @@ Total download size: 10.7 GB
 | `fix.attempted` | Issue type, success/failure | Measure fix effectiveness |
 | `error.occurred` | Error code, category (no stack traces) | Identify common failures |
 
-### 10.2 Opt-In / Opt-Out
+### 9.2 Opt-In / Opt-Out
 
 ```
 # Check telemetry status
@@ -1210,7 +1050,7 @@ $ maui telemetry disable
 ? Help improve MAUI Dev Tools by sending anonymous usage data? [y/N]
 ```
 
-### 10.3 Redaction Rules
+### 9.3 Redaction Rules
 
 All telemetry and logs follow these redaction rules:
 
@@ -1222,7 +1062,7 @@ All telemetry and logs follow these redaction rules:
 | UDIDs | Redact | `A1B2C3...` → `<simulator-udid>` |
 | Error messages | Keep, unless contains path | Preserved |
 
-### 10.4 Diagnostic Bundle
+### 9.4 Diagnostic Bundle
 
 ```
 $ maui diagnostic-bundle --output ~/Desktop/maui-diag.zip
@@ -1259,7 +1099,7 @@ maui-diag/
 ---
 
 
-## 11. MVP vs vNext Features
+## 10. MVP vs vNext Features
 
 ### MVP (v1.0)
 
@@ -1308,6 +1148,7 @@ maui-diag/
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 2.6-draft | 2026-02-04 | Condensed §3 Goals and §4 Personas into single section; Now 10 sections |
 | 2.5-draft | 2026-02-04 | Removed §11 Security, §12 Extensibility; Added physical device support to device list |
 | 2.4-draft | 2026-02-04 | Removed §13 Testing Strategy, §14 Rollout Plan |
 | 2.3-draft | 2026-02-04 | Removed §15-20 (Open Questions, Appendix, Acceptance Criteria, etc.) |
