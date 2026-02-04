@@ -41,31 +41,23 @@ After Gate passes, read `.github/agents/pr/post-gate.md` for **Phases 4-5**.
 
 ---
 
-## Phase Completion Protocol (CRITICAL)
+## 🚨 Critical Rules
 
-**Before changing ANY phase status to ✅ COMPLETE:**
+**Read `.github/agents/pr/SHARED-RULES.md` for complete details on:**
+- Phase Completion Protocol (fill ALL pending fields before marking complete)
+- Follow Templates EXACTLY (no `open` attributes, no "improvements")
+- No Direct Git Commands (use `gh pr diff/view`, let scripts handle files)
+- Use Skills' Scripts (don't bypass with manual commands)
+- Stop on Environment Blockers (strict retry limits, report and ask user)
+- Multi-Model Configuration (5 models for Phase 4)
+- Platform Selection (must be affected AND available on host)
 
-1. **Read the state file section** for the phase you're completing
-2. **Find ALL ⏳ PENDING and [PENDING] fields** in that section
-3. **Fill in every field** with actual content
-4. **Verify no pending markers remain** in your section
-5. **Commit the state file** with complete content
-6. **Then change status** to ✅ COMPLETE
+**Key points:**
+- ❌ Never run `git checkout`, `git switch`, `git stash`, `git reset` - agent is always on correct branch
+- ❌ Never continue after environment blocker - STOP and ask user
+- ❌ Never mark phase ✅ with [PENDING] fields remaining
 
-**Rule:** Status ✅ means "documentation complete", not "I finished thinking about it"
-
----
-
-### 🚨 CRITICAL: Phase 4 Always Uses `try-fix` Skill
-
-**Even when a PR already has a fix**, Phase 4 requires running the `try-fix` skill to:
-1. **Independently explore alternative solutions** - Generate fix ideas WITHOUT looking at the PR's solution
-2. **Test alternatives empirically** - Actually implement and run tests, don't just theorize
-3. **Compare with PR's fix** - PR's fix is already validated by Gate; try-fix explores if there's something better
-
-The PR's fix is NOT tested by try-fix (Gate already did that). try-fix generates and tests YOUR independent ideas.
-
-This ensures independent analysis rather than rubber-stamping the PR.
+Phase 4 uses a 5-model exploration workflow. See `post-gate.md` for detailed instructions after Gate passes.
 
 ---
 
@@ -233,7 +225,7 @@ This file:
 - Serves as your TODO list for all phases
 - Tracks progress if interrupted
 - Must exist before you start gathering context
-- **Always include when committing changes** (to `CustomAgentLogsTmp/PRState/`)
+- **Always include when saving changes** (to `CustomAgentLogsTmp/PRState/`)
 - **Phases 4-5 sections are added AFTER Gate passes** (see `pr/post-gate.md`)
 
 **Then gather context and update the file as you go.**
@@ -242,11 +234,7 @@ This file:
 
 **If starting from a PR:**
 ```bash
-# Checkout the PR
-git fetch origin pull/XXXXX/head:pr-XXXXX
-git checkout pr-XXXXX
-
-# Fetch PR metadata
+# Fetch PR metadata (agent is already on correct branch)
 gh pr view XXXXX --json title,body,url,author,labels,files
 
 # Find and read linked issue
@@ -256,7 +244,6 @@ gh issue view ISSUE_NUMBER --json title,body,comments
 
 **If starting from an Issue (no PR exists):**
 ```bash
-# Stay on current branch - do NOT checkout anything
 # Fetch issue details directly
 gh issue view XXXXX --json title,body,comments,labels
 ```
@@ -351,7 +338,7 @@ The test result will be updated to `✅ PASS (Gate)` after Gate passes.
 - [ ] Files Changed table populated (if PR exists)
 - [ ] PR Discussion Summary documented (if PR exists)
 - [ ] All [PENDING] placeholders replaced
-- [ ] State file committed
+- [ ] State file saved
 
 ---
 
@@ -418,7 +405,7 @@ The script auto-detects mode based on git diff. If only test files changed, it v
 - [ ] Test file paths documented
 - [ ] "Tests verified to FAIL" note added
 - [ ] Test category identified
-- [ ] State file committed
+- [ ] State file saved
 
 ---
 
@@ -441,13 +428,42 @@ Tests were already verified to FAIL in Phase 2. Gate is a confirmation step:
 **If starting from a PR (fix exists):**
 Use full verification mode - tests should FAIL without fix, PASS with fix.
 
+### Platform Selection for Gate
+
+**🚨 CRITICAL: Choose a platform that is BOTH affected by the bug AND available on the current host.**
+
+**Step 1: Identify affected platforms** from Pre-Flight:
+- Check the "Platforms Affected" checkboxes in the state file
+- Check issue labels (e.g., `platform/iOS`, `platform/Android`)
+- Check which platform-specific files the PR modifies
+
+**Step 2: Match to available platforms on current host:**
+
+| Host OS | Available Platforms |
+|---------|---------------------|
+| Windows | Android, Windows |
+| macOS | Android, iOS, MacCatalyst |
+
+**Step 3: Select the best match:**
+1. Pick a platform that IS affected by the bug
+2. That IS available on the current host
+3. Prefer the platform most directly impacted by the PR's code changes
+
+**Example decisions:**
+- Bug affects iOS/Windows/MacCatalyst, host is Windows → Test on **Windows**
+- Bug affects iOS only, host is Windows → **STOP** - cannot test (ask user)
+- Bug affects Android only → Test on **Android** (works on any host)
+- Bug affects all platforms → Pick based on host (Windows on Windows, iOS on macOS)
+
+**⚠️ Do NOT test on a platform that isn't affected by the bug** - the test will pass regardless of whether the fix works.
+
 **🚨 MUST invoke as a task agent** to prevent command substitution:
 
 ```markdown
 Invoke the `task` agent with agent_type: "task" and this prompt:
 
 "Invoke the verify-tests-fail-without-fix skill for this PR:
-- Platform: android (or ios)
+- Platform: [selected platform from Platform Selection above]
 - TestFilter: 'IssueXXXXX'
 - RequireFullVerification: true
 
@@ -486,7 +502,7 @@ See `.github/skills/verify-tests-fail-without-fix/SKILL.md` for full skill docum
 - [ ] Result shows PASSED ✅ or FAILED ❌
 - [ ] Test behavior documented
 - [ ] Platform tested noted
-- [ ] State file committed
+- [ ] State file saved
 
 ---
 
