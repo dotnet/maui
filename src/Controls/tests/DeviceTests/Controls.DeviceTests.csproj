@@ -19,7 +19,8 @@
          This is set unconditionally for Windows builds because:
          1. For packaged (MSIX) builds, this property is ignored - MSIX handles Windows App SDK differently
          2. For unpackaged builds, this bundles the Windows App SDK DLLs with the app
-         3. Using WindowsPackageType condition doesn't work reliably due to MSBuild evaluation timing -->
+         3. Using WindowsPackageType condition doesn't work reliably due to MSBuild evaluation timing
+         See PR #33702 for more details on this approach. -->
     <WindowsAppSDKSelfContained Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">true</WindowsAppSDKSelfContained>
   </PropertyGroup>
 
