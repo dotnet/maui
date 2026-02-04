@@ -13,5 +13,4 @@ class AssemblyAttributes(IReadOnlyList<XmlnsDefinitionAttribute> xmlnsDefinition
 	public IReadOnlyList<XmlnsDefinitionAttribute> GlobalGeneratedXmlnsDefinitions { get; } = globalGeneratedXmlnsDefinitions;
 	public IReadOnlyList<IAssemblySymbol> InternalsVisible { get; } = internalsVisible;
 	public Dictionary<string, List<string>> ClrNamespacesForXmlns { get; } = clrNamespacesForXmlns;
-	public bool AllowImplicitXmlns => true; // Always enabled in .NET 11+
 }
