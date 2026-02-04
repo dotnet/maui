@@ -1,0 +1,49 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Microsoft.Maui.DevTools</RootNamespace>
+    <AssemblyName>dotnet-maui</AssemblyName>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>dotnet-maui</ToolCommandName>
+    <PackageId>Microsoft.Maui.DevTools</PackageId>
+    <Description>MAUI Dev Tools Client - CLI for .NET MAUI development environment setup and device management</Description>
+    <Authors>Microsoft</Authors>
+    <IsPackable>true</IsPackable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    
+    <!-- Override repo versioning - this tool has its own version -->
+    <VersionPrefix>0.0.1</VersionPrefix>
+    <Version>0.0.1</Version>
+    <PackageVersion>0.0.1</PackageVersion>
+  </PropertyGroup>
+  
+  <!-- Get git commit at build time and set version to 0.0.1-alpha.{commit} -->
+  <Target Name="SetGitCommitHash" BeforeTargets="GetAssemblyVersion;GenerateNuspec;Build;Pack">
+    <Exec Command="git rev-parse --short HEAD" ConsoleToMSBuild="true" StandardOutputImportance="low">
+      <Output TaskParameter="ConsoleOutput" PropertyName="GitCommitHash" />
+    </Exec>
+    <PropertyGroup>
+      <Version>0.0.1-alpha.$(GitCommitHash)</Version>
+      <PackageVersion>0.0.1-alpha.$(GitCommitHash)</PackageVersion>
+      <AssemblyVersion>0.0.1.0</AssemblyVersion>
+      <FileVersion>0.0.1.0</FileVersion>
+    </PropertyGroup>
+  </Target>
+
+  <ItemGroup>
+    <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
+    <PackageReference Include="System.Text.Json" Version="9.0.0" />
+  </ItemGroup>
+
+  <!-- Allow test project to access internals -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Maui.DevTools.Tests" />
+  </ItemGroup>
+
+</Project>
