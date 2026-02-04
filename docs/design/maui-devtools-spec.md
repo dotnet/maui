@@ -1,6 +1,6 @@
 # MAUI Dev Tools Client — Product Specification
 
-**Version**: 1.5-draft  
+**Version**: 2.0-draft  
 **Status**: Proposal  
 **Last Updated**: 2026-02-04
 
@@ -31,6 +31,7 @@
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 2.0-draft | 2026-02-04 | **Major revision from multi-model review**: Added DP3 (stateless-first), DP4 (machine-first output); Added Error Contract Specification (§7.9); Added Bootstrap State Machine (§5.6) with JDK installation; Clarified deploy vs run semantics; Added `--json`, `--dry-run`, `--ci` flags; Added JDK management commands; Defined default installation paths per platform |
 | 1.5-draft | 2026-02-04 | Added: Design Principles (DP1: delegate to native tools, DP2: consolidate VS repositories); added NG6 for no custom download logic |
 | 1.4-draft | 2026-02-03 | Changed CLI to `dotnet maui` pattern; kept `apple` for Apple platform commands; added `windows` subcommand |
 | 1.3-draft | 2026-02-03 | Added: Copilot-assisted troubleshooting (§9.3), MCP tool integration, escalation hierarchy, context handoff schema |
@@ -166,6 +167,62 @@ This tool enables **consolidation of existing Visual Studio repositories** that 
 2. VS Android features call `dotnet maui android` commands instead of internal libraries
 3. Internal repositories enter maintenance mode
 4. After VS release cycle, internal repositories are archived
+
+#### DP3: Stateless-First Architecture
+
+**The CLI MUST operate statelessly by default.** No background daemon is required for core functionality.
+
+| Mode | When to Use | Characteristics |
+|------|-------------|-----------------|
+| **Stateless (default)** | CLI invocations, CI/CD, AI agents | Each command reads state, acts, exits; no process coordination |
+| **Daemon (optional, v2+)** | IDE performance optimization only | Explicit opt-in via `dotnet maui daemon start` |
+
+**Rationale**:
+- Daemon lifecycle (orphaned processes, stale state, port conflicts) is a major source of tooling bugs
+- Stateless commands are easier to debug, test, and reason about
+- AI agents prefer deterministic request/response over managing socket connections
+- Performance bottleneck is native tool execution, not process spin-up
+
+**State Caching**:
+Stateless does not mean slow. The tool uses file-system caching:
+```
+~/.maui/cache/
+├── devices.json          # TTL: 30 seconds
+├── android-sdk-state.json # TTL: 5 minutes
+├── apple-runtimes.json   # TTL: 5 minutes
+└── doctor-report.json    # TTL: 1 minute
+```
+
+Commands read from cache if fresh, otherwise invoke native tools and update cache.
+
+#### DP4: Machine-First Output — The User is the AI
+
+**Every command MUST support `--json` output with a stable, versioned schema.**
+
+This tool is designed for three consumers in priority order:
+1. **AI Agents** (GitHub Copilot, IDE assistants) — need structured data to reason about
+2. **CI/CD Pipelines** — need deterministic exit codes and parseable output
+3. **Human Developers** — need readable summaries with color and formatting
+
+**Implication**: If an error message is ambiguous plain text, AI agents will fail to use the tool reliably. Every failure must be expressed as structured data.
+
+```bash
+# Human-friendly (default)
+dotnet maui doctor
+# ✓ .NET SDK 9.0.100
+# ✗ Android SDK not found
+
+# Machine-friendly (for AI/CI)
+dotnet maui doctor --json
+# { "status": "unhealthy", "checks": [...], "errors": [...] }
+```
+
+**Required flags for all commands**:
+| Flag | Purpose |
+|------|---------|
+| `--json` | Output structured JSON instead of human-readable text |
+| `--dry-run` | Show what would be done without executing (enables "what will this do?" UX) |
+| `--ci` | Strict mode: no interactive prompts, non-zero exit on warnings, machine-readable only |
 
 ---
 
@@ -314,6 +371,10 @@ This tool enables **consolidation of existing Visual Studio repositories** that 
 | FR-A11 | Install APK to device/emulator | P1 |
 | FR-A12 | Uninstall package from device/emulator | P2 |
 | FR-A13 | Capture screenshot from device/emulator | P0 |
+| FR-A14 | Bootstrap full Android environment (JDK + SDK) from scratch | P0 |
+| FR-A15 | Detect JDK installation and version | P0 |
+| FR-A16 | Install OpenJDK if missing (version 17 default, 21 supported) | P0 |
+| FR-A17 | Use platform-appropriate default paths when env vars not set | P0 |
 
 ### 5.3 Apple (Xcode) Management
 
@@ -366,6 +427,157 @@ This tool enables **consolidation of existing Visual Studio repositories** that 
 | FR-DL3 | Include unique identifier (serial/UDID) for targeting | P0 |
 | FR-DL4 | Support `--platform` filter | P1 |
 | FR-DL5 | Support `--json` output | P0 |
+
+### 5.6 Bootstrap State Machine
+
+**Critical**: The tool must handle the "bootstrap gap" — the chicken-and-egg problem where native tools (sdkmanager, xcrun) don't exist yet.
+
+#### Platform Bootstrap States
+
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│   MISSING   │────▶│ DOWNLOADING │────▶│ INSTALLING  │────▶│    READY    │
+└─────────────┘     └─────────────┘     └─────────────┘     └─────────────┘
+       │                   │                   │                   │
+       │                   │                   │                   │
+       ▼                   ▼                   ▼                   ▼
+   User action         Progress            Progress           Operational
+   required            reporting           reporting          (delegate to
+   (or auto-fix)                                              native tools)
+```
+
+#### Android Bootstrap
+
+The tool can fully bootstrap an Android development environment from scratch, including JDK and SDK installation.
+
+**Dependency Order**: JDK must be installed before SDK (sdkmanager requires Java).
+
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│  JDK Check  │────▶│ JDK Install │────▶│ SDK Install │────▶│    READY    │
+└─────────────┘     └─────────────┘     └─────────────┘     └─────────────┘
+       │                   │                   │                   │
+   Missing?            Download            Download           Operational
+                      OpenJDK 17         cmdline-tools        (delegate)
+```
+
+**Default Installation Paths** (when env vars not set):
+
+| Platform | JDK Path | SDK Path |
+|----------|----------|----------|
+| macOS | `~/Library/Developer/Android/jdk` | `~/Library/Developer/Android/sdk` |
+| Windows | `%LOCALAPPDATA%\Android\jdk` | `%LOCALAPPDATA%\Android\sdk` |
+
+**Bootstrap States**:
+
+| State | Detection | Behavior |
+|-------|-----------|----------|
+| `JDK_MISSING` | No `java` in PATH, no JDK at default paths | Install OpenJDK 17 to default path |
+| `SDK_MISSING` | `ANDROID_HOME` not set, no SDK at standard paths | Install command-line tools to default path |
+| `PARTIAL` | SDK exists but `sdkmanager` missing/broken | Repair SDK or reinstall cmdline-tools |
+| `READY` | `java -version` succeeds AND `sdkmanager --list` succeeds | Delegate all operations to native tools |
+
+**Bootstrap Command**:
+```bash
+# Full bootstrap: JDK + SDK + recommended packages
+dotnet maui android bootstrap --accept-licenses
+
+# With custom paths
+dotnet maui android bootstrap --jdk-path ~/my-jdk --sdk-path ~/my-sdk --accept-licenses
+```
+
+This command:
+1. Checks for JDK; if missing, downloads and installs OpenJDK 17
+2. Sets `JAVA_HOME` for the session (prints guidance for permanent setup)
+3. Downloads Android command-line tools (if missing)
+4. Accepts SDK licenses non-interactively (if `--accept-licenses`)
+5. Installs recommended packages (platform-tools, build-tools, emulator, system image)
+6. Prints environment variable guidance (doesn't modify shell config)
+
+**JDK Management Commands**:
+```bash
+# Check JDK status
+dotnet maui android jdk status
+
+# Install OpenJDK (default: version 17)
+dotnet maui android jdk install
+dotnet maui android jdk install --version 21
+
+# List available JDK versions
+dotnet maui android jdk list-available
+```
+
+**Environment Variable Guidance Output**:
+```
+✓ JDK installed to ~/Library/Developer/Android/jdk
+✓ SDK installed to ~/Library/Developer/Android/sdk
+
+Add to your shell profile (~/.zshrc or ~/.bashrc):
+
+  export JAVA_HOME="$HOME/Library/Developer/Android/jdk"
+  export ANDROID_HOME="$HOME/Library/Developer/Android/sdk"
+  export PATH="$JAVA_HOME/bin:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH"
+```
+
+#### Apple Bootstrap
+
+| State | Detection | Behavior |
+|-------|-----------|----------|
+| `MISSING` | No Xcode.app at `/Applications/Xcode*.app` | Error: "Install Xcode from App Store" (cannot auto-install) |
+| `CLI_ONLY` | Only Command Line Tools installed | Error: "Full Xcode required for simulators" |
+| `READY` | `xcrun simctl list` succeeds | Delegate all operations to native tools |
+
+**Important**: Apple bootstrap is limited because:
+- Xcode cannot be installed programmatically (App Store only)
+- Runtime downloads require Xcode to be open at least once (license acceptance)
+
+```bash
+dotnet maui apple bootstrap
+```
+
+This command:
+1. Verifies Xcode installation
+2. Runs `xcode-select --install` if CLI tools missing
+3. Prompts user to accept Xcode license if needed
+4. Reports status and next steps
+
+#### Windows Bootstrap
+
+| State | Detection | Behavior |
+|-------|-----------|----------|
+| `MISSING` | No Windows SDK detected | Provide download link |
+| `NO_DEV_MODE` | Developer Mode disabled | Guide user to enable (requires Settings app) |
+| `READY` | SDK present, Developer Mode enabled | Operational |
+
+### 5.7 Deploy vs Run Semantics
+
+**Critical clarification**: The spec distinguishes between deployment operations:
+
+| Operation | Command | Behavior | Returns |
+|-----------|---------|----------|---------|
+| **Install Only** | `dotnet maui deploy --install-only` | Copy app to device, do not launch | Exit 0 on success |
+| **Launch** | `dotnet maui deploy` | Install and launch app | Exit 0 when app starts |
+| **Run to Completion** | `dotnet maui deploy --wait` | Install, launch, wait for exit | App exit code |
+| **Debug Attach** | `dotnet maui deploy --debug` | Install, launch with debugger attached | Blocks until detach |
+
+**Lifecycle Detection**:
+The tool MUST detect "app successfully started" per platform:
+- **Android**: `adb shell am start` returns 0 + activity launched
+- **iOS Simulator**: `xcrun simctl launch` returns 0 + process appears
+- **Windows**: Process starts and main window appears
+
+**App Lifecycle Events** (JSON output):
+```json
+{
+  "operation": "deploy",
+  "events": [
+    { "type": "installing", "timestamp": "..." },
+    { "type": "installed", "timestamp": "..." },
+    { "type": "launching", "timestamp": "..." },
+    { "type": "launched", "pid": 12345, "timestamp": "..." },
+    { "type": "exited", "exit_code": 0, "timestamp": "..." }
+  ]
+}
 
 ---
 
@@ -631,22 +843,65 @@ User: maui doctor --json
 - Surfaces issues in Error List window
 - Provides menu items in Tools > MAUI submenu
 
-### 7.5 Daemon Mode vs On-Demand
+### 7.5 Stateless-First Architecture with Optional Daemon
 
-| Aspect | On-Demand (CLI) | Daemon Mode |
-|--------|-----------------|-------------|
-| Startup | New process per command | Single long-running process |
-| Latency | ~200ms cold start | <50ms response |
-| Use Case | CI, terminal, simple scripts | IDE integration |
-| State | Stateless | Cached device list, SDK state |
-| Resource Usage | None when idle | ~20MB memory when idle |
+> **Design Decision (from multi-model review)**: The tool operates statelessly by default. Daemon mode is an optional optimization for IDE performance, NOT a requirement.
+
+#### Why Stateless-First?
+
+| Concern | Daemon Problem | Stateless Solution |
+|---------|----------------|-------------------|
+| Orphaned processes | Daemon crashes, leaves socket locked | No persistent process to orphan |
+| Stale state | Daemon caches outdated SDK state | Read fresh state each invocation |
+| Multiple IDEs | Port conflicts, duplicate daemons | No coordination needed |
+| Debugging | Hidden process state hard to inspect | CLI behavior is fully observable |
+| CI/CD | Daemon unnecessary overhead | Clean process per command |
+
+#### On-Demand Mode (Default)
+
+| Aspect | Behavior |
+|--------|----------|
+| Startup | New process per command |
+| Latency | ~200ms cold start (acceptable for most use cases) |
+| State | Reads from file cache (`~/.maui/cache/`), always current |
+| Best for | CI, terminal, scripts, AI agents |
+
+**File Cache Structure**:
+```
+~/.maui/cache/
+├── devices.json          # TTL: 30 seconds
+├── android-sdk.json      # TTL: 5 minutes  
+├── apple-runtimes.json   # TTL: 5 minutes
+└── doctor-report.json    # TTL: 1 minute
+```
+
+#### Daemon Mode (Optional, v2+)
+
+Daemon is an **explicit opt-in** for IDE performance optimization only:
+
+```bash
+# Explicit daemon control
+dotnet maui daemon start    # Start daemon
+dotnet maui daemon stop     # Stop daemon
+dotnet maui daemon status   # Check if running
+
+# Daemon-aware commands (use daemon if running, fallback to direct)
+dotnet maui device list     # Uses daemon if available, else direct
+```
+
+| Aspect | Behavior |
+|--------|----------|
+| Startup | Single long-running process |
+| Latency | <50ms response |
+| State | In-memory cache with file persistence |
+| Best for | IDE integration requiring sub-100ms response |
 
 **Daemon Lifecycle**:
-1. IDE sends request to well-known socket/pipe
-2. If no daemon running, extension spawns `maui daemon --background`
-3. Daemon responds to requests
+1. User or IDE explicitly starts daemon with `dotnet maui daemon start`
+2. Daemon listens on well-known socket/pipe
+3. CLI commands check for daemon; use if running, else execute directly
 4. After 5 minutes idle (configurable via `--idle-timeout`), daemon self-terminates
-5. Next request restarts daemon
+5. IDE can restart daemon when needed
 
 **Well-Known Paths**:
 - macOS: `/tmp/maui-devtools.sock` (Unix domain socket)
@@ -697,6 +952,139 @@ When an existing SDK is detected:
 3. **Non-Destructive**: Never delete or modify user's existing SDK without explicit consent
 4. **Override Support**: `--sdk-path` for non-standard locations
 
+### 7.9 Error Contract Specification
+
+**This is the highest-priority architectural element.** Every consumer (AI agents, CI pipelines, IDEs, humans) depends on predictable error handling.
+
+#### Error Taxonomy
+
+Errors are classified into three categories:
+
+| Category | Prefix | Responsibility | Example |
+|----------|--------|----------------|---------|
+| **Tool** | `E1xxx` | Bug in this tool | E1001: Internal state corruption |
+| **Platform** | `E2xxx` | Native tool or SDK issue | E2001: sdkmanager license not accepted |
+| **User** | `E3xxx` | User action required | E3001: Xcode not installed |
+
+#### Error Object Schema
+
+**Every error MUST be expressible as this JSON structure:**
+
+```json
+{
+  "code": "E2001",
+  "category": "platform",
+  "severity": "error",
+  "message": "Android SDK licenses not accepted",
+  "native_error": "Warning: License for package Android SDK Platform 34 not accepted.",
+  "context": {
+    "sdk_path": "/Users/dev/Library/Android/sdk",
+    "package": "platforms;android-34"
+  },
+  "remediation": {
+    "type": "auto_fixable",
+    "command": "dotnet maui android sdk accept-licenses",
+    "manual_steps": null
+  },
+  "docs_url": "https://learn.microsoft.com/dotnet/maui/troubleshoot/E2001",
+  "correlation_id": "7f3d2a1b-..."
+}
+```
+
+#### Remediation Types
+
+| Type | Meaning | AI Agent Behavior |
+|------|---------|-------------------|
+| `auto_fixable` | Tool can fix this automatically | Execute `remediation.command` with user permission |
+| `user_action` | User must take manual steps | Display `remediation.manual_steps`, cannot auto-fix |
+| `terminal` | Cannot be fixed (e.g., unsupported OS) | Report error, suggest alternatives |
+| `unknown` | Tool doesn't recognize this error | Escalate to Copilot Handoff |
+
+#### Error Code Registry (Partial)
+
+| Code | Category | Message | Remediation Type |
+|------|----------|---------|------------------|
+| `E1001` | tool | Internal error | terminal |
+| `E2001` | platform | SDK licenses not accepted | auto_fixable |
+| `E2002` | platform | sdkmanager not found | auto_fixable (bootstrap) |
+| `E2003` | platform | xcrun failed | user_action |
+| `E2004` | platform | Emulator acceleration unavailable | user_action |
+| `E3001` | user | Xcode not installed | user_action |
+| `E3002` | user | Developer Mode not enabled | user_action |
+| `E3003` | user | Insufficient disk space | user_action |
+| `E3004` | user | Network unavailable | user_action |
+
+#### Unknown Error Handling
+
+When the tool encounters an error it doesn't recognize:
+
+```json
+{
+  "code": "E0000",
+  "category": "unknown",
+  "severity": "error",
+  "message": "Unexpected error from native tool",
+  "native_error": "<full stderr output>",
+  "remediation": {
+    "type": "unknown",
+    "command": null,
+    "manual_steps": null
+  },
+  "copilot_handoff": {
+    "eligible": true,
+    "context": {
+      "doctor_report": { ... },
+      "failed_command": "dotnet maui android avd create ...",
+      "environment": { ... },
+      "native_tool_output": "..."
+    }
+  }
+}
+```
+
+This is the **Copilot escalation trigger** — structured data that AI agents can consume to diagnose novel issues.
+
+#### Exit Code Mapping
+
+| Exit Code | Meaning | Contains |
+|-----------|---------|----------|
+| 0 | Success | Result data |
+| 1 | Partial success | Result + warnings |
+| 2 | Operation failed | Error objects |
+| 3 | Permission denied | Error + elevation guidance |
+| 4 | User cancelled | Cancellation reason |
+| 5 | Resource not found | Error + suggestions |
+| 126 | Command not executable | Error |
+| 127 | Command not found | Error |
+
+#### Structured Output Contract
+
+**All commands MUST support these output modes:**
+
+```bash
+# Default: Human-readable (stderr for errors, stdout for results)
+dotnet maui doctor
+
+# Machine-readable: JSON to stdout (errors included in JSON, not stderr)
+dotnet maui doctor --json
+
+# CI mode: JSON output, no prompts, warnings become errors
+dotnet maui doctor --ci
+```
+
+**JSON output envelope:**
+
+```json
+{
+  "success": false,
+  "correlation_id": "...",
+  "duration_ms": 1234,
+  "result": null,
+  "errors": [ { ... } ],
+  "warnings": [ { ... } ]
+}
+```
+
 ---
 
 ## 8. Public API Surface
@@ -725,15 +1113,29 @@ dotnet maui
 │   │   ├── --output <path>   # Output file
 │   │   ├── --wait <ms>       # Delay before capture
 │   │   └── --format <fmt>    # png, jpg
-│   └── logs                  # Stream logs from device
-│       ├── --device          # Device identifier
-│       └── --filter          # Filter expression
+│   └── logs                  # Stream logs from device (unified across platforms)
+│       ├── --device <id>     # Device identifier (required)
+│       ├── --filter <expr>   # Filter expression (platform-specific)
+│       ├── --maui-only       # Filter to MAUI-related logs only
+│       └── --since <time>    # Show logs since timestamp
 │
 ├── android                   # Android-specific commands
+│   ├── bootstrap             # Bootstrap Android SDK from scratch
+│   │   ├── --accept-licenses # Non-interactively accept licenses
+│   │   ├── --recommended     # Install recommended components
+│   │   ├── --jdk-path <dir>  # JDK installation directory
+│   │   └── --sdk-path <dir>  # SDK installation directory
+│   ├── jdk                   # JDK management
+│   │   ├── status            # Check JDK installation status
+│   │   ├── install           # Install OpenJDK
+│   │   │   ├── --version     # JDK version (default: 17)
+│   │   │   └── --path <dir>  # Installation directory
+│   │   └── list-available    # List available JDK versions
 │   ├── sdk
 │   │   ├── list              # List installed packages
 │   │   ├── list-available    # List available packages
 │   │   ├── install <pkg>     # Install package
+│   │   ├── accept-licenses   # Accept all SDK licenses
 │   │   └── uninstall <pkg>   # Uninstall package
 │   ├── avd
 │   │   ├── list              # List AVDs
@@ -785,11 +1187,15 @@ dotnet maui
 │       ├── status            # Check Developer Mode status
 │       └── enable            # Guide to enable Developer Mode
 │
-├── deploy                    # Deploy app to device (without running)
+├── deploy                    # Deploy app to device
 │   ├── --device <id>         # Target device
 │   ├── --project <path>      # Project file (default: current dir)
 │   ├── --configuration       # Build configuration
-│   └── --framework           # Target framework
+│   ├── --framework           # Target framework
+│   ├── --install-only        # Install without launching
+│   ├── --wait                # Wait for app to exit (returns app exit code)
+│   ├── --debug               # Launch with debugger attached
+│   └── --timeout <seconds>   # Timeout for launch detection (default: 30)
 │
 ├── config                    # Configuration management
 │   ├── list                  # List all config values
@@ -832,12 +1238,38 @@ dotnet maui windows developer-mode status
 
 #### Global Options (Available on All Commands)
 
-| Option | Description |
-|--------|-------------|
-| `--json` | Output as JSON (machine-readable) |
-| `--verbose` | Enable verbose logging |
-| `--non-interactive` | Disable prompts; fail if input needed |
-| `--correlation-id` | Set correlation ID for tracing |
+> **Design Principle DP4**: Every command MUST support `--json` output with a stable, versioned schema. The primary consumer is AI agents, not humans.
+
+| Option | Description | Required |
+|--------|-------------|----------|
+| `--json` | Output as JSON (machine-readable) | **Mandatory on all commands** |
+| `--dry-run` | Show what would be done without executing | **Mandatory on write commands** |
+| `--ci` | Strict mode: no prompts, warnings become errors, JSON output forced | Recommended |
+| `--verbose` | Enable verbose logging | Optional |
+| `--non-interactive` | Disable prompts; fail if input needed | Optional |
+| `--correlation-id` | Set correlation ID for tracing | Optional |
+| `--offline` | Skip network operations; use cached data only | Optional |
+
+**`--ci` Mode Behavior**:
+- Forces `--json` output (human-readable disabled)
+- Forces `--non-interactive` (no stdin prompts)
+- Elevates warnings to errors (exit code 1 → 2)
+- Includes full diagnostic context in error output
+- Ideal for CI/CD pipelines and AI agent consumption
+
+**`--dry-run` Mode Output**:
+```json
+{
+  "dry_run": true,
+  "planned_operations": [
+    { "action": "install", "target": "platforms;android-34", "size_mb": 150 },
+    { "action": "install", "target": "build-tools;34.0.0", "size_mb": 55 }
+  ],
+  "estimated_duration_seconds": 120,
+  "requires_approval": true,
+  "approval_reason": "Downloads exceed 100MB"
+}
+```
 
 #### Exit Code Standard
 
