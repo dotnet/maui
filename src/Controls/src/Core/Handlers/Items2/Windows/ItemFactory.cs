@@ -55,6 +55,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 						wrapper = new ElementWrapper(_view.Handler.MauiContext);
 						wrapper.HorizontalAlignment = HorizontalAlignment.Stretch;
 						wrapper.HorizontalContentAlignment = HorizontalAlignment.Stretch;
+						wrapper.VerticalAlignment = VerticalAlignment.Stretch;
+						wrapper.VerticalContentAlignment = VerticalAlignment.Stretch;
 						wrapper.SetContent(viewContent);
 
 						if(wrapper is not null)
@@ -92,6 +94,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				container ??= new ItemContainer()
 				{
 					Child = wrapper,
+					VerticalAlignment = VerticalAlignment.Stretch,
 					HorizontalAlignment = HorizontalAlignment.Stretch
 				};
 

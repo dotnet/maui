@@ -9,11 +9,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 	{
 		readonly IEnumerable _itemsSource;
 		readonly DataTemplate _itemTemplate;
-		readonly DataTemplate _groupHeaderTemplate;
-		readonly DataTemplate _groupFooterTemplate;
+		readonly DataTemplate? _groupHeaderTemplate;
+		readonly DataTemplate? _groupFooterTemplate;
 		readonly BindableObject _container;
 		readonly IMauiContext? _mauiContext;
-		readonly Dictionary<object, INotifyCollectionChanged> _groupSubscriptions = new();
+		readonly Dictionary<object, NotifyCollectionChangedEventHandler> _groupSubscriptions = new();
+		bool _suppressNotifications;
 
 		public GroupedItemTemplateCollection2(IEnumerable itemsSource,
 			DataTemplate itemTemplate, DataTemplate groupHeaderTemplate, DataTemplate groupFooterTemplate,
@@ -26,124 +27,139 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			_container = container;
 			_mauiContext = mauiContext;
 
-			AddItems(_itemsSource);
+			RebuildFlatList();
 			SubscribeToGroups(_itemsSource);
-			if (_itemsSource is IList groupList && _itemsSource is INotifyCollectionChanged incc)
+
+			if (_itemsSource is INotifyCollectionChanged incc)
 			{
 				incc.CollectionChanged += GroupsChanged;
 			}
 		}
 
-		void SubscribeToGroups(IEnumerable? groups)
+		protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
 		{
-			if (groups is null) return;
-			foreach (var group in groups)
+			if (!_suppressNotifications)
 			{
-				if (group is INotifyCollectionChanged incc && !_groupSubscriptions.ContainsKey(group))
-				{
-					incc.CollectionChanged += (s, e) => GroupItemsChanged(group, e);
-					_groupSubscriptions[group] = incc;
-				}
+				base.OnCollectionChanged(e);
 			}
 		}
+
+		ItemTemplateContext2 CreateItemContext(object item) =>
+			new(_itemTemplate, item, _container, mauiContext: _mauiContext);
+
+		ItemTemplateContext2 CreateHeaderContext(object group) =>
+			new(_groupHeaderTemplate!, group, _container, null, null, null, isHeader: true, isFooter: false, mauiContext: _mauiContext);
+
+		ItemTemplateContext2 CreateFooterContext(object group) =>
+			new(_groupFooterTemplate!, group, _container, null, null, null, isHeader: false, isFooter: true, mauiContext: _mauiContext);
+
+		void SubscribeToGroups(IEnumerable? groups)
+		{
+			if (groups is null)
+				return;
+
+			foreach (var group in groups)
+			{
+				SubscribeToGroup(group);
+			}
+		}
+
+		void SubscribeToGroup(object group)
+		{
+			if (group is INotifyCollectionChanged incc && !_groupSubscriptions.ContainsKey(group))
+			{
+				var handler = CreateGroupItemsChangedHandler(group);
+				incc.CollectionChanged += handler;
+				_groupSubscriptions[group] = handler;
+			}
+		}
+
+		NotifyCollectionChangedEventHandler CreateGroupItemsChangedHandler(object group) =>
+			(s, e) => _container.Dispatcher.DispatchIfRequired(() => GroupItemsChanged(group, e));
 
 		void UnsubscribeFromGroups(IEnumerable? groups)
 		{
-			if (groups is null) return;
+			if (groups is null)
+				return;
+
 			foreach (var group in groups)
 			{
-				if (_groupSubscriptions.TryGetValue(group, out var incc))
+				UnsubscribeFromGroup(group);
+			}
+		}
+
+		void UnsubscribeFromGroup(object group)
+		{
+			if (_groupSubscriptions.TryGetValue(group, out var handler))
+			{
+				if (group is INotifyCollectionChanged incc)
 				{
-					incc.CollectionChanged -= (s, e) => GroupItemsChanged(group, e);
-					_groupSubscriptions.Remove(group);
+					incc.CollectionChanged -= handler;
+				}
+				_groupSubscriptions.Remove(group);
+			}
+		}
+
+		void UnsubscribeFromAllGroups()
+		{
+			foreach (var kvp in _groupSubscriptions)
+			{
+				if (kvp.Key is INotifyCollectionChanged incc)
+				{
+					incc.CollectionChanged -= kvp.Value;
+				}
+			}
+			_groupSubscriptions.Clear();
+		}
+
+		void RebuildFlatList()
+		{
+			Items.Clear();
+
+			foreach (var group in _itemsSource)
+			{
+				if (group is not IList itemsList)
+					continue;
+
+				if (_groupHeaderTemplate is not null)
+				{
+					Items.Add(CreateHeaderContext(group));
+				}
+
+				foreach (var item in itemsList)
+				{
+					Items.Add(CreateItemContext(item));
+				}
+
+				if (_groupFooterTemplate is not null)
+				{
+					Items.Add(CreateFooterContext(group));
 				}
 			}
 		}
 
-		void AddItems(IEnumerable? items)
-		{
-			if (items is null)
-			{
-				return;
-			}
+		void GroupsChanged(object? sender, NotifyCollectionChangedEventArgs args) =>
+			_container.Dispatcher.DispatchIfRequired(() => OnGroupsCollectionChanged(args));
 
-			var newItems = new List<ItemTemplateContext2>();
-			int index = Items.Count;
-			foreach (var group in items)
-			{
-				if (group is IList itemsList)
-				{
-					if (_groupHeaderTemplate is not null)
-					{
-						var newItem = new ItemTemplateContext2(_groupHeaderTemplate, group, _container, null,
-							null, null, true, false, mauiContext: _mauiContext);
-						newItems.Add(newItem);
-						Items.Add(newItem);
-					}
-
-					foreach (var item in itemsList)
-					{
-						var newItem = new ItemTemplateContext2(_itemTemplate, item, _container, mauiContext: _mauiContext);
-						newItems.Add(newItem);
-						Items.Add(newItem);
-					}
-
-					if (_groupFooterTemplate is not null)
-					{
-						var newItem = new ItemTemplateContext2(_groupFooterTemplate, group, _container, null,
-							null, null, isHeader: false, isFooter: true, mauiContext: _mauiContext);
-						newItems.Add(newItem);
-						Items.Add(newItem);
-					}
-				}
-			}
-
-			OnCollectionChanged(new NotifyCollectionChangedEventArgs(
-				NotifyCollectionChangedAction.Add, newItems, index));
-		}
-
-		void GroupsChanged(object? sender, NotifyCollectionChangedEventArgs args)
-		{
-			_container.Dispatcher.DispatchIfRequired(() => OnNotifyCollectionChanged(args));
-		}
-
-		void OnNotifyCollectionChanged(NotifyCollectionChangedEventArgs args)
+		void OnGroupsCollectionChanged(NotifyCollectionChangedEventArgs args)
 		{
 			switch (args.Action)
 			{
 				case NotifyCollectionChangedAction.Add:
-					AddItems(args.NewItems);
 					SubscribeToGroups(args.NewItems);
+					ResetWithoutResubscribe();
 					break;
 				case NotifyCollectionChangedAction.Move:
+					ResetWithoutResubscribe();
 					break;
 				case NotifyCollectionChangedAction.Remove:
 					if (args.OldItems is not null)
 					{
 						UnsubscribeFromGroups(args.OldItems);
-						var startIndex = args.OldStartingIndex;
-						if (startIndex < 0)
-						{
-							Reset();
-							return;
-						}
-
-						int count = 0;
-						foreach (var item in args.OldItems)
-						{
-							count++;
-							if (item is IList itemsList)
-							{
-								count += itemsList.Count;
-							}
-						}
-
-						for (int index = startIndex + count - 1; index >= startIndex; index--)
-						{
-							RemoveAt(index);
-						}
+						ResetWithoutResubscribe();
 					}
 					break;
+
 				case NotifyCollectionChangedAction.Replace:
 				case NotifyCollectionChangedAction.Reset:
 					Reset();
@@ -151,111 +167,179 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 		}
 
-		void GroupItemsChanged(object group, NotifyCollectionChangedEventArgs e)
+		/// <summary>
+		/// Gets the flat index for the first item in a group by iterating through the source collection.
+		/// Returns the index after the group header (if present), pointing to where group items start.
+		/// </summary>
+		int GetFlatIndexForGroupItems(object targetGroup)
 		{
-			// Find the start index of this group's items in the flat list
-			int groupIndex = -1;
-			int current = 0;
-			foreach (var g in _itemsSource)
-			{
-				if (g == group)
-				{
-					groupIndex = current;
-					break;
-				}
-				current++;
-			}
-			if (groupIndex == -1) return;
-
-			// Calculate the flat list index for the first item of this group
 			int flatIndex = 0;
-			current = 0;
-			foreach (var g in _itemsSource)
+
+			foreach (var group in _itemsSource)
 			{
-				if (g is IList itemsList)
+				if (ReferenceEquals(group, targetGroup))
 				{
-					if (_groupHeaderTemplate is not null) flatIndex++;
-					if (current == groupIndex) break;
-					flatIndex += itemsList.Count;
-					if (_groupFooterTemplate is not null) flatIndex++;
+					// Found the group - return index after header (if present)
+					return _groupHeaderTemplate is not null ? flatIndex + 1 : flatIndex;
 				}
-				current++;
+
+				if (group is IList itemsList)
+				{
+					// Count header + items + footer for this group
+					if (_groupHeaderTemplate is not null)
+						flatIndex++;
+
+					flatIndex += itemsList.Count;
+
+					if (_groupFooterTemplate is not null)
+						flatIndex++;
+				}
 			}
 
-			// Do NOT increment flatIndex for header here; it is already handled above
-
-			if (group is IList groupList)
-			{
-				switch (e.Action)
-				{
-					case NotifyCollectionChangedAction.Add:
-						if (e.NewItems is not null)
-						{
-							int insertIndex = flatIndex + (e.NewStartingIndex >= 0 ? e.NewStartingIndex : groupList.Count - e.NewItems.Count);
-							var newItems = new List<ItemTemplateContext2>();
-							foreach (var item in e.NewItems)
-							{
-								var newItem = new ItemTemplateContext2(_itemTemplate, item, _container, mauiContext: _mauiContext);
-								newItems.Add(newItem);
-								Items.Insert(insertIndex++, newItem);
-							}
-							OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, newItems, insertIndex - newItems.Count));
-						}
-						break;
-					case NotifyCollectionChangedAction.Remove:
-						if (e.OldItems is not null)
-						{
-							int removeIndex = flatIndex + (e.OldStartingIndex >= 0 ? e.OldStartingIndex : 0);
-							for (int i = 0; i < e.OldItems.Count; i++)
-							{
-								Items.RemoveAt(removeIndex);
-							}
-							OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, e.OldItems, removeIndex));
-						}
-						break;
-					case NotifyCollectionChangedAction.Replace:
-						if (e.NewItems is not null && e.OldItems is not null)
-						{
-							int replaceIndex = flatIndex + (e.NewStartingIndex >= 0 ? e.NewStartingIndex : 0);
-							for (int i = 0; i < e.NewItems.Count; i++)
-							{
-								var newItem = new ItemTemplateContext2(_itemTemplate, e.NewItems[i]!, _container, mauiContext: _mauiContext);
-								Items[replaceIndex + i] = newItem;
-							}
-							OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, e.NewItems, e.OldItems, replaceIndex));
-						}
-						break;
-					case NotifyCollectionChangedAction.Move:
-						if (e.OldItems is not null && e.NewItems is not null)
-						{
-							int oldIndex = flatIndex + (e.OldStartingIndex >= 0 ? e.OldStartingIndex : 0);
-							int newIndex = flatIndex + (e.NewStartingIndex >= 0 ? e.NewStartingIndex : 0);
-							var moved = new List<ItemTemplateContext2>();
-							for (int i = 0; i < e.OldItems.Count; i++)
-							{
-								var item = Items[oldIndex];
-								Items.RemoveAt(oldIndex);
-								Items.Insert(newIndex + i, item);
-								moved.Add(item);
-							}
-							OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Move, moved, newIndex, oldIndex));
-						}
-						break;
-					case NotifyCollectionChangedAction.Reset:
-						Reset();
-						break;
-					}
-				}
+			return -1;
 		}
 
+		void GroupItemsChanged(object group, NotifyCollectionChangedEventArgs e)
+		{
+			int flatIndex = GetFlatIndexForGroupItems(group);
+			if (flatIndex == -1)
+				return;
+
+			if (group is not IList groupList)
+				return;
+
+			switch (e.Action)
+			{
+				case NotifyCollectionChangedAction.Add:
+					HandleGroupItemsAdd(e, flatIndex, groupList);
+					break;
+
+				case NotifyCollectionChangedAction.Remove:
+					HandleGroupItemsRemove(e, flatIndex);
+					break;
+
+				case NotifyCollectionChangedAction.Replace:
+					HandleGroupItemsReplace(e, flatIndex);
+					break;
+
+				case NotifyCollectionChangedAction.Move:
+					HandleGroupItemsMove(e, flatIndex);
+					break;
+
+				case NotifyCollectionChangedAction.Reset:
+					ResetWithoutResubscribe();
+					break;
+			}
+		}
+
+		void HandleGroupItemsAdd(NotifyCollectionChangedEventArgs e, int flatIndex, IList groupList)
+		{
+			if (e.NewItems is null)
+				return;
+
+			int insertIndex = flatIndex + (e.NewStartingIndex >= 0 ? e.NewStartingIndex : groupList.Count - e.NewItems.Count);
+			var newItems = new List<ItemTemplateContext2>(e.NewItems.Count);
+
+			_suppressNotifications = true;
+			foreach (var item in e.NewItems)
+			{
+				var newItem = CreateItemContext(item);
+				newItems.Add(newItem);
+				Items.Insert(insertIndex++, newItem);
+			}
+			_suppressNotifications = false;
+
+			OnCollectionChanged(new NotifyCollectionChangedEventArgs(
+				NotifyCollectionChangedAction.Add, newItems, insertIndex - newItems.Count));
+		}
+
+		void HandleGroupItemsRemove(NotifyCollectionChangedEventArgs e, int flatIndex)
+		{
+			if (e.OldItems is null)
+				return;
+
+			int removeIndex = flatIndex + (e.OldStartingIndex >= 0 ? e.OldStartingIndex : 0);
+			var removedItems = new List<ItemTemplateContext2>(e.OldItems.Count);
+
+			for (int i = 0; i < e.OldItems.Count; i++)
+			{
+				removedItems.Add(Items[removeIndex]);
+				Items.RemoveAt(removeIndex);
+			}
+
+			OnCollectionChanged(new NotifyCollectionChangedEventArgs(
+				NotifyCollectionChangedAction.Remove, removedItems, removeIndex));
+		}
+
+		void HandleGroupItemsReplace(NotifyCollectionChangedEventArgs e, int flatIndex)
+		{
+			if (e.NewItems is null || e.OldItems is null)
+				return;
+
+			int replaceIndex = flatIndex + (e.NewStartingIndex >= 0 ? e.NewStartingIndex : 0);
+			var oldItems = new List<ItemTemplateContext2>(e.NewItems.Count);
+			var newItems = new List<ItemTemplateContext2>(e.NewItems.Count);
+
+			_suppressNotifications = true;
+			for (int i = 0; i < e.NewItems.Count; i++)
+			{
+				oldItems.Add(Items[replaceIndex + i]);
+				var newItem = CreateItemContext(e.NewItems[i]!);
+				newItems.Add(newItem);
+				Items[replaceIndex + i] = newItem;
+			}
+			_suppressNotifications = false;
+
+			OnCollectionChanged(new NotifyCollectionChangedEventArgs(
+				NotifyCollectionChangedAction.Replace, newItems, oldItems, replaceIndex));
+		}
+
+		void HandleGroupItemsMove(NotifyCollectionChangedEventArgs e, int flatIndex)
+		{
+			if (e.OldItems is null)
+				return;
+
+			int oldIndex = flatIndex + (e.OldStartingIndex >= 0 ? e.OldStartingIndex : 0);
+			int newIndex = flatIndex + (e.NewStartingIndex >= 0 ? e.NewStartingIndex : 0);
+			var movedItems = new List<ItemTemplateContext2>(e.OldItems.Count);
+
+			_suppressNotifications = true;
+			for (int i = 0; i < e.OldItems.Count; i++)
+			{
+				var item = Items[oldIndex];
+				Items.RemoveAt(oldIndex);
+				Items.Insert(newIndex + i, item);
+				movedItems.Add(item);
+			}
+			_suppressNotifications = false;
+
+			OnCollectionChanged(new NotifyCollectionChangedEventArgs(
+				NotifyCollectionChangedAction.Move, movedItems, newIndex, oldIndex));
+		}
+
+		void ResetWithoutResubscribe()
+		{
+			_suppressNotifications = true;
+			RebuildFlatList();
+			_suppressNotifications = false;
+
+			OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+		}
+
+		/// <summary>
+		/// Full reset that also resubscribes to all groups.
+		/// Used for Replace and Reset actions where group references may have changed.
+		/// </summary>
 		public void Reset()
 		{
-			UnsubscribeFromGroups(_itemsSource);
-			Items.Clear();
-			AddItems(_itemsSource);
+			UnsubscribeFromAllGroups();
+
+			_suppressNotifications = true;
+			RebuildFlatList();
+			_suppressNotifications = false;
+
 			SubscribeToGroups(_itemsSource);
-			var reset = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset);
-			OnCollectionChanged(reset);
+			OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
 		}
 	}
 }
