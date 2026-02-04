@@ -6,6 +6,7 @@ using Maui.Controls.Sample.ViewModels;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Essentials.AI;
 using System.ClientModel;
 
 #if ENABLE_OPENAI_CLIENT
@@ -37,7 +38,11 @@ public static class MauiProgram
 		});
 
 		// Register AI agents and workflow
+#if IOS || MACCATALYST
+		builder.AddAppleIntelligenceServices();
+#else
 		builder.AddOpenAIServices();
+#endif
 		builder.AddItineraryWorkflow();
 
 		// Register Pages
@@ -78,6 +83,69 @@ public static class MauiProgram
 		}
 		return stream;
 	}
+
+#if IOS || MACCATALYST
+#pragma warning disable CA1416 // Validate platform compatibility - this sample requires iOS/macCatalyst 26.0+
+	private static MauiAppBuilder AddAppleIntelligenceServices(this MauiAppBuilder builder)
+	{
+		// Register the base Apple Intelligence client
+		builder.Services.AddSingleton<AppleIntelligenceChatClient>();
+
+		// Register the Apple Intelligence client as IChatClient to allow direct use
+		builder.Services.AddSingleton<IChatClient>(sp =>
+		{
+			var appleClient = sp.GetRequiredService<AppleIntelligenceChatClient>();
+			var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
+			return appleClient
+				.AsBuilder()
+				.UseLogging(loggerFactory)
+				.Build();
+		});
+
+		// Register the Agent Framework wrapper as "local-model"
+		builder.Services.AddKeyedSingleton<IChatClient>("local-model", (sp, _) =>
+		{
+			var appleClient = sp.GetRequiredService<AppleIntelligenceChatClient>();
+			var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
+			return appleClient
+				.AsBuilder()
+				.UseLogging(loggerFactory)
+				// This prevents double tool invocation when using Microsoft Agent Framework
+				// TODO: workaround for https://github.com/dotnet/extensions/issues/7204
+				.Use(cc => new NonFunctionInvokingChatClient(cc, loggerFactory, sp))
+				.Build();
+		});
+
+		// Register "cloud-model" with buffering
+		builder.Services.AddKeyedSingleton<IChatClient>("cloud-model", (sp, _) =>
+		{
+			// TODO: Add OpenAI/Azure support for better translation quality
+			var appleClient = sp.GetRequiredService<AppleIntelligenceChatClient>();
+			var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
+			return appleClient
+				.AsBuilder()
+				.UseLogging(loggerFactory)
+				.Use(cc => new BufferedChatClient(cc))
+				.Build();
+		});
+
+		// Register the Natural Language Embedding generator
+		builder.Services.AddSingleton<NLEmbeddingGenerator>();
+
+		// Register embedding generator
+		builder.Services.AddSingleton<IEmbeddingGenerator<string, Embedding<float>>>(sp =>
+		{
+			var embeddings = sp.GetRequiredService<NLEmbeddingGenerator>();
+			var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
+			return embeddings.AsBuilder()
+				.UseLogging(loggerFactory)
+				.Build();
+		});
+
+		return builder;
+	}
+#pragma warning restore CA1416
+#endif
 
 	private static MauiAppBuilder AddOpenAIServices(this MauiAppBuilder builder)
 	{
