@@ -293,7 +293,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				incc.CollectionChanged += ItemsChanged;
 			}
 
-			PlatformView.ItemsSource = _collectionViewSource?.View;
+				PlatformView.ItemsSource = null;
+				PlatformView.ItemsSource = _collectionViewSource?.View;
+			
 
 			if (VirtualView.ItemTemplate is not null)
 			{
