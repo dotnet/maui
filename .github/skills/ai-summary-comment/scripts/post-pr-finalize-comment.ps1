@@ -554,16 +554,14 @@ if ($CodeReviewStatus -ne "Skipped" -or -not [string]::IsNullOrWhiteSpace($CodeR
 
 <summary><b>Code Review: $codeReviewEmoji $codeReviewStatusDisplay</b></summary>
 
-<br>
-
 "@
 
     if (-not [string]::IsNullOrWhiteSpace($CodeReviewFindings)) {
         # Trim the findings and ensure proper newline spacing
         $trimmedFindings = $CodeReviewFindings.Trim()
-        $codeReviewSection += $trimmedFindings
+        $codeReviewSection += "`n$trimmedFindings"
     } else {
-        $codeReviewSection += "No significant issues found. Code follows best practices."
+        $codeReviewSection += "`nNo significant issues found. Code follows best practices."
     }
 
     $codeReviewSection += @"
