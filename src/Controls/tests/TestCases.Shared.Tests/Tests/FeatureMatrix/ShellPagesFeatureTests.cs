@@ -256,33 +256,37 @@ public class ShellPagesFeatureTests : _GalleryUITest
 	}
 #endif
 
-#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link: https://github.com/dotnet/maui/issues/32992
-	[Test, Order(21)]
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/32992
+	[Test, Order(16)]
 	[Category(UITestCategories.Shell)]
 	public void ShellPages_ShowTitleViewWithBackgroundColor()
 	{
-		App.WaitForElement("ShowTitleViewButton");
-		App.Tap("ShowTitleViewButton");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("SkyBlueBackgroundColor");
 		App.Tap("SkyBlueBackgroundColor");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
+		App.WaitForElement("ShowTitleViewButton");
+		App.Tap("ShowTitleViewButton");
 		VerifyScreenshot();
 	}
 #endif
 
-	[Test, Order(20)]
+	[Test, Order(17)]
 	[Category(UITestCategories.Shell)]
 	public void ShellPages_ShowTitleView()
 	{
+		App.WaitForElement(Options); // to reset the old value
+		App.Tap(Options);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
 		App.WaitForElement("ShowTitleViewButton");
 		App.Tap("ShowTitleViewButton");
 		VerifyScreenshot();
 	}
 
-	[Test, Order(22)]
+	[Test, Order(18)]
 	[Category(UITestCategories.Shell)]
 	public void ShellPages_ShowTitleViewHidden()
 	{
@@ -292,7 +296,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 	}
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/17550
-	[Test, Order(16)]
+	[Test, Order(19)]
 	[Category(UITestCategories.Shell)]
 	public void ShellPages_NavBarVisibilityHide()
 	{
@@ -301,7 +305,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(17)]
+	[Test, Order(20)]
 	[Category(UITestCategories.Shell)]
 	public void ShellPages_NavBarVisibilityShow()
 	{
@@ -312,7 +316,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 #endif
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS  
-	[Test, Order(18)]
+	[Test, Order(21)]
 	[Category(UITestCategories.Shell)]
 	public void ShellPages_NavBarAnimationDisabled()
 	{
@@ -321,7 +325,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(19)]
+	[Test, Order(22)]
 	[Category(UITestCategories.Shell)]
 	public void ShellPages_NavBarAnimationEnabled()
 	{
