@@ -15,11 +15,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Shape)]
-		public void LineWithReversedCoordinatesShouldRenderSymmetrically()
+		public void LineWithReversedCoordinatesShouldRenderSymmetrical()
 		{
 			// Wait for the test grid to be ready
 			App.WaitForElement("DescriptionLabel");
-
 			VerifyScreenshot();
 		}
 	}
