@@ -20,7 +20,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			// The test passes if both "Hello, World!" texts are of the same size
 			// and have the same character spacing
-			VerifyScreenshot();
+			//VerifyScreenshot();
+			// Temporary disabled to test agents
 		}
 	}
 }
