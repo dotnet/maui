@@ -147,7 +147,7 @@ Write-Host "╚═════════════════════�
 # ============================================================================
 
 # If PRNumber provided but no SummaryFile, try to find it
-if ($PRNumber -gt 0 -and [string]::IsNullOrWhiteSpace($SummaryFile) -and [string]::IsNullOrWhiteSpace($ReviewDescription)) {
+if ($PRNumber -gt 0 -and [string]::IsNullOrWhiteSpace($SummaryFile)) {
     $summaryPath = "CustomAgentLogsTmp/PRState/$PRNumber/pr-finalize/pr-finalize-summary.md"
     if (-not (Test-Path $summaryPath)) {
         $repoRoot = git rev-parse --show-toplevel 2>$null
