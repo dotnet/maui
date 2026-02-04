@@ -111,9 +111,11 @@ parameters:
 
 # Condition for MacOSPool comparison lanes (non-ARM64)
 # Runs on: (non-PR on main/net*.0/release/*/inflight/*) OR (PR targeting net*.0/release/*/inflight/*)
+# TEMPORARY: Enable x64 lanes for PR validation - will revert after validation
+# Original: or(and(ne(variables['Build.Reason'], 'PullRequest'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), and(startsWith(variables['Build.SourceBranch'], 'refs/heads/net'), endsWith(variables['Build.SourceBranch'], '.0')), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/inflight/'))), and(eq(variables['Build.Reason'], 'PullRequest'), or(and(startsWith(variables['System.PullRequest.TargetBranch'], 'net'), endsWith(variables['System.PullRequest.TargetBranch'], '.0')), startsWith(variables['System.PullRequest.TargetBranch'], 'release/'), startsWith(variables['System.PullRequest.TargetBranch'], 'inflight/'))))
 - name: macOSPoolLaneCondition
   type: string
-  default: or(and(ne(variables['Build.Reason'], 'PullRequest'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), and(startsWith(variables['Build.SourceBranch'], 'refs/heads/net'), endsWith(variables['Build.SourceBranch'], '.0')), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/inflight/'))), and(eq(variables['Build.Reason'], 'PullRequest'), or(and(startsWith(variables['System.PullRequest.TargetBranch'], 'net'), endsWith(variables['System.PullRequest.TargetBranch'], '.0')), startsWith(variables['System.PullRequest.TargetBranch'], 'release/'), startsWith(variables['System.PullRequest.TargetBranch'], 'inflight/'))))
+  default: true
 
 stages:
 
@@ -315,6 +317,7 @@ stages:
         pool: ${{ parameters.MacOSPool.internal }}
       timeout: 45
       testName: RunOniOS_MauiDebug
+      arch: ARM64
 
     - name: mac_runios_maui_release_arm64
       ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
@@ -323,6 +326,7 @@ stages:
         pool: ${{ parameters.MacOSPool.internal }}
       timeout: 45
       testName: RunOniOS_MauiRelease
+      arch: ARM64
 
     - name: mac_runios_maui_trim_arm64
       ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
@@ -331,6 +335,7 @@ stages:
         pool: ${{ parameters.MacOSPool.internal }}
       timeout: 45
       testName: RunOniOS_MauiReleaseTrimFull
+      arch: ARM64
 
     - name: mac_runios_blazor_debug_arm64
       ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
@@ -339,6 +344,7 @@ stages:
         pool: ${{ parameters.MacOSPool.internal }}
       timeout: 45
       testName: RunOniOS_BlazorDebug
+      arch: ARM64
 
     - name: mac_runios_blazor_release_arm64
       ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
@@ -347,6 +353,7 @@ stages:
         pool: ${{ parameters.MacOSPool.internal }}
       timeout: 45
       testName: RunOniOS_BlazorRelease
+      arch: ARM64
 
     # TODO: Re-enable once ASP.NET Core fixes trimmer warning IL2111 with Blazor Router.NotFoundPage
     # Issue: https://github.com/dotnet/aspnetcore/issues/63951
@@ -354,6 +361,7 @@ stages:
     #   pool: ${{ parameters.MacOSPoolArm64 }}
     #   timeout: 45
     #   testName: RunOniOS_BlazorReleaseTrimFull
+    #   arch: ARM64
 
     - name: mac_runios_nativeaot_arm64
       ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
@@ -362,6 +370,7 @@ stages:
         pool: ${{ parameters.MacOSPool.internal }}
       timeout: 45
       testName: RunOniOS_MauiNativeAOT
+      arch: ARM64
 
     # MacOSPool lanes - comparison with ARM64 pool
     # Only run on: (non-PR on main/net*.0/release/*/inflight/*) OR (PR targeting net*.0/release/*/inflight/*)
@@ -372,6 +381,7 @@ stages:
         pool: ${{ parameters.MacOSPool.internal }}
       timeout: 45
       testName: RunOniOS_MauiDebug
+      arch: x64
       condition: ${{ parameters.macOSPoolLaneCondition }}
 
     - name: mac_runios_maui_release
@@ -381,6 +391,7 @@ stages:
         pool: ${{ parameters.MacOSPool.internal }}
       timeout: 45
       testName: RunOniOS_MauiRelease
+      arch: x64
       condition: ${{ parameters.macOSPoolLaneCondition }}
 
     - name: mac_runios_maui_trim
@@ -390,6 +401,7 @@ stages:
         pool: ${{ parameters.MacOSPool.internal }}
       timeout: 45
       testName: RunOniOS_MauiReleaseTrimFull
+      arch: x64
       condition: ${{ parameters.macOSPoolLaneCondition }}
 
     - name: mac_runios_blazor_debug
@@ -399,6 +411,7 @@ stages:
         pool: ${{ parameters.MacOSPool.internal }}
       timeout: 45
       testName: RunOniOS_BlazorDebug
+      arch: x64
       condition: ${{ parameters.macOSPoolLaneCondition }}
 
     - name: mac_runios_blazor_release
@@ -408,6 +421,7 @@ stages:
         pool: ${{ parameters.MacOSPool.internal }}
       timeout: 45
       testName: RunOniOS_BlazorRelease
+      arch: x64
       condition: ${{ parameters.macOSPoolLaneCondition }}
 
     - name: mac_runios_nativeaot
@@ -417,4 +431,5 @@ stages:
         pool: ${{ parameters.MacOSPool.internal }}
       timeout: 45
       testName: RunOniOS_MauiNativeAOT
+      arch: x64
       condition: ${{ parameters.macOSPoolLaneCondition }}
