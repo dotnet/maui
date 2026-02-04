@@ -380,7 +380,7 @@ if ($DryRun) {
             Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
             Write-Host ""
             
-            $commentPrompt = "Use the ai-summary-comment skill to post a review comment on PR #$PRNumber. Read the state file at CustomAgentLogsTmp/PRState/pr-$PRNumber.md which contains results from both the PR agent review and pr-finalize phases. Post a single combined summary comment to the PR."
+            $commentPrompt = "Use the ai-summary-comment skill to post a comment on PR #$PRNumber based on the results from the PR agent review and pr-finalize phases in CustomAgentLogsTmp/PRState/pr-$PRNumber.md."
             
             $commentArgs = @(
                 "-p", $commentPrompt,
