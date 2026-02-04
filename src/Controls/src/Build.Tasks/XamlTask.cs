@@ -39,9 +39,8 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 		internal static ILRootNode ParseXaml(Stream stream, ModuleDefinition module, TypeReference typeReference)
 		{
-			var allowImplicitXmlns = module.Assembly.CustomAttributes.Any(a =>
-				   a.AttributeType.FullName == typeof(Microsoft.Maui.Controls.Xaml.Internals.AllowImplicitXmlnsDeclarationAttribute).FullName
-				&& (a.ConstructorArguments.Count == 0 || a.ConstructorArguments[0].Value is bool b && b));
+			// Implicit xmlns is always enabled in .NET 11+
+			var allowImplicitXmlns = true;
 
 			var nsmgr = new XmlNamespaceManager(new NameTable());
 			if (allowImplicitXmlns)
@@ -84,9 +83,8 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			if (!resource.Name.EndsWith(".xaml", StringComparison.InvariantCulture))
 				return false;
 
-			var allowImplicitXmlns = module.Assembly.CustomAttributes.Any(a =>
-				   a.AttributeType.FullName == typeof(Microsoft.Maui.Controls.Xaml.Internals.AllowImplicitXmlnsDeclarationAttribute).FullName
-				&& (a.ConstructorArguments.Count == 0 || a.ConstructorArguments[0].Value is bool b && b));
+			// Implicit xmlns is always enabled in .NET 11+
+			var allowImplicitXmlns = true;
 
 			var nsmgr = new XmlNamespaceManager(new NameTable());
 			nsmgr.AddNamespace("__f__", XamlParser.MauiUri);
