@@ -93,6 +93,28 @@ stages:
               Write-Host "ANDROID_SDK_ROOT: $env:ANDROID_SDK_ROOT"
               Write-Host "JAVA_HOME: $env:JAVA_HOME"
               
+              # Auto-detect JAVA_HOME if not set (e.g., on self-hosted agents)
+              if (-not $env:JAVA_HOME) {
+                $jvmDir = "/Library/Java/JavaVirtualMachines"
+                $msJdk = Get-ChildItem "$jvmDir/microsoft-*.jdk" -ErrorAction SilentlyContinue | Select-Object -First 1
+                if ($msJdk) {
+                  $env:JAVA_HOME = "$($msJdk.FullName)/Contents/Home"
+                  Write-Host "Auto-detected JAVA_HOME: $env:JAVA_HOME"
+                }
+              }
+              
+              # Add Android SDK tools to PATH (required when SDK is freshly provisioned)
+              if ($env:ANDROID_SDK_ROOT) {
+                $platformTools = Join-Path $env:ANDROID_SDK_ROOT "platform-tools"
+                $emulatorPath = Join-Path $env:ANDROID_SDK_ROOT "emulator"
+                $cmdlineTools = Join-Path $env:ANDROID_SDK_ROOT "cmdline-tools/latest/bin"
+                $env:PATH = "$platformTools${[IO.Path]::PathSeparator}$emulatorPath${[IO.Path]::PathSeparator}$cmdlineTools${[IO.Path]::PathSeparator}$env:PATH"
+                Write-Host "Updated PATH to include Android SDK tools"
+                Write-Host "  platform-tools: $platformTools"
+                Write-Host "  emulator: $emulatorPath"
+                Write-Host "  cmdline-tools: $cmdlineTools"
+              }
+              
               $scriptPath = ".github/scripts/shared/Start-Emulator.ps1"
               Write-Host "Script path: $scriptPath"
               
@@ -124,7 +146,6 @@ stages:
             timeoutInMinutes: 35
             env:
               ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
-              JAVA_HOME: $(JAVA_HOME_17_X64)
 
           # Install .NET and workloads via build.ps1
           - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
