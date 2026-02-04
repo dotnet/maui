@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.ContentViewClip"
+             Title="ContentViewClip">
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Options"
+                     Clicked="NavigateToOptionsPage_Clicked"
+                     AutomationId="Options"/>
+    </ContentPage.ToolbarItems>
+
+    <Grid RowDefinitions="*,Auto"
+          RowSpacing="15">
+        <ContentView BackgroundColor="Teal"
+                     WidthRequest="300"
+                     HeightRequest="300"
+                     Shadow="{Binding Shadow}"
+                     AutomationId="ContentViewControl"
+                     Clip="{Binding Clip}">
+            <VerticalStackLayout HorizontalOptions="Center"
+                                 VerticalOptions="Center">
+                <Label Text="ContentView"
+                       TextColor="White"
+                       FontSize="24"
+                       FontAttributes="Bold"
+                       HorizontalOptions="Center"/>
+                <Label Text="With Clipping"
+                       TextColor="White"
+                       FontSize="18"
+                       HorizontalOptions="Center"/>
+            </VerticalStackLayout>
+        </ContentView>
+    </Grid>
+</ContentPage>

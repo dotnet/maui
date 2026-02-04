@@ -10,11 +10,6 @@ public class ClipFeatureTests : _GalleryUITest
 	public const string ClipFeatureMatrix = "Clip Feature Matrix";
 	public const string Options = "Options";
 	public const string Apply = "Apply";
-	public const string BorderControl = "BorderControl";
-	public const string BoxViewControl = "BoxViewControl";
-	public const string ButtonControl = "ButtonControl";
-	public const string ImageControl = "ImageControl";
-	public const string LabelControl = "LabelControl";
 	public const string RectangleGeometry = "RectangleGeometry";
 	public const string EllipseGeometry = "EllipseGeometry";
 	public const string RoundRectangleGeometry = "RoundRectangleGeometry";
@@ -43,8 +38,6 @@ public class ClipFeatureTests : _GalleryUITest
 		App.WaitForElement("BorderButton");
 		App.Tap("BorderButton");
 
-		App.WaitForElement(BorderControl);
-
 		App.WaitForElement(Options);
 		App.Tap(Options);
 
@@ -57,7 +50,6 @@ public class ClipFeatureTests : _GalleryUITest
 
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(BorderControl);
 		VerifyScreenshot();
 	}
 
@@ -76,7 +68,6 @@ public class ClipFeatureTests : _GalleryUITest
 
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(BorderControl);
 		VerifyScreenshot();
 	}
 
@@ -95,7 +86,6 @@ public class ClipFeatureTests : _GalleryUITest
 
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(BorderControl);
 		VerifyScreenshot();
 	}
 
@@ -114,7 +104,6 @@ public class ClipFeatureTests : _GalleryUITest
 
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(BorderControl);
 		VerifyScreenshot();
 	}
 
@@ -133,7 +122,6 @@ public class ClipFeatureTests : _GalleryUITest
 
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(BorderControl);
 		VerifyScreenshot();
 	}
 
@@ -147,7 +135,6 @@ public class ClipFeatureTests : _GalleryUITest
 		App.WaitForElement("BoxViewButton");
 		App.Tap("BoxViewButton");
 
-		App.WaitForElement(BoxViewControl);
 		App.WaitForElement(Options);
 		App.Tap(Options);
 
@@ -159,7 +146,6 @@ public class ClipFeatureTests : _GalleryUITest
 
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(BoxViewControl);
 		VerifyScreenshot();
 	}
 
@@ -179,7 +165,6 @@ public class ClipFeatureTests : _GalleryUITest
 
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(BoxViewControl);
 		VerifyScreenshot();
 	}
 
@@ -198,7 +183,6 @@ public class ClipFeatureTests : _GalleryUITest
 
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(BoxViewControl);
 		VerifyScreenshot();
 	}
 
@@ -212,7 +196,6 @@ public class ClipFeatureTests : _GalleryUITest
 		App.WaitForElement("ButtonId");
 		App.Tap("ButtonId");
 
-		App.WaitForElement(ButtonControl);
 		App.WaitForElement(Options);
 		App.Tap(Options);
 
@@ -224,7 +207,6 @@ public class ClipFeatureTests : _GalleryUITest
 
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ButtonControl);
 		VerifyScreenshot();
 	}
 
@@ -244,7 +226,6 @@ public class ClipFeatureTests : _GalleryUITest
 
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ButtonControl);
 		VerifyScreenshot();
 	}
 
@@ -263,7 +244,6 @@ public class ClipFeatureTests : _GalleryUITest
 
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ButtonControl);
 		VerifyScreenshot();
 	}
 
@@ -277,7 +257,6 @@ public class ClipFeatureTests : _GalleryUITest
 		App.WaitForElement("ImageButton");
 		App.Tap("ImageButton");
 
-		App.WaitForElement(ImageControl);
 		App.WaitForElement(Options);
 		App.Tap(Options);
 
@@ -286,7 +265,6 @@ public class ClipFeatureTests : _GalleryUITest
 
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ImageControl);
 		VerifyScreenshot();
 	}
 
@@ -302,7 +280,6 @@ public class ClipFeatureTests : _GalleryUITest
 
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ImageControl);
 		VerifyScreenshot();
 	}
 
@@ -318,7 +295,6 @@ public class ClipFeatureTests : _GalleryUITest
 
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ImageControl);
 		VerifyScreenshot();
 	}
 
@@ -334,7 +310,6 @@ public class ClipFeatureTests : _GalleryUITest
 
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ImageControl);
 		VerifyScreenshot();
 	}
 
@@ -350,7 +325,6 @@ public class ClipFeatureTests : _GalleryUITest
 
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ImageControl);
 		VerifyScreenshot();
 	}
 
@@ -366,7 +340,6 @@ public class ClipFeatureTests : _GalleryUITest
 
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ImageControl);
 		VerifyScreenshot();
 	}
 
@@ -382,7 +355,6 @@ public class ClipFeatureTests : _GalleryUITest
 
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ImageControl);
 		VerifyScreenshot();
 	}
 
@@ -398,7 +370,6 @@ public class ClipFeatureTests : _GalleryUITest
 
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ImageControl);
 		VerifyScreenshot();
 	}
 
@@ -414,7 +385,6 @@ public class ClipFeatureTests : _GalleryUITest
 
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ImageControl);
 		VerifyScreenshot();
 	}
 
@@ -430,7 +400,6 @@ public class ClipFeatureTests : _GalleryUITest
 
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ImageControl);
 		VerifyScreenshot();
 	}
 
@@ -446,7 +415,6 @@ public class ClipFeatureTests : _GalleryUITest
 
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(ImageControl);
 		VerifyScreenshot();
 	}
 
@@ -460,7 +428,6 @@ public class ClipFeatureTests : _GalleryUITest
 		App.WaitForElement("LabelButton");
 		App.Tap("LabelButton");
 
-		App.WaitForElement(LabelControl);
 		App.WaitForElement(Options);
 		App.Tap(Options);
 
@@ -469,7 +436,6 @@ public class ClipFeatureTests : _GalleryUITest
 
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(LabelControl);
 		VerifyScreenshot();
 	}
 
@@ -489,7 +455,6 @@ public class ClipFeatureTests : _GalleryUITest
 
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(LabelControl);
 		VerifyScreenshot();
 	}
 
@@ -508,7 +473,144 @@ public class ClipFeatureTests : _GalleryUITest
 
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement(LabelControl);
+		VerifyScreenshot();
+	}
+
+	// ==================== ContentView Tests ====================
+
+	[Test, Order(33)]
+	[Category(UITestCategories.Layout)]
+	public void ContentView_ClipWithRectangleGeometry()
+	{
+		App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
+		App.WaitForElement("ContentViewButton");
+		App.Tap("ContentViewButton");
+
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement(RectangleGeometry);
+		App.Tap(RectangleGeometry);
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		VerifyScreenshot();
+	}
+
+	[Test, Order(34)]
+	[Category(UITestCategories.Layout)]
+	public void ContentView_ClipWithEllipseGeometry()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement(EllipseGeometry);
+		App.Tap(EllipseGeometry);
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		VerifyScreenshot();
+	}
+
+	[Test, Order(35)]
+	[Category(UITestCategories.Layout)]
+	public void ContentView_ClipWithRoundRectangleGeometry()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement(RoundRectangleGeometry);
+		App.Tap(RoundRectangleGeometry);
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		VerifyScreenshot();
+	}
+
+	[Test, Order(36)]
+	[Category(UITestCategories.Layout)]
+	public void ContentView_ClipWithShadow()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement(GeometryGroup);
+		App.Tap(GeometryGroup);
+
+		App.WaitForElement("ShadowTrueRadioButton");
+		App.Tap("ShadowTrueRadioButton");
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		VerifyScreenshot();
+	}
+
+	// ==================== ImageButton Tests ====================
+
+	[Test, Order(38)]
+	[Category(UITestCategories.ImageButton)]
+	public void ImageButton_ClipWithRectangleGeometry()
+	{
+		App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
+		App.WaitForElement("ImageButtonButton");
+		App.Tap("ImageButtonButton");
+
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement(RectangleGeometry);
+		App.Tap(RectangleGeometry);
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		VerifyScreenshot();
+	}
+
+	[Test, Order(39)]
+	[Category(UITestCategories.ImageButton)]
+	public void ImageButton_ClipWithEllipseGeometry()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement(EllipseGeometry);
+		App.Tap(EllipseGeometry);
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		VerifyScreenshot();
+	}
+
+	[Test, Order(40)]
+	[Category(UITestCategories.ImageButton)]
+	public void ImageButton_ClipWithRoundRectangleGeometry()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement(RoundRectangleGeometry);
+		App.Tap(RoundRectangleGeometry);
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		VerifyScreenshot();
+	}
+
+	[Test, Order(41)]
+	[Category(UITestCategories.ImageButton)]
+	public void ImageButton_ClipWithShadow()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement(GeometryGroup);
+		App.Tap(GeometryGroup);
+
+		App.WaitForElement("ShadowTrueRadioButton");
+		App.Tap("ShadowTrueRadioButton");
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
 		VerifyScreenshot();
 	}
 }

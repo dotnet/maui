@@ -23,5 +23,11 @@
                 <Button Text="Label"
                         Clicked="OnLabelPageClicked"
                         AutomationId="LabelButton"/>
+                <Button Text="ContentView"
+                        Clicked="OnContentViewPageClicked"
+                        AutomationId="ContentViewButton"/>
+                <Button Text="ImageButton"
+                        Clicked="OnImageButtonPageClicked"
+                        AutomationId="ImageButtonButton"/>
         </VerticalStackLayout>
 </ContentPage>

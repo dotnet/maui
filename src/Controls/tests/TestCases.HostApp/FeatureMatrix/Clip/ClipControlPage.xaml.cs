@@ -39,4 +39,14 @@ public partial class ClipControlMainPage : ContentPage
     {
         Navigation.PushAsync(new LabelClip());
     }
+
+    private void OnContentViewPageClicked(object sender, EventArgs e)
+    {
+        Navigation.PushAsync(new ContentViewClip());
+    }
+
+    private void OnImageButtonPageClicked(object sender, EventArgs e)
+    {
+        Navigation.PushAsync(new ImageButtonClip());
+    }
 }
