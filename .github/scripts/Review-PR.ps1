@@ -35,6 +35,14 @@
 .PARAMETER DryRun
     If specified, shows what would be done without making changes
 
+.PARAMETER PostSummaryComment
+    If specified, runs the ai-summary-comment skill after the PR agent completes
+    to post a summary comment on the PR.
+
+.PARAMETER RunFinalize
+    If specified, runs the pr-finalize skill after the PR agent completes
+    to verify PR title/description match the implementation and post a comment.
+
 .EXAMPLE
     .\Review-PR.ps1 -PRNumber 33687
     Reviews PR #33687 in non-interactive mode (default) using auto-detected platform
@@ -70,7 +78,13 @@ param(
     [switch]$Interactive,
 
     [Parameter(Mandatory = $false)]
-    [switch]$DryRun
+    [switch]$DryRun,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$PostSummaryComment,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$RunFinalize
 )
 
 $ErrorActionPreference = 'Stop'
@@ -317,6 +331,64 @@ if ($DryRun) {
         Write-Host "✅ Copilot CLI completed successfully" -ForegroundColor Green
     } else {
         Write-Host "⚠️ Copilot CLI exited with code: $exitCode" -ForegroundColor Yellow
+    }
+    
+    # Post-completion skills (only run if main agent completed successfully)
+    if ($exitCode -eq 0) {
+        
+        # Run pr-finalize skill if requested
+        if ($RunFinalize) {
+            Write-Host ""
+            Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Magenta
+            Write-Host "║  RUNNING PR-FINALIZE SKILL                                ║" -ForegroundColor Magenta
+            Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
+            Write-Host ""
+            
+            $finalizePrompt = "Run the pr-finalize skill for PR #$PRNumber. Verify the PR title and description match the actual implementation, then post a comment with any suggested updates."
+            
+            $finalizeArgs = @(
+                "-p", $finalizePrompt,
+                "--allow-all",
+                "--stream", "on"
+            )
+            
+            Write-Host "🔍 Running pr-finalize..." -ForegroundColor Yellow
+            & copilot @finalizeArgs
+            
+            $finalizeExit = $LASTEXITCODE
+            if ($finalizeExit -eq 0) {
+                Write-Host "✅ pr-finalize completed" -ForegroundColor Green
+            } else {
+                Write-Host "⚠️ pr-finalize exited with code: $finalizeExit" -ForegroundColor Yellow
+            }
+        }
+        
+        # Run ai-summary-comment skill if requested
+        if ($PostSummaryComment) {
+            Write-Host ""
+            Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Magenta
+            Write-Host "║  POSTING SUMMARY COMMENT                                  ║" -ForegroundColor Magenta
+            Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
+            Write-Host ""
+            
+            $commentPrompt = "Use the ai-summary-comment skill to post the review feedback as a comment on PR #$PRNumber. The review output should be in CustomAgentLogsTmp/PRState/pr-$PRNumber.md. Clean up any ANSI codes and stats before posting."
+            
+            $commentArgs = @(
+                "-p", $commentPrompt,
+                "--allow-all",
+                "--stream", "on"
+            )
+            
+            Write-Host "💬 Posting summary comment..." -ForegroundColor Yellow
+            & copilot @commentArgs
+            
+            $commentExit = $LASTEXITCODE
+            if ($commentExit -eq 0) {
+                Write-Host "✅ Summary comment posted" -ForegroundColor Green
+            } else {
+                Write-Host "⚠️ ai-summary-comment exited with code: $commentExit" -ForegroundColor Yellow
+            }
+        }
     }
 }
 
