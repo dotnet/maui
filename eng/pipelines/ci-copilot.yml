@@ -284,39 +284,6 @@ stages:
               ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
               JAVA_HOME: $(JAVA_HOME_17_X64)
 
-          # Build and Run HostApp with Tests (verbose logging)
-          - pwsh: |
-              Write-Host "=== Building and Running HostApp ==="
-              Write-Host "Working directory: $(Get-Location)"
-              
-              $scriptPath = ".github/scripts/BuildAndRunHostApp.ps1"
-              if (-not (Test-Path $scriptPath)) {
-                Write-Host "##vso[task.logissue type=error]Script not found: $scriptPath"
-                exit 1
-              }
-              
-              $ErrorActionPreference = "Continue"
-              try {
-                & "./$scriptPath" -Platform android -Verbose 2>&1 | ForEach-Object { Write-Host $_ }
-                $exitCode = $LASTEXITCODE
-              } catch {
-                Write-Host "##vso[task.logissue type=error]Exception: $_"
-                Write-Host $_.ScriptStackTrace
-                $exitCode = 1
-              }
-              
-              Write-Host "BuildAndRunHostApp completed with exit code: $exitCode"
-              if ($exitCode -ne 0) {
-                Write-Host "##vso[task.logissue type=warning]BuildAndRunHostApp failed with code $exitCode"
-              }
-              exit $exitCode
-            displayName: 'Build and Run HostApp (Verbose)'
-            continueOnError: true
-            timeoutInMinutes: 45
-            env:
-              ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
-              JAVA_HOME: $(JAVA_HOME_17_X64)
-
           - script: |
               echo "Installing Node.js 22..."
               brew install node@22
