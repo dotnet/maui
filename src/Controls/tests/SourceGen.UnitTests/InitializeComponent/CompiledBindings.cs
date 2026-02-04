@@ -123,21 +123,20 @@ public partial class TestPage
 		{
 			global::System.Action<global::Test.TestPage, string>? setter = static (source, value) =>
 			{
-				if (source.Foo is {} p0
-					&& p0.Bar is {} p1)
+				if (source.Foo.Bar is {} p0)
 				{
-					p1.Title = value;
+					p0.Title = value;
 				}
 			};
 
 			return new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::Test.TestPage, string>(
-				getter: source => (source.Foo?.Bar.Title, true),
+				getter: source => (source.Foo.Bar.Title, true),
 				setter,
 				handlers: new global::System.Tuple<global::System.Func<global::Test.TestPage, object?>, string>[]
 				{
 					new(static source => source, "Foo"),
 					new(static source => source.Foo, "Bar"),
-					new(static source => source.Foo?.Bar, "Title"),
+					new(static source => source.Foo.Bar, "Title"),
 				})
 				{
 					Mode = extension.Mode,
@@ -997,71 +996,5 @@ public class Container
 		var isNullEarlyReturnPattern = @"if\s*\(\s*value\s+is\s+null\s*\)\s*\{\s*return\s*;";
 		Assert.DoesNotMatch(hasValueEarlyReturnPattern, generated);
 		Assert.DoesNotMatch(isNullEarlyReturnPattern, generated);
-	}
-
-	[Fact]
-	public void SetterGeneratesNullCheckForNonNullableIntermediateProperty()
-	{
-		// This test verifies the fix for the issue where SourceGen would generate a setter
-		// that throws NullReferenceException when an intermediate property is null.
-		// The binding `{Binding ViewModelProperty.Property}` should generate a null check
-		// for ViewModelProperty even if it's not annotated as nullable.
-		var xaml =
-"""
-<?xml version="1.0" encoding="UTF-8"?>
-<ContentPage
-	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-	xmlns:test="clr-namespace:Test"
-	x:Class="Test.TestPage"
-	x:DataType="test:SomeViewModel">
-	<BoxView Color="{Binding ViewModelProperty.Property, Mode=TwoWay}"/>
-</ContentPage>
-""";
-
-		var code =
-"""
-#nullable enable
-using System;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-using Microsoft.Maui.Graphics;
-
-namespace Test;
-
-[XamlProcessing(XamlInflator.SourceGen)]
-public partial class TestPage : ContentPage
-{
-	public TestPage()
-	{
-		InitializeComponent();
-	}
-}
-
-public class SomeViewModel
-{
-	// Non-nullable property that might be null at runtime before data loads
-	public NestedModel ViewModelProperty { get; set; } = null!;
-}
-
-public class NestedModel
-{
-	public Color Property { get; set; } = Colors.White;
-}
-""";
-		var (result, generated) = RunGenerator(xaml, code);
-
-		// Should compile without errors
-		Assert.Empty(result.Diagnostics.Where(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error));
-		Assert.NotNull(generated);
-
-		// The setter should have a null check pattern for ViewModelProperty
-		// Before fix: setter = static (source, value) => { source.ViewModelProperty.Property = value; };
-		// After fix: setter = static (source, value) => { if (source.ViewModelProperty is {} p0) { p0.Property = value; } };
-		Assert.Contains("source.ViewModelProperty is {} p0", generated, StringComparison.Ordinal);
-		Assert.Contains("p0.Property = value", generated, StringComparison.Ordinal);
-
-		// The getter should use conditional access
-		Assert.Contains("source.ViewModelProperty?.Property", generated, StringComparison.Ordinal);
 	}
 }

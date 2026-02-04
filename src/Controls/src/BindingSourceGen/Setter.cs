@@ -20,15 +20,11 @@ public sealed record Setter(string[] PatternMatchingExpressions, string Assignme
 			accessAccumulator = tmpVariableName;
 		}
 
-		// Convert to list once to allow indexed access and avoid repeated enumeration
-		var pathList = path.ToList();
-		
-		for (int i = 0; i < pathList.Count; i++)
+		foreach (var part in path)
 		{
-			var part = pathList[i];
 			var skipConditionalAccess = skipNextConditionalAccess;
 			skipNextConditionalAccess = false;
-			bool isLastPart = i == pathList.Count - 1;
+			bool isLastPart = part == path.Last();
 
 			if (part is Cast { TargetType: var targetType })
 			{
@@ -46,34 +42,6 @@ public sealed record Setter(string[] PatternMatchingExpressions, string Assignme
 				}
 
 				accessAccumulator = AccessExpressionBuilder.ExtendExpression(accessAccumulator, innerPart);
-
-				// If the inner part is a value type and the NEXT part is the last part, we need to capture
-				// the value type in a variable to be able to set its properties.
-				// We only do this when:
-				// 1. Inner is value type
-				// 2. Not the last part
-				// 3. Next part is the last part
-				// 4. Next part is NOT a ConditionalAccess or Cast (those add their own pattern match)
-				// Example: Foo.Bar.Title where Bar is struct and Title is last - we need to capture Bar.
-				// Counter-example: a.B?.C where B is struct - the ?.C adds a pattern match for B, so we don't need to.
-				bool innerIsValueType = innerPart switch
-				{
-					MemberAccess { IsValueType: true } => true,
-					IndexAccess { IsValueType: true } => true,
-					_ => false
-				};
-				
-				if (innerIsValueType && !isLastPart)
-				{
-					bool nextPartIsLast = i == pathList.Count - 2;
-					bool nextPartAddsPatternMatch = i + 1 < pathList.Count && 
-						(pathList[i + 1] is ConditionalAccess or Cast);
-					
-					if (nextPartIsLast && !nextPartAddsPatternMatch)
-					{
-						AddPatternMatchingExpression("{}");
-					}
-				}
 			}
 			else if (part is MemberAccess { IsValueType: true } && !isLastPart)
 			{
@@ -93,7 +61,7 @@ public sealed record Setter(string[] PatternMatchingExpressions, string Assignme
 
 		return new Setter(
 			patternMatchingExpressions.ToArray(),
-			AssignmentStatement: BuildAssignmentStatement(accessAccumulator, pathList.Count > 0 ? pathList[pathList.Count - 1] : null, assignedValueExpression));
+			AssignmentStatement: BuildAssignmentStatement(accessAccumulator, path.Any() ? path.Last() : null, assignedValueExpression));
 	}
 
 	public static string BuildAssignmentStatement(string accessAccumulator, IPathPart? lastPart, string assignedValueExpression = "value") =>
