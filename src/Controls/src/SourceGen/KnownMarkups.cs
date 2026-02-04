@@ -166,6 +166,7 @@ internal class KnownMarkups
 					// x:Type extension not yet processed - resolve it now
 					// This can happen when RelativeSource is processed before the x:Type child
 					if (!typeExtNode.Properties.TryGetValue(new XmlName("", "TypeName"), out INode? typeNameNode)
+						&& !typeExtNode.Properties.TryGetValue(new XmlName(null, "TypeName"), out typeNameNode)
 						&& !typeExtNode.Properties.TryGetValue(new XmlName(XamlParser.MauiUri, "TypeName"), out typeNameNode)
 						&& typeExtNode.CollectionItems.Count == 1)
 						typeNameNode = typeExtNode.CollectionItems[0];
