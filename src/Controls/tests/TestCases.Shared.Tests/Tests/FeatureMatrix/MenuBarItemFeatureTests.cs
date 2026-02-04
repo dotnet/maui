@@ -1,3 +1,5 @@
+// This feature test is applicable only on desktop platforms (Windows and Mac).
+#if MACCATALYST || WINDOWS
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -211,7 +213,6 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 		App.WaitForElement("ResetButton");
 		App.Tap("ResetButton");
 
-
 		App.WaitForElement("FileMenuBar");
 		App.Tap("FileMenuBar");
 		App.WaitForElement("ExitMenuBarFlyoutItem");
@@ -232,6 +233,15 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 		App.WaitForElement("ViewMenuBar");
 		App.Tap("ViewMenuBar");
 		App.WaitForElement("RefreshMenuBarFlyoutItem");
+
+		App.WaitForElement("ViewMenuBarItem");
+		App.Tap("ViewMenuBarItem");
+
+		App.WaitForElement("MediaMenuBar");
+		App.Tap("MediaMenuBar");
+		App.WaitForElement("Play");
+		App.WaitForElement("Pause");
+		App.WaitForElement("Stop");
 	}
 
 	[Test, Order(11)]
@@ -270,6 +280,7 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 		App.WaitForElement("FileMenuBar");
 		App.WaitForElement("LocationsMenuBar");
 		App.WaitForElement("ViewMenuBar");
+		App.WaitForElement("MediaMenuBar");
 
 		// Verify status labels are present
 		App.WaitForElement("CurrentLocationLabel");
@@ -492,4 +503,19 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 		// Take screenshot to verify separator visual appearance
 		VerifyWindowsScreenshot();
 	}
+
+	[Test, Order(23)]
+	public void MenuBarItem_MediaMenuBarItemPresent()
+	{
+		App.WaitForElement("ResetButton");
+		App.Tap("ResetButton");
+
+		// Open Locations menu which has a separator
+		App.WaitForElement("MediaMenuBar");
+		App.Tap("MediaMenuBar");
+
+		// Take screenshot to verify separator visual appearance
+		VerifyWindowsScreenshot();
+	}
 }
+#endif

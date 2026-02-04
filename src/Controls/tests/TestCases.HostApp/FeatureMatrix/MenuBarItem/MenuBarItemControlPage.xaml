@@ -49,6 +49,30 @@
                                      Command="{Binding RefreshCommand}"
                                      AutomationId="RefreshMenuFlyoutItem"/>
               </MenuBarItem>
+
+              <MenuBarItem Text="MediaMenuBar">
+                     <MenuFlyoutItem Text="Play"
+                                     AutomationId="PlayMenuFlyoutItem">
+                            <MenuFlyoutItem.IconImageSource>
+                                   <FontImageSource Glyph="&#x25B6;"
+                                                    FontFamily="Arial"/>
+                            </MenuFlyoutItem.IconImageSource>
+                     </MenuFlyoutItem>
+                     <MenuFlyoutItem Text="Pause"
+                                     AutomationId="PauseMenuFlyoutItem">
+                            <MenuFlyoutItem.IconImageSource>
+                                   <FontImageSource Glyph="&#x23F8;"
+                                                    FontFamily="Arial"/>
+                            </MenuFlyoutItem.IconImageSource>
+                     </MenuFlyoutItem>
+                     <MenuFlyoutItem Text="Stop"
+                                     AutomationId="StopMenuFlyoutItem">
+                            <MenuFlyoutItem.IconImageSource>
+                                   <FontImageSource Glyph="&#x23F9;"
+                                                    FontFamily="Arial"/>
+                            </MenuFlyoutItem.IconImageSource>
+                     </MenuFlyoutItem>
+              </MenuBarItem>
        </Shell.MenuBarItems>
 
        <!-- Main Content -->
