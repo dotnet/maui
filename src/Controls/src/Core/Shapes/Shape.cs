@@ -294,109 +294,6 @@ namespace Microsoft.Maui.Controls.Shapes
 			return path;
 		}
 
-		// 		internal void TransformPathForBounds(PathF path, Graphics.Rect viewBounds)
-		// 		{
-		// #if !(NETSTANDARD || !PLATFORM)
-
-		// 			// TODO: not using this.GetPath().Bounds.Size;
-		// 			//       since default GetBoundsByFlattening(0.001) returns incorrect results for curves
-		// 			RectF pathBounds = path.GetBoundsByFlattening(1);
-
-		// 			viewBounds.X += StrokeThickness / 2;
-		// 			viewBounds.Y += StrokeThickness / 2;
-		// 			viewBounds.Width -= StrokeThickness;
-		// 			viewBounds.Height -= StrokeThickness;
-
-		// 			Matrix3x2 transform;
-
-		// 			if (Aspect == Stretch.None)
-		// 			{
-		// 				float translateX = 0;
-		// 				float translateY = 0;
-
-		// 				// Check if path needs to be shifted right to fit within view bounds (left edge)
-		// 				if (viewBounds.Left > pathBounds.Left)
-		// 				{
-		// 					translateX = (float)(viewBounds.Left - pathBounds.Left);
-		// 				}
-		// 				// Check if path needs to be shifted left to fit within view bounds (right edge)
-		// 				else if (pathBounds.Right > viewBounds.Right)
-		// 				{
-		// 					translateX = (float)(viewBounds.Right - pathBounds.Right);
-		// 				}
-
-		// 				// Check if path needs to be shifted down to fit within view bounds (top edge)
-		// 				if (viewBounds.Top > pathBounds.Top)
-		// 				{
-		// 					translateY = (float)(viewBounds.Top - pathBounds.Top);
-		// 				}
-		// 				// Check if path needs to be shifted up to fit within view bounds (bottom edge)
-		// 				else if (pathBounds.Bottom > viewBounds.Bottom)
-		// 				{
-		// 					translateY = (float)(viewBounds.Bottom - pathBounds.Bottom);
-		// 				}
-
-		// 				if (translateX != 0 || translateY != 0)
-		// 				{
-		// 					transform = Matrix3x2.CreateTranslation(translateX, translateY);
-		// 				}
-		// 				else
-		// 				{
-		// 					transform = Matrix3x2.Identity;
-		// 				}
-		// 			}
-		// 			else
-		// 			{
-		// 				transform = Matrix3x2.Identity;
-
-		// 				float calculatedWidth = (float)(viewBounds.Width / pathBounds.Width);
-		// 				float calculatedHeight = (float)(viewBounds.Height / pathBounds.Height);
-
-		// 				float widthScale = float.IsNaN(calculatedWidth) || float.IsInfinity(calculatedWidth) ? 0 : calculatedWidth;
-		// 				float heightScale = float.IsNaN(calculatedHeight) || float.IsInfinity(calculatedHeight) ? 0 : calculatedHeight;
-
-		// 				switch (Aspect)
-		// 				{
-		// 					case Stretch.None:
-		// 						break;
-
-		// 					case Stretch.Fill:
-		// 						transform *= Matrix3x2.CreateScale(widthScale, heightScale);
-
-		// 						transform *= Matrix3x2.CreateTranslation(
-		// 							(float)(viewBounds.Left - widthScale * pathBounds.Left),
-		// 							(float)(viewBounds.Top - heightScale * pathBounds.Top));
-		// 						break;
-
-		// 					case Stretch.Uniform:
-		// 						float minScale = Math.Min(widthScale, heightScale);
-
-		// 						transform *= Matrix3x2.CreateScale(minScale, minScale);
-
-		// 						transform *= Matrix3x2.CreateTranslation(
-		// 							(float)(viewBounds.Left - minScale * pathBounds.Left +
-		// 							(viewBounds.Width - minScale * pathBounds.Width) / 2),
-		// 							(float)(viewBounds.Top - minScale * pathBounds.Top +
-		// 							(viewBounds.Height - minScale * pathBounds.Height) / 2));
-		// 						break;
-
-		// 					case Stretch.UniformToFill:
-		// 						float maxScale = Math.Max(widthScale, heightScale);
-
-		// 						transform *= Matrix3x2.CreateScale(maxScale, maxScale);
-
-		// 						transform *= Matrix3x2.CreateTranslation(
-		// 							(float)(viewBounds.Left - maxScale * pathBounds.Left),
-		// 							(float)(viewBounds.Top - maxScale * pathBounds.Top));
-		// 						break;
-		// 				}
-		// 			}
-
-		// 			if (!transform.IsIdentity)
-		// 				path.Transform(transform);
-		// #endif
-		// 		}
-
 		internal void TransformPathForBounds(PathF path, Graphics.Rect viewBounds)
 		{
 #if !(NETSTANDARD || !PLATFORM)
@@ -414,14 +311,34 @@ namespace Microsoft.Maui.Controls.Shapes
 
 			if (Aspect == Stretch.None)
 			{
-				bool requireAdjustX = viewBounds.Left > pathBounds.Left;
-				bool requireAdjustY = viewBounds.Top > pathBounds.Top;
+				float translateX = 0;
+				float translateY = 0;
 
-				if (requireAdjustX || requireAdjustY)
+				// Check if path needs to be shifted right to fit within view bounds (left edge)
+				if (viewBounds.Left > pathBounds.Left)
 				{
-					transform = Matrix3x2.CreateTranslation(
-						(float)(pathBounds.X + viewBounds.Left - pathBounds.Left),
-						(float)(pathBounds.Y + viewBounds.Top - pathBounds.Top));
+					translateX = (float)(viewBounds.Left - pathBounds.Left);
+				}
+				// Check if path needs to be shifted left to fit within view bounds (right edge)
+				else if (pathBounds.Right > viewBounds.Right)
+				{
+					translateX = (float)(viewBounds.Right - pathBounds.Right);
+				}
+
+				// Check if path needs to be shifted down to fit within view bounds (top edge)
+				if (viewBounds.Top > pathBounds.Top)
+				{
+					translateY = (float)(viewBounds.Top - pathBounds.Top);
+				}
+				// Check if path needs to be shifted up to fit within view bounds (bottom edge)
+				else if (pathBounds.Bottom > viewBounds.Bottom)
+				{
+					translateY = (float)(viewBounds.Bottom - pathBounds.Bottom);
+				}
+
+				if (translateX != 0 || translateY != 0)
+				{
+					transform = Matrix3x2.CreateTranslation(translateX, translateY);
 				}
 				else
 				{
