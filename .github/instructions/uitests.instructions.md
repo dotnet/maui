@@ -20,16 +20,17 @@ This document provides specific guidance for GitHub Copilot when writing UI test
 
 1. **HostApp UI Test Page** (`src/Controls/tests/TestCases.HostApp/Issues/`)
    - Create the actual UI page that demonstrates the feature or reproduces the issue
-   - Use XAML with proper `AutomationId` attributes on interactive controls for test automation
-   - Follow naming convention: `IssueXXXXX.xaml` and `IssueXXXXX.xaml.cs`
+   - **Prefer C# only** (`.cs` file) unless testing XAML-specific features (bindings, templates, styles)
+   - Add `AutomationId` attributes on interactive controls for test automation
+   - Follow naming convention: `IssueXXXXX.cs` (C# only) or `IssueXXXXX.xaml` + `IssueXXXXX.xaml.cs` (when XAML required)
    - XXXXX should correspond to a GitHub issue number when applicable
    - Ensure the UI provides clear visual feedback for the behavior being tested
-   - Code-behind must include `[Issue()]` attribute with tracker, number, description, and platform
+   - Class must include `[Issue()]` attribute with tracker, number, description, and platform
 
 2. **NUnit Test Implementation** (`src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/`)
    - Create corresponding Appium-based NUnit tests that inherit from `_IssuesUITest`
    - Use the `AutomationId` values to locate and interact with UI elements
-   - Follow naming convention: `IssueXXXXX.cs` (matches the HostApp XAML file)
+   - Follow naming convention: `IssueXXXXX.cs` (matches the HostApp page file)
    - Include appropriate `[Category(UITestCategories.XYZ)]` attributes (only ONE per test)
    - Test should validate expected behavior through UI interactions and assertions
 
@@ -46,7 +47,7 @@ This document provides specific guidance for GitHub Copilot when writing UI test
 
 **Test Files:**
 - Pattern: `IssueXXXXX.cs` where XXXXX corresponds to a GitHub issue number
-- Must match the corresponding XAML file in TestCases.HostApp
+- Must match the corresponding HostApp page file name in TestCases.HostApp (either `.cs` only or `.xaml`)
 
 **Test Methods:**
 - Use descriptive names that clearly explain what behavior is being verified
@@ -55,26 +56,86 @@ This document provides specific guidance for GitHub Copilot when writing UI test
 
 **AutomationId Values:**
 - Always use unique, descriptive `AutomationId` values
-- Reference the same `AutomationId` in both XAML and test code
+- Reference the same `AutomationId` in both C# code (or XAML if used) and test code
 - Use PascalCase for AutomationId values
 
 ## Complete Test Example
 
-**HostApp Code-Behind** (`TestCases.HostApp/Issues/Issue12345.xaml.cs`):
+### Example 1: C# Only (Preferred for Most Tests)
+
+**HostApp Page** (`TestCases.HostApp/Issues/Issue12345.cs`):
 ```csharp
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 12345, "Description of the issue being tested", PlatformAffected.All)]
-public partial class Issue12345 : ContentPage
+[Issue(IssueTracker.Github, 12345, "Button click updates label text", PlatformAffected.All)]
+public class Issue12345 : ContentPage
 {
     public Issue12345()
     {
-        InitializeComponent();
+        var resultLabel = new Label
+        {
+            Text = "Initial Text",
+            AutomationId = "ResultLabel"
+        };
+
+        Content = new VerticalStackLayout
+        {
+            Children =
+            {
+                new Button
+                {
+                    Text = "Click Me",
+                    AutomationId = "TestButton",
+                    Command = new Command(() => resultLabel.Text = "Expected Text")
+                },
+                resultLabel
+            }
+        };
     }
 }
 ```
 
-**NUnit Test** (`TestCases.Shared.Tests/Tests/Issues/Issue12345.cs`):
+### Example 2: XAML (When Testing XAML-Specific Features)
+
+**HostApp XAML** (`TestCases.HostApp/Issues/Issue12346.xaml`):
+```xaml
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue12346">
+    <VerticalStackLayout>
+        <Button Text="Click Me" 
+                AutomationId="TestButton"
+                Clicked="OnButtonClicked" />
+        <Label Text="Initial Text" 
+               x:Name="ResultLabel"
+               AutomationId="ResultLabel" />
+    </VerticalStackLayout>
+</ContentPage>
+```
+
+**HostApp Code-Behind** (`TestCases.HostApp/Issues/Issue12346.xaml.cs`):
+```csharp
+namespace Maui.Controls.Sample.Issues;
+
+[Issue(IssueTracker.Github, 12346, "Testing XAML binding behavior", PlatformAffected.All)]
+public partial class Issue12346 : ContentPage
+{
+    public Issue12346()
+    {
+        InitializeComponent();
+    }
+
+    void OnButtonClicked(object sender, EventArgs e)
+    {
+        ResultLabel.Text = "Expected Text";
+    }
+}
+```
+
+### NUnit Test (Same for Both Examples)
+
+**NUnit Test** (`TestCases.Shared.Tests/Tests/Issues/Issue12345.cs` or `Issue12346.cs`):
 ```csharp
 public class Issue12345 : _IssuesUITest
 {
@@ -467,7 +528,7 @@ cat /tmp/ios_crash.log | grep -A 20 -B 5 "Exception"
 Verify the following checklist before committing UI tests:
 
 - [ ] Compile both the HostApp project and TestCases.Shared.Tests project successfully
-- [ ] Verify AutomationId references match between XAML and test code
+- [ ] Verify AutomationId references match between HostApp UI (C# or XAML) and test code
 - [ ] Ensure file names follow the `IssueXXXXX` pattern and match between projects
 - [ ] Ensure test methods have descriptive names
 - [ ] Verify test inherits from `_IssuesUITest`
