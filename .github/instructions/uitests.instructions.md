@@ -545,9 +545,9 @@ Verify the following checklist before committing UI tests:
 
 ## Best Practices
 
-### Prefer C# Over XAML
+### Default: C# Over XAML
 
-**DEFAULT: Use C# files (`.cs`) for UI tests. ONLY use XAML files (`.xaml`) when the test scenario REQUIRES XAML-specific features.**
+**Use C# files (`.cs`) for UI tests. Only use XAML files (`.xaml`) when the test scenario requires XAML-specific features.**
 
 **When to use C# only (`.cs` file):**
 - ✅ Simple control tests (Button, Label, Entry, etc.)
@@ -558,12 +558,12 @@ Verify the following checklist before committing UI tests:
 - ✅ Most UI behavior tests
 
 **When XAML is required (`.xaml` + `.xaml.cs` files):**
-- ❌ Testing XAML binding syntax
-- ❌ Testing XAML templates (DataTemplate, ControlTemplate)
-- ❌ Testing XAML styles and resources
-- ❌ Testing XAML markup extensions
-- ❌ Testing XamlC compilation behavior
-- ❌ Testing XAML-specific parsing or compilation issues
+- ✅ Testing XAML binding syntax
+- ✅ Testing XAML templates (DataTemplate, ControlTemplate)
+- ✅ Testing XAML styles and resources
+- ✅ Testing XAML markup extensions
+- ✅ Testing XamlC compilation behavior
+- ✅ Testing XAML-specific parsing or compilation issues
 
 **Examples:**
 
@@ -669,76 +669,32 @@ new Border { Content = new Label { Text = "Hello" } }
 new Frame { Content = new Label { Text = "Hello" } }
 ```
 
-### Use UITest Optimized Controls
+### Use UITest Optimized Controls for Screenshot Tests
 
-**ALWAYS use UITest optimized controls when available instead of standard controls.**
+**For tests that use `VerifyScreenshot()`, use UITest optimized controls instead of standard text input controls.** These controls provide `IsCursorVisible` to prevent cursor blinking from causing flaky screenshot comparisons.
 
-These controls are specifically designed for UI testing and provide additional testable properties:
+| Standard Control | UITest Control | Purpose |
+|------------------|----------------|---------|
+| `Entry` | `UITestEntry` | Text input without cursor blink |
+| `Editor` | `UITestEditor` | Multi-line input without cursor blink |
+| `SearchBar` | `UITestSearchBar` | Search input without cursor blink |
 
-| Standard Control | UITest Optimized Control | Additional Features |
-|------------------|-------------------------|---------------------|
-| `Entry` | `UITestEntry` | `IsCursorVisible` property for cursor control |
-| `Editor` | `UITestEditor` | `IsCursorVisible` property for cursor control |
-| `SearchBar` | `UITestSearchBar` | `IsCursorVisible` property for cursor control |
-
-**Why use UITest controls:**
-- Hide cursor (`IsCursorVisible = false`) to prevent visual test flakiness
-- Cursor blinking can cause screenshot comparison failures
-- Platform-specific cursor behavior is standardized
-- Easier to create deterministic, reproducible tests
-
-**Location:** `src/Controls/tests/TestCases.HostApp/Controls/UITest*.cs`
-
-**Examples:**
+**Example:**
 
 ```csharp
-// ✅ GOOD: Using UITestEntry for text input tests
+// For screenshot tests, use UITest controls (UITestEntry, UITestEditor, UITestSearchBar)
 var entry = new UITestEntry
 {
-    HorizontalOptions = LayoutOptions.Fill,
     Placeholder = "Enter text",
-    IsCursorVisible = false,  // Prevents cursor from causing visual differences
+    IsCursorVisible = false,  // Prevents flaky screenshots
     AutomationId = "TestEntry"
 };
 
-// ❌ BAD: Using standard Entry (cursor blink causes flaky screenshots)
-var entry = new Entry
-{
-    Placeholder = "Enter text",
-    AutomationId = "TestEntry"
-};
+// For non-screenshot tests, standard Entry is fine
+var entry = new Entry { Placeholder = "Enter text", AutomationId = "TestEntry" };
 ```
 
-```csharp
-// ✅ GOOD: UITestEditor for multi-line input
-var editor = new UITestEditor
-{
-    IsCursorVisible = false,
-    AutomationId = "TestEditor"
-};
-
-// ✅ GOOD: UITestSearchBar for search scenarios
-var searchBar = new UITestSearchBar
-{
-    IsCursorVisible = false,
-    AutomationId = "TestSearchBar"
-};
-```
-
-**When to check for UITest controls:**
-- Before using `Entry`, `Editor`, or `SearchBar` in any test
-- When experiencing flaky screenshot tests due to cursor blinking
-- When creating tests involving text input
-
-**How to find available UITest controls:**
-
-```bash
-# List all UITest optimized controls
-ls src/Controls/tests/TestCases.HostApp/Controls/UITest*.cs
-
-# Find usage examples
-grep -r "UITestEntry\|UITestEditor\|UITestSearchBar" src/Controls/tests/TestCases.HostApp/Issues/*.cs
-```
+**Location:** `src/Controls/tests/TestCases.HostApp/Controls/UITest*.cs`
 
 ### Check Similar Tests for Patterns
 
