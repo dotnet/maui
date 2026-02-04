@@ -51,18 +51,16 @@ internal static partial class ImageProcessor
 				return new MemoryStream(bytes);
 			}
 
-			// Apply EXIF orientation correction using SetRotate(0) to preserve original EXIF behavior
-			Bitmap? rotatedBitmap = ApplyExifOrientation(originalBitmap);
-			if (rotatedBitmap is null)
-			{
-				return new MemoryStream(bytes);
-			}
+		// Apply EXIF orientation correction with the actual orientation value
+		Bitmap? rotatedBitmap = ApplyExifOrientation(originalBitmap, orientation);		if (rotatedBitmap is null)
+		{
+			return new MemoryStream(bytes);
+		}
 
-			// Clean up the original bitmap if we created a new one
-			if (rotatedBitmap != originalBitmap)
-			{
-				originalBitmap.Recycle();
-			}
+		// Clean up the original bitmap if we created a new one
+		if (rotatedBitmap != originalBitmap)
+		{
+			originalBitmap.Recycle();			}
 
 			// Convert the rotated bitmap back to a stream
 			var resultStream = new MemoryStream();
@@ -144,16 +142,36 @@ internal static partial class ImageProcessor
 	}
 
 	/// <summary>
-	/// Apply EXIF orientation correction by preserving original EXIF behavior
+	/// Apply EXIF orientation correction by rotating the bitmap according to EXIF orientation value
 	/// </summary>
-	private static Bitmap? ApplyExifOrientation(Bitmap bitmap)
+	private static Bitmap? ApplyExifOrientation(Bitmap bitmap, int orientation = 1)
 	{
 		try
 		{
-			// Use SetRotate(0) to preserve original EXIF orientation behavior
+			// Convert EXIF orientation to rotation angle
+			// EXIF orientation values: 1=normal, 3=180°, 6=90° CW, 8=90° CCW
+			int rotationAngle = orientation switch
+			{
+				3 => 180,
+				6 => 90,
+				8 => 270,
+				_ => 0  // 1 and other values mean no rotation needed
+			};
+
+			// If no rotation needed, return original bitmap
+			if (rotationAngle == 0)
+			{
+				return bitmap;
+			}
+
+			// Apply rotation using a transformation matrix
 			var matrix = new Matrix();
-			matrix.SetRotate(0);
-			return Bitmap.CreateBitmap(bitmap, 0, 0, bitmap.Width, bitmap.Height, matrix, true);
+			matrix.PostRotate(rotationAngle);
+			
+			// Create rotated bitmap
+			var rotatedBitmap = Bitmap.CreateBitmap(bitmap, 0, 0, bitmap.Width, bitmap.Height, matrix, true);
+			
+			return rotatedBitmap;
 		}
 		catch (Exception ex)
 		{
