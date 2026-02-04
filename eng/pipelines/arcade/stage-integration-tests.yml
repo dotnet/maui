@@ -13,7 +13,7 @@ stages:
   jobs:
   - ${{ each job in parameters.jobMatrix }}:
     - job: ${{ job.name }}
-      displayName: ${{ coalesce(job.testName, job.testCategory) }} ${{ coalesce(job.pool.label, job.pool.os) }}
+      displayName: ${{ coalesce(job.testName, job.testCategory) }} ${{ coalesce(job.arch, job.pool.label, job.pool.os) }}
       pool: ${{ job.pool }}
       timeoutInMinutes: ${{ job.timeout }}
       ${{ if job.condition }}:
