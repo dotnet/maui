@@ -2150,7 +2150,7 @@ namespace UITest.Appium
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
 		/// <returns>Information about visibility and bounds of status and navigation bar.</returns>
-		public static IDictionary<string, object> GetSystemBars(this IApp app)
+		internal static IDictionary<string, object> GetSystemBars(this IApp app)
 		{
 			if (app is not AppiumAndroidApp)
 			{
@@ -2813,6 +2813,44 @@ namespace UITest.Appium
 			}
 
 			return 1.0;
+		}
+
+		/// <summary>
+		/// Gets the system bar insets (status bar and navigation bar heights) for Android devices.
+		/// Uses the existing GetSystemBars command which calls the Appium UiAutomator2 driver.
+		/// </summary>
+		/// <param name="app">The IApp instance representing the application.</param>
+		/// <returns>A tuple containing (statusBarHeight, navigationBarHeight) in pixels.</returns>
+		/// <exception cref="InvalidOperationException">Thrown when called on non-Android platforms.</exception>
+		public static (int StatusBarHeight, int NavigationBarHeight) GetAndroidSystemBarInsets(this IApp app)
+		{
+			// Reuse existing GetSystemBars method which uses the command executor pattern
+			var systemBars = app.GetSystemBars();
+
+			int statusBarHeight = 0;
+			int navigationBarHeight = 0;
+
+			// Parse status bar info
+			if (systemBars.TryGetValue("statusBar", out var statusBarObj) &&
+				statusBarObj is IDictionary<string, object> statusBar)
+			{
+				if (statusBar.TryGetValue("height", out var heightObj))
+				{
+					statusBarHeight = Convert.ToInt32(heightObj);
+				}
+			}
+
+			// Parse navigation bar info
+			if (systemBars.TryGetValue("navigationBar", out var navBarObj) &&
+				navBarObj is IDictionary<string, object> navBar)
+			{
+				if (navBar.TryGetValue("height", out var heightObj))
+				{
+					navigationBarHeight = Convert.ToInt32(heightObj);
+				}
+			}
+
+			return (statusBarHeight, navigationBarHeight);
 		}
 	}
 }
