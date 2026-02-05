@@ -573,6 +573,51 @@ public static class AndroidCommands
 		command.AddCommand(createCommand);
 		command.AddCommand(startCommand);
 
+		// avd stop
+		var stopCommand = new Command("stop", "Stop a running emulator")
+		{
+			new Argument<string>("serial", "Device serial (e.g., emulator-5554)")
+		};
+		stopCommand.SetHandler(async (InvocationContext context) =>
+		{
+			var androidProvider = Program.AndroidProvider;
+			
+			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
+			var dryRun = context.ParseResult.GetValueForOption(GlobalOptions.DryRunOption);
+			var serial = context.ParseResult.GetValueForArgument(
+				(Argument<string>)context.ParseResult.CommandResult.Command.Arguments.First());
+
+			var formatter = useJson 
+				? (IOutputFormatter)new JsonOutputFormatter(Console.Out) 
+				: new ConsoleOutputFormatter(Console.Out);
+
+			try
+			{
+				if (dryRun)
+				{
+					Console.WriteLine($"[dry-run] Would stop emulator: {serial}");
+					return;
+				}
+
+				await androidProvider.StopEmulatorAsync(serial, context.GetCancellationToken());
+
+				if (useJson)
+				{
+					formatter.Write(new { success = true, serial = serial, status = "stopped" });
+				}
+				else
+				{
+					Console.WriteLine($"✓ Stopped emulator: {serial}");
+				}
+			}
+			catch (Exception ex)
+			{
+				formatter.WriteError(ex);
+				context.ExitCode = 1;
+			}
+		});
+		command.AddCommand(stopCommand);
+
 		// avd delete
 		var deleteCommand = new Command("delete", "Delete an AVD")
 		{

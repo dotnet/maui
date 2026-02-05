@@ -100,6 +100,30 @@ public class AndroidCommandsTests
 	}
 
 	[Fact]
+	public void AvdCommand_HasStopSubcommand()
+	{
+		// Arrange
+		var androidCommand = AndroidCommands.Create();
+		var avdCommand = androidCommand.Subcommands.First(c => c.Name == "avd");
+
+		// Assert
+		Assert.Contains(avdCommand.Subcommands, c => c.Name == "stop");
+	}
+
+	[Fact]
+	public void AvdStopCommand_HasRequiredSerialArgument()
+	{
+		// Arrange
+		var androidCommand = AndroidCommands.Create();
+		var avdCommand = androidCommand.Subcommands.First(c => c.Name == "avd");
+		var stopCommand = avdCommand.Subcommands.First(c => c.Name == "stop");
+
+		// Assert
+		Assert.Single(stopCommand.Arguments);
+		Assert.Equal("serial", stopCommand.Arguments.First().Name);
+	}
+
+	[Fact]
 	public void AvdDeleteCommand_HasRequiredNameArgument()
 	{
 		// Arrange
