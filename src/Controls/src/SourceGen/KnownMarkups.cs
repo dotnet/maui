@@ -859,8 +859,16 @@ internal class KnownMarkups
 				var resourcesAccessor = GetResourcesAccessor(eNode, context, lazyResource);
 				if (resourcesAccessor != null)
 				{
-					returnType = lazyType;
-					value = $"({lazyType.ToFQDisplayString()}){resourcesAccessor}[\"{key}\"]";
+					// For markup extensions, use the return type of ProvideValue (stored in the dictionary)
+					// not the declaring type of the markup extension itself
+					ITypeSymbol actualType = lazyType;
+					if (lazyType.IsValueProvider(context, out var provideValueReturnType, out _, out _, out _))
+					{
+						actualType = provideValueReturnType;
+					}
+					
+					returnType = actualType;
+					value = $"({actualType.ToFQDisplayString()}){resourcesAccessor}[\"{key}\"]";
 					return true;
 				}
 			}
