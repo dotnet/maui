@@ -4,13 +4,15 @@ This document describes the .NET MAUI release process, which uses the Arcade SDK
 
 ## Overview
 
-The .NET MAUI release process uses `azure-pipelines-internal.yml` for building, packing, and publishing packages.
+The .NET MAUI release process consists of two main phases:
+1. Building and packing using `ci-official.yml`
+2. Publishing to NuGet.org and Workload Set channels using `ci-official-release.yml`
 
 This process leverages the [.NET Arcade infrastructure](https://github.com/dotnet/arcade), which is a set of shared tools and services used across the .NET ecosystem to standardize build processes, dependency management, and package publishing.
 
-## Build and Pack Pipeline (`azure-pipelines-internal.yml`)
+## Build and Pack Pipeline (`ci-official.yml`)
 
-The `azure-pipelines-internal.yml` pipeline is responsible for building, packing, and signing the .NET MAUI packages and workloads. This pipeline runs automatically on a schedule (daily at 5:00 UTC) for the main branch and is also triggered on commits to main, release branches, and tags. The pipeline runs in the internal Azure DevOps environment ([dnceng/internal](https://dev.azure.com/dnceng/internal/_git/dotnet-maui)) where it has access to signing certificates and secured resources.
+The `ci-official.yml` pipeline is responsible for building, packing, and signing the .NET MAUI packages and workloads. This pipeline runs automatically on a schedule (daily at 5:00 UTC) for the main branch and is also triggered on commits to main, release branches, and tags. The pipeline runs in the internal Azure DevOps environment ([dnceng/internal](https://dev.azure.com/dnceng/internal/_git/dotnet-maui)) where it has access to signing certificates and secured resources.
 
 ### Key Steps in Build and Pack Pipeline
 
@@ -36,19 +38,24 @@ The `azure-pipelines-internal.yml` pipeline is responsible for building, packing
 
 ## Release and Publishing
 
-The `azure-pipelines-internal.yml` pipeline handles both building and publishing to the appropriate channels. Publishing happens automatically after successful build and signing, with packages being published to internal feeds and registered in the Build Asset Registry (BAR) using Darc.
+The release process is split into two pipelines:
+- `ci-official.yml` handles building, packing, and signing
+- `ci-official-release.yml` handles publishing to NuGet.org and Workload Set channels
+
+After successful build and signing, packages are published to internal feeds and registered in the Build Asset Registry (BAR) using Darc.
 
 ## Release Flow
 
 The complete release process follows these steps:
 
-1. Build and package using `azure-pipelines-internal.yml`
+1. Build and package using `ci-official.yml`
    - This happens automatically on the main branch and release branches
    - The build produces NuGet packages and workload manifests
    - The build is assigned a BAR ID in Maestro
    - All assets are published to internal feeds and registered in the BAR using Darc
 
-2. Packages are published to appropriate channels:
+2. Publish using `ci-official-release.yml`
+   - This pipeline is manually triggered with the commit hash
    - Published to internal feeds for consumption by other .NET repositories
    - The workload set is published to the appropriate .NET SDK workload channel
    - After required approvals, packages are published to NuGet.org
@@ -70,7 +77,7 @@ The .NET MAUI release process operates using two repositories:
    - An internal mirror of the GitHub repository
    - Used for official builds, signing, and release processes
    - Contains the same code but runs in a secured environment with access to signing certificates and internal resources
-   - The `azure-pipelines-internal.yml` pipeline runs against this mirror
+   - The `ci-official.yml` and `ci-official-release.yml` pipelines run against this mirror
 
 The use of the internal mirror ensures that the signing process and access to internal feeds are properly secured while still maintaining an open-source development model in the public repository. Changes are synchronized from the public repository to the internal mirror, ensuring that the released packages contain the same code that is publicly visible.
 
