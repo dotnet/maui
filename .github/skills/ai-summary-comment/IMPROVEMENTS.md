@@ -58,7 +58,7 @@ $preFlightContent = Get-SectionByPattern -Sections $allSections -Patterns @(
 
 **Pattern examples:**
 - `'📋.*Issue Summary'` matches "📋 Issue Summary", "📋 Pre-Flight Issue Summary", etc.
-- `'🧪.*Tests'` matches "🧪 Tests", "🧪 Phase 2: Tests", etc.
+- `'🚦.*Gate'` matches "🚦 Gate", "🚦 Phase 2: Gate", etc.
 - `'📋.*Report'` matches any title with 📋 and Report in it
 
 ---
@@ -182,17 +182,11 @@ Any title matching `'📋.*Issue Summary'` or `'📋.*Pre-Flight'`:
 - ✅ "📋 Pre-Flight Analysis"
 - ✅ "📋 Context and Issue Summary"
 
-### Tests Phase
-Any title matching `'🧪.*Tests'`:
-- ✅ "🧪 Tests"
-- ✅ "🧪 Phase 2: Tests"
-- ✅ "🧪 Test Verification"
-
 ### Gate Phase
 Any title matching `'🚦.*Gate'`:
 - ✅ "🚦 Gate - Test Verification"
 - ✅ "🚦 Gate"
-- ✅ "🚦 Phase 3: Gate"
+- ✅ "🚦 Phase 2: Gate"
 
 ### Fix Phase
 Any title matching `'🔧.*Fix'`:
@@ -505,10 +499,6 @@ Any of these variations will be recognized:
 - `📋 Pre-Flight` ✅
 - `🔍 Pre-Flight` ✅
 
-**Tests:**
-- `🧪 Tests` ✅ (preferred)
-- `📋 Tests` ✅
-
 **Gate:**
 - `🚦 Gate - Test Verification` ✅ (preferred)
 - `🚦 Gate` ✅
@@ -521,9 +511,9 @@ Any of these variations will be recognized:
 
 **Report:**
 - `📋 Final Report` ✅
-- `📋 Phase 5: Final Report` ✅
+- `📋 Phase 4: Final Report` ✅
 - `📋 Report` ✅
-- `Phase 5: Report` ✅
+- `Phase 4: Report` ✅
 - `Final Report` ✅
 
 ---

@@ -192,11 +192,6 @@ function Test-PhaseContentComplete {
                 $validationWarnings += "Pre-Flight missing 'Platforms Affected' section (non-critical)"
             }
         }
-        "Tests" {
-            if ($PhaseContent -notmatch '(HostApp:|Test Files:)') {
-                $validationWarnings += "Tests phase missing test file paths (non-critical)"
-            }
-        }
         "Gate" {
             if ($PhaseContent -notmatch 'Result:') {
                 $validationWarnings += "Gate phase missing 'Result' field (non-critical)"

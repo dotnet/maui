@@ -1,10 +1,10 @@
 # PR Review Plan Template
 
-**Reusable checklist** for the 5-phase PR Agent workflow.
+**Reusable checklist** for the 4-phase PR Agent workflow.
 
 **Source documents:**
-- `.github/agents/pr.md` - Phases 1-3 (Pre-Flight, Tests, Gate)
-- `.github/agents/pr/post-gate.md` - Phases 4-5 (Fix, Report)
+- `.github/agents/pr.md` - Phases 1-2 (Pre-Flight, Gate)
+- `.github/agents/pr/post-gate.md` - Phases 3-4 (Fix, Report)
 - `.github/agents/pr/SHARED-RULES.md` - Critical rules (blockers, git, templates)
 
 ---
@@ -36,18 +36,10 @@ See `SHARED-RULES.md` for complete details. Key points:
 
 **Boundaries:** No code analysis, no fix opinions, no test running
 
-### Phase 2: Tests
-- [ ] Check if PR includes UI tests
-- [ ] Verify tests follow `IssueXXXXX` naming convention
-- [ ] If tests exist: Verify they compile
-- [ ] If tests missing: Invoke `write-ui-tests` skill
-- [ ] Document test files in state file
-- [ ] Update state file: Tests → ✅ COMPLETE
-- [ ] Save state file
-
-### Phase 3: Gate ⛔
+### Phase 2: Gate ⛔
 **🚨 Cannot continue if Gate fails**
 
+- [ ] Check if tests exist (if not, invoke `write-ui-tests` skill first)
 - [ ] Select platform (must be affected AND available on host)
 - [ ] Invoke via **task agent** (NOT inline):
   ```
@@ -60,7 +52,7 @@ See `SHARED-RULES.md` for complete details. Key points:
 - [ ] Update state file: Gate → ✅ PASSED
 - [ ] Save state file
 
-### Phase 4: Fix 🔧
+### Phase 3: Fix 🔧
 *(Only if Gate ✅ PASSED)*
 
 **Round 1: Run try-fix with each model (SEQUENTIAL)**
@@ -86,8 +78,8 @@ See `SHARED-RULES.md` for complete details. Key points:
 - [ ] Update state file: Fix → ✅ COMPLETE
 - [ ] Save state file
 
-### Phase 5: Report 📋
-*(Only if Phases 1-4 complete)*
+### Phase 4: Report 📋
+*(Only if Phases 1-3 complete)*
 
 - [ ] Run `pr-finalize` skill
 - [ ] Generate review: root cause, candidates, recommendation
@@ -102,7 +94,6 @@ See `SHARED-RULES.md` for complete details. Key points:
 | Phase | Key Action | Blocker Response |
 |-------|------------|------------------|
 | Pre-Flight | Create state file | N/A |
-| Tests | Verify/create tests | N/A |
 | Gate | Task agent → verify script | ⛔ STOP, report, ask |
 | Fix | Multi-model try-fix | ⛔ STOP, report, ask |
 | Report | Post via skill | ⛔ STOP, report, ask |
