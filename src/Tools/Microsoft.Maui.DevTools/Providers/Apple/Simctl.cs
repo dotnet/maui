@@ -40,6 +40,8 @@ public class Simctl
 				foreach (var runtime in devicesElement.EnumerateObject())
 				{
 					var runtimeName = ExtractRuntimeName(runtime.Name);
+					var runtimeVersion = ExtractRuntimeVersion(runtime.Name);
+					var platform = ExtractPlatformFromRuntime(runtime.Name);
 
 					foreach (var device in runtime.Value.EnumerateArray())
 					{
@@ -51,13 +53,29 @@ public class Simctl
 						if (udid == null || name == null || !isAvailable)
 							continue;
 
+						var deviceState = ParseState(state);
+						var idiom = DetermineIdiomFromName(name);
+						var architecture = PlatformDetector.IsArm64 ? "arm64" : "x64";
+
 						devices.Add(new Device
 						{
 							Id = udid,
 							Name = $"{name} ({runtimeName})",
-							Platform = "ios",
+							Platforms = new[] { platform },
 							Type = DeviceType.Simulator,
-							State = ParseState(state)
+							State = deviceState,
+							IsEmulator = true,
+							IsRunning = deviceState == DeviceState.Booted,
+							ConnectionType = Models.ConnectionType.Local,
+							EmulatorId = udid,
+							Model = name,
+							Manufacturer = "Apple",
+							Version = runtimeVersion,
+							VersionName = runtimeName,
+							Architecture = architecture,
+							PlatformArchitecture = architecture,
+							RuntimeIdentifiers = GetAppleRuntimeIdentifiers(platform, architecture),
+							Idiom = idiom
 						});
 					}
 				}
@@ -69,6 +87,52 @@ public class Simctl
 		{
 			return new List<Device>();
 		}
+	}
+
+	private static string DetermineIdiomFromName(string name)
+	{
+		var lowerName = name.ToLowerInvariant();
+		if (lowerName.Contains("ipad", StringComparison.Ordinal)) return DeviceIdiom.Tablet;
+		if (lowerName.Contains("watch", StringComparison.Ordinal)) return DeviceIdiom.Watch;
+		if (lowerName.Contains("tv", StringComparison.Ordinal)) return DeviceIdiom.TV;
+		if (lowerName.Contains("vision", StringComparison.Ordinal)) return DeviceIdiom.Desktop; // visionOS
+		return DeviceIdiom.Phone; // iPhone, default
+	}
+
+	private static string ExtractPlatformFromRuntime(string runtimeIdentifier)
+	{
+		if (runtimeIdentifier.Contains("tvOS", StringComparison.OrdinalIgnoreCase)) return "tvos";
+		if (runtimeIdentifier.Contains("watchOS", StringComparison.OrdinalIgnoreCase)) return "watchos";
+		if (runtimeIdentifier.Contains("xrOS", StringComparison.OrdinalIgnoreCase) || 
+		    runtimeIdentifier.Contains("visionOS", StringComparison.OrdinalIgnoreCase)) return "visionos";
+		return "ios"; // Default to iOS
+	}
+
+	private static string? ExtractRuntimeVersion(string runtimeIdentifier)
+	{
+		// Format: com.apple.CoreSimulator.SimRuntime.iOS-18-5 -> "18.5"
+		var match = System.Text.RegularExpressions.Regex.Match(runtimeIdentifier, @"(\d+)-(\d+)(?:-(\d+))?$");
+		if (match.Success)
+		{
+			var major = match.Groups[1].Value;
+			var minor = match.Groups[2].Value;
+			var patch = match.Groups[3].Success ? $".{match.Groups[3].Value}" : "";
+			return $"{major}.{minor}{patch}";
+		}
+		return null;
+	}
+
+	private static string[]? GetAppleRuntimeIdentifiers(string platform, string architecture)
+	{
+		var rid = platform switch
+		{
+			"ios" => $"iossimulator-{architecture}",
+			"tvos" => $"tvossimulator-{architecture}",
+			"watchos" => $"watchossimulator-{architecture}",
+			"maccatalyst" => $"maccatalyst-{architecture}",
+			_ => $"iossimulator-{architecture}"
+		};
+		return new[] { rid };
 	}
 
 	/// <summary>
@@ -142,14 +206,30 @@ public class Simctl
 		}
 
 		var udid = result.StandardOutput.Trim();
+		var platform = ExtractPlatformFromRuntime(runtime);
+		var runtimeVersion = ExtractRuntimeVersion(runtime);
+		var architecture = PlatformDetector.IsArm64 ? "arm64" : "x64";
+		var idiom = DetermineIdiomFromName(deviceType);
 
 		return new Device
 		{
 			Id = udid,
 			Name = name,
-			Platform = "ios",
+			Platforms = new[] { platform },
 			Type = DeviceType.Simulator,
-			State = DeviceState.Shutdown
+			State = DeviceState.Shutdown,
+			IsEmulator = true,
+			IsRunning = false,
+			ConnectionType = Models.ConnectionType.Local,
+			EmulatorId = udid,
+			Model = deviceType,
+			Manufacturer = "Apple",
+			Version = runtimeVersion,
+			VersionName = ExtractRuntimeName(runtime),
+			Architecture = architecture,
+			PlatformArchitecture = architecture,
+			RuntimeIdentifiers = GetAppleRuntimeIdentifiers(platform, architecture),
+			Idiom = idiom
 		};
 	}
 

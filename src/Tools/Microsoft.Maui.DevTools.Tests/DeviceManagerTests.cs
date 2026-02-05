@@ -18,12 +18,12 @@ public class DeviceManagerTests
 		// Arrange
 		var androidDevices = new List<Device>
 		{
-			new Device { Id = "emulator-5554", Name = "Pixel 6", Platform = "android", Type = DeviceType.Emulator, State = DeviceState.Booted }
+			new Device { Id = "emulator-5554", Name = "Pixel 6", Platforms = new[] { "android" }, Type = DeviceType.Emulator, State = DeviceState.Booted, IsEmulator = true, IsRunning = true }
 		};
 
 		var iosDevices = new List<Device>
 		{
-			new Device { Id = "ABC-123", Name = "iPhone 15", Platform = "ios", Type = DeviceType.Simulator, State = DeviceState.Shutdown }
+			new Device { Id = "ABC-123", Name = "iPhone 15", Platforms = new[] { "ios" }, Type = DeviceType.Simulator, State = DeviceState.Shutdown, IsEmulator = true, IsRunning = false }
 		};
 
 		var mockAndroid = new Mock<IAndroidProvider>();
@@ -43,8 +43,8 @@ public class DeviceManagerTests
 
 		// Assert
 		Assert.Equal(2, devices.Count);
-		Assert.Contains(devices, d => d.Platform == "android");
-		Assert.Contains(devices, d => d.Platform == "ios");
+		Assert.Contains(devices, d => d.Platforms.Contains("android"));
+		Assert.Contains(devices, d => d.Platforms.Contains("ios"));
 	}
 
 	[Fact]
@@ -53,12 +53,12 @@ public class DeviceManagerTests
 		// Arrange
 		var androidDevices = new List<Device>
 		{
-			new Device { Id = "emulator-5554", Name = "Pixel 6", Platform = "android", Type = DeviceType.Emulator, State = DeviceState.Booted }
+			new Device { Id = "emulator-5554", Name = "Pixel 6", Platforms = new[] { "android" }, Type = DeviceType.Emulator, State = DeviceState.Booted, IsEmulator = true, IsRunning = true }
 		};
 
 		var iosDevices = new List<Device>
 		{
-			new Device { Id = "ABC-123", Name = "iPhone 15", Platform = "ios", Type = DeviceType.Simulator, State = DeviceState.Shutdown }
+			new Device { Id = "ABC-123", Name = "iPhone 15", Platforms = new[] { "ios" }, Type = DeviceType.Simulator, State = DeviceState.Shutdown, IsEmulator = true, IsRunning = false }
 		};
 
 		var mockAndroid = new Mock<IAndroidProvider>();
@@ -79,9 +79,9 @@ public class DeviceManagerTests
 
 		// Assert
 		Assert.Single(androidOnly);
-		Assert.All(androidOnly, d => Assert.Equal("android", d.Platform));
+		Assert.All(androidOnly, d => Assert.Contains("android", d.Platforms));
 		Assert.Single(iosOnly);
-		Assert.All(iosOnly, d => Assert.Equal("ios", d.Platform));
+		Assert.All(iosOnly, d => Assert.Contains("ios", d.Platforms));
 	}
 
 	[Fact]
@@ -90,8 +90,8 @@ public class DeviceManagerTests
 		// Arrange
 		var devices = new List<Device>
 		{
-			new Device { Id = "device-1", Name = "Device 1", Platform = "android", Type = DeviceType.Physical, State = DeviceState.Booted },
-			new Device { Id = "device-2", Name = "Device 2", Platform = "android", Type = DeviceType.Emulator, State = DeviceState.Shutdown }
+			new Device { Id = "device-1", Name = "Device 1", Platforms = new[] { "android" }, Type = DeviceType.Physical, State = DeviceState.Booted, IsEmulator = false, IsRunning = true },
+			new Device { Id = "device-2", Name = "Device 2", Platforms = new[] { "android" }, Type = DeviceType.Emulator, State = DeviceState.Shutdown, IsEmulator = true, IsRunning = false }
 		};
 
 		var mockAndroid = new Mock<IAndroidProvider>();
