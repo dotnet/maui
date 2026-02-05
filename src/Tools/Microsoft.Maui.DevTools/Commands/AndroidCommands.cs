@@ -397,7 +397,7 @@ public static class AndroidCommands
 		var createCommand = new Command("create", "Create a new AVD")
 		{
 			new Argument<string>("name", "AVD name"),
-			new Option<string>("--package", "System image package") { IsRequired = true },
+			new Option<string>("--package", "System image package (auto-detects most recent if not specified)"),
 			new Option<string>("--device", "Device definition")
 		};
 		createCommand.SetHandler(async (InvocationContext context) =>
@@ -419,19 +419,35 @@ public static class AndroidCommands
 
 			try
 			{
+				// Auto-detect system image if not provided
+				if (string.IsNullOrEmpty(package))
+				{
+					package = await androidProvider.GetMostRecentSystemImageAsync(context.GetCancellationToken());
+					if (string.IsNullOrEmpty(package))
+					{
+						throw new InvalidOperationException(
+							"No system images installed. Install one first with: dotnet maui android sdk install \"system-images;android-35;google_apis;arm64-v8a\"");
+					}
+					
+					if (!useJson)
+					{
+						Console.WriteLine($"Auto-detected system image: {package}");
+					}
+				}
+
 				if (dryRun)
 				{
 					Console.WriteLine($"[dry-run] Would create AVD: {name}");
 					Console.WriteLine($"  Package: {package}");
-					Console.WriteLine($"  Device: {device ?? "(default)"}");
+					Console.WriteLine($"  Device: {device ?? "(default: pixel_6)"}");
 					return;
 				}
 
-				await androidProvider.CreateAvdAsync(name, device ?? "pixel_6", package!, false, context.GetCancellationToken());
+				await androidProvider.CreateAvdAsync(name, device ?? "pixel_6", package, false, context.GetCancellationToken());
 
 				if (useJson)
 				{
-					formatter.Write(new { success = true, name = name });
+					formatter.Write(new { success = true, name = name, package = package });
 				}
 				else
 				{

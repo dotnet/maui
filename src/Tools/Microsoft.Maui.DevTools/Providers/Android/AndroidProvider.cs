@@ -225,6 +225,39 @@ public class AndroidProvider : IAndroidProvider
 		return await _sdkManager.GetInstalledPackagesAsync(cancellationToken);
 	}
 
+	public async Task<string?> GetMostRecentSystemImageAsync(CancellationToken cancellationToken = default)
+	{
+		var packages = await GetInstalledPackagesAsync(cancellationToken);
+		
+		// Filter to system images and sort by Android API level (descending)
+		// System image format: system-images;android-XX;google_apis;arm64-v8a
+		var systemImages = packages
+			.Where(p => p.Path.StartsWith("system-images;android-", StringComparison.OrdinalIgnoreCase))
+			.Select(p => new { Package = p, ApiLevel = ExtractApiLevel(p.Path) })
+			.Where(x => x.ApiLevel > 0)
+			.OrderByDescending(x => x.ApiLevel)
+			.ToList();
+
+		return systemImages.FirstOrDefault()?.Package.Path;
+	}
+
+	private static int ExtractApiLevel(string systemImagePath)
+	{
+		// Parse "system-images;android-35;google_apis;arm64-v8a" -> 35
+		var parts = systemImagePath.Split(';');
+		if (parts.Length >= 2)
+		{
+			var androidPart = parts[1]; // "android-35"
+			if (androidPart.StartsWith("android-", StringComparison.OrdinalIgnoreCase))
+			{
+				var levelStr = androidPart.Substring(8); // Remove "android-"
+				if (int.TryParse(levelStr, out var level))
+					return level;
+			}
+		}
+		return 0;
+	}
+
 	public async Task InstallPackagesAsync(IEnumerable<string> packages, bool acceptLicenses = false, 
 		CancellationToken cancellationToken = default)
 	{
