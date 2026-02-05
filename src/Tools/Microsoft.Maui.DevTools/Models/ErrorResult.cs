@@ -59,6 +59,36 @@ public record ErrorResult
 			_ => "unknown"
 		};
 	}
+
+	/// <summary>
+	/// Converts an exception to a structured ErrorResult.
+	/// </summary>
+	public static ErrorResult FromException(Exception exception)
+	{
+		if (exception is Errors.MauiToolException mex)
+		{
+			return new ErrorResult
+			{
+				Code = mex.Code,
+				Category = GetCategory(mex.Code),
+				Message = mex.Message,
+				NativeError = mex.NativeError,
+				Remediation = mex.Remediation != null ? new RemediationResult
+				{
+					Type = mex.Remediation.Type.ToString().ToLowerInvariant(),
+					Command = mex.Remediation.Command,
+					ManualSteps = mex.Remediation.ManualSteps
+				} : null
+			};
+		}
+
+		return new ErrorResult
+		{
+			Code = Errors.ErrorCodes.InternalError,
+			Category = "tool",
+			Message = exception.Message
+		};
+	}
 }
 
 /// <summary>

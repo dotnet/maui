@@ -111,136 +111,89 @@ public class SdkManager
 	}
 
 	private Dictionary<string, string>? GetEnvironment()
+		=> AndroidEnvironment.GetEnvironment(SdkPath, JdkPath);
+
+	/// <summary>
+	/// Runs sdkmanager --list once and returns both installed and available packages.
+	/// </summary>
+	private async Task<(List<SdkPackage> Installed, List<SdkPackage> Available)> ListAllPackagesAsync(CancellationToken cancellationToken)
 	{
-		var env = new Dictionary<string, string>();
-		
-		if (!string.IsNullOrEmpty(JdkPath))
-		{
-			env["JAVA_HOME"] = JdkPath;
-			env["PATH"] = $"{Path.Combine(JdkPath, "bin")}{Path.PathSeparator}{Environment.GetEnvironmentVariable("PATH")}";
-		}
+		if (!IsAvailable)
+			return ([], []);
 
-		if (!string.IsNullOrEmpty(SdkPath))
-		{
-			env["ANDROID_HOME"] = SdkPath;
-			env["ANDROID_SDK_ROOT"] = SdkPath;
-		}
+		var result = await ProcessRunner.RunAsync(
+			SdkManagerPath!,
+			"--list",
+			environmentVariables: GetEnvironment(),
+			timeout: TimeSpan.FromMinutes(2),
+			cancellationToken: cancellationToken);
 
-		return env.Count > 0 ? env : null;
+		if (!result.Success)
+			return ([], []);
+
+		return ParseAllPackages(result.StandardOutput);
 	}
 
 	public async Task<List<SdkPackage>> GetInstalledPackagesAsync(CancellationToken cancellationToken = default)
 	{
-		if (!IsAvailable)
-			return new List<SdkPackage>();
-
-		var result = await ProcessRunner.RunAsync(
-			SdkManagerPath!,
-			"--list",
-			environmentVariables: GetEnvironment(),
-			timeout: TimeSpan.FromMinutes(2),
-			cancellationToken: cancellationToken);
-
-		if (!result.Success)
-			return new List<SdkPackage>();
-
-		return ParseInstalledPackages(result.StandardOutput);
+		var (installed, _) = await ListAllPackagesAsync(cancellationToken);
+		return installed;
 	}
 
 	public async Task<List<SdkPackage>> GetAvailablePackagesAsync(CancellationToken cancellationToken = default)
 	{
-		if (!IsAvailable)
-			return new List<SdkPackage>();
-
-		var result = await ProcessRunner.RunAsync(
-			SdkManagerPath!,
-			"--list",
-			environmentVariables: GetEnvironment(),
-			timeout: TimeSpan.FromMinutes(2),
-			cancellationToken: cancellationToken);
-
-		if (!result.Success)
-			return new List<SdkPackage>();
-
-		return ParseAvailablePackages(result.StandardOutput);
+		var (_, available) = await ListAllPackagesAsync(cancellationToken);
+		return available;
 	}
 
-	private static List<SdkPackage> ParseInstalledPackages(string output)
+	private static (List<SdkPackage> Installed, List<SdkPackage> Available) ParseAllPackages(string output)
 	{
-		var packages = new List<SdkPackage>();
-		var inInstalledSection = false;
+		var installed = new List<SdkPackage>();
+		var available = new List<SdkPackage>();
+
+		var currentSection = (string?)null;
 		var lines = output.Split('\n');
 
 		foreach (var line in lines)
 		{
 			if (line.Contains("Installed packages:", StringComparison.Ordinal))
 			{
-				inInstalledSection = true;
+				currentSection = "installed";
 				continue;
 			}
-
-			if (line.Contains("Available Packages:", StringComparison.Ordinal) || line.Contains("Available Updates:", StringComparison.Ordinal))
-			{
-				inInstalledSection = false;
-				continue;
-			}
-
-			if (inInstalledSection && !string.IsNullOrWhiteSpace(line))
-			{
-				var parts = line.Split('|').Select(p => p.Trim()).ToArray();
-				if (parts.Length >= 2 && !parts[0].StartsWith("Path", StringComparison.Ordinal) && !parts[0].StartsWith("---", StringComparison.Ordinal))
-				{
-					packages.Add(new SdkPackage
-					{
-						Path = parts[0],
-						Version = parts.Length > 1 ? parts[1] : null,
-						Description = parts.Length > 2 ? parts[2] : null,
-						IsInstalled = true
-					});
-				}
-			}
-		}
-
-		return packages;
-	}
-
-	private static List<SdkPackage> ParseAvailablePackages(string output)
-	{
-		var packages = new List<SdkPackage>();
-		var inAvailableSection = false;
-		var lines = output.Split('\n');
-
-		foreach (var line in lines)
-		{
 			if (line.Contains("Available Packages:", StringComparison.Ordinal))
 			{
-				inAvailableSection = true;
+				currentSection = "available";
 				continue;
 			}
-
-			if (line.Contains("Available Updates:", StringComparison.Ordinal) || line.Contains("Installed packages:", StringComparison.Ordinal))
+			if (line.Contains("Available Updates:", StringComparison.Ordinal))
 			{
-				inAvailableSection = false;
+				currentSection = null;
 				continue;
 			}
 
-			if (inAvailableSection && !string.IsNullOrWhiteSpace(line))
+			if (currentSection != null && !string.IsNullOrWhiteSpace(line))
 			{
 				var parts = line.Split('|').Select(p => p.Trim()).ToArray();
 				if (parts.Length >= 2 && !parts[0].StartsWith("Path", StringComparison.Ordinal) && !parts[0].StartsWith("---", StringComparison.Ordinal))
 				{
-					packages.Add(new SdkPackage
+					var pkg = new SdkPackage
 					{
 						Path = parts[0],
 						Version = parts.Length > 1 ? parts[1] : null,
 						Description = parts.Length > 2 ? parts[2] : null,
-						IsInstalled = false
-					});
+						IsInstalled = currentSection == "installed"
+					};
+
+					if (currentSection == "installed")
+						installed.Add(pkg);
+					else
+						available.Add(pkg);
 				}
 			}
 		}
 
-		return packages;
+		return (installed, available);
 	}
 
 	public async Task InstallPackagesAsync(IEnumerable<string> packages, bool acceptLicenses = false,
@@ -258,13 +211,12 @@ public class SdkManager
 		ProcessResult result;
 		if (acceptLicenses)
 		{
-			// Use continuous input to accept any license prompts
-			result = await ProcessRunner.RunWithContinuousInputAsync(
+			result = await ProcessRunner.RunAsync(
 				SdkManagerPath!,
 				args,
-				inputToWrite: "y",
 				environmentVariables: GetEnvironment(),
 				timeout: TimeSpan.FromMinutes(30),
+				continuousInput: "y",
 				cancellationToken: cancellationToken);
 		}
 		else
@@ -294,32 +246,29 @@ public class SdkManager
 				"SDK Manager not found",
 				"dotnet maui android bootstrap");
 
-		// Use the continuous input approach like AndroidSdk.Tools
-		// This continuously writes "y" to stdin until the process exits
-		var result = await ProcessRunner.RunWithContinuousInputAsync(
+		var result = await ProcessRunner.RunAsync(
 			SdkManagerPath!,
 			"--licenses",
-			inputToWrite: "y",
 			environmentVariables: GetEnvironment(),
 			timeout: TimeSpan.FromMinutes(5),
+			continuousInput: "y",
 			cancellationToken: cancellationToken);
 
 		// License acceptance may return non-zero even when successful
 		// if licenses were already accepted, so we don't throw on failure
 	}
 
-	public async Task<bool> AreLicensesAcceptedAsync(CancellationToken cancellationToken = default)
+	public Task<bool> AreLicensesAcceptedAsync(CancellationToken cancellationToken = default)
 	{
 		if (!IsAvailable || string.IsNullOrEmpty(SdkPath))
-			return false;
+			return Task.FromResult(false);
 
-		// Check if licenses directory exists and has accepted licenses
 		var licensesPath = Path.Combine(SdkPath, "licenses");
 		if (!Directory.Exists(licensesPath))
-			return false;
+			return Task.FromResult(false);
 
 		var licenseFiles = Directory.GetFiles(licensesPath);
-		return licenseFiles.Length > 0;
+		return Task.FromResult(licenseFiles.Length > 0);
 	}
 
 	public async Task BootstrapSdkAsync(string targetPath, CancellationToken cancellationToken = default)
@@ -373,20 +322,12 @@ public class SdkManager
 
 	private static string GetCommandLineToolsUrl()
 	{
-		// Latest command-line tools URLs
+		// Latest command-line tools URLs (universal binaries on macOS)
 		if (PlatformDetector.IsMacOS)
-		{
-			return PlatformDetector.IsArm64
-				? "https://dl.google.com/android/repository/commandlinetools-mac-11076708_latest.zip"
-				: "https://dl.google.com/android/repository/commandlinetools-mac-11076708_latest.zip";
-		}
+			return "https://dl.google.com/android/repository/commandlinetools-mac-11076708_latest.zip";
 		else if (PlatformDetector.IsWindows)
-		{
 			return "https://dl.google.com/android/repository/commandlinetools-win-11076708_latest.zip";
-		}
 		else
-		{
 			return "https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip";
-		}
 	}
 }

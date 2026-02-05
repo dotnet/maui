@@ -31,11 +31,6 @@ public static class AndroidCommands
 		{
 			AllowMultipleArgumentsPerToken = true
 		};
-		// Support comma-separated values like: --packages "pkg1,pkg2,pkg3"
-		packagesOption.AddValidator(result =>
-		{
-			// No validation needed, just allow the input
-		});
 
 		var command = new Command("bootstrap", "Set up Android development environment")
 		{

@@ -68,23 +68,7 @@ public class AvdManager
 	public bool IsAvailable => AvdManagerPath != null;
 
 	private Dictionary<string, string>? GetEnvironment()
-	{
-		var env = new Dictionary<string, string>();
-		
-		if (!string.IsNullOrEmpty(JdkPath))
-		{
-			env["JAVA_HOME"] = JdkPath;
-			env["PATH"] = $"{Path.Combine(JdkPath, "bin")}{Path.PathSeparator}{Environment.GetEnvironmentVariable("PATH")}";
-		}
-
-		if (!string.IsNullOrEmpty(SdkPath))
-		{
-			env["ANDROID_HOME"] = SdkPath;
-			env["ANDROID_SDK_ROOT"] = SdkPath;
-		}
-
-		return env.Count > 0 ? env : null;
-	}
+		=> AndroidEnvironment.GetEnvironment(SdkPath, JdkPath);
 
 	public async Task<List<AvdInfo>> GetAvdsAsync(CancellationToken cancellationToken = default)
 	{
@@ -249,18 +233,15 @@ public class AvdManager
 				"dotnet maui android bootstrap");
 
 		var forceFlag = force ? " --force" : "";
-		// Escape single quotes in arguments and use single quotes to prevent shell interpretation of semicolons
-		var escapedName = name.Replace("'", "'\\''", StringComparison.Ordinal);
-		var escapedDevice = deviceProfile.Replace("'", "'\\''", StringComparison.Ordinal);
-		var escapedImage = systemImage.Replace("'", "'\\''", StringComparison.Ordinal);
-		var args = $"create avd --name '{escapedName}' --device '{escapedDevice}' --package '{escapedImage}'{forceFlag}";
+		var args = $"create avd --name \"{name}\" --device \"{deviceProfile}\" --package \"{systemImage}\"{forceFlag}";
 
-		// avdmanager requires 'no' for hardware profile question
+		// avdmanager requires 'no' for hardware profile question — use continuousInput
 		var result = await ProcessRunner.RunAsync(
-			"/bin/bash",
-			$"-c \"echo no | '{AvdManagerPath}' {args}\"",
+			AvdManagerPath!,
+			args,
 			environmentVariables: GetEnvironment(),
 			timeout: TimeSpan.FromMinutes(2),
+			continuousInput: "no",
 			cancellationToken: cancellationToken);
 
 		if (!result.Success)
