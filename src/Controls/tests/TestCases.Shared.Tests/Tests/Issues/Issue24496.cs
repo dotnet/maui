@@ -21,7 +21,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap("Picker6");
             VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_Picker6");
             App.Tap("Entry7");
-            VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_Entry7", cropBottom: 1200);
+            VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_Entry7", cropBottom: 1000);
         }
     }
 }
