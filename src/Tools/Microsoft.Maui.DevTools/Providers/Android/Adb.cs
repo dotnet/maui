@@ -57,7 +57,121 @@ public class Adb
 		if (!result.Success)
 			return new List<Device>();
 
-		return ParseDeviceList(result.StandardOutput);
+		var devices = ParseDeviceList(result.StandardOutput);
+
+		// Enrich connected physical devices with detailed properties
+		var enrichedDevices = new List<Device>();
+		foreach (var device in devices)
+		{
+			if (device.IsRunning && !device.IsEmulator)
+			{
+				var enriched = await EnrichDevicePropertiesAsync(device, cancellationToken);
+				enrichedDevices.Add(enriched);
+			}
+			else
+			{
+				enrichedDevices.Add(device);
+			}
+		}
+
+		return enrichedDevices;
+	}
+
+	private async Task<Device> EnrichDevicePropertiesAsync(Device device, CancellationToken cancellationToken)
+	{
+		try
+		{
+			// Get multiple properties in one call for efficiency
+			var propsResult = await ProcessRunner.RunAsync(
+				AdbPath!,
+				$"-s {device.Id} shell getprop",
+				timeout: TimeSpan.FromSeconds(5),
+				cancellationToken: cancellationToken);
+
+			if (!propsResult.Success)
+				return device;
+
+			var props = ParseGetProp(propsResult.StandardOutput);
+
+			// Extract properties
+			props.TryGetValue("ro.build.version.sdk", out var sdkVersion);
+			props.TryGetValue("ro.build.version.release", out var versionRelease);
+			props.TryGetValue("ro.product.manufacturer", out var manufacturer);
+			props.TryGetValue("ro.product.cpu.abi", out var abi);
+			props.TryGetValue("ro.product.model", out var model);
+			props.TryGetValue("ro.product.brand", out var brand);
+
+			// Build details dictionary
+			var details = device.Details ?? new Dictionary<string, object>();
+			if (!string.IsNullOrEmpty(sdkVersion))
+				details["sdk_version"] = sdkVersion;
+			if (!string.IsNullOrEmpty(versionRelease))
+				details["version_release"] = versionRelease;
+			if (!string.IsNullOrEmpty(manufacturer))
+				details["manufacturer"] = manufacturer;
+			if (!string.IsNullOrEmpty(abi))
+				details["abi"] = abi;
+			if (!string.IsNullOrEmpty(brand))
+				details["brand"] = brand;
+
+			// Determine architecture from ABI
+			var architecture = abi switch
+			{
+				"arm64-v8a" => "arm64",
+				"armeabi-v7a" => "arm",
+				"x86_64" => "x64",
+				"x86" => "x86",
+				_ => device.Architecture
+			};
+
+			// Create enriched device name
+			var displayName = !string.IsNullOrEmpty(brand) && !string.IsNullOrEmpty(model)
+				? $"{CapitalizeFirst(brand)} {model}"
+				: device.Name;
+
+			return device with
+			{
+				Name = displayName,
+				Version = sdkVersion,
+				VersionName = !string.IsNullOrEmpty(versionRelease) ? $"Android {versionRelease}" : null,
+				Manufacturer = CapitalizeFirst(manufacturer),
+				Model = model ?? device.Model,
+				Architecture = architecture,
+				PlatformArchitecture = abi ?? device.PlatformArchitecture,
+				RuntimeIdentifiers = GetAndroidRuntimeIdentifiers(architecture),
+				Details = details
+			};
+		}
+		catch
+		{
+			// Return original device if enrichment fails
+			return device;
+		}
+	}
+
+	private static string? CapitalizeFirst(string? value)
+	{
+		if (string.IsNullOrEmpty(value))
+			return value;
+		return char.ToUpper(value[0], System.Globalization.CultureInfo.InvariantCulture) + value.Substring(1).ToLower(System.Globalization.CultureInfo.InvariantCulture);
+	}
+
+	private static Dictionary<string, string> ParseGetProp(string output)
+	{
+		var props = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+		var lines = output.Split('\n');
+
+		foreach (var line in lines)
+		{
+			// Format: [ro.build.version.sdk]: [35]
+			var match = System.Text.RegularExpressions.Regex.Match(line, @"\[([^\]]+)\]:\s*\[([^\]]*)\]");
+			if (match.Success)
+			{
+				props[match.Groups[1].Value] = match.Groups[2].Value;
+			}
+		}
+
+		return props;
 	}
 
 	private static List<Device> ParseDeviceList(string output)

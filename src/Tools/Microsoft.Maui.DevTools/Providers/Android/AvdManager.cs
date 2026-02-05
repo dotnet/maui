@@ -170,7 +170,73 @@ public class AvdManager
 			});
 		}
 
+		// Enrich AVDs with config.ini data (API level, ABI, etc.)
+		for (int i = 0; i < avds.Count; i++)
+		{
+			var avd = avds[i];
+			if (!string.IsNullOrEmpty(avd.Path))
+			{
+				var configPath = System.IO.Path.Combine(avd.Path, "config.ini");
+				if (File.Exists(configPath))
+				{
+					var configInfo = ParseAvdConfig(configPath);
+					// Update the AVD with config info using record with syntax
+					avds[i] = avd with
+					{
+						ApiLevel = configInfo.ApiLevel ?? avd.ApiLevel,
+						Abi = configInfo.Abi ?? avd.Abi,
+						TagId = configInfo.TagId ?? avd.TagId
+					};
+				}
+			}
+		}
+
 		return avds;
+	}
+
+	private static (string? ApiLevel, string? Abi, string? TagId) ParseAvdConfig(string configPath)
+	{
+		string? apiLevel = null;
+		string? abi = null;
+		string? tagId = null;
+
+		try
+		{
+			var lines = File.ReadAllLines(configPath);
+			foreach (var line in lines)
+			{
+				if (line.StartsWith("image.sysdir.1", StringComparison.OrdinalIgnoreCase))
+				{
+					// Format: image.sysdir.1 = system-images/android-35/google_apis/arm64-v8a/
+					var value = line.Split('=').LastOrDefault()?.Trim();
+					if (!string.IsNullOrEmpty(value))
+					{
+						var parts = value.Split('/');
+						foreach (var part in parts)
+						{
+							if (part.StartsWith("android-", StringComparison.OrdinalIgnoreCase))
+							{
+								apiLevel = part.Substring(8); // Extract "35" from "android-35"
+							}
+						}
+					}
+				}
+				else if (line.StartsWith("abi.type", StringComparison.OrdinalIgnoreCase))
+				{
+					abi = line.Split('=').LastOrDefault()?.Trim();
+				}
+				else if (line.StartsWith("tag.id", StringComparison.OrdinalIgnoreCase))
+				{
+					tagId = line.Split('=').LastOrDefault()?.Trim();
+				}
+			}
+		}
+		catch
+		{
+			// Ignore errors reading config
+		}
+
+		return (apiLevel, abi, tagId);
 	}
 
 	public async Task<AvdInfo> CreateAvdAsync(string name, string deviceProfile, string systemImage,
