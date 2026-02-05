@@ -51,6 +51,11 @@ public interface IAndroidProvider
 	Task<AvdInfo> CreateAvdAsync(string name, string deviceProfile, string systemImage, bool force = false, CancellationToken cancellationToken = default);
 
 	/// <summary>
+	/// Deletes an AVD.
+	/// </summary>
+	Task DeleteAvdAsync(string name, CancellationToken cancellationToken = default);
+
+	/// <summary>
 	/// Starts an AVD.
 	/// </summary>
 	Task StartAvdAsync(string name, bool coldBoot = false, bool wait = false, CancellationToken cancellationToken = default);
