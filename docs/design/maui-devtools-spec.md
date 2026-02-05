@@ -1,8 +1,8 @@
 # MAUI Dev Tools Client — Product Specification
 
-**Version**: 2.6-draft  
+**Version**: 2.7-draft  
 **Status**: Proposal  
-**Last Updated**: 2026-02-04
+**Last Updated**: 2026-02-05
 
 ---
 
@@ -271,6 +271,9 @@ dotnet maui android bootstrap --accept-licenses
 
 # With custom paths
 dotnet maui android bootstrap --jdk-path ~/my-jdk --sdk-path ~/my-sdk --accept-licenses
+
+# With specific packages (comma-separated)
+dotnet maui android bootstrap --packages "platform-tools,build-tools;35.0.0,platforms;android-35"
 ```
 
 This command:
@@ -278,20 +281,20 @@ This command:
 2. Sets `JAVA_HOME` for the session (prints guidance for permanent setup)
 3. Downloads Android command-line tools (if missing)
 4. Accepts SDK licenses non-interactively (if `--accept-licenses`)
-5. Installs recommended packages (platform-tools, build-tools, emulator, system image)
+5. Installs specified packages (or default recommended set if `--packages` not provided)
 6. Prints environment variable guidance (doesn't modify shell config)
 
 **JDK Management Commands**:
 ```bash
 # Check JDK status
-dotnet maui android jdk status
+dotnet maui android jdk check
 
 # Install OpenJDK (default: version 17)
 dotnet maui android jdk install
 dotnet maui android jdk install --version 21
 
-# List available JDK versions
-dotnet maui android jdk list-available
+# List installed JDK versions
+dotnet maui android jdk list
 ```
 
 **Environment Variable Guidance Output**:
@@ -304,6 +307,18 @@ Add to your shell profile (~/.zshrc or ~/.bashrc):
   export JAVA_HOME="$HOME/Library/Developer/Android/jdk"
   export ANDROID_HOME="$HOME/Library/Developer/Android/sdk"
   export PATH="$JAVA_HOME/bin:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH"
+```
+
+**AVD Creation with Auto-Detection**:
+
+When `--package` is not specified, the tool automatically detects the most recent installed system image:
+
+```bash
+# Auto-detect system image (uses highest API level installed)
+dotnet maui android avd create MyEmulator
+
+# Explicitly specify system image
+dotnet maui android avd create MyEmulator --package "system-images;android-35;google_apis;arm64-v8a"
 ```
 
 #### Apple Bootstrap
@@ -358,6 +373,32 @@ This command:
 | NFR-O3 | Long-running operations must emit progress events |
 | NFR-O4 | `diagnostic-bundle` command must collect all relevant logs and state |
 
+**Progress Reporting**:
+
+Long-running operations (bootstrap, SDK install, JDK install) emit step-by-step progress:
+
+Console output:
+```
+[1/4] Checking JDK installation...
+[2/4] Installing JDK 17...
+[3/4] Checking SDK installation...
+[4/4] Installing SDK packages: platform-tools, build-tools;35.0.0
+✓ Bootstrap completed successfully
+```
+
+JSON output (`--json`):
+```json
+{
+  "type": "progress",
+  "step": 2,
+  "total_steps": 4,
+  "message": "Installing JDK 17...",
+  "percentage": 50
+}
+```
+
+IDE consumers can use the `type: "progress"` messages to update progress bars and status indicators.
+
 ### 5.3 Performance
 
 | ID | Requirement |
@@ -371,6 +412,12 @@ This command:
 - Android SDK detection: Parse `package.xml` and `source.properties` directly instead of invoking `sdkmanager --list` (which has 3-10s JVM startup time)
 - iOS simulator list: Use `xcrun simctl list -j` (fast native tool)
 - Fall back to CLI tools only for write operations (install, create, etc.)
+
+**Shell Quoting Implementation Notes**:
+- Package identifiers contain semicolons (e.g., `system-images;android-35;google_apis;arm64-v8a`)
+- When calling `avdmanager` or `sdkmanager`, arguments with semicolons must be properly quoted
+- Use single quotes with escaped inner quotes: `--package '{escapedImage}'`
+- This prevents shell interpretation of semicolons as command separators
 
 ### 5.4 Security
 
@@ -761,19 +808,21 @@ dotnet maui
 ├── android                   # Android-specific commands
 │   ├── bootstrap             # Bootstrap Android SDK from scratch
 │   │   ├── --accept-licenses # Non-interactively accept licenses
-│   │   ├── --recommended     # Install recommended components
+│   │   ├── --packages <list> # Comma-separated packages to install
 │   │   ├── --jdk-path <dir>  # JDK installation directory
+│   │   ├── --jdk-version     # JDK version (default: 17)
 │   │   └── --sdk-path <dir>  # SDK installation directory
 │   ├── jdk                   # JDK management
-│   │   ├── status            # Check JDK installation status
+│   │   ├── check             # Check JDK installation status
 │   │   ├── install           # Install OpenJDK
 │   │   │   ├── --version     # JDK version (default: 17)
 │   │   │   └── --path <dir>  # Installation directory
-│   │   └── list-available    # List available JDK versions
+│   │   └── list              # List installed JDK versions
 │   ├── sdk
-│   │   ├── list              # List installed packages
-│   │   ├── list-available    # List available packages
-│   │   ├── install <pkg>     # Install package
+│   │   ├── list              # List SDK packages
+│   │   │   ├── --available   # Show packages available for install
+│   │   │   └── --all         # Show both installed and available
+│   │   ├── install <pkg>     # Install package(s) - comma-separated
 │   │   ├── accept-licenses   # Accept all SDK licenses
 │   │   └── uninstall <pkg>   # Uninstall package
 │   ├── avd
@@ -781,14 +830,14 @@ dotnet maui
 │   │   ├── create            # Create AVD
 │   │   │   ├── --name        # AVD name
 │   │   │   ├── --device      # Device profile
-│   │   │   ├── --image       # System image (prefers arm64 on Apple Silicon)
+│   │   │   ├── --package     # System image (optional, auto-detects latest)
 │   │   │   └── --force       # Overwrite existing
 │   │   ├── start             # Start AVD
 │   │   │   ├── --name        # AVD name (or --avd)
 │   │   │   ├── --cold-boot   # Fresh boot
 │   │   │   └── --wait        # Wait for boot
 │   │   ├── stop              # Stop emulator
-│   │   │   └── --device      # Emulator serial
+│   │   │   └── --serial      # Emulator serial (e.g., emulator-5554)
 │   │   └── delete            # Delete AVD
 │   │       └── --name        # AVD name
 │   ├── install               # Install APK
@@ -929,16 +978,86 @@ All commands follow a consistent exit code scheme:
 | `dotnet maui doctor` | Check environment health | `--fix`, `--platform`, `--json` | Status report | 0=healthy, 1=issues, 2=error |
 | `dotnet maui device list` | List available devices | `--platform`, `--json` | Device list | 0=success, 2=error |
 | `dotnet maui device screenshot` | Capture screenshot | `--device`, `--output`, `--wait` | File path | 0=success, 5=no device, 2=error |
-| `dotnet maui android sdk list` | List SDK packages | `--json` | Package list | 0=success, 2=error |
+| `dotnet maui android sdk list` | List SDK packages | `--available`, `--all`, `--json` | Package list | 0=success, 2=error |
 | `dotnet maui android sdk install` | Install SDK package | `<package>`, `--accept-licenses` | Progress, result | 0=success, 5=not found, 2=error |
-| `dotnet maui android avd create` | Create emulator | `--name`, `--device`, `--image` | AVD name | 0=success, 1=exists, 2=error |
+| `dotnet maui android avd create` | Create emulator | `--name`, `--device`, `--package` | AVD name | 0=success, 1=exists, 2=error |
 | `dotnet maui android avd start` | Start emulator | `--name`, `--wait`, `--cold-boot` | Device serial | 0=success, 5=not found, 2=error |
+| `dotnet maui android avd stop` | Stop emulator | `--serial` | Status | 0=success, 5=not found, 2=error |
+| `dotnet maui android avd delete` | Delete AVD | `--name` | Status | 0=success, 5=not found, 2=error |
 | `dotnet maui apple simulator list` | List simulators | `--runtime`, `--device-type`, `--state` | Simulator list | 0=success, 2=error |
 | `dotnet maui apple simulator boot` | Boot simulator | `--udid` or `--name` | UDID | 0=success, 5=not found, 2=error |
 | `dotnet maui apple runtime list` | List iOS runtimes | `--json` | Runtime list | 0=success, 2=error |
 | `dotnet maui config set` | Set configuration | `<key>`, `<value>` | Confirmation | 0=success, 2=error |
 
-### 7.2 Capabilities Model
+### 7.2 JSON Output Schemas
+
+#### MauiDevice Schema
+
+The unified device model for all platforms (physical devices, emulators, simulators):
+
+```json
+{
+  "name": "iPhone 15 Pro",
+  "identifier": "12345678-1234-1234-1234-123456789ABC",
+  "emulator_id": null,
+  "platforms": ["ios", "maccatalyst"],
+  "version": "18.5",
+  "version_name": "iOS 18.5",
+  "manufacturer": "Apple",
+  "model": "iPhone 15 Pro",
+  "sub_model": "Pro",
+  "idiom": "phone",
+  "platform_architecture": "arm64",
+  "runtime_identifiers": ["ios-arm64", "maccatalyst-arm64"],
+  "architecture": "arm64",
+  "is_emulator": true,
+  "is_running": true,
+  "connection_type": "local",
+  "type": "Simulator",
+  "state": "Booted"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | string | Display name (required) |
+| `identifier` | string | Unique ID - UDID (iOS) or serial (Android) (required) |
+| `emulator_id` | string? | AVD name for Android emulators |
+| `platforms` | string[] | Supported platforms (required) |
+| `version` | string? | OS version number |
+| `version_name` | string? | Human-readable OS version |
+| `manufacturer` | string? | Device manufacturer |
+| `model` | string? | Device model |
+| `sub_model` | string? | Device variant |
+| `idiom` | string? | Form factor: `phone`, `tablet`, `watch`, `tv`, `desktop` |
+| `platform_architecture` | string? | Platform architecture (e.g., `arm64-v8a`) |
+| `runtime_identifiers` | string[]? | .NET runtime identifiers |
+| `architecture` | string? | CPU architecture |
+| `is_emulator` | bool | True for emulator/simulator |
+| `is_running` | bool | True if device is booted |
+| `connection_type` | string? | `usb`, `wifi`, or `local` |
+
+#### SdkPackage Schema
+
+```json
+{
+  "path": "platforms;android-35",
+  "version": "3",
+  "description": "Android SDK Platform 35",
+  "location": "/Users/dev/Library/Android/sdk/platforms/android-35",
+  "is_installed": true
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `path` | string | Package identifier (required) |
+| `version` | string? | Installed/available version |
+| `description` | string? | Human-readable description |
+| `location` | string? | Install path (for installed packages) |
+| `is_installed` | bool | True if currently installed |
+
+### 7.3 Capabilities Model
 
 | Command | Windows | macOS | Requires Elevation |
 |---------|---------|-------|-------------------|
