@@ -171,10 +171,14 @@
             ResizetizeCollectItems;
         </ResizetizeAfterTargets>
 
-        <ProcessMauiFontsAfterTargets>
-            $(ProcessMauiFontsAfterTargets);
-            ResizetizeCollectItems;
-        </ProcessMauiFontsAfterTargets>
+        <!-- Use BeforeTargets to create a hard dependency ensuring ProcessMauiFonts
+             always runs before Android resource processing, even during concurrent builds.
+             AfterTargets alone is a weak scheduling hint that can be skipped when parallel
+             MSBuild processes (e.g. VS design-time build) compete for stamp files. -->
+        <ProcessMauiFontsBeforeTargets>
+            $(ProcessMauiFontsBeforeTargets);
+            _ComputeAndroidResourcePaths;
+        </ProcessMauiFontsBeforeTargets>
     </PropertyGroup>
 
     <!-- Windows App SDK -->
@@ -226,10 +230,12 @@
             ResizetizeCollectItems;
         </ResizetizeAfterTargets>
 
-        <ProcessMauiFontsAfterTargets>
-            $(ProcessMauiFontsAfterTargets);
-            ResizetizeCollectItems;
-        </ProcessMauiFontsAfterTargets>
+        <!-- Use BeforeTargets to create a hard dependency ensuring ProcessMauiFonts
+             always runs before Tizen resource preparation, even during concurrent builds. -->
+        <ProcessMauiFontsBeforeTargets>
+            $(ProcessMauiFontsBeforeTargets);
+            PrepareResources;
+        </ProcessMauiFontsBeforeTargets>
     </PropertyGroup>
 
     <!-- Finds absolute paths to any MauiImage in this project -->
