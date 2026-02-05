@@ -81,14 +81,30 @@ public class Adb
 			if (serial == "attached" || !IsValidSerial(serial))
 				continue;
 
+			var isEmulator = serial.StartsWith("emulator");
+			var state = MapAdbState(status);
+			var deviceDetails = ParseDeviceDetails(line);
+			var model = ExtractDeviceName(line);
+			var architecture = ExtractArchitecture(deviceDetails);
+
 			var device = new Device
 			{
 				Id = serial,
-				Name = ExtractDeviceName(line) ?? serial,
-				Platform = "android",
-				Type = serial.StartsWith("emulator") ? DeviceType.Emulator : DeviceType.Physical,
-				State = MapAdbState(status),
-				Details = ParseDeviceDetails(line)
+				Name = model ?? serial,
+				Platforms = new[] { "android" },
+				Type = isEmulator ? DeviceType.Emulator : DeviceType.Physical,
+				State = state,
+				IsEmulator = isEmulator,
+				IsRunning = state == DeviceState.Booted || state == DeviceState.Connected,
+				ConnectionType = isEmulator ? Models.ConnectionType.Local : Models.ConnectionType.Usb,
+				EmulatorId = isEmulator ? serial : null,
+				Model = model,
+				Manufacturer = ExtractManufacturer(deviceDetails),
+				Architecture = architecture,
+				PlatformArchitecture = architecture,
+				RuntimeIdentifiers = GetAndroidRuntimeIdentifiers(architecture),
+				Idiom = DeviceIdiom.Phone, // Default, could be improved with device info
+				Details = deviceDetails
 			};
 
 			devices.Add(device);
@@ -102,6 +118,46 @@ public class Adb
 		return !string.IsNullOrEmpty(serial) && 
 			   serial != "attached" && 
 			   !serial.StartsWith("*");
+	}
+
+	private static string? ExtractManufacturer(Dictionary<string, object>? details)
+	{
+		if (details?.TryGetValue("manufacturer", out var mfr) == true)
+			return mfr?.ToString();
+		return null;
+	}
+
+	private static string? ExtractArchitecture(Dictionary<string, object>? details)
+	{
+		if (details?.TryGetValue("abi", out var abi) == true)
+		{
+			var abiStr = abi?.ToString();
+			if (!string.IsNullOrEmpty(abiStr))
+			{
+				// Map ABI to architecture
+				return abiStr switch
+				{
+					"arm64-v8a" => "arm64",
+					"armeabi-v7a" => "arm",
+					"x86_64" => "x64",
+					"x86" => "x86",
+					_ => abiStr
+				};
+			}
+		}
+		return null;
+	}
+
+	private static string[]? GetAndroidRuntimeIdentifiers(string? architecture)
+	{
+		return architecture switch
+		{
+			"arm64" => new[] { "android-arm64" },
+			"arm" => new[] { "android-arm" },
+			"x64" => new[] { "android-x64" },
+			"x86" => new[] { "android-x86" },
+			_ => null
+		};
 	}
 
 	private static string? ExtractDeviceName(string line)

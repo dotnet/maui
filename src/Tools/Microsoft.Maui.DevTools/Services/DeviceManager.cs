@@ -39,20 +39,32 @@ public class DeviceManager : IDeviceManager
 			{
 				// Check if this AVD is already in the running devices list
 				var isRunning = devices.Any(d => 
-					d.Platform == "android" && 
+					d.Platforms.Contains("android") && 
 					d.Details != null &&
 					d.Details.TryGetValue("avd", out var avdName) && 
 					avdName?.ToString() == avd.Name);
 
 				if (!isRunning)
 				{
+					var architecture = PlatformDetector.IsArm64 ? "arm64" : "x64";
 					devices.Add(new Device
 					{
 						Id = $"avd:{avd.Name}",
 						Name = avd.Name,
-						Platform = "android",
+						Platforms = new[] { "android" },
 						Type = DeviceType.Emulator,
 						State = DeviceState.Shutdown,
+						IsEmulator = true,
+						IsRunning = false,
+						ConnectionType = Models.ConnectionType.Local,
+						EmulatorId = avd.Name,
+						Model = avd.DeviceProfile,
+						Version = ExtractAndroidVersion(avd.Target),
+						VersionName = avd.Target,
+						Architecture = architecture,
+						PlatformArchitecture = architecture,
+						RuntimeIdentifiers = new[] { $"android-{architecture}" },
+						Idiom = DeviceIdiom.Phone,
 						Details = new Dictionary<string, object>
 						{
 							["avd"] = avd.Name,
@@ -75,10 +87,18 @@ public class DeviceManager : IDeviceManager
 		return devices;
 	}
 
+	private static string? ExtractAndroidVersion(string? target)
+	{
+		if (string.IsNullOrEmpty(target)) return null;
+		// Extract "35" from "android-35" or "Android 35"
+		var match = System.Text.RegularExpressions.Regex.Match(target, @"(\d+)");
+		return match.Success ? match.Groups[1].Value : null;
+	}
+
 	public async Task<IReadOnlyList<Device>> GetDevicesByPlatformAsync(string platform, CancellationToken cancellationToken = default)
 	{
 		var allDevices = await GetAllDevicesAsync(cancellationToken);
-		return allDevices.Where(d => d.Platform.Equals(platform, StringComparison.OrdinalIgnoreCase)).ToList();
+		return allDevices.Where(d => d.Platforms.Any(p => p.Equals(platform, StringComparison.OrdinalIgnoreCase))).ToList();
 	}
 
 	public async Task<Device?> GetDeviceByIdAsync(string deviceId, CancellationToken cancellationToken = default)
