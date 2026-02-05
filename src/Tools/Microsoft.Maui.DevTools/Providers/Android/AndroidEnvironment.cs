@@ -94,17 +94,18 @@ internal static class AndroidEnvironment
 	}
 
 	/// <summary>
-	/// Maps a system image tag ID to a human-readable variant name (e.g., "google_apis" → "Google API's").
+	/// Maps a system image tag ID to a human-readable variant name.
+	/// When playStoreEnabled is true (from config.ini PlayStore.enabled=true), appends ", Play Store".
 	/// </summary>
-	public static string? MapTagIdToSubModel(string? tagId)
+	public static string? MapTagIdToSubModel(string? tagId, bool playStoreEnabled = false)
 	{
 		if (string.IsNullOrEmpty(tagId))
 			return null;
 
-		return tagId switch
+		var baseName = tagId switch
 		{
-			"google_apis" => "Google API's",
 			"google_apis_playstore" => "Google API's, Play Store",
+			"google_apis" => playStoreEnabled ? "Google API's, Play Store" : "Google API's",
 			"default" => "AOSP",
 			"android-wear" => "Wear OS",
 			"android-tv" => "Android TV",
@@ -112,5 +113,7 @@ internal static class AndroidEnvironment
 			"chromeos" => "Chrome OS",
 			_ => tagId
 		};
+
+		return baseName;
 	}
 }
