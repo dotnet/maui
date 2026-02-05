@@ -101,15 +101,7 @@ public class Issue25200 : _IssuesUITest
 	{
 		try
 		{
-#if IOS
-			// Skip screenshot verification on iOS when running on macOS 15.x due to visual differences compared to macOS 26
-			if (OperatingSystem.IsMacOSVersionAtLeast(26))
-			{
-				VerifyScreenshot();
-			}
-#else
 			VerifyScreenshot();
-#endif
 			App.TapDisplayAlertButton("Cancel", 1);
 		}
 		catch (Exception)
