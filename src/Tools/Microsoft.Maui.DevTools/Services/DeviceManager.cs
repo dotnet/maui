@@ -46,7 +46,8 @@ public class DeviceManager : IDeviceManager
 
 				if (!isRunning)
 				{
-					var architecture = PlatformDetector.IsArm64 ? "arm64" : "x64";
+					var architecture = avd.Abi ?? (PlatformDetector.IsArm64 ? "arm64-v8a" : "x86_64");
+					var cpuArch = architecture.Contains("arm64", StringComparison.OrdinalIgnoreCase) ? "arm64" : "x64";
 					devices.Add(new Device
 					{
 						Id = $"avd:{avd.Name}",
@@ -59,16 +60,19 @@ public class DeviceManager : IDeviceManager
 						ConnectionType = Models.ConnectionType.Local,
 						EmulatorId = avd.Name,
 						Model = avd.DeviceProfile,
-						Version = ExtractAndroidVersion(avd.Target),
-						VersionName = avd.Target,
-						Architecture = architecture,
+						Version = avd.ApiLevel,
+						VersionName = avd.ApiLevel != null ? $"Android {avd.ApiLevel} ({avd.TagId ?? "default"})" : avd.Target,
+						Architecture = cpuArch,
 						PlatformArchitecture = architecture,
-						RuntimeIdentifiers = new[] { $"android-{architecture}" },
+						RuntimeIdentifiers = new[] { $"android-{cpuArch}" },
 						Idiom = DeviceIdiom.Phone,
 						Details = new Dictionary<string, object>
 						{
 							["avd"] = avd.Name,
-							["target"] = avd.Target ?? "unknown"
+							["target"] = avd.Target ?? "unknown",
+							["api_level"] = avd.ApiLevel ?? "unknown",
+							["abi"] = architecture,
+							["tag_id"] = avd.TagId ?? "default"
 						}
 					});
 				}

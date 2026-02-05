@@ -129,6 +129,9 @@ public record AvdInfo
 	public string? Target { get; init; }
 	public string? Path { get; init; }
 	public string? Status { get; init; }
+	public string? ApiLevel { get; init; }
+	public string? Abi { get; init; }
+	public string? TagId { get; init; }
 }
 
 /// <summary>
