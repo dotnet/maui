@@ -39,7 +39,7 @@ See `SHARED-RULES.md` for complete details. Key points:
 ### Phase 2: Gate ⛔
 **🚨 Cannot continue if Gate fails**
 
-- [ ] Check if tests exist (if not, invoke `write-ui-tests` skill first)
+- [ ] Check if tests exist (if not, let the user know and suggest using `write-tests-agent`)
 - [ ] Select platform (must be affected AND available on host)
 - [ ] Invoke via **task agent** (NOT inline):
   ```

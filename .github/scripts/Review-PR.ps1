@@ -252,12 +252,12 @@ $platformInstruction
 3. Follow ALL critical rules, especially:
    - STOP on environment blockers and ask before continuing
    - Use task agent for Gate verification
-   - Run multi-model try-fix in Phase 4
+   - Run multi-model try-fix in Phase 3
 
 **Start with Phase 1: Pre-Flight**
 - Create state file: CustomAgentLogsTmp/PRState/pr-$PRNumber.md
 - Gather context from PR #$PRNumber
-- Proceed through all 5 phases
+- Proceed through all 4 phases
 
 Begin the review now.
 "@
