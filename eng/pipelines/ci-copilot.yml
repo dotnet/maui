@@ -86,33 +86,70 @@ stages:
               fi
             displayName: 'Configure AVD for Software Emulation'
 
+          # Set up Android SDK PATH (required on self-hosted agents)
+          - pwsh: |
+              if ($env:ANDROID_SDK_ROOT) {
+                $platformTools = Join-Path $env:ANDROID_SDK_ROOT "platform-tools"
+                $emulatorPath = Join-Path $env:ANDROID_SDK_ROOT "emulator"
+                $cmdlineTools = Join-Path $env:ANDROID_SDK_ROOT "cmdline-tools/latest/bin"
+                
+                # Use Azure Pipelines' prependpath command to persist across steps
+                Write-Host "##vso[task.prependpath]$platformTools"
+                Write-Host "##vso[task.prependpath]$emulatorPath"
+                Write-Host "##vso[task.prependpath]$cmdlineTools"
+                
+                Write-Host "Added to PATH (will apply to subsequent steps):"
+                Write-Host "  platform-tools: $platformTools"
+                Write-Host "  emulator: $emulatorPath"
+                Write-Host "  cmdline-tools: $cmdlineTools"
+                
+                # Verify the tools exist
+                if (Test-Path (Join-Path $platformTools "adb")) {
+                  Write-Host "✅ adb found at: $platformTools/adb"
+                } else {
+                  Write-Host "⚠️ adb NOT found at expected location"
+                }
+                if (Test-Path (Join-Path $emulatorPath "emulator")) {
+                  Write-Host "✅ emulator found at: $emulatorPath/emulator"
+                } else {
+                  Write-Host "⚠️ emulator NOT found at expected location"
+                }
+              } else {
+                Write-Host "##vso[task.logissue type=warning]ANDROID_SDK_ROOT not set, skipping PATH setup"
+              }
+              
+              # Auto-detect and set JAVA_HOME if not already set
+              if (-not $env:JAVA_HOME) {
+                $jvmDir = "/Library/Java/JavaVirtualMachines"
+                $msJdk = Get-ChildItem "$jvmDir/microsoft-*.jdk" -ErrorAction SilentlyContinue | Select-Object -First 1
+                if ($msJdk) {
+                  $javaHome = "$($msJdk.FullName)/Contents/Home"
+                  Write-Host "##vso[task.setvariable variable=JAVA_HOME]$javaHome"
+                  Write-Host "Set JAVA_HOME to: $javaHome"
+                }
+              }
+            displayName: 'Configure Android SDK PATH'
+            env:
+              ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
+
           # Start Android Emulator EARLY (using Start-Emulator.ps1 script)
           - pwsh: |
               Write-Host "=== Starting Android Emulator ==="
               Write-Host "Working directory: $(Get-Location)"
               Write-Host "ANDROID_SDK_ROOT: $env:ANDROID_SDK_ROOT"
               Write-Host "JAVA_HOME: $env:JAVA_HOME"
+              Write-Host "PATH (first 500 chars): $($env:PATH.Substring(0, [Math]::Min(500, $env:PATH.Length)))"
               
-              # Auto-detect JAVA_HOME if not set (e.g., on self-hosted agents)
-              if (-not $env:JAVA_HOME) {
-                $jvmDir = "/Library/Java/JavaVirtualMachines"
-                $msJdk = Get-ChildItem "$jvmDir/microsoft-*.jdk" -ErrorAction SilentlyContinue | Select-Object -First 1
-                if ($msJdk) {
-                  $env:JAVA_HOME = "$($msJdk.FullName)/Contents/Home"
-                  Write-Host "Auto-detected JAVA_HOME: $env:JAVA_HOME"
+              # Verify adb is in path
+              $adbPath = Get-Command adb -ErrorAction SilentlyContinue
+              if ($adbPath) {
+                Write-Host "adb found at: $($adbPath.Source)"
+              } else {
+                Write-Host "adb NOT in PATH, checking manually..."
+                $manualAdb = Join-Path $env:ANDROID_SDK_ROOT "platform-tools/adb"
+                if (Test-Path $manualAdb) {
+                  Write-Host "adb exists at $manualAdb but not in PATH"
                 }
-              }
-              
-              # Add Android SDK tools to PATH (required when SDK is freshly provisioned)
-              if ($env:ANDROID_SDK_ROOT) {
-                $platformTools = Join-Path $env:ANDROID_SDK_ROOT "platform-tools"
-                $emulatorPath = Join-Path $env:ANDROID_SDK_ROOT "emulator"
-                $cmdlineTools = Join-Path $env:ANDROID_SDK_ROOT "cmdline-tools/latest/bin"
-                $env:PATH = "$platformTools${[IO.Path]::PathSeparator}$emulatorPath${[IO.Path]::PathSeparator}$cmdlineTools${[IO.Path]::PathSeparator}$env:PATH"
-                Write-Host "Updated PATH to include Android SDK tools"
-                Write-Host "  platform-tools: $platformTools"
-                Write-Host "  emulator: $emulatorPath"
-                Write-Host "  cmdline-tools: $cmdlineTools"
               }
               
               $scriptPath = ".github/scripts/shared/Start-Emulator.ps1"
