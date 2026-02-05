@@ -14,6 +14,10 @@ public class Issue25200 : _IssuesUITest
 	[Category(UITestCategories.ActionSheet)]
 	public void ActionSheetWithSixActionsShouldDisplayProperly()
 	{
+		if (!OperatingSystem.IsMacOSVersionAtLeast(26)) // Issue Link: https://github.com/dotnet/maui/issues/33879
+		{
+			Assert.Ignore("Ignored the test on iOS if it runs on macOS version less than 26 due to known visual differences");
+		}
 		App.WaitForElement("ShowActionSheetButton", timeout: TimeSpan.FromSeconds(30));
 		App.Tap("ShowActionSheetButton");
 
@@ -41,6 +45,10 @@ public class Issue25200 : _IssuesUITest
 	[Category(UITestCategories.ActionSheet)]
 	public void ActionSheetWithManyActionsShouldDisplayProperly()
 	{
+		if (!OperatingSystem.IsMacOSVersionAtLeast(26)) // Issue Link: https://github.com/dotnet/maui/issues/33879
+		{
+			Assert.Ignore("Ignored the test on iOS if it runs on macOS version less than 26 due to known visual differences");
+		}
 		App.WaitForElement("ShowLargeActionSheetButton", timeout: TimeSpan.FromSeconds(45));
 		App.Tap("ShowLargeActionSheetButton");
 
@@ -72,6 +80,10 @@ public class Issue25200 : _IssuesUITest
 	[Category(UITestCategories.ActionSheet)]
 	public void ActionSheetWithLongTitleShouldDisplayProperly()
 	{
+		if (!OperatingSystem.IsMacOSVersionAtLeast(26)) // Issue Link: https://github.com/dotnet/maui/issues/33879
+		{
+			Assert.Ignore("Ignored the test on iOS if it runs on macOS version less than 26 due to known visual differences");
+		}
 		App.WaitForElement("ShowLongTitleActionSheetButton");
 		App.Tap("ShowLongTitleActionSheetButton");
 
