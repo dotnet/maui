@@ -630,14 +630,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void AddFactory_ValuesChanged_FiresWithLazyResourceWrapper_KnownIssue()
+		public void AddFactory_ValuesChanged_ResolvesLazyResource()
 		{
-			// This test documents a known issue: AddFactory fires ValuesChanged with the
-			// internal LazyResource wrapper instead of the resolved value.
-			// This can break DynamicResource bindings that are set up before the resource is added.
-			// 
-			// Future fix: Either resolve before firing, or have Element.OnResourcesChanged 
-			// handle LazyResource resolution.
+			// AddFactory fires ValuesChanged and when the value is accessed via
+			// the resolver function, it returns the resolved value (not the LazyResource wrapper).
 
 			var rd = new ResourceDictionary();
 			object eventValue = null;
@@ -649,23 +645,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			rd.AddFactory("myColor", () => Colors.Red, shared: true);
 
-			// Current behavior: eventValue is a LazyResource wrapper, not Colors.Red
-			// This is a known issue - the value is NOT resolved before firing the event
+			// The event value should be properly resolved
 			Assert.NotNull(eventValue);
 			
-			// This assertion documents the bug - eventValue should be Colors.Red but isn't
-			Assert.NotEqual(Colors.Red, eventValue);
+			// The value should be the resolved color
+			Assert.Equal(Colors.Red, eventValue);
 			
 			// The value IS correct when accessed directly
 			Assert.Equal(Colors.Red, rd["myColor"]);
 		}
 
 		[Fact]
-		public void AddFactory_DynamicResource_ReceivesLazyWrapper_KnownIssue()
+		public void AddFactory_DynamicResource_ResolvesCorrectly()
 		{
-			// This test documents a known issue: When a DynamicResource binding exists
-			// and a lazy resource is added later, the element receives the LazyResource
-			// wrapper instead of the resolved value.
+			// When a DynamicResource binding exists and a lazy resource is added later,
+			// the element receives the resolved value (not the LazyResource wrapper).
 
 			var rd = new ResourceDictionary();
 			var label = new Label();
@@ -680,11 +674,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// Add the resource via factory - this fires ValuesChanged
 			rd.AddFactory("myColor", () => Colors.Blue, shared: true);
 
-			// Known issue: The label's TextColor is NOT set to Colors.Blue
-			// because OnResourcesChanged received the LazyResource wrapper
-			// 
-			// When fixed, this should be: Assert.Equal(Colors.Blue, label.TextColor);
-			Assert.NotEqual(Colors.Blue, label.TextColor);
+			// The label's TextColor should be set to Colors.Blue
+			Assert.Equal(Colors.Blue, label.TextColor);
 		}
 
 		#endregion

@@ -50,6 +50,9 @@ namespace Microsoft.Maui.Controls.Xaml
 		//used by X.HR.F
 		internal static object CastTo(object value, object targetProperty)
 		{
+			if (value is null)
+				return null;
+				
 			var bp = targetProperty as BindableProperty;
 			var pi = targetProperty as PropertyInfo;
 
