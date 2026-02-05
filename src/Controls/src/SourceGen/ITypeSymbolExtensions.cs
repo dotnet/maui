@@ -100,6 +100,29 @@ static partial class ITypeSymbolExtensions
 		out IPropertySymbol? property,
 		out ITypeSymbol? propertyType)
 	{
+		return TryGetProperty(symbol, propertyName, context, out property, out propertyType, out _);
+	}
+
+	/// <summary>
+	/// Tries to get a property by name, and if not found, checks if it could be inferred from a RelayCommand method
+	/// or an ObservableProperty attribute. Returns the property type if found or inferred.
+	/// </summary>
+	/// <param name="symbol">The type to search</param>
+	/// <param name="propertyName">The name of the property to find</param>
+	/// <param name="context">The source generation context</param>
+	/// <param name="property">The found property symbol (null if inferred from RelayCommand/ObservableProperty)</param>
+	/// <param name="propertyType">The property type (either from the property or inferred)</param>
+	/// <param name="isObservableProperty">True if the property was inferred from an ObservableProperty attribute (which is always writable)</param>
+	/// <returns>True if property exists or can be inferred</returns>
+	public static bool TryGetProperty(
+		this ITypeSymbol symbol,
+		string propertyName,
+		SourceGenContext? context,
+		out IPropertySymbol? property,
+		out ITypeSymbol? propertyType,
+		out bool isObservableProperty)
+	{
+		isObservableProperty = false;
 		property = symbol.GetAllProperties(propertyName, context)
 			.FirstOrDefault(p => p.GetMethod != null && !p.GetMethod.IsStatic);
 
@@ -120,6 +143,7 @@ static partial class ITypeSymbolExtensions
 		// Call the BindingSourceGen extension method directly
 		if (symbol.TryGetObservablePropertyType(propertyName, context?.Compilation, out propertyType))
 		{
+			isObservableProperty = true;
 			return true;
 		}
 
