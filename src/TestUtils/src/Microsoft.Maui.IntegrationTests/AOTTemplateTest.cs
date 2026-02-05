@@ -47,6 +47,12 @@ public class AOTTemplateTest : BaseTemplateTests
 				? PrepareNativeAotBuildPropsAndroid()
 				: PrepareNativeAotBuildProps();
 
+		// Disable code signing for Apple platforms (no signing certificate available in CI)
+		if (isApplePlatform)
+		{
+			AddNoCodeSigningProps(extendedBuildProps);
+		}
+
 		string binLogFilePath = $"publish-{DateTime.UtcNow.ToFileTimeUtc()}.binlog";
 		Assert.True(DotnetInternal.Build(projectFile, "Release", framework: framework, properties: extendedBuildProps, runtimeIdentifier: runtimeIdentifier, binlogPath: binLogFilePath, output: _output),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
@@ -99,6 +105,13 @@ public class AOTTemplateTest : BaseTemplateTests
 			: isAndroidPlatform
 				? PrepareNativeAotBuildPropsAndroid()
 				: PrepareNativeAotBuildProps();
+
+		// Disable code signing for Apple platforms (no signing certificate available in CI)
+		if (isApplePlatform)
+		{
+			AddNoCodeSigningProps(extendedBuildProps);
+		}
+
 		FileUtilities.ReplaceInFile(projectFile,
 			"</Project>",
 			"""
@@ -142,8 +155,7 @@ public class AOTTemplateTest : BaseTemplateTests
 			"PublishAotUsingRuntimePack=true",  // TODO: This parameter will become obsolete https://github.com/dotnet/runtime/issues/87060 in net9
 			"_IsPublishing=true", // This makes 'dotnet build -r iossimulator-x64' equivalent to 'dotnet publish -r iossimulator-x64'
 			"IlcTreatWarningsAsErrors=false",
-			"TrimmerSingleWarn=false",
-			"_RequireCodeSigning=false" // This is required to build the iOS app without a signing key
+			"TrimmerSingleWarn=false"
 		};
 		return extendedBuildProps;
 	}
@@ -184,6 +196,16 @@ public class AOTTemplateTest : BaseTemplateTests
 		}
 
 		return extendedBuildProps;
+	}
+
+	/// <summary>
+	/// Adds properties to disable code signing for Apple platforms.
+	/// This is required when building without a signing certificate (e.g., in CI environments).
+	/// </summary>
+	private static void AddNoCodeSigningProps(List<string> buildProps)
+	{
+		buildProps.Add("EnableCodeSigning=false");
+		buildProps.Add("_RequireCodeSigning=false");
 	}
 
 }
