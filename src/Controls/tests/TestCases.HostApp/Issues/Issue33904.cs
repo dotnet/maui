@@ -1,9 +1,9 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 14181, "CharacterSpacing applied to Label is not inherited by Span elements in FormattedString", PlatformAffected.All)]
-public class Issue14181 : ContentPage
+[Issue(IssueTracker.Github, 33904, "CharacterSpacing applied to Label is not inherited by Span elements in FormattedString", PlatformAffected.All)]
+public class Issue33904 : ContentPage
 {
-    public Issue14181()
+    public Issue33904()
     {
         Label directLabel = new Label
         {
