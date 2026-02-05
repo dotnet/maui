@@ -71,6 +71,11 @@ public interface IAndroidProvider
 	Task<List<SdkPackage>> GetInstalledPackagesAsync(CancellationToken cancellationToken = default);
 
 	/// <summary>
+	/// Lists SDK packages available for installation.
+	/// </summary>
+	Task<List<SdkPackage>> GetAvailablePackagesAsync(CancellationToken cancellationToken = default);
+
+	/// <summary>
 	/// Gets the most recent installed system image for AVD creation.
 	/// Returns the system image path (e.g., "system-images;android-35;google_apis;arm64-v8a") or null if none found.
 	/// </summary>
@@ -116,7 +121,7 @@ public record AvdInfo
 }
 
 /// <summary>
-/// Information about an installed SDK package.
+/// Information about an SDK package (installed or available).
 /// </summary>
 public record SdkPackage
 {
@@ -124,4 +129,5 @@ public record SdkPackage
 	public string? Version { get; init; }
 	public string? Description { get; init; }
 	public string? Location { get; init; }
+	public bool IsInstalled { get; init; }
 }

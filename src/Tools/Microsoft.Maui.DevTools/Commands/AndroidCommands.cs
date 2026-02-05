@@ -315,19 +315,45 @@ public static class AndroidCommands
 		});
 
 		// sdk list
-		var listCommand = new Command("list", "List installed SDK packages");
+		var listCommand = new Command("list", "List SDK packages")
+		{
+			new Option<bool>("--available", "List packages available for installation"),
+			new Option<bool>("--all", "List both installed and available packages")
+		};
 		listCommand.SetHandler(async (InvocationContext context) =>
 		{
 			var androidProvider = Program.AndroidProvider;
 			
 			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
+			var showAvailable = context.ParseResult.GetValueForOption(
+				(Option<bool>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "available"));
+			var showAll = context.ParseResult.GetValueForOption(
+				(Option<bool>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "all"));
+			
 			var formatter = useJson 
 				? (IOutputFormatter)new JsonOutputFormatter(Console.Out) 
 				: new ConsoleOutputFormatter(Console.Out);
 
 			try
 			{
-				var packages = await androidProvider.GetInstalledPackagesAsync(context.GetCancellationToken());
+				var packages = new List<SdkPackage>();
+				
+				if (showAll)
+				{
+					// Get both installed and available
+					var installed = await androidProvider.GetInstalledPackagesAsync(context.GetCancellationToken());
+					var available = await androidProvider.GetAvailablePackagesAsync(context.GetCancellationToken());
+					packages.AddRange(installed);
+					packages.AddRange(available);
+				}
+				else if (showAvailable)
+				{
+					packages = await androidProvider.GetAvailablePackagesAsync(context.GetCancellationToken());
+				}
+				else
+				{
+					packages = await androidProvider.GetInstalledPackagesAsync(context.GetCancellationToken());
+				}
 
 				if (useJson)
 				{
@@ -337,14 +363,31 @@ public static class AndroidCommands
 				{
 					if (!packages.Any())
 					{
-						Console.WriteLine("No packages installed.");
+						Console.WriteLine(showAvailable ? "No packages available." : "No packages installed.");
 						return;
 					}
 
-					Console.WriteLine("Installed packages:");
-					foreach (var pkg in packages)
+					if (showAll)
 					{
-						Console.WriteLine($"  {pkg.Path}");
+						Console.WriteLine("Installed packages:");
+						foreach (var pkg in packages.Where(p => p.IsInstalled))
+						{
+							Console.WriteLine($"  {pkg.Path,-50} {pkg.Version}");
+						}
+						Console.WriteLine();
+						Console.WriteLine("Available packages:");
+						foreach (var pkg in packages.Where(p => !p.IsInstalled))
+						{
+							Console.WriteLine($"  {pkg.Path,-50} {pkg.Version}");
+						}
+					}
+					else
+					{
+						Console.WriteLine(showAvailable ? "Available packages:" : "Installed packages:");
+						foreach (var pkg in packages)
+						{
+							Console.WriteLine($"  {pkg.Path,-50} {pkg.Version}");
+						}
 					}
 				}
 			}

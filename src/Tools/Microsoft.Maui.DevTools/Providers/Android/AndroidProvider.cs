@@ -230,6 +230,11 @@ public class AndroidProvider : IAndroidProvider
 		return await _sdkManager.GetInstalledPackagesAsync(cancellationToken);
 	}
 
+	public async Task<List<SdkPackage>> GetAvailablePackagesAsync(CancellationToken cancellationToken = default)
+	{
+		return await _sdkManager.GetAvailablePackagesAsync(cancellationToken);
+	}
+
 	public async Task<string?> GetMostRecentSystemImageAsync(CancellationToken cancellationToken = default)
 	{
 		var packages = await GetInstalledPackagesAsync(cancellationToken);
