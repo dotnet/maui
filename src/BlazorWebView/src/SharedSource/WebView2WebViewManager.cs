@@ -186,7 +186,9 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			{
 				var isWebviewInitialized = await _webviewReadyTask;
 
-				// Capture CoreWebView2 reference to avoid race condition between null check and usage
+				// Check CoreWebView2 availability to ensure webview is ready and not disposed.
+				// Setting _webview.Source is safe as it's a managed property, but we should only
+				// navigate if CoreWebView2 is initialized to avoid errors during shutdown.
 				var coreWebView = _webview.CoreWebView2;
 				if (isWebviewInitialized && coreWebView != null)
 				{
