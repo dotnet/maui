@@ -173,6 +173,7 @@ public class AndroidCommandsTests
 		Assert.Contains(sdkCommand.Subcommands, c => c.Name == "check");
 		Assert.Contains(sdkCommand.Subcommands, c => c.Name == "install");
 		Assert.Contains(sdkCommand.Subcommands, c => c.Name == "list");
+		Assert.Contains(sdkCommand.Subcommands, c => c.Name == "accept-licenses");
 	}
 
 	[Fact]

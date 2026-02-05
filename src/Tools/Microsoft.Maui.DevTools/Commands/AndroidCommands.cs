@@ -398,9 +398,123 @@ public static class AndroidCommands
 			}
 		});
 
+		// sdk accept-licenses
+		var acceptLicensesCommand = new Command("accept-licenses", "Accept Android SDK licenses interactively");
+		acceptLicensesCommand.SetHandler(async (InvocationContext context) =>
+		{
+			var androidProvider = Program.AndroidProvider;
+			
+			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
+			var formatter = useJson 
+				? (IOutputFormatter)new JsonOutputFormatter(Console.Out) 
+				: new ConsoleOutputFormatter(Console.Out);
+
+			try
+			{
+				// Check if licenses already accepted
+				var accepted = await androidProvider.AreLicensesAcceptedAsync(context.GetCancellationToken());
+				if (accepted)
+				{
+					if (useJson)
+					{
+						formatter.Write(new { 
+							success = true, 
+							status = "already_accepted",
+							message = "SDK licenses are already accepted" 
+						});
+					}
+					else
+					{
+						Console.WriteLine("✓ SDK licenses are already accepted");
+					}
+					return;
+				}
+
+				// Get the command for interactive license acceptance
+				var licenseCommand = androidProvider.GetLicenseAcceptanceCommand();
+				if (licenseCommand == null)
+				{
+					if (useJson)
+					{
+						formatter.Write(new { 
+							success = false, 
+							status = "sdk_not_found",
+							message = "Android SDK not found. Run 'dotnet maui android bootstrap' first." 
+						});
+					}
+					else
+					{
+						Console.WriteLine("✗ Android SDK not found. Run 'dotnet maui android bootstrap' first.");
+					}
+					context.ExitCode = 1;
+					return;
+				}
+
+				if (useJson)
+				{
+					// For IDE integration: return the command to run in a terminal
+					formatter.Write(new { 
+						success = true, 
+						status = "requires_interaction",
+						message = "Run the following command in a terminal to accept licenses interactively",
+						command = licenseCommand.Value.Command,
+						arguments = licenseCommand.Value.Arguments,
+						full_command = $"{licenseCommand.Value.Command} {licenseCommand.Value.Arguments}"
+					});
+				}
+				else
+				{
+					// For CLI: run interactively
+					Console.WriteLine("Starting interactive license acceptance...");
+					Console.WriteLine("Review each license and type 'y' to accept.\n");
+					
+					// Run sdkmanager --licenses interactively (inherits stdin/stdout)
+					var processInfo = new System.Diagnostics.ProcessStartInfo
+					{
+						FileName = licenseCommand.Value.Command,
+						Arguments = licenseCommand.Value.Arguments,
+						UseShellExecute = false,
+						RedirectStandardInput = false,
+						RedirectStandardOutput = false,
+						RedirectStandardError = false
+					};
+					
+					// Set environment variables for JDK
+					var jdkPath = androidProvider.JdkPath;
+					if (!string.IsNullOrEmpty(jdkPath))
+					{
+						processInfo.Environment["JAVA_HOME"] = jdkPath;
+						var currentPath = Environment.GetEnvironmentVariable("PATH") ?? "";
+						processInfo.Environment["PATH"] = $"{Path.Combine(jdkPath, "bin")}{Path.PathSeparator}{currentPath}";
+					}
+					
+					using var process = System.Diagnostics.Process.Start(processInfo);
+					if (process != null)
+					{
+						await process.WaitForExitAsync(context.GetCancellationToken());
+						
+						if (process.ExitCode == 0)
+						{
+							Console.WriteLine("\n✓ License acceptance completed");
+						}
+						else
+						{
+							Console.WriteLine($"\n⚠ License acceptance exited with code {process.ExitCode}");
+						}
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				formatter.WriteError(ex);
+				context.ExitCode = 1;
+			}
+		});
+
 		command.AddCommand(checkCommand);
 		command.AddCommand(installCommand);
 		command.AddCommand(listCommand);
+		command.AddCommand(acceptLicensesCommand);
 
 		return command;
 	}
