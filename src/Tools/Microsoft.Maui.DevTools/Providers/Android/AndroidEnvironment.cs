@@ -104,7 +104,7 @@ internal static class AndroidEnvironment
 		return tagId switch
 		{
 			"google_apis" => "Google API's",
-			"google_apis_playstore" => "Play Store",
+			"google_apis_playstore" => "Google API's, Play Store",
 			"default" => "AOSP",
 			"android-wear" => "Wear OS",
 			"android-tv" => "Android TV",
