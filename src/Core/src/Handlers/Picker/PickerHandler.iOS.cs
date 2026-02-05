@@ -64,7 +64,14 @@ namespace Microsoft.Maui.Handlers
 			// needs translation
 			pickerController.AddAction(UIAlertAction.Create("Done",
 								UIAlertActionStyle.Default,
-								action => FinishSelectItem(pickerView, uITextField)
+								action =>
+								{
+									FinishSelectItem(pickerView, uITextField);
+									if (VirtualView is IPicker virtualView)
+									{
+										virtualView.IsFocused = virtualView.IsOpen = false;
+									}
+								}
 							));
 
 			if (pickerController.View != null && pickerView != null)
@@ -82,18 +89,6 @@ namespace Microsoft.Maui.Handlers
 				popoverPresentation.SourceRect = uITextField.Bounds;
 			}
 
-			EventHandler? editingDidEndHandler = null;
-
-			editingDidEndHandler = async (s, e) =>
-			{
-				await pickerController.DismissViewControllerAsync(true);
-				if (VirtualView is IPicker virtualView)
-					virtualView.IsFocused = virtualView.IsOpen = false;
-				uITextField.EditingDidEnd -= editingDidEndHandler;
-			};
-
-			uITextField.EditingDidEnd += editingDidEndHandler;
-
 			var platformWindow = MauiContext?.GetPlatformWindow();
 			if (platformWindow is null)
 			{
@@ -103,7 +98,10 @@ namespace Microsoft.Maui.Handlers
 			var currentViewController = GetCurrentViewController(platformWindow.RootViewController);
 			platformWindow.BeginInvokeOnMainThread(() =>
 			{
-				currentViewController?.PresentViewControllerAsync(pickerController, true);
+				if (currentViewController is not null)
+				{
+					currentViewController.PresentViewControllerAsync(pickerController, true);
+				}
 			});
 		}
 
