@@ -83,7 +83,15 @@ See `SHARED-RULES.md` for complete details. Key points:
 
 - [ ] Run `pr-finalize` skill
 - [ ] Generate review: root cause, candidates, recommendation
-- [ ] Post via `ai-summary-comment` skill
+- [ ] Post AI Summary comment (PR phases + try-fix):
+  ```bash
+  pwsh .github/skills/ai-summary-comment/scripts/post-ai-summary-comment.ps1 -PRNumber XXXXX -SkipValidation
+  pwsh .github/skills/ai-summary-comment/scripts/post-try-fix-comment.ps1 -IssueNumber XXXXX
+  ```
+- [ ] Post PR Finalization comment (separate):
+  ```bash
+  pwsh .github/skills/ai-summary-comment/scripts/post-pr-finalize-comment.ps1 -PRNumber XXXXX -SummaryFile CustomAgentLogsTmp/PRState/pr-XXXXX.md
+  ```
 - [ ] Update state file: Report → ✅ COMPLETE
 - [ ] Save final state file
 
