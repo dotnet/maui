@@ -32,18 +32,42 @@ public class SdkManager
 			if (string.IsNullOrEmpty(SdkPath))
 				return null;
 
-			var cmdlineToolsPath = Path.Combine(SdkPath, "cmdline-tools", "latest", "bin", "sdkmanager");
-			if (PlatformDetector.IsWindows)
-				cmdlineToolsPath += ".bat";
+			var ext = PlatformDetector.IsWindows ? ".bat" : string.Empty;
+			var cmdlineToolsDir = Path.Combine(SdkPath, "cmdline-tools");
 
-			if (File.Exists(cmdlineToolsPath))
-				return cmdlineToolsPath;
+			if (Directory.Exists(cmdlineToolsDir))
+			{
+				// Search through version directories, sorted by version (like AndroidSdk.Tools)
+				// Check common directory names: latest, then versioned folders
+				var searchDirs = new List<string> { "latest" };
+				
+				try
+				{
+					// Add versioned directories sorted descending (newest first)
+					var versionedDirs = Directory.GetDirectories(cmdlineToolsDir)
+						.Select(d => Path.GetFileName(d))
+						.Where(n => n != "latest" && !string.IsNullOrEmpty(n))
+						.OrderByDescending(n => {
+							// Try to parse as version, otherwise sort alphabetically
+							if (Version.TryParse(n, out var v))
+								return v;
+							return new Version(0, 0);
+						})
+						.ToList();
+					searchDirs.AddRange(versionedDirs);
+				}
+				catch { }
 
-			// Try older location
-			var toolsPath = Path.Combine(SdkPath, "tools", "bin", "sdkmanager");
-			if (PlatformDetector.IsWindows)
-				toolsPath += ".bat";
+				foreach (var dir in searchDirs)
+				{
+					var toolPath = Path.Combine(cmdlineToolsDir, dir, "bin", "sdkmanager" + ext);
+					if (File.Exists(toolPath))
+						return toolPath;
+				}
+			}
 
+			// Try older location (tools/bin)
+			var toolsPath = Path.Combine(SdkPath, "tools", "bin", "sdkmanager" + ext);
 			if (File.Exists(toolsPath))
 				return toolsPath;
 
@@ -171,15 +195,29 @@ public class SdkManager
 				"dotnet maui android bootstrap");
 
 		var packageList = string.Join(" ", packages.Select(p => $"\"{p}\""));
-		var args = acceptLicenses ? $"--install {packageList}" : $"{packageList}";
+		var args = packageList;
 
-		// For accepting licenses, we need to pipe 'y' to stdin
-		var result = await ProcessRunner.RunAsync(
-			SdkManagerPath!,
-			args,
-			environmentVariables: GetEnvironment(),
-			timeout: TimeSpan.FromMinutes(30),
-			cancellationToken: cancellationToken);
+		ProcessResult result;
+		if (acceptLicenses)
+		{
+			// Use continuous input to accept any license prompts
+			result = await ProcessRunner.RunWithContinuousInputAsync(
+				SdkManagerPath!,
+				args,
+				inputToWrite: "y",
+				environmentVariables: GetEnvironment(),
+				timeout: TimeSpan.FromMinutes(30),
+				cancellationToken: cancellationToken);
+		}
+		else
+		{
+			result = await ProcessRunner.RunAsync(
+				SdkManagerPath!,
+				args,
+				environmentVariables: GetEnvironment(),
+				timeout: TimeSpan.FromMinutes(30),
+				cancellationToken: cancellationToken);
+		}
 
 		if (!result.Success)
 		{
@@ -198,31 +236,18 @@ public class SdkManager
 				"SDK Manager not found",
 				"dotnet maui android bootstrap");
 
-		// Use yes command to accept all licenses
-		var yesCommand = PlatformDetector.IsWindows ? "cmd" : "yes";
-		var yesArgs = PlatformDetector.IsWindows 
-			? $"/c echo y | \"{SdkManagerPath}\" --licenses"
-			: $"| \"{SdkManagerPath}\" --licenses";
+		// Use the continuous input approach like AndroidSdk.Tools
+		// This continuously writes "y" to stdin until the process exits
+		var result = await ProcessRunner.RunWithContinuousInputAsync(
+			SdkManagerPath!,
+			"--licenses",
+			inputToWrite: "y",
+			environmentVariables: GetEnvironment(),
+			timeout: TimeSpan.FromMinutes(5),
+			cancellationToken: cancellationToken);
 
-		if (PlatformDetector.IsWindows)
-		{
-			var result = await ProcessRunner.RunAsync(
-				"cmd",
-				$"/c echo y | \"{SdkManagerPath}\" --licenses",
-				environmentVariables: GetEnvironment(),
-				timeout: TimeSpan.FromMinutes(5),
-				cancellationToken: cancellationToken);
-		}
-		else
-		{
-			// On Unix, use a shell to pipe yes to sdkmanager
-			var result = await ProcessRunner.RunAsync(
-				"/bin/bash",
-				$"-c \"yes | '{SdkManagerPath}' --licenses\"",
-				environmentVariables: GetEnvironment(),
-				timeout: TimeSpan.FromMinutes(5),
-				cancellationToken: cancellationToken);
-		}
+		// License acceptance may return non-zero even when successful
+		// if licenses were already accepted, so we don't throw on failure
 	}
 
 	public async Task<bool> AreLicensesAcceptedAsync(CancellationToken cancellationToken = default)
