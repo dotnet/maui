@@ -66,11 +66,11 @@ public class Adb
 
 		var devices = ParseDeviceList(result.StandardOutput);
 
-		// Enrich connected physical devices with detailed properties
+		// Enrich all connected/running devices with detailed properties
 		var enrichedDevices = new List<Device>();
 		foreach (var device in devices)
 		{
-			if (device.IsRunning && !device.IsEmulator)
+			if (device.IsRunning)
 			{
 				var enriched = await EnrichDevicePropertiesAsync(device, cancellationToken);
 				enrichedDevices.Add(enriched);
@@ -109,7 +109,9 @@ public class Adb
 			props.TryGetValue("ro.product.brand", out var brand);
 
 			// Build details dictionary
-			var details = device.Details ?? new Dictionary<string, object>();
+			var details = device.Details != null
+				? new Dictionary<string, object>(device.Details)
+				: new Dictionary<string, object>();
 			if (!string.IsNullOrEmpty(sdkVersion))
 				details["sdk_version"] = sdkVersion;
 			if (!string.IsNullOrEmpty(versionRelease))
@@ -121,6 +123,25 @@ public class Adb
 			if (!string.IsNullOrEmpty(brand))
 				details["brand"] = brand;
 
+			// For emulators, get the AVD name
+			string? avdName = null;
+			if (device.IsEmulator)
+			{
+				var avdResult = await ProcessRunner.RunAsync(
+					AdbPath!,
+					$"-s {device.Id} emu avd name",
+					timeout: TimeSpan.FromSeconds(3),
+					cancellationToken: cancellationToken);
+
+				if (avdResult.Success)
+				{
+					// Output is the AVD name on the first line
+					avdName = avdResult.StandardOutput.Split('\n').FirstOrDefault()?.Trim();
+					if (!string.IsNullOrEmpty(avdName))
+						details["avd"] = avdName;
+				}
+			}
+
 			// Determine architecture from ABI
 			var architecture = AndroidEnvironment.MapAbiToArchitecture(abi) ?? device.Architecture;
 
@@ -129,16 +150,24 @@ public class Adb
 				? $"{CapitalizeFirst(brand)} {model}"
 				: device.Name;
 
+			// version = API level (e.g., "33", "36")
+			// versionName = OS version number without "Android" prefix (e.g., "16.0", "14.0")
+			var version = sdkVersion;
+			var versionName = !string.IsNullOrEmpty(versionRelease)
+				? versionRelease
+				: AndroidEnvironment.MapApiLevelToVersion(sdkVersion);
+
 			return device with
 			{
 				Name = displayName,
-				Version = sdkVersion,
-				VersionName = !string.IsNullOrEmpty(versionRelease) ? $"Android {versionRelease}" : null,
+				Version = version,
+				VersionName = versionName,
 				Manufacturer = CapitalizeFirst(manufacturer),
 				Model = model ?? device.Model,
 				Architecture = architecture,
 				PlatformArchitecture = abi ?? device.PlatformArchitecture,
 				RuntimeIdentifiers = AndroidEnvironment.GetRuntimeIdentifiers(architecture),
+				EmulatorId = avdName ?? device.EmulatorId,
 				Details = details
 			};
 		}

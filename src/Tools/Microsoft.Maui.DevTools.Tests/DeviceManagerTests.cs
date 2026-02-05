@@ -165,7 +165,7 @@ public class DeviceManagerTests
 
 		// Assert
 		Assert.Single(devices);
-		Assert.Equal("avd:Pixel_6_API_35", devices[0].Id);
+		Assert.Equal("Pixel_6_API_35", devices[0].Id);
 		Assert.Equal(DeviceState.Shutdown, devices[0].State);
 		Assert.Equal(DeviceType.Emulator, devices[0].Type);
 	}
