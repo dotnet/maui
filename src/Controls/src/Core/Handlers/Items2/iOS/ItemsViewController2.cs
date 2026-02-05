@@ -244,14 +244,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		}
 
 		static bool ShouldApplyCellReConfiguration()
-        {
-            if (!OperatingSystem.IsIOSVersionAtLeast(15))
-            {
-                return false;
-            }
- 
-            return UIDevice.CurrentDevice?.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad;
-        }
+		{
+			return OperatingSystem.IsIOSVersionAtLeast(15);
+		}
 
 		private void MovedToWindow(object sender, EventArgs e)
 		{
