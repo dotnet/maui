@@ -183,7 +183,11 @@ public class AvdManager
 				"dotnet maui android bootstrap");
 
 		var forceFlag = force ? " --force" : "";
-		var args = $"create avd --name \"{name}\" --device \"{deviceProfile}\" --package \"{systemImage}\"{forceFlag}";
+		// Escape single quotes in arguments and use single quotes to prevent shell interpretation of semicolons
+		var escapedName = name.Replace("'", "'\\''", StringComparison.Ordinal);
+		var escapedDevice = deviceProfile.Replace("'", "'\\''", StringComparison.Ordinal);
+		var escapedImage = systemImage.Replace("'", "'\\''", StringComparison.Ordinal);
+		var args = $"create avd --name '{escapedName}' --device '{escapedDevice}' --package '{escapedImage}'{forceFlag}";
 
 		// avdmanager requires 'no' for hardware profile question
 		var result = await ProcessRunner.RunAsync(
