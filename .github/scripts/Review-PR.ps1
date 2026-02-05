@@ -422,11 +422,24 @@ if ($DryRun) {
             Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
             Write-Host ""
             
-            # Restore tracked files (including deleted ones) to clean state.
-            Write-Host "🧹 Restoring working tree to clean state..." -ForegroundColor Yellow
-            git status --porcelain 2>$null | Set-Content "CustomAgentLogsTmp/PRState/phase2-exit-git-status.log" -ErrorAction SilentlyContinue
-            git checkout HEAD -- . 2>&1 | Out-Null
-            Write-Host "  ✅ Working tree restored" -ForegroundColor Green
+            # First verify the skill file exists
+            $skillPath = ".github/skills/ai-summary-comment/SKILL.md"
+            if (Test-Path $skillPath) {
+                Write-Host "✅ Found skill file: $skillPath" -ForegroundColor Green
+            } else {
+                Write-Host "⚠️ Skill file not found at: $skillPath" -ForegroundColor Yellow
+                Write-Host "   Current directory: $(Get-Location)" -ForegroundColor Gray
+                Write-Host "   Available skills:" -ForegroundColor Gray
+                Get-ChildItem ".github/skills/" -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "     - $($_.Name)" -ForegroundColor Gray }
+            }
+            
+            $commentPrompt = @"
+Read the ai-summary-comment skill from .github/skills/ai-summary-comment/SKILL.md and follow its instructions to post a summary comment on PR #$PRNumber.
+
+The PR state file is at: CustomAgentLogsTmp/PRState/pr-$PRNumber-state.md
+
+If you cannot find the skill file, use the GitHub CLI (gh pr comment) to post a summary of the PR review results from the state file.
+"@
             
             # 3a: Post PR agent summary comment (from Phase 1 state file)
             $scriptPath = ".github/skills/ai-summary-comment/scripts/post-ai-summary-comment.ps1"
