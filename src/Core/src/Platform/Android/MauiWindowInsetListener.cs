@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Android.Content;
 using Android.Views;
+using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Core.Graphics;
 using AndroidX.Core.View;
 using AndroidX.Core.Widget;
@@ -209,7 +210,7 @@ namespace Microsoft.Maui.Platform
 			return ApplyDefaultWindowInsets(v, insets);
 		}
 
-		static WindowInsetsCompat? ApplyDefaultWindowInsets(AView v, WindowInsetsCompat insets)
+		WindowInsetsCompat? ApplyDefaultWindowInsets(AView v, WindowInsetsCompat insets)
 		{
 			var systemBars = insets.GetInsets(WindowInsetsCompat.Type.SystemBars());
 			var displayCutout = insets.GetInsets(WindowInsetsCompat.Type.DisplayCutout());
@@ -264,6 +265,59 @@ namespace Microsoft.Maui.Platform
 				}
 			}
 
+			//Keyboard Handling
+			if (v is CoordinatorLayout coordinatorLayout)
+			{
+				var window = coordinatorLayout.Context?.GetActivity()?.Window;
+				// When using AdjustResize, we don't want to apply bottom insets
+				var imeInsets = insets.GetInsets(WindowInsetsCompat.Type.Ime());
+				var isKeyboardShowing = insets.IsVisible(WindowInsetsCompat.Type.Ime());
+				if (window is not null)
+				{
+					var windowAttributes = window.Attributes;
+					if (windowAttributes is not null)
+					{
+						// Mask to extract only the adjustment mode bits (0xF0)
+						const SoftInput adjustMask = (SoftInput)0xF0;
+						var adjustMode = windowAttributes.SoftInputMode & adjustMask;
+
+						if (adjustMode == SoftInput.AdjustResize)
+						{
+							if (isKeyboardShowing && !IsImeAnimating)
+							{
+								var bottomInset = Math.Max(systemBars?.Bottom ?? 0, imeInsets?.Bottom ?? 0);
+								coordinatorLayout.SetPadding(0, 0, 0, bottomInset);
+
+								// Reset bottom padding of all tracked child views since the keyboard
+								// now covers the navigation bar area. Without this, child views would
+								// retain their stale bottom safe area padding, causing double padding.
+								ResetBottomPaddingForDescendants(coordinatorLayout);
+
+								return WindowInsetsCompat.Consumed;
+							}
+							else if (!isKeyboardShowing)
+							{
+								// Keyboard dismissed - reset CoordinatorLayout padding and request
+								// insets for child views so they can restore their safe area padding
+								coordinatorLayout.SetPadding(0, 0, 0, 0);
+								RequestInsetsForDescendants(coordinatorLayout);
+							}
+						}
+						else if (adjustMode == SoftInput.AdjustPan)
+						{
+							if (isKeyboardShowing && !IsImeAnimating)
+							{
+								return WindowInsetsCompat.Consumed;
+							}
+						}
+						else if (adjustMode == SoftInput.AdjustNothing)
+						{
+							return insets;
+						}
+					}
+				}
+			}
+
 			// Handle bottom navigation
 			var hasBottomNav = v.FindViewById(Resource.Id.navigationlayout_bottomtabs)?.MeasuredHeight > 0;
 			if (hasBottomNav)
@@ -304,10 +358,11 @@ namespace Microsoft.Maui.Platform
 
 		public bool HasTrackedView => _trackedViews.Count > 0;
 
-        public bool IsViewTracked(AView view)
-        {
-            return _trackedViews.Contains(view);
-        }
+		public bool IsViewTracked(AView view)
+		{
+			return _trackedViews.Contains(view);
+		}
+
 		public void ResetView(AView view)
 		{
 			if (view is IHandleWindowInsets customHandler)
@@ -343,6 +398,42 @@ namespace Microsoft.Maui.Platform
 				if (IsDescendantOf(trackedView, view))
 				{
 					ResetView(trackedView);
+				}
+			}
+		}
+
+		/// <summary>
+		/// Resets only the bottom padding of all tracked descendant views of the specified parent view.
+		/// This is called when the CoordinatorLayout handles keyboard insets in AdjustResize mode,
+		/// since the keyboard covers the navigation bar area and child views should not maintain
+		/// their stale bottom safe area padding.
+		/// </summary>
+		/// <param name="parentView">The parent view whose descendants' bottom padding should be reset</param>
+		public void ResetBottomPaddingForDescendants(AView parentView)
+		{
+			foreach (var trackedView in _trackedViews.ToArray())
+			{
+				if (IsDescendantOf(trackedView, parentView))
+				{
+					// Reset only the bottom padding, preserve other padding values
+					trackedView.SetPadding(trackedView.PaddingLeft, trackedView.PaddingTop, trackedView.PaddingRight, 0);
+				}
+			}
+		}
+
+		/// <summary>
+		/// Requests insets to be re-applied to all tracked descendant views of the specified parent view.
+		/// This is called when the keyboard is dismissed so that child views can restore their
+		/// original safe area padding.
+		/// </summary>
+		/// <param name="parentView">The parent view whose descendants should request new insets</param>
+		public void RequestInsetsForDescendants(AView parentView)
+		{
+			foreach (var trackedView in _trackedViews.ToArray())
+			{
+				if (IsDescendantOf(trackedView, parentView))
+				{
+					ViewCompat.RequestApplyInsets(trackedView);
 				}
 			}
 		}
