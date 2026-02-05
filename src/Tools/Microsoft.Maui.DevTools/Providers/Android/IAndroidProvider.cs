@@ -66,6 +66,12 @@ public interface IAndroidProvider
 	Task<List<SdkPackage>> GetInstalledPackagesAsync(CancellationToken cancellationToken = default);
 
 	/// <summary>
+	/// Gets the most recent installed system image for AVD creation.
+	/// Returns the system image path (e.g., "system-images;android-35;google_apis;arm64-v8a") or null if none found.
+	/// </summary>
+	Task<string?> GetMostRecentSystemImageAsync(CancellationToken cancellationToken = default);
+
+	/// <summary>
 	/// Installs SDK packages.
 	/// </summary>
 	Task InstallPackagesAsync(IEnumerable<string> packages, bool acceptLicenses = false, CancellationToken cancellationToken = default);
