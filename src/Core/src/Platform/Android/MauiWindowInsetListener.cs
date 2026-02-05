@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Android.Content;
 using Android.Views;
+using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Core.Graphics;
 using AndroidX.Core.View;
 using AndroidX.Core.Widget;
@@ -209,7 +210,7 @@ namespace Microsoft.Maui.Platform
 			return ApplyDefaultWindowInsets(v, insets);
 		}
 
-		static WindowInsetsCompat? ApplyDefaultWindowInsets(AView v, WindowInsetsCompat insets)
+		WindowInsetsCompat? ApplyDefaultWindowInsets(AView v, WindowInsetsCompat insets)
 		{
 			var systemBars = insets.GetInsets(WindowInsetsCompat.Type.SystemBars());
 			var displayCutout = insets.GetInsets(WindowInsetsCompat.Type.DisplayCutout());
@@ -313,10 +314,11 @@ namespace Microsoft.Maui.Platform
 
 		public bool HasTrackedView => _trackedViews.Count > 0;
 
-        public bool IsViewTracked(AView view)
-        {
-            return _trackedViews.Contains(view);
-        }
+		public bool IsViewTracked(AView view)
+		{
+			return _trackedViews.Contains(view);
+		}
+
 		public void ResetView(AView view)
 		{
 			if (view is IHandleWindowInsets customHandler)
@@ -352,6 +354,42 @@ namespace Microsoft.Maui.Platform
 				if (IsDescendantOf(trackedView, view))
 				{
 					ResetView(trackedView);
+				}
+			}
+		}
+
+		/// <summary>
+		/// Resets only the bottom padding of all tracked descendant views of the specified parent view.
+		/// This is called when the CoordinatorLayout handles keyboard insets in AdjustResize mode,
+		/// since the keyboard covers the navigation bar area and child views should not maintain
+		/// their stale bottom safe area padding.
+		/// </summary>
+		/// <param name="parentView">The parent view whose descendants' bottom padding should be reset</param>
+		public void ResetBottomPaddingForDescendants(AView parentView)
+		{
+			foreach (var trackedView in _trackedViews.ToArray())
+			{
+				if (IsDescendantOf(trackedView, parentView))
+				{
+					// Reset only the bottom padding, preserve other padding values
+					trackedView.SetPadding(trackedView.PaddingLeft, trackedView.PaddingTop, trackedView.PaddingRight, 0);
+				}
+			}
+		}
+
+		/// <summary>
+		/// Requests insets to be re-applied to all tracked descendant views of the specified parent view.
+		/// This is called when the keyboard is dismissed so that child views can restore their
+		/// original safe area padding.
+		/// </summary>
+		/// <param name="parentView">The parent view whose descendants should request new insets</param>
+		public void RequestInsetsForDescendants(AView parentView)
+		{
+			foreach (var trackedView in _trackedViews.ToArray())
+			{
+				if (IsDescendantOf(trackedView, parentView))
+				{
+					ViewCompat.RequestApplyInsets(trackedView);
 				}
 			}
 		}
