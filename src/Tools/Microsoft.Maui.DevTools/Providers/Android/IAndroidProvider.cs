@@ -132,6 +132,7 @@ public record AvdInfo
 	public string? ApiLevel { get; init; }
 	public string? Abi { get; init; }
 	public string? TagId { get; init; }
+	public bool PlayStoreEnabled { get; init; }
 }
 
 /// <summary>

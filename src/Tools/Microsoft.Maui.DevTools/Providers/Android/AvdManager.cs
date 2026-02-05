@@ -169,7 +169,8 @@ public class AvdManager
 					{
 						ApiLevel = configInfo.ApiLevel ?? avd.ApiLevel,
 						Abi = configInfo.Abi ?? avd.Abi,
-						TagId = configInfo.TagId ?? avd.TagId
+						TagId = configInfo.TagId ?? avd.TagId,
+						PlayStoreEnabled = configInfo.PlayStoreEnabled
 					};
 				}
 			}
@@ -178,11 +179,12 @@ public class AvdManager
 		return avds;
 	}
 
-	private static (string? ApiLevel, string? Abi, string? TagId) ParseAvdConfig(string configPath)
+	private static (string? ApiLevel, string? Abi, string? TagId, bool PlayStoreEnabled) ParseAvdConfig(string configPath)
 	{
 		string? apiLevel = null;
 		string? abi = null;
 		string? tagId = null;
+		bool playStoreEnabled = false;
 
 		try
 		{
@@ -213,6 +215,11 @@ public class AvdManager
 				{
 					tagId = line.Split('=').LastOrDefault()?.Trim();
 				}
+				else if (line.StartsWith("PlayStore.enabled", StringComparison.OrdinalIgnoreCase))
+				{
+					playStoreEnabled = line.Split('=').LastOrDefault()?.Trim()
+						.Equals("true", StringComparison.OrdinalIgnoreCase) == true;
+				}
 			}
 		}
 		catch
@@ -220,7 +227,7 @@ public class AvdManager
 			// Ignore errors reading config
 		}
 
-		return (apiLevel, abi, tagId);
+		return (apiLevel, abi, tagId, playStoreEnabled);
 	}
 
 	public async Task<AvdInfo> CreateAvdAsync(string name, string deviceProfile, string systemImage,

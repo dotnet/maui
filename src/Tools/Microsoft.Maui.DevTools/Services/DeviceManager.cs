@@ -48,7 +48,7 @@ public class DeviceManager : IDeviceManager
 				{
 					// Merge AVD metadata into the running emulator device
 					var running = devices[runningIndex];
-					var subModel = AndroidEnvironment.MapTagIdToSubModel(avd.TagId);
+					var subModel = AndroidEnvironment.MapTagIdToSubModel(avd.TagId, avd.PlayStoreEnabled);
 					var details = running.Details != null
 						? new Dictionary<string, object>(running.Details)
 						: new Dictionary<string, object>();
@@ -67,7 +67,7 @@ public class DeviceManager : IDeviceManager
 					var architecture = AndroidEnvironment.MapAbiToArchitecture(avd.Abi) ?? (PlatformDetector.IsArm64 ? "arm64" : "x64");
 					var abi = avd.Abi ?? (PlatformDetector.IsArm64 ? "arm64-v8a" : "x86_64");
 					var versionName = AndroidEnvironment.MapApiLevelToVersion(avd.ApiLevel);
-					var subModel = AndroidEnvironment.MapTagIdToSubModel(avd.TagId);
+					var subModel = AndroidEnvironment.MapTagIdToSubModel(avd.TagId, avd.PlayStoreEnabled);
 					devices.Add(new Device
 					{
 						Id = avd.Name,
