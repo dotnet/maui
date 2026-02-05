@@ -214,6 +214,133 @@ public static class ProcessRunner
 	}
 
 	/// <summary>
+	/// Runs a process asynchronously with continuous stdin input until exit.
+	/// Used for accepting licenses where we need to continuously send "y".
+	/// </summary>
+	public static async Task<ProcessResult> RunWithContinuousInputAsync(
+		string fileName,
+		string arguments = "",
+		string inputToWrite = "y",
+		string? workingDirectory = null,
+		Dictionary<string, string>? environmentVariables = null,
+		TimeSpan? timeout = null,
+		CancellationToken cancellationToken = default)
+	{
+		var stopwatch = Stopwatch.StartNew();
+		var stdoutBuilder = new StringBuilder();
+		var stderrBuilder = new StringBuilder();
+
+		using var process = new Process();
+		process.StartInfo = new ProcessStartInfo
+		{
+			FileName = fileName,
+			Arguments = arguments,
+			WorkingDirectory = workingDirectory ?? Environment.CurrentDirectory,
+			UseShellExecute = false,
+			RedirectStandardOutput = true,
+			RedirectStandardError = true,
+			RedirectStandardInput = true,
+			CreateNoWindow = true
+		};
+
+		if (environmentVariables != null)
+		{
+			foreach (var kvp in environmentVariables)
+			{
+				process.StartInfo.EnvironmentVariables[kvp.Key] = kvp.Value;
+			}
+		}
+
+		var outputTcs = new TaskCompletionSource<bool>();
+		var errorTcs = new TaskCompletionSource<bool>();
+
+		process.OutputDataReceived += (_, e) =>
+		{
+			if (e.Data != null)
+				stdoutBuilder.AppendLine(e.Data);
+			else
+				outputTcs.TrySetResult(true);
+		};
+
+		process.ErrorDataReceived += (_, e) =>
+		{
+			if (e.Data != null)
+				stderrBuilder.AppendLine(e.Data);
+			else
+				errorTcs.TrySetResult(true);
+		};
+
+		try
+		{
+			process.Start();
+			process.BeginOutputReadLine();
+			process.BeginErrorReadLine();
+
+			var effectiveTimeout = timeout ?? TimeSpan.FromMinutes(5);
+			
+			using var timeoutCts = new CancellationTokenSource(effectiveTimeout);
+			using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(
+				cancellationToken, timeoutCts.Token);
+
+			// Start a task to continuously write input until the process exits
+			var inputTask = Task.Run(async () =>
+			{
+				while (!process.HasExited && !linkedCts.Token.IsCancellationRequested)
+				{
+					try
+					{
+						await process.StandardInput.WriteLineAsync(inputToWrite);
+						await process.StandardInput.FlushAsync();
+					}
+					catch
+					{
+						// Process may have exited
+						break;
+					}
+					await Task.Delay(250, linkedCts.Token);
+				}
+			}, linkedCts.Token);
+
+			try
+			{
+				await process.WaitForExitAsync(linkedCts.Token);
+			}
+			catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested)
+			{
+				try { process.Kill(entireProcessTree: true); } catch { }
+				throw new TimeoutException($"Process '{fileName}' timed out after {effectiveTimeout.TotalSeconds}s");
+			}
+
+			// Wait for input task to complete
+			try { await inputTask.WaitAsync(TimeSpan.FromSeconds(2)); } catch { }
+
+			// Wait for output streams to complete
+			await Task.WhenAll(outputTcs.Task, errorTcs.Task).WaitAsync(TimeSpan.FromSeconds(5));
+
+			stopwatch.Stop();
+
+			return new ProcessResult
+			{
+				ExitCode = process.ExitCode,
+				StandardOutput = stdoutBuilder.ToString(),
+				StandardError = stderrBuilder.ToString(),
+				Duration = stopwatch.Elapsed
+			};
+		}
+		catch (Exception ex) when (ex is not TimeoutException && ex is not OperationCanceledException)
+		{
+			stopwatch.Stop();
+			return new ProcessResult
+			{
+				ExitCode = -1,
+				StandardOutput = stdoutBuilder.ToString(),
+				StandardError = ex.Message,
+				Duration = stopwatch.Elapsed
+			};
+		}
+	}
+
+	/// <summary>
 	/// Checks if a command exists in PATH.
 	/// </summary>
 	public static bool CommandExists(string command)

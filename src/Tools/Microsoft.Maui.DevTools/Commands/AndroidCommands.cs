@@ -27,12 +27,22 @@ public static class AndroidCommands
 
 	private static Command CreateBootstrapCommand()
 	{
+		var packagesOption = new Option<string[]>("--packages", "Additional SDK packages to install (comma-separated or multiple --packages flags)")
+		{
+			AllowMultipleArgumentsPerToken = true
+		};
+		// Support comma-separated values like: --packages "pkg1,pkg2,pkg3"
+		packagesOption.AddValidator(result =>
+		{
+			// No validation needed, just allow the input
+		});
+
 		var command = new Command("bootstrap", "Set up Android development environment")
 		{
 			new Option<string>("--sdk-path", "Custom SDK installation path"),
 			new Option<string>("--jdk-path", "Custom JDK installation path"),
 			new Option<int>("--jdk-version", () => 17, "JDK version to install (17 or 21)"),
-			new Option<string[]>("--packages", "Additional SDK packages to install")
+			packagesOption
 		};
 
 		command.SetHandler(async (InvocationContext context) =>
@@ -47,8 +57,13 @@ public static class AndroidCommands
 				(Option<string>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "jdk-path"));
 			var jdkVersion = context.ParseResult.GetValueForOption(
 				(Option<int>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "jdk-version"));
-			var packages = context.ParseResult.GetValueForOption(
+			var rawPackages = context.ParseResult.GetValueForOption(
 				(Option<string[]>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "packages"));
+			
+			// Support comma-separated packages: "pkg1,pkg2,pkg3" becomes ["pkg1", "pkg2", "pkg3"]
+			var packages = rawPackages?
+				.SelectMany(p => p.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+				.ToArray();
 
 			var formatter = useJson 
 				? (IOutputFormatter)new JsonOutputFormatter(Console.Out) 
