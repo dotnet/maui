@@ -69,6 +69,19 @@ public static class AndroidCommands
 				? (IOutputFormatter)new JsonOutputFormatter(Console.Out) 
 				: new ConsoleOutputFormatter(Console.Out);
 
+			// Create progress reporter
+			var progress = new Progress<string>(message =>
+			{
+				if (useJson)
+				{
+					formatter.WriteProgress(message);
+				}
+				else
+				{
+					Console.WriteLine(message);
+				}
+			});
+
 			try
 			{
 				if (dryRun)
@@ -87,6 +100,7 @@ public static class AndroidCommands
 					jdkPath: jdkPath,
 					jdkVersion: jdkVersion,
 					additionalPackages: packages,
+					progress: progress,
 					cancellationToken: context.GetCancellationToken());
 
 				if (useJson)
