@@ -518,6 +518,11 @@ stages:
               echo "Running Copilot PR Reviewer Agent via Review-PR.ps1..."
               echo "Reviewing PR #${{ parameters.PRNumber }}..."
               
+              # Configure git identity (required for merge operations on self-hosted agents)
+              git config user.email "copilot-ci@microsoft.com"
+              git config user.name "Copilot CI"
+              echo "Git identity configured"
+              
               # Create artifacts directory for Copilot outputs
               mkdir -p $(Build.ArtifactStagingDirectory)/copilot-logs
               
