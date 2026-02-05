@@ -186,7 +186,9 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			{
 				var isWebviewInitialized = await _webviewReadyTask;
 
-				if (isWebviewInitialized && _webview.CoreWebView2 != null)
+				// Capture CoreWebView2 reference to avoid race condition between null check and usage
+				var coreWebView = _webview.CoreWebView2;
+				if (isWebviewInitialized && coreWebView != null)
 				{
 					_logger.NavigatingToUri(absoluteUri);
 					_webview.Source = absoluteUri;
@@ -198,10 +200,12 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		protected override void SendMessage(string message)
 		{
 			// Guard against calling into WebView2 after it has been disposed, which can happen
-			// during window shutdown when event handlers are still executing
-			if (_webview.CoreWebView2 != null)
+			// during window shutdown when event handlers are still executing.
+			// Capture CoreWebView2 reference to avoid race condition between null check and usage.
+			var coreWebView = _webview.CoreWebView2;
+			if (coreWebView != null)
 			{
-				_webview.CoreWebView2.PostWebMessageAsString(message);
+				coreWebView.PostWebMessageAsString(message);
 			}
 		}
 
