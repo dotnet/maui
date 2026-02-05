@@ -349,7 +349,7 @@ find src/Controls/tests -name "*XXXXX*" -type f 2>/dev/null
 
 **If tests exist** → Proceed to verification.
 
-**If NO tests exist** → Let the user know that tests are missing and needed before the PR can be fully reviewed.
+**If NO tests exist** → Let the user know that tests are missing. They can use the `write-tests-agent` to help create them.
 
 ### Step 2: Select Platform
 
@@ -412,7 +412,7 @@ See `.github/skills/verify-tests-fail-without-fix/SKILL.md` for full skill docum
 
 ### If Tests Don't Behave as Expected
 
-**If tests PASS without fix** → Tests don't catch the bug. Let the user know the tests need to be fixed to properly reproduce the issue.
+**If tests PASS without fix** → Tests don't catch the bug. Let the user know the tests need to be fixed. They can use the `write-tests-agent` for help.
 
 ### Complete 🚦 Gate
 
