@@ -84,12 +84,12 @@ public interface IAndroidProvider
 	/// <summary>
 	/// Installs JDK if not present.
 	/// </summary>
-	Task InstallJdkAsync(int version = 17, string? installPath = null, CancellationToken cancellationToken = default);
+	Task InstallJdkAsync(int version = 17, string? installPath = null, IProgress<string>? progress = null, CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Bootstraps the Android development environment.
 	/// </summary>
-	Task BootstrapAsync(string? sdkPath = null, string? jdkPath = null, int jdkVersion = 17, IEnumerable<string>? additionalPackages = null, CancellationToken cancellationToken = default);
+	Task BootstrapAsync(string? sdkPath = null, string? jdkPath = null, int jdkVersion = 17, IEnumerable<string>? additionalPackages = null, IProgress<string>? progress = null, CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Takes a screenshot from a device.

@@ -270,31 +270,46 @@ public class AndroidProvider : IAndroidProvider
 	}
 
 	public async Task InstallJdkAsync(int version = 17, string? installPath = null, 
-		CancellationToken cancellationToken = default)
+		IProgress<string>? progress = null, CancellationToken cancellationToken = default)
 	{
+		progress?.Report($"Installing OpenJDK {version}...");
 		await _jdkManager.InstallAsync(version, installPath, cancellationToken);
 		_jdkPath = installPath ?? PlatformDetector.Paths.DefaultJdkPath;
+		progress?.Report($"OpenJDK {version} installed to {_jdkPath}");
 	}
 
 	public async Task BootstrapAsync(string? sdkPath = null, string? jdkPath = null, int jdkVersion = 17, 
-		IEnumerable<string>? additionalPackages = null, CancellationToken cancellationToken = default)
+		IEnumerable<string>? additionalPackages = null, IProgress<string>? progress = null, CancellationToken cancellationToken = default)
 	{
 		// Step 1: Install JDK if not present
 		if (!IsJdkInstalled)
 		{
-			await InstallJdkAsync(jdkVersion, jdkPath, cancellationToken);
+			progress?.Report("Step 1/4: Installing JDK...");
+			await InstallJdkAsync(jdkVersion, jdkPath, progress, cancellationToken);
+		}
+		else
+		{
+			progress?.Report("Step 1/4: JDK already installed ✓");
 		}
 
 		// Step 2: Install Android SDK if not present
 		if (!IsSdkInstalled)
 		{
+			progress?.Report("Step 2/4: Installing Android SDK command-line tools...");
 			var targetSdkPath = sdkPath ?? PlatformDetector.Paths.DefaultAndroidSdkPath;
 			await _sdkManager.BootstrapSdkAsync(targetSdkPath, cancellationToken);
 			_sdkPath = targetSdkPath;
+			progress?.Report($"Android SDK installed to {_sdkPath}");
+		}
+		else
+		{
+			progress?.Report("Step 2/4: Android SDK already installed ✓");
 		}
 
 		// Step 3: Accept licenses
+		progress?.Report("Step 3/4: Accepting SDK licenses...");
 		await AcceptLicensesAsync(cancellationToken);
+		progress?.Report("SDK licenses accepted ✓");
 
 		// Step 4: Install recommended packages
 		var packages = new List<string>
@@ -309,7 +324,13 @@ public class AndroidProvider : IAndroidProvider
 		if (additionalPackages != null)
 			packages.AddRange(additionalPackages);
 
+		progress?.Report($"Step 4/4: Installing {packages.Count} packages...");
+		foreach (var pkg in packages)
+		{
+			progress?.Report($"  Installing {pkg}...");
+		}
 		await InstallPackagesAsync(packages, true, cancellationToken);
+		progress?.Report("All packages installed ✓");
 	}
 
 	public async Task<string> TakeScreenshotAsync(string deviceSerial, string outputPath, 
