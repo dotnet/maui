@@ -17,10 +17,12 @@ public class Issue12156 : _IssuesUITest
 	[Category(UITestCategories.TitleView)]
 	public void LargeTitleDisplayWorks()
 	{
+#if IOS
 		if (!OperatingSystem.IsMacOSVersionAtLeast(26)) // Issue Link: https://github.com/dotnet/maui/issues/33879
 		{
 			Assert.Ignore("Ignored the test on iOS if it runs on macOS version less than 26 due to known visual differences");
 		}
+#endif
 		App.WaitForElement("Label");
 		VerifyScreenshot();
 	}
