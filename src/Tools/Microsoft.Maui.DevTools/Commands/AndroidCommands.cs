@@ -530,6 +530,51 @@ public static class AndroidCommands
 		command.AddCommand(createCommand);
 		command.AddCommand(startCommand);
 
+		// avd delete
+		var deleteCommand = new Command("delete", "Delete an AVD")
+		{
+			new Argument<string>("name", "AVD name to delete")
+		};
+		deleteCommand.SetHandler(async (InvocationContext context) =>
+		{
+			var androidProvider = Program.AndroidProvider;
+			
+			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
+			var dryRun = context.ParseResult.GetValueForOption(GlobalOptions.DryRunOption);
+			var name = context.ParseResult.GetValueForArgument(
+				(Argument<string>)context.ParseResult.CommandResult.Command.Arguments.First());
+
+			var formatter = useJson 
+				? (IOutputFormatter)new JsonOutputFormatter(Console.Out) 
+				: new ConsoleOutputFormatter(Console.Out);
+
+			try
+			{
+				if (dryRun)
+				{
+					Console.WriteLine($"[dry-run] Would delete AVD: {name}");
+					return;
+				}
+
+				await androidProvider.DeleteAvdAsync(name, context.GetCancellationToken());
+
+				if (useJson)
+				{
+					formatter.Write(new { success = true, name = name, status = "deleted" });
+				}
+				else
+				{
+					Console.WriteLine($"✓ Deleted AVD: {name}");
+				}
+			}
+			catch (Exception ex)
+			{
+				formatter.WriteError(ex);
+				context.ExitCode = 1;
+			}
+		});
+		command.AddCommand(deleteCommand);
+
 		return command;
 	}
 }
