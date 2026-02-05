@@ -61,4 +61,56 @@ internal static class AndroidEnvironment
 			_ => null
 		};
 	}
+
+	/// <summary>
+	/// Maps an Android API level to an OS version string (e.g., "33" → "13.0", "35" → "15.0").
+	/// Returns the release version without "Android" prefix, matching ServiceHub expectations.
+	/// </summary>
+	public static string? MapApiLevelToVersion(string? apiLevel)
+	{
+		if (string.IsNullOrEmpty(apiLevel))
+			return null;
+
+		return apiLevel switch
+		{
+			"36" => "16.0",
+			"35" => "15.0",
+			"34" => "14.0",
+			"33" => "13.0",
+			"32" => "12.1",
+			"31" => "12.0",
+			"30" => "11.0",
+			"29" => "10.0",
+			"28" => "9.0",
+			"27" => "8.1",
+			"26" => "8.0",
+			"25" => "7.1",
+			"24" => "7.0",
+			"23" => "6.0",
+			"22" => "5.1",
+			"21" => "5.0",
+			_ => null
+		};
+	}
+
+	/// <summary>
+	/// Maps a system image tag ID to a human-readable variant name (e.g., "google_apis" → "Google API's").
+	/// </summary>
+	public static string? MapTagIdToSubModel(string? tagId)
+	{
+		if (string.IsNullOrEmpty(tagId))
+			return null;
+
+		return tagId switch
+		{
+			"google_apis" => "Google API's",
+			"google_apis_playstore" => "Play Store",
+			"default" => "AOSP",
+			"android-wear" => "Wear OS",
+			"android-tv" => "Android TV",
+			"android-automotive" => "Android Automotive",
+			"chromeos" => "Chrome OS",
+			_ => tagId
+		};
+	}
 }

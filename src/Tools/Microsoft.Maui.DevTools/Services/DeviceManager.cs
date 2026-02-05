@@ -37,20 +37,40 @@ public class DeviceManager : IDeviceManager
 			var avds = await _androidProvider.GetAvdsAsync(cancellationToken);
 			foreach (var avd in avds)
 			{
-				// Check if this AVD is already in the running devices list
-				var isRunning = devices.Any(d => 
+				// Check if this AVD is already in the running devices list (matched by AVD name in details)
+				var runningIndex = devices.FindIndex(d => 
 					d.Platforms.Contains("android") && 
 					d.Details != null &&
 					d.Details.TryGetValue("avd", out var avdName) && 
 					avdName?.ToString() == avd.Name);
 
-				if (!isRunning)
+				if (runningIndex >= 0)
+				{
+					// Merge AVD metadata into the running emulator device
+					var running = devices[runningIndex];
+					var subModel = AndroidEnvironment.MapTagIdToSubModel(avd.TagId);
+					var details = running.Details != null
+						? new Dictionary<string, object>(running.Details)
+						: new Dictionary<string, object>();
+					details["tag_id"] = avd.TagId ?? "default";
+					details["target"] = avd.Target ?? "unknown";
+
+					devices[runningIndex] = running with
+					{
+						EmulatorId = avd.Name,
+						SubModel = subModel,
+						Details = details
+					};
+				}
+				else
 				{
 					var architecture = AndroidEnvironment.MapAbiToArchitecture(avd.Abi) ?? (PlatformDetector.IsArm64 ? "arm64" : "x64");
 					var abi = avd.Abi ?? (PlatformDetector.IsArm64 ? "arm64-v8a" : "x86_64");
+					var versionName = AndroidEnvironment.MapApiLevelToVersion(avd.ApiLevel);
+					var subModel = AndroidEnvironment.MapTagIdToSubModel(avd.TagId);
 					devices.Add(new Device
 					{
-						Id = $"avd:{avd.Name}",
+						Id = avd.Name,
 						Name = avd.Name,
 						Platforms = new[] { "android" },
 						Type = DeviceType.Emulator,
@@ -60,8 +80,10 @@ public class DeviceManager : IDeviceManager
 						ConnectionType = Models.ConnectionType.Local,
 						EmulatorId = avd.Name,
 						Model = avd.DeviceProfile,
+						SubModel = subModel,
+						Manufacturer = "Google",
 						Version = avd.ApiLevel,
-						VersionName = avd.ApiLevel != null ? $"Android {avd.ApiLevel} ({avd.TagId ?? "default"})" : avd.Target,
+						VersionName = versionName,
 						Architecture = architecture,
 						PlatformArchitecture = abi,
 						RuntimeIdentifiers = AndroidEnvironment.GetRuntimeIdentifiers(architecture),
