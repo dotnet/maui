@@ -128,27 +128,15 @@ public class ConsoleOutputFormatter : IOutputFormatter
 
 	public void WriteError(Exception exception)
 	{
-		if (exception is Errors.MauiToolException mex)
-		{
-			var category = ErrorResult.GetCategory(mex.Code);
-			WriteError(new ErrorResult
-			{
-				Code = mex.Code,
-				Category = category,
-				Message = mex.Message,
-				NativeError = mex.NativeError,
-				Remediation = mex.Remediation != null ? new RemediationResult
-				{
-					Type = mex.Remediation.Type.ToString().ToLowerInvariant(),
-					Command = mex.Remediation.Command,
-					ManualSteps = mex.Remediation.ManualSteps
-				} : null
-			});
-		}
-		else
+		var errorResult = ErrorResult.FromException(exception);
+		if (exception is not Errors.MauiToolException)
 		{
 			WriteColored($"Error: ", ConsoleColor.Red);
 			_error.WriteLine(exception.Message);
+		}
+		else
+		{
+			WriteError(errorResult);
 		}
 	}
 

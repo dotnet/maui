@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.RegularExpressions;
 using Microsoft.Maui.DevTools.Errors;
 using Microsoft.Maui.DevTools.Models;
 using Microsoft.Maui.DevTools.Utils;
@@ -13,6 +14,12 @@ namespace Microsoft.Maui.DevTools.Providers.Android;
 public class Adb
 {
 	private readonly Func<string?> _getSdkPath;
+
+	// Compiled regex patterns for parsing
+	private static readonly Regex s_getPropRegex = new(@"\[([^\]]+)\]:\s*\[([^\]]*)\]", RegexOptions.Compiled);
+	private static readonly Regex s_modelRegex = new(@"model:(\S+)", RegexOptions.Compiled);
+	private static readonly Regex s_deviceRegex = new(@"device:(\S+)", RegexOptions.Compiled);
+	private static readonly Regex s_detailsRegex = new(@"(\w+):(\S+)", RegexOptions.Compiled);
 
 	public Adb(Func<string?> getSdkPath)
 	{
@@ -115,14 +122,7 @@ public class Adb
 				details["brand"] = brand;
 
 			// Determine architecture from ABI
-			var architecture = abi switch
-			{
-				"arm64-v8a" => "arm64",
-				"armeabi-v7a" => "arm",
-				"x86_64" => "x64",
-				"x86" => "x86",
-				_ => device.Architecture
-			};
+			var architecture = AndroidEnvironment.MapAbiToArchitecture(abi) ?? device.Architecture;
 
 			// Create enriched device name
 			var displayName = !string.IsNullOrEmpty(brand) && !string.IsNullOrEmpty(model)
@@ -138,7 +138,7 @@ public class Adb
 				Model = model ?? device.Model,
 				Architecture = architecture,
 				PlatformArchitecture = abi ?? device.PlatformArchitecture,
-				RuntimeIdentifiers = GetAndroidRuntimeIdentifiers(architecture),
+				RuntimeIdentifiers = AndroidEnvironment.GetRuntimeIdentifiers(architecture),
 				Details = details
 			};
 		}
@@ -153,7 +153,7 @@ public class Adb
 	{
 		if (string.IsNullOrEmpty(value))
 			return value;
-		return char.ToUpper(value[0], System.Globalization.CultureInfo.InvariantCulture) + value.Substring(1).ToLower(System.Globalization.CultureInfo.InvariantCulture);
+		return char.ToUpper(value[0], System.Globalization.CultureInfo.InvariantCulture) + value.Substring(1);
 	}
 
 	private static Dictionary<string, string> ParseGetProp(string output)
@@ -163,8 +163,7 @@ public class Adb
 
 		foreach (var line in lines)
 		{
-			// Format: [ro.build.version.sdk]: [35]
-			var match = System.Text.RegularExpressions.Regex.Match(line, @"\[([^\]]+)\]:\s*\[([^\]]*)\]");
+			var match = s_getPropRegex.Match(line);
 			if (match.Success)
 			{
 				props[match.Groups[1].Value] = match.Groups[2].Value;
@@ -216,8 +215,8 @@ public class Adb
 				Manufacturer = ExtractManufacturer(deviceDetails),
 				Architecture = architecture,
 				PlatformArchitecture = architecture,
-				RuntimeIdentifiers = GetAndroidRuntimeIdentifiers(architecture),
-				Idiom = DeviceIdiom.Phone, // Default, could be improved with device info
+				RuntimeIdentifiers = AndroidEnvironment.GetRuntimeIdentifiers(architecture),
+				Idiom = DeviceIdiom.Phone,
 				Details = deviceDetails
 			};
 
@@ -244,44 +243,17 @@ public class Adb
 	private static string? ExtractArchitecture(Dictionary<string, object>? details)
 	{
 		if (details?.TryGetValue("abi", out var abi) == true)
-		{
-			var abiStr = abi?.ToString();
-			if (!string.IsNullOrEmpty(abiStr))
-			{
-				// Map ABI to architecture
-				return abiStr switch
-				{
-					"arm64-v8a" => "arm64",
-					"armeabi-v7a" => "arm",
-					"x86_64" => "x64",
-					"x86" => "x86",
-					_ => abiStr
-				};
-			}
-		}
+			return AndroidEnvironment.MapAbiToArchitecture(abi?.ToString());
 		return null;
-	}
-
-	private static string[]? GetAndroidRuntimeIdentifiers(string? architecture)
-	{
-		return architecture switch
-		{
-			"arm64" => new[] { "android-arm64" },
-			"arm" => new[] { "android-arm" },
-			"x64" => new[] { "android-x64" },
-			"x86" => new[] { "android-x86" },
-			_ => null
-		};
 	}
 
 	private static string? ExtractDeviceName(string line)
 	{
-		// Try to extract model from device info
-		var modelMatch = System.Text.RegularExpressions.Regex.Match(line, @"model:(\S+)");
+		var modelMatch = s_modelRegex.Match(line);
 		if (modelMatch.Success)
 			return modelMatch.Groups[1].Value.Replace('_', ' ');
 
-		var deviceMatch = System.Text.RegularExpressions.Regex.Match(line, @"device:(\S+)");
+		var deviceMatch = s_deviceRegex.Match(line);
 		if (deviceMatch.Success)
 			return deviceMatch.Groups[1].Value;
 
@@ -292,8 +264,8 @@ public class Adb
 	{
 		var details = new Dictionary<string, object>();
 
-		var matches = System.Text.RegularExpressions.Regex.Matches(line, @"(\w+):(\S+)");
-		foreach (System.Text.RegularExpressions.Match match in matches)
+		var matches = s_detailsRegex.Matches(line);
+		foreach (Match match in matches)
 		{
 			details[match.Groups[1].Value] = match.Groups[2].Value;
 		}

@@ -40,32 +40,7 @@ public class JsonOutputFormatter : IOutputFormatter
 
 	public void WriteError(Exception exception)
 	{
-		if (exception is Errors.MauiToolException mex)
-		{
-			var category = ErrorResult.GetCategory(mex.Code);
-			WriteError(new ErrorResult
-			{
-				Code = mex.Code,
-				Category = category,
-				Message = mex.Message,
-				NativeError = mex.NativeError,
-				Remediation = mex.Remediation != null ? new RemediationResult
-				{
-					Type = mex.Remediation.Type.ToString().ToLowerInvariant(),
-					Command = mex.Remediation.Command,
-					ManualSteps = mex.Remediation.ManualSteps
-				} : null
-			});
-		}
-		else
-		{
-			WriteError(new ErrorResult
-			{
-				Code = Errors.ErrorCodes.InternalError,
-				Category = "tool",
-				Message = exception.Message
-			});
-		}
+		WriteError(ErrorResult.FromException(exception));
 	}
 
 	public void WriteError(ErrorResult error)

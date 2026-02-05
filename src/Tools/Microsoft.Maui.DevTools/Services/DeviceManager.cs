@@ -46,8 +46,8 @@ public class DeviceManager : IDeviceManager
 
 				if (!isRunning)
 				{
-					var architecture = avd.Abi ?? (PlatformDetector.IsArm64 ? "arm64-v8a" : "x86_64");
-					var cpuArch = architecture.Contains("arm64", StringComparison.OrdinalIgnoreCase) ? "arm64" : "x64";
+					var architecture = AndroidEnvironment.MapAbiToArchitecture(avd.Abi) ?? (PlatformDetector.IsArm64 ? "arm64" : "x64");
+					var abi = avd.Abi ?? (PlatformDetector.IsArm64 ? "arm64-v8a" : "x86_64");
 					devices.Add(new Device
 					{
 						Id = $"avd:{avd.Name}",
@@ -62,16 +62,16 @@ public class DeviceManager : IDeviceManager
 						Model = avd.DeviceProfile,
 						Version = avd.ApiLevel,
 						VersionName = avd.ApiLevel != null ? $"Android {avd.ApiLevel} ({avd.TagId ?? "default"})" : avd.Target,
-						Architecture = cpuArch,
-						PlatformArchitecture = architecture,
-						RuntimeIdentifiers = new[] { $"android-{cpuArch}" },
+						Architecture = architecture,
+						PlatformArchitecture = abi,
+						RuntimeIdentifiers = AndroidEnvironment.GetRuntimeIdentifiers(architecture),
 						Idiom = DeviceIdiom.Phone,
 						Details = new Dictionary<string, object>
 						{
 							["avd"] = avd.Name,
 							["target"] = avd.Target ?? "unknown",
 							["api_level"] = avd.ApiLevel ?? "unknown",
-							["abi"] = architecture,
+							["abi"] = abi,
 							["tag_id"] = avd.TagId ?? "default"
 						}
 					});
@@ -89,14 +89,6 @@ public class DeviceManager : IDeviceManager
 		// TODO: Get Windows devices when WindowsProvider is implemented
 
 		return devices;
-	}
-
-	private static string? ExtractAndroidVersion(string? target)
-	{
-		if (string.IsNullOrEmpty(target)) return null;
-		// Extract "35" from "android-35" or "Android 35"
-		var match = System.Text.RegularExpressions.Regex.Match(target, @"(\d+)");
-		return match.Success ? match.Groups[1].Value : null;
 	}
 
 	public async Task<IReadOnlyList<Device>> GetDevicesByPlatformAsync(string platform, CancellationToken cancellationToken = default)
