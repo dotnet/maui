@@ -92,6 +92,17 @@ public interface IAndroidProvider
 	Task AcceptLicensesAsync(CancellationToken cancellationToken = default);
 
 	/// <summary>
+	/// Checks if SDK licenses have been accepted.
+	/// </summary>
+	Task<bool> AreLicensesAcceptedAsync(CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Gets the command and arguments to run for interactive license acceptance.
+	/// Returns (command, arguments) tuple for IDE terminal integration.
+	/// </summary>
+	(string Command, string Arguments)? GetLicenseAcceptanceCommand();
+
+	/// <summary>
 	/// Installs JDK if not present.
 	/// </summary>
 	Task InstallJdkAsync(int version = 17, string? installPath = null, IProgress<string>? progress = null, CancellationToken cancellationToken = default);

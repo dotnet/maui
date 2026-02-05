@@ -279,6 +279,20 @@ public class AndroidProvider : IAndroidProvider
 		await _sdkManager.AcceptLicensesAsync(cancellationToken);
 	}
 
+	public async Task<bool> AreLicensesAcceptedAsync(CancellationToken cancellationToken = default)
+	{
+		return await _sdkManager.AreLicensesAcceptedAsync(cancellationToken);
+	}
+
+	public (string Command, string Arguments)? GetLicenseAcceptanceCommand()
+	{
+		var sdkManagerPath = _sdkManager.SdkManagerPath;
+		if (string.IsNullOrEmpty(sdkManagerPath))
+			return null;
+
+		return (sdkManagerPath, "--licenses");
+	}
+
 	public async Task InstallJdkAsync(int version = 17, string? installPath = null, 
 		IProgress<string>? progress = null, CancellationToken cancellationToken = default)
 	{
