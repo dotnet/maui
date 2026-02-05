@@ -218,6 +218,86 @@ public class AndroidProviderTests
 		Assert.Contains("platforms;android-35", installedPackages);
 	}
 
+	[Fact]
+	public async Task GetAvailablePackagesAsync_ReturnsAvailablePackages()
+	{
+		// Arrange
+		var availablePackages = new List<SdkPackage>
+		{
+			new SdkPackage { Path = "platforms;android-36", Version = "1", Description = "Android SDK Platform 36", IsInstalled = false },
+			new SdkPackage { Path = "system-images;android-36;google_apis;arm64-v8a", Version = "1", IsInstalled = false },
+			new SdkPackage { Path = "build-tools;36.0.0", Version = "36.0.0", IsInstalled = false }
+		};
+
+		var mockProvider = new Mock<IAndroidProvider>();
+		mockProvider.Setup(x => x.GetAvailablePackagesAsync(It.IsAny<CancellationToken>()))
+			.ReturnsAsync(availablePackages);
+
+		// Act
+		var result = await mockProvider.Object.GetAvailablePackagesAsync();
+
+		// Assert
+		Assert.Equal(3, result.Count);
+		Assert.All(result, pkg => Assert.False(pkg.IsInstalled));
+		Assert.Contains(result, p => p.Path == "platforms;android-36");
+		Assert.Contains(result, p => p.Path == "system-images;android-36;google_apis;arm64-v8a");
+	}
+
+	[Fact]
+	public async Task GetInstalledPackagesAsync_SetsIsInstalledToTrue()
+	{
+		// Arrange
+		var installedPackages = new List<SdkPackage>
+		{
+			new SdkPackage { Path = "platforms;android-35", Version = "3", IsInstalled = true },
+			new SdkPackage { Path = "build-tools;35.0.0", Version = "35.0.0", IsInstalled = true },
+			new SdkPackage { Path = "platform-tools", Version = "35.0.2", IsInstalled = true }
+		};
+
+		var mockProvider = new Mock<IAndroidProvider>();
+		mockProvider.Setup(x => x.GetInstalledPackagesAsync(It.IsAny<CancellationToken>()))
+			.ReturnsAsync(installedPackages);
+
+		// Act
+		var result = await mockProvider.Object.GetInstalledPackagesAsync();
+
+		// Assert
+		Assert.Equal(3, result.Count);
+		Assert.All(result, pkg => Assert.True(pkg.IsInstalled));
+	}
+
+	[Fact]
+	public async Task GetAvailableAndInstalledPackages_CanBeCombined()
+	{
+		// Arrange
+		var installedPackages = new List<SdkPackage>
+		{
+			new SdkPackage { Path = "platforms;android-35", Version = "3", IsInstalled = true },
+			new SdkPackage { Path = "build-tools;35.0.0", Version = "35.0.0", IsInstalled = true }
+		};
+		var availablePackages = new List<SdkPackage>
+		{
+			new SdkPackage { Path = "platforms;android-36", Version = "1", IsInstalled = false },
+			new SdkPackage { Path = "build-tools;36.0.0", Version = "36.0.0", IsInstalled = false }
+		};
+
+		var mockProvider = new Mock<IAndroidProvider>();
+		mockProvider.Setup(x => x.GetInstalledPackagesAsync(It.IsAny<CancellationToken>()))
+			.ReturnsAsync(installedPackages);
+		mockProvider.Setup(x => x.GetAvailablePackagesAsync(It.IsAny<CancellationToken>()))
+			.ReturnsAsync(availablePackages);
+
+		// Act
+		var installed = await mockProvider.Object.GetInstalledPackagesAsync();
+		var available = await mockProvider.Object.GetAvailablePackagesAsync();
+		var allPackages = installed.Concat(available).ToList();
+
+		// Assert
+		Assert.Equal(4, allPackages.Count);
+		Assert.Equal(2, allPackages.Count(p => p.IsInstalled));
+		Assert.Equal(2, allPackages.Count(p => !p.IsInstalled));
+	}
+
 	// Helper method to extract API level from system image path
 	private static int ExtractApiLevel(string systemImagePath)
 	{

@@ -147,6 +147,24 @@ public class SdkManager
 		return ParseInstalledPackages(result.StandardOutput);
 	}
 
+	public async Task<List<SdkPackage>> GetAvailablePackagesAsync(CancellationToken cancellationToken = default)
+	{
+		if (!IsAvailable)
+			return new List<SdkPackage>();
+
+		var result = await ProcessRunner.RunAsync(
+			SdkManagerPath!,
+			"--list",
+			environmentVariables: GetEnvironment(),
+			timeout: TimeSpan.FromMinutes(2),
+			cancellationToken: cancellationToken);
+
+		if (!result.Success)
+			return new List<SdkPackage>();
+
+		return ParseAvailablePackages(result.StandardOutput);
+	}
+
 	private static List<SdkPackage> ParseInstalledPackages(string output)
 	{
 		var packages = new List<SdkPackage>();
@@ -170,13 +188,53 @@ public class SdkManager
 			if (inInstalledSection && !string.IsNullOrWhiteSpace(line))
 			{
 				var parts = line.Split('|').Select(p => p.Trim()).ToArray();
-				if (parts.Length >= 2 && !parts[0].StartsWith("Path") && !parts[0].StartsWith("---"))
+				if (parts.Length >= 2 && !parts[0].StartsWith("Path", StringComparison.Ordinal) && !parts[0].StartsWith("---", StringComparison.Ordinal))
 				{
 					packages.Add(new SdkPackage
 					{
 						Path = parts[0],
 						Version = parts.Length > 1 ? parts[1] : null,
-						Description = parts.Length > 2 ? parts[2] : null
+						Description = parts.Length > 2 ? parts[2] : null,
+						IsInstalled = true
+					});
+				}
+			}
+		}
+
+		return packages;
+	}
+
+	private static List<SdkPackage> ParseAvailablePackages(string output)
+	{
+		var packages = new List<SdkPackage>();
+		var inAvailableSection = false;
+		var lines = output.Split('\n');
+
+		foreach (var line in lines)
+		{
+			if (line.Contains("Available Packages:", StringComparison.Ordinal))
+			{
+				inAvailableSection = true;
+				continue;
+			}
+
+			if (line.Contains("Available Updates:", StringComparison.Ordinal) || line.Contains("Installed packages:", StringComparison.Ordinal))
+			{
+				inAvailableSection = false;
+				continue;
+			}
+
+			if (inAvailableSection && !string.IsNullOrWhiteSpace(line))
+			{
+				var parts = line.Split('|').Select(p => p.Trim()).ToArray();
+				if (parts.Length >= 2 && !parts[0].StartsWith("Path", StringComparison.Ordinal) && !parts[0].StartsWith("---", StringComparison.Ordinal))
+				{
+					packages.Add(new SdkPackage
+					{
+						Path = parts[0],
+						Version = parts.Length > 1 ? parts[1] : null,
+						Description = parts.Length > 2 ? parts[2] : null,
+						IsInstalled = false
 					});
 				}
 			}

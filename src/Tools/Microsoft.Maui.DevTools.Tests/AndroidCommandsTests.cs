@@ -152,6 +152,19 @@ public class AndroidCommandsTests
 	}
 
 	[Fact]
+	public void SdkListCommand_HasAvailableAndAllOptions()
+	{
+		// Arrange
+		var androidCommand = AndroidCommands.Create();
+		var sdkCommand = androidCommand.Subcommands.First(c => c.Name == "sdk");
+		var listCommand = sdkCommand.Subcommands.First(c => c.Name == "list");
+
+		// Assert
+		Assert.Contains(listCommand.Options, o => o.Name == "available");
+		Assert.Contains(listCommand.Options, o => o.Name == "all");
+	}
+
+	[Fact]
 	public void AndroidCommand_HasAllSubcommands()
 	{
 		// Arrange
