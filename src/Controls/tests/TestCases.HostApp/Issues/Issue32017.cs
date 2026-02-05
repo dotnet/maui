@@ -82,7 +82,6 @@ public class Issue32017 : ContentPage
 
 				var newWidth = Window.Width / 2;
 				Window.Width = newWidth;
-				Window.Height = Window.Height / 2;
 			}
 		};
 
