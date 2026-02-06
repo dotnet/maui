@@ -1,5 +1,6 @@
 namespace Microsoft.Maui.Handlers;
 
+// TODO: Material3 - make it public in .net 11
 internal class ProgressBarHandler2 : ViewHandler<IProgress, MaterialProgressBar>
 {
 	public static PropertyMapper<IProgress, ProgressBarHandler2> Mapper =
