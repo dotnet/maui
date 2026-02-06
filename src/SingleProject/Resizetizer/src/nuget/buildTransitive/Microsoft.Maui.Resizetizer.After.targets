@@ -549,9 +549,9 @@
     <!-- Collect font items for platform-specific packaging.
          This target always runs (no Inputs/Outputs) to ensure platform items
          are registered even when ProcessMauiFonts is skipped by incremental build.
-         Uses wildcard collection similar to ResizetizeImages to handle both cases:
-         - When ProcessMauiFonts runs: collects newly copied fonts
-         - When ProcessMauiFonts skips: collects existing fonts from intermediate folder -->
+         Uses predictive path mapping from source @(MauiFont) items to handle both cases:
+         - When ProcessMauiFonts runs: items point to newly copied fonts
+         - When ProcessMauiFonts skips: items point to existing fonts from intermediate folder -->
     <Target Name="_CollectMauiFontItems"
         Condition="'$(EnableMauiFontProcessing)' == 'true'"
         DependsOnTargets="ProcessMauiFonts"
