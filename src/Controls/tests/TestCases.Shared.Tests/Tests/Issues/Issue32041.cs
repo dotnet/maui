@@ -1,4 +1,4 @@
-//#if ANDROID
+#if ANDROID
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -60,4 +60,4 @@ public class Issue32041 : _IssuesUITest
 		Assert.That(rootContainerRect.Bottom, Is.EqualTo(afterKeyboardCloseBottom + navBarHeight));
 	}
 }
-//#endif
+#endif
