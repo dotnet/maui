@@ -457,35 +457,6 @@ if (-not $DryRun) {
 }
 Write-Host ""
 
-# NOTE: This cleanup targets CI/ADO agent environments where only this script's
-# Copilot CLI processes should exist. On developer machines, this could potentially
-# affect other Copilot processes (e.g., VS Code extension). The risk is low since
-# this runs at script end, but be aware if running locally.
-# Clean up orphaned copilot CLI processes that may hold stdout fd open
-# IMPORTANT: Only target processes whose command line contains "copilot" to avoid
-# accidentally terminating the ADO agent's own node process
-Write-Host "🧹 Cleaning up child processes..." -ForegroundColor Gray
-try {
-    $myPid = $PID
-    # Find node processes running copilot CLI (not the ADO agent's node process)
-    $orphans = Get-Process -Name "node" -ErrorAction SilentlyContinue | Where-Object {
-        $_.Id -ne $myPid -and
-        (($_.Path -and $_.Path -match "copilot") -or
-         ($_.CommandLine -and $_.CommandLine -match "copilot"))
-    }
-    # Also get any process literally named "copilot"
-    $copilotProcs = Get-Process -Name "copilot" -ErrorAction SilentlyContinue
-    $allOrphans = @($orphans) + @($copilotProcs) | Where-Object { $_ -ne $null } | Sort-Object Id -Unique
-    if ($allOrphans.Count -gt 0) {
-        Write-Host "  Stopping $($allOrphans.Count) orphaned process(es): $($allOrphans | ForEach-Object { "$($_.ProcessName)($($_.Id))" } | Join-String -Separator ', ')" -ForegroundColor Gray
-        $allOrphans | Stop-Process -Force -ErrorAction SilentlyContinue
-    } else {
-        Write-Host "  No orphaned copilot processes found" -ForegroundColor Gray
-    }
-} catch {
-    Write-Host "  ⚠️ Cleanup warning: $_" -ForegroundColor Yellow
-}
-
 if ($LogFile) {
     Stop-Transcript | Out-Null
 }
