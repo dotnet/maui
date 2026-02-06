@@ -18,7 +18,7 @@ namespace Maui.Controls.Sample.Pages.SwipeViewGalleries
 			WeakReferenceMessenger.Default.Register<SwipeViewGalleryViewModel, string>(this, "delete", (_, sender) => { DisplayAlertAsync("SwipeView", "Delete", "Ok"); });
 		}
 
-		async void OnSwipeListViewItemTapped(object sender, ItemTappedEventArgs args)
+		async void OnSwipeListViewItemTapped(object? sender, ItemTappedEventArgs args)
 		{
 			await DisplayAlertAsync("OnSwipeListViewItemTapped", "You have tapped a ListView item", "Ok");
 		}

@@ -10,6 +10,8 @@
     <Nullable>enable</Nullable>
     <MauiEnablePlatformUsings>true</MauiEnablePlatformUsings>
     <NoWarn>$(NoWarn);XC0022</NoWarn>
+    <!-- This sample has nullability mismatches - use Runtime inflation -->
+    <MauiXamlInflator>Runtime</MauiXamlInflator>
 
     <!-- Display name -->
     <ApplicationTitle>.NET MAUI Embedding</ApplicationTitle>
