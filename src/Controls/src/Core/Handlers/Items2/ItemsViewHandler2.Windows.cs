@@ -17,306 +17,230 @@ using Microsoft.UI.Xaml.Input;
 using WASDKScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
 using WItemsView = Microsoft.UI.Xaml.Controls.ItemsView;
 using WScrollPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter;
-using WScrollSnapPointsAlignment = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPointsAlignment;
-using WRect = Windows.Foundation.Rect;
 using WVisibility = Microsoft.UI.Xaml.Visibility;
 
-namespace Microsoft.Maui.Controls.Handlers.Items2;
-/// <summary>
-/// Base handler for ItemsView controls on Windows, providing item source management,
-/// layout, scrolling, snap points, empty views, headers, and footers.
-/// </summary>
-public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WItemsView> where TItemsView : ItemsView
+namespace Microsoft.Maui.Controls.Handlers.Items2
 {
-	/// <summary>
-	/// Alignment ratio that positions the item at the start (top/left) of the viewport.
-	/// </summary>
-	const double AlignToStart = 0.0;
-
-	/// <summary>
-	/// Alignment ratio that positions the item at the center of the viewport.
-	/// </summary>
-	const double AlignToCenter = 0.5;
-
-	/// <summary>
-	/// Alignment ratio that positions the item at the end (bottom/right) of the viewport.
-	/// </summary>
-	const double AlignToEnd = 1.0;
-
-	CollectionViewSource? _collectionViewSource;
-	IList? _itemsSource;
-	ItemFactory? _itemFactory;
-
-	FrameworkElement? _emptyView;
-	View? _mauiEmptyView;
-	bool _emptyViewDisplayed;
-	double _previousHorizontalOffset;
-	double _previousVerticalOffset;
-
-	FrameworkElement? _footer;
-	View? _mauiFooter;
-	bool _footerDisplayed;
-
-	FrameworkElement? _header;
-	View? _mauiHeader;
-	bool _headerDisplayed;
-
-	ScrollViewer? _scrollViewer;
-
-	int _lastRemainingItemsThresholdIndex = -1;
-
-	WeakNotifyPropertyChangedProxy? _layoutPropertyChangedProxy;
-	PropertyChangedEventHandler? _layoutPropertyChanged;
-	bool _isScrollingForItemsUpdate;
-	int _pendingScrollToIndex = -1;
-	RoutedEventHandler? _pendingLoadedHandler;
-	protected TItemsView ItemsView => VirtualView;
-	protected TItemsView Element => VirtualView;
-
-	protected abstract IItemsLayout Layout { get; }
-
-	bool IsLayoutHorizontal => Layout switch
+	public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WItemsView> where TItemsView : ItemsView
 	{
-		LinearItemsLayout linearLayout => linearLayout.Orientation == ItemsLayoutOrientation.Horizontal,
-		GridItemsLayout gridLayout => gridLayout.Orientation == ItemsLayoutOrientation.Horizontal,
-		_ => false
-	};
+		CollectionViewSource? _collectionViewSource;
+		IList? _itemsSource;
 
-	public ItemsViewHandler2() : base(ItemsViewMapper)
-	{
+		FrameworkElement? _emptyView;
+		View? _mauiEmptyView;
+		bool _emptyViewDisplayed;
+		double _previousHorizontalOffset;
+		double _previousVerticalOffset;
 
-	}
+		FrameworkElement? _footer;
+		View? _mauiFooter;
+		bool _footerDisplayed;
 
-	public ItemsViewHandler2(PropertyMapper? mapper = null) : base(mapper ?? ItemsViewMapper)
-	{
+		FrameworkElement? _header;
+		View? _mauiHeader;
+		bool _headerDisplayed;
 
-	}
+		ScrollingScrollBarVisibility? _defaultHorizontalScrollVisibility;
+		ScrollingScrollBarVisibility? _defaultVerticalScrollVisibility;
 
-	public static PropertyMapper<TItemsView, ItemsViewHandler2<TItemsView>> ItemsViewMapper = new(ViewMapper)
-	{
-		[Controls.ItemsView.ItemsSourceProperty.PropertyName] = MapItemsSource,
-		[Controls.ItemsView.HorizontalScrollBarVisibilityProperty.PropertyName] = MapHorizontalScrollBarVisibility,
-		[Controls.ItemsView.VerticalScrollBarVisibilityProperty.PropertyName] = MapVerticalScrollBarVisibility,
-		[Controls.ItemsView.ItemTemplateProperty.PropertyName] = MapItemTemplate,
-		[Controls.ItemsView.EmptyViewProperty.PropertyName] = MapEmptyView,
-		[Controls.ItemsView.EmptyViewTemplateProperty.PropertyName] = MapEmptyViewTemplate,
-		[Controls.ItemsView.FlowDirectionProperty.PropertyName] = MapFlowDirection,
-		[Controls.ItemsView.IsVisibleProperty.PropertyName] = MapIsVisible,
-		[Controls.ItemsView.ItemsUpdatingScrollModeProperty.PropertyName] = MapItemsUpdatingScrollMode,
-		[Controls.StructuredItemsView.ItemsLayoutProperty.PropertyName] = MapItemsLayout,
-		[Controls.StructuredItemsView.HeaderProperty.PropertyName] = MapHeader,
-		[Controls.StructuredItemsView.HeaderTemplateProperty.PropertyName] = MapHeaderTemplate,
-		[Controls.StructuredItemsView.FooterProperty.PropertyName] = MapFooter,
-		[Controls.StructuredItemsView.FooterTemplateProperty.PropertyName] = MapFooterTemplate,
-	};
+		int _lastRemainingItemsThresholdIndex = -1;
 
-	bool _scrollUpdatePending;
+		WeakNotifyPropertyChangedProxy? _layoutPropertyChangedProxy;
+		PropertyChangedEventHandler? _layoutPropertyChanged;
+		bool _isScrollingForItemsUpdate;
+		int _pendingScrollToIndex = -1;
+		protected TItemsView ItemsView => VirtualView;
+		protected TItemsView Element => VirtualView;
 
-	public static void MapItemsSource(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
-	{
-		handler.UpdateItemsSource();
-	}
+		protected abstract IItemsLayout Layout { get; }
 
-	// Intentionally empty: ItemsUpdatingScrollMode is handled during scroll events
-	// via ApplyItemsUpdatingScrollMode, not as a direct property map.
-	public static void MapItemsUpdatingScrollMode(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
-	{
-	}
-
-	public static void MapHorizontalScrollBarVisibility(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
-	{
-		handler.UpdateHorizontalScrollBarVisibility();
-	}
-
-	public static void MapVerticalScrollBarVisibility(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
-	{
-		handler.UpdateVerticalScrollBarVisibility();
-	}
-
-	public static void MapItemTemplate(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
-	{
-		handler.UpdateItemsSource();
-	}
-
-	public static void MapEmptyView(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
-	{
-		handler.UpdateEmptyView();
-	}
-
-	public static void MapEmptyViewTemplate(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
-	{
-		handler.UpdateEmptyView();
-	}
-
-	public static void MapFlowDirection(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
-	{
-		handler.PlatformView.UpdateFlowDirection(itemsView);
-	}
-
-	public static void MapIsVisible(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
-	{
-		handler.PlatformView.UpdateVisibility(itemsView);
-		handler.UpdateEmptyViewVisibility();
-	}
-
-	public static void MapItemsLayout(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
-	{
-		handler.UpdateItemsLayout();
-	}
-
-	public static void MapHeader(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
-	{
-		handler.UpdateHeader();
-	}
-
-	public static void MapHeaderTemplate(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
-	{
-		handler.UpdateHeader();
-	}
-
-	public static void MapFooter(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
-	{
-		handler.UpdateFooter();
-	}
-
-	public static void MapFooterTemplate(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
-	{
-		handler.UpdateFooter();
-	}
-
-	protected override WItemsView CreatePlatformView()
-	{
-		var itemsView = SelectListViewBase();
-
-		return itemsView;
-	}
-
-	protected override void ConnectHandler(WItemsView platformView)
-	{
-		base.ConnectHandler(platformView);
-
-		if (Layout is not null)
+		bool IsLayoutHorizontal => Layout switch
 		{
-			_layoutPropertyChanged ??= LayoutPropertyChanged;
-			_layoutPropertyChangedProxy = new WeakNotifyPropertyChangedProxy(Layout, _layoutPropertyChanged);
+			LinearItemsLayout linearLayout => linearLayout.Orientation == ItemsLayoutOrientation.Horizontal,
+			GridItemsLayout gridLayout => gridLayout.Orientation == ItemsLayoutOrientation.Horizontal,
+			_ => false
+		};
+
+		public ItemsViewHandler2() : base(ItemsViewMapper)
+		{
+
 		}
-		else
+
+		public ItemsViewHandler2(PropertyMapper? mapper = null) : base(mapper ?? ItemsViewMapper)
 		{
+
+		}
+
+		public static PropertyMapper<TItemsView, ItemsViewHandler2<TItemsView>> ItemsViewMapper = new(ViewMapper)
+		{
+			[Controls.ItemsView.ItemsSourceProperty.PropertyName] = MapItemsSource,
+			[Controls.ItemsView.HorizontalScrollBarVisibilityProperty.PropertyName] = MapHorizontalScrollBarVisibility,
+			[Controls.ItemsView.VerticalScrollBarVisibilityProperty.PropertyName] = MapVerticalScrollBarVisibility,
+			[Controls.ItemsView.ItemTemplateProperty.PropertyName] = MapItemTemplate,
+			[Controls.ItemsView.EmptyViewProperty.PropertyName] = MapEmptyView,
+			[Controls.ItemsView.EmptyViewTemplateProperty.PropertyName] = MapEmptyViewTemplate,
+			[Controls.ItemsView.FlowDirectionProperty.PropertyName] = MapFlowDirection,
+			[Controls.ItemsView.IsVisibleProperty.PropertyName] = MapIsVisible,
+			[Controls.ItemsView.ItemsUpdatingScrollModeProperty.PropertyName] = MapItemsUpdatingScrollMode,
+			[Controls.StructuredItemsView.ItemsLayoutProperty.PropertyName] = MapItemsLayout,
+			[Controls.StructuredItemsView.HeaderProperty.PropertyName] = MapHeader,
+			[Controls.StructuredItemsView.HeaderTemplateProperty.PropertyName] = MapHeaderTemplate,
+			[Controls.StructuredItemsView.FooterProperty.PropertyName] = MapFooter,
+			[Controls.StructuredItemsView.FooterTemplateProperty.PropertyName] = MapFooterTemplate,
+		};
+
+		private bool _scrollUpdatePending;
+
+		public static void MapItemsSource(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
+		{
+			handler.UpdateItemsSource();
+		}
+
+		public static void MapItemsUpdatingScrollMode(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
+		{
+		}
+
+		public static void MapHorizontalScrollBarVisibility(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
+		{
+			handler.UpdateHorizontalScrollBarVisibility();
+		}
+
+		public static void MapVerticalScrollBarVisibility(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
+		{
+			handler.UpdateVerticalScrollBarVisibility();
+		}
+
+		public static void MapItemTemplate(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
+		{
+			handler.UpdateItemsSource();
+		}
+
+		public static void MapEmptyView(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
+		{
+			handler.UpdateEmptyView();
+		}
+
+		public static void MapEmptyViewTemplate(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
+		{
+			handler.UpdateEmptyView();
+		}
+
+		public static void MapFlowDirection(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
+		{
+			handler.PlatformView.UpdateFlowDirection(itemsView);
+		}
+
+		public static void MapIsVisible(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
+		{
+			handler.PlatformView.UpdateVisibility(itemsView);
+		}
+
+		public static void MapItemsLayout(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
+		{
+			handler.UpdateItemsLayout();
+		}
+
+		public static void MapHeader(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
+		{
+			handler.UpdateHeader();
+		}
+
+		public static void MapHeaderTemplate(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
+		{
+			handler.UpdateHeader();
+		}
+
+		public static void MapFooter(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
+		{
+			handler.UpdateFooter();
+		}
+
+		public static void MapFooterTemplate(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
+		{
+			handler.UpdateFooter();
+		}
+
+		protected override WItemsView CreatePlatformView()
+		{
+			var itemsView = SelectListViewBase();
+
+			return itemsView;
+		}
+
+		protected override void ConnectHandler(WItemsView platformView)
+		{
+			base.ConnectHandler(platformView);
+
+			if (Layout is not null)
+			{
+				_layoutPropertyChanged ??= LayoutPropertyChanged;
+				_layoutPropertyChangedProxy = new WeakNotifyPropertyChangedProxy(Layout, _layoutPropertyChanged);
+			}
+			else
+			{
+				_layoutPropertyChangedProxy?.Unsubscribe();
+				_layoutPropertyChangedProxy = null;
+			}
+
+			VirtualView.ScrollToRequested += ScrollToRequested;
+			FindScrollViewer();
+		}
+
+
+		protected override void DisconnectHandler(WItemsView platformView)
+		{
+			if(_collectionViewSource?.Source is INotifyCollectionChanged incc)
+			{
+				incc.CollectionChanged -= ItemsChanged;
+			}
+
+			// Unsubscribe from LayoutUpdated before disconnecting to prevent exceptions
+			if (_scrollUpdatePending)
+			{
+				platformView.LayoutUpdated -= OnLayoutUpdated;
+				_scrollUpdatePending = false;
+			}
+
 			_layoutPropertyChangedProxy?.Unsubscribe();
 			_layoutPropertyChangedProxy = null;
-		}
 
-		VirtualView.ScrollToRequested += ScrollToRequested;
-		FindScrollViewer();
-	}
-
-
-	protected override void DisconnectHandler(WItemsView platformView)
-	{
-		// Phase 1: Unsubscribe ALL events first to prevent callbacks during cleanup
-		if (_collectionViewSource?.Source is INotifyCollectionChanged incc)
-		{
-			incc.CollectionChanged -= ItemsChanged;
-		}
-
-		if (_scrollViewer is not null)
-		{
-			_scrollViewer.ViewChanged -= ScrollViewChanged;
-			_scrollViewer = null;
-		}
-
-		// Unsubscribe pending Loaded handler if ScrollView wasn't found yet
-		if (_pendingLoadedHandler is not null)
-		{
-			platformView.Loaded -= _pendingLoadedHandler;
-			_pendingLoadedHandler = null;
-		}
-
-		if (_scrollUpdatePending)
-		{
-			platformView.LayoutUpdated -= OnLayoutUpdated;
-			_scrollUpdatePending = false;
-		}
-
-		_layoutPropertyChangedProxy?.Unsubscribe();
-		_layoutPropertyChangedProxy = null;
-
-		if (VirtualView is not null)
-		{
-			VirtualView.ScrollToRequested -= ScrollToRequested;
-		}
-
-		// Safe subscription cleanup only — do NOT call CleanUpCollectionViewSource() here.
-		//
-		// CleanUpCollectionViewSource() performs two operations that trigger WinUI side effects
-		// during teardown:
-		//   1. Sets _collectionViewSource.Source = null → causes WinUI to recycle/release elements
-		//   2. Calls PlatformView.GetChildren<ItemContentControl>() → triggers element enumeration
-		//      while the ItemsRepeater is tearing down, leading to collection change notifications
-		//      and potential InvalidOperationException.
-		//
-		// The CleanUp() methods below are safe because they ONLY unsubscribe event handlers
-		// (CollectionChanged, group change notifications) without touching WinUI state.
-		if (_collectionViewSource?.Source is ObservableItemTemplateCollection2 observableCollection)
-		{
-			observableCollection.CleanUp();
-		}
-		else if (_collectionViewSource?.Source is GroupedItemTemplateCollection2 groupedCollection)
-		{
-			groupedCollection.CleanUp();
-		}
-
-		_itemFactory?.CleanUp();
-		_itemFactory = null;
-
-		// Clean up logical children for empty view, header, and footer to prevent memory leaks
-		if (_mauiEmptyView is not null && _emptyViewDisplayed)
-		{
-			ItemsView?.RemoveLogicalChild(_mauiEmptyView);
-		}
-		_mauiEmptyView = null;
-		_emptyView = null;
-		_emptyViewDisplayed = false;
-
-		if (_mauiHeader is not null && _headerDisplayed)
-		{
-			ItemsView?.RemoveLogicalChild(_mauiHeader);
-		}
-		_mauiHeader = null;
-		_header = null;
-		_headerDisplayed = false;
-
-		if (_mauiFooter is not null && _footerDisplayed)
-		{
-			ItemsView?.RemoveLogicalChild(_mauiFooter);
-		}
-		_mauiFooter = null;
-		_footer = null;
-		_footerDisplayed = false;
-
-		base.DisconnectHandler(platformView);
-	}
-
-	CollectionViewSource CreateCollectionViewSource()
-	{
-		var itemsSource = Element.ItemsSource;
-		var itemTemplate = Element.ItemTemplate;
-
-		if (itemTemplate is not null && itemsSource is not null)
-		{
-			if (ItemsView is GroupableItemsView groupableItemsView && groupableItemsView.IsGrouped
-				&& IsItemsSourceGrouped(itemsSource))
+			if (VirtualView is not null)
 			{
+				VirtualView.ScrollToRequested -= ScrollToRequested;
+			}
+
+			base.DisconnectHandler(platformView);
+		}
+
+		CollectionViewSource CreateCollectionViewSource()
+		{
+			var itemsSource = Element.ItemsSource;
+			var itemTemplate = Element.ItemTemplate;
+
+			// Handle grouped items first (with or without ItemTemplate)
+			if (itemsSource is not null && ItemsView is GroupableItemsView groupableItemsView && groupableItemsView.IsGrouped)
+			{
+				// When there's no ItemTemplate, use the raw ItemsSource directly (no wrapping)
+				// This allows default ToString() rendering without ItemTemplateContext2 wrapper
+				if (itemTemplate is null)
+				{
+					return new CollectionViewSource
+					{
+						Source = itemsSource,
+						IsSourceGrouped = true
+					};
+				}
+				
 				return new CollectionViewSource
 				{
 					Source = TemplatedItemSourceFactory2.CreateGrouped(itemsSource, itemTemplate,
 						groupableItemsView.GroupHeaderTemplate, groupableItemsView.GroupFooterTemplate,
 						Element, mauiContext: MauiContext)
-						,
-					IsSourceGrouped = false
+						, IsSourceGrouped = false
 				};
 			}
-			else
+
+			if (itemTemplate is not null && itemsSource is not null)
 			{
 				var flattenedSource = itemsSource;
 				if (itemsSource is not null && IsItemsSourceGrouped(itemsSource))
@@ -329,1334 +253,1017 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 					IsSourceGrouped = false
 				};
 			}
-		}
 
-		// When IsGrouped=true but no ItemTemplate, flatten the grouped source so that
-		// the WinUI ItemsView (which doesn't support native grouping) can display the
-		// individual items. Without this, the raw grouped collections are set as the source
-		// but ItemsView cannot render them, resulting in an empty list.
-		if (itemsSource is not null &&
-			ItemsView is GroupableItemsView groupable && groupable.IsGrouped &&
-			IsItemsSourceGrouped(itemsSource))
-		{
 			return new CollectionViewSource
 			{
-				Source = FlattenGroupedItemsSource(itemsSource),
+				Source = itemsSource,
 				IsSourceGrouped = false
 			};
 		}
 
-		return new CollectionViewSource
+		bool IsItemsSourceGrouped(object itemsSource)
 		{
-			Source = itemsSource,
-			IsSourceGrouped = false
-		};
-	}
-
-	bool IsItemsSourceGrouped(object itemsSource)
-	{
-		if (itemsSource is IEnumerable enumerable)
-		{
-			foreach (var item in enumerable)
+			if (itemsSource is IEnumerable enumerable)
 			{
-				if (item is IEnumerable && item is not string)
+				foreach (var item in enumerable)
 				{
-					return true;
-				}
-				break;
-			}
-		}
-		return false;
-	}
-
-	IEnumerable FlattenGroupedItemsSource(IEnumerable groupedSource)
-	{
-		return groupedSource.Cast<object>().
-			Where(group => group is IEnumerable && group is not string).
-			SelectMany(group => ((IEnumerable)group).Cast<object>()).
-			ToList();
-	}
-
-
-	protected virtual void UpdateItemsSource()
-	{
-		if (PlatformView is null)
-		{
-			return;
-		}
-
-		CleanUpCollectionViewSource();
-
-		_collectionViewSource = CreateCollectionViewSource();
-		_itemsSource = _collectionViewSource?.Source as IList;
-
-		if (_collectionViewSource?.Source is INotifyCollectionChanged incc)
-		{
-			incc.CollectionChanged += ItemsChanged;
-		}
-
-		PlatformView.ItemsSource = null;
-		PlatformView.ItemsSource = _collectionViewSource?.View;
-
-
-		if (VirtualView.ItemTemplate is not null)
-		{
-			_itemFactory = new ItemFactory(Element);
-			PlatformView.ItemTemplate = _itemFactory;
-		}
-		else if (PlatformView.ItemTemplate is not null)
-		{
-			PlatformView.ItemTemplate = null;
-		}
-
-		UpdateEmptyViewVisibility();
-	}
-
-	void CleanUpCollectionViewSource()
-	{
-		// Clean up the recycle pool in the old ItemFactory to release pooled elements
-		_itemFactory?.CleanUp();
-		_itemFactory = null;
-
-		if (_collectionViewSource is not null)
-		{
-			if (_collectionViewSource.Source is ObservableItemTemplateCollection2 observableItemTemplateCollection)
-			{
-				observableItemTemplateCollection.CleanUp();
-			}
-			else if (_collectionViewSource.Source is GroupedItemTemplateCollection2 groupedItemTemplateCollection)
-			{
-				groupedItemTemplateCollection.CleanUp();
-			}
-
-			if (_collectionViewSource.Source is INotifyCollectionChanged incc)
-			{
-				incc.CollectionChanged -= ItemsChanged;
-			}
-
-			_collectionViewSource.Source = null;
-			_collectionViewSource = null;
-		}
-
-		// Remove all children inside the ItemsSource
-		if (VirtualView is not null && PlatformView is not null)
-		{
-			foreach (var item in PlatformView.GetChildren<ItemContentControl>())
-			{
-				if (item is not null)
-				{
-					var element = item.GetVisualElement();
-					VirtualView.RemoveLogicalChild(element);
+					if (item is IEnumerable && item is not string)
+					{
+						return true;
+					}
+					break;
 				}
 			}
+			return false;
 		}
 
-		if (VirtualView?.ItemsSource is null && PlatformView is not null)
+		IEnumerable FlattenGroupedItemsSource(IEnumerable groupedSource)
 		{
-			PlatformView.ItemsSource = null;
-		}
-	}
-
-	void ItemsChanged(object? sender, NotifyCollectionChangedEventArgs e)
-	{
-		// Skip if handler is disconnected
-		if (PlatformView is null || VirtualView is null)
-		{
-			return;
+			return groupedSource.Cast<object>().
+				Where(group => group is IEnumerable && group is not string).
+				SelectMany(group => ((IEnumerable)group).Cast<object>());
 		}
 
-		UpdateEmptyViewVisibility();
 
-		if (e.Action == NotifyCollectionChangedAction.Add || e.Action == NotifyCollectionChangedAction.Reset)
+		protected virtual void UpdateItemsSource()
 		{
-			_lastRemainingItemsThresholdIndex = -1;
+			if (PlatformView is null)
+			{
+				return;
+			}
+
+			CleanUpCollectionViewSource();
+
+
+
+			_collectionViewSource = CreateCollectionViewSource();
+			_itemsSource = _collectionViewSource?.Source as IList;
+
+			if (_collectionViewSource?.Source is INotifyCollectionChanged incc)
+			{
+				incc.CollectionChanged += ItemsChanged;
+			}
+
+				PlatformView.ItemsSource = null;
+				PlatformView.ItemsSource = _collectionViewSource?.View;
+			
+
+			if (VirtualView.ItemTemplate is not null)
+			{
+				PlatformView.ItemTemplate = new ItemFactory(Element);
+			}
+			else if (PlatformView.ItemTemplate is not null)
+			{
+				PlatformView.ItemTemplate = null;
+			}
+
+			UpdateEmptyViewVisibility();
 		}
 
-		if (!_scrollUpdatePending && PlatformView is not null)
+		void CleanUpCollectionViewSource()
 		{
-			_scrollUpdatePending = true;
+			if (_collectionViewSource is not null)
+			{
+				if (_collectionViewSource.Source is ObservableItemTemplateCollection2 observableItemTemplateCollection)
+				{
+					observableItemTemplateCollection.CleanUp();
+				}
 
-			PlatformView.LayoutUpdated += OnLayoutUpdated;
+				if (_collectionViewSource.Source is INotifyCollectionChanged incc)
+				{
+					incc.CollectionChanged -= ItemsChanged;
+				}
+
+				_collectionViewSource.Source = null;
+				_collectionViewSource = null;
+			}
+
+			// Remove all children inside the ItemsSource
+			if (VirtualView is not null)
+			{
+				foreach (var item in PlatformView.GetChildren<ItemContentControl>())
+				{
+					if (item is not null)
+					{
+						var element = item.GetVisualElement();
+						VirtualView.RemoveLogicalChild(element);
+					}
+				}
+			}
+
+			if (VirtualView?.ItemsSource is null && PlatformView is not null)
+			{
+				PlatformView.ItemsSource = null;
+			}
 		}
-	}
-	void OnLayoutUpdated(object? s, object args)
-	{
-		if (PlatformView is null)
+
+		void ItemsChanged(object? sender, NotifyCollectionChangedEventArgs e)
 		{
+			// Skip if handler is disconnected
+			if (PlatformView is null || VirtualView is null)
+			{
+				return;
+			}
+
+			UpdateEmptyViewVisibility();
+
+			if(e.Action == NotifyCollectionChangedAction.Add || e.Action == NotifyCollectionChangedAction.Reset )
+			{
+				_lastRemainingItemsThresholdIndex = -1;
+			}
+
+			if (!_scrollUpdatePending && PlatformView is not null)
+			{
+				_scrollUpdatePending = true;
+				
+				PlatformView.LayoutUpdated += OnLayoutUpdated;
+			}
+		}
+		void OnLayoutUpdated(object? s, object args)
+		{
+			if (PlatformView is null)
+			{
+				_scrollUpdatePending = false;
+				return;
+			}
+
+			PlatformView.LayoutUpdated -= OnLayoutUpdated;
 			_scrollUpdatePending = false;
-			return;
+			ApplyItemsUpdatingScrollMode();
 		}
 
-		PlatformView.LayoutUpdated -= OnLayoutUpdated;
-		_scrollUpdatePending = false;
-		ApplyItemsUpdatingScrollMode();
-	}
-
-	void ApplyItemsUpdatingScrollMode()
-	{
-		if (PlatformView is null || VirtualView is null)
+		void ApplyItemsUpdatingScrollMode()
 		{
-			return;
-		}
-
-		if (VirtualView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepScrollOffset)
-		{
-			return;
-		}
-
-		if (_itemsSource is null || _itemsSource.Count == 0)
-		{
-			return;
-		}
-
-		// Get the actual count from the CollectionView's view
-		var viewCount = _collectionViewSource?.View?.Count ?? 0;
-		if (viewCount == 0)
-		{
-			return;
-		}
-
-		// Force layout update to ensure items are properly positioned
-		PlatformView.UpdateLayout();
-
-		if (VirtualView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
-		{
-			_isScrollingForItemsUpdate = true;
-
-			// Use dispatcher to ensure the scroll happens after layout is fully complete
-			VirtualView.Dispatcher.Dispatch(() =>
+			if (PlatformView is null || VirtualView is null)
 			{
-				if (PlatformView is null)
-				{
-					return;
-				}
+				return;
+			}
 
-				// Keeps the first item in the list displayed when new items are added.
-				PlatformView.StartBringItemIntoView(0, new BringIntoViewOptions()
-				{
-					AnimationDesired = false,
-					VerticalAlignmentRatio = AlignToStart,
-					HorizontalAlignmentRatio = AlignToStart
-				});
-			});
-		}
-		else if (VirtualView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
-		{
-			_isScrollingForItemsUpdate = true;
-
-			// Use the view count to ensure we're scrolling to the correct last item
-			var lastIndex = viewCount - 1;
-			if (lastIndex >= 0)
+			if (_itemsSource is null || _itemsSource.Count == 0)
 			{
-				_pendingScrollToIndex = lastIndex;
+				return;
+			}
 
+			// Get the actual count from the CollectionView's view
+			var viewCount = _collectionViewSource?.View?.Count ?? 0;
+			if (viewCount == 0)
+			{
+				return;
+			}
+
+			// Force layout update to ensure items are properly positioned
+			PlatformView.UpdateLayout();
+
+			if (VirtualView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
+			{
+				_isScrollingForItemsUpdate = true;
+				
 				// Use dispatcher to ensure the scroll happens after layout is fully complete
 				VirtualView.Dispatcher.Dispatch(() =>
 				{
-					if (PlatformView is null || _pendingScrollToIndex < 0)
+					if (PlatformView is null)
 					{
-						_pendingScrollToIndex = -1;
 						return;
 					}
 
-					var currentViewCount = _collectionViewSource?.View?.Count ?? 0;
-					var scrollIndex = Math.Min(_pendingScrollToIndex, currentViewCount - 1);
-
-					if (scrollIndex >= 0)
-					{
-						PlatformView.StartBringItemIntoView(scrollIndex, new BringIntoViewOptions()
-						{
-							AnimationDesired = false,
-							VerticalAlignmentRatio = AlignToEnd,
-							HorizontalAlignmentRatio = AlignToEnd
-						});
-					}
-
-					_pendingScrollToIndex = -1;
+					// Keeps the first item in the list displayed when new items are added.
+					PlatformView.StartBringItemIntoView(0, new BringIntoViewOptions() 
+					{ 
+						AnimationDesired = false,
+						VerticalAlignmentRatio = 0.0,
+						HorizontalAlignmentRatio = 0.0
+					});
 				});
 			}
-		}
-	}
+			else if (VirtualView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
+			{
+				_isScrollingForItemsUpdate = true;
+				
+				// Use the view count to ensure we're scrolling to the correct last item
+				var lastIndex = viewCount - 1;
+				if (lastIndex >= 0)
+				{
+					_pendingScrollToIndex = lastIndex;
+					
+					// Use dispatcher to ensure the scroll happens after layout is fully complete
+					VirtualView.Dispatcher.Dispatch(() =>
+					{
+						if (PlatformView is null || _pendingScrollToIndex < 0)
+						{
+							_pendingScrollToIndex = -1;
+							return;
+						}
 
-	MauiItemsView SelectListViewBase()
-	{
-		var itemsView = new MauiItemsView()
-		{
-			Layout = CreateItemsLayout()
-		};
-
-		if (IsLayoutHorizontal)
-		{
-			ScrollViewer.SetHorizontalScrollMode(itemsView, UI.Xaml.Controls.ScrollMode.Enabled);
-			ScrollViewer.SetHorizontalScrollBarVisibility(itemsView, WASDKScrollBarVisibility.Visible);
-
-			ScrollViewer.SetVerticalScrollMode(itemsView, UI.Xaml.Controls.ScrollMode.Disabled);
-			ScrollViewer.SetVerticalScrollBarVisibility(itemsView, WASDKScrollBarVisibility.Disabled);
-
-		}
-		else
-		{
-			ScrollViewer.SetHorizontalScrollMode(itemsView, UI.Xaml.Controls.ScrollMode.Disabled);
-			ScrollViewer.SetHorizontalScrollBarVisibility(itemsView, WASDKScrollBarVisibility.Disabled);
-
-			ScrollViewer.SetVerticalScrollMode(itemsView, UI.Xaml.Controls.ScrollMode.Enabled);
-			ScrollViewer.SetVerticalScrollBarVisibility(itemsView, WASDKScrollBarVisibility.Visible);
-		}
-
-		itemsView.SetLayoutOrientation(IsLayoutHorizontal);
-		return itemsView;
-	}
-
-	protected void UpdateItemsLayout()
-	{
-		FindScrollViewer();
-
-		// Unsubscribe from the old layout's property changes and subscribe to the new layout
-		_layoutPropertyChangedProxy?.Unsubscribe();
-		_layoutPropertyChangedProxy = null;
-
-		if (Layout is not null)
-		{
-			_layoutPropertyChanged ??= LayoutPropertyChanged;
-			_layoutPropertyChangedProxy = new WeakNotifyPropertyChangedProxy(Layout, _layoutPropertyChanged);
+						var currentViewCount = _collectionViewSource?.View?.Count ?? 0;
+						var scrollIndex = Math.Min(_pendingScrollToIndex, currentViewCount - 1);
+						
+						if (scrollIndex >= 0)
+						{
+							PlatformView.StartBringItemIntoView(scrollIndex, new BringIntoViewOptions() 
+							{ 
+								AnimationDesired = false,
+								VerticalAlignmentRatio = 1.0,
+								HorizontalAlignmentRatio = 1.0
+							});
+						}
+						
+						_pendingScrollToIndex = -1;
+					});
+				}
+			}
 		}
 
-		PlatformView.Layout = CreateItemsLayout();
-
-		// Update header/footer orientation
-		if (PlatformView is MauiItemsView mauiItemsView)
+		MauiItemsView SelectListViewBase()
 		{
+			var itemsView = new MauiItemsView()
+			{
+				Layout = CreateItemsLayout()
+			};
+
 			if (IsLayoutHorizontal)
 			{
-				ScrollViewer.SetHorizontalScrollMode(mauiItemsView, UI.Xaml.Controls.ScrollMode.Enabled);
-				ScrollViewer.SetVerticalScrollMode(mauiItemsView, UI.Xaml.Controls.ScrollMode.Disabled);
+				ScrollViewer.SetHorizontalScrollMode(itemsView, UI.Xaml.Controls.ScrollMode.Enabled);
+				ScrollViewer.SetHorizontalScrollBarVisibility(itemsView, WASDKScrollBarVisibility.Visible);
+
+				ScrollViewer.SetVerticalScrollMode(itemsView, UI.Xaml.Controls.ScrollMode.Disabled);
+				ScrollViewer.SetVerticalScrollBarVisibility(itemsView, WASDKScrollBarVisibility.Disabled);
+
 			}
 			else
 			{
-				ScrollViewer.SetHorizontalScrollMode(mauiItemsView, UI.Xaml.Controls.ScrollMode.Disabled);
-				ScrollViewer.SetVerticalScrollMode(mauiItemsView, UI.Xaml.Controls.ScrollMode.Enabled);
+				ScrollViewer.SetHorizontalScrollMode(itemsView, UI.Xaml.Controls.ScrollMode.Disabled);
+				ScrollViewer.SetHorizontalScrollBarVisibility(itemsView, WASDKScrollBarVisibility.Disabled);
+
+				ScrollViewer.SetVerticalScrollMode(itemsView, UI.Xaml.Controls.ScrollMode.Enabled);
+				ScrollViewer.SetVerticalScrollBarVisibility(itemsView, WASDKScrollBarVisibility.Visible);
 			}
 
-			mauiItemsView.SetLayoutOrientation(IsLayoutHorizontal);
+			itemsView.SetLayoutOrientation(IsLayoutHorizontal);
+			return itemsView;
 		}
 
-		UpdateVerticalScrollBarVisibility();
-		UpdateHorizontalScrollBarVisibility();
-		UpdateEmptyView();
-		UpdateSnapPoints();
-	}
-
-	UI.Xaml.Controls.Layout CreateItemsLayout()
-	{
-		switch (Layout)
+		protected void UpdateItemsLayout()
 		{
-			case GridItemsLayout gridItemsLayout:
-				return CreateGridView(gridItemsLayout);
-			case LinearItemsLayout listItemsLayout:
-				return CreateStackLayout(listItemsLayout);
-			default:
-				break;
-		}
-
-		throw new NotImplementedException("The layout is not implemented");
-	}
-
-	static UI.Xaml.Controls.StackLayout CreateStackLayout(LinearItemsLayout listItemsLayout)
-	{
-		return new UI.Xaml.Controls.StackLayout()
-		{
-			Orientation = listItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal
-					? Orientation.Horizontal : Orientation.Vertical,
-			Spacing = listItemsLayout.ItemSpacing
-		};
-	}
-
-	UniformGridLayout CreateGridView(GridItemsLayout gridItemsLayout)
-	{
-		var layout = new UniformGridLayout()
-		{
-			Orientation = gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal
-					? Orientation.Vertical : Orientation.Horizontal,
-			MaximumRowsOrColumns = gridItemsLayout.Span,
-			MinColumnSpacing = gridItemsLayout.HorizontalItemSpacing,
-			MinRowSpacing = gridItemsLayout.VerticalItemSpacing,
-			ItemsStretch = UniformGridLayoutItemsStretch.Fill,
-			ItemsJustification = UniformGridLayoutItemsJustification.Start,
-		};
-
-		ApplyMinItemSizeForSpan(layout, gridItemsLayout);
-		return layout;
-	}
-
-	/// <summary>
-	/// Computes and applies MinItemWidth/MinItemHeight to work around a WinUI UniformGridLayout bug
-	/// where two internal formulas disagree on items-per-line when ItemsStretch=Fill:
-	///   - GetItemsPerLine uses: floor((available + spacing) / (minWidth + spacing))
-	///   - CalculateExtraPixelsInLine uses: floor(available / (minWidth + spacing))
-	/// The more restrictive formula sees fewer items and inflates the effective width, causing
-	/// fewer columns than requested. By using floor(crossAxisSize / span) - spacing as MinItemWidth,
-	/// both formulas agree on the correct number of columns.
-	/// See: https://github.com/microsoft/microsoft-ui-xaml/blob/main/src/controls/dev/Repeater/UniformGridLayout.cpp
-	/// </summary>
-	void ApplyMinItemSizeForSpan(UniformGridLayout layout, GridItemsLayout gridItemsLayout)
-	{
-		// Only apply when an explicit cross-axis size is set on the CollectionView
-		bool isHorizontal = gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal;
-		double crossAxisSize = isHorizontal
-			? VirtualView.HeightRequest
-			: VirtualView.WidthRequest;
-
-		if (crossAxisSize <= 0 || double.IsNaN(crossAxisSize))
-			return;
-
-		int span = gridItemsLayout.Span;
-		double spacing = isHorizontal
-			? gridItemsLayout.VerticalItemSpacing
-			: gridItemsLayout.HorizontalItemSpacing;
-
-		// Formula: floor(crossAxisSize / span) - spacing
-		// This ensures both WinUI internal formulas agree on the correct number of columns.
-		double minItemSize = Math.Floor(crossAxisSize / span) - spacing;
-		if (minItemSize <= 0)
-			return;
-
-		if (isHorizontal)
-			layout.MinItemHeight = minItemSize;
-		else
-			layout.MinItemWidth = minItemSize;
-	}
-
-	void FindScrollViewer()
-	{
-		if (PlatformView is null)
-		{
-			return;
-		}
-
-		var scrollViewer = PlatformView.GetFirstDescendant<ScrollViewer>();
-		if (scrollViewer is not null)
-		{
-			OnScrollViewerFound(scrollViewer);
-			return;
-		}
-
-		// Unsubscribe any previous pending Loaded handler
-		if (_pendingLoadedHandler is not null)
-		{
-			PlatformView.Loaded -= _pendingLoadedHandler;
-		}
-
-		_pendingLoadedHandler = (sender, e) =>
-		{
-			var lv = (WItemsView)sender;
-			lv.Loaded -= _pendingLoadedHandler;
-			_pendingLoadedHandler = null;
 			FindScrollViewer();
-		};
 
-		PlatformView.Loaded += _pendingLoadedHandler;
-	}
+			_defaultHorizontalScrollVisibility = null;
+			_defaultVerticalScrollVisibility = null;
 
-	void OnScrollViewerFound(ScrollViewer scrollViewer)
-	{
-		if (_scrollViewer == scrollViewer)
-		{
-			return;
-		}
+			// Unsubscribe from the old layout's property changes and subscribe to the new layout
+			_layoutPropertyChangedProxy?.Unsubscribe();
+			_layoutPropertyChangedProxy = null;
 
-		if (_scrollViewer is not null)
-		{
-			_scrollViewer.ViewChanged -= ScrollViewChanged;
-		}
-
-		_scrollViewer = scrollViewer;
-		_scrollViewer.ViewChanged += ScrollViewChanged;
-
-		UpdateVerticalScrollBarVisibility();
-		UpdateHorizontalScrollBarVisibility();
-		UpdateSnapPoints();
-	}
-
-	void LayoutPropertyChanged(object? sender, PropertyChangedEventArgs e)
-	{
-		if (e.PropertyName == GridItemsLayout.SpanProperty.PropertyName)
-		{
-			UpdateItemsLayoutSpan();
-		}
-		else if (e.PropertyName == GridItemsLayout.HorizontalItemSpacingProperty.PropertyName || e.PropertyName == GridItemsLayout.VerticalItemSpacingProperty.PropertyName)
-		{
-			UpdateItemsLayoutItemSpacing();
-		}
-		else if (e.PropertyName == LinearItemsLayout.ItemSpacingProperty.PropertyName)
-		{
-			UpdateItemsLayoutItemSpacing();
-		}
-		else if (e.PropertyName == nameof(ItemsLayout.SnapPointsType) ||
-				 e.PropertyName == nameof(ItemsLayout.SnapPointsAlignment))
-		{
-			UpdateSnapPoints();
-		}
-	}
-
-	void UpdateItemsLayoutSpan()
-	{
-		if (PlatformView.Layout is UniformGridLayout listViewLayout &&
-			Layout is GridItemsLayout gridItemsLayout)
-		{
-			listViewLayout.MaximumRowsOrColumns = gridItemsLayout.Span;
-			ApplyMinItemSizeForSpan(listViewLayout, gridItemsLayout);
-		}
-	}
-
-	void UpdateItemsLayoutItemSpacing()
-	{
-		if (PlatformView.Layout is UniformGridLayout listViewLayout &&
-			Layout is GridItemsLayout gridItemsLayout)
-		{
-			listViewLayout.MinColumnSpacing = gridItemsLayout.HorizontalItemSpacing;
-			listViewLayout.MinRowSpacing = gridItemsLayout.VerticalItemSpacing;
-			ApplyMinItemSizeForSpan(listViewLayout, gridItemsLayout);
-		}
-		else if (PlatformView.Layout is UI.Xaml.Controls.StackLayout stackLayout &&
-			Layout is LinearItemsLayout linearItemsLayout)
-		{
-			stackLayout.Spacing = linearItemsLayout.ItemSpacing;
-		}
-	}
-
-	void UpdateSnapPoints()
-	{
-		if (_scrollViewer is null || Layout is not ItemsLayout itemsLayout)
-		{
-			return;
-		}
-
-		var snapPointsType = itemsLayout.SnapPointsType;
-		var snapPointsAlignment = itemsLayout.SnapPointsAlignment;
-		bool isHorizontal = IsLayoutHorizontal;
-
-		// Map MAUI enum values to WinUI equivalents
-		var winSnapType = snapPointsType switch
-		{
-			SnapPointsType.Mandatory => Microsoft.UI.Xaml.Controls.SnapPointsType.Mandatory,
-			SnapPointsType.MandatorySingle => Microsoft.UI.Xaml.Controls.SnapPointsType.MandatorySingle,
-			_ => Microsoft.UI.Xaml.Controls.SnapPointsType.None,
-		};
-
-		var winSnapAlignment = snapPointsAlignment switch
-		{
-			SnapPointsAlignment.Center => Microsoft.UI.Xaml.Controls.Primitives.SnapPointsAlignment.Center,
-			SnapPointsAlignment.End => Microsoft.UI.Xaml.Controls.Primitives.SnapPointsAlignment.Far,
-			_ => Microsoft.UI.Xaml.Controls.Primitives.SnapPointsAlignment.Near,
-		};
-
-		// Set snap point properties on the ScrollViewer.
-		// The StackPanel (content of ScrollViewer) already implements IScrollSnapPointsInfo,
-		// so ScrollViewer will query it for snap point offsets automatically.
-		if (isHorizontal)
-		{
-			_scrollViewer.HorizontalSnapPointsType = winSnapType;
-			_scrollViewer.HorizontalSnapPointsAlignment = winSnapAlignment;
-		}
-		else
-		{
-			_scrollViewer.VerticalSnapPointsType = winSnapType;
-			_scrollViewer.VerticalSnapPointsAlignment = winSnapAlignment;
-		}
-	}
-
-	void UpdateEmptyView()
-	{
-		if (Element is null || PlatformView is null)
-		{
-			return;
-		}
-
-		var emptyView = Element.EmptyView;
-		var emptyViewTemplate = Element.EmptyViewTemplate;
-
-		// Clear empty view
-		if (emptyView is null && emptyViewTemplate is null)
-		{
-			if (_emptyViewDisplayed)
+			if (Layout is not null)
 			{
-				if (_emptyView != null && PlatformView is IEmptyView ev)
-					ev.EmptyViewVisibility = WVisibility.Collapsed;
+				_layoutPropertyChanged ??= LayoutPropertyChanged;
+				_layoutPropertyChangedProxy = new WeakNotifyPropertyChangedProxy(Layout, _layoutPropertyChanged);
+			}
 
-				if (_mauiEmptyView != null)
+			UpdateItemsSource();
+
+			PlatformView.Layout = CreateItemsLayout();
+
+			bool isHorizontal = IsLayoutHorizontal;
+
+			// Update header/footer orientation
+			if (PlatformView is MauiItemsView mauiItemsView)
+			{
+				if (IsLayoutHorizontal)
+				{
+					ScrollViewer.SetHorizontalScrollMode(mauiItemsView, UI.Xaml.Controls.ScrollMode.Enabled);
+					ScrollViewer.SetVerticalScrollMode(mauiItemsView, UI.Xaml.Controls.ScrollMode.Disabled);
+				}
+				else
+				{
+					ScrollViewer.SetHorizontalScrollMode(mauiItemsView, UI.Xaml.Controls.ScrollMode.Disabled);
+					ScrollViewer.SetVerticalScrollMode(mauiItemsView, UI.Xaml.Controls.ScrollMode.Enabled);
+				}
+
+				mauiItemsView.SetLayoutOrientation(IsLayoutHorizontal);
+			}
+
+			UpdateVerticalScrollBarVisibility();
+			UpdateHorizontalScrollBarVisibility();
+			UpdateEmptyView();
+		}
+
+		UI.Xaml.Controls.Layout CreateItemsLayout()
+		{
+			switch (Layout)
+			{
+				case GridItemsLayout gridItemsLayout:
+					return CreateGridView(gridItemsLayout);
+				case LinearItemsLayout listItemsLayout:
+					return CreateStackLayout(listItemsLayout);
+				default:
+					break;
+			}
+
+			throw new NotImplementedException("The layout is not implemented");
+		}
+
+		static UI.Xaml.Controls.StackLayout CreateStackLayout(LinearItemsLayout listItemsLayout)
+		{
+			return new UI.Xaml.Controls.StackLayout()
+			{
+				Orientation = listItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal
+						? Orientation.Horizontal : Orientation.Vertical,
+				Spacing = listItemsLayout.ItemSpacing
+			};
+		}
+
+		static UniformGridLayout CreateGridView(GridItemsLayout gridItemsLayout)
+		{
+			return new UniformGridLayout()
+			{
+				Orientation = gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal
+						? Orientation.Vertical : Orientation.Horizontal,
+				MaximumRowsOrColumns = gridItemsLayout.Span,
+				MinColumnSpacing = gridItemsLayout.HorizontalItemSpacing,
+				MinRowSpacing = gridItemsLayout.VerticalItemSpacing,
+				ItemsStretch = UniformGridLayoutItemsStretch.Fill,
+				ItemsJustification = UniformGridLayoutItemsJustification.Start,
+			};
+		}
+
+		void FindScrollViewer()
+		{
+			if (PlatformView is null)
+			{
+				return;
+			}
+
+			if (PlatformView.ScrollView is not null)
+			{
+				OnScrollViewerFound();
+				return;
+			}
+
+			void ListViewLoaded(object sender, RoutedEventArgs e)
+			{
+				var lv = (WItemsView)sender;
+				lv.Loaded -= ListViewLoaded;
+				FindScrollViewer();
+			}
+
+			PlatformView.Loaded += ListViewLoaded;
+		}
+
+		void OnScrollViewerFound()
+		{
+			if (PlatformView is null || PlatformView.ScrollView is null)
+			{
+				return;
+			}
+
+			PlatformView.ScrollView.ViewChanged -= ScrollViewChanged;
+			PlatformView.ScrollView.PointerWheelChanged -= PointerScrollChanged;
+
+			PlatformView.ScrollView.ViewChanged += ScrollViewChanged;
+			PlatformView.ScrollView.PointerWheelChanged += PointerScrollChanged;
+
+			UpdateVerticalScrollBarVisibility();
+			UpdateHorizontalScrollBarVisibility();
+		}
+
+		void LayoutPropertyChanged(object? sender, PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName == GridItemsLayout.SpanProperty.PropertyName)
+			{
+				UpdateItemsLayoutSpan();
+			}
+			else if (e.PropertyName == GridItemsLayout.HorizontalItemSpacingProperty.PropertyName || e.PropertyName == GridItemsLayout.VerticalItemSpacingProperty.PropertyName)
+			{
+				UpdateItemsLayoutItemSpacing();
+			}
+			else if (e.PropertyName == LinearItemsLayout.ItemSpacingProperty.PropertyName)
+			{
+				UpdateItemsLayoutItemSpacing();
+			}
+		}
+
+		void UpdateItemsLayoutSpan()
+		{
+			if (PlatformView.Layout is UniformGridLayout listViewLayout &&
+				Layout is GridItemsLayout gridItemsLayout)
+			{
+				listViewLayout.MaximumRowsOrColumns = gridItemsLayout.Span;
+			}
+		}
+
+		void UpdateItemsLayoutItemSpacing()
+		{
+			if (PlatformView.Layout is UniformGridLayout listViewLayout &&
+				Layout is GridItemsLayout gridItemsLayout)
+			{
+				listViewLayout.MinColumnSpacing = gridItemsLayout.HorizontalItemSpacing;
+				listViewLayout.MinRowSpacing = gridItemsLayout.VerticalItemSpacing;
+			}
+			else if (PlatformView.Layout is UI.Xaml.Controls.StackLayout stackLayout &&
+				Layout is LinearItemsLayout linearItemsLayout)
+			{
+				stackLayout.Spacing = linearItemsLayout.ItemSpacing;
+			}
+		}
+
+		void UpdateEmptyView()
+		{
+			if (Element is null || PlatformView is null)
+			{
+				return;
+			}
+
+			var emptyView = Element.EmptyView;
+			var emptyViewTemplate = Element.EmptyViewTemplate;
+
+			// Clear empty view
+			if (emptyView is null && emptyViewTemplate is null)
+			{
+				if (_emptyViewDisplayed)
+				{
+					if (_emptyView != null && PlatformView is IEmptyView ev)
+						ev.EmptyViewVisibility = WVisibility.Collapsed;
+
+					if (_mauiEmptyView != null)
+						ItemsView.RemoveLogicalChild(_mauiEmptyView);
+
+					_emptyViewDisplayed = false;
+				}
+
+				_emptyView = null;
+				_mauiEmptyView = null;
+				(PlatformView as IEmptyView)?.SetEmptyView(null, null);
+				return;
+			}
+
+			if (emptyViewTemplate is DataTemplateSelector && emptyView is null)
+			{
+				_emptyView = null;
+				_mauiEmptyView = null;
+				(PlatformView as IEmptyView)?.SetEmptyView(null, null);
+				return;
+			}
+
+			// Resolve empty view
+			_emptyView = emptyViewTemplate != null
+				? ItemsViewExtensions.RealizeEmptyViewTemplate(emptyView, emptyViewTemplate, MauiContext!, ref _mauiEmptyView)
+				: emptyView switch
+				{
+					string text => new TextBlock
+					{
+						HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Center,
+						VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Center,
+						Text = text
+					},
+					View view => ItemsViewExtensions.RealizeEmptyView(view, MauiContext!, ref _mauiEmptyView),
+					_ => ItemsViewExtensions.RealizeEmptyViewTemplate(emptyView, null, MauiContext!, ref _mauiEmptyView)
+				};
+
+			(PlatformView as IEmptyView)?.SetEmptyView(_emptyView, _mauiEmptyView);
+			UpdateEmptyViewVisibility();
+		}
+
+		void UpdateEmptyViewVisibility()
+		{
+			if (PlatformView is null || VirtualView is null)
+			{
+				return;
+			}
+
+			// Check both CollectionViewSource.View and the underlying _itemsSource
+			// After a Reset action, CollectionViewSource.View.Count might not be immediately updated
+			bool isEmpty = (_collectionViewSource?.View?.Count ?? 0) == 0 && (_itemsSource?.Count ?? 0) == 0;
+
+			if (isEmpty)
+			{
+				if (_mauiEmptyView is not null)
+				{
+					if (_emptyViewDisplayed)
+					{
+						ItemsView.RemoveLogicalChild(_mauiEmptyView);
+					}
+
+					if (ItemsView.EmptyViewTemplate is null)
+					{
+						ItemsView.AddLogicalChild(_mauiEmptyView);
+					}
+				}
+
+				if (_emptyView is not null && PlatformView is IEmptyView emptyView)
+				{
+					emptyView.EmptyViewVisibility = WVisibility.Visible;
+				}
+
+				_emptyViewDisplayed = true;
+			}
+			else
+			{
+				if (_emptyViewDisplayed)
+				{
+					if (_emptyView is not null && PlatformView is IEmptyView emptyView)
+					{
+						emptyView.EmptyViewVisibility = WVisibility.Collapsed;
+					}
+
 					ItemsView.RemoveLogicalChild(_mauiEmptyView);
+				}
 
 				_emptyViewDisplayed = false;
 			}
-
-			_emptyView = null;
-			_mauiEmptyView = null;
-			(PlatformView as IEmptyView)?.SetEmptyView(null, null);
-			return;
 		}
 
-		if (emptyViewTemplate is DataTemplateSelector && emptyView is null)
+		void UpdateHeader()
 		{
-			_emptyView = null;
-			_mauiEmptyView = null;
-			(PlatformView as IEmptyView)?.SetEmptyView(null, null);
-			return;
+			if (Element is not StructuredItemsView structuredItemsView || PlatformView is null)
+			{
+				return;
+			}
+
+			var header = structuredItemsView.Header;
+			var headerTemplate = structuredItemsView.HeaderTemplate;
+
+			// Hide header only if both Header and HeaderTemplate are null
+			if (header is null && headerTemplate is null)
+			{
+				if (_headerDisplayed)
+				{
+					if (PlatformView is MauiItemsView mauiItemsView)
+					{
+						mauiItemsView.HeaderVisibility = WVisibility.Collapsed;
+					}
+
+					if (_mauiHeader is not null)
+					{
+						ItemsView.RemoveLogicalChild(_mauiHeader);
+					}
+					_headerDisplayed = false;
+				}
+				return;
+			}
+
+			// If HeaderTemplate is set, use it regardless of header value
+			if (headerTemplate is not null)
+			{
+				var bindingContext = header ?? (object)string.Empty;
+				_header = ItemsViewExtensions.RealizeHeaderFooterTemplate(bindingContext, headerTemplate, MauiContext!, ref _mauiHeader);
+			}
+			else if (header is not null)
+			{
+				_header = header switch
+				{
+					string text => new TextBlock
+					{
+						Text = text,
+						Margin = new Microsoft.UI.Xaml.Thickness(0, 0, 0, 10)
+					},
+					View view => ItemsViewExtensions.RealizeHeaderFooterView(view, MauiContext!, ref _mauiHeader),
+					_ => new TextBlock
+					{
+						Text = header.ToString(),
+						Margin = new Microsoft.UI.Xaml.Thickness(0, 0, 0, 10)
+					}
+				};
+			}
+			else
+			{
+				// This shouldn't happen due to null check above, but handle it safely
+				return;
+			}
+
+			if (PlatformView is MauiItemsView platformItemsView && _header is not null)
+			{
+				platformItemsView.SetHeader(_header, _mauiHeader);
+				platformItemsView.HeaderVisibility = WVisibility.Visible;
+			}
+
+			// Add logical child for View
+			if (_mauiHeader is not null)
+			{
+				ItemsView.AddLogicalChild(_mauiHeader);
+			}
+
+			_headerDisplayed = true;
 		}
 
-		// Resolve empty view
-		var oldMauiEmptyView = _mauiEmptyView;
-		_emptyView = emptyViewTemplate != null
-			? ItemsViewExtensions.RealizeEmptyViewTemplate(emptyView, emptyViewTemplate, MauiContext!, ref _mauiEmptyView)
-			: emptyView switch
+		void UpdateFooter()
+		{
+			if (Element is not StructuredItemsView structuredItemsView || PlatformView is null)
 			{
-				string text => new TextBlock
+				return;
+			}
+
+			var footer = structuredItemsView.Footer;
+			var footerTemplate = structuredItemsView.FooterTemplate;
+
+			// Hide footer only if both Footer and FooterTemplate are null
+			if (footer is null && footerTemplate is null)
+			{
+				if (_footerDisplayed)
 				{
-					HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Center,
-					VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Center,
-					Text = text
-				},
-				View view => ItemsViewExtensions.RealizeEmptyView(view, MauiContext!, ref _mauiEmptyView),
-				_ => ItemsViewExtensions.RealizeEmptyViewTemplate(emptyView, null, MauiContext!, ref _mauiEmptyView)
+					if (PlatformView is MauiItemsView mauiItemsView)
+					{
+						mauiItemsView.FooterVisibility = WVisibility.Collapsed;
+					}
+
+					if (_mauiFooter is not null)
+					{
+						ItemsView.RemoveLogicalChild(_mauiFooter);
+					}
+					_footerDisplayed = false;
+				}
+				return;
+			}
+
+			// If FooterTemplate is set, use it regardless of footer value
+			if (footerTemplate is not null)
+			{
+				var bindingContext = footer ?? (object)string.Empty;
+				_footer = ItemsViewExtensions.RealizeHeaderFooterTemplate(bindingContext, footerTemplate, MauiContext!, ref _mauiFooter);
+			}
+			else if (footer is not null)
+			{
+				_footer = footer switch
+				{
+					string text => new TextBlock
+					{
+						Text = text,
+						Margin = new Microsoft.UI.Xaml.Thickness(0, 10, 0, 0)
+					},
+					View view => ItemsViewExtensions.RealizeHeaderFooterView(view, MauiContext!, ref _mauiFooter),
+					_ => new TextBlock
+					{
+						Text = footer.ToString(),
+						Margin = new Microsoft.UI.Xaml.Thickness(0, 10, 0, 0)
+					}
+				};
+			}
+			else
+			{
+				// This shouldn't happen due to null check above, but handle it safely
+				return;
+			}
+
+			if (PlatformView is MauiItemsView platformItemsView && _footer is not null)
+			{
+				platformItemsView.SetFooter(_footer, _mauiFooter);
+				platformItemsView.FooterVisibility = WVisibility.Visible;
+			}
+
+			// Add logical child for View
+			if (_mauiFooter is not null)
+			{
+				ItemsView.AddLogicalChild(_mauiFooter);
+			}
+
+			_footerDisplayed = true;
+		}
+
+		void UpdateVerticalScrollBarVisibility()
+		{
+			var scrollBarVisibility = Element.VerticalScrollBarVisibility;
+			var scrollView = PlatformView.ScrollView;
+
+			if (scrollView is null)
+				return;
+
+			if (scrollBarVisibility != ScrollBarVisibility.Default)
+			{
+				// If the value is changing to anything other than the default, record the default
+				if (_defaultVerticalScrollVisibility is null)
+				{
+					_defaultVerticalScrollVisibility = scrollView.VerticalScrollBarVisibility;
+				}
+			}
+
+			if (_defaultVerticalScrollVisibility is null)
+			{
+				// If the default has never been recorded, then this has never been set to anything but the
+				// default value; there's nothing to do.
+				return;
+			}
+
+			switch (scrollBarVisibility)
+			{
+				case ScrollBarVisibility.Always:
+					scrollView.VerticalScrollBarVisibility = ScrollingScrollBarVisibility.Visible;
+					break;
+				case ScrollBarVisibility.Never:
+					scrollView.VerticalScrollBarVisibility = ScrollingScrollBarVisibility.Hidden;
+					break;
+				case ScrollBarVisibility.Default:
+					scrollView.VerticalScrollBarVisibility =_defaultVerticalScrollVisibility.Value;
+					break;
+			}
+
+		}
+
+		void UpdateHorizontalScrollBarVisibility()
+		{
+			var scrollBarVisibility = Element.HorizontalScrollBarVisibility;
+			var scrollView = PlatformView.ScrollView;
+
+			if (scrollView is null)
+				return;
+
+			if (scrollBarVisibility != ScrollBarVisibility.Default)
+			{
+				// If the value is changing to anything other than the default, record the default
+				if (_defaultHorizontalScrollVisibility is null)
+				{
+					_defaultHorizontalScrollVisibility = scrollView.HorizontalScrollBarVisibility;
+				}
+			}
+
+			if (_defaultHorizontalScrollVisibility is null)
+			{
+				// If the default has never been recorded, then this has never been set to anything but the
+				// default value; there's nothing to do.
+				return;
+			}
+
+			switch (scrollBarVisibility)
+			{
+				case ScrollBarVisibility.Always:
+					scrollView.HorizontalScrollBarVisibility = ScrollingScrollBarVisibility.Visible;
+						break;
+				case ScrollBarVisibility.Never:
+					scrollView.HorizontalScrollBarVisibility = ScrollingScrollBarVisibility.Hidden;
+					break;
+				case ScrollBarVisibility.Default:
+					scrollView.HorizontalScrollBarVisibility = _defaultHorizontalScrollVisibility.Value;
+					break;
+			}
+
+		}
+
+		void PointerScrollChanged(object sender, PointerRoutedEventArgs e)
+		{
+			if (PlatformView?.ScrollView is null)
+				return;
+
+			if (PlatformView.ScrollView.ComputedHorizontalScrollMode == ScrollingScrollMode.Enabled)
+			{
+				PlatformView.ScrollView.AddScrollVelocity(new(e.GetCurrentPoint(PlatformView.ScrollView).Properties.MouseWheelDelta, 0), null);
+			}
+		}
+
+		void ScrollViewChanged(UI.Xaml.Controls.ScrollView sender, object args)
+		{
+			if (PlatformView?.ScrollView?.ScrollPresenter is null)
+				return;
+
+			HandleScroll(PlatformView.ScrollView.ScrollPresenter);
+		}
+
+		void HandleScroll(WScrollPresenter scrollViewer)
+		{
+			if(_isScrollingForItemsUpdate)
+			{
+				_isScrollingForItemsUpdate = false;
+				return;
+			}
+
+			var itemsViewScrolledEventArgs = new ItemsViewScrolledEventArgs
+			{
+				HorizontalOffset = scrollViewer.HorizontalOffset,
+				HorizontalDelta = scrollViewer.HorizontalOffset - _previousHorizontalOffset,
+				VerticalOffset = scrollViewer.VerticalOffset,
+				VerticalDelta = scrollViewer.VerticalOffset - _previousVerticalOffset,
 			};
 
-		// Remove old logical child before adding the new one to prevent leak
-		if (oldMauiEmptyView is not null && _emptyViewDisplayed)
-		{
-			ItemsView.RemoveLogicalChild(oldMauiEmptyView);
-			_emptyViewDisplayed = false;
-		}
+			_previousHorizontalOffset = scrollViewer.HorizontalOffset;
+			_previousVerticalOffset = scrollViewer.VerticalOffset;
 
-		(PlatformView as IEmptyView)?.SetEmptyView(_emptyView, _mauiEmptyView);
-		UpdateEmptyViewVisibility();
-	}
-
-	void UpdateEmptyViewVisibility()
-	{
-		if (PlatformView is null || VirtualView is null)
-		{
-			return;
-		}
-
-		// Check both CollectionViewSource.View and the underlying _itemsSource
-		// After a Reset action, CollectionViewSource.View.Count might not be immediately updated
-		bool isEmpty = (_collectionViewSource?.View?.Count ?? 0) == 0 && (_itemsSource?.Count ?? 0) == 0;
-
-		if (isEmpty)
-		{
-			if (_mauiEmptyView is not null && !_emptyViewDisplayed)
+			bool advancing = true;
+			switch (Layout)
 			{
-				if (ItemsView.EmptyViewTemplate is null)
-				{
-					ItemsView.AddLogicalChild(_mauiEmptyView);
-				}
+				case LinearItemsLayout linearItemsLayout:
+					advancing = itemsViewScrolledEventArgs.HorizontalDelta > 0;
+					break;
+				case GridItemsLayout gridItemsLayout:
+					advancing = itemsViewScrolledEventArgs.VerticalDelta > 0;
+					break;
+				default:
+					break;
 			}
 
-			if (_emptyView is not null && PlatformView is IEmptyView emptyView)
+			itemsViewScrolledEventArgs = ComputeVisibleIndexes(itemsViewScrolledEventArgs, advancing);
+
+			Element.SendScrolled(itemsViewScrolledEventArgs);
+
+			var remainingItemsThreshold = Element.RemainingItemsThreshold;
+			if (_collectionViewSource != null && remainingItemsThreshold > -1)
 			{
-				emptyView.EmptyViewVisibility = WVisibility.Visible;
-			}
-
-			_emptyViewDisplayed = true;
-		}
-		else
-		{
-			// Always set EmptyViewVisibility to Collapsed when items exist,
-			// regardless of _emptyViewDisplayed state. This handles the case
-			// where the empty view was made visible on the platform but
-			// _emptyViewDisplayed got out of sync (e.g., during Collapsed→Visible
-			// transitions where the template wasn't yet applied when the flag was set).
-			if (_emptyView is not null && PlatformView is IEmptyView emptyView)
-			{
-				emptyView.EmptyViewVisibility = WVisibility.Collapsed;
-			}
-
-			if (_emptyViewDisplayed)
-			{
-				ItemsView.RemoveLogicalChild(_mauiEmptyView);
-			}
-
-			_emptyViewDisplayed = false;
-		}
-	}
-
-	void UpdateHeader()
-	{
-		if (Element is not StructuredItemsView structuredItemsView || PlatformView is null)
-		{
-			return;
-		}
-
-		var header = structuredItemsView.Header;
-		var headerTemplate = structuredItemsView.HeaderTemplate;
-
-		// Hide header only if both Header and HeaderTemplate are null
-		if (header is null && headerTemplate is null)
-		{
-			if (_headerDisplayed)
-			{
-				if (PlatformView is MauiItemsView mauiItemsView)
+				var itemsRemaining = _collectionViewSource.View.Count - 1 - itemsViewScrolledEventArgs.LastVisibleItemIndex;
+					
+				if(itemsRemaining<= remainingItemsThreshold)
 				{
-					mauiItemsView.HeaderVisibility = WVisibility.Collapsed;
-				}
-
-				if (_mauiHeader is not null)
-				{
-					ItemsView.RemoveLogicalChild(_mauiHeader);
-				}
-				_headerDisplayed = false;
-			}
-			return;
-		}
-
-		// Save old logical child reference before realization overwrites _mauiHeader via ref
-		var oldMauiHeader = _mauiHeader;
-
-		// If HeaderTemplate is set, use it regardless of header value
-		if (headerTemplate is not null)
-		{
-			var bindingContext = header ?? (object)string.Empty;
-			_header = ItemsViewExtensions.RealizeHeaderFooterTemplate(bindingContext, headerTemplate, MauiContext!, ref _mauiHeader);
-		}
-		else if (header is not null)
-		{
-			_header = header switch
-			{
-				string text => new TextBlock
-				{
-					Text = text,
-					Margin = new Microsoft.UI.Xaml.Thickness(0, 0, 0, 10),
-					TextAlignment = Microsoft.UI.Xaml.TextAlignment.Center,
-				},
-				View view => ItemsViewExtensions.RealizeHeaderFooterView(view, MauiContext!, ref _mauiHeader),
-				_ => new TextBlock
-				{
-					Text = header.ToString(),
-					Margin = new Microsoft.UI.Xaml.Thickness(0, 0, 0, 10),
-					TextAlignment = Microsoft.UI.Xaml.TextAlignment.Center,
-				}
-			};
-		}
-		else
-		{
-			// This shouldn't happen due to null check above, but handle it safely
-			return;
-		}
-
-		ItemsViewExtensions.ApplyMauiLayoutProperties(_mauiHeader, _header);
-
-		if (PlatformView is MauiItemsView platformItemsView && _header is not null)
-		{
-			platformItemsView.SetHeader(_header, _mauiHeader);
-			platformItemsView.HeaderVisibility = WVisibility.Visible;
-		}
-
-		// Remove old logical child before adding the new one to prevent leak
-		if (oldMauiHeader is not null && _headerDisplayed)
-		{
-			ItemsView.RemoveLogicalChild(oldMauiHeader);
-		}
-
-		if (_mauiHeader is not null)
-		{
-			ItemsView.AddLogicalChild(_mauiHeader);
-		}
-
-		_headerDisplayed = true;
-	}
-
-	void UpdateFooter()
-	{
-		if (Element is not StructuredItemsView structuredItemsView || PlatformView is null)
-		{
-			return;
-		}
-
-		var footer = structuredItemsView.Footer;
-		var footerTemplate = structuredItemsView.FooterTemplate;
-
-		// Hide footer only if both Footer and FooterTemplate are null
-		if (footer is null && footerTemplate is null)
-		{
-			if (_footerDisplayed)
-			{
-				if (PlatformView is MauiItemsView mauiItemsView)
-				{
-					mauiItemsView.FooterVisibility = WVisibility.Collapsed;
-				}
-
-				if (_mauiFooter is not null)
-				{
-					ItemsView.RemoveLogicalChild(_mauiFooter);
-				}
-				_footerDisplayed = false;
-			}
-			return;
-		}
-
-		// Save old logical child reference before realization overwrites _mauiFooter via ref
-		var oldMauiFooter = _mauiFooter;
-
-		// If FooterTemplate is set, use it regardless of footer value
-		if (footerTemplate is not null)
-		{
-			var bindingContext = footer ?? (object)string.Empty;
-			_footer = ItemsViewExtensions.RealizeHeaderFooterTemplate(bindingContext, footerTemplate, MauiContext!, ref _mauiFooter);
-		}
-		else if (footer is not null)
-		{
-			_footer = footer switch
-			{
-				string text => new TextBlock
-				{
-					Text = text,
-					Margin = new Microsoft.UI.Xaml.Thickness(0, 10, 0, 0),
-					TextAlignment = Microsoft.UI.Xaml.TextAlignment.Center,
-				},
-				View view => ItemsViewExtensions.RealizeHeaderFooterView(view, MauiContext!, ref _mauiFooter),
-				_ => new TextBlock
-				{
-					Text = footer.ToString(),
-					Margin = new Microsoft.UI.Xaml.Thickness(0, 10, 0, 0),
-					TextAlignment = Microsoft.UI.Xaml.TextAlignment.Center,
-				}
-			};
-		}
-		else
-		{
-			// This shouldn't happen due to null check above, but handle it safely
-			return;
-		}
-
-		ItemsViewExtensions.ApplyMauiLayoutProperties(_mauiFooter, _footer);
-
-		if (PlatformView is MauiItemsView platformItemsView && _footer is not null)
-		{
-			platformItemsView.SetFooter(_footer, _mauiFooter);
-			platformItemsView.FooterVisibility = WVisibility.Visible;
-		}
-
-		// Remove old logical child before adding the new one to prevent leak
-		if (oldMauiFooter is not null && _footerDisplayed)
-		{
-			ItemsView.RemoveLogicalChild(oldMauiFooter);
-		}
-
-		if (_mauiFooter is not null)
-		{
-			ItemsView.AddLogicalChild(_mauiFooter);
-		}
-
-		_footerDisplayed = true;
-	}
-
-	void UpdateVerticalScrollBarVisibility()
-	{
-		if (_scrollViewer is null)
-			return;
-
-		// For horizontal layout, vertical is the cross-axis — must stay Disabled
-		// so ScrollContentPresenter constrains content height to viewport
-		if (IsLayoutHorizontal)
-		{
-			_scrollViewer.VerticalScrollBarVisibility = UI.Xaml.Controls.ScrollBarVisibility.Disabled;
-			return;
-		}
-
-		// Vertical is the scroll axis — respect the user's MAUI setting
-		_scrollViewer.VerticalScrollBarVisibility = Element.VerticalScrollBarVisibility switch
-		{
-			ScrollBarVisibility.Always => UI.Xaml.Controls.ScrollBarVisibility.Visible,
-			ScrollBarVisibility.Never => UI.Xaml.Controls.ScrollBarVisibility.Hidden,
-			_ => UI.Xaml.Controls.ScrollBarVisibility.Auto,
-		};
-	}
-
-	void UpdateHorizontalScrollBarVisibility()
-	{
-		if (_scrollViewer is null)
-			return;
-
-		// For vertical layout, horizontal is the cross-axis — must stay Disabled
-		// so ScrollContentPresenter constrains content width to viewport
-		if (!IsLayoutHorizontal)
-		{
-			_scrollViewer.HorizontalScrollBarVisibility = UI.Xaml.Controls.ScrollBarVisibility.Disabled;
-			return;
-		}
-
-		// Horizontal is the scroll axis — respect the user's MAUI setting
-		_scrollViewer.HorizontalScrollBarVisibility = Element.HorizontalScrollBarVisibility switch
-		{
-			ScrollBarVisibility.Always => UI.Xaml.Controls.ScrollBarVisibility.Visible,
-			ScrollBarVisibility.Never => UI.Xaml.Controls.ScrollBarVisibility.Hidden,
-			_ => UI.Xaml.Controls.ScrollBarVisibility.Auto,
-		};
-	}
-
-	void ScrollViewChanged(object? sender, ScrollViewerViewChangedEventArgs e)
-	{
-		if (_scrollViewer is null)
-			return;
-
-		HandleScroll(_scrollViewer);
-	}
-
-	void HandleScroll(ScrollViewer scrollViewer)
-	{
-		if (_isScrollingForItemsUpdate)
-		{
-			_isScrollingForItemsUpdate = false;
-			return;
-		}
-
-		var itemsViewScrolledEventArgs = new ItemsViewScrolledEventArgs
-		{
-			HorizontalOffset = scrollViewer.HorizontalOffset,
-			HorizontalDelta = scrollViewer.HorizontalOffset - _previousHorizontalOffset,
-			VerticalOffset = scrollViewer.VerticalOffset,
-			VerticalDelta = scrollViewer.VerticalOffset - _previousVerticalOffset,
-		};
-
-		_previousHorizontalOffset = scrollViewer.HorizontalOffset;
-		_previousVerticalOffset = scrollViewer.VerticalOffset;
-
-		bool advancing = true;
-		switch (Layout)
-		{
-			case LinearItemsLayout linearItemsLayout:
-				advancing = linearItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal
-					? itemsViewScrolledEventArgs.HorizontalDelta > 0
-					: itemsViewScrolledEventArgs.VerticalDelta > 0;
-				break;
-			case GridItemsLayout gridItemsLayout:
-				advancing = gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal
-					? itemsViewScrolledEventArgs.HorizontalDelta > 0
-					: itemsViewScrolledEventArgs.VerticalDelta > 0;
-				break;
-			default:
-				break;
-		}
-
-		itemsViewScrolledEventArgs = ComputeVisibleIndexes(itemsViewScrolledEventArgs, advancing);
-
-		Element.SendScrolled(itemsViewScrolledEventArgs);
-
-		var remainingItemsThreshold = Element.RemainingItemsThreshold;
-		if (_collectionViewSource != null && remainingItemsThreshold > -1)
-		{
-			var itemsRemaining = _collectionViewSource.View.Count - 1 - itemsViewScrolledEventArgs.LastVisibleItemIndex;
-
-			if (itemsRemaining <= remainingItemsThreshold)
-			{
-				if (itemsViewScrolledEventArgs.LastVisibleItemIndex > _lastRemainingItemsThresholdIndex)
-				{
-					_lastRemainingItemsThresholdIndex = itemsViewScrolledEventArgs.LastVisibleItemIndex;
+					if (itemsViewScrolledEventArgs.LastVisibleItemIndex > _lastRemainingItemsThresholdIndex) 
+					{
+						_lastRemainingItemsThresholdIndex = itemsViewScrolledEventArgs.LastVisibleItemIndex;
 					Element.SendRemainingItemsThresholdReached();
+					}
+				
 				}
-				// When scrolling backward within the threshold zone, keep the
-				// high-water mark — don't reset, to avoid duplicate event fires.
-				// The reset happens in the outer else (when leaving the zone entirely)
-				// or in ItemsChanged (when new items are added).
+			
+			} 
+		}
+
+		ItemsViewScrolledEventArgs ComputeVisibleIndexes(ItemsViewScrolledEventArgs args, bool advancing)
+		{
+			var (firstVisibleItemIndex, lastVisibleItemIndex, centerItemIndex) = GetVisibleIndexes(advancing);
+
+			args.FirstVisibleItemIndex = firstVisibleItemIndex;
+			args.CenterItemIndex = centerItemIndex;
+			args.LastVisibleItemIndex = lastVisibleItemIndex;
+
+			return args;
+		}
+
+		(int firstVisibleItemIndex, int lastVisibleItemIndex, int centerItemIndex) GetVisibleIndexes(bool advancing)
+		{
+			int firstVisibleItemIndex = -1;
+			int lastVisibleItemIndex = -1;
+
+			if (PlatformView is null)
+			{
+				return (firstVisibleItemIndex, lastVisibleItemIndex, -1);
+			}
+
+			PlatformView.TryGetItemIndex(0, 0, out firstVisibleItemIndex);
+			PlatformView.TryGetItemIndex(1, 1, out lastVisibleItemIndex);
+
+			double center = (lastVisibleItemIndex + firstVisibleItemIndex) / 2.0;
+			int centerItemIndex = advancing ? (int)Math.Ceiling(center) : (int)Math.Floor(center);
+
+			return (firstVisibleItemIndex, lastVisibleItemIndex, centerItemIndex);
+		}
+
+		void ScrollToRequested(object? sender, ScrollToRequestEventArgs args)
+		{
+			// Use base.PlatformView to avoid InvalidOperationException
+			if (base.PlatformView is not WItemsView platformView)
+			{
+				return;
+			}
+
+			int index;
+
+			// Handle grouped scrolling by position
+			if (args.Mode == ScrollToMode.Position &&
+				ItemsView is GroupableItemsView groupableItemsView &&
+				groupableItemsView.IsGrouped &&
+				args.GroupIndex >= 0)
+			{
+				index = FindGroupedItemIndex(args.GroupIndex, args.Index);
+			}
+			else if (args.Mode == ScrollToMode.Element)
+			{
+				index = FindItemIndex(args.Item);
 			}
 			else
 			{
-				// Reset when scrolling away from the threshold zone so the
-				// event can re-fire when the user scrolls back.
-				_lastRemainingItemsThresholdIndex = -1;
-			}
-		}
-	}
-
-	ItemsViewScrolledEventArgs ComputeVisibleIndexes(ItemsViewScrolledEventArgs args, bool advancing)
-	{
-		var (firstVisibleItemIndex, lastVisibleItemIndex, centerItemIndex) = GetVisibleIndexes(advancing);
-
-		args.FirstVisibleItemIndex = firstVisibleItemIndex;
-		args.CenterItemIndex = centerItemIndex;
-		args.LastVisibleItemIndex = lastVisibleItemIndex;
-
-		return args;
-	}
-
-	(int firstVisibleItemIndex, int lastVisibleItemIndex, int centerItemIndex) GetVisibleIndexes(bool advancing)
-	{
-		int firstVisibleItemIndex = -1;
-		int lastVisibleItemIndex = -1;
-
-		if (PlatformView is null || _scrollViewer is null)
-		{
-			return (firstVisibleItemIndex, lastVisibleItemIndex, -1);
-		}
-
-		// MauiItemsView uses a custom ControlTemplate with a ScrollViewer wrapping
-		// a StackPanel > ItemsRepeater (not the default ItemsView template with ScrollView).
-		// WinUI's TryGetItemIndex relies on its internal ScrollView part (PART_ScrollView),
-		// which doesn't exist in our template — so it always returns -1.
-		// Instead, walk the realized ItemContainer children and check which ones
-		// are visible within the ScrollViewer viewport, similar to CV1's fallback approach.
-		bool isHorizontal = IsLayoutHorizontal;
-		int index = 0;
-
-		foreach (var container in PlatformView.GetChildren<ItemContainer>())
-		{
-			if (container is null)
-			{
-				index++;
-				continue;
+				// Non-grouped position-based scroll
+				index = args.Index;
 			}
 
-			if (IsElementVisibleInScrollViewer(container, _scrollViewer, isHorizontal))
-			{
-				if (firstVisibleItemIndex == -1)
-				{
-					firstVisibleItemIndex = index;
-				}
-
-				lastVisibleItemIndex = index;
-			}
-
-			index++;
-		}
-
-		double center = (lastVisibleItemIndex + firstVisibleItemIndex) / 2.0;
-		int centerItemIndex = advancing ? (int)Math.Ceiling(center) : (int)Math.Floor(center);
-
-		return (firstVisibleItemIndex, lastVisibleItemIndex, centerItemIndex);
-	}
-
-	/// <summary>
-	/// Checks whether a UI element is visible within the scroll viewer's viewport.
-	/// Uses coordinate transformation to compare element bounds against the viewport.
-	/// </summary>
-	static bool IsElementVisibleInScrollViewer(FrameworkElement element, ScrollViewer scrollViewer, bool isHorizontal)
-	{
-		if (element.Visibility != WVisibility.Visible)
-		{
-			return false;
-		}
-
-		try
-		{
-			var transform = element.TransformToVisual(scrollViewer);
-			var elementBounds = transform.TransformBounds(
-				new WRect(0, 0, element.ActualWidth, element.ActualHeight));
-			var viewportBounds = new WRect(
-				0, 0, scrollViewer.ActualWidth, scrollViewer.ActualHeight);
-
-			if (isHorizontal)
-			{
-				return elementBounds.Left < viewportBounds.Right && elementBounds.Right > viewportBounds.Left;
-			}
-			else
-			{
-				return elementBounds.Top < viewportBounds.Bottom && elementBounds.Bottom > viewportBounds.Top;
-			}
-		}
-		catch
-		{
-			// TransformToVisual can throw if the element is not in the visual tree
-			return false;
-		}
-	}
-
-	void ScrollToRequested(object? sender, ScrollToRequestEventArgs args)
-	{
-		// Use base.PlatformView to avoid InvalidOperationException
-		if (base.PlatformView is not WItemsView platformView)
-		{
-			return;
-		}
-
-		int index;
-
-		// Handle grouped scrolling by position
-		if (args.Mode == ScrollToMode.Position &&
-			ItemsView is GroupableItemsView groupableItemsView &&
-			groupableItemsView.IsGrouped &&
-			args.GroupIndex >= 0)
-		{
-			index = FindGroupedItemIndex(args.GroupIndex, args.Index);
-		}
-		else if (args.Mode == ScrollToMode.Element && args.Group is not null)
-		{
-			index = FindGroupedItemByElement(args.Item, args.Group);
-		}
-		else if (args.Mode == ScrollToMode.Element)
-		{
-			index = FindItemIndex(args.Item);
-		}
-		else
-		{
-			// Non-grouped position-based scroll
-			index = args.Index;
-		}
-
-		// Validate index is within bounds
-		var itemCount = _collectionViewSource?.View?.Count ?? 0;
-		if (index < 0 || index >= itemCount)
-		{
-			return;
-		}
-
-		double offset = AlignToStart;
-		switch (args.ScrollToPosition)
-		{
-			case ScrollToPosition.Start:
-				offset = AlignToStart;
-				break;
-			case ScrollToPosition.Center:
-				offset = AlignToCenter;
-				break;
-			case ScrollToPosition.End:
-				offset = AlignToEnd;
-				break;
-		}
-
-		// Store the scroll request and dispatch it to ensure it executes after
-		// the layout has been updated. This prevents unstable scrolling when items
-		// are being rapidly added and ScrollTo is called before layout completes.
-		var scrollIndex = index;
-		var scrollOffset = offset;
-		var isAnimated = args.IsAnimated;
-
-		VirtualView.Dispatcher.Dispatch(() =>
-		{
-			if (base.PlatformView is not WItemsView pv)
+			// Validate index is within bounds
+			var itemCount = _collectionViewSource?.View?.Count ?? 0;
+			if (index < 0 || index >= itemCount)
 			{
 				return;
 			}
 
-			// Re-validate index bounds in case collection changed between dispatch
-			var currentItemCount = _collectionViewSource?.View?.Count ?? 0;
-			if (scrollIndex < 0 || scrollIndex >= currentItemCount)
+			float offset = 0.0f;
+			switch (args.ScrollToPosition)
 			{
-				return;
+				case ScrollToPosition.Start:
+					offset = 0.0f;
+					break;
+				case ScrollToPosition.Center:
+					offset = 0.5f;
+					break;
+				case ScrollToPosition.End:
+					offset = 1.0f;
+					break;
 			}
 
-			// Guard: StartBringItemIntoView requires the ItemsView to be fully
-			// loaded and its ItemsRepeater to have completed its first layout pass.
-			// Without this check, the call can crash when ScrollTo is dispatched
-			// before the view is in the visual tree (e.g., during OnAppearing).
-			if (!pv.IsLoaded)
+			platformView.StartBringItemIntoView(index, new BringIntoViewOptions()
 			{
-				return;
-			}
-
-			pv.StartBringItemIntoView(scrollIndex, new BringIntoViewOptions()
-			{
-				AnimationDesired = isAnimated,
-				VerticalAlignmentRatio = scrollOffset,
-				HorizontalAlignmentRatio = scrollOffset
+				AnimationDesired = args.IsAnimated,
+				VerticalAlignmentRatio = offset,
+				HorizontalAlignmentRatio = offset
 			});
-		});
-	}
-
-	/// <summary>
-	/// Finds the flat index in the flattened grouped collection for the specified group and item index.
-	/// </summary>
-	int FindGroupedItemIndex(int groupIndex, int itemIndex)
-	{
-		if (_collectionViewSource is null)
-		{
-			return -1;
 		}
 
-		if (ItemsView is not GroupableItemsView groupableItemsView)
+		/// <summary>
+		/// Finds the flat index in the flattened grouped collection for the specified group and item index.
+		/// </summary>
+		int FindGroupedItemIndex(int groupIndex, int itemIndex)
 		{
-			return -1;
-		}
-
-		var itemsSource = groupableItemsView.ItemsSource;
-		if (itemsSource is null)
-		{
-			return -1;
-		}
-
-		var hasGroupHeader = groupableItemsView.GroupHeaderTemplate is not null;
-		var hasGroupFooter = groupableItemsView.GroupFooterTemplate is not null;
-
-		int flatIndex = 0;
-		int currentGroupIndex = 0;
-
-		foreach (var group in itemsSource)
-		{
-			if (group is IList groupList)
+			if (_collectionViewSource is null)
 			{
-				if (currentGroupIndex == groupIndex)
+				return -1;
+			}
+
+			if (ItemsView is not GroupableItemsView groupableItemsView)
+			{
+				return -1;
+			}
+
+			var itemsSource = groupableItemsView.ItemsSource;
+			if (itemsSource is null)
+			{
+				return -1;
+			}
+
+			var hasGroupHeader = groupableItemsView.GroupHeaderTemplate is not null;
+			var hasGroupFooter = groupableItemsView.GroupFooterTemplate is not null;
+
+			int flatIndex = 0;
+			int currentGroupIndex = 0;
+
+			foreach (var group in itemsSource)
+			{
+				if (group is IList groupList)
 				{
-					// Found the target group
+					if (currentGroupIndex == groupIndex)
+					{
+						// Found the target group
+						if (hasGroupHeader)
+						{
+							flatIndex++; // Skip group header
+						}
+
+						// Check if itemIndex is within bounds of this group
+						if (itemIndex < 0 || itemIndex >= groupList.Count)
+						{
+							return -1;
+						}
+
+						// Return the calculated flat index
+						return flatIndex + itemIndex;
+					}
+
+					// Count items in this group to move to next group
 					if (hasGroupHeader)
 					{
-						flatIndex++; // Skip group header
+						flatIndex++;
 					}
-
-					// Check if itemIndex is within bounds of this group
-					if (itemIndex < 0 || itemIndex >= groupList.Count)
+					flatIndex += groupList.Count;
+					if (hasGroupFooter)
 					{
-						return -1;
+						flatIndex++;
 					}
-
-					// Return the calculated flat index
-					return flatIndex + itemIndex;
 				}
 
-				// Count items in this group to move to next group
-				if (hasGroupHeader)
-				{
-					flatIndex++;
-				}
-				flatIndex += groupList.Count;
-				if (hasGroupFooter)
-				{
-					flatIndex++;
-				}
+				currentGroupIndex++;
 			}
 
-			currentGroupIndex++;
-		}
-
-		// Group index not found
-		return -1;
-	}
-
-	/// <summary>
-	/// Finds the index of an item in the collection view by searching through the flattened list.
-	/// Used for non-grouped ScrollToMode.Element requests.
-	/// </summary>
-	int FindItemIndex(object item)
-	{
-		if (_collectionViewSource is null)
-		{
+			// Group index not found
 			return -1;
 		}
 
-		for (int index = 0; index < _collectionViewSource.View.Count; index++)
+		/// <summary>
+		/// Finds the index of an item in the collection view by searching through the flattened list.
+		/// Used for non-grouped ScrollToMode.Element requests.
+		/// </summary>
+		int FindItemIndex(object item)
 		{
-			var viewItem = _collectionViewSource.View[index];
-
-			// Check for ItemTemplateContext (non-grouped templated items)
-			if (viewItem is ItemTemplateContext pair)
+			if (_collectionViewSource is null)
 			{
-				if (Equals(pair.Item, item))
-				{
-					return index;
-				}
+				return -1;
 			}
-			// Check for ItemTemplateContext2 (grouped templated items)
-			else if (viewItem is ItemTemplateContext2 pair2)
+
+			for (int index = 0; index < _collectionViewSource.View.Count; index++)
 			{
-				// Skip headers and footers, only match actual items
-				if (!pair2.IsHeader && !pair2.IsFooter && Equals(pair2.Item, item))
+				var viewItem = _collectionViewSource.View[index];
+
+				// Check for ItemTemplateContext (non-grouped templated items)
+				if (viewItem is ItemTemplateContext pair)
+				{
+					if (Equals(pair.Item, item))
+					{
+						return index;
+					}
+				}
+				// Check for ItemTemplateContext2 (grouped templated items)
+				else if (viewItem is ItemTemplateContext2 pair2)
+				{
+					// Skip headers and footers, only match actual items
+					if (!pair2.IsHeader && !pair2.IsFooter && Equals(pair2.Item, item))
+					{
+						return index;
+					}
+				}
+				// Check for non-templated items (direct equality)
+				else if (Equals(viewItem, item))
 				{
 					return index;
 				}
 			}
-			// Check for non-templated items (direct equality)
-			else if (Equals(viewItem, item))
-			{
-				return index;
-			}
-		}
-
-		return -1;
-	}
-	
-	/// <summary>
-	/// Finds the flat index in the flattened grouped collection for a ScrollToMode.Element request
-	/// where a group is specified. If item is null, returns the index of the group header.
-	/// If item is non-null, returns the index of that item within the specified group.
-	/// </summary>
-	int FindGroupedItemByElement(object? item, object group)
-	{
-		if (_collectionViewSource is null)
-		{
-			return -1;
-		}
-
-		if (ItemsView is not GroupableItemsView groupableItemsView)
-		{
-			return -1;
-		}
-
-		var itemsSource = groupableItemsView.ItemsSource;
-		if (itemsSource is null)
-		{
-			return -1;
-		}
-
-		var hasGroupHeader = groupableItemsView.GroupHeaderTemplate is not null;
-		var hasGroupFooter = groupableItemsView.GroupFooterTemplate is not null;
-
-		// Find the target group and its items by matching the group object
-		IList? targetGroupItems = null;
-		int flatIndexOfGroup = 0;
-		int currentFlatIndex = 0;
-
-		foreach (var g in itemsSource)
-		{
-			if (g is not IList groupList)
-			{
-				continue;
-			}
-
-			if (Equals(g, group))
-			{
-				targetGroupItems = groupList;
-				flatIndexOfGroup = currentFlatIndex;
-				break;
-			}
-
-			// Advance past this group's entries in the flat list
-			if (hasGroupHeader)
-			{
-				currentFlatIndex++;
-			}
-
-			currentFlatIndex += groupList.Count;
-
-			if (hasGroupFooter)
-			{
-				currentFlatIndex++;
-			}
-		}
-
-		if (targetGroupItems is null)
-		{
-			return -1;
-		}
-
-		// If item is null, scroll to the group header (if it exists)
-		if (item is null)
-		{
-			if (hasGroupHeader)
-			{
-				return flatIndexOfGroup;
-			}
-
-			// No header template — scroll to the first item in the group instead
-			if (targetGroupItems.Count > 0)
-			{
-				return flatIndexOfGroup;
-			}
 
 			return -1;
 		}
-
-		// Find the item within the target group
-		int itemStartIndex = flatIndexOfGroup;
-		if (hasGroupHeader)
-		{
-			itemStartIndex++;
-		}
-
-		for (int i = 0; i < targetGroupItems.Count; i++)
-		{
-			if (Equals(targetGroupItems[i], item))
-			{
-				return itemStartIndex + i;
-			}
-		}
-
-		return -1;
 	}
 }
