@@ -548,8 +548,8 @@ stages:
           - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
             displayName: 'Add .NET to PATH'
 
-          # Build BuildTasks first
-          - script: ./build.cmd -build -configuration Release -projects Microsoft.Maui.BuildTasks.slnf
+          # Build BuildTasks first (need -restore to ensure SDK is available)
+          - script: ./build.cmd -restore -build -configuration Release -projects Microsoft.Maui.BuildTasks.slnf
             displayName: Build the MSBuild Tasks
 
           # Build Windows device tests using Cake script (Packaged/MSIX builds)

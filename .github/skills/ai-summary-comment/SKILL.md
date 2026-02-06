@@ -56,11 +56,17 @@ Most scripts post to the **same single comment** identified by `<!-- AI Summary 
 
 ### Separate PR Finalization Comment
 
-The `post-pr-finalize-comment.ps1` script posts a **separate comment** identified by `<!-- PR-FINALIZE-COMMENT -->`. This comment contains two sections:
-- **Title**: Shows the suggested PR title with comparison to current
-- **Description**: Shows the suggested PR description
+The `post-pr-finalize-comment.ps1` script posts a **separate comment** identified by `<!-- PR-FINALIZE-COMMENT -->`. This comment contains three sections:
+- **Title**: Shows the current vs recommended PR title
+- **Description**: Shows description assessment, missing elements, and **recommended description**
+- **Code Review**: Shows code review findings (critical issues, suggestions, positive observations)
 
-If an existing finalize comment exists, it will be replaced with the updated Title and Description sections. This keeps finalization reviews distinct from automated analysis.
+If an existing finalize comment exists, it will be replaced with the updated sections. This keeps finalization reviews distinct from automated analysis.
+
+**⚠️ Important Requirements for PR Finalize Comments:**
+- When `TitleStatus` is `NeedsUpdate`, **always provide** `-RecommendedTitle`
+- When `DescriptionStatus` is `NeedsUpdate` or `NeedsRewrite`, **always provide** `-RecommendedDescription` with the full suggested description text
+- The script will warn if these are missing but won't fail
 
 ## Section Scripts
 
@@ -445,6 +451,101 @@ CustomAgentLogsTmp/PRState/{IssueNumber}/write-tests/
     "TestMethod": "ScrollToFirstItemWithHeader",
     "Category": "CollectionView"
 }
+```
+
+---
+
+## PR Finalize Comment Script
+
+The `post-pr-finalize-comment.ps1` script posts a **separate comment** (not part of the unified AI Summary) specifically for PR finalization reviews. It provides structured feedback on the PR title, description, and code review findings.
+
+### Usage
+
+#### Simplest: Just provide PR number (auto-loads from summary file)
+
+```powershell
+# Auto-loads from CustomAgentLogsTmp/PRState/{PRNumber}/pr-finalize/pr-finalize-summary.md
+pwsh .github/skills/ai-summary-comment/scripts/post-pr-finalize-comment.ps1 -PRNumber 33892
+```
+
+#### Full manual parameters (recommended for best results)
+
+```powershell
+pwsh .github/skills/ai-summary-comment/scripts/post-pr-finalize-comment.ps1 `
+    -PRNumber 33892 `
+    -TitleStatus "NeedsUpdate" `
+    -CurrentTitle "Fix 32650 Image Orientation" `
+    -RecommendedTitle "[iOS][Android] MediaPicker: Fix image orientation when RotateImage=true" `
+    -TitleIssues "- Missing platform tags
+- Doesn't describe the behavior fix" `
+    -DescriptionStatus "NeedsUpdate" `
+    -DescriptionAssessment "The current description is minimal and missing:
+- ❌ Missing NOTE block for testing artifacts
+- ❌ No root cause analysis
+- ❌ No technical details" `
+    -MissingElements "Add the NOTE block, root cause, and technical details." `
+    -RecommendedDescription "> [!NOTE]
+> Are you waiting for this PR? Test it: [Testing PR Builds](link)
+
+### Root Cause
+...description...
+
+### Description of Change
+...details..." `
+    -CodeReviewStatus "IssuesFound" `
+    -CodeReviewFindings "### 🔴 Critical Issues
+**1. Broken indentation**
+- File: \`src/file.cs\`
+- Problem: Inconsistent tabs/spaces
+
+### 🟡 Suggestions
+1. Consider disposing Matrix object
+
+### ✅ Looks Good
+- Proper cleanup in finally block"
+```
+
+### Parameters
+
+| Parameter | Required | Description |
+|-----------|----------|-------------|
+| `PRNumber` | Yes* | Pull request number |
+| `SummaryFile` | No | Path to pr-finalize-summary.md (auto-discovered) |
+| `TitleStatus` | No* | `Good` or `NeedsUpdate` |
+| `CurrentTitle` | No* | Current PR title (fetched from GitHub if not provided) |
+| `RecommendedTitle` | No | **Required if TitleStatus is NeedsUpdate** |
+| `TitleIssues` | No | List of issues with current title |
+| `DescriptionStatus` | No* | `Excellent`, `Good`, `NeedsUpdate`, or `NeedsRewrite` |
+| `DescriptionAssessment` | Yes | Assessment of description quality |
+| `MissingElements` | No | What's missing from the description |
+| `RecommendedDescription` | No | **Required if DescriptionStatus is NeedsUpdate/NeedsRewrite** |
+| `CodeReviewStatus` | No | `Passed`, `IssuesFound`, or `Skipped` |
+| `CodeReviewFindings` | No | Markdown content for code review section |
+| `DryRun` | No | Preview instead of posting |
+
+*At least PRNumber or SummaryFile required. Script auto-detects values when possible.
+
+### ⚠️ Common Mistakes to Avoid
+
+1. **Missing RecommendedTitle when TitleStatus is NeedsUpdate**
+   - The script will warn but still post - always provide a recommended title
+
+2. **Missing RecommendedDescription when DescriptionStatus is NeedsUpdate**
+   - Users need to see what the description SHOULD look like
+
+3. **Code review findings not starting with proper headers**
+   - Always structure with `### 🔴 Critical Issues`, `### 🟡 Suggestions`, `### ✅ Looks Good`
+
+4. **Auto-parsing from summary file getting confused**
+   - When in doubt, provide explicit parameters instead of relying on auto-parsing
+
+### Expected Directory Structure for Auto-Loading
+
+```
+CustomAgentLogsTmp/PRState/{PRNumber}/pr-finalize/
+├── pr-finalize-summary.md      # Main summary (auto-parsed)
+├── recommended-description.md  # Full recommended description (optional)
+└── code-review.md             # Code review findings (optional)
 ```
 
 ---
