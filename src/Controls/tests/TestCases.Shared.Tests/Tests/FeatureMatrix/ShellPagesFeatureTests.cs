@@ -32,21 +32,8 @@ public class ShellPagesFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(2)	]
-	[Category(UITestCategories.Shell)]
-	public void ShellPages_ForegroundColor()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement("MagentaForegroundColor");
-		App.Tap("MagentaForegroundColor");
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		VerifyScreenshot();
-	}
-
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/32992
-	[Test, Order(3)]
+	[Test, Order(2)]
 	[Category(UITestCategories.Shell)]
 	public void ShellPages_BackgroundColor()
 	{
@@ -61,7 +48,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 #endif
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/5161
-	[Test, Order(4)]
+	[Test, Order(3)]
 	[Category(UITestCategories.Shell)]
 	public void ShellPages_DisabledColor()
 	{
@@ -78,7 +65,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 #endif
 
 #if TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/32125
-	[Test, Order(5)]
+	[Test, Order(4)]
 	[Category(UITestCategories.Shell)]
 	public void ShellPages_UnselectedColor()
 	{
@@ -92,122 +79,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 	}
 #endif
 
-#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS// Issue Link: https://github.com/dotnet/maui/issues/32992
-	[Test, Order(6)]
-	[Category(UITestCategories.Shell)]
-	public void ShellPages_BackgroundColorAndForegroundColor()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement("LightGreenBackgroundColor");
-		App.Tap("LightGreenBackgroundColor");
-		App.WaitForElement("MagentaForegroundColor");
-		App.Tap("MagentaForegroundColor");
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		VerifyScreenshot();
-	}
-
-	[Test, Order(7)]
-	[Category(UITestCategories.Shell)]
-	public void ShellPages_BackgroundColorAndTitleColor()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement("LightGreenBackgroundColor");
-		App.Tap("LightGreenBackgroundColor");
-		App.WaitForElement("RedTitleColor");
-		App.Tap("RedTitleColor");
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		VerifyScreenshot();
-	}
-
-	[Test, Order(8)]
-	[Category(UITestCategories.Shell)]
-	public void ShellPages_BackgroundColorAndUnselectedColor()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement("LightGreenBackgroundColor");
-		App.Tap("LightGreenBackgroundColor");
-		App.WaitForElement("MaroonUnselectedColor");
-		App.Tap("MaroonUnselectedColor");
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		VerifyScreenshot();
-	}
-#endif
-
-	[Test, Order(9)]
-	[Category(UITestCategories.Shell)]
-	public void ShellPages_ForegroundColorAndTitleColor()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement("MagentaForegroundColor");
-		App.Tap("MagentaForegroundColor");
-		App.WaitForElement("RedTitleColor");
-		App.Tap("RedTitleColor");
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		VerifyScreenshot();
-	}
-
-#if TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/32125
-	[Test, Order(10)]
-	[Category(UITestCategories.Shell)]
-	public void ShellPages_ForegroundColorAndUnselectedColor()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement("MagentaForegroundColor");
-		App.Tap("MagentaForegroundColor");
-		App.WaitForElement("MaroonUnselectedColor");
-		App.Tap("MaroonUnselectedColor");
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		VerifyScreenshot();
-	}
-#endif
-
-#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/5161
-	[Test, Order(11)]
-	[Category(UITestCategories.Shell)]
-	public void ShellPages_ForegroundColorAndDisabledColor()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement("MagentaForegroundColor");
-		App.Tap("MagentaForegroundColor");
-		App.WaitForElement("IsEnabledFalse");
-		App.Tap("IsEnabledFalse");
-		App.WaitForElement("VioletDisabledColor");
-		App.Tap("VioletDisabledColor");
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		VerifyScreenshot();
-	}
-
-	[Test, Order(12)]
-	[Category(UITestCategories.Shell)]
-	public void ShellPages_DisabledColorAndUnselectedColor()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement("MaroonUnselectedColor");
-		App.Tap("MaroonUnselectedColor");
-		App.WaitForElement("IsEnabledFalse");
-		App.Tap("IsEnabledFalse");
-		App.WaitForElement("VioletDisabledColor");
-		App.Tap("VioletDisabledColor");
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		VerifyScreenshot();
-	}
-#endif 
-
-	[Test, Order(13)]
+	[Test, Order(5)]
 	[Category(UITestCategories.Shell)]
 	public void ShellPages_IsEnabledTrue()
 	{
@@ -225,7 +97,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 	}
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/5161
-	[Test, Order(14)]
+	[Test, Order(6)]
 	[Category(UITestCategories.Shell)]
 	public void ShellPages_IsEnabledFalse()
 	{
@@ -241,23 +113,8 @@ public class ShellPagesFeatureTests : _GalleryUITest
 	}
 #endif
 
-#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS  // Issue Link:https://github.com/dotnet/maui/issues/32993
-	[Test, Order(15)]
-	[Category(UITestCategories.Shell)]
-	public void ShellPages_FlowDirectionRTL()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement("FlowDirectionRTL");
-		App.Tap("FlowDirectionRTL");
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		VerifyScreenshot();
-	}
-#endif
-
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/32992
-	[Test, Order(16)]
+	[Test, Order(7)]
 	[Category(UITestCategories.Shell)]
 	public void ShellPages_ShowTitleViewWithBackgroundColor()
 	{
@@ -273,7 +130,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 	}
 #endif
 
-	[Test, Order(17)]
+	[Test, Order(8)]
 	[Category(UITestCategories.Shell)]
 	public void ShellPages_ShowTitleView()
 	{
@@ -286,7 +143,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(18)]
+	[Test, Order(9)]
 	[Category(UITestCategories.Shell)]
 	public void ShellPages_ShowTitleViewHidden()
 	{
@@ -296,7 +153,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 	}
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/17550
-	[Test, Order(19)]
+	[Test, Order(10)]
 	[Category(UITestCategories.Shell)]
 	public void ShellPages_NavBarVisibilityHide()
 	{
@@ -305,7 +162,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(20)]
+	[Test, Order(11)]
 	[Category(UITestCategories.Shell)]
 	public void ShellPages_NavBarVisibilityShow()
 	{
@@ -315,28 +172,8 @@ public class ShellPagesFeatureTests : _GalleryUITest
 	}
 #endif
 
-#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS  
-	[Test, Order(21)]
-	[Category(UITestCategories.Shell)]
-	public void ShellPages_NavBarAnimationDisabled()
-	{
-		App.WaitForElement("NavBarAnimFalseButton");
-		App.Tap("NavBarAnimFalseButton");
-		VerifyScreenshot();
-	}
-
-	[Test, Order(22)]
-	[Category(UITestCategories.Shell)]
-	public void ShellPages_NavBarAnimationEnabled()
-	{
-		App.WaitForElement("NavBarAnimTrueButton");
-		App.Tap("NavBarAnimTrueButton");
-		VerifyScreenshot();
-	}
-#endif
-
-#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS // Issue Link:
-	[Test, Order(23)]
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/6399
+	[Test, Order(12)]
 	[Category(UITestCategories.Shell)]
 	public void ShellPages_NavBarHasShadowTrue()
 	{
@@ -351,7 +188,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(24)]
+	[Test, Order(13)]
 	[Category(UITestCategories.Shell)]
 	public void ShellPages_NavBarHasShadowFalse()
 	{
@@ -367,7 +204,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 	}
 #endif
 
-	[Test, Order(25)]
+	[Test, Order(14)]
 	[Category(UITestCategories.Shell)]
 	public void ShellPages_IsVisibleFalse()
 	{
@@ -380,7 +217,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(26)]
+	[Test, Order(15)]
 	[Category(UITestCategories.Shell)]
 	public void ShellPages_IsVisibleTrue()
 	{
@@ -393,7 +230,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(27)]
+	[Test, Order(16)]
 	[Category(UITestCategories.Shell)]
 	public void ShellPages_PresentationModeNotAnimated()
 	{
@@ -403,7 +240,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(28)]
+	[Test, Order(17)]
 	[Category(UITestCategories.Shell)]
 	public void ShellPages_PresentationModeAnimated()
 	{
@@ -415,7 +252,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(29)]
+	[Test, Order(18)]
 	[Category(UITestCategories.Shell)]
 	public void ShellPages_PresentationModeModal()
 	{
@@ -427,7 +264,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(30)]
+	[Test, Order(19)]
 	[Category(UITestCategories.Shell)]
 	public void ShellPages_PresentationModeModalAnimated()
 	{
@@ -439,7 +276,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(31)]
+	[Test, Order(20)]
 	[Category(UITestCategories.Shell)]
 	public void ShellPages_PresentationModeModalNotAnimated()
 	{ 
@@ -450,4 +287,173 @@ public class ShellPagesFeatureTests : _GalleryUITest
 		App.WaitForElement("GoBackButton");
 		VerifyScreenshot();
 	}
+
+	[Test, Order(21)]
+	[Category(UITestCategories.Shell)]
+	public void ShellPages_ForegroundColor()
+	{
+		App.WaitForElement("GoBackButton"); // To go back to controls page
+		App.Tap("GoBackButton");
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement("MagentaForegroundColor");
+		App.Tap("MagentaForegroundColor");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		VerifyScreenshot();
+	}
+
+	[Test, Order(22)]
+	[Category(UITestCategories.Shell)]
+	public void ShellPages_ForegroundColorAndTitleColor()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement("MagentaForegroundColor");
+		App.Tap("MagentaForegroundColor");
+		App.WaitForElement("RedTitleColor");
+		App.Tap("RedTitleColor");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		VerifyScreenshot();
+	}
+
+#if TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/32125
+	[Test, Order(23)]
+	[Category(UITestCategories.Shell)]
+	public void ShellPages_ForegroundColorAndUnselectedColor()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement("MagentaForegroundColor");
+		App.Tap("MagentaForegroundColor");
+		App.WaitForElement("MaroonUnselectedColor");
+		App.Tap("MaroonUnselectedColor");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		VerifyScreenshot();
+	}
+#endif
+
+
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS// Issue Link: https://github.com/dotnet/maui/issues/32992
+	[Test, Order(24)]
+	[Category(UITestCategories.Shell)]
+	public void ShellPages_BackgroundColorAndForegroundColor()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement("LightGreenBackgroundColor");
+		App.Tap("LightGreenBackgroundColor");
+		App.WaitForElement("MagentaForegroundColor");
+		App.Tap("MagentaForegroundColor");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		VerifyScreenshot();
+	}
+
+	[Test, Order(25)]
+	[Category(UITestCategories.Shell)]
+	public void ShellPages_BackgroundColorAndTitleColor()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement("LightGreenBackgroundColor");
+		App.Tap("LightGreenBackgroundColor");
+		App.WaitForElement("RedTitleColor");
+		App.Tap("RedTitleColor");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		VerifyScreenshot();
+	}
+
+	[Test, Order(26)]
+	[Category(UITestCategories.Shell)]
+	public void ShellPages_BackgroundColorAndUnselectedColor()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement("LightGreenBackgroundColor");
+		App.Tap("LightGreenBackgroundColor");
+		App.WaitForElement("MaroonUnselectedColor");
+		App.Tap("MaroonUnselectedColor");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		VerifyScreenshot();
+	}
+#endif
+
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/5161
+	[Test, Order(27)]
+	[Category(UITestCategories.Shell)]
+	public void ShellPages_ForegroundColorAndDisabledColor()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement("MagentaForegroundColor");
+		App.Tap("MagentaForegroundColor");
+		App.WaitForElement("IsEnabledFalse");
+		App.Tap("IsEnabledFalse");
+		App.WaitForElement("VioletDisabledColor");
+		App.Tap("VioletDisabledColor");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		VerifyScreenshot();
+	}
+
+	[Test, Order(28)]
+	[Category(UITestCategories.Shell)]
+	public void ShellPages_DisabledColorAndUnselectedColor()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement("MaroonUnselectedColor");
+		App.Tap("MaroonUnselectedColor");
+		App.WaitForElement("IsEnabledFalse");
+		App.Tap("IsEnabledFalse");
+		App.WaitForElement("VioletDisabledColor");
+		App.Tap("VioletDisabledColor");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		VerifyScreenshot();
+	}
+#endif 
+
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST  // Issue Link: https://github.com/dotnet/maui/issues/33909
+	[Test, Order(29)]
+	[Category(UITestCategories.Shell)]
+	public void ShellPages_VerifyForegroundColorResetForBackButton()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement("MagentaForegroundColor");
+		App.Tap("MagentaForegroundColor");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(Options);
+		App.Tap(Options);
+#if WINDOWS
+		VerifyScreenshot(includeTitleBar: true);
+#else
+		VerifyScreenshot();
+#endif
+	}
+#endif 
+
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS  // Issue Link:https://github.com/dotnet/maui/issues/32993
+	[Test, Order(30)]
+	[Category(UITestCategories.Shell)]
+	public void ShellPages_FlowDirectionRTL()
+	{
+		App.WaitForElement(Apply); // To reset the old value
+		App.Tap(Apply);
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement("FlowDirectionRTL");
+		App.Tap("FlowDirectionRTL");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		VerifyScreenshot();
+	}
+#endif
 }
