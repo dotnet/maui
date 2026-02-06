@@ -1,18 +1,18 @@
 namespace Microsoft.Maui.Handlers;
 
-internal partial class MaterialProgressBarHandler : ViewHandler<IProgress, MaterialProgressBar>
+internal class ProgressBarHandler2 : ViewHandler<IProgress, MaterialProgressBar>
 {
-	public static PropertyMapper<IProgress, MaterialProgressBarHandler> Mapper =
+	public static PropertyMapper<IProgress, ProgressBarHandler2> Mapper =
 		new(ViewMapper)
 		{
 			[nameof(IProgress.Progress)] = MapProgress,
 			[nameof(IProgress.ProgressColor)] = MapProgressColor,
 		};
 
-	public static CommandMapper<IProgress, MaterialProgressBarHandler> CommandMapper =
+	public static CommandMapper<IProgress, ProgressBarHandler2> CommandMapper =
 		new(ViewCommandMapper);
 
-	public MaterialProgressBarHandler() : base(Mapper, CommandMapper)
+	public ProgressBarHandler2() : base(Mapper, CommandMapper)
 	{
 	}
 
@@ -35,12 +35,12 @@ internal partial class MaterialProgressBarHandler : ViewHandler<IProgress, Mater
 		base.DisconnectHandler(platformView);
 	}
 
-	public static void MapProgress(MaterialProgressBarHandler handler, IProgress progress)
+	public static void MapProgress(ProgressBarHandler2 handler, IProgress progress)
 	{
 		handler.PlatformView?.UpdateProgress(progress);
 	}
 
-	public static void MapProgressColor(MaterialProgressBarHandler handler, IProgress progress)
+	public static void MapProgressColor(ProgressBarHandler2 handler, IProgress progress)
 	{
 		handler.PlatformView?.UpdateProgressColor(progress);
 	}

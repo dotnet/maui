@@ -133,7 +133,7 @@ public static partial class AppHostBuilderExtensions
 #if ANDROID
 		if (RuntimeFeature.IsMaterial3Enabled)
 		{
-			handlersCollection.AddHandler<ProgressBar, MaterialProgressBarHandler>();
+			handlersCollection.AddHandler<ProgressBar, ProgressBarHandler2>();
 		}
 		else
 		{
