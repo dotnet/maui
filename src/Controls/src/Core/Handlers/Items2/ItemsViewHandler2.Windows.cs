@@ -572,18 +572,24 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			};
 		}
 
-		static UniformGridLayout CreateGridView(GridItemsLayout gridItemsLayout)
+		UniformGridLayout CreateGridView(GridItemsLayout gridItemsLayout)
 		{
-			return new UniformGridLayout()
-			{
-				Orientation = gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal
-						? Orientation.Vertical : Orientation.Horizontal,
-				MaximumRowsOrColumns = gridItemsLayout.Span,
-				MinColumnSpacing = gridItemsLayout.HorizontalItemSpacing,
-				MinRowSpacing = gridItemsLayout.VerticalItemSpacing,
-				ItemsStretch = UniformGridLayoutItemsStretch.Fill,
-				ItemsJustification = UniformGridLayoutItemsJustification.Start,
-			};
+			// Use custom layout for grouped items to handle headers/footers spanning full width
+			bool isGrouped = ItemsView is GroupableItemsView groupableItemsView && groupableItemsView.IsGrouped;
+			
+			UniformGridLayout layout = isGrouped 
+				? new GroupableUniformGridLayout()
+				: new UniformGridLayout();
+
+			layout.Orientation = gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal
+				? Orientation.Vertical : Orientation.Horizontal;
+			layout.MaximumRowsOrColumns = gridItemsLayout.Span;
+			layout.MinColumnSpacing = gridItemsLayout.HorizontalItemSpacing;
+			layout.MinRowSpacing = gridItemsLayout.VerticalItemSpacing;
+			layout.ItemsStretch = UniformGridLayoutItemsStretch.Fill;
+			layout.ItemsJustification = UniformGridLayoutItemsJustification.Start;
+
+			return layout;
 		}
 
 		void FindScrollViewer()
