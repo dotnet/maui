@@ -22,12 +22,11 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				platformProgressBar.UpdateNativeProgressColor(progress);
+				platformProgressBar.UpdateProgressBarColor(progress);
 			}
 		}
 
-		// TODO: make it public in .net 11
-		static void UpdateNativeProgressColor(this AProgressBar platformProgressBar, IProgress progress)
+		static void UpdateProgressBarColor(this AProgressBar platformProgressBar, IProgress progress)
 		{
 			Color color = progress.ProgressColor;
 
@@ -51,8 +50,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		// TODO: Material3 - make it public in .net 11
-		internal static void UpdateLinearProgressIndicatorColor(this LinearProgressIndicator materialProgressBar, IProgress progress)
+		static void UpdateLinearProgressIndicatorColor(this LinearProgressIndicator materialProgressBar, IProgress progress)
 		{
 			Color color = progress.ProgressColor;
 
