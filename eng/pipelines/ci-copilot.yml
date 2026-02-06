@@ -636,10 +636,11 @@ stages:
                   exit 1
                 }
                 Write-Host "Found alternative: $($altStateFile.FullName)"
+                $stateFile = $altStateFile.FullName
               }
               
               # Run the post-ai-summary-comment.ps1 script directly
-              pwsh .github/skills/ai-summary-comment/scripts/post-ai-summary-comment.ps1 -PRNumber $prNumber
+              pwsh .github/skills/ai-summary-comment/scripts/post-ai-summary-comment.ps1 -StateFile $stateFile
               if ($LASTEXITCODE -eq 0) {
                 Write-Host "✅ AI summary comment posted successfully"
               } else {
