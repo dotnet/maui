@@ -69,7 +69,7 @@ Each stamp file (except `mauimanifest.stamp`) has a companion `.inputs` file con
 
 ```
 ResizetizeCollectItems          ← Collects items from project + references
-    ├── ProcessMauiAssets        ← Copies MauiAsset items
+    ├── ProcessMauiAssets        ← Computes asset paths and registers platform items
     ├── ProcessMauiSplashScreens ← Generates splash resources
     ├── ProcessMauiFonts         ← Copies font files (incremental)
     │   └── _CollectMauiFontItems ← Registers platform items (ALWAYS runs)
@@ -82,9 +82,9 @@ ResizetizeCollectItems          ← Collects items from project + references
 |----------|----------------------|-----------------|-----------------|
 | **iOS** | `CollectBundleResourcesDependsOn`, `CompileImageAssetsDependsOn` | `_CollectMauiFontItems` via `CollectAppManifestsDependsOn` | `AfterTargets=ResizetizeCollectItems` |
 | **Android** | `BeforeTargets=_ComputeAndroidResourcePaths` | `AfterTargets=ResizetizeCollectItems` | `AfterTargets=ResizetizeCollectItems` |
-| **Windows** | `BeforeTargets=AssignTargetPaths` | `BeforeTargets=AssignTargetPaths` | `BeforeTargets=AssignTargetPaths` |
-| **WPF** | `BeforeTargets=FileClassification` | `BeforeTargets=FileClassification` | `BeforeTargets=FileClassification` |
-| **Tizen** | `BeforeTargets=PrepareResources` | `AfterTargets=ResizetizeCollectItems` | `AfterTargets=ResizetizeCollectItems` |
+| **Windows** | Via `DependsOnTargets` (from `ResizetizeImages`/`ProcessMauiFonts`) | `BeforeTargets=AssignTargetPaths` | `BeforeTargets=AssignTargetPaths` |
+| **WPF** | Via `DependsOnTargets` (from `ResizetizeImages`/`ProcessMauiFonts`) | `BeforeTargets=FileClassification` | `BeforeTargets=FileClassification` |
+| **Tizen** | Via `DependsOnTargets` (from `ResizetizeImages`/`ProcessMauiFonts`) | `AfterTargets=ResizetizeCollectItems` | `AfterTargets=ResizetizeCollectItems` |
 
 ## ⚠️ Critical Pattern: Inputs/Outputs and Item Registration
 
