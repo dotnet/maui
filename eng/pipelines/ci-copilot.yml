@@ -34,7 +34,7 @@ stages:
       - job: CopilotReview
         displayName: 'Run Copilot PR Reviewer Agent'
         pool: ${{ parameters.pool }}
-        timeoutInMinutes: 120
+        timeoutInMinutes: 180
         steps:
           - checkout: self
             fetchDepth: 0
