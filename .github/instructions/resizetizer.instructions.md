@@ -90,7 +90,10 @@ ResizetizeCollectItems          ← Collects items from project + references
 
 ### The Problem
 
-MSBuild's `Inputs`/`Outputs` incremental check **completely skips the target body** when outputs are up-to-date. This means any `<ItemGroup>` inside the target body that registers platform items (e.g., `AndroidAsset`, `BundleResource`) will **NOT be evaluated** on incremental builds.
+MSBuild's `Inputs`/`Outputs` incremental check skips **tasks** when outputs are up-to-date, but **still evaluates ItemGroups and PropertyGroups** via [output inference](https://learn.microsoft.com/en-us/visualstudio/msbuild/incremental-builds#output-inference). However, this is dangerous when ItemGroups depend on side-effects of skipped tasks:
+
+- Wildcard globs (`$(_MauiIntermediateFonts)*`) depend on files created by `Copy` tasks — if the intermediate directory is missing (partial clean, concurrent builds), the glob evaluates to nothing
+- Tasks like `CreatePartialInfoPlistTask` are genuinely skipped — their output files won't exist if they haven't run
 
 ### The Solution: Split Target Pattern
 
@@ -179,9 +182,22 @@ This target is the starting point for the pipeline. It:
 
 **⚠️ CRITICAL**: `DependsOnTargets` alone does NOT trigger a target. Something must invoke the target first (via `AfterTargets`, `BeforeTargets`, or another target's `DependsOnTargets`).
 
-### Common Pitfall: Items in Inputs/Outputs Targets
+### Common Pitfall: Items Dependent on Task Side-Effects
 
-**Never put platform item registrations inside a target that has `Inputs`/`Outputs`.** When MSBuild determines the target is up-to-date, the ENTIRE body is skipped — including `<ItemGroup>` elements that register items needed by downstream targets.
+**Never use wildcard globs that depend on files created by tasks in the same target.** During output inference (when the target is skipped), tasks don't run but ItemGroups ARE evaluated — globs will find nothing if the intermediate files don't exist yet.
+
+```xml
+<!-- ❌ DANGEROUS: glob depends on Copy task having run -->
+<Copy SourceFiles="@(MauiFont)" DestinationFolder="$(_MauiIntermediateFonts)" />
+<ItemGroup>
+    <_MauiFontCopied Include="$(_MauiIntermediateFonts)*" />
+</ItemGroup>
+
+<!-- ✅ SAFE: predictive mapping from source items, filesystem-independent -->
+<ItemGroup>
+    <_MauiFontCopied Include="@(MauiFont->'$(_MauiIntermediateFonts)%(Filename)%(Extension)')" />
+</ItemGroup>
+```
 
 This is the root cause of issue #23268.
 
@@ -232,8 +248,9 @@ dotnet build ... -v:diag 2>&1 | grep -E "ProcessMauiFonts|_CollectMauiFontItems|
 
 | Mistake | Impact | Correct Approach |
 |---------|--------|-----------------|
-| Put item registration inside `Inputs`/`Outputs` target | Items lost on incremental build | Use split target pattern |
-| Use wildcard glob for intermediate collection | Picks up stale files | Use predictive path mapping from source items |
+| Use wildcard glob dependent on task output | Glob finds nothing if task was skipped (output inference) | Use predictive path mapping from source items |
+| Put task-dependent logic in same target as work | During output inference, tasks are skipped but ItemGroups evaluate | Use split target pattern |
 | Forget to copy changes to `.buildtasks/` | Local testing uses old code | Always copy after editing source |
 | Assume `DependsOnTargets` triggers execution | Target never runs | Add `AfterTargets` or `BeforeTargets` trigger |
 | Mix up `AfterTargets` vs `DependsOnTargets` | Both are hard requirements, but serve different purposes | `DependsOnTargets` = pull, `AfterTargets` = push |
+| Assume target body is fully skipped by Inputs/Outputs | ItemGroups ARE evaluated via output inference; only tasks are skipped | Be aware of output inference; don't rely on it for task-dependent items |
