@@ -1,4 +1,5 @@
 ﻿using Android.Content.Res;
+using Google.Android.Material.ProgressIndicator;
 using Microsoft.Maui.Graphics;
 using AProgressBar = Android.Widget.ProgressBar;
 
@@ -15,6 +16,19 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateProgressColor(this AProgressBar platformProgressBar, IProgress progress)
 		{
+			if(platformProgressBar is LinearProgressIndicator materialProgressBar)
+			{
+				materialProgressBar.UpdateLinearProgressIndicatorColor(progress);
+			}
+			else
+			{
+				platformProgressBar.UpdateNativeProgressColor(progress);
+			}
+		}
+
+		// TODO: make it public in .net 11
+		static void UpdateNativeProgressColor(this AProgressBar platformProgressBar, IProgress progress)
+		{
 			Color color = progress.ProgressColor;
 
 			if (color == null)
@@ -27,20 +41,18 @@ namespace Microsoft.Maui.Platform
 				var tintList = ColorStateList.ValueOf(color.ToPlatform());
 
 				if (platformProgressBar.Indeterminate)
+				{
 					platformProgressBar.IndeterminateTintList = tintList;
+				}
 				else
+				{
 					platformProgressBar.ProgressTintList = tintList;
+				}
 			}
 		}
 
 		// TODO: Material3 - make it public in .net 11
-		internal static void UpdateProgress(this MaterialProgressBar materialProgressBar, IProgress progress)
-		{
-			materialProgressBar.Progress = (int)(progress.Progress * Maximum);
-		}
-
-		// TODO: Material3 - make it public in .net 11
-		internal static void UpdateProgressColor(this MaterialProgressBar materialProgressBar, IProgress progress)
+		internal static void UpdateLinearProgressIndicatorColor(this LinearProgressIndicator materialProgressBar, IProgress progress)
 		{
 			Color color = progress.ProgressColor;
 
