@@ -429,7 +429,7 @@ if ($DryRun) {
             }
             if (Test-Path $scriptPath) {
                 Write-Host "💬 Running post-ai-summary-comment.ps1 directly..." -ForegroundColor Yellow
-                & pwsh $scriptPath -PRNumber $PRNumber
+                & $scriptPath -PRNumber $PRNumber
                 
                 $commentExit = $LASTEXITCODE
                 if ($commentExit -eq 0) {

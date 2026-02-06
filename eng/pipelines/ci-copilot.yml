@@ -536,6 +536,16 @@ stages:
               
               echo "Review-PR.ps1 exit code: $COPILOT_EXIT_CODE"
               
+              # Terminate any orphaned copilot/node processes that could hold this step's
+              # stdout fd open and prevent the bash step from exiting.
+              echo "Cleaning up orphaned processes..."
+              for proc in $(pgrep -f "copilot" 2>/dev/null || true) $(pgrep -f "node.*copilot" 2>/dev/null || true); do
+                if [ -n "$proc" ]; then
+                  echo "  Stopping process $proc"
+                  kill "$proc" 2>/dev/null || true
+                fi
+              done
+              
               # Copy any Copilot session files
               if [ -d "$HOME/.copilot" ]; then
                 echo "Copying Copilot session state..."
