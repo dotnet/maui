@@ -61,7 +61,7 @@ This means stamp files, input tracking files, and intermediate outputs are at **
 | `mauisplash.stamp` | Splash screen processing |
 | `mauimanifest.stamp` | Platform manifest generation |
 
-Each has a companion `.inputs` file containing serialized metadata for change detection.
+Each stamp file (except `mauimanifest.stamp`) has a companion `.inputs` file containing serialized metadata for change detection.
 
 ## Target Pipeline
 
@@ -78,9 +78,9 @@ ResizetizeCollectItems          ← Collects items from project + references
 
 ### Platform-Specific Scheduling
 
-| Platform | ResizetizeCollectItems | ProcessMauiFonts | ResizetizeImages |
+| Platform | ResizetizeCollectItems | ProcessMauiFonts / _CollectMauiFontItems | ResizetizeImages |
 |----------|----------------------|-----------------|-----------------|
-| **iOS** | `CollectAppManifestsDependsOn` | `CollectAppManifestsDependsOn` | `BeforeTargets=CompileImageAssets` |
+| **iOS** | `CollectBundleResourcesDependsOn`, `CompileImageAssetsDependsOn` | `_CollectMauiFontItems` via `CollectAppManifestsDependsOn` | `AfterTargets=ResizetizeCollectItems` |
 | **Android** | `BeforeTargets=_ComputeAndroidResourcePaths` | `AfterTargets=ResizetizeCollectItems` | `AfterTargets=ResizetizeCollectItems` |
 | **Windows** | `BeforeTargets=AssignTargetPaths` | `BeforeTargets=AssignTargetPaths` | `BeforeTargets=AssignTargetPaths` |
 | **WPF** | `BeforeTargets=FileClassification` | `BeforeTargets=FileClassification` | `BeforeTargets=FileClassification` |
@@ -140,13 +140,25 @@ MSBuild's `Inputs`/`Outputs` incremental check skips **tasks** when outputs are 
 
 ### How Each Platform Receives Assets
 
-| Platform | Font Item | Image Item | Metadata |
-|----------|-----------|------------|----------|
-| **iOS** | `BundleResource` | `BundleResource` or `ImageAsset` | `LogicalName`, `TargetPath` |
-| **Android** | `AndroidAsset` | `LibraryResourceDirectories` | `Link` |
-| **Windows** | `ContentWithTargetPath` | `ContentWithTargetPath` | `TargetPath`, `CopyToPublishDirectory` |
-| **WPF** | `Resource` | `Resource` | `LogicalName`, `Link` |
-| **Tizen** | `TizenTpkUserIncludeFiles` | `TizenTpkUserIncludeFiles` | `TizenTpkSubDir` |
+**Font Items** (from `_CollectMauiFontItems`):
+
+| Platform | Item Type | Metadata |
+|----------|-----------|----------|
+| **iOS** | `BundleResource` | `LogicalName`, `TargetPath` |
+| **Android** | `AndroidAsset` | `Link` |
+| **Windows** | `ContentWithTargetPath` | `TargetPath`, `CopyToPublishDirectory` |
+| **WPF** | `Resource` | `LogicalName`, `Link` |
+| **Tizen** | `TizenTpkUserIncludeFiles` | `TizenTpkSubDir` |
+
+**Image Items** (from `ResizetizeImages`):
+
+| Platform | Item Type | Metadata |
+|----------|-----------|----------|
+| **iOS** | `BundleResource` or `ImageAsset` | `LogicalName`, `TargetPath` (+ `Link` for ImageAsset) |
+| **Android** | `LibraryResourceDirectories` | `StampFile` |
+| **Windows** | `ContentWithTargetPath` | `TargetPath`, `CopyToPublishDirectory` |
+| **WPF** | `Resource` | `LogicalName`, `Link` |
+| **Tizen** | `TizenTpkUserIncludeFiles` | `TizenTpkSubDir` |
 
 ### iOS-Specific: Info.plist Font Registration
 
