@@ -196,7 +196,7 @@ The repository includes specialized custom agents and reusable skills for specif
 
 ### Available Custom Agents
 
-1. **pr** - Sequential 5-phase workflow for reviewing and working on PRs
+1. **pr** - Sequential 4-phase workflow for reviewing and working on PRs
    - **Use when**: A PR already exists and needs review or work, OR an issue needs a fix
    - **Capabilities**: PR review, test verification, fix exploration, alternative comparison
    - **Trigger phrases**: "review PR #XXXXX", "work on PR #XXXXX", "fix issue #XXXXX", "continue PR #XXXXX"

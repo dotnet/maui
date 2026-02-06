@@ -1,8 +1,8 @@
-# PR Agent: Post-Gate Phases (4-5)
+# PR Agent: Post-Gate Phases (3-4)
 
 **⚠️ PREREQUISITE: Only read this file after 🚦 Gate shows `✅ PASSED` in your state file.**
 
-If Gate is not passed, go back to `.github/agents/pr.md` and complete phases 1-3 first.
+If Gate is not passed, go back to `.github/agents/pr.md` and complete phases 1-2 first.
 
 ---
 
@@ -10,8 +10,8 @@ If Gate is not passed, go back to `.github/agents/pr.md` and complete phases 1-3
 
 | Phase | Name | What Happens |
 |-------|------|--------------|
-| 4 | **Fix** | Invoke `try-fix` skill repeatedly to explore independent alternatives, then compare with PR's fix |
-| 5 | **Report** | Deliver result (approve PR, request changes, or create new PR) |
+| 3 | **Fix** | Invoke `try-fix` skill repeatedly to explore independent alternatives, then compare with PR's fix |
+| 4 | **Report** | Deliver result (approve PR, request changes, or create new PR) |
 
 ---
 
@@ -26,7 +26,7 @@ If try-fix cannot run due to environment issues, **STOP and ask the user**. Do N
 
 ---
 
-## 🔧 FIX: Explore and Select Fix (Phase 4)
+## 🔧 FIX: Explore and Select Fix (Phase 3)
 
 > **SCOPE**: Explore independent fix alternatives using `try-fix` skill, compare with PR's fix, select the best approach.
 
@@ -193,11 +193,11 @@ Update the state file:
 
 ---
 
-## 📋 REPORT: Final Report (Phase 5)
+## 📋 REPORT: Final Report (Phase 4)
 
 > **SCOPE**: Deliver the final result - either a PR review or a new PR.
 
-**⚠️ Gate Check:** Verify ALL phases 1-4 are `✅ COMPLETE` or `✅ PASSED` before proceeding.
+**⚠️ Gate Check:** Verify ALL phases 1-3 are `✅ COMPLETE` or `✅ PASSED` before proceeding.
 
 ### Finalize Title and Description
 
@@ -290,7 +290,6 @@ Update all phase statuses to complete.
 - ❌ **Re-testing the PR's fix in try-fix** - Gate already validated it; try-fix tests YOUR ideas
 - ❌ **Skipping models in Round 1** - All 5 models must run try-fix before cross-pollination
 - ❌ **Running try-fix in parallel** - SEQUENTIAL ONLY - they modify same files and use same device
-- ❌ **Stopping before cross-pollination** - Must share results and check for new ideas
 - ❌ **Using explore/glob instead of invoking models** - Cross-pollination requires ACTUAL task agent invocations with each model, not code searches
 - ❌ **Assuming "comprehensive coverage" = exhausted** - Only exhausted when all 5 models explicitly say "NO NEW IDEAS"
 - ❌ **Not recording cross-pollination responses** - State file must have table showing each model's Round 2 response

@@ -3,13 +3,12 @@
     Runs a PR review using Copilot CLI and the PR Agent workflow.
 
 .DESCRIPTION
-    This script invokes Copilot CLI to perform a comprehensive 5-phase PR review:
+    This script invokes Copilot CLI to perform a comprehensive 4-phase PR review:
     
     Phase 1: Pre-Flight - Context gathering
-    Phase 2: Tests - Verify test existence
-    Phase 3: Gate - Verify tests catch the bug
-    Phase 4: Fix - Multi-model exploration of alternatives
-    Phase 5: Report - Final recommendation
+    Phase 2: Gate - Verify tests catch the bug
+    Phase 3: Fix - Multi-model exploration of alternatives
+    Phase 4: Report - Final recommendation
     
     The script:
     - Validates prerequisites (gh CLI, PR exists)
@@ -248,17 +247,17 @@ $platformInstruction
 - If you think you need to switch branches or push changes, you are WRONG - ask the user instead
 
 **Instructions:**
-1. Read the plan template at ``$planTemplatePath`` for the 5-phase workflow
-2. Read ``.github/agents/pr.md`` for Phases 1-3 instructions
+1. Read the plan template at ``$planTemplatePath`` for the 4-phase workflow
+2. Read ``.github/agents/pr.md`` for Phases 1-2 instructions
 3. Follow ALL critical rules, especially:
    - STOP on environment blockers and ask before continuing
    - Use task agent for Gate verification
-   - Run multi-model try-fix in Phase 4
+   - Run multi-model try-fix in Phase 3
 
 **Start with Phase 1: Pre-Flight**
 - Create state file: CustomAgentLogsTmp/PRState/pr-$PRNumber.md
 - Gather context from PR #$PRNumber
-- Proceed through all 5 phases
+- Proceed through all 4 phases
 
 Begin the review now.
 "@

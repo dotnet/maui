@@ -181,7 +181,7 @@ gh auth status  # Verify authentication before running
 ## Comment Format
 
 Comments are formatted with:
-- **Phase badge** (🔍 Pre-Flight, 🧪 Tests, 🚦 Gate, 🔧 Fix, 📋 Report)
+- **Phase badge** (🔍 Pre-Flight, 🚦 Gate, 🔧 Fix, 📋 Report)
 - **Status indicator** (✅ Completed, ⚠️ Issues Found)
 - **Expandable review sessions** (each session is a collapsible section)
 - **What's Next** (what phase happens next)
@@ -209,7 +209,7 @@ When the same PR is reviewed multiple times (e.g., after new commits), the scrip
 - Test coverage includes iOS device test
 
 ### Next Steps
-→ **Phase 2: Tests** - Analyzing test files and coverage
+→ **Phase 2: Gate** - Verifying tests catch the bug
 
 ---
 *Posted by PR Agent @ 2026-01-17 14:23:45 UTC*
