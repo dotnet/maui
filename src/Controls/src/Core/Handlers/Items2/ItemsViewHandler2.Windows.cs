@@ -217,31 +217,41 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			var itemsSource = Element.ItemsSource;
 			var itemTemplate = Element.ItemTemplate;
 
+			// Handle grouped items first (with or without ItemTemplate)
+			if (itemsSource is not null && ItemsView is GroupableItemsView groupableItemsView && groupableItemsView.IsGrouped)
+			{
+				// When there's no ItemTemplate, use the raw ItemsSource directly (no wrapping)
+				// This allows default ToString() rendering without ItemTemplateContext2 wrapper
+				if (itemTemplate is null)
+				{
+					return new CollectionViewSource
+					{
+						Source = itemsSource,
+						IsSourceGrouped = true
+					};
+				}
+				
+				return new CollectionViewSource
+				{
+					Source = TemplatedItemSourceFactory2.CreateGrouped(itemsSource, itemTemplate,
+						groupableItemsView.GroupHeaderTemplate, groupableItemsView.GroupFooterTemplate,
+						Element, mauiContext: MauiContext)
+						, IsSourceGrouped = false
+				};
+			}
+
 			if (itemTemplate is not null && itemsSource is not null)
 			{
-				if (ItemsView is GroupableItemsView groupableItemsView && groupableItemsView.IsGrouped)
+				var flattenedSource = itemsSource;
+				if (itemsSource is not null && IsItemsSourceGrouped(itemsSource))
 				{
-					return new CollectionViewSource
-					{
-						Source = TemplatedItemSourceFactory2.CreateGrouped(itemsSource, itemTemplate,
-							groupableItemsView.GroupHeaderTemplate, groupableItemsView.GroupFooterTemplate,
-							Element, mauiContext: MauiContext)
-							, IsSourceGrouped = false
-					};
+					flattenedSource = FlattenGroupedItemsSource(itemsSource);
 				}
-				else
+				return new CollectionViewSource
 				{
-					var flattenedSource = itemsSource;
-					if (itemsSource is not null && IsItemsSourceGrouped(itemsSource))
-					{
-						flattenedSource = FlattenGroupedItemsSource(itemsSource);
-					}
-					return new CollectionViewSource
-					{
-						Source = TemplatedItemSourceFactory2.Create(flattenedSource, itemTemplate, Element, mauiContext: MauiContext),
-						IsSourceGrouped = false
-					};
-				}
+					Source = TemplatedItemSourceFactory2.Create(flattenedSource, itemTemplate, Element, mauiContext: MauiContext),
+					IsSourceGrouped = false
+				};
 			}
 
 			return new CollectionViewSource
