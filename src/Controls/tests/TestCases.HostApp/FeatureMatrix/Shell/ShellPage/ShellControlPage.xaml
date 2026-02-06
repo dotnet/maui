@@ -202,7 +202,7 @@
                 <ShellContent x:Name="tab3Item"
                               Title="Tab3"
                               AutomationId="Tab3"
-                              IsEnabled="False"
+                              IsEnabled="{Binding IsEnabled}"
                               Icon="bank.png">
                         <ContentPage>
                                 <VerticalStackLayout>
