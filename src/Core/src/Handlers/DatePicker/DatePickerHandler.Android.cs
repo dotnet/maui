@@ -55,12 +55,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(MauiDatePicker platformView)
 		{
-			if (_dialog != null)
-			{
-				_dialog.DismissEvent -= OnDialogDismiss;
-				_dialog.Dismiss();
-				_dialog = null;
-			}
+			ResetDialog();
 
 			platformView.ViewAttachedToWindow -= OnViewAttachedToWindow;
 			platformView.ViewDetachedFromWindow -= OnViewDetachedFromWindow;
@@ -106,13 +101,47 @@ namespace Microsoft.Maui.Handlers
 		public static partial void MapMinimumDate(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			if (handler is DatePickerHandler platformHandler)
-				handler.PlatformView?.UpdateMinimumDate(datePicker, platformHandler._dialog);
+			{
+				// Force dialog recreation when MinimumDate is provided.
+				// Android's DatePickerDialog caches min/max dates internally,
+				// making it unreliable to update them after the dialog is created.
+				if (datePicker.MinimumDate is not null)
+				{
+					platformHandler.ResetDialog();
+				}
+				else
+				{
+					handler.PlatformView?.UpdateMinimumDate(datePicker, platformHandler._dialog);
+				}
+			}
 		}
 
 		public static partial void MapMaximumDate(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			if (handler is DatePickerHandler platformHandler)
-				handler.PlatformView?.UpdateMaximumDate(datePicker, platformHandler._dialog);
+			{
+				// Force dialog recreation when MaximumDate is provided.
+				// Android's DatePickerDialog caches min/max dates internally,
+				// making it unreliable to update them after the dialog is created.
+				if (datePicker.MaximumDate is not null)
+				{
+					platformHandler.ResetDialog();
+				}
+				else
+				{
+					handler.PlatformView?.UpdateMaximumDate(datePicker, platformHandler._dialog);
+				}
+			}
+		}
+
+		void ResetDialog()
+		{
+			if (_dialog is not null)
+			{
+				_dialog.DismissEvent -= OnDialogDismiss;
+				_dialog.Dismiss();
+				_dialog = null;
+			}
 		}
 
 		public static partial void MapCharacterSpacing(IDatePickerHandler handler, IDatePicker datePicker)
@@ -170,6 +199,13 @@ namespace Microsoft.Maui.Handlers
 			if (_dialog is null)
 			{
 				_dialog = CreateDatePickerDialog(year, month, day);
+
+				// Apply min/max constraints to newly created dialog
+				if (VirtualView is not null)
+				{
+					PlatformView?.UpdateMinimumDate(VirtualView, _dialog);
+					PlatformView?.UpdateMaximumDate(VirtualView, _dialog);
+				}
 			}
 			else
 			{
@@ -178,35 +214,6 @@ namespace Microsoft.Maui.Handlers
 				_dialog.ShowEvent += setDateLater;
 				_dialog.DismissEvent += OnDialogDismiss;
 			}
-
-			// Always update min/max dates in ShowEvent to ensure they are applied
-			// after Android's internal DatePicker initialization (fixes Android bug where
-			// setMinDate/setMaxDate don't update properly on reused dialogs)
-			EventHandler? updateMinMaxDates = null;
-			updateMinMaxDates = (sender, e) =>
-			{
-				var dialog = _dialog; // Capture locally to avoid race conditions
-				try
-				{
-					if (VirtualView is not null && dialog is not null)
-					{
-						dialog.DatePicker.MinDate = 0;
-						dialog.DatePicker.MaxDate = long.MaxValue;
-
-						PlatformView?.UpdateMinimumDate(VirtualView, dialog);
-						PlatformView?.UpdateMaximumDate(VirtualView, dialog);
-					}
-				}
-				finally
-				{
-					// Always unsubscribe to prevent memory leaks
-					if (dialog is not null)
-					{
-						dialog.ShowEvent -= updateMinMaxDates;
-					}
-				}
-			};
-			_dialog.ShowEvent += updateMinMaxDates;
 
 			_dialog.Show();
 		}
