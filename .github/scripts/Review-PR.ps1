@@ -457,6 +457,22 @@ if (-not $DryRun) {
 }
 Write-Host ""
 
+# Kill any orphaned copilot/node child processes that may hold stdout fd open
+# This prevents the ADO pipeline step from hanging after the script completes
+Write-Host "🧹 Cleaning up child processes..." -ForegroundColor Gray
+try {
+    $myPid = $PID
+    $children = Get-Process -Name "copilot","node" -ErrorAction SilentlyContinue | Where-Object { $_.Id -ne $myPid }
+    if ($children) {
+        Write-Host "  Stopping $($children.Count) orphaned process(es): $($children | ForEach-Object { "$($_.ProcessName)($($_.Id))" } | Join-String -Separator ', ')" -ForegroundColor Gray
+        $children | Stop-Process -Force -ErrorAction SilentlyContinue
+    } else {
+        Write-Host "  No orphaned processes found" -ForegroundColor Gray
+    }
+} catch {
+    Write-Host "  ⚠️ Cleanup warning: $_" -ForegroundColor Yellow
+}
+
 if ($LogFile) {
     Stop-Transcript | Out-Null
 }
