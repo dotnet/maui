@@ -370,12 +370,9 @@ if ($DryRun) {
         # Restore tracked files to clean state before running post-completion skills.
         # Phase 1 (PR Agent) may have left the working tree dirty from try-fix attempts,
         # which can cause skill files to be missing or modified in subsequent phases.
-        # NOTE: State files in CustomAgentLogsTmp/ are .gitignore'd and untracked,
-        # so this won't touch them. Using HEAD to also restore deleted files.
         Write-Host ""
         Write-Host "🧹 Restoring working tree to clean state between phases..." -ForegroundColor Yellow
-        git status --porcelain 2>$null | Set-Content "CustomAgentLogsTmp/PRState/phase1-exit-git-status.log" -ErrorAction SilentlyContinue
-        git checkout HEAD -- . 2>&1 | Out-Null
+        git checkout -- . 2>&1 | Out-Null
         Write-Host "  ✅ Working tree restored" -ForegroundColor Green
         
         # Phase 2: Run pr-finalize skill if requested
@@ -386,13 +383,7 @@ if ($DryRun) {
             Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
             Write-Host ""
             
-            # Ensure output directory exists for finalize results
-            $finalizeDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/pr-finalize"
-            if (-not (Test-Path $finalizeDir)) {
-                New-Item -ItemType Directory -Path $finalizeDir -Force | Out-Null
-            }
-            
-            $finalizePrompt = "Run the pr-finalize skill for PR #$PRNumber. Verify the PR title and description match the actual implementation. Do NOT post a comment. Write your findings to CustomAgentLogsTmp/PRState/$PRNumber/pr-finalize/pr-finalize-summary.md (NOT the main state file pr-$PRNumber.md which contains phase data that must not be overwritten). If you recommend a new description, also write it to CustomAgentLogsTmp/PRState/$PRNumber/pr-finalize/recommended-description.md. If you have code review findings, also write them to CustomAgentLogsTmp/PRState/$PRNumber/pr-finalize/code-review.md."
+            $finalizePrompt = "Run the pr-finalize skill for PR #$PRNumber. Verify the PR title and description match the actual implementation. Do NOT post a comment. Write your findings to CustomAgentLogsTmp/PRState/pr-$PRNumber-final.md (NOT the main state file pr-$PRNumber.md which contains phase data that must not be overwritten)."
             
             $finalizeArgs = @(
                 "-p", $finalizePrompt,
@@ -411,8 +402,8 @@ if ($DryRun) {
             }
         }
         
-        # Phase 3: Post comments if requested
-        # Runs scripts directly instead of via Copilot CLI to avoid:
+        # Phase 3: Post AI summary comment if requested
+        # Runs the script directly instead of via Copilot CLI to avoid:
         # - LLM creating its own broken version if skill files are missing
         # - Dirty tree from Phase 2 corrupting script files
         if ($PostSummaryComment) {
@@ -422,78 +413,28 @@ if ($DryRun) {
             Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
             Write-Host ""
             
-            # First verify the skill file exists
-            $skillPath = ".github/skills/ai-summary-comment/SKILL.md"
-            if (Test-Path $skillPath) {
-                Write-Host "✅ Found skill file: $skillPath" -ForegroundColor Green
-            } else {
-                Write-Host "⚠️ Skill file not found at: $skillPath" -ForegroundColor Yellow
-                Write-Host "   Current directory: $(Get-Location)" -ForegroundColor Gray
-                Write-Host "   Available skills:" -ForegroundColor Gray
-                Get-ChildItem ".github/skills/" -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "     - $($_.Name)" -ForegroundColor Gray }
-            }
+            # Restore tracked files to clean state before running the script.
+            # Phase 2 (pr-finalize) may have modified files via its Copilot CLI session,
+            # causing skill scripts to be missing or corrupted.
+            Write-Host "🧹 Restoring working tree to clean state..." -ForegroundColor Yellow
+            git checkout -- . 2>&1 | Out-Null
+            Write-Host "  ✅ Working tree restored" -ForegroundColor Green
             
-            $commentPrompt = @"
-Post the AI summary comment for PR #$PRNumber using the ai-summary-comment skill.
-
-**Step 1: Run the post-ai-summary-comment.ps1 script**
-``````bash
-pwsh .github/skills/ai-summary-comment/scripts/post-ai-summary-comment.ps1 -PRNumber $PRNumber
-``````
-
-The script will automatically:
-- Load the state file from CustomAgentLogsTmp/PRState/pr-$PRNumber.md
-- Parse all phases and their statuses
-- Post/update the unified AI Summary comment on the PR
-
-**If the script fails**, check that the state file exists and contains valid phase data.
-
-**Do NOT** manually compose or post comments - always use the script.
-"@
-            
-            # 3a: Post PR agent summary comment (from Phase 1 state file)
             $scriptPath = ".github/skills/ai-summary-comment/scripts/post-ai-summary-comment.ps1"
-            if (-not (Test-Path $scriptPath)) {
-                Write-Host "⚠️ Script missing after checkout, attempting targeted recovery..." -ForegroundColor Yellow
-                git checkout HEAD -- $scriptPath 2>&1 | Out-Null
-            }
             if (Test-Path $scriptPath) {
                 Write-Host "💬 Running post-ai-summary-comment.ps1 directly..." -ForegroundColor Yellow
-                & $scriptPath -PRNumber $PRNumber
+                & pwsh $scriptPath -PRNumber $PRNumber
                 
                 $commentExit = $LASTEXITCODE
                 if ($commentExit -eq 0) {
-                    Write-Host "✅ Agent summary comment posted" -ForegroundColor Green
+                    Write-Host "✅ Summary comment posted" -ForegroundColor Green
                 } else {
                     Write-Host "⚠️ post-ai-summary-comment.ps1 exited with code: $commentExit" -ForegroundColor Yellow
                 }
             } else {
                 Write-Host "⚠️ Script not found at: $scriptPath" -ForegroundColor Yellow
                 Write-Host "   Current directory: $(Get-Location)" -ForegroundColor Gray
-                Write-Host "   Skipping agent summary comment." -ForegroundColor Gray
-            }
-            
-            # 3b: Post PR finalize comment (from Phase 2 finalize results)
-            if ($RunFinalize) {
-                $finalizeScriptPath = ".github/skills/ai-summary-comment/scripts/post-pr-finalize-comment.ps1"
-                if (-not (Test-Path $finalizeScriptPath)) {
-                    Write-Host "⚠️ Finalize script missing, attempting targeted recovery..." -ForegroundColor Yellow
-                    git checkout HEAD -- $finalizeScriptPath 2>&1 | Out-Null
-                }
-                if (Test-Path $finalizeScriptPath) {
-                    Write-Host "💬 Running post-pr-finalize-comment.ps1 directly..." -ForegroundColor Yellow
-                    & $finalizeScriptPath -PRNumber $PRNumber
-                    
-                    $finalizeCommentExit = $LASTEXITCODE
-                    if ($finalizeCommentExit -eq 0) {
-                        Write-Host "✅ Finalize comment posted" -ForegroundColor Green
-                    } else {
-                        Write-Host "⚠️ post-pr-finalize-comment.ps1 exited with code: $finalizeCommentExit" -ForegroundColor Yellow
-                    }
-                } else {
-                    Write-Host "⚠️ Script not found at: $finalizeScriptPath" -ForegroundColor Yellow
-                    Write-Host "   Skipping finalize comment." -ForegroundColor Gray
-                }
+                Write-Host "   Skipping summary comment." -ForegroundColor Gray
             }
         }
     }

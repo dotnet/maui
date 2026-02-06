@@ -575,6 +575,7 @@ stages:
             displayName: 'Run PR Reviewer Agent'
             env:
               GITHUB_TOKEN: $(COPILOT_TOKEN)
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
 
           # Publish Copilot logs and session artifacts
           - task: PublishPipelineArtifact@1
