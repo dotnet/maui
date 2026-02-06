@@ -574,7 +574,7 @@ stages:
               echo "Review output saved to $(Build.ArtifactStagingDirectory)/copilot-logs/"
             displayName: 'Run PR Reviewer Agent'
             env:
-              GITHUB_TOKEN: $(COPILOT_TOKEN)
+              COPILOT_GITHUB_TOKEN: $(COPILOT_TOKEN)
               GH_TOKEN: $(GH_COMMENT_TOKEN)
 
           # Publish Copilot logs and session artifacts
