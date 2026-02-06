@@ -19,9 +19,18 @@ public partial class VisualStateManagerEntryPage : ContentPage
 	void OnToggleEntryDisabled(object sender, EventArgs e)
 	{
 		DemoEntry.IsEnabled = !DemoEntry.IsEnabled;
+		EntryDisableButton?.Text = DemoEntry.IsEnabled ? "Disable" : "Enable";
 		EntryState.Text = DemoEntry.IsEnabled
 			? (DemoEntry.IsFocused ? "State: Focused" : "State: Unfocused")
 			: "State: Disabled";
+	}
+
+	void OnResetEntry(object sender, EventArgs e)
+	{
+		DemoEntry.IsEnabled = true;
+		DemoEntry.Text = string.Empty;
+		EntryDisableButton?.Text = "Disable";
+		EntryState.Text = "State: Unfocused";
 	}
 
 	void OnEntryFocused(object sender, FocusEventArgs e)

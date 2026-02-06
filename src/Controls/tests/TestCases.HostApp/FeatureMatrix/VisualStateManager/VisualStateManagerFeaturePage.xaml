@@ -4,6 +4,7 @@
              x:Class="Maui.Controls.Sample.VisualStateManagerFeatureMainPage"
              Title="VisualStateManagerFeaturePage">
     <VerticalStackLayout>
+        <Label Text="VisualStateManager Feature Matrix" FontSize="20" FontAttributes="Bold" />
         <Button Text="VSM Button"
                 Clicked="OnVSMButtonClicked"
                 HorizontalOptions="Center"

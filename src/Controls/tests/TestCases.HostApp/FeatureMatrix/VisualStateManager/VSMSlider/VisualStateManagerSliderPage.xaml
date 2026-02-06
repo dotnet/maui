@@ -4,7 +4,7 @@
              x:Class="Maui.Controls.Sample.VisualStateManagerSliderPage"
              Title="VisualStateManagerSliderPage">
     <ContentPage.Resources>
-        <!-- Slider VSM demo -->
+        <!-- Slider VSM VSM -->
         <Style TargetType="Slider" x:Key="VsmSliderStyle">
             <Setter Property="MinimumTrackColor" Value="#FFEF2323" />
             <Setter Property="MaximumTrackColor" Value="#FF0BCD32" />
@@ -57,7 +57,7 @@
 
             <VerticalStackLayout Padding="12" Spacing="8">
                 <Label Text="Slider States (Focused / Unfocused / Disabled)" FontAttributes="Bold" />
-                    <Slider x:Name="DemoSlider" AutomationId="DemoSlider" Minimum="0" Maximum="100" Value="50" Style="{StaticResource VsmSliderStyle}"
+                    <Slider x:Name="VSMSlider" AutomationId="VSMSlider" Minimum="0" Maximum="100" Value="50" Style="{StaticResource VsmSliderStyle}"
                             Focused="OnSliderFocused" Unfocused="OnSliderUnfocused" ValueChanged="OnSliderValueChanged" />
 
                 <!-- State output label -->
@@ -65,7 +65,7 @@
 
                 <HorizontalStackLayout Spacing="10">
                     <Button Text="Focus" AutomationId="SliderFocus" Clicked="OnFocusSlider" />
-                    <Button Text="Disable" AutomationId="SliderDisable" Clicked="OnToggleSliderDisabled" />
+                    <Button x:Name="SliderDisableButton" Text="Disable" AutomationId="SliderDisable" Clicked="OnToggleSliderDisabled" />
                     <Button Text="Reset" AutomationId="SliderReset" Clicked="OnResetSlider" />
                 </HorizontalStackLayout>
             </VerticalStackLayout>

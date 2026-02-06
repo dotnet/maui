@@ -108,7 +108,7 @@
                    FontSize="14"
                    TextColor="#111827"/>
             <HorizontalStackLayout Spacing="10">
-                <Button Text="Disable"
+                <Button x:Name="ButtonDisableButton" Text="Disable"
                         AutomationId="ButtonDisable"
                         Clicked="OnToggleButtonDisabled"/>
                 <Button Text="Reset"

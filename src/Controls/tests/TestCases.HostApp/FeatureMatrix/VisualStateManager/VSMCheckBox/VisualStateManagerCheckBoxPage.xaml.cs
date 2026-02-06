@@ -9,38 +9,41 @@ public partial class VisualStateManagerCheckBoxPage : ContentPage
 
 	void OnCheckBoxCheckedChanged(object sender, CheckedChangedEventArgs e)
 	{
-		if (!DemoCheckBox.IsEnabled)
+		if (!VSMCheckBox.IsEnabled)
 		{
 			CheckBoxState.Text = "State: Disabled";
 			return;
 		}
 
 		var state = e.Value ? "Checked" : "Unchecked";
-		VisualStateManager.GoToState(DemoCheckBox, state);
+		VisualStateManager.GoToState(VSMCheckBox, state);
 		CheckBoxState.Text = $"State: {state}";
 	}
 
 	void OnToggleCheckBoxDisabled(object sender, EventArgs e)
 	{
-		DemoCheckBox.IsEnabled = !DemoCheckBox.IsEnabled;
-		if (!DemoCheckBox.IsEnabled)
+		VSMCheckBox.IsEnabled = !VSMCheckBox.IsEnabled;
+		CheckBoxDisableButton.Text = VSMCheckBox.IsEnabled ? "Disable" : "Enable";
+		if (!VSMCheckBox.IsEnabled)
 		{
-			VisualStateManager.GoToState(DemoCheckBox, "Disabled");
+			VisualStateManager.GoToState(VSMCheckBox, "Disabled");
 			CheckBoxState.Text = "State: Disabled";
 		}
 		else
 		{
-			var state = DemoCheckBox.IsChecked ? "Checked" : "Unchecked";
-			VisualStateManager.GoToState(DemoCheckBox, state);
+			var state = VSMCheckBox.IsChecked ? "Checked" : "Unchecked";
+			VisualStateManager.GoToState(VSMCheckBox, state);
 			CheckBoxState.Text = $"State: {state}";
 		}
 	}
 
 	void OnResetCheckBox(object sender, EventArgs e)
 	{
-		DemoCheckBox.IsEnabled = true;
-		DemoCheckBox.IsChecked = false;
-		VisualStateManager.GoToState(DemoCheckBox, "Unchecked");
+		VSMCheckBox.IsEnabled = true;
+		VSMCheckBox.IsChecked = false;
+		CheckBoxDisableButton.Text = "Disable";
+		CheckBoxDisableButton.Text = "Disable";
+		VisualStateManager.GoToState(VSMCheckBox, "Unchecked");
 		CheckBoxState.Text = "State: Unchecked";
 	}
 }

@@ -23,19 +23,21 @@ public partial class VisualStateManagerCollectionViewPage : ContentPage
 	void OnToggleCollectionViewDisabled(object sender, EventArgs e)
 	{
 		MyCollectionView.IsEnabled = !MyCollectionView.IsEnabled;
-		CVState.Text = MyCollectionView.IsEnabled 
+		CVToggleButton?.Text = MyCollectionView.IsEnabled ? "Disable" : "Enable";
+		CVState.Text = MyCollectionView.IsEnabled
 			? (GetSelectedCount() > 0 ? $"State: Selected ({GetSelectedCount()})" : "State: Normal")
 			: "State: Disabled";
 	}
 
 	void OnResetCollectionView(object sender, EventArgs e)
 	{
-		MyCollectionView.IsEnabled = true;
+		MyCollectionView.IsEnabled = true; 
 		MyCollectionView.SelectedItem = null;
 		if (MyCollectionView.SelectionMode == SelectionMode.Multiple)
 		{
 			MyCollectionView.SelectedItems?.Clear();
 		}
+		CVToggleButton.Text = "Disable";
 		CVState.Text = "State: Normal";
 	}
 
@@ -79,10 +81,11 @@ public partial class VisualStateManagerCollectionViewPage : ContentPage
 
 	bool IsItemSelected(object item)
 	{
-		if (item is null) return false;
+		if (item is null)
+			return false;
 		if (MyCollectionView.SelectionMode == SelectionMode.Multiple)
 			return MyCollectionView.SelectedItems?.Contains(item) == true;
 		return Equals(MyCollectionView.SelectedItem, item);
-		
+
 	}
 }

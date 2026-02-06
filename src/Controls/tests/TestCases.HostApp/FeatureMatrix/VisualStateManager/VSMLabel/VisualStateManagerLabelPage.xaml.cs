@@ -24,7 +24,7 @@ public partial class VisualStateManagerLabelPage : ContentPage
 	{
 		_labelDisabled = !_labelDisabled;
 		string state;
-
+			LabelDisableButton.Text = _labelDisabled ? "Enable" : "Disable";
 		if (_labelDisabled)
 		{
 			state = "Disabled";
@@ -43,6 +43,7 @@ public partial class VisualStateManagerLabelPage : ContentPage
 	{
 		_labelSelected = false;
 		_labelDisabled = false;
+			LabelDisableButton.Text = "Disable";
 		VisualStateManager.GoToState(SelectableLabelContainer, "Normal");
 		LabelState.Text = "State: Normal";
 	}

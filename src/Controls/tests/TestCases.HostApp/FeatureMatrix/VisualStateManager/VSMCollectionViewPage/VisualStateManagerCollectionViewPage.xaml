@@ -45,6 +45,9 @@
     </ContentPage.Resources>
 
     <VerticalStackLayout Padding="20" Spacing="12">
+        <Label Text="VisualStateManager Feature Matrix" FontSize="20" />
+        <Label Text="CollectionView States (Normal / PointerOver / Selected / Disabled)" FontAttributes="Bold" />
+
         <CollectionView ItemsSource="{Binding Items}"
                 SelectionMode="Multiple"
                         x:Name="MyCollectionView"
@@ -70,7 +73,7 @@
                FontSize="14"
                TextColor="#111827" />
         <HorizontalStackLayout Spacing="10">
-            <Button Text="Disable" AutomationId="CVDisable" Clicked="OnToggleCollectionViewDisabled" />
+            <Button x:Name="CVToggleButton" Text="Disable" AutomationId="CVDisable" Clicked="OnToggleCollectionViewDisabled" />
             <Button Text="Reset" AutomationId="CVReset" Clicked="OnResetCollectionView" />
         </HorizontalStackLayout>
     </VerticalStackLayout>

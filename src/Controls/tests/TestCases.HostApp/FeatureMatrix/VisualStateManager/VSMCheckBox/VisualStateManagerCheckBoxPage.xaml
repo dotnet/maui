@@ -4,7 +4,6 @@
              x:Class="Maui.Controls.Sample.VisualStateManagerCheckBoxPage"
              Title="VisualStateManagerCheckBoxPage">
     <ContentPage.Resources>
-        <!-- CheckBox VSM demo -->
         <Style TargetType="CheckBox" x:Key="VsmCheckBoxStyle">
             <Setter Property="Color" Value="#374151" />
             <Setter Property="VisualStateManager.VisualStateGroups">
@@ -49,11 +48,11 @@
             <VerticalStackLayout Padding="12" Spacing="8">
                 <Label Text="CheckBox States (Checked / Unchecked / Disabled)" FontAttributes="Bold" />
                 <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
-                    <CheckBox x:Name="DemoCheckBox" AutomationId="DemoCheckBox" Style="{StaticResource VsmCheckBoxStyle}" CheckedChanged="OnCheckBoxCheckedChanged" />
+                    <CheckBox x:Name="VSMCheckBox" AutomationId="VSMCheckBox" Style="{StaticResource VsmCheckBoxStyle}" CheckedChanged="OnCheckBoxCheckedChanged" />
                     <Label x:Name="CheckBoxState" AutomationId="CheckBoxState" Text="State: Unchecked" VerticalOptions="Center" />
                 </HorizontalStackLayout>
                 <HorizontalStackLayout Spacing="10">
-                    <Button Text="Disable" AutomationId="CheckBoxDisable" Clicked="OnToggleCheckBoxDisabled" />
+                    <Button x:Name="CheckBoxDisableButton" Text="Disable" AutomationId="CheckBoxDisable" Clicked="OnToggleCheckBoxDisabled" />
                     <Button Text="Reset" AutomationId="CheckBoxReset" Clicked="OnResetCheckBox" />
                 </HorizontalStackLayout>
             </VerticalStackLayout>

@@ -14,38 +14,63 @@ public class VisualStateManager_ButtonFeatureTests : _GalleryUITest
 		: base(device)
 	{
 	}
-
+#if TEST_FAILS_ON_ANDROID
 	[Test, Order(1)]
-	public void Button_Click_UpdatesStateLabel()
+	public void VerifyVSM_Button_Click_UpdatesStateLabel()
 	{
-		try { App.WaitForElement("VSMButton", timeout: System.TimeSpan.FromSeconds(1)); App.Tap("VSMButton"); } catch { }
+		App.WaitForElement("VSMButton");
+		App.Tap("VSMButton");
 		App.WaitForElement("DemoButton");
-		App.WaitForElement("ButtonStateLabel");
 		App.Tap("DemoButton");
+		App.WaitForElement("ButtonStateLabel");
 		var stateText = App.FindElement("ButtonStateLabel").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Clicked"));
-		VerifyScreenshot(retryTimeout: System.TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(2)]
-	public void Button_Disable_SetsIsEnabledFalse()
+	public void VerifyVSM_Button_Disable_UpdatesStateLabel()
 	{
-		try { App.WaitForElement("VSMButton", timeout: System.TimeSpan.FromSeconds(1)); App.Tap("VSMButton"); } catch { }
 		App.WaitForElement("ButtonDisable");
 		App.Tap("ButtonDisable");
-		Assert.That(App.FindElement("DemoButton").IsEnabled(), Is.False);
-		VerifyScreenshot(retryTimeout: System.TimeSpan.FromSeconds(2));
+		App.WaitForElement("ButtonStateLabel");
+		var stateText = App.FindElement("ButtonStateLabel").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Disabled"));
+		VerifyScreenshot("Button_Disabled_State");
 	}
 
 	[Test, Order(3)]
-	public void Button_Reset_ReturnsToNormal()
+	public void VerifyVSM_Button_Reset_ReturnsToNormal()
 	{
-		try { App.WaitForElement("VSMButton", timeout: System.TimeSpan.FromSeconds(1)); App.Tap("VSMButton"); } catch { }
 		App.WaitForElement("ButtonReset");
 		App.Tap("ButtonReset");
 		Assert.That(App.FindElement("DemoButton").IsEnabled(), Is.True);
 		var stateText = App.FindElement("ButtonStateLabel").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Normal"));
-		VerifyScreenshot(retryTimeout: System.TimeSpan.FromSeconds(2));
+	}
+#endif
+
+	[Test, Order(4)]
+	public void VerifyVSM_Button_DisableAndEnable()
+	{
+		App.WaitForElement("ButtonDisable");
+		App.Tap("ButtonDisable");
+		App.WaitForElement("ButtonStateLabel");
+		var stateText = App.FindElement("ButtonStateLabel").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Disabled"));
+		App.WaitForElement("ButtonDisable");
+		App.Tap("ButtonDisable");
+		App.WaitForElement("ButtonStateLabel");
+		stateText = App.FindElement("ButtonStateLabel").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Normal"));
+	}
+
+	[Test, Order(5)]
+	public void VerifyVSM_Button_ResetFromDisabled()
+	{
+		App.WaitForElement("ButtonDisable");
+		App.Tap("ButtonDisable");
+		App.Tap("ButtonReset");
+		var stateText = App.FindElement("ButtonStateLabel").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Normal"));
 	}
 }

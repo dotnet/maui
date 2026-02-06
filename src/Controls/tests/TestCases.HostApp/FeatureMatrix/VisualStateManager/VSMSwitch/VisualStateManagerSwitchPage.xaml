@@ -44,17 +44,16 @@
 
     <ScrollView>
         <VerticalStackLayout Padding="20" Spacing="16">
-            <Label Text="Switch VisualStateManager" FontSize="20" />
-            <Label Text="Interact to see states: On, Off, Disabled." FontSize="14" />
+            <Label Text="VisualStateManager Feature Matrix" FontSize="20" />
 
             <VerticalStackLayout Padding="12" Spacing="8">
                 <Label Text="Switch States (On / Off / Disabled)" FontAttributes="Bold" />
                 <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
-                    <Switch x:Name="DemoSwitch" AutomationId="DemoSwitch" Style="{StaticResource VsmSwitchStyle}" Toggled="OnSwitchToggled" />
+                    <Switch x:Name="VSMSwitch" AutomationId="VSMSwitch" Style="{StaticResource VsmSwitchStyle}" Toggled="OnSwitchToggled" />
                     <Label x:Name="SwitchState" AutomationId="SwitchState" Text="State: Off" VerticalOptions="Center" />
                 </HorizontalStackLayout>
                 <HorizontalStackLayout Spacing="10">
-                    <Button Text="Disable" AutomationId="SwitchDisable" Clicked="OnToggleSwitchDisabled" />
+                    <Button x:Name="SwitchDisableButton" Text="Disable" AutomationId="SwitchDisable" Clicked="OnToggleSwitchDisabled" />
                     <Button Text="Reset" AutomationId="SwitchReset" Clicked="OnResetSwitch" />
                 </HorizontalStackLayout>
             </VerticalStackLayout>

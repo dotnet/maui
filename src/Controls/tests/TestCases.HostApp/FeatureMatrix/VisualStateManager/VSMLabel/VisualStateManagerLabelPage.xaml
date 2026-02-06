@@ -4,7 +4,6 @@
              x:Class="Maui.Controls.Sample.VisualStateManagerLabelPage"
              Title="VisualStateManagerLabelPage">
     <ContentPage.Resources>
-        <!-- Label VSM demo using TargetName -->
         <Style TargetType="Grid"
                 x:Key="SelectableLabelContainerStyle">
             <Setter Property="Padding"
@@ -88,7 +87,7 @@
                     TextColor="#111827"/>
 
             <HorizontalStackLayout Spacing="10">
-                <Button Text="Disable"
+                <Button x:Name="LabelDisableButton" Text="Disable"
                         AutomationId="LabelDisable"
                         Clicked="OnToggleLabelDisabled"/>
                 <Button Text="Reset"

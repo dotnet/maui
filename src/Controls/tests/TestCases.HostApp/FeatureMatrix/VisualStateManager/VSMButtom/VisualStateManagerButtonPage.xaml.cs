@@ -22,12 +22,14 @@ public partial class VisualStateManagerButtonPage : ContentPage
 	void OnToggleButtonDisabled(object sender, EventArgs e)
 	{
 		DemoButton.IsEnabled = !DemoButton.IsEnabled;
+		ButtonDisableButton.Text = DemoButton.IsEnabled ? "Disable" : "Enable";
 	}
 
 	void OnResetButtonState(object sender, EventArgs e)
 	{
 		DemoButton.IsEnabled = true;
 		VisualStateManager.GoToState(DemoButton, "Normal");
+		ButtonDisableButton.Text = "Disable";
 		StateLabel.Text = "State: Normal";
 	}
 

@@ -56,8 +56,7 @@
 
     <VerticalStackLayout Padding="20"
             Spacing="16">
-        <Label Text="Entry VisualStateManager"
-                FontSize="20"/>
+        <Label Text="VisualStateManager Feature Matrix" FontSize="20" />
 
         <VerticalStackLayout Padding="12"
                 Spacing="8">
@@ -82,9 +81,12 @@
                 <Button Text="Focus"
                         AutomationId="EntryFocus"
                         Clicked="OnFocusEntry"/>
-                <Button Text="Disable"
+                <Button x:Name="EntryDisableButton" Text="Disable"
                         AutomationId="EntryDisable"
                         Clicked="OnToggleEntryDisabled"/>
+                <Button Text="Reset"
+                        AutomationId="EntryReset"
+                        Clicked="OnResetEntry"/>
             </HorizontalStackLayout>
         </VerticalStackLayout>
     </VerticalStackLayout>
