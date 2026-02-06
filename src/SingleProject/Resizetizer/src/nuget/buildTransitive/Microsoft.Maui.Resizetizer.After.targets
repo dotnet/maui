@@ -171,14 +171,10 @@
             ResizetizeCollectItems;
         </ResizetizeAfterTargets>
 
-        <!-- Use BeforeTargets to create a hard dependency ensuring ProcessMauiFonts
-             always runs before Android resource processing, even during concurrent builds.
-             AfterTargets alone is a weak scheduling hint that can be skipped when parallel
-             MSBuild processes (e.g. VS design-time build) compete for stamp files. -->
-        <ProcessMauiFontsBeforeTargets>
-            $(ProcessMauiFontsBeforeTargets);
-            _ComputeAndroidResourcePaths;
-        </ProcessMauiFontsBeforeTargets>
+        <ProcessMauiFontsAfterTargets>
+            $(ProcessMauiFontsAfterTargets);
+            ResizetizeCollectItems;
+        </ProcessMauiFontsAfterTargets>
     </PropertyGroup>
 
     <!-- Windows App SDK -->
@@ -230,12 +226,10 @@
             ResizetizeCollectItems;
         </ResizetizeAfterTargets>
 
-        <!-- Use BeforeTargets to create a hard dependency ensuring ProcessMauiFonts
-             always runs before Tizen resource preparation, even during concurrent builds. -->
-        <ProcessMauiFontsBeforeTargets>
-            $(ProcessMauiFontsBeforeTargets);
-            PrepareResources;
-        </ProcessMauiFontsBeforeTargets>
+        <ProcessMauiFontsAfterTargets>
+            $(ProcessMauiFontsAfterTargets);
+            ResizetizeCollectItems;
+        </ProcessMauiFontsAfterTargets>
     </PropertyGroup>
 
     <!-- Finds absolute paths to any MauiImage in this project -->
@@ -536,8 +530,37 @@
             DestinationFolder="$(_MauiIntermediateFonts)"
             SkipUnchangedFiles="true" />
 
+        <!-- Create a partial info.plist for iOS -->
+        <CreatePartialInfoPlistTask
+            Condition="'$(_ResizetizerIsiOSApp)' == 'True' And '@(MauiFont)' != ''"
+            IntermediateOutputPath="$(_MauiIntermediateFonts)"
+            PlistName="MauiInfo.plist"
+            CustomFonts="@(MauiFont)" />
+
+        <!-- Touch/create our stamp file for outputs -->
+        <Touch Files="$(_MauiFontStampFile)" AlwaysCreate="True" />
+
+        <!-- Include our stamp file as filewrite so it doesn't get rm'd -->
         <ItemGroup>
-            <_MauiFontCopied Include="$(_MauiIntermediateFonts)*" />
+            <FileWrites Include="$(_MauiFontStampFile)" />
+        </ItemGroup>
+    </Target>
+
+    <!-- Collect font items for platform-specific packaging.
+         This target always runs (no Inputs/Outputs) to ensure platform items
+         are registered even when ProcessMauiFonts is skipped by incremental build.
+         Uses wildcard collection similar to ResizetizeImages to handle both cases:
+         - When ProcessMauiFonts runs: collects newly copied fonts
+         - When ProcessMauiFonts skips: collects existing fonts from intermediate folder -->
+    <Target Name="_CollectMauiFontItems"
+        Condition="'$(EnableMauiFontProcessing)' == 'true'"
+        DependsOnTargets="ProcessMauiFonts"
+        AfterTargets="$(ProcessMauiFontsAfterTargets)"
+        BeforeTargets="$(ProcessMauiFontsBeforeTargets)">
+
+        <!-- Collect fonts from intermediate directory (works whether ProcessMauiFonts ran or was skipped) -->
+        <ItemGroup>
+            <_MauiFontCopied Include="@(MauiFont->'$(_MauiIntermediateFonts)%(Filename)%(Extension)')" />
         </ItemGroup>
 
         <!-- iOS -->
@@ -552,13 +575,6 @@
             <BundleResource Include="@(_MauiFontBundleResource)" />
 
         </ItemGroup>
-
-        <!-- Create a partial info.plist for iOS -->
-        <CreatePartialInfoPlistTask
-            Condition="'$(_ResizetizerIsiOSApp)' == 'True' And '@(_MauiFontCopied)' != ''"
-            IntermediateOutputPath="$(_MauiIntermediateFonts)"
-            PlistName="MauiInfo.plist"
-            CustomFonts="@(_MauiFontCopied)" />
 
         <!-- iOS - Partial Info.plist for font registration  -->
         <ItemGroup Condition="'$(_ResizetizerIsiOSApp)' == 'True' ">
@@ -601,12 +617,8 @@
             <TizenTpkUserIncludeFiles Include="@(_MauiFontCopied)"  Condition="'@(_MauiFontCopied)' != ''" TizenTpkSubDir="res\fonts\" />
         </ItemGroup>
 
-        <!-- Touch/create our stamp file for outputs -->
-        <Touch Files="$(_MauiFontStampFile)" AlwaysCreate="True" />
-
-        <!-- Include our fonts and stamp file as filewrites so they don't get rm'd -->
+        <!-- Include collected fonts as filewrites so they don't get rm'd -->
         <ItemGroup>
-            <FileWrites Include="$(_MauiFontStampFile)" />
             <FileWrites Include="@(_MauiFontCopied)" />
         </ItemGroup>
     </Target>
