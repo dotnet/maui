@@ -370,6 +370,8 @@ if ($DryRun) {
         # Restore tracked files to clean state before running post-completion skills.
         # Phase 1 (PR Agent) may have left the working tree dirty from try-fix attempts,
         # which can cause skill files to be missing or modified in subsequent phases.
+        # NOTE: State files in CustomAgentLogsTmp/ are .gitignore'd and untracked,
+        # so git checkout -- . won't touch them.
         Write-Host ""
         Write-Host "🧹 Restoring working tree to clean state between phases..." -ForegroundColor Yellow
         git checkout -- . 2>&1 | Out-Null
@@ -414,8 +416,8 @@ if ($DryRun) {
             Write-Host ""
             
             # Restore tracked files to clean state before running the script.
-            # Phase 2 (pr-finalize) may have modified files via its Copilot CLI session,
-            # causing skill scripts to be missing or corrupted.
+            # Phase 2 (pr-finalize) may have modified files via its Copilot CLI session.
+            # State files in CustomAgentLogsTmp/ are untracked and safe.
             Write-Host "🧹 Restoring working tree to clean state..." -ForegroundColor Yellow
             git checkout -- . 2>&1 | Out-Null
             Write-Host "  ✅ Working tree restored" -ForegroundColor Green

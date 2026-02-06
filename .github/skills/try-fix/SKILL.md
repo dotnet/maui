@@ -363,9 +363,9 @@ If `state_file` input was provided and file exists:
 
 **If no state file provided:** Skip this step (results returned to invoker only).
 
-**⚠️ Do NOT `git add` or `git commit` the state file.** It lives in `CustomAgentLogsTmp/` which is `.gitignore`d. Committing it with `git add -f` would cause `git checkout HEAD -- .` (used between phases) to revert it, losing data.
+**⚠️ Do NOT `git add` or `git commit` the state file.** It lives in `CustomAgentLogsTmp/` which is `.gitignore`d. Committing it with `git add -f` would cause `git checkout -- .` (used between phases) to revert it, losing data.
 
-**⚠️ IMPORTANT: Do NOT set any "Exhausted" field.** Cross-pollination exhaustion is determined by the pr agent after invoking ALL 6 models and confirming none have new ideas. try-fix only reports its own attempt result.
+**⚠️ IMPORTANT: Do NOT set any "Exhausted" field.** Cross-pollination exhaustion is determined by the pr agent after invoking ALL 5 models and confirming none have new ideas. try-fix only reports its own attempt result.
 
 **Ownership rule:** try-fix updates its own row ONLY. Never modify:
 - Phase status fields
