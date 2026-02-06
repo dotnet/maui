@@ -457,17 +457,26 @@ if (-not $DryRun) {
 }
 Write-Host ""
 
-# Kill any orphaned copilot/node child processes that may hold stdout fd open
-# This prevents the ADO pipeline step from hanging after the script completes
+# Clean up orphaned copilot CLI processes that may hold stdout fd open
+# IMPORTANT: Only target processes whose command line contains "copilot" to avoid
+# accidentally terminating the ADO agent's own node process
 Write-Host "🧹 Cleaning up child processes..." -ForegroundColor Gray
 try {
     $myPid = $PID
-    $children = Get-Process -Name "copilot","node" -ErrorAction SilentlyContinue | Where-Object { $_.Id -ne $myPid }
-    if ($children) {
-        Write-Host "  Stopping $($children.Count) orphaned process(es): $($children | ForEach-Object { "$($_.ProcessName)($($_.Id))" } | Join-String -Separator ', ')" -ForegroundColor Gray
-        $children | Stop-Process -Force -ErrorAction SilentlyContinue
+    # Find node processes running copilot CLI (not the ADO agent's node process)
+    $orphans = Get-Process -Name "node" -ErrorAction SilentlyContinue | Where-Object {
+        $_.Id -ne $myPid -and
+        (($_.Path -and $_.Path -match "copilot") -or
+         ($_.CommandLine -and $_.CommandLine -match "copilot"))
+    }
+    # Also get any process literally named "copilot"
+    $copilotProcs = Get-Process -Name "copilot" -ErrorAction SilentlyContinue
+    $allOrphans = @($orphans) + @($copilotProcs) | Where-Object { $_ -ne $null } | Sort-Object Id -Unique
+    if ($allOrphans.Count -gt 0) {
+        Write-Host "  Stopping $($allOrphans.Count) orphaned process(es): $($allOrphans | ForEach-Object { "$($_.ProcessName)($($_.Id))" } | Join-String -Separator ', ')" -ForegroundColor Gray
+        $allOrphans | Stop-Process -Force -ErrorAction SilentlyContinue
     } else {
-        Write-Host "  No orphaned processes found" -ForegroundColor Gray
+        Write-Host "  No orphaned copilot processes found" -ForegroundColor Gray
     }
 } catch {
     Write-Host "  ⚠️ Cleanup warning: $_" -ForegroundColor Yellow

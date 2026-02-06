@@ -536,13 +536,18 @@ stages:
               
               echo "Review-PR.ps1 exit code: $COPILOT_EXIT_CODE"
               
-              # Terminate any orphaned copilot/node processes that could hold this step's
+              # Terminate any orphaned copilot CLI processes that could hold this step's
               # stdout fd open and prevent the bash step from exiting.
-              echo "Cleaning up orphaned processes..."
-              for proc in $(pgrep -f "copilot" 2>/dev/null || true) $(pgrep -f "node.*copilot" 2>/dev/null || true); do
-                if [ -n "$proc" ]; then
-                  echo "  Stopping process $proc"
-                  kill "$proc" 2>/dev/null || true
+              # Only target processes whose command line includes the copilot CLI path.
+              echo "Cleaning up orphaned copilot processes..."
+              SELF_PID=$$
+              for proc in $(pgrep -f "[c]opilot" 2>/dev/null || true); do
+                if [ -n "$proc" ] && [ "$proc" != "$SELF_PID" ]; then
+                  PROC_CMD=$(ps -p "$proc" -o args= 2>/dev/null || true)
+                  if echo "$PROC_CMD" | grep -q "copilot"; then
+                    echo "  Stopping copilot process $proc: $PROC_CMD"
+                    kill "$proc" 2>/dev/null || true
+                  fi
                 fi
               done
               
