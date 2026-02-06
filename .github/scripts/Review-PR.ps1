@@ -371,10 +371,10 @@ if ($DryRun) {
         # Phase 1 (PR Agent) may have left the working tree dirty from try-fix attempts,
         # which can cause skill files to be missing or modified in subsequent phases.
         # NOTE: State files in CustomAgentLogsTmp/ are .gitignore'd and untracked,
-        # so git checkout -- . won't touch them.
+        # so this won't touch them. Using HEAD to also restore deleted files.
         Write-Host ""
         Write-Host "🧹 Restoring working tree to clean state between phases..." -ForegroundColor Yellow
-        git checkout -- . 2>&1 | Out-Null
+        git checkout HEAD -- . 2>&1 | Out-Null
         Write-Host "  ✅ Working tree restored" -ForegroundColor Green
         
         # Phase 2: Run pr-finalize skill if requested
@@ -415,11 +415,9 @@ if ($DryRun) {
             Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
             Write-Host ""
             
-            # Restore tracked files to clean state before running the script.
-            # Phase 2 (pr-finalize) may have modified files via its Copilot CLI session.
-            # State files in CustomAgentLogsTmp/ are untracked and safe.
+            # Restore tracked files (including deleted ones) to clean state.
             Write-Host "🧹 Restoring working tree to clean state..." -ForegroundColor Yellow
-            git checkout -- . 2>&1 | Out-Null
+            git checkout HEAD -- . 2>&1 | Out-Null
             Write-Host "  ✅ Working tree restored" -ForegroundColor Green
             
             $scriptPath = ".github/skills/ai-summary-comment/scripts/post-ai-summary-comment.ps1"
