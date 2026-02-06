@@ -151,7 +151,7 @@
         </ResizetizeAfterTargets>
 
         <CollectAppManifestsDependsOn>
-            ProcessMauiFonts;
+            _CollectMauiFontItems;
             ProcessMauiSplashScreens;
             $(CollectAppManifestsDependsOn)
         </CollectAppManifestsDependsOn>
