@@ -611,6 +611,13 @@ stages:
               $prNumber = "${{ parameters.PRNumber }}"
               Write-Host "PR #$prNumber"
               
+              # Restore tracked files to clean state before running the script.
+              # The PR reviewer's try-fix phase may have left the working tree dirty,
+              # which can corrupt script files and cause parameter binding errors.
+              Write-Host "Restoring working tree to clean state..."
+              git checkout -- . 2>&1 | Write-Host
+              Write-Host "✅ Working tree restored"
+              
               # Check if a comment was already posted by looking for the AI Summary marker
               Write-Host "Checking for existing AI summary comment..."
               $existingComment = gh pr view $prNumber --json comments --jq '.comments[] | select(.body | contains("<!-- AI Summary -->")) | .id' 2>$null | Select-Object -First 1
@@ -622,25 +629,9 @@ stages:
               
               Write-Host "No AI summary comment found. Running post-ai-summary-comment.ps1..."
               
-              # Check for state file
-              $stateFile = "CustomAgentLogsTmp/PRState/pr-$prNumber.md"
-              if (-not (Test-Path $stateFile)) {
-                Write-Host "##vso[task.logissue type=warning]State file not found: $stateFile"
-                Write-Host "Available state files:"
-                Get-ChildItem "CustomAgentLogsTmp/PRState/" -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "  - $($_.Name)" }
-                
-                # Try to find any matching state file
-                $altStateFile = Get-ChildItem "CustomAgentLogsTmp/PRState/pr-$prNumber*.md" -ErrorAction SilentlyContinue | Select-Object -First 1
-                if (-not $altStateFile) {
-                  Write-Host "##vso[task.logissue type=error]No state file found for PR #$prNumber. Cannot post AI summary comment."
-                  exit 1
-                }
-                Write-Host "Found alternative: $($altStateFile.FullName)"
-                $stateFile = $altStateFile.FullName
-              }
-              
               # Run the post-ai-summary-comment.ps1 script directly
-              pwsh .github/skills/ai-summary-comment/scripts/post-ai-summary-comment.ps1 -StateFile $stateFile
+              # Uses -PRNumber which auto-loads state from CustomAgentLogsTmp/PRState/pr-$prNumber.md
+              pwsh .github/skills/ai-summary-comment/scripts/post-ai-summary-comment.ps1 -PRNumber $prNumber
               if ($LASTEXITCODE -eq 0) {
                 Write-Host "✅ AI summary comment posted successfully"
               } else {
