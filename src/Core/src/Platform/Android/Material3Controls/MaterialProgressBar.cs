@@ -5,6 +5,7 @@ using Google.Android.Material.ProgressIndicator;
 
 namespace Microsoft.Maui.Platform;
 
+// TODO: Material3 - make it public in .net 11
 internal class MaterialProgressBar : LinearProgressIndicator
 {
 	public MaterialProgressBar(Context context)

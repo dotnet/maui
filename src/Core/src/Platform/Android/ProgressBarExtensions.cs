@@ -33,11 +33,13 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		// TODO: Material3 - make it public in .net 11
 		internal static void UpdateProgress(this MaterialProgressBar materialProgressBar, IProgress progress)
 		{
 			materialProgressBar.Progress = (int)(progress.Progress * Maximum);
 		}
 
+		// TODO: Material3 - make it public in .net 11
 		internal static void UpdateProgressColor(this MaterialProgressBar materialProgressBar, IProgress progress)
 		{
 			Color color = progress.ProgressColor;
