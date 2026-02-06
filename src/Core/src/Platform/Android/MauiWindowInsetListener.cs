@@ -265,11 +265,11 @@ namespace Microsoft.Maui.Platform
 				}
 			}
 
-			//Keyboard Handling
+			// Keyboard Handling
 			if (v is CoordinatorLayout coordinatorLayout)
 			{
 				var window = coordinatorLayout.Context?.GetActivity()?.Window;
-				// When using AdjustResize, we don't want to apply bottom insets
+				// Handle keyboard insets based on SoftInputMode (AdjustResize/AdjustPan/AdjustNothing)
 				var imeInsets = insets.GetInsets(WindowInsetsCompat.Type.Ime());
 				var isKeyboardShowing = insets.IsVisible(WindowInsetsCompat.Type.Ime());
 				if (window is not null)
@@ -277,8 +277,8 @@ namespace Microsoft.Maui.Platform
 					var windowAttributes = window.Attributes;
 					if (windowAttributes is not null)
 					{
-						// Mask to extract only the adjustment mode bits (0xF0)
-						const SoftInput adjustMask = (SoftInput)0xF0;
+						// Mask to extract only the adjustment mode bits
+						const SoftInput adjustMask = SoftInput.MaskAdjust;
 						var adjustMode = windowAttributes.SoftInputMode & adjustMask;
 
 						if (adjustMode == SoftInput.AdjustResize)
@@ -301,6 +301,7 @@ namespace Microsoft.Maui.Platform
 								// insets for child views so they can restore their safe area padding
 								coordinatorLayout.SetPadding(0, 0, 0, 0);
 								RequestInsetsForDescendants(coordinatorLayout);
+								return insets;
 							}
 						}
 						else if (adjustMode == SoftInput.AdjustPan)
