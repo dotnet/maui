@@ -434,11 +434,21 @@ if ($DryRun) {
             }
             
             $commentPrompt = @"
-Read the ai-summary-comment skill from .github/skills/ai-summary-comment/SKILL.md and follow its instructions to post a summary comment on PR #$PRNumber.
+Post the AI summary comment for PR #$PRNumber using the ai-summary-comment skill.
 
-The PR state file is at: CustomAgentLogsTmp/PRState/pr-$PRNumber-state.md
+**Step 1: Run the post-ai-summary-comment.ps1 script**
+``````bash
+pwsh .github/skills/ai-summary-comment/scripts/post-ai-summary-comment.ps1 -PRNumber $PRNumber
+``````
 
-If you cannot find the skill file, use the GitHub CLI (gh pr comment) to post a summary of the PR review results from the state file.
+The script will automatically:
+- Load the state file from CustomAgentLogsTmp/PRState/pr-$PRNumber.md
+- Parse all phases and their statuses
+- Post/update the unified AI Summary comment on the PR
+
+**If the script fails**, check that the state file exists and contains valid phase data.
+
+**Do NOT** manually compose or post comments - always use the script.
 "@
             
             # 3a: Post PR agent summary comment (from Phase 1 state file)

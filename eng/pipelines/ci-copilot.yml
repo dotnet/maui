@@ -604,48 +604,63 @@ stages:
             condition: succeededOrFailed()
 
           # Fallback: Post AI summary comment if the PR Reviewer didn't successfully post one
-          # This runs the ai-summary-comment skill directly as a backup
+          # This directly runs the post-ai-summary-comment.ps1 script as a backup
           - pwsh: |
-              Write-Host "=== Fallback: Running ai-summary-comment skill ==="
+              Write-Host "=== Fallback: Running post-ai-summary-comment.ps1 ==="
               
-              # Check if a comment was already posted by looking at recent PR comments
               $prNumber = "${{ parameters.PRNumber }}"
-              Write-Host "Checking for existing AI summary comment on PR #$prNumber..."
+              Write-Host "PR #$prNumber"
               
-              $recentComments = gh pr view $prNumber --json comments --jq '.comments[-5:] | .[] | .body' 2>$null
+              # Check if a comment was already posted by looking for the AI Summary marker
+              Write-Host "Checking for existing AI summary comment..."
+              $existingComment = gh pr view $prNumber --json comments --jq '.comments[] | select(.body | contains("<!-- AI Summary -->")) | .id' 2>$null | Select-Object -First 1
               
-              # Look for our AI summary marker
-              if ($recentComments -match "AI Summary|🤖.*Summary|Copilot.*Summary") {
-                Write-Host "✅ AI summary comment already exists on PR. Skipping fallback."
+              if ($existingComment) {
+                Write-Host "✅ AI summary comment already exists (ID: $existingComment). Skipping fallback."
                 exit 0
               }
               
-              Write-Host "No AI summary comment found. Running ai-summary-comment skill..."
+              Write-Host "No AI summary comment found. Running post-ai-summary-comment.ps1..."
               
-              # Build the prompt for the skill
-              $skillPrompt = @"
-              Please run the ai-summary-comment skill to post a progress comment on PR #$prNumber.
-              
-              The PR state file should be at: CustomAgentLogsTmp/PRState/pr-$prNumber-state.md
-              
-              Post a summary comment with:
-              1. Current phase status
-              2. Test results (if available)
-              3. Any blockers or issues encountered
-              4. Next steps or recommendations
-              "@
-              
-              # Try to invoke Copilot CLI with the skill
-              Write-Host "Invoking Copilot CLI to run ai-summary-comment skill..."
-              
-              $result = gh copilot suggest "$skillPrompt" 2>&1
-              $exitCode = $LASTEXITCODE
-              
-              if ($exitCode -ne 0) {
-                Write-Host "##vso[task.logissue type=warning]Copilot CLI skill invocation returned exit code $exitCode"
-                Write-Host "Attempting direct comment as final fallback..."
+              # Check for state file
+              $stateFile = "CustomAgentLogsTmp/PRState/pr-$prNumber.md"
+              if (-not (Test-Path $stateFile)) {
+                Write-Host "##vso[task.logissue type=warning]State file not found: $stateFile"
+                Write-Host "Available state files:"
+                Get-ChildItem "CustomAgentLogsTmp/PRState/" -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "  - $($_.Name)" }
                 
-                # Direct fallback: post a simple comment using gh CLI
+                # Try to find any matching state file
+                $stateFile = Get-ChildItem "CustomAgentLogsTmp/PRState/pr-$prNumber*.md" -ErrorAction SilentlyContinue | Select-Object -First 1
+                if ($stateFile) {
+                  Write-Host "Found alternative: $($stateFile.FullName)"
+                } else {
+                  Write-Host "No state file found. Posting minimal fallback comment."
+                  $commentBody = @"
+              ## 🤖 AI PR Review Summary (Automated)
+              
+              **PR:** #$prNumber
+              **Status:** Review completed
+              
+              The automated Copilot PR reviewer completed but the state file was not found. Please check the build artifacts for detailed logs.
+              
+              ---
+              *This comment was posted by the CI pipeline fallback mechanism.*
+              "@
+                  gh pr comment $prNumber --body "$commentBody"
+                  exit 0
+                }
+              }
+              
+              Write-Host "State file: $stateFile"
+              
+              # Run the post-ai-summary-comment.ps1 script directly
+              try {
+                pwsh .github/skills/ai-summary-comment/scripts/post-ai-summary-comment.ps1 -PRNumber $prNumber
+                Write-Host "✅ AI summary comment posted successfully"
+              } catch {
+                Write-Host "##vso[task.logissue type=warning]post-ai-summary-comment.ps1 failed: $_"
+                
+                # Final fallback: post simple comment
                 $commentBody = @"
               ## 🤖 AI PR Review Summary (Automated)
               
@@ -657,15 +672,7 @@ stages:
               ---
               *This comment was posted by the CI pipeline fallback mechanism.*
               "@
-                
                 gh pr comment $prNumber --body "$commentBody"
-                if ($LASTEXITCODE -eq 0) {
-                  Write-Host "✅ Fallback comment posted successfully"
-                } else {
-                  Write-Host "##vso[task.logissue type=warning]Failed to post fallback comment"
-                }
-              } else {
-                Write-Host "✅ ai-summary-comment skill completed"
               }
             displayName: 'Post AI Summary Comment (Fallback)'
             condition: succeededOrFailed()
