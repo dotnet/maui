@@ -88,10 +88,10 @@ pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore
 
 # 2. Restore all tracked files to HEAD (the merged PR state)
 # This catches any files the previous attempt modified but didn't restore
-git checkout -- .
+git checkout HEAD -- .
 ```
 
-**Why this is required:** Each try-fix attempt modifies source files. If an attempt fails mid-way (build error, timeout, model error), it may not run its own cleanup step. Without explicit cleanup, the next attempt starts with a dirty working tree, which can cause missing files, corrupt state, or misleading test results.
+**Why this is required:** Each try-fix attempt modifies source files. If an attempt fails mid-way (build error, timeout, model error), it may not run its own cleanup step. Without explicit cleanup, the next attempt starts with a dirty working tree, which can cause missing files, corrupt state, or misleading test results. Use `HEAD` (not just `-- .`) to also restore deleted files.
 
 #### Round 2+: Cross-Pollination Loop (MANDATORY)
 
@@ -321,7 +321,7 @@ Update all phase statuses to complete.
 - ❌ **Forgetting to revert between attempts** - Each try-fix must start from broken baseline, end with PR restored
 - ❌ **Declaring exhaustion prematurely** - All 5 models must confirm "no new ideas" via actual invocation
 - ❌ **Rushing the report** - Take time to write clear justification
-- ❌ **Skipping cleanup between attempts** - ALWAYS run `-Restore` + `git checkout -- .` between try-fix attempts (see Step 1)
+- ❌ **Skipping cleanup between attempts** - ALWAYS run `-Restore` + `git checkout HEAD -- .` between try-fix attempts (see Step 1)
 
 ---
 
@@ -336,7 +336,7 @@ Update all phase statuses to complete.
 **Fix:** Run cleanup before retrying:
 ```bash
 pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore
-git checkout -- .
+git checkout HEAD -- .
 ```
 
 Then retry the try-fix attempt. The skill file should now be accessible.
@@ -349,7 +349,7 @@ Then retry the try-fix attempt. The skill file should now be accessible.
 
 **Root cause:** Previous attempt didn't restore its changes (crashed, timed out, or model didn't follow Step 8 restore instructions).
 
-**Fix:** Same as above — run `-Restore` + `git checkout -- .` to reset to the merged PR state.
+**Fix:** Same as above — run `-Restore` + `git checkout HEAD -- .` to reset to the merged PR state.
 
 ### Build errors unrelated to the fix being attempted
 
@@ -358,6 +358,6 @@ Then retry the try-fix attempt. The skill file should now be accessible.
 **Root cause:** Often caused by dirty working tree from a previous attempt. Can also be transient environment issues.
 
 **Fix:**
-1. Run cleanup: `pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore && git checkout -- .`
+1. Run cleanup: `pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore && git checkout HEAD -- .`
 2. Retry the attempt
 3. If it fails again with the same unrelated error, skip this attempt and continue with the next model

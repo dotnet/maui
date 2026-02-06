@@ -374,6 +374,7 @@ if ($DryRun) {
         # so this won't touch them. Using HEAD to also restore deleted files.
         Write-Host ""
         Write-Host "🧹 Restoring working tree to clean state between phases..." -ForegroundColor Yellow
+        git status --porcelain 2>$null | Set-Content "CustomAgentLogsTmp/PRState/phase1-exit-git-status.log" -ErrorAction SilentlyContinue
         git checkout HEAD -- . 2>&1 | Out-Null
         Write-Host "  ✅ Working tree restored" -ForegroundColor Green
         
@@ -417,10 +418,15 @@ if ($DryRun) {
             
             # Restore tracked files (including deleted ones) to clean state.
             Write-Host "🧹 Restoring working tree to clean state..." -ForegroundColor Yellow
+            git status --porcelain 2>$null | Set-Content "CustomAgentLogsTmp/PRState/phase2-exit-git-status.log" -ErrorAction SilentlyContinue
             git checkout HEAD -- . 2>&1 | Out-Null
             Write-Host "  ✅ Working tree restored" -ForegroundColor Green
             
             $scriptPath = ".github/skills/ai-summary-comment/scripts/post-ai-summary-comment.ps1"
+            if (-not (Test-Path $scriptPath)) {
+                Write-Host "⚠️ Script missing after checkout, attempting targeted recovery..." -ForegroundColor Yellow
+                git checkout HEAD -- $scriptPath 2>&1 | Out-Null
+            }
             if (Test-Path $scriptPath) {
                 Write-Host "💬 Running post-ai-summary-comment.ps1 directly..." -ForegroundColor Yellow
                 & pwsh $scriptPath -PRNumber $PRNumber
