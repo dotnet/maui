@@ -50,11 +50,22 @@ if ($Platform -eq "android") {
         exit 1
     }
     
-    # Get device UDID if not provided OR if it's an AVD name that needs to be booted
+    # Get Android SDK path
+    $androidSdkRoot = $env:ANDROID_SDK_ROOT
+    if (-not $androidSdkRoot) {
+        $androidSdkRoot = $env:ANDROID_HOME
+    }
+    if (-not $androidSdkRoot) {
+        $androidSdkRoot = "$env:HOME/Library/Android/sdk"
+    }
+    
+    # Track which AVD to boot (may be set from DeviceUdid parameter if it's an AVD name)
+    $selectedAvd = $null
+    
     # Check if DeviceUdid is an AVD name (not an emulator-XXXX format)
     if ($DeviceUdid -and $DeviceUdid -notmatch "^emulator-\d+$") {
         # DeviceUdid is likely an AVD name - check if it's in the AVD list
-        $avdList = emulator -list-avds
+        $avdList = emulator -list-avds 2>$null
         if ($avdList -contains $DeviceUdid) {
             Write-Info "DeviceUdid '$DeviceUdid' is an AVD name. Will boot this emulator..."
             $selectedAvd = $DeviceUdid
@@ -70,11 +81,15 @@ if ($Platform -eq "android") {
         Write-Info "Auto-detecting Android device..."
         
         # Check for running devices first
-        $runningDevices = adb devices | Select-String "device$"
+        # Note: adb devices output can be:
+        #   emulator-5554	device    (basic)
+        #   emulator-5554          device product:... model:...    (with -l flag or some environments)
+        # We match any line starting with emulator- and containing "device" as the state
+        $runningDevices = adb devices | Select-String "^emulator-\d+\s+device"
         
         if ($runningDevices.Count -gt 0) {
-            # Use first running device
-            $DeviceUdid = ($runningDevices[0] -split '\s+')[0]
+            # Use first running device - extract just the emulator-XXXX part
+            $DeviceUdid = ($runningDevices[0].Line -split '\s+')[0]
             Write-Success "Found running Android device: $DeviceUdid"
         }
         else {
@@ -86,146 +101,208 @@ if ($Platform -eq "android") {
                 exit 1
             }
             
-            # Get list of available AVDs
-            $avdList = emulator -list-avds
-            
-            if (-not $avdList -or $avdList.Count -eq 0) {
-                Write-Error "No Android emulators found. Please create an Android Virtual Device (AVD) using Android Studio."
-                Write-Info "To create an AVD:"
-                Write-Info "  1. Open Android Studio"
-                Write-Info "  2. Go to Tools > Device Manager"
-                Write-Info "  3. Click 'Create Device' and follow the wizard"
-                exit 1
-            }
-            
-            Write-Info "Available emulators: $($avdList -join ', ')"
-            
-            # Selection priority:
-            # 1. API 30 Nexus device
-            # 2. Any API 30 device
-            # 3. Any Nexus device
-            # 4. First available device
-            
-            # $selectedAvd may already be set if AVD name was provided
-            # Only run auto-selection if not already set
+            # Get list of available AVDs (if not already set from parameter)
             if (-not $selectedAvd) {
+                $avdList = emulator -list-avds 2>$null
+                
+                if (-not $avdList -or $avdList.Count -eq 0) {
+                    Write-Error "No Android emulators found. Please create an Android Virtual Device (AVD) using Android Studio."
+                    Write-Info "To create an AVD:"
+                    Write-Info "  1. Open Android Studio"
+                    Write-Info "  2. Go to Tools > Device Manager"
+                    Write-Info "  3. Click 'Create Device' and follow the wizard"
+                    exit 1
+                }
+                
+                Write-Info "Available emulators: $($avdList -join ', ')"
+                
+                # Selection priority:
+                # 1. API 34 device (matches CI provisioning)
+                # 2. API 30 Nexus device
+                # 3. Any API 30 device
+                # 4. Any Nexus device
+                # 5. First available device
+                
+                # Try to find API 34 device (CI default)
+                $api34Device = $avdList | Where-Object { $_ -match "34|API.*34" } | Select-Object -First 1
+                if ($api34Device) {
+                    $selectedAvd = $api34Device
+                    Write-Info "Selected API 34 device: $selectedAvd"
+                }
+                
                 # Try to find API 30 Nexus device
-                $api30Nexus = $avdList | Where-Object { $_ -match "API.*30" -and $_ -match "Nexus" } | Select-Object -First 1
-                if ($api30Nexus) {
-                    $selectedAvd = $api30Nexus
-                    Write-Info "Selected API 30 Nexus device: $selectedAvd"
+                if (-not $selectedAvd) {
+                    $api30Nexus = $avdList | Where-Object { $_ -match "API.*30" -and $_ -match "Nexus" } | Select-Object -First 1
+                    if ($api30Nexus) {
+                        $selectedAvd = $api30Nexus
+                        Write-Info "Selected API 30 Nexus device: $selectedAvd"
+                    }
+                }
+                
+                # Try to find any API 30 device
+                if (-not $selectedAvd) {
+                    $api30Device = $avdList | Where-Object { $_ -match "API.*30" } | Select-Object -First 1
+                    if ($api30Device) {
+                        $selectedAvd = $api30Device
+                        Write-Info "Selected API 30 device: $selectedAvd"
+                    }
+                }
+                
+                # Try to find any Nexus device
+                if (-not $selectedAvd) {
+                    $nexusDevice = $avdList | Where-Object { $_ -match "Nexus" } | Select-Object -First 1
+                    if ($nexusDevice) {
+                        $selectedAvd = $nexusDevice
+                        Write-Info "Selected Nexus device: $selectedAvd"
+                    }
+                }
+                
+                # Fall back to first available device
+                if (-not $selectedAvd) {
+                    $selectedAvd = $avdList[0]
+                    Write-Info "Selected first available device: $selectedAvd"
                 }
             }
             
-            # Try to find any API 30 device
-            if (-not $selectedAvd) {
-                $api30Device = $avdList | Where-Object { $_ -match "API.*30" } | Select-Object -First 1
-                if ($api30Device) {
-                    $selectedAvd = $api30Device
-                    Write-Info "Selected API 30 device: $selectedAvd"
-                }
-            }
+            # Start emulator with selected AVD
+            $emulatorBin = Join-Path $androidSdkRoot "emulator/emulator"
             
-            # Try to find any Nexus device
-            if (-not $selectedAvd) {
-                $nexusDevice = $avdList | Where-Object { $_ -match "Nexus" } | Select-Object -First 1
-                if ($nexusDevice) {
-                    $selectedAvd = $nexusDevice
-                    Write-Info "Selected Nexus device: $selectedAvd"
-                }
-            }
-            
-            # Fall back to first available device
-            if (-not $selectedAvd) {
-                $selectedAvd = $avdList[0]
-                Write-Info "Selected first available device: $selectedAvd"
+            # Check emulator binary exists
+            if (-not (Test-Path $emulatorBin)) {
+                Write-Error "Emulator binary not found at: $emulatorBin"
+                Write-Info "Looking for emulator in SDK..."
+                Get-ChildItem -Path $androidSdkRoot -Filter "emulator*" -Recurse -Depth 2 -ErrorAction SilentlyContinue | ForEach-Object { Write-Info "  Found: $($_.FullName)" }
+                exit 1
             }
             
             Write-Info "Starting emulator: $selectedAvd"
             Write-Info "This may take 1-2 minutes..."
             
-            # CRITICAL: Must use correct startup pattern for emulator to work
-            # On macOS/Linux, need to cd to emulator directory and use subshell
+            # Use swiftshader for software rendering (more reliable on CI without GPU)
+            # Redirect output to a log file for debugging
+            $emulatorLog = "/tmp/emulator-$selectedAvd.log"
+            
             if ($IsWindows) {
-                Start-Process "emulator" -ArgumentList "-avd", $selectedAvd, "-no-snapshot-load", "-no-boot-anim" -WindowStyle Hidden
+                Start-Process $emulatorBin -ArgumentList "-avd", $selectedAvd, "-no-snapshot-load", "-no-boot-anim", "-gpu", "swiftshader_indirect" -WindowStyle Hidden
             }
             else {
-                # macOS/Linux: Use bash subshell pattern from platform-workflows.md
-                # This ensures emulator binary can find its dependencies
-                $androidHome = $env:ANDROID_HOME
-                if (-not $androidHome) {
-                    $androidHome = "$env:HOME/Library/Android/sdk"
-                }
-                
-                $emulatorDir = Join-Path $androidHome "emulator"
-                $emulatorBin = Join-Path $emulatorDir "emulator"
-                
-                if (-not (Test-Path $emulatorBin)) {
-                    Write-Error "Emulator binary not found at: $emulatorBin"
-                    Write-Info "Please ensure ANDROID_HOME is set correctly or Android SDK is installed."
-                    exit 1
-                }
-                
-                # Start emulator using bash subshell pattern (works correctly on macOS)
-                $startScript = "cd '$emulatorDir' && (./emulator -avd '$selectedAvd' -no-snapshot-load -no-audio -no-boot-anim > /tmp/emulator.log 2>&1 &)"
+                # macOS/Linux: Use nohup to detach from terminal
+                $startScript = "nohup '$emulatorBin' -avd '$selectedAvd' -no-window -no-snapshot -no-audio -no-boot-anim -gpu swiftshader_indirect > '$emulatorLog' 2>&1 &"
                 bash -c $startScript
-                
-                Write-Info "Emulator started in background. Log file: /tmp/emulator.log"
+                Write-Info "Emulator started in background. Log file: $emulatorLog"
             }
             
-            # Wait for emulator to appear in adb devices
-            Write-Info "Waiting for emulator to start..."
-            $timeout = 120
-            $elapsed = 0
-            $emulatorStarted = $false
+            # Give the emulator process time to start
+            Start-Sleep -Seconds 5
             
-            while ($elapsed -lt $timeout) {
-                Start-Sleep -Seconds 2
-                $elapsed += 2
-                
-                $devices = adb devices | Select-String "emulator.*device$"
+            # Check if emulator process is running
+            $emulatorProcs = bash -c "pgrep -f 'qemu.*$selectedAvd' || pgrep -f 'emulator.*$selectedAvd' || true" 2>&1
+            if ([string]::IsNullOrWhiteSpace($emulatorProcs)) {
+                Write-Error "Emulator process did not start. Checking log..."
+                if (Test-Path $emulatorLog) {
+                    Get-Content $emulatorLog | Select-Object -Last 50 | ForEach-Object { Write-Info "  $_" }
+                }
+                exit 1
+            }
+            Write-Info "Emulator process started (PIDs: $emulatorProcs)"
+            
+            # Wait for device to appear with timeout
+            # Timeout of 600s (10 min) - emulator can take a while to boot, especially with software rendering
+            Write-Info "Waiting for emulator device to appear..."
+            $deviceTimeout = 600
+            $deviceWaited = 0
+            
+            while ($deviceWaited -lt $deviceTimeout) {
+                # Match any emulator device line
+                $devices = adb devices | Select-String "^emulator-\d+\s+device"
                 if ($devices.Count -gt 0) {
-                    $DeviceUdid = ($devices[0] -split '\s+')[0]
-                    $emulatorStarted = $true
+                    $DeviceUdid = ($devices[0].Line -split '\s+')[0]
                     Write-Info "Emulator detected: $DeviceUdid"
                     break
                 }
                 
-                if ($elapsed % 10 -eq 0) {
-                    Write-Info "Still waiting... ($elapsed seconds elapsed)"
+                # Check for offline state
+                $offlineDevices = adb devices | Select-String "^emulator-\d+\s+offline"
+                if ($offlineDevices.Count -gt 0) {
+                    Write-Info "Device found but offline, waiting..."
+                }
+                
+                Start-Sleep -Seconds 5
+                $deviceWaited += 5
+                
+                if ($deviceWaited % 30 -eq 0) {
+                    Write-Info "Still waiting... ($deviceWaited seconds elapsed)"
+                    # Show emulator log tail if taking too long
+                    if ((Test-Path $emulatorLog)) {
+                        Write-Info "Emulator log (last 5 lines):"
+                        Get-Content $emulatorLog | Select-Object -Last 5 | ForEach-Object { Write-Info "  $_" }
+                    }
                 }
             }
             
-            if (-not $emulatorStarted) {
-                Write-Error "Emulator failed to start within $timeout seconds. Please try starting it manually."
+            if (-not $DeviceUdid) {
+                Write-Error "Emulator failed to start within $deviceTimeout seconds. Please try starting it manually."
+                Write-Info "Current adb devices:"
+                adb devices -l
+                if (Test-Path $emulatorLog) {
+                    Write-Info "Emulator log (last 30 lines):"
+                    Get-Content $emulatorLog | Select-Object -Last 30 | ForEach-Object { Write-Info "  $_" }
+                }
                 exit 1
             }
             
             # Wait for boot to complete
             Write-Info "Waiting for emulator to finish booting..."
-            $bootTimeout = 120
+            $bootTimeout = 600
             $bootElapsed = 0
-            $bootCompleted = $false
             
             while ($bootElapsed -lt $bootTimeout) {
-                Start-Sleep -Seconds 2
-                $bootElapsed += 2
-                
                 $bootStatus = adb -s $DeviceUdid shell getprop sys.boot_completed 2>$null
                 if ($bootStatus -match "1") {
-                    $bootCompleted = $true
                     Write-Success "Emulator fully booted: $DeviceUdid"
                     break
                 }
                 
-                if ($bootElapsed % 10 -eq 0) {
+                Start-Sleep -Seconds 5
+                $bootElapsed += 5
+                
+                if ($bootElapsed % 30 -eq 0) {
                     Write-Info "Still booting... ($bootElapsed seconds elapsed)"
                 }
             }
             
-            if (-not $bootCompleted) {
-                Write-Error "Emulator failed to complete boot within $bootTimeout seconds. It may still be starting."
+            if ($bootElapsed -ge $bootTimeout) {
+                Write-Error "Emulator failed to complete boot within $bootTimeout seconds."
                 Write-Info "You can check status with: adb -s $DeviceUdid shell getprop sys.boot_completed"
+                if (Test-Path $emulatorLog) {
+                    Write-Info "Emulator log (last 30 lines):"
+                    Get-Content $emulatorLog | Select-Object -Last 30 | ForEach-Object { Write-Info "  $_" }
+                }
+                exit 1
+            }
+            
+            # Wait for package manager service to be available (critical for app installation)
+            Write-Info "Waiting for package manager service..."
+            $pmTimeout = 120
+            $pmWaited = 0
+            
+            while ($pmWaited -lt $pmTimeout) {
+                $pmOutput = adb -s $DeviceUdid shell pm list packages 2>$null
+                if ($pmOutput -match "package:") {
+                    Write-Info "Package manager service is ready"
+                    break
+                }
+                Start-Sleep -Seconds 3
+                $pmWaited += 3
+                if ($pmWaited % 15 -eq 0) {
+                    Write-Info "Waiting for package manager... ($pmWaited seconds elapsed)"
+                }
+            }
+            
+            if ($pmWaited -ge $pmTimeout) {
+                Write-Error "Package manager service did not start within $pmTimeout seconds."
+                Write-Info "Checking services:"
+                adb -s $DeviceUdid shell service list 2>$null | Select-Object -First 20 | ForEach-Object { Write-Info "  $_" }
                 exit 1
             }
         }
@@ -249,29 +326,91 @@ if ($Platform -eq "android") {
         Write-Info "Auto-detecting iOS simulator..."
         $simList = xcrun simctl list devices available --json | ConvertFrom-Json
         
-        # Find iPhone Xs with iOS 18.5 (default for UI tests)
-        $iPhoneXs = $simList.devices.PSObject.Properties | 
-            Where-Object { $_.Name -match "iOS-18-5" } |
-            ForEach-Object { 
-                $_.Value | Where-Object { $_.name -eq "iPhone Xs" }
-            } | 
-            Select-Object -First 1
+        # Preferred devices in order of priority
+        $preferredDevices = @("iPhone 16 Pro", "iPhone 15 Pro", "iPhone 14 Pro", "iPhone Xs")
+        # Preferred iOS versions in order (newest first)
+        $preferredVersions = @("iOS-18", "iOS-17", "iOS-26")
         
-        if (-not $iPhoneXs) {
-            Write-Error "No iPhone Xs simulator found with iOS 18.5. Please create one in Xcode."
-            Write-Info "Available iOS 18.5 simulators:"
-            $simList.devices.PSObject.Properties | 
-                Where-Object { $_.Name -match "iOS-18-5" } |
-                ForEach-Object { 
-                    $_.Value | ForEach-Object { Write-Info "  - $($_.name) ($($_.udid))" }
+        $selectedDevice = $null
+        $selectedVersion = $null
+        
+        # Try each preferred version
+        foreach ($version in $preferredVersions) {
+            if ($selectedDevice) { break }
+            
+            # Get all runtimes matching this version prefix
+            $matchingRuntimes = $simList.devices.PSObject.Properties | 
+                Where-Object { $_.Name -match $version }
+            
+            if ($matchingRuntimes) {
+                # Try each preferred device
+                foreach ($deviceName in $preferredDevices) {
+                    $device = $matchingRuntimes | ForEach-Object { 
+                        $_.Value | Where-Object { $_.name -eq $deviceName -and $_.isAvailable -eq $true }
+                    } | Select-Object -First 1
+                    
+                    if ($device) {
+                        $selectedDevice = $device
+                        $selectedVersion = ($matchingRuntimes | Select-Object -First 1).Name
+                        Write-Info "Found preferred device: $deviceName on $selectedVersion"
+                        break
+                    }
                 }
+                
+                # If no preferred device found, take first available iPhone
+                if (-not $selectedDevice) {
+                    $anyiPhone = $matchingRuntimes | ForEach-Object { 
+                        $_.Value | Where-Object { $_.name -match "iPhone" -and $_.isAvailable -eq $true }
+                    } | Select-Object -First 1
+                    
+                    if ($anyiPhone) {
+                        $selectedDevice = $anyiPhone
+                        $selectedVersion = ($matchingRuntimes | Select-Object -First 1).Name
+                        Write-Info "Using available iPhone: $($anyiPhone.name) on $selectedVersion"
+                    }
+                }
+            }
+        }
+        
+        # Last resort: find ANY available iPhone simulator
+        if (-not $selectedDevice) {
+            $allDevices = $simList.devices.PSObject.Properties | ForEach-Object { 
+                $runtime = $_.Name
+                $_.Value | Where-Object { $_.name -match "iPhone" -and $_.isAvailable -eq $true } | 
+                    ForEach-Object { $_ | Add-Member -NotePropertyName "runtime" -NotePropertyValue $runtime -PassThru }
+            }
+            
+            if ($allDevices) {
+                $selectedDevice = $allDevices | Select-Object -First 1
+                $selectedVersion = $selectedDevice.runtime
+                Write-Info "Fallback: Using $($selectedDevice.name) on $selectedVersion"
+            }
+        }
+        
+        if (-not $selectedDevice) {
+            Write-Error "No iPhone simulator found. Please create one in Xcode."
+            Write-Info "Available simulators:"
+            $simList.devices.PSObject.Properties | ForEach-Object { 
+                $runtime = $_.Name
+                $_.Value | Where-Object { $_.isAvailable -eq $true } | ForEach-Object { 
+                    Write-Info "  - $($_.name) ($runtime) - $($_.udid)" 
+                }
+            }
             exit 1
         }
         
-        $DeviceUdid = $iPhoneXs.udid
+        $DeviceUdid = $selectedDevice.udid
     }
     
-    Write-Success "iOS simulator: $DeviceUdid (iOS 18.5)"
+    # Get device name for display
+    $simState = xcrun simctl list devices --json | ConvertFrom-Json
+    $deviceInfo = $simState.devices.PSObject.Properties.Value | 
+        ForEach-Object { $_ } | 
+        Where-Object { $_.udid -eq $DeviceUdid } | 
+        Select-Object -First 1
+    $deviceName = if ($deviceInfo) { $deviceInfo.name } else { "Unknown" }
+    
+    Write-Success "iOS simulator: $deviceName ($DeviceUdid)"
     
     # Boot simulator if not already booted
     Write-Info "Booting simulator (if not already running)..."

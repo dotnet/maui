@@ -83,10 +83,22 @@ param(
     [switch]$PostSummaryComment,
 
     [Parameter(Mandatory = $false)]
-    [switch]$RunFinalize
+    [switch]$RunFinalize,
+
+    [Parameter(Mandatory = $false)]
+    [string]$LogFile  # If provided, captures all output via Start-Transcript
 )
 
 $ErrorActionPreference = 'Stop'
+
+# Start transcript logging if LogFile specified (replaces external tee pipe)
+if ($LogFile) {
+    $logDir = Split-Path $LogFile -Parent
+    if ($logDir -and -not (Test-Path $logDir)) {
+        New-Item -ItemType Directory -Path $logDir -Force | Out-Null
+    }
+    Start-Transcript -Path $LogFile -Force | Out-Null
+}
 
 # Get repository root
 $RepoRoot = git rev-parse --show-toplevel 2>$null
@@ -351,6 +363,17 @@ if ($DryRun) {
     # Post-completion skills (only run if main agent completed successfully)
     if ($exitCode -eq 0) {
         
+        # Restore tracked files to clean state before running post-completion skills.
+        # Phase 1 (PR Agent) may have left the working tree dirty from try-fix attempts,
+        # which can cause skill files to be missing or modified in subsequent phases.
+        # NOTE: State files in CustomAgentLogsTmp/ are .gitignore'd and untracked,
+        # so this won't touch them. Using HEAD to also restore deleted files.
+        Write-Host ""
+        Write-Host "🧹 Restoring working tree to clean state between phases..." -ForegroundColor Yellow
+        git status --porcelain 2>$null | Set-Content "CustomAgentLogsTmp/PRState/phase1-exit-git-status.log" -ErrorAction SilentlyContinue
+        git checkout HEAD -- . 2>&1 | Out-Null
+        Write-Host "  ✅ Working tree restored" -ForegroundColor Green
+        
         # Phase 2: Run pr-finalize skill if requested
         if ($RunFinalize) {
             Write-Host ""
@@ -359,7 +382,7 @@ if ($DryRun) {
             Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
             Write-Host ""
             
-            $finalizePrompt = "Run the pr-finalize skill for PR #$PRNumber. Verify the PR title and description match the actual implementation. Do NOT post a comment - just update the state file at CustomAgentLogsTmp/PRState/pr-$PRNumber.md with your findings."
+            $finalizePrompt = "Run the pr-finalize skill for PR #$PRNumber. Verify the PR title and description match the actual implementation. Do NOT post a comment. Write your findings to CustomAgentLogsTmp/PRState/pr-$PRNumber-final.md (NOT the main state file pr-$PRNumber.md which contains phase data that must not be overwritten)."
             
             $finalizeArgs = @(
                 "-p", $finalizePrompt,
@@ -378,7 +401,10 @@ if ($DryRun) {
             }
         }
         
-        # Phase 3: Run ai-summary-comment skill if requested (posts combined results)
+        # Phase 3: Post AI summary comment if requested
+        # Runs the script directly instead of via Copilot CLI to avoid:
+        # - LLM creating its own broken version if skill files are missing
+        # - Dirty tree from Phase 2 corrupting script files
         if ($PostSummaryComment) {
             Write-Host ""
             Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Magenta
@@ -386,22 +412,31 @@ if ($DryRun) {
             Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
             Write-Host ""
             
-            $commentPrompt = "Use the ai-summary-comment skill to post a comment on PR #$PRNumber based on the results from the PR agent review and pr-finalize phases in CustomAgentLogsTmp/PRState/pr-$PRNumber.md."
+            # Restore tracked files (including deleted ones) to clean state.
+            Write-Host "🧹 Restoring working tree to clean state..." -ForegroundColor Yellow
+            git status --porcelain 2>$null | Set-Content "CustomAgentLogsTmp/PRState/phase2-exit-git-status.log" -ErrorAction SilentlyContinue
+            git checkout HEAD -- . 2>&1 | Out-Null
+            Write-Host "  ✅ Working tree restored" -ForegroundColor Green
             
-            $commentArgs = @(
-                "-p", $commentPrompt,
-                "--allow-all",
-                "--stream", "on"
-            )
-            
-            Write-Host "💬 Posting summary comment..." -ForegroundColor Yellow
-            & copilot @commentArgs
-            
-            $commentExit = $LASTEXITCODE
-            if ($commentExit -eq 0) {
-                Write-Host "✅ Summary comment posted" -ForegroundColor Green
+            $scriptPath = ".github/skills/ai-summary-comment/scripts/post-ai-summary-comment.ps1"
+            if (-not (Test-Path $scriptPath)) {
+                Write-Host "⚠️ Script missing after checkout, attempting targeted recovery..." -ForegroundColor Yellow
+                git checkout HEAD -- $scriptPath 2>&1 | Out-Null
+            }
+            if (Test-Path $scriptPath) {
+                Write-Host "💬 Running post-ai-summary-comment.ps1 directly..." -ForegroundColor Yellow
+                & $scriptPath -PRNumber $PRNumber
+                
+                $commentExit = $LASTEXITCODE
+                if ($commentExit -eq 0) {
+                    Write-Host "✅ Summary comment posted" -ForegroundColor Green
+                } else {
+                    Write-Host "⚠️ post-ai-summary-comment.ps1 exited with code: $commentExit" -ForegroundColor Yellow
+                }
             } else {
-                Write-Host "⚠️ ai-summary-comment exited with code: $commentExit" -ForegroundColor Yellow
+                Write-Host "⚠️ Script not found at: $scriptPath" -ForegroundColor Yellow
+                Write-Host "   Current directory: $(Get-Location)" -ForegroundColor Gray
+                Write-Host "   Skipping summary comment." -ForegroundColor Gray
             }
         }
     }
@@ -417,3 +452,32 @@ if (-not $DryRun) {
     }
 }
 Write-Host ""
+
+# Clean up orphaned copilot CLI processes that may hold stdout fd open
+# IMPORTANT: Only target processes whose command line contains "copilot" to avoid
+# accidentally terminating the ADO agent's own node process
+Write-Host "🧹 Cleaning up child processes..." -ForegroundColor Gray
+try {
+    $myPid = $PID
+    # Find node processes running copilot CLI (not the ADO agent's node process)
+    $orphans = Get-Process -Name "node" -ErrorAction SilentlyContinue | Where-Object {
+        $_.Id -ne $myPid -and
+        (($_.Path -and $_.Path -match "copilot") -or
+         ($_.CommandLine -and $_.CommandLine -match "copilot"))
+    }
+    # Also get any process literally named "copilot"
+    $copilotProcs = Get-Process -Name "copilot" -ErrorAction SilentlyContinue
+    $allOrphans = @($orphans) + @($copilotProcs) | Where-Object { $_ -ne $null } | Sort-Object Id -Unique
+    if ($allOrphans.Count -gt 0) {
+        Write-Host "  Stopping $($allOrphans.Count) orphaned process(es): $($allOrphans | ForEach-Object { "$($_.ProcessName)($($_.Id))" } | Join-String -Separator ', ')" -ForegroundColor Gray
+        $allOrphans | Stop-Process -Force -ErrorAction SilentlyContinue
+    } else {
+        Write-Host "  No orphaned copilot processes found" -ForegroundColor Gray
+    }
+} catch {
+    Write-Host "  ⚠️ Cleanup warning: $_" -ForegroundColor Yellow
+}
+
+if ($LogFile) {
+    Stop-Transcript | Out-Null
+}

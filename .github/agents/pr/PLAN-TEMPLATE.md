@@ -57,7 +57,7 @@ See `SHARED-RULES.md` for complete details. Key points:
 
 **Round 1: Run try-fix with each model (SEQUENTIAL)**
 - [ ] claude-sonnet-4.5
-- [ ] claude-opus-4.5
+- [ ] claude-opus-4.6
 - [ ] gpt-5.2
 - [ ] gpt-5.2-codex
 - [ ] gemini-3-pro-preview
