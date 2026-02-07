@@ -1,0 +1,98 @@
+name: 'Scrape and Improve'
+description: 'Collects agent interaction data and generates instruction improvement recommendations.'
+
+inputs:
+  token:
+    description: 'GitHub token for API access'
+    required: false
+    default: ${{ github.token }}
+  pr-numbers:
+    description: 'Comma-separated list of PR numbers to analyze (optional)'
+    required: false
+    default: ''
+  label:
+    description: 'GitHub label to filter PRs by'
+    required: false
+    default: 'copilot'
+  since:
+    description: 'ISO 8601 date to filter PRs from (e.g., 2026-01-01)'
+    required: false
+    default: ''
+
+outputs:
+  report-file:
+    description: 'Path to the analysis report'
+    value: ${{ steps.analyze.outputs.report-file }}
+  recommendations-file:
+    description: 'Path to the recommendations JSON'
+    value: ${{ steps.analyze.outputs.recommendations-file }}
+  recommendations-count:
+    description: 'Number of recommendations generated'
+    value: ${{ steps.analyze.outputs.recommendations-count }}
+
+runs:
+  using: 'composite'
+  steps:
+
+    - name: Collect agent data
+      id: collect
+      shell: pwsh
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+      run: |
+        Write-Host "Collecting agent interaction data..."
+        $params = @{
+          RepoRoot   = "${{ github.workspace }}"
+          OutputDir  = "${{ runner.temp }}/scrape-and-improve"
+          Repository = "${{ github.repository }}"
+        }
+        if ("${{ inputs.pr-numbers }}") {
+          $params["PRNumbers"] = "${{ inputs.pr-numbers }}"
+        }
+        if ("${{ inputs.label }}") {
+          $params["Label"] = "${{ inputs.label }}"
+        }
+        if ("${{ inputs.since }}") {
+          $params["Since"] = "${{ inputs.since }}"
+        }
+        & "${{ github.workspace }}/.github/skills/scrape-and-improve/scripts/Collect-AgentData.ps1" @params
+
+    - name: Analyze and generate recommendations
+      id: analyze
+      shell: pwsh
+      run: |
+        Write-Host "Analyzing collected data..."
+        $outputDir = "${{ runner.temp }}/scrape-and-improve"
+        & "${{ github.workspace }}/.github/skills/scrape-and-improve/scripts/Analyze-And-Recommend.ps1" `
+          -InputFile "$outputDir/collected-data.json" `
+          -OutputDir $outputDir `
+          -RepoRoot "${{ github.workspace }}"
+
+        "report-file=$outputDir/analysis-report.md" >> $env:GITHUB_OUTPUT
+        "recommendations-file=$outputDir/recommendations.json" >> $env:GITHUB_OUTPUT
+
+        $recommendations = Get-Content -Path "$outputDir/recommendations.json" -Raw | ConvertFrom-Json
+        $count = if ($recommendations -is [System.Array]) { $recommendations.Count } else { if ($recommendations) { 1 } else { 0 } }
+        "recommendations-count=$count" >> $env:GITHUB_OUTPUT
+
+    - name: Upload analysis artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: scrape-and-improve-results
+        path: |
+          ${{ runner.temp }}/scrape-and-improve/analysis-report.md
+          ${{ runner.temp }}/scrape-and-improve/recommendations.json
+          ${{ runner.temp }}/scrape-and-improve/collected-data.json
+        retention-days: 30
+
+    - name: Print summary
+      shell: pwsh
+      run: |
+        $reportFile = "${{ steps.analyze.outputs.report-file }}"
+        if (Test-Path $reportFile) {
+          Write-Host "::group::Analysis Report"
+          Get-Content -Path $reportFile
+          Write-Host "::endgroup::"
+        }
+        Write-Host ""
+        Write-Host "Recommendations: ${{ steps.analyze.outputs.recommendations-count }}"

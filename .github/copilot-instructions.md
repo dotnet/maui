@@ -277,9 +277,15 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
    - **Categories**: Build, WindowsTemplates, macOSTemplates, Blazor, MultiProject, Samples, AOT, RunOnAndroid, RunOniOS
    - **Note**: **ALWAYS use this skill** instead of manual `dotnet test` commands for integration tests
 
+9. **scrape-and-improve** (`.github/skills/scrape-and-improve/SKILL.md`)
+   - **Purpose**: Scrapes agent PR sessions, Copilot comments, CCA sessions, and memories to generate instruction updates
+   - **Trigger phrases**: "improve agent instructions", "scrape agent data", "analyze agent patterns", "what patterns are agents struggling with?"
+   - **Scripts**: `Collect-AgentData.ps1`, `Analyze-And-Recommend.ps1`
+   - **Note**: Also available as a GitHub Action (`.github/actions/scrape-and-improve/`) and scheduled workflow
+
 #### Internal Skills (Used by Agents)
 
-9. **try-fix** (`.github/skills/try-fix/SKILL.md`)
+10. **try-fix** (`.github/skills/try-fix/SKILL.md`)
    - **Purpose**: Proposes ONE independent fix approach, applies it, tests, records result with failure analysis, then reverts
    - **Used by**: pr agent Phase 3 (Fix phase) - rarely invoked directly by users
    - **Behavior**: Reads prior attempts to learn from failures. Max 5 attempts per session.

@@ -1,0 +1,60 @@
+name: "Scrape and Improve Agent Instructions"
+
+on:
+  # Run on a weekly schedule (every Monday at 9 AM UTC)
+  schedule:
+    - cron: '0 9 * * 1'
+
+  # Allow manual trigger with parameters
+  workflow_dispatch:
+    inputs:
+      pr_numbers:
+        description: 'Comma-separated PR numbers to analyze (optional)'
+        required: false
+        type: string
+      label:
+        description: 'GitHub label to filter PRs by'
+        required: false
+        type: string
+        default: 'copilot'
+      since:
+        description: 'ISO 8601 date to filter PRs from (e.g., 2026-01-01)'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+
+jobs:
+  scrape-and-improve:
+    name: Analyze Agent Interactions
+    runs-on: ubuntu-latest
+    if: github.repository_owner == 'dotnet'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Scrape and Improve
+        id: scrape
+        uses: ./.github/actions/scrape-and-improve
+        with:
+          pr-numbers: ${{ inputs.pr_numbers || '' }}
+          label: ${{ inputs.label || 'copilot' }}
+          since: ${{ inputs.since || '' }}
+
+      - name: Post summary to workflow
+        shell: pwsh
+        run: |
+          $reportFile = "${{ steps.scrape.outputs.report-file }}"
+          if (Test-Path $reportFile) {
+            $content = Get-Content -Path $reportFile -Raw
+            # Write to GitHub step summary
+            $content >> $env:GITHUB_STEP_SUMMARY
+          }
+
+          Write-Host "✅ Analysis complete!"
+          Write-Host "   Recommendations: ${{ steps.scrape.outputs.recommendations-count }}"
+          Write-Host "   Report artifact: scrape-and-improve-results"
