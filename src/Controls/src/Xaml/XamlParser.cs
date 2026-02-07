@@ -364,7 +364,6 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		static IList<XmlnsDefinitionAttribute> s_xmlnsDefinitions;
 		internal static IList<XmlnsPrefixAttribute> s_xmlnsPrefixes;
-		internal static Dictionary<Assembly, bool> s_allowImplicitXmlns = new();
 		static bool ValidateProtectedXmlns(string xmlNamespace, string assemblyName)
 		{
 			//maui, and x: xmlns are protected
