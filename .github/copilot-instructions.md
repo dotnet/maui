@@ -78,6 +78,39 @@ Platform-specific files use naming conventions to control compilation:
 - `src/Essentials/samples/Essentials.Sample` - Essentials API demonstrations (non-UI MAUI APIs)
 - `src/BlazorWebView/samples/` - BlazorWebView sample applications
 
+## Common Fix Patterns (From Agent Analysis)
+
+These patterns were identified from scrape-and-improve analysis of past agent PR sessions. They help agents find fixes faster by documenting what worked and what didn't.
+
+### NavigationPage Handler Disconnection
+
+When fixing handler disconnection issues with `NavigationPage.RemovePage()`:
+- ❌ **Don't** add `DisconnectHandlers()` inside `SendHandlerUpdateAsync` callback (failed in PR #32289)
+- ❌ **Don't** add `DisconnectHandlers()` synchronously after `SendHandlerUpdateAsync` (failed in PR #32289)
+- ✅ **Do** add `DisconnectHandlers()` at the end of the Legacy `RemovePage` method path
+- **Key insight**: The fix location is in the legacy code path, not the modern handler update path
+
+### CollectionView EmptyView (Android)
+
+When fixing EmptyView display issues inside unconstrained layouts (e.g., `VerticalStackLayout`):
+- ❌ **Don't** just check for infinity before casting in `GetHeight()`/`GetWidth()` (failed in PR #33134)
+- ✅ **Do** handle `double.PositiveInfinity` → `int.MaxValue` propagation in `EmptyViewAdapter`
+- **Key insight**: In C#, `(int)double.PositiveInfinity` produces `int.MaxValue`. The fix must normalize dimensions where they're consumed (e.g., convert `int.MaxValue` back to `double.PositiveInfinity` for layout measurement), not where they're cast
+- **Root cause**: When CollectionView is inside VerticalStackLayout, height constraint is `double.PositiveInfinity` which propagates through `EmptyViewAdapter.RecyclerViewHeight`
+
+### Shell Navigation Tests (iOS)
+
+When fixing Shell back button / navigation tests on iOS:
+- Check if `OnAppearing` count expectations changed due to lifecycle changes in related PRs
+- Shell navigation involves both `DidPopItem` and `SendPop()` — ensure stacks stay in sync
+- **Key insight**: Simplify `DidPopItem` to always call `SendPop()` when stacks are out of sync
+
+### Device Test Isolation
+
+When fixing flaky device tests (e.g., Stepper tests):
+- Tests that modify control state (like `Minimum`, `Maximum`) can leak state to subsequent tests
+- **Key insight**: Check if a previous test in the same class modifies shared state without resetting it
+
 ## Development Workflow
 
 ### Testing
@@ -219,6 +252,13 @@ The repository includes specialized custom agents and reusable skills for specif
    - **Trigger phrases**: "learn from PR #XXXXX and apply improvements", "improve repo based on what we learned", "update skills based on PR"
    - **Output**: Applied changes to instruction files, skills, architecture docs, code comments
    - **Do NOT use for**: Analysis only without applying changes → Use `/learn-from-pr` skill instead
+
+5. **scrape-and-improve** - Scrapes agent data from multiple sources and applies instruction improvements
+   - **Use when**: Want to analyze agent patterns across multiple PRs and apply improvements automatically
+   - **Capabilities**: Collects data from PR sessions, Copilot comments, CCA sessions, memories, and recent PRs; analyzes patterns; applies High/Medium priority instruction updates
+   - **Trigger phrases**: "scrape and improve agent instructions", "analyze agent patterns and apply improvements", "run scrape-and-improve and check in improvements"
+   - **Output**: Applied changes to instruction files based on aggregated pattern analysis
+   - **Do NOT use for**: Analysis only without applying → Use `/scrape-and-improve` skill instead; single PR analysis → Use `learn-from-pr` agent
 
 ### Reusable Skills
 
