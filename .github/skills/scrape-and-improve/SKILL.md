@@ -18,6 +18,8 @@ Collects data from multiple agent interaction sources, analyzes patterns of succ
 | Agent PR Sessions | `.github/agent-pr-session/*.md` | Structured PR review records with phases, fix candidates, root cause analysis |
 | Copilot Comments | PR comments via `gh` CLI | AI Summary comments, try-fix attempts, test verification results |
 | CCA Session Logs | `CustomAgentLogsTmp/PRState/` | Live session state files from Copilot Coding Agent runs |
+| Repository Memories | Agent memory context | Stored facts from agent interactions (conventions, build commands, patterns) |
+| Recent PR Reviews | Most recent N PRs via `gh` API | Review comments, suggestion acceptance/rejection, code change requests |
 | Copilot Review Comments | PR review comments via `gh` CLI | Code review feedback, inline suggestions |
 
 ## Inputs
@@ -27,6 +29,8 @@ Collects data from multiple agent interaction sources, analyzes patterns of succ
 | Date range | No | Default: last 30 days |
 | PR numbers | No | Specific PRs to analyze (comma-separated) |
 | Label filter | No | Filter PRs by label (e.g., `copilot`) |
+| Recent PR count | No | Number of recent PRs to scrape (default: 20) |
+| Memory context | No | Raw memory text from agent interactions |
 
 ## Outputs
 
@@ -84,6 +88,12 @@ pwsh .github/skills/scrape-and-improve/scripts/Collect-AgentData.ps1 -Label "cop
 
 # Collect from a specific date range
 pwsh .github/skills/scrape-and-improve/scripts/Collect-AgentData.ps1 -Since "2026-01-01"
+
+# Scrape most recent 20 PRs for suggestion response analysis
+pwsh .github/skills/scrape-and-improve/scripts/Collect-AgentData.ps1 -RecentPRCount 20
+
+# Pass memory context for analysis
+pwsh .github/skills/scrape-and-improve/scripts/Collect-AgentData.ps1 -MemoryContext "**subject**\n- Fact: ...\n- Citations: ..."
 ```
 
 The script collects:
@@ -103,6 +113,18 @@ The script collects:
    - Reads session state files
    - Extracts fix attempt records
    - Identifies files targeted vs actual fix location
+
+4. **Repository memories** (stored agent facts):
+   - Parses structured memory blocks (subject, fact, citations)
+   - Scans session files for convention/build-command patterns
+   - Categorizes memories by subject for frequency analysis
+
+5. **Recent PR suggestion responses** (most recent N PRs):
+   - Fetches review comments from recent PRs via GitHub API
+   - Detects Copilot-authored suggestions
+   - Tracks acceptance/rejection/discussion patterns
+   - Identifies review hotspot areas by file path
+   - Analyzes code change request patterns
 
 Output is saved to `CustomAgentLogsTmp/scrape-and-improve/collected-data.json`.
 
@@ -128,6 +150,9 @@ The script analyzes:
 | **Platform Gaps** | Platform-specific failures not covered by instructions | "No iOS instruction for TraitCollection lifecycle" |
 | **Test Gaps** | Missing test patterns for common scenarios | "CollectionView empty state tests missing" |
 | **Common Root Causes** | Frequently appearing root causes | "int/double casting issues in Android layout code" |
+| **Memory Hotspots** | Frequently stored memory subjects | "convention patterns stored 5 times - should be in instructions" |
+| **Suggestion Rejection** | High rejection rate on Copilot suggestions | "40% rejection rate in Controls area - needs better guidance" |
+| **Review Hotspots** | Areas with high review comment volume | "Core/ has 15 review comments across 20 PRs" |
 
 Output is saved to `CustomAgentLogsTmp/scrape-and-improve/analysis-report.md`.
 

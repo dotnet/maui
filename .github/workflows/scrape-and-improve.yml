@@ -21,6 +21,11 @@ on:
         description: 'ISO 8601 date to filter PRs from (e.g., 2026-01-01)'
         required: false
         type: string
+      recent_pr_count:
+        description: 'Number of most recent PRs to scrape (default: 20)'
+        required: false
+        type: string
+        default: '20'
 
 permissions:
   contents: read
@@ -44,6 +49,7 @@ jobs:
           pr-numbers: ${{ inputs.pr_numbers || '' }}
           label: ${{ inputs.label || 'copilot' }}
           since: ${{ inputs.since || '' }}
+          recent-pr-count: ${{ inputs.recent_pr_count || '20' }}
 
       - name: Post summary to workflow
         shell: pwsh

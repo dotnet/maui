@@ -18,6 +18,14 @@ inputs:
     description: 'ISO 8601 date to filter PRs from (e.g., 2026-01-01)'
     required: false
     default: ''
+  recent-pr-count:
+    description: 'Number of most recent PRs to scrape for suggestion analysis'
+    required: false
+    default: '20'
+  memory-context:
+    description: 'Raw memory context text from agent interactions to analyze'
+    required: false
+    default: ''
 
 outputs:
   report-file:
@@ -42,9 +50,10 @@ runs:
       run: |
         Write-Host "Collecting agent interaction data..."
         $params = @{
-          RepoRoot   = "${{ github.workspace }}"
-          OutputDir  = "${{ runner.temp }}/scrape-and-improve"
-          Repository = "${{ github.repository }}"
+          RepoRoot      = "${{ github.workspace }}"
+          OutputDir     = "${{ runner.temp }}/scrape-and-improve"
+          Repository    = "${{ github.repository }}"
+          RecentPRCount = ${{ inputs.recent-pr-count }}
         }
         if ("${{ inputs.pr-numbers }}") {
           $params["PRNumbers"] = "${{ inputs.pr-numbers }}"
@@ -54,6 +63,9 @@ runs:
         }
         if ("${{ inputs.since }}") {
           $params["Since"] = "${{ inputs.since }}"
+        }
+        if ("${{ inputs.memory-context }}") {
+          $params["MemoryContext"] = "${{ inputs.memory-context }}"
         }
         & "${{ github.workspace }}/.github/skills/scrape-and-improve/scripts/Collect-AgentData.ps1" @params
 

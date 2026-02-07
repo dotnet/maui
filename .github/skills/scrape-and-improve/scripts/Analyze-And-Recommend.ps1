@@ -4,8 +4,8 @@
 
 .DESCRIPTION
     Reads the collected data from Collect-AgentData.ps1 and identifies patterns
-    across agent interactions. Produces a markdown report with prioritized
-    recommendations for instruction file updates.
+    across agent interactions, memories, and PR review responses. Produces a
+    markdown report with prioritized recommendations for instruction file updates.
 
 .PARAMETER InputFile
     Path to the collected data JSON file. Default: CustomAgentLogsTmp/scrape-and-improve/collected-data.json
@@ -28,6 +28,11 @@ param(
 )
 
 $ErrorActionPreference = "Continue"
+
+# Analysis thresholds
+$HIGH_REJECTION_THRESHOLD = 30    # Percentage - flag when Copilot suggestion rejection rate exceeds this
+$HOTSPOT_COMMENT_THRESHOLD = 5    # Count - flag areas with this many or more review comments
+$MEMORY_FREQUENCY_THRESHOLD = 2   # Count - flag memory subjects appearing this many or more times
 
 # Ensure output directory exists
 New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null
@@ -133,6 +138,117 @@ $prsWithTryFix = ($data.sources.copilotComments | Where-Object { $_.tryFixAttemp
 $prsWithTestVerification = ($data.sources.copilotComments | Where-Object { $_.testVerification }).Count
 
 # ─────────────────────────────────────────────────────────────
+# Analyze Memories
+# ─────────────────────────────────────────────────────────────
+Write-Host "`n🧠 Analyzing memories..." -ForegroundColor Yellow
+
+$memoryAnalysis = @{
+    totalMemories     = 0
+    bySubject         = @{}
+    bySource          = @{}
+    conventions       = @()
+    buildCommands     = @()
+    storeEvents       = @()
+}
+
+if ($data.sources.memories) {
+    $memoryAnalysis.totalMemories = $data.sources.memories.Count
+
+    foreach ($mem in $data.sources.memories) {
+        $subject = if ($mem.subject) { $mem.subject } else { "unknown" }
+        $source = if ($mem.source) { $mem.source } else { "unknown" }
+
+        if (-not $memoryAnalysis.bySubject.ContainsKey($subject)) {
+            $memoryAnalysis.bySubject[$subject] = 0
+        }
+        $memoryAnalysis.bySubject[$subject]++
+
+        if (-not $memoryAnalysis.bySource.ContainsKey($source)) {
+            $memoryAnalysis.bySource[$source] = 0
+        }
+        $memoryAnalysis.bySource[$source]++
+
+        # Categorize
+        switch ($subject) {
+            "convention"    { $memoryAnalysis.conventions += $mem }
+            "build-command" { $memoryAnalysis.buildCommands += $mem }
+            "store-event"   { $memoryAnalysis.storeEvents += $mem }
+        }
+    }
+    Write-Host "   Memories analyzed: $($memoryAnalysis.totalMemories)"
+    Write-Host "   Subjects found: $($memoryAnalysis.bySubject.Count)"
+}
+
+# ─────────────────────────────────────────────────────────────
+# Analyze Recent PR Suggestion Responses
+# ─────────────────────────────────────────────────────────────
+Write-Host "`n📊 Analyzing recent PR suggestion responses..." -ForegroundColor Yellow
+
+$suggestionAnalysis = @{
+    totalPRs                = 0
+    copilotPRs              = 0
+    totalReviewComments     = 0
+    totalCopilotSuggestions = 0
+    acceptanceRate          = 0
+    rejectionRate           = 0
+    commonChangeRequests    = @()
+    filePathPatterns        = @{}
+    copilotPRList           = @()
+}
+
+if ($data.sources.recentPRSuggestions) {
+    $suggestionAnalysis.totalPRs = $data.sources.recentPRSuggestions.Count
+
+    foreach ($prData in $data.sources.recentPRSuggestions) {
+        if ($prData.isCopilotPR) {
+            $suggestionAnalysis.copilotPRs++
+            $suggestionAnalysis.copilotPRList += @{
+                number = $prData.prNumber
+                title  = $prData.title
+                state  = $prData.state
+            }
+        }
+
+        $stats = $prData.suggestionStats
+        $suggestionAnalysis.totalReviewComments += $stats.totalReviewComments
+        $suggestionAnalysis.totalCopilotSuggestions += $stats.copilotSuggestions
+
+        # Track file path patterns in review comments
+        foreach ($rc in $prData.reviewComments) {
+            if ($rc.path) {
+                # Extract component area from path
+                $area = ""
+                if ($rc.path -match "src/Controls/") { $area = "Controls" }
+                elseif ($rc.path -match "src/Core/") { $area = "Core" }
+                elseif ($rc.path -match "src/Essentials/") { $area = "Essentials" }
+                elseif ($rc.path -match "src/BlazorWebView/") { $area = "BlazorWebView" }
+                elseif ($rc.path -match "\.github/") { $area = "GitHub/CI" }
+                elseif ($rc.path -match "eng/") { $area = "Engineering" }
+                else { $area = "Other" }
+
+                if (-not $suggestionAnalysis.filePathPatterns.ContainsKey($area)) {
+                    $suggestionAnalysis.filePathPatterns[$area] = 0
+                }
+                $suggestionAnalysis.filePathPatterns[$area]++
+            }
+        }
+    }
+
+    # Calculate rates
+    $totalSuggestions = $suggestionAnalysis.totalCopilotSuggestions
+    if ($totalSuggestions -gt 0) {
+        $totalAccepted = ($data.sources.recentPRSuggestions | ForEach-Object { $_.suggestionStats.suggestionsAccepted } | Measure-Object -Sum).Sum
+        $totalRejected = ($data.sources.recentPRSuggestions | ForEach-Object { $_.suggestionStats.suggestionsRejected } | Measure-Object -Sum).Sum
+        $suggestionAnalysis.acceptanceRate = [Math]::Round(($totalAccepted / $totalSuggestions) * 100, 1)
+        $suggestionAnalysis.rejectionRate = [Math]::Round(($totalRejected / $totalSuggestions) * 100, 1)
+    }
+
+    Write-Host "   Recent PRs analyzed: $($suggestionAnalysis.totalPRs)"
+    Write-Host "   Copilot PRs: $($suggestionAnalysis.copilotPRs)"
+    Write-Host "   Review comments: $($suggestionAnalysis.totalReviewComments)"
+}
+
+# ─────────────────────────────────────────────────────────────
 # Generate recommendations
 # ─────────────────────────────────────────────────────────────
 Write-Host "`n💡 Generating recommendations..." -ForegroundColor Yellow
@@ -203,6 +319,78 @@ if ($prsWithTryFix -gt 0 -and $prsWithTestVerification -eq 0) {
     }
 }
 
+# Memory-based recommendations
+if ($memoryAnalysis.totalMemories -gt 0) {
+    # Check for frequently recurring memory subjects
+    $topSubjects = $memoryAnalysis.bySubject.GetEnumerator() | Sort-Object Value -Descending | Select-Object -First 3
+    foreach ($subject in $topSubjects) {
+        if ($subject.Value -ge $MEMORY_FREQUENCY_THRESHOLD) {
+            $recommendations += @{
+                category = "Instruction File"
+                priority = "Medium"
+                location = ".github/instructions/"
+                change   = "Memory pattern '$($subject.Key)' appears $($subject.Value) times across sessions. Consider formalizing this as an instruction to prevent agents from having to re-learn it."
+                evidence = "Memory analysis: $($subject.Value) occurrences of '$($subject.Key)'"
+                impact   = "Reduces re-learning overhead for agents by codifying frequently stored knowledge"
+            }
+        }
+    }
+
+    # If many conventions are being stored, they should be in instruction files
+    if ($memoryAnalysis.conventions.Count -gt 0) {
+        $recommendations += @{
+            category = "Instruction File"
+            priority = "High"
+            location = ".github/copilot-instructions.md"
+            change   = "Found $($memoryAnalysis.conventions.Count) convention-related memory entries. These should be documented in instruction files so agents don't need to rely on memory recall."
+            evidence = "Memory scan: $($memoryAnalysis.conventions.Count) convention patterns found"
+            impact   = "Ensures conventions are always available, not dependent on memory retention"
+        }
+    }
+}
+
+# Recent PR suggestion-based recommendations
+if ($suggestionAnalysis.totalPRs -gt 0) {
+    # High rejection rate indicates suggestion quality issues
+    if ($suggestionAnalysis.rejectionRate -gt $HIGH_REJECTION_THRESHOLD) {
+        $recommendations += @{
+            category = "Instruction File"
+            priority = "High"
+            location = ".github/copilot-instructions.md"
+            change   = "Copilot suggestions have a $($suggestionAnalysis.rejectionRate)% rejection rate across $($suggestionAnalysis.totalPRs) recent PRs. Review rejected suggestions to identify common issues and add guidance."
+            evidence = "Review comment analysis: $($suggestionAnalysis.totalCopilotSuggestions) suggestions, $($suggestionAnalysis.rejectionRate)% rejected"
+            impact   = "Improves suggestion acceptance rate by addressing common rejection reasons"
+        }
+    }
+
+    # High review comment volume in specific areas suggests missing guidance
+    $hotAreas = $suggestionAnalysis.filePathPatterns.GetEnumerator() | Sort-Object Value -Descending | Select-Object -First 3
+    foreach ($area in $hotAreas) {
+        if ($area.Value -ge $HOTSPOT_COMMENT_THRESHOLD) {
+            $recommendations += @{
+                category = "Instruction File"
+                priority = "Medium"
+                location = ".github/instructions/"
+                change   = "Area '$($area.Key)' has $($area.Value) review comments across recent PRs. Consider adding or enhancing instruction files for this area."
+                evidence = "Review comment analysis: $($area.Value) comments in $($area.Key) files"
+                impact   = "Reduces review friction in high-comment areas"
+            }
+        }
+    }
+
+    # Copilot PRs success tracking
+    if ($suggestionAnalysis.copilotPRs -gt 0) {
+        $recommendations += @{
+            category = "General"
+            priority = "Low"
+            location = ".github/copilot-instructions.md"
+            change   = "Found $($suggestionAnalysis.copilotPRs) Copilot-labeled PR(s) in the last $($suggestionAnalysis.totalPRs) PRs. Track these for ongoing quality improvement."
+            evidence = "PRs: $(($suggestionAnalysis.copilotPRList | Select-Object -First 10 | ForEach-Object { "#$($_.number)" }) -join ', ')"
+            impact   = "Provides baseline metrics for agent improvement tracking"
+        }
+    }
+}
+
 # ─────────────────────────────────────────────────────────────
 # Generate Report
 # ─────────────────────────────────────────────────────────────
@@ -221,6 +409,9 @@ $report = @"
 | Agent Session Files | $($data.summary.totalSessionFiles) |
 | Copilot Comments | $($data.summary.totalCopilotComments) |
 | CCA Sessions | $($data.summary.totalCCASessions) |
+| Memories Collected | $($data.summary.totalMemories) |
+| Recent PRs Scraped | $($data.summary.totalRecentPRsScraped) |
+| Suggestion Responses | $($data.summary.totalSuggestionResponses) |
 | Total Fix Attempts | $($data.summary.totalFixAttempts) |
 | Successful Fixes | $($data.summary.totalSuccessfulFixes) |
 | Failed Fixes | $($data.summary.totalFailedFixes) |
@@ -262,6 +453,43 @@ $(if ($patterns.rootCauses.Count -gt 0) {
     }
 } else {
     "_No root causes extracted._"
+})
+
+## Memory Analysis
+
+| Metric | Value |
+|--------|-------|
+| Total Memories | $($memoryAnalysis.totalMemories) |
+| Unique Subjects | $($memoryAnalysis.bySubject.Count) |
+| Convention Patterns | $($memoryAnalysis.conventions.Count) |
+| Build Command Patterns | $($memoryAnalysis.buildCommands.Count) |
+
+$(if ($memoryAnalysis.bySubject.Count -gt 0) {
+    "### Memory Subject Frequency`n`n| Subject | Count |`n|---------|-------|"
+    $memoryAnalysis.bySubject.GetEnumerator() | Sort-Object Value -Descending | ForEach-Object { "| $($_.Key) | $($_.Value) |" }
+} else {
+    "_No memory data available. Pass -MemoryContext parameter with stored memories to analyze._"
+})
+
+## Recent PR Suggestion Analysis
+
+| Metric | Value |
+|--------|-------|
+| Recent PRs Scraped | $($suggestionAnalysis.totalPRs) |
+| Copilot PRs Found | $($suggestionAnalysis.copilotPRs) |
+| Total Review Comments | $($suggestionAnalysis.totalReviewComments) |
+| Copilot Suggestions | $($suggestionAnalysis.totalCopilotSuggestions) |
+| Suggestion Acceptance Rate | $($suggestionAnalysis.acceptanceRate)% |
+| Suggestion Rejection Rate | $($suggestionAnalysis.rejectionRate)% |
+
+$(if ($suggestionAnalysis.copilotPRList.Count -gt 0) {
+    "### Copilot PRs`n`n| PR | Title | State |`n|----|-------|-------|"
+    $suggestionAnalysis.copilotPRList | ForEach-Object { "| #$($_.number) | $($_.title) | $($_.state) |" }
+})
+
+$(if ($suggestionAnalysis.filePathPatterns.Count -gt 0) {
+    "### Review Comment Hotspots (by area)`n`n| Area | Review Comments |`n|------|----------------|"
+    $suggestionAnalysis.filePathPatterns.GetEnumerator() | Sort-Object Value -Descending | ForEach-Object { "| $($_.Key) | $($_.Value) |" }
 })
 
 ## Recommendations

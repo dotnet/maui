@@ -7,6 +7,8 @@
     - Agent PR session files (.github/agent-pr-session/*.md)
     - Copilot comments on PRs (via gh CLI)
     - CCA session logs (CustomAgentLogsTmp/PRState/)
+    - Repository memories (stored facts from agent interactions)
+    - Recent PRs with Copilot suggestion responses (review comments)
     Outputs structured JSON for analysis by Analyze-And-Recommend.ps1.
 
 .PARAMETER PRNumbers
@@ -24,10 +26,17 @@
 .PARAMETER RepoRoot
     Repository root directory. Default: current directory.
 
+.PARAMETER RecentPRCount
+    Number of most recent PRs to scrape for Copilot suggestion analysis. Default: 20.
+
+.PARAMETER MemoryContext
+    Raw memory context text to parse. If not provided, script looks for memory files in standard locations.
+
 .EXAMPLE
     pwsh .github/skills/scrape-and-improve/scripts/Collect-AgentData.ps1
     pwsh .github/skills/scrape-and-improve/scripts/Collect-AgentData.ps1 -PRNumbers "33380,33134"
     pwsh .github/skills/scrape-and-improve/scripts/Collect-AgentData.ps1 -Label "copilot" -Since "2026-01-01"
+    pwsh .github/skills/scrape-and-improve/scripts/Collect-AgentData.ps1 -RecentPRCount 20
 #>
 
 param(
@@ -36,7 +45,9 @@ param(
     [string]$Since = "",
     [string]$OutputDir = "CustomAgentLogsTmp/scrape-and-improve",
     [string]$RepoRoot = ".",
-    [string]$Repository = "dotnet/maui"
+    [string]$Repository = "dotnet/maui",
+    [int]$RecentPRCount = 20,
+    [string]$MemoryContext = ""
 )
 
 $ErrorActionPreference = "Continue"
@@ -56,9 +67,11 @@ if (-not $Since) {
 $collectedData = @{
     collectedAt = (Get-Date -Format "yyyy-MM-ddTHH:mm:ssZ")
     sources     = @{
-        agentSessions  = @()
-        copilotComments = @()
-        ccaSessions    = @()
+        agentSessions       = @()
+        copilotComments     = @()
+        ccaSessions         = @()
+        memories            = @()
+        recentPRSuggestions = @()
     }
     summary     = @{
         totalPRsAnalyzed       = 0
@@ -68,6 +81,9 @@ $collectedData = @{
         totalFixAttempts       = 0
         totalSuccessfulFixes   = 0
         totalFailedFixes       = 0
+        totalMemories          = 0
+        totalRecentPRsScraped  = 0
+        totalSuggestionResponses = 0
     }
 }
 
@@ -319,11 +335,216 @@ if (Test-Path $ccaDir) {
 }
 
 # ─────────────────────────────────────────────────────────────
+# Source 4: Repository Memories
+# ─────────────────────────────────────────────────────────────
+Write-Host "`n🧠 Collecting repository memories..." -ForegroundColor Yellow
+
+$memoryEntries = @()
+
+# Parse memory context if provided directly
+if ($MemoryContext) {
+    Write-Host "   Parsing provided memory context..."
+    # Parse structured memory blocks: **subject** followed by - Fact: and - Citations:
+    $memoryBlocks = [regex]::Matches($MemoryContext, '(?ms)\*\*(.+?)\*\*\s*\n- Fact:\s*(.+?)\n- Citations:\s*(.+?)(?=\n\n\*\*|\z)')
+    foreach ($block in $memoryBlocks) {
+        $memoryEntries += @{
+            subject  = $block.Groups[1].Value.Trim()
+            fact     = $block.Groups[2].Value.Trim()
+            citations = $block.Groups[3].Value.Trim()
+            source   = "provided-context"
+        }
+    }
+    Write-Host "   Parsed $($memoryEntries.Count) memory entries from context"
+}
+
+# Also scan for memory-like patterns in agent session files and CCA logs
+$memoryPatterns = @(
+    @{ pattern = "(?i)store_memory|stored.*fact|memory.*stored"; type = "store-event" }
+    @{ pattern = "(?i)convention|best practice|always use|never use|must use"; type = "convention" }
+    @{ pattern = "(?i)build.*command|test.*command|run.*with"; type = "build-command" }
+)
+
+# Check agent PR sessions for embedded learnings
+$sessionDir = Join-Path $RepoRoot ".github/agent-pr-session"
+if (Test-Path $sessionDir) {
+    $sessionFiles = Get-ChildItem -Path $sessionDir -Filter "*.md" -File
+    foreach ($file in $sessionFiles) {
+        $content = Get-Content -Path $file.FullName -Raw
+        foreach ($mp in $memoryPatterns) {
+            $matches = [regex]::Matches($content, $mp.pattern)
+            if ($matches.Count -gt 0) {
+                $memoryEntries += @{
+                    subject  = $mp.type
+                    fact     = "Pattern '$($mp.type)' found $($matches.Count) time(s) in $($file.Name)"
+                    citations = $file.Name
+                    source   = "agent-session-scan"
+                }
+            }
+        }
+    }
+}
+
+# Check CCA logs for embedded learnings
+$ccaDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState"
+if (Test-Path $ccaDir) {
+    $ccaFiles = Get-ChildItem -Path $ccaDir -Filter "*.md" -File -ErrorAction SilentlyContinue
+    foreach ($file in $ccaFiles) {
+        $content = Get-Content -Path $file.FullName -Raw
+        foreach ($mp in $memoryPatterns) {
+            $matches = [regex]::Matches($content, $mp.pattern)
+            if ($matches.Count -gt 0) {
+                $memoryEntries += @{
+                    subject  = $mp.type
+                    fact     = "Pattern '$($mp.type)' found $($matches.Count) time(s) in $($file.Name)"
+                    citations = "CCA: $($file.Name)"
+                    source   = "cca-session-scan"
+                }
+            }
+        }
+    }
+}
+
+$collectedData.sources.memories = $memoryEntries
+$collectedData.summary.totalMemories = $memoryEntries.Count
+Write-Host "   Total memory entries: $($memoryEntries.Count)"
+
+# ─────────────────────────────────────────────────────────────
+# Source 5: Recent PRs - Copilot Suggestion Responses
+# ─────────────────────────────────────────────────────────────
+Write-Host "`n📊 Scraping recent PRs for Copilot suggestion analysis..." -ForegroundColor Yellow
+
+if ($ghAvailable) {
+    Write-Host "   Fetching $RecentPRCount most recent PRs..."
+    try {
+        $recentPRsJson = gh pr list --repo $Repository --state all --limit $RecentPRCount --json number,title,author,state,createdAt,labels,reviewDecision 2>&1
+        if ($LASTEXITCODE -eq 0 -and $recentPRsJson) {
+            $recentPRs = $recentPRsJson | ConvertFrom-Json
+            Write-Host "   Found $($recentPRs.Count) recent PR(s)"
+
+            foreach ($rpr in $recentPRs) {
+                $prNum = $rpr.number
+                Write-Host "   Analyzing PR #$prNum review comments..."
+
+                $prSuggestionData = @{
+                    prNumber       = $prNum
+                    title          = $rpr.title
+                    author         = if ($rpr.author) { $rpr.author.login } else { "" }
+                    state          = $rpr.state
+                    labels         = @()
+                    isCopilotPR    = $false
+                    reviewComments = @()
+                    suggestionStats = @{
+                        totalReviewComments    = 0
+                        copilotSuggestions     = 0
+                        suggestionsAccepted    = 0
+                        suggestionsRejected    = 0
+                        suggestionsDiscussed   = 0
+                        codeChangeRequests     = 0
+                    }
+                }
+
+                # Extract labels
+                if ($rpr.labels) {
+                    $prSuggestionData.labels = @($rpr.labels | ForEach-Object { $_.name })
+                    $prSuggestionData.isCopilotPR = $prSuggestionData.labels -contains "copilot"
+                }
+
+                # Get review comments (inline code review feedback)
+                try {
+                    $reviewCommentsJson = gh api "repos/$Repository/pulls/$prNum/comments" --paginate 2>&1
+                    if ($LASTEXITCODE -eq 0 -and $reviewCommentsJson) {
+                        $reviewComments = $reviewCommentsJson | ConvertFrom-Json -ErrorAction SilentlyContinue
+
+                        foreach ($rc in $reviewComments) {
+                            $prSuggestionData.suggestionStats.totalReviewComments++
+
+                            $commentInfo = @{
+                                author    = if ($rc.user) { $rc.user.login } else { "" }
+                                body      = if ($rc.body.Length -gt 500) { $rc.body.Substring(0, 500) } else { $rc.body }
+                                path      = $rc.path
+                                createdAt = $rc.created_at
+                                isCopilot = $false
+                                isAccepted = $false
+                                isRejected = $false
+                                hasSuggestion = $false
+                            }
+
+                            # Detect Copilot-authored comments (specific bot accounts)
+                            if ($commentInfo.author -match "^(copilot|github-copilot)\[bot\]$|^copilot$") {
+                                $commentInfo.isCopilot = $true
+                                $prSuggestionData.suggestionStats.copilotSuggestions++
+                            }
+
+                            # Detect suggestion blocks
+                            if ($rc.body -match '```suggestion') {
+                                $commentInfo.hasSuggestion = $true
+                            }
+
+                            # Detect acceptance patterns (resolved, committed suggestion)
+                            $isAcceptMatch = $rc.body -match '(?i)lgtm|looks good|approved|applied|makes sense|good catch|fixed'
+                            # Detect rejection patterns
+                            $isRejectMatch = $rc.body -match "(?i)disagree|won't fix|not needed|revert|nack|don't think|shouldn't|incorrect"
+
+                            # Avoid double-counting: prioritize rejection over acceptance
+                            if ($isRejectMatch) {
+                                $commentInfo.isRejected = $true
+                                $prSuggestionData.suggestionStats.suggestionsRejected++
+                            } elseif ($isAcceptMatch) {
+                                $commentInfo.isAccepted = $true
+                                $prSuggestionData.suggestionStats.suggestionsAccepted++
+                            }
+
+                            # Detect change requests
+                            if ($rc.body -match '(?i)please change|should be|needs to be|consider using|instead of') {
+                                $prSuggestionData.suggestionStats.codeChangeRequests++
+                            }
+
+                            # Count discussions (replies that aren't simple acceptance/rejection)
+                            if (-not $commentInfo.isAccepted -and -not $commentInfo.isRejected -and $rc.body.Length -gt 50) {
+                                $prSuggestionData.suggestionStats.suggestionsDiscussed++
+                            }
+
+                            $prSuggestionData.reviewComments += $commentInfo
+                        }
+                    }
+                } catch {
+                    Write-Host "     ⚠️ Could not fetch review comments for PR #${prNum}: $_" -ForegroundColor Red
+                }
+
+                # Get PR reviews (approve/request changes/comment)
+                try {
+                    $reviewsJson = gh api "repos/$Repository/pulls/$prNum/reviews" 2>&1
+                    if ($LASTEXITCODE -eq 0 -and $reviewsJson) {
+                        $reviews = $reviewsJson | ConvertFrom-Json -ErrorAction SilentlyContinue
+                        foreach ($review in $reviews) {
+                            if ($review.state -eq "CHANGES_REQUESTED") {
+                                $prSuggestionData.suggestionStats.codeChangeRequests++
+                            }
+                        }
+                    }
+                } catch {
+                    # Silently continue - reviews are supplementary
+                }
+
+                $collectedData.sources.recentPRSuggestions += $prSuggestionData
+                $collectedData.summary.totalRecentPRsScraped++
+                $collectedData.summary.totalSuggestionResponses += $prSuggestionData.suggestionStats.totalReviewComments
+            }
+        }
+    } catch {
+        Write-Host "   ⚠️ Could not fetch recent PRs: $_" -ForegroundColor Red
+    }
+} else {
+    Write-Host "   ⚠️ gh CLI not available, skipping recent PR analysis" -ForegroundColor Red
+}
+
+# ─────────────────────────────────────────────────────────────
 # Compute totals
 # ─────────────────────────────────────────────────────────────
 $allPRs = @()
 $allPRs += $collectedData.sources.agentSessions | ForEach-Object { $_.prNumber } | Where-Object { $_ }
 $allPRs += $collectedData.sources.copilotComments | ForEach-Object { $_.prNumber } | Where-Object { $_ }
+$allPRs += $collectedData.sources.recentPRSuggestions | ForEach-Object { $_.prNumber.ToString() } | Where-Object { $_ }
 $collectedData.summary.totalPRsAnalyzed = ($allPRs | Sort-Object -Unique).Count
 
 # ─────────────────────────────────────────────────────────────
@@ -338,6 +559,9 @@ Write-Host "========================================" -ForegroundColor Green
 Write-Host "  Session files:      $($collectedData.summary.totalSessionFiles)"
 Write-Host "  Copilot comments:   $($collectedData.summary.totalCopilotComments)"
 Write-Host "  CCA sessions:       $($collectedData.summary.totalCCASessions)"
+Write-Host "  Memories:           $($collectedData.summary.totalMemories)"
+Write-Host "  Recent PRs scraped: $($collectedData.summary.totalRecentPRsScraped)"
+Write-Host "  Suggestion responses: $($collectedData.summary.totalSuggestionResponses)"
 Write-Host "  Total PRs analyzed: $($collectedData.summary.totalPRsAnalyzed)"
 Write-Host "  Fix attempts:       $($collectedData.summary.totalFixAttempts)"
 Write-Host "    Successful:       $($collectedData.summary.totalSuccessfulFixes)"
