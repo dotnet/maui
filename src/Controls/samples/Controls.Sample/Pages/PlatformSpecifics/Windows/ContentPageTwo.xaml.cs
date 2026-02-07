@@ -14,7 +14,7 @@ namespace Maui.Controls.Sample.Pages
 			_returnToPlatformSpecificsPage = restore;
 		}
 
-		void OnReturnButtonClicked(object sender, EventArgs e)
+		void OnReturnButtonClicked(object? sender, EventArgs e)
 		{
 			_returnToPlatformSpecificsPage.Execute(null);
 		}

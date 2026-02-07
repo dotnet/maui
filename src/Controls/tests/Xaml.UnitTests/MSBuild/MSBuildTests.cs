@@ -168,7 +168,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			project.Add(itemGroup);
 
 			//Let's enable XamlC assembly-wide
-			project.Add(AddFile("AssemblyInfo.cs", "Compile", "[assembly: Microsoft.Maui.Controls.Xaml.XamlCompilation (Microsoft.Maui.Controls.Xaml.XamlCompilationOptions.Compile)]"));
+			project.Add(AddFile("AssemblyInfo.cs", "Compile", "#pragma warning disable CS0618\n[assembly: Microsoft.Maui.Controls.Xaml.XamlCompilation (Microsoft.Maui.Controls.Xaml.XamlCompilationOptions.Compile)]"));
 
 			//Add a single CSS file
 			project.Add(AddFile("Foo.css", "MauiCss", Css.Foo));
@@ -311,7 +311,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 
 		}
 
-		// Tests the MauiXamlCValidateOnly=True MSBuild property
+		// Tests the default build behavior with SourceGen inflator
 		[Theory]
 		[InlineData("Debug")]
 		[InlineData("Release")]
@@ -330,16 +330,8 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			AssertExists(testDll, nonEmpty: true);
 			using var assembly = AssemblyDefinition.ReadAssembly(testDll);
 			var resources = assembly.MainModule.Resources.OfType<EmbeddedResource>().Select(e => e.Name).ToArray();
-			if (configuration == "Debug")
-			{
-				// XAML files should remain as EmbeddedResource
-				Assert.Contains("test.MainPage.xaml", resources);
-			}
-			else
-			{
-				// XAML files should *not* remain as EmbeddedResource
-				Assert.DoesNotContain("test.MainPage.xaml", resources);
-			}
+			// With SourceGen as default inflator, XAML files are not embedded as resources
+			Assert.DoesNotContain("test.MainPage.xaml", resources);
 		}
 
 		[Fact(Skip = "source gen changes")]

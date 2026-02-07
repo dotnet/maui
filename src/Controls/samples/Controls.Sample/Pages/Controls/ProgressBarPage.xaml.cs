@@ -10,7 +10,7 @@ namespace Maui.Controls.Sample.Pages
 			InitializeComponent();
 		}
 
-		void OnProgressToClicked(object sender, EventArgs args)
+		void OnProgressToClicked(object? sender, EventArgs args)
 		{
 			ProgressToBar.ProgressTo(1.0, 1000, Easing.Linear);
 		}
