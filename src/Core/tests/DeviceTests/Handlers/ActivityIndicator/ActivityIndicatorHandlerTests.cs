@@ -8,17 +8,17 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class ActivityIndicatorHandlerTests : CoreHandlerTestBase<ActivityIndicatorHandler, ActivityIndicatorStub>
 	{
 #if !WINDOWS // On Windows, the platform control will return IsActive as true even when the control is not visible.
-		[Theory(DisplayName = "IsRunning Should Respect IsVisible")]
-		[InlineData(true,true)]
-		[InlineData(true,false)]
-		[InlineData(false,true)]
-		[InlineData(false,false)]
-		public async  Task IsRunningShouldRespectIsVisible(bool _isRunning,bool _isVisible)
+		[Theory(DisplayName = "IsRunning Should Respect Visibility At Init")]
+		[InlineData(true, true)]
+		[InlineData(true, false)]
+		[InlineData(false, true)]
+		[InlineData(false, false)]
+		public async Task IsRunningShouldRespectVisibilityAtInit(bool isRunning, bool isVisible)
 		{
 			var activityIndicator = new ActivityIndicatorStub
 			{
-				IsRunning = _isRunning,
-				Visibility = _isVisible  ? Visibility.Visible :Visibility.Hidden
+				IsRunning = isRunning,
+				Visibility = isVisible ? Visibility.Visible : Visibility.Hidden
 			};
 
 			bool isAnimating = false;
@@ -29,11 +29,60 @@ namespace Microsoft.Maui.DeviceTests
 				isAnimating = GetNativeIsRunning(handler);
 			});
 
-			if (_isVisible && _isRunning)
-            	Assert.True(isAnimating);
-    		else
-        		Assert.False(isAnimating);
+			if (isVisible && isRunning)
+				Assert.True(isAnimating);
+			else
+				Assert.False(isAnimating);
+		}
 
+		[Fact(DisplayName = "Setting IsRunning After Init Should Respect Hidden Visibility")]
+		public async Task SettingIsRunningAfterInitShouldRespectHiddenVisibility()
+		{
+			var activityIndicator = new ActivityIndicatorStub
+			{
+				IsRunning = false,
+				Visibility = Visibility.Hidden
+			};
+
+			bool isAnimating = false;
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler(activityIndicator);
+
+				// Simulate runtime: set IsRunning=true while Visibility=Hidden
+				activityIndicator.IsRunning = true;
+				handler.UpdateValue(nameof(IActivityIndicator.IsRunning));
+
+				isAnimating = GetNativeIsRunning(handler);
+			});
+
+			Assert.False(isAnimating, "ActivityIndicator should not animate when Visibility is Hidden");
+		}
+
+		[Fact(DisplayName = "Setting IsRunning After Init Should Respect Collapsed Visibility")]
+		public async Task SettingIsRunningAfterInitShouldRespectCollapsedVisibility()
+		{
+			var activityIndicator = new ActivityIndicatorStub
+			{
+				IsRunning = false,
+				Visibility = Visibility.Collapsed
+			};
+
+			bool isAnimating = false;
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler(activityIndicator);
+
+				// Simulate runtime: set IsRunning=true while Visibility=Collapsed
+				activityIndicator.IsRunning = true;
+				handler.UpdateValue(nameof(IActivityIndicator.IsRunning));
+
+				isAnimating = GetNativeIsRunning(handler);
+			});
+
+			Assert.False(isAnimating, "ActivityIndicator should not animate when Visibility is Collapsed");
 		}
 #endif
 
