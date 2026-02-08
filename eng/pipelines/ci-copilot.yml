@@ -15,6 +15,14 @@ parameters:
     type: string
     default: ''
 
+  - name: Platform
+    displayName: 'Target Platform'
+    type: string
+    default: 'android'
+    values:
+      - android
+      - ios
+
   - name: pool
     type: object
     default:
@@ -54,14 +62,14 @@ stages:
             parameters:
               skipXcode: false
               skipProvisionator: false
-              skipAndroidCommonSdks: false  # Install base Android SDK (cmdline-tools, emulator, platform-tools)
-              skipAndroidPlatformApis: false  # Install platform APIs
-              skipJdk: false
+              skipAndroidCommonSdks: ${{ eq(parameters.Platform, 'ios') }}
+              skipAndroidPlatformApis: ${{ eq(parameters.Platform, 'ios') }}
+              skipJdk: ${{ eq(parameters.Platform, 'ios') }}
               skipSimulatorSetup: false
               skipCertificates: true
-              # Android emulator setup
-              skipAndroidEmulatorImages: false
-              skipAndroidCreateAvds: false
+              # Android emulator setup (skip for iOS)
+              skipAndroidEmulatorImages: ${{ eq(parameters.Platform, 'ios') }}
+              skipAndroidCreateAvds: ${{ eq(parameters.Platform, 'ios') }}
               androidEmulatorApiLevel: '34'
 
           # Disable hardware acceleration in AVD config (HVF not available on Azure hosted agents)
@@ -85,6 +93,7 @@ stages:
                 ls -la "$HOME/.android/avd/" 2>/dev/null || echo "AVD directory not found"
               fi
             displayName: 'Configure AVD for Software Emulation'
+            condition: eq('${{ parameters.Platform }}', 'android')
 
           # Set up Android SDK PATH (required on self-hosted agents)
           - pwsh: |
@@ -129,6 +138,7 @@ stages:
                 }
               }
             displayName: 'Configure Android SDK PATH'
+            condition: eq('${{ parameters.Platform }}', 'android')
             env:
               ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
 
@@ -180,6 +190,7 @@ stages:
               
               Write-Host "=== Android Emulator Started Successfully ==="
             displayName: 'Start Android Emulator'
+            condition: eq('${{ parameters.Platform }}', 'android')
             timeoutInMinutes: 35
             env:
               ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
@@ -216,16 +227,18 @@ stages:
                 echo "✓ .NET SDK: $(dotnet --version)"
               fi
               
-              # Check Android SDK
-              echo "Checking Android SDK..."
-              if [ -z "$ANDROID_HOME" ] && [ -z "$ANDROID_SDK_ROOT" ]; then
-                ERRORS="${ERRORS}\n- ANDROID_HOME/ANDROID_SDK_ROOT not set"
-              else
-                SDK_PATH="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
-                if [ ! -d "$SDK_PATH" ]; then
-                  ERRORS="${ERRORS}\n- Android SDK directory not found: $SDK_PATH"
+              # Check Android SDK (only for Android platform)
+              if [ "${{ parameters.Platform }}" = "android" ]; then
+                echo "Checking Android SDK..."
+                if [ -z "$ANDROID_HOME" ] && [ -z "$ANDROID_SDK_ROOT" ]; then
+                  ERRORS="${ERRORS}\n- ANDROID_HOME/ANDROID_SDK_ROOT not set"
                 else
-                  echo "✓ Android SDK: $SDK_PATH"
+                  SDK_PATH="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+                  if [ ! -d "$SDK_PATH" ]; then
+                    ERRORS="${ERRORS}\n- Android SDK directory not found: $SDK_PATH"
+                  else
+                    echo "✓ Android SDK: $SDK_PATH"
+                  fi
                 fi
               fi
               
@@ -247,12 +260,14 @@ stages:
                 fi
               fi
               
-              # Check Java/JDK
-              echo "Checking JDK..."
-              if ! java -version 2>&1; then
-                ERRORS="${ERRORS}\n- JDK not available"
-              else
-                echo "✓ JDK available"
+              # Check Java/JDK (only for Android platform)
+              if [ "${{ parameters.Platform }}" = "android" ]; then
+                echo "Checking JDK..."
+                if ! java -version 2>&1; then
+                  ERRORS="${ERRORS}\n- JDK not available"
+                else
+                  echo "✓ JDK available"
+                fi
               fi
               
               # Report errors
@@ -353,6 +368,7 @@ stages:
               echo "=== Emulator booted successfully! ==="
               adb devices -l
             displayName: 'Boot Android Emulator'
+            condition: eq('${{ parameters.Platform }}', 'android')
             continueOnError: true
             timeoutInMinutes: 15
             env:
@@ -372,7 +388,7 @@ stages:
             displayName: 'Install Node.js'
 
           - script: |
-              echo "Installing Appium and UiAutomator2 driver..."
+              echo "Installing Appium and platform driver..."
               
               # Get npm global bin directory and add to PATH
               NPM_BIN=$(npm config get prefix)/bin
@@ -382,8 +398,14 @@ stages:
               # Install Appium globally
               npm install -g appium
               
-              # Install UiAutomator2 driver for Android
-              appium driver install uiautomator2
+              # Install platform-specific driver
+              if [ "${{ parameters.Platform }}" = "ios" ]; then
+                echo "Installing XCUITest driver for iOS..."
+                appium driver install xcuitest
+              else
+                echo "Installing UiAutomator2 driver for Android..."
+                appium driver install uiautomator2
+              fi
               
               # Verify installation
               if ! which appium; then
@@ -510,9 +532,52 @@ stages:
               echo "=== Fresh Android Emulator Ready! ==="
               adb devices -l
             displayName: 'Restart Android Emulator (Fresh)'
+            condition: eq('${{ parameters.Platform }}', 'android')
             timeoutInMinutes: 15
             env:
               ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
+
+          # Boot iOS Simulator (only for iOS platform)
+          - script: |
+              echo "=== Booting iOS Simulator ==="
+              
+              # Find a suitable simulator (prefer iPhone Xs for consistency)
+              UDID=$(xcrun simctl list devices available --json | jq -r '
+                .devices | to_entries |
+                map(select(.key | test("iOS"))) |
+                sort_by(.key) | reverse |
+                .[0].value |
+                map(select(.name | test("iPhone (Xs|14|15)"))) |
+                .[0].udid // empty
+              ')
+              
+              if [ -z "$UDID" ]; then
+                echo "No preferred simulator found, using first available iPhone"
+                UDID=$(xcrun simctl list devices available --json | jq -r '
+                  .devices | to_entries |
+                  map(.value) | flatten |
+                  map(select(.name | test("iPhone"))) |
+                  .[0].udid
+                ')
+              fi
+              
+              if [ -z "$UDID" ]; then
+                echo "##vso[task.logissue type=error]No iOS simulator found"
+                exit 1
+              fi
+              
+              echo "Booting simulator: $UDID"
+              xcrun simctl boot "$UDID" 2>/dev/null || echo "Simulator may already be booted"
+              sleep 10
+              
+              echo "Booted simulators:"
+              xcrun simctl list devices booted
+              
+              echo "##vso[task.setvariable variable=DEVICE_UDID]$UDID"
+              echo "iOS Simulator UDID: $UDID"
+            displayName: 'Boot iOS Simulator'
+            condition: eq('${{ parameters.Platform }}', 'ios')
+            timeoutInMinutes: 5
 
           - script: |
               echo "Running Copilot PR Reviewer Agent via Review-PR.ps1..."
@@ -530,7 +595,7 @@ stages:
               # The script will merge the PR into the current branch
               # -PostSummaryComment and -RunFinalize handle posting comments
               set +e
-              pwsh .github/scripts/Review-PR.ps1 -PRNumber ${{ parameters.PRNumber }} -Platform android -RunFinalize -PostSummaryComment -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md"
+              pwsh .github/scripts/Review-PR.ps1 -PRNumber ${{ parameters.PRNumber }} -Platform ${{ parameters.Platform }} -RunFinalize -PostSummaryComment -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md"
               COPILOT_EXIT_CODE=$?
               set -e
               
@@ -591,6 +656,7 @@ stages:
             env:
               COPILOT_GITHUB_TOKEN: $(COPILOT_TOKEN)
               GH_TOKEN: $(GH_COMMENT_TOKEN)
+              DEVICE_UDID: $(DEVICE_UDID)
 
           # Publish Copilot logs and session artifacts
           - task: PublishPipelineArtifact@1
