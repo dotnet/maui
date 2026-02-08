@@ -692,8 +692,9 @@ namespace Microsoft.Maui.Controls
 		{
 			// FlexLayout's Shrink and Stretch features require a fixed area to measure/layout correctly;
 			// when the dimensions they are working in are infinite, they don't really make sense. We can
-			// get a sensible measure by temporarily setting the Shrink and Grow values of all items to 0 
-			// and the Stretch alignment values to Start. So we prepare for that here.
+			// get a sensible measure by temporarily setting the Shrink and Grow values of all items to 0,
+			// the Stretch alignment values to Start, and Basis to Auto (so relative Basis like 0% doesn't
+			// force items to 0 size). So we prepare for that here.
 
 			foreach (var child in Children)
 			{
@@ -702,13 +703,14 @@ namespace Microsoft.Maui.Controls
 					item.Shrink = 0;
 					item.Grow = 0;
 					item.AlignSelf = Flex.AlignSelf.Start;
+					item.Basis = Flex.Basis.Auto;
 				}
 			}
 		}
 
 		void RestoreValues()
 		{
-			// If we had to modify the Shrink, Grow and Stretch values of the FlexItems for measurement, we 
+			// If we had to modify the Shrink, Grow, Stretch and Basis values of the FlexItems for measurement, we 
 			// restore them to their original values.
 
 			foreach (var child in Children)
@@ -718,6 +720,7 @@ namespace Microsoft.Maui.Controls
 					item.Shrink = GetShrink(child);
 					item.Grow = GetGrow(child);
 					item.AlignSelf = (Flex.AlignSelf)GetAlignSelf(child);
+					item.Basis = GetBasis(child).ToFlexBasis();
 				}
 			}
 		}

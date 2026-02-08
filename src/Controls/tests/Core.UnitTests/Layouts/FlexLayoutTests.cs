@@ -315,5 +315,58 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 				return new Size(150, 100);
 			}
 		}
+
+		[Fact]
+		public void FlexLayoutColumnDirectionWithGrowAndRelativeBasisReportsCorrectHeight()
+		{
+			// Reproduces #33942: FlexLayout Direction=Column inside ScrollView
+			// with children that have Grow=1 and Basis=0% (relative).
+			// The Basis=0% overrides self-sizing, setting child frame to 0.
+			// Then with container height=0 (from infinity), flex_dim=0,
+			// so Grow can't distribute any space → children collapse to height=0.
+			// This is the CRITICAL test that catches the real bug.
+			
+			var root = new Grid();
+			var flexLayout = new FlexLayout
+			{
+				Direction = FlexDirection.Column,
+				Wrap = FlexWrap.NoWrap,  // NoWrap to ensure children stack vertically
+				AlignItems = FlexAlignItems.Stretch,
+				JustifyContent = FlexJustify.Start
+			};
+
+			var view1 = new TestLabelWithTracking();
+			var view2 = new TestLabelWithTracking();
+
+			root.Add(flexLayout);
+			flexLayout.Add(view1);
+			flexLayout.Add(view2);
+
+			// Match the real-world scenario from issue #33942: Grow=1, Basis=0% (relative)
+			FlexLayout.SetGrow(view1, 1);
+			FlexLayout.SetBasis(view1, new FlexBasis(0, true));
+			FlexLayout.SetAlignSelf(view1, FlexAlignSelf.Stretch);
+
+			FlexLayout.SetGrow(view2, 1);
+			FlexLayout.SetBasis(view2, new FlexBasis(0, true));
+			FlexLayout.SetAlignSelf(view2, FlexAlignSelf.Stretch);
+
+			// Measure with constrained width, unconstrained height (ScrollView)
+			var measure = flexLayout.CrossPlatformMeasure(400, double.PositiveInfinity);
+
+			// Without fix: height=0 because Basis=0% + container=0 + Grow can't fire
+			// With fix: children should get their intrinsic height from self-sizing
+			Assert.True(measure.Height > 0,
+				$"FlexLayout Column+Grow+Basis(0%) should report non-zero height, got {measure.Height}");
+			Assert.Equal(200, measure.Height); // 100 + 100 from TestLabel
+
+			var frame1 = flexLayout.GetFlexFrame(view1);
+			var frame2 = flexLayout.GetFlexFrame(view2);
+
+			Assert.True(frame1.Height > 0, "First child should have non-zero height");
+			Assert.True(frame2.Height > 0, "Second child should have non-zero height");
+			Assert.Equal(100, frame1.Height);
+			Assert.Equal(100, frame2.Height);
+		}
 	}
 }
