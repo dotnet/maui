@@ -597,13 +597,15 @@ namespace Microsoft.Maui.Controls
 			if (_root.Parent != null)   //Layout is only computed at root level
 				return;
 
+			// CRITICAL: EnsureFlexItemPropertiesUpdated must run BEFORE PrepareMeasureHack
+			// so that the measure hack's Grow=0/Shrink=0 overrides aren't immediately overwritten
+			EnsureFlexItemPropertiesUpdated();
+
 			var useMeasureHack = NeedsMeasureHack(width, height);
 			if (useMeasureHack)
 			{
 				PrepareMeasureHack();
 			}
-
-			EnsureFlexItemPropertiesUpdated();
 
 			_root.Width = !double.IsPositiveInfinity((width)) ? (float)width : 0;
 			_root.Height = !double.IsPositiveInfinity((height)) ? (float)height : 0;
