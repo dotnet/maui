@@ -1,6 +1,5 @@
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Xml;
 using Microsoft.CodeAnalysis;
 using Microsoft.Maui.Controls.Xaml;
@@ -30,7 +29,7 @@ class ThicknessConverter : ISGTypeConverter
 							&& TryParseDouble(thickness[1], out double v))
 						{
 							var thicknessType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Thickness")!;
-							return $"new {thicknessType.ToFQDisplayString()}({FormatDouble(h)}, {FormatDouble(v)})";
+							return $"new {thicknessType.ToFQDisplayString()}({FormatInvariant(h)}, {FormatInvariant(v)})";
 						}
 						break;
 					case 4:
@@ -40,7 +39,7 @@ class ThicknessConverter : ISGTypeConverter
 							&& TryParseDouble(thickness[3], out double b))
 						{
 							var thicknessType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Thickness")!;
-							return $"new {thicknessType.ToFQDisplayString()}({FormatDouble(l)}, {FormatDouble(t)}, {FormatDouble(r)}, {FormatDouble(b)})";
+							return $"new {thicknessType.ToFQDisplayString()}({FormatInvariant(l)}, {FormatInvariant(t)}, {FormatInvariant(r)}, {FormatInvariant(b)})";
 						}
 						break;
 				}
@@ -50,55 +49,12 @@ class ThicknessConverter : ISGTypeConverter
 				if (TryParseDouble(value, out double l))
 				{
 					var thicknessType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Thickness")!;
-					return $"new {thicknessType.ToFQDisplayString()}({FormatDouble(l)})";
+					return $"new {thicknessType.ToFQDisplayString()}({FormatInvariant(l)})";
 				}
 			}
 		}
 
 		context.ReportConversionFailed(xmlLineInfo, value, Descriptors.ThicknessConversionFailed);
 		return "default";
-	}
-
-	/// <summary>
-	/// Tries to parse a double value, including special values like NaN, Infinity, -Infinity.
-	/// </summary>
-	static bool TryParseDouble(string value, out double result)
-	{
-		value = value.Trim();
-
-		// Handle special values that NumberStyles.Number doesn't parse
-		if (value.Equals("NaN", System.StringComparison.OrdinalIgnoreCase))
-		{
-			result = double.NaN;
-			return true;
-		}
-		if (value.Equals("Infinity", System.StringComparison.OrdinalIgnoreCase) ||
-			value.Equals("+Infinity", System.StringComparison.OrdinalIgnoreCase))
-		{
-			result = double.PositiveInfinity;
-			return true;
-		}
-		if (value.Equals("-Infinity", System.StringComparison.OrdinalIgnoreCase))
-		{
-			result = double.NegativeInfinity;
-			return true;
-		}
-
-		return double.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out result);
-	}
-
-	/// <summary>
-	/// Formats a double value for C# code generation, handling special values.
-	/// </summary>
-	static string FormatDouble(double value)
-	{
-		if (double.IsNaN(value))
-			return "double.NaN";
-		if (double.IsPositiveInfinity(value))
-			return "double.PositiveInfinity";
-		if (double.IsNegativeInfinity(value))
-			return "double.NegativeInfinity";
-
-		return FormatInvariant(value);
 	}
 }
