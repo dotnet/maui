@@ -218,5 +218,121 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			Assert.Equal(0, flexFrame.X);
 			Assert.Equal(0, flexFrame.Y);
 		}
+
+		[Fact]
+		public void FlexLayoutColumnDirectionReportsCorrectDesiredHeightInScrollView()
+		{
+			// Arrange
+			var root = new Grid();
+			var flexLayout = new FlexLayout { Direction = FlexDirection.Column };
+			
+			var view1 = Substitute.For<IView>();
+			var view2 = Substitute.For<IView>();
+			
+			// Child 1 wants to be 100x200
+			view1.Measure(Arg.Any<double>(), Arg.Any<double>()).Returns(new Size(100, 200));
+			view1.DesiredSize.Returns(new Size(100, 200));
+			
+			// Child 2 wants to be 100x150
+			view2.Measure(Arg.Any<double>(), Arg.Any<double>()).Returns(new Size(100, 150));
+			view2.DesiredSize.Returns(new Size(100, 150));
+			
+			root.Add(flexLayout);
+			flexLayout.Add(view1);
+			flexLayout.Add(view2);
+			
+			// Act - Measure with constrained width but unconstrained height (like ScrollView does)
+			var measure = flexLayout.CrossPlatformMeasure(400, double.PositiveInfinity);
+			
+			// Assert - FlexLayout should report a height equal to sum of children's heights
+			// With Column direction, children are stacked vertically: 200 + 150 = 350
+			Assert.True(measure.Height > 0, "FlexLayout with Direction=Column should report non-zero height");
+			Assert.Equal(350, measure.Height);
+			
+			// Also verify that children get proper frames
+			var frame1 = flexLayout.GetFlexFrame(view1);
+			var frame2 = flexLayout.GetFlexFrame(view2);
+			
+			Assert.True(frame1.Height > 0, "First child should have non-zero height");
+			Assert.True(frame2.Height > 0, "Second child should have non-zero height");
+			Assert.Equal(200, frame1.Height);
+			Assert.Equal(150, frame2.Height);
+		}
+
+		[Fact]
+		public void FlexLayoutColumnDirectionWithGrowReportsCorrectHeight()
+		{
+			// Test the scenario from the issue: children with FlexLayout.Grow
+			// This might reveal different behavior
+			var root = new Grid();
+			var flexLayout = new FlexLayout { Direction = FlexDirection.Column };
+			
+			var view1 = new TestLabel(); // Returns fixed 150x100
+			var view2 = new TestLabel(); // Returns fixed 150x100
+			
+			root.Add(flexLayout);
+			flexLayout.Add(view1);
+			flexLayout.Add(view2);
+			
+			// Set Grow property like in the issue
+			FlexLayout.SetGrow(view1, 1);
+			FlexLayout.SetGrow(view2, 1);
+			
+			// Act - Measure with constrained width but unconstrained height
+			var measure = flexLayout.CrossPlatformMeasure(400, double.PositiveInfinity);
+			
+			// Assert - Should report non-zero height
+			Assert.True(measure.Height > 0, $"FlexLayout with Direction=Column and Grow should report non-zero height, got {measure.Height}");
+			
+			// Verify frames
+			var frame1 = flexLayout.GetFlexFrame(view1);
+			var frame2 = flexLayout.GetFlexFrame(view2);
+			
+			Assert.True(frame1.Height > 0, $"First child with Grow should have non-zero height, got {frame1.Height}");
+			Assert.True(frame2.Height > 0, $"Second child with Grow should have non-zero height, got {frame2.Height}");
+		}
+
+		[Fact]
+		public void FlexLayoutColumnDirectionWithStretchAlignItemsReportsCorrectHeight()
+		{
+			// Reproduce the exact scenario from the issue
+			var root = new Grid();
+			var flexLayout = new FlexLayout 
+			{ 
+				Direction = FlexDirection.Column,
+				Wrap = FlexWrap.Wrap,
+				AlignItems = FlexAlignItems.Stretch,
+				JustifyContent = FlexJustify.Start
+			};
+			
+			var view1 = new TestLabel(); // Returns fixed 150x100
+			var view2 = new TestLabel(); // Returns fixed 150x100
+			
+			root.Add(flexLayout);
+			flexLayout.Add(view1);
+			flexLayout.Add(view2);
+			
+			// Set properties like in the issue
+			FlexLayout.SetGrow(view1, 1);
+			FlexLayout.SetBasis(view1, FlexBasis.Auto);
+			FlexLayout.SetAlignSelf(view1, FlexAlignSelf.Stretch);
+			
+			FlexLayout.SetGrow(view2, 1);
+			FlexLayout.SetBasis(view2, FlexBasis.Auto);
+			FlexLayout.SetAlignSelf(view2, FlexAlignSelf.Stretch);
+			
+			// Act - Measure with constrained width but unconstrained height (like ScrollView)
+			var measure = flexLayout.CrossPlatformMeasure(400, double.PositiveInfinity);
+			
+			// Assert - Should report non-zero height
+			Assert.True(measure.Height > 0, $"FlexLayout with Direction=Column, AlignItems=Stretch should report non-zero height, got {measure.Height}");
+			
+			// Verify frames
+			var frame1 = flexLayout.GetFlexFrame(view1);
+			var frame2 = flexLayout.GetFlexFrame(view2);
+			
+			Assert.True(frame1.Height > 0, $"First child with Stretch should have non-zero height, got {frame1.Height}");
+			Assert.True(frame2.Height > 0, $"Second child with Stretch should have non-zero height, got {frame2.Height}");
+		}
 	}
 }
