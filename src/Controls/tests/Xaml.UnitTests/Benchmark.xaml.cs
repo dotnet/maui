@@ -28,6 +28,7 @@ public partial class Benchmark : ContentPage
 	[Collection("Xaml Inflation")]
 	public class Tests
 	{
+#if DEBUG
 		private readonly ITestOutputHelper _output;
 
 		public Tests(ITestOutputHelper output)
@@ -123,5 +124,6 @@ public partial class Benchmark : ContentPage
 			Assert.Equal(0, diag.LazyCount);
 			Assert.Equal(diag.TotalCount, diag.EagerCount);
 		}
+#endif
 	}
 }
