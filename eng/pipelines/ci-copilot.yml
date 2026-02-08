@@ -588,6 +588,12 @@ stages:
               git config user.name "Copilot CI"
               echo "Git identity configured"
               
+              # Create Directory.Build.Override.props to skip Xcode version check
+              # AcesShared agents may have a newer Xcode than the .NET iOS SDK expects
+              cp Directory.Build.Override.props.in Directory.Build.Override.props
+              # Insert ValidateXcodeVersion before closing </Project> tag
+              sed -i '' 's|</Project>|  <PropertyGroup><ValidateXcodeVersion>false</ValidateXcodeVersion></PropertyGroup>\n</Project>|' Directory.Build.Override.props
+              
               # Create artifacts directory for Copilot outputs
               mkdir -p $(Build.ArtifactStagingDirectory)/copilot-logs
               
