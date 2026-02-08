@@ -22,7 +22,7 @@ public class Issue33688 : _IssuesUITest
 
 		// Wait for the second page to load - use StatusLabel as primary indicator
 		App.WaitForElement("StatusLabel");
-		
+
 		// Find and tap the filter button to load items - this triggers the bug
 		// (setting ItemsSource to a new ObservableCollection)
 		App.WaitForElement("FilterButton");
@@ -32,13 +32,17 @@ public class Issue33688 : _IssuesUITest
 		App.WaitForElement("TestCollectionView");
 
 		// Press the back button
+#if ANDROID || WINDOWS
 		App.TapBackArrow();
+#elif IOS || MACCATALYST
+		App.TapBackArrow("Main");
+#endif
 
 		// Wait for navigation back and verify BackButtonBehavior was triggered
 		App.WaitForElement("ResultLabel");
-		
+
 		var resultText = App.FindElement("ResultLabel").GetText();
-		Assert.That(resultText, Is.EqualTo("BackButtonBehavior triggered!"), 
+		Assert.That(resultText, Is.EqualTo("BackButtonBehavior triggered!"),
 			"BackButtonBehavior command should have been executed when pressing back button");
 	}
 }
