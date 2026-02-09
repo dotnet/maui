@@ -392,7 +392,7 @@ internal class MauiGridLayout : VirtualizingLayout
 		var data = context.GetItemAt(index);
 		if (data is ItemTemplateContext2 templateContext)
 		{
-			return templateContext.IsHeader || templateContext.IsFooter;
+			return templateContext.IsFullSpan;
 		}
 		return false;
 	}

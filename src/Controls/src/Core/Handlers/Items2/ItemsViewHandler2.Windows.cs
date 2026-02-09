@@ -481,10 +481,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			switch (Layout)
 			{
 				case GridItemsLayout gridItemsLayout:
-					// Use MauiGridLayout for all grid layouts
-					// It supports full-span headers/footers for grouped collections
-					// and works correctly for non-grouped collections too
-					return CreateMauiGridLayout(gridItemsLayout);
+					// Use MauiGridLayout only for grouped collections (needs full-span headers/footers)
+					// Use native UniformGridLayout for non-grouped (better performance)
+					bool isGrouped = ItemsView is GroupableItemsView groupable && groupable.IsGrouped;
+					if (isGrouped)
+					{
+						return CreateMauiGridLayout(gridItemsLayout);
+					}
+					return CreateUniformGridLayout(gridItemsLayout);
 				case LinearItemsLayout listItemsLayout:
 					return CreateStackLayout(listItemsLayout);
 				default:
@@ -513,6 +517,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				Span = gridItemsLayout.Span,
 				HorizontalSpacing = gridItemsLayout.HorizontalItemSpacing,
 				VerticalSpacing = gridItemsLayout.VerticalItemSpacing,
+			};
+		}
+
+		static UniformGridLayout CreateUniformGridLayout(GridItemsLayout gridItemsLayout)
+		{
+			return new UniformGridLayout()
+			{
+				Orientation = gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal
+						? Orientation.Vertical : Orientation.Horizontal,
+				MinItemWidth = 0,
+				MinItemHeight = 0,
+				MinColumnSpacing = gridItemsLayout.HorizontalItemSpacing,
+				MinRowSpacing = gridItemsLayout.VerticalItemSpacing,
+				ItemsStretch = UniformGridLayoutItemsStretch.Fill,
+				MaximumRowsOrColumns = gridItemsLayout.Span,
 			};
 		}
 
@@ -579,6 +598,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				mauiGridLayout.Span = gridItemsLayout.Span;
 			}
+			else if (PlatformView.Layout is UniformGridLayout uniformGridLayout &&
+				Layout is GridItemsLayout gridLayout)
+			{
+				uniformGridLayout.MaximumRowsOrColumns = gridLayout.Span;
+			}
 		}
 
 		void UpdateItemsLayoutItemSpacing()
@@ -588,6 +612,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				mauiGridLayout.HorizontalSpacing = gridItemsLayout.HorizontalItemSpacing;
 				mauiGridLayout.VerticalSpacing = gridItemsLayout.VerticalItemSpacing;
+			}
+			else if (PlatformView.Layout is UniformGridLayout uniformGridLayout &&
+				Layout is GridItemsLayout gridLayout)
+			{
+				uniformGridLayout.MinColumnSpacing = gridLayout.HorizontalItemSpacing;
+				uniformGridLayout.MinRowSpacing = gridLayout.VerticalItemSpacing;
 			}
 			else if (PlatformView.Layout is UI.Xaml.Controls.StackLayout stackLayout &&
 				Layout is LinearItemsLayout linearItemsLayout)

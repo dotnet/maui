@@ -16,6 +16,12 @@ internal class ItemTemplateContext2
 	public bool IsHeader { get; }
 	public bool IsFooter { get; }
 
+	/// <summary>
+	/// Gets whether this item should span the full width/height of the layout.
+	/// Group headers and footers are full-span items in grid layouts.
+	/// </summary>
+	public bool IsFullSpan => IsHeader || IsFooter;
+
 	public ItemTemplateContext2(DataTemplate mauiDataTemplate, object item, BindableObject container,
 		double? height = null, double? width = null, Thickness? itemSpacing = null,
 		bool isHeader = false, bool isFooter = false, IMauiContext? mauiContext = null)
