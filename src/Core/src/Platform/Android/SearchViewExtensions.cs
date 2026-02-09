@@ -5,10 +5,8 @@ using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Text;
 using Android.Util;
-using Android.Views;
 using Android.Views.InputMethods;
 using Android.Widget;
-using Google.Android.Material.Search;
 using Google.Android.Material.TextField;
 using static Android.Content.Res.Resources;
 using AAttribute = Android.Resource.Attribute;
@@ -18,6 +16,8 @@ namespace Microsoft.Maui.Platform
 {
 	public static class SearchViewExtensions
 	{
+		static readonly int[] s_DisabledState = [-AAttribute.StateEnabled];
+		static readonly int[] s_EnabledState = [AAttribute.StateEnabled];
 		public static void UpdateText(this SearchView searchView, ISearchBar searchBar)
 		{
 			searchView.SetQuery(searchBar.Text, false);
@@ -231,15 +231,12 @@ namespace Microsoft.Maui.Platform
 			if (searchView.Context?.Theme is not Theme theme)
 				return false;
 
-			int[] s_disabledState = [-AAttribute.StateEnabled];
-			int[] s_enabledState = [AAttribute.StateEnabled];
-
 			using var ta = theme.ObtainStyledAttributes([attribute]);
 			var cs = ta.GetColorStateList(0);
 			if (cs is null)
 				return false;
 
-			var state = searchView.Enabled ? s_enabledState : s_disabledState;
+			var state = searchView.Enabled ? s_EnabledState : s_DisabledState;
 			color = new Color(cs.GetColorForState(state, Color.Black));
 			return true;
 		}
@@ -352,9 +349,6 @@ namespace Microsoft.Maui.Platform
 				return false;
 			}
 
-			int[] s_disabledState = [-AAttribute.StateEnabled];
-			int[] s_enabledState = [AAttribute.StateEnabled];
-
 			using var ta = theme.ObtainStyledAttributes([attribute]);
 			var cs = ta.GetColorStateList(0);
 			if (cs is null)
@@ -362,7 +356,7 @@ namespace Microsoft.Maui.Platform
 				return false;
 			}
 
-			var state = textInputLayout.Enabled ? s_enabledState : s_disabledState;
+			var state = textInputLayout.Enabled ? s_EnabledState : s_DisabledState;
 			color = new Color(cs.GetColorForState(state, Color.Black));
 			return true;
 		}

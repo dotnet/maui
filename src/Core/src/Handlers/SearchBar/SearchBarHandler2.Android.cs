@@ -123,12 +123,12 @@ internal class SearchBarHandler2 : ViewHandler<ISearchBar, MauiMaterialTextInput
 
     public static void MapIsTextPredictionEnabled(SearchBarHandler2 handler, ISearchBar searchBar)
     {
-        handler.PlatformView?.EditText?.UpdateIsTextPredictionEnabled(searchBar as ITextInput);
+        handler.PlatformView?.EditText?.UpdateIsTextPredictionEnabled(searchBar);
     }
 
     public static void MapIsSpellCheckEnabled(SearchBarHandler2 handler, ISearchBar searchBar)
     {
-        handler.PlatformView?.EditText?.UpdateIsSpellCheckEnabled(searchBar as ITextInput);
+        handler.PlatformView?.EditText?.UpdateIsSpellCheckEnabled(searchBar);
     }
 
     public static void MapMaxLength(SearchBarHandler2 handler, ISearchBar searchBar)
