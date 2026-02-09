@@ -15,7 +15,7 @@ See `SHARED-RULES.md` for complete details. Key points:
 - **Environment Blockers**: STOP immediately, report, ask user (strict retry limits)
 - **No Git Commands**: Never checkout/switch branches - agent is always on correct branch
 - **Gate via Task Agent**: Never run inline (prevents fabrication)
-- **Multi-Model try-fix**: 5 models, SEQUENTIAL only
+- **Multi-Model try-fix**: 6 models, SEQUENTIAL only
 - **Follow Templates**: No `open` attributes, no "improvements"
 
 ---
