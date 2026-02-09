@@ -237,7 +237,13 @@ static class SetPropertyHelpers
 			// This mirrors the normal flow: CreateValuesVisitor walks the entire tree first
 			node.Accept(new CreateValuesVisitor(lambdaContext), null);
 
-			// Second pass: Set properties on all nodes using SetPropertiesVisitor
+			// Second pass: Set namescopes and register names in the namescope
+			node.Accept(new SetNamescopesAndRegisterNamesVisitor(lambdaContext), null);
+
+			// Third pass: Set resources in ResourceDictionary
+			node.Accept(new SetResourcesVisitor(lambdaContext), null);
+
+			// Fourth pass: Set properties on all nodes using SetPropertiesVisitor
 			// stopOnResourceDictionary=true prevents infinite recursion if there are nested RDs
 			node.Accept(new SetPropertiesVisitor(lambdaContext, stopOnResourceDictionary: true), null);
 
