@@ -128,7 +128,7 @@ namespace Microsoft.Maui.Graphics
 		/// <summary>
 		/// Determines whether the specified <see cref="Color"/> is equal to the current color using byte-precision comparison.
 		/// </summary>
-		public virtual bool Equals(Color other)
+		public bool Equals(Color other)
 		{
 			if (other is null)
 				return false;
