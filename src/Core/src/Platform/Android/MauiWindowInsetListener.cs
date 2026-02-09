@@ -272,137 +272,121 @@ namespace Microsoft.Maui.Platform
 			// Keyboard Handling & Bottom Navigation Handling - only applies to CoordinatorLayout
 			if (v is CoordinatorLayout coordinatorLayout)
 			{
-
 				var bottomTabContainer = coordinatorLayout.FindViewById<ViewGroup>(Resource.Id.navigationlayout_bottomtabs);
 				hasBottomNav = bottomTabContainer?.ChildCount > 0;
-
 				var contentView = coordinatorLayout.FindViewById(Resource.Id.navigationlayout_content);
-
 				var window = coordinatorLayout.Context?.GetActivity()?.Window;
+
 				// Handle keyboard insets based on SoftInputMode (AdjustResize/AdjustPan/AdjustNothing)
 				var imeInsets = insets.GetInsets(WindowInsetsCompat.Type.Ime());
 				var isKeyboardShowing = insets.IsVisible(WindowInsetsCompat.Type.Ime());
 
-				if (contentView is null)
+				if (contentView is null || window is null)
 				{
 					return insets;
 				}
 
-				if (window is not null)
+				var windowAttributes = window.Attributes;
+
+				if (windowAttributes is null)
 				{
-					var windowAttributes = window.Attributes;
-					if (windowAttributes is not null)
+					return insets;
+				}
+
+				// Mask to extract only the adjustment mode bits
+				const SoftInput adjustMask = SoftInput.MaskAdjust;
+				var adjustMode = windowAttributes.SoftInputMode & adjustMask;
+
+				if (adjustMode == SoftInput.AdjustResize)
+				{
+					if (isKeyboardShowing && !IsImeAnimating && !_wasKeyboardShowing)
 					{
-						// Mask to extract only the adjustment mode bits
-						const SoftInput adjustMask = SoftInput.MaskAdjust;
-						var adjustMode = windowAttributes.SoftInputMode & adjustMask;
+						var keyboardHeight = imeInsets?.Bottom ?? 0;
 
-						if (adjustMode == SoftInput.AdjustResize)
+						if (hasBottomNav)
 						{
-
-							if (isKeyboardShowing && !IsImeAnimating)
-							{
-								var keyboardHeight = imeInsets?.Bottom ?? 0;
-								var navBarHeight = systemBars?.Bottom ?? 0;
-
-								if (hasBottomNav)
-								{
-									// Don't set CoordinatorLayout padding - it disrupts bottom tabs layout
-									coordinatorLayout.SetPadding(0, 0, 0, 0);
-
-									// Set contentView padding to push content above keyboard
-									contentView.SetPadding(
-										systemBars?.Left ?? 0,
-										0,
-										systemBars?.Right ?? 0,
-										keyboardHeight);
-								}
-								else
-								{
-									// No bottom tabs - apply keyboard padding to CoordinatorLayout
-									coordinatorLayout.SetPadding(0, 0, 0, keyboardHeight);
-								}
-
-								// Reset bottom padding of all tracked child views since the keyboard
-								// now covers the navigation bar area. Without this, child views would
-								// retain their stale bottom safe area padding, causing double padding.
-								if (hasBottomNav)
-								{
-									ResetBottomPaddingForDescendants(contentView);
-								}
-								else
-								{
-
-									ResetBottomPaddingForDescendants(coordinatorLayout);
-								}
-
-								_wasKeyboardShowing = true;
-								return WindowInsetsCompat.Consumed;
-							}
-							else if (!isKeyboardShowing && _wasKeyboardShowing)
-							{
-								// Keyboard dismissed - reset padding
-								_wasKeyboardShowing = false;
-								if (hasBottomNav)
-								{
-									contentView.SetPadding(0, 0, 0, 0);
-								}
-								else
-								{
-									coordinatorLayout.SetPadding(0, 0, 0, 0);
-								}
-
-								// Request insets for child views to restore their safe area padding
-								// Post to allow layout to complete first - position-based SafeArea
-								// calculation needs updated positions after keyboard resize
-								// coordinatorLayout.Post(() =>
-								// {
-								// 	Debug.WriteLine("[SafeAreaKeyboard] Executing posted RequestInsetsForDescendants");
-								// 	RequestInsetsForDescendants(coordinatorLayout);
-								// });
-								RequestInsetsForDescendants(coordinatorLayout);
-								// Don't return early - continue to bottom nav handling section
-							}
+							// Set contentView padding to push content above keyboard
+							contentView.SetPadding(
+								contentView.PaddingLeft,
+								contentView.PaddingTop,
+								contentView.PaddingRight,
+								keyboardHeight);
 						}
-						else if (adjustMode == SoftInput.AdjustPan)
+						else
 						{
-							if (isKeyboardShowing && !IsImeAnimating)
-							{
-								return WindowInsetsCompat.Consumed;
-							}
+							// No bottom tabs - apply keyboard padding to CoordinatorLayout
+							coordinatorLayout.SetPadding(0, 0, 0, keyboardHeight);
 						}
-						else if (adjustMode == SoftInput.AdjustNothing)
+
+						// Reset bottom padding of all tracked child views since the keyboard
+						// now covers the navigation bar area. Without this, child views would
+						// retain their stale bottom safe area padding, causing double padding.
+						if (hasBottomNav)
 						{
+							bottomTabContainer?.SetPadding(bottomTabContainer.PaddingLeft, bottomTabContainer.PaddingTop, bottomTabContainer.PaddingRight, 0);
+						}
+						else
+						{
+							ResetBottomPaddingForDescendants(coordinatorLayout);
+						}
+
+						_wasKeyboardShowing = true;
+						return WindowInsetsCompat.Consumed;
+					}
+					else if (!isKeyboardShowing && _wasKeyboardShowing && !IsImeAnimating)
+					{
+						// Keyboard dismissed - reset padding
+						_wasKeyboardShowing = false;
+						if (hasBottomNav)
+						{
+							//RequestInsetsForDescendants(contentView);
+						}
+						else
+						{
+							coordinatorLayout.SetPadding(0, 0, 0, 0);
+							RequestInsetsForDescendants(coordinatorLayout);
 							return insets;
 						}
+
+						// Request insets for child views to restore their safe area padding
+						// Post to allow layout to complete first - position-based SafeArea
+						// calculation needs updated positions after keyboard resize
+						// coordinatorLayout.Post(() =>
+						// {
+						// 	Debug.WriteLine("[SafeAreaKeyboard] Executing posted RequestInsetsForDescendants");
+						// 	RequestInsetsForDescendants(coordinatorLayout);
+						// });
+						//System.Diagnostics.Debug.WriteLine("[SafeAreaKeyboard] Requesting insets for coordinatorLayout descendants");
+
+						// Don't return early - continue to bottom nav handling section
 					}
 				}
+				else if (adjustMode == SoftInput.AdjustPan)
+				{
+					if (isKeyboardShowing && !IsImeAnimating)
+					{
+						return WindowInsetsCompat.Consumed;
+					}
+				}
+				else if (adjustMode == SoftInput.AdjustNothing)
+				{
+					return insets;
+				}
+
 
 				if (hasBottomNav)
 				{
-					// When bottom tabs exist, contentView and bottomTabContainer are overlapping siblings.
-					// 1. bottomTabContainer needs nav bar padding so tabs don't overlap system nav bar
-					// 2. contentView needs bottom padding = tabs height + nav bar so content doesn't overlap tabs
+					// bottomTabContainer needs nav bar padding so tabs don't overlap system nav bar
+					// contentView is positioned above tabs by the layout - no padding needed
 					var bottomInset = Math.Max(systemBars?.Bottom ?? 0, displayCutout?.Bottom ?? 0);
-
-					// Use child's MeasuredHeight to get intrinsic tab bar height (excludes padding we set)
-					// This avoids feedback loop where container's MeasuredHeight includes our padding
-					var tabBarChild = bottomTabContainer?.GetChildAt(0);
-					var tabsIntrinsicHeight = tabBarChild?.MeasuredHeight ?? 0;
-
-					if (!isKeyboardShowing)
-					{
-						contentView?.SetPadding(
-												systemBars?.Left ?? 0,
-												0,
-												systemBars?.Right ?? 0,
-												bottomInset);
-					}
+					contentView?.SetPadding(contentView.PaddingLeft, contentView.PaddingTop, contentView.PaddingRight, bottomInset);
+					bottomTabContainer?.SetPadding(bottomTabContainer.PaddingLeft, bottomTabContainer.PaddingTop, bottomTabContainer.PaddingRight, bottomInset);
 				}
 				else
 				{
-					// No bottom navigation - reset CoordinatorLayout padding (original behavior)
-					contentView?.SetPadding(0, 0, 0, 0);
+					System.Diagnostics.Debug.WriteLine("[SafeAreaKeyboard] No bottom navigation, resetting bottomTabContainer padding");
+					// No bottom navigation - reset bottomTabContainer padding (original behavior)
+					bottomTabContainer?.SetPadding(0, 0, 0, 0);
 				}
 			}
 
