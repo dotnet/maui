@@ -28,9 +28,7 @@ namespace Microsoft.Maui.Platform
 
 			if (thumbColor is not null)
 			{
-				// Use ThumbTintList instead of SetColorFilter to preserve the thumb shadow
-				// SetColorFilter flattens the drawable and removes the shadow effect
-				aSwitch.ThumbTintList = ColorStateListExtensions.CreateDefault(thumbColor.ToPlatform());
+				aSwitch.ThumbDrawable?.SetColorFilter(thumbColor, FilterMode.SrcAtop);
 			}
 		}
 
