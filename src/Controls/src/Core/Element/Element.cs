@@ -857,7 +857,14 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		internal void OnResourcesChangedKeys(IEnumerable<string> keys)
 		{
-			OnResourcesChangedKeys(keys, key => this.TryGetResource(key, out var v) ? v : null);
+			OnResourcesChangedKeys(keys, key =>
+			{
+				// Style class keys need to be merged across the entire parent chain,
+				// not just return the first match from TryGetResource.
+				if (key.StartsWith(Style.StyleClassPrefix, StringComparison.Ordinal))
+					return this.GetMergedStyleClassResource(key);
+				return this.TryGetResource(key, out var v) ? v : null;
+			});
 		}
 
 		/// <summary>
