@@ -203,7 +203,10 @@ steps:
             echo "Successfully installed the requested iOS simulator"
           elif [[ "$RC" == "70" ]]; then
             echo "xcodebuild exited with exit code 70 - verifying simulator runtime was actually installed..."
-            if ! verify_simulator_installed; then
+            if verify_simulator_installed; then
+              echo "Simulator runtime is available despite exit code 70, continuing..."
+              RC=0
+            else
               echo "Simulator runtime not available despite exit code 70, retrying..."
               RC=1
             fi

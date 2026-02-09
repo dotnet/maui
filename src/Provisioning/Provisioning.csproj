@@ -346,7 +346,7 @@
 	</Target>
 
 	<Target Name="ProvisionJdkMacOS" DependsOnTargets="DetectJdkVersion" Condition=" '$(IsMacOS)' == 'True' AND '$(_AndroidJdkRequiresProvisioning)' == 'True' ">
-		<!-- Retry JDK installation up to 3 times to handle transient network failures (e.g., curl transfer closed) -->
+		<!-- Retry JDK installation (2 attempts) to handle transient network failures (e.g., curl transfer closed) -->
 		<Exec Command="brew install --cask microsoft-openjdk@$(_AndroidJdkMajorVersion)" IgnoreExitCode="true">
 			<Output TaskParameter="ExitCode" PropertyName="_JdkInstallExitCode1" />
 		</Exec>
