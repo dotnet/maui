@@ -5,6 +5,7 @@ using System.CommandLine;
 using System.CommandLine.Invocation;
 using Microsoft.Maui.DevTools.Output;
 using Microsoft.Maui.DevTools.Providers.Android;
+using Microsoft.Maui.DevTools.Utils;
 
 namespace Microsoft.Maui.DevTools.Commands;
 
@@ -105,6 +106,29 @@ public static class AndroidCommands
 				else
 				{
 					Console.WriteLine("✓ Android environment bootstrapped successfully");
+				}
+			}
+			catch (UnauthorizedAccessException) when (PlatformDetector.IsWindows)
+			{
+				if (!useJson)
+					Console.WriteLine("Administrator access required. Requesting elevation...");
+
+				if (ProcessRunner.RelaunchElevated())
+				{
+					if (useJson)
+					{
+						formatter.Write(new { success = true, message = "Android environment bootstrapped successfully (elevated)" });
+					}
+					else
+					{
+						Console.WriteLine("✓ Android environment bootstrapped successfully (elevated)");
+					}
+				}
+				else
+				{
+					var error = new Exception("Elevation was cancelled or failed. Run this command from an administrator terminal.");
+					formatter.WriteError(error);
+					context.ExitCode = 1;
 				}
 			}
 			catch (Exception ex)

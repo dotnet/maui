@@ -262,6 +262,45 @@ public static class ProcessRunner
 	}
 
 	/// <summary>
+	/// Re-launches the current process with administrator elevation (Windows UAC).
+	/// Returns true if the elevated process completed successfully, false if the user
+	/// cancelled the UAC prompt or the process failed.
+	/// </summary>
+	public static bool RelaunchElevated()
+	{
+		if (!PlatformDetector.IsWindows)
+			return false;
+
+		var processPath = Environment.ProcessPath;
+		if (string.IsNullOrEmpty(processPath))
+			return false;
+
+		// Reconstruct command line args (skip the first which is the exe path)
+		var args = Environment.GetCommandLineArgs().Skip(1)
+			.Select(a => a.Contains(' ', StringComparison.Ordinal) ? $"\"{a}\"" : a);
+
+		var psi = new ProcessStartInfo
+		{
+			FileName = processPath,
+			Arguments = string.Join(" ", args),
+			Verb = "runas",
+			UseShellExecute = true,
+		};
+
+		try
+		{
+			using var process = Process.Start(psi);
+			process?.WaitForExit();
+			return process?.ExitCode == 0;
+		}
+		catch (System.ComponentModel.Win32Exception)
+		{
+			// User cancelled the UAC prompt
+			return false;
+		}
+	}
+
+	/// <summary>
 	/// Checks if a command exists in PATH.
 	/// </summary>
 	public static bool CommandExists(string command)
