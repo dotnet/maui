@@ -18,22 +18,22 @@ namespace Maui.Controls.Sample.Pages
 			UpdateCornerRadius();
 		}
 
-		void OnBorderShapeSelectedIndexChanged(object sender, EventArgs e)
+		void OnBorderShapeSelectedIndexChanged(object? sender, EventArgs e)
 		{
 			UpdateBorderShape();
 		}
 
-		void OnBorderChanged(object sender, TextChangedEventArgs e)
+		void OnBorderChanged(object? sender, TextChangedEventArgs e)
 		{
 			UpdateBorder();
 		}
 
-		void OnBorderWidthChanged(object sender, ValueChangedEventArgs e)
+		void OnBorderWidthChanged(object? sender, ValueChangedEventArgs e)
 		{
 			UpdateBorder();
 		}
 
-		void OnCornerRadiusChanged(object sender, ValueChangedEventArgs e)
+		void OnCornerRadiusChanged(object? sender, ValueChangedEventArgs e)
 		{
 			UpdateCornerRadius();
 		}

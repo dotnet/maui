@@ -20,12 +20,12 @@ namespace Maui.Controls.Sample.Pages
 			StreamSourceImage.Source = ImageSource.FromStream(() => new MemoryStream(imageBytes));
 		}
 
-		void AnimationStartStop_Clicked(object sender, EventArgs e)
+		void AnimationStartStop_Clicked(object? sender, EventArgs e)
 		{
 			AnimatedGifImage.IsAnimationPlaying = !AnimatedGifImage.IsAnimationPlaying;
 		}
 
-		void UseOnlineSource_Clicked(object sender, EventArgs e)
+		void UseOnlineSource_Clicked(object? sender, EventArgs e)
 		{
 			AnimatedGifImage.Source =
 				ImageSource.FromUri(new Uri("https://raw.githubusercontent.com/dotnet/maui/126f47aaf9d5c01224f54fe1c6bfb1c8299cc2fe/src/Compatibility/ControlGallery/src/iOS/GifTwo.gif"));

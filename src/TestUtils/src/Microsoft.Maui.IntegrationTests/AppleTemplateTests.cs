@@ -24,6 +24,15 @@ namespace Microsoft.Maui.IntegrationTests
 			{
 				TestSimulator.Shutdown();
 				TestSimulator.Launch();
+				// Wait for simulator to fully boot to avoid race condition where
+				// simulator reports "booted" but is still in Booting state internally
+				// This prevents "Unable to lookup in current state: Booting" errors
+				if (!TestSimulator.WaitForBootComplete())
+				{
+					throw new InvalidOperationException(
+						$"Simulator failed to fully boot within timeout. " +
+						$"Target: {TestSimulator.XHarnessID}, UDID: {TestSimulator.GetUDID()}");
+				}
 			}
 		}
 
