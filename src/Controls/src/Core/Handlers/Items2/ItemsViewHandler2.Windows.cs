@@ -514,9 +514,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				Orientation = gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal
 						? Orientation.Vertical : Orientation.Horizontal,
-				Span = gridItemsLayout.Span,
-				HorizontalSpacing = gridItemsLayout.HorizontalItemSpacing,
-				VerticalSpacing = gridItemsLayout.VerticalItemSpacing,
+				MaximumRowsOrColumns = gridItemsLayout.Span,
+				MinColumnSpacing = gridItemsLayout.HorizontalItemSpacing,
+				MinRowSpacing = gridItemsLayout.VerticalItemSpacing,
+				ItemsStretch = UniformGridLayoutItemsStretch.Fill,
+				ItemsJustification = UniformGridLayoutItemsJustification.Start,
 			};
 		}
 
@@ -593,31 +595,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		void UpdateItemsLayoutSpan()
 		{
-			if (PlatformView.Layout is MauiGridLayout mauiGridLayout &&
+			if (PlatformView.Layout is UniformGridLayout uniformGridLayout &&
 				Layout is GridItemsLayout gridItemsLayout)
 			{
-				mauiGridLayout.Span = gridItemsLayout.Span;
-			}
-			else if (PlatformView.Layout is UniformGridLayout uniformGridLayout &&
-				Layout is GridItemsLayout gridLayout)
-			{
-				uniformGridLayout.MaximumRowsOrColumns = gridLayout.Span;
+				uniformGridLayout.MaximumRowsOrColumns = gridItemsLayout.Span;
 			}
 		}
 
 		void UpdateItemsLayoutItemSpacing()
 		{
-			if (PlatformView.Layout is MauiGridLayout mauiGridLayout &&
+			if (PlatformView.Layout is UniformGridLayout uniformGridLayout &&
 				Layout is GridItemsLayout gridItemsLayout)
 			{
-				mauiGridLayout.HorizontalSpacing = gridItemsLayout.HorizontalItemSpacing;
-				mauiGridLayout.VerticalSpacing = gridItemsLayout.VerticalItemSpacing;
-			}
-			else if (PlatformView.Layout is UniformGridLayout uniformGridLayout &&
-				Layout is GridItemsLayout gridLayout)
-			{
-				uniformGridLayout.MinColumnSpacing = gridLayout.HorizontalItemSpacing;
-				uniformGridLayout.MinRowSpacing = gridLayout.VerticalItemSpacing;
+				uniformGridLayout.MinColumnSpacing = gridItemsLayout.HorizontalItemSpacing;
+				uniformGridLayout.MinRowSpacing = gridItemsLayout.VerticalItemSpacing;
 			}
 			else if (PlatformView.Layout is UI.Xaml.Controls.StackLayout stackLayout &&
 				Layout is LinearItemsLayout linearItemsLayout)

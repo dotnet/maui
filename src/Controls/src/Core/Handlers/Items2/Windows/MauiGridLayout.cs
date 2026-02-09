@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Specialized;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Foundation;
@@ -7,393 +6,241 @@ using Windows.Foundation;
 namespace Microsoft.Maui.Controls.Handlers.Items2;
 
 /// <summary>
-/// A custom VirtualizingLayout for grid layout that supports full-span items for group headers and footers.
-/// Similar to UniformGridLayout but with the ability to make specific items span the full width.
+/// Extends UniformGridLayout to handle group headers/footers spanning full width.
+/// Regular grid items use UniformGridLayout's native behavior.
+/// Only headers/footers are overridden to span the full available width.
 /// </summary>
-internal class MauiGridLayout : VirtualizingLayout
+#pragma warning disable CsWinRT1028 // Class is not marked partial
+internal class MauiGridLayout : UniformGridLayout
+#pragma warning restore CsWinRT1028
 {
-	int _span = 1;
-	double _minItemWidth = 0;
-	double _minItemHeight = 0;
-	double _minColumnSpacing = 0;
-	double _minRowSpacing = 0;
-	Orientation _orientation = Orientation.Horizontal;
-
-	public int Span
-	{
-		get => _span;
-		set
-		{
-			if (_span != value)
-			{
-				_span = Math.Max(1, value);
-				InvalidateMeasure();
-			}
-		}
-	}
-
-	public double MinItemWidth
-	{
-		get => _minItemWidth;
-		set
-		{
-			if (_minItemWidth != value)
-			{
-				_minItemWidth = value;
-				InvalidateMeasure();
-			}
-		}
-	}
-
-	public double MinItemHeight
-	{
-		get => _minItemHeight;
-		set
-		{
-			if (_minItemHeight != value)
-			{
-				_minItemHeight = value;
-				InvalidateMeasure();
-			}
-		}
-	}
-
-	public double HorizontalSpacing
-	{
-		get => _minColumnSpacing;
-		set
-		{
-			if (_minColumnSpacing != value)
-			{
-				_minColumnSpacing = value;
-				InvalidateMeasure();
-			}
-		}
-	}
-
-	public double VerticalSpacing
-	{
-		get => _minRowSpacing;
-		set
-		{
-			if (_minRowSpacing != value)
-			{
-				_minRowSpacing = value;
-				InvalidateMeasure();
-			}
-		}
-	}
-
-	public Orientation Orientation
-	{
-		get => _orientation;
-		set
-		{
-			if (_orientation != value)
-			{
-				_orientation = value;
-				InvalidateMeasure();
-			}
-		}
-	}
-
-	protected override void OnItemsChangedCore(VirtualizingLayoutContext context, object source, NotifyCollectionChangedEventArgs args)
-	{
-		InvalidateMeasure();
-		base.OnItemsChangedCore(context, source, args);
-	}
-
 	protected override Size MeasureOverride(VirtualizingLayoutContext context, Size availableSize)
 	{
-		int itemCount = context.ItemCount;
-		if (itemCount == 0)
-		{
+		if (context.ItemCount == 0)
 			return new Size(0, 0);
-		}
 
-		// Determine scroll direction based on orientation
-		// Orientation.Horizontal means items flow left-to-right, scrolling is vertical
-		// Orientation.Vertical means items flow top-to-bottom, scrolling is horizontal  
-		bool isVerticalScroll = _orientation == Orientation.Horizontal;
+		var span = MaximumRowsOrColumns;
+		var minColumnSpacing = MinColumnSpacing;
+		var minRowSpacing = MinRowSpacing;
+		var isVertical = Orientation == Orientation.Horizontal; // Horizontal orientation = vertical scrolling
 
-		double availableMainAxis = isVerticalScroll ? availableSize.Width : availableSize.Height;
-		if (double.IsInfinity(availableMainAxis))
+		double totalHeight = 0;
+		double totalWidth = 0;
+		double maxItemSize = 0;
+		int columnIndex = 0;
+		int rowIndex = 0;
+
+		for (int i = 0; i < context.ItemCount; i++)
 		{
-			availableMainAxis = 400;
-		}
+			var element = context.GetOrCreateElementAt(i);
+			element.Measure(availableSize);
 
-		double columnSpacing = _minColumnSpacing;
-		double rowSpacing = _minRowSpacing;
-
-		// Calculate item size based on span
-		double itemWidth = (availableMainAxis - (columnSpacing * (_span - 1))) / _span;
-		double itemHeight = 0;
-
-		// Get realization rect for virtualization
-		Rect realizationRect = context.RealizationRect;
-
-		// Calculate layout positions and realize visible items
-		double currentMainOffset = 0; // Y for vertical scroll, X for horizontal
-		int currentColumn = 0;
-		double currentRowHeight = 0;
-
-		double totalExtent = 0;
-
-		for (int i = 0; i < itemCount; i++)
-		{
-			bool isFullSpan = IsFullSpanItem(context, i);
+			bool isFullSpan = IsHeaderOrFooter(element);
 
 			if (isFullSpan)
 			{
-				// Complete current row if we have items
-				if (currentColumn > 0)
+				if (isVertical)
 				{
-					currentMainOffset += currentRowHeight + rowSpacing;
-					currentColumn = 0;
-					currentRowHeight = 0;
-				}
-
-				// Check if this item is in the visible range
-				bool isVisible = IsInRealizationRect(realizationRect, 0, currentMainOffset, availableMainAxis, 50, isVerticalScroll);
-
-				if (isVisible)
-				{
-					var element = context.GetOrCreateElementAt(i, ElementRealizationOptions.ForceCreate);
-					element.Measure(new Size(availableMainAxis, double.PositiveInfinity));
-					currentRowHeight = element.DesiredSize.Height;
+					if (columnIndex > 0)
+					{
+						totalHeight += maxItemSize + minRowSpacing;
+						columnIndex = 0;
+						maxItemSize = 0;
+					}
+					totalHeight += element.DesiredSize.Height + minRowSpacing;
 				}
 				else
 				{
-					currentRowHeight = 50; // Estimated height for non-visible items
-					RecycleElementIfExists(context, i);
+					if (rowIndex > 0)
+					{
+						totalWidth += maxItemSize + minColumnSpacing;
+						rowIndex = 0;
+						maxItemSize = 0;
+					}
+					totalWidth += element.DesiredSize.Width + minColumnSpacing;
 				}
-
-				currentMainOffset += currentRowHeight + rowSpacing;
-				currentRowHeight = 0;
 			}
 			else
 			{
-				// Regular grid item
-				double x = currentColumn * (itemWidth + columnSpacing);
-				double y = currentMainOffset;
-
-				// Check if this item is in the visible range
-				bool isVisible = IsInRealizationRect(realizationRect, x, y, itemWidth, 50, isVerticalScroll);
-
-				if (isVisible)
+				if (isVertical)
 				{
-					var element = context.GetOrCreateElementAt(i, ElementRealizationOptions.ForceCreate);
-					element.Measure(new Size(itemWidth, double.PositiveInfinity));
-					currentRowHeight = Math.Max(currentRowHeight, element.DesiredSize.Height);
-					itemHeight = Math.Max(itemHeight, element.DesiredSize.Height);
+					maxItemSize = Math.Max(maxItemSize, element.DesiredSize.Height);
+					columnIndex++;
+
+					if (columnIndex >= span)
+					{
+						totalHeight += maxItemSize + minRowSpacing;
+						columnIndex = 0;
+						maxItemSize = 0;
+					}
 				}
 				else
 				{
-					RecycleElementIfExists(context, i);
-				}
+					maxItemSize = Math.Max(maxItemSize, element.DesiredSize.Width);
+					rowIndex++;
 
-				currentColumn++;
-				if (currentColumn >= _span)
-				{
-					currentMainOffset += (currentRowHeight > 0 ? currentRowHeight : itemHeight > 0 ? itemHeight : 50) + rowSpacing;
-					currentColumn = 0;
-					currentRowHeight = 0;
+					if (rowIndex >= span)
+					{
+						totalWidth += maxItemSize + minColumnSpacing;
+						rowIndex = 0;
+						maxItemSize = 0;
+					}
 				}
 			}
 		}
 
-		// Account for last incomplete row
-		if (currentColumn > 0)
+		// Add final incomplete row/column
+		if (isVertical)
 		{
-			currentMainOffset += currentRowHeight > 0 ? currentRowHeight : itemHeight > 0 ? itemHeight : 50;
+			if (columnIndex > 0)
+				totalHeight += maxItemSize;
+
+			totalWidth = availableSize.Width;
+		}
+		else
+		{
+			if (rowIndex > 0)
+				totalWidth += maxItemSize;
+
+			totalHeight = availableSize.Height;
 		}
 
-		totalExtent = currentMainOffset;
-
-		return isVerticalScroll
-			? new Size(availableMainAxis, totalExtent)
-			: new Size(totalExtent, availableMainAxis);
+		return new Size(totalWidth, totalHeight);
 	}
 
 	protected override Size ArrangeOverride(VirtualizingLayoutContext context, Size finalSize)
 	{
-		int itemCount = context.ItemCount;
-		if (itemCount == 0)
-		{
+		if (context.ItemCount == 0)
 			return finalSize;
-		}
 
-		bool isVerticalScroll = _orientation == Orientation.Horizontal;
-		double availableMainAxis = isVerticalScroll ? finalSize.Width : finalSize.Height;
+		var span = MaximumRowsOrColumns;
+		var minColumnSpacing = MinColumnSpacing;
+		var minRowSpacing = MinRowSpacing;
+		var isVertical = Orientation == Orientation.Horizontal;
 
-		double columnSpacing = _minColumnSpacing;
-		double rowSpacing = _minRowSpacing;
+		double currentX = 0;
+		double currentY = 0;
+		double cellWidth = 0;
+		double cellHeight = 0;
+		double maxItemSize = 0;
+		int columnIndex = 0;
+		int rowIndex = 0;
 
-		double itemWidth = (availableMainAxis - (columnSpacing * (_span - 1))) / _span;
-
-		Rect realizationRect = context.RealizationRect;
-
-		double currentMainOffset = 0;
-		int currentColumn = 0;
-		double currentRowHeight = 0;
-		int rowStartIndex = 0;
-
-		for (int i = 0; i < itemCount; i++)
+		// First pass: calculate uniform cell size from regular items
+		for (int i = 0; i < context.ItemCount; i++)
 		{
-			bool isFullSpan = IsFullSpanItem(context, i);
-
-			if (isFullSpan)
+			var child = context.GetOrCreateElementAt(i);
+			if (!IsHeaderOrFooter(child))
 			{
-				// Complete current row - arrange pending items
-				if (currentColumn > 0)
-				{
-					ArrangeRowItems(context, realizationRect, rowStartIndex, i - 1, currentMainOffset, 
-						itemWidth, currentRowHeight, columnSpacing, isVerticalScroll, availableMainAxis);
-					currentMainOffset += currentRowHeight + rowSpacing;
-					currentColumn = 0;
-					currentRowHeight = 0;
-				}
-
-				// Arrange full-span item
-				bool isVisible = IsInRealizationRect(realizationRect, 0, currentMainOffset, availableMainAxis, 100, isVerticalScroll);
-				if (isVisible)
-				{
-					var element = context.GetOrCreateElementAt(i, ElementRealizationOptions.ForceCreate);
-					double height = element.DesiredSize.Height;
-
-					Rect rect = isVerticalScroll
-						? new Rect(0, currentMainOffset, availableMainAxis, height)
-						: new Rect(currentMainOffset, 0, height, availableMainAxis);
-
-					element.Arrange(rect);
-					currentMainOffset += height + rowSpacing;
-				}
+				if (isVertical)
+					maxItemSize = Math.Max(maxItemSize, child.DesiredSize.Height);
 				else
-				{
-					currentMainOffset += 50 + rowSpacing; // Skip with estimated height
-				}
-
-				rowStartIndex = i + 1;
-			}
-			else
-			{
-				// Track row info
-				if (currentColumn == 0)
-				{
-					rowStartIndex = i;
-				}
-
-				// Get element to measure row height
-				bool isVisible = IsInRealizationRect(realizationRect, currentColumn * (itemWidth + columnSpacing), 
-					currentMainOffset, itemWidth, 100, isVerticalScroll);
-				
-				if (isVisible)
-				{
-					var element = context.GetOrCreateElementAt(i, ElementRealizationOptions.ForceCreate);
-					currentRowHeight = Math.Max(currentRowHeight, element.DesiredSize.Height);
-				}
-
-				currentColumn++;
-				if (currentColumn >= _span)
-				{
-					// Arrange this complete row
-					ArrangeRowItems(context, realizationRect, rowStartIndex, i, currentMainOffset, 
-						itemWidth, currentRowHeight > 0 ? currentRowHeight : 50, columnSpacing, isVerticalScroll, availableMainAxis);
-					
-					currentMainOffset += (currentRowHeight > 0 ? currentRowHeight : 50) + rowSpacing;
-					currentColumn = 0;
-					currentRowHeight = 0;
-					rowStartIndex = i + 1;
-				}
+					maxItemSize = Math.Max(maxItemSize, child.DesiredSize.Width);
 			}
 		}
 
-		// Arrange last incomplete row
-		if (currentColumn > 0)
+		if (isVertical)
 		{
-			ArrangeRowItems(context, realizationRect, rowStartIndex, itemCount - 1, currentMainOffset, 
-				itemWidth, currentRowHeight > 0 ? currentRowHeight : 50, columnSpacing, isVerticalScroll, availableMainAxis);
-		}
-
-		return finalSize;
-	}
-
-	void ArrangeRowItems(VirtualizingLayoutContext context, Rect realizationRect, int startIndex, int endIndex,
-		double rowY, double itemWidth, double rowHeight, double columnSpacing, bool isVerticalScroll, double availableWidth)
-	{
-		int column = 0;
-		for (int i = startIndex; i <= endIndex; i++)
-		{
-			// Skip full-span items (they're handled separately)
-			if (IsFullSpanItem(context, i))
-			{
-				continue;
-			}
-
-			double x = column * (itemWidth + columnSpacing);
-
-			bool isVisible = IsInRealizationRect(realizationRect, x, rowY, itemWidth, rowHeight, isVerticalScroll);
-			if (isVisible)
-			{
-				var element = context.GetOrCreateElementAt(i, ElementRealizationOptions.ForceCreate);
-
-				Rect rect = isVerticalScroll
-					? new Rect(x, rowY, itemWidth, rowHeight)
-					: new Rect(rowY, x, rowHeight, itemWidth);
-
-				element.Arrange(rect);
-			}
-
-			column++;
-		}
-	}
-
-	bool IsInRealizationRect(Rect realizationRect, double x, double y, double width, double height, bool isVerticalScroll)
-	{
-		if (realizationRect.IsEmpty)
-		{
-			return true; // Realize all if no rect
-		}
-
-		// Add buffer for smoother scrolling
-		double buffer = Math.Max(realizationRect.Height, realizationRect.Width) * 0.5;
-
-		if (isVerticalScroll)
-		{
-			double itemTop = y;
-			double itemBottom = y + height;
-			double viewTop = realizationRect.Y - buffer;
-			double viewBottom = realizationRect.Y + realizationRect.Height + buffer;
-
-			return itemBottom >= viewTop && itemTop <= viewBottom;
+			double totalSpacing = minColumnSpacing * (span - 1);
+			cellWidth = (finalSize.Width - totalSpacing) / span;
+			cellHeight = maxItemSize > 0 ? maxItemSize : 0;
 		}
 		else
 		{
-			double itemLeft = y; // y is actually x in horizontal scroll
-			double itemRight = y + height;
-			double viewLeft = realizationRect.X - buffer;
-			double viewRight = realizationRect.X + realizationRect.Width + buffer;
+			double totalSpacing = minRowSpacing * (span - 1);
+			cellHeight = (finalSize.Height - totalSpacing) / span;
+			cellWidth = maxItemSize > 0 ? maxItemSize : 0;
+		}
 
-			return itemRight >= viewLeft && itemLeft <= viewRight;
+		// Second pass: arrange items
+		for (int i = 0; i < context.ItemCount; i++)
+		{
+			var child = context.GetOrCreateElementAt(i);
+			bool isFullSpan = IsHeaderOrFooter(child);
+
+			if (isFullSpan)
+			{
+				if (isVertical)
+				{
+					if (columnIndex > 0)
+					{
+						currentY += cellHeight + minRowSpacing;
+						currentX = 0;
+						columnIndex = 0;
+					}
+
+					var headerHeight = child.DesiredSize.Height;
+					child.Arrange(new Rect(0, currentY, finalSize.Width, headerHeight));
+					currentY += headerHeight + minRowSpacing;
+				}
+				else
+				{
+					if (rowIndex > 0)
+					{
+						currentX += cellWidth + minColumnSpacing;
+						currentY = 0;
+						rowIndex = 0;
+					}
+
+					var headerWidth = child.DesiredSize.Width;
+					child.Arrange(new Rect(currentX, 0, headerWidth, finalSize.Height));
+					currentX += headerWidth + minColumnSpacing;
+				}
+			}
+			else
+			{
+				if (isVertical)
+				{
+					child.Arrange(new Rect(currentX, currentY, cellWidth, cellHeight));
+					columnIndex++;
+					currentX += cellWidth + minColumnSpacing;
+
+					if (columnIndex >= span)
+					{
+						columnIndex = 0;
+						currentX = 0;
+						currentY += cellHeight + minRowSpacing;
+					}
+				}
+				else
+				{
+					child.Arrange(new Rect(currentX, currentY, cellWidth, cellHeight));
+					rowIndex++;
+					currentY += cellHeight + minRowSpacing;
+
+					if (rowIndex >= span)
+					{
+						rowIndex = 0;
+						currentY = 0;
+						currentX += cellWidth + minColumnSpacing;
+					}
+				}
+			}
+		}
+
+		if (isVertical)
+		{
+			if (columnIndex > 0)
+				currentY += cellHeight;
+			return new Size(finalSize.Width, currentY);
+		}
+		else
+		{
+			if (rowIndex > 0)
+				currentX += cellWidth;
+			return new Size(currentX, finalSize.Height);
 		}
 	}
 
-	void RecycleElementIfExists(VirtualizingLayoutContext context, int index)
+	static bool IsHeaderOrFooter(UIElement child)
 	{
-		var element = context.GetOrCreateElementAt(index, ElementRealizationOptions.None);
-		if (element is not null)
+		if (child is ItemContainer itemContainer &&
+			itemContainer.Child is FrameworkElement fe &&
+			fe.DataContext is ItemTemplateContext2 context)
 		{
-			context.RecycleElement(element);
+			return context.IsHeader || context.IsFooter;
 		}
-	}
 
-	static bool IsFullSpanItem(VirtualizingLayoutContext context, int index)
-	{
-		var data = context.GetItemAt(index);
-		if (data is ItemTemplateContext2 templateContext)
-		{
-			return templateContext.IsFullSpan;
-		}
 		return false;
 	}
 }
