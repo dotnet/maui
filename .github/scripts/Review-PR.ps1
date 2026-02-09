@@ -386,7 +386,13 @@ if ($DryRun) {
             Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
             Write-Host ""
             
-            $finalizePrompt = "Run the pr-finalize skill for PR #$PRNumber. Verify the PR title and description match the actual implementation. Do NOT post a comment. Write your findings to CustomAgentLogsTmp/PRState/pr-$PRNumber-final.md (NOT the main state file pr-$PRNumber.md which contains phase data that must not be overwritten)."
+            # Ensure output directory exists for finalize results
+            $finalizeDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/pr-finalize"
+            if (-not (Test-Path $finalizeDir)) {
+                New-Item -ItemType Directory -Path $finalizeDir -Force | Out-Null
+            }
+            
+            $finalizePrompt = "Run the pr-finalize skill for PR #$PRNumber. Verify the PR title and description match the actual implementation. Do NOT post a comment. Write your findings to CustomAgentLogsTmp/PRState/$PRNumber/pr-finalize/pr-finalize-summary.md (NOT the main state file pr-$PRNumber.md which contains phase data that must not be overwritten). If you recommend a new description, also write it to CustomAgentLogsTmp/PRState/$PRNumber/pr-finalize/recommended-description.md. If you have code review findings, also write them to CustomAgentLogsTmp/PRState/$PRNumber/pr-finalize/code-review.md."
             
             $finalizeArgs = @(
                 "-p", $finalizePrompt,
@@ -405,8 +411,8 @@ if ($DryRun) {
             }
         }
         
-        # Phase 3: Post AI summary comment if requested
-        # Runs the script directly instead of via Copilot CLI to avoid:
+        # Phase 3: Post comments if requested
+        # Runs scripts directly instead of via Copilot CLI to avoid:
         # - LLM creating its own broken version if skill files are missing
         # - Dirty tree from Phase 2 corrupting script files
         if ($PostSummaryComment) {
@@ -422,6 +428,7 @@ if ($DryRun) {
             git checkout HEAD -- . 2>&1 | Out-Null
             Write-Host "  ✅ Working tree restored" -ForegroundColor Green
             
+            # 3a: Post PR agent summary comment (from Phase 1 state file)
             $scriptPath = ".github/skills/ai-summary-comment/scripts/post-ai-summary-comment.ps1"
             if (-not (Test-Path $scriptPath)) {
                 Write-Host "⚠️ Script missing after checkout, attempting targeted recovery..." -ForegroundColor Yellow
@@ -433,14 +440,37 @@ if ($DryRun) {
                 
                 $commentExit = $LASTEXITCODE
                 if ($commentExit -eq 0) {
-                    Write-Host "✅ Summary comment posted" -ForegroundColor Green
+                    Write-Host "✅ Agent summary comment posted" -ForegroundColor Green
                 } else {
                     Write-Host "⚠️ post-ai-summary-comment.ps1 exited with code: $commentExit" -ForegroundColor Yellow
                 }
             } else {
                 Write-Host "⚠️ Script not found at: $scriptPath" -ForegroundColor Yellow
                 Write-Host "   Current directory: $(Get-Location)" -ForegroundColor Gray
-                Write-Host "   Skipping summary comment." -ForegroundColor Gray
+                Write-Host "   Skipping agent summary comment." -ForegroundColor Gray
+            }
+            
+            # 3b: Post PR finalize comment (from Phase 2 finalize results)
+            if ($RunFinalize) {
+                $finalizeScriptPath = ".github/skills/ai-summary-comment/scripts/post-pr-finalize-comment.ps1"
+                if (-not (Test-Path $finalizeScriptPath)) {
+                    Write-Host "⚠️ Finalize script missing, attempting targeted recovery..." -ForegroundColor Yellow
+                    git checkout HEAD -- $finalizeScriptPath 2>&1 | Out-Null
+                }
+                if (Test-Path $finalizeScriptPath) {
+                    Write-Host "💬 Running post-pr-finalize-comment.ps1 directly..." -ForegroundColor Yellow
+                    & $finalizeScriptPath -PRNumber $PRNumber
+                    
+                    $finalizeCommentExit = $LASTEXITCODE
+                    if ($finalizeCommentExit -eq 0) {
+                        Write-Host "✅ Finalize comment posted" -ForegroundColor Green
+                    } else {
+                        Write-Host "⚠️ post-pr-finalize-comment.ps1 exited with code: $finalizeCommentExit" -ForegroundColor Yellow
+                    }
+                } else {
+                    Write-Host "⚠️ Script not found at: $finalizeScriptPath" -ForegroundColor Yellow
+                    Write-Host "   Skipping finalize comment." -ForegroundColor Gray
+                }
             }
         }
     }
