@@ -301,7 +301,7 @@ namespace Microsoft.Maui.Platform
 				{
 					if (isKeyboardShowing && !IsImeAnimating && !_wasKeyboardShowing)
 					{
-						var keyboardHeight = imeInsets?.Bottom ?? 0;
+						var bottomInset = Math.Max(systemBars?.Bottom ?? 0, imeInsets?.Bottom ?? 0);
 
 						if (hasBottomNav)
 						{
@@ -310,12 +310,12 @@ namespace Microsoft.Maui.Platform
 								contentView.PaddingLeft,
 								contentView.PaddingTop,
 								contentView.PaddingRight,
-								keyboardHeight);
+								bottomInset);
 						}
 						else
 						{
 							// No bottom tabs - apply keyboard padding to CoordinatorLayout
-							coordinatorLayout.SetPadding(0, 0, 0, keyboardHeight);
+							coordinatorLayout.SetPadding(0, 0, 0, bottomInset);
 						}
 
 						// Reset bottom padding of all tracked child views since the keyboard
@@ -344,8 +344,10 @@ namespace Microsoft.Maui.Platform
 						else
 						{
 							coordinatorLayout.SetPadding(0, 0, 0, 0);
-							RequestInsetsForDescendants(coordinatorLayout);
-							return insets;
+							coordinatorLayout.Post(() =>
+							{
+								RequestInsetsForDescendants(coordinatorLayout);
+							});
 						}
 
 						// Request insets for child views to restore their safe area padding
