@@ -5,8 +5,11 @@ using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Text;
 using Android.Util;
+using Android.Views;
 using Android.Views.InputMethods;
 using Android.Widget;
+using Google.Android.Material.Search;
+using Google.Android.Material.TextField;
 using static Android.Content.Res.Resources;
 using AAttribute = Android.Resource.Attribute;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
@@ -258,6 +261,119 @@ namespace Microsoft.Maui.Platform
 			var safe = drawable.Mutate();
 			safe.SetTint(color);
 			imageView?.SetImageDrawable(safe);
+		}
+
+		// material3 searchbar extension methods
+		// TODO: material3 - make it public in .net 11
+		internal static void UpdateText(this EditText editText, ISearchBar searchBar)
+		{
+			// Check if text is already the same to prevent unnecessary updates and TextWatcher loops
+			var currentText = editText.Text ?? string.Empty;
+			var newText = searchBar.Text ?? string.Empty;
+
+			if (currentText == newText)
+			{
+				return;
+			}
+
+			editText.Text = newText;
+		}
+
+		internal static void UpdateBackground(this TextInputLayout textInputLayout, ISearchBar searchBar)
+		{
+			var background = searchBar.Background;
+
+			if (background is Microsoft.Maui.Graphics.SolidPaint solidPaint)
+			{
+				// For Material 3 filled TextInputLayout, use ColorStateList to maintain
+				// the same background color across all states (enabled, disabled, focused)
+				// This prevents Material Design from applying its default disabled state styling
+				var platformColor = solidPaint.Color.ToPlatform();
+				var colorInt = (int)platformColor;
+
+				// Use the same color for both enabled and disabled states
+				var colorStateList = ColorStateListExtensions.CreateEditText(colorInt, colorInt);
+
+				textInputLayout.SetBoxBackgroundColorStateList(colorStateList);
+			}
+			else if (background is null)
+			{
+				// Clear the custom background and restore Material 3 default
+				if (TryGetDefaultStateColor(textInputLayout, AAttribute.ColorBackground, out var defaultColor))
+				{
+					var colorInt = (int)defaultColor;
+					var colorStateList = ColorStateListExtensions.CreateEditText(colorInt, colorInt);
+					textInputLayout.SetBoxBackgroundColorStateList(colorStateList);
+				}
+			}
+		}
+
+		internal static void UpdateSearchIconColor(this TextInputLayout textInputLayout, ISearchBar searchBar)
+		{
+			// For TextInputLayout, the search icon is the start icon
+			if (searchBar.SearchIconColor is not null)
+			{
+				var color = searchBar.SearchIconColor.ToPlatform();
+				textInputLayout.SetStartIconTintList(ColorStateList.ValueOf(color));
+			}
+			else if (TryGetDefaultStateColor(textInputLayout, AAttribute.TextColorPrimary, out var defaultColor))
+			{
+				// Restore default theme color
+				textInputLayout.SetStartIconTintList(ColorStateList.ValueOf(defaultColor));
+			}
+		}
+
+		internal static void UpdateCancelButtonColor(this TextInputLayout textInputLayout, ISearchBar searchBar)
+		{
+			// For TextInputLayout, the cancel/clear button is the end icon
+			if (searchBar.CancelButtonColor is not null)
+			{
+				var color = searchBar.CancelButtonColor.ToPlatform();
+				textInputLayout.SetEndIconTintList(ColorStateList.ValueOf(color));
+			}
+			else if (TryGetDefaultStateColor(textInputLayout, AAttribute.TextColorPrimary, out var defaultColor))
+			{
+				// Restore default theme color
+				textInputLayout.SetEndIconTintList(ColorStateList.ValueOf(defaultColor));
+			}
+		}
+
+		static bool TryGetDefaultStateColor(TextInputLayout textInputLayout, int attribute, out Color color)
+		{
+			color = default;
+
+			if (!OperatingSystem.IsAndroidVersionAtLeast(23))
+			{
+				return false;
+			}
+
+			if (textInputLayout.Context?.Theme is not Theme theme)
+			{
+				return false;
+			}
+
+			int[] s_disabledState = [-AAttribute.StateEnabled];
+			int[] s_enabledState = [AAttribute.StateEnabled];
+
+			using var ta = theme.ObtainStyledAttributes([attribute]);
+			var cs = ta.GetColorStateList(0);
+			if (cs is null)
+			{
+				return false;
+			}
+
+			var state = textInputLayout.Enabled ? s_enabledState : s_disabledState;
+			color = new Color(cs.GetColorForState(state, Color.Black));
+			return true;
+		}
+
+		internal static void UpdateReturnType(this EditText editText, ISearchBar searchBar)
+		{
+			editText.ImeOptions = searchBar.ReturnType.ToPlatform();
+
+			// Restart the input on the current focused EditText
+			InputMethodManager? imm = (InputMethodManager?)editText.Context?.GetSystemService(Context.InputMethodService);
+			imm?.RestartInput(editText);
 		}
 	}
 }
