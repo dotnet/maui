@@ -627,41 +627,6 @@ public partial class SyncLambdaPage : ContentPage
 	}
 
 	[Fact]
-	public void CSharpExpression_WithoutPreviewFeatures_ReportsMAUIX2012()
-	{
-		// C# expressions require EnablePreviewFeatures=true
-		var xaml =
-"""
-<?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="TestApp.NoPreviewPage">
-    <Label Text="{GetText()}" />
-</ContentPage>
-""";
-
-		var codeBehind =
-"""
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-
-namespace TestApp;
-
-[XamlProcessing(XamlInflator.SourceGen)]
-public partial class NoPreviewPage : ContentPage
-{
-	public string GetText() => "Hello";
-	public NoPreviewPage() => InitializeComponent();
-}
-""";
-
-		var (result, _) = RunGenerator(xaml, codeBehind, enablePreviewFeatures: false);
-
-		// Should report MAUIX2012 error about preview features required
-		Assert.Contains(result.Diagnostics, d => d.Id == "MAUIX2012");
-	}
-
-	[Fact]
 	public void SingleQuotedLiteral_MethodExpectsString_GeneratesStringLiteral()
 	{
 		// When a method expects string, 'x' should become "x"

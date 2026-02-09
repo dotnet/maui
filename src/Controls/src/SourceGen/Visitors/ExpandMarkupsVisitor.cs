@@ -57,13 +57,6 @@ class ExpandMarkupsVisitor(SourceGenContext context) : IXamlNodeVisitor
 		// Check if it's a C# expression
 		if (CSharpExpressionHelpers.IsExpression(trimmed, name => TryResolveMarkupExtensionType(name, node.NamespaceResolver)))
 		{
-			if (!Context.ProjectItem.EnablePreviewFeatures)
-			{
-				var location = LocationHelpers.LocationCreate(Context.ProjectItem.RelativePath!, node, trimmed);
-				Context.ReportDiagnostic(Diagnostic.Create(Descriptors.CSharpExpressionsRequirePreviewFeatures, location));
-				return;
-			}
-
 			// Async lambda event handlers are not supported
 			if (CSharpExpressionHelpers.IsAsyncLambdaEventHandler(trimmed))
 			{
@@ -93,16 +86,14 @@ class ExpandMarkupsVisitor(SourceGenContext context) : IXamlNodeVisitor
 		// Get thisType and dataType for ambiguity checking
 		ITypeSymbol? thisType = null;
 		ITypeSymbol? dataType = null;
-		if (Context.ProjectItem.EnablePreviewFeatures)
-		{
-			// Try to get the page/view type (this)
-			var rootElement = GetRootElement(parentElement);
-			if (rootElement?.XmlType.TryResolveTypeSymbol(null, Context.Compilation, Context.XmlnsCache, Context.TypeCache, out var resolvedThisType) == true)
-				thisType = resolvedThisType;
-			
-			// Try to get x:DataType
-			XDataTypeResolver.TryGetXDataType(parentElement, Context, out dataType);
-		}
+
+		// Try to get the page/view type (this)
+		var rootElement = GetRootElement(parentElement);
+		if (rootElement?.XmlType.TryResolveTypeSymbol(null, Context.Compilation, Context.XmlnsCache, Context.TypeCache, out var resolvedThisType) == true)
+			thisType = resolvedThisType;
+		
+		// Try to get x:DataType
+		XDataTypeResolver.TryGetXDataType(parentElement, Context, out dataType);
 
 		// Check if this is a C# expression (consolidates all detection logic)
 		var classification = CSharpExpressionHelpers.ClassifyExpression(
@@ -111,7 +102,7 @@ class ExpandMarkupsVisitor(SourceGenContext context) : IXamlNodeVisitor
 			name => CanResolveAsProperty(name, thisType, dataType));
 
 		// Report ambiguity warning if both markup extension and property exist
-		if (classification.IsAmbiguous && classification.Name != null && Context.ProjectItem.EnablePreviewFeatures)
+		if (classification.IsAmbiguous && classification.Name != null)
 		{
 			var location = LocationHelpers.LocationCreate(Context.ProjectItem.RelativePath!, markupnode, markupString);
 			Context.ReportDiagnostic(Diagnostic.Create(
@@ -122,15 +113,8 @@ class ExpandMarkupsVisitor(SourceGenContext context) : IXamlNodeVisitor
 
 		if (classification.IsExpression)
 		{
-			// C# expressions require EnablePreviewFeatures
-			if (!Context.ProjectItem.EnablePreviewFeatures)
-			{
-				var location = LocationHelpers.LocationCreate(Context.ProjectItem.RelativePath!, markupnode, markupString);
-				Context.ReportDiagnostic(Diagnostic.Create(Descriptors.CSharpExpressionsRequirePreviewFeatures, location));
-				// Fall through to parse as markup extension (will likely fail, but gives better error context)
-			}
 			// Async lambda event handlers are not supported
-			else if (CSharpExpressionHelpers.IsAsyncLambdaEventHandler(markupString))
+			if (CSharpExpressionHelpers.IsAsyncLambdaEventHandler(markupString))
 			{
 				var location = LocationHelpers.LocationCreate(Context.ProjectItem.RelativePath!, markupnode, markupString);
 				Context.ReportDiagnostic(Diagnostic.Create(Descriptors.AsyncLambdaNotSupported, location));

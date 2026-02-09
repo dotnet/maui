@@ -77,7 +77,4 @@ record ProjectItem(AdditionalText AdditionalText, AnalyzerConfigOptions Options)
 
 	public string? TargetPath
 		=> Options.GetValueOrDefault("build_metadata.additionalfiles.TargetPath", AdditionalText.Path);
-
-	public bool EnablePreviewFeatures
-		=> Options.IsTrue("build_property.EnablePreviewFeatures");
 }

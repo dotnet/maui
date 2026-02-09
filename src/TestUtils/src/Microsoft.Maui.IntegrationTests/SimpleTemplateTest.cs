@@ -17,7 +17,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 	[InlineData("maui", DotNetCurrent, "Release", false, "--sample-content", "TrimMode=partial")]
 	//Debug not ready yet
 	//[InlineData("maui", DotNetCurrent, "Debug", false, "--sample-content", "UseMonoRuntime=false")]
-	[InlineData("maui", DotNetCurrent, "Release", false, "--sample-content", "UseMonoRuntime=false EnablePreviewFeatures=true")]
+	[InlineData("maui", DotNetCurrent, "Release", false, "--sample-content", "UseMonoRuntime=false")]
 	// [InlineData("maui-blazor", DotNetPrevious, "Debug", false, "", "")]
 	// [InlineData("maui-blazor", DotNetPrevious, "Release", false, "", "")]
 	[InlineData("maui-blazor", DotNetCurrent, "Debug", false, "", "")]

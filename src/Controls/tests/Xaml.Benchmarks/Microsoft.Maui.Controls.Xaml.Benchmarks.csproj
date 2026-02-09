@@ -6,7 +6,6 @@
     <TargetFramework>net10.0</TargetFramework>
     <AssemblyName>Microsoft.Maui.Controls.Xaml.Benchmarks</AssemblyName>
     <Nullable>enable</Nullable>
-    <EnablePreviewFeatures>True</EnablePreviewFeatures>
     <DefineConstants>$(DefineConstants);_MAUIXAML_SG_NAMESCOPE_DISABLE</DefineConstants>
     <PublishReadyToRun>false</PublishReadyToRun>
   </PropertyGroup>
