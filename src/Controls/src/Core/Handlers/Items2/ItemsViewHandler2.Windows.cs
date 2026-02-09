@@ -586,7 +586,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			layout.MaximumRowsOrColumns = gridItemsLayout.Span;
 			layout.MinColumnSpacing = gridItemsLayout.HorizontalItemSpacing;
 			layout.MinRowSpacing = gridItemsLayout.VerticalItemSpacing;
-			layout.ItemsStretch = UniformGridLayoutItemsStretch.Fill;
+			bool noTemplate = ItemsView.ItemTemplate is null;
+			bool isMeasureAllItems = ItemsView is CollectionView cv && cv.ItemSizingStrategy == ItemSizingStrategy.MeasureAllItems;
+		
+			layout.ItemsStretch = (noTemplate && isMeasureAllItems) 
+				? UniformGridLayoutItemsStretch.Uniform 
+				: UniformGridLayoutItemsStretch.Fill;
 			layout.ItemsJustification = UniformGridLayoutItemsJustification.Start;
 
 			return layout;
