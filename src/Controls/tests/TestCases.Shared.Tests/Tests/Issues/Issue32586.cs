@@ -1,4 +1,4 @@
-﻿#if iOS || ANDROID
+﻿#if IOS || ANDROID
 using System.Threading.Tasks;
 using NUnit.Framework;
 using UITest.Appium;
