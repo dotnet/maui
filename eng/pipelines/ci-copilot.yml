@@ -70,12 +70,12 @@ stages:
               # Android emulator setup (skip for iOS)
               skipAndroidEmulatorImages: ${{ eq(parameters.Platform, 'ios') }}
               skipAndroidCreateAvds: ${{ eq(parameters.Platform, 'ios') }}
-              androidEmulatorApiLevel: '34'
+              androidEmulatorApiLevel: '30'
 
           # Disable hardware acceleration in AVD config (HVF not available on Azure hosted agents)
           - script: |
               echo "=== Disabling hardware acceleration in AVD config ==="
-              AVD_CONFIG="$HOME/.android/avd/Emulator_34.avd/config.ini"
+              AVD_CONFIG="$HOME/.android/avd/Emulator_30.avd/config.ini"
               if [ -f "$AVD_CONFIG" ]; then
                 echo "Found AVD config: $AVD_CONFIG"
                 echo "Current config:"
@@ -173,8 +173,8 @@ stages:
               
               $ErrorActionPreference = "Continue"
               try {
-                Write-Host "Invoking Start-Emulator.ps1 -Platform android -DeviceUdid Emulator_34..."
-                & "./$scriptPath" -Platform android -DeviceUdid Emulator_34 2>&1 | ForEach-Object { Write-Host $_ }
+                Write-Host "Invoking Start-Emulator.ps1 -Platform android -DeviceUdid Emulator_30..."
+                & "./$scriptPath" -Platform android -DeviceUdid Emulator_30 2>&1 | ForEach-Object { Write-Host $_ }
                 $exitCode = $LASTEXITCODE
                 Write-Host "Script returned exit code: $exitCode"
               } catch {
@@ -299,7 +299,7 @@ stages:
               # Use swiftshader for software rendering (more reliable on CI without GPU)
               # Start emulator in background with logging for debugging
               EMULATOR_LOG="/tmp/emulator-boot.log"
-              nohup $ANDROID_SDK_ROOT/emulator/emulator -avd Emulator_34 -no-window -no-snapshot -no-audio -no-boot-anim -gpu swiftshader_indirect > "$EMULATOR_LOG" 2>&1 &
+              nohup $ANDROID_SDK_ROOT/emulator/emulator -avd Emulator_30 -no-window -no-snapshot -no-audio -no-boot-anim -gpu swiftshader_indirect > "$EMULATOR_LOG" 2>&1 &
               EMULATOR_PID=$!
               echo "Emulator started with PID: $EMULATOR_PID"
               
@@ -480,7 +480,7 @@ stages:
               # Start fresh emulator
               EMULATOR_LOG="/tmp/emulator-fresh.log"
               echo "Starting fresh emulator..."
-              nohup $ANDROID_SDK_ROOT/emulator/emulator -avd Emulator_34 -no-window -no-snapshot -no-audio -no-boot-anim -gpu swiftshader_indirect > "$EMULATOR_LOG" 2>&1 &
+              nohup $ANDROID_SDK_ROOT/emulator/emulator -avd Emulator_30 -no-window -no-snapshot -no-audio -no-boot-anim -gpu swiftshader_indirect > "$EMULATOR_LOG" 2>&1 &
               EMULATOR_PID=$!
               echo "Emulator started with PID: $EMULATOR_PID"
               
