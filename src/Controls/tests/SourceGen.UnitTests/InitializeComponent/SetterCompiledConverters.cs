@@ -91,8 +91,6 @@ public partial class TestPage
 			return;
 		}
 
-		var style1 = new global::Microsoft.Maui.Controls.Style(typeof(global::Microsoft.Maui.Controls.Label));
-		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(style1!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 8, 5);
 		var resourceDictionary = new global::Microsoft.Maui.Controls.ResourceDictionary();
 		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(resourceDictionary!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 7, 4);
 		var __root = this;
@@ -103,28 +101,36 @@ public partial class TestPage
 #if !_MAUIXAML_SG_NAMESCOPE_DISABLE
 		global::Microsoft.Maui.Controls.Internals.NameScope.SetNameScope(__root, iNameScope);
 #endif
-#if !_MAUIXAML_SG_NAMESCOPE_DISABLE
-		global::Microsoft.Maui.Controls.Internals.INameScope iNameScope1 = new global::Microsoft.Maui.Controls.Internals.NameScope();
-#endif
-#if !_MAUIXAML_SG_NAMESCOPE_DISABLE
-		global::Microsoft.Maui.Controls.Internals.INameScope iNameScope2 = new global::Microsoft.Maui.Controls.Internals.NameScope();
-#endif
 #line 7 "{{testXamlFilePath}}"
 		__root.Resources = (global::Microsoft.Maui.Controls.ResourceDictionary)resourceDictionary;
 #line default
-		var setter = new global::Microsoft.Maui.Controls.Setter {Property = global::Microsoft.Maui.Controls.Label.FontSizeProperty, Value = 16D};
-		if (global::Microsoft.Maui.VisualDiagnostics.GetSourceInfo(setter!) == null)
-			global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(setter!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 9, 6);
+		resourceDictionary.AddFactory("testStyle", () =>
+		{
+			var style1 = new global::Microsoft.Maui.Controls.Style(typeof(global::Microsoft.Maui.Controls.Label));
+			global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(style1!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 8, 5);
+#if !_MAUIXAML_SG_NAMESCOPE_DISABLE
+			global::Microsoft.Maui.Controls.Internals.INameScope iNameScope1 = new global::Microsoft.Maui.Controls.Internals.NameScope();
+#endif
+#if !_MAUIXAML_SG_NAMESCOPE_DISABLE
+			global::Microsoft.Maui.Controls.Internals.INameScope iNameScope2 = new global::Microsoft.Maui.Controls.Internals.NameScope();
+#endif
+#if !_MAUIXAML_SG_NAMESCOPE_DISABLE
+			global::Microsoft.Maui.Controls.Internals.INameScope iNameScope3 = new global::Microsoft.Maui.Controls.Internals.NameScope();
+#endif
+			var setter = new global::Microsoft.Maui.Controls.Setter {Property = global::Microsoft.Maui.Controls.Label.FontSizeProperty, Value = 16D};
+			if (global::Microsoft.Maui.VisualDiagnostics.GetSourceInfo(setter!) == null)
+				global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(setter!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 9, 6);
 #line 9 "{{testXamlFilePath}}"
-		((global::System.Collections.Generic.ICollection<global::Microsoft.Maui.Controls.Setter>)style1.Setters).Add((global::Microsoft.Maui.Controls.Setter)setter);
+			((global::System.Collections.Generic.ICollection<global::Microsoft.Maui.Controls.Setter>)style1.Setters).Add((global::Microsoft.Maui.Controls.Setter)setter);
 #line default
-		var setter1 = new global::Microsoft.Maui.Controls.Setter {Property = global::Microsoft.Maui.Controls.Label.TextColorProperty, Value = global::Microsoft.Maui.Graphics.Colors.Red};
-		if (global::Microsoft.Maui.VisualDiagnostics.GetSourceInfo(setter1!) == null)
-			global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(setter1!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 10, 6);
+			var setter1 = new global::Microsoft.Maui.Controls.Setter {Property = global::Microsoft.Maui.Controls.Label.TextColorProperty, Value = global::Microsoft.Maui.Graphics.Colors.Red};
+			if (global::Microsoft.Maui.VisualDiagnostics.GetSourceInfo(setter1!) == null)
+				global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(setter1!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 10, 6);
 #line 10 "{{testXamlFilePath}}"
-		((global::System.Collections.Generic.ICollection<global::Microsoft.Maui.Controls.Setter>)style1.Setters).Add((global::Microsoft.Maui.Controls.Setter)setter1);
+			((global::System.Collections.Generic.ICollection<global::Microsoft.Maui.Controls.Setter>)style1.Setters).Add((global::Microsoft.Maui.Controls.Setter)setter1);
 #line default
-		resourceDictionary["testStyle"] = style1;
+			return style1;
+		}, shared: true);
 #line 7 "{{testXamlFilePath}}"
 		__root.Resources = (global::Microsoft.Maui.Controls.ResourceDictionary)resourceDictionary;
 #line default
