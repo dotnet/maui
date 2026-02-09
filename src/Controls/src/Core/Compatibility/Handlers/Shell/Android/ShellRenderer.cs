@@ -94,7 +94,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		// These are the primary colors in our styles.xml file
 		public static Color DefaultBackgroundColor => ResolveThemeColor(Color.FromArgb("#2c3e50"), Color.FromArgb("#1B3147"));
 
-		public static readonly Color DefaultForegroundColor = Colors.White;
+		public static readonly Color DefaultForegroundColor = ResolveThemeColor(Colors.Black, Colors.White);
 		public static readonly Color DefaultTitleColor = Colors.White;
 		public static readonly Color DefaultUnselectedColor = Color.FromRgba(255, 255, 255, 180);
 		internal static Color DefaultBottomNavigationViewBackgroundColor => ResolveThemeColor(Colors.White, Color.FromArgb("#1B3147"));
