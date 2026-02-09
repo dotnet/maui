@@ -36,12 +36,10 @@ public partial class Maui33867 : ContentPage
 				// Verify no compilation errors
 				Assert.Empty(result.Diagnostics);
 			}
-			else
-			{
-				var page = new Maui33867(inflator);
-				Assert.NotNull(page);
-				Assert.NotNull(page.testLabel);
-			}
+
+			var page = new Maui33867(inflator);
+			Assert.NotNull(page);
+			Assert.NotNull(page.testLabel);
 		}
 	}
 }
