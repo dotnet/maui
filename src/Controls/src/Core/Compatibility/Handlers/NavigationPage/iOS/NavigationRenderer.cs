@@ -1652,6 +1652,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				titleView.Frame = new RectangleF(0, 0, navigationBarFrame.Width, navigationBarFrame.Height);
 				titleView.LayoutIfNeeded();
 			}
+
 			internal void UpdateLeftBarButtonItem(Page pageBeingRemoved = null)
 			{
 				NavigationRenderer n;
