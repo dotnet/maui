@@ -557,7 +557,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			var currentItemPosition = GetIndexForItem(carousel.CurrentItem).Row;
 			var carouselPosition = carousel.Position;
 
-			ScrollToPosition(carouselPosition, currentItemPosition, carousel.AnimatePositionChanges);
+			if (OperatingSystem.IsIOSVersionAtLeast(26))
+			{
+				await Task.Delay(200).ContinueWith(_ =>
+				{
+					MainThread.BeginInvokeOnMainThread(() =>
+					{
+						ScrollToPosition(carouselPosition, currentItemPosition, carousel.AnimatePositionChanges);
+					});
+				});
+			}
+			else
+			{
+				ScrollToPosition(carouselPosition, currentItemPosition, carousel.AnimatePositionChanges);
+			}
 
 			// SetCurrentItem(carouselPosition);
 		}
