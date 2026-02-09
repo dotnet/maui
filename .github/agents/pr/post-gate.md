@@ -20,7 +20,7 @@ If Gate is not passed, go back to `.github/agents/pr.md` and complete phases 1-2
 **All rules from `.github/agents/pr/SHARED-RULES.md` apply here**, including:
 - Phase Completion Protocol (fill ALL pending fields before marking complete)
 - Stop on Environment Blockers (STOP and ask user, don't continue)
-- Multi-Model Configuration (6 models, SEQUENTIAL only)
+- Multi-Model Configuration (5 models, SEQUENTIAL only)
 
 If try-fix cannot run due to environment issues, **STOP and ask the user**. Do NOT mark attempts as "BLOCKED" and continue.
 
@@ -89,13 +89,17 @@ pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore
 # 2. Restore all tracked files to HEAD (the merged PR state)
 # This catches any files the previous attempt modified but didn't restore
 git checkout HEAD -- .
+
+# 3. Remove untracked files added by the previous attempt
+# git checkout restores tracked files but does NOT remove new untracked files
+git clean -fd --exclude=CustomAgentLogsTmp/
 ```
 
 **Why this is required:** Each try-fix attempt modifies source files. If an attempt fails mid-way (build error, timeout, model error), it may not run its own cleanup step. Without explicit cleanup, the next attempt starts with a dirty working tree, which can cause missing files, corrupt state, or misleading test results. Use `HEAD` (not just `-- .`) to also restore deleted files.
 
 #### Round 2+: Cross-Pollination Loop (MANDATORY)
 
-After Round 1, invoke EACH of the 6 models to ask for new ideas. **No shortcuts allowed.**
+After Round 1, invoke EACH of the 5 models to ask for new ideas. **No shortcuts allowed.**
 
 **❌ WRONG**: Using `explore`/`glob`, declaring exhaustion without invoking each model
 **✅ CORRECT**: Invoke EACH model via task agent and ask explicitly
@@ -118,7 +122,7 @@ After Round 1, invoke EACH of the 6 models to ask for new ideas. **No shortcuts 
 
 4. **For each new idea**: Run try-fix with that model (SEQUENTIAL, wait for completion)
 
-5. **Exit when**: ALL 6 models say "NO NEW IDEAS" in the same round
+5. **Exit when**: ALL 5 models say "NO NEW IDEAS" in the same round
 
 #### try-fix Behavior
 
@@ -193,14 +197,13 @@ Update the state file:
 5. Change 📋 Report status to `▶️ IN PROGRESS`
 
 **Before marking ✅ COMPLETE, verify state file contains:**
-- [ ] Round 1 completed: All 6 models ran try-fix
-- [ ] **Cross-pollination table exists** with responses from ALL 6 models:
+- [ ] Round 1 completed: All 5 models ran try-fix
+- [ ] **Cross-pollination table exists** with responses from ALL 5 models:
   ```
   | Model | Round 2 Response |
   |-------|------------------|
   | claude-sonnet-4.5 | NO NEW IDEAS |
   | claude-opus-4.6 | NO NEW IDEAS |
-  | claude-opus-4.6-fast | NO NEW IDEAS |
   | gpt-5.2 | NO NEW IDEAS |
   | gpt-5.2-codex | NO NEW IDEAS |
   | gemini-3-pro-preview | NO NEW IDEAS |
@@ -312,17 +315,17 @@ Update all phase statuses to complete.
 
 - ❌ **Looking at PR's fix before generating ideas** - Generate fix ideas independently first
 - ❌ **Re-testing the PR's fix in try-fix** - Gate already validated it; try-fix tests YOUR ideas
-- ❌ **Skipping models in Round 1** - All 6 models must run try-fix before cross-pollination
+- ❌ **Skipping models in Round 1** - All 5 models must run try-fix before cross-pollination
 - ❌ **Running try-fix in parallel** - SEQUENTIAL ONLY - they modify same files and use same device
 - ❌ **Using explore/glob instead of invoking models** - Cross-pollination requires ACTUAL task agent invocations with each model, not code searches
-- ❌ **Assuming "comprehensive coverage" = exhausted** - Only exhausted when all 6 models explicitly say "NO NEW IDEAS"
+- ❌ **Assuming "comprehensive coverage" = exhausted** - Only exhausted when all 5 models explicitly say "NO NEW IDEAS"
 - ❌ **Not recording cross-pollination responses** - State file must have table showing each model's Round 2 response
 - ❌ **Not analyzing why fixes failed** - Record the flawed reasoning to help future attempts
 - ❌ **Selecting a failing fix** - Only select from passing candidates
 - ❌ **Forgetting to revert between attempts** - Each try-fix must start from broken baseline, end with PR restored
-- ❌ **Declaring exhaustion prematurely** - All 6 models must confirm "no new ideas" via actual invocation
+- ❌ **Declaring exhaustion prematurely** - All 5 models must confirm "no new ideas" via actual invocation
 - ❌ **Rushing the report** - Take time to write clear justification
-- ❌ **Skipping cleanup between attempts** - ALWAYS run `-Restore` + `git checkout HEAD -- .` between try-fix attempts (see Step 1)
+- ❌ **Skipping cleanup between attempts** - ALWAYS run `-Restore` + `git checkout HEAD -- .` + `git clean -fd --exclude=CustomAgentLogsTmp/` between try-fix attempts (see Step 1)
 
 ---
 
@@ -338,6 +341,7 @@ Update all phase statuses to complete.
 ```bash
 pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore
 git checkout HEAD -- .
+git clean -fd --exclude=CustomAgentLogsTmp/
 ```
 
 Then retry the try-fix attempt. The skill file should now be accessible.
@@ -350,7 +354,7 @@ Then retry the try-fix attempt. The skill file should now be accessible.
 
 **Root cause:** Previous attempt didn't restore its changes (crashed, timed out, or model didn't follow Step 8 restore instructions).
 
-**Fix:** Same as above — run `-Restore` + `git checkout HEAD -- .` to reset to the merged PR state.
+**Fix:** Same as above — run `-Restore` + `git checkout HEAD -- .` + `git clean -fd --exclude=CustomAgentLogsTmp/` to reset to the merged PR state.
 
 ### Build errors unrelated to the fix being attempted
 
@@ -359,6 +363,6 @@ Then retry the try-fix attempt. The skill file should now be accessible.
 **Root cause:** Often caused by dirty working tree from a previous attempt. Can also be transient environment issues.
 
 **Fix:**
-1. Run cleanup: `pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore && git checkout HEAD -- .`
+1. Run cleanup: `pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore && git checkout HEAD -- . && git clean -fd --exclude=CustomAgentLogsTmp/`
 2. Retry the attempt
-3. If it fails again with the same unrelated error, skip this attempt and continue with the next model
+3. If it fails again with the same unrelated error, treat this as an environment/worktree blocker: STOP the try-fix workflow, do NOT continue with the next model, and ask the user to investigate (see "Stop on Environment Blockers").

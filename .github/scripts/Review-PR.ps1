@@ -453,6 +453,10 @@ if (-not $DryRun) {
 }
 Write-Host ""
 
+# NOTE: This cleanup targets CI/ADO agent environments where only this script's
+# Copilot CLI processes should exist. On developer machines, this could potentially
+# affect other Copilot processes (e.g., VS Code extension). The risk is low since
+# this runs at script end, but be aware if running locally.
 # Clean up orphaned copilot CLI processes that may hold stdout fd open
 # IMPORTANT: Only target processes whose command line contains "copilot" to avoid
 # accidentally terminating the ADO agent's own node process

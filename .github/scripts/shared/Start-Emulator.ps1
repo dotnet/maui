@@ -166,13 +166,23 @@ if ($Platform -eq "android") {
             
             # Start emulator with selected AVD
             $emulatorBin = Join-Path $androidSdkRoot "emulator/emulator"
+            if ($IsWindows) {
+                $emulatorBin = "$emulatorBin.exe"
+            }
             
             # Check emulator binary exists
             if (-not (Test-Path $emulatorBin)) {
-                Write-Error "Emulator binary not found at: $emulatorBin"
-                Write-Info "Looking for emulator in SDK..."
-                Get-ChildItem -Path $androidSdkRoot -Filter "emulator*" -Recurse -Depth 2 -ErrorAction SilentlyContinue | ForEach-Object { Write-Info "  Found: $($_.FullName)" }
-                exit 1
+                # Fallback: try to find emulator on PATH
+                $emulatorCmd = Get-Command emulator -ErrorAction SilentlyContinue
+                if ($emulatorCmd) {
+                    $emulatorBin = $emulatorCmd.Source
+                    Write-Info "Using emulator from PATH: $emulatorBin"
+                } else {
+                    Write-Error "Emulator binary not found at: $emulatorBin"
+                    Write-Info "Looking for emulator in SDK..."
+                    Get-ChildItem -Path $androidSdkRoot -Filter "emulator*" -Recurse -Depth 2 -ErrorAction SilentlyContinue | ForEach-Object { Write-Info "  Found: $($_.FullName)" }
+                    exit 1
+                }
             }
             
             Write-Info "Starting emulator: $selectedAvd"
@@ -180,13 +190,16 @@ if ($Platform -eq "android") {
             
             # Use swiftshader for software rendering (more reliable on CI without GPU)
             # Redirect output to a log file for debugging
-            $emulatorLog = "/tmp/emulator-$selectedAvd.log"
+            $emulatorLog = Join-Path ([System.IO.Path]::GetTempPath()) "emulator-$selectedAvd.log"
             
             if ($IsWindows) {
                 Start-Process $emulatorBin -ArgumentList "-avd", $selectedAvd, "-no-snapshot-load", "-no-boot-anim", "-gpu", "swiftshader_indirect" -WindowStyle Hidden
             }
             else {
                 # macOS/Linux: Use nohup to detach from terminal
+                # Use -no-snapshot (not -no-snapshot-load) to ensure clean emulator state for CI/testing.
+                # This disables both snapshot load and save, so each boot is a cold boot.
+                # Trade-off: slower boots, but guarantees no stale state between test runs.
                 $startScript = "nohup '$emulatorBin' -avd '$selectedAvd' -no-window -no-snapshot -no-audio -no-boot-anim -gpu swiftshader_indirect > '$emulatorLog' 2>&1 &"
                 bash -c $startScript
                 Write-Info "Emulator started in background. Log file: $emulatorLog"
@@ -196,7 +209,12 @@ if ($Platform -eq "android") {
             Start-Sleep -Seconds 5
             
             # Check if emulator process is running
-            $emulatorProcs = bash -c "pgrep -f 'qemu.*$selectedAvd' || pgrep -f 'emulator.*$selectedAvd' || true" 2>&1
+            if ($IsWindows) {
+                $emulatorProcs = (Get-Process -Name "emulator*","qemu*" -ErrorAction SilentlyContinue | 
+                    Where-Object { $_.CommandLine -match [regex]::Escape($selectedAvd) }).Id -join "`n"
+            } else {
+                $emulatorProcs = bash -c "pgrep -f 'qemu.*$selectedAvd' || pgrep -f 'emulator.*$selectedAvd' || true" 2>&1
+            }
             if ([string]::IsNullOrWhiteSpace($emulatorProcs)) {
                 Write-Error "Emulator process did not start. Checking log..."
                 if (Test-Path $emulatorLog) {
@@ -207,9 +225,9 @@ if ($Platform -eq "android") {
             Write-Info "Emulator process started (PIDs: $emulatorProcs)"
             
             # Wait for device to appear with timeout
-            # Timeout of 600s (10 min) - emulator can take a while to boot, especially with software rendering
+            # Timeout of 120s (2 min) - if the emulator hasn't registered an ADB device by then, it's not going to
             Write-Info "Waiting for emulator device to appear..."
-            $deviceTimeout = 600
+            $deviceTimeout = 120
             $deviceWaited = 0
             
             while ($deviceWaited -lt $deviceTimeout) {
@@ -328,7 +346,7 @@ if ($Platform -eq "android") {
         
         # Preferred devices in order of priority
         $preferredDevices = @("iPhone 16 Pro", "iPhone 15 Pro", "iPhone 14 Pro", "iPhone Xs")
-        # Preferred iOS versions in order (newest first)
+        # Preferred iOS versions in order (stable preferred, beta fallback)
         $preferredVersions = @("iOS-18", "iOS-17", "iOS-26")
         
         $selectedDevice = $null
@@ -345,13 +363,20 @@ if ($Platform -eq "android") {
             if ($matchingRuntimes) {
                 # Try each preferred device
                 foreach ($deviceName in $preferredDevices) {
-                    $device = $matchingRuntimes | ForEach-Object { 
-                        $_.Value | Where-Object { $_.name -eq $deviceName -and $_.isAvailable -eq $true }
-                    } | Select-Object -First 1
+                    $device = $null
+                    $deviceRuntime = $null
+                    foreach ($rt in $matchingRuntimes) {
+                        $found = $rt.Value | Where-Object { $_.name -eq $deviceName -and $_.isAvailable -eq $true } | Select-Object -First 1
+                        if ($found) {
+                            $device = $found
+                            $deviceRuntime = $rt.Name
+                            break
+                        }
+                    }
                     
                     if ($device) {
                         $selectedDevice = $device
-                        $selectedVersion = ($matchingRuntimes | Select-Object -First 1).Name
+                        $selectedVersion = $deviceRuntime
                         Write-Info "Found preferred device: $deviceName on $selectedVersion"
                         break
                     }
@@ -359,13 +384,20 @@ if ($Platform -eq "android") {
                 
                 # If no preferred device found, take first available iPhone
                 if (-not $selectedDevice) {
-                    $anyiPhone = $matchingRuntimes | ForEach-Object { 
-                        $_.Value | Where-Object { $_.name -match "iPhone" -and $_.isAvailable -eq $true }
-                    } | Select-Object -First 1
+                    $anyiPhone = $null
+                    $iphoneRuntime = $null
+                    foreach ($rt in $matchingRuntimes) {
+                        $found = $rt.Value | Where-Object { $_.name -match "iPhone" -and $_.isAvailable -eq $true } | Select-Object -First 1
+                        if ($found) {
+                            $anyiPhone = $found
+                            $iphoneRuntime = $rt.Name
+                            break
+                        }
+                    }
                     
                     if ($anyiPhone) {
                         $selectedDevice = $anyiPhone
-                        $selectedVersion = ($matchingRuntimes | Select-Object -First 1).Name
+                        $selectedVersion = $iphoneRuntime
                         Write-Info "Using available iPhone: $($anyiPhone.name) on $selectedVersion"
                     }
                 }
