@@ -74,4 +74,78 @@ public class XcodeSelect
 				nativeError: result.StandardError);
 		}
 	}
+
+	/// <summary>
+	/// Lists all Xcode installations found on the system.
+	/// </summary>
+	public async Task<List<XcodeInstallation>> ListInstallationsAsync(CancellationToken cancellationToken = default)
+	{
+		var installations = new List<XcodeInstallation>();
+
+		if (!PlatformDetector.IsMacOS)
+			return installations;
+
+		var currentDevDir = GetDeveloperDirectory();
+
+		// Scan /Applications for Xcode*.app
+		var appsDir = "/Applications";
+		if (!Directory.Exists(appsDir))
+			return installations;
+
+		var xcodePaths = Directory.GetDirectories(appsDir, "Xcode*.app")
+			.OrderBy(p => p)
+			.ToList();
+
+		foreach (var appPath in xcodePaths)
+		{
+			var devDir = Path.Combine(appPath, "Contents", "Developer");
+			if (!Directory.Exists(devDir))
+				continue;
+
+			string? version = null;
+			string? build = null;
+
+			// Read version from xcodebuild at this specific path
+			var result = await ProcessRunner.RunAsync(
+				Path.Combine(devDir, "usr", "bin", "xcodebuild"),
+				"-version",
+				timeout: TimeSpan.FromSeconds(10),
+				cancellationToken: cancellationToken);
+
+			if (result.Success)
+			{
+				var lines = result.StandardOutput.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+				if (lines.Length > 0)
+					version = lines[0].Replace("Xcode ", string.Empty, StringComparison.Ordinal).Trim();
+				if (lines.Length > 1)
+					build = lines[1].Replace("Build version ", string.Empty, StringComparison.Ordinal).Trim();
+			}
+
+			var isSelected = currentDevDir != null &&
+				currentDevDir.Equals(devDir, StringComparison.OrdinalIgnoreCase);
+
+			installations.Add(new XcodeInstallation
+			{
+				Path = appPath,
+				DeveloperDir = devDir,
+				Version = version,
+				Build = build,
+				IsSelected = isSelected
+			});
+		}
+
+		return installations;
+	}
+}
+
+/// <summary>
+/// Represents an installed Xcode version.
+/// </summary>
+public record XcodeInstallation
+{
+	public required string Path { get; init; }
+	public required string DeveloperDir { get; init; }
+	public string? Version { get; init; }
+	public string? Build { get; init; }
+	public bool IsSelected { get; init; }
 }

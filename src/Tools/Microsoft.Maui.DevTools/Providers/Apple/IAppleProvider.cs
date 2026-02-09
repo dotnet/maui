@@ -59,6 +59,16 @@ public interface IAppleProvider
 	/// Shuts down a simulator.
 	/// </summary>
 	Task ShutdownSimulatorAsync(string udid, CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Lists all installed Xcode versions.
+	/// </summary>
+	Task<List<XcodeInstallation>> ListXcodeInstallationsAsync(CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Switches the active Xcode to the specified path.
+	/// </summary>
+	Task SelectXcodeAsync(string xcodePath, CancellationToken cancellationToken = default);
 }
 
 /// <summary>

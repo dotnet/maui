@@ -218,4 +218,14 @@ public class AppleProvider : IAppleProvider
 	{
 		await _simctl.ShutdownDeviceAsync(udid, cancellationToken);
 	}
+
+	public async Task<List<XcodeInstallation>> ListXcodeInstallationsAsync(CancellationToken cancellationToken = default)
+	{
+		return await _xcodeSelect.ListInstallationsAsync(cancellationToken);
+	}
+
+	public async Task SelectXcodeAsync(string xcodePath, CancellationToken cancellationToken = default)
+	{
+		await _xcodeSelect.SwitchAsync(xcodePath, cancellationToken);
+	}
 }

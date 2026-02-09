@@ -21,6 +21,7 @@ public static class AppleCommands
 
 		appleCommand.AddCommand(CreateSimulatorCommand(appleProvider, getFormatter));
 		appleCommand.AddCommand(CreateRuntimeCommand(appleProvider, getFormatter));
+		appleCommand.AddCommand(CreateXcodeCommand(appleProvider, getFormatter));
 
 		return appleCommand;
 	}
@@ -270,5 +271,109 @@ public static class AppleCommands
 		runtimeCommand.AddCommand(listCommand);
 
 		return runtimeCommand;
+	}
+
+	private static Command CreateXcodeCommand(IAppleProvider provider, Func<InvocationContext, IOutputFormatter> getFormatter)
+	{
+		var xcodeCommand = new Command("xcode", "Manage Xcode installations");
+
+		// xcode list
+		var listCommand = new Command("list", "List installed Xcode versions");
+		listCommand.SetHandler(async (InvocationContext context) =>
+		{
+			var formatter = getFormatter(context);
+
+			try
+			{
+				var installations = await provider.ListXcodeInstallationsAsync(context.GetCancellationToken());
+
+				if (formatter is JsonOutputFormatter)
+				{
+					formatter.Write(new
+					{
+						installations = installations.Select(x => new
+						{
+							path = x.Path,
+							developer_dir = x.DeveloperDir,
+							version = x.Version,
+							build = x.Build,
+							is_selected = x.IsSelected
+						})
+					});
+				}
+				else
+				{
+					if (installations.Count == 0)
+					{
+						Console.WriteLine("No Xcode installations found.");
+						return;
+					}
+
+					Console.WriteLine();
+					Console.WriteLine("  SELECTED | VERSION    | BUILD     | PATH");
+					Console.WriteLine("  ---------|------------|-----------|------------------------------------");
+					foreach (var xcode in installations)
+					{
+						var selected = xcode.IsSelected ? "  ►" : "   ";
+						var version = (xcode.Version ?? "unknown").PadRight(10);
+						var build = (xcode.Build ?? "unknown").PadRight(9);
+						Console.WriteLine($"{selected}      | {version} | {build} | {xcode.Path}");
+					}
+					Console.WriteLine();
+				}
+			}
+			catch (Exception ex)
+			{
+				formatter.WriteError(ex);
+				context.ExitCode = 1;
+			}
+		});
+		xcodeCommand.AddCommand(listCommand);
+
+		// xcode select <path>
+		var selectCommand = new Command("select", "Switch active Xcode installation");
+		var pathArg = new Argument<string>("path", "Path to Xcode.app (e.g., /Applications/Xcode.app)");
+		selectCommand.AddArgument(pathArg);
+		selectCommand.SetHandler(async (InvocationContext context) =>
+		{
+			var formatter = getFormatter(context);
+			var xcodePath = context.ParseResult.GetValueForArgument(pathArg);
+
+			try
+			{
+				// Resolve to Contents/Developer if user passed .app path
+				var devDir = xcodePath;
+				if (xcodePath.EndsWith(".app", StringComparison.OrdinalIgnoreCase))
+				{
+					devDir = Path.Combine(xcodePath, "Contents", "Developer");
+				}
+
+				if (!Directory.Exists(devDir))
+				{
+					throw new Errors.MauiToolException(
+						Errors.ErrorCodes.XcodeNotFound,
+						$"Xcode developer directory not found: {devDir}");
+				}
+
+				await provider.SelectXcodeAsync(devDir, context.GetCancellationToken());
+
+				if (formatter is JsonOutputFormatter)
+				{
+					formatter.Write(new { success = true, path = xcodePath, developer_dir = devDir });
+				}
+				else
+				{
+					formatter.WriteSuccess($"Switched to Xcode at {xcodePath}");
+				}
+			}
+			catch (Exception ex)
+			{
+				formatter.WriteError(ex);
+				context.ExitCode = 1;
+			}
+		});
+		xcodeCommand.AddCommand(selectCommand);
+
+		return xcodeCommand;
 	}
 }
