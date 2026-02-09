@@ -109,6 +109,7 @@
                                          Minimum="1"
                                          Maximum="100"
                                          Increment="10"
+                                         HorizontalOptions="Start"
                                          AutomationId="IndicatorSizeStepper"/>
                         </StackLayout>
                         <StackLayout Grid.Column="1"
@@ -120,6 +121,7 @@
                                          Minimum="0"
                                          Maximum="50"
                                          Increment="1"
+                                         HorizontalOptions="Start"
                                          AutomationId="PositionStepper"/>
                         </StackLayout>
 
@@ -268,6 +270,7 @@
                                  Minimum="1"
                                  Maximum="100"
                                  Increment="1"
+                                 HorizontalOptions="Start"
                                  AutomationId="MaximumVisibleStepper"/>
                 </StackLayout>
 
