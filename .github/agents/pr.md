@@ -49,7 +49,7 @@ After Gate passes, read `.github/agents/pr/post-gate.md` for **Phases 3-4**.
 - No Direct Git Commands (use `gh pr diff/view`, let scripts handle files)
 - Use Skills' Scripts (don't bypass with manual commands)
 - Stop on Environment Blockers (strict retry limits, report and ask user)
-- Multi-Model Configuration (6 models for Phase 4)
+- Multi-Model Configuration (5 models for Phase 4)
 - Platform Selection (must be affected AND available on host)
 
 **Key points:**
