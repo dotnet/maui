@@ -34,6 +34,9 @@ namespace Microsoft.Maui.Platform
 
 		AView? _pendingView;
 
+		// Track keyboard visibility to detect open→close transitions and avoid infinite loops
+		bool _wasKeyboardShowing;
+
 		// Static tracking for views that have local inset listeners.
 		// This registry allows child views to find their appropriate listener without
 		// relying on a global activity-level listener.
@@ -265,13 +268,26 @@ namespace Microsoft.Maui.Platform
 				}
 			}
 
-			// Keyboard Handling
+			bool hasBottomNav = false;
+			// Keyboard Handling & Bottom Navigation Handling - only applies to CoordinatorLayout
 			if (v is CoordinatorLayout coordinatorLayout)
 			{
+
+				var bottomTabContainer = coordinatorLayout.FindViewById<ViewGroup>(Resource.Id.navigationlayout_bottomtabs);
+				hasBottomNav = bottomTabContainer?.ChildCount > 0;
+
+				var contentView = coordinatorLayout.FindViewById(Resource.Id.navigationlayout_content);
+
 				var window = coordinatorLayout.Context?.GetActivity()?.Window;
 				// Handle keyboard insets based on SoftInputMode (AdjustResize/AdjustPan/AdjustNothing)
 				var imeInsets = insets.GetInsets(WindowInsetsCompat.Type.Ime());
 				var isKeyboardShowing = insets.IsVisible(WindowInsetsCompat.Type.Ime());
+
+				if (contentView is null)
+				{
+					return insets;
+				}
+
 				if (window is not null)
 				{
 					var windowAttributes = window.Attributes;
@@ -283,25 +299,69 @@ namespace Microsoft.Maui.Platform
 
 						if (adjustMode == SoftInput.AdjustResize)
 						{
+
 							if (isKeyboardShowing && !IsImeAnimating)
 							{
-								var bottomInset = Math.Max(systemBars?.Bottom ?? 0, imeInsets?.Bottom ?? 0);
-								coordinatorLayout.SetPadding(0, 0, 0, bottomInset);
+								var keyboardHeight = imeInsets?.Bottom ?? 0;
+								var navBarHeight = systemBars?.Bottom ?? 0;
+
+								if (hasBottomNav)
+								{
+									// Don't set CoordinatorLayout padding - it disrupts bottom tabs layout
+									coordinatorLayout.SetPadding(0, 0, 0, 0);
+
+									// Set contentView padding to push content above keyboard
+									contentView.SetPadding(
+										systemBars?.Left ?? 0,
+										0,
+										systemBars?.Right ?? 0,
+										keyboardHeight);
+								}
+								else
+								{
+									// No bottom tabs - apply keyboard padding to CoordinatorLayout
+									coordinatorLayout.SetPadding(0, 0, 0, keyboardHeight);
+								}
 
 								// Reset bottom padding of all tracked child views since the keyboard
 								// now covers the navigation bar area. Without this, child views would
 								// retain their stale bottom safe area padding, causing double padding.
-								ResetBottomPaddingForDescendants(coordinatorLayout);
+								if (hasBottomNav)
+								{
+									ResetBottomPaddingForDescendants(contentView);
+								}
+								else
+								{
 
+									ResetBottomPaddingForDescendants(coordinatorLayout);
+								}
+
+								_wasKeyboardShowing = true;
 								return WindowInsetsCompat.Consumed;
 							}
-							else if (!isKeyboardShowing)
+							else if (!isKeyboardShowing && _wasKeyboardShowing)
 							{
-								// Keyboard dismissed - reset CoordinatorLayout padding and request
-								// insets for child views so they can restore their safe area padding
-								coordinatorLayout.SetPadding(0, 0, 0, 0);
+								// Keyboard dismissed - reset padding
+								_wasKeyboardShowing = false;
+								if (hasBottomNav)
+								{
+									contentView.SetPadding(0, 0, 0, 0);
+								}
+								else
+								{
+									coordinatorLayout.SetPadding(0, 0, 0, 0);
+								}
+
+								// Request insets for child views to restore their safe area padding
+								// Post to allow layout to complete first - position-based SafeArea
+								// calculation needs updated positions after keyboard resize
+								// coordinatorLayout.Post(() =>
+								// {
+								// 	Debug.WriteLine("[SafeAreaKeyboard] Executing posted RequestInsetsForDescendants");
+								// 	RequestInsetsForDescendants(coordinatorLayout);
+								// });
 								RequestInsetsForDescendants(coordinatorLayout);
-								return insets;
+								// Don't return early - continue to bottom nav handling section
 							}
 						}
 						else if (adjustMode == SoftInput.AdjustPan)
@@ -317,21 +377,38 @@ namespace Microsoft.Maui.Platform
 						}
 					}
 				}
+
+				if (hasBottomNav)
+				{
+					// When bottom tabs exist, contentView and bottomTabContainer are overlapping siblings.
+					// 1. bottomTabContainer needs nav bar padding so tabs don't overlap system nav bar
+					// 2. contentView needs bottom padding = tabs height + nav bar so content doesn't overlap tabs
+					var bottomInset = Math.Max(systemBars?.Bottom ?? 0, displayCutout?.Bottom ?? 0);
+
+					// Use child's MeasuredHeight to get intrinsic tab bar height (excludes padding we set)
+					// This avoids feedback loop where container's MeasuredHeight includes our padding
+					var tabBarChild = bottomTabContainer?.GetChildAt(0);
+					var tabsIntrinsicHeight = tabBarChild?.MeasuredHeight ?? 0;
+
+					if (!isKeyboardShowing)
+					{
+						contentView?.SetPadding(
+												systemBars?.Left ?? 0,
+												0,
+												systemBars?.Right ?? 0,
+												bottomInset);
+					}
+				}
+				else
+				{
+					// No bottom navigation - reset CoordinatorLayout padding (original behavior)
+					contentView?.SetPadding(0, 0, 0, 0);
+				}
 			}
 
-			// Handle bottom navigation
-			var hasBottomNav = v.FindViewById(Resource.Id.navigationlayout_bottomtabs)?.MeasuredHeight > 0;
-			if (hasBottomNav)
-			{
-				var bottomInset = Math.Max(systemBars?.Bottom ?? 0, displayCutout?.Bottom ?? 0);
-				v.SetPadding(0, 0, 0, bottomInset);
-			}
-			else
-			{
-				v.SetPadding(0, 0, 0, 0);
-			}
 
-			// Create new insets with consumed values
+			// Create new insets with consumed values (original behavior)
+			// This allows child views to properly calculate their SafeArea
 			var newSystemBars = Insets.Of(
 				systemBars?.Left ?? 0,
 				appBarHasContent ? 0 : systemBars?.Top ?? 0,
@@ -502,9 +579,7 @@ namespace Microsoft.Maui.Platform
 			{
 				if (IsImeAnimation(animation))
 				{
-					var imeInsets = insets.GetInsets(WindowInsetsCompat.Type.Ime());
-					// IME height available as: imeInsets?.Bottom ?? 0
-					break; // Only need to process one IME animation
+					break;
 				}
 			}
 			return insets;
