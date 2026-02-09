@@ -109,6 +109,7 @@ namespace Microsoft.Maui.Storage
 
 	class UnpackagedSecureStorageImplementation : ISecureStorageImplementation
 	{
+		static readonly object locker = new object();
 		static readonly string AppSecureStoragePath = Path.Combine(FileSystem.AppDataDirectory, "..", "Settings", "securestorage.dat");
 
 		readonly SecureStorageDictionary _secureStorage = new();
@@ -120,35 +121,41 @@ namespace Microsoft.Maui.Storage
 
 		void Load()
 		{
-			if (!File.Exists(AppSecureStoragePath))
-				return;
-
-			try
+			lock (locker)
 			{
-				using var stream = File.OpenRead(AppSecureStoragePath);
+				if (!File.Exists(AppSecureStoragePath))
+					return;
 
-				SecureStorageDictionary readPreferences = JsonSerializer.Deserialize(stream, SecureStorageJsonSerializerContext.Default.SecureStorageDictionary);
-
-				if (readPreferences != null)
+				try
 				{
-					_secureStorage.Clear();
-					foreach (var pair in readPreferences)
-						_secureStorage.TryAdd(pair.Key, pair.Value);
+					using var stream = File.OpenRead(AppSecureStoragePath);
+
+					SecureStorageDictionary readPreferences = JsonSerializer.Deserialize(stream, SecureStorageJsonSerializerContext.Default.SecureStorageDictionary);
+
+					if (readPreferences != null)
+					{
+						_secureStorage.Clear();
+						foreach (var pair in readPreferences)
+							_secureStorage.TryAdd(pair.Key, pair.Value);
+					}
 				}
-			}
-			catch (JsonException)
-			{
-				// if deserialization fails proceed with empty settings
+				catch (JsonException)
+				{
+					// if deserialization fails proceed with empty settings
+				}
 			}
 		}
 
 		void Save()
 		{
-			var dir = Path.GetDirectoryName(AppSecureStoragePath);
-			Directory.CreateDirectory(dir);
+			lock (locker)
+			{
+				var dir = Path.GetDirectoryName(AppSecureStoragePath);
+				Directory.CreateDirectory(dir);
 
-			using var stream = File.Create(AppSecureStoragePath);
-			JsonSerializer.Serialize(stream, _secureStorage, SecureStorageJsonSerializerContext.Default.SecureStorageDictionary);
+				using var stream = File.Create(AppSecureStoragePath);
+				JsonSerializer.Serialize(stream, _secureStorage, SecureStorageJsonSerializerContext.Default.SecureStorageDictionary);
+			}
 		}
 
 		public Task<byte[]> GetAsync(string key)
