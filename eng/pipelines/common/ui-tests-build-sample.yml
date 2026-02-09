@@ -25,11 +25,6 @@ steps:
   parameters:
     skipAndroidSdks: false
     skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
-    provisionatorChannel: ${{ parameters.provisionatorChannel }}
-    ${{ if parameters.skipProvisioning }}:
-      skipProvisionator: true
-    ${{ else }}:
-      skipProvisionator: false
 
 - task: PowerShell@2
   condition: ne('${{ parameters.platform }}' , 'windows')

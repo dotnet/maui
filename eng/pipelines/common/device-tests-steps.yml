@@ -55,9 +55,6 @@ steps:
     skipAndroidEmulatorImages: ${{ or(eq(parameters.buildType, 'buildOnly'), ne(parameters.platform, 'android')) }}
     skipAndroidCreateAvds: true
     androidEmulatorApiLevel: ${{ parameters.apiversion }}
-    provisionatorChannel: ${{ parameters.provisionatorChannel }}
-    ${{ if eq(parameters.skipProvisioning, false) }}:
-      skipProvisionator: false
     skipInternalFeeds: true
 
 ##################################################
