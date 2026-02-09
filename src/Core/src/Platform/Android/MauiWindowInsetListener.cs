@@ -34,6 +34,9 @@ namespace Microsoft.Maui.Platform
 
 		AView? _pendingView;
 
+		// Track keyboard visibility to detect open→close transitions and avoid infinite loops
+		bool _wasKeyboardShowing;
+
 		// Static tracking for views that have local inset listeners.
 		// This registry allows child views to find their appropriate listener without
 		// relying on a global activity-level listener.
@@ -457,9 +460,7 @@ namespace Microsoft.Maui.Platform
 			{
 				if (IsImeAnimation(animation))
 				{
-					var imeInsets = insets.GetInsets(WindowInsetsCompat.Type.Ime());
-					// IME height available as: imeInsets?.Bottom ?? 0
-					break; // Only need to process one IME animation
+					break;
 				}
 			}
 			return insets;
