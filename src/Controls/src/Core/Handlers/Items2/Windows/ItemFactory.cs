@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -157,24 +158,39 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			// Check if we should use cached first item size
 			var cachedSize = handler?.GetCachedFirstItemSize() ?? global::Windows.Foundation.Size.Empty;
 
+			// Always measure to allow content to load and render
+			var measuredSize = base.MeasureOverride(availableSize);
+
 			if (!cachedSize.IsEmpty)
 			{
-				// Use cached size for MeasureFirstItem strategy
-				base.MeasureOverride(cachedSize);
+				// For MeasureFirstItem: Return cached size for uniform layout
 				return cachedSize;
 			}
 
-			// Measure normally
-			var measuredSize = base.MeasureOverride(availableSize);
-
-			// Cache the size if this is the first item being measured
+			// Cache the first item's size for MeasureFirstItem optimization
 			if (handler != null && !IsHeaderOrFooter)
 			{
-				var currentCached = handler.GetCachedFirstItemSize();
-				if (currentCached.IsEmpty)
+				// For first item with images: Hook into content's SizeChanged to update cache when images load
+				if (VirtualView is View firstView && Content is FrameworkElement content)
 				{
-					handler.SetCachedFirstItemSize(measuredSize);
+					void OnContentSizeChanged(object? sender, Microsoft.UI.Xaml.SizeChangedEventArgs e)
+					{
+						// Update cached size with actual loaded size
+						var currentCache = handler.GetCachedFirstItemSize();
+						if (!currentCache.IsEmpty && (e.NewSize.Width > currentCache.Width || e.NewSize.Height > currentCache.Height))
+						{
+							handler.SetCachedFirstItemSize(e.NewSize);
+							// Force layout update
+							InvalidateMeasure();
+						}
+					}
+
+					// Subscribe once
+					content.SizeChanged -= OnContentSizeChanged;
+					content.SizeChanged += OnContentSizeChanged;
 				}
+
+				handler.SetCachedFirstItemSize(measuredSize);
 			}
 
 			return measuredSize;
