@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateProgressColor(this AProgressBar platformProgressBar, IProgress progress)
 		{
-			if(platformProgressBar is LinearProgressIndicator materialProgressBar)
+			if (platformProgressBar is LinearProgressIndicator materialProgressBar)
 			{
 				materialProgressBar.UpdateLinearProgressIndicatorColor(progress);
 			}
