@@ -35,6 +35,7 @@ public partial class CollectionViewHandler2
 public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItemsView>
 {
 	bool _ignorePlatformSelectionChange;
+	Page? _parentPage;
 
 	protected override IItemsLayout Layout { get => ItemsView.ItemsLayout; }
 
@@ -121,6 +122,14 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 		base.ConnectHandler(platformView);
 
 		ItemsView.SelectionChanged += VirtualSelectionChanged;
+		
+		// Subscribe to parent page lifecycle events to clear selection on navigation
+		_parentPage = ItemsView.FindParentOfType<Page>();
+		if (_parentPage is not null)
+		{
+			_parentPage.Disappearing += OnPageDisappearing;
+		}
+		
 		if (PlatformView is not null)
 		{
 			PlatformView.SetBinding(WItemsView.SelectionModeProperty,
@@ -150,8 +159,35 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 		{
 			ItemsView.SelectionChanged -= VirtualSelectionChanged;
 		}
+		
+		// Unsubscribe from page lifecycle events
+		if (_parentPage is not null)
+		{
+			_parentPage.Disappearing -= OnPageDisappearing;
+			_parentPage = null;
+		}
 
 		base.DisconnectHandler(platformView);
+	}
+
+	void OnPageDisappearing(object? sender, EventArgs e)
+	{
+		// Clear selection when navigating away from the page
+		// This allows re-selecting the same item when returning to the page
+		if (ItemsView is null || PlatformView is null)
+			return;
+
+		_ignorePlatformSelectionChange = true;
+
+		// Clear platform selection
+		PlatformView.DeselectAll();
+
+		// Clear virtual selection without firing SelectionChanged event
+		ItemsView.SelectionChanged -= VirtualSelectionChanged;
+		ItemsView.SelectedItem = null;
+		ItemsView.SelectionChanged += VirtualSelectionChanged;
+
+		_ignorePlatformSelectionChange = false;
 	}
 
 	protected override void UpdateItemsSource()
