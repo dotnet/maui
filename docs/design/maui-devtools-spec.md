@@ -16,7 +16,7 @@
 6. [Architecture](#6-architecture)
 7. [Public API Surface](#7-public-api-surface)
 8. [User Experience](#8-user-experience)
-9. [Telemetry & Diagnostics](#9-telemetry--diagnostics)
+9. [Diagnostics](#9-diagnostics)
 10. [MVP vs vNext Features](#10-mvp-vs-vnext-features)
 
 ---
@@ -158,7 +158,7 @@ This tool eliminates that friction by providing a single, authoritative source f
 | FR-A11 | Install APK to device/emulator | P1 |
 | FR-A12 | Uninstall package from device/emulator | P2 |
 | FR-A13 | Capture screenshot from device/emulator | P0 |
-| FR-A14 | Bootstrap full Android environment (JDK + SDK) from scratch | P0 |
+| FR-A14 | Install full Android environment (JDK + SDK) from scratch | P0 |
 | FR-A15 | Detect JDK installation and version | P0 |
 | FR-A16 | Install OpenJDK if missing (version 17 default, 21 supported) | P0 |
 | FR-A17 | Use platform-appropriate default paths when env vars not set | P0 |
@@ -216,9 +216,9 @@ This tool eliminates that friction by providing a single, authoritative source f
 | FR-DL4 | Support `--platform` filter | P1 |
 | FR-DL5 | Support `--json` output | P0 |
 
-### 4.6 Bootstrap State Machine
+### 4.6 Install State Machine
 
-**Critical**: The tool must handle the "bootstrap gap" — the chicken-and-egg problem where native tools (sdkmanager, xcrun) don't exist yet.
+**Critical**: The tool must handle the "install gap" — the chicken-and-egg problem where native tools (sdkmanager, xcrun) don't exist yet.
 
 #### Platform Bootstrap States
 
@@ -234,9 +234,9 @@ This tool eliminates that friction by providing a single, authoritative source f
    (or auto-fix)                                              native tools)
 ```
 
-#### Android Bootstrap
+#### Android Install
 
-The tool can fully bootstrap an Android development environment from scratch, including JDK and SDK installation.
+The tool can fully install an Android development environment from scratch, including JDK and SDK installation.
 
 **Dependency Order**: JDK must be installed before SDK (sdkmanager requires Java).
 
@@ -256,7 +256,7 @@ The tool can fully bootstrap an Android development environment from scratch, in
 | macOS | `~/Library/Developer/Android/jdk` | `~/Library/Developer/Android/sdk` |
 | Windows | `%LOCALAPPDATA%\Android\jdk` | `%LOCALAPPDATA%\Android\sdk` |
 
-**Bootstrap States**:
+**Install States**:
 
 | State | Detection | Behavior |
 |-------|-----------|----------|
@@ -265,16 +265,16 @@ The tool can fully bootstrap an Android development environment from scratch, in
 | `PARTIAL` | SDK exists but `sdkmanager` missing/broken | Repair SDK or reinstall cmdline-tools |
 | `READY` | `java -version` succeeds AND `sdkmanager --list` succeeds | Delegate all operations to native tools |
 
-**Bootstrap Command**:
+**Install Command**:
 ```bash
-# Full bootstrap: JDK + SDK + recommended packages
-dotnet maui android bootstrap --accept-licenses
+# Full install: JDK + SDK + recommended packages
+dotnet maui android install --accept-licenses
 
 # With custom paths
-dotnet maui android bootstrap --jdk-path ~/my-jdk --sdk-path ~/my-sdk --accept-licenses
+dotnet maui android install --jdk-path ~/my-jdk --sdk-path ~/my-sdk --accept-licenses
 
 # With specific packages (comma-separated)
-dotnet maui android bootstrap --packages "platform-tools,build-tools;35.0.0,platforms;android-35"
+dotnet maui android install --packages "platform-tools,build-tools;35.0.0,platforms;android-35"
 ```
 
 This command:
@@ -322,7 +322,7 @@ dotnet maui android avd create MyEmulator
 dotnet maui android avd create MyEmulator --package "system-images;android-35;google_apis;arm64-v8a"
 ```
 
-#### Apple Bootstrap
+#### Apple Install
 
 | State | Detection | Behavior |
 |-------|-----------|----------|
@@ -330,12 +330,12 @@ dotnet maui android avd create MyEmulator --package "system-images;android-35;go
 | `CLI_ONLY` | Only Command Line Tools installed | Error: "Full Xcode required for simulators" |
 | `READY` | `xcrun simctl list` succeeds | Delegate all operations to native tools |
 
-**Important**: Apple bootstrap is limited because:
+**Important**: Apple install is limited because:
 - Xcode cannot be installed programmatically (App Store only)
 - Runtime downloads require Xcode to be open at least once (license acceptance)
 
 ```bash
-dotnet maui apple bootstrap
+dotnet maui apple install
 ```
 
 This command:
@@ -344,7 +344,7 @@ This command:
 3. Prompts user to accept Xcode license if needed
 4. Reports status and next steps
 
-#### Windows Bootstrap
+#### Windows Install
 
 | State | Detection | Behavior |
 |-------|-----------|----------|
@@ -372,11 +372,11 @@ This command:
 | NFR-O1 | All operations must support `--verbose` flag for detailed logging |
 | NFR-O2 | JSON output must include `correlation_id` for tracing |
 | NFR-O3 | Long-running operations must emit progress events |
-| NFR-O4 | `diagnostic-bundle` command must collect all relevant logs and state |
+| NFR-O4 | (vNext) `diagnostic-bundle` command to collect all relevant logs and state |
 
 **Progress Reporting**:
 
-Long-running operations (bootstrap, SDK install, JDK install) emit step-by-step progress:
+Long-running operations (install, SDK install, JDK install) emit step-by-step progress:
 
 Console output:
 ```
@@ -622,7 +622,6 @@ When multiple SDK installations are detected:
 
 **Conflict Handling**:
 - `dotnet maui doctor` reports all detected SDKs with recommendation
-- `dotnet maui config set android-sdk-path <path>` to override
 - `--sdk-path` flag available on all android commands for one-off override
 
 **Android Studio Coexistence**:
@@ -693,7 +692,7 @@ Errors are classified into three categories:
 |------|----------|---------|------------------|
 | `E1001` | tool | Internal error | terminal |
 | `E2001` | platform | SDK licenses not accepted | auto_fixable |
-| `E2002` | platform | sdkmanager not found | auto_fixable (bootstrap) |
+| `E2002` | platform | sdkmanager not found | auto_fixable (install) |
 | `E2003` | platform | xcrun failed | user_action |
 | `E2004` | platform | Emulator acceleration unavailable | user_action |
 | `E3001` | user | Xcode not installed | user_action |
@@ -806,7 +805,7 @@ dotnet maui
 │       └── --since <time>    # Show logs since timestamp
 │
 ├── android                   # Android-specific commands
-│   ├── bootstrap             # Bootstrap Android SDK from scratch
+│   ├── install               # Set up Android development environment
 │   │   ├── --accept-licenses # Non-interactively accept licenses
 │   │   ├── --packages <list> # Comma-separated packages to install
 │   │   ├── --jdk-path <dir>  # JDK installation directory
@@ -825,27 +824,21 @@ dotnet maui
 │   │   ├── install <pkg>     # Install package(s) - comma-separated
 │   │   ├── accept-licenses   # Accept all SDK licenses
 │   │   └── uninstall <pkg>   # Uninstall package
-│   ├── avd
-│   │   ├── list              # List AVDs
-│   │   ├── create            # Create AVD
-│   │   │   ├── --name        # AVD name
-│   │   │   ├── --device      # Device profile
-│   │   │   ├── --package     # System image (optional, auto-detects latest)
-│   │   │   └── --force       # Overwrite existing
-│   │   ├── start             # Start AVD
-│   │   │   ├── --name        # AVD name (or --avd)
-│   │   │   ├── --cold-boot   # Fresh boot
-│   │   │   └── --wait        # Wait for boot
-│   │   ├── stop              # Stop emulator
-│   │   │   └── --serial      # Emulator serial (e.g., emulator-5554)
-│   │   └── delete            # Delete AVD
-│   │       └── --name        # AVD name
-│   ├── install               # Install APK
-│   │   ├── --device          # Target device
-│   │   └── <apk-path>        # APK file
-│   └── logcat                # Stream Android logs
-│       ├── --device          # Target device
-│       └── --filter          # Tag filter (e.g., "MainActivity:V *:S")
+│   └── avd
+│       ├── list              # List AVDs
+│       ├── create            # Create AVD
+│       │   ├── --name        # AVD name
+│       │   ├── --device      # Device profile
+│       │   ├── --package     # System image (optional, auto-detects latest)
+│       │   └── --force       # Overwrite existing
+│       ├── start             # Start AVD
+│       │   ├── --name        # AVD name (or --avd)
+│       │   ├── --cold-boot   # Fresh boot
+│       │   └── --wait        # Wait for boot
+│       ├── stop              # Stop emulator
+│       │   └── --serial      # Emulator serial (e.g., emulator-5554)
+│       └── delete            # Delete AVD
+│           └── --name        # AVD name
 │
 ├── apple                     # Apple platform commands (macOS only)
 │   ├── simulator
@@ -877,24 +870,6 @@ dotnet maui
 │   └── developer-mode
 │       ├── status            # Check Developer Mode status
 │       └── enable            # Guide to enable Developer Mode
-│
-├── deploy                    # Deploy app to device
-│   ├── --device <id>         # Target device
-│   ├── --project <path>      # Project file (default: current dir)
-│   ├── --configuration       # Build configuration
-│   ├── --framework           # Target framework
-│   ├── --install-only        # Install without launching
-│   ├── --wait                # Wait for app to exit (returns app exit code)
-│   ├── --debug               # Launch with debugger attached
-│   └── --timeout <seconds>   # Timeout for launch detection (default: 30)
-│
-├── config                    # Configuration management
-│   ├── list                  # List all config values
-│   ├── get <key>             # Get config value
-│   └── set <key> <value>     # Set config value
-│
-├── diagnostic-bundle         # Export diagnostic info
-│   └── --output <path>       # Output zip file
 │
 └── --version                 # Show version
 ```
@@ -998,7 +973,6 @@ All commands follow a consistent exit code scheme:
 | `dotnet maui apple xcode list` | List Xcode installations | `--json` | Installation list | 0=success, 2=error |
 | `dotnet maui apple xcode select` | Switch active Xcode | `<path>` | Confirmation | 0=success, 3=permission denied |
 | `dotnet maui android sdk accept-licenses` | Accept SDK licenses | `--json` | Status | 0=success, 2=error |
-| `dotnet maui config set` | Set configuration | `<key>`, `<value>` | Confirmation | 0=success, 2=error |
 
 ### 7.2 JSON Output Schemas
 
@@ -1118,7 +1092,7 @@ The unified device model for all platforms (physical devices, emulators, simulat
 | `dotnet maui android avd start` | ✓ | ✓ | No |
 | `dotnet maui android avd stop` | ✓ | ✓ | No |
 | `dotnet maui android avd delete` | ✓ | ✓ | No |
-| `dotnet maui android bootstrap` | ✓ | ✓ | No |
+| `dotnet maui android install` | ✓ | ✓ | No |
 | `dotnet maui android jdk check` | ✓ | ✓ | No |
 | `dotnet maui android jdk install` | ✓ | ✓ | No |
 | `dotnet maui android jdk list` | ✓ | ✓ | No |
@@ -1195,37 +1169,9 @@ Total download size: 10.7 GB
 
 ---
 
-## 9. Telemetry & Diagnostics
+## 9. Diagnostics
 
-### 9.1 Telemetry Events
-
-| Event | Data Collected | Purpose |
-|-------|----------------|---------|
-| `command.invoked` | Command name, flags used, duration | Understand usage patterns |
-| `doctor.result` | Issue counts by category (no specifics) | Track environment health |
-| `fix.attempted` | Issue type, success/failure | Measure fix effectiveness |
-| `error.occurred` | Error code, category (no stack traces) | Identify common failures |
-
-### 9.2 Opt-In / Opt-Out
-
-```
-# Check telemetry status
-$ maui telemetry status
-Telemetry is currently: DISABLED
-
-# Enable telemetry
-$ maui telemetry enable
-
-# Disable telemetry
-$ maui telemetry disable
-```
-
-**Default**: Telemetry is **OFF** by default. First run prompts:
-```
-? Help improve MAUI Dev Tools by sending anonymous usage data? [y/N]
-```
-
-### 9.3 Redaction Rules
+### 9.1 Redaction Rules
 
 All telemetry and logs follow these redaction rules:
 
@@ -1236,40 +1182,6 @@ All telemetry and logs follow these redaction rules:
 | Serial numbers | Redact | `R58M32XXXXX` → `<android-serial>` |
 | UDIDs | Redact | `A1B2C3...` → `<simulator-udid>` |
 | Error messages | Keep, unless contains path | Preserved |
-
-### 9.4 Diagnostic Bundle
-
-```
-$ maui diagnostic-bundle --output ~/Desktop/maui-diag.zip
-
-Collecting diagnostics...
-  • Environment info
-  • Tool configuration
-  • Recent command history (redacted)
-  • Android SDK state
-  • Xcode/simulator state
-  • .NET SDK info
-
-Saved to: /Users/dev/Desktop/maui-diag.zip (2.3 MB)
-```
-
-**Bundle Contents**:
-```
-maui-diag/
-├── environment.json      # OS, tool version, paths
-├── doctor-report.json    # Full doctor output
-├── android/
-│   ├── sdk-packages.json
-│   └── avd-list.json
-├── apple/
-│   ├── simulators.json
-│   └── runtimes.json
-├── dotnet/
-│   ├── sdk-info.json
-│   └── workloads.json
-└── logs/
-    └── recent-commands.log  # Last 50 commands (redacted)
-```
 
 ---
 
@@ -1284,7 +1196,7 @@ maui-diag/
 | P0 | `doctor --fix` for automated remediation | ✅ Implemented |
 | P0 | Android SDK detection and installation | ✅ Implemented |
 | P0 | Android AVD creation and management | ✅ Implemented |
-| P0 | Android bootstrap (JDK + SDK from scratch) | ✅ Implemented |
+| P0 | Android install (JDK + SDK from scratch) | ✅ Implemented |
 | P0 | Android JDK management (check, install, list) | ✅ Implemented |
 | P0 | Android SDK license acceptance | ✅ Implemented |
 | P0 | iOS simulator listing and boot/shutdown/create/delete | ✅ Implemented |
@@ -1303,15 +1215,11 @@ maui-diag/
 |----------|---------|
 | P1 | Visual Studio extension integration |
 | P1 | iOS runtime installation guidance |
-| P1 | APK install/uninstall |
-| P1 | `deploy` command (build + deploy to device) |
-| P1 | `config` command (get/set/list configuration) |
 | P1 | `--non-interactive`, `--correlation-id`, `--offline` global options |
 | P2 | AVD snapshot management |
 | P2 | Windows SDK management |
 | P2 | Linux host support (Android only) |
 | P2 | Physical iOS device support (requires signing) |
-| P2 | `diagnostic-bundle` command |
 | P2 | Telemetry (opt-in) |
 | Future | MCP server integration for AI agents |
 | Future | Cloud-hosted device support |
@@ -1331,7 +1239,7 @@ maui-diag/
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 2.8-draft | 2026-02-09 | Synced spec with implementation: added Xcode list/select commands, XcodeInstallation schema, Android device field semantics, updated MauiDevice schema with `type`/`state`/`details` fields, marked MVP features as implemented, updated capabilities model and command table, clarified global option implementation status |
+| 2.8-draft | 2026-02-09 | Synced with implementation: renamed `bootstrap` → `install` per PR feedback; removed `deploy`, `config`, `diagnostic-bundle` commands (covered by `dotnet run`/`dotnet build`); removed telemetry section (vNext); added Xcode list/select, XcodeInstallation schema, Android device field semantics, `type`/`state`/`details` to MauiDevice |
 | 2.6-draft | 2026-02-04 | Condensed §3 Goals and §4 Personas into single section; Now 10 sections |
 | 2.5-draft | 2026-02-04 | Removed §11 Security, §12 Extensibility; Added physical device support to device list |
 | 2.4-draft | 2026-02-04 | Removed §13 Testing Strategy, §14 Rollout Plan |
