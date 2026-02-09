@@ -249,6 +249,10 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Test, Order(10)]
 		public void SetIconColor_Red_Purple_Default_Visual()
 		{
+			if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+			{
+				Assert.Ignore("Ignored due to a bug issue in iOS 26"); // Issue Link: https://github.com/dotnet/maui/issues/33966
+			}
 			App.WaitForElement("ResetButton");
 			App.Tap("ResetButton");
 
@@ -307,6 +311,10 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Test, Order(13)]
 		public void Combine_BarBackgroundColor_TextColor_IconColor_Visual()
 		{
+			if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+			{
+				Assert.Ignore("Ignored due to a bug issue in iOS 26"); // Issue Link: https://github.com/dotnet/maui/issues/33966
+			}
 			App.WaitForElement("ResetButton");
 			App.Tap("ResetButton");
 			// Set bar background color and text color
