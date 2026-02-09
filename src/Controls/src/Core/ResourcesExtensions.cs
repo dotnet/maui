@@ -109,5 +109,29 @@ namespace Microsoft.Maui.Controls
 			value = null;
 			return false;
 		}
+
+		/// <summary>
+		/// Merges style class resources across the entire parent chain.
+		/// Style classes with the same key at different levels must be combined into a single list.
+		/// </summary>
+		public static object GetMergedStyleClassResource(this IElementDefinition element, string key)
+		{
+			List<Style> merged = null;
+			while (element != null)
+			{
+				if (element is IResourcesProvider ve && ve.IsResourcesCreated && ve.Resources.TryGetValue(key, out var value) && value is IList<Style> styles)
+				{
+					merged ??= new List<Style>();
+					merged.AddRange(styles);
+				}
+				if (element is Application app && app.SystemResources != null && app.SystemResources.TryGetValue(key, out var sysValue) && sysValue is IList<Style> sysStyles)
+				{
+					merged ??= new List<Style>();
+					merged.AddRange(sysStyles);
+				}
+				element = element.Parent;
+			}
+			return merged;
+		}
 	}
 }
