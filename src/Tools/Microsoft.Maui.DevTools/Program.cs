@@ -84,7 +84,6 @@ public class Program
 		rootCommand.AddCommand(ScreenshotCommand.Create());  // Top-level per spec
 		rootCommand.AddCommand(LogsCommand.Create());        // Top-level per spec
 		rootCommand.AddCommand(DeviceCommand.Create());
-		rootCommand.AddCommand(DeployCommand.Create());
 		rootCommand.AddCommand(VersionCommand.Create());
 
 		// Platform-specific command groups

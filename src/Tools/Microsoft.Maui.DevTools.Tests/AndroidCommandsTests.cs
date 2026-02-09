@@ -11,15 +11,15 @@ namespace Microsoft.Maui.DevTools.Tests;
 public class AndroidCommandsTests
 {
 	[Fact]
-	public void BootstrapCommand_ParsesCommaSeparatedPackages()
+	public void InstallCommand_ParsesCommaSeparatedPackages()
 	{
 		// Arrange
 		var androidCommand = AndroidCommands.Create();
-		var bootstrapCommand = androidCommand.Subcommands.First(c => c.Name == "bootstrap");
-		var packagesOption = bootstrapCommand.Options.First(o => o.Name == "packages");
+		var installCommand = androidCommand.Subcommands.First(c => c.Name == "install");
+		var packagesOption = installCommand.Options.First(o => o.Name == "packages");
 
 		// Act
-		var parseResult = bootstrapCommand.Parse("bootstrap --packages platform-tools,build-tools;35.0.0,platforms;android-35");
+		var parseResult = installCommand.Parse("install --packages platform-tools,build-tools;35.0.0,platforms;android-35");
 
 		// Assert
 		Assert.Empty(parseResult.Errors);
@@ -31,15 +31,15 @@ public class AndroidCommandsTests
 	}
 
 	[Fact]
-	public void BootstrapCommand_ParsesMultiplePackageFlags()
+	public void InstallCommand_ParsesMultiplePackageFlags()
 	{
 		// Arrange
 		var androidCommand = AndroidCommands.Create();
-		var bootstrapCommand = androidCommand.Subcommands.First(c => c.Name == "bootstrap");
-		var packagesOption = bootstrapCommand.Options.First(o => o.Name == "packages");
+		var installCommand = androidCommand.Subcommands.First(c => c.Name == "install");
+		var packagesOption = installCommand.Options.First(o => o.Name == "packages");
 
 		// Act
-		var parseResult = bootstrapCommand.Parse("bootstrap --packages platform-tools --packages build-tools;35.0.0");
+		var parseResult = installCommand.Parse("install --packages platform-tools --packages build-tools;35.0.0");
 
 		// Assert
 		Assert.Empty(parseResult.Errors);
@@ -49,17 +49,17 @@ public class AndroidCommandsTests
 	}
 
 	[Fact]
-	public void BootstrapCommand_HasCorrectOptions()
+	public void InstallCommand_HasCorrectOptions()
 	{
 		// Arrange
 		var androidCommand = AndroidCommands.Create();
-		var bootstrapCommand = androidCommand.Subcommands.First(c => c.Name == "bootstrap");
+		var installCommand = androidCommand.Subcommands.First(c => c.Name == "install");
 
 		// Assert
-		Assert.Contains(bootstrapCommand.Options, o => o.Name == "sdk-path");
-		Assert.Contains(bootstrapCommand.Options, o => o.Name == "jdk-path");
-		Assert.Contains(bootstrapCommand.Options, o => o.Name == "jdk-version");
-		Assert.Contains(bootstrapCommand.Options, o => o.Name == "packages");
+		Assert.Contains(installCommand.Options, o => o.Name == "sdk-path");
+		Assert.Contains(installCommand.Options, o => o.Name == "jdk-path");
+		Assert.Contains(installCommand.Options, o => o.Name == "jdk-version");
+		Assert.Contains(installCommand.Options, o => o.Name == "packages");
 	}
 
 	[Fact]
@@ -196,7 +196,7 @@ public class AndroidCommandsTests
 		var androidCommand = AndroidCommands.Create();
 
 		// Assert
-		Assert.Contains(androidCommand.Subcommands, c => c.Name == "bootstrap");
+		Assert.Contains(androidCommand.Subcommands, c => c.Name == "install");
 		Assert.Contains(androidCommand.Subcommands, c => c.Name == "jdk");
 		Assert.Contains(androidCommand.Subcommands, c => c.Name == "sdk");
 		Assert.Contains(androidCommand.Subcommands, c => c.Name == "avd");

@@ -155,14 +155,14 @@ public class AndroidProviderTests
 	}
 
 	[Fact]
-	public async Task BootstrapAsync_ReportsProgress()
+	public async Task InstallAsync_ReportsProgress()
 	{
 		// Arrange
 		var progressMessages = new List<string>();
 		var progress = new Progress<string>(msg => progressMessages.Add(msg));
 
 		var mockProvider = new Mock<IAndroidProvider>();
-		mockProvider.Setup(x => x.BootstrapAsync(
+		mockProvider.Setup(x => x.InstallAsync(
 				It.IsAny<string?>(),
 				It.IsAny<string?>(),
 				It.IsAny<int>(),
@@ -180,7 +180,7 @@ public class AndroidProviderTests
 			.Returns(Task.CompletedTask);
 
 		// Act
-		await mockProvider.Object.BootstrapAsync(progress: progress);
+		await mockProvider.Object.InstallAsync(progress: progress);
 
 		// Allow progress callbacks to complete
 		await Task.Delay(100);
