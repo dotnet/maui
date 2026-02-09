@@ -15,7 +15,7 @@ See `SHARED-RULES.md` for complete details. Key points:
 - **Environment Blockers**: STOP immediately, report, ask user (strict retry limits)
 - **No Git Commands**: Never checkout/switch branches - agent is always on correct branch
 - **Gate via Task Agent**: Never run inline (prevents fabrication)
-- **Multi-Model try-fix**: 5 models, SEQUENTIAL only
+- **Multi-Model try-fix**: 6 models, SEQUENTIAL only
 - **Follow Templates**: No `open` attributes, no "improvements"
 
 ---
@@ -68,10 +68,10 @@ See `SHARED-RULES.md` for complete details. Key points:
 - [ ] Invoke EACH model: "Any NEW fix ideas?"
 - [ ] Record responses in Cross-Pollination table
 - [ ] Run try-fix for new ideas (SEQUENTIAL)
-- [ ] Repeat until ALL 5 say "NO NEW IDEAS" (max 3 rounds)
+- [ ] Repeat until ALL 6 say "NO NEW IDEAS" (max 3 rounds)
 
 **Completion:**
-- [ ] Cross-Pollination table has all 5 responses
+- [ ] Cross-Pollination table has all 6 responses
 - [ ] Mark Exhausted: Yes
 - [ ] Compare passing candidates with PR's fix
 - [ ] Select best fix (results → simplicity → robustness)

@@ -20,7 +20,7 @@ If Gate is not passed, go back to `.github/agents/pr.md` and complete phases 1-2
 **All rules from `.github/agents/pr/SHARED-RULES.md` apply here**, including:
 - Phase Completion Protocol (fill ALL pending fields before marking complete)
 - Stop on Environment Blockers (STOP and ask user, don't continue)
-- Multi-Model Configuration (5 models, SEQUENTIAL only)
+- Multi-Model Configuration (6 models, SEQUENTIAL only)
 
 If try-fix cannot run due to environment issues, **STOP and ask the user**. Do NOT mark attempts as "BLOCKED" and continue.
 
@@ -62,7 +62,7 @@ Phase 4 uses a **multi-model approach** to maximize fix diversity. Each AI model
 
 #### Round 1: Run try-fix with Each Model
 
-Run the `try-fix` skill **5 times sequentially**, once with each model (see `SHARED-RULES.md` for model list).
+Run the `try-fix` skill **6 times sequentially**, once with each model (see `SHARED-RULES.md` for model list).
 
 **For each model**, invoke the try-fix skill:
 ```
@@ -95,12 +95,12 @@ git checkout HEAD -- .
 
 #### Round 2+: Cross-Pollination Loop (MANDATORY)
 
-After Round 1, invoke EACH of the 5 models to ask for new ideas. **No shortcuts allowed.**
+After Round 1, invoke EACH of the 6 models to ask for new ideas. **No shortcuts allowed.**
 
 **❌ WRONG**: Using `explore`/`glob`, declaring exhaustion without invoking each model
 **✅ CORRECT**: Invoke EACH model via task agent and ask explicitly
 
-**Steps (repeat until all 5 say "NO NEW IDEAS", max 3 rounds):**
+**Steps (repeat until all 6 say "NO NEW IDEAS", max 3 rounds):**
 
 1. **Compile bounded summary** (max 3-4 bullets per attempt):
    - Attempt #, approach (1 line), result (✅/❌), key learning (1 line)
@@ -118,7 +118,7 @@ After Round 1, invoke EACH of the 5 models to ask for new ideas. **No shortcuts 
 
 4. **For each new idea**: Run try-fix with that model (SEQUENTIAL, wait for completion)
 
-5. **Exit when**: ALL 5 models say "NO NEW IDEAS" in the same round
+5. **Exit when**: ALL 6 models say "NO NEW IDEAS" in the same round
 
 #### try-fix Behavior
 
@@ -193,13 +193,14 @@ Update the state file:
 5. Change 📋 Report status to `▶️ IN PROGRESS`
 
 **Before marking ✅ COMPLETE, verify state file contains:**
-- [ ] Round 1 completed: All 5 models ran try-fix
-- [ ] **Cross-pollination table exists** with responses from ALL 5 models:
+- [ ] Round 1 completed: All 6 models ran try-fix
+- [ ] **Cross-pollination table exists** with responses from ALL 6 models:
   ```
   | Model | Round 2 Response |
   |-------|------------------|
   | claude-sonnet-4.5 | NO NEW IDEAS |
   | claude-opus-4.6 | NO NEW IDEAS |
+  | claude-opus-4.6-fast | NO NEW IDEAS |
   | gpt-5.2 | NO NEW IDEAS |
   | gpt-5.2-codex | NO NEW IDEAS |
   | gemini-3-pro-preview | NO NEW IDEAS |
@@ -311,15 +312,15 @@ Update all phase statuses to complete.
 
 - ❌ **Looking at PR's fix before generating ideas** - Generate fix ideas independently first
 - ❌ **Re-testing the PR's fix in try-fix** - Gate already validated it; try-fix tests YOUR ideas
-- ❌ **Skipping models in Round 1** - All 5 models must run try-fix before cross-pollination
+- ❌ **Skipping models in Round 1** - All 6 models must run try-fix before cross-pollination
 - ❌ **Running try-fix in parallel** - SEQUENTIAL ONLY - they modify same files and use same device
 - ❌ **Using explore/glob instead of invoking models** - Cross-pollination requires ACTUAL task agent invocations with each model, not code searches
-- ❌ **Assuming "comprehensive coverage" = exhausted** - Only exhausted when all 5 models explicitly say "NO NEW IDEAS"
+- ❌ **Assuming "comprehensive coverage" = exhausted** - Only exhausted when all 6 models explicitly say "NO NEW IDEAS"
 - ❌ **Not recording cross-pollination responses** - State file must have table showing each model's Round 2 response
 - ❌ **Not analyzing why fixes failed** - Record the flawed reasoning to help future attempts
 - ❌ **Selecting a failing fix** - Only select from passing candidates
 - ❌ **Forgetting to revert between attempts** - Each try-fix must start from broken baseline, end with PR restored
-- ❌ **Declaring exhaustion prematurely** - All 5 models must confirm "no new ideas" via actual invocation
+- ❌ **Declaring exhaustion prematurely** - All 6 models must confirm "no new ideas" via actual invocation
 - ❌ **Rushing the report** - Take time to write clear justification
 - ❌ **Skipping cleanup between attempts** - ALWAYS run `-Restore` + `git checkout HEAD -- .` between try-fix attempts (see Step 1)
 
