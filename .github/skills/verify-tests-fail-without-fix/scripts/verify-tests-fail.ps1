@@ -77,6 +77,9 @@ param(
     [string]$PRNumber,
 
     [Parameter(Mandatory = $false)]
+    [string]$DeviceUdid,
+
+    [Parameter(Mandatory = $false)]
     [switch]$RequireFullVerification
 )
 
@@ -432,7 +435,15 @@ if ($DetectedFixFiles.Count -eq 0) {
 
     # Use shared BuildAndRunHostApp.ps1 infrastructure with -Rebuild to ensure clean builds
     $buildScript = Join-Path $RepoRoot ".github/scripts/BuildAndRunHostApp.ps1"
-    & $buildScript -Platform $Platform -TestFilter $TestFilter -Rebuild 2>&1 | Tee-Object -FilePath $TestLog
+    $buildParams = @{
+        Platform = $Platform
+        TestFilter = $TestFilter
+        Rebuild = $true
+    }
+    if ($DeviceUdid) {
+        $buildParams.DeviceUdid = $DeviceUdid
+    }
+    & $buildScript @buildParams 2>&1 | Tee-Object -FilePath $TestLog
 
     # Parse test results using shared function
     $testOutputLog = Join-Path $RepoRoot "CustomAgentLogsTmp/UITests/test-output.log"
@@ -804,7 +815,15 @@ Write-Log "=========================================="
 
 # Use shared BuildAndRunHostApp.ps1 infrastructure with -Rebuild to ensure clean builds
 $buildScript = Join-Path $RepoRoot ".github/scripts/BuildAndRunHostApp.ps1"
-& $buildScript -Platform $Platform -TestFilter $TestFilter -Rebuild 2>&1 | Tee-Object -FilePath $WithoutFixLog
+$buildParams = @{
+    Platform = $Platform
+    TestFilter = $TestFilter
+    Rebuild = $true
+}
+if ($DeviceUdid) {
+    $buildParams.DeviceUdid = $DeviceUdid
+}
+& $buildScript @buildParams 2>&1 | Tee-Object -FilePath $WithoutFixLog
 
 $withoutFixResult = Get-TestResultFromLog -LogFile (Join-Path $RepoRoot "CustomAgentLogsTmp/UITests/test-output.log")
 
@@ -832,7 +851,15 @@ Write-Log "=========================================="
 Write-Log "STEP 4: Running tests WITH fix (should PASS)"
 Write-Log "=========================================="
 
-& $buildScript -Platform $Platform -TestFilter $TestFilter -Rebuild 2>&1 | Tee-Object -FilePath $WithFixLog
+$buildParams = @{
+    Platform = $Platform
+    TestFilter = $TestFilter
+    Rebuild = $true
+}
+if ($DeviceUdid) {
+    $buildParams.DeviceUdid = $DeviceUdid
+}
+& $buildScript @buildParams 2>&1 | Tee-Object -FilePath $WithFixLog
 
 $withFixResult = Get-TestResultFromLog -LogFile (Join-Path $RepoRoot "CustomAgentLogsTmp/UITests/test-output.log")
 
