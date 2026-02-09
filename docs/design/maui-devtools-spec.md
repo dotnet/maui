@@ -1,8 +1,8 @@
 # MAUI Dev Tools Client — Product Specification
 
-**Version**: 2.7-draft  
+**Version**: 2.8-draft  
 **Status**: Proposal  
-**Last Updated**: 2026-02-05
+**Last Updated**: 2026-02-09
 
 ---
 
@@ -179,8 +179,9 @@ This tool eliminates that friction by providing a single, authoritative source f
 | FR-X10 | Stream simulator/device logs | P1 |
 | FR-X11 | Validate basic signing prerequisites (team ID, certificate presence) | P2 |
 | FR-X12 | Open Simulator.app with specific device | P1 |
-| FR-X13 | Handle multiple Xcode versions (detect all, use `xcode-select` default) | P1 |
-| FR-X14 | Detect Xcode beta installations at `/Applications/Xcode-beta.app` | P2 |
+| FR-X13 | List all Xcode installations with version, build number, and selected status (`xcode list`) | P0 |
+| FR-X14 | Switch active Xcode installation (`xcode select <path>`) | P0 |
+| FR-X15 | Detect Xcode beta installations at `/Applications/Xcode-beta.app` | P2 |
 
 ### 4.4 Windows Management
 
@@ -784,11 +785,10 @@ The tool is invoked as `dotnet maui <command>`, integrating naturally with the .
 ```
 dotnet maui
 ├── doctor                    # Check environment health
-│   ├── --fix [issue-id]      # Auto-fix all or specific issue
-│   ├── --platform <p>        # Filter: android, ios, windows, maccatalyst (repeatable)
+│   ├── --fix                 # Auto-fix all detected issues
+│   ├── --category <c>       # Filter: dotnet, android, apple, windows
 │   ├── --json                # Output as JSON
-│   ├── --non-interactive     # No prompts (for CI)
-│   └── --offline             # Skip network checks
+│   └── --ci                  # CI mode (no prompts, fail-fast)
 │
 ├── device
 │   ├── list                  # List all devices across platforms
@@ -858,15 +858,18 @@ dotnet maui
 │   │   │   ├── --runtime     # Runtime identifier
 │   │   │   └── --device-type # Device type identifier
 │   │   ├── boot              # Boot simulator
-│   │   │   └── --udid        # Simulator UDID (or --name)
+│   │   │   └── <udid>        # Simulator UDID
 │   │   ├── shutdown          # Shutdown simulator
-│   │   │   └── --udid        # Simulator UDID
+│   │   │   └── <udid>        # Simulator UDID
 │   │   └── delete            # Delete simulator
-│   │       └── --udid        # Simulator UDID
-│   └── runtime
-│       ├── list              # List installed iOS/macOS runtimes
-│       └── install           # Install runtime (guidance)
-│           └── --version     # Runtime version
+│   │       └── <udid>        # Simulator UDID
+│   ├── runtime
+│   │   ├── list              # List installed iOS/macOS runtimes
+│   │   └── install           # Install runtime (guidance)
+│   │       └── --version     # Runtime version
+│   └── xcode                 # Xcode installation management
+│       ├── list              # List installed Xcode versions
+│       └── select <path>     # Switch active Xcode installation
 │
 ├── windows                   # Windows-specific commands (Windows only)
 │   ├── sdk
@@ -914,8 +917,10 @@ dotnet maui android logcat --device emulator-5554
 
 # Apple-specific (macOS only)
 dotnet maui apple simulator list
-dotnet maui apple simulator boot --name "iPhone 16 Pro"
+dotnet maui apple simulator boot <udid>
 dotnet maui apple runtime list
+dotnet maui apple xcode list
+dotnet maui apple xcode select /Applications/Xcode.app
 
 # Windows-specific
 dotnet maui windows developer-mode status
@@ -927,13 +932,13 @@ dotnet maui windows developer-mode status
 
 | Option | Description | Required |
 |--------|-------------|----------|
-| `--json` | Output as JSON (machine-readable) | **Mandatory on all commands** |
-| `--dry-run` | Show what would be done without executing | **Mandatory on write commands** |
-| `--ci` | Strict mode: no prompts, warnings become errors, JSON output forced | Recommended |
-| `--verbose` | Enable verbose logging | Optional |
-| `--non-interactive` | Disable prompts; fail if input needed | Optional |
-| `--correlation-id` | Set correlation ID for tracing | Optional |
-| `--offline` | Skip network operations; use cached data only | Optional |
+| `--json` | Output as JSON (machine-readable) | **Mandatory on all commands** ✅ |
+| `--dry-run` | Show what would be done without executing | **Mandatory on write commands** ✅ |
+| `--ci` | Strict mode: no prompts, warnings become errors, JSON output forced | Recommended ✅ |
+| `--verbose` / `-v` | Enable verbose logging | Optional ✅ |
+| `--non-interactive` | Disable prompts; fail if input needed | Optional (vNext) |
+| `--correlation-id` | Set correlation ID for tracing | Optional (vNext) |
+| `--offline` | Skip network operations; use cached data only | Optional (vNext) |
 
 **`--ci` Mode Behavior**:
 - Forces `--json` output (human-readable disabled)
@@ -985,8 +990,14 @@ All commands follow a consistent exit code scheme:
 | `dotnet maui android avd stop` | Stop emulator | `--serial` | Status | 0=success, 5=not found, 2=error |
 | `dotnet maui android avd delete` | Delete AVD | `--name` | Status | 0=success, 5=not found, 2=error |
 | `dotnet maui apple simulator list` | List simulators | `--runtime`, `--device-type`, `--state` | Simulator list | 0=success, 2=error |
-| `dotnet maui apple simulator boot` | Boot simulator | `--udid` or `--name` | UDID | 0=success, 5=not found, 2=error |
+| `dotnet maui apple simulator boot` | Boot simulator | `<udid>` | UDID | 0=success, 5=not found, 2=error |
+| `dotnet maui apple simulator shutdown` | Shutdown simulator | `<udid>` | Status | 0=success, 5=not found, 2=error |
+| `dotnet maui apple simulator create` | Create simulator | `<name> <device-type> <runtime>` | UDID | 0=success, 2=error |
+| `dotnet maui apple simulator delete` | Delete simulator | `<udid>` | Status | 0=success, 5=not found, 2=error |
 | `dotnet maui apple runtime list` | List iOS runtimes | `--json` | Runtime list | 0=success, 2=error |
+| `dotnet maui apple xcode list` | List Xcode installations | `--json` | Installation list | 0=success, 2=error |
+| `dotnet maui apple xcode select` | Switch active Xcode | `<path>` | Confirmation | 0=success, 3=permission denied |
+| `dotnet maui android sdk accept-licenses` | Accept SDK licenses | `--json` | Status | 0=success, 2=error |
 | `dotnet maui config set` | Set configuration | `<key>`, `<value>` | Confirmation | 0=success, 2=error |
 
 ### 7.2 JSON Output Schemas
@@ -1002,7 +1013,7 @@ The unified device model for all platforms (physical devices, emulators, simulat
   "emulator_id": null,
   "platforms": ["ios", "maccatalyst"],
   "version": "18.5",
-  "version_name": "iOS 18.5",
+  "version_name": "18.5",
   "manufacturer": "Apple",
   "model": "iPhone 15 Pro",
   "sub_model": "Pro",
@@ -1014,28 +1025,43 @@ The unified device model for all platforms (physical devices, emulators, simulat
   "is_running": true,
   "connection_type": "local",
   "type": "Simulator",
-  "state": "Booted"
+  "state": "Booted",
+  "details": {}
 }
 ```
 
 | Field | Type | Description |
 |-------|------|-------------|
 | `name` | string | Display name (required) |
-| `identifier` | string | Unique ID - UDID (iOS) or serial (Android) (required) |
+| `identifier` | string | Unique ID — AVD name (Android emulator), serial (Android physical), UDID (iOS) (required) |
 | `emulator_id` | string? | AVD name for Android emulators |
 | `platforms` | string[] | Supported platforms (required) |
-| `version` | string? | OS version number |
-| `version_name` | string? | Human-readable OS version |
-| `manufacturer` | string? | Device manufacturer |
-| `model` | string? | Device model |
-| `sub_model` | string? | Device variant |
+| `version` | string? | API level for Android (e.g., `"35"`), OS version for iOS (e.g., `"18.5"`) |
+| `version_name` | string? | OS version number without platform prefix (e.g., `"15.0"` not `"Android 15.0"`) |
+| `manufacturer` | string? | Device manufacturer (`"Google"` for emulators, `ro.product.manufacturer` for physical) |
+| `model` | string? | Device model (e.g., `"Pixel 8"`, `"iPhone 15 Pro"`) |
+| `sub_model` | string? | System image variant for Android (e.g., `"Google API's"`, `"Google API's, Play Store"`) |
 | `idiom` | string? | Form factor: `phone`, `tablet`, `watch`, `tv`, `desktop` |
-| `platform_architecture` | string? | Platform architecture (e.g., `arm64-v8a`) |
+| `platform_architecture` | string? | Raw platform ABI (e.g., `arm64-v8a`, `x86_64`, `arm64`) |
 | `runtime_identifiers` | string[]? | .NET runtime identifiers |
-| `architecture` | string? | CPU architecture |
+| `architecture` | string? | Normalized CPU architecture (e.g., `arm64`, `x64`) |
 | `is_emulator` | bool | True for emulator/simulator |
 | `is_running` | bool | True if device is booted |
 | `connection_type` | string? | `usb`, `wifi`, or `local` |
+| `type` | string? | `Physical`, `Emulator`, or `Simulator` |
+| `state` | string? | `Connected`, `Booted`, `Offline`, `Shutdown`, `Unknown` |
+| `details` | object? | Additional platform-specific metadata (e.g., `tag_id`, `avd` for Android) |
+
+**Android-Specific Field Semantics**:
+
+| Field | Running Emulator | Shutdown Emulator | Physical Device |
+|-------|-----------------|-------------------|-----------------|
+| `identifier` | AVD name (e.g., `Pixel_8_API_35`) | AVD name | Serial (e.g., `R58M32XXXXX`) |
+| `version` | API level from `ro.build.version.sdk` | API level from AVD config | API level from `ro.build.version.sdk` |
+| `version_name` | `ro.build.version.release` | Mapped from API level | `ro.build.version.release` |
+| `manufacturer` | `ro.product.manufacturer` | `"Google"` | `ro.product.manufacturer` |
+| `platform_architecture` | Raw ABI (e.g., `arm64-v8a`) | From AVD config | Raw ABI from `ro.product.cpu.abi` |
+| `sub_model` | Merged from AVD tag + `PlayStore.enabled` | From AVD tag + `PlayStore.enabled` | N/A |
 
 #### SdkPackage Schema
 
@@ -1057,6 +1083,26 @@ The unified device model for all platforms (physical devices, emulators, simulat
 | `location` | string? | Install path (for installed packages) |
 | `is_installed` | bool | True if currently installed |
 
+#### XcodeInstallation Schema
+
+```json
+{
+  "path": "/Applications/Xcode.app",
+  "developer_dir": "/Applications/Xcode.app/Contents/Developer",
+  "version": "16.2",
+  "build": "16C5032a",
+  "is_selected": true
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `path` | string | Path to Xcode.app bundle (required) |
+| `developer_dir` | string | Path to Developer directory inside the bundle |
+| `version` | string | Xcode version string |
+| `build` | string | Xcode build number |
+| `is_selected` | bool | True if this is the currently active Xcode (via `xcode-select`) |
+
 ### 7.3 Capabilities Model
 
 | Command | Windows | macOS | Requires Elevation |
@@ -1067,14 +1113,24 @@ The unified device model for all platforms (physical devices, emulators, simulat
 | `dotnet maui device screenshot` | ✓ | ✓ | No |
 | `dotnet maui android sdk list` | ✓ | ✓ | No |
 | `dotnet maui android sdk install` | ✓ | ✓ | No |
+| `dotnet maui android sdk accept-licenses` | ✓ | ✓ | No |
 | `dotnet maui android avd create` | ✓ | ✓ | No |
 | `dotnet maui android avd start` | ✓ | ✓ | No |
-| `dotnet maui android logcat` | ✓ | ✓ | No |
+| `dotnet maui android avd stop` | ✓ | ✓ | No |
+| `dotnet maui android avd delete` | ✓ | ✓ | No |
+| `dotnet maui android bootstrap` | ✓ | ✓ | No |
+| `dotnet maui android jdk check` | ✓ | ✓ | No |
+| `dotnet maui android jdk install` | ✓ | ✓ | No |
+| `dotnet maui android jdk list` | ✓ | ✓ | No |
 | `dotnet maui apple simulator list` | — | ✓ | No |
 | `dotnet maui apple simulator boot` | — | ✓ | No |
+| `dotnet maui apple simulator shutdown` | — | ✓ | No |
 | `dotnet maui apple simulator create` | — | ✓ | No |
+| `dotnet maui apple simulator delete` | — | ✓ | No |
 | `dotnet maui apple runtime list` | — | ✓ | No |
 | `dotnet maui apple runtime install` | — | ✓ | Yes (admin) |
+| `dotnet maui apple xcode list` | — | ✓ | No |
+| `dotnet maui apple xcode select` | — | ✓ | Yes (sudo) |
 | `dotnet maui device logs` | ✓ | ✓ | No |
 
 *Elevation required for: installing Android SDK to system locations, installing Xcode runtimes
@@ -1222,20 +1278,24 @@ maui-diag/
 
 ### MVP (v1.0)
 
-| Priority | Feature |
-|----------|---------|
-| P0 | `doctor` command with status reporting |
-| P0 | `doctor --fix` for automated remediation |
-| P0 | Android SDK detection and installation |
-| P0 | Android AVD creation and management |
-| P0 | iOS simulator listing and boot/shutdown |
-| P0 | Unified `device list` command (emulators, simulators, physical devices) |
-| P0 | `device screenshot` command |
-| P0 | JSON output for all commands |
-| P0 | VS Code extension integration |
-| P1 | Logcat streaming |
-| P1 | iOS runtime listing |
-| P1 | Interactive prompting |
+| Priority | Feature | Status |
+|----------|---------|--------|
+| P0 | `doctor` command with status reporting | ✅ Implemented |
+| P0 | `doctor --fix` for automated remediation | ✅ Implemented |
+| P0 | Android SDK detection and installation | ✅ Implemented |
+| P0 | Android AVD creation and management | ✅ Implemented |
+| P0 | Android bootstrap (JDK + SDK from scratch) | ✅ Implemented |
+| P0 | Android JDK management (check, install, list) | ✅ Implemented |
+| P0 | Android SDK license acceptance | ✅ Implemented |
+| P0 | iOS simulator listing and boot/shutdown/create/delete | ✅ Implemented |
+| P0 | iOS runtime listing | ✅ Implemented |
+| P0 | Xcode installation listing and selection | ✅ Implemented |
+| P0 | Unified `device list` command (emulators, simulators, physical devices) | ✅ Implemented |
+| P0 | `device screenshot` command | ✅ Implemented |
+| P0 | JSON output for all commands | ✅ Implemented |
+| P0 | VS Code extension integration | ✅ In progress |
+| P1 | Device log streaming | ✅ Implemented |
+| P1 | Interactive prompting | Planned |
 
 ### vNext (v1.x / v2.0)
 
@@ -1244,11 +1304,15 @@ maui-diag/
 | P1 | Visual Studio extension integration |
 | P1 | iOS runtime installation guidance |
 | P1 | APK install/uninstall |
+| P1 | `deploy` command (build + deploy to device) |
+| P1 | `config` command (get/set/list configuration) |
+| P1 | `--non-interactive`, `--correlation-id`, `--offline` global options |
 | P2 | AVD snapshot management |
-| P2 | Simulator log streaming |
 | P2 | Windows SDK management |
 | P2 | Linux host support (Android only) |
 | P2 | Physical iOS device support (requires signing) |
+| P2 | `diagnostic-bundle` command |
+| P2 | Telemetry (opt-in) |
 | Future | MCP server integration for AI agents |
 | Future | Cloud-hosted device support |
 
@@ -1267,6 +1331,7 @@ maui-diag/
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 2.8-draft | 2026-02-09 | Synced spec with implementation: added Xcode list/select commands, XcodeInstallation schema, Android device field semantics, updated MauiDevice schema with `type`/`state`/`details` fields, marked MVP features as implemented, updated capabilities model and command table, clarified global option implementation status |
 | 2.6-draft | 2026-02-04 | Condensed §3 Goals and §4 Personas into single section; Now 10 sections |
 | 2.5-draft | 2026-02-04 | Removed §11 Security, §12 Extensibility; Added physical device support to device list |
 | 2.4-draft | 2026-02-04 | Removed §13 Testing Strategy, §14 Rollout Plan |
