@@ -18,7 +18,7 @@ public static class AndroidCommands
 	{
 		var command = new Command("android", "Android SDK and device management");
 
-		command.AddCommand(CreateBootstrapCommand());
+		command.AddCommand(CreateInstallCommand());
 		command.AddCommand(CreateJdkCommand());
 		command.AddCommand(CreateSdkCommand());
 		command.AddCommand(CreateAvdCommand());
@@ -26,14 +26,14 @@ public static class AndroidCommands
 		return command;
 	}
 
-	private static Command CreateBootstrapCommand()
+	private static Command CreateInstallCommand()
 	{
 		var packagesOption = new Option<string[]>("--packages", "Additional SDK packages to install (comma-separated or multiple --packages flags)")
 		{
 			AllowMultipleArgumentsPerToken = true
 		};
 
-		var command = new Command("bootstrap", "Set up Android development environment")
+		var command = new Command("install", "Set up Android development environment")
 		{
 			new Option<string>("--sdk-path", "Custom SDK installation path"),
 			new Option<string>("--jdk-path", "Custom JDK installation path"),
@@ -82,7 +82,7 @@ public static class AndroidCommands
 			{
 				if (dryRun)
 				{
-					Console.WriteLine("[dry-run] Would bootstrap Android environment:");
+					Console.WriteLine("[dry-run] Would install Android environment:");
 					Console.WriteLine($"  JDK version: {jdkVersion}");
 					Console.WriteLine($"  JDK path: {jdkPath ?? "(default)"}");
 					Console.WriteLine($"  SDK path: {sdkPath ?? "(default)"}");
@@ -91,7 +91,7 @@ public static class AndroidCommands
 					return;
 				}
 
-				await androidProvider.BootstrapAsync(
+				await androidProvider.InstallAsync(
 					sdkPath: sdkPath,
 					jdkPath: jdkPath,
 					jdkVersion: jdkVersion,
@@ -101,11 +101,11 @@ public static class AndroidCommands
 
 				if (useJson)
 				{
-					formatter.Write(new { success = true, message = "Android environment bootstrapped successfully" });
+					formatter.Write(new { success = true, message = "Android environment installed successfully" });
 				}
 				else
 				{
-					Console.WriteLine("✓ Android environment bootstrapped successfully");
+					Console.WriteLine("✓ Android environment installed successfully");
 				}
 			}
 			catch (UnauthorizedAccessException) when (PlatformDetector.IsWindows)
@@ -117,11 +117,11 @@ public static class AndroidCommands
 				{
 					if (useJson)
 					{
-						formatter.Write(new { success = true, message = "Android environment bootstrapped successfully (elevated)" });
+						formatter.Write(new { success = true, message = "Android environment installed successfully (elevated)" });
 					}
 					else
 					{
-						Console.WriteLine("✓ Android environment bootstrapped successfully (elevated)");
+						Console.WriteLine("✓ Android environment installed successfully (elevated)");
 					}
 				}
 				else
@@ -458,12 +458,12 @@ public static class AndroidCommands
 						formatter.Write(new { 
 							success = false, 
 							status = "sdk_not_found",
-							message = "Android SDK not found. Run 'dotnet maui android bootstrap' first." 
+							message = "Android SDK not found. Run 'dotnet maui android install' first." 
 						});
 					}
 					else
 					{
-						Console.WriteLine("✗ Android SDK not found. Run 'dotnet maui android bootstrap' first.");
+						Console.WriteLine("✗ Android SDK not found. Run 'dotnet maui android install' first.");
 					}
 					context.ExitCode = 1;
 					return;

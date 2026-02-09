@@ -56,7 +56,7 @@ public class AndroidProvider : IAndroidProvider
 					IssueId = ErrorCodes.AndroidSdkNotFound,
 					Description = "Install Android SDK",
 					AutoFixable = true,
-					Command = "dotnet maui android bootstrap --accept-licenses"
+					Command = "dotnet maui android install --accept-licenses"
 				}
 			});
 			return checks;
@@ -84,7 +84,7 @@ public class AndroidProvider : IAndroidProvider
 					IssueId = ErrorCodes.AndroidSdkManagerNotFound,
 					Description = "Install command-line tools",
 					AutoFixable = true,
-					Command = "dotnet maui android bootstrap"
+					Command = "dotnet maui android install"
 				}
 			});
 		}
@@ -302,7 +302,7 @@ public class AndroidProvider : IAndroidProvider
 		progress?.Report($"OpenJDK {version} installed to {_jdkPath}");
 	}
 
-	public async Task BootstrapAsync(string? sdkPath = null, string? jdkPath = null, int jdkVersion = 17, 
+	public async Task InstallAsync(string? sdkPath = null, string? jdkPath = null, int jdkVersion = 17, 
 		IEnumerable<string>? additionalPackages = null, IProgress<string>? progress = null, CancellationToken cancellationToken = default)
 	{
 		// Step 1: Install JDK if not present
@@ -321,7 +321,7 @@ public class AndroidProvider : IAndroidProvider
 		{
 			progress?.Report("Step 2/4: Installing Android SDK command-line tools...");
 			var targetSdkPath = sdkPath ?? PlatformDetector.Paths.DefaultAndroidSdkPath;
-			await _sdkManager.BootstrapSdkAsync(targetSdkPath, cancellationToken);
+			await _sdkManager.InstallSdkAsync(targetSdkPath, cancellationToken);
 			_sdkPath = targetSdkPath;
 			progress?.Report($"Android SDK installed to {_sdkPath}");
 		}

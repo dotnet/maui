@@ -92,7 +92,7 @@ public class SdkManager
 					IssueId = ErrorCodes.AndroidSdkNotFound,
 					Description = "Install Android SDK",
 					AutoFixable = true,
-					Command = "dotnet maui android bootstrap"
+					Command = "dotnet maui android install"
 				}
 			};
 		}
@@ -202,8 +202,8 @@ public class SdkManager
 		if (!IsAvailable)
 			throw MauiToolException.AutoFixable(
 				ErrorCodes.AndroidSdkManagerNotFound,
-				"SDK Manager not found. Run 'dotnet maui android bootstrap' first.",
-				"dotnet maui android bootstrap");
+				"SDK Manager not found. Run 'dotnet maui android install' first.",
+				"dotnet maui android install");
 
 		var packageList = string.Join(" ", packages.Select(p => $"\"{p}\""));
 		var args = packageList;
@@ -244,7 +244,7 @@ public class SdkManager
 			throw MauiToolException.AutoFixable(
 				ErrorCodes.AndroidSdkManagerNotFound,
 				"SDK Manager not found",
-				"dotnet maui android bootstrap");
+				"dotnet maui android install");
 
 		var result = await ProcessRunner.RunAsync(
 			SdkManagerPath!,
@@ -271,7 +271,7 @@ public class SdkManager
 		return Task.FromResult(licenseFiles.Length > 0);
 	}
 
-	public async Task BootstrapSdkAsync(string targetPath, CancellationToken cancellationToken = default)
+	public async Task InstallSdkAsync(string targetPath, CancellationToken cancellationToken = default)
 	{
 		// Create target directory
 		Directory.CreateDirectory(targetPath);
