@@ -78,6 +78,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		SearchHandlerAppearanceTracker? _searchHandlerAppearanceTracker;
 		IFontManager _fontManager;
 		bool _isVisiblePage;
+		NSObject? _keyboardWillHideObserver;
 
 		BackButtonBehavior? BackButtonBehavior { get; set; }
 		UINavigationItem? NavigationItem { get; set; }
@@ -92,6 +93,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_context.Shell.PropertyChanged += HandleShellPropertyChanged;
 
 			_fontManager = context.Shell.RequireFontManager();
+
+			_keyboardWillHideObserver = UIKeyboard.Notifications.ObserveWillHide(OnKeyboardWillHide);
 		}
 
 		public void OnFlyoutBehaviorChanged(FlyoutBehavior behavior)
@@ -1164,6 +1167,36 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_context.Shell.Toolbar.PropertyChanged -= OnToolbarPropertyChanged;
 		}
 
+		void OnKeyboardWillHide(object? sender, UIKeyboardEventArgs e)
+		{
+			// Keyboard dismissal during page load can cause iOS to misposition the view behind the navigation bar.
+			// Detect and correct this by repositioning the view below the navigation bar when needed.
+
+			if (_disposed || ViewController?.View is null || ViewController.NavigationController is null)
+				return;
+
+			var navController = ViewController.NavigationController;
+			var navBar = navController.NavigationBar;
+
+			if (navBar.Hidden || navBar.Frame.Height <= 0)
+				return;
+
+			var currentFrame = ViewController.View.Frame;
+			var navBarBottom = navBar.Frame.Bottom;
+
+			if (currentFrame.Y == 0 && navBarBottom > 0)
+			{
+				var correctFrame = new CGRect(
+					currentFrame.X,
+					navBarBottom,
+					currentFrame.Width,
+					currentFrame.Height
+				);
+
+				ViewController.View.Frame = correctFrame;
+			}
+		}
+
 		#endregion SearchHandler
 
 		#region IDisposable Support
@@ -1210,6 +1243,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				if (NavigationItem?.TitleView is TitleViewContainer tvc)
 					tvc.Disconnect();
+
+				_keyboardWillHideObserver?.Dispose();
+				_keyboardWillHideObserver = null;
 			}
 
 			_context = null;
