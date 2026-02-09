@@ -6,30 +6,18 @@ namespace Microsoft.Maui.Platform
 	{
 		public static void UpdateIsRunning(this UIActivityIndicatorView activityIndicatorView, IActivityIndicator activityIndicator)
 		{
-			activityIndicatorView.UpdateActivityIndicatorVisibility(activityIndicator);
 
-			if (activityIndicator.IsRunning && !activityIndicatorView.Hidden)
-				activityIndicatorView.StartAnimating();
-			else if(activityIndicatorView.IsAnimating)
-				activityIndicatorView.StopAnimating();
-		}
-
-		internal static void UpdateActivityIndicatorVisibility(this UIActivityIndicatorView platformView,IActivityIndicator activityIndicator)
-		{		
-			switch(activityIndicator.Visibility)
+				// Only show and animate if both IsRunning AND Visibility == Visible
+			if (activityIndicator.IsRunning && activityIndicator.Visibility == Visibility.Visible)
 			{
-				case Visibility.Visible:
-					platformView.Inflate();
-					platformView.Hidden = !activityIndicator.IsRunning;
-					break;
-				case Visibility.Hidden:
-					platformView.Inflate();
-					platformView.Hidden = true;
-					break;
-				case Visibility.Collapsed:
-					platformView.Hidden = true;
-					platformView.Collapse();
-					break;
+				activityIndicatorView.Hidden = false;
+ 				activityIndicatorView.StartAnimating();
+			}
+			else
+			{
+				if (activityIndicatorView.IsAnimating)
+					activityIndicatorView.StopAnimating();
+				activityIndicatorView.Hidden = true;
 			}
 		}
 
