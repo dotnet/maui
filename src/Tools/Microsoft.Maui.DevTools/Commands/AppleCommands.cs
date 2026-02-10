@@ -19,11 +19,156 @@ public static class AppleCommands
 	{
 		var appleCommand = new Command("apple", "Apple platform management (macOS only)");
 
+		appleCommand.AddCommand(CreateInstallCommand(appleProvider, getFormatter));
 		appleCommand.AddCommand(CreateSimulatorCommand(appleProvider, getFormatter));
 		appleCommand.AddCommand(CreateRuntimeCommand(appleProvider, getFormatter));
 		appleCommand.AddCommand(CreateXcodeCommand(appleProvider, getFormatter));
 
 		return appleCommand;
+	}
+
+	private static Command CreateInstallCommand(IAppleProvider provider, Func<InvocationContext, IOutputFormatter> getFormatter)
+	{
+		var command = new Command("install", "Set up Apple development environment (Xcode, runtimes)")
+		{
+			new Option<string>("--runtime", "iOS runtime version to install (e.g., 18.5)"),
+			new Option<bool>("--accept-licenses", "Automatically accept Xcode license")
+		};
+
+		command.SetHandler(async (InvocationContext context) =>
+		{
+			var formatter = getFormatter(context);
+			var dryRun = context.ParseResult.GetValueForOption(GlobalOptions.DryRunOption);
+			var runtimeVersion = context.ParseResult.GetValueForOption(
+				(Option<string>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "runtime"));
+			var acceptLicenses = context.ParseResult.GetValueForOption(
+				(Option<bool>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "accept-licenses"));
+
+			var progress = new Progress<string>(message =>
+			{
+				if (formatter is JsonOutputFormatter)
+					formatter.WriteProgress(message);
+				else
+					Console.WriteLine(message);
+			});
+
+			try
+			{
+				if (dryRun)
+				{
+					Console.WriteLine("[dry-run] Would set up Apple development environment:");
+					Console.WriteLine("  • Check Xcode installation");
+					Console.WriteLine("  • Check Xcode license");
+					if (acceptLicenses)
+						Console.WriteLine("  • Accept Xcode license if needed");
+					Console.WriteLine("  • Check installed runtimes");
+					if (!string.IsNullOrEmpty(runtimeVersion))
+						Console.WriteLine($"  • Install iOS {runtimeVersion} runtime if needed");
+					return;
+				}
+
+				var results = new List<object>();
+
+				// Step 1: Check Xcode
+				((IProgress<string>)progress).Report("Checking Xcode installation...");
+				var checks = await provider.CheckHealthAsync(context.GetCancellationToken());
+				var xcodeCheck = checks.FirstOrDefault(c => c.Name == "Xcode");
+
+				if (xcodeCheck == null || xcodeCheck.Status == CheckStatus.Error)
+				{
+					throw new Errors.MauiToolException(
+						Errors.ErrorCodes.XcodeNotFound,
+						"Xcode is not installed. Please install Xcode from the App Store or https://developer.apple.com/xcode/");
+				}
+
+				if (formatter is not JsonOutputFormatter)
+				{
+					Console.WriteLine($"✓ Xcode {(xcodeCheck.Details?.TryGetValue("version", out var ver) == true ? ver : "installed")}");
+				}
+				results.Add(new { step = "xcode", status = "ok", message = xcodeCheck.Message });
+
+				// Step 2: Check and accept license
+				((IProgress<string>)progress).Report("Checking Xcode license...");
+				var licenseAccepted = await provider.IsXcodeLicenseAcceptedAsync(context.GetCancellationToken());
+
+				if (!licenseAccepted)
+				{
+					if (acceptLicenses)
+					{
+						((IProgress<string>)progress).Report("Accepting Xcode license...");
+						await provider.AcceptXcodeLicenseAsync(context.GetCancellationToken());
+						if (formatter is not JsonOutputFormatter)
+							Console.WriteLine("✓ Xcode license accepted");
+						results.Add(new { step = "license", status = "ok", message = "Xcode license accepted" });
+					}
+					else
+					{
+						if (formatter is not JsonOutputFormatter)
+							Console.WriteLine("⚠ Xcode license not accepted (use --accept-licenses or run: dotnet maui apple xcode accept-licenses)");
+						results.Add(new { step = "license", status = "warning", message = "Xcode license not accepted" });
+					}
+				}
+				else
+				{
+					if (formatter is not JsonOutputFormatter)
+						Console.WriteLine("✓ Xcode license accepted");
+					results.Add(new { step = "license", status = "ok", message = "Xcode license already accepted" });
+				}
+
+				// Step 3: Check runtimes
+				((IProgress<string>)progress).Report("Checking installed runtimes...");
+				var runtimes = await provider.ListRuntimesAsync(context.GetCancellationToken());
+
+				if (formatter is not JsonOutputFormatter)
+				{
+					if (runtimes.Count > 0)
+						Console.WriteLine($"✓ {runtimes.Count} runtime(s) installed: {string.Join(", ", runtimes.Select(r => r.Name))}");
+					else
+						Console.WriteLine("⚠ No iOS runtimes installed");
+				}
+				results.Add(new { step = "runtimes", status = runtimes.Count > 0 ? "ok" : "warning", installed = runtimes.Select(r => r.Name) });
+
+				// Step 4: Install runtime if requested
+				if (!string.IsNullOrEmpty(runtimeVersion))
+				{
+					var alreadyInstalled = runtimes.Any(r =>
+						r.Version.StartsWith(runtimeVersion, StringComparison.OrdinalIgnoreCase) ||
+						r.Name.Contains(runtimeVersion, StringComparison.OrdinalIgnoreCase));
+
+					if (alreadyInstalled)
+					{
+						if (formatter is not JsonOutputFormatter)
+							Console.WriteLine($"✓ iOS {runtimeVersion} runtime already installed");
+						results.Add(new { step = "runtime_install", status = "ok", message = $"iOS {runtimeVersion} already installed" });
+					}
+					else
+					{
+						((IProgress<string>)progress).Report($"Installing iOS {runtimeVersion} runtime...");
+						await provider.InstallRuntimeAsync(runtimeVersion, progress, context.GetCancellationToken());
+						if (formatter is not JsonOutputFormatter)
+							Console.WriteLine($"✓ iOS {runtimeVersion} runtime installed");
+						results.Add(new { step = "runtime_install", status = "ok", message = $"iOS {runtimeVersion} installed" });
+					}
+				}
+
+				if (formatter is JsonOutputFormatter)
+				{
+					formatter.Write(new { success = true, message = "Apple development environment ready", steps = results });
+				}
+				else
+				{
+					Console.WriteLine();
+					Console.WriteLine("✓ Apple development environment is ready");
+				}
+			}
+			catch (Exception ex)
+			{
+				formatter.WriteError(ex);
+				context.ExitCode = 1;
+			}
+		});
+
+		return command;
 	}
 
 	private static Command CreateSimulatorCommand(IAppleProvider provider, Func<InvocationContext, IOutputFormatter> getFormatter)
