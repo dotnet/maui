@@ -8,6 +8,7 @@ parameters:
   androidApiLevels: [ 30 ]
   androidApiLevelsExtended: [ 36 ] # API 36 for Material3 tests with Pixel 3 XL
   iosVersions: [ 'latest' ]
+  androidApiLevels: [ 30 ]
   androidApiLevelsForSafeAreaEdges: [ 36 ] # Separate API level for SafeAreaEdges tests with Pixel 7
   provisionatorChannel: 'latest'
   timeoutInMinutes: 180
