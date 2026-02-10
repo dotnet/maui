@@ -219,6 +219,27 @@ public class AppleProvider : IAppleProvider
 		await _simctl.ShutdownDeviceAsync(udid, cancellationToken);
 	}
 
+	public async Task<List<Runtime>> ListAvailableRuntimesAsync(CancellationToken cancellationToken = default)
+	{
+		return await _simctl.ListAvailableRuntimesAsync(cancellationToken);
+	}
+
+	public async Task InstallRuntimeAsync(string version, IProgress<string>? progress = null,
+		CancellationToken cancellationToken = default)
+	{
+		await _simctl.InstallRuntimeAsync(version, progress, cancellationToken);
+	}
+
+	public async Task AcceptXcodeLicenseAsync(CancellationToken cancellationToken = default)
+	{
+		await _xcodeSelect.AcceptLicenseAsync(cancellationToken);
+	}
+
+	public async Task<bool> IsXcodeLicenseAcceptedAsync(CancellationToken cancellationToken = default)
+	{
+		return await _xcodeSelect.IsLicenseAcceptedAsync(cancellationToken);
+	}
+
 	public async Task<List<XcodeInstallation>> ListXcodeInstallationsAsync(CancellationToken cancellationToken = default)
 	{
 		return await _xcodeSelect.ListInstallationsAsync(cancellationToken);

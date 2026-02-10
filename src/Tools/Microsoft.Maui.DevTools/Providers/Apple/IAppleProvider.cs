@@ -61,6 +61,26 @@ public interface IAppleProvider
 	Task ShutdownSimulatorAsync(string udid, CancellationToken cancellationToken = default);
 
 	/// <summary>
+	/// Lists runtimes available for download.
+	/// </summary>
+	Task<List<Runtime>> ListAvailableRuntimesAsync(CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Installs an iOS runtime by version or identifier.
+	/// </summary>
+	Task InstallRuntimeAsync(string version, IProgress<string>? progress = null, CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Accepts the Xcode license agreement.
+	/// </summary>
+	Task AcceptXcodeLicenseAsync(CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Checks if the Xcode license has been accepted.
+	/// </summary>
+	Task<bool> IsXcodeLicenseAcceptedAsync(CancellationToken cancellationToken = default);
+
+	/// <summary>
 	/// Lists all installed Xcode versions.
 	/// </summary>
 	Task<List<XcodeInstallation>> ListXcodeInstallationsAsync(CancellationToken cancellationToken = default);
@@ -80,4 +100,6 @@ public class Runtime
 	public required string Name { get; init; }
 	public required string Version { get; init; }
 	public bool IsAvailable { get; init; }
+	public bool IsInstalled { get; init; }
+	public string? Source { get; init; }
 }

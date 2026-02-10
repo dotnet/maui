@@ -76,6 +76,41 @@ public class XcodeSelect
 	}
 
 	/// <summary>
+	/// Checks if the Xcode license has been accepted.
+	/// </summary>
+	public async Task<bool> IsLicenseAcceptedAsync(CancellationToken cancellationToken = default)
+	{
+		if (!PlatformDetector.IsMacOS)
+			return false;
+
+		var result = await ProcessRunner.RunAsync(
+			"xcodebuild", "-checkFirstLaunchStatus",
+			timeout: TimeSpan.FromSeconds(15),
+			cancellationToken: cancellationToken);
+
+		return result.Success;
+	}
+
+	/// <summary>
+	/// Accepts the Xcode license agreement. Requires sudo.
+	/// </summary>
+	public async Task AcceptLicenseAsync(CancellationToken cancellationToken = default)
+	{
+		var result = await ProcessRunner.RunAsync(
+			"sudo", "xcodebuild -license accept",
+			timeout: TimeSpan.FromSeconds(30),
+			cancellationToken: cancellationToken);
+
+		if (!result.Success)
+		{
+			throw new Errors.MauiToolException(
+				Errors.ErrorCodes.XcodeSelectFailed,
+				$"Failed to accept Xcode license: {result.StandardError}",
+				nativeError: result.StandardError);
+		}
+	}
+
+	/// <summary>
 	/// Lists all Xcode installations found on the system.
 	/// </summary>
 	public async Task<List<XcodeInstallation>> ListInstallationsAsync(CancellationToken cancellationToken = default)
