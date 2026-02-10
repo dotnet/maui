@@ -335,14 +335,22 @@ dotnet maui android emulator create MyEmulator --package "system-images;android-
 - Runtime downloads require Xcode to be open at least once (license acceptance)
 
 ```bash
+# Basic setup check
 dotnet maui apple install
+
+# Accept licenses automatically
+dotnet maui apple install --accept-licenses
+
+# Also install a specific iOS runtime
+dotnet maui apple install --runtime 18.5 --accept-licenses
 ```
 
 This command:
 1. Verifies Xcode installation
-2. Runs `xcode-select --install` if CLI tools missing
-3. Prompts user to accept Xcode license if needed
-4. Reports status and next steps
+2. Checks and optionally accepts Xcode license (`--accept-licenses`)
+3. Lists installed runtimes
+4. Installs a specific iOS runtime if `--runtime <version>` is provided
+5. Reports overall status and next steps
 
 #### Windows Install
 
@@ -785,7 +793,7 @@ The tool is invoked as `dotnet maui <command>`, integrating naturally with the .
 dotnet maui
 ├── doctor                    # Check environment health
 │   ├── --fix                 # Auto-fix all detected issues
-│   ├── --category <c>       # Filter: dotnet, android, apple, windows
+│   ├── --platform <p>       # Filter: dotnet, android, apple, windows
 │   ├── --json                # Output as JSON
 │   └── --ci                  # CI mode (no prompts, fail-fast)
 │
@@ -836,11 +844,14 @@ dotnet maui
 │       │   ├── --cold-boot   # Cold boot
 │       │   └── --wait        # Wait for boot
 │       ├── stop              # Stop emulator
-│       │   └── --serial      # Emulator serial (e.g., emulator-5554)
+│       │   └── <name>        # Emulator name
 │       └── delete            # Delete emulator
 │           └── --name        # Emulator name
 │
 ├── apple                     # Apple platform commands (macOS only)
+│   ├── install               # Set up Apple development environment
+│   │   ├── --runtime         # iOS runtime version to install
+│   │   └── --accept-licenses # Accept Xcode license automatically
 │   ├── simulator
 │   │   ├── list              # List simulators
 │   │   │   ├── --runtime     # Filter by runtime
@@ -857,12 +868,17 @@ dotnet maui
 │   │   └── delete            # Delete simulator
 │   │       └── <udid>        # Simulator UDID
 │   ├── runtime
-│   │   ├── list              # List installed iOS/macOS runtimes
-│   │   └── install           # Install runtime (guidance)
-│   │       └── --version     # Runtime version
+│   │   ├── check             # Check runtime installation status
+│   │   ├── list              # List runtimes
+│   │   │   ├── --available   # Show runtimes available for download
+│   │   │   └── --all         # Show all (installed + available)
+│   │   └── install           # Install iOS runtime
+│   │       └── <version>     # Runtime version
 │   └── xcode                 # Xcode installation management
+│       ├── check             # Check Xcode installation and license
 │       ├── list              # List installed Xcode versions
-│       └── select <path>     # Switch active Xcode installation
+│       ├── select <path>     # Switch active Xcode installation
+│       └── accept-licenses   # Accept Xcode license agreement
 │
 ├── windows                   # Windows-specific commands (Windows only)
 │   ├── sdk
@@ -891,11 +907,19 @@ dotnet maui android emulator start --name Pixel_8 --wait
 dotnet maui android logcat --device emulator-5554
 
 # Apple-specific (macOS only)
+dotnet maui apple install                              # Check Xcode + runtimes
+dotnet maui apple install --accept-licenses            # Also accept Xcode license
+dotnet maui apple install --runtime 18.5 --accept-licenses  # Full bootstrap
 dotnet maui apple simulator list
 dotnet maui apple simulator start <udid>
+dotnet maui apple runtime check
 dotnet maui apple runtime list
+dotnet maui apple runtime list --available             # Show downloadable runtimes
+dotnet maui apple runtime install 18.5                 # Install specific runtime
+dotnet maui apple xcode check
 dotnet maui apple xcode list
 dotnet maui apple xcode select /Applications/Xcode.app
+dotnet maui apple xcode accept-licenses
 
 # Windows-specific
 dotnet maui windows developer-mode status
@@ -962,16 +986,21 @@ All commands follow a consistent exit code scheme:
 | `dotnet maui android sdk install` | Install SDK package | `<package>`, `--accept-licenses` | Progress, result | 0=success, 5=not found, 2=error |
 | `dotnet maui android emulator create` | Create emulator | `--name`, `--device`, `--package` | Emulator name | 0=success, 1=exists, 2=error |
 | `dotnet maui android emulator start` | Start emulator | `--name`, `--wait`, `--cold-boot` | Device serial | 0=success, 5=not found, 2=error |
-| `dotnet maui android emulator stop` | Stop emulator | `--serial` | Status | 0=success, 5=not found, 2=error |
+| `dotnet maui android emulator stop` | Stop emulator | `<name>` | Status | 0=success, 5=not found, 2=error |
 | `dotnet maui android emulator delete` | Delete emulator | `--name` | Status | 0=success, 5=not found, 2=error |
 | `dotnet maui apple simulator list` | List simulators | `--runtime`, `--device-type`, `--state` | Simulator list | 0=success, 2=error |
 | `dotnet maui apple simulator start` | Start simulator | `<udid>` | UDID | 0=success, 5=not found, 2=error |
 | `dotnet maui apple simulator stop` | Stop simulator | `<udid>` | Status | 0=success, 5=not found, 2=error |
 | `dotnet maui apple simulator create` | Create simulator | `<name> <device-type> <runtime>` | UDID | 0=success, 2=error |
 | `dotnet maui apple simulator delete` | Delete simulator | `<udid>` | Status | 0=success, 5=not found, 2=error |
-| `dotnet maui apple runtime list` | List iOS runtimes | `--json` | Runtime list | 0=success, 2=error |
+| `dotnet maui apple runtime list` | List iOS runtimes | `--available`, `--all`, `--json` | Runtime list | 0=success, 2=error |
+| `dotnet maui apple runtime check` | Check runtime status | `--json` | Status report | 0=success, 2=error |
+| `dotnet maui apple runtime install` | Install iOS runtime | `<version>` | Progress, result | 0=success, 2=error |
+| `dotnet maui apple xcode check` | Check Xcode status | `--json` | Status report | 0=success, 2=error |
 | `dotnet maui apple xcode list` | List Xcode installations | `--json` | Installation list | 0=success, 2=error |
 | `dotnet maui apple xcode select` | Switch active Xcode | `<path>` | Confirmation | 0=success, 3=permission denied |
+| `dotnet maui apple xcode accept-licenses` | Accept Xcode license | `--json` | Status | 0=success, 3=permission denied |
+| `dotnet maui apple install` | Set up Apple environment | `--runtime`, `--accept-licenses` | Progress, result | 0=success, 2=error |
 | `dotnet maui android sdk accept-licenses` | Accept SDK licenses | `--json` | Status | 0=success, 2=error |
 
 ### 7.2 JSON Output Schemas
@@ -1101,10 +1130,14 @@ The unified device model for all platforms (physical devices, emulators, simulat
 | `dotnet maui apple simulator stop` | — | ✓ | No |
 | `dotnet maui apple simulator create` | — | ✓ | No |
 | `dotnet maui apple simulator delete` | — | ✓ | No |
+| `dotnet maui apple install` | — | ✓ | Sometimes* |
+| `dotnet maui apple runtime check` | — | ✓ | No |
 | `dotnet maui apple runtime list` | — | ✓ | No |
 | `dotnet maui apple runtime install` | — | ✓ | Yes (admin) |
+| `dotnet maui apple xcode check` | — | ✓ | No |
 | `dotnet maui apple xcode list` | — | ✓ | No |
 | `dotnet maui apple xcode select` | — | ✓ | Yes (sudo) |
+| `dotnet maui apple xcode accept-licenses` | — | ✓ | Yes (sudo) |
 | `dotnet maui device logs` | ✓ | ✓ | No |
 
 *Elevation required for: installing Android SDK to system locations, installing Xcode runtimes
@@ -1239,6 +1272,7 @@ All telemetry and logs follow these redaction rules:
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 2.10-draft | 2026-02-10 | Added `apple install` bootstrap command (Xcode + license + runtime), `runtime check`, `runtime list --available/--all`, `runtime install <version>`, `xcode check`, `xcode accept-licenses`; changed `doctor --category` → `doctor --platform`; changed `emulator stop <serial>` → `emulator stop <name>` for consistency |
 | 2.9-draft | 2026-02-10 | Unified command naming: renamed `avd` → `emulator` for Android, `simulator boot` → `simulator start`, `simulator shutdown` → `simulator stop` for Apple — consistent start/stop verbs across platforms |
 | 2.8-draft | 2026-02-09 | Synced with implementation: renamed `bootstrap` → `install` per PR feedback; removed `deploy`, `config`, `diagnostic-bundle` commands (covered by `dotnet run`/`dotnet build`); removed telemetry section (vNext); added Xcode list/select, XcodeInstallation schema, Android device field semantics, `type`/`state`/`details` to MauiDevice |
 | 2.6-draft | 2026-02-04 | Condensed §3 Goals and §4 Personas into single section; Now 10 sections |
