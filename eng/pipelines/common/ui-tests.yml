@@ -7,7 +7,7 @@ parameters:
   macosPool: { }
   iosVersions: [ 'latest' ]
   androidApiLevels: [ 30 ]
-  androidApiLevelsForSafeAreaEdges: [ 36 ] # Separate API level for SafeAreaEdges tests with Pixel 7
+  androidApiLevelsForSafeAreaEdges: [ 36 ] # Separate API level for SafeAreaEdges tests with Pixel 3XL
   provisionatorChannel: 'latest'
   timeoutInMinutes: 180
   skipProvisioning: true
@@ -207,9 +207,9 @@ stages:
                       artifactName: 'uitest-snapshot-results-android-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
 
-# SafeAreaEdges tests on Android API 36 with Pixel 7
+# SafeAreaEdges tests on Android API 36 with Pixel 3 XL
   - stage: android_ui_tests_safeareavedges
-    displayName: Android UITests SafeAreaEdges (API 36 Pixel 7)
+    displayName: Android UITests SafeAreaEdges (API 36 Pixel 3 XL)
     dependsOn: build_ui_tests
     jobs:
       - ${{ each project in parameters.projects }}:
@@ -232,7 +232,7 @@ stages:
                     path: ${{ project.android }}
                     app: ${{ project.app }}
                     device: android-emulator-64_${{ api }}
-                    deviceType: 'pixel_7' # Specific device type for SafeAreaEdges tests
+                    deviceType: 'pixel_3_xl' # Pixel 3 XL has notch display for SafeAreaEdges tests
                     provisionatorChannel: ${{ parameters.provisionatorChannel }}
                     testFilter: 'SafeAreaEdges'
                     skipProvisioning: ${{ parameters.skipProvisioning }}
