@@ -111,7 +111,7 @@ public class AndroidCommandsTests
 	}
 
 	[Fact]
-	public void EmulatorStopCommand_HasRequiredSerialArgument()
+	public void EmulatorStopCommand_HasRequiredNameArgument()
 	{
 		// Arrange
 		var androidCommand = AndroidCommands.Create();
@@ -120,7 +120,7 @@ public class AndroidCommandsTests
 
 		// Assert
 		Assert.Single(stopCommand.Arguments);
-		Assert.Equal("serial", stopCommand.Arguments.First().Name);
+		Assert.Equal("name", stopCommand.Arguments.First().Name);
 	}
 
 	[Fact]
