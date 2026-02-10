@@ -145,7 +145,11 @@ public partial class HybridWebViewTests_Interception : HybridWebViewTestsBase
 
 #if !ANDROID // Custom schemes are not supported on Android
 #if !WINDOWS // TODO: There seems to be a bug with the implementation in the WASDK version of WebView2
+#if IOS || MACCATALYST
+	[Theory(Skip = "Ignored on iOS and Catalyst. See tracking issue.")]
+#else
 	[Theory]
+#endif
 	[InlineData("app://echoservice/", "RequestsWithCustomSchemeCanBeIntercepted")]
 #endif
 #endif
