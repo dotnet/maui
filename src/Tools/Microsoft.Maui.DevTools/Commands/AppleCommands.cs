@@ -80,11 +80,11 @@ public static class AppleCommands
 		});
 		simulatorCommand.AddCommand(listCommand);
 
-		// simulator boot <udid>
-		var bootCommand = new Command("boot", "Boot a simulator");
+		// simulator start <udid>
+		var startCommand = new Command("start", "Start a simulator");
 		var udidArgument = new Argument<string>("udid", "Simulator UDID");
-		bootCommand.AddArgument(udidArgument);
-		bootCommand.SetHandler(async (InvocationContext context) =>
+		startCommand.AddArgument(udidArgument);
+		startCommand.SetHandler(async (InvocationContext context) =>
 		{
 			var formatter = getFormatter(context);
 			var udid = context.ParseResult.GetValueForArgument(udidArgument);
@@ -99,7 +99,7 @@ public static class AppleCommands
 				}
 				else
 				{
-					formatter.WriteSuccess($"Simulator {udid} booted");
+					formatter.WriteSuccess($"Simulator {udid} started");
 				}
 			}
 			catch (Exception ex)
@@ -108,16 +108,16 @@ public static class AppleCommands
 				context.ExitCode = 1;
 			}
 		});
-		simulatorCommand.AddCommand(bootCommand);
+		simulatorCommand.AddCommand(startCommand);
 
-		// simulator shutdown <udid>
-		var shutdownCommand = new Command("shutdown", "Shutdown a simulator");
-		var shutdownUdidArg = new Argument<string>("udid", "Simulator UDID");
-		shutdownCommand.AddArgument(shutdownUdidArg);
-		shutdownCommand.SetHandler(async (InvocationContext context) =>
+		// simulator stop <udid>
+		var stopCommand = new Command("stop", "Stop a simulator");
+		var stopUdidArg = new Argument<string>("udid", "Simulator UDID");
+		stopCommand.AddArgument(stopUdidArg);
+		stopCommand.SetHandler(async (InvocationContext context) =>
 		{
 			var formatter = getFormatter(context);
-			var udid = context.ParseResult.GetValueForArgument(shutdownUdidArg);
+			var udid = context.ParseResult.GetValueForArgument(stopUdidArg);
 
 			try
 			{
@@ -129,7 +129,7 @@ public static class AppleCommands
 				}
 				else
 				{
-					formatter.WriteSuccess($"Simulator {udid} shutdown");
+					formatter.WriteSuccess($"Simulator {udid} stopped");
 				}
 			}
 			catch (Exception ex)
@@ -138,7 +138,7 @@ public static class AppleCommands
 				context.ExitCode = 1;
 			}
 		});
-		simulatorCommand.AddCommand(shutdownCommand);
+		simulatorCommand.AddCommand(stopCommand);
 
 		// simulator create <name> <device-type> <runtime>
 		var createCommand = new Command("create", "Create a new simulator");

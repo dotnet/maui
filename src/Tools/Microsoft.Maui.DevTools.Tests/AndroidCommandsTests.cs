@@ -63,12 +63,12 @@ public class AndroidCommandsTests
 	}
 
 	[Fact]
-	public void AvdCreateCommand_PackageIsOptional()
+	public void EmulatorCreateCommand_PackageIsOptional()
 	{
 		// Arrange
 		var androidCommand = AndroidCommands.Create();
-		var avdCommand = androidCommand.Subcommands.First(c => c.Name == "avd");
-		var createCommand = avdCommand.Subcommands.First(c => c.Name == "create");
+		var emulatorCommand = androidCommand.Subcommands.First(c => c.Name == "emulator");
+		var createCommand = emulatorCommand.Subcommands.First(c => c.Name == "create");
 		var packageOption = createCommand.Options.First(o => o.Name == "package");
 
 		// Assert
@@ -76,12 +76,12 @@ public class AndroidCommandsTests
 	}
 
 	[Fact]
-	public void AvdCreateCommand_HasRequiredNameArgument()
+	public void EmulatorCreateCommand_HasRequiredNameArgument()
 	{
 		// Arrange
 		var androidCommand = AndroidCommands.Create();
-		var avdCommand = androidCommand.Subcommands.First(c => c.Name == "avd");
-		var createCommand = avdCommand.Subcommands.First(c => c.Name == "create");
+		var emulatorCommand = androidCommand.Subcommands.First(c => c.Name == "emulator");
+		var createCommand = emulatorCommand.Subcommands.First(c => c.Name == "create");
 
 		// Assert
 		Assert.Single(createCommand.Arguments);
@@ -89,34 +89,34 @@ public class AndroidCommandsTests
 	}
 
 	[Fact]
-	public void AvdDeleteCommand_Exists()
+	public void EmulatorDeleteCommand_Exists()
 	{
 		// Arrange
 		var androidCommand = AndroidCommands.Create();
-		var avdCommand = androidCommand.Subcommands.First(c => c.Name == "avd");
+		var emulatorCommand = androidCommand.Subcommands.First(c => c.Name == "emulator");
 
 		// Assert
-		Assert.Contains(avdCommand.Subcommands, c => c.Name == "delete");
+		Assert.Contains(emulatorCommand.Subcommands, c => c.Name == "delete");
 	}
 
 	[Fact]
-	public void AvdCommand_HasStopSubcommand()
+	public void EmulatorCommand_HasStopSubcommand()
 	{
 		// Arrange
 		var androidCommand = AndroidCommands.Create();
-		var avdCommand = androidCommand.Subcommands.First(c => c.Name == "avd");
+		var emulatorCommand = androidCommand.Subcommands.First(c => c.Name == "emulator");
 
 		// Assert
-		Assert.Contains(avdCommand.Subcommands, c => c.Name == "stop");
+		Assert.Contains(emulatorCommand.Subcommands, c => c.Name == "stop");
 	}
 
 	[Fact]
-	public void AvdStopCommand_HasRequiredSerialArgument()
+	public void EmulatorStopCommand_HasRequiredSerialArgument()
 	{
 		// Arrange
 		var androidCommand = AndroidCommands.Create();
-		var avdCommand = androidCommand.Subcommands.First(c => c.Name == "avd");
-		var stopCommand = avdCommand.Subcommands.First(c => c.Name == "stop");
+		var emulatorCommand = androidCommand.Subcommands.First(c => c.Name == "emulator");
+		var stopCommand = emulatorCommand.Subcommands.First(c => c.Name == "stop");
 
 		// Assert
 		Assert.Single(stopCommand.Arguments);
@@ -124,12 +124,12 @@ public class AndroidCommandsTests
 	}
 
 	[Fact]
-	public void AvdDeleteCommand_HasRequiredNameArgument()
+	public void EmulatorDeleteCommand_HasRequiredNameArgument()
 	{
 		// Arrange
 		var androidCommand = AndroidCommands.Create();
-		var avdCommand = androidCommand.Subcommands.First(c => c.Name == "avd");
-		var deleteCommand = avdCommand.Subcommands.First(c => c.Name == "delete");
+		var emulatorCommand = androidCommand.Subcommands.First(c => c.Name == "emulator");
+		var deleteCommand = emulatorCommand.Subcommands.First(c => c.Name == "delete");
 
 		// Assert
 		Assert.Single(deleteCommand.Arguments);
@@ -137,12 +137,12 @@ public class AndroidCommandsTests
 	}
 
 	[Fact]
-	public void AvdStartCommand_HasColdBootOption()
+	public void EmulatorStartCommand_HasColdBootOption()
 	{
 		// Arrange
 		var androidCommand = AndroidCommands.Create();
-		var avdCommand = androidCommand.Subcommands.First(c => c.Name == "avd");
-		var startCommand = avdCommand.Subcommands.First(c => c.Name == "start");
+		var emulatorCommand = androidCommand.Subcommands.First(c => c.Name == "emulator");
+		var startCommand = emulatorCommand.Subcommands.First(c => c.Name == "start");
 
 		// Assert
 		Assert.Contains(startCommand.Options, o => o.Name == "cold-boot");
@@ -199,6 +199,6 @@ public class AndroidCommandsTests
 		Assert.Contains(androidCommand.Subcommands, c => c.Name == "install");
 		Assert.Contains(androidCommand.Subcommands, c => c.Name == "jdk");
 		Assert.Contains(androidCommand.Subcommands, c => c.Name == "sdk");
-		Assert.Contains(androidCommand.Subcommands, c => c.Name == "avd");
+		Assert.Contains(androidCommand.Subcommands, c => c.Name == "emulator");
 	}
 }
