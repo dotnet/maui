@@ -5,8 +5,8 @@ parameters:
   windowsPool: { }
   windowsBuildPool: { }
   macosPool: { }
-  androidApiLevels: [ 30, 36 ]
   iosVersions: [ 'latest' ]
+  androidApiLevelsForSafeAreaEdges: [ 36 ] # Separate API level for SafeAreaEdges tests with Pixel 7
   provisionatorChannel: 'latest'
   timeoutInMinutes: 180
   skipProvisioning: true
@@ -30,7 +30,7 @@ parameters:
     - 'Navigation'
     - 'Page,Performance,Picker,ProgressBar'
     - 'RadioButton,RefreshView'
-    - 'SafeAreaEdges,Shadow'
+    - 'Shadow' # SafeAreaEdges moved to separate stage
     - 'ScrollView'
     - 'SearchBar,Shape,Slider'
     - 'SoftInput,Stepper,Switch,SwipeView'
@@ -205,35 +205,42 @@ stages:
                       platform: 'Android'
                       artifactName: 'uitest-snapshot-results-android-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
-  # Dedicated lane for SafeAreaEdges tests on Android API 36
-  - stage: android_ui_tests_safeareas_api36
-    displayName: Android SafeAreaEdges Tests (API 36)
+
+# SafeAreaEdges tests on Android API 36 with Pixel 7
+  - stage: android_ui_tests_safeareavedges
+    displayName: Android UITests SafeAreaEdges (API 36 Pixel 7)
     dependsOn: build_ui_tests
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.android, '') }}:
-          - job: android_safeareas_ui_tests_${{ project.name }}_36
-            timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
-            workspace:
-              clean: all
-            displayName: ${{ coalesce(project.desc, project.name) }} SafeAreaEdges (API 36)
-            pool: ${{ parameters.androidLinuxPool }}
-            variables:
-              REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
-              APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
-            steps:
-              - template: ui-tests-steps.yml
-                parameters:
-                  platform: android
-                  version: 36
-                  path: ${{ project.android }}
-                  app: ${{ project.app }}
-                  device: android-emulator-64_36
-                  deviceType: "pixel_7"
-                  provisionatorChannel: ${{ parameters.provisionatorChannel }}
-                  agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
-                  testFilter: "SafeAreaEdges"
-                  skipProvisioning: ${{ parameters.skipProvisioning }}
+          - ${{ each api in parameters.androidApiLevelsForSafeAreaEdges }}:
+            - job: android_ui_tests_safeareavedges_${{ project.name }}_${{ api }}
+              timeoutInMinutes: 240 # how long to run the job before automatically cancelling
+              workspace:
+                clean: all
+              displayName: ${{ coalesce(project.desc, project.name) }} SafeAreaEdges (API ${{ api }} Pixel 7)
+              pool: ${{ parameters.androidLinuxPool }}
+              variables:
+                REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+                APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+              steps:
+                - template: ui-tests-steps.yml
+                  parameters:
+                    platform: android
+                    version: ${{ api }}
+                    path: ${{ project.android }}
+                    app: ${{ project.app }}
+                    device: android-emulator-64_${{ api }}
+                    deviceType: 'pixel_7' # Specific device type for SafeAreaEdges tests
+                    provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                    testFilter: 'SafeAreaEdges'
+                    skipProvisioning: ${{ parameters.skipProvisioning }}
+
+                # Collect and publish Android SafeAreaEdges snapshot diffs
+                - template: ui-tests-collect-snapshot-diffs.yml
+                  parameters:
+                    platform: 'Android SafeAreaEdges'
+                    artifactName: 'uitest-snapshot-results-android-safeareavedges-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
   - stage: ios_ui_tests_mono
     displayName: iOS UITests Mono
