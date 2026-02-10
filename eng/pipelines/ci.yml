@@ -145,9 +145,11 @@ stages:
   parameters:
     ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
       pool: ${{ parameters.WindowsPool.public }}
+      macPool: ${{ parameters.MacOSPool.public }}
       runAsPublic: true
     ${{ else }}:
       pool: ${{ parameters.WindowsPool.internal }}
+      macPool: ${{ parameters.MacOSPool.internal }}
       runAsPublic: false
     prepareSteps:
     - template: /eng/pipelines/common/provision.yml@self
@@ -160,7 +162,7 @@ stages:
         skipAndroidEmulatorImages: true
         skipAndroidCreateAvds: true
         skipProvisioning: true
-        skipXcode: true
+        skipXcode: false
 
 - template: /eng/pipelines/arcade/stage-build.yml@self
   parameters:
