@@ -6,6 +6,7 @@ parameters:
   windowsBuildPool: { }
   macosPool: { }
   iosVersions: [ 'latest' ]
+  androidApiLevels: [ 30 ]
   androidApiLevelsForSafeAreaEdges: [ 36 ] # Separate API level for SafeAreaEdges tests with Pixel 7
   provisionatorChannel: 'latest'
   timeoutInMinutes: 180
