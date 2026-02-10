@@ -1115,7 +1115,7 @@ The unified device model for all platforms (physical devices, emulators, simulat
 | `dotnet maui device list` | ✓ | ✓ | No |
 | `dotnet maui device screenshot` | ✓ | ✓ | No |
 | `dotnet maui android sdk list` | ✓ | ✓ | No |
-| `dotnet maui android sdk install` | ✓ | ✓ | No |
+| `dotnet maui android sdk install` | ✓ | ✓ | Sometimes* |
 | `dotnet maui android sdk accept-licenses` | ✓ | ✓ | No |
 | `dotnet maui android emulator create` | ✓ | ✓ | No |
 | `dotnet maui android emulator start` | ✓ | ✓ | No |
@@ -1123,7 +1123,7 @@ The unified device model for all platforms (physical devices, emulators, simulat
 | `dotnet maui android emulator delete` | ✓ | ✓ | No |
 | `dotnet maui android install` | ✓ | ✓ | No |
 | `dotnet maui android jdk check` | ✓ | ✓ | No |
-| `dotnet maui android jdk install` | ✓ | ✓ | No |
+| `dotnet maui android jdk install` | ✓ | ✓ | Sometimes* |
 | `dotnet maui android jdk list` | ✓ | ✓ | No |
 | `dotnet maui apple simulator list` | — | ✓ | No |
 | `dotnet maui apple simulator start` | — | ✓ | No |
