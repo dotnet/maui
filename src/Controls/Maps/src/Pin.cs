@@ -167,6 +167,30 @@ namespace Microsoft.Maui.Controls.Maps
 			return args.HideInfoWindow;
 		}
 
+		/// <summary>
+		/// Shows the info window (callout) for this pin on the map.
+		/// </summary>
+		/// <remarks>The pin must be added to a <see cref="Map"/> for this method to have an effect.</remarks>
+		public void ShowInfoWindow()
+		{
+			if (Parent is Map map)
+			{
+				map.Handler?.Invoke(nameof(IMap.ShowInfoWindow), this);
+			}
+		}
+
+		/// <summary>
+		/// Hides the info window (callout) for this pin on the map.
+		/// </summary>
+		/// <remarks>The pin must be added to a <see cref="Map"/> for this method to have an effect.</remarks>
+		public void HideInfoWindow()
+		{
+			if (Parent is Map map)
+			{
+				map.Handler?.Invoke(nameof(IMap.HideInfoWindow), this);
+			}
+		}
+
 		bool Equals(Pin other)
 		{
 			return string.Equals(Label, other.Label, StringComparison.Ordinal) &&

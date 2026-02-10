@@ -1,1 +1,7 @@
 #nullable enable
+Microsoft.Maui.Maps.IMap.HideInfoWindow(Microsoft.Maui.Maps.IMapPin pin) -> void
+Microsoft.Maui.Maps.IMap.HideInfoWindow(Microsoft.Maui.Maps.IMapPin! pin) -> void
+Microsoft.Maui.Maps.IMap.ShowInfoWindow(Microsoft.Maui.Maps.IMapPin pin) -> void
+Microsoft.Maui.Maps.IMap.ShowInfoWindow(Microsoft.Maui.Maps.IMapPin! pin) -> void
+static Microsoft.Maui.Maps.Handlers.MapHandler.MapHideInfoWindow(Microsoft.Maui.Maps.Handlers.IMapHandler! handler, Microsoft.Maui.Maps.IMap! map, object? arg) -> void
+static Microsoft.Maui.Maps.Handlers.MapHandler.MapShowInfoWindow(Microsoft.Maui.Maps.Handlers.IMapHandler! handler, Microsoft.Maui.Maps.IMap! map, object? arg) -> void
