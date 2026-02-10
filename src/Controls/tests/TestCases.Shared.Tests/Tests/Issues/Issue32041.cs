@@ -37,6 +37,7 @@ public class Issue32041 : _IssuesUITest
 		App.WaitForKeyboardToShow();
 
 		// With AdjustResize, bottom marker should move up to stay above keyboard
+		App.WaitForElement("BottomMarker");
 		var afterBottom = App.FindElement("BottomMarker").GetRect().Bottom;
 		var afterTop = App.FindElement("TopLabel").GetRect().Top;
 		var upwardMovement = initialBottom - afterBottom;
