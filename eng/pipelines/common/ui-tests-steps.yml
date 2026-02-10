@@ -158,6 +158,11 @@ steps:
     if ($testFilter) {
       $command += " --test-filter ""$testFilter"""
     }
+
+    $deviceType = "${{ parameters.deviceType }}"
+    if ($deviceType) {
+      $command += " --skin=""$deviceType"""
+    }
     
     $headless = ${{ parameters.headless }}
     if ($headless) {
@@ -172,8 +177,6 @@ steps:
     retryCountOnTaskFailure: 1
   env:
     APPIUM_HOME: $(APPIUM_HOME)
-    ${{ if ne(parameters.deviceType, '') }}:
-      ANDROID_TEST_SKIN: ${{ parameters.deviceType }}
 
 - bash: |
     cat ${BASH_SOURCE[0]}

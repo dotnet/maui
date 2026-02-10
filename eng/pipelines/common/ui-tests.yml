@@ -8,6 +8,7 @@ parameters:
   androidApiLevels: [ 30 ]
   androidApiLevelsExtended: [ 36 ] # API 36 for Material3 tests with Pixel 3 XL
   iosVersions: [ 'latest' ]
+  androidApiLevelsForSafeAreaEdges: [ 36 ] # Separate API level for SafeAreaEdges tests with Pixel 7
   provisionatorChannel: 'latest'
   timeoutInMinutes: 180
   skipProvisioning: true
@@ -32,7 +33,7 @@ parameters:
     - 'Navigation'
     - 'Page,Performance,Picker,ProgressBar'
     - 'RadioButton,RefreshView'
-    - 'SafeAreaEdges,Shadow'
+    - 'Shadow' # SafeAreaEdges moved to separate stage
     - 'ScrollView'
     - 'SearchBar,Shape,Slider'
     - 'SoftInput,Stepper,Switch,SwipeView'
@@ -267,7 +268,6 @@ stages:
                     parameters:
                       platform: 'Android Material3'
                       artifactName: 'uitest-snapshot-results-android-material3-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
-
   - stage: ios_ui_tests_mono
     displayName: iOS UITests Mono
     dependsOn: build_ui_tests
