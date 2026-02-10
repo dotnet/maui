@@ -173,7 +173,9 @@ public class Simctl
 						Identifier = identifier,
 						Name = name,
 						Version = version ?? "unknown",
-						IsAvailable = isAvailable
+						IsAvailable = isAvailable,
+						IsInstalled = true,
+						Source = "disk"
 					});
 				}
 			}
@@ -184,6 +186,103 @@ public class Simctl
 		{
 			return new List<Runtime>();
 		}
+	}
+
+	/// <summary>
+	/// Lists runtimes available for download (not yet installed).
+	/// </summary>
+	public async Task<List<Runtime>> ListAvailableRuntimesAsync(CancellationToken cancellationToken = default)
+	{
+		if (!PlatformDetector.IsMacOS)
+			return new List<Runtime>();
+
+		var result = await ProcessRunner.RunAsync(
+			"xcrun", "simctl runtime list --json",
+			timeout: TimeSpan.FromSeconds(60),
+			cancellationToken: cancellationToken);
+
+		if (!result.Success)
+			return new List<Runtime>();
+
+		try
+		{
+			var json = JsonDocument.Parse(result.StandardOutput);
+			var runtimes = new List<Runtime>();
+
+			// The output may vary by Xcode version; handle array at root or under a key
+			JsonElement runtimesElement;
+			if (json.RootElement.ValueKind == JsonValueKind.Array)
+				runtimesElement = json.RootElement;
+			else if (json.RootElement.TryGetProperty("runtimes", out var prop))
+				runtimesElement = prop;
+			else
+				return runtimes;
+
+			foreach (var runtime in runtimesElement.EnumerateArray())
+			{
+				var identifier = runtime.TryGetProperty("identifier", out var id) ? id.GetString() : null;
+				var name = runtime.TryGetProperty("name", out var n) ? n.GetString() : null;
+				var version = runtime.TryGetProperty("version", out var v) ? v.GetString() : null;
+				var platform = runtime.TryGetProperty("platform", out var p) ? p.GetString() : null;
+				var state = runtime.TryGetProperty("state", out var s) ? s.GetString() : null;
+				var source = runtime.TryGetProperty("source", out var src) ? src.GetString() : null;
+
+				if (identifier == null)
+					continue;
+
+				var displayName = name ?? $"{platform} {version}";
+				var isInstalled = state?.Equals("Ready", StringComparison.OrdinalIgnoreCase) == true;
+
+				runtimes.Add(new Runtime
+				{
+					Identifier = identifier,
+					Name = displayName,
+					Version = version ?? "unknown",
+					IsAvailable = true,
+					IsInstalled = isInstalled,
+					Source = source
+				});
+			}
+
+			return runtimes;
+		}
+		catch
+		{
+			return new List<Runtime>();
+		}
+	}
+
+	/// <summary>
+	/// Installs a runtime by platform and version.
+	/// </summary>
+	public async Task InstallRuntimeAsync(string version, IProgress<string>? progress = null,
+		CancellationToken cancellationToken = default)
+	{
+		progress?.Report($"Installing iOS {version} runtime...");
+
+		var result = await ProcessRunner.RunAsync(
+			"xcodebuild", $"-downloadPlatform iOS -buildVersion {version}",
+			timeout: TimeSpan.FromMinutes(60),
+			cancellationToken: cancellationToken);
+
+		if (!result.Success)
+		{
+			// Fallback: try xcrun simctl runtime add
+			var fallback = await ProcessRunner.RunAsync(
+				"xcrun", $"simctl runtime add \"iOS {version}\"",
+				timeout: TimeSpan.FromMinutes(60),
+				cancellationToken: cancellationToken);
+
+			if (!fallback.Success)
+			{
+				throw new Errors.MauiToolException(
+					Errors.ErrorCodes.RuntimeInstallFailed,
+					$"Failed to install iOS {version} runtime: {result.StandardError}",
+					nativeError: result.StandardError);
+			}
+		}
+
+		progress?.Report($"iOS {version} runtime installed successfully");
 	}
 
 	/// <summary>
