@@ -619,6 +619,42 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			((IMapElement)polyline).Clicked();
 
 			Assert.Same(polyline, sender);
+		public void MoveToRegionThrowsOnNull()
+		{
+			var map = new Map();
+			Assert.Throws<ArgumentNullException>(() => map.MoveToRegion(null!));
+		}
+
+		[Fact]
+		public void MoveToRegionAnimatedThrowsOnNull()
+		{
+			var map = new Map();
+			Assert.Throws<ArgumentNullException>(() => map.MoveToRegion(null!, true));
+		}
+
+		[Fact]
+		public void MoveToRegionAnimatedOverloadExists()
+		{
+			var map = new Map();
+			var span = new MapSpan(new Location(0, 0), 1, 1);
+
+			// Should not throw - verifies the overload exists and is callable
+			map.MoveToRegion(span, false);
+			map.MoveToRegion(span, true);
+		}
+
+		[Fact]
+		public void MoveToRegionRequestProperties()
+		{
+			var span = new MapSpan(new Location(10, 20), 1, 1);
+			var request = new MoveToRegionRequest(span, true);
+
+			Assert.Same(span, request.Region);
+			Assert.True(request.Animated);
+
+			var request2 = new MoveToRegionRequest(null, false);
+			Assert.Null(request2.Region);
+			Assert.False(request2.Animated);
 		}
 
 		[Fact]
