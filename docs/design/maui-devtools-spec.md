@@ -1,8 +1,8 @@
 # MAUI Dev Tools Client — Product Specification
 
-**Version**: 2.8-draft  
+**Version**: 2.9-draft  
 **Status**: Proposal  
-**Last Updated**: 2026-02-09
+**Last Updated**: 2026-02-10
 
 ---
 
@@ -148,12 +148,12 @@ This tool eliminates that friction by providing a single, authoritative source f
 | FR-A1 | List connected devices and running emulators | P0 |
 | FR-A2 | List installed SDK packages with version info | P0 |
 | FR-A3 | Install SDK packages by name or alias (e.g., `--recommended`) | P0 |
-| FR-A4 | List available AVDs | P0 |
-| FR-A5 | Create AVD with specified device profile and system image | P0 |
-| FR-A6 | Start AVD and wait for boot completion | P0 |
+| FR-A4 | List available emulators | P0 |
+| FR-A5 | Create emulator with specified device profile and system image | P0 |
+| FR-A6 | Start emulator and wait for boot completion | P0 |
 | FR-A7 | Stop running emulator | P1 |
 | FR-A8 | Cold boot emulator (wipe runtime state) | P1 |
-| FR-A9 | Wipe AVD data | P2 |
+| FR-A9 | Wipe emulator data | P2 |
 | FR-A10 | Stream logcat output with filtering | P1 |
 | FR-A11 | Install APK to device/emulator | P1 |
 | FR-A12 | Uninstall package from device/emulator | P2 |
@@ -169,8 +169,8 @@ This tool eliminates that friction by providing a single, authoritative source f
 |----|-------------|----------|
 | FR-X1 | List available simulators with runtime/device type info | P0 |
 | FR-X2 | Filter simulators by runtime, device type, or state | P0 |
-| FR-X3 | Boot simulator by UDID or name | P0 |
-| FR-X4 | Shutdown simulator | P0 |
+| FR-X3 | Start simulator by UDID or name | P0 |
+| FR-X4 | Stop simulator | P0 |
 | FR-X5 | Create simulator with specified runtime and device type | P0 |
 | FR-X6 | Delete simulator | P2 |
 | FR-X7 | List available runtimes | P0 |
@@ -316,10 +316,10 @@ When `--package` is not specified, the tool automatically detects the most recen
 
 ```bash
 # Auto-detect system image (uses highest API level installed)
-dotnet maui android avd create MyEmulator
+dotnet maui android emulator create MyEmulator
 
 # Explicitly specify system image
-dotnet maui android avd create MyEmulator --package "system-images;android-35;google_apis;arm64-v8a"
+dotnet maui android emulator create MyEmulator --package "system-images;android-35;google_apis;arm64-v8a"
 ```
 
 #### Apple Install
@@ -471,7 +471,7 @@ IDE consumers can use the `type: "progress"` messages to update progress bars an
 
 When emulator/simulator unavailable:
 - `dotnet maui doctor` reports capability with reason (e.g., "emulator: unavailable (virtualization disabled)")
-- `dotnet maui android avd start` fails fast with `E2010` "Hardware acceleration unavailable"
+- `dotnet maui android emulator start` fails fast with `E2010` "Hardware acceleration unavailable"
 
 ---
 
@@ -720,7 +720,7 @@ When the tool encounters an error it doesn't recognize:
     "eligible": true,
     "context": {
       "doctor_report": { ... },
-      "failed_command": "dotnet maui android avd create ...",
+      "failed_command": "dotnet maui android emulator create ...",
       "environment": { ... },
       "native_tool_output": "..."
     }
@@ -824,21 +824,21 @@ dotnet maui
 │   │   ├── install <pkg>     # Install package(s) - comma-separated
 │   │   ├── accept-licenses   # Accept all SDK licenses
 │   │   └── uninstall <pkg>   # Uninstall package
-│   └── avd
-│       ├── list              # List AVDs
-│       ├── create            # Create AVD
-│       │   ├── --name        # AVD name
+│   └── emulator
+│       ├── list              # List emulators
+│       ├── create            # Create emulator
+│       │   ├── --name        # Emulator name
 │       │   ├── --device      # Device profile
 │       │   ├── --package     # System image (optional, auto-detects latest)
 │       │   └── --force       # Overwrite existing
-│       ├── start             # Start AVD
-│       │   ├── --name        # AVD name (or --avd)
-│       │   ├── --cold-boot   # Fresh boot
+│       ├── start             # Start emulator
+│       │   ├── --name        # Emulator name
+│       │   ├── --cold-boot   # Cold boot
 │       │   └── --wait        # Wait for boot
 │       ├── stop              # Stop emulator
 │       │   └── --serial      # Emulator serial (e.g., emulator-5554)
-│       └── delete            # Delete AVD
-│           └── --name        # AVD name
+│       └── delete            # Delete emulator
+│           └── --name        # Emulator name
 │
 ├── apple                     # Apple platform commands (macOS only)
 │   ├── simulator
@@ -850,9 +850,9 @@ dotnet maui
 │   │   │   ├── --name        # Simulator name
 │   │   │   ├── --runtime     # Runtime identifier
 │   │   │   └── --device-type # Device type identifier
-│   │   ├── boot              # Boot simulator
+│   │   ├── start             # Start simulator
 │   │   │   └── <udid>        # Simulator UDID
-│   │   ├── shutdown          # Shutdown simulator
+│   │   ├── stop              # Stop simulator
 │   │   │   └── <udid>        # Simulator UDID
 │   │   └── delete            # Delete simulator
 │   │       └── <udid>        # Simulator UDID
@@ -886,13 +886,13 @@ dotnet maui device screenshot --device emulator-5554
 
 # Android-specific
 dotnet maui android sdk install platforms;android-34
-dotnet maui android avd create --name Pixel_8 --device pixel_8
-dotnet maui android avd start --name Pixel_8 --wait
+dotnet maui android emulator create --name Pixel_8 --device pixel_8
+dotnet maui android emulator start --name Pixel_8 --wait
 dotnet maui android logcat --device emulator-5554
 
 # Apple-specific (macOS only)
 dotnet maui apple simulator list
-dotnet maui apple simulator boot <udid>
+dotnet maui apple simulator start <udid>
 dotnet maui apple runtime list
 dotnet maui apple xcode list
 dotnet maui apple xcode select /Applications/Xcode.app
@@ -960,13 +960,13 @@ All commands follow a consistent exit code scheme:
 | `dotnet maui device screenshot` | Capture screenshot | `--device`, `--output`, `--wait` | File path | 0=success, 5=no device, 2=error |
 | `dotnet maui android sdk list` | List SDK packages | `--available`, `--all`, `--json` | Package list | 0=success, 2=error |
 | `dotnet maui android sdk install` | Install SDK package | `<package>`, `--accept-licenses` | Progress, result | 0=success, 5=not found, 2=error |
-| `dotnet maui android avd create` | Create emulator | `--name`, `--device`, `--package` | AVD name | 0=success, 1=exists, 2=error |
-| `dotnet maui android avd start` | Start emulator | `--name`, `--wait`, `--cold-boot` | Device serial | 0=success, 5=not found, 2=error |
-| `dotnet maui android avd stop` | Stop emulator | `--serial` | Status | 0=success, 5=not found, 2=error |
-| `dotnet maui android avd delete` | Delete AVD | `--name` | Status | 0=success, 5=not found, 2=error |
+| `dotnet maui android emulator create` | Create emulator | `--name`, `--device`, `--package` | Emulator name | 0=success, 1=exists, 2=error |
+| `dotnet maui android emulator start` | Start emulator | `--name`, `--wait`, `--cold-boot` | Device serial | 0=success, 5=not found, 2=error |
+| `dotnet maui android emulator stop` | Stop emulator | `--serial` | Status | 0=success, 5=not found, 2=error |
+| `dotnet maui android emulator delete` | Delete emulator | `--name` | Status | 0=success, 5=not found, 2=error |
 | `dotnet maui apple simulator list` | List simulators | `--runtime`, `--device-type`, `--state` | Simulator list | 0=success, 2=error |
-| `dotnet maui apple simulator boot` | Boot simulator | `<udid>` | UDID | 0=success, 5=not found, 2=error |
-| `dotnet maui apple simulator shutdown` | Shutdown simulator | `<udid>` | Status | 0=success, 5=not found, 2=error |
+| `dotnet maui apple simulator start` | Start simulator | `<udid>` | UDID | 0=success, 5=not found, 2=error |
+| `dotnet maui apple simulator stop` | Stop simulator | `<udid>` | Status | 0=success, 5=not found, 2=error |
 | `dotnet maui apple simulator create` | Create simulator | `<name> <device-type> <runtime>` | UDID | 0=success, 2=error |
 | `dotnet maui apple simulator delete` | Delete simulator | `<udid>` | Status | 0=success, 5=not found, 2=error |
 | `dotnet maui apple runtime list` | List iOS runtimes | `--json` | Runtime list | 0=success, 2=error |
@@ -1088,17 +1088,17 @@ The unified device model for all platforms (physical devices, emulators, simulat
 | `dotnet maui android sdk list` | ✓ | ✓ | No |
 | `dotnet maui android sdk install` | ✓ | ✓ | No |
 | `dotnet maui android sdk accept-licenses` | ✓ | ✓ | No |
-| `dotnet maui android avd create` | ✓ | ✓ | No |
-| `dotnet maui android avd start` | ✓ | ✓ | No |
-| `dotnet maui android avd stop` | ✓ | ✓ | No |
-| `dotnet maui android avd delete` | ✓ | ✓ | No |
+| `dotnet maui android emulator create` | ✓ | ✓ | No |
+| `dotnet maui android emulator start` | ✓ | ✓ | No |
+| `dotnet maui android emulator stop` | ✓ | ✓ | No |
+| `dotnet maui android emulator delete` | ✓ | ✓ | No |
 | `dotnet maui android install` | ✓ | ✓ | No |
 | `dotnet maui android jdk check` | ✓ | ✓ | No |
 | `dotnet maui android jdk install` | ✓ | ✓ | No |
 | `dotnet maui android jdk list` | ✓ | ✓ | No |
 | `dotnet maui apple simulator list` | — | ✓ | No |
-| `dotnet maui apple simulator boot` | — | ✓ | No |
-| `dotnet maui apple simulator shutdown` | — | ✓ | No |
+| `dotnet maui apple simulator start` | — | ✓ | No |
+| `dotnet maui apple simulator stop` | — | ✓ | No |
 | `dotnet maui apple simulator create` | — | ✓ | No |
 | `dotnet maui apple simulator delete` | — | ✓ | No |
 | `dotnet maui apple runtime list` | — | ✓ | No |
@@ -1121,11 +1121,11 @@ The unified device model for all platforms (physical devices, emulators, simulat
 
 When running in interactive mode (terminal), the tool prompts for missing information:
 
-**Example: AVD Creation with Missing Parameters**:
+**Example: Emulator Creation with Missing Parameters**:
 ```
-$ maui android avd create
+$ maui android emulator create
 
-? AVD name: My_Pixel_5
+? Emulator name: My_Pixel_5
 
 ? Select device profile:
   ❯ Pixel 5 (1080x2340, 440dpi)
@@ -1139,12 +1139,12 @@ $ maui android avd create
     android-33 | Google APIs | x86_64
     (more...)
 
-Creating AVD 'My_Pixel_5'... done
+Creating emulator 'My_Pixel_5'... done
 ```
 
 **Non-Interactive Mode**:
 ```
-$ maui android avd create --non-interactive
+$ maui android emulator create --non-interactive
 Error: --name is required in non-interactive mode
 ```
 
@@ -1195,11 +1195,11 @@ All telemetry and logs follow these redaction rules:
 | P0 | `doctor` command with status reporting | ✅ Implemented |
 | P0 | `doctor --fix` for automated remediation | ✅ Implemented |
 | P0 | Android SDK detection and installation | ✅ Implemented |
-| P0 | Android AVD creation and management | ✅ Implemented |
+| P0 | Android emulator creation and management | ✅ Implemented |
 | P0 | Android install (JDK + SDK from scratch) | ✅ Implemented |
 | P0 | Android JDK management (check, install, list) | ✅ Implemented |
 | P0 | Android SDK license acceptance | ✅ Implemented |
-| P0 | iOS simulator listing and boot/shutdown/create/delete | ✅ Implemented |
+| P0 | iOS simulator listing and start/stop/create/delete | ✅ Implemented |
 | P0 | iOS runtime listing | ✅ Implemented |
 | P0 | Xcode installation listing and selection | ✅ Implemented |
 | P0 | Unified `device list` command (emulators, simulators, physical devices) | ✅ Implemented |
@@ -1239,6 +1239,7 @@ All telemetry and logs follow these redaction rules:
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 2.9-draft | 2026-02-10 | Unified command naming: renamed `avd` → `emulator` for Android, `simulator boot` → `simulator start`, `simulator shutdown` → `simulator stop` for Apple — consistent start/stop verbs across platforms |
 | 2.8-draft | 2026-02-09 | Synced with implementation: renamed `bootstrap` → `install` per PR feedback; removed `deploy`, `config`, `diagnostic-bundle` commands (covered by `dotnet run`/`dotnet build`); removed telemetry section (vNext); added Xcode list/select, XcodeInstallation schema, Android device field semantics, `type`/`state`/`details` to MauiDevice |
 | 2.6-draft | 2026-02-04 | Condensed §3 Goals and §4 Personas into single section; Now 10 sections |
 | 2.5-draft | 2026-02-04 | Removed §11 Security, §12 Extensibility; Added physical device support to device list |
