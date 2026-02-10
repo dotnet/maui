@@ -51,7 +51,16 @@ internal class SetterValueProvider : IKnownMarkupValueProvider
 		}
 
 		var bpNode = (ValueNode)node.Properties[new XmlName("", "Property")];
-		var bpRef = bpNode.GetBindableProperty(context);
+		IFieldSymbol? bpRef = bpNode.GetBindableProperty(context);
+		if (!TryGetBindablePropertyNameAndType(bpRef, bpNode, context, out var bpName, out var bpType))
+		{
+			// Report diagnostic when bindable property cannot be resolved
+			var propertyText = bpNode.Value as string ?? string.Empty;
+			var location = LocationHelpers.LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)bpNode, propertyText);
+			context.ReportDiagnostic(Diagnostic.Create(Descriptors.MemberResolution, location, propertyText));
+			value = string.Empty;
+			return false;
+		}
 
 		string targetsetter;
 		if (node.Properties.TryGetValue(new XmlName("", "TargetName"), out var targetNode))
@@ -61,23 +70,89 @@ internal class SetterValueProvider : IKnownMarkupValueProvider
 
 		if (valueNode is ValueNode vn)
 		{
-			value = $"new global::Microsoft.Maui.Controls.Setter {{{targetsetter}Property = {bpRef.ToFQDisplayString()}, Value = {vn.ConvertTo(bpRef, writer, context)}}}";
+			string valueString;
+			if (bpRef != null)
+			{
+				valueString = vn.ConvertTo(bpRef, writer, context);
+			}
+			else if (bpType != null)
+			{
+				valueString = vn.ConvertTo(bpType, null, writer, context);
+			}
+			else
+			{
+				value = string.Empty;
+				return false;
+			}
+			value = $"new global::Microsoft.Maui.Controls.Setter {{{targetsetter}Property = {bpName}, Value = {valueString}}}";
 			return true;
 		}
 		else if (getNodeValue != null)
 		{
-			var lvalue = getNodeValue(valueNode, bpRef.Type);
-			value = $"new global::Microsoft.Maui.Controls.Setter {{{targetsetter}Property = {bpRef.ToFQDisplayString()}, Value = {lvalue.ValueAccessor}}}";
+			var lvalue = getNodeValue(valueNode, bpType ?? context.Compilation.ObjectType);
+			value = $"new global::Microsoft.Maui.Controls.Setter {{{targetsetter}Property = {bpName}, Value = {lvalue.ValueAccessor}}}";
 			return true;
 		}
 		else if (context.Variables.TryGetValue(valueNode, out var variable))
 		{
-			value = $"new global::Microsoft.Maui.Controls.Setter {{{targetsetter}Property = {bpRef.ToFQDisplayString()}, Value = {variable.ValueAccessor}}}";
+			value = $"new global::Microsoft.Maui.Controls.Setter {{{targetsetter}Property = {bpName}, Value = {variable.ValueAccessor}}}";
 			return true;
 		}
 
 		value = string.Empty;
 		//FIXME context.ReportDiagnostic
+		return false;
+	}
+
+	/// <summary>
+	/// Gets the bindable property name and type for a Setter's Property attribute.
+	/// Uses the resolved field symbol if available, otherwise uses heuristics for source-generated properties.
+	/// </summary>
+	/// <returns>True if the property could be resolved, false otherwise.</returns>
+	private static bool TryGetBindablePropertyNameAndType(IFieldSymbol? bpRef, ValueNode bpNode, SourceGenContext context, out string bpName, out ITypeSymbol? bpType)
+	{
+		if (bpRef != null)
+		{
+			bpName = bpRef.ToFQDisplayString();
+			bpType = bpRef.GetBPTypeAndConverter(context)?.type;
+			return true;
+		}
+
+		var propertyText = bpNode.Value as string ?? string.Empty;
+		var parts = propertyText.Split('.');
+
+		ITypeSymbol? targetType = null;
+		string propertyName;
+
+		if (parts.Length == 1)
+		{
+			propertyName = parts[0];
+			var parent = bpNode.Parent?.Parent as ElementNode ?? (bpNode.Parent?.Parent as IListNode)?.Parent as ElementNode;
+			if (parent?.XmlType.IsOfAnyType("Trigger", "DataTrigger", "MultiTrigger", "Style") == true)
+				targetType = NodeSGExtensions.GetTargetTypeSymbol(parent, context);
+		}
+		else if (parts.Length == 2)
+		{
+			targetType = XmlTypeExtensions.GetTypeSymbol(parts[0], context, bpNode);
+			propertyName = parts[1];
+		}
+		else
+		{
+			bpName = string.Empty;
+			bpType = null;
+			return false;
+		}
+
+		if (targetType != null && targetType.HasBindablePropertyHeuristic(propertyName, context, out var explicitPropertyName))
+		{
+			var bpFieldName = explicitPropertyName ?? $"{propertyName}Property";
+			bpName = $"{targetType.ToFQDisplayString()}.{bpFieldName}";
+			bpType = targetType.GetAllProperties(propertyName, context).FirstOrDefault()?.Type;
+			return true;
+		}
+
+		bpName = string.Empty;
+		bpType = null;
 		return false;
 	}
 

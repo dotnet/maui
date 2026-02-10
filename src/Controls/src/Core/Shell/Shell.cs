@@ -203,6 +203,34 @@ namespace Microsoft.Maui.Controls
 		public static BackButtonBehavior GetBackButtonBehavior(BindableObject obj) => (BackButtonBehavior)obj.GetValue(BackButtonBehaviorProperty);
 
 		/// <summary>
+		/// Gets the BackButtonBehavior for the given page, with fallback to Shell if not set on the page.
+		/// </summary>
+		internal static BackButtonBehavior GetEffectiveBackButtonBehavior(BindableObject page)
+		{
+			if (page == null)
+				return null;
+
+			// First check if the page has its own BackButtonBehavior
+			var behavior = GetBackButtonBehavior(page);
+			if (behavior != null)
+				return behavior;
+
+			// Fallback: check if the Shell itself has a BackButtonBehavior
+			if (page is Element element)
+			{
+				var shell = element.FindParentOfType<Shell>();
+				if (shell != null)
+				{
+					behavior = GetBackButtonBehavior(shell);
+					if (behavior != null)
+						return behavior;
+				}
+			}
+
+			return null;
+		}
+
+		/// <summary>
 		/// Sets the back button behavior when the given <paramref name="obj"/> is presented.
 		/// </summary>
 		/// <remarks>
@@ -1556,7 +1584,7 @@ namespace Microsoft.Maui.Controls
 		protected override bool OnBackButtonPressed()
 		{
 #if WINDOWS || !PLATFORM
-			var backButtonBehavior = GetBackButtonBehavior(GetVisiblePage());
+			var backButtonBehavior = GetEffectiveBackButtonBehavior(GetVisiblePage());
 			if (backButtonBehavior != null)
 			{
 				var command = backButtonBehavior.GetPropertyIfSet<ICommand>(BackButtonBehavior.CommandProperty, null);
