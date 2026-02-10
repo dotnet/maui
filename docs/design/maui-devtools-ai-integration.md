@@ -145,8 +145,8 @@ Opening Copilot with diagnostic context...
 Run: gh copilot explain "MAUI SDK install failure E4001"
 
 Or copy this diagnostic summary:
-  maui diagnostic-bundle --output /tmp/maui-diag.zip
-  gh copilot explain --file /tmp/maui-diag.zip
+  dotnet maui doctor --json --verbose > /tmp/maui-diag.json
+  gh copilot explain --file /tmp/maui-diag.json
 ```
 
 ### MCP Tool Integration
@@ -164,16 +164,6 @@ When running as an MCP server, the tool exposes actions that Copilot can invoke 
     {
       "name": "maui_doctor_fix",
       "description": "Attempt to fix detected environment issues",
-      "requires_approval": true
-    },
-    {
-      "name": "maui_diagnostic_bundle",
-      "description": "Generate diagnostic bundle for troubleshooting",
-      "requires_approval": false
-    },
-    {
-      "name": "maui_config_set",
-      "description": "Update tool configuration (e.g., proxy settings)",
       "requires_approval": true
     }
   ]
@@ -257,7 +247,7 @@ When invoked by an AI agent, certain operations require explicit user confirmati
 | `device.screenshot` | `device.capture` | IDE prompt |
 | `doctor.fix` | `environment.modify` | IDE prompt with details |
 | `android.sdk.install` | `environment.modify` | IDE prompt with package list |
-| `android.avd.create` | `device.create` | IDE prompt |
+| `android.emulator.create` | `device.create` | IDE prompt |
 | `logs.stream` | `device.logs` | IDE prompt |
 
 **Permission Flow**:

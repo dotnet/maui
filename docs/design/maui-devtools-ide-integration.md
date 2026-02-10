@@ -86,7 +86,7 @@ $(error) MAUI: Setup Required      ← Red when critical
 │  ├── ✓ Android SDK (/Users/dev/Android/sdk)              │
 │  ├── ✓ Build Tools 34.0.0                                 │
 │  ├── ⚠ Emulator not running                    [Start]    │
-│  └── ✓ AVD: Pixel_5_API_34                                │
+│  └── ✓ Emulator: Pixel_5_API_34                              │
 │                                                            │
 │  iOS / macOS (Xcode 16.0)                                 │
 │  ├── ✓ iOS 18.0 Runtime                                   │
@@ -115,7 +115,7 @@ $(error) MAUI: Setup Required      ← Red when critical
 │  ✓ Installing build-tools;34.0.0                          │
 │  ● Installing system-images;android-34;google_apis;x86_64 │
 │    ████████████░░░░░░░░░░░░░░░░░░░░░░  45% (1.2 GB/2.6 GB)│
-│  ○ Creating AVD Pixel_5_API_34                            │
+│  ○ Creating Emulator Pixel_5_API_34                          │
 │  ○ Verifying setup                                        │
 │                                                            │
 │  ─────────────────────────────────────────────────────────│
@@ -186,11 +186,11 @@ Tools
 │   ├── ─────────────────────────
 │   ├── Android
 │   │   ├── SDK Manager...
-│   │   ├── AVD Manager...
+│   │   ├── Emulator Manager...
 │   │   └── Device Log...
 │   ├── iOS Simulators...
 │   └── ─────────────────────────
-│   └── Diagnostic Bundle...
+│       └── Environment Report...
 ```
 
 ### Error List Integration
@@ -225,11 +225,11 @@ Detailed logs available in Output window under "MAUI Dev Tools" pane:
 
 When running in interactive mode (terminal), the tool prompts for missing information:
 
-**Example: AVD Creation with Missing Parameters**:
+**Example: Emulator Creation with Missing Parameters**:
 ```
-$ dotnet maui android avd create
+$ dotnet maui android emulator create
 
-? AVD name: My_Pixel_5
+? Emulator name: My_Pixel_5
 
 ? Select device profile:
   ❯ Pixel 5 (1080x2340, 440dpi)
@@ -243,12 +243,12 @@ $ dotnet maui android avd create
     android-33 | Google APIs | x86_64
     (more...)
 
-Creating AVD 'My_Pixel_5'... done
+Creating emulator 'My_Pixel_5'... done
 ```
 
 **Non-Interactive Mode**:
 ```
-$ dotnet maui android avd create --non-interactive
+$ dotnet maui android emulator create --non-interactive
 Error: --name is required in non-interactive mode
 ```
 

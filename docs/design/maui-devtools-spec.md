@@ -1,6 +1,6 @@
 # MAUI Dev Tools Client — Product Specification
 
-**Version**: 2.9-draft  
+**Version**: 2.10-draft  
 **Status**: Proposal  
 **Last Updated**: 2026-02-10
 
@@ -154,7 +154,7 @@ This tool eliminates that friction by providing a single, authoritative source f
 | FR-A7 | Stop running emulator | P1 |
 | FR-A8 | Cold boot emulator (wipe runtime state) | P1 |
 | FR-A9 | Wipe emulator data | P2 |
-| FR-A10 | Stream logcat output with filtering | P1 |
+| FR-A10 | Stream device logs with filtering | P1 |
 | FR-A11 | Install APK to device/emulator | P1 |
 | FR-A12 | Uninstall package from device/emulator | P2 |
 | FR-A13 | Capture screenshot from device/emulator | P0 |
@@ -206,7 +206,7 @@ This tool eliminates that friction by providing a single, authoritative source f
 | FR-S6 | Support `--format` flag (png, jpg) | P2 |
 | FR-S7 | Return file path in JSON output | P0 |
 
-### 4.5 Device Listing (Unified)
+### 4.6 Device Listing (Unified)
 
 | ID | Requirement | Priority |
 |----|-------------|----------|
@@ -310,7 +310,7 @@ Add to your shell profile (~/.zshrc or ~/.bashrc):
   export PATH="$JAVA_HOME/bin:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH"
 ```
 
-**AVD Creation with Auto-Detection**:
+**Emulator Creation with Auto-Detection**:
 
 When `--package` is not specified, the tool automatically detects the most recent installed system image:
 
@@ -331,8 +331,8 @@ dotnet maui android emulator create MyEmulator --package "system-images;android-
 | `READY` | `xcrun simctl list` succeeds | Delegate all operations to native tools |
 
 **Important**: Apple install is limited because:
-- Xcode cannot be installed programmatically (App Store only)
-- Runtime downloads require Xcode to be open at least once (license acceptance)
+- Xcode cannot be installed fully unattended (App Store or interactive install with Apple ID credentials)
+- Xcode license can be accepted programmatically (`xcodebuild -license accept`) via `apple xcode accept-licenses`
 
 ```bash
 # Basic setup check
@@ -904,7 +904,7 @@ dotnet maui device screenshot --device emulator-5554
 dotnet maui android sdk install platforms;android-34
 dotnet maui android emulator create --name Pixel_8 --device pixel_8
 dotnet maui android emulator start --name Pixel_8 --wait
-dotnet maui android logcat --device emulator-5554
+dotnet maui device logs --device emulator-5554
 
 # Apple-specific (macOS only)
 dotnet maui apple install                              # Check Xcode + runtimes
@@ -971,7 +971,7 @@ All commands follow a consistent exit code scheme:
 | 2 | Operation failed | Command failed (network error, invalid input, etc.) |
 | 3 | Permission denied | Elevation required but not granted |
 | 4 | User canceled | User declined confirmation prompt |
-| 5 | Resource not found | Requested device/AVD/simulator not found |
+| 5 | Resource not found | Requested device/emulator/simulator not found |
 | 126 | Command not executable | Binary not found or not executable |
 | 127 | Command not found | Unknown subcommand |
 
@@ -1249,7 +1249,7 @@ All telemetry and logs follow these redaction rules:
 | P1 | Visual Studio extension integration |
 | P1 | iOS runtime installation guidance |
 | P1 | `--non-interactive`, `--correlation-id`, `--offline` global options |
-| P2 | AVD snapshot management |
+| P2 | Emulator snapshot management |
 | P2 | Windows SDK management |
 | P2 | Linux host support (Android only) |
 | P2 | Physical iOS device support (requires signing) |
