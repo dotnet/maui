@@ -1,3 +1,4 @@
 #nullable enable
 ~override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.ViewWillTransitionToSize(CoreGraphics.CGSize toSize, UIKit.IUIViewControllerTransitionCoordinator coordinator) -> void
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewController.LoadView() -> void
+override Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.ViewDidAppear(bool animated) -> void
