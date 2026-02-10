@@ -13,6 +13,10 @@ namespace Microsoft.Maui.Controls.Maps
 
 		void IMap.Clicked(Location location) => MapClicked?.Invoke(this, new MapClickedEventArgs(location));
 
+		void IMap.MoveToRegion(MapSpan region) => MoveToRegion(region);
+
+		void IMap.MoveToRegion(MapSpan region, bool animated) => MoveToRegion(region, animated);
+
 		MapSpan? IMap.VisibleRegion
 		{
 			get
@@ -33,7 +37,7 @@ namespace Microsoft.Maui.Controls.Maps
 		{
 			base.OnHandlerChanged();
 			//The user specified on the ctor a MapSpan we now need the handler to move to that region
-			Handler?.Invoke(nameof(IMap.MoveToRegion), _lastMoveToRegion);
+			Handler?.Invoke(nameof(IMap.MoveToRegion), new MoveToRegionRequest(_lastMoveToRegion, false));
 		}
 
 	}

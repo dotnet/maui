@@ -1,1 +1,2 @@
 #nullable enable
+Microsoft.Maui.Controls.Maps.Map.MoveToRegion(Microsoft.Maui.Maps.MapSpan! mapSpan, bool animated) -> void
