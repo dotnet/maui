@@ -34,10 +34,6 @@ namespace Microsoft.Maui.Platform
 			if (ChildCount == 0 || GetChildAt(0) is not AView child)
 				return;
 
-			var widthMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(right - left);
-			var heightMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(bottom - top);
-
-			child.Measure(widthMeasureSpec, heightMeasureSpec);
 			child.Layout(0, 0, child.MeasuredWidth, child.MeasuredHeight);
 			_borderView?.Layout(0, 0, child.MeasuredWidth, child.MeasuredHeight);
 		}
