@@ -390,14 +390,12 @@ stages:
               # Install Appium globally
               npm install -g appium
               
-              # Install platform-specific driver
-              if [ "${{ parameters.Platform }}" = "ios" ]; then
-                echo "Installing XCUITest driver for iOS..."
-                appium driver install xcuitest
-              else
-                echo "Installing UiAutomator2 driver for Android..."
-                appium driver install uiautomator2
-              fi
+              # Install both drivers — the agent may switch platforms if the bug
+              # only affects one platform (e.g., iOS bug triggered via Android run)
+              echo "Installing UiAutomator2 driver for Android..."
+              appium driver install uiautomator2
+              echo "Installing XCUITest driver for iOS..."
+              appium driver install xcuitest
               
               # Verify installation
               if ! which appium; then
