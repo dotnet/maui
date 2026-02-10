@@ -278,7 +278,8 @@
             
             <controls:ItemsRepeater x:Name="PART_ItemsRepeater"
                                     ItemTransitionProvider="{TemplateBinding ItemTransitionProvider}"
-                                    HorizontalCacheLength="0"
+                                    HorizontalCacheLength="4"
+                                    VerticalCacheLength="4"
                                     ItemsSource="{TemplateBinding ItemsSource}"
                                     ItemTemplate="{TemplateBinding ItemTemplate}"
                                     Layout="{TemplateBinding Layout}"

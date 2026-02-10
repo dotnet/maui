@@ -2,8 +2,10 @@
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using WApp = Microsoft.UI.Xaml.Application;
 using WControlTemplate = Microsoft.UI.Xaml.Controls.ControlTemplate;
+using WScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
 using WVisibility = Microsoft.UI.Xaml.Visibility;
 using WStackPanel = Microsoft.UI.Xaml.Controls.StackPanel;
 using WScrollView = Microsoft.UI.Xaml.Controls.ScrollView;
@@ -29,9 +31,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		bool _isHorizontalLayout;
 		WScrollView? _scrollView;
 
+		// WinUI's RefreshContainer requires a ScrollViewer in the visual tree to detect
+		// pull-to-refresh gestures via its internal adapter. CV2's ItemsView uses ScrollView
+		// (not ScrollViewer), so RefreshContainer can't find one. When MauiItemsView detects
+		// it's inside a RefreshContainer, it wraps itself in a ScrollViewer as a detection
+		// target. The wrapper has no scroll range (ItemsView fills its viewport), so normal
+		// scrolling is handled entirely by the internal ScrollView. Only the over-scroll at
+		// the top chains up to the wrapper, which the InteractionTracker picks up for refresh.
+		ScrollViewer? _refreshScrollViewerWrapper;
+
 		public MauiItemsView()
 		{
 			Template = (WControlTemplate)WApp.Current.Resources["MauiItemsViewTemplate"];
+			Loaded += OnLoaded;
+			Unloaded += OnUnloaded;
 		}
 
 		public static readonly DependencyProperty EmptyViewVisibilityProperty =
@@ -252,6 +265,127 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 
 			_footerContentControl.Visibility = visibility;
+		}
+
+		void OnLoaded(object sender, RoutedEventArgs e)
+		{
+			if (_refreshScrollViewerWrapper is not null)
+			{
+				return;
+			}
+
+			// Check if we're inside a RefreshContainer. If so, inject a ScrollViewer
+			// wrapper so RefreshContainer's adapter can detect it for pull-to-refresh.
+			var refreshContainer = FindAncestor<RefreshContainer>(this);
+			if (refreshContainer is null)
+			{
+				return;
+			}
+
+			WrapInScrollViewerForRefresh();
+		}
+
+		void OnUnloaded(object sender, RoutedEventArgs e)
+		{
+			UnwrapFromScrollViewer();
+		}
+
+		/// <summary>
+		/// Wraps this MauiItemsView inside a ScrollViewer so that an ancestor RefreshContainer
+		/// can find it in the visual tree for pull-to-refresh gesture detection.
+		/// The wrapper ScrollViewer has no scroll range because ItemsView fills its viewport,
+		/// so normal scrolling is unaffected. Over-scroll at the top chains from the internal
+		/// ScrollView through to the wrapper, where RefreshContainer's InteractionTracker
+		/// detects the pull gesture.
+		/// </summary>
+		void WrapInScrollViewerForRefresh()
+		{
+			_refreshScrollViewerWrapper = new ScrollViewer
+			{
+				VerticalScrollMode = ScrollMode.Enabled,
+				VerticalScrollBarVisibility = WScrollBarVisibility.Hidden,
+				HorizontalScrollMode = ScrollMode.Disabled,
+				HorizontalScrollBarVisibility = WScrollBarVisibility.Disabled,
+				IsVerticalScrollChainingEnabled = true,
+			};
+
+			var parent = VisualTreeHelper.GetParent(this);
+
+			if (parent is ContentPanel contentPanel)
+			{
+				contentPanel.Content = null;
+				_refreshScrollViewerWrapper.Content = this;
+				contentPanel.Content = _refreshScrollViewerWrapper;
+			}
+			else if (parent is ContentControl contentControl)
+			{
+				contentControl.Content = null;
+				_refreshScrollViewerWrapper.Content = this;
+				contentControl.Content = _refreshScrollViewerWrapper;
+			}
+			else if (parent is Panel panel)
+			{
+				int index = panel.Children.IndexOf(this);
+				if (index >= 0)
+				{
+					panel.Children.RemoveAt(index);
+					_refreshScrollViewerWrapper.Content = this;
+					panel.Children.Insert(index, _refreshScrollViewerWrapper);
+				}
+				else
+				{
+					_refreshScrollViewerWrapper = null;
+				}
+			}
+			else
+			{
+				_refreshScrollViewerWrapper = null;
+			}
+		}
+
+		void UnwrapFromScrollViewer()
+		{
+			if (_refreshScrollViewerWrapper is null)
+			{
+				return;
+			}
+
+			var wrapperParent = VisualTreeHelper.GetParent(_refreshScrollViewerWrapper);
+			_refreshScrollViewerWrapper.Content = null;
+
+			if (wrapperParent is ContentPanel contentPanel)
+			{
+				contentPanel.Content = this;
+			}
+			else if (wrapperParent is ContentControl contentControl)
+			{
+				contentControl.Content = this;
+			}
+			else if (wrapperParent is Panel panel)
+			{
+				int index = panel.Children.IndexOf(_refreshScrollViewerWrapper);
+				if (index >= 0)
+				{
+					panel.Children.RemoveAt(index);
+					panel.Children.Insert(index, this);
+				}
+			}
+
+			_refreshScrollViewerWrapper = null;
+		}
+
+		static T? FindAncestor<T>(DependencyObject child) where T : DependencyObject
+		{
+			var parent = VisualTreeHelper.GetParent(child);
+			while (parent is not null)
+			{
+				if (parent is T found)
+				{
+					return found;
+				}
+				parent = VisualTreeHelper.GetParent(parent);
+			}
+			return null;
 		}
 	}
 }
