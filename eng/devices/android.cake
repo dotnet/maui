@@ -408,8 +408,7 @@ void DetermineDeviceCharacteristics(string deviceDescriptor, int defaultApiLevel
 	}
 	else if (parts[2] == "64")
 	{
-		// API 36+ only provides arm64-v8a images (no x86_64)
-		if (api >= 36 || isArm64)
+		if (isArm64)
 			deviceArch = "arm64-v8a";
 		else if (emulator)
 			deviceArch = "x86_64";

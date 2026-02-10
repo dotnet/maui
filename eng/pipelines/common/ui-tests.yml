@@ -9,7 +9,7 @@ parameters:
   androidApiLevelsExtended: [ 36 ] # API 36 for Material3 tests with Pixel 3 XL
   iosVersions: [ 'latest' ]
   androidApiLevels: [ 30 ]
-  androidApiLevelsForSafeAreaEdges: [ 36 ] # Separate API level for SafeAreaEdges tests with Pixel 7
+  androidApiLevelsForSafeAreaEdges: [ 36 ] # Separate API level for SafeAreaEdges tests with Pixel 3XL
   provisionatorChannel: 'latest'
   timeoutInMinutes: 180
   skipProvisioning: true
@@ -269,6 +269,43 @@ stages:
                     parameters:
                       platform: 'Android Material3'
                       artifactName: 'uitest-snapshot-results-android-material3-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
+
+# SafeAreaEdges tests on Android API 36 with Pixel 3 XL
+  - stage: android_ui_tests_safeareavedges
+    displayName: Android UITests SafeAreaEdges (API 36 Pixel 3 XL)
+    dependsOn: build_ui_tests
+    jobs:
+      - ${{ each project in parameters.projects }}:
+        - ${{ if ne(project.android, '') }}:
+          - ${{ each api in parameters.androidApiLevelsForSafeAreaEdges }}:
+            - job: android_ui_tests_safeareavedges_${{ project.name }}_${{ api }}
+              timeoutInMinutes: 240 # how long to run the job before automatically cancelling
+              workspace:
+                clean: all
+              displayName: ${{ coalesce(project.desc, project.name) }} SafeAreaEdges (API ${{ api }} Pixel 7)
+              pool: ${{ parameters.androidLinuxPool }}
+              variables:
+                REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+                APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+              steps:
+                - template: ui-tests-steps.yml
+                  parameters:
+                    platform: android
+                    version: ${{ api }}
+                    path: ${{ project.android }}
+                    app: ${{ project.app }}
+                    device: android-emulator-64_${{ api }}
+                    deviceType: 'pixel_3_xl' # Pixel 3 XL has notch display for SafeAreaEdges tests
+                    provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                    testFilter: 'SafeAreaEdges'
+                    skipProvisioning: ${{ parameters.skipProvisioning }}
+
+                # Collect and publish Android SafeAreaEdges snapshot diffs
+                - template: ui-tests-collect-snapshot-diffs.yml
+                  parameters:
+                    platform: 'Android SafeAreaEdges'
+                    artifactName: 'uitest-snapshot-results-android-safeareavedges-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
+
   - stage: ios_ui_tests_mono
     displayName: iOS UITests Mono
     dependsOn: build_ui_tests
