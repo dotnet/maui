@@ -24,6 +24,10 @@ namespace Microsoft.Maui.Controls.Maps
 
 		void IMap.LongClicked(Location location) => MapLongClicked?.Invoke(this, new MapClickedEventArgs(location));
 
+		void IMap.ShowInfoWindow(IMapPin pin) => Handler?.Invoke(nameof(IMap.ShowInfoWindow), pin);
+
+		void IMap.HideInfoWindow(IMapPin pin) => Handler?.Invoke(nameof(IMap.HideInfoWindow), pin);
+
 		MapSpan? IMap.VisibleRegion
 		{
 			get
