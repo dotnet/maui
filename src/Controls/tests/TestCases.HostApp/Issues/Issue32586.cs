@@ -5,13 +5,18 @@ public class Issue32586 : ContentPage
 {
 	const uint AnimationDuration = 250;
 	Button FooterButton;
+	Button ParentSafeAreaToggleButton;
+	Button ChildSafeAreaToggleButton;
 	Label TestLabel;
+	Label SafeAreaStatusLabel;
 	ContentView FooterView;
+	Grid MainGrid;
+	VerticalStackLayout verticalStackLayout;
 
 	public Issue32586()
 	{
 		// Create the main grid
-		var grid = new Grid
+		MainGrid = new Grid
 		{
 			BackgroundColor = Colors.Orange,
 			RowDefinitions =
@@ -22,10 +27,19 @@ public class Issue32586 : ContentPage
 		};
 
 		// Create the main content layout
-		var stackLayout = new VerticalStackLayout
+		verticalStackLayout = new VerticalStackLayout
 		{
 			Padding = new Thickness(30, 10, 30, 0),
 			Spacing = 25
+		};
+
+		// Top marker label - its Y position indicates whether safe area is applied
+		var topMarker = new Label
+		{
+			Text = "Top Marker",
+			FontSize = 12,
+			HorizontalOptions = LayoutOptions.Center,
+			AutomationId = "TopMarker"
 		};
 
 		// Create FooterButton
@@ -45,7 +59,7 @@ public class Issue32586 : ContentPage
 			AutomationId = "InfoLabel"
 		};
 
-		// Create TestButton
+		// Create TestLabel
 		TestLabel = new Label
 		{
 			Text = "Footer is not visible",
@@ -53,10 +67,40 @@ public class Issue32586 : ContentPage
 			AutomationId = "TestLabel"
 		};
 
+		// Create SafeAreaEdges toggle button for parent Grid
+		ParentSafeAreaToggleButton = new Button
+		{
+			Text = "Toggle Parent SafeArea",
+			HorizontalOptions = LayoutOptions.Center,
+			AutomationId = "ParentSafeAreaToggleButton"
+		};
+		ParentSafeAreaToggleButton.Clicked += OnParentSafeAreaToggleClicked;
+
+		// Create SafeAreaEdges toggle button for child verticalStackLayout
+		ChildSafeAreaToggleButton = new Button
+		{
+			Text = "Toggle Child SafeArea",
+			HorizontalOptions = LayoutOptions.Center,
+			AutomationId = "ChildSafeAreaToggleButton"
+		};
+		ChildSafeAreaToggleButton.Clicked += OnChildSafeAreaToggleClicked;
+
+		// Create SafeAreaEdges status label
+		SafeAreaStatusLabel = new Label
+		{
+			Text = "Parent: Container, Child: Container",
+			HorizontalOptions = LayoutOptions.Center,
+			AutomationId = "SafeAreaStatusLabel"
+		};
+
 		// Add elements to stack layout
-		stackLayout.Add(FooterButton);
-		stackLayout.Add(infoLabel);
-		stackLayout.Add(TestLabel);
+		verticalStackLayout.Add(topMarker);
+		verticalStackLayout.Add(FooterButton);
+		verticalStackLayout.Add(infoLabel);
+		verticalStackLayout.Add(TestLabel);
+		verticalStackLayout.Add(ParentSafeAreaToggleButton);
+		verticalStackLayout.Add(ChildSafeAreaToggleButton);
+		verticalStackLayout.Add(SafeAreaStatusLabel);
 
 		// Create the footer view
 		FooterView = new ContentView
@@ -103,13 +147,13 @@ public class Issue32586 : ContentPage
 		FooterView.Content = footerGrid;
 
 		// Add elements to main grid
-		Grid.SetRow(stackLayout, 0);
+		Grid.SetRow(verticalStackLayout, 0);
 		Grid.SetRow(FooterView, 1);
-		grid.Add(stackLayout);
-		grid.Add(FooterView);
+		MainGrid.Add(verticalStackLayout);
+		MainGrid.Add(FooterView);
 
 		// Set the grid as the page content
-		Content = grid;
+		Content = MainGrid;
 	}
 
 	void OnFooterButtonClicked(object sender, EventArgs e)
@@ -152,5 +196,42 @@ public class Issue32586 : ContentPage
 		FooterView.IsVisible = false;
 
 		TestLabel.Text = "Footer is now hidden";
+	}
+
+	void OnParentSafeAreaToggleClicked(object sender, EventArgs e)
+	{
+		// Toggle SafeAreaEdges on the parent Grid between Container and None
+		var currentEdges = MainGrid.SafeAreaEdges;
+		if (currentEdges == new SafeAreaEdges(SafeAreaRegions.None))
+		{
+			MainGrid.SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
+		}
+		else
+		{
+			MainGrid.SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.None);
+		}
+		UpdateStatusLabel();
+	}
+
+	void OnChildSafeAreaToggleClicked(object sender, EventArgs e)
+	{
+		// Toggle SafeAreaEdges on the child verticalStackLayout between Container and None
+		var currentEdges = verticalStackLayout.SafeAreaEdges;
+		if (currentEdges == new SafeAreaEdges(SafeAreaRegions.None))
+		{
+			verticalStackLayout.SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
+		}
+		else
+		{
+			verticalStackLayout.SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.None);
+		}
+		UpdateStatusLabel();
+	}
+
+	void UpdateStatusLabel()
+	{
+		var parentEdges = MainGrid.SafeAreaEdges == new SafeAreaEdges(SafeAreaRegions.None) ? "None" : "Container";
+		var childEdges = verticalStackLayout.SafeAreaEdges == new SafeAreaEdges(SafeAreaRegions.None) ? "None" : "Container";
+		SafeAreaStatusLabel.Text = $"Parent: {parentEdges}, Child: {childEdges}";
 	}
 }
