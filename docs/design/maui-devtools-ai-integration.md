@@ -238,17 +238,17 @@ When escalating to Copilot:
 
 ### Permission Gates
 
-When invoked by an AI agent, certain operations require explicit user confirmation:
+When invoked by an AI agent, certain operations require explicit user confirmation. The complete mapping of commands to permission gates is defined in the **[Capabilities Model (§7.3)](./maui-devtools-spec.md#73-capabilities-model)** in the main specification.
 
-| Operation | Permission Required | Confirmation UI |
-|-----------|---------------------|-----------------|
-| `doctor.status` | None | — |
-| `device.list` | None | — |
-| `device.screenshot` | `device.capture` | IDE prompt |
-| `doctor.fix` | `environment.modify` | IDE prompt with details |
-| `android.sdk.install` | `environment.modify` | IDE prompt with package list |
-| `android.emulator.create` | `device.create` | IDE prompt |
-| `logs.stream` | `device.logs` | IDE prompt |
+**Permission summary by gate**:
+
+| Permission | Operations | Confirmation UI |
+|------------|-----------|-----------------|
+| None | `doctor.status`, `device.list`, `sdk.list`, `simulator.list`, `runtime.list`, `xcode.list` | — |
+| `device.capture` | `device.screenshot` | IDE prompt |
+| `device.logs` | `device.logs` (streaming) | IDE prompt |
+| `device.create` | `android.emulator.create/delete`, `apple.simulator.create/delete` | IDE prompt |
+| `environment.modify` | `doctor.fix`, `android.sdk.install`, `android.install`, `android.jdk.install`, `apple.install`, `apple.runtime.install`, `apple.xcode.select`, `apple.xcode.accept-licenses` | IDE prompt with details |
 
 **Permission Flow**:
 ```
@@ -322,14 +322,18 @@ AI agent calls are sandboxed:
 
 ### Elevation Handling
 
-When an operation requires elevation:
+> **See [Elevation Model (§5.4)](./maui-devtools-spec.md#54-security)** in the main spec for full platform-specific elevation flows.
 
-| Platform | Mechanism | User Experience |
-|----------|-----------|-----------------|
-| macOS | `sudo` prompt in terminal; Authorization Services in GUI | System password dialog |
-| Windows | UAC prompt | Standard elevation dialog |
+When an operation requires OS elevation, AI agents have additional constraints:
 
-**For AI Agents**: Elevated operations cannot be auto-approved. Agent receives error `E5001` with message explaining elevation requirement. User must run command manually or through IDE's privileged execution path.
+| Scenario | AI Agent Behavior |
+|----------|-------------------|
+| Elevation needed (Windows UAC) | Agent receives `E5001` error. Cannot auto-approve UAC. Must inform user and suggest running from elevated terminal or using default user-writable paths. |
+| Elevation needed (macOS sudo) | Agent receives `E5001` error. Cannot provide sudo password. Must inform user and suggest running the command manually. |
+| Default paths (no elevation) | Agent can proceed normally with `environment.modify` permission gate. |
+| CI environment (`--ci` flag) | Assumes pre-authorized. No elevation prompts — fails with `E5001` if permissions insufficient. |
+
+**Key rule**: Elevated operations are **never auto-approved** by AI agents. The agent must always inform the user and provide alternatives (e.g., installing to a user-writable default path instead).
 
 ---
 

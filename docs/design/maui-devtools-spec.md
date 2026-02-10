@@ -437,6 +437,98 @@ IDE consumers can use the `type: "progress"` messages to update progress bars an
 | NFR-S3 | Elevation must be requested explicitly with clear justification |
 | NFR-S4 | AI agent calls must respect permission gates (see Security Model) |
 
+#### Elevation Model
+
+Some operations require OS-level elevation when targeting system-protected paths. The tool **never silently elevates** — it always detects the need first, then delegates to the platform's native elevation mechanism.
+
+**When Elevation is Required**:
+
+| Scenario | Platform | Example |
+|----------|----------|---------|
+| Android SDK/JDK install to system path | Windows | Installing to `C:\Program Files\Android\sdk` |
+| Android SDK/JDK install to system path | macOS | Installing to `/opt/android-sdk` (rare — default is user home) |
+| Xcode selection | macOS | `xcode-select -s` requires `sudo` |
+| Xcode license acceptance | macOS | `xcodebuild -license accept` requires `sudo` |
+| iOS runtime installation | macOS | `xcodebuild -downloadPlatform iOS` requires admin |
+| Enable Developer Mode | Windows | Requires Settings app (no CLI elevation path) |
+
+**Windows Elevation Flow**:
+
+When the tool detects that the target install path requires elevation (e.g., `Program Files`):
+
+1. The tool detects the current process is **not elevated**
+2. It launches a **new elevated process** via `ProcessStartInfo` with `Verb = "runas"`, which triggers the standard UAC prompt
+3. The elevated child process performs the install operation
+4. The parent process monitors the child and reports progress/result
+5. If the user declines UAC, the tool returns error `E5001`
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  dotnet maui android install --sdk-path "C:\Program Files\  │
+│  Android\sdk"                                                │
+├─────────────────────────────────────────────────────────────┤
+│  1. Detect: target path requires elevation                   │
+│  2. Prompt: "Installing to a system path requires admin      │
+│     permissions. Continue? [Y/n]"                            │
+│  3. Launch: elevated child process (UAC dialog appears)      │
+│  4. Child: performs SDK download + install                    │
+│  5. Parent: streams progress from child, reports result      │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**macOS Elevation Flow**:
+
+| Context | Mechanism | Details |
+|---------|-----------|---------|
+| Terminal | `sudo` | Tool re-invokes itself with `sudo` for the specific operation that needs it (e.g., `sudo xcode-select -s <path>`) |
+| IDE (VS Code / VS for Mac) | Authorization Services | IDE presents system password dialog via `AuthorizationExecuteWithPrivileges` or equivalent |
+| CI | Pre-authorized | CI agents typically run with required permissions; use `--ci` flag to skip interactive prompts |
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  dotnet maui apple xcode select /Applications/Xcode.app     │
+├─────────────────────────────────────────────────────────────┤
+│  1. Detect: xcode-select requires sudo                       │
+│  2. Invoke: sudo xcode-select -s /Applications/Xcode.app    │
+│  3. macOS shows system password prompt                       │
+│  4. On success: report new active Xcode                      │
+│  5. On failure: return E5001 with guidance                   │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Default Paths Avoid Elevation**:
+
+By default, the tool installs to **user-writable paths** that do not require elevation:
+
+| Platform | Default JDK Path | Default SDK Path | Elevation Needed |
+|----------|------------------|------------------|------------------|
+| macOS | `~/Library/Developer/Android/jdk` | `~/Library/Developer/Android/sdk` | No |
+| Windows | `%LOCALAPPDATA%\Android\jdk` | `%LOCALAPPDATA%\Android\sdk` | No |
+
+Elevation is only triggered when the user explicitly specifies a system path via `--sdk-path`, `--jdk-path`, or for macOS operations that inherently require `sudo` (Xcode selection, license acceptance, runtime installs).
+
+**Error on Elevation Denial**:
+
+```json
+{
+  "code": "E5001",
+  "category": "user",
+  "message": "Operation requires elevated permissions",
+  "context": {
+    "operation": "android.sdk.install",
+    "target_path": "C:\\Program Files\\Android\\sdk",
+    "platform": "windows"
+  },
+  "remediation": {
+    "type": "user_action",
+    "manual_steps": [
+      "Run the command from an elevated terminal (Run as Administrator)",
+      "Or install to a user-writable path: dotnet maui android install --sdk-path %LOCALAPPDATA%\\Android\\sdk"
+    ]
+  }
+}
+```
+
 ### 5.5 Privacy
 
 | ID | Requirement |
@@ -1108,39 +1200,51 @@ The unified device model for all platforms (physical devices, emulators, simulat
 
 ### 7.3 Capabilities Model
 
-| Command | Windows | macOS | Requires Elevation |
-|---------|---------|-------|-------------------|
-| `doctor` | ✓ | ✓ | No |
-| `doctor --fix` | ✓ | ✓ | Sometimes* |
-| `dotnet maui device list` | ✓ | ✓ | No |
-| `dotnet maui device screenshot` | ✓ | ✓ | No |
-| `dotnet maui android sdk list` | ✓ | ✓ | No |
-| `dotnet maui android sdk install` | ✓ | ✓ | Sometimes* |
-| `dotnet maui android sdk accept-licenses` | ✓ | ✓ | No |
-| `dotnet maui android emulator create` | ✓ | ✓ | No |
-| `dotnet maui android emulator start` | ✓ | ✓ | No |
-| `dotnet maui android emulator stop` | ✓ | ✓ | No |
-| `dotnet maui android emulator delete` | ✓ | ✓ | No |
-| `dotnet maui android install` | ✓ | ✓ | No |
-| `dotnet maui android jdk check` | ✓ | ✓ | No |
-| `dotnet maui android jdk install` | ✓ | ✓ | Sometimes* |
-| `dotnet maui android jdk list` | ✓ | ✓ | No |
-| `dotnet maui apple simulator list` | — | ✓ | No |
-| `dotnet maui apple simulator start` | — | ✓ | No |
-| `dotnet maui apple simulator stop` | — | ✓ | No |
-| `dotnet maui apple simulator create` | — | ✓ | No |
-| `dotnet maui apple simulator delete` | — | ✓ | No |
-| `dotnet maui apple install` | — | ✓ | Sometimes* |
-| `dotnet maui apple runtime check` | — | ✓ | No |
-| `dotnet maui apple runtime list` | — | ✓ | No |
-| `dotnet maui apple runtime install` | — | ✓ | Yes (admin) |
-| `dotnet maui apple xcode check` | — | ✓ | No |
-| `dotnet maui apple xcode list` | — | ✓ | No |
-| `dotnet maui apple xcode select` | — | ✓ | Yes (sudo) |
-| `dotnet maui apple xcode accept-licenses` | — | ✓ | Yes (sudo) |
-| `dotnet maui device logs` | ✓ | ✓ | No |
+| Command | Windows | macOS | OS Elevation | AI Agent Permission |
+|---------|---------|-------|-------------|---------------------|
+| `doctor` | ✓ | ✓ | No | None |
+| `doctor --fix` | ✓ | ✓ | Sometimes* | `environment.modify` |
+| `dotnet maui device list` | ✓ | ✓ | No | None |
+| `dotnet maui device screenshot` | ✓ | ✓ | No | `device.capture` |
+| `dotnet maui device logs` | ✓ | ✓ | No | `device.logs` |
+| `dotnet maui android sdk list` | ✓ | ✓ | No | None |
+| `dotnet maui android sdk install` | ✓ | ✓ | Sometimes* | `environment.modify` |
+| `dotnet maui android sdk accept-licenses` | ✓ | ✓ | No | `environment.modify` |
+| `dotnet maui android emulator create` | ✓ | ✓ | No | `device.create` |
+| `dotnet maui android emulator start` | ✓ | ✓ | No | None |
+| `dotnet maui android emulator stop` | ✓ | ✓ | No | None |
+| `dotnet maui android emulator delete` | ✓ | ✓ | No | `device.create` |
+| `dotnet maui android install` | ✓ | ✓ | Sometimes* | `environment.modify` |
+| `dotnet maui android jdk check` | ✓ | ✓ | No | None |
+| `dotnet maui android jdk install` | ✓ | ✓ | Sometimes* | `environment.modify` |
+| `dotnet maui android jdk list` | ✓ | ✓ | No | None |
+| `dotnet maui apple simulator list` | — | ✓ | No | None |
+| `dotnet maui apple simulator start` | — | ✓ | No | None |
+| `dotnet maui apple simulator stop` | — | ✓ | No | None |
+| `dotnet maui apple simulator create` | — | ✓ | No | `device.create` |
+| `dotnet maui apple simulator delete` | — | ✓ | No | `device.create` |
+| `dotnet maui apple install` | — | ✓ | Sometimes* | `environment.modify` |
+| `dotnet maui apple runtime check` | — | ✓ | No | None |
+| `dotnet maui apple runtime list` | — | ✓ | No | None |
+| `dotnet maui apple runtime install` | — | ✓ | Yes (admin) | `environment.modify` |
+| `dotnet maui apple xcode check` | — | ✓ | No | None |
+| `dotnet maui apple xcode list` | — | ✓ | No | None |
+| `dotnet maui apple xcode select` | — | ✓ | Yes (sudo) | `environment.modify` |
+| `dotnet maui apple xcode accept-licenses` | — | ✓ | Yes (sudo) | `environment.modify` |
 
-*Elevation required for: installing Android SDK to system locations, installing Xcode runtimes
+*OS Elevation required for: installing Android SDK/JDK to system locations (e.g., `Program Files`), installing Xcode runtimes, switching Xcode, accepting Xcode licenses
+
+**AI Agent Permission Gates**:
+
+| Permission | Description | Default |
+|------------|-------------|---------|
+| None | Read-only operation — no approval required | Allow |
+| `device.capture` | Capture screenshots or screen recordings | Prompt |
+| `device.logs` | Stream device/simulator logs | Prompt |
+| `device.create` | Create or delete emulators/simulators | Prompt |
+| `environment.modify` | Install, update, or configure SDK/JDK/runtime components | Prompt |
+
+> **See [AI Agent Integration](./maui-devtools-ai-integration.md) §4** for permission storage, persistent permission schema, and sandbox boundaries.
 
 ---
 
