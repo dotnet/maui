@@ -31,7 +31,7 @@ stages:
           skipAndroidCreateAvds: true
           skipProvisioning: true
           skipXcode: false
-          skipSimulatorSetup: true
+          skipSimulatorSetup: false
           base64Encode: true
           outputVariableName: dotnetbuilds-internal-container-read-token-base64
       

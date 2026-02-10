@@ -1,0 +1,8 @@
+{"reply": "
+Hello! I'm just a program, but 
+I'm here and ready to help. How
+ can I assist you today?", "
+happiness": 9.5
+, 
+"anger":
+ 0}
