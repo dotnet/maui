@@ -3,6 +3,7 @@ using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Windows.Foundation;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
@@ -11,6 +12,7 @@ namespace Microsoft.Maui.Handlers
 	public partial class RefreshViewHandler : ViewHandler<IRefreshView, RefreshContainer>
 	{
 		Deferral? _refreshCompletionDeferral;
+		bool _needsManualVisualizerControl;
 
 		protected override RefreshContainer CreatePlatformView()
 		{
@@ -38,6 +40,7 @@ namespace Microsoft.Maui.Handlers
 			nativeView.RefreshRequested -= OnRefresh;
 
 			CompleteRefresh();
+			_needsManualVisualizerControl = false;
 
 			if (nativeView.Content is ContentPanel contentPanel)
 			{
@@ -72,11 +75,13 @@ namespace Microsoft.Maui.Handlers
 			{
 				// The virtual view is no longer refreshing, so we complete the refresh
 				CompleteRefresh();
+				UpdateVisualizerVisibility();
 			}
 			else if (_refreshCompletionDeferral is null)
 			{
 				// The virtual view requested a refresh but we have not yet started a refresh,
 				// so we request a refresh on the platform view
+				UpdateVisualizerVisibility();
 				platform.RequestRefresh();
 			}
 		}
@@ -149,7 +154,25 @@ namespace Microsoft.Maui.Handlers
 			// If the virtual view requested a refresh, we need to trigger it now that the control
 			// is loaded. This needs to be done on a dispatch as the control may need to be laid
 			// out or the template applied first.
-			refreshControl.DispatcherQueue.TryEnqueue(UpdateIsRefreshing);
+			refreshControl.DispatcherQueue.TryEnqueue(() =>
+			{
+				if (PlatformView is null || VirtualView is null)
+					return;
+
+				// RefreshContainer's internal adapter walks the visual tree looking for a
+				// ScrollViewer to hook up pull-to-refresh interaction tracking. Content that
+				// uses the newer ScrollView control (e.g. CV2's ItemsView) won't have one,
+				// leaving the RefreshVisualizer stuck at its default visible position.
+				// In that case we manually toggle the visualizer's visibility.
+				_needsManualVisualizerControl = !HasScrollViewerInVisualTree(PlatformView);
+
+				if (_needsManualVisualizerControl)
+				{
+					UpdateVisualizerVisibility();
+				}
+
+				UpdateIsRefreshing();
+			});
 		}
 
 		void OnRefresh(object sender, RefreshRequestedEventArgs args)
@@ -177,6 +200,45 @@ namespace Microsoft.Maui.Handlers
 			_refreshCompletionDeferral?.Complete();
 			_refreshCompletionDeferral?.Dispose();
 			_refreshCompletionDeferral = null;
+		}
+
+		/// <summary>
+		/// When the RefreshContainer's adapter cannot find a ScrollViewer in the content
+		/// tree (e.g. content uses the newer ScrollView control), the RefreshVisualizer
+		/// remains at its default visible position. This method manually collapses the
+		/// visualizer when not refreshing and makes it visible when refreshing.
+		/// </summary>
+		void UpdateVisualizerVisibility()
+		{
+			if (!_needsManualVisualizerControl || PlatformView?.Visualizer is null)
+				return;
+
+			PlatformView.Visualizer.Visibility = VirtualView?.IsRefreshing == true
+				? Visibility.Visible
+				: Visibility.Collapsed;
+		}
+
+		/// <summary>
+		/// Checks whether the visual tree rooted at <paramref name="root"/> contains a
+		/// <see cref="ScrollViewer"/>. The RefreshContainer's internal adapter requires a
+		/// ScrollViewer to manage the RefreshVisualizer's position and interaction tracking.
+		/// </summary>
+		static bool HasScrollViewerInVisualTree(DependencyObject root, int maxDepth = 10)
+		{
+			if (root is ScrollViewer)
+				return true;
+
+			if (maxDepth <= 0)
+				return false;
+
+			int childCount = VisualTreeHelper.GetChildrenCount(root);
+			for (int i = 0; i < childCount; i++)
+			{
+				if (HasScrollViewerInVisualTree(VisualTreeHelper.GetChild(root, i), maxDepth - 1))
+					return true;
+			}
+
+			return false;
 		}
 
 		void SetRefreshColorCallback(RefreshContainer refreshControl)
