@@ -361,6 +361,18 @@ $reportContent = Get-SectionByPattern -Sections $allSections -Patterns @(
     'Final Report'
 ) -Debug:$debugMode
 
+# Fallback: If Report content not found in <details> blocks, look for
+# "## Final Recommendation" section directly in the markdown (agent sometimes
+# writes Report as a top-level heading instead of a <details> block)
+if ([string]::IsNullOrWhiteSpace($reportContent)) {
+    if ($Content -match '(?s)##\s+[✅⚠️❌]*\s*Final Recommendation[:\s].+') {
+        $reportContent = $Matches[0].Trim()
+        if ($debugMode) {
+            Write-Host "  [DEBUG] Report extracted from '## Final Recommendation' heading ($($reportContent.Length) chars)" -ForegroundColor Green
+        }
+    }
+}
+
 # ============================================================================
 # VALIDATION
 # ============================================================================
