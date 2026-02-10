@@ -21,7 +21,7 @@ public static class AndroidCommands
 		command.AddCommand(CreateInstallCommand());
 		command.AddCommand(CreateJdkCommand());
 		command.AddCommand(CreateSdkCommand());
-		command.AddCommand(CreateAvdCommand());
+		command.AddCommand(CreateEmulatorCommand());
 
 		return command;
 	}
@@ -538,12 +538,12 @@ public static class AndroidCommands
 		return command;
 	}
 
-	private static Command CreateAvdCommand()
+	private static Command CreateEmulatorCommand()
 	{
-		var command = new Command("avd", "Manage Android Virtual Devices");
+		var command = new Command("emulator", "Manage Android emulators");
 
-		// avd list
-		var listCommand = new Command("list", "List available AVDs");
+		// emulator list
+		var listCommand = new Command("list", "List available emulators");
 		listCommand.SetHandler(async (InvocationContext context) =>
 		{
 			var androidProvider = Program.AndroidProvider;
@@ -565,11 +565,11 @@ public static class AndroidCommands
 				{
 					if (!avds.Any())
 					{
-						Console.WriteLine("No AVDs found.");
+						Console.WriteLine("No emulators found.");
 						return;
 					}
 
-					Console.WriteLine("Available AVDs:");
+					Console.WriteLine("Available emulators:");
 					foreach (var avd in avds)
 					{
 						Console.WriteLine($"  {avd.Name} ({avd.Target ?? avd.SystemImage ?? "unknown"})");
@@ -583,8 +583,8 @@ public static class AndroidCommands
 			}
 		});
 
-		// avd create
-		var createCommand = new Command("create", "Create a new AVD")
+		// emulator create
+		var createCommand = new Command("create", "Create a new emulator")
 		{
 			new Argument<string>("name", "AVD name"),
 			new Option<string>("--package", "System image package (auto-detects most recent if not specified)"),
@@ -651,8 +651,8 @@ public static class AndroidCommands
 			}
 		});
 
-		// avd start
-		var startCommand = new Command("start", "Start an AVD")
+		// emulator start
+		var startCommand = new Command("start", "Start an emulator")
 		{
 			new Argument<string>("name", "AVD name to start"),
 			new Option<bool>("--cold-boot", "Perform a cold boot"),
@@ -706,7 +706,7 @@ public static class AndroidCommands
 		command.AddCommand(createCommand);
 		command.AddCommand(startCommand);
 
-		// avd stop
+		// emulator stop
 		var stopCommand = new Command("stop", "Stop a running emulator")
 		{
 			new Argument<string>("serial", "Device serial (e.g., emulator-5554)")
@@ -751,8 +751,8 @@ public static class AndroidCommands
 		});
 		command.AddCommand(stopCommand);
 
-		// avd delete
-		var deleteCommand = new Command("delete", "Delete an AVD")
+		// emulator delete
+		var deleteCommand = new Command("delete", "Delete an emulator")
 		{
 			new Argument<string>("name", "AVD name to delete")
 		};
