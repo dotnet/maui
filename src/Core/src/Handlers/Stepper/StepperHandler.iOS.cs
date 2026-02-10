@@ -70,6 +70,10 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		// iOS 26+ Workaround: UIStepper behavior changed to prevent button clicks when increment would exceed boundaries
+		// instead of clamping to boundary values like previous iOS versions. This method dynamically adjusts
+		// the stepValue to match available space to boundaries, allowing users to reach exact min/max values.
+		// Reference: https://developer.apple.com/forums/thread/802452
 		static void AdjustStepValueForBoundaries(IStepper virtualView, UIStepper platformView)
 		{
 			var originalIncrement = virtualView.Interval;
