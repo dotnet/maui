@@ -72,27 +72,19 @@ stages:
               skipAndroidCreateAvds: ${{ eq(parameters.Platform, 'ios') }}
               androidEmulatorApiLevel: '30'
 
-          # Disable hardware acceleration in AVD config (HVF not available on Azure hosted agents)
+          # Configure AVD for hardware acceleration (AcesShared ARM64 macOS agents have HVF)
+          # Match maui-pr Cake script: no GPU override on macOS (uses default hw GPU)
           - script: |
-              echo "=== Disabling hardware acceleration in AVD config ==="
+              echo "=== Configuring AVD for hardware-accelerated emulation ==="
               AVD_CONFIG="$HOME/.android/avd/Emulator_30.avd/config.ini"
               if [ -f "$AVD_CONFIG" ]; then
                 echo "Found AVD config: $AVD_CONFIG"
-                echo "Current config:"
-                cat "$AVD_CONFIG"
-                echo ""
-                echo "Adding hw.cpu.ncore=2 and removing any accelerator settings..."
-                # Remove any existing accelerator settings and add our own
-                grep -v "hw.accelerator" "$AVD_CONFIG" > "$AVD_CONFIG.tmp" && mv "$AVD_CONFIG.tmp" "$AVD_CONFIG"
-                echo "hw.cpu.ncore=2" >> "$AVD_CONFIG"
-                echo ""
-                echo "Updated config:"
                 cat "$AVD_CONFIG"
               else
                 echo "##vso[task.logissue type=warning]AVD config not found at: $AVD_CONFIG"
                 ls -la "$HOME/.android/avd/" 2>/dev/null || echo "AVD directory not found"
               fi
-            displayName: 'Configure AVD for Software Emulation'
+            displayName: 'Configure AVD'
             condition: eq('${{ parameters.Platform }}', 'android')
 
           # Set up Android SDK PATH (required on self-hosted agents)
@@ -295,11 +287,11 @@ stages:
           - script: |
               echo "=== Booting Android Emulator ==="
               
-              # Use swiftshader for software graphics rendering (HVF not available on Azure hosted ARM64 agents)
-              # Use swiftshader for software rendering (more reliable on CI without GPU)
+              # Match maui-pr Cake script: on macOS use default GPU (hardware-accelerated),
+              # only use swiftshader on Linux. AcesShared agents are ARM64 macOS with HVF.
               # Start emulator in background with logging for debugging
               EMULATOR_LOG="/tmp/emulator-boot.log"
-              nohup $ANDROID_SDK_ROOT/emulator/emulator -avd Emulator_30 -no-window -no-snapshot -no-audio -no-boot-anim -gpu swiftshader_indirect > "$EMULATOR_LOG" 2>&1 &
+              nohup $ANDROID_SDK_ROOT/emulator/emulator -avd Emulator_30 -no-window -no-snapshot -no-audio -no-boot-anim > "$EMULATOR_LOG" 2>&1 &
               EMULATOR_PID=$!
               echo "Emulator started with PID: $EMULATOR_PID"
               
@@ -480,7 +472,7 @@ stages:
               # Start fresh emulator
               EMULATOR_LOG="/tmp/emulator-fresh.log"
               echo "Starting fresh emulator..."
-              nohup $ANDROID_SDK_ROOT/emulator/emulator -avd Emulator_30 -no-window -no-snapshot -no-audio -no-boot-anim -gpu swiftshader_indirect > "$EMULATOR_LOG" 2>&1 &
+              nohup $ANDROID_SDK_ROOT/emulator/emulator -avd Emulator_30 -no-window -no-snapshot -no-audio -no-boot-anim > "$EMULATOR_LOG" 2>&1 &
               EMULATOR_PID=$!
               echo "Emulator started with PID: $EMULATOR_PID"
               
