@@ -38,13 +38,19 @@ variables:
 - group: AzureDevOps-Artifact-Feeds-Pats
 
 parameters:
-- name: VM_IMAGE_HOST
+- name: WindowsPool
   type: object
   default:
     name: NetCore1ESPool-Internal
     demands:
       - ImageOverride -equals 1es-windows-2022
     os: windows
+- name: MacOSPool
+  type: object
+  default:
+    name: Azure Pipelines
+    vmImage: macOS-15
+    os: macOS
 
 resources:
   repositories:
@@ -59,7 +65,7 @@ extends:
   ${{ else }}:
     template: v1/1ES.Unofficial.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
-    pool: ${{ parameters.VM_IMAGE_HOST }}
+    pool: ${{ parameters.WindowsPool }}
     sdl:
       binskim:
         scanOutputDirectoryOnly: true
@@ -76,7 +82,8 @@ extends:
 
     - template: /eng/pipelines/arcade/stage-pack.yml@self
       parameters:
-        pool: ${{ parameters.VM_IMAGE_HOST }}
+        pool: ${{ parameters.WindowsPool }}
+        macPool: ${{ parameters.MacOSPool }}
         enableSourceIndex: false
         runAsPublic: false
         enableMicrobuild: true
@@ -102,7 +109,7 @@ extends:
     - ${{ if or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), and(startsWith(variables['Build.SourceBranch'], 'refs/heads/net'), endsWith(variables['Build.SourceBranch'], '.0')), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')) }}:
       - template: /eng/pipelines/arcade/stage-api-scan.yml@self
         parameters:
-          pool: ${{ parameters.VM_IMAGE_HOST }}
+          pool: ${{ parameters.WindowsPool }}
           dependsOnStage: Pack
 
     # Publish and validation steps. Only run in official builds

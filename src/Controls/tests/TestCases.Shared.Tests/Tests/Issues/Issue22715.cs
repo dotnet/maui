@@ -20,7 +20,7 @@ public class Issue22715 : _IssuesUITest
     {
         App.WaitForElement("EntNumber").GetRect();
         App.WaitForElement("TopLabel").GetRect();
-        VerifyScreenshot();
+        VerifyScreenshot(cropBottom: 1400);
     }
 }
 #endif
