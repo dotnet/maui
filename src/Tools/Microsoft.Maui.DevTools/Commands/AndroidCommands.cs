@@ -709,7 +709,7 @@ public static class AndroidCommands
 		// emulator stop
 		var stopCommand = new Command("stop", "Stop a running emulator")
 		{
-			new Argument<string>("serial", "Device serial (e.g., emulator-5554)")
+			new Argument<string>("name", "Emulator name")
 		};
 		stopCommand.SetHandler(async (InvocationContext context) =>
 		{
@@ -717,7 +717,7 @@ public static class AndroidCommands
 			
 			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
 			var dryRun = context.ParseResult.GetValueForOption(GlobalOptions.DryRunOption);
-			var serial = context.ParseResult.GetValueForArgument(
+			var name = context.ParseResult.GetValueForArgument(
 				(Argument<string>)context.ParseResult.CommandResult.Command.Arguments.First());
 
 			var formatter = useJson 
@@ -726,9 +726,26 @@ public static class AndroidCommands
 
 			try
 			{
+				// Find the running emulator's serial by AVD name
+				var devices = await androidProvider.GetDevicesAsync(context.GetCancellationToken());
+				var emulator = devices.FirstOrDefault(d =>
+					d.IsEmulator &&
+					d.Details != null &&
+					d.Details.TryGetValue("avd", out var avd) &&
+					string.Equals(avd?.ToString(), name, StringComparison.OrdinalIgnoreCase));
+
+				if (emulator == null)
+				{
+					throw new Errors.MauiToolException(
+						Errors.ErrorCodes.AndroidEmulatorNotFound,
+						$"No running emulator found with name '{name}'");
+				}
+
+				var serial = emulator.Id;
+
 				if (dryRun)
 				{
-					Console.WriteLine($"[dry-run] Would stop emulator: {serial}");
+					Console.WriteLine($"[dry-run] Would stop emulator: {name} ({serial})");
 					return;
 				}
 
@@ -736,11 +753,11 @@ public static class AndroidCommands
 
 				if (useJson)
 				{
-					formatter.Write(new { success = true, serial = serial, status = "stopped" });
+					formatter.Write(new { success = true, name = name, serial = serial, status = "stopped" });
 				}
 				else
 				{
-					Console.WriteLine($"✓ Stopped emulator: {serial}");
+					Console.WriteLine($"✓ Stopped emulator: {name} ({serial})");
 				}
 			}
 			catch (Exception ex)

@@ -19,7 +19,7 @@ public static class DoctorCommand
 		{
 			// Options
 			new Option<bool>("--fix", "Attempt to automatically fix issues"),
-			new Option<string>("--category", "Check only specific category (dotnet, android, apple, windows)")
+			new Option<string>("--platform", "Check only specific platform (dotnet, android, apple, windows)")
 		};
 
 		command.SetHandler(async (InvocationContext context) =>
@@ -29,8 +29,8 @@ public static class DoctorCommand
 			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
 			var fix = context.ParseResult.GetValueForOption(
 				(Option<bool>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "fix"));
-			var category = context.ParseResult.GetValueForOption(
-				(Option<string>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "category"));
+			var platform = context.ParseResult.GetValueForOption(
+				(Option<string>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "platform"));
 
 			var formatter = useJson 
 				? (IOutputFormatter)new JsonOutputFormatter(Console.Out) 
@@ -38,9 +38,9 @@ public static class DoctorCommand
 
 			try
 			{
-				var report = string.IsNullOrEmpty(category)
+				var report = string.IsNullOrEmpty(platform)
 					? await doctorService.RunAllChecksAsync(context.GetCancellationToken())
-					: await doctorService.RunCategoryChecksAsync(category, context.GetCancellationToken());
+					: await doctorService.RunCategoryChecksAsync(platform, context.GetCancellationToken());
 
 				// Output the report
 				formatter.Write(report);
