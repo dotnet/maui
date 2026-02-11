@@ -47,6 +47,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					return false;
 				}
 
+				if (fromItemIndex < 0 || fromItemIndex > fromList.Count)
+				{
+					return false;
+				}
+
+				if (toItemIndex < 0 || toItemIndex > toList.Count)
+				{
+					return false;
+				}
+
 				if (fromList != null && toList != null)
 				{
 					var fromItem = fromList[fromItemIndex];
