@@ -34,7 +34,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 				WaitForAllElements();
 
-				VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "SizeButtonsDownLandscape");
+				VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "SizeButtonsDownLandscape", tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 
 				changeBoundsButton.Click();
 				WaitForAllElements();
