@@ -741,11 +741,8 @@ static class SetPropertyHelpers
 	static void SetExpressionBinding(IndentedTextWriter writer, ILocalValue parentVar, IFieldSymbol bpFieldSymbol, string expression, ITypeSymbol dataTypeSymbol, SourceGenContext context, ValueNode valueNode)
 	{
 		var bpName = bpFieldSymbol.ToFQDisplayString();
-		var bpTypeAndConverter = bpFieldSymbol.GetBPTypeAndConverter(context);
-		var targetType = bpTypeAndConverter?.type ?? context.Compilation.ObjectType;
 		
 		var sourceTypeName = dataTypeSymbol.ToFQDisplayString();
-		var targetTypeName = targetType.ToFQDisplayString();
 
 		// Transform quotes with semantic context - char literals stay as char only if target expects char
 		var transformedExpression = CSharpExpressionHelpers.TransformQuotesWithSemantics(
@@ -754,6 +751,13 @@ static class SetPropertyHelpers
 		// Analyze expression for mixed local+binding scenarios
 		var analysis = ExpressionAnalyzer.Analyze(transformedExpression, "__source", dataTypeSymbol, context.RootType);
 		var handlers = analysis.Handlers;
+
+		// Resolve the expression's result type for TProperty.
+		// TypedBinding<TSource, TProperty> should use the expression type (e.g., decimal for Price),
+		// NOT the target BindableProperty type (e.g., string for Entry.TextProperty).
+		// The binding infrastructure handles type conversion at runtime.
+		var expressionType = ResolveExpressionType(expression, dataTypeSymbol, context);
+		var propertyTypeName = expressionType?.ToFQDisplayString() ?? "object";
 
 		// Wrap in scoped block if we have captures to avoid duplicate variable names
 		// when multiple expressions capture the same local member
@@ -774,7 +778,7 @@ static class SetPropertyHelpers
 		{
 			writer.WriteLine($"{parentVar.ValueAccessor}.SetBinding({bpName},");
 			writer.Indent++;
-			writer.WriteLine($"new global::Microsoft.Maui.Controls.Internals.TypedBinding<{sourceTypeName}, {targetTypeName}>(");
+			writer.WriteLine($"new global::Microsoft.Maui.Controls.Internals.TypedBinding<{sourceTypeName}, {propertyTypeName}>(");
 			writer.Indent++;
 			// TransformedExpression already has identifiers prefixed with __source. where needed
 			// Add null-forgiving operator if expression contains ?. to suppress nullability warnings
@@ -830,6 +834,54 @@ static class SetPropertyHelpers
 			writer.Indent--;
 			writer.WriteLine("}");
 		}
+	}
+
+	/// <summary>
+	/// Resolves the result type of a C# expression by walking the property chain on the dataType.
+	/// For example, "Price" on SimpleViewModel resolves to decimal, "User.DisplayName" resolves to string.
+	/// For complex expressions (operators, method calls, interpolation), returns null to fall back to object.
+	/// </summary>
+	static ITypeSymbol? ResolveExpressionType(string expression, ITypeSymbol dataType, SourceGenContext context)
+	{
+		if (string.IsNullOrWhiteSpace(expression))
+			return null;
+
+		var expr = expression.Trim();
+
+		// Strip leading dot prefix (e.g., ".Name" → "Name"), but avoid the ".." range operator
+		if (expr.StartsWith(".", StringComparison.Ordinal) &&
+			!expr.StartsWith("..", StringComparison.Ordinal))
+			expr = expr.Substring(1);
+
+		// Strip "BindingContext." prefix (e.g., "BindingContext.Name" → "Name")
+		if (expr.StartsWith("BindingContext.", StringComparison.Ordinal))
+			expr = expr.Substring("BindingContext.".Length);
+
+		if (string.IsNullOrEmpty(expr))
+			return null;
+
+		// Walk the dot-separated property chain (also handle ?. null-conditional access)
+		var parts = expr.Replace("?.", ".").Split('.');
+		var currentType = dataType;
+
+		foreach (var part in parts)
+		{
+			var memberName = part.Trim().TrimEnd('!');
+
+			// If it contains parens, operators, or special chars, it's not a simple property chain
+			if (memberName.Contains('(') || memberName.Contains(' ') || memberName.Contains('[') || string.IsNullOrEmpty(memberName))
+				return null;
+
+			var member = currentType.GetAllMembers(memberName, context).FirstOrDefault();
+			if (member is IPropertySymbol prop)
+				currentType = prop.Type;
+			else if (member is IFieldSymbol field)
+				currentType = field.Type;
+			else
+				return null;
+		}
+
+		return currentType;
 	}
 
 	/// <summary>

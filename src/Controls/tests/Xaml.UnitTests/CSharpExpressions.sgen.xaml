@@ -142,6 +142,9 @@
             
             <!-- String interpolation with multiple bindings and format -->
             <Label x:Name="vmInterpolationMultiLabel" Text="{$'{Quantity}x at {Price:C2}'}" />
+            
+            <!-- Two-way binding: Entry.Text (string) to decimal property via C# expression -->
+            <Entry x:Name="twoWayDecimalEntry" Text="{Price}" />
         </VerticalStackLayout>
         
         <!-- CDATA EXPRESSION TESTS -->
