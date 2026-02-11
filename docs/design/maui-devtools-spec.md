@@ -44,7 +44,7 @@ This tool eliminates that friction by providing a single, authoritative source f
 |---------|---------------|
 | MAUI Developer (Windows) | One-command setup for Android development |
 | MAUI Developer (macOS) | Unified setup for Android + iOS/Mac Catalyst |
-| CI Engineer | Headless, scriptable environment provisioning |
+| CI Engineer | Headless, automatable environment provisioning |
 | AI Agent | Structured APIs for querying and fixing environment issues |
 | IDE (VS/VS Code) | Fast, reliable environment checks with actionable fixes |
 
@@ -62,7 +62,7 @@ This tool eliminates that friction by providing a single, authoritative source f
 
 4. **IDE Integration Gap**: Visual Studio and VS Code must independently implement detection and installation logic, leading to inconsistent experiences.
 
-5. **AI Agent Blindspot**: AI coding assistants cannot reliably query environment state or propose fixes because there's no structured API.
+5. **AI Agent Blind Spot**: AI coding assistants cannot reliably query environment state or propose fixes because there's no structured API.
 
 6. **CI Complexity**: Setting up MAUI builds in CI requires extensive scripting and platform-specific knowledge.
 
@@ -169,7 +169,7 @@ This tool eliminates that friction by providing a single, authoritative source f
 |----|-------------|----------|
 | FR-X1 | List available simulators with runtime/device type info | P0 |
 | FR-X2 | Filter simulators by runtime, device type, or state | P0 |
-| FR-X3 | Start simulator by UDID or name | P0 |
+| FR-X3 | Start simulator by UUID or name | P0 |
 | FR-X4 | Stop simulator | P0 |
 | FR-X5 | Create simulator with specified runtime and device type | P0 |
 | FR-X6 | Delete simulator | P2 |
@@ -1317,7 +1317,7 @@ All telemetry and logs follow these redaction rules:
 | File paths | Replace with `<path>` or keep structure | `/Users/name/code` → `<user-home>/code` |
 | Device names | Replace with type | `John's iPhone` → `<iPhone>` |
 | Serial numbers | Redact | `R58M32XXXXX` → `<android-serial>` |
-| UDIDs | Redact | `A1B2C3...` → `<simulator-udid>` |
+| Simulator IDs | Redact | `A1B2C3...` → `<simulator-udid>` |
 | Error messages | Keep, unless contains path | Preserved |
 
 ---
