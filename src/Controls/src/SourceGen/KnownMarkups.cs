@@ -276,7 +276,9 @@ internal class KnownMarkups
 
 		if (styleNode != null)
 		{
-			value = $"global::Microsoft.Maui.Controls.StyleSheets.StyleSheet.FromString(@\"{(styleNode as ValueNode)!.Value as string}\")";
+			// Escape quotes for verbatim string literal (@"") by doubling them
+			var styleContent = ((styleNode as ValueNode)!.Value as string)?.Replace("\"", "\"\"") ?? "";
+			value = $"global::Microsoft.Maui.Controls.StyleSheets.StyleSheet.FromString(@\"{styleContent}\")";
 			return true;
 		}
 		else // sourceNode != null

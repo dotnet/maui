@@ -115,7 +115,11 @@ namespace Microsoft.Maui.Controls
 		public string Route
 		{
 			get { return Routing.GetRoute(this); }
-			set { Routing.SetRoute(this, value); }
+			set
+			{
+				Routing.ValidateForDuplicates(this, value);
+				Routing.SetRoute(this, value);
+			}
 		}
 
 		/// <summary>

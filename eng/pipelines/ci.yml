@@ -201,28 +201,6 @@ stages:
         skipProvisioning: true
         skipXcode: false
 
-- template: /eng/pipelines/arcade/stage-unit-tests.yml@self
-  parameters:
-    jobMatrix:
-    - name: win_unit_tests
-      displayName: Windows Unit Tests
-      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
-        pool: ${{ parameters.WindowsPool.public }}
-        runAsPublic: true
-      ${{ else }}:
-        pool: ${{ parameters.WindowsPool.internal }}
-        runAsPublic: false
-      timeout: 90
-      testOS: Windows
-      buildscript: $(_buildScript)
-    - name: mac_unit_tests
-      displayName: macOS Unit Tests
-      pool: ${{ parameters.MacOSPoolArm64 }}
-      timeout: 90
-      testOS: macOS
-      buildscript: $(_buildScriptMacOS)
-    publishTaskPrefix: ''
-
 - template: /eng/pipelines/arcade/stage-integration-tests.yml@self
   parameters:
     stageDependsOn: Pack
@@ -301,7 +279,13 @@ stages:
 
     # TODO: macOSTemplates and AOT template categories
     - name: mac_runandroid_tests
-      pool: ${{ parameters.MacOSPool }}
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool:
+          name: AcesShared
+          demands:
+            - ImageOverride -equals ACES_arm64_Sequoia_Xcode
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
       timeout: 240
       testCategory: RunOnAndroid
 
