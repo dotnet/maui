@@ -3,6 +3,8 @@ using System.Diagnostics.CodeAnalysis;
 using Android.Content;
 using Android.Content.Res;
 using Android.Graphics.Drawables;
+using Google.Android.Material.ImageView;
+using Google.Android.Material.Shape;
 using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
@@ -46,6 +48,20 @@ static class MauiRippleDrawableExtensions
 		// and the background/mask are separate drawables.
 		gradientDrawable.SetCornerRadius(radius);
 		maskDrawable.SetCornerRadius(radius);
+
+		if (platformView is ShapeableImageView shapeableImageView)
+		{
+			// Update the ShapeAppearanceModel to match the stroke radius
+			// so that the corners are rounded correctly.
+			shapeableImageView.ShapeAppearanceModel =
+				shapeableImageView.ShapeAppearanceModel
+					.ToBuilder()
+					.SetTopLeftCorner(CornerFamily.Rounded, radius)
+					.SetTopRightCorner(CornerFamily.Rounded, radius)
+					.SetBottomLeftCorner(CornerFamily.Rounded, radius)
+					.SetBottomRightCorner(CornerFamily.Rounded, radius)
+					.Build();
+		}
 
 		return true;
 	}
