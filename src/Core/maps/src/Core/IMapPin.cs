@@ -30,6 +30,12 @@ namespace Microsoft.Maui.Maps
 		object? MarkerId { get; set; }
 
 		/// <summary>
+		/// Gets the custom image source for this pin's icon.
+		/// </summary>
+		/// <remarks>When set, this image will be used instead of the default platform pin icon.</remarks>
+		IImageSource? ImageSource { get; }
+
+		/// <summary>
 		/// Sends a marker click event.
 		/// </summary>
 		/// <returns><see langword="true"/> if the info window should be hidden; otherwise, <see langword="false"/>.</returns>
