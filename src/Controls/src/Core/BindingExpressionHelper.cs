@@ -29,10 +29,11 @@ namespace Microsoft.Maui.Controls
 				var underlyingType = Nullable.GetUnderlyingType(convertTo);
 				var stringValue = value as string ?? string.Empty;
 
-				// Handle empty/whitespace string conversion to nullable types
+				// Handle empty string conversion to nullable types
 				// Empty string should convert to null for nullable value types
+				// Only apply to actual string values to avoid converting non-string inputs
 				// See: https://github.com/dotnet/maui/issues/8342
-				if (underlyingType != null && string.IsNullOrWhiteSpace(stringValue))
+				if (underlyingType != null && value is string && string.IsNullOrEmpty(stringValue))
 				{
 					value = null!;
 					return true;
