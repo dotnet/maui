@@ -50,6 +50,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		PropertyChangedEventHandler? _layoutPropertyChanged;
 		bool _isScrollingForItemsUpdate;
 		int _pendingScrollToIndex = -1;
+		RoutedEventHandler? _pendingLoadedHandler;
 		protected TItemsView ItemsView => VirtualView;
 		protected TItemsView Element => VirtualView;
 
@@ -192,23 +193,25 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		protected override void DisconnectHandler(WItemsView platformView)
 		{
+			// Phase 1: Unsubscribe ALL events first to prevent callbacks during cleanup
 			if (_collectionViewSource?.Source is INotifyCollectionChanged incc)
 			{
 				incc.CollectionChanged -= ItemsChanged;
 			}
 
-			// Clean up the collection view source (cleans grouped/observable collections,
-			// removes logical children from ItemsSource items, and clears the recycle pool)
-			CleanUpCollectionViewSource();
-
-			// Unsubscribe from ScrollView events to prevent leaks
 			if (platformView.ScrollView is not null)
 			{
 				platformView.ScrollView.ViewChanged -= ScrollViewChanged;
 				platformView.ScrollView.PointerWheelChanged -= PointerScrollChanged;
 			}
 
-			// Unsubscribe from LayoutUpdated before disconnecting to prevent exceptions
+			// Unsubscribe pending Loaded handler if ScrollView wasn't found yet
+			if (_pendingLoadedHandler is not null)
+			{
+				platformView.Loaded -= _pendingLoadedHandler;
+				_pendingLoadedHandler = null;
+			}
+
 			if (_scrollUpdatePending)
 			{
 				platformView.LayoutUpdated -= OnLayoutUpdated;
@@ -223,7 +226,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				VirtualView.ScrollToRequested -= ScrollToRequested;
 			}
 
-			// Clean up ItemFactory recycle pool to release pooled elements
+			// Phase 2: Now safe to do cleanup — no events can fire
+			CleanUpCollectionViewSource();
+
 			_itemFactory?.CleanUp();
 			_itemFactory = null;
 
@@ -379,7 +384,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 
 			// Remove all children inside the ItemsSource
-			if (VirtualView is not null)
+			if (VirtualView is not null && PlatformView is not null)
 			{
 				foreach (var item in PlatformView.GetChildren<ItemContentControl>())
 				{
@@ -639,14 +644,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
-			void ListViewLoaded(object sender, RoutedEventArgs e)
+			// Unsubscribe any previous pending Loaded handler
+			if (_pendingLoadedHandler is not null)
 			{
-				var lv = (WItemsView)sender;
-				lv.Loaded -= ListViewLoaded;
-				FindScrollViewer();
+				PlatformView.Loaded -= _pendingLoadedHandler;
 			}
 
-			PlatformView.Loaded += ListViewLoaded;
+			_pendingLoadedHandler = (sender, e) =>
+			{
+				var lv = (WItemsView)sender;
+				lv.Loaded -= _pendingLoadedHandler;
+				_pendingLoadedHandler = null;
+				FindScrollViewer();
+			};
+
+			PlatformView.Loaded += _pendingLoadedHandler;
 		}
 
 		void OnScrollViewerFound()
@@ -745,6 +757,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 
 			// Resolve empty view
+			var oldMauiEmptyView = _mauiEmptyView;
 			_emptyView = emptyViewTemplate != null
 				? ItemsViewExtensions.RealizeEmptyViewTemplate(emptyView, emptyViewTemplate, MauiContext!, ref _mauiEmptyView)
 				: emptyView switch
@@ -758,6 +771,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					View view => ItemsViewExtensions.RealizeEmptyView(view, MauiContext!, ref _mauiEmptyView),
 					_ => ItemsViewExtensions.RealizeEmptyViewTemplate(emptyView, null, MauiContext!, ref _mauiEmptyView)
 				};
+
+			// Remove old logical child before adding the new one to prevent leak
+			if (oldMauiEmptyView is not null && _emptyViewDisplayed)
+			{
+				ItemsView.RemoveLogicalChild(oldMauiEmptyView);
+				_emptyViewDisplayed = false;
+			}
 
 			(PlatformView as IEmptyView)?.SetEmptyView(_emptyView, _mauiEmptyView);
 			UpdateEmptyViewVisibility();
