@@ -81,6 +81,16 @@ namespace Microsoft.Maui.IntegrationTests.Android
 			output?.WriteLine($"Launching AVD: {Name}...");
 			var emulatorOutput = ToolRunner.Run(EmulatorTool, launchArgs, out _, timeoutInSeconds: 15, output: output);
 			File.WriteAllText(logFile, emulatorOutput);
+
+			if (emulatorOutput.Contains("failed to initialize HVF", StringComparison.OrdinalIgnoreCase))
+			{
+				output?.WriteLine("HVF initialization failed, retrying with software acceleration (-accel off)...");
+				var fallbackLogFile = Path.Combine(Path.GetDirectoryName(logFile)!, $"emulator-launch-noaccel-{DateTime.UtcNow.ToFileTimeUtc()}.log");
+				var fallbackArgs = launchArgs + " -accel off";
+				emulatorOutput = ToolRunner.Run(EmulatorTool, fallbackArgs, out _, timeoutInSeconds: 15, output: output);
+				File.WriteAllText(fallbackLogFile, emulatorOutput);
+			}
+
 			return Adb.WaitForEmulator(timeToWaitInSeconds, Id, output: output);
 		}
 
