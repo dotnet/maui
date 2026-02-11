@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Linq;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Primitives;
 
@@ -25,7 +26,7 @@ namespace Microsoft.Maui.Layouts
 
 			var measuredWidth = _gridStructure.MeasuredGridWidth();
 			var measuredHeight = _gridStructure.MeasuredGridHeight();
-
+			
 			return new Size(measuredWidth, measuredHeight);
 		}
 
@@ -140,6 +141,29 @@ namespace Microsoft.Maui.Layouts
 				_cells = new Cell[_childrenToLayOut.Length];
 
 				InitializeCells();
+
+				// Some _childrenToLayout may have an absolute Height/Width, while our columns/rows are set to auto or *.  
+				// In this case, we adjust the column/row size to match the child's size.  
+				foreach (var cell in _cells)
+				{
+					var view = _childrenToLayOut[cell.ViewIndex];
+					if (view.Height > 0)
+					{
+						var row = _rows[cell.Row];
+						if (row.IsAuto)
+						{
+							row.Size = view.Height;
+						}
+					}
+					if (view.Width > 0)
+					{
+						var column = _columns[cell.Column];
+						if (column.IsAuto)
+						{
+							column.Size = view.Width;
+						}
+					}
+				}
 
 				MeasureCells();
 			}
@@ -369,6 +393,8 @@ namespace Microsoft.Maui.Layouts
 					ResolveStarRows(_gridHeightConstraint);
 				}
 
+				AdjustDefinitions();
+
 				SecondMeasurePass();
 
 				ResolveSpans();
@@ -428,6 +454,8 @@ namespace Microsoft.Maui.Layouts
 							TrackSpan(new Span(cell.Row, cell.RowSpan, false, measure.Height));
 						}
 					}
+
+					AdjustDefinitions();
 				}
 			}
 
@@ -497,8 +525,31 @@ namespace Microsoft.Maui.Layouts
 							_rows[cell.Row].Update(measure.Height);
 						}
 					}
+
+					AdjustDefinitions();
 				}
 			}
+
+			void AdjustDefinitions()
+			{
+				AdjustDefinitions(_rows, _gridHeightConstraint);
+				AdjustDefinitions(_columns, _gridWidthConstraint);
+			}
+
+			static void AdjustDefinitions(Definition[] definitions, double gridConstrain)
+			{
+				var definitionsTempMax = definitions.Sum(d => d.Size);
+				if (definitionsTempMax > gridConstrain)
+				{
+					var overflow = definitionsTempMax - gridConstrain;
+					var biggestDefinition = definitions.Where(d => d.IsAuto || d.IsStar).OrderByDescending(d => d.Size).FirstOrDefault();
+					if (biggestDefinition != null)
+					{
+						biggestDefinition.Size -= overflow;
+					}
+				}
+			}
+
 
 			void TrackSpan(Span span)
 			{
