@@ -696,12 +696,19 @@ stages:
               git checkout -- . 2>&1 | Write-Host
               Write-Host "✅ Working tree restored"
               
+              # Verify state file exists before calling the script.
+              # Without a state file, post-ai-summary-comment.ps1 falls through to
+              # reading stdin ($input | Out-String) which hangs forever in CI.
+              $stateFile = "CustomAgentLogsTmp/PRState/pr-$prNumber.md"
+              if (-not (Test-Path $stateFile)) {
+                Write-Host "⚠️ State file not found: $stateFile — skipping fallback comment"
+                Write-Host "   (The PR Reviewer Agent may not have created a state file)"
+                exit 0
+              }
+              Write-Host "✅ State file found: $stateFile"
+              
               # Always run post-ai-summary-comment.ps1 - it handles both creating new
               # comments and updating existing ones with the latest results.
-              # Previous logic skipped if a comment existed, but that left stale results
-              # from earlier runs (e.g., BLOCKED try-fixes that later ran successfully).
-              Write-Host "Running post-ai-summary-comment.ps1 (creates or updates)..."
-              
               pwsh .github/skills/ai-summary-comment/scripts/post-ai-summary-comment.ps1 -PRNumber $prNumber
               if ($LASTEXITCODE -eq 0) {
                 Write-Host "✅ AI summary comment posted/updated successfully"
@@ -711,6 +718,7 @@ stages:
               }
             displayName: 'Post AI Summary Comment (Fallback)'
             condition: succeededOrFailed()
+            timeoutInMinutes: 5
             continueOnError: true
             env:
               GITHUB_TOKEN: $(COPILOT_TOKEN)

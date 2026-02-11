@@ -112,10 +112,8 @@ if ([string]::IsNullOrWhiteSpace($Content) -and $PRNumber -gt 0) {
     }
 }
 
-# If Content still not provided, try stdin (legacy support)
-if ([string]::IsNullOrWhiteSpace($Content)) {
-    $Content = $input | Out-String
-}
+# If Content still not provided, skip stdin (it hangs in CI/non-interactive contexts).
+# Legacy piped input is no longer supported — use -StateFile or -Content instead.
 
 # Final validation
 if ([string]::IsNullOrWhiteSpace($Content)) {
