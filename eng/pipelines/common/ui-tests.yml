@@ -9,7 +9,7 @@ parameters:
   androidApiLevelsExtended: [ 36 ] # API 36 for Material3 tests with Pixel 3 XL
   iosVersions: [ 'latest' ]
   androidApiLevels: [ 30 ]
-  androidApiLevelsForSafeAreaEdges: [ 36 ] # Separate API level for SafeAreaEdges tests with Pixel 3XL
+  androidApiLevelsForPixel9: [ 36 ] # Separate API level for tests requiring Pixel 9
   provisionatorChannel: 'latest'
   timeoutInMinutes: 180
   skipProvisioning: true
@@ -270,14 +270,14 @@ stages:
                       platform: 'Android Material3'
                       artifactName: 'uitest-snapshot-results-android-material3-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
-# SafeAreaEdges tests on Android API 36 with Pixel 3 XL
+# SafeAreaEdges tests on Android API 36 with Pixel 9
   - stage: android_ui_tests_safeareavedges
-    displayName: Android UITests SafeAreaEdges (API 36 Pixel 3 XL)
+    displayName: Android UITests SafeAreaEdges (API 36 Pixel 9)
     dependsOn: build_ui_tests
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.android, '') }}:
-          - ${{ each api in parameters.androidApiLevelsForSafeAreaEdges }}:
+          - ${{ each api in parameters.androidApiLevelsForPixel9 }}:
             - job: android_ui_tests_safeareavedges_${{ project.name }}_${{ api }}
               timeoutInMinutes: 240 # how long to run the job before automatically cancelling
               workspace:
@@ -295,7 +295,7 @@ stages:
                     path: ${{ project.android }}
                     app: ${{ project.app }}
                     device: android-emulator-64_${{ api }}
-                    deviceType: 'pixel_3_xl' # Pixel 3 XL has notch display for SafeAreaEdges tests
+                    deviceType: 'pixel_9' # Pixel 9 has modern display cutout for SafeAreaEdges tests
                     provisionatorChannel: ${{ parameters.provisionatorChannel }}
                     testFilter: 'SafeAreaEdges'
                     skipProvisioning: ${{ parameters.skipProvisioning }}
