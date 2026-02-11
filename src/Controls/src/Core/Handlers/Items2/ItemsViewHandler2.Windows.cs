@@ -192,9 +192,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		protected override void DisconnectHandler(WItemsView platformView)
 		{
-			if(_collectionViewSource?.Source is INotifyCollectionChanged incc)
+			if (_collectionViewSource?.Source is INotifyCollectionChanged incc)
 			{
 				incc.CollectionChanged -= ItemsChanged;
+			}
+
+			// Clean up the collection view source (cleans grouped/observable collections,
+			// removes logical children from ItemsSource items, and clears the recycle pool)
+			CleanUpCollectionViewSource();
+
+			// Unsubscribe from ScrollView events to prevent leaks
+			if (platformView.ScrollView is not null)
+			{
+				platformView.ScrollView.ViewChanged -= ScrollViewChanged;
+				platformView.ScrollView.PointerWheelChanged -= PointerScrollChanged;
 			}
 
 			// Unsubscribe from LayoutUpdated before disconnecting to prevent exceptions
@@ -352,6 +363,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				if (_collectionViewSource.Source is ObservableItemTemplateCollection2 observableItemTemplateCollection)
 				{
 					observableItemTemplateCollection.CleanUp();
+				}
+				else if (_collectionViewSource.Source is GroupedItemTemplateCollection2 groupedItemTemplateCollection)
+				{
+					groupedItemTemplateCollection.CleanUp();
 				}
 
 				if (_collectionViewSource.Source is INotifyCollectionChanged incc)
