@@ -97,6 +97,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			handler.UpdateItemsSource();
 		}
 
+		// Intentionally empty: ItemsUpdatingScrollMode is handled during scroll events
+		// via ApplyItemsUpdatingScrollMode, not as a direct property map.
 		public static void MapItemsUpdatingScrollMode(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
 		{
 		}
@@ -285,32 +287,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			if (itemsSource is IEnumerable enumerable)
 			{
-				// Sample up to a few items to determine if the source contains groups.
-				// A group is any non-string IEnumerable. If all sampled items are groups
-				// (or null), we treat the source as grouped. If any item is not a group,
-				// we treat it as a flat list to avoid false positives.
-				int checked_count = 0;
-				bool hasGroups = false;
 				foreach (var item in enumerable)
 				{
-					if (item is null)
-						continue;
-
 					if (item is IEnumerable && item is not string)
 					{
-						hasGroups = true;
+						return true;
 					}
-					else
-					{
-						// Found a non-group item — this is a flat list
-						return false;
-					}
-
-					if (++checked_count >= 3)
-						break;
+					break;
 				}
-
-				return hasGroups;
 			}
 			return false;
 		}
@@ -332,8 +316,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			CleanUpCollectionViewSource();
 
-
-
 			_collectionViewSource = CreateCollectionViewSource();
 			_itemsSource = _collectionViewSource?.Source as IList;
 
@@ -342,8 +324,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				incc.CollectionChanged += ItemsChanged;
 			}
 
-				PlatformView.ItemsSource = null;
-				PlatformView.ItemsSource = _collectionViewSource?.View;
+			PlatformView.ItemsSource = null;
+			PlatformView.ItemsSource = _collectionViewSource?.View;
 			
 
 			if (VirtualView.ItemTemplate is not null)
@@ -1113,17 +1095,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (_collectionViewSource != null && remainingItemsThreshold > -1)
 			{
 				var itemsRemaining = _collectionViewSource.View.Count - 1 - itemsViewScrolledEventArgs.LastVisibleItemIndex;
-					
-				if(itemsRemaining<= remainingItemsThreshold)
+
+				if (itemsRemaining <= remainingItemsThreshold)
 				{
-					if (itemsViewScrolledEventArgs.LastVisibleItemIndex > _lastRemainingItemsThresholdIndex) 
+					if (itemsViewScrolledEventArgs.LastVisibleItemIndex > _lastRemainingItemsThresholdIndex)
 					{
 						_lastRemainingItemsThresholdIndex = itemsViewScrolledEventArgs.LastVisibleItemIndex;
-					Element.SendRemainingItemsThresholdReached();
+						Element.SendRemainingItemsThresholdReached();
 					}
-				
 				}
-			
 			} 
 		}
 

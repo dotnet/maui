@@ -58,13 +58,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 						wrapper.VerticalAlignment = VerticalAlignment.Stretch;
 						wrapper.VerticalContentAlignment = VerticalAlignment.Stretch;
 						wrapper.SetContent(viewContent);
+						wrapper.IsHeaderOrFooter = templateContext.IsHeader || templateContext.IsFooter;
 
-						if(wrapper is not null)
-						{
-							wrapper.IsHeaderOrFooter = templateContext.IsHeader || templateContext.IsFooter;
-						}
-
-						if (wrapper?.VirtualView is View virtualView)
+						if (wrapper.VirtualView is View virtualView)
 						{
 							virtualView.SetValue(OriginTemplateProperty, template);
 						}

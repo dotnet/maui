@@ -291,14 +291,14 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 			return;
 		}
 
-		_ignorePlatformSelectionChange = true;
-
 		var itemList = PlatformView.ItemsSource as ICollectionView;
 
 		if (itemList is null)
 		{
 			return;
 		}
+
+		_ignorePlatformSelectionChange = true;
 
 		switch (PlatformView.SelectionMode)
 		{
