@@ -158,6 +158,8 @@ namespace Microsoft.Maui.Maps.Platform
 			// Apply custom image if present
 			if (hasCustomImage && pin?.ImageSource != null)
 			{
+				// Clear any existing image on a reused annotation view before loading the new one
+				mapPin.Image = null;
 				ApplyCustomImageAsync(mapPin, pin).FireAndForget();
 			}
 
@@ -246,9 +248,17 @@ namespace Microsoft.Maui.Maps.Platform
 			if (handler?.MauiContext == null || pin.ImageSource == null)
 				return;
 
+			// Capture the annotation before the async operation to detect reuse
+			var targetAnnotation = annotationView.Annotation;
+
 			try
 			{
 				var result = await pin.ImageSource.GetPlatformImageAsync(handler.MauiContext);
+
+				// Verify the annotation view hasn't been reused for a different pin
+				if (annotationView.Annotation != targetAnnotation)
+					return;
+
 				if (result?.Value is UIImage image)
 				{
 					// Scale image to appropriate pin size (32x32 points)
@@ -256,9 +266,9 @@ namespace Microsoft.Maui.Maps.Platform
 					annotationView.Image = scaledImage;
 				}
 			}
-			catch
+			catch (Exception ex)
 			{
-				// If image loading fails, leave the annotation view as-is
+				System.Diagnostics.Debug.WriteLine($"Failed to load custom pin icon: {ex.Message}");
 			}
 		}
 
