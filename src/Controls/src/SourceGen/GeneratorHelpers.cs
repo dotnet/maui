@@ -424,5 +424,32 @@ static class GeneratorHelpers
 		return SymbolDisplay.FormatPrimitive(value, quoteStrings: quoted, useHexadecimalNumbers: false);
 	}
 
+	/// <summary>
+	/// Tries to parse a double value, including special values like NaN, Infinity, -Infinity.
+	/// </summary>
+	public static bool TryParseDouble(string value, out double result)
+	{
+		value = value.Trim();
+
+		// Handle special values that NumberStyles.Number doesn't parse
+		if (value.Equals("NaN", StringComparison.OrdinalIgnoreCase))
+		{
+			result = double.NaN;
+			return true;
+		}
+		if (value.Equals("Infinity", StringComparison.OrdinalIgnoreCase) ||
+			value.Equals("+Infinity", StringComparison.OrdinalIgnoreCase))
+		{
+			result = double.PositiveInfinity;
+			return true;
+		}
+		if (value.Equals("-Infinity", StringComparison.OrdinalIgnoreCase))
+		{
+			result = double.NegativeInfinity;
+			return true;
+		}
+
+		return double.TryParse(value, System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out result);
+	}
 
 }
