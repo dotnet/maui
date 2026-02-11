@@ -226,8 +226,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				VirtualView.ScrollToRequested -= ScrollToRequested;
 			}
 
-			// Phase 2: Now safe to do cleanup — no events can fire
-			CleanUpCollectionViewSource();
+			// Safe subscription cleanup only — do NOT call CleanUpCollectionViewSource() here
+			// because it sets _collectionViewSource.Source = null and accesses PlatformView.GetChildren,
+			// which triggers WinUI side effects (element recycling, collection changes) during teardown.
+			if (_collectionViewSource?.Source is ObservableItemTemplateCollection2 observableCollection)
+			{
+				observableCollection.CleanUp();
+			}
+			else if (_collectionViewSource?.Source is GroupedItemTemplateCollection2 groupedCollection)
+			{
+				groupedCollection.CleanUp();
+			}
 
 			_itemFactory?.CleanUp();
 			_itemFactory = null;
