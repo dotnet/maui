@@ -544,10 +544,7 @@ namespace Microsoft.Maui.Controls
 			OnDestroying();
 
 			AlertManager.Unsubscribe();
-			// On Android, preserve window in collection to enable reuse when Activity is recreated
-#if !ANDROID
-			Application?.RemoveWindow(this);	
-#endif
+			Application?.RemoveWindow(this);
 
 			var mauiContext = Handler?.MauiContext as MauiContext;
 			Handler?.DisconnectHandler();

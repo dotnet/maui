@@ -468,12 +468,6 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 
-			// On Android, reuse existing window when Activity is recreated due to lifecycle changes
-#if ANDROID
-			if (window == null && _windows.Count > 0)
-				window = _windows[0];
-#endif
-
 			// create a new one if there is no pending windows
 			if (window == null)
 			{

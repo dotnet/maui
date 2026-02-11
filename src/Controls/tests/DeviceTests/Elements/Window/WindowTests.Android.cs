@@ -38,34 +38,5 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact]
-		public async Task WindowDestroyingPreservesWindowCollectionOnAndroid()
-		{
-			// https://github.com/dotnet/maui/issues/33597
-			SetupBuilder();
-
-			var app = Application.Current;
-			var window = new Window(new ContentPage());
-
-			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
-			{
-				await OnLoadedAsync(window.Page);
-
-				window.Parent = app;
-
-				var windowsField = typeof(Application).GetField("_windows", BindingFlags.NonPublic | BindingFlags.Instance);
-				var windowsList = windowsField.GetValue(app) as IList<Window>;
-
-				if (!windowsList.Contains(window))
-					windowsList.Add(window);
-
-				var countBefore = windowsList.Count;
-
-				((IWindow)window).Destroying();
-
-				Assert.Equal(countBefore, windowsList.Count);
-				Assert.Contains(window, windowsList);
-			});
-		}
 	}
 }
