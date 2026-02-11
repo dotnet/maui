@@ -98,29 +98,43 @@ parameters:
 - name: MacOSPool
   type: object
   default:
-    name: MAUI
-    vmImage: MAUI
-    os: macOS
-    label: macOS
-# Switch back to this once XCode 26.2 is available on Azure Pipelines
-#     name: Azure Pipelines
-#     vmImage: $(HostedMacImage)
-#     os: macOS
-#     label: macOS
+    # Switch back to this once XCode 26.2 is available on Azure Pipelines:
+    # 
+    # internal:
+    #   name: Azure Pipelines
+    #   vmImage: $(HostedMacImage)
+    #   os: macOS
+    #   label: macOS
+    # public:
+    #   name: Azure Pipelines
+    #   vmImage: $(HostedMacImage)
+    #   os: macOS
+    #   label: macOS
+    internal:
+      name: MAUI
+      vmImage: MAUI
+      os: macOS
+      label: macOS
+    public:
+      name: MAUI
+      vmImage: MAUI
+      os: macOS
+      label: macOS
 
 # ARM64 macOS pool (Apple Silicon)
 - name: MacOSPoolArm64
   type: object
   default:
+    # Switch back to this once XCode 26.2 is available on Azure Pipelines:
+    # 
+    # name: Azure Pipelines
+    # vmImage: macOS-15-arm64
+    # os: macOS
+    # label: macOS-arm64
     name: MAUI
     vmImage: MAUI
     os: macOS
     label: macOS-arm64
-# Switch back to this once XCode 26.2 is available on Azure Pipelines
-#     name: Azure Pipelines
-#     vmImage: macOS-15-arm64
-#     os: macOS
-#     label: macOS-arm64
 
 # Condition for MacOSPool comparison lanes (non-ARM64)
 # Currently disabled - both pools use MAUI self-hosted since Xcode 26.2 isn't available on Azure Pipelines x64.
