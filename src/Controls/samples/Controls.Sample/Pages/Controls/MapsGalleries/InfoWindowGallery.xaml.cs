@@ -2,7 +2,7 @@ using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Devices.Sensors;
 using Microsoft.Maui.Maps;
 
-namespace Maui.Controls.Sample.Pages.Controls.MapsGalleries;
+namespace Maui.Controls.Sample.Pages.MapsGalleries;
 
 public partial class InfoWindowGallery : ContentPage
 {
