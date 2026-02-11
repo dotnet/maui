@@ -59,8 +59,8 @@ parameters:
     os: Windows
     buildScript: $(_buildScript)
     sln: '$(Build.SourcesDirectory)/Microsoft.Maui.sln'
-  - name: Azure Pipelines
-    vmImage: $(HostedMacImage)
+  - name: MAUI
+    vmImage: MAUI
     os: macOS
     buildScript: $(_buildScriptMacOS)
     sln: '$(Build.SourcesDirectory)/Microsoft.Maui-mac.slnf'
@@ -74,9 +74,8 @@ parameters:
     os: Windows
     buildScript: $(_buildScript)
     sln: '$(Build.SourcesDirectory)/Microsoft.Maui.sln'
-  - name: AcesShared
-    demands:
-        - ImageOverride -equals ACES_VM_SharedPool_Tahoe
+  - name: MAUI
+    vmImage: MAUI
     os: macOS
     buildScript: $(_buildScriptMacOS)
     sln: '$(Build.SourcesDirectory)/Microsoft.Maui-mac.slnf'
@@ -99,15 +98,15 @@ parameters:
   type: object
   default:
     internal:
-      name: Azure Pipelines
-      vmImage: $(HostedMacImage)
-      label: macOS
+      name: MAUI
+      vmImage: MAUI
+      os: macOS
+      label: macOS-arm64
     public:
       name: AcesShared
       demands:
         - ImageOverride -equals ACES_VM_SharedPool_Tahoe
       label: macOS
-
 
 # Condition for MacOSPool comparison lanes (non-ARM64)
 # Runs on: (non-PR on main/net*.0/release/*/inflight/*) OR (PR targeting net*.0/release/*/inflight/*)
