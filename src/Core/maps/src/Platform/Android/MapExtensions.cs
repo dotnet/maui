@@ -65,14 +65,20 @@ namespace Microsoft.Maui.Maps.Platform
 			if (googleMap == null)
 				return;
 
+			bool result;
 			if (string.IsNullOrEmpty(map.MapStyle))
 			{
-				googleMap.SetMapStyle(null);
+				result = googleMap.SetMapStyle(null);
 			}
 			else
 			{
 				var styleOptions = new MapStyleOptions(map.MapStyle);
-				googleMap.SetMapStyle(styleOptions);
+				result = googleMap.SetMapStyle(styleOptions);
+			}
+
+			if (!result)
+			{
+				System.Diagnostics.Debug.WriteLine("Failed to apply map style. The provided JSON style may be invalid.");
 			}
 		}
 
