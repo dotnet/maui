@@ -17,6 +17,8 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		public static void MapIsTrafficEnabled(IMapHandler handler, IMap map) => throw new NotImplementedException();
 
+		public static void MapMapStyle(IMapHandler handler, IMap map) => throw new NotImplementedException();
+
 		public static void MapIsShowingUser(IMapHandler handler, IMap map) => throw new NotImplementedException();
 
 		public static void MapIsClusteringEnabled(IMapHandler handler, IMap map) => throw new NotImplementedException();

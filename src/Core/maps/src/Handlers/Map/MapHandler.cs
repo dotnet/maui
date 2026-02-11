@@ -29,6 +29,8 @@ namespace Microsoft.Maui.Maps.Handlers
 			[nameof(IMap.IsTrafficEnabled)] = MapIsTrafficEnabled,
 			[nameof(IMap.IsZoomEnabled)] = MapIsZoomEnabled,
 			[nameof(IMap.IsClusteringEnabled)] = MapIsClusteringEnabled,
+
+			[nameof(IMap.MapStyle)] = MapMapStyle,
 			[nameof(IMap.Pins)] = MapPins,
 			[nameof(IMap.Elements)] = MapElements,
 		};

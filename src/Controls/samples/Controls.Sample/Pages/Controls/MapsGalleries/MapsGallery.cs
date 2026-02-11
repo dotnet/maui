@@ -28,6 +28,7 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 						GalleryBuilder.NavButton("Info Window", () => new InfoWindowGallery(), Navigation),
 						GalleryBuilder.NavButton("User Location", () => new UserLocationGallery(), Navigation),
 						GalleryBuilder.NavButton("Camera & Zoom", () => new CameraZoomGallery(), Navigation),
+						GalleryBuilder.NavButton("Map Style", () => new MapStyleGallery(), Navigation),
 					}
 				}
 			};
