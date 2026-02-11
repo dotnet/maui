@@ -50,6 +50,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Gestures)]
 		public void LongPressWithSwipe_SwipeCancelsLongPress()
 		{
+			// Swipe + LongPress on the same element is not reliably supported on Windows
+			// (Manipulation system conflicts with Pointer events used by LongPressGestureHandler)
+			// and macOS Catalyst (discrete UISwipeGestureRecognizer conflicts with continuous
+			// UILongPressGestureRecognizer when simulated via Appium).
+#if WINDOWS || MACCATALYST
+			Assert.Ignore("Swipe + LongPress gesture combination on the same element is not supported on this platform.");
+#endif
+
 			App.WaitForElement("SwipeAndLongPressFrame");
 
 			// Swipe left (right to left) - should fire swipe but NOT long press
