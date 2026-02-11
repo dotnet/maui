@@ -43,6 +43,8 @@ namespace Maui.Controls.Sample
 				.Issue28945AddMappers()
 				.Issue25436RegisterNavigationService();
 
+			appBuilder.ConfigureEssentials();
+			
 #if IOS || MACCATALYST
 			appBuilder.ConfigureCollectionViewHandlers();
 #endif
