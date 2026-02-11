@@ -461,7 +461,11 @@ namespace Microsoft.Maui.Maps.Handlers
 				}
 			}
 
-			var marker = Map.AddMarker(markerOptions);
+			// Re-check after async operation since handler may have been disconnected
+if (Map == null || MauiContext == null)
+return;
+
+var marker = Map.AddMarker(markerOptions);
 			if (marker == null)
 			{
 				throw new System.Exception("Map.AddMarker returned null");
@@ -478,7 +482,7 @@ namespace Microsoft.Maui.Maps.Handlers
 		{
 			if (drawable is ABitmapDrawable bitmapDrawable && bitmapDrawable.Bitmap != null)
 			{
-				return ScaleBitmap(bitmapDrawable.Bitmap, 64, 64);  // 64dp for Android (2x density)
+				return ScaleBitmap(bitmapDrawable.Bitmap, 64, 64);  // 64x64 pixels
 			}
 
 			int width = drawable.IntrinsicWidth;

@@ -18,7 +18,7 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 
 		void OnAddCustomPinsClicked(object sender, EventArgs e)
 		{
-			// Add pin with custom icon from embedded resource
+			// Add pin with custom icon from an image file in the app bundle
 			var customPin1 = new Pin
 			{
 				Label = "Custom Icon Pin",
