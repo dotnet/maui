@@ -121,9 +121,27 @@ namespace Microsoft.Maui.Maps
 			}
 
 			double centerLat = (minLat + maxLat) / 2;
-			double centerLon = (minLon + maxLon) / 2;
 			double latDegrees = (maxLat - minLat) * 1.1; // 10% padding
-			double lonDegrees = (maxLon - minLon) * 1.1;
+
+			// Handle antimeridian crossing: if the direct span exceeds 180°,
+			// it's likely shorter to go the other way around
+			double lonSpan = maxLon - minLon;
+			double wrappedLonSpan = 360 - lonSpan;
+			double centerLon, lonDegrees;
+
+			if (lonSpan <= wrappedLonSpan)
+			{
+				// Normal case: all points are on the same side
+				centerLon = (minLon + maxLon) / 2;
+				lonDegrees = lonSpan * 1.1;
+			}
+			else
+			{
+				// Antimeridian crossing: wrap around
+				centerLon = (maxLon + minLon) / 2 + 180;
+				if (centerLon > 180) centerLon -= 360;
+				lonDegrees = wrappedLonSpan * 1.1;
+			}
 
 			// Ensure minimum span
 			latDegrees = Math.Max(latDegrees, MinimumRangeDegrees);
