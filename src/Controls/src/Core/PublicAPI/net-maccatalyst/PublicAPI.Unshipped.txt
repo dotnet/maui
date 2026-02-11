@@ -10,3 +10,4 @@ Microsoft.Maui.Controls.AppThemeBinding.AppThemeBinding() -> void
 ~Microsoft.Maui.Controls.AppThemeBinding.Light.set -> void
 ~override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.ViewWillTransitionToSize(CoreGraphics.CGSize toSize, UIKit.IUIViewControllerTransitionCoordinator coordinator) -> void
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewController.LoadView() -> void
+*REMOVED*~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootRenderer.TraitCollectionDidChange(UIKit.UITraitCollection previousTraitCollection) -> void
