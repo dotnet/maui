@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Graphics.Platform
 		{
 			_scale = Resources.DisplayMetrics.Density;
 			_canvas = new PlatformCanvas(context);
-			_scalingCanvas = new ScalingCanvas(_canvas);
+			_scalingCanvas = new ScalingCanvas(_canvas, _scale);
 			Drawable = drawable;
 		}
 
@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Graphics.Platform
 		{
 			_scale = Resources.DisplayMetrics.Density;
 			_canvas = new PlatformCanvas(context);
-			_scalingCanvas = new ScalingCanvas(_canvas);
+			_scalingCanvas = new ScalingCanvas(_canvas, _scale);
 			Drawable = drawable;
 		}
 
@@ -67,7 +67,6 @@ namespace Microsoft.Maui.Graphics.Platform
 			}
 
 			_scalingCanvas.ResetState();
-			_scalingCanvas.Scale(_scale, _scale);
 			//Since we are using a scaling canvas, we need to scale the rectangle
 			dirtyRect.Height /= _scale;
 			dirtyRect.Width /= _scale;
