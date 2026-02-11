@@ -77,7 +77,8 @@ namespace Microsoft.Maui.Maps.Handlers
 		public static void MapIsClusteringEnabled(IMapHandler handler, IMap map)
 		{
 			handler.PlatformView.IsClusteringEnabled = map.IsClusteringEnabled;
-			// Re-add pins to apply clustering changes
+			// Remove existing pins before re-adding to avoid duplicates
+			handler.PlatformView.RemovePins((IList)map.Pins);
 			handler.PlatformView.AddPins((IList)map.Pins);
 		}
 

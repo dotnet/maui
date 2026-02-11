@@ -306,13 +306,16 @@ namespace Microsoft.Maui.Maps.Handlers
 			// At zoom 21 (street level), cluster radius is tiny
 			// The divisor controls how aggressively pins cluster - smaller = less clustering
 			// 50 pixels on screen ≈ cluster if pins would overlap at this zoom
-			double clusterRadius = 50.0 / Math.Pow(2, zoom);
+			// Base cluster radius in approximate screen pixels at zoom 0.
+// Pins whose projected positions fall within this radius are clustered.
+const double clusterRadiusBasePixels = 50.0;
+double clusterRadius = clusterRadiusBasePixels / Math.Pow(2, zoom);
 
 			// Group pins by their clustering identifier
 			var pinsByIdentifier = new Dictionary<string, List<IMapPin>>();
 			foreach (var pin in pins)
 			{
-				var identifier = pin.ClusteringIdentifier ?? "default";
+				var identifier = pin.ClusteringIdentifier ?? Pin.DefaultClusteringIdentifier;
 				if (!pinsByIdentifier.ContainsKey(identifier))
 					pinsByIdentifier[identifier] = new List<IMapPin>();
 				pinsByIdentifier[identifier].Add(pin);
@@ -335,9 +338,13 @@ namespace Microsoft.Maui.Maps.Handlers
 					for (int i = remaining.Count - 1; i >= 0; i--)
 					{
 						var pin = remaining[i];
+						var deltaLat = pin.Location.Latitude - cluster.CenterLatitude;
+						var deltaLng = pin.Location.Longitude - cluster.CenterLongitude;
+						var centerLatRad = cluster.CenterLatitude * (Math.PI / 180.0);
+						var adjustedDeltaLng = deltaLng * Math.Cos(centerLatRad);
 						var distance = Math.Sqrt(
-							Math.Pow(pin.Location.Latitude - cluster.CenterLatitude, 2) +
-							Math.Pow(pin.Location.Longitude - cluster.CenterLongitude, 2));
+							deltaLat * deltaLat +
+							adjustedDeltaLng * adjustedDeltaLng);
 						
 						if (distance <= clusterRadius)
 						{
@@ -488,7 +495,7 @@ namespace Microsoft.Maui.Maps.Handlers
 			if (_clusterMarkers != null && _clusterMarkers.TryGetValue(e.Marker.Id, out var cluster))
 			{
 				var location = new Devices.Sensors.Location(cluster.CenterLatitude, cluster.CenterLongitude);
-				bool handled = VirtualView.ClusterClicked(cluster.Pins, location);
+				bool handled = VirtualView?.ClusterClicked(cluster.Pins, location) ?? false;
 				
 				if (!handled && Map != null)
 				{

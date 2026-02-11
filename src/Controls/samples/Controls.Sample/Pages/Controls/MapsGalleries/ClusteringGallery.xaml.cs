@@ -52,7 +52,7 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 			UpdateStatus();
 		}
 
-		void OnClusterClicked(object sender, ClusterClickedEventArgs e)
+		async void OnClusterClicked(object sender, ClusterClickedEventArgs e)
 		{
 			_clusterClickCount++;
 			
@@ -63,7 +63,7 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 				pinLabels.Add(pin.Label);
 			}
 
-			DisplayAlert(
+			await DisplayAlert(
 				$"Cluster Clicked ({e.Pins.Count} pins)",
 				$"Location: {e.Location.Latitude:F4}, {e.Location.Longitude:F4}\n\nPins: {string.Join(", ", pinLabels.GetRange(0, Math.Min(5, pinLabels.Count)))}{(pinLabels.Count > 5 ? "..." : "")}",
 				"OK");

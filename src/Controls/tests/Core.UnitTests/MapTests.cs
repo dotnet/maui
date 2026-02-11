@@ -514,7 +514,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var map = new Map();
 			bool eventRaised = false;
-			ClusterClickedEventArgs receivedArgs = null;
+			ClusterClickedEventArgs? receivedArgs = null;
 
 			map.ClusterClicked += (sender, args) =>
 			{
