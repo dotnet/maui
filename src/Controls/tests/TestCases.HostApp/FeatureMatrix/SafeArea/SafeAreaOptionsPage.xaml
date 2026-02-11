@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.SafeAreaOptionsPage"
+             Title="SafeAreaOptionsPage">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Apply"
+                     Clicked="ApplyButton_Clicked"
+                     AutomationId="Apply"/>
+    </ContentPage.ToolbarItems>
+    <ScrollView>
+        <StackLayout Padding="10" Spacing="5">
+
+            <!-- Uniform SafeAreaEdges -->
+            <Label Text="Uniform SafeAreaEdges:"
+                   FontSize="12"
+                   FontAttributes="Bold"/>
+            <StackLayout Orientation="Horizontal">
+                <RadioButton x:Name="UniformNone"
+                             Content="None"
+                             GroupName="UniformSafeArea"
+                             IsChecked="True"
+                             CheckedChanged="OnUniformChanged"
+                             FontSize="11"
+                             AutomationId="UniformNone"/>
+                <RadioButton x:Name="UniformAll"
+                             Content="All"
+                             GroupName="UniformSafeArea"
+                             CheckedChanged="OnUniformChanged"
+                             FontSize="11"
+                             AutomationId="UniformAll"/>
+                <RadioButton x:Name="UniformContainer"
+                             Content="Container"
+                             GroupName="UniformSafeArea"
+                             CheckedChanged="OnUniformChanged"
+                             FontSize="11"
+                             AutomationId="UniformContainer"/>
+            </StackLayout>
+            <StackLayout Orientation="Horizontal">
+                <RadioButton x:Name="UniformSoftInput"
+                             Content="SoftInput"
+                             GroupName="UniformSafeArea"
+                             CheckedChanged="OnUniformChanged"
+                             FontSize="11"
+                             AutomationId="UniformSoftInput"/>
+                <RadioButton x:Name="UniformDefault"
+                             Content="Default"
+                             GroupName="UniformSafeArea"
+                             CheckedChanged="OnUniformChanged"
+                             FontSize="11"
+                             AutomationId="UniformDefault"/>
+            </StackLayout>
+
+            <!-- Per-Edge Configuration -->
+            <BoxView HeightRequest="1" Color="LightGray" Margin="0,5"/>
+
+            <!-- Left Edge -->
+            <Label x:Name="LeftEdgeLabel"
+                   Text="Left Edge:"
+                   FontSize="12"
+                   FontAttributes="Bold"/>
+            <StackLayout x:Name="LeftEdgeOptions"
+                         Orientation="Horizontal">
+                <RadioButton x:Name="LeftNone"
+                             Content="None"
+                             GroupName="LeftEdge"
+                             IsChecked="True"
+                             CheckedChanged="OnLeftEdgeChanged"
+                             FontSize="11"
+                             AutomationId="LeftNone"/>
+                <RadioButton x:Name="LeftContainer"
+                             Content="Container"
+                             GroupName="LeftEdge"
+                             CheckedChanged="OnLeftEdgeChanged"
+                             FontSize="11"
+                             AutomationId="LeftContainer"/>
+                <RadioButton x:Name="LeftSoftInput"
+                             Content="SoftInput"
+                             GroupName="LeftEdge"
+                             CheckedChanged="OnLeftEdgeChanged"
+                             FontSize="11"
+                             AutomationId="LeftSoftInput"/>
+                <RadioButton x:Name="LeftAll"
+                             Content="All"
+                             GroupName="LeftEdge"
+                             CheckedChanged="OnLeftEdgeChanged"
+                             FontSize="11"
+                             AutomationId="LeftAll"/>
+                <RadioButton x:Name="LeftDefault"
+                             Content="Default"
+                             GroupName="LeftEdge"
+                             CheckedChanged="OnLeftEdgeChanged"
+                             FontSize="11"
+                             AutomationId="LeftDefault"/>
+            </StackLayout>
+
+            <!-- Top Edge -->
+            <Label x:Name="TopEdgeLabel"
+                   Text="Top Edge:"
+                   FontSize="12"
+                   FontAttributes="Bold"/>
+            <StackLayout x:Name="TopEdgeOptions"
+                         Orientation="Horizontal">
+                <RadioButton x:Name="TopNone"
+                             Content="None"
+                             GroupName="TopEdge"
+                             IsChecked="True"
+                             CheckedChanged="OnTopEdgeChanged"
+                             FontSize="11"
+                             AutomationId="TopNone"/>
+                <RadioButton x:Name="TopContainer"
+                             Content="Container"
+                             GroupName="TopEdge"
+                             CheckedChanged="OnTopEdgeChanged"
+                             FontSize="11"
+                             AutomationId="TopContainer"/>
+                <RadioButton x:Name="TopSoftInput"
+                             Content="SoftInput"
+                             GroupName="TopEdge"
+                             CheckedChanged="OnTopEdgeChanged"
+                             FontSize="11"
+                             AutomationId="TopSoftInput"/>
+                <RadioButton x:Name="TopAll"
+                             Content="All"
+                             GroupName="TopEdge"
+                             CheckedChanged="OnTopEdgeChanged"
+                             FontSize="11"
+                             AutomationId="TopAll"/>
+                <RadioButton x:Name="TopDefault"
+                             Content="Default"
+                             GroupName="TopEdge"
+                             CheckedChanged="OnTopEdgeChanged"
+                             FontSize="11"
+                             AutomationId="TopDefault"/>
+            </StackLayout>
+
+            <!-- Right Edge -->
+            <Label x:Name="RightEdgeLabel"
+                   Text="Right Edge:"
+                   FontSize="12"
+                   FontAttributes="Bold"/>
+            <StackLayout x:Name="RightEdgeOptions"
+                         Orientation="Horizontal">
+                <RadioButton x:Name="RightNone"
+                             Content="None"
+                             GroupName="RightEdge"
+                             IsChecked="True"
+                             CheckedChanged="OnRightEdgeChanged"
+                             FontSize="11"
+                             AutomationId="RightNone"/>
+                <RadioButton x:Name="RightContainer"
+                             Content="Container"
+                             GroupName="RightEdge"
+                             CheckedChanged="OnRightEdgeChanged"
+                             FontSize="11"
+                             AutomationId="RightContainer"/>
+                <RadioButton x:Name="RightSoftInput"
+                             Content="SoftInput"
+                             GroupName="RightEdge"
+                             CheckedChanged="OnRightEdgeChanged"
+                             FontSize="11"
+                             AutomationId="RightSoftInput"/>
+                <RadioButton x:Name="RightAll"
+                             Content="All"
+                             GroupName="RightEdge"
+                             CheckedChanged="OnRightEdgeChanged"
+                             FontSize="11"
+                             AutomationId="RightAll"/>
+                <RadioButton x:Name="RightDefault"
+                             Content="Default"
+                             GroupName="RightEdge"
+                             CheckedChanged="OnRightEdgeChanged"
+                             FontSize="11"
+                             AutomationId="RightDefault"/>
+            </StackLayout>
+
+            <!-- Bottom Edge -->
+            <Label x:Name="BottomEdgeLabel"
+                   Text="Bottom Edge:"
+                   FontSize="12"
+                   FontAttributes="Bold"/>
+            <StackLayout x:Name="BottomEdgeOptions"
+                         Orientation="Horizontal">
+                <RadioButton x:Name="BottomNone"
+                             Content="None"
+                             GroupName="BottomEdge"
+                             IsChecked="True"
+                             CheckedChanged="OnBottomEdgeChanged"
+                             FontSize="11"
+                             AutomationId="BottomNone"/>
+                <RadioButton x:Name="BottomContainer"
+                             Content="Container"
+                             GroupName="BottomEdge"
+                             CheckedChanged="OnBottomEdgeChanged"
+                             FontSize="11"
+                             AutomationId="BottomContainer"/>
+                <RadioButton x:Name="BottomSoftInput"
+                             Content="SoftInput"
+                             GroupName="BottomEdge"
+                             CheckedChanged="OnBottomEdgeChanged"
+                             FontSize="11"
+                             AutomationId="BottomSoftInput"/>
+                <RadioButton x:Name="BottomAll"
+                             Content="All"
+                             GroupName="BottomEdge"
+                             CheckedChanged="OnBottomEdgeChanged"
+                             FontSize="11"
+                             AutomationId="BottomAll"/>
+                <RadioButton x:Name="BottomDefault"
+                             Content="Default"
+                             GroupName="BottomEdge"
+                             CheckedChanged="OnBottomEdgeChanged"
+                             FontSize="11"
+                             AutomationId="BottomDefault"/>
+            </StackLayout>
+
+            <!-- Additional Properties -->
+            <BoxView HeightRequest="1" Color="LightGray" Margin="0,5"/>
+            <Label Text="Additional Properties:"
+                   FontSize="12"
+                   FontAttributes="Bold"/>
+
+            <HorizontalStackLayout Spacing="10">
+                <CheckBox x:Name="PaddingCheckBox"
+                          CheckedChanged="OnPaddingCheckBoxChanged"
+                          AutomationId="PaddingCheckBox"/>
+                <Label Text="Custom Padding (20)"
+                       VerticalOptions="Center"
+                       FontSize="11"/>
+            </HorizontalStackLayout>
+
+            <HorizontalStackLayout Spacing="10">
+                <CheckBox x:Name="TitleCheckBox"
+                          IsChecked="True"
+                          CheckedChanged="OnTitleCheckBoxChanged"
+                          AutomationId="TitleCheckBox"/>
+                <Label Text="Show Title"
+                       VerticalOptions="Center"
+                       FontSize="11"/>
+            </HorizontalStackLayout>
+
+            <HorizontalStackLayout Spacing="10">
+                <CheckBox x:Name="RTLCheckBox"
+                          CheckedChanged="OnRTLCheckBoxChanged"
+                          AutomationId="RTLCheckBox"/>
+                <Label Text="RTL FlowDirection"
+                       VerticalOptions="Center"
+                       FontSize="11"/>
+            </HorizontalStackLayout>
+
+            <HorizontalStackLayout Spacing="10">
+                <CheckBox x:Name="BackgroundCheckBox"
+                          CheckedChanged="OnBackgroundCheckBoxChanged"
+                          AutomationId="BackgroundCheckBox"/>
+                <Label Text="Background Brush"
+                       VerticalOptions="Center"
+                       FontSize="11"/>
+            </HorizontalStackLayout>
+
+        </StackLayout>
+    </ScrollView>
+</ContentPage>
