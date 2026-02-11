@@ -410,6 +410,57 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(IsMapWithItemsSource(itemsSource, map));
 		}
 
+		[Fact]
+		public void MapElementIsVisibleDefaultIsTrue()
+		{
+			var polygon = new Polygon();
+			Assert.True(polygon.IsVisible);
+		}
+
+		[Fact]
+		public void MapElementIsVisibleCanBeSet()
+		{
+			var polygon = new Polygon();
+			polygon.IsVisible = false;
+			Assert.False(polygon.IsVisible);
+		}
+
+		[Fact]
+		public void MapElementZIndexDefaultIsZero()
+		{
+			var polyline = new Polyline();
+			Assert.Equal(0, polyline.ZIndex);
+		}
+
+		[Fact]
+		public void MapElementZIndexCanBeSet()
+		{
+			var circle = new Circle
+			{
+				Center = new Location(0, 0),
+				Radius = new Distance(100)
+			};
+			circle.ZIndex = 5;
+			Assert.Equal(5, circle.ZIndex);
+		}
+
+		[Fact]
+		public void MapElementIsVisibleWorksOnAllTypes()
+		{
+			var polygon = new Polygon { IsVisible = false };
+			var polyline = new Polyline { IsVisible = false };
+			var circle = new Circle
+			{
+				Center = new Location(0, 0),
+				Radius = new Distance(100),
+				IsVisible = false
+			};
+
+			Assert.False(polygon.IsVisible);
+			Assert.False(polyline.IsVisible);
+			Assert.False(circle.IsVisible);
+		}
+
 		// Checks if for every item in the items source there's a corresponding pin
 		static bool IsMapWithItemsSource(IEnumerable itemsSource, Map map)
 		{
