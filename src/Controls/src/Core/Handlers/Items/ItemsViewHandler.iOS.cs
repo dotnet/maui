@@ -97,6 +97,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			Controller?.UpdateLayout(_layout);
 		}
 
+		internal static void MapIsEnabled(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
+		{
+			if (handler.Controller?.CollectionView is not null)
+				handler.Controller.CollectionView.UserInteractionEnabled = itemsView.IsEnabled;
+		}
+
 		protected virtual void ScrollToRequested(object sender, ScrollToRequestEventArgs args)
 		{
 			using (var indexPath = DetermineIndex(args))
