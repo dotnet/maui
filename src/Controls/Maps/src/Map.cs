@@ -135,9 +135,11 @@ namespace Microsoft.Maui.Controls.Maps
 		/// do not support custom JSON styling.
 		/// Set to <see langword="null"/> to revert to the default map style.
 		/// </remarks>
+#if !NETSTANDARD
 		[System.Runtime.Versioning.UnsupportedOSPlatform("ios")]
 		[System.Runtime.Versioning.UnsupportedOSPlatform("maccatalyst")]
 		[System.Runtime.Versioning.UnsupportedOSPlatform("windows")]
+#endif
 		public string? MapStyle
 		{
 			get { return (string?)GetValue(MapStyleProperty); }

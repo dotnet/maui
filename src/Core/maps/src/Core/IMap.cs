@@ -47,9 +47,11 @@ namespace Microsoft.Maui.Maps
 		/// On iOS, MacCatalyst, and Windows this property has no effect as the native map controls
 		/// do not support custom JSON styling.
 		/// </remarks>
+#if !NETSTANDARD
 		[System.Runtime.Versioning.UnsupportedOSPlatform("ios")]
 		[System.Runtime.Versioning.UnsupportedOSPlatform("maccatalyst")]
 		[System.Runtime.Versioning.UnsupportedOSPlatform("windows")]
+#endif
 		string? MapStyle { get; }
 
 		/// <summary>
