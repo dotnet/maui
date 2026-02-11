@@ -2591,9 +2591,55 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			entry.SetValueFromRenderer(Entry.TextProperty, "");
 
 			// Nullable int should become null when empty string is entered
-			// Note: Currently this also fails due to the same FormatException
-			// but conceptually nullable int should accept null for empty string
 			Assert.Null(vm.IntValue);
+			Assert.Equal("", entry.Text);
+		}
+
+		[Fact]
+		// https://github.com/dotnet/maui/issues/8342
+		public void TwoWayBindingToNullableIntPropertyWithWhitespaceRetainsPreviousValue()
+		{
+			// Whitespace-only strings should fail conversion, not silently become null
+			var vm = new NullableIntViewModel { IntValue = 123 };
+			var entry = new Entry { BindingContext = vm };
+			entry.SetBinding(Entry.TextProperty, "IntValue", BindingMode.TwoWay);
+
+			entry.SetValueFromRenderer(Entry.TextProperty, " ");
+
+			// Whitespace should not convert to null — value should be retained
+			Assert.Equal(123, vm.IntValue);
+		}
+
+		[Fact]
+		// https://github.com/dotnet/maui/issues/8342
+		public void TwoWayBindingToNullableDoublePropertyWithEmptyStringBecomesNull()
+		{
+			var vm = new NullableDoubleViewModel { Value = 3.14 };
+			var entry = new Entry { BindingContext = vm };
+			entry.SetBinding(Entry.TextProperty, "Value", BindingMode.TwoWay);
+
+			Assert.Equal("3.14", entry.Text);
+
+			entry.SetValueFromRenderer(Entry.TextProperty, "");
+
+			Assert.Null(vm.Value);
+		}
+
+		[Fact]
+		// https://github.com/dotnet/maui/issues/8342
+		public void TwoWayBindingToNullableIntPropertyReentersValueAfterClearing()
+		{
+			var vm = new NullableIntViewModel { IntValue = 123 };
+			var entry = new Entry { BindingContext = vm };
+			entry.SetBinding(Entry.TextProperty, "IntValue", BindingMode.TwoWay);
+
+			// Clear
+			entry.SetValueFromRenderer(Entry.TextProperty, "");
+			Assert.Null(vm.IntValue);
+
+			// Re-enter a value
+			entry.SetValueFromRenderer(Entry.TextProperty, "456");
+			Assert.Equal(456, vm.IntValue);
 		}
 
 		internal class IntViewModel : INotifyPropertyChanged
@@ -2628,6 +2674,24 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 						return;
 					_intValue = value;
 					PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IntValue)));
+				}
+			}
+		}
+
+		internal class NullableDoubleViewModel : INotifyPropertyChanged
+		{
+			public event PropertyChangedEventHandler PropertyChanged;
+
+			double? _value;
+			public double? Value
+			{
+				get => _value;
+				set
+				{
+					if (_value == value)
+						return;
+					_value = value;
+					PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Value)));
 				}
 			}
 		}
