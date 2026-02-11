@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.ComponentModel;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Maui.Dispatching;
@@ -775,7 +776,7 @@ public partial class CSharpExpressions : ContentPage
 				page.BindingContext = vm;
 
 				// Use decimal.Parse to handle locale-specific decimal separators
-				Assert.Equal(42.5m, decimal.Parse(page.twoWayDecimalEntry.Text));
+				Assert.Equal(42.5m, decimal.Parse(page.twoWayDecimalEntry.Text, CultureInfo.InvariantCulture));
 			}
 			finally
 			{
@@ -812,10 +813,10 @@ public partial class CSharpExpressions : ContentPage
 				var vm = new SimpleViewModel { Price = 10m };
 				page.BindingContext = vm;
 
-				Assert.Equal(10m, decimal.Parse(page.twoWayDecimalEntry.Text));
+				Assert.Equal(10m, decimal.Parse(page.twoWayDecimalEntry.Text, CultureInfo.InvariantCulture));
 
 				vm.Price = 25.75m;
-				Assert.Equal(25.75m, decimal.Parse(page.twoWayDecimalEntry.Text));
+				Assert.Equal(25.75m, decimal.Parse(page.twoWayDecimalEntry.Text, CultureInfo.InvariantCulture));
 			}
 			finally
 			{

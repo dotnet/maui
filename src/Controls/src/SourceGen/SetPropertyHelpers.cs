@@ -849,8 +849,9 @@ static class SetPropertyHelpers
 
 		var expr = expression.Trim();
 
-		// Strip leading dot prefix (e.g., ".Name" → "Name")
-		if (expr.StartsWith(".", StringComparison.Ordinal))
+		// Strip leading dot prefix (e.g., ".Name" → "Name"), but avoid the ".." range operator
+		if (expr.StartsWith(".", StringComparison.Ordinal) &&
+			!expr.StartsWith("..", StringComparison.Ordinal))
 			expr = expr.Substring(1);
 
 		// Strip "BindingContext." prefix (e.g., "BindingContext.Name" → "Name")
