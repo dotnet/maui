@@ -8,6 +8,8 @@ parameters:
   default: []
 - name: pool
   type: object
+- name: macPool
+  type: object
 - name: enableSourceBuild
   type: boolean
   default: false
@@ -32,6 +34,69 @@ stages:
   displayName: Pack .NET MAUI
   dependsOn: []
   jobs:
+  # macOS job - different publish methods for public vs internal
+  - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
+    parameters:
+      helixRepo: dotnet/maui
+      pool: ${{ parameters.macPool }}
+      enableMicrobuild: false
+      enablePublishUsingPipelines: false
+      enablePublishBuildAssets: false
+      enableTelemetry: true
+      enableSourceBuild: false
+      enableSourceIndex: false
+      publishAssetsImmediately: false
+      enablePublishBuildArtifacts: true
+      enablePublishTestResults: false
+      # templateContext.outputs for internal/1ES pipelines
+      ${{ if ne(parameters.runAsPublic, true) }}:
+        templateContext:
+          outputs:
+          - output: pipelineArtifact
+            artifact: MacNativeArtifacts
+            path: $(Agent.TempDirectory)/native-binaries
+            condition: always()
+
+      workspace:
+        clean: all
+
+      jobs:
+      - job: pack_net_macOS
+        displayName: Pack macOS
+        timeoutInMinutes: 240
+        preSteps:
+        - checkout: self
+          fetchDepth: 1
+          clean: true
+
+        steps:
+        - ${{ each step in parameters.prepareSteps }}:
+          - ${{ each pair in step }}:
+              ${{ pair.key }}: ${{ pair.value }}
+
+        - script: $(_buildScriptMacOS) -restore -pack -configuration $(_BuildConfig) /bl:$(Build.Arcade.LogsPath)/$(_BuildConfig)/pack-mac.binlog $(_OfficialBuildIdArgs)
+          displayName: Pack
+
+        - task: CopyFiles@2
+          displayName: Copy Native Binaries
+          inputs:
+            SourceFolder: '$(Build.SourcesDirectory)/artifacts/bin'
+            Contents: |
+              */$(_BuildConfig)/*/*.resources.zip
+            TargetFolder: '$(Agent.TempDirectory)/native-binaries'
+
+        # publish: step for public pipelines only
+        - ${{ if eq(parameters.runAsPublic, true) }}:
+          - publish: $(Agent.TempDirectory)/native-binaries
+            displayName: Publish Mac Native Artifacts
+            artifact: MacNativeArtifacts
+            condition: always()
+
+        - ${{ each step in parameters.postSteps }}:
+          - ${{ each pair in step }}:
+              ${{ pair.key }}: ${{ pair.value }}
+
+  # Windows job with its own templateContext.outputs
   - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
     parameters:
       helixRepo: dotnet/maui
@@ -61,6 +126,8 @@ stages:
       jobs:
       - job: pack_net_Windows
         displayName: Pack Windows
+        dependsOn:
+        - pack_net_macOS
         timeoutInMinutes: 240
         preSteps:
         - checkout: self
@@ -71,6 +138,13 @@ stages:
         - ${{ each step in parameters.prepareSteps }}:
           - ${{ each pair in step }}:
               ${{ pair.key }}: ${{ pair.value }}
+
+        # Download Mac native binaries built on macOS
+        - task: DownloadPipelineArtifact@2
+          displayName: Download Mac Native Binaries
+          inputs:
+            artifact: MacNativeArtifacts
+            path: '$(Build.SourcesDirectory)/artifacts/bin'
 
         # Run on public pipeline
         - ${{ if not(parameters.enableMicrobuild) }}:

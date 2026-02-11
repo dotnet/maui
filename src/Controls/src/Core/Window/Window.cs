@@ -545,12 +545,14 @@ namespace Microsoft.Maui.Controls
 
 			AlertManager.Unsubscribe();
 			Application?.RemoveWindow(this);
-			
+
 			var mauiContext = Handler?.MauiContext as MauiContext;
 			Handler?.DisconnectHandler();
 
-			// Dispose the window-scoped service scope
+			// On Android, preserve window scope to enable reuse when Activity is recreated
+#if !ANDROID
 			mauiContext?.DisposeWindowScope();
+#endif
 		}
 
 		void IWindow.Resumed()

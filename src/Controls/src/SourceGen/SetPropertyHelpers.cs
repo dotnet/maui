@@ -266,8 +266,7 @@ static class SetPropertyHelpers
 		if (handlerSymbol == null)
 		{
 			var location = LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)valueNode, handler);
-			//FIXME better error message: "handler signature does not match event signature"
-			context.ReportDiagnostic(Diagnostic.Create(Descriptors.MemberResolution, location, handler));
+			context.ReportDiagnostic(Diagnostic.Create(Descriptors.MissingEventHandler, location, handler, context.RootType.ToFQDisplayString()));
 			return;
 		}
 		if (treeOrder && icWriter != null && inflatorVar != null)
