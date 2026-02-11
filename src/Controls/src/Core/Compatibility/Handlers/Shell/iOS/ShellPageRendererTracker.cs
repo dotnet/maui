@@ -7,6 +7,7 @@ using System.Runtime.Versioning;
 using System.Windows.Input;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
 using UIKit;
 using static Microsoft.Maui.Controls.Compatibility.Platform.iOS.AccessibilityExtensions;
@@ -498,12 +499,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				UIImage? icon = null;
 
+				var foregroundColor = _context?.Shell.CurrentPage?.GetValue(Shell.ForegroundColorProperty) as Color ??
+					_context?.Shell.GetValue(Shell.ForegroundColorProperty) as Color;
+
 				if (image is not null)
 				{
 					icon = result?.Value;
-
-					var foregroundColor = _context?.Shell.CurrentPage?.GetValue(Shell.ForegroundColorProperty) ??
-					_context?.Shell.GetValue(Shell.ForegroundColorProperty);
 
 					if (foregroundColor is null)
 					{
@@ -547,10 +548,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					// because the navigation bar's tint color is not automatically inherited
 					if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
 					{
-						var navigationBar = ViewController?.NavigationController?.NavigationBar;
-						if (navigationBar?.TintColor is not null)
+						if (foregroundColor is not null)
 						{
-							NavigationItem.LeftBarButtonItem.TintColor = navigationBar.TintColor;
+							NavigationItem.LeftBarButtonItem.TintColor = foregroundColor.ToPlatform();
 						}
 					}
 				}
