@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.Maui.Maps.IMap.MapStyle.get -> string?
+static Microsoft.Maui.Maps.Handlers.MapHandler.MapMapStyle(Microsoft.Maui.Maps.Handlers.IMapHandler! handler, Microsoft.Maui.Maps.IMap! map) -> void
