@@ -175,7 +175,8 @@ namespace Microsoft.Maui.Controls.Maps
 		/// Occurs when the user's location is updated on the map.
 		/// </summary>
 		/// <remarks>
-		/// This event only fires when <see cref="IsShowingUser"/> is set to true
+		/// This event fires when the platform map handler reports a location update.
+		/// The handler only sends updates when <see cref="IsShowingUser"/> is set to true
 		/// and location permissions have been granted.
 		/// </remarks>
 		public event EventHandler<UserLocationChangedEventArgs>? UserLocationChanged;

@@ -17,7 +17,12 @@ namespace Microsoft.Maui.Controls.Maps
 
 		void IMap.UserLocationUpdated(Location location)
 		{
+			if (Equals(_lastUserLocation, location))
+				return;
+
+			OnPropertyChanging(nameof(LastUserLocation));
 			_lastUserLocation = location;
+			OnPropertyChanged(nameof(LastUserLocation));
 			UserLocationChanged?.Invoke(this, new UserLocationChangedEventArgs(location));
 		}
 
