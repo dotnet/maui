@@ -1,15 +1,53 @@
 ---
 name: pr-finalize
-description: Finalizes any PR for merge by verifying title and description match actual implementation. Reviews existing description quality before suggesting changes. Use when asked to "finalize PR", "check PR description", "review commit message", before merging any PR, or when PR implementation changed during review. Do NOT use for extracting lessons (use learn-from-pr), writing tests (use write-tests-agent), or investigating build failures (use pr-build-status).
+description: Finalizes any PR for merge by verifying title/description match implementation AND performing code review for best practices. Use when asked to "finalize PR", "check PR description", "review commit message", before merging any PR, or when PR implementation changed during review. Do NOT use for extracting lessons (use learn-from-pr), writing tests (use write-tests-agent), or investigating build failures (use pr-build-status).
 ---
 
 # PR Finalize
 
-Ensures PR title and description accurately reflect the implementation for a good commit message.
+Ensures PR title and description accurately reflect the implementation, and performs a **code review** for best practices before merge.
 
 **Standalone skill** - Can be used on any PR, not just PRs created by the pr agent.
 
-## Core Principle: Preserve Quality
+## Two-Phase Workflow
+
+1. **Title & Description Review** - Verify PR metadata matches implementation
+2. **Code Review** - Review code for best practices and potential issues
+
+---
+
+## 🚨 CRITICAL RULES
+
+### 1. NEVER Approve or Request Changes
+
+**AI agents must NEVER use `--approve` or `--request-changes` flags.**
+
+| Action | Allowed? | Why |
+|--------|----------|-----|
+| `gh pr review --approve` | ❌ **NEVER** | Approval is a human decision |
+| `gh pr review --request-changes` | ❌ **NEVER** | Blocking PRs is a human decision |
+
+### 2. NEVER Post Comments Directly
+
+**This skill is ANALYSIS ONLY.** Never post comments using `gh` commands.
+
+| Action | Allowed? | Why |
+|--------|----------|-----|
+| `gh pr review --comment` | ❌ **NEVER** | Use ai-summary-comment skill instead |
+| `gh pr comment` | ❌ **NEVER** | Use ai-summary-comment skill instead |
+| Analyze and report findings | ✅ **YES** | This is the skill's purpose |
+
+**Correct workflow:**
+1. **This skill**: Analyze PR, produce findings in your response to the user
+2. **User explicitly asks to post comment**: Then invoke `ai-summary-comment` skill
+
+**Only humans control when comments are posted.** Your job is to analyze and present findings.
+
+---
+
+## Phase 1: Title & Description
+
+### Core Principle: Preserve Quality
 
 **Review existing description BEFORE suggesting changes.** Many PR authors write excellent, detailed descriptions. Your job is to:
 
@@ -277,6 +315,73 @@ Fixed the issue mentioned in #30897
 ```
 
 **Verdict:** Inadequate - no detail on what changed. Use template.
+
+---
+
+## Phase 2: Code Review
+
+After verifying title/description, perform a **code review** to catch best practice violations and potential issues before merge.
+
+### Review Focus Areas
+
+When reviewing code changes, focus on:
+
+1. **Code quality and maintainability** - Clean code, good naming, appropriate abstractions
+2. **Error handling and edge cases** - Null checks, exception handling, boundary conditions
+3. **Performance implications** - Unnecessary allocations, N+1 queries, blocking calls
+4. **Platform-specific concerns** - iOS/Android/Windows differences, platform APIs
+5. **Breaking changes** - API changes, behavior changes that affect existing code
+
+### How to Review
+
+```bash
+# Get the PR diff
+gh pr diff XXXXX
+
+# Review specific files
+gh pr diff XXXXX -- path/to/file.cs
+```
+
+### Output Format
+
+```markdown
+## Code Review Findings
+
+### 🔴 Critical Issues
+
+**[Issue Title]**
+- **File:** [path/to/file.cs]
+- **Problem:** [Description]
+- **Recommendation:** [Code fix or approach]
+
+### 🟡 Suggestions
+
+- [Suggestion 1]
+- [Suggestion 2]
+
+### ✅ Looks Good
+
+- [Positive observation 1]
+- [Positive observation 2]
+```
+
+### 🚨 CRITICAL: Do NOT Post Comments Directly
+
+**The pr-finalize skill is ANALYSIS ONLY.** Never post comments using `gh pr review` or `gh pr comment`.
+
+| Action | Allowed? | Why |
+|--------|----------|-----|
+| `gh pr review --comment` | ❌ **NEVER** | Use ai-summary-comment skill instead |
+| `gh pr comment` | ❌ **NEVER** | Use ai-summary-comment skill instead |
+| Analyze and report findings | ✅ **YES** | This is the skill's purpose |
+
+**Workflow:**
+1. **This skill**: Analyze PR, produce findings in your response
+2. **User asks to post**: Then invoke `ai-summary-comment` skill to post
+
+The user controls when comments are posted. Your job is to analyze and present findings.
+
+---
 
 ## Complete Example
 

@@ -3,13 +3,12 @@
     Runs a PR review using Copilot CLI and the PR Agent workflow.
 
 .DESCRIPTION
-    This script invokes Copilot CLI to perform a comprehensive 5-phase PR review:
+    This script invokes Copilot CLI to perform a comprehensive 4-phase PR review:
     
     Phase 1: Pre-Flight - Context gathering
-    Phase 2: Tests - Verify test existence
-    Phase 3: Gate - Verify tests catch the bug
-    Phase 4: Fix - Multi-model exploration of alternatives
-    Phase 5: Report - Final recommendation
+    Phase 2: Gate - Verify tests catch the bug
+    Phase 3: Fix - Multi-model exploration of alternatives
+    Phase 4: Report - Final recommendation
     
     The script:
     - Validates prerequisites (gh CLI, PR exists)
@@ -29,27 +28,31 @@
     If specified, skips merging the PR into the current branch (useful if already merged)
 
 .PARAMETER Interactive
-    If specified, starts Copilot in interactive mode with the prompt (default).
-    Use -NoInteractive for non-interactive mode that exits after completion.
-
-.PARAMETER NoInteractive
-    If specified, runs in non-interactive mode (exits after completion).
-    Requires --allow-all for tool permissions.
+    If specified, starts Copilot in interactive mode with the prompt.
+    Default is non-interactive mode (exits after completion).
 
 .PARAMETER DryRun
     If specified, shows what would be done without making changes
 
+.PARAMETER RunFinalize
+    If specified, runs the pr-finalize skill after the PR agent completes
+    to verify PR title/description match the implementation.
+
+.PARAMETER PostSummaryComment
+    If specified, runs the ai-summary-comment skill after all other phases complete
+    to post a combined summary comment on the PR from all phases.
+
 .EXAMPLE
     .\Review-PR.ps1 -PRNumber 33687
-    Reviews PR #33687 interactively using the default platform (android)
+    Reviews PR #33687 in non-interactive mode (default) using auto-detected platform
 
 .EXAMPLE
     .\Review-PR.ps1 -PRNumber 33687 -Platform ios -SkipMerge
-    Reviews PR #33687 on iOS without merging (assumes already merged), in interactive mode
+    Reviews PR #33687 on iOS without merging (assumes already merged)
 
 .EXAMPLE
-    .\Review-PR.ps1 -PRNumber 33687 -NoInteractive
-    Reviews PR #33687 in non-interactive mode (exits after completion)
+    .\Review-PR.ps1 -PRNumber 33687 -Interactive
+    Reviews PR #33687 in interactive mode (stays open for follow-up questions)
 
 .NOTES
     Prerequisites:
@@ -71,10 +74,16 @@ param(
     [switch]$SkipMerge,
 
     [Parameter(Mandatory = $false)]
-    [switch]$NoInteractive,
+    [switch]$Interactive,
 
     [Parameter(Mandatory = $false)]
-    [switch]$DryRun
+    [switch]$DryRun,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$PostSummaryComment,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$RunFinalize
 )
 
 $ErrorActionPreference = 'Stop'
@@ -230,18 +239,25 @@ Review PR #$PRNumber using the pr agent workflow.
 
 $platformInstruction
 
+🚨 **CRITICAL - NEVER MODIFY GIT STATE:**
+- NEVER run ``git checkout``, ``git switch``, ``git fetch``, ``git stash``, or ``git reset``
+- NEVER run ``git push`` - you do NOT have permission to push anything
+- You are ALWAYS on the correct branch already - the script handles this
+- If the state file says "wrong branch", that's stale state - delete it and start fresh
+- If you think you need to switch branches or push changes, you are WRONG - ask the user instead
+
 **Instructions:**
-1. Read the plan template at ``$planTemplatePath`` for the 5-phase workflow
-2. Read ``.github/agents/pr.md`` for Phases 1-3 instructions
+1. Read the plan template at ``$planTemplatePath`` for the 4-phase workflow
+2. Read ``.github/agents/pr.md`` for Phases 1-2 instructions
 3. Follow ALL critical rules, especially:
    - STOP on environment blockers and ask before continuing
    - Use task agent for Gate verification
-   - Run multi-model try-fix in Phase 4
+   - Run multi-model try-fix in Phase 3
 
 **Start with Phase 1: Pre-Flight**
 - Create state file: CustomAgentLogsTmp/PRState/pr-$PRNumber.md
 - Gather context from PR #$PRNumber
-- Proceed through all 5 phases
+- Proceed through all 4 phases
 
 Begin the review now.
 "@
@@ -254,7 +270,7 @@ if ($DryRun) {
     Write-Host "[DRY RUN] Would invoke Copilot CLI with:" -ForegroundColor Magenta
     Write-Host ""
     Write-Host "  Agent: pr" -ForegroundColor Gray
-    Write-Host "  Mode: $(if ($NoInteractive) { 'Non-interactive (-p)' } else { 'Interactive (-i)' })" -ForegroundColor Gray
+    Write-Host "  Mode: $(if ($Interactive) { 'Interactive (-i)' } else { 'Non-interactive (-p)' })" -ForegroundColor Gray
     Write-Host "  PR: #$PRNumber" -ForegroundColor Gray
     Write-Host "  Platform: $(if ($Platform) { $Platform } else { '(agent will determine)' })" -ForegroundColor Gray
     Write-Host ""
@@ -264,7 +280,7 @@ if ($DryRun) {
     Write-Host "To run for real, remove the -DryRun flag" -ForegroundColor Yellow
 } else {
     Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Green
-    Write-Host "║  LAUNCHING COPILOT CLI                                    ║" -ForegroundColor Green
+    Write-Host "║  PHASE 1: PR AGENT REVIEW                                 ║" -ForegroundColor Green
     Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Green
     Write-Host ""
     Write-Host "PR Review Context:" -ForegroundColor Cyan
@@ -274,7 +290,16 @@ if ($DryRun) {
     Write-Host "  PLAN_TEMPLATE:  $planTemplatePath" -ForegroundColor White
     Write-Host "  CURRENT_BRANCH: $(git branch --show-current)" -ForegroundColor White
     Write-Host "  PR_TITLE:       $($prInfo.title)" -ForegroundColor White
-    Write-Host "  MODE:           $(if ($NoInteractive) { 'Non-interactive' } else { 'Interactive' })" -ForegroundColor White
+    Write-Host "  MODE:           $(if ($Interactive) { 'Interactive' } else { 'Non-interactive' })" -ForegroundColor White
+    Write-Host ""
+    Write-Host "Workflow:" -ForegroundColor Cyan
+    Write-Host "  1. PR Agent Review (this phase)" -ForegroundColor White
+    if ($RunFinalize) {
+        Write-Host "  2. pr-finalize skill (queued)" -ForegroundColor White
+    }
+    if ($PostSummaryComment) {
+        Write-Host "  3. ai-summary-comment skill (queued)" -ForegroundColor White
+    }
     Write-Host ""
     Write-Host "─────────────────────────────────────────────────────────────" -ForegroundColor DarkGray
     Write-Host ""
@@ -297,14 +322,14 @@ if ($DryRun) {
     # Add logging options
     $copilotArgs += @("--log-dir", $prLogDir, "--log-level", "info")
     
-    if ($NoInteractive) {
-        # Non-interactive mode: -p with --allow-all
+    if ($Interactive) {
+        # Interactive mode: -i to start with prompt
+        $copilotArgs += @("-i", $prompt)
+    } else {
+        # Non-interactive mode (default): -p with --allow-all
         # Also save session to markdown for review
         $sessionFile = Join-Path $prLogDir "session-$(Get-Date -Format 'yyyyMMdd-HHmmss').md"
         $copilotArgs += @("-p", $prompt, "--allow-all", "--share", $sessionFile)
-    } else {
-        # Interactive mode: -i to start with prompt
-        $copilotArgs += @("-i", $prompt)
     }
     
     Write-Host "🚀 Starting Copilot CLI..." -ForegroundColor Yellow
@@ -322,6 +347,64 @@ if ($DryRun) {
     } else {
         Write-Host "⚠️ Copilot CLI exited with code: $exitCode" -ForegroundColor Yellow
     }
+    
+    # Post-completion skills (only run if main agent completed successfully)
+    if ($exitCode -eq 0) {
+        
+        # Phase 2: Run pr-finalize skill if requested
+        if ($RunFinalize) {
+            Write-Host ""
+            Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Magenta
+            Write-Host "║  PHASE 2: PR-FINALIZE SKILL                               ║" -ForegroundColor Magenta
+            Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
+            Write-Host ""
+            
+            $finalizePrompt = "Run the pr-finalize skill for PR #$PRNumber. Verify the PR title and description match the actual implementation. Do NOT post a comment - just update the state file at CustomAgentLogsTmp/PRState/pr-$PRNumber.md with your findings."
+            
+            $finalizeArgs = @(
+                "-p", $finalizePrompt,
+                "--allow-all",
+                "--stream", "on"
+            )
+            
+            Write-Host "🔍 Running pr-finalize..." -ForegroundColor Yellow
+            & copilot @finalizeArgs
+            
+            $finalizeExit = $LASTEXITCODE
+            if ($finalizeExit -eq 0) {
+                Write-Host "✅ pr-finalize completed" -ForegroundColor Green
+            } else {
+                Write-Host "⚠️ pr-finalize exited with code: $finalizeExit" -ForegroundColor Yellow
+            }
+        }
+        
+        # Phase 3: Run ai-summary-comment skill if requested (posts combined results)
+        if ($PostSummaryComment) {
+            Write-Host ""
+            Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Magenta
+            Write-Host "║  PHASE 3: POST SUMMARY COMMENT                            ║" -ForegroundColor Magenta
+            Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
+            Write-Host ""
+            
+            $commentPrompt = "Use the ai-summary-comment skill to post a comment on PR #$PRNumber based on the results from the PR agent review and pr-finalize phases in CustomAgentLogsTmp/PRState/pr-$PRNumber.md."
+            
+            $commentArgs = @(
+                "-p", $commentPrompt,
+                "--allow-all",
+                "--stream", "on"
+            )
+            
+            Write-Host "💬 Posting summary comment..." -ForegroundColor Yellow
+            & copilot @commentArgs
+            
+            $commentExit = $LASTEXITCODE
+            if ($commentExit -eq 0) {
+                Write-Host "✅ Summary comment posted" -ForegroundColor Green
+            } else {
+                Write-Host "⚠️ ai-summary-comment exited with code: $commentExit" -ForegroundColor Yellow
+            }
+        }
+    }
 }
 
 Write-Host ""
@@ -329,7 +412,7 @@ Write-Host "📝 State file: CustomAgentLogsTmp/PRState/pr-$PRNumber.md" -Foregr
 Write-Host "📋 Plan template: $planTemplatePath" -ForegroundColor Gray
 if (-not $DryRun) {
     Write-Host "📁 Copilot logs: CustomAgentLogsTmp/PRState/$PRNumber/copilot-logs/" -ForegroundColor Gray
-    if ($NoInteractive) {
+    if (-not $Interactive) {
         Write-Host "📄 Session markdown: $sessionFile" -ForegroundColor Gray
     }
 }

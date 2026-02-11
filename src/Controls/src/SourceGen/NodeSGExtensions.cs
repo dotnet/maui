@@ -620,21 +620,25 @@ static class NodeSGExtensions
 		return (bpFieldSymbol, property);
 	}
 
+	/// <summary>
+	/// Gets the TargetType symbol from a parent node (Style, Trigger, DataTrigger, MultiTrigger).
+	/// Used to resolve bindable properties when only the property name is specified.
+	/// </summary>
+	public static ITypeSymbol? GetTargetTypeSymbol(INode node, SourceGenContext context)
+	{
+		var ttnode = (node as ElementNode)?.Properties[new XmlName("", "TargetType")];
+		//it's either a value
+		if (ttnode is ValueNode { Value: string tt })
+			return XmlTypeExtensions.GetTypeSymbol(tt, context, node);
+		//or a x:Type that we parsed earlier
+		if (ttnode != null && context.Types.TryGetValue(ttnode, out var typeSymbol))
+			return typeSymbol;
+		//FIXME: report diagnostic on missing TargetType
+		return null;
+	}
+
 	public static IFieldSymbol GetBindableProperty(this ValueNode node, SourceGenContext context)
 	{
-		static ITypeSymbol? GetTargetTypeSymbol(INode node, SourceGenContext context)
-		{
-			var ttnode = (node as ElementNode)?.Properties[new XmlName("", "TargetType")];
-			//it's either a value
-			if (ttnode is ValueNode { Value: string tt })
-				return XmlTypeExtensions.GetTypeSymbol(tt, context, node);
-			//or a x:Type that we parsed earlier
-			if (context.Types.TryGetValue(ttnode!, out var typeSymbol))
-				return typeSymbol;
-			//FIXME: report diagnostic on missing TargetType
-			return null;
-		}
-
 		var parts = ((string)node.Value).Split('.');
 		if (parts.Length == 1)
 		{

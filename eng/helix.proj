@@ -35,6 +35,7 @@
     <XUnitProject Include="$(RepoRoot)src/Controls/tests/SourceGen.UnitTests/SourceGen.UnitTests.csproj" />
     <XUnitProject Include="$(RepoRoot)src/Core/tests/UnitTests/Core.UnitTests.csproj" />
     <XUnitProject Include="$(RepoRoot)src/Essentials/test/UnitTests/Essentials.UnitTests.csproj" />
+    <XUnitProject Include="$(RepoRoot)src/Graphics/tests/Graphics.Tests/Graphics.Tests.csproj" />
   </ItemGroup>
 
   <!-- Prepare the staging directory for MSBuild test payloads - runs early during Restore -->

@@ -30,10 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="TestImages\**" />
-    <None Update="TestImages\Windows\**" CopyToOutputDirectory="PreserveNewest" Condition="$([MSBuild]::IsOSPlatform('windows'))" />
-    <None Update="TestImages\Mac\**" CopyToOutputDirectory="PreserveNewest" Condition="$([MSBuild]::IsOSPlatform('osx'))" />
-    <None Update="TestImages\Linux\**" CopyToOutputDirectory="PreserveNewest" Condition="!$([MSBuild]::IsOSPlatform('windows')) and !$([MSBuild]::IsOSPlatform('osx'))" />
+    <None Include="TestImages\**" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Errors\**" CopyToOutputDirectory="Never" />
   </ItemGroup>
 
