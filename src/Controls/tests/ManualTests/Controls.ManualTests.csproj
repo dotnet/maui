@@ -40,6 +40,7 @@
   
   <PropertyGroup>
     <NoWarn>$(NoWarn);CS0618;CS0672;MVVMTK0045</NoWarn>
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);XC0618;XC0619</WarningsNotAsErrors>
   </PropertyGroup>
   
 	<ItemGroup>

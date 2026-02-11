@@ -27,7 +27,15 @@ public partial class Maui23989
 		internal void ItemDisplayBindingWithoutDataTypeFails(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.XamlC)
-				XamlExceptionAssert.ThrowsBuildException(12, 13, s => s.Contains("0022", StringComparison.Ordinal), () => MockCompiler.Compile(typeof(Maui23989), treatWarningsAsErrors: true));
+			{
+				// May throw AggregateException if multiple warnings are promoted to errors
+				// (e.g., obsolete type warning + binding warning)
+				var ex = Assert.Catch(() => MockCompiler.Compile(typeof(Maui23989), treatWarningsAsErrors: true));
+				Assert.That(ex, Is.Not.Null);
+				// Verify at least one error contains the expected XC0022 binding warning
+				var message = ex.ToString();
+				Assert.That(message, Does.Contain("0022"));
+			}
 
 			var layout = new Maui23989(inflator);
 			//without x:DataType, bindings aren't compiled

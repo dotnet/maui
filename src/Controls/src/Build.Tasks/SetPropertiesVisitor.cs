@@ -537,7 +537,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				// continue compilation
 			}
 
-			if (   dataTypeNode is ElementNode enode
+			if (dataTypeNode is ElementNode enode
 				&& enode.XmlType.NamespaceUri == XamlParser.X2009Uri
 				&& enode.XmlType.Name == nameof(Xaml.NullExtension))
 			{
@@ -1219,9 +1219,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			var bpRef = module.ImportReference(bpDef.ResolveGenericParameters(declaringTypeReference));
 			bpRef.FieldType = module.ImportReference(bpRef.FieldType);
 
-			var isObsolete = bpDef.CustomAttributes.Any(ca => ca.AttributeType.FullName == "System.ObsoleteAttribute");
-			if (isObsolete)
-				context.LoggingHelper.LogWarningOrError(ObsoleteProperty, context.XamlFilePath, iXmlLineInfo.LineNumber, iXmlLineInfo.LinePosition, 0, 0, localName);
+			LogObsoleteWarningOrError(context, iXmlLineInfo, localName, bpDef.CustomAttributes);
 
 			return bpRef;
 		}
@@ -1601,14 +1599,10 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		{
 			var module = context.Body.Method.Module;
 			var property = parent.VariableType.GetProperty(context.Cache, pd => pd.Name == localName, out TypeReference declaringTypeReference);
-			var propertyIsObsolete = property.CustomAttributes.Any(ca => ca.AttributeType.FullName == "System.ObsoleteAttribute");
-			if (propertyIsObsolete)
-				context.LoggingHelper.LogWarningOrError(ObsoleteProperty, context.XamlFilePath, iXmlLineInfo.LineNumber, iXmlLineInfo.LinePosition, 0, 0, localName);
+			LogObsoleteWarningOrError(context, iXmlLineInfo, localName, property.CustomAttributes);
 
 			var propertySetter = property.SetMethod;
-			var propertySetterIsObsolete = propertySetter.CustomAttributes.Any(ca => ca.AttributeType.FullName == "System.ObsoleteAttribute");
-			if (propertySetterIsObsolete)
-				context.LoggingHelper.LogWarningOrError(ObsoleteProperty, context.XamlFilePath, iXmlLineInfo.LineNumber, iXmlLineInfo.LinePosition, 0, 0, localName);
+			LogObsoleteWarningOrError(context, iXmlLineInfo, localName, propertySetter.CustomAttributes);
 
 			//			IL_0007:  ldloc.0
 			//			IL_0008:  ldstr "foo"
@@ -1952,6 +1946,50 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 			Context.IL.Append(SetPropertyValue(variableDefinition, new XmlName("", runTimeName), node, Context, node));
 			return true;
+		}
+
+		/// <summary>
+		/// Gets the ObsoleteAttribute information from a custom attribute provider (field, property, method, or type).
+		/// </summary>
+		/// <param name="customAttributes">The custom attributes collection to search.</param>
+		/// <param name="message">The obsolete message from the attribute, or a default message if not specified.</param>
+		/// <param name="isError">True if the obsolete attribute specifies error=true.</param>
+		/// <returns>True if the ObsoleteAttribute is present, false otherwise.</returns>
+		internal static bool TryGetObsoleteAttribute(IEnumerable<CustomAttribute> customAttributes, out string message, out bool isError)
+		{
+			message = null;
+			isError = false;
+
+			var obsoleteAttr = customAttributes.FirstOrDefault(ca => ca.AttributeType.FullName == "System.ObsoleteAttribute");
+			if (obsoleteAttr == null)
+				return false;
+
+			// ObsoleteAttribute has the following constructors:
+			// ObsoleteAttribute()
+			// ObsoleteAttribute(string message)
+			// ObsoleteAttribute(string message, bool error)
+			if (obsoleteAttr.ConstructorArguments.Count >= 1 && obsoleteAttr.ConstructorArguments[0].Value is string msg)
+				message = msg;
+
+			if (obsoleteAttr.ConstructorArguments.Count >= 2 && obsoleteAttr.ConstructorArguments[1].Value is bool err)
+				isError = err;
+
+			// Use a default message if none was provided
+			message ??= "This member is obsolete.";
+
+			return true;
+		}
+
+		/// <summary>
+		/// Logs an obsolete warning or error based on the ObsoleteAttribute's error parameter.
+		/// </summary>
+		internal static void LogObsoleteWarningOrError(ILContext context, IXmlLineInfo lineInfo, string memberName, IEnumerable<CustomAttribute> customAttributes)
+		{
+			if (TryGetObsoleteAttribute(customAttributes, out string message, out bool isError))
+			{
+				var code = isError ? ObsoletePropertyError : ObsoleteProperty;
+				context.LoggingHelper.LogWarningOrError(code, context.XamlFilePath, lineInfo.LineNumber, lineInfo.LinePosition, 0, 0, memberName, message);
+			}
 		}
 	}
 

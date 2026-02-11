@@ -102,6 +102,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 		//CSC equivalents
 		public static BuildExceptionCode ObsoleteProperty = new BuildExceptionCode("XC", 0618, nameof(ObsoleteProperty), ""); //warning
+		public static BuildExceptionCode ObsoletePropertyError = new BuildExceptionCode("XC", 0619, nameof(ObsoletePropertyError), ""); //error
 
 		public string Code { get; }
 		public string CodePrefix { get; }
