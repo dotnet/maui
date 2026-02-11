@@ -1,4 +1,5 @@
 ﻿#nullable disable
+using System;
 using AndroidX.RecyclerView.Widget;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
@@ -77,9 +78,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected virtual (int First, int Center, int Last) GetVisibleItemsIndex(RecyclerView recyclerView)
 		{
-			var firstVisibleItemIndex = -1;
-			var lastVisibleItemIndex = -1;
-			var centerItemIndex = -1;
+			int firstVisibleItemIndex = -1, lastVisibleItemIndex = -1, centerItemIndex = -1;
 
 			if (recyclerView.GetLayoutManager() is LinearLayoutManager linearLayoutManager)
 			{
@@ -88,63 +87,147 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				centerItemIndex = recyclerView.CalculateCenterItemIndex(firstVisibleItemIndex, linearLayoutManager, _getCenteredItemOnXAndY);
 			}
 
-			bool hasHeader = ItemsViewAdapter.ItemsSource.HasHeader;
-			bool hasFooter = ItemsViewAdapter.ItemsSource.HasFooter;
-			int itemsCount = ItemsViewAdapter.ItemCount;
+			var adapter = ItemsViewAdapter;
+			var itemsSource = adapter.ItemsSource;
+			int itemsCount = adapter.ItemCount;
+			bool hasHeader = itemsSource.HasHeader;
+			bool hasFooter = itemsSource.HasFooter;
 
-			if (!hasHeader && !hasFooter)
+			if (itemsSource is not UngroupedItemsSource && itemsSource is IGroupableItemsViewSource groupable)
 			{
-				return (firstVisibleItemIndex, centerItemIndex, lastVisibleItemIndex);
-			}
-
-			if (firstVisibleItemIndex == 0 && lastVisibleItemIndex == itemsCount - 1)
-			{
-				lastVisibleItemIndex -= hasHeader && hasFooter ? 2 : 1;
-			}
-			else
-			{
-				if (hasHeader && !hasFooter)
-				{
-					lastVisibleItemIndex -= 1;
-					firstVisibleItemIndex -= 1;
-				}
-				else if (!hasHeader && hasFooter)
-				{
-					if (lastVisibleItemIndex == itemsCount - 1)
-					{
-						lastVisibleItemIndex -= 1;
-					}
-				}
-				else if (hasHeader && hasFooter)
-				{
-					if (firstVisibleItemIndex == 0)
-					{
-						lastVisibleItemIndex -= 1;
-					}
-					else if (lastVisibleItemIndex != itemsCount - 1)
-					{
-						firstVisibleItemIndex -= 1;
-						lastVisibleItemIndex -= 1;
-					}
-					else
-					{
-						firstVisibleItemIndex -= 1;
-						lastVisibleItemIndex -= 2;
-					}
-				}
+				return (
+				 AdjustGroupIndex(groupable, firstVisibleItemIndex, hasHeader, hasFooter, itemsCount, true),
+				 AdjustGroupIndex(groupable, centerItemIndex, hasHeader, hasFooter, itemsCount, true),
+				 AdjustGroupIndex(groupable, lastVisibleItemIndex, hasHeader, hasFooter, itemsCount, false)
+				);
 			}
 
-			if (firstVisibleItemIndex < 0)
+			// Adjust for footer: if the last visible item is the footer, decrement to get the last data item index
+			if (hasFooter && lastVisibleItemIndex == itemsCount - 1)
 			{
-				firstVisibleItemIndex = 0;
+				lastVisibleItemIndex--;
 			}
 
-			if (lastVisibleItemIndex < 0)
+			// Non-grouped items adjustment
+			if (hasHeader)
 			{
-				lastVisibleItemIndex = 0;
+				firstVisibleItemIndex--;
+				lastVisibleItemIndex--;
+				centerItemIndex--;
 			}
+
+			int maxValidIndex = Math.Max(0, itemsSource.Count - 1);
+			firstVisibleItemIndex = Math.Clamp(firstVisibleItemIndex, 0, maxValidIndex);
+			lastVisibleItemIndex = Math.Clamp(lastVisibleItemIndex, 0, maxValidIndex);
+			centerItemIndex = Math.Clamp(centerItemIndex, 0, maxValidIndex);
 
 			return (firstVisibleItemIndex, centerItemIndex, lastVisibleItemIndex);
+		}
+
+		static int AdjustGroupIndex(IGroupableItemsViewSource source, int position, bool hasHeader, bool hasFooter, int count, bool isStart)
+		{
+			if (position < 0 || position >= count)
+			{
+				return Math.Max(0, GetGroupedDataCount(source) - 1);
+			}
+
+			// Adjust for header if present
+			position = position - (hasHeader && position > 0 ? 1 : 0);
+
+			int dataIndex = hasHeader ? 1 : 0, currentItem = hasHeader ? 1 : 0;
+
+			// Iterate through items until we reach the target position
+			while (currentItem <= position && currentItem < count)
+			{
+				if (hasFooter && currentItem == count - 1)
+				{
+					break;
+				}
+
+				bool isHeader = source.IsGroupHeader(currentItem), isFooter = source.IsGroupFooter(currentItem);
+
+				// If current item is a normal data item (not header/footer)
+				if (!isHeader && !isFooter)
+				{
+					if (currentItem == position)
+					{
+						return dataIndex;
+					}
+
+					dataIndex++;
+				}
+				// If position is a group header/footer, find the nearest data item
+				else if (currentItem == position)
+				{
+					return isStart
+					 ? FindNextDataIndex(source, currentItem, hasFooter, count, dataIndex)
+					 : FindPrevDataIndex(source, currentItem, hasHeader);
+				}
+
+				currentItem++;
+			}
+
+			// If we reach here, pos was beyond the last item
+			// Return the last valid data index (or 0 if empty)
+			return Math.Max(0, dataIndex - 1);
+		}
+
+		static int GetGroupedDataCount(IGroupableItemsViewSource source)
+		{
+			// Count data items only (excluding all headers and footers)
+			int dataCount = 0;
+			for (int index = 0; index < source.Count; index++)
+			{
+				if (!source.IsGroupHeader(index) && !source.IsGroupFooter(index) &&
+					!source.IsHeader(index) && !source.IsFooter(index))
+				{
+					dataCount++;
+				}
+			}
+
+			return dataCount;
+		}
+
+		static int FindNextDataIndex(IGroupableItemsViewSource source, int start, bool hasFooter, int count, int dataIndex)
+		{
+			for (int i = start + 1; i < count; i++)
+			{
+				// Skip footer item if present
+				if (hasFooter && i == count - 1)
+				{
+					break;
+				}
+
+				// If we find a regular item (not a group header or footer),
+				// return the current data index without incrementing
+				if (!source.IsGroupHeader(i) && !source.IsGroupFooter(i))
+				{
+					return dataIndex;
+				}
+			}
+
+			// If no valid data item found ahead, return the previous data index
+			// (or 0 if no valid items exist)
+			return Math.Max(0, dataIndex - 1);
+		}
+
+		static int FindPrevDataIndex(IGroupableItemsViewSource source, int start, bool hasHeader)
+		{
+			int lastValid = -1;
+			int currentItem = hasHeader ? 1 : 0;
+
+			for (; currentItem < start; currentItem++)
+			{
+				// Increment counter only for data items (not headers/footers)
+				// to get accurate position for last visible item index
+				if (!source.IsGroupHeader(currentItem) && !source.IsGroupFooter(currentItem))
+				{
+					lastValid++;
+				}
+			}
+
+			// Return the last valid data item found (or 0 if none)
+			return Math.Max(0, lastValid);
 		}
 
 		protected override void Dispose(bool disposing)
