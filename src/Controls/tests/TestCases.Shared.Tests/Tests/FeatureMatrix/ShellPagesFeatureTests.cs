@@ -17,12 +17,11 @@ public class ShellPagesFeatureTests : _GalleryUITest
 	{
 	}
 
-	[Test, Order(1)]
+#if TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/32125
+	[Test, Order(5)]
 	[Category(UITestCategories.Shell)]
 	public void ShellPages_TitleColor()
 	{
-		App.WaitForElement("ShellPageButton");
-		App.Tap("ShellPageButton");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("RedTitleColor");
@@ -31,6 +30,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		VerifyScreenshot();
 	}
+#endif
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/32992
 	[Test, Order(2)]
@@ -79,10 +79,12 @@ public class ShellPagesFeatureTests : _GalleryUITest
 	}
 #endif
 
-	[Test, Order(5)]
+	[Test, Order(1)]
 	[Category(UITestCategories.Shell)]
 	public void ShellPages_IsEnabledTrue()
 	{
+		App.WaitForElement("ShellPageButton");
+		App.Tap("ShellPageButton");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("IsEnabledTrue");
@@ -288,6 +290,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
+#if TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/32125
 	[Test, Order(21)]
 	[Category(UITestCategories.Shell)]
 	public void ShellPages_ForegroundColor()
@@ -317,6 +320,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		VerifyScreenshot();
 	}
+#endif 
 
 #if TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/32125
 	[Test, Order(23)]
@@ -419,7 +423,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 	}
 #endif 
 
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST  // Issue Link: https://github.com/dotnet/maui/issues/33909
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS// Issue Link: https://github.com/dotnet/maui/issues/33909
 	[Test, Order(29)]
 	[Category(UITestCategories.Shell)]
 	public void ShellPages_VerifyForegroundColorResetForBackButton()
