@@ -87,6 +87,11 @@ public interface IAndroidProvider
 	Task InstallPackagesAsync(IEnumerable<string> packages, bool acceptLicenses = false, CancellationToken cancellationToken = default);
 
 	/// <summary>
+	/// Uninstalls SDK packages.
+	/// </summary>
+	Task UninstallPackagesAsync(IEnumerable<string> packages, CancellationToken cancellationToken = default);
+
+	/// <summary>
 	/// Accepts all SDK licenses.
 	/// </summary>
 	Task AcceptLicensesAsync(CancellationToken cancellationToken = default);

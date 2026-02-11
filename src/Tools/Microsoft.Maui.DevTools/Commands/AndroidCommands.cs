@@ -38,6 +38,7 @@ public static class AndroidCommands
 			new Option<string>("--sdk-path", "Custom SDK installation path"),
 			new Option<string>("--jdk-path", "Custom JDK installation path"),
 			new Option<int>("--jdk-version", () => 17, "JDK version to install (17 or 21)"),
+			new Option<bool>("--accept-licenses", "Non-interactively accept all SDK licenses"),
 			packagesOption
 		};
 
@@ -55,6 +56,8 @@ public static class AndroidCommands
 				(Option<int>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "jdk-version"));
 			var rawPackages = context.ParseResult.GetValueForOption(
 				(Option<string[]>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "packages"));
+			var acceptLicenses = context.ParseResult.GetValueForOption(
+				(Option<bool>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "accept-licenses"));
 			
 			// Support comma-separated packages: "pkg1,pkg2,pkg3" becomes ["pkg1", "pkg2", "pkg3"]
 			var packages = rawPackages?
@@ -86,6 +89,7 @@ public static class AndroidCommands
 					Console.WriteLine($"  JDK version: {jdkVersion}");
 					Console.WriteLine($"  JDK path: {jdkPath ?? "(default)"}");
 					Console.WriteLine($"  SDK path: {sdkPath ?? "(default)"}");
+					Console.WriteLine($"  Accept licenses: {acceptLicenses}");
 					if (packages?.Any() == true)
 						Console.WriteLine($"  Extra packages: {string.Join(", ", packages)}");
 					return;
@@ -534,6 +538,56 @@ public static class AndroidCommands
 		command.AddCommand(installCommand);
 		command.AddCommand(listCommand);
 		command.AddCommand(acceptLicensesCommand);
+		command.AddCommand(CreateSdkUninstallCommand());
+
+		return command;
+	}
+
+	private static Command CreateSdkUninstallCommand()
+	{
+		var command = new Command("uninstall", "Uninstall SDK packages")
+		{
+			new Argument<string[]>("packages", "Package names to uninstall") { Arity = ArgumentArity.OneOrMore }
+		};
+
+		command.SetHandler(async (InvocationContext context) =>
+		{
+			var androidProvider = Program.AndroidProvider;
+
+			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
+			var dryRun = context.ParseResult.GetValueForOption(GlobalOptions.DryRunOption);
+			var packages = context.ParseResult.GetValueForArgument(
+				(Argument<string[]>)context.ParseResult.CommandResult.Command.Arguments.First());
+
+			var formatter = useJson
+				? (IOutputFormatter)new JsonOutputFormatter(Console.Out)
+				: new ConsoleOutputFormatter(Console.Out);
+
+			try
+			{
+				if (dryRun)
+				{
+					Console.WriteLine($"[dry-run] Would uninstall: {string.Join(", ", packages)}");
+					return;
+				}
+
+				await androidProvider.UninstallPackagesAsync(packages, context.GetCancellationToken());
+
+				if (useJson)
+				{
+					formatter.Write(new { success = true, uninstalled = packages });
+				}
+				else
+				{
+					Console.WriteLine($"✓ Uninstalled: {string.Join(", ", packages)}");
+				}
+			}
+			catch (Exception ex)
+			{
+				formatter.WriteError(ex);
+				context.ExitCode = 1;
+			}
+		});
 
 		return command;
 	}
@@ -588,7 +642,8 @@ public static class AndroidCommands
 		{
 			new Argument<string>("name", "AVD name"),
 			new Option<string>("--package", "System image package (auto-detects most recent if not specified)"),
-			new Option<string>("--device", "Device definition")
+			new Option<string>("--device", "Device definition"),
+			new Option<bool>("--force", "Overwrite existing emulator with the same name")
 		};
 		createCommand.SetHandler(async (InvocationContext context) =>
 		{
@@ -602,6 +657,8 @@ public static class AndroidCommands
 				(Option<string>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "package"));
 			var device = context.ParseResult.GetValueForOption(
 				(Option<string>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "device"));
+			var force = context.ParseResult.GetValueForOption(
+				(Option<bool>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "force"));
 
 			var formatter = useJson 
 				? (IOutputFormatter)new JsonOutputFormatter(Console.Out) 
@@ -633,7 +690,7 @@ public static class AndroidCommands
 					return;
 				}
 
-				await androidProvider.CreateAvdAsync(name, device ?? "pixel_6", package, false, context.GetCancellationToken());
+				await androidProvider.CreateAvdAsync(name, device ?? "pixel_6", package, force, context.GetCancellationToken());
 
 				if (useJson)
 				{

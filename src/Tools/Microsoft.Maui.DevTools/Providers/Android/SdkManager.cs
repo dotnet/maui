@@ -258,6 +258,33 @@ public class SdkManager
 		// if licenses were already accepted, so we don't throw on failure
 	}
 
+	public async Task UninstallPackagesAsync(IEnumerable<string> packages, CancellationToken cancellationToken = default)
+	{
+		if (!IsAvailable)
+			throw MauiToolException.AutoFixable(
+				ErrorCodes.AndroidSdkManagerNotFound,
+				"SDK Manager not found. Run 'dotnet maui android install' first.",
+				"dotnet maui android install");
+
+		var packageList = string.Join(" ", packages.Select(p => $"\"{p}\""));
+		var args = $"--uninstall {packageList}";
+
+		var result = await ProcessRunner.RunAsync(
+			SdkManagerPath!,
+			args,
+			environmentVariables: GetEnvironment(),
+			timeout: TimeSpan.FromMinutes(10),
+			cancellationToken: cancellationToken);
+
+		if (!result.Success)
+		{
+			throw new MauiToolException(
+				ErrorCodes.AndroidPackageInstallFailed,
+				$"Failed to uninstall packages: {result.StandardError}",
+				nativeError: result.StandardError);
+		}
+	}
+
 	public Task<bool> AreLicensesAcceptedAsync(CancellationToken cancellationToken = default)
 	{
 		if (!IsAvailable || string.IsNullOrEmpty(SdkPath))

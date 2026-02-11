@@ -87,7 +87,7 @@ public static class LogsCommand
 					return;
 				}
 
-				await StreamLogsAsync(device, filter, follow, lines, context.GetCancellationToken());
+				await StreamDeviceLogsAsync(device, filter, follow, lines, context.GetCancellationToken());
 			}
 			catch (OperationCanceledException)
 			{
@@ -105,7 +105,7 @@ public static class LogsCommand
 		return command;
 	}
 
-	private static async Task StreamLogsAsync(Device device, string? filter, bool follow, int lines, CancellationToken cancellationToken)
+	internal static async Task StreamDeviceLogsAsync(Device device, string? filter, bool follow, int lines, CancellationToken cancellationToken)
 	{
 		string command;
 		string args;

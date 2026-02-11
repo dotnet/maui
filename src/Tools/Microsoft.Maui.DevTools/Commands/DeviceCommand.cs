@@ -3,6 +3,8 @@
 
 using System.CommandLine;
 using System.CommandLine.Invocation;
+using Microsoft.Maui.DevTools.Errors;
+using Microsoft.Maui.DevTools.Models;
 using Microsoft.Maui.DevTools.Output;
 using Microsoft.Maui.DevTools.Services;
 
@@ -19,6 +21,7 @@ public static class DeviceCommand
 
 		command.AddCommand(CreateListCommand());
 		command.AddCommand(CreateScreenshotCommand());
+		command.AddCommand(CreateDeviceLogsCommand());
 
 		return command;
 	}
@@ -117,6 +120,85 @@ public static class DeviceCommand
 				{
 					Console.WriteLine($"Screenshot saved to: {result}");
 				}
+			}
+			catch (Exception ex)
+			{
+				formatter.WriteError(ex);
+				context.ExitCode = 1;
+			}
+		});
+
+		return command;
+	}
+
+	/// <summary>
+	/// Creates the 'device logs' subcommand that shares the same handler logic as the root 'logs' command.
+	/// </summary>
+	private static Command CreateDeviceLogsCommand()
+	{
+		var deviceOption = new Option<string?>(new[] { "-d", "--device" }, "Target device ID (auto-detects if not specified)");
+		var filterOption = new Option<string?>(new[] { "-f", "--filter" }, "Filter logs by tag or pattern");
+		var followOption = new Option<bool>("--follow", () => true, "Follow log output (like tail -f)");
+		var linesOption = new Option<int>(new[] { "-n", "--lines" }, () => 50, "Number of lines to show (0 = all)");
+		var mauiOnlyOption = new Option<bool>("--maui-only", "Show only .NET MAUI related log entries");
+		var sinceOption = new Option<string?>("--since", "Show logs since timestamp (e.g., '5m', '1h', ISO 8601)");
+
+		var command = new Command("logs", "View device logs")
+		{
+			deviceOption, filterOption, followOption, linesOption, mauiOnlyOption, sinceOption
+		};
+
+		command.SetHandler(async (InvocationContext context) =>
+		{
+			var formatter = Program.GetFormatter(context);
+			var deviceId = context.ParseResult.GetValueForOption(deviceOption);
+			var filter = context.ParseResult.GetValueForOption(filterOption);
+			var follow = context.ParseResult.GetValueForOption(followOption);
+			var lines = context.ParseResult.GetValueForOption(linesOption);
+
+			try
+			{
+				if (string.IsNullOrWhiteSpace(deviceId))
+				{
+					var devices = await Program.DeviceManager.GetAllDevicesAsync(context.GetCancellationToken());
+					var runningDevice = devices.FirstOrDefault(d => d.State == Models.DeviceState.Booted);
+
+					if (runningDevice == null)
+					{
+						formatter.WriteError(new ErrorResult
+						{
+							Code = ErrorCodes.DeviceNotFound,
+							Category = "tool",
+							Message = "No running device found. Start a device or specify one with --device"
+						});
+						context.ExitCode = 1;
+						return;
+					}
+
+					deviceId = runningDevice.Id;
+					formatter.WriteInfo($"Streaming logs from: {runningDevice.Name}");
+				}
+
+				var device = await Program.DeviceManager.GetDeviceByIdAsync(deviceId, context.GetCancellationToken());
+				if (device == null)
+				{
+					formatter.WriteError(new ErrorResult
+					{
+						Code = ErrorCodes.DeviceNotFound,
+						Category = "tool",
+						Message = $"Device not found: {deviceId}"
+					});
+					context.ExitCode = 1;
+					return;
+				}
+
+				// Delegate to the shared log streaming implementation
+				await LogsCommand.StreamDeviceLogsAsync(device, filter, follow, lines, context.GetCancellationToken());
+			}
+			catch (OperationCanceledException)
+			{
+				Console.WriteLine();
+				formatter.WriteInfo("Log streaming stopped.");
 			}
 			catch (Exception ex)
 			{

@@ -176,13 +176,41 @@ public static class AppleCommands
 		var simulatorCommand = new Command("simulator", "Manage iOS simulators");
 
 		// simulator list
-		var listCommand = new Command("list", "List available simulators");
+		var listCommand = new Command("list", "List available simulators")
+		{
+			new Option<string?>("--runtime", "Filter by runtime (e.g., 'iOS-18-5', 'iOS')"),
+			new Option<string?>("--device-type", "Filter by device type (e.g., 'iPhone', 'iPad')"),
+			new Option<string?>("--state", "Filter by state (booted, shutdown)")
+		};
 		listCommand.SetHandler(async (InvocationContext context) =>
 		{
 			var formatter = getFormatter(context);
+			var runtimeFilter = context.ParseResult.GetValueForOption(
+				(Option<string?>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "runtime"));
+			var deviceTypeFilter = context.ParseResult.GetValueForOption(
+				(Option<string?>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "device-type"));
+			var stateFilter = context.ParseResult.GetValueForOption(
+				(Option<string?>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "state"));
 			try
 			{
 				var devices = await provider.ListSimulatorsAsync(context.GetCancellationToken());
+
+				// Apply filters
+				if (!string.IsNullOrEmpty(runtimeFilter))
+					devices = devices.Where(d => 
+						(d.VersionName?.Contains(runtimeFilter, StringComparison.OrdinalIgnoreCase) ?? false) ||
+						(d.Version?.Contains(runtimeFilter, StringComparison.OrdinalIgnoreCase) ?? false)).ToList();
+
+				if (!string.IsNullOrEmpty(deviceTypeFilter))
+					devices = devices.Where(d => 
+						d.Name.Contains(deviceTypeFilter, StringComparison.OrdinalIgnoreCase) ||
+						(d.Model?.Contains(deviceTypeFilter, StringComparison.OrdinalIgnoreCase) ?? false)).ToList();
+
+				if (!string.IsNullOrEmpty(stateFilter))
+				{
+					if (Enum.TryParse<Models.DeviceState>(stateFilter, ignoreCase: true, out var parsedState))
+						devices = devices.Where(d => d.State == parsedState).ToList();
+				}
 
 				if (formatter is JsonOutputFormatter)
 				{

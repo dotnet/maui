@@ -274,6 +274,11 @@ public class AndroidProvider : IAndroidProvider
 		await _sdkManager.InstallPackagesAsync(packages, acceptLicenses, cancellationToken);
 	}
 
+	public async Task UninstallPackagesAsync(IEnumerable<string> packages, CancellationToken cancellationToken = default)
+	{
+		await _sdkManager.UninstallPackagesAsync(packages, cancellationToken);
+	}
+
 	public async Task AcceptLicensesAsync(CancellationToken cancellationToken = default)
 	{
 		await _sdkManager.AcceptLicensesAsync(cancellationToken);
