@@ -454,6 +454,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
+			if (VirtualView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepScrollOffset)
+			{
+				return;
+			}
+
 			if (_itemsSource is null || _itemsSource.Count == 0)
 			{
 				return;
@@ -574,11 +579,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				_layoutPropertyChangedProxy = new WeakNotifyPropertyChangedProxy(Layout, _layoutPropertyChanged);
 			}
 
-			UpdateItemsSource();
-
 			PlatformView.Layout = CreateItemsLayout();
-
-			bool isHorizontal = IsLayoutHorizontal;
 
 			// Update header/footer orientation
 			if (PlatformView is MauiItemsView mauiItemsView)
@@ -1147,6 +1148,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					{
 						_lastRemainingItemsThresholdIndex = itemsViewScrolledEventArgs.LastVisibleItemIndex;
 						Element.SendRemainingItemsThresholdReached();
+					}
+					else
+					{
+						//Reset when scrolling back up away from the threshold zone so the
+						//event can fire again if the user scrolls back down
+						_lastRemainingItemsThresholdIndex = -1;
 					}
 				}
 			}

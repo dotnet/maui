@@ -181,11 +181,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (_isHorizontalLayout)
 			{
 				_containerPanel.Orientation = Orientation.Horizontal;
-				_itemsRepeater.VerticalAlignment = UI.Xaml.VerticalAlignment.Top;
+				// For horizontal layout, the container panel should stretch vertically
+				_containerPanel.VerticalAlignment = UI.Xaml.VerticalAlignment.Stretch;
+				_containerPanel.HorizontalAlignment = UI.Xaml.HorizontalAlignment.Left;
+				
+				// Items should stretch vertically (cross-axis)
+				_itemsRepeater.VerticalAlignment = UI.Xaml.VerticalAlignment.Stretch;
 				_itemsRepeater.HorizontalAlignment = UI.Xaml.HorizontalAlignment.Left;
-				_headerContentControl.VerticalContentAlignment = UI.Xaml.VerticalAlignment.Top;
+				_headerContentControl.VerticalAlignment = UI.Xaml.VerticalAlignment.Stretch;
+				_headerContentControl.VerticalContentAlignment = UI.Xaml.VerticalAlignment.Stretch;
 				_headerContentControl.HorizontalContentAlignment = UI.Xaml.HorizontalAlignment.Left;
-				_footerContentControl.VerticalContentAlignment = UI.Xaml.VerticalAlignment.Top;
+				_footerContentControl.VerticalAlignment = UI.Xaml.VerticalAlignment.Stretch;
+				_footerContentControl.VerticalContentAlignment = UI.Xaml.VerticalAlignment.Stretch;
 				_footerContentControl.HorizontalContentAlignment = UI.Xaml.HorizontalAlignment.Left;
 
 				if (_scrollView is not null)
@@ -196,10 +203,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			else
 			{
 				_containerPanel.Orientation = Orientation.Vertical;
+				// For vertical layout, the container panel should stretch horizontally
+				_containerPanel.VerticalAlignment = UI.Xaml.VerticalAlignment.Top;
+				_containerPanel.HorizontalAlignment = UI.Xaml.HorizontalAlignment.Stretch;
+				
+				// Items should stretch horizontally (cross-axis)
 				_itemsRepeater.VerticalAlignment = UI.Xaml.VerticalAlignment.Top;
 				_itemsRepeater.HorizontalAlignment = UI.Xaml.HorizontalAlignment.Stretch;
+				_headerContentControl.VerticalAlignment = UI.Xaml.VerticalAlignment.Top;
 				_headerContentControl.VerticalContentAlignment = UI.Xaml.VerticalAlignment.Top;
 				_headerContentControl.HorizontalContentAlignment = UI.Xaml.HorizontalAlignment.Stretch;
+				_footerContentControl.VerticalAlignment = UI.Xaml.VerticalAlignment.Top;
 				_footerContentControl.VerticalContentAlignment = UI.Xaml.VerticalAlignment.Top;
 				_footerContentControl.HorizontalContentAlignment = UI.Xaml.HorizontalAlignment.Stretch;
 
