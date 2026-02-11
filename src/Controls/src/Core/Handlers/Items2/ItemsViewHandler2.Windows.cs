@@ -25,6 +25,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 	{
 		CollectionViewSource? _collectionViewSource;
 		IList? _itemsSource;
+		ItemFactory? _itemFactory;
 
 		FrameworkElement? _emptyView;
 		View? _mauiEmptyView;
@@ -209,6 +210,35 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				VirtualView.ScrollToRequested -= ScrollToRequested;
 			}
 
+			// Clean up ItemFactory recycle pool to release pooled elements
+			_itemFactory?.CleanUp();
+			_itemFactory = null;
+
+			// Clean up logical children for empty view, header, and footer to prevent memory leaks
+			if (_mauiEmptyView is not null && _emptyViewDisplayed)
+			{
+				ItemsView?.RemoveLogicalChild(_mauiEmptyView);
+			}
+			_mauiEmptyView = null;
+			_emptyView = null;
+			_emptyViewDisplayed = false;
+
+			if (_mauiHeader is not null && _headerDisplayed)
+			{
+				ItemsView?.RemoveLogicalChild(_mauiHeader);
+			}
+			_mauiHeader = null;
+			_header = null;
+			_headerDisplayed = false;
+
+			if (_mauiFooter is not null && _footerDisplayed)
+			{
+				ItemsView?.RemoveLogicalChild(_mauiFooter);
+			}
+			_mauiFooter = null;
+			_footer = null;
+			_footerDisplayed = false;
+
 			base.DisconnectHandler(platformView);
 		}
 
@@ -255,14 +285,32 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			if (itemsSource is IEnumerable enumerable)
 			{
+				// Sample up to a few items to determine if the source contains groups.
+				// A group is any non-string IEnumerable. If all sampled items are groups
+				// (or null), we treat the source as grouped. If any item is not a group,
+				// we treat it as a flat list to avoid false positives.
+				int checked_count = 0;
+				bool hasGroups = false;
 				foreach (var item in enumerable)
 				{
+					if (item is null)
+						continue;
+
 					if (item is IEnumerable && item is not string)
 					{
-						return true;
+						hasGroups = true;
 					}
-					break;
+					else
+					{
+						// Found a non-group item — this is a flat list
+						return false;
+					}
+
+					if (++checked_count >= 3)
+						break;
 				}
+
+				return hasGroups;
 			}
 			return false;
 		}
@@ -300,7 +348,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (VirtualView.ItemTemplate is not null)
 			{
-				PlatformView.ItemTemplate = new ItemFactory(Element);
+				_itemFactory = new ItemFactory(Element);
+				PlatformView.ItemTemplate = _itemFactory;
 			}
 			else if (PlatformView.ItemTemplate is not null)
 			{
@@ -312,6 +361,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		void CleanUpCollectionViewSource()
 		{
+			// Clean up the recycle pool in the old ItemFactory to release pooled elements
+			_itemFactory?.CleanUp();
+			_itemFactory = null;
+
 			if (_collectionViewSource is not null)
 			{
 				if (_collectionViewSource.Source is ObservableItemTemplateCollection2 observableItemTemplateCollection)
@@ -726,13 +779,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (isEmpty)
 			{
-				if (_mauiEmptyView is not null)
+				if (_mauiEmptyView is not null && !_emptyViewDisplayed)
 				{
-					if (_emptyViewDisplayed)
-					{
-						ItemsView.RemoveLogicalChild(_mauiEmptyView);
-					}
-
 					if (ItemsView.EmptyViewTemplate is null)
 					{
 						ItemsView.AddLogicalChild(_mauiEmptyView);
@@ -791,6 +839,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
+			// Save old logical child reference before realization overwrites _mauiHeader via ref
+			var oldMauiHeader = _mauiHeader;
+
 			// If HeaderTemplate is set, use it regardless of header value
 			if (headerTemplate is not null)
 			{
@@ -826,7 +877,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				platformItemsView.HeaderVisibility = WVisibility.Visible;
 			}
 
-			// Add logical child for View
+			// Remove old logical child before adding the new one to prevent leak
+			if (oldMauiHeader is not null && _headerDisplayed)
+			{
+				ItemsView.RemoveLogicalChild(oldMauiHeader);
+			}
+
 			if (_mauiHeader is not null)
 			{
 				ItemsView.AddLogicalChild(_mauiHeader);
@@ -864,6 +920,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
+			// Save old logical child reference before realization overwrites _mauiFooter via ref
+			var oldMauiFooter = _mauiFooter;
+
 			// If FooterTemplate is set, use it regardless of footer value
 			if (footerTemplate is not null)
 			{
@@ -899,7 +958,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				platformItemsView.FooterVisibility = WVisibility.Visible;
 			}
 
-			// Add logical child for View
+			// Remove old logical child before adding the new one to prevent leak
+			if (oldMauiFooter is not null && _footerDisplayed)
+			{
+				ItemsView.RemoveLogicalChild(oldMauiFooter);
+			}
+
 			if (_mauiFooter is not null)
 			{
 				ItemsView.AddLogicalChild(_mauiFooter);
@@ -1028,10 +1092,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			switch (Layout)
 			{
 				case LinearItemsLayout linearItemsLayout:
-					advancing = itemsViewScrolledEventArgs.HorizontalDelta > 0;
+					advancing = linearItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal
+						? itemsViewScrolledEventArgs.HorizontalDelta > 0
+						: itemsViewScrolledEventArgs.VerticalDelta > 0;
 					break;
 				case GridItemsLayout gridItemsLayout:
-					advancing = itemsViewScrolledEventArgs.VerticalDelta > 0;
+					advancing = gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal
+						? itemsViewScrolledEventArgs.HorizontalDelta > 0
+						: itemsViewScrolledEventArgs.VerticalDelta > 0;
 					break;
 				default:
 					break;

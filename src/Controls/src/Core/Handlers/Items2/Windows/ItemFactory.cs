@@ -124,6 +124,29 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			_view.RemoveLogicalChild(wrapperView);
 		}
+
+		/// <summary>
+		/// Clears the recycle pool and removes logical children held by pooled elements.
+		/// Must be called when the items source changes or when the handler disconnects
+		/// to prevent memory leaks from pooled ItemContainers holding strong references.
+		/// </summary>
+		internal void CleanUp()
+		{
+			foreach (var kvp in _recyclePool)
+			{
+				foreach (var container in kvp.Value)
+				{
+					var wrapper = container?.Child as ElementWrapper;
+					var wrapperView = wrapper?.VirtualView as View;
+					if (wrapperView is not null)
+					{
+						_view.RemoveLogicalChild(wrapperView);
+					}
+				}
+			}
+
+			_recyclePool.Clear();
+		}
 	}
 
 	internal partial class ElementWrapper(IMauiContext context) : ContentControl
