@@ -696,22 +696,15 @@ stages:
               git checkout -- . 2>&1 | Write-Host
               Write-Host "✅ Working tree restored"
               
-              # Check if a comment was already posted by looking for the AI Summary marker
-              Write-Host "Checking for existing AI summary comment..."
-              $existingComment = gh pr view $prNumber --json comments --jq '.comments[] | select(.body | contains("<!-- AI Summary -->")) | .id' 2>$null | Select-Object -First 1
+              # Always run post-ai-summary-comment.ps1 - it handles both creating new
+              # comments and updating existing ones with the latest results.
+              # Previous logic skipped if a comment existed, but that left stale results
+              # from earlier runs (e.g., BLOCKED try-fixes that later ran successfully).
+              Write-Host "Running post-ai-summary-comment.ps1 (creates or updates)..."
               
-              if ($existingComment) {
-                Write-Host "✅ AI summary comment already exists (ID: $existingComment). Skipping fallback."
-                exit 0
-              }
-              
-              Write-Host "No AI summary comment found. Running post-ai-summary-comment.ps1..."
-              
-              # Run the post-ai-summary-comment.ps1 script directly
-              # Uses -PRNumber which auto-loads state from CustomAgentLogsTmp/PRState/pr-$prNumber.md
               pwsh .github/skills/ai-summary-comment/scripts/post-ai-summary-comment.ps1 -PRNumber $prNumber
               if ($LASTEXITCODE -eq 0) {
-                Write-Host "✅ AI summary comment posted successfully"
+                Write-Host "✅ AI summary comment posted/updated successfully"
               } else {
                 Write-Host "##vso[task.logissue type=error]post-ai-summary-comment.ps1 failed with exit code $LASTEXITCODE"
                 exit $LASTEXITCODE
