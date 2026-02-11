@@ -342,6 +342,8 @@ namespace Microsoft.Maui.Maps.Platform
 				.Clicked();
 			}
 
+			// Hit-test overlays in draw order: Circle > Polygon > Polyline.
+			// First matching overlay wins; overlapping elements won't fire multiple events.
 			foreach (var overlay in mauiMkMapView.Overlays)
 			{
 				if (overlay is MKCircle circle)
@@ -384,7 +386,8 @@ namespace Microsoft.Maui.Maps.Platform
 						var pointInRenderer = renderer.PointForMapPoint(mapPoint);
 
 						// Check if tap is within stroke width of the polyline path
-						using var strokedPath = renderer.Path.CopyByStrokingPath(renderer.StrokeColor is not null ? renderer.LineWidth : 44, CoreGraphics.CGLineCap.Round, CoreGraphics.CGLineJoin.Round, 1);
+						var lineWidth = renderer.LineWidth > 0 ? renderer.LineWidth : 1;
+						using var strokedPath = renderer.Path.CopyByStrokingPath(lineWidth, CoreGraphics.CGLineCap.Round, CoreGraphics.CGLineJoin.Round, 1);
 						if (strokedPath?.ContainsPoint(pointInRenderer, true) == true)
 						{
 							SendClickEvent(overlay);
