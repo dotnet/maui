@@ -29,7 +29,7 @@ public partial class CollectionViewHandler2
 		[SelectableItemsView.SelectedItemsProperty.PropertyName] = MapSelectedItems,
 		[SelectableItemsView.SelectionModeProperty.PropertyName] = MapSelectionMode,
 		[StructuredItemsView.ItemSizingStrategyProperty.PropertyName] = MapItemSizingStrategy,
-		
+
 	};
 }
 public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItemsView>
@@ -291,14 +291,14 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 			return;
 		}
 
-		_ignorePlatformSelectionChange = true;
-
 		var itemList = PlatformView.ItemsSource as ICollectionView;
 
 		if (itemList is null)
 		{
 			return;
 		}
+
+		_ignorePlatformSelectionChange = true;
 
 		switch (PlatformView.SelectionMode)
 		{
@@ -333,7 +333,7 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 				break;
 			case ItemsViewSelectionMode.Multiple:
 				PlatformView.DeselectAll();
-				
+
 				// Use safe enumeration to avoid ArgumentOutOfRangeException during collection updates
 				int index = 0;
 				foreach (var nativeItem in itemList)

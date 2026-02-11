@@ -58,13 +58,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 						wrapper.VerticalAlignment = VerticalAlignment.Stretch;
 						wrapper.VerticalContentAlignment = VerticalAlignment.Stretch;
 						wrapper.SetContent(viewContent);
+						wrapper.IsHeaderOrFooter = templateContext.IsHeader || templateContext.IsFooter;
 
-						if(wrapper is not null)
-						{
-							wrapper.IsHeaderOrFooter = templateContext.IsHeader || templateContext.IsFooter;
-						}
-
-						if (wrapper?.VirtualView is View virtualView)
+						if (wrapper.VirtualView is View virtualView)
 						{
 							virtualView.SetValue(OriginTemplateProperty, template);
 						}
@@ -124,15 +120,38 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			_view.RemoveLogicalChild(wrapperView);
 		}
+
+		/// <summary>
+		/// Clears the recycle pool and removes logical children held by pooled elements.
+		/// Must be called when the items source changes or when the handler disconnects
+		/// to prevent memory leaks from pooled ItemContainers holding strong references.
+		/// </summary>
+		internal void CleanUp()
+		{
+			foreach (var kvp in _recyclePool)
+			{
+				foreach (var container in kvp.Value)
+				{
+					var wrapper = container?.Child as ElementWrapper;
+					var wrapperView = wrapper?.VirtualView as View;
+					if (wrapperView is not null)
+					{
+						_view.RemoveLogicalChild(wrapperView);
+					}
+				}
+			}
+
+			_recyclePool.Clear();
+		}
 	}
 
 	internal partial class ElementWrapper(IMauiContext context) : ContentControl
 	{
 		public IView? VirtualView { get; private set; }
-		
+
 		private IMauiContext _context = context;
 
-		public bool IsHeaderOrFooter { get; set; }	
+		public bool IsHeaderOrFooter { get; set; }
 
 		public void SetContent(IView view)
 		{
