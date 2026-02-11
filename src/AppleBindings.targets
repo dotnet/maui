@@ -10,7 +10,7 @@
 
   <PropertyGroup>
     <!-- Determine if we should use pre-built native artifacts instead of building from XcodeProject -->
-    <_UsePrebuiltAppleArtifacts Condition="'$(_UsePrebuiltAppleArtifacts)' == '' and (('$(CI)' == 'true' or '$(TF_BUILD)' == 'true') and '$([MSBuild]::IsOSPlatform(OSX))' != 'true')">true</_UsePrebuiltAppleArtifacts>
+    <_UsePrebuiltAppleArtifacts Condition="'$(_UsePrebuiltAppleArtifacts)' == '' and (('$(CI)' == 'true' or '$(TF_BUILD)' == 'true') and !$([MSBuild]::IsOSPlatform('osx')))">true</_UsePrebuiltAppleArtifacts>
     <_UsePrebuiltAppleArtifacts Condition="'$(_UsePrebuiltAppleArtifacts)' == ''">false</_UsePrebuiltAppleArtifacts>
   </PropertyGroup>
 
