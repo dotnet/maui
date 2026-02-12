@@ -17,6 +17,7 @@ using Microsoft.UI.Xaml.Input;
 using WASDKScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
 using WItemsView = Microsoft.UI.Xaml.Controls.ItemsView;
 using WScrollPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter;
+using WScrollSnapPointsAlignment = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPointsAlignment;
 using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
@@ -203,6 +204,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				platformView.ScrollView.ViewChanged -= ScrollViewChanged;
 				platformView.ScrollView.PointerWheelChanged -= PointerScrollChanged;
+				platformView.ScrollView.ExtentChanged -= ScrollViewExtentChanged;
 			}
 
 			// Unsubscribe pending Loaded handler if ScrollView wasn't found yet
@@ -454,6 +456,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
+			// KeepScrollOffset is the default — the native WinUI ItemsView already
+			// maintains scroll position when items change, so no action is needed.
+			// Calling UpdateLayout here would force a layout pass that resets the
+			// scroll position, making the default behave like KeepItemsInView.
 			if (VirtualView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepScrollOffset)
 			{
 				return;
@@ -681,12 +687,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			PlatformView.ScrollView.ViewChanged -= ScrollViewChanged;
 			PlatformView.ScrollView.PointerWheelChanged -= PointerScrollChanged;
+			PlatformView.ScrollView.ExtentChanged -= ScrollViewExtentChanged;
 
 			PlatformView.ScrollView.ViewChanged += ScrollViewChanged;
 			PlatformView.ScrollView.PointerWheelChanged += PointerScrollChanged;
+			PlatformView.ScrollView.ExtentChanged += ScrollViewExtentChanged;
 
 			UpdateVerticalScrollBarVisibility();
 			UpdateHorizontalScrollBarVisibility();
+			UpdateSnapPoints();
 		}
 
 		void LayoutPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -702,6 +711,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			else if (e.PropertyName == LinearItemsLayout.ItemSpacingProperty.PropertyName)
 			{
 				UpdateItemsLayoutItemSpacing();
+			}
+			else if (e.PropertyName == nameof(ItemsLayout.SnapPointsType) ||
+					 e.PropertyName == nameof(ItemsLayout.SnapPointsAlignment))
+			{
+				UpdateSnapPoints();
 			}
 		}
 
@@ -727,6 +741,126 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				stackLayout.Spacing = linearItemsLayout.ItemSpacing;
 			}
+		}
+
+		void ScrollViewExtentChanged(Microsoft.UI.Xaml.Controls.ScrollView sender, object args)
+		{
+			UpdateSnapPoints();
+		}
+
+		void UpdateSnapPoints()
+		{
+			if (PlatformView?.ScrollView?.ScrollPresenter is not WScrollPresenter scrollPresenter)
+			{
+				return;
+			}
+
+			if (Layout is not ItemsLayout itemsLayout)
+			{
+				return;
+			}
+
+			var snapPointsType = itemsLayout.SnapPointsType;
+
+			// Clear existing snap points
+			if (IsLayoutHorizontal)
+			{
+				scrollPresenter.HorizontalSnapPoints.Clear();
+			}
+			else
+			{
+				scrollPresenter.VerticalSnapPoints.Clear();
+			}
+
+			if (snapPointsType == SnapPointsType.None)
+			{
+				return;
+			}
+
+			// We need realized items to compute the snap interval.
+			// Use the first visible item container's size + spacing.
+			var itemCount = _collectionViewSource?.View?.Count ?? 0;
+			if (itemCount == 0)
+			{
+				return;
+			}
+
+			double itemExtent = 0;
+			double spacing = 0;
+
+			// Try to get the size of the first realized item container
+			foreach (var container in PlatformView.GetChildren<ItemContainer>())
+			{
+				if (container is not null)
+				{
+					itemExtent = IsLayoutHorizontal ? container.ActualWidth : container.ActualHeight;
+					break;
+				}
+			}
+
+			if (itemExtent <= 0)
+			{
+				// Items not yet realized, snap points will be applied
+				// when ExtentChanged fires after items are laid out.
+				return;
+			}
+
+			// Get spacing from the layout
+			if (Layout is LinearItemsLayout linearLayout)
+			{
+				spacing = linearLayout.ItemSpacing;
+			}
+			else if (Layout is GridItemsLayout gridLayout)
+			{
+				spacing = IsLayoutHorizontal ? gridLayout.HorizontalItemSpacing : gridLayout.VerticalItemSpacing;
+			}
+
+			double interval = itemExtent + spacing;
+			if (interval <= 0)
+			{
+				return;
+			}
+
+			var alignment = GetScrollSnapPointsAlignment(itemsLayout.SnapPointsAlignment);
+
+			// Compute the extent range for the snap points
+			double extent = IsLayoutHorizontal
+				? scrollPresenter.ExtentWidth
+				: scrollPresenter.ExtentHeight;
+
+			if (extent <= 0)
+			{
+				return;
+			}
+
+			// RepeatedScrollSnapPoint: snap every 'interval' pixels starting from 'offset',
+			// within the range [start, end].
+			var snapPoint = new Microsoft.UI.Xaml.Controls.Primitives.RepeatedScrollSnapPoint(
+				0,          // offset: first snap point at position 0
+				interval,   // interval: distance between snap points
+				0,          // start: beginning of range
+				extent,     // end: full content extent
+				alignment);
+
+			if (IsLayoutHorizontal)
+			{
+				scrollPresenter.HorizontalSnapPoints.Add(snapPoint);
+			}
+			else
+			{
+				scrollPresenter.VerticalSnapPoints.Add(snapPoint);
+			}
+		}
+
+		static WScrollSnapPointsAlignment GetScrollSnapPointsAlignment(SnapPointsAlignment alignment)
+		{
+			return alignment switch
+			{
+				SnapPointsAlignment.Start => WScrollSnapPointsAlignment.Near,
+				SnapPointsAlignment.Center => WScrollSnapPointsAlignment.Center,
+				SnapPointsAlignment.End => WScrollSnapPointsAlignment.Far,
+				_ => WScrollSnapPointsAlignment.Near,
+			};
 		}
 
 		void UpdateEmptyView()
@@ -1155,6 +1289,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 						//event can fire again if the user scrolls back down
 						_lastRemainingItemsThresholdIndex = -1;
 					}
+				}
+				else
+				{
+					// Reset when scrolling away from the threshold zone so the
+					// event can re-fire when the user scrolls back.
+					_lastRemainingItemsThresholdIndex = -1;
 				}
 			}
 		}
