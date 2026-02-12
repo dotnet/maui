@@ -80,14 +80,14 @@ public class NLEmbeddingGenerator : IEmbeddingGenerator<string, Embedding<float>
 		CancellationToken cancellationToken = default)
 	{
 		ArgumentNullException.ThrowIfNull(values);
-		if (!values.Any())
+
+		// Fast path: reject empty collections that expose Count
+		if (values.TryGetNonEnumeratedCount(out var count) && count == 0)
 		{
 			throw new ArgumentException("The values collection must contain at least one value.", nameof(values));
 		}
 
-		var potentialCount = values.TryGetNonEnumeratedCount(out var count) ? count : 0;
-
-		var result = new GeneratedEmbeddings<Embedding<float>>(potentialCount);
+		var result = new GeneratedEmbeddings<Embedding<float>>(count);
 
 		await _semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 		try
@@ -106,6 +106,12 @@ public class NLEmbeddingGenerator : IEmbeddingGenerator<string, Embedding<float>
 		finally
 		{
 			_semaphore.Release();
+		}
+
+		// Slow path: catch empty generators/LINQ chains
+		if (result.Count == 0)
+		{
+			throw new ArgumentException("The values collection must contain at least one value.", nameof(values));
 		}
 
 		return result;
@@ -150,6 +156,7 @@ public class NLEmbeddingGenerator : IEmbeddingGenerator<string, Embedding<float>
 		}
 
 		_disposed = true;
+		GC.SuppressFinalize(this);
 
 		if (_ownsEmbedding)
 		{

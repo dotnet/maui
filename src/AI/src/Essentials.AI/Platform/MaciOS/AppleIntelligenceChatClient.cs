@@ -63,10 +63,12 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 		CancellationToken cancellationToken = default)
 	{
 		var nativeMessages = ToNative(messages, options);
-		var nativeOptions = ToNative(options);
+		var nativeOptions = ToNative(options, cancellationToken);
 		var native = new ChatClientNative();
 
 		var tcs = new TaskCompletionSource<ChatResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+		CancellationTokenRegistration registration = default;
 
 		var nativeToken = native.GetResponse(
 			nativeMessages,
@@ -77,6 +79,7 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 			},
 			onComplete: (response, error) =>
 			{
+				registration.Dispose();
 				if (error is not null)
 				{
 					if (error.Domain == nameof(ChatClientNative) && error.Code == (int)ChatClientError.Cancelled)
@@ -95,7 +98,7 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 				}
 			});
 
-		cancellationToken.Register(() => nativeToken?.Cancel());
+		registration = cancellationToken.Register(() => nativeToken?.Cancel());
 
 		return tcs.Task;
 	}
@@ -107,7 +110,7 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 		[EnumeratorCancellation] CancellationToken cancellationToken = default)
 	{
 		var nativeMessages = ToNative(messages, options);
-		var nativeOptions = ToNative(options);
+		var nativeOptions = ToNative(options, cancellationToken);
 
 		var native = new ChatClientNative();
 
@@ -117,6 +120,8 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 		StreamChunkerBase chunker = nativeOptions?.ResponseJsonSchema is not null
 			? new JsonStreamChunker()
 			: new PlainTextStreamChunker();
+
+		CancellationTokenRegistration registration = default;
 
 		var nativeToken = native.StreamResponse(
 			nativeMessages,
@@ -172,6 +177,7 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 			},
 			onComplete: (finalResult, error) =>
 			{
+				registration.Dispose();
 				if (error is not null)
 				{
 					if (error.Domain == nameof(ChatClientNative) && error.Code == (int)ChatClientError.Cancelled)
@@ -198,12 +204,11 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 						channel.Writer.TryWrite(finalUpdate);
 					}
 
-					var chatResponse = FromNativeChatResponse(finalResult);
 					channel.Writer.Complete();
 				}
 			});
 
-		cancellationToken.Register(() => nativeToken?.Cancel());
+		registration = cancellationToken.Register(() => nativeToken?.Cancel());
 
 		await foreach (var update in channel.Reader.ReadAllAsync(cancellationToken))
 		{
@@ -350,7 +355,7 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 			throw new ArgumentOutOfRangeException(nameof(role), $"The role '{role}' is not supported by Apple Intelligence chat APIs.");
 	}
 
-	private static ChatOptionsNative? ToNative(ChatOptions? options)
+	private static ChatOptionsNative? ToNative(ChatOptions? options, CancellationToken cancellationToken)
 	{
 		if (options is null)
 		{
@@ -369,11 +374,11 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 			Temperature = ToNative(options.Temperature),
 			MaxOutputTokens = ToNative(options.MaxOutputTokens),
 			ResponseJsonSchema = ToNative(options.ResponseFormat),
-			Tools = ToNative(options.Tools)
+			Tools = ToNative(options.Tools, cancellationToken)
 		};
 	}
 
-	private static AIFunctionToolAdapter[]? ToNative(IList<AITool>? tools)
+	private static AIFunctionToolAdapter[]? ToNative(IList<AITool>? tools, CancellationToken cancellationToken)
 	{
 		AIFunctionToolAdapter[]? adapters = null;
 
@@ -390,7 +395,7 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 
 			adapters = tools
 				.OfType<AIFunction>()
-				.Select(function => new AIFunctionToolAdapter(function))
+				.Select(function => new AIFunctionToolAdapter(function, cancellationToken))
 				.ToArray();
 		}
 
@@ -429,7 +434,7 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 	private static NSNumber? ToNative(long? value) =>
 		value.HasValue ? NSNumber.FromInt64(value.Value) : null;
 
-	private sealed class AIFunctionToolAdapter(AIFunction function) : AIToolNative
+	private sealed class AIFunctionToolAdapter(AIFunction function, CancellationToken cancellationToken) : AIToolNative
 	{
 		public override string Name => function.Name;
 
@@ -448,13 +453,19 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 
 				var aiArgs = JsonSerializer.Deserialize<AIFunctionArguments>((string)arguments, AIJsonUtilities.DefaultOptions);
 
-				var result = await function.InvokeAsync(aiArgs, cancellationToken: default);
+				var result = await function.InvokeAsync(aiArgs, cancellationToken: cancellationToken);
 
 				var resultJson = result is not null
 					? JsonSerializer.Serialize(result)
 					: "{}";
 
 				completionHandler(new NSString(resultJson), null);
+			}
+			catch (OperationCanceledException)
+			{
+				var error = new NSError(new NSString(nameof(ChatClientNative)), (int)ChatClientError.Cancelled);
+
+				completionHandler(null, error);
 			}
 			catch (Exception ex)
 			{
