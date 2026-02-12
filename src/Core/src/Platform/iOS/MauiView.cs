@@ -62,6 +62,17 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		bool _appliesSafeAreaAdjustments;
 
+		// Global counter incremented each time any MauiView receives SafeAreaInsetsDidChange.
+		// Used to detect when a ValidateSafeArea "changed" result is due to the same safe area
+		// event being re-processed (infinite cycle) vs. a genuinely new safe area change.
+		static int s_safeAreaGeneration;
+
+		// The safe area generation at which this view last triggered ancestor invalidation
+		// from LayoutSubviews. If we've already invalidated for this generation, skip it
+		// to break infinite layout cycles between parent and child views that both respond
+		// to safe area.
+		int _lastSafeAreaInvalidationGeneration = -1;
+
 		// Indicates whether this view should respond to safe area insets.
 		// Cached to avoid repeated hierarchy checks.
 		// True if the view is an ISafeAreaView, does not ignore safe area, and is not inside a UIScrollView;
@@ -547,6 +558,20 @@ namespace Microsoft.Maui.Platform
 				// to let ancestors adjust to the measured size.
 				if (this.IsFinalMeasureHandledBySuperView())
 				{
+					// Guard against infinite layout cycles: when both parent and child views respond to
+					// safe area, each one's layout change triggers the other to re-validate, creating an
+					// infinite loop. We use a generation counter (incremented on genuine SafeAreaInsetsDidChange
+					// events) to ensure we only invalidate ancestors once per safe area change event.
+					var currentGeneration = s_safeAreaGeneration;
+					if (_lastSafeAreaInvalidationGeneration == currentGeneration)
+					{
+						// Already invalidated ancestors for this safe area generation — don't do it again.
+						// Just arrange with current values and stop.
+						CrossPlatformArrange(Bounds.ToRectangle());
+						return;
+					}
+					_lastSafeAreaInvalidationGeneration = currentGeneration;
+
 					//This arrangement step is essential for communicating the correct coordinate space to native iOS views before scheduling the second layout pass.
 					//This ensures the native view is aware of the correct bounds and can adjust its layout accordingly.
 					CrossPlatformArrange(Bounds.ToRectangle());
@@ -702,6 +727,7 @@ namespace Microsoft.Maui.Platform
 		public override void SafeAreaInsetsDidChange()
 		{
 			_safeAreaInvalidated = true;
+			System.Threading.Interlocked.Increment(ref s_safeAreaGeneration);
 			base.SafeAreaInsetsDidChange();
 		}
 
