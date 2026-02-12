@@ -145,8 +145,58 @@ $BaselineScript = Join-Path $RepoRoot ".github/scripts/EstablishBrokenBaseline.p
 . $BaselineScript
 
 # ============================================================
-# Note: Label management moved to .github/scripts/helpers/Update-AgentLabels.ps1
-# Labels are now applied centrally by Review-PR.ps1 Phase 4.
+# Label management for verification results
+# ============================================================
+$LabelConfirmed = "s/ai-reproduction-confirmed"
+$LabelFailed = "s/ai-reproduction-failed"
+
+function Update-VerificationLabels {
+    param(
+        [Parameter(Mandatory = $true)]
+        [bool]$ReproductionConfirmed,
+        
+        [Parameter(Mandatory = $false)]
+        [string]$PR = $PRNumber
+    )
+    
+    if ($PR -eq "unknown" -or -not $PR) {
+        Write-Host "⚠️  Cannot update labels: PR number not available" -ForegroundColor Yellow
+        return
+    }
+    
+    $labelToAdd = if ($ReproductionConfirmed) { $LabelConfirmed } else { $LabelFailed }
+    $labelToRemove = if ($ReproductionConfirmed) { $LabelFailed } else { $LabelConfirmed }
+    
+    Write-Host ""
+    Write-Host "🏷️  Updating verification labels on PR #$PR..." -ForegroundColor Cyan
+    
+    # Track success for both operations
+    $removeSuccess = $true
+    
+    # Remove the opposite label if it exists (using REST API to avoid GraphQL deprecation issues)
+    $existingLabels = gh pr view $PR --json labels --jq '.labels[].name' 2>$null
+    if ($existingLabels -contains $labelToRemove) {
+        Write-Host "   Removing: $labelToRemove" -ForegroundColor Yellow
+        gh api "repos/dotnet/maui/issues/$PR/labels/$labelToRemove" --method DELETE 2>$null | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            $removeSuccess = $false
+            Write-Host "   ⚠️  Failed to remove label: $labelToRemove" -ForegroundColor Yellow
+        }
+    }
+    
+    # Add the appropriate label (using REST API to avoid GraphQL deprecation issues)
+    Write-Host "   Adding: $labelToAdd" -ForegroundColor Green
+    $result = gh api "repos/dotnet/maui/issues/$PR/labels" --method POST -f "labels[]=$labelToAdd" 2>&1
+    $addSuccess = $LASTEXITCODE -eq 0
+    
+    if ($addSuccess -and $removeSuccess) {
+        Write-Host "✅ Labels updated successfully" -ForegroundColor Green
+    } elseif ($addSuccess) {
+        Write-Host "⚠️  Label added but failed to remove old label" -ForegroundColor Yellow
+    } else {
+        Write-Host "⚠️  Failed to update labels: $result" -ForegroundColor Yellow
+    }
+}
 
 # ============================================================
 # Auto-detect test filter from changed files
@@ -416,6 +466,7 @@ if ($DetectedFixFiles.Count -eq 0) {
         Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Green
         Write-Host ""
         Write-Host "Failed tests: $($testResult.FailCount)" -ForegroundColor Yellow
+        Update-VerificationLabels -ReproductionConfirmed $true
         exit 0
     } else {
         # Tests PASSED - this is bad!
@@ -436,6 +487,7 @@ if ($DetectedFixFiles.Count -eq 0) {
         Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Red
         Write-Host ""
         Write-Host "Passed tests: $($testResult.PassCount)" -ForegroundColor Yellow
+        Update-VerificationLabels -ReproductionConfirmed $false
         exit 1
     }
 }
@@ -830,8 +882,8 @@ if ($verificationPassed) {
     Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Green
     Write-Host "║  Tests correctly detect the issue:                        ║" -ForegroundColor Green
     Write-Host "║  - FAIL without fix (as expected)                         ║" -ForegroundColor Green
-    Write-Host "║  - PASS with fix (as expected)                            ║" -ForegroundColor Green
     Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Green
+    Update-VerificationLabels -ReproductionConfirmed $true
     exit 0
 } else {
     Write-Host ""
@@ -851,7 +903,7 @@ if ($verificationPassed) {
     Write-Host "║  1. Wrong fix files specified                             ║" -ForegroundColor Red
     Write-Host "║  2. Tests don't actually test the fixed behavior          ║" -ForegroundColor Red
     Write-Host "║  3. The issue was already fixed in base branch            ║" -ForegroundColor Red
-    Write-Host "║  4. Build caching - try clean rebuild                     ║" -ForegroundColor Red
     Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Red
+    Update-VerificationLabels -ReproductionConfirmed $false
     exit 1
 }
