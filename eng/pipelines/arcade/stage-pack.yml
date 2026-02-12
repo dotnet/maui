@@ -28,14 +28,17 @@ parameters:
 - name: runAsPublic
   type: boolean
   default: true
+- name: is1ESPipeline
+  type: boolean
+  default: false
 
 stages:
 - stage: Pack
   displayName: Pack .NET MAUI
   dependsOn: []
   jobs:
-  # macOS job - different publish methods for public vs internal
-  - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
+  # macOS job
+  - template: ${{ iif(eq(parameters.is1ESPipeline, 'true'), '/eng/common/templates-official/jobs/jobs.yml@self', '/eng/common/templates/jobs/jobs.yml') }}
     parameters:
       helixRepo: dotnet/maui
       pool: ${{ parameters.macPool }}
@@ -48,8 +51,8 @@ stages:
       publishAssetsImmediately: false
       enablePublishBuildArtifacts: true
       enablePublishTestResults: false
-      # templateContext.outputs for internal/1ES pipelines
-      ${{ if ne(parameters.runAsPublic, true) }}:
+      # templateContext.outputs for 1ES pipelines (ci-official.yml)
+      ${{ if eq(parameters.is1ESPipeline, true) }}:
         templateContext:
           outputs:
           - output: pipelineArtifact
@@ -85,8 +88,8 @@ stages:
               */$(_BuildConfig)/*/*.resources.zip
             TargetFolder: '$(Agent.TempDirectory)/native-binaries'
 
-        # publish: step for public pipelines only
-        - ${{ if eq(parameters.runAsPublic, true) }}:
+        # publish: step for non-1ES pipelines (ci.yml)
+        - ${{ if ne(parameters.is1ESPipeline, true) }}:
           - publish: $(Agent.TempDirectory)/native-binaries
             displayName: Publish Mac Native Artifacts
             artifact: MacNativeArtifacts
@@ -96,8 +99,8 @@ stages:
           - ${{ each pair in step }}:
               ${{ pair.key }}: ${{ pair.value }}
 
-  # Windows job with its own templateContext.outputs
-  - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
+  # Windows job
+  - template: ${{ iif(eq(parameters.is1ESPipeline, 'true'), '/eng/common/templates-official/jobs/jobs.yml@self', '/eng/common/templates/jobs/jobs.yml') }}
     parameters:
       helixRepo: dotnet/maui
       pool: ${{ parameters.pool }}
@@ -111,14 +114,16 @@ stages:
       publishAssetsImmediately: true
       enablePublishBuildArtifacts: true
       enablePublishTestResults: false
-      templateContext:
-        outputs:
-        - output: pipelineArtifact
-          artifact: APIScanFiles
-          path: $(Agent.TempDirectory)/APIScanFiles
-        - output: pipelineArtifact
-          artifact: Metadata
-          path: $(Agent.TempDirectory)/metadata
+      # templateContext.outputs for 1ES pipelines (ci-official.yml)
+      ${{ if eq(parameters.is1ESPipeline, true) }}:
+        templateContext:
+          outputs:
+          - output: pipelineArtifact
+            artifact: APIScanFiles
+            path: $(Agent.TempDirectory)/APIScanFiles
+          - output: pipelineArtifact
+            artifact: Metadata
+            path: $(Agent.TempDirectory)/metadata
 
       workspace:
         clean: all
