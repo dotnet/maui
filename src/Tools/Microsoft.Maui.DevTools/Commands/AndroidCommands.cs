@@ -28,7 +28,7 @@ public static class AndroidCommands
 
 	private static Command CreateInstallCommand()
 	{
-		var packagesOption = new Option<string[]>("--packages", "Additional SDK packages to install (comma-separated or multiple --packages flags)")
+		var packagesOption = new Option<string[]>("--packages", "SDK packages to install (replaces defaults; comma-separated or multiple --packages flags)")
 		{
 			AllowMultipleArgumentsPerToken = true
 		};

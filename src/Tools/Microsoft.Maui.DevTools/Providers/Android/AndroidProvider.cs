@@ -340,18 +340,25 @@ public class AndroidProvider : IAndroidProvider
 		await AcceptLicensesAsync(cancellationToken);
 		progress?.Report("SDK licenses accepted ✓");
 
-		// Step 4: Install recommended packages
-		var packages = new List<string>
+		// Step 4: Install packages
+		// When packages are explicitly provided, use only those (caller knows what they need).
+		// Otherwise, install a default set for MAUI development.
+		List<string> packages;
+		if (additionalPackages != null && additionalPackages.Any())
 		{
-			"platform-tools",
-			"emulator",
-			"platforms;android-34",
-			"build-tools;34.0.0",
-			$"system-images;android-34;google_apis;{(PlatformDetector.IsArm64 ? "arm64-v8a" : "x86_64")}"
-		};
-
-		if (additionalPackages != null)
-			packages.AddRange(additionalPackages);
+			packages = additionalPackages.ToList();
+		}
+		else
+		{
+			packages = new List<string>
+			{
+				"platform-tools",
+				"emulator",
+				"platforms;android-35",
+				"build-tools;35.0.0",
+				$"system-images;android-35;google_apis;{(PlatformDetector.IsArm64 ? "arm64-v8a" : "x86_64")}"
+			};
+		}
 
 		progress?.Report($"Step 4/4: Installing {packages.Count} packages...");
 		foreach (var pkg in packages)
