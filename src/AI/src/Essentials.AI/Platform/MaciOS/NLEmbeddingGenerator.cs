@@ -35,6 +35,9 @@ public class NLEmbeddingGenerator : IEmbeddingGenerator<string, Embedding<float>
 	/// <summary>Whether this instance owns the <see cref="NLEmbedding"/> and is responsible for disposing it.</summary>
 	private readonly bool _ownsEmbedding;
 
+	/// <summary>Whether this instance has been disposed.</summary>
+	private bool _disposed;
+
 	/// <summary>Metadata about the embedding generator.</summary>
 	private EmbeddingGeneratorMetadata? _metadata;
 
@@ -141,6 +144,13 @@ public class NLEmbeddingGenerator : IEmbeddingGenerator<string, Embedding<float>
 	/// <inheritdoc />
 	public void Dispose()
 	{
+		if (_disposed)
+		{
+			return;
+		}
+
+		_disposed = true;
+
 		if (_ownsEmbedding)
 		{
 			_embedding.Dispose();

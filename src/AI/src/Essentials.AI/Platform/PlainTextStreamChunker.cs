@@ -18,10 +18,22 @@ internal sealed class PlainTextStreamChunker : StreamChunkerBase
 		if (string.IsNullOrEmpty(completeResponse))
 			return string.Empty;
 
-		// Simple substring delta - emit only new characters
-		var delta = completeResponse.Length > _lastResponse.Length
-			? completeResponse.Substring(_lastResponse.Length)
-			: string.Empty;
+		// Simple substring delta - emit only new characters.
+		// If the response is shorter than expected (snapshot regression), treat it as a reset.
+		string delta;
+		if (completeResponse.Length > _lastResponse.Length)
+		{
+			delta = completeResponse.Substring(_lastResponse.Length);
+		}
+		else if (completeResponse != _lastResponse)
+		{
+			// Response changed but didn't grow - treat as a reset and emit the full response
+			delta = completeResponse;
+		}
+		else
+		{
+			delta = string.Empty;
+		}
 
 		_lastResponse = completeResponse;
 		return delta;

@@ -66,7 +66,7 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 		var nativeOptions = ToNative(options);
 		var native = new ChatClientNative();
 
-		var tcs = new TaskCompletionSource<ChatResponse>();
+		var tcs = new TaskCompletionSource<ChatResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
 
 		var nativeToken = native.GetResponse(
 			nativeMessages,
@@ -379,8 +379,14 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 
 		if (tools is { Count: > 0 })
 		{
-			// Note: Only AIFunction tools are supported for Apple Intelligence
-			// Other AITool implementations should be converted to AIFunction using AIFunctionFactory
+			var unsupportedTools = tools.Where(t => t is not AIFunction).ToList();
+			if (unsupportedTools.Count > 0)
+			{
+				throw new NotSupportedException(
+					$"Only AIFunction tools are supported by Apple Intelligence. " +
+					$"Convert other tool types using AIFunctionFactory. " +
+					$"Unsupported tools: {string.Join(", ", unsupportedTools.Select(t => t.GetType().Name))}");
+			}
 
 			adapters = tools
 				.OfType<AIFunction>()

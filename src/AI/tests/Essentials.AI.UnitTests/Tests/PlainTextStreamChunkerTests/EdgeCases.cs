@@ -10,16 +10,53 @@ public partial class PlainTextStreamChunkerTests
 	public class EdgeCaseTests
 	{
 		[Fact]
-		public void Process_ShorterText_EmitsEmptyDelta()
+		public void Process_ShorterText_TreatsAsReset()
 		{
-			// If the AI somehow sends shorter text (shouldn't happen, but defensive)
 			var chunker = new PlainTextStreamChunker();
 
 			var chunk1 = chunker.Process("Hello World");
-			var chunk2 = chunker.Process("Hello"); // Shorter - should emit nothing
+			var chunk2 = chunker.Process("Hello"); // Shorter and different - snapshot regression, reset
 
 			Assert.Equal("Hello World", chunk1);
-			Assert.Equal("", chunk2);
+			Assert.Equal("Hello", chunk2);
+		}
+
+		[Fact]
+		public void Process_ShorterText_ThenGrows_EmitsCorrectDeltas()
+		{
+			var chunker = new PlainTextStreamChunker();
+
+			var chunk1 = chunker.Process("Hello World");
+			var chunk2 = chunker.Process("Hi");           // Reset
+			var chunk3 = chunker.Process("Hi there");     // Grows from new baseline
+
+			Assert.Equal("Hello World", chunk1);
+			Assert.Equal("Hi", chunk2);
+			Assert.Equal(" there", chunk3);
+		}
+
+		[Fact]
+		public void Process_CompletelyDifferentText_TreatsAsReset()
+		{
+			var chunker = new PlainTextStreamChunker();
+
+			var chunk1 = chunker.Process("First response");
+			var chunk2 = chunker.Process("Second");  // Different and shorter
+
+			Assert.Equal("First response", chunk1);
+			Assert.Equal("Second", chunk2);
+		}
+
+		[Fact]
+		public void Process_SameLengthDifferentContent_TreatsAsReset()
+		{
+			var chunker = new PlainTextStreamChunker();
+
+			var chunk1 = chunker.Process("AAAA");
+			var chunk2 = chunker.Process("BBBB"); // Same length, different content
+
+			Assert.Equal("AAAA", chunk1);
+			Assert.Equal("BBBB", chunk2);
 		}
 
 		[Fact]
