@@ -346,7 +346,17 @@
 	</Target>
 
 	<Target Name="ProvisionJdkMacOS" DependsOnTargets="DetectJdkVersion" Condition=" '$(IsMacOS)' == 'True' AND '$(_AndroidJdkRequiresProvisioning)' == 'True' ">
-		<Exec Command="brew install --cask microsoft-openjdk@$(_AndroidJdkMajorVersion)" />
+		<!-- Retry JDK installation (2 attempts) to handle transient network failures (e.g., curl transfer closed) -->
+		<Exec Command="brew install --cask microsoft-openjdk@$(_AndroidJdkMajorVersion)" IgnoreExitCode="true">
+			<Output TaskParameter="ExitCode" PropertyName="_JdkInstallExitCode1" />
+		</Exec>
+		<Message Text="JDK install attempt 1 exit code: $(_JdkInstallExitCode1)" Importance="high" />
+		<!-- Retry on failure after cleaning brew cache -->
+		<Exec Condition=" '$(_JdkInstallExitCode1)' != '0' " Command="echo 'JDK install failed, cleaning cache and retrying...' &amp;&amp; brew cleanup microsoft-openjdk@$(_AndroidJdkMajorVersion) 2>/dev/null; sleep 5 &amp;&amp; brew install --cask microsoft-openjdk@$(_AndroidJdkMajorVersion)" IgnoreExitCode="true">
+			<Output TaskParameter="ExitCode" PropertyName="_JdkInstallExitCode2" />
+		</Exec>
+		<Message Condition=" '$(_JdkInstallExitCode1)' != '0' " Text="JDK install attempt 2 exit code: $(_JdkInstallExitCode2)" Importance="high" />
+		<Error Condition=" '$(_JdkInstallExitCode1)' != '0' AND '$(_JdkInstallExitCode2)' != '0' " Text="Failed to install microsoft-openjdk@$(_AndroidJdkMajorVersion) after 2 attempts" />
 	</Target>
 
 	<Target Name="ProvisionJdkLinux" DependsOnTargets="DetectJdkVersion" Condition=" '$(IsLinux)' == 'True' AND '$(_AndroidJdkRequiresProvisioning)' == 'True' ">
