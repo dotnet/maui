@@ -231,25 +231,6 @@
             </HorizontalStackLayout>
 
             <HorizontalStackLayout Spacing="10">
-                <CheckBox x:Name="TitleCheckBox"
-                          IsChecked="True"
-                          CheckedChanged="OnTitleCheckBoxChanged"
-                          AutomationId="TitleCheckBox"/>
-                <Label Text="Show Title"
-                       VerticalOptions="Center"
-                       FontSize="11"/>
-            </HorizontalStackLayout>
-
-            <HorizontalStackLayout Spacing="10">
-                <CheckBox x:Name="RTLCheckBox"
-                          CheckedChanged="OnRTLCheckBoxChanged"
-                          AutomationId="RTLCheckBox"/>
-                <Label Text="RTL FlowDirection"
-                       VerticalOptions="Center"
-                       FontSize="11"/>
-            </HorizontalStackLayout>
-
-            <HorizontalStackLayout Spacing="10">
                 <CheckBox x:Name="BackgroundCheckBox"
                           CheckedChanged="OnBackgroundCheckBoxChanged"
                           AutomationId="BackgroundCheckBox"/>

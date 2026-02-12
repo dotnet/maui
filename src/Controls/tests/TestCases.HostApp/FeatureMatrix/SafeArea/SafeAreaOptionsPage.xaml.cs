@@ -90,16 +90,6 @@ public partial class SafeAreaOptionsPage : ContentPage
 		_viewModel.Padding = e.Value ? new Thickness(20) : new Thickness(0);
 	}
 
-	private void OnTitleCheckBoxChanged(object sender, CheckedChangedEventArgs e)
-	{
-		_viewModel.Title = e.Value ? "SafeAreaContentPage" : string.Empty;
-	}
-
-	private void OnRTLCheckBoxChanged(object sender, CheckedChangedEventArgs e)
-	{
-		_viewModel.FlowDirection = e.Value ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
-	}
-
 	private void OnBackgroundCheckBoxChanged(object sender, CheckedChangedEventArgs e)
 	{
 		if (e.Value)

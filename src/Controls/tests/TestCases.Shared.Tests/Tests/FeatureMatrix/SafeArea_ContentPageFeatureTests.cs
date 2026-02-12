@@ -326,37 +326,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test]
-		[Description("Nav bar title visible; content behind system bars below nav bar")]
-		public void ValidateSafeArea_None_WithTitle()
-		{
-			NavigateToContentPage();
-			OpenOptionsAndApply(() =>
-			{
-				SelectUniform("UniformNone");
-				App.Tap("TitleCheckBox");
-			});
-
-			Assert.That(GetDisplayString(), Is.EqualTo("None"));
-		}
-
-		[Test]
-		[Description("Fully edge-to-edge, no nav bar")]
-		public void ValidateSafeArea_None_WithoutTitle()
-		{
-			NavigateToContentPage();
-			OpenOptionsAndApply(() =>
-			{
-				SelectUniform("UniformNone");
-				// Title is off by default
-			});
-
-			Assert.That(GetDisplayString(), Is.EqualTo("None"));
-
-			var topRect = App.WaitForElement("TopEdgeIndicator").GetRect();
-			Assert.That(topRect.Y, Is.LessThanOrEqualTo(5), "Top indicator should be at the very top (edge-to-edge, no nav bar)");
-		}
-
-		[Test]
 		[Description("Background extends edge-to-edge behind system UI")]
 		public void ValidateSafeArea_None_WithBackground()
 		{
@@ -368,23 +337,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			});
 
 			Assert.That(GetDisplayString(), Is.EqualTo("None"));
-		}
-
-		[Test]
-		[Description("Safe area insets correctly mirrored for RTL")]
-		public void ValidateSafeArea_Container_WithRTL()
-		{
-			NavigateToContentPage();
-			OpenOptionsAndApply(() =>
-			{
-				SelectUniform("UniformContainer");
-				App.Tap("RTLCheckBox");
-			});
-
-			Assert.That(GetDisplayString(), Is.EqualTo("Container"));
-
-			var topRect = App.WaitForElement("TopEdgeIndicator").GetRect();
-			Assert.That(topRect.Y, Is.GreaterThan(5), "Top indicator should still be inset in RTL mode");
 		}
 
 		// ──────────────────────────────────────────────

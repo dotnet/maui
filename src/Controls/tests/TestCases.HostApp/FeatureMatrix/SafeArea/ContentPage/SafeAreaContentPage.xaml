@@ -6,7 +6,6 @@
              x:DataType="local:SafeAreaViewModel"
              SafeAreaEdges="{Binding EffectiveSafeAreaEdges}"
              Padding="{Binding Padding}"
-             FlowDirection="{Binding FlowDirection}"
              Background="{Binding Background}">
     <Grid RowDefinitions="Auto,*,Auto" SafeAreaEdges="None"
           ColumnDefinitions="Auto,*,Auto">

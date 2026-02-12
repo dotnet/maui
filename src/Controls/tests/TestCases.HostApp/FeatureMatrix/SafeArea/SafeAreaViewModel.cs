@@ -13,10 +13,8 @@ public class SafeAreaViewModel : INotifyPropertyChanged
 	private SafeAreaRegions _topEdge = SafeAreaRegions.None;
 	private SafeAreaRegions _rightEdge = SafeAreaRegions.None;
 	private SafeAreaRegions _bottomEdge = SafeAreaRegions.None;
-	private string _title = "SafeAreaContentPage";
 	private Thickness _padding = new Thickness(0);
-	private FlowDirection _flowDirection = FlowDirection.LeftToRight;
-	private Brush _background;
+	private Brush _background = Brush.White;
 
 	public SafeAreaRegions LeftEdge
 	{
@@ -78,19 +76,6 @@ public class SafeAreaViewModel : INotifyPropertyChanged
 		}
 	}
 
-	public string Title
-	{
-		get => _title;
-		set
-		{
-			if (_title != value)
-			{
-				_title = value;
-				OnPropertyChanged();
-			}
-		}
-	}
-
 	public Thickness Padding
 	{
 		get => _padding;
@@ -99,19 +84,6 @@ public class SafeAreaViewModel : INotifyPropertyChanged
 			if (_padding != value)
 			{
 				_padding = value;
-				OnPropertyChanged();
-			}
-		}
-	}
-
-	public FlowDirection FlowDirection
-	{
-		get => _flowDirection;
-		set
-		{
-			if (_flowDirection != value)
-			{
-				_flowDirection = value;
 				OnPropertyChanged();
 			}
 		}
