@@ -53,8 +53,8 @@ stages:
         templateContext:
           outputs:
           - output: pipelineArtifact
-            artifact: MacNativeArtifacts
-            path: $(Agent.TempDirectory)/native-binaries
+            artifactName: MacNativeArtifacts
+            targetPath: $(Agent.TempDirectory)/native-binaries
             condition: always()
 
       workspace:
@@ -114,11 +114,11 @@ stages:
       templateContext:
         outputs:
         - output: pipelineArtifact
-          artifact: APIScanFiles
-          path: $(Agent.TempDirectory)/APIScanFiles
+          artifactName: APIScanFiles
+          targetPath: $(Agent.TempDirectory)/APIScanFiles
         - output: pipelineArtifact
-          artifact: Metadata
-          path: $(Agent.TempDirectory)/metadata
+          artifactName: Metadata
+          targetPath: $(Agent.TempDirectory)/metadata
 
       workspace:
         clean: all
