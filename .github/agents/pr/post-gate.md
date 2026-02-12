@@ -24,9 +24,9 @@ If Gate is not passed, go back to `.github/agents/pr.md` and complete phases 1-2
 
 If try-fix cannot run due to environment issues after one retry, **skip the remaining try-fix models and proceed to Report**. Do NOT stop and ask the user.
 
-### 🚨 CRITICAL: Environment Blockers in Phase 3 (CI Mode)
+### 🚨 CRITICAL: Environment Blockers in Phase 3
 
-The default mode is **non-interactive CI** where no human can respond to questions.
+The default mode is **non-interactive** — no human can respond to questions.
 
 If try-fix cannot run due to:
 - Missing Appium drivers

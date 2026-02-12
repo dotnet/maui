@@ -268,8 +268,8 @@ $platformInstruction
 - You are ALWAYS on the correct branch already - the script handles this
 - If you think you need to switch branches or push changes, you are WRONG - ask the user instead
 
-🚨 **CRITICAL - NON-INTERACTIVE CI MODE:**
-- This is running in a CI environment with NO human operator to respond to questions
+🚨 **CRITICAL - AUTONOMOUS EXECUTION:**
+- There is NO human operator to respond to questions
 - NEVER stop and ask the user for input - nobody will respond
 - NEVER present a list of options and wait for a choice
 - When you encounter an environment blocker, use your best judgment to choose the best path forward:
@@ -292,7 +292,7 @@ $platformInstruction
 1. Read the plan template at ``$planTemplatePath`` for the 4-phase workflow
 2. Read ``.github/agents/pr.md`` for Phases 1-2 instructions
 3. Follow ALL critical rules, especially:
-   - On environment blockers: skip the blocked phase and continue autonomously (see NON-INTERACTIVE CI MODE above)
+   - On environment blockers: skip the blocked phase and continue autonomously (see AUTONOMOUS EXECUTION above)
    - Use task agent for Gate verification
    - Run multi-model try-fix in Phase 3
 
