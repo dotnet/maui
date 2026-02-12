@@ -1,1 +1,4 @@
 #nullable enable
+static readonly Microsoft.Maui.Controls.Maps.Map.RegionProperty -> Microsoft.Maui.Controls.BindableProperty!
+Microsoft.Maui.Controls.Maps.Map.Region.get -> Microsoft.Maui.Maps.MapSpan?
+Microsoft.Maui.Controls.Maps.Map.Region.set -> void

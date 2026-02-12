@@ -42,6 +42,10 @@ namespace Microsoft.Maui.Controls.Maps
 		public static readonly BindableProperty ItemTemplateSelectorProperty = BindableProperty.Create(nameof(ItemTemplateSelector), typeof(DataTemplateSelector), typeof(Map), default(DataTemplateSelector),
 			propertyChanged: (b, o, n) => ((Map)b).OnItemTemplateSelectorPropertyChanged());
 
+		/// <summary>Bindable property for <see cref="Region"/>.</summary>
+		public static readonly BindableProperty RegionProperty = BindableProperty.Create(nameof(Region), typeof(MapSpan), typeof(Map), null,
+			propertyChanged: (b, o, n) => ((Map)b).OnRegionPropertyChanged((MapSpan?)n));
+
 		readonly ObservableCollection<Pin> _pins = new();
 		readonly ObservableCollection<MapElement> _mapElements = new();
 		MapSpan? _visibleRegion;
@@ -160,6 +164,16 @@ namespace Microsoft.Maui.Controls.Maps
 		}
 
 		/// <summary>
+		/// Gets or sets the region displayed by the map. Setting this property moves the map to the specified region.
+		/// This is a bindable property.
+		/// </summary>
+		public MapSpan? Region
+		{
+			get { return (MapSpan?)GetValue(RegionProperty); }
+			set { SetValue(RegionProperty, value); }
+		}
+
+		/// <summary>
 		/// Gets the elements (pins, polygons, polylines, etc.) currently added to this map.
 		/// </summary>
 		public IList<MapElement> MapElements => _mapElements;
@@ -222,6 +236,14 @@ namespace Microsoft.Maui.Controls.Maps
 			OnPropertyChanging(nameof(VisibleRegion));
 			_visibleRegion = visibleRegion;
 			OnPropertyChanged(nameof(VisibleRegion));
+		}
+
+		void OnRegionPropertyChanged(MapSpan? newRegion)
+		{
+			if (newRegion is not null)
+			{
+				MoveToRegion(newRegion);
+			}
 		}
 
 		void PinsOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
