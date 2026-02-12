@@ -48,6 +48,14 @@ stages:
       publishAssetsImmediately: false
       enablePublishBuildArtifacts: true
       enablePublishTestResults: false
+      # templateContext.outputs for internal/1ES pipelines
+      ${{ if ne(parameters.runAsPublic, true) }}:
+        templateContext:
+          outputs:
+          - output: pipelineArtifact
+            artifactName: MacNativeArtifacts
+            targetPath: $(Agent.TempDirectory)/native-binaries
+            condition: always()
 
       workspace:
         clean: all
@@ -77,11 +85,12 @@ stages:
               */$(_BuildConfig)/*/*.resources.zip
             TargetFolder: '$(Agent.TempDirectory)/native-binaries'
 
-        # publish: step for all pipelines (ci.yml doesn't use 1ES extends, so templateContext.outputs won't work there)
-        - publish: $(Agent.TempDirectory)/native-binaries
-          displayName: Publish Mac Native Artifacts
-          artifact: MacNativeArtifacts
-          condition: always()
+        # publish: step for public pipelines only
+        - ${{ if eq(parameters.runAsPublic, true) }}:
+          - publish: $(Agent.TempDirectory)/native-binaries
+            displayName: Publish Mac Native Artifacts
+            artifact: MacNativeArtifacts
+            condition: always()
 
         - ${{ each step in parameters.postSteps }}:
           - ${{ each pair in step }}:
