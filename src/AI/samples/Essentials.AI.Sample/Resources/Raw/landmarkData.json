@@ -33,6 +33,17 @@
         "shortDescription": "An otherworldly landscape of contrasting bleached white claypan ground, blackened camel thorn trees, and fiery red-orange dunes, Deadvlei is located in Namibia’s Namib-Naukluft National Park."
     },
     {
+        "name": "Cape Town",
+        "continent": "Africa",
+        "id": 1022,
+        "placeID": "I3B8E2FA9C7D14A22",
+        "longitude": 18.4241,
+        "latitude": -33.9249,
+        "span": 5.0,
+        "description": "Cape Town is a port city on South Africa's southwest coast, set beneath the iconic Table Mountain. One of the most biodiverse cities in the world, it sits within the Cape Floristic Region, a UNESCO World Heritage Site home to thousands of plant species found nowhere else on Earth. The city's dramatic landscape features rugged coastlines, pristine beaches, and lush vineyards nestled in surrounding valleys.\n\nTable Mountain, a flat-topped landmark rising over 3,500 feet above sea level, dominates the city's skyline and is one of the oldest mountains in the world, dating back over 600 million years. The mountain is home to an extraordinary diversity of flora and fauna, including many endemic species. Visitors can reach the summit via a revolving cable car or a network of hiking trails offering panoramic views of the city, harbor, and surrounding ocean.\n\nThe Cape of Good Hope, located at the southern tip of the Cape Peninsula, marks where the warm Agulhas Current from the Indian Ocean meets the cold Benguela Current from the Atlantic. This convergence creates a unique marine environment supporting an abundance of wildlife, including African penguins at Boulders Beach, Cape fur seals, and southern right whales during migration season. Robben Island, visible from the waterfront, served as a political prison during apartheid and is now a museum and UNESCO World Heritage Site.",
+        "shortDescription": "A port city on South Africa's southwest coast, set beneath the iconic Table Mountain, one of the most biodiverse cities in the world."
+    },
+    {
         "name": "Grand Canyon",
         "continent": "North America",
         "id": 1004,
@@ -202,7 +213,7 @@
         "continent": "Australia/Oceana",
         "id": 1020,
         "placeID": "I8F3C2D4A1E5B6789",
-        "longitude": -156.33170,
+        "longitude": -156.3317,
         "latitude": 20.79838,
         "span": 8.0,
         "description": "The second-largest island in Hawaii, Maui offers a stunning tapestry of volcanic landscapes, lush rainforests, pristine beaches, and dramatic coastal cliffs. Known as the \"Valley Isle,\" Maui is dominated by two massive volcanoes: the dormant Haleakalā in the east and the older, eroded West Maui Mountains. Haleakalā National Park features a massive volcanic crater that reaches over 10,000 feet in elevation, offering breathtaking sunrise views and unique high-altitude ecosystems.\n\nThe island's diverse geography creates distinct climate zones, from arid leeward coasts to verdant windward rainforests receiving over 400 inches of annual rainfall. The famous Road to Hana winds through tropical paradise, passing countless waterfalls, bamboo forests, and dramatic ocean vistas. Maui's volcanic soil supports rich agriculture, including sugarcane, pineapple, coffee, and exotic tropical fruits.\n\nMarine life thrives in Maui's warm Pacific waters. Humpback whales migrate to the shallow channels between the Hawaiian islands from December to May, making Maui one of the world's premier whale-watching destinations. Hawaiian green sea turtles, spinner dolphins, and vibrant coral reefs attract snorkelers and divers year-round. The island's beaches range from golden sand to unique red and black volcanic shores. Native Hawaiian plants such as the silversword, which grows only on Haleakalā's slopes, and endemic bird species like the nēnē (Hawaiian goose) highlight the island's ecological significance and ongoing conservation efforts.",
