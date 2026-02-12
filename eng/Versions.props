@@ -54,7 +54,7 @@
     <MicrosoftExtensionsPrimitivesVersion>11.0.0-preview.2.26103.111</MicrosoftExtensionsPrimitivesVersion>
     <MicrosoftExtensionsHostingAbstractionsVersion>11.0.0-preview.2.26103.111</MicrosoftExtensionsHostingAbstractionsVersion>
     <!-- xamarin/xamarin-android -->
-    <MicrosoftAndroidSdkWindowsPackageVersion>36.1.99-ci.main.142</MicrosoftAndroidSdkWindowsPackageVersion>
+    <MicrosoftAndroidSdkWindowsPackageVersion>36.1.99-ci.main.144</MicrosoftAndroidSdkWindowsPackageVersion>
     <MicrosoftNETSdkAndroidManifest100100PackageVersion>36.1.30</MicrosoftNETSdkAndroidManifest100100PackageVersion>
     <AndroidNetPreviousVersion>$(MicrosoftNetSdkAndroidManifest100100PackageVersion)</AndroidNetPreviousVersion>
     <!-- xamarin/xamarin-macios -->
