@@ -49,9 +49,34 @@ parameters:
       app: /optional/path/to/app.csproj
 
 stages:
+  - stage: discover_ui_test_categories
+    displayName: Discover UI Test Categories
+    condition: eq(variables['Build.Reason'], 'PullRequest')
+    jobs:
+      - job: detect
+        displayName: Detect category filters
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - checkout: self
+            fetchDepth: 200
+          - task: PowerShell@2
+            name: DetectCategories
+            displayName: Determine UI test categories for PRs
+            inputs:
+              pwsh: true
+              filePath: $(System.DefaultWorkingDirectory)/eng/scripts/detect-ui-test-categories.ps1
+              arguments: '-TargetBranch "$(System.PullRequest.TargetBranch)"'
+
   - stage: build_ui_tests
     displayName: Build UITests Sample App
-    dependsOn: []
+    dependsOn:
+      - discover_ui_test_categories
+    condition: |
+      or(
+        ne(variables['Build.Reason'], 'PullRequest'),
+        in(dependencies.discover_ui_test_categories.result, 'Succeeded', 'Skipped')
+      )
     jobs:
       - job: build_ui_tests
         displayName: Build Sample App
@@ -117,7 +142,9 @@ stages:
 
   - stage: android_ui_tests
     displayName: Android UITests
-    dependsOn: build_ui_tests
+    dependsOn:
+      - build_ui_tests
+      - discover_ui_test_categories
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.android, '') }}:
@@ -137,6 +164,8 @@ stages:
                 variables:
                   REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                   APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+                  # Access detected categories directly from stage dependency
+                  DETECTED_CATEGORIES: $[ stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryList'] ]
                 steps:
                   - template: ui-tests-steps.yml
                     parameters:
@@ -149,7 +178,6 @@ stages:
                       ${{ if not(eq(api, 27)) }}:
                         device: android-emulator-64_${{ api }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
-                      testFilter: $(CATEGORYGROUP)
                       skipProvisioning: ${{ parameters.skipProvisioning }}
                   
                   # Collect and publish Android snapshot diffs
@@ -161,7 +189,9 @@ stages:
 
   - stage: android_ui_tests_coreclr
     displayName: Android UITests CoreClr
-    dependsOn: build_ui_tests_coreclr
+    dependsOn:
+      - build_ui_tests_coreclr
+      - discover_ui_test_categories
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.android, '') }}:
@@ -181,6 +211,7 @@ stages:
                 variables:
                   REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                   APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+                  DETECTED_CATEGORIES: $[ stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryList'] ]
                 steps:
                   - template: ui-tests-steps.yml
                     parameters:
@@ -194,7 +225,6 @@ stages:
                         device: android-emulator-64_${{ api }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
-                      testFilter: $(CATEGORYGROUP)
                       headless: ${{ parameters.headless }}
                       skipProvisioning: ${{ parameters.skipProvisioning }}
                       runtimeVariant: "CoreCLR"
@@ -207,7 +237,9 @@ stages:
 
   - stage: ios_ui_tests_mono
     displayName: iOS UITests Mono
-    dependsOn: build_ui_tests
+    dependsOn:
+      - build_ui_tests
+      - discover_ui_test_categories
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.ios, '') }}:
@@ -227,6 +259,7 @@ stages:
                 variables:
                   REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                   APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+                  DETECTED_CATEGORIES: $[ stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryList'] ]
                 steps:
                   - template: ui-tests-steps.yml
                     parameters:
@@ -243,7 +276,6 @@ stages:
                         device: ios-simulator-64_${{ version }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       runtimeVariant : "Mono"
-                      testFilter: $(CATEGORYGROUP)
                       headless: ${{ parameters.headless }}
                       skipProvisioning: ${{ parameters.skipProvisioning }}
                   
@@ -255,7 +287,19 @@ stages:
 
   - stage: ios_ui_tests_mono_cv1
     displayName: iOS UITests Mono CollectionView1
-    dependsOn: build_ui_tests
+    dependsOn:
+      - discover_ui_test_categories
+      - build_ui_tests
+    condition: |
+      and(
+        succeeded('build_ui_tests'),
+        or(
+          ne(variables['Build.Reason'], 'PullRequest'),
+          eq(dependencies.discover_ui_test_categories.result, 'Skipped'),
+          eq(stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryList'], ''),
+          contains(stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryList'], 'CollectionView')
+        )
+      )
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.ios, '') }}:
@@ -270,6 +314,7 @@ stages:
                 variables:
                   REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                   APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+                  DETECTED_CATEGORIES: $[ stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryList'] ]
                 steps:
                   - template: ui-tests-steps.yml
                     parameters:
@@ -299,7 +344,19 @@ stages:
 
   - stage: ios_ui_tests_mono_carv1
     displayName: iOS UITests Mono CarouselView1
-    dependsOn: build_ui_tests
+    dependsOn:
+      - discover_ui_test_categories
+      - build_ui_tests
+    condition: |
+      and(
+        succeeded('build_ui_tests'),
+        or(
+          ne(variables['Build.Reason'], 'PullRequest'),
+          eq(dependencies.discover_ui_test_categories.result, 'Skipped'),
+          eq(stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryList'], ''),
+          contains(stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryList'], 'CarouselView')
+        )
+      )
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.ios, '') }}:
@@ -314,6 +371,7 @@ stages:
                 variables:
                   REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                   APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+                  DETECTED_CATEGORIES: $[ stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryList'] ]
                 steps:
                   - template: ui-tests-steps.yml
                     parameters:
@@ -344,7 +402,9 @@ stages:
   - ${{ if and(eq(parameters.BuildNativeAOT, true), eq(parameters.RunNativeAOT, true)) }}:
     - stage: ios_ui_tests_nativeaot
       displayName: iOS UITests NativeAOT
-      dependsOn: build_ui_tests_nativeaot
+      dependsOn:
+        - build_ui_tests_nativeaot
+        - discover_ui_test_categories
       jobs:
         - ${{ each project in parameters.projects }}:
           - ${{ if ne(project.ios, '') }}:
@@ -364,6 +424,7 @@ stages:
                   variables:
                     REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                     APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+                    DETECTED_CATEGORIES: $[ stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryList'] ]
                   steps:
                     - template: ui-tests-steps.yml
                       parameters:
@@ -380,13 +441,14 @@ stages:
                           device: ios-simulator-64_${{ version }}
                         provisionatorChannel: ${{ parameters.provisionatorChannel }}
                         runtimeVariant : "NativeAOT"
-                        testFilter: $(CATEGORYGROUP)
                         headless: ${{ parameters.headless }}
                         skipProvisioning: ${{ parameters.skipProvisioning }}
 
   - stage: winui_ui_tests
     displayName: WinUI UITests
-    dependsOn: build_ui_tests_windows
+    dependsOn:
+      - build_ui_tests_windows
+      - discover_ui_test_categories
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.winui, '') }}:
@@ -403,6 +465,7 @@ stages:
                 pool: ${{ parameters.windowsPool }}
                 variables:
                   APPIUM_HOME: $(System.DefaultWorkingDirectory)\.appium\
+                  DETECTED_CATEGORIES: $[ stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryList'] ]
                 steps:
                   - template: ui-tests-steps.yml
                     parameters:
@@ -412,7 +475,6 @@ stages:
                       path: ${{ project.winui }}
                       app: ${{ project.app }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
-                      testFilter: $(CATEGORYGROUP)
                       skipProvisioning: ${{ parameters.skipProvisioning }}
                   
                   # Collect and publish Windows snapshot diffs
@@ -423,7 +485,9 @@ stages:
 
   - stage: mac_ui_tests
     displayName: macOS UITests
-    dependsOn: build_ui_tests
+    dependsOn:
+      - build_ui_tests
+      - discover_ui_test_categories
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.mac, '') }}:
@@ -441,6 +505,7 @@ stages:
                 variables:
                   REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                   APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+                  DETECTED_CATEGORIES: $[ stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryList'] ]
                 steps:
                   - template: ui-tests-steps.yml
                     parameters:
@@ -450,7 +515,6 @@ stages:
                       path: ${{ project.mac }}
                       app: ${{ project.app }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
-                      testFilter: $(CATEGORYGROUP)
                       skipProvisioning: ${{ parameters.skipProvisioning }}
                   
                   # Collect and publish Mac snapshot diffs

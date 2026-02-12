@@ -36,6 +36,25 @@ parameters:
 steps:
 
 ##################################################
+#         Skip Check for UI Test Optimization    #
+##################################################
+
+# If SHOULD_RUN_TESTS is explicitly False (set by ui-tests-steps.yml),
+# skip all provisioning to save time
+- pwsh: |
+    $shouldRun = $env:SHOULD_RUN_TESTS
+    Write-Host "SHOULD_RUN_TESTS: '$shouldRun'"
+    if ($shouldRun -eq 'False') {
+      Write-Host "##[warning]Skipping all provisioning - no tests will run for this category"
+      Write-Host "##vso[task.setvariable variable=SKIP_PROVISIONING]true"
+    } else {
+      Write-Host "##vso[task.setvariable variable=SKIP_PROVISIONING]false"
+    }
+  displayName: 'Check if provisioning should be skipped'
+  env:
+    SHOULD_RUN_TESTS: $(SHOULD_RUN_TESTS)
+
+##################################################
 #               Provisioning Feeds               #
 ##################################################
 
@@ -76,7 +95,7 @@ steps:
 - ${{ if ne(parameters.skipXcode, 'true') }}:
   - ${{ if ne(parameters.skipProvisionator, true) }}:
     - task: xamops.azdevex.provisionator-task.provisionator@3
-      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+      condition: and(succeeded(), ne(variables['SKIP_PROVISIONING'], 'true'), eq(variables['Agent.OS'], 'Darwin'))
       displayName: 'Provision Xcode'
       inputs:
         provisionator_uri: ${{ parameters.provisionatorUri }}
@@ -154,7 +173,7 @@ steps:
 
       sudo xcodebuild -runFirstLaunch
     displayName: Select Xcode Version
-    condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+    condition: and(succeeded(), ne(variables['SKIP_PROVISIONING'], 'true'), eq(variables['Agent.OS'], 'Darwin'))
     timeoutInMinutes: 30
 
   - ${{ if ne(parameters.skipSimulatorSetup, 'true') }}:
@@ -194,7 +213,7 @@ steps:
           sudo xcodebuild -downloadPlatform iOS
         fi
       displayName: Install Simulator Runtimes
-      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+      condition: and(succeeded(), ne(variables['SKIP_PROVISIONING'], 'true'), eq(variables['Agent.OS'], 'Darwin'))
       continueOnError: true
       timeoutInMinutes: 30
 
@@ -239,6 +258,7 @@ steps:
 # Provisioning .NET - .NET SDK
 - task: UseDotNet@2
   displayName: 'Use .NET SDK $(DOTNET_VERSION)'
+  condition: and(succeeded(), ne(variables['SKIP_PROVISIONING'], 'true'))
   inputs:
     packageType: sdk
     version: $(DOTNET_VERSION)
@@ -248,18 +268,21 @@ steps:
     dotnet --list-sdks
     dotnet --version
   displayName: 'List all .NET SDKs'
+  condition: and(succeeded(), ne(variables['SKIP_PROVISIONING'], 'true'))
   continueOnError: true
 
 # Provisioning .NET - Clear all NuGet caches
 - ${{ if eq(parameters.clearCaches, 'true') }}:
   - script: dotnet nuget locals all --clear
     displayName: 'Clear all NuGet caches'
+    condition: and(succeeded(), ne(variables['SKIP_PROVISIONING'], 'true'))
     continueOnError: true
 
 # Provisioning .NET - .NET tools
 - script: |
     dotnet tool restore --verbosity diag
   displayName: 'Restore .NET Tools'
+  condition: and(succeeded(), ne(variables['SKIP_PROVISIONING'], 'true'))
 
 ##################################################
 #              Provisioning Android              #
@@ -269,13 +292,13 @@ steps:
 - ${{ if ne(parameters.skipJdk, 'true') }}:
   - pwsh: dotnet build -t:ProvisionJdk -bl:"$(LogDirectory)/provision-jdk.binlog" ${{ parameters.checkoutDirectory }}/src/Provisioning/Provisioning.csproj -v:detailed
     displayName: 'Provision JDK'
-    condition: succeeded()
+    condition: and(succeeded(), ne(variables['SKIP_PROVISIONING'], 'true'))
 
 # Provisioning Android - Android SDK common packages (eg: cmdline-tools, emulator, platform-tools, build-tools)
 - ${{ if ne(parameters.skipAndroidCommonSdks, 'true') }}:
   - pwsh: dotnet build -t:ProvisionAndroidSdkCommonPackages -bl:"$(LogDirectory)/provision-androidsdk-common.binlog" ${{ parameters.checkoutDirectory }}/src/Provisioning/Provisioning.csproj -v:detailed
     displayName: 'Provision Android SDK - Common Packages'
-    condition: succeeded()
+    condition: and(succeeded(), ne(variables['SKIP_PROVISIONING'], 'true'))
 
 # Provisioning Android - Android environment variables
 - ${{ if ne(parameters.skipAndroidCommonSdks, 'true') }}:
@@ -288,13 +311,13 @@ steps:
       echo "##vso[task.setvariable variable=ANDROID_HOME]$preferredSdk"
       echo "ANDROID_HOME set to '$preferredSdk'"
     displayName: 'Provision Android SDK - Environment variables'
-    condition: succeeded()
+    condition: and(succeeded(), ne(variables['SKIP_PROVISIONING'], 'true'))
 
 # Provisioning Android - Android SDK platform APIs (eg: platforms;android-29, platforms;android-30)
 - ${{ if ne(parameters.skipAndroidPlatformApis, 'true') }}:
   - pwsh: dotnet build -t:ProvisionAndroidSdkPlatformApiPackages -p:AndroidSdkProvisionDefaultApiLevelsOnly="$Env:AndroidSdkProvisionDefaultApiLevelsOnly" -bl:"$(LogDirectory)/provision-androidsdk-platform-apis.binlog" ${{ parameters.checkoutDirectory }}/src/Provisioning/Provisioning.csproj -v:detailed
     displayName: 'Provision Android SDK - Platform APIs'
-    condition: succeeded()
+    condition: and(succeeded(), ne(variables['SKIP_PROVISIONING'], 'true'))
     env:
       AndroidSdkProvisionDefaultApiLevelsOnly: ${{ parameters.onlyAndroidPlatformDefaultApis }}
 
@@ -302,7 +325,7 @@ steps:
 - ${{ if ne(parameters.skipAndroidEmulatorImages, 'true') }}:
   - pwsh: dotnet build -t:ProvisionAndroidSdkEmulatorImagePackages -p:AndroidSdkProvisionApiLevel="$Env:AndroidSdkProvisionApiLevel" -bl:"$(LogDirectory)/provision-androidsdk-emulator-images.binlog" ${{ parameters.checkoutDirectory }}/src/Provisioning/Provisioning.csproj -v:detailed
     displayName: 'Provision Android SDK - Emulator Images'
-    condition: succeeded()
+    condition: and(succeeded(), ne(variables['SKIP_PROVISIONING'], 'true'))
     env:
       AndroidSdkProvisionApiLevel: ${{ parameters.androidEmulatorApiLevel }}
 
@@ -310,6 +333,6 @@ steps:
 - ${{ if ne(parameters.skipAndroidCreateAvds, 'true') }}:
   - pwsh: dotnet build -t:ProvisionAndroidSdkAvdCreateAvds -p:AndroidSdkProvisionApiLevel="$Env:AndroidSdkProvisionApiLevel" -bl:"$(LogDirectory)/provision-androidsdk-create-avds.binlog" ${{ parameters.checkoutDirectory }}/src/Provisioning/Provisioning.csproj -v:detailed
     displayName: 'Provision Android SDK - Create AVDs'
-    condition: succeeded()
+    condition: and(succeeded(), ne(variables['SKIP_PROVISIONING'], 'true'))
     env:
       AndroidSdkProvisionApiLevel: ${{ parameters.androidEmulatorApiLevel }}
