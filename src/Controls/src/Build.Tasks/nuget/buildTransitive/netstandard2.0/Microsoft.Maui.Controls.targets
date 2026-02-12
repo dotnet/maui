@@ -10,6 +10,9 @@
     <_MauiXamlInflator Condition="' $(MauiXamlInflator)' != '' ">$(MauiXamlInflator)</_MauiXamlInflator>
     <_MauiXamlInflator Condition=" '$(MauiXamlInflator)' == '' ">SourceGen</_MauiXamlInflator>
 
+    <!-- XAML Hot Reload mode for IDE communication (Legacy or SourceGen) -->
+    <MauiXamlHotReload Condition="'$(MauiXamlHotReload)' == ''">Legacy</MauiXamlHotReload>
+
     <EnableMauiXamlDiagnostics Condition=" '$(EnableMauiXamlDiagnostics)' == '' ">$(EnableMauiDiagnostics)</EnableMauiXamlDiagnostics>
     <EnableMauiXamlDiagnostics Condition=" '$(EnableMauiXamlDiagnostics)' == '' And '$(Configuration)' == 'Debug' ">$(EnableDiagnostics)</EnableMauiXamlDiagnostics>
     <EnableMauiXamlDiagnostics Condition=" '$(EnableMauiXamlDiagnostics)' == '' And '$(Configuration)' == 'Debug' ">true</EnableMauiXamlDiagnostics>
@@ -71,6 +74,13 @@
 		<Error Code="XF001"
 			Text="Microsoft.Maui targets have been imported multiple times. Please check your project file and remove the duplicate import(s)."
 			Condition="'$(_MauiTargetsImportedAgain)' == 'True'" />
+	</Target>
+
+	<!-- Warn when MauiXamlHotReload is set to SourceGen (not yet fully implemented) -->
+	<Target Name="_ValidateMauiXamlHotReload" BeforeTargets="_CheckForInvalidConfigurationAndPlatform" Condition="'$(MauiXamlHotReload)' == 'SourceGen'">
+		<Warning 
+			Code="MAUI1002"
+			Text="MauiXamlHotReload is set to 'SourceGen'. Source generator-based XAML Hot Reload is experimental and not yet fully implemented. Use at your own risk." />
 	</Target>
 
 	<Target Name="_ValidateMSBuild" BeforeTargets="_CheckForInvalidConfigurationAndPlatform">
