@@ -12,7 +12,7 @@
 ## 🚨 Critical Rules (Summary)
 
 See `SHARED-RULES.md` for complete details. Key points:
-- **Environment Blockers**: Skip blocked phase and continue autonomously (CI mode has no human operator)
+- **Environment Blockers**: Skip blocked phase and continue autonomously (no human operator)
 - **No Git Commands**: Never checkout/switch branches - agent is always on correct branch
 - **Gate via Task Agent**: Never run inline (prevents fabrication)
 - **Multi-Model try-fix**: 5 models, SEQUENTIAL only
@@ -101,4 +101,4 @@ See `SHARED-RULES.md` for complete details. Key points:
 | Fix | Multi-model try-fix | Skip remaining, proceed to Report |
 | Report | Post via skill | Document what completed |
 
-**Never:** Claim success without tests, bypass scripts, stop and ask user in CI mode
+**Never:** Claim success without tests, bypass scripts, stop and ask user

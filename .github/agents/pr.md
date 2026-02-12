@@ -48,13 +48,13 @@ After Gate passes, read `.github/agents/pr/post-gate.md` for **Phases 3-4**.
 - Follow Templates EXACTLY (no `open` attributes, no "improvements")
 - No Direct Git Commands (use `gh pr diff/view`, let scripts handle files)
 - Use Skills' Scripts (don't bypass with manual commands)
-- Stop on Environment Blockers (retry once, then skip and continue autonomously in CI mode)
+- Stop on Environment Blockers (retry once, then skip and continue autonomously)
 - Multi-Model Configuration (5 models for Phase 4)
 - Platform Selection (must be affected AND available on host)
 
 **Key points:**
 - ❌ Never run `git checkout`, `git switch`, `git stash`, `git reset` - agent is always on correct branch
-- ❌ Never stop and ask user in CI mode - use best judgment to skip blocked phases and continue
+- ❌ Never stop and ask user - use best judgment to skip blocked phases and continue
 - ❌ Never mark phase ✅ with [PENDING] fields remaining
 
 Phase 3 uses a 5-model exploration workflow. See `post-gate.md` for detailed instructions after Gate passes.

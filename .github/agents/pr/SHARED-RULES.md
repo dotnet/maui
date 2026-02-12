@@ -155,9 +155,9 @@ When a skill provides a PowerShell script:
 
 If you encounter an environment or system setup blocker that prevents completing a phase:
 
-### 🚨 Non-Interactive CI Mode (Default)
+### 🚨 Autonomous Execution (Default)
 
-When running via `Review-PR.ps1` (non-interactive/CI mode), there is **NO human operator** to respond to questions.
+When running via `Review-PR.ps1`, there is **NO human operator** to respond to questions.
 
 **NEVER stop and ask the user. NEVER present options and wait for a choice. Nobody will respond.**
 
@@ -205,8 +205,8 @@ When running with `-Interactive` flag, you MAY ask the user for guidance on bloc
 - ❌ Claim "verification passed" when tests couldn't actually run
 - ❌ Install multiple tools/drivers without asking between each
 - ❌ Spend more than 2-3 tool calls troubleshooting the same blocker
-- ❌ **Stop and present options to the user in CI mode** - choose the best option yourself
-- ❌ **Wait for user response in CI mode** - nobody will respond
+- ❌ **Stop and present options to the user** - choose the best option yourself
+- ❌ **Wait for user response** - nobody will respond
 
 ---
 
