@@ -120,21 +120,9 @@ internal static class SafeAreaExtensions
 				var viewRight = viewLeft + viewWidth;
 				var viewBottom = viewTop + viewHeight;
 
-				// Adjust for view's position relative to parent (including margins) to calculate
-				// safe area insets relative to the parent's position, not the view's visual position.
-				// This ensures margins and safe area insets are additive rather than overlapping.
-				// For example: 20px margin + 30px safe area = 50px total offset
-				// We only take the margins into account if the Width and Height are set
-				// If the Width and Height aren't set it means the layout pass hasn't happen yet
-				if (view.Width > 0 && view.Height > 0)
-				{
-					viewTop = Math.Max(0, viewTop - (int)context.ToPixels(margins.Top));
-					viewLeft = Math.Max(0, viewLeft - (int)context.ToPixels(margins.Left));
-					viewRight += (int)context.ToPixels(margins.Right);
-					viewBottom += (int)context.ToPixels(margins.Bottom);
-				}
-
 				// Get actual screen dimensions (including system UI)
+				// This must be done BEFORE margin adjustment so we can detect
+				// off-screen animation state from raw position values.
 				var windowManager = context.GetSystemService(Context.WindowService) as IWindowManager;
 				if (windowManager?.DefaultDisplay is not null)
 				{
@@ -142,6 +130,26 @@ internal static class SafeAreaExtensions
 					windowManager.DefaultDisplay.GetRealMetrics(realMetrics);
 					var screenWidth = realMetrics.WidthPixels;
 					var screenHeight = realMetrics.HeightPixels;
+
+					// Detect if view is off-screen horizontally BEFORE margin adjustment
+					// clamps negative positions to zero via Math.Max, destroying the signal.
+					// Example: during Shell tab animation, viewLeft=-1 gets clamped to 0,
+					// making it impossible to detect animation for the RIGHT edge afterward.
+					var isAnimatingHorizontally = viewLeft < 0 || viewRight > screenWidth;
+
+					// Adjust for view's position relative to parent (including margins) to calculate
+					// safe area insets relative to the parent's position, not the view's visual position.
+					// This ensures margins and safe area insets are additive rather than overlapping.
+					// For example: 20px margin + 30px safe area = 50px total offset
+					// We only take the margins into account if the Width and Height are set
+					// If the Width and Height aren't set it means the layout pass hasn't happen yet
+					if (view.Width > 0 && view.Height > 0)
+					{
+						viewTop = Math.Max(0, viewTop - (int)context.ToPixels(margins.Top));
+						viewLeft = Math.Max(0, viewLeft - (int)context.ToPixels(margins.Left));
+						viewRight += (int)context.ToPixels(margins.Right);
+						viewBottom += (int)context.ToPixels(margins.Bottom);
+					}
 
 					// Calculate actual overlap for each edge
 					// Top: how much the view extends into the top safe area
@@ -200,23 +208,17 @@ internal static class SafeAreaExtensions
 					}
 
 					// Left: how much the view extends into the left safe area
-					// Similar to top, during animation the view may be shifted right (viewLeft > 0)
-					// but will settle at X=0. Detect animation by checking if view extends beyond screen.
-					// Note: We also check viewBottom > screenHeight because in landscape orientation,
-					// Shell navigation transitions can slide views vertically while affecting left safe area.
-					// Without this check, the left inset would be incorrectly set to 0 during these animations.
-					var viewIsAnimatingHorizontally = viewLeft > 0 && (viewRight > screenWidth || viewBottom > screenHeight);
-
-					if (left > 0 && viewLeft < left)
+					// During Shell navigation animations, the view slides in from off-screen.
+					// We must check animation FIRST because near the end of animation
+					// (e.g., viewLeft=1), the overlap check would incorrectly reduce the inset.
+					if (left > 0 && isAnimatingHorizontally && viewLeft > 0)
+					{
+						// View is animating - keep full inset since view will settle at X=0
+					}
+					else if (left > 0 && viewLeft < left)
 					{
 						// Calculate the actual overlap amount
 						left = Math.Min(left - viewLeft, left);
-					}
-					else if (left > 0 && viewIsAnimatingHorizontally && viewLeft > left)
-					{
-						// View is animating and has been shifted beyond the left safe area edge (viewLeft > left).
-						// This happens during Shell navigation when the view slides in from the right.
-						// Keep the full left inset since the view will eventually settle at X=0.
 					}
 					else
 					{
@@ -227,7 +229,13 @@ internal static class SafeAreaExtensions
 					}
 
 					// Right: how much the view extends into the right safe area
-					if (right > 0 && viewRight > (screenWidth - right))
+					// During animation, viewRight may be near screenWidth (e.g., 2991 vs 2992)
+					// causing incorrect partial overlap. Check animation before overlap.
+					if (right > 0 && isAnimatingHorizontally)
+					{
+						// View is animating - keep full inset
+					}
+					else if (right > 0 && viewRight > (screenWidth - right))
 					{
 						// Calculate the actual overlap amount
 						var rightEdge = screenWidth - right;
