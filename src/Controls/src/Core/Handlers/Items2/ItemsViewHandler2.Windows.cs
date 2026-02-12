@@ -17,6 +17,7 @@ using Microsoft.UI.Xaml.Input;
 using WASDKScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
 using WItemsView = Microsoft.UI.Xaml.Controls.ItemsView;
 using WScrollPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter;
+using WScrollSnapPointsAlignment = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPointsAlignment;
 using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
@@ -203,6 +204,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				platformView.ScrollView.ViewChanged -= ScrollViewChanged;
 				platformView.ScrollView.PointerWheelChanged -= PointerScrollChanged;
+				platformView.ScrollView.ExtentChanged -= ScrollViewExtentChanged;
 			}
 
 			// Unsubscribe pending Loaded handler if ScrollView wasn't found yet
@@ -265,6 +267,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			_mauiFooter = null;
 			_footer = null;
 			_footerDisplayed = false;
+
+			_cachedSnapPointOffsets = null;
+			_lastSnapPointExtent = 0;
 
 			base.DisconnectHandler(platformView);
 		}
@@ -681,12 +686,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			PlatformView.ScrollView.ViewChanged -= ScrollViewChanged;
 			PlatformView.ScrollView.PointerWheelChanged -= PointerScrollChanged;
+			PlatformView.ScrollView.ExtentChanged -= ScrollViewExtentChanged;
 
 			PlatformView.ScrollView.ViewChanged += ScrollViewChanged;
 			PlatformView.ScrollView.PointerWheelChanged += PointerScrollChanged;
+			PlatformView.ScrollView.ExtentChanged += ScrollViewExtentChanged;
 
 			UpdateVerticalScrollBarVisibility();
 			UpdateHorizontalScrollBarVisibility();
+			UpdateSnapPoints();
 		}
 
 		void LayoutPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -702,6 +710,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			else if (e.PropertyName == LinearItemsLayout.ItemSpacingProperty.PropertyName)
 			{
 				UpdateItemsLayoutItemSpacing();
+			}
+			else if (e.PropertyName == nameof(ItemsLayout.SnapPointsType) ||
+					 e.PropertyName == nameof(ItemsLayout.SnapPointsAlignment))
+			{
+				UpdateSnapPoints();
 			}
 		}
 
@@ -727,6 +740,148 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				stackLayout.Spacing = linearItemsLayout.ItemSpacing;
 			}
+		}
+
+		double _lastSnapPointExtent;
+		List<double>? _cachedSnapPointOffsets;
+		SnapPointsType _cachedSnapPointsType;
+		SnapPointsAlignment _cachedSnapPointsAlignment;
+
+		void ScrollViewExtentChanged(Microsoft.UI.Xaml.Controls.ScrollView sender, object args)
+		{
+			// Only recalculate snap points when the extent actually changes
+			// to avoid redundant work during intermediate layout passes.
+			var currentExtent = IsLayoutHorizontal ? sender.ExtentWidth : sender.ExtentHeight;
+			if (currentExtent != _lastSnapPointExtent)
+			{
+				_lastSnapPointExtent = currentExtent;
+				UpdateSnapPoints();
+			}
+		}
+
+		void UpdateSnapPoints()
+		{
+			if (PlatformView?.ScrollView?.ScrollPresenter is not WScrollPresenter scrollPresenter)
+			{
+				return;
+			}
+
+			if (Layout is not ItemsLayout itemsLayout)
+			{
+				return;
+			}
+
+			var snapPointsType = itemsLayout.SnapPointsType;
+
+			if (snapPointsType == SnapPointsType.None)
+			{
+				scrollPresenter.HorizontalSnapPoints.Clear();
+				scrollPresenter.VerticalSnapPoints.Clear();
+				_cachedSnapPointOffsets = null;
+				_cachedSnapPointsType = SnapPointsType.None;
+				return;
+			}
+
+			// NOTE: MandatorySingle is treated identically to Mandatory.
+			// WinUI's ScrollPresenter snap point object model does not natively support
+			// "single item per gesture" limiting. Both Mandatory and MandatorySingle
+			// will snap to the nearest snap point, but a fling gesture can skip past
+			// multiple items. A true MandatorySingle implementation would require
+			// intercepting scroll inertia to limit travel distance, which is not
+			// supported by the current ScrollPresenter API.
+
+			var itemCount = _collectionViewSource?.View?.Count ?? 0;
+			if (itemCount == 0)
+			{
+				scrollPresenter.HorizontalSnapPoints.Clear();
+				scrollPresenter.VerticalSnapPoints.Clear();
+				_cachedSnapPointOffsets = null;
+				return;
+			}
+
+			var snapAlignment = itemsLayout.SnapPointsAlignment;
+
+			// Compute offsets from realized item containers.
+			// Uses actual measured sizes to handle variable-size items,
+			// complex templates, and async image loading.
+			double runningOffset = 0;
+			double spacing = 0;
+			var newOffsets = new List<double>();
+
+			if (Layout is LinearItemsLayout linearLayout)
+			{
+				spacing = linearLayout.ItemSpacing;
+			}
+			else if (Layout is GridItemsLayout gridLayout)
+			{
+				spacing = IsLayoutHorizontal ? gridLayout.HorizontalItemSpacing : gridLayout.VerticalItemSpacing;
+			}
+
+			foreach (var container in PlatformView.GetChildren<ItemContainer>())
+			{
+				if (container is null)
+				{
+					continue;
+				}
+
+				double itemExtent = IsLayoutHorizontal ? container.ActualWidth : container.ActualHeight;
+				if (itemExtent <= 0)
+				{
+					continue;
+				}
+
+				newOffsets.Add(runningOffset);
+				runningOffset += itemExtent + spacing;
+			}
+
+			if (newOffsets.Count == 0)
+			{
+				// Items not yet realized; snap points will be applied
+				// when ExtentChanged fires after items are laid out.
+				return;
+			}
+
+			// Skip rebuild if snap points haven't changed — avoids redundant
+			// WinUI collection clears and allocations on every ExtentChanged.
+			if (_cachedSnapPointOffsets is not null &&
+				_cachedSnapPointsType == snapPointsType &&
+				_cachedSnapPointsAlignment == snapAlignment &&
+				_cachedSnapPointOffsets.Count == newOffsets.Count &&
+				_cachedSnapPointOffsets.SequenceEqual(newOffsets))
+			{
+				return;
+			}
+
+			// Rebuild snap points — clear both axes to handle orientation changes
+			var alignment = GetScrollSnapPointsAlignment(snapAlignment);
+
+			scrollPresenter.HorizontalSnapPoints.Clear();
+			scrollPresenter.VerticalSnapPoints.Clear();
+
+			var snapPoints = IsLayoutHorizontal
+				? scrollPresenter.HorizontalSnapPoints
+				: scrollPresenter.VerticalSnapPoints;
+
+			foreach (var offset in newOffsets)
+			{
+				snapPoints.Add(new Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPoint(
+					offset, alignment));
+			}
+
+			_cachedSnapPointOffsets = newOffsets;
+			_cachedSnapPointsType = snapPointsType;
+			_cachedSnapPointsAlignment = snapAlignment;
+		}
+
+		static WScrollSnapPointsAlignment GetScrollSnapPointsAlignment(SnapPointsAlignment alignment)
+		{
+			return alignment switch
+			{
+				SnapPointsAlignment.Start => WScrollSnapPointsAlignment.Near,
+				SnapPointsAlignment.Center => WScrollSnapPointsAlignment.Center,
+				SnapPointsAlignment.End => WScrollSnapPointsAlignment.Far,
+				_ => WScrollSnapPointsAlignment.Near,
+			};
 		}
 
 		void UpdateEmptyView()
@@ -1149,12 +1304,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 						_lastRemainingItemsThresholdIndex = itemsViewScrolledEventArgs.LastVisibleItemIndex;
 						Element.SendRemainingItemsThresholdReached();
 					}
-					else
-					{
-						//Reset when scrolling back up away from the threshold zone so the
-						//event can fire again if the user scrolls back down
-						_lastRemainingItemsThresholdIndex = -1;
-					}
+					// When scrolling backward within the threshold zone, keep the
+					// high-water mark — don't reset, to avoid duplicate event fires.
+					// The reset happens in the outer else (when leaving the zone entirely)
+					// or in ItemsChanged (when new items are added).
+				}
+				else
+				{
+					// Reset when scrolling away from the threshold zone so the
+					// event can re-fire when the user scrolls back.
+					_lastRemainingItemsThresholdIndex = -1;
 				}
 			}
 		}
