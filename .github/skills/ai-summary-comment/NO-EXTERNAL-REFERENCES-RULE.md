@@ -100,9 +100,9 @@ When running `pr-finalize` skill, you create TWO outputs:
    - Audience: PR authors, reviewers, community
    - **MUST be self-contained** - no external references
 
-### PR Agent Phase 5 (Report)
+### PR Agent Phase 4 (Report)
 
-When completing Phase 5:
+When completing Phase 4:
 - Include ALL pr-finalize findings inline
 - Show exact code blocks for NOTE block
 - Show exact before/after text for corrections
@@ -168,7 +168,7 @@ Add an **Implementation** subsection after "Description of Change":
 
 ## Checklist for Report Phase
 
-When completing Phase 5, verify:
+When completing Phase 4, verify:
 
 - [ ] All recommendations are inline (no file references)
 - [ ] Code blocks show exact text to add

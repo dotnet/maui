@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			 x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui33867">
+	<!-- Test: Inline StyleSheet with CDATA content (from StyleSheetsPage) -->
+	<ContentPage.Resources>
+		<StyleSheet>
+			<![CDATA[
+stacklayout {
+	-maui-spacing: 15;
+}
+entry {
+	background-color: red;
+	-maui-placeholder: "CSS Placeholder";
+	-maui-placeholder-color: blue;
+}
+			]]>
+		</StyleSheet>
+	</ContentPage.Resources>
+	<StackLayout Padding="30,60,30,30">
+		<Label x:Name="testLabel" Text="3 red text boxes spaced apart with a blue placeholder." />
+		<Entry />
+		<Entry />
+		<Entry />
+	</StackLayout>
+</ContentPage>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
+             x:Class="Maui.Controls.Sample.Issues.Issue17823"
+             Title="Issue 17823 - CollectionView reorder with header">
+    <VerticalStackLayout Padding="16" Spacing="12">
+        <CollectionView x:Name="ReorderCollectionView"
+                        AutomationId="ReorderCollectionView"
+                        ItemsSource="{Binding Items}"
+                        CanReorderItems="True"
+                        SelectionMode="None">
+            <CollectionView.Header>
+                <Grid Padding="12" BackgroundColor="#EEEEEE">
+                    <Label Text="Header Content"
+                           AutomationId="HeaderLabel"
+                           FontAttributes="Bold"/>
+                </Grid>
+            </CollectionView.Header>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="local:Issue17823+ReorderItem">
+                    <Grid Padding="16"
+                          Margin="0,0,0,8"
+                          BackgroundColor="#FFFFFF"
+                          AutomationId="{Binding ContainerAutomationId}">
+                        <Label Text="{Binding Text}"
+                               FontSize="18"
+                               HorizontalOptions="Center"
+                               AutomationId="{Binding LabelAutomationId}"/>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <Label x:Name="ReorderStatusLabel"
+               AutomationId="ReorderStatusLabel"
+               FontAttributes="Bold"/>
+    </VerticalStackLayout>
+</ContentPage>

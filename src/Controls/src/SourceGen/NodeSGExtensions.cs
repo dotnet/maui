@@ -166,6 +166,10 @@ static class NodeSGExtensions
 
 	public static bool CanConvertTo(this ValueNode valueNode, ITypeSymbol toType, ITypeSymbol? converter, SourceGenContext context)
 	{
+		// C# expressions can be assigned to any type - trust the user's code
+		if (valueNode.Value is Expression)
+			return true;
+
 		var stringValue = (string)valueNode.Value;
 
 		//if there's a typeconverter, assume we can convert
@@ -252,6 +256,14 @@ static class NodeSGExtensions
 
 	public static string ConvertTo(this ValueNode valueNode, ITypeSymbol toType, ITypeSymbol? typeConverter, IndentedTextWriter writer, SourceGenContext context, ILocalValue? parentVar = null)
 	{
+		// C# expressions are emitted directly without conversion, but need quote transformation
+		if (valueNode.Value is Expression expression)
+		{
+			// Transform quotes with semantic context - char literals stay as char only if target expects char
+			return CSharpExpressionHelpers.TransformQuotesWithSemantics(
+				expression.Code, context.Compilation, context.RootType);
+		}
+
 		var valueString = valueNode.Value as string ?? string.Empty;
 
 		if (typeConverter is not null && GetKnownSGTypeConverters(context).TryGetValue(typeConverter, out var converterAndReturnType))
@@ -608,21 +620,25 @@ static class NodeSGExtensions
 		return (bpFieldSymbol, property);
 	}
 
-	public static IFieldSymbol GetBindableProperty(this ValueNode node, SourceGenContext context)
+	/// <summary>
+	/// Gets the TargetType symbol from a parent node (Style, Trigger, DataTrigger, MultiTrigger).
+	/// Used to resolve bindable properties when only the property name is specified.
+	/// </summary>
+	public static ITypeSymbol? GetTargetTypeSymbol(INode node, SourceGenContext context)
 	{
-		static ITypeSymbol? GetTargetTypeSymbol(INode node, SourceGenContext context)
-		{
-			var ttnode = (node as ElementNode)?.Properties[new XmlName("", "TargetType")];
-			//it's either a value
-			if (ttnode is ValueNode { Value: string tt })
-				return XmlTypeExtensions.GetTypeSymbol(tt, context, node);
-			//or a x:Type that we parsed earlier
-			if (context.Types.TryGetValue(ttnode!, out var typeSymbol))
-				return typeSymbol;
-			//FIXME: report diagnostic on missing TargetType
-			return null;
-		}
+		var ttnode = (node as ElementNode)?.Properties[new XmlName("", "TargetType")];
+		//it's either a value
+		if (ttnode is ValueNode { Value: string tt })
+			return XmlTypeExtensions.GetTypeSymbol(tt, context, node);
+		//or a x:Type that we parsed earlier
+		if (ttnode != null && context.Types.TryGetValue(ttnode, out var typeSymbol))
+			return typeSymbol;
+		//FIXME: report diagnostic on missing TargetType
+		return null;
+	}
 
+	public static IFieldSymbol? GetBindableProperty(this ValueNode node, SourceGenContext context)
+	{
 		var parts = ((string)node.Value).Split('.');
 		if (parts.Length == 1)
 		{
@@ -639,18 +655,17 @@ static class NodeSGExtensions
 				typeSymbol = GetTargetTypeSymbol(node.Parent!, context);
 
 			var propertyName = parts[0];
-			return typeSymbol!.GetBindableProperty("", ref propertyName, out _, context, node)!;
+			return typeSymbol?.GetBindableProperty("", ref propertyName, out _, context, node);
 		}
 		else if (parts.Length == 2)
 		{
 			var typeSymbol = XmlTypeExtensions.GetTypeSymbol(parts[0], context, node);
 			string propertyName = parts[1];
-			return typeSymbol!.GetBindableProperty("", ref propertyName, out _, context, node)!;
+			return typeSymbol?.GetBindableProperty("", ref propertyName, out _, context, node);
 		}
 		else
 		{
-			throw new Exception();
-			// FIXME context.ReportDiagnostic
+			return null;
 		}
 	}
 

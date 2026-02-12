@@ -72,6 +72,18 @@ After the skill completes, report:
 - Test verification result (FAIL = success)
 - Failure message (proof tests catch the bug)
 
+## Best Practices
+
+**For detailed UI test best practices, see:**
+- `.github/instructions/uitests.instructions.md` - Auto-loaded when working on test files
+
+Key topics covered in the instructions:
+- Prefer C# over XAML for most tests
+- Use test helper base classes (TestShell, TestContentPage, etc.)
+- Avoid obsolete APIs (Application.MainPage → Window.Page)
+- Use UITest optimized controls (UITestEntry, UITestEditor, UITestSearchBar)
+- Check similar tests for patterns
+
 ## Quick Reference
 
 ```bash
