@@ -29,6 +29,10 @@ Follow the style used by the [.NET Foundation](https://github.com/dotnet/runtime
 
 Read and follow our [Pull Request template](/.github/PULL_REQUEST_TEMPLATE.md).
 
+### AI-Assisted Development
+
+We have custom AI agents to help you work on issues more efficiently. See [Using AI to Work on .NET MAUI](https://github.com/dotnet/maui/wiki/Using-AI-to-Work-on-.NET-MAUI) for details.
+
 ### Pull Request Requirements
 
 Please refer to our [Pull Request template](/.github/PULL_REQUEST_TEMPLATE.md).
