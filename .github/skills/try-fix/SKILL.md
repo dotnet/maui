@@ -47,7 +47,6 @@ All inputs are provided by the invoker (CI, agent, or user).
 | Platform | Yes | Target platform (`android`, `ios`, `windows`, `maccatalyst`) |
 | Hints | Optional | Suggested approaches, prior attempts, or areas to focus on |
 | Baseline | Optional | Git ref or instructions for establishing broken state (default: current state) |
-| state_file | Optional | Path to PR agent state file (e.g., `CustomAgentLogsTmp/PRState/pr-12345.md`). If provided, try-fix will append its results to the Fix Candidates table. |
 
 ## Outputs
 
@@ -70,7 +69,7 @@ Results reported back to the invoker:
 $IssueNumber = "<ISSUE_OR_PR_NUMBER>"  # Replace with actual number
 
 # Find next attempt number
-$tryFixDir = "CustomAgentLogsTmp/PRState/$IssueNumber/try-fix"
+$tryFixDir = "CustomAgentLogsTmp/PRState/$IssueNumber/PRAgent/try-fix"
 $existingAttempts = (Get-ChildItem "$tryFixDir/attempt-*" -Directory -ErrorAction SilentlyContinue).Count
 $attemptNum = $existingAttempts + 1
 
@@ -163,9 +162,8 @@ The skill is complete when:
    - Review what files were changed
    - Read the actual code changes to understand the current fix approach
 
-2. **If state_file provided, review prior attempts:**
-   - Read the Fix Candidates table
-   - Note which approaches failed and WHY (the Notes column)
+2. **Review prior attempts if any are known:**
+   - Note which approaches failed and WHY
    - Note which approaches partially succeeded
 
 3. **Identify what makes your approach DIFFERENT:**
@@ -348,29 +346,6 @@ Provide structured output to the invoker:
 ```
 
 **Determining Status:** Set `Done` when you've completed testing this approach (whether it passed or failed). Set `NeedsRetry` only if you hit a transient error (network timeout, flaky test) and want to retry the same approach.
-
-### Step 10: Update State File (if provided)
-
-If `state_file` input was provided and file exists:
-
-1. **Read current Fix Candidates table** from state file
-2. **Determine next attempt number** (count existing try-fix rows + 1)
-3. **Append new row** with this attempt's results:
-
-| # | Source | Approach | Test Result | Files Changed | Notes |
-|---|--------|----------|-------------|---------------|-------|
-| N | try-fix #N | [approach] | ✅ PASS / ❌ FAIL | [files] | [analysis] |
-
-**If no state file provided:** Skip this step (results returned to invoker only).
-
-**⚠️ Do NOT `git add` or `git commit` the state file.** It lives in `CustomAgentLogsTmp/` which is `.gitignore`d. Committing it with `git add -f` would cause `git checkout HEAD -- .` (used between phases) to revert it, losing data.
-
-**⚠️ IMPORTANT: Do NOT set any "Exhausted" field.** Cross-pollination exhaustion is determined by the pr agent after invoking ALL 6 models and confirming none have new ideas. try-fix only reports its own attempt result.
-
-**Ownership rule:** try-fix updates its own row ONLY. Never modify:
-- Phase status fields
-- "Selected Fix" field
-- Other try-fix rows
 
 ## Error Handling
 

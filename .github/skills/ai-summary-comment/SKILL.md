@@ -18,7 +18,6 @@ This skill posts automated progress comments to GitHub Pull Requests during the 
 - **Section-Based Updates**: Each script updates only its section, preserving others
 - **Duplicate Prevention**: Finds existing `<!-- AI Summary -->` comment and updates it
 - **File-Based DryRun Preview**: Use `-DryRun` to preview changes in a local file before posting
-- **Auto-Loading State Files**: Automatically finds and loads state files from `CustomAgentLogsTmp/PRState/`
 - **Simple Interface**: Just provide PR number - script handles everything else
 
 ## Comment Architecture
@@ -97,41 +96,28 @@ If an existing finalize comment exists, it will be replaced with the updated sec
 
 ## Usage
 
-### Simplest: Just provide PR number
+### Simplest: Just provide PR number (auto-loads from phase files)
 
 ```bash
-# Auto-loads CustomAgentLogsTmp/PRState/pr-27246.md
+# Auto-loads from CustomAgentLogsTmp/PRState/{PRNumber}/PRAgent/*/content.md
 pwsh .github/skills/ai-summary-comment/scripts/post-ai-summary-comment.ps1 -PRNumber 27246
 ```
 
-### With explicit state file path
+### Provide content directly
 
 ```bash
-# PRNumber auto-extracted from filename (pr-27246.md → 27246)
-pwsh .github/skills/ai-summary-comment/scripts/post-ai-summary-comment.ps1 -StateFile CustomAgentLogsTmp/PRState/pr-27246.md
-```
-
-### Legacy: Provide content directly
-
-```bash
-pwsh .github/skills/ai-summary-comment/scripts/post-ai-summary-comment.ps1 -PRNumber 12345 -Content "$(cat CustomAgentLogsTmp/PRState/pr-12345.md)"
+pwsh .github/skills/ai-summary-comment/scripts/post-ai-summary-comment.ps1 -PRNumber 12345 -Content "review content here"
 ```
 
 ### Parameters
 
 | Parameter | Required | Description | Example |
 |-----------|----------|-------------|---------|
-| `PRNumber` | No* | Pull request number | `12345` |
-| `StateFile` | No* | Path to state file (PRNumber auto-extracted from `pr-XXXXX.md` naming) | `CustomAgentLogsTmp/PRState/pr-27246.md` |
-| `Content` | No* | Full state file content (legacy, can be piped via stdin) | Content from state file |
+| `PRNumber` | Yes | Pull request number | `12345` |
+| `Content` | No | Review content to post (auto-loaded from `PRAgent/*/content.md` if not provided) | Review markdown content |
 | `DryRun` | No | Preview changes in local file instead of posting to GitHub | `-DryRun` |
 | `PreviewFile` | No | Path to local preview file for DryRun mode (default: `CustomAgentLogsTmp/PRState/{PRNumber}/ai-summary-comment-preview.md`) | `-PreviewFile ./preview.md` |
 | `SkipValidation` | No | Skip validation checks (not recommended) | `-SkipValidation` |
-
-*At least one of PRNumber, StateFile, or Content is required. The script will:
-- If `-PRNumber` provided: Auto-load `CustomAgentLogsTmp/PRState/pr-{PRNumber}.md`
-- If `-StateFile` provided: Load the file and extract PRNumber from `pr-XXXXX.md` filename
-- If `-Content` provided: Use content directly (legacy, requires `-PRNumber`)
 
 ## DryRun Preview Workflow
 
@@ -233,17 +219,17 @@ The `post-try-fix-comment.ps1` script updates the `<!-- SECTION:TRY-FIX -->` sec
 ```powershell
 # All parameters auto-loaded from directory structure
 pwsh .github/skills/ai-summary-comment/scripts/post-try-fix-comment.ps1 `
-    -TryFixDir CustomAgentLogsTmp/PRState/27246/try-fix/attempt-1
+    -TryFixDir CustomAgentLogsTmp/PRState/27246/PRAgent/try-fix/attempt-1
 ```
 
 #### Or just provide issue number
 
 ```powershell
-# Auto-discovers and posts latest attempt from CustomAgentLogsTmp/PRState/27246/try-fix/
+# Auto-discovers and posts latest attempt from CustomAgentLogsTmp/PRState/27246/PRAgent/try-fix/
 pwsh .github/skills/ai-summary-comment/scripts/post-try-fix-comment.ps1 -IssueNumber 27246
 ```
 
-#### Legacy: Manual parameters
+#### Manual parameters
 
 ```powershell
 pwsh .github/skills/ai-summary-comment/scripts/post-try-fix-comment.ps1 `
@@ -277,7 +263,7 @@ pwsh .github/skills/ai-summary-comment/scripts/post-try-fix-comment.ps1 `
 ### Expected Directory Structure
 
 ```
-CustomAgentLogsTmp/PRState/{IssueNumber}/try-fix/
+CustomAgentLogsTmp/PRState/{IssueNumber}/PRAgent/try-fix/
 ├── attempt-1/
 │   ├── approach.md      # Brief description of the approach (required)
 │   ├── result.txt       # "Pass", "Fail", or "Compiles" (required)
@@ -344,7 +330,7 @@ pwsh .github/skills/ai-summary-comment/scripts/post-verify-tests-comment.ps1 -PR
 ```powershell
 pwsh .github/skills/ai-summary-comment/scripts/post-verify-tests-comment.ps1 `
     -PRNumber 32891 `
-    -ReportFile CustomAgentLogsTmp/PRState/32891/verify-tests-fail/verification-report.md
+    -ReportFile CustomAgentLogsTmp/PRState/32891/PRAgent/gate/verify-tests-fail/verification-report.md
 ```
 
 ### Parameters
@@ -362,7 +348,7 @@ pwsh .github/skills/ai-summary-comment/scripts/post-verify-tests-comment.ps1 `
 ### Expected Directory Structure
 
 ```
-CustomAgentLogsTmp/PRState/{PRNumber}/verify-tests-fail/
+CustomAgentLogsTmp/PRState/{PRNumber}/PRAgent/gate/verify-tests-fail/
 ├── verification-report.md   # Full verification report (required)
 ├── verification-log.txt     # Detailed log (optional)
 ├── test-without-fix.log     # Test output without fix (optional)
@@ -394,7 +380,7 @@ pwsh .github/skills/ai-summary-comment/scripts/post-write-tests-comment.ps1 `
 pwsh .github/skills/ai-summary-comment/scripts/post-write-tests-comment.ps1 -IssueNumber 27246
 ```
 
-#### Legacy: Manual parameters
+#### Manual parameters
 
 ```powershell
 pwsh .github/skills/ai-summary-comment/scripts/post-write-tests-comment.ps1 `
@@ -539,14 +525,51 @@ pwsh .github/skills/ai-summary-comment/scripts/post-pr-finalize-comment.ps1 `
 4. **Auto-parsing from summary file getting confused**
    - When in doubt, provide explicit parameters instead of relying on auto-parsing
 
-### Expected Directory Structure for Auto-Loading
+### Expected Directory Structure
+
+The PR agent writes phase output files that comment scripts auto-load:
 
 ```
-CustomAgentLogsTmp/PRState/{PRNumber}/pr-finalize/
-├── pr-finalize-summary.md      # Main summary (auto-parsed)
-├── recommended-description.md  # Full recommended description (optional)
-└── code-review.md             # Code review findings (optional)
+CustomAgentLogsTmp/PRState/{PRNumber}/
+├── PRAgent/
+│   ├── pre-flight/
+│   │   └── content.md              # Phase 1 output (auto-loaded by post-ai-summary-comment.ps1)
+│   ├── gate/
+│   │   ├── content.md              # Phase 2 output (auto-loaded by post-ai-summary-comment.ps1)
+│   │   └── verify-tests-fail/     # Script output from verify-tests-fail.ps1
+│   │       ├── verification-report.md
+│   │       ├── verification-log.txt
+│   │       ├── test-without-fix.log
+│   │       └── test-with-fix.log
+│   ├── try-fix/
+│   │   ├── content.md              # Phase 3 summary (auto-loaded by post-ai-summary-comment.ps1)
+│   │   ├── attempt-1/             # Individual attempt outputs
+│   │   │   ├── approach.md
+│   │   │   ├── result.txt
+│   │   │   ├── fix.diff
+│   │   │   └── analysis.md
+│   │   └── attempt-2/
+│   │       └── ...
+│   └── report/
+│       └── content.md              # Phase 4 output (auto-loaded by post-ai-summary-comment.ps1)
+├── pr-finalize/
+│   ├── pr-finalize-summary.md
+│   ├── recommended-description.md
+│   └── code-review.md
+└── copilot-logs/
+    ├── process-*.log
+    └── session-*.md
 ```
+
+### Auto-Loading Behavior
+
+When `post-ai-summary-comment.ps1` is called **without `-Content`**, it auto-discovers phase files:
+1. Checks `CustomAgentLogsTmp/PRState/{PRNumber}/PRAgent/*/content.md`
+2. Loads all available phase content files
+3. Builds the comment structure from the loaded files
+4. Posts/updates the unified AI Summary comment
+
+This eliminates the need to pass large content strings as parameters.
 
 ---
 

@@ -87,17 +87,12 @@ Add an **Implementation** subsection:
 
 ### pr-finalize Skill
 
-When running `pr-finalize` skill, you create TWO outputs:
+When running `pr-finalize` skill, you create output:
 
 1. **Summary file** (local reference)
    - Location: `CustomAgentLogsTmp/PRState/XXXXX/pr-finalize/pr-finalize-summary.md`
    - Purpose: Your detailed analysis and working notes
    - Audience: You and local CLI users
-
-2. **State file Report section** (GitHub audience)
-   - Location: `CustomAgentLogsTmp/PRState/pr-XXXXX.md` (Report phase)
-   - Purpose: Final recommendations that get posted to GitHub
-   - Audience: PR authors, reviewers, community
    - **MUST be self-contained** - no external references
 
 ### PR Agent Phase 4 (Report)
@@ -184,9 +179,8 @@ When completing Phase 4, verify:
 | What | Where | Audience | Self-Contained? |
 |------|-------|----------|-----------------|
 | Summary file | `CustomAgentLogsTmp/.../summary.md` | Local CLI | N/A (local only) |
-| State file | `CustomAgentLogsTmp/PRState/pr-XXXXX.md` | GitHub users | ✅ YES - REQUIRED |
 | PR comment | GitHub PR page | Public | ✅ YES - REQUIRED |
 
-**Remember:** Anything that goes in the state file's `<details>` sections will be posted to GitHub. Make it self-contained!
+**Remember:** Anything posted to GitHub must be self-contained. Never reference local files.
 
 --

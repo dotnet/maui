@@ -7,8 +7,7 @@
     Creates ONE comment for the entire PR review with all phases wrapped in an expandable section.
     Uses HTML marker <!-- AI Summary --> for identification.
     
-    **NEW: Validates that phases marked as COMPLETE actually have content.**
-    **NEW: Auto-loads state file from CustomAgentLogsTmp/PRState/pr-XXXXX.md**
+    **Validates that phases marked as COMPLETE actually have content.**
     
     Format:
     ## 🤖 AI Summary — ✅ APPROVE
@@ -17,14 +16,10 @@
     </details>
 
 .PARAMETER PRNumber
-    The pull request number (required unless -StateFile is provided with pr-XXXXX.md naming)
-
-.PARAMETER StateFile
-    Path to state file (defaults to CustomAgentLogsTmp/PRState/pr-{PRNumber}.md)
-    If provided with pr-XXXXX.md naming, PRNumber is auto-extracted
+    The pull request number (required)
 
 .PARAMETER Content
-    The full state file content (alternative to -StateFile)
+    The review content to post
 
 .PARAMETER DryRun
     Print comment instead of posting
@@ -33,24 +28,15 @@
     Skip validation checks (not recommended)
 
 .EXAMPLE
-    # Simplest: just provide PR number, state file auto-loaded
-    ./post-ai-summary-comment.ps1 -PRNumber 12345
+    ./post-ai-summary-comment.ps1 -PRNumber 12345 -Content "review content"
 
 .EXAMPLE
-    # Provide state file directly (PR number auto-extracted from filename)
-    ./post-ai-summary-comment.ps1 -StateFile CustomAgentLogsTmp/PRState/pr-27246.md
-
-.EXAMPLE
-    # Legacy: provide content directly
-    ./post-ai-summary-comment.ps1 -PRNumber 12345 -Content "$(cat CustomAgentLogsTmp/PRState/pr-12345.md)"
+    ./post-ai-summary-comment.ps1 -PRNumber 12345 -Content "review content" -DryRun
 #>
 
 param(
     [Parameter(Mandatory=$false)]
     [int]$PRNumber,
-
-    [Parameter(Mandatory=$false)]
-    [string]$StateFile,
 
     [Parameter(Mandatory=$false)]
     [string]$Content,
@@ -68,75 +54,144 @@ param(
 $ErrorActionPreference = "Stop"
 
 # ============================================================================
-# STATE FILE RESOLUTION
+# INPUT VALIDATION
 # ============================================================================
 
-# Priority: 1) -Content, 2) -StateFile, 3) Auto-detect from PRNumber
+if ($PRNumber -eq 0) {
+    throw "PRNumber is required."
+}
 
-# If StateFile provided, extract PRNumber from filename if not already set
-if (-not [string]::IsNullOrWhiteSpace($StateFile)) {
-    if ($StateFile -match 'pr-(\d+)\.md$') {
-        $extractedPR = [int]$Matches[1]
-        if ($PRNumber -eq 0) {
-            $PRNumber = $extractedPR
-            Write-Host "ℹ️  Auto-detected PRNumber: $PRNumber from state file name" -ForegroundColor Cyan
-        } elseif ($PRNumber -ne $extractedPR) {
-            Write-Host "⚠️  Warning: PRNumber ($PRNumber) differs from state file name (pr-$extractedPR.md)" -ForegroundColor Yellow
+# Auto-load from PRAgent phase files if Content not provided
+if ([string]::IsNullOrWhiteSpace($Content)) {
+    Write-Host "ℹ️  No -Content provided, auto-loading from PRAgent phase files..." -ForegroundColor Cyan
+    
+    $PRAgentDir = "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent"
+    if (-not (Test-Path $PRAgentDir)) {
+        $repoRoot = git rev-parse --show-toplevel 2>$null
+        if ($repoRoot) {
+            $PRAgentDir = Join-Path $repoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent"
         }
     }
     
-    if (Test-Path $StateFile) {
-        $Content = Get-Content $StateFile -Raw -Encoding UTF8
-        Write-Host "ℹ️  Loaded state file: $StateFile" -ForegroundColor Cyan
-    } else {
-        throw "State file not found: $StateFile"
+    if (-not (Test-Path $PRAgentDir)) {
+        Write-Host ""
+        Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Red
+        Write-Host "║  ⛔ No content provided and no PRAgent directory found    ║" -ForegroundColor Red
+        Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Red
+        Write-Host ""
+        Write-Host "Expected directory: $PRAgentDir" -ForegroundColor Yellow
+        Write-Host "Either provide -Content parameter or ensure PRAgent phase files exist." -ForegroundColor Yellow
+        throw "Content is required. Provide via -Content or ensure PRAgent/*/content.md files exist."
     }
-}
-
-# If no Content and no StateFile, try auto-detect from PRNumber
-if ([string]::IsNullOrWhiteSpace($Content) -and $PRNumber -gt 0) {
-    $autoStateFile = "CustomAgentLogsTmp/PRState/pr-$PRNumber.md"
-    if (Test-Path $autoStateFile) {
-        $Content = Get-Content $autoStateFile -Raw -Encoding UTF8
-        Write-Host "ℹ️  Auto-loaded state file: $autoStateFile" -ForegroundColor Cyan
-    } else {
-        # Try relative to repo root
-        $repoRoot = git rev-parse --show-toplevel 2>$null
-        if ($repoRoot) {
-            $autoStateFile = Join-Path $repoRoot "CustomAgentLogsTmp/PRState/pr-$PRNumber.md"
-            if (Test-Path $autoStateFile) {
-                $Content = Get-Content $autoStateFile -Raw -Encoding UTF8
-                Write-Host "ℹ️  Auto-loaded state file: $autoStateFile" -ForegroundColor Cyan
-            }
+    
+    # Load each phase content file
+    $phaseFiles = @{
+        "pre-flight" = Join-Path $PRAgentDir "pre-flight/content.md"
+        "gate" = Join-Path $PRAgentDir "gate/content.md"
+        "try-fix" = Join-Path $PRAgentDir "try-fix/content.md"
+        "report" = Join-Path $PRAgentDir "report/content.md"
+    }
+    
+    $loadedPhases = @()
+    $phaseContentMap = @{}
+    
+    foreach ($phase in $phaseFiles.GetEnumerator()) {
+        if (Test-Path $phase.Value) {
+            $phaseContentMap[$phase.Key] = Get-Content $phase.Value -Raw -Encoding UTF8
+            $loadedPhases += $phase.Key
+            Write-Host "  ✅ Loaded: $($phase.Key) ($((Get-Item $phase.Value).Length) bytes)" -ForegroundColor Green
+        } else {
+            Write-Host "  ⏭️  Skipped: $($phase.Key) (no content.md)" -ForegroundColor Gray
         }
     }
-}
+    
+    if ($loadedPhases.Count -eq 0) {
+        throw "No phase content files found in $PRAgentDir. Ensure at least one phase has a content.md file."
+    }
+    
+    Write-Host "  📦 Loaded $($loadedPhases.Count) phase(s): $($loadedPhases -join ', ')" -ForegroundColor Cyan
+    
+    # Build synthetic Content from phase files in the expected <details> format
+    $syntheticParts = @()
+    
+    # Determine phase statuses based on which files exist and content
+    $phaseStatusMap = @{}
+    foreach ($phase in @("pre-flight", "gate", "try-fix", "report")) {
+        if ($phaseContentMap.ContainsKey($phase)) {
+            $phaseStatusMap[$phase] = "✅ COMPLETE"
+        } else {
+            $phaseStatusMap[$phase] = "⏳ PENDING"
+        }
+    }
+    
+    # Build status table
+    $statusTable = @"
+| Phase | Status |
+|-------|--------|
+| Pre-Flight | $($phaseStatusMap['pre-flight']) |
+| Gate | $($phaseStatusMap['gate']) |
+| Fix | $($phaseStatusMap['try-fix']) |
+| Report | $($phaseStatusMap['report']) |
+"@
+    $syntheticParts += $statusTable
+    
+    # Build phase sections
+    if ($phaseContentMap.ContainsKey('pre-flight')) {
+        $syntheticParts += @"
+<details><summary><strong>📋 Pre-Flight — Issue Summary</strong></summary>
 
-# If Content still not provided, skip stdin (it hangs in CI/non-interactive contexts).
-# Legacy piped input is no longer supported — use -StateFile or -Content instead.
+$($phaseContentMap['pre-flight'])
+
+</details>
+"@
+    }
+    
+    if ($phaseContentMap.ContainsKey('gate')) {
+        $syntheticParts += @"
+<details><summary><strong>🚦 Gate — Test Verification</strong></summary>
+
+$($phaseContentMap['gate'])
+
+</details>
+"@
+    }
+    
+    if ($phaseContentMap.ContainsKey('try-fix')) {
+        $syntheticParts += @"
+<details><summary><strong>🔧 Fix — Analysis & Comparison</strong></summary>
+
+$($phaseContentMap['try-fix'])
+
+</details>
+"@
+    }
+    
+    if ($phaseContentMap.ContainsKey('report')) {
+        $syntheticParts += @"
+<details><summary><strong>📋 Report — Final Recommendation</strong></summary>
+
+$($phaseContentMap['report'])
+
+</details>
+"@
+    }
+    
+    $Content = $syntheticParts -join "`n`n---`n`n"
+    Write-Host "  ✅ Built synthetic content ($($Content.Length) chars)" -ForegroundColor Green
+}
 
 # Final validation
 if ([string]::IsNullOrWhiteSpace($Content)) {
     Write-Host ""
     Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Red
-    Write-Host "║  ⛔ No state file content found                           ║" -ForegroundColor Red
+    Write-Host "║  ⛔ No content provided                                   ║" -ForegroundColor Red
     Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Red
     Write-Host ""
-    Write-Host "Usage options:" -ForegroundColor Yellow
-    Write-Host "  1. ./post-ai-summary-comment.ps1 -PRNumber 12345" -ForegroundColor Gray
-    Write-Host "     (auto-loads CustomAgentLogsTmp/PRState/pr-12345.md)" -ForegroundColor Gray
+    Write-Host "Usage:" -ForegroundColor Yellow
+    Write-Host "  ./post-ai-summary-comment.ps1 -PRNumber 12345 -Content `"review content`"" -ForegroundColor Gray
+    Write-Host "  ./post-ai-summary-comment.ps1 -PRNumber 12345  # auto-loads from PRAgent/*/content.md" -ForegroundColor Gray
     Write-Host ""
-    Write-Host "  2. ./post-ai-summary-comment.ps1 -StateFile path/to/pr-12345.md" -ForegroundColor Gray
-    Write-Host "     (loads specified file, extracts PRNumber from name)" -ForegroundColor Gray
-    Write-Host ""
-    Write-Host "  3. ./post-ai-summary-comment.ps1 -PRNumber 12345 -Content `"...`"" -ForegroundColor Gray
-    Write-Host "     (legacy: provide content directly)" -ForegroundColor Gray
-    Write-Host ""
-    throw "Content is required. See usage options above."
-}
-
-if ($PRNumber -eq 0) {
-    throw "PRNumber is required. Provide via -PRNumber or use a state file named pr-XXXXX.md"
+    throw "Content is required."
 }
 
 Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
@@ -165,7 +220,7 @@ function Test-PhaseContentComplete {
     
     # Check if content exists
     if ([string]::IsNullOrWhiteSpace($PhaseContent)) {
-        $validationErrors += "Phase $PhaseName is marked as '$PhaseStatus' but has NO content in state file"
+        $validationErrors += "Phase $PhaseName is marked as '$PhaseStatus' but has NO content"
         if ($Debug) {
             Write-Host "  [DEBUG] Content is null or whitespace for phase: $PhaseName" -ForegroundColor DarkGray
         }
@@ -177,8 +232,9 @@ function Test-PhaseContentComplete {
         Write-Host "  [DEBUG] First 100 chars: $($PhaseContent.Substring(0, [Math]::Min(100, $PhaseContent.Length)))" -ForegroundColor DarkGray
     }
     
-    # Check for PENDING markers
-    $pendingMatches = [regex]::Matches($PhaseContent, '\[PENDING\]|⏳\s*PENDING')
+    # Check for PENDING markers - only match [PENDING] placeholder markers.
+    # ⏳ PENDING is a status indicator (redundant with phase table), not an unfilled placeholder.
+    $pendingMatches = [regex]::Matches($PhaseContent, '\[PENDING\]')
     if ($pendingMatches.Count -gt 0) {
         $validationErrors += "Phase $PhaseName is marked as '$PhaseStatus' but contains $($pendingMatches.Count) PENDING markers"
     }
@@ -233,7 +289,7 @@ function Test-PhaseContentComplete {
 # EXTRACTION FUNCTIONS
 # ============================================================================
 
-# Extract recommendation from state file
+# Extract recommendation from content
 $recommendation = "IN PROGRESS"
 if ($Content -match '##\s+✅\s+Final Recommendation:\s+APPROVE') {
     $recommendation = "✅ APPROVE"
@@ -245,7 +301,7 @@ if ($Content -match '##\s+✅\s+Final Recommendation:\s+APPROVE') {
     $recommendation = "⚠️ REQUEST CHANGES"
 }
 
-# Extract phase statuses from state file
+# Extract phase statuses from content
 $phaseStatuses = @{
     "Pre-Flight" = "⏳ PENDING"
     "Gate" = "⏳ PENDING"
@@ -271,7 +327,7 @@ if ($Content -match '(?s)\|\s*Phase\s*\|\s*Status\s*\|.*?\n\|[\s-]+\|[\s-]+\|(.*
 # DYNAMIC SECTION EXTRACTION
 # ============================================================================
 
-# Extract ALL sections from state file dynamically
+# Extract ALL sections from content dynamically
 function Extract-AllSections {
     param(
         [string]$StateContent,
@@ -286,7 +342,7 @@ function Extract-AllSections {
     $matches = [regex]::Matches($StateContent, $pattern)
     
     if ($Debug) {
-        Write-Host "  [DEBUG] Found $($matches.Count) section(s) in state file" -ForegroundColor Cyan
+        Write-Host "  [DEBUG] Found $($matches.Count) section(s) in content" -ForegroundColor Cyan
     }
     
     foreach ($match in $matches) {
@@ -363,10 +419,19 @@ $reportContent = Get-SectionByPattern -Sections $allSections -Patterns @(
 # "## Final Recommendation" section directly in the markdown (agent sometimes
 # writes Report as a top-level heading instead of a <details> block)
 if ([string]::IsNullOrWhiteSpace($reportContent)) {
-    if ($Content -match '(?s)##\s+[✅⚠️❌]*\s*Final Recommendation[:\s].+') {
+    # Look for "## Final Recommendation" heading - capture up to the first --- separator
+    # or <details> block to avoid including content from other phases
+    if ($Content -match '(?s)##\s+[✅⚠️❌\uFE0F]*\s*Final Recommendation[:\s].+?(?=\n---|\n<details|$)') {
         $reportContent = $Matches[0].Trim()
         if ($debugMode) {
             Write-Host "  [DEBUG] Report extracted from '## Final Recommendation' heading ($($reportContent.Length) chars)" -ForegroundColor Green
+        }
+    }
+    # Broader fallback: look for any top-level recommendation/status heading
+    elseif ($Content -match '(?s)##\s+[✅⚠️❌\uFE0F]*\s*(?:Final\s+)?Recommendation[:\s].+?(?=\n---|\n<details|$)') {
+        $reportContent = $Matches[0].Trim()
+        if ($debugMode) {
+            Write-Host "  [DEBUG] Report extracted from '## Recommendation' heading ($($reportContent.Length) chars)" -ForegroundColor Green
         }
     }
 }
@@ -439,7 +504,7 @@ if (-not $SkipValidation) {
             Write-Host "  - $err" -ForegroundColor Red
         }
         Write-Host ""
-        Write-Host "💡 Fix these issues in the state file before posting the review comment." -ForegroundColor Cyan
+        Write-Host "💡 Fix these issues in the content before posting the review comment." -ForegroundColor Cyan
         Write-Host "   Or use -SkipValidation to bypass these checks (not recommended)." -ForegroundColor Cyan
         Write-Host ""
         Write-Host "🐛 Debug tip: Run with `$DebugPreference = 'Continue' for detailed extraction info" -ForegroundColor DarkGray
@@ -595,7 +660,7 @@ if ($existingComment) {
     Write-Host "✓ No existing comment found - creating new..." -ForegroundColor Yellow
 }
 
-# Create NEW review sessions from current state file
+# Create NEW review sessions from current content
 $newPreFlightSession = New-ReviewSession -PhaseContent $preFlightContent -CommitTitle $latestCommitTitle -CommitSha $latestCommitSha -CommitUrl $latestCommitUrl
 $newGateSession = New-ReviewSession -PhaseContent $gateContent -CommitTitle $latestCommitTitle -CommitSha $latestCommitSha -CommitUrl $latestCommitUrl
 $newFixSession = New-ReviewSession -PhaseContent $fixContent -CommitTitle $latestCommitTitle -CommitSha $latestCommitSha -CommitUrl $latestCommitUrl
