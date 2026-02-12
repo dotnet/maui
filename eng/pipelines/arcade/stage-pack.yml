@@ -51,14 +51,6 @@ stages:
       publishAssetsImmediately: false
       enablePublishBuildArtifacts: true
       enablePublishTestResults: false
-      # templateContext.outputs for 1ES pipelines (ci-official.yml)
-      ${{ if eq(parameters.is1ESPipeline, true) }}:
-        templateContext:
-          outputs:
-          - output: pipelineArtifact
-            artifact: MacNativeArtifacts
-            path: $(Agent.TempDirectory)/native-binaries
-            condition: always()
 
       workspace:
         clean: all
@@ -88,12 +80,15 @@ stages:
               */$(_BuildConfig)/*/*.resources.zip
             TargetFolder: '$(Agent.TempDirectory)/native-binaries'
 
-        # publish: step for non-1ES pipelines (ci.yml)
-        - ${{ if ne(parameters.is1ESPipeline, true) }}:
-          - publish: $(Agent.TempDirectory)/native-binaries
-            displayName: Publish Mac Native Artifacts
-            artifact: MacNativeArtifacts
-            condition: always()
+        # Publish Mac Native Artifacts using arcade step template
+        - template: /eng/common/core-templates/steps/publish-pipeline-artifacts.yml
+          parameters:
+            is1ESPipeline: ${{ parameters.is1ESPipeline }}
+            args:
+              targetPath: $(Agent.TempDirectory)/native-binaries
+              artifactName: MacNativeArtifacts
+              displayName: Publish Mac Native Artifacts
+              condition: always()
 
         - ${{ each step in parameters.postSteps }}:
           - ${{ each pair in step }}:
@@ -114,16 +109,6 @@ stages:
       publishAssetsImmediately: true
       enablePublishBuildArtifacts: true
       enablePublishTestResults: false
-      # templateContext.outputs for 1ES pipelines (ci-official.yml)
-      ${{ if eq(parameters.is1ESPipeline, true) }}:
-        templateContext:
-          outputs:
-          - output: pipelineArtifact
-            artifact: APIScanFiles
-            path: $(Agent.TempDirectory)/APIScanFiles
-          - output: pipelineArtifact
-            artifact: Metadata
-            path: $(Agent.TempDirectory)/metadata
 
       workspace:
         clean: all
@@ -181,6 +166,24 @@ stages:
             Contents: |
               **/*.json
             TargetFolder: '$(Agent.TempDirectory)\metadata'
+
+        # Publish APIScanFiles using arcade step template
+        - template: /eng/common/core-templates/steps/publish-pipeline-artifacts.yml
+          parameters:
+            is1ESPipeline: ${{ parameters.is1ESPipeline }}
+            args:
+              targetPath: $(Agent.TempDirectory)/APIScanFiles
+              artifactName: APIScanFiles
+              displayName: Publish APIScanFiles
+
+        # Publish Metadata using arcade step template
+        - template: /eng/common/core-templates/steps/publish-pipeline-artifacts.yml
+          parameters:
+            is1ESPipeline: ${{ parameters.is1ESPipeline }}
+            args:
+              targetPath: $(Agent.TempDirectory)/metadata
+              artifactName: Metadata
+              displayName: Publish Metadata
 
         - ${{ each step in parameters.postSteps }}:
           - ${{ each pair in step }}:
