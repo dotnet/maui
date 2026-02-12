@@ -463,6 +463,11 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
+			if (e.Handled)
+			{
+				return;
+			}
+
 			_isPanning = true;
 
 			foreach (IPanGestureController recognizer in view.GestureRecognizers.GetGesturesFor<PanGestureRecognizer>().Where(g => g.TouchPoints == _fingers.Count))
@@ -472,6 +477,7 @@ namespace Microsoft.Maui.Controls.Platform
 					recognizer.SendPanStarted(view, PanGestureRecognizer.CurrentId.Value);
 				}
 				recognizer.SendPan(view, e.Delta.Translation.X + e.Cumulative.Translation.X, e.Delta.Translation.Y + e.Cumulative.Translation.Y, PanGestureRecognizer.CurrentId.Value);
+				e.Handled = true;
 			}
 			_wasPanGestureStartedSent = true;
 		}
