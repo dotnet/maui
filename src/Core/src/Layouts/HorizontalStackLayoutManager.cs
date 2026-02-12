@@ -13,6 +13,9 @@ namespace Microsoft.Maui.Layouts
 		{
 			var padding = Stack.Padding;
 
+			// If explicit dimensions are set, use them instead of the passed constraints
+			var (effectiveWidthConstraint, effectiveHeightConstraint) = GetEffectiveConstraints(widthConstraint, heightConstraint);
+
 			double measuredWidth = 0;
 			double measuredHeight = 0;
 			int spacingCount = 0;
@@ -27,7 +30,7 @@ namespace Microsoft.Maui.Layouts
 				}
 
 				spacingCount += 1;
-				var measure = child.Measure(double.PositiveInfinity, heightConstraint - padding.VerticalThickness);
+				var measure = child.Measure(double.PositiveInfinity, effectiveHeightConstraint - padding.VerticalThickness);
 				measuredWidth += measure.Width;
 				measuredHeight = Math.Max(measuredHeight, measure.Height);
 			}
@@ -36,8 +39,8 @@ namespace Microsoft.Maui.Layouts
 			measuredWidth += padding.HorizontalThickness;
 			measuredHeight += padding.VerticalThickness;
 
-			var finalHeight = ResolveConstraints(heightConstraint, Stack.Height, measuredHeight, Stack.MinimumHeight, Stack.MaximumHeight);
-			var finalWidth = ResolveConstraints(widthConstraint, Stack.Width, measuredWidth, Stack.MinimumWidth, Stack.MaximumWidth);
+			var finalHeight = ResolveConstraints(effectiveHeightConstraint, Stack.Height, measuredHeight, Stack.MinimumHeight, Stack.MaximumHeight);
+			var finalWidth = ResolveConstraints(effectiveWidthConstraint, Stack.Width, measuredWidth, Stack.MinimumWidth, Stack.MaximumWidth);
 
 			return new Size(finalWidth, finalHeight);
 		}
