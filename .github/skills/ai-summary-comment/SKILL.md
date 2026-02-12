@@ -210,7 +210,7 @@ When the same PR is reviewed multiple times (e.g., after new commits), the scrip
 
 The `post-try-fix-comment.ps1` script updates the `<!-- SECTION:TRY-FIX -->` section of the unified AI Summary comment. It aggregates all try-fix attempts into collapsible sections. Works for both issues and PRs (GitHub treats PR comments as issue comments).
 
-**✨ Auto-Loading from `CustomAgentLogsTmp`**: The script automatically discovers and aggregates ALL attempt directories from `CustomAgentLogsTmp/PRState/{IssueNumber}/try-fix/`.
+**✨ Auto-Loading from `CustomAgentLogsTmp`**: The script automatically discovers and aggregates ALL attempt directories from `CustomAgentLogsTmp/PRState/{IssueNumber}/PRAgent/try-fix/`.
 
 ### Usage
 
