@@ -501,19 +501,7 @@ if ($DryRun) {
                 }
             }
         }
-        
-        # Phase 4: Apply agent workflow labels
-        $labelHelperPath = ".github/scripts/helpers/Update-AgentLabels.ps1"
-        if (-not (Test-Path $labelHelperPath)) {
-            Write-Host "⚠️ Label helper missing, attempting recovery..." -ForegroundColor Yellow
-            git checkout HEAD -- $labelHelperPath 2>&1 | Out-Null
-        }
-        if (Test-Path $labelHelperPath) {
-            . $labelHelperPath
-            Invoke-AgentLabels -PRNumber $PRNumber
-        } else {
-            Write-Host "⚠️ Label helper not found at: $labelHelperPath — skipping labels" -ForegroundColor Yellow
-        }
+
     }
 }
 
