@@ -751,10 +751,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			// Only recalculate snap points when the content extent actually changes
 			// to avoid redundant work during intermediate layout passes.
+			// NOTE: _lastSnapPointExtent is updated inside UpdateSnapPoints() only after
+			// snap points are successfully created. This ensures retries are not blocked
+			// when items aren't realized yet (common for horizontal layouts).
 			var currentExtent = IsLayoutHorizontal ? sender.ExtentWidth : sender.ExtentHeight;
 			if (currentExtent != _lastSnapPointExtent)
 			{
-				_lastSnapPointExtent = currentExtent;
 				UpdateSnapPoints();
 			}
 		}
@@ -773,18 +775,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			var snapPointsType = itemsLayout.SnapPointsType;
 
-			// Clear existing snap points
-			if (IsLayoutHorizontal)
-			{
-				scrollPresenter.HorizontalSnapPoints.Clear();
-			}
-			else
-			{
-				scrollPresenter.VerticalSnapPoints.Clear();
-			}
+			// Clear both axes to handle orientation changes safely
+			scrollPresenter.HorizontalSnapPoints.Clear();
+			scrollPresenter.VerticalSnapPoints.Clear();
 
 			if (snapPointsType == SnapPointsType.None)
 			{
+				_lastSnapPointExtent = 0;
 				return;
 			}
 
@@ -793,6 +790,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			var itemCount = _collectionViewSource?.View?.Count ?? 0;
 			if (itemCount == 0)
 			{
+				_lastSnapPointExtent = 0;
 				return;
 			}
 
@@ -811,8 +809,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (itemExtent <= 0)
 			{
-				// Items not yet realized, snap points will be applied
-				// when ExtentChanged fires after items are laid out.
+				// Items not yet realized — do NOT update _lastSnapPointExtent so
+				// the next ExtentChanged will retry once items are laid out.
 				return;
 			}
 
@@ -834,33 +832,58 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			var alignment = GetScrollSnapPointsAlignment(itemsLayout.SnapPointsAlignment);
 
-			// Compute the extent range for the snap points
+			// Compute the extent and viewport to cap the snap range
 			double extent = IsLayoutHorizontal
 				? scrollPresenter.ExtentWidth
 				: scrollPresenter.ExtentHeight;
 
 			if (extent <= 0)
 			{
+				// Extent not ready — do NOT update _lastSnapPointExtent so retries are allowed.
+				return;
+			}
+
+			double viewport = IsLayoutHorizontal
+				? scrollPresenter.ViewportWidth
+				: scrollPresenter.ViewportHeight;
+
+			// Cap the snap range to the maximum scrollable offset to prevent mandatory
+			// snap points from forcing the scroll past the content boundary, which would
+			// show empty space after the last item.
+			double maxScrollOffset = Math.Max(0, extent - viewport);
+			if (maxScrollOffset <= 0)
+			{
+				// Content fits entirely in viewport — no scrolling or snapping needed.
 				return;
 			}
 
 			// RepeatedScrollSnapPoint: snap every 'interval' pixels starting from 'offset',
-			// within the range [start, end].
-			var snapPoint = new Microsoft.UI.Xaml.Controls.Primitives.RepeatedScrollSnapPoint(
-				0,          // offset: first snap point at position 0
-				interval,   // interval: distance between snap points
-				0,          // start: beginning of range
-				extent,     // end: full content extent
-				alignment);
+			// within the range [start, end]. Capping end at maxScrollOffset ensures no snap
+			// point exists beyond the last scrollable position.
+			var snapPoints = IsLayoutHorizontal
+				? scrollPresenter.HorizontalSnapPoints
+				: scrollPresenter.VerticalSnapPoints;
 
-			if (IsLayoutHorizontal)
+			snapPoints.Add(new Microsoft.UI.Xaml.Controls.Primitives.RepeatedScrollSnapPoint(
+				0,                // offset: first snap point at position 0
+				interval,         // interval: distance between snap points
+				0,                // start: beginning of range
+				maxScrollOffset,  // end: max scrollable offset (prevents empty space)
+				alignment));
+
+			// If the last repeated snap point doesn't reach the max scroll offset,
+			// add an individual snap point so the very end of content is reachable.
+			double lastRepeatedSnap = Math.Floor(maxScrollOffset / interval) * interval;
+			if (maxScrollOffset - lastRepeatedSnap > 1)
 			{
-				scrollPresenter.HorizontalSnapPoints.Add(snapPoint);
+				snapPoints.Add(new Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPoint(
+					maxScrollOffset, alignment));
 			}
-			else
-			{
-				scrollPresenter.VerticalSnapPoints.Add(snapPoint);
-			}
+
+			// Mark extent as processed — prevents redundant recalculations on subsequent
+			// ExtentChanged events with the same extent. Only set AFTER successful creation
+			// so early returns (items not realized) allow retries.
+			_lastSnapPointExtent = extent;
 		}
 
 		static WScrollSnapPointsAlignment GetScrollSnapPointsAlignment(SnapPointsAlignment alignment)
