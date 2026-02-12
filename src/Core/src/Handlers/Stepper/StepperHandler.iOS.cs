@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using ObjCRuntime;
 using UIKit;
@@ -32,7 +32,8 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.PlatformView?.UpdateMinimum(stepper);
 
-			if (OperatingSystem.IsIOSVersionAtLeast(26) && handler.PlatformView is UIStepper platformView)
+			if (OperatingSystem.IsIOSVersionAtLeast(26) && handler.PlatformView is UIStepper platformView
+				&& NeedsStepValueAdjustment(stepper, platformView))
 			{
 				AdjustStepValueForBoundaries(stepper, platformView);
 			}
@@ -42,7 +43,8 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.PlatformView?.UpdateMaximum(stepper);
 
-			if (OperatingSystem.IsIOSVersionAtLeast(26) && handler.PlatformView is UIStepper platformView)
+			if (OperatingSystem.IsIOSVersionAtLeast(26) && handler.PlatformView is UIStepper platformView
+				&& NeedsStepValueAdjustment(stepper, platformView))
 			{
 				AdjustStepValueForBoundaries(stepper, platformView);
 			}
@@ -53,7 +55,8 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateIncrement(stepper);
 			
 			// When increment changes, Adjust stepValue for boundary handling
-			if (OperatingSystem.IsIOSVersionAtLeast(26) && handler.PlatformView is UIStepper platformView)
+			if (OperatingSystem.IsIOSVersionAtLeast(26) && handler.PlatformView is UIStepper platformView
+				&& NeedsStepValueAdjustment(stepper, platformView))
 			{
 				AdjustStepValueForBoundaries(stepper, platformView);
 			}
@@ -64,10 +67,19 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateValue(stepper);
 
 			// iOS 26+ fix: Adjust stepValue for boundary handling
-			if (OperatingSystem.IsIOSVersionAtLeast(26) && handler.PlatformView is UIStepper platformView)
+			if (OperatingSystem.IsIOSVersionAtLeast(26) && handler.PlatformView is UIStepper platformView
+				&& NeedsStepValueAdjustment(stepper, platformView))
 			{
 				AdjustStepValueForBoundaries(stepper, platformView);
 			}
+		}
+
+		// Checks whether the step value needs adjustment due to boundary proximity or a previously modified step value.
+		static bool NeedsStepValueAdjustment(IStepper stepper, UIStepper platformView)
+		{
+			return stepper.Value + stepper.Interval > stepper.Maximum
+				|| stepper.Value - stepper.Interval < stepper.Minimum
+				|| platformView.StepValue != stepper.Interval;
 		}
 
 		// iOS 26+ Workaround: UIStepper behavior changed to prevent button clicks when increment would exceed boundaries
@@ -146,7 +158,8 @@ namespace Microsoft.Maui.Handlers
 				if (VirtualView is IStepper virtualView && sender is UIStepper platformView)
 				{
 					// iOS 26+ fix: Adjust stepValue for boundary handling
-					if (OperatingSystem.IsIOSVersionAtLeast(26))
+					if (OperatingSystem.IsIOSVersionAtLeast(26)
+						&& NeedsStepValueAdjustment(virtualView, platformView))
 					{
 						AdjustStepValueForBoundaries(virtualView, platformView);
 					}
