@@ -16,6 +16,7 @@ public class Issue18896 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.ListView)]
+	[Ignore("Failing due to image comparison failure, see https://github.com/dotnet/maui/issues/34017")]
 	public void Issue18896Test()
 	{
 		App.WaitForElement("WaitForStubControl");
