@@ -74,6 +74,12 @@ namespace Microsoft.Maui.Maps.Handlers
 			handler.PlatformView.ZoomEnabled = map.IsZoomEnabled;
 		}
 
+		public static void MapMapStyle(IMapHandler handler, IMap map)
+		{
+			// MapKit does not support custom JSON map styling.
+			// This property is marked with [UnsupportedOSPlatform] for iOS/MacCatalyst.
+		}
+
 		public static void MapPins(IMapHandler handler, IMap map)
 		{
 			handler.PlatformView.AddPins((IList)map.Pins);

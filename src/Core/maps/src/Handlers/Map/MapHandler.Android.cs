@@ -108,6 +108,12 @@ namespace Microsoft.Maui.Maps.Handlers
 			googleMap?.UpdateIsZoomEnabled(map);
 		}
 
+		public static void MapMapStyle(IMapHandler handler, IMap map)
+		{
+			GoogleMap? googleMap = handler?.Map;
+			googleMap?.UpdateMapStyle(map);
+		}
+
 		public static void MapMoveToRegion(IMapHandler handler, IMap map, object? arg)
 		{
 			MapSpan? newRegion = arg as MapSpan;
@@ -295,6 +301,7 @@ namespace Microsoft.Maui.Maps.Handlers
 				map.UpdateIsScrollEnabled(VirtualView);
 				map.UpdateIsTrafficEnabled(VirtualView);
 				map.UpdateIsZoomEnabled(VirtualView);
+				map.UpdateMapStyle(VirtualView);
 			}
 
 			InitialUpdate();

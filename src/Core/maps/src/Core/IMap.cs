@@ -39,6 +39,22 @@ namespace Microsoft.Maui.Maps
 		bool IsTrafficEnabled { get; }
 
 		/// <summary>
+		/// Gets the custom map style as a JSON string.
+		/// </summary>
+		/// <remarks>
+		/// This property is only supported on Android where it accepts a Google Maps style JSON string.
+		/// Use the Google Maps Styling Wizard (https://mapstyle.withgoogle.com/) to generate a style JSON.
+		/// On iOS, MacCatalyst, and Windows this property has no effect as the native map controls
+		/// do not support custom JSON styling.
+		/// </remarks>
+#if !NETSTANDARD
+		[System.Runtime.Versioning.UnsupportedOSPlatform("ios")]
+		[System.Runtime.Versioning.UnsupportedOSPlatform("maccatalyst")]
+		[System.Runtime.Versioning.UnsupportedOSPlatform("windows")]
+#endif
+		string? MapStyle { get; }
+
+		/// <summary>
 		/// The pins that are to be shown on this Map.
 		/// </summary>
 		IList<IMapPin> Pins { get; }
