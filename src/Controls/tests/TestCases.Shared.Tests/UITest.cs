@@ -341,7 +341,7 @@ namespace Microsoft.Maui.TestCases.Tests
 				// For iOS, crop the home indicator at the bottom.
 				int cropFromBottom = _testDevice switch
 				{
-					TestDevice.Android => environmentName == "android-notch-36" ? 48 : 125,
+					TestDevice.Android => environmentName == "android-notch-36" ? 52 : 125,
 					TestDevice.iOS => 40,
 					_ => 0,
 				};
