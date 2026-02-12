@@ -1,4 +1,5 @@
-﻿using OpenQA.Selenium.Appium.iOS;
+﻿using System.Diagnostics;
+using OpenQA.Selenium.Appium.iOS;
 using OpenQA.Selenium.Appium.Windows;
 using UITest.Core;
 
@@ -11,6 +12,7 @@ namespace UITest.Appium
 		const string ForegroundAppCommand = "foregroundApp";
 		const string ResetAppCommand = "resetApp";
 		const string CloseAppCommand = "closeApp";
+		const string ForceCloseAppCommand = "forceCloseApp";
 		const string BackCommand = "back";
 		const string RefreshCommand = "refresh";
 
@@ -23,6 +25,7 @@ namespace UITest.Appium
 			BackgroundAppCommand,
 			ResetAppCommand,
 			CloseAppCommand,
+			ForceCloseAppCommand,
 			BackCommand,
 			RefreshCommand
 		};
@@ -46,6 +49,7 @@ namespace UITest.Appium
 				BackgroundAppCommand => BackgroundApp(parameters),
 				ResetAppCommand => ResetApp(parameters),
 				CloseAppCommand => CloseApp(parameters),
+				ForceCloseAppCommand => ForceCloseApp(parameters),
 				BackCommand => Back(parameters),
 				RefreshCommand => Refresh(parameters),
 				_ => CommandResponse.FailedEmptyResponse,
@@ -152,44 +156,114 @@ namespace UITest.Appium
 			}
 			catch (Exception)
 			{
-				// TODO: Pass in logger so we can log these exceptions
-
-				// Occasionally the app seems to get so locked up it can't 
-				// even report back the appstate. In that case, we'll just
-				// try to trigger a reset.
+				// App might be too locked up to even report state — try force close
+				return ForceCloseApp(parameters);
 			}
 
+			// Try normal Appium termination with a timeout to prevent hanging when app is unresponsive
 			try
 			{
-				if (_app.GetTestDevice() == TestDevice.Mac)
+				var closeTask = Task.Run(() =>
 				{
-					_app.Driver.ExecuteScript("macos: terminateApp", new Dictionary<string, object>
+					if (_app.GetTestDevice() == TestDevice.Mac)
 					{
-						{ "bundleId", _app.GetAppId() },
-					});
-				}
-				else if (_app.Driver is WindowsDriver windowsDriver)
+						_app.Driver.ExecuteScript("macos: terminateApp", new Dictionary<string, object>
+						{
+							{ "bundleId", _app.GetAppId() },
+						});
+					}
+					else if (_app.Driver is WindowsDriver windowsDriver)
+					{
+						windowsDriver.CloseApp();
+					}
+					else
+					{
+						_app.Driver.TerminateApp(_app.GetAppId());
+					}
+				});
+
+				if (closeTask.Wait(TimeSpan.FromSeconds(15)))
 				{
-					// This is still here for now, but it looks like it will get removed just like
-					// LaunchApp was in 5.0.0, in which case we may need to use:
-					// windowsDriver.ExecuteScript("windows: closeApp", [_app.GetAppId()]);
-					windowsDriver.CloseApp();
+					return CommandResponse.SuccessEmptyResponse;
 				}
-				else
-				{
-					_app.Driver.TerminateApp(_app.GetAppId());
-				}
+
+				// Normal close timed out — app is likely unresponsive, use force close
+				Debug.WriteLine(">>>>> CloseApp timed out after 15s, falling back to ForceCloseApp");
 			}
-			catch (Exception)
+			catch (Exception ex)
 			{
-				// TODO Pass in logger so we can log these exceptions
-
-				// Occasionally the app seems like it's already closed before we get here
-				// and then this throws an exception.
-				return CommandResponse.FailedEmptyResponse;
+				// Normal close failed — fall through to force close
+				Debug.WriteLine($">>>>> CloseApp threw an exception, falling back to ForceCloseApp: {ex.Message}");
 			}
 
-			return CommandResponse.SuccessEmptyResponse;
+			return ForceCloseApp(parameters);
+		}
+
+		/// <summary>
+		/// Force-terminates the app using platform-specific OS commands.
+		/// This bypasses Appium/WDA which may be stuck waiting for the app to become idle.
+		/// Use when the app is unresponsive (e.g., stuck in an infinite layout loop).
+		/// </summary>
+		CommandResponse ForceCloseApp(IDictionary<string, object> parameters)
+		{
+			try
+			{
+				var appId = _app.GetAppId();
+				var testDevice = _app.GetTestDevice();
+
+				if (testDevice == TestDevice.iOS)
+				{
+					var udid = _app.Config.GetProperty<string>("Udid");
+					if (!string.IsNullOrEmpty(udid))
+					{
+						Debug.WriteLine($">>>>> ForceCloseApp: xcrun simctl terminate {udid} {appId}");
+						using var process = Process.Start(new ProcessStartInfo
+						{
+							FileName = "xcrun",
+							ArgumentList = { "simctl", "terminate", udid, appId },
+							RedirectStandardOutput = true,
+							RedirectStandardError = true,
+							UseShellExecute = false,
+						});
+						process?.WaitForExit(10000);
+						return CommandResponse.SuccessEmptyResponse;
+					}
+				}
+				else if (testDevice == TestDevice.Android)
+				{
+					Debug.WriteLine($">>>>> ForceCloseApp: adb shell am force-stop {appId}");
+					using var process = Process.Start(new ProcessStartInfo
+					{
+						FileName = "adb",
+						ArgumentList = { "shell", "am", "force-stop", appId },
+						RedirectStandardOutput = true,
+						RedirectStandardError = true,
+						UseShellExecute = false,
+					});
+					process?.WaitForExit(10000);
+					return CommandResponse.SuccessEmptyResponse;
+				}
+				else if (testDevice == TestDevice.Mac)
+				{
+					Debug.WriteLine($">>>>> ForceCloseApp: macOS kill for {appId}");
+					using var process = Process.Start(new ProcessStartInfo
+					{
+						FileName = "osascript",
+						ArgumentList = { "-e", $"tell application id \"{appId}\" to quit" },
+						RedirectStandardOutput = true,
+						RedirectStandardError = true,
+						UseShellExecute = false,
+					});
+					process?.WaitForExit(10000);
+					return CommandResponse.SuccessEmptyResponse;
+				}
+			}
+			catch (Exception ex)
+			{
+				Debug.WriteLine($">>>>> ForceCloseApp failed: {ex.Message}");
+			}
+
+			return CommandResponse.FailedEmptyResponse;
 		}
 
 		CommandResponse Back(IDictionary<string, object> parameters)
