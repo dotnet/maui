@@ -15,51 +15,20 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 		}
 
-		private void NavigateToContentPage()
-		{
-			App.WaitForElement("ContentPageSafeAreaButton");
-			App.Tap("ContentPageSafeAreaButton");
-			App.WaitForElement("SafeAreaEdgesValueLabel");
-		}
-
-		private void OpenOptionsAndApply(System.Action configureOptions)
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("Apply");
-			configureOptions();
-			App.Tap("Apply");
-			App.WaitForElement("SafeAreaEdgesValueLabel");
-		}
-
-		private void SelectUniform(string automationId)
-		{
-			App.WaitForElement(automationId);
-			App.Tap(automationId);
-		}
-
-		private string GetDisplayString()
-		{
-			return App.FindElement("SafeAreaEdgesValueLabel").GetText();
-		}
-
 		// ──────────────────────────────────────────────
-		// Category 1: Uniform SafeAreaRegions Values
+		// Uniform SafeAreaRegions via Buttons
 		// ──────────────────────────────────────────────
 
-		[Test, Order(1)]
+		[Test]
 		[Description("Content extends edge-to-edge behind system bars/notch")]
 		public void ValidateSafeAreaEdges_None()
 		{
-			NavigateToContentPage();
-			OpenOptionsAndApply(() =>
-			{
-				SelectUniform("UniformNone");
-			});
+			
+			App.WaitForElement("SafeAreaNoneButton");
+			App.Tap("SafeAreaNoneButton");
 
-			Assert.That(GetDisplayString(), Is.EqualTo("None"));
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("None"));
 
-			// With None, content goes edge-to-edge: top indicator should be at or near Y=0
 			var topRect = App.WaitForElement("TopEdgeIndicator").GetRect();
 			Assert.That(topRect.Y, Is.LessThanOrEqualTo(5), "Top indicator should be at the very top (edge-to-edge)");
 		}
@@ -68,15 +37,11 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Description("Content inset from all system UI (status bar, nav bar, notch, home indicator)")]
 		public void ValidateSafeAreaEdges_All()
 		{
-			NavigateToContentPage();
-			OpenOptionsAndApply(() =>
-			{
-				SelectUniform("UniformAll");
-			});
+			App.WaitForElement("SafeAreaAllButton");
+			App.Tap("SafeAreaAllButton");
 
-			Assert.That(GetDisplayString(), Is.EqualTo("All"));
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("All"));
 
-			// With All, content is inset: top indicator should be pushed down from Y=0
 			var topRect = App.WaitForElement("TopEdgeIndicator").GetRect();
 			Assert.That(topRect.Y, Is.GreaterThan(5), "Top indicator should be inset from the top edge");
 		}
@@ -85,13 +50,10 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Description("Content avoids system bars/notch but can extend under keyboard area")]
 		public void ValidateSafeAreaEdges_Container()
 		{
-			NavigateToContentPage();
-			OpenOptionsAndApply(() =>
-			{
-				SelectUniform("UniformContainer");
-			});
+			App.WaitForElement("SafeAreaContainerButton");
+			App.Tap("SafeAreaContainerButton");
 
-			Assert.That(GetDisplayString(), Is.EqualTo("Container"));
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("Container"));
 
 			var topRect = App.WaitForElement("TopEdgeIndicator").GetRect();
 			Assert.That(topRect.Y, Is.GreaterThan(5), "Top indicator should be inset from the top edge for Container");
@@ -101,15 +63,11 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Description("Content flows under system bars/notch but avoids keyboard")]
 		public void ValidateSafeAreaEdges_SoftInput()
 		{
-			NavigateToContentPage();
-			OpenOptionsAndApply(() =>
-			{
-				SelectUniform("UniformSoftInput");
-			});
+			App.WaitForElement("SafeAreaSoftInputButton");
+			App.Tap("SafeAreaSoftInputButton");
 
-			Assert.That(GetDisplayString(), Is.EqualTo("SoftInput"));
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("SoftInput"));
 
-			// SoftInput only avoids keyboard, content goes under system bars
 			var topRect = App.WaitForElement("TopEdgeIndicator").GetRect();
 			Assert.That(topRect.Y, Is.LessThanOrEqualTo(5), "Top indicator should be at the top (SoftInput doesn't avoid system bars)");
 		}
@@ -118,35 +76,33 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Description("ContentPage defaults to None behavior")]
 		public void ValidateSafeAreaEdges_Default()
 		{
-			NavigateToContentPage();
-			OpenOptionsAndApply(() =>
-			{
-				SelectUniform("UniformDefault");
-			});
+			App.WaitForElement("SafeAreaDefaultButton");
+			App.Tap("SafeAreaDefaultButton");
 
-			Assert.That(GetDisplayString(), Is.EqualTo("Default"));
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("Default"));
 		}
 
 		// ──────────────────────────────────────────────
-		// Category 2: Per-Edge Configuration
+		// Per-Edge Configuration (via Options)
 		// ──────────────────────────────────────────────
 
 		[Test]
 		[Description("Only top avoids status bar/notch. Other edges edge-to-edge.")]
 		public void ValidatePerEdge_TopContainerOnly()
 		{
-			NavigateToContentPage();
-			OpenOptionsAndApply(() =>
-			{
-				App.Tap("LeftNone");
-				App.Tap("TopContainer");
-				App.Tap("RightNone");
-				App.Tap("BottomNone");
-			});
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("LeftNone");
+			App.Tap("LeftNone");
+			App.Tap("TopContainer");
+			App.Tap("RightNone");
+			App.Tap("BottomNone");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
 
-			Assert.That(GetDisplayString(), Is.EqualTo("L:None, T:Container, R:None, B:None"));
+			App.WaitForElement("SafeAreaEdgesValueLabel");
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("L:None, T:Container, R:None, B:None"));
 
-			// Top should be inset, left should be at x=0
 			var topRect = App.WaitForElement("TopEdgeIndicator").GetRect();
 			Assert.That(topRect.Y, Is.GreaterThan(5), "Top should be inset (Container)");
 
@@ -158,16 +114,18 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Description("Sides/top avoid system bars; bottom avoids only keyboard")]
 		public void ValidatePerEdge_BottomSoftInput_SidesContainer()
 		{
-			NavigateToContentPage();
-			OpenOptionsAndApply(() =>
-			{
-				App.Tap("LeftContainer");
-				App.Tap("TopContainer");
-				App.Tap("RightContainer");
-				App.Tap("BottomSoftInput");
-			});
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("LeftContainer");
+			App.Tap("LeftContainer");
+			App.Tap("TopContainer");
+			App.Tap("RightContainer");
+			App.Tap("BottomSoftInput");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
 
-			Assert.That(GetDisplayString(), Is.EqualTo("L:Container, T:Container, R:Container, B:SoftInput"));
+			App.WaitForElement("SafeAreaEdgesValueLabel");
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("L:Container, T:Container, R:Container, B:SoftInput"));
 
 			var topRect = App.WaitForElement("TopEdgeIndicator").GetRect();
 			Assert.That(topRect.Y, Is.GreaterThan(5), "Top should be inset (Container)");
@@ -180,16 +138,18 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Description("Top/bottom respect all insets; left/right edge-to-edge")]
 		public void ValidatePerEdge_TopBottomAll_SidesNone()
 		{
-			NavigateToContentPage();
-			OpenOptionsAndApply(() =>
-			{
-				App.Tap("LeftNone");
-				App.Tap("TopAll");
-				App.Tap("RightNone");
-				App.Tap("BottomAll");
-			});
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("LeftNone");
+			App.Tap("LeftNone");
+			App.Tap("TopAll");
+			App.Tap("RightNone");
+			App.Tap("BottomAll");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
 
-			Assert.That(GetDisplayString(), Is.EqualTo("L:None, T:All, R:None, B:All"));
+			App.WaitForElement("SafeAreaEdgesValueLabel");
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("L:None, T:All, R:None, B:All"));
 
 			var topRect = App.WaitForElement("TopEdgeIndicator").GetRect();
 			Assert.That(topRect.Y, Is.GreaterThan(5), "Top should be inset (All)");
@@ -202,125 +162,124 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Description("Each edge independently applies its behavior")]
 		public void ValidatePerEdge_AllDifferent()
 		{
-			NavigateToContentPage();
-			OpenOptionsAndApply(() =>
-			{
-				App.Tap("LeftNone");
-				App.Tap("TopContainer");
-				App.Tap("RightSoftInput");
-				App.Tap("BottomAll");
-			});
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("LeftNone");
+			App.Tap("LeftNone");
+			App.Tap("TopContainer");
+			App.Tap("RightSoftInput");
+			App.Tap("BottomAll");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
 
-			Assert.That(GetDisplayString(), Is.EqualTo("L:None, T:Container, R:SoftInput, B:All"));
+			App.WaitForElement("SafeAreaEdgesValueLabel");
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("L:None, T:Container, R:SoftInput, B:All"));
 		}
 
 		// ──────────────────────────────────────────────
-		// Category 3: Keyboard Interaction (SoftInput)
+		// Keyboard Interaction (SoftInput)
 		// ──────────────────────────────────────────────
 
 		[Test]
 		[Description("Content shifts to avoid keyboard when SafeAreaEdges is All")]
 		public void ValidateKeyboard_All()
 		{
-			NavigateToContentPage();
-			OpenOptionsAndApply(() =>
-			{
-				SelectUniform("UniformAll");
-			});
+			App.WaitForElement("SafeAreaAllButton");
+			App.Tap("SafeAreaAllButton");
+
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("All"));
 
 			var entryRectBefore = App.WaitForElement("SafeAreaTestEntry").GetRect();
 			App.Tap("SafeAreaTestEntry");
 
-			// Entry should still be visible after keyboard opens
 			var entryRectAfter = App.WaitForElement("SafeAreaTestEntry").GetRect();
-			Assert.That(GetDisplayString(), Is.EqualTo("All"));
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("All"));
 		}
 
 		[Test]
 		[Description("Content under system bars but above keyboard")]
 		public void ValidateKeyboard_SoftInput()
 		{
-			NavigateToContentPage();
-			OpenOptionsAndApply(() =>
-			{
-				SelectUniform("UniformSoftInput");
-			});
+			App.WaitForElement("SafeAreaSoftInputButton");
+			App.Tap("SafeAreaSoftInputButton");
+
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("SoftInput"));
 
 			App.WaitForElement("SafeAreaTestEntry");
 			App.Tap("SafeAreaTestEntry");
 
-			Assert.That(GetDisplayString(), Is.EqualTo("SoftInput"));
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("SoftInput"));
 		}
 
 		[Test]
 		[Description("Keyboard overlaps content, no adjustment")]
 		public void ValidateKeyboard_None()
 		{
-			NavigateToContentPage();
-			OpenOptionsAndApply(() =>
-			{
-				SelectUniform("UniformNone");
-			});
+			App.WaitForElement("SafeAreaNoneButton");
+			App.Tap("SafeAreaNoneButton");
+
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("None"));
 
 			App.WaitForElement("SafeAreaTestEntry");
 			App.Tap("SafeAreaTestEntry");
 
-			Assert.That(GetDisplayString(), Is.EqualTo("None"));
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("None"));
 		}
 
 		[Test]
 		[Description("System bars avoided, keyboard may overlap")]
 		public void ValidateKeyboard_Container()
 		{
-			NavigateToContentPage();
-			OpenOptionsAndApply(() =>
-			{
-				SelectUniform("UniformContainer");
-			});
+			App.WaitForElement("SafeAreaContainerButton");
+			App.Tap("SafeAreaContainerButton");
+
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("Container"));
 
 			App.WaitForElement("SafeAreaTestEntry");
 			App.Tap("SafeAreaTestEntry");
 
-			Assert.That(GetDisplayString(), Is.EqualTo("Container"));
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("Container"));
 		}
 
 		[Test]
 		[Description("Entry at bottom shifts above keyboard with per-edge SoftInput on bottom")]
 		public void ValidateKeyboard_BottomSoftInput()
 		{
-			NavigateToContentPage();
-			OpenOptionsAndApply(() =>
-			{
-				App.Tap("LeftContainer");
-				App.Tap("TopContainer");
-				App.Tap("RightContainer");
-				App.Tap("BottomSoftInput");
-			});
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("LeftContainer");
+			App.Tap("LeftContainer");
+			App.Tap("TopContainer");
+			App.Tap("RightContainer");
+			App.Tap("BottomSoftInput");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
 
 			App.WaitForElement("SafeAreaTestEntry");
 			App.Tap("SafeAreaTestEntry");
 
-			Assert.That(GetDisplayString(), Is.EqualTo("L:Container, T:Container, R:Container, B:SoftInput"));
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("L:Container, T:Container, R:Container, B:SoftInput"));
 		}
 
 		// ──────────────────────────────────────────────
-		// Category 4: Interaction with ContentPage Properties
+		// Interaction with ContentPage Properties
 		// ──────────────────────────────────────────────
 
 		[Test]
 		[Description("Safe area insets and padding are additive")]
 		public void ValidateSafeArea_WithPadding()
 		{
-			NavigateToContentPage();
-			OpenOptionsAndApply(() =>
-			{
-				SelectUniform("UniformAll");
-				App.Tap("PaddingCheckBox");
-			});
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("UniformAll");
+			App.Tap("UniformAll");
+			App.Tap("PaddingCheckBox");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
 
-			Assert.That(GetDisplayString(), Is.EqualTo("All"));
+			App.WaitForElement("SafeAreaEdgesValueLabel");
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("All"));
 
-			// With padding + safe area, the top indicator should be pushed down even further
 			var topRect = App.WaitForElement("TopEdgeIndicator").GetRect();
 			Assert.That(topRect.Y, Is.GreaterThan(20), "Top indicator should be inset by safe area + padding");
 		}
@@ -329,65 +288,55 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Description("Background extends edge-to-edge behind system UI")]
 		public void ValidateSafeArea_None_WithBackground()
 		{
-			NavigateToContentPage();
-			OpenOptionsAndApply(() =>
-			{
-				SelectUniform("UniformNone");
-				App.Tap("BackgroundCheckBox");
-			});
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("UniformNone");
+			App.Tap("UniformNone");
+			App.Tap("BackgroundCheckBox");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
 
-			Assert.That(GetDisplayString(), Is.EqualTo("None"));
+			App.WaitForElement("SafeAreaEdgesValueLabel");
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("None"));
 		}
 
 		// ──────────────────────────────────────────────
-		// Category 5: Dynamic Runtime Changes
+		// Dynamic Runtime Changes via Buttons
 		// ──────────────────────────────────────────────
 
 		[Test]
-		[Description("Content shifts from edge-to-edge to inset")]
+		[Description("Content shifts from edge-to-edge to inset using runtime buttons")]
 		public void ValidateDynamic_NoneToAll()
 		{
-			NavigateToContentPage();
-			OpenOptionsAndApply(() =>
-			{
-				SelectUniform("UniformNone");
-			});
+			App.WaitForElement("SafeAreaNoneButton");
+			App.Tap("SafeAreaNoneButton");
 
-			// Verify initial state (None)
-			Assert.That(GetDisplayString(), Is.EqualTo("None"));
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("None"));
 			var topRectBefore = App.WaitForElement("TopEdgeIndicator").GetRect();
 			Assert.That(topRectBefore.Y, Is.LessThanOrEqualTo(5), "Before: top should be edge-to-edge");
 
-			// Toggle to All via ChangeSafeAreaButton
-			App.WaitForElement("ChangeSafeAreaButton");
-			App.Tap("ChangeSafeAreaButton");
+			App.Tap("SafeAreaAllButton");
 
-			Assert.That(GetDisplayString(), Is.EqualTo("All"));
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("All"));
 			var topRectAfter = App.WaitForElement("TopEdgeIndicator").GetRect();
 			Assert.That(topRectAfter.Y, Is.GreaterThan(5), "After: top should be inset");
 			Assert.That(topRectAfter.Y, Is.GreaterThan(topRectBefore.Y), "Top indicator should have moved down");
 		}
 
 		[Test]
-		[Description("Content expands to edge-to-edge")]
+		[Description("Content expands to edge-to-edge using runtime buttons")]
 		public void ValidateDynamic_AllToNone()
 		{
-			NavigateToContentPage();
-			OpenOptionsAndApply(() =>
-			{
-				SelectUniform("UniformAll");
-			});
+			App.WaitForElement("SafeAreaAllButton");
+			App.Tap("SafeAreaAllButton");
 
-			// Verify initial state (All)
-			Assert.That(GetDisplayString(), Is.EqualTo("All"));
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("All"));
 			var topRectBefore = App.WaitForElement("TopEdgeIndicator").GetRect();
 			Assert.That(topRectBefore.Y, Is.GreaterThan(5), "Before: top should be inset");
 
-			// Toggle to None via ChangeSafeAreaButton
-			App.WaitForElement("ChangeSafeAreaButton");
-			App.Tap("ChangeSafeAreaButton");
+			App.Tap("SafeAreaNoneButton");
 
-			Assert.That(GetDisplayString(), Is.EqualTo("None"));
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("None"));
 			var topRectAfter = App.WaitForElement("TopEdgeIndicator").GetRect();
 			Assert.That(topRectAfter.Y, Is.LessThanOrEqualTo(5), "After: top should be edge-to-edge");
 			Assert.That(topRectAfter.Y, Is.LessThan(topRectBefore.Y), "Top indicator should have moved up");
@@ -397,58 +346,69 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Description("Behavior transitions correctly from Container to SoftInput")]
 		public void ValidateDynamic_ContainerToSoftInput()
 		{
-			NavigateToContentPage();
-			OpenOptionsAndApply(() =>
-			{
-				SelectUniform("UniformContainer");
-			});
+			App.WaitForElement("SafeAreaContainerButton");
+			App.Tap("SafeAreaContainerButton");
 
-			Assert.That(GetDisplayString(), Is.EqualTo("Container"));
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("Container"));
 			var topRectBefore = App.WaitForElement("TopEdgeIndicator").GetRect();
 			Assert.That(topRectBefore.Y, Is.GreaterThan(5), "Container: top should be inset");
 
-			// Navigate to options and switch to SoftInput
-			OpenOptionsAndApply(() =>
-			{
-				SelectUniform("UniformSoftInput");
-			});
+			App.Tap("SafeAreaSoftInputButton");
 
-			Assert.That(GetDisplayString(), Is.EqualTo("SoftInput"));
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("SoftInput"));
 			var topRectAfter = App.WaitForElement("TopEdgeIndicator").GetRect();
 			Assert.That(topRectAfter.Y, Is.LessThanOrEqualTo(5), "SoftInput: top should be edge-to-edge");
 		}
 
 		[Test]
-		[Description("Per-edge layout updates correctly at runtime")]
+		[Description("Cycle through all values: None, All, Container, SoftInput, Default")]
+		public void ValidateDynamic_CycleThroughAll()
+		{
+			App.WaitForElement("SafeAreaNoneButton");
+
+			App.Tap("SafeAreaNoneButton");
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("None"));
+
+			App.Tap("SafeAreaAllButton");
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("All"));
+
+			App.Tap("SafeAreaContainerButton");
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("Container"));
+
+			App.Tap("SafeAreaSoftInputButton");
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("SoftInput"));
+
+			App.Tap("SafeAreaDefaultButton");
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("Default"));
+		}
+
+		[Test]
+		[Description("Per-edge layout updates correctly at runtime via Options")]
 		public void ValidateDynamic_PerEdgeChange()
 		{
-			NavigateToContentPage();
-			OpenOptionsAndApply(() =>
-			{
-				App.Tap("LeftNone");
-				App.Tap("TopNone");
-				App.Tap("RightNone");
-				App.Tap("BottomNone");
-			});
+			App.WaitForElement("SafeAreaNoneButton");
+			App.Tap("SafeAreaNoneButton");
 
-			Assert.That(GetDisplayString(), Is.EqualTo("None"));
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("None"));
 			var topRectBefore = App.WaitForElement("TopEdgeIndicator").GetRect();
 			Assert.That(topRectBefore.Y, Is.LessThanOrEqualTo(5), "Before: all edges None");
 
-			// Change to per-edge Container on top/bottom
-			OpenOptionsAndApply(() =>
-			{
-				App.Tap("TopContainer");
-				App.Tap("BottomContainer");
-			});
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("TopContainer");
+			App.Tap("TopContainer");
+			App.Tap("BottomContainer");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
 
-			Assert.That(GetDisplayString(), Is.EqualTo("L:None, T:Container, R:None, B:Container"));
+			App.WaitForElement("SafeAreaEdgesValueLabel");
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("L:None, T:Container, R:None, B:Container"));
 			var topRectAfter = App.WaitForElement("TopEdgeIndicator").GetRect();
 			Assert.That(topRectAfter.Y, Is.GreaterThan(5), "After: top should be inset (Container)");
 		}
 
 		// ──────────────────────────────────────────────
-		// Category 6: Platform-Specific Behavior
+		// Platform-Specific Behavior
 		// ──────────────────────────────────────────────
 
 #if IOS
@@ -456,13 +416,10 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Description("Container/All avoids notch/Dynamic Island on iOS")]
 		public void ValidateiOS_NotchAvoidance()
 		{
-			NavigateToContentPage();
-			OpenOptionsAndApply(() =>
-			{
-				SelectUniform("UniformContainer");
-			});
+			App.WaitForElement("SafeAreaContainerButton");
+			App.Tap("SafeAreaContainerButton");
 
-			Assert.That(GetDisplayString(), Is.EqualTo("Container"));
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("Container"));
 			var topRect = App.WaitForElement("TopEdgeIndicator").GetRect();
 			Assert.That(topRect.Y, Is.GreaterThan(20), "Container should avoid notch/Dynamic Island on iOS");
 		}
@@ -471,13 +428,10 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Description("Container/All avoids home indicator on iOS")]
 		public void ValidateiOS_HomeIndicatorAvoidance()
 		{
-			NavigateToContentPage();
-			OpenOptionsAndApply(() =>
-			{
-				SelectUniform("UniformAll");
-			});
+			App.WaitForElement("SafeAreaAllButton");
+			App.Tap("SafeAreaAllButton");
 
-			Assert.That(GetDisplayString(), Is.EqualTo("All"));
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("All"));
 			var topRect = App.WaitForElement("TopEdgeIndicator").GetRect();
 			Assert.That(topRect.Y, Is.GreaterThan(20), "All should avoid notch/home indicator on iOS");
 		}
@@ -488,13 +442,10 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Description("Container/All avoids Android status bar")]
 		public void ValidateAndroid_StatusBarAvoidance()
 		{
-			NavigateToContentPage();
-			OpenOptionsAndApply(() =>
-			{
-				SelectUniform("UniformContainer");
-			});
+			App.WaitForElement("SafeAreaContainerButton");
+			App.Tap("SafeAreaContainerButton");
 
-			Assert.That(GetDisplayString(), Is.EqualTo("Container"));
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("Container"));
 			var topRect = App.WaitForElement("TopEdgeIndicator").GetRect();
 			Assert.That(topRect.Y, Is.GreaterThan(5), "Container should avoid status bar on Android");
 		}
@@ -503,13 +454,10 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Description("Container/All avoids navigation bar on Android")]
 		public void ValidateAndroid_NavBarAvoidance()
 		{
-			NavigateToContentPage();
-			OpenOptionsAndApply(() =>
-			{
-				SelectUniform("UniformAll");
-			});
+			App.WaitForElement("SafeAreaAllButton");
+			App.Tap("SafeAreaAllButton");
 
-			Assert.That(GetDisplayString(), Is.EqualTo("All"));
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("All"));
 			var topRect = App.WaitForElement("TopEdgeIndicator").GetRect();
 			Assert.That(topRect.Y, Is.GreaterThan(5), "All should avoid status bar on Android");
 		}
@@ -518,54 +466,195 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Description("ContentPage defaults to None (edge-to-edge) in .NET 10")]
 		public void ValidateAndroid_DefaultIsNone()
 		{
-			NavigateToContentPage();
-			// Do not change any options - verify default behavior
-			Assert.That(GetDisplayString(), Is.EqualTo("None"));
+			App.WaitForElement("SafeAreaEdgesValueLabel");
+
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("None"));
 			var topRect = App.WaitForElement("TopEdgeIndicator").GetRect();
 			Assert.That(topRect.Y, Is.LessThanOrEqualTo(5), "Default (None) should be edge-to-edge on Android");
 		}
 #endif
 
+		// ──────────────────────────────────────────────
+		// Orientation / Landscape Validation
+		// ──────────────────────────────────────────────
+
 		[Test]
-		[Description("Safe area insets update on device rotation")]
-		public void ValidateOrientationChange()
+		[Description("None: portrait top/bottom and landscape left/right are all edge-to-edge")]
+		public void ValidateOrientation_None_AllEdges()
 		{
-			NavigateToContentPage();
-			OpenOptionsAndApply(() =>
-			{
-				SelectUniform("UniformContainer");
-			});
+			App.WaitForElement("SafeAreaNoneButton");
+			App.Tap("SafeAreaNoneButton");
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("None"));
 
-			Assert.That(GetDisplayString(), Is.EqualTo("Container"));
-			var topRectPortrait = App.WaitForElement("TopEdgeIndicator").GetRect();
-			Assert.That(topRectPortrait.Y, Is.GreaterThan(5), "Portrait: top should be inset");
+			// Portrait: top and bottom
+			var topRect = App.WaitForElement("TopEdgeIndicator").GetRect();
+			Assert.That(topRect.Y, Is.LessThanOrEqualTo(5), "Portrait: top should be edge-to-edge");
+			App.WaitForElement("BottomEdgeIndicator");
 
+			// Landscape: left and right
+			App.SetOrientationLandscape();
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("None"));
+			var leftRect = App.WaitForElement("LeftEdgeIndicator").GetRect();
+			Assert.That(leftRect.X, Is.LessThanOrEqualTo(5), "Landscape: left should be edge-to-edge");
+			App.WaitForElement("RightEdgeIndicator");
+
+			App.SetOrientationPortrait();
+		}
+
+		[Test]
+		[Description("All: portrait top/bottom and landscape left/right are all inset")]
+		public void ValidateOrientation_All_AllEdges()
+		{
+			App.WaitForElement("SafeAreaAllButton");
+			App.Tap("SafeAreaAllButton");
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("All"));
+
+			// Portrait: top and bottom
+			var topRect = App.WaitForElement("TopEdgeIndicator").GetRect();
+			Assert.That(topRect.Y, Is.GreaterThan(5), "Portrait: top should be inset");
+			App.WaitForElement("BottomEdgeIndicator");
+
+			// Landscape: left and right
+			App.SetOrientationLandscape();
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("All"));
+			App.WaitForElement("LeftEdgeIndicator");
+			App.WaitForElement("RightEdgeIndicator");
+
+			App.SetOrientationPortrait();
+		}
+
+		[Test]
+		[Description("Container: portrait top/bottom and landscape left/right respect system bars")]
+		public void ValidateOrientation_Container_AllEdges()
+		{
+			App.WaitForElement("SafeAreaContainerButton");
+			App.Tap("SafeAreaContainerButton");
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("Container"));
+
+			// Portrait: top and bottom
+			var topRect = App.WaitForElement("TopEdgeIndicator").GetRect();
+			Assert.That(topRect.Y, Is.GreaterThan(5), "Portrait: top should be inset");
+			App.WaitForElement("BottomEdgeIndicator");
+
+			// Landscape: left and right
+			App.SetOrientationLandscape();
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("Container"));
+			App.WaitForElement("LeftEdgeIndicator");
+			App.WaitForElement("RightEdgeIndicator");
+
+			App.SetOrientationPortrait();
+		}
+
+		[Test]
+		[Description("SoftInput: portrait top/bottom and landscape left/right are edge-to-edge for system bars")]
+		public void ValidateOrientation_SoftInput_AllEdges()
+		{
+			App.WaitForElement("SafeAreaSoftInputButton");
+			App.Tap("SafeAreaSoftInputButton");
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("SoftInput"));
+
+			// Portrait: top and bottom
+			var topRect = App.WaitForElement("TopEdgeIndicator").GetRect();
+			Assert.That(topRect.Y, Is.LessThanOrEqualTo(5), "Portrait: top should be edge-to-edge");
+			App.WaitForElement("BottomEdgeIndicator");
+
+			// Landscape: left and right
+			App.SetOrientationLandscape();
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("SoftInput"));
+			var leftRect = App.WaitForElement("LeftEdgeIndicator").GetRect();
+			Assert.That(leftRect.X, Is.LessThanOrEqualTo(5), "Landscape: left should be edge-to-edge");
+			App.WaitForElement("RightEdgeIndicator");
+
+			App.SetOrientationPortrait();
+		}
+
+		[Test]
+		[Description("Switching None to All in portrait validates all 4 edges shift inward")]
+		public void ValidateOrientation_Portrait_NoneVsAll_EdgeComparison()
+		{
+			// Capture all 4 edge positions with None
+			App.WaitForElement("SafeAreaNoneButton");
+			App.Tap("SafeAreaNoneButton");
+
+			var topNone = App.WaitForElement("TopEdgeIndicator").GetRect();
+			var bottomNone = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			var leftNone = App.WaitForElement("LeftEdgeIndicator").GetRect();
+			var rightNone = App.WaitForElement("RightEdgeIndicator").GetRect();
+
+			// Switch to All and capture again
+			App.Tap("SafeAreaAllButton");
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("All"));
+
+			var topAll = App.WaitForElement("TopEdgeIndicator").GetRect();
+			var bottomAll = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			var leftAll = App.WaitForElement("LeftEdgeIndicator").GetRect();
+			var rightAll = App.WaitForElement("RightEdgeIndicator").GetRect();
+
+			// Top and left edges should move inward (greater values)
+			Assert.That(topAll.Y, Is.GreaterThanOrEqualTo(topNone.Y), "Portrait: All top inset >= None top");
+			Assert.That(leftAll.X, Is.GreaterThanOrEqualTo(leftNone.X), "Portrait: All left inset >= None left");
+
+			// Bottom and right edges should move inward (smaller end positions)
+			var bottomEdgeNone = bottomNone.Y + bottomNone.Height;
+			var bottomEdgeAll = bottomAll.Y + bottomAll.Height;
+			Assert.That(bottomEdgeAll, Is.LessThanOrEqualTo(bottomEdgeNone), "Portrait: All bottom edge <= None bottom edge");
+
+			var rightEdgeNone = rightNone.X + rightNone.Width;
+			var rightEdgeAll = rightAll.X + rightAll.Width;
+			Assert.That(rightEdgeAll, Is.LessThanOrEqualTo(rightEdgeNone), "Portrait: All right edge <= None right edge");
+		}
+
+		[Test]
+		[Description("Switching None to All in landscape validates all 4 edges shift inward")]
+		public void ValidateOrientation_Landscape_NoneVsAll_EdgeComparison()
+		{
+			// Set None and rotate to landscape
+			App.WaitForElement("SafeAreaNoneButton");
+			App.Tap("SafeAreaNoneButton");
 			App.SetOrientationLandscape();
 
-			var topRectLandscape = App.WaitForElement("TopEdgeIndicator").GetRect();
-			Assert.That(GetDisplayString(), Is.EqualTo("Container"));
+			var topNone = App.WaitForElement("TopEdgeIndicator").GetRect();
+			var bottomNone = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			var leftNone = App.WaitForElement("LeftEdgeIndicator").GetRect();
+			var rightNone = App.WaitForElement("RightEdgeIndicator").GetRect();
 
-			// In landscape, left edge should be inset (on devices with notch)
-			var leftRect = App.WaitForElement("LeftEdgeIndicator").GetRect();
+			// Switch to All while still in landscape
+			App.Tap("SafeAreaAllButton");
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("All"));
+
+			var topAll = App.WaitForElement("TopEdgeIndicator").GetRect();
+			var bottomAll = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			var leftAll = App.WaitForElement("LeftEdgeIndicator").GetRect();
+			var rightAll = App.WaitForElement("RightEdgeIndicator").GetRect();
+
+			// Top and left edges should move inward (greater values)
+			Assert.That(topAll.Y, Is.GreaterThanOrEqualTo(topNone.Y), "Landscape: All top inset >= None top");
+			Assert.That(leftAll.X, Is.GreaterThanOrEqualTo(leftNone.X), "Landscape: All left inset >= None left");
+
+			// Bottom and right edges should move inward (smaller end positions)
+			var bottomEdgeNone = bottomNone.Y + bottomNone.Height;
+			var bottomEdgeAll = bottomAll.Y + bottomAll.Height;
+			Assert.That(bottomEdgeAll, Is.LessThanOrEqualTo(bottomEdgeNone), "Landscape: All bottom edge <= None bottom edge");
+
+			var rightEdgeNone = rightNone.X + rightNone.Width;
+			var rightEdgeAll = rightAll.X + rightAll.Width;
+			Assert.That(rightEdgeAll, Is.LessThanOrEqualTo(rightEdgeNone), "Landscape: All right edge <= None right edge");
 
 			App.SetOrientationPortrait();
 		}
 
 		// ──────────────────────────────────────────────
-		// Category 7: Legacy API Migration
+		// Legacy API Migration
 		// ──────────────────────────────────────────────
 
 		[Test]
 		[Description("UseSafeArea=True equivalent to SafeAreaEdges=Container")]
 		public void ValidateLegacy_UseSafeAreaTrue()
 		{
-			NavigateToContentPage();
-			OpenOptionsAndApply(() =>
-			{
-				SelectUniform("UniformContainer");
-			});
+			App.WaitForElement("SafeAreaContainerButton");
+			App.Tap("SafeAreaContainerButton");
 
-			Assert.That(GetDisplayString(), Is.EqualTo("Container"));
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("Container"));
 			var topRect = App.WaitForElement("TopEdgeIndicator").GetRect();
 			Assert.That(topRect.Y, Is.GreaterThan(5), "Container (legacy UseSafeArea=True) should inset from system bars");
 		}
@@ -574,13 +663,10 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Description("UseSafeArea=False equivalent to SafeAreaEdges=None")]
 		public void ValidateLegacy_UseSafeAreaFalse()
 		{
-			NavigateToContentPage();
-			OpenOptionsAndApply(() =>
-			{
-				SelectUniform("UniformNone");
-			});
+			App.WaitForElement("SafeAreaNoneButton");
+			App.Tap("SafeAreaNoneButton");
 
-			Assert.That(GetDisplayString(), Is.EqualTo("None"));
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("None"));
 			var topRect = App.WaitForElement("TopEdgeIndicator").GetRect();
 			Assert.That(topRect.Y, Is.LessThanOrEqualTo(5), "None (legacy UseSafeArea=False) should be edge-to-edge");
 		}
