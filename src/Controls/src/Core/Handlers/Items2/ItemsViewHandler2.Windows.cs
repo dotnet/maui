@@ -268,6 +268,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			_footer = null;
 			_footerDisplayed = false;
 
+			_cachedSnapPointOffsets = null;
+			_lastSnapPointExtent = 0;
+
 			base.DisconnectHandler(platformView);
 		}
 
@@ -743,9 +746,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 		}
 
+		double _lastSnapPointExtent;
+		List<double>? _cachedSnapPointOffsets;
+		SnapPointsType _cachedSnapPointsType;
+		SnapPointsAlignment _cachedSnapPointsAlignment;
+
 		void ScrollViewExtentChanged(Microsoft.UI.Xaml.Controls.ScrollView sender, object args)
 		{
-			UpdateSnapPoints();
+			// Only recalculate snap points when the extent actually changes
+			// to avoid redundant work during intermediate layout passes.
+			var currentExtent = IsLayoutHorizontal ? sender.ExtentWidth : sender.ExtentHeight;
+			if (currentExtent != _lastSnapPointExtent)
+			{
+				_lastSnapPointExtent = currentExtent;
+				UpdateSnapPoints();
+			}
 		}
 
 		void UpdateSnapPoints()
@@ -762,50 +777,41 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			var snapPointsType = itemsLayout.SnapPointsType;
 
-			// Clear existing snap points
-			if (IsLayoutHorizontal)
-			{
-				scrollPresenter.HorizontalSnapPoints.Clear();
-			}
-			else
-			{
-				scrollPresenter.VerticalSnapPoints.Clear();
-			}
-
 			if (snapPointsType == SnapPointsType.None)
 			{
+				scrollPresenter.HorizontalSnapPoints.Clear();
+				scrollPresenter.VerticalSnapPoints.Clear();
+				_cachedSnapPointOffsets = null;
+				_cachedSnapPointsType = SnapPointsType.None;
 				return;
 			}
 
-			// We need realized items to compute the snap interval.
-			// Use the first visible item container's size + spacing.
+			// NOTE: MandatorySingle is treated identically to Mandatory.
+			// WinUI's ScrollPresenter snap point object model does not natively support
+			// "single item per gesture" limiting. Both Mandatory and MandatorySingle
+			// will snap to the nearest snap point, but a fling gesture can skip past
+			// multiple items. A true MandatorySingle implementation would require
+			// intercepting scroll inertia to limit travel distance, which is not
+			// supported by the current ScrollPresenter API.
+
 			var itemCount = _collectionViewSource?.View?.Count ?? 0;
 			if (itemCount == 0)
 			{
+				scrollPresenter.HorizontalSnapPoints.Clear();
+				scrollPresenter.VerticalSnapPoints.Clear();
+				_cachedSnapPointOffsets = null;
 				return;
 			}
 
-			double itemExtent = 0;
+			var snapAlignment = itemsLayout.SnapPointsAlignment;
+
+			// Compute offsets from realized item containers.
+			// Uses actual measured sizes to handle variable-size items,
+			// complex templates, and async image loading.
+			double runningOffset = 0;
 			double spacing = 0;
+			var newOffsets = new List<double>();
 
-			// Try to get the size of the first realized item container
-			foreach (var container in PlatformView.GetChildren<ItemContainer>())
-			{
-				if (container is not null)
-				{
-					itemExtent = IsLayoutHorizontal ? container.ActualWidth : container.ActualHeight;
-					break;
-				}
-			}
-
-			if (itemExtent <= 0)
-			{
-				// Items not yet realized, snap points will be applied
-				// when ExtentChanged fires after items are laid out.
-				return;
-			}
-
-			// Get spacing from the layout
 			if (Layout is LinearItemsLayout linearLayout)
 			{
 				spacing = linearLayout.ItemSpacing;
@@ -815,41 +821,60 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				spacing = IsLayoutHorizontal ? gridLayout.HorizontalItemSpacing : gridLayout.VerticalItemSpacing;
 			}
 
-			double interval = itemExtent + spacing;
-			if (interval <= 0)
+			foreach (var container in PlatformView.GetChildren<ItemContainer>())
+			{
+				if (container is null)
+				{
+					continue;
+				}
+
+				double itemExtent = IsLayoutHorizontal ? container.ActualWidth : container.ActualHeight;
+				if (itemExtent <= 0)
+				{
+					continue;
+				}
+
+				newOffsets.Add(runningOffset);
+				runningOffset += itemExtent + spacing;
+			}
+
+			if (newOffsets.Count == 0)
+			{
+				// Items not yet realized; snap points will be applied
+				// when ExtentChanged fires after items are laid out.
+				return;
+			}
+
+			// Skip rebuild if snap points haven't changed — avoids redundant
+			// WinUI collection clears and allocations on every ExtentChanged.
+			if (_cachedSnapPointOffsets is not null &&
+				_cachedSnapPointsType == snapPointsType &&
+				_cachedSnapPointsAlignment == snapAlignment &&
+				_cachedSnapPointOffsets.Count == newOffsets.Count &&
+				_cachedSnapPointOffsets.SequenceEqual(newOffsets))
 			{
 				return;
 			}
 
-			var alignment = GetScrollSnapPointsAlignment(itemsLayout.SnapPointsAlignment);
+			// Rebuild snap points — clear both axes to handle orientation changes
+			var alignment = GetScrollSnapPointsAlignment(snapAlignment);
 
-			// Compute the extent range for the snap points
-			double extent = IsLayoutHorizontal
-				? scrollPresenter.ExtentWidth
-				: scrollPresenter.ExtentHeight;
+			scrollPresenter.HorizontalSnapPoints.Clear();
+			scrollPresenter.VerticalSnapPoints.Clear();
 
-			if (extent <= 0)
+			var snapPoints = IsLayoutHorizontal
+				? scrollPresenter.HorizontalSnapPoints
+				: scrollPresenter.VerticalSnapPoints;
+
+			foreach (var offset in newOffsets)
 			{
-				return;
+				snapPoints.Add(new Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPoint(
+					offset, alignment));
 			}
 
-			// RepeatedScrollSnapPoint: snap every 'interval' pixels starting from 'offset',
-			// within the range [start, end].
-			var snapPoint = new Microsoft.UI.Xaml.Controls.Primitives.RepeatedScrollSnapPoint(
-				0,          // offset: first snap point at position 0
-				interval,   // interval: distance between snap points
-				0,          // start: beginning of range
-				extent,     // end: full content extent
-				alignment);
-
-			if (IsLayoutHorizontal)
-			{
-				scrollPresenter.HorizontalSnapPoints.Add(snapPoint);
-			}
-			else
-			{
-				scrollPresenter.VerticalSnapPoints.Add(snapPoint);
-			}
+			_cachedSnapPointOffsets = newOffsets;
+			_cachedSnapPointsType = snapPointsType;
+			_cachedSnapPointsAlignment = snapAlignment;
 		}
 
 		static WScrollSnapPointsAlignment GetScrollSnapPointsAlignment(SnapPointsAlignment alignment)
