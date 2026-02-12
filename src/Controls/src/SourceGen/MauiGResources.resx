@@ -233,4 +233,11 @@
     <value>An element with the name "{0}" already exists in this NameScope.</value>
     <comment>0 is the duplicated key</comment>
   </data>
+  <data name="DuplicatePropertyAssignmentTitle" xml:space="preserve">
+    <value>Property set multiple times</value>
+  </data>
+  <data name="DuplicatePropertyAssignmentMessage" xml:space="preserve">
+    <value>Property '{0}' is being set multiple times. Only the last value will be used.</value>
+    <comment>0 is a property name (e.g., "Border.Content", "Label.Text")</comment>
+  </data>
 </root>
