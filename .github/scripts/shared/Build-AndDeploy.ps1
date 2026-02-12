@@ -106,7 +106,13 @@ if ($Platform -eq "android") {
     
     Write-Step "Building $projectName for iOS..."
     
-    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration)
+    # Detect host architecture for simulator builds
+    $hostArch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLower()
+    $runtimeId = if ($hostArch -eq "x64") { "iossimulator-x64" } else { "iossimulator-arm64" }
+    $simArch = if ($hostArch -eq "x64") { "x64" } else { "arm64" }
+    Write-Info "Host architecture: $hostArch, RuntimeIdentifier: $runtimeId"
+    
+    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-r", $runtimeId)
     if ($Rebuild) {
         $buildArgs += "--no-incremental"
     }
@@ -169,13 +175,26 @@ if ($Platform -eq "android") {
     }
     
     Write-Info "Searching for app bundle in: $artifactsDir"
+    
     $appPath = Get-ChildItem -Path $artifactsDir -Filter "*.app" -Recurse -ErrorAction SilentlyContinue | 
         Where-Object { 
-            $_.FullName -match "$Configuration.*iossimulator.*$projectName" -and 
+            $_.FullName -match "$Configuration.*iossimulator-$simArch.*$projectName" -and 
             $_.FullName -notmatch "\\obj\\" -and 
             $_.FullName -notmatch "/obj/"
         } |
         Select-Object -First 1
+    
+    # Fallback: try any iossimulator build if specific arch not found
+    if (-not $appPath) {
+        Write-Info "Specific arch ($simArch) not found, trying any iossimulator build..."
+        $appPath = Get-ChildItem -Path $artifactsDir -Filter "*.app" -Recurse -ErrorAction SilentlyContinue | 
+            Where-Object { 
+                $_.FullName -match "$Configuration.*iossimulator.*$projectName" -and 
+                $_.FullName -notmatch "\\obj\\" -and 
+                $_.FullName -notmatch "/obj/"
+            } |
+            Select-Object -First 1
+    }
     
     if (-not $appPath) {
         Write-Error "Could not find built app bundle in artifacts directory"
