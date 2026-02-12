@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.Maui.Controls.Maps.Pin.HideInfoWindow() -> void
+Microsoft.Maui.Controls.Maps.Pin.ShowInfoWindow() -> void

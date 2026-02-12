@@ -477,5 +477,61 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Items = itemsSource;
 			}
 		}
+
+		[Fact]
+		public void ShowInfoWindowDoesNotThrowWhenPinHasNoParent()
+		{
+			var pin = new Pin
+			{
+				Label = "Test",
+				Location = new Location(0, 0)
+			};
+
+			// Should not throw even without a parent map
+			pin.ShowInfoWindow();
+		}
+
+		[Fact]
+		public void HideInfoWindowDoesNotThrowWhenPinHasNoParent()
+		{
+			var pin = new Pin
+			{
+				Label = "Test",
+				Location = new Location(0, 0)
+			};
+
+			// Should not throw even without a parent map
+			pin.HideInfoWindow();
+		}
+
+		[Fact]
+		public void ShowInfoWindowOnPinAddedToMap()
+		{
+			var map = new Map();
+			var pin = new Pin
+			{
+				Label = "Test",
+				Location = new Location(47.6, -122.3)
+			};
+			map.Pins.Add(pin);
+
+			// Pin has a parent now; without a handler it's a no-op but should not throw
+			pin.ShowInfoWindow();
+		}
+
+		[Fact]
+		public void HideInfoWindowOnPinAddedToMap()
+		{
+			var map = new Map();
+			var pin = new Pin
+			{
+				Label = "Test",
+				Location = new Location(47.6, -122.3)
+			};
+			map.Pins.Add(pin);
+
+			// Pin has a parent now; without a handler it's a no-op but should not throw
+			pin.HideInfoWindow();
+		}
 	}
 }

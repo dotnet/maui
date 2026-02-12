@@ -459,6 +459,32 @@ namespace Microsoft.Maui.Maps.Handlers
 			return targetPin;
 		}
 
+		Marker? GetMarkerForPin(IMapPin pin)
+		{
+			if (_markers == null || pin.MarkerId is not string pinMarkerId)
+				return null;
+
+			for (int i = 0; i < _markers.Count; i++)
+			{
+				if (_markers[i].Id == pinMarkerId)
+					return _markers[i];
+			}
+
+			return null;
+		}
+
+		void ShowInfoWindow(IMapPin pin)
+		{
+			var marker = GetMarkerForPin(pin);
+			marker?.ShowInfoWindow();
+		}
+
+		void HideInfoWindow(IMapPin pin)
+		{
+			var marker = GetMarkerForPin(pin);
+			marker?.HideInfoWindow();
+		}
+
 		void ClearMapElements()
 		{
 			if (_polylines != null)
