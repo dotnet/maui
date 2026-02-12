@@ -87,7 +87,7 @@ See `SHARED-RULES.md` for complete details. Key points:
   ```
 - [ ] Post PR Finalization comment (separate):
   ```bash
-  pwsh .github/skills/ai-summary-comment/scripts/post-pr-finalize-comment.ps1 -PRNumber XXXXX -SummaryFile CustomAgentLogsTmp/PRState/XXXXX/pr-finalize/pr-finalize-summary.md
+  pwsh .github/skills/ai-summary-comment/scripts/post-pr-finalize-comment.ps1 -PRNumber XXXXX -SummaryFile CustomAgentLogsTmp/PRState/XXXXX/PRAgent/pr-finalize/pr-finalize-summary.md
   ```
 
 ---

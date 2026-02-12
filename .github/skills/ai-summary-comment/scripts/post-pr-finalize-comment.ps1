@@ -410,7 +410,14 @@ if ([string]::IsNullOrWhiteSpace($DescriptionStatus)) {
 }
 
 if ([string]::IsNullOrWhiteSpace($DescriptionAssessment)) {
-    throw "DescriptionAssessment is required. Provide via -DescriptionAssessment or use -SummaryFile"
+    if (-not [string]::IsNullOrWhiteSpace($SummaryFile)) {
+        # We have a summary file but couldn't extract a specific assessment section.
+        # Use the full summary content as the assessment (the whole file IS the assessment).
+        $DescriptionAssessment = $content
+        Write-Host "ℹ️  Using full summary file content as DescriptionAssessment" -ForegroundColor Cyan
+    } else {
+        throw "DescriptionAssessment is required. Provide via -DescriptionAssessment or use -SummaryFile"
+    }
 }
 
 # Warn if description needs work but no recommended description is provided

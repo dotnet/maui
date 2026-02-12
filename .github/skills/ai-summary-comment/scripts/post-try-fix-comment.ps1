@@ -10,7 +10,7 @@
     If an existing try-fix comment exists, it will be EDITED with the new attempt added.
     Otherwise, a new comment will be created.
     
-    **NEW: Auto-loads from CustomAgentLogsTmp/PRState/{PRNumber}/try-fix/**
+    **NEW: Auto-loads from CustomAgentLogsTmp/PRState/{PRNumber}/PRAgent/try-fix/**
     
     Format:
     ## 🔧 Try-Fix Analysis for Issue #XXXXX
@@ -35,7 +35,7 @@
     The attempt number (1, 2, 3, etc.) - auto-detected from TryFixDir if not specified
 
 .PARAMETER TryFixDir
-    Path to try-fix attempt directory (e.g., CustomAgentLogsTmp/PRState/27246/try-fix/attempt-1)
+    Path to try-fix attempt directory (e.g., CustomAgentLogsTmp/PRState/27246/PRAgent/try-fix/attempt-1)
     If provided, all parameters are auto-loaded from files in this directory
 
 .PARAMETER Approach
@@ -61,7 +61,7 @@
 
 .EXAMPLE
     # Simplest: Just provide attempt directory (all info auto-loaded)
-    ./post-try-fix-comment.ps1 -TryFixDir CustomAgentLogsTmp/PRState/27246/try-fix/attempt-1
+    ./post-try-fix-comment.ps1 -TryFixDir CustomAgentLogsTmp/PRState/27246/PRAgent/try-fix/attempt-1
 
 .EXAMPLE
     # Post all attempts for an issue
@@ -128,7 +128,7 @@ if (-not [string]::IsNullOrWhiteSpace($TryFixDir)) {
         throw "Try-fix directory not found: $TryFixDir"
     }
     
-    # Extract IssueNumber from path (e.g., CustomAgentLogsTmp/PRState/27246/try-fix/attempt-1)
+    # Extract IssueNumber from path (e.g., CustomAgentLogsTmp/PRState/27246/PRAgent/try-fix/attempt-1)
     if ($TryFixDir -match '[/\\](\d+)[/\\]try-fix') {
         if ($IssueNumber -eq 0) {
             $IssueNumber = [int]$Matches[1]
