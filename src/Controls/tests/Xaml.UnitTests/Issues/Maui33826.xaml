@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests"
+             x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui33826"
+             x:DataType="local:Maui33826ViewModel">
+    <!-- 
+        Test for GitHub issue #33826
+        SourceGen typed bindings should generate setters for properties 
+        created by CommunityToolkit.Mvvm's [ObservableProperty] attribute.
+        
+        The SelectedItem binding needs TwoWay support to update SelectedProject
+        when the user selects an item in the CollectionView.
+    -->
+    <CollectionView x:Name="collectionView"
+                    ItemsSource="{Binding Projects}"
+                    SelectedItem="{Binding SelectedProject}"
+                    SelectionMode="Single">
+        <CollectionView.ItemTemplate>
+            <DataTemplate x:DataType="local:Maui33826Project">
+                <Label Text="{Binding Name}" />
+            </DataTemplate>
+        </CollectionView.ItemTemplate>
+    </CollectionView>
+</ContentPage>
