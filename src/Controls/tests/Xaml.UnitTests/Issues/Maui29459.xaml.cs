@@ -1,8 +1,9 @@
+using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -131,14 +132,15 @@ public partial class Maui29459 : ContentPage
 {
 	public Maui29459() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+	[Collection("Binding")]
+	public class Tests : IDisposable
 	{
-		[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-		[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
+		public Tests() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		public void Dispose() => DispatcherProvider.SetCurrent(null);
 
-		[Test]
-		public void SwitchingBindingTriggersPropertyChanged([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		public void SwitchingBindingTriggersPropertyChanged(XamlInflator inflator)
 		{
 			// Arrange: Create page and set up view model
 			var page = new Maui29459(inflator);
@@ -149,7 +151,7 @@ public partial class Maui29459 : ContentPage
 			page.MyControl.SetBinding(Maui29459CustomControl.ValueProperty, nameof(Maui29459ViewModel.A));
 
 			// Assert: Initial binding should trigger property changed
-			Assert.That(page.MyControl.Value, Is.EqualTo(0), "Initial value should be A (0)");
+			Assert.Equal(0, page.MyControl.Value);
 
 			// Reset counter for clean measurement
 			int initialCount = page.MyControl.PropertyChangedCount;
@@ -158,13 +160,14 @@ public partial class Maui29459 : ContentPage
 			page.MyControl.SetBinding(Maui29459CustomControl.ValueProperty, nameof(Maui29459ViewModel.B));
 
 			// Assert: Switching binding should trigger property changed since value is different
-			Assert.That(page.MyControl.Value, Is.EqualTo(100), "Value should now be B (100)");
-			Assert.That(page.MyControl.PropertyChangedCount, Is.GreaterThan(initialCount),
+			Assert.Equal(100, page.MyControl.Value);
+			Assert.True(page.MyControl.PropertyChangedCount > initialCount,
 				"PropertyChanged should fire when switching to a binding with a different value");
 		}
 
-		[Test]
-		public void SwitchingBindingAfterModifyingValueTriggersPropertyChanged([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		public void SwitchingBindingAfterModifyingValueTriggersPropertyChanged(XamlInflator inflator)
 		{
 			// This test reproduces the exact scenario from issue #29459:
 			// A --> B (press Increase button on control) --> A (no changes) --> B (should show updated B value)
@@ -176,24 +179,24 @@ public partial class Maui29459 : ContentPage
 
 			// Step 1: Bind to A
 			page.MyControl.SetBinding(Maui29459CustomControl.ValueProperty, nameof(Maui29459ViewModel.A));
-			Assert.That(page.MyControl.Value, Is.EqualTo(0), "Step 1: Value should be A (0)");
-			Assert.That(page.MyControl.ViewModel.Value, Is.EqualTo(0), "Step 1: Internal ViewModel should sync to 0");
+			Assert.Equal(0, page.MyControl.Value);
+			Assert.Equal(0, page.MyControl.ViewModel.Value);
 
 			// Step 2: Switch to B
 			page.MyControl.SetBinding(Maui29459CustomControl.ValueProperty, nameof(Maui29459ViewModel.B));
-			Assert.That(page.MyControl.Value, Is.EqualTo(100), "Step 2: Value should be B (100)");
-			Assert.That(page.MyControl.ViewModel.Value, Is.EqualTo(100), "Step 2: Internal ViewModel should sync to 100");
+			Assert.Equal(100, page.MyControl.Value);
+			Assert.Equal(100, page.MyControl.ViewModel.Value);
 
 			// Step 3: Press Increase button (this modifies the INTERNAL ViewModel, which syncs to bindable property, which syncs to external viewModel.B)
 			page.MyControl.ViewModel.Increase();
-			Assert.That(page.MyControl.ViewModel.Value, Is.EqualTo(101), "Step 3: Internal ViewModel should be 101");
-			Assert.That(page.MyControl.Value, Is.EqualTo(101), "Step 3: Bindable property should be 101");
-			Assert.That(viewModel.B, Is.EqualTo(101), "Step 3: External ViewModel B should be 101 (TwoWay binding)");
+			Assert.Equal(101, page.MyControl.ViewModel.Value);
+			Assert.Equal(101, page.MyControl.Value);
+			Assert.Equal(101, viewModel.B);
 
 			// Step 4: Switch back to A (without pressing Increase)
 			page.MyControl.SetBinding(Maui29459CustomControl.ValueProperty, nameof(Maui29459ViewModel.A));
-			Assert.That(page.MyControl.Value, Is.EqualTo(0), "Step 4: Value should be A (0)");
-			Assert.That(page.MyControl.ViewModel.Value, Is.EqualTo(0), "Step 4: Internal ViewModel should sync to 0");
+			Assert.Equal(0, page.MyControl.Value);
+			Assert.Equal(0, page.MyControl.ViewModel.Value);
 
 			// Record PropertyChangedCount before Step 5
 			int countBeforeStep5 = page.MyControl.PropertyChangedCount;
@@ -204,23 +207,22 @@ public partial class Maui29459 : ContentPage
 			page.MyControl.SetBinding(Maui29459CustomControl.ValueProperty, nameof(Maui29459ViewModel.B));
 
 			// The external viewModel.B should still be 101 (we didn't change it)
-			Assert.That(viewModel.B, Is.EqualTo(101), "Step 5: External ViewModel B should still be 101");
+			Assert.Equal(101, viewModel.B);
 			
 			// The control's Value (bindable property) should be 101
-			Assert.That(page.MyControl.Value, Is.EqualTo(101), 
-				"Step 5: Bindable property should be B (101), not the stale value");
+			Assert.Equal(101, page.MyControl.Value);
 
 			// Check if propertyChanged was called
-			Assert.That(page.MyControl.PropertyChangedCount, Is.GreaterThan(countBeforeStep5),
-				$"Step 5: PropertyChanged callback should have been called. Count before: {countBeforeStep5}, after: {page.MyControl.PropertyChangedCount}. Last old={page.MyControl.LastOldValue}, new={page.MyControl.LastNewValue}. Value now={page.MyControl.Value}");
+			Assert.True(page.MyControl.PropertyChangedCount > countBeforeStep5,
+				$"PropertyChanged callback should have been called. Count before: {countBeforeStep5}, after: {page.MyControl.PropertyChangedCount}");
 			
 			// The internal ViewModel should also be synced to 101
-			Assert.That(page.MyControl.ViewModel.Value, Is.EqualTo(101),
-				"Step 5: Internal ViewModel should be synced to 101 - THIS IS THE BUG if it shows 0");
+			Assert.Equal(101, page.MyControl.ViewModel.Value);
 		}
 
-		[Test]
-		public void SwitchingBindingToSameValueMaintainsCorrectValue([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		public void SwitchingBindingToSameValueMaintainsCorrectValue(XamlInflator inflator)
 		{
 			// The value should be correct regardless of PropertyChanged firing behavior
 
@@ -230,12 +232,11 @@ public partial class Maui29459 : ContentPage
 
 			// Bind to A
 			page.MyControl.SetBinding(Maui29459CustomControl.ValueProperty, nameof(Maui29459ViewModel.A));
-			int countAfterFirstBinding = page.MyControl.PropertyChangedCount;
 
 			// Switch to B (same value)
 			page.MyControl.SetBinding(Maui29459CustomControl.ValueProperty, nameof(Maui29459ViewModel.B));
 
-			Assert.That(page.MyControl.Value, Is.EqualTo(50), "Value should remain 50");
+			Assert.Equal(50, page.MyControl.Value);
 			// PropertyChangedCount behavior is implementation-defined when values are equal; no assertion is made.
 		}
 	}
