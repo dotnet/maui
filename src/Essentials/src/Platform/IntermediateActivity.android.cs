@@ -104,11 +104,10 @@ namespace Microsoft.Maui.ApplicationModel
 			// (it won't exist if OnActivityResult already processed it)
 			if (GetIntermediateTask(guid, true) is IntermediateTask task)
 			{
-				// Only cancel picker tasks (FilePicker, MediaPicker, MediaCapture)
-				// Other tasks like WebAuthenticator may have different behavior expectations
 				if (task.RequestCode == PlatformUtils.requestCodeFilePicker ||
 					task.RequestCode == PlatformUtils.requestCodeMediaPicker ||
-					task.RequestCode == PlatformUtils.requestCodeMediaCapture)
+					task.RequestCode == PlatformUtils.requestCodeMediaCapture ||
+					task.RequestCode == PlatformUtils.requestCodePickContact)
 				{
 					task.TaskCompletionSource.TrySetCanceled();
 				}
