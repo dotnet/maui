@@ -220,6 +220,12 @@ The repository includes specialized custom agents and reusable skills for specif
    - **Output**: Applied changes to instruction files, skills, architecture docs, code comments
    - **Do NOT use for**: Analysis only without applying changes → Use `/learn-from-pr` skill instead
 
+5. **build-error-fixer** - Iterates over issues labeled `Known Build Error`, finds ones without PRs, and delegates fixes
+   - **Use when**: Want to find and fix known build errors that have no associated PR
+   - **Capabilities**: Issue discovery via `find-build-errors` skill, branch creation, fix delegation to pr agent, CI monitoring
+   - **Trigger phrases**: "fix known build errors", "work on build errors without PRs", "find and fix unassigned build errors"
+   - **Do NOT use for**: Just listing build errors → Use `find-build-errors` skill instead
+
 ### Reusable Skills
 
 Skills are modular capabilities that can be invoked directly or used by agents. Located in `.github/skills/`:
@@ -277,9 +283,15 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
    - **Categories**: Build, WindowsTemplates, macOSTemplates, Blazor, MultiProject, Samples, AOT, RunOnAndroid, RunOniOS
    - **Note**: **ALWAYS use this skill** instead of manual `dotnet test` commands for integration tests
 
+9. **find-build-errors** (`.github/skills/find-build-errors/SKILL.md`)
+   - **Purpose**: Queries issues labeled `Known Build Error` and identifies those without associated PRs
+   - **Trigger phrases**: "find known build errors", "show build errors without PRs", "what build errors need fixing"
+   - **Scripts**: `query-build-errors.ps1`
+   - **Used by**: `build-error-fixer` agent for discovery phase
+
 #### Internal Skills (Used by Agents)
 
-9. **try-fix** (`.github/skills/try-fix/SKILL.md`)
+10. **try-fix** (`.github/skills/try-fix/SKILL.md`)
    - **Purpose**: Proposes ONE independent fix approach, applies it, tests, records result with failure analysis, then reverts
    - **Used by**: pr agent Phase 3 (Fix phase) - rarely invoked directly by users
    - **Behavior**: Reads prior attempts to learn from failures. Max 5 attempts per session.
@@ -294,6 +306,7 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
 - User: "Test this PR" → Immediately invoke **sandbox-agent**
 - User: "Fix issue #67890" (no PR exists) → Suggest using `/delegate` command
 - User: "Write tests for issue #12345" → Immediately invoke **write-tests-agent**
+- User: "Fix known build errors" → Immediately invoke **build-error-fixer** agent
 
 **When NOT to delegate**:
 - User asks "What does PR #12345 do?" → Informational query, handle yourself
