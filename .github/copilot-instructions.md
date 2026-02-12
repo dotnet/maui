@@ -136,7 +136,7 @@ When working with public API changes:
 
 1. **NEVER commit directly to `main`** - Always create a feature branch for your work. Direct commits to `main` are strictly prohibited.
 
-2. **When fixing CI or amending an existing PR, commit directly to the PR's branch** - Do NOT create a separate branch. The PR branch already IS a feature branch. Creating a new branch off a PR branch means CI won't run on the PR, defeating the purpose. Checkout the PR branch, commit, and push to it.
+2. **When amending an existing PR, work on the PR's branch directly** - Do NOT create a separate branch off a PR branch. The PR branch already IS a feature branch. Creating a new branch off it means CI won't run on the original PR, defeating the purpose. Use `gh pr checkout` to switch to the PR branch and commit there.
 
 3. **Do NOT rebase, squash, or force-push** unless explicitly requested by the user. These operations rewrite git history and can cause problems for other contributors. Default behavior should be regular commits and pushes.
 
@@ -158,15 +158,15 @@ git push -u origin feature/issue-12345
 git push
 ```
 
-**When fixing CI or contributing to an existing PR:**
+**When amending an existing PR:**
 ```bash
-# Checkout the PR branch directly (do NOT create a new branch off it)
+# Check out the PR branch directly (do NOT create a new branch off it)
 gh pr checkout 12345
 
-# Make fixes, commit, and push to the PR branch
+# Make fixes and commit to the PR branch
 git add .
 git commit -m "Fix: Description of the change"
-git push
+# Do NOT push automatically; ask the user before running: git push
 ```
 
 **When asked to update an existing PR:**
