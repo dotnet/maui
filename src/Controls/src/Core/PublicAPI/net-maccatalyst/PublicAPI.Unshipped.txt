@@ -9,5 +9,6 @@ Microsoft.Maui.Controls.AppThemeBinding.AppThemeBinding() -> void
 ~Microsoft.Maui.Controls.AppThemeBinding.Light.get -> object
 ~Microsoft.Maui.Controls.AppThemeBinding.Light.set -> void
 ~override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.ViewWillTransitionToSize(CoreGraphics.CGSize toSize, UIKit.IUIViewControllerTransitionCoordinator coordinator) -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewController.LoadView() -> void~static Microsoft.Maui.Controls.VisualStateManager.GetVisualStateGroups(Microsoft.Maui.Controls.VisualElement visualElement) -> Microsoft.Maui.Controls.VisualStateGroupList
+override Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewController.LoadView() -> void
+~static Microsoft.Maui.Controls.VisualStateManager.GetVisualStateGroups(Microsoft.Maui.Controls.VisualElement visualElement) -> Microsoft.Maui.Controls.VisualStateGroupList
 *REMOVED*~static Microsoft.Maui.Controls.VisualStateManager.GetVisualStateGroups(Microsoft.Maui.Controls.VisualElement visualElement) -> System.Collections.Generic.IList<Microsoft.Maui.Controls.VisualStateGroup>
