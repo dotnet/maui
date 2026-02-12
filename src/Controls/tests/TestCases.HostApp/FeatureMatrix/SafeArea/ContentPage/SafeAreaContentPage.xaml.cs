@@ -24,7 +24,7 @@ public partial class SafeAreaContentPage : ContentPage
     {
         _viewModel = new SafeAreaViewModel();
         BindingContext = _viewModel;
-        await Navigation.PushAsync(new SafeAreaOptionsPage(_viewModel));
+        await Navigation.PushModalAsync(new NavigationPage(new SafeAreaOptionsPage(_viewModel)));
     }
 
     private void ChangeSafeAreaButton_Clicked(object sender, EventArgs e)
@@ -41,10 +41,5 @@ public partial class SafeAreaContentPage : ContentPage
         _viewModel.TopEdge = target;
         _viewModel.RightEdge = target;
         _viewModel.BottomEdge = target;
-    }
-
-    private async void BackButton_Clicked(object sender, EventArgs e)
-    {
-        await Navigation.PopAsync();
     }
 }

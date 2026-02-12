@@ -4,7 +4,6 @@
              xmlns:local="clr-namespace:Maui.Controls.Sample"
              x:Class="Maui.Controls.Sample.SafeAreaContentPage"
              x:DataType="local:SafeAreaViewModel"
-             NavigationPage.HasNavigationBar="False"
              SafeAreaEdges="{Binding EffectiveSafeAreaEdges}"
              Padding="{Binding Padding}"
              FlowDirection="{Binding FlowDirection}"
@@ -49,10 +48,6 @@
             <Button AutomationId="Options"
                     Text="Options"
                     Clicked="NavigateToOptionsPage_Clicked"/>
-
-            <Button AutomationId="BackButton"
-                    Text="Back"
-                    Clicked="BackButton_Clicked"/>
 
             <Label Text="SafeAreaEdges:"
                    FontAttributes="Bold"/>

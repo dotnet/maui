@@ -14,9 +14,9 @@ public partial class SafeAreaOptionsPage : ContentPage
 		BindingContext = _viewModel;
 	}
 
-	private void ApplyButton_Clicked(object sender, EventArgs e)
+	private async void ApplyButton_Clicked(object sender, EventArgs e)
 	{
-		Navigation.PopAsync();
+		await Navigation.PopModalAsync();
 	}
 
 	private void OnUniformChanged(object sender, CheckedChangedEventArgs e)

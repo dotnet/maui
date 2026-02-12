@@ -21,8 +21,8 @@ public partial class SafeAreaFeatureMainPage : ContentPage
 		_viewModel = new SafeAreaViewModel();
 	}
 
-	private async void OnContentPageSafeAreaButtonClicked(object sender, EventArgs e)
+	private void OnContentPageSafeAreaButtonClicked(object sender, EventArgs e)
 	{
-		await Navigation.PushAsync(new SafeAreaContentPage(_viewModel));
+		Application.Current.Windows[0].Page = new SafeAreaContentPage(_viewModel);
 	}
 }
