@@ -1181,10 +1181,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (navBar.Hidden || navBar.Frame.Height <= 0)
 				return;
 
+			// Don't interfere with SearchHandler's keyboard management
+			if (_searchHandlerAppearanceTracker != null)
+				return;
+
 			var currentFrame = ViewController.View.Frame;
 			var navBarBottom = navBar.Frame.Bottom;
 
-			if (currentFrame.Y == 0 && navBarBottom > 0)
+			if (currentFrame.Y == 0 && navBarBottom > 0 &&
+				navController.ViewControllers?.Length > 1 &&
+				ViewController == navController.TopViewController)
 			{
 				var correctFrame = new CGRect(
 					currentFrame.X,
