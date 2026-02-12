@@ -6,6 +6,7 @@ parameters:
   windowsBuildPool: { }
   macosPool: { }
   androidApiLevels: [ 30 ]
+  androidApiLevelsExtended: [ 36 ] # API 36 for Material3 tests with Pixel 3 XL
   iosVersions: [ 'latest' ]
   provisionatorChannel: 'latest'
   timeoutInMinutes: 180
@@ -233,7 +234,7 @@ stages:
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.android, '') }}:
-          - ${{ each api in parameters.androidApiLevels }}:
+          - ${{ each api in parameters.androidApiLevelsExtended }}:
             - ${{ if not(containsValue(project.androidApiLevelsExclude, api)) }}:
               - job: M3_android_ui_tests_${{ project.name }}_${{ api }}
                 timeoutInMinutes: 240
@@ -255,6 +256,7 @@ stages:
                         device: android-emulator-32_${{ api }}
                       ${{ if not(eq(api, 27)) }}:
                         device: android-emulator-64_${{ api }}
+                      deviceType: "pixel_3_xl"
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       useMaterial3: true
                       testFilter: "Material3"

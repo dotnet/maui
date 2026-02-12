@@ -2,6 +2,7 @@ parameters:
   platform: '' # [ android, ios, windows, catalyst ]
   path: '' # path to csproj
   device: '' # the xharness device to use
+  deviceType: '' # the device type/skin for Android emulator (e.g., pixel_3XL, Nexus 5X)
   cakeArgs: '' # additional cake args
   app: '' #path to app to test
   version: '' #the iOS version'
@@ -134,6 +135,12 @@ steps:
     $command += " --appproject=""${{ parameters.app }}"" --device=""${{ parameters.device }}"" --apiversion=""${{ parameters.version }}"" --configuration=""${{ parameters.configuration }}"""
     $command += " --runtimevariant=""${{ parameters.runtimeVariant }}"""
     $command += " --results=""$(TestResultsDirectory)"" --binlog=""$(LogDirectory)"" ${{ parameters.cakeArgs }} --verbosity=diagnostic"
+
+    # Add device skin parameter if specified (for Android emulator hardware profile)
+    $deviceType = "${{ parameters.deviceType }}"
+    if ($deviceType) {
+      $command += " --skin=""$deviceType"""
+    }
 
     $testFilter = ""
     $testConfigrationArgs = "${{ parameters.testConfigurationArgs }}"
