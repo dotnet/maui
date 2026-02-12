@@ -126,8 +126,8 @@ if (-not $PRNumber) {
         }
         
         if (-not $foundPR) {
-            Write-Host "⚠️  Could not auto-detect PR number - using 'unknown' folder" -ForegroundColor Yellow
-            $PRNumber = "unknown"
+            Write-Error "Could not auto-detect PR number. Please provide -PRNumber parameter."
+            exit 1
         }
     }
 }

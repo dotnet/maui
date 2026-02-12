@@ -358,7 +358,7 @@ if ($DryRun) {
     # Branch switching prevention relies on agent instructions in pr.md only
     
     # Create log directory for this PR
-    $prLogDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/copilot-logs"
+    $prLogDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/copilot-logs"
     if (-not (Test-Path $prLogDir)) {
         New-Item -ItemType Directory -Path $prLogDir -Force | Out-Null
     }
@@ -520,7 +520,7 @@ if ($DryRun) {
 Write-Host ""
 Write-Host "📋 Plan template: $planTemplatePath" -ForegroundColor Gray
 if (-not $DryRun) {
-    Write-Host "📁 Copilot logs: CustomAgentLogsTmp/PRState/$PRNumber/copilot-logs/" -ForegroundColor Gray
+    Write-Host "📁 Copilot logs: CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/copilot-logs/" -ForegroundColor Gray
     if (-not $Interactive) {
         Write-Host "📄 Session markdown: $sessionFile" -ForegroundColor Gray
     }
