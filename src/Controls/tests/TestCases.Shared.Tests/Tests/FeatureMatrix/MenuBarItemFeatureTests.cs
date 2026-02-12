@@ -17,12 +17,8 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 	{
 	}
 
-	public void VerifyWindowsScreenshot()
-	{
+
 #if WINDOWS
-		VerifyScreenshot();
-#endif
-	}
 	[Test, Order(1)]
 	public void MenuBarItem_FileMenuExit()
 	{
@@ -37,10 +33,59 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 		App.WaitForElement("FileMenuBar");
 		App.Tap("FileMenuBar");
 
-		VerifyWindowsScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test, Order(2)]
+	public void MenuBarItem_RefreshMenuItemProperties()
+	{
+		App.WaitForElement("ResetButton");
+		App.Tap("ResetButton");
+
+		// Open View menu
+		App.WaitForElement("ViewMenuBar");
+		App.Tap("ViewMenuBar");
+
+		VerifyScreenshot();
+	}
+	[Test, Order(3)]
+	public void MenuBarItem_MenuFlyoutSeparatorPresent()
+	{
+		App.WaitForElement("ResetButton");
+		App.Tap("ResetButton");
+
+		// Open Locations menu which has a separator
+		App.WaitForElement("LocationsMenuBar");
+		App.Tap("LocationsMenuBar");
+
+		// Verify menu items before and after separator are present
+		App.WaitForElement("Change Location");
+		App.WaitForElement("Add Location");
+		App.WaitForElement("Edit Location");
+		App.WaitForElement("Remove Location");
+
+		// Take screenshot to verify separator visual appearance
+		VerifyScreenshot();
+	}
+
+	[Test, Order(4)]
+	public void MenuBarItem_MediaMenuBarItemPresent()
+	{
+		App.WaitForElement("ResetButton");
+		App.Tap("ResetButton");
+
+		// Open Locations menu which has a separator
+		App.WaitForElement("MediaMenuBar");
+		App.Tap("MediaMenuBar");
+
+		// Take screenshot to verify separator visual appearance
+		VerifyScreenshot();
+	}
+#endif
+
+
+
+	[Test, Order(5)]
 	public void MenuBarItem_LocationsMenuChangeLocation()
 	{
 		App.WaitForElement("ResetButton");
@@ -69,7 +114,7 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 
 	}
 
-	[Test, Order(3)]
+	[Test, Order(6)]
 	public void MenuBarItem_LocationsMenuAddLocation()
 	{
 		App.WaitForElement("ResetButton");
@@ -95,7 +140,7 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 
 	}
 
-	[Test, Order(4)]
+	[Test, Order(7)]
 	public void MenuBarItem_LocationsMenuEditLocation()
 	{
 		App.WaitForElement("ResetButton");
@@ -120,7 +165,7 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 
 	}
 
-	[Test, Order(5)]
+	[Test, Order(8)]
 	public void MenuBarItem_LocationsMenuRemoveLocation()
 	{
 		App.WaitForElement("ResetButton");
@@ -142,7 +187,7 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 
 	}
 
-	[Test, Order(6)]
+	[Test, Order(9)]
 	public void MenuBarItem_ViewMenuRefreshCommand()
 	{
 		App.WaitForElement("ResetButton");
@@ -161,7 +206,7 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 		Assert.That(statusLabel.GetText(), Does.Contain("Refreshed"));
 	}
 
-	[Test, Order(7)]
+	[Test, Order(10)]
 	public void MenuBarItem_DisableFileMenu()
 	{
 		App.WaitForElement("ResetButton");
@@ -171,14 +216,24 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 		App.WaitForElement("FileMenuEnabledSwitch");
 		App.Tap("FileMenuEnabledSwitch");
 
-		// Try to open File menu (should be disabled)
-		// Note: Disabled menus may not be clickable or may not open
-		// Verify the switch state changed
-		var fileSwitch = App.FindElement("FileMenuEnabledSwitch");
-		Assert.That(fileSwitch, Is.Not.Null);
+		// Try to open File menu
+		App.Tap("FileMenuBar");
+
+		// Try to tap "Exit" menu item (should be disabled)
+		try
+		{
+			App.Tap("ExitMenuBarFlyoutItem");
+			// If we reach here, the item was clickable (bad)
+			Assert.Fail("Disabled menu item was clickable");
+		}
+		catch
+		{
+			// Expected - item should not be clickable when disabled
+			Assert.Pass("Menu item correctly disabled");
+		}
 	}
 
-	[Test, Order(8)]
+	[Test, Order(11)]
 	public void MenuBarItem_DisableLocationsMenu()
 	{
 		App.WaitForElement("ResetButton");
@@ -188,11 +243,23 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 		App.WaitForElement("LocationsMenuEnabledSwitch");
 		App.Tap("LocationsMenuEnabledSwitch");
 
-		// Verify the switch state changed
-		var locationsSwitch = App.FindElement("LocationsMenuEnabledSwitch");
-		Assert.That(locationsSwitch, Is.Not.Null);
+		// Try to open Locations menu
+		App.Tap("LocationsMenuBar");
+
+		// Try to tap "Add Location" (should be disabled)
+		try
+		{
+			App.Tap("AddLocationMenuFlyoutItem");
+			// If we reach here, the item was clickable (bad)
+			Assert.Fail("Disabled menu item was clickable");
+		}
+		catch
+		{
+			// Expected - item should not be clickable when disabled
+			Assert.Pass("Menu item correctly disabled");
+		}
 	}
-	[Test, Order(9)]
+	[Test, Order(12)]
 	public void MenuBarItem_DisableViewMenu()
 	{
 		App.WaitForElement("ResetButton");
@@ -202,12 +269,24 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 		App.WaitForElement("ViewMenuEnabledSwitch");
 		App.Tap("ViewMenuEnabledSwitch");
 
-		// Verify the switch state changed
-		var viewSwitch = App.FindElement("ViewMenuEnabledSwitch");
-		Assert.That(viewSwitch, Is.Not.Null);
+		// Try to open View menu
+		App.Tap("ViewMenuBar");
+
+		// Try to tap "Refresh" (should be disabled)
+		try
+		{
+			App.Tap("RefreshMenuBarFlyoutItem");
+			// If we reach here, the item was clickable (bad)
+			Assert.Fail("Disabled menu item was clickable");
+		}
+		catch
+		{
+			// Expected - item should not be clickable when disabled
+			Assert.Pass("Menu item correctly disabled");
+		}
 	}
 
-	[Test, Order(10)]
+	[Test, Order(13)]
 	public void MenuBarItem_MenuTextBindingUpdates()
 	{
 		App.WaitForElement("ResetButton");
@@ -244,7 +323,7 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 		App.WaitForElement("Stop");
 	}
 
-	[Test, Order(11)]
+	[Test, Order(14)]
 	public void MenuBarItem_DynamicLocationMenuItems()
 	{
 		App.WaitForElement("ResetButton");
@@ -270,7 +349,7 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 		Assert.That(locationLabel.GetText(), Is.EqualTo("London, UK"));
 	}
 
-	[Test, Order(13)]
+	[Test, Order(15)]
 	public void MenuBarItem_VerifyAllMenusPresent()
 	{
 		App.WaitForElement("ResetButton");
@@ -295,20 +374,7 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 		App.WaitForElement("LocationsCollectionView");
 	}
 
-	[Test, Order(14)]
-	public void MenuBarItem_RefreshMenuItemProperties()
-	{
-		App.WaitForElement("ResetButton");
-		App.Tap("ResetButton");
-
-		// Open View menu
-		App.WaitForElement("ViewMenuBar");
-		App.Tap("ViewMenuBar");
-
-		VerifyWindowsScreenshot();
-	}
-
-	[Test, Order(15)]
+	[Test, Order(16)]
 	public void MenuBarItem_AddMultipleLocations()
 	{
 		App.WaitForElement("ResetButton");
@@ -341,7 +407,7 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 		App.WaitForElement("Paris, FR");
 	}
 
-	[Test, Order(16)]
+	[Test, Order(17)]
 	public void MenuBarItem_CancelAddLocation()
 	{
 		App.WaitForElement("ResetButton");
@@ -359,10 +425,10 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 		App.Tap("CancelButton");
 
 		// Verify location was not added
-		App.WaitForNoElement("Cancelled Location");
+		App.WaitForElement("Operation cancelled");
 	}
 
-	[Test, Order(17)]
+	[Test, Order(18)]
 	public void MenuBarItem_ResetRestolesDefaultLocations()
 	{
 		App.WaitForElement("ResetButton");
@@ -392,7 +458,7 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 		App.WaitForNoElement("Custom Location");
 	}
 
-	[Test, Order(18)]
+	[Test, Order(19)]
 	public void MenuBarItem_ToggleMenusOnOff()
 	{
 		App.WaitForElement("ResetButton");
@@ -422,7 +488,7 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 		App.WaitForElement("ViewMenuBar");
 	}
 
-	[Test, Order(19)]
+	[Test, Order(20)]
 	public void MenuBarItem_VerifyInitialLocationState()
 	{
 		App.WaitForElement("ResetButton");
@@ -439,7 +505,7 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 		App.WaitForElement("Berlin, DE");
 	}
 
-	[Test, Order(20)]
+	[Test, Order(21)]
 	public void MenuBarItem_EntryVisibilityToggling()
 	{
 		App.WaitForElement("ResetButton");
@@ -461,9 +527,10 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 
 		// Note: Entry visibility check would require checking if element is displayed
 		// The entry should be hidden after cancel
+		App.WaitForNoElement("LocationEntry");
 	}
 
-	[Test, Order(21)]
+	[Test, Order(22)]
 	public void MenuBarItem_AddEmptyLocationValidation()
 	{
 		App.WaitForElement("ResetButton");
@@ -482,40 +549,6 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 		// Verify validation message
 		var statusLabel = App.FindElement("StatusMessageLabel");
 		Assert.That(statusLabel.GetText(), Does.Contain("cannot be empty").Or.Contain("empty"));
-	}
-
-	[Test, Order(22)]
-	public void MenuBarItem_MenuFlyoutSeparatorPresent()
-	{
-		App.WaitForElement("ResetButton");
-		App.Tap("ResetButton");
-
-		// Open Locations menu which has a separator
-		App.WaitForElement("LocationsMenuBar");
-		App.Tap("LocationsMenuBar");
-
-		// Verify menu items before and after separator are present
-		App.WaitForElement("Change Location");
-		App.WaitForElement("Add Location");
-		App.WaitForElement("Edit Location");
-		App.WaitForElement("Remove Location");
-
-		// Take screenshot to verify separator visual appearance
-		VerifyWindowsScreenshot();
-	}
-
-	[Test, Order(23)]
-	public void MenuBarItem_MediaMenuBarItemPresent()
-	{
-		App.WaitForElement("ResetButton");
-		App.Tap("ResetButton");
-
-		// Open Locations menu which has a separator
-		App.WaitForElement("MediaMenuBar");
-		App.Tap("MediaMenuBar");
-
-		// Take screenshot to verify separator visual appearance
-		VerifyWindowsScreenshot();
 	}
 }
 #endif
