@@ -12,8 +12,15 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- NuGet package information -->
-    <IsPackable>false</IsPackable>
+    <IsPackable>true</IsPackable>
     <PackageId>Microsoft.Maui.Essentials.AI</PackageId>
+    <!-- Keep this package always preview — it is experimental and should not ship stable
+         even when the rest of the repo stabilizes. Bump PreReleaseVersionIteration for new previews.
+         The label/iteration only activate during stable builds (DotNetFinalVersionKind=release).
+         During preview builds, the AI package uses the same label as the rest of the repo. -->
+    <SuppressFinalPackageVersion>true</SuppressFinalPackageVersion>
+    <PreReleaseVersionLabel Condition="'$(DotNetFinalVersionKind)' == 'release'">preview</PreReleaseVersionLabel>
+    <PreReleaseVersionIteration Condition="'$(DotNetFinalVersionKind)' == 'release'">1</PreReleaseVersionIteration>
     <PackageTags>$(DefaultPackageTags);essentials;ai</PackageTags>
     <Description>.NET Multi-platform App UI (.NET MAUI) is a cross-platform framework for creating native mobile and desktop apps with C# and XAML. This package contains a collection of cross-platform APIs for working with device AI and local models.</Description>
   </PropertyGroup>
