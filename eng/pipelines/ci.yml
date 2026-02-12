@@ -1,6 +1,3 @@
-# Build number format must match arcade SDK expectations: yyyyMMdd.r
-name: $(Date:yyyyMMdd).$(Rev:r)
-
 trigger:
   batch: false
   branches:
