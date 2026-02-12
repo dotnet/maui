@@ -37,12 +37,18 @@ public class DeviceManager : IDeviceManager
 			var avds = await _androidProvider.GetAvdsAsync(cancellationToken);
 			foreach (var avd in avds)
 			{
-				// Check if this AVD is already in the running devices list (matched by AVD name in details)
+				// Check if this AVD is already in the running devices list
+				// Match by AVD name in details dict or by EmulatorId
 				var runningIndex = devices.FindIndex(d => 
 					d.Platforms.Contains("android") && 
-					d.Details != null &&
-					d.Details.TryGetValue("avd", out var avdName) && 
-					avdName?.ToString() == avd.Name);
+					d.IsEmulator &&
+					(
+						(d.Details != null &&
+						 d.Details.TryGetValue("avd", out var avdName) && 
+						 string.Equals(avdName?.ToString(), avd.Name, StringComparison.OrdinalIgnoreCase))
+						||
+						string.Equals(d.EmulatorId, avd.Name, StringComparison.OrdinalIgnoreCase)
+					));
 
 				if (runningIndex >= 0)
 				{

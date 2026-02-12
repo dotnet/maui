@@ -169,4 +169,100 @@ public class DeviceManagerTests
 		Assert.Equal(DeviceState.Shutdown, devices[0].State);
 		Assert.Equal(DeviceType.Emulator, devices[0].Type);
 	}
+
+	[Fact]
+	public async Task GetAllDevicesAsync_MergesRunningEmulatorWithAvd()
+	{
+		// Arrange: ADB returns a running emulator with AVD name in details
+		var runningDevices = new List<Device>
+		{
+			new Device
+			{
+				Id = "emulator-5554",
+				Name = "Google sdk_gphone64_arm64",
+				Platforms = new[] { "android" },
+				Type = DeviceType.Emulator,
+				State = DeviceState.Booted,
+				IsEmulator = true,
+				IsRunning = true,
+				EmulatorId = "Pixel_6_API_35",
+				Details = new Dictionary<string, object> { ["avd"] = "Pixel_6_API_35" }
+			}
+		};
+
+		// AVD manager returns the same emulator definition
+		var avds = new List<AvdInfo>
+		{
+			new AvdInfo { Name = "Pixel_6_API_35", Target = "android-35", DeviceProfile = "pixel_6" }
+		};
+
+		var mockAndroid = new Mock<IAndroidProvider>();
+		mockAndroid.Setup(x => x.GetDevicesAsync(It.IsAny<CancellationToken>()))
+			.ReturnsAsync(runningDevices);
+		mockAndroid.Setup(x => x.GetAvdsAsync(It.IsAny<CancellationToken>()))
+			.ReturnsAsync(avds);
+
+		var mockApple = new Mock<IAppleProvider>();
+		mockApple.Setup(x => x.ListSimulatorsAsync(It.IsAny<CancellationToken>()))
+			.ReturnsAsync(new List<Device>());
+
+		var manager = new DeviceManager(mockAndroid.Object, mockApple.Object);
+
+		// Act
+		var devices = await manager.GetAllDevicesAsync();
+
+		// Assert: should be merged into a single entry, not two
+		Assert.Single(devices);
+		Assert.Equal("emulator-5554", devices[0].Id);
+		Assert.Equal("Pixel_6_API_35", devices[0].EmulatorId);
+		Assert.True(devices[0].IsRunning);
+	}
+
+	[Fact]
+	public async Task GetAllDevicesAsync_MergesRunningEmulatorWithAvd_ByEmulatorId()
+	{
+		// Arrange: ADB returns a running emulator with EmulatorId set but no "avd" in Details
+		// This simulates the case where "emu avd name" succeeded but wasn't stored in Details
+		var runningDevices = new List<Device>
+		{
+			new Device
+			{
+				Id = "emulator-5554",
+				Name = "Google sdk_gphone64_arm64",
+				Platforms = new[] { "android" },
+				Type = DeviceType.Emulator,
+				State = DeviceState.Booted,
+				IsEmulator = true,
+				IsRunning = true,
+				EmulatorId = "Pixel_6_API_35",
+				Details = new Dictionary<string, object>()
+			}
+		};
+
+		var avds = new List<AvdInfo>
+		{
+			new AvdInfo { Name = "Pixel_6_API_35", Target = "android-35", DeviceProfile = "pixel_6" }
+		};
+
+		var mockAndroid = new Mock<IAndroidProvider>();
+		mockAndroid.Setup(x => x.GetDevicesAsync(It.IsAny<CancellationToken>()))
+			.ReturnsAsync(runningDevices);
+		mockAndroid.Setup(x => x.GetAvdsAsync(It.IsAny<CancellationToken>()))
+			.ReturnsAsync(avds);
+
+		var mockApple = new Mock<IAppleProvider>();
+		mockApple.Setup(x => x.ListSimulatorsAsync(It.IsAny<CancellationToken>()))
+			.ReturnsAsync(new List<Device>());
+
+		var manager = new DeviceManager(mockAndroid.Object, mockApple.Object);
+
+		// Act
+		var devices = await manager.GetAllDevicesAsync();
+
+		// Assert: should still merge via EmulatorId fallback
+		Assert.Single(devices);
+		Assert.Equal("emulator-5554", devices[0].Id);
+		Assert.Equal("Pixel_6_API_35", devices[0].EmulatorId);
+		Assert.True(devices[0].IsRunning);
+	}
 }
