@@ -55,6 +55,32 @@
                    Text="{Binding DisplayString}"
                    FontSize="14"/>
 
+            <!-- SafeArea value buttons -->
+            <HorizontalStackLayout Spacing="5" HorizontalOptions="Center">
+                <Button AutomationId="SafeAreaNoneButton"
+                        Text="None"
+                        FontSize="12"
+                        Clicked="OnSafeAreaNoneClicked"/>
+                <Button AutomationId="SafeAreaAllButton"
+                        Text="All"
+                        FontSize="12"
+                        Clicked="OnSafeAreaAllClicked"/>
+                <Button AutomationId="SafeAreaContainerButton"
+                        Text="Container"
+                        FontSize="12"
+                        Clicked="OnSafeAreaContainerClicked"/>
+            </HorizontalStackLayout>
+            <HorizontalStackLayout Spacing="5" HorizontalOptions="Center">
+                <Button AutomationId="SafeAreaSoftInputButton"
+                        Text="SoftInput"
+                        FontSize="12"
+                        Clicked="OnSafeAreaSoftInputClicked"/>
+                <Button AutomationId="SafeAreaDefaultButton"
+                        Text="Default"
+                        FontSize="12"
+                        Clicked="OnSafeAreaDefaultClicked"/>
+            </HorizontalStackLayout>
+
             <Label Text="Content below is for testing keyboard interaction:"
                    FontSize="12"
                    TextColor="Gray"/>
@@ -62,11 +88,6 @@
             <Entry x:Name="SafeAreaTestEntry"
                    AutomationId="SafeAreaTestEntry"
                    Placeholder="Tap to raise keyboard"/>
-
-            <Button x:Name="ChangeSafeAreaButton"
-                    AutomationId="ChangeSafeAreaButton"
-                    Text="Change SafeArea"
-                    Clicked="ChangeSafeAreaButton_Clicked"/>
         </VerticalStackLayout>
 
         <!-- Right Edge Indicator -->

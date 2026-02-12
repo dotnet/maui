@@ -27,19 +27,17 @@ public partial class SafeAreaContentPage : ContentPage
         await Navigation.PushModalAsync(new NavigationPage(new SafeAreaOptionsPage(_viewModel)));
     }
 
-    private void ChangeSafeAreaButton_Clicked(object sender, EventArgs e)
+    private void SetAllEdges(SafeAreaRegions region)
     {
-        // Toggle between None and All for dynamic runtime change tests
-        var target = (_viewModel.LeftEdge == SafeAreaRegions.None
-            && _viewModel.TopEdge == SafeAreaRegions.None
-            && _viewModel.RightEdge == SafeAreaRegions.None
-            && _viewModel.BottomEdge == SafeAreaRegions.None)
-            ? SafeAreaRegions.All
-            : SafeAreaRegions.None;
-
-        _viewModel.LeftEdge = target;
-        _viewModel.TopEdge = target;
-        _viewModel.RightEdge = target;
-        _viewModel.BottomEdge = target;
+        _viewModel.LeftEdge = region;
+        _viewModel.TopEdge = region;
+        _viewModel.RightEdge = region;
+        _viewModel.BottomEdge = region;
     }
+
+    private void OnSafeAreaNoneClicked(object sender, EventArgs e) => SetAllEdges(SafeAreaRegions.None);
+    private void OnSafeAreaAllClicked(object sender, EventArgs e) => SetAllEdges(SafeAreaRegions.All);
+    private void OnSafeAreaContainerClicked(object sender, EventArgs e) => SetAllEdges(SafeAreaRegions.Container);
+    private void OnSafeAreaSoftInputClicked(object sender, EventArgs e) => SetAllEdges(SafeAreaRegions.SoftInput);
+    private void OnSafeAreaDefaultClicked(object sender, EventArgs e) => SetAllEdges(SafeAreaRegions.Default);
 }
