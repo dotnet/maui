@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.ExceptionServices;
 using System.Drawing;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
@@ -17,6 +18,13 @@ namespace UITest.Appium
 	{
 		static TimeSpan DefaultTimeout = TimeSpan.FromSeconds(15);
 
+		// Maximum time to wait for a single Appium command before assuming the app is unresponsive.
+		// This prevents tests from hanging indefinitely when the app enters an infinite loop
+		// (e.g., layout cycle) that blocks the UI thread and makes WDA wait forever for app idle.
+		// 45 seconds balances avoiding false positives on slow CI (normal operations: 10-30s)
+		// while still failing reasonably fast when the app is truly frozen.
+		static readonly TimeSpan AppiumCommandTimeout = TimeSpan.FromSeconds(45);
+
 		/// <summary>
 		/// For desktop, this will perform a mouse click on the target element.
 		/// For mobile, this will tap the element.
@@ -25,7 +33,7 @@ namespace UITest.Appium
 		/// <param name="element">Target Element.</param>
 		public static void Tap(this IApp app, string element)
 		{
-			FindElement(app, element).Click();
+			RunWithTimeout(() => FindElement(app, element).Click());
 		}
 
 		/// <summary>
@@ -36,7 +44,7 @@ namespace UITest.Appium
 		/// <param name="query">Represents the query that identify an element by parameters such as type, text it contains or identifier.</param>
 		public static void Tap(this IApp app, IQuery query)
 		{
-			app.FindElement(query).Tap();
+			RunWithTimeout(() => app.FindElement(query).Tap());
 		}
 
 		/// <summary>
@@ -46,7 +54,7 @@ namespace UITest.Appium
 		/// <param name="element">Target Element.</param>
 		public static void Click(this IApp app, string element)
 		{
-			FindElement(app, element).Click();
+			RunWithTimeout(() => FindElement(app, element).Click());
 		}
 
 		/// <summary>
@@ -56,7 +64,7 @@ namespace UITest.Appium
 		/// <param name="query">Represents the query that identify an element by parameters such as type, text it contains or identifier.</param>
 		public static void Click(this IApp app, IQuery query)
 		{
-			app.FindElement(query).Click();
+			RunWithTimeout(() => app.FindElement(query).Click());
 		}
 
 		public static void RightClick(this IApp app, string element)
@@ -2704,7 +2712,7 @@ namespace UITest.Appium
 
 			DateTime start = DateTime.Now;
 
-			IUIElement? result = query();
+			IUIElement? result = RunWithTimeout(query);
 
 			while (!satisfactory(result))
 			{
@@ -2717,7 +2725,7 @@ namespace UITest.Appium
 				}
 
 				Task.Delay(retryFrequency.Value.Milliseconds).Wait();
-				result = query();
+				result = RunWithTimeout(query);
 			}
 
 			return result!;
@@ -2911,6 +2919,51 @@ namespace UITest.Appium
 			}
 
 			return 1.0;
+		}
+
+		/// <summary>
+		/// Executes a function with a timeout to prevent tests from hanging indefinitely
+		/// when the application becomes unresponsive (e.g., due to an infinite layout loop).
+		/// WDA (WebDriverAgent) waits for the app's main thread to be idle before executing
+		/// commands — if the app is stuck in an infinite loop, WDA blocks forever. This wrapper
+		/// runs the command on a background thread and enforces a hard timeout.
+		/// </summary>
+		static T? RunWithTimeout<T>(Func<T?> action, TimeSpan? timeout = null)
+		{
+			timeout ??= AppiumCommandTimeout;
+			using var cts = new CancellationTokenSource();
+			var task = Task.Run(action, cts.Token);
+			try
+			{
+				if (!task.Wait(timeout.Value))
+				{
+					// Signal cancellation (Appium driver won't respect it, but good hygiene)
+					cts.Cancel();
+					
+					// Warn about orphaned thread - the background task will continue blocking until
+					// the underlying Appium/WDA call times out or the process is killed
+					Debug.WriteLine($">>>>> Appium command timed out after {timeout.Value.TotalSeconds}s. Background thread may remain blocked until app is force-terminated.");
+					
+					throw new TimeoutException(
+						$"An Appium command did not complete within {timeout.Value.TotalSeconds}s. " +
+						"The application may be unresponsive (e.g., due to an infinite layout loop).");
+				}
+			}
+			catch (AggregateException ex) when (ex.InnerExceptions.Count == 1)
+			{
+				ExceptionDispatchInfo.Capture(ex.InnerExceptions[0]).Throw();
+			}
+			// Use GetAwaiter().GetResult() to unwrap AggregateException if the task faulted
+			return task.GetAwaiter().GetResult();
+		}
+
+		/// <summary>
+		/// Executes an action with a timeout to prevent tests from hanging indefinitely
+		/// when the application becomes unresponsive.
+		/// </summary>
+		static void RunWithTimeout(Action action, TimeSpan? timeout = null)
+		{
+			RunWithTimeout<object?>(() => { action(); return null; }, timeout);
 		}
 	}
 }
