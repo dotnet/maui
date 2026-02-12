@@ -36,7 +36,8 @@ public class LongPressGestureInteraction : ContentPage
 		{
 			AutomationId = "TapAndLongPressFrame",
 			BackgroundColor = Colors.LightBlue,
-			HeightRequest = 100,
+			HeightRequest = 50,
+			Padding = 4,
 			Content = new Label
 			{
 				Text = "Tap or Long Press Me",
@@ -66,7 +67,8 @@ public class LongPressGestureInteraction : ContentPage
 		{
 			AutomationId = "SwipeAndLongPressFrame",
 			BackgroundColor = Colors.LightGreen,
-			HeightRequest = 100,
+			HeightRequest = 50,
+			Padding = 4,
 			Content = new Label
 			{
 				Text = "Swipe Left or Long Press",
@@ -94,9 +96,9 @@ public class LongPressGestureInteraction : ContentPage
 		var longPressInScrollFrame = new Frame
 		{
 			AutomationId = "LongPressInScrollFrame",
-			Margin = 10,
 			BackgroundColor = Colors.Orange,
-			HeightRequest = 100,
+			HeightRequest = 50,
+			Padding = 4,
 			Content = new Label
 			{
 				Text = "Long Press in ScrollView",
@@ -119,7 +121,8 @@ public class LongPressGestureInteraction : ContentPage
 			AutomationId = "LongPress1",
 			BackgroundColor = Colors.Pink,
 			WidthRequest = 150,
-			HeightRequest = 100,
+			HeightRequest = 50,
+			Padding = 4,
 			Content = new Label
 			{
 				Text = "Long Press 1",
@@ -141,7 +144,8 @@ public class LongPressGestureInteraction : ContentPage
 			AutomationId = "LongPress2",
 			BackgroundColor = Colors.LightCoral,
 			WidthRequest = 150,
-			HeightRequest = 100,
+			HeightRequest = 50,
+			Padding = 4,
 			Content = new Label
 			{
 				Text = "Long Press 2",
@@ -158,50 +162,44 @@ public class LongPressGestureInteraction : ContentPage
 			})
 		});
 
-		Content = new ScrollView
+		// Use compact layout so all test areas fit on screen without scrolling
+		Content = new VerticalStackLayout
 		{
-			Content = new VerticalStackLayout
+			Spacing = 6,
+			Padding = 8,
+			Children =
 			{
-				Spacing = 20,
-				Padding = 20,
-				Children =
+				tapAndLongPressFrame,
+				_tapLabel,
+				_longPressLabel,
+
+				swipeAndLongPressFrame,
+				_swipeLabel,
+				_longPress2Label,
+
+				new ScrollView
 				{
-					new Label { Text = "Test 1: LongPress + Tap", FontAttributes = FontAttributes.Bold },
-					tapAndLongPressFrame,
-					_tapLabel,
-					_longPressLabel,
-
-					new Label { Text = "Test 2: LongPress + Swipe", FontAttributes = FontAttributes.Bold },
-					swipeAndLongPressFrame,
-					_swipeLabel,
-					_longPress2Label,
-
-					new Label { Text = "Test 3: LongPress in ScrollView", FontAttributes = FontAttributes.Bold },
-					new ScrollView
+					AutomationId = "TestScrollView",
+					HeightRequest = 80,
+					BackgroundColor = Colors.LightYellow,
+					Content = new VerticalStackLayout
 					{
-						AutomationId = "TestScrollView",
-						HeightRequest = 200,
-						BackgroundColor = Colors.LightYellow,
-						Content = new VerticalStackLayout
+						Children =
 						{
-							Children =
-							{
-								longPressInScrollFrame,
-								new BoxView { HeightRequest = 400, Color = Colors.Gray }
-							}
+							longPressInScrollFrame,
+							new BoxView { HeightRequest = 200, Color = Colors.Gray }
 						}
-					},
-					_longPress3Label,
+					}
+				},
+				_longPress3Label,
 
-					new Label { Text = "Test 4: Multiple LongPress", FontAttributes = FontAttributes.Bold },
-					new HorizontalStackLayout
-					{
-						Spacing = 10,
-						Children = { longPress1Frame, longPress2Frame }
-					},
-					_longPress4Label,
-					_longPress5Label,
-				}
+				new HorizontalStackLayout
+				{
+					Spacing = 10,
+					Children = { longPress1Frame, longPress2Frame }
+				},
+				_longPress4Label,
+				_longPress5Label,
 			}
 		};
 	}
