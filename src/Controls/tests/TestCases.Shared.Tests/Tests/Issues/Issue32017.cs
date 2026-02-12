@@ -18,9 +18,6 @@ public class Issue32017 : _IssuesUITest
         // Wait for CarouselView to load
         App.WaitForElement("TestCarouselView");
 
-        // Wait 1 second for images to load and layout to settle
-        Task.Delay(1000).Wait();
-
         // Reduce the window width
         App.Tap("ReduceWidthButton");
 

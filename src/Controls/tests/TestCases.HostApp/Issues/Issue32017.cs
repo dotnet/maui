@@ -154,9 +154,9 @@ public class Issue32017 : ContentPage
 		{
 			Items = new ObservableCollection<Issue32017Recipe>
 			{
-				new Issue32017Recipe { RecipeName = "Delicious Pasta", ImageUrl = "https://www.koreanbapsang.com/wp-content/uploads/2019/10/DSC_1183-2.jpg" },
-				new Issue32017Recipe { RecipeName = "Grilled Chicken", ImageUrl = "https://mblogthumb-phinf.pstatic.net/MjAxNzEyMjlfMTQ0/MDAxNTE0NTM2MTcwMzM5.feATDxTPqCzmnlXqheAC87Fk0pMo_9uz3fj8FDu1zgwg.qdar-w_Xggvqp9IB8bPMwGMRaCt_CvGgDfqFCwbt6Zog.JPEG.sundoong2/image_1532650841514535869603.jpg?type=w800" },
-				new Issue32017Recipe { RecipeName = "Fresh Salad", ImageUrl = "https://www.inspiredtaste.net/wp-content/uploads/2018/09/Easy-Oven-Baked-Salmon-Recipe-2-1200.jpg" },
+				new Issue32017Recipe { RecipeName = "Delicious Pasta", ImageUrl = "oasis.jpg" },
+				new Issue32017Recipe { RecipeName = "Grilled Chicken", ImageUrl = "oasis .jpg" },
+				new Issue32017Recipe { RecipeName = "Fresh Salad", ImageUrl = "oasis.jpg" },
 			};
 		}
 	}
