@@ -68,7 +68,7 @@
     ./post-try-fix-comment.ps1 -IssueNumber 27246
 
 .EXAMPLE
-    # Manual parameters (legacy)
+    # Manual parameters
     ./post-try-fix-comment.ps1 -IssueNumber 19560 -AttemptNumber 1 `
         -Approach "Change Shadow base class to StyleableElement" `
         -RootCause "Shadow inherits from Element which lacks styling support" `
@@ -207,11 +207,11 @@ if (-not [string]::IsNullOrWhiteSpace($TryFixDir)) {
 
 # If IssueNumber provided but no TryFixDir, try to find all attempts
 if ($IssueNumber -gt 0 -and [string]::IsNullOrWhiteSpace($TryFixDir) -and [string]::IsNullOrWhiteSpace($Approach)) {
-    $tryFixBase = "CustomAgentLogsTmp/PRState/$IssueNumber/try-fix"
+    $tryFixBase = "CustomAgentLogsTmp/PRState/$IssueNumber/PRAgent/try-fix"
     if (-not (Test-Path $tryFixBase)) {
         $repoRoot = git rev-parse --show-toplevel 2>$null
         if ($repoRoot) {
-            $tryFixBase = Join-Path $repoRoot "CustomAgentLogsTmp/PRState/$IssueNumber/try-fix"
+            $tryFixBase = Join-Path $repoRoot "CustomAgentLogsTmp/PRState/$IssueNumber/PRAgent/try-fix"
         }
     }
     

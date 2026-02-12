@@ -241,7 +241,7 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
    - **Purpose**: Verifies PR title and description match actual implementation, AND performs code review for best practices before merge.
    - **Trigger phrases**: "finalize PR #XXXXX", "check PR description for #XXXXX", "review commit message"
    - **Used by**: Before merging any PR, when description may be stale
-   - **Note**: Does NOT require agent involvement or session markdown - works on any PR
+   - **Note**: Works on any PR
    - **🚨 CRITICAL**: NEVER use `--approve` or `--request-changes` - only post comments. Approval is a human decision.
 
 4. **learn-from-pr** (`.github/skills/learn-from-pr/SKILL.md`)
@@ -283,7 +283,37 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
    - **Purpose**: Proposes ONE independent fix approach, applies it, tests, records result with failure analysis, then reverts
    - **Used by**: pr agent Phase 3 (Fix phase) - rarely invoked directly by users
    - **Behavior**: Reads prior attempts to learn from failures. Max 5 attempts per session.
-   - **Output**: Updates session markdown with attempt results and failure analysis
+   - **Output**: Reports attempt results and failure analysis
+
+### Agent Workflow Labels
+
+Labels with `s/agent-*` prefix track agent workflow outcomes for metrics. Applied by `Review-PR.ps1` Phase 4.
+
+**Outcome Labels** (mutually exclusive — one per PR):
+
+| Label | Description |
+|-------|-------------|
+| `s/agent-approved` | AI agent recommends approval |
+| `s/agent-changes-requested` | AI agent recommends changes |
+| `s/agent-review-incomplete` | AI agent could not complete all phases |
+
+**Signal Labels** (additive):
+
+| Label | Description |
+|-------|-------------|
+| `s/agent-gate-passed` | AI verified tests catch the bug |
+| `s/agent-gate-failed` | AI could not verify tests catch the bug |
+| `s/agent-fix-optimal` | AI confirms PR fix is the best among candidates |
+
+**Manual Labels** (applied by maintainers):
+
+| Label | Description |
+|-------|-------------|
+| `s/agent-fix-implemented` | PR author implemented the agent's suggested fix |
+
+**Base Label**: `s/agent-reviewed` — always applied on completed agent runs.
+
+**Helper module**: `.github/scripts/helpers/Update-AgentLabels.ps1`
 
 ### Agent Workflow Labels
 

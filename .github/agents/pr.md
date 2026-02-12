@@ -1,6 +1,6 @@
 ---
 name: pr
-description: Sequential 4-phase workflow for GitHub issues - Pre-Flight, Gate, Fix, Report. Phases MUST complete in order. State tracked in CustomAgentLogsTmp/PRState/
+description: Sequential 4-phase workflow for GitHub issues - Pre-Flight, Gate, Fix, Report. Phases MUST complete in order.
 ---
 
 # .NET MAUI Pull Request Agent
@@ -48,13 +48,13 @@ After Gate passes, read `.github/agents/pr/post-gate.md` for **Phases 3-4**.
 - Follow Templates EXACTLY (no `open` attributes, no "improvements")
 - No Direct Git Commands (use `gh pr diff/view`, let scripts handle files)
 - Use Skills' Scripts (don't bypass with manual commands)
-- Stop on Environment Blockers (strict retry limits, report and ask user)
+- Stop on Environment Blockers (retry once, then skip and continue autonomously in CI mode)
 - Multi-Model Configuration (5 models for Phase 4)
 - Platform Selection (must be affected AND available on host)
 
 **Key points:**
 - ❌ Never run `git checkout`, `git switch`, `git stash`, `git reset` - agent is always on correct branch
-- ❌ Never continue after environment blocker - STOP and ask user
+- ❌ Never stop and ask user in CI mode - use best judgment to skip blocked phases and continue
 - ❌ Never mark phase ✅ with [PENDING] fields remaining
 
 Phase 3 uses a 5-model exploration workflow. See `post-gate.md` for detailed instructions after Gate passes.
@@ -64,8 +64,6 @@ Phase 3 uses a 5-model exploration workflow. See `post-gate.md` for detailed ins
 ## PRE-FLIGHT: Context Gathering (Phase 1)
 
 > **⚠️ SCOPE**: Document only. No code analysis. No fix opinions. No running tests.
-
-**🚨 CRITICAL: Create the state file BEFORE doing anything else.**
 
 ### ❌ Pre-Flight Boundaries (What NOT To Do)
 
@@ -79,140 +77,10 @@ Phase 3 uses a 5-model exploration workflow. See `post-gate.md` for detailed ins
 
 ### ✅ What TO Do in Pre-Flight
 
-- Create/check state file
 - Read issue description and comments
 - Note platforms affected (from labels)
 - Identify files changed (if PR exists)
 - Document disagreements and edge cases from comments
-
-### Step 0: Check for Existing State File or Create New One
-
-**State file location**: `CustomAgentLogsTmp/PRState/pr-XXXXX.md`
-
-**Naming convention:**
-- If starting from **PR #12345** → Name file `pr-12345.md` (use PR number)
-- If starting from **Issue #33356** (no PR yet) → Name file `pr-33356.md` (use issue number as placeholder)
-- When PR is created later → Rename to use actual PR number
-
-```bash
-# Check if state file exists
-mkdir -p CustomAgentLogsTmp/PRState
-if [ -f "CustomAgentLogsTmp/PRState/pr-XXXXX.md" ]; then
-    echo "State file exists - resuming session"
-    cat CustomAgentLogsTmp/PRState/pr-XXXXX.md
-else
-    echo "Creating new state file"
-fi
-```
-
-**If the file EXISTS**: Read it to determine your current phase and resume from there. Look for:
-- Which phase has `▶️ IN PROGRESS` status - that's where you left off
-- Which phases have `✅ PASSED` status - those are complete
-- Which phases have `⏳ PENDING` status - those haven't started
-
-**If the file does NOT exist**: Create it with the template structure:
-
-```markdown
-# PR Review: #XXXXX - [Issue Title TBD]
-
-**Date:** [TODAY] | **Issue:** [#XXXXX](https://github.com/dotnet/maui/issues/XXXXX) | **PR:** [#YYYYY](https://github.com/dotnet/maui/pull/YYYYY) or None
-
-## ⏳ Status: IN PROGRESS
-
-| Phase | Status |
-|-------|--------|
-| Pre-Flight | ▶️ IN PROGRESS |
-| 🚦 Gate | ⏳ PENDING |
-| 🔧 Fix | ⏳ PENDING |
-| 📋 Report | ⏳ PENDING |
-
----
-
-<details>
-<summary><strong>📋 Issue Summary</strong></summary>
-
-[From issue body]
-
-**Steps to Reproduce:**
-1. [Step 1]
-2. [Step 2]
-
-**Platforms Affected:**
-- [ ] iOS
-- [ ] Android
-- [ ] Windows
-- [ ] MacCatalyst
-
-</details>
-
-<details>
-<summary><strong>📁 Files Changed</strong></summary>
-
-| File | Type | Changes |
-|------|------|---------|
-| `path/to/fix.cs` | Fix | +X lines |
-| `path/to/test.cs` | Test | +Y lines |
-
-</details>
-
-<details>
-<summary><strong>💬 PR Discussion Summary</strong></summary>
-
-**Key Comments:**
-- [Notable comments from issue/PR discussion]
-
-**Reviewer Feedback:**
-- [Key points from review comments]
-
-**Disagreements to Investigate:**
-| File:Line | Reviewer Says | Author Says | Status |
-|-----------|---------------|-------------|--------|
-
-**Author Uncertainty:**
-- [Areas where author expressed doubt]
-
-</details>
-
-<details>
-<summary><strong>🚦 Gate - Test Verification</strong></summary>
-
-**Status**: ⏳ PENDING
-
-- [ ] Tests FAIL (bug reproduced)
-
-**Result:** [PENDING]
-
-</details>
-
-<details>
-<summary><strong>🔧 Fix Candidates</strong></summary>
-
-**Status**: ⏳ PENDING
-
-| # | Source | Approach | Test Result | Files Changed | Notes |
-|---|--------|----------|-------------|---------------|-------|
-| PR | PR #XXXXX | [PR's approach - from Pre-Flight] | ⏳ PENDING (Gate) | [files] | Original PR - validated by Gate |
-
-**Note:** try-fix candidates (1, 2, 3...) are added during Phase 3. PR's fix is reference only.
-
-**Exhausted:** No
-**Selected Fix:** [PENDING]
-
-</details>
-
----
-
-**Next Step:** After Gate passes, read `.github/agents/pr/post-gate.md` and continue with phases 3-4.
-```
-
-This file:
-- Serves as your TODO list for all phases
-- Tracks progress if interrupted
-- Must exist before you start gathering context
-- **Always include when saving changes** (to `CustomAgentLogsTmp/PRState/`)
-- **Phases 3-4 sections are added AFTER Gate passes** (see `pr/post-gate.md`)
-
-**Then gather context and update the file as you go.**
 
 ### Step 1: Gather Context (depends on starting point)
 
@@ -258,11 +126,9 @@ gh pr view XXXXX --json comments --jq '.comments[] | select(.body | contains("Fi
 - Contains structured analysis (Root Cause, Platform Comparison, etc.)
 
 **If prior agent review found:**
-1. **Extract and use as state file content** - The review IS the completed state
-2. Parse the phase statuses to determine what's already done
-3. Import all findings (fix candidates, test results)
-4. Update your local state file with this content
-5. Resume from whichever phase is not yet complete (or report as done)
+1. Parse the phase statuses to determine what's already done
+2. Import all findings (fix candidates, test results)
+3. Resume from whichever phase is not yet complete (or report as done)
 
 **Do NOT:**
 - Start from scratch if a complete review already exists
@@ -270,8 +136,6 @@ gh pr view XXXXX --json comments --jq '.comments[] | select(.body | contains("Fi
 - Re-do phases that are already marked `✅ PASSED`
 
 ### Step 3: Document Key Findings
-
-Update the state file `CustomAgentLogsTmp/PRState/pr-XXXXX.md`:
 
 **If PR exists** - Document disagreements and reviewer feedback:
 | File:Line | Reviewer Says | Author Says | Status |
@@ -308,21 +172,12 @@ The test result will be updated to `✅ PASS (Gate)` after Gate passes.
 
 ### Step 5: Complete Pre-Flight
 
-**🚨 MANDATORY: Update state file**
-
-**Update state file** - Change Pre-Flight status and populate with gathered context:
-1. Change Pre-Flight status from `▶️ IN PROGRESS` to `✅ COMPLETE`
-2. Fill in issue summary, platforms affected, regression info
-3. Add edge cases and any disagreements (if PR exists)
-4. Change 🚦 Gate status to `▶️ IN PROGRESS`
-
-**Before marking ✅ COMPLETE, verify state file contains:**
-- [ ] Issue summary filled (not [PENDING])
-- [ ] Platform checkboxes marked
-- [ ] Files Changed table populated (if PR exists)
-- [ ] PR Discussion Summary documented (if PR exists)
-- [ ] All [PENDING] placeholders replaced
-- [ ] State file saved
+Verify the following before proceeding:
+- [ ] Issue summary captured
+- [ ] Platform information noted
+- [ ] Files changed identified (if PR exists)
+- [ ] PR discussion summarized (if PR exists)
+- [ ] **Write phase output to `CustomAgentLogsTmp/PRState/{PRNumber}/PRAgent/pre-flight/content.md`** (see SHARED-RULES.md "Phase Output Artifacts")
 
 ---
 
@@ -356,7 +211,7 @@ find src/Controls/tests -name "*XXXXX*" -type f 2>/dev/null
 **🚨 CRITICAL: Choose a platform that is BOTH affected by the bug AND available on the current host.**
 
 **Identify affected platforms** from Pre-Flight:
-- Check the "Platforms Affected" checkboxes in the state file
+- Check the platforms affected from Pre-Flight context
 - Check issue labels (e.g., `platform/iOS`, `platform/Android`)
 - Check which platform-specific files the PR modifies
 
@@ -416,18 +271,11 @@ See `.github/skills/verify-tests-fail-without-fix/SKILL.md` for full skill docum
 
 ### Complete 🚦 Gate
 
-**🚨 MANDATORY: Update state file**
-
-**Update state file**:
-1. Fill in **Result**: `PASSED ✅`
-2. Change 🚦 Gate status to `✅ PASSED`
-3. Proceed to Phase 3
-
-**Before marking ✅ PASSED, verify state file contains:**
-- [ ] Result shows PASSED ✅ or FAILED ❌
+Verify the following before proceeding:
+- [ ] Test result documented (PASSED ✅ or FAILED ❌)
 - [ ] Test behavior documented
 - [ ] Platform tested noted
-- [ ] State file saved
+- [ ] **Write phase output to `CustomAgentLogsTmp/PRState/{PRNumber}/PRAgent/gate/content.md`** (see SHARED-RULES.md "Phase Output Artifacts")
 
 ---
 
@@ -445,7 +293,6 @@ See `.github/skills/verify-tests-fail-without-fix/SKILL.md` for full skill docum
 - ❌ **Looking at implementation code during Pre-Flight** - Just gather issue/PR context
 - ❌ **Forming opinions on the fix during Pre-Flight** - That's Phase 3
 - ❌ **Running tests during Pre-Flight** - That's Phase 2 (Gate)
-- ❌ **Not creating state file first** - ALWAYS create state file before gathering context
 - ❌ **Skipping to Phase 3** - Gate MUST pass first
 
 ## Common Gate Mistakes

@@ -133,7 +133,7 @@ if (-not $PRNumber) {
 }
 
 # Set output directory based on PR number
-$OutputDir = "CustomAgentLogsTmp/PRState/$PRNumber/verify-tests-fail"
+$OutputDir = "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/gate/verify-tests-fail"
 Write-Host "📁 Output directory: $OutputDir" -ForegroundColor Cyan
 
 # ============================================================

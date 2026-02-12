@@ -1,6 +1,6 @@
 # PR Agent: Post-Gate Phases (3-4)
 
-**⚠️ PREREQUISITE: Only read this file after 🚦 Gate shows `✅ PASSED` in your state file.**
+**⚠️ PREREQUISITE: Only read this file after 🚦 Gate shows `✅ PASSED`.**
 
 If Gate is not passed, go back to `.github/agents/pr.md` and complete phases 1-2 first.
 
@@ -19,20 +19,27 @@ If Gate is not passed, go back to `.github/agents/pr.md` and complete phases 1-2
 
 **All rules from `.github/agents/pr/SHARED-RULES.md` apply here**, including:
 - Phase Completion Protocol (fill ALL pending fields before marking complete)
-- Stop on Environment Blockers (STOP and ask user, don't continue)
+- Stop on Environment Blockers (retry once, then skip and continue autonomously)
 - Multi-Model Configuration (5 models, SEQUENTIAL only)
 
-If try-fix cannot run due to environment issues, **STOP and ask the user**. Do NOT mark attempts as "BLOCKED" and continue.
+If try-fix cannot run due to environment issues after one retry, **skip the remaining try-fix models and proceed to Report**. Do NOT stop and ask the user.
 
-### 🚨 CRITICAL: Stop on Environment Blockers (Applies to Phase 4)
+### 🚨 CRITICAL: Environment Blockers in Phase 3 (CI Mode)
 
-The same "Stop on Environment Blockers" rule from `pr.md` applies here. If try-fix cannot run due to:
+The default mode is **non-interactive CI** where no human can respond to questions.
+
+If try-fix cannot run due to:
 - Missing Appium drivers
 - Device/emulator not available
 - WinAppDriver not installed
 - Platform tools missing
+- Build failures unrelated to the fix
 
-**STOP and ask the user** before continuing. Do NOT mark try-fix attempts as "BLOCKED" and continue. Either fix the environment issue or get explicit user permission to skip.
+**Use your best judgment to continue autonomously:**
+1. Try ONE alternative (e.g., different platform, rebuild)
+2. If still blocked, **skip remaining try-fix models and proceed to Report**
+3. Document what was skipped and why in the Report phase
+4. The PR's fix was already validated by Gate - that's sufficient for a recommendation
 
 ---
 
@@ -40,7 +47,7 @@ The same "Stop on Environment Blockers" rule from `pr.md` applies here. If try-f
 
 > **SCOPE**: Explore independent fix alternatives using `try-fix` skill, compare with PR's fix, select the best approach.
 
-**⚠️ Gate Check:** Verify 🚦 Gate is `✅ PASSED` in your state file before proceeding.
+**⚠️ Gate Check:** Verify 🚦 Gate is `✅ PASSED` before proceeding.
 
 ### 🚨 CRITICAL: try-fix is Independent of PR's Fix
 
@@ -73,7 +80,6 @@ Invoke the try-fix skill for PR #XXXXX:
 - target_files:
   - src/[area]/[likely-affected-file-1].cs
   - src/[area]/[likely-affected-file-2].cs
-- state_file: CustomAgentLogsTmp/PRState/pr-XXXXX.md
 
 Generate ONE independent fix idea. Review the PR's fix first to ensure your approach is DIFFERENT.
 ```
@@ -118,7 +124,7 @@ After Round 1, invoke EACH of the 5 models to ask for new ideas. **No shortcuts 
      Do you have any NEW fix ideas? Reply: 'NEW IDEA: [desc]' or 'NO NEW IDEAS'"
    ```
 
-3. **Record each model's response** in state file Cross-Pollination table
+3. **Record each model's response** in Cross-Pollination table
 
 4. **For each new idea**: Run try-fix with that model (SEQUENTIAL, wait for completion)
 
@@ -127,13 +133,12 @@ After Round 1, invoke EACH of the 5 models to ask for new ideas. **No shortcuts 
 #### try-fix Behavior
 
 Each `try-fix` invocation (run via task agent with specific model):
-1. Reads state file to learn from prior failed attempts
+1. Learns from prior failed attempts
 2. Reverts PR's fix to get a broken baseline
 3. Proposes ONE new independent fix idea
 4. Implements and tests it
 5. Records result (with failure analysis if it failed)
-6. **Updates state file** (appends row to Fix Candidates table)
-7. Reverts all changes (restores PR's fix)
+6. Reverts all changes (restores PR's fix)
 
 See `.github/skills/try-fix/SKILL.md` for full details.
 
@@ -162,7 +167,7 @@ After the loop, review the **Fix Candidates** table:
 3. **Most robust** - Handles edge cases, less likely to regress
 4. **Matches codebase style** - Consistent with existing patterns
 
-Update the state file:
+Update the selected fix:
 
 ```markdown
 **Exhausted:** Yes (or No if stopped early)
@@ -187,36 +192,17 @@ Update the state file:
 
 ### Complete 🔧 Fix
 
-**🚨 MANDATORY: Update state file**
-
-**Update state file**:
-1. Verify Fix Candidates table is complete with all attempts
-2. Verify failure analyses are documented for failed attempts
-3. Verify Selected Fix is documented with reasoning
-4. Change 🔧 Fix status to `✅ COMPLETE`
-5. Change 📋 Report status to `▶️ IN PROGRESS`
-
-**Before marking ✅ COMPLETE, verify state file contains:**
+Verify the following before proceeding:
 - [ ] Round 1 completed: All 5 models ran try-fix
-- [ ] **Cross-pollination table exists** with responses from ALL 5 models:
-  ```
-  | Model | Round 2 Response |
-  |-------|------------------|
-  | claude-sonnet-4.5 | NO NEW IDEAS |
-  | claude-opus-4.6 | NO NEW IDEAS |
-  | gpt-5.2 | NO NEW IDEAS |
-  | gpt-5.2-codex | NO NEW IDEAS |
-  | gemini-3-pro-preview | NO NEW IDEAS |
-  ```
+- [ ] Cross-pollination completed with responses from ALL 5 models
 - [ ] Fix Candidates table has numbered rows for each try-fix attempt
 - [ ] Each row has: approach, test result, files changed, notes
 - [ ] "Exhausted" field set to Yes (all models confirmed no new ideas)
 - [ ] "Selected Fix" populated with reasoning
-- [ ] Root cause analysis documented for the selected fix (to be surfaced in 📋 Report phase "### Root Cause" section)
-- [ ] No ⏳ PENDING markers remain in Fix section
-- [ ] State file saved
+- [ ] Root cause analysis documented for the selected fix
+- [ ] **Write phase output to `CustomAgentLogsTmp/PRState/{PRNumber}/PRAgent/try-fix/content.md`** (see SHARED-RULES.md "Phase Output Artifacts")
 
-**🚨 If cross-pollination table is missing, you skipped Round 2. Go back and invoke each model.**
+**🚨 If cross-pollination is missing, you skipped Round 2. Go back and invoke each model.**
 
 ---
 
@@ -224,7 +210,7 @@ Update the state file:
 
 > **SCOPE**: Deliver the final result - either a PR review or a new PR.
 
-**⚠️ Gate Check:** Verify ALL phases 1-3 are `✅ COMPLETE` or `✅ PASSED` before proceeding.
+**⚠️ Gate Check:** Verify ALL phases 1-3 are complete before proceeding.
 
 ### Finalize Title and Description
 
@@ -256,8 +242,6 @@ If reviewing an existing PR, check if title/description need updates and include
    
    **Do NOT run git commands. User handles commit/push/PR creation.**
 
-2. **Update state file** with PR link once user provides it
-
 ### If Starting from PR - Write Review
 
 Determine your recommendation based on the Fix phase:
@@ -279,35 +263,14 @@ Determine your recommendation based on the Fix phase:
 - Run the `pr-finalize` skill to verify title and description match implementation
 - If discrepancies found, include suggested updates in review comments
 
-### Final State File Format
-
-Update the state file header:
-
-```markdown
-## ✅ Final Recommendation: APPROVE
-```
-or
-```markdown
-## ⚠️ Final Recommendation: REQUEST CHANGES
-```
-
-Update all phase statuses to complete.
-
 ### Complete 📋 Report
 
-**🚨 MANDATORY: Update state file**
-
-**Update state file**:
-1. Change header status to final recommendation
-2. Update all phases to `✅ COMPLETE` or `✅ PASSED`
-3. Present final result to user
-
-**Before marking ✅ COMPLETE, verify state file contains:**
-- [ ] Final recommendation (APPROVE/REQUEST_CHANGES/COMMENT)
-- [ ] Summary of findings
+Verify the following before finishing:
+- [ ] Final recommendation determined (APPROVE/REQUEST_CHANGES/COMMENT)
+- [ ] Summary of findings prepared
 - [ ] Key technical insights documented
-- [ ] Overall status changed to final recommendation
-- [ ] State file saved
+- [ ] **Write phase output to `CustomAgentLogsTmp/PRState/{PRNumber}/PRAgent/report/content.md`** (see SHARED-RULES.md "Phase Output Artifacts")
+- [ ] Result presented to user
 
 ---
 
@@ -319,7 +282,7 @@ Update all phase statuses to complete.
 - ❌ **Running try-fix in parallel** - SEQUENTIAL ONLY - they modify same files and use same device
 - ❌ **Using explore/glob instead of invoking models** - Cross-pollination requires ACTUAL task agent invocations with each model, not code searches
 - ❌ **Assuming "comprehensive coverage" = exhausted** - Only exhausted when all 5 models explicitly say "NO NEW IDEAS"
-- ❌ **Not recording cross-pollination responses** - State file must have table showing each model's Round 2 response
+- ❌ **Not recording cross-pollination responses** - Must track each model's Round 2 response
 - ❌ **Not analyzing why fixes failed** - Record the flawed reasoning to help future attempts
 - ❌ **Selecting a failing fix** - Only select from passing candidates
 - ❌ **Forgetting to revert between attempts** - Each try-fix must start from broken baseline, end with PR restored

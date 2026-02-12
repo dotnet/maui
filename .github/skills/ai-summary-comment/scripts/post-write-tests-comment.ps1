@@ -74,7 +74,7 @@
     ./post-write-tests-comment.ps1 -IssueNumber 27246
 
 .EXAMPLE
-    # Manual parameters (legacy)
+    # Manual parameters
     ./post-write-tests-comment.ps1 -IssueNumber 33331 -AttemptNumber 1 `
         -TestDescription "Verifies Picker.IsOpen property changes correctly" `
         -HostAppFile "src/Controls/tests/TestCases.HostApp/Issues/Issue33331.cs" `

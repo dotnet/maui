@@ -148,11 +148,11 @@ Write-Host "╚═════════════════════�
 
 # If PRNumber provided but no SummaryFile, try to find it
 if ($PRNumber -gt 0 -and [string]::IsNullOrWhiteSpace($SummaryFile)) {
-    $summaryPath = "CustomAgentLogsTmp/PRState/$PRNumber/pr-finalize/pr-finalize-summary.md"
+    $summaryPath = "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/pr-finalize/pr-finalize-summary.md"
     if (-not (Test-Path $summaryPath)) {
         $repoRoot = git rev-parse --show-toplevel 2>$null
         if ($repoRoot) {
-            $summaryPath = Join-Path $repoRoot "CustomAgentLogsTmp/PRState/$PRNumber/pr-finalize/pr-finalize-summary.md"
+            $summaryPath = Join-Path $repoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/pr-finalize/pr-finalize-summary.md"
         }
     }
     
@@ -615,7 +615,7 @@ $codeReviewSection
 if ($DryRun) {
     # File-based DryRun: uses separate preview file for finalize (separate comment from unified)
     if ([string]::IsNullOrWhiteSpace($PreviewFile)) {
-        $PreviewFile = "CustomAgentLogsTmp/PRState/$PRNumber/pr-finalize-preview.md"
+        $PreviewFile = "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/pr-finalize-preview.md"
     }
     
     # Ensure directory exists
