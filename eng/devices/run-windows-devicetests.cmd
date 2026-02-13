@@ -253,68 +253,6 @@ if %IS_PACKAGED%==1 (
     for %%i in ("!TEST_EXE!") do set EXE_DIR=%%~dpi
     echo Executable directory: !EXE_DIR!
     
-    REM ========================================
-    REM DIAGNOSTIC: Check for Windows App SDK DLLs
-    REM If WindowsAppSDKSelfContained=true was applied, these should exist
-    REM ========================================
-    echo.
-    echo ========================================
-    echo DIAGNOSTIC: Checking for Windows App SDK DLLs
-    echo ========================================
-    echo Looking for Microsoft.WindowsAppRuntime.*.dll in !EXE_DIR!
-    dir "!EXE_DIR!\Microsoft.WindowsAppRuntime*.dll" 2>nul
-    if !ERRORLEVEL! NEQ 0 (
-        echo WARNING: No Microsoft.WindowsAppRuntime DLLs found!
-        echo This indicates WindowsAppSDKSelfContained may not have been applied during build.
-    )
-    echo Looking for Microsoft.Windows.SDK.NET.dll in !EXE_DIR!
-    dir "!EXE_DIR!\Microsoft.Windows.SDK.NET.dll" 2>nul
-    echo.
-    echo CRITICAL: Looking for Microsoft.ui.xaml.dll ^(native WinUI3 DLL, ~14 MB^):
-    dir "!EXE_DIR!\Microsoft.ui.xaml.dll" 2>nul
-    if !ERRORLEVEL! NEQ 0 (
-        echo CRITICAL ERROR: Microsoft.ui.xaml.dll NOT FOUND!
-        echo This DLL is required for Windows App SDK SelfContained mode.
-        echo Without it, the app WILL crash with 0xC000027B.
-        echo Checking recursively in case it's in a subdirectory:
-        powershell -Command "Get-ChildItem -Path '!EXE_DIR!' -Filter 'Microsoft.ui.xaml.dll' -Recurse | ForEach-Object { Write-Host $_.FullName }"
-    ) else (
-        echo OK: Microsoft.ui.xaml.dll found
-    )
-    echo.
-    echo Total DLL count in output directory:
-    powershell -Command "(Get-ChildItem -Path '!EXE_DIR!' -Filter '*.dll').Count"
-    echo.
-    echo Total file count in output directory:
-    powershell -Command "(Get-ChildItem -Path '!EXE_DIR!' -File).Count"
-    echo.
-    echo Payload root total file count ^(including Unpackaged and AppPackages^):
-    powershell -Command "(Get-ChildItem -Path '%SCENARIO_DIR%' -File -Recurse).Count"
-    echo.
-    echo Listing all Windows App SDK related files:
-    dir "!EXE_DIR!\*WindowsApp*" 2>nul
-    dir "!EXE_DIR!\*WinRT*" 2>nul
-    echo.
-    echo DIAGNOSTIC: Checking for Visual C++ Runtime DLLs ^(required for Windows App SDK^):
-    echo Looking for vcruntime, msvcp, ucrtbase DLLs:
-    powershell -Command "Get-ChildItem -Path '!EXE_DIR!' -Filter 'vcruntime*.dll' -Recurse 2>$null | Select-Object -First 5 | ForEach-Object { Write-Host $_.FullName }"
-    powershell -Command "Get-ChildItem -Path '!EXE_DIR!' -Filter 'msvcp*.dll' -Recurse 2>$null | Select-Object -First 5 | ForEach-Object { Write-Host $_.FullName }"
-    powershell -Command "Get-ChildItem -Path '!EXE_DIR!' -Filter 'ucrtbase.dll' -Recurse 2>$null | Select-Object -First 5 | ForEach-Object { Write-Host $_.FullName }"
-    echo.
-    echo DIAGNOSTIC: Checking system VC++ Runtime availability:
-    where vcruntime140.dll 2>nul
-    if !ERRORLEVEL! NEQ 0 (
-        echo WARNING: vcruntime140.dll not found in PATH
-        echo Checking if app-local VC++ runtime is present:
-        dir "!EXE_DIR!\vcruntime*.dll" 2>nul
-        if !ERRORLEVEL! NEQ 0 (
-            echo CRITICAL: No VC++ Runtime DLLs found in app directory!
-            echo This may cause 0xC000027B crash on machines without VS installed.
-        )
-    )
-    echo ========================================
-    echo.
-    
     pushd "!EXE_DIR!"
     
     if %IS_CONTROLS_TEST%==1 (
