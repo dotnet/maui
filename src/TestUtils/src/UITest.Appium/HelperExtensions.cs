@@ -2944,6 +2944,13 @@ namespace UITest.Appium
 					// the underlying Appium/WDA call times out or the process is killed
 					Debug.WriteLine($">>>>> Appium command timed out after {timeout.Value.TotalSeconds}s. Background thread may remain blocked until app is force-terminated.");
 					
+					// Observe any future exception from the orphaned task to prevent unobserved task exceptions
+					task.ContinueWith(t =>
+					{
+						if (t.Exception is not null)
+							Debug.WriteLine($">>>>> Orphaned Appium task faulted: {t.Exception.InnerException?.Message}");
+					}, TaskContinuationOptions.OnlyOnFaulted);
+					
 					throw new TimeoutException(
 						$"An Appium command did not complete within {timeout.Value.TotalSeconds}s. " +
 						"The application may be unresponsive (e.g., due to an infinite layout loop).");
