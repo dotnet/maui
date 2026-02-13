@@ -11,8 +11,24 @@ public partial class VisualStateManagerSliderPage : ContentPage
 	{
 		if (!VSMSlider.IsEnabled)
 			return;
+		if (!VSMSlider.IsFocused)
+		{
+			VSMSlider.Focus();
+			VisualStateManager.GoToState(VSMSlider, "Focused");
+			VSMSlider.Value = 65;
+			SliderState.Text = $"State: Focused | Value: {VSMSlider.Value:0}";
+		}
+	}
 
-		VSMSlider.Focus();
+	void OnUnfocusSlider(object sender, EventArgs e)
+	{
+		if (!VSMSlider.IsEnabled)
+			return;
+
+		VSMSlider.Unfocus();
+		SliderUnfocusButton.Focus();
+		VisualStateManager.GoToState(VSMSlider, "Unfocused");
+		SliderState.Text = $"State: Unfocused | Value: {VSMSlider.Value:0}";
 	}
 
 	void OnToggleSliderDisabled(object sender, EventArgs e)
@@ -21,44 +37,51 @@ public partial class VisualStateManagerSliderPage : ContentPage
 		SliderDisableButton.Text = VSMSlider.IsEnabled ? "Disable" : "Enable";
 		if (!VSMSlider.IsEnabled)
 		{
+			VisualStateManager.GoToState(VSMSlider, "Disabled");
 			SliderState.Text = $"State: Disabled | Value: {VSMSlider.Value:0}";
 			return;
 		}
-
-		SliderState.Text = VSMSlider.IsFocused
-			? $"State: Focused | Value: {VSMSlider.Value:0}"
-			: $"State: Unfocused | Value: {VSMSlider.Value:0}";
+		VisualStateManager.GoToState(VSMSlider, "Normal");
+		SliderState.Text = $"State: Normal | Value: {VSMSlider.Value:0}";
 	}
-
+	bool _isResetting = false;
 	void OnResetSlider(object sender, EventArgs e)
 	{
+		_isResetting = true;
 		VSMSlider.IsEnabled = true;
-		VSMSlider.Unfocus();
 		SliderDisableButton.Text = "Disable";
-		VisualStateManager.GoToState(VSMSlider, "Unfocused");
-		SliderState.Text = $"State: Unfocused | Value: {VSMSlider.Value:0}";
+		VSMSlider.Value = 50;
+		VisualStateManager.GoToState(VSMSlider, "Normal");
+		SliderState.Text = $"State: Normal | Value: {VSMSlider.Value:0}";
+		_isResetting = false;
 	}
 
 	void OnSliderFocused(object sender, FocusEventArgs e)
 	{
+		VisualStateManager.GoToState(VSMSlider, "Focused");
 		SliderState.Text = $"State: Focused | Value: {VSMSlider.Value:0}";
 	}
 
 	void OnSliderUnfocused(object sender, FocusEventArgs e)
 	{
+		VisualStateManager.GoToState(VSMSlider, "Unfocused");
 		SliderState.Text = $"State: Unfocused | Value: {VSMSlider.Value:0}";
 	}
 
 	void OnSliderValueChanged(object sender, ValueChangedEventArgs e)
 	{
+		if (_isResetting)
+		{
+		    VisualStateManager.GoToState(VSMSlider, "Normal");
+			SliderState.Text = $"State: Normal | Value: {VSMSlider.Value:0}";
+			return;
+		}
 		if (!VSMSlider.IsEnabled)
 		{
 			SliderState.Text = $"State: Disabled | Value: {e.NewValue:0}";
 			return;
 		}
-
-		SliderState.Text = VSMSlider.IsFocused
-			? $"State: Focused | Value: {e.NewValue:0}"
-			: $"State: Unfocused | Value: {e.NewValue:0}";
+		VisualStateManager.GoToState(VSMSlider, "Focused");
+		SliderState.Text = $"State: Focused | Value: {e.NewValue:0}";
 	}
 }

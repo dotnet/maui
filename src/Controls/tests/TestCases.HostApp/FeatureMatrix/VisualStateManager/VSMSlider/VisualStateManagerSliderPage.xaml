@@ -6,9 +6,9 @@
     <ContentPage.Resources>
         <!-- Slider VSM VSM -->
         <Style TargetType="Slider" x:Key="VsmSliderStyle">
-            <Setter Property="MinimumTrackColor" Value="#FFEF2323" />
-            <Setter Property="MaximumTrackColor" Value="#FF0BCD32" />
-            <Setter Property="ThumbColor" Value="#FF4823EC" />
+            <Setter Property="MinimumTrackColor" Value="#FFD77676" />
+            <Setter Property="MaximumTrackColor" Value="#FFE43C08" />
+            <Setter Property="ThumbColor" Value="#FF830400" />
             <Setter Property="VisualStateManager.VisualStateGroups">
                 <VisualStateGroupList>
                     <VisualStateGroup x:Name="CommonStates">
@@ -18,7 +18,7 @@
                                 <Setter Property="Scale" Value="1" />
                                 <Setter Property="MinimumTrackColor" Value="#FFF63BCA" />
                                 <Setter Property="MaximumTrackColor" Value="#FFF1A6DE" />
-                                <Setter Property="ThumbColor" Value="#FFE6EC26" />
+                                <Setter Property="ThumbColor" Value="#FFEB0875" />
                             </VisualState.Setters>
                         </VisualState>
                         <VisualState x:Name="Disabled">
@@ -33,15 +33,17 @@
                     <VisualStateGroup x:Name="FocusStates">
                         <VisualState x:Name="Focused">
                             <VisualState.Setters>
-                                <Setter Property="ThumbColor" Value="#60A5FA" />
+                                <Setter Property="ThumbColor" Value="#FF05432E" />
                                 <Setter Property="MinimumTrackColor" Value="#22C55E" />
+                                <Setter Property="MaximumTrackColor" Value="#86EFAC" />
                                 <Setter Property="Scale" Value="1.05" />
                             </VisualState.Setters>
                         </VisualState>
                         <VisualState x:Name="Unfocused">
                             <VisualState.Setters>
-                                <Setter Property="ThumbColor" Value="#FFFFFF" />
-                                <Setter Property="MinimumTrackColor" Value="#3B82F6" />
+                                <Setter Property="ThumbColor" Value="#FF500FE6" />
+                                <Setter Property="MinimumTrackColor" Value="#FF8564B6" />
+                                <Setter Property="MaximumTrackColor" Value="#FF4E3C90" />
                                 <Setter Property="Scale" Value="1" />
                             </VisualState.Setters>
                         </VisualState>
@@ -64,7 +66,10 @@
                 <Label x:Name="SliderState" AutomationId="SliderState" Text="State: Unfocused | Value: 50" FontSize="14" TextColor="#111827" />
 
                 <HorizontalStackLayout Spacing="10">
-                    <Button Text="Focus" AutomationId="SliderFocus" Clicked="OnFocusSlider" />
+                    <Button x:Name="SliderFocusButton" Text="Focus" AutomationId="SliderFocus" Clicked="OnFocusSlider" />
+                    <Button x:Name="SliderUnfocusButton" Text="UnFocus" AutomationId="SliderUnfocus" Clicked="OnUnfocusSlider" />
+                </HorizontalStackLayout> 
+                <HorizontalStackLayout Spacing="10">
                     <Button x:Name="SliderDisableButton" Text="Disable" AutomationId="SliderDisable" Clicked="OnToggleSliderDisabled" />
                     <Button Text="Reset" AutomationId="SliderReset" Clicked="OnResetSlider" />
                 </HorizontalStackLayout>
