@@ -1,4 +1,3 @@
-#if TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/16767
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -24,4 +23,3 @@ public class Issue29961 : _IssuesUITest
 		Assert.That(resizeLabelText, Is.EqualTo("Success"));
 	}
 }
-#endif
