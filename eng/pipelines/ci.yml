@@ -108,6 +108,13 @@ parameters:
         - ImageOverride -equals ACES_VM_SharedPool_Tahoe
       label: macOS
 
+- name: AndroidPoolLinux
+  type: object
+  default:
+    name: MAUI-DNCENG
+    demands:
+      - ImageOverride -equals 1ESPT-Ubuntu22.04
+
 
 # Condition for MacOSPool comparison lanes (non-ARM64)
 # Runs on: (non-PR on main/net*.0/release/*/inflight/*) OR (PR targeting net*.0/release/*/inflight/*)
@@ -277,12 +284,9 @@ stages:
     # TODO: macOSTemplates and AOT template categories
     - name: mac_runandroid_tests
       ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
-        pool:
-          name: AcesShared
-          demands:
-            - ImageOverride -equals ACES_arm64_Sequoia_Xcode
+        pool: ${{ parameters.AndroidPoolLinux }}
       ${{ else }}:  
-        pool: ${{ parameters.MacOSPool.internal }}
+        pool: ${{ parameters.AndroidPoolLinux }}
       timeout: 240
       testCategory: RunOnAndroid
 
