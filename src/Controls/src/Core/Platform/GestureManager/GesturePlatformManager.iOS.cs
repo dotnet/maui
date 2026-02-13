@@ -19,6 +19,8 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	class GesturePlatformManager : IDisposable
 	{
+		static readonly UIGesturesProbe _alwaysRecognizeSimultaneously = (g, o) => true;
+
 		readonly NotifyCollectionChangedEventHandler _collectionChangedHandler;
 
 		readonly Dictionary<IGestureRecognizer, List<UIGestureRecognizer?>> _gestureRecognizers = new Dictionary<IGestureRecognizer, List<UIGestureRecognizer?>>();
@@ -379,7 +381,42 @@ namespace Microsoft.Maui.Controls.Platform
 				return new List<UIGestureRecognizer?> { uiRecognizer };
 			}
 
-			return null;
+			if (recognizer is not LongPressGestureRecognizer longPressRecognizer)
+				return null;
+
+			WeakReference? weakPlatformRecognizer = null;
+			var longPressUiRecognizer = CreateLongPressRecognizer(r =>
+			{
+				var eventTracker = weakEventTracker.Target as GesturePlatformManager;
+				var view = eventTracker?._handler?.VirtualView as View;
+				var lpRecognizer = weakRecognizer.Target as LongPressGestureRecognizer;
+
+				if (lpRecognizer == null || view == null)
+					return;
+
+				var originPoint = r.LocationInView(eventTracker?.PlatformView);
+				Func<IElement?, Point?> getPosition = (relativeTo) => CalculatePosition(relativeTo, originPoint, weakPlatformRecognizer, weakEventTracker);
+
+				switch (r.State)
+				{
+					case UIGestureRecognizerState.Began:
+						lpRecognizer.SendLongPressing(view, GestureStatus.Started, getPosition);
+						break;
+					case UIGestureRecognizerState.Changed:
+						lpRecognizer.SendLongPressing(view, GestureStatus.Running, getPosition);
+						break;
+					case UIGestureRecognizerState.Ended:
+						lpRecognizer.SendLongPressed(view, getPosition);
+						lpRecognizer.SendLongPressing(view, GestureStatus.Completed, getPosition);
+						break;
+					case UIGestureRecognizerState.Cancelled:
+					case UIGestureRecognizerState.Failed:
+						lpRecognizer.SendLongPressing(view, GestureStatus.Canceled, getPosition);
+						break;
+				}
+			});
+			weakPlatformRecognizer = new WeakReference(longPressUiRecognizer);
+			return new List<UIGestureRecognizer?> { longPressUiRecognizer };
 		}
 
 		UIPanGestureRecognizer CreatePanRecognizer(int numTouches, Action<UIPanGestureRecognizer> action)
@@ -405,6 +442,34 @@ namespace Microsoft.Maui.Controls.Platform
 			result.Direction = (UISwipeGestureRecognizerDirection)direction;
 			result.ShouldRecognizeSimultaneously = (g, o) => true;
 			result.AddTarget(() => action(direction));
+			return result;
+		}
+
+		UILongPressGestureRecognizer CreateLongPressRecognizer(Action<UILongPressGestureRecognizer> action)
+		{
+			var result = new UILongPressGestureRecognizer(action);
+			
+			// Get the recognizer from the handler's VirtualView
+			if (_handler?.VirtualView is View view)
+			{
+				var recognizers = view.GestureRecognizers;
+				foreach (var gestureRecognizer in recognizers)
+				{
+					if (gestureRecognizer is LongPressGestureRecognizer longPress)
+					{
+						// Configure native properties
+						result.MinimumPressDuration = longPress.MinimumPressDuration / 1000.0; // Convert ms to seconds
+						result.AllowableMovement = (nfloat)longPress.AllowableMovement;
+						result.NumberOfTouchesRequired = (nuint)longPress.NumberOfTouchesRequired;
+						break;
+					}
+				}
+			}
+			
+			// Enable simultaneous recognition with other gestures (like Swipe, Tap)
+			// This allows LongPress to coexist with other gestures
+			result.ShouldRecognizeSimultaneously = _alwaysRecognizeSimultaneously;
+			
 			return result;
 		}
 
@@ -642,7 +707,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (PlatformView != null &&
 				_handler.VirtualView is View v &&
-				v.HasAccessibleTapGesture() &&
+				(v.HasAccessibleTapGesture() || v.HasAccessibleLongPressGesture()) &&
 				(PlatformView.AccessibilityTraits & UIAccessibilityTrait.Button) != UIAccessibilityTrait.Button)
 			{
 				PlatformView.AccessibilityTraits |= UIAccessibilityTrait.Button;
