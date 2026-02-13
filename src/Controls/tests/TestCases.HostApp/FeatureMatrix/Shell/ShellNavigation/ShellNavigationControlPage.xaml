@@ -1,0 +1,362 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Shell
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:local="clr-namespace:Maui.Controls.Sample"
+	x:Class="Maui.Controls.Sample.ShellNavigationControlPage"
+	x:DataType="local:ShellViewModel"
+	x:Name="MainShell"
+	Title="Shell Navigation"
+	AutomationId="ShellNavigationMatrix">
+
+	<FlyoutItem Title="Main"
+			Route="main"
+			AutomationId="MainFlyoutItem">
+		<ShellContent Title="Main"
+				AutomationId="MainShellContent">
+			<ContentPage Title="Shell Navigation"
+					x:Name="MainContentPage">
+
+				<ContentPage.ToolbarItems>
+					<ToolbarItem Text="Reset"
+							Clicked="OnResetClicked"
+							AutomationId="ResetToolbarItem"/>
+					<ToolbarItem Text="Apply"
+							Clicked="NavigateToOptionsPage_Clicked"
+							AutomationId="ApplyToolbarItem"/>
+				</ContentPage.ToolbarItems>
+
+				<Grid Padding="10"
+						RowSpacing="4"
+						ColumnSpacing="10"
+					  RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+					  ColumnDefinitions="*,*">
+
+					<Label Grid.Row="0"
+							Grid.Column="0"
+							Text="CurrentState:"
+							FontSize="12"/>
+					<Label Grid.Row="0"
+							Grid.Column="1"
+							Text="{Binding CurrentState}"
+							FontSize="12"
+						   AutomationId="CurrentStateLabel"/>
+
+					<Label Grid.Row="1"
+							Grid.Column="0"
+							Text="CurrentPage:"
+							FontSize="12"/>
+					<Label Grid.Row="1"
+							Grid.Column="1"
+							Text="{Binding CurrentPage}"
+							FontSize="12"
+						   AutomationId="CurrentPageLabel"/>
+
+					<Label Grid.Row="2"
+							Grid.Column="0"
+							Text="CurrentItem:"
+							FontSize="12"/>
+					<Label Grid.Row="2"
+							Grid.Column="1"
+							Text="{Binding CurrentItem}"
+							FontSize="12"
+						   AutomationId="CurrentItemLabel"/>
+
+					<Label Grid.Row="3"
+							Grid.Column="0"
+							Text="Shell.Current:"
+							FontSize="12"/>
+					<Label Grid.Row="3"
+							Grid.Column="1"
+							Text="{Binding ShellCurrent}"
+							FontSize="12"
+						   AutomationId="ShellCurrentLabel"/>
+
+					<Label Grid.Row="4"
+							Grid.Column="0"
+							Text="TextOverride:"
+							FontSize="12"
+							VerticalOptions="Center"/>
+					<Entry Grid.Row="4"
+							Grid.Column="1"
+							Text="{Binding TextOverride}"
+							FontSize="12"
+						   HeightRequest="35"
+							AutomationId="TextOverrideEntry"/>
+
+					<Label Grid.Row="5"
+							Grid.Column="0"
+							Text="IconOverride:"
+							FontSize="12"
+							VerticalOptions="Center"/>
+					<HorizontalStackLayout Grid.Row="5"
+							Grid.Column="1"
+							Spacing="5">
+						<Button Text="bank.png"
+								Clicked="OnIconOverrideClicked"
+								FontSize="10"
+								HeightRequest="30"
+								Padding="5,0"
+								AutomationId="IconOverrideBank"/>
+						<Button Text="coffee.png"
+								Clicked="OnIconOverrideClicked"
+								FontSize="10"
+								HeightRequest="30"
+								Padding="5,0"
+								AutomationId="IconOverrideCoffee"/>
+						<Button Text="None"
+								Clicked="OnIconOverrideClicked"
+								FontSize="10"
+								HeightRequest="30"
+								Padding="5,0"
+								AutomationId="IconOverrideDefault"/>
+					</HorizontalStackLayout>
+
+					<Button Grid.Row="6"
+							Grid.Column="0"
+							Text="{Binding IsEnabledText}"
+							FontSize="11"
+							HeightRequest="35"
+							Padding="5,0"
+							Clicked="OnToggleIsEnabled"
+							AutomationId="IsEnabledButton"/>
+					<Button Grid.Row="6"
+							Grid.Column="1"
+							Text="{Binding IsVisibleText}"
+							FontSize="11"
+							HeightRequest="35"
+							Padding="5,0"
+							Clicked="OnToggleIsVisible"
+							AutomationId="IsVisibleButton"/>
+
+					<Label Grid.Row="7"
+							Grid.Column="0"
+							Text="CommandParameter:"
+							FontSize="12"
+							VerticalOptions="Center"/>
+					<Entry Grid.Row="7"
+							Grid.Column="1"
+							Text="{Binding CommandParameter}"
+							FontSize="12"
+						   HeightRequest="35"
+							AutomationId="CommandParameterEntry"/>
+
+					<Label Grid.Row="8"
+							Grid.Column="0"
+							Text="CommandExecuted:"
+							FontSize="12"/>
+					<Label Grid.Row="8"
+							Grid.Column="1"
+							Text="{Binding CommandExecuted}"
+							FontSize="12"
+						   AutomationId="CommandExecutedLabel"/>
+
+					<Label Grid.Row="9"
+							Grid.Column="0"
+							Text="Navigating:"
+							FontSize="12"/>
+					<Label Grid.Row="9"
+							Grid.Column="1"
+							Text="{Binding Navigating}"
+							FontSize="11"
+						   AutomationId="NavigatingLabel"/>
+
+					<Label Grid.Row="10"
+							Grid.Column="0"
+							Text="Navigated:"
+							FontSize="12"/>
+					<Label Grid.Row="10"
+							Grid.Column="1"
+							Text="{Binding Navigated}"
+							FontSize="11"
+						   AutomationId="NavigatedLabel"/>
+
+					<Button Grid.Row="11"
+							Grid.Column="0"
+							Text="GoTo Detail1"
+							FontSize="12"
+							HeightRequest="35"
+							Padding="5,0"
+							Clicked="OnNavigateToDetail1Clicked"
+							AutomationId="NavigateToDetail1Button"/>
+					<Button Grid.Row="11"
+							Grid.Column="1"
+							Text="GoTo Detail2"
+							FontSize="12"
+							HeightRequest="35"
+							Padding="5,0"
+							Clicked="OnNavigateToDetail2Clicked"
+							AutomationId="NavigateToDetail2Button"/>
+
+					<Button Grid.Row="12"
+							Grid.Column="0"
+							Grid.ColumnSpan="2"
+							Text="GoToAsync(..)"
+							FontSize="12"
+							HeightRequest="35"
+							Padding="5,0"
+							Clicked="OnGoBackClicked"
+							AutomationId="GoBackButton"/>
+
+				</Grid>
+			</ContentPage>
+		</ShellContent>
+	</FlyoutItem>
+
+	<FlyoutItem Title="Page2"
+			Route="page2"
+			AutomationId="Page2FlyoutItem">
+		<ShellContent Title="Page2"
+				AutomationId="Page2ShellContent">
+			<ContentPage Title="Page 2"
+					x:Name="Page2ContentPage">
+				<Grid Padding="10"
+						RowSpacing="4"
+						ColumnSpacing="10"
+					  RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto"
+					  ColumnDefinitions="*,*">
+
+					<Label Grid.Row="0"
+							Grid.Column="0"
+							Text="CurrentState:"
+							FontSize="12"/>
+					<Label Grid.Row="0"
+							Grid.Column="1"
+							FontSize="12"
+							AutomationId="Page2CurrentStateLabel"
+						   x:Name="Page2CurrentStateLabel"/>
+
+					<Label Grid.Row="1"
+							Grid.Column="0"
+							Text="CurrentPage:"
+							FontSize="12"/>
+					<Label Grid.Row="1"
+							Grid.Column="1"
+							FontSize="12"
+							AutomationId="Page2CurrentPageLabel"
+						   x:Name="Page2CurrentPageLabel"/>
+
+					<Label Grid.Row="2"
+							Grid.Column="0"
+							Text="CurrentItem:"
+							FontSize="12"/>
+					<Label Grid.Row="2"
+							Grid.Column="1"
+							FontSize="12"
+							AutomationId="Page2CurrentItemLabel"
+						   x:Name="Page2CurrentItemLabel"/>
+
+					<Label Grid.Row="3"
+							Grid.Column="0"
+							Text="Shell.Current:"
+							FontSize="12"/>
+					<Label Grid.Row="3"
+							Grid.Column="1"
+							FontSize="12"
+							AutomationId="Page2ShellCurrentLabel"
+						   x:Name="Page2ShellCurrentLabel"/>
+
+					<Label Grid.Row="4"
+							Grid.Column="0"
+							Text="Navigating:"
+							FontSize="12"/>
+					<Label Grid.Row="4"
+							Grid.Column="1"
+							FontSize="11"
+							AutomationId="Page2NavigatingLabel"
+						   x:Name="Page2NavigatingLabel"/>
+
+					<Label Grid.Row="5"
+							Grid.Column="0"
+							Text="Navigated:"
+							FontSize="12"/>
+					<Label Grid.Row="5"
+							Grid.Column="1"
+							FontSize="11"
+							AutomationId="Page2NavigatedLabel"
+						   x:Name="Page2NavigatedLabel"/>
+
+				</Grid>
+			</ContentPage>
+		</ShellContent>
+	</FlyoutItem>
+
+	<FlyoutItem Title="Page3"
+			Route="page3"
+			AutomationId="Page3FlyoutItem">
+		<ShellContent Title="Page3"
+				AutomationId="Page3ShellContent">
+			<ContentPage Title="Page 3"
+					x:Name="Page3ContentPage">
+				<Grid Padding="10"
+						RowSpacing="4"
+						ColumnSpacing="10"
+					  RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto"
+					  ColumnDefinitions="*,*">
+
+					<Label Grid.Row="0"
+							Grid.Column="0"
+							Text="CurrentState:"
+							FontSize="12"/>
+					<Label Grid.Row="0"
+							Grid.Column="1"
+							FontSize="12"
+							AutomationId="Page3CurrentStateLabel"
+						   x:Name="Page3CurrentStateLabel"/>
+
+					<Label Grid.Row="1"
+							Grid.Column="0"
+							Text="CurrentPage:"
+							FontSize="12"/>
+					<Label Grid.Row="1"
+							Grid.Column="1"
+							FontSize="12"
+							AutomationId="Page3CurrentPageLabel"
+						   x:Name="Page3CurrentPageLabel"/>
+
+					<Label Grid.Row="2"
+							Grid.Column="0"
+							Text="CurrentItem:"
+							FontSize="12"/>
+					<Label Grid.Row="2"
+							Grid.Column="1"
+							FontSize="12"
+							AutomationId="Page3CurrentItemLabel"
+						   x:Name="Page3CurrentItemLabel"/>
+
+					<Label Grid.Row="3"
+							Grid.Column="0"
+							Text="Shell.Current:"
+							FontSize="12"/>
+					<Label Grid.Row="3"
+							Grid.Column="1"
+							FontSize="12"
+							AutomationId="Page3ShellCurrentLabel"
+						   x:Name="Page3ShellCurrentLabel"/>
+
+					<Label Grid.Row="4"
+							Grid.Column="0"
+							Text="Navigating:"
+							FontSize="12"/>
+					<Label Grid.Row="4"
+							Grid.Column="1"
+							FontSize="11"
+							AutomationId="Page3NavigatingLabel"
+						   x:Name="Page3NavigatingLabel"/>
+
+					<Label Grid.Row="5"
+							Grid.Column="0"
+							Text="Navigated:"
+							FontSize="12"/>
+					<Label Grid.Row="5"
+							Grid.Column="1"
+							FontSize="11"
+							AutomationId="Page3NavigatedLabel"
+						   x:Name="Page3NavigatedLabel"/>
+
+				</Grid>
+			</ContentPage>
+		</ShellContent>
+	</FlyoutItem>
+
+</Shell>
