@@ -60,7 +60,9 @@ public class AOTTemplateTest : BaseTemplateTests
 		var actualWarnings = BuildWarningsUtilities.ReadNativeAOTWarningsFromBinLog(binLogFilePath);
 		var expectedWarnings = isAndroidPlatform
 			? BuildWarningsUtilities.ExpectedNativeAOTWarningsAndroid
-			: BuildWarningsUtilities.ExpectedNativeAOTWarnings;
+			: isWindowsFramework
+				? BuildWarningsUtilities.ExpectedNativeAOTWarningsWindows
+				: BuildWarningsUtilities.ExpectedNativeAOTWarnings;
 		actualWarnings.AssertWarnings(expectedWarnings);
 	}
 
