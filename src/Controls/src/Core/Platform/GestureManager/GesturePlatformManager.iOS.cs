@@ -707,7 +707,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (PlatformView != null &&
 				_handler.VirtualView is View v &&
-				v.HasAccessibleTapGesture() &&
+				(v.HasAccessibleTapGesture() || v.HasAccessibleLongPressGesture()) &&
 				(PlatformView.AccessibilityTraits & UIAccessibilityTrait.Button) != UIAccessibilityTrait.Button)
 			{
 				PlatformView.AccessibilityTraits |= UIAccessibilityTrait.Button;

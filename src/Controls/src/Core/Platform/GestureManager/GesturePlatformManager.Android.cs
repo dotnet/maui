@@ -226,8 +226,8 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				platformView.Touch += OnPlatformViewTouched;
 
-				// If we have a TapGestureRecognizer, we need to handle key presses
-				if (View.HasAccessibleTapGesture())
+				// If we have a TapGestureRecognizer or LongPressGestureRecognizer, we need to handle key presses
+				if (View.HasAccessibleTapGesture() || View.HasAccessibleLongPressGesture())
 				{
 					platformView.KeyPress += OnKeyPress;
 					_focusableDefaultValue ??= platformView.Focusable;
@@ -254,9 +254,7 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
-			if (e.KeyCode.IsConfirmKey() &&
-				View.HasAccessibleTapGesture(out var tapGestureRecognizer) &&
-				e.Event.HasNoModifiers)
+			if (e.KeyCode.IsConfirmKey() && e.Event.HasNoModifiers)
 			{
 				if (!platformView.Enabled)
 				{
@@ -265,7 +263,13 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 
 				if (!e.Event.IsCanceled)
-					tapGestureRecognizer.SendTapped(View, (v) => Point.Zero);
+				{
+					if (View.HasAccessibleTapGesture(out var tapGestureRecognizer))
+						tapGestureRecognizer.SendTapped(View, (v) => Point.Zero);
+
+					if (View.HasAccessibleLongPressGesture(out var longPressGestureRecognizer))
+						longPressGestureRecognizer.SendLongPressed(View, (v) => Point.Zero);
+				}
 			}
 
 			e.Handled = false;
