@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:local="clr-namespace:Maui.Controls.Sample"
+	x:Class="Maui.Controls.Sample.ShellNavigationOptionsPage"
+	x:DataType="local:ShellViewModel"
+	Title="Options - BackButton Validation"
+	AutomationId="ShellNavigationOptionsPage">
+
+	<Shell.BackButtonBehavior>
+		<BackButtonBehavior
+			TextOverride="{Binding TextOverride}"
+			IconOverride="{Binding IconOverride}"
+			IsEnabled="{Binding IsEnabled}"
+			IsVisible="{Binding IsVisible}"
+			Command="{Binding Command}"
+			CommandParameter="{Binding CommandParameter}"/>
+	</Shell.BackButtonBehavior>
+
+	<Grid Padding="10"
+			RowSpacing="4"
+			ColumnSpacing="10"
+		  RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+		  ColumnDefinitions="*,*">
+
+		<Label Grid.Row="0"
+				Grid.Column="0"
+				Text="TextOverride:"
+				FontSize="12"/>
+		<Label Grid.Row="0"
+				Grid.Column="1"
+				Text="{Binding TextOverride}"
+				FontSize="12"
+			   AutomationId="OptionsTextOverrideLabel"/>
+
+		<Label Grid.Row="1"
+				Grid.Column="0"
+				Text="IconOverride:"
+				FontSize="12"/>
+		<Label Grid.Row="1"
+				Grid.Column="1"
+				Text="{Binding IconOverride}"
+				FontSize="12"
+			   AutomationId="OptionsIconOverrideLabel"/>
+
+		<Label Grid.Row="2"
+				Grid.Column="0"
+				Text="IsEnabled:"
+				FontSize="12"/>
+		<Label Grid.Row="2"
+				Grid.Column="1"
+				Text="{Binding IsEnabled}"
+				FontSize="12"
+			   AutomationId="OptionsIsEnabledLabel"/>
+
+		<Label Grid.Row="3"
+				Grid.Column="0"
+				Text="IsVisible:"
+				FontSize="12"/>
+		<Label Grid.Row="3"
+				Grid.Column="1"
+				Text="{Binding IsVisible}"
+				FontSize="12"
+			   AutomationId="OptionsIsVisibleLabel"/>
+
+		<Label Grid.Row="4"
+				Grid.Column="0"
+				Text="CommandParameter:"
+				FontSize="12"/>
+		<Label Grid.Row="4"
+				Grid.Column="1"
+				Text="{Binding CommandParameter}"
+				FontSize="12"
+			   AutomationId="OptionsCommandParameterLabel"/>
+
+		<Label Grid.Row="5"
+				Grid.Column="0"
+				Text="CommandExecuted:"
+				FontSize="12"/>
+		<Label Grid.Row="5"
+				Grid.Column="1"
+				Text="{Binding CommandExecuted}"
+				FontSize="12"
+			   AutomationId="OptionsCommandExecutedLabel"/>
+
+		<Label Grid.Row="6"
+				Grid.Column="0"
+				Text="CurrentState:"
+				FontSize="12"/>
+		<Label Grid.Row="6"
+				Grid.Column="1"
+				Text="{Binding CurrentState}"
+				FontSize="12"
+			   AutomationId="OptionsCurrentStateLabel"/>
+
+		<Label Grid.Row="7"
+				Grid.Column="0"
+				Text="CurrentPage:"
+				FontSize="12"/>
+		<Label Grid.Row="7"
+				Grid.Column="1"
+				Text="{Binding CurrentPage}"
+				FontSize="12"
+			   AutomationId="OptionsCurrentPageLabel"/>
+
+		<Label Grid.Row="8"
+				Grid.Column="0"
+				Text="CurrentItem:"
+				FontSize="12"/>
+		<Label Grid.Row="8"
+				Grid.Column="1"
+				Text="{Binding CurrentItem}"
+				FontSize="12"
+			   AutomationId="OptionsCurrentItemLabel"/>
+
+		<Label Grid.Row="9"
+				Grid.Column="0"
+				Text="Navigating:"
+				FontSize="12"/>
+		<Label Grid.Row="9"
+				Grid.Column="1"
+				Text="{Binding Navigating}"
+				FontSize="11"
+			   AutomationId="OptionsNavigatingLabel"/>
+
+		<Label Grid.Row="10"
+				Grid.Column="0"
+				Text="Navigated:"
+				FontSize="12"/>
+		<Label Grid.Row="10"
+				Grid.Column="1"
+				Text="{Binding Navigated}"
+				FontSize="11"
+			   AutomationId="OptionsNavigatedLabel"/>
+
+	</Grid>
+</ContentPage>
