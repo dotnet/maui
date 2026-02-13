@@ -195,7 +195,7 @@ public class AOTTemplateTest : BaseTemplateTests
 		if (!string.IsNullOrEmpty(ndkRoot))
 		{
 			// Quote and escape the NDK path to avoid argument splitting when it contains spaces.
-			var ndkRootEscaped = ndkRoot.Replace("\"", "\\\"");
+			var ndkRootEscaped = ndkRoot.Replace("\"", "\\\"", StringComparison.Ordinal);
 			extendedBuildProps.Add($"AndroidNdkDirectory=\"{ndkRootEscaped}\"");
 		}
 
