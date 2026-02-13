@@ -132,6 +132,11 @@ namespace UITest.Appium.NUnit
 					// App is unresponsive - let the outer TimeoutException handler deal with it
 					throw;
 				}
+				catch (TimeoutException)
+				{
+					// Let unresponsive-app timeouts bubble to the outer TimeoutException handler.
+					throw;
+				}
 				catch (Exception)
 				{
 					// AppState query failed for some other reason (not a timeout/freeze).
@@ -159,7 +164,7 @@ namespace UITest.Appium.NUnit
 					Assert.Fail("The app was expected to be running still, investigate as possible crash");
 				}
 			}
-			catch (TimeoutException ex) when (ex.Message.Contains("unresponsive", StringComparison.Ordinal))
+			catch (TimeoutException ex)
 			{
 				// App is stuck in an infinite loop (e.g., layout cycle). Force-terminate and reset.
 				TestContext.Error.WriteLine($">>>>> {DateTime.Now} App became unresponsive, force-closing: {ex.Message}");
