@@ -151,6 +151,7 @@ namespace Microsoft.Maui.Platform
 				navView.Content = null;
 
 			_rootView.Content = null;
+			_rootView.AppWindowId = null;
 			_disconnected = true;
 		}
 
