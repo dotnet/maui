@@ -595,9 +595,9 @@ public static class BindingCodeWriter
 					$"{currentVar}{conditionalOp}[{numericIndex}]",
 				IndexAccess { Index: string stringIndex } => 
 					$"{currentVar}{conditionalOp}[\"{stringIndex}\"]",
-				MemberAccess { Kind: AccessorKind.Field, IsGetterInaccessible: true } memberAccess => 
+				MemberAccess { Kind: AccessorKind.Field, IsGetterAccessible: false } memberAccess => 
 					$"{UnsafeAccessorsMethodName.CreateUnsafeFieldAccessorMethodName(memberAccess.MemberName)}({currentVar})",
-				MemberAccess { Kind: AccessorKind.Property, IsGetterInaccessible: true } memberAccess => 
+				MemberAccess { Kind: AccessorKind.Property, IsGetterAccessible: false } memberAccess => 
 					$"{UnsafeAccessorsMethodName.CreateUnsafePropertyAccessorGetMethodName(memberAccess.MemberName)}({currentVar})",
 				MemberAccess memberAccess => 
 					$"{currentVar}{conditionalOp}.{memberAccess.MemberName}",

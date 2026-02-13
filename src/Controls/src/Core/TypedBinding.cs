@@ -274,7 +274,6 @@ namespace Microsoft.Maui.Controls.Internals
 
 			var needsGetter = (mode == BindingMode.TwoWay && !fromTarget) || mode == BindingMode.OneWay || mode == BindingMode.OneTime;
 
-<<<<<<< HEAD
 			// Only subscribe once per binding lifetime
 			if (!_isSubscribed && isTSource && (mode == BindingMode.OneWay || mode == BindingMode.TwoWay))
 			{
