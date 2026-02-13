@@ -2,6 +2,7 @@ parameters:
   platform: '' # [ android, ios, windows, catalyst ]
   path: '' # path to csproj
   device: '' # the xharness device to use
+  deviceType: '' # the device type/skin for Android emulator (e.g., pixel_3XL, Nexus 5X)
   cakeArgs: '' # additional cake args
   app: '' #path to app to test
   version: '' #the iOS version'
@@ -144,6 +145,11 @@ steps:
     }
     if ($testFilter) {
       $command += " --test-filter ""$testFilter"""
+    }
+
+    $deviceType = "${{ parameters.deviceType }}"
+    if ($deviceType) {
+      $command += " --skin=""$deviceType"""
     }
     
     $headless = ${{ parameters.headless }}
