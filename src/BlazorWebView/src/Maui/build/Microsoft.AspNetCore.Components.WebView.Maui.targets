@@ -121,4 +121,18 @@
     </ItemGroup>
   </Target>
 
+  <!-- Include computed static web assets in the single-file bundle. Other static web assets
+       are already included via the normal ResolvedFileToPublish flow. -->
+  <Target Name="_IncludeComputedStaticWebAssetsInSingleFileBundle"
+          AfterTargets="_ComputeFilesToBundle"
+          BeforeTargets="PrepareForBundle"
+          Condition="'$(PublishSingleFile)' == 'true'">
+
+    <ItemGroup>
+      <_FilesToBundle Include="@(_PublishStaticWebAssetsPreserveNewest)" Condition="'%(_PublishStaticWebAssetsPreserveNewest.SourceType)' == 'Computed'">
+        <RelativePath>%(_PublishStaticWebAssetsPreserveNewest.TargetPath)</RelativePath>
+      </_FilesToBundle>
+    </ItemGroup>
+  </Target>
+
 </Project>
