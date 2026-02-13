@@ -73,6 +73,13 @@ namespace Microsoft.Maui.Platform
 				uiSlider.SetThumbImage(null, UIControlState.Normal);
 				uiSlider.UpdateThumbColor(slider);
 			}
+
+			// On iOS 26+, SetThumbImage() no longer triggers a layout pass that recalculates
+			// the thumb position at runtime. Explicitly call SetNeedsLayout() to restore this.
+			if (System.OperatingSystem.IsIOSVersionAtLeast(26))
+			{
+				uiSlider.SetNeedsLayout();
+			}
 		}
 	}
 }
