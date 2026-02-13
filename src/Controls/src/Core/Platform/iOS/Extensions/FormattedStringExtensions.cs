@@ -28,7 +28,8 @@ namespace Microsoft.Maui.Controls.Platform
 				label.HorizontalTextAlignment,
 				label.ToFont(),
 				label.TextColor,
-				label.TextTransform);
+				label.TextTransform,
+				label.CharacterSpacing);
 
 		public static NSAttributedString ToNSAttributedString(
 			this FormattedString formattedString,
@@ -38,19 +39,36 @@ namespace Microsoft.Maui.Controls.Platform
 			Font? defaultFont = null,
 			Color? defaultColor = null,
 			TextTransform defaultTextTransform = TextTransform.Default)
+			=> ToNSAttributedString(formattedString, fontManager, defaultLineHeight, defaultHorizontalAlignment, defaultFont, defaultColor, defaultTextTransform, defaultCharacterSpacing: 0d);
+
+		// Private overload that supports CharacterSpacing inheritance
+		// TODO: Make this method public in .NET 11
+		static NSAttributedString ToNSAttributedString(
+			this FormattedString formattedString,
+			IFontManager fontManager,
+			double defaultLineHeight,
+			TextAlignment defaultHorizontalAlignment,
+			Font? defaultFont,
+			Color? defaultColor,
+			TextTransform defaultTextTransform,
+			double defaultCharacterSpacing)
 		{
 			if (formattedString == null)
+			{
 				return new NSAttributedString(string.Empty);
+			}
 
 			var attributed = new NSMutableAttributedString();
 			for (int i = 0; i < formattedString.Spans.Count; i++)
 			{
 				Span span = formattedString.Spans[i];
 				if (span.Text == null)
+				{
 					continue;
+				}
 
 				attributed.Append(span.ToNSAttributedString(fontManager, defaultLineHeight, defaultHorizontalAlignment,
-					defaultFont, defaultColor, defaultTextTransform));
+					defaultFont, defaultColor, defaultTextTransform, defaultCharacterSpacing));
 			}
 
 			return attributed;
@@ -64,6 +82,19 @@ namespace Microsoft.Maui.Controls.Platform
 			Font? defaultFont = null,
 			Color? defaultColor = null,
 			TextTransform defaultTextTransform = TextTransform.Default)
+			=> ToNSAttributedString(span, fontManager, defaultLineHeight, defaultHorizontalAlignment, defaultFont, defaultColor, defaultTextTransform, defaultCharacterSpacing: 0d);
+
+		// Private overload that supports CharacterSpacing inheritance
+		// TODO: Make this method public in .NET 11
+		static NSAttributedString ToNSAttributedString(
+			this Span span,
+			IFontManager fontManager,
+			double defaultLineHeight,
+			TextAlignment defaultHorizontalAlignment,
+			Font? defaultFont,
+			Color? defaultColor,
+			TextTransform defaultTextTransform,
+			double defaultCharacterSpacing)
 		{
 			var defaultFontSize = defaultFont?.Size ?? fontManager.DefaultFontSize;
 
@@ -71,7 +102,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var text = TextTransformUtilities.GetTransformedText(span.Text, transform);
 			if (text is null)
+			{
 				return new NSAttributedString(string.Empty);
+			}
 
 			var style = new NSMutableParagraphStyle();
 			var lineHeight = span.LineHeight >= 0
@@ -93,7 +126,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var font = span.ToFont(defaultFontSize);
 			if (font.IsDefault && defaultFont.HasValue)
+			{
 				font = defaultFont.Value;
+			}
 
 			var hasUnderline = false;
 			var hasStrikethrough = false;
@@ -106,6 +141,12 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var platformFont = font.IsDefault ? null : font.ToUIFont(fontManager);
 
+			// CharacterSpacing with validation
+			var characterSpacing = span.IsSet(Span.CharacterSpacingProperty) 
+				? span.CharacterSpacing 
+				: defaultCharacterSpacing;
+			characterSpacing = Math.Max(0, characterSpacing);
+
 #if !MACOS
 			var attrString = new NSAttributedString(
 				text,
@@ -115,7 +156,7 @@ namespace Microsoft.Maui.Controls.Platform
 				underlineStyle: hasUnderline ? NSUnderlineStyle.Single : NSUnderlineStyle.None,
 				strikethroughStyle: hasStrikethrough ? NSUnderlineStyle.Single : NSUnderlineStyle.None,
 				paragraphStyle: style,
-				kerning: (float)span.CharacterSpacing);
+				kerning: (float)characterSpacing);
 #else
 			var attrString = new NSAttributedString(
 				text,
@@ -125,7 +166,7 @@ namespace Microsoft.Maui.Controls.Platform
 				underlineStyle: hasUnderline ? NSUnderlineStyle.Single : NSUnderlineStyle.None,
 				strikethroughStyle: hasStrikethrough ? NSUnderlineStyle.Single : NSUnderlineStyle.None,
 				paragraphStyle: style,
-				kerningAdjustment: (float)span.CharacterSpacing);
+				kerningAdjustment: (float)characterSpacing);
 #endif
 
 			return attrString;
