@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		int _horizontalOffset, _verticalOffset;
 		TItemsView _itemsView;
 		readonly bool _getCenteredItemOnXAndY = false;
+		bool _hasCompletedFirstLayout = false;
 
 		public RecyclerViewScrollListener(TItemsView itemsView, ItemsViewAdapter<TItemsView, TItemsViewSource> itemsViewAdapter) : this(itemsView, itemsViewAdapter, false)
 		{
@@ -28,6 +29,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		internal void UpdateAdapter(ItemsViewAdapter<TItemsView, TItemsViewSource> itemsViewAdapter)
 		{
 			ItemsViewAdapter = itemsViewAdapter;
+			// Reset flag when adapter changes to handle ItemsSource updates
+			_hasCompletedFirstLayout = false;
 		}
 
 		public override void OnScrolled(RecyclerView recyclerView, int dx, int dy)
@@ -41,11 +44,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_horizontalOffset += dx;
 			_verticalOffset += dy;
 
-			// Prevent the Scrolled event from firing on initial page load while allowing it for ItemsSource changes.
-			if (!recyclerView.IsLaidOut && dx == 0 && dy == 0)
+			// Prevent the Scrolled event from firing on the very first layout callback only.
+			// This is the initial OnScrolled(0,0) call when the view is first laid out.
+			// After that, layout is marked as complete and all subsequent scroll events are allowed.
+			if (!_hasCompletedFirstLayout && !recyclerView.IsLaidOut && dx == 0 && dy == 0)
 			{
 				return;
 			}
+
+			// Mark that first layout has been processed - all future scrolls should fire events
+			_hasCompletedFirstLayout = true;
 
 			var (First, Center, Last) = GetVisibleItemsIndex(recyclerView);
 			var itemsViewScrolledEventArgs = new ItemsViewScrolledEventArgs
