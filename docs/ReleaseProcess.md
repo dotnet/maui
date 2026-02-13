@@ -44,6 +44,37 @@ The release process is split into two pipelines:
 
 After successful build and signing, packages are published to internal feeds and registered in the Build Asset Registry (BAR) using Darc.
 
+## Release Pipeline (`ci-official-release.yml`)
+
+The `ci-official-release.yml` pipeline is responsible for taking the packed artifacts and publishing them to the appropriate channels. This pipeline is not automatically triggered and must be manually run. Like the build pipeline, it also runs in the internal Azure DevOps environment where it has access to the necessary API keys and secured resources.
+
+### Key Steps in Release Pipeline
+
+1. **Publish to Workload Set Channel**: 
+   - Takes the commit hash of the build to be released
+   - Retrieves the Build Asset Registry (BAR) ID for that commit
+   - Publishes the workload set to the appropriate .NET SDK workload channel (.NET 8, 9, 10, or 11 Workload Release)
+   - This allows the .NET SDK to consume the .NET MAUI workloads
+
+2. **Release Packs**:
+   - Requires manual approval
+   - Takes the packages (excluding manifest packages) from the build
+   - Pushes them to NuGet.org with retry logic and quota management
+
+3. **Release Manifests**:
+   - Requires separate manual approval
+   - Takes only the manifest packages from the build
+   - Pushes them to NuGet.org with retry logic and quota management
+
+### Important Parameters
+
+The release pipeline accepts several parameters:
+- `commitHash`: The commit hash to download NuGet packages from
+- `pushWorkloadSet`: Whether to publish to the Workload Set channel
+- `pushNugetOrg`: Whether to push to NuGet.org
+- `pushPackages`: Controls if packages are actually pushed (allows for dry runs)
+- `nugetIncludeFilters` and `nugetExcludeFilters`: Filters for controlling which packages are published
+
 ## Release Flow
 
 The complete release process follows these steps:
