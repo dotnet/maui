@@ -6,10 +6,19 @@ namespace Microsoft.Maui.Platform
 	{
 		public static void UpdateIsRunning(this UIActivityIndicatorView activityIndicatorView, IActivityIndicator activityIndicator)
 		{
-			if (activityIndicator.IsRunning)
-				activityIndicatorView.StartAnimating();
+
+				// Only show and animate if both IsRunning AND Visibility == Visible
+			if (activityIndicator.IsRunning && activityIndicator.Visibility == Visibility.Visible)
+			{
+				activityIndicatorView.Hidden = false;
+ 				activityIndicatorView.StartAnimating();
+			}
 			else
-				activityIndicatorView.StopAnimating();
+			{
+				if (activityIndicatorView.IsAnimating)
+					activityIndicatorView.StopAnimating();
+				activityIndicatorView.Hidden = true;
+			}
 		}
 
 		public static void UpdateColor(this UIActivityIndicatorView activityIndicatorView, IActivityIndicator activityIndicator)
