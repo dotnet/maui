@@ -225,7 +225,11 @@ namespace UITest.Appium
 							RedirectStandardError = true,
 							UseShellExecute = false,
 						});
-						process?.WaitForExit(10000);
+						if (process is null || !process.WaitForExit(10000) || process.ExitCode != 0)
+						{
+							Debug.WriteLine($">>>>> ForceCloseApp: xcrun simctl terminate failed (process={process is not null}, exitCode={process?.ExitCode})");
+							return CommandResponse.FailedEmptyResponse;
+						}
 						return CommandResponse.SuccessEmptyResponse;
 					}
 				}
@@ -240,7 +244,11 @@ namespace UITest.Appium
 						RedirectStandardError = true,
 						UseShellExecute = false,
 					});
-					process?.WaitForExit(10000);
+					if (process is null || !process.WaitForExit(10000) || process.ExitCode != 0)
+					{
+						Debug.WriteLine($">>>>> ForceCloseApp: adb force-stop failed (process={process is not null}, exitCode={process?.ExitCode})");
+						return CommandResponse.FailedEmptyResponse;
+					}
 					return CommandResponse.SuccessEmptyResponse;
 				}
 				else if (testDevice == TestDevice.Mac)
@@ -254,7 +262,11 @@ namespace UITest.Appium
 						RedirectStandardError = true,
 						UseShellExecute = false,
 					});
-					process?.WaitForExit(10000);
+					if (process is null || !process.WaitForExit(10000) || process.ExitCode != 0)
+					{
+						Debug.WriteLine($">>>>> ForceCloseApp: osascript quit failed (process={process is not null}, exitCode={process?.ExitCode})");
+						return CommandResponse.FailedEmptyResponse;
+					}
 					return CommandResponse.SuccessEmptyResponse;
 				}
 			}
