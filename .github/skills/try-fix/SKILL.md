@@ -193,7 +193,7 @@ The skill is complete when:
 pwsh .github/scripts/EstablishBrokenBaseline.ps1 *>&1 | Tee-Object -FilePath "$OUTPUT_DIR/baseline.log"
 ```
 
-The script auto-detects and reverts fix files to merge-base state while preserving test files. **Will fail fast if no fix files detected** - you must be on the actual PR branch. Optional flags: `-BaseBranch main`, `-DryRun`.
+The script auto-detects and reverts fix files to merge-base state while preserving test files. **Will fail fast if no fix files detected** - the PR's changes must be present in the current branch (the `Review-PR.ps1` script handles this by merging the PR before the agent runs). Optional flags: `-BaseBranch main`, `-DryRun`.
 
 **Verify baseline was established:**
 ```powershell
@@ -201,7 +201,7 @@ The script auto-detects and reverts fix files to merge-base state while preservi
 Select-String -Path "$OUTPUT_DIR/baseline.log" -Pattern "Baseline established"
 ```
 
-**If the script fails with "No fix files detected":** You're likely on the wrong branch. Checkout the actual PR branch with `gh pr checkout <PR#>` and try again.
+**If the script fails with "No fix files detected":** The PR changes are not present on the current branch. Report this as `Blocked` — do NOT switch branches.
 
 **If something fails mid-attempt:** `pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore`
 

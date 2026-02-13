@@ -247,6 +247,14 @@ foreach ($subdir in $phaseSubdirs) {
 }
 Write-Host "  📁 Created PRAgent phase directories: $PRAgentDir" -ForegroundColor Gray
 
+# Save the branch name and commit SHA BEFORE launching the agent.
+# The Copilot agent may change HEAD (e.g., via git checkout, gh pr checkout, git reset)
+# despite prompt instructions forbidding it. Using a pinned SHA for restoration
+# ensures we always recover to the correct state regardless of what the agent did.
+$savedBranch = git branch --show-current
+$savedHead = git rev-parse HEAD
+Write-Host "  📌 Pinned restore point: $savedBranch @ $($savedHead.Substring(0, 10))" -ForegroundColor Gray
+
 # Step 4: Build the prompt for Copilot CLI
 $planTemplatePath = ".github/agents/pr/PLAN-TEMPLATE.md"
 
@@ -397,14 +405,25 @@ if ($DryRun) {
         
         # Restore tracked files to clean state before running post-completion skills.
         # Phase 1 (PR Agent) may have left the working tree dirty from try-fix attempts,
-        # which can cause skill files to be missing or modified in subsequent phases.
-        # NOTE: CustomAgentLogsTmp/ is .gitignore'd and untracked,
-        # so this won't touch them. Using HEAD to also restore deleted files.
+        # or even switched branches despite instructions. We use the pinned SHA ($savedHead)
+        # instead of HEAD to guarantee restoration to the correct commit.
+        # NOTE: CustomAgentLogsTmp/ is .gitignore'd and untracked, so this won't touch them.
         Write-Host ""
         Write-Host "🧹 Restoring working tree to clean state between phases..." -ForegroundColor Yellow
         git status --porcelain 2>$null | Set-Content "CustomAgentLogsTmp/PRState/phase1-exit-git-status.log" -ErrorAction SilentlyContinue
-        git checkout HEAD -- . 2>&1 | Out-Null
-        Write-Host "  ✅ Working tree restored" -ForegroundColor Green
+        
+        # Check if the agent moved HEAD or switched branches
+        $postAgentBranch = git branch --show-current
+        $postAgentHead = git rev-parse HEAD
+        if ($postAgentBranch -ne $savedBranch -or $postAgentHead -ne $savedHead) {
+            Write-Host "  ⚠️ Agent changed git state! Branch: $postAgentBranch (expected: $savedBranch), HEAD: $($postAgentHead.Substring(0, 10)) (expected: $($savedHead.Substring(0, 10)))" -ForegroundColor Red
+            Write-Host "  🔄 Recovering to pinned restore point..." -ForegroundColor Yellow
+            git checkout $savedBranch 2>&1 | Out-Null
+            git reset --hard $savedHead 2>&1 | Out-Null
+        } else {
+            git checkout $savedHead -- . 2>&1 | Out-Null
+        }
+        Write-Host "  ✅ Working tree restored (pinned SHA: $($savedHead.Substring(0, 10)))" -ForegroundColor Green
         
         # Phase 2: Run pr-finalize skill if requested
         if ($RunFinalize) {
@@ -450,17 +469,27 @@ if ($DryRun) {
             Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
             Write-Host ""
             
-            # Restore tracked files (including deleted ones) to clean state.
+            # Restore tracked files (including deleted ones) to clean state using pinned SHA.
             Write-Host "🧹 Restoring working tree to clean state..." -ForegroundColor Yellow
             git status --porcelain 2>$null | Set-Content "CustomAgentLogsTmp/PRState/phase2-exit-git-status.log" -ErrorAction SilentlyContinue
-            git checkout HEAD -- . 2>&1 | Out-Null
-            Write-Host "  ✅ Working tree restored" -ForegroundColor Green
+            
+            # Check if Phase 2 (pr-finalize) moved HEAD or switched branches
+            $postPhase2Branch = git branch --show-current
+            $postPhase2Head = git rev-parse HEAD
+            if ($postPhase2Branch -ne $savedBranch -or $postPhase2Head -ne $savedHead) {
+                Write-Host "  ⚠️ Phase 2 changed git state! Recovering to pinned restore point..." -ForegroundColor Red
+                git checkout $savedBranch 2>&1 | Out-Null
+                git reset --hard $savedHead 2>&1 | Out-Null
+            } else {
+                git checkout $savedHead -- . 2>&1 | Out-Null
+            }
+            Write-Host "  ✅ Working tree restored (pinned SHA: $($savedHead.Substring(0, 10)))" -ForegroundColor Green
             
             # 3a: Post PR agent summary comment
             $scriptPath = ".github/skills/ai-summary-comment/scripts/post-ai-summary-comment.ps1"
             if (-not (Test-Path $scriptPath)) {
-                Write-Host "⚠️ Script missing after checkout, attempting targeted recovery..." -ForegroundColor Yellow
-                git checkout HEAD -- $scriptPath 2>&1 | Out-Null
+                Write-Host "⚠️ Script missing after restore, attempting targeted recovery..." -ForegroundColor Yellow
+                git checkout $savedHead -- $scriptPath 2>&1 | Out-Null
             }
             if (Test-Path $scriptPath) {
                 Write-Host "💬 Running post-ai-summary-comment.ps1 directly..." -ForegroundColor Yellow
@@ -483,7 +512,7 @@ if ($DryRun) {
                 $finalizeScriptPath = ".github/skills/ai-summary-comment/scripts/post-pr-finalize-comment.ps1"
                 if (-not (Test-Path $finalizeScriptPath)) {
                     Write-Host "⚠️ Finalize script missing, attempting targeted recovery..." -ForegroundColor Yellow
-                    git checkout HEAD -- $finalizeScriptPath 2>&1 | Out-Null
+                    git checkout $savedHead -- $finalizeScriptPath 2>&1 | Out-Null
                 }
                 if (Test-Path $finalizeScriptPath) {
                     Write-Host "💬 Running post-pr-finalize-comment.ps1 directly..." -ForegroundColor Yellow
