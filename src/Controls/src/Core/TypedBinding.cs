@@ -71,73 +71,34 @@ namespace Microsoft.Maui.Controls.Internals
 		internal abstract void SubscribeToAncestryChanges(List<Element> chain, bool includeBindingContext, bool rootIsSource);
 	}
 
-	internal class TypedBinding
-	{
-		/// <summary>
-		/// <para>This factory method was added to simplify creating typed bindings for a property that
-		/// isn't nested which is the most common scenario.</para>
-		/// <para>This factory method must be used carefully. As the name implies, it is only applicable
-		/// when the getter and setter access a property directly on the source object. Whenever the
-		/// property is nested two or more levels deep, create the binding manually and construct the
-		/// handlers array for that usecase.</para>
-		/// </summary>
-		/// <typeparam name="TSource">The type of the source object.</typeparam>
-		/// <typeparam name="TProperty">The type of the property.</typeparam>
-		/// <param name="propertyName">The name of the property.</param>
-		/// <param name="getter">The getter function to retrieve the property value from the source object.</param>
-		/// <param name="setter">The optional setter action to set the property value on the source object.</param>
-		/// <param name="mode">The binding mode.</param>
-		/// <param name="converter">The value converter.</param>
-		/// <param name="converterParameter">The converter parameter.</param>
-		/// <param name="source">The source object.</param>
-		/// <returns>The typed binding.</returns>
-		internal static TypedBinding<TSource, TProperty> ForSingleNestingLevel<TSource, TProperty>(
-			string propertyName,
-			Func<TSource, TProperty> getter,
-			Action<TSource, TProperty> setter = null,
-			BindingMode mode = BindingMode.Default,
-			IValueConverter converter = null,
-			object converterParameter = null,
-			object source = null)
-		{
-			return new TypedBinding<TSource, TProperty>(
-				getter: source => (getter(source), true),
-				setter,
-				handlers: new Tuple<Func<TSource, object>, string>[]
-				{
-					new(static source => source, propertyName),
-				})
-			{
-				Converter = converter,
-				ConverterParameter = converterParameter,
-				Mode = mode,
-				Source = source,
-			};
-		}
-	}
-
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public sealed class TypedBinding<TSource, TProperty> : TypedBindingBase
 	{
 		readonly Func<TSource, (TProperty value, bool success)> _getter;
 		readonly Action<TSource, TProperty> _setter;
-		readonly PropertyChangedProxy[] _handlers;
+		readonly IPropertyChangeHandler _propertyChangeHandler;
 
-		public TypedBinding(Func<TSource, (TProperty value, bool success)> getter, Action<TSource, TProperty> setter, Tuple<Func<TSource, object>, string>[] handlers)
+#nullable enable
+		public TypedBinding(
+			Func<TSource, (TProperty value, bool success)> getter,
+			Action<TSource, TProperty>? setter,
+			int handlersCount,
+			Func<TSource, IEnumerable<ValueTuple<INotifyPropertyChanged?, string>>>? handlers)
 		{
 			_getter = getter ?? throw new ArgumentNullException(nameof(getter));
 			_setter = setter;
+			_propertyChangeHandler = new PropertyChangeHandler(this, handlersCount, handlers);
+		}
+#nullable disable
 
-			if (handlers == null)
-				return;
-
-			_handlers = new PropertyChangedProxy[handlers.Length];
-			for (var i = 0; i < handlers.Length; i++)
-			{
-				if (handlers[i] is null)
-					continue;
-				_handlers[i] = new PropertyChangedProxy(handlers[i].Item1, handlers[i].Item2, this);
-			}
+		public TypedBinding(
+			Func<TSource, (TProperty value, bool success)> getter,
+			Action<TSource, TProperty> setter,
+			Tuple<Func<TSource, object>, string>[] handlers)
+		{
+			_getter = getter ?? throw new ArgumentNullException(nameof(getter));
+			_setter = setter;
+			_propertyChangeHandler = new LegacyPropertyChangeHandler(this, handlers);
 		}
 
 		readonly WeakReference<object> _weakSource = new WeakReference<object>(null);
@@ -146,6 +107,12 @@ namespace Microsoft.Maui.Controls.Internals
 		BindableProperty _targetProperty;
 		List<WeakReference<Element>> _ancestryChain;
 		bool _isBindingContextRelativeSource;
+		BindingMode _cachedMode;
+		bool _isSubscribed;
+		bool _isTSource; // cached type check result
+		object _cachedDefaultValue; // cached default value
+		bool _hasDefaultValue;
+		bool _skipConvert; // true when TProperty matches property.ReturnType
 
 		// Applies the binding to a previously set source and target.
 		internal override void Apply(bool fromTarget = false)
@@ -217,25 +184,7 @@ namespace Microsoft.Maui.Controls.Internals
 
 		internal override BindingBase Clone()
 		{
-			Tuple<Func<TSource, object>, string>[] handlers = _handlers == null ? null : new Tuple<Func<TSource, object>, string>[_handlers.Length];
-			if (handlers != null)
-			{
-				for (var i = 0; i < _handlers.Length; i++)
-				{
-					if (_handlers[i] == null)
-						continue;
-					handlers[i] = new Tuple<Func<TSource, object>, string>(_handlers[i].PartGetter, _handlers[i].PropertyName);
-				}
-			}
-			return new TypedBinding<TSource, TProperty>(_getter, _setter, handlers)
-			{
-				Mode = Mode,
-				Converter = Converter,
-				ConverterParameter = ConverterParameter,
-				StringFormat = StringFormat,
-				Source = Source,
-				UpdateSourceEventName = UpdateSourceEventName,
-			};
+			return _propertyChangeHandler.CloneBinding();
 		}
 
 		internal override void ApplyToResolvedSource(object source, BindableObject target, BindableProperty targetProperty, bool fromBindingContextChanged, SetterSpecificity specificity)
@@ -280,8 +229,14 @@ namespace Microsoft.Maui.Controls.Internals
 #if (!DO_NOT_CHECK_FOR_BINDING_REUSE)
 			base.Unapply(fromBindingContextChanged:fromBindingContextChanged);
 #endif
-			if (_handlers != null)
-				Unsubscribe();
+			_propertyChangeHandler.Unsubscribe();
+
+			_isSubscribed = false;
+			_cachedMode = BindingMode.Default;
+			_hasDefaultValue = false;
+			_cachedDefaultValue = null;
+			_skipConvert = false;
+			_isTSource = false;
 
 #if (!DO_NOT_CHECK_FOR_BINDING_REUSE)
 			_weakSource.SetTarget(null);
@@ -294,24 +249,58 @@ namespace Microsoft.Maui.Controls.Internals
 		// ApplyCore  100000 (w/o INPC, w/o unnapply)	: 20ms.
 		internal void ApplyCore(object sourceObject, BindableObject target, BindableProperty property, bool fromTarget, SetterSpecificity specificity)
 		{
-			var isTSource = sourceObject is TSource;
-			if (!isTSource && sourceObject is not null)
+			// Use cached type check after first apply (source type doesn't change)
+			var isTSource = _isTSource;
+			if (!_hasDefaultValue)
 			{
-				BindingDiagnostics.SendBindingFailure(this, "Binding", $"Mismatch between the specified x:DataType ({typeof(TSource)}) and the current binding context ({sourceObject.GetType()}).");
+				isTSource = sourceObject is TSource;
+				_isTSource = isTSource;
+				if (!isTSource && sourceObject is not null)
+				{
+					BindingDiagnostics.SendBindingFailure(this, "Binding", $"Mismatch between the specified x:DataType ({typeof(TSource)}) and the current binding context ({sourceObject.GetType()}).");
+				}
 			}
 
-			var mode = this.GetRealizedMode(property);
+			// Use cached mode if available, otherwise compute and cache it
+			var mode = _cachedMode;
+			if (mode == BindingMode.Default)
+			{
+				mode = this.GetRealizedMode(property);
+				_cachedMode = mode;
+			}
+
 			if ((mode == BindingMode.OneWay || mode == BindingMode.OneTime) && fromTarget)
 				return;
 
 			var needsGetter = (mode == BindingMode.TwoWay && !fromTarget) || mode == BindingMode.OneWay || mode == BindingMode.OneTime;
 
-			if (isTSource && (mode == BindingMode.OneWay || mode == BindingMode.TwoWay) && _handlers != null)
-				Subscribe((TSource)sourceObject);
+			// Only subscribe once per binding lifetime
+			if (!_isSubscribed && isTSource && (mode == BindingMode.OneWay || mode == BindingMode.TwoWay))
+			{
+				_propertyChangeHandler.Subscribe((TSource)sourceObject);
+				_isSubscribed = true;
+			}
 
 			if (needsGetter)
 			{
-				var value = FallbackValue ?? property.GetDefaultValue(target);
+				// Use cached default value
+				object value;
+				if (FallbackValue != null)
+				{
+					value = FallbackValue;
+				}
+				else if (_hasDefaultValue)
+				{
+					value = _cachedDefaultValue;
+				}
+				else
+				{
+					value = property.GetDefaultValue(target);
+					_cachedDefaultValue = value;
+					_skipConvert = typeof(TProperty) == property.ReturnType && Converter == null;
+					_hasDefaultValue = true;
+				}
+
 				if (isTSource)
 				{
 					try
@@ -328,7 +317,8 @@ namespace Microsoft.Maui.Controls.Internals
 						BindingDiagnostics.SendBindingFailure(this, sourceObject, target, property, "Binding", $"Exception thrown from getter: {ex.Message}");
 					}
 				}
-				if (!BindingExpressionHelper.TryConvert(ref value, property, property.ReturnType, true))
+				// Skip TryConvert when types match and no converter
+				if (!_skipConvert && !BindingExpressionHelper.TryConvert(ref value, property, property.ReturnType, true))
 				{
 					BindingDiagnostics.SendBindingFailure(this, sourceObject, target, property, "Binding", BindingExpression.CannotConvertTypeErrorMessage, value, property.ReturnType);
 					return;
@@ -520,38 +510,227 @@ namespace Microsoft.Maui.Controls.Internals
 				Listener = new BindingExpression.WeakPropertyChangedProxy();
 				//avoid GC collection, keep a ref to the OnPropertyChanged handler
 				handler = new PropertyChangedEventHandler(OnPropertyChanged);
+				//cache the Apply delegate to avoid allocation on every property change
+				_applyAction = () => _binding.Apply(false);
 			}
+
+			readonly Action _applyAction;
 
 			void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
 			{
 				if (!string.IsNullOrEmpty(e.PropertyName) && string.CompareOrdinal(e.PropertyName, PropertyName) != 0)
 					return;
 
+				// Note: sender is typically a ViewModel (INotifyPropertyChanged), not a BindableObject,
+				// so (sender as BindableObject)?.Dispatcher usually returns null.
+				// DispatchIfRequired handles null dispatcher via EnsureDispatcher fallback.
 				IDispatcher dispatcher = (sender as BindableObject)?.Dispatcher;
-				dispatcher.DispatchIfRequired(() => _binding.Apply(false));
+				dispatcher.DispatchIfRequired(_applyAction);
 			}
 		}
 
-		void Subscribe(TSource sourceObject)
+#nullable enable
+		private interface IPropertyChangeHandler
 		{
-			for (var i = 0; i < _handlers.Length; i++)
+			void Subscribe(object sourceObject);
+			void Unsubscribe();
+			TypedBinding<TSource, TProperty> CloneBinding();
+		}
+
+		private class LegacyPropertyChangeHandler : IPropertyChangeHandler
+		{
+			private readonly TypedBinding<TSource, TProperty> _binding;
+			private Tuple<Func<TSource, object>, string>[]? _cachedHandlersForClone;
+			private readonly PropertyChangedProxy[]? _handlers;
+
+			public LegacyPropertyChangeHandler(
+				TypedBinding<TSource, TProperty> binding,
+				Tuple<Func<TSource, object>, string>[]? handlers)
 			{
-				if (_handlers[i] == null)
-					continue;
-				var part = _handlers[i].PartGetter(sourceObject);
-				if (part == null)
-					break;
-				var inpc = part as INotifyPropertyChanged;
-				if (inpc == null)
-					continue;
-				_handlers[i].Part = (inpc);
+				_binding = binding;
+
+				if (handlers == null)
+					return;
+
+				_handlers = new PropertyChangedProxy[handlers.Length];
+				for (var i = 0; i < handlers.Length; i++)
+				{
+					if (handlers[i] is null)
+						continue;
+					_handlers[i] = new PropertyChangedProxy(handlers[i].Item1, handlers[i].Item2, binding);
+				}
+			}
+
+			public void Subscribe(object sourceObject)
+			{
+				var handlers = _handlers;
+				if (sourceObject is not TSource source || handlers is null)
+				{
+					return;
+				}
+
+				for (var i = 0; i < handlers.Length; i++)
+				{
+					var handler = handlers[i];
+					if (handler == null)
+						continue;
+					var part = handler.PartGetter(source);
+					if (part == null)
+						break;
+					var inpc = part as INotifyPropertyChanged;
+					if (inpc == null)
+						continue;
+					handler.Part = inpc;
+				}
+			}
+
+			public void Unsubscribe()
+			{
+				var handlers = _handlers;
+				if (handlers is null)
+					return;
+
+				for (var i = 0; i < handlers.Length; i++)
+				{
+					handlers[i]?.Listener.Unsubscribe();
+				}
+			}
+
+			public TypedBinding<TSource, TProperty> CloneBinding()
+			{
+				var cachedHandlers = _cachedHandlersForClone;
+				if (cachedHandlers is null && _handlers != null)
+				{
+					cachedHandlers = new Tuple<Func<TSource, object>, string>[_handlers.Length];
+					for (var i = 0; i < _handlers.Length; i++)
+					{
+						var handler = _handlers[i];
+						if (handler == null)
+							continue;
+						cachedHandlers[i] = new Tuple<Func<TSource, object>, string>(handler.PartGetter, handler.PropertyName);
+					}
+
+					_cachedHandlersForClone = cachedHandlers;
+				}
+
+#pragma warning disable RS0030 // Do not use banned APIs
+				return new TypedBinding<TSource, TProperty>(_binding._getter, _binding._setter, cachedHandlers)
+				{
+					Mode = _binding.Mode,
+					Converter = _binding.Converter,
+					ConverterParameter = _binding.ConverterParameter,
+					StringFormat = _binding.StringFormat,
+					Source = _binding.Source,
+					UpdateSourceEventName = _binding.UpdateSourceEventName,
+				};
+#pragma warning restore RS0030 // Do not use banned APIs
 			}
 		}
 
-		void Unsubscribe()
+		private class PropertyChangeHandler(
+			TypedBinding<TSource, TProperty> binding,
+			int handlersCount,
+			Func<TSource, IEnumerable<ValueTuple<INotifyPropertyChanged?, string>>>? handlers) : IPropertyChangeHandler
 		{
-			for (var i = 0; i < _handlers.Length; i++)
-				_handlers[i]?.Listener.Unsubscribe();
+			private readonly TypedBinding<TSource, TProperty> _binding = binding;
+			private readonly BindingExpression.WeakPropertyChangedProxy?[] _listeners = new BindingExpression.WeakPropertyChangedProxy?[handlersCount];
+			private readonly string?[] _propertyNames = new string?[handlersCount];
+			private readonly Func<TSource, IEnumerable<ValueTuple<INotifyPropertyChanged?, string>>>? _handlers = handlers;
+
+			public void Subscribe(object sourceObject)
+			{
+				if (sourceObject is not TSource source || _handlers is null)
+				{
+					return;
+				}
+
+				int index = 0;
+
+				foreach ((INotifyPropertyChanged? part, string propertyName) in _handlers(source))
+				{
+					if (part is null || index >= _listeners.Length)
+						break;
+
+					_propertyNames[index] = propertyName;
+					var listener = _listeners[index] ??= new();
+					index++;
+
+					// Check if we're already subscribed to the same object
+					if (listener.TryGetSource(out var existingSource) && ReferenceEquals(part, existingSource))
+					{
+						// Already subscribed to the same object, no need to re-subscribe
+						continue;
+					}
+
+					// Different object or first subscription, unsubscribe from old and subscribe to new
+					listener.Unsubscribe();
+					listener.Subscribe(part, OnPropertyChanged);
+				}
+
+				Unsubscribe(startIndex: index);
+			}
+
+			void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+			{
+				if (ShouldApplyChanges(sender, e.PropertyName))
+				{
+					var dispatcher = (sender as BindableObject)?.Dispatcher;
+					dispatcher.DispatchIfRequired(ApplyChanges);
+				}
+			}
+
+			bool ShouldApplyChanges(object? sender, string? propertyName)
+			{
+				for (int i = 0; i < _listeners.Length; i++)
+				{
+					if (_listeners[i] is {} listener
+						&& listener.TryGetSource(out var source)
+						&& ReferenceEquals(source, sender)
+						&& MatchEventPropertyName(_propertyNames[i], propertyName))
+					{
+						return true;
+					}
+				}
+
+				return false;
+			}
+
+			void ApplyChanges()
+			{
+				_binding.Apply(fromTarget: false);
+			}
+
+			static bool MatchEventPropertyName(string? expectedPropertyName, string? eventPropertyName)
+			{
+				return string.IsNullOrEmpty(eventPropertyName)
+					|| string.Equals(expectedPropertyName, eventPropertyName, StringComparison.Ordinal);
+			}
+
+			public void Unsubscribe()
+				=> Unsubscribe(startIndex: 0);
+
+			void Unsubscribe(int startIndex)
+			{
+				for (int i = startIndex; i < _listeners.Length; i++)
+				{
+					_listeners[i]?.Unsubscribe();
+					_listeners[i] = null;
+				}
+			}
+
+			public TypedBinding<TSource, TProperty> CloneBinding()
+			{
+				return new TypedBinding<TSource, TProperty>(_binding._getter, _binding._setter, _listeners.Length, _handlers)
+				{
+					Mode = _binding.Mode,
+					Converter = _binding.Converter,
+					ConverterParameter = _binding.ConverterParameter,
+					StringFormat = _binding.StringFormat,
+					Source = _binding.Source,
+					UpdateSourceEventName = _binding.UpdateSourceEventName,
+				};
+			}
 		}
+#nullable disable
 	}
 }
