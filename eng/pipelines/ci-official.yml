@@ -103,7 +103,7 @@ extends:
             skipAndroidEmulatorImages: true
             skipAndroidCreateAvds: true
             skipProvisioning: true
-            skipXcode: true
+            skipXcode: false
             base64Encode: true
             outputVariableName: dotnetbuilds-internal-container-read-token-base64
 
