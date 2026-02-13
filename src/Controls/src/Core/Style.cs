@@ -1,6 +1,9 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Internals;
@@ -15,7 +18,8 @@ namespace Microsoft.Maui.Controls
 	{
 		internal const string StyleClassPrefix = "Microsoft.Maui.Controls.StyleClass.";
 
-		readonly BindableProperty _basedOnResourceProperty = BindableProperty.CreateAttached("BasedOnResource", typeof(Style), typeof(Style), default(Style),
+		readonly BindableProperty _basedOnResourceProperty = BindableProperty.CreateAttached(
+			"BasedOnResource", typeof(Style), typeof(Style), default(Style),
 			propertyChanged: OnBasedOnResourceChanged);
 
 		readonly ConditionalWeakTable<BindableObject, object> _targets = new();
@@ -28,15 +32,39 @@ namespace Microsoft.Maui.Controls
 
 		IList<TriggerBase> _triggers;
 
+		// Fields for lazy/trimmable styles
+		readonly string _assemblyQualifiedTargetTypeName;
+		readonly object _initializerLock = new();
+		Type _targetType;
+
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Style"/> class.
 		/// </summary>
 		/// <param name="targetType">The type to which the style applies.</param>
 		public Style([System.ComponentModel.TypeConverter(typeof(TypeTypeConverter))][Parameter("TargetType")] Type targetType)
 		{
-			TargetType = targetType ?? throw new ArgumentNullException(nameof(targetType));
+			_targetType = targetType ?? throw new ArgumentNullException(nameof(targetType));
 			Setters = new List<Setter>();
 		}
+
+		/// <summary>
+		/// Creates a lazy style that defers initialization until first application.
+		/// This constructor is intended for source generator use only.
+		/// </summary>
+		/// <param name="assemblyQualifiedTargetTypeName">The assembly-qualified type name of the target type.</param>
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public Style(string assemblyQualifiedTargetTypeName)
+		{
+			_assemblyQualifiedTargetTypeName = assemblyQualifiedTargetTypeName ?? throw new ArgumentNullException(nameof(assemblyQualifiedTargetTypeName));
+			Setters = new List<Setter>();
+		}
+
+		/// <summary>
+		/// Sets the initializer action that populates the style's Setters, Behaviors, and Triggers.
+		/// This property is intended for source generator use only.
+		/// </summary>
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public Action<Style, BindableObject> LazyInitialization { private get; set; }
 
 		/// <summary>
 		/// Gets or sets whether the style can be applied to types derived from <see cref="TargetType"/>.
@@ -113,6 +141,8 @@ namespace Microsoft.Maui.Controls
 
 		void IStyle.Apply(BindableObject bindable, SetterSpecificity specificity)
 		{
+			InitializeIfNeeded(bindable);
+
 			lock (_targets)
 			{
 #if NETSTANDARD2_0
@@ -131,7 +161,65 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets the type to which this style applies.
 		/// </summary>
-		public Type TargetType { get; }
+		public Type TargetType => _targetType ??= ResolveTargetType();
+
+		/// <summary>
+		/// Attempts to resolve the target type from the assembly-qualified name.
+		/// Returns null if the type was trimmed away.
+		/// </summary>
+		[UnconditionalSuppressMessage("Trimming", "IL2057:Unrecognized value passed to the parameter 'typeName' of method 'System.Type.GetType(String, Boolean)'",
+			Justification = "Lazy styles intentionally allow target types to be trimmed. When a type is trimmed, TargetType returns null and the style is skipped at runtime. This enables the trimmer to remove unused styles.")]
+		private Type ResolveTargetType()
+		{
+			Debug.Assert(_assemblyQualifiedTargetTypeName is not null, "Either _targetType or _assemblyQualifiedTargetTypeName must be set");
+			return Type.GetType(_assemblyQualifiedTargetTypeName, throwOnError: false);
+		}
+
+		/// <summary>
+		/// Gets the full name of the target type (namespace-qualified, without assembly).
+		/// </summary>
+		internal ReadOnlySpan<char> TargetTypeFullName
+		{
+			get
+			{
+				// If we have the type already, use it
+				if (_targetType is not null)
+					return _targetType.FullName.AsSpan();
+
+				// Extract FullName from AQN: "Namespace.TypeName, AssemblyName, ..."
+				// FullName is everything before the first comma
+				Debug.Assert(_assemblyQualifiedTargetTypeName is not null, "Either _targetType or _assemblyQualifiedTargetTypeName must be set");
+
+#if NETSTANDARD2_0 || NETSTANDARD2_1
+#pragma warning disable CA1307 // string.IndexOf(char, StringComparison) is not available in netstandard
+				var commaIndex = _assemblyQualifiedTargetTypeName.IndexOf(',');
+#pragma warning restore CA1307
+#else
+				var commaIndex = _assemblyQualifiedTargetTypeName.IndexOf(',', StringComparison.Ordinal);
+#endif
+				return commaIndex > 0
+					? _assemblyQualifiedTargetTypeName.AsSpan(0, commaIndex)
+					: _assemblyQualifiedTargetTypeName.AsSpan();
+			}
+		}
+
+		/// <summary>
+		/// Initializes the lazy style if it hasn't been initialized yet.
+		/// This is primarily intended for testing scenarios where setters need to be inspected
+		/// before the style is applied to any element.
+		/// </summary>
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		internal void InitializeIfNeeded(BindableObject target)
+		{
+			lock (_initializerLock)
+			{
+				if (LazyInitialization is null)
+					return;
+
+				LazyInitialization(this, target);
+				LazyInitialization = null;
+			}
+		}
 
 		void IStyle.UnApply(BindableObject bindable)
 		{
@@ -145,14 +233,15 @@ namespace Microsoft.Maui.Controls
 
 		internal bool CanBeAppliedTo(Type targetType)
 		{
-			if (TargetType == targetType)
+			// Use FullName comparison to avoid resolving the type (which may have been trimmed)
+			if (TargetTypeFullName.SequenceEqual(targetType.FullName))
 				return true;
 			if (!ApplyToDerivedTypes)
 				return false;
 			do
 			{
 				targetType = targetType.BaseType;
-				if (TargetType == targetType)
+				if (TargetTypeFullName.SequenceEqual(targetType.FullName))
 					return true;
 			} while (targetType != typeof(Element));
 			return false;
@@ -217,7 +306,23 @@ namespace Microsoft.Maui.Controls
 				((IStyle)basedOn).UnApply(bindable);
 		}
 
+		/// <summary>
+		/// Validates that BasedOn.TargetType is compatible with this style's TargetType.
+		/// Returns true if validation passes or cannot be performed (types trimmed).
+		/// </summary>
 		bool ValidateBasedOn(Style value)
-			=> value is null || value.TargetType.IsAssignableFrom(TargetType);
+		{
+			if (value is null)
+				return true;
+
+			// If either type was trimmed, we can't validate - allow it and let runtime handle it
+			var basedOnTargetType = value.TargetType;
+			var thisTargetType = TargetType;
+
+			if (basedOnTargetType is null || thisTargetType is null)
+				return true;
+
+			return basedOnTargetType.IsAssignableFrom(thisTargetType);
+		}
 	}
 }

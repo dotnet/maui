@@ -36,12 +36,22 @@ public partial class Maui21757
 
 			var styleA = resourceDictionary["A"] as Style;
 			Assert.NotNull(styleA);
+			
+			// For SourceGen, styles are lazy - force initialization before inspecting Setters
+			if (inflator == XamlInflator.SourceGen)
+				styleA.InitializeIfNeeded(new BoxView());
+			
 			Assert.Equal(typeof(BoxView), styleA.TargetType);
 			Assert.Equal(BoxView.ColorProperty, styleA.Setters[0].Property);
 			Assert.Equal(Color.FromArgb("#C8C8C8"), styleA.Setters[0].Value);
 
 			var styleB = resourceDictionary["B"] as Style;
 			Assert.NotNull(styleB);
+			
+			// For SourceGen, styles are lazy - force initialization before inspecting Setters
+			if (inflator == XamlInflator.SourceGen)
+				styleB.InitializeIfNeeded(new BoxView());
+			
 			Assert.Equal(typeof(BoxView), styleB.TargetType);
 			Assert.Equal(BoxView.ColorProperty, styleB.Setters[0].Property);
 			Assert.Equal(Color.FromArgb("#C8C8C8"), styleB.Setters[0].Value);
