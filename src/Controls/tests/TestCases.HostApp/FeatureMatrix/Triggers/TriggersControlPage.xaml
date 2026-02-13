@@ -77,7 +77,7 @@
                         <VisualStateGroup>
                             <VisualState x:Name="CheckedState">
                                 <VisualState.StateTriggers>
-                                    <CompareStateTrigger Property="{Binding Source={x:Reference compareCheckBox}, Path=IsChecked}"
+                                    <CompareStateTrigger Property="{Binding IsChecked}"
                                                          Value="True"/>
                                 </VisualState.StateTriggers>
                                 <VisualState.Setters>
@@ -87,7 +87,7 @@
                             </VisualState>
                             <VisualState x:Name="UncheckedState">
                                 <VisualState.StateTriggers>
-                                    <CompareStateTrigger Property="{Binding Source={x:Reference compareCheckBox}, Path=IsChecked}"
+                                    <CompareStateTrigger Property="{Binding IsChecked}"
                                                          Value="False"/>
                                 </VisualState.StateTriggers>
                                 <VisualState.Setters>
@@ -130,11 +130,13 @@
                            FontSize="12"
                            TextColor="Gray"/>
 
-                    <Entry x:Name="propertyTriggerEntry"
-                           Placeholder="Click here to focus"
-                           AutomationId="PropertyTriggerEntry">
-                        <Entry.Triggers>
-                            <Trigger TargetType="Entry"
+                    <local:UITestEntry x:Name="propertyTriggerEntry"
+                                       Placeholder="Click here to focus"
+                                       AutomationId="PropertyTriggerEntry"
+                                       BackgroundColor="Transparent"
+                                       IsCursorVisible="False">
+                        <local:UITestEntry.Triggers>
+                            <Trigger TargetType="local:UITestEntry"
                                      Property="IsFocused"
                                      Value="True">
                                 <Setter Property="BackgroundColor"
@@ -142,8 +144,12 @@
                                 <Setter Property="TextColor"
                                         Value="DarkRed"/>
                             </Trigger>
-                        </Entry.Triggers>
-                    </Entry>
+                        </local:UITestEntry.Triggers>
+                    </local:UITestEntry>
+
+                    <local:UITestEntry Placeholder="Dummy entry"
+                                       AutomationId="PropertyTriggerDummyEntry"
+                                       IsCursorVisible="False"/>
 
                     <Label Text="Tests: IsFocused property, multiple setters"
                            FontSize="11"
@@ -170,10 +176,11 @@
                            FontSize="12"
                            TextColor="Gray"/>
 
-                    <Entry x:Name="dataEntry"
-                           Text="{Binding DataEntryText}"
-                           Placeholder="Enter text to enable button"
-                           AutomationId="DataTriggerEntry"/>
+                    <local:UITestEntry x:Name="dataEntry"
+                                       Text="{Binding DataEntryText}"
+                                       Placeholder="Enter text to enable button"
+                                       AutomationId="DataTriggerEntry"
+                                       IsCursorVisible="False"/>
 
                     <Button x:Name="saveButton"
                             Text="Save"
@@ -221,16 +228,17 @@
                            FontSize="12"
                            TextColor="Gray"/>
 
-                    <Entry x:Name="numericEntry"
-                           Placeholder="Enter a number"
-                           Keyboard="Numeric"
-                           AutomationId="EventTriggerEntry">
-                        <Entry.Triggers>
+                    <local:UITestEntry x:Name="numericEntry"
+                                       Placeholder="Enter a number"
+                                       Keyboard="Numeric"
+                                       AutomationId="EventTriggerEntry"
+                                       IsCursorVisible="False">
+                        <local:UITestEntry.Triggers>
                             <EventTrigger Event="TextChanged">
                                 <local:NumericValidationTriggerAction/>
                             </EventTrigger>
-                        </Entry.Triggers>
-                    </Entry>
+                        </local:UITestEntry.Triggers>
+                    </local:UITestEntry>
 
                     <Label Text="Tests: TextChanged event, custom TriggerAction"
                            FontSize="11"
@@ -257,15 +265,17 @@
                            FontSize="12"
                            TextColor="Gray"/>
 
-                    <Entry x:Name="emailEntry"
-                           Text="{Binding EmailEntryText}"
-                           Placeholder="Enter email"
-                           AutomationId="MultiTriggerEmailEntry"/>
+                    <local:UITestEntry x:Name="emailEntry"
+                                       Text="{Binding EmailEntryText}"
+                                       Placeholder="Enter email"
+                                       AutomationId="MultiTriggerEmailEntry"
+                                       IsCursorVisible="False"/>
 
-                    <Entry x:Name="phoneEntry"
-                           Text="{Binding PhoneEntryText}"
-                           Placeholder="Enter phone"
-                           AutomationId="MultiTriggerPhoneEntry"/>
+                    <local:UITestEntry x:Name="phoneEntry"
+                                       Text="{Binding PhoneEntryText}"
+                                       Placeholder="Enter phone"
+                                       AutomationId="MultiTriggerPhoneEntry"
+                                       IsCursorVisible="False"/>
 
                     <Button x:Name="submitButton"
                             Text="Submit"
@@ -313,10 +323,11 @@
                            FontSize="12"
                            TextColor="Gray"/>
 
-                    <Entry Placeholder="Focus here to see fade effect"
-                           AutomationId="EnterExitActionsEntry">
-                        <Entry.Triggers>
-                            <Trigger TargetType="Entry"
+                    <local:UITestEntry Placeholder="Focus here to see fade effect"
+                                       AutomationId="EnterExitActionsEntry"
+                                       IsCursorVisible="False">
+                        <local:UITestEntry.Triggers>
+                            <Trigger TargetType="local:UITestEntry"
                                      Property="IsFocused"
                                      Value="True">
                                 <Trigger.EnterActions>
@@ -326,8 +337,12 @@
                                     <local:FadeTriggerAction StartsFrom="1"/>
                                 </Trigger.ExitActions>
                             </Trigger>
-                        </Entry.Triggers>
-                    </Entry>
+                        </local:UITestEntry.Triggers>
+                    </local:UITestEntry>
+
+                    <local:UITestEntry Placeholder="Dummy entry"
+                                       AutomationId="EnterExitActionsDummyEntry"
+                                       IsCursorVisible="False"/>
 
                     <Label Text="Tests: EnterActions, ExitActions, animations"
                            FontSize="11"
@@ -391,7 +406,7 @@
                            TextColor="DarkMagenta"
                            AutomationId="AdaptiveTriggerTitle"/>
 
-                    <Label Text="Test: Resize window to see orientation change at 800px width"
+                    <Label Text="Test: Resize window to see orientation change"
                            FontSize="12"
                            TextColor="Gray"/>
 
@@ -450,6 +465,7 @@
                         <HorizontalStackLayout HorizontalOptions="Center"
                                                VerticalOptions="Center">
                             <CheckBox x:Name="compareCheckBox"
+                                      IsChecked="{Binding IsChecked}"
                                       VerticalOptions="Center"
                                       AutomationId="CompareStateCheckBox"/>
                             <Label Text="Check to change background"

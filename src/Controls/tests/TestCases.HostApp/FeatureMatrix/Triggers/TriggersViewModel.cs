@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.CompilerServices;
@@ -10,6 +11,7 @@ public class TriggersViewModel : INotifyPropertyChanged
 
 	private TriggerType _selectedTriggerType = TriggerType.PropertyTrigger;
 	private bool _isToggled = false;
+	private bool _isChecked = false;
 	private string _dataEntryText = string.Empty;
 	private string _emailEntryText = string.Empty;
 	private string _phoneEntryText = string.Empty;
@@ -45,6 +47,19 @@ public class TriggersViewModel : INotifyPropertyChanged
 			if (_isToggled != value)
 			{
 				_isToggled = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+
+	public bool IsChecked
+	{
+		get => _isChecked;
+		set
+		{
+			if (_isChecked != value)
+			{
+				_isChecked = value;
 				OnPropertyChanged();
 			}
 		}
@@ -109,6 +124,7 @@ public class TriggersViewModel : INotifyPropertyChanged
 	public void Reset()
 	{
 		IsToggled = false;
+		IsChecked = false;
 		DataEntryText = string.Empty;
 		EmailEntryText = string.Empty;
 		PhoneEntryText = string.Empty;
