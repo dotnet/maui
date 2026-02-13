@@ -194,7 +194,9 @@ public class AOTTemplateTest : BaseTemplateTests
 		var ndkRoot = Environment.GetEnvironmentVariable("ANDROID_NDK_ROOT");
 		if (!string.IsNullOrEmpty(ndkRoot))
 		{
-			extendedBuildProps.Add($"AndroidNdkDirectory={ndkRoot}");
+			// Quote and escape the NDK path to avoid argument splitting when it contains spaces.
+			var ndkRootEscaped = ndkRoot.Replace("\"", "\\\"");
+			extendedBuildProps.Add($"AndroidNdkDirectory=\"{ndkRootEscaped}\"");
 		}
 
 		return extendedBuildProps;
