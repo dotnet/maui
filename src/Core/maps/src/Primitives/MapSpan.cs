@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Maui.Devices.Sensors;
 
 namespace Microsoft.Maui.Maps
@@ -86,6 +88,66 @@ namespace Microsoft.Maui.Maps
 		public static MapSpan FromCenterAndRadius(Location center, Distance radius)
 		{
 			return new MapSpan(center, 2 * DistanceToLatitudeDegrees(radius), 2 * DistanceToLongitudeDegrees(center, radius));
+		}
+
+		/// <summary>
+		/// Creates a <see cref="MapSpan"/> that encompasses all of the specified locations.
+		/// </summary>
+		/// <param name="locations">The locations to include in the span.</param>
+		/// <returns>A new <see cref="MapSpan"/> that fits all locations, with 10% padding.</returns>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="locations"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException">Thrown when <paramref name="locations"/> is empty.</exception>
+		public static MapSpan FromLocations(IEnumerable<Location> locations)
+		{
+			if (locations is null)
+				throw new ArgumentNullException(nameof(locations));
+
+			var locationList = locations.ToList();
+			if (locationList.Count == 0)
+				throw new ArgumentException("At least one location is required.", nameof(locations));
+
+			if (locationList.Count == 1)
+				return FromCenterAndRadius(locationList[0], Distance.FromKilometers(1));
+
+			double minLat = double.MaxValue, maxLat = double.MinValue;
+			double minLon = double.MaxValue, maxLon = double.MinValue;
+
+			foreach (var loc in locationList)
+			{
+				minLat = Math.Min(minLat, loc.Latitude);
+				maxLat = Math.Max(maxLat, loc.Latitude);
+				minLon = Math.Min(minLon, loc.Longitude);
+				maxLon = Math.Max(maxLon, loc.Longitude);
+			}
+
+			double centerLat = (minLat + maxLat) / 2;
+			double latDegrees = (maxLat - minLat) * 1.1; // 10% padding
+
+			// Handle antimeridian crossing: if the direct span exceeds 180°,
+			// it's likely shorter to go the other way around
+			double lonSpan = maxLon - minLon;
+			double wrappedLonSpan = 360 - lonSpan;
+			double centerLon, lonDegrees;
+
+			if (lonSpan <= wrappedLonSpan)
+			{
+				// Normal case: all points are on the same side
+				centerLon = (minLon + maxLon) / 2;
+				lonDegrees = lonSpan * 1.1;
+			}
+			else
+			{
+				// Antimeridian crossing: wrap around
+				centerLon = (maxLon + minLon) / 2 + 180;
+				if (centerLon > 180) centerLon -= 360;
+				lonDegrees = wrappedLonSpan * 1.1;
+			}
+
+			// Ensure minimum span
+			latDegrees = Math.Max(latDegrees, MinimumRangeDegrees);
+			lonDegrees = Math.Max(lonDegrees, MinimumRangeDegrees);
+
+			return new MapSpan(new Location(centerLat, centerLon), latDegrees, lonDegrees);
 		}
 
 		/// <inheritdoc/>

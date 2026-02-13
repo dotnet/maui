@@ -1,1 +1,7 @@
 #nullable enable
+Microsoft.Maui.Maps.IMap.MoveToRegion(Microsoft.Maui.Maps.MapSpan! region, bool animated) -> void
+Microsoft.Maui.Maps.MoveToRegionRequest
+Microsoft.Maui.Maps.MoveToRegionRequest.Animated.get -> bool
+Microsoft.Maui.Maps.MoveToRegionRequest.MoveToRegionRequest(Microsoft.Maui.Maps.MapSpan? region, bool animated) -> void
+Microsoft.Maui.Maps.MoveToRegionRequest.Region.get -> Microsoft.Maui.Maps.MapSpan?
+static Microsoft.Maui.Maps.MapSpan.FromLocations(System.Collections.Generic.IEnumerable<Microsoft.Maui.Devices.Sensors.Location!>! locations) -> Microsoft.Maui.Maps.MapSpan!

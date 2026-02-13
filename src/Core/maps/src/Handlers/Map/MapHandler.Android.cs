@@ -110,9 +110,14 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		public static void MapMoveToRegion(IMapHandler handler, IMap map, object? arg)
 		{
-			MapSpan? newRegion = arg as MapSpan;
-			if (newRegion != null)
+			if (arg is MoveToRegionRequest request && request.Region != null)
+			{
+				(handler as MapHandler)?.MoveToRegion(request.Region, request.Animated);
+			}
+			else if (arg is MapSpan newRegion)
+			{
 				(handler as MapHandler)?.MoveToRegion(newRegion, true);
+			}
 		}
 
 		public void UpdateMapElement(IMapElement element)

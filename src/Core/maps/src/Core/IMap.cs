@@ -57,5 +57,13 @@ namespace Microsoft.Maui.Maps
 		/// Moves the map so that it displays the specified <see cref="MapSpan"/> region.
 		/// </summary>
 		void MoveToRegion(MapSpan region);
+
+		/// <summary>
+		/// Moves the map so that it displays the specified <see cref="MapSpan"/> region,
+		/// with control over whether the transition is animated.
+		/// </summary>
+		/// <param name="region">The region to display.</param>
+		/// <param name="animated">Whether the transition should be animated.</param>
+		void MoveToRegion(MapSpan region, bool animated);
 	}
 }
