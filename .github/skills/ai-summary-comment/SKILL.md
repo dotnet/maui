@@ -103,18 +103,11 @@ If an existing finalize comment exists, it will be replaced with the updated sec
 pwsh .github/skills/ai-summary-comment/scripts/post-ai-summary-comment.ps1 -PRNumber 27246
 ```
 
-### Provide content directly
-
-```bash
-pwsh .github/skills/ai-summary-comment/scripts/post-ai-summary-comment.ps1 -PRNumber 12345 -Content "review content here"
-```
-
 ### Parameters
 
 | Parameter | Required | Description | Example |
 |-----------|----------|-------------|---------|
 | `PRNumber` | Yes | Pull request number | `12345` |
-| `Content` | No | Review content to post (auto-loaded from `PRAgent/*/content.md` if not provided) | Review markdown content |
 | `DryRun` | No | Preview changes in local file instead of posting to GitHub | `-DryRun` |
 | `PreviewFile` | No | Path to local preview file for DryRun mode (default: `CustomAgentLogsTmp/PRState/{PRNumber}/ai-summary-comment-preview.md`) | `-PreviewFile ./preview.md` |
 | `SkipValidation` | No | Skip validation checks (not recommended) | `-SkipValidation` |
@@ -563,7 +556,7 @@ CustomAgentLogsTmp/PRState/{PRNumber}/
 
 ### Auto-Loading Behavior
 
-When `post-ai-summary-comment.ps1` is called **without `-Content`**, it auto-discovers phase files:
+When `post-ai-summary-comment.ps1` is called, it auto-discovers phase files:
 1. Checks `CustomAgentLogsTmp/PRState/{PRNumber}/PRAgent/*/content.md`
 2. Loads all available phase content files
 3. Builds the comment structure from the loaded files
