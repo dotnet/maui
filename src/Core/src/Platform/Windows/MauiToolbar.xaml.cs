@@ -20,11 +20,31 @@ namespace Microsoft.Maui.Platform
 		WBrush? _menuBarForeground;
 		private Button? _navigationViewBackButton;
 		private Button? _togglePaneButton;
+		private Button? _commandBarMoreButton;
 		private Graphics.Color? _iconColor;
 
 		public MauiToolbar()
 		{
 			InitializeComponent();
+			CommandBar.Loaded += OnCommandBarLoaded;
+		}
+
+		void OnCommandBarLoaded(object sender, RoutedEventArgs e)
+		{
+			// Get the MoreButton from the CommandBar template
+			TryGetCommandBarMoreButton();
+		}
+
+		void TryGetCommandBarMoreButton()
+		{
+			if (_commandBarMoreButton == null)
+			{
+				_commandBarMoreButton = this.GetTemplateChild("MoreButton") as Button;
+				if (_commandBarMoreButton != null)
+				{
+					UpdateIconColor(); // Apply current icon color to the MoreButton
+				}
+			}
 		}
 
 		internal string? Title
@@ -162,6 +182,9 @@ namespace Microsoft.Maui.Platform
 
 		void UpdateIconColor()
 		{
+			// Ensure we have a reference to the CommandBar's MoreButton
+			TryGetCommandBarMoreButton();
+
 			if (IconColor != null)
 			{
 				TogglePaneButton?.SetApplicationResource("NavigationViewButtonForegroundPointerOver", IconColor.ToPlatform());
@@ -174,6 +197,14 @@ namespace Microsoft.Maui.Platform
 
 				NavigationViewBackButton?.UpdateForegroundColor(IconColor);
 				TogglePaneButton?.UpdateForegroundColor(IconColor);
+
+				// Apply IconColor to CommandBar's MoreButton (3-dot overflow menu)
+				// This ensures consistent theming across Windows 10 and Windows 11 in dark mode
+				// Similar to how Android applies IconColor to OverflowIcon
+				if (_commandBarMoreButton != null)
+				{
+					_commandBarMoreButton.Foreground = IconColor.ToPlatform();
+				}
 
 			}
 			else
@@ -188,6 +219,9 @@ namespace Microsoft.Maui.Platform
 
 				NavigationViewBackButton?.ClearValue(Button.ForegroundProperty);
 				TogglePaneButton?.ClearValue(Button.ForegroundProperty);
+
+				// Clear CommandBar's MoreButton foreground to use default theme
+				_commandBarMoreButton?.ClearValue(Button.ForegroundProperty);
 			}
 		}
 
