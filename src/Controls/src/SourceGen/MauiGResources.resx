@@ -233,4 +233,11 @@
     <value>An element with the name "{0}" already exists in this NameScope.</value>
     <comment>0 is the duplicated key</comment>
   </data>
+  <data name="EventTriggerEventNotFoundTitle" xml:space="preserve">
+    <value>Event not found</value>
+  </data>
+  <data name="EventTriggerEventNotFoundMessage" xml:space="preserve">
+    <value>Event '{0}' not found on type '{1}'. The EventTrigger will not fire.</value>
+    <comment>0 is event name, 1 is type name</comment>
+  </data>
 </root>

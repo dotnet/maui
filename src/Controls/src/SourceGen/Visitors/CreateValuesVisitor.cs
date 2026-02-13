@@ -285,6 +285,17 @@ class CreateValuesVisitor : IXamlNodeVisitor
 			if (NodeSGExtensions.GetKnownValueProviders(Context).TryGetValue(type, out var valueProvider) &&
 				valueProvider.CanProvideValue(node, Context))
 			{
+				// EventTrigger is special: it has children (TriggerActions) that need the variable
+				// to exist before they're processed. Emit the declaration here.
+				if (valueProvider is EventTriggerValueProvider)
+				{
+					var varName = NamingHelpers.CreateUniqueVariableName(Context, type);
+					variables[node] = new LocalVariable(type, varName);
+					writer.Write($"var {varName} = ");
+					EventTriggerValueProvider.GenerateCreateExpression(node, Context);
+					return;
+				}
+
 				// This element can be fully inlined without property assignments or variable creation.
 				// Skip setting all simple value properties since they'll be handled
 				// by inline initialization in TryProvideValue.
