@@ -15,9 +15,9 @@ namespace Maui.Controls.Sample
             BindingContext = _viewModel;
         }
 
-        void OnApplyClicked(object sender, EventArgs e)
+        private async void OnApplyClicked(object sender, EventArgs e)
         {
-            Navigation.PopAsync();
+            await Navigation.PopAsync();
         }
           
         // BackgroundColor

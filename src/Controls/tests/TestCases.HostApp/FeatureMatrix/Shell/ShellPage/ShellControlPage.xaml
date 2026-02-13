@@ -175,7 +175,7 @@
                                                Padding="20"/>
                                         <Button Text="Go to Home"
                                                 Clicked="OnGoToHomeClicked"
-                                                AutomationId="GoToHomeButton"/>
+                                                AutomationId="Tab1GoToHomeButton"/>
 
 
                                 </VerticalStackLayout>
@@ -194,7 +194,7 @@
                                                Padding="20"/>
                                         <Button Text="Go to Home"
                                                 Clicked="OnGoToHomeClicked"
-                                                AutomationId="GoToHomeButton"/>
+                                                AutomationId="Tab2GoToHomeButton"/>
                                 </VerticalStackLayout>
                         </ContentPage>
                 </ShellContent>
@@ -211,7 +211,7 @@
                                                Padding="20"/>
                                         <Button Text="Go to Home"
                                                 Clicked="OnGoToHomeClicked"
-                                                AutomationId="GoToHomeButton"/>
+                                                AutomationId="Tab3GoToHomeButton"/>
                                 </VerticalStackLayout>
                         </ContentPage>
                 </ShellContent>

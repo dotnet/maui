@@ -10,6 +10,11 @@ public partial class ShellControlPage : Shell
 {
     private ShellViewModel _viewModel;
     public ShellContent HomePage => homePage;
+    private const string NotAnimatedRoute = "notanimated";
+    private const string AnimatedRoute = "animated";
+    private const string ModalRoute = "modal";
+    private const string ModalAnimatedRoute = "modalanimated";
+    private const string ModalNotAnimatedRoute = "modalnotanimated";
 
 
     public ShellControlPage()
@@ -17,11 +22,11 @@ public partial class ShellControlPage : Shell
         InitializeComponent();
         _viewModel = new ShellViewModel();
         BindingContext = _viewModel;
-        Routing.RegisterRoute("notanimated", typeof(NotAnimatedPresentationPage));
-        Routing.RegisterRoute("animated", typeof(AnimatedPresentationPage));
-        Routing.RegisterRoute("modal", typeof(ModalPresentationPage));
-        Routing.RegisterRoute("modalanimated", typeof(ModalAnimatedPresentationPage));
-        Routing.RegisterRoute("modalnotanimated", typeof(ModalNotAnimatedPresentationPage));
+        Routing.RegisterRoute(NotAnimatedRoute, typeof(NotAnimatedPresentationPage));
+        Routing.RegisterRoute(AnimatedRoute, typeof(AnimatedPresentationPage));
+        Routing.RegisterRoute(ModalRoute, typeof(ModalPresentationPage));
+        Routing.RegisterRoute(ModalAnimatedRoute, typeof(ModalAnimatedPresentationPage));
+        Routing.RegisterRoute(ModalNotAnimatedRoute, typeof(ModalNotAnimatedPresentationPage));
     }
     async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)
     {
@@ -68,7 +73,7 @@ public partial class ShellControlPage : Shell
         => await Shell.Current.GoToAsync("modalnotanimated");
     private async void OnGoToHomeClicked(object sender, EventArgs e)
     {
-        this.CurrentItem = this.homePage;
+        await Shell.Current.GoToAsync("//home");
     }
     private async void OnGoBackClicked(object sender, EventArgs e)
     {

@@ -94,8 +94,8 @@ public class ShellPagesFeatureTests : _GalleryUITest
 		App.WaitForElement("Tab3");
 		App.Tap("Tab3");
 		App.WaitForElement("Tab3Label");
-		App.WaitForElement("GoToHomeButton");
-		App.Tap("GoToHomeButton");
+		App.WaitForElement("Tab3GoToHomeButton");
+		App.Tap("Tab3GoToHomeButton");
 	}
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/5161
@@ -424,7 +424,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 #endif 
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS// Issue Link: https://github.com/dotnet/maui/issues/33909
-	[Test, Order(29)]
+	[Test, Order(30)]
 	[Category(UITestCategories.Shell)]
 	public void ShellPages_VerifyForegroundColorResetForBackButton()
 	{
@@ -445,12 +445,10 @@ public class ShellPagesFeatureTests : _GalleryUITest
 #endif 
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS  // Issue Link:https://github.com/dotnet/maui/issues/32993
-	[Test, Order(30)]
+	[Test, Order(29)]
 	[Category(UITestCategories.Shell)]
 	public void ShellPages_FlowDirectionRTL()
 	{
-		App.WaitForElement(Apply); // To reset the old value
-		App.Tap(Apply);
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("FlowDirectionRTL");
