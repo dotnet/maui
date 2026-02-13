@@ -121,11 +121,14 @@ namespace UITest.Appium
 
 		public static string? GetText(this IUIElement element)
 		{
-			var response = element.Command.Execute("getText", new Dictionary<string, object>()
+			return RunWithTimeout(() =>
 			{
-				{ "element", element },
+				var response = element.Command.Execute("getText", new Dictionary<string, object>()
+				{
+					{ "element", element },
+				});
+				return (string?)response.Value;
 			});
-			return (string?)response.Value;
 		}
 
 		public static bool TryGetText(this IUIElement element, [NotNullWhen(true)] out string? text)
@@ -147,27 +150,33 @@ namespace UITest.Appium
 
 		public static T? GetAttribute<T>(this IUIElement element, string attributeName)
 		{
-			var response = element.Command.Execute("getAttribute", new Dictionary<string, object>()
+			return RunWithTimeout(() =>
 			{
-				{ "element", element },
-				{ "attributeName", attributeName },
+				var response = element.Command.Execute("getAttribute", new Dictionary<string, object>()
+				{
+					{ "element", element },
+					{ "attributeName", attributeName },
+				});
+				return (T?)response.Value;
 			});
-			return (T?)response.Value;
 		}
 
 		public static Rectangle GetRect(this IUIElement element)
 		{
-			var response = element.Command.Execute("getRect", new Dictionary<string, object>()
+			return RunWithTimeout(() =>
 			{
-				{ "element", element },
-			});
+				var response = element.Command.Execute("getRect", new Dictionary<string, object>()
+				{
+					{ "element", element },
+				});
 
-			if (response?.Value != null)
-			{
-				return (Rectangle)response.Value;
-			}
+				if (response?.Value != null)
+				{
+					return (Rectangle)response.Value;
+				}
 
-			throw new InvalidOperationException($"Could not get Rect of element");
+				throw new InvalidOperationException($"Could not get Rect of element");
+			})!;
 		}
 
 		/// <summary>
@@ -177,17 +186,20 @@ namespace UITest.Appium
 		/// <returns>Whether the element is selected (boolean).</returns>
 		public static bool IsSelected(this IUIElement element)
 		{
-			var response = element.Command.Execute("getSelected", new Dictionary<string, object>()
+			return RunWithTimeout(() =>
 			{
-				{ "element", element },
+				var response = element.Command.Execute("getSelected", new Dictionary<string, object>()
+				{
+					{ "element", element },
+				});
+
+				if (response?.Value != null)
+				{
+					return (bool)response.Value;
+				}
+
+				throw new InvalidOperationException($"Could not get Selected of element");
 			});
-
-			if (response?.Value != null)
-			{
-				return (bool)response.Value;
-			}
-
-			throw new InvalidOperationException($"Could not get Selected of element");
 		}
 
 		/// <summary>
