@@ -947,16 +947,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				? UINavigationBar.Appearance.TintColor
 				: iconColor.ToPlatform();
 
-			if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+			if ((OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26)) && NavigationBar.TintColor is not null)
 			{
 				if (VisibleViewController?.NavigationItem?.RightBarButtonItems is UIBarButtonItem[] items)
 				{
 					foreach (var item in items)
 					{
-						if (NavigationBar.TintColor is not null)
-						{
-							item.TintColor = NavigationBar.TintColor;
-						}
+						item.TintColor = NavigationBar.TintColor;
 					}
 				}
 			}
@@ -1953,9 +1950,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				NavigationItem.SetRightBarButtonItems(primaries is null ? [] : primaries.ToArray(), false);
 				if ((OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26)) && primaries is not null && _navigation.TryGetTarget(out NavigationRenderer navigationRenderer))
 				{
-					foreach (var item in primaries)
+					if (navigationRenderer.NavigationBar?.TintColor is not null)
 					{
-						if (navigationRenderer.NavigationBar?.TintColor is not null)
+						foreach (var item in primaries)
 						{
 							item.TintColor = navigationRenderer.NavigationBar?.TintColor;
 						}
