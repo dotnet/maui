@@ -5,9 +5,8 @@ namespace Maui.Controls.Sample;
 
 public class ShellFeaturePage : NavigationPage
 {
-	public ShellFeaturePage()
+	public ShellFeaturePage() : base(new ShellFeatureMainPage())
 	{
-		PushAsync(new ShellFeatureMainPage());
 	}
 }
 
@@ -19,6 +18,6 @@ public partial class ShellFeatureMainPage : ContentPage
 	}
 	private void OnShellPageButtonClicked(object sender, EventArgs e)
 	{
-		Application.Current.MainPage = new ShellControlPage();
+		this.Window.Page = new ShellControlPage();
 	}
 }
