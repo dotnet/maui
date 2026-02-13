@@ -7,6 +7,9 @@
     Creates ONE comment for the entire PR review with all phases wrapped in an expandable section.
     Uses HTML marker <!-- AI Summary --> for identification.
     
+    Content is always auto-loaded from PRAgent phase files
+    (CustomAgentLogsTmp/PRState/<PRNumber>/PRAgent/*/content.md).
+    
     **Validates that phases marked as COMPLETE actually have content.**
     
     Format:
@@ -18,9 +21,6 @@
 .PARAMETER PRNumber
     The pull request number (required)
 
-.PARAMETER Content
-    The review content to post
-
 .PARAMETER DryRun
     Print comment instead of posting
 
@@ -28,18 +28,15 @@
     Skip validation checks (not recommended)
 
 .EXAMPLE
-    ./post-ai-summary-comment.ps1 -PRNumber 12345 -Content "review content"
+    ./post-ai-summary-comment.ps1 -PRNumber 12345
 
 .EXAMPLE
-    ./post-ai-summary-comment.ps1 -PRNumber 12345 -Content "review content" -DryRun
+    ./post-ai-summary-comment.ps1 -PRNumber 12345 -DryRun
 #>
 
 param(
     [Parameter(Mandatory=$false)]
     [int]$PRNumber,
-
-    [Parameter(Mandatory=$false)]
-    [string]$Content,
 
     [Parameter(Mandatory=$false)]
     [switch]$DryRun,
@@ -61,71 +58,70 @@ if ($PRNumber -eq 0) {
     throw "PRNumber is required."
 }
 
-# Auto-load from PRAgent phase files if Content not provided
-if ([string]::IsNullOrWhiteSpace($Content)) {
-    Write-Host "ℹ️  No -Content provided, auto-loading from PRAgent phase files..." -ForegroundColor Cyan
-    
-    $PRAgentDir = "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent"
-    if (-not (Test-Path $PRAgentDir)) {
-        $repoRoot = git rev-parse --show-toplevel 2>$null
-        if ($repoRoot) {
-            $PRAgentDir = Join-Path $repoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent"
-        }
+# Auto-load from PRAgent phase files
+Write-Host "ℹ️  Auto-loading from PRAgent phase files..." -ForegroundColor Cyan
+
+$PRAgentDir = "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent"
+if (-not (Test-Path $PRAgentDir)) {
+    $repoRoot = git rev-parse --show-toplevel 2>$null
+    if ($repoRoot) {
+        $PRAgentDir = Join-Path $repoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent"
     }
-    
-    if (-not (Test-Path $PRAgentDir)) {
-        Write-Host ""
-        Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Red
-        Write-Host "║  ⛔ No content provided and no PRAgent directory found    ║" -ForegroundColor Red
-        Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Red
-        Write-Host ""
-        Write-Host "Expected directory: $PRAgentDir" -ForegroundColor Yellow
-        Write-Host "Either provide -Content parameter or ensure PRAgent phase files exist." -ForegroundColor Yellow
-        throw "Content is required. Provide via -Content or ensure PRAgent/*/content.md files exist."
+}
+
+if (-not (Test-Path $PRAgentDir)) {
+    Write-Host ""
+    Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Red
+    Write-Host "║  ⛔ No PRAgent directory found                            ║" -ForegroundColor Red
+    Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Red
+    Write-Host ""
+    Write-Host "Expected directory: $PRAgentDir" -ForegroundColor Yellow
+    Write-Host "Ensure PRAgent phase files exist." -ForegroundColor Yellow
+    throw "No PRAgent directory found. Ensure PRAgent/*/content.md files exist."
+}
+
+# Load each phase content file
+$phaseFiles = @{
+    "pre-flight" = Join-Path $PRAgentDir "pre-flight/content.md"
+    "gate" = Join-Path $PRAgentDir "gate/content.md"
+    "try-fix" = Join-Path $PRAgentDir "try-fix/content.md"
+    "report" = Join-Path $PRAgentDir "report/content.md"
+}
+
+$loadedPhases = @()
+$phaseContentMap = @{}
+
+foreach ($phase in $phaseFiles.GetEnumerator()) {
+    if (Test-Path $phase.Value) {
+        $phaseContentMap[$phase.Key] = Get-Content $phase.Value -Raw -Encoding UTF8
+        $loadedPhases += $phase.Key
+        Write-Host "  ✅ Loaded: $($phase.Key) ($((Get-Item $phase.Value).Length) bytes)" -ForegroundColor Green
+    } else {
+        Write-Host "  ⏭️  Skipped: $($phase.Key) (no content.md)" -ForegroundColor Gray
     }
-    
-    # Load each phase content file
-    $phaseFiles = @{
-        "pre-flight" = Join-Path $PRAgentDir "pre-flight/content.md"
-        "gate" = Join-Path $PRAgentDir "gate/content.md"
-        "try-fix" = Join-Path $PRAgentDir "try-fix/content.md"
-        "report" = Join-Path $PRAgentDir "report/content.md"
+}
+
+if ($loadedPhases.Count -eq 0) {
+    throw "No phase content files found in $PRAgentDir. Ensure at least one phase has a content.md file."
+}
+
+Write-Host "  📦 Loaded $($loadedPhases.Count) phase(s): $($loadedPhases -join ', ')" -ForegroundColor Cyan
+
+# Build synthetic Content from phase files in the expected <details> format
+$syntheticParts = @()
+
+# Determine phase statuses based on which files exist and content
+$phaseStatusMap = @{}
+foreach ($phase in @("pre-flight", "gate", "try-fix", "report")) {
+    if ($phaseContentMap.ContainsKey($phase)) {
+        $phaseStatusMap[$phase] = "✅ COMPLETE"
+    } else {
+        $phaseStatusMap[$phase] = "⏳ PENDING"
     }
-    
-    $loadedPhases = @()
-    $phaseContentMap = @{}
-    
-    foreach ($phase in $phaseFiles.GetEnumerator()) {
-        if (Test-Path $phase.Value) {
-            $phaseContentMap[$phase.Key] = Get-Content $phase.Value -Raw -Encoding UTF8
-            $loadedPhases += $phase.Key
-            Write-Host "  ✅ Loaded: $($phase.Key) ($((Get-Item $phase.Value).Length) bytes)" -ForegroundColor Green
-        } else {
-            Write-Host "  ⏭️  Skipped: $($phase.Key) (no content.md)" -ForegroundColor Gray
-        }
-    }
-    
-    if ($loadedPhases.Count -eq 0) {
-        throw "No phase content files found in $PRAgentDir. Ensure at least one phase has a content.md file."
-    }
-    
-    Write-Host "  📦 Loaded $($loadedPhases.Count) phase(s): $($loadedPhases -join ', ')" -ForegroundColor Cyan
-    
-    # Build synthetic Content from phase files in the expected <details> format
-    $syntheticParts = @()
-    
-    # Determine phase statuses based on which files exist and content
-    $phaseStatusMap = @{}
-    foreach ($phase in @("pre-flight", "gate", "try-fix", "report")) {
-        if ($phaseContentMap.ContainsKey($phase)) {
-            $phaseStatusMap[$phase] = "✅ COMPLETE"
-        } else {
-            $phaseStatusMap[$phase] = "⏳ PENDING"
-        }
-    }
-    
-    # Build status table
-    $statusTable = @"
+}
+
+# Build status table
+$statusTable = @"
 | Phase | Status |
 |-------|--------|
 | Pre-Flight | $($phaseStatusMap['pre-flight']) |
@@ -133,65 +129,63 @@ if ([string]::IsNullOrWhiteSpace($Content)) {
 | Fix | $($phaseStatusMap['try-fix']) |
 | Report | $($phaseStatusMap['report']) |
 "@
-    $syntheticParts += $statusTable
-    
-    # Build phase sections
-    if ($phaseContentMap.ContainsKey('pre-flight')) {
-        $syntheticParts += @"
+$syntheticParts += $statusTable
+
+# Build phase sections
+if ($phaseContentMap.ContainsKey('pre-flight')) {
+    $syntheticParts += @"
 <details><summary><strong>📋 Pre-Flight — Issue Summary</strong></summary>
 
 $($phaseContentMap['pre-flight'])
 
 </details>
 "@
-    }
-    
-    if ($phaseContentMap.ContainsKey('gate')) {
-        $syntheticParts += @"
+}
+
+if ($phaseContentMap.ContainsKey('gate')) {
+    $syntheticParts += @"
 <details><summary><strong>🚦 Gate — Test Verification</strong></summary>
 
 $($phaseContentMap['gate'])
 
 </details>
 "@
-    }
-    
-    if ($phaseContentMap.ContainsKey('try-fix')) {
-        $syntheticParts += @"
+}
+
+if ($phaseContentMap.ContainsKey('try-fix')) {
+    $syntheticParts += @"
 <details><summary><strong>🔧 Fix — Analysis & Comparison</strong></summary>
 
 $($phaseContentMap['try-fix'])
 
 </details>
 "@
-    }
-    
-    if ($phaseContentMap.ContainsKey('report')) {
-        $syntheticParts += @"
+}
+
+if ($phaseContentMap.ContainsKey('report')) {
+    $syntheticParts += @"
 <details><summary><strong>📋 Report — Final Recommendation</strong></summary>
 
 $($phaseContentMap['report'])
 
 </details>
 "@
-    }
-    
-    $Content = $syntheticParts -join "`n`n---`n`n"
-    Write-Host "  ✅ Built synthetic content ($($Content.Length) chars)" -ForegroundColor Green
 }
+
+$Content = $syntheticParts -join "`n`n---`n`n"
+Write-Host "  ✅ Built synthetic content ($($Content.Length) chars)" -ForegroundColor Green
 
 # Final validation
 if ([string]::IsNullOrWhiteSpace($Content)) {
     Write-Host ""
     Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Red
-    Write-Host "║  ⛔ No content provided                                   ║" -ForegroundColor Red
+    Write-Host "║  ⛔ No content loaded from phase files                    ║" -ForegroundColor Red
     Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Red
     Write-Host ""
     Write-Host "Usage:" -ForegroundColor Yellow
-    Write-Host "  ./post-ai-summary-comment.ps1 -PRNumber 12345 -Content `"review content`"" -ForegroundColor Gray
     Write-Host "  ./post-ai-summary-comment.ps1 -PRNumber 12345  # auto-loads from PRAgent/*/content.md" -ForegroundColor Gray
     Write-Host ""
-    throw "Content is required."
+    throw "No content loaded from PRAgent phase files."
 }
 
 Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
