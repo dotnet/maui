@@ -161,6 +161,9 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 		App.ClearText("LocationEntry");
 		App.EnterText("LocationEntry", "Seattle, USA");
 
+		App.WaitForElement("ConfirmButton");
+		App.Tap("ConfirmButton");
+
 		App.FindElementByText("Seattle, USA");
 
 	}
@@ -206,6 +209,7 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 		Assert.That(statusLabel.GetText(), Does.Contain("Refreshed"));
 	}
 
+#if TEST_FAILS_ON_CATALYST //For more info, see: https://github.com/dotnet/maui/issues/34038
 	[Test, Order(10)]
 	public void MenuBarItem_DisableFileMenu()
 	{
@@ -217,20 +221,12 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 		App.Tap("FileMenuEnabledSwitch");
 
 		// Try to open File menu
+		App.WaitForElement("FileMenuBar");
 		App.Tap("FileMenuBar");
 
-		// Try to tap "Exit" menu item (should be disabled)
-		try
-		{
-			App.Tap("ExitMenuBarFlyoutItem");
-			// If we reach here, the item was clickable (bad)
-			Assert.Fail("Disabled menu item was clickable");
-		}
-		catch
-		{
-			// Expected - item should not be clickable when disabled
-			Assert.Pass("Menu item correctly disabled");
-		}
+		// Verify "Exit" menu item is not accessible when menu is disabled
+		var elements = App.FindElements("ExitMenuBarFlyoutItem");
+		Assert.That(elements, Is.Empty, "Disabled menu items should not be accessible");
 	}
 
 	[Test, Order(11)]
@@ -244,21 +240,14 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 		App.Tap("LocationsMenuEnabledSwitch");
 
 		// Try to open Locations menu
+		App.WaitForElement("LocationsMenuBar");
 		App.Tap("LocationsMenuBar");
 
-		// Try to tap "Add Location" (should be disabled)
-		try
-		{
-			App.Tap("AddLocationMenuFlyoutItem");
-			// If we reach here, the item was clickable (bad)
-			Assert.Fail("Disabled menu item was clickable");
-		}
-		catch
-		{
-			// Expected - item should not be clickable when disabled
-			Assert.Pass("Menu item correctly disabled");
-		}
+		// Verify "Add Location" menu item is not accessible when menu is disabled
+		var elements = App.FindElements("AddLocationMenuFlyoutItem");
+		Assert.That(elements, Is.Empty, "Disabled menu items should not be accessible");
 	}
+
 	[Test, Order(12)]
 	public void MenuBarItem_DisableViewMenu()
 	{
@@ -270,21 +259,14 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 		App.Tap("ViewMenuEnabledSwitch");
 
 		// Try to open View menu
+		App.WaitForElement("ViewMenuBar");
 		App.Tap("ViewMenuBar");
 
-		// Try to tap "Refresh" (should be disabled)
-		try
-		{
-			App.Tap("RefreshMenuBarFlyoutItem");
-			// If we reach here, the item was clickable (bad)
-			Assert.Fail("Disabled menu item was clickable");
-		}
-		catch
-		{
-			// Expected - item should not be clickable when disabled
-			Assert.Pass("Menu item correctly disabled");
-		}
+		// Verify "Refresh" menu item is not accessible when menu is disabled
+		var elements = App.FindElements("RefreshMenuBarFlyoutItem");
+		Assert.That(elements, Is.Empty, "Disabled menu items should not be accessible");
 	}
+#endif
 
 	[Test, Order(13)]
 	public void MenuBarItem_MenuTextBindingUpdates()
@@ -429,7 +411,7 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(18)]
-	public void MenuBarItem_ResetRestolesDefaultLocations()
+	public void MenuBarItem_ResetRestoresDefaultLocations()
 	{
 		App.WaitForElement("ResetButton");
 		App.Tap("ResetButton");

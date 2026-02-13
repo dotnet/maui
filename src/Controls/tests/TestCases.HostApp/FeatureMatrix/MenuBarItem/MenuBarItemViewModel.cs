@@ -322,11 +322,9 @@ public class MenuBarItemViewModel : INotifyPropertyChanged
 	private void OnExit()
 	{
 		StatusMessage = "Exit command executed - Application closing...";
-		// Delay to show message before exit
-		Application.Current?.Dispatcher.Dispatch(() =>
-		{
-			Application.Current?.Quit();
-		});
+		// Note: Application.Current?.Quit() is commented out to prevent terminating
+		// the HostApp during feature matrix test runs, which can make UITests flaky.
+		// In a real app, you would call Quit() here.
 	}
 
 	private void OnChangeLocation(object parameter)
