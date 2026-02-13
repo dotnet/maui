@@ -124,17 +124,21 @@ public class TabbedPageManager
 			((IPageController)Element).InternalChildren.CollectionChanged -= OnChildrenCollectionChanged;
 			Element.Appearing -= OnTabbedPageAppearing;
 			Element.Disappearing -= OnTabbedPageDisappearing;
+
 			RemoveTabs();
+			
 			_viewPager.LayoutChange -= OnLayoutChanged;
 			_viewPager.Adapter = null;
 		}
 
 		Element = tabbedPage;
+		
 		if (Element is not null)
 		{
 			_viewPager.LayoutChange += OnLayoutChanged;
 			Element.Appearing += OnTabbedPageAppearing;
 			Element.Disappearing += OnTabbedPageDisappearing;
+
 			_viewPager.Adapter = new MultiPageFragmentStateAdapter<Page>(tabbedPage, FragmentManager, _context) { CountOverride = tabbedPage.Children.Count };
 
 			if (IsBottomTabPlacement)
@@ -218,7 +222,10 @@ public class TabbedPageManager
 
 	protected virtual void OnTabbedPageDisappearing(object sender, EventArgs e)
 	{
-		RemoveTabs();
+		// Reset the content bottom margin when navigating away from the tabbed page
+		// This ensures subsequent pages can use the full screen height
+		// We don't remove the tabs themselves to avoid issues with modal navigation
+		SetContentBottomMargin(0);
 	}
 
 	protected virtual void OnTabbedPageAppearing(object sender, EventArgs e)
