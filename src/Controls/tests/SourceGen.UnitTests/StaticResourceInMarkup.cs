@@ -163,6 +163,9 @@ public partial class TestPage
 		xmlNamespaceResolver.Add("__f__", "http://schemas.microsoft.com/dotnet/2021/maui");
 		xmlNamespaceResolver.Add("__g__", "http://schemas.microsoft.com/dotnet/maui/global");
 		xmlNamespaceResolver.Add("", "http://schemas.microsoft.com/dotnet/2021/maui");
+		xmlNamespaceResolver.Add("global", "http://schemas.microsoft.com/dotnet/maui/global");
+		xmlNamespaceResolver.Add("maui", "http://schemas.microsoft.com/dotnet/2021/maui");
+		xmlNamespaceResolver.Add("d", "http://schemas.microsoft.com/dotnet/2021/maui/design");
 		xmlNamespaceResolver.Add("x", "http://schemas.microsoft.com/winfx/2009/xaml");
 		xmlNamespaceResolver.Add("local", "clr-namespace:TestApp");
 		xamlServiceProvider.Add(typeof(global::Microsoft.Maui.Controls.Xaml.IXamlTypeResolver), new global::Microsoft.Maui.Controls.Xaml.Internals.XamlTypeResolver(xmlNamespaceResolver, typeof(global::TestApp.TestPage).Assembly));
