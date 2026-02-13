@@ -128,7 +128,7 @@ steps:
 
       # Add latest installed major match fallback (e.g., 26.0.1 -> 26.1.1 if installed)
       if [[ "$XCODE_VERSION" =~ ^([0-9]+)\. ]]; then
-        LATEST_MAJOR_MATCH=$(printf '%s\n' "${XCODE_LIST[@]}" | grep -E "^${BASH_REMATCH[1]}\\." | sort -V | tail -1)
+        LATEST_MAJOR_MATCH=$(printf '%s\n' "${XCODE_LIST[@]}" | grep -E "^${BASH_REMATCH[1]}\." | sort -V | tail -1)
         if [[ -n "$LATEST_MAJOR_MATCH" ]]; then
           VERSIONS_TO_TRY+=("$LATEST_MAJOR_MATCH")
         fi
