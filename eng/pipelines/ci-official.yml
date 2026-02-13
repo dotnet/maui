@@ -86,6 +86,7 @@ extends:
         macPool: ${{ parameters.MacOSPool }}
         enableSourceIndex: false
         runAsPublic: false
+        is1ESPipeline: true
         enableMicrobuild: true
         publishAssets: true
         sourceIndexParams:
