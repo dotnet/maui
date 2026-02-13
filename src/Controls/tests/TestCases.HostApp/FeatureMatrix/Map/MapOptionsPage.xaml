@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.MapOptionsPage"
+             x:DataType="local:MapViewModel"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             Title="MapOptionsPage">
+       <ContentPage.ToolbarItems>
+              <ToolbarItem Text="Apply"
+                           Clicked="ApplyButton_Clicked"
+                           AutomationId="Apply"/>
+       </ContentPage.ToolbarItems>
+
+       <Grid Padding="5"
+             RowSpacing="15"
+             ColumnSpacing="15">
+              <Grid.RowDefinitions>
+                     <RowDefinition Height="Auto"/>
+                     <RowDefinition Height="Auto"/>
+                     <RowDefinition Height="Auto"/>
+                     <RowDefinition Height="Auto"/>
+                     <RowDefinition Height="Auto"/>
+                     <RowDefinition Height="Auto"/>
+                     <RowDefinition Height="*"/>
+              </Grid.RowDefinitions>
+              <Grid.ColumnDefinitions>
+                     <ColumnDefinition Width="*"/>
+                     <ColumnDefinition Width="*"/>
+              </Grid.ColumnDefinitions>
+
+              <!-- Boolean Properties Section - Left Column -->
+              <StackLayout Grid.Row="0"
+                           Grid.Column="0"
+                           Spacing="5">
+                     <Label Text="Map Behavior Options"
+                            FontSize="16"
+                            FontAttributes="Bold"/>
+
+                     <StackLayout Orientation="Horizontal"
+                                  Spacing="10">
+                            <CheckBox x:Name="IsShowingUserCheckBox"
+                                      IsChecked="{Binding IsShowingUser}"
+                                      AutomationId="IsShowingUserCheckBox"/>
+                            <Label Text="Show User Location"
+                                   VerticalOptions="Center"
+                                   FontSize="12"/>
+                     </StackLayout>
+
+                     <StackLayout Orientation="Horizontal"
+                                  Spacing="10">
+                            <CheckBox x:Name="IsScrollEnabledCheckBox"
+                                      IsChecked="{Binding IsScrollEnabled}"
+                                      AutomationId="IsScrollEnabledCheckBox"/>
+                            <Label Text="Enable Scroll"
+                                   VerticalOptions="Center"
+                                   FontSize="12"/>
+                     </StackLayout>
+
+                     <StackLayout Orientation="Horizontal"
+                                  Spacing="10">
+                            <CheckBox x:Name="IsTrafficEnabledCheckBox"
+                                      IsChecked="{Binding IsTrafficEnabled}"
+                                      AutomationId="IsTrafficEnabledCheckBox"/>
+                            <Label Text="Show Traffic"
+                                   VerticalOptions="Center"
+                                   FontSize="12"/>
+                     </StackLayout>
+
+                     <StackLayout Orientation="Horizontal"
+                                  Spacing="10">
+                            <CheckBox x:Name="IsZoomEnabledCheckBox"
+                                      IsChecked="{Binding IsZoomEnabled}"
+                                      AutomationId="IsZoomEnabledCheckBox"/>
+                            <Label Text="Enable Zoom"
+                                   VerticalOptions="Center"
+                                   FontSize="12"/>
+                     </StackLayout>
+
+                     <StackLayout Orientation="Horizontal"
+                                  Spacing="10">
+                            <CheckBox x:Name="IsVisibleCheckBox"
+                                      IsChecked="{Binding IsVisible}"
+                                      AutomationId="IsVisibleCheckBox"/>
+                            <Label Text="Map Visible"
+                                   VerticalOptions="Center"
+                                   FontSize="12"/>
+                     </StackLayout>
+              </StackLayout>
+
+              <!-- MapType Section - Right Column -->
+              <StackLayout Grid.Row="0"
+                           Grid.Column="1"
+                           Spacing="4">
+                     <Label Text="Map Type"
+                            FontSize="16"
+                            FontAttributes="Bold"/>
+
+                     <RadioButton x:Name="StreetRadioButton"
+                                  Content="Street"
+                                  GroupName="MapType"
+                                  IsChecked="True"
+                                  CheckedChanged="MapTypeRadioButton_CheckedChanged"
+                                  AutomationId="StreetRadioButton"
+                                  FontSize="12"/>
+
+                     <RadioButton x:Name="SatelliteRadioButton"
+                                  Content="Satellite"
+                                  GroupName="MapType"
+                                  CheckedChanged="MapTypeRadioButton_CheckedChanged"
+                                  AutomationId="SatelliteRadioButton"
+                                  FontSize="12"/>
+
+                     <RadioButton x:Name="HybridRadioButton"
+                                  Content="Hybrid"
+                                  GroupName="MapType"
+                                  CheckedChanged="MapTypeRadioButton_CheckedChanged"
+                                  AutomationId="HybridRadioButton"
+                                  FontSize="12"/>
+              </StackLayout>
+
+              <!-- Collections Section - Left Column -->
+              <StackLayout Grid.Row="1"
+                           Grid.Column="0"
+                           Spacing="3">
+                     <Label Text="Map Collections"
+                            FontSize="16"
+                            FontAttributes="Bold"/>
+
+                     <Label Text="{Binding UserAddedPinCount, StringFormat='Pins: {0}'}"
+                            FontSize="12"/>
+                     <Button Text="Add Pin"
+                             x:Name="AddPinButton"
+                             Clicked="AddPinButton_Clicked"
+                             AutomationId="AddPinButton"
+                             FontSize="11"/>
+              </StackLayout>
+
+              <!-- Map Elements Section - Right Column -->
+              <StackLayout Grid.Row="1"
+                           Grid.Column="1"
+                           Spacing="3">
+                     <Label Text="Map Elements"
+                            FontSize="16"
+                            FontAttributes="Bold"/>
+                     <Label Text="{Binding MapElements.Count, StringFormat='Elements: {0}'}"
+                            FontSize="12"/>
+                     <Button Text="Add Element"
+                             x:Name="AddElementButton"
+                             Clicked="AddElementButton_Clicked"
+                             AutomationId="AddElementButton"
+                             FontSize="11"/>
+                     <!-- Shape Selection Radio Buttons -->
+                     <StackLayout Orientation="Vertical"
+                                  Spacing="5">
+                            <Label Text="Shape:"
+                                   FontSize="12"
+                                   VerticalOptions="Center"/>
+                            <RadioButton x:Name="PolylineRadioButton"
+                                         Content="Polyline"
+                                         GroupName="ShapeType"
+                                         IsChecked="True"
+                                         CheckedChanged="ShapeRadioButton_CheckedChanged"
+                                         AutomationId="PolylineRadioButton"
+                                         FontSize="11"/>
+                            <RadioButton x:Name="PolygonRadioButton"
+                                         Content="Polygon"
+                                         GroupName="ShapeType"
+                                         CheckedChanged="ShapeRadioButton_CheckedChanged"
+                                         AutomationId="PolygonRadioButton"
+                                         FontSize="11"/>
+                            <RadioButton x:Name="CircleRadioButton"
+                                         Content="Circle"
+                                         GroupName="ShapeType"
+                                         CheckedChanged="ShapeRadioButton_CheckedChanged"
+                                         AutomationId="CircleRadioButton"
+                                         FontSize="11"/>
+                     </StackLayout>
+              </StackLayout>
+
+              <!-- Template Properties Section - Spanning both columns -->
+              <StackLayout Grid.Row="2"
+                           Grid.Column="0"
+                           Grid.ColumnSpan="2"
+                           Spacing="5">
+                     <Label Text="Template Properties"
+                            FontSize="16"
+                            FontAttributes="Bold"/>
+
+                     <Grid ColumnDefinitions="*,*"
+                           ColumnSpacing="10">
+                            <Button Grid.Column="0"
+                                    Text="Set ItemsSource"
+                                    x:Name="SetItemsSourceButton"
+                                    Clicked="SetItemsSourceButton_Clicked"
+                                    AutomationId="SetItemsSourceButton"
+                                    FontSize="11"/>
+                            <Button Grid.Column="1"
+                                    Text="Clear ItemsSource"
+                                    x:Name="ClearItemsSourceButton"
+                                    Clicked="ClearItemsSourceButton_Clicked"
+                                    AutomationId="ClearItemsSourceButton"
+                                    FontSize="11"/>
+                     </Grid>
+                     <!-- ItemTemplate Section -->
+                     <Grid ColumnDefinitions="*,*"
+                           ColumnSpacing="10">
+                            <Button Grid.Column="0"
+                                    Text="Set ItemTemplate"
+                                    x:Name="SetItemTemplateButton"
+                                    Clicked="SetItemTemplateButton_Clicked"
+                                    AutomationId="SetItemTemplateButton"
+                                    FontSize="11"/>
+                            <Button Grid.Column="1"
+                                    Text="Clear ItemTemplate"
+                                    x:Name="ClearItemTemplateButton"
+                                    Clicked="ClearItemTemplateButton_Clicked"
+                                    AutomationId="ClearItemTemplateButton"
+                                    FontSize="11"/>
+                     </Grid>
+
+                     <!-- ItemTemplateSelector Section -->
+                     <Grid ColumnDefinitions="*,*"
+                           ColumnSpacing="10">
+                            <Button Grid.Column="0"
+                                    Text="Set TemplateSelector"
+                                    x:Name="SetTemplateSelectorButton"
+                                    Clicked="SetTemplateSelectorButton_Clicked"
+                                    AutomationId="SetTemplateSelectorButton"
+                                    FontSize="11"/>
+                            <Button Grid.Column="1"
+                                    Text="Clear TemplateSelector"
+                                    x:Name="ClearTemplateSelectorButton"
+                                    Clicked="ClearTemplateSelectorButton_Clicked"
+                                    AutomationId="ClearTemplateSelectorButton"
+                                    FontSize="11"/>
+                     </Grid>
+              </StackLayout>
+
+              <!-- VisibleRegion Section - Spanning both columns -->
+              <StackLayout Grid.Row="3"
+                           Grid.Column="0"
+                           Grid.ColumnSpan="2"
+                           Spacing="5">
+                     <Label Text="Visible Region"
+                            FontSize="16"
+                            FontAttributes="Bold"/>
+
+                     <Grid ColumnDefinitions="*,*"
+                           ColumnSpacing="10">
+                            <Button Grid.Column="0"
+                                    Text="Zoom In"
+                                    x:Name="ZoomInButton"
+                                    Clicked="ZoomInButton_Clicked"
+                                    AutomationId="ZoomInButton"
+                                    FontSize="11"/>
+                            <Button Grid.Column="1"
+                                    Text="Zoom Out"
+                                    x:Name="ZoomOutButton"
+                                    Clicked="ZoomOutButton_Clicked"
+                                    AutomationId="ZoomOutButton"
+                                    FontSize="11"/>
+                     </Grid>
+
+                     <Grid ColumnDefinitions="*,*"
+                           ColumnSpacing="10">
+                            <Button Grid.Column="0"
+                                    Text="Show All Pins"
+                                    x:Name="ShowAllPinsButton"
+                                    Clicked="ShowAllPinsButton_Clicked"
+                                    AutomationId="ShowAllPinsButton"
+                                    FontSize="11"/>
+                            <Button Grid.Column="1"
+                                    Text="Reset to Initial"
+                                    x:Name="ResetToInitialButton"
+                                    Clicked="ResetToInitialButton_Clicked"
+                                    AutomationId="ResetToInitialButton"
+                                    FontSize="11"/>
+                     </Grid>
+              </StackLayout>
+       </Grid>
+</ContentPage>
