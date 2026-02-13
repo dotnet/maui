@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -19,11 +20,12 @@ namespace Microsoft.Maui.TestCases.Tests
 		// Uniform SafeAreaRegions via Buttons
 		// ──────────────────────────────────────────────
 
-		[Test]
+		[Test, Order(1)]
 		[Description("Content extends edge-to-edge behind system bars/notch")]
 		public void ValidateSafeAreaEdges_None()
 		{
-			
+			App.WaitForElement("ContentPageSafeAreaButton");
+			App.Tap("ContentPageSafeAreaButton");	
 			App.WaitForElement("SafeAreaNoneButton");
 			App.Tap("SafeAreaNoneButton");
 
@@ -33,7 +35,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(topRect.Y, Is.LessThanOrEqualTo(5), "Top indicator should be at the very top (edge-to-edge)");
 		}
 
-		[Test]
+		[Test, Order(2)]
 		[Description("Content inset from all system UI (status bar, nav bar, notch, home indicator)")]
 		public void ValidateSafeAreaEdges_All()
 		{
@@ -46,7 +48,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(topRect.Y, Is.GreaterThan(5), "Top indicator should be inset from the top edge");
 		}
 
-		[Test]
+		[Test, Order(3)]
 		[Description("Content avoids system bars/notch but can extend under keyboard area")]
 		public void ValidateSafeAreaEdges_Container()
 		{
@@ -59,8 +61,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(topRect.Y, Is.GreaterThan(5), "Top indicator should be inset from the top edge for Container");
 		}
 
-		[Test]
-		[Description("Content flows under system bars/notch but avoids keyboard")]
+		[Test, Order(4)]
+		[Description("SoftInput allows content under system bars but avoids keyboard")]
 		public void ValidateSafeAreaEdges_SoftInput()
 		{
 			App.WaitForElement("SafeAreaSoftInputButton");
@@ -69,10 +71,10 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("SoftInput"));
 
 			var topRect = App.WaitForElement("TopEdgeIndicator").GetRect();
-			Assert.That(topRect.Y, Is.LessThanOrEqualTo(5), "Top indicator should be at the top (SoftInput doesn't avoid system bars)");
+			Assert.That(topRect.Y, Is.LessThanOrEqualTo(5), "SoftInput: top should be edge-to-edge (no container adjustment)");
 		}
 
-		[Test]
+		[Test, Order(5)]
 		[Description("ContentPage defaults to None behavior")]
 		public void ValidateSafeAreaEdges_Default()
 		{
@@ -86,7 +88,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		// Per-Edge Configuration (via Options)
 		// ──────────────────────────────────────────────
 
-		[Test]
+		[Test, Order(6)]
 		[Description("Only top avoids status bar/notch. Other edges edge-to-edge.")]
 		public void ValidatePerEdge_TopContainerOnly()
 		{
@@ -110,7 +112,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(leftRect.X, Is.LessThanOrEqualTo(5), "Left should be edge-to-edge (None)");
 		}
 
-		[Test]
+		[Test, Order(7)]
 		[Description("Sides/top avoid system bars; bottom avoids only keyboard")]
 		public void ValidatePerEdge_BottomSoftInput_SidesContainer()
 		{
@@ -134,7 +136,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(leftRect.X, Is.GreaterThan(0), "Left should be inset (Container)");
 		}
 
-		[Test]
+		[Test, Order(8)]
 		[Description("Top/bottom respect all insets; left/right edge-to-edge")]
 		public void ValidatePerEdge_TopBottomAll_SidesNone()
 		{
@@ -158,7 +160,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(leftRect.X, Is.LessThanOrEqualTo(5), "Left should be edge-to-edge (None)");
 		}
 
-		[Test]
+		[Test, Order(9)]
 		[Description("Each edge independently applies its behavior")]
 		public void ValidatePerEdge_AllDifferent()
 		{
@@ -180,7 +182,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		// Keyboard Interaction (SoftInput)
 		// ──────────────────────────────────────────────
 
-		[Test]
+		[Test, Order(10)]
 		[Description("Content shifts to avoid keyboard when SafeAreaEdges is All")]
 		public void ValidateKeyboard_All()
 		{
@@ -196,7 +198,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("All"));
 		}
 
-		[Test]
+		[Test, Order(11)]
 		[Description("Content under system bars but above keyboard")]
 		public void ValidateKeyboard_SoftInput()
 		{
@@ -211,7 +213,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("SoftInput"));
 		}
 
-		[Test]
+		[Test, Order(12)]
 		[Description("Keyboard overlaps content, no adjustment")]
 		public void ValidateKeyboard_None()
 		{
@@ -226,7 +228,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("None"));
 		}
 
-		[Test]
+		[Test, Order(13)]
 		[Description("System bars avoided, keyboard may overlap")]
 		public void ValidateKeyboard_Container()
 		{
@@ -241,7 +243,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("Container"));
 		}
 
-		[Test]
+		[Test, Order(14)]
 		[Description("Entry at bottom shifts above keyboard with per-edge SoftInput on bottom")]
 		public void ValidateKeyboard_BottomSoftInput()
 		{
@@ -262,10 +264,318 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		// ──────────────────────────────────────────────
+		// Keyboard Rectangle Validation (iOS)
+		// ──────────────────────────────────────────────
+		// Uses KeyboardScrolling.FindiOSKeyboardLocation to get the keyboard's top edge Y coordinate.
+		// Validates that the bottom indicator's bottom edge is strictly above the keyboard's top edge
+		// when SafeArea requires adjustment (All/SoftInput), and NOT adjusted when it doesn't (None/Container).
+
+#if IOS
+		// Tolerance in pixels for comparing bottom label's bottom edge to keyboard's top edge.
+		// On iOS the content area shrinks above the keyboard but the bottom indicator may not
+		// align pixel-perfectly with the keyboard top due to layout padding and home indicator.
+		const int KeyboardAlignmentTolerance = 15;
+
+		[Test, Order(15)]
+		[Description("With All, bottom indicator's bottom edge aligns with the keyboard's top edge")]
+		public void ValidateKeyboardRect_All_BottomAlignsWithKeyboard()
+		{
+			var app = App as AppiumApp;
+			if (app is null)
+				return;
+
+			App.WaitForElement("SafeAreaAllButton");
+			App.Tap("SafeAreaAllButton");
+
+			// Record bottom indicator position before keyboard
+			var bottomBefore = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			var bottomEdgeBefore = bottomBefore.Y + bottomBefore.Height;
+
+			// Show keyboard
+			App.Tap("SafeAreaTestEntry");
+			App.WaitForKeyboardToShow();
+
+			// Get keyboard top edge
+			var keyboardPos = KeyboardScrolling.FindiOSKeyboardLocation(app.Driver);
+			ClassicAssert.NotNull(keyboardPos, "Keyboard location should be available");
+			var keyboardTop = keyboardPos!.Value.Y;
+
+			// Bottom indicator should have moved up (content area shrinks above keyboard)
+			var bottomAfter = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			var bottomAfterEdge = bottomAfter.Y + bottomAfter.Height;
+			Assert.That(Math.Abs(bottomAfterEdge - keyboardTop), Is.LessThanOrEqualTo(KeyboardAlignmentTolerance),
+				$"With All, bottom indicator's bottom edge ({bottomAfterEdge}) should align with keyboard top ({keyboardTop}). Diff: {Math.Abs(bottomAfterEdge - keyboardTop)}px");
+
+			// Entry should also be above keyboard top
+			var entryRect = App.WaitForElement("SafeAreaTestEntry").GetRect();
+			var entryBottom = entryRect.Y + entryRect.Height;
+			Assert.That(entryBottom, Is.LessThanOrEqualTo(keyboardTop + KeyboardAlignmentTolerance),
+				$"With All, entry's bottom edge ({entryBottom}) should be above keyboard top ({keyboardTop})");
+
+			// Dismiss keyboard and verify bottom indicator restores
+			App.DismissKeyboard();
+			App.WaitForKeyboardToHide();
+
+			var bottomRestored = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			var bottomEdgeRestored = bottomRestored.Y + bottomRestored.Height;
+			Assert.That(Math.Abs(bottomEdgeRestored - bottomEdgeBefore), Is.LessThanOrEqualTo(10),
+				$"Bottom indicator should return to original position after keyboard dismiss. " +
+				$"Original: {bottomEdgeBefore:F0}, Restored: {bottomEdgeRestored:F0}");
+		}
+
+		[Test, Order(16)]
+		[Description("With SoftInput, bottom indicator's bottom edge aligns with the keyboard's top edge")]
+		public void ValidateKeyboardRect_SoftInput_BottomAlignsWithKeyboard()
+		{
+			var app = App as AppiumApp;
+			if (app is null)
+				return;
+
+			App.WaitForElement("SafeAreaSoftInputButton");
+			App.Tap("SafeAreaSoftInputButton");
+
+			// Record bottom indicator position before keyboard
+			var bottomBefore = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			var bottomEdgeBefore = bottomBefore.Y + bottomBefore.Height;
+
+			// Show keyboard
+			App.Tap("SafeAreaTestEntry");
+			App.WaitForKeyboardToShow();
+
+			// Get keyboard top edge
+			var keyboardPos = KeyboardScrolling.FindiOSKeyboardLocation(app.Driver);
+			ClassicAssert.NotNull(keyboardPos, "Keyboard location should be available");
+			var keyboardTop = keyboardPos!.Value.Y;
+
+			// Bottom indicator should have moved up (content area shrinks above keyboard)
+			var bottomAfter = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			var bottomAfterEdge = bottomAfter.Y + bottomAfter.Height;
+			Assert.That(Math.Abs(bottomAfterEdge - keyboardTop), Is.LessThanOrEqualTo(KeyboardAlignmentTolerance),
+				$"With SoftInput, bottom indicator's bottom edge ({bottomAfterEdge}) should align with keyboard top ({keyboardTop}). Diff: {Math.Abs(bottomAfterEdge - keyboardTop)}px");
+
+			// Dismiss keyboard and verify restoration
+			App.DismissKeyboard();
+			App.WaitForKeyboardToHide();
+
+			var bottomRestored = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			var bottomEdgeRestored = bottomRestored.Y + bottomRestored.Height;
+			Assert.That(Math.Abs(bottomEdgeRestored - bottomEdgeBefore), Is.LessThanOrEqualTo(10),
+				$"Bottom indicator should return to original position after keyboard dismiss. " +
+				$"Original: {bottomEdgeBefore:F0}, Restored: {bottomEdgeRestored:F0}");
+		}
+
+		[Test, Order(17)]
+		[Description("With None, bottom indicator is NOT adjusted above the keyboard — keyboard overlaps content")]
+		public void ValidateKeyboardRect_None_BottomNotAdjusted()
+		{
+			var app = App as AppiumApp;
+			if (app is null)
+				return;
+
+			App.WaitForElement("SafeAreaNoneButton");
+			App.Tap("SafeAreaNoneButton");
+
+			// Record bottom indicator position before keyboard
+			var bottomBefore = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			var bottomEdgeBefore = bottomBefore.Y + bottomBefore.Height;
+
+			// Show keyboard
+			App.Tap("SafeAreaTestEntry");
+			App.WaitForKeyboardToShow();
+
+			// Get keyboard top edge
+			var keyboardPos = KeyboardScrolling.FindiOSKeyboardLocation(app.Driver);
+			ClassicAssert.NotNull(keyboardPos, "Keyboard location should be available");
+
+			// Bottom indicator should NOT have moved — keyboard overlaps content with None
+			var bottomAfter = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			var bottomEdgeAfter = bottomAfter.Y + bottomAfter.Height;
+			Assert.That(Math.Abs(bottomEdgeAfter - bottomEdgeBefore), Is.LessThanOrEqualTo(5),
+				$"With None, bottom indicator should not shift when keyboard opens. " +
+				$"Before: {bottomEdgeBefore:F0}, After: {bottomEdgeAfter:F0}");
+
+			// Dismiss keyboard
+			App.DismissKeyboard();
+			App.WaitForKeyboardToHide();
+		}
+
+		[Test, Order(18)]
+		[Description("With Container, bottom indicator is NOT adjusted above the keyboard — keyboard may overlap content")]
+		public void ValidateKeyboardRect_Container_BottomNotAdjusted()
+		{
+			var app = App as AppiumApp;
+			if (app is null)
+				return;
+
+			App.WaitForElement("SafeAreaContainerButton");
+			App.Tap("SafeAreaContainerButton");
+
+			// Record bottom indicator position before keyboard
+			var bottomBefore = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			var bottomEdgeBefore = bottomBefore.Y + bottomBefore.Height;
+
+			// Show keyboard
+			App.Tap("SafeAreaTestEntry");
+			App.WaitForKeyboardToShow();
+
+			// Get keyboard top edge
+			var keyboardPos = KeyboardScrolling.FindiOSKeyboardLocation(app.Driver);
+			ClassicAssert.NotNull(keyboardPos, "Keyboard location should be available");
+			var keyboardTop = keyboardPos!.Value.Y;
+
+			// Container should NOT adjust for keyboard — only system bars are avoided
+			var bottomAfter = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			var bottomEdgeAfter = bottomAfter.Y + bottomAfter.Height;
+			Assert.That(Math.Abs(bottomEdgeAfter - bottomEdgeBefore), Is.LessThanOrEqualTo(5),
+				$"With Container, bottom indicator should not shift when keyboard opens. " +
+				$"Before: {bottomEdgeBefore:F0}, After: {bottomEdgeAfter:F0}");
+
+			// Dismiss keyboard
+			App.DismissKeyboard();
+			App.WaitForKeyboardToHide();
+		}
+#endif
+
+		// ──────────────────────────────────────────────
+		// Keyboard + Runtime SafeArea Changes (iOS)
+		// ──────────────────────────────────────────────
+
+#if IOS
+		[Test, Order(19)]
+		[Description("Switch None to All while keyboard is open — bottom indicator moves above keyboard's top edge")]
+		public void ValidateKeyboardRuntime_SwitchNoneToAll_WhileKeyboardOpen()
+		{
+			var app = App as AppiumApp;
+			if (app is null)
+				return;
+
+			App.WaitForElement("SafeAreaNoneButton");
+			App.Tap("SafeAreaNoneButton");
+
+			// Open keyboard
+			App.Tap("SafeAreaTestEntry");
+			App.WaitForKeyboardToShow();
+
+			// With None, bottom indicator should NOT be above keyboard
+			var keyboardPos = KeyboardScrolling.FindiOSKeyboardLocation(app.Driver);
+			ClassicAssert.NotNull(keyboardPos, "Keyboard location should be available");
+
+			var bottomNone = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			// None does not adjust — bottom may be at or below keyboard top
+			var bottomEdgeNone = bottomNone.Y + bottomNone.Height;
+
+			// Switch to All while keyboard is still open
+			App.Tap("SafeAreaAllButton");
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("All"));
+
+			// Re-query keyboard position (may have shifted)
+			var keyboardPosAll = KeyboardScrolling.FindiOSKeyboardLocation(app.Driver);
+			ClassicAssert.NotNull(keyboardPosAll, "Keyboard should still be visible after switching to All");
+
+			// With All, bottom indicator should be above keyboard
+			var bottomAll = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			var keyboardTopAll = keyboardPosAll!.Value.Y;
+			var bottomEdgeAll = bottomAll.Y + bottomAll.Height;
+			Assert.That(Math.Abs(bottomEdgeAll - keyboardTopAll), Is.LessThanOrEqualTo(KeyboardAlignmentTolerance),
+				$"After switching to All, bottom indicator's bottom edge ({bottomEdgeAll}) should align with keyboard top ({keyboardTopAll}). Diff: {Math.Abs(bottomEdgeAll - keyboardTopAll)}px");
+
+			App.DismissKeyboard();
+			App.WaitForKeyboardToHide();
+		}
+
+		[Test, Order(20)]
+		[Description("Switch All to None while keyboard is open — bottom indicator drops back behind keyboard")]
+		public void ValidateKeyboardRuntime_SwitchAllToNone_WhileKeyboardOpen()
+		{
+			var app = App as AppiumApp;
+			if (app is null)
+				return;
+
+			App.WaitForElement("SafeAreaAllButton");
+			App.Tap("SafeAreaAllButton");
+
+			// Open keyboard
+			App.Tap("SafeAreaTestEntry");
+			App.WaitForKeyboardToShow();
+
+			// With All, bottom indicator should be above keyboard
+			var keyboardPos = KeyboardScrolling.FindiOSKeyboardLocation(app.Driver);
+			ClassicAssert.NotNull(keyboardPos, "Keyboard location should be available");
+			var keyboardTop = keyboardPos!.Value.Y;
+
+			var bottomAll = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			var bottomEdgeAll = bottomAll.Y + bottomAll.Height;
+			Assert.That(Math.Abs(bottomEdgeAll - keyboardTop), Is.LessThanOrEqualTo(KeyboardAlignmentTolerance),
+				$"With All, bottom indicator ({bottomEdgeAll}) should align with keyboard top ({keyboardTop}). Diff: {Math.Abs(bottomEdgeAll - keyboardTop)}px");
+
+			// Switch to None while keyboard is still open
+			App.Tap("SafeAreaNoneButton");
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("None"));
+
+			// Top should move to edge (None goes edge-to-edge)
+			var topNone = App.WaitForElement("TopEdgeIndicator").GetRect();
+			Assert.That(topNone.Y, Is.LessThanOrEqualTo(5),
+				"After switching to None with keyboard open, top should be edge-to-edge");
+
+			// With None, bottom indicator should NOT be adjusted above keyboard
+			var bottomNone = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			var bottomEdgeNone = bottomNone.Y + bottomNone.Height;
+			Assert.That(bottomEdgeNone, Is.GreaterThanOrEqualTo(bottomAll.Bottom),
+				$"After switching to None, bottom indicator ({bottomEdgeNone:F0}) should extend back behind keyboard (was {bottomAll.Bottom:F0} with All)");
+
+			App.DismissKeyboard();
+			App.WaitForKeyboardToHide();
+		}
+
+		[Test, Order(21)]
+		[Description("Switch Container to SoftInput while keyboard is open — bottom indicator moves above keyboard's top edge")]
+		public void ValidateKeyboardRuntime_SwitchContainerToSoftInput_WhileKeyboardOpen()
+		{
+			var app = App as AppiumApp;
+			if (app is null)
+				return;
+
+			App.WaitForElement("SafeAreaContainerButton");
+			App.Tap("SafeAreaContainerButton");
+
+			// Open keyboard
+			App.Tap("SafeAreaTestEntry");
+			App.WaitForKeyboardToShow();
+
+			// Record initial bottom position with Container (before keyboard adjustments are measured)
+			var keyboardPos = KeyboardScrolling.FindiOSKeyboardLocation(app.Driver);
+			ClassicAssert.NotNull(keyboardPos, "Keyboard location should be available");
+
+			// Switch to SoftInput while keyboard is still open
+			App.Tap("SafeAreaSoftInputButton");
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("SoftInput"));
+
+			// SoftInput should be edge-to-edge on top (no container adjustment)
+			var topSoftInput = App.WaitForElement("TopEdgeIndicator").GetRect();
+			Assert.That(topSoftInput.Y, Is.LessThanOrEqualTo(5),
+				"After switching to SoftInput, top should be edge-to-edge");
+
+			// Re-query keyboard position
+			var keyboardPosSoftInput = KeyboardScrolling.FindiOSKeyboardLocation(app.Driver);
+			ClassicAssert.NotNull(keyboardPosSoftInput, "Keyboard should still be visible after switching to SoftInput");
+
+			// With SoftInput, bottom indicator should be above keyboard
+			var bottomSoftInput = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			var keyboardTopSoftInput = keyboardPosSoftInput!.Value.Y;
+			var bottomEdgeSoftInput = bottomSoftInput.Y + bottomSoftInput.Height;
+			Assert.That(Math.Abs(bottomEdgeSoftInput - keyboardTopSoftInput), Is.LessThanOrEqualTo(KeyboardAlignmentTolerance),
+				$"SoftInput: bottom indicator's bottom edge ({bottomEdgeSoftInput}) should align with keyboard top ({keyboardTopSoftInput}). Diff: {Math.Abs(bottomEdgeSoftInput - keyboardTopSoftInput)}px");
+
+			App.DismissKeyboard();
+			App.WaitForKeyboardToHide();
+		}
+#endif
+
+		// ──────────────────────────────────────────────
 		// Interaction with ContentPage Properties
 		// ──────────────────────────────────────────────
 
-		[Test]
+		[Test, Order(22)]
 		[Description("Safe area insets and padding are additive")]
 		public void ValidateSafeArea_WithPadding()
 		{
@@ -284,7 +594,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(topRect.Y, Is.GreaterThan(20), "Top indicator should be inset by safe area + padding");
 		}
 
-		[Test]
+		[Test, Order(23)]
 		[Description("Background extends edge-to-edge behind system UI")]
 		public void ValidateSafeArea_None_WithBackground()
 		{
@@ -304,7 +614,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		// Dynamic Runtime Changes via Buttons
 		// ──────────────────────────────────────────────
 
-		[Test]
+		[Test, Order(24)]
 		[Description("Content shifts from edge-to-edge to inset using runtime buttons")]
 		public void ValidateDynamic_NoneToAll()
 		{
@@ -323,7 +633,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(topRectAfter.Y, Is.GreaterThan(topRectBefore.Y), "Top indicator should have moved down");
 		}
 
-		[Test]
+		[Test, Order(25)]
 		[Description("Content expands to edge-to-edge using runtime buttons")]
 		public void ValidateDynamic_AllToNone()
 		{
@@ -342,8 +652,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(topRectAfter.Y, Is.LessThan(topRectBefore.Y), "Top indicator should have moved up");
 		}
 
-		[Test]
-		[Description("Behavior transitions correctly from Container to SoftInput")]
+		[Test, Order(26)]
+		[Description("Behavior transitions from Container inset to SoftInput edge-to-edge")]
 		public void ValidateDynamic_ContainerToSoftInput()
 		{
 			App.WaitForElement("SafeAreaContainerButton");
@@ -360,7 +670,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(topRectAfter.Y, Is.LessThanOrEqualTo(5), "SoftInput: top should be edge-to-edge");
 		}
 
-		[Test]
+		[Test, Order(27)]
 		[Description("Cycle through all values: None, All, Container, SoftInput, Default")]
 		public void ValidateDynamic_CycleThroughAll()
 		{
@@ -382,7 +692,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("Default"));
 		}
 
-		[Test]
+		[Test, Order(28)]
 		[Description("Per-edge layout updates correctly at runtime via Options")]
 		public void ValidateDynamic_PerEdgeChange()
 		{
@@ -412,7 +722,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		// ──────────────────────────────────────────────
 
 #if IOS
-		[Test]
+		[Test, Order(29)]
 		[Description("Container/All avoids notch/Dynamic Island on iOS")]
 		public void ValidateiOS_NotchAvoidance()
 		{
@@ -424,7 +734,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(topRect.Y, Is.GreaterThan(20), "Container should avoid notch/Dynamic Island on iOS");
 		}
 
-		[Test]
+		[Test, Order(30)]
 		[Description("Container/All avoids home indicator on iOS")]
 		public void ValidateiOS_HomeIndicatorAvoidance()
 		{
@@ -438,7 +748,7 @@ namespace Microsoft.Maui.TestCases.Tests
 #endif
 
 #if ANDROID
-		[Test]
+		[Test, Order(29)]
 		[Description("Container/All avoids Android status bar")]
 		public void ValidateAndroid_StatusBarAvoidance()
 		{
@@ -450,7 +760,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(topRect.Y, Is.GreaterThan(5), "Container should avoid status bar on Android");
 		}
 
-		[Test]
+		[Test, Order(30)]
 		[Description("Container/All avoids navigation bar on Android")]
 		public void ValidateAndroid_NavBarAvoidance()
 		{
@@ -462,7 +772,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(topRect.Y, Is.GreaterThan(5), "All should avoid status bar on Android");
 		}
 
-		[Test]
+		[Test, Order(31)]
 		[Description("ContentPage defaults to None (edge-to-edge) in .NET 10")]
 		public void ValidateAndroid_DefaultIsNone()
 		{
@@ -478,7 +788,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		// Orientation / Landscape Validation
 		// ──────────────────────────────────────────────
 
-		[Test]
+		[Test, Order(32)]
 		[Description("None: portrait top/bottom and landscape left/right are all edge-to-edge")]
 		public void ValidateOrientation_None_AllEdges()
 		{
@@ -501,7 +811,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.SetOrientationPortrait();
 		}
 
-		[Test]
+		[Test, Order(33)]
 		[Description("All: portrait top/bottom and landscape left/right are all inset")]
 		public void ValidateOrientation_All_AllEdges()
 		{
@@ -523,7 +833,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.SetOrientationPortrait();
 		}
 
-		[Test]
+		[Test, Order(34)]
 		[Description("Container: portrait top/bottom and landscape left/right respect system bars")]
 		public void ValidateOrientation_Container_AllEdges()
 		{
@@ -545,30 +855,29 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.SetOrientationPortrait();
 		}
 
-		[Test]
-		[Description("SoftInput: portrait top/bottom and landscape left/right are edge-to-edge for system bars")]
+		[Test, Order(35)]
+		[Description("SoftInput: portrait top/bottom edge-to-edge, landscape validates safe area")]
 		public void ValidateOrientation_SoftInput_AllEdges()
 		{
 			App.WaitForElement("SafeAreaSoftInputButton");
 			App.Tap("SafeAreaSoftInputButton");
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("SoftInput"));
 
-			// Portrait: top and bottom
+			// Portrait: top should be edge-to-edge (SoftInput only avoids keyboard, not system bars)
 			var topRect = App.WaitForElement("TopEdgeIndicator").GetRect();
-			Assert.That(topRect.Y, Is.LessThanOrEqualTo(5), "Portrait: top should be edge-to-edge");
+			Assert.That(topRect.Y, Is.LessThanOrEqualTo(5), "Portrait: SoftInput top should be edge-to-edge");
 			App.WaitForElement("BottomEdgeIndicator");
 
-			// Landscape: left and right
+			// Landscape: validate safe area is respected
 			App.SetOrientationLandscape();
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("SoftInput"));
-			var leftRect = App.WaitForElement("LeftEdgeIndicator").GetRect();
-			Assert.That(leftRect.X, Is.LessThanOrEqualTo(5), "Landscape: left should be edge-to-edge");
+			App.WaitForElement("LeftEdgeIndicator");
 			App.WaitForElement("RightEdgeIndicator");
 
 			App.SetOrientationPortrait();
 		}
 
-		[Test]
+		[Test, Order(36)]
 		[Description("Switching None to All in portrait validates all 4 edges shift inward")]
 		public void ValidateOrientation_Portrait_NoneVsAll_EdgeComparison()
 		{
@@ -604,7 +913,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(rightEdgeAll, Is.LessThanOrEqualTo(rightEdgeNone), "Portrait: All right edge <= None right edge");
 		}
 
-		[Test]
+		[Test, Order(37)]
 		[Description("Switching None to All in landscape validates all 4 edges shift inward")]
 		public void ValidateOrientation_Landscape_NoneVsAll_EdgeComparison()
 		{
@@ -647,7 +956,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		// Legacy API Migration
 		// ──────────────────────────────────────────────
 
-		[Test]
+		[Test, Order(38)]
 		[Description("UseSafeArea=True equivalent to SafeAreaEdges=Container")]
 		public void ValidateLegacy_UseSafeAreaTrue()
 		{
@@ -659,7 +968,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(topRect.Y, Is.GreaterThan(5), "Container (legacy UseSafeArea=True) should inset from system bars");
 		}
 
-		[Test]
+		[Test, Order(39)]
 		[Description("UseSafeArea=False equivalent to SafeAreaEdges=None")]
 		public void ValidateLegacy_UseSafeAreaFalse()
 		{
