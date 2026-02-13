@@ -68,9 +68,9 @@ parameters:
 - name: BuildPlatformsPublic
   type: object
   default:
-  - name: NetCore-Public
+  - name: MAUI-DNCENG
     demands:
-        - ImageOverride -equals 1es-windows-2022-open
+        - ImageOverride -equals 1ESPT-Windows2022
     os: Windows
     buildScript: $(_buildScript)
     sln: '$(Build.SourcesDirectory)/Microsoft.Maui.sln'
@@ -90,9 +90,9 @@ parameters:
         - ImageOverride -equals 1es-windows-2022
       os: windows
     public:
-      name: NetCore-Public
+      name: MAUI-DNCENG
       demands:
-        - ImageOverride -equals 1es-windows-2022-open
+        - ImageOverride -equals 1ESPT-Windows2022
       os: windows
 
 - name: MacOSPool
