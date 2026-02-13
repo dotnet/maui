@@ -540,6 +540,7 @@ namespace Microsoft.Maui.Controls.Internals
 		private class LegacyPropertyChangeHandler : IPropertyChangeHandler
 		{
 			private readonly TypedBinding<TSource, TProperty> _binding;
+			private Tuple<Func<TSource, object>, string>[]? _cachedHandlersForClone;
 			private readonly PropertyChangedProxy[]? _handlers;
 
 			public LegacyPropertyChangeHandler(
@@ -562,52 +563,58 @@ namespace Microsoft.Maui.Controls.Internals
 
 			public void Subscribe(object sourceObject)
 			{
-				if (sourceObject is not TSource source || _handlers is null)
+				var handlers = _handlers;
+				if (sourceObject is not TSource source || handlers is null)
 				{
 					return;
 				}
 
-				for (var i = 0; i < _handlers.Length; i++)
+				for (var i = 0; i < handlers.Length; i++)
 				{
-					if (_handlers[i] == null)
+					var handler = handlers[i];
+					if (handler == null)
 						continue;
-					var part = _handlers[i].PartGetter(source);
+					var part = handler.PartGetter(source);
 					if (part == null)
 						break;
 					var inpc = part as INotifyPropertyChanged;
 					if (inpc == null)
 						continue;
-					_handlers[i].Part = (inpc);
+					handler.Part = inpc;
 				}
 			}
 
 			public void Unsubscribe()
 			{
-				if (_handlers is null)
+				var handlers = _handlers;
+				if (handlers is null)
 					return;
 
-				for (var i = 0; i < _handlers.Length; i++)
+				for (var i = 0; i < handlers.Length; i++)
 				{
-					_handlers[i]?.Listener.Unsubscribe();
+					handlers[i]?.Listener.Unsubscribe();
 				}
 			}
 
 			public TypedBinding<TSource, TProperty> CloneBinding()
 			{
-				Tuple<Func<TSource, object>, string>[]? handlers = null;
-				if (_handlers != null)
+				var cachedHandlers = _cachedHandlersForClone;
+				if (cachedHandlers is null && _handlers != null)
 				{
-					handlers = new Tuple<Func<TSource, object>, string>[_handlers.Length];
+					cachedHandlers = new Tuple<Func<TSource, object>, string>[_handlers.Length];
 					for (var i = 0; i < _handlers.Length; i++)
 					{
-						if (_handlers[i] == null)
+						var handler = _handlers[i];
+						if (handler == null)
 							continue;
-						handlers[i] = new Tuple<Func<TSource, object>, string>(_handlers[i].PartGetter, _handlers[i].PropertyName);
+						cachedHandlers[i] = new Tuple<Func<TSource, object>, string>(handler.PartGetter, handler.PropertyName);
 					}
+
+					_cachedHandlersForClone = cachedHandlers;
 				}
 
 #pragma warning disable RS0030 // Do not use banned APIs
-				return new TypedBinding<TSource, TProperty>(_binding._getter, _binding._setter, handlers)
+				return new TypedBinding<TSource, TProperty>(_binding._getter, _binding._setter, cachedHandlers)
 				{
 					Mode = _binding.Mode,
 					Converter = _binding.Converter,

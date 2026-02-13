@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using BenchmarkDotNet.Attributes;
@@ -54,10 +55,12 @@ namespace Microsoft.Maui.Benchmarks
 
 		NotifyingObject SourceBinding;
 		NotifyingObject SourceTypedBinding;
+		NotifyingObject SourceTypedBinding2;
 		NotifyingObject SourceSourceGenBinding;
 		MyObject TargetSetValue;
 		MyObject TargetBinding;
 		MyObject TargetTypedBinding;
+		MyObject TargetTypedBinding2;
 		MyObject TargetSourceGenBinding;
 
 		[GlobalSetup]
@@ -79,6 +82,21 @@ namespace Microsoft.Maui.Benchmarks
 				handlers: new[] { Tuple.Create<Func<NotifyingObject, object>, string>(o => o, "Name") }
 			)
 			{ Source = SourceTypedBinding });
+
+			SourceTypedBinding2 = new NotifyingObject { Name = "Initial" };
+			TargetTypedBinding2 = new MyObject();
+			TargetTypedBinding2.SetBinding(MyObject.NameProperty, new TypedBinding<NotifyingObject, string>(
+				o => (o.Name, true),
+				null,
+				handlersCount: 1,
+				handlers: static o => GetHandlers(o)
+			)
+			{ Source = SourceTypedBinding2 });
+
+			static IEnumerable<ValueTuple<INotifyPropertyChanged, string>> GetHandlers(NotifyingObject o)
+			{
+				yield return (o, "Name");
+			}
 
 			SourceSourceGenBinding = new NotifyingObject { Name = "Initial" };
 			TargetSourceGenBinding = new MyObject();
@@ -109,6 +127,12 @@ namespace Microsoft.Maui.Benchmarks
 		public void TypedBinding()
 		{
 			SourceTypedBinding.Name = (++_counter).ToString();
+		}
+
+		[Benchmark]
+		public void TypedBinding2()
+		{
+			SourceTypedBinding2.Name = (++_counter).ToString();
 		}
 
 		[Benchmark]
