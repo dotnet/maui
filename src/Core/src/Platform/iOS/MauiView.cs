@@ -62,9 +62,10 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		bool _appliesSafeAreaAdjustments;
 
-		// Global counter incremented each time any MauiView receives SafeAreaInsetsDidChange.
-		// Used to detect when a ValidateSafeArea "changed" result is due to the same safe area
-		// event being re-processed (infinite cycle) vs. a genuinely new safe area change.
+		// Global counter incremented each time any MauiView invalidates ancestors from LayoutSubviews.
+		// Used to prevent the same view from triggering multiple ancestor invalidations in a cascade.
+		// When view A invalidates ancestors, it stores the current generation. If it's asked to layout
+		// again before the generation changes (meaning we're in a cycle), it skips invalidation.
 		static int s_safeAreaGeneration;
 
 		// The safe area generation at which this view last triggered ancestor invalidation
@@ -560,8 +561,9 @@ namespace Microsoft.Maui.Platform
 				{
 					// Guard against infinite layout cycles: when both parent and child views respond to
 					// safe area, each one's layout change triggers the other to re-validate, creating an
-					// infinite loop. We use a generation counter (incremented on genuine SafeAreaInsetsDidChange
-					// events) to ensure we only invalidate ancestors once per safe area change event.
+					// infinite loop. We track the current "invalidation generation" (incremented each time
+					// any view invalidates ancestors) and skip re-invalidating if we've already done so for
+					// this generation.
 					var currentGeneration = s_safeAreaGeneration;
 					if (_lastSafeAreaInvalidationGeneration == currentGeneration)
 					{
@@ -570,7 +572,11 @@ namespace Microsoft.Maui.Platform
 						CrossPlatformArrange(Bounds.ToRectangle());
 						return;
 					}
-					_lastSafeAreaInvalidationGeneration = currentGeneration;
+					
+					// Increment the global generation counter so other views know we're triggering a new
+					// invalidation wave. Store it before invalidating.
+					System.Threading.Interlocked.Increment(ref s_safeAreaGeneration);
+					_lastSafeAreaInvalidationGeneration = s_safeAreaGeneration;
 
 					//This arrangement step is essential for communicating the correct coordinate space to native iOS views before scheduling the second layout pass.
 					//This ensures the native view is aware of the correct bounds and can adjust its layout accordingly.
@@ -727,7 +733,6 @@ namespace Microsoft.Maui.Platform
 		public override void SafeAreaInsetsDidChange()
 		{
 			_safeAreaInvalidated = true;
-			System.Threading.Interlocked.Increment(ref s_safeAreaGeneration);
 			base.SafeAreaInsetsDidChange();
 		}
 
