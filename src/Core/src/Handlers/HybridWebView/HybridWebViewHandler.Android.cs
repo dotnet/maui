@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Android.Webkit;
 using Java.Interop;
 using static Android.Views.ViewGroup;
@@ -13,6 +14,8 @@ namespace Microsoft.Maui.Handlers
 
 		private HybridWebViewJavaScriptInterface? _javaScriptInterface;
 
+		[UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingAotSuppressedBecauseIsHybridWebViewSupportedFeatureSwitch)]
+		[UnconditionalSuppressMessage("AOT", "IL3050", Justification = TrimmingAotSuppressedBecauseIsHybridWebViewSupportedFeatureSwitch)]
 		protected override AWebView CreatePlatformView()
 		{
 			var platformView = new MauiHybridWebView(this, Context!)
@@ -64,6 +67,8 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		[UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingAotSuppressedBecauseIsHybridWebViewSupportedFeatureSwitch)]
+		[UnconditionalSuppressMessage("AOT", "IL3050", Justification = TrimmingAotSuppressedBecauseIsHybridWebViewSupportedFeatureSwitch)]
 		protected override void ConnectHandler(AWebView platformView)
 		{
 			base.ConnectHandler(platformView);

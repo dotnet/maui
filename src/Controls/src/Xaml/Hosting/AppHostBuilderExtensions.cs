@@ -40,6 +40,7 @@ public static partial class AppHostBuilderExtensions
 	/// </summary>
 	/// <param name="handlersCollection">The handlers collection to register handlers with.</param>
 	/// <returns>The handlers collection for chaining.</returns>
+	[Obsolete("The AddMauiControlsHandlers method is a no-op.")]
 	public static IMauiHandlersCollection AddMauiControlsHandlers(this IMauiHandlersCollection handlersCollection) =>
 		handlersCollection.AddControlsHandlers();
 

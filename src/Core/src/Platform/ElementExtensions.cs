@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Platform
 
 		static IElementHandler? CreateTypeWithInjection(this Type viewType, IMauiContext mauiContext)
 		{
-			var handlerType = mauiContext.Handlers.GetHandlerType(viewType);
+			var handlerType = mauiContext.Handlers.GetConstructibleHandlerType(viewType);
 
 			if (handlerType == null)
 				return null;
@@ -78,7 +78,7 @@ namespace Microsoft.Maui.Platform
 					if (handlersWithConstructors.Contains(viewType))
 						handler = viewType.CreateTypeWithInjection(context);
 					else
-						handler = context.Handlers.GetHandler(viewType);
+						handler = context.Handlers.GetHandler(viewType, context);
 				}
 				catch (MissingMethodException)
 				{
@@ -146,7 +146,7 @@ namespace Microsoft.Maui.Platform
 				handler = null;
 
 			if (handler == null)
-				handler = context.Handlers.GetHandler(element.GetType());
+				handler = context.Handlers.GetHandler(element.GetType(), context);
 
 			if (handler == null)
 				throw new Exception($"Handler not found for window {element}.");

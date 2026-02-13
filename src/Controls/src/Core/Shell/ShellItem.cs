@@ -9,6 +9,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
@@ -16,6 +17,9 @@ namespace Microsoft.Maui.Controls
 	/// Represents a flyout menu item in a <see cref="Shell"/> application.
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Always)]
+#if WINDOWS || TIZEN
+	[ElementHandler(typeof(Handlers.ShellItemHandler))]
+#endif
 	public class FlyoutItem : ShellItem
 	{
 		/// <summary>The style class for flyout item labels.</summary>

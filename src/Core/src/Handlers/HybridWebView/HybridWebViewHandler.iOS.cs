@@ -18,6 +18,8 @@ namespace Microsoft.Maui.Handlers
 	{
 		private const string ScriptMessageHandlerName = "webwindowinterop";
 
+		[UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingAotSuppressedBecauseIsHybridWebViewSupportedFeatureSwitch)]
+		[UnconditionalSuppressMessage("AOT", "IL3050", Justification = TrimmingAotSuppressedBecauseIsHybridWebViewSupportedFeatureSwitch)]
 		protected override WKWebView CreatePlatformView()
 		{
 			var config = new WKWebViewConfiguration();
@@ -109,11 +111,6 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(platformView);
 		}
 
-
-		[RequiresUnreferencedCode(DynamicFeatures)]
-#if !NETSTANDARD
-		[RequiresDynamicCode(DynamicFeatures)]
-#endif
 		private sealed class WebViewScriptMessageHandler : NSObject, IWKScriptMessageHandler
 		{
 			private readonly WeakReference<HybridWebViewHandler?> _webViewHandler;

@@ -7,12 +7,14 @@ namespace Microsoft.Maui
 {
 	public interface IMauiHandlersFactory : IMauiFactory
 	{
-		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 		Type? GetHandlerType(Type iview);
 
-		IElementHandler? GetHandler(Type type);
+		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+		Type? GetConstructibleHandlerType(Type iview);
 
-		IElementHandler? GetHandler<T>() where T : IElement;
+		IElementHandler? GetHandler(Type type, IMauiContext context);
+
+		IElementHandler? GetHandler<T>(IMauiContext context) where T : IElement;
 
 		IMauiHandlersCollection GetCollection();
 	}
