@@ -102,7 +102,25 @@ namespace UITest.Appium.NUnit
 		{
 			try
 			{
-				if (App.AppState != ApplicationState.Running)
+				ApplicationState appState;
+				try
+				{
+					appState = App.AppState;
+				}
+				catch (TimeoutException)
+				{
+					// Let unresponsive-app timeouts bubble to the outer TimeoutException handler.
+					throw;
+				}
+				catch (Exception)
+				{
+					// AppState query itself can hang if the app is completely unresponsive.
+					// Force-close the app and treat it as not running.
+					App.CommandExecutor.Execute("forceCloseApp", new Dictionary<string, object>());
+					appState = ApplicationState.NotRunning;
+				}
+
+				if (appState != ApplicationState.Running)
 				{
 					SaveDeviceDiagnosticInfo();
 
@@ -116,6 +134,31 @@ namespace UITest.Appium.NUnit
 					// running anymore so we can't capture any UI structures or any screenshots
 					Assert.Fail("The app was expected to be running still, investigate as possible crash");
 				}
+			}
+			catch (TimeoutException ex)
+			{
+				// App is stuck in an infinite loop (e.g., layout cycle). Force-terminate and reset.
+				TestContext.Error.WriteLine($">>>>> {DateTime.Now} App became unresponsive, force-closing: {ex.Message}");
+				try
+				{
+					App.CommandExecutor.Execute("forceCloseApp", new Dictionary<string, object>());
+				}
+				catch { /* best effort */ }
+
+				if (!ResetAfterEachTest)
+				{
+					try
+					{
+						Reset();
+						FixtureSetup();
+					}
+					catch (Exception resetEx)
+					{
+						TestContext.Error.WriteLine($">>>>> {DateTime.Now} Reset after force-close failed: {resetEx.Message}");
+					}
+				}
+
+				Assert.Fail($"The app became unresponsive and was force-terminated: {ex.Message}");
 			}
 			finally
 			{
