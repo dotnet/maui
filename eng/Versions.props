@@ -3,12 +3,14 @@
     <!-- The .NET product branding version -->
     <MajorVersion>10</MajorVersion>
     <MinorVersion>0</MinorVersion>
-    <PatchVersion>40</PatchVersion>
+    <PatchVersion>50</PatchVersion>
     <SdkBandVersion>10.0.100</SdkBandVersion>
     <PreReleaseVersionLabel>ci.main</PreReleaseVersionLabel>
     <PreReleaseVersionLabel Condition="'$(BUILD_SOURCEBRANCH)' == 'refs/heads/inflight/current'">ci.inflight</PreReleaseVersionLabel>
     <PreReleaseVersionIteration>
     </PreReleaseVersionIteration>
+    <!-- Essentials.AI preview versioning — bump this for new AI previews -->
+    <EssentialsAIPreviewVersionIteration>1</EssentialsAIPreviewVersionIteration>
     <!-- Servicing builds have different characteristics for the way dependencies, baselines, and versions are handled. -->
     <IsServicingBuild Condition=" '$(PreReleaseVersionLabel)' == 'servicing' ">true</IsServicingBuild>
     <!-- Enable to remove prerelease label and produce stable package versions. -->
