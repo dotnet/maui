@@ -9,6 +9,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <IsBindingProject>true</IsBindingProject>
   </PropertyGroup>
   <PropertyGroup>
     <!-- NuGet package information -->
@@ -38,9 +39,15 @@
   <ItemGroup Condition=" $(TargetFramework.Contains('-android')) ">
   </ItemGroup>
   <ItemGroup Condition=" $(TargetFramework.Contains('-ios')) or $(TargetFramework.Contains('-maccatalyst')) or $(TargetFramework.Contains('-macos')) ">
+    <XcodeProject Include="..\AppleNative\EssentialsAI\EssentialsAI.xcodeproj">
+      <SchemeName>EssentialsAI</SchemeName>
+    </XcodeProject>
+    <ObjcBindingApiDefinition Include="..\AppleNative\ApiDefinitions.cs" />
+    <ObjcBindingCoreSource Include="..\AppleNative\StructsAndEnums.cs" />
   </ItemGroup>
   <ItemGroup Condition=" $(TargetFramework.Contains('-windows')) ">
   </ItemGroup>
   <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
+  <Import Project="$(MauiSrcDirectory)AppleBindings.targets" />
   <Import Project="$(MauiSrcDirectory)Workload\Shared\LibraryPacks.targets" />
 </Project>
