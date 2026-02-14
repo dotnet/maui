@@ -158,16 +158,20 @@ internal class SetterValueProvider : IKnownMarkupValueProvider
 
 	/// <summary>
 	/// Shared helper to get the value node from a Setter element.
-	/// Checks properties first, then collection items.
+	/// Checks properties first (matching any namespace), then collection items.
 	/// </summary>
 	private static INode? GetValueNode(ElementNode node)
 	{
-		INode? valueNode = null;
-		if (!node.Properties.TryGetValue(new XmlName("", "Value"), out valueNode) &&
-			!node.Properties.TryGetValue(new XmlName(XamlParser.MauiUri, "Value"), out valueNode) &&
-			node.CollectionItems.Count == 1)
-			valueNode = node.CollectionItems[0];
+		// Look for the "Value" property regardless of namespace URI
+		foreach (var prop in node.Properties)
+		{
+			if (prop.Key.LocalName == "Value")
+				return prop.Value;
+		}
 
-		return valueNode;
+		if (node.CollectionItems.Count == 1)
+			return node.CollectionItems[0];
+
+		return null;
 	}
 }
