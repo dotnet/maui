@@ -515,8 +515,8 @@ if ($DryRun) {
                     git checkout $savedHead -- $finalizeScriptPath 2>&1 | Out-Null
                 }
                 if (Test-Path $finalizeScriptPath) {
-                    Write-Host "💬 Running post-pr-finalize-comment.ps1 directly..." -ForegroundColor Yellow
-                    & $finalizeScriptPath -PRNumber $PRNumber
+                    Write-Host "💬 Running post-pr-finalize-comment.ps1 directly (unified mode)..." -ForegroundColor Yellow
+                    & $finalizeScriptPath -PRNumber $PRNumber -Unified
                     
                     $finalizeCommentExit = $LASTEXITCODE
                     if ($finalizeCommentExit -eq 0) {
