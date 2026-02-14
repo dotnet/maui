@@ -66,6 +66,43 @@ Labels are parsed from `content.md` files:
 
 ---
 
+## Agent Labels (Automated by Review-PR.ps1)
+
+After all phases complete, `Review-PR.ps1` automatically applies GitHub labels based on phase outcomes. The agent does NOT need to apply labels — just write accurate `content.md` files.
+
+### Label Categories
+
+**Outcome labels** (mutually exclusive — exactly one per PR):
+| Label | When Applied |
+|-------|-------------|
+| `s/agent-approved` | Report recommends APPROVE |
+| `s/agent-changes-requested` | Report recommends REQUEST CHANGES |
+| `s/agent-review-incomplete` | Agent didn't complete all phases |
+
+**Signal labels** (additive — multiple can coexist):
+| Label | When Applied |
+|-------|-------------|
+| `s/agent-gate-passed` | Gate phase passes |
+| `s/agent-gate-failed` | Gate phase fails |
+| `s/agent-fix-win` | Agent found a better alternative fix than the PR |
+| `s/agent-fix-pr-picked` | PR's fix is the best — agent couldn't beat it |
+
+**Tracking label** (always applied):
+| Label | When Applied |
+|-------|-------------|
+| `s/agent-reviewed` | Every completed agent run |
+
+### How Labels Are Determined
+
+Labels are parsed from `content.md` files:
+- **Outcome**: from `report/content.md` — looks for `Final Recommendation: APPROVE` or `REQUEST CHANGES`
+- **Gate**: from `gate/content.md` — looks for `PASSED` or `FAILED`
+- **Fix**: from `try-fix/content.md` — looks for alternative selected (win = agent beat PR) vs `Selected Fix: PR` (lose = PR was best)
+
+**Agent responsibility**: Write clear, parseable `content.md` with standard markers (`✅ PASSED`, `❌ FAILED`, `Selected Fix: PR`, `Final Recommendation: APPROVE`).
+
+---
+
 ## No Direct Git Commands
 
 **Never run git commands that change branch or file state.**

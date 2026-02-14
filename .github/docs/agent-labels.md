@@ -29,7 +29,7 @@ Additive — **multiple** can coexist on a single PR.
 | `s/agent-gate-passed` | 🟢 `#4CAF50` | AI verified tests catch the bug (fail without fix, pass with fix) | Gate phase passes |
 | `s/agent-gate-failed` | 🟠 `#FF9800` | AI could not verify tests catch the bug | Gate phase fails |
 | `s/agent-fix-win` | 🟢 `#66BB6A` | AI found a better alternative fix than the PR | Fix phase: alternative selected over PR's fix |
-| `s/agent-fix-lose` | 🟠 `#FF7043` | AI could not beat the PR fix — PR is the best among all candidates | Fix phase: PR selected as best after comparison |
+| `s/agent-fix-pr-picked` | 🟠 `#FF7043` | AI could not beat the PR fix — PR is the best among all candidates | Fix phase: PR selected as best after comparison |
 
 Gate labels (`gate-passed`/`gate-failed`) are mutually exclusive with each other. Fix labels (`fix-win`/`fix-lose`) are mutually exclusive with each other.
 
@@ -82,7 +82,7 @@ The `Parse-PhaseOutcomes` function in `Update-AgentLabels.ps1` reads `content.md
 | `gate/content.md` | `**Result:** ✅ PASSED` | `s/agent-gate-passed` |
 | `gate/content.md` | `**Result:** ❌ FAILED` | `s/agent-gate-failed` |
 | `try-fix/content.md` | `**Selected Fix:** Candidate ...` | `s/agent-fix-win` |
-| `try-fix/content.md` | `**Selected Fix:** PR ...` | `s/agent-fix-lose` |
+| `try-fix/content.md` | `**Selected Fix:** PR ...` | `s/agent-fix-pr-picked` |
 | `report/content.md` | `Final Recommendation: APPROVE` | `s/agent-approved` |
 | `report/content.md` | `Final Recommendation: REQUEST CHANGES` | `s/agent-changes-requested` |
 | *(missing report)* | No report file exists | `s/agent-review-incomplete` |
@@ -104,7 +104,7 @@ All labels use the `s/agent-*` prefix, making them easy to filter on GitHub.
 is:pr label:s/agent-approved
 
 # PRs where agent found a better fix
-is:pr label:s/agent-fix-lose
+is:pr label:s/agent-fix-pr-picked
 
 # PRs where agent found better fix AND author implemented it
 is:pr label:s/agent-changes-requested label:s/agent-fix-implemented
@@ -126,7 +126,7 @@ is:pr label:s/agent-reviewed
 | Total agent reviews | `is:pr label:s/agent-reviewed` |
 | Approval rate | Compare `label:s/agent-approved` vs `label:s/agent-changes-requested` counts |
 | Gate pass rate | Compare `label:s/agent-gate-passed` vs `label:s/agent-gate-failed` counts |
-| Fix win rate | Compare `label:s/agent-fix-win` vs `label:s/agent-fix-lose` counts |
+| Fix win rate | Compare `label:s/agent-fix-win` vs `label:s/agent-fix-pr-picked` counts |
 | Agent adoption rate | `label:s/agent-fix-implemented` / `label:s/agent-changes-requested` |
 | Incomplete review rate | `label:s/agent-review-incomplete` / `label:s/agent-reviewed` |
 

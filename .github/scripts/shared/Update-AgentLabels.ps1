@@ -9,7 +9,7 @@
 
     Label categories:
     - Outcome labels (mutually exclusive): agent-approved, agent-changes-requested, agent-review-incomplete
-    - Signal labels (additive): agent-gate-passed, agent-gate-failed, agent-fix-win, agent-fix-lose
+    - Signal labels (additive): agent-gate-passed, agent-gate-failed, agent-fix-win, agent-fix-pr-picked
     - Manual labels (applied by maintainers): agent-fix-implemented
     - Tracking label: agent-reviewed (always applied on completed run)
 
@@ -32,7 +32,7 @@ $script:SignalLabels = @{
     's/agent-gate-passed' = @{ Description = 'AI verified tests catch the bug (fail without fix, pass with fix)'; Color = '4CAF50' }
     's/agent-gate-failed' = @{ Description = 'AI could not verify tests catch the bug'; Color = 'FF9800' }
     's/agent-fix-win'     = @{ Description = 'AI found a better alternative fix than the PR'; Color = '66BB6A' }
-    's/agent-fix-lose'    = @{ Description = 'AI could not beat the PR fix - PR is the best among all candidates'; Color = 'FF7043' }
+    's/agent-fix-pr-picked'    = @{ Description = 'AI could not beat the PR fix - PR is the best among all candidates'; Color = 'FF7043' }
 }
 
 $script:ManualLabels = @{
@@ -265,13 +265,13 @@ function Update-AgentSignalLabels {
             Add-Label -PRNumber $PRNumber -LabelName $label -Owner $Owner -Repo $Repo | Out-Null
             Write-Host "  ✅ Signal: $label" -ForegroundColor Green
         }
-        if ($currentLabels -contains 's/agent-fix-lose') {
-            Remove-Label -PRNumber $PRNumber -LabelName 's/agent-fix-lose' -Owner $Owner -Repo $Repo | Out-Null
-            Write-Host "  🗑️  Removed stale: s/agent-fix-lose" -ForegroundColor Yellow
+        if ($currentLabels -contains 's/agent-fix-pr-picked') {
+            Remove-Label -PRNumber $PRNumber -LabelName 's/agent-fix-pr-picked' -Owner $Owner -Repo $Repo | Out-Null
+            Write-Host "  🗑️  Removed stale: s/agent-fix-pr-picked" -ForegroundColor Yellow
         }
     }
     elseif ($FixResult -eq 'lose') {
-        $label = 's/agent-fix-lose'
+        $label = 's/agent-fix-pr-picked'
         $def = $script:SignalLabels[$label]
         Ensure-LabelExists -LabelName $label -Description $def.Description -Color $def.Color -Owner $Owner -Repo $Repo
 
