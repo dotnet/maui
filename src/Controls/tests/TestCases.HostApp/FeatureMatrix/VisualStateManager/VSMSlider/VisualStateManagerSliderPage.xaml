@@ -77,7 +77,7 @@
                 <!-- State output label -->
                 <Label x:Name="SliderState"
                        AutomationId="SliderState"
-                       Text="State: Unfocused | Value: 50"
+                       Text="State: Normal | Value: 50"
                        FontSize="14"
                        TextColor="#111827"/>
 
