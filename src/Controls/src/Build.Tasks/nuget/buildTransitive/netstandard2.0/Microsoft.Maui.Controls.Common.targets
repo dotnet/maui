@@ -31,5 +31,7 @@
 		<CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="LineInfo" />
     <CompilerVisibleProperty Include="Configuration" />
     <CompilerVisibleProperty Include="EnablePreviewFeatures" />
+    <CompilerVisibleProperty Include="MauiXamlLazyRD" />
+		<CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="LazyRD" />
 	</ItemGroup>
 </Project>

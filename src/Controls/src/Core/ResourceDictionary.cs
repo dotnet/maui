@@ -102,7 +102,7 @@ namespace Microsoft.Maui.Controls
 		{
 			_source = source;
 			_mergedInstance = sourceInstance;
-			OnValuesChanged(_mergedInstance.ToArray());
+			OnKeysChanged(_mergedInstance.MergedResourcesKeys);
 		}
 
 		ObservableCollection<ResourceDictionary> _mergedDictionaries;
@@ -159,7 +159,7 @@ namespace Microsoft.Maui.Controls
 					var rd = (ResourceDictionary)item;
 					_collectionTrack.Add(rd);
 					rd.ValuesChanged += Item_ValuesChanged;
-					OnValuesChanged(rd.ToArray());
+					OnKeysChanged(rd.MergedResourcesKeys);
 				}
 			}
 
@@ -177,13 +177,13 @@ namespace Microsoft.Maui.Controls
 
 		void Item_ValuesChanged(object sender, ResourcesChangedEventArgs e)
 		{
-			OnValuesChanged(e.Values.ToArray());
+			OnKeysChanged(e.Keys);
 		}
 
 		void ICollection<KeyValuePair<string, object>>.Add(KeyValuePair<string, object> item)
 		{
 			((ICollection<KeyValuePair<string, object>>)_innerDictionary).Add(item);
-			OnValuesChanged(item);
+			OnKeysChanged(new[] { item.Key });
 		}
 
 		/// <summary>Removes all items from the dictionary.</summary>
@@ -246,8 +246,8 @@ namespace Microsoft.Maui.Controls
 		{
 			get
 			{
-				if (_innerDictionary.ContainsKey(index))
-					return _innerDictionary[index];
+				if (_innerDictionary.TryGetValue(index, out var value))
+					return ResolveValue(value);
 				if (_mergedInstance != null && _mergedInstance.ContainsKey(index))
 					return _mergedInstance[index];
 				if (_mergedDictionaries != null)
@@ -255,7 +255,7 @@ namespace Microsoft.Maui.Controls
 					var dictionaries = (ObservableCollection<ResourceDictionary>)MergedDictionaries;
 					for (int i = dictionaries.Count - 1; i >= 0; i--)
 					{
-						if (dictionaries[i].TryGetValue(index, out var value))
+						if (dictionaries[i].TryGetValue(index, out value))
 						{
 							return value;
 						}
@@ -297,11 +297,13 @@ namespace Microsoft.Maui.Controls
 		{
 			get
 			{
+				// Resolve lazy values when enumerating
+				var resolvedValues = _innerDictionary.Values.Select(ResolveValue);
 				if (_mergedInstance is null)
-					return _innerDictionary.Values;
+					return new ReadOnlyCollection<object>(resolvedValues.ToList());
 				if (_innerDictionary.Count == 0)
 					return _mergedInstance.Values;
-				return new ReadOnlyCollection<object>(_innerDictionary.Values.Concat(_mergedInstance.Values).ToList());
+				return new ReadOnlyCollection<object>(resolvedValues.Concat(_mergedInstance.Values).ToList());
 			}
 		}
 
@@ -314,7 +316,9 @@ namespace Microsoft.Maui.Controls
 		/// <returns>An enumerator for the dictionary.</returns>
 		public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
 		{
-			return _innerDictionary.GetEnumerator();
+			// Resolve lazy values when enumerating
+			foreach (var kvp in _innerDictionary)
+				yield return new KeyValuePair<string, object>(kvp.Key, ResolveValue(kvp.Value));
 		}
 
 		internal IEnumerable<KeyValuePair<string, object>> MergedResources
@@ -334,8 +338,36 @@ namespace Microsoft.Maui.Controls
 				if (_mergedInstance != null)
 					foreach (var r in _mergedInstance.MergedResources)
 						yield return r;
+				// Resolve lazy values when enumerating
 				foreach (var r in _innerDictionary)
-					yield return r;
+					yield return new KeyValuePair<string, object>(r.Key, ResolveValue(r.Value));
+			}
+		}
+
+		/// <summary>
+		/// Enumerates all resource keys without resolving lazy values.
+		/// Used for resource change propagation where values are looked up on-demand.
+		/// </summary>
+		internal IEnumerable<string> MergedResourcesKeys
+		{
+			get
+			{
+				if (_mergedDictionaries != null)
+				{
+					for (int i = _mergedDictionaries.Count - 1; i >= 0; i--)
+					{
+						ResourceDictionary r = _mergedDictionaries[i];
+						foreach (var key in r.MergedResourcesKeys)
+							yield return key;
+					}
+				}
+
+				if (_mergedInstance != null)
+					foreach (var key in _mergedInstance.MergedResourcesKeys)
+						yield return key;
+				
+				foreach (var key in _innerDictionary.Keys)
+					yield return key;
 			}
 		}
 
@@ -349,9 +381,16 @@ namespace Microsoft.Maui.Controls
 		internal bool TryGetValueAndSource(string key, out object value, out ResourceDictionary source)
 		{
 			source = this;
-			return _innerDictionary.TryGetValue(key, out value)
-				|| (_mergedInstance != null && _mergedInstance.TryGetValueAndSource(key, out value, out source))
-				|| (_mergedDictionaries != null && TryGetMergedDictionaryValue(key, out value, out source));
+			if (_innerDictionary.TryGetValue(key, out value))
+			{
+				value = ResolveValue(value);
+				return true;
+			}
+			if (_mergedInstance != null && _mergedInstance.TryGetValueAndSource(key, out value, out source))
+				return true;
+			if (_mergedDictionaries != null && TryGetMergedDictionaryValue(key, out value, out source))
+				return true;
+			return false;
 		}
 
 		bool TryGetMergedDictionaryValue(string key, out object value, out ResourceDictionary source)
@@ -413,26 +452,170 @@ namespace Microsoft.Maui.Controls
 
 		void OnValueChanged(string key, object value)
 		{
-			OnValuesChanged(new KeyValuePair<string, object>(key, value));
+			OnKeysChanged(new[] { key });
 		}
 
-		void OnValuesChanged(params KeyValuePair<string, object>[] values)
+		void OnKeysChanged(IEnumerable<string> keys)
 		{
-			if (values == null || values.Length == 0)
+			if (keys == null)
 				return;
-			ValuesChanged?.Invoke(this, new ResourcesChangedEventArgs(values));
+			ValuesChanged?.Invoke(this, new ResourcesChangedEventArgs(keys, ResolveKey));
 		}
+
+		object ResolveKey(string key) => TryGetValue(key, out var value) ? value : null;
 
 		internal void Reload()
 		{
-			foreach (var mr in MergedResources)
-				OnValuesChanged(mr);
+			OnKeysChanged(MergedResourcesKeys);
 		}
 
 		event EventHandler<ResourcesChangedEventArgs> ValuesChanged;
 
 		//only used for unit testing
 		internal static void ClearCache() => s_instances = new ConditionalWeakTable<Type, ResourceDictionary>();
+
+		/// <summary>
+		/// Adds a resource factory to the dictionary. The factory is invoked lazily when the resource is first accessed.
+		/// </summary>
+		/// <param name="key">The resource key.</param>
+		/// <param name="factory">A factory function that creates the resource.</param>
+		/// <param name="shared">If true (default), the factory result is cached. If false, the factory is invoked on each access.</param>
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void AddFactory(string key, Func<object> factory, bool shared = true)
+		{
+			if (ContainsKey(key))
+				throw new ArgumentException($"A resource with the key '{key}' is already present in the ResourceDictionary.");
+			var lazyResource = new LazyResource(factory, shared);
+			_innerDictionary.Add(key, lazyResource);
+			// Note: We don't fire OnValueChanged here since the value hasn't been resolved yet.
+			// The event will contain the LazyResource wrapper, which is internal behavior.
+			OnValueChanged(key, lazyResource);
+		}
+
+		/// <summary>
+		/// Adds an implicit style factory to the dictionary. The factory is invoked lazily when the style is first accessed.
+		/// </summary>
+		/// <param name="targetType">The target type for the implicit style. The type's full name is used as the key.</param>
+		/// <param name="factory">A factory function that creates the style.</param>
+		/// <param name="shared">If true (default), the factory result is cached. If false, the factory is invoked on each access.</param>
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void AddFactory(Type targetType, Func<Style> factory, bool shared = true)
+		{
+			AddFactory(targetType.FullName, factory, shared);
+		}
+
+		/// <summary>
+		/// Internal wrapper for lazy resource factories.
+		/// </summary>
+		internal sealed class LazyResource
+		{
+			private readonly Func<object> _factory;
+			private readonly bool _shared;
+			private object _cachedValue;
+			private bool _hasValue;
+			private int _invocationCount;
+
+			public LazyResource(Func<object> factory, bool shared)
+			{
+				_factory = factory ?? throw new ArgumentNullException(nameof(factory));
+				_shared = shared;
+			}
+
+			public object GetValue()
+			{
+				_invocationCount++;
+				
+				if (!_shared)
+					return _factory();
+
+				if (!_hasValue)
+				{
+					_cachedValue = _factory();
+					_hasValue = true;
+				}
+				return _cachedValue;
+			}
+
+			/// <summary>
+			/// Gets whether this is a shared (cached) resource.
+			/// </summary>
+			public bool Shared => _shared;
+
+#if DEBUG
+			/// <summary>
+			/// Gets whether the value has been resolved (factory was invoked at least once for shared resources).
+			/// </summary>
+			internal bool IsResolved => _hasValue;
+
+			/// <summary>
+			/// Gets the number of times GetValue was called.
+			/// </summary>
+			internal int InvocationCount => _invocationCount;
+#endif
+		}
+
+		/// <summary>
+		/// Resolves a value, invoking the factory if it's a LazyResource.
+		/// </summary>
+		static object ResolveValue(object value)
+		{
+			if (value is LazyResource lazy)
+				return lazy.GetValue();
+			return value;
+		}
+
+#if DEBUG
+		/// <summary>
+		/// Gets diagnostic information about all resources in this dictionary.
+		/// For internal/testing use only.
+		/// </summary>
+		internal ResourceDiagnostics GetDiagnostics()
+		{
+			var diag = new ResourceDiagnostics();
+			
+			foreach (var kvp in _innerDictionary)
+			{
+				diag.TotalCount++;
+				
+				if (kvp.Value is LazyResource lazy)
+				{
+					diag.LazyCount++;
+					if (lazy.IsResolved)
+					{
+						diag.ResolvedLazyCount++;
+						diag.ResolvedKeys.Add(kvp.Key);
+					}
+					else
+					{
+						diag.UnresolvedKeys.Add(kvp.Key);
+					}
+					diag.InvocationCounts[kvp.Key] = lazy.InvocationCount;
+				}
+				else
+				{
+					diag.EagerCount++;
+					diag.EagerKeys.Add(kvp.Key);
+				}
+			}
+			
+			return diag;
+		}
+
+		/// <summary>
+		/// Diagnostic information about resources in a ResourceDictionary.
+		/// </summary>
+		internal class ResourceDiagnostics
+		{
+			public int TotalCount { get; set; }
+			public int LazyCount { get; set; }
+			public int EagerCount { get; set; }
+			public int ResolvedLazyCount { get; set; }
+			public List<string> EagerKeys { get; } = new();
+			public List<string> ResolvedKeys { get; } = new();
+			public List<string> UnresolvedKeys { get; } = new();
+			public Dictionary<string, int> InvocationCounts { get; } = new();
+		}
+#endif
 
 		[Xaml.ProvideCompiled("Microsoft.Maui.Controls.XamlC.RDSourceTypeConverter")]
 		public class RDSourceTypeConverter : TypeConverter, IExtendedTypeConverter

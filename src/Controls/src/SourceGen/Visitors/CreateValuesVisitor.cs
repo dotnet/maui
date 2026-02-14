@@ -20,7 +20,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 	public bool StopOnDataTemplate => true;
 	public bool StopOnResourceDictionary => false;
 	public bool VisitNodeOnDataTemplate => false;
-	public bool SkipChildren(INode node, INode parentNode) => false;
+	public bool SkipChildren(INode node, INode parentNode) => node is ElementNode en && en.IsLazyResource(parentNode, Context);
 	public bool IsResourceDictionary(ElementNode node) => node.IsResourceDictionary(Context);
 
 	public void Visit(ValueNode node, INode parentNode)
@@ -350,6 +350,10 @@ class CreateValuesVisitor : IXamlNodeVisitor
 
 	public void Visit(ElementNode node, INode parentNode)
 	{
+		// Skip lazy RD resources - they will be created inside lambda in SetPropertiesVisitor
+		if (node.IsLazyResource(parentNode, Context))
+			return;
+
 		CreateValue(node, Writer, Context.Variables, Context.Compilation, Context.XmlnsCache, Context);
 	}
 

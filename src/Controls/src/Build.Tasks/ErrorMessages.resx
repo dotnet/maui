@@ -271,4 +271,7 @@
   <data name="StaticResourceSyntax" xml:space="preserve">
     <value>A key is required in {StaticResource}.</value>
   </data>  
+  <data name="XSharedNotSupported" xml:space="preserve">
+    <value>x:Shared is only supported with SourceGen inflator. Remove the attribute or switch to SourceGen.</value>
+  </data>
 </root>
