@@ -2,7 +2,15 @@ namespace Microsoft.Maui.IntegrationTests;
 
 /// <summary>
 /// Integration tests that verify .NET MAUI builds successfully with popular third-party toolkit packages.
-/// These tests help catch regressions where MAUI changes break compatibility with widely-used community packages.
+/// 
+/// These tests help catch regressions where MAUI changes break compatibility with widely-used community packages
+/// such as CommunityToolkit.Maui and Syncfusion.Maui.Toolkit. By building template projects with these packages,
+/// we ensure that MAUI's build system, MSBuild tasks, and SDK remain compatible with the broader MAUI ecosystem.
+///
+/// Tests follow the same pattern as SampleTests.cs - creating projects from templates, adding package references,
+/// and building to ensure no breaking changes have been introduced.
+///
+/// See also: https://github.com/dotnet/maui/pull/34047
 /// </summary>
 [Trait("Category", "Build")]
 public class ToolkitTests : BaseTemplateTests
