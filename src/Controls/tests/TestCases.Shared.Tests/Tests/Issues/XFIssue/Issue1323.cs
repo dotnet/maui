@@ -20,6 +20,10 @@ public class Issue1323 : _IssuesUITest
 	[Category(UITestCategories.TabbedPage)]
 	public void Issue1323Test()
 	{
+		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+		{
+			Assert.Ignore("Ignored due to a bug issue in iOS 26"); // Issue Link: https://github.com/dotnet/maui/issues/32125
+		}
 		App.WaitForTabElement(Tab1);
 		App.WaitForTabElement(Tab2);
 		VerifyScreenshot();
