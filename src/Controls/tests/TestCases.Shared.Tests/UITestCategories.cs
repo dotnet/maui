@@ -47,7 +47,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		public const string WebView = "WebView";
 		public const string Window = "Window";
 		public const string Maps = "Maps";
-		public const string MediaPicker = "MediaPicker";
 		public const string InputTransparent = "InputTransparent";
 		public const string IsEnabled = "IsEnabled";
 		public const string IsVisible = "IsVisible";
