@@ -31,7 +31,10 @@ namespace Maui.Controls.Sample.Issues
 				{
 					// Check if the returned FileResult is properly oriented
 					using var stream = await photo.OpenReadAsync();
-					var imageSource = ImageSource.FromStream(() => stream);
+					var memoryStream = new MemoryStream();
+					await stream.CopyToAsync(memoryStream);
+					memoryStream.Position = 0;
+					var imageSource = ImageSource.FromStream(() => memoryStream);
 					PickedImage.Source = imageSource;
 					ResultLabel.Text = $"Photo picked: {photo.FileName}";
 				}
@@ -65,7 +68,10 @@ namespace Maui.Controls.Sample.Issues
 				{
 					var photo = photos[0];
 					using var stream = await photo.OpenReadAsync();
-					var imageSource = ImageSource.FromStream(() => stream);
+					var memoryStream = new MemoryStream();
+					await stream.CopyToAsync(memoryStream);
+					memoryStream.Position = 0;
+					var imageSource = ImageSource.FromStream(() => memoryStream);
 					PickedImage.Source = imageSource;
 					ResultLabel.Text = $"Photos picked: {photos.Count} - First: {photo.FileName}";
 				}
@@ -103,7 +109,10 @@ namespace Maui.Controls.Sample.Issues
 				if (photo != null)
 				{
 					using var stream = await photo.OpenReadAsync();
-					var imageSource = ImageSource.FromStream(() => stream);
+					var memoryStream = new MemoryStream();
+					await stream.CopyToAsync(memoryStream);
+					memoryStream.Position = 0;
+					var imageSource = ImageSource.FromStream(() => memoryStream);
 					PickedImage.Source = imageSource;
 					ResultLabel.Text = $"Photo captured: {photo.FileName}";
 				}
