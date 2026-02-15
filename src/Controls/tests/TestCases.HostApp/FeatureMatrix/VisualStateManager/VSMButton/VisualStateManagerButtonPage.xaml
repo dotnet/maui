@@ -3,118 +3,119 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.VisualStateManagerButtonPage"
              Title="VisualStateManagerButtonPage">
-    <ContentPage.Resources>
-        <!-- Button VSM demo -->
-        <Style TargetType="Button"
-               x:Key="VsmButtonStyle">
-            <Setter Property="Padding"
-                    Value="14,10"/>
-            <Setter Property="BackgroundColor"
-                    Value="#4A4A4A"/>
-            <Setter Property="TextColor"
-                    Value="White"/>
-            <Setter Property="CornerRadius"
-                    Value="8"/>
-            <Setter Property="VisualStateManager.VisualStateGroups">
-                <VisualStateGroupList>
-                    <VisualStateGroup x:Name="CommonStates">
-                        <VisualState x:Name="Normal">
-                            <VisualState.Setters>
-                                <Setter Property="BackgroundColor"
-                                        Value="#4A4A4A"/>
-                                <Setter Property="TextColor"
-                                        Value="White"/>
-                                <Setter Property="Opacity"
-                                        Value="1"/>
-                                <Setter Property="Scale"
-                                        Value="1"/>
-                                <Setter Property="TranslationY"
-                                        Value="0"/>
-                            </VisualState.Setters>
-                        </VisualState>
-                        <VisualState x:Name="Pressed">
-                            <VisualState.Setters>
-                                <Setter Property="BackgroundColor"
-                                        Value="#FFE73C3C"/>
-                                <Setter Property="Scale"
-                                        Value="0.98"/>
-                                <Setter Property="TranslationY"
-                                        Value="1"/>
-                            </VisualState.Setters>
-                        </VisualState>
-                        <VisualState x:Name="PointerOver">
-                            <VisualState.Setters>
-                                <Setter Property="BackgroundColor"
-                                        Value="#60A5FA"/>
-                                <Setter Property="Scale"
-                                        Value="1.03"/>
-                            </VisualState.Setters>
-                        </VisualState>
-                        <VisualState x:Name="Disabled">
-                            <VisualState.Setters>
-                                <Setter Property="BackgroundColor"
-                                        Value="#BDBDBD"/>
-                                <Setter Property="TextColor"
-                                        Value="#6B7280"/>
-                                <Setter Property="Opacity"
-                                        Value="0.6"/>
-                            </VisualState.Setters>
-                        </VisualState>
-                    </VisualStateGroup>
-                                        <VisualStateGroup x:Name="FocusStates">
-                                                <VisualState x:Name="Focused">
+        <ContentPage.Resources>
+                <!-- Button VSM demo -->
+                <Style TargetType="Button"
+                       x:Key="VsmButtonStyle">
+                        <Setter Property="Padding"
+                                Value="14,10"/>
+                        <Setter Property="BackgroundColor"
+                                Value="#4A4A4A"/>
+                        <Setter Property="TextColor"
+                                Value="White"/>
+                        <Setter Property="CornerRadius"
+                                Value="8"/>
+                        <Setter Property="VisualStateManager.VisualStateGroups">
+                                <VisualStateGroupList>
+                                        <VisualStateGroup x:Name="CommonStates">
+                                                <VisualState x:Name="Normal">
                                                         <VisualState.Setters>
-                                                                <Setter Property="Scale" Value="1.04" />
+                                                                <Setter Property="BackgroundColor"
+                                                                        Value="Blue"/>
+                                                                <Setter Property="TextColor"
+                                                                        Value="White"/>
+                                                                <Setter Property="Opacity"
+                                                                        Value="1"/>
+                                                                <Setter Property="Scale"
+                                                                        Value="1"/>
+                                                                <Setter Property="TranslationY"
+                                                                        Value="0"/>
                                                         </VisualState.Setters>
                                                 </VisualState>
-                                                <VisualState x:Name="Unfocused">
+                                                <VisualState x:Name="Pressed">
                                                         <VisualState.Setters>
-                                                                <Setter Property="Scale" Value="1" />
+                                                                <Setter Property="BackgroundColor"
+                                                                        Value="Red"/>
+                                                                <Setter Property="TextColor"
+                                                                        Value="White"/>
+                                                                <Setter Property="Scale"
+                                                                        Value="0.98"/>
+                                                                <Setter Property="TranslationY"
+                                                                        Value="1"/>
+                                                        </VisualState.Setters>
+                                                </VisualState>
+                                                <VisualState x:Name="PointerOver">
+                                                        <VisualState.Setters>
+                                                                <Setter Property="BackgroundColor"
+                                                                        Value="#FFE1770C"/>
+                                                                <Setter Property="TextColor"
+                                                                        Value="Black"/>
+                                                                <Setter Property="Scale"
+                                                                        Value="1.03"/>
+                                                        </VisualState.Setters>
+                                                </VisualState>
+                                                <VisualState x:Name="Disabled">
+                                                        <VisualState.Setters>
+                                                                <Setter Property="BackgroundColor"
+                                                                        Value="#FFB4B3B3"/>
+                                                                <Setter Property="TextColor"
+                                                                        Value="#FF65676D"/>
+                                                                <Setter Property="Opacity"
+                                                                        Value="0.6"/>
+                                                        </VisualState.Setters>
+                                                </VisualState>
+                                                <VisualState x:Name="Focused">
+                                                        <VisualState.Setters>
+                                                                <Setter Property="Scale"
+                                                                        Value="1.04"/>
+                                                                <Setter Property="BackgroundColor"
+                                                                        Value="Green"/>
+                                                                <Setter Property="TextColor"
+                                                                        Value="White"/>
                                                         </VisualState.Setters>
                                                 </VisualState>
                                         </VisualStateGroup>
-                </VisualStateGroupList>
-            </Setter>
-        </Style>
-    </ContentPage.Resources>
+                                </VisualStateGroupList>
+                        </Setter>
+                </Style>
+        </ContentPage.Resources>
 
-    <VerticalStackLayout Padding="20"
-                         Spacing="16">
-        <Label Text="VisualStateManager Feature Matrix"
-               FontSize="20"/>
+        <VerticalStackLayout Padding="20"
+                             Spacing="16">
+                <Label Text="VisualStateManager Feature Matrix"
+                       FontSize="20"/>
 
-        <VerticalStackLayout Padding="12"
-                             Spacing="8">
-            <Label Text="Button States (Normal / Pressed / PointerOver / Disabled)"
-                   FontAttributes="Bold"/>
-            <Button x:Name="DemoButton"
-                    AutomationId="DemoButton"
-                    Text="Press me"
-                    Style="{StaticResource VsmButtonStyle}"
-                    Pressed="OnDemoButtonPressed"
-                    Released="OnDemoButtonReleased"
-                    Clicked="OnDemoButtonClicked"
-                    Focused="OnButtonFocused"
-                    Unfocused="OnButtonUnfocused">
-                <Button.GestureRecognizers>
-                    <PointerGestureRecognizer PointerEntered="OnDemoButtonPointerEntered"
-                                              PointerExited="OnDemoButtonPointerExited"/>
-                </Button.GestureRecognizers>
-            </Button>
+                <VerticalStackLayout Padding="12"
+                                     Spacing="8">
+                        <Label Text="Button States (Normal / Pressed / PointerOver / Disabled)"
+                               FontAttributes="Bold"/>
+                        <Button x:Name="DemoButton"
+                                AutomationId="DemoButton"
+                                Text="Press me"
+                                Style="{StaticResource VsmButtonStyle}"
+                                Pressed="OnDemoButtonPressed"
+                                Released="OnDemoButtonReleased"
+                                Focused="OnButtonFocused">
+                                <Button.GestureRecognizers>
+                                        <PointerGestureRecognizer PointerEntered="OnDemoButtonPointerEntered"
+                                                                  PointerExited="OnDemoButtonPointerExited"/>
+                                </Button.GestureRecognizers>
+                        </Button>
 
-            <Label x:Name="StateLabel"
-                   AutomationId="ButtonStateLabel"
-                   Text="State: Normal"
-                   FontSize="14"
-                   TextColor="#111827"/>
-            <HorizontalStackLayout Spacing="10">
-                <Button x:Name="ButtonDisableButton" Text="Disable"
-                        AutomationId="ButtonDisable"
-                        Clicked="OnToggleButtonDisabled"/>
-                <Button Text="Reset"
-                        AutomationId="ButtonReset"
-                        Clicked="OnResetButtonState"/>
-            </HorizontalStackLayout>
+                        <Label x:Name="StateLabel"
+                               AutomationId="ButtonStateLabel"
+                               Text="State: Normal"
+                               FontSize="14"
+                               TextColor="#111827"/>
+                        <HorizontalStackLayout Spacing="10">
+                                <Button x:Name="ButtonDisableButton"
+                                        Text="Disable"
+                                        AutomationId="ButtonDisable"
+                                        Clicked="OnToggleButtonDisabled"/>
+                                <Button Text="Reset"
+                                        AutomationId="ButtonReset"
+                                        Clicked="OnResetButtonState"/>
+                        </HorizontalStackLayout>
+                </VerticalStackLayout>
         </VerticalStackLayout>
-    </VerticalStackLayout>
 </ContentPage>
