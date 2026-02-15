@@ -14,7 +14,6 @@ public partial class VisualStateManagerSwitchPage : ContentPage
 			SwitchState.Text = "State: Disabled";
 			return;
 		}
-
 		var state = e.Value ? "On" : "Off";
 		VisualStateManager.GoToState(VSMSwitch, state);
 		SwitchState.Text = $"State: {state}";
@@ -42,7 +41,7 @@ public partial class VisualStateManagerSwitchPage : ContentPage
 		VSMSwitch.IsEnabled = true;
 		VSMSwitch.IsToggled = false;
 		SwitchDisableButton.Text = "Disable";
-		VisualStateManager.GoToState(VSMSwitch, "Off");
-		SwitchState.Text = "State: Off";
+		VisualStateManager.GoToState(VSMSwitch, "Normal");
+		SwitchState.Text = "State: Normal";
 	}
 }

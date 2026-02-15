@@ -7,33 +7,39 @@
         <!-- Switch VSM demo -->
         <Style TargetType="Switch" x:Key="VsmSwitchStyle">
             <Setter Property="ThumbColor" Value="#FFFFFF" />
+            <Setter Property="OnColor" Value="#FF858688" />
             <Setter Property="VisualStateManager.VisualStateGroups">
                 <VisualStateGroupList>
                     <VisualStateGroup x:Name="CommonStates">
                         <VisualState x:Name="Normal">
                             <VisualState.Setters>
                                 <Setter Property="Opacity" Value="1" />
-                                <Setter Property="Scale" Value="1" />
-                                <Setter Property="ThumbColor" Value="#FFFFFF" />
+                                <Setter Property="Scale" Value="1.05" />
+                                <Setter Property="ThumbColor" Value="#1141a7" />
+                                <Setter Property="OnColor" Value="#6295ec" />
                             </VisualState.Setters>
                         </VisualState>
                         <VisualState x:Name="Disabled">
                             <VisualState.Setters>
                                 <Setter Property="Opacity" Value="0.6" />
+                                <Setter Property="ThumbColor" Value="#FF707172" />
+                                <Setter Property="OnColor" Value="#9CA3AF" />
                             </VisualState.Setters>
                         </VisualState>
                     </VisualStateGroup>
                     <VisualStateGroup x:Name="OnOffStates">
                         <VisualState x:Name="On">
                             <VisualState.Setters>
-                                <Setter Property="ThumbColor" Value="#22C55E" />
+                                <Setter Property="ThumbColor" Value="#0f5027" />
+                                <Setter Property="OnColor" Value="#86EFAC" />
                                 <Setter Property="Scale" Value="1.05" />
                             </VisualState.Setters>
                         </VisualState>
                         <VisualState x:Name="Off">
                             <VisualState.Setters>
-                                <Setter Property="ThumbColor" Value="#EF4444" />
-                                <Setter Property="Scale" Value="1" />
+                                <Setter Property="ThumbColor" Value="#ff2e2e" />
+                                <Setter Property="OnColor" Value="#FFDB8787" />
+                                <Setter Property="Scale" Value="1.05" />
                             </VisualState.Setters>
                         </VisualState>
                     </VisualStateGroup>
