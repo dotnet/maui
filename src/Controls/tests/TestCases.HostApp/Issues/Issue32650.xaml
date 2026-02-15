@@ -17,24 +17,28 @@
 
 		<Button 
 			x:Name="PickPhotoButton"
+			AutomationId="PickPhotoButton"
 			Text="Pick Photo with Rotation"
 			Clicked="OnPickPhotoClicked"
 			Padding="20"/>
 
 		<Button 
 			x:Name="PickMultiplePhotosButton"
+			AutomationId="PickMultiplePhotosButton"
 			Text="Pick Multiple Photos with Rotation"
 			Clicked="OnPickMultiplePhotosClicked"
 			Padding="20"/>
 
 		<Button 
 			x:Name="CapturePhotoButton"
+			AutomationId="CapturePhotoButton"
 			Text="Capture Photo with Rotation"
 			Clicked="OnCapturePhotoClicked"
 			Padding="20"/>
 
 		<Label 
 			x:Name="ResultLabel"
+			AutomationId="ResultLabel"
 			Text="Result: Waiting for action"
 			FontSize="12"
 			HorizontalTextAlignment="Center"
@@ -42,6 +46,7 @@
 
 		<Image 
 			x:Name="PickedImage"
+			AutomationId="PickedImage"
 			Aspect="AspectFit"
 			HeightRequest="300"
 			WidthRequest="300"/>
