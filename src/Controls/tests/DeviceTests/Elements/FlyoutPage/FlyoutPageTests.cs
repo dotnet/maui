@@ -49,7 +49,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		[Theory]
 		[ClassData(typeof(FlyoutPageLayoutBehaviorTestCases))]
-		public async Task SwappingDetailPageWorksForSplitFlyoutBehavior(Type flyoutPageType)
+		public async Task SwappingDetailPageWorksForSplitFlyoutBehavior([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type flyoutPageType)
 		{
 			SetupBuilder();
 
@@ -91,7 +91,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		[Theory(DisplayName = "FlyoutPage With Toolbar")]
 		[ClassData(typeof(FlyoutPageLayoutBehaviorTestCases))]
-		public async Task FlyoutPageWithToolbar(Type flyoutPageType)
+		public async Task FlyoutPageWithToolbar([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type flyoutPageType)
 		{
 			SetupBuilder();
 
@@ -111,7 +111,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		[Theory(DisplayName = "Details View Updates w/NavigationPage")]
 		[ClassData(typeof(FlyoutPageLayoutBehaviorTestCases))]
-		public async Task DetailsViewUpdatesWithNavigationPage(Type flyoutPageType)
+		public async Task DetailsViewUpdatesWithNavigationPage([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type flyoutPageType)
 		{
 			SetupBuilder();
 
@@ -138,7 +138,7 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 		)]
 		[ClassData(typeof(FlyoutPageLayoutBehaviorTestCases))]
-		public async Task DetailsViewUpdates(Type flyoutPageType)
+		public async Task DetailsViewUpdates([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type flyoutPageType)
 		{
 			SetupBuilder();
 			var flyoutPage =
