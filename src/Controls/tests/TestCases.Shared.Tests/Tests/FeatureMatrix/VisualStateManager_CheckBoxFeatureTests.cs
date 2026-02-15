@@ -16,19 +16,18 @@ public class VisualStateManager_CheckBoxFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(1)]
-	public void VerifyVSM_CheckBox_Checked_UpdatesStateLabel()
+	public void VerifyVSM_CheckBox_InitialState()
 	{
 		App.WaitForElement("VSMCheckBoxButton");
 		App.Tap("VSMCheckBoxButton");
-		App.WaitForElement("DemoCheckBox");
-		App.Tap("DemoCheckBox");
 		App.WaitForElement("CheckBoxState");
 		var stateText = App.FindElement("CheckBoxState").GetText();
-		Assert.That(stateText, Is.EqualTo("State: Checked"));
+		Assert.That(stateText, Is.EqualTo("State: Unchecked"));
+		VerifyScreenshot("CheckBox_Initial_State");
 	}
 
 	[Test, Order(2)]
-	public void VerifyVSM_CheckBox_Disable_UpdatesStateLabel()
+	public void VerifyVSM_CheckBox_Disable()
 	{
 		App.WaitForElement("CheckBoxDisable");
 		App.Tap("CheckBoxDisable");
@@ -38,11 +37,170 @@ public class VisualStateManager_CheckBoxFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(3)]
-	public void VerifyVSM_CheckBox_Reset_ReturnsToUnchecked()
+	public void VerifyVSM_CheckBox_Reset()
 	{
 		App.WaitForElement("CheckBoxReset");
 		App.Tap("CheckBoxReset");
 		var stateText = App.FindElement("CheckBoxState").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Unchecked"));
+		VerifyScreenshot("CheckBox_Reset_State");
+	}
+
+	[Test, Order(4)]
+	public void VerifyVSM_CheckBox_Checked()
+	{
+		App.WaitForElement("VSMCheckBox");
+		App.Tap("VSMCheckBox");
+		var stateText = App.FindElement("CheckBoxState").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Checked"));
+		VerifyScreenshot("CheckBox_Checked_State");
+	}
+
+	[Test, Order(5)]
+	public void VerifyVSM_CheckBox_UnCheckedAfterChecked()
+	{
+		App.WaitForElement("CheckBoxReset");
+		App.Tap("CheckBoxReset");
+		App.WaitForElement("VSMCheckBox");
+		App.Tap("VSMCheckBox");
+		var stateText = App.FindElement("CheckBoxState").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Checked"));
+		App.WaitForElement("VSMCheckBox");
+		App.Tap("VSMCheckBox");
+		stateText = App.FindElement("CheckBoxState").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Unchecked"));
+	}
+
+	[Test, Order(6)]
+	public void VerifyVSM_CheckBox_DisableAfterChecked()
+	{
+		App.WaitForElement("CheckBoxReset");
+		App.Tap("CheckBoxReset");
+		App.WaitForElement("VSMCheckBox");
+		App.Tap("VSMCheckBox");
+		var stateText = App.FindElement("CheckBoxState").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Checked"));
+		App.WaitForElement("CheckBoxDisable");
+		App.Tap("CheckBoxDisable");
+		stateText = App.FindElement("CheckBoxState").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Disabled"));
+		VerifyScreenshot("CheckBox_Disable_After_Checked_State");
+	}
+
+	[Test, Order(7)]
+	public void VerifyVSM_CheckBox_CheckedAfterDisable()
+	{
+		App.WaitForElement("CheckBoxReset");
+		App.Tap("CheckBoxReset");
+		App.WaitForElement("CheckBoxDisable");
+		App.Tap("CheckBoxDisable");
+		var stateText = App.FindElement("CheckBoxState").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Disabled"));
+		App.WaitForElement("VSMCheckBox");
+		App.Tap("VSMCheckBox");
+		stateText = App.FindElement("CheckBoxState").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Disabled"));
+	}
+
+	[Test, Order(8)]
+	public void VerifyVSM_CheckBox_ResetAfterDisable()
+	{
+		App.WaitForElement("CheckBoxReset");
+		App.Tap("CheckBoxReset");
+		App.WaitForElement("CheckBoxDisable");
+		App.Tap("CheckBoxDisable");
+		var stateText = App.FindElement("CheckBoxState").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Disabled"));
+		App.WaitForElement("CheckBoxReset");
+		App.Tap("CheckBoxReset");
+		stateText = App.FindElement("CheckBoxState").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Unchecked"));
+	}
+
+	[Test, Order(9)]
+	public void VerifyVSM_CheckBox_UnCheckedAfterDisable()
+	{
+		App.WaitForElement("CheckBoxReset");
+		App.Tap("CheckBoxReset");
+		App.WaitForElement("VSMCheckBox");
+		App.Tap("VSMCheckBox");
+		var stateText = App.FindElement("CheckBoxState").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Checked"));
+		App.WaitForElement("CheckBoxDisable");
+		App.Tap("CheckBoxDisable");
+		var stateText1 = App.FindElement("CheckBoxState").GetText();
+		Assert.That(stateText1, Is.EqualTo("State: Disabled"));
+		App.WaitForElement("VSMCheckBox");
+		App.Tap("VSMCheckBox");
+		stateText = App.FindElement("CheckBoxState").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Disabled"));
+	}
+
+	[Test, Order(10)]
+	public void VerifyVSM_CheckBox_CheckedDisableAndEnable()
+	{
+		App.WaitForElement("CheckBoxReset");
+		App.Tap("CheckBoxReset");
+		App.WaitForElement("VSMCheckBox");
+		App.Tap("VSMCheckBox");
+		var stateText = App.FindElement("CheckBoxState").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Checked"));
+		App.WaitForElement("CheckBoxDisable");
+		App.Tap("CheckBoxDisable");
+		var stateText1 = App.FindElement("CheckBoxState").GetText();
+		Assert.That(stateText1, Is.EqualTo("State: Disabled"));
+		App.WaitForElement("CheckBoxDisable");
+		App.Tap("CheckBoxDisable");
+		stateText = App.FindElement("CheckBoxState").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Checked"));
+	}
+
+	[Test, Order(11)]
+	public void VerifyVSM_CheckBox_UnCheckedDisableAndEnable()
+	{
+		App.WaitForElement("CheckBoxReset");
+		App.Tap("CheckBoxReset");
+		var stateText = App.FindElement("CheckBoxState").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Unchecked"));
+		App.WaitForElement("CheckBoxDisable");
+		App.Tap("CheckBoxDisable");
+		var stateText1 = App.FindElement("CheckBoxState").GetText();
+		Assert.That(stateText1, Is.EqualTo("State: Disabled"));
+		App.WaitForElement("CheckBoxDisable");
+		App.Tap("CheckBoxDisable");
+		stateText = App.FindElement("CheckBoxState").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Unchecked"));
+	}
+
+	[Test, Order(12)]
+	public void VerifyVSM_CheckBox_CheckedAfterReset()
+	{
+		App.WaitForElement("CheckBoxReset");
+		App.Tap("CheckBoxReset");
+		App.WaitForElement("VSMCheckBox");
+		App.Tap("VSMCheckBox");
+		var stateText = App.FindElement("CheckBoxState").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Checked"));
+		App.WaitForElement("CheckBoxReset");
+		App.Tap("CheckBoxReset");
+		stateText = App.FindElement("CheckBoxState").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Unchecked"));
+	}
+
+	[Test, Order(13)]
+	public void VerifyVSM_CheckBox_UnCheckedAfterReset()
+	{
+		App.WaitForElement("CheckBoxReset");
+		App.Tap("CheckBoxReset");
+		App.WaitForElement("VSMCheckBox");
+		App.Tap("VSMCheckBox");
+		App.WaitForElement("VSMCheckBox");
+		App.Tap("VSMCheckBox");
+		var stateText = App.FindElement("CheckBoxState").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Unchecked"));
+		App.WaitForElement("CheckBoxReset");
+		App.Tap("CheckBoxReset");
+		stateText = App.FindElement("CheckBoxState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Unchecked"));
 	}
 }
