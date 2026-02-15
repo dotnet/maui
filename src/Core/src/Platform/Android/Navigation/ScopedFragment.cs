@@ -36,6 +36,8 @@ namespace Microsoft.Maui.Platform
 		{
 			base.OnDestroy();
 			IsDestroyed = true;
+
+			DetailView = null!;
 		}
 	}
 }
