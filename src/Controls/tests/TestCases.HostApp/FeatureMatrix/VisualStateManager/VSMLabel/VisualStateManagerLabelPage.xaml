@@ -16,13 +16,13 @@
                         <VisualState x:Name="Normal">
                             <VisualState.Setters>
                                 <Setter Property="BackgroundColor"
-                                        Value="#FFFFFF"/>
+                                        Value="#FFD0D68F"/>
                                 <Setter TargetName="ItemLabel"
                                         Property="Label.TextColor"
                                         Value="#111827"/>
                                 <Setter TargetName="ItemLabel"
                                         Property="Label.FontAttributes"
-                                        Value="None"/>
+                                        Value="Italic"/>
                                 <Setter Property="Scale"
                                         Value="1"/>
                             </VisualState.Setters>

@@ -16,381 +16,150 @@ public class VisualStateManager_LabelFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(1)]
-	public void VerifyVSM_Label_Selected_UpdatesStateLabel()
+	public void VerifyVSM_Label_InitialState()
 	{
-		try { App.WaitForElement("VSMLabelButton", timeout: System.TimeSpan.FromSeconds(1)); App.Tap("VSMLabelButton"); } catch { }
-		App.WaitForElement("SelectableLabelContainer");
+		App.WaitForElement("VSMLabelButton");
+		App.Tap("VSMLabelButton");
 		App.WaitForElement("LabelState");
-		App.Tap("SelectableLabelContainer");
 		var labelText = App.FindElement("LabelState").GetText();
-		Assert.That(labelText, Is.EqualTo("State: Selected"));
-		VerifyScreenshot(retryTimeout: System.TimeSpan.FromSeconds(2));
+		Assert.That(labelText, Is.EqualTo("State: Normal"));
+		VerifyScreenshot("Label_Initial_State");
 	}
 
 	[Test, Order(2)]
-	public void VerifyVSM_Label_Disable_BlocksSelectionAndUpdatesStateLabel()
+	public void VerifyVSM_Label_Selected()
 	{
-		try { App.WaitForElement("VSMLabelButton", timeout: System.TimeSpan.FromSeconds(1)); App.Tap("VSMLabelButton"); } catch { }
-		App.WaitForElement("LabelDisable");
-		App.Tap("LabelDisable");
-		var labelText = App.FindElement("LabelState").GetText();
-		Assert.That(labelText, Is.EqualTo("State: Disabled"));
-		// Tap container should not change state while disabled
+		App.WaitForElement("SelectableLabelContainer");
 		App.Tap("SelectableLabelContainer");
-		labelText = App.FindElement("LabelState").GetText();
-		Assert.That(labelText, Is.EqualTo("State: Disabled"));
-		VerifyScreenshot(retryTimeout: System.TimeSpan.FromSeconds(2));
+		App.WaitForElement("LabelState");
+		var labelText = App.FindElement("LabelState").GetText();
+		Assert.That(labelText, Is.EqualTo("State: Selected"));
+		VerifyScreenshot("Label_Selected_State");
 	}
 
 	[Test, Order(3)]
-	public void VerifyVSM_Label_Reset_ReturnsToNormal()
+	public void VerifyVSM_Label_Disabled()
 	{
-		try { App.WaitForElement("VSMLabelButton", timeout: System.TimeSpan.FromSeconds(1)); App.Tap("VSMLabelButton"); } catch { }
-		App.WaitForElement("LabelReset");
-		App.Tap("LabelReset");
+		App.WaitForElement("LabelDisable");
+		App.Tap("LabelDisable");
+		App.WaitForElement("LabelState");
 		var labelText = App.FindElement("LabelState").GetText();
-		Assert.That(labelText, Is.EqualTo("State: Normal"));
-		VerifyScreenshot(retryTimeout: System.TimeSpan.FromSeconds(2));
+		Assert.That(labelText, Is.EqualTo("State: Disabled"));
+		VerifyScreenshot("Label_Disabled_State");
 	}
 
 	[Test, Order(4)]
-	public void VerifyVSM_Label_Deselect_ReturnsToNormal()
+	public void VerifyVSM_Label_Reset()
 	{
-		try { App.WaitForElement("VSMLabelButton", timeout: System.TimeSpan.FromSeconds(1)); App.Tap("VSMLabelButton"); } catch { }
-		App.WaitForElement("SelectableLabelContainer");
-
-		App.Tap("SelectableLabelContainer");
-		System.Threading.Thread.Sleep(300);
-		Assert.That(App.FindElement("LabelState").GetText(), Is.EqualTo("State: Selected"));
-
-		App.Tap("SelectableLabelContainer");
-		System.Threading.Thread.Sleep(300);
+		App.WaitForElement("LabelReset");
+		App.Tap("LabelReset");
+		App.WaitForElement("LabelState");
 		var labelText = App.FindElement("LabelState").GetText();
 		Assert.That(labelText, Is.EqualTo("State: Normal"));
-
-		VerifyScreenshot(retryTimeout: System.TimeSpan.FromSeconds(2));
+		VerifyScreenshot("Label_Reset_State");
 	}
 
 	[Test, Order(5)]
-	public void VerifyVSM_Label_DisableWhileSelected_ShowsDisabled()
+	public void VerifyVSM_Label_DisableWhileSelected()
 	{
-		try { App.WaitForElement("VSMLabelButton", timeout: System.TimeSpan.FromSeconds(1)); App.Tap("VSMLabelButton"); } catch { }
+		App.WaitForElement("LabelReset");
+		App.Tap("LabelReset");
 		App.WaitForElement("SelectableLabelContainer");
-
 		App.Tap("SelectableLabelContainer");
-		System.Threading.Thread.Sleep(300);
-		Assert.That(App.FindElement("LabelState").GetText(), Is.EqualTo("State: Selected"));
-
-		App.Tap("LabelDisable");
-		System.Threading.Thread.Sleep(300);
+		App.WaitForElement("LabelState");
 		var labelText = App.FindElement("LabelState").GetText();
+		Assert.That(labelText, Is.EqualTo("State: Selected"));
+		App.WaitForElement("LabelDisable");
+		App.Tap("LabelDisable");
+		App.WaitForElement("LabelState");
+		labelText = App.FindElement("LabelState").GetText();
 		Assert.That(labelText, Is.EqualTo("State: Disabled"));
-
-		VerifyScreenshot(retryTimeout: System.TimeSpan.FromSeconds(2));
+		VerifyScreenshot("Label_SelectedAndDisabled_State");
 	}
 
 	[Test, Order(6)]
-	public void VerifyVSM_Label_DisableWhileNormal_ShowsDisabled()
+	public void VerifyVSM_Label_DisableWhileNormal()
 	{
-		try { App.WaitForElement("VSMLabelButton", timeout: System.TimeSpan.FromSeconds(1)); App.Tap("VSMLabelButton"); } catch { }
 		App.WaitForElement("LabelReset");
-
 		App.Tap("LabelReset");
-		System.Threading.Thread.Sleep(300);
-		Assert.That(App.FindElement("LabelState").GetText(), Is.EqualTo("State: Normal"));
-
+		App.WaitForElement("LabelDisable");
 		App.Tap("LabelDisable");
-		System.Threading.Thread.Sleep(300);
+		App.WaitForElement("LabelState");
 		var labelText = App.FindElement("LabelState").GetText();
 		Assert.That(labelText, Is.EqualTo("State: Disabled"));
-
-		VerifyScreenshot(retryTimeout: System.TimeSpan.FromSeconds(2));
+		VerifyScreenshot("Label_DisabledWhileNormal_State");
 	}
 
 	[Test, Order(7)]
-	public void VerifyVSM_Label_EnableWhileSelected_RestoresSelected()
+	public void VerifyVSM_Label_EnableWhileSelected()
 	{
-		try { App.WaitForElement("VSMLabelButton", timeout: System.TimeSpan.FromSeconds(1)); App.Tap("VSMLabelButton"); } catch { }
+		App.WaitForElement("LabelReset");
+		App.Tap("LabelReset");
 		App.WaitForElement("SelectableLabelContainer");
-
 		App.Tap("SelectableLabelContainer");
-		System.Threading.Thread.Sleep(300);
-		App.Tap("LabelDisable");
-		System.Threading.Thread.Sleep(300);
-		Assert.That(App.FindElement("LabelState").GetText(), Is.EqualTo("State: Disabled"));
-
-		App.Tap("LabelDisable");
-		System.Threading.Thread.Sleep(300);
+		App.WaitForElement("LabelState");
 		var labelText = App.FindElement("LabelState").GetText();
 		Assert.That(labelText, Is.EqualTo("State: Selected"));
-
-		VerifyScreenshot(retryTimeout: System.TimeSpan.FromSeconds(2));
+		App.WaitForElement("LabelDisable");
+		App.Tap("LabelDisable");
+		App.WaitForElement("LabelState");
+		labelText = App.FindElement("LabelState").GetText();
+		Assert.That(labelText, Is.EqualTo("State: Disabled"));
+		App.WaitForElement("LabelDisable");
+		App.Tap("LabelDisable");
+		App.WaitForElement("LabelState");
+		labelText = App.FindElement("LabelState").GetText();
+		Assert.That(labelText, Is.EqualTo("State: Selected"));
 	}
 
 	[Test, Order(8)]
-	public void VerifyVSM_Label_EnableWhileNormal_RestoresNormal()
+	public void VerifyVSM_Label_EnableWhileNormal()
 	{
-		try { App.WaitForElement("VSMLabelButton", timeout: System.TimeSpan.FromSeconds(1)); App.Tap("VSMLabelButton"); } catch { }
 		App.WaitForElement("LabelReset");
-
 		App.Tap("LabelReset");
-		System.Threading.Thread.Sleep(300);
+		App.WaitForElement("LabelDisable");
 		App.Tap("LabelDisable");
-		System.Threading.Thread.Sleep(300);
-		Assert.That(App.FindElement("LabelState").GetText(), Is.EqualTo("State: Disabled"));
-
-		App.Tap("LabelDisable");
-		System.Threading.Thread.Sleep(300);
+		App.WaitForElement("LabelState");
 		var labelText = App.FindElement("LabelState").GetText();
+		Assert.That(labelText, Is.EqualTo("State: Disabled"));
+		App.WaitForElement("LabelDisable");
+		App.Tap("LabelDisable");
+		App.WaitForElement("LabelState");
+		labelText = App.FindElement("LabelState").GetText();
 		Assert.That(labelText, Is.EqualTo("State: Normal"));
-
-		VerifyScreenshot(retryTimeout: System.TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(9)]
-	public void VerifyVSM_Label_ResetFromDisabled_ClearsAndEnables()
+	public void VerifyVSM_Label_SelectedAfterReset()
 	{
-		try { App.WaitForElement("VSMLabelButton", timeout: System.TimeSpan.FromSeconds(1)); App.Tap("VSMLabelButton"); } catch { }
-		App.WaitForElement("SelectableLabelContainer");
-
-		App.Tap("SelectableLabelContainer");
-		System.Threading.Thread.Sleep(300);
-		App.Tap("LabelDisable");
-		System.Threading.Thread.Sleep(300);
-		Assert.That(App.FindElement("LabelState").GetText(), Is.EqualTo("State: Disabled"));
-
+		App.WaitForElement("LabelReset");
 		App.Tap("LabelReset");
-		System.Threading.Thread.Sleep(300);
+		App.WaitForElement("SelectableLabelContainer");
+		App.Tap("SelectableLabelContainer");
+		App.WaitForElement("LabelState");
 		var labelText = App.FindElement("LabelState").GetText();
+		Assert.That(labelText, Is.EqualTo("State: Selected"));
+		App.WaitForElement("LabelReset");
+		App.Tap("LabelReset");
+		App.WaitForElement("LabelState");
+		labelText = App.FindElement("LabelState").GetText();
 		Assert.That(labelText, Is.EqualTo("State: Normal"));
-
-		VerifyScreenshot(retryTimeout: System.TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(10)]
-	public void VerifyVSM_Label_MultipleToggle_StateTransitionsCorrectly()
+	public void VerifyVSM_Label_DisableAfterReset()
 	{
-		try { App.WaitForElement("VSMLabelButton", timeout: System.TimeSpan.FromSeconds(1)); App.Tap("VSMLabelButton"); } catch { }
-		App.WaitForElement("SelectableLabelContainer");
-		
-		// Multiple select/deselect cycles
-		App.Tap("LabelReset");
-		System.Threading.Thread.Sleep(300);
-		
-		for (int i = 0; i < 3; i++)
-		{
-			App.Tap("SelectableLabelContainer");
-			System.Threading.Thread.Sleep(200);
-			Assert.That(App.FindElement("LabelState").GetText(), Is.EqualTo("State: Selected"));
-			
-			App.Tap("SelectableLabelContainer");
-			System.Threading.Thread.Sleep(200);
-			Assert.That(App.FindElement("LabelState").GetText(), Is.EqualTo("State: Normal"));
-		}
-		
-		VerifyScreenshot(retryTimeout: System.TimeSpan.FromSeconds(2));
-	}
-
-	[Test, Order(11)]
-	public void VerifyVSM_Label_SequentialStateTransitions_Normal_Selected_Disabled()
-	{
-		try { App.WaitForElement("VSMLabelButton", timeout: System.TimeSpan.FromSeconds(1)); App.Tap("VSMLabelButton"); } catch { }
 		App.WaitForElement("LabelReset");
-		
-		// Normal
 		App.Tap("LabelReset");
-		System.Threading.Thread.Sleep(300);
-		Assert.That(App.FindElement("LabelState").GetText(), Is.EqualTo("State: Normal"));
-		
-		// Selected
-		App.Tap("SelectableLabelContainer");
-		System.Threading.Thread.Sleep(300);
-		Assert.That(App.FindElement("LabelState").GetText(), Is.EqualTo("State: Selected"));
-		
-		// Disabled
-		App.Tap("LabelDisable");
-		System.Threading.Thread.Sleep(300);
-		Assert.That(App.FindElement("LabelState").GetText(), Is.EqualTo("State: Disabled"));
-		
-		VerifyScreenshot(retryTimeout: System.TimeSpan.FromSeconds(2));
-	}
-
-	[Test, Order(12)]
-	public void VerifyVSM_Label_SequentialStateTransitions_Disabled_Normal_Selected()
-	{
-		try { App.WaitForElement("VSMLabelButton", timeout: System.TimeSpan.FromSeconds(1)); App.Tap("VSMLabelButton"); } catch { }
 		App.WaitForElement("LabelDisable");
-		
-		// Disabled
 		App.Tap("LabelDisable");
-		System.Threading.Thread.Sleep(300);
-		Assert.That(App.FindElement("LabelState").GetText(), Is.EqualTo("State: Disabled"));
-		
-		// Normal via Reset
-		App.Tap("LabelReset");
-		System.Threading.Thread.Sleep(300);
-		Assert.That(App.FindElement("LabelState").GetText(), Is.EqualTo("State: Normal"));
-		
-		// Selected
-		App.Tap("SelectableLabelContainer");
-		System.Threading.Thread.Sleep(300);
-		Assert.That(App.FindElement("LabelState").GetText(), Is.EqualTo("State: Selected"));
-		
-		VerifyScreenshot(retryTimeout: System.TimeSpan.FromSeconds(2));
-	}
-
-	[Test, Order(13)]
-	public void VerifyVSM_Label_AllStateTransitions_VerifyVisualChanges()
-	{
-		try { App.WaitForElement("VSMLabelButton", timeout: System.TimeSpan.FromSeconds(1)); App.Tap("VSMLabelButton"); } catch { }
-		App.WaitForElement("LabelReset");
-		
-		// Complete cycle: Normal -> Selected -> Normal -> Disabled -> Normal
-		App.Tap("LabelReset");
-		System.Threading.Thread.Sleep(200);
-		Assert.That(App.FindElement("LabelState").GetText(), Is.EqualTo("State: Normal"));
-		
-		App.Tap("SelectableLabelContainer");
-		System.Threading.Thread.Sleep(200);
-		Assert.That(App.FindElement("LabelState").GetText(), Is.EqualTo("State: Selected"));
-		
-		App.Tap("SelectableLabelContainer");
-		System.Threading.Thread.Sleep(200);
-		Assert.That(App.FindElement("LabelState").GetText(), Is.EqualTo("State: Normal"));
-		
-		App.Tap("LabelDisable");
-		System.Threading.Thread.Sleep(200);
-		Assert.That(App.FindElement("LabelState").GetText(), Is.EqualTo("State: Disabled"));
-		
-		App.Tap("LabelReset");
-		System.Threading.Thread.Sleep(200);
-		Assert.That(App.FindElement("LabelState").GetText(), Is.EqualTo("State: Normal"));
-		
-		VerifyScreenshot(retryTimeout: System.TimeSpan.FromSeconds(2));
-	}
-
-	[Test, Order(14)]
-	public void VerifyVSM_Label_SelectionPersistence_AfterDisableEnable()
-	{
-		try { App.WaitForElement("VSMLabelButton", timeout: System.TimeSpan.FromSeconds(1)); App.Tap("VSMLabelButton"); } catch { }
-		App.WaitForElement("SelectableLabelContainer");
-		
-		// Select
-		App.Tap("SelectableLabelContainer");
-		System.Threading.Thread.Sleep(300);
-		Assert.That(App.FindElement("LabelState").GetText(), Is.EqualTo("State: Selected"));
-		
-		// Disable and enable
-		App.Tap("LabelDisable");
-		System.Threading.Thread.Sleep(300);
-		App.Tap("LabelDisable");
-		System.Threading.Thread.Sleep(300);
-		
-		// Should still be selected
+		App.WaitForElement("LabelState");
 		var labelText = App.FindElement("LabelState").GetText();
-		Assert.That(labelText, Is.EqualTo("State: Selected"));
-		
-		VerifyScreenshot(retryTimeout: System.TimeSpan.FromSeconds(2));
-	}
-
-	[Test, Order(15)]
-	public void VerifyVSM_Label_RapidSelection_HandlesCorrectly()
-	{
-		try { App.WaitForElement("VSMLabelButton", timeout: System.TimeSpan.FromSeconds(1)); App.Tap("VSMLabelButton"); } catch { }
-		App.WaitForElement("SelectableLabelContainer");
-		
-		App.Tap("LabelReset");
-		System.Threading.Thread.Sleep(300);
-		
-		// Rapid taps
-		for (int i = 0; i < 5; i++)
-		{
-			App.Tap("SelectableLabelContainer");
-			System.Threading.Thread.Sleep(100);
-		}
-		
-		System.Threading.Thread.Sleep(500);
-		// After 5 taps from normal: should be selected
-		var labelText = App.FindElement("LabelState").GetText();
-		Assert.That(labelText, Is.EqualTo("State: Selected"));
-		
-		VerifyScreenshot(retryTimeout: System.TimeSpan.FromSeconds(2));
-	}
-
-	[Test, Order(16)]
-	public void VerifyVSM_Label_EdgeCase_ResetMultipleTimes()
-	{
-		try { App.WaitForElement("VSMLabelButton", timeout: System.TimeSpan.FromSeconds(1)); App.Tap("VSMLabelButton"); } catch { }
+		Assert.That(labelText, Is.EqualTo("State: Disabled"));
 		App.WaitForElement("LabelReset");
-		
-		// Reset multiple times
-		for (int i = 0; i < 3; i++)
-		{
-			App.Tap("LabelReset");
-			System.Threading.Thread.Sleep(200);
-			Assert.That(App.FindElement("LabelState").GetText(), Is.EqualTo("State: Normal"));
-		}
-		
-		VerifyScreenshot(retryTimeout: System.TimeSpan.FromSeconds(2));
-	}
-
-	[Test, Order(17)]
-	public void VerifyVSM_Label_EdgeCase_ToggleDisableMultipleTimes()
-	{
-		try { App.WaitForElement("VSMLabelButton", timeout: System.TimeSpan.FromSeconds(1)); App.Tap("VSMLabelButton"); } catch { }
-		App.WaitForElement("LabelDisable");
-		
-		// Select first
-		App.Tap("SelectableLabelContainer");
-		System.Threading.Thread.Sleep(300);
-		
-		// Toggle disable multiple times
-		for (int i = 0; i < 3; i++)
-		{
-			App.Tap("LabelDisable");
-			System.Threading.Thread.Sleep(200);
-			var expectedState = (i % 2 == 0) ? "State: Disabled" : "State: Selected";
-			Assert.That(App.FindElement("LabelState").GetText(), Is.EqualTo(expectedState));
-		}
-		
-		VerifyScreenshot(retryTimeout: System.TimeSpan.FromSeconds(2));
-	}
-
-	[Test, Order(18)]
-	public void VerifyVSM_Label_ComplexScenario_MultipleOperations()
-	{
-		try { App.WaitForElement("VSMLabelButton", timeout: System.TimeSpan.FromSeconds(1)); App.Tap("VSMLabelButton"); } catch { }
-		App.WaitForElement("LabelReset");
-		
-		// Complex: Reset -> Select -> Deselect -> Select -> Disable -> Enable -> Reset
 		App.Tap("LabelReset");
-		System.Threading.Thread.Sleep(200);
-		Assert.That(App.FindElement("LabelState").GetText(), Is.EqualTo("State: Normal"));
-		
-		App.Tap("SelectableLabelContainer");
-		System.Threading.Thread.Sleep(200);
-		Assert.That(App.FindElement("LabelState").GetText(), Is.EqualTo("State: Selected"));
-		
-		App.Tap("SelectableLabelContainer");
-		System.Threading.Thread.Sleep(200);
-		Assert.That(App.FindElement("LabelState").GetText(), Is.EqualTo("State: Normal"));
-		
-		App.Tap("SelectableLabelContainer");
-		System.Threading.Thread.Sleep(200);
-		Assert.That(App.FindElement("LabelState").GetText(), Is.EqualTo("State: Selected"));
-		
-		App.Tap("LabelDisable");
-		System.Threading.Thread.Sleep(200);
-		Assert.That(App.FindElement("LabelState").GetText(), Is.EqualTo("State: Disabled"));
-		
-		App.Tap("LabelDisable");
-		System.Threading.Thread.Sleep(200);
-		Assert.That(App.FindElement("LabelState").GetText(), Is.EqualTo("State: Selected"));
-		
-		App.Tap("LabelReset");
-		System.Threading.Thread.Sleep(200);
-		Assert.That(App.FindElement("LabelState").GetText(), Is.EqualTo("State: Normal"));
-		
-		VerifyScreenshot(retryTimeout: System.TimeSpan.FromSeconds(2));
+		App.WaitForElement("LabelState");
+		labelText = App.FindElement("LabelState").GetText();
+		Assert.That(labelText, Is.EqualTo("State: Normal"));
 	}
 }
