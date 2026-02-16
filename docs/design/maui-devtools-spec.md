@@ -1,8 +1,8 @@
 # MAUI Dev Tools Client — Product Specification
 
-**Version**: 2.10-draft  
+**Version**: 2.11-draft  
 **Status**: Proposal  
-**Last Updated**: 2026-02-10
+**Last Updated**: 2026-02-16
 
 ---
 
@@ -101,7 +101,7 @@ This tool eliminates that friction by providing a single, authoritative source f
 
 **DP1: Delegate to Native Toolchains** — Do not reimplement. Use `sdkmanager`, `avdmanager`, `adb`, `emulator` for Android; `xcrun simctl`, `xcode-select` for Apple; Windows SDK installer for Windows. Native tools are authoritative, reduce maintenance burden, and ensure consistency.
 
-**DP2: Consolidate Existing VS Repositories** — Replace `ClientTools.android-acquisition` and `android-platform-support` with unified `dotnet maui android` commands across VS, VS Code, CLI, and CI.
+**DP2: Consolidate Existing VS Repositories** — Replace `ClientTools.android-acquisition` and `android-platform-support` with unified `maui android` commands across VS, VS Code, CLI, and CI.
 
 **DP3: Stateless Architecture** — Each command reads state, acts, and exits. Uses file-system caching (`~/.maui/cache/`) with TTLs for performance.
 
@@ -268,13 +268,13 @@ The tool can fully install an Android development environment from scratch, incl
 **Install Command**:
 ```bash
 # Full install: JDK + SDK + recommended packages
-dotnet maui android install --accept-licenses
+maui android install --accept-licenses
 
 # With custom paths
-dotnet maui android install --jdk-path ~/my-jdk --sdk-path ~/my-sdk --accept-licenses
+maui android install --jdk-path ~/my-jdk --sdk-path ~/my-sdk --accept-licenses
 
 # With specific packages (comma-separated)
-dotnet maui android install --packages "platform-tools,build-tools;35.0.0,platforms;android-35"
+maui android install --packages "platform-tools,build-tools;35.0.0,platforms;android-35"
 ```
 
 This command:
@@ -288,14 +288,14 @@ This command:
 **JDK Management Commands**:
 ```bash
 # Check JDK status
-dotnet maui android jdk check
+maui android jdk check
 
 # Install OpenJDK (default: version 17)
-dotnet maui android jdk install
-dotnet maui android jdk install --version 21
+maui android jdk install
+maui android jdk install --version 21
 
 # List installed JDK versions
-dotnet maui android jdk list
+maui android jdk list
 ```
 
 **Environment Variable Guidance Output**:
@@ -316,10 +316,10 @@ When `--package` is not specified, the tool automatically detects the most recen
 
 ```bash
 # Auto-detect system image (uses highest API level installed)
-dotnet maui android emulator create MyEmulator
+maui android emulator create MyEmulator
 
 # Explicitly specify system image
-dotnet maui android emulator create MyEmulator --package "system-images;android-35;google_apis;arm64-v8a"
+maui android emulator create MyEmulator --package "system-images;android-35;google_apis;arm64-v8a"
 ```
 
 #### Apple Install
@@ -336,13 +336,13 @@ dotnet maui android emulator create MyEmulator --package "system-images;android-
 
 ```bash
 # Basic setup check
-dotnet maui apple install
+maui apple install
 
 # Accept licenses automatically
-dotnet maui apple install --accept-licenses
+maui apple install --accept-licenses
 
 # Also install a specific iOS runtime
-dotnet maui apple install --runtime 18.5 --accept-licenses
+maui apple install --runtime 18.5 --accept-licenses
 ```
 
 This command:
@@ -464,7 +464,7 @@ When the tool detects that the target install path requires elevation (e.g., `Pr
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  dotnet maui android install --sdk-path "C:\Program Files\  │
+│  maui android install --sdk-path "C:\Program Files\  │
 │  Android\sdk"                                                │
 ├─────────────────────────────────────────────────────────────┤
 │  1. Detect: target path requires elevation                   │
@@ -486,7 +486,7 @@ When the tool detects that the target install path requires elevation (e.g., `Pr
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  dotnet maui apple xcode select /Applications/Xcode.app     │
+│  maui apple xcode select /Applications/Xcode.app     │
 ├─────────────────────────────────────────────────────────────┤
 │  1. Detect: xcode-select requires sudo                       │
 │  2. Invoke: sudo xcode-select -s /Applications/Xcode.app    │
@@ -523,7 +523,7 @@ Elevation is only triggered when the user explicitly specifies a system path via
     "type": "user_action",
     "manual_steps": [
       "Run the command from an elevated terminal (Run as Administrator)",
-      "Or install to a user-writable path: dotnet maui android install --sdk-path %LOCALAPPDATA%\\Android\\sdk"
+      "Or install to a user-writable path: maui android install --sdk-path %LOCALAPPDATA%\\Android\\sdk"
     ]
   }
 }
@@ -570,8 +570,8 @@ Elevation is only triggered when the user explicitly specifies a system path via
 | WSL2 | ✓ (experimental) | — | Partial | ✓ |
 
 When emulator/simulator unavailable:
-- `dotnet maui doctor` reports capability with reason (e.g., "emulator: unavailable (virtualization disabled)")
-- `dotnet maui android emulator start` fails fast with `E2010` "Hardware acceleration unavailable"
+- `maui doctor` reports capability with reason (e.g., "emulator: unavailable (virtualization disabled)")
+- `maui android emulator start` fails fast with `E2010` "Hardware acceleration unavailable"
 
 ---
 
@@ -632,7 +632,7 @@ When emulator/simulator unavailable:
 - Maps commands to core service calls
 - Formats output for human consumption (colors, tables, progress bars)
 - Supports `--json` for machine-readable output
-- Entry point: `dotnet maui` command
+- Entry point: `maui` command
 
 #### Core Services
 
@@ -698,7 +698,7 @@ User: maui doctor --json
 
 > **See [IDE Integration](./maui-devtools-ide-integration.md)** for detailed VS Code and Visual Studio UI flows, status panels, and menu integrations.
 
-**Summary**: IDEs spawn `dotnet maui` as a child process, invoke `dotnet maui doctor --json` on workspace open, display issues in their problems/error list panels, and provide commands for environment setup with progress notifications.
+**Summary**: IDEs spawn `maui` as a child process, invoke `maui doctor --json` on workspace open, display issues in their problems/error list panels, and provide commands for environment setup with progress notifications.
 
 ### 6.5 Concurrency Model
 
@@ -721,7 +721,7 @@ When multiple SDK installations are detected:
 5. Default location (`~/Library/Android/sdk` on macOS, `%LOCALAPPDATA%\Android\Sdk` on Windows)
 
 **Conflict Handling**:
-- `dotnet maui doctor` reports all detected SDKs with recommendation
+- `maui doctor` reports all detected SDKs with recommendation
 - `--sdk-path` flag available on all android commands for one-off override
 
 **Android Studio Coexistence**:
@@ -769,7 +769,7 @@ Errors are classified into three categories:
   },
   "remediation": {
     "type": "auto_fixable",
-    "command": "dotnet maui android sdk accept-licenses",
+    "command": "maui android sdk accept-licenses",
     "manual_steps": null
   },
   "docs_url": "https://learn.microsoft.com/dotnet/maui/troubleshoot/E2001",
@@ -820,7 +820,7 @@ When the tool encounters an error it doesn't recognize:
     "eligible": true,
     "context": {
       "doctor_report": { ... },
-      "failed_command": "dotnet maui android emulator create ...",
+      "failed_command": "maui android emulator create ...",
       "environment": { ... },
       "native_tool_output": "..."
     }
@@ -849,13 +849,13 @@ This is the **Copilot escalation trigger** — structured data that AI agents ca
 
 ```bash
 # Default: Human-readable (stderr for errors, stdout for results)
-dotnet maui doctor
+maui doctor
 
 # Machine-readable: JSON to stdout (errors included in JSON, not stderr)
-dotnet maui doctor --json
+maui doctor --json
 
 # CI mode: JSON output, no prompts, warnings become errors
-dotnet maui doctor --ci
+maui doctor --ci
 ```
 
 **JSON output envelope:**
@@ -877,12 +877,12 @@ dotnet maui doctor --ci
 
 ### 7.1 CLI Commands
 
-The tool is invoked as `dotnet maui <command>`, integrating naturally with the .NET CLI. Platform-specific commands use the target framework moniker pattern (`ios`, `android`, `maccatalyst`, `windows`).
+The tool is invoked as `maui <command>` as a standalone CLI tool. Platform-specific commands use the target framework moniker pattern (`ios`, `android`, `maccatalyst`, `windows`).
 
 #### Command Hierarchy
 
 ```
-dotnet maui
+maui
 ├── doctor                    # Check environment health
 │   ├── --fix                 # Auto-fix all detected issues
 │   ├── --platform <p>       # Filter: dotnet, android, apple, windows
@@ -985,36 +985,36 @@ dotnet maui
 **Command Examples**:
 ```bash
 # Cross-platform commands
-dotnet maui doctor
-dotnet maui doctor --fix
-dotnet maui device list                              # List all devices (physical + emulators + simulators)
-dotnet maui device list --platform android           # Android devices and emulators
-dotnet maui device list --platform ios               # iOS simulators and physical devices
-dotnet maui device screenshot --device emulator-5554
+maui doctor
+maui doctor --fix
+maui device list                              # List all devices (physical + emulators + simulators)
+maui device list --platform android           # Android devices and emulators
+maui device list --platform ios               # iOS simulators and physical devices
+maui device screenshot --device emulator-5554
 
 # Android-specific
-dotnet maui android sdk install platforms;android-34
-dotnet maui android emulator create --name Pixel_8 --device pixel_8
-dotnet maui android emulator start --name Pixel_8 --wait
-dotnet maui device logs --device emulator-5554
+maui android sdk install platforms;android-34
+maui android emulator create --name Pixel_8 --device pixel_8
+maui android emulator start --name Pixel_8 --wait
+maui device logs --device emulator-5554
 
 # Apple-specific (macOS only)
-dotnet maui apple install                              # Check Xcode + runtimes
-dotnet maui apple install --accept-licenses            # Also accept Xcode license
-dotnet maui apple install --runtime 18.5 --accept-licenses  # Full bootstrap
-dotnet maui apple simulator list
-dotnet maui apple simulator start <udid>
-dotnet maui apple runtime check
-dotnet maui apple runtime list
-dotnet maui apple runtime list --available             # Show downloadable runtimes
-dotnet maui apple runtime install 18.5                 # Install specific runtime
-dotnet maui apple xcode check
-dotnet maui apple xcode list
-dotnet maui apple xcode select /Applications/Xcode.app
-dotnet maui apple xcode accept-licenses
+maui apple install                              # Check Xcode + runtimes
+maui apple install --accept-licenses            # Also accept Xcode license
+maui apple install --runtime 18.5 --accept-licenses  # Full bootstrap
+maui apple simulator list
+maui apple simulator start <udid>
+maui apple runtime check
+maui apple runtime list
+maui apple runtime list --available             # Show downloadable runtimes
+maui apple runtime install 18.5                 # Install specific runtime
+maui apple xcode check
+maui apple xcode list
+maui apple xcode select /Applications/Xcode.app
+maui apple xcode accept-licenses
 
 # Windows-specific
-dotnet maui windows developer-mode status
+maui windows developer-mode status
 ```
 
 #### Global Options (Available on All Commands)
@@ -1071,29 +1071,29 @@ All commands follow a consistent exit code scheme:
 
 | Command | Description | Inputs | Output | Exit Codes |
 |---------|-------------|--------|--------|------------|
-| `dotnet maui doctor` | Check environment health | `--fix`, `--platform`, `--json` | Status report | 0=healthy, 1=issues, 2=error |
-| `dotnet maui device list` | List available devices | `--platform`, `--json` | Device list | 0=success, 2=error |
-| `dotnet maui device screenshot` | Capture screenshot | `--device`, `--output`, `--wait` | File path | 0=success, 5=no device, 2=error |
-| `dotnet maui android sdk list` | List SDK packages | `--available`, `--all`, `--json` | Package list | 0=success, 2=error |
-| `dotnet maui android sdk install` | Install SDK package | `<package>`, `--accept-licenses` | Progress, result | 0=success, 5=not found, 2=error |
-| `dotnet maui android emulator create` | Create emulator | `--name`, `--device`, `--package` | Emulator name | 0=success, 1=exists, 2=error |
-| `dotnet maui android emulator start` | Start emulator | `--name`, `--wait`, `--cold-boot` | Device serial | 0=success, 5=not found, 2=error |
-| `dotnet maui android emulator stop` | Stop emulator | `<name>` | Status | 0=success, 5=not found, 2=error |
-| `dotnet maui android emulator delete` | Delete emulator | `--name` | Status | 0=success, 5=not found, 2=error |
-| `dotnet maui apple simulator list` | List simulators | `--runtime`, `--device-type`, `--state` | Simulator list | 0=success, 2=error |
-| `dotnet maui apple simulator start` | Start simulator | `<udid>` | UDID | 0=success, 5=not found, 2=error |
-| `dotnet maui apple simulator stop` | Stop simulator | `<udid>` | Status | 0=success, 5=not found, 2=error |
-| `dotnet maui apple simulator create` | Create simulator | `<name> <device-type> <runtime>` | UDID | 0=success, 2=error |
-| `dotnet maui apple simulator delete` | Delete simulator | `<udid>` | Status | 0=success, 5=not found, 2=error |
-| `dotnet maui apple runtime list` | List iOS runtimes | `--available`, `--all`, `--json` | Runtime list | 0=success, 2=error |
-| `dotnet maui apple runtime check` | Check runtime status | `--json` | Status report | 0=success, 2=error |
-| `dotnet maui apple runtime install` | Install iOS runtime | `<version>` | Progress, result | 0=success, 2=error |
-| `dotnet maui apple xcode check` | Check Xcode status | `--json` | Status report | 0=success, 2=error |
-| `dotnet maui apple xcode list` | List Xcode installations | `--json` | Installation list | 0=success, 2=error |
-| `dotnet maui apple xcode select` | Switch active Xcode | `<path>` | Confirmation | 0=success, 3=permission denied |
-| `dotnet maui apple xcode accept-licenses` | Accept Xcode license | `--json` | Status | 0=success, 3=permission denied |
-| `dotnet maui apple install` | Set up Apple environment | `--runtime`, `--accept-licenses` | Progress, result | 0=success, 2=error |
-| `dotnet maui android sdk accept-licenses` | Accept SDK licenses | `--json` | Status | 0=success, 2=error |
+| `maui doctor` | Check environment health | `--fix`, `--platform`, `--json` | Status report | 0=healthy, 1=issues, 2=error |
+| `maui device list` | List available devices | `--platform`, `--json` | Device list | 0=success, 2=error |
+| `maui device screenshot` | Capture screenshot | `--device`, `--output`, `--wait` | File path | 0=success, 5=no device, 2=error |
+| `maui android sdk list` | List SDK packages | `--available`, `--all`, `--json` | Package list | 0=success, 2=error |
+| `maui android sdk install` | Install SDK package | `<package>`, `--accept-licenses` | Progress, result | 0=success, 5=not found, 2=error |
+| `maui android emulator create` | Create emulator | `--name`, `--device`, `--package` | Emulator name | 0=success, 1=exists, 2=error |
+| `maui android emulator start` | Start emulator | `--name`, `--wait`, `--cold-boot` | Device serial | 0=success, 5=not found, 2=error |
+| `maui android emulator stop` | Stop emulator | `<name>` | Status | 0=success, 5=not found, 2=error |
+| `maui android emulator delete` | Delete emulator | `--name` | Status | 0=success, 5=not found, 2=error |
+| `maui apple simulator list` | List simulators | `--runtime`, `--device-type`, `--state` | Simulator list | 0=success, 2=error |
+| `maui apple simulator start` | Start simulator | `<udid>` | UDID | 0=success, 5=not found, 2=error |
+| `maui apple simulator stop` | Stop simulator | `<udid>` | Status | 0=success, 5=not found, 2=error |
+| `maui apple simulator create` | Create simulator | `<name> <device-type> <runtime>` | UDID | 0=success, 2=error |
+| `maui apple simulator delete` | Delete simulator | `<udid>` | Status | 0=success, 5=not found, 2=error |
+| `maui apple runtime list` | List iOS runtimes | `--available`, `--all`, `--json` | Runtime list | 0=success, 2=error |
+| `maui apple runtime check` | Check runtime status | `--json` | Status report | 0=success, 2=error |
+| `maui apple runtime install` | Install iOS runtime | `<version>` | Progress, result | 0=success, 2=error |
+| `maui apple xcode check` | Check Xcode status | `--json` | Status report | 0=success, 2=error |
+| `maui apple xcode list` | List Xcode installations | `--json` | Installation list | 0=success, 2=error |
+| `maui apple xcode select` | Switch active Xcode | `<path>` | Confirmation | 0=success, 3=permission denied |
+| `maui apple xcode accept-licenses` | Accept Xcode license | `--json` | Status | 0=success, 3=permission denied |
+| `maui apple install` | Set up Apple environment | `--runtime`, `--accept-licenses` | Progress, result | 0=success, 2=error |
+| `maui android sdk accept-licenses` | Accept SDK licenses | `--json` | Status | 0=success, 2=error |
 
 ### 7.2 JSON Output Schemas
 
@@ -1204,33 +1204,33 @@ The unified device model for all platforms (physical devices, emulators, simulat
 |---------|---------|-------|-------------|---------------------|
 | `doctor` | ✓ | ✓ | No | None |
 | `doctor --fix` | ✓ | ✓ | Sometimes* | `environment.modify` |
-| `dotnet maui device list` | ✓ | ✓ | No | None |
-| `dotnet maui device screenshot` | ✓ | ✓ | No | `device.capture` |
-| `dotnet maui device logs` | ✓ | ✓ | No | `device.logs` |
-| `dotnet maui android sdk list` | ✓ | ✓ | No | None |
-| `dotnet maui android sdk install` | ✓ | ✓ | Sometimes* | `environment.modify` |
-| `dotnet maui android sdk accept-licenses` | ✓ | ✓ | No | `environment.modify` |
-| `dotnet maui android emulator create` | ✓ | ✓ | No | `device.create` |
-| `dotnet maui android emulator start` | ✓ | ✓ | No | None |
-| `dotnet maui android emulator stop` | ✓ | ✓ | No | None |
-| `dotnet maui android emulator delete` | ✓ | ✓ | No | `device.create` |
-| `dotnet maui android install` | ✓ | ✓ | Sometimes* | `environment.modify` |
-| `dotnet maui android jdk check` | ✓ | ✓ | No | None |
-| `dotnet maui android jdk install` | ✓ | ✓ | Sometimes* | `environment.modify` |
-| `dotnet maui android jdk list` | ✓ | ✓ | No | None |
-| `dotnet maui apple simulator list` | — | ✓ | No | None |
-| `dotnet maui apple simulator start` | — | ✓ | No | None |
-| `dotnet maui apple simulator stop` | — | ✓ | No | None |
-| `dotnet maui apple simulator create` | — | ✓ | No | `device.create` |
-| `dotnet maui apple simulator delete` | — | ✓ | No | `device.create` |
-| `dotnet maui apple install` | — | ✓ | Sometimes* | `environment.modify` |
-| `dotnet maui apple runtime check` | — | ✓ | No | None |
-| `dotnet maui apple runtime list` | — | ✓ | No | None |
-| `dotnet maui apple runtime install` | — | ✓ | Yes (admin) | `environment.modify` |
-| `dotnet maui apple xcode check` | — | ✓ | No | None |
-| `dotnet maui apple xcode list` | — | ✓ | No | None |
-| `dotnet maui apple xcode select` | — | ✓ | Yes (sudo) | `environment.modify` |
-| `dotnet maui apple xcode accept-licenses` | — | ✓ | Yes (sudo) | `environment.modify` |
+| `maui device list` | ✓ | ✓ | No | None |
+| `maui device screenshot` | ✓ | ✓ | No | `device.capture` |
+| `maui device logs` | ✓ | ✓ | No | `device.logs` |
+| `maui android sdk list` | ✓ | ✓ | No | None |
+| `maui android sdk install` | ✓ | ✓ | Sometimes* | `environment.modify` |
+| `maui android sdk accept-licenses` | ✓ | ✓ | No | `environment.modify` |
+| `maui android emulator create` | ✓ | ✓ | No | `device.create` |
+| `maui android emulator start` | ✓ | ✓ | No | None |
+| `maui android emulator stop` | ✓ | ✓ | No | None |
+| `maui android emulator delete` | ✓ | ✓ | No | `device.create` |
+| `maui android install` | ✓ | ✓ | Sometimes* | `environment.modify` |
+| `maui android jdk check` | ✓ | ✓ | No | None |
+| `maui android jdk install` | ✓ | ✓ | Sometimes* | `environment.modify` |
+| `maui android jdk list` | ✓ | ✓ | No | None |
+| `maui apple simulator list` | — | ✓ | No | None |
+| `maui apple simulator start` | — | ✓ | No | None |
+| `maui apple simulator stop` | — | ✓ | No | None |
+| `maui apple simulator create` | — | ✓ | No | `device.create` |
+| `maui apple simulator delete` | — | ✓ | No | `device.create` |
+| `maui apple install` | — | ✓ | Sometimes* | `environment.modify` |
+| `maui apple runtime check` | — | ✓ | No | None |
+| `maui apple runtime list` | — | ✓ | No | None |
+| `maui apple runtime install` | — | ✓ | Yes (admin) | `environment.modify` |
+| `maui apple xcode check` | — | ✓ | No | None |
+| `maui apple xcode list` | — | ✓ | No | None |
+| `maui apple xcode select` | — | ✓ | Yes (sudo) | `environment.modify` |
+| `maui apple xcode accept-licenses` | — | ✓ | Yes (sudo) | `environment.modify` |
 
 *OS Elevation required for: installing Android SDK/JDK to system locations (e.g., `Program Files`), installing Xcode runtimes, switching Xcode, accepting Xcode licenses
 
