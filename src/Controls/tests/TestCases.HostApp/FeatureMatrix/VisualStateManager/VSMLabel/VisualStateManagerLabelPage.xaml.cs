@@ -8,6 +8,7 @@ public partial class VisualStateManagerLabelPage : ContentPage
 	public VisualStateManagerLabelPage()
 	{
 		InitializeComponent();
+		VisualStateManager.GoToState(SelectableLabelContainer, "Normal");
 	}
 	void OnToggleLabelSelected(object sender, EventArgs e)
 	{

@@ -16,338 +16,271 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(1)]
-	public void VerifyVSM_Entry_Focus_UpdatesStateLabel()
+	public void VerifyVSM_Entry_InitialState()
 	{
 		App.WaitForElement("VSMEntryButton");
 		App.Tap("VSMEntryButton");
-		App.WaitForElement("ResetEntry");
-		App.Tap("ResetEntry");
-		App.WaitForElement("EntryFocus");
-		App.Tap("EntryFocus");
 		App.WaitForElement("EntryState");
+		var stateText = App.FindElement("EntryState").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Normal"));
+		VerifyScreenshot("Entry_Initial_State");
+	}
+
+	[Test, Order(2)]
+	public void VerifyVSM_Entry_Focus()
+	{
+		App.WaitForElement("VSMEntry");
+		App.Tap("VSMEntry");
 		var stateText = App.FindElement("EntryState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Focused"));
 		VerifyScreenshot("Entry_Focused_State");
 	}
 
-	[Test, Order(2)]
-	public void VerifyVSM_Entry_Disable_UpdatesStateLabel()
+	[Test, Order(3)]
+	public void VerifyVSM_Entry_Unfocus()
 	{
-		App.WaitForElement("ResetEntry");
-		App.Tap("ResetEntry");
-		App.WaitForElement("EntryDisable");
-		App.Tap("EntryDisable");
-		App.WaitForElement("EntryState");
+		App.WaitForElement("NormalEntryButton");
+		App.Tap("NormalEntryButton");
+		var stateText = App.FindElement("EntryState").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Normal/Unfocused"));
+		VerifyScreenshot("Entry_Unfocused_State");
+	}
+
+	[Test, Order(4)]
+	public void VerifyVSM_Entry_Disable()
+	{
+		App.WaitForElement("DisableEntryButton");
+		App.Tap("DisableEntryButton");
 		var stateText = App.FindElement("EntryState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Disabled"));
 		VerifyScreenshot("Entry_Disabled_State");
 	}
 
-	[Test, Order(3)]
-	public void VerifyVSM_Entry_Enable_ShowsUnfocused()
-	{
-		App.WaitForElement("ResetEntry");
-		App.Tap("ResetEntry");
-		App.WaitForElement("EntryDisable");
-		App.Tap("EntryDisable");
-		App.WaitForElement("EntryState");
-		var stateText = App.FindElement("EntryState").GetText();
-		Assert.That(stateText, Is.EqualTo("State: Unfocused"));
-		VerifyScreenshot("Entry_Unfocused_State");
-	}
-
-	[Test, Order(4)]
-	public void VerifyVSM_Entry_TapToFocus_UpdatesState()
-	{
-		try
-		{ App.WaitForElement("VSMEntryButton", timeout: System.TimeSpan.FromSeconds(1)); App.Tap("VSMEntryButton"); }
-		catch { }
-		App.WaitForElement("DemoEntry");
-
-		App.Tap("DemoEntry");
-		System.Threading.Thread.Sleep(500);
-
-		var stateText = App.FindElement("EntryState").GetText();
-		Assert.That(stateText, Is.EqualTo("State: Focused"));
-
-		VerifyScreenshot(retryTimeout: System.TimeSpan.FromSeconds(2));
-	}
-
 	[Test, Order(5)]
-	public void VerifyVSM_Entry_Unfocus_UpdatesState()
+	public void VerifyVSM_Entry_Reset()
 	{
-		try
-		{ App.WaitForElement("VSMEntryButton", timeout: System.TimeSpan.FromSeconds(1)); App.Tap("VSMEntryButton"); }
-		catch { }
-		App.WaitForElement("DemoEntry");
-
-		App.Tap("EntryFocus");
-		System.Threading.Thread.Sleep(300);
-		Assert.That(App.FindElement("EntryState").GetText(), Is.EqualTo("State: Focused"));
-
-		App.Tap("EntryState");
-		System.Threading.Thread.Sleep(500);
-
+		App.WaitForElement("ResetEntryButton");
+		App.Tap("ResetEntryButton");
 		var stateText = App.FindElement("EntryState").GetText();
-		Assert.That(stateText, Is.EqualTo("State: Unfocused"));
-
-		VerifyScreenshot(retryTimeout: System.TimeSpan.FromSeconds(2));
+		Assert.That(stateText, Is.EqualTo("State: Normal"));
+		VerifyScreenshot("Entry_Reset_State");
 	}
 
 	[Test, Order(6)]
-	public void VerifyVSM_Entry_DisableWhileFocused_ShowsDisabled()
+	public void VerifyVSM_Entry_DisableWhileFocused()
 	{
-		try
-		{ App.WaitForElement("VSMEntryButton", timeout: System.TimeSpan.FromSeconds(1)); App.Tap("VSMEntryButton"); }
-		catch { }
-		App.WaitForElement("EntryFocus");
-
-		// Focus first
-		App.Tap("EntryFocus");
-		System.Threading.Thread.Sleep(300);
-		Assert.That(App.FindElement("EntryState").GetText(), Is.EqualTo("State: Focused"));
-
-		// Disable
-		App.Tap("EntryDisable");
-		System.Threading.Thread.Sleep(300);
-
+		App.WaitForElement("ResetEntryButton");
+		App.Tap("ResetEntryButton");
+		App.WaitForElement("VSMEntry");
+		App.Tap("VSMEntry");
+		App.EnterText("VSMEntry", "Testing");
+		App.WaitForElement("FocusEntryButton");
+		App.Tap("FocusEntryButton");
 		var stateText = App.FindElement("EntryState").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Focused"));
+		App.WaitForElement("DisableEntryButton");
+		App.Tap("DisableEntryButton");
+		stateText = App.FindElement("EntryState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Disabled"));
-
-		VerifyScreenshot(retryTimeout: System.TimeSpan.FromSeconds(2));
+		VerifyScreenshot("Entry_FocusedAndDisabled_State");
 	}
 
 	[Test, Order(7)]
-	public void VerifyVSM_Entry_DisableWhileUnfocused_ShowsDisabled()
+	public void VerifyVSM_Entry_DisableWhileUnFocused()
 	{
-		try
-		{ App.WaitForElement("VSMEntryButton", timeout: System.TimeSpan.FromSeconds(1)); App.Tap("VSMEntryButton"); }
-		catch { }
-		App.WaitForElement("EntryDisable");
-
-		App.Tap("EntryState");
-		System.Threading.Thread.Sleep(300);
-
-		App.Tap("EntryDisable");
-		System.Threading.Thread.Sleep(300);
-
+		App.WaitForElement("ResetEntryButton");
+		App.Tap("ResetEntryButton");
+		App.WaitForElement("NormalEntryButton");
+		App.Tap("NormalEntryButton");
 		var stateText = App.FindElement("EntryState").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Normal/Unfocused"));
+		App.WaitForElement("DisableEntryButton");
+		App.Tap("DisableEntryButton");
+		stateText = App.FindElement("EntryState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Disabled"));
-
-		VerifyScreenshot(retryTimeout: System.TimeSpan.FromSeconds(2));
+		VerifyScreenshot("Entry_UnfocusedAndDisabled_State");
 	}
 
 	[Test, Order(8)]
-	public void VerifyVSM_Entry_EnableWhileFocusedState_RestoresFocused()
+	public void VerifyVSM_Entry_ResetAfterDisable()
 	{
-		try
-		{ App.WaitForElement("VSMEntryButton", timeout: System.TimeSpan.FromSeconds(1)); App.Tap("VSMEntryButton"); }
-		catch { }
-		App.WaitForElement("EntryFocus");
-
-		App.Tap("EntryFocus");
-		System.Threading.Thread.Sleep(300);
-		App.Tap("EntryDisable");
-		System.Threading.Thread.Sleep(300);
-		Assert.That(App.FindElement("EntryState").GetText(), Is.EqualTo("State: Disabled"));
-
-		App.Tap("EntryDisable");
-		System.Threading.Thread.Sleep(300);
-
+		App.WaitForElement("ResetEntryButton");
+		App.Tap("ResetEntryButton");
 		var stateText = App.FindElement("EntryState").GetText();
-		Assert.That(stateText, Is.EqualTo("State: Unfocused"));
-
-		VerifyScreenshot(retryTimeout: System.TimeSpan.FromSeconds(2));
+		Assert.That(stateText, Is.EqualTo("State: Normal"));
+		App.WaitForElement("DisableEntryButton");
+		App.Tap("DisableEntryButton");
+		stateText = App.FindElement("EntryState").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Disabled"));
+		VerifyScreenshot("Entry_ResetAndDisabled_State");
 	}
 
 	[Test, Order(9)]
-	public void VerifyVSM_Entry_MultipleFocusUnfocusCycles()
+	public void VerifyVSM_Entry_DisableAndEnableWhileFocused()
 	{
-		try
-		{ App.WaitForElement("VSMEntryButton", timeout: System.TimeSpan.FromSeconds(1)); App.Tap("VSMEntryButton"); }
-		catch { }
-		App.WaitForElement("EntryFocus");
-
-		// Multiple focus/unfocus cycles
-		for (int i = 0; i < 3; i++)
-		{
-			App.Tap("EntryFocus");
-			System.Threading.Thread.Sleep(300);
-			Assert.That(App.FindElement("EntryState").GetText(), Is.EqualTo("State: Focused"));
-
-			App.Tap("EntryState");
-			System.Threading.Thread.Sleep(300);
-			Assert.That(App.FindElement("EntryState").GetText(), Is.EqualTo("State: Unfocused"));
-		}
-
-		VerifyScreenshot(retryTimeout: System.TimeSpan.FromSeconds(2));
+		App.WaitForElement("ResetEntryButton");
+		App.Tap("ResetEntryButton");
+		App.WaitForElement("VSMEntry");
+		App.Tap("VSMEntry");
+		App.EnterText("VSMEntry", "Testing");
+		App.WaitForElement("FocusEntryButton");
+		App.Tap("FocusEntryButton");
+		var stateText = App.FindElement("EntryState").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Focused"));
+		App.WaitForElement("DisableEntryButton");
+		App.Tap("DisableEntryButton");
+		stateText = App.FindElement("EntryState").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Disabled"));
+		App.WaitForElement("DisableEntryButton");
+		App.Tap("DisableEntryButton");
+		stateText = App.FindElement("EntryState").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Normal"));
+		VerifyScreenshot("Entry_Focused_Disable_And_Enable_State");
 	}
 
 	[Test, Order(10)]
-	public void VerifyVSM_Entry_SequentialStateTransitions_Unfocused_Focused_Disabled()
+	public void VerifyVSM_Entry_DisableAndEnableWhileUnFocused()
 	{
-		try
-		{ App.WaitForElement("VSMEntryButton", timeout: System.TimeSpan.FromSeconds(1)); App.Tap("VSMEntryButton"); }
-		catch { }
-		App.WaitForElement("EntryState");
-
-		// Start unfocused
-		App.Tap("EntryState");
-		System.Threading.Thread.Sleep(300);
-		Assert.That(App.FindElement("EntryState").GetText(), Is.EqualTo("State: Unfocused"));
-
-		// Transition to Focused
-		App.Tap("EntryFocus");
-		System.Threading.Thread.Sleep(300);
-		Assert.That(App.FindElement("EntryState").GetText(), Is.EqualTo("State: Focused"));
-
-		// Transition to Disabled
-		App.Tap("EntryDisable");
-		System.Threading.Thread.Sleep(300);
-		Assert.That(App.FindElement("EntryState").GetText(), Is.EqualTo("State: Disabled"));
-
-		VerifyScreenshot(retryTimeout: System.TimeSpan.FromSeconds(2));
+		App.WaitForElement("ResetEntryButton");
+		App.Tap("ResetEntryButton");
+		App.WaitForElement("NormalEntryButton");
+		App.Tap("NormalEntryButton");
+		var stateText = App.FindElement("EntryState").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Normal/Unfocused"));
+		App.WaitForElement("DisableEntryButton");
+		App.Tap("DisableEntryButton");
+		stateText = App.FindElement("EntryState").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Disabled"));
+		App.WaitForElement("DisableEntryButton");
+		App.Tap("DisableEntryButton");
+		stateText = App.FindElement("EntryState").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Normal"));
+		VerifyScreenshot("Entry_Unfocused_Disable_And_Enable_State");
 	}
 
 	[Test, Order(11)]
-	public void VerifyVSM_Entry_SequentialStateTransitions_Disabled_Unfocused_Focused()
+	public void VerifyVSM_Entry_FocusedAndUnfocused()
 	{
-		try
-		{ App.WaitForElement("VSMEntryButton", timeout: System.TimeSpan.FromSeconds(1)); App.Tap("VSMEntryButton"); }
-		catch { }
-		App.WaitForElement("EntryDisable");
-
-		// Start disabled
-		App.Tap("EntryDisable");
-		System.Threading.Thread.Sleep(300);
-		Assert.That(App.FindElement("EntryState").GetText(), Is.EqualTo("State: Disabled"));
-
-		// Enable to Unfocused
-		App.Tap("EntryDisable");
-		System.Threading.Thread.Sleep(300);
-		Assert.That(App.FindElement("EntryState").GetText(), Is.EqualTo("State: Unfocused"));
-
-		// Transition to Focused
-		App.Tap("EntryFocus");
-		System.Threading.Thread.Sleep(300);
-		Assert.That(App.FindElement("EntryState").GetText(), Is.EqualTo("State: Focused"));
-
-		VerifyScreenshot(retryTimeout: System.TimeSpan.FromSeconds(2));
+		App.WaitForElement("ResetEntryButton");
+		App.Tap("ResetEntryButton");
+		App.WaitForElement("VSMEntry");
+		App.Tap("VSMEntry");
+		App.WaitForElement("EntryState");
+		var stateText = App.FindElement("EntryState").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Focused"));
+		App.WaitForElement("NormalEntryButton");
+		App.Tap("NormalEntryButton");
+		App.WaitForElement("EntryState");
+		stateText = App.FindElement("EntryState").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Normal/Unfocused"));
 	}
 
 	[Test, Order(12)]
-	public void VerifyVSM_Entry_AllStateTransitions_VerifyVisualChanges()
+	public void VerifyVSM_Entry_ResetWhileDisabled()
 	{
-		try
-		{ App.WaitForElement("VSMEntryButton", timeout: System.TimeSpan.FromSeconds(1)); App.Tap("VSMEntryButton"); }
-		catch { }
-		App.WaitForElement("EntryFocus");
-
-		// Complete cycle: Unfocused -> Focused -> Unfocused -> Disabled -> Unfocused
-		App.Tap("EntryState");
-		System.Threading.Thread.Sleep(300);
-		Assert.That(App.FindElement("EntryState").GetText(), Is.EqualTo("State: Unfocused"));
-
-		App.Tap("EntryFocus");
-		System.Threading.Thread.Sleep(300);
-		Assert.That(App.FindElement("EntryState").GetText(), Is.EqualTo("State: Focused"));
-
-		App.Tap("EntryState");
-		System.Threading.Thread.Sleep(300);
-		Assert.That(App.FindElement("EntryState").GetText(), Is.EqualTo("State: Unfocused"));
-
-		App.Tap("EntryDisable");
-		System.Threading.Thread.Sleep(300);
-		Assert.That(App.FindElement("EntryState").GetText(), Is.EqualTo("State: Disabled"));
-
-		App.Tap("EntryDisable");
-		System.Threading.Thread.Sleep(300);
-		Assert.That(App.FindElement("EntryState").GetText(), Is.EqualTo("State: Unfocused"));
-
-		VerifyScreenshot(retryTimeout: System.TimeSpan.FromSeconds(2));
+		App.WaitForElement("ResetEntryButton");
+		App.Tap("ResetEntryButton");
+		App.WaitForElement("DisableEntryButton");
+		App.Tap("DisableEntryButton");
+		App.WaitForElement("EntryState");
+		var stateText = App.FindElement("EntryState").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Disabled"));
+		App.WaitForElement("ResetEntryButton");
+		App.Tap("ResetEntryButton");
+		App.WaitForElement("EntryState");
+		stateText = App.FindElement("EntryState").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Normal"));
 	}
 
 	[Test, Order(13)]
-	public void VerifyVSM_Entry_RapidFocusChanges_HandlesCorrectly()
+	public void VerifyVSM_Entry_FocusedWhileDisabled()
 	{
-		try
-		{ App.WaitForElement("VSMEntryButton", timeout: System.TimeSpan.FromSeconds(1)); App.Tap("VSMEntryButton"); }
-		catch { }
-		App.WaitForElement("EntryFocus");
-
-		// Rapid focus/unfocus
-		for (int i = 0; i < 5; i++)
-		{
-			App.Tap("EntryFocus");
-			System.Threading.Thread.Sleep(100);
-			App.Tap("EntryState");
-			System.Threading.Thread.Sleep(100);
-		}
-
-		System.Threading.Thread.Sleep(500);
+		App.WaitForElement("ResetEntryButton");
+		App.Tap("ResetEntryButton");
+		App.WaitForElement("DisableEntryButton");
+		App.Tap("DisableEntryButton");
+		App.WaitForElement("VSMEntry");
+		App.Tap("VSMEntry");
+		App.EnterText("VSMEntry", "Testing");
+		App.WaitForElement("EntryState");
 		var stateText = App.FindElement("EntryState").GetText();
-		Assert.That(stateText, Is.EqualTo("State: Unfocused"));
-
-		VerifyScreenshot(retryTimeout: System.TimeSpan.FromSeconds(2));
+		Assert.That(stateText, Is.EqualTo("State: Disabled"));
 	}
 
 	[Test, Order(14)]
-	public void VerifyVSM_Entry_EdgeCase_ToggleDisableMultipleTimes()
+	public void VerifyVSM_Entry_UnfocusedWhileDisabled()
 	{
-		try
-		{ App.WaitForElement("VSMEntryButton", timeout: System.TimeSpan.FromSeconds(1)); App.Tap("VSMEntryButton"); }
-		catch { }
-		App.WaitForElement("EntryDisable");
-
-		// Toggle disable multiple times
-		for (int i = 0; i < 4; i++)
-		{
-			App.Tap("EntryDisable");
-			System.Threading.Thread.Sleep(200);
-			var expectedState = (i % 2 == 0) ? "State: Disabled" : "State: Unfocused";
-			Assert.That(App.FindElement("EntryState").GetText(), Is.EqualTo(expectedState));
-		}
-
-		VerifyScreenshot(retryTimeout: System.TimeSpan.FromSeconds(2));
+		App.WaitForElement("ResetEntryButton");
+		App.Tap("ResetEntryButton");
+		App.WaitForElement("DisableEntryButton");
+		App.Tap("DisableEntryButton");
+		App.WaitForElement("EntryState");
+		var stateText = App.FindElement("EntryState").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Disabled"));
+		App.WaitForElement("NormalEntryButton");
+		App.Tap("NormalEntryButton");
+		App.WaitForElement("EntryState");
+		stateText = App.FindElement("EntryState").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Disabled"));
 	}
 
-	[Test, Order(15)]
-	public void VerifyVSM_Entry_ComplexScenario_MultipleOperations()
+	[Test, Order(16)]
+	public void VerifyVSM_Entry_Validate()
 	{
-		try
-		{ App.WaitForElement("VSMEntryButton", timeout: System.TimeSpan.FromSeconds(1)); App.Tap("VSMEntryButton"); }
-		catch { }
-		App.WaitForElement("EntryFocus");
+		App.WaitForElement("ResetValidationEntryButton");
+		App.Tap("ResetValidationEntryButton");
+		App.WaitForElement("ValidationEntry");
+		App.Tap("ValidationEntry");
+		App.EnterText("ValidationEntry", "965-999-9999");
+		var stateText = App.FindElement("ValidationEntryLabel").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Valid"));
+		VerifyScreenshot("Entry_Valid_State");
+	}
 
-		// Complex: Unfocus -> Focus -> Unfocus -> Focus -> Disable -> Enable -> Focus
-		App.Tap("EntryState");
-		System.Threading.Thread.Sleep(200);
-		Assert.That(App.FindElement("EntryState").GetText(), Is.EqualTo("State: Unfocused"));
+	[Test, Order(16)]
+	public void VerifyVSM_Entry_Invalid()
+	{
+		App.WaitForElement("ResetValidationEntryButton");
+		App.Tap("ResetValidationEntryButton");
+		App.WaitForElement("ValidationEntry");
+		App.Tap("ValidationEntry");
+		App.EnterText("ValidationEntry", "Invalid");
+		var stateText = App.FindElement("ValidationEntryLabel").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Invalid"));
+		VerifyScreenshot("Entry_Invalid_State");
+	}
 
-		App.Tap("EntryFocus");
-		System.Threading.Thread.Sleep(200);
-		Assert.That(App.FindElement("EntryState").GetText(), Is.EqualTo("State: Focused"));
+	[Test, Order(17)]
+	public void VerifyVSM_Entry_ResetValidation()
+	{
+		App.WaitForElement("ResetValidationEntryButton");
+		App.Tap("ResetValidationEntryButton");
+		App.WaitForElement("ValidationEntry");
+		App.Tap("ValidationEntry");
+		App.EnterText("ValidationEntry", "777-777-7777");
+		var stateText = App.FindElement("ValidationEntryLabel").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Valid"));
+		App.WaitForElement("ResetValidationEntryButton");
+		App.Tap("ResetValidationEntryButton");
+		App.WaitForElement("ValidationEntryLabel");
+		stateText = App.FindElement("ValidationEntryLabel").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Invalid"));
+	}
 
-		App.Tap("EntryState");
-		System.Threading.Thread.Sleep(200);
-		Assert.That(App.FindElement("EntryState").GetText(), Is.EqualTo("State: Unfocused"));
-
-		App.Tap("EntryFocus");
-		System.Threading.Thread.Sleep(200);
-		Assert.That(App.FindElement("EntryState").GetText(), Is.EqualTo("State: Focused"));
-
-		App.Tap("EntryDisable");
-		System.Threading.Thread.Sleep(200);
-		Assert.That(App.FindElement("EntryState").GetText(), Is.EqualTo("State: Disabled"));
-
-		App.Tap("EntryDisable");
-		System.Threading.Thread.Sleep(200);
-		Assert.That(App.FindElement("EntryState").GetText(), Is.EqualTo("State: Unfocused"));
-
-		App.Tap("EntryFocus");
-		System.Threading.Thread.Sleep(200);
-		Assert.That(App.FindElement("EntryState").GetText(), Is.EqualTo("State: Focused"));
-
-		VerifyScreenshot(retryTimeout: System.TimeSpan.FromSeconds(2));
+	[Test, Order(18)]
+	public void VerifyVSM_Entry_ValidToInvalid()
+	{
+		App.WaitForElement("ResetValidationEntryButton");
+		App.Tap("ResetValidationEntryButton");
+		App.WaitForElement("ValidationEntry");
+		App.Tap("ValidationEntry");
+		App.EnterText("ValidationEntry", "965-999-9999");
+		var stateText = App.FindElement("ValidationEntryLabel").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Valid"));
+		App.WaitForElement("ValidateEntryButton");
+		App.Tap("ValidateEntryButton");
+		App.EnterText("ValidationEntry", "Invalid");
+		stateText = App.FindElement("ValidationEntryLabel").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Invalid"));
 	}
 }

@@ -5,6 +5,7 @@ public partial class VisualStateManagerButtonPage : ContentPage
 	public VisualStateManagerButtonPage()
 	{
 		InitializeComponent();
+		VisualStateManager.GoToState(DemoButton, "Normal");
 	}
 
 	void OnDemoButtonPressed(object sender, EventArgs e)

@@ -5,6 +5,7 @@ public partial class VisualStateManagerSwitchPage : ContentPage
 	public VisualStateManagerSwitchPage()
 	{
 		InitializeComponent();
+		VisualStateManager.GoToState(VSMSwitch, "Normal");
 	}
 
 	void OnSwitchToggled(object sender, ToggledEventArgs e)

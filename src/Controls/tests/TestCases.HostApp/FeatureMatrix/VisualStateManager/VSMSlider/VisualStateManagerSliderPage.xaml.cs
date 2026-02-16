@@ -7,6 +7,7 @@ public partial class VisualStateManagerSliderPage : ContentPage
 	public VisualStateManagerSliderPage()
 	{
 		InitializeComponent();
+		VisualStateManager.GoToState(VSMSlider, "Normal");
 	}
 
 	void OnFocusSlider(object sender, EventArgs e)

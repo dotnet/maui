@@ -5,6 +5,7 @@ public partial class VisualStateManagerCheckBoxPage : ContentPage
 	public VisualStateManagerCheckBoxPage()
 	{
 		InitializeComponent();
+		VisualStateManager.GoToState(VSMCheckBox, "Unchecked");
 	}
 
 	void OnCheckBoxCheckedChanged(object sender, CheckedChangedEventArgs e)
