@@ -107,7 +107,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (e.Is(VisualElement.FlowDirectionProperty))
 				UpdateFlowDirection();
 			else if (e.Is(Shell.FlyoutIconProperty) || e.Is(Shell.ForegroundColorProperty))
+			{
 				UpdateLeftToolbarItems();
+				UpdateRightBarButtonItemTintColors();
+			}
 		}
 
 #nullable disable
@@ -154,6 +157,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			else if (e.PropertyName == Shell.ForegroundColorProperty.PropertyName)
 			{
 				UpdateLeftToolbarItems();
+				UpdateRightBarButtonItemTintColors();
 			}
 		}
 
@@ -455,7 +459,36 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			NavigationItem.SetRightBarButtonItems(primaries is null ? Array.Empty<UIBarButtonItem>() : primaries.ToArray(), false);
 
+			UpdateRightBarButtonItemTintColors();
 			UpdateLeftToolbarItems();
+		}
+
+		/// iOS 26+: LiquidGlass no longer inherits the foreground color from the navigation bar's TintColor.
+		/// Explicitly set TintColor on each right bar button item to ensure the Shell.ForegroundColor is applied.
+		/// When ForegroundColor is cleared, resets TintColor to null so items revert to the system default.
+		void UpdateRightBarButtonItemTintColors()
+		{
+			if (!(OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26)))
+			{
+				return;
+			}
+
+			if (NavigationItem?.RightBarButtonItems is not { Length: > 0 } rightItems)
+			{
+				return;
+			}
+
+			var foregroundColor = _context?.Shell?.CurrentPage?.GetValue(Shell.ForegroundColorProperty) ??
+								_context?.Shell?.GetValue(Shell.ForegroundColorProperty);
+
+			var platformColor = foregroundColor is Graphics.Color shellForegroundColor
+				? shellForegroundColor.ToPlatform()
+				: null;
+
+			foreach (var item in rightItems)
+			{
+				item.TintColor = platformColor;
+			}
 		}
 
 		void UpdateLeftToolbarItems()
