@@ -4,6 +4,7 @@
              xmlns:local="clr-namespace:Maui.Controls.Sample"
              x:Class="Maui.Controls.Sample.SafeAreaContentPage"
              x:DataType="local:SafeAreaViewModel"
+             AutomationId="SafeAreaContentPage"
              SafeAreaEdges="{Binding EffectiveSafeAreaEdges}"
              Padding="{Binding Padding}"
              Background="{Binding Background}">
@@ -33,7 +34,6 @@
                TextColor="White"
                VerticalOptions="Fill"
                VerticalTextAlignment="Center"
-               Padding="5"
                Grid.Row="1"
                Grid.Column="0"/>
 
@@ -54,6 +54,12 @@
             <Label AutomationId="SafeAreaEdgesValueLabel"
                    Text="{Binding DisplayString}"
                    FontSize="14"/>
+
+            <Label x:Name="SafeAreaInsetsLabel"
+                   AutomationId="SafeAreaInsetsLabel"
+                   Text="Insets: Loading..."
+                   FontSize="12"
+                   TextColor="Gray"/>
 
             <!-- SafeArea value buttons -->
             <HorizontalStackLayout Spacing="5" HorizontalOptions="Center">
@@ -112,7 +118,6 @@
                FontAttributes="Bold"
                HorizontalOptions="Fill"
                HorizontalTextAlignment="Center"
-               Padding="5"
                Grid.Row="2"
                Grid.Column="0"
                Grid.ColumnSpan="3"/>

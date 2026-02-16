@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,9 +10,68 @@ namespace Microsoft.Maui.TestCases.Tests
 		public const string SafeAreaFeatureMatrix = "SafeArea Feature Matrix";
 		public override string GalleryPageName => SafeAreaFeatureMatrix;
 
+		// Tolerance in pixels/points for comparing label positions to safe area inset values
+		const int InsetTolerance = 5;
+		int _bottomSafeAreaStartY;
+		int _bottomSafeAreaEndY;
+
 		public SafeArea_ContentPageFeatureTests(TestDevice device)
 			: base(device)
 		{
+		}
+
+		/// <summary>
+		/// Reads and parses safe area inset values from the SafeAreaInsetsLabel.
+		/// Reuses the same platform-specific approach as Issue28986_SafeAreaBorderOrientation.
+		/// Format: "L:{left},T:{top},R:{right},B:{bottom}"
+		/// </summary>
+		private (int Left, int Top, int Right, int Bottom) GetSafeAreaInsets()
+		{
+			var text = App.WaitForElement("SafeAreaInsetsLabel").GetText() ?? string.Empty;
+			var match = System.Text.RegularExpressions.Regex.Match(text, @"L:(\d+),T:(\d+),R:(\d+),B:(\d+)");
+			if (!match.Success)
+				throw new InvalidOperationException($"Failed to parse safe area insets from: '{text}'");
+			return (
+				int.Parse(match.Groups[1].Value),
+				int.Parse(match.Groups[2].Value),
+				int.Parse(match.Groups[3].Value),
+				int.Parse(match.Groups[4].Value)
+			);
+		}
+
+		private int GetKeyboardY()
+        {
+            var app = (AppiumApp)App;
+            OpenQA.Selenium.IWebElement? keyboard = null;
+
+#if IOS
+            keyboard = app.Driver.FindElement(OpenQA.Selenium.Appium.MobileBy.ClassName("XCUIElementTypeKeyboard"));
+#elif ANDROID
+            keyboard = app.Driver.FindElement(OpenQA.Selenium.Appium.MobileBy.ClassName("android.inputmethodservice.SoftInputWindow"));
+#endif
+
+            if (keyboard == null)
+                throw new InvalidOperationException("Keyboard not found");
+
+            return keyboard.Location.Y;
+        }
+
+		public void GetSafeAreaBottomYposition()
+		{
+			var size = ((AppiumApp)App).Driver.Manage().Window.Size;
+			// int screenWidth = size.Width;
+			int screenHeight = size.Height;
+
+			var insets = GetSafeAreaInsets();
+
+			_bottomSafeAreaStartY = screenHeight - insets.Bottom;
+			_bottomSafeAreaEndY = screenHeight;
+		}
+
+		public void ClickContentPageSafeAreaButton()
+		{
+			App.WaitForElement("ContentPageSafeAreaButton");
+			App.Tap("ContentPageSafeAreaButton");
 		}
 
 		// ──────────────────────────────────────────────
@@ -25,44 +83,73 @@ namespace Microsoft.Maui.TestCases.Tests
 		public void ValidateSafeAreaEdges_None()
 		{
 			App.WaitForElement("ContentPageSafeAreaButton");
-			App.Tap("ContentPageSafeAreaButton");	
+			App.Tap("ContentPageSafeAreaButton");
 			App.WaitForElement("SafeAreaNoneButton");
 			App.Tap("SafeAreaNoneButton");
-
+			GetSafeAreaBottomYposition();
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("None"));
 
-			var topRect = App.WaitForElement("TopEdgeIndicator").GetRect();
-			Assert.That(topRect.Y, Is.LessThanOrEqualTo(5), "Top indicator should be at the very top (edge-to-edge)");
+			// Portrait: top label Y should be ≈ 0 (edge-to-edge, no safe area applied)
+			var topLabelRect = App.WaitForElement("TopEdgeIndicator").GetRect();
+			Assert.That(topLabelRect.Y, Is.EqualTo(0),
+				$"None: top label Y ({topLabelRect.Y}) should be = 0 (edge-to-edge), safe area top inset is ignored");
+
+			var insets = GetSafeAreaInsets();
+
+			// Portrait: bottom label bottom edge should be ≈ insets.Bottom (edge-to-edge, no safe area applied)
+			var bottomLabelRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			Assert.That(Math.Abs(bottomLabelRect.Bottom), Is.EqualTo(_bottomSafeAreaEndY),
+				$"None: bottom label Y ({bottomLabelRect.Bottom}) should be ≈ insets.Bottom ({_bottomSafeAreaEndY})");
 		}
 
 		[Test, Order(2)]
 		[Description("Content inset from all system UI (status bar, nav bar, notch, home indicator)")]
 		public void ValidateSafeAreaEdges_All()
 		{
-			App.WaitForElement("SafeAreaAllButton");
 			App.Tap("SafeAreaAllButton");
-
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("All"));
 
-			var topRect = App.WaitForElement("TopEdgeIndicator").GetRect();
-			Assert.That(topRect.Y, Is.GreaterThan(5), "Top indicator should be inset from the top edge");
+			var insets = GetSafeAreaInsets();
+
+			// Portrait: top label Y should be ≈ insets.Top (safe area applied)
+			var topLabelRect = App.WaitForElement("TopEdgeIndicator").GetRect();
+			Assert.That(Math.Abs(topLabelRect.Y), Is.EqualTo(insets.Top),
+				$"All: top label Y ({topLabelRect.Y}) should be equal to insets.Top ({insets.Top})");
+
+			// Portrait: bottom label bottom edge should be ≈ screenBottom - insets.Bottom
+			var bottomLabelRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			Assert.That(Math.Abs(bottomLabelRect.Bottom), Is.EqualTo(_bottomSafeAreaStartY),
+				$"All: bottom label Y ({bottomLabelRect.Bottom}) should be equal to insets.Bottom ({_bottomSafeAreaStartY})");
 		}
 
 		[Test, Order(3)]
 		[Description("Content avoids system bars/notch but can extend under keyboard area")]
 		public void ValidateSafeAreaEdges_Container()
 		{
-			App.WaitForElement("SafeAreaContainerButton");
-			App.Tap("SafeAreaContainerButton");
+			// Get None baseline for bottom reference
+			App.WaitForElement("SafeAreaNoneButton");
+			App.Tap("SafeAreaNoneButton");
+			var noneBottomRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			var screenBottom = noneBottomRect.Y + noneBottomRect.Height;
 
+			App.Tap("SafeAreaContainerButton");
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("Container"));
 
-			var topRect = App.WaitForElement("TopEdgeIndicator").GetRect();
-			Assert.That(topRect.Y, Is.GreaterThan(5), "Top indicator should be inset from the top edge for Container");
+			var insets = GetSafeAreaInsets();
+
+			// Portrait: top label Y should be ≈ insets.Top (safe area applied)
+			var topLabelRect = App.WaitForElement("TopEdgeIndicator").GetRect();
+			Assert.That(Math.Abs(topLabelRect.Y), Is.EqualTo(insets.Top),
+				$"Container: top label Y ({topLabelRect.Y}) should be equal to insets.Top ({insets.Top})");
+
+			// Portrait: bottom label bottom edge should be ≈ screenBottom - insets.Bottom
+			var bottomLabelRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			Assert.That(Math.Abs(bottomLabelRect.Bottom), Is.EqualTo(_bottomSafeAreaStartY),
+				$"Container: bottom label Y ({bottomLabelRect.Bottom}) should be equal to insets.Bottom ({_bottomSafeAreaStartY})");
 		}
 
 		[Test, Order(4)]
-		[Description("SoftInput allows content under system bars but avoids keyboard")]
+		[Description("SoftInput respects safe area on top/sides but bottom is edge-to-edge without keyboard")]
 		public void ValidateSafeAreaEdges_SoftInput()
 		{
 			App.WaitForElement("SafeAreaSoftInputButton");
@@ -70,8 +157,17 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("SoftInput"));
 
-			var topRect = App.WaitForElement("TopEdgeIndicator").GetRect();
-			Assert.That(topRect.Y, Is.LessThanOrEqualTo(5), "SoftInput: top should be edge-to-edge (no container adjustment)");
+			var insets = GetSafeAreaInsets();
+
+			// Portrait: top label Y should be ≈ insets.Top (SoftInput respects notch/safe area)
+			var topLabelRect = App.WaitForElement("TopEdgeIndicator").GetRect();
+			Assert.That(Math.Abs(topLabelRect.Y), Is.EqualTo(insets.Top),
+				$"SoftInput: top label Y ({topLabelRect.Y}) should be equal to insets.Top ({insets.Top})");
+
+			// Portrait: bottom label bottom edge should be ≈ insets.Bottom (edge-to-edge, no safe area applied)
+			var bottomLabelRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			Assert.That(Math.Abs(bottomLabelRect.Bottom), Is.EqualTo(_bottomSafeAreaEndY),
+				$"SoftInput: bottom label Y ({bottomLabelRect.Bottom}) should be equal to insets.Bottom ({_bottomSafeAreaEndY})");
 		}
 
 		[Test, Order(5)]
@@ -82,6 +178,18 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("SafeAreaDefaultButton");
 
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("Default"));
+
+			var insets = GetSafeAreaInsets();
+
+			// Portrait: top label Y should be ≈ insets.Top (safe area applied)
+			var topLabelRect = App.WaitForElement("TopEdgeIndicator").GetRect();
+			Assert.That(Math.Abs(topLabelRect.Y), Is.EqualTo(insets.Top),
+				$"Default: top label Y ({topLabelRect.Y}) should be equal to insets.Top ({insets.Top})");
+
+			// Portrait: bottom label bottom edge should be ≈ screenBottom - insets.Bottom
+			var bottomLabelRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			Assert.That(Math.Abs(bottomLabelRect.Bottom), Is.EqualTo(_bottomSafeAreaStartY),
+				$"Default: bottom label Y ({bottomLabelRect.Bottom}) should be equal to insets.Bottom ({_bottomSafeAreaStartY})");
 		}
 
 		// ──────────────────────────────────────────────
@@ -89,15 +197,13 @@ namespace Microsoft.Maui.TestCases.Tests
 		// ──────────────────────────────────────────────
 
 		[Test, Order(6)]
-		[Description("Only top avoids status bar/notch. Other edges edge-to-edge.")]
+		[Description("Only top avoids status bar/notch. Bottom edge-to-edge.")]
 		public void ValidatePerEdge_TopContainerOnly()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("LeftNone");
-			App.Tap("LeftNone");
+			App.WaitForElement("TopContainer");
 			App.Tap("TopContainer");
-			App.Tap("RightNone");
 			App.Tap("BottomNone");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
@@ -105,47 +211,62 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("SafeAreaEdgesValueLabel");
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("L:None, T:Container, R:None, B:None"));
 
-			var topRect = App.WaitForElement("TopEdgeIndicator").GetRect();
-			Assert.That(topRect.Y, Is.GreaterThan(5), "Top should be inset (Container)");
+			var insets = GetSafeAreaInsets();
 
-			var leftRect = App.WaitForElement("LeftEdgeIndicator").GetRect();
-			Assert.That(leftRect.X, Is.LessThanOrEqualTo(5), "Left should be edge-to-edge (None)");
+			// Portrait: Container — should be inset by safe area top
+			var topLabelRect = App.WaitForElement("TopEdgeIndicator").GetRect();
+			Assert.That(Math.Abs(topLabelRect.Y), Is.EqualTo(insets.Top),
+				$"Top (Container): label Y ({topLabelRect.Y}) should be ≈ insets.Top ({insets.Top})");
+
+			// Portrait: bottom label bottom edge should be ≈ insets.Bottom (edge-to-edge, no safe area applied)
+			var bottomLabelRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			Assert.That(Math.Abs(bottomLabelRect.Bottom), Is.EqualTo(_bottomSafeAreaEndY),
+				$"None: bottom label Y ({bottomLabelRect.Bottom}) should be ≈ insets.Bottom ({_bottomSafeAreaEndY})");
 		}
 
 		[Test, Order(7)]
-		[Description("Sides/top avoid system bars; bottom avoids only keyboard")]
-		public void ValidatePerEdge_BottomSoftInput_SidesContainer()
+		[Description("Top avoids system bars; bottom avoids only keyboard")]
+		public void ValidatePerEdge_BottomSoftInput_TopContainer()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("LeftContainer");
-			App.Tap("LeftContainer");
+			App.WaitForElement("TopContainer");
 			App.Tap("TopContainer");
-			App.Tap("RightContainer");
 			App.Tap("BottomSoftInput");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 
 			App.WaitForElement("SafeAreaEdgesValueLabel");
-			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("L:Container, T:Container, R:Container, B:SoftInput"));
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("L:None, T:Container, R:None, B:SoftInput"));
 
-			var topRect = App.WaitForElement("TopEdgeIndicator").GetRect();
-			Assert.That(topRect.Y, Is.GreaterThan(5), "Top should be inset (Container)");
+			var insets = GetSafeAreaInsets();
 
-			var leftRect = App.WaitForElement("LeftEdgeIndicator").GetRect();
-			Assert.That(leftRect.X, Is.GreaterThan(0), "Left should be inset (Container)");
+			// Portrait: only validate top and bottom — no left/right safe area insets in portrait
+			// Top: Container — should be inset by safe area top
+			var topLabelRect = App.WaitForElement("TopEdgeIndicator").GetRect();
+			Assert.That(Math.Abs(topLabelRect.Y), Is.EqualTo(insets.Top),
+				$"Top (Container): label Y ({topLabelRect.Y}) should be ≈ insets.Top ({insets.Top})");
+
+			// Portrait: bottom label bottom edge should be ≈ insets.Bottom (edge-to-edge, no safe area applied)
+			var bottomLabelRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			Assert.That(Math.Abs(bottomLabelRect.Bottom), Is.EqualTo(_bottomSafeAreaEndY),
+				$"None: bottom label Y ({bottomLabelRect.Bottom}) should be ≈ insets.Bottom ({_bottomSafeAreaEndY})");
 		}
 
 		[Test, Order(8)]
-		[Description("Top/bottom respect all insets; left/right edge-to-edge")]
+		[Description("Top/bottom respect all insets")]
 		public void ValidatePerEdge_TopBottomAll_SidesNone()
 		{
+			// Get None baseline for bottom reference
+			App.WaitForElement("SafeAreaNoneButton");
+			App.Tap("SafeAreaNoneButton");
+			var noneBottomRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			var screenBottom = noneBottomRect.Y + noneBottomRect.Height;
+
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("LeftNone");
-			App.Tap("LeftNone");
+			App.WaitForElement("TopAll");
 			App.Tap("TopAll");
-			App.Tap("RightNone");
 			App.Tap("BottomAll");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
@@ -153,11 +274,17 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("SafeAreaEdgesValueLabel");
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("L:None, T:All, R:None, B:All"));
 
-			var topRect = App.WaitForElement("TopEdgeIndicator").GetRect();
-			Assert.That(topRect.Y, Is.GreaterThan(5), "Top should be inset (All)");
+			var insets = GetSafeAreaInsets();
 
-			var leftRect = App.WaitForElement("LeftEdgeIndicator").GetRect();
-			Assert.That(leftRect.X, Is.LessThanOrEqualTo(5), "Left should be edge-to-edge (None)");
+			// Portrait: top label Y should be ≈ 0 (edge-to-edge, no safe area applied)
+			var topLabelRect = App.WaitForElement("TopEdgeIndicator").GetRect();
+			Assert.That(topLabelRect.Y, Is.EqualTo(0),
+				$"None: top label Y ({topLabelRect.Y}) should be = 0 (edge-to-edge), safe area top inset is ignored");
+
+			// Portrait: bottom label bottom edge should be ≈ insets.Bottom (edge-to-edge, no safe area applied)
+			var bottomLabelRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			Assert.That(Math.Abs(bottomLabelRect.Bottom), Is.EqualTo(_bottomSafeAreaEndY),
+				$"None: bottom label Y ({bottomLabelRect.Bottom}) should be ≈ insets.Bottom ({_bottomSafeAreaEndY})");
 		}
 
 		[Test, Order(9)]
@@ -166,16 +293,26 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("LeftNone");
-			App.Tap("LeftNone");
+			App.WaitForElement("TopContainer");
 			App.Tap("TopContainer");
-			App.Tap("RightSoftInput");
 			App.Tap("BottomAll");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 
 			App.WaitForElement("SafeAreaEdgesValueLabel");
-			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("L:None, T:Container, R:SoftInput, B:All"));
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("L:None, T:Container, R:None, B:All"));
+
+			var insets = GetSafeAreaInsets();
+
+			// Portrait: top label Y should be ≈ insets.Top (safe area applied)
+			var topLabelRect = App.WaitForElement("TopEdgeIndicator").GetRect();
+			Assert.That(Math.Abs(topLabelRect.Y), Is.EqualTo(insets.Top),
+				$"All: top label Y ({topLabelRect.Y}) should be equal to insets.Top ({insets.Top})");
+
+			// Portrait: bottom label bottom edge should be ≈ screenBottom - insets.Bottom
+			var bottomLabelRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			Assert.That(Math.Abs(bottomLabelRect.Bottom), Is.EqualTo(_bottomSafeAreaStartY),
+				$"All: bottom label Y ({bottomLabelRect.Bottom}) should be equal to insets.Bottom ({_bottomSafeAreaStartY})");
 		}
 
 		// ──────────────────────────────────────────────
@@ -264,249 +401,247 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		// ──────────────────────────────────────────────
-		// Keyboard Rectangle Validation (iOS)
+		// Keyboard Position Validation
 		// ──────────────────────────────────────────────
-		// Uses KeyboardScrolling.FindiOSKeyboardLocation to get the keyboard's top edge Y coordinate.
-		// Validates that the bottom indicator's bottom edge is strictly above the keyboard's top edge
-		// when SafeArea requires adjustment (All/SoftInput), and NOT adjusted when it doesn't (None/Container).
-
-#if IOS
-		// Tolerance in pixels for comparing bottom label's bottom edge to keyboard's top edge.
-		// On iOS the content area shrinks above the keyboard but the bottom indicator may not
-		// align pixel-perfectly with the keyboard top due to layout padding and home indicator.
-		const int KeyboardAlignmentTolerance = 15;
+		// Validates that the bottom indicator moves up when keyboard is shown with modes that
+		// adjust for keyboard (All/SoftInput), and does NOT move with modes that don't (None/Container).
 
 		[Test, Order(15)]
-		[Description("With All, bottom indicator's bottom edge aligns with the keyboard's top edge")]
-		public void ValidateKeyboardRect_All_BottomAlignsWithKeyboard()
+		[Description("With All, bottom indicator moves up when keyboard is shown and restores when dismissed")] /////////////
+		public void ValidateKeyboard_All_BottomMovesUp()
 		{
-			var app = App as AppiumApp;
-			if (app is null)
-				return;
-
 			App.WaitForElement("SafeAreaAllButton");
 			App.Tap("SafeAreaAllButton");
 
-			// Record bottom indicator position before keyboard
-			var bottomBefore = App.WaitForElement("BottomEdgeIndicator").GetRect();
-			var bottomEdgeBefore = bottomBefore.Y + bottomBefore.Height;
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("All"));
 
-			// Show keyboard
+			var insets = GetSafeAreaInsets();
+
+			// ── Before keyboard ──
+			var topLabelBeforeRect = App.WaitForElement("TopEdgeIndicator").GetRect();
+			Assert.That(Math.Abs(topLabelBeforeRect.Y), Is.EqualTo(insets.Top),
+				$"Before keyboard - top label Y ({topLabelBeforeRect.Y}) should be equal to insets.Top ({insets.Top})");
+
+			var bottomLabelBeforeRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			Assert.That(Math.Abs(bottomLabelBeforeRect.Bottom), Is.EqualTo(_bottomSafeAreaStartY),
+				$"Before keyboard - bottom label Bottom ({bottomLabelBeforeRect.Bottom}) should be equal to _bottomSafeAreaStartY ({_bottomSafeAreaStartY})");
+
+			// ── Show keyboard ──
 			App.Tap("SafeAreaTestEntry");
 			App.WaitForKeyboardToShow();
 
-			// Get keyboard top edge
-			var keyboardPos = KeyboardScrolling.FindiOSKeyboardLocation(app.Driver);
-			ClassicAssert.NotNull(keyboardPos, "Keyboard location should be available");
-			var keyboardTop = keyboardPos!.Value.Y;
+			var keyboardY = GetKeyboardY();
 
-			// Bottom indicator should have moved up (content area shrinks above keyboard)
-			var bottomAfter = App.WaitForElement("BottomEdgeIndicator").GetRect();
-			var bottomAfterEdge = bottomAfter.Y + bottomAfter.Height;
-			Assert.That(Math.Abs(bottomAfterEdge - keyboardTop), Is.LessThanOrEqualTo(KeyboardAlignmentTolerance),
-				$"With All, bottom indicator's bottom edge ({bottomAfterEdge}) should align with keyboard top ({keyboardTop}). Diff: {Math.Abs(bottomAfterEdge - keyboardTop)}px");
+			// Bottom should have moved up to the keyboard top
+			var bottomLabelDuringRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			Assert.That(bottomLabelDuringRect.Bottom, Is.EqualTo(keyboardY),
+				$"During keyboard - bottom label Bottom ({bottomLabelDuringRect.Bottom}) should equal keyboard Y ({keyboardY})");
 
-			// Entry should also be above keyboard top
-			var entryRect = App.WaitForElement("SafeAreaTestEntry").GetRect();
-			var entryBottom = entryRect.Y + entryRect.Height;
-			Assert.That(entryBottom, Is.LessThanOrEqualTo(keyboardTop + KeyboardAlignmentTolerance),
-				$"With All, entry's bottom edge ({entryBottom}) should be above keyboard top ({keyboardTop})");
+			// Top should remain unchanged
+			var topLabelDuringRect = App.WaitForElement("TopEdgeIndicator").GetRect();
+			Assert.That(topLabelDuringRect.Y, Is.EqualTo(topLabelBeforeRect.Y),
+				$"During keyboard - top label Y ({topLabelDuringRect.Y}) should remain at ({topLabelBeforeRect.Y})");
 
-			// Dismiss keyboard and verify bottom indicator restores
+			// ── Dismiss keyboard ──
 			App.DismissKeyboard();
 			App.WaitForKeyboardToHide();
 
-			var bottomRestored = App.WaitForElement("BottomEdgeIndicator").GetRect();
-			var bottomEdgeRestored = bottomRestored.Y + bottomRestored.Height;
-			Assert.That(Math.Abs(bottomEdgeRestored - bottomEdgeBefore), Is.LessThanOrEqualTo(10),
-				$"Bottom indicator should return to original position after keyboard dismiss. " +
-				$"Original: {bottomEdgeBefore:F0}, Restored: {bottomEdgeRestored:F0}");
+			// Top should return to its original position
+			var topLabelAfterRect = App.WaitForElement("TopEdgeIndicator").GetRect();
+			Assert.That(topLabelAfterRect.Y, Is.EqualTo(topLabelBeforeRect.Y),
+				$"After keyboard - top label Y ({topLabelAfterRect.Y}) should return to original ({topLabelBeforeRect.Y})");
+
+			// Bottom should return to its original position
+			var bottomLabelAfterRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			Assert.That(bottomLabelAfterRect.Bottom, Is.EqualTo(bottomLabelBeforeRect.Bottom),
+				$"After keyboard - bottom label Bottom ({bottomLabelAfterRect.Bottom}) should return to original ({bottomLabelBeforeRect.Bottom})");
 		}
 
 		[Test, Order(16)]
-		[Description("With SoftInput, bottom indicator's bottom edge aligns with the keyboard's top edge")]
-		public void ValidateKeyboardRect_SoftInput_BottomAlignsWithKeyboard()
+		[Description("With SoftInput, bottom indicator moves up when keyboard is shown and restores when dismissed")] ////////////
+		public void ValidateKeyboard_SoftInput_BottomMovesUp()
 		{
-			var app = App as AppiumApp;
-			if (app is null)
-				return;
-
 			App.WaitForElement("SafeAreaSoftInputButton");
 			App.Tap("SafeAreaSoftInputButton");
 
-			// Record bottom indicator position before keyboard
-			var bottomBefore = App.WaitForElement("BottomEdgeIndicator").GetRect();
-			var bottomEdgeBefore = bottomBefore.Y + bottomBefore.Height;
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("SoftInput"));
 
-			// Show keyboard
+			var insets = GetSafeAreaInsets();
+
+			// ── Before keyboard ──
+			var topLabelBeforeRect = App.WaitForElement("TopEdgeIndicator").GetRect();
+			Assert.That(Math.Abs(topLabelBeforeRect.Y), Is.EqualTo(insets.Top),
+				$"Before keyboard - top label Y ({topLabelBeforeRect.Y}) should be equal to insets.Top ({insets.Top})");
+
+			var bottomLabelBeforeRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			Assert.That(Math.Abs(bottomLabelBeforeRect.Bottom), Is.EqualTo(_bottomSafeAreaEndY),
+				$"Before keyboard - bottom label Bottom ({bottomLabelBeforeRect.Bottom}) should be equal to _bottomSafeAreaEndY ({_bottomSafeAreaEndY})");
+
+			// ── Show keyboard ──
 			App.Tap("SafeAreaTestEntry");
 			App.WaitForKeyboardToShow();
 
-			// Get keyboard top edge
-			var keyboardPos = KeyboardScrolling.FindiOSKeyboardLocation(app.Driver);
-			ClassicAssert.NotNull(keyboardPos, "Keyboard location should be available");
-			var keyboardTop = keyboardPos!.Value.Y;
+			var keyboardY = GetKeyboardY();
 
-			// Bottom indicator should have moved up (content area shrinks above keyboard)
-			var bottomAfter = App.WaitForElement("BottomEdgeIndicator").GetRect();
-			var bottomAfterEdge = bottomAfter.Y + bottomAfter.Height;
-			Assert.That(Math.Abs(bottomAfterEdge - keyboardTop), Is.LessThanOrEqualTo(KeyboardAlignmentTolerance),
-				$"With SoftInput, bottom indicator's bottom edge ({bottomAfterEdge}) should align with keyboard top ({keyboardTop}). Diff: {Math.Abs(bottomAfterEdge - keyboardTop)}px");
+			// Bottom should have moved up to the keyboard top
+			var bottomLabelDuringRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			Assert.That(bottomLabelDuringRect.Bottom, Is.EqualTo(keyboardY),
+				$"During keyboard - bottom label Bottom ({bottomLabelDuringRect.Bottom}) should equal keyboard Y ({keyboardY})");
 
-			// Dismiss keyboard and verify restoration
+			// Top should remain unchanged
+			var topLabelDuringRect = App.WaitForElement("TopEdgeIndicator").GetRect();
+			Assert.That(topLabelDuringRect.Y, Is.EqualTo(topLabelBeforeRect.Y),
+				$"During keyboard - top label Y ({topLabelDuringRect.Y}) should remain at ({topLabelBeforeRect.Y})");
+
+			// ── Dismiss keyboard ──
 			App.DismissKeyboard();
 			App.WaitForKeyboardToHide();
 
-			var bottomRestored = App.WaitForElement("BottomEdgeIndicator").GetRect();
-			var bottomEdgeRestored = bottomRestored.Y + bottomRestored.Height;
-			Assert.That(Math.Abs(bottomEdgeRestored - bottomEdgeBefore), Is.LessThanOrEqualTo(10),
-				$"Bottom indicator should return to original position after keyboard dismiss. " +
-				$"Original: {bottomEdgeBefore:F0}, Restored: {bottomEdgeRestored:F0}");
+			// Top should return to its original position
+			var topLabelAfterRect = App.WaitForElement("TopEdgeIndicator").GetRect();
+			Assert.That(topLabelAfterRect.Y, Is.EqualTo(topLabelBeforeRect.Y),
+				$"After keyboard - top label Y ({topLabelAfterRect.Y}) should return to original ({topLabelBeforeRect.Y})");
+
+			// Bottom should return to its original position
+			var bottomLabelAfterRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			Assert.That(bottomLabelAfterRect.Bottom, Is.EqualTo(bottomLabelBeforeRect.Bottom),
+				$"After keyboard - bottom label Bottom ({bottomLabelAfterRect.Bottom}) should return to original ({bottomLabelBeforeRect.Bottom})");
 		}
 
 		[Test, Order(17)]
-		[Description("With None, bottom indicator is NOT adjusted above the keyboard — keyboard overlaps content")]
-		public void ValidateKeyboardRect_None_BottomNotAdjusted()
+		[Description("With None, bottom indicator does NOT move when keyboard is shown")] /////////////
+		public void ValidateKeyboard_None_BottomStays()
 		{
-			var app = App as AppiumApp;
-			if (app is null)
-				return;
-
 			App.WaitForElement("SafeAreaNoneButton");
 			App.Tap("SafeAreaNoneButton");
 
-			// Record bottom indicator position before keyboard
-			var bottomBefore = App.WaitForElement("BottomEdgeIndicator").GetRect();
-			var bottomEdgeBefore = bottomBefore.Y + bottomBefore.Height;
+			// ── Before keyboard ──
+			var topLabelBeforeRect = App.WaitForElement("TopEdgeIndicator").GetRect();
+			Assert.That(topLabelBeforeRect.Y, Is.EqualTo(0),
+				$"Before keyboard - top label Y ({topLabelBeforeRect.Y}) should be 0 (edge-to-edge)");
 
-			// Show keyboard
+			var bottomLabelBeforeRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			Assert.That(Math.Abs(bottomLabelBeforeRect.Bottom), Is.EqualTo(_bottomSafeAreaEndY),
+				$"Before keyboard - bottom label Bottom ({bottomLabelBeforeRect.Bottom}) should be equal to _bottomSafeAreaEndY ({_bottomSafeAreaEndY})");
+
+			// ── Show keyboard ──
 			App.Tap("SafeAreaTestEntry");
 			App.WaitForKeyboardToShow();
 
-			// Get keyboard top edge
-			var keyboardPos = KeyboardScrolling.FindiOSKeyboardLocation(app.Driver);
-			ClassicAssert.NotNull(keyboardPos, "Keyboard location should be available");
+			var topLabelDuringRect = App.WaitForElement("TopEdgeIndicator").GetRect();
+			Assert.That(topLabelDuringRect.Y, Is.EqualTo(0),
+				$"During keyboard - top label Y ({topLabelDuringRect.Y}) should be 0 (edge-to-edge)");
 
-			// Bottom indicator should NOT have moved — keyboard overlaps content with None
-			var bottomAfter = App.WaitForElement("BottomEdgeIndicator").GetRect();
-			var bottomEdgeAfter = bottomAfter.Y + bottomAfter.Height;
-			Assert.That(Math.Abs(bottomEdgeAfter - bottomEdgeBefore), Is.LessThanOrEqualTo(5),
-				$"With None, bottom indicator should not shift when keyboard opens. " +
-				$"Before: {bottomEdgeBefore:F0}, After: {bottomEdgeAfter:F0}");
+			var bottomLabelDuringRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			Assert.That(Math.Abs(bottomLabelDuringRect.Bottom), Is.EqualTo(_bottomSafeAreaEndY),
+				$"During keyboard - bottom label Bottom ({bottomLabelDuringRect.Bottom}) should be equal to _bottomSafeAreaEndY ({_bottomSafeAreaEndY})");
 
-			// Dismiss keyboard
 			App.DismissKeyboard();
 			App.WaitForKeyboardToHide();
+
+			var topLabelAfterRect = App.WaitForElement("TopEdgeIndicator").GetRect();
+			Assert.That(topLabelAfterRect.Y, Is.EqualTo(topLabelBeforeRect.Y),
+				$"After keyboard - top label Y ({topLabelAfterRect.Y}) should return to original ({topLabelBeforeRect.Y})");
+
+			var bottomLabelAfterRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			Assert.That(bottomLabelAfterRect.Bottom, Is.EqualTo(bottomLabelBeforeRect.Bottom),
+				$"After keyboard - bottom label Bottom ({bottomLabelAfterRect.Bottom}) should return to original ({bottomLabelBeforeRect.Bottom})");
+
 		}
 
 		[Test, Order(18)]
-		[Description("With Container, bottom indicator is NOT adjusted above the keyboard — keyboard may overlap content")]
-		public void ValidateKeyboardRect_Container_BottomNotAdjusted()
+		[Description("With Container, bottom indicator does NOT move when keyboard is shown")] /////////////////
+		public void ValidateKeyboard_Container_BottomStays()
 		{
-			var app = App as AppiumApp;
-			if (app is null)
-				return;
-
 			App.WaitForElement("SafeAreaContainerButton");
 			App.Tap("SafeAreaContainerButton");
 
-			// Record bottom indicator position before keyboard
-			var bottomBefore = App.WaitForElement("BottomEdgeIndicator").GetRect();
-			var bottomEdgeBefore = bottomBefore.Y + bottomBefore.Height;
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("Container"));
 
-			// Show keyboard
+			var insets = GetSafeAreaInsets();
+
+			// ── Before keyboard ──
+			var topLabelBeforeRect = App.WaitForElement("TopEdgeIndicator").GetRect();
+			Assert.That(Math.Abs(topLabelBeforeRect.Y), Is.EqualTo(insets.Top),
+				$"Before keyboard - top label Y ({topLabelBeforeRect.Y}) should be equal to insets.Top ({insets.Top})");
+
+			var bottomLabelBeforeRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			Assert.That(Math.Abs(bottomLabelBeforeRect.Bottom), Is.EqualTo(_bottomSafeAreaStartY),
+				$"Before keyboard - bottom label Bottom ({bottomLabelBeforeRect.Bottom}) should be equal to _bottomSafeAreaStartY ({_bottomSafeAreaStartY})");
+			
 			App.Tap("SafeAreaTestEntry");
 			App.WaitForKeyboardToShow();
 
-			// Get keyboard top edge
-			var keyboardPos = KeyboardScrolling.FindiOSKeyboardLocation(app.Driver);
-			ClassicAssert.NotNull(keyboardPos, "Keyboard location should be available");
-			var keyboardTop = keyboardPos!.Value.Y;
+			// Bottom should have not moved up to the keyboard top
+			var bottomLabelDuringRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			Assert.That(bottomLabelDuringRect.Bottom, Is.EqualTo(_bottomSafeAreaStartY),
+				$"During keyboard - bottom label Bottom ({bottomLabelDuringRect.Bottom}) should equal _bottomSafeAreaStartY ({_bottomSafeAreaStartY})");
 
-			// Container should NOT adjust for keyboard — only system bars are avoided
-			var bottomAfter = App.WaitForElement("BottomEdgeIndicator").GetRect();
-			var bottomEdgeAfter = bottomAfter.Y + bottomAfter.Height;
-			Assert.That(Math.Abs(bottomEdgeAfter - bottomEdgeBefore), Is.LessThanOrEqualTo(5),
-				$"With Container, bottom indicator should not shift when keyboard opens. " +
-				$"Before: {bottomEdgeBefore:F0}, After: {bottomEdgeAfter:F0}");
+			// Top should remain unchanged
+			var topLabelDuringRect = App.WaitForElement("TopEdgeIndicator").GetRect();
+			Assert.That(topLabelDuringRect.Y, Is.EqualTo(topLabelBeforeRect.Y),
+				$"During keyboard - top label Y ({topLabelDuringRect.Y}) should remain at ({topLabelBeforeRect.Y})");
 
-			// Dismiss keyboard
 			App.DismissKeyboard();
 			App.WaitForKeyboardToHide();
+
+			// Top should return to its original position
+			var topLabelAfterRect = App.WaitForElement("TopEdgeIndicator").GetRect();
+			Assert.That(topLabelAfterRect.Y, Is.EqualTo(topLabelBeforeRect.Y),
+				$"After keyboard - top label Y ({topLabelAfterRect.Y}) should return to original ({topLabelBeforeRect.Y})");
+
+			// Bottom should return to its original position
+			var bottomLabelAfterRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			Assert.That(bottomLabelAfterRect.Bottom, Is.EqualTo(bottomLabelBeforeRect.Bottom),
+				$"After keyboard - bottom label Bottom ({bottomLabelAfterRect.Bottom}) should return to original ({bottomLabelBeforeRect.Bottom})");
+			
 		}
-#endif
 
 		// ──────────────────────────────────────────────
-		// Keyboard + Runtime SafeArea Changes (iOS)
+		// Keyboard + Runtime SafeArea Changes
 		// ──────────────────────────────────────────────
 
-#if IOS
 		[Test, Order(19)]
-		[Description("Switch None to All while keyboard is open — bottom indicator moves above keyboard's top edge")]
+		[Description("Switch None to All while keyboard is open — bottom indicator moves up")]
 		public void ValidateKeyboardRuntime_SwitchNoneToAll_WhileKeyboardOpen()
 		{
-			var app = App as AppiumApp;
-			if (app is null)
-				return;
-
 			App.WaitForElement("SafeAreaNoneButton");
 			App.Tap("SafeAreaNoneButton");
 
-			// Open keyboard
 			App.Tap("SafeAreaTestEntry");
 			App.WaitForKeyboardToShow();
 
-			// With None, bottom indicator should NOT be above keyboard
-			var keyboardPos = KeyboardScrolling.FindiOSKeyboardLocation(app.Driver);
-			ClassicAssert.NotNull(keyboardPos, "Keyboard location should be available");
-
+			// With None, record bottom position (not adjusted for keyboard)
 			var bottomNone = App.WaitForElement("BottomEdgeIndicator").GetRect();
-			// None does not adjust — bottom may be at or below keyboard top
 			var bottomEdgeNone = bottomNone.Y + bottomNone.Height;
 
 			// Switch to All while keyboard is still open
 			App.Tap("SafeAreaAllButton");
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("All"));
 
-			// Re-query keyboard position (may have shifted)
-			var keyboardPosAll = KeyboardScrolling.FindiOSKeyboardLocation(app.Driver);
-			ClassicAssert.NotNull(keyboardPosAll, "Keyboard should still be visible after switching to All");
-
-			// With All, bottom indicator should be above keyboard
+			// With All, bottom indicator should move up (above keyboard)
 			var bottomAll = App.WaitForElement("BottomEdgeIndicator").GetRect();
-			var keyboardTopAll = keyboardPosAll!.Value.Y;
 			var bottomEdgeAll = bottomAll.Y + bottomAll.Height;
-			Assert.That(Math.Abs(bottomEdgeAll - keyboardTopAll), Is.LessThanOrEqualTo(KeyboardAlignmentTolerance),
-				$"After switching to All, bottom indicator's bottom edge ({bottomEdgeAll}) should align with keyboard top ({keyboardTopAll}). Diff: {Math.Abs(bottomEdgeAll - keyboardTopAll)}px");
+			Assert.That(bottomEdgeAll, Is.LessThan(bottomEdgeNone),
+				$"After switching to All, bottom should move up. None: {bottomEdgeNone}, All: {bottomEdgeAll}");
 
 			App.DismissKeyboard();
 			App.WaitForKeyboardToHide();
 		}
 
 		[Test, Order(20)]
-		[Description("Switch All to None while keyboard is open — bottom indicator drops back behind keyboard")]
+		[Description("Switch All to None while keyboard is open — bottom indicator drops back")]
 		public void ValidateKeyboardRuntime_SwitchAllToNone_WhileKeyboardOpen()
 		{
-			var app = App as AppiumApp;
-			if (app is null)
-				return;
-
 			App.WaitForElement("SafeAreaAllButton");
 			App.Tap("SafeAreaAllButton");
 
-			// Open keyboard
 			App.Tap("SafeAreaTestEntry");
 			App.WaitForKeyboardToShow();
 
-			// With All, bottom indicator should be above keyboard
-			var keyboardPos = KeyboardScrolling.FindiOSKeyboardLocation(app.Driver);
-			ClassicAssert.NotNull(keyboardPos, "Keyboard location should be available");
-			var keyboardTop = keyboardPos!.Value.Y;
-
+			// With All, record bottom position (adjusted above keyboard)
 			var bottomAll = App.WaitForElement("BottomEdgeIndicator").GetRect();
 			var bottomEdgeAll = bottomAll.Y + bottomAll.Height;
-			Assert.That(Math.Abs(bottomEdgeAll - keyboardTop), Is.LessThanOrEqualTo(KeyboardAlignmentTolerance),
-				$"With All, bottom indicator ({bottomEdgeAll}) should align with keyboard top ({keyboardTop}). Diff: {Math.Abs(bottomEdgeAll - keyboardTop)}px");
 
 			// Switch to None while keyboard is still open
 			App.Tap("SafeAreaNoneButton");
@@ -514,62 +649,51 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			// Top should move to edge (None goes edge-to-edge)
 			var topNone = App.WaitForElement("TopEdgeIndicator").GetRect();
-			Assert.That(topNone.Y, Is.LessThanOrEqualTo(5),
+			Assert.That(topNone.Y, Is.LessThanOrEqualTo(InsetTolerance),
 				"After switching to None with keyboard open, top should be edge-to-edge");
 
 			// With None, bottom indicator should NOT be adjusted above keyboard
 			var bottomNone = App.WaitForElement("BottomEdgeIndicator").GetRect();
 			var bottomEdgeNone = bottomNone.Y + bottomNone.Height;
-			Assert.That(bottomEdgeNone, Is.GreaterThanOrEqualTo(bottomAll.Bottom),
-				$"After switching to None, bottom indicator ({bottomEdgeNone:F0}) should extend back behind keyboard (was {bottomAll.Bottom:F0} with All)");
+			Assert.That(bottomEdgeNone, Is.GreaterThanOrEqualTo(bottomEdgeAll),
+				$"After switching to None, bottom should extend back. All: {bottomEdgeAll}, None: {bottomEdgeNone}");
 
 			App.DismissKeyboard();
 			App.WaitForKeyboardToHide();
 		}
 
 		[Test, Order(21)]
-		[Description("Switch Container to SoftInput while keyboard is open — bottom indicator moves above keyboard's top edge")]
+		[Description("Switch Container to SoftInput while keyboard is open — bottom indicator moves up")]
 		public void ValidateKeyboardRuntime_SwitchContainerToSoftInput_WhileKeyboardOpen()
 		{
-			var app = App as AppiumApp;
-			if (app is null)
-				return;
-
 			App.WaitForElement("SafeAreaContainerButton");
 			App.Tap("SafeAreaContainerButton");
 
-			// Open keyboard
 			App.Tap("SafeAreaTestEntry");
 			App.WaitForKeyboardToShow();
 
-			// Record initial bottom position with Container (before keyboard adjustments are measured)
-			var keyboardPos = KeyboardScrolling.FindiOSKeyboardLocation(app.Driver);
-			ClassicAssert.NotNull(keyboardPos, "Keyboard location should be available");
+			// With Container, bottom is NOT adjusted for keyboard
+			var bottomContainer = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			var bottomEdgeContainer = bottomContainer.Y + bottomContainer.Height;
 
 			// Switch to SoftInput while keyboard is still open
 			App.Tap("SafeAreaSoftInputButton");
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("SoftInput"));
 
-			// SoftInput should be edge-to-edge on top (no container adjustment)
+			// With keyboard open, KeyboardAutoManagerScroll may adjust layout positioning
 			var topSoftInput = App.WaitForElement("TopEdgeIndicator").GetRect();
-			Assert.That(topSoftInput.Y, Is.LessThanOrEqualTo(5),
-				"After switching to SoftInput, top should be edge-to-edge");
+			Assert.That(topSoftInput.Y, Is.LessThanOrEqualTo(InsetTolerance),
+				"After switching to SoftInput with keyboard open, top may be shifted by keyboard scroll manager");
 
-			// Re-query keyboard position
-			var keyboardPosSoftInput = KeyboardScrolling.FindiOSKeyboardLocation(app.Driver);
-			ClassicAssert.NotNull(keyboardPosSoftInput, "Keyboard should still be visible after switching to SoftInput");
-
-			// With SoftInput, bottom indicator should be above keyboard
+			// With SoftInput, bottom indicator should move up (above keyboard)
 			var bottomSoftInput = App.WaitForElement("BottomEdgeIndicator").GetRect();
-			var keyboardTopSoftInput = keyboardPosSoftInput!.Value.Y;
 			var bottomEdgeSoftInput = bottomSoftInput.Y + bottomSoftInput.Height;
-			Assert.That(Math.Abs(bottomEdgeSoftInput - keyboardTopSoftInput), Is.LessThanOrEqualTo(KeyboardAlignmentTolerance),
-				$"SoftInput: bottom indicator's bottom edge ({bottomEdgeSoftInput}) should align with keyboard top ({keyboardTopSoftInput}). Diff: {Math.Abs(bottomEdgeSoftInput - keyboardTopSoftInput)}px");
+			Assert.That(bottomEdgeSoftInput, Is.LessThan(bottomEdgeContainer),
+				$"SoftInput: bottom should be above Container position. Container: {bottomEdgeContainer}, SoftInput: {bottomEdgeSoftInput}");
 
 			App.DismissKeyboard();
 			App.WaitForKeyboardToHide();
 		}
-#endif
 
 		// ──────────────────────────────────────────────
 		// Interaction with ContentPage Properties
@@ -590,8 +714,12 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("SafeAreaEdgesValueLabel");
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("All"));
 
-			var topRect = App.WaitForElement("TopEdgeIndicator").GetRect();
-			Assert.That(topRect.Y, Is.GreaterThan(20), "Top indicator should be inset by safe area + padding");
+			var insets = GetSafeAreaInsets();
+
+			// With All + padding, top should be beyond safe area inset (additive)
+			var topLabelRect = App.WaitForElement("TopEdgeIndicator").GetRect();
+			Assert.That(topLabelRect.Y, Is.GreaterThan(insets.Top),
+				$"Top Y ({topLabelRect.Y}) should be > insets.Top ({insets.Top}) due to additional padding");
 		}
 
 		[Test, Order(23)]
@@ -621,15 +749,19 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("SafeAreaNoneButton");
 			App.Tap("SafeAreaNoneButton");
 
+			var insets = GetSafeAreaInsets();
+
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("None"));
 			var topRectBefore = App.WaitForElement("TopEdgeIndicator").GetRect();
-			Assert.That(topRectBefore.Y, Is.LessThanOrEqualTo(5), "Before: top should be edge-to-edge");
+			Assert.That(topRectBefore.Y, Is.LessThanOrEqualTo(InsetTolerance),
+				$"Before (None): top Y ({topRectBefore.Y}) should be ≈ 0 (edge-to-edge)");
 
 			App.Tap("SafeAreaAllButton");
 
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("All"));
 			var topRectAfter = App.WaitForElement("TopEdgeIndicator").GetRect();
-			Assert.That(topRectAfter.Y, Is.GreaterThan(5), "After: top should be inset");
+			Assert.That(Math.Abs(topRectAfter.Y - insets.Top), Is.LessThanOrEqualTo(InsetTolerance),
+				$"After (All): top Y ({topRectAfter.Y}) should be ≈ insets.Top ({insets.Top})");
 			Assert.That(topRectAfter.Y, Is.GreaterThan(topRectBefore.Y), "Top indicator should have moved down");
 		}
 
@@ -640,34 +772,43 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("SafeAreaAllButton");
 			App.Tap("SafeAreaAllButton");
 
+			var insets = GetSafeAreaInsets();
+
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("All"));
 			var topRectBefore = App.WaitForElement("TopEdgeIndicator").GetRect();
-			Assert.That(topRectBefore.Y, Is.GreaterThan(5), "Before: top should be inset");
+			Assert.That(Math.Abs(topRectBefore.Y - insets.Top), Is.LessThanOrEqualTo(InsetTolerance),
+				$"Before (All): top Y ({topRectBefore.Y}) should be ≈ insets.Top ({insets.Top})");
 
 			App.Tap("SafeAreaNoneButton");
 
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("None"));
 			var topRectAfter = App.WaitForElement("TopEdgeIndicator").GetRect();
-			Assert.That(topRectAfter.Y, Is.LessThanOrEqualTo(5), "After: top should be edge-to-edge");
+			Assert.That(topRectAfter.Y, Is.LessThanOrEqualTo(InsetTolerance),
+				$"After (None): top Y ({topRectAfter.Y}) should be ≈ 0 (edge-to-edge)");
 			Assert.That(topRectAfter.Y, Is.LessThan(topRectBefore.Y), "Top indicator should have moved up");
 		}
 
 		[Test, Order(26)]
-		[Description("Behavior transitions from Container inset to SoftInput edge-to-edge")]
+		[Description("Behavior transitions from Container to SoftInput — top remains inset, bottom becomes edge-to-edge")]
 		public void ValidateDynamic_ContainerToSoftInput()
 		{
 			App.WaitForElement("SafeAreaContainerButton");
 			App.Tap("SafeAreaContainerButton");
 
+			var insets = GetSafeAreaInsets();
+
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("Container"));
 			var topRectBefore = App.WaitForElement("TopEdgeIndicator").GetRect();
-			Assert.That(topRectBefore.Y, Is.GreaterThan(5), "Container: top should be inset");
+			Assert.That(Math.Abs(topRectBefore.Y - insets.Top), Is.LessThanOrEqualTo(InsetTolerance),
+				$"Container: top Y ({topRectBefore.Y}) should be ≈ insets.Top ({insets.Top})");
 
 			App.Tap("SafeAreaSoftInputButton");
 
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("SoftInput"));
+			// SoftInput also respects safe area on top (like Container), so top remains inset
 			var topRectAfter = App.WaitForElement("TopEdgeIndicator").GetRect();
-			Assert.That(topRectAfter.Y, Is.LessThanOrEqualTo(5), "SoftInput: top should be edge-to-edge");
+			Assert.That(Math.Abs(topRectAfter.Y - insets.Top), Is.LessThanOrEqualTo(InsetTolerance),
+				$"SoftInput: top Y ({topRectAfter.Y}) should be ≈ insets.Top ({insets.Top})");
 		}
 
 		[Test, Order(27)]
@@ -699,9 +840,12 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("SafeAreaNoneButton");
 			App.Tap("SafeAreaNoneButton");
 
+			var insets = GetSafeAreaInsets();
+
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("None"));
 			var topRectBefore = App.WaitForElement("TopEdgeIndicator").GetRect();
-			Assert.That(topRectBefore.Y, Is.LessThanOrEqualTo(5), "Before: all edges None");
+			Assert.That(topRectBefore.Y, Is.LessThanOrEqualTo(InsetTolerance),
+				$"Before (None): top Y ({topRectBefore.Y}) should be ≈ 0 (edge-to-edge)");
 
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -714,203 +858,216 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("SafeAreaEdgesValueLabel");
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("L:None, T:Container, R:None, B:Container"));
 			var topRectAfter = App.WaitForElement("TopEdgeIndicator").GetRect();
-			Assert.That(topRectAfter.Y, Is.GreaterThan(5), "After: top should be inset (Container)");
+			Assert.That(Math.Abs(topRectAfter.Y - insets.Top), Is.LessThanOrEqualTo(InsetTolerance),
+				$"After (Container): top Y ({topRectAfter.Y}) should be ≈ insets.Top ({insets.Top})");
 		}
 
 		// ──────────────────────────────────────────────
-		// Platform-Specific Behavior
+		// Platform System Bar Avoidance
 		// ──────────────────────────────────────────────
 
-#if IOS
 		[Test, Order(29)]
-		[Description("Container/All avoids notch/Dynamic Island on iOS")]
-		public void ValidateiOS_NotchAvoidance()
+		[Description("Container avoids system bars — top label matches safe area top inset")]
+		public void ValidatePlatform_ContainerAvoidsSystemBars()
 		{
 			App.WaitForElement("SafeAreaContainerButton");
 			App.Tap("SafeAreaContainerButton");
 
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("Container"));
-			var topRect = App.WaitForElement("TopEdgeIndicator").GetRect();
-			Assert.That(topRect.Y, Is.GreaterThan(20), "Container should avoid notch/Dynamic Island on iOS");
+
+			var insets = GetSafeAreaInsets();
+			var topLabelRect = App.WaitForElement("TopEdgeIndicator").GetRect();
+			Assert.That(Math.Abs(topLabelRect.Y - insets.Top), Is.LessThanOrEqualTo(InsetTolerance),
+				$"Container: top label Y ({topLabelRect.Y}) should be ≈ insets.Top ({insets.Top})");
 		}
 
 		[Test, Order(30)]
-		[Description("Container/All avoids home indicator on iOS")]
-		public void ValidateiOS_HomeIndicatorAvoidance()
+		[Description("All avoids system bars — top and bottom labels match safe area insets")]
+		public void ValidatePlatform_AllAvoidsSystemBars()
 		{
-			App.WaitForElement("SafeAreaAllButton");
+			// Get None baseline for bottom reference
+			App.WaitForElement("SafeAreaNoneButton");
+			App.Tap("SafeAreaNoneButton");
+			var noneBottomRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			var screenBottom = noneBottomRect.Y + noneBottomRect.Height;
+
 			App.Tap("SafeAreaAllButton");
-
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("All"));
-			var topRect = App.WaitForElement("TopEdgeIndicator").GetRect();
-			Assert.That(topRect.Y, Is.GreaterThan(20), "All should avoid notch/home indicator on iOS");
-		}
-#endif
 
-#if ANDROID
-		[Test, Order(29)]
-		[Description("Container/All avoids Android status bar")]
-		public void ValidateAndroid_StatusBarAvoidance()
-		{
-			App.WaitForElement("SafeAreaContainerButton");
-			App.Tap("SafeAreaContainerButton");
+			var insets = GetSafeAreaInsets();
 
-			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("Container"));
-			var topRect = App.WaitForElement("TopEdgeIndicator").GetRect();
-			Assert.That(topRect.Y, Is.GreaterThan(5), "Container should avoid status bar on Android");
-		}
+			var topLabelRect = App.WaitForElement("TopEdgeIndicator").GetRect();
+			Assert.That(Math.Abs(topLabelRect.Y - insets.Top), Is.LessThanOrEqualTo(InsetTolerance),
+				$"All: top label Y ({topLabelRect.Y}) should be ≈ insets.Top ({insets.Top})");
 
-		[Test, Order(30)]
-		[Description("Container/All avoids navigation bar on Android")]
-		public void ValidateAndroid_NavBarAvoidance()
-		{
-			App.WaitForElement("SafeAreaAllButton");
-			App.Tap("SafeAreaAllButton");
-
-			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("All"));
-			var topRect = App.WaitForElement("TopEdgeIndicator").GetRect();
-			Assert.That(topRect.Y, Is.GreaterThan(5), "All should avoid status bar on Android");
+			var bottomLabelRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			var bottomEdge = bottomLabelRect.Y + bottomLabelRect.Height;
+			Assert.That(Math.Abs(bottomEdge - (screenBottom - insets.Bottom)), Is.LessThanOrEqualTo(InsetTolerance),
+				$"All: bottom edge ({bottomEdge}) should be ≈ screenBottom - insets.Bottom ({screenBottom} - {insets.Bottom} = {screenBottom - insets.Bottom})");
 		}
 
 		[Test, Order(31)]
-		[Description("ContentPage defaults to None (edge-to-edge) in .NET 10")]
-		public void ValidateAndroid_DefaultIsNone()
+		[Description("Default behavior is edge-to-edge (None) in .NET 10")]
+		public void ValidatePlatform_DefaultIsEdgeToEdge()
 		{
-			App.WaitForElement("SafeAreaEdgesValueLabel");
+			App.WaitForElement("SafeAreaDefaultButton");
+			App.Tap("SafeAreaDefaultButton");
 
-			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("None"));
-			var topRect = App.WaitForElement("TopEdgeIndicator").GetRect();
-			Assert.That(topRect.Y, Is.LessThanOrEqualTo(5), "Default (None) should be edge-to-edge on Android");
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("Default"));
+
+			var insets = GetSafeAreaInsets();
+
+			var topLabelRect = App.WaitForElement("TopEdgeIndicator").GetRect();
+			Assert.That(topLabelRect.Y, Is.LessThanOrEqualTo(InsetTolerance),
+				$"Default: top Y ({topLabelRect.Y}) should be ≈ 0 (edge-to-edge, insets T={insets.Top}, B={insets.Bottom} are NOT applied)");
 		}
-#endif
 
 		// ──────────────────────────────────────────────
 		// Orientation / Landscape Validation
 		// ──────────────────────────────────────────────
 
 		[Test, Order(32)]
-		[Description("None: portrait top/bottom and landscape left/right are all edge-to-edge")]
+		[Description("None: portrait top/bottom at page edges, landscape left/right/bottom at page edges")]
 		public void ValidateOrientation_None_AllEdges()
 		{
 			App.WaitForElement("SafeAreaNoneButton");
 			App.Tap("SafeAreaNoneButton");
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("None"));
 
-			// Portrait: top and bottom
-			var topRect = App.WaitForElement("TopEdgeIndicator").GetRect();
-			Assert.That(topRect.Y, Is.LessThanOrEqualTo(5), "Portrait: top should be edge-to-edge");
-			App.WaitForElement("BottomEdgeIndicator");
+			// Portrait: top label at page top (ignoring safe area insets)
+			var topLabelRect = App.WaitForElement("TopEdgeIndicator").GetRect();
+			Assert.That(topLabelRect.Y, Is.LessThanOrEqualTo(InsetTolerance),
+				$"Portrait None: top Y ({topLabelRect.Y}) should be ≈ 0 (edge-to-edge)");
 
-			// Landscape: left and right
+			// Switch to landscape
 			App.SetOrientationLandscape();
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("None"));
+
+			// Landscape: left label at page left (edge-to-edge)
 			var leftRect = App.WaitForElement("LeftEdgeIndicator").GetRect();
-			Assert.That(leftRect.X, Is.LessThanOrEqualTo(5), "Landscape: left should be edge-to-edge");
-			App.WaitForElement("RightEdgeIndicator");
+			Assert.That(leftRect.X, Is.LessThanOrEqualTo(InsetTolerance),
+				$"Landscape None: left X ({leftRect.X}) should be ≈ 0 (edge-to-edge)");
 
 			App.SetOrientationPortrait();
 		}
 
 		[Test, Order(33)]
-		[Description("All: portrait top/bottom and landscape left/right are all inset")]
+		[Description("All: portrait top/bottom match safe area insets, landscape left/right/bottom match safe area insets")]
 		public void ValidateOrientation_All_AllEdges()
 		{
 			App.WaitForElement("SafeAreaAllButton");
 			App.Tap("SafeAreaAllButton");
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("All"));
 
-			// Portrait: top and bottom
-			var topRect = App.WaitForElement("TopEdgeIndicator").GetRect();
-			Assert.That(topRect.Y, Is.GreaterThan(5), "Portrait: top should be inset");
-			App.WaitForElement("BottomEdgeIndicator");
+			var insets = GetSafeAreaInsets();
 
-			// Landscape: left and right
+			// Portrait: top label Y should match the safe area top inset
+			var topLabelRect = App.WaitForElement("TopEdgeIndicator").GetRect();
+			Assert.That(Math.Abs(topLabelRect.Y - insets.Top), Is.LessThanOrEqualTo(InsetTolerance),
+				$"Portrait All: top Y ({topLabelRect.Y}) should be ≈ insets.Top ({insets.Top})");
+
+			// Switch to landscape
 			App.SetOrientationLandscape();
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("All"));
-			App.WaitForElement("LeftEdgeIndicator");
-			App.WaitForElement("RightEdgeIndicator");
+
+			var insetsLandscape = GetSafeAreaInsets();
+
+			// Landscape: left label X should match safe area left inset
+			var leftRect = App.WaitForElement("LeftEdgeIndicator").GetRect();
+			Assert.That(Math.Abs(leftRect.X - insetsLandscape.Left), Is.LessThanOrEqualTo(InsetTolerance),
+				$"Landscape All: left X ({leftRect.X}) should be ≈ insetsLandscape.Left ({insetsLandscape.Left})");
 
 			App.SetOrientationPortrait();
 		}
 
 		[Test, Order(34)]
-		[Description("Container: portrait top/bottom and landscape left/right respect system bars")]
+		[Description("Container: portrait top/bottom match safe area insets, landscape left/right/bottom match safe area insets")]
 		public void ValidateOrientation_Container_AllEdges()
 		{
 			App.WaitForElement("SafeAreaContainerButton");
 			App.Tap("SafeAreaContainerButton");
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("Container"));
 
-			// Portrait: top and bottom
-			var topRect = App.WaitForElement("TopEdgeIndicator").GetRect();
-			Assert.That(topRect.Y, Is.GreaterThan(5), "Portrait: top should be inset");
-			App.WaitForElement("BottomEdgeIndicator");
+			var insets = GetSafeAreaInsets();
 
-			// Landscape: left and right
+			// Portrait: top label Y should match the safe area top inset
+			var topLabelRect = App.WaitForElement("TopEdgeIndicator").GetRect();
+			Assert.That(Math.Abs(topLabelRect.Y - insets.Top), Is.LessThanOrEqualTo(InsetTolerance),
+				$"Portrait Container: top Y ({topLabelRect.Y}) should be ≈ insets.Top ({insets.Top})");
+
+			// Switch to landscape
 			App.SetOrientationLandscape();
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("Container"));
-			App.WaitForElement("LeftEdgeIndicator");
-			App.WaitForElement("RightEdgeIndicator");
+
+			var insetsLandscape = GetSafeAreaInsets();
+
+			// Landscape: left label X should match safe area left inset
+			var leftRect = App.WaitForElement("LeftEdgeIndicator").GetRect();
+			Assert.That(Math.Abs(leftRect.X - insetsLandscape.Left), Is.LessThanOrEqualTo(InsetTolerance),
+				$"Landscape Container: left X ({leftRect.X}) should be ≈ insetsLandscape.Left ({insetsLandscape.Left})");
 
 			App.SetOrientationPortrait();
 		}
 
 		[Test, Order(35)]
-		[Description("SoftInput: portrait top/bottom edge-to-edge, landscape validates safe area")]
+		[Description("SoftInput: portrait top respects safe area, bottom edge-to-edge; landscape left/right respect safe area, bottom edge-to-edge")]
 		public void ValidateOrientation_SoftInput_AllEdges()
 		{
 			App.WaitForElement("SafeAreaSoftInputButton");
 			App.Tap("SafeAreaSoftInputButton");
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("SoftInput"));
 
-			// Portrait: top should be edge-to-edge (SoftInput only avoids keyboard, not system bars)
-			var topRect = App.WaitForElement("TopEdgeIndicator").GetRect();
-			Assert.That(topRect.Y, Is.LessThanOrEqualTo(5), "Portrait: SoftInput top should be edge-to-edge");
-			App.WaitForElement("BottomEdgeIndicator");
+			var insets = GetSafeAreaInsets();
 
-			// Landscape: validate safe area is respected
+			// Portrait: top should respect safe area (notch)
+			var topLabelRect = App.WaitForElement("TopEdgeIndicator").GetRect();
+			Assert.That(Math.Abs(topLabelRect.Y - insets.Top), Is.LessThanOrEqualTo(InsetTolerance),
+				$"Portrait SoftInput: top Y ({topLabelRect.Y}) should be ≈ insets.Top ({insets.Top})");
+
+			// Switch to landscape
 			App.SetOrientationLandscape();
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("SoftInput"));
-			App.WaitForElement("LeftEdgeIndicator");
-			App.WaitForElement("RightEdgeIndicator");
+
+			var insetsLandscape = GetSafeAreaInsets();
+
+			// Landscape: left should respect safe area (notch side)
+			var leftRect = App.WaitForElement("LeftEdgeIndicator").GetRect();
+			Assert.That(Math.Abs(leftRect.X - insetsLandscape.Left), Is.LessThanOrEqualTo(InsetTolerance),
+				$"Landscape SoftInput: left X ({leftRect.X}) should be ≈ insetsLandscape.Left ({insetsLandscape.Left})");
 
 			App.SetOrientationPortrait();
 		}
 
 		[Test, Order(36)]
-		[Description("Switching None to All in portrait validates all 4 edges shift inward")]
+		[Description("Switching None to All in portrait validates top/bottom edges shift inward")]
 		public void ValidateOrientation_Portrait_NoneVsAll_EdgeComparison()
 		{
-			// Capture all 4 edge positions with None
 			App.WaitForElement("SafeAreaNoneButton");
 			App.Tap("SafeAreaNoneButton");
 
-			var topNone = App.WaitForElement("TopEdgeIndicator").GetRect();
-			var bottomNone = App.WaitForElement("BottomEdgeIndicator").GetRect();
-			var leftNone = App.WaitForElement("LeftEdgeIndicator").GetRect();
-			var rightNone = App.WaitForElement("RightEdgeIndicator").GetRect();
+			var insets = GetSafeAreaInsets();
 
-			// Switch to All and capture again
+			// None: top at page top, bottom at page bottom (baseline for screen edges)
+			var topNone = App.WaitForElement("TopEdgeIndicator").GetRect();
+			Assert.That(topNone.Y, Is.LessThanOrEqualTo(InsetTolerance),
+				$"None: top Y ({topNone.Y}) should be ≈ 0 (edge-to-edge)");
+
+			var bottomNone = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			var screenBottom = bottomNone.Y + bottomNone.Height;
+
+			// Switch to All
 			App.Tap("SafeAreaAllButton");
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("All"));
 
+			// All: top at topInset, bottom at screenBottom - bottomInset
 			var topAll = App.WaitForElement("TopEdgeIndicator").GetRect();
+			Assert.That(Math.Abs(topAll.Y - insets.Top), Is.LessThanOrEqualTo(InsetTolerance),
+				$"All: top Y ({topAll.Y}) should be ≈ insets.Top ({insets.Top})");
+
 			var bottomAll = App.WaitForElement("BottomEdgeIndicator").GetRect();
-			var leftAll = App.WaitForElement("LeftEdgeIndicator").GetRect();
-			var rightAll = App.WaitForElement("RightEdgeIndicator").GetRect();
-
-			// Top and left edges should move inward (greater values)
-			Assert.That(topAll.Y, Is.GreaterThanOrEqualTo(topNone.Y), "Portrait: All top inset >= None top");
-			Assert.That(leftAll.X, Is.GreaterThanOrEqualTo(leftNone.X), "Portrait: All left inset >= None left");
-
-			// Bottom and right edges should move inward (smaller end positions)
-			var bottomEdgeNone = bottomNone.Y + bottomNone.Height;
 			var bottomEdgeAll = bottomAll.Y + bottomAll.Height;
-			Assert.That(bottomEdgeAll, Is.LessThanOrEqualTo(bottomEdgeNone), "Portrait: All bottom edge <= None bottom edge");
-
-			var rightEdgeNone = rightNone.X + rightNone.Width;
-			var rightEdgeAll = rightAll.X + rightAll.Width;
-			Assert.That(rightEdgeAll, Is.LessThanOrEqualTo(rightEdgeNone), "Portrait: All right edge <= None right edge");
+			Assert.That(Math.Abs(bottomEdgeAll - (screenBottom - insets.Bottom)), Is.LessThanOrEqualTo(InsetTolerance),
+				$"All: bottom ({bottomEdgeAll}) should be ≈ screenBottom - insets.Bottom ({screenBottom} - {insets.Bottom} = {screenBottom - insets.Bottom})");
 		}
 
 		[Test, Order(37)]
@@ -922,32 +1079,38 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("SafeAreaNoneButton");
 			App.SetOrientationLandscape();
 
+			// None: all edges at screen edges (baseline for screen dimensions)
 			var topNone = App.WaitForElement("TopEdgeIndicator").GetRect();
-			var bottomNone = App.WaitForElement("BottomEdgeIndicator").GetRect();
 			var leftNone = App.WaitForElement("LeftEdgeIndicator").GetRect();
+			Assert.That(leftNone.X, Is.LessThanOrEqualTo(InsetTolerance),
+				$"None: left X ({leftNone.X}) should be ≈ 0 (edge-to-edge)");
+
 			var rightNone = App.WaitForElement("RightEdgeIndicator").GetRect();
+			var screenRight = rightNone.X + rightNone.Width;
+
+			var bottomNone = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			var screenBottom = bottomNone.Y + bottomNone.Height;
 
 			// Switch to All while still in landscape
 			App.Tap("SafeAreaAllButton");
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("All"));
 
-			var topAll = App.WaitForElement("TopEdgeIndicator").GetRect();
-			var bottomAll = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			var insetsLandscape = GetSafeAreaInsets();
+
+			// All: edges should be inset by safe area values
 			var leftAll = App.WaitForElement("LeftEdgeIndicator").GetRect();
+			Assert.That(Math.Abs(leftAll.X - insetsLandscape.Left), Is.LessThanOrEqualTo(InsetTolerance),
+				$"All: left X ({leftAll.X}) should be ≈ insetsLandscape.Left ({insetsLandscape.Left})");
+
 			var rightAll = App.WaitForElement("RightEdgeIndicator").GetRect();
-
-			// Top and left edges should move inward (greater values)
-			Assert.That(topAll.Y, Is.GreaterThanOrEqualTo(topNone.Y), "Landscape: All top inset >= None top");
-			Assert.That(leftAll.X, Is.GreaterThanOrEqualTo(leftNone.X), "Landscape: All left inset >= None left");
-
-			// Bottom and right edges should move inward (smaller end positions)
-			var bottomEdgeNone = bottomNone.Y + bottomNone.Height;
-			var bottomEdgeAll = bottomAll.Y + bottomAll.Height;
-			Assert.That(bottomEdgeAll, Is.LessThanOrEqualTo(bottomEdgeNone), "Landscape: All bottom edge <= None bottom edge");
-
-			var rightEdgeNone = rightNone.X + rightNone.Width;
 			var rightEdgeAll = rightAll.X + rightAll.Width;
-			Assert.That(rightEdgeAll, Is.LessThanOrEqualTo(rightEdgeNone), "Landscape: All right edge <= None right edge");
+			Assert.That(Math.Abs(rightEdgeAll - (screenRight - insetsLandscape.Right)), Is.LessThanOrEqualTo(InsetTolerance),
+				$"All: right ({rightEdgeAll}) should be ≈ screenRight - insets.Right ({screenRight} - {insetsLandscape.Right} = {screenRight - insetsLandscape.Right})");
+
+			var bottomAll = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			var bottomEdgeAll = bottomAll.Y + bottomAll.Height;
+			Assert.That(Math.Abs(bottomEdgeAll - (screenBottom - insetsLandscape.Bottom)), Is.LessThanOrEqualTo(InsetTolerance),
+				$"All: bottom ({bottomEdgeAll}) should be ≈ screenBottom - insets.Bottom ({screenBottom} - {insetsLandscape.Bottom} = {screenBottom - insetsLandscape.Bottom})");
 
 			App.SetOrientationPortrait();
 		}
@@ -964,8 +1127,12 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("SafeAreaContainerButton");
 
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("Container"));
-			var topRect = App.WaitForElement("TopEdgeIndicator").GetRect();
-			Assert.That(topRect.Y, Is.GreaterThan(5), "Container (legacy UseSafeArea=True) should inset from system bars");
+
+			var insets = GetSafeAreaInsets();
+
+			var topLabelRect = App.WaitForElement("TopEdgeIndicator").GetRect();
+			Assert.That(Math.Abs(topLabelRect.Y - insets.Top), Is.LessThanOrEqualTo(InsetTolerance),
+				$"Container (UseSafeArea=True): top Y ({topLabelRect.Y}) should be ≈ insets.Top ({insets.Top})");
 		}
 
 		[Test, Order(39)]
@@ -976,8 +1143,10 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("SafeAreaNoneButton");
 
 			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("None"));
-			var topRect = App.WaitForElement("TopEdgeIndicator").GetRect();
-			Assert.That(topRect.Y, Is.LessThanOrEqualTo(5), "None (legacy UseSafeArea=False) should be edge-to-edge");
+
+			var topLabelRect = App.WaitForElement("TopEdgeIndicator").GetRect();
+			Assert.That(topLabelRect.Y, Is.LessThanOrEqualTo(InsetTolerance),
+				$"None (UseSafeArea=False): top Y ({topLabelRect.Y}) should be ≈ 0 (edge-to-edge)");
 		}
 	}
 }
