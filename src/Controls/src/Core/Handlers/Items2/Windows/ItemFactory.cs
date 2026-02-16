@@ -76,15 +76,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				{
 					view.BindingContext = templateContext.Item ?? _view.BindingContext;
 					_view.AddLogicalChild(view);
-					if (_view is SelectableItemsView selectableItemsView && selectableItemsView.SelectionMode != SelectionMode.None)
-					{
-						bool isSelected = false;
-						if (selectableItemsView.SelectionMode == SelectionMode.Single)
-							isSelected = selectableItemsView.SelectedItem == templateContext.Item;
-						else
-							isSelected = selectableItemsView.SelectedItems.Contains(templateContext.Item);
-
-						if (isSelected && view is VisualElement visualElement)
+				if (_view is SelectableItemsView selectableItemsView && selectableItemsView.SelectionMode != SelectionMode.None)
+				{
+					bool isSelected = false;
+					if (selectableItemsView.SelectionMode == SelectionMode.Single)
+						isSelected = object.Equals(selectableItemsView.SelectedItem, templateContext.Item);
+					else
+						isSelected = selectableItemsView.SelectedItems.Contains(templateContext.Item);						if (isSelected && view is VisualElement visualElement)
 						{
 							VisualStateManager.GoToState(visualElement, VisualStateManager.CommonStates.Selected);
 						}
