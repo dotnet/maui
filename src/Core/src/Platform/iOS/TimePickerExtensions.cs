@@ -68,11 +68,6 @@ public static class TimePickerExtensions
 				formattingCulture = new CultureInfo("en-US");
 			}
 
-			var time = timePicker.Time;
-			var format = timePicker.Format;
-			
-			// Determine which culture to use for consistent formatting
-			CultureInfo formattingCulture;
 			if (format != null)
 			{
 				if (format.Contains('t', StringComparison.Ordinal) || format.Contains('h', StringComparison.Ordinal))
@@ -101,7 +96,7 @@ public static class TimePickerExtensions
 		}
 
 		// Apply the same culture to both the text display and the picker
-		mauiTimePicker.Text = time.ToFormattedString(format ?? string.Empty, formattingCulture);
+		mauiTimePicker.Text = time?.ToFormattedString(format ?? string.Empty, formattingCulture) ?? string.Empty;
 
 		if (picker != null && format != null)
 		{
