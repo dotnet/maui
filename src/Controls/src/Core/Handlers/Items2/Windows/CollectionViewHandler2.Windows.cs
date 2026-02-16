@@ -246,7 +246,7 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 			if (itemcontainer?.Child is ElementWrapper wrapper && wrapper.VirtualView is VisualElement visualElement)
 			{
 				var actualItem = visualElement.BindingContext;
-				bool isSelected = ItemsView.SelectedItem == actualItem || ItemsView.SelectedItems.Contains(actualItem);
+				bool isSelected = object.Equals(ItemsView.SelectedItem, actualItem) || ItemsView.SelectedItems.Contains(actualItem);
 				VisualStateManager.GoToState(visualElement, isSelected ? VisualStateManager.CommonStates.Selected : VisualStateManager.CommonStates.Normal);
 			}
 		}
@@ -347,19 +347,17 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 					}
 					else
 					{
-						var selectedItem = itemList.FirstOrDefault(item =>
+					var selectedItem = itemList.FirstOrDefault(item =>
+					{
+						if (item is ItemTemplateContext2 itemPair)
 						{
-							if (item is ItemTemplateContext2 itemPair)
-							{
-								return itemPair.Item == ItemsView.SelectedItem;
-							}
-							else
-							{
-								return item == ItemsView.SelectedItem;
-							}
-						});
-
-						if (selectedItem is not null)
+							return object.Equals(itemPair.Item, ItemsView.SelectedItem);
+						}
+						else
+						{
+							return object.Equals(item, ItemsView.SelectedItem);
+						}
+					});						if (selectedItem is not null)
 						{
 							PlatformView.Select(itemList.IndexOf(selectedItem));
 						}
