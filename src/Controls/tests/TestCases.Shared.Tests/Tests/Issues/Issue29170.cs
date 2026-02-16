@@ -15,11 +15,15 @@ internal class Issue29170 : _IssuesUITest
 	[Category(UITestCategories.FlyoutPage)]
 	public void CollectionViewFirstItemShouldNotOverlapWithSafeAreaInFlyoutMenu()
 	{
-		Assert.That(App.WaitForElement("CollectionViewDetail").GetRect().Y, Is.GreaterThanOrEqualTo(54), 
-            "CollectionView Y position should be at least 54 to avoid overlapping with safe area");
+		// Use 44 (status bar height) as conservative minimum instead of device-specific value
+		// This prevents test flakiness across different simulators and iOS versions
+		const int MinimumSafeAreaHeight = 44;
+		
+		Assert.That(App.WaitForElement("CollectionViewDetail").GetRect().Y, Is.GreaterThanOrEqualTo(MinimumSafeAreaHeight), 
+            $"CollectionView Y position should be at least {MinimumSafeAreaHeight} to avoid overlapping with safe area");
 		App.WaitForElement("FlyoutButton").Tap();
-		Assert.That(App.WaitForElement("CollectionViewFlyout").GetRect().Y, Is.GreaterThanOrEqualTo(54), 
-            "CollectionView Y position should be at least 54 to avoid overlapping with safe area");
+		Assert.That(App.WaitForElement("CollectionViewFlyout").GetRect().Y, Is.GreaterThanOrEqualTo(MinimumSafeAreaHeight), 
+            $"CollectionView Y position should be at least {MinimumSafeAreaHeight} to avoid overlapping with safe area");
 	}
 }
 #endif

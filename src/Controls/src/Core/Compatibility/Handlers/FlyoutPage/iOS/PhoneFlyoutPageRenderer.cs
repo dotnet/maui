@@ -366,15 +366,20 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			var frame = Element.Bounds.ToCGRect();
 
+			// Apply safe area insets to the FlyoutPage container if UseSafeArea is enabled.
+			// This ensures the Flyout content (e.g., CollectionView) renders below the status bar/notch
+			// on iOS devices with notches (iPhone X and newer). Without this adjustment, the container
+			// would start at Y=0, causing content to overlap with the status bar.
+			// https://github.com/dotnet/maui/issues/29170
 			if (Element is FlyoutPage flyoutPage && flyoutPage is ISafeAreaView sav &&
 			 !sav.IgnoreSafeArea && OperatingSystem.IsIOSVersionAtLeast(11))
 			{
-				var safeAreaTop = View.SafeAreaInsets.Top;
+				var safeAreaTopInset = View.SafeAreaInsets.Top;
 
-				if (safeAreaTop > 0)
+				if (safeAreaTopInset > 0)
 				{
-					frame.Y = safeAreaTop;
-					frame.Height -= safeAreaTop;
+					frame.Y = safeAreaTopInset;
+					frame.Height -= safeAreaTopInset;
 				}
 			}
 
