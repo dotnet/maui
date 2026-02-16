@@ -82,12 +82,13 @@
         <Label Text="Entry1: Normal / Focused / Disabled"
                FontAttributes="Bold"/>
 
-        <Entry x:Name="VSMEntry"
+        <local:UITestEntry x:Name="VSMEntry"
                AutomationId="VSMEntry"
                Placeholder="Focus me..."
                Style="{StaticResource EntryStateStyle}"
                Focused="OnEntryFocused"
-               Unfocused="OnEntryUnfocused"/>
+               Unfocused="OnEntryUnfocused"
+               IsCursorVisible="False"/>
 
         <Label x:Name="StateEntryLabel"
                AutomationId="EntryState"
@@ -119,11 +120,12 @@
         <Label Text="Entry2: Valid / Invalid"
                FontAttributes="Bold"/>
 
-        <Entry x:Name="ValidationEntry"
+        <local:UITestEntry x:Name="ValidationEntry"
                AutomationId="ValidationEntry"
                Placeholder="Enter phone: 555-555-5555"
                Style="{StaticResource EntryValidationStyle}"
-               TextChanged="OnValidationEntryTextChanged"/>
+               TextChanged="OnValidationEntryTextChanged"
+               IsCursorVisible="False"/>
 
         <Label x:Name="ValidationEntryLabel"
                AutomationId="ValidationEntryLabel"
