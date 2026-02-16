@@ -18,6 +18,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		bool _initialized;
 		bool _isVisible;
 		bool _disposed;
+		bool _isInternalPositionUpdate;
 
 		List<View> _oldViews;
 		CarouselViewOnGlobalLayoutListener _carouselViewLayoutListener;
@@ -218,6 +219,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (!(ItemsViewAdapter.ItemsSource is IItemsViewSource observableItemsSource))
 				return;
 
+			// Set flag to disable animation during collection changes
+			_isInternalPositionUpdate = true;
+
 			var carouselPosition = Carousel.Position;
 			var currentItemPosition = observableItemsSource.GetPosition(Carousel.CurrentItem);
 			var count = observableItemsSource.Count;
@@ -262,6 +266,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (removingAnyPrevious)
 			{
+				_isInternalPositionUpdate = false;
 				return;
 			}
 
@@ -305,6 +310,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 						}
 
 						UpdateVisualStates();
+
+						// Reset flag after collection operations complete
+						_isInternalPositionUpdate = false;
 					});
 		}
 
@@ -504,7 +512,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (_gotoPosition == -1 && currentItemPosition != carouselPosition)
 			{
 				_gotoPosition = currentItemPosition;
-				ItemsView.ScrollTo(currentItemPosition, position: Microsoft.Maui.Controls.ScrollToPosition.Center, animate: Carousel.AnimateCurrentItemChanges);
+				ScrollToItemPosition(currentItemPosition, Carousel.AnimateCurrentItemChanges);
 			}
 
 			_gotoPosition = -1;
@@ -544,10 +552,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (_gotoPosition == -1 && !Carousel.IsDragging && !Carousel.IsScrolling && centerPosition != carouselPosition)
 			{
 				_gotoPosition = carouselPosition;
-
-				ItemsView.ScrollTo(carouselPosition, position: Microsoft.Maui.Controls.ScrollToPosition.Center, animate: Carousel.AnimatePositionChanges);
+				ScrollToItemPosition(carouselPosition, Carousel.AnimatePositionChanges);
 			}
 			SetCurrentItem(carouselPosition);
+		}
+
+		void ScrollToItemPosition(int position, bool shouldAnimate)
+		{
+			if (position < 0 || position >= (ItemsViewAdapter?.ItemsSource?.Count ?? 0))
+				return;
+
+			// Disable animation during collection changes to prevent cascading scroll events
+			var animate = shouldAnimate && !_isInternalPositionUpdate;
+			ItemsView.ScrollTo(position, position: Microsoft.Maui.Controls.ScrollToPosition.Center, animate: animate);
 		}
 
 		void AddLayoutListener()
