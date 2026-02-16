@@ -802,7 +802,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					}
 					else
 					{
-						ADrawableCompat.SetTintList(IconBitmap, null); // If no tint color is set, assign null to maintain the original icon color.
+						ADrawableCompat.SetTintList(IconBitmap, null); // Clear tint to preserve original icon colors
 					}
 
 					IconBitmap.SetBounds(Bounds.Left, Bounds.Top, Bounds.Right, Bounds.Bottom);
@@ -813,7 +813,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					var paint = new Paint { AntiAlias = true };
 					paint.TextSize = _defaultSize;
 #pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
-					paint.Color = pressed ? _pressedBackgroundColor.ToPlatform() : (TintColor is not null ? TintColor.ToPlatform() : Colors.White.ToPlatform());
+					paint.Color = pressed ? _pressedBackgroundColor.ToPlatform() : (TintColor ?? Colors.White).ToPlatform();
 #pragma warning restore CA1416
 					paint.SetStyle(Paint.Style.Fill);
 					var y = (Bounds.Height() + paint.TextSize) / 2;
