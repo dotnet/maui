@@ -365,6 +365,19 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void LayoutChildren(bool animated)
 		{
 			var frame = Element.Bounds.ToCGRect();
+
+			if (Element is FlyoutPage flyoutPage && flyoutPage is ISafeAreaView sav &&
+			 !sav.IgnoreSafeArea && OperatingSystem.IsIOSVersionAtLeast(11))
+			{
+				var safeAreaTop = View.SafeAreaInsets.Top;
+
+				if (safeAreaTop > 0)
+				{
+					frame.Y = safeAreaTop;
+					frame.Height -= safeAreaTop;
+				}
+			}
+
 			var flyoutFrame = frame;
 			nfloat opacity = 1;
 
