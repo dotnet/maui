@@ -3,28 +3,22 @@ using System;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <summary>Event arguments for <see cref="E:Microsoft.Maui.Controls.TimePicker.TimeSelected" /> event.</summary>
-	/// <remarks>To be added.</remarks>
+	/// <summary>Event arguments for the <see cref="TimePicker.TimeSelected"/> event.</summary>
 	public class TimeChangedEventArgs : EventArgs
 	{
-		/// <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.TimeChangedEventArgs" /> object that represents a change from <paramref name="oldTime" /> to <paramref name="newTime" />.</summary>
-		/// <param name="oldTime"></param>
-		/// <param name="newTime"></param>
-		/// <remarks>To be added.</remarks>
+		/// <summary>Creates a new <see cref="TimeChangedEventArgs"/> with the specified old and new times.</summary>
+		/// <param name="oldTime">The previously selected time.</param>
+		/// <param name="newTime">The newly selected time.</param>
 		public TimeChangedEventArgs(TimeSpan? oldTime, TimeSpan? newTime)
 		{
 			OldTime = oldTime;
 			NewTime = newTime;
 		}
 
-		/// <summary>The time that the user entered.</summary>
-		/// <value>To be added.</value>
-		/// <remarks>To be added.</remarks>
+		/// <summary>Gets the newly selected time.</summary>
 		public TimeSpan? NewTime { get; private set; }
 
-		/// <summary>The time that was on the element at the time that the user selected it.</summary>
-		/// <value>To be added.</value>
-		/// <remarks>To be added.</remarks>
+		/// <summary>Gets the previously selected time.</summary>
 		public TimeSpan? OldTime { get; private set; }
 	}
 }

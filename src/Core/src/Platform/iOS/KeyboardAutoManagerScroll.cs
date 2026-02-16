@@ -449,7 +449,7 @@ public static class KeyboardAutoManagerScroll
 
 		// scenario where we go into an editor with the "Next" keyboard button,
 		// but the cursor location on the editor is scrolled below the visible section
-		if (View is UITextView && IsKeyboardShowing && cursorRect.Bottom >= viewRectInWindow.GetMaxY())
+		if (View is UITextView && IsKeyboardShowing && cursorRect.Y >= viewRectInWindow.GetMaxY())
 		{
 			move = viewRectInWindow.Bottom - (nfloat)bottomBoundary;
 		}

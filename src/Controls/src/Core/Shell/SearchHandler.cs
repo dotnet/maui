@@ -10,10 +10,12 @@ using static Microsoft.Maui.Controls.VisualElement;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/SearchHandler.xml" path="Type[@FullName='Microsoft.Maui.Controls.SearchHandler']/Docs/*" />
+	/// <summary>
+	/// Provides search functionality in a <see cref="Shell"/> application.
+	/// </summary>
 	public class SearchHandler : BindableObject, ISearchHandlerController, IPlaceholderElement, IFontElement, ITextElement, ITextAlignmentElement
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SearchHandler.xml" path="//Member[@MemberName='IsFocusedPropertyKey']/Docs/*" />
+		/// <summary>Bindable property key for <see cref="IsFocused"/>.</summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static readonly BindablePropertyKey IsFocusedPropertyKey = BindableProperty.CreateReadOnly(nameof(IsFocused),
 			typeof(bool), typeof(VisualElement), default(bool), propertyChanged: OnIsFocusedPropertyChanged);
@@ -27,7 +29,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="IsFocused"/>.</summary>
 		public static readonly BindableProperty IsFocusedProperty = IsFocusedPropertyKey.BindableProperty;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SearchHandler.xml" path="//Member[@MemberName='IsFocused']/Docs/*" />
+		/// <summary>Gets a value indicating whether this search handler currently has focus. This is a bindable property.</summary>
 		public bool IsFocused
 		{
 			get { return (bool)GetValue(IsFocusedProperty); }
@@ -55,7 +57,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SearchHandler.xml" path="//Member[@MemberName='SetIsFocused']/Docs/*" />
+		/// <summary>Sets the value of the <see cref="IsFocused"/> property. For internal use by platform renderers.</summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SetIsFocused(bool value)
 		{
@@ -64,7 +66,8 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public event EventHandler<FocusRequestArgs> FocusChangeRequested;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SearchHandler.xml" path="//Member[@MemberName='Focus']/Docs/*" />
+		/// <summary>Sets focus to the search handler, causing the input field to become the current focus.</summary>
+		/// <returns><see langword="true"/> if the search handler gained focus; otherwise, <see langword="false"/>.</returns>
 		public bool Focus()
 		{
 			if (IsFocused)
@@ -78,7 +81,7 @@ namespace Microsoft.Maui.Controls
 			return arg.Result;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SearchHandler.xml" path="//Member[@MemberName='Unfocus']/Docs/*" />
+		/// <summary>Removes focus from the search handler.</summary>
 		public void Unfocus()
 		{
 			if (!IsFocused)
@@ -110,7 +113,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="Keyboard"/>.</summary>
 		public static readonly BindableProperty KeyboardProperty = BindableProperty.Create(nameof(Keyboard), typeof(Keyboard), typeof(SearchHandler), Keyboard.Default, coerceValue: (o, v) => (Keyboard)v ?? Keyboard.Default);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SearchHandler.xml" path="//Member[@MemberName='Keyboard']/Docs/*" />
+		/// <summary>Gets or sets the keyboard type for the search input. This is a bindable property.</summary>
 		public Keyboard Keyboard
 		{
 			get { return (Keyboard)GetValue(KeyboardProperty); }
@@ -127,14 +130,14 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SearchHandler.xml" path="//Member[@MemberName='HorizontalTextAlignment']/Docs/*" />
+		/// <summary>Gets or sets the horizontal alignment of the search text. This is a bindable property.</summary>
 		public TextAlignment HorizontalTextAlignment
 		{
 			get { return (TextAlignment)GetValue(TextAlignmentElement.HorizontalTextAlignmentProperty); }
 			set { SetValue(TextAlignmentElement.HorizontalTextAlignmentProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SearchHandler.xml" path="//Member[@MemberName='VerticalTextAlignment']/Docs/*" />
+		/// <summary>Gets or sets the vertical alignment of the search text. This is a bindable property.</summary>
 		public TextAlignment VerticalTextAlignment
 		{
 			get { return (TextAlignment)GetValue(TextAlignmentElement.VerticalTextAlignmentProperty); }
@@ -147,7 +150,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="CharacterSpacing"/>.</summary>
 		public static readonly BindableProperty CharacterSpacingProperty = TextElement.CharacterSpacingProperty;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SearchHandler.xml" path="//Member[@MemberName='TextColor']/Docs/*" />
+		/// <summary>Gets or sets the color of the search text. This is a bindable property.</summary>
 		public Color TextColor
 		{
 			get { return (Color)GetValue(TextElement.TextColorProperty); }
@@ -178,7 +181,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="TextTransform"/>.</summary>
 		public static readonly BindableProperty TextTransformProperty = TextElement.TextTransformProperty;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SearchHandler.xml" path="//Member[@MemberName='TextTransform']/Docs/*" />
+		/// <summary>Gets or sets the text transformation applied to the search text. This is a bindable property.</summary>
 		public TextTransform TextTransform
 		{
 			get => (TextTransform)GetValue(TextTransformProperty);
@@ -189,11 +192,11 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SearchHandler.xml" path="//Member[@MemberName='UpdateFormsText']/Docs/*" />
+		/// <summary>Returns the transformed text using the specified <see cref="TextTransform"/>.</summary>
 		public virtual string UpdateFormsText(string source, TextTransform textTransform)
 			=> TextTransformUtilities.GetTransformedText(source, textTransform);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SearchHandler.xml" path="//Member[@MemberName='CancelButtonColor']/Docs/*" />
+		/// <summary>Gets or sets the color of the cancel button. This is a bindable property.</summary>
 		public Color CancelButtonColor
 		{
 			get { return (Color)GetValue(CancelButtonColorProperty); }
@@ -201,28 +204,28 @@ namespace Microsoft.Maui.Controls
 		}
 
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SearchHandler.xml" path="//Member[@MemberName='FontAttributes']/Docs/*" />
+		/// <summary>Gets or sets the font attributes for the search text. This is a bindable property.</summary>
 		public FontAttributes FontAttributes
 		{
 			get { return (FontAttributes)GetValue(FontAttributesProperty); }
 			set { SetValue(FontAttributesProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SearchHandler.xml" path="//Member[@MemberName='FontFamily']/Docs/*" />
+		/// <summary>Gets or sets the font family for the search text. This is a bindable property.</summary>
 		public string FontFamily
 		{
 			get { return (string)GetValue(FontFamilyProperty); }
 			set { SetValue(FontFamilyProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SearchHandler.xml" path="//Member[@MemberName='CharacterSpacing']/Docs/*" />
+		/// <summary>Gets or sets the character spacing for the search text. This is a bindable property.</summary>
 		public double CharacterSpacing
 		{
 			get { return (double)GetValue(TextElement.CharacterSpacingProperty); }
 			set { SetValue(TextElement.CharacterSpacingProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SearchHandler.xml" path="//Member[@MemberName='FontSize']/Docs/*" />
+		/// <summary>Gets or sets the font size for the search text. This is a bindable property.</summary>
 		[System.ComponentModel.TypeConverter(typeof(FontSizeConverter))]
 		public double FontSize
 		{
@@ -255,14 +258,14 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SearchHandler.xml" path="//Member[@MemberName='PlaceholderColor']/Docs/*" />
+		/// <summary>Gets or sets the color of the placeholder text. This is a bindable property.</summary>
 		public Color PlaceholderColor
 		{
 			get => (Color)GetValue(PlaceholderElement.PlaceholderColorProperty);
 			set => SetValue(PlaceholderElement.PlaceholderColorProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SearchHandler.xml" path="//Member[@MemberName='Placeholder']/Docs/*" />
+		/// <summary>Gets or sets the text displayed when the search box is empty. This is a bindable property.</summary>
 		public string Placeholder
 		{
 			get => (string)GetValue(PlaceholderElement.PlaceholderProperty);
@@ -272,7 +275,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="BackgroundColor"/>.</summary>
 		public static readonly BindableProperty BackgroundColorProperty = BindableProperty.Create(nameof(BackgroundColor), typeof(Color), typeof(SearchHandler), null);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SearchHandler.xml" path="//Member[@MemberName='BackgroundColor']/Docs/*" />
+		/// <summary>Gets or sets the background color of the search box. This is a bindable property.</summary>
 		public Color BackgroundColor
 		{
 			get { return (Color)GetValue(BackgroundColorProperty); }
@@ -420,7 +423,7 @@ namespace Microsoft.Maui.Controls
 		static readonly BindablePropertyKey SelectedItemPropertyKey =
 			BindableProperty.CreateReadOnly(nameof(SelectedItem), typeof(object), typeof(SearchHandler), null, BindingMode.OneWayToSource);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SearchHandler.xml" path="//Member[@MemberName='SelectedItemProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="SelectedItem"/>.</summary>
 		public static BindableProperty SelectedItemProperty = SelectedItemPropertyKey.BindableProperty;
 
 		/// <summary>Bindable property for <see cref="ShowsResults"/>.</summary>
@@ -435,84 +438,84 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(AutomationIdProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SearchHandler.xml" path="//Member[@MemberName='ClearIcon']/Docs/*" />
+		/// <summary>Gets or sets the icon displayed for the clear button. This is a bindable property.</summary>
 		public ImageSource ClearIcon
 		{
 			get { return (ImageSource)GetValue(ClearIconProperty); }
 			set { SetValue(ClearIconProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SearchHandler.xml" path="//Member[@MemberName='ClearIconHelpText']/Docs/*" />
+		/// <summary>Gets or sets the accessibility help text for the clear icon. This is a bindable property.</summary>
 		public string ClearIconHelpText
 		{
 			get { return (string)GetValue(ClearIconHelpTextProperty); }
 			set { SetValue(ClearIconHelpTextProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SearchHandler.xml" path="//Member[@MemberName='ClearIconName']/Docs/*" />
+		/// <summary>Gets or sets the accessibility name for the clear icon. This is a bindable property.</summary>
 		public string ClearIconName
 		{
 			get { return (string)GetValue(ClearIconNameProperty); }
 			set { SetValue(ClearIconNameProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SearchHandler.xml" path="//Member[@MemberName='ClearPlaceholderCommand']/Docs/*" />
+		/// <summary>Gets or sets the command invoked when the clear placeholder button is pressed. This is a bindable property.</summary>
 		public ICommand ClearPlaceholderCommand
 		{
 			get { return (ICommand)GetValue(ClearPlaceholderCommandProperty); }
 			set { SetValue(ClearPlaceholderCommandProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SearchHandler.xml" path="//Member[@MemberName='ClearPlaceholderCommandParameter']/Docs/*" />
+		/// <summary>Gets or sets the parameter passed to <see cref="ClearPlaceholderCommand"/>. This is a bindable property.</summary>
 		public object ClearPlaceholderCommandParameter
 		{
 			get { return GetValue(ClearPlaceholderCommandParameterProperty); }
 			set { SetValue(ClearPlaceholderCommandParameterProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SearchHandler.xml" path="//Member[@MemberName='ClearPlaceholderEnabled']/Docs/*" />
+		/// <summary>Gets or sets a value indicating whether the clear placeholder button is enabled. This is a bindable property.</summary>
 		public bool ClearPlaceholderEnabled
 		{
 			get { return (bool)GetValue(ClearPlaceholderEnabledProperty); }
 			set { SetValue(ClearPlaceholderEnabledProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SearchHandler.xml" path="//Member[@MemberName='ClearPlaceholderHelpText']/Docs/*" />
+		/// <summary>Gets or sets the accessibility help text for the clear placeholder icon. This is a bindable property.</summary>
 		public string ClearPlaceholderHelpText
 		{
 			get { return (string)GetValue(ClearPlaceholderHelpTextProperty); }
 			set { SetValue(ClearPlaceholderHelpTextProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SearchHandler.xml" path="//Member[@MemberName='ClearPlaceholderIcon']/Docs/*" />
+		/// <summary>Gets or sets the icon displayed for the clear placeholder button. This is a bindable property.</summary>
 		public ImageSource ClearPlaceholderIcon
 		{
 			get { return (ImageSource)GetValue(ClearPlaceholderIconProperty); }
 			set { SetValue(ClearPlaceholderIconProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SearchHandler.xml" path="//Member[@MemberName='ClearPlaceholderName']/Docs/*" />
+		/// <summary>Gets or sets the accessibility name for the clear placeholder icon. This is a bindable property.</summary>
 		public string ClearPlaceholderName
 		{
 			get { return (string)GetValue(ClearPlaceholderNameProperty); }
 			set { SetValue(ClearPlaceholderNameProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SearchHandler.xml" path="//Member[@MemberName='Command']/Docs/*" />
+		/// <summary>Gets or sets the command invoked when the search query is confirmed. This is a bindable property.</summary>
 		public ICommand Command
 		{
 			get { return (ICommand)GetValue(CommandProperty); }
 			set { SetValue(CommandProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SearchHandler.xml" path="//Member[@MemberName='CommandParameter']/Docs/*" />
+		/// <summary>Gets or sets the parameter passed to <see cref="Command"/>. This is a bindable property.</summary>
 		public object CommandParameter
 		{
 			get { return (object)GetValue(CommandParameterProperty); }
 			set { SetValue(CommandParameterProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SearchHandler.xml" path="//Member[@MemberName='DisplayMemberName']/Docs/*" />
+		/// <summary>Gets or sets the name of the property to display for search results. This is a bindable property.</summary>
 		[Obsolete("Use ItemTemplate instead.")]
 		public string DisplayMemberName
 		{
@@ -520,66 +523,66 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(DisplayMemberNameProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SearchHandler.xml" path="//Member[@MemberName='IsSearchEnabled']/Docs/*" />
+		/// <summary>Gets or sets a value indicating whether search is enabled. This is a bindable property.</summary>
 		public bool IsSearchEnabled
 		{
 			get { return (bool)GetValue(IsSearchEnabledProperty); }
 			set { SetValue(IsSearchEnabledProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SearchHandler.xml" path="//Member[@MemberName='ItemsSource']/Docs/*" />
+		/// <summary>Gets or sets the collection of items to display as search suggestions. This is a bindable property.</summary>
 		public IEnumerable ItemsSource
 		{
 			get { return (IEnumerable)GetValue(ItemsSourceProperty); }
 			set { SetValue(ItemsSourceProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SearchHandler.xml" path="//Member[@MemberName='ItemTemplate']/Docs/*" />
+		/// <summary>Gets or sets the template for displaying search result items. This is a bindable property.</summary>
 		public DataTemplate ItemTemplate
 		{
 			get { return (DataTemplate)GetValue(ItemTemplateProperty); }
 			set { SetValue(ItemTemplateProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SearchHandler.xml" path="//Member[@MemberName='Query']/Docs/*" />
+		/// <summary>Gets or sets the current search query text. This is a bindable property.</summary>
 		public string Query
 		{
 			get { return (string)GetValue(QueryProperty); }
 			set { SetValue(QueryProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SearchHandler.xml" path="//Member[@MemberName='QueryIcon']/Docs/*" />
+		/// <summary>Gets or sets the icon displayed for the search query. This is a bindable property.</summary>
 		public ImageSource QueryIcon
 		{
 			get { return (ImageSource)GetValue(QueryIconProperty); }
 			set { SetValue(QueryIconProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SearchHandler.xml" path="//Member[@MemberName='QueryIconHelpText']/Docs/*" />
+		/// <summary>Gets or sets the accessibility help text for the query icon. This is a bindable property.</summary>
 		public string QueryIconHelpText
 		{
 			get { return (string)GetValue(QueryIconHelpTextProperty); }
 			set { SetValue(QueryIconHelpTextProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SearchHandler.xml" path="//Member[@MemberName='QueryIconName']/Docs/*" />
+		/// <summary>Gets or sets the accessibility name for the query icon. This is a bindable property.</summary>
 		public string QueryIconName
 		{
 			get { return (string)GetValue(QueryIconNameProperty); }
 			set { SetValue(QueryIconNameProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SearchHandler.xml" path="//Member[@MemberName='SearchBoxVisibility']/Docs/*" />
+		/// <summary>Gets or sets the visibility mode of the search box. This is a bindable property.</summary>
 		public SearchBoxVisibility SearchBoxVisibility
 		{
 			get { return (SearchBoxVisibility)GetValue(SearchBoxVisibilityProperty); }
 			set { SetValue(SearchBoxVisibilityProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SearchHandler.xml" path="//Member[@MemberName='SelectedItem']/Docs/*" />
+		/// <summary>Gets the currently selected search result item. This is a bindable property.</summary>
 		public object SelectedItem => GetValue(SelectedItemProperty);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SearchHandler.xml" path="//Member[@MemberName='ShowsResults']/Docs/*" />
+		/// <summary>Gets or sets a value indicating whether search results are displayed. This is a bindable property.</summary>
 		public bool ShowsResults
 		{
 			get { return (bool)GetValue(ShowsResultsProperty); }

@@ -3,29 +3,35 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/RadialGradientBrush.xml" path="Type[@FullName='Microsoft.Maui.Controls.RadialGradientBrush']/Docs/*" />
+	/// <summary>A <see cref="GradientBrush"/> that paints an area with a radial gradient.</summary>
 	public class RadialGradientBrush : GradientBrush
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadialGradientBrush.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
+		/// <summary>Initializes a new instance of the <see cref="RadialGradientBrush"/> class.</summary>
 		public RadialGradientBrush()
 		{
 
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadialGradientBrush.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />
+		/// <summary>Initializes a new instance of the <see cref="RadialGradientBrush"/> class with the specified gradient stops.</summary>
+		/// <param name="gradientStops">The collection of gradient stops.</param>
 		public RadialGradientBrush(GradientStopCollection gradientStops)
 		{
 			GradientStops = gradientStops;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadialGradientBrush.xml" path="//Member[@MemberName='.ctor'][3]/Docs/*" />
+		/// <summary>Initializes a new instance of the <see cref="RadialGradientBrush"/> class with the specified gradient stops and radius.</summary>
+		/// <param name="gradientStops">The collection of gradient stops.</param>
+		/// <param name="radius">The radius of the gradient.</param>
 		public RadialGradientBrush(GradientStopCollection gradientStops, double radius)
 		{
 			GradientStops = gradientStops;
 			Radius = radius;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadialGradientBrush.xml" path="//Member[@MemberName='.ctor'][4]/Docs/*" />
+		/// <summary>Initializes a new instance of the <see cref="RadialGradientBrush"/> class with the specified gradient stops, center, and radius.</summary>
+		/// <param name="gradientStops">The collection of gradient stops.</param>
+		/// <param name="center">The center point of the gradient.</param>
+		/// <param name="radius">The radius of the gradient.</param>
 		public RadialGradientBrush(GradientStopCollection gradientStops, Point center, double radius)
 		{
 			GradientStops = gradientStops;
@@ -39,7 +45,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty CenterProperty = BindableProperty.Create(
 			nameof(Center), typeof(Point), typeof(RadialGradientBrush), new Point(0.5, 0.5));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadialGradientBrush.xml" path="//Member[@MemberName='Center']/Docs/*" />
+		/// <summary>Gets or sets the center point of the gradient. This is a bindable property.</summary>
 		public Point Center
 		{
 			get => (Point)GetValue(CenterProperty);
@@ -50,7 +56,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty RadiusProperty = BindableProperty.Create(
 			nameof(Radius), typeof(double), typeof(RadialGradientBrush), 0.5d);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadialGradientBrush.xml" path="//Member[@MemberName='Radius']/Docs/*" />
+		/// <summary>Gets or sets the radius of the gradient. This is a bindable property.</summary>
 		public double Radius
 		{
 			get => (double)GetValue(RadiusProperty);

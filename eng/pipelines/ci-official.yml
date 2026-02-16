@@ -38,12 +38,19 @@ variables:
 - group: AzureDevOps-Artifact-Feeds-Pats
 
 parameters:
-- name: VM_IMAGE_HOST
+- name: WindowsPool
   type: object
   default:
     name: NetCore1ESPool-Internal
-    image: 1es-windows-2022
+    demands:
+      - ImageOverride -equals 1es-windows-2022
     os: windows
+- name: MacOSPool
+  type: object
+  default:
+    name: Azure Pipelines
+    vmImage: macOS-15
+    os: macOS
 
 resources:
   repositories:
@@ -58,7 +65,7 @@ extends:
   ${{ else }}:
     template: v1/1ES.Unofficial.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
-    pool: ${{ parameters.VM_IMAGE_HOST }}
+    pool: ${{ parameters.WindowsPool }}
     sdl:
       binskim:
         scanOutputDirectoryOnly: true
@@ -69,22 +76,21 @@ extends:
       spotBugs:
         enabled: false
         justification: 'Failing with "Could not successfully find the java tool launcher"'
-      sourceRepositoriesToScan:
-        exclude:
-        - repository: yaml-templates
       suppression:
         suppressionFile: $(Build.SourcesDirectory)\eng\automation\guardian\source.gdnsuppress
     stages:
 
     - template: /eng/pipelines/arcade/stage-pack.yml@self
       parameters:
-        pool: ${{ parameters.VM_IMAGE_HOST }}
+        pool: ${{ parameters.WindowsPool }}
+        macPool: ${{ parameters.MacOSPool }}
         enableSourceIndex: false
         runAsPublic: false
+        is1ESPipeline: true
         enableMicrobuild: true
         publishAssets: true
         sourceIndexParams:
-          sourceIndexBuildCommand: build.cmd -restore -build -ci /bl:$(Build.Arcade.LogsPath)sourceIndexBuild.binlog /p:OfficialBuildId=$(_BuildOfficalId) /p:_SkipUpdateBuildNumber=true
+          sourceIndexBuildCommand: build.cmd -restore -build -ci /bl:$(Build.Arcade.LogsPath)sourceIndexBuild.binlog /p:OfficialBuildId=$(_BuildOfficialId) /p:_SkipUpdateBuildNumber=true
           binlogPath: $(Build.Arcade.LogsPath)sourceIndexBuild.binlog
         prepareSteps:
         - template: /eng/pipelines/common/provision.yml@self
@@ -97,14 +103,14 @@ extends:
             skipAndroidEmulatorImages: true
             skipAndroidCreateAvds: true
             skipProvisioning: true
-            skipXcode: true
+            skipXcode: false
             base64Encode: true
             outputVariableName: dotnetbuilds-internal-container-read-token-base64
 
     - ${{ if or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), and(startsWith(variables['Build.SourceBranch'], 'refs/heads/net'), endsWith(variables['Build.SourceBranch'], '.0')), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')) }}:
       - template: /eng/pipelines/arcade/stage-api-scan.yml@self
         parameters:
-          pool: ${{ parameters.VM_IMAGE_HOST }}
+          pool: ${{ parameters.WindowsPool }}
           dependsOnStage: Pack
 
     # Publish and validation steps. Only run in official builds

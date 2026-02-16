@@ -12,7 +12,6 @@ public class Issue28570 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Shell)]
-	[Category(UITestCategories.Navigation)]
 	public void BackButtonShouldNotBeVisible()
 	{
 		App.WaitForElement("NavigateToDetailButton");

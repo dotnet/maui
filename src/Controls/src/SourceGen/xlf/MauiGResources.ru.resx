@@ -203,4 +203,34 @@
     <value>{0} содержит ключевое слово "required". В XAML поддержка этого пока ограничена, поэтому избегайте его использования. Мы по-прежнему прилагаем максимум усилий, чтобы предоставить значение.</value>
     <comment>0 is a property identifier</comment>
   </data>
+  <data name="BindingCompilationFailed" xml:space="preserve">
+    <value>Сбой компиляции привязки</value>
+  </data>
+  <data name="BindingCompilationWarning" xml:space="preserve">
+    <value>Предупреждение о компиляции привязки</value>
+  </data>
+  <data name="BindingIndexerNotClosed" xml:space="preserve">
+    <value>Привязка: индексатор не содержит закрывающей скобки.</value>
+  </data>
+  <data name="BindingIndexerEmpty" xml:space="preserve">
+    <value>Привязка: индексатор не содержит аргументов.</value>
+  </data>
+  <data name="BindingIndexerTypeUnsupported" xml:space="preserve">
+    <value>Привязка: неподдерживаемый тип индекса индексатора: "{0}".</value>
+    <comment>0 is indexer type name</comment>
+  </data>
+  <data name="BindingPropertyNotFound" xml:space="preserve">
+    <value>Привязка: свойство "{0}" не найдено в "{1}". Во время выполнения будет использоваться более медленная привязка на основе отражения. Если это свойство генерируется другим генератором исходного кода, сообщите об этом по адресу https://github.com/dotnet/maui/issues, чтобы помочь нам улучшить совместимость с другими генераторами исходного кода.</value>
+    <comment>0 is property name, 1 is type name</comment>
+  </data>
+  <data name="BindingWithXDataTypeFromOuterScope" xml:space="preserve">
+    <value>Привязка может быть скомпилирована неправильно, поскольку аннотация x:DataType взята из внешней области. Убедитесь, что для всех элементов XAML DataTemplate используется правильная аннотация x:DataType. Дополнительные сведения см. по адресу https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings.</value>
+  </data>
+  <data name="NamescopeError" xml:space="preserve">
+    <value>Ошибка области имен</value>
+  </data>
+  <data name="NamescopeDuplicate" xml:space="preserve">
+    <value>Элемент с именем "{0}" уже существует в этой области NameScope.</value>
+    <comment>0 is the duplicated key</comment>
+  </data>
 </root>

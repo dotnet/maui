@@ -9,7 +9,10 @@ using Microsoft.Maui.Controls.Xaml.Diagnostics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/TableSectionBase.xml" path="Type[@FullName='Microsoft.Maui.Controls.TableSectionBase']/Docs/*" />
+	/// <summary>
+	/// Generic base class for table sections that contain a collection of items of type <typeparamref name="T"/>.
+	/// </summary>
+	/// <typeparam name="T">The type of items contained in the section.</typeparam>
 	public abstract class TableSectionBase<T> : TableSectionBase, IList<T>, IVisualTreeElement, INotifyCollectionChanged where T : BindableObject
 	{
 		readonly ObservableCollection<T> _children = new ObservableCollection<T>();
@@ -161,17 +164,23 @@ namespace Microsoft.Maui.Controls
 		IVisualTreeElement IVisualTreeElement.GetVisualParent() => null;
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Controls/TableSection.xml" path="Type[@FullName='Microsoft.Maui.Controls.TableSection']/Docs/*" />
+	/// <summary>
+	/// A logical grouping of cells in a <see cref="TableView"/>.
+	/// </summary>
 #pragma warning disable CS0618 // Type or member is obsolete
 	public sealed class TableSection : TableSectionBase<Cell>
 #pragma warning restore CS0618 // Type or member is obsolete
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/TableSection.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
+		/// <summary>
+		/// Creates a new <see cref="TableSection"/> with default values.
+		/// </summary>
 		public TableSection()
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/TableSection.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />
+		/// <summary>
+		/// Creates a new <see cref="TableSection"/> with the specified title.
+		/// </summary>
 		public TableSection(string title) : base(title)
 		{
 		}

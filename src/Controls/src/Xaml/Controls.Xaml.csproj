@@ -7,15 +7,13 @@
 		<RootNamespace>Microsoft.Maui.Controls.Xaml</RootNamespace>
 		<IsTrimmable>false</IsTrimmable>
 		<_MauiDesignDllBuild Condition=" '$(OS)' != 'Unix' ">True</_MauiDesignDllBuild>
-		<NoWarn>$(NoWarn);CA2200;CS1591;RS0041</NoWarn>
+		<NoWarn>$(NoWarn);CA2200;RS0041</NoWarn>
+		<WarningsAsErrors>$(WarningsAsErrors);CS1591</WarningsAsErrors>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
 		<NoWarn>$(NoWarn);CA1416</NoWarn>
-		<DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
-		<!-- Disable PRI generation to avoid conflicts with Core project's PRI file -->
-		<AppxGeneratePriEnabled>false</AppxGeneratePriEnabled>
 	</PropertyGroup>
 
 	<PropertyGroup>

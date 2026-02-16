@@ -15,10 +15,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void CarouselItemsShouldRenderProperly()
 		{
 			App.WaitForElement("CarouselView");
-#if WINDOWS
-            Thread.Sleep(2000); // Wait for scrollbar to disappear to avoid flaky test failures in CI
-#endif
-			VerifyScreenshot();
+			// Use retryTimeout to wait for scrollbar to disappear on Windows
+			VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 		}
 	}
 }

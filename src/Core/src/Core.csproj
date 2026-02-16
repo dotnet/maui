@@ -23,6 +23,10 @@
     <EnableSingleFileAnalyzer>true</EnableSingleFileAnalyzer>
   </PropertyGroup>
 
+  <PropertyGroup Condition="$(TargetFramework.Contains('-ios')) or $(TargetFramework.Contains('-maccatalyst'))">
+    <IsBindingProject>true</IsBindingProject>
+  </PropertyGroup>
+
   <PropertyGroup>
     <!-- NuGet package information -->
     <IsPackable>true</IsPackable>
@@ -61,6 +65,13 @@
     <PackageReference Include="Xamarin.AndroidX.Navigation.Runtime" />
     <PackageReference Include="Xamarin.AndroidX.Navigation.Common" />
   </ItemGroup>
+  <ItemGroup Condition="$(TargetFramework.Contains('-ios')) or $(TargetFramework.Contains('-maccatalyst'))">
+    <XcodeProject Include="..\AppleNative\PlatformInterop\MauiPlatformInterop.xcodeproj">
+      <SchemeName>MauiPlatformInterop</SchemeName>
+    </XcodeProject>
+    <ObjcBindingApiDefinition Include="..\AppleNative\ApiDefinition.cs" />
+    <ObjcBindingCoreSource Include="..\AppleNative\StructsAndEnums.cs" />
+  </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.Contains('-tizen'))">
     <PackageReference Include="Tizen.UIExtensions.NUI" />
     <ProjectReference Include="..\..\Graphics\src\Graphics.Skia\Graphics.Skia.csproj" />
@@ -87,6 +98,9 @@
     <EmbeddedResource Include="Handlers\HybridWebView\HybridWebView.js" LogicalName="_framework/hybridwebview.js" />
     <None Remove="Handlers\HybridWebView\HybridWebView.js" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="Platform\iOS\CALayerAutosizeObserver.cs" />
+  </ItemGroup>
 
   <Target Name="_CopyToBuildTasksDir" AfterTargets="Build">
     <ItemGroup>
@@ -98,6 +112,8 @@
   </Target>
 
   <Import Project="$(MauiSrcDirectory)Workload\Shared\LibraryPacks.targets" />
+
+  <Import Project="$(MauiSrcDirectory)AppleBindings.targets" />
 
   <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
 

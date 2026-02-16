@@ -22,7 +22,10 @@ namespace Microsoft.Maui.Controls
 		}
 	}
 
-	/// <include file="../../../docs/Microsoft.Maui.Controls/TriggerAction.xml" path="Type[@FullName='Microsoft.Maui.Controls.TriggerAction' and position()=1]/Docs/*" />
+	/// <summary>
+	/// A base class for user-defined actions that respond to a trigger condition with a type-safe sender parameter.
+	/// </summary>
+	/// <typeparam name="T">The type of <see cref="BindableObject" /> to which this action can be attached.</typeparam>
 	public abstract class TriggerAction<T> : TriggerAction where T : BindableObject
 	{
 		protected TriggerAction() : base(typeof(T))

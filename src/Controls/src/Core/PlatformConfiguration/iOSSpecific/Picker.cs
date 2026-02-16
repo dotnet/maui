@@ -17,7 +17,9 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return (UpdateMode)element.GetValue(UpdateModeProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Picker.xml" path="//Member[@MemberName='SetUpdateMode'][1]/Docs/*" />
+		/// <summary>Sets when the selected value is updated during user interaction on iOS.</summary>
+		/// <param name="element">The element to set the value on.</param>
+		/// <param name="value">When to update: immediately while scrolling or after selection completes.</param>
 		public static void SetUpdateMode(BindableObject element, UpdateMode value)
 		{
 			element.SetValue(UpdateModeProperty, value);
@@ -31,7 +33,10 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return GetUpdateMode(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Picker.xml" path="//Member[@MemberName='SetUpdateMode'][2]/Docs/*" />
+		/// <summary>Sets when the selected value is updated during user interaction on iOS.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <param name="value">When to update: immediately while scrolling or after selection completes.</param>
+		/// <returns>The updated platform configuration.</returns>
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetUpdateMode(this IPlatformElementConfiguration<iOS, FormsElement> config, UpdateMode value)
 		{
 			SetUpdateMode(config.Element, value);
