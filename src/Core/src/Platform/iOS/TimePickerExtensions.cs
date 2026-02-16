@@ -36,7 +36,7 @@ public static class TimePickerExtensions
 		}
 	}
 
-		public static void UpdateTime(this MauiTimePicker mauiTimePicker, ITimePicker timePicker, UIDatePicker? picker)
+	public static void UpdateTime(this MauiTimePicker mauiTimePicker, ITimePicker timePicker, UIDatePicker? picker)
 	{
 		picker?.UpdateTime(timePicker);
 
@@ -47,7 +47,9 @@ public static class TimePickerExtensions
 			NSLocale locale = new NSLocale(cultureInfo.TwoLetterISOLanguageName);
 
 			if (picker != null)
+			{
 				picker.Locale = locale;
+			}
 		}
 
 		var time = timePicker.Time;
