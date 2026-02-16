@@ -32,43 +32,110 @@ internal static partial class ImageProcessor
 			return inputStream;
 		}
 
-		// Create a new image with corrected orientation metadata (no pixel manipulation)
-		// This preserves the original image data while fixing the display orientation
-		var correctedImage = UIImage.FromImage(image.CGImage, image.CurrentScale, UIImageOrientation.Up);
+		// Create a graphics context with the rotated size and draw the rotated image
+		// This ensures the pixels are actually rotated, not just the orientation flag
+		var size = image.Size;
 		
-		// Write the corrected image back to a stream, preserving original quality
-		var outputStream = new MemoryStream();
-		
-		// Determine output format based on original file
-		NSData? imageData = null;
-		if (!string.IsNullOrEmpty(originalFileName))
+		// Determine the size after rotation
+		var rotatedSize = image.Orientation switch
 		{
-			var extension = Path.GetExtension(originalFileName).ToLowerInvariant();
-			if (extension == ".png")
+			UIImageOrientation.Left or UIImageOrientation.Right or
+			UIImageOrientation.LeftMirrored or UIImageOrientation.RightMirrored
+				=> new CGSize(size.Height, size.Width),
+			_ => size
+		};
+
+		// Create a graphics context with the rotated dimensions
+		UIGraphics.BeginImageContextWithOptions(rotatedSize, false, image.CurrentScale);
+		
+		try
+		{
+			var context = UIGraphics.GetCurrentContext();
+			
+			// Apply the appropriate transformation based on orientation
+			switch (image.Orientation)
 			{
-				imageData = correctedImage.AsPNG();
+				case UIImageOrientation.Right:
+					context.TranslateCTM(rotatedSize.Width, 0);
+					context.RotateCTM((nfloat)System.Math.PI / 2);
+					break;
+				case UIImageOrientation.Down:
+					context.TranslateCTM(rotatedSize.Width, rotatedSize.Height);
+					context.RotateCTM((nfloat)System.Math.PI);
+					break;
+				case UIImageOrientation.Left:
+					context.TranslateCTM(0, rotatedSize.Height);
+					context.RotateCTM(-(nfloat)System.Math.PI / 2);
+					break;
+				case UIImageOrientation.UpMirrored:
+					context.TranslateCTM(rotatedSize.Width, 0);
+					context.ScaleCTM(-1, 1);
+					break;
+				case UIImageOrientation.RightMirrored:
+					context.TranslateCTM(rotatedSize.Width, rotatedSize.Height);
+					context.RotateCTM((nfloat)System.Math.PI / 2);
+					context.ScaleCTM(-1, 1);
+					break;
+				case UIImageOrientation.DownMirrored:
+					context.TranslateCTM(0, rotatedSize.Height);
+					context.ScaleCTM(1, -1);
+					break;
+				case UIImageOrientation.LeftMirrored:
+					context.TranslateCTM(0, 0);
+					context.RotateCTM(-(nfloat)System.Math.PI / 2);
+					context.ScaleCTM(-1, 1);
+					break;
+				// UIImageOrientation.Up: no transformation needed
+			}
+			
+			// Draw the image
+			image.Draw(CGPoint.Empty);
+			
+			// Get the rotated image
+			var rotatedImage = UIGraphics.GetImageFromCurrentImageContext();
+			
+			if (rotatedImage == null)
+			{
+				return inputStream;
+			}
+			
+			// Write the rotated image back to a stream, preserving original quality
+			var outputStream = new MemoryStream();
+			
+			// Determine output format based on original file
+			NSData? imageData = null;
+			if (!string.IsNullOrEmpty(originalFileName))
+			{
+				var extension = Path.GetExtension(originalFileName).ToLowerInvariant();
+				if (extension == ".png")
+				{
+					imageData = rotatedImage.AsPNG();
+				}
+				else
+				{
+					// For JPEG and other formats, use maximum quality (1.0)
+					imageData = rotatedImage.AsJPEG(1f);
+				}
 			}
 			else
 			{
-				// For JPEG and other formats, use maximum quality (1.0)
-				// People can downscale themselves through the MediaPickerOptions
-				imageData = correctedImage.AsJPEG(1f);
+				// Default to JPEG with maximum quality (1.0)
+				imageData = rotatedImage.AsJPEG(1f);
 			}
+			
+			if (imageData is not null)
+			{
+				await imageData.AsStream().CopyToAsync(outputStream);
+				outputStream.Position = 0;
+				return outputStream;
+			}
+			
+			return inputStream;
 		}
-		else
+		finally
 		{
-			// Default to JPEG with maximum quality (1.0)
-			imageData = correctedImage.AsJPEG(1f);
+			UIGraphics.EndImageContext();
 		}
-		
-		if (imageData is not null)
-		{
-			await imageData.AsStream().CopyToAsync(outputStream);
-			outputStream.Position = 0;
-			return outputStream;
-		}
-
-		return inputStream;
 	}
 
 	public static partial Task<byte[]?> ExtractMetadataAsync(Stream inputStream, string? originalFileName)
