@@ -453,17 +453,13 @@ namespace Microsoft.Maui.Controls.Platform
 			foreach (SwipeGestureRecognizer recognizer in view.GestureRecognizers.GetGesturesFor<SwipeGestureRecognizer>())
 			{
 				((ISwipeGestureController)recognizer).SendSwipe(view, e.Delta.Translation.X + e.Cumulative.Translation.X, e.Delta.Translation.Y + e.Cumulative.Translation.Y);
+				e.Handled = true;
 			}
 		}
 
 		void HandlePan(ManipulationDeltaRoutedEventArgs e, View view)
 		{
 			if (view == null)
-			{
-				return;
-			}
-
-			if (e.Handled)
 			{
 				return;
 			}
@@ -503,6 +499,7 @@ namespace Microsoft.Maui.Controls.Platform
 					}
 
 					recognizer.SendPinch(view, e.Delta.Scale, scaleOriginPoint);
+					e.Handled = true;
 				}
 
 				_wasPinchGestureStartedSent = true;
