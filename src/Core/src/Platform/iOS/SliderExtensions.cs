@@ -45,12 +45,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateThumbColor(this UISlider uiSlider, ISlider slider)
 		{
-			if (slider.ThumbImageSource is not null && slider.Handler is not null)
-			{
-				var provider = slider.Handler.GetRequiredService<IImageSourceServiceProvider>();
-				uiSlider.UpdateThumbImageSourceAsync(slider, provider).FireAndForget();
-			}
-			else if (slider.ThumbColor is not null)
+			if (slider.ThumbColor is not null)
 			{
 				uiSlider.ThumbTintColor = slider.ThumbColor.ToPlatform();
 			}
@@ -61,16 +56,21 @@ namespace Microsoft.Maui.Platform
 			var thumbImageSource = slider.ThumbImageSource;
 			if (thumbImageSource is not null)
 			{
-				// Clear the thumb color if we have a thumb image, so that slider doesn't clear image when sliding
-				uiSlider.ThumbTintColor = null;
 				var service = provider.GetRequiredImageSourceService(thumbImageSource);
 				var scale = uiSlider.GetDisplayDensity();
 				var result = await service.GetImageAsync(thumbImageSource, scale);
-				var thumbImage = result?.Value;
+				var thumbImageSize = result?.Value.Size ?? CGSize.Empty;
+				var defaultThumbSize = CalculateDefaultThumbSize(uiSlider);
 
-				if (thumbImage is not null && slider.ThumbColor is not null)
+				UIImage? thumbImage;
+				if (thumbImageSize.IsEmpty)
 				{
-					thumbImage = thumbImage.ApplyTintColor(slider.ThumbColor.ToPlatform());
+					thumbImage = result?.Value;
+				}
+				else
+				{
+					// Resize the image if the size is valid
+					thumbImage = result?.Value?.ResizeImageSource(defaultThumbSize.Width, defaultThumbSize.Height, thumbImageSize);
 				}
 
 				uiSlider.SetThumbImage(thumbImage, UIControlState.Normal);
