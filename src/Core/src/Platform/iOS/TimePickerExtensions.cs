@@ -46,7 +46,7 @@ public static class TimePickerExtensions
 		{
 			NSLocale locale = new NSLocale(cultureInfo.TwoLetterISOLanguageName);
 
-			if (picker != null)
+			if (picker is not null)
 			{
 				picker.Locale = locale;
 			}
