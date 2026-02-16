@@ -10,7 +10,7 @@ using Microsoft.Maui.DevTools.Utils;
 namespace Microsoft.Maui.DevTools.Commands;
 
 /// <summary>
-/// Implementation of 'dotnet maui android' command group.
+/// Implementation of 'maui android' command group.
 /// </summary>
 public static class AndroidCommands
 {
@@ -462,12 +462,12 @@ public static class AndroidCommands
 						formatter.Write(new { 
 							success = false, 
 							status = "sdk_not_found",
-							message = "Android SDK not found. Run 'dotnet maui android install' first." 
+							message = "Android SDK not found. Run 'maui android install' first." 
 						});
 					}
 					else
 					{
-						Console.WriteLine("✗ Android SDK not found. Run 'dotnet maui android install' first.");
+						Console.WriteLine("✗ Android SDK not found. Run 'maui android install' first.");
 					}
 					context.ExitCode = 1;
 					return;
@@ -673,7 +673,7 @@ public static class AndroidCommands
 					if (string.IsNullOrEmpty(package))
 					{
 						throw new InvalidOperationException(
-							"No system images installed. Install one first with: dotnet maui android sdk install \"system-images;android-35;google_apis;arm64-v8a\"");
+							"No system images installed. Install one first with: maui android sdk install \"system-images;android-35;google_apis;arm64-v8a\"");
 					}
 					
 					if (!useJson)

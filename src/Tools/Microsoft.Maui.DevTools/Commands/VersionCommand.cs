@@ -9,7 +9,7 @@ using Microsoft.Maui.DevTools.Output;
 namespace Microsoft.Maui.DevTools.Commands;
 
 /// <summary>
-/// Implementation of 'dotnet maui version' command.
+/// Implementation of 'maui version' command.
 /// </summary>
 public static class VersionCommand
 {

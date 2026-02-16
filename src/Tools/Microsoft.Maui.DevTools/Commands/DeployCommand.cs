@@ -8,7 +8,7 @@ using Microsoft.Maui.DevTools.Output;
 namespace Microsoft.Maui.DevTools.Commands;
 
 /// <summary>
-/// Implementation of 'dotnet maui deploy' command.
+/// Implementation of 'maui deploy' command.
 /// </summary>
 public static class DeployCommand
 {

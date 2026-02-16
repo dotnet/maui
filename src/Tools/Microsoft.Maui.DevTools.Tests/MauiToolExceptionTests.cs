@@ -24,7 +24,7 @@ public class MauiToolExceptionTests
 	{
 		var remediation = new RemediationInfo(
 			Type: RemediationType.AutoFixable,
-			Command: "dotnet maui android jdk install"
+			Command: "maui android jdk install"
 		);
 
 		var ex = new MauiToolException(
@@ -34,7 +34,7 @@ public class MauiToolExceptionTests
 
 		Assert.NotNull(ex.Remediation);
 		Assert.Equal(RemediationType.AutoFixable, ex.Remediation.Type);
-		Assert.Equal("dotnet maui android jdk install", ex.Remediation.Command);
+		Assert.Equal("maui android jdk install", ex.Remediation.Command);
 	}
 
 	[Fact]
@@ -73,12 +73,12 @@ public class MauiToolExceptionTests
 		var ex = MauiToolException.AutoFixable(
 			ErrorCodes.JdkNotFound,
 			"JDK not found",
-			"dotnet maui android jdk install");
+			"maui android jdk install");
 
 		Assert.Equal(ErrorCodes.JdkNotFound, ex.Code);
 		Assert.NotNull(ex.Remediation);
 		Assert.Equal(RemediationType.AutoFixable, ex.Remediation.Type);
-		Assert.Equal("dotnet maui android jdk install", ex.Remediation.Command);
+		Assert.Equal("maui android jdk install", ex.Remediation.Command);
 	}
 
 	[Fact]

@@ -9,7 +9,7 @@ using Microsoft.Maui.DevTools.Services;
 namespace Microsoft.Maui.DevTools.Commands;
 
 /// <summary>
-/// Implementation of 'dotnet maui doctor' command.
+/// Implementation of 'maui doctor' command.
 /// </summary>
 public static class DoctorCommand
 {

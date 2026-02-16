@@ -11,7 +11,7 @@ using Microsoft.Maui.DevTools.Services;
 namespace Microsoft.Maui.DevTools.Commands;
 
 /// <summary>
-/// Implementation of 'dotnet maui device' commands.
+/// Implementation of 'maui device' commands.
 /// </summary>
 public static class DeviceCommand
 {

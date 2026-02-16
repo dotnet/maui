@@ -70,7 +70,7 @@ public class Program
 	{
 		var rootCommand = new RootCommand("MAUI Development Tools - Device management and environment setup")
 		{
-			Name = "dotnet-maui"
+			Name = "maui"
 		};
 
 		// Global options

@@ -104,7 +104,7 @@ public static class AppleCommands
 					else
 					{
 						if (formatter is not JsonOutputFormatter)
-							Console.WriteLine("⚠ Xcode license not accepted (use --accept-licenses or run: dotnet maui apple xcode accept-licenses)");
+							Console.WriteLine("⚠ Xcode license not accepted (use --accept-licenses or run: maui apple xcode accept-licenses)");
 						results.Add(new { step = "license", status = "warning", message = "Xcode license not accepted" });
 					}
 				}
@@ -610,7 +610,7 @@ public static class AppleCommands
 						var licenseAccepted = await provider.IsXcodeLicenseAcceptedAsync(context.GetCancellationToken());
 						Console.WriteLine(licenseAccepted
 							? "✓ Xcode license accepted"
-							: "⚠ Xcode license not accepted (run: dotnet maui apple xcode accept-licenses)");
+							: "⚠ Xcode license not accepted (run: maui apple xcode accept-licenses)");
 					}
 				}
 			}
