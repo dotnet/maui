@@ -109,6 +109,8 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 				else
 				{
+					// Reinitialize navigation icon to display flyout (hamburger) menu
+    				// This ensures the icon is shown when back button is not visible
 					nativeToolbar.NavigationIcon = new DrawerArrowDrawable(context!);
 					if (nativeToolbar.NavigationIcon is DrawerArrowDrawable iconDrawable)
 						iconDrawable.Progress = 0;

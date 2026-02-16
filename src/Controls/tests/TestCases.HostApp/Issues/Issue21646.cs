@@ -3,7 +3,7 @@ using System;
 
 namespace Maui.Controls.Sample.Issues
 {
-    [Issue(IssueTracker.Github, 21646, "Flyout icon should remain visible when a page is pushed onto a NavigationPage with the back button disabled.", PlatformAffected.WPF | PlatformAffected.Android)]
+    [Issue(IssueTracker.Github, 21646, "Flyout icon should remain visible when a page is pushed onto a NavigationPage with the back button disabled.", PlatformAffected.WPF | PlatformAffected.Android, issueTestNumber: 1)]
     public partial class Issue21646 : FlyoutPage
     {
         public Issue21646()
