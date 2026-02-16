@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Android.Content;
 using Android.Content.Res;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Util;
 using Android.Widget;
-using Microsoft.Maui.Graphics.Platform;
 
 namespace Microsoft.Maui.Platform
 {
@@ -68,14 +68,61 @@ namespace Microsoft.Maui.Platform
 
 				if (seekBar.IsAlive())
 				{
-					using var value = new TypedValue();
-					context.Theme.ResolveAttribute(global::Android.Resource.Attribute.ColorAccent, value, true);
-					var color = new Color(value.Data);
-					seekBar.Thumb?.SetColorFilter(color, FilterMode.SrcIn);
+					if (thumbDrawable is not null)
+					{
+						SetThumbDrawable(seekBar, context, thumbDrawable);
+					}
+					else
+					{
+						SetDefaultThumb(seekBar, slider, context);
+					}
 				}
-				else
+			}
+			else
+			{
+				SetDefaultThumb(seekBar, slider, context);
+			}
+		}
+
+		static void SetThumbDrawable(SeekBar seekBar, Context context, Drawable thumbDrawable)
+		{
+			// Check if we're setting the same drawable to avoid unnecessary work
+			if (ReferenceEquals(seekBar.Thumb, thumbDrawable))
+			{
+				return;
+			}
+
+			int thumbSize = (int)context.ToPixels(TARGET_SIZE);
+
+			if (thumbSize <= 0)
+			{
+				return;
+			}
+
+
+			using (Bitmap bitmap = Bitmap.CreateBitmap(thumbSize, thumbSize, Bitmap.Config.Argb8888!))
+			using (Canvas canvas = new Canvas(bitmap))
+			{
+				thumbDrawable.SetBounds(0, 0, thumbSize, thumbSize);
+				thumbDrawable.Draw(canvas);
+
+				using (BitmapDrawable finalDrawable = new BitmapDrawable(context.Resources, bitmap))
 				{
-					seekBar.UpdateThumbColor(slider);
+					seekBar.SetThumb(finalDrawable);
+				}
+			}
+		}
+
+		static void SetDefaultThumb(SeekBar seekBar, ISlider slider, Context context)
+		{
+			seekBar.SetThumb(context.GetDrawable(Resource.Drawable.abc_seekbar_thumb_material));
+
+			if (slider.ThumbColor is null && context.Theme is not null)
+			{
+				using var value = new TypedValue();
+				if (context.Theme.ResolveAttribute(global::Android.Resource.Attribute.ColorAccent, value, true))
+				{
+					seekBar.Thumb?.SetColorFilter(new Color(value.Data), FilterMode.SrcIn);
 				}
 			}
 			else
