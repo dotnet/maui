@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Platform
 			SizeChanged += ContentPanelSizeChanged;
 		}
 
-	// Custom automation peer prevents duplicate announcements when ContentView has Description set
+	// Custom automation peer prevents duplicate announcements when AutomationProperties.Name is set
 	protected override AutomationPeer OnCreateAutomationPeer() => new ContentPanelAutomationPeer(this);
 
 	partial class ContentPanelAutomationPeer : FrameworkElementAutomationPeer

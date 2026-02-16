@@ -97,6 +97,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				var children = peer.GetChildren();
 				Assert.NotNull(children);
+				Assert.NotEmpty(children);
 
 				await Task.CompletedTask;
 			});
