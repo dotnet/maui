@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 19168, "iOS Picker dismiss does not work when clicking outside of the Picker", PlatformAffected.iOS | PlatformAffected.MacCatalyst)]
+[Issue(IssueTracker.Github, 19168, "iOS Picker dismiss does not work when clicking outside of the Picker", PlatformAffected.iOS | PlatformAffected.macOS)]
 public class Issue19168 : ContentPage
 {
 	Picker picker;
