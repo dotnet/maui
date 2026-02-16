@@ -6,7 +6,7 @@
 .DESCRIPTION
     Handles device detection and startup for both Android and iOS platforms.
     - Android: Automatically selects and starts emulator with priority: API 30 Nexus > API 30 > Nexus > First available
-    - iOS: Automatically selects iPhone Xs with iOS 18.5 by default
+    - iOS: Selects device matching UI test baselines (iPhone Xs for iOS 18.x/17.x, iPhone 11 Pro for iOS 26.x)
 
 .PARAMETER Platform
     Target platform: "android" or "ios"
@@ -344,8 +344,14 @@ if ($Platform -eq "android") {
         Write-Info "Auto-detecting iOS simulator..."
         $simList = xcrun simctl list devices available --json | ConvertFrom-Json
         
-        # Preferred devices in order of priority
-        $preferredDevices = @("iPhone 16 Pro", "iPhone 15 Pro", "iPhone 14 Pro", "iPhone Xs")
+        # Preferred devices per iOS version - must match UI test baseline screenshot devices
+        # iOS 18.x/17.x: iPhone Xs (default in UITest.cs, baselines captured on this device)
+        # iOS 26.x: iPhone 11 Pro (required by UITest.cs for ios-26 environment)
+        $preferredDevicesForVersion = @{
+            "iOS-18" = @("iPhone Xs", "iPhone 16 Pro", "iPhone 15 Pro", "iPhone 14 Pro")
+            "iOS-17" = @("iPhone Xs", "iPhone 16 Pro", "iPhone 15 Pro", "iPhone 14 Pro")
+            "iOS-26" = @("iPhone 11 Pro", "iPhone Xs")
+        }
         # Preferred iOS versions in order (stable preferred, beta fallback)
         $preferredVersions = @("iOS-18", "iOS-17", "iOS-26")
         
@@ -361,7 +367,8 @@ if ($Platform -eq "android") {
                 Where-Object { $_.Name -match $version }
             
             if ($matchingRuntimes) {
-                # Try each preferred device
+                # Try each preferred device for this iOS version
+                $preferredDevices = $preferredDevicesForVersion[$version]
                 foreach ($deviceName in $preferredDevices) {
                     $device = $null
                     $deviceRuntime = $null
