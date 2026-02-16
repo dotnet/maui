@@ -92,7 +92,7 @@ public class SdkManager
 					IssueId = ErrorCodes.AndroidSdkNotFound,
 					Description = "Install Android SDK",
 					AutoFixable = true,
-					Command = "dotnet maui android install"
+					Command = "maui android install"
 				}
 			};
 		}
@@ -202,8 +202,8 @@ public class SdkManager
 		if (!IsAvailable)
 			throw MauiToolException.AutoFixable(
 				ErrorCodes.AndroidSdkManagerNotFound,
-				"SDK Manager not found. Run 'dotnet maui android install' first.",
-				"dotnet maui android install");
+				"SDK Manager not found. Run 'maui android install' first.",
+				"maui android install");
 
 		var packageList = string.Join(" ", packages.Select(p => $"\"{p}\""));
 		var args = packageList;
@@ -244,7 +244,7 @@ public class SdkManager
 			throw MauiToolException.AutoFixable(
 				ErrorCodes.AndroidSdkManagerNotFound,
 				"SDK Manager not found",
-				"dotnet maui android install");
+				"maui android install");
 
 		var result = await ProcessRunner.RunAsync(
 			SdkManagerPath!,
@@ -263,8 +263,8 @@ public class SdkManager
 		if (!IsAvailable)
 			throw MauiToolException.AutoFixable(
 				ErrorCodes.AndroidSdkManagerNotFound,
-				"SDK Manager not found. Run 'dotnet maui android install' first.",
-				"dotnet maui android install");
+				"SDK Manager not found. Run 'maui android install' first.",
+				"maui android install");
 
 		var packageList = string.Join(" ", packages.Select(p => $"\"{p}\""));
 		var args = $"--uninstall {packageList}";

@@ -79,7 +79,7 @@ public class JdkManager : IJdkManager
 					IssueId = ErrorCodes.JdkNotFound,
 					Description = "Install OpenJDK 17",
 					AutoFixable = true,
-					Command = "dotnet maui android jdk install"
+					Command = "maui android jdk install"
 				}
 			};
 		}
@@ -104,7 +104,7 @@ public class JdkManager : IJdkManager
 						IssueId = ErrorCodes.JdkVersionUnsupported,
 						Description = $"Install OpenJDK {DefaultJdkVersion}",
 						AutoFixable = true,
-						Command = "dotnet maui android jdk install"
+						Command = "maui android jdk install"
 					}
 				};
 			}

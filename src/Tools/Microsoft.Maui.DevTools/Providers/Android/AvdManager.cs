@@ -237,7 +237,7 @@ public class AvdManager
 			throw MauiToolException.AutoFixable(
 				ErrorCodes.AndroidSdkManagerNotFound,
 				"AVD Manager not found",
-				"dotnet maui android install");
+				"maui android install");
 
 		var forceFlag = force ? " --force" : "";
 		var args = $"create avd --name \"{name}\" --device \"{deviceProfile}\" --package \"{systemImage}\"{forceFlag}";
@@ -274,7 +274,7 @@ public class AvdManager
 			throw MauiToolException.AutoFixable(
 				ErrorCodes.AndroidEmulatorNotFound,
 				"Android emulator not installed",
-				"dotnet maui android sdk install emulator");
+				"maui android sdk install emulator");
 
 		var args = $"-avd \"{name}\"";
 		if (coldBoot)
@@ -317,7 +317,7 @@ public class AvdManager
 			throw MauiToolException.AutoFixable(
 				ErrorCodes.AndroidSdkManagerNotFound,
 				"AVD Manager not found",
-				"dotnet maui android install");
+				"maui android install");
 
 		var result = await ProcessRunner.RunAsync(
 			AvdManagerPath!,

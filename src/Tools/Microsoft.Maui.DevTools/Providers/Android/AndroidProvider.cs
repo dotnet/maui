@@ -56,7 +56,7 @@ public class AndroidProvider : IAndroidProvider
 					IssueId = ErrorCodes.AndroidSdkNotFound,
 					Description = "Install Android SDK",
 					AutoFixable = true,
-					Command = "dotnet maui android install --accept-licenses"
+					Command = "maui android install --accept-licenses"
 				}
 			});
 			return checks;
@@ -84,7 +84,7 @@ public class AndroidProvider : IAndroidProvider
 					IssueId = ErrorCodes.AndroidSdkManagerNotFound,
 					Description = "Install command-line tools",
 					AutoFixable = true,
-					Command = "dotnet maui android install"
+					Command = "maui android install"
 				}
 			});
 		}
@@ -112,7 +112,7 @@ public class AndroidProvider : IAndroidProvider
 						IssueId = ErrorCodes.AndroidLicensesNotAccepted,
 						Description = "Accept Android SDK licenses",
 						AutoFixable = true,
-						Command = "dotnet maui android sdk accept-licenses"
+						Command = "maui android sdk accept-licenses"
 					}
 				});
 			}
@@ -141,7 +141,7 @@ public class AndroidProvider : IAndroidProvider
 					IssueId = ErrorCodes.AndroidAdbNotFound,
 					Description = "Install platform-tools",
 					AutoFixable = true,
-					Command = "dotnet maui android sdk install platform-tools"
+					Command = "maui android sdk install platform-tools"
 				}
 			});
 		}
@@ -173,7 +173,7 @@ public class AndroidProvider : IAndroidProvider
 					IssueId = ErrorCodes.AndroidEmulatorNotFound,
 					Description = "Install emulator",
 					AutoFixable = true,
-					Command = "dotnet maui android sdk install emulator"
+					Command = "maui android sdk install emulator"
 				}
 			});
 		}

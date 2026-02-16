@@ -7,9 +7,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>Microsoft.Maui.DevTools</RootNamespace>
-    <AssemblyName>dotnet-maui</AssemblyName>
+    <AssemblyName>maui</AssemblyName>
     <PackAsTool>true</PackAsTool>
-    <ToolCommandName>dotnet-maui</ToolCommandName>
+    <ToolCommandName>maui</ToolCommandName>
     <PackageId>Microsoft.Maui.DevTools</PackageId>
     <Description>MAUI Dev Tools Client - CLI for .NET MAUI development environment setup and device management</Description>
     <Authors>Microsoft</Authors>
