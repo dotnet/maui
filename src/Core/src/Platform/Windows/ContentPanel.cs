@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Numerics;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Maui.Graphics;
@@ -9,6 +10,8 @@ using Microsoft.Maui.Graphics.Platform;
 #endif
 using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Shapes;
 
@@ -72,6 +75,25 @@ namespace Microsoft.Maui.Platform
 
 			SizeChanged += ContentPanelSizeChanged;
 		}
+
+	// Custom automation peer prevents duplicate announcements when ContentView has Description set
+	protected override AutomationPeer OnCreateAutomationPeer() => new ContentPanelAutomationPeer(this);
+
+	partial class ContentPanelAutomationPeer : FrameworkElementAutomationPeer
+	{
+		internal ContentPanelAutomationPeer(ContentPanel owner) : base(owner) { }
+
+		bool HasDescription => !string.IsNullOrWhiteSpace(AutomationProperties.GetName(Owner));
+
+		protected override AutomationControlType GetAutomationControlTypeCore() =>
+			HasDescription ? AutomationControlType.Text : AutomationControlType.Custom;
+
+		protected override string GetLocalizedControlTypeCore() =>
+			HasDescription ? string.Empty : base.GetLocalizedControlTypeCore() ?? string.Empty;
+
+		protected override IList<AutomationPeer>? GetChildrenCore() =>
+			HasDescription ? null : base.GetChildrenCore();
+	}
 
 		void ContentPanelSizeChanged(object sender, SizeChangedEventArgs e)
 		{
