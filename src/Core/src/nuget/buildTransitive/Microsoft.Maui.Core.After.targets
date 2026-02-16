@@ -29,7 +29,7 @@
     
     <Error
         Code="MA003"
-        Text="The current .NET MAUI package version '$(MauiCorePackageVersion)' requires the .NET MAUI workload version to be at least '$(MauiMinimumSupportedWorkloadVersion)'. The current .NET MAUI workload version is '$(MauiWorkloadVersion)'." />
+        Text=".NET MAUI package version '$(MauiCorePackageVersion)' requires the .NET MAUI workload version to be at least '$(MauiMinimumSupportedWorkloadVersion)'. However, the installed .NET MAUI workload version for the target framework is '$(MauiWorkloadVersion)'." />
 
   </Target>
 
