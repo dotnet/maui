@@ -54,6 +54,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		bool _disposed;
 		ShellItem _shellItem;
 		static UIColor _defaultMoreTextLabelTextColor;
+		const int MaxTabs = 5;
 
 		internal IShellSectionRenderer CurrentRenderer { get; private set; }
 
@@ -331,8 +332,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			var items = ShellItemController.GetItems();
 			var count = items.Count;
-			int maxTabs = 5; // fetch this a better way
-			bool willUseMore = count > maxTabs;
+			bool willUseMore = count > MaxTabs;
 
 			UIViewController[] viewControllers = new UIViewController[count];
 			int i = 0;
@@ -340,7 +340,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				var renderer = _context.CreateShellSectionRenderer(shellContent);
 
-				renderer.IsInMoreTab = willUseMore && i >= maxTabs - 1;
+				renderer.IsInMoreTab = willUseMore && i >= MaxTabs - 1;
 
 				renderer.ShellSection = shellContent;
 				AddRenderer(renderer);
@@ -356,7 +356,22 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			// Make sure we are at the right item
 			GoTo(ShellItem.CurrentItem);
+			UpdateCellsEnabled();
 			UpdateMoreCellsEnabled();
+		}
+
+		void UpdateCellsEnabled()
+		{
+			// Skip disabling the "More" tab to ensure overflow tabs remain accessible.
+			bool willUseMore = ViewControllers.Length > MaxTabs;
+			var tabCount = TabBar.Items.Length - (willUseMore ? 1 : 0);
+
+			for (int i = 0; i < tabCount; i++)
+			{
+				var tab = TabBar.Items[i];
+				var itemRenderer = RendererForViewController(ViewControllers[i]);
+				tab.Enabled = itemRenderer.ShellSection.IsEnabled;
+			}
 		}
 
 		void UpdateMoreCellsEnabled()
