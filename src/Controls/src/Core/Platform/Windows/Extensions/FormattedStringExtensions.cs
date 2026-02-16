@@ -127,9 +127,11 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var run = new Run { Text = text ?? string.Empty };
 
-			var font = span.ToFont(defaultFontSize);
-			if (font.IsDefault && defaultFont.HasValue)
-				font = defaultFont.Value;
+
+			// Inherit FontFamily from defaultFont if not explicitly set
+			var fontFamily = span.IsSet(Span.FontFamilyProperty) ? span.FontFamily : defaultFont?.Family;
+			var fontSize = span.FontSize >= 0 ? span.FontSize : defaultFontSize;
+			var font = Font.OfSize(fontFamily, fontSize);
 
 			if (!font.IsDefault)
 			{
