@@ -11,10 +11,11 @@ public class Issue32030 : _IssuesUITest
     public override string Issue => "Android - WebView in a grid expands beyond it's cell";
     [Test]
     [Category(UITestCategories.WebView)]
-    public void VerifyWebViewStaysWithinGridCell()
+    public void VerifyWebViewBoundsWhenSourceSetToNull()
     {
         App.WaitForElement("BottomButton");
         App.Tap("BottomButton");
+        App.WaitForElement("BottomButton");
         VerifyScreenshot();
     }
 }

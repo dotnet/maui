@@ -57,6 +57,7 @@ namespace Microsoft.Maui.Platform
 			bool navigate = _navigationResult != WebNavigationResult.Failure || !GetValidUrl(url).Equals(_lastUrlNavigatedCancel, StringComparison.OrdinalIgnoreCase);
 			_lastUrlNavigatedCancel = _navigationResult == WebNavigationResult.Cancel ? url : null;
 
+			// Skip Navigated event for about:blank to prevent unwanted events when Source is null
 			if (navigate && !IsBlankNavigation(url))
 				handler.VirtualView.Navigated(handler.CurrentNavigationEvent, GetValidUrl(url), _navigationResult);
 
@@ -98,6 +99,8 @@ namespace Microsoft.Maui.Platform
 
 		static bool IsBlankNavigation(string? url)
 		{
+			// Null/empty URLs are handled by the early return in OnPageFinished,
+    		// so we only need to check for the explicit "about:blank" URL
 			if (string.IsNullOrWhiteSpace(url))
 				return false;
 
