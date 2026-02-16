@@ -66,14 +66,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			int headerValue = itemsSource.HasHeader ? 1 : 0;
 			int footerValue = itemsSource.HasFooter ? 1 : 0;
 
-			int modifiedItemCount = ItemsViewAdapter.ItemCount - footerValue - headerValue;
+			// Calculate actual data item count (excluding header and footer positions)
+			int actualItemCount = ItemsViewAdapter.ItemCount - footerValue - headerValue;
 
-			if (Last < headerValue || Last > modifiedItemCount)
+			// Ensure we're within the data items region (not in header/footer)
+			if (Last < headerValue || Last > actualItemCount)
 			{
 				return;
 			}
 
-			bool isThresholdReached = (Last == modifiedItemCount - 1) || (modifiedItemCount - 1 - Last <= _itemsView.RemainingItemsThreshold);
+			// Check if we're at or within threshold distance from the last data item
+			bool isThresholdReached = (Last == actualItemCount - 1) || (actualItemCount - 1 - Last <= _itemsView.RemainingItemsThreshold);
 
 			if (isThresholdReached)
 			{
