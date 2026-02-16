@@ -1,4 +1,4 @@
-#if WINDOWS
+#if TEST_FAILS_ON_CATALYST //The test fails on Mac because PinchToZoomIn does not work.                     
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;

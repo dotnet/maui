@@ -5,18 +5,15 @@ public class Issue24252 : ContentPage
 {
 	public Issue24252()
 	{
-		Content = new ScrollView
+		Content = new VerticalStackLayout
 		{
-			Content = new VerticalStackLayout
+			Padding = 20,
+			Spacing = 15,
+			Children =
 			{
-				Padding = 20,
-				Spacing = 15,
-				Children =
-				{
-					CreatePanSection(),
-					CreateSwipeSection(),
-					CreatePinchSection()
-				}
+				CreatePanSection(),
+				CreateSwipeSection(),
+				CreatePinchSection()
 			}
 		};
 	}
@@ -29,7 +26,7 @@ public class Issue24252 : ContentPage
 		{
 			BackgroundColor = Colors.LightBlue,
 			WidthRequest = 250,
-			HeightRequest = 200,
+			HeightRequest = 150,
 			HorizontalOptions = LayoutOptions.Center
 		};
 
@@ -86,7 +83,7 @@ public class Issue24252 : ContentPage
 		{
 			BackgroundColor = Colors.LightGreen,
 			WidthRequest = 250,
-			HeightRequest = 200,
+			HeightRequest = 150,
 			HorizontalOptions = LayoutOptions.Center
 		};
 
@@ -131,7 +128,7 @@ public class Issue24252 : ContentPage
 		{
 			BackgroundColor = Colors.LightCoral,
 			WidthRequest = 250,
-			HeightRequest = 200,
+			HeightRequest = 150,
 			HorizontalOptions = LayoutOptions.Center
 		};
 
