@@ -481,13 +481,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var foregroundColor = _context?.Shell?.CurrentPage?.GetValue(Shell.ForegroundColorProperty) ??
 								_context?.Shell?.GetValue(Shell.ForegroundColorProperty);
 
-			var platformColor = foregroundColor is Graphics.Color shellForegroundColor
-				? shellForegroundColor.ToPlatform()
-				: null;
-
-			foreach (var item in rightItems)
+			if (foregroundColor is Graphics.Color shellForegroundColor)
 			{
-				item.TintColor = platformColor;
+				var platformColor = shellForegroundColor.ToPlatform();
+				foreach (var item in rightItems)
+				{
+					item.TintColor = platformColor;
+				}
 			}
 		}
 
