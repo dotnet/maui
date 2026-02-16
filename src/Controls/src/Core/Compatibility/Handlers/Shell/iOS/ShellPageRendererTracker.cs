@@ -465,7 +465,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		/// iOS 26+: LiquidGlass no longer inherits the foreground color from the navigation bar's TintColor.
 		/// Explicitly set TintColor on each right bar button item to ensure the Shell.ForegroundColor is applied.
-		/// When ForegroundColor is cleared, resets TintColor to null so items revert to the system default.
 		void UpdateRightBarButtonItemTintColors()
 		{
 			if (!(OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26)))
