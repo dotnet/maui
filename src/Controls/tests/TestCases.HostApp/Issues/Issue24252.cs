@@ -37,7 +37,9 @@ public class Issue24252 : ContentPage
 		parentPan.PanUpdated += (s, e) =>
 		{
 			if (e.StatusType == GestureStatus.Started)
+			{
 				statusLabel.Text = "Parent triggered";
+			}
 		};
 		parent.GestureRecognizers.Add(parentPan);
 
@@ -56,7 +58,9 @@ public class Issue24252 : ContentPage
 		childPan.PanUpdated += (s, e) =>
 		{
 			if (e.StatusType == GestureStatus.Started)
+			{
 				statusLabel.Text = "Child triggered";
+			}
 		};
 		child.GestureRecognizers.Add(childPan);
 
@@ -135,7 +139,9 @@ public class Issue24252 : ContentPage
 		parentPinch.PinchUpdated += (s, e) =>
 		{
 			if (e.Status == GestureStatus.Started)
+			{
 				statusLabel.Text = "Parent triggered";
+			}
 		};
 		parent.GestureRecognizers.Add(parentPinch);
 
@@ -154,7 +160,9 @@ public class Issue24252 : ContentPage
 		childPinch.PinchUpdated += (s, e) =>
 		{
 			if (e.Status == GestureStatus.Started)
+			{
 				statusLabel.Text = "Child triggered";
+			}
 		};
 		child.GestureRecognizers.Add(childPinch);
 
