@@ -7,23 +7,23 @@ namespace Microsoft.Maui.Graphics.Win2D
 namespace Microsoft.Maui.Graphics.Platform
 #endif
 {
-	/// <summary>
-	/// A Windows platform implementation of <see cref="IStringSizeService"/> which
-	/// can measure a given string and return the dimensions.
-	/// </summary>
+    /// <summary>
+    /// A Windows platform implementation of <see cref="IStringSizeService"/> which
+    /// can measure a given string and return the dimensions.
+    /// </summary>
 #if MAUI_GRAPHICS_WIN2D
 	public class W2DStringSizeService
 #else
-	public class PlatformStringSizeService
+    public class PlatformStringSizeService
 #endif
-		: IStringSizeService
-	{
-		public SizeF GetStringSize(string value, IFont font, float textSize)
-			=> GetStringSize(value, font, textSize, HorizontalAlignment.Left, VerticalAlignment.Top);
+        : IStringSizeService
+    {
+        public SizeF GetStringSize(string value, IFont font, float textSize)
+            => GetStringSize(value, font, textSize, HorizontalAlignment.Left, VerticalAlignment.Top);
 
-		public SizeF GetStringSize(string value, IFont font, float textSize, HorizontalAlignment horizontalAlignment, VerticalAlignment verticalAlignment)
-		{
-            if (string.IsNullOrEmpty(value) || font is null || textSize <= 0)
+        public SizeF GetStringSize(string value, IFont font, float textSize, HorizontalAlignment horizontalAlignment, VerticalAlignment verticalAlignment)
+        {
+            if (string.IsNullOrEmpty(value) || textSize <= 0)
             {
                 return SizeF.Zero;
             }
@@ -62,5 +62,5 @@ namespace Microsoft.Maui.Graphics.Platform
                 return new SizeF((float)bounds.Width, (float)bounds.Height);
             }
         }
-	}
+    }
 }

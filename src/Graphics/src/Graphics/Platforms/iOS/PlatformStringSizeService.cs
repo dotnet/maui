@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Graphics.Platform
 
 			// Get suggested frame size with unlimited constraints
 			var measuredSize = framesetter.SuggestFrameSize(
-				new NSRange(0, 0),
+				new NSRange(0, attributedString.Length),
 				null,
 				new CGSize(float.MaxValue, float.MaxValue),
 				out _);
