@@ -12,9 +12,9 @@ namespace Microsoft.Maui.Controls
 	/// </summary>
 	internal struct SetterSpecificityList<T>
 	{
-		Entry _top;       // highest specificity entry
-		Entry _second;    // second highest (fallback when top is removed)
-		RestList? _rest;  // overflow for 3+ entries (< 1% of instances in practice)
+		Entry _top;        // highest specificity entry
+		Entry _second;     // second highest (fallback when top is removed)
+		Entry[]? _rest;    // overflow for 3+ entries (< 1% of instances in practice)
 		int _count;
 
 		public readonly int Count => _count;
@@ -94,7 +94,7 @@ namespace Microsoft.Maui.Controls
 
 			if (key > _top.Specificity)
 			{
-				PushSecondToRest();
+				RestInsert(_second);
 				_second = _top;
 				_top = newEntry;
 				_count++;
@@ -103,14 +103,13 @@ namespace Microsoft.Maui.Controls
 
 			if (key > _second.Specificity)
 			{
-				PushSecondToRest();
+				RestInsert(_second);
 				_second = newEntry;
 				_count++;
 				return;
 			}
 
-			_rest ??= new RestList();
-			if (_rest.SetOrInsert(newEntry))
+			if (RestSetOrInsert(newEntry))
 				_count++;
 		}
 
@@ -124,9 +123,9 @@ namespace Microsoft.Maui.Controls
 			{
 				RemoveSecond();
 			}
-			else if (_count >= 3 && _rest is not null)
+			else if (_count >= 3)
 			{
-				if (_rest.Remove(key))
+				if (RestRemove(key))
 					_count--;
 			}
 		}
@@ -138,16 +137,18 @@ namespace Microsoft.Maui.Controls
 			if (_count >= 2 && _second.Specificity == key)
 				return _second.Value;
 
-			if (_rest is not null && _rest.TryGetValue(key, out var value))
-				return value;
+			if (_count >= 3)
+			{
+				var rest = _rest!;
+				var restCount = _count - 2;
+				for (int i = 0; i < restCount; i++)
+				{
+					if (rest[i].Specificity == key)
+						return rest[i].Value;
+				}
+			}
 
 			return default;
-		}
-
-		void PushSecondToRest()
-		{
-			_rest ??= new RestList();
-			_rest.Insert(_second);
 		}
 
 		void RemoveTop()
@@ -163,10 +164,10 @@ namespace Microsoft.Maui.Controls
 				_second = default;
 				_count = 1;
 			}
-			else if (_rest is not null)
+			else
 			{
 				_top = _second;
-				_second = _rest.PopLast();
+				_second = RestPopLast();
 				_count--;
 			}
 		}
@@ -178,10 +179,121 @@ namespace Microsoft.Maui.Controls
 				_second = default;
 				_count = 1;
 			}
-			else if (_rest is not null)
+			else
 			{
-				_second = _rest.PopLast();
+				_second = RestPopLast();
 				_count--;
+			}
+		}
+
+		// --- Rest array helpers (overflow for entries beyond _top and _second) ---
+
+		int RestCount => _count - 2;
+
+		void RestInsert(Entry entry)
+		{
+			var restCount = RestCount;
+			RestEnsureCapacity(restCount + 1);
+			var rest = _rest!;
+
+			int insertAt = restCount;
+			for (int i = restCount - 1; i >= 0; i--)
+			{
+				if (rest[i].Specificity <= entry.Specificity)
+				{
+					insertAt = i + 1;
+					break;
+				}
+
+				insertAt = i;
+			}
+
+			if (insertAt < restCount)
+				Array.Copy(rest, insertAt, rest, insertAt + 1, restCount - insertAt);
+
+			rest[insertAt] = entry;
+		}
+
+		bool RestSetOrInsert(Entry entry)
+		{
+			var restCount = RestCount;
+			var rest = _rest;
+
+			int insertAt = restCount;
+			if (rest is not null)
+			{
+				for (int i = restCount - 1; i >= 0; i--)
+				{
+					var specificity = rest[i].Specificity;
+					if (specificity == entry.Specificity)
+					{
+						rest[i] = entry;
+						return false;
+					}
+
+					if (specificity < entry.Specificity)
+					{
+						insertAt = i + 1;
+						break;
+					}
+
+					insertAt = i;
+				}
+			}
+
+			RestEnsureCapacity(restCount + 1);
+			rest = _rest!;
+
+			if (insertAt < restCount)
+				Array.Copy(rest, insertAt, rest, insertAt + 1, restCount - insertAt);
+
+			rest[insertAt] = entry;
+			return true;
+		}
+
+		Entry RestPopLast()
+		{
+			var rest = _rest!;
+			var lastIndex = RestCount - 1;
+			var entry = rest[lastIndex];
+			rest[lastIndex] = default;
+			return entry;
+		}
+
+		bool RestRemove(SetterSpecificity key)
+		{
+			var rest = _rest;
+			if (rest is null)
+				return false;
+
+			var restCount = RestCount;
+			for (int i = restCount - 1; i >= 0; i--)
+			{
+				if (rest[i].Specificity == key)
+				{
+					var trailingCount = restCount - i - 1;
+					if (trailingCount > 0)
+						Array.Copy(rest, i + 1, rest, i, trailingCount);
+
+					rest[restCount - 1] = default;
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		void RestEnsureCapacity(int requiredLength)
+		{
+			if (_rest is null)
+			{
+				_rest = new Entry[Math.Max(requiredLength, 4)];
+			}
+			else if (_rest.Length < requiredLength)
+			{
+				var newEntries = new Entry[Math.Max(requiredLength, _rest.Length * 2)];
+				Array.Copy(_rest, 0, newEntries, 0, RestCount);
+				_rest = newEntries;
 			}
 		}
 
@@ -189,145 +301,6 @@ namespace Microsoft.Maui.Controls
 		{
 			public T? Value = value;
 			public readonly SetterSpecificity Specificity = specificity;
-		}
-
-		sealed class RestList
-		{
-			Entry[]? _entries;
-			int _count;
-
-			public bool TryGetValue(SetterSpecificity key, out T? value)
-			{
-				var entries = _entries;
-				if (entries is not null)
-				{
-					for (int i = 0; i < _count; i++)
-					{
-						if (entries[i].Specificity == key)
-						{
-							value = entries[i].Value;
-							return true;
-						}
-					}
-				}
-
-				value = default;
-				return false;
-			}
-
-			/// <summary>
-			/// Updates existing entry or inserts a new one, maintaining ascending specificity order.
-			/// Returns true if a new entry was inserted; false if an existing one was updated.
-			/// </summary>
-			public bool SetOrInsert(Entry entry)
-			{
-				var entries = _entries;
-				int insertAt = _count;
-				if (entries is not null)
-				{
-					for (int i = _count - 1; i >= 0; i--)
-					{
-						var specificity = entries[i].Specificity;
-						if (specificity == entry.Specificity)
-						{
-							entries[i] = entry;
-							return false;
-						}
-
-						if (specificity < entry.Specificity)
-						{
-							insertAt = i + 1;
-							break;
-						}
-
-						insertAt = i;
-					}
-				}
-
-				InsertAt(entry, insertAt);
-				return true;
-			}
-
-			public void Insert(Entry entry)
-			{
-				var entries = _entries;
-				int insertAt = _count;
-				if (entries is not null)
-				{
-					for (int i = _count - 1; i >= 0; i--)
-					{
-						if (entries[i].Specificity <= entry.Specificity)
-						{
-							insertAt = i + 1;
-							break;
-						}
-
-						insertAt = i;
-					}
-				}
-
-				InsertAt(entry, insertAt);
-			}
-
-			public Entry PopLast()
-			{
-				var entries = _entries!;
-				var lastIndex = _count - 1;
-				var entry = entries[lastIndex];
-				entries[lastIndex] = default;
-				_count--;
-				return entry;
-			}
-
-			public bool Remove(SetterSpecificity key)
-			{
-				var entries = _entries;
-				if (entries is null)
-					return false;
-
-				for (int i = _count - 1; i >= 0; i--)
-				{
-					if (entries[i].Specificity == key)
-					{
-						var trailingCount = _count - i - 1;
-						if (trailingCount > 0)
-							Array.Copy(entries, i + 1, entries, i, trailingCount);
-
-						_count--;
-						entries[_count] = default;
-						return true;
-					}
-				}
-
-				return false;
-			}
-
-			void InsertAt(Entry entry, int insertAt)
-			{
-				EnsureCapacity(_count + 1);
-				var entries = _entries!;
-				if (insertAt < _count)
-				{
-					Array.Copy(entries, insertAt, entries, insertAt + 1, _count - insertAt);
-				}
-
-				entries[insertAt] = entry;
-				_count++;
-			}
-
-			void EnsureCapacity(int requiredLength)
-			{
-				if (_entries is null)
-				{
-					_entries = new Entry[Math.Max(requiredLength, 4)];
-				}
-				else if (_entries.Length < requiredLength)
-				{
-					var newEntries = new Entry[Math.Max(requiredLength, _entries.Length * 2)];
-					Array.Copy(_entries, 0, newEntries, 0, _count);
-					_entries = newEntries;
-				}
-			}
 		}
 	}
 }
