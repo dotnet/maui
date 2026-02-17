@@ -21,7 +21,7 @@
                FontAttributes="Bold"
                HorizontalOptions="Fill"
                HorizontalTextAlignment="Center"
-               Padding="5"
+               Padding="10"
                Grid.Row="0"
                Grid.Column="0"
                Grid.ColumnSpan="3"/>
@@ -34,12 +34,14 @@
                TextColor="White"
                VerticalOptions="Fill"
                VerticalTextAlignment="Center"
+               Padding="5"
                Grid.Row="1"
                Grid.Column="0"/>
 
         <!-- Main Content -->
-        <VerticalStackLayout Grid.Row="1"
-                             Grid.Column="1"
+        <ScrollView Grid.Row="1"
+                             Grid.Column="1">
+        <VerticalStackLayout 
                              VerticalOptions="Center"
                              Spacing="10"
                              Padding="10">
@@ -95,7 +97,7 @@
                    AutomationId="SafeAreaTestEntry"
                    Placeholder="Tap to raise keyboard"/>
         </VerticalStackLayout>
-
+       </ScrollView>
         <!-- Right Edge Indicator -->
         <Label x:Name="RightEdgeIndicator"
                AutomationId="RightEdgeIndicator"
@@ -118,6 +120,7 @@
                FontAttributes="Bold"
                HorizontalOptions="Fill"
                HorizontalTextAlignment="Center"
+               Padding="10"
                Grid.Row="2"
                Grid.Column="0"
                Grid.ColumnSpan="3"/>
