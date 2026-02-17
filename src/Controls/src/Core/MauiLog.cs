@@ -1,6 +1,5 @@
 using System;
 using System.Runtime.CompilerServices;
-using System.Text;
 using Microsoft.Extensions.Logging;
 
 #if NETSTANDARD
@@ -93,40 +92,69 @@ internal static class MauiLog
 	/// <see cref="ILogger.IsEnabled"/> before formatting. When the log level
 	/// is filtered out, <c>shouldAppend</c> is <c>false</c> and the compiler
 	/// skips all Append calls — zero allocation.
+	///
+	/// Uses inline fields and <see cref="string.Concat(string?, string?, string?, string?)"/>
+	/// instead of StringBuilder to match (or beat) plain <c>$"..."</c>
+	/// interpolation performance for the short messages typical of MAUI logging.
 	/// </summary>
 	[InterpolatedStringHandler]
 	internal ref struct WarningInterpolatedStringHandler
 	{
-		StringBuilder? _builder;
+		private string? _s0, _s1, _s2, _s3, _s4, _s5, _s6;
+		private int _count;
 
-		internal bool IsEnabled => _builder is not null;
+		internal bool IsEnabled { get; }
 		internal ILogger? Logger { get; }
 
 		public WarningInterpolatedStringHandler(int literalLength, int formattedCount, out bool shouldAppend)
 		{
+			_count = 0;
+			_s0 = _s1 = _s2 = _s3 = _s4 = _s5 = _s6 = null;
 			Logger = Application.Current?.FindMauiContext()?.CreateLogger(typeof(MauiLog));
 			if (Logger is not null && Logger.IsEnabled(LogLevel.Warning))
 			{
-				_builder = new StringBuilder(literalLength);
+				IsEnabled = true;
 				shouldAppend = true;
 			}
 			else
 			{
-				_builder = null;
+				IsEnabled = false;
 				shouldAppend = false;
 			}
 		}
 
-		public void AppendLiteral(string value) => _builder!.Append(value);
+		public void AppendLiteral(string value) => Add(value);
 
-		public void AppendFormatted<T>(T value) => _builder!.Append(value);
+		public void AppendFormatted<T>(T value) => Add(value?.ToString() ?? "");
 
-		public void AppendFormatted<T>(T value, string? format) => _builder!.AppendFormat($"{{0:{format}}}", value);
+		public void AppendFormatted<T>(T value, string? format) => Add(string.Format($"{{0:{format}}}", value));
+
+		private void Add(string value)
+		{
+			switch (_count++)
+			{
+				case 0: _s0 = value; break;
+				case 1: _s1 = value; break;
+				case 2: _s2 = value; break;
+				case 3: _s3 = value; break;
+				case 4: _s4 = value; break;
+				case 5: _s5 = value; break;
+				default: _s6 = (_s6 ?? "") + value; break;
+			}
+		}
 
 		internal string ToStringAndClear()
 		{
-			var result = _builder!.ToString();
-			_builder = null;
+			var result = _count switch
+			{
+				0 => "",
+				1 => _s0!,
+				2 => string.Concat(_s0, _s1),
+				3 => string.Concat(_s0, _s1, _s2),
+				4 => string.Concat(_s0, _s1, _s2, _s3),
+				_ => string.Concat(_s0, _s1, _s2, _s3) + string.Concat(_s4, _s5, _s6),
+			};
+			_count = 0;
 			return result;
 		}
 	}
