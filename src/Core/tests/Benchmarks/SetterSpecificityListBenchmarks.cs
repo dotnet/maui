@@ -11,7 +11,6 @@ namespace Microsoft.Maui.Handlers.Benchmarks;
 /// - Current: the real struct-based SetterSpecificityList from the project
 /// </summary>
 [MemoryDiagnoser]
-[ShortRunJob]
 public class SetterSpecificityListBenchmarks
 {
 	static readonly SetterSpecificity DefaultValue = default;
@@ -19,110 +18,95 @@ public class SetterSpecificityListBenchmarks
 	static readonly SetterSpecificity ManualValueSetter = new(0, 0, 0, 1, 0, 0, 0, 0);
 	static readonly SetterSpecificity Style = new(0, 1, 0, 0, 0, 0, 0, 0);
 
-	// --- Create contexts and set 2 entries (the 99% hot path) ---
+	LegacyContext _legacyCtx = null!;
+	CurrentContext _currentCtx = null!;
+
+	[IterationSetup(Target = nameof(Legacy_Update))]
+	public void SetupLegacyUpdate()
+	{
+		_legacyCtx = new LegacyContext();
+		_legacyCtx.Values[DefaultValue] = "default";
+		_legacyCtx.Values[ManualValueSetter] = "initial";
+	}
+
+	[IterationSetup(Target = nameof(Current_Update))]
+	public void SetupCurrentUpdate()
+	{
+		_currentCtx = new CurrentContext();
+		_currentCtx.Values.SetValue(DefaultValue, "default");
+		_currentCtx.Values.SetValue(ManualValueSetter, "initial");
+	}
+
+	// --- Create context and set 2 entries (the 99% hot path) ---
 
 	[Benchmark(Baseline = true)]
-	public object Legacy_Create100_Set2()
-	{
-		LegacyContext? last = null;
-		for (int i = 0; i < 100; i++)
-		{
-			var ctx = new LegacyContext();
-			ctx.Values[DefaultValue] = "default";
-			ctx.Values[FromHandler] = "handler";
-			last = ctx;
-		}
-		return last!;
-	}
-
-	[Benchmark]
-	public object Current_Create100_Set2()
-	{
-		CurrentContext? last = null;
-		for (int i = 0; i < 100; i++)
-		{
-			var ctx = new CurrentContext();
-			ctx.Values.SetValue(DefaultValue, "default");
-			ctx.Values.SetValue(FromHandler, "handler");
-			last = ctx;
-		}
-		return last!;
-	}
-
-	// --- Create contexts and set 3 entries (the < 1% cold path) ---
-
-	[Benchmark]
-	public object Legacy_Create100_Set3()
-	{
-		LegacyContext? last = null;
-		for (int i = 0; i < 100; i++)
-		{
-			var ctx = new LegacyContext();
-			ctx.Values[DefaultValue] = "default";
-			ctx.Values[Style] = "style";
-			ctx.Values[ManualValueSetter] = "manual";
-			last = ctx;
-		}
-		return last!;
-	}
-
-	[Benchmark]
-	public object Current_Create100_Set3()
-	{
-		CurrentContext? last = null;
-		for (int i = 0; i < 100; i++)
-		{
-			var ctx = new CurrentContext();
-			ctx.Values.SetValue(DefaultValue, "default");
-			ctx.Values.SetValue(Style, "style");
-			ctx.Values.SetValue(ManualValueSetter, "manual");
-			last = ctx;
-		}
-		return last!;
-	}
-
-	// --- Allocate 1000 empty contexts ---
-
-	[Benchmark]
-	public int Legacy_Alloc1000()
-	{
-		int sum = 0;
-		for (int i = 0; i < 1000; i++)
-			sum += new LegacyContext().Values.Count;
-		return sum;
-	}
-
-	[Benchmark]
-	public int Current_Alloc1000()
-	{
-		int sum = 0;
-		for (int i = 0; i < 1000; i++)
-			sum += new CurrentContext().Values.Count;
-		return sum;
-	}
-
-	// --- Update existing value 1000× ---
-
-	[Benchmark]
-	public object Legacy_Update1000()
+	public object Legacy_CreateAndSet2()
 	{
 		var ctx = new LegacyContext();
 		ctx.Values[DefaultValue] = "default";
-		ctx.Values[ManualValueSetter] = "v0";
-		for (int i = 0; i < 1000; i++)
-			ctx.Values[ManualValueSetter] = "v" + i;
+		ctx.Values[FromHandler] = "handler";
 		return ctx;
 	}
 
 	[Benchmark]
-	public object Current_Update1000()
+	public object Current_CreateAndSet2()
 	{
 		var ctx = new CurrentContext();
 		ctx.Values.SetValue(DefaultValue, "default");
-		ctx.Values.SetValue(ManualValueSetter, "v0");
-		for (int i = 0; i < 1000; i++)
-			ctx.Values.SetValue(ManualValueSetter, "v" + i);
+		ctx.Values.SetValue(FromHandler, "handler");
 		return ctx;
+	}
+
+	// --- Create context and set 3 entries (the < 1% cold path) ---
+
+	[Benchmark]
+	public object Legacy_CreateAndSet3()
+	{
+		var ctx = new LegacyContext();
+		ctx.Values[DefaultValue] = "default";
+		ctx.Values[Style] = "style";
+		ctx.Values[ManualValueSetter] = "manual";
+		return ctx;
+	}
+
+	[Benchmark]
+	public object Current_CreateAndSet3()
+	{
+		var ctx = new CurrentContext();
+		ctx.Values.SetValue(DefaultValue, "default");
+		ctx.Values.SetValue(Style, "style");
+		ctx.Values.SetValue(ManualValueSetter, "manual");
+		return ctx;
+	}
+
+	// --- Allocate empty context ---
+
+	[Benchmark]
+	public object Legacy_Alloc()
+	{
+		return new LegacyContext();
+	}
+
+	[Benchmark]
+	public object Current_Alloc()
+	{
+		return new CurrentContext();
+	}
+
+	// --- Update existing value ---
+
+	[Benchmark]
+	public object Legacy_Update()
+	{
+		_legacyCtx.Values[ManualValueSetter] = "updated";
+		return _legacyCtx;
+	}
+
+	[Benchmark]
+	public object Current_Update()
+	{
+		_currentCtx.Values.SetValue(ManualValueSetter, "updated");
+		return _currentCtx;
 	}
 
 	// ==================================================================
