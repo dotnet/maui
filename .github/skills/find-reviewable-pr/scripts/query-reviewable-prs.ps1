@@ -45,7 +45,7 @@
 
 param(
     [Parameter(Mandatory = $false)]
-    [ValidateSet("milestoned", "priority", "recent", "partner", "community", "docs-maui", "all")]
+    [ValidateSet("milestoned", "priority", "recent", "partner", "community", "docs-maui", "approved", "ready-to-review", "agent-reviewed", "all")]
     [string]$Category = "all",
 
     [Parameter(Mandatory = $false)]
@@ -138,6 +138,138 @@ function Invoke-GitHubWithRetry {
     throw "Failed to $Description after $MaxRetries attempts"
 }
 
+# MAUI SDK Ongoing project board constants
+$MAUI_PROJECT_ID = "PVT_kwDOAIt-yc4AH1zp"
+$READY_TO_REVIEW_OPTION_ID = "11d42e2a"
+
+# Helper function to fetch PR numbers in "Ready To Review" from the project board
+function Get-ReadyToReviewPRNumbers {
+    param([bool]$HasProjectScope)
+    
+    if (-not $HasProjectScope) {
+        Write-Host "  ⚠ Skipping project board query (missing read:project scope)" -ForegroundColor Yellow
+        return @()
+    }
+    
+    Write-Host "  Fetching 'Ready To Review' items from MAUI SDK Ongoing board..." -ForegroundColor Gray
+    
+    try {
+        $graphqlQuery = @"
+{
+  node(id: "$MAUI_PROJECT_ID") {
+    ... on ProjectV2 {
+      items(first: 100) {
+        nodes {
+          fieldValueByName(name: "Status") {
+            ... on ProjectV2ItemFieldSingleSelectValue {
+              optionId
+            }
+          }
+          content {
+            ... on PullRequest {
+              number
+              state
+            }
+          }
+        }
+      }
+    }
+  }
+}
+"@
+        $result = Invoke-GitHubWithRetry -Command "gh api graphql -f query='$($graphqlQuery -replace "`n", " " -replace "'", "'\''")'" -Description "fetch project board items"
+        $parsed = $result | ConvertFrom-Json
+        
+        $readyPRs = @()
+        foreach ($item in $parsed.data.node.items.nodes) {
+            if ($item.fieldValueByName -and 
+                $item.fieldValueByName.optionId -eq $READY_TO_REVIEW_OPTION_ID -and
+                $item.content -and 
+                $item.content.number -and
+                $item.content.state -eq "OPEN") {
+                $readyPRs += $item.content.number
+            }
+        }
+        
+        Write-Host "    Ready To Review: $($readyPRs.Count) PRs" -ForegroundColor Gray
+        return $readyPRs
+    }
+    catch {
+        Write-Warning "  Could not query project board: $_"
+        return @()
+    }
+}
+
+# Helper function to fetch the AI Summary comment from a PR
+function Get-AgentSummaryComment {
+    param([int]$PRNumber)
+    
+    try {
+        $result = gh api "repos/dotnet/maui/issues/$PRNumber/comments" --jq '.[] | select(.body | contains("<!-- AI Summary -->")) | .body' 2>&1
+        if ($LASTEXITCODE -eq 0 -and $result) {
+            return $result -join "`n"
+        }
+    }
+    catch { }
+    return $null
+}
+
+# Helper function to extract merge-relevant highlights from an AI Summary comment
+function Get-AgentSummaryHighlights {
+    param([string]$CommentBody)
+    
+    if (-not $CommentBody) { return $null }
+    
+    # Strip HTML tags for cleaner extraction
+    $cleanBody = $CommentBody -replace '<[^>]+>', ''
+    
+    $highlights = [ordered]@{}
+    
+    # Extract the overall verdict/recommendation
+    if ($cleanBody -match "(?i)(?:Verdict|Recommendation|Overall)[:\s]+([^\n]+)") {
+        $verdict = $Matches[1].Trim()
+        if ($verdict.Length -gt 5) {
+            $highlights["Verdict"] = if ($verdict.Length -gt 150) { $verdict.Substring(0, 147) + "..." } else { $verdict }
+        }
+    }
+    
+    # Check for gate results (tests pass/fail)
+    if ($cleanBody -match "(?i)Gate[:\s]+(PASS|FAIL|passed|failed)[^\n]*") {
+        $highlights["Gate"] = $Matches[0].Trim()
+    } elseif ($cleanBody -match "(?i)tests?\s+(pass|fail|catch|verified)[^\n]*") {
+        $gate = $Matches[0].Trim()
+        if ($gate.Length -gt 5) {
+            $highlights["Gate"] = if ($gate.Length -gt 100) { $gate.Substring(0, 97) + "..." } else { $gate }
+        }
+    }
+    
+    # Check for fix comparison results
+    if ($cleanBody -match "(?i)(fix.*optimal|fix.*win|fix.*lose|better.*alternative|PR fix is|agent found)[^\n]*") {
+        $fix = $Matches[0].Trim()
+        if ($fix.Length -gt 5) {
+            $highlights["Fix"] = if ($fix.Length -gt 150) { $fix.Substring(0, 147) + "..." } else { $fix }
+        }
+    }
+    
+    # Check for agent label-based status (most reliable)
+    if ($CommentBody -match "s/agent-approved") {
+        if (-not $highlights.Contains("Verdict")) { $highlights["Verdict"] = "Agent recommends approval" }
+    } elseif ($CommentBody -match "s/agent-changes-requested") {
+        if (-not $highlights.Contains("Verdict")) { $highlights["Verdict"] = "Agent recommends changes" }
+    }
+    
+    # Extract key concern if present
+    if ($cleanBody -match "(?i)(?:concern|blocker|issue found|problem)[:\s]+([^\n]+)") {
+        $concern = $Matches[1].Trim()
+        if ($concern.Length -gt 10 -and $concern.Length -le 200) {
+            $highlights["Concern"] = $concern
+        }
+    }
+    
+    if ($highlights.Count -eq 0) { return $null }
+    return $highlights
+}
+
 # Check if we have read:project scope by testing a simple query with projectItems
 $hasProjectScope = $true
 Write-Host ""
@@ -165,6 +297,9 @@ catch {
 # Build the JSON fields list based on available scopes
 $baseFields = "number,title,labels,createdAt,updatedAt,isDraft,author,additions,deletions,changedFiles,milestone,url,reviewDecision,reviews"
 $jsonFields = if ($hasProjectScope) { "$baseFields,projectItems" } else { $baseFields }
+
+# Fetch "Ready To Review" PR numbers from the project board
+$readyToReviewPRNumbers = Get-ReadyToReviewPRNumbers -HasProjectScope $hasProjectScope
 
 # Fetch PRs from dotnet/maui using multiple targeted queries to ensure comprehensive coverage
 Write-Host ""
@@ -246,6 +381,27 @@ try {
     $prs = $prResult | ConvertFrom-Json
     $added = Add-UniquePRs -prs $prs -allPRs ([ref]$allPRs) -seenNumbers ([ref]$seenPRNumbers)
     Write-Host "    Recently created: $added PRs" -ForegroundColor Gray
+    
+    # Query 7: Approved but not merged PRs
+    Write-Host "  Fetching approved (not merged) PRs..." -ForegroundColor Gray
+    $prResult = Invoke-GitHubWithRetry -Command "gh pr list --repo dotnet/maui --state open --search 'review:approved' --limit 25 --json $jsonFields" -Description "fetch approved PRs"
+    $prs = $prResult | ConvertFrom-Json
+    $added = Add-UniquePRs -prs $prs -allPRs ([ref]$allPRs) -seenNumbers ([ref]$seenPRNumbers)
+    Write-Host "    Approved (not merged): $added PRs" -ForegroundColor Gray
+    
+    # Query 8: Agent-reviewed PRs
+    Write-Host "  Fetching agent-reviewed PRs..." -ForegroundColor Gray
+    $prResult = Invoke-GitHubWithRetry -Command "gh pr list --repo dotnet/maui --state open --search 'label:s/agent-reviewed' --limit 25 --json $jsonFields" -Description "fetch agent-reviewed PRs"
+    $prs = $prResult | ConvertFrom-Json
+    $added = Add-UniquePRs -prs $prs -allPRs ([ref]$allPRs) -seenNumbers ([ref]$seenPRNumbers)
+    Write-Host "    Agent-reviewed: $added PRs" -ForegroundColor Gray
+    
+    # Query 9: Agent-approved PRs
+    Write-Host "  Fetching agent-approved PRs..." -ForegroundColor Gray
+    $prResult = Invoke-GitHubWithRetry -Command "gh pr list --repo dotnet/maui --state open --search 'label:s/agent-approved' --limit 25 --json $jsonFields" -Description "fetch agent-approved PRs"
+    $prs = $prResult | ConvertFrom-Json
+    $added = Add-UniquePRs -prs $prs -allPRs ([ref]$allPRs) -seenNumbers ([ref]$seenPRNumbers)
+    Write-Host "    Agent-approved: $added PRs" -ForegroundColor Gray
     
     # Filter out drafts
     $allPRs = $allPRs | Where-Object { -not $_.isDraft }
@@ -470,6 +626,23 @@ foreach ($pr in $allPRs) {
     $categories = Get-PRCategory -pr $pr
     $labelNames = ($pr.labels | ForEach-Object { $_.name }) -join ", "
     
+    # Detect agent labels
+    $labelList = $pr.labels | ForEach-Object { $_.name }
+    $isAgentApproved = $labelList -contains "s/agent-approved"
+    $isAgentReviewed = $labelList -contains "s/agent-reviewed"
+    $isAgentChangesRequested = $labelList -contains "s/agent-changes-requested"
+    $hasAgentReview = $isAgentApproved -or $isAgentReviewed -or $isAgentChangesRequested
+    $agentStatus = if ($isAgentApproved) { "✅ Agent Approved" } 
+                   elseif ($isAgentChangesRequested) { "⚠️ Agent Changes Requested" }
+                   elseif ($isAgentReviewed) { "🤖 Agent Reviewed" }
+                   else { "" }
+    
+    # Check if PR is in "Ready To Review" on the project board
+    $isReadyToReview = $readyToReviewPRNumbers -contains $pr.number
+    
+    # Check if PR is approved but not merged
+    $isApproved = $pr.reviewDecision -eq "APPROVED"
+    
     $processedPRs += [PSCustomObject]@{
         Number = $pr.number
         Title = $pr.title
@@ -493,10 +666,32 @@ foreach ($pr in $allPRs) {
         IsPartner = ($labelNames -match "partner/")
         IsCommunity = ($labelNames -match "community")
         IsPriority = ($labelNames -match "p/0")
+        IsApproved = $isApproved
+        IsReadyToReview = $isReadyToReview
+        HasAgentReview = $hasAgentReview
+        AgentStatus = $agentStatus
+        AgentSummary = $null  # Populated later for agent-reviewed PRs
     }
 }
 
 Write-Host "  Processed $($processedPRs.Count) PRs matching filters" -ForegroundColor Green
+
+# Fetch agent summaries for agent-reviewed PRs
+$agentReviewedPRs = $processedPRs | Where-Object { $_.HasAgentReview }
+if ($agentReviewedPRs.Count -gt 0) {
+    Write-Host ""
+    Write-Host "Fetching agent review summaries..." -ForegroundColor Cyan
+    foreach ($pr in $agentReviewedPRs) {
+        Write-Host "  PR #$($pr.Number)..." -ForegroundColor Gray -NoNewline
+        $commentBody = Get-AgentSummaryComment -PRNumber $pr.Number
+        if ($commentBody) {
+            $pr.AgentSummary = Get-AgentSummaryHighlights -CommentBody $commentBody
+            Write-Host " ✓" -ForegroundColor Green
+        } else {
+            Write-Host " (no AI Summary comment found)" -ForegroundColor Yellow
+        }
+    }
+}
 
 # Process docs-maui PRs
 $processedDocsMauiPRs = @()
@@ -562,6 +757,15 @@ function Get-MilestonePriority {
 }
 
 # Organize PRs by category
+$approvedPRs = $processedPRs | Where-Object { $_.IsApproved } | Sort-Object { 
+    Get-MilestonePriority $_.Milestone
+}, { if ($_.IsPriority) { 0 } else { 1 } }, CreatedAt
+$readyToReviewPRs = $processedPRs | Where-Object { $_.IsReadyToReview } | Sort-Object { 
+    Get-MilestonePriority $_.Milestone
+}, { if ($_.IsPriority) { 0 } else { 1 } }, CreatedAt
+$agentReviewedPRList = $processedPRs | Where-Object { $_.HasAgentReview } | Sort-Object { 
+    if ($_.AgentStatus -match "Approved") { 0 } elseif ($_.AgentStatus -match "Reviewed") { 1 } else { 2 }
+}, { Get-MilestonePriority $_.Milestone }, CreatedAt
 $milestonedPRs = $processedPRs | Where-Object { $_.Milestone -ne "" } | Sort-Object { 
     Get-MilestonePriority $_.Milestone
 }, { if ($_.IsPriority) { 0 } else { 1 } }, CreatedAt
@@ -597,191 +801,200 @@ if ($Category -ne "all") {
         "partner" { $processedPRs = $partnerPRs }
         "community" { $processedPRs = $communityPRs }
         "recent" { $processedPRs = $recentPRs }
+        "approved" { $processedPRs = $approvedPRs }
+        "ready-to-review" { $processedPRs = $readyToReviewPRs }
+        "agent-reviewed" { $processedPRs = $agentReviewedPRList }
         "docs-maui" { $processedPRs = @() } # Will be handled separately
     }
 }
 
 # Output functions
+
+# Helper to print a single PR entry (avoids repetition)
+function Write-PREntry {
+    param($pr, [string]$CategoryName, [string]$RepoOverride)
+    
+    Write-Host "==="
+    Write-Host "Number:$($pr.Number)"
+    Write-Host "Title:$($pr.Title)"
+    Write-Host "URL:$($pr.URL)"
+    Write-Host "Author:$($pr.Author)"
+    if ($RepoOverride) { Write-Host "Repo:$RepoOverride" } else { Write-Host "Platform:$($pr.Platform)" }
+    Write-Host "Complexity:$($pr.Complexity)"
+    Write-Host "Milestone:$($pr.Milestone)"
+    Write-Host "ReviewStatus:$($pr.ReviewStatus)"
+    if ($pr.ProjectStatus) { Write-Host "ProjectStatus:$($pr.ProjectStatus)" }
+    if ($pr.AgentStatus) { Write-Host "AgentStatus:$($pr.AgentStatus)" }
+    if ($pr.AgentSummary) {
+        Write-Host "AgentSummary:"
+        foreach ($key in $pr.AgentSummary.Keys) {
+            Write-Host "  ${key}: $($pr.AgentSummary[$key])"
+        }
+    }
+    if ($pr.IsReadyToReview) { Write-Host "BoardStatus:Ready To Review" }
+    Write-Host "Age:$($pr.Age) days"
+    Write-Host "Updated:$($pr.Updated) days ago"
+    Write-Host "Files:$($pr.Files) (+$($pr.Additions)/-$($pr.Deletions))"
+    Write-Host "Labels:$($pr.Labels)"
+    Write-Host "Category:$CategoryName"
+}
+
 function Format-Review-Output {
     Write-Host ""
     Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Cyan
     
-    # Priority PRs (P/0)
+    # 1. Priority PRs (P/0) - ALWAYS on top
     if ($priorityPRs.Count -gt 0 -and ($Category -eq "all" -or $Category -eq "priority")) {
         Write-Host ""
         Write-Host "🔴 PRIORITY (P/0) PRs - $($priorityPRs.Count) found" -ForegroundColor Red
         Write-Host "-----------------------------------------------------------"
         foreach ($pr in ($priorityPRs | Select-Object -First $Limit)) {
-            Write-Host "==="
-            Write-Host "Number:$($pr.Number)"
-            Write-Host "Title:$($pr.Title)"
-            Write-Host "URL:$($pr.URL)"
-            Write-Host "Author:$($pr.Author)"
-            Write-Host "Platform:$($pr.Platform)"
-            Write-Host "Complexity:$($pr.Complexity)"
-            Write-Host "Milestone:$($pr.Milestone)"
-            Write-Host "ReviewStatus:$($pr.ReviewStatus)"
-            if ($pr.ProjectStatus) { Write-Host "ProjectStatus:$($pr.ProjectStatus)" }
-            Write-Host "Age:$($pr.Age) days"
-            Write-Host "Updated:$($pr.Updated) days ago"
-            Write-Host "Files:$($pr.Files) (+$($pr.Additions)/-$($pr.Deletions))"
-            Write-Host "Labels:$($pr.Labels)"
-            Write-Host "Category:priority"
+            Write-PREntry -pr $pr -CategoryName "priority"
         }
     }
     
-    # Milestoned PRs
+    # 2. Approved but not merged PRs
+    if ($approvedPRs.Count -gt 0 -and ($Category -eq "all" -or $Category -eq "approved")) {
+        # When showing "all", exclude PRs already shown in priority
+        $approvedToDisplay = if ($Category -eq "approved") {
+            $approvedPRs
+        } else {
+            $approvedPRs | Where-Object { -not $_.IsPriority }
+        }
+        if ($approvedToDisplay.Count -gt 0) {
+            Write-Host ""
+            Write-Host "🟢 APPROVED (NOT MERGED) PRs - $($approvedToDisplay.Count) found" -ForegroundColor Green
+            Write-Host "-----------------------------------------------------------"
+            foreach ($pr in ($approvedToDisplay | Select-Object -First $Limit)) {
+                Write-PREntry -pr $pr -CategoryName "approved"
+            }
+        }
+    }
+    
+    # 3. Ready To Review (from project board)
+    if ($readyToReviewPRs.Count -gt 0 -and ($Category -eq "all" -or $Category -eq "ready-to-review")) {
+        # When showing "all", exclude PRs already shown above
+        $readyToDisplay = if ($Category -eq "ready-to-review") {
+            $readyToReviewPRs
+        } else {
+            $readyToReviewPRs | Where-Object { -not $_.IsPriority -and -not $_.IsApproved }
+        }
+        if ($readyToDisplay.Count -gt 0) {
+            Write-Host ""
+            Write-Host "📋 READY TO REVIEW (Project Board) PRs - $($readyToDisplay.Count) found" -ForegroundColor Yellow
+            Write-Host "-----------------------------------------------------------"
+            foreach ($pr in ($readyToDisplay | Select-Object -First $Limit)) {
+                Write-PREntry -pr $pr -CategoryName "ready-to-review"
+            }
+        }
+    }
+    
+    # 4. Agent Reviewed PRs (with summary highlights)
+    if ($agentReviewedPRList.Count -gt 0 -and ($Category -eq "all" -or $Category -eq "agent-reviewed")) {
+        # When showing "all", exclude PRs already shown above
+        $agentToDisplay = if ($Category -eq "agent-reviewed") {
+            $agentReviewedPRList
+        } else {
+            $agentReviewedPRList | Where-Object { -not $_.IsPriority -and -not $_.IsApproved -and -not $_.IsReadyToReview }
+        }
+        if ($agentToDisplay.Count -gt 0) {
+            Write-Host ""
+            Write-Host "🤖 AGENT REVIEWED PRs - $($agentToDisplay.Count) found" -ForegroundColor DarkCyan
+            Write-Host "-----------------------------------------------------------"
+            foreach ($pr in ($agentToDisplay | Select-Object -First $Limit)) {
+                Write-PREntry -pr $pr -CategoryName "agent-reviewed"
+            }
+        }
+    }
+    
+    # 5. Milestoned PRs
     if ($milestonedPRs.Count -gt 0 -and ($Category -eq "all" -or $Category -eq "milestoned")) {
-        Write-Host ""
-        Write-Host "📅 MILESTONED PRs - $($milestonedPRs.Count) found" -ForegroundColor Yellow
-        Write-Host "-----------------------------------------------------------"
-        foreach ($pr in ($milestonedPRs | Select-Object -First $Limit)) {
-            Write-Host "==="
-            Write-Host "Number:$($pr.Number)"
-            Write-Host "Title:$($pr.Title)"
-            Write-Host "URL:$($pr.URL)"
-            Write-Host "Author:$($pr.Author)"
-            Write-Host "Platform:$($pr.Platform)"
-            Write-Host "Complexity:$($pr.Complexity)"
-            Write-Host "Milestone:$($pr.Milestone)"
-            Write-Host "ReviewStatus:$($pr.ReviewStatus)"
-            if ($pr.ProjectStatus) { Write-Host "ProjectStatus:$($pr.ProjectStatus)" }
-            Write-Host "Age:$($pr.Age) days"
-            Write-Host "Updated:$($pr.Updated) days ago"
-            Write-Host "Files:$($pr.Files) (+$($pr.Additions)/-$($pr.Deletions))"
-            Write-Host "Labels:$($pr.Labels)"
-            Write-Host "Category:milestoned"
+        # When showing "all", exclude PRs already shown above
+        $milestonedToDisplay = if ($Category -eq "milestoned") {
+            $milestonedPRs
+        } else {
+            $milestonedPRs | Where-Object { -not $_.IsPriority -and -not $_.IsApproved -and -not $_.IsReadyToReview -and -not $_.HasAgentReview }
+        }
+        if ($milestonedToDisplay.Count -gt 0) {
+            Write-Host ""
+            Write-Host "📅 MILESTONED PRs - $($milestonedToDisplay.Count) found" -ForegroundColor Yellow
+            Write-Host "-----------------------------------------------------------"
+            foreach ($pr in ($milestonedToDisplay | Select-Object -First $Limit)) {
+                Write-PREntry -pr $pr -CategoryName "milestoned"
+            }
         }
     }
     
-    # Partner PRs
+    # 6. Partner PRs
     if ($partnerPRs.Count -gt 0 -and ($Category -eq "all" -or $Category -eq "partner")) {
-        Write-Host ""
-        Write-Host "🤝 PARTNER PRs - $($partnerPRs.Count) found" -ForegroundColor Magenta
-        Write-Host "-----------------------------------------------------------"
-        foreach ($pr in ($partnerPRs | Select-Object -First $Limit)) {
-            Write-Host "==="
-            Write-Host "Number:$($pr.Number)"
-            Write-Host "Title:$($pr.Title)"
-            Write-Host "URL:$($pr.URL)"
-            Write-Host "Author:$($pr.Author)"
-            Write-Host "Platform:$($pr.Platform)"
-            Write-Host "Complexity:$($pr.Complexity)"
-            Write-Host "Milestone:$($pr.Milestone)"
-            Write-Host "ReviewStatus:$($pr.ReviewStatus)"
-            if ($pr.ProjectStatus) { Write-Host "ProjectStatus:$($pr.ProjectStatus)" }
-            Write-Host "Age:$($pr.Age) days"
-            Write-Host "Updated:$($pr.Updated) days ago"
-            Write-Host "Files:$($pr.Files) (+$($pr.Additions)/-$($pr.Deletions))"
-            Write-Host "Labels:$($pr.Labels)"
-            Write-Host "Category:partner"
+        $partnerToDisplay = if ($Category -eq "partner") {
+            $partnerPRs
+        } else {
+            $partnerPRs | Where-Object { -not $_.IsPriority -and -not $_.IsApproved -and -not $_.IsReadyToReview }
+        }
+        if ($partnerToDisplay.Count -gt 0) {
+            Write-Host ""
+            Write-Host "🤝 PARTNER PRs - $($partnerToDisplay.Count) found" -ForegroundColor Magenta
+            Write-Host "-----------------------------------------------------------"
+            foreach ($pr in ($partnerToDisplay | Select-Object -First $Limit)) {
+                Write-PREntry -pr $pr -CategoryName "partner"
+            }
         }
     }
     
-    # Community PRs
+    # 7. Community PRs
     if ($communityPRs.Count -gt 0 -and ($Category -eq "all" -or $Category -eq "community")) {
-        Write-Host ""
-        Write-Host "✨ COMMUNITY PRs - $($communityPRs.Count) found" -ForegroundColor Green
-        Write-Host "-----------------------------------------------------------"
-        foreach ($pr in ($communityPRs | Select-Object -First $Limit)) {
-            Write-Host "==="
-            Write-Host "Number:$($pr.Number)"
-            Write-Host "Title:$($pr.Title)"
-            Write-Host "URL:$($pr.URL)"
-            Write-Host "Author:$($pr.Author)"
-            Write-Host "Platform:$($pr.Platform)"
-            Write-Host "Complexity:$($pr.Complexity)"
-            Write-Host "Milestone:$($pr.Milestone)"
-            Write-Host "ReviewStatus:$($pr.ReviewStatus)"
-            if ($pr.ProjectStatus) { Write-Host "ProjectStatus:$($pr.ProjectStatus)" }
-            Write-Host "Age:$($pr.Age) days"
-            Write-Host "Updated:$($pr.Updated) days ago"
-            Write-Host "Files:$($pr.Files) (+$($pr.Additions)/-$($pr.Deletions))"
-            Write-Host "Labels:$($pr.Labels)"
-            Write-Host "Category:community"
+        $communityToDisplay = if ($Category -eq "community") {
+            $communityPRs
+        } else {
+            $communityPRs | Where-Object { -not $_.IsPriority -and -not $_.IsApproved -and -not $_.IsReadyToReview }
+        }
+        if ($communityToDisplay.Count -gt 0) {
+            Write-Host ""
+            Write-Host "✨ COMMUNITY PRs - $($communityToDisplay.Count) found" -ForegroundColor Green
+            Write-Host "-----------------------------------------------------------"
+            foreach ($pr in ($communityToDisplay | Select-Object -First $Limit)) {
+                Write-PREntry -pr $pr -CategoryName "community"
+            }
         }
     }
     
-    # Recent PRs waiting for review
-    # When Category is explicitly "recent", show ALL recent PRs
-    # When Category is "all", only show those not in other categories (to avoid duplicates)
+    # 8. Recent PRs waiting for review
     $recentToDisplay = if ($Category -eq "recent") {
         $recentPRs
     } else {
         $recentPRs | Where-Object { 
-            -not $_.IsPriority -and -not $_.IsPartner -and -not $_.IsCommunity -and $_.Milestone -eq ""
+            -not $_.IsPriority -and -not $_.IsPartner -and -not $_.IsCommunity -and -not $_.IsApproved -and -not $_.IsReadyToReview -and $_.Milestone -eq ""
         }
     }
     if ($recentToDisplay.Count -gt 0 -and ($Category -eq "all" -or $Category -eq "recent")) {
         Write-Host ""
         Write-Host "🕐 RECENT PRs WAITING FOR REVIEW (last 2 weeks) - $($recentToDisplay.Count) found" -ForegroundColor Cyan
         Write-Host "-----------------------------------------------------------"
-        $recentToShow = [Math]::Max($RecentLimit, 5)  # Always show at least 5
+        $recentToShow = [Math]::Max($RecentLimit, 5)
         foreach ($pr in ($recentToDisplay | Select-Object -First $recentToShow)) {
-            Write-Host "==="
-            Write-Host "Number:$($pr.Number)"
-            Write-Host "Title:$($pr.Title)"
-            Write-Host "URL:$($pr.URL)"
-            Write-Host "Author:$($pr.Author)"
-            Write-Host "Platform:$($pr.Platform)"
-            Write-Host "Complexity:$($pr.Complexity)"
-            Write-Host "Milestone:$($pr.Milestone)"
-            Write-Host "ReviewStatus:$($pr.ReviewStatus)"
-            if ($pr.ProjectStatus) { Write-Host "ProjectStatus:$($pr.ProjectStatus)" }
-            Write-Host "Age:$($pr.Age) days"
-            Write-Host "Updated:$($pr.Updated) days ago"
-            Write-Host "Files:$($pr.Files) (+$($pr.Additions)/-$($pr.Deletions))"
-            Write-Host "Labels:$($pr.Labels)"
-            Write-Host "Category:recent"
+            Write-PREntry -pr $pr -CategoryName "recent"
         }
     }
     
-    # docs-maui PRs - Priority
+    # 9. docs-maui PRs - Priority
     if ($docsMauiPriorityPRs.Count -gt 0 -and ($Category -eq "all" -or $Category -eq "docs-maui")) {
         Write-Host ""
         Write-Host "📚 DOCS-MAUI PRIORITY PRs - $($docsMauiPriorityPRs.Count) found" -ForegroundColor Blue
         Write-Host "-----------------------------------------------------------"
         foreach ($pr in ($docsMauiPriorityPRs | Select-Object -First $DocsLimit)) {
-            Write-Host "==="
-            Write-Host "Number:$($pr.Number)"
-            Write-Host "Title:$($pr.Title)"
-            Write-Host "URL:$($pr.URL)"
-            Write-Host "Author:$($pr.Author)"
-            Write-Host "Repo:docs-maui"
-            Write-Host "Complexity:$($pr.Complexity)"
-            Write-Host "Milestone:$($pr.Milestone)"
-            Write-Host "ReviewStatus:$($pr.ReviewStatus)"
-            if ($pr.ProjectStatus) { Write-Host "ProjectStatus:$($pr.ProjectStatus)" }
-            Write-Host "Age:$($pr.Age) days"
-            Write-Host "Updated:$($pr.Updated) days ago"
-            Write-Host "Files:$($pr.Files) (+$($pr.Additions)/-$($pr.Deletions))"
-            Write-Host "Labels:$($pr.Labels)"
-            Write-Host "Category:docs-maui-priority"
+            Write-PREntry -pr $pr -CategoryName "docs-maui-priority" -RepoOverride "docs-maui"
         }
     }
     
-    # docs-maui PRs - Waiting for Review (at least 5)
+    # 10. docs-maui PRs - Waiting for Review
     if ($docsMauiRecentPRs.Count -gt 0 -and ($Category -eq "all" -or $Category -eq "docs-maui")) {
         Write-Host ""
         Write-Host "📖 DOCS-MAUI PRs WAITING FOR REVIEW - $($docsMauiRecentPRs.Count) found" -ForegroundColor Blue
         Write-Host "-----------------------------------------------------------"
-        $docsToShow = [Math]::Max($DocsLimit, 5)  # Always show at least 5
+        $docsToShow = [Math]::Max($DocsLimit, 5)
         foreach ($pr in ($docsMauiRecentPRs | Select-Object -First $docsToShow)) {
-            Write-Host "==="
-            Write-Host "Number:$($pr.Number)"
-            Write-Host "Title:$($pr.Title)"
-            Write-Host "URL:$($pr.URL)"
-            Write-Host "Author:$($pr.Author)"
-            Write-Host "Repo:docs-maui"
-            Write-Host "Complexity:$($pr.Complexity)"
-            Write-Host "Milestone:$($pr.Milestone)"
-            Write-Host "ReviewStatus:$($pr.ReviewStatus)"
-            if ($pr.ProjectStatus) { Write-Host "ProjectStatus:$($pr.ProjectStatus)" }
-            Write-Host "Age:$($pr.Age) days"
-            Write-Host "Updated:$($pr.Updated) days ago"
-            Write-Host "Files:$($pr.Files) (+$($pr.Additions)/-$($pr.Deletions))"
-            Write-Host "Labels:$($pr.Labels)"
-            Write-Host "Category:docs-maui-waiting-for-review"
+            Write-PREntry -pr $pr -CategoryName "docs-maui-waiting-for-review" -RepoOverride "docs-maui"
         }
     }
     
@@ -790,6 +1003,9 @@ function Format-Review-Output {
     Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Cyan
     Write-Host "SUMMARY" -ForegroundColor Cyan
     Write-Host "  Priority (P/0): $($priorityPRs.Count)"
+    Write-Host "  Approved (not merged): $($approvedPRs.Count)"
+    Write-Host "  Ready To Review (board): $($readyToReviewPRs.Count)"
+    Write-Host "  Agent Reviewed: $($agentReviewedPRList.Count)"
     Write-Host "  Milestoned: $($milestonedPRs.Count)"
     Write-Host "  Partner: $($partnerPRs.Count)"
     Write-Host "  Community: $($communityPRs.Count)"
@@ -801,6 +1017,9 @@ function Format-Review-Output {
 function Format-Json-Output {
     $output = @{
         Priority = $priorityPRs | Select-Object -First $Limit
+        Approved = $approvedPRs | Select-Object -First $Limit
+        ReadyToReview = $readyToReviewPRs | Select-Object -First $Limit
+        AgentReviewed = $agentReviewedPRList | Select-Object -First $Limit
         Milestoned = $milestonedPRs | Select-Object -First $Limit
         Partner = $partnerPRs | Select-Object -First $Limit
         Community = $communityPRs | Select-Object -First $Limit
