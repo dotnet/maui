@@ -21,17 +21,13 @@ public class SetterSpecificityListBenchmarks
 	LegacyContext _legacyCtx = null!;
 	CurrentContext _currentCtx = null!;
 
-	[IterationSetup(Target = nameof(Legacy_Update))]
-	public void SetupLegacyUpdate()
+	[GlobalSetup]
+	public void Setup()
 	{
 		_legacyCtx = new LegacyContext();
 		_legacyCtx.Values[DefaultValue] = "default";
 		_legacyCtx.Values[ManualValueSetter] = "initial";
-	}
 
-	[IterationSetup(Target = nameof(Current_Update))]
-	public void SetupCurrentUpdate()
-	{
 		_currentCtx = new CurrentContext();
 		_currentCtx.Values.SetValue(DefaultValue, "default");
 		_currentCtx.Values.SetValue(ManualValueSetter, "initial");
