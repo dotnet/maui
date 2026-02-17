@@ -4,6 +4,7 @@ using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.StyleSheets;
 using Compatibility = Microsoft.Maui.Controls.Compatibility;
 
+[assembly: InternalsVisibleTo("Core.Benchmarks")]
 [assembly: InternalsVisibleTo("Microsoft.AspNetCore.Components.WebView.Maui")]
 
 [assembly: InternalsVisibleTo("iOSUnitTests")]
