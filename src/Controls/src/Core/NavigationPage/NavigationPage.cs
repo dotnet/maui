@@ -255,7 +255,7 @@ namespace Microsoft.Maui.Controls
 			}
 			catch (Exception e)
 			{
-				MauiLog.Warning<NavigationPage>(e, null);
+				MauiLog.LogWarning(e, $"");
 				CurrentNavigationTask = null;
 				tcs.SetCanceled();
 
@@ -931,7 +931,7 @@ namespace Microsoft.Maui.Controls
 
 				if (page == Owner.CurrentPage)
 				{
-					MauiLog.Warning<NavigationPage>("RemovePage called for CurrentPage object. This can result in undesired behavior, consider calling PopAsync instead.");
+					MauiLog.LogWarning($"RemovePage called for CurrentPage object. This can result in undesired behavior, consider calling PopAsync instead.");
 					PopAsync();
 					return;
 				}

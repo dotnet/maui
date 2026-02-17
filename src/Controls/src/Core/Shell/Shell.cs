@@ -1296,7 +1296,7 @@ namespace Microsoft.Maui.Controls
 					}
 					catch (Exception exc)
 					{
-						MauiLog.Warning<Shell>(exc, "If you're using hot reload add a route to everything in your shell file");
+						MauiLog.LogWarning(exc, $"If you're using hot reload add a route to everything in your shell file");
 					}
 				}
 
@@ -1592,7 +1592,7 @@ namespace Microsoft.Maui.Controls
 				}
 				catch (Exception exc)
 				{
-					MauiLog.Warning<Shell>(exc, "Failed to Navigate Back");
+					MauiLog.LogWarning(exc, $"Failed to Navigate Back");
 				}
 			}
 		}

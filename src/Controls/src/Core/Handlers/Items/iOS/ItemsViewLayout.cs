@@ -427,7 +427,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				}
 				catch (ObjCRuntime.ObjCException ex) when (ex.Name == "NSRangeException")
 				{
-					MauiLog.Warning<ItemsViewLayout>(ex, "NSRangeException");
+					MauiLog.LogWarning(ex, $"NSRangeException");
 				}
 
 				UICollectionViewFlowLayoutInvalidationContext context = new UICollectionViewFlowLayoutInvalidationContext();

@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 #pragma warning disable CS0618
 							if (SearchHandler.DisplayMemberName is not null)
 							{
-								MauiLog.Error<ShellSearchResultsRenderer>(TrimmerConstants.SearchHandlerDisplayMemberNameNotSupportedWarning);
+								MauiLog.LogError($"{TrimmerConstants.SearchHandlerDisplayMemberNameNotSupportedWarning}");
 								throw new InvalidOperationException(TrimmerConstants.SearchHandlerDisplayMemberNameNotSupportedWarning);
 							}
 #pragma warning restore CS0618

@@ -85,15 +85,15 @@ namespace Microsoft.Maui.Controls
 				}
 				catch (NotSupportedException)
 				{
-					MauiLog.Warning<IVisual>("Cannot scan assembly {assembly} for Visual types.", assembly.FullName);
+					MauiLog.LogWarning($"Cannot scan assembly {assembly.FullName} for Visual types.");
 				}
 				catch (FileNotFoundException)
 				{
-					MauiLog.Warning<IVisual>("Unable to load a dependent assembly for {assembly}. It cannot be scanned for Visual types.", assembly.FullName);
+					MauiLog.LogWarning($"Unable to load a dependent assembly for {assembly.FullName}. It cannot be scanned for Visual types.");
 				}
 				catch (ReflectionTypeLoadException)
 				{
-					MauiLog.Warning<IVisual>("Unable to load a dependent assembly for {assembly}. Types cannot be loaded.", assembly.FullName);
+					MauiLog.LogWarning($"Unable to load a dependent assembly for {assembly.FullName}. Types cannot be loaded.");
 				}
 			}
 
@@ -145,7 +145,7 @@ namespace Microsoft.Maui.Controls
 			}
 			catch
 			{
-				MauiLog.Warning<IVisual>("Unable to register {visualType} please add a public default constructor", visualType.ToString());
+				MauiLog.LogWarning($"Unable to register {visualType} please add a public default constructor");
 			}
 
 			return null;
@@ -164,9 +164,7 @@ namespace Microsoft.Maui.Controls
 
 				if (!RuntimeFeature.IsIVisualAssemblyScanningEnabled)
 				{
-				MauiLog.Warning<IVisual>(
-						"Unable to find visual {key}. Automatic discovery of IVisual types is disabled. You can enabled it by setting the $(MauiEnableIVisualAssemblyScanning)=true MSBuild property. " +
-						"Note: automatic registration of IVisual types through assembly scanning is not trimming-compatible and it can lead to slower app startup.", strValue);
+				MauiLog.LogWarning($"Unable to find visual {strValue}. Automatic discovery of IVisual types is disabled. You can enabled it by setting the $(MauiEnableIVisualAssemblyScanning)=true MSBuild property. Note: automatic registration of IVisual types through assembly scanning is not trimming-compatible and it can lead to slower app startup.");
 				}
 
 				return VisualMarker.Default;

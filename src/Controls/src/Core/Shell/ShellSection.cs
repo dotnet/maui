@@ -511,7 +511,7 @@ namespace Microsoft.Maui.Controls
 			var content = Routing.GetOrCreateContent(route, services) as Page;
 			if (content == null)
 			{
-				MauiLog.Warning<ShellSection>("Failed to Create Content For: {route}", route);
+				MauiLog.LogWarning($"Failed to Create Content For: {route}");
 			}
 
 			ShellNavigationManager.ApplyQueryAttributes(content, queryData, isLast, isPopping);
