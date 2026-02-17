@@ -32,6 +32,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.PlatformView?.UpdateMinimum(stepper);
 
+			// iOS 26+ fix: Adjust stepValue for boundary handling when minimum changes
 			if (OperatingSystem.IsIOSVersionAtLeast(26) && handler.PlatformView is UIStepper platformView
 				&& NeedsStepValueAdjustment(stepper, platformView))
 			{
@@ -43,6 +44,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.PlatformView?.UpdateMaximum(stepper);
 
+			// iOS 26+ fix: Adjust stepValue for boundary handling when maximum changes
 			if (OperatingSystem.IsIOSVersionAtLeast(26) && handler.PlatformView is UIStepper platformView
 				&& NeedsStepValueAdjustment(stepper, platformView))
 			{
