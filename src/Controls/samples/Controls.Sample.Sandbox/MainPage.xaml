@@ -1,5 +1,30 @@
 ﻿<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:maps="clr-namespace:Microsoft.Maui.Controls.Maps;assembly=Microsoft.Maui.Controls.Maps"
              x:Class="Maui.Controls.Sample.MainPage"
-             xmlns:local="clr-namespace:Maui.Controls.Sample">
+             Title="Maps Demo"
+             AutomationId="MapsPage">
+    <Grid RowDefinitions="Auto,*,Auto">
+
+        <!-- Navigation buttons -->
+        <HorizontalStackLayout Grid.Row="0" Spacing="8" Padding="8">
+            <Button Text="London" AutomationId="LondonButton" Clicked="OnLondonClicked" />
+            <Button Text="New York" AutomationId="NewYorkButton" Clicked="OnNewYorkClicked" />
+            <Button Text="Tokyo" AutomationId="TokyoButton" Clicked="OnTokyoClicked" />
+            <Button Text="Add Pin" AutomationId="AddPinButton" Clicked="OnAddPinClicked" />
+            <Button Text="Clear Pins" AutomationId="ClearPinsButton" Clicked="OnClearPinsClicked" />
+        </HorizontalStackLayout>
+
+        <!-- Map control -->
+        <maps:Map x:Name="map" Grid.Row="1"
+                  AutomationId="MainMap"
+                  IsZoomEnabled="True"
+                  IsScrollEnabled="True" />
+
+        <!-- Status bar -->
+        <Label x:Name="statusLabel" Grid.Row="2"
+               AutomationId="StatusLabel"
+               Text="Ready"
+               Padding="8" FontSize="12" />
+    </Grid>
 </ContentPage>

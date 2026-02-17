@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Globalization;
 using Microsoft.Maui.Devices.Sensors;
 using Microsoft.Maui.Handlers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Windows.Devices.Geolocation;
 
 namespace Microsoft.Maui.Maps.Handlers
@@ -21,7 +23,7 @@ namespace Microsoft.Maui.Maps.Handlers
 	/// <para>
 	/// <b>Supported features:</b>
 	/// <list type="bullet">
-	/// <item><description><b>MoveToRegion:</b> Sets the map center and zoom level from the <see cref="MapSpan"/>.</description></item>
+	/// <item><description><b>MoveToRegion:</b> Navigates via the internal Azure Maps JS API (<c>map.setCamera</c>).</description></item>
 	/// <item><description><b>Pins:</b> Displays map pins using <see cref="MapIcon"/> on a <see cref="MapElementsLayer"/>. Pin click events are supported.</description></item>
 	/// <item><description><b>InteractiveControls:</b> <see cref="IMap.IsZoomEnabled"/> and <see cref="IMap.IsScrollEnabled"/> control the <c>InteractiveControlsVisible</c> property (zoom, rotate, pitch, style picker are bundled together).</description></item>
 	/// </list>
@@ -41,6 +43,8 @@ namespace Microsoft.Maui.Maps.Handlers
 	public partial class MapHandler : ViewHandler<IMap, FrameworkElement>
 	{
 		MapControl? _mapControl;
+		WebView2? _webView;
+		bool _webViewReady;
 		MapElementsLayer? _pinsLayer;
 		MapElementsLayer? _mapElementsLayer;
 		readonly List<MapIcon> _mapIcons = new();
@@ -52,10 +56,17 @@ namespace Microsoft.Maui.Maps.Handlers
 			_mapControl = new MapControl();
 
 			var token = ApplicationModel.Platform.MapServiceToken;
+
 			if (!string.IsNullOrEmpty(token))
 			{
 				_mapControl.MapServiceToken = token;
 			}
+
+			_mapControl.ZoomLevel = 2;
+			_mapControl.InteractiveControlsVisible = true;
+
+			// Hook the Loaded event to find the internal WebView2 for JS-based navigation
+			_mapControl.Loaded += OnMapControlLoaded;
 
 			_pinsLayer = new MapElementsLayer();
 			_pinsLayer.MapElementClick += OnPinLayerElementClick;
@@ -67,6 +78,75 @@ namespace Microsoft.Maui.Maps.Handlers
 			_mapControl.Unloaded += OnMapControlUnloaded;
 
 			return _mapControl;
+		}
+
+		void OnMapControlLoaded(object sender, RoutedEventArgs e)
+		{
+			if (_mapControl == null)
+				return;
+
+			_mapControl.Loaded -= OnMapControlLoaded;
+
+			// The MapControl hosts Azure Maps inside a WebView2 child.
+			// We need a reference to it for programmatic camera navigation via map.setCamera().
+			if (VisualTreeHelper.GetChildrenCount(_mapControl) > 0 &&
+				VisualTreeHelper.GetChild(_mapControl, 0) is WebView2 webView)
+			{
+				_webView = webView;
+
+				// Wait for WebView2 navigation to complete before sending JS commands
+				_webView.NavigationCompleted += OnWebViewNavigationCompleted;
+			}
+			else
+			{
+				// MapControl may not have WebView2 child yet; MoveToRegion will be queued
+			}
+		}
+
+		void OnWebViewNavigationCompleted(WebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs args)
+		{
+			sender.NavigationCompleted -= OnWebViewNavigationCompleted;
+			_webViewReady = true;
+
+			// If there's a pending MoveToRegion that was queued before the WebView was ready, apply it now
+			if (_pendingSpan != null)
+			{
+				var span = _pendingSpan;
+				_pendingSpan = null;
+				_ = SetCameraAsync(span.Center.Latitude, span.Center.Longitude, CalculateZoom(span));
+			}
+		}
+
+		MapSpan? _pendingSpan;
+
+		/// <summary>
+		/// Navigates the map camera using the Azure Maps JavaScript API (map.setCamera).
+		/// </summary>
+		async System.Threading.Tasks.Task SetCameraAsync(double latitude, double longitude, double zoom)
+		{
+			if (_webView == null || !_webViewReady)
+				return;
+
+			try
+			{
+				var script = string.Format(
+					CultureInfo.InvariantCulture,
+					"map.setCamera({{ center: [{0}, {1}], zoom: {2}, type: 'jump' }});",
+					longitude, latitude, zoom);
+
+				await _webView.ExecuteScriptAsync(script);
+			}
+			catch (Exception)
+			{
+				// JS execution may fail if WebView2 is not fully ready or map object is not available
+			}
+		}
+
+		static double CalculateZoom(MapSpan span)
+		{
+			double zoomLat = Math.Log2(360.0 / span.LatitudeDegrees);
+			double zoomLon = Math.Log2(360.0 / span.LongitudeDegrees);
+			return Math.Clamp(Math.Min(zoomLat, zoomLon), 0, 24);
 		}
 
 		void OnMapControlUnloaded(object sender, RoutedEventArgs e)
@@ -96,6 +176,8 @@ namespace Microsoft.Maui.Maps.Handlers
 			}
 
 			_mapIcons.Clear();
+			_webView = null;
+			_webViewReady = false;
 			_mapControl = null;
 		}
 
@@ -170,33 +252,37 @@ namespace Microsoft.Maui.Maps.Handlers
 		}
 
 		/// <summary>
-		/// Handles the <see cref="IMap.MoveToRegion"/> command by setting the map center and zoom level.
+		/// Handles the <see cref="IMap.MoveToRegion"/> command by navigating via the Azure Maps JS camera API.
 		/// </summary>
 		/// <remarks>
+		/// The WinUI 3 MapControl wraps Azure Maps in a WebView2. Setting the <c>Center</c> dependency property
+		/// does not reliably navigate the map view. Instead, we call <c>map.setCamera()</c> via JavaScript.
 		/// The zoom level is calculated from the <see cref="MapSpan"/> using the Spherical Mercator formula:
 		/// <c>zoom = log2(360 / degrees)</c>, clamped to the Azure Maps range of 0–24.
-		/// The minimum of latitude-based and longitude-based zoom is used to ensure the full span is visible.
 		/// </remarks>
 		public static void MapMoveToRegion(IMapHandler handler, IMap map, object? arg)
 		{
 			if (arg is MapSpan mapSpan && handler is MapHandler mapHandler && mapHandler._mapControl != null)
 			{
-				var center = new Geopoint(new BasicGeoposition
+				double zoom = CalculateZoom(mapSpan);
+
+				// Also set the DP values so they stay in sync for property reads
+				mapHandler._mapControl.Center = new Geopoint(new BasicGeoposition
 				{
 					Latitude = mapSpan.Center.Latitude,
 					Longitude = mapSpan.Center.Longitude
 				});
+				mapHandler._mapControl.ZoomLevel = zoom;
 
-				mapHandler._mapControl.Center = center;
-
-				// Calculate zoom from span using Spherical Mercator: zoom = log2(360 / degrees)
-				// Use the minimum of lat and lon zoom to ensure the full span is visible
-				double zoomLat = Math.Log2(360.0 / mapSpan.LatitudeDegrees);
-				double zoomLon = Math.Log2(360.0 / mapSpan.LongitudeDegrees);
-				double zoom = Math.Min(zoomLat, zoomLon);
-
-				// Clamp to Azure Maps range (0-24)
-				mapHandler._mapControl.ZoomLevel = Math.Clamp(zoom, 0, 24);
+				if (mapHandler._webViewReady)
+				{
+					_ = mapHandler.SetCameraAsync(mapSpan.Center.Latitude, mapSpan.Center.Longitude, zoom);
+				}
+				else
+				{
+					// Queue it for when the WebView is ready
+					mapHandler._pendingSpan = mapSpan;
+				}
 			}
 		}
 
@@ -231,7 +317,7 @@ namespace Microsoft.Maui.Maps.Handlers
 				AddPinToLayer(pin);
 			}
 
-			// Subscribe to collection changes
+			// Subscribe to collection changes if available
 			if (pins is INotifyCollectionChanged newObservable)
 			{
 				newObservable.CollectionChanged += OnPinsCollectionChanged;
@@ -287,8 +373,13 @@ namespace Microsoft.Maui.Maps.Handlers
 					}
 					break;
 				case NotifyCollectionChangedAction.Reset:
+					_pinsLayer?.MapElements.Clear();
+					_mapIcons.Clear();
 					if (VirtualView != null)
-						UpdatePins(VirtualView.Pins);
+					{
+						foreach (var pin in VirtualView.Pins)
+							AddPinToLayer(pin);
+					}
 					break;
 			}
 		}
