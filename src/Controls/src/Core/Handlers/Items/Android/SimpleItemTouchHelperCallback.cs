@@ -28,7 +28,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override bool OnMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target)
 		{
-			if (viewHolder.ItemViewType != target.ItemViewType && _adapter is ReorderableItemsViewAdapter<ReorderableItemsView, IGroupableItemsViewSource> reorderableItemsViewAdapter && !reorderableItemsViewAdapter.CanReorderBetweenItemsView(viewHolder.ItemViewType, target.ItemViewType))
+			// Block reordering onto structural elements (Header, Footer, GroupHeader, GroupFooter).
+			// Dragging FROM structural elements is already prevented by GetMovementFlags returning 0.
+			// All other items (including those with different DataTemplateSelector view types) can be freely reordered.
+			var targetViewType = target.ItemViewType;
+			if (targetViewType == ItemViewType.Header || targetViewType == ItemViewType.Footer
+				|| targetViewType == ItemViewType.GroupHeader || targetViewType == ItemViewType.GroupFooter)
 			{
 				return false;
 			}
