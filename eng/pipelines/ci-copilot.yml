@@ -528,33 +528,83 @@ stages:
               ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
 
           # Boot iOS Simulator (only for iOS platform)
+          # UI test baseline screenshots are captured on iPhone Xs - must use same device
           - script: |
               echo "=== Booting iOS Simulator ==="
               
-              # Find a suitable simulator (prefer iPhone Xs for consistency)
-              UDID=$(xcrun simctl list devices available --json | jq -r '
-                .devices | to_entries |
-                map(select(.key | test("iOS"))) |
-                sort_by(.key) | reverse |
-                .[0].value |
-                map(select(.name | test("iPhone (Xs|14|15)"))) |
+              # Find the latest stable iOS runtime (prefer 18.x, fallback to 17.x)
+              RUNTIME=$(xcrun simctl list runtimes available --json | jq -r '
+                [.runtimes[] | select(.name | test("iOS 18"))] | sort_by(.version) | last | .identifier // empty
+              ')
+              if [ -z "$RUNTIME" ]; then
+                RUNTIME=$(xcrun simctl list runtimes available --json | jq -r '
+                  [.runtimes[] | select(.name | test("iOS 17"))] | sort_by(.version) | last | .identifier // empty
+                ')
+              fi
+              echo "Selected iOS runtime: $RUNTIME"
+              
+              # Look for iPhone Xs (matches UI test baselines - required for snapshot tests)
+              UDID=$(xcrun simctl list devices available --json | jq -r --arg rt "$RUNTIME" '
+                .devices[$rt] // [] |
+                map(select(.name == "iPhone Xs")) |
                 .[0].udid // empty
               ')
               
+              # If iPhone Xs doesn't exist, try iPhone 11 Pro (same 1125×2436 resolution)
               if [ -z "$UDID" ]; then
-                echo "No preferred simulator found, using first available iPhone"
-                UDID=$(xcrun simctl list devices available --json | jq -r '
-                  .devices | to_entries |
-                  map(.value) | flatten |
-                  map(select(.name | test("iPhone"))) |
-                  .[0].udid
+                UDID=$(xcrun simctl list devices available --json | jq -r --arg rt "$RUNTIME" '
+                  .devices[$rt] // [] |
+                  map(select(.name == "iPhone 11 Pro")) |
+                  .[0].udid // empty
                 ')
+                if [ -n "$UDID" ]; then
+                  echo "Found existing iPhone 11 Pro (same resolution as iPhone Xs): $UDID"
+                fi
+              else
+                echo "Found existing iPhone Xs: $UDID"
+              fi
+              
+              # If neither exists, try to create them
+              if [ -z "$UDID" ]; then
+                echo "No matching device found - attempting to create one for runtime $RUNTIME..."
+                
+                # Try iPhone Xs first
+                UDID=$(xcrun simctl create "iPhone Xs" com.apple.CoreSimulator.SimDeviceType.iPhone-Xs "$RUNTIME" 2>&1)
+                if [ $? -ne 0 ]; then
+                  echo "iPhone Xs device type unavailable: $UDID"
+                  # Try iPhone 11 Pro (same 1125×2436 resolution)
+                  UDID=$(xcrun simctl create "iPhone 11 Pro" com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro "$RUNTIME" 2>&1)
+                  if [ $? -ne 0 ]; then
+                    echo "##vso[task.logissue type=warning]Failed to create iPhone 11 Pro: $UDID"
+                    # Last resort: first available iPhone
+                    UDID=$(xcrun simctl list devices available --json | jq -r '
+                      .devices | to_entries |
+                      map(.value) | flatten |
+                      map(select(.name | test("iPhone"))) |
+                      .[0].udid
+                    ')
+                  else
+                    echo "Created iPhone 11 Pro simulator: $UDID"
+                  fi
+                else
+                  echo "Created iPhone Xs simulator: $UDID"
+                fi
               fi
               
               if [ -z "$UDID" ]; then
                 echo "##vso[task.logissue type=error]No iOS simulator found"
                 exit 1
               fi
+              
+              # Shutdown any other booted simulators to avoid Appium connecting to wrong device
+              xcrun simctl list devices booted --json | jq -r '
+                .devices | to_entries | map(.value) | flatten |
+                map(select(.state == "Booted" and .udid != "'"$UDID"'")) |
+                .[].udid
+              ' | while read OTHER_UDID; do
+                echo "Shutting down other simulator: $OTHER_UDID"
+                xcrun simctl shutdown "$OTHER_UDID" 2>/dev/null || true
+              done
               
               echo "Booting simulator: $UDID"
               xcrun simctl boot "$UDID" 2>/dev/null || echo "Simulator may already be booted"
