@@ -162,4 +162,48 @@ public class VisualStateManager_LabelFeatureTests : _GalleryUITest
 		labelText = App.FindElement("LabelState").GetText();
 		Assert.That(labelText, Is.EqualTo("State: Normal"));
 	}
+
+	[Test, Order(11)]
+	public void VerifyVSM_Label_SelectedToDisabledToSelected()
+	{
+		App.WaitForElement("LabelReset");
+		App.Tap("LabelReset");
+		App.WaitForElement("SelectableLabelContainer");
+		App.Tap("SelectableLabelContainer");
+		App.WaitForElement("LabelState");
+		var labelText = App.FindElement("LabelState").GetText();
+		Assert.That(labelText, Is.EqualTo("State: Selected"));
+		App.WaitForElement("LabelDisable");
+		App.Tap("LabelDisable");
+		App.WaitForElement("LabelState");
+		labelText = App.FindElement("LabelState").GetText();
+		Assert.That(labelText, Is.EqualTo("State: Disabled"));
+		App.WaitForElement("LabelDisable");
+		App.Tap("LabelDisable");
+		App.WaitForElement("LabelState");
+		labelText = App.FindElement("LabelState").GetText();
+		Assert.That(labelText, Is.EqualTo("State: Selected"));
+	}
+
+	[Test, Order(12)]
+	public void VerifyVSM_Label_SelectedToDisabledToNormal()
+	{
+		App.WaitForElement("LabelReset");
+		App.Tap("LabelReset");
+		App.WaitForElement("SelectableLabelContainer");
+		App.Tap("SelectableLabelContainer");
+		App.WaitForElement("LabelState");
+		var labelText = App.FindElement("LabelState").GetText();
+		Assert.That(labelText, Is.EqualTo("State: Selected"));
+		App.WaitForElement("LabelDisable");
+		App.Tap("LabelDisable");
+		App.WaitForElement("LabelState");
+		labelText = App.FindElement("LabelState").GetText();
+		Assert.That(labelText, Is.EqualTo("State: Disabled"));
+		App.WaitForElement("SelectableLabelContainer");
+		App.Tap("SelectableLabelContainer");
+		App.WaitForElement("LabelState");
+		labelText = App.FindElement("LabelState").GetText();
+		Assert.That(labelText, Is.EqualTo("State: Disabled"));
+	}
 }

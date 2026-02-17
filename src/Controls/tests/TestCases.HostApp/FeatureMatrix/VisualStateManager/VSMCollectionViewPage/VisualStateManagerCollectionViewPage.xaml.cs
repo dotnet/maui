@@ -28,18 +28,10 @@ public partial class VisualStateManagerCollectionViewPage : ContentPage
 	void OnToggleCollectionViewDisabled(object sender, EventArgs e)
 	{
 		MyCollectionView.IsEnabled = !MyCollectionView.IsEnabled;
-		CVToggleButton.Text = MyCollectionView.IsEnabled ? "Disable" : "Enable";
-
-		if (!MyCollectionView.IsEnabled)
-		{
-			VisualStateManager.GoToState(MyCollectionView, "Disabled");
-			CVState.Text = "State: Disabled";
-		}
-		else
-		{
-			VisualStateManager.GoToState(MyCollectionView, "Normal");
-			CVState.Text = "State: Normal";
-		}
+		CVToggleButton?.Text = MyCollectionView.IsEnabled ? "Disable" : "Enable";
+		CVState.Text = MyCollectionView.IsEnabled
+			? (GetSelectedCount() > 0 ? $"State: Selected ({GetSelectedCount()})" : "State: Normal")
+			: "State: Disabled";
 	}
 
 	void OnResetCollectionView(object sender, EventArgs e)

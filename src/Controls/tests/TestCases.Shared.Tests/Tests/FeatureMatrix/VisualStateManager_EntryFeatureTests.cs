@@ -31,7 +31,7 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 	{
 		App.WaitForElement("VSMEntry");
 		App.Tap("VSMEntry");
-#if ANDROID || IOS
+#if ANDROID
 		if (App.WaitForKeyboardToShow())
 			App.DismissKeyboard();
 #endif
@@ -178,10 +178,6 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 		App.Tap("ResetEntryButton");
 		App.WaitForElement("VSMEntry");
 		App.Tap("VSMEntry");
-		#if ANDROID || IOS
-		if (App.WaitForKeyboardToShow())
-			App.DismissKeyboard();
-		#endif
 		App.WaitForElement("EntryState");
 		var stateText = App.FindElement("EntryState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Focused"));
@@ -218,11 +214,6 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 		App.Tap("DisableEntryButton");
 		App.WaitForElement("VSMEntry");
 		App.Tap("VSMEntry");
-		App.EnterText("VSMEntry", "Testing");
-#if ANDROID || IOS
-		if (App.WaitForKeyboardToShow())
-			App.DismissKeyboard();
-#endif
 		App.WaitForElement("EntryState");
 		var stateText = App.FindElement("EntryState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Disabled"));
