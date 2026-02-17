@@ -682,7 +682,7 @@ namespace Microsoft.Maui.Controls
 			if (newValue != null && lv.GroupHeaderTemplate != null)
 			{
 				lv.GroupHeaderTemplate = null;
-				MauiLog.LogWarning<ListView>($"GroupHeaderTemplate and GroupDisplayBinding cannot be set at the same time, setting GroupHeaderTemplate to null");
+				MauiLog<ListView>.LogWarning($"GroupHeaderTemplate and GroupDisplayBinding cannot be set at the same time, setting GroupHeaderTemplate to null");
 			}
 		}
 
@@ -692,7 +692,7 @@ namespace Microsoft.Maui.Controls
 			if (newValue != null && lv.GroupDisplayBinding != null)
 			{
 				lv.GroupDisplayBinding = null;
-				MauiLog.LogWarning<ListView>($"GroupHeaderTemplate and GroupDisplayBinding cannot be set at the same time, setting GroupDisplayBinding to null");
+				MauiLog<ListView>.LogWarning($"GroupHeaderTemplate and GroupDisplayBinding cannot be set at the same time, setting GroupDisplayBinding to null");
 			}
 		}
 

@@ -693,7 +693,7 @@ namespace Microsoft.Maui.Controls
 			var content = Content;
 			if (content is View)
 			{
-				MauiLog.LogWarning<RadioButton>($"Warning - {DeviceInfo.Platform} does not support View as the {ContentProperty.PropertyName} property of RadioButton; the return value of the ToString() method will be displayed instead.");
+				MauiLog<RadioButton>.LogWarning($"Warning - {DeviceInfo.Platform} does not support View as the {ContentProperty.PropertyName} property of RadioButton; the return value of the ToString() method will be displayed instead.");
 			}
 
 			return content?.ToString();
