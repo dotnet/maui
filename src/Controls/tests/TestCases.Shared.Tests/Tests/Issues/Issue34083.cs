@@ -5,9 +5,9 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-public class Issue14181 : _IssuesUITest
+public class Issue34083 : _IssuesUITest
 {
-	public Issue14181(TestDevice testDevice) : base(testDevice)
+	public Issue34083(TestDevice testDevice) : base(testDevice)
 	{
 	}
 
@@ -17,7 +17,7 @@ public class Issue14181 : _IssuesUITest
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellForegroundColorIsAppliedToToolbarItems()
 	{
-		App.WaitForElement("Issue14181_DescriptionLabel");
+		App.WaitForElement("Issue34083_DescriptionLabel");
 		VerifyScreenshot();
 	}
 }

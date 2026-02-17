@@ -1,17 +1,17 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 14181, "Toolbar Items Do Not Reflect Shell ForegroundColor", PlatformAffected.iOS)]
-public class Issue14181 : Shell
+[Issue(IssueTracker.Github, 34083, "Toolbar Items Do Not Reflect Shell ForegroundColor", PlatformAffected.iOS)]
+public class Issue34083 : Shell
 {
-	public Issue14181()
+	public Issue34083()
 	{
-		Items.Add(new Issue14181Page());
+		Items.Add(new Issue34083Page());
 		Shell.SetForegroundColor(this, Colors.Purple);
 	}
 
-	public class Issue14181Page : ContentPage
+	public class Issue34083Page : ContentPage
 	{
-		public Issue14181Page()
+		public Issue34083Page()
 		{
 			Title = "Home";
 			ToolbarItems.Add(new ToolbarItem
@@ -23,7 +23,7 @@ public class Issue14181 : Shell
 			Content = new Label
 			{
 				Text = "The test passes if the color is being applied to the toolbar.",
-				AutomationId = "Issue14181_DescriptionLabel",
+				AutomationId = "Issue34083_DescriptionLabel",
 				HorizontalOptions = LayoutOptions.Center,
 				VerticalOptions = LayoutOptions.Center
 			};
