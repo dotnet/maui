@@ -339,17 +339,23 @@ if ($Platform -eq "android") {
         exit 1
     }
     
-    # Get device UDID if not provided
+    # Get device UDID if not provided - check env var first
+    if (-not $DeviceUdid -and $env:DEVICE_UDID) {
+        Write-Info "Using DEVICE_UDID from environment: $($env:DEVICE_UDID)"
+        $DeviceUdid = $env:DEVICE_UDID
+    }
+
     if (-not $DeviceUdid) {
         Write-Info "Auto-detecting iOS simulator..."
         $simList = xcrun simctl list devices available --json | ConvertFrom-Json
         
         # Preferred devices per iOS version - must match UI test baseline screenshot devices
-        # iOS 18.x/17.x: iPhone Xs (default in UITest.cs, baselines captured on this device)
+        # iPhone Xs and iPhone 11 Pro have identical resolution (1125×2436 @3x)
+        # iOS 18.x/17.x: iPhone Xs preferred (default in UITest.cs), iPhone 11 Pro as fallback
         # iOS 26.x: iPhone 11 Pro (required by UITest.cs for ios-26 environment)
         $preferredDevicesForVersion = @{
-            "iOS-18" = @("iPhone Xs", "iPhone 16 Pro", "iPhone 15 Pro", "iPhone 14 Pro")
-            "iOS-17" = @("iPhone Xs", "iPhone 16 Pro", "iPhone 15 Pro", "iPhone 14 Pro")
+            "iOS-18" = @("iPhone Xs", "iPhone 11 Pro", "iPhone 16 Pro", "iPhone 15 Pro", "iPhone 14 Pro")
+            "iOS-17" = @("iPhone Xs", "iPhone 11 Pro", "iPhone 16 Pro", "iPhone 15 Pro", "iPhone 14 Pro")
             "iOS-26" = @("iPhone 11 Pro", "iPhone Xs")
         }
         # Preferred iOS versions in order (stable preferred, beta fallback)
