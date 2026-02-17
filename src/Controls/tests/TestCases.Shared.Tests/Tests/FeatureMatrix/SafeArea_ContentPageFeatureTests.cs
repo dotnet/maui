@@ -1399,6 +1399,372 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			App.SetOrientationPortrait();
 		}
+
+		[Test, Order(30)]
+		[Description("Landscape Default: bottom stays at safe area inset with keyboard (behaves like Container)")]
+		public void ValidateKeyboard_Default_Landscape()
+		{
+			App.WaitForElement("SafeAreaDefaultButton");
+			App.Tap("SafeAreaDefaultButton");
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("Default"));
+
+			App.SetOrientationLandscape();
+
+			var (screenWidth, screenHeight) = GetScreenSize();
+			var insetsLandscape = GetSafeAreaInsets();
+
+			// ── Before keyboard ──
+			var leftBeforeRect = App.WaitForElement("LeftEdgeIndicator").GetRect();
+			Assert.That(Math.Abs(leftBeforeRect.X), Is.EqualTo(insetsLandscape.Left),
+				$"Before keyboard - left X ({leftBeforeRect.X}) should be = insetsLandscape.Left ({insetsLandscape.Left})");
+
+			var rightBeforeRect = App.WaitForElement("RightEdgeIndicator").GetRect();
+			var rightBeforeEdge = rightBeforeRect.X + rightBeforeRect.Width;
+			Assert.That(Math.Abs(rightBeforeEdge), Is.EqualTo(screenWidth - insetsLandscape.Right),
+				$"Before keyboard - right edge ({rightBeforeEdge}) should be = screenWidth - insetsLandscape.Right ({screenWidth - insetsLandscape.Right})");
+
+			var bottomBeforeRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			Assert.That(Math.Abs(bottomBeforeRect.Bottom), Is.EqualTo(screenHeight - insetsLandscape.Bottom),
+				$"Before keyboard - bottom edge ({bottomBeforeRect.Bottom}) should be = screenHeight - insetsLandscape.Bottom ({screenHeight - insetsLandscape.Bottom})");
+
+			// ── Show keyboard ──
+			App.Tap("SafeAreaTestEntry");
+			App.WaitForKeyboardToShow();
+
+			// Bottom should NOT move (Default behaves like Container)
+			var bottomDuringRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			Assert.That(bottomDuringRect.Bottom, Is.EqualTo(bottomBeforeRect.Bottom),
+				$"During keyboard - bottom edge ({bottomDuringRect.Bottom}) should remain at ({bottomBeforeRect.Bottom})");
+
+			// Left/Right should remain unchanged
+			var leftDuringRect = App.WaitForElement("LeftEdgeIndicator").GetRect();
+			Assert.That(leftDuringRect.X, Is.EqualTo(leftBeforeRect.X),
+				$"During keyboard - left X ({leftDuringRect.X}) should remain at ({leftBeforeRect.X})");
+
+			var rightDuringRect = App.WaitForElement("RightEdgeIndicator").GetRect();
+			var rightDuringEdge = rightDuringRect.X + rightDuringRect.Width;
+			Assert.That(rightDuringEdge, Is.EqualTo(rightBeforeEdge),
+				$"During keyboard - right edge ({rightDuringEdge}) should remain at ({rightBeforeEdge})");
+
+			// ── Dismiss keyboard ──
+			App.DismissKeyboard();
+			App.WaitForKeyboardToHide();
+
+			var bottomAfterRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			Assert.That(bottomAfterRect.Bottom, Is.EqualTo(bottomBeforeRect.Bottom),
+				$"After keyboard - bottom edge ({bottomAfterRect.Bottom}) should return to original ({bottomBeforeRect.Bottom})");
+
+			App.SetOrientationPortrait();
+		}
 #endif
+
+		// ──────────────────────────────────────────────
+		// Default + Keyboard (Portrait)
+		// ──────────────────────────────────────────────
+
+		[Test, Order(31)]
+		[Description("With Default, bottom indicator does NOT move when keyboard is shown (behaves like Container)")]
+		public void ValidateKeyboard_Default_BottomStays()
+		{
+			App.WaitForElement("SafeAreaDefaultButton");
+			App.Tap("SafeAreaDefaultButton");
+
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("Default"));
+
+			var insets = GetSafeAreaInsets();
+			var (_, screenHeight) = GetScreenSize();
+
+			// ── Before keyboard ──
+			var topLabelBeforeRect = App.WaitForElement("TopEdgeIndicator").GetRect();
+			Assert.That(Math.Abs(topLabelBeforeRect.Y), Is.EqualTo(insets.Top),
+				$"Before keyboard - top label Y ({topLabelBeforeRect.Y}) should be equal to insets.Top ({insets.Top})");
+
+			var bottomLabelBeforeRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			Assert.That(Math.Abs(bottomLabelBeforeRect.Bottom), Is.EqualTo(screenHeight - insets.Bottom),
+				$"Before keyboard - bottom label Bottom ({bottomLabelBeforeRect.Bottom}) should be equal to (screenHeight - insets.Bottom) ({screenHeight - insets.Bottom})");
+
+			App.Tap("SafeAreaTestEntry");
+			App.WaitForKeyboardToShow();
+
+			// Bottom should NOT move (Default behaves like Container — ignores keyboard)
+			var bottomLabelDuringRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			Assert.That(bottomLabelDuringRect.Bottom, Is.EqualTo(screenHeight - insets.Bottom),
+				$"During keyboard - bottom label Bottom ({bottomLabelDuringRect.Bottom}) should equal (screenHeight - insets.Bottom) ({screenHeight - insets.Bottom})");
+
+			// Top should remain unchanged
+			var topLabelDuringRect = App.WaitForElement("TopEdgeIndicator").GetRect();
+			Assert.That(topLabelDuringRect.Y, Is.EqualTo(topLabelBeforeRect.Y),
+				$"During keyboard - top label Y ({topLabelDuringRect.Y}) should remain at ({topLabelBeforeRect.Y})");
+
+			App.DismissKeyboard();
+			App.WaitForKeyboardToHide();
+
+			var topLabelAfterRect = App.WaitForElement("TopEdgeIndicator").GetRect();
+			Assert.That(topLabelAfterRect.Y, Is.EqualTo(topLabelBeforeRect.Y),
+				$"After keyboard - top label Y ({topLabelAfterRect.Y}) should return to original ({topLabelBeforeRect.Y})");
+
+			var bottomLabelAfterRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			Assert.That(bottomLabelAfterRect.Bottom, Is.EqualTo(bottomLabelBeforeRect.Bottom),
+				$"After keyboard - bottom label Bottom ({bottomLabelAfterRect.Bottom}) should return to original ({bottomLabelBeforeRect.Bottom})");
+		}
+
+		// ──────────────────────────────────────────────
+		// Per-Edge + Keyboard (Portrait)
+		// ──────────────────────────────────────────────
+
+		[Test, Order(32)]
+		[Description("Per-edge B:None + keyboard — bottom stays edge-to-edge when keyboard shows")]
+		public void ValidatePerEdgeKeyboard_BottomNone_BottomStays()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("TopContainer");
+			App.Tap("TopContainer");
+			App.Tap("BottomNone");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+
+			App.WaitForElement("SafeAreaEdgesValueLabel");
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("L:None, T:Container, R:None, B:None"));
+
+			var (_, screenHeight) = GetScreenSize();
+
+			var bottomLabelBeforeRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			Assert.That(Math.Abs(bottomLabelBeforeRect.Bottom), Is.EqualTo(screenHeight),
+				$"Before keyboard - bottom label Bottom ({bottomLabelBeforeRect.Bottom}) should be equal to screenHeight ({screenHeight})");
+
+			App.Tap("SafeAreaTestEntry");
+			App.WaitForKeyboardToShow();
+
+			var bottomLabelDuringRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			Assert.That(Math.Abs(bottomLabelDuringRect.Bottom), Is.EqualTo(screenHeight),
+				$"During keyboard - bottom label Bottom ({bottomLabelDuringRect.Bottom}) should stay at screenHeight ({screenHeight})");
+
+			App.DismissKeyboard();
+			App.WaitForKeyboardToHide();
+
+			var bottomLabelAfterRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			Assert.That(bottomLabelAfterRect.Bottom, Is.EqualTo(bottomLabelBeforeRect.Bottom),
+				$"After keyboard - bottom label Bottom ({bottomLabelAfterRect.Bottom}) should return to original ({bottomLabelBeforeRect.Bottom})");
+		}
+
+		[Test, Order(33)]
+		[Description("Per-edge B:Container + keyboard — bottom stays at safe area inset when keyboard shows")]
+		public void ValidatePerEdgeKeyboard_BottomContainer_BottomStays()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("TopContainer");
+			App.Tap("TopContainer");
+			App.Tap("BottomContainer");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+
+			App.WaitForElement("SafeAreaEdgesValueLabel");
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("L:None, T:Container, R:None, B:Container"));
+
+			var insets = GetSafeAreaInsets();
+			var (_, screenHeight) = GetScreenSize();
+
+			var bottomLabelBeforeRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			Assert.That(Math.Abs(bottomLabelBeforeRect.Bottom), Is.EqualTo(screenHeight - insets.Bottom),
+				$"Before keyboard - bottom label Bottom ({bottomLabelBeforeRect.Bottom}) should be equal to (screenHeight - insets.Bottom) ({screenHeight - insets.Bottom})");
+
+			App.Tap("SafeAreaTestEntry");
+			App.WaitForKeyboardToShow();
+
+			var bottomLabelDuringRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			Assert.That(bottomLabelDuringRect.Bottom, Is.EqualTo(screenHeight - insets.Bottom),
+				$"During keyboard - bottom label Bottom ({bottomLabelDuringRect.Bottom}) should stay at (screenHeight - insets.Bottom) ({screenHeight - insets.Bottom})");
+
+			App.DismissKeyboard();
+			App.WaitForKeyboardToHide();
+
+			var bottomLabelAfterRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			Assert.That(bottomLabelAfterRect.Bottom, Is.EqualTo(bottomLabelBeforeRect.Bottom),
+				$"After keyboard - bottom label Bottom ({bottomLabelAfterRect.Bottom}) should return to original ({bottomLabelBeforeRect.Bottom})");
+		}
+
+#if TEST_FAILS_ON_ANDROID
+		[Test, Order(34)]
+		[Description("Per-edge B:SoftInput + keyboard — bottom moves up to keyboard Y")]
+		public void ValidatePerEdgeKeyboard_BottomSoftInput_BottomMovesUp()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("TopContainer");
+			App.Tap("TopContainer");
+			App.Tap("BottomSoftInput");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+
+			App.WaitForElement("SafeAreaEdgesValueLabel");
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("L:None, T:Container, R:None, B:SoftInput"));
+
+			var (_, screenHeight) = GetScreenSize();
+
+			var bottomLabelBeforeRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			Assert.That(Math.Abs(bottomLabelBeforeRect.Bottom), Is.EqualTo(screenHeight),
+				$"Before keyboard - bottom label Bottom ({bottomLabelBeforeRect.Bottom}) should be equal to screenHeight ({screenHeight})");
+
+			App.Tap("SafeAreaTestEntry");
+			App.WaitForKeyboardToShow();
+
+			var keyboardY = GetKeyboardY();
+
+			var bottomLabelDuringRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			Assert.That(bottomLabelDuringRect.Bottom, Is.EqualTo(keyboardY),
+				$"During keyboard - bottom label Bottom ({bottomLabelDuringRect.Bottom}) should equal keyboard Y ({keyboardY})");
+
+			App.DismissKeyboard();
+			App.WaitForKeyboardToHide();
+
+			var bottomLabelAfterRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			Assert.That(bottomLabelAfterRect.Bottom, Is.EqualTo(bottomLabelBeforeRect.Bottom),
+				$"After keyboard - bottom label Bottom ({bottomLabelAfterRect.Bottom}) should return to original ({bottomLabelBeforeRect.Bottom})");
+		}
+
+		[Test, Order(35)]
+		[Description("Per-edge B:All + keyboard — bottom moves up to keyboard Y")]
+		public void ValidatePerEdgeKeyboard_BottomAll_BottomMovesUp()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("TopContainer");
+			App.Tap("TopContainer");
+			App.Tap("BottomAll");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+
+			App.WaitForElement("SafeAreaEdgesValueLabel");
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("L:None, T:Container, R:None, B:All"));
+
+			var insets = GetSafeAreaInsets();
+			var (_, screenHeight) = GetScreenSize();
+
+			var bottomLabelBeforeRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			Assert.That(Math.Abs(bottomLabelBeforeRect.Bottom), Is.EqualTo(screenHeight - insets.Bottom),
+				$"Before keyboard - bottom label Bottom ({bottomLabelBeforeRect.Bottom}) should be equal to (screenHeight - insets.Bottom) ({screenHeight - insets.Bottom})");
+
+			App.Tap("SafeAreaTestEntry");
+			App.WaitForKeyboardToShow();
+
+			var keyboardY = GetKeyboardY();
+
+			var bottomLabelDuringRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			Assert.That(bottomLabelDuringRect.Bottom, Is.EqualTo(keyboardY),
+				$"During keyboard - bottom label Bottom ({bottomLabelDuringRect.Bottom}) should equal keyboard Y ({keyboardY})");
+
+			App.DismissKeyboard();
+			App.WaitForKeyboardToHide();
+
+			var bottomLabelAfterRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			Assert.That(bottomLabelAfterRect.Bottom, Is.EqualTo(bottomLabelBeforeRect.Bottom),
+				$"After keyboard - bottom label Bottom ({bottomLabelAfterRect.Bottom}) should return to original ({bottomLabelBeforeRect.Bottom})");
+		}
+#endif
+
+		// ──────────────────────────────────────────────
+		// Left/Right Per-Edge in Landscape
+		// ──────────────────────────────────────────────
+
+		[Test, Order(36)]
+		[Description("Landscape per-edge: L:Container, R:None — left inset by safe area, right edge-to-edge")]
+		public void ValidatePerEdge_LeftContainerRightNone_Landscape()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("LeftContainer");
+			App.Tap("LeftContainer");
+			App.Tap("RightNone");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+
+			App.WaitForElement("SafeAreaEdgesValueLabel");
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("L:Container, T:None, R:None, B:None"));
+
+			App.SetOrientationLandscape();
+
+			var (screenWidth, screenHeight) = GetScreenSize();
+			var insetsLandscape = GetSafeAreaInsets();
+
+			// Left: inset by safe area (Container)
+			var leftRect = App.WaitForElement("LeftEdgeIndicator").GetRect();
+			Assert.That(Math.Abs(leftRect.X), Is.EqualTo(insetsLandscape.Left),
+				$"Left (Container): X ({leftRect.X}) should be = insetsLandscape.Left ({insetsLandscape.Left})");
+
+			// Right: edge-to-edge (None)
+			var rightRect = App.WaitForElement("RightEdgeIndicator").GetRect();
+			var rightEdge = rightRect.X + rightRect.Width;
+			Assert.That(Math.Abs(rightEdge), Is.EqualTo(screenWidth),
+				$"Right (None): right edge ({rightEdge}) should be = screenWidth ({screenWidth})");
+
+			App.SetOrientationPortrait();
+		}
+
+		// ──────────────────────────────────────────────
+		// Orientation Roundtrip
+		// ──────────────────────────────────────────────
+
+		[Test, Order(37)]
+		[Description("Rotate to landscape and back to portrait — positions restore correctly")]
+		public void ValidateOrientation_Roundtrip_PositionsRestore()
+		{
+			App.WaitForElement("SafeAreaAllButton");
+			App.Tap("SafeAreaAllButton");
+			Assert.That(App.FindElement("SafeAreaEdgesValueLabel").GetText(), Is.EqualTo("All"));
+
+			var insets = GetSafeAreaInsets();
+			var (_, screenHeight) = GetScreenSize();
+
+			// ── Record portrait positions ──
+			var topPortraitRect = App.WaitForElement("TopEdgeIndicator").GetRect();
+			var bottomPortraitRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
+
+			Assert.That(Math.Abs(topPortraitRect.Y), Is.EqualTo(insets.Top),
+				$"Portrait: top label Y ({topPortraitRect.Y}) should be equal to insets.Top ({insets.Top})");
+			Assert.That(Math.Abs(bottomPortraitRect.Bottom), Is.EqualTo(screenHeight - insets.Bottom),
+				$"Portrait: bottom label Bottom ({bottomPortraitRect.Bottom}) should be equal to (screenHeight - insets.Bottom) ({screenHeight - insets.Bottom})");
+
+			// ── Rotate to landscape ──
+			App.SetOrientationLandscape();
+
+			var (screenWidthLandscape, screenHeightLandscape) = GetScreenSize();
+			var insetsLandscape = GetSafeAreaInsets();
+
+			var topLandscapeRect = App.WaitForElement("TopEdgeIndicator").GetRect();
+			Assert.That(Math.Abs(topLandscapeRect.Y), Is.EqualTo(insetsLandscape.Top),
+				$"Landscape: top label Y ({topLandscapeRect.Y}) should be equal to insetsLandscape.Top ({insetsLandscape.Top})");
+
+			var leftLandscapeRect = App.WaitForElement("LeftEdgeIndicator").GetRect();
+			Assert.That(Math.Abs(leftLandscapeRect.X), Is.EqualTo(insetsLandscape.Left),
+				$"Landscape: left X ({leftLandscapeRect.X}) should be equal to insetsLandscape.Left ({insetsLandscape.Left})");
+
+			var rightLandscapeRect = App.WaitForElement("RightEdgeIndicator").GetRect();
+			var rightLandscapeEdge = rightLandscapeRect.X + rightLandscapeRect.Width;
+			Assert.That(Math.Abs(rightLandscapeEdge), Is.EqualTo(screenWidthLandscape - insetsLandscape.Right),
+				$"Landscape: right edge ({rightLandscapeEdge}) should be equal to screenWidth - insetsLandscape.Right ({screenWidthLandscape - insetsLandscape.Right})");
+
+			// ── Rotate back to portrait ──
+			App.SetOrientationPortrait();
+
+			var insetsAfter = GetSafeAreaInsets();
+			var (_, screenHeightAfter) = GetScreenSize();
+
+			var topAfterRect = App.WaitForElement("TopEdgeIndicator").GetRect();
+			Assert.That(Math.Abs(topAfterRect.Y), Is.EqualTo(insetsAfter.Top),
+				$"After roundtrip: top label Y ({topAfterRect.Y}) should be equal to insets.Top ({insetsAfter.Top})");
+
+			var bottomAfterRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			Assert.That(Math.Abs(bottomAfterRect.Bottom), Is.EqualTo(screenHeightAfter - insetsAfter.Bottom),
+				$"After roundtrip: bottom label Bottom ({bottomAfterRect.Bottom}) should be equal to (screenHeight - insets.Bottom) ({screenHeightAfter - insetsAfter.Bottom})");
+
+			// Verify positions match the original portrait positions
+			Assert.That(topAfterRect.Y, Is.EqualTo(topPortraitRect.Y),
+				$"After roundtrip: top label Y ({topAfterRect.Y}) should match original portrait ({topPortraitRect.Y})");
+
+			Assert.That(bottomAfterRect.Bottom, Is.EqualTo(bottomPortraitRect.Bottom),
+				$"After roundtrip: bottom label Bottom ({bottomAfterRect.Bottom}) should match original portrait ({bottomPortraitRect.Bottom})");
+		}
 	}
 }
