@@ -486,9 +486,18 @@ stages:
               )
               
               foreach ($project in $projects) {
-                # Look for AppPackages in artifacts/bin (where Cake outputs MSIX builds)
-                # The MSIX is built to: artifacts/bin/{ProjectName}/Release/net10.0-windows.../AppPackages/
-                $appPackagesDir = Get-ChildItem -Path "$($project.ArtifactDir)" -Filter "AppPackages" -Recurse -Directory | Select-Object -First 1
+                # Look for AppPackages in multiple locations (Cake may put them in project dir OR artifacts/bin)
+                # First try artifacts/bin, then fallback to project directory
+                $appPackagesDir = $null
+                
+                # Try artifacts/bin first
+                $appPackagesDir = Get-ChildItem -Path "$($project.ArtifactDir)" -Filter "AppPackages" -Recurse -Directory -ErrorAction SilentlyContinue | Select-Object -First 1
+                
+                # If not found, try project directory (where Cake sometimes puts MSIX)
+                if (-not $appPackagesDir) {
+                  $appPackagesDir = Get-ChildItem -Path "$($project.ProjectDir)" -Filter "AppPackages" -Recurse -Directory -ErrorAction SilentlyContinue | Select-Object -First 1
+                }
+                
                 $zipPath = "$artifactsDir/$($project.Name).zip"
                 
                 # Create a temp folder to consolidate packaged and unpackaged outputs
@@ -507,7 +516,7 @@ stages:
                     $hasContent = $true
                   }
                 } else {
-                  Write-Host "Warning: AppPackages not found in $($project.ArtifactDir)"
+                  Write-Host "Warning: AppPackages not found in $($project.ArtifactDir) or $($project.ProjectDir)"
                 }
                 
                 # Copy unpackaged output (publish folder with .exe)
