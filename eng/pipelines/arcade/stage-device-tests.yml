@@ -440,8 +440,8 @@ stages:
             displayName: 'Restore .NET tools'
             retryCountOnTaskFailure: 3
 
-          # Install .NET SDK
-          - script: dotnet cake --target=dotnet --configuration="Release" --verbosity=diagnostic
+          # Install .NET SDK and workloads using Arcade build script
+          - script: ./build.cmd -restore -configuration Release
             displayName: 'Install .NET'
             retryCountOnTaskFailure: 3
             env:
@@ -451,8 +451,8 @@ stages:
           - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
             displayName: 'Add .NET to PATH'
 
-          # Build BuildTasks first
-          - script: dotnet cake --target=dotnet-buildtasks --configuration="Release"
+          # Build BuildTasks first (need -restore to ensure SDK is available)
+          - script: ./build.cmd -restore -build -configuration Release -projects Microsoft.Maui.BuildTasks.slnf
             displayName: Build the MSBuild Tasks
 
           # Build Windows device tests using Cake script (Packaged/MSIX builds)
