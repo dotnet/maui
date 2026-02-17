@@ -503,7 +503,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 			else if (ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
 			{
-				ForceScrollToFirstItem(CollectionView, _itemsLayout);
+				CollectionView.SetContentOffset(CGPoint.Empty, true);
 			}
 		}
 
@@ -569,34 +569,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			return false;
 		}
-
-		static void ForceScrollToFirstItem(UICollectionView collectionView, ItemsLayout itemsLayout)
-		{
-			//CarouselView and CarouselView2 handle scrolling based on ItemsUpdatingScrollMode in CarouselViewController. Even when passing the 0th index, issues may arise in CarouselView since the position is determined by the center itemindex.
-			// Issue Link : https://github.com/dotnet/maui/issues/25991
-			if (collectionView.DataSource is CarouselViewController || collectionView.DataSource is CarouselViewController2)
-			{
-				return;
-			}
-
-			//Fix Added for ItemsUpdatingScrollMode.KeepItemsInView
-			int sections = (int)collectionView.NumberOfSections();
-
-			if (sections == 0)
-			{
-				return;
-			}
-
-			if (collectionView.NumberOfItemsInSection(0) > 0)
-			{
-				var indexPath = NSIndexPath.FromItemSection(0, 0);
-				if (itemsLayout.Orientation == ItemsLayoutOrientation.Vertical)
-					collectionView.ScrollToItem(indexPath, UICollectionViewScrollPosition.Top, true);
-				else
-					collectionView.ScrollToItem(indexPath, UICollectionViewScrollPosition.Right, true);
-			}
-		}
-
+		
 		static void ForceScrollToLastItem(UICollectionView collectionView, ItemsLayout itemsLayout)
 		{
 			var sections = (int)collectionView.NumberOfSections();
