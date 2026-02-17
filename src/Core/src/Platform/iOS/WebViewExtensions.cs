@@ -70,6 +70,10 @@ namespace Microsoft.Maui.Platform
 
 			// On macOS, we need to refresh the scroll indicators when flow direction changes
 			// But only for runtime changes, not during initial load
+			// The view.IsLoadedOnPlatform() check ensures that this code is executed
+			// only after the view has been loaded on the platform. During the initial load,
+			// the scroll indicators do not need to be refreshed as they are set up correctly
+			// by default. This avoids unnecessary operations during the initial load phase.
 			if (OperatingSystem.IsMacCatalyst() && view.IsLoadedOnPlatform())
 			{
 				bool showsVertical = scrollView.ShowsVerticalScrollIndicator;
