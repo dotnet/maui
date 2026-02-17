@@ -243,7 +243,7 @@ namespace Microsoft.Maui.Controls
 
 			if (page == CurrentPage)
 			{
-				MauiLog.LogWarning($"RemovePage called for CurrentPage object. This can result in undesired behavior, consider calling PopAsync instead.");
+				MauiLog.LogWarning<NavigationPage>($"RemovePage called for CurrentPage object. This can result in undesired behavior, consider calling PopAsync instead.");
 				PopAsync();
 				return;
 			}

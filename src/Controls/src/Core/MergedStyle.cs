@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Controls
 				if (_style == value)
 					return;
 				if (value != null && !value.TargetType.IsAssignableFrom(TargetType))
-					MauiLog.LogWarning($"Style TargetType {value.TargetType.FullName} is not compatible with element target type {TargetType}");
+					MauiLog.LogWarning<Style>($"Style TargetType {value.TargetType.FullName} is not compatible with element target type {TargetType}");
 				SetStyle(ImplicitStyle, ClassStyles, value);
 			}
 		}

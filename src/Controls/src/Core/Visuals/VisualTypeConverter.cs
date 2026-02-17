@@ -85,15 +85,15 @@ namespace Microsoft.Maui.Controls
 				}
 				catch (NotSupportedException)
 				{
-					MauiLog.LogWarning($"Cannot scan assembly {assembly.FullName} for Visual types.");
+					MauiLog.LogWarning<IVisual>($"Cannot scan assembly {assembly.FullName} for Visual types.");
 				}
 				catch (FileNotFoundException)
 				{
-					MauiLog.LogWarning($"Unable to load a dependent assembly for {assembly.FullName}. It cannot be scanned for Visual types.");
+					MauiLog.LogWarning<IVisual>($"Unable to load a dependent assembly for {assembly.FullName}. It cannot be scanned for Visual types.");
 				}
 				catch (ReflectionTypeLoadException)
 				{
-					MauiLog.LogWarning($"Unable to load a dependent assembly for {assembly.FullName}. Types cannot be loaded.");
+					MauiLog.LogWarning<IVisual>($"Unable to load a dependent assembly for {assembly.FullName}. Types cannot be loaded.");
 				}
 			}
 
@@ -145,7 +145,7 @@ namespace Microsoft.Maui.Controls
 			}
 			catch
 			{
-				MauiLog.LogWarning($"Unable to register {visualType} please add a public default constructor");
+				MauiLog.LogWarning<IVisual>($"Unable to register {visualType} please add a public default constructor");
 			}
 
 			return null;
@@ -164,7 +164,7 @@ namespace Microsoft.Maui.Controls
 
 				if (!RuntimeFeature.IsIVisualAssemblyScanningEnabled)
 				{
-				MauiLog.LogWarning($"Unable to find visual {strValue}. Automatic discovery of IVisual types is disabled. You can enabled it by setting the $(MauiEnableIVisualAssemblyScanning)=true MSBuild property. Note: automatic registration of IVisual types through assembly scanning is not trimming-compatible and it can lead to slower app startup.");
+				MauiLog.LogWarning<IVisual>($"Unable to find visual {strValue}. Automatic discovery of IVisual types is disabled. You can enabled it by setting the $(MauiEnableIVisualAssemblyScanning)=true MSBuild property. Note: automatic registration of IVisual types through assembly scanning is not trimming-compatible and it can lead to slower app startup.");
 				}
 
 				return VisualMarker.Default;

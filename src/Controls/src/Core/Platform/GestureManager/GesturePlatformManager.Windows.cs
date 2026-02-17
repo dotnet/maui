@@ -229,7 +229,7 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 				catch (Exception dropExc)
 				{
-					MauiLog.LogWarning(dropExc, $"Error sending event");
+					MauiLog.LogWarning<DropGestureRecognizer>(dropExc, $"Error sending event");
 				}
 			});
 		}
@@ -678,7 +678,7 @@ namespace Microsoft.Maui.Controls.Platform
 			catch (Exception ex)
 			{
 				// Log the exception for diagnostics
-				MauiLog.LogError(ex, $"An error occurred while validating pointer event relevance.");
+				MauiLog.LogError<GesturePlatformManager>(ex, $"An error occurred while validating pointer event relevance.");
 				return false;
 			}
 		}

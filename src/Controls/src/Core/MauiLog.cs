@@ -28,17 +28,17 @@ namespace Microsoft.Maui.Controls
 /// </summary>
 internal static class MauiLog
 {
-	internal static void LogWarning(
-		[InterpolatedStringHandlerArgument()] ref WarningInterpolatedStringHandler handler)
+	internal static void LogWarning<T>(
+		[InterpolatedStringHandlerArgument()] ref LogInterpolatedStringHandler<T> handler)
 	{
 		if (handler.IsEnabled)
 		{
-			handler.Logger!.LogWarning(handler.Exception, handler.ToStringAndClear());
+			handler.Logger!.LogWarning(handler.ToStringAndClear());
 		}
 	}
 
-	internal static void LogWarning(Exception? exception,
-		[InterpolatedStringHandlerArgument("exception")] ref WarningInterpolatedStringHandler handler)
+	internal static void LogWarning<T>(Exception? exception,
+		[InterpolatedStringHandlerArgument("exception")] ref LogInterpolatedStringHandler<T> handler)
 	{
 		if (handler.IsEnabled)
 		{
@@ -46,17 +46,17 @@ internal static class MauiLog
 		}
 	}
 
-	internal static void LogError(
-		[InterpolatedStringHandlerArgument()] ref ErrorInterpolatedStringHandler handler)
+	internal static void LogError<T>(
+		[InterpolatedStringHandlerArgument()] ref LogInterpolatedStringHandler<T> handler)
 	{
 		if (handler.IsEnabled)
 		{
-			handler.Logger!.LogError(handler.Exception, handler.ToStringAndClear());
+			handler.Logger!.LogError(handler.ToStringAndClear());
 		}
 	}
 
-	internal static void LogError(Exception? exception,
-		[InterpolatedStringHandlerArgument("exception")] ref ErrorInterpolatedStringHandler handler)
+	internal static void LogError<T>(Exception? exception,
+		[InterpolatedStringHandlerArgument("exception")] ref LogInterpolatedStringHandler<T> handler)
 	{
 		if (handler.IsEnabled)
 		{
@@ -65,10 +65,13 @@ internal static class MauiLog
 	}
 
 	/// <summary>
-	/// Gets a logger by category name (for non-generic callers like TypeConversionHelper).
+	/// Gets a logger by category name (for callers that need structured logging).
 	/// </summary>
 	internal static ILogger? GetLogger(string categoryName)
 		=> Application.Current?.FindMauiContext()?.CreateLogger(categoryName);
+
+	static ILogger? GetLogger<T>()
+		=> Application.Current?.FindMauiContext()?.CreateLogger<T>();
 
 	/// <summary>
 	/// Interpolated string handler that resolves the logger and checks
@@ -77,20 +80,17 @@ internal static class MauiLog
 	/// skips all Append calls — zero allocation.
 	/// </summary>
 	[InterpolatedStringHandler]
-	internal ref struct WarningInterpolatedStringHandler
+	internal ref struct LogInterpolatedStringHandler<T>
 	{
 		private StringBuilder? _builder;
-		private Exception? _exception;
 
 		internal bool IsEnabled => _builder is not null;
 		internal ILogger? Logger { get; }
-		internal Exception? Exception => _exception;
 
-		public WarningInterpolatedStringHandler(int literalLength, int formattedCount, out bool shouldAppend)
+		public LogInterpolatedStringHandler(int literalLength, int formattedCount, out bool shouldAppend)
 		{
-			Logger = Application.Current?.FindMauiContext()?.CreateLogger(typeof(MauiLog));
-			_exception = null;
-			if (Logger is not null && Logger.IsEnabled(LogLevel.Warning))
+			Logger = GetLogger<T>();
+			if (Logger is not null && Logger.IsEnabled(LogLevel.Trace))
 			{
 				_builder = new StringBuilder(literalLength + formattedCount * 16);
 				shouldAppend = true;
@@ -102,66 +102,16 @@ internal static class MauiLog
 			}
 		}
 
-		public WarningInterpolatedStringHandler(int literalLength, int formattedCount, Exception? exception, out bool shouldAppend)
+		public LogInterpolatedStringHandler(int literalLength, int formattedCount, Exception? exception, out bool shouldAppend)
 			: this(literalLength, formattedCount, out shouldAppend)
 		{
-			_exception = exception;
 		}
 
 		public void AppendLiteral(string value) => _builder!.Append(value);
 
-		public void AppendFormatted<T>(T value) => _builder!.Append(value);
+		public void AppendFormatted<U>(U value) => _builder!.Append(value);
 
-		public void AppendFormatted<T>(T value, string? format) => _builder!.AppendFormat($"{{0:{format}}}", value);
-
-		internal string ToStringAndClear()
-		{
-			var result = _builder!.ToString();
-			_builder = null;
-			return result;
-		}
-	}
-
-	/// <summary>
-	/// Interpolated string handler for error-level logging.
-	/// </summary>
-	[InterpolatedStringHandler]
-	internal ref struct ErrorInterpolatedStringHandler
-	{
-		private StringBuilder? _builder;
-		private Exception? _exception;
-
-		internal bool IsEnabled => _builder is not null;
-		internal ILogger? Logger { get; }
-		internal Exception? Exception => _exception;
-
-		public ErrorInterpolatedStringHandler(int literalLength, int formattedCount, out bool shouldAppend)
-		{
-			Logger = Application.Current?.FindMauiContext()?.CreateLogger(typeof(MauiLog));
-			_exception = null;
-			if (Logger is not null && Logger.IsEnabled(LogLevel.Error))
-			{
-				_builder = new StringBuilder(literalLength + formattedCount * 16);
-				shouldAppend = true;
-			}
-			else
-			{
-				_builder = null;
-				shouldAppend = false;
-			}
-		}
-
-		public ErrorInterpolatedStringHandler(int literalLength, int formattedCount, Exception? exception, out bool shouldAppend)
-			: this(literalLength, formattedCount, out shouldAppend)
-		{
-			_exception = exception;
-		}
-
-		public void AppendLiteral(string value) => _builder!.Append(value);
-
-		public void AppendFormatted<T>(T value) => _builder!.Append(value);
-
-		public void AppendFormatted<T>(T value, string? format) => _builder!.AppendFormat($"{{0:{format}}}", value);
+		public void AppendFormatted<U>(U value, string? format) => _builder!.AppendFormat($"{{0:{format}}}", value);
 
 		internal string ToStringAndClear()
 		{

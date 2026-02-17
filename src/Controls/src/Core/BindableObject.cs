@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Controls
 
 			if (property.IsReadOnly)
 			{
-				MauiLog.LogWarning($"Cannot set the BindableProperty \"{property.PropertyName}\" because it is readonly.");
+				MauiLog.LogWarning<BindableObject>($"Cannot set the BindableProperty \"{property.PropertyName}\" because it is readonly.");
 				return;
 			}
 
@@ -100,7 +100,7 @@ namespace Microsoft.Maui.Controls
 
 			if (property.IsReadOnly)
 			{
-				MauiLog.LogWarning($"Cannot set the BindableProperty \"{property.PropertyName}\" because it is readonly.");
+				MauiLog.LogWarning<BindableObject>($"Cannot set the BindableProperty \"{property.PropertyName}\" because it is readonly.");
 				return;
 			}
 
@@ -295,7 +295,7 @@ namespace Microsoft.Maui.Controls
 
 			if (targetProperty.IsReadOnly && binding.Mode == BindingMode.OneWay)
 			{
-				MauiLog.LogWarning($"Cannot set the a OneWay Binding \"{targetProperty.PropertyName}\" because it is readonly.");
+				MauiLog.LogWarning<BindableObject>($"Cannot set the a OneWay Binding \"{targetProperty.PropertyName}\" because it is readonly.");
 				return;
 			}
 
@@ -503,7 +503,7 @@ namespace Microsoft.Maui.Controls
 
 			if (property.IsReadOnly)
 			{
-				MauiLog.LogWarning($"Cannot set the BindableProperty \"{property.PropertyName}\" because it is readonly.");
+				MauiLog.LogWarning<BindableObject>($"Cannot set the BindableProperty \"{property.PropertyName}\" because it is readonly.");
 				return;
 			}
 			SetValueCore(property, value, SetValueFlags.ClearOneWayBindings | SetValueFlags.ClearDynamicResource, SetValuePrivateFlags.Default, SetterSpecificity.ManualValueSetter);
@@ -531,7 +531,7 @@ namespace Microsoft.Maui.Controls
 
 			if (property.IsReadOnly)
 			{
-				MauiLog.LogWarning($"Cannot set the BindableProperty \"{property.PropertyName}\" because it is readonly.");
+				MauiLog.LogWarning<BindableObject>($"Cannot set the BindableProperty \"{property.PropertyName}\" because it is readonly.");
 				return;
 			}
 
@@ -572,13 +572,13 @@ namespace Microsoft.Maui.Controls
 
 			if (!converted && !property.TryConvert(ref value))
 			{
-				MauiLog.LogWarning($"Cannot convert {value} to type '{property.ReturnType}'");
+				MauiLog.LogWarning<BindableObject>($"Cannot convert {value} to type '{property.ReturnType}'");
 				return;
 			}
 
 			if (property.ValidateValue != null && !property.ValidateValue(this, value))
 			{
-				MauiLog.LogWarning($"Value is an invalid value for {property.PropertyName}");
+				MauiLog.LogWarning<BindableObject>($"Value is an invalid value for {property.PropertyName}");
 				return;
 			}
 

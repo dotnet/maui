@@ -189,7 +189,7 @@ namespace Microsoft.Maui.Controls
 			catch (FormatException)
 			{
 				value = null;
-				MauiLog.LogWarning($"FormatException");
+				MauiLog.LogWarning<BindingBase>($"FormatException");
 				return false;
 			}
 		}
@@ -204,7 +204,7 @@ namespace Microsoft.Maui.Controls
 			catch (FormatException)
 			{
 				value = null;
-				MauiLog.LogWarning($"FormatException");
+				MauiLog.LogWarning<BindingBase>($"FormatException");
 				return false;
 			}
 		}

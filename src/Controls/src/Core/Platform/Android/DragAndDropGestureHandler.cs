@@ -243,7 +243,7 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 				catch (Exception exc)
 				{
-					MauiLog.LogWarning(exc, $"Error sending event");
+					MauiLog.LogWarning<DropGestureRecognizer>(exc, $"Error sending event");
 				}
 			});
 		}
