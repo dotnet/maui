@@ -176,17 +176,28 @@ namespace Microsoft.Maui.Graphics.Platform
 		private static IImage CreateImageFromSeekableStream(Stream seekableStream)
 		{
 			Bitmap bitmap;
+
+			// API 24+ (Android 7.0) required for ExifInterface stream constructor
 			if (OperatingSystem.IsAndroidVersionAtLeast(24))
 			{
-				// Read EXIF orientation
-				var exif = new ExifInterface(seekableStream);
-				var orientation = exif.GetAttributeInt(ExifInterface.TagOrientation, 1);
-				seekableStream.Position = 0;
-				bitmap = BitmapFactory.DecodeStream(seekableStream);
-				// Apply rotation only if needed
-				if (orientation != 1)
+				try
 				{
-					bitmap = RotateBitmap(bitmap, orientation);
+					// Read EXIF orientation
+					var exif = new ExifInterface(seekableStream);
+					var orientation = exif.GetAttributeInt(ExifInterface.TagOrientation, 1);
+					seekableStream.Position = 0;
+					bitmap = BitmapFactory.DecodeStream(seekableStream);
+					// Apply rotation only if needed
+					if (orientation != 1)
+					{
+						bitmap = RotateBitmap(bitmap, orientation);
+					}
+				}
+				catch (Exception)
+				{
+					// Fallback: decode without EXIF orientation correction
+					seekableStream.Position = 0;
+					bitmap = BitmapFactory.DecodeStream(seekableStream);
 				}
 			}
 			else
@@ -230,6 +241,7 @@ namespace Microsoft.Maui.Graphics.Platform
 					return bitmap;
 			}
 			var rotated = Bitmap.CreateBitmap(bitmap, 0, 0, bitmap.Width, bitmap.Height, matrix, true);
+			matrix.Dispose();
 			bitmap.Dispose();
 			return rotated;
 		}

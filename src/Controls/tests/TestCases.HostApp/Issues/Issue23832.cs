@@ -4,7 +4,7 @@ using IImage = Microsoft.Maui.Graphics.IImage;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 23832, "Some HEIC photos is upside down after using PlatformImage.Resize", PlatformAffected.Android | PlatformAffected.iOS)]
+[Issue(IssueTracker.Github, 23832, "Some HEIC photos are upside down after using PlatformImage.Resize", PlatformAffected.Android | PlatformAffected.iOS)]
 public class Issue23832 : ContentPage
 {
     public Issue23832()

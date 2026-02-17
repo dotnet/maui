@@ -10,7 +10,7 @@ public class Issue23832 : _IssuesUITest
 	{
 	}
 
-	public override string Issue => "Some HEIC photos is upside down after using PlatformImage.Resize";
+	public override string Issue => "Some HEIC photos are upside down after using PlatformImage.Resize";
 
 	[Test]
 	[Category(UITestCategories.GraphicsView)]
