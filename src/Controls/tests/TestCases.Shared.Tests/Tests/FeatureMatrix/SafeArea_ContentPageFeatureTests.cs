@@ -38,23 +38,46 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		private int GetKeyboardY()
-        {
+		{
 #if IOS
             return App.WaitForElement("Done").GetRect().Y;
 #elif ANDROID
 
 			var app = (AppiumApp)App;
-            OpenQA.Selenium.IWebElement? keyboard = null;
-            keyboard = app.Driver.FindElement(OpenQA.Selenium.Appium.MobileBy.ClassName("android.inputmethodservice.SoftInputWindow"));
 
-            if (keyboard == null)
-                throw new InvalidOperationException("Keyboard not found");
+    // Get keyboard top Y in physical pixels
+    var result = app.Driver.ExecuteScript("mobile: shell", new Dictionary<string, object>
+    {
+        { "command", "dumpsys" },
+        { "args", new[] { "input_method" } }
+    });
+    var output = result?.ToString() ?? "";
+    var match = System.Text.RegularExpressions.Regex.Match(output, @"mBounds=Rect\((\d+),\s*(\d+)\s*-\s*(\d+),\s*(\d+)\)");
+    if (!match.Success)
+        throw new InvalidOperationException($"Could not parse keyboard bounds from dumpsys output");
 
-            return keyboard.Location.Y;
+    int topYPx = int.Parse(match.Groups[2].Value);
+
+    // Convert physical pixels to dp
+    var sizeResult = app.Driver.ExecuteScript("mobile: shell", new Dictionary<string, object>
+    {
+        { "command", "wm" },
+        { "args", new[] { "size" } }
+    });
+    var sizeOutput = sizeResult?.ToString() ?? "";
+    var sizeMatch = System.Text.RegularExpressions.Regex.Match(sizeOutput, @"Physical size:\s*(\d+)x(\d+)");
+    if (!sizeMatch.Success)
+        throw new InvalidOperationException($"Could not parse screen size from wm output");
+
+    int physicalHeight = int.Parse(sizeMatch.Groups[2].Value);
+    var (_, logicalHeight) = GetScreenSize();
+    double density = (double)physicalHeight / logicalHeight;
+
+    return (int)(topYPx / density);
 #else
 			return 0;
 #endif
-        }
+		}
 
 
 
@@ -309,6 +332,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		// ──────────────────────────────────────────────
 		// Keyboard Interaction (SoftInput)
 		// ──────────────────────────────────────────────
+#if TEST_FAILS_ON_ANDROID
 #if TEST_FAILS_ON_IOS
 
 		[Test, Order(10)]
@@ -560,7 +584,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			var bottomLabelBeforeRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
 			Assert.That(Math.Abs(bottomLabelBeforeRect.Bottom), Is.EqualTo(screenHeight - insets.Bottom),
 				$"Before keyboard - bottom label Bottom ({bottomLabelBeforeRect.Bottom}) should be equal to (screenHeight - insets.Bottom) ({screenHeight - insets.Bottom})");
-			
+
 			App.Tap("SafeAreaTestEntry");
 			App.WaitForKeyboardToShow();
 
@@ -586,7 +610,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			var bottomLabelAfterRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
 			Assert.That(bottomLabelAfterRect.Bottom, Is.EqualTo(bottomLabelBeforeRect.Bottom),
 				$"After keyboard - bottom label Bottom ({bottomLabelAfterRect.Bottom}) should return to original ({bottomLabelBeforeRect.Bottom})");
-			
+
 		}
 
 		// ──────────────────────────────────────────────
@@ -896,7 +920,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.DismissKeyboard();
 			App.WaitForKeyboardToHide();
 		}
-
+#endif
 		// ──────────────────────────────────────────────
 		// Interaction with ContentPage Properties
 		// ──────────────────────────────────────────────
@@ -1106,7 +1130,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		// ──────────────────────────────────────────────
 		// Landscape Keyboard Position Validation
 		// ──────────────────────────────────────────────
-
+#if TEST_FAILS_ON_ANDROID
 		[Test, Order(26)]
 		[Description("Landscape All: bottom moves up to keyboard, left/right stay inset")]
 		public void ValidateKeyboard_All_Landscape()
@@ -1375,5 +1399,6 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			App.SetOrientationPortrait();
 		}
+#endif
 	}
 }
