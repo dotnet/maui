@@ -16,7 +16,7 @@ public class VisualStateManager_CollectionViewFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(1)]
-	public void VisualStateManager_CollectionViewFeatureTests_InitialState()
+	public void VisualStateManager_CollectionView_InitialState()
 	{
 		App.WaitForElement("VSMCollectionViewButton");
 		App.Tap("VSMCollectionViewButton");

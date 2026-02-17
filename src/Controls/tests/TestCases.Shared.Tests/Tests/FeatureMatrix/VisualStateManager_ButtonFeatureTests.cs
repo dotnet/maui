@@ -61,7 +61,7 @@ public class VisualStateManager_ButtonFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(5)]
-	public void VerifyVSM_Button_PressedAfterDisable()
+	public void VerifyVSM_Button_DisableWhilePressed()
 	{
 		App.WaitForElement("ButtonReset");
 		App.Tap("ButtonReset");
@@ -79,7 +79,7 @@ public class VisualStateManager_ButtonFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(6)]
-	public void VerifyVSM_Button_PressedAfterReset()
+	public void VerifyVSM_Button_ResetWhilePressed()
 	{
 		App.WaitForElement("ButtonReset");
 		App.Tap("ButtonReset");
@@ -97,7 +97,7 @@ public class VisualStateManager_ButtonFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(7)]
-	public void VerifyVSM_Button_DisableAfterReset()
+	public void VerifyVSM_Button_ResetWhileDisabled()
 	{
 		App.WaitForElement("ButtonReset");
 		App.Tap("ButtonReset");
@@ -115,7 +115,7 @@ public class VisualStateManager_ButtonFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(8)]
-	public void VerifyVSM_Button_DisableAfterPressed()
+	public void VerifyVSM_Button_PressedWhileDisabled()
 	{
 		App.WaitForElement("ButtonReset");
 		App.Tap("ButtonReset");
@@ -140,6 +140,28 @@ public class VisualStateManager_ButtonFeatureTests : _GalleryUITest
 		App.Tap("ButtonDisable");
 		App.WaitForElement("ButtonStateLabel");
 		var stateText = App.FindElement("ButtonStateLabel").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Disabled"));
+		App.WaitForElement("ButtonDisable");
+		App.Tap("ButtonDisable");
+		App.WaitForElement("ButtonStateLabel");
+		stateText = App.FindElement("ButtonStateLabel").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Normal"));
+	}
+
+	[Test, Order(10)]
+	public void VerifyVSM_Button_DisableAndEnableWhilePressed()
+	{
+		App.WaitForElement("ButtonReset");
+		App.Tap("ButtonReset");
+		App.WaitForElement("DemoButton");
+		App.Tap("DemoButton");
+		App.WaitForElement("ButtonStateLabel");
+		var stateText = App.FindElement("ButtonStateLabel").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Normal/Released"));
+		App.WaitForElement("ButtonDisable");
+		App.Tap("ButtonDisable");
+		App.WaitForElement("ButtonStateLabel");
+		stateText = App.FindElement("ButtonStateLabel").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Disabled"));
 		App.WaitForElement("ButtonDisable");
 		App.Tap("ButtonDisable");

@@ -236,7 +236,7 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 		Assert.That(stateText, Is.EqualTo("State: Disabled"));
 	}
 
-	[Test, Order(16)]
+	[Test, Order(15)]
 	public void VerifyVSM_Entry_Validate()
 	{
 		App.WaitForElement("ResetValidationEntryButton");
