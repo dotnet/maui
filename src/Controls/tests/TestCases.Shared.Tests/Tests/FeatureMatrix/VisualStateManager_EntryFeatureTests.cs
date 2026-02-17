@@ -31,6 +31,11 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 	{
 		App.WaitForElement("VSMEntry");
 		App.Tap("VSMEntry");
+#if ANDROID || IOS
+		if (App.WaitForKeyboardToShow())
+			App.DismissKeyboard();
+#endif
+		App.WaitForElement("EntryState");
 		var stateText = App.FindElement("EntryState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Focused"));
 		VerifyScreenshot("Entry_Focused_State");
@@ -75,6 +80,10 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 		App.Tap("VSMEntry");
 		App.EnterText("VSMEntry", "Testing");
 		App.WaitForElement("FocusEntryButton");
+#if ANDROID || IOS
+		if (App.WaitForKeyboardToShow())
+			App.DismissKeyboard();
+#endif
 		App.Tap("FocusEntryButton");
 		var stateText = App.FindElement("EntryState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Focused"));
@@ -124,6 +133,10 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 		App.Tap("VSMEntry");
 		App.EnterText("VSMEntry", "Testing");
 		App.WaitForElement("FocusEntryButton");
+#if ANDROID || IOS
+		if (App.WaitForKeyboardToShow())
+			App.DismissKeyboard();
+#endif
 		App.Tap("FocusEntryButton");
 		var stateText = App.FindElement("EntryState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Focused"));
@@ -165,6 +178,10 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 		App.Tap("ResetEntryButton");
 		App.WaitForElement("VSMEntry");
 		App.Tap("VSMEntry");
+		#if ANDROID || IOS
+		if (App.WaitForKeyboardToShow())
+			App.DismissKeyboard();
+		#endif
 		App.WaitForElement("EntryState");
 		var stateText = App.FindElement("EntryState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Focused"));
@@ -202,6 +219,10 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("VSMEntry");
 		App.Tap("VSMEntry");
 		App.EnterText("VSMEntry", "Testing");
+#if ANDROID || IOS
+		if (App.WaitForKeyboardToShow())
+			App.DismissKeyboard();
+#endif
 		App.WaitForElement("EntryState");
 		var stateText = App.FindElement("EntryState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Disabled"));
@@ -232,6 +253,11 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("ValidationEntry");
 		App.Tap("ValidationEntry");
 		App.EnterText("ValidationEntry", "965-999-9999");
+#if ANDROID || IOS
+		if (App.WaitForKeyboardToShow())
+			App.DismissKeyboard();
+#endif
+		App.WaitForElement("ValidationEntryLabel");
 		var stateText = App.FindElement("ValidationEntryLabel").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Valid"));
 		VerifyScreenshot("Entry_Valid_State");
@@ -245,6 +271,11 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("ValidationEntry");
 		App.Tap("ValidationEntry");
 		App.EnterText("ValidationEntry", "Invalid");
+#if ANDROID || IOS
+		if (App.WaitForKeyboardToShow())
+			App.DismissKeyboard();
+#endif
+		App.WaitForElement("ValidationEntryLabel");
 		var stateText = App.FindElement("ValidationEntryLabel").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Invalid"));
 		VerifyScreenshot("Entry_Invalid_State");
@@ -258,6 +289,11 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("ValidationEntry");
 		App.Tap("ValidationEntry");
 		App.EnterText("ValidationEntry", "777-777-7777");
+#if ANDROID || IOS
+		if (App.WaitForKeyboardToShow())
+			App.DismissKeyboard();
+#endif
+		App.WaitForElement("ValidationEntryLabel");
 		var stateText = App.FindElement("ValidationEntryLabel").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Valid"));
 		App.WaitForElement("ResetValidationEntryButton");
@@ -275,11 +311,21 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("ValidationEntry");
 		App.Tap("ValidationEntry");
 		App.EnterText("ValidationEntry", "965-999-9999");
+#if ANDROID || IOS
+		if (App.WaitForKeyboardToShow())
+			App.DismissKeyboard();
+#endif
+		App.WaitForElement("ValidationEntryLabel");
 		var stateText = App.FindElement("ValidationEntryLabel").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Valid"));
 		App.WaitForElement("ValidateEntryButton");
 		App.Tap("ValidateEntryButton");
 		App.EnterText("ValidationEntry", "Invalid");
+#if ANDROID || IOS
+		if (App.WaitForKeyboardToShow())
+			App.DismissKeyboard();
+#endif
+		App.WaitForElement("ValidationEntryLabel");
 		stateText = App.FindElement("ValidationEntryLabel").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Invalid"));
 	}
