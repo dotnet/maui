@@ -4,24 +4,22 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-[Category(UITestCategories.Visual)]
-public class VisualTransformFeatureTests : UITest
+[Category(UITestCategories.Shadow)]
+public class VisualTransformFeatureTests : _GalleryUITest
 {
 	public const string VisualTransformFeatureMatrix = "VisualTransform Feature Matrix";
+	public override string GalleryPageName => VisualTransformFeatureMatrix;
 
 	public VisualTransformFeatureTests(TestDevice device)
 		: base(device)
 	{
 	}
 
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(VisualTransformFeatureMatrix);
-	}
-
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_ANDROID //For iOS & macOS, see issue: https://github.com/dotnet/maui/issues/32767 and for Android, see issue: https://github.com/dotnet/maui/issues/32731
-
+	// Shadow interaction tests - Currently disabled due to platform bugs:
+	// - iOS/macOS: Issue #32724 - Shadow affects Visual Transform properties
+	// - Android: Issue #32731 - Shadow affects Visual Transform properties
+	// These tests will be enabled once the platform bugs are fixed.
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_ANDROID
 	[Test]
 	public void VisualTransform_ScaleXWithShadow()
 	{
