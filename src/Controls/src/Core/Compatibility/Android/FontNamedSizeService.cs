@@ -139,8 +139,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 			catch (Exception ex)
 			{
-				Application.Current?.FindMauiContext()?.CreateLogger<FontNamedSizeService>()?
-					.LogWarning(ex, "Error retrieving text appearance");
+				MauiLog.Warning<FontNamedSizeService>(ex, "Error retrieving text appearance");
 			}
 			return false;
 		}

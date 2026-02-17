@@ -81,13 +81,13 @@ namespace Microsoft.Maui.Controls
 				return null;
 			if (strValue.IndexOf(":", StringComparison.Ordinal) != -1)
 			{
-				Application.Current?.FindMauiContext()?.CreateLogger<BindablePropertyConverter>()?.LogWarning("Can't resolve properties with xml namespace prefix.");
+				MauiLog.Warning<BindablePropertyConverter>("Can't resolve properties with xml namespace prefix.");
 				return null;
 			}
 			string[] parts = strValue.Split('.');
 			if (parts.Length != 2)
 			{
-				Application.Current?.FindMauiContext()?.CreateLogger<BindablePropertyConverter>()?.LogWarning($"Can't resolve {value}. Accepted syntax is Type.PropertyName.");
+				MauiLog.Warning<BindablePropertyConverter>($"Can't resolve {value}. Accepted syntax is Type.PropertyName.");
 				return null;
 			}
 			Type type = GetControlType(parts[0]);

@@ -306,7 +306,7 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 				catch (Exception dropExc)
 				{
-					Application.Current?.FindMauiContext()?.CreateLogger<DropGestureRecognizer>()?.LogWarning(dropExc, "Error sending drop event");
+					MauiLog.Warning<DropGestureRecognizer>(dropExc, "Error sending drop event");
 				}
 			}, (View)element);
 		}

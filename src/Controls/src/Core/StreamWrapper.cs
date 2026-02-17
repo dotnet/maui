@@ -95,8 +95,7 @@ namespace Microsoft.Maui.Controls
 			var response = await client.GetAsync(uri, cancellationToken).ConfigureAwait(false);
 			if (!response.IsSuccessStatusCode)
 			{
-				Application.Current?.FindMauiContext()?.CreateLogger<StreamWrapper>()?
-						.LogWarning("Could not retrieve {Uri}, status code {StatusCode}", uri, response.StatusCode);
+				MauiLog.Warning<StreamWrapper>("Could not retrieve {Uri}, status code {StatusCode}", uri, response.StatusCode);
 
 				return null;
 			}

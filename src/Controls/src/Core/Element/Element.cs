@@ -294,10 +294,7 @@ namespace Microsoft.Maui.Controls
 				}
 				else
 				{
-					Application.Current?
-						.FindMauiContext()?
-						.CreateLogger<Element>()?
-						.LogWarning($"The ParentOverride on {this} has been Garbage Collected. This should never happen. Please log a bug: https://github.com/dotnet/maui");
+					MauiLog.Warning<Element>($"The ParentOverride on {this} has been Garbage Collected. This should never happen. Please log a bug: https://github.com/dotnet/maui");
 				}
 
 				return null;
@@ -351,10 +348,7 @@ namespace Microsoft.Maui.Controls
 				_realParent = null;
 				if (logWarningIfParentHasBeenCollected)
 				{
-					Application.Current?
-										.FindMauiContext()?
-										.CreateLogger<Element>()?
-										.LogWarning($"The RealParent on {this} has been Garbage Collected. This should never happen. Please log a bug: https://github.com/dotnet/maui");
+					MauiLog.Warning<Element>($"The RealParent on {this} has been Garbage Collected. This should never happen. Please log a bug: https://github.com/dotnet/maui");
 				}
 			}
 
@@ -415,7 +409,7 @@ namespace Microsoft.Maui.Controls
 
 				if (value != null && (element is Layout || element is IControlTemplated))
 				{
-					Application.Current?.FindMauiContext()?.CreateLogger<Element>()?.LogWarning($"{this} is already a child of {element}. Remove {this} from {element} before adding to {value}.");
+					MauiLog.Warning<Element>($"{this} is already a child of {element}. Remove {this} from {element} before adding to {value}.");
 				}
 			}
 
