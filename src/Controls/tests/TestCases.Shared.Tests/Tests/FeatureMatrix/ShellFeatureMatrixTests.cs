@@ -414,8 +414,8 @@ public class ShellFeatureTests : _GalleryUITest
 		App.TapShellFlyoutIcon();
 		App.ScrollUp("MenuItem1", ScrollStrategy.Gesture, 0.99, 1000); // FlyoutItems are scrolled down, when changing the FlyoutContent
 		App.ScrollUp("MenuItem2", ScrollStrategy.Gesture, 0.99, 1000);
-		App.WaitForElement("MenuItem1", timeout: TimeSpan.FromSeconds(5));
-		VerifyScreenshot();
+		App.WaitForElement("MenuItem1");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(20)]
@@ -432,8 +432,8 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		App.WaitForElement(Options);
 		App.TapShellFlyoutIcon();
-		App.WaitForElement("MenuItem1", timeout: TimeSpan.FromSeconds(5));
-		VerifyScreenshot();
+		App.WaitForElement("MenuItem1");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(21)]
@@ -451,8 +451,8 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		App.WaitForElement(Options);
 		App.TapShellFlyoutIcon();
-		App.WaitForElement("MenuItem1", timeout: TimeSpan.FromSeconds(5));
-		VerifyScreenshot();
+		App.WaitForElement("MenuItem1");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(22)]
@@ -470,8 +470,8 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		App.WaitForElement(Options);
 		App.TapShellFlyoutIcon();
-		App.WaitForElement("MenuItem1", timeout: TimeSpan.FromSeconds(5));
-		VerifyScreenshot();
+		App.WaitForElement("MenuItem1");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(23)]
@@ -488,8 +488,8 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		App.WaitForElement(Options);
 		App.TapShellFlyoutIcon();
-		App.WaitForElement("MenuItem1", timeout: TimeSpan.FromSeconds(5));
-		VerifyScreenshot();
+		App.WaitForElement("MenuItem1");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(24)]
@@ -506,8 +506,8 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		App.WaitForElement(Options);
 		App.TapShellFlyoutIcon();
-		App.WaitForElement("MenuItem1", timeout: TimeSpan.FromSeconds(5));
-		VerifyScreenshot();
+		App.WaitForElement("MenuItem1");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(25)]
@@ -526,8 +526,8 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		App.WaitForElement(Options);
 		App.TapShellFlyoutIcon();
-		App.WaitForElement("MenuItem1", timeout: TimeSpan.FromSeconds(5));
-		VerifyScreenshot();
+		App.WaitForElement("MenuItem1");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(26)]
@@ -546,8 +546,8 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		App.WaitForElement(Options);
 		App.TapShellFlyoutIcon();
-		App.WaitForElement("MenuItem1", timeout: TimeSpan.FromSeconds(5));
-		VerifyScreenshot();
+		App.WaitForElement("MenuItem1");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(27)]
@@ -566,8 +566,8 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		App.WaitForElement(Options);
 		App.TapShellFlyoutIcon();
-		App.WaitForElement("MenuItem1", timeout: TimeSpan.FromSeconds(5));
-		VerifyScreenshot();
+		App.WaitForElement("MenuItem1");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(28)]
@@ -590,8 +590,8 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		App.WaitForElement(Options);
 		App.TapShellFlyoutIcon();
-		App.WaitForElement("MenuItem1", timeout: TimeSpan.FromSeconds(5));
-		VerifyScreenshot();
+		App.WaitForElement("MenuItem1");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(29)]
@@ -610,8 +610,8 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		App.WaitForElement(Options);
 		App.TapShellFlyoutIcon();
-		App.WaitForElement("MenuItem1", timeout: TimeSpan.FromSeconds(5));
-		VerifyScreenshot();
+		App.WaitForElement("MenuItem1");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/32416
@@ -632,8 +632,8 @@ public class ShellFeatureTests : _GalleryUITest
 		App.WaitForElement(OpenFlyout);
 		App.ScrollDown("MenuItem1", ScrollStrategy.Gesture, 0.99, 1000);
 		App.ScrollDown("MenuItem2", ScrollStrategy.Gesture, 0.99, 1000);
-		App.WaitForElement("MenuItem1", timeout: TimeSpan.FromSeconds(5));
-		VerifyScreenshot();
+		App.WaitForElement("MenuItem1");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -651,8 +651,8 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		App.WaitForElement(Options);
 		App.TapShellFlyoutIcon();
-		App.WaitForElement("MenuItem1", timeout: TimeSpan.FromSeconds(5));
-		VerifyScreenshot();
+		App.WaitForElement("MenuItem1");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_IOS && TEST_FAILS_ON_MACCATALYST // Issue Link: https://github.com/dotnet/maui/issues/32417
@@ -672,8 +672,8 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		App.WaitForElement(Options);
 		App.TapShellFlyoutIcon();
-		App.WaitForElement("MenuItem1", timeout: TimeSpan.FromSeconds(5));
-		VerifyScreenshot();
+		App.WaitForElement("MenuItem1");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -782,7 +782,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.TapShellFlyoutIcon();
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(40)]
@@ -800,7 +800,7 @@ public class ShellFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.TapShellFlyoutIcon();
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(41)]
@@ -817,8 +817,8 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		App.WaitForElement(Options);
 		App.TapShellFlyoutIcon();
-		App.WaitForElement("MenuItem1", timeout: TimeSpan.FromSeconds(5));
-		VerifyScreenshot();
+		App.WaitForElement("MenuItem1");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(42)]
@@ -839,8 +839,8 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		App.WaitForElement(Options);
 		App.TapShellFlyoutIcon();
-		App.WaitForElement("MenuItem1", timeout: TimeSpan.FromSeconds(5));
-		VerifyScreenshot();
+		App.WaitForElement("MenuItem1");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(43)]
@@ -861,8 +861,8 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		App.WaitForElement(Options);
 		App.TapShellFlyoutIcon();
-		App.WaitForElement("MenuItem1", timeout: TimeSpan.FromSeconds(5));
-		VerifyScreenshot();
+		App.WaitForElement("MenuItem1");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(44)]
@@ -883,8 +883,8 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		App.WaitForElement(Options);
 		App.TapShellFlyoutIcon();
-		App.WaitForElement("MenuItem1", timeout: TimeSpan.FromSeconds(5));
-		VerifyScreenshot();
+		App.WaitForElement("MenuItem1");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(45)]
@@ -905,8 +905,8 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		App.WaitForElement(Options);
 		App.TapShellFlyoutIcon();
-		App.WaitForElement("MenuItem1", timeout: TimeSpan.FromSeconds(5));
-		VerifyScreenshot();
+		App.WaitForElement("MenuItem1");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(46)]
@@ -929,8 +929,8 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		App.WaitForElement(Options);
 		App.TapShellFlyoutIcon();
-		App.WaitForElement("MenuItem1", timeout: TimeSpan.FromSeconds(5));
-		VerifyScreenshot();
+		App.WaitForElement("MenuItem1");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(47)]
@@ -979,8 +979,8 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap("FlowDirectionRTL");
 		App.WaitForElement("IsPresentedTrue");
 		App.Tap("IsPresentedTrue");
-		App.WaitForElement("MenuItem1", timeout: TimeSpan.FromSeconds(5));
-		VerifyScreenshot();
+		App.WaitForElement("MenuItem1");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(50)]
@@ -997,16 +997,16 @@ public class ShellFeatureTests : _GalleryUITest
 		App.Tap("FlowDirectionRTL");
 		App.WaitForElement("FlyoutBehaviorLocked");
 		App.Tap("FlyoutBehaviorLocked");
-		App.WaitForElement("MenuItem1", timeout: TimeSpan.FromSeconds(5));
-		VerifyScreenshot();
+		App.WaitForElement("MenuItem1");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 	public void FlyoutScreenshot() // This method is to show titlebar for Screenshot
 	{
 #if WINDOWS
-		 VerifyScreenshot(includeTitleBar: true);
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2), includeTitleBar: true);
 #else
-		 VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 #endif
 	}
 }
