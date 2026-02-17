@@ -486,6 +486,38 @@ stages:
               )
               
               foreach ($project in $projects) {
+                Write-Host "============================================"
+                Write-Host "Processing $($project.Name)..."
+                Write-Host "============================================"
+                
+                # DIAGNOSTIC: List contents of project directory and artifact directory
+                Write-Host "DIAGNOSTIC: Checking artifact dir $($project.ArtifactDir)..."
+                if (Test-Path $project.ArtifactDir) {
+                  Write-Host "  Artifact dir exists. Contents:"
+                  Get-ChildItem -Path $project.ArtifactDir -Directory | ForEach-Object { Write-Host "    [DIR] $($_.Name)" }
+                } else {
+                  Write-Host "  WARNING: Artifact dir does not exist!"
+                }
+                
+                Write-Host "DIAGNOSTIC: Checking project dir $($project.ProjectDir)..."
+                if (Test-Path $project.ProjectDir) {
+                  Write-Host "  Project dir exists. Top-level contents:"
+                  Get-ChildItem -Path $project.ProjectDir -Directory | ForEach-Object { Write-Host "    [DIR] $($_.Name)" }
+                  # Also check bin folder specifically
+                  $binDir = Join-Path $project.ProjectDir "bin"
+                  if (Test-Path $binDir) {
+                    Write-Host "  bin/ folder exists. Checking for AppPackages recursively..."
+                    $allAppPkg = Get-ChildItem -Path $binDir -Filter "AppPackages" -Recurse -Directory -ErrorAction SilentlyContinue
+                    if ($allAppPkg) {
+                      $allAppPkg | ForEach-Object { Write-Host "    Found AppPackages at: $($_.FullName)" }
+                    } else {
+                      Write-Host "    No AppPackages folder found under bin/"
+                    }
+                  }
+                } else {
+                  Write-Host "  WARNING: Project dir does not exist!"
+                }
+                
                 # Look for AppPackages in multiple locations (Cake may put them in project dir OR artifacts/bin)
                 # First try artifacts/bin, then fallback to project directory
                 $appPackagesDir = $null
