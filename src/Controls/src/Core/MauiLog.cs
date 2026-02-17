@@ -33,53 +33,66 @@ internal static class MauiLog
 	{
 		if (handler.IsEnabled)
 		{
-			handler.Context!.CreateLogger<T>()?.LogWarning(handler.ToStringAndClear());
+			handler.Logger!.LogWarning(handler.ToStringAndClear());
 		}
 	}
 
 	internal static void Warning<T>(string message)
 	{
-		GetContext()?.CreateLogger<T>()?.LogWarning(message);
+		var logger = GetLogger<T>();
+		if (logger is not null && logger.IsEnabled(LogLevel.Warning))
+			logger.LogWarning(message);
 	}
 
 	internal static void Warning<T>(string message, params object?[] args)
 	{
-		GetContext()?.CreateLogger<T>()?.LogWarning(message, args);
+		var logger = GetLogger<T>();
+		if (logger is not null && logger.IsEnabled(LogLevel.Warning))
+			logger.LogWarning(message, args);
 	}
 
 	internal static void Warning<T>(Exception? exception, string? message, params object?[] args)
 	{
-		GetContext()?.CreateLogger<T>()?.LogWarning(exception, message, args);
+		var logger = GetLogger<T>();
+		if (logger is not null && logger.IsEnabled(LogLevel.Warning))
+			logger.LogWarning(exception, message, args);
 	}
 
 	internal static void Error<T>(string message)
 	{
-		GetContext()?.CreateLogger<T>()?.LogError(message);
+		var logger = GetLogger<T>();
+		if (logger is not null && logger.IsEnabled(LogLevel.Error))
+			logger.LogError(message);
 	}
 
 	internal static void Error<T>(Exception? exception, string? message, params object?[] args)
 	{
-		GetContext()?.CreateLogger<T>()?.LogError(exception, message, args);
+		var logger = GetLogger<T>();
+		if (logger is not null && logger.IsEnabled(LogLevel.Error))
+			logger.LogError(exception, message, args);
 	}
 
 	internal static void Error<T>(string message, params object?[] args)
 	{
-		GetContext()?.CreateLogger<T>()?.LogError(message, args);
+		var logger = GetLogger<T>();
+		if (logger is not null && logger.IsEnabled(LogLevel.Error))
+			logger.LogError(message, args);
 	}
 
-	static IMauiContext? GetContext()
-		=> Application.Current?.FindMauiContext();
+	static ILogger? GetLogger<T>()
+		=> Application.Current?.FindMauiContext()?.CreateLogger<T>();
 
 	/// <summary>
 	/// Gets a logger by category name (for non-generic callers like TypeConversionHelper).
 	/// </summary>
 	internal static ILogger? GetLogger(string categoryName)
-		=> GetContext()?.CreateLogger(categoryName);
+		=> Application.Current?.FindMauiContext()?.CreateLogger(categoryName);
 
 	/// <summary>
-	/// Interpolated string handler that only formats the string when logging is enabled.
-	/// Resolves <see cref="IMauiContext"/> once in the constructor and caches it
-	/// so the Warning method reuses it without a second tree walk.
+	/// Interpolated string handler that resolves the logger and checks
+	/// <see cref="ILogger.IsEnabled"/> before formatting. When the log level
+	/// is filtered out, <c>shouldAppend</c> is <c>false</c> and the compiler
+	/// skips all Append calls — zero allocation.
 	/// </summary>
 	[InterpolatedStringHandler]
 	internal ref struct WarningInterpolatedStringHandler
@@ -87,12 +100,12 @@ internal static class MauiLog
 		StringBuilder? _builder;
 
 		internal bool IsEnabled => _builder is not null;
-		internal IMauiContext? Context { get; }
+		internal ILogger? Logger { get; }
 
 		public WarningInterpolatedStringHandler(int literalLength, int formattedCount, out bool shouldAppend)
 		{
-			Context = GetContext();
-			if (Context is not null)
+			Logger = Application.Current?.FindMauiContext()?.CreateLogger(typeof(MauiLog));
+			if (Logger is not null && Logger.IsEnabled(LogLevel.Warning))
 			{
 				_builder = new StringBuilder(literalLength);
 				shouldAppend = true;
