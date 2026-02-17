@@ -5,9 +5,10 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-public class ShellFeatureTests : UITest
+public class ShellFeatureTests : _GalleryUITest
 {
 	public const string ShellFeatureMatrix = "Shell Feature Matrix";
+	public override string GalleryPageName => ShellFeatureMatrix;
 	public const string Options = "Options";
 	public const string Apply = "Apply";
 	public const string Header = "Header";
@@ -20,12 +21,6 @@ public class ShellFeatureTests : UITest
 	public ShellFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(ShellFeatureMatrix);
 	}
 
 	[Test, Order(1)]
