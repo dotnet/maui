@@ -490,44 +490,20 @@ stages:
                 Write-Host "Processing $($project.Name)..."
                 Write-Host "============================================"
                 
-                # DIAGNOSTIC: List contents of project directory and artifact directory
-                Write-Host "DIAGNOSTIC: Checking artifact dir $($project.ArtifactDir)..."
-                if (Test-Path $project.ArtifactDir) {
-                  Write-Host "  Artifact dir exists. Contents:"
-                  Get-ChildItem -Path $project.ArtifactDir -Directory | ForEach-Object { Write-Host "    [DIR] $($_.Name)" }
-                } else {
-                  Write-Host "  WARNING: Artifact dir does not exist!"
-                }
+                # Look for AppPackages using the same approach as main branch:
+                # Direct path to project dir's AppPackages folder (where Cake puts MSIX)
+                $appPackagesDir = "$($project.ProjectDir)/AppPackages"
                 
-                Write-Host "DIAGNOSTIC: Checking project dir $($project.ProjectDir)..."
-                if (Test-Path $project.ProjectDir) {
-                  Write-Host "  Project dir exists. Top-level contents:"
+                Write-Host "DIAGNOSTIC: Checking for AppPackages at $appPackagesDir..."
+                if (Test-Path $appPackagesDir) {
+                  Write-Host "  Found AppPackages directory!"
+                  $msixFiles = Get-ChildItem -Path $appPackagesDir -Recurse -Filter "*.msix"
+                  Write-Host "  MSIX files found: $($msixFiles.Count)"
+                  $msixFiles | ForEach-Object { Write-Host "    - $($_.FullName)" }
+                } else {
+                  Write-Host "  AppPackages NOT found at project directory."
+                  Write-Host "  Listing contents of $($project.ProjectDir):"
                   Get-ChildItem -Path $project.ProjectDir -Directory | ForEach-Object { Write-Host "    [DIR] $($_.Name)" }
-                  # Also check bin folder specifically
-                  $binDir = Join-Path $project.ProjectDir "bin"
-                  if (Test-Path $binDir) {
-                    Write-Host "  bin/ folder exists. Checking for AppPackages recursively..."
-                    $allAppPkg = Get-ChildItem -Path $binDir -Filter "AppPackages" -Recurse -Directory -ErrorAction SilentlyContinue
-                    if ($allAppPkg) {
-                      $allAppPkg | ForEach-Object { Write-Host "    Found AppPackages at: $($_.FullName)" }
-                    } else {
-                      Write-Host "    No AppPackages folder found under bin/"
-                    }
-                  }
-                } else {
-                  Write-Host "  WARNING: Project dir does not exist!"
-                }
-                
-                # Look for AppPackages in multiple locations (Cake may put them in project dir OR artifacts/bin)
-                # First try artifacts/bin, then fallback to project directory
-                $appPackagesDir = $null
-                
-                # Try artifacts/bin first
-                $appPackagesDir = Get-ChildItem -Path "$($project.ArtifactDir)" -Filter "AppPackages" -Recurse -Directory -ErrorAction SilentlyContinue | Select-Object -First 1
-                
-                # If not found, try project directory (where Cake sometimes puts MSIX)
-                if (-not $appPackagesDir) {
-                  $appPackagesDir = Get-ChildItem -Path "$($project.ProjectDir)" -Filter "AppPackages" -Recurse -Directory -ErrorAction SilentlyContinue | Select-Object -First 1
                 }
                 
                 $zipPath = "$artifactsDir/$($project.Name).zip"
@@ -538,17 +514,17 @@ stages:
                 
                 $hasContent = $false
                 
-                # Copy packaged output (AppPackages with MSIX)
-                if ($appPackagesDir) {
-                  Write-Host "Copying packaged output from $($appPackagesDir.FullName)..."
-                  Copy-Item -Path $appPackagesDir.FullName -Destination "$tempDir/AppPackages" -Recurse
+                # Copy packaged output (AppPackages with MSIX) - use direct path like main does
+                if (Test-Path $appPackagesDir) {
+                  Write-Host "Copying packaged output from $appPackagesDir..."
+                  Copy-Item -Path $appPackagesDir -Destination "$tempDir/AppPackages" -Recurse
                   $msix = Get-ChildItem -Path "$tempDir/AppPackages" -Recurse -Filter "*.msix" | Select-Object -First 1
                   if ($msix) { 
                     Write-Host "  Contains MSIX: $($msix.Name)" 
                     $hasContent = $true
                   }
                 } else {
-                  Write-Host "Warning: AppPackages not found in $($project.ArtifactDir) or $($project.ProjectDir)"
+                  Write-Host "Warning: AppPackages not found at $appPackagesDir"
                 }
                 
                 # Copy unpackaged output (publish folder with .exe)
