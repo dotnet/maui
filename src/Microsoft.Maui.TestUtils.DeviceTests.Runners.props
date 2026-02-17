@@ -2,12 +2,10 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <PropertyGroup>
-    <!-- Required for Windows deployment on Helix - bundle Windows App SDK instead of relying on installed runtime.
-         For packaged (MSIX): bundles Windows App SDK DLLs inside the MSIX package
-         For unpackaged: bundles Windows App SDK DLLs alongside the EXE
-         This allows tests to run on Helix machines without the Windows App SDK runtime installed.
-         Note: Not appropriate for Store submissions (which require framework-dependent MSIX). -->
-    <WindowsAppSDKSelfContained Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">true</WindowsAppSDKSelfContained>
+    <!-- Required for unpackaged Windows deployment on Helix - bundle Windows App SDK alongside the EXE.
+         Only applies to unpackaged builds (signaled by _MauiDeviceTestUnpackaged=true from Cake script).
+         Packaged (MSIX) builds must NOT set this, as it prevents MSIX generation. -->
+    <WindowsAppSDKSelfContained Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows' and '$(_MauiDeviceTestUnpackaged)' == 'true'">true</WindowsAppSDKSelfContained>
   </PropertyGroup>
 
 </Project>
