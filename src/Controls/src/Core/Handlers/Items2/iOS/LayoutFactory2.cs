@@ -85,7 +85,7 @@ internal static class LayoutFactory2
 		return [];
 	}
 
-	static UICollectionViewLayout CreateListLayout(UICollectionViewScrollDirection scrollDirection, LayoutGroupingInfo groupingInfo, LayoutHeaderFooterInfo layoutHeaderFooterInfo, LayoutSnapInfo snapInfo, NSCollectionLayoutDimension itemWidth, NSCollectionLayoutDimension itemHeight, NSCollectionLayoutDimension groupWidth, NSCollectionLayoutDimension groupHeight, double itemSpacing, Func<Thickness>? peekAreaInsetsFunc, ItemsUpdatingScrollMode itemsUpdatingScrollMode)
+	static UICollectionViewLayout CreateListLayout(UICollectionViewScrollDirection scrollDirection, LayoutGroupingInfo groupingInfo, LayoutHeaderFooterInfo layoutHeaderFooterInfo, LayoutSnapInfo snapInfo, NSCollectionLayoutDimension itemWidth, NSCollectionLayoutDimension itemHeight, NSCollectionLayoutDimension groupWidth, NSCollectionLayoutDimension groupHeight, double itemSpacing, Func<Thickness>? peekAreaInsetsFunc, ItemsLayout itemsLayout)
 	{
 		var layoutConfiguration = new UICollectionViewCompositionalLayoutConfiguration();
 		layoutConfiguration.ScrollDirection = scrollDirection;
@@ -139,14 +139,14 @@ internal static class LayoutFactory2
 				groupHeight);
 
 			return section;
-		}, layoutConfiguration, itemsUpdatingScrollMode);
+		}, layoutConfiguration, itemsLayout);
 
 		return layout;
 	}
 
 
 
-	static UICollectionViewLayout CreateGridLayout(UICollectionViewScrollDirection scrollDirection, LayoutGroupingInfo groupingInfo, LayoutHeaderFooterInfo headerFooterInfo, LayoutSnapInfo snapInfo, NSCollectionLayoutDimension itemWidth, NSCollectionLayoutDimension itemHeight, NSCollectionLayoutDimension groupWidth, NSCollectionLayoutDimension groupHeight, double verticalItemSpacing, double horizontalItemSpacing, int columns, ItemsUpdatingScrollMode itemsUpdatingScrollMode)
+	static UICollectionViewLayout CreateGridLayout(UICollectionViewScrollDirection scrollDirection, LayoutGroupingInfo groupingInfo, LayoutHeaderFooterInfo headerFooterInfo, LayoutSnapInfo snapInfo, NSCollectionLayoutDimension itemWidth, NSCollectionLayoutDimension itemHeight, NSCollectionLayoutDimension groupWidth, NSCollectionLayoutDimension groupHeight, double verticalItemSpacing, double horizontalItemSpacing, int columns, ItemsLayout itemsLayout)
 	{
 		var layoutConfiguration = new UICollectionViewCompositionalLayoutConfiguration();
 		layoutConfiguration.ScrollDirection = scrollDirection;
@@ -191,7 +191,7 @@ internal static class LayoutFactory2
 				groupHeight);
 
 			return section;
-		}, layoutConfiguration, itemsUpdatingScrollMode);
+		}, layoutConfiguration, itemsLayout);
 
 		return layout;
 	}
@@ -210,7 +210,7 @@ internal static class LayoutFactory2
 			NSCollectionLayoutDimension.CreateEstimated(30f),
 			linearItemsLayout.ItemSpacing,
 			null,
-			linearItemsLayout.ItemsUpdatingScrollMode);
+			linearItemsLayout);
 
 
 	public static UICollectionViewLayout CreateHorizontalList(LinearItemsLayout linearItemsLayout,
@@ -227,7 +227,7 @@ internal static class LayoutFactory2
 			NSCollectionLayoutDimension.CreateFractionalHeight(1f),
 			linearItemsLayout.ItemSpacing,
 			null,
-			linearItemsLayout.ItemsUpdatingScrollMode);
+			linearItemsLayout);
 
 	public static UICollectionViewLayout CreateVerticalGrid(GridItemsLayout gridItemsLayout,
 		LayoutGroupingInfo groupingInfo, LayoutHeaderFooterInfo headerFooterInfo)
@@ -246,7 +246,7 @@ internal static class LayoutFactory2
 			gridItemsLayout.VerticalItemSpacing,
 			gridItemsLayout.HorizontalItemSpacing,
 			gridItemsLayout.Span,
-			gridItemsLayout.ItemsUpdatingScrollMode);
+			gridItemsLayout);
 
 
 	public static UICollectionViewLayout CreateHorizontalGrid(GridItemsLayout gridItemsLayout,
@@ -266,7 +266,7 @@ internal static class LayoutFactory2
 			gridItemsLayout.VerticalItemSpacing,
 			gridItemsLayout.HorizontalItemSpacing,
 			gridItemsLayout.Span,
-			gridItemsLayout.ItemsUpdatingScrollMode);
+			gridItemsLayout);
 
 
 #nullable disable
@@ -446,22 +446,22 @@ internal static class LayoutFactory2
 			return false;
 		}
 	}
-	internal class CustomUICollectionViewCompositionalLayout : UICollectionViewCompositionalLayout
+	class CustomUICollectionViewCompositionalLayout : UICollectionViewCompositionalLayout
 	{
 		LayoutSnapInfo _snapInfo;
-		ItemsUpdatingScrollMode _itemsUpdatingScrollMode;
+		ItemsLayout? _itemsLayout;
 
-		public CustomUICollectionViewCompositionalLayout(LayoutSnapInfo snapInfo, UICollectionViewCompositionalLayoutSectionProvider sectionProvider, UICollectionViewCompositionalLayoutConfiguration configuration, ItemsUpdatingScrollMode itemsUpdatingScrollMode) : base(sectionProvider, configuration)
+		public CustomUICollectionViewCompositionalLayout(LayoutSnapInfo snapInfo, UICollectionViewCompositionalLayoutSectionProvider sectionProvider, UICollectionViewCompositionalLayoutConfiguration configuration, ItemsLayout? itemsLayout) : base(sectionProvider, configuration)
 		{
 			_snapInfo = snapInfo;
-			_itemsUpdatingScrollMode = itemsUpdatingScrollMode;
+			_itemsLayout = itemsLayout;
 		}
 
 		public override void FinalizeCollectionViewUpdates()
 		{
 			base.FinalizeCollectionViewUpdates();
 
-			if (_itemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
+			if (_itemsLayout?.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
 			{
 				ForceScrollToLastItem(CollectionView);
 			}
@@ -594,11 +594,6 @@ internal static class LayoutFactory2
 
 			return Items.SnapHelpers.AdjustContentOffset(CollectionView.ContentOffset, currentItem.Frame, viewport, alignment,
 				Configuration.ScrollDirection);
-		}
-
-		public void UpdateItemsUpdatingScrollMode(ItemsUpdatingScrollMode itemsUpdatingScrollMode)
-		{
-			_itemsUpdatingScrollMode = itemsUpdatingScrollMode;
 		}
 	}
 

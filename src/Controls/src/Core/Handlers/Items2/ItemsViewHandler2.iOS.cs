@@ -126,11 +126,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (handler.ItemsView is StructuredItemsView structuredItemsView && structuredItemsView.ItemsLayout is ItemsLayout itemsLayout)
 			{
 				itemsLayout.ItemsUpdatingScrollMode = itemsView.ItemsUpdatingScrollMode;
-				if (handler.Controller?.CollectionView?.CollectionViewLayout is LayoutFactory2.CustomUICollectionViewCompositionalLayout customLayout)
-				{
-					// When the CollectionView’s ItemsUpdatingScrollMode value changes dynamically, update the items layout’s ItemsUpdatingScrollMode property accordingly.
-					customLayout.UpdateItemsUpdatingScrollMode(itemsView.ItemsUpdatingScrollMode);
-				}
 			}
 		}
 
