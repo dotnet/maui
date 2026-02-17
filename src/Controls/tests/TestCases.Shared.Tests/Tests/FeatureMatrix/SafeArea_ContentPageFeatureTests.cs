@@ -40,43 +40,17 @@ namespace Microsoft.Maui.TestCases.Tests
 		private int GetKeyboardY()
         {
 #if IOS
-            var app = (AppiumApp)App;
-            var toolbar = app.Driver.FindElement(OpenQA.Selenium.Appium.MobileBy.ClassName("XCUIElementTypeToolbar"));
-            return toolbar.Location.Y;
+            return App.WaitForElement("Done").GetRect().Y;
 #elif ANDROID
-            var app = (AppiumApp)App;
 
-            // Get the InputMethod window frame via dumpsys (physical pixels)
-            var result = app.Driver.ExecuteScript("mobile: shell", new Dictionary<string, object>
-            {
-                { "command", "dumpsys" },
-                { "args", new[] { "window", "InputMethod" } }
-            });
-            var output = result?.ToString() ?? string.Empty;
+			var app = (AppiumApp)App;
+            OpenQA.Selenium.IWebElement? keyboard = null;
+            keyboard = app.Driver.FindElement(OpenQA.Selenium.Appium.MobileBy.ClassName("android.inputmethodservice.SoftInputWindow"));
 
-            // Parse mFrame=[left,top][right,bottom] from the InputMethod window
-            var frameMatch = System.Text.RegularExpressions.Regex.Match(output, @"mFrame=\[(\d+),(\d+)\]\[(\d+),(\d+)\]");
-            if (!frameMatch.Success)
-                throw new InvalidOperationException("Could not parse keyboard frame from dumpsys window InputMethod output");
+            if (keyboard == null)
+                throw new InvalidOperationException("Keyboard not found");
 
-            var topPx = int.Parse(frameMatch.Groups[2].Value);
-
-            // Get physical screen size to calculate density for px-to-dp conversion
-            var sizeResult = app.Driver.ExecuteScript("mobile: shell", new Dictionary<string, object>
-            {
-                { "command", "wm" },
-                { "args", new[] { "size" } }
-            });
-            var sizeOutput = sizeResult?.ToString() ?? string.Empty;
-            var sizeMatch = System.Text.RegularExpressions.Regex.Match(sizeOutput, @"(\d+)x(\d+)");
-            if (!sizeMatch.Success)
-                throw new InvalidOperationException("Could not parse physical screen size from wm size output");
-
-            var physicalHeight = double.Parse(sizeMatch.Groups[2].Value);
-            var (_, logicalHeight) = GetScreenSize();
-            var density = physicalHeight / logicalHeight;
-
-            return (int)(topPx / density);
+            return keyboard.Location.Y;
 #else
 			return 0;
 #endif
