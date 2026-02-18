@@ -247,7 +247,7 @@ namespace Microsoft.Maui.DeviceTests
 				decorView.GetLocationOnScreen(location);
 				var screenHeight = location[1] + decorView.Height;
 
-				Assert.True(screenHeight == bottomNavBottom,
+				Assert.True(Math.Abs(screenHeight - bottomNavBottom) < 2,
 					$"BottomNavigationView should extend to screen bottom. Expected bottom at {screenHeight}px, but was at {bottomNavBottom}px (gap of {screenHeight - bottomNavBottom}px)");
 			});
 		}

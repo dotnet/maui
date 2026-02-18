@@ -264,7 +264,6 @@ namespace Microsoft.Maui.Platform
 				}
 			}
 
-			// Handle bottom navigation for TabbedPage with ToolbarPlacement.Bottom
 			var bottomTabContainer = v.FindViewById<ViewGroup>(Resource.Id.navigationlayout_bottomtabs);
 			var hasBottomNav = bottomTabContainer?.MeasuredHeight > 0;
 			var contentView = v.FindViewById(Resource.Id.navigationlayout_content);
@@ -273,39 +272,22 @@ namespace Microsoft.Maui.Platform
 			{
 				var bottomInset = Math.Max(systemBars?.Bottom ?? 0, displayCutout?.Bottom ?? 0);
 
-				// Pad content view to prevent overlap with bottom navigation
-				contentView?.SetPadding(
-					systemBars?.Left ?? 0,
-					0,
-					systemBars?.Right ?? 0,
-					bottomInset);
+				// Only pad the bottom of contentView to prevent content from sliding under the
+				// BottomNavigationView + system navigation bar. Left/right are intentionally
+				// excluded: landscape cutout padding on the content area is handled by
+				// SafeAreaExtensions which applies per-view overlap logic.
+				contentView?.SetPadding(0, 0, 0, bottomInset);
 			}
 			else
 			{
-				// Reset content view padding when bottom navigation is removed dynamically
+				// Reset contentView padding when bottom navigation is removed dynamically
 				contentView?.SetPadding(0, 0, 0, 0);
 			}
 
-			// Create new insets with consumed values
-			// Pass insets through to child views - SafeAreaExtensions overlap logic determines actual padding needed
-			var newSystemBars = Insets.Of(
-				systemBars?.Left ?? 0,
-				systemBars?.Top ?? 0,
-				systemBars?.Right ?? 0,
-				systemBars?.Bottom ?? 0
-			) ?? Insets.None;
-
-			var newDisplayCutout = Insets.Of(
-				displayCutout?.Left ?? 0,
-				displayCutout?.Top ?? 0,
-				displayCutout?.Right ?? 0,
-				displayCutout?.Bottom ?? 0
-			) ?? Insets.None;
-
-			return new WindowInsetsCompat.Builder(insets)
-				?.SetInsets(WindowInsetsCompat.Type.SystemBars(), newSystemBars)
-				?.SetInsets(WindowInsetsCompat.Type.DisplayCutout(), newDisplayCutout)
-				?.Build() ?? insets;
+			// Pass insets through unconsumed so child views receive them intact.
+			// Bottom: BottomNavigationView needs the nav bar inset to extend its background in Edge-to-Edge mode (Issue #33344).
+			// Top: SafeAreaExtensions handles per-view overlap, avoiding double-padding.
+			return insets;
 		}
 
 		public void TrackView(AView view)
