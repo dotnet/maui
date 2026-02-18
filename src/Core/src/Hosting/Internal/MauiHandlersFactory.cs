@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Hosting.Internal
 {
@@ -37,6 +38,13 @@ namespace Microsoft.Maui.Hosting.Internal
 				return inheritedRegisteredHandler;
 			}
 
+			// ContentViewHandler is the default/fallback handler for any IContentView implementation
+			// that doesn't have a more specific handler registered via [ElementHandler] or AddHandler.
+			if (typeof(IContentView).IsAssignableFrom(type))
+			{
+				return new ContentViewHandler();
+			}
+
 			throw new HandlerNotFoundException($"Unable to find a {nameof(IElementHandler)} corresponding to {type}. Please register a handler for {type} using `Microsoft.Maui.Hosting.MauiHandlersCollectionExtensions.AddHandler` or `Microsoft.Maui.Hosting.MauiHandlersCollectionExtensions.TryAddHandler`");
 		}
 
@@ -64,6 +72,12 @@ namespace Microsoft.Maui.Hosting.Internal
 				return type;
 			}
 
+			// ContentViewHandler is the default/fallback handler for any IContentView
+			if (typeof(IContentView).IsAssignableFrom(iview))
+			{
+				return typeof(ContentViewHandler);
+			}
+
 			return null;
 		}
 
@@ -84,6 +98,12 @@ namespace Microsoft.Maui.Hosting.Internal
 				&& TryGetRegisteredHandlerType(serviceType, out type))
 			{
 				return type;
+			}
+
+			// ContentViewHandler is the default/fallback handler for any IContentView
+			if (typeof(IContentView).IsAssignableFrom(iview))
+			{
+				return typeof(ContentViewHandler);
 			}
 
 			return null;
