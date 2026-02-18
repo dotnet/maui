@@ -9,28 +9,28 @@ public class Issue23832 : ContentPage
 {
     public Issue23832()
     {
-        VerticalStackLayout _stackLayout = new VerticalStackLayout
+        VerticalStackLayout stackLayout = new VerticalStackLayout
         {
             Padding = new Thickness(20),
             Spacing = 25,
         };
 
-        Label _labelResize = new Label
+        Label labelResize = new Label
         {
             AutomationId = "DrawableLabel",
             Text = "The test passes if the image is displayed correctly without being upside down.",
         };
 
-        GraphicsView _graphicsView = new GraphicsView
+        GraphicsView graphicsView = new GraphicsView
         {
             Drawable = new Issue23832_Drawable(),
             HeightRequest = 300,
             WidthRequest = 400,
         };
 
-        _stackLayout.Children.Add(_graphicsView);
-        _stackLayout.Children.Add(_labelResize);
-        Content = _stackLayout;
+        stackLayout.Children.Add(graphicsView);
+        stackLayout.Children.Add(labelResize);
+        Content = stackLayout;
     }
 }
 
