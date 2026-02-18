@@ -3,6 +3,5 @@ Microsoft.Maui.Handlers.ElementHandlerAttribute
 virtual Microsoft.Maui.Handlers.ElementHandlerAttribute.CreateHandler(Microsoft.Maui.IMauiContext! context) -> Microsoft.Maui.IElementHandler!
 Microsoft.Maui.Handlers.ElementHandlerAttribute.ElementHandlerAttribute(System.Type! handlerType) -> void
 Microsoft.Maui.Handlers.ElementHandlerAttribute.HandlerType.get -> System.Type!
-Microsoft.Maui.IMauiHandlersFactory.GetConstructibleHandlerType(System.Type! iview) -> System.Type?
 override Microsoft.Maui.Platform.MauiView.DidUpdateFocus(UIKit.UIFocusUpdateContext! context, UIKit.UIFocusAnimationCoordinator! coordinator) -> void
 static Microsoft.Maui.GridLength.implicit operator Microsoft.Maui.GridLength(string! value) -> Microsoft.Maui.GridLength

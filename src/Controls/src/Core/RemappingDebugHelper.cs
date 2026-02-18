@@ -13,6 +13,7 @@ internal static class RemappingDebugHelper
 	/// that we'd be accidentally skipping.
 	/// </summary>
 	[Conditional("DEBUG")]
+	[UnconditionalSuppressMessage("Trimming", "IL2075", Justification = "This method is only called in DEBUG builds and uses reflection to validate the type hierarchy.")]
 	public static void AssertBaseClassForRemapping(
 		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.NonPublicFields)] Type derivedType,
 		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.NonPublicFields)] Type baseWithField)

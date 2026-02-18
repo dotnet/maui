@@ -213,9 +213,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					renderer = GetNewRenderer();
 				else
 				{
-#pragma warning disable CS0618 // Intentional use of obsolete GetHandlerType in compat code
 					var viewHandlerType = MauiContext.Handlers.GetHandlerType(cell.View.GetType());
-#pragma warning restore CS0618
 					var reflectableType = renderer as System.Reflection.IReflectableType;
 					var rendererType = reflectableType != null ? reflectableType.GetTypeInfo().AsType() : (renderer != null ? renderer.GetType() : typeof(System.Object));
 

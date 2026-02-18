@@ -53,36 +53,6 @@ namespace Microsoft.Maui.Hosting.Internal
 			=> GetHandler(typeof(T), context);
 
 		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
-		public Type? GetConstructibleHandlerType(Type iview)
-		{
-			// Check if there is a handler registered for this EXACT type -- allows overriding the default handler
-			if (TryGetRegisteredHandlerType(iview, out Type? type))
-			{
-				return type;
-			}
-
-			if (TryGetElementHandlerAttribute(iview, out var elementHandlerAttribute))
-			{
-				throw new InvalidOperationException($"The handler type {elementHandlerAttribute.HandlerType} for {iview} cannot be constructed by the factory. " +
-					$"Handlers created via {nameof(ElementHandlerAttribute)} must be created using the attribute's {nameof(ElementHandlerAttribute.CreateHandler)} method.");
-			}
-
-			if (TryGetVirtualViewHandlerServiceType(iview) is Type serviceType
-				&& TryGetRegisteredHandlerType(serviceType, out type))
-			{
-				return type;
-			}
-
-			// ContentViewHandler is the default/fallback handler for any IContentView
-			if (typeof(IContentView).IsAssignableFrom(iview))
-			{
-				return typeof(ContentViewHandler);
-			}
-
-			return null;
-		}
-
-		[Obsolete("Use GetHandler(Type, IMauiContext) instead.")]
 		public Type? GetHandlerType(Type iview)
 		{
 			// Check if there is a handler registered for this EXACT type -- allows overriding the default handler

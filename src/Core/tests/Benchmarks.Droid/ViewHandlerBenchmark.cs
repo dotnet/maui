@@ -107,8 +107,6 @@ public class ViewHandlerBenchmark
 
 		public Type? GetHandlerType(Type iview) => throw new NotImplementedException();
 
-		public Type? GetConstructibleHandlerType(Type iview) => throw new NotImplementedException();
-
 		public object? GetService(Type serviceType)
 		{
 			if (serviceType == typeof(IFontManager))

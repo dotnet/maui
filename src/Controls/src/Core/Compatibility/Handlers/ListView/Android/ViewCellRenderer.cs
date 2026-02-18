@@ -209,9 +209,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				// This cell could have a handler that was used for the measure pass for the ListView height calculations
 				//cell.View.Handler.DisconnectHandler();
 
-#pragma warning disable CS0618 // Intentional use of obsolete GetHandlerType in compat code
 				var viewHandlerType = _viewHandler.MauiContext.Handlers.GetHandlerType(cell.View.GetType());
-#pragma warning restore CS0618
 				var reflectableType = _viewHandler as System.Reflection.IReflectableType;
 				var rendererType = reflectableType != null ? reflectableType.GetTypeInfo().AsType() : (_viewHandler != null ? _viewHandler.GetType() : typeof(System.Object));
 				if (_viewHandler != null && rendererType == viewHandlerType)

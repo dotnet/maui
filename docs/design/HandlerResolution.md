@@ -62,10 +62,7 @@ The main interface for requesting handlers:
 public interface IMauiHandlersFactory : IMauiFactory
 {
     Type? GetHandlerType(Type iview);
-    Type? GetConstructibleHandlerType(Type iview);
     IElementHandler? GetHandler(Type type, IMauiContext context);
-    IElementHandler? GetHandler<T>(IMauiContext context) where T : IElement;
-    IMauiHandlersCollection GetCollection();
 }
 ```
 
