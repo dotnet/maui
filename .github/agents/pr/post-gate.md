@@ -24,7 +24,7 @@ If Gate is not passed, go back to `.github/agents/pr.md` and complete phases 1-2
 
 If try-fix cannot run due to environment issues, **STOP and ask the user**. Do NOT mark attempts as "BLOCKED" and continue.
 
-### 🚨 CRITICAL: Stop on Environment Blockers (Applies to Phase 4)
+### 🚨 CRITICAL: Stop on Environment Blockers (Applies to Phase 3)
 
 The same "Stop on Environment Blockers" rule from `pr.md` applies here. If try-fix cannot run due to:
 - Missing Appium drivers
@@ -46,7 +46,7 @@ The same "Stop on Environment Blockers" rule from `pr.md` applies here. If try-f
 
 **The PR's fix has already been validated by Gate (tests FAIL without it, PASS with it).**
 
-The purpose of Phase 4 is NOT to re-test the PR's fix, but to:
+The purpose of Phase 3 is NOT to re-test the PR's fix, but to:
 1. **Generate independent fix ideas** - What would YOU do to fix this bug?
 2. **Test those ideas empirically** - Actually implement and run tests
 3. **Compare with PR's fix** - Is there a simpler/better alternative?
@@ -56,7 +56,7 @@ The purpose of Phase 4 is NOT to re-test the PR's fix, but to:
 
 ### Step 1: Multi-Model try-fix Exploration
 
-Phase 4 uses a **multi-model approach** to maximize fix diversity. Each AI model brings different perspectives and may find solutions others miss.
+Phase 3 uses a **multi-model approach** to maximize fix diversity. Each AI model brings different perspectives and may find solutions others miss.
 
 **⚠️ SEQUENTIAL ONLY**: try-fix runs MUST execute one at a time. They modify the same files and use the same test device. Never run try-fix attempts in parallel.
 
@@ -202,10 +202,10 @@ Update the state file:
   ```
   | Model | Round 2 Response |
   |-------|------------------|
-  | claude-sonnet-4.5 | NO NEW IDEAS |
+  | claude-sonnet-4.6 | NO NEW IDEAS |
   | claude-opus-4.6 | NO NEW IDEAS |
   | gpt-5.2 | NO NEW IDEAS |
-  | gpt-5.2-codex | NO NEW IDEAS |
+  | gpt-5.3-codex | NO NEW IDEAS |
   | gemini-3-pro-preview | NO NEW IDEAS |
   ```
 - [ ] Fix Candidates table has numbered rows for each try-fix attempt

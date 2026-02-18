@@ -131,10 +131,10 @@ Phase 4 uses these 5 AI models for try-fix exploration (run SEQUENTIALLY):
 
 | Order | Model |
 |-------|-------|
-| 1 | `claude-sonnet-4.5` |
+| 1 | `claude-sonnet-4.6` |
 | 2 | `claude-opus-4.6` |
 | 3 | `gpt-5.2` |
-| 4 | `gpt-5.2-codex` |
+| 4 | `gpt-5.3-codex` |
 | 5 | `gemini-3-pro-preview` |
 
 **Note:** The `model` parameter is passed to the `task` tool, which supports model selection. This is separate from agent YAML frontmatter (which is VS Code-only).
