@@ -248,5 +248,50 @@
                                   Content="True"
                                   CheckedChanged="OnShadowRadioButtonCheckedChanged"/>
               </HorizontalStackLayout>
+
+              <!-- Transforms -->
+              <Label FontSize="14"
+                     FontAttributes="Bold"
+                     Text="Transforms"/>
+              <HorizontalStackLayout Spacing="5">
+                     <HorizontalStackLayout>
+                            <Label FontSize="12"
+                                   FontAttributes="Bold"
+                                   Text="Rotation:"
+                                   VerticalOptions="Center"/>
+                            <Entry x:Name="RotationEntry"
+                                   Text="0"
+                                   TextChanged="OnRotationChanged"
+                                   AutomationId="RotationEntry"/>
+                     </HorizontalStackLayout>
+                     <HorizontalStackLayout>
+                            <Label FontSize="12"
+                                   FontAttributes="Bold"
+                                   Text="ScaleX:"
+                                   VerticalOptions="Center"/>
+                            <Entry x:Name="ScaleXEntry"
+                                   Text="1"
+                                   TextChanged="OnScaleXChanged"
+                                   AutomationId="ScaleXEntry"/>
+                     </HorizontalStackLayout>
+                     <HorizontalStackLayout>
+                            <Label FontSize="12"
+                                   FontAttributes="Bold"
+                                   Text="ScaleY:"
+                                   VerticalOptions="Center"/>
+                            <Entry x:Name="ScaleYEntry"
+                                   Text="1"
+                                   TextChanged="OnScaleYChanged"
+                                   AutomationId="ScaleYEntry"/>
+                     </HorizontalStackLayout>
+              </HorizontalStackLayout>
+
+              <!-- Clear Clip -->
+              <HorizontalStackLayout Spacing="5">
+                     <Button Text="Clear Clip (Null)"
+                             FontSize="12"
+                             Clicked="OnClearClipClicked"
+                             AutomationId="ClearClipButton"/>
+              </HorizontalStackLayout>
        </VerticalStackLayout>
 </ContentPage>

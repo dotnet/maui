@@ -19,6 +19,9 @@
                 BackgroundColor="Purple"
                 WidthRequest="300"
                 HeightRequest="300"
+                Rotation="{Binding ControlRotation}"
+                ScaleX="{Binding ControlScaleX}"
+                ScaleY="{Binding ControlScaleY}"
                 AutomationId="BorderControl"
                 Clip="{Binding Clip}">
             <Label Text="Border Content With Clipping"

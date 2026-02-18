@@ -186,6 +186,48 @@ public class ClipViewModel : INotifyPropertyChanged
 		}
 	}
 
+	private double _rotation;
+	public double ControlRotation
+	{
+		get => _rotation;
+		set
+		{
+			if (_rotation != value)
+			{
+				_rotation = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+
+	private double _scaleX = 1.0;
+	public double ControlScaleX
+	{
+		get => _scaleX;
+		set
+		{
+			if (_scaleX != value)
+			{
+				_scaleX = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+
+	private double _scaleY = 1.0;
+	public double ControlScaleY
+	{
+		get => _scaleY;
+		set
+		{
+			if (_scaleY != value)
+			{
+				_scaleY = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+
 	public event PropertyChangedEventHandler PropertyChanged;
 
 	protected void OnPropertyChanged([CallerMemberName] string propertyName = "") =>

@@ -309,4 +309,37 @@ public partial class ClipOptionsPage : ContentPage
 			_viewModel.FontSize = size;
 		}
 	}
+
+	private void OnRotationChanged(object sender, TextChangedEventArgs e)
+	{
+		if (!string.IsNullOrWhiteSpace(RotationEntry?.Text) &&
+			double.TryParse(RotationEntry.Text, out double rotation))
+		{
+			_viewModel.ControlRotation = rotation;
+		}
+	}
+
+	private void OnScaleXChanged(object sender, TextChangedEventArgs e)
+	{
+		if (!string.IsNullOrWhiteSpace(ScaleXEntry?.Text) &&
+			double.TryParse(ScaleXEntry.Text, out double scaleX))
+		{
+			_viewModel.ControlScaleX = scaleX;
+		}
+	}
+
+	private void OnScaleYChanged(object sender, TextChangedEventArgs e)
+	{
+		if (!string.IsNullOrWhiteSpace(ScaleYEntry?.Text) &&
+			double.TryParse(ScaleYEntry.Text, out double scaleY))
+		{
+			_viewModel.ControlScaleY = scaleY;
+		}
+	}
+
+	private void OnClearClipClicked(object sender, EventArgs e)
+	{
+		_viewModel.Clip = null;
+		_viewModel.SelectedClip = "null";
+	}
 }

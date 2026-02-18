@@ -15,6 +15,9 @@
         <ContentView BackgroundColor="Teal"
                      WidthRequest="300"
                      HeightRequest="300"
+                     Rotation="{Binding ControlRotation}"
+                     ScaleX="{Binding ControlScaleX}"
+                     ScaleY="{Binding ControlScaleY}"
                      Shadow="{Binding Shadow}"
                      AutomationId="ContentViewControl"
                      Clip="{Binding Clip}">

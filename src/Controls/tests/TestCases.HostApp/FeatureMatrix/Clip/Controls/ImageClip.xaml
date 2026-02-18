@@ -17,6 +17,9 @@
            HeightRequest="300"
            Aspect="AspectFill"
            Clip="{Binding Clip}"
+           Rotation="{Binding ControlRotation}"
+           ScaleX="{Binding ControlScaleX}"
+           ScaleY="{Binding ControlScaleY}"
            Shadow="{Binding Shadow}"
            AutomationId="ImageControl"/>
   </Grid>

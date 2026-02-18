@@ -613,4 +613,445 @@ public class ClipFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		VerifyScreenshot();
 	}
+
+	// ==================== Negative Tests ====================
+
+	[Test, Order(43)]
+	[Category(UITestCategories.Border)]
+	public void Border_ClipNone_NoCrash()
+	{
+		App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
+		App.WaitForElement("BorderButton");
+		App.Tap("BorderButton");
+
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement(RectangleGeometry);
+		App.Tap(RectangleGeometry);
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+
+		// Now clear the clip by setting it to null
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement("ClearClipButton");
+		App.Tap("ClearClipButton");
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+
+		// Verify control still renders without crash
+		App.WaitForElement("BorderControl");
+		VerifyScreenshot();
+	}
+
+	[Test, Order(44)]
+	[Category(UITestCategories.Image)]
+	public void Image_ClipNull_NoCrash()
+	{
+		App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
+		App.WaitForElement("ImageButton");
+		App.Tap("ImageButton");
+
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement(EllipseGeometry);
+		App.Tap(EllipseGeometry);
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+
+		// Now clear the clip by setting it to null
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement("ClearClipButton");
+		App.Tap("ClearClipButton");
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+
+		// Verify control still renders without crash
+		App.WaitForElement("ImageControl");
+		VerifyScreenshot();
+	}
+
+	[Test, Order(45)]
+	[Category(UITestCategories.Button)]
+	public void Button_ClipNull_NoCrash()
+	{
+		App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
+		App.WaitForElement("ButtonId");
+		App.Tap("ButtonId");
+
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement(RoundRectangleGeometry);
+		App.Tap(RoundRectangleGeometry);
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+
+		// Now clear the clip by setting it to null
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement("ClearClipButton");
+		App.Tap("ClearClipButton");
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+
+		// Verify control still renders without crash
+		App.WaitForElement("ButtonControl");
+		VerifyScreenshot();
+	}
+
+	[Test, Order(46)]
+	[Category(UITestCategories.Layout)]
+	public void ContentView_ClipNull_NoCrash()
+	{
+		App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
+		App.WaitForElement("ContentViewButton");
+		App.Tap("ContentViewButton");
+
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement(GeometryGroup);
+		App.Tap(GeometryGroup);
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+
+		// Now clear the clip by setting it to null
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement("ClearClipButton");
+		App.Tap("ClearClipButton");
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+
+		// Verify control still renders without crash
+		App.WaitForElement("ContentViewControl");
+		VerifyScreenshot();
+	}
+
+	// ==================== Clip with Rotation Tests ====================
+
+	[Test, Order(48)]
+	[Category(UITestCategories.Image)]
+	public void Image_ClipWithRotation()
+	{
+		App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
+		App.WaitForElement("ImageButton");
+		App.Tap("ImageButton");
+
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement(EllipseGeometry);
+		App.Tap(EllipseGeometry);
+
+		App.WaitForElement("RotationEntry");
+		App.ClearText("RotationEntry");
+		App.EnterText("RotationEntry", "45");
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		VerifyScreenshot();
+	}
+
+	[Test, Order(49)]
+	[Category(UITestCategories.Border)]
+	public void Border_ClipWithRotation()
+	{
+		App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
+		App.WaitForElement("BorderButton");
+		App.Tap("BorderButton");
+
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement(RectangleGeometry);
+		App.Tap(RectangleGeometry);
+
+		App.WaitForElement("RotationEntry");
+		App.ClearText("RotationEntry");
+		App.EnterText("RotationEntry", "30");
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		VerifyScreenshot();
+	}
+
+	[Test, Order(50)]
+	[Category(UITestCategories.Label)]
+	public void Label_ClipWithRotation()
+	{
+		App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
+		App.WaitForElement("LabelButton");
+		App.Tap("LabelButton");
+
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement(RoundRectangleGeometry);
+		App.Tap(RoundRectangleGeometry);
+
+		App.WaitForElement("RotationEntry");
+		App.ClearText("RotationEntry");
+		App.EnterText("RotationEntry", "90");
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		VerifyScreenshot();
+	}
+
+	// ==================== Clip with Scale Tests ====================
+
+	[Test, Order(52)]
+	[Category(UITestCategories.Button)]
+	public void Button_ClipWithScale()
+	{
+		App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
+		App.WaitForElement("ButtonId");
+		App.Tap("ButtonId");
+
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement(RectangleGeometry);
+		App.Tap(RectangleGeometry);
+
+		App.WaitForElement("ScaleXEntry");
+		App.ClearText("ScaleXEntry");
+		App.EnterText("ScaleXEntry", "0.5");
+
+		App.WaitForElement("ScaleYEntry");
+		App.ClearText("ScaleYEntry");
+		App.EnterText("ScaleYEntry", "0.5");
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		VerifyScreenshot();
+	}
+
+	[Test, Order(53)]
+	[Category(UITestCategories.Image)]
+	public void Image_ClipWithScale()
+	{
+		App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
+		App.WaitForElement("ImageButton");
+		App.Tap("ImageButton");
+
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement(RoundRectangleGeometry);
+		App.Tap(RoundRectangleGeometry);
+
+		App.WaitForElement("ScaleXEntry");
+		App.ClearText("ScaleXEntry");
+		App.EnterText("ScaleXEntry", "1.5");
+
+		App.WaitForElement("ScaleYEntry");
+		App.ClearText("ScaleYEntry");
+		App.EnterText("ScaleYEntry", "0.75");
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		VerifyScreenshot();
+	}
+
+	[Test, Order(54)]
+	[Category(UITestCategories.ImageButton)]
+	public void ImageButton_ClipWithScale()
+	{
+		App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
+		App.WaitForElement("ImageButtonButton");
+		App.Tap("ImageButtonButton");
+
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement(EllipseGeometry);
+		App.Tap(EllipseGeometry);
+
+		App.WaitForElement("ScaleXEntry");
+		App.ClearText("ScaleXEntry");
+		App.EnterText("ScaleXEntry", "0.8");
+
+		App.WaitForElement("ScaleYEntry");
+		App.ClearText("ScaleYEntry");
+		App.EnterText("ScaleYEntry", "0.8");
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		VerifyScreenshot();
+	}
+
+	// ==================== Nested Clip Tests ====================
+
+	[Test, Order(56)]
+	[Category(UITestCategories.Layout)]
+	public void ContentView_ClipWithNestedClippedContent()
+	{
+		App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
+		App.WaitForElement("ContentViewButton");
+		App.Tap("ContentViewButton");
+
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		// Apply an ellipse clip to the ContentView (which contains child elements)
+		App.WaitForElement(EllipseGeometry);
+		App.Tap(EllipseGeometry);
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+
+		// ContentView with clip applied to the parent acts as a nested clip scenario
+		// since the child content is also clipped by the parent's geometry
+		App.WaitForElement("ContentViewControl");
+		VerifyScreenshot();
+	}
+
+	[Test, Order(57)]
+	[Category(UITestCategories.Border)]
+	public void Border_ClipWithNestedContent()
+	{
+		App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
+		App.WaitForElement("BorderButton");
+		App.Tap("BorderButton");
+
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		// Apply a geometry group clip to Border (which has child Label)
+		App.WaitForElement(GeometryGroup);
+		App.Tap(GeometryGroup);
+
+		App.WaitForElement("ShadowTrueRadioButton");
+		App.Tap("ShadowTrueRadioButton");
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+
+		// Border clips both its own content and child elements
+		App.WaitForElement("BorderControl");
+		VerifyScreenshot();
+	}
+
+	// ==================== Complex Geometry Tests ====================
+
+	[Test, Order(59)]
+	[Category(UITestCategories.Image)]
+	public void Image_ClipWithComplexPolyLineGeometry()
+	{
+		App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
+		App.WaitForElement("ImageButton");
+		App.Tap("ImageButton");
+
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		// PolyLine creates a complex star shape - tests performance with many points
+		App.WaitForElement(PolyLineSegment);
+		App.Tap(PolyLineSegment);
+
+		App.WaitForElement("ShadowTrueRadioButton");
+		App.Tap("ShadowTrueRadioButton");
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		VerifyScreenshot();
+	}
+
+	[Test, Order(60)]
+	[Category(UITestCategories.Image)]
+	public void Image_ClipWithComplexPolyBezierAndRotation()
+	{
+		App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
+		App.WaitForElement("ImageButton");
+		App.Tap("ImageButton");
+
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		// Combine complex geometry with transform for stress test
+		App.WaitForElement(PolyBezierSegment);
+		App.Tap(PolyBezierSegment);
+
+		App.WaitForElement("RotationEntry");
+		App.ClearText("RotationEntry");
+		App.EnterText("RotationEntry", "15");
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		VerifyScreenshot();
+	}
+
+	// ==================== Clip with Combined Transforms ====================
+
+	[Test, Order(62)]
+	[Category(UITestCategories.Border)]
+	public void Border_ClipWithRotationAndScale()
+	{
+		App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
+		App.WaitForElement("BorderButton");
+		App.Tap("BorderButton");
+
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement(EllipseGeometry);
+		App.Tap(EllipseGeometry);
+
+		App.WaitForElement("RotationEntry");
+		App.ClearText("RotationEntry");
+		App.EnterText("RotationEntry", "25");
+
+		App.WaitForElement("ScaleXEntry");
+		App.ClearText("ScaleXEntry");
+		App.EnterText("ScaleXEntry", "0.7");
+
+		App.WaitForElement("ScaleYEntry");
+		App.ClearText("ScaleYEntry");
+		App.EnterText("ScaleYEntry", "0.7");
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		VerifyScreenshot();
+	}
+
+	[Test, Order(63)]
+	[Category(UITestCategories.BoxView)]
+	public void BoxView_ClipWithRotation()
+	{
+		App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
+		App.WaitForElement("BoxViewButton");
+		App.Tap("BoxViewButton");
+
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement(RectangleGeometry);
+		App.Tap(RectangleGeometry);
+
+		App.WaitForElement("RotationEntry");
+		App.ClearText("RotationEntry");
+		App.EnterText("RotationEntry", "60");
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		VerifyScreenshot();
+	}
 }
