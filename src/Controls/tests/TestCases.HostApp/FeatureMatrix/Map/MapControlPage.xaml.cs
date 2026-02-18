@@ -77,6 +77,15 @@ public partial class MapControlMainPage : ContentPage
 
 	}
 
+	protected override void OnDisappearing()
+	{
+		base.OnDisappearing();
+
+		// Clean up MessagingCenter subscriptions to avoid memory leaks
+		Microsoft.Maui.Controls.MessagingCenter.Unsubscribe<object, string>(this, "MapClickedLabelUpdate");
+		Microsoft.Maui.Controls.MessagingCenter.Unsubscribe<object, string>(this, "MarkerClickedLabelUpdate");
+	}
+
 	private void OnMapElementsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 	{
 		if (e.Action == NotifyCollectionChangedAction.Add)

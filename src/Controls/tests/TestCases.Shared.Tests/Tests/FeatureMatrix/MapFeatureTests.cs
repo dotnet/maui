@@ -7,19 +7,14 @@ using UITest.Core;
 namespace Microsoft.Maui.TestCases.Tests;
 
 [Category(UITestCategories.Maps)]
-public class MapFeatureTests : UITest
+public class MapFeatureTests : _GalleryUITest
 {
 	public const string MapFeatureMatrix = "Map Feature Matrix";
+	public override string GalleryPageName => MapFeatureMatrix;
 
 	public MapFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(MapFeatureMatrix);
 	}
 
 	[Test]
