@@ -318,6 +318,28 @@ namespace Microsoft.Maui.Controls
 			return null;
 		}
 
+		PropertyInfo GetProperty(TypeInfo sourceType, string propertyName)
+		{
+			// First, check the type and its base classes
+			TypeInfo type = sourceType;
+			do
+			{
+				var property = type.GetDeclaredProperty(propertyName);
+				if (property != null)
+					return property;
+			} while ((type = type.BaseType?.GetTypeInfo()) != null);
+
+			// If not found, check implemented interfaces (for interface-inherited properties like IReadOnlyList<T>.Count)
+			foreach (var iface in sourceType.ImplementedInterfaces)
+			{
+				var property = GetProperty(iface.GetTypeInfo(), propertyName);
+				if (property != null)
+					return property;
+			}
+
+			return null;
+		}
+
 
 		void SetupPart(TypeInfo sourceType, BindingExpressionPart part)
 		{
@@ -382,11 +404,7 @@ namespace Microsoft.Maui.Controls
 			}
 			else
 			{
-				TypeInfo type = sourceType;
-				do
-				{
-					property = type.GetDeclaredProperty(part.Content);
-				} while (property == null && (type = type.BaseType?.GetTypeInfo()) != null);
+				property = GetProperty(sourceType, part.Content);
 			}
 			if (property != null)
 			{

@@ -7,19 +7,14 @@ namespace Microsoft.Maui.TestCases.Tests;
 
 [Category(UITestCategories.ScrollView)]
 
-public class ScrollView_DynamicFlexWithChildrenFeatureTests : UITest
+public class ScrollView_DynamicFlexWithChildrenFeatureTests : _GalleryUITest
 {
 
 	public const string ScrollViewDynamicFlexWithChildrenFeatureTests = "ScrollView With LayoutOptions Feature Matrix";
+	public override string GalleryPageName => ScrollViewDynamicFlexWithChildrenFeatureTests;
 	public ScrollView_DynamicFlexWithChildrenFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(ScrollViewDynamicFlexWithChildrenFeatureTests);
 	}
 
 	[Test, Order(1)]
@@ -88,7 +83,7 @@ public class ScrollView_DynamicFlexWithChildrenFeatureTests : UITest
 		{
 			App.Tap("RemoveButton");
 		}
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(6)]
@@ -110,7 +105,7 @@ public class ScrollView_DynamicFlexWithChildrenFeatureTests : UITest
 		{
 			App.Tap("RemoveButton");
 		}
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 }

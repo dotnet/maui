@@ -3,7 +3,9 @@ using System;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/BaseSwipeEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Controls.BaseSwipeEventArgs']/Docs/*" />
+	/// <summary>
+	/// Provides base event data for swipe events.
+	/// </summary>
 	public abstract class BaseSwipeEventArgs : EventArgs
 	{
 		protected BaseSwipeEventArgs(SwipeDirection swipeDirection)
@@ -11,7 +13,9 @@ namespace Microsoft.Maui.Controls
 			SwipeDirection = swipeDirection;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BaseSwipeEventArgs.xml" path="//Member[@MemberName='SwipeDirection']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the direction of the swipe gesture.
+		/// </summary>
 		public SwipeDirection SwipeDirection { get; set; }
 	}
 
@@ -37,39 +41,60 @@ namespace Microsoft.Maui.Controls
 		public bool Animated { get; set; }
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Controls/SwipeStartedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Controls.SwipeStartedEventArgs']/Docs/*" />
+	/// <summary>
+	/// Provides data for the <see cref="SwipeView.SwipeStarted"/> event.
+	/// </summary>
 	public class SwipeStartedEventArgs : BaseSwipeEventArgs
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeStartedEventArgs.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="SwipeStartedEventArgs"/> class.
+		/// </summary>
+		/// <param name="swipeDirection">The direction of the swipe gesture.</param>
 		public SwipeStartedEventArgs(SwipeDirection swipeDirection) : base(swipeDirection)
 		{
 
 		}
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Controls/SwipeChangingEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Controls.SwipeChangingEventArgs']/Docs/*" />
+	/// <summary>
+	/// Provides data for the <see cref="SwipeView.SwipeChanging"/> event.
+	/// </summary>
 	public class SwipeChangingEventArgs : BaseSwipeEventArgs
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeChangingEventArgs.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="SwipeChangingEventArgs"/> class.
+		/// </summary>
+		/// <param name="swipeDirection">The direction of the swipe gesture.</param>
+		/// <param name="offset">The current swipe offset distance.</param>
 		public SwipeChangingEventArgs(SwipeDirection swipeDirection, double offset) : base(swipeDirection)
 		{
 			Offset = offset;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeChangingEventArgs.xml" path="//Member[@MemberName='Offset']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the current swipe offset distance.
+		/// </summary>
 		public double Offset { get; set; }
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Controls/SwipeEndedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Controls.SwipeEndedEventArgs']/Docs/*" />
+	/// <summary>
+	/// Provides data for the <see cref="SwipeView.SwipeEnded"/> event.
+	/// </summary>
 	public class SwipeEndedEventArgs : BaseSwipeEventArgs
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeEndedEventArgs.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="SwipeEndedEventArgs"/> class.
+		/// </summary>
+		/// <param name="swipeDirection">The direction of the swipe gesture.</param>
+		/// <param name="isOpen">Whether the swipe view is open after the gesture.</param>
 		public SwipeEndedEventArgs(SwipeDirection swipeDirection, bool isOpen) : base(swipeDirection)
 		{
 			IsOpen = isOpen;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeEndedEventArgs.xml" path="//Member[@MemberName='IsOpen']/Docs/*" />
+		/// <summary>
+		/// Gets or sets a value indicating whether the swipe view is open.
+		/// </summary>
 		public bool IsOpen { get; set; }
 	}
 }

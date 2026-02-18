@@ -16,7 +16,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.ScrollView)]
-		[Category(UITestCategories.Compatibility)]
 		public void ChangeOrientationCheckScroll()
 		{
 			var grid1 = App.WaitForElement("MainGrid").GetRect();

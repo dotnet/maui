@@ -3,11 +3,11 @@ using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls.Internals
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/EffectUtilities.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.EffectUtilities']/Docs/*" />
+	/// <summary>Utility methods for managing effect control providers.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class EffectUtilities
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/EffectUtilities.xml" path="//Member[@MemberName='RegisterEffectControlProvider']/Docs/*" />
+		/// <summary>Registers an effect control provider with an element.</summary>
 		public static void RegisterEffectControlProvider(IEffectControlProvider self, IElementController oldElement, IElementController newElement)
 		{
 			IElementController controller = oldElement;
@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Internals
 				controller.EffectControlProvider = self;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/EffectUtilities.xml" path="//Member[@MemberName='UnregisterEffectControlProvider']/Docs/*" />
+		/// <summary>Unregisters an effect control provider from an element.</summary>
 		public static void UnregisterEffectControlProvider(IEffectControlProvider self, IElementController element)
 		{
 			if (element?.EffectControlProvider == self)

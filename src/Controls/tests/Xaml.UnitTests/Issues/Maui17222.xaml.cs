@@ -39,19 +39,20 @@ public partial class Maui17222 : ContentPage
 
 				var page = new Maui17222(inflator);
 				SourceInfo info = VisualDiagnostics.GetSourceInfo(page);
-				Assert.Equal(new Uri($"Issues{System.IO.Path.DirectorySeparatorChar}Maui17222.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", UriKind.Relative), info.SourceUri);
+				// Normalize path separators for cross-platform comparison (compiled on Windows, may run on macOS/Linux via Helix)
+				Assert.Equal("Issues/Maui17222.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", info.SourceUri.OriginalString.Replace('\\', '/'));
 				Assert.Equal(2, info.LineNumber);
 				Assert.Equal(2, info.LinePosition);
 
 				var button = page.button;
 				info = VisualDiagnostics.GetSourceInfo(button);
-				Assert.Equal(new Uri($"Issues{System.IO.Path.DirectorySeparatorChar}Maui17222.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", UriKind.Relative), info.SourceUri);
+				Assert.Equal("Issues/Maui17222.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", info.SourceUri.OriginalString.Replace('\\', '/'));
 				Assert.Equal(6, info.LineNumber);
 				Assert.Equal(6, info.LinePosition);
 
 				Style style = button.Style;
 				info = VisualDiagnostics.GetSourceInfo(style);
-				Assert.Equal(new Uri($"Issues{System.IO.Path.DirectorySeparatorChar}Maui17222Style.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", UriKind.Relative), info.SourceUri);
+				Assert.Equal("Issues/Maui17222Style.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", info.SourceUri.OriginalString.Replace('\\', '/'));
 				Assert.Equal(5, info.LineNumber);
 				Assert.Equal(6, info.LinePosition);
 
@@ -59,13 +60,13 @@ public partial class Maui17222 : ContentPage
 				Assert.Equal(setter.Property, Button.TextColorProperty);
 				Assert.Equal(setter.Value, Colors.Red);
 				info = VisualDiagnostics.GetSourceInfo(setter);
-				Assert.Equal(new Uri($"Issues{System.IO.Path.DirectorySeparatorChar}Maui17222Style.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", UriKind.Relative), info.SourceUri);
+				Assert.Equal("Issues/Maui17222Style.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", info.SourceUri.OriginalString.Replace('\\', '/'));
 				Assert.Equal(6, info.LineNumber);
 				Assert.Equal(10, info.LinePosition);
 
 				style = style.BasedOn;
 				info = VisualDiagnostics.GetSourceInfo(style);
-				Assert.Equal(new Uri($"Issues{System.IO.Path.DirectorySeparatorChar}Maui17222BaseStyle.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", UriKind.Relative), info.SourceUri);
+				Assert.Equal("Issues/Maui17222BaseStyle.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", info.SourceUri.OriginalString.Replace('\\', '/'));
 				Assert.Equal(5, info.LineNumber);
 				Assert.Equal(6, info.LinePosition);
 			}

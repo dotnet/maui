@@ -16,7 +16,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.ImageButton)]
-		[Category(UITestCategories.Compatibility)]
 		public void ImageButtonNullDrawable()
 		{
 			App.WaitForElement(Success);

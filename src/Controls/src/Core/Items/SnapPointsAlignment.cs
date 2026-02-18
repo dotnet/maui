@@ -1,13 +1,30 @@
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/SnapPointsAlignment.xml" path="Type[@FullName='Microsoft.Maui.Controls.SnapPointsAlignment']/Docs/*" />
+	/// <summary>
+	/// Specifies how items align to snap points in a scrollable items layout.
+	/// </summary>
+	/// <remarks>
+	/// Snap points cause the scrolling to "snap" to specific positions, creating a paging-like effect.
+	/// This enum controls where items align when they snap into position.
+	/// </remarks>
 	public enum SnapPointsAlignment
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SnapPointsAlignment.xml" path="//Member[@MemberName='Start']/Docs/*" />
+		/// <summary>
+		/// Items snap to align with the start of the scrollable area.
+		/// For vertical scrolling, items align to the top. For horizontal scrolling, items align to the left (or right in RTL).
+		/// </summary>
 		Start,
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SnapPointsAlignment.xml" path="//Member[@MemberName='Center']/Docs/*" />
+		
+		/// <summary>
+		/// Items snap to align with the center of the scrollable area.
+		/// The snapped item appears centered in the visible viewport.
+		/// </summary>
 		Center,
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SnapPointsAlignment.xml" path="//Member[@MemberName='End']/Docs/*" />
+		
+		/// <summary>
+		/// Items snap to align with the end of the scrollable area.
+		/// For vertical scrolling, items align to the bottom. For horizontal scrolling, items align to the right (or left in RTL).
+		/// </summary>
 		End
 	}
 }

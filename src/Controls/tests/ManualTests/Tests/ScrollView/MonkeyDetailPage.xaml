@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:Microsoft.Maui.ManualTests.Models"
+             x:Class="Microsoft.Maui.ManualTests.Tests.ScrollView.MonkeyDetailPage"
+             x:DataType="models:Monkey"
+             x:Name="page"
+             BackgroundColor="White">
+    <ScrollView Padding="20">
+        <VerticalStackLayout Spacing="20">
+            <!-- Page title -->
+            <Label Text="{Binding Name}"
+                   FontSize="32"
+                   FontAttributes="Bold"
+                   TextColor="#176515"
+                   HorizontalOptions="Start" />
+            
+            <!-- Image with overlay name -->
+            <Grid>
+                <Image Source="{Binding ImageUrl}"
+                       Aspect="AspectFit"
+                       HeightRequest="300"
+                       WidthRequest="300"
+                       HorizontalOptions="Center" />
+                
+                <Label Text="{Binding Name}"
+                       FontSize="24"
+                       FontAttributes="Bold"
+                       TextColor="Black"
+                       BackgroundColor="White"
+                       Padding="5,0"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center"
+                       MaxLines="3" />
+            </Grid>
+            
+            <!-- Location section -->
+            <Label Text="Location"
+                   FontSize="20"
+                   FontAttributes="Bold"
+                   TextColor="#176515"
+                   Margin="0,10,0,5" />
+            
+            <Label Text="{Binding Location}"
+                   FontSize="16"
+                   LineBreakMode="WordWrap"
+                   TextColor="Black" />
+            
+            <!-- Details section -->
+            <Label Text="Details"
+                   FontSize="20"
+                   FontAttributes="Bold"
+                   TextColor="#176515"
+                   Margin="0,10,0,5" />
+            
+            <Label Text="{Binding Details}"
+                   FontSize="16"
+                   LineBreakMode="WordWrap"
+                   TextColor="Black" />            
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

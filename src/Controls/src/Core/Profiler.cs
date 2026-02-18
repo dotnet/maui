@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 
 namespace Microsoft.Maui.Controls.Internals
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Profile.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.Profile']/Docs/*" />
+	/// <summary>A disposable struct for profiling code execution.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 #pragma warning disable CA1815 // Override equals and operator equals on value types
 	public struct Profile : IDisposable
@@ -24,10 +24,10 @@ namespace Microsoft.Maui.Controls.Internals
 			public int Depth;
 			public int Line;
 		}
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Profile.xml" path="//Member[@MemberName='Data']/Docs/*" />
+		/// <summary>Gets the collected profiling data.</summary>
 		public static List<Datum> Data;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Profile.xml" path="//Member[@MemberName='IsEnabled']/Docs/*" />
+		/// <summary>Gets whether profiling is enabled.</summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static bool IsEnabled { get; private set; } = false;
 
@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls.Internals
 		readonly string _name;
 		readonly int _slot;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Profile.xml" path="//Member[@MemberName='Enable']/Docs/*" />
+		/// <summary>Enables profiling and initializes data structures.</summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void Enable()
 		{
@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Profile.xml" path="//Member[@MemberName='Start']/Docs/*" />
+		/// <summary>Starts profiling.</summary>
 		public static void Start()
 		{
 			if (!IsEnabled)
@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls.Internals
 			Running = true;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Profile.xml" path="//Member[@MemberName='Stop']/Docs/*" />
+		/// <summary>Stops profiling and unwinds the stack.</summary>
 		public static void Stop()
 		{
 			if (!IsEnabled)
@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Controls.Internals
 				Stack.Pop();
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Profile.xml" path="//Member[@MemberName='FrameBegin']/Docs/*" />
+		/// <summary>Begins a new profiling frame.</summary>
 		public static void FrameBegin(
 			[CallerMemberName] string name = "",
 			[CallerLineNumber] int line = 0)
@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Controls.Internals
 			FrameBeginBody(name, null, line);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Profile.xml" path="//Member[@MemberName='FrameEnd']/Docs/*" />
+		/// <summary>Ends the current profiling frame.</summary>
 		public static void FrameEnd(
 			[CallerMemberName] string name = "")
 		{
@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Controls.Internals
 			FrameEndBody(name);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Profile.xml" path="//Member[@MemberName='FramePartition']/Docs/*" />
+		/// <summary>Creates a partition within the current frame.</summary>
 		public static void FramePartition(
 			string id,
 			[CallerLineNumber] int line = 0)
@@ -160,7 +160,7 @@ namespace Microsoft.Maui.Controls.Internals
 			Depth++;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Profile.xml" path="//Member[@MemberName='Dispose']/Docs/*" />
+		/// <summary>Disposes the profile and records the elapsed time.</summary>
 		public void Dispose()
 		{
 			if (!IsEnabled)

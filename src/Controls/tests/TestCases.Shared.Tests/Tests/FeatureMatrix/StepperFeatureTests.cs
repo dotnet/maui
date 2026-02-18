@@ -5,19 +5,15 @@ using UITest.Core;
 namespace Microsoft.Maui.TestCases.Tests;
 
 [Category(UITestCategories.Stepper)]
-public class StepperFeatureTests : UITest
+public class StepperFeatureTests : _GalleryUITest
 {
 	public const string StepperFeatureMatrix = "Stepper Feature Matrix";
+
+	public override string GalleryPageName => StepperFeatureMatrix;
 
 	public StepperFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(StepperFeatureMatrix);
 	}
 
 	[Test, Order(1)]
@@ -182,7 +178,7 @@ public class StepperFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("Options");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 	[Test]

@@ -1,6 +1,6 @@
 # .NET Multi-platform App UI (.NET MAUI)
 
-[![Build Status](https://dev.azure.com/xamarin/public/_apis/build/status/MAUI-public?repoName=dotnet%2Fmaui&branchName=main&label=Public)](https://dev.azure.com/xamarin/public/_build/latest?definitionId=57&repoName=dotnet%2Fmaui&branchName=main) [![Build Status](https://devdiv.visualstudio.com/DevDiv/_apis/build/status/MAUI?repoName=dotnet%2Fmaui&branchName=main&label=Private)](https://devdiv.visualstudio.com/DevDiv/_build/latest?definitionId=13330&repoName=dotnet%2Fmaui&branchName=main)
+[![Build Status](https://dev.azure.com/dnceng-public/public/_apis/build/status%2Fdotnet%2Fmaui%2Fmaui-pr?branchName=main&label=Public)](https://dev.azure.com/dnceng-public/public/_build?definitionId=302) [![Build Status](https://devdiv.visualstudio.com/DevDiv/_apis/build/status/MAUI?repoName=dotnet%2Fmaui&branchName=main&label=Private)](https://devdiv.visualstudio.com/DevDiv/_build/latest?definitionId=13330&repoName=dotnet%2Fmaui&branchName=main)
 
 [.NET Multi-platform App UI (.NET MAUI)](https://dotnet.microsoft.com/en-us/apps/maui) is a cross-platform framework for creating mobile and desktop apps with C# and XAML. Using .NET MAUI, you can develop apps that can run on Android, iOS, iPadOS, macOS, and Windows from a single shared codebase.
 
@@ -15,9 +15,10 @@ Create a new app with `dotnet new maui -n NewApp` or a [sample app](https://gith
 
 ## Overview
 
-.NET Multi-platform App UI (.NET MAUI) is the evolution of Xamarin.Forms that expand capabilities beyond mobile Android and iOS into desktop apps for Windows and macOS. With .NET MAUI, you can build apps that perform great on any device that runs Windows, macOS, Android, & iOS from a single codebase. Coupled with Visual Studio productivity tools and emulators, .NET and Visual Studio significantly speed up the development process for building apps that target the widest possible set of devices. Use a single development stack that supports the best-of-breed solutions for all modern workloads with a unified SDK, base class libraries, and a toolchain. [Read More](https://docs.microsoft.com/dotnet/maui/what-is-maui)
+.NET Multi-platform App UI (.NET MAUI) is the evolution of Xamarin.Forms that expand capabilities beyond mobile Android and iOS into desktop apps for Windows and macOS. With .NET MAUI, you can build apps that perform great on any device that runs Windows, macOS, Android, & iOS from a single codebase. Coupled with Visual Studio productivity tools and emulators, .NET and Visual Studio significantly speed up the development process for building apps that target the widest possible set of devices. Use a single development stack that supports the best-of-breed solutions for all modern workloads with a unified SDK, base class libraries, and a toolchain.
 
-![.NET MAUI Weather App on all platforms](Assets/maui-weather-hero-sm.png)
+* [What is .NET MAUI](https://docs.microsoft.com/dotnet/maui/what-is-maui)
+* [.NET MAUI Customer Showcase](https://dotnet.microsoft.com/platform/customers?filters=technology%3Adotnet-maui)
 
 ## Current News
 * 2025 - [What's new in .NET MAUI for .NET 10](https://learn.microsoft.com/dotnet/maui/whats-new/dotnet-10)

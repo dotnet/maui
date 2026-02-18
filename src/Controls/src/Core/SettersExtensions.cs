@@ -5,16 +5,28 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/SettersExtensions.xml" path="Type[@FullName='Microsoft.Maui.Controls.SettersExtensions']/Docs/*" />
+	/// <summary>
+	/// Extension methods for working with <see cref="Setter"/> collections.
+	/// </summary>
 	public static class SettersExtensions
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/SettersExtensions.xml" path="//Member[@MemberName='Add']/Docs/*" />
+		/// <summary>
+		/// Adds a <see cref="Setter"/> with the specified property and value to the collection.
+		/// </summary>
+		/// <param name="setters">The setter collection.</param>
+		/// <param name="property">The bindable property to set.</param>
+		/// <param name="value">The value to apply.</param>
 		public static void Add(this IList<Setter> setters, BindableProperty property, object value)
 		{
 			setters.Add(new Setter { Property = property, Value = value });
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SettersExtensions.xml" path="//Member[@MemberName='AddBinding']/Docs/*" />
+		/// <summary>
+		/// Adds a <see cref="Setter"/> with the specified property and binding to the collection.
+		/// </summary>
+		/// <param name="setters">The setter collection.</param>
+		/// <param name="property">The bindable property to set.</param>
+		/// <param name="binding">The binding to apply.</param>
 		public static void AddBinding(this IList<Setter> setters, BindableProperty property, Binding binding)
 		{
 			if (binding == null)
@@ -23,7 +35,12 @@ namespace Microsoft.Maui.Controls
 			setters.Add(new Setter { Property = property, Value = binding });
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SettersExtensions.xml" path="//Member[@MemberName='AddDynamicResource']/Docs/*" />
+		/// <summary>
+		/// Adds a <see cref="Setter"/> with the specified property and dynamic resource key to the collection.
+		/// </summary>
+		/// <param name="setters">The setter collection.</param>
+		/// <param name="property">The bindable property to set.</param>
+		/// <param name="key">The dynamic resource key.</param>
 		public static void AddDynamicResource(this IList<Setter> setters, BindableProperty property, string key)
 		{
 			if (string.IsNullOrEmpty(key))

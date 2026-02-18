@@ -1,13 +1,23 @@
 namespace Microsoft.Maui.Controls.Shapes
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PenLineJoin.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.PenLineJoin']/Docs/*" />
+	/// <summary>
+	/// Specifies the shape at the vertices where two lines meet.
+	/// </summary>
 	public enum PenLineJoin
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PenLineJoin.xml" path="//Member[@MemberName='Miter']/Docs/*" />
+		/// <summary>
+		/// A pointed corner where two lines meet.
+		/// </summary>
 		Miter,
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PenLineJoin.xml" path="//Member[@MemberName='Bevel']/Docs/*" />
+
+		/// <summary>
+		/// A beveled (cut-off) corner where two lines meet.
+		/// </summary>
 		Bevel,
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PenLineJoin.xml" path="//Member[@MemberName='Round']/Docs/*" />
+
+		/// <summary>
+		/// A rounded corner where two lines meet.
+		/// </summary>
 		Round
 	}
 }

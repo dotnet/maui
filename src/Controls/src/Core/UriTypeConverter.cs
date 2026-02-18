@@ -4,7 +4,9 @@ using System.Globalization;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/UriTypeConverter.xml" path="Type[@FullName='Microsoft.Maui.Controls.UriTypeConverter']/Docs/*" />
+	/// <summary>
+	/// Converts a string representation of a URI into a <see cref="Uri"/> object.
+	/// </summary>
 	[Xaml.ProvideCompiled("Microsoft.Maui.Controls.XamlC.UriTypeConverter")]
 	public class UriTypeConverter : TypeConverter
 	{

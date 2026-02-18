@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_ANDROID // Issue Link - https://github.com/dotnet/maui/issues/33766
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,8 +15,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.WebView)]
-		[Category(UITestCategories.Compatibility)]
-		[FlakyTest("Temporarily disabled due to flakiness in CI. Tracking issue: https://github.com/dotnet/maui/issues/31869")]
 		public void CookiesCorrectlyLoadWithMultipleWebViews()
 		{
 			VerifyInternetConnectivity();
@@ -27,3 +26,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif

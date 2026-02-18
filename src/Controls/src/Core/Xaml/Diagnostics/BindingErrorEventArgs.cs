@@ -6,7 +6,9 @@ using System;
 
 namespace Microsoft.Maui.Controls.Xaml.Diagnostics
 {
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.Xaml.Diagnostics/BindingBaseErrorEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Controls.Xaml.Diagnostics.BindingBaseErrorEventArgs']/Docs/*" />
+	/// <summary>
+	/// Event arguments containing information about a binding failure.
+	/// </summary>
 	public class BindingBaseErrorEventArgs : EventArgs
 	{
 		internal BindingBaseErrorEventArgs(SourceInfo xamlSourceInfo, BindingBase binding, string errorCode, string message, object[] messageArgs)
@@ -18,19 +20,21 @@ namespace Microsoft.Maui.Controls.Xaml.Diagnostics
 			MessageArgs = messageArgs;
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.Xaml.Diagnostics/BindingBaseErrorEventArgs.xml" path="//Member[@MemberName='XamlSourceInfo']/Docs/*" />
+		/// <summary>Gets the XAML source location where the binding was defined.</summary>
 		public SourceInfo XamlSourceInfo { get; }
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.Xaml.Diagnostics/BindingBaseErrorEventArgs.xml" path="//Member[@MemberName='Binding']/Docs/*" />
+		/// <summary>Gets the binding that failed.</summary>
 		public BindingBase Binding { get; }
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.Xaml.Diagnostics/BindingBaseErrorEventArgs.xml" path="//Member[@MemberName='ErrorCode']/Docs/*" />
+		/// <summary>Gets the error code identifying the type of failure.</summary>
 		public string ErrorCode { get; }
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.Xaml.Diagnostics/BindingBaseErrorEventArgs.xml" path="//Member[@MemberName='Message']/Docs/*" />
+		/// <summary>Gets the error message describing the failure.</summary>
 		public string Message { get; }
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.Xaml.Diagnostics/BindingBaseErrorEventArgs.xml" path="//Member[@MemberName='MessageArgs']/Docs/*" />
+		/// <summary>Gets the arguments for formatting the error message.</summary>
 		public object[] MessageArgs { get; }
 	}
 
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.Xaml.Diagnostics/BindingErrorEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Controls.Xaml.Diagnostics.BindingErrorEventArgs']/Docs/*" />
+	/// <summary>
+	/// Extended event arguments for binding failures with source and target information.
+	/// </summary>
 	public class BindingErrorEventArgs : BindingBaseErrorEventArgs
 	{
 		internal BindingErrorEventArgs(
@@ -48,11 +52,11 @@ namespace Microsoft.Maui.Controls.Xaml.Diagnostics
 			TargetProperty = property;
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.Xaml.Diagnostics/BindingErrorEventArgs.xml" path="//Member[@MemberName='Source']/Docs/*" />
+		/// <summary>Gets the binding source object.</summary>
 		public object Source { get; }
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.Xaml.Diagnostics/BindingErrorEventArgs.xml" path="//Member[@MemberName='Target']/Docs/*" />
+		/// <summary>Gets the target object that the binding was applied to.</summary>
 		public BindableObject Target { get; }
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.Xaml.Diagnostics/BindingErrorEventArgs.xml" path="//Member[@MemberName='TargetProperty']/Docs/*" />
+		/// <summary>Gets the target property that the binding was applied to.</summary>
 		public BindableProperty TargetProperty { get; }
 	}
 }

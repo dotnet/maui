@@ -1,17 +1,30 @@
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/RelativeBindingSourceMode.xml" path="Type[@FullName='Microsoft.Maui.Controls.RelativeBindingSourceMode']/Docs/*" />
+	/// <summary>
+	/// Specifies the mode for resolving a relative binding source.
+	/// </summary>
 	public enum RelativeBindingSourceMode
 	{
 		// 0 reserved for possible future implementation of PreviousData 
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RelativeBindingSourceMode.xml" path="//Member[@MemberName='TemplatedParent']/Docs/*" />
+		/// <summary>
+		/// Binds to the element that applied the control template containing this binding.
+		/// </summary>
 		TemplatedParent = 1,
-		/// <include file="../../docs/Microsoft.Maui.Controls/RelativeBindingSourceMode.xml" path="//Member[@MemberName='Self']/Docs/*" />
+
+		/// <summary>
+		/// Binds to the element on which the binding is set.
+		/// </summary>
 		Self = 2,
-		/// <include file="../../docs/Microsoft.Maui.Controls/RelativeBindingSourceMode.xml" path="//Member[@MemberName='FindAncestor']/Docs/*" />
+
+		/// <summary>
+		/// Binds to an ancestor element of the specified type in the visual tree.
+		/// </summary>
 		FindAncestor = 3,
-		/// <include file="../../docs/Microsoft.Maui.Controls/RelativeBindingSourceMode.xml" path="//Member[@MemberName='FindAncestorBindingContext']/Docs/*" />
+
+		/// <summary>
+		/// Binds to the binding context of an ancestor element of the specified type.
+		/// </summary>
 		FindAncestorBindingContext = 4,
 	}
 }

@@ -1,7 +1,7 @@
 variables:
 - name: BuildVersion
   value: $[counter('buildversion-counter', 5000)]
-- name: _BuildOfficalId
+- name: _BuildOfficialId
   value: $[ format('{0}.{1}', format('{0:yyyyMMdd}', pipeline.startTime), counter(format('{0:yyyyMMdd}', pipeline.startTime), 1) )]
 - name: DOTNET_SKIP_FIRST_TIME_EXPERIENCE
   value: true

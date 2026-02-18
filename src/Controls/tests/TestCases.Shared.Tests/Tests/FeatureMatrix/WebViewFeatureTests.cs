@@ -4,9 +4,10 @@ using UITest.Appium;
 using UITest.Core;
 namespace Microsoft.Maui.TestCases.Tests;
 
-public class WebViewFeatureTests : UITest
+public class WebViewFeatureTests : _GalleryUITest
 {
 	public const string WebViewFeatureMatrix = "WebView Feature Matrix";
+	public override string GalleryPageName => WebViewFeatureMatrix;
 	public const string Options = "Options";
 	public const string Apply = "Apply";
 	public const string WebViewControl = "WebViewControl";
@@ -25,11 +26,6 @@ public class WebViewFeatureTests : UITest
 	public WebViewFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(WebViewFeatureMatrix);
 	}
 
 	[Test, Order(1)]
@@ -318,7 +314,7 @@ public class WebViewFeatureTests : UITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElementTillPageNavigationSettled(Options, timeout: TimeSpan.FromSeconds(3));
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 }

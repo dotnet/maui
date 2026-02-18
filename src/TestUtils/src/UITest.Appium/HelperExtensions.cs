@@ -2,11 +2,13 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Android;
 using OpenQA.Selenium.Appium.Android.Enums;
 using OpenQA.Selenium.Appium.Interfaces;
 using OpenQA.Selenium.Appium.iOS;
+using OpenQA.Selenium.Appium.Windows;
 using UITest.Core;
 
 namespace UITest.Appium
@@ -65,6 +67,34 @@ namespace UITest.Appium
 				{ "element", uiElement },
 				{ "button", "right" }
 			});
+		}
+
+		/// <summary>
+		/// Closes a picker dialog using platform-specific dismiss actions.
+		/// For Android, taps the "Cancel" button.
+		/// For iOS/MacCatalyst, taps the "Done" button.
+		/// For Windows, either taps coordinates (if provided) or the "Cancel" button.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="x">Optional X coordinate for Windows tap. Default is 0.</param>
+		/// <param name="y">Optional Y coordinate for Windows tap. Default is 0.</param>
+		public static void ClosePicker(this IApp app, int windowsTapx = 0, int windowsTapy = 0)
+		{
+			if (app is AppiumAndroidApp)
+			{
+				app.Tap("Cancel");
+			}
+			else if (app is AppiumIOSApp || app is AppiumCatalystApp)
+			{
+				app.Tap("Done");
+			}
+			else if (app is AppiumWindowsApp)
+			{
+				if (windowsTapx != 0 || windowsTapy != 0)
+				{
+					app.TapCoordinates(windowsTapx, windowsTapy);
+				}
+			}
 		}
 
 		/// <summary>
@@ -743,6 +773,102 @@ namespace UITest.Appium
 			var results = WaitForAtLeastOne(result, timeoutMessage, timeout, retryFrequency);
 
 			return results;
+		}
+
+		public static void TapMinimizeButton(this IApp app)
+		{
+			if (app is not AppiumWindowsApp windowsApp)
+				return;
+
+			var windowsDriver = windowsApp.Driver as WindowsDriver;
+			if (windowsDriver == null)
+				return;
+
+			try
+			{
+				var minimizeButton = FindSystemButton(windowsDriver, "Minimize", "MinimizeButton", "PART_Min");
+
+				if (minimizeButton != null && minimizeButton.Displayed && minimizeButton.Enabled)
+				{
+					minimizeButton.Click();
+				}
+
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"UITest: Error testing minimize button: {ex.Message}");
+			}
+		}
+
+		/// <summary>
+		/// Tests if the Windows maximize/restore button is accessible and responsive
+		/// </summary>
+		/// <param name="app">The Windows app instance</param>
+		/// <param name="clickButton">Whether to actually click the maximize button (default: false)</param>
+		/// <returns>True if the maximize/restore button is accessible and responsive</returns>
+		public static void TapMaximizeButton(this IApp app)
+		{
+			if (app is not AppiumWindowsApp windowsApp)
+				return;
+
+			var windowsDriver = windowsApp.Driver as WindowsDriver;
+			if (windowsDriver == null)
+				return;
+
+			try
+			{
+				var maximizeButton = FindSystemButton(windowsDriver, "Maximize", "MaximizeButton", "PART_Max", "Restore");
+
+				if (maximizeButton != null && maximizeButton.Displayed && maximizeButton.Enabled)
+				{
+					maximizeButton.Click();
+				}
+
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"UITest: Error testing maximize button: {ex.Message}");
+			}
+		}
+
+		static IWebElement? FindSystemButton(WindowsDriver driver, params string[] identifiers)
+		{
+			foreach (var identifier in identifiers)
+			{
+				try
+				{
+					try
+					{
+						var element = driver.FindElement(By.XPath($"//*[@Name='{identifier}']"));
+						if (element != null)
+							return element;
+					}
+					catch { }
+
+					try
+					{
+						var element = driver.FindElement(By.XPath($"//*[@AutomationId='{identifier}']"));
+						if (element != null)
+							return element;
+					}
+					catch { }
+
+					//By XPath with partial name match (for localized systems)
+					try
+					{
+						var element = driver.FindElement(By.XPath($"//*[contains(@Name, '{identifier}')]"));
+						if (element != null)
+							return element;
+					}
+					catch { }
+				}
+				catch (Exception ex)
+				{
+					Console.WriteLine($"UITest: Exception searching for {identifier}: {ex.Message}");
+				}
+			}
+
+			return null;
 		}
 
 		/// <summary>
@@ -1554,6 +1680,21 @@ namespace UITest.Appium
 			app.CommandExecutor.Execute("launchApp", ImmutableDictionary<string, object>.Empty);
 		}
 
+		/// <summary>
+		/// Executes an existing application on the device with additional parameters.
+		/// If the application is already running then it will be brought to the foreground.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="parameters">Additional parameters to send with the launch command.</param>
+		public static void LaunchApp(this IApp app, string parameters, bool isResetAfterEachTest = false)
+		{
+			app.CommandExecutor.Execute("launchApp", new Dictionary<string, object>
+			{
+				{ "testName", parameters },
+				{ "isResetAfterEachTest", isResetAfterEachTest }
+			});
+		}
+		
 		/// <summary>
 		/// Send the currently running app for this session to the background.
 		/// </summary>

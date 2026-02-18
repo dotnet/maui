@@ -1,5 +1,5 @@
 trigger:
-  batch: true
+  batch: false
   branches:
     include:
     - main
@@ -54,7 +54,8 @@ parameters:
   type: object
   default:
   - name: NetCore1ESPool-Internal
-    image: 1es-windows-2022
+    demands:
+        - ImageOverride -equals 1es-windows-2022
     os: Windows
     buildScript: $(_buildScript)
     sln: '$(Build.SourcesDirectory)/Microsoft.Maui.sln'
@@ -68,12 +69,14 @@ parameters:
   type: object
   default:
   - name: NetCore-Public
-    image: 1es-windows-2022
+    demands:
+        - ImageOverride -equals 1es-windows-2022-open
     os: Windows
     buildScript: $(_buildScript)
     sln: '$(Build.SourcesDirectory)/Microsoft.Maui.sln'
-  - name: Azure Pipelines
-    vmImage: $(HostedMacImage)
+  - name: AcesShared
+    demands:
+        - ImageOverride -equals ACES_VM_SharedPool_Tahoe
     os: macOS
     buildScript: $(_buildScriptMacOS)
     sln: '$(Build.SourcesDirectory)/Microsoft.Maui-mac.slnf'
@@ -83,19 +86,34 @@ parameters:
   default:
     internal:
       name: NetCore1ESPool-Internal
-      image: 1es-windows-2022
+      demands:
+        - ImageOverride -equals 1es-windows-2022
       os: windows
     public:
       name: NetCore-Public
-      image: 1es-windows-2022
+      demands:
+        - ImageOverride -equals 1es-windows-2022-open
       os: windows
 
 - name: MacOSPool
   type: object
   default:
-    name: Azure Pipelines
-    vmImage: $(HostedMacImage)
-    os: macOS
+    internal:
+      name: Azure Pipelines
+      vmImage: $(HostedMacImage)
+      label: macOS
+    public:
+      name: AcesShared
+      demands:
+        - ImageOverride -equals ACES_VM_SharedPool_Tahoe
+      label: macOS
+
+
+# Condition for MacOSPool comparison lanes (non-ARM64)
+# Runs on: (non-PR on main/net*.0/release/*/inflight/*) OR (PR targeting net*.0/release/*/inflight/*)
+- name: macOSPoolLaneCondition
+  type: string
+  default: or(and(ne(variables['Build.Reason'], 'PullRequest'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), and(startsWith(variables['Build.SourceBranch'], 'refs/heads/net'), endsWith(variables['Build.SourceBranch'], '.0')), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/inflight/'))), and(eq(variables['Build.Reason'], 'PullRequest'), or(and(startsWith(variables['System.PullRequest.TargetBranch'], 'net'), endsWith(variables['System.PullRequest.TargetBranch'], '.0')), startsWith(variables['System.PullRequest.TargetBranch'], 'release/'), startsWith(variables['System.PullRequest.TargetBranch'], 'inflight/'))))
 
 stages:
 
@@ -127,9 +145,11 @@ stages:
   parameters:
     ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
       pool: ${{ parameters.WindowsPool.public }}
+      macPool: ${{ parameters.MacOSPool.public }}
       runAsPublic: true
     ${{ else }}:
       pool: ${{ parameters.WindowsPool.internal }}
+      macPool: ${{ parameters.MacOSPool.internal }}
       runAsPublic: false
     prepareSteps:
     - template: /eng/pipelines/common/provision.yml@self
@@ -142,7 +162,7 @@ stages:
         skipAndroidEmulatorImages: true
         skipAndroidCreateAvds: true
         skipProvisioning: true
-        skipXcode: true
+        skipXcode: false
 
 - template: /eng/pipelines/arcade/stage-build.yml@self
   parameters:
@@ -166,28 +186,6 @@ stages:
         skipProvisioning: true
         skipXcode: false
 
-- template: /eng/pipelines/arcade/stage-unit-tests.yml@self
-  parameters:
-    jobMatrix:
-    - name: win_unit_tests
-      displayName: Windows Unit Tests
-      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
-        pool: ${{ parameters.WindowsPool.public }}
-        runAsPublic: true
-      ${{ else }}:
-        pool: ${{ parameters.WindowsPool.internal }}
-        runAsPublic: false
-      timeout: 90
-      testOS: Windows
-      buildscript: $(_buildScript)
-    - name: mac_unit_tests
-      displayName: macOS Unit Tests
-      pool: ${{ parameters.MacOSPool }}
-      timeout: 90
-      testOS: macOS
-      buildscript: $(_buildScriptMacOS)
-    publishTaskPrefix: ''
-
 - template: /eng/pipelines/arcade/stage-integration-tests.yml@self
   parameters:
     stageDependsOn: Pack
@@ -203,7 +201,10 @@ stages:
       timeout: 120
       testCategory: Samples
     - name: mac_sample_tests
-      pool: ${{ parameters.MacOSPool }}
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
       timeout: 240
       testCategory: Samples
 
@@ -232,7 +233,10 @@ stages:
       timeout: 120
       testCategory: Build
     - name: mac_buildtemplate_tests
-      pool: ${{ parameters.MacOSPool }}
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
       timeout: 240
       testCategory: Build
 
@@ -246,7 +250,10 @@ stages:
       timeout: 120
       testCategory: Blazor
     - name: mac_blazortemplate_tests
-      pool: ${{ parameters.MacOSPool }}
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
       timeout: 240
       testCategory: Blazor
 
@@ -260,18 +267,147 @@ stages:
       timeout: 120
       testCategory: MultiProject
     - name: mac_multitemplate_tests
-      pool: ${{ parameters.MacOSPool }}
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
       timeout: 120
       testCategory: MultiProject
 
     # TODO: macOSTemplates and AOT template categories
-
     - name: mac_runandroid_tests
-      pool: ${{ parameters.MacOSPool }}
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool:
+          name: AcesShared
+          demands:
+            - ImageOverride -equals ACES_arm64_Sequoia_Xcode
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
       timeout: 240
       testCategory: RunOnAndroid
 
-    - name: mac_runios_tests
-      pool: ${{ parameters.MacOSPool }}
-      timeout: 240
-      testCategory: RunOniOS
+    # RunOniOS - Individual test methods run in parallel
+    # ARM64 (Apple Silicon) lanes - using MacOSPoolArm64
+    - name: mac_runios_maui_debug_arm64
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 45
+      testName: RunOniOS_MauiDebug
+      arch: ARM64
+
+    - name: mac_runios_maui_release_arm64
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 45
+      testName: RunOniOS_MauiRelease
+      arch: ARM64
+
+    - name: mac_runios_maui_trim_arm64
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 45
+      testName: RunOniOS_MauiReleaseTrimFull
+      arch: ARM64
+
+    - name: mac_runios_blazor_debug_arm64
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 45
+      testName: RunOniOS_BlazorDebug
+      arch: ARM64
+
+    - name: mac_runios_blazor_release_arm64
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 45
+      testName: RunOniOS_BlazorRelease
+      arch: ARM64
+
+    # TODO: Re-enable once ASP.NET Core fixes trimmer warning IL2111 with Blazor Router.NotFoundPage
+    # Issue: https://github.com/dotnet/aspnetcore/issues/63951
+    # - name: mac_runios_blazor_trim_arm64
+    #   pool: ${{ parameters.MacOSPoolArm64 }}
+    #   timeout: 45
+    #   testName: RunOniOS_BlazorReleaseTrimFull
+    #   arch: ARM64
+
+    - name: mac_runios_nativeaot_arm64
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 45
+      testName: RunOniOS_MauiNativeAOT
+      arch: ARM64
+
+    # MacOSPool lanes - comparison with ARM64 pool
+    # Only run on: (non-PR on main/net*.0/release/*/inflight/*) OR (PR targeting net*.0/release/*/inflight/*)
+    - name: mac_runios_maui_debug
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 45
+      testName: RunOniOS_MauiDebug
+      arch: x64
+      condition: ${{ parameters.macOSPoolLaneCondition }}
+
+    - name: mac_runios_maui_release
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 45
+      testName: RunOniOS_MauiRelease
+      arch: x64
+      condition: ${{ parameters.macOSPoolLaneCondition }}
+
+    - name: mac_runios_maui_trim
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 45
+      testName: RunOniOS_MauiReleaseTrimFull
+      arch: x64
+      condition: ${{ parameters.macOSPoolLaneCondition }}
+
+    - name: mac_runios_blazor_debug
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 45
+      testName: RunOniOS_BlazorDebug
+      arch: x64
+      condition: ${{ parameters.macOSPoolLaneCondition }}
+
+    - name: mac_runios_blazor_release
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 45
+      testName: RunOniOS_BlazorRelease
+      arch: x64
+      condition: ${{ parameters.macOSPoolLaneCondition }}
+
+    - name: mac_runios_nativeaot
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 45
+      testName: RunOniOS_MauiNativeAOT
+      arch: x64
+      condition: ${{ parameters.macOSPoolLaneCondition }}
