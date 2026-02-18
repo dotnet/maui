@@ -6,7 +6,7 @@
 .DESCRIPTION
     Handles device detection and startup for both Android and iOS platforms.
     - Android: Automatically selects and starts emulator with priority: API 30 Nexus > API 30 > Nexus > First available
-    - iOS: Automatically selects iPhone Xs with iOS 18.5 by default
+    - iOS: Automatically selects iPhone Xs with iOS 18.x (or iPhone 11 Pro with iOS 26.x) to match CI
 
 .PARAMETER Platform
     Target platform: "android" or "ios"
@@ -344,10 +344,17 @@ if ($Platform -eq "android") {
         Write-Info "Auto-detecting iOS simulator..."
         $simList = xcrun simctl list devices available --json | ConvertFrom-Json
         
-        # Preferred devices in order of priority
-        $preferredDevices = @("iPhone 16 Pro", "iPhone 15 Pro", "iPhone 14 Pro", "iPhone Xs")
         # Preferred iOS versions in order (stable preferred, beta fallback)
         $preferredVersions = @("iOS-18", "iOS-17", "iOS-26")
+        # Preferred devices per iOS version to match CI configuration:
+        #   iOS 18.x → iPhone Xs (matches CI default in UITest.cs)
+        #   iOS 26.x → iPhone 11 Pro (matches CI visual test requirement)
+        #   iOS 17.x → iPhone Xs (fallback)
+        $preferredDevicesPerVersion = @{
+            "iOS-18" = @("iPhone Xs", "iPhone 16 Pro", "iPhone 15 Pro", "iPhone 14 Pro")
+            "iOS-17" = @("iPhone Xs", "iPhone 15 Pro", "iPhone 14 Pro")
+            "iOS-26" = @("iPhone 11 Pro", "iPhone 16 Pro", "iPhone 15 Pro")
+        }
         
         $selectedDevice = $null
         $selectedVersion = $null
@@ -361,8 +368,9 @@ if ($Platform -eq "android") {
                 Where-Object { $_.Name -match $version }
             
             if ($matchingRuntimes) {
-                # Try each preferred device
-                foreach ($deviceName in $preferredDevices) {
+                # Try each preferred device for this version
+                $devicesForVersion = if ($preferredDevicesPerVersion.ContainsKey($version)) { $preferredDevicesPerVersion[$version] } else { @("iPhone Xs", "iPhone 16 Pro") }
+                foreach ($deviceName in $devicesForVersion) {
                     $device = $null
                     $deviceRuntime = $null
                     foreach ($rt in $matchingRuntimes) {
