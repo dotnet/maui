@@ -429,6 +429,8 @@ public class ClipFeatureTests : _GalleryUITest
 
 	// ==================== Label Tests ====================
 
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS // Issue: https://github.com/dotnet/maui/issues/34114
+
 	[Test, Order(23)]
 	[Category(UITestCategories.Label)]
 	public void Label_ClipWithLongText() // all clip in iOS not working
@@ -484,6 +486,7 @@ public class ClipFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		VerifyScreenshot();
 	}
+#endif
 
 	// ==================== ContentView Tests ====================
 
@@ -795,6 +798,8 @@ public class ClipFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS // Issue: https://github.com/dotnet/maui/issues/34114
+
 	[Test, Order(40)]
 	[Category(UITestCategories.Label)]
 	public void Label_ClipWithRotation()
@@ -817,6 +822,7 @@ public class ClipFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		VerifyScreenshot();
 	}
+#endif
 
 	// ==================== Clip with Scale Tests ====================
 
