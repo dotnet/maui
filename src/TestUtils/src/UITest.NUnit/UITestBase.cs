@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using NUnit.Framework.Interfaces;
 using UITest.Core;
@@ -105,18 +106,29 @@ namespace UITest.Appium.NUnit
 				ApplicationState appState;
 				try
 				{
-					appState = App.AppState;
+					// App.AppState queries via WDA which blocks if the app's main thread is stuck
+					// (e.g., infinite layout loop). Use a timeout to detect this.
+					var appStateTask = Task.Run(() => App.AppState);
+					if (!appStateTask.Wait(TimeSpan.FromSeconds(15)))
+					{
+						throw new TimeoutException("App.AppState query did not complete — app is likely unresponsive");
+					}
+					appState = appStateTask.GetAwaiter().GetResult();
 				}
 				catch (TimeoutException)
 				{
-					// Let unresponsive-app timeouts bubble to the outer TimeoutException handler.
+					// App is unresponsive - let the outer TimeoutException handler deal with it
 					throw;
 				}
 				catch (Exception)
 				{
-					// AppState query itself can hang if the app is completely unresponsive.
+					// AppState query failed for some other reason (not a timeout/freeze).
 					// Force-close the app and treat it as not running.
-					App.CommandExecutor.Execute("forceCloseApp", new Dictionary<string, object>());
+					try
+					{
+						App.CommandExecutor.Execute("forceCloseApp", new Dictionary<string, object>());
+					}
+					catch { /* best effort */ }
 					appState = ApplicationState.NotRunning;
 				}
 
@@ -135,7 +147,7 @@ namespace UITest.Appium.NUnit
 					Assert.Fail("The app was expected to be running still, investigate as possible crash");
 				}
 			}
-			catch (TimeoutException ex)
+			catch (TimeoutException ex) when (ex.Message.Contains("unresponsive", StringComparison.Ordinal))
 			{
 				// App is stuck in an infinite loop (e.g., layout cycle). Force-terminate and reset.
 				TestContext.Error.WriteLine($">>>>> {DateTime.Now} App became unresponsive, force-closing: {ex.Message}");
@@ -167,7 +179,20 @@ namespace UITest.Appium.NUnit
 					testOutcome == ResultState.Failure)
 				{
 					SaveDeviceDiagnosticInfo();
-					SaveUIDiagnosticInfo();
+					// SaveUIDiagnosticInfo makes Appium calls that hang if app is frozen.
+					// Wrap in a timeout so we don't block the entire test run.
+					try
+					{
+						var diagTask = Task.Run(() => SaveUIDiagnosticInfo());
+						if (!diagTask.Wait(TimeSpan.FromSeconds(15)))
+						{
+							TestContext.Error.WriteLine($">>>>> {DateTime.Now} SaveUIDiagnosticInfo timed out — app may be unresponsive, skipping UI diagnostics");
+						}
+					}
+					catch (Exception ex)
+					{
+						TestContext.Error.WriteLine($">>>>> {DateTime.Now} SaveUIDiagnosticInfo failed: {ex.Message}");
+					}
 				}
 			}
 		}

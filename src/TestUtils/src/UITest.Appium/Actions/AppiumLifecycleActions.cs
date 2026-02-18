@@ -225,12 +225,16 @@ namespace UITest.Appium
 							RedirectStandardError = true,
 							UseShellExecute = false,
 						});
-						if (process is null || !process.WaitForExit(10000) || process.ExitCode != 0)
+						if (process is not null && !process.WaitForExit(10000))
 						{
-							Debug.WriteLine($">>>>> ForceCloseApp: xcrun simctl terminate failed (process={process is not null}, exitCode={process?.ExitCode})");
-							return CommandResponse.FailedEmptyResponse;
+							Debug.WriteLine(">>>>> ForceCloseApp: xcrun simctl terminate timed out, killing process");
+							try { process.Kill(); } catch { }
 						}
 						return CommandResponse.SuccessEmptyResponse;
+					}
+					else
+					{
+						Debug.WriteLine(">>>>> ForceCloseApp: iOS UDID not available, cannot force-terminate via simctl");
 					}
 				}
 				else if (testDevice == TestDevice.Android)
@@ -244,28 +248,48 @@ namespace UITest.Appium
 						RedirectStandardError = true,
 						UseShellExecute = false,
 					});
-					if (process is null || !process.WaitForExit(10000) || process.ExitCode != 0)
+					if (process is not null && !process.WaitForExit(10000))
 					{
-						Debug.WriteLine($">>>>> ForceCloseApp: adb force-stop failed (process={process is not null}, exitCode={process?.ExitCode})");
-						return CommandResponse.FailedEmptyResponse;
+						Debug.WriteLine(">>>>> ForceCloseApp: adb force-stop timed out, killing process");
+						try { process.Kill(); } catch { }
 					}
 					return CommandResponse.SuccessEmptyResponse;
 				}
 				else if (testDevice == TestDevice.Mac)
 				{
-					Debug.WriteLine($">>>>> ForceCloseApp: macOS kill for {appId}");
+					// Use pkill -9 instead of osascript "tell app to quit" because a hung app
+					// won't process the cooperative Apple Event from osascript.
+					Debug.WriteLine($">>>>> ForceCloseApp: macOS force-kill for {appId}");
 					using var process = Process.Start(new ProcessStartInfo
 					{
-						FileName = "osascript",
-						ArgumentList = { "-e", $"tell application id \"{appId}\" to quit" },
+						FileName = "pkill",
+						ArgumentList = { "-9", "-f", appId },
 						RedirectStandardOutput = true,
 						RedirectStandardError = true,
 						UseShellExecute = false,
 					});
-					if (process is null || !process.WaitForExit(10000) || process.ExitCode != 0)
+					if (process is not null && !process.WaitForExit(10000))
 					{
-						Debug.WriteLine($">>>>> ForceCloseApp: osascript quit failed (process={process is not null}, exitCode={process?.ExitCode})");
-						return CommandResponse.FailedEmptyResponse;
+						Debug.WriteLine(">>>>> ForceCloseApp: pkill timed out, killing process");
+						try { process.Kill(); } catch { }
+					}
+					return CommandResponse.SuccessEmptyResponse;
+				}
+				else if (testDevice == TestDevice.Windows)
+				{
+					Debug.WriteLine($">>>>> ForceCloseApp: Windows taskkill for {appId}");
+					using var process = Process.Start(new ProcessStartInfo
+					{
+						FileName = "taskkill",
+						ArgumentList = { "/F", "/IM", $"{appId}.exe" },
+						RedirectStandardOutput = true,
+						RedirectStandardError = true,
+						UseShellExecute = false,
+					});
+					if (process is not null && !process.WaitForExit(10000))
+					{
+						Debug.WriteLine(">>>>> ForceCloseApp: taskkill timed out, killing process");
+						try { process.Kill(); } catch { }
 					}
 					return CommandResponse.SuccessEmptyResponse;
 				}
