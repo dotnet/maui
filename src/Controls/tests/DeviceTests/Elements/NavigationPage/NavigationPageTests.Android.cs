@@ -9,8 +9,10 @@ using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -85,23 +87,27 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.NotNull(tab2SnManager);
 
 				tabbedPage.CurrentPage = tab2Nav;
-				await Task.Delay(100);
+				await OnLoadedAsync(tab2Content);
 
 				await baseNavPage.Navigation.PopModalAsync(animated: false);
-				await Task.Delay(100);
 
 				var flags = BindingFlags.NonPublic | BindingFlags.Instance;
 				var currentPageField = typeof(StackNavigationManager).GetField("_currentPage", flags);
 				var fragmentContainerViewField = typeof(StackNavigationManager).GetField("_fragmentContainerView", flags);
 				var fragmentManagerField = typeof(StackNavigationManager).GetField("_fragmentManager", flags);
+				
+				Assert.NotNull(currentPageField);
+				Assert.NotNull(fragmentContainerViewField);
+				Assert.NotNull(fragmentManagerField);
 
-				Assert.Null(currentPageField.GetValue(tab1SnManager));
-				Assert.Null(fragmentContainerViewField.GetValue(tab1SnManager));
-				Assert.Null(fragmentManagerField.GetValue(tab1SnManager));
-
-				Assert.Null(currentPageField.GetValue(tab2SnManager));
-				Assert.Null(fragmentContainerViewField.GetValue(tab2SnManager));
-				Assert.Null(fragmentManagerField.GetValue(tab2SnManager));
+				await AssertEventually(() =>
+					currentPageField.GetValue(tab1SnManager) == null &&
+					fragmentContainerViewField.GetValue(tab1SnManager) == null &&
+					fragmentManagerField.GetValue(tab1SnManager) == null &&
+					currentPageField.GetValue(tab2SnManager) == null &&
+					fragmentContainerViewField.GetValue(tab2SnManager) == null &&
+					fragmentManagerField.GetValue(tab2SnManager) == null,
+					message: "StackNavigationManager fields were not cleared after Disconnect()");
 			});
 		}
 	}
