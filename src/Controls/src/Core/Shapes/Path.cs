@@ -10,7 +10,6 @@ namespace Microsoft.Maui.Controls.Shapes
 	/// <summary>
 	/// A shape that can draw complex geometries defined by a <see cref="PathGeometry"/>.
 	/// </summary>
-	[ElementHandler<PathHandler>]
 	[ElementHandler(typeof(PathHandler))]
 	public sealed partial class Path : Shape, IShape
 	{

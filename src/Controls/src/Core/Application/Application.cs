@@ -20,7 +20,6 @@ namespace Microsoft.Maui.Controls
 	/// <summary>
 	/// Represents the main application class that provides lifecycle management, resources, and theming.
 	/// </summary>
-	[ElementHandler<ApplicationHandler>]
 	[ElementHandler(typeof(ApplicationHandler))]
 	public partial class Application : Element, IResourcesProvider, IApplicationController, IElementConfiguration<Application>, IVisualTreeElement, IApplication
 	{

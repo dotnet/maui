@@ -9,7 +9,6 @@ namespace Microsoft.Maui.Controls
 	/// <summary>
 	/// Represents a menu item displayed in a <see cref="SwipeView"/> when the view is swiped.
 	/// </summary>
-	[ElementHandler<SwipeItemMenuItemHandler>]
 	[ElementHandler(typeof(SwipeItemMenuItemHandler))]
 	public partial class SwipeItem : MenuItem, Controls.ISwipeItem, Maui.ISwipeItemMenuItem
 	{
