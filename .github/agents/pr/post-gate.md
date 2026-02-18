@@ -202,10 +202,10 @@ Update the state file:
   ```
   | Model | Round 2 Response |
   |-------|------------------|
-  | claude-sonnet-4.5 | NO NEW IDEAS |
+  | claude-sonnet-4.6 | NO NEW IDEAS |
   | claude-opus-4.6 | NO NEW IDEAS |
   | gpt-5.2 | NO NEW IDEAS |
-  | gpt-5.2-codex | NO NEW IDEAS |
+  | gpt-5.3-codex | NO NEW IDEAS |
   | gemini-3-pro-preview | NO NEW IDEAS |
   ```
 - [ ] Fix Candidates table has numbered rows for each try-fix attempt
