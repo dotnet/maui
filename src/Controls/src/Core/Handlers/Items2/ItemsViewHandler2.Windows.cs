@@ -112,6 +112,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public static void MapItemTemplate(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
 		{
+			// Only invalidate cache if:
+			// 1. ItemSizingStrategy is MeasureFirstItem
+			// 2. Control is already loaded (runtime template change, not initial load)
+			if (handler is CollectionViewHandler2 cvHandler && itemsView is CollectionView cv && 
+			cv.ItemSizingStrategy == ItemSizingStrategy.MeasureFirstItem && itemsView.IsLoadedOnPlatform())
+			{
+				cvHandler.InvalidateFirstItemSize();
+			}
+			
 			handler.UpdateItemsSource();
 		}
 
