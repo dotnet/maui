@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup>
-    <!-- Required for unpackaged Windows deployment on Helix - bundle Windows App SDK alongside the EXE.
-         Only applies to unpackaged builds (signaled by _MauiDeviceTestUnpackaged=true from Cake script).
-         Packaged (MSIX) builds must NOT set this, as it prevents MSIX generation. -->
-    <WindowsAppSDKSelfContained Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows' and '$(_MauiDeviceTestUnpackaged)' == 'true'">true</WindowsAppSDKSelfContained>
-  </PropertyGroup>
-</Project>

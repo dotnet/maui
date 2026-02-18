@@ -1,5 +1,0 @@
-<Project>
-  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
-  <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
-  <Import Project="$(MauiSrcDirectory)Microsoft.Maui.TestUtils.DeviceTests.Runners.props" />
-</Project>
