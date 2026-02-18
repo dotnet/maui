@@ -13,12 +13,13 @@ public class Issue33239 : _IssuesUITest
 
     [Test]
     [Category(UITestCategories.Image)]
-    public void ImageFromResourceAndStreamShouldHaveSimilarByteCount()
+    public void ImageFromResourceAndFileShouldHaveSimilarByteCount()
     {
         App.WaitForElement("MeasureButton");
         App.Tap("MeasureButton");
-        var resultText = App.FindElement("ResultLabel").GetText();
-        Assert.That(resultText, Is.EqualTo("Image ByteCount: 786432"));
+        var file = App.FindElement("FileImageLabel").GetText();
+        var resource = App.FindElement("ResourceImageLabel").GetText();
+        Assert.That(resource, Is.EqualTo(file));
     }
 }
 #endif
