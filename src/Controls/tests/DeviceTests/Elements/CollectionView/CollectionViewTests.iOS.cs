@@ -350,20 +350,32 @@ namespace Microsoft.Maui.DeviceTests
 				// Test ScrollBarVisibility.Always
 				carouselView.HorizontalScrollBarVisibility = ScrollBarVisibility.Always;
 				carouselView.VerticalScrollBarVisibility = ScrollBarVisibility.Always;
+				await Task.Yield(); // Allow BeginInvokeOnMainThread callbacks to drain
 
-				var internalScrollView = FindInternalScrollView(nativeCollectionView);
-				if (internalScrollView != null)
+				// Poll for the internal scroll view (it may not be created synchronously)
+				UIScrollView internalScrollView = null;
+				for (int attempt = 0; attempt < 10 && internalScrollView == null; attempt++)
 				{
-					Assert.True(internalScrollView.ShowsHorizontalScrollIndicator == true);
-					Assert.True(internalScrollView.ShowsVerticalScrollIndicator == true);
+					internalScrollView = FindInternalScrollView(nativeCollectionView);
+					if (internalScrollView == null)
+						await Task.Delay(100);
 				}
+				Assert.NotNull(internalScrollView); // Must exist for the test to be valid
+
+				Assert.True(internalScrollView.ShowsHorizontalScrollIndicator);
+				Assert.True(internalScrollView.ShowsVerticalScrollIndicator);
+				Assert.True(nativeCollectionView.ShowsHorizontalScrollIndicator);
+				Assert.True(nativeCollectionView.ShowsVerticalScrollIndicator);
 
 				// Test ScrollBarVisibility.Never
 				carouselView.HorizontalScrollBarVisibility = ScrollBarVisibility.Never;
 				carouselView.VerticalScrollBarVisibility = ScrollBarVisibility.Never;
+				await Task.Yield();
 
-				Assert.True(nativeCollectionView.ShowsHorizontalScrollIndicator == false);
-				Assert.True(internalScrollView.ShowsVerticalScrollIndicator == false);
+				Assert.False(internalScrollView.ShowsHorizontalScrollIndicator); // Key assertion for this bug!
+				Assert.False(internalScrollView.ShowsVerticalScrollIndicator);
+				Assert.False(nativeCollectionView.ShowsHorizontalScrollIndicator);
+				Assert.False(nativeCollectionView.ShowsVerticalScrollIndicator);
 			});
 		}
 
