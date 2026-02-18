@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using ObjCRuntime;
 using UIKit;
@@ -76,7 +77,7 @@ namespace Microsoft.Maui.Platform
 
 			// On iOS 26+, SetThumbImage() no longer triggers a layout pass that recalculates
 			// the thumb position at runtime. Explicitly call SetNeedsLayout() to restore this.
-			if (System.OperatingSystem.IsIOSVersionAtLeast(26))
+			if (OperatingSystem.IsIOSVersionAtLeast(26))
 			{
 				uiSlider.SetNeedsLayout();
 			}
