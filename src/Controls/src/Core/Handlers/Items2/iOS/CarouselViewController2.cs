@@ -295,7 +295,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			int carouselPosition = carousel.Position;
 			_positionAfterUpdate = carouselPosition;
-			var currentItemPosition = ItemsSource.GetIndexForItem(carousel.CurrentItem).Row;
+			var currentItemIndex = ItemsSource.GetIndexForItem(carousel.CurrentItem);
+			var currentItemPosition = currentItemIndex.Row;
+
+			if (currentItemPosition < 0)
+			{
+				return;
+			}
 
 			if (e.Action == NotifyCollectionChangedAction.Remove)
 			{
@@ -452,12 +458,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		void ScrollToPosition(int goToPosition, int carouselPosition, bool animate, bool forceScroll = false)
 		{
-			if (goToPosition < 0)
-			{
-				System.Diagnostics.Debug.WriteLine($"CarouselViewController2.ScrollToPosition: Skipping scroll due to invalid goToPosition ({goToPosition}).");
-				return;
-			}
-			
 			if (ItemsView is not CarouselView carousel)
 			{
 				return;
@@ -536,9 +536,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
-			var currentItemPosition = GetIndexForItem(carousel.CurrentItem).Row;
+			var currentItemIndex = GetIndexForItem(carousel.CurrentItem);
+			if (currentItemIndex.Row < 0)
+			{
+				return;
+			}
 
-			ScrollToPosition(currentItemPosition, carousel.Position, carousel.AnimateCurrentItemChanges);
+			ScrollToPosition(currentItemIndex.Row, carousel.Position, carousel.AnimateCurrentItemChanges);
 
 			UpdateVisualStates();
 		}
@@ -560,7 +564,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
-			var currentItemPosition = GetIndexForItem(carousel.CurrentItem).Row;
+			var currentItemIndex = GetIndexForItem(carousel.CurrentItem);
+			var currentItemPosition = currentItemIndex.Row;
 			var carouselPosition = carousel.Position;
 
 			ScrollToPosition(carouselPosition, currentItemPosition, carousel.AnimatePositionChanges);
