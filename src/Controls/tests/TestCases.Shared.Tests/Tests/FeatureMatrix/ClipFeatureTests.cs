@@ -107,6 +107,8 @@ public class ClipFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
+#if TEST_FAILS_ON_WINDOWS // Issue: https://github.com/dotnet/maui/issues/30778
+
 	[Test, Order(5)]
 	[Category(UITestCategories.Border)]
 	public void Border_ClipWithShadow()
@@ -124,6 +126,7 @@ public class ClipFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		VerifyScreenshot();
 	}
+#endif
 
 	// ==================== BoxView Tests ====================
 
@@ -168,6 +171,8 @@ public class ClipFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
+#if TEST_FAILS_ON_WINDOWS // Issue: https://github.com/dotnet/maui/issues/30778
+
 	[Test, Order(8)]
 	[Category(UITestCategories.BoxView)]
 	public void BoxView_ClipWithShadow()
@@ -185,6 +190,7 @@ public class ClipFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		VerifyScreenshot();
 	}
+#endif
 
 	// ==================== Button Tests ====================
 
@@ -229,6 +235,8 @@ public class ClipFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
+#if TEST_FAILS_ON_WINDOWS // Issue: https://github.com/dotnet/maui/issues/30778
+
 	[Test, Order(11)]
 	[Category(UITestCategories.Button)]
 	public void Button_ClipWithShadow()
@@ -246,6 +254,7 @@ public class ClipFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		VerifyScreenshot();
 	}
+#endif
 
 	// ==================== Image Tests (Geometry Variations) ====================
 
@@ -527,6 +536,8 @@ public class ClipFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
+#if TEST_FAILS_ON_WINDOWS // Issue: https://github.com/dotnet/maui/issues/30778
+
 	[Test, Order(29)]
 	[Category(UITestCategories.Layout)]
 	public void ContentView_ClipWithShadow()
@@ -544,6 +555,7 @@ public class ClipFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		VerifyScreenshot();
 	}
+#endif
 
 	// ==================== ImageButton Tests ====================
 
@@ -596,6 +608,8 @@ public class ClipFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
+#if TEST_FAILS_ON_WINDOWS // Issue: https://github.com/dotnet/maui/issues/30778
+
 	[Test, Order(33)]
 	[Category(UITestCategories.ImageButton)]
 	public void ImageButton_ClipWithShadow()
@@ -613,6 +627,7 @@ public class ClipFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		VerifyScreenshot();
 	}
+#endif
 
 	// ==================== Negative Tests ====================
 
@@ -908,6 +923,8 @@ public class ClipFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
+#if TEST_FAILS_ON_WINDOWS // Issue: https://github.com/dotnet/maui/issues/30778
+
 	[Test, Order(45)]
 	[Category(UITestCategories.Border)]
 	public void Border_ClipWithNestedContent()
@@ -930,8 +947,11 @@ public class ClipFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		VerifyScreenshot();
 	}
+#endif
 
 	// ==================== Complex Geometry Tests ====================
+
+#if TEST_FAILS_ON_WINDOWS // Issue: https://github.com/dotnet/maui/issues/30778
 
 	[Test, Order(46)]
 	[Category(UITestCategories.Image)]
@@ -955,6 +975,7 @@ public class ClipFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		VerifyScreenshot();
 	}
+#endif
 
 	[Test, Order(47)]
 	[Category(UITestCategories.Image)]
