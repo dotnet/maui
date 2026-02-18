@@ -506,21 +506,8 @@ stages:
                 Write-Host "Processing $($project.Name)..."
                 Write-Host "============================================"
                 
-                # Look for AppPackages using the same approach as main branch:
-                # Direct path to project dir's AppPackages folder (where Cake puts MSIX)
+                # Look for AppPackages (MSIX) at project directory
                 $appPackagesDir = "$($project.ProjectDir)/AppPackages"
-                
-                Write-Host "DIAGNOSTIC: Checking for AppPackages at $appPackagesDir..."
-                if (Test-Path $appPackagesDir) {
-                  Write-Host "  Found AppPackages directory!"
-                  $msixFiles = Get-ChildItem -Path $appPackagesDir -Recurse -Filter "*.msix"
-                  Write-Host "  MSIX files found: $($msixFiles.Count)"
-                  $msixFiles | ForEach-Object { Write-Host "    - $($_.FullName)" }
-                } else {
-                  Write-Host "  AppPackages NOT found at project directory."
-                  Write-Host "  Listing contents of $($project.ProjectDir):"
-                  Get-ChildItem -Path $project.ProjectDir -Directory | ForEach-Object { Write-Host "    [DIR] $($_.Name)" }
-                }
                 
                 $zipPath = "$artifactsDir/$($project.Name).zip"
                 
@@ -530,17 +517,16 @@ stages:
                 
                 $hasContent = $false
                 
-                # Copy packaged output (AppPackages with MSIX) - use direct path like main does
+                # Copy packaged output (AppPackages with MSIX)
                 if (Test-Path $appPackagesDir) {
-                  Write-Host "Copying packaged output from $appPackagesDir..."
                   Copy-Item -Path $appPackagesDir -Destination "$tempDir/AppPackages" -Recurse
                   $msix = Get-ChildItem -Path "$tempDir/AppPackages" -Recurse -Filter "*.msix" | Select-Object -First 1
                   if ($msix) { 
-                    Write-Host "  Contains MSIX: $($msix.Name)" 
+                    Write-Host "  Packaged: $($msix.Name)" 
                     $hasContent = $true
                   }
                 } else {
-                  Write-Host "Warning: AppPackages not found at $appPackagesDir"
+                  Write-Host "##vso[task.logissue type=warning]AppPackages not found at $appPackagesDir"
                 }
                 
                 # Copy unpackaged output from saved location (saved before packaged build overwrites artifacts/bin)
@@ -551,77 +537,29 @@ stages:
                   if ($publishDir) { $savedDir = $publishDir.FullName }
                 }
                 if (Test-Path $savedDir) {
-                  Write-Host "Copying unpackaged output from $savedDir..."
                   Copy-Item -Path $savedDir -Destination "$tempDir/Unpackaged" -Recurse
                   $exe = Get-ChildItem -Path "$tempDir/Unpackaged" -Filter "*.exe" | Where-Object { $_.Name -like "Microsoft.Maui.*" } | Select-Object -First 1
                   if ($exe) { 
-                    Write-Host "  Contains EXE: $($exe.Name)"
+                    Write-Host "  Unpackaged: $($exe.Name)"
                     $hasContent = $true
                   }
                   
-                  # DIAGNOSTIC: Check for Windows App SDK DLLs (indicates WindowsAppSDKSelfContained=true was applied)
-                  Write-Host "  DIAGNOSTIC: Checking for Windows App SDK DLLs in publish output..."
-                  $wasdk = Get-ChildItem -Path "$tempDir/Unpackaged" -Filter "Microsoft.WindowsAppRuntime*.dll" 2>$null
-                  if ($wasdk) {
-                    Write-Host "  OK: Found $($wasdk.Count) Windows App SDK DLLs:"
-                    $wasdk | ForEach-Object { Write-Host "    - $($_.Name)" }
-                  } else {
-                    Write-Host "  WARNING: No Microsoft.WindowsAppRuntime DLLs found!"
-                    Write-Host "  This indicates WindowsAppSDKSelfContained may not have been applied during build."
-                    Write-Host "  Listing all DLLs in output:"
-                    Get-ChildItem -Path "$tempDir/Unpackaged" -Filter "*.dll" | Select-Object -First 20 | ForEach-Object { Write-Host "    - $($_.Name)" }
-                  }
-                  
-                  # CRITICAL DIAGNOSTIC: Check for Microsoft.ui.xaml.dll (the main WinUI3 native DLL)
-                  # Use -Recurse to check subdirectories too
+                  # Validate critical DLLs are present
                   $winui = Get-ChildItem -Path "$tempDir/Unpackaged" -Filter "Microsoft.ui.xaml.dll" -Recurse 2>$null
-                  if ($winui) {
-                    Write-Host "  CRITICAL OK: Found Microsoft.ui.xaml.dll at $($winui.FullName)"
-                  } else {
-                    Write-Host "  CRITICAL WARNING: Microsoft.ui.xaml.dll NOT found!"
-                    Write-Host "  This is the native WinUI3 DLL. Without it, the app will crash with 0xC000027B."
-                    Write-Host "  Total DLL count (recursive): $($(Get-ChildItem -Path "$tempDir/Unpackaged" -Filter "*.dll" -Recurse 2>$null).Count)"
-                    Write-Host "  Directory structure:"
-                    Get-ChildItem -Path "$tempDir/Unpackaged" -Directory 2>$null | ForEach-Object { Write-Host "    - $($_.Name)/" }
+                  if (!$winui) {
+                    Write-Host "##vso[task.logissue type=error]Microsoft.ui.xaml.dll missing from unpackaged output for $($project.Name)! Tests will crash with 0xC000027B."
                   }
                 } else {
-                  Write-Host "Warning: Unpackaged output not found (checked $savedDir and $($project.ArtifactDir))"
-                  # List what's in the artifact dir to debug
-                  Get-ChildItem -Path "$($project.ArtifactDir)" -Recurse -Depth 3 2>$null | ForEach-Object { Write-Host "  Found: $($_.FullName)" }
+                  Write-Host "##vso[task.logissue type=warning]Unpackaged output not found for $($project.Name)"
                 }
                 
                 if ($hasContent) {
-                  # Count total files before archive
-                  $totalFiles = (Get-ChildItem -Path "$tempDir" -Recurse -File).Count
-                  $dllCount = (Get-ChildItem -Path "$tempDir/Unpackaged" -Filter "*.dll" -Recurse 2>$null).Count
-                  Write-Host "Total files to archive: $totalFiles (including $dllCount DLLs in Unpackaged)"
-                  
                   Write-Host "Creating archive $zipPath..."
                   Compress-Archive -Path "$tempDir/*" -DestinationPath $zipPath -Force
-                  
-                  # Report archive size
                   $archiveSize = (Get-Item $zipPath).Length
                   Write-Host "Created $zipPath - Size: $([math]::Round($archiveSize / 1MB, 2)) MB"
-                  
-                  # VERIFY archive contains Microsoft.ui.xaml.dll by extracting and checking
-                  $verifyDir = "$artifactsDir/verify_$($project.Name)"
-                  New-Item -ItemType Directory -Force -Path $verifyDir | Out-Null
-                  Expand-Archive -Path $zipPath -DestinationPath $verifyDir -Force
-                  
-                  $verifyWinui = Get-ChildItem -Path "$verifyDir/Unpackaged" -Filter "Microsoft.ui.xaml.dll" -Recurse 2>$null
-                  $verifyDllCount = (Get-ChildItem -Path "$verifyDir/Unpackaged" -Filter "*.dll" -Recurse 2>$null).Count
-                  
-                  if ($verifyWinui) {
-                    Write-Host "  ARCHIVE VERIFY: Microsoft.ui.xaml.dll is in archive ($([math]::Round($verifyWinui.Length / 1MB, 2)) MB)"
-                  } else {
-                    Write-Host "  ARCHIVE VERIFY ERROR: Microsoft.ui.xaml.dll NOT FOUND in archive!"
-                  }
-                  Write-Host "  ARCHIVE VERIFY: $verifyDllCount DLLs in extracted Unpackaged folder"
-                  
-                  # Cleanup verify folder
-                  Remove-Item -Path $verifyDir -Recurse -Force
                 } else {
-                  Write-Host "ERROR: No content found for $($project.Name)"
+                  Write-Host "##vso[task.logissue type=error]No content found for $($project.Name) - neither AppPackages nor publish output found."
                 }
                 
                 # Cleanup temp folder
