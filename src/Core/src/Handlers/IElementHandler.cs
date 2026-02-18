@@ -51,12 +51,4 @@
 		/// </summary>
 		IMauiContext? MauiContext { get; }
 	}
-
-#if ANDROID
-	public interface IElementHandlerWithAndroidContext<THandler>
-		where THandler : IElementHandler
-	{
-		static abstract THandler CreateHandler(global::Android.Content.Context? context);
-	}
-#endif
 }

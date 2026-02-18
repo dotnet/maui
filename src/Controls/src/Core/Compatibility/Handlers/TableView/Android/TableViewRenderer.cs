@@ -11,7 +11,7 @@ using AView = Android.Views.View;
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
 #pragma warning disable CS0618 // Type or member is obsolete
-	public class TableViewRenderer : ViewRenderer<TableView, AListView>, IElementHandlerWithAndroidContext<TableViewRenderer>
+	public class TableViewRenderer : ViewRenderer<TableView, AListView>
 #pragma warning restore CS0618 // Type or member is obsolete
 	{
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -26,9 +26,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		TableViewModelRenderer _adapter;
 		bool _reattached;
 		bool _disposed;
-
-		static TableViewRenderer IElementHandlerWithAndroidContext<TableViewRenderer>.CreateHandler(Context context)
-			=> new TableViewRenderer(context);
 
 		public TableViewRenderer(Context context) : base(context, Mapper, CommandMapper)
 		{

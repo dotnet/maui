@@ -6,14 +6,30 @@ namespace Microsoft.Maui.Handlers;
 [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
 public class ElementHandlerAttribute : Attribute
 {
-	public ElementHandlerAttribute([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type handlerType)
+#if ANDROID
+	private static readonly Type[] s_androidContextConstructorSignature = [typeof(global::Android.Content.Context)];
+#endif
+
+	public ElementHandlerAttribute([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type handlerType)
 	{
 		HandlerType = handlerType;
 	}
 
 	public virtual IElementHandler CreateHandler(IMauiContext context)
 	{
-		object? handler = Activator.CreateInstance(HandlerType);
+		object? handler;
+
+#if ANDROID
+		if (HandlerType.GetConstructor(s_androidContextConstructorSignature) is {} constructor)
+		{
+			handler = constructor.Invoke([context.Context]);
+		}
+		else
+#endif
+		{
+			handler = Activator.CreateInstance(HandlerType);
+		}
+
 		if (handler is IElementHandler elementHandler)
 		{
 			return elementHandler;
@@ -21,7 +37,11 @@ public class ElementHandlerAttribute : Attribute
 
 		if (typeof(IElementHandler).IsAssignableFrom(HandlerType))
 		{
-			throw new InvalidOperationException($"Could not create an instance of handler type {HandlerType} for element handler. Ensure it has a public parameterless constructor.");
+			throw new InvalidOperationException($"Could not create an instance of handler type {HandlerType} for element handler. Ensure it has a public parameterless constructor"
+#if ANDROID
+				+ " or a constructor that accepts an Android.Content.Context parameter"
+#endif
+				+ ".");
 		}
 		else
 		{
@@ -29,18 +49,6 @@ public class ElementHandlerAttribute : Attribute
 		}
 	}
 
-	[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
+	[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 	public Type HandlerType { get; }
 }
-
-#if ANDROID
-public sealed class ElementHandlerWithAndroidContextAttribute<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] THandler>
-	: ElementHandlerAttribute
-	where THandler : IElementHandler, IElementHandlerWithAndroidContext<THandler>
-{
-	public ElementHandlerWithAndroidContextAttribute() : base(typeof(THandler)) { }
-
-	public override IElementHandler CreateHandler(IMauiContext context)
-		=> THandler.CreateHandler(context.Context);
-}
-#endif
