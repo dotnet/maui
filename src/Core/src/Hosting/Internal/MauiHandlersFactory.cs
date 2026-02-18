@@ -82,6 +82,7 @@ namespace Microsoft.Maui.Hosting.Internal
 			return null;
 		}
 
+		[Obsolete("Use GetHandler(Type, IMauiContext) instead.")]
 		public Type? GetHandlerType(Type iview)
 		{
 			// Check if there is a handler registered for this EXACT type -- allows overriding the default handler

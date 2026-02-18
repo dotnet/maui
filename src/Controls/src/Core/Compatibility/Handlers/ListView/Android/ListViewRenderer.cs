@@ -455,7 +455,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				var reflectableType = _headerRenderer as System.Reflection.IReflectableType;
 				var rendererType = reflectableType != null ? reflectableType.GetTypeInfo().AsType() : _headerRenderer.GetType();
+#pragma warning disable CS0618 // Intentional use of obsolete GetHandlerType in compat code
 				if (header == null || MauiContext.Handlers.GetHandlerType(header.GetType()) != rendererType)
+#pragma warning restore CS0618
 				{
 					if (_headerView != null)
 						_headerView.Child = null;

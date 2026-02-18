@@ -9,6 +9,7 @@ namespace Microsoft.Maui
 	{
 		IElementHandler? GetHandler(Type type, IMauiContext context);
 
+		[Obsolete("Use GetHandler(Type, IMauiContext) instead.")]
 		Type? GetHandlerType(Type iview);
 
 		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
