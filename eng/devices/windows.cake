@@ -175,7 +175,7 @@ Task("buildOnly")
 	else
 	{
 		// Apply correct build properties for unpackaged builds
-		// _MauiDeviceTestUnpackaged signals the shared .props file to set WindowsAppSDKSelfContained=true.
+		// _MauiDeviceTestUnpackaged signals the csproj files to set WindowsAppSDKSelfContained=true.
 		// WindowsAppSDKSelfContained MUST NOT be passed via command line because it propagates to ALL
 		// referenced projects (including library dependencies like Graphics.csproj) causing architecture errors.
 		s.MSBuildSettings.Properties.Add("SelfContained", new List<string> { "True" });
@@ -185,7 +185,7 @@ Task("buildOnly")
 		Information("=== UNPACKAGED BUILD PROPERTIES ===");
 		Information("  SelfContained=True");
 		Information("  WindowsPackageType=None");
-		Information("  _MauiDeviceTestUnpackaged=true (triggers WindowsAppSDKSelfContained in .props)");
+		Information("  _MauiDeviceTestUnpackaged=true (triggers WindowsAppSDKSelfContained in csproj)");
 	}
 
 	// Set correct launchSettings.json setting for packaged/unpackaged
