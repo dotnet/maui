@@ -1,5 +1,4 @@
 ﻿using System;
-using CoreGraphics;
 using ObjCRuntime;
 using UIKit;
 
@@ -25,12 +24,17 @@ namespace Microsoft.Maui.Handlers
 		internal static void MapFlowDirection(IProgressBarHandler handler, IProgress progress)
 		{
 			var progressbar = handler.PlatformView;
+			if (progressbar is null)
+			{
+				return;
+			}
+
 			UISemanticContentAttribute contentAttribute = GetSemanticContentAttribute(progress);
 			progressbar.SemanticContentAttribute = contentAttribute;
 
 			// On iOS 26, UIProgressView no longer applies the SemanticContentAttribute to its internal subviews, so update
 			// each subview explicitly to keep flow direction consistent.
-			if (OperatingSystem.IsIOSVersionAtLeast(26))
+			if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
 			{
 				foreach (var subview in progressbar.Subviews)
 				{
