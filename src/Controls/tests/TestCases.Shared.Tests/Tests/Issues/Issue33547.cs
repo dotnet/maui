@@ -13,7 +13,7 @@ public class Issue33547 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Shell)]
-	public void PageShouldNotMoveOutsideViewportWhenPressingEnterOnKeyboard()
+	public void PageShouldNotMoveOutsideViewportWhenEntryFocusedOnPageLoad()
 	{
 		App.WaitForElement("NavigationPushButton");
 		App.Tap("NavigationPushButton");

@@ -79,6 +79,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		IFontManager _fontManager;
 		bool _isVisiblePage;
 		NSObject? _keyboardWillHideObserver;
+		bool _pendingKeyboardNavigation;
 
 		BackButtonBehavior? BackButtonBehavior { get; set; }
 		UINavigationItem? NavigationItem { get; set; }
@@ -1111,6 +1112,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 			}
 
+			// Set flag when page is loaded during navigation - this is when the keyboard issue can occur
+			_pendingKeyboardNavigation = true;
+
 			UpdateToolbarItemsInternal();
 
 			//UIKIt will try to override our colors when the SearchController is inside the NavigationBar
@@ -1175,14 +1179,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (_disposed || ViewController?.View is null || ViewController.NavigationController is null)
 				return;
 
+			// Only apply fix during the problematic timing window (page load with navigation)
+			if (!_pendingKeyboardNavigation)
+				return;
+
 			var navController = ViewController.NavigationController;
 			var navBar = navController.NavigationBar;
 
 			if (navBar.Hidden || navBar.Frame.Height <= 0)
 				return;
 
-			// Don't interfere with SearchHandler's keyboard management
-			if (_searchHandlerAppearanceTracker != null)
+			// Don't interfere with SearchHandler's keyboard management when it's active
+			if (_searchController?.Active == true)
 				return;
 
 			var currentFrame = ViewController.View.Frame;
@@ -1192,15 +1200,20 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				navController.ViewControllers?.Length > 1 &&
 				ViewController == navController.TopViewController)
 			{
+				// Adjust height to fit available space after Y position change
+				var yOffset = navBarBottom - currentFrame.Y;
 				var correctFrame = new CGRect(
 					currentFrame.X,
 					navBarBottom,
 					currentFrame.Width,
-					currentFrame.Height
+					currentFrame.Height - yOffset
 				);
 
 				ViewController.View.Frame = correctFrame;
 			}
+
+			// Clear flag after handling keyboard dismissal once
+			_pendingKeyboardNavigation = false;
 		}
 
 		#endregion SearchHandler
