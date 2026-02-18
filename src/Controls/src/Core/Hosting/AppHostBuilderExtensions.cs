@@ -76,6 +76,10 @@ public static partial class AppHostBuilderExtensions
 
 		builder.ConfigureImageSourceHandlers();
 
+		// Ensure the handlers factory is registered even though we have no handlers to add via DI.
+		// All built-in handlers are resolved via [ElementHandler] attributes on the view types.
+		builder.ConfigureMauiHandlers(configureDelegate: null);
+
 		// NOTE: not registered under NativeAOT or TrimMode=Full scenarios
 		if (RuntimeFeature.IsHybridWebViewSupported)
 		{
