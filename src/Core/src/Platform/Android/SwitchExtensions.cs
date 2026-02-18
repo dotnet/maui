@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using Android.Content.Res;
 using Android.Graphics.Drawables;
 using ASwitch = AndroidX.AppCompat.Widget.SwitchCompat;
@@ -7,8 +8,12 @@ namespace Microsoft.Maui.Platform
 {
 	public static class SwitchExtensions
 	{
-		static ColorStateList? _defaultTrackTintList;
-		static ColorStateList? _defaultThumbTintList;
+		// Store the original theme tint per MaterialSwitch instance to support:
+		// Per-Activity theming (different Activities can have different themes)
+		// Theme switching at runtime (dark mode toggle)
+		// Thread safety (no shared mutable state)
+		static readonly ConditionalWeakTable<MSwitch, ColorStateList> _defaultTrackTintCache = new();
+		static readonly ConditionalWeakTable<MSwitch, ColorStateList> _defaultThumbTintCache = new();
 
 		public static void UpdateIsOn(this ASwitch aSwitch, ISwitch view)
 		{
@@ -39,7 +44,17 @@ namespace Microsoft.Maui.Platform
 		internal static void UpdateTrackColor(this MSwitch materialSwitch, ISwitch view)
 		{
 			var trackColor = view.TrackColor;
-			_defaultTrackTintList ??= materialSwitch.TrackTintList;
+
+			// Cache the original theme track tint for this switch instance before we modify it.
+			// This must happen before TrackTintList is set, as that will overwrite the original value.
+			if (!_defaultTrackTintCache.TryGetValue(materialSwitch, out var defaultTrackTintList))
+			{
+				if (materialSwitch.TrackTintList is ColorStateList currentTint)
+				{
+					_defaultTrackTintCache.Add(materialSwitch, currentTint);
+					defaultTrackTintList = currentTint;
+				}
+			}
 
 			if (trackColor is not null)
 			{
@@ -47,7 +62,7 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				materialSwitch.TrackTintList = _defaultTrackTintList;
+				materialSwitch.TrackTintList = defaultTrackTintList;
 			}
 		}
 
@@ -55,7 +70,17 @@ namespace Microsoft.Maui.Platform
 		internal static void UpdateThumbColor(this MSwitch materialSwitch, ISwitch view)
 		{
 			var thumbColor = view.ThumbColor;
-			_defaultThumbTintList ??= materialSwitch.ThumbTintList;
+
+			// Cache the original theme thumb tint for this switch instance before we modify it.
+			// This must happen before ThumbTintList is set, as that will overwrite the original value.
+			if (!_defaultThumbTintCache.TryGetValue(materialSwitch, out var defaultThumbTintList))
+			{
+				if (materialSwitch.ThumbTintList is ColorStateList currentTint)
+				{
+					_defaultThumbTintCache.Add(materialSwitch, currentTint);
+					defaultThumbTintList = currentTint;
+				}
+			}
 
 			if (thumbColor is not null)
 			{
@@ -63,7 +88,7 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				materialSwitch.ThumbTintList = _defaultThumbTintList;
+				materialSwitch.ThumbTintList = defaultThumbTintList;
 			}
 		}
 
