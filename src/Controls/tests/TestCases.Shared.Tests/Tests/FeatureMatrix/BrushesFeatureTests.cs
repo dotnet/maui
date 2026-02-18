@@ -5,17 +5,12 @@ using UITest.Core;
 namespace Microsoft.Maui.TestCases.Tests;
 
 [Category(UITestCategories.Brush)]
-public class BrushesFeatureTests : UITest
+public class BrushesFeatureTests : _GalleryUITest
 {
 	public const string BrushesFeatureMatrix = "Brushes Feature Matrix";
+	public override string GalleryPageName => BrushesFeatureMatrix;
 	public BrushesFeatureTests(TestDevice testDevice) : base(testDevice)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(BrushesFeatureMatrix);
 	}
 
 	public void VerifyBrushesScreenshot()
