@@ -12,7 +12,8 @@
 
     <Grid RowDefinitions="*,Auto"
           RowSpacing="15">
-        <ImageButton Source="green.png"
+        <ImageButton Source="oasis.jpg"
+                     Aspect="AspectFill"
                      BackgroundColor="LightGray"
                      WidthRequest="300"
                      HeightRequest="300"
