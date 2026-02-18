@@ -5,6 +5,9 @@ namespace Maui.Controls.Sample;
 public partial class ClipOptionsPage : ContentPage
 {
 	private ClipViewModel _viewModel;
+#if WINDOWS
+	private Geometry _geometry;
+#endif
 	public ClipOptionsPage(ClipViewModel viewModel)
 	{
 		InitializeComponent();
@@ -12,16 +15,19 @@ public partial class ClipOptionsPage : ContentPage
 		BindingContext = _viewModel;
 	}
 
-	private void ApplyButton_Clicked(object sender, EventArgs e)
+	private async void ApplyButton_Clicked(object sender, EventArgs e)
 	{
-		Navigation.PopAsync();
+		await Navigation.PopAsync();
+#if WINDOWS
+		_viewModel.Clip = _geometry;
+#endif
 	}
 
 	private void ClipRadio_CheckedChanged(object sender, CheckedChangedEventArgs e)
 	{
 		if (e.Value && BindingContext is ClipViewModel vm && sender is RadioButton rb)
 		{
-			vm.Clip = rb.Content?.ToString() switch
+			Geometry clip = rb.Content?.ToString() switch
 			{
 				"None" => null,
 				"Rectangle" => new RectangleGeometry(new Rect(75, 100, 150, 100)),
@@ -37,6 +43,11 @@ public partial class ClipOptionsPage : ContentPage
 				},
 				_ => null
 			};
+#if WINDOWS
+			_geometry = clip;
+#else
+			vm.Clip = clip;
+#endif
 		}
 	}
 
@@ -45,7 +56,12 @@ public partial class ClipOptionsPage : ContentPage
 		if (e.Value && BindingContext is ClipViewModel vm && sender is RadioButton rb)
 		{
 			string pathType = rb.Content?.ToString() ?? "LineSegment";
-			vm.Clip = CreatePathGeometry(pathType);
+			Geometry pathClip = CreatePathGeometry(pathType);
+#if WINDOWS
+			_geometry = pathClip;
+#else
+			vm.Clip = pathClip;
+#endif
 		}
 	}
 
@@ -337,6 +353,10 @@ public partial class ClipOptionsPage : ContentPage
 
 	private void OnClearClipClicked(object sender, EventArgs e)
 	{
+#if WINDOWS
+		_geometry = null;
+#else
 		_viewModel.Clip = null;
+#endif
 	}
 }
