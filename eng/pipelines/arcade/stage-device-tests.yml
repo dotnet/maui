@@ -439,8 +439,9 @@ stages:
           - script: dotnet tool restore
             displayName: 'Restore .NET tools'
             retryCountOnTaskFailure: 3
+
           # Install .NET SDK and workloads using Arcade build script
-          - script: ./build.cmd -restore -configuration Release 
+          - script: ./build.cmd -restore -configuration Release
             displayName: 'Install .NET'
             retryCountOnTaskFailure: 3
             env:
@@ -454,45 +455,115 @@ stages:
           - script: ./build.cmd -restore -build -configuration Release -projects Microsoft.Maui.BuildTasks.slnf
             displayName: Build the MSBuild Tasks
 
+          # Build Unpackaged tests FIRST (self-contained .exe for direct execution)
+          # Must build unpackaged BEFORE packaged so we can save the publish output
+          # before the packaged build overwrites the artifacts/bin directory
+          - ${{ each project in parameters.windowsDeviceTestProjects }}:
+            - script: dotnet cake eng/devices/windows.cake --target=buildOnly --project="$(Build.SourcesDirectory)/${{ project.path }}" --device=unpackaged --binlog="$(Build.SourcesDirectory)/artifacts/log/Debug" --configuration=Release --packageid=${{ project.packageId }} --verbosity=diagnostic
+              displayName: Build ${{ project.name }} (Windows Unpackaged)
+              retryCountOnTaskFailure: 1
+
+          # Save unpackaged publish output before packaged builds overwrite artifacts/bin
+          - pwsh: |
+              $artifactNames = @("Controls.DeviceTests", "Core.DeviceTests", "Graphics.DeviceTests", "Essentials.DeviceTests", "MauiBlazorWebView.DeviceTests")
+              foreach ($name in $artifactNames) {
+                $publishDir = Get-ChildItem -Path "$(Build.SourcesDirectory)/artifacts/bin/$name" -Filter "publish" -Recurse -Directory | Select-Object -First 1
+                if ($publishDir) {
+                  $savedDir = "$(Build.SourcesDirectory)/artifacts/bin/saved_unpackaged_$name"
+                  Write-Host "Saving unpackaged output: $($publishDir.FullName) -> $savedDir"
+                  Copy-Item -Path $publishDir.FullName -Destination $savedDir -Recurse -Force
+                } else {
+                  Write-Host "Warning: No publish folder found for $name"
+                }
+              }
+            displayName: Save unpackaged publish output
+
           # Build Windows device tests using Cake script (Packaged/MSIX builds)
-          # TODO: Unpackaged builds disabled - apps crash on Helix with 0xC000027B
-          # (Windows App SDK Bootstrap failure). Investigating root cause. See PR #33328.
+          # Built AFTER unpackaged so AppPackages directory exists when zip step runs
           - ${{ each project in parameters.windowsDeviceTestProjects }}:
             - script: dotnet cake eng/devices/windows.cake --target=buildOnly --project="$(Build.SourcesDirectory)/${{ project.path }}" --device=packaged --binlog="$(Build.SourcesDirectory)/artifacts/log/Debug" --configuration=Release --packageid=${{ project.packageId }} --verbosity=diagnostic
               displayName: Build ${{ project.name }} (Windows Packaged)
               retryCountOnTaskFailure: 1
 
           # Create zip archives for each device test project
-          # The MSIX packages are built in the project's AppPackages directory, not artifacts/bin
+          # Include both packaged (AppPackages with MSIX) and unpackaged (publish folder with .exe)
           - pwsh: |
               # Ensure artifacts/bin directory exists
               $artifactsDir = "$(Build.SourcesDirectory)/artifacts/bin"
               New-Item -ItemType Directory -Force -Path $artifactsDir | Out-Null
               
-              # Archive each project's AppPackages directory
+              # Project configurations with artifact bin paths
               $projects = @(
-                @{ Name = "Controls.DeviceTests"; Dir = "$(Build.SourcesDirectory)/src/Controls/tests/DeviceTests" },
-                @{ Name = "Core.DeviceTests"; Dir = "$(Build.SourcesDirectory)/src/Core/tests/DeviceTests" },
-                @{ Name = "Graphics.DeviceTests"; Dir = "$(Build.SourcesDirectory)/src/Graphics/tests/DeviceTests" },
-                @{ Name = "Essentials.DeviceTests"; Dir = "$(Build.SourcesDirectory)/src/Essentials/test/DeviceTests" },
-                @{ Name = "MauiBlazorWebView.DeviceTests"; Dir = "$(Build.SourcesDirectory)/src/BlazorWebView/tests/DeviceTests" }
+                @{ Name = "Controls.DeviceTests"; ProjectDir = "$(Build.SourcesDirectory)/src/Controls/tests/DeviceTests"; ArtifactDir = "$(Build.SourcesDirectory)/artifacts/bin/Controls.DeviceTests" },
+                @{ Name = "Core.DeviceTests"; ProjectDir = "$(Build.SourcesDirectory)/src/Core/tests/DeviceTests"; ArtifactDir = "$(Build.SourcesDirectory)/artifacts/bin/Core.DeviceTests" },
+                @{ Name = "Graphics.DeviceTests"; ProjectDir = "$(Build.SourcesDirectory)/src/Graphics/tests/DeviceTests"; ArtifactDir = "$(Build.SourcesDirectory)/artifacts/bin/Graphics.DeviceTests" },
+                @{ Name = "Essentials.DeviceTests"; ProjectDir = "$(Build.SourcesDirectory)/src/Essentials/test/DeviceTests"; ArtifactDir = "$(Build.SourcesDirectory)/artifacts/bin/Essentials.DeviceTests" },
+                @{ Name = "MauiBlazorWebView.DeviceTests"; ProjectDir = "$(Build.SourcesDirectory)/src/BlazorWebView/tests/DeviceTests"; ArtifactDir = "$(Build.SourcesDirectory)/artifacts/bin/MauiBlazorWebView.DeviceTests" }
               )
               
               foreach ($project in $projects) {
-                $appPackagesDir = "$($project.Dir)/AppPackages"
+                Write-Host "============================================"
+                Write-Host "Processing $($project.Name)..."
+                Write-Host "============================================"
+                
+                # Look for AppPackages (MSIX) at project directory
+                $appPackagesDir = "$($project.ProjectDir)/AppPackages"
+                
                 $zipPath = "$artifactsDir/$($project.Name).zip"
                 
+                # Create a temp folder to consolidate packaged and unpackaged outputs
+                $tempDir = "$artifactsDir/temp_$($project.Name)"
+                New-Item -ItemType Directory -Force -Path $tempDir | Out-Null
+                
+                $hasContent = $false
+                
+                # Copy packaged output (AppPackages with MSIX)
                 if (Test-Path $appPackagesDir) {
-                  Write-Host "Creating archive for $($project.Name) from $appPackagesDir..."
-                  Compress-Archive -Path "$appPackagesDir" -DestinationPath $zipPath -Force
-                  Write-Host "Created $zipPath"
-                  
-                  $msix = Get-ChildItem -Path $appPackagesDir -Recurse -Filter "*.msix" | Select-Object -First 1
-                  if ($msix) { Write-Host "  Contains MSIX: $($msix.Name)" }
-                  else { Write-Host "  WARNING: No MSIX found!" }
+                  Copy-Item -Path $appPackagesDir -Destination "$tempDir/AppPackages" -Recurse
+                  $msix = Get-ChildItem -Path "$tempDir/AppPackages" -Recurse -Filter "*.msix" | Select-Object -First 1
+                  if ($msix) { 
+                    Write-Host "  Packaged: $($msix.Name)" 
+                    $hasContent = $true
+                  }
                 } else {
-                  Write-Host "Warning: $appPackagesDir not found for $($project.Name)"
+                  Write-Host "##vso[task.logissue type=warning]AppPackages not found at $appPackagesDir"
                 }
+                
+                # Copy unpackaged output from saved location (saved before packaged build overwrites artifacts/bin)
+                $savedDir = "$artifactsDir/saved_unpackaged_$($project.Name)"
+                if (!(Test-Path $savedDir)) {
+                  # Fallback: try the original publish folder in artifacts/bin
+                  $publishDir = Get-ChildItem -Path "$($project.ArtifactDir)" -Filter "publish" -Recurse -Directory | Select-Object -First 1
+                  if ($publishDir) { $savedDir = $publishDir.FullName }
+                }
+                if (Test-Path $savedDir) {
+                  Copy-Item -Path $savedDir -Destination "$tempDir/Unpackaged" -Recurse
+                  $exe = Get-ChildItem -Path "$tempDir/Unpackaged" -Filter "*.exe" | Where-Object { $_.Name -like "Microsoft.Maui.*" } | Select-Object -First 1
+                  if ($exe) { 
+                    Write-Host "  Unpackaged: $($exe.Name)"
+                    $hasContent = $true
+                  }
+                  
+                  # Validate critical DLLs are present
+                  $winui = Get-ChildItem -Path "$tempDir/Unpackaged" -Filter "Microsoft.ui.xaml.dll" -Recurse 2>$null
+                  if (!$winui) {
+                    Write-Host "##vso[task.logissue type=error]Microsoft.ui.xaml.dll missing from unpackaged output for $($project.Name)! Tests will crash with 0xC000027B."
+                  }
+                } else {
+                  Write-Host "##vso[task.logissue type=warning]Unpackaged output not found for $($project.Name)"
+                }
+                
+                if ($hasContent) {
+                  Write-Host "Creating archive $zipPath..."
+                  Compress-Archive -Path "$tempDir/*" -DestinationPath $zipPath -Force
+                  $archiveSize = (Get-Item $zipPath).Length
+                  Write-Host "Created $zipPath - Size: $([math]::Round($archiveSize / 1MB, 2)) MB"
+                } else {
+                  Write-Host "##vso[task.logissue type=error]No content found for $($project.Name) - neither AppPackages nor publish output found."
+                }
+                
+                # Cleanup temp folder
+                Remove-Item -Path $tempDir -Recurse -Force
               }
             displayName: Create payload archives
 
@@ -558,91 +629,3 @@ stages:
               IncludeDotNetCli: true
               DisplayNamePrefix: DeviceTestsWindows
               WorkItemTimeout: 04:00:00
-
-  # Windows Unpackaged Tests via Cake (unpackaged doesn't work on Helix)
-  # This runs separately from Helix using the existing Cake infrastructure
-  - ${{ if eq(parameters.runWindowsTests, true) }}:
-    - stage: devicetests_windows_unpackaged
-      displayName: ${{ parameters.TargetFrameworkVersion }} Windows Unpackaged Tests (Cake)
-      dependsOn: []
-      jobs:
-      - template: /eng/pipelines/common/device-tests-jobs.yml@self
-        parameters:
-          platform: windows
-          timeoutInMinutes: 240
-          pool: ${{ parameters.windowsTestPool }}
-          versions: [ 'unpackaged' ]
-          targetFrameworkVersion:
-            tfm: ${{ parameters.TargetFrameworkVersion }}
-            dependsOn: ''
-          project:
-            name: essentials_unpackaged
-            desc: Essentials unpackaged
-            path: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
-            packageid: com.microsoft.maui.essentials.devicetests
-            configuration: Debug
-          skipProvisioning: true
-      - template: /eng/pipelines/common/device-tests-jobs.yml@self
-        parameters:
-          platform: windows
-          timeoutInMinutes: 240
-          pool: ${{ parameters.windowsTestPool }}
-          versions: [ 'unpackaged' ]
-          targetFrameworkVersion:
-            tfm: ${{ parameters.TargetFrameworkVersion }}
-            dependsOn: ''
-          project:
-            name: graphics_unpackaged
-            desc: Graphics unpackaged
-            path: $(System.DefaultWorkingDirectory)/src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj
-            packageid: com.microsoft.maui.graphics.devicetests
-            configuration: Debug
-          skipProvisioning: true
-      - template: /eng/pipelines/common/device-tests-jobs.yml@self
-        parameters:
-          platform: windows
-          timeoutInMinutes: 240
-          pool: ${{ parameters.windowsTestPool }}
-          versions: [ 'unpackaged' ]
-          targetFrameworkVersion:
-            tfm: ${{ parameters.TargetFrameworkVersion }}
-            dependsOn: ''
-          project:
-            name: core_unpackaged
-            desc: Core unpackaged
-            path: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj
-            packageid: com.microsoft.maui.core.devicetests
-            configuration: Debug
-          skipProvisioning: true
-      - template: /eng/pipelines/common/device-tests-jobs.yml@self
-        parameters:
-          platform: windows
-          timeoutInMinutes: 240
-          pool: ${{ parameters.windowsTestPool }}
-          versions: [ 'unpackaged' ]
-          targetFrameworkVersion:
-            tfm: ${{ parameters.TargetFrameworkVersion }}
-            dependsOn: ''
-          project:
-            name: controls_unpackaged
-            desc: Controls unpackaged
-            path: $(System.DefaultWorkingDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj
-            packageid: com.microsoft.maui.controls.devicetests
-            configuration: Debug
-          skipProvisioning: true
-      - template: /eng/pipelines/common/device-tests-jobs.yml@self
-        parameters:
-          platform: windows
-          timeoutInMinutes: 240
-          pool: ${{ parameters.windowsTestPool }}
-          versions: [ 'unpackaged' ]
-          targetFrameworkVersion:
-            tfm: ${{ parameters.TargetFrameworkVersion }}
-            dependsOn: ''
-          project:
-            name: blazorwebview_unpackaged
-            desc: BlazorWebView unpackaged
-            path: $(System.DefaultWorkingDirectory)/src/BlazorWebView/tests/DeviceTests/MauiBlazorWebView.DeviceTests.csproj
-            packageid: Microsoft.Maui.MauiBlazorWebView.DeviceTests
-            configuration: Debug
-          skipProvisioning: true

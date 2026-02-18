@@ -13,6 +13,8 @@
     <ExcludeMicrosoftNetTestSdk>true</ExcludeMicrosoftNetTestSdk>
   </PropertyGroup>
 
+  <Import Project="$(MauiSrcDirectory)Microsoft.Maui.TestUtils.DeviceTests.Runners.props" />
+
   <PropertyGroup>
     <ApplicationTitle>Essentials Tests</ApplicationTitle>
     <ApplicationId>com.microsoft.maui.essentials.devicetests</ApplicationId>
