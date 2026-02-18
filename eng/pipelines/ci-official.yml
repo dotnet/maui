@@ -86,6 +86,7 @@ extends:
         macPool: ${{ parameters.MacOSPool }}
         enableSourceIndex: false
         runAsPublic: false
+        is1ESPipeline: true
         enableMicrobuild: true
         publishAssets: true
         sourceIndexParams:
@@ -102,7 +103,7 @@ extends:
             skipAndroidEmulatorImages: true
             skipAndroidCreateAvds: true
             skipProvisioning: true
-            skipXcode: true
+            skipXcode: false
             base64Encode: true
             outputVariableName: dotnetbuilds-internal-container-read-token-base64
 
