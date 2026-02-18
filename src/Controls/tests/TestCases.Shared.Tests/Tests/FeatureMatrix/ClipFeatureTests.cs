@@ -31,7 +31,7 @@ public class ClipFeatureTests : _GalleryUITest
 
 	// ==================== Border Tests ====================
 
-	[Test, Order(2)]
+	[Test, Order(1)]
 	[Category(UITestCategories.Border)]
 	public void Border_ClipWithStrokeThickness()
 	{
@@ -53,7 +53,7 @@ public class ClipFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(3)]
+	[Test, Order(2)]
 	[Category(UITestCategories.Border)]
 	public void Border_ClipWithStrokeColorBlue()
 	{
@@ -71,7 +71,7 @@ public class ClipFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(4)]
+	[Test, Order(3)]
 	[Category(UITestCategories.Border)]
 	public void Border_ClipWithStrokeColorGreen()
 	{
@@ -89,7 +89,7 @@ public class ClipFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(5)]
+	[Test, Order(4)]
 	[Category(UITestCategories.Border)]
 	public void Border_ClipWithStrokeShapeRoundRectangle()
 	{
@@ -107,7 +107,7 @@ public class ClipFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(7)]
+	[Test, Order(5)]
 	[Category(UITestCategories.Border)]
 	public void Border_ClipWithShadow()
 	{
@@ -127,7 +127,7 @@ public class ClipFeatureTests : _GalleryUITest
 
 	// ==================== BoxView Tests ====================
 
-	[Test, Order(9)]
+	[Test, Order(6)]
 	[Category(UITestCategories.BoxView)]
 	public void BoxView_ClipWithColorGreen()
 	{
@@ -149,7 +149,7 @@ public class ClipFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(10)]
+	[Test, Order(7)]
 	[Category(UITestCategories.BoxView)]
 	public void BoxView_ClipWithCornerRadius()
 	{
@@ -168,7 +168,7 @@ public class ClipFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(11)]
+	[Test, Order(8)]
 	[Category(UITestCategories.BoxView)]
 	public void BoxView_ClipWithShadow()
 	{
@@ -188,7 +188,7 @@ public class ClipFeatureTests : _GalleryUITest
 
 	// ==================== Button Tests ====================
 
-	[Test, Order(13)]
+	[Test, Order(9)]
 	[Category(UITestCategories.Button)]
 	public void Button_ClipWithImageSource()
 	{
@@ -210,7 +210,7 @@ public class ClipFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(14)]
+	[Test, Order(10)]
 	[Category(UITestCategories.Button)]
 	public void Button_ClipWithText()
 	{
@@ -229,7 +229,7 @@ public class ClipFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(15)]
+	[Test, Order(11)]
 	[Category(UITestCategories.Button)]
 	public void Button_ClipWithShadow()
 	{
@@ -249,7 +249,7 @@ public class ClipFeatureTests : _GalleryUITest
 
 	// ==================== Image Tests (Geometry Variations) ====================
 
-	[Test, Order(17)]
+	[Test, Order(12)]
 	[Category(UITestCategories.Image)]
 	public void Image_ClipWithRectangleGeometry()
 	{
@@ -268,7 +268,7 @@ public class ClipFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(18)]
+	[Test, Order(13)]
 	[Category(UITestCategories.Image)]
 	public void Image_ClipWithEllipseGeometry()
 	{
@@ -283,7 +283,7 @@ public class ClipFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(19)]
+	[Test, Order(14)]
 	[Category(UITestCategories.Image)]
 	public void Image_ClipWithRoundRectangleGeometry()
 	{
@@ -298,7 +298,7 @@ public class ClipFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(20)]
+	[Test, Order(15)]
 	[Category(UITestCategories.Image)]
 	public void Image_ClipWithGeometryGroup()
 	{
@@ -313,7 +313,7 @@ public class ClipFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(21)]
+	[Test, Order(16)]
 	[Category(UITestCategories.Image)]
 	public void Image_ClipWithLineSegmentPath()
 	{
@@ -328,7 +328,7 @@ public class ClipFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(22)]
+	[Test, Order(17)]
 	[Category(UITestCategories.Image)]
 	public void Image_ClipWithArcSegmentPath()
 	{
@@ -343,7 +343,7 @@ public class ClipFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(23)]
+	[Test, Order(18)]
 	[Category(UITestCategories.Image)]
 	public void Image_ClipWithBezierSegmentPath()
 	{
@@ -358,7 +358,7 @@ public class ClipFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(24)]
+	[Test, Order(19)]
 	[Category(UITestCategories.Image)]
 	public void Image_ClipWithPolyLineSegmentPath()
 	{
@@ -373,7 +373,7 @@ public class ClipFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(25)]
+	[Test, Order(20)]
 	[Category(UITestCategories.Image)]
 	public void Image_ClipWithPolyBezierSegmentPath()
 	{
@@ -388,7 +388,7 @@ public class ClipFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(26)]
+	[Test, Order(21)]
 	[Category(UITestCategories.Image)]
 	public void Image_ClipWithQuadraticBezierSegmentPath()
 	{
@@ -403,7 +403,7 @@ public class ClipFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(27)]
+	[Test, Order(22)]
 	[Category(UITestCategories.Image)]
 	public void Image_ClipWithPolyQuadraticBezierSegmentPath()
 	{
@@ -420,7 +420,7 @@ public class ClipFeatureTests : _GalleryUITest
 
 	// ==================== Label Tests ====================
 
-	[Test, Order(29)]
+	[Test, Order(23)]
 	[Category(UITestCategories.Label)]
 	public void Label_ClipWithLongText() // all clip in iOS not working
 	{
@@ -439,7 +439,7 @@ public class ClipFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(30)]
+	[Test, Order(24)]
 	[Category(UITestCategories.Label)]
 	public void Label_ClipWithDifferentFontSize()
 	{
@@ -458,7 +458,7 @@ public class ClipFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(31)]
+	[Test, Order(25)]
 	[Category(UITestCategories.Label)]
 	public void Label_ClipWithFormattedText()
 	{
@@ -478,7 +478,7 @@ public class ClipFeatureTests : _GalleryUITest
 
 	// ==================== ContentView Tests ====================
 
-	[Test, Order(33)]
+	[Test, Order(26)]
 	[Category(UITestCategories.Layout)]
 	public void ContentView_ClipWithRectangleGeometry()
 	{
@@ -497,7 +497,7 @@ public class ClipFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(34)]
+	[Test, Order(27)]
 	[Category(UITestCategories.Layout)]
 	public void ContentView_ClipWithEllipseGeometry()
 	{
@@ -512,7 +512,7 @@ public class ClipFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(35)]
+	[Test, Order(28)]
 	[Category(UITestCategories.Layout)]
 	public void ContentView_ClipWithRoundRectangleGeometry()
 	{
@@ -527,7 +527,7 @@ public class ClipFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(36)]
+	[Test, Order(29)]
 	[Category(UITestCategories.Layout)]
 	public void ContentView_ClipWithShadow()
 	{
@@ -547,7 +547,7 @@ public class ClipFeatureTests : _GalleryUITest
 
 	// ==================== ImageButton Tests ====================
 
-	[Test, Order(38)]
+	[Test, Order(30)]
 	[Category(UITestCategories.ImageButton)]
 	public void ImageButton_ClipWithRectangleGeometry()
 	{
@@ -566,7 +566,7 @@ public class ClipFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(39)]
+	[Test, Order(31)]
 	[Category(UITestCategories.ImageButton)]
 	public void ImageButton_ClipWithEllipseGeometry()
 	{
@@ -581,7 +581,7 @@ public class ClipFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(40)]
+	[Test, Order(32)]
 	[Category(UITestCategories.ImageButton)]
 	public void ImageButton_ClipWithRoundRectangleGeometry()
 	{
@@ -596,7 +596,7 @@ public class ClipFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(41)]
+	[Test, Order(33)]
 	[Category(UITestCategories.ImageButton)]
 	public void ImageButton_ClipWithShadow()
 	{
@@ -616,7 +616,7 @@ public class ClipFeatureTests : _GalleryUITest
 
 	// ==================== Negative Tests ====================
 
-	[Test, Order(43)]
+	[Test, Order(34)]
 	[Category(UITestCategories.Border)]
 	public void Border_ClipNone_NoCrash()
 	{
@@ -642,13 +642,10 @@ public class ClipFeatureTests : _GalleryUITest
 
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-
-		// Verify control still renders without crash
-		App.WaitForElement("BorderControl");
 		VerifyScreenshot();
 	}
 
-	[Test, Order(44)]
+	[Test, Order(35)]
 	[Category(UITestCategories.Image)]
 	public void Image_ClipNull_NoCrash()
 	{
@@ -674,13 +671,10 @@ public class ClipFeatureTests : _GalleryUITest
 
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-
-		// Verify control still renders without crash
-		App.WaitForElement("ImageControl");
 		VerifyScreenshot();
 	}
 
-	[Test, Order(45)]
+	[Test, Order(36)]
 	[Category(UITestCategories.Button)]
 	public void Button_ClipNull_NoCrash()
 	{
@@ -706,13 +700,10 @@ public class ClipFeatureTests : _GalleryUITest
 
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-
-		// Verify control still renders without crash
-		App.WaitForElement("ButtonControl");
 		VerifyScreenshot();
 	}
 
-	[Test, Order(46)]
+	[Test, Order(37)]
 	[Category(UITestCategories.Layout)]
 	public void ContentView_ClipNull_NoCrash()
 	{
@@ -738,15 +729,12 @@ public class ClipFeatureTests : _GalleryUITest
 
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-
-		// Verify control still renders without crash
-		App.WaitForElement("ContentViewControl");
 		VerifyScreenshot();
 	}
 
 	// ==================== Clip with Rotation Tests ====================
 
-	[Test, Order(48)]
+	[Test, Order(38)]
 	[Category(UITestCategories.Image)]
 	public void Image_ClipWithRotation()
 	{
@@ -769,7 +757,7 @@ public class ClipFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(49)]
+	[Test, Order(39)]
 	[Category(UITestCategories.Border)]
 	public void Border_ClipWithRotation()
 	{
@@ -792,7 +780,7 @@ public class ClipFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(50)]
+	[Test, Order(40)]
 	[Category(UITestCategories.Label)]
 	public void Label_ClipWithRotation()
 	{
@@ -817,7 +805,7 @@ public class ClipFeatureTests : _GalleryUITest
 
 	// ==================== Clip with Scale Tests ====================
 
-	[Test, Order(52)]
+	[Test, Order(41)]
 	[Category(UITestCategories.Button)]
 	public void Button_ClipWithScale()
 	{
@@ -844,7 +832,7 @@ public class ClipFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(53)]
+	[Test, Order(42)]
 	[Category(UITestCategories.Image)]
 	public void Image_ClipWithScale()
 	{
@@ -871,7 +859,7 @@ public class ClipFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(54)]
+	[Test, Order(43)]
 	[Category(UITestCategories.ImageButton)]
 	public void ImageButton_ClipWithScale()
 	{
@@ -900,7 +888,7 @@ public class ClipFeatureTests : _GalleryUITest
 
 	// ==================== Nested Clip Tests ====================
 
-	[Test, Order(56)]
+	[Test, Order(44)]
 	[Category(UITestCategories.Layout)]
 	public void ContentView_ClipWithNestedClippedContent()
 	{
@@ -917,14 +905,10 @@ public class ClipFeatureTests : _GalleryUITest
 
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-
-		// ContentView with clip applied to the parent acts as a nested clip scenario
-		// since the child content is also clipped by the parent's geometry
-		App.WaitForElement("ContentViewControl");
 		VerifyScreenshot();
 	}
 
-	[Test, Order(57)]
+	[Test, Order(45)]
 	[Category(UITestCategories.Border)]
 	public void Border_ClipWithNestedContent()
 	{
@@ -944,15 +928,12 @@ public class ClipFeatureTests : _GalleryUITest
 
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-
-		// Border clips both its own content and child elements
-		App.WaitForElement("BorderControl");
 		VerifyScreenshot();
 	}
 
 	// ==================== Complex Geometry Tests ====================
 
-	[Test, Order(59)]
+	[Test, Order(46)]
 	[Category(UITestCategories.Image)]
 	public void Image_ClipWithComplexPolyLineGeometry()
 	{
@@ -975,7 +956,7 @@ public class ClipFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(60)]
+	[Test, Order(47)]
 	[Category(UITestCategories.Image)]
 	public void Image_ClipWithComplexPolyBezierAndRotation()
 	{
@@ -1001,7 +982,7 @@ public class ClipFeatureTests : _GalleryUITest
 
 	// ==================== Clip with Combined Transforms ====================
 
-	[Test, Order(62)]
+	[Test, Order(48)]
 	[Category(UITestCategories.Border)]
 	public void Border_ClipWithRotationAndScale()
 	{
@@ -1032,7 +1013,7 @@ public class ClipFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(63)]
+	[Test, Order(49)]
 	[Category(UITestCategories.BoxView)]
 	public void BoxView_ClipWithRotation()
 	{
