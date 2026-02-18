@@ -10,7 +10,7 @@ public class Issue24468 : _IssuesUITest
     {
     }
 
-    public override string Issue => "FlyoutPage toolbar button not updating on orientation change on Android";
+    public override string Issue => "FlyoutPage toolbar button not updating on orientation change on Android and Windows";
     [Test]
     [Category(UITestCategories.Navigation)]
     public void FlyoutPageToolbarButtonUpdatesOnOrientationChange()

@@ -1,7 +1,7 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 24468, "FlyoutPage toolbar button not updating on orientation change on Android", 
-    PlatformAffected.Android)]
+[Issue(IssueTracker.Github, 24468, "FlyoutPage toolbar button not updating on orientation change on Android and Windows", 
+    PlatformAffected.Android | PlatformAffected.UWP)]
 public class Issue24468 : TestFlyoutPage
 {
     private Label _eventLabel;
