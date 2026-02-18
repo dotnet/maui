@@ -57,19 +57,18 @@ public class BindableLayoutViewModel : INotifyPropertyChanged
 		AddItemCommand = new Command(AddItem);
 	}
 
-	
-
-
+	private bool _gridEventsSubscribed = false;
 	public void OnGridLoaded(object sender, EventArgs e)
 	{
 		if (sender is not Grid grid)
 			return;
 
-		// Re-arrange items whenever children change
-		grid.ChildAdded += (_, _) => ArrangeGridItems(grid);
-		grid.ChildRemoved += (_, _) => ArrangeGridItems(grid);
-
-		// Initial arrangement
+		if (!_gridEventsSubscribed)
+		{
+			grid.ChildAdded += (_, _) => ArrangeGridItems(grid);
+			grid.ChildRemoved += (_, _) => ArrangeGridItems(grid);
+			_gridEventsSubscribed = true;
+		}
 		ArrangeGridItems(grid);
 	}
 
@@ -107,10 +106,10 @@ public class BindableLayoutViewModel : INotifyPropertyChanged
 	}
 
 	public object FlexEmptyView
-    {
+	{
 		get => _flexEmptyView;
 		set { _flexEmptyView = value; OnPropertyChanged(); }
-    }
+	}
 
 	public object GridEmptyView
 	{

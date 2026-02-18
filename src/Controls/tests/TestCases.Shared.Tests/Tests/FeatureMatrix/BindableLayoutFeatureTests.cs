@@ -5,19 +5,14 @@ using UITest.Core;
 namespace Microsoft.Maui.TestCases.Tests;
 
 [Category(UITestCategories.Layout)]
-public class BindableLayoutFeatureTests : UITest
+public class BindableLayoutFeatureTests : _GalleryUITest
 {
 	public const string BindableLayoutFeatureMatrix = "BindableLayout Feature Matrix";
+	public override string GalleryPageName => BindableLayoutFeatureMatrix;
 
 	public BindableLayoutFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(BindableLayoutFeatureMatrix);
 	}
 
 	[Test, Order(1)]
