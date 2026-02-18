@@ -60,8 +60,8 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <param name="visualElement">The visual element to get visual state groups from.</param>
 		/// <returns>The collection of visual state groups.</returns>
-		public static IList<VisualStateGroup> GetVisualStateGroups(VisualElement visualElement)
-			=> (IList<VisualStateGroup>)visualElement.GetValue(VisualStateGroupsProperty);
+		public static VisualStateGroupList GetVisualStateGroups(VisualElement visualElement)
+			=> (VisualStateGroupList)visualElement.GetValue(VisualStateGroupsProperty);
 
 		/// <summary>
 		/// Sets the collection of <see cref="VisualStateGroup"/> objects for the specified <paramref name="visualElement"/>.
@@ -154,7 +154,7 @@ namespace Microsoft.Maui.Controls
 
 		internal static void UpdateStateTriggers(VisualElement visualElement)
 		{
-			var groups = (IList<VisualStateGroup>)visualElement.GetValue(VisualStateGroupsProperty);
+			var groups = (VisualStateGroupList)visualElement.GetValue(VisualStateGroupsProperty);
 
 			foreach (VisualStateGroup group in groups)
 			{
