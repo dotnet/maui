@@ -121,34 +121,69 @@ To enable: `gh auth refresh -s read:project`
 
 **DO NOT** omit any category. Each category table should include columns for: PR, Title, Author, Platform/Repo, Status, Age, Updated.
 
-### Step 4: Present ONE PR at a Time for Review
+### Step 4: Present ONE PR at a Time for Merge Review
 
-When user asks to review, present only ONE PR in this format:
+When user asks to walk through PRs or review a specific PR for merging, present ONE PR with a **deep analysis**. This requires fetching:
+1. Full PR details (`gh pr view`)
+2. The AI Summary comment (`gh api repos/dotnet/maui/issues/XXXXX/comments` filtered for `<!-- AI Summary -->`)
+3. The PR diff (`gh pr diff`)
+4. CI build status (use `pr-build-status` skill)
+5. Project board status (GraphQL query to MAUI SDK Ongoing board)
+
+Present in this format:
 
 ```markdown
-## PR #XXXXX
-
-**[Title]**
+## PR #XXXXX — [Title]
 
 🔗 [URL]
 
 | Field | Value |
 |-------|-------|
-| **Author** | username |
-| **Platform** | platform |
-| **Complexity** | Easy/Medium/Complex |
-| **Milestone** | milestone or (none) |
-| **Age** | X days |
-| **Files** | X (+additions/-deletions) |
-| **Labels** | labels |
-| **Category** | priority/milestoned/partner/community/recent |
+| **Author** | username (affiliation if known, e.g. Syncfusion partner) |
+| **Milestone** | milestone or None |
+| **Board Status** | MAUI SDK Ongoing: status (or "Not on board") |
+| **CI** | ✅ Passed / ❌ Failed (with details) |
+| **Review** | ✅ Approved (Nx human) / ⚠️ Changes Requested / 🔍 Review Required |
 
-Would you like me to review this PR?
+**Labels:** `label1`, `label2`, `label3`
+
+---
+
+### What it fixes
+Brief description of the issue and root cause.
+
+### The fix
+Concise description of the code change with size (+X/-Y lines, N files).
+
+### AI Agent Analysis
+Summarize each phase from the AI Summary comment:
+- **🔍 Pre-Flight:** What was found
+- **🚦 Gate:** PASSED/FAILED — did tests catch the bug?
+- **🔧 Fix:** How many alternatives tried, was PR's fix the best?
+- **📋 Verdict:** Agent's recommendation
+
+### My Assessment
+**🟢 MERGE** / **🟡 MERGE WITH CAVEAT** / **🔴 DO NOT MERGE**
+
+Clear reasoning for/against merging, including:
+- Code quality assessment
+- Test coverage confidence
+- Risk level
+- Any concerns from agent review
+- Whether gate passed or failed and what that means
 ```
+
+**Key rules:**
+- **ALWAYS** include board status (query the project board, don't skip it)
+- **ALWAYS** include all labels
+- **ALWAYS** fetch and analyze the AI Summary comment if agent labels are present
+- **ALWAYS** give your own merge assessment with clear reasoning
+- **ALWAYS** check CI status
+- If the AI Summary comment is absent, note that and base assessment on code review and human reviews only
 
 ### Step 5: Invoke PR Reviewer
 
-When user confirms, use the **pr** agent:
+When user confirms they want a deeper review, use the **pr** agent:
 - "Review PR #XXXXX"
 
 ## Complexity Levels
