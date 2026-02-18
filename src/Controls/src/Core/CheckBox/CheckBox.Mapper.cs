@@ -17,10 +17,7 @@ namespace Microsoft.Maui.Controls
 
 			// Force VisualElement's static constructor to run first so base-level
 			// mapper remappings are applied before these Control-specific ones.
-#if DEBUG
-			RemappingDebugHelper.AssertBaseClassForRemapping(typeof(CheckBox), typeof(VisualElement));
-#endif
-			VisualElement.s_forceStaticConstructor = true;
+RemappingHelper.EnsureBaseTypeRemapped(typeof(CheckBox), typeof(VisualElement));
 
 			CheckBoxHandler.Mapper.ReplaceMapping<ICheckBox, ICheckBoxHandler>(nameof(Color), MapColor);
 		}

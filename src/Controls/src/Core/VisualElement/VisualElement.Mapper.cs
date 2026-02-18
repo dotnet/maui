@@ -10,20 +10,9 @@ namespace Microsoft.Maui.Controls
 	/// </summary>
 	public partial class VisualElement
 	{
-		// Accessing this field from a derived type's static constructor forces
-		// VisualElement's static constructor (and transitively Element's) to run
-		// first, guaranteeing that base-level mapper remappings are applied before
-		// derived ones.
-		private protected static new bool s_forceStaticConstructor;
-
 		static VisualElement()
 		{
-			// Force Element's static constructor to run first so its mapper
-			// remappings are applied before VisualElement's.
-#if DEBUG
-			RemappingDebugHelper.AssertBaseClassForRemapping(typeof(VisualElement), typeof(Element));
-#endif
-			Element.s_forceStaticConstructor = true;
+			RemappingHelper.EnsureBaseTypeRemapped(typeof(VisualElement), typeof(Element));
 
 #if WINDOWS
 			ViewHandler.ViewMapper.ReplaceMapping<IView, IViewHandler>(PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyHorizontalOffsetProperty.PropertyName, MapAccessKeyHorizontalOffset);

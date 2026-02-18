@@ -11,10 +11,7 @@ namespace Microsoft.Maui.Controls
 		{
 			// Force Element's static constructor to run first so base-level
 			// mapper remappings are applied before these Control-specific ones.
-#if DEBUG
-			RemappingDebugHelper.AssertBaseClassForRemapping(typeof(Window), typeof(Element));
-#endif
-			Element.s_forceStaticConstructor = true;
+			RemappingHelper.EnsureBaseTypeRemapped(typeof(Window), typeof(Element));
 
 #if ANDROID
 			// This property is also on the Application Mapper since that's where the attached property exists

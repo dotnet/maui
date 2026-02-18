@@ -15,10 +15,7 @@ namespace Microsoft.Maui.Controls
 		{
 			// Force VisualElement's static constructor to run first so base-level
 			// mapper remappings are applied before these Control-specific ones.
-#if DEBUG
-			RemappingDebugHelper.AssertBaseClassForRemapping(typeof(RadioButton), typeof(VisualElement));
-#endif
-			VisualElement.s_forceStaticConstructor = true;
+RemappingHelper.EnsureBaseTypeRemapped(typeof(RadioButton), typeof(VisualElement));
 
 			RadioButtonHandler.Mapper.ReplaceMapping<RadioButton, IRadioButtonHandler>(nameof(IRadioButton.Content), MapContent);
 

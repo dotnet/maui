@@ -10,10 +10,7 @@ namespace Microsoft.Maui.Controls
 		{
 			// Force VisualElement's static constructor to run first so base-level
 			// mapper remappings are applied before these Control-specific ones.
-#if DEBUG
-			RemappingDebugHelper.AssertBaseClassForRemapping(typeof(DatePicker), typeof(VisualElement));
-#endif
-			VisualElement.s_forceStaticConstructor = true;
+RemappingHelper.EnsureBaseTypeRemapped(typeof(DatePicker), typeof(VisualElement));
 
 			// Adjust the mappings to preserve Controls.DatePicker legacy behaviors
 #if IOS
