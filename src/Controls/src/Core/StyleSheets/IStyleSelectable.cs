@@ -1,7 +1,6 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Maui.Controls.StyleSheets
 {
@@ -16,7 +15,6 @@ namespace Microsoft.Maui.Controls.StyleSheets
 
 	interface IStylable
 	{
-		[RequiresUnreferencedCode(StyleSheet.StyleSheetTrimmerWarning)]
 		BindableProperty GetProperty(string key, bool inheriting);
 	}
 }

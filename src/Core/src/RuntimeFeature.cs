@@ -23,7 +23,6 @@ namespace Microsoft.Maui
 		const bool AreBindingInterceptorsSupportedByDefault = true;
 		const bool IsXamlCBindingWithSourceCompilationEnabledByDefault = false;
 		const bool IsHybridWebViewSupportedByDefault = true;
-		const bool IsCssStyleSheetSupportedByDefault = true;
 		const bool SupportNamescopesByDefault = true;
 		const bool EnableDiagnosticsByDefault = false;
 		const bool IsMeterSupportedByDefault = true;
@@ -92,15 +91,6 @@ namespace Microsoft.Maui
 			AppContext.TryGetSwitch($"{FeatureSwitchPrefix}.{nameof(IsHybridWebViewSupported)}", out bool isSupported)
 				? isSupported
 				: IsHybridWebViewSupportedByDefault;
-
-#if NET9_0_OR_GREATER
-		[FeatureSwitchDefinition($"{FeatureSwitchPrefix}.{nameof(IsCssStyleSheetSupported)}")]
-		[FeatureGuard(typeof(RequiresUnreferencedCodeAttribute))]
-#endif
-		public static bool IsCssStyleSheetSupported =>
-			AppContext.TryGetSwitch($"{FeatureSwitchPrefix}.{nameof(IsCssStyleSheetSupported)}", out bool isSupported)
-				? isSupported
-				: IsCssStyleSheetSupportedByDefault;
 
 #if NET9_0_OR_GREATER
 		[FeatureSwitchDefinition($"{FeatureSwitchPrefix}.{nameof(AreNamescopesSupported)}")]

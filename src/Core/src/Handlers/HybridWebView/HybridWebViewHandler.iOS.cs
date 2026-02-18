@@ -18,8 +18,6 @@ namespace Microsoft.Maui.Handlers
 	{
 		private const string ScriptMessageHandlerName = "webwindowinterop";
 
-		[UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingAotSuppressedBecauseIsHybridWebViewSupportedFeatureSwitch)]
-		[UnconditionalSuppressMessage("AOT", "IL3050", Justification = TrimmingAotSuppressedBecauseIsHybridWebViewSupportedFeatureSwitch)]
 		protected override WKWebView CreatePlatformView()
 		{
 			var config = new WKWebViewConfiguration();
@@ -58,12 +56,12 @@ namespace Microsoft.Maui.Handlers
 			if (DeveloperTools.Enabled)
 			{
 				// Legacy Developer Extras setting.
-				config.Preferences.SetValueForKey(NSObject.FromObject(true)!, new NSString("developerExtrasEnabled"));
+				config.Preferences.SetValueForKey(NSObject.FromObject(true), new NSString("developerExtrasEnabled"));
 
 				if (OperatingSystem.IsIOSVersionAtLeast(16, 4) || OperatingSystem.IsMacCatalystVersionAtLeast(16, 6))
 				{
 					// Enable Developer Extras for iOS builds for 16.4+ and Mac Catalyst builds for 16.6 (macOS 13.5)+
-					webview.SetValueForKey(NSObject.FromObject(true)!, new NSString("inspectable"));
+					webview.SetValueForKey(NSObject.FromObject(true), new NSString("inspectable"));
 				}
 			}
 
@@ -111,6 +109,11 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(platformView);
 		}
 
+
+		[RequiresUnreferencedCode(DynamicFeatures)]
+#if !NETSTANDARD
+		[RequiresDynamicCode(DynamicFeatures)]
+#endif
 		private sealed class WebViewScriptMessageHandler : NSObject, IWKScriptMessageHandler
 		{
 			private readonly WeakReference<HybridWebViewHandler?> _webViewHandler;

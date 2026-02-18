@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
 using System.Xml;
@@ -13,7 +12,6 @@ namespace Microsoft.Maui.Controls.Xaml
 	[ContentProperty(nameof(Style))]
 	[ProvideCompiled("Microsoft.Maui.Controls.XamlC.StyleSheetProvider")]
 	[RequireService([typeof(IXmlLineInfoProvider), typeof(IRootObjectProvider)])]
-	[RequiresUnreferencedCode(StyleSheet.StyleSheetTrimmerWarning)]
 	public sealed class StyleSheetExtension : IValueProvider
 	{
 		/// <summary>

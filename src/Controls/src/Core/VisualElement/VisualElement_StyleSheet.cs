@@ -12,10 +12,8 @@ namespace Microsoft.Maui.Controls
 	/// Provides the base class for all visual elements in .NET MAUI.
 	/// </summary>
 	[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.NonPublicFields)]
-	/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="Type[@FullName='Microsoft.Maui.Controls.VisualElement']/Docs/*" />
 	public partial class VisualElement : IStylable
 	{
-		[RequiresUnreferencedCode(StyleSheet.StyleSheetTrimmerWarning)]
 		BindableProperty IStylable.GetProperty(string key, bool inheriting)
 		{
 			if (!Internals.Registrar.StyleProperties.TryGetValue(key, out var attrList))
