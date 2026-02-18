@@ -20,7 +20,7 @@ public partial class ShellTabbedControlPage : Shell
         InitializeComponent();
         _viewModel = new ShellViewModel();
         BindingContext = _viewModel;
-        Navigated += (s, e) => _viewModel.CurrentItemTitle = CurrentItem?.CurrentItem?.Title ?? "Unknown";
+        Navigated += OnNavigated;
     }
 
     private async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)
@@ -32,5 +32,16 @@ public partial class ShellTabbedControlPage : Shell
     private void OnGoToTab1Clicked(object sender, EventArgs e)
     {
         this.CurrentItem = this.tab1Item;
+    }
+
+    private void OnNavigated(object sender, ShellNavigatedEventArgs e)
+    {
+        _viewModel.CurrentItemTitle = CurrentItem?.CurrentItem?.Title ?? "Unknown";
+    }
+
+    protected override void OnDisappearing()
+    {
+        base.OnDisappearing();
+        Navigated -= OnNavigated;  // Clean up
     }
 }
