@@ -48,8 +48,10 @@ namespace Microsoft.Maui.Hosting.Internal
 			throw new HandlerNotFoundException($"Unable to find a {nameof(IElementHandler)} corresponding to {type}. Please register a handler for {type} using `Microsoft.Maui.Hosting.MauiHandlersCollectionExtensions.AddHandler` or `Microsoft.Maui.Hosting.MauiHandlersCollectionExtensions.TryAddHandler`");
 		}
 
+		#pragma warning disable CS0618 // Obsolete member implemented from interface
 		public IElementHandler? GetHandler<T>(IMauiContext context) where T : IElement
 			=> GetHandler(typeof(T), context);
+		#pragma warning restore CS0618
 
 		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 		public Type? GetConstructibleHandlerType(Type iview)
@@ -141,7 +143,9 @@ namespace Microsoft.Maui.Hosting.Internal
 			return false;
 		}
 
+		#pragma warning disable CS0618 // Obsolete member implemented from interface
 		public IMauiHandlersCollection GetCollection() => (IMauiHandlersCollection)InternalCollection;
+		#pragma warning restore CS0618
 
 		private Type? TryGetVirtualViewHandlerServiceType(Type type)
 			=> _serviceCache.GetOrAdd(type, _registeredHandlerServiceTypeSet.ResolveVirtualViewToRegisteredHandlerServiceType);
