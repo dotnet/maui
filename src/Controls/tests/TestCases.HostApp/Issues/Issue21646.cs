@@ -3,7 +3,7 @@ using System;
 
 namespace Maui.Controls.Sample.Issues
 {
-    [Issue(IssueTracker.Github, 21646, "Flyout icon should remain visible when a page is pushed onto a NavigationPage with the back button disabled.", PlatformAffected.WPF | PlatformAffected.Android, issueTestNumber: 1)]
+    [Issue(IssueTracker.Github, 21646, "Flyout icon should remain visible when a page is pushed onto a NavigationPage with the back button disabled.", PlatformAffected.iOS | PlatformAffected.Android, issueTestNumber: 1)]
     public partial class Issue21646 : FlyoutPage
     {
         public Issue21646()
@@ -11,7 +11,7 @@ namespace Maui.Controls.Sample.Issues
             FlyoutLayoutBehavior = FlyoutLayoutBehavior.Popover;
             var flyoutPage = new ContentPage
             {
-                Title = "Menu",
+                Title = "OK",
                 BackgroundColor = Colors.LightGray,
                 Content = new StackLayout
                 {
@@ -43,11 +43,11 @@ namespace Maui.Controls.Sample.Issues
             Detail = detailPage;
         }
 
-        private void OnNavigateButtonClicked(object sender, EventArgs e)
+        private async void OnNavigateButtonClicked(object sender, EventArgs e)
         {
             if (Detail is NavigationPage navPage)
             {
-                PushPageNoBackAsync(navPage, new ContentPage
+                await PushPageNoBackAsync(navPage, new ContentPage
                 {
                     Title = "Second Page",
                     Content = new StackLayout
@@ -58,7 +58,7 @@ namespace Maui.Controls.Sample.Issues
             }
         }
 
-        public static async void PushPageNoBackAsync(NavigationPage np, Page p)
+        public static async Task PushPageNoBackAsync(NavigationPage np, Page p)
         {
             NavigationPage.SetHasBackButton(p, false);
             await np.PushAsync(p);
