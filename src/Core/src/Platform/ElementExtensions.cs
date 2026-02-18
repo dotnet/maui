@@ -76,9 +76,15 @@ namespace Microsoft.Maui.Platform
 				try
 				{
 					if (handlersWithConstructors.Contains(viewType))
+					{
 						handler = viewType.CreateTypeWithInjection(context);
+					}
 					else
-						handler = context.Handlers.GetHandler(viewType, context);
+					{
+						var handlerType = context.Handlers.GetHandlerType(viewType)
+							?? throw new HandlerNotFoundException(view);
+						handler = (IElementHandler?)Activator.CreateInstance(handlerType);
+					}
 				}
 				catch (MissingMethodException)
 				{
@@ -146,10 +152,12 @@ namespace Microsoft.Maui.Platform
 				handler = null;
 
 			if (handler == null)
-				handler = context.Handlers.GetHandler(element.GetType(), context);
-
-			if (handler == null)
-				throw new Exception($"Handler not found for window {element}.");
+			{
+				var handlerType = context.Handlers.GetHandlerType(element.GetType())
+					?? throw new Exception($"Handler not found for window {element}.");
+				handler = (IElementHandler?)Activator.CreateInstance(handlerType)
+					?? throw new Exception($"Could not create handler for window {element}.");
+			}
 
 			handler.SetMauiContext(context);
 

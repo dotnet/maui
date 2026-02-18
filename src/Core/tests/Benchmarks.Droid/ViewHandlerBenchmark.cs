@@ -99,11 +99,11 @@ public class ViewHandlerBenchmark
 	{
 		readonly FontManager _fontManager = new(new FontRegistrar(new EmbeddedFontLoader()));
 
-		public IMauiHandlersCollection GetCollection() => throw new NotImplementedException();
+		[Obsolete] public IMauiHandlersCollection GetCollection() => throw new NotImplementedException();
 
-		public IElementHandler? GetHandler(Type type, IMauiContext context) => throw new NotImplementedException();
+		[Obsolete] public IElementHandler? GetHandler(Type type, IMauiContext context) => throw new NotImplementedException();
 
-		public IElementHandler? GetHandler<T>(IMauiContext context) where T : IElement => throw new NotImplementedException();
+		[Obsolete] public IElementHandler? GetHandler<T>(IMauiContext context) where T : IElement => throw new NotImplementedException();
 
 		public Type? GetHandlerType(Type iview) => throw new NotImplementedException();
 
