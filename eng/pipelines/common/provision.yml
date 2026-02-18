@@ -144,7 +144,7 @@ steps:
       if [[ -z "$XCODE_PATH" ]]; then
         echo "ERROR: No suitable Xcode version found for requested version ${ORIGINAL_VERSION}"
         echo "Tried: ${VERSIONS_TO_TRY[*]}"
-        exit 0
+        exit 1
       fi
 
       sudo xcode-select -s "$XCODE_PATH"
@@ -169,33 +169,40 @@ steps:
         # if we're using Xcode 26.0[.?], then explicitly install the iOS 26.0 simulator (the iOS 26.0.1 simulator doesn't work for us)
         # also install the universal simulator version, so that this bot can run x64 apps in the simulator.
         if [[ "${XCODE_VERSION}" =~ ^26[.]0.*$ ]]; then
-          RC=0
-          sudo xcodebuild -downloadPlatform iOS -architectureVariant universal -buildVersion 26.0 || RC=$?
-          if [[ "$RC" == "70" ]]; then
-            echo "xcodebuild exited with exit code 70, which seems to mean not all is bad? Assuming things will work..."
-          elif [[ "$RC" == "0" ]]; then
-            echo "Successfully installed the requested iOS simulator"
-          else
-            echo "Failed to install simulator runtime, deleting all simulator runtimes and trying again..."
-            sudo xcrun simctl runtime delete all
-            # simulator runtimes are deleted asynchronously, so wait until they're all gone (but max 60 seconds)
-            for i in $(seq 1 60); do
-              sleep 1
-              C=$(xcrun simctl runtime list -j | jq '. | length')
-              if [[ $C == 0 ]]; then
-                echo "    still $C simulators left..."
-                break
-              fi
-            done
-            echo "Re-trying simulator runtime installation, if this doesn't work, a reboot might be required"
-            sudo xcodebuild -downloadPlatform iOS -architectureVariant universal -buildVersion 26.0
-          fi
+          DOWNLOAD_ARGS="-downloadPlatform iOS -architectureVariant universal -buildVersion 26.0"
         else
-          sudo xcodebuild -downloadPlatform iOS
+          DOWNLOAD_ARGS="-downloadPlatform iOS"
         fi
+
+        RC=0
+        sudo xcodebuild $DOWNLOAD_ARGS || RC=$?
+        if [[ "$RC" != "0" ]]; then
+          echo "First attempt failed with exit code $RC, deleting all simulator runtimes and trying again..."
+          sudo xcrun simctl runtime delete all
+          # simulator runtimes are deleted asynchronously, so wait until they're all gone (but max 60 seconds)
+          for i in $(seq 1 60); do
+            sleep 1
+            C=$(xcrun simctl runtime list -j | jq '. | length')
+            if [[ $C == 0 ]]; then
+              break
+            fi
+            echo "    still $C simulators left..."
+          done
+          echo "Re-trying simulator runtime installation..."
+          sudo xcodebuild $DOWNLOAD_ARGS
+        fi
+
+        # Verify the simulator runtime was actually installed
+        echo "Verifying simulator runtimes..."
+        xcrun simctl runtime list
+        RUNTIME_COUNT=$(xcrun simctl runtime list -j | jq '. | length')
+        if [[ "$RUNTIME_COUNT" == "0" ]]; then
+          echo "##vso[task.logissue type=error]No simulator runtimes installed after download attempt"
+          exit 1
+        fi
+        echo "Found $RUNTIME_COUNT simulator runtime(s)"
       displayName: Install Simulator Runtimes
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
-      continueOnError: true
       timeoutInMinutes: 30
 
 # Provision Additional Software

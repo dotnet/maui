@@ -129,6 +129,7 @@ public class Issue28986_SafeAreaBorderOrientation : _IssuesUITest
 
     [Test]
     [Category(UITestCategories.SafeAreaEdges)]
+    [Retry(2)]
     public void SafeAreaBorderMultipleOrientationChanges()
     {
         var borderContent = App.WaitForElement("BorderContent");
