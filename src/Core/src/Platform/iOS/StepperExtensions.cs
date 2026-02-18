@@ -47,6 +47,8 @@ namespace Microsoft.Maui.Platform
 		internal static void UpdateFlowDirection(this UIStepper platformStepper, IStepper stepper)
 		{
 			UISemanticContentAttribute contentAttribute = GetSemanticContentAttribute(stepper);
+			// iOS 26 changed UIStepper internal rendering so that SemanticContentAttribute alone
+			// is no longer sufficient to mirror the control for RTL. A horizontal transform is required.
 			bool isIOS26 = OperatingSystem.IsIOSVersionAtLeast(26);
 			CGAffineTransform transform = GetCGAffineTransform(stepper);
 			platformStepper.SemanticContentAttribute = contentAttribute;
@@ -111,11 +113,8 @@ namespace Microsoft.Maui.Platform
 				// Flip horizontally for RTL
 				return CGAffineTransform.MakeScale(-1, 1);
 			}
-			else
-			{
-				// Identity transform for LTR
-				return CGAffineTransform.MakeIdentity();
-			}
+			// Identity transform for LTR
+			return CGAffineTransform.MakeIdentity();
 		}
 	}
 }
