@@ -37,8 +37,6 @@ public partial class ClipOptionsPage : ContentPage
 				},
 				_ => null
 			};
-
-			vm.SelectedClip = rb.Content?.ToString() ?? "null";
 		}
 	}
 
@@ -340,6 +338,5 @@ public partial class ClipOptionsPage : ContentPage
 	private void OnClearClipClicked(object sender, EventArgs e)
 	{
 		_viewModel.Clip = null;
-		_viewModel.SelectedClip = "null";
 	}
 }

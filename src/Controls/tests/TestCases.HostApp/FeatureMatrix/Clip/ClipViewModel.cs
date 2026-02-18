@@ -12,8 +12,6 @@ public class ClipViewModel : INotifyPropertyChanged
 	private double _fontSize = 28;
 	private string _imageSource = null;
 	private string _text = "Button";
-	private string _selectedControl = "Image";
-	private string _selectedClip = "null";
 	private IShape _strokeShape = new Rectangle();
 	private Shadow _shadow = null;
 	private Brush _stroke = Brush.Red;
@@ -105,31 +103,6 @@ public class ClipViewModel : INotifyPropertyChanged
 			if (_text != value)
 			{
 				_text = value;
-				OnPropertyChanged();
-			}
-		}
-	}
-	public string SelectedControl
-	{
-		get => _selectedControl;
-		set
-		{
-			if (_selectedControl != value)
-			{
-				_selectedControl = value;
-				OnPropertyChanged();
-			}
-		}
-	}
-
-	public string SelectedClip
-	{
-		get => _selectedClip;
-		set
-		{
-			if (_selectedClip != value)
-			{
-				_selectedClip = value;
 				OnPropertyChanged();
 			}
 		}
