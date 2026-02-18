@@ -21,18 +21,18 @@ namespace Microsoft.Maui.Maps.Handlers
 	/// Get a key from the Azure Portal: https://portal.azure.com → Azure Maps account → Authentication.
 	/// </para>
 	/// <para>
-	/// <b>Supported features:</b>
+	/// <b>Supported features (via Azure Maps JS API through internal WebView2):</b>
 	/// <list type="bullet">
-	/// <item><description><b>MoveToRegion:</b> Navigates via the internal Azure Maps JS API (<c>map.setCamera</c>).</description></item>
+	/// <item><description><b>MoveToRegion:</b> Navigates via <c>map.setCamera()</c>.</description></item>
+	/// <item><description><b>MapType:</b> Street/Satellite/Hybrid via <c>map.setStyle()</c> (road/satellite/satellite_road_labels).</description></item>
+	/// <item><description><b>IsTrafficEnabled:</b> Traffic flow and incidents via <c>map.setTraffic()</c>.</description></item>
+	/// <item><description><b>IsZoomEnabled/IsScrollEnabled:</b> Independent control via <c>map.setUserInteraction()</c>.</description></item>
 	/// <item><description><b>Pins:</b> Displays map pins using <see cref="MapIcon"/> on a <see cref="MapElementsLayer"/>. Pin click events are supported.</description></item>
-	/// <item><description><b>InteractiveControls:</b> <see cref="IMap.IsZoomEnabled"/> and <see cref="IMap.IsScrollEnabled"/> control the <c>InteractiveControlsVisible</c> property (zoom, rotate, pitch, style picker are bundled together).</description></item>
 	/// </list>
 	/// </para>
 	/// <para>
 	/// <b>Unsupported features (no-op on Windows):</b>
 	/// <list type="bullet">
-	/// <item><description><b>MapType:</b> The WinUI 3 MapControl does not support programmatic map style switching. Users can change styles via the built-in picker when <c>InteractiveControlsVisible</c> is enabled.</description></item>
-	/// <item><description><b>IsTrafficEnabled:</b> Not supported by the WinUI 3 MapControl.</description></item>
 	/// <item><description><b>IsShowingUser:</b> Not built-in. Use the Geolocation API and a custom <see cref="MapIcon"/> to display user location.</description></item>
 	/// <item><description><b>Polylines/Polygons/Circles:</b> <see cref="MapElementsLayer"/> only supports <see cref="MapIcon"/>. Shapes are not rendered.</description></item>
 	/// <item><description><b>Pin Labels/InfoWindows:</b> <see cref="MapIcon"/> does not support labels or info windows.</description></item>
@@ -108,38 +108,82 @@ namespace Microsoft.Maui.Maps.Handlers
 			sender.NavigationCompleted -= OnWebViewNavigationCompleted;
 			_webViewReady = true;
 
-			// If there's a pending MoveToRegion that was queued before the WebView was ready, apply it now
+			// Apply any pending state that was queued before the WebView was ready
 			if (_pendingSpan != null)
 			{
 				var span = _pendingSpan;
 				_pendingSpan = null;
-				_ = SetCameraAsync(span.Center.Latitude, span.Center.Longitude, CalculateZoom(span));
+				_ = ExecuteJsAsync(string.Format(
+					CultureInfo.InvariantCulture,
+					"map.setCamera({{ center: [{0}, {1}], zoom: {2}, type: 'jump' }});",
+					span.Center.Longitude, span.Center.Latitude, CalculateZoom(span)));
+			}
+
+			// Apply initial property state via JS now that the map is ready
+			if (VirtualView != null)
+			{
+				_ = ApplyMapTypeAsync(VirtualView.MapType);
+				_ = ApplyTrafficAsync(VirtualView.IsTrafficEnabled);
+				_ = ApplyUserInteractionAsync(VirtualView.IsScrollEnabled, VirtualView.IsZoomEnabled);
 			}
 		}
 
 		MapSpan? _pendingSpan;
 
 		/// <summary>
-		/// Navigates the map camera using the Azure Maps JavaScript API (map.setCamera).
+		/// Executes a JavaScript command on the Azure Maps instance inside the WebView2.
 		/// </summary>
-		async System.Threading.Tasks.Task SetCameraAsync(double latitude, double longitude, double zoom)
+		async System.Threading.Tasks.Task ExecuteJsAsync(string script)
 		{
 			if (_webView == null || !_webViewReady)
 				return;
 
 			try
 			{
-				var script = string.Format(
-					CultureInfo.InvariantCulture,
-					"map.setCamera({{ center: [{0}, {1}], zoom: {2}, type: 'jump' }});",
-					longitude, latitude, zoom);
-
 				await _webView.ExecuteScriptAsync(script);
 			}
 			catch (Exception)
 			{
 				// JS execution may fail if WebView2 is not fully ready or map object is not available
 			}
+		}
+
+		/// <summary>
+		/// Applies the map style corresponding to the MAUI <see cref="MapType"/> via the Azure Maps JS API.
+		/// </summary>
+		System.Threading.Tasks.Task ApplyMapTypeAsync(MapType mapType)
+		{
+			// Azure Maps style names: https://learn.microsoft.com/azure/azure-maps/supported-map-styles
+			var style = mapType switch
+			{
+				MapType.Street => "road",
+				MapType.Satellite => "satellite",
+				MapType.Hybrid => "satellite_road_labels",
+				_ => "road"
+			};
+			return ExecuteJsAsync($"map.setStyle({{ style: '{style}' }});");
+		}
+
+		/// <summary>
+		/// Enables or disables the traffic overlay via the Azure Maps JS API.
+		/// </summary>
+		System.Threading.Tasks.Task ApplyTrafficAsync(bool enabled)
+		{
+			if (enabled)
+				return ExecuteJsAsync("map.setTraffic({ flow: 'relative', incidents: true });");
+			else
+				return ExecuteJsAsync("map.setTraffic({ flow: 'none', incidents: false });");
+		}
+
+		/// <summary>
+		/// Configures independent scroll and zoom interaction via the Azure Maps JS API.
+		/// </summary>
+		System.Threading.Tasks.Task ApplyUserInteractionAsync(bool scrollEnabled, bool zoomEnabled)
+		{
+			var drag = scrollEnabled ? "true" : "false";
+			var scroll = zoomEnabled ? "true" : "false";
+			var dblClick = zoomEnabled ? "true" : "false";
+			return ExecuteJsAsync($"map.setUserInteraction({{ dragPanInteraction: {drag}, scrollZoomInteraction: {scroll}, dblClickZoomInteraction: {dblClick} }});");
 		}
 
 		static double CalculateZoom(MapSpan span)
@@ -206,41 +250,73 @@ namespace Microsoft.Maui.Maps.Handlers
 		}
 
 		/// <summary>
-		/// Maps the <see cref="IMap.MapType"/> property. No-op on Windows: the WinUI 3 MapControl does not support programmatic style changes.
+		/// Maps the <see cref="IMap.MapType"/> property via the Azure Maps JS <c>map.setStyle()</c> API.
 		/// </summary>
+		/// <remarks>
+		/// Maps MAUI <see cref="MapType.Street"/> to <c>road</c>, <see cref="MapType.Satellite"/> to <c>satellite</c>,
+		/// and <see cref="MapType.Hybrid"/> to <c>satellite_road_labels</c>.
+		/// </remarks>
 		public static void MapMapType(IMapHandler handler, IMap map)
 		{
-			// No-op: Azure Maps style is user-controlled via InteractiveControlsVisible picker.
+			if (handler is MapHandler mapHandler && mapHandler._webViewReady)
+			{
+				_ = mapHandler.ApplyMapTypeAsync(map.MapType);
+			}
 		}
 
 		/// <summary>
-		/// Maps <see cref="IMap.IsZoomEnabled"/>. Controls the <c>InteractiveControlsVisible</c> property together with <see cref="IMap.IsScrollEnabled"/>.
+		/// Maps <see cref="IMap.IsZoomEnabled"/> via the Azure Maps JS <c>map.setUserInteraction()</c> API.
 		/// </summary>
+		/// <remarks>
+		/// Controls <c>scrollZoomInteraction</c> and <c>dblClickZoomInteraction</c> independently from scroll/drag.
+		/// Also keeps <c>InteractiveControlsVisible</c> in sync so the built-in UI controls remain accessible.
+		/// </remarks>
 		public static void MapIsZoomEnabled(IMapHandler handler, IMap map)
 		{
 			if (handler is MapHandler mapHandler && mapHandler._mapControl != null)
 			{
 				mapHandler._mapControl.InteractiveControlsVisible = map.IsZoomEnabled || map.IsScrollEnabled;
+
+				if (mapHandler._webViewReady)
+				{
+					_ = mapHandler.ApplyUserInteractionAsync(map.IsScrollEnabled, map.IsZoomEnabled);
+				}
 			}
 		}
 
 		/// <summary>
-		/// Maps <see cref="IMap.IsScrollEnabled"/>. Controls the <c>InteractiveControlsVisible</c> property together with <see cref="IMap.IsZoomEnabled"/>.
+		/// Maps <see cref="IMap.IsScrollEnabled"/> via the Azure Maps JS <c>map.setUserInteraction()</c> API.
 		/// </summary>
+		/// <remarks>
+		/// Controls <c>dragPanInteraction</c> independently from zoom.
+		/// Also keeps <c>InteractiveControlsVisible</c> in sync so the built-in UI controls remain accessible.
+		/// </remarks>
 		public static void MapIsScrollEnabled(IMapHandler handler, IMap map)
 		{
 			if (handler is MapHandler mapHandler && mapHandler._mapControl != null)
 			{
 				mapHandler._mapControl.InteractiveControlsVisible = map.IsZoomEnabled || map.IsScrollEnabled;
+
+				if (mapHandler._webViewReady)
+				{
+					_ = mapHandler.ApplyUserInteractionAsync(map.IsScrollEnabled, map.IsZoomEnabled);
+				}
 			}
 		}
 
 		/// <summary>
-		/// Maps <see cref="IMap.IsTrafficEnabled"/>. No-op on Windows: the WinUI 3 MapControl does not expose a traffic layer.
+		/// Maps <see cref="IMap.IsTrafficEnabled"/> via the Azure Maps JS <c>map.setTraffic()</c> API.
 		/// </summary>
+		/// <remarks>
+		/// When enabled, shows traffic flow (color-coded roads) and incident icons.
+		/// When disabled, removes both traffic flow and incident overlays.
+		/// </remarks>
 		public static void MapIsTrafficEnabled(IMapHandler handler, IMap map)
 		{
-			// No-op: traffic is not available on the WinUI 3 MapControl.
+			if (handler is MapHandler mapHandler && mapHandler._webViewReady)
+			{
+				_ = mapHandler.ApplyTrafficAsync(map.IsTrafficEnabled);
+			}
 		}
 
 		/// <summary>
@@ -276,7 +352,10 @@ namespace Microsoft.Maui.Maps.Handlers
 
 				if (mapHandler._webViewReady)
 				{
-					_ = mapHandler.SetCameraAsync(mapSpan.Center.Latitude, mapSpan.Center.Longitude, zoom);
+					_ = mapHandler.ExecuteJsAsync(string.Format(
+						CultureInfo.InvariantCulture,
+						"map.setCamera({{ center: [{0}, {1}], zoom: {2}, type: 'jump' }});",
+						mapSpan.Center.Longitude, mapSpan.Center.Latitude, zoom));
 				}
 				else
 				{

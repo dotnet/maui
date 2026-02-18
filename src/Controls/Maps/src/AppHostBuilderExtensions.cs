@@ -31,17 +31,26 @@ namespace Microsoft.Maui.Controls.Hosting
 		/// Get a key from the Azure Portal: https://portal.azure.com → Azure Maps account → Authentication
 		/// </para>
 		/// <para>
-		/// <b>Windows Platform Limitations:</b>
-		/// The Windows implementation uses the WinUI 3 MapControl backed by Azure Maps, which has some limitations
-		/// compared to iOS (Apple Maps) and Android (Google Maps):
+		/// <b>Windows Features (via Azure Maps JS API):</b>
+		/// The Windows implementation uses the WinUI 3 MapControl backed by Azure Maps. The following features are
+		/// implemented by accessing the Azure Maps JavaScript API through the control's internal WebView2:
 		/// <list type="bullet">
-		/// <item><description><b>MapType:</b> Programmatic map type switching is not supported. Users can change styles via the built-in picker.</description></item>
-		/// <item><description><b>Traffic:</b> Traffic layer is not supported by the basic MapControl.</description></item>
-		/// <item><description><b>User Location:</b> Not built-in; requires manual Geolocation API integration.</description></item>
-		/// <item><description><b>Shapes:</b> Polylines, polygons, and circles have limited support.</description></item>
-		/// <item><description><b>Pin Labels:</b> MapIcon does not support labels or info windows directly.</description></item>
+		/// <item><description><b>MoveToRegion:</b> Navigates via <c>map.setCamera()</c>.</description></item>
+		/// <item><description><b>MapType:</b> Street/Satellite/Hybrid via <c>map.setStyle()</c>.</description></item>
+		/// <item><description><b>IsTrafficEnabled:</b> Traffic flow and incidents via <c>map.setTraffic()</c>.</description></item>
+		/// <item><description><b>IsScrollEnabled/IsZoomEnabled:</b> Independent control via <c>map.setUserInteraction()</c>.</description></item>
+		/// <item><description><b>Pins:</b> Via <c>MapIcon</c> on a <c>MapElementsLayer</c>.</description></item>
 		/// </list>
-		/// See <see cref="MapHandler"/> documentation for detailed platform limitations.
+		/// </para>
+		/// <para>
+		/// <b>Windows Platform Limitations:</b>
+		/// <list type="bullet">
+		/// <item><description><b>User Location:</b> Not built-in; requires manual Geolocation API integration.</description></item>
+		/// <item><description><b>Shapes:</b> Polylines, polygons, and circles are not supported (<c>MapElementsLayer</c> only supports <c>MapIcon</c>).</description></item>
+		/// <item><description><b>Pin Labels:</b> <c>MapIcon</c> does not support labels or info windows.</description></item>
+		/// <item><description><b>Map.Clicked (background):</b> Only <c>MapElement</c> clicks fire events, not empty map area clicks.</description></item>
+		/// </list>
+		/// See <see cref="MapHandler"/> documentation for detailed platform information.
 		/// </para>
 		/// </remarks>
 		public static MauiAppBuilder UseMauiMaps(this MauiAppBuilder builder)

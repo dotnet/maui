@@ -4,7 +4,7 @@
              x:Class="Maui.Controls.Sample.MainPage"
              Title="Maps Demo"
              AutomationId="MapsPage">
-    <Grid RowDefinitions="Auto,*,Auto">
+    <Grid RowDefinitions="Auto,Auto,*,Auto">
 
         <!-- Navigation buttons -->
         <HorizontalStackLayout Grid.Row="0" Spacing="8" Padding="8">
@@ -15,14 +15,24 @@
             <Button Text="Clear Pins" AutomationId="ClearPinsButton" Clicked="OnClearPinsClicked" />
         </HorizontalStackLayout>
 
+        <!-- Feature controls -->
+        <HorizontalStackLayout Grid.Row="1" Spacing="8" Padding="8">
+            <Button Text="Street" AutomationId="StreetButton" Clicked="OnStreetClicked" />
+            <Button Text="Satellite" AutomationId="SatelliteButton" Clicked="OnSatelliteClicked" />
+            <Button Text="Hybrid" AutomationId="HybridButton" Clicked="OnHybridClicked" />
+            <Button Text="Traffic" AutomationId="TrafficButton" Clicked="OnTrafficClicked" />
+            <Button Text="Toggle Scroll" AutomationId="ToggleScrollButton" Clicked="OnToggleScrollClicked" />
+            <Button Text="Toggle Zoom" AutomationId="ToggleZoomButton" Clicked="OnToggleZoomClicked" />
+        </HorizontalStackLayout>
+
         <!-- Map control -->
-        <maps:Map x:Name="map" Grid.Row="1"
+        <maps:Map x:Name="map" Grid.Row="2"
                   AutomationId="MainMap"
                   IsZoomEnabled="True"
                   IsScrollEnabled="True" />
 
         <!-- Status bar -->
-        <Label x:Name="statusLabel" Grid.Row="2"
+        <Label x:Name="statusLabel" Grid.Row="3"
                AutomationId="StatusLabel"
                Text="Ready"
                Padding="8" FontSize="12" />
