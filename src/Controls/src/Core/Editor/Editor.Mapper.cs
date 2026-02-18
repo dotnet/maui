@@ -6,11 +6,14 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class Editor
 	{
-		static Editor() => RemapForControls();
-
-		private new static void RemapForControls()
+		static Editor()
 		{
-			VisualElement.RemapIfNeeded();
+			// Force VisualElement's static constructor to run first so base-level
+			// mapper remappings are applied before these Control-specific ones.
+#if DEBUG
+			RemappingDebugHelper.AssertBaseClassForRemapping(typeof(Editor), typeof(VisualElement));
+#endif
+			VisualElement.s_forceStaticConstructor = true;
 
 			// Adjust the mappings to preserve Controls.Editor legacy behaviors
 #if WINDOWS

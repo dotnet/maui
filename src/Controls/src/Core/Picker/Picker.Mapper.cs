@@ -6,11 +6,14 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class Picker
 	{
-		static Picker() => RemapForControls();
-
-		private static new void RemapForControls()
+		static Picker()
 		{
-			VisualElement.RemapIfNeeded();
+			// Force VisualElement's static constructor to run first so base-level
+			// mapper remappings are applied before these Control-specific ones.
+#if DEBUG
+			RemappingDebugHelper.AssertBaseClassForRemapping(typeof(Picker), typeof(VisualElement));
+#endif
+			VisualElement.s_forceStaticConstructor = true;
 
 			// Adjust the mappings to preserve Controls.Picker legacy behaviors
 #if IOS

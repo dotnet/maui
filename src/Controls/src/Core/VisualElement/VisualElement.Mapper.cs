@@ -10,39 +10,36 @@ namespace Microsoft.Maui.Controls
 	/// </summary>
 	public partial class VisualElement
 	{
-		static VisualElement() => RemapIfNeeded();
+		// Accessing this field from a derived type's static constructor forces
+		// VisualElement's static constructor (and transitively Element's) to run
+		// first, guaranteeing that base-level mapper remappings are applied before
+		// derived ones.
+		private protected static new bool s_forceStaticConstructor;
 
-		internal static new void RemapIfNeeded()
+		static VisualElement()
 		{
-			RemappingHelper.RemapIfNeeded(typeof(VisualElement), RemapForControls);
-		}
-
-		internal static new void RemapForControls()
-		{
-			RemapForControls(ViewHandler.ViewMapper, ViewHandler.ViewCommandMapper);
-		}
-
-		internal static void RemapForControls(
-			IPropertyMapper<IView, IViewHandler> viewMapper,
-			CommandMapper<IView, IViewHandler> commandMapper)
-		{
-			Element.RemapIfNeeded();
+			// Force Element's static constructor to run first so its mapper
+			// remappings are applied before VisualElement's.
+#if DEBUG
+			RemappingDebugHelper.AssertBaseClassForRemapping(typeof(VisualElement), typeof(Element));
+#endif
+			Element.s_forceStaticConstructor = true;
 
 #if WINDOWS
-			viewMapper.ReplaceMapping<IView, IViewHandler>(PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyHorizontalOffsetProperty.PropertyName, MapAccessKeyHorizontalOffset);
-			viewMapper.ReplaceMapping<IView, IViewHandler>(PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyPlacementProperty.PropertyName, MapAccessKeyPlacement);
-			viewMapper.ReplaceMapping<IView, IViewHandler>(PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyProperty.PropertyName, MapAccessKey);
-			viewMapper.ReplaceMapping<IView, IViewHandler>(PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyVerticalOffsetProperty.PropertyName, MapAccessKeyVerticalOffset);
+			ViewHandler.ViewMapper.ReplaceMapping<IView, IViewHandler>(PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyHorizontalOffsetProperty.PropertyName, MapAccessKeyHorizontalOffset);
+			ViewHandler.ViewMapper.ReplaceMapping<IView, IViewHandler>(PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyPlacementProperty.PropertyName, MapAccessKeyPlacement);
+			ViewHandler.ViewMapper.ReplaceMapping<IView, IViewHandler>(PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyProperty.PropertyName, MapAccessKey);
+			ViewHandler.ViewMapper.ReplaceMapping<IView, IViewHandler>(PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyVerticalOffsetProperty.PropertyName, MapAccessKeyVerticalOffset);
 #endif
-			viewMapper.ReplaceMapping<IView, IViewHandler>(nameof(BackgroundColor), MapBackgroundColor);
-			viewMapper.ReplaceMapping<IView, IViewHandler>(nameof(Page.BackgroundImageSource), MapBackgroundImageSource);
-			viewMapper.ReplaceMapping<IView, IViewHandler>(SemanticProperties.DescriptionProperty.PropertyName, MapSemanticPropertiesDescriptionProperty);
-			viewMapper.ReplaceMapping<IView, IViewHandler>(SemanticProperties.HintProperty.PropertyName, MapSemanticPropertiesHintProperty);
-			viewMapper.ReplaceMapping<IView, IViewHandler>(SemanticProperties.HeadingLevelProperty.PropertyName, MapSemanticPropertiesHeadingLevelProperty);
+			ViewHandler.ViewMapper.ReplaceMapping<IView, IViewHandler>(nameof(BackgroundColor), MapBackgroundColor);
+			ViewHandler.ViewMapper.ReplaceMapping<IView, IViewHandler>(nameof(Page.BackgroundImageSource), MapBackgroundImageSource);
+			ViewHandler.ViewMapper.ReplaceMapping<IView, IViewHandler>(SemanticProperties.DescriptionProperty.PropertyName, MapSemanticPropertiesDescriptionProperty);
+			ViewHandler.ViewMapper.ReplaceMapping<IView, IViewHandler>(SemanticProperties.HintProperty.PropertyName, MapSemanticPropertiesHintProperty);
+			ViewHandler.ViewMapper.ReplaceMapping<IView, IViewHandler>(SemanticProperties.HeadingLevelProperty.PropertyName, MapSemanticPropertiesHeadingLevelProperty);
 
-			viewMapper.AppendToMapping<VisualElement, IViewHandler>(nameof(IViewHandler.ContainerView), MapContainerView);
+			ViewHandler.ViewMapper.AppendToMapping<VisualElement, IViewHandler>(nameof(IViewHandler.ContainerView), MapContainerView);
 
-			commandMapper.ModifyMapping<VisualElement, IViewHandler>(nameof(IView.Focus), MapFocus);
+			ViewHandler.ViewCommandMapper.ModifyMapping<VisualElement, IViewHandler>(nameof(IView.Focus), MapFocus);
 		}
 
 		public static void MapBackgroundColor(IViewHandler handler, IView view) =>

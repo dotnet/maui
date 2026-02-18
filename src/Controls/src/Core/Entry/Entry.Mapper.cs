@@ -6,11 +6,14 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class Entry
 	{
-		static Entry() => RemapForControls();
-
-		private static new void RemapForControls()
+		static Entry()
 		{
-			VisualElement.RemapIfNeeded();
+			// Force VisualElement's static constructor to run first so base-level
+			// mapper remappings are applied before these Control-specific ones.
+#if DEBUG
+			RemappingDebugHelper.AssertBaseClassForRemapping(typeof(Entry), typeof(VisualElement));
+#endif
+			VisualElement.s_forceStaticConstructor = true;
 
 			// Adjust the mappings to preserve Controls.Entry legacy behaviors
 #if ANDROID

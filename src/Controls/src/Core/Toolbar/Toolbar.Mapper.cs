@@ -11,11 +11,9 @@ namespace Microsoft.Maui.Controls
 
 	public partial class Toolbar
 	{
-		static Toolbar() => RemapForControls();
-
 		IMauiContext MauiContext => Handler?.MauiContext ?? throw new InvalidOperationException("MauiContext not set");
 
-		private static void RemapForControls()
+		static Toolbar()
 		{
 #if ANDROID || WINDOWS || TIZEN
 			ToolbarHandler.Mapper.ReplaceMapping<Toolbar, IToolbarHandler>(nameof(IToolbar.IsVisible), MapIsVisible);

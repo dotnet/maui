@@ -8,14 +8,12 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class Element
 	{
-		static Element() => RemapIfNeeded();
+		// Accessing this field from a derived type's static constructor forces
+		// Element's static constructor to run first, guaranteeing that base-level
+		// mapper remappings are applied before derived ones.
+		private protected static bool s_forceStaticConstructor;
 
-		internal static void RemapIfNeeded()
-		{
-			RemappingHelper.RemapIfNeeded(typeof(Element), RemapForControls);
-		}
-
-		internal static void RemapForControls()
+		static Element()
 		{
 			ViewHandler.ViewMapper.ReplaceMapping<Maui.IElement, IElementHandler>(AutomationProperties.IsInAccessibleTreeProperty.PropertyName, MapAutomationPropertiesIsInAccessibleTree);
 			ViewHandler.ViewMapper.ReplaceMapping<Maui.IElement, IElementHandler>(AutomationProperties.ExcludedWithChildrenProperty.PropertyName, MapAutomationPropertiesExcludedWithChildren);

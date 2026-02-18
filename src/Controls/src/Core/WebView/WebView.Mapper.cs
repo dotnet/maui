@@ -6,11 +6,14 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class WebView
 	{
-		static WebView() => RemapForControls();
-
-		private static new void RemapForControls()
+		static WebView()
 		{
-			VisualElement.RemapIfNeeded();
+			// Force VisualElement's static constructor to run first so base-level
+			// mapper remappings are applied before these Control-specific ones.
+#if DEBUG
+			RemappingDebugHelper.AssertBaseClassForRemapping(typeof(WebView), typeof(VisualElement));
+#endif
+			VisualElement.s_forceStaticConstructor = true;
 
 			// Adjust the mappings to preserve Controls.WebView legacy behaviors
 #if ANDROID
