@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.Xaml.Diagnostics
 				return;
 			}
 
-			MauiLogger<BindingDiagnostics>.Log(LogLevel.Warning, $"{string.Format(message, messageArgs)}");
+			MauiLogger<BindingDiagnostics>.Log(LogLevel.Warning, message, messageArgs);
 
 			BindingFailed?.Invoke(null, new BindingBaseErrorEventArgs(VisualDiagnostics.GetSourceInfo(binding), binding, errorCode, message, messageArgs));
 		}
@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls.Xaml.Diagnostics
 				return;
 			}
 
-			MauiLogger<BindingDiagnostics>.Log(LogLevel.Warning, $"{string.Format(message, messageArgs)}");
+			MauiLogger<BindingDiagnostics>.Log(LogLevel.Warning, message, messageArgs);
 
 			BindingFailed?.Invoke(null, new BindingErrorEventArgs(VisualDiagnostics.GetSourceInfo(binding), binding, source, bo, bp, errorCode, message, messageArgs));
 		}

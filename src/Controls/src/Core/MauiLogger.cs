@@ -21,6 +21,13 @@ internal static class MauiLogger<T>
 			logger.Log(level, message);
 	}
 
+	internal static void Log(LogLevel level, string message, params object[] args)
+	{
+		var logger = CreateLogger();
+		if (logger is not null && logger.IsEnabled(level))
+			logger.Log(level, string.Format(message, args));
+	}
+
 	internal static void Log(LogLevel level, Exception? exception, string message)
 	{
 		var logger = CreateLogger();
