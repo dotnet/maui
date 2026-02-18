@@ -57,7 +57,7 @@
                             </VisualState>
                             <VisualState x:Name="Horizontal">
                                 <VisualState.StateTriggers>
-                                    <AdaptiveTrigger MinWindowWidth="800"/>
+                                    <AdaptiveTrigger MinWindowWidth="600"/>
                                 </VisualState.StateTriggers>
                                 <VisualState.Setters>
                                     <Setter Property="Orientation"
@@ -522,9 +522,9 @@
                                                 Value="#E8F5E9"/>
                                     </VisualState.Setters>
                                 </VisualState>
-                                <VisualState x:Name="WinUIState">
+                                <VisualState x:Name="WindowsState">
                                     <VisualState.StateTriggers>
-                                        <DeviceStateTrigger Device="WinUI"/>
+                                        <DeviceStateTrigger Device="Windows"/>
                                     </VisualState.StateTriggers>
                                     <VisualState.Setters>
                                         <Setter Property="BackgroundColor"
