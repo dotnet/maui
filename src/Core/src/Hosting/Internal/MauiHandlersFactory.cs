@@ -87,10 +87,15 @@ namespace Microsoft.Maui.Hosting.Internal
 		public IElementHandler? GetHandler(Type type, IMauiContext context)
 		{
 			var handlerType = GetHandlerType(type);
-			if (handlerType == null)
-				return null;
+			if (handlerType != null)
+				return (IElementHandler?)Activator.CreateInstance(handlerType);
 
-			return (IElementHandler?)Activator.CreateInstance(handlerType);
+			// Fall back to service resolution for factory-based registrations
+			var serviceType = TryGetVirtualViewHandlerServiceType(type) ?? type;
+			if (GetService(serviceType) is IElementHandler handler)
+				return handler;
+
+			throw new HandlerNotFoundException($"Handler not found for view {type}.");
 		}
 
 		[Obsolete("Use GetHandlerType instead.")]

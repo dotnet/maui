@@ -81,9 +81,18 @@ namespace Microsoft.Maui.Platform
 					}
 					else
 					{
-						var handlerType = context.Handlers.GetHandlerType(viewType)
-							?? throw new HandlerNotFoundException(view);
-						handler = (IElementHandler?)Activator.CreateInstance(handlerType);
+						var handlerType = context.Handlers.GetHandlerType(viewType);
+						if (handlerType != null)
+						{
+							handler = (IElementHandler?)Activator.CreateInstance(handlerType);
+						}
+						else
+						{
+							// Fall back to service resolution for factory-based handler registrations
+							handler = context.Handlers.GetService(viewType) as IElementHandler;
+							if (handler == null)
+								throw new HandlerNotFoundException(view);
+						}
 					}
 				}
 				catch (MissingMethodException)
