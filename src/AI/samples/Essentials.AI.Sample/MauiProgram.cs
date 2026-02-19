@@ -52,6 +52,7 @@ public static class MauiProgram
 		// Register ViewModels
 		builder.Services.AddTransient<LandmarksViewModel>();
 		builder.Services.AddTransient<TripPlanningViewModel>();
+		builder.Services.AddSingleton<ChatViewModel>();
 
 		// Register Services
 		builder.Services.AddSingleton<DataService>();
@@ -59,6 +60,7 @@ public static class MauiProgram
 		builder.Services.AddTransient<ItineraryService>();
 		builder.Services.AddTransient<TaggingService>();
 		builder.Services.AddHttpClient<WeatherService>();
+		builder.Services.AddSingleton<ChatService>();
 
 		// Configure Logging
 		builder.Services.AddLogging();

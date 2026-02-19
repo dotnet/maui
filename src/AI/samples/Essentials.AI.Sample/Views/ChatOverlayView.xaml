@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:views="clr-namespace:Maui.Controls.Sample.Views"
+    xmlns:models="clr-namespace:Maui.Controls.Sample.Models"
+    x:Class="Maui.Controls.Sample.Views.ChatOverlayView">
+
+    <ContentView.Resources>
+        <!-- User bubble: right-aligned, blue -->
+        <DataTemplate x:Key="UserBubbleTemplate" x:DataType="models:ChatBubble">
+            <Border
+                BackgroundColor="#512BD4"
+                StrokeThickness="0"
+                StrokeShape="RoundRectangle 16,16,4,16"
+                Padding="14,10"
+                Margin="60,4,16,4"
+                HorizontalOptions="End"
+                MaximumWidthRequest="400">
+                <Label
+                    Text="{Binding Text}"
+                    AutomationId="UserBubbleText"
+                    TextColor="White"
+                    FontSize="14"
+                    LineBreakMode="WordWrap" />
+            </Border>
+        </DataTemplate>
+
+        <!-- Assistant bubble: left-aligned, gray -->
+        <DataTemplate x:Key="AssistantBubbleTemplate" x:DataType="models:ChatBubble">
+            <Grid Margin="16,4,60,4" HorizontalOptions="Start" MaximumWidthRequest="400">
+                <Border
+                    BackgroundColor="{AppThemeBinding Light=#F0F0F0, Dark=#2D2D2D}"
+                    StrokeThickness="0"
+                    StrokeShape="RoundRectangle 16,16,16,4"
+                    Padding="14,10">
+                    <VerticalStackLayout Spacing="4">
+                        <Label
+                            Text="{Binding Text}"
+                            AutomationId="AssistantBubbleText"
+                            TextColor="{AppThemeBinding Light=#1F1F1F, Dark=#E1E1E1}"
+                            FontSize="14"
+                            LineBreakMode="WordWrap" />
+                        <ActivityIndicator
+                            IsRunning="{Binding IsStreaming}"
+                            IsVisible="{Binding IsStreaming}"
+                            HeightRequest="16"
+                            WidthRequest="16"
+                            HorizontalOptions="Start"
+                            Color="{StaticResource Primary}" />
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
+        </DataTemplate>
+
+        <!-- Tool Call bubble: left-aligned, amber border, collapsible -->
+        <DataTemplate x:Key="ToolCallBubbleTemplate" x:DataType="models:ChatBubble">
+            <Border
+                Stroke="#E6A817"
+                StrokeThickness="1"
+                StrokeShape="RoundRectangle 12"
+                BackgroundColor="{AppThemeBinding Light=#FFF8E1, Dark=#3D3520}"
+                Padding="12,8"
+                Margin="16,4,60,4"
+                HorizontalOptions="Start"
+                MaximumWidthRequest="400">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding ToggleExpandedCommand}" />
+                </Border.GestureRecognizers>
+                <VerticalStackLayout Spacing="6">
+                    <HorizontalStackLayout Spacing="6">
+                        <Label
+                            Text="{Binding IsExpanded, StringFormat='{0}'}"
+                            FontSize="10"
+                            TextColor="{AppThemeBinding Light=#856404, Dark=#E6A817}"
+                            VerticalOptions="Center"
+                            IsVisible="False" />
+                        <Label
+                            Text="{Binding Text}"
+                            AutomationId="ToolCallBubbleText"
+                            FontSize="13"
+                            FontAttributes="Bold"
+                            TextColor="{AppThemeBinding Light=#856404, Dark=#E6A817}" />
+                    </HorizontalStackLayout>
+                    <Label
+                        Text="{Binding DetailText}"
+                        FontSize="12"
+                        FontFamily="Courier New"
+                        TextColor="{AppThemeBinding Light=#666666, Dark=#AAAAAA}"
+                        LineBreakMode="WordWrap"
+                        IsVisible="{Binding IsExpanded}"
+                        MaxLines="20" />
+                </VerticalStackLayout>
+            </Border>
+        </DataTemplate>
+
+        <!-- Tool Result bubble: left-aligned, green border, collapsible -->
+        <DataTemplate x:Key="ToolResultBubbleTemplate" x:DataType="models:ChatBubble">
+            <Border
+                Stroke="#4CAF50"
+                StrokeThickness="1"
+                StrokeShape="RoundRectangle 12"
+                BackgroundColor="{AppThemeBinding Light=#E8F5E9, Dark=#1B3D1E}"
+                Padding="12,8"
+                Margin="16,4,60,4"
+                HorizontalOptions="Start"
+                MaximumWidthRequest="400">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding ToggleExpandedCommand}" />
+                </Border.GestureRecognizers>
+                <VerticalStackLayout Spacing="6">
+                    <HorizontalStackLayout Spacing="6">
+                        <Label
+                            Text="{Binding Text}"
+                            AutomationId="ToolResultBubbleText"
+                            FontSize="13"
+                            FontAttributes="Bold"
+                            TextColor="{AppThemeBinding Light=#2E7D32, Dark=#81C784}" />
+                    </HorizontalStackLayout>
+                    <Label
+                        Text="{Binding DetailText}"
+                        FontSize="12"
+                        FontFamily="Courier New"
+                        TextColor="{AppThemeBinding Light=#666666, Dark=#AAAAAA}"
+                        LineBreakMode="WordWrap"
+                        IsVisible="{Binding IsExpanded}"
+                        MaxLines="20" />
+                </VerticalStackLayout>
+            </Border>
+        </DataTemplate>
+
+        <views:ChatBubbleTemplateSelector
+            x:Key="BubbleSelector"
+            UserTemplate="{StaticResource UserBubbleTemplate}"
+            AssistantTemplate="{StaticResource AssistantBubbleTemplate}"
+            ToolCallTemplate="{StaticResource ToolCallBubbleTemplate}"
+            ToolResultTemplate="{StaticResource ToolResultBubbleTemplate}" />
+    </ContentView.Resources>
+
+    <Grid
+        x:Name="RootGrid"
+        RowDefinitions="*"
+        ColumnDefinitions="*">
+
+        <!-- Semi-transparent backdrop -->
+        <BoxView
+            x:Name="Backdrop"
+            Color="Black"
+            Opacity="0"
+            InputTransparent="False">
+            <BoxView.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnBackdropTapped" />
+            </BoxView.GestureRecognizers>
+        </BoxView>
+
+        <!-- Chat panel (bottom-anchored) -->
+        <Border
+            x:Name="ChatPanel"
+            AutomationId="ChatPanel"
+            InputTransparent="False"
+            VerticalOptions="End"
+            HeightRequest="500"
+            StrokeShape="RoundRectangle 20,20,0,0"
+            StrokeThickness="0"
+            BackgroundColor="{AppThemeBinding Light=White, Dark=#1F1F1F}"
+            Shadow="{Shadow Brush=Black, Offset='0,-4', Radius=16, Opacity=0.3}"
+            TranslationY="500">
+
+            <Grid RowDefinitions="Auto,*,Auto" Padding="0">
+                <!-- Header -->
+                <Border
+                    Grid.Row="0"
+                    StrokeThickness="0"
+                    BackgroundColor="{AppThemeBinding Light=#F8F8F8, Dark=#2D2D2D}"
+                    Padding="16,12">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label
+                            Text="💬 Chat"
+                            FontSize="18"
+                            FontAttributes="Bold"
+                            VerticalOptions="Center"
+                            TextColor="{AppThemeBinding Light=#1F1F1F, Dark=#E1E1E1}" />
+                        <Button
+                            Grid.Column="1"
+                            AutomationId="ChatCloseButton"
+                            Text="✕"
+                            FontSize="18"
+                            BackgroundColor="Transparent"
+                            TextColor="{AppThemeBinding Light=#666666, Dark=#AAAAAA}"
+                            Padding="8,4"
+                            Clicked="OnCloseTapped" />
+                    </Grid>
+                </Border>
+
+                <!-- Messages -->
+                <CollectionView
+                    x:Name="MessagesView"
+                    AutomationId="ChatMessages"
+                    Grid.Row="1"
+                    ItemsSource="{Binding Messages}"
+                    ItemTemplate="{StaticResource BubbleSelector}"
+                    Margin="0,8">
+                    <CollectionView.ItemsLayout>
+                        <LinearItemsLayout Orientation="Vertical" ItemSpacing="2" />
+                    </CollectionView.ItemsLayout>
+                </CollectionView>
+
+                <!-- Input bar -->
+                <Border
+                    Grid.Row="2"
+                    StrokeThickness="0"
+                    BackgroundColor="{AppThemeBinding Light=#F8F8F8, Dark=#2D2D2D}"
+                    Padding="12,8">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                        <Entry
+                            x:Name="MessageEntry"
+                            AutomationId="ChatMessageEntry"
+                            Placeholder="Type a message..."
+                            Text="{Binding MessageText, Mode=TwoWay}"
+                            ReturnType="Send"
+                            ReturnCommand="{Binding SendMessageCommand}"
+                            FontSize="14"
+                            VerticalOptions="Center" />
+                        <Button
+                            Grid.Column="1"
+                            AutomationId="ChatSendButton"
+                            Text="▶"
+                            Command="{Binding SendMessageCommand}"
+                            FontSize="16"
+                            BackgroundColor="{StaticResource Primary}"
+                            TextColor="White"
+                            Padding="12,8"
+                            CornerRadius="20"
+                            WidthRequest="44"
+                            HeightRequest="44" />
+                    </Grid>
+                </Border>
+            </Grid>
+        </Border>
+    </Grid>
+</ContentView>
