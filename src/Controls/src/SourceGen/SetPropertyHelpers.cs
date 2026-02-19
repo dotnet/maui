@@ -787,8 +787,8 @@ static class SetPropertyHelpers
 				getterExpression += "!";
 			writer.WriteLine($"__source => ({getterExpression}, true),");
 			
-			// Generate setter if expression is a simple property chain
-			if (analysis.IsSettable)
+			// Generate setter if expression is a simple property chain AND the terminal property is writable
+			if (analysis.IsSettable && IsExpressionWritable(expression, dataTypeSymbol, context))
 			{
 				writer.WriteLine($"(__source, __value) => {analysis.TransformedExpression} = __value,");
 			}
@@ -915,6 +915,74 @@ static class SetPropertyHelpers
 	{
 		var fullName = $"{bpFieldSymbol.ContainingType.ToFQDisplayString()}.{bpFieldSymbol.Name}";
 		return TwoWayBindableProperties.Contains(fullName);
+	}
+
+	/// <summary>
+	/// Checks if the terminal property in a C# expression chain is writable (has a public setter).
+	/// For example, "Name" is writable if Name has a public set accessor, but "ReadOnlyProp" is not
+	/// if it only has a getter (expression-bodied or getter-only property).
+	/// Returns false for complex expressions that are not simple property chains.
+	/// </summary>
+	static bool IsExpressionWritable(string expression, ITypeSymbol dataType, SourceGenContext context)
+	{
+		if (string.IsNullOrWhiteSpace(expression))
+			return false;
+
+		var expr = expression.Trim();
+
+		// Strip leading dot prefix (e.g., ".Name" → "Name"), but avoid the ".." range operator
+		if (expr.StartsWith(".", StringComparison.Ordinal) &&
+			!expr.StartsWith("..", StringComparison.Ordinal))
+			expr = expr.Substring(1);
+
+		// Strip "BindingContext." prefix (e.g., "BindingContext.Name" → "Name")
+		if (expr.StartsWith("BindingContext.", StringComparison.Ordinal))
+			expr = expr.Substring("BindingContext.".Length);
+
+		if (string.IsNullOrEmpty(expr))
+			return false;
+
+		// Walk the dot-separated property chain (also handle ?. null-conditional access)
+		var parts = expr.Replace("?.", ".").Split('.');
+		var currentType = dataType;
+		IPropertySymbol? lastProperty = null;
+
+		foreach (var part in parts)
+		{
+			var memberName = part.Trim().TrimEnd('!');
+
+			// If it contains parens, operators, or special chars, it's not a simple property chain
+			if (memberName.Contains('(') || memberName.Contains(' ') || memberName.Contains('[') || string.IsNullOrEmpty(memberName))
+				return false;
+
+			var member = currentType.GetAllMembers(memberName, context).FirstOrDefault();
+			if (member is IPropertySymbol prop)
+			{
+				lastProperty = prop;
+				currentType = prop.Type;
+			}
+			else if (member is IFieldSymbol field)
+			{
+				// Fields are writable (unless readonly, but that's a different check)
+				lastProperty = null;
+				currentType = field.Type;
+			}
+			else
+			{
+				return false;
+			}
+		}
+
+		// Check if the terminal property has a public, non-init setter
+		if (lastProperty is not null)
+		{
+			return lastProperty.SetMethod is not null
+				&& lastProperty.SetMethod.DeclaredAccessibility == Accessibility.Public
+				&& !lastProperty.SetMethod.IsInitOnly;
+		}
+
+		// For fields, assume writable
+		return true;
 	}
 
 }
