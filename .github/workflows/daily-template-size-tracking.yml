@@ -46,6 +46,7 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
       maui-version: ${{ steps.install-templates.outputs.maui-version }}
+      maui-versions: ${{ steps.install-templates.outputs.maui-versions }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -64,20 +65,40 @@ jobs:
         id: install-templates
         shell: pwsh
         run: |
-          if ("${{ inputs.maui_template_version }}" -ne "") {
-            $version = "${{ inputs.maui_template_version }}"
-            Write-Host "Installing Microsoft.Maui.Templates version $version"
-            dotnet new install Microsoft.Maui.Templates::$version
-            echo "maui-version=$version" >> $env:GITHUB_OUTPUT
+          $dotnetVersions = "${{ inputs.dotnet_versions || '9.0,10.0' }}".Split(',') | ForEach-Object { $_.Trim() }
+          $versions = @{}
+
+          foreach ($dotnet in $dotnetVersions) {
+            $major = $dotnet.Split('.')[0]
+            $packageId = "Microsoft.Maui.Templates.net$major"
+
+            if ("${{ inputs.maui_template_version }}" -ne "") {
+              $version = "${{ inputs.maui_template_version }}"
+            }
+            else {
+              Write-Host "Fetching latest $packageId version..."
+              $response = Invoke-RestMethod -Uri "https://api.nuget.org/v3-flatcontainer/$($packageId.ToLower())/index.json"
+              # Filter to stable versions only (no prerelease dashes)
+              $stableVersions = $response.versions | Where-Object { $_ -notmatch '-' }
+              if ($stableVersions.Count -gt 0) {
+                $version = $stableVersions[-1]
+              } else {
+                $version = $response.versions[-1]
+              }
+            }
+
+            Write-Host "Installing $packageId version $version"
+            dotnet new install "${packageId}::${version}" --nuget-source https://api.nuget.org/v3/index.json
+            $versions[$dotnet] = $version
           }
-          else {
-            Write-Host "Fetching latest Microsoft.Maui.Templates version..."
-            $response = Invoke-RestMethod -Uri "https://api.nuget.org/v3-flatcontainer/microsoft.maui.templates/index.json"
-            $latestVersion = $response.versions[-1]
-            Write-Host "Latest version found: $latestVersion"
-            dotnet new install Microsoft.Maui.Templates::$latestVersion
-            echo "maui-version=$latestVersion" >> $env:GITHUB_OUTPUT
-          }
+
+          # Output the versions as JSON
+          $versionsJson = $versions | ConvertTo-Json -Compress
+          echo "maui-versions=$versionsJson" >> $env:GITHUB_OUTPUT
+
+          # Also output a simple version for display (use the first one)
+          $firstVersion = $versions.Values | Select-Object -First 1
+          echo "maui-version=$firstVersion" >> $env:GITHUB_OUTPUT
 
           # Verify installation
           dotnet new list maui
@@ -249,9 +270,15 @@ jobs:
       - name: Install MAUI Templates
         shell: pwsh
         run: |
-          $version = "${{ needs.prepare-matrix.outputs.maui-version }}"
-          Write-Host "Installing Microsoft.Maui.Templates version $version"
-          dotnet new install Microsoft.Maui.Templates::$version
+          $dotnet = "${{ matrix.dotnet }}"
+          $major = $dotnet.Split('.')[0]
+          $packageId = "Microsoft.Maui.Templates.net$major"
+          $versionsJson = '${{ needs.prepare-matrix.outputs.maui-versions }}'
+          $versions = $versionsJson | ConvertFrom-Json
+
+          $version = $versions.$dotnet
+          Write-Host "Installing $packageId version $version"
+          dotnet new install "${packageId}::${version}" --nuget-source https://api.nuget.org/v3/index.json
 
       - name: Install Workloads
         shell: pwsh
