@@ -40,6 +40,17 @@ public partial class ChatViewModel : ObservableObject
 	public Command ToggleOverlayCommand => field ??= new Command(
 		() => IsOverlayVisible = !IsOverlayVisible);
 
+	public Command NewChatCommand => field ??= new Command(NewChat);
+
+	void NewChat()
+	{
+		_cts?.Cancel();
+		Messages.Clear();
+		_conversationHistory.Clear();
+		MessageText = string.Empty;
+		IsSending = false;
+	}
+
 	partial void OnMessageTextChanged(string value)
 	{
 		SendMessageCommand.ChangeCanExecute();

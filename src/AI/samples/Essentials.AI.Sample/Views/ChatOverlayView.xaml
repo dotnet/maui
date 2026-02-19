@@ -153,18 +153,18 @@
             </BoxView.GestureRecognizers>
         </BoxView>
 
-        <!-- Chat panel (bottom-anchored) -->
+        <!-- Chat panel (bottom-anchored, responsive sizing) -->
         <Border
             x:Name="ChatPanel"
             AutomationId="ChatPanel"
             InputTransparent="False"
             VerticalOptions="End"
-            HeightRequest="500"
+            HorizontalOptions="Center"
             StrokeShape="RoundRectangle 20,20,0,0"
             StrokeThickness="0"
             BackgroundColor="{AppThemeBinding Light=White, Dark=#1F1F1F}"
             Shadow="{Shadow Brush=Black, Offset='0,-4', Radius=16, Opacity=0.3}"
-            TranslationY="500">
+            TranslationY="1000">
 
             <Grid RowDefinitions="Auto,*,Auto" Padding="0">
                 <!-- Header -->
@@ -173,7 +173,7 @@
                     StrokeThickness="0"
                     BackgroundColor="{AppThemeBinding Light=#F8F8F8, Dark=#2D2D2D}"
                     Padding="16,12">
-                    <Grid ColumnDefinitions="*,Auto">
+                    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="4">
                         <Label
                             Text="💬 Chat"
                             FontSize="18"
@@ -182,6 +182,16 @@
                             TextColor="{AppThemeBinding Light=#1F1F1F, Dark=#E1E1E1}" />
                         <Button
                             Grid.Column="1"
+                            AutomationId="ChatNewButton"
+                            Text="🗑"
+                            FontSize="16"
+                            BackgroundColor="Transparent"
+                            TextColor="{AppThemeBinding Light=#666666, Dark=#AAAAAA}"
+                            Padding="8,4"
+                            Command="{Binding NewChatCommand}"
+                            ToolTipProperties.Text="New Chat" />
+                        <Button
+                            Grid.Column="2"
                             AutomationId="ChatCloseButton"
                             Text="✕"
                             FontSize="18"
