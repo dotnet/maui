@@ -116,8 +116,10 @@ public class ChatClientNative: NSObject {
                 for try await response in responseStream {
                     try Task.checkCancellation()
                     let text = response.content
-                    // Apple Intelligence may emit "null" as the accumulated content when no text
-                    // has been generated yet (e.g. before a tool call). Skip empty/null content.
+                    // Apple's FoundationModels framework yields StreamResponse<String> entries with
+                    // content "null" before the model has generated any text (e.g. before a tool call).
+                    // This is safe to skip: the accumulated content grows ("null" → "null is..."),
+                    // so the chunker catches up on the next non-null update with no data loss.
                     guard !text.isEmpty, text != "null" else { continue }
 #if APPLE_INTELLIGENCE_LOGGING_ENABLED
                     if let log = AppleIntelligenceLogger.log {
@@ -388,28 +390,52 @@ public class ChatClientNative: NSObject {
     private func toTranscriptEntries(message: ChatMessageNative) throws -> [Transcript.Entry] {
         switch message.role {
         case .user:
-            return [.prompt(Transcript.Prompt(segments: message.contents.compactMap(self.toTranscriptSegment)))]
+            let segments: [Transcript.Segment] = message.contents.compactMap { content in
+                guard let textContent = content as? TextContentNative else { return nil }
+                return .text(Transcript.TextSegment(content: textContent.text))
+            }
+            return [.prompt(Transcript.Prompt(segments: segments))]
         case .assistant:
+            // Process contents in order, flushing batches when the content type changes.
+            // This preserves interleaving: [text, funcCall, text] → [.response, .toolCalls, .response]
             var entries: [Transcript.Entry] = []
-            // Collect text segments for a response entry
-            let textSegments = message.contents.compactMap(self.toTranscriptSegment)
-            if !textSegments.isEmpty {
-                entries.append(.response(Transcript.Response(assetIDs: [], segments: textSegments)))
+            var pendingTextSegments: [Transcript.Segment] = []
+            var pendingToolCalls: [Transcript.ToolCall] = []
+
+            for content in message.contents {
+                if let textContent = content as? TextContentNative {
+                    // Flush pending tool calls before starting text
+                    if !pendingToolCalls.isEmpty {
+                        entries.append(.toolCalls(Transcript.ToolCalls(pendingToolCalls)))
+                        pendingToolCalls = []
+                    }
+                    pendingTextSegments.append(.text(Transcript.TextSegment(content: textContent.text)))
+                } else if let funcCall = content as? FunctionCallContentNative {
+                    // Flush pending text before starting tool calls
+                    if !pendingTextSegments.isEmpty {
+                        entries.append(.response(Transcript.Response(assetIDs: [], segments: pendingTextSegments)))
+                        pendingTextSegments = []
+                    }
+                    let argsContent = (try? GeneratedContent(json: funcCall.arguments)) ?? GeneratedContent(funcCall.arguments)
+                    pendingToolCalls.append(Transcript.ToolCall(id: funcCall.callId, toolName: funcCall.name, arguments: argsContent))
+                }
             }
-            // Collect function call content for a toolCalls entry
-            let toolCalls: [Transcript.ToolCall] = message.contents.compactMap { content in
-                guard let funcCall = content as? FunctionCallContentNative else { return nil }
-                let argsContent = (try? GeneratedContent(json: funcCall.arguments)) ?? GeneratedContent(funcCall.arguments)
-                return Transcript.ToolCall(id: funcCall.callId, toolName: funcCall.name, arguments: argsContent)
+
+            // Flush remaining batches
+            if !pendingTextSegments.isEmpty {
+                entries.append(.response(Transcript.Response(assetIDs: [], segments: pendingTextSegments)))
             }
-            if !toolCalls.isEmpty {
-                entries.append(.toolCalls(Transcript.ToolCalls(toolCalls)))
+            if !pendingToolCalls.isEmpty {
+                entries.append(.toolCalls(Transcript.ToolCalls(pendingToolCalls)))
             }
             return entries
         case .system:
-            return [.instructions(Transcript.Instructions(segments: message.contents.compactMap(self.toTranscriptSegment), toolDefinitions: []))]
+            let segments: [Transcript.Segment] = message.contents.compactMap { content in
+                guard let textContent = content as? TextContentNative else { return nil }
+                return .text(Transcript.TextSegment(content: textContent.text))
+            }
+            return [.instructions(Transcript.Instructions(segments: segments, toolDefinitions: []))]
         case .tool:
-            // Convert function results to toolOutput entries
             let toolOutputs: [Transcript.Entry] = message.contents.compactMap { content in
                 guard let funcResult = content as? FunctionResultContentNative else { return nil }
                 let segment = Transcript.Segment.text(Transcript.TextSegment(content: funcResult.result))
@@ -418,16 +444,6 @@ public class ChatClientNative: NSObject {
             return toolOutputs
         default:
             throw NSError.chatError(.invalidRole, description: "Unsupported role in transcript. Found: \(message.role)")
-        }
-    }
-
-    private func toTranscriptSegment(content: AIContentNative) -> Transcript.Segment? {
-        switch content {
-        case let textContent as TextContentNative:
-            return .text(Transcript.TextSegment(content: textContent.text))
-        default:
-            // Non-text content (function calls/results) is handled separately in toTranscriptEntries
-            return nil
         }
     }
 

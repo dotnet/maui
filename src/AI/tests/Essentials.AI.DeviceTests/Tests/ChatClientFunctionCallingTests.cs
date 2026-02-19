@@ -887,6 +887,119 @@ public abstract class ChatClientFunctionCallingTestsBase<T>
 		Assert.True(responseText.Contains("47", StringComparison.Ordinal),
 			$"Follow-up response should reference the tool result temperature (47°F), proving tool results are preserved in context. Got: '{responseText}'");
 	}
+
+	[Fact]
+	public async Task GetStreamingResponseAsync_WithToolCalling_NoNullTextContent()
+	{
+		// Verifies that no text content with the literal value "null" leaks through
+		// the streaming pipeline during tool-calling conversations. This guards against
+		// both Apple framework sentinels and any serialization bugs in our code.
+
+		var weatherTool = AIFunctionFactory.Create(
+			(string location) => $"Sunny, 72°F in {location}",
+			name: "GetWeather",
+			description: "Gets the weather for a location");
+
+		var client = EnableFunctionCalling(new T());
+		var options = new ChatOptions
+		{
+			Tools = [weatherTool]
+		};
+
+		var allTextDeltas = new List<string>();
+
+		await foreach (var update in client.GetStreamingResponseAsync(
+			[new ChatMessage(ChatRole.User, "What's the weather in Seattle?")], options))
+		{
+			foreach (var content in update.Contents)
+			{
+				if (content is TextContent tc && tc.Text is not null)
+				{
+					allTextDeltas.Add(tc.Text);
+				}
+			}
+		}
+
+		// No text delta should be the literal string "null"
+		Assert.DoesNotContain("null", allTextDeltas);
+		Assert.True(allTextDeltas.Count > 0, "Should receive at least one text delta");
+	}
+
+	[Fact]
+	public async Task GetStreamingResponseAsync_MultiTurnWithToolCalling_ContentOrderPreserved()
+	{
+		// Verifies that conversation history built from streaming preserves the
+		// correct interleaving order: each FunctionCallContent (Assistant) is followed
+		// by its FunctionResultContent (Tool) before the next call or text.
+
+		var weatherTool = AIFunctionFactory.Create(
+			(string location) => $"Clear skies, 68°F in {location}",
+			name: "GetWeather",
+			description: "Gets the weather for a location");
+
+		var client = EnableFunctionCalling(new T());
+		var options = new ChatOptions
+		{
+			Tools = [weatherTool]
+		};
+
+		// Stream and build history, tracking the order of content types
+		var history = new List<ChatMessage>
+		{
+			new(ChatRole.User, "What's the weather in Seattle?")
+		};
+		var contentOrder = new List<string>(); // Track: "call", "result", "text"
+		ChatMessage? textMessage = null;
+
+		await foreach (var update in client.GetStreamingResponseAsync(
+			[new ChatMessage(ChatRole.User, "What's the weather in Seattle?")], options))
+		{
+			foreach (var content in update.Contents)
+			{
+				switch (content)
+				{
+					case FunctionCallContent fc:
+						contentOrder.Add("call");
+						history.Add(new ChatMessage(ChatRole.Assistant, [fc]));
+						textMessage = null;
+						break;
+					case FunctionResultContent fr:
+						contentOrder.Add("result");
+						history.Add(new ChatMessage(ChatRole.Tool, [fr]));
+						break;
+					case TextContent tc when !string.IsNullOrEmpty(tc.Text):
+						if (!contentOrder.Contains("text") || contentOrder.Last() != "text")
+							contentOrder.Add("text");
+						if (textMessage is null)
+						{
+							textMessage = new ChatMessage(ChatRole.Assistant, [tc]);
+							history.Add(textMessage);
+						}
+						else
+						{
+							textMessage.Contents.Add(tc);
+						}
+						break;
+				}
+			}
+		}
+
+		// Verify: every "call" is immediately followed by "result" (no reordering)
+		for (int i = 0; i < contentOrder.Count; i++)
+		{
+			if (contentOrder[i] == "call")
+			{
+				Assert.True(i + 1 < contentOrder.Count && contentOrder[i + 1] == "result",
+					$"FunctionCall at index {i} should be followed by FunctionResult. Order: [{string.Join(", ", contentOrder)}]");
+			}
+		}
+
+		// Verify the history can be used for a follow-up (ordering is valid for the transcript)
+		history.Add(new ChatMessage(ChatRole.User, "What about Portland?"));
+		var followUp = await client.GetResponseAsync(history, options);
+		Assert.NotNull(followUp);
+		Assert.True(followUp.Messages.Count > 0, "Follow-up should succeed with correctly ordered history");
+	}
 }
 
 public enum PointOfInterestCategory
