@@ -269,7 +269,7 @@ public class MenuBarItemFeatureTests : _GalleryUITest
 #endif
 
 	[Test, Order(13)]
-	public void MenuBarItem_MenuTextBindingUpdates()
+	public void MenuBarItem_VerifyAllMenusAndItemsAccessible()
 	{
 		App.WaitForElement("ResetButton");
 		App.Tap("ResetButton");

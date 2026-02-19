@@ -36,6 +36,16 @@ public partial class MenuBarItemControlPage : Shell
 			location.PropertyChanged += OnLocationPropertyChanged;
 		}
 
+		// Unsubscribe from events when the page is unloaded
+		this.Unloaded += (s, e) =>
+		{
+			_viewModel.Locations.CollectionChanged -= OnLocationsCollectionChanged;
+			foreach (var location in _viewModel.Locations)
+			{
+				location.PropertyChanged -= OnLocationPropertyChanged;
+			}
+		};
+
 		// Initial population of menu items
 		PopulateLocationMenuItems();
 	}
