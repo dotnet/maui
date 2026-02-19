@@ -1,16 +1,19 @@
 using System.Globalization;
-using System.Text.RegularExpressions;
+using Markdig;
+using Markdig.Syntax;
+using Markdig.Syntax.Inlines;
 
 namespace Maui.Controls.Sample.Views;
 
 /// <summary>
-/// Converts a markdown string to a FormattedString with styled Spans.
-/// Supports **bold**, *italic*, ***bold italic***, and `code`.
+/// Converts a markdown string to a FormattedString using Markdig's AST.
+/// Supports bold, italic, code, and renders everything else as plain text.
 /// </summary>
-public partial class MarkdownConverter : IValueConverter
+public class MarkdownConverter : IValueConverter
 {
-	[GeneratedRegex(@"\*\*\*(.+?)\*\*\*|\*\*(.+?)\*\*|\*(?!\s)(.+?)(?<!\s)\*|`(.+?)`", RegexOptions.Singleline)]
-	private static partial Regex MarkdownPattern();
+	static readonly MarkdownPipeline s_pipeline = new MarkdownPipelineBuilder()
+		.UseEmphasisExtras()
+		.Build();
 
 	public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
 	{
@@ -21,60 +24,137 @@ public partial class MarkdownConverter : IValueConverter
 		var textColor = isDark ? Color.FromArgb("#E1E1E1") : Color.FromArgb("#1F1F1F");
 		var codeBackground = isDark ? Color.FromArgb("#3D3D3D") : Color.FromArgb("#E8E8E8");
 
-		return Parse(text, textColor, codeBackground);
+		var formatted = new FormattedString();
+		var doc = Markdown.Parse(text, s_pipeline);
+
+		foreach (var block in doc)
+		{
+			if (formatted.Spans.Count > 0)
+				formatted.Spans.Add(new Span { Text = "\n", TextColor = textColor, FontSize = 14 });
+
+			if (block is ParagraphBlock paragraph && paragraph.Inline is not null)
+			{
+				WalkInlines(paragraph.Inline, formatted, textColor, codeBackground, FontAttributes.None);
+			}
+			else if (block is HeadingBlock heading && heading.Inline is not null)
+			{
+				WalkInlines(heading.Inline, formatted, textColor, codeBackground, FontAttributes.Bold);
+			}
+			else if (block is ListBlock list)
+			{
+				int index = 1;
+				foreach (var item in list)
+				{
+					if (formatted.Spans.Count > 0)
+						formatted.Spans.Add(new Span { Text = "\n", TextColor = textColor, FontSize = 14 });
+
+					var bullet = list.IsOrdered ? $"{index++}. " : "• ";
+					formatted.Spans.Add(new Span { Text = bullet, TextColor = textColor, FontSize = 14 });
+
+					if (item is ListItemBlock listItem)
+					{
+						foreach (var subBlock in listItem)
+						{
+							if (subBlock is ParagraphBlock p && p.Inline is not null)
+								WalkInlines(p.Inline, formatted, textColor, codeBackground, FontAttributes.None);
+						}
+					}
+				}
+			}
+			else
+			{
+				// Fallback: render block as plain text
+				var plainText = block.GetType().Name == "FencedCodeBlock" || block.GetType().Name == "CodeBlock"
+					? GetCodeBlockText(block)
+					: text.Substring(block.Span.Start, block.Span.Length);
+				formatted.Spans.Add(new Span
+				{
+					Text = plainText,
+					TextColor = textColor,
+					FontFamily = "Courier New",
+					BackgroundColor = codeBackground,
+					FontSize = 13,
+				});
+			}
+		}
+
+		if (formatted.Spans.Count == 0)
+			formatted.Spans.Add(new Span { Text = text, TextColor = textColor, FontSize = 14 });
+
+		return formatted;
 	}
 
 	public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
 		=> throw new NotSupportedException();
 
-	static FormattedString Parse(string text, Color textColor, Color codeBackground)
+	static void WalkInlines(ContainerInline container, FormattedString fs, Color textColor, Color codeBackground, FontAttributes inherited)
 	{
-		var formatted = new FormattedString();
-		var lastIndex = 0;
-
-		foreach (Match match in MarkdownPattern().Matches(text))
+		foreach (var inline in container)
 		{
-			if (match.Index > lastIndex)
-				AddSpan(formatted, text[lastIndex..match.Index], textColor);
+			switch (inline)
+			{
+				case EmphasisInline emphasis:
+					var attrs = inherited;
+					if (emphasis.DelimiterCount == 2 || (emphasis.DelimiterChar == '*' && emphasis.DelimiterCount >= 2))
+						attrs |= FontAttributes.Bold;
+					else
+						attrs |= FontAttributes.Italic;
+					WalkInlines(emphasis, fs, textColor, codeBackground, attrs);
+					break;
 
-			if (match.Groups[1].Success) // ***bold italic***
-				AddSpan(formatted, match.Groups[1].Value, textColor, FontAttributes.Bold | FontAttributes.Italic);
-			else if (match.Groups[2].Success) // **bold**
-				AddSpan(formatted, match.Groups[2].Value, textColor, FontAttributes.Bold);
-			else if (match.Groups[3].Success) // *italic*
-				AddSpan(formatted, match.Groups[3].Value, textColor, FontAttributes.Italic);
-			else if (match.Groups[4].Success) // `code`
-				AddSpan(formatted, match.Groups[4].Value, textColor, fontFamily: "Courier New", backgroundColor: codeBackground);
+				case CodeInline code:
+					fs.Spans.Add(new Span
+					{
+						Text = code.Content,
+						TextColor = textColor,
+						FontFamily = "Courier New",
+						BackgroundColor = codeBackground,
+						FontSize = 13,
+					});
+					break;
 
-			lastIndex = match.Index + match.Length;
+				case LinkInline link:
+					// Render link text with underline
+					var linkText = link.FirstChild is LiteralInline lit ? lit.Content.ToString() : link.Url ?? "";
+					fs.Spans.Add(new Span
+					{
+						Text = linkText,
+						TextColor = Color.FromArgb("#512BD4"),
+						TextDecorations = TextDecorations.Underline,
+						FontAttributes = inherited,
+						FontSize = 14,
+					});
+					break;
+
+				case LineBreakInline:
+					fs.Spans.Add(new Span { Text = "\n", TextColor = textColor, FontSize = 14 });
+					break;
+
+				case LiteralInline literal:
+					fs.Spans.Add(new Span
+					{
+						Text = literal.Content.ToString(),
+						TextColor = textColor,
+						FontAttributes = inherited,
+						FontSize = 14,
+					});
+					break;
+
+				default:
+					// Any other inline — render as plain text
+					if (inline is ContainerInline ci)
+						WalkInlines(ci, fs, textColor, codeBackground, inherited);
+					break;
+			}
 		}
-
-		if (lastIndex < text.Length)
-			AddSpan(formatted, text[lastIndex..], textColor);
-
-		if (formatted.Spans.Count == 0)
-			AddSpan(formatted, text, textColor);
-
-		return formatted;
 	}
 
-	static void AddSpan(FormattedString fs, string text, Color textColor,
-		FontAttributes fontAttributes = FontAttributes.None,
-		string? fontFamily = null, Color? backgroundColor = null)
+	static string GetCodeBlockText(Block block)
 	{
-		var span = new Span
-		{
-			Text = text,
-			TextColor = textColor,
-			FontAttributes = fontAttributes,
-			FontSize = 14,
-		};
-
-		if (fontFamily is not null)
-			span.FontFamily = fontFamily;
-		if (backgroundColor is not null)
-			span.BackgroundColor = backgroundColor;
-
-		fs.Spans.Add(span);
+		if (block is FencedCodeBlock fenced)
+			return string.Join("\n", fenced.Lines);
+		if (block is CodeBlock code)
+			return string.Join("\n", code.Lines);
+		return block.Span.ToString() ?? "";
 	}
 }
