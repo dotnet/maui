@@ -621,6 +621,136 @@ public abstract class ChatClientFunctionCallingTestsBase<T>
 			capturedQuery.Contains("maui", StringComparison.OrdinalIgnoreCase),
 			$"The natural language query should relate to the user's request, but got: {capturedQuery}");
 	}
+
+	[Fact]
+	public async Task GetResponseAsync_MultiTurnConversationWithToolCalling_SucceedsOnFollowUp()
+	{
+		var weatherTool = AIFunctionFactory.Create(
+			(string location) => $"Sunny, 72°F in {location}",
+			name: "GetWeather",
+			description: "Gets the weather for a location");
+
+		var client = EnableFunctionCalling(new T());
+		var options = new ChatOptions
+		{
+			Tools = [weatherTool]
+		};
+
+		// Turn 1: Ask about weather (triggers tool call)
+		var messages = new List<ChatMessage>
+		{
+			new(ChatRole.User, "What's the weather in Seattle?")
+		};
+
+		var firstResponse = await client.GetResponseAsync(messages, options);
+		Assert.NotNull(firstResponse);
+		Assert.NotNull(firstResponse.Messages);
+		Assert.True(firstResponse.Messages.Count > 0, "First response should have messages");
+
+		// Verify tool calling occurred in the response
+		bool hasFunctionContent = firstResponse.Messages
+			.Any(m => m.Contents.Any(c => c is FunctionCallContent || c is FunctionResultContent));
+		Assert.True(hasFunctionContent, "First response should contain function call/result content from tool calling");
+
+		// Turn 2: Build conversation history with all messages from first turn, then add follow-up
+		// This is the pattern that triggers the bug: FunctionCallContent/FunctionResultContent
+		// in the history causes ToNative to throw "content type not supported"
+		var followUpMessages = new List<ChatMessage>(firstResponse.Messages)
+		{
+			new(ChatRole.User, "What about in Portland?")
+		};
+
+		var secondResponse = await client.GetResponseAsync(followUpMessages, options);
+
+		Assert.NotNull(secondResponse);
+		Assert.NotNull(secondResponse.Messages);
+		Assert.True(secondResponse.Messages.Count > 0, "Second response should have messages");
+	}
+
+	[Fact]
+	public async Task GetStreamingResponseAsync_MultiTurnConversationWithToolCalling_SucceedsOnFollowUp()
+	{
+		var weatherTool = AIFunctionFactory.Create(
+			(string location) => $"Sunny, 72°F in {location}",
+			name: "GetWeather",
+			description: "Gets the weather for a location");
+
+		var client = EnableFunctionCalling(new T());
+		var options = new ChatOptions
+		{
+			Tools = [weatherTool]
+		};
+
+		// Turn 1: Ask about weather (triggers tool call)
+		var messages = new List<ChatMessage>
+		{
+			new(ChatRole.User, "What's the weather in Seattle?")
+		};
+
+		var firstResponse = await client.GetResponseAsync(messages, options);
+		Assert.NotNull(firstResponse);
+		Assert.NotNull(firstResponse.Messages);
+
+		// Verify tool calling occurred
+		bool hasFunctionContent = firstResponse.Messages
+			.Any(m => m.Contents.Any(c => c is FunctionCallContent || c is FunctionResultContent));
+		Assert.True(hasFunctionContent, "First response should contain function call/result content from tool calling");
+
+		// Turn 2: Stream follow-up with full conversation history including tool call/result content
+		var followUpMessages = new List<ChatMessage>(firstResponse.Messages)
+		{
+			new(ChatRole.User, "What about in Portland?")
+		};
+
+		bool receivedAnyUpdate = false;
+		await foreach (var update in client.GetStreamingResponseAsync(followUpMessages, options))
+		{
+			receivedAnyUpdate = true;
+			Assert.NotNull(update);
+		}
+
+		Assert.True(receivedAnyUpdate, "Should receive at least one streaming update for the follow-up");
+	}
+
+	[Fact]
+	public async Task GetResponseAsync_MultiTurnConversationWithToolCalling_ToolResultsPreservedInContext()
+	{
+		// Use a distinctive, unlikely-to-be-hallucinated temperature value
+		var weatherTool = AIFunctionFactory.Create(
+			(string location) => $"The current weather in {location} is 47 degrees Fahrenheit and rainy",
+			name: "GetWeather",
+			description: "Gets the weather for a location");
+
+		var client = EnableFunctionCalling(new T());
+		var toolOptions = new ChatOptions
+		{
+			Tools = [weatherTool]
+		};
+
+		// Turn 1: Ask about weather WITH tools (triggers tool call + result)
+		var messages = new List<ChatMessage>
+		{
+			new(ChatRole.User, "What's the weather in Seattle?")
+		};
+
+		var firstResponse = await client.GetResponseAsync(messages, toolOptions);
+		Assert.NotNull(firstResponse);
+
+		// Turn 2: Ask about the temperature WITHOUT tools — forces the model to recall from context.
+		// If tool results were dropped from the transcript, the model has no way to know "47".
+		var followUpMessages = new List<ChatMessage>(firstResponse.Messages)
+		{
+			new(ChatRole.User, "What was the exact temperature in Fahrenheit that the weather check returned for Seattle? Reply with just the number.")
+		};
+
+		// No tools on follow-up — model must rely on conversation history
+		var secondResponse = await client.GetResponseAsync(followUpMessages);
+		Assert.NotNull(secondResponse);
+
+		var responseText = secondResponse.Text ?? string.Empty;
+		Assert.True(responseText.Contains("47", StringComparison.Ordinal),
+			$"Follow-up response should reference the tool result temperature (47°F), proving tool results are preserved in context. Got: '{responseText}'");
+	}
 }
 
 public enum PointOfInterestCategory
