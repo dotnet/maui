@@ -139,7 +139,7 @@ namespace Microsoft.Maui.Controls
 			if (changed)
 			{
 				property.PropertyChanging?.Invoke(this, original.Value, newValue);
-				OnPropertyChanging(property.GetPropertyChangingEventArgs());
+				OnPropertyChanging(property.CachedPropertyChangingEventArgs);
 			}
 
 			bpcontext.Values.Remove(specificity);
@@ -666,7 +666,7 @@ namespace Microsoft.Maui.Controls
 			{
 				property.PropertyChanging?.Invoke(this, original, value);
 
-				OnPropertyChanging(property.GetPropertyChangingEventArgs());
+				OnPropertyChanging(property.CachedPropertyChangingEventArgs);
 			}
 
 			context.Values[specificity] = value;
@@ -699,7 +699,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (willFirePropertyChanged)
 			{
-				OnPropertyChanged(property.GetPropertyChangedEventArgs());
+				OnPropertyChanged(property.CachedPropertyChangedEventArgs);
 				property.PropertyChanged?.Invoke(this, original, value);
 			}
 		}
