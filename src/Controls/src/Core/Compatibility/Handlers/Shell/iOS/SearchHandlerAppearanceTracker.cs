@@ -164,7 +164,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_hasCustomBackground = true;
 				textField.Layer.CornerRadius = 10;
 				textField.ClipsToBounds = true;
-				_defaultBackgroundColor = backGroundColor.ToPlatform();
+				if (_defaultBackgroundColor is null)
+				{
+					_defaultBackgroundColor = backGroundColor.ToPlatform();
+				}
 				textField.BackgroundColor = backGroundColor.ToPlatform();
 			}
 		}
