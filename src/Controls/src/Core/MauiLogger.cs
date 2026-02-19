@@ -54,9 +54,9 @@ internal static class MauiLogger<T>
 	/// calls — zero allocation.
 	/// </summary>
 	[InterpolatedStringHandler]
-	internal readonly ref struct LogInterpolatedStringHandler
+	internal ref struct LogInterpolatedStringHandler
 	{
-		private readonly DefaultInterpolatedStringHandler _inner;
+		private DefaultInterpolatedStringHandler _inner;
 		private readonly ILogger? _logger;
 		private readonly LogLevel _level;
 
