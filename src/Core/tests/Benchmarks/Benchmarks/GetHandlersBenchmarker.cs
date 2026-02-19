@@ -8,7 +8,6 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 	public class GetHandlersBenchmarker
 	{
 		MauiApp _mauiApp;
-		IMauiContext _mauiContext;
 
 		Registrar<IView, IViewHandler> _registrar;
 
@@ -21,7 +20,6 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 			_mauiApp = MauiApp
 				.CreateBuilder()
 				.Build();
-			_mauiContext = new MauiContext(_mauiApp.Services);
 		}
 
 		[GlobalSetup(Target = nameof(GetHandlerUsingRegistrar))]
