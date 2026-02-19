@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		internal ushort _triggerCount = 0;
-		internal Dictionary<TriggerBase, SetterSpecificity> _triggerSpecificity = new Dictionary<TriggerBase, SetterSpecificity>();
+		internal Dictionary<TriggerBase, SetterSpecificity> _triggerSpecificity;
 		readonly Dictionary<BindableProperty, BindablePropertyContext> _properties = new Dictionary<BindableProperty, BindablePropertyContext>(4);
 		bool _applying;
 		WeakReference _inheritedContext;
