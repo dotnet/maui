@@ -378,6 +378,52 @@ stages:
       testName: RunOniOS_MauiNativeAOT
       arch: ARM64
 
+    # CoreCLR test variants - ARM64 (Apple Silicon) lanes
+    - name: mac_runios_maui_debug_coreclr_arm64
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 45
+      testName: RunOniOS_MauiDebug_CoreCLR
+      arch: ARM64
+
+    - name: mac_runios_maui_release_coreclr_arm64
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 45
+      testName: RunOniOS_MauiRelease_CoreCLR
+      arch: ARM64
+
+    - name: mac_runios_maui_trim_coreclr_arm64
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 45
+      testName: RunOniOS_MauiReleaseTrimFull_CoreCLR
+      arch: ARM64
+
+    - name: mac_runios_blazor_debug_coreclr_arm64
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 45
+      testName: RunOniOS_BlazorDebug_CoreCLR
+      arch: ARM64
+
+    - name: mac_runios_blazor_release_coreclr_arm64
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 45
+      testName: RunOniOS_BlazorRelease_CoreCLR
+      arch: ARM64
+
     # MacOSPool lanes - comparison with ARM64 pool
     # Only run on: (non-PR on main/net*.0/release/*/inflight/*) OR (PR targeting net*.0/release/*/inflight/*)
     - name: mac_runios_maui_debug
@@ -437,5 +483,56 @@ stages:
         pool: ${{ parameters.MacOSPool.internal }}
       timeout: 45
       testName: RunOniOS_MauiNativeAOT
+      arch: x64
+      condition: ${{ parameters.macOSPoolLaneCondition }}
+
+    # CoreCLR test variants - MacOSPool lanes
+    - name: mac_runios_maui_debug_coreclr
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 45
+      testName: RunOniOS_MauiDebug_CoreCLR
+      arch: x64
+      condition: ${{ parameters.macOSPoolLaneCondition }}
+
+    - name: mac_runios_maui_release_coreclr
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 45
+      testName: RunOniOS_MauiRelease_CoreCLR
+      arch: x64
+      condition: ${{ parameters.macOSPoolLaneCondition }}
+
+    - name: mac_runios_maui_trim_coreclr
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 45
+      testName: RunOniOS_MauiReleaseTrimFull_CoreCLR
+      arch: x64
+      condition: ${{ parameters.macOSPoolLaneCondition }}
+
+    - name: mac_runios_blazor_debug_coreclr
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 45
+      testName: RunOniOS_BlazorDebug_CoreCLR
+      arch: x64
+      condition: ${{ parameters.macOSPoolLaneCondition }}
+
+    - name: mac_runios_blazor_release_coreclr
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 45
+      testName: RunOniOS_BlazorRelease_CoreCLR
       arch: x64
       condition: ${{ parameters.macOSPoolLaneCondition }}
