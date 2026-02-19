@@ -19,6 +19,40 @@ namespace Microsoft.Maui.Hosting.Internal
 			_registeredHandlerServiceTypeSet = RegisteredHandlerServiceTypeSet.GetInstance(collection);
 		}
 
+		public IElementHandler? GetHandler(Type type)
+		{
+			// 1. Exact DI registration (allows overriding attribute-based defaults)
+			if (InternalCollection.TryGetService(type, out _)
+				&& GetService(type) is IElementHandler exactHandler)
+			{
+				return exactHandler;
+			}
+
+			// 2. ElementHandler attribute (no DI, just Activator.CreateInstance)
+			if (TryGetElementHandlerAttribute(type, out var elementHandlerAttribute))
+			{
+				return (IElementHandler?)Activator.CreateInstance(elementHandlerAttribute.HandlerType);
+			}
+
+			// 3. Interface-based DI registration (e.g., handler registered for IScrollView)
+			if (TryGetVirtualViewHandlerServiceType(type) is Type serviceType
+				&& GetService(serviceType) is IElementHandler interfaceHandler)
+			{
+				return interfaceHandler;
+			}
+
+			// 4. ContentView fallback
+			if (typeof(IContentView).IsAssignableFrom(type))
+			{
+				return new ContentViewHandler();
+			}
+
+			throw new HandlerNotFoundException($"Unable to find a {nameof(IElementHandler)} corresponding to {type}. Please register a handler for {type} using `Microsoft.Maui.Hosting.MauiHandlersCollectionExtensions.AddHandler` or `Microsoft.Maui.Hosting.MauiHandlersCollectionExtensions.TryAddHandler`");
+		}
+
+		public IElementHandler? GetHandler<T>() where T : IElement
+			=> GetHandler(typeof(T));
+
 		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 		public Type? GetHandlerType(Type iview)
 		{
@@ -58,7 +92,7 @@ namespace Microsoft.Maui.Hosting.Internal
 			}
 
 			handlerType = null;
-			return handlerType is not null;
+			return false;
 		}
 
 		private static bool TryGetElementHandlerAttribute(Type viewType, [NotNullWhen(returnValue: true)] out ElementHandlerAttribute? elementHandlerAttribute)
@@ -80,27 +114,8 @@ namespace Microsoft.Maui.Hosting.Internal
 			return false;
 		}
 
-		[Obsolete("Use GetHandlerType instead.")]
+		[Obsolete("The handlers collection no longer contains all registered handlers. Use GetHandlerType instead.")]
 		public IMauiHandlersCollection GetCollection() => (IMauiHandlersCollection)InternalCollection;
-
-		[Obsolete("Use GetHandlerType instead.")]
-		public IElementHandler? GetHandler(Type type, IMauiContext context)
-		{
-			var handlerType = GetHandlerType(type);
-			if (handlerType != null)
-				return (IElementHandler?)Activator.CreateInstance(handlerType);
-
-			// Fall back to service resolution for factory-based registrations
-			var serviceType = TryGetVirtualViewHandlerServiceType(type) ?? type;
-			if (GetService(serviceType) is IElementHandler handler)
-				return handler;
-
-			throw new HandlerNotFoundException($"Handler not found for view {type}.");
-		}
-
-		[Obsolete("Use GetHandlerType instead.")]
-		public IElementHandler? GetHandler<T>(IMauiContext context) where T : IElement
-			=> GetHandler(typeof(T), context);
 
 		private Type? TryGetVirtualViewHandlerServiceType(Type type)
 			=> _serviceCache.GetOrAdd(type, _registeredHandlerServiceTypeSet.ResolveVirtualViewToRegisteredHandlerServiceType);
