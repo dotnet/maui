@@ -41,39 +41,14 @@ param(
     [ValidateSet("Debug", "Release")]
     [string]$Configuration = "Debug",
 
-    [string]$DeviceUdid,
-
-    # Optional overrides for testing non-Sandbox sample apps
-    [string]$ProjectPath,
-    [string]$BundleId,
-    [string]$AppName,
-    [string]$TestDir
+    [string]$DeviceUdid
 )
 
 # Script configuration
 $ErrorActionPreference = "Stop"
 $RepoRoot = Resolve-Path "$PSScriptRoot/../.."
-
-# Apply defaults (Sandbox) if not overridden
-if (-not $ProjectPath) {
-    $ProjectPath = "src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj"
-}
-# Resolve relative to repo root if not absolute
-if (-not [System.IO.Path]::IsPathRooted($ProjectPath)) {
-    $ProjectPath = Join-Path $RepoRoot $ProjectPath
-}
-if (-not $TestDir) { $TestDir = "CustomAgentLogsTmp/Sandbox" }
-if (-not [System.IO.Path]::IsPathRooted($TestDir)) {
-    $TestDir = Join-Path $RepoRoot $TestDir
-}
-# Derive AppName from project file name if not set
-if (-not $AppName) {
-    $AppName = [System.IO.Path]::GetFileNameWithoutExtension($ProjectPath)
-}
-# Derive default BundleId from platform config below if not set
-
-$SandboxProject = $ProjectPath
-$SandboxAppiumDir = $TestDir
+$SandboxProject = Join-Path $RepoRoot "src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj"
+$SandboxAppiumDir = Join-Path $RepoRoot "CustomAgentLogsTmp/Sandbox"
 $AppiumTestScript = Join-Path $SandboxAppiumDir "RunWithAppiumTest.cs"
 $AppiumPort = 4723
 
@@ -173,23 +148,20 @@ Write-Success "Prerequisites validated"
 
 #region Platform-Specific Configuration
 
-# Default bundle/package ID
-$DefaultBundleId = if ($BundleId) { $BundleId } else { "com.microsoft.maui.sandbox" }
-
 # Set target framework and app identifiers
 if ($Platform -eq "android") {
     $TargetFramework = "net10.0-android"
-    $AppPackage = $DefaultBundleId
-    $AppActivity = "$DefaultBundleId.MainActivity"
+    $AppPackage = "com.microsoft.maui.sandbox"
+    $AppActivity = "com.microsoft.maui.sandbox.MainActivity"
 } elseif ($Platform -eq "ios") {
     $TargetFramework = "net10.0-ios"
-    $AppBundleId = $DefaultBundleId
+    $AppBundleId = "com.microsoft.maui.sandbox"
 } elseif ($Platform -eq "catalyst") {
     $TargetFramework = "net10.0-maccatalyst"
-    $AppBundleId = $DefaultBundleId
+    $AppBundleId = "com.microsoft.maui.sandbox"
 } elseif ($Platform -eq "windows") {
     $TargetFramework = "net10.0-windows10.0.19041.0"
-    $AppPackage = $DefaultBundleId
+    $AppPackage = "com.microsoft.maui.sandbox"
 }
 
 # For catalyst and windows, skip emulator detection - runs on host
@@ -250,19 +222,17 @@ if ($Platform -eq "catalyst") {
     $arch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLower()
     $rid = if ($arch -eq "arm64") { "maccatalyst-arm64" } else { "maccatalyst-x64" }
     
-    # Build app path — artifact folder matches project name
-    $projectBaseName = [System.IO.Path]::GetFileNameWithoutExtension($SandboxProject)
-    $appPath = Join-Path $RepoRoot "artifacts/bin/$projectBaseName/$Configuration/$TargetFramework/$rid/$AppName.app"
+    # Build app path
+    $appPath = Join-Path $RepoRoot "artifacts/bin/Maui.Controls.Sample.Sandbox/$Configuration/$TargetFramework/$rid/Sandbox.app"
     
     if (Test-Path $appPath) {
-        Write-Info "Launching MacCatalyst app with dotnet run..."
+        Write-Info "Launching MacCatalyst Sandbox app with dotnet run..."
         Write-Info "App path: $appPath"
         
-        # Make executable — find the actual binary in the MacOS folder
-        $macosDir = Join-Path $appPath "Contents/MacOS"
-        $executablePath = Get-ChildItem -Path $macosDir -File -ErrorAction SilentlyContinue | Select-Object -First 1
-        if ($executablePath) {
-            & chmod +x $executablePath.FullName
+        # Make executable
+        $executablePath = Join-Path $appPath "Contents/MacOS/Maui.Controls.Sample.Sandbox"
+        if (Test-Path $executablePath) {
+            & chmod +x $executablePath
         }
         
         # Use dotnet run with StandardOutputPath/StandardErrorPath
@@ -270,9 +240,10 @@ if ($Platform -eq "catalyst") {
         # Console.WriteLine on MacCatalyst goes to stderr
         $deviceLogFile = Join-Path $SandboxAppiumDir "catalyst-device.log"
         $stderrFile = "$deviceLogFile.stderr"
+        $sandboxProject = Join-Path $RepoRoot "src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj"
         
         Write-Info "Starting app with dotnet run (logs to $stderrFile)..."
-        & dotnet run --project $SandboxProject -f $TargetFramework --no-build `
+        & dotnet run --project $sandboxProject -f $TargetFramework --no-build `
             -p:StandardOutputPath=$deviceLogFile `
             -p:StandardErrorPath=$stderrFile 2>&1 | Out-Null
         
@@ -280,14 +251,14 @@ if ($Platform -eq "catalyst") {
         Start-Sleep -Seconds 3
         
         # Get app process ID for later cleanup
-        $catalystAppProcess = Get-Process -Name $projectBaseName -ErrorAction SilentlyContinue | Select-Object -First 1
+        $catalystAppProcess = Get-Process -Name "Maui.Controls.Sample.Sandbox" -ErrorAction SilentlyContinue | Select-Object -First 1
         if ($catalystAppProcess) {
-            Write-Success "MacCatalyst app launched (PID: $($catalystAppProcess.Id))"
+            Write-Success "MacCatalyst Sandbox app launched (PID: $($catalystAppProcess.Id))"
         } else {
-            Write-Success "MacCatalyst app launched with log capture"
+            Write-Success "MacCatalyst Sandbox app launched with log capture"
         }
     } else {
-        Write-Warn "MacCatalyst app not found at: $appPath"
+        Write-Warn "MacCatalyst Sandbox app not found at: $appPath"
     }
 }
 
@@ -417,13 +388,12 @@ try {
     # Capture iOS logs after test completes
     if ($Platform -eq "ios") {
         Write-Host ""
-        Write-Info "Capturing iOS simulator logs for app..."
+        Write-Info "Capturing iOS simulator logs for Sandbox app..."
         
-        # Use log show to capture recent logs from app
+        # Use log show to capture recent logs from Sandbox app
         $logStartTime = (Get-Date).AddMinutes(-2).ToString("yyyy-MM-dd HH:mm:ss")
-        $processFilter = [System.IO.Path]::GetFileNameWithoutExtension($SandboxProject)
         
-        $iosLogCommand = "xcrun simctl spawn booted log show --predicate 'processImagePath contains `"$processFilter`"' --start `"$logStartTime`" --style compact"
+        $iosLogCommand = "xcrun simctl spawn booted log show --predicate 'processImagePath contains `"Maui.Controls.Sample.Sandbox`"' --start `"$logStartTime`" --style compact"
         
         Write-Info "Capturing logs from last 2 minutes..."
         Invoke-Expression "$iosLogCommand > `"$deviceLogFile`" 2>&1"
@@ -453,8 +423,7 @@ try {
         if ($logFileSize -lt 100) {
             Write-Info "Console output was minimal, using os_log fallback..."
             $logStartTime = (Get-Date).AddMinutes(-2).ToString("yyyy-MM-dd HH:mm:ss")
-            $processFilter = [System.IO.Path]::GetFileNameWithoutExtension($SandboxProject)
-            $catalystLogCommand = "log show --level debug --predicate 'process contains `"$processFilter`" OR processImagePath contains `"$processFilter`"' --start `"$logStartTime`" --style compact"
+            $catalystLogCommand = "log show --level debug --predicate 'process contains `"Maui.Controls.Sample.Sandbox`" OR processImagePath contains `"Maui.Controls.Sample.Sandbox`"' --start `"$logStartTime`" --style compact"
             Invoke-Expression "$catalystLogCommand > `"$deviceLogFile`" 2>&1"
         }
         
@@ -466,9 +435,9 @@ try {
         Write-Host ""
         Write-Host "═══════════════════════════════════════════════════════" -ForegroundColor Cyan
         if ($Platform -eq "android") {
-            Write-Host "  Android Logcat Output (Filtered to App)" -ForegroundColor Cyan
+            Write-Host "  Android Logcat Output (Filtered to Sandbox App)" -ForegroundColor Cyan
         } elseif ($Platform -eq "ios") {
-            Write-Host "  iOS Simulator Logs (Filtered to App)" -ForegroundColor Cyan
+            Write-Host "  iOS Simulator Logs (Filtered to Sandbox App)" -ForegroundColor Cyan
         } elseif ($Platform -eq "catalyst") {
             Write-Host "  MacCatalyst App Logs (Console.WriteLine output)" -ForegroundColor Cyan
         } elseif ($Platform -eq "windows") {
@@ -476,28 +445,28 @@ try {
         }
         Write-Host "═══════════════════════════════════════════════════════" -ForegroundColor Cyan
         
-        # Show ALL logs from app (no content filtering)
+        # Show ALL logs from Sandbox app (no content filtering)
         $logContent = Get-Content $deviceLogFile -ErrorAction SilentlyContinue
         if ($logContent) {
-            # Display last 100 lines (no filtering - already filtered to app only)
+            # Display last 100 lines (no filtering - already filtered to Sandbox app only)
             $recentLogs = $logContent | Select-Object -Last 100
             
             if ($recentLogs) {
                 $recentLogs | ForEach-Object { Write-Host $_ }
             } else {
-                Write-Host "No logs captured from app" -ForegroundColor Yellow
+                Write-Host "No logs captured from Sandbox app" -ForegroundColor Yellow
             }
             
             Write-Host ""
             Write-Info "Full device log saved to: $deviceLogFile"
             if ($Platform -eq "android") {
-                Write-Info "All logs are from app only ($DefaultBundleId)"
+                Write-Info "All logs are from Sandbox app only (com.microsoft.maui.sandbox)"
             } elseif ($Platform -eq "catalyst") {
-                Write-Info "All logs are from app only (Console.WriteLine output)"
+                Write-Info "All logs are from Sandbox app only (Console.WriteLine output)"
             } elseif ($Platform -eq "windows") {
-                Write-Info "All logs are from app only (Console.WriteLine output)"
+                Write-Info "All logs are from Sandbox app only (Console.WriteLine output)"
             } else {
-                Write-Info "All logs are from app only ($AppName)"
+                Write-Info "All logs are from Sandbox app only (Maui.Controls.Sample.Sandbox)"
             }
         } else {
             Write-Warn "Could not read device log file"
@@ -552,7 +521,7 @@ try {
     if ($catalystAppProcess) {
         $runningApp = Get-Process -Id $catalystAppProcess.Id -ErrorAction SilentlyContinue
         if ($runningApp -and -not $runningApp.HasExited) {
-            Write-Info "Stopping MacCatalyst app (we started it)..."
+            Write-Info "Stopping MacCatalyst Sandbox app (we started it)..."
             Stop-Process -Id $catalystAppProcess.Id -Force -ErrorAction SilentlyContinue
         }
     }
@@ -580,9 +549,9 @@ if ($catalystAppProcess) {
     $runningApp = Get-Process -Id $catalystAppProcess.Id -ErrorAction SilentlyContinue
     if ($runningApp -and -not $runningApp.HasExited) {
         Write-Host ""
-        Write-Info "Stopping MacCatalyst app (PID: $($catalystAppProcess.Id))..."
+        Write-Info "Stopping MacCatalyst Sandbox app (PID: $($catalystAppProcess.Id))..."
         Stop-Process -Id $catalystAppProcess.Id -Force -ErrorAction SilentlyContinue
-        Write-Success "MacCatalyst app stopped"
+        Write-Success "MacCatalyst Sandbox app stopped"
     }
 }
 
