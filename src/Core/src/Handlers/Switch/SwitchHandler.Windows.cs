@@ -43,5 +43,7 @@ namespace Microsoft.Maui.Handlers
 
 			VirtualView.IsOn = PlatformView.IsOn;
 		}
+
+		internal override bool PreventGestureBubbling => true;
 	}
 }

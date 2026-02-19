@@ -6,8 +6,12 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class NavigationPage
 	{
-		internal static new void RemapForControls()
+		static NavigationPage()
 		{
+			// Force VisualElement's static constructor to run first so base-level
+			// mapper remappings are applied before these Control-specific ones.
+			RemappingHelper.EnsureBaseTypeRemapped(typeof(NavigationPage), typeof(VisualElement));
+
 			// Adjust the mappings to preserve Controls.NavigationPage legacy behaviors
 #if IOS
 			NavigationViewHandler.Mapper.ReplaceMapping<NavigationPage, NavigationViewHandler>(PlatformConfiguration.iOSSpecific.NavigationPage.PrefersLargeTitlesProperty.PropertyName, MapPrefersLargeTitles);

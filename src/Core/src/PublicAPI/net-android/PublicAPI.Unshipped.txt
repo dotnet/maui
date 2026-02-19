@@ -1,3 +1,6 @@
 #nullable enable
 override Microsoft.Maui.Handlers.LabelHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
+Microsoft.Maui.Handlers.ElementHandlerAttribute
+Microsoft.Maui.Handlers.ElementHandlerAttribute.ElementHandlerAttribute(System.Type! handlerType) -> void
+Microsoft.Maui.Handlers.ElementHandlerAttribute.HandlerType.get -> System.Type!
 static Microsoft.Maui.GridLength.implicit operator Microsoft.Maui.GridLength(string! value) -> Microsoft.Maui.GridLength
