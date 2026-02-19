@@ -196,7 +196,19 @@ public partial class ChatViewModel : ObservableObject
 					assistantBubble.IsStreaming = false;
 			});
 
-			// Add assistant response to history for multi-turn context
+			// Add full assistant response to history for multi-turn context
+			// Include tool interactions so the model's transcript preserves the complete chain:
+			//   Assistant → [FunctionCallContent]  (tool call decisions)
+			//   Tool      → [FunctionResultContent] (tool results)
+			//   Assistant → [TextContent]           (final text response)
+			var functionCalls = allContents.OfType<FunctionCallContent>().ToArray();
+			if (functionCalls.Length > 0)
+				_conversationHistory.Add(new ChatMessage(ChatRole.Assistant, functionCalls));
+
+			var functionResults = allContents.OfType<FunctionResultContent>().ToArray();
+			if (functionResults.Length > 0)
+				_conversationHistory.Add(new ChatMessage(ChatRole.Tool, functionResults));
+
 			var textContents = allContents.OfType<TextContent>().Where(t => !string.IsNullOrEmpty(t.Text)).ToArray();
 			if (textContents.Length > 0)
 				_conversationHistory.Add(new ChatMessage(ChatRole.Assistant, textContents));
