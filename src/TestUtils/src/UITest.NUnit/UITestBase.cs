@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using NUnit.Framework.Interfaces;
 using UITest.Core;
@@ -107,16 +108,33 @@ namespace UITest.Appium.NUnit
 				{
 					// App.AppState queries via WDA which blocks if the app's main thread is stuck
 					// (e.g., infinite layout loop). Use a timeout to detect this.
+					// Retry once after a short delay — some tests leave the app briefly busy
+					// (e.g., RefreshView animations settling) but not truly frozen.
 					var appStateTask = Task.Run(() => App.AppState);
 					if (!appStateTask.Wait(TimeSpan.FromSeconds(15)))
 					{
-						throw new TimeoutException("App.AppState query did not complete — app is likely unresponsive");
+						// First attempt timed out — wait briefly and retry once before declaring frozen
+						Task.Delay(5000).Wait();
+						var retryTask = Task.Run(() => App.AppState);
+						if (!retryTask.Wait(TimeSpan.FromSeconds(15)))
+						{
+							throw new TimeoutException("App.AppState query did not complete — app is likely unresponsive");
+						}
+						appState = retryTask.GetAwaiter().GetResult();
 					}
-					appState = appStateTask.GetAwaiter().GetResult();
+					else
+					{
+						appState = appStateTask.GetAwaiter().GetResult();
+					}
 				}
 				catch (TimeoutException)
 				{
 					// App is unresponsive - let the outer TimeoutException handler deal with it
+					throw;
+				}
+				catch (TimeoutException)
+				{
+					// Let unresponsive-app timeouts bubble to the outer TimeoutException handler.
 					throw;
 				}
 				catch (Exception)
@@ -146,7 +164,7 @@ namespace UITest.Appium.NUnit
 					Assert.Fail("The app was expected to be running still, investigate as possible crash");
 				}
 			}
-			catch (TimeoutException ex) when (ex.Message.Contains("unresponsive", StringComparison.Ordinal))
+			catch (TimeoutException ex)
 			{
 				// App is stuck in an infinite loop (e.g., layout cycle). Force-terminate and reset.
 				TestContext.Error.WriteLine($">>>>> {DateTime.Now} App became unresponsive, force-closing: {ex.Message}");

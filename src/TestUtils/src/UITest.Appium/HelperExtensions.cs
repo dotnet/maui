@@ -2724,7 +2724,9 @@ namespace UITest.Appium
 
 			DateTime start = DateTime.Now;
 
-			IUIElement? result = RunWithTimeout(query);
+			// Cap the inner command timeout to the remaining time so WaitForElement(timeout: 15s)
+			// doesn't block for the full AppiumCommandTimeout (45s) on each attempt.
+			IUIElement? result = RunWithTimeout(query, CapTimeout(timeout.Value, start));
 
 			while (!satisfactory(result))
 			{
@@ -2737,10 +2739,22 @@ namespace UITest.Appium
 				}
 
 				Task.Delay(retryFrequency.Value.Milliseconds).Wait();
-				result = RunWithTimeout(query);
+				result = RunWithTimeout(query, CapTimeout(timeout.Value, start));
 			}
 
 			return result!;
+		}
+
+		/// <summary>
+		/// Returns the smaller of the remaining time and <see cref="AppiumCommandTimeout"/>,
+		/// with a minimum floor of 2 seconds to avoid near-zero timeouts on edge cases.
+		/// </summary>
+		static TimeSpan CapTimeout(TimeSpan totalTimeout, DateTime start)
+		{
+			var remaining = totalTimeout - (DateTime.Now - start);
+			if (remaining < TimeSpan.FromSeconds(2))
+				remaining = TimeSpan.FromSeconds(2);
+			return remaining < AppiumCommandTimeout ? remaining : AppiumCommandTimeout;
 		}
 
 		static IUIElement WaitForAtLeastOne(Func<IUIElement> query,
@@ -2955,6 +2969,13 @@ namespace UITest.Appium
 					// Warn about orphaned thread - the background task will continue blocking until
 					// the underlying Appium/WDA call times out or the process is killed
 					Debug.WriteLine($">>>>> Appium command timed out after {timeout.Value.TotalSeconds}s. Background thread may remain blocked until app is force-terminated.");
+					
+					// Observe any future exception from the orphaned task to prevent unobserved task exceptions
+					task.ContinueWith(t =>
+					{
+						if (t.Exception is not null)
+							Debug.WriteLine($">>>>> Orphaned Appium task faulted: {t.Exception.InnerException?.Message}");
+					}, TaskContinuationOptions.OnlyOnFaulted);
 					
 					throw new TimeoutException(
 						$"An Appium command did not complete within {timeout.Value.TotalSeconds}s. " +
