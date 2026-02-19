@@ -154,6 +154,12 @@ namespace Microsoft.Maui.Maps.Handlers
 
 			nativePolygon.StrokeWidth = (float)mauiPolygon.StrokeThickness;
 			nativePolygon.Points = mauiPolygon.Select(position => new LatLng(position.Latitude, position.Longitude)).ToList();
+
+			if (mauiPolygon is IMapElement mapElement)
+			{
+				nativePolygon.Visible = mapElement.IsVisible;
+				nativePolygon.ZIndex = mapElement.ZIndex;
+			}
 		}
 
 		void PolylineOnPropertyChanged(IGeoPathMapElement mauiPolyline)
@@ -168,6 +174,12 @@ namespace Microsoft.Maui.Maps.Handlers
 
 			nativePolyline.Width = (float)mauiPolyline.StrokeThickness;
 			nativePolyline.Points = mauiPolyline.Select(position => new LatLng(position.Latitude, position.Longitude)).ToList();
+
+			if (mauiPolyline is IMapElement mapElement)
+			{
+				nativePolyline.Visible = mapElement.IsVisible;
+				nativePolyline.ZIndex = mapElement.ZIndex;
+			}
 		}
 
 
@@ -189,6 +201,11 @@ namespace Microsoft.Maui.Maps.Handlers
 			nativeCircle.Radius = mauiCircle.Radius.Meters;
 			nativeCircle.StrokeWidth = (float)mauiCircle.StrokeThickness;
 
+			if (mauiCircle is IMapElement mapElement)
+			{
+				nativeCircle.Visible = mapElement.IsVisible;
+				nativeCircle.ZIndex = mapElement.ZIndex;
+			}
 		}
 
 		protected APolyline? GetNativePolyline(IGeoPathMapElement polyline)
@@ -530,6 +547,12 @@ namespace Microsoft.Maui.Maps.Handlers
 
 				polyline.MapElementId = nativePolyline.Id;
 
+				if (polyline is IMapElement mapElement)
+				{
+					nativePolyline.Visible = mapElement.IsVisible;
+					nativePolyline.ZIndex = mapElement.ZIndex;
+				}
+
 				_polylines.Add(nativePolyline);
 			}
 		}
@@ -552,6 +575,12 @@ namespace Microsoft.Maui.Maps.Handlers
 
 			polygon.MapElementId = nativePolygon.Id;
 
+			if (polygon is IMapElement mapElement)
+			{
+				nativePolygon.Visible = mapElement.IsVisible;
+				nativePolygon.ZIndex = mapElement.ZIndex;
+			}
+
 			_polygons.Add(nativePolygon);
 		}
 
@@ -572,6 +601,12 @@ namespace Microsoft.Maui.Maps.Handlers
 			var nativeCircle = map.AddCircle(options);
 
 			circle.MapElementId = nativeCircle.Id;
+
+			if (circle is IMapElement mapElement)
+			{
+				nativeCircle.Visible = mapElement.IsVisible;
+				nativeCircle.ZIndex = mapElement.ZIndex;
+			}
 
 			_circles.Add(nativeCircle);
 		}

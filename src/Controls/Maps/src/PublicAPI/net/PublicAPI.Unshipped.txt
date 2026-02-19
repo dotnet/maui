@@ -1,1 +1,10 @@
 #nullable enable
+
+Microsoft.Maui.Controls.Maps.MapElement.IsVisible.get -> bool
+Microsoft.Maui.Controls.Maps.MapElement.IsVisible.set -> void
+Microsoft.Maui.Controls.Maps.MapElement.IsVisibleProperty -> Microsoft.Maui.Controls.BindableProperty!
+Microsoft.Maui.Controls.Maps.MapElement.ZIndex.get -> int
+Microsoft.Maui.Controls.Maps.MapElement.ZIndex.set -> void
+Microsoft.Maui.Controls.Maps.MapElement.ZIndexProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.Maps.MapElement.IsVisibleProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.Maps.MapElement.ZIndexProperty -> Microsoft.Maui.Controls.BindableProperty!

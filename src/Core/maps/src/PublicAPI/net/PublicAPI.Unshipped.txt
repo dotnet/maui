@@ -1,1 +1,6 @@
 #nullable enable
+
+Microsoft.Maui.Maps.IMapElement.IsVisible.get -> bool
+Microsoft.Maui.Maps.IMapElement.ZIndex.get -> int
+static Microsoft.Maui.Maps.Handlers.MapElementHandler.MapIsVisible(Microsoft.Maui.Maps.Handlers.IMapElementHandler! handler, Microsoft.Maui.Maps.IMapElement! mapElement) -> void
+static Microsoft.Maui.Maps.Handlers.MapElementHandler.MapZIndex(Microsoft.Maui.Maps.Handlers.IMapElementHandler! handler, Microsoft.Maui.Maps.IMapElement! mapElement) -> void
