@@ -12,6 +12,8 @@ public partial class ChatOverlayView : ContentView
 		InitializeComponent();
 		SizeChanged += (s, e) =>
 		{
+			if (Width > 0)
+				ChatPanel.WidthRequest = Math.Min(Width - 16, 500);
 			if (Height > 0)
 				ChatPanel.HeightRequest = Math.Min(Height - 16, 800);
 		};

@@ -8,7 +8,7 @@ namespace Maui.Controls.Sample.Services;
 
 public class ChatService
 {
-	const string SystemPrompt = """
+	static string SystemPrompt => $"""
 		You are a helpful travel assistant for the .NET MAUI Trip Planner app. You have access to 21 world landmarks across 7 continents and can help users:
 		- Search and discover destinations
 		- Find nearby hotels, restaurants, cafes, and museums
@@ -17,7 +17,10 @@ public class ChatService
 		- Change the AI response language
 		- Start planning a trip by navigating to the trip planner
 
+		Today's date is {DateTime.Now:yyyy-MM-dd} ({DateTime.Now:dddd}).
+
 		When users ask about destinations, search first to provide relevant results. When they want to plan a trip, use plan_trip to navigate them to the planning page.
+		For weather requests with relative dates like "tomorrow" or "next week", calculate the actual date from today before calling get_weather.
 		Be concise and helpful. Use the tools available to provide accurate information.
 		""";
 
@@ -151,23 +154,29 @@ public class ChatService
 		return sb.ToString();
 	}
 
-	[Description("Get the weather forecast for a landmark on a specific date. Returns temperature and conditions.")]
+	[Description("Get the weather forecast for a landmark. Supports today and up to 7 days ahead.")]
 	async Task<string> GetWeatherAsync(
 		[Description("The name of the landmark to check weather for")] string landmarkName,
-		[Description("The date to check weather for in yyyy-MM-dd format. Use today's date if not specified.")] string date)
+		[Description("The date to check weather for. Use today's date from the system prompt to calculate dates for 'tomorrow', 'next week', etc.")] DateTimeOffset date)
 	{
 		var landmark = await FindLandmarkByNameAsync(landmarkName);
 
 		if (landmark is null)
-			return $"Landmark '{landmarkName}' not found.";
+			return $"Landmark '{landmarkName}' not found in the app database. Available landmarks can be found with search_landmarks or list_landmarks_by_continent.";
 
-		if (!DateOnly.TryParse(date, out var dateOnly))
-			dateOnly = DateOnly.FromDateTime(DateTime.Now);
+		var dateOnly = DateOnly.FromDateTime(date.LocalDateTime);
+		var today = DateOnly.FromDateTime(DateTime.Now);
+
+		if (dateOnly < today)
+			return $"Cannot get weather for past date {dateOnly:yyyy-MM-dd}. The forecast supports today ({today:yyyy-MM-dd}) through {today.AddDays(7):yyyy-MM-dd}.";
+
+		if (dateOnly > today.AddDays(7))
+			return $"Cannot get weather for {dateOnly:yyyy-MM-dd} — too far ahead. The forecast supports today ({today:yyyy-MM-dd}) through {today.AddDays(7):yyyy-MM-dd}.";
 
 		var weather = await _weatherService.GetWeatherForecastAsync(
 			landmark.Latitude, landmark.Longitude, dateOnly);
 
-		return $"Weather at {landmark.Name} on {dateOnly:yyyy-MM-dd}: {weather}";
+		return $"Weather at {landmark.Name} on {dateOnly:yyyy-MM-dd} ({dateOnly:dddd}): {weather}";
 	}
 
 	[Description("Generate social media hashtags for a trip description or destination.")]

@@ -150,14 +150,12 @@
             </BoxView.GestureRecognizers>
         </BoxView>
 
-        <!-- Chat panel: MaxWidth/MaxHeight cap it on desktop,
-             on small screens it shrinks to available space.
-             End alignment pushes it bottom-right. -->
+        <!-- Chat panel: sized via code-behind SizeChanged (MAUI centers MaxWidth-capped elements,
+             so pure XAML can't do right-aligned + max-capped + responsive) -->
         <Border
             x:Name="ChatPanel"
             AutomationId="ChatPanel"
             InputTransparent="False"
-            MaximumWidthRequest="500"
             VerticalOptions="End"
             HorizontalOptions="End"
             Margin="8"
