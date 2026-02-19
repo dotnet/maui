@@ -58,7 +58,6 @@ namespace Microsoft.Maui.UnitTests.Hosting
 				.Build();
 
 			var mauiHandlersFactory = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
-			var context = new HandlersContextStub(mauiApp.Services);
 
 			var handlerService = retrieveHandlerServiceWithGenerics ? mauiHandlersFactory.GetHandler<IViewStub>() : mauiHandlersFactory.GetHandler(typeof(IViewStub));
 
@@ -74,7 +73,6 @@ namespace Microsoft.Maui.UnitTests.Hosting
 				.Build();
 
 			var mauiHandlersFactory = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
-			var context = new HandlersContextStub(mauiApp.Services);
 			var specificHandler = mauiHandlersFactory.GetHandler(typeof(ButtonStub));
 			Assert.IsType<ButtonHandlerStub>(specificHandler);
 
@@ -93,7 +91,6 @@ namespace Microsoft.Maui.UnitTests.Hosting
 				.Build();
 
 			var mauiHandlersFactory = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
-			var context = new HandlersContextStub(mauiApp.Services);
 
 			Assert.Throws<HandlerNotFoundException>(() => mauiHandlersFactory.GetHandler(typeof(ViewStub)));
 		}
@@ -109,7 +106,6 @@ namespace Microsoft.Maui.UnitTests.Hosting
 				.Build();
 
 			var mauiHandlersFactory = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
-			var context = new HandlersContextStub(mauiApp.Services);
 
 			var handlerService = mauiHandlersFactory.GetHandler(typeof(MyDerivedViewStub));
 
@@ -134,7 +130,6 @@ namespace Microsoft.Maui.UnitTests.Hosting
 				.Build();
 
 			var mauiHandlersFactory = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
-			var context = new HandlersContextStub(mauiApp.Services);
 
 			var handlerService = mauiHandlersFactory.GetHandler(typeof(MyDerivedViewStub));
 
@@ -159,7 +154,6 @@ namespace Microsoft.Maui.UnitTests.Hosting
 				.Build();
 
 			var mauiHandlersFactory = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
-			var context = new HandlersContextStub(mauiApp.Services);
 
 			var handlerService = mauiHandlersFactory.GetHandler(typeof(MyDerivedViewStub));
 
@@ -180,7 +174,6 @@ namespace Microsoft.Maui.UnitTests.Hosting
 				.Build();
 
 			var mauiHandlersFactory = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
-			var context = new HandlersContextStub(mauiApp.Services);
 
 			Assert.Throws<HandlerNotFoundException>(() => mauiHandlersFactory.GetHandler(typeof(ViewStub)));
 		}
@@ -201,7 +194,6 @@ namespace Microsoft.Maui.UnitTests.Hosting
 				.Build();
 
 			var mauiHandlersFactory = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
-			var context = new HandlersContextStub(mauiApp.Services);
 
 			var handlerService = mauiHandlersFactory.GetHandler(type);
 
@@ -227,7 +219,6 @@ namespace Microsoft.Maui.UnitTests.Hosting
 				.Build();
 
 			var mauiHandlersFactory = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
-			var context = new HandlersContextStub(mauiApp.Services);
 
 			Assert.Throws<InvalidOperationException>(() => mauiHandlersFactory.GetHandler(typeof(ChildViewStub)));
 		}
@@ -249,7 +240,6 @@ namespace Microsoft.Maui.UnitTests.Hosting
 				.Build();
 
 			var mauiHandlersFactory = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
-			var context = new HandlersContextStub(mauiApp.Services);
 
 			var handlerService = mauiHandlersFactory.GetHandler(typeof(ChildViewStub));
 
