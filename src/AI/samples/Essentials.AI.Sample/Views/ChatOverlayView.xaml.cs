@@ -7,15 +7,14 @@ public partial class ChatOverlayView : ContentView
 {
 	ChatViewModel? _viewModel;
 
-	const double WidthPercent = 0.9;
-	const double HeightPercent = 0.9;
-	const double MaxPanelWidth = 400;
-	const double MaxPanelHeight = 700;
-
 	public ChatOverlayView()
 	{
 		InitializeComponent();
-		SizeChanged += OnSizeChanged;
+		SizeChanged += (s, e) =>
+		{
+			if (Height > 0)
+				ChatPanel.HeightRequest = Math.Min(Height - 16, 800);
+		};
 	}
 
 	public void Initialize(ChatViewModel viewModel)
@@ -23,24 +22,6 @@ public partial class ChatOverlayView : ContentView
 		_viewModel = viewModel;
 		BindingContext = viewModel;
 		viewModel.Messages.CollectionChanged += OnMessagesChanged;
-	}
-
-	void OnSizeChanged(object? sender, EventArgs e)
-	{
-		UpdatePanelSize();
-	}
-
-	void UpdatePanelSize()
-	{
-		if (Width <= 0 || Height <= 0)
-			return;
-
-		ChatPanel.WidthRequest = Math.Min(Width * WidthPercent, MaxPanelWidth);
-		ChatPanel.HeightRequest = Math.Min(Height * HeightPercent, MaxPanelHeight);
-
-		// Keep TranslationY in sync for the hide animation
-		if (ChatPanel.TranslationY > 0)
-			ChatPanel.TranslationY = ChatPanel.HeightRequest;
 	}
 
 	void OnMessagesChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -54,21 +35,16 @@ public partial class ChatOverlayView : ContentView
 		}
 	}
 
-	async void OnBackdropTapped(object? sender, TappedEventArgs e)
-	{
-		await Hide();
-	}
+	async void OnBackdropTapped(object? sender, TappedEventArgs e) => await Hide();
 
-	async void OnCloseTapped(object? sender, EventArgs e)
-	{
-		await Hide();
-	}
+	async void OnCloseTapped(object? sender, EventArgs e) => await Hide();
 
 	public event EventHandler? Closed;
 
 	public async Task Show()
 	{
-		UpdatePanelSize();
+		// Ensure panel starts offscreen at its actual height
+		ChatPanel.TranslationY = ChatPanel.Height > 0 ? ChatPanel.Height : 1000;
 
 		var backdropFade = Backdrop.FadeToAsync(0.4, 250, Easing.CubicOut);
 		var panelSlide = ChatPanel.TranslateToAsync(0, 0, 300, Easing.CubicOut);
@@ -81,8 +57,9 @@ public partial class ChatOverlayView : ContentView
 	{
 		MessageEntry.Unfocus();
 
+		var targetY = ChatPanel.Height > 0 ? ChatPanel.Height : 700;
 		var backdropFade = Backdrop.FadeToAsync(0, 200, Easing.CubicIn);
-		var panelSlide = ChatPanel.TranslateToAsync(0, ChatPanel.HeightRequest, 250, Easing.CubicIn);
+		var panelSlide = ChatPanel.TranslateToAsync(0, targetY, 250, Easing.CubicIn);
 		await Task.WhenAll(backdropFade, panelSlide);
 
 		Closed?.Invoke(this, EventArgs.Empty);

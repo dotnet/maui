@@ -7,6 +7,8 @@
     x:Class="Maui.Controls.Sample.Views.ChatOverlayView">
 
     <ContentView.Resources>
+        <views:MarkdownConverter x:Key="MarkdownConverter" />
+
         <!-- User bubble: right-aligned, blue -->
         <DataTemplate x:Key="UserBubbleTemplate" x:DataType="models:ChatBubble">
             <Border
@@ -36,10 +38,8 @@
                     Padding="14,10">
                     <VerticalStackLayout Spacing="4">
                         <Label
-                            Text="{Binding Text}"
+                            FormattedText="{Binding Text, Converter={StaticResource MarkdownConverter}}"
                             AutomationId="AssistantBubbleText"
-                            TextColor="{AppThemeBinding Light=#1F1F1F, Dark=#E1E1E1}"
-                            FontSize="14"
                             LineBreakMode="WordWrap" />
                         <ActivityIndicator
                             IsRunning="{Binding IsStreaming}"
@@ -137,10 +137,7 @@
             ToolResultTemplate="{StaticResource ToolResultBubbleTemplate}" />
     </ContentView.Resources>
 
-    <Grid
-        x:Name="RootGrid"
-        RowDefinitions="*"
-        ColumnDefinitions="*">
+    <Grid x:Name="RootGrid">
 
         <!-- Semi-transparent backdrop -->
         <BoxView
@@ -153,18 +150,22 @@
             </BoxView.GestureRecognizers>
         </BoxView>
 
-        <!-- Chat panel (bottom-anchored, responsive sizing) -->
+        <!-- Chat panel: MaxWidth/MaxHeight cap it on desktop,
+             on small screens it shrinks to available space.
+             End alignment pushes it bottom-right. -->
         <Border
             x:Name="ChatPanel"
             AutomationId="ChatPanel"
             InputTransparent="False"
+            MaximumWidthRequest="500"
             VerticalOptions="End"
             HorizontalOptions="End"
-            StrokeShape="RoundRectangle 20,20,0,0"
+            Margin="8"
+            StrokeShape="RoundRectangle 20"
             StrokeThickness="0"
             BackgroundColor="{AppThemeBinding Light=White, Dark=#1F1F1F}"
             Shadow="{Shadow Brush=Black, Offset='0,-4', Radius=16, Opacity=0.3}"
-            TranslationY="1000">
+            TranslationY="800">
 
             <Grid RowDefinitions="Auto,*,Auto" Padding="0">
                 <!-- Header -->
