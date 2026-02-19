@@ -296,10 +296,15 @@ namespace Microsoft.Maui.Platform
 
 		static int GetSelectionEnd(EditText editText, ITextInput entry, int start)
 		{
-			int end = start;
 			int selectionLength = entry.SelectionLength;
-			end = System.Math.Max(start, System.Math.Min(editText.Length(), start + selectionLength));
-			int newSelectionLength = System.Math.Max(0, end - start);
+			int end = Math.Max(start, Math.Min(editText.Length(), start + selectionLength));
+			int newSelectionLength = Math.Max(0, end - start);
+			if (start > editText.SelectionEnd && selectionLength > 0)
+			{
+				end = editText.SelectionEnd;
+				newSelectionLength = selectionLength;
+			}
+
 			// Updating this property results in UpdateSelectionLength being called again messing things up
 			if (newSelectionLength != selectionLength)
 				entry.SelectionLength = newSelectionLength;
@@ -308,8 +313,7 @@ namespace Microsoft.Maui.Platform
 
 		public static int GetSelectedTextLength(this EditText editText)
 		{
-			var selectedLength = editText.SelectionEnd - editText.SelectionStart;
-			return Math.Max(0, selectedLength);
+			return Math.Abs(editText.SelectionEnd - editText.SelectionStart);
 		}
 
 		internal static void SetInputType(this EditText editText, ITextInput textInput)
