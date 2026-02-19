@@ -54,6 +54,7 @@ These are automatically loaded by the Run-DeviceTests.ps1 script.
 | Essentials | `src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj` |
 | Graphics | `src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj` |
 | BlazorWebView | `src/BlazorWebView/tests/DeviceTests/MauiBlazorWebView.DeviceTests.csproj` |
+| AI | `src/AI/tests/Essentials.AI.DeviceTests/Essentials.AI.DeviceTests.csproj` |
 
 ## Scripts
 
