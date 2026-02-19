@@ -32,11 +32,42 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 	public bool SkipChildren(INode node, INode parentNode) => false;
 	public bool IsResourceDictionary(ElementNode node) => node.IsResourceDictionary(Context);
 
+	// Track properties that have been set to detect duplicates
+	readonly Dictionary<ElementNode, HashSet<XmlName>> setProperties = new Dictionary<ElementNode, HashSet<XmlName>>();
+
+	void CheckForDuplicateProperty(ElementNode parentNode, XmlName propertyName, IXmlLineInfo lineInfo)
+	{
+		if (!setProperties.TryGetValue(parentNode, out var props))
+		{
+			props = new HashSet<XmlName>();
+			setProperties[parentNode] = props;
+		}
+
+		if (!props.Add(propertyName))
+		{
+			// Property is being set multiple times - check if this warning should be suppressed via NoWarn
+			var noWarn = Context.ProjectItem.NoWarn;
+			bool shouldSuppress = !string.IsNullOrEmpty(noWarn) &&
+				noWarn.Split(new[] { ',', ';', ' ' }, StringSplitOptions.RemoveEmptyEntries)
+					.Select(code => code.Trim())
+					.Where(code => !string.IsNullOrWhiteSpace(code))
+					.Any(code => code == "2015" || code == "MAUIX2015");
+
+			if (!shouldSuppress)
+			{
+				var propertyDisplayName = $"{parentNode.XmlType.Name}.{propertyName.LocalName}";
+				var location = LocationCreate(Context.ProjectItem.RelativePath!, lineInfo, propertyDisplayName);
+				context.ReportDiagnostic(Diagnostic.Create(Descriptors.DuplicatePropertyAssignment, location, propertyDisplayName));
+			}
+		}
+	}
+
 	public void Visit(ValueNode node, INode parentNode)
 	{
 		//TODO support Label text as element
 
 		// if it's implicit content property, get the content property name
+		bool isImplicitContentProperty = false;
 		if (!node.TryGetPropertyName(parentNode, out XmlName propertyName))
 		{
 			if (!parentNode.IsCollectionItem(node))
@@ -46,7 +77,10 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 				return;
 			var parentVar = Context.Variables[(ElementNode)parentNode];
 			if ((contentProperty = parentVar.Type.GetContentPropertyName(context)) != null)
+			{
 				propertyName = new XmlName(((ElementNode)parentNode).NamespaceURI, contentProperty);
+				isImplicitContentProperty = true;
+			}
 			else
 				return;
 		}
@@ -59,6 +93,31 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 			return;
 		if (propertyName.Equals(XmlName.mcIgnorable))
 			return;
+
+		// Check for duplicate property assignment for implicit content properties
+		if (isImplicitContentProperty && parentNode is ElementNode parentElement)
+		{
+			var parentVar = Context.Variables[parentElement];
+			
+			// Only check for duplicate property assignment if the property is not a collection
+			bool attached = false;
+			var localName = propertyName.LocalName;
+			var bpFieldSymbol = parentVar.Type.GetBindableProperty(propertyName.NamespaceURI, ref localName, out attached, context, node);
+			ITypeSymbol? propertyType = null;
+			
+			// Try to get the property type
+			bool hasProperty = (bpFieldSymbol != null && SetPropertyHelpers.CanGetValue(parentVar, bpFieldSymbol, attached, context, out propertyType))
+				|| SetPropertyHelpers.CanGet(parentVar, localName, context, out propertyType, out _);
+			
+			// Only warn if:
+			// 1. We can resolve the property and its type
+			// 2. The property type is NOT a collection (doesn't support Add)
+			// 3. The property type is not System.Object (unresolved generic)
+			bool isObject = propertyType != null && propertyType.SpecialType == Microsoft.CodeAnalysis.SpecialType.System_Object;
+			if (hasProperty && propertyType != null && !isObject && !propertyType.CanAdd(context))
+				CheckForDuplicateProperty(parentElement, propertyName, node);
+		}
+
 		SetPropertyHelpers.SetPropertyValue(Writer, Context.Variables[(ElementNode)parentNode], propertyName, node, Context);
 	}
 
@@ -128,6 +187,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 			//     return;
 			// if (parentNode is IElementNode && ((IElementNode)parentNode).SkipProperties.Contains(propertyName))
 			//     return;
+
 			SetPropertyHelpers.SetPropertyValue(Writer, Context.Variables[(ElementNode)parentNode], propertyName, node, Context);
 		}
 		else if (parentNode.IsCollectionItem(node) && parentNode is ElementNode)
@@ -142,8 +202,28 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 				var name = new XmlName(node.NamespaceURI, contentProperty);
 				if (skips.Contains(name))
 					return;
-				if (parentNode is ElementNode node1 && node1.SkipProperties.Contains(propertyName))
+				if (parentNode is ElementNode node1 && node1.SkipProperties.Contains(name))
 					return;
+
+				// Only check for duplicate property assignment if the property is not a collection
+				// Get the property type and check if it supports Add() for collection behavior
+				bool attached = false;
+				var localName = name.LocalName;
+				var bpFieldSymbol = parentVar.Type.GetBindableProperty(name.NamespaceURI, ref localName, out attached, context, node);
+				ITypeSymbol? propertyType = null;
+				
+				// Try to get the property type
+				bool hasProperty = (bpFieldSymbol != null && SetPropertyHelpers.CanGetValue(parentVar, bpFieldSymbol, attached, context, out propertyType))
+					|| SetPropertyHelpers.CanGet(parentVar, localName, context, out propertyType, out _);
+				
+				// Only warn if:
+				// 1. We can resolve the property and its type
+				// 2. The property type is NOT a collection (doesn't support Add)
+				// 3. The property type is not System.Object (unresolved generic)
+				bool isObject = propertyType != null && propertyType.SpecialType == Microsoft.CodeAnalysis.SpecialType.System_Object;
+				if (hasProperty && propertyType != null && !isObject && !propertyType.CanAdd(context))
+					CheckForDuplicateProperty((ElementNode)parentNode, name, node);
+
 				SetPropertyHelpers.SetPropertyValue(Writer, parentVar, name, node, Context);
 			}
 			else if (parentVar.Type.CanAdd(context))
