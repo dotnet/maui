@@ -1,1 +1,4 @@
 #nullable enable
+Microsoft.Maui.Controls.Maps.Pin.ImageSource.get -> Microsoft.Maui.Controls.ImageSource?
+Microsoft.Maui.Controls.Maps.Pin.ImageSource.set -> void
+static readonly Microsoft.Maui.Controls.Maps.Pin.ImageSourceProperty -> Microsoft.Maui.Controls.BindableProperty!

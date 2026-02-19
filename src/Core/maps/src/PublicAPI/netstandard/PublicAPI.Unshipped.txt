@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.Maui.Maps.IMapPin.ImageSource.get -> Microsoft.Maui.IImageSource?
+static Microsoft.Maui.Maps.Handlers.MapPinHandler.MapImageSource(Microsoft.Maui.Maps.Handlers.IMapPinHandler! handler, Microsoft.Maui.Maps.IMapPin! mapPin) -> void
