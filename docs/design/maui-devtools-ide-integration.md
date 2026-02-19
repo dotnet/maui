@@ -42,8 +42,8 @@ This document details how IDEs (Visual Studio, VS Code) integrate with MAUI Dev 
 ```
 
 **Extension Responsibilities**:
-1. Spawn `dotnet maui` process on activation
-2. Send `dotnet maui doctor --json` request on workspace open
+1. Spawn `maui` process on activation
+2. Send `maui doctor --json` request on workspace open
 3. Display issues in Problems panel
 4. Register "MAUI: Setup Environment" command
 5. Show progress notifications during fixes
@@ -195,7 +195,7 @@ Tools
 
 ### Error List Integration
 
-Issues detected by `dotnet maui doctor` appear in Visual Studio's Error List window:
+Issues detected by `maui doctor` appear in Visual Studio's Error List window:
 
 | Severity | Code | Description | Project |
 |----------|------|-------------|---------|
@@ -227,7 +227,7 @@ When running in interactive mode (terminal), the tool prompts for missing inform
 
 **Example: Emulator Creation with Missing Parameters**:
 ```
-$ dotnet maui android emulator create
+$ maui android emulator create
 
 ? Emulator name: My_Pixel_5
 
@@ -248,13 +248,13 @@ Creating emulator 'My_Pixel_5'... done
 
 **Non-Interactive Mode**:
 ```
-$ dotnet maui android emulator create --non-interactive
+$ maui android emulator create --non-interactive
 Error: --name is required in non-interactive mode
 ```
 
 **Example: Large Download Confirmation**:
 ```
-$ dotnet maui doctor --fix
+$ maui doctor --fix
 
 The following will be installed:
   • system-images;android-34;google_apis;x86_64 (2.6 GB)

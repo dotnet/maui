@@ -101,7 +101,7 @@ This tool eliminates that friction by providing a single, authoritative source f
 
 **DP1: Delegate to Native Toolchains** — Do not reimplement. Use `sdkmanager`, `avdmanager`, `adb`, `emulator` for Android; `xcrun simctl`, `xcode-select` for Apple; Windows SDK installer for Windows. Native tools are authoritative, reduce maintenance burden, and ensure consistency.
 
-**DP2: Consolidate Existing VS Repositories** — Replace `ClientTools.android-acquisition` and `android-platform-support` with unified `maui android` commands across VS, VS Code, CLI, and CI.
+**DP2: Reuse & Consolidate** — Leverage [`dotnet/android-tools`](https://github.com/dotnet/android-tools) for SDK/JDK discovery. Move proven code from `android-platform-support` (internal) to the public `android-tools` package for JDK installation, SDK bootstrap, and license acceptance.
 
 **DP3: Stateless Architecture** — Each command reads state, acts, and exits. Uses file-system caching (`~/.maui/cache/`) with TTLs for performance.
 
@@ -750,8 +750,8 @@ The Android Provider layer reuses the **[`Xamarin.Android.Tools.AndroidSdk`](htt
 |-----------|-------|-----------|
 | **Android SDK path discovery** | `AndroidSdkInfo` + `AndroidSdkBase` | Probes 15+ locations: `ANDROID_HOME`, `ANDROID_SDK_ROOT`, Windows registry (HKLM/HKCU for VS-installed SDKs), macOS Homebrew, Linux `/usr/lib/android-sdk`, Android Studio paths. Validates by checking for `adb` executable. |
 | **JDK discovery** | `JdkInfo` + `*JdkLocations.cs` | Finds Microsoft OpenJDK, Eclipse Adoptium, Azul, Oracle, VS-bundled JDKs. Checks Windows registry (32/64-bit views), macOS `/usr/libexec/java_home`, Linux `update-java-alternatives`. Returns version, vendor, home path. |
-| **JDK installation** | `JdkInstaller` *(planned)* | Will be contributed from `android-platform-support`'s `JavaDependencyInstaller`. Downloads Microsoft OpenJDK from manifest feed, extracts, validates. |
-| **`sdkmanager` wrapper** | `SdkManager` *(planned)* | Will be contributed from `android-platform-support`. Wraps `sdkmanager` CLI for install/uninstall/list/update operations and license acceptance. |
+| **JDK installation** | `JdkInstaller` *(planned)* | Based on `android-platform-support`'s `JavaDependencyInstaller`. Downloads Microsoft OpenJDK from manifest feed, extracts, validates. Will be moved to `android-tools`. |
+| **SDK bootstrap & management** | `SdkManager` *(planned)* | New implementation inspired by `android-platform-support`'s SDK installer. Downloads and unzips command-line tools from the manifest feed, then uses the extracted `sdkmanager` for package operations. Will be moved to `android-tools`. |
 | **SDK path validation** | `AndroidSdkBase.ValidateAndroidSdkLocation()` | Executable-based validation (checks for `adb`) rather than simple directory existence. |
 | **Process/executable utilities** | `ProcessUtils` | PATHEXT-aware executable discovery (`FindExecutablesInDirectory`). |
 | **Android version mapping** | `AndroidVersion` / `AndroidVersions` | Maps API levels ↔ version names/codenames for human-readable output. |
@@ -810,33 +810,26 @@ The manifest feed parsing infrastructure already exists in `android-platform-sup
 | Capability | Rationale |
 |-----------|-----------|
 | **SDK bootstrap (command-line tools)** | DevTools downloads and unzips command-line tools from the manifest feed to bootstrap a fresh SDK. Subsequent package operations use the `sdkmanager` wrapper from `android-tools`. |
-| **ADB device communication** | DevTools shells out to the `adb` CLI for device listing, logcat streaming, and screenshot capture. Simpler than integrating `Mono.AndroidTools`' raw TCP ADB protocol for now. |
+| **ADB device communication** | DevTools shells out to the `adb` CLI for device listing, logcat streaming, and screenshot capture. |
 | **CLI command routing** | `System.CommandLine`-based CLI layer, output formatting, `--json`/`--verbose` modes. |
-| **`avdmanager` / `emulator` lifecycle** | AVD create/start/stop/delete — `android-platform-support` has read-only AVD discovery but no lifecycle management. |
-| **`device screenshot`** | Not implemented in `Mono.AndroidTools`; DevTools uses `adb exec-out screencap`. |
+| **`avdmanager` / `emulator` lifecycle** | AVD create/start/stop/delete and emulator lifecycle management. |
+| **`device screenshot`** | DevTools uses `adb exec-out screencap` for Android screenshots. |
 | **OS elevation model** | UAC/sudo handling for SDK installs into protected paths (see §5.4). |
 | **Apple & Windows providers** | Entirely DevTools-specific; shared Android libraries are Android-only. |
 
 #### Contributing to `dotnet/android-tools`
 
-The following capabilities will be moved from `android-platform-support` to the public `Xamarin.Android.Tools.AndroidSdk` package in `dotnet/android-tools`, making them available for DevTools and the broader ecosystem:
+Capabilities currently in `android-platform-support` (internal) will be moved to the public `Xamarin.Android.Tools.AndroidSdk` package in `dotnet/android-tools`:
 
 | Capability | Source in `android-platform-support` | Benefit |
 |-----------|--------------------------------------|---------|
 | **JDK installation** | `JavaDependencyInstaller` | IDEs, build tasks, and DevTools can auto-install missing JDKs instead of just reporting errors. |
-| **`sdkmanager` wrapper** | `AndroidSDKInstaller` + `SdkManager` logic | Shared API for install/uninstall/list operations — used by DevTools CLI, IDE extensions, and CI. |
+| **SDK bootstrap & management** | `AndroidSDKInstaller` | Shared API for downloading command-line tools and managing SDK packages — used by DevTools CLI, IDE extensions, and CI. |
 | **License acceptance** | `AndroidLicensesStorage` | Unattended CI scenarios across all .NET Android tooling. |
 
-DevTools will consume these from the `Xamarin.Android.Tools.AndroidSdk` NuGet package once upstreamed.
+DevTools will consume these from the `Xamarin.Android.Tools.AndroidSdk` NuGet package once moved.
 
-#### Future Considerations
-
-| Candidate | Target | Benefit |
-|-----------|--------|---------|
-| **Device screenshot** | `android-platform-support` | Complement existing ADB operations in `Mono.AndroidTools`. |
-| **ADB protocol integration** | DevTools | Replace `adb` CLI calls with `Mono.AndroidTools`' raw TCP protocol for better performance if needed. |
-
-This approach ensures DevTools benefits from the battle-tested discovery and installation logic in shared libraries while contributing new capabilities back to the ecosystem over time.
+This approach ensures DevTools benefits from the battle-tested discovery logic in `android-tools` while contributing new capabilities back to the ecosystem over time.
 
 ### 6.9 Error Contract Specification
 
@@ -1476,7 +1469,7 @@ All telemetry and logs follow these redaction rules:
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 2.13-draft | 2026-02-19 | Expanded §6.8: added `android-platform-support` reuse table (SDK installer, ADB protocol, manifest parsing, license acceptance), added §6.8.1 Manifest-Driven Downloads & Checksum Verification — no hardcoded URLs, SHA-1 verification from Xamarin/Google manifest feeds |
+| 2.13-draft | 2026-02-19 | Expanded §6.8: added §6.8.1 Manifest-Driven Downloads & Checksum Verification — no hardcoded URLs, SHA-1 verification from Xamarin/Google manifest feeds. JDK install and SDK bootstrap planned for `dotnet/android-tools`. |
 | 2.12-draft | 2026-02-19 | Added §6.8 Shared Libraries & Code Reuse — documents reuse of `Xamarin.Android.Tools.AndroidSdk` for SDK/JDK discovery and plan to contribute JDK installation, sdkmanager wrapper, license acceptance back to `dotnet/android-tools` |
 | 2.10-draft | 2026-02-10 | Added `apple install` bootstrap command (Xcode + license + runtime), `runtime check`, `runtime list --available/--all`, `runtime install <version>`, `xcode check`, `xcode accept-licenses`; changed `doctor --category` → `doctor --platform`; changed `emulator stop <serial>` → `emulator stop <name>` for consistency |
 | 2.9-draft | 2026-02-10 | Unified command naming: renamed `avd` → `emulator` for Android, `simulator boot` → `simulator start`, `simulator shutdown` → `simulator stop` for Apple — consistent start/stop verbs across platforms |

@@ -29,12 +29,12 @@ This tool is designed for three consumers in priority order:
 
 ```bash
 # Human-friendly (default)
-dotnet maui doctor
+maui doctor
 # ✓ .NET SDK 9.0.100
 # ✗ Android SDK not found
 
 # Machine-friendly (for AI/CI)
-dotnet maui doctor --json
+maui doctor --json
 # { "status": "unhealthy", "checks": [...], "errors": [...] }
 ```
 
@@ -53,7 +53,7 @@ dotnet maui doctor --json
 
 **Journey**:
 1. User asks: "My Android build is failing with 'SDK not found'"
-2. Agent invokes: `dotnet maui doctor --json --platform android`
+2. Agent invokes: `maui doctor --json --platform android`
 3. Agent receives structured response:
    ```json
    {
@@ -64,7 +64,7 @@ dotnet maui doctor --json
          "severity": "error",
          "message": "Android SDK not found",
          "fixable": true,
-         "fix_command": "dotnet maui android sdk install --recommended"
+         "fix_command": "maui android sdk install --recommended"
        }
      ]
    }
@@ -145,7 +145,7 @@ Opening Copilot with diagnostic context...
 Run: gh copilot explain "MAUI SDK install failure E4001"
 
 Or copy this diagnostic summary:
-  dotnet maui doctor --json --verbose > /tmp/maui-diag.json
+  maui doctor --json --verbose > /tmp/maui-diag.json
   gh copilot explain --file /tmp/maui-diag.json
 ```
 
@@ -357,16 +357,16 @@ MAUI DevTools is designed with AI agents as first-class consumers:
 
 ```python
 # 1. Discover available devices
-devices = run("dotnet maui device list --platform android --json")
+devices = run("maui device list --platform android --json")
 
 # 2. Select appropriate device (first online emulator)
 device = next(d for d in devices if d["status"] == "Online" and d["type"] == "Emulator")
 
 # 3. Build and deploy (with user confirmation via IDE)
-run(f"dotnet maui deploy --device {device['id']} --project ./MyApp.csproj")
+run(f"maui deploy --device {device['id']} --project ./MyApp.csproj")
 
 # 4. Capture screenshot for verification
-run(f"dotnet maui device screenshot --device {device['id']} --output ./screenshot.png")
+run(f"maui device screenshot --device {device['id']} --output ./screenshot.png")
 ```
 
 ### Error Contract for AI Agents
