@@ -51,6 +51,10 @@ internal static partial class ImageProcessor
 		try
 		{
 			var context = UIGraphics.GetCurrentContext();
+			if (context is null)
+			{
+				return inputStream;
+			}
 			
 			// Apply the appropriate transformation based on orientation
 			switch (image.Orientation)
@@ -88,11 +92,13 @@ internal static partial class ImageProcessor
 				// UIImageOrientation.Up: no transformation needed
 			}
 			
-			// Draw the image
-			image.Draw(CGPoint.Empty);
+			// Draw raw pixels without applying UIImage orientation semantics again
+			context.TranslateCTM(0, rotatedSize.Height);
+			context.ScaleCTM(1, -1);
+			context.DrawImage(new CGRect(0, 0, size.Width, size.Height), image.CGImage);
 			
 			// Get the rotated image
-			var rotatedImage = UIGraphics.GetImageFromCurrentImageContext();
+			using var rotatedImage = UIGraphics.GetImageFromCurrentImageContext();
 			
 			if (rotatedImage == null)
 			{
@@ -103,7 +109,7 @@ internal static partial class ImageProcessor
 			var outputStream = new MemoryStream();
 			
 			// Determine output format based on original file
-			NSData? imageData = null;
+			NSData? imageData;
 			if (!string.IsNullOrEmpty(originalFileName))
 			{
 				var extension = Path.GetExtension(originalFileName).ToLowerInvariant();
@@ -125,7 +131,11 @@ internal static partial class ImageProcessor
 			
 			if (imageData is not null)
 			{
-				await imageData.AsStream().CopyToAsync(outputStream);
+				using (imageData)
+				using (var encodedStream = imageData.AsStream())
+				{
+					await encodedStream.CopyToAsync(outputStream);
+				}
 				outputStream.Position = 0;
 				return outputStream;
 			}
