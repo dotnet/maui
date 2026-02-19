@@ -31,15 +31,21 @@ DI registration should only be used to override an existing `[ElementHandler]` d
 
 ## Resolution Order
 
-`MauiHandlersFactory.GetHandlerType(Type)` resolves handler types in this order:
+Both `MauiHandlersFactory.GetHandler(Type)` and `MauiHandlersFactory.GetHandlerType(Type)` follow the same resolution order:
 
 1. **Exact DI registration** — checks if a handler was registered for this exact type via `AddHandler`
 2. **`[ElementHandler]` attribute** — walks the type's base class hierarchy looking for the attribute
 3. **Interface-based DI registration** — uses `RegisteredHandlerServiceTypeSet` to find the best matching interface registration (e.g., a handler registered for `IScrollView` matches a `ScrollView` instance)
 4. **`IContentView` fallback** — returns `ContentViewHandler` for any `IContentView` implementation
-5. **Returns `null`** — if none of the above matched
+5. **`GetHandlerType` returns `null`** / **`GetHandler` throws `HandlerNotFoundException`** — if none of the above matched
 
-Handlers are instantiated via `Activator.CreateInstance`. When a parameterless constructor is not available, `ActivatorUtilities.CreateInstance` is used as a fallback, which supports constructor injection from the DI container.
+### Handler Instantiation
+
+How a handler instance is created depends on how it was resolved:
+
+- **DI-registered handlers** (steps 1 & 3): Instantiated through `MauiFactory.GetService()`, which uses `Activator.CreateInstance` on the registered `ImplementationType`, or invokes the `ImplementationFactory` delegate if one was provided.
+- **`[ElementHandler]` attribute** (step 2): Instantiated directly via `Activator.CreateInstance` — no DI involvement.
+- **Fallback in `ElementExtensions.ToHandler()`**: When `Activator.CreateInstance` fails with a `MissingMethodException` (e.g., the handler requires constructor parameters), `ActivatorUtilities.CreateInstance` is used instead, which supports constructor injection from the DI container.
 
 ## Types used in the resolution of Handlers to Views
 
@@ -78,6 +84,8 @@ public class MauiHandlersFactory : MauiFactory, IMauiHandlersFactory
 public interface IMauiHandlersFactory : IMauiFactory
 {
     Type? GetHandlerType(Type iview);
+    IElementHandler? GetHandler(Type type);
+    IElementHandler? GetHandler<T>() where T : IElement;
 }
 ```
 
