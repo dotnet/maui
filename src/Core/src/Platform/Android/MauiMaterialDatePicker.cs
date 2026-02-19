@@ -19,12 +19,12 @@ internal class MauiMaterialDatePicker : TextInputEditText, IOnClickListener
         Initialize();
     }
 
-    public MauiMaterialDatePicker(Context context, IAttributeSet? attrs) : base(context, attrs)
+    public MauiMaterialDatePicker(Context context, IAttributeSet? attrs) : base(MauiMaterialContextThemeWrapper.Create(context), attrs)
     {
         Initialize();
     }
 
-    public MauiMaterialDatePicker(Context context, IAttributeSet? attrs, int defStyleAttr) : base(context, attrs, defStyleAttr)
+    public MauiMaterialDatePicker(Context context, IAttributeSet? attrs, int defStyleAttr) : base(MauiMaterialContextThemeWrapper.Create(context), attrs, defStyleAttr)
     {
         Initialize();
     }
