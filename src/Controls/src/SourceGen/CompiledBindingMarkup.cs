@@ -192,7 +192,7 @@ internal struct CompiledBindingMarkup
 		code.WriteLine($"getter: source => ({GenerateGetterExpression(binding, sourceVariableName: "source", targetNullValueExpression)}, true),");
 		code.WriteLine("setter,");
 		code.WriteLine("handlersCount,");
-		code.Write(localFunctionCode is not null ? "handlers" : "null");
+		code.Write(localFunctionCode is not null ? "GetHandlers" : "null");
 		code.Write(")");;
 		code.Indent--;
 

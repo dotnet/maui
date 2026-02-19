@@ -129,18 +129,15 @@ public partial class TestPage
 				}
 			};
 
+			var handlersCount = 0;
 			return new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::Test.TestPage, string>(
 				getter: source => (source.Foo.Bar.Title, true),
 				setter,
-				handlers: new global::System.Tuple<global::System.Func<global::Test.TestPage, object?>, string>[]
-				{
-					new(static source => source, "Foo"),
-					new(static source => source.Foo, "Bar"),
-					new(static source => source.Foo.Bar, "Title"),
-				})
-				{
-					Mode = extension.Mode,
-				};
+				handlersCount,
+				null)
+			{
+				Mode = extension.Mode,
+			};
 		}
 
 		
@@ -267,14 +264,12 @@ public partial class TestPage
 				}
 			};
 			
+			var handlersCount = 0;
 			return new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::Test.TestPage, int>(
 				getter: source => (source.Product?.Size ?? default, true),
 				setter,
-				handlers: new global::System.Tuple<global::System.Func<global::Test.TestPage, object?>, string>[]
-				{
-					new(static source => source, "Product"),
-					new(static source => source.Product, "Size"),
-				});
+				handlersCount,
+				null);
 		}
 	}
 }
@@ -431,14 +426,12 @@ public partial class TestPage
 				}
 			};
 			
+			var handlersCount = 0;
 			return new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::Test.TestPage, string?>(
 				getter: source => (source.Product?.Name, true),
 				setter,
-				handlers: new global::System.Tuple<global::System.Func<global::Test.TestPage, object?>, string>[]
-				{
-					new(static source => source, "Product"),
-					new(static source => source.Product, "Name"),
-				});
+				handlersCount,
+				null);
 		}
 	}
 }
@@ -685,14 +678,12 @@ public partial class TestPage
 				}
 			};
 
+			var handlersCount = 0;
 			return new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::Test.TestPage, int>(
 				getter: source => (source.CurrentPerson?.Id ?? extension.TargetNullValue as int? ?? default, true),
 				setter,
-				handlers: new global::System.Tuple<global::System.Func<global::Test.TestPage, object?>, string>[]
-				{
-					new(static source => source, "CurrentPerson"),
-					new(static source => source.CurrentPerson, "Id"),
-				})
+				handlersCount,
+				null)
 			{
 				TargetNullValue = extension.TargetNullValue,
 			};
@@ -771,10 +762,9 @@ public class TestViewModel
 		// Verify setter is null for self-bindings (not writable)
 		Assert.Contains("global::System.Action<global::Test.TestViewModel, global::Test.TestViewModel>? setter = null;", generated, StringComparison.Ordinal);
 
-		// Verify handlers array is empty for self-bindings (no items in the array)
-		// Use regex to match the empty array pattern without relying on exact whitespace
-		var emptyHandlersPattern = @"handlers:\s*new\s+global::System\.Tuple<global::System\.Func<global::Test\.TestViewModel,\s*object\?>,\s*string>\[\]\s*\{\s*\}";
-		Assert.Matches(emptyHandlersPattern, generated);
+		// Verify handlers are null for self-bindings (no property path to observe)
+		Assert.Contains("var handlersCount = 0;", generated, StringComparison.Ordinal);
+		Assert.Contains("null);", generated, StringComparison.Ordinal);
 	}
 
 	[Fact]
