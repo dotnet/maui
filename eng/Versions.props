@@ -210,7 +210,7 @@
     <MonoVersionBand>10.0.100</MonoVersionBand>
     <DotNetSdkManifestsFolder>$(DotNetVersionBand)</DotNetSdkManifestsFolder>
     <DotNetMauiManifestVersionBand>$(DotNetVersionBand)</DotNetMauiManifestVersionBand>
-    <DotNetAndroidManifestVersionBand>11.0.100-preview.1</DotNetAndroidManifestVersionBand>
+    <DotNetAndroidManifestVersionBand>11.0.100-preview.2</DotNetAndroidManifestVersionBand>
     <DotNetMaciOSManifestVersionBand>$(DotNetVersionBand)</DotNetMaciOSManifestVersionBand>
     <DotNetTizenManifestVersionBand>9.0.100</DotNetTizenManifestVersionBand>
     <MicrosoftMacCatalystSdkPackageVersion>$(MicrosoftMacCatalystSdknet110_262PackageVersion)</MicrosoftMacCatalystSdkPackageVersion>
