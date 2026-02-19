@@ -84,7 +84,12 @@
     <MauiXaml Update="Issues\Issue2578.xaml" NoWarn="0612" />
     <MauiXaml Update="Issues\Issue2659.xaml" NoWarn="0612" />
 
-    <MauiXaml Update="Benchmark.xaml" TreeOrder="true" />
+    <!-- LazyRD feature test -->
+    <MauiXaml Update="Issues\LazyResourceDictionary.sgen.xaml" LazyRD="true" />
+
+    <!-- Benchmark comparison: with and without LazyRD -->
+    <MauiXaml Update="Benchmark.xaml" LazyRD="true" />
+    <MauiXaml Update="BenchmarkNoLazy.xaml" LazyRD="false" />
   </ItemGroup>
 
   <ItemGroup>

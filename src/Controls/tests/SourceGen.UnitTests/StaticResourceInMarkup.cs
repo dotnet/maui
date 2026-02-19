@@ -118,8 +118,6 @@ public partial class TestPage
 			return;
 		}
 
-		var color = new global::Microsoft.Maui.Graphics.Color(0f, 1f, 0f, 1f) /* #00FF00 */;
-		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(color!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 8, 4);
 		var staticResourceExtension = new global::Microsoft.Maui.Controls.Xaml.StaticResourceExtension();
 		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(staticResourceExtension!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 11, 9);
 		var myExtension = new global::TestApp.MyExtension();
@@ -137,11 +135,19 @@ public partial class TestPage
 #if !_MAUIXAML_SG_NAMESCOPE_DISABLE
 		label.transientNamescope = iNameScope;
 #endif
-		__root.Resources["MyColor"] = color;
+		__root.Resources.AddFactory("MyColor", () =>
+		{
+			var color = new global::Microsoft.Maui.Graphics.Color(0f, 1f, 0f, 1f) /* #00FF00 */;
+			global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(color!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 8, 4);
+#if !_MAUIXAML_SG_NAMESCOPE_DISABLE
+			global::Microsoft.Maui.Controls.Internals.INameScope iNameScope1 = new global::Microsoft.Maui.Controls.Internals.NameScope();
+#endif
+			return color;
+		}, shared: true);
 #line 11 "{{testXamlFilePath}}"
 		staticResourceExtension.Key = "MyColor";
 #line default
-		var color1 = color;
+		var color1 = (global::Microsoft.Maui.Graphics.Color)__root.Resources["MyColor"];
 		if (global::Microsoft.Maui.VisualDiagnostics.GetSourceInfo(color1!) == null)
 			global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(color1!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 11, 9);
 #line 11 "{{testXamlFilePath}}"

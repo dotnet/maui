@@ -2,3 +2,8 @@
 ~override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.ViewWillTransitionToSize(CoreGraphics.CGSize toSize, UIKit.IUIViewControllerTransitionCoordinator coordinator) -> void
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewController.LoadView() -> void
 *REMOVED*~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootRenderer.TraitCollectionDidChange(UIKit.UITraitCollection previousTraitCollection) -> void
+~Microsoft.Maui.Controls.ResourceDictionary.AddFactory(string key, System.Func<object> factory, bool shared = true) -> void
+~Microsoft.Maui.Controls.ResourceDictionary.AddFactory(System.Type targetType, System.Func<Microsoft.Maui.Controls.Style> factory, bool shared = true) -> void
+~Microsoft.Maui.Controls.Internals.ResourcesChangedEventArgs.ResourcesChangedEventArgs(System.Collections.Generic.IEnumerable<string> keys, System.Func<string, object> resolver) -> void
+~Microsoft.Maui.Controls.Internals.ResourcesChangedEventArgs.Keys.get -> System.Collections.Generic.IEnumerable<string>
+~Microsoft.Maui.Controls.Internals.ResourcesChangedEventArgs.ResolveValue(string key) -> object

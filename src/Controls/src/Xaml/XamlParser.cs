@@ -303,6 +303,8 @@ namespace Microsoft.Maui.Controls.Xaml
 						return XmlName.xArguments;
 					case "ClassModifier":
 						return XmlName.xClassModifier;
+					case "Shared":
+						return XmlName.xShared;
 					default:
 						Debug.WriteLine("Unhandled attribute {0}", name);
 						return XmlName.Empty;
