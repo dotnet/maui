@@ -74,6 +74,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return base.OnInterceptTouchEvent(ev);
 		}
 
+		// Determines whether the touch event should be handled by a child view rather than the carousel. 
+		// Delegates when the dominant axis of movement does not match the
+		// carousel's scroll orientation.
 		bool ShouldDelegateToChild(float deltaX, float deltaY)
 		{
 			float absDeltaX = Math.Abs(deltaX);
