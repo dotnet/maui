@@ -2532,5 +2532,170 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();
 		}
+
+		[Fact]
+		// https://github.com/dotnet/maui/issues/8342
+		public void TwoWayBindingToIntPropertyWithEmptyStringRetainsLastValidValue()
+		{
+			// This test reproduces the issue where when the user clears an Entry
+			// that is bound to an int property, the int property retains the first
+			// digit of the last entered value instead of keeping the last valid value.
+			//
+			// The expected behavior is that when an empty string cannot be converted
+			// to int, the source property should retain its last valid value.
+
+			var vm = new IntViewModel { IntValue = 0 };
+			var entry = new Entry { BindingContext = vm };
+			entry.SetBinding(Entry.TextProperty, "IntValue", BindingMode.TwoWay);
+
+			// Simulate user entering "456"
+			entry.SetValueFromRenderer(Entry.TextProperty, "456");
+			Assert.Equal(456, vm.IntValue);
+
+			// Simulate user backspacing to "45"
+			entry.SetValueFromRenderer(Entry.TextProperty, "45");
+			Assert.Equal(45, vm.IntValue);
+
+			// Simulate user backspacing to "4"
+			entry.SetValueFromRenderer(Entry.TextProperty, "4");
+			Assert.Equal(4, vm.IntValue);
+
+			// Simulate user backspacing to empty string
+			// The binding should fail to convert "" to int
+			// and the source property should retain its last valid value (4)
+			entry.SetValueFromRenderer(Entry.TextProperty, "");
+			
+			// This is the key assertion - after clearing the Entry, the IntValue
+			// should still be 4 (the last successfully converted value)
+			Assert.Equal(4, vm.IntValue);
+
+			// The Entry.Text will be "" because that's what was set from the renderer
+			// This creates a mismatch between Entry.Text ("") and ViewModel.IntValue (4)
+			// which is the core of the bug reported in issue #8342
+			Assert.Equal("", entry.Text);
+		}
+
+		[Fact]
+		// https://github.com/dotnet/maui/issues/8342
+		public void TwoWayBindingToNullableIntPropertyWithEmptyStringBecomesNull()
+		{
+			// When binding to a nullable int, empty string should be converted to null
+			var vm = new NullableIntViewModel { IntValue = 123 };
+			var entry = new Entry { BindingContext = vm };
+			entry.SetBinding(Entry.TextProperty, "IntValue", BindingMode.TwoWay);
+
+			// Verify initial binding
+			Assert.Equal("123", entry.Text);
+
+			// Clear the entry - for nullable int, empty string should result in null
+			entry.SetValueFromRenderer(Entry.TextProperty, "");
+
+			// Nullable int should become null when empty string is entered
+			Assert.Null(vm.IntValue);
+			// Entry.Text becomes null because the binding writes back null from vm.IntValue
+			// This is expected - Entry displays empty for both null and "" text
+			Assert.Null(entry.Text);
+		}
+
+		[Fact]
+		// https://github.com/dotnet/maui/issues/8342
+		public void TwoWayBindingToNullableIntPropertyWithWhitespaceRetainsPreviousValue()
+		{
+			// Whitespace-only strings should fail conversion, not silently become null
+			var vm = new NullableIntViewModel { IntValue = 123 };
+			var entry = new Entry { BindingContext = vm };
+			entry.SetBinding(Entry.TextProperty, "IntValue", BindingMode.TwoWay);
+
+			entry.SetValueFromRenderer(Entry.TextProperty, " ");
+
+			// Whitespace should not convert to null — value should be retained
+			Assert.Equal(123, vm.IntValue);
+		}
+
+		[Fact]
+		// https://github.com/dotnet/maui/issues/8342
+		public void TwoWayBindingToNullableDoublePropertyWithEmptyStringBecomesNull()
+		{
+			var vm = new NullableDoubleViewModel { Value = 3.14 };
+			var entry = new Entry { BindingContext = vm };
+			entry.SetBinding(Entry.TextProperty, "Value", BindingMode.TwoWay);
+
+			Assert.Equal("3.14", entry.Text);
+
+			entry.SetValueFromRenderer(Entry.TextProperty, "");
+
+			Assert.Null(vm.Value);
+		}
+
+		[Fact]
+		// https://github.com/dotnet/maui/issues/8342
+		public void TwoWayBindingToNullableIntPropertyReentersValueAfterClearing()
+		{
+			var vm = new NullableIntViewModel { IntValue = 123 };
+			var entry = new Entry { BindingContext = vm };
+			entry.SetBinding(Entry.TextProperty, "IntValue", BindingMode.TwoWay);
+
+			// Clear
+			entry.SetValueFromRenderer(Entry.TextProperty, "");
+			Assert.Null(vm.IntValue);
+
+			// Re-enter a value
+			entry.SetValueFromRenderer(Entry.TextProperty, "456");
+			Assert.Equal(456, vm.IntValue);
+		}
+
+		internal class IntViewModel : INotifyPropertyChanged
+		{
+			public event PropertyChangedEventHandler PropertyChanged;
+
+			int _intValue;
+			public int IntValue
+			{
+				get => _intValue;
+				set
+				{
+					if (_intValue == value)
+						return;
+					_intValue = value;
+					PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IntValue)));
+				}
+			}
+		}
+
+		internal class NullableIntViewModel : INotifyPropertyChanged
+		{
+			public event PropertyChangedEventHandler PropertyChanged;
+
+			int? _intValue;
+			public int? IntValue
+			{
+				get => _intValue;
+				set
+				{
+					if (_intValue == value)
+						return;
+					_intValue = value;
+					PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IntValue)));
+				}
+			}
+		}
+
+		internal class NullableDoubleViewModel : INotifyPropertyChanged
+		{
+			public event PropertyChangedEventHandler PropertyChanged;
+
+			double? _value;
+			public double? Value
+			{
+				get => _value;
+				set
+				{
+					if (_value == value)
+						return;
+					_value = value;
+					PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Value)));
+				}
+			}
+		}
 	}
 }
