@@ -4,23 +4,18 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Maui.Controls.Sample.Models;
 using Maui.Controls.Sample.Services;
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.Logging;
 
 namespace Maui.Controls.Sample.ViewModels;
 
 public partial class ChatViewModel : ObservableObject
 {
 	readonly ChatService _chatService;
-	readonly IDispatcher _dispatcher;
-	readonly ILogger<ChatViewModel> _logger;
 	readonly List<ChatMessage> _conversationHistory = [];
 	CancellationTokenSource? _cts;
 
-	public ChatViewModel(ChatService chatService, IDispatcher dispatcher, ILogger<ChatViewModel> logger)
+	public ChatViewModel(ChatService chatService)
 	{
 		_chatService = chatService;
-		_dispatcher = dispatcher;
-		_logger = logger;
 	}
 
 	public ChatService ChatService => _chatService;
@@ -83,19 +78,6 @@ public partial class ChatViewModel : ObservableObject
 		// Add to conversation history
 		_conversationHistory.Add(new ChatMessage(ChatRole.User, userText));
 
-		_logger.LogDebug($"[Chat] === Sending {_conversationHistory.Count} messages ===");
-		foreach (var msg in _conversationHistory)
-		{
-			var contentSummary = string.Join(", ", msg.Contents.Select(c => c switch
-			{
-				TextContent tc => $"Text({tc.Text?.Length ?? 0} chars)",
-				FunctionCallContent fc => $"Call({fc.Name}, id={fc.CallId})",
-				FunctionResultContent fr => $"Result(id={fr.CallId})",
-				_ => c.GetType().Name
-			}));
-			_logger.LogDebug($"[Chat]   {msg.Role}: [{contentSummary}]");
-		}
-
 		// Prepare streaming
 		_cts = new CancellationTokenSource();
 		ChatBubble? assistantBubble = null;
@@ -118,13 +100,6 @@ public partial class ChatViewModel : ObservableObject
 			{
 				foreach (var content in update.Contents)
 				{
-					_logger.LogDebug($"[Chat] ← {content switch
-					{
-						TextContent tc => $"Text: \"{tc.Text?[..Math.Min(tc.Text?.Length ?? 0, 80)]}\"",
-						FunctionCallContent fc => $"FunctionCall: {fc.Name} (id={fc.CallId})",
-						FunctionResultContent fr => $"FunctionResult: (id={fr.CallId}) {fr.Result?.ToString()?[..Math.Min(fr.Result?.ToString()?.Length ?? 0, 80)]}",
-						_ => content.GetType().Name
-					}}");
 					switch (content)
 					{
 						case TextContent textContent when !string.IsNullOrEmpty(textContent.Text):
@@ -139,30 +114,29 @@ public partial class ChatViewModel : ObservableObject
 								textMessage.Contents.Add(textContent);
 							}
 
-							// Update UI
-							_dispatcher.Dispatch(() =>
+							// Update UI (already on UI thread via await foreach)
+							if (assistantBubble is null)
 							{
-								if (assistantBubble is null)
+								if (Messages.Contains(thinkingBubble))
 								{
-									if (Messages.Contains(thinkingBubble))
-									{
-										thinkingBubble.Text = textContent.Text;
-										assistantBubble = thinkingBubble;
-									}
-									else
-									{
-										assistantBubble = new ChatBubble
-										{
-											BubbleType = ChatBubbleType.Assistant,
-											Text = textContent.Text,
-											IsStreaming = true
-										};
-										Messages.Add(assistantBubble);
-									}
-									return;
+									thinkingBubble.Text = textContent.Text;
+									assistantBubble = thinkingBubble;
 								}
+								else
+								{
+									assistantBubble = new ChatBubble
+									{
+										BubbleType = ChatBubbleType.Assistant,
+										Text = textContent.Text,
+										IsStreaming = true
+									};
+									Messages.Add(assistantBubble);
+								}
+							}
+							else
+							{
 								assistantBubble.Text += textContent.Text;
-							});
+							}
 							break;
 
 						case FunctionCallContent functionCall:
@@ -174,33 +148,30 @@ public partial class ChatViewModel : ObservableObject
 							textMessage = null; // Next text starts a new message
 
 							// Update UI
-							_dispatcher.Dispatch(() =>
+							if (assistantBubble is not null)
 							{
-								if (assistantBubble is not null)
-								{
-									var trimmed = assistantBubble.Text.Trim();
-									if (string.IsNullOrEmpty(trimmed))
-										Messages.Remove(assistantBubble);
-									else
-										assistantBubble.IsStreaming = false;
-									assistantBubble = null;
-								}
+								var trimmed = assistantBubble.Text.Trim();
+								if (string.IsNullOrEmpty(trimmed))
+									Messages.Remove(assistantBubble);
 								else
-								{
-									Messages.Remove(thinkingBubble);
-								}
+									assistantBubble.IsStreaming = false;
+								assistantBubble = null;
+							}
+							else
+							{
+								Messages.Remove(thinkingBubble);
+							}
 
-								var argsJson = functionCall.Arguments is not null
-									? JsonSerializer.Serialize(functionCall.Arguments, new JsonSerializerOptions { WriteIndented = true })
-									: "{}";
+							var argsJson = functionCall.Arguments is not null
+								? JsonSerializer.Serialize(functionCall.Arguments, new JsonSerializerOptions { WriteIndented = true })
+								: "{}";
 
-								Messages.Add(new ChatBubble
-								{
-									BubbleType = ChatBubbleType.ToolCall,
-									Text = $"🔧 Called {functionCall.Name}",
-									ToolName = functionCall.Name,
-									DetailText = argsJson
-								});
+							Messages.Add(new ChatBubble
+							{
+								BubbleType = ChatBubbleType.ToolCall,
+								Text = $"🔧 Called {functionCall.Name}",
+								ToolName = functionCall.Name,
+								DetailText = argsJson
 							});
 							break;
 
@@ -212,31 +183,23 @@ public partial class ChatViewModel : ObservableObject
 							_conversationHistory.Add(new ChatMessage(ChatRole.Tool, [functionResult]));
 
 							// Update UI
-							_dispatcher.Dispatch(() =>
-							{
-								var resultText = functionResult.Result?.ToString() ?? "(no result)";
-								var toolName = functionResult.CallId ?? "tool";
+							var resultText = functionResult.Result?.ToString() ?? "(no result)";
+							var toolName = functionResult.CallId ?? "tool";
 
-								Messages.Add(new ChatBubble
-								{
-									BubbleType = ChatBubbleType.ToolResult,
-									Text = $"📋 {toolName} responded",
-									ToolName = toolName,
-									DetailText = resultText
-								});
+							Messages.Add(new ChatBubble
+							{
+								BubbleType = ChatBubbleType.ToolResult,
+								Text = $"📋 {toolName} responded",
+								ToolName = toolName,
+								DetailText = resultText
 							});
 							break;
 					}
 				}
 			}
 
-			_dispatcher.Dispatch(() =>
-			{
-				if (assistantBubble is { IsStreaming: true })
-					assistantBubble.IsStreaming = false;
-			});
-
-			_logger.LogDebug($"[Chat] === Stream complete. History now has {_conversationHistory.Count} messages ===");
+			if (assistantBubble is { IsStreaming: true })
+				assistantBubble.IsStreaming = false;
 		}
 		catch (OperationCanceledException)
 		{
@@ -244,13 +207,10 @@ public partial class ChatViewModel : ObservableObject
 		}
 		catch (Exception ex)
 		{
-			_dispatcher.Dispatch(() =>
+			Messages.Add(new ChatBubble
 			{
-				Messages.Add(new ChatBubble
-				{
-					BubbleType = ChatBubbleType.Assistant,
-					Text = $"⚠️ Error: {ex.Message}"
-				});
+				BubbleType = ChatBubbleType.Assistant,
+				Text = $"⚠️ Error: {ex.Message}"
 			});
 		}
 		finally
