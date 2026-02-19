@@ -170,6 +170,11 @@ namespace Microsoft.Maui.Controls.Maps
 		public event EventHandler<MapClickedEventArgs>? MapClicked;
 
 		/// <summary>
+		/// Occurs when the user long-presses/holds on the map control.
+		/// </summary>
+		public event EventHandler<MapClickedEventArgs>? MapLongClicked;
+
+		/// <summary>
 		/// Gets the currently visible region of the map.
 		/// </summary>
 		public MapSpan? VisibleRegion
