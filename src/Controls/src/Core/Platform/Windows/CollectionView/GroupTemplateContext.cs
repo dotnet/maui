@@ -21,26 +21,7 @@ namespace Microsoft.Maui.Controls.Platform
 				Items = items;
 			}
 			else
-			{
-				// If the group items are not an IList, then we'll have to append the footer the hard way
-
-				var groupFooterTemplateItemType = footerItemTemplateContext.Item?.GetType();
-
-				if (groupFooterTemplateItemType is not IList)
-				{
-					var listPlusFooter = new List<object>();
-
-					foreach (var item in (items as IEnumerable))
-					{
-						listPlusFooter.Add(item);
-					}
-
-					listPlusFooter.Add(footerItemTemplateContext);
-
-					Items = listPlusFooter;
-					return;
-				}
-
+			{			
 				// UWP ListViewBase does not support group footers. So we're going to fake the footer by adding an 
 				// extra item to the ItemsSource so the footer shows up at the end of the group. 
 
@@ -51,6 +32,19 @@ namespace Microsoft.Maui.Controls.Platform
 					Items = itemsList;
 					return;
 				}
+
+				// If the group items are not an IList, then we'll have to append the footer the hard way
+
+				var listPlusFooter = new List<object>();
+
+				foreach (var item in (items as IEnumerable))
+				{
+					listPlusFooter.Add(item);
+				}
+
+				listPlusFooter.Add(footerItemTemplateContext);
+
+				Items = listPlusFooter;
 			}
 		}
 	}
