@@ -227,6 +227,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				// Self-sizing cells cause scroll position jumps during invalidation
 				if (ShouldApplyCellReConfiguration())
 				{
+					// Wrap in PerformWithoutAnimation to prevent ReconfigureItems from animating
+					// the scroll position adjustment that would otherwise occur during the layout pass.
 					UIView.PerformWithoutAnimation(() =>
 					{
 						// Use ReconfigureItems (iOS 15+) which is designed for size changes
