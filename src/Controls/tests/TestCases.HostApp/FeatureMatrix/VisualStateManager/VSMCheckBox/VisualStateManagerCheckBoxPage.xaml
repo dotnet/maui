@@ -12,13 +12,14 @@
                         <VisualState x:Name="Normal">
                             <VisualState.Setters>
                                 <Setter Property="Opacity" Value="1" />
-                                <Setter Property="Scale" Value="1" />
+                                <Setter Property="Scale" Value="1.0" />
                                 <Setter Property="Color" Value="#374151" />
                             </VisualState.Setters>
                         </VisualState>
                         <VisualState x:Name="Disabled">
                             <VisualState.Setters>
                                 <Setter Property="Opacity" Value="0.6" />
+                                <Setter Property="Scale" Value="1.0" />
                                 <Setter Property="Color" Value="#9CA3AF" />
                             </VisualState.Setters>
                         </VisualState>
@@ -27,13 +28,13 @@
                         <VisualState x:Name="Checked">
                             <VisualState.Setters>
                                 <Setter Property="Color" Value="#2563EB" />
-                                <Setter Property="Scale" Value="1.05" />
+                                <Setter Property="Scale" Value="1.5" />
                             </VisualState.Setters>
                         </VisualState>
                         <VisualState x:Name="Unchecked">
                             <VisualState.Setters>
                                 <Setter Property="Color" Value="#374151" />
-                                <Setter Property="Scale" Value="1" />
+                                <Setter Property="Scale" Value="1.5" />
                             </VisualState.Setters>
                         </VisualState>
                     </VisualStateGroup>

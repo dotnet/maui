@@ -26,10 +26,10 @@
                                                                         Value="White"/>
                                                                 <Setter Property="Opacity"
                                                                         Value="1"/>
-                                                                <Setter Property="Scale"
-                                                                        Value="1"/>
                                                                 <Setter Property="TranslationY"
                                                                         Value="0"/>
+                                                                <Setter Property="Scale"
+                                                                        Value="1.0"/>
                                                         </VisualState.Setters>
                                                 </VisualState>
                                                 <VisualState x:Name="Pressed">
@@ -39,9 +39,9 @@
                                                                 <Setter Property="TextColor"
                                                                         Value="White"/>
                                                                 <Setter Property="Scale"
-                                                                        Value="0.98"/>
+                                                                        Value="1.5"/>
                                                                 <Setter Property="TranslationY"
-                                                                        Value="1"/>
+                                                                        Value="1.5"/>
                                                         </VisualState.Setters>
                                                 </VisualState>
                                                 <VisualState x:Name="PointerOver">
@@ -51,7 +51,7 @@
                                                                 <Setter Property="TextColor"
                                                                         Value="Black"/>
                                                                 <Setter Property="Scale"
-                                                                        Value="1.03"/>
+                                                                        Value="1.3"/>
                                                         </VisualState.Setters>
                                                 </VisualState>
                                                 <VisualState x:Name="Disabled">
@@ -62,12 +62,14 @@
                                                                         Value="#FF65676D"/>
                                                                 <Setter Property="Opacity"
                                                                         Value="0.6"/>
+                                                                <Setter Property="Scale"
+                                                                        Value="1.0"/>
                                                         </VisualState.Setters>
                                                 </VisualState>
                                                 <VisualState x:Name="Focused">
                                                         <VisualState.Setters>
                                                                 <Setter Property="Scale"
-                                                                        Value="1.04"/>
+                                                                        Value="1.5"/>
                                                                 <Setter Property="BackgroundColor"
                                                                         Value="Green"/>
                                                                 <Setter Property="TextColor"

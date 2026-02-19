@@ -14,7 +14,7 @@
                         <VisualState x:Name="Normal">
                             <VisualState.Setters>
                                 <Setter Property="Opacity" Value="1" />
-                                <Setter Property="Scale" Value="1.05" />
+                                <Setter Property="Scale" Value="1.0" />
                                 <Setter Property="ThumbColor" Value="#1141a7" />
                                 <Setter Property="OnColor" Value="#6295ec" />
                             </VisualState.Setters>
@@ -22,6 +22,7 @@
                         <VisualState x:Name="Disabled">
                             <VisualState.Setters>
                                 <Setter Property="Opacity" Value="0.6" />
+                                <Setter Property="Scale" Value="1.0" />
                                 <Setter Property="ThumbColor" Value="#FF707172" />
                                 <Setter Property="OnColor" Value="#9CA3AF" />
                             </VisualState.Setters>
@@ -32,14 +33,14 @@
                             <VisualState.Setters>
                                 <Setter Property="ThumbColor" Value="#0f5027" />
                                 <Setter Property="OnColor" Value="#86EFAC" />
-                                <Setter Property="Scale" Value="1.05" />
+                                <Setter Property="Scale" Value="1.5" />
                             </VisualState.Setters>
                         </VisualState>
                         <VisualState x:Name="Off">
                             <VisualState.Setters>
                                 <Setter Property="ThumbColor" Value="#ff2e2e" />
-                                <Setter Property="OnColor" Value="#FFDB8787" />
-                                <Setter Property="Scale" Value="1.05" />
+                                <Setter Property="OffColor" Value="#FFDB8787" />
+                                <Setter Property="Scale" Value="1.5" />
                             </VisualState.Setters>
                         </VisualState>
                     </VisualStateGroup>

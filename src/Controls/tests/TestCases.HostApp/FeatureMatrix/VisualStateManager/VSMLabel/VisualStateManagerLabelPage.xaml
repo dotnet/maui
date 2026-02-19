@@ -24,7 +24,7 @@
                                         Property="Label.FontAttributes"
                                         Value="Italic"/>
                                 <Setter Property="Scale"
-                                        Value="1"/>
+                                        Value="1.0"/>
                             </VisualState.Setters>
                         </VisualState>
                         <VisualState x:Name="Selected">
@@ -38,7 +38,7 @@
                                         Property="Label.FontAttributes"
                                         Value="Bold"/>
                                 <Setter Property="Scale"
-                                        Value="1.04"/>
+                                        Value="1.5"/>
                             </VisualState.Setters>
                         </VisualState>
                         <VisualState x:Name="Disabled">
@@ -50,6 +50,8 @@
                                         Value="#6B7280"/>
                                 <Setter Property="Opacity"
                                         Value="0.7"/>
+                                <Setter Property="Scale"
+                                        Value="1.0"/>
                             </VisualState.Setters>
                         </VisualState>
                     </VisualStateGroup>

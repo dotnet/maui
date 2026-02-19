@@ -4,121 +4,124 @@
              xmlns:local="clr-namespace:Maui.Controls.Sample"
              x:Class="Maui.Controls.Sample.VisualStateManagerCollectionViewPage"
              Title="VisualStateManagerCollectionViewPage">
-    <ContentPage.Resources>
-        <Style TargetType="Grid"
-               x:Key="CollectionItemStyle">
-            <Setter Property="Padding"
-                    Value="10"/>
-            <Setter Property="BackgroundColor"
-                    Value="#FFFFFF"/>
-            <Setter Property="VisualStateManager.VisualStateGroups">
-                <VisualStateGroupList>
-                    <VisualStateGroup x:Name="CommonStates">
-                        <VisualState x:Name="Normal">
-                            <VisualState.Setters>
-                                <Setter Property="BackgroundColor"
-                                        Value="#FFF867D9"/>
-                                <Setter TargetName="ItemLabel"
-                                        Property="Label.TextColor"
-                                        Value="#111827"/>
-                                <Setter Property="Scale"
-                                        Value="1"/>
-                            </VisualState.Setters>
-                        </VisualState>
-                        <VisualState x:Name="PointerOver">
-                            <VisualState.Setters>
-                                <Setter Property="BackgroundColor"
-                                        Value="#FF4D57DD"/>
-                                <Setter TargetName="ItemLabel"
-                                        Property="Label.TextColor"
-                                        Value="White"/>
-                                <Setter Property="Scale"
-                                        Value="1.02"/>
-                            </VisualState.Setters>
-                        </VisualState>
-                        <VisualState x:Name="Selected">
-                            <VisualState.Setters>
-                                <Setter Property="BackgroundColor"
-                                        Value="#FF87FA87"/>
-                                <Setter Property="Scale"
-                                        Value="1.05"/>
-                                <Setter TargetName="ItemLabel"
-                                        Property="Label.TextColor"
-                                        Value="#0B1021"/>
-                                <Setter TargetName="ItemLabel"
-                                        Property="Label.FontAttributes"
-                                        Value="Bold"/>
-                            </VisualState.Setters>
-                        </VisualState>
-                        <VisualState x:Name="Disabled">
-                            <VisualState.Setters>
-                                <Setter Property="Opacity"
-                                        Value="0.7"/>
-                                <Setter Property="BackgroundColor"
-                                        Value="#FFBEC0C1"/>
-                                <Setter TargetName="ItemLabel"
-                                        Property="Label.TextColor"
-                                        Value="#6B7280"/>
-                            </VisualState.Setters>
-                        </VisualState>
-                    </VisualStateGroup>
-                </VisualStateGroupList>
-            </Setter>
-        </Style>
-    </ContentPage.Resources>
+        <ContentPage.Resources>
+                <Style TargetType="Grid"
+                       x:Key="CollectionItemStyle">
+                        <Setter Property="Padding"
+                                Value="10"/>
+                        <Setter Property="BackgroundColor"
+                                Value="#FFFFFF"/>
+                        <Setter Property="VisualStateManager.VisualStateGroups">
+                                <VisualStateGroupList>
+                                        <VisualStateGroup x:Name="CommonStates">
+                                                <VisualState x:Name="Normal">
+                                                        <VisualState.Setters>
+                                                                <Setter Property="BackgroundColor"
+                                                                        Value="#FFF867D9"/>
+                                                                <Setter TargetName="ItemLabel"
+                                                                        Property="Label.TextColor"
+                                                                        Value="#111827"/>
+                                                                <Setter Property="Scale"
+                                                                        Value="1.0"/>
+                                                        </VisualState.Setters>
+                                                </VisualState>
+                                                <VisualState x:Name="PointerOver">
+                                                        <VisualState.Setters>
+                                                                <Setter Property="BackgroundColor"
+                                                                        Value="#FF4D57DD"/>
+                                                                <Setter TargetName="ItemLabel"
+                                                                        Property="Label.TextColor"
+                                                                        Value="White"/>
+                                                                <Setter Property="Scale"
+                                                                        Value="1.2"/>
+                                                        </VisualState.Setters>
+                                                </VisualState>
+                                                <VisualState x:Name="Selected">
+                                                        <VisualState.Setters>
+                                                                <Setter Property="BackgroundColor"
+                                                                        Value="#FF87FA87"/>
+                                                                <Setter Property="Scale"
+                                                                        Value="1.5"/>
+                                                                <Setter TargetName="ItemLabel"
+                                                                        Property="Label.TextColor"
+                                                                        Value="#0B1021"/>
+                                                                <Setter TargetName="ItemLabel"
+                                                                        Property="Label.FontAttributes"
+                                                                        Value="Bold"/>
+                                                        </VisualState.Setters>
+                                                </VisualState>
+                                                <VisualState x:Name="Disabled">
+                                                        <VisualState.Setters>
+                                                                <Setter Property="Opacity"
+                                                                        Value="0.7"/>
+                                                                <Setter Property="BackgroundColor"
+                                                                        Value="#FFBEC0C1"/>
+                                                                <Setter Property="Scale"
+                                                                        Value="1.0"/>
+                                                                <Setter TargetName="ItemLabel"
+                                                                        Property="Label.TextColor"
+                                                                        Value="#6B7280"/>
+                                                        </VisualState.Setters>
+                                                </VisualState>
+                                        </VisualStateGroup>
+                                </VisualStateGroupList>
+                        </Setter>
+                </Style>
+        </ContentPage.Resources>
 
-    <VerticalStackLayout Padding="20"
-                         Spacing="12">
-        <Label Text="VisualStateManager Feature Matrix"
-               FontSize="20"/>
-        <Label Text="CollectionView States (Normal / PointerOver / Selected / Disabled)"
-               FontAttributes="Bold"/>
+        <VerticalStackLayout Padding="20"
+                             Spacing="12">
+                <Label Text="VisualStateManager Feature Matrix"
+                       FontSize="20"/>
+                <BoxView HeightRequest="200"/>
+                <Label Text="CollectionView States (Normal / PointerOver / Selected / Disabled)"
+                       FontAttributes="Bold"/>
 
-        <local:CollectionView2 ItemsSource="{Binding Items}"
-                        SelectionMode="Multiple"
-                        x:Name="MyCollectionView"
-                        SelectionChanged="OnCollectionSelectionChanged">
-            <local:CollectionView2.ItemsLayout>
-                <GridItemsLayout Orientation="Vertical"
-                                 Span="2"/>
-            </local:CollectionView2.ItemsLayout>
-            <local:CollectionView2.ItemTemplate>
-                <DataTemplate>
-                    <Grid Style="{StaticResource CollectionItemStyle}">
-                        <Grid.GestureRecognizers>
-                            <PointerGestureRecognizer PointerEntered="OnItemPointerEntered"
-                                                      PointerExited="OnItemPointerExited"/>
-                        </Grid.GestureRecognizers>
-                        <Label x:Name="ItemLabel"
-                               Text="{Binding Name}"
-                               VerticalOptions="Center"
-                               HorizontalOptions="Center"/>
-                    </Grid>
-                </DataTemplate>
-            </local:CollectionView2.ItemTemplate>
-        </local:CollectionView2>
+                <local:CollectionView2 ItemsSource="{Binding Items}"
+                                       SelectionMode="Multiple"
+                                       x:Name="MyCollectionView"
+                                       SelectionChanged="OnCollectionSelectionChanged">
+                        <local:CollectionView2.ItemsLayout>
+                                <GridItemsLayout Orientation="Vertical"
+                                                 Span="2"/>
+                        </local:CollectionView2.ItemsLayout>
+                        <local:CollectionView2.ItemTemplate>
+                                <DataTemplate>
+                                        <Grid Style="{StaticResource CollectionItemStyle}">
+                                                <Grid.GestureRecognizers>
+                                                        <PointerGestureRecognizer PointerEntered="OnItemPointerEntered"
+                                                                                  PointerExited="OnItemPointerExited"/>
+                                                </Grid.GestureRecognizers>
+                                                <Label x:Name="ItemLabel"
+                                                       Text="{Binding Name}"
+                                                       VerticalOptions="Center"
+                                                       HorizontalOptions="Center"/>
+                                        </Grid>
+                                </DataTemplate>
+                        </local:CollectionView2.ItemTemplate>
+                </local:CollectionView2>
 
-        <Label x:Name="CVState"
-               AutomationId="CVState"
-               Text="State: Normal"
-               FontSize="14"
-               TextColor="#111827"/>
-        <HorizontalStackLayout Spacing="10">
-            <Button Text="Select Item"
-                    AutomationId="CVSelectItem"
-                    Clicked="OnSelectItem"/>
-            <Button Text="Normal"
-                    AutomationId="CVNormal"
-                    Clicked="OnSetNormal"/>
-        </HorizontalStackLayout>
-        <HorizontalStackLayout Spacing="10">
-            <Button x:Name="CVToggleButton"
-                    Text="Disable"
-                    AutomationId="CVDisable"
-                    Clicked="OnToggleCollectionViewDisabled"/>
-            <Button Text="Reset"
-                    AutomationId="CVReset"
-                    Clicked="OnResetCollectionView"/>
-        </HorizontalStackLayout>
-    </VerticalStackLayout>
+                <Label x:Name="CVState"
+                       AutomationId="CVState"
+                       Text="State: Normal"
+                       FontSize="14"
+                       TextColor="#111827"/>
+                <HorizontalStackLayout Spacing="10">
+                        <Button Text="Select Item"
+                                AutomationId="CVSelectItem"
+                                Clicked="OnSelectItem"/>
+                        <Button Text="Normal"
+                                AutomationId="CVNormal"
+                                Clicked="OnSetNormal"/>
+                </HorizontalStackLayout>
+                <HorizontalStackLayout Spacing="10">
+                        <Button x:Name="CVToggleButton"
+                                Text="Disable"
+                                AutomationId="CVDisable"
+                                Clicked="OnToggleCollectionViewDisabled"/>
+                        <Button Text="Reset"
+                                AutomationId="CVReset"
+                                Clicked="OnResetCollectionView"/>
+                </HorizontalStackLayout>
+        </VerticalStackLayout>
 </ContentPage>

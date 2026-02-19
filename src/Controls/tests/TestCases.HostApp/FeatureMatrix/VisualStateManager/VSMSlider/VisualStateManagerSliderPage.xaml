@@ -15,7 +15,7 @@
                                 <Setter Property="Opacity"
                                         Value="1"/>
                                 <Setter Property="Scale"
-                                        Value="1"/>
+                                        Value="1.0"/>
                                 <Setter Property="MinimumTrackColor"
                                         Value="#FFF63BCA"/>
                                 <Setter Property="MaximumTrackColor"
@@ -34,6 +34,8 @@
                                         Value="#E5E7EB"/>
                                 <Setter Property="ThumbColor"
                                         Value="#9CA3AF"/>
+                                <Setter Property="Scale"
+                                        Value="1.0"/>
                             </VisualState.Setters>
                         </VisualState>
                         <VisualState x:Name="Focused">
@@ -45,7 +47,7 @@
                                 <Setter Property="MaximumTrackColor"
                                         Value="#86EFAC"/>
                                 <Setter Property="Scale"
-                                        Value="1.05"/>
+                                        Value="1.5"/>
                             </VisualState.Setters>
                         </VisualState>
                     </VisualStateGroup>
