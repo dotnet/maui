@@ -22,4 +22,10 @@ internal abstract class StreamChunkerBase
 	/// </summary>
 	/// <returns>Final chunk to complete the output (may be empty).</returns>
 	public abstract string Flush();
+
+	/// <summary>
+	/// Resets the chunker state. Call this when the streaming context changes
+	/// (e.g., after a tool call boundary) so the next text is treated as a fresh stream.
+	/// </summary>
+	public abstract void Reset();
 }

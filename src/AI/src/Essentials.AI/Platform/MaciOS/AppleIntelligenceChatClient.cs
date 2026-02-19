@@ -151,6 +151,9 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 						break;
 
 					case ResponseUpdateTypeNative.ToolCall:
+						// Reset chunker so post-tool text is treated as a fresh stream
+						chunker.Reset();
+
 						var args = update.ToolCallArguments is null
 							? null
 #pragma warning disable IL3050, IL2026 // DefaultJsonTypeInfoResolver is only used when reflection-based serialization is enabled
