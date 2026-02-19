@@ -12,7 +12,7 @@
     - Windows: android, windows
 
 .PARAMETER Project
-    The device test project to run. Valid values: Controls, Core, Essentials, Graphics, BlazorWebView
+    The device test project to run. Valid values: Controls, Core, Essentials, Graphics, BlazorWebView, AI
 
 .PARAMETER Platform
     Target platform. Valid values depend on OS:
@@ -65,7 +65,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true, Position = 0)]
-    [ValidateSet("Controls", "Core", "Essentials", "Graphics", "BlazorWebView")]
+    [ValidateSet("Controls", "Core", "Essentials", "Graphics", "BlazorWebView", "AI")]
     [string]$Project,
 
     [Parameter(Mandatory = $false)]
@@ -128,6 +128,7 @@ $ProjectPaths = @{
     "Essentials"    = "src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj"
     "Graphics"      = "src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj"
     "BlazorWebView" = "src/BlazorWebView/tests/DeviceTests/MauiBlazorWebView.DeviceTests.csproj"
+    "AI"            = "src/AI/tests/Essentials.AI.DeviceTests/Essentials.AI.DeviceTests.csproj"
 }
 
 $AppNames = @{
@@ -136,6 +137,7 @@ $AppNames = @{
     "Essentials"    = "Microsoft.Maui.Essentials.DeviceTests"
     "Graphics"      = "Microsoft.Maui.Graphics.DeviceTests"
     "BlazorWebView" = "Microsoft.Maui.MauiBlazorWebView.DeviceTests"
+    "AI"            = "Microsoft.Maui.Essentials.AI.DeviceTests"
 }
 
 # Android package names (lowercase)
@@ -145,6 +147,7 @@ $AndroidPackageNames = @{
     "Essentials"    = "com.microsoft.maui.essentials.devicetests"
     "Graphics"      = "com.microsoft.maui.graphics.devicetests"
     "BlazorWebView" = "com.microsoft.maui.mauiblazorwebview.devicetests"
+    "AI"            = "com.microsoft.maui.ai.devicetests"
 }
 
 # Platform-specific configurations
@@ -239,6 +242,8 @@ try {
 
     $projectPath = $ProjectPaths[$Project]
     $appName = $AppNames[$Project]
+    # Derive artifact folder name from the project file name (e.g., "Essentials.AI.DeviceTests" from the .csproj)
+    $artifactName = [System.IO.Path]::GetFileNameWithoutExtension($projectPath)
     
     Write-Host ""
     Write-Host "Project:       $Project" -ForegroundColor Yellow
@@ -316,11 +321,11 @@ try {
     # Construct app path based on platform
     switch ($Platform) {
         "ios" {
-            $appPath = "artifacts/bin/$Project.DeviceTests/$Configuration/$tfmFolder/$ridFolder/$appName.app"
+            $appPath = "artifacts/bin/$artifactName/$Configuration/$tfmFolder/$ridFolder/$appName.app"
         }
         "maccatalyst" {
             # MacCatalyst apps may have different names - search for .app bundle
-            $appSearchPath = "artifacts/bin/$Project.DeviceTests/$Configuration/$tfmFolder/$ridFolder"
+            $appSearchPath = "artifacts/bin/$artifactName/$Configuration/$tfmFolder/$ridFolder"
             $appBundle = Get-ChildItem -Path $appSearchPath -Filter "*.app" -Directory -ErrorAction SilentlyContinue | Select-Object -First 1
             if ($appBundle) {
                 $appPath = $appBundle.FullName
@@ -330,7 +335,7 @@ try {
         }
         "android" {
             # Android APK path - look for signed APK
-            $apkSearchPath = "artifacts/bin/$Project.DeviceTests/$Configuration/$tfmFolder"
+            $apkSearchPath = "artifacts/bin/$artifactName/$Configuration/$tfmFolder"
             $apkFile = Get-ChildItem -Path $apkSearchPath -Filter "*-Signed.apk" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
             if ($apkFile) {
                 $appPath = $apkFile.FullName
@@ -345,14 +350,14 @@ try {
             }
         }
         "windows" {
-            $appPath = "artifacts/bin/$Project.DeviceTests/$Configuration/$tfmFolder/$ridFolder/$appName.exe"
+            $appPath = "artifacts/bin/$artifactName/$Configuration/$tfmFolder/$ridFolder/$appName.exe"
         }
     }
     
     if (-not (Test-Path $appPath)) {
         Write-Error "Built app not found at: $appPath"
         Write-Info "Searching for app in artifacts..."
-        Get-ChildItem -Path "artifacts/bin/$Project.DeviceTests" -Recurse -ErrorAction SilentlyContinue | 
+        Get-ChildItem -Path "artifacts/bin/$artifactName" -Recurse -ErrorAction SilentlyContinue | 
             Where-Object { $_.Name -match "$appName" } |
             ForEach-Object { Write-Host "  Found: $($_.FullName)" }
         exit 1
