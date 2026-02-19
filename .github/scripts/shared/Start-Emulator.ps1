@@ -363,9 +363,11 @@ if ($Platform -eq "android") {
         foreach ($version in $preferredVersions) {
             if ($selectedDevice) { break }
             
-            # Get all runtimes matching this version prefix
+            # Get all runtimes matching this version prefix, sorted by version descending
+            # so the latest minor version is preferred (e.g., iOS-18-5 before iOS-18-3)
             $matchingRuntimes = $simList.devices.PSObject.Properties | 
-                Where-Object { $_.Name -match $version }
+                Where-Object { $_.Name -match $version } |
+                Sort-Object { $_.Name } -Descending
             
             if ($matchingRuntimes) {
                 # Try each preferred device for this version
