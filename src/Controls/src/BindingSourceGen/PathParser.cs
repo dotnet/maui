@@ -126,7 +126,9 @@ internal class PathParser
 				MemberType: memberType,
 				Kind: AccessorKind.Property,
 				IsGetterAccessible: true, // Assume generated property is accessible
-				IsSetterAccessible: true); // ObservableProperty properties have setters
+				IsSetterAccessible: true, // ObservableProperty properties have setters
+				DefinitelyImplementsINPC: expressionType.ImplementsINPC(),
+				MaybeImplementsINPC: expressionType.MaybeImplementsINPC());
 
 			return true;
 		}

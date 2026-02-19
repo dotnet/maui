@@ -518,15 +518,12 @@ public class BindingCodeWriterTests
                 static global::System.Collections.Generic.IEnumerable<global::System.ValueTuple<global::System.ComponentModel.INotifyPropertyChanged?, string>> GetHandlers(global::MyNamespace.MySourceClass source)
                 {
                     if (source is global::System.ComponentModel.INotifyPropertyChanged p0) yield return (p0, "A");
-                    var p1 = source.A;
-                    var p2 = (p1 as X);
-                    if (p2 is global::System.ComponentModel.INotifyPropertyChanged p3) yield return (p3, "B");
-                    var p4 = p2?.B;
-                    var p5 = (p4 as Y);
-                    if (p5 is global::System.ComponentModel.INotifyPropertyChanged p6) yield return (p6, "C");
-                    var p7 = p5?.C;
-                    var p8 = (p7 as Z?);
-                    if (p8 is global::System.ComponentModel.INotifyPropertyChanged p9) yield return (p9, "D");
+                    var p1 = (source.A as X);
+                    if (p1 is global::System.ComponentModel.INotifyPropertyChanged p2) yield return (p2, "B");
+                    var p3 = (p1?.B as Y);
+                    if (p3 is global::System.ComponentModel.INotifyPropertyChanged p4) yield return (p4, "C");
+                    var p5 = (p3?.C as Z?);
+                    if (p5 is global::System.ComponentModel.INotifyPropertyChanged p6) yield return (p6, "D");
                 }
 
                 var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass>(

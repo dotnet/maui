@@ -595,36 +595,6 @@ public class IntegrationTests
                     }
                 """
 			},
-			new object[]
-			{
-				"""
-                // Nullable value type on path
-                #nullable disable
-                using Microsoft.Maui.Controls;
-                using MyNamespace;
-
-                var label = new Label();
-                label.SetBinding(Label.RotationProperty, static (A a) => a.B?.C);
-
-                namespace MyNamespace
-                    {
-                        public class A
-                        {
-                            public B? B { get; set; }
-                        }
-
-                        public struct B
-                        {
-                            public C C { get; set; }
-                        }
-
-                        public class C
-                        {
-
-                        }
-                    }
-                """
-			},
 		};
 
 	[Theory]
@@ -724,6 +694,49 @@ public class IntegrationTests
             }
             """,
 			result.GeneratedFiles["Path-To-Program.cs-GeneratedBindingInterceptors-7-7.g.cs"]);
+	}
+
+	[Fact]
+	public void GenerateSimpleBindingWhenNullableDisabledAndNullableValueTypeOnPath()
+	{
+		var source = """
+            #nullable disable
+            using Microsoft.Maui.Controls;
+            using MyNamespace;
+
+            var label = new Label();
+            label.SetBinding(Label.RotationProperty, static (A a) => a.B?.C);
+
+            namespace MyNamespace
+                {
+                    public class A
+                    {
+                        public B? B { get; set; }
+                    }
+
+                    public struct B
+                    {
+                        public C C { get; set; }
+                    }
+
+                    public class C
+                    {
+
+                    }
+                }
+            """;
+
+		var result = SourceGenHelpers.Run(source);
+		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
+		AssertExtensions.AssertNoDiagnostics(result);
+		// Struct B doesn't and can't implement INotifyPropertyChanged,
+		// so only one handler (for class A's property "B") is generated.
+		var key = result.GeneratedFiles.Keys.First(k => k.Contains("GeneratedBindingInterceptors-", StringComparison.Ordinal));
+		var generated = result.GeneratedFiles[key];
+		// Struct B doesn't and can't implement INotifyPropertyChanged,
+		// so only one handler (for class A's property "B") is generated.
+		Assert.Contains("handlersCount: 1,", generated, StringComparison.Ordinal);
+		Assert.Contains("\"B\"", generated, StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -1235,21 +1248,17 @@ public class IntegrationTests
 
                         static global::System.Collections.Generic.IEnumerable<global::System.ValueTuple<global::System.ComponentModel.INotifyPropertyChanged?, string>> GetHandlers(global::MyNamespace.A source)
                         {
-                            if (source is global::System.ComponentModel.INotifyPropertyChanged p0) yield return (p0, "X");
-                            var p1 = (source.X as global::MyNamespace.Wrapper);
-                            if (p1 is global::System.ComponentModel.INotifyPropertyChanged p2) yield return (p2, "Wrapped");
-                            var p3 = p1?.Wrapped;
-                            if (p3 is global::System.ComponentModel.INotifyPropertyChanged p4) yield return (p4, "Y");
-                            var p5 = p3?.Y;
-                            if (p5 is global::System.ComponentModel.INotifyPropertyChanged p6) yield return (p6, "Value");
-                            var p7 = p5?.Value;
-                            if (p7 is global::System.ComponentModel.INotifyPropertyChanged p8) yield return (p8, "Length");
+                            var p0 = (source.X as global::MyNamespace.Wrapper);
+                            if (p0 is global::System.ComponentModel.INotifyPropertyChanged p1) yield return (p1, "Wrapped");
+                            var p2 = p0?.Wrapped;
+                            var p3 = p2?.Y;
+                            var p4 = p3?.Value;
                         }
 
                         var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::MyNamespace.A, int>(
                             getter: source => (getter(source), true),
                             setter,
-                            handlersCount: 5,
+                            handlersCount: 1,
                             GetHandlers)
                         {
                             Mode = mode,

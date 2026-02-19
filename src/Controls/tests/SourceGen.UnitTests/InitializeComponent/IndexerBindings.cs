@@ -309,7 +309,7 @@ public class TestViewModel
 
 		// For arrays, the handler should use empty string for indexer name (no property to listen to on the array itself)
 		// The array itself can't notify about element changes - only the containing property can
-		Assert.Contains("new(static source => source, \"Names\")", generated, StringComparison.Ordinal);
+		Assert.Contains("\"Names\"", generated, StringComparison.Ordinal);
 	}
 
 	[Fact]

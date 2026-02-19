@@ -335,7 +335,9 @@ internal struct CompiledBindingMarkup
 				var memberIsNullable = currentPropertyType.IsTypeNullable(enabledNullable);
 				isNullable |= memberIsNullable;
 
-				IPathPart memberAccess = new MemberAccess(p, currentPropertyType.IsValueType);
+				IPathPart memberAccess = new MemberAccess(p, currentPropertyType.IsValueType,
+					DefinitelyImplementsINPC: DefinitelyImplementsINPC(previousPartType),
+					MaybeImplementsINPC: MaybeImplementsINPC(previousPartType));
 				if (previousPartIsNullable)
 				{
 					memberAccess = new ConditionalAccess(memberAccess);
@@ -464,7 +466,9 @@ internal struct CompiledBindingMarkup
 						// Name property is "this[]" but MetadataName is "CustomName" which is what
 						// PropertyChanged events use (e.g., "CustomName[3]" not "this[][3]")
 						var actualIndexerName = indexer.MetadataName;
-						IPathPart indexAccess = new IndexAccess(actualIndexerName, index, indexer.Type.IsValueType);
+						IPathPart indexAccess = new IndexAccess(actualIndexerName, index, indexer.Type.IsValueType,
+							DefinitelyImplementsINPC: DefinitelyImplementsINPC(previousPartType),
+							MaybeImplementsINPC: MaybeImplementsINPC(previousPartType));
 						if (previousPartIsNullable)
 						{
 							indexAccess = new ConditionalAccess(indexAccess);
@@ -652,20 +656,39 @@ internal struct CompiledBindingMarkup
 			// Make binding react for PropertyChanged events on indexer itself
 			// If we know for certain it implements INPC, generate the yield directly
 			// If it might implement INPC at runtime, generate a runtime check
+			// Generate two handlers: one for the base indexer name (e.g., "Item") and one for the
+			// specific index (e.g., "Item[2]") so the binding reacts to both general and specific changes
 			if (part is IndexAccess indexAccess)
 			{
 				if (indexAccess.DefinitelyImplementsINPC)
 				{
-					statements.Add($"yield return ({previousVar}, \"{indexAccess.DefaultMemberName}\");");
+					if (!string.IsNullOrEmpty(indexAccess.DefaultMemberName))
+					{
+						statements.Add($"yield return ({previousVar}, \"{indexAccess.DefaultMemberName}\");");
+						handlersCount++;
+					}
+					statements.Add($"yield return ({previousVar}, \"{indexAccess.PropertyName}\");");
 					handlersCount++;
 				}
 				else if (indexAccess.MaybeImplementsINPC)
 				{
 					var nextVarLocal = $"p{varIndex++}";
-					statements.Add($"""
-						if ({previousVar} is {INPC} {nextVarLocal})
-							yield return ({nextVarLocal}, "{indexAccess.DefaultMemberName}");
-						""");
+					if (!string.IsNullOrEmpty(indexAccess.DefaultMemberName))
+					{
+						statements.Add(
+							$"if ({previousVar} is {INPC} {nextVarLocal})\n" +
+							$"{{\n" +
+							$"\tyield return ({nextVarLocal}, \"{indexAccess.DefaultMemberName}\");\n" +
+							$"\tyield return ({nextVarLocal}, \"{indexAccess.PropertyName}\");\n" +
+							$"}}");
+					}
+					else
+					{
+						statements.Add($"""
+							if ({previousVar} is {INPC} {nextVarLocal})
+								yield return ({nextVarLocal}, "{indexAccess.PropertyName}");
+							""");
+					}
 					handlersCount++;
 				}
 			}
@@ -673,16 +696,33 @@ internal struct CompiledBindingMarkup
 			{
 				if (innerIndexAccess.DefinitelyImplementsINPC)
 				{
-					statements.Add($"yield return ({previousVar}, \"{innerIndexAccess.DefaultMemberName}\");");
+					if (!string.IsNullOrEmpty(innerIndexAccess.DefaultMemberName))
+					{
+						statements.Add($"yield return ({previousVar}, \"{innerIndexAccess.DefaultMemberName}\");");
+						handlersCount++;
+					}
+					statements.Add($"yield return ({previousVar}, \"{innerIndexAccess.PropertyName}\");");
 					handlersCount++;
 				}
 				else if (innerIndexAccess.MaybeImplementsINPC)
 				{
 					var nextVarLocal = $"p{varIndex++}";
-					statements.Add($"""
-						if ({previousVar} is {INPC} {nextVarLocal})
-							yield return ({nextVarLocal}, "{innerIndexAccess.DefaultMemberName}");
-						""");
+					if (!string.IsNullOrEmpty(innerIndexAccess.DefaultMemberName))
+					{
+						statements.Add(
+							$"if ({previousVar} is {INPC} {nextVarLocal})\n" +
+							$"{{\n" +
+							$"\tyield return ({nextVarLocal}, \"{innerIndexAccess.DefaultMemberName}\");\n" +
+							$"\tyield return ({nextVarLocal}, \"{innerIndexAccess.PropertyName}\");\n" +
+							$"}}");
+					}
+					else
+					{
+						statements.Add($"""
+							if ({previousVar} is {INPC} {nextVarLocal})
+								yield return ({nextVarLocal}, "{innerIndexAccess.PropertyName}");
+							""");
+					}
 					handlersCount++;
 				}
 			}
@@ -766,6 +806,28 @@ internal struct CompiledBindingMarkup
 				_ => part,
 			};
 		}
+	}
+
+	static bool DefinitelyImplementsINPC(ITypeSymbol? typeSymbol)
+	{
+		if (typeSymbol == null)
+			return false;
+		return typeSymbol.AllInterfaces.Any(i => i.ToFQDisplayString() == "global::System.ComponentModel.INotifyPropertyChanged");
+	}
+
+	static bool MaybeImplementsINPC(ITypeSymbol? typeSymbol)
+	{
+		if (typeSymbol == null)
+			return true;
+		if (DefinitelyImplementsINPC(typeSymbol))
+			return false;
+		if (typeSymbol.TypeKind == TypeKind.TypeParameter)
+			return true;
+		if (typeSymbol.TypeKind == TypeKind.Interface)
+			return true;
+		if (typeSymbol.TypeKind == TypeKind.Class && !typeSymbol.IsSealed)
+			return true;
+		return false;
 	}
 }
 

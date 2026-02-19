@@ -470,17 +470,12 @@ public static class BindingCodeWriter
 			}
 		}
 
-		// Check if there's a Cast immediately following this part, AND the part after that is NOT a ConditionalAccess
-		// In that case, we combine the cast with this MemberAccess
+		// Check if there's a Cast immediately following this part
+		// Combine it with the current MemberAccess variable declaration
 		Cast? followingCast = null;
 		if (i + 1 < pathList.Count && pathList[i + 1] is Cast cast)
 		{
-			// Only combine if the part after the cast is NOT a ConditionalAccess
-			// (If it's a ConditionalAccess, the cast will be handled separately above)
-			if (i + 2 >= pathList.Count || !(pathList[i + 2] is ConditionalAccess))
-			{
-				followingCast = cast;
-			}
+			followingCast = cast;
 		}
 
 		// Check if there's a subsequent handler part (skipping over casts)
@@ -500,10 +495,12 @@ public static class BindingCodeWriter
 						? $"({memberExpression} as {targetType.GlobalName}?)"
 						: $"({memberExpression} as {targetType.GlobalName})";
 					afterCast = true;  // Next access needs conditional access
+					i++; // Skip the Cast part, it's been combined with this MemberAccess
 				}
 				else
 				{
 					nextExpression = memberExpression;
+					bool wasConditionalAccess = useConditionalAccess || afterCast;
 					afterCast = false;
 					
 					// Determine if subsequent accesses need conditional access (?.)
@@ -515,6 +512,17 @@ public static class BindingCodeWriter
 					else if (innerPart is IndexAccess)
 					{
 						useConditionalAccess = true;
+					}
+					else if (wasConditionalAccess)
+					{
+						// After conditional access (?.), the result can be null
+						// (value types become Nullable<T>, references become nullable)
+						// so subsequent accesses also need ?.
+						useConditionalAccess = true;
+					}
+					else
+					{
+						useConditionalAccess = false;
 					}
 				}
 				
