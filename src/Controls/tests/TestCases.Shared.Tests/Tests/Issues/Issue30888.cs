@@ -14,8 +14,7 @@ public class Issue30888 : _IssuesUITest
 
     [Test]
     [Category(UITestCategories.FlyoutPage)]
-    [Category(UITestCategories.ToolbarItem)]
-    public void VerifyFlyoutPageToolbarItemsRenderOnIOS()
+    public void VerifyFlyoutPageToolbarItemsRender()
     {
         App.WaitForElement("DetailContent");
         VerifyScreenshot();

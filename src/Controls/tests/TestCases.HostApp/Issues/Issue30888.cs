@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 30888, "Flyout page toolbar items not rendered on iOS", PlatformAffected.iOS)]
+[Issue(IssueTracker.Github, 30888, "Flyout page toolbar items not rendered on iOS", PlatformAffected.iOS | PlatformAffected.macOS)]
 public class Issue30888 : TestFlyoutPage
 {
 	protected override void Init()
