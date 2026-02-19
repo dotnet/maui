@@ -75,6 +75,8 @@ namespace Microsoft.Maui.Platform
 		{
 			if (view is UIScrollView scrollView)
 			{
+				// ContentOffset.Y < 0 means the scroll view is mid-pull (being dragged down for refresh).
+				// Adjusting the offset here would fight the  bail out early.gesture 
 				if (scrollView.ContentOffset.Y < 0)
 					return true;
 
@@ -106,17 +108,13 @@ namespace Microsoft.Maui.Platform
 
 		void StoreCurrentScrollPosition()
 		{
-			// Store the current scroll position from the refresh control parent
+			// _refreshControlParent is set to the innermost UIScrollView by TryInsertRefresh.
+    		// If it's not a UIScrollView (unexpected), we leave _originalY as-is.
 			if (_refreshControlParent is UIScrollView scrollView)
 			{
-				if (scrollView.ContentSize.Height <= scrollView.Bounds.Height)
-				{
-					_originalY = 0; // Stay at top
-				}
-				else
-				{
-					_originalY = scrollView.ContentOffset.Y;
-				}
+				// If content fits entirely in the viewport, the offset is always 0.
+				// Explicitly setting it here avoids capturing any floating-point noise.
+				_originalY = (scrollView.ContentSize.Height <= scrollView.Bounds.Height) ? 0 : scrollView.ContentOffset.Y;
 			}
 		}
 
