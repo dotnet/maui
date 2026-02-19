@@ -18,12 +18,12 @@ internal class MauiMaterialTimePicker : TextInputEditText, IOnClickListener
         Initialize();
     }
 
-    public MauiMaterialTimePicker(Context context, IAttributeSet? attrs) : base(context, attrs)
+    public MauiMaterialTimePicker(Context context, IAttributeSet? attrs) : base(MauiMaterialContextThemeWrapper.Create(context), attrs)
     {
         Initialize();
     }
 
-    public MauiMaterialTimePicker(Context context, IAttributeSet? attrs, int defStyleAttr) : base(context, attrs, defStyleAttr)
+    public MauiMaterialTimePicker(Context context, IAttributeSet? attrs, int defStyleAttr) : base(MauiMaterialContextThemeWrapper.Create(context), attrs, defStyleAttr)
     {
         Initialize();
     }

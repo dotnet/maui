@@ -140,7 +140,12 @@ internal partial class TimePickerHandler2 : ViewHandler<ITimePicker, MauiMateria
         var minute = time?.Minutes ?? 0;
 
         _dialog = CreateTimePickerDialog(hour, minute);
-        _dialog?.Show(fragmentManager, "MaterialTimePicker");
+        if (_dialog is null)
+        {
+            return;
+        }
+
+        _dialog.Show(fragmentManager, "MaterialTimePicker");
 
         UpdateIsOpenState(true);
     }
@@ -170,15 +175,15 @@ internal partial class TimePickerHandler2 : ViewHandler<ITimePicker, MauiMateria
 
     public static void MapIsOpen(TimePickerHandler2 handler, ITimePicker picker)
     {
-        if (handler.IsConnected() && handler is TimePickerHandler2 timePickerHandler && !timePickerHandler._isUpdatingIsOpen)
+        if (handler.IsConnected() && !handler._isUpdatingIsOpen)
         {
             if (picker.IsOpen)
             {
-                timePickerHandler.ShowPickerDialog();
+                handler.ShowPickerDialog();
             }
             else
             {
-                timePickerHandler.HidePickerDialog();
+                handler.HidePickerDialog();
             }
         }
     }
