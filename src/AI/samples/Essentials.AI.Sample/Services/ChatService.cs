@@ -164,7 +164,7 @@ public class ChatService
 		if (landmark is null)
 			return $"Landmark '{landmarkName}' not found in the app database. Available landmarks can be found with search_landmarks or list_landmarks_by_continent.";
 
-		var dateOnly = DateOnly.FromDateTime(date.LocalDateTime);
+		var dateOnly = DateOnly.FromDateTime(date.DateTime);
 		var today = DateOnly.FromDateTime(DateTime.Now);
 
 		if (dateOnly < today)
@@ -217,7 +217,7 @@ public class ChatService
 		if (landmark is null)
 			return $"Landmark '{landmarkName}' not found. Try searching with search_landmarks first.";
 
-		NavigateToTripRequested?.Invoke(landmark);
+		MainThread.BeginInvokeOnMainThread(() => NavigateToTripRequested?.Invoke(landmark));
 		return $"Navigating to trip planner for {landmark.Name}! A multi-day itinerary will be generated for you.";
 	}
 

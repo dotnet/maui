@@ -64,9 +64,11 @@ public class MarkdownConverter : IValueConverter
 			else
 			{
 				// Fallback: render block as plain text
+				var start = Math.Min(block.Span.Start, text.Length);
+				var length = Math.Min(block.Span.Length, text.Length - start);
 				var plainText = block.GetType().Name == "FencedCodeBlock" || block.GetType().Name == "CodeBlock"
 					? GetCodeBlockText(block)
-					: text.Substring(block.Span.Start, block.Span.Length);
+					: text.Substring(start, length);
 				formatted.Spans.Add(new Span
 				{
 					Text = plainText,
