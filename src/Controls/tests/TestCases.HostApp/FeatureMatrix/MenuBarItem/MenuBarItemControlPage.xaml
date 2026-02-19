@@ -13,17 +13,14 @@
                      <MenuFlyoutItem Text="{Binding ExitText}"
                                      IsEnabled="{Binding ExitEnabled}"
                                      IconImageSource="{Binding ExitIcon}"
-                                     Command="{Binding ExitCommand}"
-                                     AutomationId="ExitMenuFlyoutItem"/>
+                                     Command="{Binding ExitCommand}"/>
               </MenuBarItem>
 
               <MenuBarItem Text="{Binding LocationsMenuText}"
-                           IsEnabled="{Binding LocationsMenuEnabled}"
-                           AutomationId="LocationsMenuBarItem">
+                           IsEnabled="{Binding LocationsMenuEnabled}">
                      <MenuFlyoutSubItem x:Name="ChangeLocationSubItem"
                                         Text="{Binding ChangeLocationText}"
-                                        IsEnabled="{Binding ChangeLocationEnabled}"
-                                        AutomationId="ChangeLocationMenuFlyoutSubItem">
+                                        IsEnabled="{Binding ChangeLocationEnabled}">
                             <!-- Location items will be populated dynamically from code-behind -->
                      </MenuFlyoutSubItem>
                      <MenuFlyoutSeparator/>
@@ -33,12 +30,10 @@
                                      AutomationId="AddLocationMenuFlyoutItem"/>
                      <MenuFlyoutItem Text="{Binding EditLocationText}"
                                      IsEnabled="{Binding EditLocationEnabled}"
-                                     Command="{Binding EditLocationCommand}"
-                                     AutomationId="EditLocationMenuFlyoutItem"/>
+                                     Command="{Binding EditLocationCommand}"/>
                      <MenuFlyoutItem Text="{Binding RemoveLocationText}"
                                      IsEnabled="{Binding RemoveLocationEnabled}"
-                                     Command="{Binding RemoveLocationCommand}"
-                                     AutomationId="RemoveLocationMenuFlyoutItem"/>
+                                     Command="{Binding RemoveLocationCommand}"/>
               </MenuBarItem>
 
               <MenuBarItem Text="{Binding ViewMenuText}"
@@ -46,27 +41,23 @@
                      <MenuFlyoutItem Text="{Binding RefreshText}"
                                      IsEnabled="{Binding RefreshEnabled}"
                                      IconImageSource="{Binding RefreshIcon}"
-                                     Command="{Binding RefreshCommand}"
-                                     AutomationId="RefreshMenuFlyoutItem"/>
+                                     Command="{Binding RefreshCommand}"/>
               </MenuBarItem>
 
               <MenuBarItem Text="MediaMenuBar">
-                     <MenuFlyoutItem Text="Play"
-                                     AutomationId="PlayMenuFlyoutItem">
+                     <MenuFlyoutItem Text="Play">
                             <MenuFlyoutItem.IconImageSource>
                                    <FontImageSource Glyph="&#x25B6;"
                                                     FontFamily="Arial"/>
                             </MenuFlyoutItem.IconImageSource>
                      </MenuFlyoutItem>
-                     <MenuFlyoutItem Text="Pause"
-                                     AutomationId="PauseMenuFlyoutItem">
+                     <MenuFlyoutItem Text="Pause">
                             <MenuFlyoutItem.IconImageSource>
                                    <FontImageSource Glyph="&#x23F8;"
                                                     FontFamily="Arial"/>
                             </MenuFlyoutItem.IconImageSource>
                      </MenuFlyoutItem>
-                     <MenuFlyoutItem Text="Stop"
-                                     AutomationId="StopMenuFlyoutItem">
+                     <MenuFlyoutItem Text="Stop">
                             <MenuFlyoutItem.IconImageSource>
                                    <FontImageSource Glyph="&#x23F9;"
                                                     FontFamily="Arial"/>
@@ -181,7 +172,6 @@
                                                                  Spacing="8">
                                                  <Label Text="{Binding ViewMenuEnabled, StringFormat='Enabled: {0}'}"
                                                         FontSize="12"
-                                                        AutomationId="ViewMenuEnabledLabel"
                                                         VerticalOptions="Center"/>
                                                  <Switch IsToggled="{Binding ViewMenuEnabled}"
                                                          VerticalOptions="Center"
@@ -199,8 +189,7 @@
                             <VerticalStackLayout Spacing="12">
                                    <Label Text="Available Locations"
                                           FontSize="18"
-                                          FontAttributes="Bold"
-                                          AutomationId="AvailableLocationsLabel"/>
+                                          FontAttributes="Bold"/>
 
                                    <CollectionView x:Name="LocationsCollectionView"
                                                    ItemsSource="{Binding Locations}"
@@ -217,8 +206,7 @@
                                                                <Label Grid.Column="1"
                                                                       Text="{Binding Name}"
                                                                       FontSize="15"
-                                                                      VerticalOptions="Center"
-                                                                      AutomationId="{Binding Id, StringFormat='LocationLabel_{0}'}"/>
+                                                                      VerticalOptions="Center"/>
                                                         </Grid>
                                                  </DataTemplate>
                                           </CollectionView.ItemTemplate>
