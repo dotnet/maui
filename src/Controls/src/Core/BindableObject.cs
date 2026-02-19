@@ -363,7 +363,10 @@ namespace Microsoft.Maui.Controls
 			}
 			else
 			{
-				bindable._inheritedContext = new WeakReference(value);
+				if (bindable._inheritedContext is not null)
+					bindable._inheritedContext.Target = value;
+				else
+					bindable._inheritedContext = new WeakReference(value);
 				bindable.ApplyBindings(fromBindingContextChanged: true);
 				bindable.OnBindingContextChanged();
 			}
@@ -692,11 +695,9 @@ namespace Microsoft.Maui.Controls
 
 		void ApplyBindings(bool fromBindingContextChanged)
 		{
-			var prop = _properties.Values.ToArray();
-
-			for (int i = 0, propLength = prop.Length; i < propLength; i++)
+			foreach (var kvp in _properties)
 			{
-				BindablePropertyContext context = prop[i];
+				BindablePropertyContext context = kvp.Value;
 				if (ReferenceEquals(context.Property, BindingContextProperty))
 				{
 					// BindingContextProperty Binding is handled separately within SetInheritedBindingContext
