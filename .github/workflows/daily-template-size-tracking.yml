@@ -404,29 +404,21 @@ jobs:
             }
 
             "ios" {
-              # iOS publish requires device RID + code signing.
-              # Use dotnet build instead — produces .app in bin/ without signing.
-              Write-Host "Building iOS (unsigned, build-only)..."
-              dotnet build $projectFile.FullName `
+              # iOS publish blocks simulator RIDs and requires device signing.
+              # Use dotnet publish with BuildIpa=false + CodesignKey=- (ad-hoc signing)
+              # to skip IPA creation and avoid needing Apple certificates.
+              Write-Host "Building iOS with ad-hoc signing..."
+              dotnet publish $projectFile.FullName `
                 -f $framework `
                 -c Release `
                 -p:RuntimeIdentifier=$rid `
                 -p:_RequireCodeSigning=false `
+                -p:EnableCodeSigning=false `
+                -p:CodesignKey="-" `
+                -p:BuildIpa=false `
                 -p:ValidateXcodeVersion=false `
+                -o publish `
                 /bl:build.binlog
-
-              # Copy .app bundle to publish/ for consistent measurement
-              $binPath = Join-Path $projectPath "bin/Release/$framework/$rid"
-              $appBundle = Get-ChildItem -Path $binPath -Filter "*.app" -Recurse -Directory | Select-Object -First 1
-              if ($appBundle) {
-                New-Item -ItemType Directory -Path "publish" -Force | Out-Null
-                Copy-Item -Path $appBundle.FullName -Destination "publish/" -Recurse
-                Write-Host "Copied $($appBundle.Name) to publish/"
-              } else {
-                Write-Host "Warning: No .app bundle found in $binPath"
-                # List what's there for debugging
-                Get-ChildItem -Path $binPath -Recurse | Select-Object -First 20
-              }
             }
 
             "maccatalyst" {
@@ -493,13 +485,13 @@ jobs:
                   -o publish `
                   /bl:build.binlog
               } else {
-                # Framework-dependent publish (Mono.win-x64 runtime may not be
-                # available on public NuGet for preview .NET versions)
+                # Framework-dependent publish without explicit RID.
+                # Specifying -r win-x64 forces self-contained which needs
+                # Mono.win-x64 runtime package (not available for .NET 10 GA).
                 Write-Host "Building Windows unpackaged (framework-dependent)..."
                 dotnet publish $projectFile.FullName `
                   -f $framework `
                   -c Release `
-                  -r $rid `
                   -p:WindowsPackageType=None `
                   -o publish `
                   /bl:build.binlog
