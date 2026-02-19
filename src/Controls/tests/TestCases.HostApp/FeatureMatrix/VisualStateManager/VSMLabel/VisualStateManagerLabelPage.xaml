@@ -38,7 +38,7 @@
                                         Property="Label.FontAttributes"
                                         Value="Bold"/>
                                 <Setter Property="Scale"
-                                        Value="1.5"/>
+                                        Value="1.3"/>
                             </VisualState.Setters>
                         </VisualState>
                         <VisualState x:Name="Disabled">

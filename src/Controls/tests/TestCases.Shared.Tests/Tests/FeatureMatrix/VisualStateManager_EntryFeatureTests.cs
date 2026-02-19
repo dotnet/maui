@@ -311,7 +311,7 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 		Assert.That(stateText, Is.EqualTo("State: Valid"));
 		App.WaitForElement("ValidateEntryButton");
 		App.Tap("ValidateEntryButton");
-		App.EnterText("ValidationEntry", "Invalid");
+		App.EnterText("ValidationEntry", "6789-456-1234");
 #if ANDROID || IOS
 		if (App.WaitForKeyboardToShow())
 			App.DismissKeyboard();

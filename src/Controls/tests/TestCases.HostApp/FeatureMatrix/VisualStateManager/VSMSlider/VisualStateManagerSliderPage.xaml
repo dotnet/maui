@@ -47,7 +47,7 @@
                                 <Setter Property="MaximumTrackColor"
                                         Value="#86EFAC"/>
                                 <Setter Property="Scale"
-                                        Value="1.5"/>
+                                        Value="1.25"/>
                             </VisualState.Setters>
                         </VisualState>
                     </VisualStateGroup>

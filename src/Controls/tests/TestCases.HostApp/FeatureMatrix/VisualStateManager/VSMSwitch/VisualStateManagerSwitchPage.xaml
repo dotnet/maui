@@ -55,7 +55,7 @@
 
             <VerticalStackLayout Padding="12" Spacing="8">
                 <Label Text="Switch States (On / Off / Disabled)" FontAttributes="Bold" />
-                <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
+                <HorizontalStackLayout Spacing="20" VerticalOptions="Center">
                     <Switch x:Name="VSMSwitch" AutomationId="VSMSwitch" Style="{StaticResource VsmSwitchStyle}" Toggled="OnSwitchToggled" />
                     <Label x:Name="SwitchState" AutomationId="SwitchState" Text="State: Off" VerticalOptions="Center" />
                 </HorizontalStackLayout>

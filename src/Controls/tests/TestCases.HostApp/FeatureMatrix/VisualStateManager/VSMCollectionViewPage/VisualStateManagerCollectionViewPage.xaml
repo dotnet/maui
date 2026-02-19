@@ -73,7 +73,7 @@
                              Spacing="12">
                 <Label Text="VisualStateManager Feature Matrix"
                        FontSize="20"/>
-                <BoxView HeightRequest="200"/>
+                <BoxView HeightRequest="150"/>
                 <Label Text="CollectionView States (Normal / PointerOver / Selected / Disabled)"
                        FontAttributes="Bold"/>
 
