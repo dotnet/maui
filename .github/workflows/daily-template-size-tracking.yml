@@ -229,9 +229,15 @@ jobs:
 
       - name: Setup Xcode (for iOS/MacCatalyst)
         if: matrix.platform == 'ios' || matrix.platform == 'maccatalyst'
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: latest-stable
+        shell: bash
+        run: |
+          # Select latest stable Xcode available on the runner
+          LATEST_XCODE=$(ls -d /Applications/Xcode*.app 2>/dev/null | sort -V | tail -1)
+          if [ -n "$LATEST_XCODE" ]; then
+            echo "Selecting Xcode: $LATEST_XCODE"
+            sudo xcode-select -s "$LATEST_XCODE/Contents/Developer"
+          fi
+          xcodebuild -version
 
       - name: Setup Java (for Android)
         if: matrix.platform == 'android'
