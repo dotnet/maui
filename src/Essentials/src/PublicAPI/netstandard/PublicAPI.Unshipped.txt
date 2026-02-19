@@ -1,1 +1,7 @@
 #nullable enable
+Microsoft.Maui.Devices.Sensors.LocationTypeConverter
+Microsoft.Maui.Devices.Sensors.LocationTypeConverter.LocationTypeConverter() -> void
+~override Microsoft.Maui.Devices.Sensors.LocationTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type sourceType) -> bool
+override Microsoft.Maui.Devices.Sensors.LocationTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
+~override Microsoft.Maui.Devices.Sensors.LocationTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object value) -> object?
+~override Microsoft.Maui.Devices.Sensors.LocationTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type destinationType) -> object?
