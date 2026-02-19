@@ -28,7 +28,6 @@ public class Issue6878 : TestShell
 
 		CurrentItem = Items.Last();
 
-		AddTopTab(TopTab);
 		AddBottomTab("Bottom tab");
 	}
 

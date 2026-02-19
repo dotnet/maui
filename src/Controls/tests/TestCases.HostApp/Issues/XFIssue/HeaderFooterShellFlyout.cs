@@ -75,8 +75,7 @@ public class HeaderFooterShellFlyout : TestShell
 
 					FlyoutFooter = new StackLayout()
 					{
-						// Problem with footer rendering when orientation is configured on iOS. Related issue: https://github.com/dotnet/maui/issues/26395 
-						// Orientation = StackOrientation.Horizontal,
+						Orientation = StackOrientation.Horizontal,
 						Children = {
 							new Label() { Text = "Footer" }
 						},

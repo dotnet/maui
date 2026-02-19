@@ -318,7 +318,7 @@ git diff | Set-Content "$OUTPUT_DIR/fix.diff"
 
 ```bash
 pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore
-git checkout -- .
+git checkout HEAD -- .
 ```
 
 ### Step 9: Report Results
@@ -343,11 +343,11 @@ Provide structured output to the invoker:
 [The actual changes made]
 ```
 
-**Exhausted:** Yes/No
-**Reasoning:** [Why you believe there are/aren't more viable approaches]
+**This Attempt's Status:** Done/NeedsRetry
+**Reasoning:** [Why this specific approach succeeded or failed]
 ```
 
-**Determining Exhaustion:** Set `exhausted=true` when you've tried the same fundamental approach multiple times, all hints have been explored, failure analysis reveals the problem is outside target files, or no new ideas remain. Set `exhausted=false` when this is the first attempt, failure analysis suggests a different approach, hints remain unexplored, or the approach was close but needs refinement.
+**Determining Status:** Set `Done` when you've completed testing this approach (whether it passed or failed). Set `NeedsRetry` only if you hit a transient error (network timeout, flaky test) and want to retry the same approach.
 
 ### Step 10: Update State File (if provided)
 
@@ -361,15 +361,13 @@ If `state_file` input was provided and file exists:
 |---|--------|----------|-------------|---------------|-------|
 | N | try-fix #N | [approach] | ✅ PASS / ❌ FAIL | [files] | [analysis] |
 
-4. **Set exhausted status** based on your determination above
-5. **Commit state file:**
-```bash
-git add "$STATE_FILE" && git commit -m "try-fix: attempt #N (exhausted=$EXHAUSTED)"
-```
-
 **If no state file provided:** Skip this step (results returned to invoker only).
 
-**Ownership rule:** try-fix updates its own row AND the exhausted field. Never modify:
+**⚠️ Do NOT `git add` or `git commit` the state file.** It lives in `CustomAgentLogsTmp/` which is `.gitignore`d. Committing it with `git add -f` would cause `git checkout HEAD -- .` (used between phases) to revert it, losing data.
+
+**⚠️ IMPORTANT: Do NOT set any "Exhausted" field.** Cross-pollination exhaustion is determined by the pr agent after invoking ALL 6 models and confirming none have new ideas. try-fix only reports its own attempt result.
+
+**Ownership rule:** try-fix updates its own row ONLY. Never modify:
 - Phase status fields
 - "Selected Fix" field
 - Other try-fix rows
@@ -382,7 +380,7 @@ git add "$STATE_FILE" && git commit -m "try-fix: attempt #N (exhausted=$EXHAUSTE
 | Test command fails to run | Report build/setup error with details |
 | Test times out | Report timeout, include partial output |
 | Can't determine fix approach | Report "no viable approach identified" with reasoning |
-| Git state unrecoverable | Run `git checkout -- .` and `git clean -fd` if needed |
+| Git state unrecoverable | Run `git checkout HEAD -- .` and `git clean -fd` if needed |
 
 ---
 

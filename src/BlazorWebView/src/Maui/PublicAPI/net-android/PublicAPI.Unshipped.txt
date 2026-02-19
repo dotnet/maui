@@ -1,1 +1,2 @@
 #nullable enable
+override Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler.ConnectHandler(Android.Webkit.WebView! platformView) -> void

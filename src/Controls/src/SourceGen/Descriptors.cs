@@ -260,6 +260,71 @@ namespace Microsoft.Maui.Controls.SourceGen
 			defaultSeverity: DiagnosticSeverity.Warning,
 			isEnabledByDefault: true);
 
+		// C# Expressions
+		public static DiagnosticDescriptor AmbiguousExpressionOrMarkup = new DiagnosticDescriptor(
+			id: "MAUIX2007",
+			title: "Ambiguous expression or markup extension",
+			messageFormat: "'{0}' is ambiguous - both a property '{0}' and markup extension '{0}Extension' exist. Use '{{= {0}}}' for the property or '{{local:{0}}}' for the markup extension.",
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Warning,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor AmbiguousMemberExpression = new DiagnosticDescriptor(
+			id: "MAUIX2008",
+			title: "Ambiguous member reference in expression",
+			messageFormat: "'{0}' exists on both '{1}' and '{2}'. Use 'this.{0}' for the local member or '.{0}' for the binding.",
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor MemberNotFound = new DiagnosticDescriptor(
+			id: "MAUIX2009",
+			title: "Member not found in expression",
+			messageFormat: "'{0}' not found on '{1}' or '{2}'.",
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor AmbiguousMemberWithStaticType = new DiagnosticDescriptor(
+			id: "MAUIX2011",
+			title: "Member name conflicts with static type",
+			messageFormat: "'{0}' exists on '{1}' but is also a well-known static type. Use '.{0}' for the binding or fully qualify the static type (e.g., 'System.{0}').",
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Warning,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor ExpressionNotSettable = new DiagnosticDescriptor(
+			id: "MAUIX2010",
+			title: "Expression cannot be used for two-way binding",
+			messageFormat: "Expression '{0}' cannot generate a setter. Two-way binding to '{1}' will be one-way.",
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Info,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor CSharpExpressionsRequirePreviewFeatures = new DiagnosticDescriptor(
+			id: "MAUIX2012",
+			title: "C# Expressions require EnablePreviewFeatures",
+			messageFormat: "XAML C# Expressions are an experimental feature. Add '<EnablePreviewFeatures>true</EnablePreviewFeatures>' to your project file to enable them.",
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor AsyncLambdaNotSupported = new DiagnosticDescriptor(
+			id: "MAUIX2013",
+			title: "Async lambda event handlers are not supported",
+			messageFormat: "Async lambda event handlers are not supported. Use a regular method for async event handling.",
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor MissingEventHandler = new DiagnosticDescriptor(
+			id: "MAUIX2014",
+			title: new LocalizableResourceString(nameof(MauiGResources.MissingEventHandlerTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.MissingEventHandler), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlInflation",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
 		// public static BuildExceptionCode TypeResolution = new BuildExceptionCode("XC", 0000, nameof(TypeResolution), "");
 		// public static BuildExceptionCode PropertyResolution = new BuildExceptionCode("XC", 0001, nameof(PropertyResolution), "");
 		// public static BuildExceptionCode MissingEventHandler = new BuildExceptionCode("XC", 0002, nameof(MissingEventHandler), "");

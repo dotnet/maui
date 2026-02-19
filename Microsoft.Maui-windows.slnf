@@ -2,6 +2,11 @@
   "solution": {
     "path": "Microsoft.Maui-dev.sln",
     "projects": [
+      "src\\AI\\samples\\Essentials.AI.Sample\\Essentials.AI.Sample.csproj",
+      "src\\AI\\src\\Essentials.AI\\Essentials.AI.csproj",
+      "src\\AI\\tests\\Essentials.AI.Benchmarks\\Essentials.AI.Benchmarks.csproj",
+      "src\\AI\\tests\\Essentials.AI.DeviceTests\\Essentials.AI.DeviceTests.csproj",
+      "src\\AI\\tests\\Essentials.AI.UnitTests\\Essentials.AI.UnitTests.csproj",
       "src\\BlazorWebView\\samples\\BlazorWinFormsApp\\BlazorWinFormsApp.csproj",
       "src\\BlazorWebView\\samples\\BlazorWpfApp\\BlazorWpfApp.csproj",
       "src\\BlazorWebView\\samples\\MauiRazorClassLibrarySample\\MauiRazorClassLibrarySample.csproj",
