@@ -17,15 +17,17 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$dotnetVersions = $DotNetVersions.Split(',') | ForEach-Object { $_.Trim() }
-$templates = $Templates.Split(',') | ForEach-Object { $_.Trim() }
+# Use different variable names to avoid PowerShell's case-insensitive
+# variable collision with the [string]-typed parameters above.
+[array]$versions = $DotNetVersions.Split(',') | ForEach-Object { $_.Trim() }
+[array]$templateList = $Templates.Split(',') | ForEach-Object { $_.Trim() }
 
 $matrix = @{
     include = @()
 }
 
-foreach ($dotnet in $dotnetVersions) {
-    foreach ($template in $templates) {
+foreach ($dotnet in $versions) {
+    foreach ($template in $templateList) {
         # Android
         $matrix.include += @{
             description = 'android'
