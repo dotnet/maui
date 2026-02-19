@@ -642,16 +642,14 @@ internal struct CompiledBindingMarkup
 		int varIndex = 0;
 		bool forceConditionalAccessToNextPart = false;
 		
-		foreach (var part in binding.Path)
+		var pathList = binding.Path.ToList();
+		for (int i = 0; i < pathList.Count; i++)
 		{
+			var part = pathList[i];
 			var previousVar = currentVar;
 			var wrappedPart = MaybeWrapInConditionalAccess(part, forceConditionalAccessToNextPart);
 			var nextExpression = AccessExpressionBuilder.ExtendExpression(previousVar, wrappedPart);
 			forceConditionalAccessToNextPart = part is Cast;
-
-			// Create a variable for the next expression to avoid re-evaluating
-			var nextVar = $"p{varIndex++}";
-			statements.Add($"var {nextVar} = {nextExpression};");
 
 			// Make binding react for PropertyChanged events on indexer itself
 			// If we know for certain it implements INPC, generate the yield directly
@@ -765,7 +763,13 @@ internal struct CompiledBindingMarkup
 				}
 			}
 
-			currentVar = nextVar;
+			// Only create a variable for the next expression if a subsequent part will yield a handler
+			if (HasSubsequentHandlerPart(pathList, i + 1))
+			{
+				var nextVar = $"p{varIndex++}";
+				statements.Add($"var {nextVar} = {nextExpression};");
+				currentVar = nextVar;
+			}
 		}
 
 		// If no handlers were generated, don't generate the function
@@ -804,6 +808,35 @@ internal struct CompiledBindingMarkup
 				MemberAccess memberAccess => new ConditionalAccess(memberAccess),
 				IndexAccess indexAccess => new ConditionalAccess(indexAccess),
 				_ => part,
+			};
+		}
+
+		static bool HasSubsequentHandlerPart(List<IPathPart> pathList, int startIndex)
+		{
+			for (int j = startIndex; j < pathList.Count; j++)
+			{
+				var nextPart = pathList[j];
+				if (nextPart is Cast)
+				{
+					continue;
+				}
+				if (WillYieldHandler(nextPart))
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+
+		static bool WillYieldHandler(IPathPart part)
+		{
+			return part switch
+			{
+				MemberAccess m => m.DefinitelyImplementsINPC || m.MaybeImplementsINPC,
+				IndexAccess i => i.DefinitelyImplementsINPC || i.MaybeImplementsINPC,
+				ConditionalAccess { Part: MemberAccess m } => m.DefinitelyImplementsINPC || m.MaybeImplementsINPC,
+				ConditionalAccess { Part: IndexAccess i } => i.DefinitelyImplementsINPC || i.MaybeImplementsINPC,
+				_ => false,
 			};
 		}
 	}

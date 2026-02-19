@@ -129,12 +129,21 @@ public partial class TestPage
 				}
 			};
 
-			var handlersCount = 0;
+			var handlersCount = 2;
+
+			static global::System.Collections.Generic.IEnumerable<global::System.ValueTuple<global::System.ComponentModel.INotifyPropertyChanged?, string>> GetHandlers(global::Test.TestPage source)
+			{
+				yield return (source, "Foo");
+				var p0 = source.Foo;
+				if (p0 is global::System.ComponentModel.INotifyPropertyChanged p1)
+					yield return (p1, "Bar");
+			}
+
 			return new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::Test.TestPage, string>(
 				getter: source => (source.Foo.Bar.Title, true),
 				setter,
 				handlersCount,
-				null)
+				GetHandlers)
 			{
 				Mode = extension.Mode,
 			};
@@ -264,12 +273,21 @@ public partial class TestPage
 				}
 			};
 			
-			var handlersCount = 0;
+			var handlersCount = 2;
+
+			static global::System.Collections.Generic.IEnumerable<global::System.ValueTuple<global::System.ComponentModel.INotifyPropertyChanged?, string>> GetHandlers(global::Test.TestPage source)
+			{
+				yield return (source, "Product");
+				var p0 = source.Product;
+				if (p0 is global::System.ComponentModel.INotifyPropertyChanged p1)
+					yield return (p1, "Size");
+			}
+
 			return new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::Test.TestPage, int>(
 				getter: source => (source.Product?.Size ?? default, true),
 				setter,
 				handlersCount,
-				null);
+				GetHandlers);
 		}
 	}
 }
@@ -426,12 +444,21 @@ public partial class TestPage
 				}
 			};
 			
-			var handlersCount = 0;
+			var handlersCount = 2;
+
+			static global::System.Collections.Generic.IEnumerable<global::System.ValueTuple<global::System.ComponentModel.INotifyPropertyChanged?, string>> GetHandlers(global::Test.TestPage source)
+			{
+				yield return (source, "Product");
+				var p0 = source.Product;
+				if (p0 is global::System.ComponentModel.INotifyPropertyChanged p1)
+					yield return (p1, "Name");
+			}
+
 			return new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::Test.TestPage, string?>(
 				getter: source => (source.Product?.Name, true),
 				setter,
 				handlersCount,
-				null);
+				GetHandlers);
 		}
 	}
 }
@@ -678,12 +705,21 @@ public partial class TestPage
 				}
 			};
 
-			var handlersCount = 0;
+			var handlersCount = 2;
+
+			static global::System.Collections.Generic.IEnumerable<global::System.ValueTuple<global::System.ComponentModel.INotifyPropertyChanged?, string>> GetHandlers(global::Test.TestPage source)
+			{
+				yield return (source, "CurrentPerson");
+				var p0 = source.CurrentPerson;
+				if (p0 is global::System.ComponentModel.INotifyPropertyChanged p1)
+					yield return (p1, "Id");
+			}
+
 			return new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::Test.TestPage, int>(
 				getter: source => (source.CurrentPerson?.Id ?? extension.TargetNullValue as int? ?? default, true),
 				setter,
 				handlersCount,
-				null)
+				GetHandlers)
 			{
 				TargetNullValue = extension.TargetNullValue,
 			};

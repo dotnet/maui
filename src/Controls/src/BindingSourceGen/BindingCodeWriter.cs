@@ -532,25 +532,6 @@ public static class BindingCodeWriter
 			}
 		}
 
-		// Check if any part after startIndex will yield a handler (has a property name)
-		// Note: We don't filter by INPC because the original code generates handlers for ALL parts
-		static bool HasSubsequentHandlerPart(List<IPathPart> pathList, int startIndex)
-		{
-			for (int j = startIndex; j < pathList.Count; j++)
-			{
-				var nextPart = pathList[j];
-				if (nextPart is Cast)
-				{
-					continue;
-				}
-				if (GetPropertyName(nextPart) != null)
-				{
-					return true;
-				}
-			}
-			return false;
-		}
-
 		// If no handlers were generated, don't generate the function
 		if (handlersCount == 0)
 		{
@@ -577,15 +558,6 @@ public static class BindingCodeWriter
 		AppendBlankLine();
 
 		return handlersCount;
-
-		static string? GetPropertyName(IPathPart part) => part switch
-		{
-			MemberAccess memberAccess => memberAccess.PropertyName,
-			IndexAccess indexAccess => indexAccess.DefaultMemberName,
-			ConditionalAccess { Part: MemberAccess innerMember } => innerMember.PropertyName,
-			ConditionalAccess { Part: IndexAccess innerIndex } => innerIndex.DefaultMemberName,
-			_ => null, // Casts don't have property names
-		};
 
 		static string BuildNextExpression(string currentVar, IPathPart part, bool useConditionalAccess)
 		{
@@ -651,7 +623,49 @@ public static class BindingCodeWriter
 			Append('}');
 		}
 
-		private void AppendUnsafeAccessors(BindingInvocationDescription binding)
+		/// <summary>
+	/// Checks if any part after startIndex will yield a handler.
+	/// A part yields a handler only if it has a property name AND its containing type implements or maybe implements INPC.
+	/// </summary>
+	private static bool HasSubsequentHandlerPart(List<IPathPart> pathList, int startIndex)
+	{
+		for (int j = startIndex; j < pathList.Count; j++)
+		{
+			var nextPart = pathList[j];
+			if (nextPart is Cast)
+			{
+				continue;
+			}
+			if (GetPropertyName(nextPart) != null && WillYieldHandler(nextPart))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private static bool WillYieldHandler(IPathPart part)
+	{
+		return part switch
+		{
+			MemberAccess m => m.DefinitelyImplementsINPC || m.MaybeImplementsINPC,
+			IndexAccess i => i.DefinitelyImplementsINPC || i.MaybeImplementsINPC,
+			ConditionalAccess { Part: MemberAccess m } => m.DefinitelyImplementsINPC || m.MaybeImplementsINPC,
+			ConditionalAccess { Part: IndexAccess i } => i.DefinitelyImplementsINPC || i.MaybeImplementsINPC,
+			_ => false,
+		};
+	}
+
+	private static string? GetPropertyName(IPathPart part) => part switch
+	{
+		MemberAccess memberAccess => memberAccess.PropertyName,
+		IndexAccess indexAccess => indexAccess.DefaultMemberName,
+		ConditionalAccess { Part: MemberAccess innerMember } => innerMember.PropertyName,
+		ConditionalAccess { Part: IndexAccess innerIndex } => innerIndex.DefaultMemberName,
+		_ => null, // Casts don't have property names
+	};
+
+	private void AppendUnsafeAccessors(BindingInvocationDescription binding)
 		{
 			// Append unsafe accessors as local methods for members with inaccessible accessors
 			var membersWithInaccessibleAccessors = binding.Path.OfType<MemberAccess>().Where(m => m.HasInaccessibleAccessor);
@@ -673,13 +687,16 @@ public static class BindingCodeWriter
 				}
 				else if (member.Kind == AccessorKind.Property)
 				{
+					var pathList = binding.Path.ToList();
+					int memberIndex = pathList.IndexOf(member);
 					bool isLastPart = member.Equals(binding.Path.Last());
 					bool needsGetterForLastPart = binding.RequiresAllUnsafeGetters;
+					bool hasSubsequentHandler = memberIndex >= 0 && HasSubsequentHandlerPart(pathList, memberIndex + 1);
 
-					if (!member.IsGetterAccessible && (!isLastPart || needsGetterForLastPart))
+					if (!member.IsGetterAccessible && (!isLastPart || needsGetterForLastPart) && hasSubsequentHandler)
 					{
-						// we don't need the unsafe getter if the item is the very last part of the path
-						// because we don't need to access its value while constructing the handlers array
+						// we don't need the unsafe getter if no subsequent part yields a handler
+						// because the variable assignment is eliminated as dead code
 						AppendUnsafePropertyGetAccessors(member.MemberName, member.MemberType.GlobalName, member.ContainingType.GlobalName);
 					}
 

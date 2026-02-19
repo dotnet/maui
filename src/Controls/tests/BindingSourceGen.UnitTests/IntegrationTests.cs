@@ -1161,25 +1161,31 @@ public class IntegrationTests
 	public void GenerateBindingWithForcedConditionalAccessAfterCast()
 	{
 		var source = $$"""
+            #nullable disable
+            #pragma warning disable CS0067
             using Microsoft.Maui.Controls;
+            using System.ComponentModel;
             var label = new Label();
             label.SetBinding(Label.TextProperty, static (MyNamespace.A n) => ((MyNamespace.Wrapper)n.X).Wrapped.Y.Value.Length);
 
             namespace MyNamespace
             {
-                public struct A
+                public class A : INotifyPropertyChanged
                 {
+                    public event PropertyChangedEventHandler PropertyChanged;
                     public object X;
                     public B Y;
                 }
 
-                public struct B
+                public class B : INotifyPropertyChanged
                 {
+                    public event PropertyChangedEventHandler PropertyChanged;
                     public string Value;
                 }
 
-                public class Wrapper
+                public class Wrapper : INotifyPropertyChanged
                 {
+                    public event PropertyChangedEventHandler PropertyChanged;
                     public A Wrapped;
                 }
             }
@@ -1228,7 +1234,7 @@ public class IntegrationTests
                     public static void SetBinding{{id}}(
                         this global::Microsoft.Maui.Controls.BindableObject bindableObject,
                         global::Microsoft.Maui.Controls.BindableProperty bindableProperty,
-                        global::System.Func<global::MyNamespace.A, int> getter,
+                        global::System.Func<global::MyNamespace.A?, int> getter,
                         global::Microsoft.Maui.Controls.BindingMode mode = global::Microsoft.Maui.Controls.BindingMode.Default,
                         global::Microsoft.Maui.Controls.IValueConverter? converter = null,
                         object? converterParameter = null,
@@ -1237,7 +1243,7 @@ public class IntegrationTests
                         object? fallbackValue = null,
                         object? targetNullValue = null)
                     {
-                        global::System.Action<global::MyNamespace.A, int>? setter = null;
+                        global::System.Action<global::MyNamespace.A?, int>? setter = null;
                         if (ShouldUseSetter(mode, bindableProperty))
                         {
                             setter = static (source, value) =>
@@ -1246,19 +1252,21 @@ public class IntegrationTests
                             };
                         }
 
-                        static global::System.Collections.Generic.IEnumerable<global::System.ValueTuple<global::System.ComponentModel.INotifyPropertyChanged?, string>> GetHandlers(global::MyNamespace.A source)
+                        static global::System.Collections.Generic.IEnumerable<global::System.ValueTuple<global::System.ComponentModel.INotifyPropertyChanged?, string>> GetHandlers(global::MyNamespace.A? source)
                         {
-                            var p0 = (source.X as global::MyNamespace.Wrapper);
-                            if (p0 is global::System.ComponentModel.INotifyPropertyChanged p1) yield return (p1, "Wrapped");
-                            var p2 = p0?.Wrapped;
-                            var p3 = p2?.Y;
-                            var p4 = p3?.Value;
+                            yield return (source, "X");
+                            var p0 = (source?.X as global::MyNamespace.Wrapper);
+                            yield return (p0, "Wrapped");
+                            var p1 = p0?.Wrapped;
+                            yield return (p1, "Y");
+                            var p2 = p1?.Y;
+                            yield return (p2, "Value");
                         }
 
-                        var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::MyNamespace.A, int>(
+                        var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::MyNamespace.A?, int>(
                             getter: source => (getter(source), true),
                             setter,
-                            handlersCount: 1,
+                            handlersCount: 4,
                             GetHandlers)
                         {
                             Mode = mode,
@@ -1275,7 +1283,7 @@ public class IntegrationTests
                 }
             }
             """,
-			result.GeneratedFiles["Path-To-Program.cs-GeneratedBindingInterceptors-3-7.g.cs"]);
+			result.GeneratedFiles["Path-To-Program.cs-GeneratedBindingInterceptors-6-7.g.cs"]);
 	}
 
 	[Fact]
@@ -1387,7 +1395,6 @@ public class IntegrationTests
                             var p2 = source[12];
                             if (p2 is global::System.ComponentModel.INotifyPropertyChanged p3) yield return (p3, "Indexer");
                             if (p2 is global::System.ComponentModel.INotifyPropertyChanged p4) yield return (p4, "Indexer[Abc]");
-                            var p5 = p2?["Abc"];
                         }
 
                         var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass?>(
@@ -1862,7 +1869,6 @@ public class IntegrationTests
                         static global::System.Collections.Generic.IEnumerable<global::System.ValueTuple<global::System.ComponentModel.INotifyPropertyChanged?, string>> GetHandlers(global::MyNamespace.MySourceClass source)
                         {
                             if (source is global::System.ComponentModel.INotifyPropertyChanged p0) yield return (p0, "Text");
-                            var p1 = GetUnsafeProperty_Text(source);
                         }
 
                         var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::MyNamespace.MySourceClass, int>(
@@ -1881,9 +1887,6 @@ public class IntegrationTests
                         };
 
                         bindableObject.SetBinding(bindableProperty, binding);
-
-                        [global::System.Runtime.CompilerServices.UnsafeAccessor(global::System.Runtime.CompilerServices.UnsafeAccessorKind.Method, Name = "get_Text")]
-                        static extern string GetUnsafeProperty_Text(global::MyNamespace.MySourceClass source);
                     }
                 }
             }
