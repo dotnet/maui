@@ -305,9 +305,16 @@ jobs:
           $dotnetVersion = "${{ matrix.dotnet }}"
           $safePlatform = "${{ matrix.description }}" -replace '-', '_'
           $projectName = "MauiApp_$($template -replace '-', '_')_$safePlatform"
+          $framework = "${{ matrix.framework }}"
 
-          Write-Host "Creating project: dotnet new $template -o $projectName --framework net$dotnetVersion"
-          dotnet new $template -o $projectName --framework net$dotnetVersion
+          # Create project in $HOME to avoid inheriting repo's Directory.Build.props
+          # (which imports Arcade SDK and causes build failures)
+          $buildRoot = Join-Path $HOME "template-builds"
+          New-Item -ItemType Directory -Path $buildRoot -Force | Out-Null
+          $projectDir = Join-Path $buildRoot $projectName
+
+          Write-Host "Creating project: dotnet new $template -o $projectDir --framework net$dotnetVersion"
+          dotnet new $template -o $projectDir --framework net$dotnetVersion
 
           # Pin SDK version to match the target .NET version.
           # Runners may have multiple SDKs installed; without pinning, the highest
@@ -315,10 +322,21 @@ jobs:
           $sdkVersion = dotnet --list-sdks | Where-Object { $_ -match "^$dotnetVersion" } | ForEach-Object { ($_ -split ' ')[0] } | Select-Object -Last 1
           if ($sdkVersion) {
             Write-Host "Pinning SDK to $sdkVersion via global.json"
-            @{ sdk = @{ version = $sdkVersion; rollForward = "latestPatch" } } | ConvertTo-Json | Out-File -FilePath (Join-Path $projectName "global.json") -Encoding UTF8
+            @{ sdk = @{ version = $sdkVersion; rollForward = "latestPatch" } } | ConvertTo-Json | Out-File -FilePath (Join-Path $projectDir "global.json") -Encoding UTF8
           }
 
-          echo "PROJECT_PATH=$projectName" >> $env:GITHUB_ENV
+          # Restrict TargetFrameworks to only the platform we're building for.
+          # MAUI templates target all platforms (android, ios, maccatalyst, windows).
+          # Building on Ubuntu for Android would fail trying to resolve iOS workloads.
+          $csproj = Get-ChildItem -Path $projectDir -Filter "*.csproj" -Recurse | Select-Object -First 1
+          if ($csproj) {
+            $content = Get-Content $csproj.FullName -Raw
+            $content = $content -replace '<TargetFrameworks>[^<]+</TargetFrameworks>', "<TargetFrameworks>$framework</TargetFrameworks>"
+            Set-Content -Path $csproj.FullName -Value $content
+            Write-Host "Restricted TargetFrameworks to: $framework"
+          }
+
+          echo "PROJECT_PATH=$projectDir" >> $env:GITHUB_ENV
           echo "PROJECT_NAME=$projectName" >> $env:GITHUB_ENV
 
       - name: Build and Publish
