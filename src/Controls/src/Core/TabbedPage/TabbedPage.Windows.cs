@@ -203,7 +203,12 @@ namespace Microsoft.Maui.Controls
 		void OnNavigationViewSizeChanged(object sender, SizeChangedEventArgs e)
 		{
 			if (_navigationView != null)
+			{
+				// Ensure TabbedPage layout responds to NavigationView size changes
+				this.InvalidateMeasure();
+				// Complete layout to fix frame dimensions
 				this.Arrange(_navigationView);
+			}
 		}
 
 		void SetupNavigationView()
