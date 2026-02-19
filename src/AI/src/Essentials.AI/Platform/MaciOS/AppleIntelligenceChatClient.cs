@@ -258,14 +258,25 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 			? messages.Prepend(new(ChatRole.System, options.Instructions))
 			: messages;
 
+		// Build a callId → name lookup from FunctionCallContent so FunctionResultContent can reference the tool name
+		var callIdToName = new Dictionary<string, string>();
+		foreach (var msg in messages)
+		{
+			foreach (var content in msg.Contents.OfType<FunctionCallContent>())
+			{
+				if (content.CallId is not null && content.Name is not null)
+					callIdToName[content.CallId] = content.Name;
+			}
+		}
+
 		// Filter out any messages that produce empty native content as a safety net.
 		ChatMessageNative[] nativeMessages = [.. toConvert
-			.Select(ToNative)
+			.Select(m => ToNative(m, callIdToName))
 			.Where(m => m.Contents.Length > 0)];
 
 		if (nativeMessages.Length == 0)
 		{
-			throw new ArgumentException("The messages collection must contain at least one message.", nameof(messages));
+			throw new ArgumentException("No messages with convertible content found. Ensure at least one message contains TextContent, FunctionCallContent, or FunctionResultContent.", nameof(messages));
 		}
 
 		return nativeMessages;
@@ -340,11 +351,11 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 			_ => throw new ArgumentException($"Unsupported content type: {content.GetType().Name}", nameof(content))
 		};
 
-	private static ChatMessageNative ToNative(ChatMessage message) =>
+	private static ChatMessageNative ToNative(ChatMessage message, Dictionary<string, string>? callIdToName = null) =>
 		new()
 		{
 			Role = ToNative(message.Role),
-			Contents = [.. message.Contents.SelectMany(ToNative)]
+			Contents = [.. message.Contents.SelectMany(c => ToNative(c, callIdToName))]
 		};
 
 	private static ChatRoleNative ToNative(ChatRole role)
@@ -420,7 +431,7 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 			_ => null
 		};
 
-	private static IEnumerable<AIContentNative> ToNative(AIContent content) =>
+	private static IEnumerable<AIContentNative> ToNative(AIContent content, Dictionary<string, string>? callIdToName = null) =>
 		content switch
 		{
 			// Apple Intelligence performs better when each text content chunk is separated
@@ -439,7 +450,8 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 
 			FunctionResultContent functionResult => [new FunctionResultContentNative(
 				functionResult.CallId ?? string.Empty,
-				string.Empty, // FunctionResultContent doesn't carry the tool name; the callId links to the ToolCall
+				// Look up the tool name from the corresponding FunctionCallContent via callId
+				(functionResult.CallId is not null && callIdToName?.TryGetValue(functionResult.CallId, out var name) == true) ? name : string.Empty,
 #pragma warning disable IL3050, IL2026
 				functionResult.Result is not null ? JsonSerializer.Serialize(functionResult.Result, AIJsonUtilities.DefaultOptions) : "{}")],
 #pragma warning restore IL3050, IL2026

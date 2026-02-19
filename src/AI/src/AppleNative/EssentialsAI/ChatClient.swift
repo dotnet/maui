@@ -87,6 +87,7 @@ public class ChatClientNative: NSObject {
                 for try await response in responseStream {
                     try Task.checkCancellation()
                     let text = response.content.jsonString
+                    guard !text.isEmpty, text != "null" else { continue }
 #if APPLE_INTELLIGENCE_LOGGING_ENABLED
                     if let log = AppleIntelligenceLogger.log {
                         log("[\(methodName)] Streaming update: \(text)")
@@ -115,6 +116,9 @@ public class ChatClientNative: NSObject {
                 for try await response in responseStream {
                     try Task.checkCancellation()
                     let text = response.content
+                    // Apple Intelligence may emit "null" as the accumulated content when no text
+                    // has been generated yet (e.g. before a tool call). Skip empty/null content.
+                    guard !text.isEmpty, text != "null" else { continue }
 #if APPLE_INTELLIGENCE_LOGGING_ENABLED
                     if let log = AppleIntelligenceLogger.log {
                         log("[\(methodName)] Streaming update: \(text)")

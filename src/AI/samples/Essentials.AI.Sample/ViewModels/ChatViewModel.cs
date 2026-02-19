@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Maui.Controls.Sample.Models;
 using Maui.Controls.Sample.Services;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging;
 
 namespace Maui.Controls.Sample.ViewModels;
 
@@ -11,13 +12,15 @@ public partial class ChatViewModel : ObservableObject
 {
 	readonly ChatService _chatService;
 	readonly IDispatcher _dispatcher;
+	readonly ILogger<ChatViewModel> _logger;
 	readonly List<ChatMessage> _conversationHistory = [];
 	CancellationTokenSource? _cts;
 
-	public ChatViewModel(ChatService chatService, IDispatcher dispatcher)
+	public ChatViewModel(ChatService chatService, IDispatcher dispatcher, ILogger<ChatViewModel> logger)
 	{
 		_chatService = chatService;
 		_dispatcher = dispatcher;
+		_logger = logger;
 	}
 
 	public ChatService ChatService => _chatService;
@@ -80,6 +83,19 @@ public partial class ChatViewModel : ObservableObject
 		// Add to conversation history
 		_conversationHistory.Add(new ChatMessage(ChatRole.User, userText));
 
+		_logger.LogDebug($"[Chat] === Sending {_conversationHistory.Count} messages ===");
+		foreach (var msg in _conversationHistory)
+		{
+			var contentSummary = string.Join(", ", msg.Contents.Select(c => c switch
+			{
+				TextContent tc => $"Text({tc.Text?.Length ?? 0} chars)",
+				FunctionCallContent fc => $"Call({fc.Name}, id={fc.CallId})",
+				FunctionResultContent fr => $"Result(id={fr.CallId})",
+				_ => c.GetType().Name
+			}));
+			_logger.LogDebug($"[Chat]   {msg.Role}: [{contentSummary}]");
+		}
+
 		// Prepare streaming
 		_cts = new CancellationTokenSource();
 		ChatBubble? assistantBubble = null;
@@ -102,6 +118,13 @@ public partial class ChatViewModel : ObservableObject
 			{
 				foreach (var content in update.Contents)
 				{
+					_logger.LogDebug($"[Chat] ← {content switch
+					{
+						TextContent tc => $"Text: \"{tc.Text?[..Math.Min(tc.Text?.Length ?? 0, 80)]}\"",
+						FunctionCallContent fc => $"FunctionCall: {fc.Name} (id={fc.CallId})",
+						FunctionResultContent fr => $"FunctionResult: (id={fr.CallId}) {fr.Result?.ToString()?[..Math.Min(fr.Result?.ToString()?.Length ?? 0, 80)]}",
+						_ => content.GetType().Name
+					}}");
 					switch (content)
 					{
 						case TextContent textContent when !string.IsNullOrEmpty(textContent.Text):
@@ -156,7 +179,7 @@ public partial class ChatViewModel : ObservableObject
 								if (assistantBubble is not null)
 								{
 									var trimmed = assistantBubble.Text.Trim();
-									if (string.IsNullOrEmpty(trimmed) || trimmed.Equals("null", StringComparison.OrdinalIgnoreCase))
+									if (string.IsNullOrEmpty(trimmed))
 										Messages.Remove(assistantBubble);
 									else
 										assistantBubble.IsStreaming = false;
@@ -212,6 +235,8 @@ public partial class ChatViewModel : ObservableObject
 				if (assistantBubble is { IsStreaming: true })
 					assistantBubble.IsStreaming = false;
 			});
+
+			_logger.LogDebug($"[Chat] === Stream complete. History now has {_conversationHistory.Count} messages ===");
 		}
 		catch (OperationCanceledException)
 		{
