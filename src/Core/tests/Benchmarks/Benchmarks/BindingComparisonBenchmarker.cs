@@ -1,3 +1,4 @@
+#pragma warning disable RS0030 // Benchmarks intentionally use the old constructor for comparison
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
