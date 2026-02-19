@@ -10,11 +10,11 @@ public partial class ShellControlPage : Shell
 {
     private ShellViewModel _viewModel;
     public ShellContent HomePage => homePage;
-    private const string NotAnimatedRoute = "notanimated";
-    private const string AnimatedRoute = "animated";
-    private const string ModalRoute = "modal";
-    private const string ModalAnimatedRoute = "modalanimated";
-    private const string ModalNotAnimatedRoute = "modalnotanimated";
+    private const string NotAnimatedRoute = "shell-feature/notanimated";
+    private const string AnimatedRoute = "shell-feature/animated";
+    private const string ModalRoute = "shell-feature/modal";
+    private const string ModalAnimatedRoute = "shell-feature/modalanimated";
+    private const string ModalNotAnimatedRoute = "shell-feature/modalnotanimated";
 
 
     public ShellControlPage()
@@ -58,19 +58,19 @@ public partial class ShellControlPage : Shell
         Shell.SetNavBarHasShadow(this, false);
     }
     private async void OnGoToNotAnimated(object sender, EventArgs e)
-        => await Shell.Current.GoToAsync("notanimated");
+        => await Shell.Current.GoToAsync(NotAnimatedRoute);
 
     private async void OnGoToAnimated(object sender, EventArgs e)
-        => await Shell.Current.GoToAsync("animated");
+        => await Shell.Current.GoToAsync(AnimatedRoute);
 
     private async void OnGoToModal(object sender, EventArgs e)
-        => await Shell.Current.GoToAsync("modal");
+        => await Shell.Current.GoToAsync(ModalRoute);
 
     private async void OnGoToModalAnimated(object sender, EventArgs e)
-        => await Shell.Current.GoToAsync("modalanimated");
+        => await Shell.Current.GoToAsync(ModalAnimatedRoute);
 
     private async void OnGoToModalNotAnimated(object sender, EventArgs e)
-        => await Shell.Current.GoToAsync("modalnotanimated");
+        => await Shell.Current.GoToAsync(ModalNotAnimatedRoute);
     private async void OnGoToHomeClicked(object sender, EventArgs e)
     {
         await Shell.Current.GoToAsync("//home");
