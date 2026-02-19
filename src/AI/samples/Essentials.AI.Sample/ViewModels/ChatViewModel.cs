@@ -83,7 +83,7 @@ public partial class ChatViewModel : ObservableObject
 		// Prepare streaming
 		_cts = new CancellationTokenSource();
 		ChatBubble? assistantBubble = null;
-		var allContents = new List<AIContent>();
+		ChatMessage? textMessage = null; // Accumulates text deltas into one assistant message
 		var seenCallIds = new HashSet<string>();
 
 		// Show "Thinking..." placeholder immediately
@@ -102,16 +102,25 @@ public partial class ChatViewModel : ObservableObject
 			{
 				foreach (var content in update.Contents)
 				{
-					allContents.Add(content);
-
 					switch (content)
 					{
 						case TextContent textContent when !string.IsNullOrEmpty(textContent.Text):
+							// Add to history: accumulate all text deltas into one assistant message
+							if (textMessage is null)
+							{
+								textMessage = new ChatMessage(ChatRole.Assistant, [textContent]);
+								_conversationHistory.Add(textMessage);
+							}
+							else
+							{
+								textMessage.Contents.Add(textContent);
+							}
+
+							// Update UI
 							_dispatcher.Dispatch(() =>
 							{
 								if (assistantBubble is null)
 								{
-									// First text: if thinking bubble is still in Messages, reuse it
 									if (Messages.Contains(thinkingBubble))
 									{
 										thinkingBubble.Text = textContent.Text;
@@ -119,7 +128,6 @@ public partial class ChatViewModel : ObservableObject
 									}
 									else
 									{
-										// Post-tool-call: create a new assistant bubble
 										assistantBubble = new ChatBubble
 										{
 											BubbleType = ChatBubbleType.Assistant,
@@ -136,12 +144,17 @@ public partial class ChatViewModel : ObservableObject
 
 						case FunctionCallContent functionCall:
 							if (!seenCallIds.Add($"call:{functionCall.CallId}"))
-								break; // Skip duplicate
+								break;
+
+							// Add to history immediately, preserving stream order
+							_conversationHistory.Add(new ChatMessage(ChatRole.Assistant, [functionCall]));
+							textMessage = null; // Next text starts a new message
+
+							// Update UI
 							_dispatcher.Dispatch(() =>
 							{
 								if (assistantBubble is not null)
 								{
-									// Remove empty/junk assistant bubbles created before the tool call
 									var trimmed = assistantBubble.Text.Trim();
 									if (string.IsNullOrEmpty(trimmed) || trimmed.Equals("null", StringComparison.OrdinalIgnoreCase))
 										Messages.Remove(assistantBubble);
@@ -151,7 +164,6 @@ public partial class ChatViewModel : ObservableObject
 								}
 								else
 								{
-									// Remove thinking bubble if tool call arrives before any text
 									Messages.Remove(thinkingBubble);
 								}
 
@@ -171,7 +183,12 @@ public partial class ChatViewModel : ObservableObject
 
 						case FunctionResultContent functionResult:
 							if (!seenCallIds.Add($"result:{functionResult.CallId}"))
-								break; // Skip duplicate
+								break;
+
+							// Add to history immediately, preserving stream order
+							_conversationHistory.Add(new ChatMessage(ChatRole.Tool, [functionResult]));
+
+							// Update UI
 							_dispatcher.Dispatch(() =>
 							{
 								var resultText = functionResult.Result?.ToString() ?? "(no result)";
@@ -195,23 +212,6 @@ public partial class ChatViewModel : ObservableObject
 				if (assistantBubble is { IsStreaming: true })
 					assistantBubble.IsStreaming = false;
 			});
-
-			// Add full assistant response to history for multi-turn context
-			// Include tool interactions so the model's transcript preserves the complete chain:
-			//   Assistant → [FunctionCallContent]  (tool call decisions)
-			//   Tool      → [FunctionResultContent] (tool results)
-			//   Assistant → [TextContent]           (final text response)
-			var functionCalls = allContents.OfType<FunctionCallContent>().ToArray();
-			if (functionCalls.Length > 0)
-				_conversationHistory.Add(new ChatMessage(ChatRole.Assistant, functionCalls));
-
-			var functionResults = allContents.OfType<FunctionResultContent>().ToArray();
-			if (functionResults.Length > 0)
-				_conversationHistory.Add(new ChatMessage(ChatRole.Tool, functionResults));
-
-			var textContents = allContents.OfType<TextContent>().Where(t => !string.IsNullOrEmpty(t.Text)).ToArray();
-			if (textContents.Length > 0)
-				_conversationHistory.Add(new ChatMessage(ChatRole.Assistant, textContents));
 		}
 		catch (OperationCanceledException)
 		{
