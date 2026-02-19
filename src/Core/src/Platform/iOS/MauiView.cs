@@ -694,26 +694,16 @@ namespace Microsoft.Maui.Platform
 			// A descendant changing size/transform doesn't affect the system-determined safe area insets.
 			// Setting this unconditionally caused spurious safe area revalidation during animations,
 			// leading to measurement oscillation and infinite layout cycles (see #33934).
+			//
+			// Child safe area propagation is handled separately by InvalidateDescendantSafeAreas(),
+			// called only from MapSafeAreaEdges. This avoids O(N) child iterations here since
+			// InvalidateMeasure fires for ALL property changes, not just safe area.
 			if (!isPropagating)
 			{
 				_safeAreaInvalidated = true;
 				// Clear the cycle-break flag so this view can invalidate ancestors again
 				// for this new event (e.g., SafeAreaEdges property changed at runtime).
 				_hasInvalidatedAncestorsForSafeArea = false;
-
-				// Propagate safe area invalidation to direct child MauiViews so they
-				// re-evaluate their own safe area handling. This is needed when a parent
-				// changes SafeAreaEdges at runtime (Issue32586) — descendants must pick
-				// up the change even though InvalidateAncestorsMeasures only goes UP.
-				foreach (var subview in Subviews)
-				{
-					if (subview is MauiView childMauiView)
-					{
-						childMauiView._safeAreaInvalidated = true;
-						childMauiView._hasInvalidatedAncestorsForSafeArea = false;
-						childMauiView.SetNeedsLayout();
-					}
-				}
 			}
 			InvalidateConstraintsCache();
 			SetNeedsLayout();
@@ -734,6 +724,40 @@ namespace Microsoft.Maui.Platform
 			// If we're not propagating, then this view is the one triggering the invalidation
 			// and one possible cause is that constraints have changed, so we have to propagate the invalidation.
 			return true;
+		}
+
+		/// <summary>
+		/// Propagates safe area invalidation to descendant MauiViews.
+		/// Called only when safe-area-specific properties change (e.g., SafeAreaEdges),
+		/// NOT for general property changes. This avoids O(N) child iterations on
+		/// unrelated property changes like BackgroundColor, IsVisible, etc.
+		/// </summary>
+		internal void InvalidateDescendantSafeAreas()
+		{
+			foreach (var subview in Subviews)
+			{
+				InvalidateDescendantSafeAreasRecursive(subview);
+			}
+		}
+
+		static void InvalidateDescendantSafeAreasRecursive(UIView view)
+		{
+			if (view is MauiView child)
+			{
+				child._safeAreaInvalidated = true;
+				child._hasInvalidatedAncestorsForSafeArea = false;
+				child.SetNeedsLayout();
+				// Recurse into this MauiView's children as well
+				foreach (var subview in child.Subviews)
+					InvalidateDescendantSafeAreasRecursive(subview);
+			}
+			else
+			{
+				// Non-MauiView (e.g., WrapperView): pass through to find
+				// any MauiViews further down the hierarchy
+				foreach (var subview in view.Subviews)
+					InvalidateDescendantSafeAreasRecursive(subview);
+			}
 		}
 
 		/// <summary>

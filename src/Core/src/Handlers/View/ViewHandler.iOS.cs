@@ -154,6 +154,14 @@ namespace Microsoft.Maui.Handlers
 
 		internal static void MapSafeAreaEdges(IViewHandler handler, IView view)
 		{
+			// Propagate safe area invalidation DOWN to descendant MauiViews so they
+			// re-evaluate their safe area handling. This walks through WrapperViews.
+			if (handler.PlatformView is MauiView mauiView)
+			{
+				mauiView.InvalidateDescendantSafeAreas();
+			}
+
+			// Normal invalidation path: invalidates this view + propagates UP to ancestors.
 			view.InvalidateMeasure();
 		}
 	}
