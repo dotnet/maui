@@ -550,7 +550,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("GroupHeaderTemplate");
-		App.WaitForElement("Banana");
+		App.WaitForElement("Banana"); // Changed from Apple to Banana because Appium taps, scrolls, or drags the Apple icon instead of the CollectionView Apple item.
 		App.ScrollRight("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
 		App.ScrollRight("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
 		App.WaitForElement("Carrot");
@@ -580,7 +580,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("GroupHeaderTemplate");
-		App.WaitForElement("Banana");
+		App.WaitForElement("Banana"); // Changed from Apple to Banana because Appium taps, scrolls, or drags the Apple icon instead of the CollectionView Apple item.
 		App.ScrollLeft("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
 		App.ScrollLeft("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
 		App.WaitForElement("Carrot");
@@ -608,7 +608,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("GroupHeaderTemplate");
-		App.WaitForElement("Banana");
+		App.WaitForElement("Banana"); // Changed from Apple to Banana because Appium taps, scrolls, or drags the Apple icon instead of the CollectionView Apple item.
 		App.ScrollRight("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
 		App.ScrollRight("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
 		App.WaitForElement("Carrot");
@@ -636,7 +636,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("GroupHeaderTemplate");
-		App.WaitForElement("Banana");
+		App.WaitForElement("Banana"); // Changed from Apple to Banana because Appium taps, scrolls, or drags the Apple icon instead of the CollectionView Apple item.
 		App.ScrollLeft("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
 		App.ScrollLeft("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
 		App.WaitForElement("Carrot");
@@ -662,7 +662,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("GroupHeaderTemplate");
-		App.WaitForElement("Banana");
+		App.WaitForElement("Banana"); // Changed from Apple to Banana because Appium taps, scrolls, or drags the Apple icon instead of the CollectionView Apple item.
 		App.WaitForElement("Carrot");
 		App.WaitForElement("GroupFooterTemplate");
 	}
@@ -706,7 +706,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("Fruits");
-		App.WaitForElement("Banana");
+		App.WaitForElement("Banana"); // Changed from Apple to Banana because Appium taps, scrolls, or drags the Apple icon instead of the CollectionView Apple item.
 		App.WaitForElement("Carrot");
 		App.WaitForElement("Vegetables");
 	}
@@ -797,7 +797,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
             App.WaitForElement(Apply);
             App.Tap(Apply);
             App.WaitForNoElement("Fruits");
-            App.WaitForElement("Banana");
+            App.WaitForElement("Banana"); // Changed from Apple to Banana because Appium taps, scrolls, or drags the Apple icon instead of the CollectionView Apple item.
             App.ScrollRight("CollectionViewControl");
             App.WaitForElement("Carrot");
             App.WaitForNoElement("Vegetables");
@@ -816,7 +816,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
             App.WaitForElement(Apply);
             App.Tap(Apply);
             App.WaitForNoElement("Fruits");
-            App.WaitForElement("Banana");
+            App.WaitForElement("Banana"); // Changed from Apple to Banana because Appium taps, scrolls, or drags the Apple icon instead of the CollectionView Apple item.
             App.ScrollRight("CollectionViewControl");
             App.WaitForElement("Carrot");
             App.WaitForNoElement("Vegetables");
@@ -835,7 +835,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
             App.WaitForElement(Apply);
             App.Tap(Apply);
             App.WaitForNoElement("Fruits");
-            App.WaitForElement("Banana");
+            App.WaitForElement("Banana"); // Changed from Apple to Banana because Appium taps, scrolls, or drags the Apple icon instead of the CollectionView Apple item.
             App.WaitForElement("Carrot");
             App.WaitForNoElement("Vegetables");
         }
@@ -851,7 +851,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
             App.WaitForElement(Apply);
             App.Tap(Apply);
             App.WaitForNoElement("Fruits");
-            App.WaitForElement("Banana");
+            App.WaitForElement("Banana"); // Changed from Apple to Banana because Appium taps, scrolls, or drags the Apple icon instead of the CollectionView Apple item.
             App.WaitForElement("Carrot");
             App.WaitForNoElement("Vegetables");
         }
@@ -873,7 +873,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
             App.Tap(Apply);
             App.WaitForNoElement("GroupHeaderTemplate");
             App.WaitForNoElement("GroupFooterTemplate");
-            App.WaitForElement("Banana");
+            App.WaitForElement("Banana"); // Changed from Apple to Banana because Appium taps, scrolls, or drags the Apple icon instead of the CollectionView Apple item.
             App.WaitForElement("Carrot");
         }
 #endif
@@ -895,7 +895,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		var initialY = App.WaitForElement("Banana").GetRect().Y;
-		App.DragAndDrop("Banana", "Potato");
+		App.DragAndDrop("Banana", "Potato"); // Changed from Apple to Banana because Appium taps, scrolls, or drags the Apple icon instead of the CollectionView Apple item.
 		var newY = App.WaitForElement("Carrot").GetRect().Y;
 		Assert.That(newY, Is.GreaterThan(initialY), "The Y position of 'Carrot' should be greater than Banana after the drag-and-drop operation.");
 	}
@@ -917,7 +917,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		var initialY = App.WaitForElement("Banana").GetRect().Y;
-		App.DragAndDrop("Banana", "Potato");
+		App.DragAndDrop("Banana", "Potato"); // Changed from Apple to Banana because Appium taps, scrolls, or drags the Apple icon instead of the CollectionView Apple item.
 		var newY = App.WaitForElement("Carrot").GetRect().Y;
 		Assert.That(newY, Is.GreaterThan(initialY), "The Y position of 'Carrot' should be greater than Banana after the drag-and-drop operation.");
 	}
@@ -939,7 +939,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		var initialY = App.WaitForElement("Banana").GetRect().Y;
-		App.DragAndDrop("Banana", "Potato");
+		App.DragAndDrop("Banana", "Potato"); // Changed from Apple to Banana because Appium taps, scrolls, or drags the Apple icon instead of the CollectionView Apple item.
 		var newY = App.WaitForElement("Banana").GetRect().Y;
 		Assert.That(newY, Is.GreaterThan(initialY), "The Y position of 'Banana' should be greater after the drag-and-drop operation.");
 	}
@@ -963,7 +963,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		var initialY = App.WaitForElement("Banana").GetRect().Y;
-		App.DragAndDrop("Banana", "Potato");
+		App.DragAndDrop("Banana", "Potato"); // Changed from Apple to Banana because Appium taps, scrolls, or drags the Apple icon instead of the CollectionView Apple item.
 		var newY = App.WaitForElement("Banana").GetRect().Y;
 		Assert.That(newY, Is.GreaterThan(initialY), "The Y position of 'Banana' should be greater after the drag-and-drop operation.");
 	}
@@ -985,7 +985,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		var initialY = App.WaitForElement("Banana").GetRect().Y;
-		App.DragAndDrop("Banana", "Potato");
+		App.DragAndDrop("Banana", "Potato"); // Changed from Apple to Banana because Appium taps, scrolls, or drags the Apple icon instead of the CollectionView Apple item.
 		var newY = App.WaitForElement("Banana").GetRect().Y;
 		Assert.That(newY, Is.GreaterThan(initialY), "The Y position of 'Banana' should be greater after the drag-and-drop operation.");
 	}
@@ -1009,7 +1009,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		var initialY = App.WaitForElement("Banana").GetRect().Y;
-		App.DragAndDrop("Banana", "Potato");
+		App.DragAndDrop("Banana", "Potato"); // Changed from Apple to Banana because Appium taps, scrolls, or drags the Apple icon instead of the CollectionView Apple item.
 		var newY = App.WaitForElement("Banana").GetRect().Y;
 		Assert.That(newY, Is.GreaterThan(initialY), "The Y position of 'Banana' should be greater after the drag-and-drop operation.");
 	}
@@ -1029,7 +1029,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		var initialY = App.WaitForElement("Banana").GetRect().Y;
-		App.DragAndDrop("Banana", "Potato");
+		App.DragAndDrop("Banana", "Potato"); // Changed from Apple to Banana because Appium taps, scrolls, or drags the Apple icon instead of the CollectionView Apple item.
 		var newY = App.WaitForElement("Banana").GetRect().Y;
 		Assert.That(newY, Is.EqualTo(initialY), "The Y position of 'Banana' should be Same Value after the drag-and-drop operation.");
 	}
@@ -1051,7 +1051,7 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		var initialY = App.WaitForElement("Banana").GetRect().Y;
-		App.DragAndDrop("Banana", "Potato");
+		App.DragAndDrop("Banana", "Potato"); // Changed from Apple to Banana because Appium taps, scrolls, or drags the Apple icon instead of the CollectionView Apple item.
 		var newY = App.WaitForElement("Banana").GetRect().Y;
 		Assert.That(newY, Is.EqualTo(initialY), "The Y position of 'Banana' should be Same Value after the drag-and-drop operation.");
 	}
