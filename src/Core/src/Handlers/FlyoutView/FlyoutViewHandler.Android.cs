@@ -141,13 +141,22 @@ namespace Microsoft.Maui.Handlers
 			LayoutViews();
 		}
 
-		void LayoutViews()
+		async void LayoutViews()
 		{
 			if (_flyoutView == null)
 				return;
-
+			if (DrawerLayout.Parent != null)
+				await Task.Delay(500);
+		
 			if (VirtualView.FlyoutBehavior == FlyoutBehavior.Locked)
-				LayoutSideBySide();
+			{
+			    if ((DrawerLayout.Parent != null) && DrawerLayout.IsOpen)
+			    {
+			        DrawerLayout.Close();
+			        await Task.Delay(500);
+			    }
+			    LayoutSideBySide();
+			}
 			else
 				LayoutAsFlyout();
 		}
