@@ -150,7 +150,7 @@ jobs:
                 platform = 'ios'
                 os = 'macos-latest'
                 framework = "net$dotnet-ios"
-                rid = 'iossimulator-arm64'
+                rid = 'ios-arm64'
                 aot = $false
               }
 
@@ -306,7 +306,10 @@ jobs:
           # Use hyphens (not underscores) in project name — MSIX package identity
           # only allows [-.A-Za-z0-9] characters
           $safePlatform = "${{ matrix.description }}"
-          $projectName = "MauiApp-$template-$safePlatform"
+          # Short project name to stay within MSIX identity 50-char limit
+          # (com.companyname.$name must be ≤50 chars)
+          $shortTemplate = if ($template -eq 'maui-blazor') { 'blazor' } else { 'maui' }
+          $projectName = "Ma-$shortTemplate-$safePlatform"
           $framework = "${{ matrix.framework }}"
 
           # Create project in $HOME to avoid inheriting repo's Directory.Build.props
@@ -314,6 +317,19 @@ jobs:
           $buildRoot = Join-Path $HOME "template-builds"
           New-Item -ItemType Directory -Path $buildRoot -Force | Out-Null
           $projectDir = Join-Path $buildRoot $projectName
+
+          # Place NuGet.config in the PARENT directory (not project dir) to avoid
+          # macOS build system bundling it into .app packages
+          $nugetConfig = @"
+          <?xml version="1.0" encoding="utf-8"?>
+          <configuration>
+            <packageSources>
+              <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
+              <add key="dotnet-public" value="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json" />
+            </packageSources>
+          </configuration>
+          "@
+          $nugetConfig | Out-File -FilePath (Join-Path $buildRoot "NuGet.config") -Encoding UTF8
 
           Write-Host "Creating project: dotnet new $template -o $projectDir --framework net$dotnetVersion"
           dotnet new $template -o $projectDir --framework net$dotnetVersion
@@ -326,19 +342,6 @@ jobs:
             Write-Host "Pinning SDK to $sdkVersion via global.json"
             @{ sdk = @{ version = $sdkVersion; rollForward = "latestPatch" } } | ConvertTo-Json | Out-File -FilePath (Join-Path $projectDir "global.json") -Encoding UTF8
           }
-
-          # Add dotnet-public NuGet feed for pre-release runtime packages
-          # (e.g., Microsoft.NETCore.App.Runtime.Mono.win-x64 for .NET 10)
-          $nugetConfig = @"
-          <?xml version="1.0" encoding="utf-8"?>
-          <configuration>
-            <packageSources>
-              <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
-              <add key="dotnet-public" value="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json" />
-            </packageSources>
-          </configuration>
-          "@
-          $nugetConfig | Out-File -FilePath (Join-Path $projectDir "NuGet.config") -Encoding UTF8
 
           # Restrict TargetFrameworks to only the platform we're building for.
           # MAUI templates target all platforms (android, ios, maccatalyst, windows).
@@ -401,15 +404,29 @@ jobs:
             }
 
             "ios" {
-              Write-Host "Building iOS (unsigned)..."
-              dotnet publish $projectFile.FullName `
+              # iOS publish requires device RID + code signing.
+              # Use dotnet build instead — produces .app in bin/ without signing.
+              Write-Host "Building iOS (unsigned, build-only)..."
+              dotnet build $projectFile.FullName `
                 -f $framework `
                 -c Release `
                 -p:RuntimeIdentifier=$rid `
                 -p:_RequireCodeSigning=false `
                 -p:ValidateXcodeVersion=false `
-                -o publish `
                 /bl:build.binlog
+
+              # Copy .app bundle to publish/ for consistent measurement
+              $binPath = Join-Path $projectPath "bin/Release/$framework/$rid"
+              $appBundle = Get-ChildItem -Path $binPath -Filter "*.app" -Recurse -Directory | Select-Object -First 1
+              if ($appBundle) {
+                New-Item -ItemType Directory -Path "publish" -Force | Out-Null
+                Copy-Item -Path $appBundle.FullName -Destination "publish/" -Recurse
+                Write-Host "Copied $($appBundle.Name) to publish/"
+              } else {
+                Write-Host "Warning: No .app bundle found in $binPath"
+                # List what's there for debugging
+                Get-ChildItem -Path $binPath -Recurse | Select-Object -First 20
+              }
             }
 
             "maccatalyst" {
@@ -476,12 +493,13 @@ jobs:
                   -o publish `
                   /bl:build.binlog
               } else {
-                Write-Host "Building Windows unpackaged (self-contained)..."
+                # Framework-dependent publish (Mono.win-x64 runtime may not be
+                # available on public NuGet for preview .NET versions)
+                Write-Host "Building Windows unpackaged (framework-dependent)..."
                 dotnet publish $projectFile.FullName `
                   -f $framework `
                   -c Release `
                   -r $rid `
-                  --self-contained true `
                   -p:WindowsPackageType=None `
                   -o publish `
                   /bl:build.binlog
