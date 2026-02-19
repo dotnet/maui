@@ -12,7 +12,8 @@ namespace Microsoft.Maui.Graphics
 	/// </summary>
 	[DebuggerDisplay("Red={Red}, Green={Green}, Blue={Blue}, Alpha={Alpha}")]
 	[TypeConverter(typeof(Converters.ColorTypeConverter))]
-	public class Color
+	[ImmutableObject(true)]
+	public record class Color
 	{
 		/// <summary>
 		/// The red component of the color, ranging from 0.0 to 1.0.
@@ -124,12 +125,15 @@ namespace Microsoft.Maui.Graphics
 			}
 		}
 
-		public override bool Equals(object obj)
+		/// <summary>
+		/// Determines whether the specified <see cref="Color"/> is equal to the current color using byte-precision comparison.
+		/// </summary>
+		public virtual bool Equals(Color other)
 		{
-			if (obj is Color other)
-				return ToInt() == other.ToInt();
+			if (other is null)
+				return false;
 
-			return base.Equals(obj);
+			return ToInt() == other.ToInt();
 		}
 
 		[Obsolete("Use ToArgbHex instead.")]

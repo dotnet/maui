@@ -1,1 +1,9 @@
 #nullable enable
+Microsoft.Maui.Graphics.Color.Color(Microsoft.Maui.Graphics.Color! original) -> void
+override Microsoft.Maui.Graphics.Color.Equals(object? obj) -> bool
+static Microsoft.Maui.Graphics.Color.operator !=(Microsoft.Maui.Graphics.Color? left, Microsoft.Maui.Graphics.Color? right) -> bool
+static Microsoft.Maui.Graphics.Color.operator ==(Microsoft.Maui.Graphics.Color? left, Microsoft.Maui.Graphics.Color? right) -> bool
+virtual Microsoft.Maui.Graphics.Color.<Clone>$() -> Microsoft.Maui.Graphics.Color!
+virtual Microsoft.Maui.Graphics.Color.EqualityContract.get -> System.Type!
+virtual Microsoft.Maui.Graphics.Color.PrintMembers(System.Text.StringBuilder! builder) -> bool
+~virtual Microsoft.Maui.Graphics.Color.Equals(Microsoft.Maui.Graphics.Color other) -> bool
