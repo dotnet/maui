@@ -38,13 +38,20 @@ public partial class MainPage : ContentPage
 		statusLabel.Text = $"Tokyo | {map.MapType} | Pins: {map.Pins.Count}";
 	}
 
+	int _pinCounter;
+
 	void OnAddPinClicked(object? sender, EventArgs e)
 	{
+		// Place each pin at a slightly different offset so they're visually distinguishable
 		var center = map.VisibleRegion?.Center ?? new Location(51.5074, -0.1278);
+		double offset = _pinCounter * 0.01;
+		var pinLocation = new Location(center.Latitude + offset, center.Longitude + offset);
+		_pinCounter++;
+
 		var pin = new Pin
 		{
 			Label = $"Pin {map.Pins.Count + 1}",
-			Location = center
+			Location = pinLocation
 		};
 		map.Pins.Add(pin);
 		statusLabel.Text = $"Pin added (total: {map.Pins.Count})";
@@ -54,6 +61,7 @@ public partial class MainPage : ContentPage
 	{
 		var countBefore = map.Pins.Count;
 		map.Pins.Clear();
+		_pinCounter = 0;
 		statusLabel.Text = $"Pins cleared ({countBefore} removed)";
 	}
 

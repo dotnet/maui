@@ -48,7 +48,6 @@ namespace Microsoft.Maui.Maps.Handlers
 		MapElementsLayer? _pinsLayer;
 		MapElementsLayer? _mapElementsLayer;
 		readonly List<MapIcon> _mapIcons = new();
-		INotifyCollectionChanged? _pinsCollectionObservable;
 
 		/// <inheritdoc/>
 		protected override FrameworkElement CreatePlatformView()
@@ -213,12 +212,6 @@ namespace Microsoft.Maui.Maps.Handlers
 				}
 			}
 
-			if (_pinsCollectionObservable != null)
-			{
-				_pinsCollectionObservable.CollectionChanged -= OnPinsCollectionChanged;
-				_pinsCollectionObservable = null;
-			}
-
 			_mapIcons.Clear();
 			_webView = null;
 			_webViewReady = false;
@@ -350,6 +343,9 @@ namespace Microsoft.Maui.Maps.Handlers
 				});
 				mapHandler._mapControl.ZoomLevel = zoom;
 
+				// Update VisibleRegion so the virtual view tracks the current map position
+				map.VisibleRegion = mapSpan;
+
 				if (mapHandler._webViewReady)
 				{
 					_ = mapHandler.ExecuteJsAsync(string.Format(
@@ -378,29 +374,20 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		void UpdatePins(IList<IMapPin> pins)
 		{
-			if (_pinsLayer == null)
+			if (_pinsLayer == null || _mapControl == null)
 				return;
 
-			// Unsubscribe from previous collection
-			if (_pinsCollectionObservable != null)
+			// Remove each MapIcon individually to trigger proper visual refresh.
+			// Layer recreation and MapElements.Clear() do not reliably update the WinUI 3 MapControl rendering.
+			foreach (var icon in _mapIcons)
 			{
-				_pinsCollectionObservable.CollectionChanged -= OnPinsCollectionChanged;
-				_pinsCollectionObservable = null;
+				_pinsLayer.MapElements.Remove(icon);
 			}
-
-			_pinsLayer.MapElements.Clear();
 			_mapIcons.Clear();
 
 			foreach (var pin in pins)
 			{
 				AddPinToLayer(pin);
-			}
-
-			// Subscribe to collection changes if available
-			if (pins is INotifyCollectionChanged newObservable)
-			{
-				newObservable.CollectionChanged += OnPinsCollectionChanged;
-				_pinsCollectionObservable = newObservable;
 			}
 		}
 
@@ -431,36 +418,6 @@ namespace Microsoft.Maui.Maps.Handlers
 			_pinsLayer.MapElements.Remove(mapIcon);
 			_mapIcons.Remove(mapIcon);
 			pin.MarkerId = null;
-		}
-
-		void OnPinsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
-		{
-			switch (e.Action)
-			{
-				case NotifyCollectionChangedAction.Add:
-					if (e.NewItems != null)
-					{
-						foreach (IMapPin pin in e.NewItems)
-							AddPinToLayer(pin);
-					}
-					break;
-				case NotifyCollectionChangedAction.Remove:
-					if (e.OldItems != null)
-					{
-						foreach (IMapPin pin in e.OldItems)
-							RemovePinFromLayer(pin);
-					}
-					break;
-				case NotifyCollectionChangedAction.Reset:
-					_pinsLayer?.MapElements.Clear();
-					_mapIcons.Clear();
-					if (VirtualView != null)
-					{
-						foreach (var pin in VirtualView.Pins)
-							AddPinToLayer(pin);
-					}
-					break;
-			}
 		}
 
 		/// <summary>
