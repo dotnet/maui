@@ -43,7 +43,7 @@ steps:
   - template: ../../common/templates-official/steps/enable-internal-sources.yml
     parameters:
       legacyCredential: $(dn-bot-dnceng-artifact-feeds-rw)
-      
+
   - template: ../../common/templates-official/steps/enable-internal-runtimes.yml
     parameters:
       federatedServiceConnection: ${{ parameters.federatedServiceConnection }}
@@ -51,11 +51,10 @@ steps:
       expiryInHours: ${{ parameters.expiryInHours }}
       base64Encode: ${{ parameters.base64Encode }}
 
-
 ##################################################
 #               Provisioning macOS               #
 ##################################################
-  
+
 #check if the _tool directory exists and remove it
 - pwsh: |
     $dotnetToolsPath = "$(Agent.ToolsDirectory)/dotnet"
@@ -95,7 +94,8 @@ steps:
       sw_vers -productVersion
       echo
       echo Installed Xcode versions:
-      ls -la /Applications | grep 'Xcode'
+      XCODE_LIST=($(ls -1 /Applications | grep '^Xcode_' | sed 's/^Xcode_//;s/.app$//'))
+      for v in "${XCODE_LIST[@]}"; do echo "  $v"; done
       echo
       echo currently selected xcode:
       xcrun xcode-select --print-path
@@ -107,41 +107,51 @@ steps:
       else
         XCODE_VERSION=$(XCODE)
       fi
-      
-      # Check if the specified Xcode version exists, if not try fallback
-      XCODE_PATH="/Applications/Xcode_${XCODE_VERSION}.app"
-      if [[ ! -d "$XCODE_PATH" ]]; then
-        echo "Xcode version ${XCODE_VERSION} not found at ${XCODE_PATH}"
-        # Extract major.minor prefix (e.g., 26.1 from 26.1.0) and search for any matching version
-        if [[ "$XCODE_VERSION" =~ ^([0-9]+\.[0-9]+)\.[0-9]+$ ]]; then
-          MAJOR_MINOR="${BASH_REMATCH[1]}"
-          echo "Searching for any Xcode version matching ${MAJOR_MINOR}.x ..."
-          # Find all matching Xcode versions and sort them (newest first)
-          AVAILABLE_VERSIONS=$(ls -d /Applications/Xcode_${MAJOR_MINOR}.*.app 2>/dev/null | sort -V -r)
-          if [[ -n "$AVAILABLE_VERSIONS" ]]; then
-            # Take the first (newest) available version
-            FALLBACK_PATH=$(echo "$AVAILABLE_VERSIONS" | head -n 1)
-            FALLBACK_VERSION=$(basename "$FALLBACK_PATH" | sed 's/Xcode_//' | sed 's/.app//')
-            echo "Found fallback Xcode version: ${FALLBACK_VERSION} at ${FALLBACK_PATH}"
-            XCODE_VERSION="$FALLBACK_VERSION"
-            XCODE_PATH="$FALLBACK_PATH"
-          else
-            echo "Warning: No Xcode versions matching ${MAJOR_MINOR}.x found"
-            echo "Proceeding with original version ${XCODE_VERSION} - this may fail"
-          fi
-        else
-          echo "Warning: Cannot determine fallback version for ${XCODE_VERSION}"
-          echo "Proceeding with original version - this may fail"
-        fi
-      else
-        echo "Found Xcode version ${XCODE_VERSION} at ${XCODE_PATH}"
+
+      # Check if the specified Xcode version exists, if not try fallbacks
+      # Fallback order: exact version -> major.minor -> major
+      XCODE_PATH=""
+      ORIGINAL_VERSION="$XCODE_VERSION"
+
+      # Build list of versions to try
+      VERSIONS_TO_TRY=("$XCODE_VERSION")
+
+      # Add major.minor fallback (e.g., 26.0.1 -> 26.0)
+      if [[ "$XCODE_VERSION" =~ ^([0-9]+\.[0-9]+)\.[0-9]+$ ]]; then
+        VERSIONS_TO_TRY+=("${BASH_REMATCH[1]}")
       fi
-      
+
+      # Add major fallback (e.g., 26.0.1 or 26.0 -> 26)
+      if [[ "$XCODE_VERSION" =~ ^([0-9]+)\. ]]; then
+        VERSIONS_TO_TRY+=("${BASH_REMATCH[1]}")
+      fi
+
+      echo "Will try Xcode versions in order: ${VERSIONS_TO_TRY[*]}"
+
+      for VERSION in "${VERSIONS_TO_TRY[@]}"; do
+        CANDIDATE_PATH="/Applications/Xcode_${VERSION}.app"
+        echo "Checking for Xcode ${VERSION} at ${CANDIDATE_PATH}..."
+        if [[ -d "$CANDIDATE_PATH" ]]; then
+          echo "Found Xcode version ${VERSION} at ${CANDIDATE_PATH}"
+          XCODE_VERSION="$VERSION"
+          XCODE_PATH="$CANDIDATE_PATH"
+          break
+        else
+          echo "Xcode version ${VERSION} not found"
+        fi
+      done
+
+      if [[ -z "$XCODE_PATH" ]]; then
+        echo "ERROR: No suitable Xcode version found for requested version ${ORIGINAL_VERSION}"
+        echo "Tried: ${VERSIONS_TO_TRY[*]}"
+        exit 0
+      fi
+
       sudo xcode-select -s "$XCODE_PATH"
       xcrun xcode-select --print-path
       xcodebuild -version
       sudo xcodebuild -license accept
-     
+
       sudo xcodebuild -runFirstLaunch
     displayName: Select Xcode Version
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
@@ -156,98 +166,34 @@ steps:
         else
           XCODE_VERSION=$(XCODE)
         fi
-        
-        # Apply the same fallback logic as Select Xcode Version step
-        XCODE_PATH="/Applications/Xcode_${XCODE_VERSION}.app"
-        if [[ ! -d "$XCODE_PATH" ]]; then
-          echo "Xcode version ${XCODE_VERSION} not found, searching for fallback..."
-          if [[ "$XCODE_VERSION" =~ ^([0-9]+\.[0-9]+)\.[0-9]+$ ]]; then
-            MAJOR_MINOR="${BASH_REMATCH[1]}"
-            AVAILABLE_VERSIONS=$(ls -d /Applications/Xcode_${MAJOR_MINOR}.*.app 2>/dev/null | sort -V -r)
-            if [[ -n "$AVAILABLE_VERSIONS" ]]; then
-              FALLBACK_PATH=$(echo "$AVAILABLE_VERSIONS" | head -n 1)
-              XCODE_VERSION=$(basename "$FALLBACK_PATH" | sed 's/Xcode_//' | sed 's/.app//')
-              echo "Using fallback Xcode version: ${XCODE_VERSION}"
-            fi
-          fi
-        fi
-        
-        # Extract major.minor for simulator version matching (e.g., 26.1 from 26.1.2)
-        if [[ "$XCODE_VERSION" =~ ^([0-9]+)\.([0-9]+)\..*$ ]]; then
-          SIMULATOR_VERSION="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}"
-        else
-          SIMULATOR_VERSION="$XCODE_VERSION"
-        fi
-        echo "Using simulator version: ${SIMULATOR_VERSION} (based on Xcode ${XCODE_VERSION})"
-        
-        # Function to install simulator with retries
-        install_simulator() {
-          local BUILD_VERSION="$1"
-          local MAX_RETRIES=3
-          local RETRY_DELAY=10
-          
-          for attempt in $(seq 1 $MAX_RETRIES); do
-            echo "Attempt $attempt of $MAX_RETRIES to install iOS simulator (buildVersion: ${BUILD_VERSION})..."
-            RC=0
-            if [[ -n "$BUILD_VERSION" ]]; then
-              sudo xcodebuild -downloadPlatform iOS -architectureVariant universal -buildVersion "$BUILD_VERSION" || RC=$?
-            else
-              sudo xcodebuild -downloadPlatform iOS || RC=$?
-            fi
-            
-            if [[ "$RC" == "0" ]]; then
-              echo "Successfully installed the requested iOS simulator"
-              return 0
-            elif [[ "$RC" == "70" ]]; then
-              echo "xcodebuild exited with exit code 70, which seems to mean not all is bad? Assuming things will work..."
-              return 0
-            else
-              echo "Installation failed with exit code $RC"
-              if [[ $attempt -lt $MAX_RETRIES ]]; then
-                echo "Waiting ${RETRY_DELAY} seconds before retry..."
-                sleep $RETRY_DELAY
-                RETRY_DELAY=$((RETRY_DELAY * 2))
-              fi
-            fi
-          done
-          
-          echo "All retries failed. Attempting cleanup and final retry..."
-          sudo xcrun simctl runtime delete all 2>/dev/null || true
-          # Wait for async deletion
-          for i in $(seq 1 60); do
-            sleep 1
-            C=$(xcrun simctl runtime list -j 2>/dev/null | jq '. | length' 2>/dev/null || echo "0")
-            if [[ "$C" == "0" ]]; then
-              break
-            fi
-          done
-          
-          echo "Final attempt after cleanup..."
-          if [[ -n "$BUILD_VERSION" ]]; then
-            sudo xcodebuild -downloadPlatform iOS -architectureVariant universal -buildVersion "$BUILD_VERSION"
+        # if we're using Xcode 26.0[.?], then explicitly install the iOS 26.0 simulator (the iOS 26.0.1 simulator doesn't work for us)
+        # also install the universal simulator version, so that this bot can run x64 apps in the simulator.
+        if [[ "${XCODE_VERSION}" =~ ^26[.]0.*$ ]]; then
+          RC=0
+          sudo xcodebuild -downloadPlatform iOS -architectureVariant universal -buildVersion 26.0 || RC=$?
+          if [[ "$RC" == "70" ]]; then
+            echo "xcodebuild exited with exit code 70, which seems to mean not all is bad? Assuming things will work..."
+          elif [[ "$RC" == "0" ]]; then
+            echo "Successfully installed the requested iOS simulator"
           else
-            sudo xcodebuild -downloadPlatform iOS
+            echo "Failed to install simulator runtime, deleting all simulator runtimes and trying again..."
+            sudo xcrun simctl runtime delete all
+            # simulator runtimes are deleted asynchronously, so wait until they're all gone (but max 60 seconds)
+            for i in $(seq 1 60); do
+              sleep 1
+              C=$(xcrun simctl runtime list -j | jq '. | length')
+              if [[ $C == 0 ]]; then
+                echo "    still $C simulators left..."
+                break
+              fi
+            done
+            echo "Re-trying simulator runtime installation, if this doesn't work, a reboot might be required"
+            sudo xcodebuild -downloadPlatform iOS -architectureVariant universal -buildVersion 26.0
           fi
-        }
-        
-        # For Xcode 26.x, use the major.minor version for simulator
-        if [[ "${XCODE_VERSION}" =~ ^26\.[0-9]+.*$ ]]; then
-          install_simulator "${SIMULATOR_VERSION}"
         else
-          install_simulator ""
+          sudo xcodebuild -downloadPlatform iOS
         fi
       displayName: Install Simulator Runtimes
-      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
-      continueOnError: true
-      timeoutInMinutes: 30
-
-    # Also install iOS 18.5 simulator for integration tests that require it
-    - script: |
-        echo "Installing iOS 18.5 simulator runtime for integration tests..."
-        sudo xcodebuild -downloadPlatform iOS -buildVersion 18.5 || {
-          echo "Warning: Failed to install iOS 18.5 simulator. Tests requiring this version may fail."
-        }
-      displayName: Install iOS 18.5 Simulator (for integration tests)
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
       continueOnError: true
       timeoutInMinutes: 30

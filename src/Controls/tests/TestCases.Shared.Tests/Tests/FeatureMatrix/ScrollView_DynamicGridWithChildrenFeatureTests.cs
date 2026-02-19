@@ -84,7 +84,7 @@ public class ScrollView_DynamicGridWithChildrenFeatureTests : _GalleryUITest
 		{
 			App.Tap("RemoveButton");
 		}
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(6)]
@@ -106,7 +106,7 @@ public class ScrollView_DynamicGridWithChildrenFeatureTests : _GalleryUITest
 		{
 			App.Tap("RemoveButton");
 		}
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 }

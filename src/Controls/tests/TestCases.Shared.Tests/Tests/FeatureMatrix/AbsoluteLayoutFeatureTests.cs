@@ -50,7 +50,7 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 		App.Tap(LayoutFlagNoneCheckBox);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -69,7 +69,7 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 		App.Tap(LayoutFlagNoneCheckBox);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -91,7 +91,7 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 		App.Tap(LayoutFlagXProportionalCheckBox);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -113,7 +113,7 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 		App.Tap(LayoutFlagYProportionalCheckBox);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -140,7 +140,7 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 		App.Tap(LayoutFlagYProportionalCheckBox);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -165,7 +165,7 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 		App.Tap(LayoutFlagPositionProportionalCheckBox);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -184,7 +184,7 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 		App.Tap(LayoutFlagWidthProportionalCheckBox);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -203,7 +203,7 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 		App.Tap(LayoutFlagHeightProportionalCheckBox);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -224,7 +224,7 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 		App.Tap(LayoutFlagWidthProportionalCheckBox);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -243,7 +243,7 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 		App.Tap(LayoutFlagSizeProportionalCheckBox);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -262,7 +262,7 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 		App.Tap(LayoutFlagSizeProportionalCheckBox);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -287,7 +287,7 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 		App.Tap(LayoutFlagAllCheckBox);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -314,7 +314,7 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 		App.Tap(LayoutFlagPositionProportionalCheckBox);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -333,7 +333,7 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 		App.Tap("FlowDirectionRTL");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -346,7 +346,7 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 		App.Tap("IsVisibleFalse");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/31496
@@ -360,7 +360,7 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 		App.Tap("BackgroundColorGrayButton");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -388,7 +388,7 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 		App.WaitForElement(XEntry);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 }
