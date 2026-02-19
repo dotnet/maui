@@ -278,18 +278,24 @@ jobs:
 
           $version = $versions.$dotnet
           Write-Host "Installing $packageId version $version"
-          dotnet new install "${packageId}::${version}" --nuget-source https://api.nuget.org/v3/index.json
+          dotnet new install "${packageId}::${version}" --force --nuget-source https://api.nuget.org/v3/index.json
 
       - name: Install Workloads
         shell: pwsh
         run: |
-          $platform = "${{ matrix.platform }}"
+          # MAUI templates create multi-TFM projects:
+          #   Linux:   android only
+          #   macOS:   android + ios + maccatalyst
+          #   Windows: android + ios + maccatalyst + windows
+          # We need all workloads for the platform's TFM set so restore succeeds.
+          $os = "${{ matrix.os }}"
 
-          switch ($platform) {
-            "android" { dotnet workload install maui-android }
-            "ios" { dotnet workload install maui-ios }
-            "maccatalyst" { dotnet workload install maui-maccatalyst }
-            { $_ -like "windows*" } { dotnet workload install maui-windows }
+          if ($os -like "ubuntu*") {
+            dotnet workload install maui-android
+          } elseif ($os -like "macos*") {
+            dotnet workload install maui-android maui-ios maui-maccatalyst
+          } else {
+            dotnet workload install maui
           }
 
       - name: Create Project
