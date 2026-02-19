@@ -293,7 +293,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void HandleShellPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.Is(Shell.FlyoutIconProperty))
+			{
 				UpdateLeftBarButtonItem();
+			}
+			else if (e.Is(Shell.ForegroundColorProperty))
+			{
+				UpdateLeftBarButtonItem();
+			}
 		}
 
 		BackButtonBehavior _backButtonBehavior = null;
@@ -322,6 +328,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 			else if (e.PropertyName == Shell.TitleViewProperty.PropertyName)
 				UpdateTitleView();
+			else if (e.PropertyName == Shell.ForegroundColorProperty.PropertyName)
+			{
+				UpdateLeftBarButtonItem();
+			}
 		}
 
 		void OnBackButtonBehaviorChanged(object sender, PropertyChangedEventArgs e)
@@ -419,7 +429,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			DrawerArrowDrawable icon = null;
 			bool defaultDrawerArrowDrawable = false;
 
-			var tintColor = Colors.White;
+			var tintColor = Shell.GetForegroundColor(page) ?? Shell.GetForegroundColor(_shell);
 			if (TintColor != null)
 				tintColor = TintColor;
 
@@ -785,8 +795,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				bool pressed = false;
 				if (IconBitmap != null)
 				{
-					ADrawableCompat.SetTint(IconBitmap, TintColor.ToPlatform());
-					ADrawableCompat.SetTintMode(IconBitmap, PorterDuff.Mode.SrcAtop);
+					if (TintColor is not null)
+					{
+						ADrawableCompat.SetTint(IconBitmap, TintColor.ToPlatform());
+						ADrawableCompat.SetTintMode(IconBitmap, PorterDuff.Mode.SrcAtop);
+					}
+					else
+					{
+						ADrawableCompat.SetTintList(IconBitmap, null); // Clear tint to preserve original icon colors
+					}
 
 					IconBitmap.SetBounds(Bounds.Left, Bounds.Top, Bounds.Right, Bounds.Bottom);
 					IconBitmap.Draw(canvas);
@@ -796,7 +813,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					var paint = new Paint { AntiAlias = true };
 					paint.TextSize = _defaultSize;
 #pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
-					paint.Color = pressed ? _pressedBackgroundColor.ToPlatform() : TintColor.ToPlatform();
+					paint.Color = pressed ? _pressedBackgroundColor.ToPlatform() : (TintColor ?? Colors.White).ToPlatform();
 #pragma warning restore CA1416
 					paint.SetStyle(Paint.Style.Fill);
 					var y = (Bounds.Height() + paint.TextSize) / 2;
