@@ -695,9 +695,8 @@ namespace Microsoft.Maui.Controls
 
 		void ApplyBindings(bool fromBindingContextChanged)
 		{
-			foreach (var kvp in _properties)
+			foreach (var context in _properties.Values)
 			{
-				BindablePropertyContext context = kvp.Value;
 				if (ReferenceEquals(context.Property, BindingContextProperty))
 				{
 					// BindingContextProperty Binding is handled separately within SetInheritedBindingContext
