@@ -626,6 +626,5 @@ If migrating from Xamarin.UITest:
 - [Appium Documentation](https://appium.io/docs/en/latest/)
 - [NUnit Documentation](https://docs.nunit.org/)
 - [.NET MAUI Testing Wiki](https://github.com/dotnet/maui/wiki/UITests)
-- [UI Tests Pipeline](../eng/pipelines/ui-tests.yml) - CI/CD pipeline for UI tests
 
 **Last Updated:** October 2025
