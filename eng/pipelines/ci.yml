@@ -316,6 +316,15 @@ stages:
 
     # RunOniOS - Individual test methods run in parallel
     # ARM64 (Apple Silicon) lanes - using MacOSPoolArm64
+    - name: mac_runios_previous_arm64
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 45
+      testName: RunOniOS_Previous
+      arch: ARM64
+
     - name: mac_runios_maui_debug_arm64
       ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
         pool: ${{ parameters.MacOSPool.public }}
@@ -380,6 +389,16 @@ stages:
 
     # MacOSPool lanes - comparison with ARM64 pool
     # Only run on: (non-PR on main/net*.0/release/*/inflight/*) OR (PR targeting net*.0/release/*/inflight/*)
+    - name: mac_runios_previous
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 45
+      testName: RunOniOS_Previous
+      arch: x64
+      condition: ${{ parameters.macOSPoolLaneCondition }}
+
     - name: mac_runios_maui_debug
       ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
         pool: ${{ parameters.MacOSPool.public }}
