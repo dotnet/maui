@@ -22,6 +22,8 @@ public class IntegrationTests
 
 		var id = Math.Abs(result.Binding.SimpleLocation!.GetHashCode());
 
+        var x = result.GeneratedFiles["Path-To-Program.cs-GeneratedBindingInterceptors-3-7.g.cs"];
+
 		AssertExtensions.AssertNoDiagnostics(result);
 		AssertExtensions.CodeIsEqual(
 			$$"""
@@ -84,28 +86,18 @@ public class IntegrationTests
                         var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<string, int>(
                             getter: source => (getter(source), true),
                             setter,
-                            handlers: new global::System.Tuple<global::System.Func<string, object?>, string>[]
-                            {
-                                new(static source => source, "Length"),
-                            })
+                            handlersCount: 0,
+                            handlers: null)
+                        {
+                            Mode = mode,
+                            Converter = converter,
+                            ConverterParameter = converterParameter,
+                            StringFormat = stringFormat,
+                            Source = source,
+                            FallbackValue = fallbackValue,
+                            TargetNullValue = targetNullValue,
+                        };
 
-                            {
-
-                            	Mode = mode,
-
-                            	Converter = converter,
-
-                            	ConverterParameter = converterParameter,
-
-                            	StringFormat = stringFormat,
-
-                            	Source = source,
-
-                            	FallbackValue = fallbackValue,
-
-                            	TargetNullValue = targetNullValue,
-
-                            };
                         bindableObject.SetBinding(bindableProperty, binding);
                     }
                 }
@@ -186,28 +178,18 @@ public class IntegrationTests
                         var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<string, int>(
                             getter: source => (getter(source), true),
                             setter,
-                            handlers: new global::System.Tuple<global::System.Func<string, object?>, string>[]
-                            {
-                                new(static source => source, "Length"),
-                            })
+                            handlersCount: 0,
+                            handlers: null)
+                        {
+                            Mode = mode,
+                            Converter = converter,
+                            ConverterParameter = converterParameter,
+                            StringFormat = stringFormat,
+                            Source = source,
+                            FallbackValue = fallbackValue,
+                            TargetNullValue = targetNullValue,
+                        };
 
-                            {
-
-                            	Mode = mode,
-
-                            	Converter = converter,
-
-                            	ConverterParameter = converterParameter,
-
-                            	StringFormat = stringFormat,
-
-                            	Source = source,
-
-                            	FallbackValue = fallbackValue,
-
-                            	TargetNullValue = targetNullValue,
-
-                            };
                         return binding;
                     }
                 }
@@ -366,32 +348,28 @@ public class IntegrationTests
                             };
                         }
 
+                        static global::System.Collections.Generic.IEnumerable<global::System.ValueTuple<global::System.ComponentModel.INotifyPropertyChanged?, string>> GetHandlers(global::MyNamespace.A? source)
+                        {
+                            if (source is global::System.ComponentModel.INotifyPropertyChanged p0) yield return (p0, "B");
+                            var p1 = source?.B;
+                            if (p1 is global::System.ComponentModel.INotifyPropertyChanged p2) yield return (p2, "C");
+                        }
+
                         var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::MyNamespace.A?, int>(
                             getter: source => (getter(source), true),
                             setter,
-                            handlers: new global::System.Tuple<global::System.Func<global::MyNamespace.A?, object?>, string>[]
-                            {
-                                new(static source => source, "B"),
-                                new(static source => source?.B, "C"),
-                            })
+                            handlersCount: 2,
+                            GetHandlers)
+                        {
+                            Mode = mode,
+                            Converter = converter,
+                            ConverterParameter = converterParameter,
+                            StringFormat = stringFormat,
+                            Source = source,
+                            FallbackValue = fallbackValue,
+                            TargetNullValue = targetNullValue,
+                        };
 
-                            {
-
-                            	Mode = mode,
-
-                            	Converter = converter,
-
-                            	ConverterParameter = converterParameter,
-
-                            	StringFormat = stringFormat,
-
-                            	Source = source,
-
-                            	FallbackValue = fallbackValue,
-
-                            	TargetNullValue = targetNullValue,
-
-                            };
                         bindableObject.SetBinding(bindableProperty, binding);
                     }
                 }
@@ -492,34 +470,30 @@ public class IntegrationTests
                             };
                         }
 
+                        static global::System.Collections.Generic.IEnumerable<global::System.ValueTuple<global::System.ComponentModel.INotifyPropertyChanged?, string>> GetHandlers(global::MyNamespace.A? source)
+                        {
+                            if (source is global::System.ComponentModel.INotifyPropertyChanged p0) yield return (p0, "B");
+                            var p1 = source?.B;
+                            if (p1 is global::System.ComponentModel.INotifyPropertyChanged p2) yield return (p2, "Item");
+                            if (p1 is global::System.ComponentModel.INotifyPropertyChanged p3) yield return (p3, "Item[0]");
+                            var p4 = p1?[0];
+                            if (p4 is global::System.ComponentModel.INotifyPropertyChanged p5) yield return (p5, "C");
+                        }
+
                         var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::MyNamespace.A?, int>(
                             getter: source => (getter(source), true),
                             setter,
-                            handlers: new global::System.Tuple<global::System.Func<global::MyNamespace.A?, object?>, string>[]
-                            {
-                                new(static source => source, "B"),
-                                new(static source => source?.B, "Item"),
-                                new(static source => source?.B, "Item[0]"),
-                                new(static source => source?.B?[0], "C"),
-                            })
-
-                            {
-
-                            	Mode = mode,
-
-                            	Converter = converter,
-
-                            	ConverterParameter = converterParameter,
-
-                            	StringFormat = stringFormat,
-
-                            	Source = source,
-
-                            	FallbackValue = fallbackValue,
-
-                            	TargetNullValue = targetNullValue,
-
-                            };
+                            handlersCount: 4,
+                            GetHandlers)
+                        {
+                            Mode = mode,
+                            Converter = converter,
+                            ConverterParameter = converterParameter,
+                            StringFormat = stringFormat,
+                            Source = source,
+                            FallbackValue = fallbackValue,
+                            TargetNullValue = targetNullValue,
+                        };
                         bindableObject.SetBinding(bindableProperty, binding);
                     }
                 }
@@ -621,36 +595,6 @@ public class IntegrationTests
                     }
                 """
 			},
-			new object[]
-			{
-				"""
-                // Nullable value type on path
-                #nullable disable
-                using Microsoft.Maui.Controls;
-                using MyNamespace;
-
-                var label = new Label();
-                label.SetBinding(Label.RotationProperty, static (A a) => a.B?.C);
-
-                namespace MyNamespace
-                    {
-                        public class A
-                        {
-                            public B? B { get; set; }
-                        }
-
-                        public struct B
-                        {
-                            public C C { get; set; }
-                        }
-
-                        public class C
-                        {
-
-                        }
-                    }
-                """
-			},
 		};
 
 	[Theory]
@@ -722,38 +666,77 @@ public class IntegrationTests
                             };
                         }
 
+                        static global::System.Collections.Generic.IEnumerable<global::System.ValueTuple<global::System.ComponentModel.INotifyPropertyChanged?, string>> GetHandlers(global::MyNamespace.A? source)
+                        {
+                            if (source is global::System.ComponentModel.INotifyPropertyChanged p0) yield return (p0, "B");
+                            var p1 = source?.B;
+                            if (p1 is global::System.ComponentModel.INotifyPropertyChanged p2) yield return (p2, "C");
+                        }
+
                         var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::MyNamespace.A?, global::MyNamespace.C?>(
                             getter: source => (getter(source), true),
                             setter,
-                            handlers: new global::System.Tuple<global::System.Func<global::MyNamespace.A?, object?>, string>[]
-                            {
-                                new(static source => source, "B"),
-                                new(static source => source?.B, "C"),
-                            })
+                            handlersCount: 2,
+                            GetHandlers)
+                        {
+                            Mode = mode,
+                            Converter = converter,
+                            ConverterParameter = converterParameter,
+                            StringFormat = stringFormat,
+                            Source = source,
+                            FallbackValue = fallbackValue,
+                            TargetNullValue = targetNullValue,
+                        };
 
-                            {
-
-                            	Mode = mode,
-
-                            	Converter = converter,
-
-                            	ConverterParameter = converterParameter,
-
-                            	StringFormat = stringFormat,
-
-                            	Source = source,
-
-                            	FallbackValue = fallbackValue,
-
-                            	TargetNullValue = targetNullValue,
-
-                            };
                         bindableObject.SetBinding(bindableProperty, binding);
                     }
                 }
             }
             """,
 			result.GeneratedFiles["Path-To-Program.cs-GeneratedBindingInterceptors-7-7.g.cs"]);
+	}
+
+	[Fact]
+	public void GenerateSimpleBindingWhenNullableDisabledAndNullableValueTypeOnPath()
+	{
+		var source = """
+            #nullable disable
+            using Microsoft.Maui.Controls;
+            using MyNamespace;
+
+            var label = new Label();
+            label.SetBinding(Label.RotationProperty, static (A a) => a.B?.C);
+
+            namespace MyNamespace
+                {
+                    public class A
+                    {
+                        public B? B { get; set; }
+                    }
+
+                    public struct B
+                    {
+                        public C C { get; set; }
+                    }
+
+                    public class C
+                    {
+
+                    }
+                }
+            """;
+
+		var result = SourceGenHelpers.Run(source);
+		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
+		AssertExtensions.AssertNoDiagnostics(result);
+		// Struct B doesn't and can't implement INotifyPropertyChanged,
+		// so only one handler (for class A's property "B") is generated.
+		var key = result.GeneratedFiles.Keys.First(k => k.Contains("GeneratedBindingInterceptors-", StringComparison.Ordinal));
+		var generated = result.GeneratedFiles[key];
+		// Struct B doesn't and can't implement INotifyPropertyChanged,
+		// so only one handler (for class A's property "B") is generated.
+		Assert.Contains("handlersCount: 1,", generated, StringComparison.Ordinal);
+		Assert.Contains("\"B\"", generated, StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -861,33 +844,29 @@ public class IntegrationTests
                             };
                         }
 
+                        static global::System.Collections.Generic.IEnumerable<global::System.ValueTuple<global::System.ComponentModel.INotifyPropertyChanged?, string>> GetHandlers(global::MyNamespace.A? source)
+                        {
+                            if (source is global::System.ComponentModel.INotifyPropertyChanged p0) yield return (p0, "B");
+                            var p1 = source?.B;
+                            var p2 = p1?.C;
+                            if (p2 is global::System.ComponentModel.INotifyPropertyChanged p3) yield return (p3, "D");
+                        }
+
                         var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::MyNamespace.A?, global::MyNamespace.D?>(
                             getter: source => (getter(source), true),
                             setter,
-                            handlers: new global::System.Tuple<global::System.Func<global::MyNamespace.A?, object?>, string>[]
-                            {
-                                new(static source => source, "B"),
-                                new(static source => source?.B, "C"),
-                                new(static source => source?.B.C, "D"),
-                            })
+                            handlersCount: 2,
+                            GetHandlers)
+                        {
+                            Mode = mode,
+                            Converter = converter,
+                            ConverterParameter = converterParameter,
+                            StringFormat = stringFormat,
+                            Source = source,
+                            FallbackValue = fallbackValue,
+                            TargetNullValue = targetNullValue,
+                        };
 
-                            {
-
-                            	Mode = mode,
-
-                            	Converter = converter,
-
-                            	ConverterParameter = converterParameter,
-
-                            	StringFormat = stringFormat,
-
-                            	Source = source,
-
-                            	FallbackValue = fallbackValue,
-
-                            	TargetNullValue = targetNullValue,
-
-                            };
                         bindableObject.SetBinding(bindableProperty, binding);
                     }
                 }
@@ -1006,34 +985,31 @@ public class IntegrationTests
                             };
                         }
 
+                        static global::System.Collections.Generic.IEnumerable<global::System.ValueTuple<global::System.ComponentModel.INotifyPropertyChanged?, string>> GetHandlers(global::MyNamespace.MySourceClass source)
+                        {
+                            if (source is global::System.ComponentModel.INotifyPropertyChanged p0) yield return (p0, "A");
+                            var p1 = (source.A as global::MyNamespace.X);
+                            if (p1 is global::System.ComponentModel.INotifyPropertyChanged p2) yield return (p2, "B");
+                            var p3 = (p1?.B as global::MyNamespace.Y);
+                            if (p3 is global::System.ComponentModel.INotifyPropertyChanged p4) yield return (p4, "C");
+                            var p5 = (p3?.C as global::MyNamespace.Z);
+                            if (p5 is global::System.ComponentModel.INotifyPropertyChanged p6) yield return (p6, "D");
+                        }
+
                         var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass?>(
                             getter: source => (getter(source), true),
                             setter,
-                            handlers: new global::System.Tuple<global::System.Func<global::MyNamespace.MySourceClass, object?>, string>[]
-                            {
-                                new(static source => source, "A"),
-                                new(static source => (source.A as global::MyNamespace.X), "B"),
-                                new(static source => ((source.A as global::MyNamespace.X)?.B as global::MyNamespace.Y), "C"),
-                                new(static source => (((source.A as global::MyNamespace.X)?.B as global::MyNamespace.Y)?.C as global::MyNamespace.Z), "D"),
-                            })
-
-                            {
-
-                            	Mode = mode,
-
-                            	Converter = converter,
-
-                            	ConverterParameter = converterParameter,
-
-                            	StringFormat = stringFormat,
-
-                            	Source = source,
-
-                            	FallbackValue = fallbackValue,
-
-                            	TargetNullValue = targetNullValue,
-
-                            };
+                            handlersCount: 4,
+                            GetHandlers)
+                        {
+                            Mode = mode,
+                            Converter = converter,
+                            ConverterParameter = converterParameter,
+                            StringFormat = stringFormat,
+                            Source = source,
+                            FallbackValue = fallbackValue,
+                            TargetNullValue = targetNullValue,
+                        };
 
                         bindableObject.SetBinding(bindableProperty, binding);
                     }
@@ -1147,34 +1123,31 @@ public class IntegrationTests
                             };
                         }
 
+                        static global::System.Collections.Generic.IEnumerable<global::System.ValueTuple<global::System.ComponentModel.INotifyPropertyChanged?, string>> GetHandlers(global::MyNamespace.MySourceClass source)
+                        {
+                            if (source is global::System.ComponentModel.INotifyPropertyChanged p0) yield return (p0, "A");
+                            var p1 = (source.A as global::MyNamespace.X);
+                            if (p1 is global::System.ComponentModel.INotifyPropertyChanged p2) yield return (p2, "B");
+                            var p3 = (p1?.B as global::MyNamespace.Y);
+                            if (p3 is global::System.ComponentModel.INotifyPropertyChanged p4) yield return (p4, "C");
+                            var p5 = (p3?.C as global::MyNamespace.Z);
+                            if (p5 is global::System.ComponentModel.INotifyPropertyChanged p6) yield return (p6, "D");
+                        }
+
                         var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass>(
                             getter: source => (getter(source), true),
                             setter,
-                            handlers: new global::System.Tuple<global::System.Func<global::MyNamespace.MySourceClass, object?>, string>[]
-                            {
-                                new(static source => source, "A"),
-                                new(static source => (source.A as global::MyNamespace.X), "B"),
-                                new(static source => ((source.A as global::MyNamespace.X)?.B as global::MyNamespace.Y), "C"),
-                                new(static source => (((source.A as global::MyNamespace.X)?.B as global::MyNamespace.Y)?.C as global::MyNamespace.Z), "D"),
-                            })
-
-                            {
-
-                            	Mode = mode,
-
-                            	Converter = converter,
-
-                            	ConverterParameter = converterParameter,
-
-                            	StringFormat = stringFormat,
-
-                            	Source = source,
-
-                            	FallbackValue = fallbackValue,
-
-                            	TargetNullValue = targetNullValue,
-
-                            };
+                            handlersCount: 4,
+                            GetHandlers)
+                        {
+                            Mode = mode,
+                            Converter = converter,
+                            ConverterParameter = converterParameter,
+                            StringFormat = stringFormat,
+                            Source = source,
+                            FallbackValue = fallbackValue,
+                            TargetNullValue = targetNullValue,
+                        };
 
                         bindableObject.SetBinding(bindableProperty, binding);
                     }
@@ -1188,25 +1161,31 @@ public class IntegrationTests
 	public void GenerateBindingWithForcedConditionalAccessAfterCast()
 	{
 		var source = $$"""
+            #nullable disable
+            #pragma warning disable CS0067
             using Microsoft.Maui.Controls;
+            using System.ComponentModel;
             var label = new Label();
             label.SetBinding(Label.TextProperty, static (MyNamespace.A n) => ((MyNamespace.Wrapper)n.X).Wrapped.Y.Value.Length);
 
             namespace MyNamespace
             {
-                public struct A
+                public class A : INotifyPropertyChanged
                 {
+                    public event PropertyChangedEventHandler PropertyChanged;
                     public object X;
                     public B Y;
                 }
 
-                public struct B
+                public class B : INotifyPropertyChanged
                 {
+                    public event PropertyChangedEventHandler PropertyChanged;
                     public string Value;
                 }
 
-                public class Wrapper
+                public class Wrapper : INotifyPropertyChanged
                 {
+                    public event PropertyChangedEventHandler PropertyChanged;
                     public A Wrapped;
                 }
             }
@@ -1255,7 +1234,7 @@ public class IntegrationTests
                     public static void SetBinding{{id}}(
                         this global::Microsoft.Maui.Controls.BindableObject bindableObject,
                         global::Microsoft.Maui.Controls.BindableProperty bindableProperty,
-                        global::System.Func<global::MyNamespace.A, int> getter,
+                        global::System.Func<global::MyNamespace.A?, int> getter,
                         global::Microsoft.Maui.Controls.BindingMode mode = global::Microsoft.Maui.Controls.BindingMode.Default,
                         global::Microsoft.Maui.Controls.IValueConverter? converter = null,
                         object? converterParameter = null,
@@ -1264,7 +1243,7 @@ public class IntegrationTests
                         object? fallbackValue = null,
                         object? targetNullValue = null)
                     {
-                        global::System.Action<global::MyNamespace.A, int>? setter = null;
+                        global::System.Action<global::MyNamespace.A?, int>? setter = null;
                         if (ShouldUseSetter(mode, bindableProperty))
                         {
                             setter = static (source, value) =>
@@ -1273,42 +1252,38 @@ public class IntegrationTests
                             };
                         }
 
-                        var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::MyNamespace.A, int>(
+                        static global::System.Collections.Generic.IEnumerable<global::System.ValueTuple<global::System.ComponentModel.INotifyPropertyChanged?, string>> GetHandlers(global::MyNamespace.A? source)
+                        {
+                            yield return (source, "X");
+                            var p0 = (source?.X as global::MyNamespace.Wrapper);
+                            yield return (p0, "Wrapped");
+                            var p1 = p0?.Wrapped;
+                            yield return (p1, "Y");
+                            var p2 = p1?.Y;
+                            yield return (p2, "Value");
+                        }
+
+                        var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::MyNamespace.A?, int>(
                             getter: source => (getter(source), true),
                             setter,
-                            handlers: new global::System.Tuple<global::System.Func<global::MyNamespace.A, object?>, string>[]
-                            {
-                                new(static source => source, "X"),
-                                new(static source => (source.X as global::MyNamespace.Wrapper), "Wrapped"),
-                                new(static source => (source.X as global::MyNamespace.Wrapper)?.Wrapped, "Y"),
-                                new(static source => (source.X as global::MyNamespace.Wrapper)?.Wrapped.Y, "Value"),
-                                new(static source => (source.X as global::MyNamespace.Wrapper)?.Wrapped.Y.Value, "Length"),
-                            })
-
-                            {
-
-                            	Mode = mode,
-
-                            	Converter = converter,
-
-                            	ConverterParameter = converterParameter,
-
-                            	StringFormat = stringFormat,
-
-                            	Source = source,
-
-                            	FallbackValue = fallbackValue,
-
-                            	TargetNullValue = targetNullValue,
-
-                            };
+                            handlersCount: 4,
+                            GetHandlers)
+                        {
+                            Mode = mode,
+                            Converter = converter,
+                            ConverterParameter = converterParameter,
+                            StringFormat = stringFormat,
+                            Source = source,
+                            FallbackValue = fallbackValue,
+                            TargetNullValue = targetNullValue,
+                        };
 
                         bindableObject.SetBinding(bindableProperty, binding);
                     }
                 }
             }
             """,
-			result.GeneratedFiles["Path-To-Program.cs-GeneratedBindingInterceptors-3-7.g.cs"]);
+			result.GeneratedFiles["Path-To-Program.cs-GeneratedBindingInterceptors-6-7.g.cs"]);
 	}
 
 	[Fact]
@@ -1413,36 +1388,29 @@ public class IntegrationTests
                             };
                         }
 
+                        static global::System.Collections.Generic.IEnumerable<global::System.ValueTuple<global::System.ComponentModel.INotifyPropertyChanged?, string>> GetHandlers(global::MyNamespace.MySourceClass source)
+                        {
+                            if (source is global::System.ComponentModel.INotifyPropertyChanged p0) yield return (p0, "Item");
+                            if (source is global::System.ComponentModel.INotifyPropertyChanged p1) yield return (p1, "Item[12]");
+                            var p2 = source[12];
+                            if (p2 is global::System.ComponentModel.INotifyPropertyChanged p3) yield return (p3, "Indexer");
+                            if (p2 is global::System.ComponentModel.INotifyPropertyChanged p4) yield return (p4, "Indexer[Abc]");
+                        }
+
                         var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass?>(
                             getter: source => (getter(source), true),
                             setter,
-                            handlers: new global::System.Tuple<global::System.Func<global::MyNamespace.MySourceClass, object?>, string>[]
-                            {
-                                new(static source => source, "Item"),
-                                new(static source => source, "Item[12]"),
-                                new(static source => source[12], "Indexer"),
-                                new(static source => source[12], "Indexer[Abc]"),
-                                new(static source => source[12]?["Abc"], "Item"),
-                                new(static source => source[12]?["Abc"], "Item[0]"),
-                            })
-
-                            {
-
-                            	Mode = mode,
-
-                            	Converter = converter,
-
-                            	ConverterParameter = converterParameter,
-
-                            	StringFormat = stringFormat,
-
-                            	Source = source,
-
-                            	FallbackValue = fallbackValue,
-
-                            	TargetNullValue = targetNullValue,
-
-                            };
+                            handlersCount: 4,
+                            GetHandlers)
+                        {
+                            Mode = mode,
+                            Converter = converter,
+                            ConverterParameter = converterParameter,
+                            StringFormat = stringFormat,
+                            Source = source,
+                            FallbackValue = fallbackValue,
+                            TargetNullValue = targetNullValue,
+                        };
 
                         bindableObject.SetBinding(bindableProperty, binding);
                     }
@@ -1539,32 +1507,27 @@ public class IntegrationTests
                             };
                         }
 
+                        static global::System.Collections.Generic.IEnumerable<global::System.ValueTuple<global::System.ComponentModel.INotifyPropertyChanged?, string>> GetHandlers(global::MyNamespace.MySourceClass source)
+                        {
+                            if (source is global::System.ComponentModel.INotifyPropertyChanged p0) yield return (p0, "_button");
+                            var p1 = GetUnsafeField__button(source);
+                            yield return (p1, "Text");
+                        }
+
                         var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::MyNamespace.MySourceClass, string>(
                             getter: source => (getter(source), true),
                             setter,
-                            handlers: new global::System.Tuple<global::System.Func<global::MyNamespace.MySourceClass, object?>, string>[]
-                            {
-                                new(static source => source, "_button"),
-                                new(static source => GetUnsafeField__button(source), "Text"),
-                            })
-
-                            {
-
-                            	Mode = mode,
-
-                            	Converter = converter,
-
-                            	ConverterParameter = converterParameter,
-
-                            	StringFormat = stringFormat,
-
-                            	Source = source,
-
-                            	FallbackValue = fallbackValue,
-
-                            	TargetNullValue = targetNullValue,
-
-                            };
+                            handlersCount: 2,
+                            GetHandlers)
+                        {
+                            Mode = mode,
+                            Converter = converter,
+                            ConverterParameter = converterParameter,
+                            StringFormat = stringFormat,
+                            Source = source,
+                            FallbackValue = fallbackValue,
+                            TargetNullValue = targetNullValue,
+                        };
 
                         bindableObject.SetBinding(bindableProperty, binding);
 
@@ -1665,32 +1628,27 @@ public class IntegrationTests
                             };
                         }
 
+                        static global::System.Collections.Generic.IEnumerable<global::System.ValueTuple<global::System.ComponentModel.INotifyPropertyChanged?, string>> GetHandlers(global::MyNamespace.MySourceClass source)
+                        {
+                            if (source is global::System.ComponentModel.INotifyPropertyChanged p0) yield return (p0, "Button");
+                            var p1 = GetUnsafeProperty_Button(source);
+                            yield return (p1, "Text");
+                        }
+
                         var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::MyNamespace.MySourceClass, string>(
                             getter: source => (getter(source), true),
                             setter,
-                            handlers: new global::System.Tuple<global::System.Func<global::MyNamespace.MySourceClass, object?>, string>[]
-                            {
-                                new(static source => source, "Button"),
-                                new(static source => GetUnsafeProperty_Button(source), "Text"),
-                            })
-
-                            {
-
-                            	Mode = mode,
-
-                            	Converter = converter,
-
-                            	ConverterParameter = converterParameter,
-
-                            	StringFormat = stringFormat,
-
-                            	Source = source,
-
-                            	FallbackValue = fallbackValue,
-
-                            	TargetNullValue = targetNullValue,
-
-                            };
+                            handlersCount: 2,
+                            GetHandlers)
+                        {
+                            Mode = mode,
+                            Converter = converter,
+                            ConverterParameter = converterParameter,
+                            StringFormat = stringFormat,
+                            Source = source,
+                            FallbackValue = fallbackValue,
+                            TargetNullValue = targetNullValue,
+                        };
 
                         bindableObject.SetBinding(bindableProperty, binding);
 
@@ -1790,31 +1748,25 @@ public class IntegrationTests
                             };
                         }
 
+                        static global::System.Collections.Generic.IEnumerable<global::System.ValueTuple<global::System.ComponentModel.INotifyPropertyChanged?, string>> GetHandlers(global::MyNamespace.MySourceClass source)
+                        {
+                            if (source is global::System.ComponentModel.INotifyPropertyChanged p0) yield return (p0, "Text");
+                        }
+
                         var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::MyNamespace.MySourceClass, string>(
                             getter: source => (getter(source), true),
                             setter,
-                            handlers: new global::System.Tuple<global::System.Func<global::MyNamespace.MySourceClass, object?>, string>[]
-                            {
-                                new(static source => source, "Text"),
-                            })
-
-                            {
-
-                            	Mode = mode,
-
-                            	Converter = converter,
-
-                            	ConverterParameter = converterParameter,
-
-                            	StringFormat = stringFormat,
-
-                            	Source = source,
-
-                            	FallbackValue = fallbackValue,
-
-                            	TargetNullValue = targetNullValue,
-
-                            };
+                            handlersCount: 1,
+                            GetHandlers)
+                        {
+                            Mode = mode,
+                            Converter = converter,
+                            ConverterParameter = converterParameter,
+                            StringFormat = stringFormat,
+                            Source = source,
+                            FallbackValue = fallbackValue,
+                            TargetNullValue = targetNullValue,
+                        };
 
                         bindableObject.SetBinding(bindableProperty, binding);
 
@@ -1914,37 +1866,27 @@ public class IntegrationTests
                             };
                         }
 
+                        static global::System.Collections.Generic.IEnumerable<global::System.ValueTuple<global::System.ComponentModel.INotifyPropertyChanged?, string>> GetHandlers(global::MyNamespace.MySourceClass source)
+                        {
+                            if (source is global::System.ComponentModel.INotifyPropertyChanged p0) yield return (p0, "Text");
+                        }
+
                         var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::MyNamespace.MySourceClass, int>(
                             getter: source => (getter(source), true),
                             setter,
-                            handlers: new global::System.Tuple<global::System.Func<global::MyNamespace.MySourceClass, object?>, string>[]
-                            {
-                                new(static source => source, "Text"),
-                            	new(static source => GetUnsafeProperty_Text(source), "Length"),
-                            })
-
-                            {
-
-                            	Mode = mode,
-
-                            	Converter = converter,
-
-                            	ConverterParameter = converterParameter,
-
-                            	StringFormat = stringFormat,
-
-                            	Source = source,
-
-                            	FallbackValue = fallbackValue,
-
-                            	TargetNullValue = targetNullValue,
-
-                            };
+                            handlersCount: 1,
+                            GetHandlers)
+                        {
+                            Mode = mode,
+                            Converter = converter,
+                            ConverterParameter = converterParameter,
+                            StringFormat = stringFormat,
+                            Source = source,
+                            FallbackValue = fallbackValue,
+                            TargetNullValue = targetNullValue,
+                        };
 
                         bindableObject.SetBinding(bindableProperty, binding);
-
-                        [global::System.Runtime.CompilerServices.UnsafeAccessor(global::System.Runtime.CompilerServices.UnsafeAccessorKind.Method, Name = "get_Text")]
-                        static extern string GetUnsafeProperty_Text(global::MyNamespace.MySourceClass source);
                     }
                 }
             }
@@ -2036,31 +1978,25 @@ public class IntegrationTests
                             };
                         }
 
+                        static global::System.Collections.Generic.IEnumerable<global::System.ValueTuple<global::System.ComponentModel.INotifyPropertyChanged?, string>> GetHandlers(global::MyNamespace.MyClass source)
+                        {
+                            if (source is global::System.ComponentModel.INotifyPropertyChanged p0) yield return (p0, "Text");
+                        }
+
                         var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::MyNamespace.MyClass, string>(
                             getter: source => (getter(source), true),
                             setter,
-                            handlers: new global::System.Tuple<global::System.Func<global::MyNamespace.MyClass, object?>, string>[]
-                            {
-                                new(static source => source, "Text"),
-                            })
-
-                            {
-
-                            	Mode = mode,
-
-                            	Converter = converter,
-
-                            	ConverterParameter = converterParameter,
-
-                            	StringFormat = stringFormat,
-
-                            	Source = source,
-
-                            	FallbackValue = fallbackValue,
-
-                            	TargetNullValue = targetNullValue,
-
-                            };
+                            handlersCount: 1,
+                            GetHandlers)
+                        {
+                            Mode = mode,
+                            Converter = converter,
+                            ConverterParameter = converterParameter,
+                            StringFormat = stringFormat,
+                            Source = source,
+                            FallbackValue = fallbackValue,
+                            TargetNullValue = targetNullValue,
+                        };
 
                         bindableObject.SetBinding(bindableProperty, binding);
                     }
@@ -2152,31 +2088,26 @@ public class IntegrationTests
 							};
 						}
 
+						static global::System.Collections.Generic.IEnumerable<global::System.ValueTuple<global::System.ComponentModel.INotifyPropertyChanged?, string>> GetHandlers(global::Microsoft.Maui.Controls.Slider source)
+						{
+							yield return (source, "Value");
+						}
+
 						var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::Microsoft.Maui.Controls.Slider, double>(
 							getter: source => (getter(source), true),
 							setter,
-							handlers: new global::System.Tuple<global::System.Func<global::Microsoft.Maui.Controls.Slider, object?>, string>[]
-							{
-								new(static source => source, "Value"),
-							})
+							handlersCount: 1,
+							GetHandlers)
+						{
+							Mode = mode,
+							Converter = converter,
+							ConverterParameter = converterParameter,
+							StringFormat = stringFormat,
+							Source = source,
+							FallbackValue = fallbackValue,
+							TargetNullValue = targetNullValue,
+						};
 
-							{
-
-								Mode = mode,
-
-								Converter = converter,
-
-								ConverterParameter = converterParameter,
-
-								StringFormat = stringFormat,
-
-								Source = source,
-
-								FallbackValue = fallbackValue,
-
-								TargetNullValue = targetNullValue,
-
-							};
 						return binding;
 					}
 				}
@@ -2271,31 +2202,26 @@ public class IntegrationTests
 							};
 						}
 
+						static global::System.Collections.Generic.IEnumerable<global::System.ValueTuple<global::System.ComponentModel.INotifyPropertyChanged?, string>> GetHandlers(global::Microsoft.Maui.Controls.Slider source)
+						{
+							yield return (source, "Value");
+						}
+
 						var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::Microsoft.Maui.Controls.Slider, double>(
 							getter: source => (getter(source), true),
 							setter,
-							handlers: new global::System.Tuple<global::System.Func<global::Microsoft.Maui.Controls.Slider, object?>, string>[]
-							{
-								new(static source => source, "Value"),
-							})
+							handlersCount: 1,
+							GetHandlers)
+						{
+							Mode = mode,
+							Converter = converter,
+							ConverterParameter = converterParameter,
+							StringFormat = stringFormat,
+							Source = source,
+							FallbackValue = fallbackValue,
+							TargetNullValue = targetNullValue,
+						};
 
-							{
-
-								Mode = mode,
-
-								Converter = converter,
-
-								ConverterParameter = converterParameter,
-
-								StringFormat = stringFormat,
-
-								Source = source,
-
-								FallbackValue = fallbackValue,
-
-								TargetNullValue = targetNullValue,
-
-							};
 						bindableObject.SetBinding(bindableProperty, binding);
 					}
 				}
@@ -2446,23 +2372,28 @@ public class IntegrationTests
 			                };
 			            }
 
+			            static global::System.Collections.Generic.IEnumerable<global::System.ValueTuple<global::System.ComponentModel.INotifyPropertyChanged?, string>> GetHandlers(global::Foo source)
+			            {
+			                if (source is global::System.ComponentModel.INotifyPropertyChanged p0) yield return (p0, "NullableObject");
+			                var p1 = source.NullableObject;
+			                if (p1 is global::System.ComponentModel.INotifyPropertyChanged p2) yield return (p2, "StringProperty");
+			            }
+
 			            var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::Foo, string?>(
 			                getter: source => (getter(source), true),
 			                setter,
-			                handlers: new global::System.Tuple<global::System.Func<global::Foo, object?>, string>[]
-			                {
-			                    new(static source => source, "NullableObject"),
-			                    new(static source => source.NullableObject, "StringProperty"),
-			                })
-			                {
-			                	Mode = mode,
-			                	Converter = converter,
-			                	ConverterParameter = converterParameter,
-			                	StringFormat = stringFormat,
-			                	Source = source,
-			                	FallbackValue = fallbackValue,
-			                	TargetNullValue = targetNullValue,
-			                };
+			                handlersCount: 2,
+			                GetHandlers)
+			            {
+			                Mode = mode,
+			                Converter = converter,
+			                ConverterParameter = converterParameter,
+			                StringFormat = stringFormat,
+			                Source = source,
+			                FallbackValue = fallbackValue,
+			                TargetNullValue = targetNullValue,
+			            };
+
 			            bindableObject.SetBinding(bindableProperty, binding);
 			        }
 			    }

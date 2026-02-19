@@ -167,17 +167,21 @@ public static class BindingCodeWriter
 			AppendLine('}');
 			AppendBlankLine();
 
+			// Generate the GetHandlers local function first (returns handlersCount)
+			var handlersCount = AppendHandlersLocalFunction(binding);
+
 			// Create instance of TypedBinding
 			AppendLines($$"""
 				var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<{{binding.SourceType}}, {{binding.PropertyType}}>(
 					getter: source => (getter(source), true),
 					setter,
+					handlersCount: {{handlersCount}},
 				""");
 			Indent();
-			Append("handlers: ");
 
-			AppendHandlersArray(binding);
-			Append(")");
+			Append(handlersCount > 0 ? "GetHandlers" : "handlers: null");
+			Append(")");;
+			Unindent();
 			Unindent();
 			
 			// Only generate property setters for the properties indicated by the flags
@@ -259,9 +263,11 @@ public static class BindingCodeWriter
 			AppendLine($"[global::System.Runtime.CompilerServices.InterceptsLocationAttribute({location.Version}, @\"{location.Data}\")]");
 		}
 
-		private void AppendSetterLambda(BindingInvocationDescription binding, string sourceVariableName = "source", string valueVariableName = "value")
-		{
-			AppendLine($"static ({sourceVariableName}, {valueVariableName}) =>");
+	private void AppendSetterLambda(BindingInvocationDescription binding, string sourceVariableName = "source", string valueVariableName = "value")
+	{
+		// The setter lambda is always static because it only accesses its parameters and local functions
+		// (unsafe accessors are static extern local functions that can be called from static lambdas)
+		AppendLine($"static ({sourceVariableName}, {valueVariableName}) =>");
 			AppendLine('{');
 			Indent();
 
@@ -329,56 +335,261 @@ public static class BindingCodeWriter
 			AppendLine("};");
 		}
 
-		private void AppendHandlersArray(BindingInvocationDescription binding)
+	/// <summary>
+	/// Generates the GetHandlers local function.
+	/// Returns the handlers count, or 0 if the path is empty.
+	/// </summary>
+	private int AppendHandlersLocalFunction(BindingInvocationDescription binding)
+	{
+		if (!binding.Path.Any())
 		{
-			AppendLine($"new global::System.Tuple<global::System.Func<{binding.SourceType}, object?>, string>[]");
-			AppendLine('{');
+			return 0;
+		}
 
-			Indent();
+		int handlersCount = 0;
+		var statements = new List<string>();
 
-			string nextExpression = "source";
-			bool forceConditonalAccessToNextPart = false;
-			foreach (var part in binding.Path)
+		string currentVar = "source";
+		int varIndex = 0;
+		// If the source type is nullable, we need to use conditional access from the start
+		bool useConditionalAccess = binding.SourceType.IsNullable;
+		var pathList = binding.Path.ToList();
+		
+		// Track whether the previous part was a cast (which means subsequent access needs ?.)
+		bool afterCast = false;
+		
+		// Single pass: interleave yield statements and variable declarations
+		// Pattern: for each part, first yield for the current variable, then declare the next variable
+		for (int i = 0; i < pathList.Count; i++)
+		{
+			var part = pathList[i];
+
+			// Handle Cast parts - they generate their own variable statement when followed by ConditionalAccess
+			if (part is Cast castPart)
 			{
-				var previousExpression = nextExpression;
-				nextExpression = AccessExpressionBuilder.ExtendExpression(previousExpression, MaybeWrapInConditionalAccess(part, forceConditonalAccessToNextPart));
-				forceConditonalAccessToNextPart = part is Cast;
-
-				// Make binding react for PropertyChanged events on indexer itself
-				if (part is IndexAccess indexAccess)
+				// If the next part is a ConditionalAccess, generate a separate cast variable
+				// Otherwise, the cast is combined with the preceding MemberAccess
+				if (i + 1 < pathList.Count && pathList[i + 1] is ConditionalAccess && HasSubsequentHandlerPart(pathList, i + 1))
 				{
-					AppendLine($"new(static source => {previousExpression}, \"{indexAccess.DefaultMemberName}\"),");
+					var targetType = castPart.TargetType;
+					var castExpression = targetType.IsValueType 
+						? $"({currentVar} as {targetType.GlobalName}?)"
+						: $"({currentVar} as {targetType.GlobalName})";
+					var nextVar = $"p{varIndex++}";
+					statements.Add($"var {nextVar} = {castExpression};");
+					currentVar = nextVar;
+					afterCast = true;
 				}
-				else if (part is ConditionalAccess conditionalAccess && conditionalAccess.Part is IndexAccess innerIndexAccess)
-				{
-					AppendLine($"new(static source => {previousExpression}, \"{innerIndexAccess.DefaultMemberName}\"),");
-				}
+				continue;
+			}
 
-				// Some parts don't have a property name, so we can't generate a handler for them (for example casts)
-				if (part.PropertyName is string propertyName)
+			// First: emit yield statement for current part using the current variable
+			string? propertyName = GetPropertyName(part);
+			if (propertyName != null)
+			{
+			// Yield the handler based on whether the type implements INPC
+			if (part is MemberAccess memberAccess)
+			{
+				if (memberAccess.DefinitelyImplementsINPC)
 				{
-					AppendLine($"new(static source => {previousExpression}, \"{propertyName}\"),");
+					// Type definitely implements INPC, no cast needed
+					statements.Add($"yield return ({currentVar}, \"{propertyName}\");");
+					handlersCount++;
+				}
+				else if (memberAccess.MaybeImplementsINPC)
+				{
+					// Type might implement INPC at runtime, use is pattern
+					var handlerVar = $"p{varIndex++}";
+					statements.Add($"if ({currentVar} is {INPC} {handlerVar}) yield return ({handlerVar}, \"{propertyName}\");");
+					handlersCount++;
 				}
 			}
-			Unindent();
-
-			Append('}');
-
-			static IPathPart MaybeWrapInConditionalAccess(IPathPart part, bool forceConditonalAccess)
+			else if (part is IndexAccess indexAccess)
 			{
-				if (!forceConditonalAccess)
+				if (indexAccess.DefinitelyImplementsINPC)
 				{
-					return part;
+					// Type definitely implements INPC, no cast needed
+					statements.Add($"yield return ({currentVar}, \"{propertyName}\");");
+					handlersCount++;
 				}
-
-				return part switch
+				else if (indexAccess.MaybeImplementsINPC)
 				{
-					MemberAccess memberAccess => new ConditionalAccess(memberAccess),
-					IndexAccess indexAccess => new ConditionalAccess(indexAccess),
-					_ => part,
-				};
+					// Type might implement INPC at runtime, use is pattern
+					var handlerVar = $"p{varIndex++}";
+					statements.Add($"if ({currentVar} is {INPC} {handlerVar}) yield return ({handlerVar}, \"{propertyName}\");");
+					handlersCount++;
+				}
+			}
+			else if (part is ConditionalAccess ca && ca.Part is MemberAccess caMemberAccess)
+			{
+				if (caMemberAccess.DefinitelyImplementsINPC)
+				{
+					statements.Add($"yield return ({currentVar}, \"{propertyName}\");");
+					handlersCount++;
+				}
+				else if (caMemberAccess.MaybeImplementsINPC)
+				{
+					var handlerVar = $"p{varIndex++}";
+					statements.Add($"if ({currentVar} is {INPC} {handlerVar}) yield return ({handlerVar}, \"{propertyName}\");");
+					handlersCount++;
+				}
+			}
+			else if (part is ConditionalAccess caIdx && caIdx.Part is IndexAccess caIndexAccess)
+			{
+				if (caIndexAccess.DefinitelyImplementsINPC)
+				{
+					statements.Add($"yield return ({currentVar}, \"{propertyName}\");");
+					handlersCount++;
+				}
+				else if (caIndexAccess.MaybeImplementsINPC)
+				{
+					var handlerVar = $"p{varIndex++}";
+					statements.Add($"if ({currentVar} is {INPC} {handlerVar}) yield return ({handlerVar}, \"{propertyName}\");");
+					handlersCount++;
+				}
+			}
+
+			// For indexers, also yield a handler for the specific indexed property
+			if (part is IndexAccess || (part is ConditionalAccess { Part: IndexAccess }))
+			{
+				var idx = part is IndexAccess ia ? ia : ((ConditionalAccess)part).Part as IndexAccess;
+				if (idx != null)
+				{
+					if (idx.DefinitelyImplementsINPC)
+					{
+						statements.Add($"yield return ({currentVar}, \"{idx.PropertyName}\");");
+						handlersCount++;
+					}
+					else if (idx.MaybeImplementsINPC)
+					{
+						var handlerVar = $"p{varIndex++}";
+						statements.Add($"if ({currentVar} is {INPC} {handlerVar}) yield return ({handlerVar}, \"{idx.PropertyName}\");");
+						handlersCount++;
+					}
+				}
 			}
 		}
+
+		// Check if there's a Cast immediately following this part
+		// Combine it with the current MemberAccess variable declaration
+		Cast? followingCast = null;
+		if (i + 1 < pathList.Count && pathList[i + 1] is Cast cast)
+		{
+			followingCast = cast;
+		}
+
+		// Check if there's a subsequent handler part (skipping over casts)
+		bool hasSubsequent = HasSubsequentHandlerPart(pathList, i + 1);
+
+		// Second: declare the next variable (if there's a subsequent part that will use it)
+		if (hasSubsequent)
+			{
+				var memberExpression = BuildNextExpression(currentVar, part, useConditionalAccess || afterCast);
+				
+				// If there's a following cast to be combined, include it in the variable assignment
+				string nextExpression;
+				if (followingCast != null)
+				{
+					var targetType = followingCast.TargetType;
+					nextExpression = targetType.IsValueType 
+						? $"({memberExpression} as {targetType.GlobalName}?)"
+						: $"({memberExpression} as {targetType.GlobalName})";
+					afterCast = true;  // Next access needs conditional access
+					i++; // Skip the Cast part, it's been combined with this MemberAccess
+				}
+				else
+				{
+					nextExpression = memberExpression;
+					bool wasConditionalAccess = useConditionalAccess || afterCast;
+					afterCast = false;
+					
+					// Determine if subsequent accesses need conditional access (?.)
+					var innerPart = part is ConditionalAccess ca ? ca.Part : part;
+					if (innerPart is MemberAccess memberAccess && memberAccess.MemberType?.IsNullable == true)
+					{
+						useConditionalAccess = true;
+					}
+					else if (innerPart is IndexAccess)
+					{
+						useConditionalAccess = true;
+					}
+					else if (wasConditionalAccess)
+					{
+						// After conditional access (?.), the result can be null
+						// (value types become Nullable<T>, references become nullable)
+						// so subsequent accesses also need ?.
+						useConditionalAccess = true;
+					}
+					else
+					{
+						useConditionalAccess = false;
+					}
+				}
+				
+				var nextVar = $"p{varIndex++}";
+				statements.Add($"var {nextVar} = {nextExpression};");
+				currentVar = nextVar;
+			}
+		}
+
+		// If no handlers were generated, don't generate the function
+		if (handlersCount == 0)
+		{
+			return 0;
+		}
+
+		// The GetHandlers function is always static because:
+		// - Unsafe accessors are static extern local functions that can be called from static methods
+		// - The function only accesses its parameter 'source' and other static local functions
+
+		// Generate the local function
+		AppendLine($"static {IEnumerableOfINPCTuple} GetHandlers({binding.SourceType} source)");
+		AppendLine('{');
+		Indent();
+
+		// Output all interleaved statements (yield return followed by var declarations)
+		foreach (var statement in statements)
+		{
+			AppendLine(statement);
+		}
+
+		Unindent();
+		AppendLine('}');
+		AppendBlankLine();
+
+		return handlersCount;
+
+		static string BuildNextExpression(string currentVar, IPathPart part, bool useConditionalAccess)
+		{
+			// If the part is wrapped in ConditionalAccess, we should use ?.
+			// Otherwise, use the passed-in useConditionalAccess flag
+			bool shouldUseConditionalAccess = part is ConditionalAccess || useConditionalAccess;
+			
+			// Unwrap ConditionalAccess to get the actual part
+			var innerPart = part is ConditionalAccess ca ? ca.Part : part;
+			var conditionalOp = shouldUseConditionalAccess ? "?" : "";
+
+			var baseExpression = innerPart switch
+			{
+				IndexAccess { Index: int numericIndex } => 
+					$"{currentVar}{conditionalOp}[{numericIndex}]",
+				IndexAccess { Index: string stringIndex } => 
+					$"{currentVar}{conditionalOp}[\"{stringIndex}\"]",
+				MemberAccess { Kind: AccessorKind.Field, IsGetterAccessible: false } memberAccess => 
+					$"{UnsafeAccessorsMethodName.CreateUnsafeFieldAccessorMethodName(memberAccess.MemberName)}({currentVar})",
+				MemberAccess { Kind: AccessorKind.Property, IsGetterAccessible: false } memberAccess => 
+					$"{UnsafeAccessorsMethodName.CreateUnsafePropertyAccessorGetMethodName(memberAccess.MemberName)}({currentVar})",
+				MemberAccess memberAccess => 
+					$"{currentVar}{conditionalOp}.{memberAccess.MemberName}",
+				_ => throw new NotSupportedException($"Unsupported path part type: {innerPart.GetType()}"),
+			};
+
+			return baseExpression;
+		}
+	}
+
+		private const string INPC = "global::System.ComponentModel.INotifyPropertyChanged";
+		private const string IEnumerableOfINPCTuple = $"global::System.Collections.Generic.IEnumerable<global::System.ValueTuple<{INPC}?, string>>";
 
 		private void AppendBindingPropertySetters(BindingPropertyFlags propertyFlags)
 		{
@@ -412,7 +623,49 @@ public static class BindingCodeWriter
 			Append('}');
 		}
 
-		private void AppendUnsafeAccessors(BindingInvocationDescription binding)
+		/// <summary>
+	/// Checks if any part after startIndex will yield a handler.
+	/// A part yields a handler only if it has a property name AND its containing type implements or maybe implements INPC.
+	/// </summary>
+	private static bool HasSubsequentHandlerPart(List<IPathPart> pathList, int startIndex)
+	{
+		for (int j = startIndex; j < pathList.Count; j++)
+		{
+			var nextPart = pathList[j];
+			if (nextPart is Cast)
+			{
+				continue;
+			}
+			if (GetPropertyName(nextPart) != null && WillYieldHandler(nextPart))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private static bool WillYieldHandler(IPathPart part)
+	{
+		return part switch
+		{
+			MemberAccess m => m.DefinitelyImplementsINPC || m.MaybeImplementsINPC,
+			IndexAccess i => i.DefinitelyImplementsINPC || i.MaybeImplementsINPC,
+			ConditionalAccess { Part: MemberAccess m } => m.DefinitelyImplementsINPC || m.MaybeImplementsINPC,
+			ConditionalAccess { Part: IndexAccess i } => i.DefinitelyImplementsINPC || i.MaybeImplementsINPC,
+			_ => false,
+		};
+	}
+
+	private static string? GetPropertyName(IPathPart part) => part switch
+	{
+		MemberAccess memberAccess => memberAccess.PropertyName,
+		IndexAccess indexAccess => indexAccess.DefaultMemberName,
+		ConditionalAccess { Part: MemberAccess innerMember } => innerMember.PropertyName,
+		ConditionalAccess { Part: IndexAccess innerIndex } => innerIndex.DefaultMemberName,
+		_ => null, // Casts don't have property names
+	};
+
+	private void AppendUnsafeAccessors(BindingInvocationDescription binding)
 		{
 			// Append unsafe accessors as local methods for members with inaccessible accessors
 			var membersWithInaccessibleAccessors = binding.Path.OfType<MemberAccess>().Where(m => m.HasInaccessibleAccessor);
@@ -434,13 +687,16 @@ public static class BindingCodeWriter
 				}
 				else if (member.Kind == AccessorKind.Property)
 				{
+					var pathList = binding.Path.ToList();
+					int memberIndex = pathList.IndexOf(member);
 					bool isLastPart = member.Equals(binding.Path.Last());
 					bool needsGetterForLastPart = binding.RequiresAllUnsafeGetters;
+					bool hasSubsequentHandler = memberIndex >= 0 && HasSubsequentHandlerPart(pathList, memberIndex + 1);
 
-					if (!member.IsGetterAccessible && (!isLastPart || needsGetterForLastPart))
+					if (!member.IsGetterAccessible && (!isLastPart || needsGetterForLastPart) && hasSubsequentHandler)
 					{
-						// we don't need the unsafe getter if the item is the very last part of the path
-						// because we don't need to access its value while constructing the handlers array
+						// we don't need the unsafe getter if no subsequent part yields a handler
+						// because the variable assignment is eliminated as dead code
 						AppendUnsafePropertyGetAccessors(member.MemberName, member.MemberType.GlobalName, member.ContainingType.GlobalName);
 					}
 

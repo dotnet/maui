@@ -129,18 +129,24 @@ public partial class TestPage
 				}
 			};
 
+			var handlersCount = 2;
+
+			static global::System.Collections.Generic.IEnumerable<global::System.ValueTuple<global::System.ComponentModel.INotifyPropertyChanged?, string>> GetHandlers(global::Test.TestPage source)
+			{
+				yield return (source, "Foo");
+				var p0 = source.Foo;
+				if (p0 is global::System.ComponentModel.INotifyPropertyChanged p1)
+					yield return (p1, "Bar");
+			}
+
 			return new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::Test.TestPage, string>(
 				getter: source => (source.Foo.Bar.Title, true),
 				setter,
-				handlers: new global::System.Tuple<global::System.Func<global::Test.TestPage, object?>, string>[]
-				{
-					new(static source => source, "Foo"),
-					new(static source => source.Foo, "Bar"),
-					new(static source => source.Foo.Bar, "Title"),
-				})
-				{
-					Mode = extension.Mode,
-				};
+				handlersCount,
+				GetHandlers)
+			{
+				Mode = extension.Mode,
+			};
 		}
 
 		
@@ -267,14 +273,21 @@ public partial class TestPage
 				}
 			};
 			
+			var handlersCount = 2;
+
+			static global::System.Collections.Generic.IEnumerable<global::System.ValueTuple<global::System.ComponentModel.INotifyPropertyChanged?, string>> GetHandlers(global::Test.TestPage source)
+			{
+				yield return (source, "Product");
+				var p0 = source.Product;
+				if (p0 is global::System.ComponentModel.INotifyPropertyChanged p1)
+					yield return (p1, "Size");
+			}
+
 			return new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::Test.TestPage, int>(
 				getter: source => (source.Product?.Size ?? default, true),
 				setter,
-				handlers: new global::System.Tuple<global::System.Func<global::Test.TestPage, object?>, string>[]
-				{
-					new(static source => source, "Product"),
-					new(static source => source.Product, "Size"),
-				});
+				handlersCount,
+				GetHandlers);
 		}
 	}
 }
@@ -431,14 +444,21 @@ public partial class TestPage
 				}
 			};
 			
+			var handlersCount = 2;
+
+			static global::System.Collections.Generic.IEnumerable<global::System.ValueTuple<global::System.ComponentModel.INotifyPropertyChanged?, string>> GetHandlers(global::Test.TestPage source)
+			{
+				yield return (source, "Product");
+				var p0 = source.Product;
+				if (p0 is global::System.ComponentModel.INotifyPropertyChanged p1)
+					yield return (p1, "Name");
+			}
+
 			return new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::Test.TestPage, string?>(
 				getter: source => (source.Product?.Name, true),
 				setter,
-				handlers: new global::System.Tuple<global::System.Func<global::Test.TestPage, object?>, string>[]
-				{
-					new(static source => source, "Product"),
-					new(static source => source.Product, "Name"),
-				});
+				handlersCount,
+				GetHandlers);
 		}
 	}
 }
@@ -685,14 +705,21 @@ public partial class TestPage
 				}
 			};
 
+			var handlersCount = 2;
+
+			static global::System.Collections.Generic.IEnumerable<global::System.ValueTuple<global::System.ComponentModel.INotifyPropertyChanged?, string>> GetHandlers(global::Test.TestPage source)
+			{
+				yield return (source, "CurrentPerson");
+				var p0 = source.CurrentPerson;
+				if (p0 is global::System.ComponentModel.INotifyPropertyChanged p1)
+					yield return (p1, "Id");
+			}
+
 			return new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::Test.TestPage, int>(
 				getter: source => (source.CurrentPerson?.Id ?? extension.TargetNullValue as int? ?? default, true),
 				setter,
-				handlers: new global::System.Tuple<global::System.Func<global::Test.TestPage, object?>, string>[]
-				{
-					new(static source => source, "CurrentPerson"),
-					new(static source => source.CurrentPerson, "Id"),
-				})
+				handlersCount,
+				GetHandlers)
 			{
 				TargetNullValue = extension.TargetNullValue,
 			};
@@ -771,10 +798,9 @@ public class TestViewModel
 		// Verify setter is null for self-bindings (not writable)
 		Assert.Contains("global::System.Action<global::Test.TestViewModel, global::Test.TestViewModel>? setter = null;", generated, StringComparison.Ordinal);
 
-		// Verify handlers array is empty for self-bindings (no items in the array)
-		// Use regex to match the empty array pattern without relying on exact whitespace
-		var emptyHandlersPattern = @"handlers:\s*new\s+global::System\.Tuple<global::System\.Func<global::Test\.TestViewModel,\s*object\?>,\s*string>\[\]\s*\{\s*\}";
-		Assert.Matches(emptyHandlersPattern, generated);
+		// Verify handlers are null for self-bindings (no property path to observe)
+		Assert.Contains("var handlersCount = 0;", generated, StringComparison.Ordinal);
+		Assert.Contains("null);", generated, StringComparison.Ordinal);
 	}
 
 	[Fact]
