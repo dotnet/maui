@@ -69,6 +69,24 @@
             FontSize="24"
             Background="{AppThemeBinding Light=#80FFFFFF, Dark=#80000000}"
             TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark=White}" />
+
+        <!-- Floating Chat Button (bottom right) -->
+        <Button
+            x:Name="ChatFab"
+            AutomationId="ChatFab"
+            Text="💬"
+            Clicked="OnChatButtonClicked"
+            VerticalOptions="End"
+            HorizontalOptions="End"
+            Margin="0,0,20,20"
+            HeightRequest="56"
+            WidthRequest="56"
+            CornerRadius="28"
+            Padding="0"
+            FontSize="24"
+            BackgroundColor="{StaticResource Primary}"
+            TextColor="White"
+            Shadow="{Shadow Brush=Black, Offset='0,4', Radius=8, Opacity=0.3}" />
     </Grid>
 
 </ContentPage>
