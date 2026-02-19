@@ -81,8 +81,7 @@ The script auto-detects which mode to use based on whether fix files are present
 1. Fetches base branch from origin (if available)
 2. Auto-detects test classes from changed test files
 3. Runs tests (should FAIL to prove they catch the bug)
-4. **Updates PR labels** based on result
-5. Reports result
+4. Reports result
 
 **Full Verification Mode (fix files detected):**
 1. Fetches base branch from origin to ensure accurate diff
@@ -95,23 +94,16 @@ The script auto-detects which mode to use based on whether fix files are present
 8. **Generates markdown reports**:
    - `CustomAgentLogsTmp/TestValidation/verification-report.md` - Full detailed report
    - `CustomAgentLogsTmp/PRState/verification-report.md` - Gate section for PR agent
-9. **Updates PR labels** based on result
-10. Reports result
+9. Reports result
 
 ## PR Labels
 
-The skill automatically manages two labels on the PR to indicate verification status:
+Labels are managed centrally by `Review-PR.ps1` Phase 4 using the shared helper module
+(`.github/scripts/helpers/Update-AgentLabels.ps1`). This skill no longer applies labels directly.
 
-| Label | Color | When Applied |
-|-------|-------|--------------|
-| `s/ai-reproduction-confirmed` | 🟢 Green (#2E7D32) | Tests correctly FAIL without fix (AI verified tests catch the bug) |
-| `s/ai-reproduction-failed` | 🟠 Orange (#E65100) | Tests PASS without fix (AI verified tests don't catch the bug) |
-
-**Behavior:**
-- When verification passes, adds `s/ai-reproduction-confirmed` and removes `s/ai-reproduction-failed` if present
-- When verification fails, adds `s/ai-reproduction-failed` and removes `s/ai-reproduction-confirmed` if present
-- If a PR is re-verified after fixing tests, labels are updated accordingly
-- No label = AI hasn't verified tests yet
+Gate results are reflected via:
+- `s/agent-gate-passed` — Tests correctly FAIL without fix (verified tests catch the bug)
+- `s/agent-gate-failed` — Tests PASS without fix (tests don't catch the bug)
 
 ## Output Files
 
