@@ -2746,24 +2746,15 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
-		/// Returns a timeout for inner RunWithTimeout calls within Wait().
-		/// When the caller's total timeout is larger than AppiumCommandTimeout, caps the inner
-		/// call to the remaining time so frozen apps don't block multiple full iterations.
-		/// When the caller's total timeout is small (≤ AppiumCommandTimeout), each individual
-		/// command still gets the full AppiumCommandTimeout — the outer Wait() loop enforces
-		/// the caller's limit between iterations.
+		/// Returns the smaller of the remaining time and <see cref="AppiumCommandTimeout"/>,
+		/// with a minimum floor of 2 seconds to avoid near-zero timeouts on edge cases.
 		/// </summary>
 		static TimeSpan CapTimeout(TimeSpan totalTimeout, DateTime start)
 		{
-			// For short timeouts, don't starve individual Appium commands — let them
-			// use the full command timeout. The outer Wait loop handles the overall limit.
-			if (totalTimeout <= AppiumCommandTimeout)
-				return AppiumCommandTimeout;
-
 			var remaining = totalTimeout - (DateTime.Now - start);
-			if (remaining < AppiumCommandTimeout)
-				return AppiumCommandTimeout;
-			return remaining;
+			if (remaining < TimeSpan.FromSeconds(2))
+				remaining = TimeSpan.FromSeconds(2);
+			return remaining < AppiumCommandTimeout ? remaining : AppiumCommandTimeout;
 		}
 
 		static IUIElement WaitForAtLeastOne(Func<IUIElement> query,
