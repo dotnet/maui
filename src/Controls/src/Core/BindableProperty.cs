@@ -252,6 +252,15 @@ namespace Microsoft.Maui.Controls
 
 		internal ValidateValueDelegate ValidateValue { get; private set; }
 
+		PropertyChangedEventArgs _cachedPropertyChangedEventArgs;
+		PropertyChangingEventArgs _cachedPropertyChangingEventArgs;
+
+		internal PropertyChangedEventArgs GetPropertyChangedEventArgs()
+			=> _cachedPropertyChangedEventArgs ??= new PropertyChangedEventArgs(PropertyName);
+
+		internal PropertyChangingEventArgs GetPropertyChangingEventArgs()
+			=> _cachedPropertyChangingEventArgs ??= new PropertyChangingEventArgs(PropertyName);
+
 		/// <summary>Creates a new instance of the BindableProperty class.</summary>
 		/// <param name="propertyName">The name of the BindableProperty.</param>
 		/// <param name="returnType">The type of the property.</param>
