@@ -713,6 +713,120 @@ public abstract class ChatClientFunctionCallingTestsBase<T>
 	}
 
 	[Fact]
+	public async Task GetStreamingResponseAsync_MultiTurnWithToolCalling_HistoryBuiltFromStreamedContent_SucceedsOnFollowUp()
+	{
+		// This test simulates the exact pattern ChatViewModel uses:
+		// 1. Stream turn 1 → collect all AIContent from ChatResponseUpdate
+		// 2. Build history by grouping content by role (FunctionCallContent → Assistant, FunctionResultContent → Tool, TextContent → Assistant)
+		// 3. Send turn 2 with that manually-built history
+		// This catches the bug where only TextContent was kept in history, dropping tool context.
+
+		var weatherTool = AIFunctionFactory.Create(
+			(string location) => $"Sunny, 72°F in {location}",
+			name: "GetWeather",
+			description: "Gets the weather for a location");
+
+		var client = EnableFunctionCalling(new T());
+		var options = new ChatOptions
+		{
+			Tools = [weatherTool]
+		};
+
+		// Turn 1: Stream the first response and collect all content
+		var turn1UserMessage = new ChatMessage(ChatRole.User, "What's the weather in Seattle?");
+		var turn1Messages = new List<ChatMessage> { turn1UserMessage };
+
+		var allContents = new List<AIContent>();
+		await foreach (var update in client.GetStreamingResponseAsync(turn1Messages, options))
+		{
+			foreach (var content in update.Contents)
+				allContents.Add(content);
+		}
+
+		// Verify we got tool content from streaming
+		var functionCalls = allContents.OfType<FunctionCallContent>().ToArray();
+		var functionResults = allContents.OfType<FunctionResultContent>().ToArray();
+		var textContents = allContents.OfType<TextContent>().Where(t => !string.IsNullOrEmpty(t.Text)).ToArray();
+
+		Assert.True(functionCalls.Length > 0, "Streaming should produce FunctionCallContent");
+		Assert.True(functionResults.Length > 0, "Streaming should produce FunctionResultContent");
+		Assert.True(textContents.Length > 0, "Streaming should produce TextContent");
+
+		// Build history the way ChatViewModel does (WITH the fix):
+		//   User → "What's the weather..."
+		//   Assistant → [FunctionCallContent]
+		//   Tool → [FunctionResultContent]
+		//   Assistant → [TextContent]
+		var history = new List<ChatMessage> { turn1UserMessage };
+		history.Add(new ChatMessage(ChatRole.Assistant, functionCalls));
+		history.Add(new ChatMessage(ChatRole.Tool, functionResults));
+		history.Add(new ChatMessage(ChatRole.Assistant, textContents));
+
+		// Turn 2: Follow-up using the manually-built history
+		history.Add(new ChatMessage(ChatRole.User, "What about in Portland?"));
+
+		var secondResponse = await client.GetResponseAsync(history, options);
+
+		Assert.NotNull(secondResponse);
+		Assert.NotNull(secondResponse.Messages);
+		Assert.True(secondResponse.Messages.Count > 0, "Second response should have messages after streaming-based history");
+	}
+
+	[Fact]
+	public async Task GetStreamingResponseAsync_MultiTurnWithToolCalling_HistoryBuiltFromStreamedContent_ToolResultsPreservedInContext()
+	{
+		// This test verifies that tool results from a streamed turn 1 are available
+		// in the model's context for turn 2 — proving the history is complete.
+		// Uses a distinctive value (47°F) that the model can't hallucinate.
+
+		var weatherTool = AIFunctionFactory.Create(
+			(string location) => $"The current weather in {location} is 47 degrees Fahrenheit and rainy",
+			name: "GetWeather",
+			description: "Gets the weather for a location");
+
+		var client = EnableFunctionCalling(new T());
+		var toolOptions = new ChatOptions
+		{
+			Tools = [weatherTool]
+		};
+
+		// Turn 1: Stream and collect all content
+		var turn1UserMessage = new ChatMessage(ChatRole.User, "What's the weather in Seattle?");
+		var turn1Messages = new List<ChatMessage> { turn1UserMessage };
+
+		var allContents = new List<AIContent>();
+		await foreach (var update in client.GetStreamingResponseAsync(turn1Messages, toolOptions))
+		{
+			foreach (var content in update.Contents)
+				allContents.Add(content);
+		}
+
+		// Build history from streamed content (the ChatViewModel pattern)
+		var functionCalls = allContents.OfType<FunctionCallContent>().ToArray();
+		var functionResults = allContents.OfType<FunctionResultContent>().ToArray();
+		var textContents = allContents.OfType<TextContent>().Where(t => !string.IsNullOrEmpty(t.Text)).ToArray();
+
+		var history = new List<ChatMessage> { turn1UserMessage };
+		if (functionCalls.Length > 0)
+			history.Add(new ChatMessage(ChatRole.Assistant, functionCalls));
+		if (functionResults.Length > 0)
+			history.Add(new ChatMessage(ChatRole.Tool, functionResults));
+		if (textContents.Length > 0)
+			history.Add(new ChatMessage(ChatRole.Assistant, textContents));
+
+		// Turn 2: Ask about the temperature WITHOUT tools — forces model to recall from context
+		history.Add(new ChatMessage(ChatRole.User,
+			"What was the exact temperature in Fahrenheit that the weather check returned for Seattle? Reply with just the number."));
+
+		var secondResponse = await client.GetResponseAsync(history);
+		Assert.NotNull(secondResponse);
+
+		var responseText = secondResponse.Text ?? string.Empty;
+		Assert.True(responseText.Contains("47", StringComparison.Ordinal),
+			$"Follow-up should reference the tool result temperature (47°F) from streamed history, proving tool context is preserved. Got: '{responseText}'");
+	}
+
+	[Fact]
 	public async Task GetResponseAsync_MultiTurnConversationWithToolCalling_ToolResultsPreservedInContext()
 	{
 		// Use a distinctive, unlikely-to-be-hallucinated temperature value
