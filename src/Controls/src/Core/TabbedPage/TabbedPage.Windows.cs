@@ -190,7 +190,10 @@ namespace Microsoft.Maui.Controls
 		void OnTabbedPageDisappearing(object? sender, EventArgs e)
 		{
 			if (_navigationView != null)
+			{
+				_navigationView.SelectedItem = null;
 				_navigationView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
+			}
 		}
 
 		void OnApplyTemplateFinished(object? sender, EventArgs e)
