@@ -1,6 +1,6 @@
 ﻿namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 31121, "[iOS, Mac] TabbedPage FlowDirection Property Renders Opposite Layout Direction When Set via ViewModel Binding", PlatformAffected.iOS)]
+[Issue(IssueTracker.Github, 31121, "[iOS, Mac] TabbedPage FlowDirection Property Renders Opposite Layout Direction When Set via ViewModel Binding", PlatformAffected.iOS | PlatformAffected.macOS)]
 public class Issue31121 : TestTabbedPage
 {
 	Issue31121_ViewModel _viewModel;
