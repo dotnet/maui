@@ -59,8 +59,8 @@ public class Issue32994 : Shell
 
 public class Issue32994Page1 : ContentPage
 {
-    ShellContent _page1Content;
-    Issue32994ViewModel _viewModel;
+    private readonly ShellContent _page1Content;
+    private readonly Issue32994ViewModel _viewModel;
 
     public Issue32994Page1(ShellContent page1Content, Issue32994ViewModel viewModel)
     {

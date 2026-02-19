@@ -254,7 +254,7 @@ namespace Microsoft.Maui.Controls
 			{
 				CheckVisibility((BaseShellItem)sender);
 			}
-			//When dynamically updating TabBarIsVisible through ShellContent
+			// When dynamically updating TabBarIsVisible through ShellContent
 			else if (e.PropertyName == Shell.TabBarIsVisibleProperty.PropertyName)
 			{
 				if (sender is ShellContent shellContent)

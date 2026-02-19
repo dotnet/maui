@@ -35,6 +35,8 @@ public class Issue32994 : _IssuesUITest
         public void TabBarVisibilityShowsOnPage2UsingBinding()
         {
 #if WINDOWS
+                // In Windows, multiple shell contents on the same tab are displayed in a dropdown,
+                // requiring the tab to be clicked first before selecting the specific shell content
                 App.WaitForElement("ShowPage2TabBar");
                 App.Tap("ShowPage2TabBar");
                 App.TapTab("Tab1");
