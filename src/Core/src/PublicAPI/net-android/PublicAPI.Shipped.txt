@@ -1138,8 +1138,8 @@ Microsoft.Maui.IMauiContext.Services.get -> System.IServiceProvider!
 Microsoft.Maui.IMauiFactory
 Microsoft.Maui.IMauiHandlersFactory
 Microsoft.Maui.IMauiHandlersFactory.GetCollection() -> Microsoft.Maui.Hosting.IMauiHandlersCollection!
-Microsoft.Maui.IMauiHandlersFactory.GetHandler(System.Type! type, Microsoft.Maui.IMauiContext! context) -> Microsoft.Maui.IElementHandler?
-Microsoft.Maui.IMauiHandlersFactory.GetHandler<T>(Microsoft.Maui.IMauiContext! context) -> Microsoft.Maui.IElementHandler?
+Microsoft.Maui.IMauiHandlersFactory.GetHandler(System.Type! type) -> Microsoft.Maui.IElementHandler?
+Microsoft.Maui.IMauiHandlersFactory.GetHandler<T>() -> Microsoft.Maui.IElementHandler?
 Microsoft.Maui.IMauiHandlersFactory.GetHandlerType(System.Type! iview) -> System.Type?
 Microsoft.Maui.IMenuBar
 Microsoft.Maui.IMenuBar.IsEnabled.get -> bool
