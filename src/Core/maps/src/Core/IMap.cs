@@ -57,5 +57,17 @@ namespace Microsoft.Maui.Maps
 		/// Moves the map so that it displays the specified <see cref="MapSpan"/> region.
 		/// </summary>
 		void MoveToRegion(MapSpan region);
+
+		/// <summary>
+		/// Shows the info window for the specified pin.
+		/// </summary>
+		/// <param name="pin">The pin whose info window should be shown.</param>
+		void ShowInfoWindow(IMapPin pin);
+
+		/// <summary>
+		/// Hides the info window for the specified pin.
+		/// </summary>
+		/// <param name="pin">The pin whose info window should be hidden.</param>
+		void HideInfoWindow(IMapPin pin);
 	}
 }

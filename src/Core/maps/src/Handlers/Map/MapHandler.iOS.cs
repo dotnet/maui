@@ -104,5 +104,17 @@ namespace Microsoft.Maui.Maps.Handlers
 			var mapRegion = new MKCoordinateRegion(new CLLocationCoordinate2D(center.Latitude, center.Longitude), new MKCoordinateSpan(mapSpan.LatitudeDegrees, mapSpan.LongitudeDegrees));
 			PlatformView.SetRegion(mapRegion, animated);
 		}
+
+		void ShowInfoWindow(IMapPin pin)
+		{
+			if (pin.MarkerId is IMKAnnotation annotation)
+				PlatformView.SelectAnnotation(annotation, true);
+		}
+
+		void HideInfoWindow(IMapPin pin)
+		{
+			if (pin.MarkerId is IMKAnnotation annotation)
+				PlatformView.DeselectAnnotation(annotation, true);
+		}
 	}
 }

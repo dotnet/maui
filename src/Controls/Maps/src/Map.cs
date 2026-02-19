@@ -231,6 +231,22 @@ namespace Microsoft.Maui.Controls.Maps
 				throw new ArgumentException("Pin must have a Label to be added to a map");
 			}
 
+			if (e.NewItems is not null)
+			{
+				foreach (Pin pin in e.NewItems)
+				{
+					pin.Parent = this;
+				}
+			}
+
+			if (e.OldItems is not null)
+			{
+				foreach (Pin pin in e.OldItems)
+				{
+					pin.Parent = null;
+				}
+			}
+
 			Handler?.UpdateValue(nameof(IMap.Pins));
 		}
 
