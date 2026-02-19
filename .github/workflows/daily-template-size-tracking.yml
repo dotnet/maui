@@ -1,0 +1,561 @@
+name: Daily Template Size Tracking
+
+on:
+  schedule:
+    # Daily at midnight ET (5 AM UTC)
+    - cron: '0 5 * * *'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/daily-template-size-tracking.yml'
+      - '.github/scripts/template-size-tracking/**'
+  workflow_dispatch:
+    inputs:
+      maui_template_version:
+        description: 'Specific Microsoft.Maui.Templates version (leave empty for latest)'
+        required: false
+        type: string
+      dotnet_versions:
+        description: 'Comma-separated .NET versions to test (e.g., 9.0,10.0)'
+        required: false
+        default: '9.0,10.0'
+        type: string
+      templates:
+        description: 'Comma-separated templates to test (maui,maui-blazor)'
+        required: false
+        default: 'maui,maui-blazor'
+        type: string
+      alert_threshold:
+        description: 'Alert threshold percentage for size increases'
+        required: false
+        default: '10'
+        type: string
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  ALERT_THRESHOLD: ${{ inputs.alert_threshold || '10' }}
+  FAILURE_THRESHOLD: '20'
+
+jobs:
+  prepare-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      maui-version: ${{ steps.install-templates.outputs.maui-version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Install MAUI Templates
+        id: install-templates
+        shell: pwsh
+        run: |
+          if ("${{ inputs.maui_template_version }}" -ne "") {
+            $version = "${{ inputs.maui_template_version }}"
+            Write-Host "Installing Microsoft.Maui.Templates version $version"
+            dotnet new install Microsoft.Maui.Templates::$version
+            echo "maui-version=$version" >> $env:GITHUB_OUTPUT
+          }
+          else {
+            Write-Host "Fetching latest Microsoft.Maui.Templates version..."
+            $response = Invoke-RestMethod -Uri "https://api.nuget.org/v3-flatcontainer/microsoft.maui.templates/index.json"
+            $latestVersion = $response.versions[-1]
+            Write-Host "Latest version found: $latestVersion"
+            dotnet new install Microsoft.Maui.Templates::$latestVersion
+            echo "maui-version=$latestVersion" >> $env:GITHUB_OUTPUT
+          }
+
+          # Verify installation
+          dotnet new list maui
+
+      - name: Prepare Build Matrix
+        id: set-matrix
+        shell: pwsh
+        run: |
+          $dotnetVersions = "${{ inputs.dotnet_versions || '9.0,10.0' }}".Split(',') | ForEach-Object { $_.Trim() }
+          $templates = "${{ inputs.templates || 'maui,maui-blazor' }}".Split(',') | ForEach-Object { $_.Trim() }
+
+          $matrix = @{
+            include = @()
+          }
+
+          foreach ($dotnet in $dotnetVersions) {
+            foreach ($template in $templates) {
+              # Android
+              $matrix.include += @{
+                description = 'android'
+                dotnet = $dotnet
+                template = $template
+                platform = 'android'
+                os = 'ubuntu-latest'
+                framework = "net$dotnet-android"
+                rid = 'android-arm64'
+                aot = $false
+              }
+
+              # Android Native AOT (.NET 10+ only)
+              if ($dotnet -ne "9.0") {
+                $matrix.include += @{
+                  description = 'android-aot'
+                  dotnet = $dotnet
+                  template = $template
+                  platform = 'android'
+                  os = 'ubuntu-latest'
+                  framework = "net$dotnet-android"
+                  rid = 'android-arm64'
+                  aot = $true
+                }
+              }
+
+              # iOS
+              $matrix.include += @{
+                description = 'ios'
+                dotnet = $dotnet
+                template = $template
+                platform = 'ios'
+                os = 'macos-latest'
+                framework = "net$dotnet-ios"
+                rid = 'ios-arm64'
+                aot = $false
+              }
+
+              # MacCatalyst
+              $matrix.include += @{
+                description = 'maccatalyst'
+                dotnet = $dotnet
+                template = $template
+                platform = 'maccatalyst'
+                os = 'macos-latest'
+                framework = "net$dotnet-maccatalyst"
+                rid = 'maccatalyst-arm64'
+                aot = $false
+              }
+
+              # MacCatalyst Native AOT
+              $matrix.include += @{
+                description = 'maccatalyst-aot'
+                dotnet = $dotnet
+                template = $template
+                platform = 'maccatalyst'
+                os = 'macos-latest'
+                framework = "net$dotnet-maccatalyst"
+                rid = 'maccatalyst-arm64'
+                aot = $true
+              }
+
+              # Windows Packaged (MSIX)
+              $matrix.include += @{
+                description = 'windows-packaged'
+                dotnet = $dotnet
+                template = $template
+                platform = 'windows-packaged'
+                os = 'windows-latest'
+                framework = "net$dotnet-windows10.0.19041.0"
+                rid = 'win10-x64'
+                aot = $false
+              }
+
+              # Windows Packaged (MSIX) Native AOT
+              $matrix.include += @{
+                description = 'windows-packaged-aot'
+                dotnet = $dotnet
+                template = $template
+                platform = 'windows-packaged'
+                os = 'windows-latest'
+                framework = "net$dotnet-windows10.0.19041.0"
+                rid = 'win10-x64'
+                aot = $true
+              }
+
+              # Windows Unpackaged
+              $matrix.include += @{
+                description = 'windows-unpackaged'
+                dotnet = $dotnet
+                template = $template
+                platform = 'windows-unpackaged'
+                os = 'windows-latest'
+                framework = "net$dotnet-windows10.0.19041.0"
+                rid = 'win10-x64'
+                aot = $false
+              }
+
+              # Windows Unpackaged Native AOT
+              $matrix.include += @{
+                description = 'windows-unpackaged-aot'
+                dotnet = $dotnet
+                template = $template
+                platform = 'windows-unpackaged'
+                os = 'windows-latest'
+                framework = "net$dotnet-windows10.0.19041.0"
+                rid = 'win10-x64'
+                aot = $true
+              }
+            }
+          }
+
+          $matrixJson = $matrix | ConvertTo-Json -Compress -Depth 10
+          echo "matrix=$matrixJson" >> $env:GITHUB_OUTPUT
+          Write-Host "Matrix: $matrixJson"
+
+  build-and-measure:
+    needs: prepare-matrix
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.prepare-matrix.outputs.matrix) }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET ${{ matrix.dotnet }}
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '${{ matrix.dotnet }}.x'
+
+      - name: Setup Xcode (for iOS/MacCatalyst)
+        if: matrix.platform == 'ios' || matrix.platform == 'maccatalyst'
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Setup Java (for Android)
+        if: matrix.platform == 'android'
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'microsoft'
+          java-version: '17'
+
+      - name: Install MAUI Templates
+        shell: pwsh
+        run: |
+          $version = "${{ needs.prepare-matrix.outputs.maui-version }}"
+          Write-Host "Installing Microsoft.Maui.Templates version $version"
+          dotnet new install Microsoft.Maui.Templates::$version
+
+      - name: Install Workloads
+        shell: pwsh
+        run: |
+          $platform = "${{ matrix.platform }}"
+
+          switch ($platform) {
+            "android" { dotnet workload install maui-android }
+            "ios" { dotnet workload install maui-ios }
+            "maccatalyst" { dotnet workload install maui-maccatalyst }
+            { $_ -like "windows*" } { dotnet workload install maui-windows }
+          }
+
+      - name: Create Project
+        shell: pwsh
+        run: |
+          $template = "${{ matrix.template }}"
+          $dotnetVersion = "${{ matrix.dotnet }}"
+          $safePlatform = "${{ matrix.description }}" -replace '-', '_'
+          $projectName = "MauiApp_$($template -replace '-', '_')_$safePlatform"
+
+          Write-Host "Creating project: dotnet new $template -o $projectName --framework net$dotnetVersion"
+          dotnet new $template -o $projectName --framework net$dotnetVersion
+
+          echo "PROJECT_PATH=$projectName" >> $env:GITHUB_ENV
+          echo "PROJECT_NAME=$projectName" >> $env:GITHUB_ENV
+
+      - name: Build and Publish
+        shell: pwsh
+        run: |
+          $projectPath = $env:PROJECT_PATH
+          $platform = "${{ matrix.platform }}"
+          $framework = "${{ matrix.framework }}"
+          $rid = "${{ matrix.rid }}"
+          $isAot = "${{ matrix.aot }}" -eq "True"
+
+          $startTime = Get-Date
+
+          # Find the main .csproj
+          $projectFile = Get-ChildItem -Path $projectPath -Filter "*.csproj" -Recurse | Select-Object -First 1
+
+          if (-not $projectFile) {
+            Write-Error "Could not find project file in $projectPath"
+            exit 1
+          }
+
+          Write-Host "Found project: $($projectFile.FullName)"
+
+          switch ($platform) {
+            "android" {
+              if ($isAot) {
+                Write-Host "Building Android AAB with Native AOT..."
+                dotnet publish $projectFile.FullName `
+                  -f $framework `
+                  -c Release `
+                  -r $rid `
+                  -p:PublishAot=true `
+                  -p:AndroidPackageFormat=aab `
+                  -p:AndroidKeyStore=false `
+                  -o publish `
+                  /bl:build.binlog
+              } else {
+                Write-Host "Building Android AAB..."
+                dotnet publish $projectFile.FullName `
+                  -f $framework `
+                  -c Release `
+                  -p:AndroidPackageFormat=aab `
+                  -p:AndroidKeyStore=false `
+                  -o publish `
+                  /bl:build.binlog
+              }
+            }
+
+            "ios" {
+              Write-Host "Building iOS (unsigned)..."
+              dotnet publish $projectFile.FullName `
+                -f $framework `
+                -c Release `
+                -p:RuntimeIdentifier=$rid `
+                -p:_RequireCodeSigning=false `
+                -o publish `
+                /bl:build.binlog
+            }
+
+            "maccatalyst" {
+              if ($isAot) {
+                Write-Host "Building MacCatalyst with Native AOT..."
+                dotnet publish $projectFile.FullName `
+                  -f $framework `
+                  -c Release `
+                  -r $rid `
+                  -p:PublishAot=true `
+                  -p:_RequireCodeSigning=false `
+                  -o publish `
+                  /bl:build.binlog
+              } else {
+                Write-Host "Building MacCatalyst (unsigned)..."
+                dotnet publish $projectFile.FullName `
+                  -f $framework `
+                  -c Release `
+                  -p:RuntimeIdentifier=$rid `
+                  -p:_RequireCodeSigning=false `
+                  -o publish `
+                  /bl:build.binlog
+              }
+            }
+
+            "windows-packaged" {
+              if ($isAot) {
+                Write-Host "Building Windows MSIX with Native AOT..."
+                dotnet publish $projectFile.FullName `
+                  -f $framework `
+                  -c Release `
+                  -r $rid `
+                  -p:PublishAot=true `
+                  -p:GenerateAppxPackageOnBuild=true `
+                  -p:AppxPackageSigningEnabled=false `
+                  -o publish `
+                  /bl:build.binlog
+              } else {
+                Write-Host "Building Windows MSIX..."
+                dotnet publish $projectFile.FullName `
+                  -f $framework `
+                  -c Release `
+                  -p:GenerateAppxPackageOnBuild=true `
+                  -p:AppxPackageSigningEnabled=false `
+                  -o publish `
+                  /bl:build.binlog
+              }
+            }
+
+            "windows-unpackaged" {
+              if ($isAot) {
+                Write-Host "Building Windows unpackaged with Native AOT..."
+                dotnet publish $projectFile.FullName `
+                  -f $framework `
+                  -c Release `
+                  -r $rid `
+                  --self-contained true `
+                  -p:PublishAot=true `
+                  -p:WindowsPackageType=None `
+                  -o publish `
+                  /bl:build.binlog
+              } else {
+                Write-Host "Building Windows unpackaged (self-contained)..."
+                dotnet publish $projectFile.FullName `
+                  -f $framework `
+                  -c Release `
+                  -r $rid `
+                  --self-contained true `
+                  -p:WindowsPackageType=None `
+                  -o publish `
+                  /bl:build.binlog
+              }
+            }
+          }
+
+          $endTime = Get-Date
+          $buildTime = ($endTime - $startTime).TotalSeconds
+
+          Write-Host "Build completed in $buildTime seconds"
+          echo "BUILD_TIME=$buildTime" >> $env:GITHUB_ENV
+
+      - name: Upload Build Binlog
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: binlog-${{ matrix.dotnet }}-${{ matrix.template }}-${{ matrix.description }}
+          path: build.binlog
+          retention-days: 14
+
+      - name: Measure Package Size
+        shell: pwsh
+        run: |
+          $scriptPath = Join-Path $env:GITHUB_WORKSPACE ".github/scripts/template-size-tracking/measure-package-size.ps1"
+          & $scriptPath `
+            -PublishPath "publish" `
+            -Platform "${{ matrix.platform }}" `
+            -Description "${{ matrix.description }}" `
+            -OS "${{ matrix.os }}" `
+            -IsAot ${{ matrix.aot }} `
+            -Template "${{ matrix.template }}" `
+            -DotNetVersion "${{ matrix.dotnet }}" `
+            -MauiVersion "${{ needs.prepare-matrix.outputs.maui-version }}" `
+            -BuildTime $env:BUILD_TIME `
+            -OutputPath "metrics.json"
+
+      - name: Upload Metrics
+        uses: actions/upload-artifact@v4
+        with:
+          name: metrics-${{ matrix.dotnet }}-${{ matrix.template }}-${{ matrix.description }}
+          path: metrics.json
+          retention-days: 90
+
+  analyze-and-report:
+    needs: [prepare-matrix, build-and-measure]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download All Metrics
+        uses: actions/download-artifact@v4
+        with:
+          pattern: metrics-*
+          path: metrics
+
+      - name: Restore Historical Metrics Cache
+        uses: actions/cache/restore@v4
+        with:
+          path: metrics-history
+          key: template-size-metrics-${{ github.run_id }}
+          restore-keys: |
+            template-size-metrics-
+
+      - name: Prepare Historical Data
+        shell: pwsh
+        run: |
+          $today = (Get-Date).ToString("yyyy-MM-dd")
+          $historyDir = "metrics-history"
+
+          # Create history directory if it doesn't exist
+          if (-not (Test-Path $historyDir)) {
+            New-Item -ItemType Directory -Force -Path $historyDir | Out-Null
+            Write-Host "Created new metrics history directory"
+          }
+
+          # Copy current metrics into today's history slot
+          $todayDir = Join-Path $historyDir $today
+          New-Item -ItemType Directory -Force -Path $todayDir | Out-Null
+
+          $metricsFiles = Get-ChildItem -Path "metrics" -Filter "*.json" -Recurse
+          foreach ($file in $metricsFiles) {
+            Copy-Item $file.FullName -Destination $todayDir -Force
+          }
+
+          Write-Host "Saved $($metricsFiles.Count) metrics to $todayDir"
+
+          # Find yesterday's metrics for comparison
+          $yesterday = (Get-Date).AddDays(-1).ToString("yyyy-MM-dd")
+          $yesterdayDir = Join-Path $historyDir $yesterday
+
+          if (Test-Path $yesterdayDir) {
+            Write-Host "Found previous metrics from $yesterday"
+            Copy-Item $yesterdayDir -Destination "previous-metrics" -Recurse
+          } else {
+            Write-Host "No previous metrics found for $yesterday"
+            New-Item -ItemType Directory -Force -Path "previous-metrics" | Out-Null
+          }
+
+          # Prune history older than 35 days
+          $cutoffDate = (Get-Date).AddDays(-35).ToString("yyyy-MM-dd")
+          $historyDirs = Get-ChildItem -Path $historyDir -Directory | Sort-Object Name
+
+          foreach ($dir in $historyDirs) {
+            if ($dir.Name -lt $cutoffDate) {
+              Write-Host "Pruning old metrics: $($dir.Name)"
+              Remove-Item $dir.FullName -Recurse -Force
+            }
+          }
+
+          $remaining = (Get-ChildItem -Path $historyDir -Directory).Count
+          Write-Host "History contains $remaining day(s) of metrics"
+
+      - name: Compare and Generate Report
+        id: compare
+        shell: pwsh
+        run: |
+          $scriptPath = Join-Path $env:GITHUB_WORKSPACE ".github/scripts/template-size-tracking/compare-and-alert.ps1"
+          & $scriptPath `
+            -CurrentMetricsPath "metrics" `
+            -PreviousMetricsPath "previous-metrics" `
+            -HistoricalMetricsPath "metrics-history" `
+            -AlertThreshold $env:ALERT_THRESHOLD `
+            -FailureThreshold $env:FAILURE_THRESHOLD
+
+      - name: Generate Summary
+        shell: pwsh
+        run: |
+          $scriptPath = Join-Path $env:GITHUB_WORKSPACE ".github/scripts/template-size-tracking/generate-summary.ps1"
+          & $scriptPath -MetricsPath "metrics" -ComparisonPath "comparison.json"
+
+      - name: Save Historical Metrics Cache
+        uses: actions/cache/save@v4
+        with:
+          path: metrics-history
+          key: template-size-metrics-${{ github.run_id }}
+
+      - name: Create Issue on Alert
+        if: steps.compare.outputs.alert == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const alertContent = fs.readFileSync('alert-report.md', 'utf8');
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `⚠️ Template Size Alert - ${new Date().toISOString().split('T')[0]}`,
+              body: alertContent,
+              labels: ['size-alert', 'automated']
+            });
+
+      - name: Fail on Critical Size Increase
+        if: steps.compare.outputs.critical == 'true'
+        run: |
+          echo "::error::Critical size increase detected (>${{ env.FAILURE_THRESHOLD }}%)"
+          exit 1
