@@ -436,11 +436,7 @@ public class ShellPagesFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		App.WaitForElement(Options);
 		App.Tap(Options);
-#if WINDOWS
-		VerifyScreenshot(includeTitleBar: true);
-#else
-		VerifyScreenshot();
-#endif
+		VerifyShellScreenshot();
 	}
 #endif 
 
@@ -458,4 +454,13 @@ public class ShellPagesFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 #endif
+
+	public void VerifyShellScreenshot()
+	{
+#if WINDOWS
+		VerifyScreenshot(includeTitleBar: true);
+#else
+		VerifyScreenshot();
+#endif
+	}
 }
