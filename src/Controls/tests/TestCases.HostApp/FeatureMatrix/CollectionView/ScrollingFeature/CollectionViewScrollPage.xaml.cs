@@ -24,7 +24,7 @@ public partial class CollectionViewScrollPage : ContentPage
 
 	public void ResetScrollEventLabels()
 	{
-#if !WINDOWS
+#if !WINDOWS // In Windows, CollectionView automatically moves to the first item when navigating to the page, so there is no need to scroll to the first item again.
 		collectionView.ScrollTo(0, position: ScrollToPosition.Start);
 #endif
 		scrolledEventLabel.Text = "Not Fired";
