@@ -62,6 +62,27 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		bool _appliesSafeAreaAdjustments;
 
+		// Global counter incremented each time any MauiView invalidates ancestors from LayoutSubviews.
+		// Used to prevent the same view from triggering multiple ancestor invalidations in a cascade.
+		// When view A invalidates ancestors, it stores the current generation. If it's asked to layout
+		// again before the generation changes (meaning we're in a cycle), it skips invalidation.
+		static int s_safeAreaGeneration;
+
+		// The safe area generation at which this view last triggered ancestor invalidation
+		// from LayoutSubviews. If we've already invalidated for this generation, skip it
+		// to break infinite layout cycles between parent and child views that both respond
+		// to safe area.
+		int _lastSafeAreaInvalidationGeneration = -1;
+		
+		// Per-view count of ancestor invalidations triggered from the safe area path.
+		// Resets when a genuine system safe area event occurs (SafeAreaInsetsDidChange).
+		// Used to prevent position-dependent safe area fluctuations from causing infinite
+		// layout cycles (e.g., BottomSheet child views that oscillate by 1px).
+		
+		// Global count of ancestor invalidations across ALL views since last system safe area event.
+		static int s_globalSafeAreaInvalidationCount;
+		const int MaxSafeAreaInvalidationsPerEvent = 6;
+
 		// Indicates whether this view should respond to safe area insets.
 		// Cached to avoid repeated hierarchy checks.
 		// True if the view is an ISafeAreaView, does not ignore safe area, and is not inside a UIScrollView;
@@ -262,6 +283,7 @@ namespace Microsoft.Maui.Platform
 		void OnKeyboardWillShow(NSNotification notification)
 		{
 			_safeAreaInvalidated = true;
+			s_globalSafeAreaInvalidationCount = 0;
 			var keyboardFrame = GetKeyboardFrame(notification);
 			if (keyboardFrame.HasValue)
 			{
@@ -274,6 +296,7 @@ namespace Microsoft.Maui.Platform
 		void OnKeyboardWillHide(NSNotification notification)
 		{
 			_safeAreaInvalidated = true;
+			s_globalSafeAreaInvalidationCount = 0;
 			_keyboardFrame = CGRect.Empty;
 			_isKeyboardShowing = false;
 			SetNeedsLayout();
@@ -547,6 +570,35 @@ namespace Microsoft.Maui.Platform
 				// to let ancestors adjust to the measured size.
 				if (this.IsFinalMeasureHandledBySuperView())
 				{
+					// Guard against infinite layout cycles: when both parent and child views respond to
+					// safe area, each one's layout change triggers the other to re-validate, creating an
+					// infinite loop. We track the current "invalidation generation" (incremented each time
+					// any view invalidates ancestors) and skip re-invalidating if we've already done so for
+					// this generation.
+					var currentGeneration = s_safeAreaGeneration;
+					if (_lastSafeAreaInvalidationGeneration == currentGeneration)
+					{
+						// Already invalidated ancestors for this safe area generation — don't do it again.
+						// Just arrange with current values and stop.
+						CrossPlatformArrange(Bounds.ToRectangle());
+						return;
+					}
+					
+					// Rate limit: prevent position-dependent safe area fluctuations from causing
+					// infinite layout cycles. Views like BottomSheet children can oscillate by 1px
+					// as their position changes, causing SafeAreaInsets to change back and forth.
+					if (s_globalSafeAreaInvalidationCount >= MaxSafeAreaInvalidationsPerEvent)
+					{
+						CrossPlatformArrange(Bounds.ToRectangle());
+						return;
+					}
+
+					// Increment the global generation counter so other views know we're triggering a new
+					// invalidation wave. Store it before invalidating.
+					System.Threading.Interlocked.Increment(ref s_safeAreaGeneration);
+					_lastSafeAreaInvalidationGeneration = s_safeAreaGeneration;
+					System.Threading.Interlocked.Increment(ref s_globalSafeAreaInvalidationCount);
+
 					//This arrangement step is essential for communicating the correct coordinate space to native iOS views before scheduling the second layout pass.
 					//This ensures the native view is aware of the correct bounds and can adjust its layout accordingly.
 					CrossPlatformArrange(Bounds.ToRectangle());
@@ -658,7 +710,14 @@ namespace Microsoft.Maui.Platform
 		/// <returns>True if the invalidation should continue propagating to ancestors, false to stop propagation</returns>
 		bool IPlatformMeasureInvalidationController.InvalidateMeasure(bool isPropagating)
 		{
-			_safeAreaInvalidated = true;
+			// Only re-validate safe area for direct invalidations (not propagating from descendants).
+			// A descendant changing size/transform doesn't affect the system-determined safe area insets.
+			// Setting this unconditionally caused spurious safe area revalidation during animations,
+			// leading to measurement oscillation and infinite layout cycles (see #33934).
+			if (!isPropagating)
+			{
+				_safeAreaInvalidated = true;
+			}
 			InvalidateConstraintsCache();
 			SetNeedsLayout();
 
@@ -702,6 +761,10 @@ namespace Microsoft.Maui.Platform
 		public override void SafeAreaInsetsDidChange()
 		{
 			_safeAreaInvalidated = true;
+			// Note: NOT resetting s_globalSafeAreaInvalidationCount here because
+			// SafeAreaInsetsDidChange fires on child views when their position changes
+			// during layout, not just for system safe area changes. Resetting here would
+			// defeat the rate limiter.
 			base.SafeAreaInsetsDidChange();
 		}
 
@@ -720,6 +783,7 @@ namespace Microsoft.Maui.Platform
 
 			// Safe area may have changed when moving to a different window
 			_safeAreaInvalidated = true;
+			s_globalSafeAreaInvalidationCount = 0;
 
 			// If we were marked to invalidate ancestors when moved to window, do so now
 			if (_invalidateParentWhenMovedToWindow)
