@@ -343,8 +343,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					if (fragmentManager != null || layoutInflater != null)
 						mauiContext = mauiContext.MakeScoped(layoutInflater, fragmentManager);
 
-					var handlerType = mauiContext.Handlers.GetHandlerType(element.GetType());
-					handler = (IViewHandler)Activator.CreateInstance(handlerType);
+					handler = mauiContext.Handlers.GetHandler(element.GetType()) as IViewHandler;
 					handler.SetMauiContext(mauiContext);
 				}
 				catch (Exception e)

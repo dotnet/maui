@@ -257,8 +257,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				//TODO: Handle this with AppBuilderHost
 				try
 				{
-					var handlerType = Forms.MauiContext.Handlers.GetHandlerType(element.GetType());
-					handler = (IViewHandler)Activator.CreateInstance(handlerType);
+					handler = Forms.MauiContext.Handlers.GetHandler(element.GetType()) as IViewHandler;
 					handler.SetMauiContext(Forms.MauiContext);
 				}
 				catch
