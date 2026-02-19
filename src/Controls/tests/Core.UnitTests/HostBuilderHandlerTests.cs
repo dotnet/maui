@@ -20,7 +20,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.NotNull(mauiApp.Services);
 			var handlers = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
 			Assert.NotNull(handlers);
-			var mauiContext = new MauiContext(mauiApp.Services);
 			var handler = handlers.GetHandler(typeof(Button));
 
 			Assert.NotNull(handler);
@@ -38,7 +37,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.NotNull(mauiApp.Services);
 			var handlers = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
 			Assert.NotNull(handlers);
-			var mauiContext = new MauiContext(mauiApp.Services);
 
 			var specificHandler = handlers.GetHandler(typeof(Button));
 
@@ -61,7 +59,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				.Build();
 
 			var handlers = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
-			var mauiContext = new MauiContext(mauiApp.Services);
 
 			var specificHandler = handlers.GetHandler(viewType);
 
