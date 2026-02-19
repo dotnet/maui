@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls
 
 			// Force VisualElement's static constructor to run first so base-level
 			// mapper remappings are applied before these Control-specific ones.
-RemappingHelper.EnsureBaseTypeRemapped(typeof(SearchBar), typeof(VisualElement));
+			RemappingHelper.EnsureBaseTypeRemapped(typeof(SearchBar), typeof(VisualElement));
 
 			// Adjust the mappings to preserve Controls.SearchBar legacy behaviors
 #if IOS

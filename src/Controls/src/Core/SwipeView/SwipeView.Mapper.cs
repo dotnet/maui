@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls
 		{
 			// Force VisualElement's static constructor to run first so base-level
 			// mapper remappings are applied before these Control-specific ones.
-RemappingHelper.EnsureBaseTypeRemapped(typeof(SwipeView), typeof(VisualElement));
+			RemappingHelper.EnsureBaseTypeRemapped(typeof(SwipeView), typeof(VisualElement));
 
 			// Adjusted the mapping to preserve SwipeView.Entry legacy behavior
 			SwipeViewHandler.Mapper.AppendToMapping<SwipeView, ISwipeViewHandler>(nameof(Background), MapBackground);

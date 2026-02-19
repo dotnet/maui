@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls
 		{
 			// Force VisualElement's static constructor to run first so base-level
 			// mapper remappings are applied before these Control-specific ones.
-RemappingHelper.EnsureBaseTypeRemapped(typeof(ContentPage), typeof(VisualElement));
+			RemappingHelper.EnsureBaseTypeRemapped(typeof(ContentPage), typeof(VisualElement));
 
 			PageHandler.Mapper.ReplaceMapping<ContentPage, IPageHandler>(nameof(ContentPage.HideSoftInputOnTapped), MapHideSoftInputOnTapped);
 #if IOS

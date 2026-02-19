@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls
 		{
 			// Force VisualElement's static constructor to run first so base-level
 			// mapper remappings are applied before these Control-specific ones.
-RemappingHelper.EnsureBaseTypeRemapped(typeof(Label), typeof(VisualElement));
+			RemappingHelper.EnsureBaseTypeRemapped(typeof(Label), typeof(VisualElement));
 
 			// Adjust the mappings to preserve Controls.Label legacy behaviors
 			// ILabel does not include the TextType property, so we map it here to handle HTML text

@@ -8,7 +8,7 @@ public partial class Stepper
 	{
 		// Force VisualElement's static constructor to run first so base-level
 		// mapper remappings are applied before these Control-specific ones.
-RemappingHelper.EnsureBaseTypeRemapped(typeof(Stepper), typeof(VisualElement));
+		RemappingHelper.EnsureBaseTypeRemapped(typeof(Stepper), typeof(VisualElement));
 
 		StepperHandler.Mapper.AppendToMapping(nameof(Stepper.Increment), MapInterval);
 	}

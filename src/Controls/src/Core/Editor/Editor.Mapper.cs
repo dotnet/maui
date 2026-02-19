@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls
 		{
 			// Force VisualElement's static constructor to run first so base-level
 			// mapper remappings are applied before these Control-specific ones.
-RemappingHelper.EnsureBaseTypeRemapped(typeof(Editor), typeof(VisualElement));
+			RemappingHelper.EnsureBaseTypeRemapped(typeof(Editor), typeof(VisualElement));
 
 			// Adjust the mappings to preserve Controls.Editor legacy behaviors
 #if WINDOWS
