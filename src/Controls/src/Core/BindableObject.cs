@@ -139,7 +139,7 @@ namespace Microsoft.Maui.Controls
 			if (changed)
 			{
 				property.PropertyChanging?.Invoke(this, original.Value, newValue);
-				OnPropertyChanging(property.PropertyName);
+				OnPropertyChanging(property.CachedPropertyChangingEventArgs);
 			}
 
 			bpcontext.Values.Remove(specificity);
@@ -402,11 +402,25 @@ namespace Microsoft.Maui.Controls
 			=> PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
 		/// <summary>
+		/// Raises the <see cref="PropertyChanged"/> event using a cached PropertyChangedEventArgs.
+		/// </summary>
+		/// <param name="args">The cached PropertyChangedEventArgs to use.</param>
+		internal void OnPropertyChanged(PropertyChangedEventArgs args)
+			=> PropertyChanged?.Invoke(this, args);
+
+		/// <summary>
 		/// Raises the <see cref="PropertyChanging"/> event.
 		/// </summary>
 		/// <param name="propertyName">The name of the property that is changing.</param>
 		protected virtual void OnPropertyChanging([CallerMemberName] string propertyName = null)
 			=> PropertyChanging?.Invoke(this, new PropertyChangingEventArgs(propertyName));
+
+		/// <summary>
+		/// Raises the <see cref="PropertyChanging"/> event using a cached PropertyChangingEventArgs.
+		/// </summary>
+		/// <param name="args">The cached PropertyChangingEventArgs to use.</param>
+		internal void OnPropertyChanging(PropertyChangingEventArgs args)
+			=> PropertyChanging?.Invoke(this, args);
 
 		/// <summary>
 		/// Removes all current bindings from the current context.
@@ -652,7 +666,7 @@ namespace Microsoft.Maui.Controls
 			{
 				property.PropertyChanging?.Invoke(this, original, value);
 
-				OnPropertyChanging(property.PropertyName);
+				OnPropertyChanging(property.CachedPropertyChangingEventArgs);
 			}
 
 			context.Values[specificity] = value;
@@ -685,7 +699,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (willFirePropertyChanged)
 			{
-				OnPropertyChanged(property.PropertyName);
+				OnPropertyChanged(property.CachedPropertyChangedEventArgs);
 				property.PropertyChanged?.Invoke(this, original, value);
 			}
 		}

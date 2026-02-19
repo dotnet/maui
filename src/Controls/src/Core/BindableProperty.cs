@@ -252,6 +252,12 @@ namespace Microsoft.Maui.Controls
 
 		internal ValidateValueDelegate ValidateValue { get; private set; }
 
+		internal PropertyChangedEventArgs CachedPropertyChangedEventArgs
+			=> field ??= new PropertyChangedEventArgs(PropertyName);
+
+		internal PropertyChangingEventArgs CachedPropertyChangingEventArgs
+			=> field ??= new PropertyChangingEventArgs(PropertyName);
+
 		// Properties that this property depends on - when getting this property's value,
 		// if the dependency has a pending binding, return the default value instead.
 		// This is used to fix timing issues where one property binding resolves before another.
