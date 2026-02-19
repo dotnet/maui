@@ -10,6 +10,8 @@ using Windows.Devices.Geolocation;
 
 namespace Microsoft.Maui.Maps.Handlers
 {
+	// TODO: For .NET 11, refactor setup/cleanup into ConnectHandler/DisconnectHandler overrides
+	// to match the iOS/Android handler pattern. Avoided for now to prevent new PublicAPI entries.
 	/// <summary>
 	/// Handler for the Map control on Windows using the WinUI 3 MapControl backed by Azure Maps.
 	/// </summary>
@@ -63,17 +65,6 @@ namespace Microsoft.Maui.Maps.Handlers
 			_mapControl.ZoomLevel = 2;
 			_mapControl.InteractiveControlsVisible = true;
 
-			return _mapControl;
-		}
-
-		/// <inheritdoc/>
-		protected override void ConnectHandler(FrameworkElement platformView)
-		{
-			base.ConnectHandler(platformView);
-
-			if (_mapControl == null)
-				return;
-
 			_mapControl.Loaded += OnMapControlLoaded;
 			_mapControl.Unloaded += OnMapControlUnloaded;
 
@@ -83,38 +74,8 @@ namespace Microsoft.Maui.Maps.Handlers
 
 			_mapElementsLayer = new MapElementsLayer();
 			_mapControl.Layers.Add(_mapElementsLayer);
-		}
 
-		/// <inheritdoc/>
-		protected override void DisconnectHandler(FrameworkElement platformView)
-		{
-			if (_mapControl != null)
-			{
-				_mapControl.Loaded -= OnMapControlLoaded;
-				_mapControl.LayoutUpdated -= OnMapControlLayoutUpdated;
-				_mapControl.Unloaded -= OnMapControlUnloaded;
-
-				if (_pinsLayer != null)
-				{
-					_pinsLayer.MapElementClick -= OnPinLayerElementClick;
-					_mapControl.Layers.Remove(_pinsLayer);
-					_pinsLayer = null;
-				}
-
-				if (_mapElementsLayer != null)
-				{
-					_mapControl.Layers.Remove(_mapElementsLayer);
-					_mapElementsLayer = null;
-				}
-			}
-
-			_mapIcons.Clear();
-			_pendingSpan = null;
-			_webView = null;
-			_webViewReady = false;
-			_mapControl = null;
-
-			base.DisconnectHandler(platformView);
+			return _mapControl;
 		}
 
 		void OnMapControlLoaded(object sender, RoutedEventArgs e)
@@ -252,8 +213,29 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		void OnMapControlUnloaded(object sender, RoutedEventArgs e)
 		{
-			// Additional cleanup when the control is unloaded from the visual tree.
-			// Primary cleanup happens in DisconnectHandler.
+			if (_mapControl != null)
+			{
+				_mapControl.Loaded -= OnMapControlLoaded;
+				_mapControl.LayoutUpdated -= OnMapControlLayoutUpdated;
+				_mapControl.Unloaded -= OnMapControlUnloaded;
+
+				if (_pinsLayer != null)
+				{
+					_pinsLayer.MapElementClick -= OnPinLayerElementClick;
+					_mapControl.Layers.Remove(_pinsLayer);
+					_pinsLayer = null;
+				}
+
+				if (_mapElementsLayer != null)
+				{
+					_mapControl.Layers.Remove(_mapElementsLayer);
+					_mapElementsLayer = null;
+				}
+			}
+
+			_mapIcons.Clear();
+			_pendingSpan = null;
+			_webView = null;
 			_webViewReady = false;
 		}
 
