@@ -18,9 +18,9 @@ on:
         default: '9.0,10.0'
         type: string
       templates:
-        description: 'Comma-separated templates to test (maui,maui-blazor)'
+        description: 'Comma-separated templates to test (maui,maui-blazor,maui-sample)'
         required: false
-        default: 'maui,maui-blazor'
+        default: 'maui,maui-blazor,maui-sample'
         type: string
       alert_threshold:
         description: 'Alert threshold percentage for size increases'
@@ -62,7 +62,7 @@ jobs:
         run: |
           & "${{ github.workspace }}/.github/scripts/template-size-tracking/prepare-matrix.ps1" `
             -DotNetVersions "${{ inputs.dotnet_versions || '9.0,10.0' }}" `
-            -Templates "${{ inputs.templates || 'maui,maui-blazor' }}"
+            -Templates "${{ inputs.templates || 'maui,maui-blazor,maui-sample' }}"
 
   build-and-measure:
     needs: prepare-matrix

@@ -4,7 +4,8 @@
     Creates a .NET MAUI template project configured for size measurement.
 
 .PARAMETER Template
-    Template to use (maui, maui-blazor).
+    Template to use (maui, maui-blazor, maui-sample).
+    "maui-sample" is a synthetic name that maps to "dotnet new maui --sample-content".
 
 .PARAMETER DotNetVersion
     .NET version (e.g., "9.0", "10.0").
@@ -48,8 +49,17 @@ $nugetConfig = @"
 "@
 $nugetConfig | Out-File -FilePath (Join-Path $buildRoot "NuGet.config") -Encoding UTF8
 
-Write-Host "Creating project: dotnet new $Template -o $projectDir --framework net$DotNetVersion"
-dotnet new $Template -o $projectDir --framework "net$DotNetVersion"
+# Map synthetic template names to actual dotnet new commands.
+# "maui-sample" → "dotnet new maui --sample-content"
+$dotnetNewTemplate = $Template
+$extraArgs = @()
+if ($Template -eq 'maui-sample') {
+    $dotnetNewTemplate = 'maui'
+    $extraArgs = @('--sample-content')
+}
+
+Write-Host "Creating project: dotnet new $dotnetNewTemplate -o $projectDir --framework net$DotNetVersion $($extraArgs -join ' ')"
+dotnet new $dotnetNewTemplate -o $projectDir --framework "net$DotNetVersion" @extraArgs
 
 # Pin SDK version to match the target .NET version.
 # Runners may have multiple SDKs installed; without pinning, the highest
