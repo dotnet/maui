@@ -1,6 +1,6 @@
 # MAUI Dev Tools Client — Product Specification
 
-**Version**: 2.12-draft  
+**Version**: 2.13-draft  
 **Status**: Proposal  
 **Last Updated**: 2026-02-16
 
@@ -750,32 +750,93 @@ The Android Provider layer reuses the **[`Xamarin.Android.Tools.AndroidSdk`](htt
 |-----------|-------|-----------|
 | **Android SDK path discovery** | `AndroidSdkInfo` + `AndroidSdkBase` | Probes 15+ locations: `ANDROID_HOME`, `ANDROID_SDK_ROOT`, Windows registry (HKLM/HKCU for VS-installed SDKs), macOS Homebrew, Linux `/usr/lib/android-sdk`, Android Studio paths. Validates by checking for `adb` executable. |
 | **JDK discovery** | `JdkInfo` + `*JdkLocations.cs` | Finds Microsoft OpenJDK, Eclipse Adoptium, Azul, Oracle, VS-bundled JDKs. Checks Windows registry (32/64-bit views), macOS `/usr/libexec/java_home`, Linux `update-java-alternatives`. Returns version, vendor, home path. |
+| **JDK installation** | `JdkInstaller` *(planned)* | Will be contributed from `android-platform-support`'s `JavaDependencyInstaller`. Downloads Microsoft OpenJDK from manifest feed, extracts, validates. |
+| **`sdkmanager` wrapper** | `SdkManager` *(planned)* | Will be contributed from `android-platform-support`. Wraps `sdkmanager` CLI for install/uninstall/list/update operations and license acceptance. |
 | **SDK path validation** | `AndroidSdkBase.ValidateAndroidSdkLocation()` | Executable-based validation (checks for `adb`) rather than simple directory existence. |
 | **Process/executable utilities** | `ProcessUtils` | PATHEXT-aware executable discovery (`FindExecutablesInDirectory`). |
 | **Android version mapping** | `AndroidVersion` / `AndroidVersions` | Maps API levels ↔ version names/codenames for human-readable output. |
 
-#### What Remains in MAUI DevTools (Not in `android-tools`)
+#### What We Reuse from `android-platform-support` (Internal)
+
+The **`android-platform-support`** repository (internal, `devdiv/android-platform-support`) contains the shared SDK installer backend used by VS for Mac, the Android SDK Manager UI, and the Device Manager. Key components we can reuse or draw from:
+
+| Capability | Project / Class | Why Reuse |
+|-----------|----------------|-----------|
+| **Manifest feed parsing** | `XamarinRepository` + `GoogleV2Repository` | Parses the Xamarin Android Manifest Feed and Google's `repository2-3.xml`. Provides download URLs, checksums, and version metadata — no hardcoded URLs needed (see §6.8.1). |
+| **License acceptance** | `AndroidLicensesStorage` | Battle-tested subprocess orchestration of `sdkmanager --licenses`. Handles interactive Y/N prompts, writes license hashes to `$SDK_ROOT/licenses/`, platform-specific `sdkmanager.bat` vs `sdkmanager`. |
+| **AVD discovery** | `Mono.AndroidTools` / `AndroidVirtualDeviceManager` | Filesystem watcher-based AVD enumeration. Read-only; create/start/stop/delete remain in DevTools. |
+| **Manifest caching** | `LocalManifestProvider` | Offline/CI support: caches downloaded manifests to disk with fallback URLs. |
+| **Progress reporting** | `Xamarin.Installer.Common` / `InstallationProgressEventArgs` | Structured progress events (0-100%) for CLI and IDE consumption. |
+
+> **Note:** `android-platform-support` also contains `AndroidSDKInstaller` (full SDK install pipeline) and `Mono.AndroidTools` / `AdbClient` (raw TCP ADB protocol). These are not reused initially — DevTools will bootstrap by unzipping command-line tools from the manifest feed and then delegating to `sdkmanager` for package operations, and will use the `adb` CLI for device communication. We may revisit reusing these components in the future.
+>
+> JDK installation (`JavaDependencyInstaller`) and `sdkmanager` wrapper logic will be contributed from `android-platform-support` to the public `dotnet/android-tools` package, where DevTools will consume them (see table above).
+
+#### 6.8.1 Manifest-Driven Downloads & Checksum Verification
+
+**No download URLs are hardcoded.** All SDK and JDK download URLs are resolved from manifest feeds at runtime:
+
+| Feed | URL | Contents |
+|------|-----|----------|
+| **Xamarin Android Manifest** | `https://aka.ms/AndroidManifestFeed/d{version}` (e.g., `d18-0`) | JDK archives (Microsoft OpenJDK), platform-tools, command-line tools, emulator — with per-platform/architecture URLs and SHA-1 checksums |
+| **Google SDK Repository** | `https://dl.google.com/android/repository/repository2-3.xml` | SDK platforms, build-tools, system images, add-ons — Google's official package index with SHA-1 checksums |
+
+Every download is verified against the manifest's checksum before installation:
+
+```
+1. Resolve package → manifest feed lookup
+2. Download archive → temp file
+3. Compute SHA-1 of downloaded file
+4. Compare against manifest checksum  →  mismatch = abort + error
+5. Extract (unzip) to SDK directory
+6. For SDK packages: delegate to extracted sdkmanager for install/update
+```
+
+**Bootstrap flow for `android install`:**
+1. Read manifest feed → resolve command-line tools URL + checksum for current OS/arch
+2. Download & SHA-1 verify command-line tools archive
+3. Unzip to `$ANDROID_HOME/cmdline-tools/latest/`
+4. Use the now-available `sdkmanager` to install remaining packages (platforms, build-tools, emulator, system images)
+
+This ensures:
+- **No stale URLs** — feed is updated centrally via aka.ms redirect; DevTools always gets current URLs
+- **Tamper detection** — SHA-1 verification catches corrupted or modified downloads
+- **Consistency** — same manifest feed already used by VS SDK Manager, VS for Mac, and `android-platform-support`
+
+The manifest feed parsing infrastructure already exists in `android-platform-support`'s `XamarinRepository` and `GoogleV2Repository` classes.
+
+#### What Remains in MAUI DevTools (Not in Shared Libraries)
 
 | Capability | Rationale |
 |-----------|-----------|
-| **`sdkmanager` CLI wrapper** | `android-tools` discovers on-disk state; DevTools drives `sdkmanager` for install/uninstall/list operations. |
-| **`avdmanager` / `emulator` management** | AVD create/start/stop/delete and emulator lifecycle are DevTools-only features. |
-| **`adb` device management** | Device listing, logcat streaming, screenshot capture are DevTools-specific. |
-| **JDK installation** | `android-tools` only discovers JDKs. DevTools adds download and install of Microsoft OpenJDK. |
+| **SDK bootstrap (command-line tools)** | DevTools downloads and unzips command-line tools from the manifest feed to bootstrap a fresh SDK. Subsequent package operations use the `sdkmanager` wrapper from `android-tools`. |
+| **ADB device communication** | DevTools shells out to the `adb` CLI for device listing, logcat streaming, and screenshot capture. Simpler than integrating `Mono.AndroidTools`' raw TCP ADB protocol for now. |
+| **CLI command routing** | `System.CommandLine`-based CLI layer, output formatting, `--json`/`--verbose` modes. |
+| **`avdmanager` / `emulator` lifecycle** | AVD create/start/stop/delete — `android-platform-support` has read-only AVD discovery but no lifecycle management. |
+| **`device screenshot`** | Not implemented in `Mono.AndroidTools`; DevTools uses `adb exec-out screencap`. |
 | **OS elevation model** | UAC/sudo handling for SDK installs into protected paths (see §5.4). |
-| **Apple & Windows providers** | Entirely DevTools-specific; `android-tools` is Android-only. |
+| **Apple & Windows providers** | Entirely DevTools-specific; shared Android libraries are Android-only. |
 
-#### Future: Contributing Back to `android-tools`
+#### Contributing to `dotnet/android-tools`
 
-Where functionality matures in DevTools and would benefit the broader .NET Android ecosystem, we plan to contribute it upstream to `dotnet/android-tools`:
+The following capabilities will be moved from `android-platform-support` to the public `Xamarin.Android.Tools.AndroidSdk` package in `dotnet/android-tools`, making them available for DevTools and the broader ecosystem:
 
-| Candidate | Current Home | Benefit of Upstreaming |
-|-----------|-------------|----------------------|
-| **JDK installation** | DevTools `JdkManager` | IDEs and build tasks could auto-install missing JDKs instead of just reporting errors. |
-| **`sdkmanager` wrapper** | DevTools `SdkManager` | IDE extensions could install SDK packages programmatically using a shared, tested API. |
-| **License acceptance** | DevTools `SdkManager.AcceptLicensesAsync()` | Unattended CI scenarios across all .NET Android tooling. |
+| Capability | Source in `android-platform-support` | Benefit |
+|-----------|--------------------------------------|---------|
+| **JDK installation** | `JavaDependencyInstaller` | IDEs, build tasks, and DevTools can auto-install missing JDKs instead of just reporting errors. |
+| **`sdkmanager` wrapper** | `AndroidSDKInstaller` + `SdkManager` logic | Shared API for install/uninstall/list operations — used by DevTools CLI, IDE extensions, and CI. |
+| **License acceptance** | `AndroidLicensesStorage` | Unattended CI scenarios across all .NET Android tooling. |
 
-This approach ensures DevTools benefits from the battle-tested discovery logic in `android-tools` while contributing installation and management capabilities back to the ecosystem over time.
+DevTools will consume these from the `Xamarin.Android.Tools.AndroidSdk` NuGet package once upstreamed.
+
+#### Future Considerations
+
+| Candidate | Target | Benefit |
+|-----------|--------|---------|
+| **Device screenshot** | `android-platform-support` | Complement existing ADB operations in `Mono.AndroidTools`. |
+| **ADB protocol integration** | DevTools | Replace `adb` CLI calls with `Mono.AndroidTools`' raw TCP protocol for better performance if needed. |
+
+This approach ensures DevTools benefits from the battle-tested discovery and installation logic in shared libraries while contributing new capabilities back to the ecosystem over time.
 
 ### 6.9 Error Contract Specification
 
@@ -1415,6 +1476,7 @@ All telemetry and logs follow these redaction rules:
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 2.13-draft | 2026-02-19 | Expanded §6.8: added `android-platform-support` reuse table (SDK installer, ADB protocol, manifest parsing, license acceptance), added §6.8.1 Manifest-Driven Downloads & Checksum Verification — no hardcoded URLs, SHA-1 verification from Xamarin/Google manifest feeds |
 | 2.12-draft | 2026-02-19 | Added §6.8 Shared Libraries & Code Reuse — documents reuse of `Xamarin.Android.Tools.AndroidSdk` for SDK/JDK discovery and plan to contribute JDK installation, sdkmanager wrapper, license acceptance back to `dotnet/android-tools` |
 | 2.10-draft | 2026-02-10 | Added `apple install` bootstrap command (Xcode + license + runtime), `runtime check`, `runtime list --available/--all`, `runtime install <version>`, `xcode check`, `xcode accept-licenses`; changed `doctor --category` → `doctor --platform`; changed `emulator stop <serial>` → `emulator stop <name>` for consistency |
 | 2.9-draft | 2026-02-10 | Unified command naming: renamed `avd` → `emulator` for Android, `simulator boot` → `simulator start`, `simulator shutdown` → `simulator stop` for Apple — consistent start/stop verbs across platforms |
