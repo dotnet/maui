@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue20372"
+             xmlns:ns="clr-namespace:Maui.Controls.Sample.Issues">
+    <ContentPage.Resources>
+        <Style x:Key="PrimaryStyle"
+               TargetType="Label">
+            <Setter Property="FontSize" Value="22" />
+            <Setter Property="TextColor" Value="MediumPurple" />
+        </Style>
+    </ContentPage.Resources>
+
+    <VerticalStackLayout Margin="20">
+
+        <Label TextType="Html"
+               AutomationId="label1"
+               x:Name="label1"
+               Style="{StaticResource PrimaryStyle}">
+            <Label.Text>
+                <![CDATA[
+                    <strong>Bold Text</strong><br>
+                    <em>italics</em><br>
+                    <ul>
+                      <li>Item 1</li>
+                      <li>Item 2</li>
+                    </ul>
+                ]]>
+            </Label.Text>
+        </Label>
+        
+        <Label TextType="Html">
+            <Label.Text>
+                <![CDATA[
+                    <strong>Bold Text</strong><br>
+                    <em>italics</em><br>
+                    <ul>
+                      <li>Item 1</li>
+                      <li>Item 2</li>
+                    </ul>
+                ]]>
+            </Label.Text>
+        </Label>
+
+    </VerticalStackLayout>
+</ContentPage>

@@ -73,8 +73,10 @@ namespace Microsoft.Maui.Platform
 				platformLabel.AttributedText = modAttrText;
 		}
 
-		internal static void UpdateTextHtml(this UILabel platformLabel, string text)
+		internal static void UpdateTextHtml(this UILabel platformLabel, ILabel label)
 		{
+			string text = label.Text ?? string.Empty;
+
 			var attr = new NSAttributedStringDocumentAttributes
 			{
 				DocumentType = NSDocumentType.HTML,
@@ -85,20 +87,41 @@ namespace Microsoft.Maui.Platform
 #endif
 			};
 
-			NSError nsError = new();
+			var uiFontAttribute = label?.Handler?.GetRequiredService<IFontManager>()?.GetFont(label.Font, UIFont.LabelFontSize);
 
-			// NOTE: Sometimes this will crash with some sort of consistency error.
-			// https://github.com/dotnet/maui/issues/25946
-			// The caller should ensure that this extension is dispatched. We cannot
-			// do it here as we need to re-apply the formatting and we cannot call
-			// into Controls from Core.
-			// This is observed with CarouselView 1 but not with 2, so hopefully this
-			// will be just disappear once we switch.
-#pragma warning disable CS8601
-#pragma warning disable CS0618
-			platformLabel.AttributedText = new NSAttributedString(text, attr, ref nsError);
-#pragma warning restore CS0618
-#pragma warning restore CS8601
+			NSError? error;
+			var htmlAttributedString = NSAttributedString.Create(text, attr, out _, out error);
+			if (htmlAttributedString == null || error != null)
+				return;
+				
+			var attributedString = new NSMutableAttributedString(htmlAttributedString);
+
+			// Enumerate through the attributes in the string and update font size
+			attributedString.EnumerateAttributes(new NSRange(0, attributedString.Length), NSAttributedStringEnumeration.None,
+				(NSDictionary attrs, NSRange range, ref bool stop) =>
+				{
+					if (label!.Font.Family == null)
+					{
+						var font = attrs[UIStringAttributeKey.Font] as UIFont;
+						if (font != null)
+						{
+							font = font.WithSize((nfloat)(label?.Font.Size ?? UIFont.LabelFontSize));
+							attributedString.AddAttribute(UIStringAttributeKey.Font, font, range);
+						}
+					}
+					else if (uiFontAttribute != null)
+					{
+						attributedString.AddAttribute(UIStringAttributeKey.Font, uiFontAttribute, range);
+					}
+
+					if(label?.TextColor != null)
+					{
+						var color = label.TextColor.ToPlatform();
+						attributedString.AddAttribute(UIStringAttributeKey.ForegroundColor, color, range);
+					}
+				});
+
+			platformLabel.AttributedText = attributedString;
 		}
 
 		internal static void UpdateTextPlainText(this UILabel platformLabel, IText label)
