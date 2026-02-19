@@ -255,7 +255,10 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 			? messages.Prepend(new(ChatRole.System, options.Instructions))
 			: messages;
 
-		ChatMessageNative[] nativeMessages = [.. toConvert.Select(ToNative)];
+		// Filter out any messages that produce empty native content as a safety net.
+		ChatMessageNative[] nativeMessages = [.. toConvert
+			.Select(ToNative)
+			.Where(m => m.Contents.Length > 0)];
 
 		if (nativeMessages.Length == 0)
 		{
@@ -420,6 +423,23 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 			// Apple Intelligence performs better when each text content chunk is separated
 			TextContent textContent when textContent.Text is not null => [new TextContentNative(textContent.Text)],
 			TextContent => Array.Empty<AIContentNative>(),
+
+			// Function call/result content from prior tool-calling turns is converted to native types.
+			// The native Swift layer gracefully skips these when building the Transcript, since Apple's
+			// LanguageModelSession manages tool call state internally.
+			FunctionCallContent functionCall => [new FunctionCallContentNative(
+				functionCall.CallId ?? string.Empty,
+				functionCall.Name,
+#pragma warning disable IL3050, IL2026
+				functionCall.Arguments is not null ? JsonSerializer.Serialize(functionCall.Arguments, AIJsonUtilities.DefaultOptions) : "{}")],
+#pragma warning restore IL3050, IL2026
+
+			FunctionResultContent functionResult => [new FunctionResultContentNative(
+				functionResult.CallId ?? string.Empty,
+				string.Empty, // FunctionResultContent doesn't carry the tool name; the callId links to the ToolCall
+#pragma warning disable IL3050, IL2026
+				functionResult.Result is not null ? JsonSerializer.Serialize(functionResult.Result, AIJsonUtilities.DefaultOptions) : "{}")],
+#pragma warning restore IL3050, IL2026
 
 			// Throw for unsupported content types
 			_ => throw new ArgumentException($"The content type '{content.GetType().FullName}' is not supported by Apple Intelligence chat APIs.", nameof(content))
