@@ -12,10 +12,6 @@ on:
       - '.github/scripts/template-size-tracking/**'
   workflow_dispatch:
     inputs:
-      maui_template_version:
-        description: 'Specific Microsoft.Maui.Templates version (leave empty for latest)'
-        required: false
-        type: string
       dotnet_versions:
         description: 'Comma-separated .NET versions to test (e.g., 9.0,10.0)'
         required: false
@@ -45,192 +41,28 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
-      maui-version: ${{ steps.install-templates.outputs.maui-version }}
-      maui-versions: ${{ steps.install-templates.outputs.maui-versions }}
+      maui-version: ${{ steps.detect-version.outputs.maui-version }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup .NET 9
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '9.0.x'
-
-      - name: Setup .NET 10
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '10.0.x'
-
-      - name: Install MAUI Templates
-        id: install-templates
+      - name: Detect MAUI Version
+        id: detect-version
         shell: pwsh
         run: |
-          $dotnetVersions = "${{ inputs.dotnet_versions || '9.0,10.0' }}".Split(',') | ForEach-Object { $_.Trim() }
-          $versions = @{}
-
-          foreach ($dotnet in $dotnetVersions) {
-            $major = $dotnet.Split('.')[0]
-            $packageId = "Microsoft.Maui.Templates.net$major"
-
-            if ("${{ inputs.maui_template_version }}" -ne "") {
-              $version = "${{ inputs.maui_template_version }}"
-            }
-            else {
-              Write-Host "Fetching latest $packageId version..."
-              $response = Invoke-RestMethod -Uri "https://api.nuget.org/v3-flatcontainer/$($packageId.ToLower())/index.json"
-              # Filter to stable versions only (no prerelease dashes)
-              $stableVersions = $response.versions | Where-Object { $_ -notmatch '-' }
-              if ($stableVersions.Count -gt 0) {
-                $version = $stableVersions[-1]
-              } else {
-                $version = $response.versions[-1]
-              }
-            }
-
-            Write-Host "Installing $packageId version $version"
-            dotnet new install "${packageId}::${version}" --nuget-source https://api.nuget.org/v3/index.json
-            $versions[$dotnet] = $version
-          }
-
-          # Output the versions as JSON
-          $versionsJson = $versions | ConvertTo-Json -Compress
-          echo "maui-versions=$versionsJson" >> $env:GITHUB_OUTPUT
-
-          # Also output a simple version for display (use the first one)
-          $firstVersion = $versions.Values | Select-Object -First 1
-          echo "maui-version=$firstVersion" >> $env:GITHUB_OUTPUT
-
-          # Verify installation
-          dotnet new list maui
+          $response = Invoke-RestMethod -Uri "https://api.nuget.org/v3-flatcontainer/microsoft.maui.templates.net10/index.json" -ErrorAction Stop
+          $stable = $response.versions | Where-Object { $_ -notmatch '-' }
+          $version = if ($stable.Count -gt 0) { $stable[-1] } else { $response.versions[-1] }
+          Write-Host "MAUI Templates version: $version"
+          echo "maui-version=$version" >> $env:GITHUB_OUTPUT
 
       - name: Prepare Build Matrix
         id: set-matrix
         shell: pwsh
         run: |
-          $dotnetVersions = "${{ inputs.dotnet_versions || '9.0,10.0' }}".Split(',') | ForEach-Object { $_.Trim() }
-          $templates = "${{ inputs.templates || 'maui,maui-blazor' }}".Split(',') | ForEach-Object { $_.Trim() }
-
-          $matrix = @{
-            include = @()
-          }
-
-          foreach ($dotnet in $dotnetVersions) {
-            foreach ($template in $templates) {
-              # Android
-              $matrix.include += @{
-                description = 'android'
-                dotnet = $dotnet
-                template = $template
-                platform = 'android'
-                os = 'ubuntu-latest'
-                framework = "net$dotnet-android"
-                rid = 'android-arm64'
-                aot = $false
-              }
-
-              # Android Native AOT (.NET 10+ only)
-              if ($dotnet -ne "9.0") {
-                $matrix.include += @{
-                  description = 'android-aot'
-                  dotnet = $dotnet
-                  template = $template
-                  platform = 'android'
-                  os = 'ubuntu-latest'
-                  framework = "net$dotnet-android"
-                  rid = 'android-arm64'
-                  aot = $true
-                }
-              }
-
-              # iOS
-              $matrix.include += @{
-                description = 'ios'
-                dotnet = $dotnet
-                template = $template
-                platform = 'ios'
-                os = 'macos-latest'
-                framework = "net$dotnet-ios"
-                rid = 'ios-arm64'
-                aot = $false
-              }
-
-              # MacCatalyst
-              $matrix.include += @{
-                description = 'maccatalyst'
-                dotnet = $dotnet
-                template = $template
-                platform = 'maccatalyst'
-                os = 'macos-latest'
-                framework = "net$dotnet-maccatalyst"
-                rid = 'maccatalyst-arm64'
-                aot = $false
-              }
-
-              # MacCatalyst Native AOT
-              $matrix.include += @{
-                description = 'maccatalyst-aot'
-                dotnet = $dotnet
-                template = $template
-                platform = 'maccatalyst'
-                os = 'macos-latest'
-                framework = "net$dotnet-maccatalyst"
-                rid = 'maccatalyst-arm64'
-                aot = $true
-              }
-
-              # Windows Packaged (MSIX)
-              $matrix.include += @{
-                description = 'windows-packaged'
-                dotnet = $dotnet
-                template = $template
-                platform = 'windows-packaged'
-                os = 'windows-latest'
-                framework = "net$dotnet-windows10.0.19041.0"
-                rid = 'win-x64'
-                aot = $false
-              }
-
-              # Windows Packaged (MSIX) Native AOT
-              $matrix.include += @{
-                description = 'windows-packaged-aot'
-                dotnet = $dotnet
-                template = $template
-                platform = 'windows-packaged'
-                os = 'windows-latest'
-                framework = "net$dotnet-windows10.0.19041.0"
-                rid = 'win-x64'
-                aot = $true
-              }
-
-              # Windows Unpackaged
-              $matrix.include += @{
-                description = 'windows-unpackaged'
-                dotnet = $dotnet
-                template = $template
-                platform = 'windows-unpackaged'
-                os = 'windows-latest'
-                framework = "net$dotnet-windows10.0.19041.0"
-                rid = 'win-x64'
-                aot = $false
-              }
-
-              # Windows Unpackaged Native AOT
-              $matrix.include += @{
-                description = 'windows-unpackaged-aot'
-                dotnet = $dotnet
-                template = $template
-                platform = 'windows-unpackaged'
-                os = 'windows-latest'
-                framework = "net$dotnet-windows10.0.19041.0"
-                rid = 'win-x64'
-                aot = $true
-              }
-            }
-          }
-
-          $matrixJson = $matrix | ConvertTo-Json -Compress -Depth 10
-          echo "matrix=$matrixJson" >> $env:GITHUB_OUTPUT
-          Write-Host "Matrix: $matrixJson"
+          & "${{ github.workspace }}/.github/scripts/template-size-tracking/prepare-matrix.ps1" `
+            -DotNetVersions "${{ inputs.dotnet_versions || '9.0,10.0' }}" `
+            -Templates "${{ inputs.templates || 'maui,maui-blazor' }}"
 
   build-and-measure:
     needs: prepare-matrix
@@ -248,11 +80,10 @@ jobs:
         with:
           dotnet-version: '${{ matrix.dotnet }}.x'
 
-      - name: Setup Xcode (for iOS/MacCatalyst)
-        if: matrix.platform == 'ios' || matrix.platform == 'maccatalyst'
+      - name: Setup Xcode
+        if: runner.os == 'macOS'
         shell: bash
         run: |
-          # Select latest stable Xcode available on the runner
           LATEST_XCODE=$(ls -d /Applications/Xcode*.app 2>/dev/null | sort -V | tail -1)
           if [ -n "$LATEST_XCODE" ]; then
             echo "Selecting Xcode: $LATEST_XCODE"
@@ -260,263 +91,39 @@ jobs:
           fi
           xcodebuild -version
 
-      - name: Setup Java (for Android)
+      - name: Setup Java
         if: matrix.platform == 'android'
         uses: actions/setup-java@v4
         with:
           distribution: 'microsoft'
           java-version: '17'
 
-      - name: Install MAUI Templates
-        shell: pwsh
-        run: |
-          $dotnet = "${{ matrix.dotnet }}"
-          $major = $dotnet.Split('.')[0]
-          $packageId = "Microsoft.Maui.Templates.net$major"
-          $versionsJson = '${{ needs.prepare-matrix.outputs.maui-versions }}'
-          $versions = $versionsJson | ConvertFrom-Json
+      - name: Install Workloads (Linux)
+        if: runner.os == 'Linux'
+        run: dotnet workload install maui-android
 
-          $version = $versions.$dotnet
-          Write-Host "Installing $packageId version $version"
-          dotnet new install "${packageId}::${version}" --force --nuget-source https://api.nuget.org/v3/index.json
-
-      - name: Install Workloads
-        shell: pwsh
-        run: |
-          # MAUI templates create multi-TFM projects:
-          #   Linux:   android only
-          #   macOS:   android + ios + maccatalyst
-          #   Windows: android + ios + maccatalyst + windows
-          # We need all workloads for the platform's TFM set so restore succeeds.
-          $os = "${{ matrix.os }}"
-
-          if ($os -like "ubuntu*") {
-            dotnet workload install maui-android
-          } elseif ($os -like "macos*") {
-            dotnet workload install maui-android maui-ios maui-maccatalyst
-          } else {
-            dotnet workload install maui
-          }
+      - name: Install Workloads (macOS/Windows)
+        if: runner.os != 'Linux'
+        run: dotnet workload install maui
 
       - name: Create Project
         shell: pwsh
         run: |
-          $template = "${{ matrix.template }}"
-          $dotnetVersion = "${{ matrix.dotnet }}"
-          # Use hyphens (not underscores) in project name — MSIX package identity
-          # only allows [-.A-Za-z0-9] characters
-          $safePlatform = "${{ matrix.description }}"
-          # Short project name to stay within MSIX identity 50-char limit
-          # (com.companyname.$name must be ≤50 chars)
-          $shortTemplate = if ($template -eq 'maui-blazor') { 'blazor' } else { 'maui' }
-          $projectName = "Ma-$shortTemplate-$safePlatform"
-          $framework = "${{ matrix.framework }}"
-
-          # Create project in $HOME to avoid inheriting repo's Directory.Build.props
-          # (which imports Arcade SDK and causes build failures)
-          $buildRoot = Join-Path $HOME "template-builds"
-          New-Item -ItemType Directory -Path $buildRoot -Force | Out-Null
-          $projectDir = Join-Path $buildRoot $projectName
-
-          # Place NuGet.config in the PARENT directory (not project dir) to avoid
-          # macOS build system bundling it into .app packages
-          $nugetConfig = @"
-          <?xml version="1.0" encoding="utf-8"?>
-          <configuration>
-            <packageSources>
-              <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
-              <add key="dotnet-public" value="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json" />
-            </packageSources>
-          </configuration>
-          "@
-          $nugetConfig | Out-File -FilePath (Join-Path $buildRoot "NuGet.config") -Encoding UTF8
-
-          Write-Host "Creating project: dotnet new $template -o $projectDir --framework net$dotnetVersion"
-          dotnet new $template -o $projectDir --framework net$dotnetVersion
-
-          # Pin SDK version to match the target .NET version.
-          # Runners may have multiple SDKs installed; without pinning, the highest
-          # SDK resolves workload manifests that conflict with older TFMs.
-          $sdkVersion = dotnet --list-sdks | Where-Object { $_ -match "^$dotnetVersion" } | ForEach-Object { ($_ -split ' ')[0] } | Select-Object -Last 1
-          if ($sdkVersion) {
-            Write-Host "Pinning SDK to $sdkVersion via global.json"
-            @{ sdk = @{ version = $sdkVersion; rollForward = "latestPatch" } } | ConvertTo-Json | Out-File -FilePath (Join-Path $projectDir "global.json") -Encoding UTF8
-          }
-
-          # Restrict TargetFrameworks to only the platform we're building for.
-          # MAUI templates target all platforms (android, ios, maccatalyst, windows).
-          # Building on Ubuntu for Android would fail trying to resolve iOS workloads.
-          $csproj = Get-ChildItem -Path $projectDir -Filter "*.csproj" -Recurse | Select-Object -First 1
-          if ($csproj) {
-            $content = Get-Content $csproj.FullName -Raw
-            $content = $content -replace '<TargetFrameworks>[^<]+</TargetFrameworks>', "<TargetFrameworks>$framework</TargetFrameworks>"
-            Set-Content -Path $csproj.FullName -Value $content
-            Write-Host "Restricted TargetFrameworks to: $framework"
-          }
-
-          echo "PROJECT_PATH=$projectDir" >> $env:GITHUB_ENV
-          echo "PROJECT_NAME=$projectName" >> $env:GITHUB_ENV
+          & "${{ github.workspace }}/.github/scripts/template-size-tracking/create-project.ps1" `
+            -Template "${{ matrix.template }}" `
+            -DotNetVersion "${{ matrix.dotnet }}" `
+            -Description "${{ matrix.description }}" `
+            -Framework "${{ matrix.framework }}"
 
       - name: Build and Publish
         shell: pwsh
         run: |
-          $projectPath = $env:PROJECT_PATH
-          $platform = "${{ matrix.platform }}"
-          $framework = "${{ matrix.framework }}"
-          $rid = "${{ matrix.rid }}"
-          $isAot = "${{ matrix.aot }}" -eq "True"
-
-          $startTime = Get-Date
-
-          # Find the main .csproj
-          $projectFile = Get-ChildItem -Path $projectPath -Filter "*.csproj" -Recurse | Select-Object -First 1
-
-          if (-not $projectFile) {
-            Write-Error "Could not find project file in $projectPath"
-            exit 1
-          }
-
-          Write-Host "Found project: $($projectFile.FullName)"
-
-          switch ($platform) {
-            "android" {
-              if ($isAot) {
-                Write-Host "Building Android AAB with Native AOT..."
-                dotnet publish $projectFile.FullName `
-                  -f $framework `
-                  -c Release `
-                  -r $rid `
-                  -p:PublishAot=true `
-                  -p:AndroidPackageFormat=aab `
-                  -p:AndroidKeyStore=false `
-                  -o publish `
-                  /bl:build.binlog
-              } else {
-                Write-Host "Building Android AAB..."
-                dotnet publish $projectFile.FullName `
-                  -f $framework `
-                  -c Release `
-                  -p:AndroidPackageFormat=aab `
-                  -p:AndroidKeyStore=false `
-                  -o publish `
-                  /bl:build.binlog
-              }
-            }
-
-            "ios" {
-              # iOS publish blocks simulator RIDs and requires device signing.
-              # Use dotnet publish with BuildIpa=false + CodesignKey=- (ad-hoc signing)
-              # to skip IPA creation and avoid needing Apple certificates.
-              Write-Host "Building iOS with ad-hoc signing..."
-              dotnet publish $projectFile.FullName `
-                -f $framework `
-                -c Release `
-                -p:RuntimeIdentifier=$rid `
-                -p:_RequireCodeSigning=false `
-                -p:EnableCodeSigning=false `
-                -p:CodesignKey="-" `
-                -p:BuildIpa=false `
-                -p:ValidateXcodeVersion=false `
-                /bl:build.binlog
-
-              # With BuildIpa=false, the .app stays in bin/ (not copied to -o path).
-              # Find and copy it to publish/ for consistent measurement.
-              $binPath = Join-Path $projectPath "bin/Release/$framework/$rid"
-              Write-Host "Looking for .app in: $binPath"
-              $appBundle = Get-ChildItem -Path $binPath -Filter "*.app" -Directory -ErrorAction SilentlyContinue | Select-Object -First 1
-              if ($appBundle) {
-                New-Item -ItemType Directory -Path "publish" -Force | Out-Null
-                Copy-Item -Path $appBundle.FullName -Destination "publish/" -Recurse
-                Write-Host "Copied $($appBundle.Name) to publish/"
-              } else {
-                Write-Host "Warning: No .app bundle found in $binPath, listing contents:"
-                Get-ChildItem -Path $binPath -Recurse -ErrorAction SilentlyContinue | Select-Object -First 20 | ForEach-Object { Write-Host "  $_" }
-              }
-            }
-
-            "maccatalyst" {
-              if ($isAot) {
-                Write-Host "Building MacCatalyst with Native AOT..."
-                dotnet publish $projectFile.FullName `
-                  -f $framework `
-                  -c Release `
-                  -r $rid `
-                  -p:PublishAot=true `
-                  -p:_RequireCodeSigning=false `
-                  -p:ValidateXcodeVersion=false `
-                  -o publish `
-                  /bl:build.binlog
-              } else {
-                Write-Host "Building MacCatalyst (unsigned)..."
-                dotnet publish $projectFile.FullName `
-                  -f $framework `
-                  -c Release `
-                  -p:RuntimeIdentifier=$rid `
-                  -p:_RequireCodeSigning=false `
-                  -p:ValidateXcodeVersion=false `
-                  -o publish `
-                  /bl:build.binlog
-              }
-            }
-
-            "windows-packaged" {
-              if ($isAot) {
-                Write-Host "Building Windows MSIX with Native AOT..."
-                dotnet publish $projectFile.FullName `
-                  -f $framework `
-                  -c Release `
-                  -r $rid `
-                  -p:PublishAot=true `
-                  -p:WindowsPackageType=MSIX `
-                  -p:GenerateAppxPackageOnBuild=true `
-                  -p:AppxPackageSigningEnabled=false `
-                  -o publish `
-                  /bl:build.binlog
-              } else {
-                Write-Host "Building Windows MSIX..."
-                dotnet publish $projectFile.FullName `
-                  -f $framework `
-                  -c Release `
-                  -p:WindowsPackageType=MSIX `
-                  -p:GenerateAppxPackageOnBuild=true `
-                  -p:AppxPackageSigningEnabled=false `
-                  -o publish `
-                  /bl:build.binlog
-              }
-            }
-
-            "windows-unpackaged" {
-              if ($isAot) {
-                Write-Host "Building Windows unpackaged with Native AOT..."
-                dotnet publish $projectFile.FullName `
-                  -f $framework `
-                  -c Release `
-                  -r $rid `
-                  --self-contained true `
-                  -p:PublishAot=true `
-                  -p:WindowsPackageType=None `
-                  -o publish `
-                  /bl:build.binlog
-              } else {
-                # Framework-dependent publish without explicit RID.
-                # Specifying -r win-x64 forces self-contained which needs
-                # Mono.win-x64 runtime package (not available for .NET 10 GA).
-                Write-Host "Building Windows unpackaged (framework-dependent)..."
-                dotnet publish $projectFile.FullName `
-                  -f $framework `
-                  -c Release `
-                  -p:WindowsPackageType=None `
-                  -o publish `
-                  /bl:build.binlog
-              }
-            }
-          }
-
-          $endTime = Get-Date
-          $buildTime = ($endTime - $startTime).TotalSeconds
-
-          Write-Host "Build completed in $buildTime seconds"
-          echo "BUILD_TIME=$buildTime" >> $env:GITHUB_ENV
+          & "${{ github.workspace }}/.github/scripts/template-size-tracking/build-and-publish.ps1" `
+            -ProjectPath $env:PROJECT_PATH `
+            -Platform "${{ matrix.platform }}" `
+            -Framework "${{ matrix.framework }}" `
+            -Rid "${{ matrix.rid }}" `
+            -IsAot "${{ matrix.aot }}"
 
       - name: Upload Build Binlog
         if: always()
@@ -529,13 +136,12 @@ jobs:
       - name: Measure Package Size
         shell: pwsh
         run: |
-          $scriptPath = Join-Path $env:GITHUB_WORKSPACE ".github/scripts/template-size-tracking/measure-package-size.ps1"
-          & $scriptPath `
+          & "${{ github.workspace }}/.github/scripts/template-size-tracking/measure-package-size.ps1" `
             -PublishPath "publish" `
             -Platform "${{ matrix.platform }}" `
             -Description "${{ matrix.description }}" `
             -OS "${{ matrix.os }}" `
-            -IsAot ${{ matrix.aot }} `
+            -IsAot "${{ matrix.aot }}" `
             -Template "${{ matrix.template }}" `
             -DotNetVersion "${{ matrix.dotnet }}" `
             -MauiVersion "${{ needs.prepare-matrix.outputs.maui-version }}" `
@@ -547,7 +153,7 @@ jobs:
         with:
           name: metrics-${{ matrix.dotnet }}-${{ matrix.template }}-${{ matrix.description }}
           path: metrics.json
-          retention-days: 90
+          retention-days: 31
 
   analyze-and-report:
     needs: [prepare-matrix, build-and-measure]
@@ -570,6 +176,8 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: metrics-history
+          # Each run saves with a unique key (GitHub Actions cache is immutable).
+          # Restore uses prefix matching to find the most recent entry.
           key: template-size-metrics-${{ github.run_id }}
           restore-keys: |
             template-size-metrics-
@@ -577,58 +185,15 @@ jobs:
       - name: Prepare Historical Data
         shell: pwsh
         run: |
-          $today = (Get-Date).ToString("yyyy-MM-dd")
-          $historyDir = "metrics-history"
-
-          # Create history directory if it doesn't exist
-          if (-not (Test-Path $historyDir)) {
-            New-Item -ItemType Directory -Force -Path $historyDir | Out-Null
-            Write-Host "Created new metrics history directory"
-          }
-
-          # Copy current metrics into today's history slot
-          $todayDir = Join-Path $historyDir $today
-          New-Item -ItemType Directory -Force -Path $todayDir | Out-Null
-
-          $metricsFiles = Get-ChildItem -Path "metrics" -Filter "*.json" -Recurse
-          foreach ($file in $metricsFiles) {
-            Copy-Item $file.FullName -Destination $todayDir -Force
-          }
-
-          Write-Host "Saved $($metricsFiles.Count) metrics to $todayDir"
-
-          # Find yesterday's metrics for comparison
-          $yesterday = (Get-Date).AddDays(-1).ToString("yyyy-MM-dd")
-          $yesterdayDir = Join-Path $historyDir $yesterday
-
-          if (Test-Path $yesterdayDir) {
-            Write-Host "Found previous metrics from $yesterday"
-            Copy-Item $yesterdayDir -Destination "previous-metrics" -Recurse
-          } else {
-            Write-Host "No previous metrics found for $yesterday"
-            New-Item -ItemType Directory -Force -Path "previous-metrics" | Out-Null
-          }
-
-          # Prune history older than 35 days
-          $cutoffDate = (Get-Date).AddDays(-35).ToString("yyyy-MM-dd")
-          $historyDirs = Get-ChildItem -Path $historyDir -Directory | Sort-Object Name
-
-          foreach ($dir in $historyDirs) {
-            if ($dir.Name -lt $cutoffDate) {
-              Write-Host "Pruning old metrics: $($dir.Name)"
-              Remove-Item $dir.FullName -Recurse -Force
-            }
-          }
-
-          $remaining = (Get-ChildItem -Path $historyDir -Directory).Count
-          Write-Host "History contains $remaining day(s) of metrics"
+          & "${{ github.workspace }}/.github/scripts/template-size-tracking/prepare-historical-data.ps1" `
+            -MetricsPath "metrics" `
+            -HistoryDir "metrics-history"
 
       - name: Compare and Generate Report
         id: compare
         shell: pwsh
         run: |
-          $scriptPath = Join-Path $env:GITHUB_WORKSPACE ".github/scripts/template-size-tracking/compare-and-alert.ps1"
-          & $scriptPath `
+          & "${{ github.workspace }}/.github/scripts/template-size-tracking/compare-and-alert.ps1" `
             -CurrentMetricsPath "metrics" `
             -PreviousMetricsPath "previous-metrics" `
             -HistoricalMetricsPath "metrics-history" `
@@ -638,8 +203,9 @@ jobs:
       - name: Generate Summary
         shell: pwsh
         run: |
-          $scriptPath = Join-Path $env:GITHUB_WORKSPACE ".github/scripts/template-size-tracking/generate-summary.ps1"
-          & $scriptPath -MetricsPath "metrics" -ComparisonPath "comparison.json"
+          & "${{ github.workspace }}/.github/scripts/template-size-tracking/generate-summary.ps1" `
+            -MetricsPath "metrics" `
+            -ComparisonPath "comparison.json"
 
       - name: Save Historical Metrics Cache
         uses: actions/cache/save@v4

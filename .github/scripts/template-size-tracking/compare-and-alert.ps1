@@ -27,7 +27,7 @@ param(
     [string]$PreviousMetricsPath,
 
     [Parameter(Mandatory=$false)]
-    [string]$HistoricalMetricsPath = "historical-metrics",
+    [string]$HistoricalMetricsPath = "metrics-history",
 
     [Parameter(Mandatory=$false)]
     [decimal]$AlertThreshold = 10,

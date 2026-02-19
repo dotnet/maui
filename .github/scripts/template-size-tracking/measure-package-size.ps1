@@ -48,7 +48,7 @@ param(
     [string]$OS,
 
     [Parameter(Mandatory=$true)]
-    [ValidateSet('True', 'False', 'true', 'false', '$true', '$false')]
+    [ValidateSet('True', 'False', 'true', 'false')]
     [string]$IsAot,
 
     [Parameter(Mandatory=$true)]
@@ -276,10 +276,24 @@ if ($largestFile) {
 }
 
 # Compressed size
-if ($Platform -eq "android" -or $Platform -eq "ios" -or $Platform -eq "windows-packaged") {
-    # These are already compressed archives
+if ($Platform -eq "android" -or $Platform -eq "windows-packaged") {
+    # AAB and MSIX are already compressed archives
     $metrics.compressedSize = $metrics.packageSize
     Write-Host "Compressed Size (same as package): $([math]::Round($metrics.compressedSize / 1MB, 2)) MB"
+} elseif ($Platform -eq "ios" -or $Platform -eq "maccatalyst") {
+    # .app bundles are directories, not compressed archives — measure actual compressed size
+    $tempZip = Join-Path ([System.IO.Path]::GetTempPath()) "package.zip"
+    if (Test-Path $tempZip) { Remove-Item $tempZip -Force }
+    Write-Host "Creating compressed archive for .app bundle measurement..." -ForegroundColor Yellow
+    try {
+        Compress-Archive -Path "$PublishPath/*" -DestinationPath $tempZip -CompressionLevel Optimal -Force
+        $metrics.compressedSize = (Get-Item $tempZip).Length
+        Write-Host "Compressed Size: $([math]::Round($metrics.compressedSize / 1MB, 2)) MB"
+        Remove-Item $tempZip -Force
+    } catch {
+        Write-Warning "Could not create compressed archive: $_"
+        $metrics.compressedSize = 0
+    }
 } else {
     $tempZip = Join-Path ([System.IO.Path]::GetTempPath()) "package.zip"
     if (Test-Path $tempZip) { Remove-Item $tempZip -Force }

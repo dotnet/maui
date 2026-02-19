@@ -51,7 +51,7 @@ $summary = @"
 - **Total Configurations**: $($currentMetrics.Count)
 - **Total Package Size**: $([math]::Round($totalSize / 1GB, 2)) GB
 - **Average Build Time**: $([math]::Round($avgBuildTime, 2)) seconds
-- **MAUI Templates Version**: $($currentMetrics[0].mauiVersion)
+- **MAUI Templates Version**: $(if ($currentMetrics.Count -gt 0) { $currentMetrics[0].mauiVersion } else { 'unknown' })
 
 "@
 
