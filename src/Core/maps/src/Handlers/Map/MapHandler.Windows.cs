@@ -235,6 +235,12 @@ namespace Microsoft.Maui.Maps.Handlers
 
 			_mapIcons.Clear();
 			_pendingSpan = null;
+
+			if (_webView != null)
+			{
+				_webView.NavigationCompleted -= OnWebViewNavigationCompleted;
+			}
+
 			_webView = null;
 			_webViewReady = false;
 		}
@@ -388,7 +394,8 @@ namespace Microsoft.Maui.Maps.Handlers
 		}
 
 		/// <summary>
-		/// Maps the <see cref="IMap.Pins"/> collection. Subscribes to collection changes for dynamic updates.
+		/// Maps the <see cref="IMap.Pins"/> collection and handles dynamic updates to the Pins collection
+		/// when invoked by the handler.
 		/// </summary>
 		public static void MapPins(IMapHandler handler, IMap map)
 		{
