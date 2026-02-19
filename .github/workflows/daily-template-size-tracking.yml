@@ -392,6 +392,7 @@ jobs:
                 -c Release `
                 -p:RuntimeIdentifier=$rid `
                 -p:_RequireCodeSigning=false `
+                -p:ValidateXcodeVersion=false `
                 -o publish `
                 /bl:build.binlog
             }
@@ -405,6 +406,7 @@ jobs:
                   -r $rid `
                   -p:PublishAot=true `
                   -p:_RequireCodeSigning=false `
+                  -p:ValidateXcodeVersion=false `
                   -o publish `
                   /bl:build.binlog
               } else {
@@ -414,6 +416,7 @@ jobs:
                   -c Release `
                   -p:RuntimeIdentifier=$rid `
                   -p:_RequireCodeSigning=false `
+                  -p:ValidateXcodeVersion=false `
                   -o publish `
                   /bl:build.binlog
               }
@@ -427,6 +430,7 @@ jobs:
                   -c Release `
                   -r $rid `
                   -p:PublishAot=true `
+                  -p:WindowsPackageType=MSIX `
                   -p:GenerateAppxPackageOnBuild=true `
                   -p:AppxPackageSigningEnabled=false `
                   -o publish `
@@ -436,6 +440,7 @@ jobs:
                 dotnet publish $projectFile.FullName `
                   -f $framework `
                   -c Release `
+                  -p:WindowsPackageType=MSIX `
                   -p:GenerateAppxPackageOnBuild=true `
                   -p:AppxPackageSigningEnabled=false `
                   -o publish `
