@@ -98,14 +98,9 @@ namespace Microsoft.Maui
 				return true;
 #endif
 
-#if ANDROID || IOS
-#pragma warning disable CS0618 // Type or member is obsolete
-			if (view is IBorder border && border.Border != null)
-				return true;
-#pragma warning restore CS0618 // Type or member is obsolete
-#elif WINDOWS
+#if WINDOWS || ANDROID
 			if (view is IBorderView border)
-				return border?.Shape != null || border?.Stroke != null;
+				return border?.Shape is not null || (border?.Stroke is not null && border.StrokeThickness > 0);
 #endif
 			return false;
 		}
