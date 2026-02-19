@@ -90,7 +90,8 @@ namespace Microsoft.Maui.Controls
 				var manualSpecificity = (ushort)(SetterSpecificity.ManualTriggerBaseline + triggerIndex);
 				var specificity = new SetterSpecificity(0, manualSpecificity, 0, 0, 0, 0, 0, 0);
 
-				(bindable._triggerSpecificity ??= new Dictionary<TriggerBase, SetterSpecificity>())[this] = specificity;
+				bindable._triggerSpecificity ??= new Dictionary<TriggerBase, SetterSpecificity>();
+				bindable._triggerSpecificity[this] = specificity;
 				Condition.SetUp(bindable);
 			}
 		}
