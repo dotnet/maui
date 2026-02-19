@@ -1395,7 +1395,6 @@ All telemetry and logs follow these redaction rules:
 
 | Document | Description |
 |----------|-------------|
-| [AI Agent Integration](./maui-devtools-ai-integration.md) | Copilot integration, permission model, MCP tools |
 | [IDE Integration](./maui-devtools-ide-integration.md) | VS Code and Visual Studio UI flows |
 
 ---

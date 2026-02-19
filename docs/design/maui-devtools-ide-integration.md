@@ -50,10 +50,10 @@ This document details how IDEs (Visual Studio, VS Code) integrate with MAUI Dev 
 
 ### Visual Studio Extension
 
-- Uses CLI invocation for communication
 - Integrates with Visual Studio's environment detection UI
 - Surfaces issues in Error List window
 - Provides menu items in Tools > MAUI submenu
+- Can consume the Android/iOS provider packages directly (as a library) or invoke the `maui` CLI -- either way, the business logic is shared. This avoids duplicating environment detection and fix logic between VS and the CLI.
 
 ---
 
