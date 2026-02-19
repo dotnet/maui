@@ -1,1 +1,6 @@
 #nullable enable
+Microsoft.Maui.Controls.Maps.Map.LastUserLocation.get -> Microsoft.Maui.Devices.Sensors.Location?
+Microsoft.Maui.Controls.Maps.Map.UserLocationChanged -> System.EventHandler<Microsoft.Maui.Controls.Maps.UserLocationChangedEventArgs!>?
+Microsoft.Maui.Controls.Maps.UserLocationChangedEventArgs
+Microsoft.Maui.Controls.Maps.UserLocationChangedEventArgs.Location.get -> Microsoft.Maui.Devices.Sensors.Location!
+Microsoft.Maui.Controls.Maps.UserLocationChangedEventArgs.UserLocationChangedEventArgs(Microsoft.Maui.Devices.Sensors.Location! location) -> void

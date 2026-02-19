@@ -477,5 +477,125 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Items = itemsSource;
 			}
 		}
+
+		#region UserLocationChanged Tests
+
+		[Fact]
+		public void UserLocationChanged_EventRaisedOnLocationUpdate()
+		{
+			// Arrange
+			var map = new Map();
+			var eventRaised = false;
+			Location receivedLocation = null;
+			map.UserLocationChanged += (sender, args) =>
+			{
+				eventRaised = true;
+				receivedLocation = args.Location;
+			};
+
+			var testLocation = new Location(37.7749, -122.4194); // San Francisco
+
+			// Act
+			((IMap)map).UserLocationUpdated(testLocation);
+
+			// Assert
+			Assert.True(eventRaised);
+			Assert.NotNull(receivedLocation);
+			Assert.Equal(37.7749, receivedLocation.Latitude);
+			Assert.Equal(-122.4194, receivedLocation.Longitude);
+		}
+
+		[Fact]
+		public void UserLocationChanged_SenderIsMap()
+		{
+			// Arrange
+			var map = new Map();
+			object sender = null;
+			map.UserLocationChanged += (s, args) => sender = s;
+
+			// Act
+			((IMap)map).UserLocationUpdated(new Location(0, 0));
+
+			// Assert
+			Assert.Same(map, sender);
+		}
+
+		[Fact]
+		public void LastUserLocation_IsNullByDefault()
+		{
+			// Arrange & Act
+			var map = new Map();
+
+			// Assert
+			Assert.Null(map.LastUserLocation);
+		}
+
+		[Fact]
+		public void LastUserLocation_UpdatedOnLocationUpdate()
+		{
+			// Arrange
+			var map = new Map();
+			var testLocation = new Location(51.5074, -0.1278); // London
+
+			// Act
+			((IMap)map).UserLocationUpdated(testLocation);
+
+			// Assert
+			Assert.NotNull(map.LastUserLocation);
+			Assert.Equal(51.5074, map.LastUserLocation.Latitude);
+			Assert.Equal(-0.1278, map.LastUserLocation.Longitude);
+		}
+
+		[Fact]
+		public void LastUserLocation_UpdatedWithLatestLocation()
+		{
+			// Arrange
+			var map = new Map();
+			var firstLocation = new Location(40.7128, -74.0060); // NYC
+			var secondLocation = new Location(34.0522, -118.2437); // LA
+
+			// Act
+			((IMap)map).UserLocationUpdated(firstLocation);
+			((IMap)map).UserLocationUpdated(secondLocation);
+
+			// Assert
+			Assert.NotNull(map.LastUserLocation);
+			Assert.Equal(34.0522, map.LastUserLocation.Latitude);
+			Assert.Equal(-118.2437, map.LastUserLocation.Longitude);
+		}
+
+		[Fact]
+		public void UserLocationChanged_MultipleSubscribers()
+		{
+			// Arrange
+			var map = new Map();
+			int eventCount = 0;
+			map.UserLocationChanged += (s, e) => eventCount++;
+			map.UserLocationChanged += (s, e) => eventCount++;
+
+			// Act
+			((IMap)map).UserLocationUpdated(new Location(0, 0));
+
+			// Assert
+			Assert.Equal(2, eventCount);
+		}
+
+		[Fact]
+		public void IMap_LastUserLocation_ReturnsMapLastUserLocation()
+		{
+			// Arrange
+			var map = new Map();
+			var testLocation = new Location(48.8566, 2.3522); // Paris
+
+			// Act
+			((IMap)map).UserLocationUpdated(testLocation);
+			var iMapLocation = ((IMap)map).LastUserLocation;
+
+			// Assert
+			Assert.NotNull(iMapLocation);
+			Assert.Equal(map.LastUserLocation, iMapLocation);
+		}
+
+		#endregion
 	}
 }

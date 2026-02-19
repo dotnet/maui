@@ -11,7 +11,20 @@ namespace Microsoft.Maui.Controls.Maps
 
 		IList<IMapPin> IMap.Pins => _pins.Cast<IMapPin>().ToList();
 
+		Location? IMap.LastUserLocation => _lastUserLocation;
+
 		void IMap.Clicked(Location location) => MapClicked?.Invoke(this, new MapClickedEventArgs(location));
+
+		void IMap.UserLocationUpdated(Location location)
+		{
+			if (Equals(_lastUserLocation, location))
+				return;
+
+			OnPropertyChanging(nameof(LastUserLocation));
+			_lastUserLocation = location;
+			OnPropertyChanged(nameof(LastUserLocation));
+			UserLocationChanged?.Invoke(this, new UserLocationChangedEventArgs(location));
+		}
 
 		MapSpan? IMap.VisibleRegion
 		{

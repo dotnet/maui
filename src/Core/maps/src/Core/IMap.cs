@@ -49,9 +49,24 @@ namespace Microsoft.Maui.Maps
 		IList<IMapElement> Elements { get; }
 
 		/// <summary>
+		/// Gets the last known user location from the map, or null if not available.
+		/// </summary>
+		/// <remarks>
+		/// This property requires <see cref="IsShowingUser"/> to be set to true.
+		/// The location is updated as the user moves and the map receives location updates.
+		/// </remarks>
+		Location? LastUserLocation { get; }
+
+		/// <summary>
 		/// Method called by the handler when user clicks on the Map.
 		/// </summary>
 		void Clicked(Location position);
+
+		/// <summary>
+		/// Method called by the handler when the user's location is updated.
+		/// </summary>
+		/// <param name="location">The new user location.</param>
+		void UserLocationUpdated(Location location);
 
 		/// <summary>
 		/// Moves the map so that it displays the specified <see cref="MapSpan"/> region.
