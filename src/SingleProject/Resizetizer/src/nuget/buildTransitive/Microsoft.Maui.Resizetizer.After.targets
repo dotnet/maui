@@ -366,6 +366,7 @@
                 sure all LogicalName items also have a Link value for this task.
             -->
             <_MauiAssetWithLinkMetadata Include="@(MauiAsset)" Link="%(MauiAsset.LogicalName)" Condition="'%(MauiAsset.Link)' == '' And '%(MauiAsset.LogicalName)' != ''" />
+             <_MauiAssetWithLinkMetadata Include="@(MauiAsset)" Link="%(MauiAsset.LogicalName)" Condition="'$(_ResizetizerIsWindowsAppSdk)' == 'True' And '%(MauiAsset.Link)' != '' And '%(MauiAsset.LogicalName)' != ''" />
             <_MauiAssetWithLinkMetadata Include="@(MauiAsset)" Condition="'%(MauiAsset.Link)' != '' Or '%(MauiAsset.LogicalName)' == ''" />
         </ItemGroup>
         <!-- pick the destination property to assign the final path -->
