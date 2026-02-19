@@ -309,6 +309,15 @@ jobs:
           Write-Host "Creating project: dotnet new $template -o $projectName --framework net$dotnetVersion"
           dotnet new $template -o $projectName --framework net$dotnetVersion
 
+          # Pin SDK version to match the target .NET version.
+          # Runners may have multiple SDKs installed; without pinning, the highest
+          # SDK resolves workload manifests that conflict with older TFMs.
+          $sdkVersion = dotnet --list-sdks | Where-Object { $_ -match "^$dotnetVersion" } | ForEach-Object { ($_ -split ' ')[0] } | Select-Object -Last 1
+          if ($sdkVersion) {
+            Write-Host "Pinning SDK to $sdkVersion via global.json"
+            @{ sdk = @{ version = $sdkVersion; rollForward = "latestPatch" } } | ConvertTo-Json | Out-File -FilePath (Join-Path $projectName "global.json") -Encoding UTF8
+          }
+
           echo "PROJECT_PATH=$projectName" >> $env:GITHUB_ENV
           echo "PROJECT_NAME=$projectName" >> $env:GITHUB_ENV
 
