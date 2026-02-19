@@ -86,6 +86,15 @@ public partial class ChatViewModel : ObservableObject
 		var allContents = new List<AIContent>();
 		var seenCallIds = new HashSet<string>();
 
+		// Show "Thinking..." placeholder immediately
+		var thinkingBubble = new ChatBubble
+		{
+			BubbleType = ChatBubbleType.Assistant,
+			Text = "Thinking...",
+			IsStreaming = true
+		};
+		Messages.Add(thinkingBubble);
+
 		try
 		{
 			await foreach (var update in _chatService.GetStreamingResponseAsync(
@@ -102,12 +111,24 @@ public partial class ChatViewModel : ObservableObject
 							{
 								if (assistantBubble is null)
 								{
-									assistantBubble = new ChatBubble
+									// First text: if thinking bubble is still in Messages, reuse it
+									if (Messages.Contains(thinkingBubble))
 									{
-										BubbleType = ChatBubbleType.Assistant,
-										IsStreaming = true
-									};
-									Messages.Add(assistantBubble);
+										thinkingBubble.Text = textContent.Text;
+										assistantBubble = thinkingBubble;
+									}
+									else
+									{
+										// Post-tool-call: create a new assistant bubble
+										assistantBubble = new ChatBubble
+										{
+											BubbleType = ChatBubbleType.Assistant,
+											Text = textContent.Text,
+											IsStreaming = true
+										};
+										Messages.Add(assistantBubble);
+									}
+									return;
 								}
 								assistantBubble.Text += textContent.Text;
 							});
@@ -127,6 +148,11 @@ public partial class ChatViewModel : ObservableObject
 									else
 										assistantBubble.IsStreaming = false;
 									assistantBubble = null;
+								}
+								else
+								{
+									// Remove thinking bubble if tool call arrives before any text
+									Messages.Remove(thinkingBubble);
 								}
 
 								var argsJson = functionCall.Arguments is not null

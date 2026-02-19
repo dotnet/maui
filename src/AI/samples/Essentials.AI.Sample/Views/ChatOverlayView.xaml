@@ -159,7 +159,7 @@
             AutomationId="ChatPanel"
             InputTransparent="False"
             VerticalOptions="End"
-            HorizontalOptions="Center"
+            HorizontalOptions="End"
             StrokeShape="RoundRectangle 20,20,0,0"
             StrokeThickness="0"
             BackgroundColor="{AppThemeBinding Light=White, Dark=#1F1F1F}"
