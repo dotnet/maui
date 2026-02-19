@@ -1,1 +1,3 @@
 #nullable enable
+override Microsoft.Maui.Maps.Handlers.MapHandler.ConnectHandler(Microsoft.UI.Xaml.FrameworkElement! platformView) -> void
+override Microsoft.Maui.Maps.Handlers.MapHandler.DisconnectHandler(Microsoft.UI.Xaml.FrameworkElement! platformView) -> void

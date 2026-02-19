@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Globalization;
 using Microsoft.Maui.Devices.Sensors;
 using Microsoft.Maui.Handlers;
@@ -64,8 +63,19 @@ namespace Microsoft.Maui.Maps.Handlers
 			_mapControl.ZoomLevel = 2;
 			_mapControl.InteractiveControlsVisible = true;
 
-			// Hook the Loaded event to find the internal WebView2 for JS-based navigation
+			return _mapControl;
+		}
+
+		/// <inheritdoc/>
+		protected override void ConnectHandler(FrameworkElement platformView)
+		{
+			base.ConnectHandler(platformView);
+
+			if (_mapControl == null)
+				return;
+
 			_mapControl.Loaded += OnMapControlLoaded;
+			_mapControl.Unloaded += OnMapControlUnloaded;
 
 			_pinsLayer = new MapElementsLayer();
 			_pinsLayer.MapElementClick += OnPinLayerElementClick;
@@ -73,10 +83,37 @@ namespace Microsoft.Maui.Maps.Handlers
 
 			_mapElementsLayer = new MapElementsLayer();
 			_mapControl.Layers.Add(_mapElementsLayer);
+		}
 
-			_mapControl.Unloaded += OnMapControlUnloaded;
+		/// <inheritdoc/>
+		protected override void DisconnectHandler(FrameworkElement platformView)
+		{
+			if (_mapControl != null)
+			{
+				_mapControl.Loaded -= OnMapControlLoaded;
+				_mapControl.LayoutUpdated -= OnMapControlLayoutUpdated;
+				_mapControl.Unloaded -= OnMapControlUnloaded;
 
-			return _mapControl;
+				if (_pinsLayer != null)
+				{
+					_pinsLayer.MapElementClick -= OnPinLayerElementClick;
+					_mapControl.Layers.Remove(_pinsLayer);
+					_pinsLayer = null;
+				}
+
+				if (_mapElementsLayer != null)
+				{
+					_mapControl.Layers.Remove(_mapElementsLayer);
+					_mapElementsLayer = null;
+				}
+			}
+
+			_mapIcons.Clear();
+			_webView = null;
+			_webViewReady = false;
+			_mapControl = null;
+
+			base.DisconnectHandler(platformView);
 		}
 
 		void OnMapControlLoaded(object sender, RoutedEventArgs e)
@@ -86,20 +123,36 @@ namespace Microsoft.Maui.Maps.Handlers
 
 			_mapControl.Loaded -= OnMapControlLoaded;
 
-			// The MapControl hosts Azure Maps inside a WebView2 child.
-			// We need a reference to it for programmatic camera navigation via map.setCamera().
+			if (!TryDiscoverWebView())
+			{
+				// WebView2 child may not be available yet during complex initialization.
+				// Retry on LayoutUpdated until found.
+				_mapControl.LayoutUpdated += OnMapControlLayoutUpdated;
+			}
+		}
+
+		void OnMapControlLayoutUpdated(object? sender, object e)
+		{
+			if (TryDiscoverWebView() && _mapControl != null)
+			{
+				_mapControl.LayoutUpdated -= OnMapControlLayoutUpdated;
+			}
+		}
+
+		bool TryDiscoverWebView()
+		{
+			if (_mapControl == null || _webView != null)
+				return true;
+
 			if (VisualTreeHelper.GetChildrenCount(_mapControl) > 0 &&
 				VisualTreeHelper.GetChild(_mapControl, 0) is WebView2 webView)
 			{
 				_webView = webView;
-
-				// Wait for WebView2 navigation to complete before sending JS commands
 				_webView.NavigationCompleted += OnWebViewNavigationCompleted;
+				return true;
 			}
-			else
-			{
-				// MapControl may not have WebView2 child yet; MoveToRegion will be queued
-			}
+
+			return false;
 		}
 
 		void OnWebViewNavigationCompleted(WebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs args)
@@ -114,7 +167,7 @@ namespace Microsoft.Maui.Maps.Handlers
 				_pendingSpan = null;
 				_ = ExecuteJsAsync(string.Format(
 					CultureInfo.InvariantCulture,
-					"map.setCamera({{ center: [{0}, {1}], zoom: {2}, type: 'jump' }});",
+					"map.setCamera({{ center: [{0}, {1}], zoom: {2}, type: 'ease', duration: 300 }});",
 					span.Center.Longitude, span.Center.Latitude, CalculateZoom(span)));
 			}
 
@@ -141,9 +194,13 @@ namespace Microsoft.Maui.Maps.Handlers
 			{
 				await _webView.ExecuteScriptAsync(script);
 			}
-			catch (Exception)
+			catch (InvalidOperationException)
 			{
-				// JS execution may fail if WebView2 is not fully ready or map object is not available
+				// Expected: WebView2 may not be fully initialized or was disposed
+			}
+			catch (Exception ex)
+			{
+				System.Diagnostics.Trace.WriteLine($"[MapHandler] JS execution failed: {ex.Message}");
 			}
 		}
 
@@ -194,28 +251,9 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		void OnMapControlUnloaded(object sender, RoutedEventArgs e)
 		{
-			if (_mapControl != null)
-			{
-				_mapControl.Unloaded -= OnMapControlUnloaded;
-
-				if (_pinsLayer != null)
-				{
-					_pinsLayer.MapElementClick -= OnPinLayerElementClick;
-					_mapControl.Layers.Remove(_pinsLayer);
-					_pinsLayer = null;
-				}
-
-				if (_mapElementsLayer != null)
-				{
-					_mapControl.Layers.Remove(_mapElementsLayer);
-					_mapElementsLayer = null;
-				}
-			}
-
-			_mapIcons.Clear();
-			_webView = null;
+			// Additional cleanup when the control is unloaded from the visual tree.
+			// Primary cleanup happens in DisconnectHandler.
 			_webViewReady = false;
-			_mapControl = null;
 		}
 
 		void OnPinLayerElementClick(MapElementsLayer sender, MapElementClickEventArgs args)
@@ -223,7 +261,11 @@ namespace Microsoft.Maui.Maps.Handlers
 			if (args.Element is MapIcon clickedIcon)
 			{
 				var pin = GetPinForMapIcon(clickedIcon);
-				pin?.SendMarkerClick();
+				if (pin != null)
+				{
+					pin.SendMarkerClick();
+					return; // Pin click should not also fire map click (matches iOS/Android behavior)
+				}
 			}
 
 			VirtualView?.Clicked(new Location(args.Location.Position.Latitude, args.Location.Position.Longitude));
@@ -328,6 +370,7 @@ namespace Microsoft.Maui.Maps.Handlers
 		/// does not reliably navigate the map view. Instead, we call <c>map.setCamera()</c> via JavaScript.
 		/// The zoom level is calculated from the <see cref="MapSpan"/> using the Spherical Mercator formula:
 		/// <c>zoom = log2(360 / degrees)</c>, clamped to the Azure Maps range of 0–24.
+		/// Navigation uses an <c>ease</c> animation (300ms) for smooth transitions.
 		/// </remarks>
 		public static void MapMoveToRegion(IMapHandler handler, IMap map, object? arg)
 		{
@@ -350,7 +393,7 @@ namespace Microsoft.Maui.Maps.Handlers
 				{
 					_ = mapHandler.ExecuteJsAsync(string.Format(
 						CultureInfo.InvariantCulture,
-						"map.setCamera({{ center: [{0}, {1}], zoom: {2}, type: 'jump' }});",
+						"map.setCamera({{ center: [{0}, {1}], zoom: {2}, type: 'ease', duration: 300 }});",
 						mapSpan.Center.Longitude, mapSpan.Center.Latitude, zoom));
 				}
 				else
