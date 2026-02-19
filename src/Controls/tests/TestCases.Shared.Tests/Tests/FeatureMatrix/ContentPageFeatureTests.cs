@@ -181,15 +181,11 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			App.WaitForElement("KeyboardTestLabel");
 			App.Tap("KeyboardTestLabel");
-
-			if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
-			{
-				VerifyScreenshot(cropBottom: 1200);
-			}
-			else
-			{
-				VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-			}
+#if IOS
+			VerifyScreenshot(cropBottom: 1200);
+#else
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+#endif
 		}
 
 		[Test]
@@ -212,15 +208,11 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			App.WaitForElement("KeyboardTestLabel");
 			App.Tap("KeyboardTestLabel");
-
-			if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
-			{
-				VerifyScreenshot(cropBottom: 1200);
-			}
-			else
-			{
-				VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-			}
+#if IOS
+			VerifyScreenshot(cropBottom: 1200);
+#else
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+#endif
 		}
 
 		[Test]
@@ -244,15 +236,11 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			App.WaitForElement("KeyboardTestLabel");
 			App.Tap("KeyboardTestLabel");
-
-			if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
-			{
-				VerifyScreenshot(cropBottom: 1200);
-			}
-			else
-			{
-				VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-			}
+#if IOS
+			VerifyScreenshot(cropBottom: 1200);
+#else
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+#endif
 		}
 #endif
 	}

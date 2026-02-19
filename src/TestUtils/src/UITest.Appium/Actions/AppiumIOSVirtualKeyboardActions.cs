@@ -16,10 +16,20 @@ namespace UITest.Appium
 			{
 				if (_app.Driver.IsKeyboardShown())
 				{
-					var keyboard = _app.Driver.FindElements(By.XPath("//XCUIElementTypeKeyboard")).FirstOrDefault(k => k.Displayed && k.Enabled);
-					// Look for button with name='Return' within keyboard
-					var returnElements = keyboard?.FindElement(By.Id("Return"));
-					returnElements?.Click();
+					if (HelperExtensions.IsIOS26OrHigher((AppiumIOSApp)_app))
+					{
+						var keyboard = _app.Driver.FindElements(By.XPath("//XCUIElementTypeKeyboard")).FirstOrDefault(k => k.Displayed && k.Enabled);
+						if (keyboard == null)
+						{
+							return CommandResponse.FailedEmptyResponse;
+						}
+						// Look for button with name='Return' within keyboard
+						keyboard?.FindElement(By.Id("Return"))?.Click();
+					}
+					else
+					{
+						_app.Driver.HideKeyboard("return");
+					}
 				}
 			}
 			catch (InvalidElementStateException)
