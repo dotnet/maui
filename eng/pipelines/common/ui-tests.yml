@@ -5,8 +5,6 @@ parameters:
   windowsPool: { }
   windowsBuildPool: { }
   macosPool: { }
-  androidApiLevels: [ 30 ]
-  androidApiLevelsExtended: [ 36 ] # API 36 for Material3 tests with Pixel 3 XL
   iosVersions: [ 'latest' ]
   androidApiLevels: [ 30 ]
   androidApiLevelsExtended: [ 36 ] # Separate API level for tests requiring Pixel 3 XL
@@ -271,14 +269,14 @@ stages:
                       artifactName: 'uitest-snapshot-results-android-material3-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
 # SafeAreaEdges tests on Android API 36 with Pixel 3 XL
-  - stage: android_ui_tests_safeareavedges
+  - stage: android_ui_tests_safeareaedges
     displayName: Android UITests SafeAreaEdges (API 36 Pixel 3 XL)
     dependsOn: build_ui_tests
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.android, '') }}:
           - ${{ each api in parameters.androidApiLevelsExtended }}:
-            - job: android_ui_tests_safeareavedges_${{ project.name }}_${{ api }}
+            - job: android_ui_tests_safeareaedges_${{ project.name }}_${{ api }}
               timeoutInMinutes: 240 # how long to run the job before automatically cancelling
               workspace:
                 clean: all
@@ -304,7 +302,7 @@ stages:
                 - template: ui-tests-collect-snapshot-diffs.yml
                   parameters:
                     platform: 'Android SafeAreaEdges'
-                    artifactName: 'uitest-snapshot-results-android-safeareavedges-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
+                    artifactName: 'uitest-snapshot-results-android-safeareaedges-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
   - stage: ios_ui_tests_mono
     displayName: iOS UITests Mono
