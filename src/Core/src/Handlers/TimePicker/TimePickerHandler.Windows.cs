@@ -9,12 +9,12 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(TimePicker platformView)
 		{
-			platformView.TimeChanged += OnControlTimeChanged;
+			platformView.SelectedTimeChanged += OnSelectedTimeChanged;
 		}
 
 		protected override void DisconnectHandler(TimePicker platformView)
 		{
-			platformView.TimeChanged -= OnControlTimeChanged;
+			platformView.SelectedTimeChanged -= OnSelectedTimeChanged;
 		}
 
 		public static void MapFormat(ITimePickerHandler handler, ITimePicker timePicker)
@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateIsOpen(timePicker);
 		}
 
-		void OnControlTimeChanged(object? sender, TimePickerValueChangedEventArgs e)
+		void OnSelectedTimeChanged(TimePicker sender, TimePickerSelectedValueChangedEventArgs e)
 		{
 			if (VirtualView is not null)
 			{
