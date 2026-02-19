@@ -20,5 +20,9 @@ public class Issue33769 : _IssuesUITest
 		App.IncreaseStepper("Issue33769_Stepper");
 		var result = App.WaitForElement("Issue33769_StepperStatusLabel").GetText();
 		Assert.That(result, Is.EqualTo("Success"));
+
+		App.DecreaseStepper("Issue33769_Stepper");
+		result = App.WaitForElement("Issue33769_StepperStatusLabel").GetText();
+		Assert.That(result, Is.EqualTo("Success"));
 	}
 }

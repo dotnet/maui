@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.PlatformView?.UpdateIncrement(stepper);
 			
-			// When increment changes, Adjust stepValue for boundary handling
+			// iOS 26+ fix: Adjust stepValue for boundary handling when increment changes
 			if (OperatingSystem.IsIOSVersionAtLeast(26) && handler.PlatformView is UIStepper platformView
 				&& NeedsStepValueAdjustment(stepper, platformView))
 			{

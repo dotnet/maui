@@ -36,10 +36,8 @@ public class Issue33769 : ContentPage
 
 		stepper.ValueChanged += (sender, e) =>
 		{
-			if (stepper.Value == stepper.Maximum)
-			{
-				stepperStatusLabel.Text = "Success";
-			}
+			stepperStatusLabel.Text = (stepper.Value == stepper.Maximum || stepper.Value == stepper.Minimum)
+			? "Success" : "Failure";
 		};
 
 		Content = new VerticalStackLayout
