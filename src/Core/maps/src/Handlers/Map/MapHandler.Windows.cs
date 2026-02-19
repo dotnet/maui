@@ -109,6 +109,7 @@ namespace Microsoft.Maui.Maps.Handlers
 			}
 
 			_mapIcons.Clear();
+			_pendingSpan = null;
 			_webView = null;
 			_webViewReady = false;
 			_mapControl = null;
@@ -451,16 +452,6 @@ namespace Microsoft.Maui.Maps.Handlers
 			pin.MarkerId = mapIcon;
 			_mapIcons.Add(mapIcon);
 			_pinsLayer.MapElements.Add(mapIcon);
-		}
-
-		void RemovePinFromLayer(IMapPin pin)
-		{
-			if (_pinsLayer == null || pin.MarkerId is not MapIcon mapIcon)
-				return;
-
-			_pinsLayer.MapElements.Remove(mapIcon);
-			_mapIcons.Remove(mapIcon);
-			pin.MarkerId = null;
 		}
 
 		/// <summary>
