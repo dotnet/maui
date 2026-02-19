@@ -78,7 +78,9 @@
     <!-- Run 'dotnet workload install' for the current running 'dotnet' install -->
     <ItemGroup>
       <_WorkloadSource Include="$(NugetArtifactsPath)" />
-      <_LocalWorkloadIds Include="maui" />
+      <!-- On Linux, only install maui-android workload; on other platforms, install full maui workload -->
+      <_LocalWorkloadIds Include="maui-android" Condition="$([MSBuild]::IsOSPlatform('linux'))" />
+      <_LocalWorkloadIds Include="maui" Condition="!$([MSBuild]::IsOSPlatform('linux'))" />
       
       <_LocalWorkloadIds Include="tizen" Condition=" '$(IncludeTizenTargetFrameworks)' == 'true' " />
     </ItemGroup>
