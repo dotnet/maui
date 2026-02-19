@@ -28,6 +28,11 @@ public static class TimePickerExtensions
 	public static void UpdateCharacterSpacing(this TimePicker platformTimePicker, ITimePicker timePicker)
 	{
 		platformTimePicker.CharacterSpacing = timePicker.CharacterSpacing.ToEm();
+
+		if (platformTimePicker.IsLoaded)
+		{
+			UpdateCharacterSpacingInTimePicker(platformTimePicker);
+		}
 	}
 
 	public static void UpdateFont(this TimePicker platformTimePicker, ITimePicker timePicker, IFontManager fontManager) =>
@@ -79,6 +84,24 @@ public static class TimePickerExtensions
 		}
 
 		platformTimePicker.RefreshThemeResources();
+	}
+
+	static void UpdateCharacterSpacingInTimePicker(this TimePicker platformTimePicker)
+	{
+		string[] partNames = { "HourTextBlock", "MinuteTextBlock", "PeriodTextBlock" };
+		foreach (var partName in partNames)
+		{
+			SetCharacterSpacingToBlocks(platformTimePicker, partName);
+		}
+	}
+
+	static void SetCharacterSpacingToBlocks(TimePicker platformTimePicker, string partName)
+	{
+		var textBlock = platformTimePicker.GetDescendantByName<TextBlock>(partName);
+		if (textBlock is not null)
+		{
+			textBlock.CharacterSpacing = platformTimePicker.CharacterSpacing;
+		}
 	}
 
 	static readonly string[] BackgroundColorResourceKeys =
