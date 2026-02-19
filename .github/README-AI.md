@@ -247,7 +247,7 @@ All agent logs are consolidated under `CustomAgentLogsTmp/`:
 Reusable skills in `.github/skills/` that agents can invoke:
 
 - **`try-fix/`** - Proposes and tests independent fix approaches, records results, learns from failures
-- **`verify-tests-fail-without-fix/`** - Verifies UI tests catch bugs (auto-detects mode based on git diff)
+- **`verify-tests-fail-without-fix/`** - Verifies tests catch bugs; supports UI tests (Appium) and Device tests (xharness) with auto-detection
 - **`write-ui-tests/`** - Creates UI tests for issues following MAUI conventions
 - **`write-xaml-tests/`** - Creates XAML unit tests for parsing, XamlC, and source generation issues
 - **`pr-build-status/`** - Retrieves Azure DevOps build status for PRs

@@ -262,7 +262,8 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
    - **Output**: Test files for Controls.Xaml.UnitTests
 
 7. **verify-tests-fail-without-fix** (`.github/skills/verify-tests-fail-without-fix/SKILL.md`)
-   - **Purpose**: Verifies UI tests catch the bug before fix and pass with fix
+   - **Purpose**: Verifies tests catch the bug before fix and pass with fix
+   - **Supports**: UI tests (Appium/NUnit) and Device tests (xUnit/xharness) — auto-detected
    - **Two modes**: Verify failure only (test creation) or full verification (test + fix)
    - **Used by**: After creating tests, before considering PR complete
 

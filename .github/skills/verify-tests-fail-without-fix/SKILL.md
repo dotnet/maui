@@ -1,15 +1,22 @@
 ---
 name: verify-tests-fail-without-fix
-description: Verifies UI tests catch the bug. Supports two modes - verify failure only (test creation) or full verification (test + fix validation).
+description: Verifies tests catch the bug. Supports UI tests (Appium) and Device tests (xharness). Two modes - verify failure only (test creation) or full verification (test + fix validation).
 metadata:
   author: dotnet-maui
-  version: "1.0"
+  version: "2.0"
 compatibility: Requires git, PowerShell, and .NET SDK for building and running tests.
 ---
 
 # Verify Tests Fail Without Fix
 
-Verifies UI tests actually catch the issue. Supports two workflow modes:
+Verifies tests actually catch the issue. Supports **UI tests** (Appium-based NUnit) and **Device tests** (xUnit via xharness). The script auto-detects the test type from changed files.
+
+## Supported Test Types
+
+| Test Type | Location | Runner | Auto-Detected From |
+|-----------|----------|--------|-------------------|
+| **UI Tests** | `TestCases.Shared.Tests/`, `TestCases.HostApp/` | `BuildAndRunHostApp.ps1` | Files matching `TestCases.(Shared.Tests\|HostApp)/*.cs` |
+| **Device Tests** | `src/*/tests/DeviceTests/` | `Run-DeviceTests.ps1` (xharness) | Files matching `src/*/tests/DeviceTests/**/*.cs` |
 
 ## Mode 1: Verify Failure Only (Test Creation)
 
@@ -26,6 +33,16 @@ pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 
 pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 -Platform ios -TestFilter "Issue33356"
 ```
 
+### Device Tests
+
+```bash
+# Auto-detect device tests and project from changed files
+pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 -Platform android
+
+# Force device test type with explicit filter
+pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 -Platform android -TestType device -TestFilter "FullyQualifiedName~EntryTests"
+```
+
 ## Mode 2: Full Verification (Fix Validation)
 
 Use when **validating both tests and fix**:
@@ -33,11 +50,14 @@ Use when **validating both tests and fix**:
 2. **With fix** - tests should PASS (bug is fixed)
 
 ```bash
-# Auto-detect everything (recommended)
+# Auto-detect everything (recommended) — works for both UI and Device tests
 pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 -Platform android -RequireFullVerification
 
 # With explicit test filter
 pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 -Platform ios -TestFilter "Issue33356" -RequireFullVerification
+
+# Device tests with explicit type
+pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 -Platform android -TestType device -RequireFullVerification
 ```
 
 **Note:** `-RequireFullVerification` ensures the script errors if no fix files are detected, preventing silent fallback to failure-only mode.
@@ -124,9 +144,14 @@ The skill generates output files under `CustomAgentLogsTmp/PRState/<PRNumber>/ve
 | `test-without-fix.log` | Full test output from run without fix |
 | `test-with-fix.log` | Full test output from run with fix |
 
-**Plus UI test logs in** `CustomAgentLogsTmp/UITests/`:
+**Plus test runner logs:**
+
+**UI Tests** → `CustomAgentLogsTmp/UITests/`:
 - `android-device.log` or `ios-device.log` - Device logs
 - `test-output.log` - NUnit test output
+
+**Device Tests** → `artifacts/log/`:
+- `<AppName>.log` - xharness test output with `[PASS]`/`[FAIL]` markers
 
 **Example structure:**
 ```
@@ -158,12 +183,19 @@ CustomAgentLogsTmp/
 | Tests fail with fix | Fix doesn't work or test is wrong | Review fix implementation |
 | App crashes | Duplicate issue numbers, XAML error | Check device logs |
 | Element not found | Wrong AutomationId, app crashed | Verify IDs match |
+| Wrong test type detected | Both UI and device test files changed | Use `-TestType device` or `-TestType ui` explicitly |
+| Device test log not found | xharness didn't produce expected log | Check `artifacts/log/` manually |
 
 ## Optional Parameters
 
 ```bash
 # Require full verification (fail if no fix files detected) - recommended
 -RequireFullVerification
+
+# Force test type (auto-detected by default)
+-TestType "device"   # Force device tests (xharness)
+-TestType "ui"       # Force UI tests (Appium)
+-TestType "auto"     # Auto-detect (default)
 
 # Explicit test filter
 -TestFilter "Issue32030|ButtonUITests"

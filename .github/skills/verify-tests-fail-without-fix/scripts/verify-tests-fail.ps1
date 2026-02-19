@@ -1,7 +1,7 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-    Verifies that UI tests catch the bug. Supports two modes: verify failure only or full verification.
+    Verifies that tests catch the bug. Supports UI tests, Device tests, and two verification modes.
 
 .DESCRIPTION
     This script verifies that tests actually catch the issue. It supports two modes:
@@ -18,12 +18,20 @@
     
     The script auto-detects which mode to use based on whether fix files are present.
     Fix files and test filters are auto-detected from the git diff (non-test files that changed).
+    
+    TEST TYPE AUTO-DETECTION:
+    The script automatically detects the type of tests in the PR:
+    - UI Tests: Files in TestCases.Shared.Tests/ or TestCases.HostApp/ → uses BuildAndRunHostApp.ps1
+    - Device Tests: Files in */DeviceTests/ → uses Run-DeviceTests.ps1 (xharness)
+    - Falls back to UI tests if type cannot be determined
 
 .PARAMETER Platform
     Target platform: "android", "ios", "catalyst" (MacCatalyst), or "windows"
 
 .PARAMETER TestFilter
-    Test filter to pass to dotnet test (e.g., "FullyQualifiedName~Issue12345").
+    Test filter to pass to the test runner.
+    For UI tests: e.g., "FullyQualifiedName~Issue12345"
+    For Device tests: e.g., "Category=Entry" or a fully qualified method name
     If not provided, auto-detects from test files in the git diff.
 
 .PARAMETER FixFiles
@@ -41,6 +49,10 @@
     (i.e., if no fix files are detected). Without this flag, the script will
     automatically run in verify failure only mode when no fix files are found.
 
+.PARAMETER TestType
+    Force test type: "ui", "device", or "auto" (default). When "auto", the script
+    auto-detects from changed files. Use this to override detection when needed.
+
 .EXAMPLE
     # Verify failure only mode - tests should fail (test creation workflow)
     ./verify-tests-fail.ps1 -Platform android
@@ -52,6 +64,10 @@
 .EXAMPLE
     # Specify test filter explicitly (works in both modes)
     ./verify-tests-fail.ps1 -Platform android -TestFilter "Issue32030"
+
+.EXAMPLE
+    # Force device test type
+    ./verify-tests-fail.ps1 -Platform android -TestType device -TestFilter "Category=Entry"
 
 .EXAMPLE
     # Specify everything explicitly
@@ -77,7 +93,11 @@ param(
     [string]$PRNumber,
 
     [Parameter(Mandatory = $false)]
-    [switch]$RequireFullVerification
+    [switch]$RequireFullVerification,
+
+    [Parameter(Mandatory = $false)]
+    [ValidateSet("auto", "ui", "device")]
+    [string]$TestType = "auto"
 )
 
 $ErrorActionPreference = "Stop"
@@ -245,6 +265,260 @@ function Get-TestResultFromLog {
 }
 
 # ============================================================
+# Detect test type from changed files (UI vs Device)
+# ============================================================
+
+# Device test project mapping: path pattern → project name for Run-DeviceTests.ps1
+$script:DeviceTestProjectMap = @{
+    "src/Controls/tests/DeviceTests" = "Controls"
+    "src/Core/tests/DeviceTests" = "Core"
+    "src/Essentials/test/DeviceTests" = "Essentials"
+    "src/Graphics/tests/DeviceTests" = "Graphics"
+    "src/BlazorWebView/tests/DeviceTests" = "BlazorWebView"
+}
+
+function Get-DetectedTestType {
+    param([string]$MergeBase)
+
+    $changedFiles = @()
+    if ($MergeBase) {
+        $changedFiles = git diff $MergeBase HEAD --name-only 2>$null
+    }
+    if (-not $changedFiles -or $changedFiles.Count -eq 0) {
+        $changedFiles = git diff --name-only 2>$null
+        if (-not $changedFiles -or $changedFiles.Count -eq 0) {
+            $changedFiles = git diff --cached --name-only 2>$null
+        }
+    }
+
+    $uiTestFiles = @()
+    $deviceTestFiles = @()
+
+    foreach ($file in $changedFiles) {
+        if ($file -match "TestCases\.(Shared\.Tests|HostApp).*\.cs$") {
+            $uiTestFiles += $file
+        }
+        elseif ($file -match "DeviceTests/.*\.cs$" -and $file -match "^src/") {
+            $deviceTestFiles += $file
+        }
+    }
+
+    if ($deviceTestFiles.Count -gt 0 -and $uiTestFiles.Count -eq 0) {
+        # Determine which device test project
+        $project = $null
+        foreach ($file in $deviceTestFiles) {
+            foreach ($pathPrefix in $script:DeviceTestProjectMap.Keys) {
+                if ($file -like "$pathPrefix*") {
+                    $project = $script:DeviceTestProjectMap[$pathPrefix]
+                    break
+                }
+            }
+            if ($project) { break }
+        }
+
+        return @{
+            Type = "device"
+            TestFiles = $deviceTestFiles
+            Project = $project
+        }
+    }
+    elseif ($uiTestFiles.Count -gt 0) {
+        return @{
+            Type = "ui"
+            TestFiles = $uiTestFiles
+            Project = $null
+        }
+    }
+    else {
+        return @{
+            Type = "unknown"
+            TestFiles = @()
+            Project = $null
+        }
+    }
+}
+
+# ============================================================
+# Auto-detect device test filter from changed device test files
+# ============================================================
+function Get-AutoDetectedDeviceTestFilter {
+    param(
+        [string]$MergeBase,
+        [string[]]$DeviceTestFiles
+    )
+
+    if (-not $DeviceTestFiles -or $DeviceTestFiles.Count -eq 0) {
+        return $null
+    }
+
+    $testMethodNames = @()
+    $testClassFQNs = @()
+
+    foreach ($file in $DeviceTestFiles) {
+        $fullPath = Join-Path $RepoRoot $file
+        if (-not (Test-Path $fullPath)) { continue }
+
+        $content = Get-Content $fullPath -Raw
+
+        # Extract namespace
+        $namespace = $null
+        if ($content -match 'namespace\s+([\w.]+)') {
+            $namespace = $matches[1]
+        }
+
+        # Extract class name
+        $className = $null
+        if ($content -match 'public\s+(?:partial\s+)?class\s+(\w+)') {
+            $className = $matches[1]
+        }
+
+        if (-not $className) { continue }
+
+        # Extract test method names (xUnit: [Fact], [Theory])
+        $methodMatches = [regex]::Matches($content, '\[(Fact|Theory)(?:\([^)]*\))?\]\s*(?:\[[^\]]*\]\s*)*(?:public\s+)?(?:async\s+)?(?:Task\s+|void\s+)(\w+)')
+        foreach ($m in $methodMatches) {
+            $methodName = $m.Groups[2].Value
+            if ($testMethodNames -notcontains $methodName) {
+                $testMethodNames += $methodName
+            }
+        }
+
+        # Build FQN for class-level filtering
+        if ($namespace -and $className) {
+            $fqn = "$namespace.$className"
+            if ($testClassFQNs -notcontains $fqn) {
+                $testClassFQNs += $fqn
+            }
+        }
+    }
+
+    if ($testMethodNames.Count -eq 0 -and $testClassFQNs.Count -eq 0) {
+        return $null
+    }
+
+    # For device tests, use FullyQualifiedName filter with class names
+    # This is more reliable than method names for xharness
+    $filterParts = @()
+    foreach ($fqn in $testClassFQNs) {
+        $filterParts += "FullyQualifiedName~$fqn"
+    }
+
+    return @{
+        Filter = $filterParts -join "|"
+        ClassNames = $testClassFQNs
+        MethodNames = $testMethodNames
+    }
+}
+
+# ============================================================
+# Parse device test results from xharness log file
+# ============================================================
+function Get-DeviceTestResultFromLog {
+    param(
+        [string]$OutputDirectory,
+        [string]$AppName
+    )
+
+    # Search for xharness log file
+    $logFile = $null
+    if (Test-Path $OutputDirectory) {
+        $logFile = Get-ChildItem -Path $OutputDirectory -Filter "$AppName.log" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+        if (-not $logFile) {
+            # Try any .log file
+            $logFile = Get-ChildItem -Path $OutputDirectory -Filter "*.log" -Recurse -ErrorAction SilentlyContinue |
+                Where-Object { $_.Name -notlike "appium*" -and $_.Name -notlike "*device*" } |
+                Select-Object -First 1
+        }
+    }
+
+    if (-not $logFile) {
+        return @{ Passed = $false; Error = "Device test log not found in: $OutputDirectory" }
+    }
+
+    $content = Get-Content $logFile.FullName -Raw
+
+    $passCount = ([regex]::Matches($content, '\[PASS\]')).Count
+    $failCount = ([regex]::Matches($content, '\[FAIL\]')).Count
+
+    if ($failCount -gt 0) {
+        return @{ Passed = $false; FailCount = $failCount; PassCount = $passCount; Total = ($passCount + $failCount) }
+    }
+    elseif ($passCount -gt 0) {
+        return @{ Passed = $true; PassCount = $passCount; FailCount = 0; Total = $passCount }
+    }
+    else {
+        return @{ Passed = $false; Error = "Could not parse device test results from: $($logFile.FullName)" }
+    }
+}
+
+# ============================================================
+# Run tests using the appropriate runner (UI or Device)
+# ============================================================
+function Invoke-TestRun {
+    param(
+        [string]$RunTestType,       # "ui" or "device"
+        [string]$RunPlatform,
+        [string]$RunTestFilter,
+        [string]$RunDeviceProject,  # Device tests only: Controls, Core, etc.
+        [string]$LogFile            # Where to tee output
+    )
+
+    if ($RunTestType -eq "device") {
+        $deviceTestScript = Join-Path $RepoRoot ".github/skills/run-device-tests/scripts/Run-DeviceTests.ps1"
+
+        # Normalize platform for Run-DeviceTests.ps1 (it uses "maccatalyst" not "catalyst")
+        $devicePlatform = if ($RunPlatform -eq "catalyst") { "maccatalyst" } else { $RunPlatform }
+
+        $deviceArgs = @(
+            "-File", $deviceTestScript,
+            "-Project", $RunDeviceProject,
+            "-Platform", $devicePlatform
+        )
+
+        if ($RunTestFilter) {
+            $deviceArgs += "-TestFilter", $RunTestFilter
+        }
+
+        Write-Host "  🧪 Running device tests: Project=$RunDeviceProject, Platform=$devicePlatform, Filter=$RunTestFilter" -ForegroundColor Cyan
+        & pwsh @deviceArgs 2>&1 | Tee-Object -FilePath $LogFile
+
+    } else {
+        # UI tests (existing behavior)
+        $buildScript = Join-Path $RepoRoot ".github/scripts/BuildAndRunHostApp.ps1"
+        & $buildScript -Platform $RunPlatform -TestFilter $RunTestFilter -Rebuild 2>&1 | Tee-Object -FilePath $LogFile
+    }
+
+    return $LASTEXITCODE
+}
+
+# ============================================================
+# Get test results from the appropriate log location
+# ============================================================
+function Get-TestRunResult {
+    param(
+        [string]$RunTestType,
+        [string]$RunDeviceProject
+    )
+
+    if ($RunTestType -eq "device") {
+        # Device test app names mapping
+        $appNames = @{
+            "Controls"      = "Microsoft.Maui.Controls.DeviceTests"
+            "Core"          = "Microsoft.Maui.Core.DeviceTests"
+            "Essentials"    = "Microsoft.Maui.Essentials.DeviceTests"
+            "Graphics"      = "Microsoft.Maui.Graphics.DeviceTests"
+            "BlazorWebView" = "Microsoft.Maui.MauiBlazorWebView.DeviceTests"
+        }
+        $appName = $appNames[$RunDeviceProject]
+        return Get-DeviceTestResultFromLog -OutputDirectory "artifacts/log" -AppName $appName
+    } else {
+        # UI tests (existing behavior)
+        $testOutputLog = Join-Path $RepoRoot "CustomAgentLogsTmp/UITests/test-output.log"
+        return Get-TestResultFromLog -LogFile $testOutputLog
+    }
+}
+
+# ============================================================
 # AUTO-DETECT MODE: Find merge-base and fix files
 # ============================================================
 
@@ -281,6 +555,50 @@ if ($baseInfo.TargetRepo) {
 Write-Host "✅ Merge base commit: $($MergeBase.Substring(0, 8))" -ForegroundColor Green
 if ($baseInfo.Distance) {
     Write-Host "   ($($baseInfo.Distance) commits ahead of $BaseBranchName)" -ForegroundColor Gray
+}
+
+# ============================================================
+# Detect test type (UI vs Device)
+# ============================================================
+$DetectedTestType = "ui"
+$DeviceTestProject = $null
+
+if ($TestType -eq "auto") {
+    Write-Host ""
+    Write-Host "🔍 Auto-detecting test type from changed files..." -ForegroundColor Cyan
+
+    $testTypeInfo = Get-DetectedTestType -MergeBase $MergeBase
+
+    if ($testTypeInfo.Type -eq "device") {
+        $DetectedTestType = "device"
+        $DeviceTestProject = $testTypeInfo.Project
+        Write-Host "✅ Detected: Device Tests (project: $DeviceTestProject)" -ForegroundColor Green
+        Write-Host "   Files:" -ForegroundColor Gray
+        foreach ($f in $testTypeInfo.TestFiles) {
+            Write-Host "   - $f" -ForegroundColor Gray
+        }
+    }
+    elseif ($testTypeInfo.Type -eq "ui") {
+        $DetectedTestType = "ui"
+        Write-Host "✅ Detected: UI Tests" -ForegroundColor Green
+    }
+    else {
+        Write-Host "⚠️  Could not detect test type, defaulting to UI Tests" -ForegroundColor Yellow
+    }
+}
+elseif ($TestType -eq "device") {
+    $DetectedTestType = "device"
+    # Try to detect project from changed files
+    $testTypeInfo = Get-DetectedTestType -MergeBase $MergeBase
+    $DeviceTestProject = $testTypeInfo.Project
+    if (-not $DeviceTestProject) {
+        $DeviceTestProject = "Controls"
+        Write-Host "⚠️  Could not detect device test project, defaulting to Controls" -ForegroundColor Yellow
+    }
+    Write-Host "✅ Test type forced: Device Tests (project: $DeviceTestProject)" -ForegroundColor Green
+}
+else {
+    Write-Host "✅ Test type forced: UI Tests" -ForegroundColor Green
 }
 
 # Check for fix files (non-test files that changed since merge-base)
@@ -340,11 +658,21 @@ if ($DetectedFixFiles.Count -eq 0) {
     # Auto-detect test filter if not provided
     if (-not $TestFilter) {
         Write-Host "🔍 Auto-detecting test filter from changed test files..." -ForegroundColor Cyan
-        $filterResult = Get-AutoDetectedTestFilter -MergeBase $MergeBase
+
+        if ($DetectedTestType -eq "device") {
+            $testTypeInfo = Get-DetectedTestType -MergeBase $MergeBase
+            $filterResult = Get-AutoDetectedDeviceTestFilter -MergeBase $MergeBase -DeviceTestFiles $testTypeInfo.TestFiles
+        } else {
+            $filterResult = Get-AutoDetectedTestFilter -MergeBase $MergeBase
+        }
 
         if (-not $filterResult) {
             Write-Host "❌ Could not auto-detect test filter. No test files found in changed files." -ForegroundColor Red
-            Write-Host "   Looking for files matching: TestCases.(Shared.Tests|HostApp)/*.cs" -ForegroundColor Yellow
+            if ($DetectedTestType -eq "device") {
+                Write-Host "   Looking for device test files in: src/*/tests/DeviceTests/**/*.cs" -ForegroundColor Yellow
+            } else {
+                Write-Host "   Looking for files matching: TestCases.(Shared.Tests|HostApp)/*.cs" -ForegroundColor Yellow
+            }
             Write-Host "   Please provide -TestFilter parameter explicitly." -ForegroundColor Yellow
             exit 1
         }
@@ -370,6 +698,7 @@ if ($DetectedFixFiles.Count -eq 0) {
     "Verify Tests Fail (Failure Only Mode)" | Add-Content $ValidationLog
     "=========================================" | Add-Content $ValidationLog
     "Platform: $Platform" | Add-Content $ValidationLog
+    "TestType: $DetectedTestType" | Add-Content $ValidationLog
     "TestFilter: $TestFilter" | Add-Content $ValidationLog
     "MergeBase: $MergeBase" | Add-Content $ValidationLog
     "" | Add-Content $ValidationLog
@@ -377,13 +706,11 @@ if ($DetectedFixFiles.Count -eq 0) {
     Write-Host "🧪 Running tests (expecting them to FAIL)..." -ForegroundColor Cyan
     Write-Host ""
 
-    # Use shared BuildAndRunHostApp.ps1 infrastructure with -Rebuild to ensure clean builds
-    $buildScript = Join-Path $RepoRoot ".github/scripts/BuildAndRunHostApp.ps1"
-    & $buildScript -Platform $Platform -TestFilter $TestFilter -Rebuild 2>&1 | Tee-Object -FilePath $TestLog
+    # Run tests using the appropriate runner
+    $exitCode = Invoke-TestRun -RunTestType $DetectedTestType -RunPlatform $Platform -RunTestFilter $TestFilter -RunDeviceProject $DeviceTestProject -LogFile $TestLog
 
-    # Parse test results using shared function
-    $testOutputLog = Join-Path $RepoRoot "CustomAgentLogsTmp/UITests/test-output.log"
-    $testResult = Get-TestResultFromLog -LogFile $testOutputLog
+    # Parse test results using appropriate parser
+    $testResult = Get-TestRunResult -RunTestType $DetectedTestType -RunDeviceProject $DeviceTestProject
 
     # Evaluate results
     Write-Host ""
@@ -461,11 +788,21 @@ foreach ($file in $FixFiles) {
 # Auto-detect test filter from test files if not provided
 if (-not $TestFilter) {
     Write-Host "🔍 Auto-detecting test filter from changed test files..." -ForegroundColor Cyan
-    $filterResult = Get-AutoDetectedTestFilter -MergeBase $MergeBase
+
+    if ($DetectedTestType -eq "device") {
+        $testTypeInfo = Get-DetectedTestType -MergeBase $MergeBase
+        $filterResult = Get-AutoDetectedDeviceTestFilter -MergeBase $MergeBase -DeviceTestFiles $testTypeInfo.TestFiles
+    } else {
+        $filterResult = Get-AutoDetectedTestFilter -MergeBase $MergeBase
+    }
 
     if (-not $filterResult) {
         Write-Host "❌ Could not auto-detect test filter. No test files found in changed files." -ForegroundColor Red
-        Write-Host "   Looking for files matching: TestCases.(Shared.Tests|HostApp)/*.cs" -ForegroundColor Yellow
+        if ($DetectedTestType -eq "device") {
+            Write-Host "   Looking for device test files in: src/*/tests/DeviceTests/**/*.cs" -ForegroundColor Yellow
+        } else {
+            Write-Host "   Looking for files matching: TestCases.(Shared.Tests|HostApp)/*.cs" -ForegroundColor Yellow
+        }
         Write-Host "   Please provide -TestFilter parameter explicitly." -ForegroundColor Yellow
         exit 1
     }
@@ -555,6 +892,7 @@ $(if (-not $FailedWithoutFix) {
 #### Configuration
 
 **Platform:** $Platform
+**Test Type:** $DetectedTestType
 **Test Filter:** $TestFilter
 **Base Branch:** $BaseBranchName
 **Merge Base:** $(if ($MergeBase -and $MergeBase.Length -ge 8) { $MergeBase.Substring(0, 8) } else { $MergeBase })
@@ -633,7 +971,7 @@ $(Get-Content $WithFixLog -Raw)
 - Full verification log: ``$ValidationLog``
 - Test output without fix: ``$WithoutFixLog``
 - Test output with fix: ``$WithFixLog``
-- UI test logs: ``CustomAgentLogsTmp/UITests/``
+- $(if ($DetectedTestType -eq 'device') { "Device test logs: ``artifacts/log/``" } else { "UI test logs: ``CustomAgentLogsTmp/UITests/``" })
 "@
 
     $markdown | Set-Content -Path $MarkdownReport -Encoding UTF8
@@ -649,6 +987,7 @@ Write-Log "=========================================="
 Write-Log "Verify Tests Fail Without Fix"
 Write-Log "=========================================="
 Write-Log "Platform: $Platform"
+Write-Log "TestType: $DetectedTestType"
 Write-Log "TestFilter: $TestFilter"
 Write-Log "FixFiles: $($FixFiles -join ', ')"
 Write-Log "BaseBranch: $BaseBranchName"
@@ -747,11 +1086,10 @@ Write-Log "=========================================="
 Write-Log "STEP 2: Running tests WITHOUT fix (should FAIL)"
 Write-Log "=========================================="
 
-# Use shared BuildAndRunHostApp.ps1 infrastructure with -Rebuild to ensure clean builds
-$buildScript = Join-Path $RepoRoot ".github/scripts/BuildAndRunHostApp.ps1"
-& $buildScript -Platform $Platform -TestFilter $TestFilter -Rebuild 2>&1 | Tee-Object -FilePath $WithoutFixLog
+# Run tests using the appropriate runner
+$exitCode = Invoke-TestRun -RunTestType $DetectedTestType -RunPlatform $Platform -RunTestFilter $TestFilter -RunDeviceProject $DeviceTestProject -LogFile $WithoutFixLog
 
-$withoutFixResult = Get-TestResultFromLog -LogFile (Join-Path $RepoRoot "CustomAgentLogsTmp/UITests/test-output.log")
+$withoutFixResult = Get-TestRunResult -RunTestType $DetectedTestType -RunDeviceProject $DeviceTestProject
 
 # Step 3: Restore fix files from current branch HEAD
 Write-Log ""
@@ -777,9 +1115,9 @@ Write-Log "=========================================="
 Write-Log "STEP 4: Running tests WITH fix (should PASS)"
 Write-Log "=========================================="
 
-& $buildScript -Platform $Platform -TestFilter $TestFilter -Rebuild 2>&1 | Tee-Object -FilePath $WithFixLog
+$exitCode = Invoke-TestRun -RunTestType $DetectedTestType -RunPlatform $Platform -RunTestFilter $TestFilter -RunDeviceProject $DeviceTestProject -LogFile $WithFixLog
 
-$withFixResult = Get-TestResultFromLog -LogFile (Join-Path $RepoRoot "CustomAgentLogsTmp/UITests/test-output.log")
+$withFixResult = Get-TestRunResult -RunTestType $DetectedTestType -RunDeviceProject $DeviceTestProject
 
 # Step 5: Evaluate results
 Write-Log ""
