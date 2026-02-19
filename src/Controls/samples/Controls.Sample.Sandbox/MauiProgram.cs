@@ -1,21 +1,14 @@
-﻿using Microsoft.Maui.Controls.Hosting;
-using Microsoft.Maui.Hosting;
-
-namespace Maui.Controls.Sample;
+﻿namespace Maui.Controls.Sample;
 
 public static class MauiProgram
 {
 	public static MauiApp CreateMauiApp() =>
 		MauiApp
 			.CreateBuilder()
+#if __ANDROID__ || __IOS__
 			.UseMauiMaps()
+#endif
 			.UseMauiApp<App>()
-			.ConfigureEssentials(essentials =>
-			{
-				// Set your Azure Maps subscription key here for Windows map tile rendering.
-				// Get a key from: https://portal.azure.com → Azure Maps account → Authentication
-				// essentials.UseMapServiceToken("YOUR_AZURE_MAPS_KEY");
-			})
 			.ConfigureFonts(fonts =>
 			{
 				fonts.AddFont("Dokdo-Regular.ttf", "Dokdo");
