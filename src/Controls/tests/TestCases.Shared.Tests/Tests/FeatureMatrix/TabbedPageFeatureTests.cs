@@ -421,7 +421,7 @@ public class TabbedPageFeatureTests : UITest
 	}
 #endif
 
-	[Test, Order(23)]
+	[Test, Order(24)]
 	[Category(UITestCategories.TabbedPage)]
 	public void TabbedPage_IconImageSource_Change_Verify()
 	{
@@ -437,7 +437,7 @@ public class TabbedPageFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(24)]
+	[Test, Order(25)]
 	[Category(UITestCategories.TabbedPage)]
 	public void TabbedPage_IsEnabled_Verify()
 	{

@@ -20,7 +20,7 @@
                        FontSize="18"
                        FontAttributes="Bold"/>
                 <StackLayout Grid.Row="0"
-                             Grid.Column="2"
+                             Grid.Column="1"
                              Orientation="Horizontal"
                              Spacing="2">
                         <Button Text="Gradient"
