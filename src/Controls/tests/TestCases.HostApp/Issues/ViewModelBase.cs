@@ -154,15 +154,6 @@ namespace Maui.Controls.Sample.Issues
 			if (method != null)
 				IsBusyChanged(this, EventArgs.Empty);
 		}
-
-		private readonly TaskCompletionSource<bool> _closeTaskCompletionSource = new();
-
-		public Task WaitForCloseAsync() => _closeTaskCompletionSource.Task;
-
-		public void Close()
-		{
-			_closeTaskCompletionSource.TrySetResult(true);
-		}
 	}
 
 	public class DelegateCommand : ICommand
