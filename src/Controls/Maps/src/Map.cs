@@ -30,6 +30,9 @@ namespace Microsoft.Maui.Controls.Maps
 		/// <summary>Bindable property for <see cref="IsZoomEnabled"/>.</summary>
 		public static readonly BindableProperty IsZoomEnabledProperty = BindableProperty.Create(nameof(IsZoomEnabled), typeof(bool), typeof(Map), true);
 
+		/// <summary>Bindable property for <see cref="MapStyle"/>.</summary>
+		public static readonly BindableProperty MapStyleProperty = BindableProperty.Create(nameof(MapStyle), typeof(string), typeof(Map), default(string));
+
 		/// <summary>Bindable property for <see cref="ItemsSource"/>.</summary>
 		public static readonly BindableProperty ItemsSourceProperty = BindableProperty.Create(nameof(ItemsSource), typeof(IEnumerable), typeof(Map), default(IEnumerable),
 			propertyChanged: (b, o, n) => ((Map)b).OnItemsSourcePropertyChanged((IEnumerable)o, (IEnumerable)n));
@@ -119,6 +122,28 @@ namespace Microsoft.Maui.Controls.Maps
 		{
 			get { return (MapType)GetValue(MapTypeProperty); }
 			set { SetValue(MapTypeProperty, value); }
+		}
+
+		/// <summary>
+		/// Gets or sets the custom map style as a JSON string.
+		/// This is a bindable property.
+		/// </summary>
+		/// <remarks>
+		/// This property is only supported on Android where it accepts a Google Maps style JSON string
+		/// generated from the Google Maps Styling Wizard (https://mapstyle.withgoogle.com/).
+		/// On iOS, MacCatalyst, and Windows this property has no effect as the native map controls
+		/// do not support custom JSON styling.
+		/// Set to <see langword="null"/> to revert to the default map style.
+		/// </remarks>
+#if !NETSTANDARD
+		[System.Runtime.Versioning.UnsupportedOSPlatform("ios")]
+		[System.Runtime.Versioning.UnsupportedOSPlatform("maccatalyst")]
+		[System.Runtime.Versioning.UnsupportedOSPlatform("windows")]
+#endif
+		public string? MapStyle
+		{
+			get { return (string?)GetValue(MapStyleProperty); }
+			set { SetValue(MapStyleProperty, value); }
 		}
 
 		/// <summary>
