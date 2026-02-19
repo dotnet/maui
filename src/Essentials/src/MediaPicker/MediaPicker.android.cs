@@ -93,9 +93,6 @@ namespace Microsoft.Maui.Media
 					using var rotatedStream = await ImageProcessor.RotateImageAsync(inputStream, fileName);
 					rotatedStream.Position = 0;
 					
-					// Close input stream before deleting
-					inputStream.Close();
-					
 					// Delete original file
 					try { File.Delete(captureResult); } catch { }
 					
@@ -162,9 +159,6 @@ namespace Microsoft.Maui.Media
 							using var rotatedStream = await ImageProcessor.RotateImageAsync(inputStream, fileName);
 							rotatedStream.Position = 0;
 							
-							// Close input stream before deleting
-							inputStream.Close();
-							
 							// Delete original file
 							try { File.Delete(path); } catch { }
 							
@@ -215,9 +209,6 @@ namespace Microsoft.Maui.Media
 					var fileName = System.IO.Path.GetFileName(path);
 					using var rotatedStream = await ImageProcessor.RotateImageAsync(inputStream, fileName);
 					rotatedStream.Position = 0;
-					
-					// Close input stream before deleting
-					inputStream.Close();
 					
 					// Delete original file
 					try { File.Delete(path); } catch { }
@@ -286,9 +277,6 @@ namespace Microsoft.Maui.Media
 							var fileName = System.IO.Path.GetFileName(path);
 							using var rotatedStream = await ImageProcessor.RotateImageAsync(inputStream, fileName);
 							rotatedStream.Position = 0;
-							
-							// Close input stream before deleting
-							inputStream.Close();
 							
 							// Delete original file
 							try { File.Delete(path); } catch { }
@@ -478,9 +466,6 @@ namespace Microsoft.Maui.Media
 							var fileName = System.IO.Path.GetFileName(processedPath);
 							using var rotatedStream = await ImageProcessor.RotateImageAsync(inputStream, fileName);
 							rotatedStream.Position = 0;
-							
-							// Close input stream before deleting
-							inputStream.Close();
 							
 							// Delete original file
 							try { File.Delete(processedPath); } catch { }
