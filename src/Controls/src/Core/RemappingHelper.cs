@@ -17,7 +17,7 @@ internal static class RemappingHelper
 		Justification = "We intentionally trigger the static constructor of the base type to ensure mapper remappings are applied in order.")]
 	public static void EnsureBaseTypeRemapped(Type derivedType, Type baseType)
 	{
-		Debug.Assert(derivedType.IsAssignableTo(baseType),
+		Debug.Assert(baseType.IsAssignableFrom(derivedType),
 			$"{baseType} is not a base class of {derivedType}.");
 
 		RuntimeHelpers.RunClassConstructor(baseType.TypeHandle);
