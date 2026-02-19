@@ -1,1 +1,7 @@
 #nullable enable
+Microsoft.Maui.Maps.MapSpanTypeConverter
+Microsoft.Maui.Maps.MapSpanTypeConverter.MapSpanTypeConverter() -> void
+override Microsoft.Maui.Maps.MapSpanTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
+override Microsoft.Maui.Maps.MapSpanTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
+override Microsoft.Maui.Maps.MapSpanTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
+override Microsoft.Maui.Maps.MapSpanTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
