@@ -255,7 +255,7 @@ namespace Microsoft.Maui.Controls
 			}
 			catch (Exception e)
 			{
-				Application.Current?.FindMauiContext()?.CreateLogger<NavigationPage>()?.LogWarning(e, null);
+				MauiLogger<NavigationPage>.Log(LogLevel.Warning, e, "");
 				CurrentNavigationTask = null;
 				tcs.SetCanceled();
 
@@ -931,7 +931,7 @@ namespace Microsoft.Maui.Controls
 
 				if (page == Owner.CurrentPage)
 				{
-					Application.Current?.FindMauiContext()?.CreateLogger<NavigationPage>()?.LogWarning("RemovePage called for CurrentPage object. This can result in undesired behavior, consider calling PopAsync instead.");
+					MauiLogger<NavigationPage>.Log(LogLevel.Warning, "RemovePage called for CurrentPage object. This can result in undesired behavior, consider calling PopAsync instead.");
 					PopAsync();
 					return;
 				}

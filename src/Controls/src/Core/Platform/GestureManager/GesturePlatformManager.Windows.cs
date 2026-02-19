@@ -229,7 +229,7 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 				catch (Exception dropExc)
 				{
-					Application.Current?.FindMauiContext()?.CreateLogger<DropGestureRecognizer>()?.LogWarning(dropExc, "Error sending event");
+					MauiLogger<DropGestureRecognizer>.Log(LogLevel.Warning, dropExc, "Error sending event");
 				}
 			});
 		}
@@ -678,7 +678,7 @@ namespace Microsoft.Maui.Controls.Platform
 			catch (Exception ex)
 			{
 				// Log the exception for diagnostics
-				Application.Current?.FindMauiContext()?.CreateLogger<GesturePlatformManager>()?.LogError(ex, "An error occurred while validating pointer event relevance.");
+				MauiLogger<GesturePlatformManager>.Log(LogLevel.Error, ex, "An error occurred while validating pointer event relevance.");
 				return false;
 			}
 		}
@@ -1029,17 +1029,17 @@ namespace Microsoft.Maui.Controls.Platform
 				var logger = Application.Current?.FindMauiContext()?.CreateLogger<GesturePlatformManager>();
 				if (hasPinchGesture)
 				{
-					logger?.LogWarning("PinchGestureRecognizer is not supported on a ScrollView in Windows Platforms");
+					logger?.Log(LogLevel.Warning, "PinchGestureRecognizer is not supported on a ScrollView in Windows Platforms");
 				}
 
 				if (hasPanGesture)
 				{
-					logger?.LogWarning("PanGestureRecognizer is not supported on a ScrollView in Windows Platforms");
+					logger?.Log(LogLevel.Warning, "PanGestureRecognizer is not supported on a ScrollView in Windows Platforms");
 				}
 
 				if (hasSwipeGesture)
 				{
-					logger?.LogWarning("SwipeGestureRecognizer is not supported on a ScrollView in Windows Platforms");
+					logger?.Log(LogLevel.Warning, "SwipeGestureRecognizer is not supported on a ScrollView in Windows Platforms");
 				}
 
 				return;

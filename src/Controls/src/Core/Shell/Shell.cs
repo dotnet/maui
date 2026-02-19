@@ -1296,7 +1296,7 @@ namespace Microsoft.Maui.Controls
 					}
 					catch (Exception exc)
 					{
-						Application.Current?.FindMauiContext()?.CreateLogger<Shell>()?.LogWarning(exc, "If you're using hot reload add a route to everything in your shell file");
+						MauiLogger<Shell>.Log(LogLevel.Warning, exc, "If you're using hot reload add a route to everything in your shell file");
 					}
 				}
 
@@ -1592,7 +1592,7 @@ namespace Microsoft.Maui.Controls
 				}
 				catch (Exception exc)
 				{
-					Application.Current?.FindMauiContext()?.CreateLogger<Shell>()?.LogWarning(exc, "Failed to Navigate Back");
+					MauiLogger<Shell>.Log(LogLevel.Warning, exc, "Failed to Navigate Back");
 				}
 			}
 		}
