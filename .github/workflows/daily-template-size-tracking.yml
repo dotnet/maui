@@ -150,7 +150,7 @@ jobs:
                 platform = 'ios'
                 os = 'macos-latest'
                 framework = "net$dotnet-ios"
-                rid = 'ios-arm64'
+                rid = 'iossimulator-arm64'
                 aot = $false
               }
 
@@ -303,8 +303,10 @@ jobs:
         run: |
           $template = "${{ matrix.template }}"
           $dotnetVersion = "${{ matrix.dotnet }}"
-          $safePlatform = "${{ matrix.description }}" -replace '-', '_'
-          $projectName = "MauiApp_$($template -replace '-', '_')_$safePlatform"
+          # Use hyphens (not underscores) in project name — MSIX package identity
+          # only allows [-.A-Za-z0-9] characters
+          $safePlatform = "${{ matrix.description }}"
+          $projectName = "MauiApp-$template-$safePlatform"
           $framework = "${{ matrix.framework }}"
 
           # Create project in $HOME to avoid inheriting repo's Directory.Build.props
@@ -324,6 +326,19 @@ jobs:
             Write-Host "Pinning SDK to $sdkVersion via global.json"
             @{ sdk = @{ version = $sdkVersion; rollForward = "latestPatch" } } | ConvertTo-Json | Out-File -FilePath (Join-Path $projectDir "global.json") -Encoding UTF8
           }
+
+          # Add dotnet-public NuGet feed for pre-release runtime packages
+          # (e.g., Microsoft.NETCore.App.Runtime.Mono.win-x64 for .NET 10)
+          $nugetConfig = @"
+          <?xml version="1.0" encoding="utf-8"?>
+          <configuration>
+            <packageSources>
+              <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
+              <add key="dotnet-public" value="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json" />
+            </packageSources>
+          </configuration>
+          "@
+          $nugetConfig | Out-File -FilePath (Join-Path $projectDir "NuGet.config") -Encoding UTF8
 
           # Restrict TargetFrameworks to only the platform we're building for.
           # MAUI templates target all platforms (android, ios, maccatalyst, windows).
