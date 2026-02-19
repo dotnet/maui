@@ -116,7 +116,6 @@ This tool eliminates that friction by providing a single, authoritative source f
 | **CI Engineer** | DevOps configuring pipelines | `--non-interactive`, JSON output, deterministic exit codes |
 | **AI Agent** | GitHub Copilot, IDE assistants | Structured JSON for diagnosis, permission-gated fixes |
 
-> **See [AI Agent Integration](./maui-devtools-ai-integration.md)** for detailed AI agent personas and permission model.
 
 ---
 
@@ -414,7 +413,6 @@ IDE consumers can use the `type: "progress"` messages to update progress bars an
 |----|-------------|
 | NFR-P1 | `doctor` command must complete in <5s when no network calls needed |
 | NFR-P2 | Device list must complete in <2s |
-| NFR-P3 | Downloaded artifacts must be cached locally |
 | NFR-P4 | Read operations must use direct file parsing (not CLI wrappers) for performance |
 
 **Performance Implementation Notes**:
@@ -537,41 +535,11 @@ Elevation is only triggered when the user explicitly specifies a system path via
 | NFR-PR2 | File paths must be redacted in telemetry (keep structure only) |
 | NFR-PR3 | Telemetry must be opt-in with clear disclosure |
 
-### 5.6 Accessibility
-
-| ID | Requirement |
-|----|-------------|
-| NFR-A1 | CLI output must work with screen readers (avoid relying solely on color) |
-| NFR-A2 | All status indicators must have text equivalents |
-| NFR-A3 | IDE integration must follow platform accessibility guidelines |
-
-### 5.7 Network & Offline Support
+### 5.6 Network & Proxy Support
 
 | ID | Requirement |
 |----|-------------|
 | NFR-N1 | Respect system proxy settings (`HTTP_PROXY`, `HTTPS_PROXY`, `NO_PROXY`) |
-| NFR-N2 | Support custom CA certificates for corporate SSL inspection |
-| NFR-N3 | Provide `--offline` mode for doctor to skip network checks |
-| NFR-N4 | Support `--local-source <path>` for installing from pre-downloaded artifacts |
-| NFR-N5 | Large downloads must support HTTP Range requests for resumability |
-| NFR-N6 | Cache downloaded installers with configurable location and size limits |
-
-### 5.8 Container & Headless Environments
-
-| Environment | Android Emulator | iOS Simulator | Doctor | SDK Install |
-|-------------|------------------|---------------|--------|-------------|
-| macOS native | ✓ | ✓ | ✓ | ✓ |
-| Windows native | ✓ | — | ✓ | ✓ |
-| Docker (Linux) | ✓ (with KVM) | — | ✓ | ✓ |
-| Docker (macOS) | ❌ No nested virt | ❌ No CoreSimulator | Partial | Partial |
-| GitHub Actions macOS | ✓ | ✓ | ✓ | ✓ |
-| GitHub Actions Windows | ✓ (with HAXM) | — | ✓ | ✓ |
-| Azure DevOps Hosted | ✓ | ✓ (macOS only) | ✓ | ✓ |
-| WSL2 | ✓ (experimental) | — | Partial | ✓ |
-
-When emulator/simulator unavailable:
-- `maui doctor` reports capability with reason (e.g., "emulator: unavailable (virtualization disabled)")
-- `maui android emulator start` fails fast with `E2010` "Hardware acceleration unavailable"
 
 ---
 
@@ -647,7 +615,7 @@ When emulator/simulator unavailable:
 
 | Provider | Responsibility |
 |----------|----------------|
-| Android Provider | Wraps `sdkmanager`, `avdmanager`, `adb`, `emulator`. Uses [`Xamarin.Android.Tools.AndroidSdk`](https://github.com/dotnet/android-tools) for SDK/JDK discovery (see §6.8). |
+| Android Provider | Wraps `sdkmanager`, `avdmanager`, `adb`, `emulator`. Uses [`Xamarin.Android.Tools.AndroidSdk`](https://github.com/dotnet/android-tools) for SDK/JDK discovery (see §6.8). Additional features (JDK install, SDK bootstrap, license acceptance) will be consumed from `android-tools` as they become available. |
 | Apple Provider | Wraps `xcrun simctl`, `xcode-select`, `xcodebuild` |
 | Windows Provider | Wraps Windows SDK detection and VS build tools |
 
@@ -700,38 +668,7 @@ User: maui doctor --json
 
 **Summary**: IDEs spawn `maui` as a child process, invoke `maui doctor --json` on workspace open, display issues in their problems/error list panels, and provide commands for environment setup with progress notifications.
 
-### 6.5 Concurrency Model
-
-| Aspect | Behavior |
-|--------|----------|
-| Read Operations | Parallelized (multiple simultaneous queries allowed) |
-| Write Operations | Serialized (single writer at a time) |
-| Lock File | `$TMPDIR/maui-devtools.lock` prevents concurrent writes |
-| Request Timeout | Requests waiting >30s for lock rejected with `E5010` |
-
-### 6.6 SDK Conflict Resolution
-
-When multiple SDK installations are detected:
-
-**Android SDK Precedence** (first match wins):
-1. `ANDROID_HOME` environment variable
-2. `ANDROID_SDK_ROOT` environment variable  
-3. Visual Studio configured path (Windows)
-4. Android Studio configured path (`~/.android/sdk` or registry)
-5. Default location (`~/Library/Android/sdk` on macOS, `%LOCALAPPDATA%\Android\Sdk` on Windows)
-
-> **Note:** This precedence order is implemented by `Xamarin.Android.Tools.AndroidSdk` (`AndroidSdkInfo`), ensuring consistent SDK resolution across MAUI DevTools, IDE extensions, and build tasks. See §6.8 for details.
-
-**Conflict Handling**:
-- `maui doctor` reports all detected SDKs with recommendation
-- `--sdk-path` flag available on all android commands for one-off override
-
-**Android Studio Coexistence**:
-- Detect Android Studio installation
-- Warn if both AS and tool would manage same SDK
-- Offer to adopt AS's SDK rather than installing duplicate
-
-### 6.7 Migration from Existing Setups
+### 6.5 Migration from Existing Setups
 
 When an existing SDK is detected:
 
@@ -1337,7 +1274,6 @@ The unified device model for all platforms (physical devices, emulators, simulat
 | `device.create` | Create or delete emulators/simulators | Prompt |
 | `environment.modify` | Install, update, or configure SDK/JDK/runtime components | Prompt |
 
-> **See [AI Agent Integration](./maui-devtools-ai-integration.md) §4** for permission storage, persistent permission schema, and sandbox boundaries.
 
 ---
 
@@ -1393,7 +1329,6 @@ Total download size: 10.7 GB
 
 ### 8.3 Copilot-Assisted Troubleshooting
 
-> **See [AI Agent Integration](./maui-devtools-ai-integration.md)** for detailed Copilot escalation triggers, context handoff schema, MCP tool integration, and example conversations.
 
 **Summary**: When automated fixes fail, the tool can escalate to GitHub Copilot with structured diagnostic context. The fallback hierarchy is: Automated Fix → Guided Manual Fix → Copilot-Assisted Troubleshooting → Community/Support Escalation.
 
