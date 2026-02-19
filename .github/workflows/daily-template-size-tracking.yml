@@ -417,8 +417,21 @@ jobs:
                 -p:CodesignKey="-" `
                 -p:BuildIpa=false `
                 -p:ValidateXcodeVersion=false `
-                -o publish `
                 /bl:build.binlog
+
+              # With BuildIpa=false, the .app stays in bin/ (not copied to -o path).
+              # Find and copy it to publish/ for consistent measurement.
+              $binPath = Join-Path $projectPath "bin/Release/$framework/$rid"
+              Write-Host "Looking for .app in: $binPath"
+              $appBundle = Get-ChildItem -Path $binPath -Filter "*.app" -Directory -ErrorAction SilentlyContinue | Select-Object -First 1
+              if ($appBundle) {
+                New-Item -ItemType Directory -Path "publish" -Force | Out-Null
+                Copy-Item -Path $appBundle.FullName -Destination "publish/" -Recurse
+                Write-Host "Copied $($appBundle.Name) to publish/"
+              } else {
+                Write-Host "Warning: No .app bundle found in $binPath, listing contents:"
+                Get-ChildItem -Path $binPath -Recurse -ErrorAction SilentlyContinue | Select-Object -First 20 | ForEach-Object { Write-Host "  $_" }
+              }
             }
 
             "maccatalyst" {
