@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		internal ushort _triggerCount = 0;
-		internal Dictionary<TriggerBase, SetterSpecificity> _triggerSpecificity = new Dictionary<TriggerBase, SetterSpecificity>();
+		internal Dictionary<TriggerBase, SetterSpecificity> _triggerSpecificity;
 		readonly Dictionary<BindableProperty, BindablePropertyContext> _properties = new Dictionary<BindableProperty, BindablePropertyContext>(4);
 		bool _applying;
 		WeakReference _inheritedContext;
@@ -363,7 +363,10 @@ namespace Microsoft.Maui.Controls
 			}
 			else
 			{
-				bindable._inheritedContext = new WeakReference(value);
+				if (bindable._inheritedContext is not null)
+					bindable._inheritedContext.Target = value;
+				else
+					bindable._inheritedContext = new WeakReference(value);
 				bindable.ApplyBindings(fromBindingContextChanged: true);
 				bindable.OnBindingContextChanged();
 			}
@@ -408,11 +411,25 @@ namespace Microsoft.Maui.Controls
 			=> PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
 		/// <summary>
+		/// Raises the <see cref="PropertyChanged"/> event using a cached PropertyChangedEventArgs.
+		/// </summary>
+		/// <param name="args">The cached PropertyChangedEventArgs to use.</param>
+		internal void OnPropertyChanged(PropertyChangedEventArgs args)
+			=> PropertyChanged?.Invoke(this, args);
+
+		/// <summary>
 		/// Raises the <see cref="PropertyChanging"/> event.
 		/// </summary>
 		/// <param name="propertyName">The name of the property that is changing.</param>
 		protected virtual void OnPropertyChanging([CallerMemberName] string propertyName = null)
 			=> PropertyChanging?.Invoke(this, new PropertyChangingEventArgs(propertyName));
+
+		/// <summary>
+		/// Raises the <see cref="PropertyChanging"/> event using a cached PropertyChangingEventArgs.
+		/// </summary>
+		/// <param name="args">The cached PropertyChangingEventArgs to use.</param>
+		internal void OnPropertyChanging(PropertyChangingEventArgs args)
+			=> PropertyChanging?.Invoke(this, args);
 
 		/// <summary>
 		/// Removes all current bindings from the current context.
@@ -679,11 +696,9 @@ namespace Microsoft.Maui.Controls
 
 		void ApplyBindings(bool fromBindingContextChanged)
 		{
-			var prop = _properties.Values.ToArray();
-
-			for (int i = 0, propLength = prop.Length; i < propLength; i++)
+			foreach (var kvp in _properties)
 			{
-				BindablePropertyContext context = prop[i];
+				BindablePropertyContext context = kvp.Value;
 				if (ReferenceEquals(context.Property, BindingContextProperty))
 				{
 					// BindingContextProperty Binding is handled separately within SetInheritedBindingContext
