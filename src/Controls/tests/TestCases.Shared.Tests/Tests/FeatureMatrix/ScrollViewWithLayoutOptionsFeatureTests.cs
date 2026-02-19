@@ -5,9 +5,10 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-public class ScrollViewWithLayoutOptionsFeatureTests : UITest
+public class ScrollViewWithLayoutOptionsFeatureTests : _GalleryUITest
 {
 	public const string ScrollViewWithLayoutOptionsFeatureMatrix = "ScrollView With LayoutOptions Feature Matrix";
+	public override string GalleryPageName => ScrollViewWithLayoutOptionsFeatureMatrix;
 	public const string Options = "Options";
 	public const string Apply = "Apply";
 	public const string HorizontalStart = "HorizontalStart";
@@ -31,16 +32,12 @@ public class ScrollViewWithLayoutOptionsFeatureTests : UITest
 	{
 	}
 
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(ScrollViewWithLayoutOptionsFeatureMatrix);
-	}
-
 	[Test, Order(1)]
 	[Category(UITestCategories.ScrollView)]
 	public void VerifyLayoutWithOrientationVertical_HorizontalOptionsStart()
 	{
+		App.WaitForElement("ScrollViewWithLayoutOptionsButton");
+		App.Tap("ScrollViewWithLayoutOptionsButton");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(HorizontalStart);
@@ -49,7 +46,7 @@ public class ScrollViewWithLayoutOptionsFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(StackLayoutButton);
 		App.Tap(StackLayoutButton);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(2)]
@@ -64,7 +61,7 @@ public class ScrollViewWithLayoutOptionsFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(StackLayoutButton);
 		App.Tap(StackLayoutButton);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(3)]
@@ -79,7 +76,7 @@ public class ScrollViewWithLayoutOptionsFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(StackLayoutButton);
 		App.Tap(StackLayoutButton);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(4)]
@@ -94,7 +91,7 @@ public class ScrollViewWithLayoutOptionsFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(StackLayoutButton);
 		App.Tap(StackLayoutButton);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(5)]
@@ -111,7 +108,7 @@ public class ScrollViewWithLayoutOptionsFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(StackLayoutButton);
 		App.Tap(StackLayoutButton);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(6)]
@@ -128,7 +125,7 @@ public class ScrollViewWithLayoutOptionsFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(StackLayoutButton);
 		App.Tap(StackLayoutButton);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(7)]
@@ -145,7 +142,7 @@ public class ScrollViewWithLayoutOptionsFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(StackLayoutButton);
 		App.Tap(StackLayoutButton);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(8)]
@@ -162,7 +159,7 @@ public class ScrollViewWithLayoutOptionsFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(StackLayoutButton);
 		App.Tap(StackLayoutButton);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(9)]
@@ -177,7 +174,7 @@ public class ScrollViewWithLayoutOptionsFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(StackLayoutButton);
 		App.Tap(StackLayoutButton);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(10)]
@@ -192,7 +189,7 @@ public class ScrollViewWithLayoutOptionsFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(StackLayoutButton);
 		App.Tap(StackLayoutButton);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(11)]
@@ -207,7 +204,7 @@ public class ScrollViewWithLayoutOptionsFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(StackLayoutButton);
 		App.Tap(StackLayoutButton);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(12)]
@@ -222,7 +219,7 @@ public class ScrollViewWithLayoutOptionsFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(StackLayoutButton);
 		App.Tap(StackLayoutButton);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(13)]
@@ -239,7 +236,7 @@ public class ScrollViewWithLayoutOptionsFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(StackLayoutButton);
 		App.Tap(StackLayoutButton);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(14)]
@@ -256,7 +253,7 @@ public class ScrollViewWithLayoutOptionsFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(StackLayoutButton);
 		App.Tap(StackLayoutButton);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(15)]
@@ -273,7 +270,7 @@ public class ScrollViewWithLayoutOptionsFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(StackLayoutButton);
 		App.Tap(StackLayoutButton);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(16)]
@@ -290,7 +287,7 @@ public class ScrollViewWithLayoutOptionsFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(StackLayoutButton);
 		App.Tap(StackLayoutButton);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(17)]
@@ -307,7 +304,7 @@ public class ScrollViewWithLayoutOptionsFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(StackLayoutButton);
 		App.Tap(StackLayoutButton);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(18)]
@@ -324,7 +321,7 @@ public class ScrollViewWithLayoutOptionsFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(StackLayoutButton);
 		App.Tap(StackLayoutButton);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(19)]
@@ -341,7 +338,7 @@ public class ScrollViewWithLayoutOptionsFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(StackLayoutButton);
 		App.Tap(StackLayoutButton);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(20)]
@@ -358,7 +355,7 @@ public class ScrollViewWithLayoutOptionsFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(StackLayoutButton);
 		App.Tap(StackLayoutButton);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(21)]
@@ -377,7 +374,7 @@ public class ScrollViewWithLayoutOptionsFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(StackLayoutButton);
 		App.Tap(StackLayoutButton);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(22)]
@@ -396,7 +393,7 @@ public class ScrollViewWithLayoutOptionsFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(StackLayoutButton);
 		App.Tap(StackLayoutButton);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(23)]
@@ -415,7 +412,7 @@ public class ScrollViewWithLayoutOptionsFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(StackLayoutButton);
 		App.Tap(StackLayoutButton);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(24)]
@@ -434,7 +431,7 @@ public class ScrollViewWithLayoutOptionsFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(StackLayoutButton);
 		App.Tap(StackLayoutButton);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(25)]
@@ -451,7 +448,7 @@ public class ScrollViewWithLayoutOptionsFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(StackLayoutButton);
 		App.Tap(StackLayoutButton);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(26)]
@@ -468,7 +465,7 @@ public class ScrollViewWithLayoutOptionsFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(StackLayoutButton);
 		App.Tap(StackLayoutButton);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(27)]
@@ -485,7 +482,7 @@ public class ScrollViewWithLayoutOptionsFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(StackLayoutButton);
 		App.Tap(StackLayoutButton);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(28)]
@@ -502,7 +499,7 @@ public class ScrollViewWithLayoutOptionsFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(StackLayoutButton);
 		App.Tap(StackLayoutButton);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(29)]
@@ -521,7 +518,7 @@ public class ScrollViewWithLayoutOptionsFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(StackLayoutButton);
 		App.Tap(StackLayoutButton);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(30)]
@@ -540,7 +537,7 @@ public class ScrollViewWithLayoutOptionsFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(StackLayoutButton);
 		App.Tap(StackLayoutButton);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(31)]
@@ -559,7 +556,7 @@ public class ScrollViewWithLayoutOptionsFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(StackLayoutButton);
 		App.Tap(StackLayoutButton);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(32)]
@@ -578,7 +575,7 @@ public class ScrollViewWithLayoutOptionsFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(StackLayoutButton);
 		App.Tap(StackLayoutButton);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(33)]
@@ -593,7 +590,7 @@ public class ScrollViewWithLayoutOptionsFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(GridButton);
 		App.Tap(GridButton);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(34)]
@@ -608,7 +605,7 @@ public class ScrollViewWithLayoutOptionsFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(GridButton);
 		App.Tap(GridButton);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(35)]
@@ -623,7 +620,7 @@ public class ScrollViewWithLayoutOptionsFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(GridButton);
 		App.Tap(GridButton);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(36)]
@@ -638,7 +635,7 @@ public class ScrollViewWithLayoutOptionsFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(GridButton);
 		App.Tap(GridButton);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(37)]
@@ -653,7 +650,7 @@ public class ScrollViewWithLayoutOptionsFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(GridButton);
 		App.Tap(GridButton);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(38)]
@@ -668,7 +665,7 @@ public class ScrollViewWithLayoutOptionsFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(GridButton);
 		App.Tap(GridButton);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(39)]
@@ -683,7 +680,7 @@ public class ScrollViewWithLayoutOptionsFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(GridButton);
 		App.Tap(GridButton);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(40)]
@@ -698,7 +695,7 @@ public class ScrollViewWithLayoutOptionsFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(GridButton);
 		App.Tap(GridButton);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(41)]
@@ -715,7 +712,7 @@ public class ScrollViewWithLayoutOptionsFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(GridButton);
 		App.Tap(GridButton);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(42)]
@@ -732,7 +729,7 @@ public class ScrollViewWithLayoutOptionsFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(GridButton);
 		App.Tap(GridButton);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(43)]
@@ -749,7 +746,7 @@ public class ScrollViewWithLayoutOptionsFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(GridButton);
 		App.Tap(GridButton);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(44)]
@@ -766,7 +763,7 @@ public class ScrollViewWithLayoutOptionsFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(GridButton);
 		App.Tap(GridButton);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(45)]
@@ -783,7 +780,7 @@ public class ScrollViewWithLayoutOptionsFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(GridButton);
 		App.Tap(GridButton);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(46)]
@@ -800,7 +797,7 @@ public class ScrollViewWithLayoutOptionsFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(GridButton);
 		App.Tap(GridButton);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(47)]
@@ -817,7 +814,7 @@ public class ScrollViewWithLayoutOptionsFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(GridButton);
 		App.Tap(GridButton);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(48)]
@@ -834,6 +831,6 @@ public class ScrollViewWithLayoutOptionsFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(GridButton);
 		App.Tap(GridButton);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 }

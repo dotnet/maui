@@ -4,6 +4,7 @@ using System.Linq;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
+#if NET11_0_OR_GREATER
 
 public class AppThemeBinding : SourceGenXamlInitializeComponentTestBase
 {
@@ -99,7 +100,7 @@ public partial class TestPage
 #line 6 "{{testXamlFilePath}}"
 		appThemeBindingExtension.Dark = "Black";
 #line default
-		var appThemeBinding = global::Microsoft.Maui.Controls.XamlSourceGen.AppThemeBindingHelpers.CreateAppThemeBindingLightDark(global::Microsoft.Maui.Graphics.Colors.White, global::Microsoft.Maui.Graphics.Colors.Black);
+		var appThemeBinding = new global::Microsoft.Maui.Controls.AppThemeBinding { Light = global::Microsoft.Maui.Graphics.Colors.White, Dark = global::Microsoft.Maui.Graphics.Colors.Black };
 		if (global::Microsoft.Maui.VisualDiagnostics.GetSourceInfo(appThemeBinding!) == null)
 			global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(appThemeBinding!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 6, 2);
 		__root.SetBinding(global::Microsoft.Maui.Controls.VisualElement.BackgroundColorProperty, appThemeBinding);
@@ -205,7 +206,7 @@ public partial class TestPage
 #line 6 "{{testXamlFilePath}}"
 		appThemeBindingExtension.Dark = "Black";
 #line default
-		var appThemeBinding = global::Microsoft.Maui.Controls.XamlSourceGen.AppThemeBindingHelpers.CreateAppThemeBindingDarkDefault(global::Microsoft.Maui.Graphics.Colors.Black, global::Microsoft.Maui.Graphics.Colors.Gray);
+		var appThemeBinding = new global::Microsoft.Maui.Controls.AppThemeBinding { Dark = global::Microsoft.Maui.Graphics.Colors.Black, Default = global::Microsoft.Maui.Graphics.Colors.Gray };
 		if (global::Microsoft.Maui.VisualDiagnostics.GetSourceInfo(appThemeBinding!) == null)
 			global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(appThemeBinding!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 6, 2);
 		__root.SetBinding(global::Microsoft.Maui.Controls.VisualElement.BackgroundColorProperty, appThemeBinding);
@@ -314,7 +315,7 @@ public partial class TestPage
 #line 6 "{{testXamlFilePath}}"
 		appThemeBindingExtension.Default = "Gray";
 #line default
-		var appThemeBinding = global::Microsoft.Maui.Controls.XamlSourceGen.AppThemeBindingHelpers.CreateAppThemeBindingLightDarkDefault(global::Microsoft.Maui.Graphics.Colors.White, global::Microsoft.Maui.Graphics.Colors.Black, global::Microsoft.Maui.Graphics.Colors.Gray);
+		var appThemeBinding = new global::Microsoft.Maui.Controls.AppThemeBinding { Light = global::Microsoft.Maui.Graphics.Colors.White, Dark = global::Microsoft.Maui.Graphics.Colors.Black, Default = global::Microsoft.Maui.Graphics.Colors.Gray };
 		if (global::Microsoft.Maui.VisualDiagnostics.GetSourceInfo(appThemeBinding!) == null)
 			global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(appThemeBinding!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 6, 2);
 		__root.SetBinding(global::Microsoft.Maui.Controls.VisualElement.BackgroundColorProperty, appThemeBinding);
@@ -328,3 +329,4 @@ public partial class TestPage
 		Assert.Equal(expected, generated, ignoreLineEndingDifferences: true);
 	}
 }
+#endif

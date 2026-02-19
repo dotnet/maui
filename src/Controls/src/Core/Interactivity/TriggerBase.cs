@@ -5,7 +5,9 @@ using System.Collections.Generic;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/TriggerBase.xml" path="Type[@FullName='Microsoft.Maui.Controls.TriggerBase']/Docs/*" />
+	/// <summary>
+	/// Base class for trigger classes that define conditional behavior in response to property or data changes.
+	/// </summary>
 	public abstract class TriggerBase : BindableObject, IAttachedObject
 	{
 		bool _isSealed;
@@ -25,13 +27,19 @@ namespace Microsoft.Maui.Controls
 			Condition.ConditionChanged = OnConditionChanged;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/TriggerBase.xml" path="//Member[@MemberName='EnterActions']/Docs/*" />
+		/// <summary>
+		/// Gets the collection of <see cref="TriggerAction" /> objects to invoke when the trigger condition becomes true.
+		/// </summary>
 		public IList<TriggerAction> EnterActions { get; }
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/TriggerBase.xml" path="//Member[@MemberName='ExitActions']/Docs/*" />
+		/// <summary>
+		/// Gets the collection of <see cref="TriggerAction" /> objects to invoke when the trigger condition becomes false.
+		/// </summary>
 		public IList<TriggerAction> ExitActions { get; }
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/TriggerBase.xml" path="//Member[@MemberName='IsSealed']/Docs/*" />
+		/// <summary>
+		/// Gets a value indicating whether this trigger has been attached to an element and can no longer be modified.
+		/// </summary>
 		public bool IsSealed
 		{
 			get { return _isSealed; }
@@ -46,7 +54,9 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/TriggerBase.xml" path="//Member[@MemberName='TargetType']/Docs/*" />
+		/// <summary>
+		/// Gets the type of object to which this trigger can be attached.
+		/// </summary>
 		public Type TargetType { get; }
 
 		internal Condition Condition { get; }

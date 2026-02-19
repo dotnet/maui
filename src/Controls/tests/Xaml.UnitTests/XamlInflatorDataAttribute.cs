@@ -12,8 +12,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 /// </summary>
 public class XamlInflatorDataAttribute : DataAttribute
 {
-	public override IEnumerable<object[]> GetData(MethodInfo testMethod) =>
-		Enum.GetValues<XamlInflator>().Select(x => new object[] { x });
+	public override IEnumerable<object[]> GetData(MethodInfo testMethod)
+	{
+		return Enum.GetValues<XamlInflator>().Select(x => new object[] { x });
+	}
 }
 
 /// <summary>
@@ -25,6 +27,7 @@ public class XamlInflatorPairDataAttribute : DataAttribute
 	public override IEnumerable<object[]> GetData(MethodInfo testMethod)
 	{
 		var inflators = Enum.GetValues<XamlInflator>();
+		
 		foreach (var from in inflators)
 		{
 			foreach (var rd in inflators)
@@ -43,8 +46,13 @@ public static class XamlInflatorTestData
 	/// <summary>
 	/// Returns all XamlInflator enum values as test data.
 	/// </summary>
-	public static IEnumerable<object[]> Inflators =>
-		Enum.GetValues<XamlInflator>().Select(x => new object[] { x });
+	public static IEnumerable<object[]> Inflators
+	{
+		get
+		{
+			return Enum.GetValues<XamlInflator>().Select(x => new object[] { x });
+		}
+	}
 
 	/// <summary>
 	/// Returns all pairs of XamlInflator enum values as test data.
@@ -55,6 +63,7 @@ public static class XamlInflatorTestData
 		get
 		{
 			var inflators = Enum.GetValues<XamlInflator>();
+			
 			foreach (var from in inflators)
 			{
 				foreach (var rd in inflators)

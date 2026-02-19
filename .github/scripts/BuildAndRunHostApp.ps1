@@ -11,7 +11,7 @@
     4. Captures all device logs and test output
 
 .PARAMETER Platform
-    Target platform: "android" or "ios"
+    Target platform: "android", "ios", "catalyst" (MacCatalyst), or "windows"
 
 .PARAMETER TestFilter
     Test filter to pass to dotnet test (e.g., "FullyQualifiedName~Issue12345")
@@ -39,12 +39,18 @@
     
 .EXAMPLE
     ./BuildAndRunHostApp.ps1 -Platform ios -Category "Button"
+    
+.EXAMPLE
+    ./BuildAndRunHostApp.ps1 -Platform catalyst -TestFilter "Issue12345"
+    
+.EXAMPLE
+    ./BuildAndRunHostApp.ps1 -Platform windows -TestFilter "Issue12345"
 #>
 
 [CmdletBinding(DefaultParameterSetName = "TestFilter")]
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet("android", "ios")]
+    [ValidateSet("android", "ios", "catalyst", "maccatalyst", "windows")]
     [string]$Platform,
 
     [Parameter(Mandatory = $true, ParameterSetName = "TestFilter")]
@@ -56,7 +62,9 @@ param(
     [ValidateSet("Debug", "Release")]
     [string]$Configuration = "Debug",
 
-    [string]$DeviceUdid
+    [string]$DeviceUdid,
+
+    [switch]$Rebuild
 )
 
 # Script configuration
@@ -64,6 +72,11 @@ $ErrorActionPreference = "Stop"
 $RepoRoot = Resolve-Path "$PSScriptRoot/../.."
 $HostAppProject = Join-Path $RepoRoot "src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj"
 $HostAppLogsDir = Join-Path $RepoRoot "CustomAgentLogsTmp/UITests"
+
+# Normalize platform name (accept both "catalyst" and "maccatalyst")
+if ($Platform -eq "maccatalyst") {
+    $Platform = "catalyst"
+}
 
 # Import shared utilities
 . "$PSScriptRoot/shared/shared-utils.ps1"
@@ -88,18 +101,15 @@ if (-not (Test-Path $HostAppLogsDir)) {
     Write-Info "Created CustomAgentLogsTmp/UITests directory"
 }
 
-# Clean up old log files from previous runs
+# Clean up ALL old log files from previous runs to avoid confusion
 $deviceLogFile = Join-Path $HostAppLogsDir "$Platform-device.log"
 $testOutputFile = Join-Path $HostAppLogsDir "test-output.log"
 
-if (Test-Path $deviceLogFile) {
-    Remove-Item $deviceLogFile -Force
-    Write-Info "Cleaned up old $Platform-device.log"
-}
-
-if (Test-Path $testOutputFile) {
-    Remove-Item $testOutputFile -Force
-    Write-Info "Cleaned up old test-output.log"
+# Remove all files in the logs directory
+$existingFiles = Get-ChildItem -Path $HostAppLogsDir -File -ErrorAction SilentlyContinue
+if ($existingFiles) {
+    $existingFiles | Remove-Item -Force
+    Write-Info "Cleaned up $($existingFiles.Count) old log file(s) from previous runs"
 }
 
 # Check if dotnet is available
@@ -122,22 +132,39 @@ if ($Platform -eq "android") {
 } elseif ($Platform -eq "ios") {
     $TargetFramework = "net10.0-ios"
     $AppBundleId = "com.microsoft.maui.uitests"
+} elseif ($Platform -eq "catalyst") {
+    $TargetFramework = "net10.0-maccatalyst"
+    $AppBundleId = "com.microsoft.maui.uitests"
+} elseif ($Platform -eq "windows") {
+    $TargetFramework = "net10.0-windows10.0.19041.0"
+    $AppPackage = "com.microsoft.maui.uitests"
 }
 
-# Use shared Start-Emulator script to detect and start device
-$startEmulatorParams = @{
-    Platform = $Platform
-}
+# Start emulator/simulator (skip for catalyst and windows - runs on desktop)
+if ($Platform -ne "catalyst" -and $Platform -ne "windows") {
+    # Use shared Start-Emulator script to detect and start device
+    $startEmulatorParams = @{
+        Platform = $Platform
+    }
 
-if ($DeviceUdid) {
-    $startEmulatorParams.DeviceUdid = $DeviceUdid
-}
+    if ($DeviceUdid) {
+        $startEmulatorParams.DeviceUdid = $DeviceUdid
+    }
 
-$DeviceUdid = & "$PSScriptRoot/shared/Start-Emulator.ps1" @startEmulatorParams
+    $DeviceUdid = & "$PSScriptRoot/shared/Start-Emulator.ps1" @startEmulatorParams
 
-if ($LASTEXITCODE -ne 0) {
-    Write-Error "Failed to start or detect device"
-    exit 1
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "Failed to start or detect device"
+        exit 1
+    }
+} elseif ($Platform -eq "windows") {
+    # Windows runs directly on the host - use "host" as placeholder
+    $DeviceUdid = "host"
+    Write-Success "Windows will run on host (no device needed)"
+} else {
+    # MacCatalyst runs directly on the Mac - use "host" as placeholder
+    $DeviceUdid = "host"
+    Write-Success "MacCatalyst will run on host Mac (no device needed)"
 }
 
 #endregion
@@ -151,6 +178,7 @@ $buildDeployParams = @{
     TargetFramework = $TargetFramework
     Configuration = $Configuration
     DeviceUdid = $DeviceUdid
+    Rebuild = $Rebuild
 }
 
 if ($Platform -eq "ios") {
@@ -174,6 +202,10 @@ if ($Platform -eq "android") {
     $TestProject = Join-Path $RepoRoot "src/Controls/tests/TestCases.Android.Tests/Controls.TestCases.Android.Tests.csproj"
 } elseif ($Platform -eq "ios") {
     $TestProject = Join-Path $RepoRoot "src/Controls/tests/TestCases.iOS.Tests/Controls.TestCases.iOS.Tests.csproj"
+} elseif ($Platform -eq "catalyst") {
+    $TestProject = Join-Path $RepoRoot "src/Controls/tests/TestCases.Mac.Tests/Controls.TestCases.Mac.Tests.csproj"
+} elseif ($Platform -eq "windows") {
+    $TestProject = Join-Path $RepoRoot "src/Controls/tests/TestCases.WinUI.Tests/Controls.TestCases.WinUI.Tests.csproj"
 }
 
 if (-not (Test-Path $TestProject)) {
@@ -205,8 +237,45 @@ if ($Platform -eq "android") {
 # Capture test start time for iOS logs
 $testStartTime = Get-Date
 
+# For MacCatalyst, launch the app BEFORE running tests so Appium finds the correct bundle
+# This is critical because both maui and maui2 repos may share the same bundle ID
+# MacCatalyst: Just ensure the app is ready - Appium will launch it with the test name
+# The app has built-in file logging that writes directly to MAUI_LOG_FILE path
+$catalystAppProcess = $null
+if ($Platform -eq "catalyst") {
+    # Determine runtime identifier
+    $arch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLower()
+    $rid = if ($arch -eq "arm64") { "maccatalyst-arm64" } else { "maccatalyst-x64" }
+    
+    # Build app path - matches Build-AndDeploy.ps1 output location
+    $appPath = Join-Path $PSScriptRoot "../../artifacts/bin/Controls.TestCases.HostApp/Debug/$TargetFramework/$rid/Controls.TestCases.HostApp.app"
+    $appPath = [System.IO.Path]::GetFullPath($appPath)
+    
+    if (Test-Path $appPath) {
+        Write-Info "MacCatalyst app ready at: $appPath"
+        
+        # Make executable (like CI does)
+        $executablePath = Join-Path $appPath "Contents/MacOS/Controls.TestCases.HostApp"
+        if (Test-Path $executablePath) {
+            & chmod +x $executablePath
+        }
+        
+        Write-Success "MacCatalyst app prepared (Appium will launch with test name)"
+    } else {
+        Write-Warn "MacCatalyst app not found at: $appPath"
+        Write-Warn "Test may use wrong app bundle if another version is registered"
+    }
+    
+    # Set log file path directly - app will write ILogger output here
+    $env:MAUI_LOG_FILE = $deviceLogFile
+}
+
 Write-Info "Executing: dotnet test --filter `"$effectiveFilter`""
 Write-Host ""
+
+# Set environment variables for the test
+$env:DEVICE_UDID = $DeviceUdid
+Write-Info "Set DEVICE_UDID environment variable: $DeviceUdid"
 
 try {
     # Run dotnet test and capture output
@@ -226,6 +295,18 @@ try {
 } catch {
     Write-Error "Failed to run tests: $_"
     exit 1
+} finally {
+    # Stop MacCatalyst app process if we started it
+    if ($catalystAppProcess) {
+        # Re-fetch the process since the original reference may be stale
+        $runningApp = Get-Process -Id $catalystAppProcess.Id -ErrorAction SilentlyContinue
+        if ($runningApp -and -not $runningApp.HasExited) {
+            Write-Info "Stopping MacCatalyst app process (PID: $($catalystAppProcess.Id))..."
+            $runningApp.Kill()
+            $runningApp.WaitForExit(5000) | Out-Null
+            Write-Success "App process stopped"
+        }
+    }
 }
 
 #endregion
@@ -238,10 +319,11 @@ if ($Platform -eq "android") {
     Write-Info "Dumping Android logcat buffer (filtered to HostApp)..."
     
     # Try to filter by package name (HostApp)
-    & adb -s $DeviceUdid logcat -d | Select-String "com.microsoft.maui.uitests" > $deviceLogFile
+    # Include DOTNET tag for Console.WriteLine and package name for Debug.WriteLine
+    & adb -s $DeviceUdid logcat -d | Select-String "com.microsoft.maui.uitests|DOTNET" > $deviceLogFile
     
     if ((Get-Item $deviceLogFile).Length -eq 0) {
-        Write-Warning "No logs found for com.microsoft.maui.uitests, dumping entire logcat..."
+        Write-Warn "No logs found for com.microsoft.maui.uitests, dumping entire logcat..."
         & adb -s $DeviceUdid logcat -d > $deviceLogFile
     }
     
@@ -258,6 +340,32 @@ if ($Platform -eq "android") {
     Invoke-Expression "$iosLogCommand > `"$deviceLogFile`" 2>&1"
     
     Write-Info "iOS logs saved to: $deviceLogFile"
+} elseif ($Platform -eq "catalyst") {
+    # App writes directly to $deviceLogFile via MAUI_LOG_FILE env var
+    # Just verify the file exists and has content
+    if ((Test-Path $deviceLogFile) -and ((Get-Item $deviceLogFile).Length -gt 0)) {
+        Write-Success "MacCatalyst logs written directly to: $deviceLogFile"
+    } else {
+        # Fall back to os_log if file logging didn't work
+        Write-Info "File logging output was minimal, using os_log fallback..."
+        $logStartTimeStr = $testStartTime.AddMinutes(-1).ToString("yyyy-MM-dd HH:mm:ss")
+        $catalystLogCommand = "log show --level debug --predicate 'process contains `"Controls.TestCases.HostApp`" OR processImagePath contains `"Controls.TestCases.HostApp`"' --start `"$logStartTimeStr`" --style compact"
+        Invoke-Expression "$catalystLogCommand > `"$deviceLogFile`" 2>&1"
+    }
+    
+    Write-Info "MacCatalyst logs saved to: $deviceLogFile"
+} elseif ($Platform -eq "windows") {
+    # Windows logs - use Event Log or console output
+    # For now, collect from test output since WinAppDriver doesn't provide separate device logs
+    Write-Info "Windows platform - logs captured from test output"
+    
+    if ((Test-Path $deviceLogFile) -and ((Get-Item $deviceLogFile).Length -gt 0)) {
+        Write-Success "Windows logs written to: $deviceLogFile"
+    } else {
+        # Create a minimal log file indicating Windows was tested
+        "Windows UI Test run at $(Get-Date)" | Out-File $deviceLogFile
+        Write-Info "Windows device log created: $deviceLogFile"
+    }
 }
 
 #endregion
@@ -269,8 +377,10 @@ if (Test-Path $deviceLogFile) {
     Write-Host "═══════════════════════════════════════════════════════" -ForegroundColor Cyan
     if ($Platform -eq "android") {
         Write-Host "  Android Device Logs (Last 100 lines)" -ForegroundColor Cyan
-    } else {
+    } elseif ($Platform -eq "ios") {
         Write-Host "  iOS Simulator Logs (Last 100 lines)" -ForegroundColor Cyan
+    } elseif ($Platform -eq "catalyst") {
+        Write-Host "  MacCatalyst App Logs (Last 100 lines)" -ForegroundColor Cyan
     }
     Write-Host "═══════════════════════════════════════════════════════" -ForegroundColor Cyan
     
@@ -287,7 +397,7 @@ if (Test-Path $deviceLogFile) {
         Write-Host ""
         Write-Info "Full device log: $deviceLogFile"
     } else {
-        Write-Warning "Could not read device log file"
+        Write-Warn "Could not read device log file"
     }
     
     Write-Host "═══════════════════════════════════════════════════════" -ForegroundColor Cyan

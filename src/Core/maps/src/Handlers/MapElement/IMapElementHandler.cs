@@ -15,9 +15,15 @@ using PlatformView = System.Object;
 
 namespace Microsoft.Maui.Maps.Handlers
 {
+	/// <summary>
+	/// Provides handler functionality for <see cref="IMapElement"/> objects.
+	/// </summary>
 	public interface IMapElementHandler : IElementHandler
 	{
+		/// <inheritdoc/>
 		new IMapElement VirtualView { get; }
+
+		/// <inheritdoc/>
 		new PlatformView PlatformView { get; }
 	}
 }

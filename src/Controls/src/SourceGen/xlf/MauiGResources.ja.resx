@@ -203,4 +203,34 @@
     <value>{0} に「必須」のキーワードがあります。XAML でのサポートは現時点で限定的なため、使用は避けてください。価値を提供するために、引き続き最善を尽くしています。</value>
     <comment>0 is a property identifier</comment>
   </data>
+  <data name="BindingCompilationFailed" xml:space="preserve">
+    <value>バインディングのコンパイルに失敗しました</value>
+  </data>
+  <data name="BindingCompilationWarning" xml:space="preserve">
+    <value>バインディング コンパイルの警告</value>
+  </data>
+  <data name="BindingIndexerNotClosed" xml:space="preserve">
+    <value>バインド: インデクサーに右角かっこが含まれていませんでした。</value>
+  </data>
+  <data name="BindingIndexerEmpty" xml:space="preserve">
+    <value>バインド: インデクサーに引数が含まれていませんでした。</value>
+  </data>
+  <data name="BindingIndexerTypeUnsupported" xml:space="preserve">
+    <value>バインド: サポートされていない種類のインデクサーのインデックスです: "{0}"。</value>
+    <comment>0 is indexer type name</comment>
+  </data>
+  <data name="BindingPropertyNotFound" xml:space="preserve">
+    <value>バインディング: プロパティ "{0}" が "{1}" に見つかりません。バインディングでは、実行時により低速なリフレクション ベースのバインディングが使用されます。このプロパティが別のソース ジェネレーターによって生成される場合は、これを https://github.com/dotnet/maui/issues で報告してソース ジェネレーターの相互運用性の向上に協力することを検討してください。</value>
+    <comment>0 is property name, 1 is type name</comment>
+  </data>
+  <data name="BindingWithXDataTypeFromOuterScope" xml:space="preserve">
+    <value>x:DataType 注釈が外部スコープから取得されているため、バインドが正しくコンパイルされない可能性があります。すべての DataTemplate XAML 要素に正しい x:DataType で注釈を付けます。詳細については、https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings を参照してください。</value>
+  </data>
+  <data name="NamescopeError" xml:space="preserve">
+    <value>Namescope エラー</value>
+  </data>
+  <data name="NamescopeDuplicate" xml:space="preserve">
+    <value>この NameScope には、"{0}" という名前の要素が既に存在します。</value>
+    <comment>0 is the duplicated key</comment>
+  </data>
 </root>

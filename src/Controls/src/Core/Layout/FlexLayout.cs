@@ -116,43 +116,63 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(WrapProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='GetOrder'][1]/Docs/*" />
+		/// <summary>Gets the order that this element appears in the flex layout.</summary>
+		/// <param name="bindable">The element to get the order for.</param>
+		/// <returns>The order value for the element.</returns>
 		public static int GetOrder(BindableObject bindable)
 			=> (int)bindable.GetValue(OrderProperty);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='SetOrder'][1]/Docs/*" />
+		/// <summary>Sets the order that this element appears in the flex layout.</summary>
+		/// <param name="bindable">The element to set the order for.</param>
+		/// <param name="value">The order value to set.</param>
 		public static void SetOrder(BindableObject bindable, int value)
 			=> bindable.SetValue(OrderProperty, value);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='GetGrow'][1]/Docs/*" />
+		/// <summary>Gets the flex grow factor for the element.</summary>
+		/// <param name="bindable">The element to get the grow factor for.</param>
+		/// <returns>The grow factor value.</returns>
 		public static float GetGrow(BindableObject bindable)
 			=> (float)bindable.GetValue(GrowProperty);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='SetGrow'][1]/Docs/*" />
+		/// <summary>Sets the flex grow factor for the element.</summary>
+		/// <param name="bindable">The element to set the grow factor for.</param>
+		/// <param name="value">The grow factor value to set.</param>
 		public static void SetGrow(BindableObject bindable, float value)
 			=> bindable.SetValue(GrowProperty, value);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='GetShrink'][1]/Docs/*" />
+		/// <summary>Gets the flex shrink factor for the element.</summary>
+		/// <param name="bindable">The element to get the shrink factor for.</param>
+		/// <returns>The shrink factor value.</returns>
 		public static float GetShrink(BindableObject bindable)
 			=> (float)bindable.GetValue(ShrinkProperty);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='SetShrink'][1]/Docs/*" />
+		/// <summary>Sets the flex shrink factor for the element.</summary>
+		/// <param name="bindable">The element to set the shrink factor for.</param>
+		/// <param name="value">The shrink factor value to set.</param>
 		public static void SetShrink(BindableObject bindable, float value)
 			=> bindable.SetValue(ShrinkProperty, value);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='GetAlignSelf'][1]/Docs/*" />
+		/// <summary>Gets the self-alignment override for the element within the flex layout.</summary>
+		/// <param name="bindable">The element to get the alignment for.</param>
+		/// <returns>The self-alignment value.</returns>
 		public static FlexAlignSelf GetAlignSelf(BindableObject bindable)
 			=> (FlexAlignSelf)bindable.GetValue(AlignSelfProperty);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='SetAlignSelf'][1]/Docs/*" />
+		/// <summary>Sets the self-alignment override for the element within the flex layout.</summary>
+		/// <param name="bindable">The element to set the alignment for.</param>
+		/// <param name="value">The self-alignment value to set.</param>
 		public static void SetAlignSelf(BindableObject bindable, FlexAlignSelf value)
 			=> bindable.SetValue(AlignSelfProperty, value);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='GetBasis'][1]/Docs/*" />
+		/// <summary>Gets the flex basis (initial size) for the element along the main axis.</summary>
+		/// <param name="bindable">The element to get the basis for.</param>
+		/// <returns>The flex basis value.</returns>
 		public static FlexBasis GetBasis(BindableObject bindable)
 			=> (FlexBasis)bindable.GetValue(BasisProperty);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='SetBasis'][1]/Docs/*" />
+		/// <summary>Sets the flex basis (initial size) for the element along the main axis.</summary>
+		/// <param name="bindable">The element to set the basis for.</param>
+		/// <param name="value">The flex basis value to set.</param>
 		public static void SetBasis(BindableObject bindable, FlexBasis value)
 			=> bindable.SetValue(BasisProperty, value);
 

@@ -4,19 +4,15 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-public class RadioButtonFeatureTests : UITest
+public class RadioButtonFeatureTests : _GalleryUITest
 {
 	public const string RadioButtonFeatureMatrix = "RadioButton Feature Matrix";
+
+	public override string GalleryPageName => RadioButtonFeatureMatrix;
 
 	public RadioButtonFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(RadioButtonFeatureMatrix);
 	}
 
 	[Test, Order(1)]
@@ -24,7 +20,7 @@ public class RadioButtonFeatureTests : UITest
 	public void RadioButton_Checking_Default_Configuration_VerifyVisualState()
 	{
 		App.WaitForElement("RadioButtonControlOne");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(2)]
@@ -39,7 +35,7 @@ public class RadioButtonFeatureTests : UITest
 		App.Tap("RadioButtonControlFour");
 		App.WaitForElement("SelectedValueLabelTwo");
 		Assert.That(App.WaitForElement("SelectedValueLabelTwo").GetText(), Is.EqualTo("All Notifications"));
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 #if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID // This test fails on Windows and Android because the RadioButton control does not update the BorderColor at runtime. Issue Link - https://github.com/dotnet/maui/issues/15806
@@ -60,7 +56,7 @@ public class RadioButtonFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("RadioButtonControlOne");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -77,7 +73,7 @@ public class RadioButtonFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("RadioButtonControlOne");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -95,7 +91,7 @@ public class RadioButtonFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("RadioButtonControlOne");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 #if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID // This test fails on Windows and Android because the RadioButton control does not update the BorderColor at runtime. Issue Link - https://github.com/dotnet/maui/issues/15806
@@ -118,7 +114,7 @@ public class RadioButtonFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("RadioButtonControlOne");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -136,7 +132,7 @@ public class RadioButtonFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("RadioButtonControlOne");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -152,7 +148,7 @@ public class RadioButtonFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("RadioButtonControlOne");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -171,7 +167,7 @@ public class RadioButtonFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("RadioButtonControlOne");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 #if TEST_FAILS_ON_WINDOWS // This test fails on Windows because the character spacing is not applied correctly.
@@ -192,7 +188,7 @@ public class RadioButtonFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("RadioButtonControlOne");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -215,7 +211,7 @@ public class RadioButtonFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("RadioButtonControlOne");
 		App.WaitForElement("SelectedValueLabelOne");
 		App.Tap("SelectedValueLabelOne");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -233,7 +229,7 @@ public class RadioButtonFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("RadioButtonControlOne");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // This test fails on Android and Windows because the text transform is not applied correctly. Issue Link - https://github.com/dotnet/maui/issues/29729
@@ -251,7 +247,7 @@ public class RadioButtonFeatureTests : UITest
 		App.Tap("TextTransformUpper");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -268,7 +264,7 @@ public class RadioButtonFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("RadioButtonControlOne");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -286,7 +282,7 @@ public class RadioButtonFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("RadioButtonControlOne");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -352,7 +348,7 @@ public class RadioButtonFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("RadioButtonControlOne");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]

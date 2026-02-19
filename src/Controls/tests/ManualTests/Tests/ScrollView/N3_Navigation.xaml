@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:Microsoft.Maui.ManualTests.ViewModels"
+             x:Class="Microsoft.Maui.ManualTests.Tests.ScrollView.N3_Navigation"
+             x:DataType="viewmodels:MonkeysViewModel"
+             Title="N3_Navigation">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        
+        <VerticalStackLayout Grid.Row="0" Spacing="5" Margin="0,0,0,15">
+            <Label Text="1. Click any monkey image to navigate to the detail page." />
+            <Label Text="2. Verify that the detail page shows complete information." />   
+        </VerticalStackLayout>
+
+        <ScrollView Grid.Row="1" Orientation="Horizontal">
+            <HorizontalStackLayout
+                Spacing="15"
+                Padding="5"
+                BindableLayout.ItemsSource="{Binding Monkeys}">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="{x:Null}">
+                        <Border Padding="10"
+                                Stroke="LightGray"
+                                StrokeThickness="1"
+                                WidthRequest="200"
+                                HeightRequest="200"
+                                BackgroundColor="White">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnImageTapped" />
+                            </Border.GestureRecognizers>
+                            <VerticalStackLayout Spacing="10">
+                                    <Image Source="{Binding ImageUrl}"
+                                           Aspect="AspectFit"
+                                           HeightRequest="120"
+                                           HorizontalOptions="Center"
+                                           VerticalOptions="Center" />
+                                    <Label Text="{Binding Name}"
+                                           FontSize="14"
+                                           FontAttributes="Bold"
+                                           BackgroundColor="#AAFFFFFF"
+                                           TextColor="Black"
+                                           Padding="4,2"
+                                           HorizontalOptions="Center"
+                                           VerticalOptions="Center"
+                                           HorizontalTextAlignment="Center"
+                                           LineBreakMode="WordWrap"
+                                           MaxLines="2" />
+                            </VerticalStackLayout>
+                        </Border>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </HorizontalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

@@ -8,10 +8,15 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Controls.Design
 {
+	/// <summary>
+	/// Provides design-time type conversion for FlowDirection values.
+	/// </summary>
 	public class FlowDirectionDesignTypeConverter : KnownValuesDesignTypeConverter
 	{
+		/// <inheritdoc/>
 		protected override bool ExclusiveToKnownValues => true;
 
+		/// <inheritdoc/>
 		protected override string[] KnownValues
 			=> new[]
 			{

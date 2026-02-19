@@ -203,4 +203,34 @@
     <value>{0} contiene la parola chiave 'required'. Al momento il supporto in XAML è limitato, quindi è meglio evitarne l'uso. Stiamo comunque facendo il possibile per specificare un valore.</value>
     <comment>0 is a property identifier</comment>
   </data>
+  <data name="BindingCompilationFailed" xml:space="preserve">
+    <value>Compilazione del binding non riuscita</value>
+  </data>
+  <data name="BindingCompilationWarning" xml:space="preserve">
+    <value>Avviso di compilazione del binding</value>
+  </data>
+  <data name="BindingIndexerNotClosed" xml:space="preserve">
+    <value>Associazione: l'indicizzatore non contiene la parentesi quadra di chiusura.</value>
+  </data>
+  <data name="BindingIndexerEmpty" xml:space="preserve">
+    <value>Associazione: l'indicizzatore non contiene argomenti.</value>
+  </data>
+  <data name="BindingIndexerTypeUnsupported" xml:space="preserve">
+    <value>Associazione: il tipo di indice "{0}" dell'indicizzatore non è supportato.</value>
+    <comment>0 is indexer type name</comment>
+  </data>
+  <data name="BindingPropertyNotFound" xml:space="preserve">
+    <value>Associazione: la proprietà "{0}" non è stata trovata in "{1}". Il binding utilizzerà un metodo più lento basato sulla reflection all'esecuzione. Se questa proprietà è generata da un altro generatore di codice, considerare di segnalarlo su https://github.com/dotnet/maui/issues per aiutarci a migliorare l'interoperabilità tra generatori di codice.</value>
+    <comment>0 is property name, 1 is type name</comment>
+  </data>
+  <data name="BindingWithXDataTypeFromOuterScope" xml:space="preserve">
+    <value>L'associazione potrebbe essere compilata in modo non corretto perché l'annotazione x:DataType proviene da un ambito esterno. Assicurarsi di annotare tutti gli elementi DataTemplate XAML con x:DataType corretto. Per altre informazioni, vedere https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings.</value>
+  </data>
+  <data name="NamescopeError" xml:space="preserve">
+    <value>Errore di namescope</value>
+  </data>
+  <data name="NamescopeDuplicate" xml:space="preserve">
+    <value>In questo elemento NameScope esiste già un elemento denominato "{0}".</value>
+    <comment>0 is the duplicated key</comment>
+  </data>
 </root>

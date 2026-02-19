@@ -10,20 +10,45 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="Type[@FullName='Microsoft.Maui.Controls.RadioButton']/Docs/*" />
+	/// <summary>
+	/// Represents a button that can be selected from a group of radio buttons, where only one button can be selected at a time.
+	/// </summary>
+	/// <remarks>
+	/// <see cref="RadioButton"/> controls are typically used in groups where users need to select one option from multiple choices.
+	/// Radio buttons in the same group are mutually exclusive - selecting one will automatically deselect the others.
+	/// Use the <see cref="GroupName"/> property or <see cref="RadioButtonGroup"/> to group radio buttons together.
+	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class RadioButton : TemplatedView, IElementConfiguration<RadioButton>, ITextElement, IFontElement, IBorderElement, IRadioButton
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='CheckedVisualState']/Docs/*" />
+		/// <summary>
+		/// The visual state name for when the radio button is checked.
+		/// </summary>
+		/// <value>The string "Checked".</value>
 		public const string CheckedVisualState = "Checked";
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='UncheckedVisualState']/Docs/*" />
+		
+		/// <summary>
+		/// The visual state name for when the radio button is unchecked.
+		/// </summary>
+		/// <value>The string "Unchecked".</value>
 		public const string UncheckedVisualState = "Unchecked";
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='TemplateRootName']/Docs/*" />
+		/// <summary>
+		/// The name of the template root element in the control template.
+		/// </summary>
+		/// <value>The string "Root".</value>
 		public const string TemplateRootName = "Root";
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='CheckedIndicator']/Docs/*" />
+		
+		/// <summary>
+		/// The name of the checked indicator element in the control template.
+		/// </summary>
+		/// <value>The string "CheckedIndicator".</value>
 		public const string CheckedIndicator = "CheckedIndicator";
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='UncheckedButton']/Docs/*" />
+		
+		/// <summary>
+		/// The name of the unchecked button element in the control template.
+		/// </summary>
+		/// <value>The string "Button".</value>
 		public const string UncheckedButton = "Button";
 
 		// App Theme string constants for Light/Dark modes
@@ -47,56 +72,59 @@ namespace Microsoft.Maui.Controls
 
 		readonly Lazy<PlatformConfigurationRegistry<RadioButton>> _platformConfigurationRegistry;
 
+		/// <summary>
+		/// Occurs when the <see cref="IsChecked"/> property changes.
+		/// </summary>
 		public event EventHandler<CheckedChangedEventArgs> CheckedChanged;
 
-		/// <summary>Bindable property for <see cref="Content"/>.</summary>
+		/// <summary>Bindable property for <see cref="Content"/>. This is a bindable property.</summary>
 		public static readonly BindableProperty ContentProperty =
 			BindableProperty.Create(nameof(Content), typeof(object), typeof(RadioButton), null);
 
-		/// <summary>Bindable property for <see cref="Value"/>.</summary>
+		/// <summary>Bindable property for <see cref="Value"/>. This is a bindable property.</summary>
 		public static readonly BindableProperty ValueProperty =
 			BindableProperty.Create(nameof(Value), typeof(object), typeof(RadioButton), null,
 			propertyChanged: (b, o, n) => ((RadioButton)b).OnValuePropertyChanged());
 
-		/// <summary>Bindable property for <see cref="IsChecked"/>.</summary>
+		/// <summary>Bindable property for <see cref="IsChecked"/>. This is a bindable property.</summary>
 		public static readonly BindableProperty IsCheckedProperty = BindableProperty.Create(
 			nameof(IsChecked), typeof(bool), typeof(RadioButton), false,
 			propertyChanged: (b, o, n) => ((RadioButton)b).OnIsCheckedPropertyChanged((bool)n),
 			defaultBindingMode: BindingMode.TwoWay);
 
-		/// <summary>Bindable property for <see cref="GroupName"/>.</summary>
+		/// <summary>Bindable property for <see cref="GroupName"/>. This is a bindable property.</summary>
 		public static readonly BindableProperty GroupNameProperty = BindableProperty.Create(
 			nameof(GroupName), typeof(string), typeof(RadioButton), null,
 			propertyChanged: (b, o, n) => ((RadioButton)b).OnGroupNamePropertyChanged((string)o, (string)n));
 
-		/// <summary>Bindable property for <see cref="TextColor"/>.</summary>
+		/// <summary>Bindable property for <see cref="TextColor"/>. This is a bindable property.</summary>
 		public static readonly BindableProperty TextColorProperty = TextElement.TextColorProperty;
 
-		/// <summary>Bindable property for <see cref="CharacterSpacing"/>.</summary>
+		/// <summary>Bindable property for <see cref="CharacterSpacing"/>. This is a bindable property.</summary>
 		public static readonly BindableProperty CharacterSpacingProperty = TextElement.CharacterSpacingProperty;
 
-		/// <summary>Bindable property for <see cref="TextTransform"/>.</summary>
+		/// <summary>Bindable property for <see cref="TextTransform"/>. This is a bindable property.</summary>
 		public static readonly BindableProperty TextTransformProperty = TextElement.TextTransformProperty;
 
-		/// <summary>Bindable property for <see cref="FontAttributes"/>.</summary>
+		/// <summary>Bindable property for <see cref="FontAttributes"/>. This is a bindable property.</summary>
 		public static readonly BindableProperty FontAttributesProperty = FontElement.FontAttributesProperty;
 
-		/// <summary>Bindable property for <see cref="FontFamily"/>.</summary>
+		/// <summary>Bindable property for <see cref="FontFamily"/>. This is a bindable property.</summary>
 		public static readonly BindableProperty FontFamilyProperty = FontElement.FontFamilyProperty;
 
-		/// <summary>Bindable property for <see cref="FontSize"/>.</summary>
+		/// <summary>Bindable property for <see cref="FontSize"/>. This is a bindable property.</summary>
 		public static readonly BindableProperty FontSizeProperty = FontElement.FontSizeProperty;
 
-		/// <summary>Bindable property for <see cref="FontAutoScalingEnabled"/>.</summary>
+		/// <summary>Bindable property for <see cref="FontAutoScalingEnabled"/>. This is a bindable property.</summary>
 		public static readonly BindableProperty FontAutoScalingEnabledProperty = FontElement.FontAutoScalingEnabledProperty;
 
-		/// <summary>Bindable property for <see cref="BorderColor"/>.</summary>
+		/// <summary>Bindable property for <see cref="BorderColor"/>. This is a bindable property.</summary>
 		public static readonly BindableProperty BorderColorProperty = BorderElement.BorderColorProperty;
 
-		/// <summary>Bindable property for <see cref="CornerRadius"/>.</summary>
+		/// <summary>Bindable property for <see cref="CornerRadius"/>. This is a bindable property.</summary>
 		public static readonly BindableProperty CornerRadiusProperty = BorderElement.CornerRadiusProperty;
 
-		/// <summary>Bindable property for <see cref="BorderWidth"/>.</summary>
+		/// <summary>Bindable property for <see cref="BorderWidth"/>. This is a bindable property.</summary>
 		public static readonly BindableProperty BorderWidthProperty = BorderElement.BorderWidthProperty;
 
 		// If Content is set to a string, the string will be displayed using the native Text property
@@ -106,70 +134,110 @@ namespace Microsoft.Maui.Controls
 		// is set. If a ControlTemplate is not set and the platform does not natively support arbitrary
 		// Content, the ToString() representation of Content will be displayed.
 		// For all types other than View and string, the ToString() representation of Content will be displayed.
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='Content']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the content to display within the radio button.
+		/// This is a bindable property.
+		/// </summary>
+		/// <value>The content object. Can be a string, <see cref="View"/>, or any object. For non-View types, the <c>ToString()</c> representation is displayed.</value>
 		public object Content
 		{
 			get => GetValue(ContentProperty);
 			set => SetValue(ContentProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='Value']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the value associated with this radio button.
+		/// This is a bindable property.
+		/// </summary>
+		/// <value>The value object. This is typically used to identify which option was selected in a group of radio buttons.</value>
 		public object Value
 		{
 			get => GetValue(ValueProperty);
 			set => SetValue(ValueProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='IsChecked']/Docs/*" />
+		/// <summary>
+		/// Gets or sets a value indicating whether the radio button is checked.
+		/// This is a bindable property.
+		/// </summary>
+		/// <value><see langword="true"/> if the radio button is checked; otherwise, <see langword="false"/>. The default is <see langword="false"/>.</value>
 		public bool IsChecked
 		{
 			get { return (bool)GetValue(IsCheckedProperty); }
 			set { SetValue(IsCheckedProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='GroupName']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the name that identifies which radio buttons are mutually exclusive.
+		/// This is a bindable property.
+		/// </summary>
+		/// <value>The group name. Radio buttons with the same group name are mutually exclusive. The default is <see langword="null"/>.</value>
 		public string GroupName
 		{
 			get { return (string)GetValue(GroupNameProperty); }
 			set { SetValue(GroupNameProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='TextColor']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the color of the text displayed in the radio button.
+		/// This is a bindable property.
+		/// </summary>
+		/// <value>The text <see cref="Color"/>. The default is <see langword="null"/>, which uses the platform default.</value>
 		public Color TextColor
 		{
 			get { return (Color)GetValue(TextColorProperty); }
 			set { SetValue(TextColorProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='CharacterSpacing']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the spacing between characters in the text.
+		/// This is a bindable property.
+		/// </summary>
+		/// <value>The character spacing value. The default is 0.0.</value>
 		public double CharacterSpacing
 		{
 			get { return (double)GetValue(CharacterSpacingProperty); }
 			set { SetValue(CharacterSpacingProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='TextTransform']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the text transformation to apply to the text.
+		/// This is a bindable property.
+		/// </summary>
+		/// <value>A <see cref="Microsoft.Maui.TextTransform"/> value. The default is <see cref="TextTransform.None"/>.</value>
 		public TextTransform TextTransform
 		{
 			get { return (TextTransform)GetValue(TextTransformProperty); }
 			set { SetValue(TextTransformProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='FontAttributes']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the font attributes (bold, italic) for the text.
+		/// This is a bindable property.
+		/// </summary>
+		/// <value>A <see cref="Microsoft.Maui.Controls.FontAttributes"/> value. The default is <see cref="FontAttributes.None"/>.</value>
 		public FontAttributes FontAttributes
 		{
 			get { return (FontAttributes)GetValue(FontAttributesProperty); }
 			set { SetValue(FontAttributesProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='FontFamily']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the font family for the text.
+		/// This is a bindable property.
+		/// </summary>
+		/// <value>The font family name. The default is <see langword="null"/>, which uses the platform default font.</value>
 		public string FontFamily
 		{
 			get { return (string)GetValue(FontFamilyProperty); }
 			set { SetValue(FontFamilyProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='FontSize']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the size of the font.
+		/// This is a bindable property.
+		/// </summary>
+		/// <value>The font size. The default is the platform default font size.</value>
 		[System.ComponentModel.TypeConverter(typeof(FontSizeConverter))]
 		public double FontSize
 		{
@@ -177,34 +245,53 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(FontSizeProperty, value); }
 		}
 
+		/// <summary>
+		/// Gets or sets a value indicating whether the font size should scale automatically based on user accessibility settings.
+		/// This is a bindable property.
+		/// </summary>
+		/// <value><see langword="true"/> if font auto-scaling is enabled; otherwise, <see langword="false"/>. The default is <see langword="true"/>.</value>
 		public bool FontAutoScalingEnabled
 		{
 			get => (bool)GetValue(FontAutoScalingEnabledProperty);
 			set => SetValue(FontAutoScalingEnabledProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='BorderWidth']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the width of the border around the radio button.
+		/// This is a bindable property.
+		/// </summary>
+		/// <value>The border width in device-independent units. The default is 0.</value>
 		public double BorderWidth
 		{
 			get { return (double)GetValue(BorderWidthProperty); }
 			set { SetValue(BorderWidthProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='BorderColor']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the color of the border around the radio button.
+		/// This is a bindable property.
+		/// </summary>
+		/// <value>The border <see cref="Color"/>. The default is <see langword="null"/>.</value>
 		public Color BorderColor
 		{
 			get { return (Color)GetValue(BorderColorProperty); }
 			set { SetValue(BorderColorProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='CornerRadius']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the corner radius of the radio button border.
+		/// This is a bindable property.
+		/// </summary>
+		/// <value>The corner radius in device-independent units. The default is -1, which indicates the platform default.</value>
 		public int CornerRadius
 		{
 			get { return (int)GetValue(CornerRadiusProperty); }
 			set { SetValue(CornerRadiusProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="RadioButton"/> class.
+		/// </summary>
 		public RadioButton()
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<RadioButton>>(() =>
@@ -217,7 +304,10 @@ namespace Microsoft.Maui.Controls
 			return _platformConfigurationRegistry.Value.On<T>();
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='DefaultTemplate']/Docs/*" />
+		/// <summary>
+		/// Gets the default control template for the <see cref="RadioButton"/>.
+		/// </summary>
+		/// <value>The default <see cref="ControlTemplate"/> that defines the visual structure of a radio button.</value>
 		public static ControlTemplate DefaultTemplate
 		{
 			get
@@ -262,7 +352,12 @@ namespace Microsoft.Maui.Controls
 		double IFontElement.FontSizeDefaultValueCreator() =>
 			this.GetDefaultFontSize();
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='UpdateFormsText']/Docs/*" />
+		/// <summary>
+		/// Applies the specified text transformation to the source text.
+		/// </summary>
+		/// <param name="source">The source text to transform.</param>
+		/// <param name="textTransform">The text transformation to apply.</param>
+		/// <returns>The transformed text.</returns>
 		public virtual string UpdateFormsText(string source, TextTransform textTransform)
 			=> TextTransformUtilities.GetTransformedText(source, textTransform);
 
@@ -586,7 +681,13 @@ namespace Microsoft.Maui.Controls
 			return border;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='ContentAsString']/Docs/*" />
+		/// <summary>
+		/// Converts the <see cref="Content"/> to a string representation.
+		/// </summary>
+		/// <returns>The string representation of the content, or the result of <c>ToString()</c> if content is not a string.</returns>
+		/// <remarks>
+		/// If <see cref="Content"/> is a <see cref="View"/>, a warning is logged and the <c>ToString()</c> representation is used instead.
+		/// </remarks>
 		public string ContentAsString()
 		{
 			var content = Content;
