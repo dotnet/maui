@@ -87,7 +87,7 @@ public class ChatClientNative: NSObject {
                 for try await response in responseStream {
                     try Task.checkCancellation()
                     let text = response.content.jsonString
-                    guard !text.isEmpty, text != "null" else { continue }
+                    guard !text.isEmpty else { continue }
 #if APPLE_INTELLIGENCE_LOGGING_ENABLED
                     if let log = AppleIntelligenceLogger.log {
                         log("[\(methodName)] Streaming update: \(text)")
@@ -116,11 +116,7 @@ public class ChatClientNative: NSObject {
                 for try await response in responseStream {
                     try Task.checkCancellation()
                     let text = response.content
-                    // Apple's FoundationModels framework yields StreamResponse<String> entries with
-                    // content "null" before the model has generated any text (e.g. before a tool call).
-                    // This is safe to skip: the accumulated content grows ("null" → "null is..."),
-                    // so the chunker catches up on the next non-null update with no data loss.
-                    guard !text.isEmpty, text != "null" else { continue }
+                    guard !text.isEmpty else { continue }
 #if APPLE_INTELLIGENCE_LOGGING_ENABLED
                     if let log = AppleIntelligenceLogger.log {
                         log("[\(methodName)] Streaming update: \(text)")
