@@ -199,11 +199,28 @@ namespace Microsoft.Maui.Handlers
 
 			UpdateVirtualViewFrame(sender);
 		}
-
 		void UpdateVirtualViewFrame(AppWindow appWindow)
 		{
+			var hwnd = PlatformView.GetWindowHandle();
+			if (hwnd == IntPtr.Zero)
+			{
+				return;
+			}
+
+			var bounds = hwnd.GetExtendedFrameBounds();
+
 			var size = appWindow.Size;
 			var pos = appWindow.Position;
+
+			if (appWindow.Presenter is OverlappedPresenter presenter &&
+				presenter.IsMaximizable &&
+				presenter.State == OverlappedPresenterState.Maximized)
+			{
+				// If the window is maximized, we need to use the bounds of the window
+				// instead of the size and position of the app window.
+				size = new SizeInt32((int)bounds.Width, (int)bounds.Height);
+				pos = new PointInt32((int)bounds.X, (int)bounds.Y);
+			}
 
 			var density = PlatformView.GetDisplayDensity();
 

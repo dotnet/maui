@@ -155,6 +155,24 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task WindowsBoundsWhenMaximized()
+		{
+			SetupBuilder();
+			var mainPage = new NavigationPage(new ContentPage());
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(mainPage, async (handler) =>
+			{
+				var presenter = handler.PlatformView.GetAppWindow()?.Presenter as OverlappedPresenter;
+
+				// maximize window
+				presenter.Maximize();
+				var appWindow = handler.PlatformView.GetWindow();
+				await AssertEventually(() => appWindow.X == 0);
+				await AssertEventually(() => appWindow.Y == 0);
+			});
+		}
+
+		[Fact]
 		public async Task ToggleFullscreenTitleBarWorks()
 		{
 			SetupBuilder();
