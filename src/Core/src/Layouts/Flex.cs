@@ -533,10 +533,27 @@ namespace Microsoft.Maui.Layouts.Flex
 					child.Frame[layout.frame_size_i] = basis - child.MarginThickness(layout.vertical);
 				}
 
+#if ANDROID || WINDOWS
+				// A small tolerance value used to account for floating-point precision errors
+				// when determining whether a child item fits on the current line during flex wrapping.
+				// Without this tolerance, items that should fit may be incorrectly wrapped to a new line
+				// due to minor rounding discrepancies in size calculations.
+				const float FlexWrapTolerance = 0.1f;
+
+				// The issue was originally reported on Windows and related to device
+				// density or scaling factor. In a few scenarios, the same issue has also
+				// been reproduced on Android due to device density variations. The tolerance value
+				// is applied unconditionally across all platforms as a safer fix, since it has no
+				// adverse effects on layout behavior. Applied as a minimum tolerance to handle floating-point precision issues in flex wrapping.
+				float flex_tolerance = layout.flex_dim + FlexWrapTolerance;
+#else
+				// On other platforms, we haven't observed the same precision issues, so we can use the actual available space as the tolerance.
+				float flex_tolerance = layout.flex_dim;
+#endif	
 				float child_size = child.Frame[layout.frame_size_i];
 				if (layout.wrap)
 				{
-					if (layout.flex_dim < child_size)
+					if (flex_tolerance < child_size)
 					{
 						// Not enough space for this child on this line, layout the
 						// remaining items and move it to a new line.
