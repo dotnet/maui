@@ -16,7 +16,6 @@ namespace Microsoft.Maui.Layouts
 		public Size ArrangeChildren(Rect bounds)
 		{
 			var padding = FlexLayout.Padding;
-			var childCount = FlexLayout.Count;
 
 			double top = padding.Top + bounds.Top;
 			double left = padding.Left + bounds.Left;
@@ -25,9 +24,8 @@ namespace Microsoft.Maui.Layouts
 
 			FlexLayout.Layout(availableWidth, availableHeight);
 
-			for (int n = 0; n < childCount; n++)
+			foreach (var child in FlexLayout)
 			{
-				var child = FlexLayout[n];
 				var frame = FlexLayout.GetFlexFrame(child);
 				if (double.IsNaN(frame.X)
 					|| double.IsNaN(frame.Y)
@@ -45,7 +43,6 @@ namespace Microsoft.Maui.Layouts
 		public Size Measure(double widthConstraint, double heightConstraint)
 		{
 			var padding = FlexLayout.Padding;
-			var childCount = FlexLayout.Count;
 
 			var availableWidth = widthConstraint - padding.HorizontalThickness;
 			var availableHeight = heightConstraint - padding.VerticalThickness;
@@ -55,9 +52,8 @@ namespace Microsoft.Maui.Layouts
 
 			FlexLayout.Layout(availableWidth, availableHeight);
 
-			for (int n = 0; n < childCount; n++)
+			foreach (var child in FlexLayout)
 			{
-				var child = FlexLayout[n];
 				if (child.Visibility == Visibility.Collapsed)
 				{
 					continue;
