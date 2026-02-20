@@ -166,7 +166,7 @@ stages:
       # BuildNativeAOT is false by default, but true in devdiv environment
       BuildNativeAOT: ${{ or(parameters.BuildNativeAOT, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}
       RunNativeAOT: ${{ parameters.RunNativeAOT }}
-      ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
+      ${{ if or(parameters.BuildEverything, ne(variables['Build.Reason'], 'PullRequest')) }}:
         androidApiLevels: [ 30 ]
         iosVersions: [ '18.5', 'latest' ]
       ${{ else }}:
