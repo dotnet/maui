@@ -513,7 +513,8 @@
 
                     <Label Text="Tests: DeviceStateTrigger for iOS, Android"
                            FontSize="11"
-                           TextColor="Green"/>
+                           TextColor="Green"
+                           AutomationId="DeviceStateTriggerInfo"/>
                 </VerticalStackLayout>
             </Border>
 
@@ -568,7 +569,8 @@
 
                     <Label Text="Tests: OrientationStateTrigger for Portrait/Landscape"
                            FontSize="11"
-                           TextColor="Green"/>
+                           TextColor="Green"
+                           AutomationId="OrientationStateTriggerInfo"/>
                 </VerticalStackLayout>
             </Border>
 

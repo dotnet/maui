@@ -26,9 +26,6 @@ public partial class TriggersControlMainPage : ContentPage
 		UpdatePlatformLabel();
 		// Display orientation information
 		UpdateOrientationLabel();
-
-		// Subscribe to window size changes for adaptive trigger testing
-		this.SizeChanged += OnPageSizeChanged;
 	}
 
 	protected override void OnAppearing()
@@ -53,6 +50,9 @@ public partial class TriggersControlMainPage : ContentPage
 
 		// Subscribe to orientation changes
 		DeviceDisplay.Current.MainDisplayInfoChanged += OnMainDisplayInfoChanged;
+
+		// Re-subscribe to size changes (may have been unsubscribed in OnDisappearing)
+		this.SizeChanged += OnPageSizeChanged;
 	}
 
 	private void ClearAndUnfocusAllEntries()
@@ -102,7 +102,7 @@ public partial class TriggersControlMainPage : ContentPage
 	private void OnPageSizeChanged(object sender, EventArgs e)
 	{
 		// Update window size label for adaptive trigger demo
-		windowSizeLabel.Text = $"Window size: {Width:F0} x {Height:F0} (Width threshold: 800)";
+		windowSizeLabel.Text = $"Window size: {Width:F0} x {Height:F0} (Width threshold: 600)";
 	}
 
 	private void OnMainDisplayInfoChanged(object sender, DisplayInfoChangedEventArgs e)

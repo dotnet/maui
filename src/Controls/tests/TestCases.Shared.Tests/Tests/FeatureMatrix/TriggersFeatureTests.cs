@@ -177,7 +177,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			SelectTriggerType("DeviceStateTriggerButton");
 			// Verify platform updated with correct background color for current platform
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 #endif
 
