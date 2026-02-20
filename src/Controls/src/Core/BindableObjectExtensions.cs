@@ -14,13 +14,14 @@ namespace Microsoft.Maui.Controls
 		internal static void RefreshPropertyValue(this BindableObject self, BindableProperty property, object value)
 		{
 			var ctx = self.GetContext(property);
-			if (ctx != null && ctx.Bindings.Count > 0)
+			var bindings = ctx?.Bindings;
+			if (bindings != null && bindings.Count > 0)
 			{
-				var binding = ctx.Bindings.GetValue();
+				var binding = bindings.GetValue();
 
 				// support bound properties
 				if (!ctx.Attributes.HasFlag(BindableObject.BindableContextAttributes.IsBeingSet))
-					binding.Apply(false);
+					binding?.Apply(false);
 			}
 			else
 			{

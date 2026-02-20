@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls
 
 		IList<BindableProperty> _classStyleProperties;
 
-		readonly List<BindableProperty> _implicitStyles = new List<BindableProperty>();
+		readonly List<BindableProperty> _implicitStyles;
 
 		IList<Style> _classStyles;
 
@@ -34,6 +34,7 @@ namespace Microsoft.Maui.Controls
 		{
 			Target = target;
 			TargetType = targetType;
+			_implicitStyles = new List<BindableProperty>(GetImplicitStylePropertyCount(targetType));
 			RegisterImplicitStyles();
 			Apply(Target);
 		}
@@ -67,7 +68,7 @@ namespace Microsoft.Maui.Controls
 
 				if (_styleClass != null)
 				{
-					_classStyleProperties = new List<BindableProperty>();
+					_classStyleProperties = new List<BindableProperty>(_styleClass.Count);
 					foreach (var styleClass in _styleClass)
 					{
 						var classStyleProperty = BindableProperty.Create("ClassStyle", typeof(IList<Style>), typeof(Element), default(IList<Style>),
@@ -80,6 +81,20 @@ namespace Microsoft.Maui.Controls
 					if (Target is Element targetelement)
 						targetelement.ApplyStyleSheets();
 				}
+			}
+		}
+
+		static int GetImplicitStylePropertyCount(Type targetType)
+		{
+			var count = 0;
+			var type = targetType;
+
+			while (true)
+			{
+				count++;
+				type = type.BaseType;
+				if (type == null || s_stopAtTypes.Contains(type))
+					return count;
 			}
 		}
 
