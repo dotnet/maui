@@ -779,6 +779,20 @@ namespace Microsoft.Maui.Controls
 
 			return false;
 		}
+
+		internal static bool IsElementInSelectedState(this VisualElement element)
+		{
+			var groups = VisualStateManager.GetVisualStateGroups(element);
+			foreach (var group in groups)
+			{
+				if (group.CurrentState?.Name == VisualStateManager.CommonStates.Selected)
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
 	}
 
 	internal class WatchAddList<T> : IList<T>
