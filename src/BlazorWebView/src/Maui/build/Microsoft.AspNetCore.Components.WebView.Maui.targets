@@ -31,7 +31,14 @@
     </ComputeStaticWebAssetsTargetPaths>
 
     <ItemGroup>
-      <MauiAsset Include="%(_MauiStaticWebAssetWithTargetPath.Identity)">
+      <!-- 
+        Filter out compressed static web asset alternatives (.gz, .br) when CompressionEnabled=false.
+        MAUI Blazor Hybrid apps don't need precompressed files since assets are served locally.
+        AssetRole='Alternative' identifies SDK-generated compressed variants vs user files.
+        See: https://github.com/dotnet/maui/issues/33773
+      -->
+      <MauiAsset Include="%(_MauiStaticWebAssetWithTargetPath.Identity)"
+                 Condition="'$(CompressionEnabled)' != 'false' or '%(_MauiStaticWebAssetWithTargetPath.AssetRole)' != 'Alternative' or ('%(_MauiStaticWebAssetWithTargetPath.Extension)' != '.gz' and '%(_MauiStaticWebAssetWithTargetPath.Extension)' != '.br')">
         <Link>%(_MauiStaticWebAssetWithTargetPath.TargetPath)</Link>
         <TargetPath>%(_MauiStaticWebAssetWithTargetPath.TargetPath)</TargetPath>
       </MauiAsset>
