@@ -70,8 +70,29 @@ namespace Microsoft.Maui.Handlers
 		public static void MapBackground(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateBackground(entry);
 
-		public static void MapText(IEntryHandler handler, IEntry entry) =>
-			handler.PlatformView?.UpdateText(entry);
+		public static void MapText(IEntryHandler handler, IEntry entry)
+		{
+			if (handler.PlatformView == null)
+				return;
+
+			// If we're in the middle of processing a text change from the platform,
+			// we need to be careful about how we update the text to avoid re-entering
+			// TextWatcher callbacks while EmojiCompat is processing.
+			// This prevents "end should be < than charSequence length" crash.
+			if (handler is EntryHandler entryHandler && entryHandler.DataFlowDirection == DataFlowDirection.FromPlatform)
+			{
+				// When updating from platform, defer the update to avoid re-entrance
+				handler.PlatformView.PostDelayed(() =>
+				{
+					if (handler.PlatformView != null)
+						handler.PlatformView.UpdateText(entry);
+				}, 10);
+			}
+			else
+			{
+				handler.PlatformView.UpdateText(entry);
+			}
+		}
 
 		public static void MapTextColor(IEntryHandler handler, IEntry entry)
 		{
