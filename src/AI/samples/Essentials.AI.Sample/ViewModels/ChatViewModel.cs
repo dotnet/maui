@@ -147,14 +147,10 @@ public partial class ChatViewModel : ObservableObject
 							_conversationHistory.Add(new ChatMessage(ChatRole.Assistant, [functionCall]));
 							textMessage = null; // Next text starts a new message
 
-							// Update UI
+							// Update UI: always remove pre-tool bubble (thinking or partial text)
 							if (assistantBubble is not null)
 							{
-								var trimmed = assistantBubble.Text.Trim();
-								if (string.IsNullOrEmpty(trimmed))
-									Messages.Remove(assistantBubble);
-								else
-									assistantBubble.IsStreaming = false;
+								Messages.Remove(assistantBubble);
 								assistantBubble = null;
 							}
 							else
