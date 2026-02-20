@@ -1,5 +1,4 @@
 #if IOS
-using System.Threading.Tasks;
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -13,38 +12,45 @@ public class Issue33934 : _IssuesUITest
 	public Issue33934(TestDevice device) : base(device) { }
 
 	[Test]
-	[Category(UITestCategories.Navigation)]
-	public async Task AnimationIterationsShouldNotExceedTwo()
+	[Category(UITestCategories.SafeAreaEdges)]
+	public void BottomSheetAnimationShouldComplete()
 	{
-		// Step 1: Wait for and locate the Show Dialog button
-		var showDialogButton = App.WaitForElement("ShowDialogBtn", timeout: TimeSpan.FromSeconds(10));
-		Assert.That(showDialogButton, Is.Not.Null, "Show Dialog button should be present on screen");
+		// Tester reported: "Due to an infinite layout loop, the bottom sheet animation
+		// does not stop and continues indefinitely."
+		//
+		// This test verifies the animation completes by checking that:
+		// 1. The IterationCountLabel becomes visible (only happens when loop exits)
+		// 2. The iteration count is reasonable (≤ 2)
+		//
+		// If the layout loop is infinite, the label never becomes visible and
+		// the WaitForElement will time out after 15 seconds — a clear failure signal.
 
-		// Step 2: Tap the button to trigger dialog and animation
+		// Step 1: Open the dialog which triggers the bottom sheet animation
+		App.WaitForElement("ShowDialogBtn", timeout: TimeSpan.FromSeconds(10));
 		App.Tap("ShowDialogBtn");
 
+		// Step 2: Wait for the iteration count label to become visible.
+		// This label is ONLY made visible when the animation loop exits successfully.
+		// If the loop is infinite, this will time out — proving the bug exists.
+		var iterationLabel = App.WaitForElement("IterationCountLabel", timeout: TimeSpan.FromSeconds(15));
+		Assert.That(iterationLabel, Is.Not.Null,
+			"IterationCountLabel never became visible — the bottom sheet animation is stuck " +
+			"in an infinite layout loop and never completed.");
 
-		// Step 3: Give animation time to complete
-		await Task.Delay(3000);
-
-		// Step 4: Read the iteration count from the label text
-		var iterationLabel = App.WaitForElement("IterationCountLabel", timeout: TimeSpan.FromSeconds(10));
-		Assert.That(iterationLabel, Is.Not.Null, "Iteration count label should be visible after animation");
-
+		// Step 3: Verify the iteration count is reasonable
 		var labelText = iterationLabel.GetText();
-		Assert.That(labelText, Is.Not.Null.And.Contains(":"), "Label should contain iteration count in format 'Animation Iterations: X'");
+		Assert.That(labelText, Is.Not.Null, "Label text should not be null");
 
-		// Extract the count value from "Animation Iterations: X"
-		var countStr = labelText!.Split(':')[1].Trim();
-		var isValidCount = int.TryParse(countStr, out int iterationCount);
-		Assert.That(isValidCount, Is.True, $"Failed to parse iteration count from label: '{labelText}'");
+		var parts = labelText!.Split(':');
+		Assert.That(parts.Length, Is.GreaterThanOrEqualTo(2), $"Unexpected label format: '{labelText}'");
 
-		// Step 6: Verify the iteration count is 1 or 2 (not excessive)
-		Assert.That(iterationCount, Is.LessThanOrEqualTo(2), 
-			$"Animation should complete in 2 or fewer iterations, but had {iterationCount}. This indicates spurious SizeChanged events.");
+		var countStr = parts[1].Trim();
+		Assert.That(int.TryParse(countStr, out int iterationCount), Is.True,
+			$"Failed to parse iteration count from: '{labelText}'");
+
+		Assert.That(iterationCount, Is.LessThanOrEqualTo(2),
+			$"Animation completed but took {iterationCount} iterations (expected ≤ 2). " +
+			"This indicates spurious SizeChanged events are still triggering unnecessary restarts.");
 	}
 }
 #endif
-
-
-

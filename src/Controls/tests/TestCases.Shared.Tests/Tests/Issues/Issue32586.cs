@@ -1,5 +1,4 @@
 ﻿#if IOS || ANDROID
-using System.Threading.Tasks;
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -23,21 +22,72 @@ public class Issue32586 : _IssuesUITest
 			if (text == expectedText) return;
 			Thread.Sleep(100);
 		}
-		// Final check - will fail if text doesn't match
 		var finalText = App.WaitForElement(elementId).GetText();
 		Assert.That(finalText, Is.EqualTo(expectedText), $"Timed out waiting for {elementId} text to be '{expectedText}'");
 	}
 
 	[Test]
 	[Category(UITestCategories.SafeAreaEdges)]
-	public void VerifyLayoutWithTranslateToAsync()
+	public void VerifyFooterAnimationCompletes()
 	{
-		var label = App.WaitForElement("TestLabel");
+		// The core bug: TranslateToAsync on the footer causes an infinite layout cycle.
+		// If the animation completes and the label updates, the cycle is broken.
+		App.WaitForElement("FooterButton");
 		App.Tap("FooterButton");
-		WaitForText("TestLabel", "Footer is now visible");
 		
+		// If the animation is stuck in an infinite loop, this will time out
+		WaitForText("TestLabel", "Footer is now visible", timeoutSec: 10);
+		
+		// Verify the footer is actually visible on screen
+		var footerRect = App.WaitForElement("FooterContentButton").GetRect();
+		Assert.That(footerRect.Height, Is.GreaterThan(0), "Footer should be visible with non-zero height");
+		
+		// Hide footer and verify
 		App.Tap("FooterButton");
-		WaitForText("TestLabel", "Footer is now hidden");
+		WaitForText("TestLabel", "Footer is now hidden", timeoutSec: 10);
+	}
+
+	[Test]
+	[Category(UITestCategories.SafeAreaEdges)]
+	public void VerifyFooterPositionRespectsSafeArea()
+	{
+		// Tester reported: "The footer view is always rendered above the safe area,
+		// even when SafeAreaEdges is set to None for both parent and footer."
+		// This test verifies the footer's bottom edge relative to the screen.
+
+		// Step 1: Show footer with default SafeAreaEdges (Container on parent)
+		App.WaitForElement("FooterButton");
+		App.Tap("FooterButton");
+		WaitForText("TestLabel", "Footer is now visible", timeoutSec: 10);
+
+		var footerWithSafeArea = App.WaitForElement("FooterContentButton").GetRect();
+		var screenBottom = App.WaitForElement("MainGrid").GetRect();
+		
+		// Record footer bottom position with safe area active
+		var footerBottomWithSafeArea = footerWithSafeArea.Y + footerWithSafeArea.Height;
+
+		// Step 2: Hide footer, set both parent and child SafeAreaEdges to None
+		App.Tap("FooterButton");
+		WaitForText("TestLabel", "Footer is now hidden", timeoutSec: 10);
+
+		App.Tap("ParentSafeAreaToggleButton");
+		WaitForText("SafeAreaStatusLabel", "Parent: None, Child: Container");
+		App.Tap("ChildSafeAreaToggleButton");
+		WaitForText("SafeAreaStatusLabel", "Parent: None, Child: None");
+
+		// Step 3: Show footer again with SafeAreaEdges=None
+		App.Tap("FooterButton");
+		WaitForText("TestLabel", "Footer is now visible", timeoutSec: 10);
+
+		var footerWithoutSafeArea = App.WaitForElement("FooterContentButton").GetRect();
+		var footerBottomWithoutSafeArea = footerWithoutSafeArea.Y + footerWithoutSafeArea.Height;
+
+		// Step 4: With SafeAreaEdges=None, footer should extend further down
+		// (closer to or into the bottom safe area)
+		Assert.That(footerBottomWithoutSafeArea, Is.GreaterThanOrEqualTo(footerBottomWithSafeArea),
+			$"Footer with SafeAreaEdges=None (bottom={footerBottomWithoutSafeArea}) should extend at least as far down as " +
+			$"footer with SafeAreaEdges=Container (bottom={footerBottomWithSafeArea}). " +
+			"The footer is being rendered above the safe area even when SafeAreaEdges=None.");
 	}
 
 	[Test]
@@ -45,7 +95,6 @@ public class Issue32586 : _IssuesUITest
 	public void VerifyRuntimeSafeAreaEdgesChange()
 	{
 		// Step 1: Default state - Parent Grid handles safe area (Container)
-		// Content should be pushed below the safe area (TopMarker.Y > 0)
 		var statusLabel = App.WaitForElement("SafeAreaStatusLabel");
 		Assert.That(statusLabel.GetText(), Is.EqualTo("Parent: Container, Child: Container"));
 
@@ -54,8 +103,6 @@ public class Issue32586 : _IssuesUITest
 		Assert.That(initialY, Is.GreaterThan(0), "Content should be below safe area when parent handles it");
 
 		// Step 2: Set parent Grid SafeAreaEdges to None
-		// Child StackLayout should take over safe area responsibility
-		// Content should still be pushed below the safe area
 		App.Tap("ParentSafeAreaToggleButton");
 		WaitForText("SafeAreaStatusLabel", "Parent: None, Child: Container");
 
@@ -63,8 +110,7 @@ public class Issue32586 : _IssuesUITest
 		var childHandlingY = topMarkerRect.Y;
 		Assert.That(childHandlingY, Is.GreaterThan(0), "Child should handle safe area when parent doesn't");
 
-		// Step 3: Set child StackLayout SafeAreaEdges to None too
-		// No one handles safe area - content should go under the safe area (Y closer to 0)
+		// Step 3: Set child SafeAreaEdges to None too — content should move under safe area
 		App.Tap("ChildSafeAreaToggleButton");
 		WaitForText("SafeAreaStatusLabel", "Parent: None, Child: None");
 
@@ -72,7 +118,7 @@ public class Issue32586 : _IssuesUITest
 		var noSafeAreaY = topMarkerRect.Y;
 		Assert.That(noSafeAreaY, Is.LessThan(childHandlingY), "Content should move up under safe area when no one handles it");
 
-		// Step 4: Restore parent to Container - parent should take over again
+		// Step 4: Restore parent to Container
 		App.Tap("ParentSafeAreaToggleButton");
 		WaitForText("SafeAreaStatusLabel", "Parent: Container, Child: None");
 
@@ -80,9 +126,9 @@ public class Issue32586 : _IssuesUITest
 		var restoredY = topMarkerRect.Y;
 		Assert.That(restoredY, Is.GreaterThan(noSafeAreaY), "Parent should push content below safe area again");
 
-		// Step 5: Verify UI is still responsive - no infinite cycle
+		// Step 5: Verify UI is still responsive
 		App.Tap("FooterButton");
-		WaitForText("TestLabel", "Footer is now visible");
+		WaitForText("TestLabel", "Footer is now visible", timeoutSec: 10);
 	}
 }
 #endif

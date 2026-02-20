@@ -19,6 +19,7 @@ public class Issue32586 : ContentPage
 		MainGrid = new Grid
 		{
 			BackgroundColor = Colors.Orange,
+			AutomationId = "MainGrid",
 			RowDefinitions =
 			{
 				new RowDefinition(GridLength.Star),
@@ -102,6 +103,16 @@ public class Issue32586 : ContentPage
 		verticalStackLayout.Add(ChildSafeAreaToggleButton);
 		verticalStackLayout.Add(SafeAreaStatusLabel);
 
+		// Bottom marker - positioned at very bottom of grid, used to detect safe area
+		var bottomMarker = new Label
+		{
+			Text = "Bottom Marker",
+			FontSize = 12,
+			HorizontalOptions = LayoutOptions.Center,
+			VerticalOptions = LayoutOptions.End,
+			AutomationId = "BottomMarker"
+		};
+
 		// Create the footer view
 		FooterView = new ContentView
 		{
@@ -148,8 +159,10 @@ public class Issue32586 : ContentPage
 
 		// Add elements to main grid
 		Grid.SetRow(verticalStackLayout, 0);
+		Grid.SetRow(bottomMarker, 0);
 		Grid.SetRow(FooterView, 1);
 		MainGrid.Add(verticalStackLayout);
+		MainGrid.Add(bottomMarker);
 		MainGrid.Add(FooterView);
 
 		// Set the grid as the page content
