@@ -30,14 +30,83 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc cref="StyleableElement.StyleProperty" />
 		public new static readonly BindableProperty StyleProperty = NavigableElement.StyleProperty;
 
-		bool _inputTransparentExplicit = (bool)InputTransparentProperty.DefaultValue;
+		[Flags]
+		enum VisualElementFlags : byte
+		{
+			InputTransparentExplicit = 1 << 0,
+			IsEnabledExplicit = 1 << 1,
+			IsInPlatformLayout = 1 << 2,
+			IsPlatformStateConsistent = 1 << 3,
+			IsPlatformEnabled = 1 << 4,
+			IsPointerOver = 1 << 5,
+			IsLoadedFired = 1 << 6,
+			WatchingPlatformLoaded = 1 << 7,
+		}
+
+		VisualElementFlags _visualElementFlags = VisualElementFlags.IsEnabledExplicit | VisualElementFlags.IsPlatformStateConsistent;
+
+		bool _inputTransparentExplicit
+		{
+			get => HasFlag(VisualElementFlags.InputTransparentExplicit);
+			set => SetFlag(VisualElementFlags.InputTransparentExplicit, value);
+		}
 
 		/// <summary>Bindable property for <see cref="InputTransparent"/>.</summary>
 		public static readonly BindableProperty InputTransparentProperty = BindableProperty.Create(
 			nameof(InputTransparent), typeof(bool), typeof(VisualElement), default(bool),
 			propertyChanged: OnInputTransparentPropertyChanged, coerceValue: CoerceInputTransparentProperty);
 
-		bool _isEnabledExplicit = (bool)IsEnabledProperty.DefaultValue;
+		bool _isEnabledExplicit
+		{
+			get => HasFlag(VisualElementFlags.IsEnabledExplicit);
+			set => SetFlag(VisualElementFlags.IsEnabledExplicit, value);
+		}
+
+		bool _isInPlatformLayout
+		{
+			get => HasFlag(VisualElementFlags.IsInPlatformLayout);
+			set => SetFlag(VisualElementFlags.IsInPlatformLayout, value);
+		}
+
+		bool _isPlatformStateConsistent
+		{
+			get => HasFlag(VisualElementFlags.IsPlatformStateConsistent);
+			set => SetFlag(VisualElementFlags.IsPlatformStateConsistent, value);
+		}
+
+		bool _isPlatformEnabled
+		{
+			get => HasFlag(VisualElementFlags.IsPlatformEnabled);
+			set => SetFlag(VisualElementFlags.IsPlatformEnabled, value);
+		}
+
+		bool _isPointerOver
+		{
+			get => HasFlag(VisualElementFlags.IsPointerOver);
+			set => SetFlag(VisualElementFlags.IsPointerOver, value);
+		}
+
+		bool _isLoadedFired
+		{
+			get => HasFlag(VisualElementFlags.IsLoadedFired);
+			set => SetFlag(VisualElementFlags.IsLoadedFired, value);
+		}
+
+		bool _watchingPlatformLoaded
+		{
+			get => HasFlag(VisualElementFlags.WatchingPlatformLoaded);
+			set => SetFlag(VisualElementFlags.WatchingPlatformLoaded, value);
+		}
+
+		bool HasFlag(VisualElementFlags flag) => (_visualElementFlags & flag) != 0;
+
+		void SetFlag(VisualElementFlags flag, bool value)
+		{
+			if (value)
+				_visualElementFlags |= flag;
+			else
+				_visualElementFlags &= ~flag;
+		}
 
 		/// <summary>Bindable property for <see cref="IsEnabled"/>.</summary>
 		public static readonly BindableProperty IsEnabledProperty = BindableProperty.Create(nameof(IsEnabled), typeof(bool),
@@ -497,25 +566,21 @@ namespace Microsoft.Maui.Controls
 		}
 
 #pragma warning disable CS0618 // Type or member is obsolete
-		readonly Dictionary<Size, SizeRequest> _measureCache = new Dictionary<Size, SizeRequest>();
+		Dictionary<Size, SizeRequest> _measureCache;
 #pragma warning restore CS0618 // Type or member is obsolete
 
 		int _batched;
 		LayoutConstraint _computedConstraint;
 
-		bool _isInPlatformLayout;
+		sealed class MockBoundsState
+		{
+			public double Height;
+			public double Width;
+			public double X;
+			public double Y;
+		}
 
-		bool _isPlatformStateConsistent = true;
-
-		bool _isPlatformEnabled;
-
-		double _mockHeight = -1;
-
-		double _mockWidth = -1;
-
-		double _mockX = -1;
-
-		double _mockY = -1;
+		MockBoundsState _mockBounds;
 
 		LayoutConstraint _selfConstraint;
 
@@ -580,7 +645,13 @@ namespace Microsoft.Maui.Controls
 		/// <remarks><see cref="Bounds"/> is assigned during layout.</remarks>
 		public Rect Bounds
 		{
-			get { return IsMocked() ? new Rect(_mockX, _mockY, _mockWidth, _mockHeight) : _frame; }
+			get
+			{
+				var mockBounds = _mockBounds;
+				return mockBounds is null
+					? _frame
+					: new Rect(mockBounds.X, mockBounds.Y, mockBounds.Width, mockBounds.Height);
+			}
 			private set
 			{
 				Frame = value;
@@ -602,7 +673,7 @@ namespace Microsoft.Maui.Controls
 		/// </remarks>
 		public double Height
 		{
-			get { return _mockHeight == -1 ? (double)GetValue(HeightProperty) : _mockHeight; }
+			get { return _mockBounds is null ? (double)GetValue(HeightProperty) : _mockBounds.Height; }
 			private set { SetValue(HeightPropertyKey, value); }
 		}
 
@@ -941,7 +1012,7 @@ namespace Microsoft.Maui.Controls
 		/// </remarks>
 		public double Width
 		{
-			get { return _mockWidth == -1 ? (double)GetValue(WidthProperty) : _mockWidth; }
+			get { return _mockBounds is null ? (double)GetValue(WidthProperty) : _mockBounds.Width; }
 			private set { SetValue(WidthPropertyKey, value); }
 		}
 
@@ -980,7 +1051,7 @@ namespace Microsoft.Maui.Controls
 		/// </remarks>
 		public double X
 		{
-			get { return _mockX == -1 ? (double)GetValue(XProperty) : _mockX; }
+			get { return _mockBounds is null ? (double)GetValue(XProperty) : _mockBounds.X; }
 			private set { SetValue(XPropertyKey, value); }
 		}
 
@@ -999,7 +1070,7 @@ namespace Microsoft.Maui.Controls
 		/// </remarks>
 		public double Y
 		{
-			get { return _mockY == -1 ? (double)GetValue(YProperty) : _mockY; }
+			get { return _mockBounds is null ? (double)GetValue(YProperty) : _mockBounds.Y; }
 			private set { SetValue(YPropertyKey, value); }
 		}
 
@@ -1223,7 +1294,7 @@ namespace Microsoft.Maui.Controls
 		SizeRequest GetSizeRequest(double widthConstraint, double heightConstraint)
 		{
 			var constraintSize = new Size(widthConstraint, heightConstraint);
-			if (_measureCache.TryGetValue(constraintSize, out SizeRequest cachedResult))
+			if (_measureCache != null && _measureCache.TryGetValue(constraintSize, out SizeRequest cachedResult))
 				return cachedResult;
 
 			double widthRequest = WidthRequest;
@@ -1266,7 +1337,7 @@ namespace Microsoft.Maui.Controls
 			var r = new SizeRequest(request, minimum);
 
 			if (r.Request.Width > 0 && r.Request.Height > 0)
-				_measureCache[constraintSize] = r;
+				(_measureCache ??= new Dictionary<Size, SizeRequest>())[constraintSize] = r;
 
 			return r;
 		}
@@ -1537,7 +1608,7 @@ namespace Microsoft.Maui.Controls
 
 		private protected void InvalidateMeasureCache()
 		{
-			_measureCache.Clear();
+			_measureCache?.Clear();
 		}
 
 		/// <inheritdoc/>
@@ -1566,19 +1637,22 @@ namespace Microsoft.Maui.Controls
 
 		internal void MockBounds(Rect bounds)
 		{
-#if NETSTANDARD2_0 || NET6_0_OR_GREATER
-			(_mockX, _mockY, _mockWidth, _mockHeight) = bounds;
-#else
-			_mockX = bounds.X;
-			_mockY = bounds.Y;
-			_mockWidth = bounds.Width;
-			_mockHeight = bounds.Height;
-#endif
+			if (bounds.X == -1 && bounds.Y == -1 && bounds.Width == -1 && bounds.Height == -1)
+			{
+				_mockBounds = null;
+				return;
+			}
+
+			_mockBounds ??= new MockBoundsState();
+			_mockBounds.X = bounds.X;
+			_mockBounds.Y = bounds.Y;
+			_mockBounds.Width = bounds.Width;
+			_mockBounds.Height = bounds.Height;
 		}
 
 		bool IsMocked()
 		{
-			return _mockX != -1 || _mockY != -1 || _mockWidth != -1 || _mockHeight != -1;
+			return _mockBounds is not null;
 		}
 
 		internal virtual void OnConstraintChanged(LayoutConstraint oldConstraint, LayoutConstraint newConstraint) => ComputeConstrainsForChildren();
@@ -1627,7 +1701,7 @@ namespace Microsoft.Maui.Controls
 				OnResourcesChanged(changedResources);
 		}
 
-		internal void UnmockBounds() => _mockX = _mockY = _mockWidth = _mockHeight = -1;
+		internal void UnmockBounds() => _mockBounds = null;
 
 		void PropagateBindingContextToStateTriggers()
 		{
@@ -1645,8 +1719,6 @@ namespace Microsoft.Maui.Controls
 		void OnFocused() => Focused?.Invoke(this, new FocusEventArgs(this, true));
 
 		internal void ChangeVisualStateInternal() => ChangeVisualState();
-
-		bool _isPointerOver;
 
 		internal bool IsPointerOver
 		{
@@ -1860,10 +1932,8 @@ namespace Microsoft.Maui.Controls
 
 #nullable enable
 		Semantics? _semantics;
-		bool _isLoadedFired;
 		EventHandler? _loaded;
 		EventHandler? _unloaded;
-		bool _watchingPlatformLoaded;
 		Rect _frame = new Rect(0, 0, -1, -1);
 		event EventHandler? _windowChanged;
 		event EventHandler? _platformContainerViewChanged;

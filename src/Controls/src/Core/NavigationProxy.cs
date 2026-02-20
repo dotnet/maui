@@ -22,9 +22,9 @@ namespace Microsoft.Maui.Controls.Internals
 	public class NavigationProxy : INavigation
 	{
 		INavigation _inner;
-		Lazy<NavigatingStepRequestList> _modalStack = new Lazy<NavigatingStepRequestList>(() => new NavigatingStepRequestList());
+		NavigatingStepRequestList _modalStack;
 
-		Lazy<List<Page>> _pushStack = new Lazy<List<Page>>(() => new List<Page>());
+		List<Page> _pushStack;
 
 		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
 		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
@@ -41,22 +41,22 @@ namespace Microsoft.Maui.Controls.Internals
 
 				if (_inner is null)
 				{
-					_pushStack = new Lazy<List<Page>>(() => new List<Page>());
-					_modalStack = new Lazy<NavigatingStepRequestList>(() => new NavigatingStepRequestList());
+					_pushStack = null;
+					_modalStack = null;
 				}
 				else
 				{
-					if (_pushStack is not null && _pushStack.IsValueCreated)
+					if (_pushStack is not null)
 					{
-						foreach (Page page in _pushStack.Value)
+						foreach (Page page in _pushStack)
 						{
 							_inner.PushAsync(page);
 						}
 					}
 
-					if (_modalStack is not null && _modalStack.IsValueCreated)
+					if (_modalStack is not null)
 					{
-						foreach (var request in _modalStack.Value)
+						foreach (var request in _modalStack)
 						{
 							_inner.PushModalAsync(request.Page, request.IsAnimated);
 						}
@@ -185,13 +185,13 @@ namespace Microsoft.Maui.Controls.Internals
 		protected virtual IReadOnlyList<Page> GetModalStack()
 		{
 			INavigation currentInner = Inner;
-			return currentInner is null ? _modalStack.Value.Pages : currentInner.ModalStack;
+			return currentInner is null ? GetOrCreateModalStack().Pages : currentInner.ModalStack;
 		}
 
 		protected virtual IReadOnlyList<Page> GetNavigationStack()
 		{
 			INavigation currentInner = Inner;
-			return currentInner is null ? _pushStack.Value : currentInner.NavigationStack;
+			return currentInner is null ? GetOrCreatePushStack() : currentInner.NavigationStack;
 		}
 
 		protected virtual void OnInsertPageBefore(Page page, Page before)
@@ -199,10 +199,11 @@ namespace Microsoft.Maui.Controls.Internals
 			INavigation currentInner = Inner;
 			if (currentInner is null)
 			{
-				int index = _pushStack.Value.IndexOf(before);
+				var stack = GetOrCreatePushStack();
+				int index = stack.IndexOf(before);
 				if (index == -1)
 					throw new ArgumentException("before must be in the pushed stack of the current context");
-				_pushStack.Value.Insert(index, page);
+				stack.Insert(index, page);
 			}
 			else
 			{
@@ -227,12 +228,13 @@ namespace Microsoft.Maui.Controls.Internals
 			INavigation currentInner = Inner;
 			if (currentInner is null)
 			{
-				if (_pushStack.Value.Count == 0)
+				var stack = GetOrCreatePushStack();
+				if (stack.Count == 0)
 					return Task.FromResult<Page>(null);
 
-				Page root = _pushStack.Value.Last();
-				_pushStack.Value.Clear();
-				_pushStack.Value.Add(root);
+				Page root = stack.Last();
+				stack.Clear();
+				stack.Add(root);
 				return Task.FromResult(root);
 			}
 			return currentInner.PopToRootAsync(animated);
@@ -243,7 +245,7 @@ namespace Microsoft.Maui.Controls.Internals
 			INavigation currentInner = Inner;
 			if (currentInner is null)
 			{
-				_pushStack.Value.Add(page);
+				GetOrCreatePushStack().Add(page);
 				return Task.FromResult(page);
 			}
 			return currentInner.PushAsync(page, animated);
@@ -254,7 +256,7 @@ namespace Microsoft.Maui.Controls.Internals
 			INavigation currentInner = Inner;
 			if (currentInner is null)
 			{
-				_modalStack.Value.Add(new NavigationStepRequest(modal, true, animated));
+				GetOrCreateModalStack().Add(new NavigationStepRequest(modal, true, animated));
 				return Task.FromResult<object>(null);
 			}
 			return currentInner.PushModalAsync(modal, animated);
@@ -265,7 +267,7 @@ namespace Microsoft.Maui.Controls.Internals
 			INavigation currentInner = Inner;
 			if (currentInner is null)
 			{
-				_pushStack.Value.Remove(page);
+				_pushStack?.Remove(page);
 			}
 			else
 			{
@@ -275,18 +277,22 @@ namespace Microsoft.Maui.Controls.Internals
 
 		Page Pop()
 		{
-			List<Page> list = _pushStack.Value;
-			if (list.Count == 0)
+			List<Page> list = _pushStack;
+			if (list is null || list.Count == 0)
 				return null;
 			Page result = list[list.Count - 1];
 			list.RemoveAt(list.Count - 1);
 			return result;
 		}
 
+		List<Page> GetOrCreatePushStack() => _pushStack ??= new List<Page>();
+
+		NavigatingStepRequestList GetOrCreateModalStack() => _modalStack ??= new NavigatingStepRequestList();
+
 		Page PopModal()
 		{
-			var list = _modalStack.Value;
-			if (list.Count == 0)
+			var list = _modalStack;
+			if (list is null || list.Count == 0)
 				return null;
 			var result = list[list.Count - 1];
 			list.RemoveAt(list.Count - 1);

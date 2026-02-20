@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Controls
 
 		IList<BindableObject> _bindableResources;
 
-		List<Action<object, ResourcesChangedEventArgs>> _changeHandlers;
+		object _changeHandlers;
 
 		Dictionary<BindableProperty, (string, SetterSpecificity)> _dynamicResources;
 
@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Controls
 
 		TrackableCollection<Effect> _effects;
 
-		Guid? _id;
+		Guid _id;
 
 		WeakReference<Element> _parentOverride;
 
@@ -124,9 +124,9 @@ namespace Microsoft.Maui.Controls
 		{
 			get
 			{
-				if (!_id.HasValue)
+				if (_id == Guid.Empty)
 					_id = Guid.NewGuid();
-				return _id.Value;
+				return _id;
 			}
 		}
 
@@ -346,8 +346,6 @@ namespace Microsoft.Maui.Controls
 			}
 			else
 			{
-				// Clear the weak reference since the target has been garbage collected
-				// This prevents repeated checks and warnings on subsequent accesses
 				_realParent = null;
 				if (logWarningIfParentHasBeenCollected)
 				{
@@ -380,8 +378,19 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc/>
 		void IElementDefinition.AddResourcesChangedListener(Action<object, ResourcesChangedEventArgs> onchanged)
 		{
-			_changeHandlers ??= new List<Action<object, ResourcesChangedEventArgs>>(2);
-			_changeHandlers.Add(onchanged);
+			if (_changeHandlers == null)
+			{
+				_changeHandlers = onchanged;
+				return;
+			}
+
+			if (_changeHandlers is Action<object, ResourcesChangedEventArgs> handler)
+			{
+				_changeHandlers = new List<Action<object, ResourcesChangedEventArgs>>(2) { handler, onchanged };
+				return;
+			}
+
+			((List<Action<object, ResourcesChangedEventArgs>>)_changeHandlers).Add(onchanged);
 		}
 
 		/// <summary>Gets or sets the parent <see cref="Element"/> of this element.</summary>
@@ -451,9 +460,26 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc/>
 		void IElementDefinition.RemoveResourcesChangedListener(Action<object, ResourcesChangedEventArgs> onchanged)
 		{
+			if (_changeHandlers is Action<object, ResourcesChangedEventArgs> handler)
+			{
+				if (handler == onchanged)
+					_changeHandlers = null;
+				return;
+			}
+
 			if (_changeHandlers == null)
 				return;
-			_changeHandlers.Remove(onchanged);
+
+			var handlers = (List<Action<object, ResourcesChangedEventArgs>>)_changeHandlers;
+			handlers.Remove(onchanged);
+			if (handlers.Count == 1)
+			{
+				_changeHandlers = handlers[0];
+			}
+			else if (handlers.Count == 0)
+			{
+				_changeHandlers = null;
+			}
 		}
 
 		/// <summary>For internal use by .NET MAUI.</summary>
@@ -675,16 +701,16 @@ namespace Microsoft.Maui.Controls
 			(this as IPropertyPropagationController)?.PropagatePropertyChanged(null);
 		}
 
-		HashSet<string> _pendingHandlerUpdatesFromBPSet = new HashSet<string>();
+		HashSet<string> _pendingHandlerUpdatesFromBPSet;
 		private protected override void OnBindablePropertySet(BindableProperty property, object original, object value, bool changed, bool willFirePropertyChanged)
 		{
 			if (willFirePropertyChanged)
 			{
-				_pendingHandlerUpdatesFromBPSet.Add(property.PropertyName);
+				(_pendingHandlerUpdatesFromBPSet ??= new HashSet<string>()).Add(property.PropertyName);
 			}
 
 			base.OnBindablePropertySet(property, original, value, changed, willFirePropertyChanged);
-			_pendingHandlerUpdatesFromBPSet.Remove(property.PropertyName);
+			_pendingHandlerUpdatesFromBPSet?.Remove(property.PropertyName);
 			UpdateHandlerValue(property.PropertyName, changed);
 
 		}
@@ -704,7 +730,7 @@ namespace Microsoft.Maui.Controls
 			// And the user has placed reacting code inside the BP.PropertyChanged callback
 			// 
 			// If the OnPropertyChanged is being called from user code, we still want that to propagate to the mapper
-			bool waitForHandlerUpdateToFireFromBP = _pendingHandlerUpdatesFromBPSet.Contains(propertyName);
+			bool waitForHandlerUpdateToFireFromBP = _pendingHandlerUpdatesFromBPSet?.Contains(propertyName) == true;
 
 			base.OnPropertyChanged(propertyName);
 
@@ -793,13 +819,14 @@ namespace Microsoft.Maui.Controls
 		{
 			if (values == null)
 				return;
-			if (_changeHandlers != null)
-				foreach (Action<object, ResourcesChangedEventArgs> handler in _changeHandlers.ToList())
-					handler(this, new ResourcesChangedEventArgs(values));
+			if (_changeHandlers is Action<object, ResourcesChangedEventArgs> handler)
+				handler(this, new ResourcesChangedEventArgs(values));
+			else if (_changeHandlers is List<Action<object, ResourcesChangedEventArgs>> handlers)
+				foreach (Action<object, ResourcesChangedEventArgs> listHandler in handlers.ToList())
+					listHandler(this, new ResourcesChangedEventArgs(values));
 			if (_dynamicResources == null)
 				return;
-			if (_bindableResources == null)
-				_bindableResources = new List<BindableObject>();
+			var bindableResources = _bindableResources;
 			foreach (KeyValuePair<string, object> value in values)
 			{
 				List<(BindableProperty, SetterSpecificity)> changedResources = null;
@@ -822,8 +849,9 @@ namespace Microsoft.Maui.Controls
 				var bindableObject = value.Value as BindableObject;
 				if (bindableObject != null && (bindableObject as Element)?.Parent == null)
 				{
-					if (!_bindableResources.Contains(bindableObject))
-						_bindableResources.Add(bindableObject);
+					bindableResources ??= _bindableResources = new List<BindableObject>();
+					if (!bindableResources.Contains(bindableObject))
+						bindableResources.Add(bindableObject);
 					SetInheritedBindingContext(bindableObject, BindingContext);
 				}
 			}
