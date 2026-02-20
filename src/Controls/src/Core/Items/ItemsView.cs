@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
@@ -321,7 +322,7 @@ namespace Microsoft.Maui.Controls
 
 		private bool DismissScroll()
 		{
-			return Handler is null || ItemsSource is null;
+			return ItemsSource is null || (ItemsSource is IEnumerable<object> items && !items.Any());
 		}
 	}
 }
