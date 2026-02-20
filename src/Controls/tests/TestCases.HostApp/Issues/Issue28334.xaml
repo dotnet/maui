@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+  xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+  x:Class="Maui.Controls.Sample.Issues.Issue28334">
+
+  <Grid RowDefinitions="*,Auto">
+    <Grid Padding="10">
+      <CollectionView
+        ItemsSource="{Binding ItemsSource}"
+        EmptyView="{Binding EmptyView}"
+        EmptyViewTemplate="{Binding EmptyViewTemplate}">
+      </CollectionView>
+    </Grid>
+    <StackLayout Grid.Row="1">
+      <Button Text="Change ItemSource to null"
+              AutomationId="ItemSourceButton"
+              Clicked="OnItemSourceButtonClick"/>
+      <Button Text="Add EmptyView"
+              AutomationId="EmptyViewButton"
+              Clicked="OnEmptyViewChangeButtonClick"/>
+      <Button Text="Add EmptyViewTemplate"
+              AutomationId="EmptyViewTemplateButton"
+              Clicked="OnEmptyViewTemplateChangedButtonClick"/>
+      <Button Text="ReAdd ItemSource"
+              AutomationId="ReAddItemSourceButton"
+              Clicked="OnReAddItemSourceButtonClick"/>
+    </StackLayout>
+  </Grid>
+
+</ContentPage>
