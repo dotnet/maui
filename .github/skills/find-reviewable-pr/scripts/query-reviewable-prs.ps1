@@ -184,7 +184,7 @@ function Get-ReadyToReviewPRNumbers {
   }
 }
 "@
-        $result = Invoke-GitHubWithRetry -Command "gh api graphql -f query='$($graphqlQuery -replace "`n", " " -replace "'", "'\''")'" -Description "fetch project board items"
+        $result = Invoke-GitHubWithRetry -Command "gh api graphql -f query='$($graphqlQuery -replace "`r?`n", " " -replace "'", "'\''")'" -Description "fetch project board items"
         $parsed = $result | ConvertFrom-Json
         
         $readyPRs = @()
@@ -684,22 +684,9 @@ foreach ($pr in $allPRs) {
 
 Write-Host "  Processed $($processedPRs.Count) PRs matching filters" -ForegroundColor Green
 
-# Fetch agent summaries for agent-reviewed PRs
-$agentReviewedPRs = $processedPRs | Where-Object { $_.HasAgentReview }
-if ($agentReviewedPRs.Count -gt 0) {
-    Write-Host ""
-    Write-Host "Fetching agent review summaries..." -ForegroundColor Cyan
-    foreach ($pr in $agentReviewedPRs) {
-        Write-Host "  PR #$($pr.Number)..." -ForegroundColor Gray -NoNewline
-        $commentBody = Get-AgentSummaryComment -PRNumber $pr.Number
-        if ($commentBody) {
-            $pr.AgentSummary = Get-AgentSummaryHighlights -CommentBody $commentBody
-            Write-Host " ✓" -ForegroundColor Green
-        } else {
-            Write-Host " (no AI Summary comment found)" -ForegroundColor Yellow
-        }
-    }
-}
+# Agent summary fetching is deferred until after category filtering
+# to avoid unnecessary API calls for PRs that won't be displayed.
+# See the block before output generation below.
 
 # Process docs-maui PRs
 $processedDocsMauiPRs = @()
@@ -814,6 +801,14 @@ if ($Category -ne "all") {
         "ready-to-review" { $processedPRs = $readyToReviewPRs }
         "agent-reviewed" { $processedPRs = $agentReviewedPRList }
         "docs-maui" { $processedPRs = @() } # Will be handled separately
+        "default" {
+            $defaultPRs = @()
+            if ($priorityPRs) { $defaultPRs += @($priorityPRs) }
+            if ($milestonedPRs) { $defaultPRs += @($milestonedPRs) }
+            $processedPRs = $defaultPRs |
+                Where-Object { $_.ReviewDecision -ne "CHANGES_REQUESTED" } |
+                Sort-Object Number -Unique
+        }
     }
 }
 
@@ -1095,6 +1090,55 @@ function Format-Table-Output {
         @{Label="Age"; Expression={"$($_.Age)d"}; Width=5},
         @{Label="Files"; Expression={$_.Files}; Width=5}
     ) -AutoSize
+}
+
+# Fetch agent review summaries only for PRs that will actually be displayed.
+# In JSON mode, all categories are included so we need all agent-reviewed PRs.
+# In review/table mode, only the selected category's PRs are shown.
+$prsNeedingSummaries = @()
+if ($OutputFormat -eq "json") {
+    # JSON output includes all categories
+    $prsNeedingSummaries = $processedPRs | Where-Object { $_.HasAgentReview }
+} elseif ($OutputFormat -eq "table") {
+    # Table output doesn't display agent summaries
+    $prsNeedingSummaries = @()
+} else {
+    # Review output: determine which PRs will be displayed based on category
+    $displayedPRs = switch ($Category) {
+        "default" {
+            $combined = @()
+            if ($priorityPRs) { $combined += @($priorityPRs) }
+            if ($milestonedPRs) { $combined += @($milestonedPRs) }
+            $combined | Where-Object { $_.ReviewDecision -ne "CHANGES_REQUESTED" } | Sort-Object Number -Unique
+        }
+        "priority" { $priorityPRs }
+        "milestoned" { $milestonedPRs }
+        "partner" { $partnerPRs }
+        "community" { $communityPRs }
+        "recent" { $recentPRs }
+        "approved" { $approvedPRs }
+        "ready-to-review" { $readyToReviewPRs }
+        "agent-reviewed" { $agentReviewedPRList }
+        "docs-maui" { @() }
+        "all" { $processedPRs }
+        default { $processedPRs }
+    }
+    $prsNeedingSummaries = @($displayedPRs) | Where-Object { $_ -and $_.HasAgentReview }
+}
+
+if ($prsNeedingSummaries.Count -gt 0) {
+    Write-Host ""
+    Write-Host "Fetching agent review summaries for $($prsNeedingSummaries.Count) displayed PRs..." -ForegroundColor Cyan
+    foreach ($pr in $prsNeedingSummaries) {
+        Write-Host "  PR #$($pr.Number)..." -ForegroundColor Gray -NoNewline
+        $commentBody = Get-AgentSummaryComment -PRNumber $pr.Number
+        if ($commentBody) {
+            $pr.AgentSummary = Get-AgentSummaryHighlights -CommentBody $commentBody
+            Write-Host " ✓" -ForegroundColor Green
+        } else {
+            Write-Host " (no AI Summary comment found)" -ForegroundColor Yellow
+        }
+    }
 }
 
 # Generate output
