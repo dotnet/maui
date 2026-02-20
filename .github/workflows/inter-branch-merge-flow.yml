@@ -15,7 +15,6 @@
 #   - Detailed PR body with merge/conflict resolution instructions
 #
 # This replaces the previous weekly-branch-merge.yml schedule-based approach.
-# For manual merges, use: .github/scripts/MergeBranchAndCreatePR.ps1
 
 name: Inter-branch merge workflow
 
