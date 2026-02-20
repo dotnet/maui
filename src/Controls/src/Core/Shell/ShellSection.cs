@@ -1278,16 +1278,16 @@ namespace Microsoft.Maui.Controls
 			_handlerBasedNavigationCompletionSource = null;
 			source?.SetResult(true);
 		}
-#nullable disable
+
 
 		private sealed class ShellSectionTypeConverter : TypeConverter
 		{
-			public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType) => false;
-			public override object ConvertTo(ITypeDescriptorContext context, CultureInfo cultureInfo, object value, Type destinationType) => throw new NotSupportedException();
+			public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType) => false;
+			public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? cultureInfo, object? value, Type destinationType) => throw new NotSupportedException();
 
-			public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
 				=> sourceType == typeof(ShellContent) || sourceType == typeof(TemplatedPage);
-			public override object ConvertFrom(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value)
+			public override object? ConvertFrom(ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object value)
 				=> value switch
 				{
 					ShellContent shellContent => (ShellSection)shellContent,
@@ -1295,7 +1295,7 @@ namespace Microsoft.Maui.Controls
 					_ => throw new NotSupportedException(),
 				};
 		}
-
+#nullable disable
 		/// <summary>
 		/// Provides a debug view for the <see cref="ShellSection"/> class.
 		/// </summary>
