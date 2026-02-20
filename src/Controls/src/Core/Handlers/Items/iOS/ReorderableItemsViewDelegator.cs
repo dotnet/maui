@@ -17,26 +17,77 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override NSIndexPath GetTargetIndexPathForMove(UICollectionView collectionView, NSIndexPath originalIndexPath, NSIndexPath proposedIndexPath)
 		{
-			NSIndexPath targetIndexPath;
-
 			var itemsView = ViewController?.ItemsView;
-			if (itemsView?.IsGrouped == true)
+
+			if (itemsView?.IsGrouped != true)
 			{
-				if (originalIndexPath.Section == proposedIndexPath.Section || itemsView.CanMixGroups)
-				{
-					targetIndexPath = proposedIndexPath;
-				}
-				else
-				{
-					targetIndexPath = originalIndexPath;
-				}
-			}
-			else
-			{
-				targetIndexPath = proposedIndexPath;
+				return proposedIndexPath;
 			}
 
-			return targetIndexPath;
+			if (originalIndexPath.Section != proposedIndexPath.Section && !itemsView.CanMixGroups)
+			{
+				return originalIndexPath;
+			}
+
+			var itemsSource = ViewController?.ItemsSource;
+			if (itemsSource == null)
+			{
+				return proposedIndexPath;
+			}
+
+			var totalSections = itemsSource.GroupCount;
+
+			// When the proposed path hasn't changed and mixing is allowed,
+			// redirect to the first empty group so the user can drop there.
+			if (originalIndexPath.Equals(proposedIndexPath) && itemsView.CanMixGroups)
+			{
+				var emptyGroupTarget = FindFirstEmptyGroup(itemsSource, totalSections);
+				if (emptyGroupTarget != null)
+				{
+					return emptyGroupTarget;
+				}
+			}
+
+			if (proposedIndexPath.Section >= totalSections)
+			{
+				return originalIndexPath;
+			}
+
+			var targetGroupItemCount = itemsSource.ItemCountInGroup(proposedIndexPath.Section);
+
+			if (targetGroupItemCount == 0)
+			{
+				return NSIndexPath.FromRowSection(0, proposedIndexPath.Section);
+			}
+
+			if (proposedIndexPath.Row >= targetGroupItemCount)
+			{
+				if (proposedIndexPath.Section < totalSections - 1)
+				{
+					var nextSectionItemCount = itemsSource.ItemCountInGroup(proposedIndexPath.Section + 1);
+					if (nextSectionItemCount == 0)
+					{
+						return NSIndexPath.FromRowSection(0, proposedIndexPath.Section + 1);
+					}
+				}
+
+				return NSIndexPath.FromRowSection(targetGroupItemCount, proposedIndexPath.Section);
+			}
+
+			return proposedIndexPath;
+		}
+
+		static NSIndexPath FindFirstEmptyGroup(IItemsViewSource itemsSource, int totalSections)
+		{
+			for (int section = 0; section < totalSections; section++)
+			{
+				var sectionItemCount = itemsSource.ItemCountInGroup(section);
+				if (sectionItemCount == 0)
+				{
+					return NSIndexPath.FromRowSection(0, section);
+				}
+			}
+			return null;
 		}
 	}
 }
