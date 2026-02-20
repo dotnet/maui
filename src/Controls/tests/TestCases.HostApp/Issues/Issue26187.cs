@@ -15,8 +15,6 @@ namespace Maui.Controls.Sample.Issues
 	{
 		public ObservableCollection<string> Items { get; set; }
 
-		public string SelectedItem { get; set; }
-
 		public CollectionViewSelectedItemNullPage()
 		{
 			Items = new ObservableCollection<string>
@@ -27,7 +25,6 @@ namespace Maui.Controls.Sample.Issues
 					"Item 4",
 					"Item 5"
 				};
-			SelectedItem = Items.LastOrDefault();
 			var cv = new CollectionView
 			{
 				SelectionMode = SelectionMode.Single,
@@ -51,20 +48,16 @@ namespace Maui.Controls.Sample.Issues
 			};
 
 			cv.SetBinding(CollectionView.ItemsSourceProperty, new Binding(nameof(Items)));
-			//  cv.SetBinding(CollectionView.SelectedItemProperty, new Binding(nameof(SelectedItem)));
 			Content = cv;
-
 			BindingContext = this;
-			//  cv.SelectedItem = SelectedItem;
-
 			cv.SelectionChanged += CollectionView_SelectionChanged;
 		}
 
-		async void CollectionView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		void CollectionView_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
 			if (e.CurrentSelection.FirstOrDefault() is string issue)
 			{
-				await Navigation.PushAsync(new NewPage(issue));
+				Navigation.PushAsync(new NewPage(issue));
 			}
 
 			// Clear Selection
