@@ -176,6 +176,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			ref Exception? exception,
 			string? name = null,
 			TimeSpan? retryDelay = null,
+			TimeSpan? retryTimeout = null,
 			int cropTop = 0,
 			int cropBottom = 0,
 			double tolerance = 0.0
@@ -186,7 +187,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			try
 			{
-				VerifyScreenshot(name, retryDelay, cropTop, cropBottom, tolerance
+				VerifyScreenshot(name, retryDelay, retryTimeout, cropTop, cropBottom, tolerance
 #if MACUITEST || WINTEST
 				, includeTitleBar
 #endif
@@ -202,7 +203,9 @@ namespace Microsoft.Maui.TestCases.Tests
 		/// Verifies a screenshot by comparing it against a baseline image and throws an exception if verification fails.
 		/// </summary>
 		/// <param name="name">Optional name for the screenshot. If not provided, a default name will be used.</param>
-		/// <param name="retryDelay">Optional delay between retry attempts when verification fails.</param>
+		/// <param name="retryDelay">Optional delay between retry attempts when verification fails. Default is 500ms.</param>
+		/// <param name="retryTimeout">Optional total time to keep retrying before giving up. If not specified, only one retry is attempted.
+		/// Use this for animations with variable completion times (e.g., retryTimeout: TimeSpan.FromSeconds(2)).</param>
 		/// <param name="cropTop">Number of pixels to crop from the top of the screenshot.</param>
 		/// <param name="cropBottom">Number of pixels to crop from the bottom of the screenshot.</param>
 		/// <param name="tolerance">Tolerance level for image comparison as a percentage from 0 to 100.</param>
@@ -234,6 +237,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		public void VerifyScreenshot(
 			string? name = null,
 			TimeSpan? retryDelay = null,
+			TimeSpan? retryTimeout = null,
 			int cropTop = 0,
 			int cropBottom = 0,
 			double tolerance = 0.0 // Add tolerance parameter (0.05 = 5%)
@@ -424,23 +428,13 @@ namespace Microsoft.Maui.TestCases.Tests
 				// For Android crop the 3 button nav from the bottom and left based on orientation, since it's not part of the
 				// app itself and the button color can vary (the buttons change clear briefly when tapped).
 				// For iOS, crop the home indicator at the bottom.
-				int cropFromBottom = _testDevice switch
-				{
-					TestDevice.Android => orientation == OpenQA.Selenium.ScreenOrientation.Portrait ? (environmentName == "android-notch-36" ? 52 : 125) : 0,
-					TestDevice.iOS => 40,
-					_ => 0,
-				};
-
-				// Cropping from the left or right can be applied for any platform using the user-specified crop values.
-				// The default values are set based on the platform, but the final cropping is determined by the parameters passed in.
-				// This allows cropping of UI elements (such as navigation bars or home indicators) for any platform as needed.
 				int cropFromLeft = 0;
 				int cropFromBottom = 0;
 				if (_testDevice == TestDevice.Android)
 				{
 					if (orientation == OpenQA.Selenium.ScreenOrientation.Portrait)
 					{
-						cropFromBottom = environmentName == "android-notch-36" ? 40 : 125;
+						cropFromBottom = environmentName == "android-notch-36" ? 52 : 125;
 					}
 					else
 					{
