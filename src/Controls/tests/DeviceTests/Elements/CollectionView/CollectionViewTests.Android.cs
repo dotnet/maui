@@ -158,18 +158,7 @@ namespace Microsoft.Maui.DeviceTests
 			await InvokeOnMainThreadAsync(() =>
 			{
 				var handler = CreateHandler<CollectionViewHandler>(collectionView);
-				var recyclerView = handler.PlatformView;
-				var adapter = recyclerView.GetAdapter();
-				Assert.NotNull(adapter);
-
-				// Force layout to create view holders
-				recyclerView.Measure(
-					global::Android.Views.View.MeasureSpec.MakeMeasureSpec(500, global::Android.Views.MeasureSpecMode.AtMost),
-					global::Android.Views.View.MeasureSpec.MakeMeasureSpec(500, global::Android.Views.MeasureSpecMode.AtMost));
-				recyclerView.Layout(0, 0, 500, 500);
-
-				var viewHolder = recyclerView.FindViewHolderForAdapterPosition(0);
-				Assert.NotNull(viewHolder);
+				var viewHolder = LayoutAndGetViewHolder(handler.PlatformView);
 
 				Assert.False(viewHolder.ItemView.HasOnClickListeners,
 					"Items should not have click listeners when SelectionMode is None");
@@ -190,15 +179,7 @@ namespace Microsoft.Maui.DeviceTests
 			await InvokeOnMainThreadAsync(() =>
 			{
 				var handler = CreateHandler<CollectionViewHandler>(collectionView);
-				var recyclerView = handler.PlatformView;
-
-				recyclerView.Measure(
-					global::Android.Views.View.MeasureSpec.MakeMeasureSpec(500, global::Android.Views.MeasureSpecMode.AtMost),
-					global::Android.Views.View.MeasureSpec.MakeMeasureSpec(500, global::Android.Views.MeasureSpecMode.AtMost));
-				recyclerView.Layout(0, 0, 500, 500);
-
-				var viewHolder = recyclerView.FindViewHolderForAdapterPosition(0);
-				Assert.NotNull(viewHolder);
+				var viewHolder = LayoutAndGetViewHolder(handler.PlatformView);
 
 				Assert.True(viewHolder.ItemView.HasOnClickListeners,
 					"Items should have click listeners when SelectionMode is Single");
@@ -224,15 +205,7 @@ namespace Microsoft.Maui.DeviceTests
 			await InvokeOnMainThreadAsync(() =>
 			{
 				var handler = CreateHandler<CollectionViewHandler>(collectionView);
-				var recyclerView = handler.PlatformView;
-
-				recyclerView.Measure(
-					global::Android.Views.View.MeasureSpec.MakeMeasureSpec(500, global::Android.Views.MeasureSpecMode.AtMost),
-					global::Android.Views.View.MeasureSpec.MakeMeasureSpec(500, global::Android.Views.MeasureSpecMode.AtMost));
-				recyclerView.Layout(0, 0, 500, 500);
-
-				var viewHolder = recyclerView.FindViewHolderForAdapterPosition(0);
-				Assert.NotNull(viewHolder);
+				var viewHolder = LayoutAndGetViewHolder(handler.PlatformView);
 
 				Assert.False(viewHolder.ItemView.HasOnClickListeners,
 					"Items should not have click listeners when SelectionMode is None");
@@ -258,15 +231,7 @@ namespace Microsoft.Maui.DeviceTests
 			await InvokeOnMainThreadAsync(() =>
 			{
 				var handler = CreateHandler<CollectionViewHandler>(collectionView);
-				var recyclerView = handler.PlatformView;
-
-				recyclerView.Measure(
-					global::Android.Views.View.MeasureSpec.MakeMeasureSpec(500, global::Android.Views.MeasureSpecMode.AtMost),
-					global::Android.Views.View.MeasureSpec.MakeMeasureSpec(500, global::Android.Views.MeasureSpecMode.AtMost));
-				recyclerView.Layout(0, 0, 500, 500);
-
-				var viewHolder = recyclerView.FindViewHolderForAdapterPosition(0);
-				Assert.NotNull(viewHolder);
+				var viewHolder = LayoutAndGetViewHolder(handler.PlatformView);
 
 				Assert.True(viewHolder.ItemView.HasOnClickListeners,
 					"Items should have click listeners when SelectionMode is Single");
@@ -316,6 +281,22 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				RemoveCount += 1;
 			}
+		}
+
+		// Forces the RecyclerView to measure and lay itself out at 500×500 dp, then
+		// returns the ViewHolder at position 0. Centralises boilerplate shared by all
+		// click-listener tests so each test stays focused on its assertion.
+		static global::AndroidX.RecyclerView.Widget.RecyclerView.ViewHolder LayoutAndGetViewHolder(
+			global::AndroidX.RecyclerView.Widget.RecyclerView recyclerView)
+		{
+			recyclerView.Measure(
+				global::Android.Views.View.MeasureSpec.MakeMeasureSpec(500, global::Android.Views.MeasureSpecMode.AtMost),
+				global::Android.Views.View.MeasureSpec.MakeMeasureSpec(500, global::Android.Views.MeasureSpecMode.AtMost));
+			recyclerView.Layout(0, 0, 500, 500);
+
+			var viewHolder = recyclerView.FindViewHolderForAdapterPosition(0);
+			Assert.NotNull(viewHolder);
+			return viewHolder!;
 		}
 
 		Rect GetCollectionViewCellBounds(IView cellContent)
