@@ -62,21 +62,6 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		bool _appliesSafeAreaAdjustments;
 
-		// Per-view flag set when this view invalidates ancestors from the safe area path
-		// in LayoutSubviews. Prevents re-entry into the ancestor invalidation path during
-		// the same safe area event, breaking parent↔child cycles. Cleared when a genuine
-		// safe area event occurs (window insets change, keyboard, MovedToWindow, or direct
-		// InvalidateMeasure from property changes like SafeAreaEdges).
-		bool _hasInvalidatedAncestorsForSafeArea;
-
-		// Tracks the Window's safe area insets to distinguish real system safe area changes
-		// from per-view inset changes caused by position movement during animations.
-		// Per-view SafeAreaInsets change whenever a view moves (e.g., TranslateToAsync animation),
-		// but the Window's safe area only changes for actual system events (keyboard, rotation,
-		// status bar). Using window-level comparison prevents spurious invalidation. (see #33934)
-		UIEdgeInsets _lastWindowSafeAreaInsets;
-		bool _hasLastWindowSafeAreaInsets;
-
 		// Indicates whether this view should respond to safe area insets.
 		// Cached to avoid repeated hierarchy checks.
 		// True if the view is an ISafeAreaView, does not ignore safe area, and is not inside a UIScrollView;
@@ -277,7 +262,6 @@ namespace Microsoft.Maui.Platform
 		void OnKeyboardWillShow(NSNotification notification)
 		{
 			_safeAreaInvalidated = true;
-			_hasInvalidatedAncestorsForSafeArea = false;
 			var keyboardFrame = GetKeyboardFrame(notification);
 			if (keyboardFrame.HasValue)
 			{
@@ -290,7 +274,6 @@ namespace Microsoft.Maui.Platform
 		void OnKeyboardWillHide(NSNotification notification)
 		{
 			_safeAreaInvalidated = true;
-			_hasInvalidatedAncestorsForSafeArea = false;
 			_keyboardFrame = CGRect.Empty;
 			_isKeyboardShowing = false;
 			SetNeedsLayout();
@@ -564,21 +547,6 @@ namespace Microsoft.Maui.Platform
 				// to let ancestors adjust to the measured size.
 				if (this.IsFinalMeasureHandledBySuperView())
 				{
-					// Guard against infinite layout cycles: when both parent and child views respond to
-					// safe area, each one's layout change triggers the other to re-validate, creating an
-					// infinite loop. If this view has already invalidated ancestors for the current safe
-					// area event, skip re-invalidation. The flag is cleared when a genuine new safe area
-					// event occurs (window insets change, keyboard, property change, MovedToWindow).
-					if (_hasInvalidatedAncestorsForSafeArea)
-					{
-						// Already invalidated ancestors for this safe area event — don't do it again.
-						// Just arrange with current values and stop.
-						CrossPlatformArrange(Bounds.ToRectangle());
-						return;
-					}
-					
-					_hasInvalidatedAncestorsForSafeArea = true;
-
 					//This arrangement step is essential for communicating the correct coordinate space to native iOS views before scheduling the second layout pass.
 					//This ensures the native view is aware of the correct bounds and can adjust its layout accordingly.
 					CrossPlatformArrange(Bounds.ToRectangle());
@@ -639,7 +607,16 @@ namespace Microsoft.Maui.Platform
 			}
 
 			var oldSafeArea = _safeArea;
-			_safeArea = GetAdjustedSafeAreaInsets();
+
+			// Round to the nearest device pixel before storing. iOS fires
+			// SafeAreaInsetsDidChange whenever a view moves during animation,
+			// producing sub-pixel inset differences. Without rounding, the exact
+			// SafeAreaPadding == comparison below returns false for semantically
+			// identical values, triggering InvalidateAncestorsMeasures and an
+			// infinite layout cycle (see #33934). Rounding also stabilizes the
+			// constraints fed to CrossPlatformMeasure, preventing per-frame jitter.
+			var scale = Window?.Screen?.Scale ?? UIScreen.MainScreen.Scale;
+			_safeArea = RoundSafeAreaToPixel(GetAdjustedSafeAreaInsets(), scale);
 
 			var oldApplyingSafeAreaAdjustments = _appliesSafeAreaAdjustments;
 			_appliesSafeAreaAdjustments = RespondsToSafeArea() && !_safeArea.IsEmpty;
@@ -690,21 +667,7 @@ namespace Microsoft.Maui.Platform
 		/// <returns>True if the invalidation should continue propagating to ancestors, false to stop propagation</returns>
 		bool IPlatformMeasureInvalidationController.InvalidateMeasure(bool isPropagating)
 		{
-			// Only re-validate safe area for direct invalidations (not propagating from descendants).
-			// A descendant changing size/transform doesn't affect the system-determined safe area insets.
-			// Setting this unconditionally caused spurious safe area revalidation during animations,
-			// leading to measurement oscillation and infinite layout cycles (see #33934).
-			//
-			// Child safe area propagation is handled separately by InvalidateDescendantSafeAreas(),
-			// called only from MapSafeAreaEdges. This avoids O(N) child iterations here since
-			// InvalidateMeasure fires for ALL property changes, not just safe area.
-			if (!isPropagating)
-			{
-				_safeAreaInvalidated = true;
-				// Clear the cycle-break flag so this view can invalidate ancestors again
-				// for this new event (e.g., SafeAreaEdges property changed at runtime).
-				_hasInvalidatedAncestorsForSafeArea = false;
-			}
+			_safeAreaInvalidated = true;
 			InvalidateConstraintsCache();
 			SetNeedsLayout();
 
@@ -727,40 +690,6 @@ namespace Microsoft.Maui.Platform
 		}
 
 		/// <summary>
-		/// Propagates safe area invalidation to descendant MauiViews.
-		/// Called only when safe-area-specific properties change (e.g., SafeAreaEdges),
-		/// NOT for general property changes. This avoids O(N) child iterations on
-		/// unrelated property changes like BackgroundColor, IsVisible, etc.
-		/// </summary>
-		internal void InvalidateDescendantSafeAreas()
-		{
-			foreach (var subview in Subviews)
-			{
-				InvalidateDescendantSafeAreasRecursive(subview);
-			}
-		}
-
-		static void InvalidateDescendantSafeAreasRecursive(UIView view)
-		{
-			if (view is MauiView child)
-			{
-				child._safeAreaInvalidated = true;
-				child._hasInvalidatedAncestorsForSafeArea = false;
-				child.SetNeedsLayout();
-				// Recurse into this MauiView's children as well
-				foreach (var subview in child.Subviews)
-					InvalidateDescendantSafeAreasRecursive(subview);
-			}
-			else
-			{
-				// Non-MauiView (e.g., WrapperView): pass through to find
-				// any MauiViews further down the hierarchy
-				foreach (var subview in view.Subviews)
-					InvalidateDescendantSafeAreasRecursive(subview);
-			}
-		}
-
-		/// <summary>
 		/// Event handler for the MovedToWindow event. This field is used to store
 		/// subscriptions to the IUIViewLifeCycleEvents.MovedToWindow event.
 		/// </summary>
@@ -779,49 +708,19 @@ namespace Microsoft.Maui.Platform
 		}
 
 
-		static double RoundToNearestPixel(nfloat value, nfloat scale)
-			=> Math.Round((double)value * scale) / (double)scale;
+		static double RoundToPixel(double value, nfloat scale)
+			=> Math.Round(value * (double)scale) / (double)scale;
 
-		static bool InsetsMateriallyChanged(UIEdgeInsets a, UIEdgeInsets b, nfloat scale)
-		{
-			return RoundToNearestPixel(a.Top, scale) != RoundToNearestPixel(b.Top, scale)
-				|| RoundToNearestPixel(a.Left, scale) != RoundToNearestPixel(b.Left, scale)
-				|| RoundToNearestPixel(a.Bottom, scale) != RoundToNearestPixel(b.Bottom, scale)
-				|| RoundToNearestPixel(a.Right, scale) != RoundToNearestPixel(b.Right, scale);
-		}
+		static SafeAreaPadding RoundSafeAreaToPixel(SafeAreaPadding padding, nfloat scale)
+			=> new(
+				RoundToPixel(padding.Left, scale),
+				RoundToPixel(padding.Right, scale),
+				RoundToPixel(padding.Top, scale),
+				RoundToPixel(padding.Bottom, scale));
 
 		public override void SafeAreaInsetsDidChange()
 		{
-			// iOS fires SafeAreaInsetsDidChange on individual views when their position changes
-			// during layout or animation, not just for actual system safe area changes (keyboard,
-			// rotation, status bar). Per-view SafeAreaInsets reflect the view's position relative
-			// to safe area boundaries, so they change whenever the view moves — even during
-			// TranslateToAsync animations.
-			//
-			// Compare the Window's safe area insets, which only change for genuine system events.
-			// Layout-driven safe area changes (e.g., parent changed SafeAreaEdges at runtime)
-			// are propagated to descendants through InvalidateMeasure + child iteration instead.
-			var windowInsets = Window?.SafeAreaInsets;
-			if (windowInsets.HasValue)
-			{
-				var scale = Window?.Screen?.Scale ?? UIScreen.MainScreen.Scale;
-				if (!_hasLastWindowSafeAreaInsets ||
-					InsetsMateriallyChanged(windowInsets.Value, _lastWindowSafeAreaInsets, scale))
-				{
-					_safeAreaInvalidated = true;
-					_hasInvalidatedAncestorsForSafeArea = false;
-					_lastWindowSafeAreaInsets = windowInsets.Value;
-					_hasLastWindowSafeAreaInsets = true;
-				}
-			}
-			else
-			{
-				// No window yet — conservatively invalidate so the view gets proper
-				// safe area layout when it's added to the hierarchy.
-				_safeAreaInvalidated = true;
-				_hasInvalidatedAncestorsForSafeArea = false;
-			}
-
+			_safeAreaInvalidated = true;
 			base.SafeAreaInsetsDidChange();
 		}
 
@@ -840,7 +739,6 @@ namespace Microsoft.Maui.Platform
 
 			// Safe area may have changed when moving to a different window
 			_safeAreaInvalidated = true;
-			_hasInvalidatedAncestorsForSafeArea = false;
 
 			// If we were marked to invalidate ancestors when moved to window, do so now
 			if (_invalidateParentWhenMovedToWindow)
