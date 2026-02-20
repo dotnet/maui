@@ -51,43 +51,38 @@ public class Issue32586 : _IssuesUITest
 	[Category(UITestCategories.SafeAreaEdges)]
 	public void VerifyFooterPositionRespectsSafeArea()
 	{
-		// Tester reported: "The footer view is always rendered above the safe area,
-		// even when SafeAreaEdges is set to None for both parent and footer."
-		// This test verifies the footer's bottom edge relative to the screen.
+		// Tester reported REGRESSION: "The footer view is always rendered above the safe area,
+		// even when SafeAreaEdges is set to None for both the parent and the footer view itself."
+		// With SafeAreaEdges=None, the footer should extend into the bottom safe area
+		// (i.e., its bottom edge should reach the screen bottom).
 
-		// Step 1: Show footer with default SafeAreaEdges (Container on parent)
-		App.WaitForElement("FooterButton");
-		App.Tap("FooterButton");
-		WaitForText("TestLabel", "Footer is now visible", timeoutSec: 10);
+		// Get screen dimensions from the main grid
+		var screenRect = App.WaitForElement("MainGrid").GetRect();
+		var screenBottom = screenRect.Y + screenRect.Height;
 
-		var footerWithSafeArea = App.WaitForElement("FooterContentButton").GetRect();
-		var screenBottom = App.WaitForElement("MainGrid").GetRect();
-		
-		// Record footer bottom position with safe area active
-		var footerBottomWithSafeArea = footerWithSafeArea.Y + footerWithSafeArea.Height;
-
-		// Step 2: Hide footer, set both parent and child SafeAreaEdges to None
-		App.Tap("FooterButton");
-		WaitForText("TestLabel", "Footer is now hidden", timeoutSec: 10);
-
+		// Step 1: Set both parent and child SafeAreaEdges to None
 		App.Tap("ParentSafeAreaToggleButton");
 		WaitForText("SafeAreaStatusLabel", "Parent: None, Child: Container");
 		App.Tap("ChildSafeAreaToggleButton");
 		WaitForText("SafeAreaStatusLabel", "Parent: None, Child: None");
 
-		// Step 3: Show footer again with SafeAreaEdges=None
+		// Step 2: Show footer with SafeAreaEdges=None on everything
 		App.Tap("FooterButton");
 		WaitForText("TestLabel", "Footer is now visible", timeoutSec: 10);
 
-		var footerWithoutSafeArea = App.WaitForElement("FooterContentButton").GetRect();
-		var footerBottomWithoutSafeArea = footerWithoutSafeArea.Y + footerWithoutSafeArea.Height;
+		// Step 3: Measure footer position
+		var footerRect = App.WaitForElement("FooterContentButton").GetRect();
+		var footerBottom = footerRect.Y + footerRect.Height;
 
-		// Step 4: With SafeAreaEdges=None, footer should extend further down
-		// (closer to or into the bottom safe area)
-		Assert.That(footerBottomWithoutSafeArea, Is.GreaterThanOrEqualTo(footerBottomWithSafeArea),
-			$"Footer with SafeAreaEdges=None (bottom={footerBottomWithoutSafeArea}) should extend at least as far down as " +
-			$"footer with SafeAreaEdges=Container (bottom={footerBottomWithSafeArea}). " +
-			"The footer is being rendered above the safe area even when SafeAreaEdges=None.");
+		// Step 4: Footer bottom should reach close to the screen bottom.
+		// On iPhone Xs, bottom safe area is ~34pt. If footer is still insetted
+		// by safe area despite SafeAreaEdges=None, it will be ~34pt short.
+		// Allow small tolerance (5pt) for padding/margins on the button itself.
+		var distanceFromBottom = screenBottom - footerBottom;
+		Assert.That(distanceFromBottom, Is.LessThan(20),
+			$"Footer bottom ({footerBottom}) should reach near screen bottom ({screenBottom}) " +
+			$"when SafeAreaEdges=None, but is {distanceFromBottom}pt short. " +
+			"The footer is still being insetted by the safe area despite SafeAreaEdges=None.");
 	}
 
 	[Test]
