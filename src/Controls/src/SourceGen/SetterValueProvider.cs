@@ -165,6 +165,7 @@ internal class SetterValueProvider : IKnownMarkupValueProvider
 		INode? valueNode = null;
 		if (!node.Properties.TryGetValue(new XmlName("", "Value"), out valueNode) &&
 			!node.Properties.TryGetValue(new XmlName(XamlParser.MauiUri, "Value"), out valueNode) &&
+			!node.Properties.TryGetValue(new XmlName(XamlParser.MauiGlobalUri, "Value"), out valueNode) &&
 			node.CollectionItems.Count == 1)
 			valueNode = node.CollectionItems[0];
 
