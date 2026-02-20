@@ -57,7 +57,7 @@ param(
     [string]$Platform = "all",
 
     [Parameter(Mandatory = $false)]
-    [int]$Limit = 20,
+    [int]$Limit = 100,
 
     [Parameter(Mandatory = $false)]
     [int]$RecentLimit = 5,

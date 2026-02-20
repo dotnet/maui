@@ -72,7 +72,7 @@ pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1 -DocsLim
 |-----------|--------|---------|-------------|
 | `-Category` | default, milestoned, priority, recent, partner, community, docs-maui, approved, ready-to-review, agent-reviewed, all | default | Filter by category. `default` shows only P/0 + milestoned, excluding changes-requested PRs. |
 | `-Platform` | android, ios, windows, maccatalyst, all | all | Filter by platform |
-| `-Limit` | 1-100 | 20 | Max PRs per category (maui repo) |
+| `-Limit` | 1-100 | 100 | Max PRs per category (maui repo) |
 | `-RecentLimit` | 1-100 | 5 | Max recent PRs waiting for review from maui repo (minimum 5 enforced) |
 | `-DocsLimit` | 1-100 | 5 | Max PRs for docs-maui waiting for review (minimum 5 enforced) |
 | `-ExcludeAuthors` | string[] | (none) | Exclude PRs from specific authors (e.g., `-ExcludeAuthors PureWeen,rmarinho`) |
