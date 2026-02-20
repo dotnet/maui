@@ -145,7 +145,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact(DisplayName = "CollectionView with SelectionMode None should not have click listeners")]
-		public void SelectionModeNoneDoesNotSetClickListeners()
+		public async Task SelectionModeNoneDoesNotSetClickListeners()
 		{
 			SetupBuilder();
 
@@ -155,57 +155,127 @@ namespace Microsoft.Maui.DeviceTests
 				SelectionMode = SelectionMode.None
 			};
 
-			var handler = CreateHandler<CollectionViewHandler>(collectionView);
-			var recyclerView = handler.PlatformView;
-			var adapter = recyclerView.GetAdapter();
-			Assert.NotNull(adapter);
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<CollectionViewHandler>(collectionView);
+				var recyclerView = handler.PlatformView;
+				var adapter = recyclerView.GetAdapter();
+				Assert.NotNull(adapter);
 
-			// Force layout to create view holders
-			recyclerView.Measure(
-				Android.Views.View.MeasureSpec.MakeMeasureSpec(500, Android.Views.MeasureSpecMode.AtMost),
-				Android.Views.View.MeasureSpec.MakeMeasureSpec(500, Android.Views.MeasureSpecMode.AtMost));
-			recyclerView.Layout(0, 0, 500, 500);
+				// Force layout to create view holders
+				recyclerView.Measure(
+					global::Android.Views.View.MeasureSpec.MakeMeasureSpec(500, global::Android.Views.MeasureSpecMode.AtMost),
+					global::Android.Views.View.MeasureSpec.MakeMeasureSpec(500, global::Android.Views.MeasureSpecMode.AtMost));
+				recyclerView.Layout(0, 0, 500, 500);
 
-			// Check first item's view holder
-			var viewHolder = recyclerView.FindViewHolderForAdapterPosition(0);
-			Assert.NotNull(viewHolder);
-			
-			bool hasClickListeners = viewHolder.ItemView.HasOnClickListeners;
-			Assert.False(hasClickListeners, "Items should not have click listeners when SelectionMode is None");
+				var viewHolder = recyclerView.FindViewHolderForAdapterPosition(0);
+				Assert.NotNull(viewHolder);
+
+				Assert.False(viewHolder.ItemView.HasOnClickListeners,
+					"Items should not have click listeners when SelectionMode is None");
+			});
 		}
 
-		[Fact(DisplayName = "CollectionView SelectionMode changes at runtime")]
-		public void SelectionModeChangesAtRuntime()
+		[Fact(DisplayName = "CollectionView SelectionMode Single → None removes click listeners")]
+		public async Task SelectionModeSingleToNoneRemovesClickListeners()
 		{
 			SetupBuilder();
 
 			var collectionView = new CollectionView
 			{
 				ItemsSource = new[] { "Item 1", "Item 2", "Item 3" },
-				SelectionMode = SelectionMode.Single // Start with Single
+				SelectionMode = SelectionMode.Single
 			};
 
-			var handler = CreateHandler<CollectionViewHandler>(collectionView);
-			var recyclerView = handler.PlatformView;
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<CollectionViewHandler>(collectionView);
+				var recyclerView = handler.PlatformView;
 
-			// Force layout to create view holders
-			recyclerView.Measure(
-				Android.Views.View.MeasureSpec.MakeMeasureSpec(500, Android.Views.MeasureSpecMode.AtMost),
-				Android.Views.View.MeasureSpec.MakeMeasureSpec(500, Android.Views.MeasureSpecMode.AtMost));
-			recyclerView.Layout(0, 0, 500, 500);
+				recyclerView.Measure(
+					global::Android.Views.View.MeasureSpec.MakeMeasureSpec(500, global::Android.Views.MeasureSpecMode.AtMost),
+					global::Android.Views.View.MeasureSpec.MakeMeasureSpec(500, global::Android.Views.MeasureSpecMode.AtMost));
+				recyclerView.Layout(0, 0, 500, 500);
 
-			// Check first item's view holder
-			var viewHolder = recyclerView.FindViewHolderForAdapterPosition(0);
-			Assert.NotNull(viewHolder);
+				var viewHolder = recyclerView.FindViewHolderForAdapterPosition(0);
+				Assert.NotNull(viewHolder);
 
-			// With SelectionMode.Single, it should have a listener
-			Assert.True(viewHolder.ItemView.HasOnClickListeners, "Items should have click listeners when SelectionMode is Single");
+				Assert.True(viewHolder.ItemView.HasOnClickListeners,
+					"Items should have click listeners when SelectionMode is Single");
 
-			// Now change the SelectionMode to None
-			collectionView.SelectionMode = SelectionMode.None;
+				collectionView.SelectionMode = SelectionMode.None;
 
-			// The listener should now be gone
-			Assert.False(viewHolder.ItemView.HasOnClickListeners, "Items should not have click listeners after changing SelectionMode to None");
+				Assert.False(viewHolder.ItemView.HasOnClickListeners,
+					"Items should not have click listeners after changing SelectionMode to None");
+			});
+		}
+
+		[Fact(DisplayName = "CollectionView SelectionMode None → Single attaches click listeners")]
+		public async Task SelectionModeNoneToSingleAttachesClickListeners()
+		{
+			SetupBuilder();
+
+			var collectionView = new CollectionView
+			{
+				ItemsSource = new[] { "Item 1", "Item 2", "Item 3" },
+				SelectionMode = SelectionMode.None
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<CollectionViewHandler>(collectionView);
+				var recyclerView = handler.PlatformView;
+
+				recyclerView.Measure(
+					global::Android.Views.View.MeasureSpec.MakeMeasureSpec(500, global::Android.Views.MeasureSpecMode.AtMost),
+					global::Android.Views.View.MeasureSpec.MakeMeasureSpec(500, global::Android.Views.MeasureSpecMode.AtMost));
+				recyclerView.Layout(0, 0, 500, 500);
+
+				var viewHolder = recyclerView.FindViewHolderForAdapterPosition(0);
+				Assert.NotNull(viewHolder);
+
+				Assert.False(viewHolder.ItemView.HasOnClickListeners,
+					"Items should not have click listeners when SelectionMode is None");
+
+				collectionView.SelectionMode = SelectionMode.Single;
+
+				Assert.True(viewHolder.ItemView.HasOnClickListeners,
+					"Items should have click listeners after changing SelectionMode from None to Single");
+			});
+		}
+
+		[Fact(DisplayName = "CollectionView SelectionMode Single → Multiple keeps click listeners")]
+		public async Task SelectionModeSingleToMultipleKeepsClickListeners()
+		{
+			SetupBuilder();
+
+			var collectionView = new CollectionView
+			{
+				ItemsSource = new[] { "Item 1", "Item 2", "Item 3" },
+				SelectionMode = SelectionMode.Single
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<CollectionViewHandler>(collectionView);
+				var recyclerView = handler.PlatformView;
+
+				recyclerView.Measure(
+					global::Android.Views.View.MeasureSpec.MakeMeasureSpec(500, global::Android.Views.MeasureSpecMode.AtMost),
+					global::Android.Views.View.MeasureSpec.MakeMeasureSpec(500, global::Android.Views.MeasureSpecMode.AtMost));
+				recyclerView.Layout(0, 0, 500, 500);
+
+				var viewHolder = recyclerView.FindViewHolderForAdapterPosition(0);
+				Assert.NotNull(viewHolder);
+
+				Assert.True(viewHolder.ItemView.HasOnClickListeners,
+					"Items should have click listeners when SelectionMode is Single");
+
+				collectionView.SelectionMode = SelectionMode.Multiple;
+
+				Assert.True(viewHolder.ItemView.HasOnClickListeners,
+					"Items should still have click listeners after changing SelectionMode from Single to Multiple");
+			});
 		}
 
 		class MockCollectionChangedNotifier : ICollectionChangedNotifier

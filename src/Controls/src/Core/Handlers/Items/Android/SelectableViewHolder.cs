@@ -25,9 +25,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			_isSelectionEnabled = enableSelection;
 
-			if (enableSelection && !ItemView.HasOnClickListeners)
+			if (enableSelection)
 			{
-				ItemView.SetOnClickListener(this);
+				// Only attach if not already registered; HasOnClickListeners is true once
+				// SetOnClickListener has been called, so this guard prevents duplicate listeners.
+				if (!ItemView.HasOnClickListeners)
+					ItemView.SetOnClickListener(this);
 			}
 			else
 			{
