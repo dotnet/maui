@@ -13,6 +13,7 @@ using Google.Android.Material.BottomSheet;
 using Google.Android.Material.Navigation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
@@ -75,6 +76,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_outerLayout = PlatformInterop.CreateNavigationBarOuterLayout(context);
 			_navigationArea = PlatformInterop.CreateNavigationBarArea(context, _outerLayout);
 			_bottomView = PlatformInterop.CreateNavigationBar(context, Resource.Attribute.bottomNavigationViewStyle, _outerLayout, this);
+
+			// Set theme-aware background colors immediately to prevent white flash during transitions.
+			// The BottomNavigationView is created with Color.WHITE in PlatformInterop.java, but the
+			// correct theme-aware color should be applied immediately before any UI is rendered.
+			// We also set the navigation area background to prevent white flash during fragment transitions.
+			var themeAwareBackgroundColor = ShellRenderer.DefaultBottomNavigationViewBackgroundColor.ToPlatform();
+			_bottomView.SetBackgroundColor(themeAwareBackgroundColor);
+			_navigationArea.SetBackgroundColor(themeAwareBackgroundColor);
 
 			if (ShellItem is null)
 				throw new InvalidOperationException("Active Shell Item not set. Have you added any Shell Items to your Shell?");

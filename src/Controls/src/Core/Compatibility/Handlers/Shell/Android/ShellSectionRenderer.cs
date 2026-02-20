@@ -16,6 +16,8 @@ using AndroidX.ViewPager2.Widget;
 using Google.Android.Material.AppBar;
 using Google.Android.Material.Tabs;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Controls.Handlers.Compatibility;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 using AView = Android.Views.View;
@@ -102,6 +104,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			var context = Context;
 			var root = PlatformInterop.CreateShellCoordinatorLayout(context);
+			
+			// Set theme-aware background color immediately to prevent white flash during transitions.
+			// The CoordinatorLayout is created without a background, which can cause white flash
+			// during fragment transitions when using dark theme.
+			root.SetBackgroundColor(ShellRenderer.DefaultBottomNavigationViewBackgroundColor.ToPlatform());
+			
 			var appbar = PlatformInterop.CreateShellAppBar(context, Resource.Attribute.appBarLayoutStyle, root);
 
 			MauiWindowInsetListener.SetupViewWithLocalListener(root);
