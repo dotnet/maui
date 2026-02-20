@@ -105,7 +105,7 @@
         "type": "nuget",
         "nuget": {
           "name": "Microsoft.WindowsAppSDK",
-          "version": "1.8.251106002"
+          "version": "1.8.260101001"
         }
       }
     },
