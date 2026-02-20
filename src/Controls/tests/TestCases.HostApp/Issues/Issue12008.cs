@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 
 namespace Maui.Controls.Sample.Issues;
@@ -73,6 +74,7 @@ public partial class Issue12008 : ContentPage
 			AutomationId = "CollectionView12008"
 		};
 		collectionView.SetBinding(ItemsView.ItemsSourceProperty, "GroupedItems");
+		collectionView.ReorderCompleted += OnReorderCompleted;
 
 		// Group Header Template
 		collectionView.GroupHeaderTemplate = new DataTemplate(() =>
@@ -100,7 +102,7 @@ public partial class Issue12008 : ContentPage
 			{
 				FontSize = 12
 			};
-			countLabel.SetBinding(Label.TextProperty, new Binding("Count", stringFormat: "Count: {0}"));
+			countLabel.SetBinding(Label.TextProperty, new Binding("ItemCount", stringFormat: "Count: {0}"));
 			countLabel.SetBinding(AutomationIdProperty, new Binding("GroupName", stringFormat: "GroupCount12008{0}"));
 
 			headerGrid.Children.Add(headerLabel);
@@ -135,6 +137,11 @@ public partial class Issue12008 : ContentPage
 		grid.Children.Add(collectionView);
 
 		Content = grid;
+	}
+
+	private void OnReorderCompleted(object sender, EventArgs e)
+	{
+		statusLabel.Text = "Status: Reorder completed";
 	}
 
 	private void OnCreateEmptyGroupClicked(object sender, EventArgs e)
@@ -206,9 +213,22 @@ public class Issue12008Group : ObservableCollection<Issue12008Item>
 {
 	public string GroupName { get; }
 
+	/// <summary>
+	/// Explicit count property that reliably raises PropertyChanged,
+	/// since ObservableCollection implements INotifyPropertyChanged explicitly
+	/// and CollectionView group headers may not pick up Count changes.
+	/// </summary>
+	public int ItemCount => Count;
+
 	public Issue12008Group(string groupName, IEnumerable<Issue12008Item> items) : base(items)
 	{
 		GroupName = groupName;
+	}
+
+	protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
+	{
+		base.OnCollectionChanged(e);
+		OnPropertyChanged(new PropertyChangedEventArgs(nameof(ItemCount)));
 	}
 }
 
