@@ -3,8 +3,12 @@ using System.Globalization;
 
 namespace Microsoft.Maui.Controls.Design
 {
+	/// <summary>
+	/// Provides design-time type conversion for constraint values.
+	/// </summary>
 	public class ConstraintDesignTypeConverter : StringConverter
 	{
+		/// <inheritdoc/>
 		public override bool IsValid(ITypeDescriptorContext context, object value)
 		{
 			// MUST MATCH ConstraintTypeConverter.ConvertFrom

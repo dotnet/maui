@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests"
+    x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui33835">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <Color x:Key="TestColor">Red</Color>
+            <Style x:Key="MyLabelStyle" TargetType="local:Maui33835Label">
+                <Setter Property="MyColor" Value="{StaticResource TestColor}" />
+            </Style>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <VerticalStackLayout>
+        <local:Maui33835Label x:Name="testLabel" Style="{StaticResource MyLabelStyle}" />
+    </VerticalStackLayout>
+
+</ContentPage>

@@ -27,7 +27,6 @@ public class Issue21814TabbedPage : _IssuesUITest
 	public override string Issue => "Add better parameters for navigation args (TabbedPage)";
 
 	[Test, Order(1)]
-	[Category(UITestCategories.Navigation)]
 	[Category(UITestCategories.TabbedPage)]
 	public void InitialTabLoadShowsCorrectNavigationInfo()
 	{
@@ -48,7 +47,6 @@ public class Issue21814TabbedPage : _IssuesUITest
 
 	[Test, Order(2)]
 	[Category(UITestCategories.TabbedPage)]
-	[Category(UITestCategories.Navigation)]
 	public void NavigationFromTab1ToTab2ShowsCorrectParameters()
 	{
 		// Start on Tab 1
@@ -73,7 +71,6 @@ public class Issue21814TabbedPage : _IssuesUITest
 
 	[Test, Order(3)]
 	[Category(UITestCategories.TabbedPage)]
-	[Category(UITestCategories.Navigation)]
 	public void NavigationFromTab2ToTab3ShowsCorrectParameters()
 	{
 		// Navigate to Tab 2 first
@@ -99,7 +96,6 @@ public class Issue21814TabbedPage : _IssuesUITest
 
 	[Test, Order(4)]
 	[Category(UITestCategories.TabbedPage)]
-	[Category(UITestCategories.Navigation)]
 	public void NavigationFromTab1ToTab3SkippingTab2ShowsCorrectParameters()
 	{
 		// Start on Tab 1
@@ -125,7 +121,6 @@ public class Issue21814TabbedPage : _IssuesUITest
 	
 	[Test, Order(5)]
 	[Category(UITestCategories.TabbedPage)]
-	[Category(UITestCategories.Navigation)]
 	[Description("Edge case: Verify behavior when tapping the same tab multiple times")]
 	public void TappingSameTabMultipleTimesDoesNotTriggerNavigationEvents()
 	{

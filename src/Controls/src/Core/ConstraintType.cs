@@ -1,13 +1,13 @@
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/ConstraintType.xml" path="Type[@FullName='Microsoft.Maui.Controls.ConstraintType']/Docs/*" />
+	/// <summary>Specifies how a constraint is defined.</summary>
 	public enum ConstraintType
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/ConstraintType.xml" path="//Member[@MemberName='RelativeToParent']/Docs/*" />
+		/// <summary>Constraint is relative to the parent element.</summary>
 		RelativeToParent,
-		/// <include file="../../docs/Microsoft.Maui.Controls/ConstraintType.xml" path="//Member[@MemberName='RelativeToView']/Docs/*" />
+		/// <summary>Constraint is relative to another view.</summary>
 		RelativeToView,
-		/// <include file="../../docs/Microsoft.Maui.Controls/ConstraintType.xml" path="//Member[@MemberName='Constant']/Docs/*" />
+		/// <summary>Constraint is a constant value.</summary>
 		Constant
 	}
 }

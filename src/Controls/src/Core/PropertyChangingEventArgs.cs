@@ -3,16 +3,17 @@ using System;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/PropertyChangingEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Controls.PropertyChangingEventArgs']/Docs/*" />
+	/// <summary>Event arguments for property changing notifications.</summary>
 	public class PropertyChangingEventArgs : EventArgs
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/PropertyChangingEventArgs.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>Creates a new <see cref="PropertyChangingEventArgs"/> with the specified property name.</summary>
+		/// <param name="propertyName">The name of the property that is changing.</param>
 		public PropertyChangingEventArgs(string propertyName)
 		{
 			PropertyName = propertyName;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/PropertyChangingEventArgs.xml" path="//Member[@MemberName='PropertyName']/Docs/*" />
+		/// <summary>Gets the name of the property that is changing.</summary>
 		public virtual string PropertyName { get; }
 	}
 }

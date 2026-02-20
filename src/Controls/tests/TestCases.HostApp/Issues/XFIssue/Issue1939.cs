@@ -57,7 +57,7 @@ public class Issue1939 : TestContentPage
 		if (!clear)
 			return;
 
-		await Task.Delay(1000);
+		await Task.Delay(1500);
 
 		results.Clear();
 	}

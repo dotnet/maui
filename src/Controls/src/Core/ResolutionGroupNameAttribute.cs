@@ -3,11 +3,11 @@ using System;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/ResolutionGroupNameAttribute.xml" path="Type[@FullName='Microsoft.Maui.Controls.ResolutionGroupNameAttribute']/Docs/*" />
+	/// <summary>Specifies the resolution group name for effects in the assembly.</summary>
 	[AttributeUsage(AttributeTargets.Assembly)]
 	public sealed class ResolutionGroupNameAttribute : Attribute
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/ResolutionGroupNameAttribute.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>Creates a new <see cref="ResolutionGroupNameAttribute"/> with the specified name.</summary>
 		public ResolutionGroupNameAttribute(string name)
 		{
 			ShortName = name;

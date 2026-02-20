@@ -2,15 +2,25 @@ using System;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/ViewState.xml" path="Type[@FullName='Microsoft.Maui.Controls.ViewState']/Docs/*" />
+	/// <summary>
+	/// Defines flags that represent different interactive states of a view.
+	/// </summary>
 	[Flags]
 	public enum ViewState
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/ViewState.xml" path="//Member[@MemberName='Default']/Docs/*" />
+		/// <summary>
+		/// The default state of the view.
+		/// </summary>
 		Default = 0,
-		/// <include file="../../docs/Microsoft.Maui.Controls/ViewState.xml" path="//Member[@MemberName='Prelight']/Docs/*" />
+
+		/// <summary>
+		/// The view is being hovered over (prelight state).
+		/// </summary>
 		Prelight = 1,
-		/// <include file="../../docs/Microsoft.Maui.Controls/ViewState.xml" path="//Member[@MemberName='Pressed']/Docs/*" />
+
+		/// <summary>
+		/// The view is being pressed.
+		/// </summary>
 		Pressed = 1 << 1
 	}
 }

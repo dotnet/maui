@@ -4,22 +4,24 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/ControlTemplate.xml" path="Type[@FullName='Microsoft.Maui.Controls.ControlTemplate']/Docs/*" />
+	/// <summary>Defines the appearance of the templated control.</summary>
 	public class ControlTemplate : ElementTemplate
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/ControlTemplate.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
+		/// <summary>Creates a new empty ControlTemplate.</summary>
 		public ControlTemplate()
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ControlTemplate.xml" path="//Member[@MemberName='.ctor'][3]/Docs/*" />
+		/// <summary>Creates a new ControlTemplate with the specified type.</summary>
+		/// <param name="type">The type to use as the template content.</param>
 		public ControlTemplate(
 			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type type)
 			: base(type)
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ControlTemplate.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />
+		/// <summary>Creates a new ControlTemplate with the specified content factory.</summary>
+		/// <param name="createTemplate">A factory method that creates the template content.</param>
 		public ControlTemplate(Func<object> createTemplate) : base(createTemplate)
 		{
 		}

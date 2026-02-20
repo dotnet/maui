@@ -38,8 +38,12 @@ public static class TransformationExtensions
 			// (i.e. their absolute value is 0), a CompositeTransform is instead used to allow for
 			// rotation of the control on a 2D plane, and the other values are set. Otherwise, the
 			// rotation values are set, but the aforementioned functionality will be lost.
-			if (Math.Abs(view.RotationX) != 0 || Math.Abs(view.RotationY) != 0)
+			if (Math.Abs(rotationX) != 0 || Math.Abs(rotationY) != 0)
 			{
+				if (double.IsNaN(rotationX) || double.IsNaN(rotationY) || double.IsNaN(rotation))
+				{
+					return;
+				}
 				frameworkElement.Projection = new PlaneProjection
 				{
 					CenterOfRotationX = anchorX,

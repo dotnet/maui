@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen.TypeConverters;
- 
+
 class PathGeometryConverter : ISGTypeConverter
 {
 	public IEnumerable<string> SupportedTypes => new[] { "PathGeometry", "Microsoft.Maui.Controls.Shapes.PathGeometry" };
@@ -22,7 +22,7 @@ class PathGeometryConverter : ISGTypeConverter
 			return $"new {pathGeometryType.ToFQDisplayString()}()";
 		}
 
-		context.ReportConversionFailed( xmlLineInfo, value, toType, Descriptors.ConversionFailed);
+		context.ReportConversionFailed(xmlLineInfo, value, toType, Descriptors.ConversionFailed);
 		return "default";
 	}
 }

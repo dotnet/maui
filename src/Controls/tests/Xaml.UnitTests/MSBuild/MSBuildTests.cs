@@ -88,15 +88,27 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			intermediateDirectory = IOPath.Combine(tempDirectory, "obj", "Debug", GetTfm());
 			Directory.CreateDirectory(tempDirectory);
 
-			//copy _Directory.Build.[props|targets] in test/
-			var props = AssemblyInfoTests.GetFilePathFromRoot(IOPath.Combine("src", "Controls", "tests", "Xaml.UnitTests", "MSBuild", "_Directory.Build.props"));
-			var targets = AssemblyInfoTests.GetFilePathFromRoot(IOPath.Combine("src", "Controls", "tests", "Xaml.UnitTests", "MSBuild", "_Directory.Build.targets"));
+			// Find the Directory.Build files - they handle both local and Helix via MSBuild conditions
+			string props, targets;
+			if (AssemblyInfoTests.IsRunningOnHelix())
+			{
+				// On Helix, the test DLL directory contains the MSBuild folder with our files
+				var msbuildDir = IOPath.Combine(testDirectory, "MSBuild");
+				props = IOPath.Combine(msbuildDir, "_Directory.Build.props");
+				targets = IOPath.Combine(msbuildDir, "_Directory.Build.targets");
+			}
+			else
+			{
+				// Local development - find from repo root
+				props = AssemblyInfoTests.GetFilePathFromRoot(IOPath.Combine("src", "Controls", "tests", "Xaml.UnitTests", "MSBuild", "_Directory.Build.props"));
+				targets = AssemblyInfoTests.GetFilePathFromRoot(IOPath.Combine("src", "Controls", "tests", "Xaml.UnitTests", "MSBuild", "_Directory.Build.targets"));
+			}
 
 			if (!File.Exists(props))
 			{
 				//NOTE: VSTS may be running tests in a staging directory, so we can use an environment variable to find the source
 				//https://docs.microsoft.com/en-us/vsts/build-release/concepts/definitions/build/variables?view=vsts&tabs=batch#buildsourcesdirectory
-				throw new FileNotFoundException("Unable to find _Directory.Build.props at path: " + props);
+				throw new FileNotFoundException($"Unable to find _Directory.Build.props at path: {props}");
 			}
 
 			File.Copy(props, IOPath.Combine(tempDirectory, "Directory.Build.props"), true);

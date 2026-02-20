@@ -28,7 +28,7 @@ class FlowDirectionConverter : ISGTypeConverter
 			{
 				var flowDirectionRtlType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.FlowDirection")!;
 				return $"{flowDirectionRtlType.ToFQDisplayString()}.RightToLeft";
-			}			
+			}
 			if (value.Equals("inherit", StringComparison.OrdinalIgnoreCase))
 			{
 				var flowDirectionMatchType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.FlowDirection")!;
@@ -40,7 +40,7 @@ class FlowDirectionConverter : ISGTypeConverter
 			return enumConverter.Convert(value, node, toType, writer, context);
 		}
 
-		context.ReportConversionFailed( xmlLineInfo, value, Descriptors.FlowDirectionConversionFailed);
+		context.ReportConversionFailed(xmlLineInfo, value, Descriptors.FlowDirectionConversionFailed);
 		return "default";
 	}
 }

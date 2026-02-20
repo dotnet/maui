@@ -6,7 +6,7 @@ using System.Collections.Specialized;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/MenuItemCollection.xml" path="Type[@FullName='Microsoft.Maui.Controls.MenuItemCollection']/Docs/*" />
+	/// <summary>A collection of <see cref="MenuItem"/> objects used in Shell.</summary>
 	public sealed class MenuItemCollection : IEnumerable<MenuItem>, IList<MenuItem>, INotifyCollectionChanged
 	{
 		ObservableCollection<MenuItem> _inner = new ObservableCollection<MenuItem>();
@@ -17,10 +17,10 @@ namespace Microsoft.Maui.Controls
 			remove { ((INotifyCollectionChanged)_inner).CollectionChanged -= value; }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/MenuItemCollection.xml" path="//Member[@MemberName='Count']/Docs/*" />
+		/// <summary>Gets the number of menu items in the collection.</summary>
 		public int Count => _inner.Count;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/MenuItemCollection.xml" path="//Member[@MemberName='IsReadOnly']/Docs/*" />
+		/// <summary>Gets a value indicating whether the collection is read-only.</summary>
 		public bool IsReadOnly => ((IList<MenuItem>)_inner).IsReadOnly;
 
 		public MenuItem this[int index]
@@ -29,31 +29,31 @@ namespace Microsoft.Maui.Controls
 			set => _inner[index] = value;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/MenuItemCollection.xml" path="//Member[@MemberName='Add']/Docs/*" />
+		/// <summary>Adds a menu item to the collection.</summary>
 		public void Add(MenuItem item) => _inner.Add(item);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/MenuItemCollection.xml" path="//Member[@MemberName='Clear']/Docs/*" />
+		/// <summary>Removes all menu items from the collection.</summary>
 		public void Clear() => _inner.Clear();
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/MenuItemCollection.xml" path="//Member[@MemberName='Contains']/Docs/*" />
+		/// <summary>Determines whether the collection contains a specific menu item.</summary>
 		public bool Contains(MenuItem item) => _inner.Contains(item);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/MenuItemCollection.xml" path="//Member[@MemberName='CopyTo']/Docs/*" />
+		/// <summary>Copies the menu items to an array, starting at the specified index.</summary>
 		public void CopyTo(MenuItem[] array, int arrayIndex) => _inner.CopyTo(array, arrayIndex);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/MenuItemCollection.xml" path="//Member[@MemberName='GetEnumerator']/Docs/*" />
+		/// <summary>Returns an enumerator that iterates through the collection.</summary>
 		public IEnumerator<MenuItem> GetEnumerator() => _inner.GetEnumerator();
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/MenuItemCollection.xml" path="//Member[@MemberName='IndexOf']/Docs/*" />
+		/// <summary>Returns the index of the specified menu item.</summary>
 		public int IndexOf(MenuItem item) => _inner.IndexOf(item);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/MenuItemCollection.xml" path="//Member[@MemberName='Insert']/Docs/*" />
+		/// <summary>Inserts a menu item at the specified index.</summary>
 		public void Insert(int index, MenuItem item) => _inner.Insert(index, item);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/MenuItemCollection.xml" path="//Member[@MemberName='Remove']/Docs/*" />
+		/// <summary>Removes the specified menu item from the collection.</summary>
 		public bool Remove(MenuItem item) => _inner.Remove(item);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/MenuItemCollection.xml" path="//Member[@MemberName='RemoveAt']/Docs/*" />
+		/// <summary>Removes the menu item at the specified index.</summary>
 		public void RemoveAt(int index) => _inner.RemoveAt(index);
 
 		IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable)_inner).GetEnumerator();

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests"
+             x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui33203">
+	<ContentPage.Resources>
+		<ResourceDictionary>
+			<!-- Base keyed style for CustomLabel -->
+			<Style x:Key="LabelBase" TargetType="local:CustomLabel33203">
+				<Setter Property="BackgroundColor" Value="Blue"/>
+				<Setter Property="FontSize" Value="20"/>
+			</Style>
+			<!-- Implicit style for CustomLabel based on keyed style with ApplyToDerivedTypes -->
+			<Style BasedOn="{StaticResource LabelBase}" ApplyToDerivedTypes="True" TargetType="local:CustomLabel33203"/>
+
+			<!-- Derived keyed style for DerivedLabel that overrides BackgroundColor -->
+			<Style x:Key="DerivedLabelStyle" BasedOn="{StaticResource LabelBase}" TargetType="local:DerivedLabel33203">
+				<Setter Property="BackgroundColor" Value="Red"/>
+			</Style>
+			<!-- Implicit style for DerivedLabel based on its keyed style with ApplyToDerivedTypes -->
+			<Style BasedOn="{StaticResource DerivedLabelStyle}" ApplyToDerivedTypes="True" TargetType="local:DerivedLabel33203"/>
+		</ResourceDictionary>
+	</ContentPage.Resources>
+	
+	<StackLayout>
+		<!-- CustomLabel should have Blue background from LabelBase keyed style -->
+		<local:CustomLabel33203 x:Name="baseLabel" Text="Base Label"/>
+		<!-- DerivedLabel should have Red background from DerivedLabelStyle keyed style (overriding Blue) -->
+		<local:DerivedLabel33203 x:Name="derivedLabel" Text="Derived Label"/>
+	</StackLayout>
+</ContentPage>

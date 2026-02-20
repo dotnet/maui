@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       x:Class="Microsoft.Maui.ManualTests.Tests.BugFixes.L2_TabBarSwitching"
+       Title="L2_TabBarSwitching">
+    <TabBar>
+        <Tab Title="Tab1" >
+            <ShellContent Title="Tab1">
+                <ContentPage Title="Tab1">
+                    <VerticalStackLayout Spacing="20" Padding="20">
+                        <Label Text="1. This test is to check if TabBar works well.(https://github.com/dotnet/maui/issues/32900)" />
+                        <Label Text="2. Click 'Tab2' to switch to Tab2 and then switch back to Tab1." />
+                        <Label Text="3. Click button 'Back to BugFixes Category' to go back to BugFixes Category page." />
+                        <Button Text="Back to BugFixes Category" Clicked="OnBackClicked" />
+                        <Label Text="Welcome to Tab1"
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center"/>
+                    </VerticalStackLayout>
+                </ContentPage>
+            </ShellContent>
+        </Tab>
+        <Tab Title="Tab2" >
+            <ShellContent Title="Tab2">
+                <ContentPage Title="Tab2">
+                    <VerticalStackLayout Spacing="20" Padding="20">
+                        <Label Text="1. This test is to check if TabBar works well.(https://github.com/dotnet/maui/issues/32900)" />
+                        <Label Text="2. Click 'Tab2' to switch to Tab2 and then switch back to Tab1." />
+                        <Label Text="3. Click button 'Back to BugFixes Category' to go back to BugFixes Category page." />
+                        <Button Text="Back to BugFixes Category" Clicked="OnBackClicked" />
+                        <Label Text="Welcome to Tab2"
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center"/>
+                    </VerticalStackLayout>
+                </ContentPage>
+            </ShellContent>
+        </Tab>
+    </TabBar>
+</Shell>

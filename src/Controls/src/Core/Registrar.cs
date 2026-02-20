@@ -10,11 +10,11 @@ using Microsoft.Maui.Controls.StyleSheets;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/InitializationFlags.xml" path="Type[@FullName='Microsoft.Maui.Controls.InitializationFlags']/Docs/*" />
+	/// <summary>Flags that control framework initialization behavior.</summary>
 	[Flags]
 	public enum InitializationFlags : long
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/InitializationFlags.xml" path="//Member[@MemberName='DisableCss']/Docs/*" />
+		/// <summary>Disables CSS styling support.</summary>
 		DisableCss = 1 << 0,
 		SkipRenderers = 1 << 1,
 	}
@@ -288,7 +288,7 @@ namespace Microsoft.Maui.Controls.Internals
 		}
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.Registrar' and position()=1]/Docs/*" />
+	/// <summary>Manages registration of renderers, effects, and other components.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class Registrar
 	{
@@ -316,17 +316,18 @@ namespace Microsoft.Maui.Controls.Internals
 		static bool DisableCSS = false;
 		static readonly Lazy<Dictionary<string, IList<StylePropertyAttribute>>> LazyStyleProperties = new Lazy<Dictionary<string, IList<StylePropertyAttribute>>>(LoadStyleSheets);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='ExtraAssemblies']/Docs/*" />
+		/// <summary>Gets or sets additional assemblies to scan for registrations.</summary>
 		public static IEnumerable<Assembly> ExtraAssemblies { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='Registered']/Docs/*" />
+		/// <summary>Gets the registrar for registerable components.</summary>
 		public static Registrar<IRegisterable> Registered { get; internal set; }
 
 		//typeof(ExportRendererAttribute);
 		//typeof(ExportCellAttribute);
 		//typeof(ExportImageSourceHandlerAttribute);
 		//TODO this is no longer used?
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='RegisterRenderers']/Docs/*" />
+		/// <summary>Registers renderers from the specified handler attributes.</summary>
+		/// <param name="attributes">The handler attributes to register.</param>
 		public static void RegisterRenderers(HandlerAttribute[] attributes)
 		{
 			var length = attributes.Length;
@@ -347,7 +348,8 @@ namespace Microsoft.Maui.Controls.Internals
 			RendererToHandlerShim = handlerShim;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='RegisterStylesheets']/Docs/*" />
+		/// <summary>Registers stylesheet support based on initialization flags.</summary>
+		/// <param name="flags">The initialization flags.</param>
 		public static void RegisterStylesheets(InitializationFlags flags)
 		{
 			if ((flags & InitializationFlags.DisableCss) == InitializationFlags.DisableCss)
@@ -395,7 +397,9 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='RegisterEffects']/Docs/*" />
+		/// <summary>Registers effects from the specified attributes.</summary>
+		/// <param name="resolutionName">The resolution group name.</param>
+		/// <param name="effectAttributes">The effect attributes to register.</param>
 		public static void RegisterEffects(string resolutionName, ExportEffectAttribute[] effectAttributes)
 		{
 			var exportEffectsLength = effectAttributes.Length;

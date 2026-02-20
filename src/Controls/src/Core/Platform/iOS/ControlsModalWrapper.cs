@@ -149,7 +149,13 @@ namespace Microsoft.Maui.Controls.Platform
 		public override void ViewDidLayoutSubviews()
 		{
 			base.ViewDidLayoutSubviews();
-			_modal?.PlatformArrange(new Rect(0, 0, View!.Bounds.Width, View.Bounds.Height));
+			
+			// Defensive check to prevent crashes during iOS snapshot creation
+			// when VirtualView may be disposed during app state transitions
+			if (_modal?.VirtualView is Page)
+			{
+				_modal?.PlatformArrange(new Rect(0, 0, View!.Bounds.Width, View.Bounds.Height));
+			}
 		}
 
 		public override void ViewWillAppear(bool animated)

@@ -19,7 +19,9 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 			return (bool)element.GetValue(HasBreadCrumbsBarProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/NavigationPage.xml" path="//Member[@MemberName='SetHasBreadCrumbsBar'][1]/Docs/*" />
+		/// <summary>Sets whether the navigation page has a bread crumb bar.</summary>
+		/// <param name="element">The navigation page on the Tizen platform.</param>
+		/// <param name="value"><see langword="true"/> to show a bread crumb bar; otherwise, <see langword="false"/>.</param>
 		public static void SetHasBreadCrumbsBar(BindableObject element, bool value)
 		{
 			element.SetValue(HasBreadCrumbsBarProperty, value);
@@ -33,7 +35,10 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 			return GetHasBreadCrumbsBar(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/NavigationPage.xml" path="//Member[@MemberName='SetHasBreadCrumbsBar'][2]/Docs/*" />
+		/// <summary>Sets whether the navigation page has a bread crumb bar.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <param name="value"><see langword="true"/> to show a bread crumb bar; otherwise, <see langword="false"/>.</param>
+		/// <returns>The updated platform configuration.</returns>
 		public static IPlatformElementConfiguration<Tizen, FormsElement> SetHasBreadCrumbsBar(this IPlatformElementConfiguration<Tizen, FormsElement> config, bool value)
 		{
 			SetHasBreadCrumbsBar(config.Element, value);

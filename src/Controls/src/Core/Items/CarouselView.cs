@@ -11,22 +11,51 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <summary>A <see cref="Microsoft.Maui.Controls.ItemsView"/> whose scrollable child views 'snap' into place.</summary>
+	/// <summary>
+	/// A view that presents a scrollable collection of items where each item 'snaps' into place after scrolling.
+	/// </summary>
+	/// <remarks>
+	/// <see cref="CarouselView"/> is useful for displaying a horizontal or vertical carousel of items,
+	/// where the user can swipe through items and each item snaps into view. Unlike <see cref="CollectionView"/>,
+	/// <see cref="CarouselView"/> enforces single-item snap points and provides additional features like looping
+	/// and position tracking.
+	/// </remarks>
 	public class CarouselView : ItemsView
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='CurrentItemVisualState']/Docs/*" />
+		/// <summary>
+		/// Visual state name for the current item in the carousel.
+		/// </summary>
+		/// <value>The string "CurrentItem".</value>
 		public const string CurrentItemVisualState = "CurrentItem";
-		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='NextItemVisualState']/Docs/*" />
+
+		/// <summary>
+		/// Visual state name for the next item in the carousel.
+		/// </summary>
+		/// <value>The string "NextItem".</value>
 		public const string NextItemVisualState = "NextItem";
-		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='PreviousItemVisualState']/Docs/*" />
+
+		/// <summary>
+		/// Visual state name for the previous item in the carousel.
+		/// </summary>
+		/// <value>The string "PreviousItem".</value>
 		public const string PreviousItemVisualState = "PreviousItem";
-		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='DefaultItemVisualState']/Docs/*" />
+
+		/// <summary>
+		/// Visual state name for items that are neither current, next, nor previous.
+		/// </summary>
+		/// <value>The string "DefaultItem".</value>
 		public const string DefaultItemVisualState = "DefaultItem";
 
 		/// <summary>Bindable property for <see cref="Loop"/>.</summary>
 		public static readonly BindableProperty LoopProperty = BindableProperty.Create(nameof(Loop), typeof(bool), typeof(CarouselView), true, BindingMode.OneTime);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='Loop']/Docs/*" />
+		/// <summary>
+		/// Gets or sets a value indicating whether the carousel loops back to the first item after reaching the last item.
+		/// </summary>
+		/// <value><see langword="true"/> if the carousel should loop continuously; otherwise, <see langword="false"/>. The default is <see langword="true"/>.</value>
+		/// <remarks>
+		/// When enabled, scrolling past the last item returns to the first item, and scrolling before the first item goes to the last item.
+		/// </remarks>
 		public bool Loop
 		{
 			get { return (bool)GetValue(LoopProperty); }
@@ -36,7 +65,14 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="PeekAreaInsets"/>.</summary>
 		public static readonly BindableProperty PeekAreaInsetsProperty = BindableProperty.Create(nameof(PeekAreaInsets), typeof(Thickness), typeof(CarouselView), default(Thickness));
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='PeekAreaInsets']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the amount of space to reserve on each side of the current item to show a peek of adjacent items.
+		/// </summary>
+		/// <value>A <see cref="Thickness"/> value defining the peek area insets. The default is 0 on all sides.</value>
+		/// <remarks>
+		/// Use this property to show a preview of adjacent items on either side of the current item.
+		/// This helps users understand that more items are available by swiping.
+		/// </remarks>
 		public Thickness PeekAreaInsets
 		{
 			get { return (Thickness)GetValue(PeekAreaInsetsProperty); }
@@ -48,7 +84,14 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="VisibleViews"/>.</summary>
 		public static readonly BindableProperty VisibleViewsProperty = VisibleViewsPropertyKey.BindableProperty;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='VisibleViews']/Docs/*" />
+		/// <summary>
+		/// Gets the collection of views currently visible in the carousel.
+		/// </summary>
+		/// <value>An <see cref="ObservableCollection{T}"/> of <see cref="View"/> objects that are currently visible.</value>
+		/// <remarks>
+		/// This collection is automatically updated as the user scrolls through the carousel.
+		/// It includes the current item and any partially visible adjacent items based on <see cref="PeekAreaInsets"/>.
+		/// </remarks>
 		public ObservableCollection<View> VisibleViews => (ObservableCollection<View>)GetValue(VisibleViewsProperty);
 
 		static readonly BindablePropertyKey IsDraggingPropertyKey = BindableProperty.CreateReadOnly(nameof(IsDragging), typeof(bool), typeof(CarouselView), false);
@@ -56,14 +99,28 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="IsDragging"/>.</summary>
 		public static readonly BindableProperty IsDraggingProperty = IsDraggingPropertyKey.BindableProperty;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='IsDragging']/Docs/*" />
+		/// <summary>
+		/// Gets a value indicating whether the user is currently dragging the carousel.
+		/// </summary>
+		/// <value><see langword="true"/> if the user is actively dragging; otherwise, <see langword="false"/>.</value>
+		/// <remarks>
+		/// This property is set to <see langword="true"/> when the user begins a drag gesture and returns to <see langword="false"/>
+		/// when the gesture completes or is cancelled.
+		/// </remarks>
 		public bool IsDragging => (bool)GetValue(IsDraggingProperty);
 
 		/// <summary>Bindable property for <see cref="IsBounceEnabled"/>.</summary>
 		public static readonly BindableProperty IsBounceEnabledProperty =
 			BindableProperty.Create(nameof(IsBounceEnabled), typeof(bool), typeof(CarouselView), true);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='IsBounceEnabled']/Docs/*" />
+		/// <summary>
+		/// Gets or sets a value indicating whether bounce effects are enabled when scrolling reaches the end of the carousel.
+		/// </summary>
+		/// <value><see langword="true"/> to enable bounce effects; otherwise, <see langword="false"/>. The default is <see langword="true"/>.</value>
+		/// <remarks>
+		/// On iOS, this controls whether the carousel bounces when reaching the first or last item.
+		/// The effect may vary by platform.
+		/// </remarks>
 		public bool IsBounceEnabled
 		{
 			get { return (bool)GetValue(IsBounceEnabledProperty); }
@@ -74,7 +131,14 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty IsSwipeEnabledProperty =
 			BindableProperty.Create(nameof(IsSwipeEnabled), typeof(bool), typeof(CarouselView), true);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='IsSwipeEnabled']/Docs/*" />
+		/// <summary>
+		/// Gets or sets a value indicating whether swipe gestures are enabled for navigation.
+		/// </summary>
+		/// <value><see langword="true"/> to enable swipe gestures; otherwise, <see langword="false"/>. The default is <see langword="true"/>.</value>
+		/// <remarks>
+		/// When disabled, users cannot navigate between items using swipe gestures.
+		/// Programmatic navigation using <see cref="Position"/> or <see cref="CurrentItem"/> still works when this is disabled.
+		/// </remarks>
 		public bool IsSwipeEnabled
 		{
 			get { return (bool)GetValue(IsSwipeEnabledProperty); }
@@ -85,7 +149,14 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty IsScrollAnimatedProperty =
 		BindableProperty.Create(nameof(IsScrollAnimated), typeof(bool), typeof(CarouselView), true);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='IsScrollAnimated']/Docs/*" />
+		/// <summary>
+		/// Gets or sets a value indicating whether scrolling between items is animated.
+		/// </summary>
+		/// <value><see langword="true"/> to animate scrolling; otherwise, <see langword="false"/>. The default is <see langword="true"/>.</value>
+		/// <remarks>
+		/// When <see langword="true"/>, programmatic changes to <see cref="Position"/> or <see cref="CurrentItem"/>
+		/// will animate the transition. When <see langword="false"/>, the carousel jumps instantly to the new position.
+		/// </remarks>
 		public bool IsScrollAnimated
 		{
 			get { return (bool)GetValue(IsScrollAnimatedProperty); }
@@ -105,21 +176,34 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty CurrentItemChangedCommandParameterProperty =
 			BindableProperty.Create(nameof(CurrentItemChangedCommandParameter), typeof(object), typeof(CarouselView));
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='CurrentItem']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the currently displayed item in the carousel.
+		/// </summary>
+		/// <value>The data item currently centered in the carousel, or <see langword="null"/> if no item is selected.</value>
+		/// <remarks>
+		/// This property is bindable and supports two-way binding. Setting this property programmatically
+		/// will scroll the carousel to display the specified item.
+		/// </remarks>
 		public object CurrentItem
 		{
 			get => GetValue(CurrentItemProperty);
 			set => SetValue(CurrentItemProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='CurrentItemChangedCommand']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the command to execute when the current item changes.
+		/// </summary>
+		/// <value>An <see cref="ICommand"/> to execute when the current item changes.</value>
 		public ICommand CurrentItemChangedCommand
 		{
 			get => (ICommand)GetValue(CurrentItemChangedCommandProperty);
 			set => SetValue(CurrentItemChangedCommandProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='CurrentItemChangedCommandParameter']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the parameter to pass to <see cref="CurrentItemChangedCommand"/>.
+		/// </summary>
+		/// <value>The parameter object to pass to the command.</value>
 		public object CurrentItemChangedCommandParameter
 		{
 			get => GetValue(CurrentItemChangedCommandParameterProperty);
@@ -163,21 +247,34 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.Create(nameof(PositionChangedCommandParameter), typeof(object),
 				typeof(CarouselView));
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='Position']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the index of the currently displayed item in the carousel.
+		/// </summary>
+		/// <value>The zero-based index of the current item. The default is 0.</value>
+		/// <remarks>
+		/// This property is bindable and supports two-way binding. Setting this property programmatically
+		/// will scroll the carousel to display the item at the specified index.
+		/// </remarks>
 		public int Position
 		{
 			get => (int)GetValue(PositionProperty);
 			set => SetValue(PositionProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='PositionChangedCommand']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the command to execute when the carousel position changes.
+		/// </summary>
+		/// <value>An <see cref="ICommand"/> to execute when the position changes.</value>
 		public ICommand PositionChangedCommand
 		{
 			get => (ICommand)GetValue(PositionChangedCommandProperty);
 			set => SetValue(PositionChangedCommandProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='PositionChangedCommandParameter']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the parameter to pass to <see cref="PositionChangedCommand"/>.
+		/// </summary>
+		/// <value>The parameter object to pass to the command.</value>
 		public object PositionChangedCommandParameter
 		{
 			get => GetValue(PositionChangedCommandParameterProperty);
@@ -189,7 +286,14 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.Create(nameof(ItemsLayout), typeof(LinearItemsLayout), typeof(ItemsView),
 				null, defaultValueCreator: (b) => LinearItemsLayout.CreateCarouselHorizontalDefault());
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='ItemsLayout']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the layout used to arrange items in the carousel.
+		/// </summary>
+		/// <value>A <see cref="LinearItemsLayout"/> that defines the layout direction and snap behavior. The default is a horizontal layout with mandatory single snap points.</value>
+		/// <remarks>
+		/// The items layout determines whether items are arranged horizontally or vertically,
+		/// and controls snap behavior through <see cref="ItemsLayout.SnapPointsType"/> and <see cref="ItemsLayout.SnapPointsAlignment"/>.
+		/// </remarks>
 		[System.ComponentModel.TypeConverter(typeof(CarouselLayoutTypeConverter))]
 		public LinearItemsLayout ItemsLayout
 		{
@@ -197,7 +301,14 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(ItemsLayoutProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='IndicatorView']/Docs/*" />
+		/// <summary>
+		/// Sets the <see cref="IndicatorView"/> to synchronize with this carousel's position and items.
+		/// </summary>
+		/// <value>The <see cref="IndicatorView"/> to link to this carousel.</value>
+		/// <remarks>
+		/// Setting this property automatically binds the indicator view's <see cref="IndicatorView.Position"/> and
+		/// <see cref="IndicatorView.ItemsSource"/> to this carousel's corresponding properties.
+		/// </remarks>
 		[System.ComponentModel.TypeConverter(typeof(ReferenceTypeConverter))]
 		public IndicatorView IndicatorView
 		{
@@ -213,14 +324,26 @@ namespace Microsoft.Maui.Controls
 			indicatorView.SetBinding(IndicatorView.ItemsSourceProperty, static (CarouselView carousel) => carousel.ItemsSource, source: carouselView);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='IsScrolling']/Docs/*" />
+		/// <summary>
+		/// Gets or sets a value indicating whether the carousel is currently scrolling.
+		/// </summary>
+		/// <value><see langword="true"/> if scrolling is in progress; otherwise, <see langword="false"/>.</value>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool IsScrolling { get; set; }
 
+		/// <summary>
+		/// Occurs when the <see cref="CurrentItem"/> changes.
+		/// </summary>
 		public event EventHandler<CurrentItemChangedEventArgs> CurrentItemChanged;
+
+		/// <summary>
+		/// Occurs when the <see cref="Position"/> changes.
+		/// </summary>
 		public event EventHandler<PositionChangedEventArgs> PositionChanged;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="CarouselView"/> class.
+		/// </summary>
 		public CarouselView()
 		{
 			ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal)
@@ -230,10 +353,18 @@ namespace Microsoft.Maui.Controls
 			};
 		}
 
+		/// <summary>
+		/// Called when the position changes. Override this method to add custom logic when the carousel position changes.
+		/// </summary>
+		/// <param name="args">Event arguments containing the previous and new position values.</param>
 		protected virtual void OnPositionChanged(PositionChangedEventArgs args)
 		{
 		}
 
+		/// <summary>
+		/// Called when the current item changes. Override this method to add custom logic when the current item changes.
+		/// </summary>
+		/// <param name="args">Event arguments containing the previous and new current items.</param>
 		protected virtual void OnCurrentItemChanged(EventArgs args)
 		{
 		}
@@ -261,6 +392,9 @@ namespace Microsoft.Maui.Controls
 			carousel.OnPositionChanged(args);
 		}
 
+		/// <summary>
+		/// Sets the dragging state of the carousel. For internal use by platform renderers.
+		/// </summary>
 		/// <param name="value">The value to set.</param>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SetIsDragging(bool value)
@@ -268,11 +402,17 @@ namespace Microsoft.Maui.Controls
 			SetValue(IsDraggingPropertyKey, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='AnimatePositionChanges']/Docs/*" />
+		/// <summary>
+		/// Gets a value indicating whether position changes should be animated. For internal use by platform renderers.
+		/// </summary>
+		/// <value><see langword="true"/> if position changes should be animated; otherwise, <see langword="false"/>.</value>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public virtual bool AnimatePositionChanges => IsScrollAnimated;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='AnimateCurrentItemChanges']/Docs/*" />
+		/// <summary>
+		/// Gets a value indicating whether current item changes should be animated. For internal use by platform renderers.
+		/// </summary>
+		/// <value><see langword="true"/> if current item changes should be animated; otherwise, <see langword="false"/>.</value>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public virtual bool AnimateCurrentItemChanges => IsScrollAnimated;
 

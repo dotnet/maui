@@ -11,7 +11,7 @@ using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/BindablePropertyConverter.xml" path="Type[@FullName='Microsoft.Maui.Controls.BindablePropertyConverter']/Docs/*" />
+	/// <summary>A TypeConverter that converts strings to <see cref="BindableProperty"/> instances.</summary>
 	[Xaml.ProvideCompiled("Microsoft.Maui.Controls.XamlC.BindablePropertyConverter")]
 	public sealed class BindablePropertyConverter : TypeConverter, IExtendedTypeConverter
 	{

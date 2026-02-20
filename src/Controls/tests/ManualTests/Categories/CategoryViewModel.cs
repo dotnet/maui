@@ -92,3 +92,15 @@ public class BugFixesCategoryViewModel : CategoryViewModel
 {
 	public override string CategoryName => Category.BugFixes;
 }
+
+[Category(id: "M", title: Category.CarouselView)]
+public class CarouselViewCategoryViewModel : CategoryViewModel
+{
+	public override string CategoryName => Category.CarouselView;
+}
+
+[Category(id: "N", title: Category.ScrollView)]
+public class ScrollViewCategoryViewModel : CategoryViewModel
+{
+	public override string CategoryName => Category.ScrollView;
+}

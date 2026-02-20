@@ -203,4 +203,34 @@
     <value>{0} hat das Schlüsselwort „erforderlich“. Die Unterstützung dafür in XAML ist derzeit begrenzt, und sie sollte nicht verwendet werden. Wir bemühen uns weiterhin, einen Mehrwert zu schaffen.</value>
     <comment>0 is a property identifier</comment>
   </data>
+  <data name="BindingCompilationFailed" xml:space="preserve">
+    <value>Buildkompilierung fehlgeschlagen</value>
+  </data>
+  <data name="BindingCompilationWarning" xml:space="preserve">
+    <value>Warnung bei der Bindungskompilierung</value>
+  </data>
+  <data name="BindingIndexerNotClosed" xml:space="preserve">
+    <value>Bindung: Der Indexer enthielt keine schließende Klammer.</value>
+  </data>
+  <data name="BindingIndexerEmpty" xml:space="preserve">
+    <value>Bindung: Der Indexer enthielt keine Argumente.</value>
+  </data>
+  <data name="BindingIndexerTypeUnsupported" xml:space="preserve">
+    <value>Binding: nicht unterstützter Indexer-Indextyp: „{0}“.</value>
+    <comment>0 is indexer type name</comment>
+  </data>
+  <data name="BindingPropertyNotFound" xml:space="preserve">
+    <value>Bindung: Die Eigenschaft „{0}“ wurde in „{1}“ nicht gefunden. Die Bindung verwendet zur Laufzeit eine langsamere, reflexionsbasierte Bindungsmethode. Wenn diese Eigenschaft von einem anderen Quellgenerator erzeugt wird, melden Sie dies bitte unter https://github.com/dotnet/maui/issues, um die Interoperabilität der Quellgeneratoren zu verbessern.</value>
+    <comment>0 is property name, 1 is type name</comment>
+  </data>
+  <data name="BindingWithXDataTypeFromOuterScope" xml:space="preserve">
+    <value>Die Bindung kann falsch kompiliert werden, da die x:DataType-Anmerkung aus einem äußeren Bereich stammt. Stellen Sie sicher, dass Sie alle DataTemplate-XAML-Elementen mit dem richtigen x:DataType kommentieren. Weitere Informationen finden Sie unter https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings.</value>
+  </data>
+  <data name="NamescopeError" xml:space="preserve">
+    <value>Namescope-Fehler</value>
+  </data>
+  <data name="NamescopeDuplicate" xml:space="preserve">
+    <value>Ein Element mit dem Namen „{0}“ ist in diesem NameScope bereits vorhanden.</value>
+    <comment>0 is the duplicated key</comment>
+  </data>
 </root>

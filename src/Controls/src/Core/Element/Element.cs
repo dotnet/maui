@@ -608,18 +608,26 @@ namespace Microsoft.Maui.Controls
 		/// <remarks>Implementors must call the base method.</remarks>
 		protected override void OnBindingContextChanged()
 		{
-			this.PropagateBindingContext(LogicalChildrenInternal, (child, bc) =>
+			var logicalChildren = LogicalChildrenInternal;
+			if (logicalChildren.Count > 0)
 			{
-				SetChildInheritedBindingContext((Element)child, bc);
-			});
+				this.PropagateBindingContext(LogicalChildrenInternal, SetLogicalChildBindingContext);
+			}
 
-			if (_bindableResources != null)
+			if (_bindableResources is not null)
+			{
 				foreach (BindableObject item in _bindableResources)
 				{
 					SetInheritedBindingContext(item, BindingContext);
 				}
+			}
 
 			base.OnBindingContextChanged();
+		}
+
+		void SetLogicalChildBindingContext(BindableObject child, object bc)
+		{
+			SetChildInheritedBindingContext((Element)child, bc);
 		}
 
 		/// <summary>Raises the <see cref="ChildAdded"/> event. Implement this method to add class handling for this event.</summary>

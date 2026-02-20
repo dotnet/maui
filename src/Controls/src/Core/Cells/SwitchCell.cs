@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="OnColor"/>.</summary>
 		public static readonly BindableProperty OnColorProperty = BindableProperty.Create(nameof(OnColor), typeof(Color), typeof(SwitchCell), null);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SwitchCell.xml" path="//Member[@MemberName='OnColor']/Docs/*" />
+		/// <summary>Gets or sets the color of the switch when it is in the "On" position. This is a bindable property.</summary>
 		public Color OnColor
 		{
 			get { return (Color)GetValue(OnColorProperty); }

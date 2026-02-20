@@ -3,7 +3,9 @@ using System.Collections;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/RadioButtonGroup.xml" path="Type[@FullName='Microsoft.Maui.Controls.RadioButtonGroup']/Docs/*" />
+	/// <summary>
+	/// Provides attached properties for managing groups of <see cref="RadioButton"/> controls.
+	/// </summary>
 	public static class RadioButtonGroup
 	{
 		static readonly BindableProperty RadioButtonGroupControllerProperty =
@@ -21,12 +23,21 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.Create("GroupName", typeof(string), typeof(Maui.ILayout), null,
 			propertyChanged: (b, o, n) => { GetRadioButtonGroupController(b).GroupName = (string)n; });
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButtonGroup.xml" path="//Member[@MemberName='GetGroupName']/Docs/*" />
+		/// <summary>
+		/// Gets the group name for the specified layout, used to logically group radio buttons.
+		/// </summary>
+		/// <param name="b">The bindable object to query.</param>
+		/// <returns>The group name assigned to the layout.</returns>
 		public static string GetGroupName(BindableObject b)
 		{
 			return (string)b.GetValue(GroupNameProperty);
 		}
 
+		/// <summary>
+		/// Sets the group name for the specified layout, used to logically group radio buttons.
+		/// </summary>
+		/// <param name="bindable">The bindable object to update.</param>
+		/// <param name="groupName">The group name to assign.</param>
 		public static void SetGroupName(BindableObject bindable, string groupName)
 		{
 			bindable.SetValue(GroupNameProperty, groupName);
@@ -38,12 +49,21 @@ namespace Microsoft.Maui.Controls
 			defaultBindingMode: BindingMode.TwoWay,
 			propertyChanged: (b, o, n) => { GetRadioButtonGroupController(b).SelectedValue = n; });
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButtonGroup.xml" path="//Member[@MemberName='GetSelectedValue']/Docs/*" />
+		/// <summary>
+		/// Gets the currently selected value from the radio button group.
+		/// </summary>
+		/// <param name="bindableObject">The bindable object to query.</param>
+		/// <returns>The value of the selected radio button in the group.</returns>
 		public static object GetSelectedValue(BindableObject bindableObject)
 		{
 			return bindableObject.GetValue(SelectedValueProperty);
 		}
 
+		/// <summary>
+		/// Sets the selected value for the radio button group.
+		/// </summary>
+		/// <param name="bindable">The bindable object to update.</param>
+		/// <param name="selectedValue">The value to select.</param>
 		public static void SetSelectedValue(BindableObject bindable, object selectedValue)
 		{
 			bindable.SetValue(SelectedValueProperty, selectedValue);

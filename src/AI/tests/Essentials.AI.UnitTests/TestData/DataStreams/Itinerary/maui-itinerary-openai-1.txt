@@ -1,0 +1,501 @@
+{"
+title
+":"
+Parad
+ise
+ Un
+ve
+iled
+:
+ Maui
+'s
+ Marvel
+s
+","
+destination
+Name
+":"
+M
+aui
+","
+description
+":"
+Explore
+ the
+ breathtaking
+ landscapes
+ and
+ rich
+ cultural
+ tapestry
+ of
+ Maui
+.
+ From
+ volcanic
+ cr
+aters
+ and
+ lush
+ rain
+fore
+sts
+ to
+ pristine
+ beaches
+ and
+ vibrant
+ marine
+ life
+,
+ this
+ adventure
+ promises
+ an
+ unforgettable
+ experience
+.","
+r
+ationale
+":"
+This
+ itinerary
+ showcases
+ a
+ blend
+ of
+ Maui
+'s
+ natural
+ beauty
+,
+ cultural
+ heritage
+,
+ and
+ luxurious
+ comforts
+,
+ offering
+ diverse
+ experiences
+ from
+ sightseeing
+ pristine
+ beaches
+ to
+ indul
+ging
+ in
+ local
+ cuisine
+,
+ perfect
+ for
+ leisure
+ and
+ exploration
+.","
+days
+":[
+{"
+title
+":"
+Sun
+rise
+ Over
+ Hale
+akal
+ā
+","
+subtitle
+":"
+Witness
+ a
+ dramatic
+ sunrise
+ atop
+ Hale
+akal
+ā
+ and
+ explore
+ natural
+ wonders
+.","
+destination
+":"
+H
+ale
+akal
+ā
+ National
+ Park
+","
+activities
+":[
+{"
+type
+":"
+Sight
+seeing
+","
+title
+":"
+Sun
+rise
+ at
+ Hale
+akal
+ā
+ Cr
+ater
+","
+description
+":"
+Experience
+ a
+ stunning
+ sunrise
+ view
+ at
+ Hale
+akal
+ā
+'s
+ summit
+,
+ a
+ breathtaking
+ spectacle
+ of
+ color
+ and
+ light
+."
+},{"
+type
+":"
+Hotel
+And
+L
+od
+ging
+","
+title
+":"
+Hotel
+ 
+1
+","
+description
+":"
+Stay
+ at
+ a
+ luxurious
+ hotel
+ offering
+ views
+ of
+ Hale
+akal
+ā
+,
+ where
+ comfort
+ meets
+ spl
+endor
+."
+},{"
+type
+":"
+Food
+And
+Dining
+","
+title
+":"
+Restaurant
+ 
+1
+","
+description
+":"
+D
+ine
+ at
+ a
+ restaurant
+ offering
+ authentic
+ Hawaiian
+ cuisine
+ near
+ a
+ popular
+ beach
+."
+}]
+},{"
+title
+":"
+The
+ Road
+ to
+ Hana
+ Adventure
+","
+subtitle
+":"
+Travel
+ through
+ lush
+ rain
+fore
+sts
+,
+ waterfalls
+,
+ and
+ panoramic
+ ocean
+ vistas
+.","
+destination
+":"
+Road
+ to
+ Hana
+","
+activities
+":[
+{"
+type
+":"
+Sight
+seeing
+","
+title
+":"
+Water
+falls
+ and
+ Rain
+forest
+ H
+ike
+","
+description
+":"
+Explore
+ the
+ iconic
+ waterfalls
+ and
+ verd
+ant
+ rain
+fore
+sts
+ along
+ the
+ Road
+ to
+ Hana
+."
+},{"
+type
+":"
+Hotel
+And
+L
+od
+ging
+","
+title
+":"
+Hotel
+ 
+2
+","
+description
+":"
+Relax
+ in
+ a
+ hotel
+ providing
+ easy
+ access
+ to
+ Hana
+'s
+ natural
+ beauty
+ and
+ tranquility
+."
+},{"
+type
+":"
+Food
+And
+Dining
+","
+title
+":"
+Cafe
+ 
+1
+","
+description
+":"
+Refresh
+ with
+ Hawaiian
+ coffee
+ and
+ tropical
+ smoothies
+ at
+ a
+ cozy
+ cafe
+ en
+ route
+."
+}]
+},{"
+title
+":"
+Ocean
+ Wonders
+ and
+ Local
+ Fl
+avors
+","
+subtitle
+":"
+Dive
+ into
+ Maui
+'s
+ marine
+ life
+ and
+ savor
+ fresh
+ seafood
+ with
+ an
+ ocean
+ view
+.","
+destination
+":"
+South
+ Maui
+ Beaches
+","
+activities
+":[
+{"
+type
+":"
+Sight
+seeing
+","
+title
+":"
+Sn
+ork
+eling
+ Exc
+ursion
+ at
+ Marina
+ 
+1
+","
+description
+":"
+Discover
+ vibrant
+ coral
+ reefs
+ and
+ marine
+ life
+ at
+ a
+ renowned
+ snorkeling
+ spot
+."
+},{"
+type
+":"
+Hotel
+And
+L
+od
+ging
+","
+title
+":"
+Hotel
+ 
+3
+","
+description
+":"
+Stay
+ at
+ a
+ beachfront
+ hotel
+ offering
+ snorkeling
+ sites
+ and
+ sun
+-k
+issed
+ shores
+."
+},{"
+type
+":"
+Food
+And
+Dining
+","
+title
+":"
+Restaurant
+ 
+3
+","
+description
+":"
+Ind
+ul
+ge
+ in
+ seafood
+ dishes
+ with
+ stunning
+ ocean
+ views
+ at
+ a
+ local
+ favorite
+."
+}
+]}
+]}

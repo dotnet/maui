@@ -9,25 +9,34 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// <summary>Bindable property for attached property <c>UpdateOnTap</c>.</summary>
 		public static readonly BindableProperty UpdateOnTapProperty = BindableProperty.Create("UpdateOnTap", typeof(bool), typeof(Slider), false);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Slider.xml" path="//Member[@MemberName='GetUpdateOnTap'][1]/Docs/*" />
+		/// <summary>Gets whether the slider value updates when the user taps on the track on iOS.</summary>
+		/// <param name="element">The element to get the value from.</param>
+		/// <returns><see langword="true"/> if tap updates value; otherwise, <see langword="false"/>.</returns>
 		public static bool GetUpdateOnTap(BindableObject element)
 		{
 			return (bool)element.GetValue(UpdateOnTapProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Slider.xml" path="//Member[@MemberName='SetUpdateOnTap'][1]/Docs/*" />
+		/// <summary>Sets whether the slider value updates when the user taps on the track on iOS.</summary>
+		/// <param name="element">The element to set the value on.</param>
+		/// <param name="value"><see langword="true"/> to update on tap; otherwise, <see langword="false"/>.</param>
 		public static void SetUpdateOnTap(BindableObject element, bool value)
 		{
 			element.SetValue(UpdateOnTapProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Slider.xml" path="//Member[@MemberName='GetUpdateOnTap'][2]/Docs/*" />
+		/// <summary>Gets whether the slider value updates when the user taps on the track on iOS.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <returns><see langword="true"/> if tap updates value; otherwise, <see langword="false"/>.</returns>
 		public static bool GetUpdateOnTap(this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{
 			return GetUpdateOnTap(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Slider.xml" path="//Member[@MemberName='SetUpdateOnTap'][2]/Docs/*" />
+		/// <summary>Sets whether the slider value updates when the user taps on the track on iOS.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <param name="value"><see langword="true"/> to update on tap; otherwise, <see langword="false"/>.</param>
+		/// <returns>The updated platform configuration.</returns>
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetUpdateOnTap(this IPlatformElementConfiguration<iOS, FormsElement> config, bool value)
 		{
 			SetUpdateOnTap(config.Element, value);

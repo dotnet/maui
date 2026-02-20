@@ -120,8 +120,15 @@ assemblies at build & runtime.
 
 After you've done a build, such as:
 
-```dotnetcli
-$ dotnet cake
+```bash
+# Restore .NET SDK and workloads, then pack
+./build.sh -restore -pack
+```
+
+or on Windows:
+
+```cmd
+.\build.cmd -restore -pack
 ```
 
 You'll have various `artifacts/*.nupkg` files produced, as well as the

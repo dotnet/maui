@@ -259,7 +259,12 @@ namespace Microsoft.Maui.Controls
 		/// <remarks>This method can be overridden to add class handling for this event. Overrides must call the base method.</remarks>
 		protected override void OnBindingContextChanged()
 		{
-			this.PropagateBindingContext(GestureRecognizers);
+			var gestureRecognizers = GestureRecognizers;
+			if (gestureRecognizers.Count > 0)
+			{
+				this.PropagateBindingContext(gestureRecognizers);
+			}
+
 			base.OnBindingContextChanged();
 		}
 

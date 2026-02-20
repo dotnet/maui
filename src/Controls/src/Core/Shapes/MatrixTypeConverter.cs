@@ -4,7 +4,9 @@ using System.Globalization;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/MatrixTypeConverter.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.MatrixTypeConverter']/Docs/*" />
+	/// <summary>
+	/// A type converter that converts strings to <see cref="Matrix"/> objects.
+	/// </summary>
 	public class MatrixTypeConverter : TypeConverter
 	{
 		static readonly char[] _separator = [' ', ','];

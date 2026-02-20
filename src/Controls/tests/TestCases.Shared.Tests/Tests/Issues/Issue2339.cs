@@ -13,7 +13,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Picker)]
-		[Category(UITestCategories.Compatibility)]
 		[FailsOnWindowsWhenRunningOnXamarinUITest("Focus Behavior is different")]
 		public void FocusAndUnFocusMultipleTimes()
 		{

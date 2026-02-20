@@ -23,7 +23,7 @@ class SourceGenContext(IndentedTextWriter writer, Compilation compilation, Sourc
 
 	public SourceProductionContext SourceProductionContext => sourceProductionContext;
 	public IndentedTextWriter Writer => writer;
-	
+
 	public IndentedTextWriter? RefStructWriter { get; set; }
 
 	public Compilation Compilation => compilation;
@@ -32,7 +32,23 @@ class SourceGenContext(IndentedTextWriter writer, Compilation compilation, Sourc
 	public IDictionary<XmlType, INamedTypeSymbol> TypeCache => typeCache;
 	public IDictionary<INode, object> Values { get; } = new Dictionary<INode, object>();
 	public IDictionary<INode, ILocalValue> Variables { get; } = new Dictionary<INode, ILocalValue>();
-	public void ReportDiagnostic(Diagnostic diagnostic) => sourceProductionContext.ReportDiagnostic(diagnostic);
+	public void ReportDiagnostic(Diagnostic diagnostic)
+	{
+		// Check if this diagnostic should be suppressed based on NoWarn
+		var noWarn = ProjectItem?.NoWarn;
+		if (!string.IsNullOrEmpty(noWarn))
+		{
+			var suppressedIds = noWarn!.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries);
+			foreach (var id in suppressedIds)
+			{
+				if (diagnostic.Id.Equals(id.Trim(), StringComparison.OrdinalIgnoreCase))
+				{
+					return; // Suppress this diagnostic
+				}
+			}
+		}
+		sourceProductionContext.ReportDiagnostic(diagnostic);
+	}
 	public IDictionary<INode, ILocalValue> ServiceProviders { get; } = new Dictionary<INode, ILocalValue>();
 	public IDictionary<INode, (ILocalValue namescope, IDictionary<string, ILocalValue> namesInScope)> Scopes = new Dictionary<INode, (ILocalValue, IDictionary<string, ILocalValue>)>();
 	public SourceGenContext? ParentContext { get; set; }

@@ -203,4 +203,34 @@
     <value>Właściwość {0} zawiera słowo kluczowe „required”. Obsługa tego problemu w języku XAML jest obecnie ograniczona, dlatego nie należy go używać. Nadal dokładamy wszelkich starań, aby zapewnić wartość.</value>
     <comment>0 is a property identifier</comment>
   </data>
+  <data name="BindingCompilationFailed" xml:space="preserve">
+    <value>Kompilacja powiązania nie powiodła się</value>
+  </data>
+  <data name="BindingCompilationWarning" xml:space="preserve">
+    <value>Ostrzeżenie kompilacji powiązania</value>
+  </data>
+  <data name="BindingIndexerNotClosed" xml:space="preserve">
+    <value>Powiązanie: indeksator nie zawierał nawiasu zamykającego.</value>
+  </data>
+  <data name="BindingIndexerEmpty" xml:space="preserve">
+    <value>Powiązanie: indeksator nie zawierał argumentów.</value>
+  </data>
+  <data name="BindingIndexerTypeUnsupported" xml:space="preserve">
+    <value>Powiązanie: nieobsługiwany typ indeksu indeksatora: „{0}”.</value>
+    <comment>0 is indexer type name</comment>
+  </data>
+  <data name="BindingPropertyNotFound" xml:space="preserve">
+    <value>Powiązanie: nie znaleziono właściwości „{0}” w typie „{1}”. Powiązanie będzie korzystać z wolniejszego, opartego na refleksji, powiązania w czasie wykonywania. Jeśli ta właściwość jest generowana przez inny generator źródła, rozważ zgłoszenie tego na https://github.com/dotnet/maui/issues, aby pomóc nam poprawić współpracę generatorów źródła.</value>
+    <comment>0 is property name, 1 is type name</comment>
+  </data>
+  <data name="BindingWithXDataTypeFromOuterScope" xml:space="preserve">
+    <value>Powiązanie może być niepoprawnie skompilowane, ponieważ adnotacja x:DataType pochodzi z zakresu zewnętrznego. Upewnij się, że adnotujesz wszystkie elementy XAML DataTemplate z poprawną adnotacją x:DataType. Aby uzyskać więcej informacji, zobacz https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings.</value>
+  </data>
+  <data name="NamescopeError" xml:space="preserve">
+    <value>Błąd zakresu nazw</value>
+  </data>
+  <data name="NamescopeDuplicate" xml:space="preserve">
+    <value>Element o nazwie „{0}” już istnieje w tym zakresie NameScope.</value>
+    <comment>0 is the duplicated key</comment>
+  </data>
 </root>

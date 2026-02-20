@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Backing store for the <see cref="Microsoft.Maui.Controls.InputView.TextColor"/> property.</summary>
 		public new static readonly BindableProperty TextColorProperty = InputView.TextColorProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Editor.xml" path="//Member[@MemberName='CharacterSpacingProperty']/Docs/*" />
+		/// <summary>Bindable property for character spacing in the editor text. This is a bindable property.</summary>
 		public new static readonly BindableProperty CharacterSpacingProperty = InputView.CharacterSpacingProperty;
 
 		/// <summary>Backing store for the <see cref="Microsoft.Maui.Controls.InputView.Placeholder"/> property.</summary>
@@ -59,7 +59,8 @@ namespace Microsoft.Maui.Controls
 
 		readonly Lazy<PlatformConfigurationRegistry<Editor>> _platformConfigurationRegistry;
 
-		/// <summary>Gets or sets a value that controls whether the editor will change size to accommodate input as the user enters it.</summary>
+		/// <summary>Gets or sets a value that controls whether the editor will change size to accommodate input as the user enters it. This is a bindable property.</summary>
+		/// <value>An <see cref="EditorAutoSizeOption"/> value. The default is <see cref="EditorAutoSizeOption.Disabled"/>.</value>
 		/// <remarks>Automatic resizing is turned off by default.</remarks>
 		public EditorAutoSizeOption AutoSize
 		{
@@ -67,12 +68,20 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(AutoSizeProperty, value); }
 		}
 
+		/// <summary>
+		/// Gets or sets the horizontal alignment of the text within the editor. This is a bindable property.
+		/// </summary>
+		/// <value>A <see cref="TextAlignment"/> value. The default is <see cref="TextAlignment.Start"/>.</value>
 		public TextAlignment HorizontalTextAlignment
 		{
 			get { return (TextAlignment)GetValue(HorizontalTextAlignmentProperty); }
 			set { SetValue(HorizontalTextAlignmentProperty, value); }
 		}
 
+		/// <summary>
+		/// Gets or sets the vertical alignment of the text within the editor. This is a bindable property.
+		/// </summary>
+		/// <value>A <see cref="TextAlignment"/> value. The default is <see cref="TextAlignment.Start"/>.</value>
 		public TextAlignment VerticalTextAlignment
 		{
 			get { return (TextAlignment)GetValue(VerticalTextAlignmentProperty); }
@@ -86,6 +95,13 @@ namespace Microsoft.Maui.Controls
 				InvalidateMeasure();
 		}
 
+		/// <summary>
+		/// Occurs when the user finalizes the text in the editor with a completion action.
+		/// </summary>
+		/// <remarks>
+		/// This event is typically raised when the user presses a hardware or software keyboard's done/return key,
+		/// although the specific trigger may vary by platform.
+		/// </remarks>
 		public event EventHandler Completed;
 		double _previousWidthConstraint;
 		double _previousHeightConstraint;

@@ -11,7 +11,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.FlyoutPage']/Docs/*" />
+	/// <summary>A <see cref="Page"/> that manages two panes of information: a flyout that presents a menu or navigation, and a detail that presents the selected content.</summary>
 	[ContentProperty(nameof(Detail))]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class FlyoutPage : Page, IFlyoutPageController, IElementConfiguration<FlyoutPage>, IFlyoutView
@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Controls
 
 		IFlyoutPageController FlyoutPageController => this;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutPage.xml" path="//Member[@MemberName='Detail']/Docs/*" />
+		/// <summary>Gets or sets the detail page that is used to display details about items on the flyout page.</summary>
 		public Page Detail
 		{
 			get { return _detail; }
@@ -82,21 +82,21 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutPage.xml" path="//Member[@MemberName='IsGestureEnabled']/Docs/*" />
+		/// <summary>Gets or sets a value that indicates whether swipe gestures can open the flyout. This is a bindable property.</summary>
 		public bool IsGestureEnabled
 		{
 			get { return (bool)GetValue(IsGestureEnabledProperty); }
 			set { SetValue(IsGestureEnabledProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutPage.xml" path="//Member[@MemberName='IsPresented']/Docs/*" />
+		/// <summary>Gets or sets a value that indicates whether the flyout is presented. This is a bindable property.</summary>
 		public bool IsPresented
 		{
 			get { return (bool)GetValue(IsPresentedProperty); }
 			set { SetValue(IsPresentedProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutPage.xml" path="//Member[@MemberName='Flyout']/Docs/*" />
+		/// <summary>Gets or sets the flyout page that is used to present a menu or navigation options.</summary>
 		public Page Flyout
 		{
 			get { return _flyout; }
@@ -138,7 +138,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutPage.xml" path="//Member[@MemberName='FlyoutLayoutBehavior']/Docs/*" />
+		/// <summary>Gets or sets a value that indicates how the flyout page displays on the screen. This is a bindable property.</summary>
 		public FlyoutLayoutBehavior FlyoutLayoutBehavior
 		{
 			get { return (FlyoutLayoutBehavior)GetValue(FlyoutLayoutBehaviorProperty); }
@@ -187,7 +187,8 @@ namespace Microsoft.Maui.Controls
 
 		public event EventHandler IsPresentedChanged;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutPage.xml" path="//Member[@MemberName='ShouldShowToolbarButton']/Docs/*" />
+		/// <summary>Returns a value that indicates whether the toolbar should display a button to toggle the flyout.</summary>
+		/// <returns><see langword="true"/> if the toolbar button should be shown; otherwise, <see langword="false"/>.</returns>
 		public virtual bool ShouldShowToolbarButton()
 		{
 			if (DeviceInfo.Idiom == DeviceIdiom.Phone)
@@ -261,7 +262,7 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public event EventHandler<BackButtonPressedEventArgs> BackButtonPressed;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutPage.xml" path="//Member[@MemberName='UpdateFlyoutLayoutBehavior']/Docs/*" />
+		/// <summary>Updates the layout behavior of the flyout page based on the current device orientation.</summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void UpdateFlyoutLayoutBehavior()
 		{
@@ -308,7 +309,7 @@ namespace Microsoft.Maui.Controls
 			return DeviceInfo.Platform == DevicePlatform.macOS;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutPage.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>Initializes a new instance of the <see cref="FlyoutPage"/> class.</summary>
 		public FlyoutPage()
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<FlyoutPage>>(() => new PlatformConfigurationRegistry<FlyoutPage>(this));

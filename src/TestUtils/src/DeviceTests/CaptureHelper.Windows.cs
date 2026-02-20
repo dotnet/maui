@@ -29,12 +29,29 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static GraphicsCaptureItem CreateItemForWindow(IntPtr hwnd)
 		{
-			var interop = GraphicsCaptureItem.As<IGraphicsCaptureItemInterop>();
-			var itemPointer = interop.CreateForWindow(hwnd, GraphicsCaptureItemGuid);
-			var item = GraphicsCaptureItem.FromAbi(itemPointer);
-			Marshal.Release(itemPointer);
+			var isSupported = GraphicsCaptureSession.IsSupported();
 
-			return item;
+			if (!isSupported)
+			{
+				throw new PlatformNotSupportedException(
+					"Windows Graphics Capture API is not supported in this environment. " +
+					"This commonly occurs on Helix CI VMs where the required graphics infrastructure is not available.");
+			}
+
+			try
+			{
+				var interop = GraphicsCaptureItem.As<IGraphicsCaptureItemInterop>();
+				var itemPointer = interop.CreateForWindow(hwnd, GraphicsCaptureItemGuid);
+				var item = GraphicsCaptureItem.FromAbi(itemPointer);
+				Marshal.Release(itemPointer);
+				return item;
+			}
+			catch (ArgumentException ex) when (ex.Message.Contains("Value does not fall within the expected range", StringComparison.Ordinal))
+			{
+				throw new PlatformNotSupportedException(
+					"Windows Graphics Capture failed: the display environment does not support window capture. " +
+					"This commonly occurs on Helix CI VMs.", ex);
+			}
 		}
 
 		public static GraphicsCaptureItem CreateItemForMonitor(IntPtr hmon)

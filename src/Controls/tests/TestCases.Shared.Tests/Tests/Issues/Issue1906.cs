@@ -14,7 +14,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.DisplayAlert)]
-		[Category(UITestCategories.Compatibility)]
 		public void TestIssue1906()
 		{
 			App.WaitForElement("Show alert");

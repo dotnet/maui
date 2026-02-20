@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace Microsoft.Maui.Controls.Internals
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/NameScope.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.NameScope']/Docs/*" />
+	/// <summary>Provides XAML namescope functionality for resolving named elements.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class NameScope : INameScope
 	{
@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Controls.Internals
 			return _values.TryGetValue(scopedObject, out var name) ? name : null;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/NameScope.xml" path="//Member[@MemberName='GetNameScope']/Docs/*" />
+		/// <summary>Gets the namescope attached to the bindable object.</summary>
 		public static INameScope GetNameScope(BindableObject bindable)
 		{
 			if (!RuntimeFeature.AreNamescopesSupported)
@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Controls.Internals
 			return (INameScope)bindable.GetValue(NameScopeProperty);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/NameScope.xml" path="//Member[@MemberName='SetNameScope']/Docs/*" />
+		/// <summary>Attaches a namescope to the bindable object.</summary>
 		public static void SetNameScope(BindableObject bindable, INameScope value)
 		{
 			if (!RuntimeFeature.AreNamescopesSupported)

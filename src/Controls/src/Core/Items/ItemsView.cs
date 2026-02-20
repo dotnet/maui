@@ -22,7 +22,14 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty EmptyViewProperty =
 			BindableProperty.Create(nameof(EmptyView), typeof(object), typeof(ItemsView), null);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="//Member[@MemberName='EmptyView']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the view or object to display when the <see cref="ItemsSource"/> is empty or <see langword="null"/>.
+		/// </summary>
+		/// <value>The empty view content, which can be a string, view, or any object. Use <see cref="EmptyViewTemplate"/> to customize rendering.</value>
+		/// <remarks>
+		/// The empty view provides user feedback when there are no items to display.
+		/// If <see cref="EmptyViewTemplate"/> is set, it is used to render the empty view; otherwise, the object's string representation or the view itself is displayed.
+		/// </remarks>
 		public object EmptyView
 		{
 			get => GetValue(EmptyViewProperty);
@@ -33,7 +40,14 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty EmptyViewTemplateProperty =
 			BindableProperty.Create(nameof(EmptyViewTemplate), typeof(DataTemplate), typeof(ItemsView), null);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="//Member[@MemberName='EmptyViewTemplate']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the <see cref="DataTemplate"/> used to render the <see cref="EmptyView"/>.
+		/// </summary>
+		/// <value>A <see cref="DataTemplate"/> that defines how the empty view is displayed, or <see langword="null"/> to use default rendering.</value>
+		/// <remarks>
+		/// The template's binding context is set to the <see cref="EmptyView"/> object.
+		/// This allows for rich, custom layouts to be displayed when the collection is empty.
+		/// </remarks>
 		public DataTemplate EmptyViewTemplate
 		{
 			get => (DataTemplate)GetValue(EmptyViewTemplateProperty);
@@ -44,7 +58,14 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty ItemsSourceProperty =
 			BindableProperty.Create(nameof(ItemsSource), typeof(IEnumerable), typeof(ItemsView), null);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="//Member[@MemberName='ItemsSource']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the collection of items to be displayed.
+		/// </summary>
+		/// <value>An <see cref="IEnumerable"/> collection of items to display, or <see langword="null"/> to display the <see cref="EmptyView"/>.</value>
+		/// <remarks>
+		/// The items source can be any collection that implements <see cref="IEnumerable"/>.
+		/// For automatic UI updates when the collection changes, use an <see cref="ObservableCollection{T}"/> or implement <see cref="System.Collections.Specialized.INotifyCollectionChanged"/>.
+		/// </remarks>
 		public IEnumerable ItemsSource
 		{
 			get => (IEnumerable)GetValue(ItemsSourceProperty);
@@ -55,7 +76,15 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty RemainingItemsThresholdReachedCommandProperty =
 			BindableProperty.Create(nameof(RemainingItemsThresholdReachedCommand), typeof(ICommand), typeof(ItemsView), null);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="//Member[@MemberName='RemainingItemsThresholdReachedCommand']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the command to execute when the remaining items threshold is reached during scrolling.
+		/// </summary>
+		/// <value>An <see cref="ICommand"/> to execute, or <see langword="null"/> for no command.</value>
+		/// <remarks>
+		/// This command is commonly used to implement incremental loading (infinite scroll).
+		/// When scrolling reaches the threshold specified by <see cref="RemainingItemsThreshold"/>, this command is executed,
+		/// allowing you to load more items asynchronously.
+		/// </remarks>
 		public ICommand RemainingItemsThresholdReachedCommand
 		{
 			get => (ICommand)GetValue(RemainingItemsThresholdReachedCommandProperty);
@@ -65,7 +94,10 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="RemainingItemsThresholdReachedCommandParameter"/>.</summary>
 		public static readonly BindableProperty RemainingItemsThresholdReachedCommandParameterProperty = BindableProperty.Create(nameof(RemainingItemsThresholdReachedCommandParameter), typeof(object), typeof(ItemsView), default(object));
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="//Member[@MemberName='RemainingItemsThresholdReachedCommandParameter']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the parameter to pass to the <see cref="RemainingItemsThresholdReachedCommand"/>.
+		/// </summary>
+		/// <value>The command parameter, or <see langword="null"/> if no parameter is needed.</value>
 		public object RemainingItemsThresholdReachedCommandParameter
 		{
 			get => GetValue(RemainingItemsThresholdReachedCommandParameterProperty);
@@ -79,7 +111,10 @@ namespace Microsoft.Maui.Controls
 			typeof(ItemsView),
 			ScrollBarVisibility.Default);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="//Member[@MemberName='HorizontalScrollBarVisibility']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the visibility of the horizontal scroll bar.
+		/// </summary>
+		/// <value>A <see cref="ScrollBarVisibility"/> value. The default is <see cref="ScrollBarVisibility.Default"/>.</value>
 		public ScrollBarVisibility HorizontalScrollBarVisibility
 		{
 			get => (ScrollBarVisibility)GetValue(HorizontalScrollBarVisibilityProperty);
@@ -93,7 +128,10 @@ namespace Microsoft.Maui.Controls
 			typeof(ItemsView),
 			ScrollBarVisibility.Default);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="//Member[@MemberName='VerticalScrollBarVisibility']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the visibility of the vertical scroll bar.
+		/// </summary>
+		/// <value>A <see cref="ScrollBarVisibility"/> value. The default is <see cref="ScrollBarVisibility.Default"/>.</value>
 		public ScrollBarVisibility VerticalScrollBarVisibility
 		{
 			get => (ScrollBarVisibility)GetValue(VerticalScrollBarVisibilityProperty);
@@ -104,7 +142,14 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty RemainingItemsThresholdProperty =
 			BindableProperty.Create(nameof(RemainingItemsThreshold), typeof(int), typeof(ItemsView), -1, validateValue: (bindable, value) => (int)value >= -1);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="//Member[@MemberName='RemainingItemsThreshold']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the number of remaining items in the view that trigger the <see cref="RemainingItemsThresholdReached"/> event.
+		/// </summary>
+		/// <value>The threshold count. Must be -1 or greater. The default is -1 (disabled).</value>
+		/// <remarks>
+		/// When scrolling reaches a point where only this many items remain to be displayed, the <see cref="RemainingItemsThresholdReached"/> event fires.
+		/// Set to -1 to disable the threshold behavior. This is commonly used for implementing infinite scroll or incremental loading.
+		/// </remarks>
 		public int RemainingItemsThreshold
 		{
 			get => (int)GetValue(RemainingItemsThresholdProperty);
@@ -135,7 +180,14 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty ItemTemplateProperty =
 			BindableProperty.Create(nameof(ItemTemplate), typeof(DataTemplate), typeof(ItemsView));
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="//Member[@MemberName='ItemTemplate']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the <see cref="DataTemplate"/> used to render each item in the collection.
+		/// </summary>
+		/// <value>A <see cref="DataTemplate"/> that defines how items are displayed, or <see langword="null"/> to use default rendering.</value>
+		/// <remarks>
+		/// The template's binding context is set to each item in the <see cref="ItemsSource"/>.
+		/// For dynamic template selection based on item data, use a <see cref="DataTemplateSelector"/> instead.
+		/// </remarks>
 		public DataTemplate ItemTemplate
 		{
 			get => (DataTemplate)GetValue(ItemTemplateProperty);
@@ -147,28 +199,53 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.Create(nameof(ItemsUpdatingScrollMode), typeof(ItemsUpdatingScrollMode), typeof(ItemsView),
 				default(ItemsUpdatingScrollMode));
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="//Member[@MemberName='ItemsUpdatingScrollMode']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the scroll behavior when items are added, removed, or updated in the collection.
+		/// </summary>
+		/// <value>An <see cref="ItemsUpdatingScrollMode"/> value. The default is <see cref="ItemsUpdatingScrollMode.KeepItemsInView"/>.</value>
+		/// <remarks>
+		/// This property controls how the view maintains its scroll position when the <see cref="ItemsSource"/> changes.
+		/// Use <see cref="ItemsUpdatingScrollMode.KeepLastItemInView"/> for chat-like interfaces where new items are added at the end.
+		/// </remarks>
 		public ItemsUpdatingScrollMode ItemsUpdatingScrollMode
 		{
 			get => (ItemsUpdatingScrollMode)GetValue(ItemsUpdatingScrollModeProperty);
 			set => SetValue(ItemsUpdatingScrollModeProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="//Member[@MemberName='ScrollTo'][1]/Docs/*" />
+		/// <summary>
+		/// Scrolls the items view to the item at the specified index.
+		/// </summary>
+		/// <param name="index">The zero-based index of the item to scroll to.</param>
+		/// <param name="groupIndex">The zero-based index of the group containing the item, or -1 if not grouped.</param>
+		/// <param name="position">The position where the item should appear in the visible area after scrolling.</param>
+		/// <param name="animate"><see langword="true"/> to animate the scroll; <see langword="false"/> to jump immediately.</param>
 		public void ScrollTo(int index, int groupIndex = -1,
 			ScrollToPosition position = ScrollToPosition.MakeVisible, bool animate = true)
 		{
 			OnScrollToRequested(new ScrollToRequestEventArgs(index, groupIndex, position, animate));
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="//Member[@MemberName='ScrollTo'][2]/Docs/*" />
+		/// <summary>
+		/// Scrolls the items view to the specified data item.
+		/// </summary>
+		/// <param name="item">The data item to scroll to.</param>
+		/// <param name="group">The group object containing the item, or <see langword="null"/> if not grouped.</param>
+		/// <param name="position">The position where the item should appear in the visible area after scrolling.</param>
+		/// <param name="animate"><see langword="true"/> to animate the scroll; <see langword="false"/> to jump immediately.</param>
 		public void ScrollTo(object item, object group = null,
 			ScrollToPosition position = ScrollToPosition.MakeVisible, bool animate = true)
 		{
 			OnScrollToRequested(new ScrollToRequestEventArgs(item, group, position, animate));
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="//Member[@MemberName='SendRemainingItemsThresholdReached']/Docs/*" />
+		/// <summary>
+		/// Manually triggers the remaining items threshold behavior.
+		/// </summary>
+		/// <remarks>
+		/// This method raises the <see cref="RemainingItemsThresholdReached"/> event and executes the <see cref="RemainingItemsThresholdReachedCommand"/>.
+		/// It's typically called by platform-specific renderers when scrolling reaches the threshold, but can be called manually if needed.
+		/// </remarks>
 		public void SendRemainingItemsThresholdReached()
 		{
 			RemainingItemsThresholdReached?.Invoke(this, EventArgs.Empty);

@@ -13,13 +13,26 @@ using PlatformView = System.Object;
 
 namespace Microsoft.Maui.Maps.Handlers
 {
+	/// <summary>
+	/// Provides handler functionality for the <see cref="IMap"/> control.
+	/// </summary>
 	public interface IMapHandler : IViewHandler
 	{
+		/// <inheritdoc/>
 		new IMap VirtualView { get; }
+
+		/// <inheritdoc/>
 		new PlatformView PlatformView { get; }
 #if MONOANDROID
+		/// <summary>
+		/// Gets the Google Maps instance for Android.
+		/// </summary>
 		GoogleMap? Map { get; }
 #endif
+		/// <summary>
+		/// Updates the specified map element on the platform.
+		/// </summary>
+		/// <param name="element">The map element to update.</param>
 		void UpdateMapElement(IMapElement element);
 	}
 }

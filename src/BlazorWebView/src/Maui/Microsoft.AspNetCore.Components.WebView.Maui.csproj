@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <DefineConstants>$(DefineConstants);WEBVIEW2_MAUI</DefineConstants>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <WarningsAsErrors>$(WarningsAsErrors);CS1591</WarningsAsErrors>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 

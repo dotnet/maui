@@ -8,7 +8,9 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathFigureCollectionConverter.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.PathFigureCollectionConverter']/Docs/*" />
+	/// <summary>
+	/// A type converter that converts path markup syntax strings to <see cref="PathFigureCollection"/> objects.
+	/// </summary>
 	public class PathFigureCollectionConverter : TypeConverter
 	{
 		public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
@@ -30,7 +32,11 @@ namespace Microsoft.Maui.Controls.Shapes
 			return pathFigureCollection;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathFigureCollectionConverter.xml" path="//Member[@MemberName='ParseStringToPathFigureCollection']/Docs/*" />
+		/// <summary>
+		/// Parses a path markup syntax string and adds the resulting figures to the specified collection.
+		/// </summary>
+		/// <param name="pathFigureCollection">The collection to add the parsed figures to.</param>
+		/// <param name="pathString">The path markup syntax string to parse.</param>
 		public static void ParseStringToPathFigureCollection(PathFigureCollection pathFigureCollection, string? pathString)
 		{
 			bool figureStarted = default;

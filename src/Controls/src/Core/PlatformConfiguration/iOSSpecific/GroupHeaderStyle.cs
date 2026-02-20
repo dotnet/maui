@@ -1,12 +1,11 @@
-
 namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 {
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/GroupHeaderStyle.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.GroupHeaderStyle']/Docs/*" />
+	/// <summary>Specifies the iOS UITableViewStyle for grouped ListView headers.</summary>
 	public enum GroupHeaderStyle
 	{
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/GroupHeaderStyle.xml" path="//Member[@MemberName='Plain']/Docs/*" />
+		/// <summary>Plain style headers that scroll with content and stick at the top.</summary>
 		Plain,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/GroupHeaderStyle.xml" path="//Member[@MemberName='Grouped']/Docs/*" />
+		/// <summary>Grouped style headers with rounded corners and inset appearance.</summary>
 		Grouped
 	}
 }

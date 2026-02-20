@@ -11,25 +11,34 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 		/// <summary>Bindable property for attached property <c>DetectReadingOrderFromContent</c>.</summary>
 		public static readonly BindableProperty DetectReadingOrderFromContentProperty = BindableProperty.Create("DetectReadingOrderFromContent", typeof(bool), typeof(FormsElement), false);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/Label.xml" path="//Member[@MemberName='SetDetectReadingOrderFromContent'][1]/Docs/*" />
+		/// <summary>Sets whether reading order (LTR/RTL) is detected from label content on Windows.</summary>
+		/// <param name="element">The element to configure.</param>
+		/// <param name="value"><see langword="true"/> to detect reading order from content.</param>
 		public static void SetDetectReadingOrderFromContent(BindableObject element, bool value)
 		{
 			element.SetValue(DetectReadingOrderFromContentProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/Label.xml" path="//Member[@MemberName='GetDetectReadingOrderFromContent'][2]/Docs/*" />
+		/// <summary>Gets whether reading order (LTR/RTL) is detected from label content on Windows.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <returns><see langword="true"/> if reading order detection is enabled.</returns>
 		public static bool GetDetectReadingOrderFromContent(this IPlatformElementConfiguration<Windows, FormsElement> config)
 		{
 			return (bool)config.Element.GetValue(DetectReadingOrderFromContentProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/Label.xml" path="//Member[@MemberName='GetDetectReadingOrderFromContent'][1]/Docs/*" />
+		/// <summary>Gets whether reading order (LTR/RTL) is detected from label content on Windows.</summary>
+		/// <param name="element">The element to query.</param>
+		/// <returns><see langword="true"/> if reading order detection is enabled.</returns>
 		public static bool GetDetectReadingOrderFromContent(BindableObject element)
 		{
 			return (bool)element.GetValue(DetectReadingOrderFromContentProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/Label.xml" path="//Member[@MemberName='SetDetectReadingOrderFromContent'][2]/Docs/*" />
+		/// <summary>Sets whether reading order (LTR/RTL) is detected from label content on Windows.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <param name="value"><see langword="true"/> to detect reading order from content.</param>
+		/// <returns>The updated platform configuration.</returns>
 		public static IPlatformElementConfiguration<Windows, FormsElement> SetDetectReadingOrderFromContent(
 			this IPlatformElementConfiguration<Windows, FormsElement> config, bool value)
 		{

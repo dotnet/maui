@@ -203,4 +203,34 @@
     <value>{0} contient le mot-clé « obligatoire ». La prise en charge de ce mot-clé dans XAML est actuellement limitée, évitez de l’utiliser. Nous faisons toujours de notre mieux pour fournir une valeur.</value>
     <comment>0 is a property identifier</comment>
   </data>
+  <data name="BindingCompilationFailed" xml:space="preserve">
+    <value>Échec de la compilation de liaison</value>
+  </data>
+  <data name="BindingCompilationWarning" xml:space="preserve">
+    <value>Avertissement de compilation de liaison</value>
+  </data>
+  <data name="BindingIndexerNotClosed" xml:space="preserve">
+    <value>Liaison : l’indexeur ne contient pas de crochet fermant.</value>
+  </data>
+  <data name="BindingIndexerEmpty" xml:space="preserve">
+    <value>Liaison : l’indexeur ne contient pas d'arguments.</value>
+  </data>
+  <data name="BindingIndexerTypeUnsupported" xml:space="preserve">
+    <value>Liaison : type d’index d’indexeur non pris en charge : « {0} ».</value>
+    <comment>0 is indexer type name</comment>
+  </data>
+  <data name="BindingPropertyNotFound" xml:space="preserve">
+    <value>Liaison : propriété « {0} » introuvable sur « {1} ». La liaison utilisera une liaison basée sur la réflexion, plus lente, au moment de l’exécution. Si cette propriété est générée par un autre générateur source, signalez-le sur https://github.com/dotnet/maui/issues pour nous aider à améliorer l’interopérabilité des générateurs source.</value>
+    <comment>0 is property name, 1 is type name</comment>
+  </data>
+  <data name="BindingWithXDataTypeFromOuterScope" xml:space="preserve">
+    <value>La compilation de la liaison peut être incorrecte car l’annotation x:DataType provient d’une étendue externe. Assurez-vous d’annoter tous les éléments XAML de DataTemplate avec le x:DataType correspondant. Pour plus d’informations, consultez https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings.</value>
+  </data>
+  <data name="NamescopeError" xml:space="preserve">
+    <value>Erreur de portée des noms</value>
+  </data>
+  <data name="NamescopeDuplicate" xml:space="preserve">
+    <value>Un élément nommé « {0} » existe déjà dans ce NameScope.</value>
+    <comment>0 is the duplicated key</comment>
+  </data>
 </root>

@@ -14,7 +14,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CarouselView)]
-		[Category(UITestCategories.Label)]
 		public void AppShouldNotCrash()
 		{
 			App.WaitForElement("btnScrollToLastItem");

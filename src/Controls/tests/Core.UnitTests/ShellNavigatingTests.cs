@@ -994,6 +994,31 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 		}
 
+		[Fact]
+		public async Task RemovePageDisconnectsHandlerInShell()
+		{
+			Routing.RegisterRoute("page1", typeof(TestPage1));
+			Routing.RegisterRoute("page2", typeof(TestPage2));
+			var shell = new TestShell(
+				CreateShellItem(shellContentRoute: "root", shellItemRoute: "main")
+			);
+
+			await shell.GoToAsync("//main/root/page1");
+			await shell.GoToAsync("page2");
+
+			// Get the middle page and assign a handler
+			var middlePage = shell.Navigation.NavigationStack[1];
+			var mockHandler = new HandlerStub();
+			middlePage.Handler = mockHandler;
+
+			// Act: Remove the middle page
+			shell.Navigation.RemovePage(middlePage);
+
+			// Assert: Handler should be disconnected
+			Assert.Null(middlePage.Handler);
+			Assert.Equal(2, shell.Navigation.NavigationStack.Count);
+		}
+
 		ShellNavigatingEventArgs CreateShellNavigatedEventArgs() =>
 			new ShellNavigatingEventArgs("..", "../newstate", ShellNavigationSource.Push, true);
 	}

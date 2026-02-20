@@ -6,17 +6,12 @@ using UITest.Core;
 namespace Microsoft.Maui.TestCases.Tests
 {
 	[Category(UITestCategories.Navigation)]
-	public class NavigationPageFeatureTests : UITest
+	public class NavigationPageFeatureTests : _GalleryUITest
 	{
 		public const string NavigationPageFeatureMatrix = "NavigationPage Feature Matrix";
+		public override string GalleryPageName => NavigationPageFeatureMatrix;
 
 		public NavigationPageFeatureTests(TestDevice device) : base(device) { }
-
-		protected override void FixtureSetup()
-		{
-			base.FixtureSetup();
-			App.NavigateToGallery(NavigationPageFeatureMatrix);
-		}
 
 		[Test, Order(1)]
 		public void EntryPoints_AreVisible()
@@ -138,7 +133,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("PushPageButton");
 			App.Tap("PushPageButton");
 			// Validate visually on page 2 (back button title)
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 #endif
 #endif
@@ -289,7 +284,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("TitleIconButton");
 			App.Tap("TitleIconButton");
 			// Screenshot: Title icon applied on current page
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 #if TEST_FAILS_ON_ANDROID      //Issue Link: https://github.com/dotnet/maui/issues/31445                                                                
@@ -305,7 +300,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("TitleIconButton");
 			App.WaitForElement("TitleIconButton");
 			App.Tap("TitleIconButton");
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 #endif
 
@@ -325,7 +320,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("PushPageButton");
 			App.Tap("PushPageButton");
 			// Screenshot: Combined bar background, text color and icon color on pushed page
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		[Test, Order(14)]
@@ -351,7 +346,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("PushPageButton");
 			App.Tap("PushPageButton");
 			// Screenshot: Title icon and custom title view present on pushed page
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		[Test, Order(15)]

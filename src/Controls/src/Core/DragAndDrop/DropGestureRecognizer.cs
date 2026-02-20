@@ -8,7 +8,9 @@ using System.Windows.Input;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/DropGestureRecognizer.xml" path="Type[@FullName='Microsoft.Maui.Controls.DropGestureRecognizer']/Docs/*" />
+	/// <summary>
+	/// Recognizes drop gestures and handles data transfer during drag and drop operations.
+	/// </summary>
 	public class DropGestureRecognizer : GestureRecognizer
 	{
 		/// <summary>Bindable property for <see cref="AllowDrop"/>.</summary>
@@ -32,63 +34,94 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="DropCommandParameter"/>.</summary>
 		public static readonly BindableProperty DropCommandParameterProperty = BindableProperty.Create(nameof(DropCommandParameter), typeof(object), typeof(DropGestureRecognizer), null);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/DropGestureRecognizer.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="DropGestureRecognizer"/> class.
+		/// </summary>
 		public DropGestureRecognizer()
 		{
 		}
 
+		/// <summary>
+		/// Occurs when a dragged element leaves the drop target.
+		/// </summary>
 		public event EventHandler<DragEventArgs> DragLeave;
+
+		/// <summary>
+		/// Occurs when a dragged element is over the drop target.
+		/// </summary>
 		public event EventHandler<DragEventArgs> DragOver;
+
+		/// <summary>
+		/// Occurs when an element is dropped on the drop target.
+		/// </summary>
 		public event EventHandler<DropEventArgs> Drop;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/DropGestureRecognizer.xml" path="//Member[@MemberName='AllowDrop']/Docs/*" />
+		/// <summary>
+		/// Gets or sets a value indicating whether the element can accept dropped data. This is a bindable property.
+		/// </summary>
 		public bool AllowDrop
 		{
 			get { return (bool)GetValue(AllowDropProperty); }
 			set { SetValue(AllowDropProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/DropGestureRecognizer.xml" path="//Member[@MemberName='DragOverCommand']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the command to invoke when a dragged element is over the drop target. This is a bindable property.
+		/// </summary>
 		public ICommand DragOverCommand
 		{
 			get { return (ICommand)GetValue(DragOverCommandProperty); }
 			set { SetValue(DragOverCommandProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/DropGestureRecognizer.xml" path="//Member[@MemberName='DragOverCommandParameter']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the parameter to pass to <see cref="DragOverCommand"/>. This is a bindable property.
+		/// </summary>
 		public object DragOverCommandParameter
 		{
 			get { return (object)GetValue(DragOverCommandParameterProperty); }
 			set { SetValue(DragOverCommandParameterProperty, value); }
 		}
-		/// <include file="../../../docs/Microsoft.Maui.Controls/DropGestureRecognizer.xml" path="//Member[@MemberName='DragLeaveCommand']/Docs/*" />
+
+		/// <summary>
+		/// Gets or sets the command to invoke when a dragged element leaves the drop target. This is a bindable property.
+		/// </summary>
 		public ICommand DragLeaveCommand
 		{
 			get { return (ICommand)GetValue(DragLeaveCommandProperty); }
 			set { SetValue(DragLeaveCommandProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/DropGestureRecognizer.xml" path="//Member[@MemberName='DragLeaveCommandParameter']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the parameter to pass to <see cref="DragLeaveCommand"/>. This is a bindable property.
+		/// </summary>
 		public object DragLeaveCommandParameter
 		{
 			get { return (object)GetValue(DragLeaveCommandParameterProperty); }
 			set { SetValue(DragLeaveCommandParameterProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/DropGestureRecognizer.xml" path="//Member[@MemberName='DropCommand']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the command to invoke when an element is dropped. This is a bindable property.
+		/// </summary>
 		public ICommand DropCommand
 		{
 			get { return (ICommand)GetValue(DropCommandProperty); }
 			set { SetValue(DropCommandProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/DropGestureRecognizer.xml" path="//Member[@MemberName='DropCommandParameter']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the parameter to pass to <see cref="DropCommand"/>. This is a bindable property.
+		/// </summary>
 		public object DropCommandParameter
 		{
 			get { return (object)GetValue(DropCommandParameterProperty); }
 			set { SetValue(DropCommandParameterProperty, value); }
 		}
 
+		/// <summary>
+		/// Raises the <see cref="DragOver"/> event.
+		/// </summary>
 		/// <param name="args">The event arguments.</param>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendDragOver(DragEventArgs args)

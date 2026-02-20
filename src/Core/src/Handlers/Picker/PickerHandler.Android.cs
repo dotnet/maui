@@ -203,6 +203,7 @@ namespace Microsoft.Maui.Handlers
 
 			_dialog.DismissEvent -= OnDialogDismiss;
 			VirtualView.IsFocused = false;
+			VirtualView.IsOpen = false;
 			_dialog = null;
 		}
 

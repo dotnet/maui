@@ -14,8 +14,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.Shell)]
-		[Category(UITestCategories.Compatibility)]
 		public void ReappearingCollectionViewShouldNotThrowNRE()
 		{
 			App.WaitForElement("8715 About");

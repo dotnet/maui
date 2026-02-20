@@ -1,0 +1,56 @@
+{"days":[{"title":"Explore
+ the Valley Isle","subtitle":"Discover
+ Maui's natural beauty and vibrant culture.","destination":"
+Maui","activities":[{"description":"
+Start your journey with a visit to a local cafe
+ to enjoy a delicious breakfast.","title":"
+Breakfast at a Local Cafe","type":"
+FoodAndDining"},{"description":"Immer
+se yourself in Maui's rich culture by visiting
+ a historic site.","title":"Visit a
+ Local Museum","type":"Sightseeing
+"},{"description":"Spend the afternoon relaxing at a
+ beautiful beach, soaking up the sun and enjoying the
+ ocean breeze.","title":"Beach Day at
+ a Local Beach","type":"Sightseeing
+"}]},{"title":"Whale Watching
+ and Nature Exploration","subtitle":"Experience
+ Maui's marine life and stunning landscapes.","destination":"
+Maui","activities":[{"description":"
+Embark on a thrilling whale-watching tour to
+ spot humpback whales in their natural habitat.","title":"
+Whale Watching Tour","type":"Sight
+seeing"},{"description":"Explore the lush rainforests
+ and waterfalls of Maui on a guided nature hike.
+","title":"Nature Hike in Haleakal
+ā National Park","type":"Ho
+telAndLodging"},{"description":"
+Enjoy a delicious dinner at a local restaurant, savor
+ing fresh seafood and tropical flavors.","title":"
+Dinner at a Local Restaurant","type":"
+FoodAndDining"}]},{"title":"
+Relaxation and Adventure","subtitle":"
+Unwind and explore Maui's hidden gems.
+"
+,"destination":"Maui","activities":[{"description":"Unwind after a day of
+ adventure with a visit to a relaxing spa or wellness
+ center."
+,"title":"Spa Day","type":"FoodAndDining"},{"description":"Visit
+ a scenic viewpoint for breathtaking panoramic views of the island
+.","title":"Sunset Viewing at a
+ Scenic Spot","type":"Sightseeing
+"},{"description":"End your trip with a farewell
+ dinner at a rooftop restaurant, enjoying a stunning sunset
+ over the ocean.","title":"Farewell
+ Dinner at a Rooftop Restaurant","type":"
+FoodAndDining
+"}]}],"title":"Maui Itinerary: Valley Isle Adventures
+"
+,"destinationName":"Maui","rationale":"Maui is a paradise with diverse landscapes and
+ activities. This itinerary balances relaxation, adventure, and
+ cultural exploration, ensuring a memorable experience on the Valley
+ Isle.","description":"Maui
+ is a paradise with diverse landscapes and activities. This
+ itinerary balances relaxation, adventure, and cultural exploration,
+ ensuring a memorable experience on the Valley Isle.
+"}

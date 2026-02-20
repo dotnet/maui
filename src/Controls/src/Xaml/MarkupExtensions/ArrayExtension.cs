@@ -5,6 +5,9 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
+	/// <summary>
+	/// Provides a XAML markup extension that creates an array of objects.
+	/// </summary>
 	[ContentProperty(nameof(Items))]
 	[AcceptEmptyServiceProvider]
 #if !NETSTANDARD
@@ -12,13 +15,22 @@ namespace Microsoft.Maui.Controls.Xaml
 #endif
 	public class ArrayExtension : IMarkupExtension<Array>
 	{
+		/// <summary>
+		/// Initializes a new instance of the <see cref="ArrayExtension"/> class.
+		/// </summary>
 		public ArrayExtension()
 		{
 			Items = new List<object>();
 		}
 
+		/// <summary>
+		/// Gets the list of items to include in the array.
+		/// </summary>
 		public IList Items { get; }
 
+		/// <summary>
+		/// Gets or sets the type of elements in the array.
+		/// </summary>
 		public Type Type { get; set; }
 
 		public Array ProvideValue(IServiceProvider serviceProvider)

@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls.Internals
 			Provider = instance;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Performance.xml" path="//Member[@MemberName='Start'][1]/Docs/*" />
+		/// <summary>Starts a performance measurement, returning a reference for later stopping.</summary>
 		public static void Start(out string reference, string tag = null, [CallerFilePath] string path = null, [CallerMemberName] string member = null)
 		{
 			if (Provider == null)
@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Controls.Internals
 			Provider.Start(reference, tag, path, member);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Performance.xml" path="//Member[@MemberName='Start'][2]/Docs/*" />
+		/// <summary>Starts a performance measurement with an existing reference.</summary>
 		public static void Start(string reference, string tag = null, [CallerFilePath] string path = null,
 			[CallerMemberName] string member = null)
 		{

@@ -130,6 +130,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			bool isHeader = elementKind == UICollectionElementKindSectionKey.Header;
 			cell.isHeaderOrFooterChanged = true;
+			cell.isSupplementaryView = true;
 
 			if (isHeader)
 			{

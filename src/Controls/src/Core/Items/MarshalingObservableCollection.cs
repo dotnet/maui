@@ -12,7 +12,13 @@ namespace Microsoft.Maui.Controls
 	// collection which are made off of the main thread remain invisible to consumers on the main thread
 	// until they have been processed by the main thread.
 
-	/// <include file="../../../docs/Microsoft.Maui.Controls/MarshalingObservableCollection.xml" path="Type[@FullName='Microsoft.Maui.Controls.MarshalingObservableCollection']/Docs/*" />
+	/// <summary>
+	/// A thread-safe observable collection that marshals all collection changes to the main thread.
+	/// </summary>
+	/// <remarks>
+	/// This collection wraps an <see cref="INotifyCollectionChanged"/> collection and ensures that all collection change notifications
+	/// are processed on the main UI thread, making it safe to bind to UI controls even when the underlying collection is modified from background threads.
+	/// </remarks>
 	public class MarshalingObservableCollection : List<object>, INotifyCollectionChanged
 	{
 		readonly IList _internalCollection;

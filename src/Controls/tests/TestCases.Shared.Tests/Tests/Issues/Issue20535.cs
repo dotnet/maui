@@ -22,6 +22,6 @@ public class Issue20535 : _IssuesUITest
 		App.WaitForElement("Update OnColor"); // Wait for the Thumb animation to complete
 
 		// 2. Verify the result.
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 }

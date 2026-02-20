@@ -25,6 +25,29 @@ namespace Microsoft.Maui.TestCases.Tests
 		string _defaultiOSVersion = "18.5";
 
 		protected const int SetupMaxRetries = 1;
+		protected const int InstrumentationCrashMaxRetries = 1;
+
+		/// <summary>
+		/// Detects if an exception indicates an Android UiAutomator2 instrumentation crash
+		/// or other infrastructure failure that requires session recreation.
+		/// </summary>
+		private static bool IsInstrumentationCrash(Exception e)
+		{
+			var message = e.ToString(); // Includes InnerException
+			return
+				message.Contains("instrumentation process is not running", StringComparison.OrdinalIgnoreCase) ||
+				message.Contains("socket hang up", StringComparison.OrdinalIgnoreCase) ||
+				message.Contains("Can't find service: package", StringComparison.OrdinalIgnoreCase) ||
+				message.Contains("Could not proxy command to remote server", StringComparison.OrdinalIgnoreCase) ||
+				message.Contains("ECONNRESET", StringComparison.OrdinalIgnoreCase) ||
+				message.Contains("ECONNREFUSED", StringComparison.OrdinalIgnoreCase) ||
+				message.Contains("Connection refused", StringComparison.OrdinalIgnoreCase) ||
+				message.Contains("InvalidSessionIdException", StringComparison.OrdinalIgnoreCase) ||
+				message.Contains("NoSuchDriverException", StringComparison.OrdinalIgnoreCase) ||
+				message.Contains("session is either terminated or not started", StringComparison.OrdinalIgnoreCase) ||
+				message.Contains("UiAutomator2 server", StringComparison.OrdinalIgnoreCase) ||
+				message.Contains("device offline", StringComparison.OrdinalIgnoreCase);
+		}
 		readonly VisualRegressionTester _visualRegressionTester;
 		readonly IImageEditorFactory _imageEditorFactory;
 		readonly VisualTestContext _visualTestContext;
@@ -67,9 +90,17 @@ namespace Microsoft.Maui.TestCases.Tests
 					config.SetProperty("Headless", bool.Parse(Environment.GetEnvironmentVariable("HEADLESS") ?? "false"));
 					break;
 				case TestDevice.iOS:
-					config.SetProperty("DeviceName", Environment.GetEnvironmentVariable("DEVICE_NAME") ?? "iPhone Xs");
-					config.SetProperty("PlatformVersion", Environment.GetEnvironmentVariable("PLATFORM_VERSION") ?? _defaultiOSVersion);
-					config.SetProperty("Udid", Environment.GetEnvironmentVariable("DEVICE_UDID") ?? "");
+					string udid = Environment.GetEnvironmentVariable("DEVICE_UDID") ?? "";
+					if (!string.IsNullOrEmpty(udid))
+					{
+						config.SetProperty("Udid", udid);
+					}
+					else
+					{					 
+						config.SetProperty("DeviceName", Environment.GetEnvironmentVariable("DEVICE_NAME") ?? "iPhone Xs");
+						config.SetProperty("PlatformVersion", Environment.GetEnvironmentVariable("PLATFORM_VERSION") ?? _defaultiOSVersion);
+					}
+					
 					config.SetProperty("Headless", bool.Parse(Environment.GetEnvironmentVariable("HEADLESS") ?? "false"));
 					break;
 				case TestDevice.Windows:
@@ -102,6 +133,13 @@ namespace Microsoft.Maui.TestCases.Tests
 				config.SetTestConfigurationArg("TEST_CONFIGURATION_ARGS", commandLineArgs);
 			}
 
+			// Pass log file path to app if set - app will write ILogger output to this file
+			var logFilePath = Environment.GetEnvironmentVariable("MAUI_LOG_FILE") ?? "";
+			if (!String.IsNullOrEmpty(logFilePath))
+			{
+				config.SetTestConfigurationArg("MAUI_LOG_FILE", logFilePath);
+			}
+
 			return config;
 		}
 
@@ -110,6 +148,16 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.ResetApp();
 		}
 
+		public override void Close()
+		{
+			App.CloseApp();
+		}
+
+		public override void LaunchAppWithTest()
+		{
+			App.LaunchApp();
+		}
+		
 		/// <summary>
 		/// Verifies the screenshots and returns an exception in case of failure.
 		/// </summary>
@@ -128,6 +176,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			ref Exception? exception,
 			string? name = null,
 			TimeSpan? retryDelay = null,
+			TimeSpan? retryTimeout = null,
 			int cropLeft = 0,
 			int cropRight = 0,
 			int cropTop = 0,
@@ -140,7 +189,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			try
 			{
-				VerifyScreenshot(name, retryDelay, cropLeft, cropRight, cropTop, cropBottom, tolerance
+				VerifyScreenshot(name, retryDelay, retryTimeout, cropLeft, cropRight, cropTop, cropBottom, tolerance
 #if MACUITEST || WINTEST
 				, includeTitleBar
 #endif
@@ -156,7 +205,9 @@ namespace Microsoft.Maui.TestCases.Tests
 		/// Verifies a screenshot by comparing it against a baseline image and throws an exception if verification fails.
 		/// </summary>
 		/// <param name="name">Optional name for the screenshot. If not provided, a default name will be used.</param>
-		/// <param name="retryDelay">Optional delay between retry attempts when verification fails.</param>
+		/// <param name="retryDelay">Optional delay between retry attempts when verification fails. Default is 500ms.</param>
+		/// <param name="retryTimeout">Optional total time to keep retrying before giving up. If not specified, only one retry is attempted.
+		/// Use this for animations with variable completion times (e.g., retryTimeout: TimeSpan.FromSeconds(2)).</param>
 		/// <param name="cropLeft">Number of pixels to crop from the left of the screenshot.</param>
 		/// <param name="cropRight">Number of pixels to crop from the right of the screenshot.</param>
 		/// <param name="cropTop">Number of pixels to crop from the top of the screenshot.</param>
@@ -180,6 +231,9 @@ namespace Microsoft.Maui.TestCases.Tests
 		/// // Allow 5% difference for animations or slight rendering variations
 		/// VerifyScreenshot("ButtonHoverState", tolerance: 5.0);
 		/// 
+		/// // Keep retrying for up to 2 seconds (useful for animations)
+		/// VerifyScreenshot("AnimatedElement", retryTimeout: TimeSpan.FromSeconds(2));
+		/// 
 		/// // Combined with cropping and tolerance
 		/// VerifyScreenshot("HeaderSection", cropTop: 50, cropBottom: 100, tolerance: 3.0);
 		/// </code>
@@ -187,6 +241,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		public void VerifyScreenshot(
 			string? name = null,
 			TimeSpan? retryDelay = null,
+			TimeSpan? retryTimeout = null,
 			int cropLeft = 0,
 			int cropRight = 0,
 			int cropTop = 0,
@@ -198,15 +253,53 @@ namespace Microsoft.Maui.TestCases.Tests
 		)
 		{
 			retryDelay ??= TimeSpan.FromMilliseconds(500);
-			// Retry the verification once in case the app is in a transient state
-			try
+			
+			// If retryTimeout is specified, keep retrying until timeout expires
+			// Otherwise, just retry once (backward compatible behavior)
+			if (retryTimeout.HasValue)
 			{
-				Verify(name);
+				var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+				Exception? lastException = null;
+				
+				while (stopwatch.Elapsed < retryTimeout.Value)
+				{
+					try
+					{
+						Verify(name);
+						return; // Success
+					}
+					catch (Exception ex)
+					{
+						lastException = ex;
+						if (stopwatch.Elapsed + retryDelay.Value < retryTimeout.Value)
+						{
+							Thread.Sleep(retryDelay.Value);
+						}
+					}
+				}
+				
+				// Final attempt after timeout
+				try
+				{
+					Verify(name);
+				}
+				catch
+				{
+					throw lastException ?? new InvalidOperationException("Screenshot verification failed");
+				}
 			}
-			catch
+			else
 			{
-				Thread.Sleep(retryDelay.Value);
-				Verify(name);
+				// Original behavior: retry once
+				try
+				{
+					Verify(name);
+				}
+				catch
+				{
+					Thread.Sleep(retryDelay.Value);
+					Verify(name);
+				}
 			}
 
 			void Verify(string? name)
@@ -246,21 +339,28 @@ namespace Microsoft.Maui.TestCases.Tests
 						}
 
 						if (!((deviceApiLevel == 30 && (deviceScreenSize.Equals("1080x1920", StringComparison.OrdinalIgnoreCase) || deviceScreenSize.Equals("1920x1080", StringComparison.OrdinalIgnoreCase)) && deviceScreenDensity == 420) ||
-								(deviceApiLevel == 36 && (deviceScreenSize.Equals("1080x2424", StringComparison.OrdinalIgnoreCase) || deviceScreenSize.Equals("2424x1080", StringComparison.OrdinalIgnoreCase)) && deviceScreenDensity == 420)))
+								(deviceApiLevel == 36 && (deviceScreenSize.Equals("1440x2960", StringComparison.OrdinalIgnoreCase) || deviceScreenSize.Equals("2960x1440", StringComparison.OrdinalIgnoreCase)) && deviceScreenDensity == 560)))
 						{
-							Assert.Fail($"Android visual tests should be run on an API30 emulator image with 1080x1920 420dpi screen or API36 emulator image with 1080x2424 420dpi screen, but the current device is API {deviceApiLevel} with a {deviceScreenSize} {deviceScreenDensity}dpi screen. Follow the steps on the MAUI UI testing wiki to launch the Android emulator with the right image.");
+							Assert.Fail($"Android visual tests should be run on an API30 emulator image with 1080x1920 420dpi screen or API36 emulator image with 1440x2960 560dpi screen, but the current device is API {deviceApiLevel} with a {deviceScreenSize} {deviceScreenDensity}dpi screen. Follow the steps on the MAUI UI testing wiki to launch the Android emulator with the right image.");
 						}
 						break;
 
 					case TestDevice.iOS:
 						var platformVersion = (string?)((AppiumApp)App).Driver.Capabilities.GetCapability("platformVersion")
 							?? throw new InvalidOperationException("platformVersion capability is missing or null.");
+						var udid = (string?)((AppiumApp)App).Driver.Capabilities.GetCapability("udid");
 						var device = (string?)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceName")
-							?? throw new InvalidOperationException("deviceName capability is missing or null.");
+							?? ((udid is not null) ? String.Empty : throw new InvalidOperationException("deviceName capability is missing or null."));
 
 						environmentName = "ios";
 
-						if (device.Contains(" Xs", StringComparison.OrdinalIgnoreCase) && platformVersion == _defaultiOSVersion)
+						// Check for iOS 26+ (handles 26.0, 26.1, 26.2, etc.)
+						// Also check device name which may contain "iOS 26.x" for simulator naming
+						if (platformVersion.StartsWith("26.", StringComparison.Ordinal) || platformVersion.StartsWith("26", StringComparison.Ordinal))
+						{
+							environmentName = "ios-26";
+						}
+						else if (device.Contains(" Xs", StringComparison.OrdinalIgnoreCase) && platformVersion == _defaultiOSVersion)
 						{
 							environmentName = "ios";
 						}
@@ -312,7 +412,7 @@ namespace Microsoft.Maui.TestCases.Tests
 				// bar at the top as it varies slightly based on OS theme and is also not part of the app.
 				int cropFromTop = _testDevice switch
 				{
-					TestDevice.Android => environmentName == "android-notch-36" ? 95 : 60,
+					TestDevice.Android => environmentName == "android-notch-36" ? 112 : 60,
 					TestDevice.iOS => environmentName == "ios-iphonex" ? 90 : 110,
 					TestDevice.Windows => 32,
 					TestDevice.Mac => 29,
@@ -331,7 +431,7 @@ namespace Microsoft.Maui.TestCases.Tests
 				// For iOS, crop the home indicator at the bottom.
 				int cropFromBottom = _testDevice switch
 				{
-					TestDevice.Android => environmentName == "android-notch-36" ? 40 : 125,
+					TestDevice.Android => environmentName == "android-notch-36" ? 52 : 125,
 					TestDevice.iOS => 40,
 					_ => 0,
 				};
@@ -364,7 +464,20 @@ namespace Microsoft.Maui.TestCases.Tests
 				}
 				else
 				{
-					_visualRegressionTester.VerifyMatchesSnapshot(name!, actualImage, environmentName: environmentName, testContext: _visualTestContext);
+					try
+					{
+						_visualRegressionTester.VerifyMatchesSnapshot(name!, actualImage, environmentName: environmentName, testContext: _visualTestContext);
+					}
+					catch (VisualTestFailedException ex) when (_testDevice == TestDevice.iOS && environmentName == "ios-26" && ex.Message.Contains("size differs", StringComparison.Ordinal))
+					{
+						throw new InvalidOperationException(
+							$"{ex.Message}\n\n" +
+							"iOS 26 visual tests require an iPhone 11 Pro simulator for correct screen resolution.\n" +
+							"To create the simulator, run:\n" +
+							"  xcrun simctl create \"iPhone 11 Pro\" com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro com.apple.CoreSimulator.SimRuntime.iOS-26-0\n\n" +
+							"Then run the tests targeting the new simulator.",
+							ex);
+					}
 				}
 			}
 		}
@@ -406,8 +519,8 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			var message = ex.Message;
 
-			// Extract percentage from pattern: "X,XX% difference"
-			var match = Regex.Match(message, @"(\d+,\d+)%\s*difference", RegexOptions.IgnoreCase);
+			// Extract percentage from pattern: "X.XX% difference" or "X,XX% difference"
+			var match = Regex.Match(message, @"(\d+[.,]\d+)%\s*difference", RegexOptions.IgnoreCase);
 			if (match.Success)
 			{
 				var percentageString = match.Groups[1].Value.Replace(',', '.');
@@ -443,6 +556,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		protected override void FixtureSetup()
 		{
 			int retries = 0;
+			int instrumentationCrashRetries = 0;
 			while (true)
 			{
 				try
@@ -458,6 +572,26 @@ namespace Microsoft.Maui.TestCases.Tests
 				catch (Exception e)
 				{
 					TestContext.Error.WriteLine($">>>>> {DateTime.Now} The FixtureSetup threw an exception. Attempt {retries}/{SetupMaxRetries}.{Environment.NewLine}Exception details: {e}");
+
+					// Check for instrumentation/infrastructure crash that requires session recreation
+					if (IsInstrumentationCrash(e) && instrumentationCrashRetries++ < InstrumentationCrashMaxRetries)
+					{
+						TestContext.Error.WriteLine($">>>>> {DateTime.Now} Detected instrumentation crash, attempting session recreation (attempt {instrumentationCrashRetries}/{InstrumentationCrashMaxRetries})...");
+						try
+						{
+							// Call base.Reset() which disposes and recreates the driver
+							// (NOT this.Reset() which just does App.ResetApp())
+							base.Reset();
+							TestContext.Error.WriteLine($">>>>> {DateTime.Now} Session recreation successful, retrying FixtureSetup...");
+							continue; // Retry the whole FixtureSetup with fresh session
+						}
+						catch (Exception resetEx)
+						{
+							TestContext.Error.WriteLine($">>>>> {DateTime.Now} Session recreation failed: {resetEx.Message}");
+							// Fall through to standard retry logic
+						}
+					}
+
 					if (retries++ < SetupMaxRetries)
 					{
 						App.Back();
@@ -484,10 +618,27 @@ namespace Microsoft.Maui.TestCases.Tests
 				{
 					App.SetOrientationPortrait();
 				}
-				catch
+				catch (Exception e)
 				{
-					// The app might not be ready
-					// Probably reduce this value if this works
+					// Check for instrumentation crash that requires session recreation
+					if (IsInstrumentationCrash(e))
+					{
+						TestContext.Error.WriteLine($">>>>> {DateTime.Now} Detected instrumentation crash in TestSetup, attempting session recreation...");
+						try
+						{
+							base.Reset(); // Recreate the driver session
+							TestContext.Error.WriteLine($">>>>> {DateTime.Now} Session recreation successful in TestSetup");
+							App.SetOrientationPortrait();
+							return;
+						}
+						catch (Exception resetEx)
+						{
+							TestContext.Error.WriteLine($">>>>> {DateTime.Now} Session recreation failed in TestSetup: {resetEx.Message}");
+							throw;
+						}
+					}
+
+					// The app might not be ready - original retry logic
 					Thread.Sleep(1000);
 					App.SetOrientationPortrait();
 				}

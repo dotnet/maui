@@ -17,7 +17,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.Compatibility)]
 		public void CollectionViewWithFooterShouldNotCrashOnDisplay()
 		{
 			App.WaitForElement(Success1);

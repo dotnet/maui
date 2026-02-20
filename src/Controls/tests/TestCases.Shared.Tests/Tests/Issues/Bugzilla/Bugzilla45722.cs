@@ -19,9 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Memory leak in Xamarin Forms ListView";
 
 		[Test]
-		[Category(UITestCategories.Label)]
 		[Category(UITestCategories.ListView)]
-		[Category(UITestCategories.Compatibility)]
 		public void LabelsInListViewTemplatesShouldBeCollected()
 		{
 			App.WaitForElement(Update);

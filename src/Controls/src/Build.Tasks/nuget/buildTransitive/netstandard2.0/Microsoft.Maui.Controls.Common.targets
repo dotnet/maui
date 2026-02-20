@@ -30,5 +30,6 @@
     <CompilerVisibleProperty Include="MauiXamlLineInfo" />
 		<CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="LineInfo" />
     <CompilerVisibleProperty Include="Configuration" />
+    <CompilerVisibleProperty Include="EnablePreviewFeatures" />
 	</ItemGroup>
 </Project>

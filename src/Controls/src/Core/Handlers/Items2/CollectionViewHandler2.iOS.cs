@@ -34,6 +34,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 	public partial class CollectionViewHandler2
 	{
+		// Cache for MeasureFirstItem optimization
+		CoreGraphics.CGSize _firstItemMeasuredSize = CoreGraphics.CGSize.Empty;
 
 		public CollectionViewHandler2() : base(Mapper)
 		{
@@ -43,6 +45,30 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public CollectionViewHandler2(PropertyMapper mapper = null) : base(mapper ?? Mapper)
 		{
 
+		}
+
+		/// <summary>
+		/// Gets the cached first item measured size for MeasureFirstItem optimization.
+		/// Returns CGSize.Empty if not cached or not using MeasureFirstItem strategy.
+		/// </summary>
+		internal CoreGraphics.CGSize GetCachedFirstItemSize()
+		{
+			if (VirtualView is CollectionView cv && cv.ItemSizingStrategy == ItemSizingStrategy.MeasureFirstItem)
+			{
+				return _firstItemMeasuredSize;
+			}
+			return CoreGraphics.CGSize.Empty;
+		}
+
+		/// <summary>
+		/// Sets the cached first item measured size for MeasureFirstItem optimization.
+		/// </summary>
+		internal void SetCachedFirstItemSize(CoreGraphics.CGSize size)
+		{
+			if (VirtualView is CollectionView cv && cv.ItemSizingStrategy == ItemSizingStrategy.MeasureFirstItem)
+			{
+				_firstItemMeasuredSize = size;
+			}
 		}
 
 		public static PropertyMapper<CollectionView, CollectionViewHandler2> Mapper = new(ItemsViewMapper)
@@ -56,6 +82,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			[StructuredItemsView.FooterTemplateProperty.PropertyName] = MapFooterTemplate,
 			[StructuredItemsView.HeaderProperty.PropertyName] = MapHeaderTemplate,
 			[StructuredItemsView.FooterProperty.PropertyName] = MapFooterTemplate,
+			[StructuredItemsView.ItemSizingStrategyProperty.PropertyName] = MapItemSizingStrategy,
 			[GroupableItemsView.GroupHeaderTemplateProperty.PropertyName] = MapHeaderTemplate,
 			[GroupableItemsView.GroupFooterTemplateProperty.PropertyName] = MapFooterTemplate,
 		};

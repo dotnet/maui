@@ -17,7 +17,9 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			return (ImeFlags)element.GetValue(ImeOptionsProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/Entry.xml" path="//Member[@MemberName='SetImeOptions'][1]/Docs/*" />
+		/// <summary>Sets the input method editor (IME) action button behavior for the Android soft keyboard.</summary>
+		/// <param name="element">The entry element.</param>
+		/// <param name="value">The IME flags specifying keyboard action behavior.</param>
 		public static void SetImeOptions(BindableObject element, ImeFlags value)
 		{
 			element.SetValue(ImeOptionsProperty, value);
@@ -31,7 +33,10 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			return GetImeOptions(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/Entry.xml" path="//Member[@MemberName='SetImeOptions'][2]/Docs/*" />
+		/// <summary>Sets the input method editor (IME) action button behavior for the Android soft keyboard.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <param name="value">The IME flags specifying keyboard action behavior.</param>
+		/// <returns>The platform configuration for fluent API chaining.</returns>
 		public static IPlatformElementConfiguration<Android, FormsElement> SetImeOptions(this IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.Android, FormsElement> config, ImeFlags value)
 		{
 			SetImeOptions(config.Element, value);

@@ -287,12 +287,47 @@ namespace Microsoft.Maui.DeviceTests
 
 				var device = CanvasDevice.GetSharedDevice();
 
+				// Wait for view to have non-zero dimensions (layout may not have completed after Loaded event)
+				if (view.ActualWidth == 0 || view.ActualHeight == 0)
+				{
+					// Force a layout pass
+					view.UpdateLayout();
+					
+					// If still zero, wait for SizeChanged event
+					if (view.ActualWidth == 0 || view.ActualHeight == 0)
+					{
+						var sizeChangedTcs = new TaskCompletionSource();
+						void OnSizeChanged(object sender, SizeChangedEventArgs e)
+						{
+							view.SizeChanged -= OnSizeChanged;
+							sizeChangedTcs.TrySetResult();
+						}
+						view.SizeChanged += OnSizeChanged;
+						
+						// Wait up to 5 seconds for size to be set
+						var completed = await Task.WhenAny(sizeChangedTcs.Task, Task.Delay(5000));
+						if (completed != sizeChangedTcs.Task)
+						{
+							view.SizeChanged -= OnSizeChanged;
+						}
+					}
+				}
+
 				// HELP?
 				// The simple act of doing a window capture results in the next render method
 				// working on DirectX controls (such as Win2D).
 				// We could use this window bitmap directly, but that is extra effort to crop
 				// to the view bounds... so until this breaks...
-				using var windowBitmap = await CaptureHelper.RenderAsync(window, device);
+				try
+				{
+					using var windowBitmap = await CaptureHelper.RenderAsync(window, device);
+				}
+				catch (PlatformNotSupportedException)
+				{
+					// On Helix CI VMs, window capture is not supported. 
+					// Continue without it - this may cause issues with DirectX controls like Win2D,
+					// but should work for standard XAML controls.
+				}
 
 				var bmp = new RenderTargetBitmap();
 				await bmp.RenderAsync(view);

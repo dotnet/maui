@@ -15,7 +15,6 @@ public class Bugzilla40858 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.ListView)]
-	[Category(UITestCategories.Compatibility)]
 	public void ListViewDoesNotCrashOnTextEntryHeaderOrFooterLongClick()
 	{
 		App.TouchAndHold("Header");

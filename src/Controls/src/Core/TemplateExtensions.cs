@@ -4,10 +4,13 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/TemplateExtensions.xml" path="Type[@FullName='Microsoft.Maui.Controls.TemplateExtensions']/Docs/*" />
+	/// <summary>Provides extension methods for working with data templates.</summary>
 	public static class TemplateExtensions
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/TemplateExtensions.xml" path="//Member[@MemberName='SetBinding']/Docs/*" />
+		/// <summary>Creates a binding on the template for the specified property and path.</summary>
+		/// <param name="self">The data template to add the binding to.</param>
+		/// <param name="targetProperty">The target bindable property.</param>
+		/// <param name="path">The binding path expression.</param>
 		[RequiresUnreferencedCode(TrimmerConstants.StringPathBindingWarning, Url = TrimmerConstants.ExpressionBasedBindingsDocsUrl)]
 		public static void SetBinding(this DataTemplate self, BindableProperty targetProperty, string path)
 		{

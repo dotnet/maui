@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
@@ -36,6 +37,7 @@ namespace Microsoft.Maui.DeviceTests
 #if MACCATALYST || IOS
 		// Only Mac Catalyst and iOS needs the CancelButtonColor nuanced handling verifying
 		[Fact(DisplayName = "CancelButtonColor is set correctly")]
+		[SkipOnIOSVersion(26, "iOS 26 changed UISearchBar internal structure")]
 		public async Task CancelButtonColorSetCorrectly()
 		{
 			var expected = Graphics.Colors.Red;

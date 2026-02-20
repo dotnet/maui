@@ -106,7 +106,7 @@ namespace Microsoft.Maui.Controls
 			get { return _contextActions != null && _contextActions.Count > 0 && IsEnabled; }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="//Member[@MemberName='IsContextActionsLegacyModeEnabled']/Docs/*" />
+		/// <summary>Gets or sets whether context actions use legacy mode. Default is <see langword="false"/>.</summary>
 		public bool IsContextActionsLegacyModeEnabled { get; set; } = false;
 
 		/// <summary>Gets or sets the height of the Cell.</summary>

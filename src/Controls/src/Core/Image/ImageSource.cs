@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls
 	{
 	}
 
-	/// <include file="../../../docs/Microsoft.Maui.Controls/FontImageSource.xml" path="Type[@FullName='Microsoft.Maui.Controls.FontImageSource']/Docs/*" />
+	/// <summary>An <see cref="ImageSource"/> that renders a glyph from a font.</summary>
 	public partial class FontImageSource : IFontImageSource
 	{
 		Font IFontImageSource.Font => Font.OfSize(FontFamily, Size, enableScaling: FontAutoScalingEnabled);

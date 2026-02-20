@@ -12,13 +12,17 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 			BindableProperty.Create("ProgressBarPulsingStatus", typeof(bool),
 			typeof(FormsElement), false);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/ProgressBar.xml" path="//Member[@MemberName='GetPulsingStatus'][1]/Docs/*" />
+		/// <summary>Gets the pulsing status for the progress bar.</summary>
+		/// <param name="element">The progress bar element whose pulsing status to get.</param>
+		/// <returns><see langword="true"/> if the progress bar is pulsing; otherwise, <see langword="false"/>.</returns>
 		public static bool GetPulsingStatus(BindableObject element)
 		{
 			return (bool)element.GetValue(ProgressBarPulsingStatusProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/ProgressBar.xml" path="//Member[@MemberName='SetPulsingStatus'][1]/Docs/*" />
+		/// <summary>Sets the pulsing status for the progress bar. Only applies when style is <see cref="ProgressBarStyle.Pending"/>.</summary>
+		/// <param name="element">The progress bar element whose pulsing status to set.</param>
+		/// <param name="isPulsing"><see langword="true"/> to enable pulsing; otherwise, <see langword="false"/>.</param>
 		public static void SetPulsingStatus(BindableObject element, bool isPulsing)
 		{
 			string style = VisualElement.GetStyle(element);
@@ -28,13 +32,18 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 			}
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/ProgressBar.xml" path="//Member[@MemberName='GetPulsingStatus'][2]/Docs/*" />
+		/// <summary>Gets the pulsing status for the progress bar.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <returns><see langword="true"/> if the progress bar is pulsing; otherwise, <see langword="false"/>.</returns>
 		public static bool GetPulsingStatus(this IPlatformElementConfiguration<Tizen, FormsElement> config)
 		{
 			return GetPulsingStatus(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/ProgressBar.xml" path="//Member[@MemberName='SetPulsingStatus'][2]/Docs/*" />
+		/// <summary>Sets the pulsing status for the progress bar. Only applies when style is <see cref="ProgressBarStyle.Pending"/>.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <param name="isPulsing"><see langword="true"/> to enable pulsing; otherwise, <see langword="false"/>.</param>
+		/// <returns>The updated platform configuration.</returns>
 		public static IPlatformElementConfiguration<Tizen, FormsElement> SetPulsingStatus(this IPlatformElementConfiguration<Tizen, FormsElement> config, bool isPulsing)
 		{
 			SetPulsingStatus(config.Element, isPulsing);

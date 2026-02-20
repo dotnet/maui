@@ -29,6 +29,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				navBar.BarTintColor = _defaultBarTint;
 				navBar.TintColor = _defaultTint;
 				navBar.TitleTextAttributes = _defaultTitleAttributes;
+
+				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
+					UpdateiOS13NavigationBarAppearance(controller, null);
 			}
 		}
 
@@ -95,37 +98,47 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			var navigationBarAppearance = new UINavigationBarAppearance();
 
-			// since we cannot set the Background Image directly, let's use the alpha in the background color to determine translucence
-			if (appearance.BackgroundColor?.Alpha < 1.0f)
-			{
-				navigationBarAppearance.ConfigureWithTransparentBackground();
-				navBar.Translucent = true;
-			}
-			else
+			if (appearance is null)
 			{
 				navigationBarAppearance.ConfigureWithOpaqueBackground();
 				navBar.Translucent = false;
+				navBar.StandardAppearance = navBar.ScrollEdgeAppearance = navigationBarAppearance;
 			}
+			else
+			{
 
-			// Set ForegroundColor
-			var foreground = appearance.ForegroundColor;
+				// since we cannot set the Background Image directly, let's use the alpha in the background color to determine translucence
+				if (appearance.BackgroundColor?.Alpha < 1.0f)
+				{
+					navigationBarAppearance.ConfigureWithTransparentBackground();
+					navBar.Translucent = true;
+				}
+				else
+				{
+					navigationBarAppearance.ConfigureWithOpaqueBackground();
+					navBar.Translucent = false;
+				}
 
-			if (foreground != null)
-				navBar.TintColor = foreground.ToPlatform();
+				// Set ForegroundColor
+				var foreground = appearance.ForegroundColor;
 
-			// Set BackgroundColor
-			var background = appearance.BackgroundColor;
+				if (foreground != null)
+					navBar.TintColor = foreground.ToPlatform();
 
-			if (background != null)
-				navigationBarAppearance.BackgroundColor = background.ToPlatform();
+				// Set BackgroundColor
+				var background = appearance.BackgroundColor;
 
-			// Set TitleColor
-			var titleColor = appearance.TitleColor;
+				if (background != null)
+					navigationBarAppearance.BackgroundColor = background.ToPlatform();
 
-			if (titleColor != null)
-				navigationBarAppearance.TitleTextAttributes = new UIStringAttributes() { ForegroundColor = titleColor.ToPlatform() };
+				// Set TitleColor
+				var titleColor = appearance.TitleColor;
 
-			navBar.StandardAppearance = navBar.ScrollEdgeAppearance = navigationBarAppearance;
+				if (titleColor != null)
+					navigationBarAppearance.TitleTextAttributes = new UIStringAttributes() { ForegroundColor = titleColor.ToPlatform() };
+
+				navBar.StandardAppearance = navBar.ScrollEdgeAppearance = navigationBarAppearance;
+			}
 		}
 
 		void UpdateNavigationBarAppearance(UINavigationController controller, ShellAppearance appearance)

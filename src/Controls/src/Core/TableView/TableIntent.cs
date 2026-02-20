@@ -1,15 +1,17 @@
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/TableIntent.xml" path="Type[@FullName='Microsoft.Maui.Controls.TableIntent']/Docs/*" />
+	/// <summary>
+	/// Specifies the visual intent of a <see cref="TableView"/>, which determines how it is rendered on each platform.
+	/// </summary>
 	public enum TableIntent
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/TableIntent.xml" path="//Member[@MemberName='Menu']/Docs/*" />
+		/// <summary>Indicates the <see cref="TableView"/> is for displaying a menu.</summary>
 		Menu,
-		/// <include file="../../docs/Microsoft.Maui.Controls/TableIntent.xml" path="//Member[@MemberName='Settings']/Docs/*" />
+		/// <summary>Indicates the <see cref="TableView"/> is for displaying application settings.</summary>
 		Settings,
-		/// <include file="../../docs/Microsoft.Maui.Controls/TableIntent.xml" path="//Member[@MemberName='Form']/Docs/*" />
+		/// <summary>Indicates the <see cref="TableView"/> is for displaying a data entry form.</summary>
 		Form,
-		/// <include file="../../docs/Microsoft.Maui.Controls/TableIntent.xml" path="//Member[@MemberName='Data']/Docs/*" />
+		/// <summary>Indicates the <see cref="TableView"/> is for displaying tabular data.</summary>
 		Data
 	}
 }

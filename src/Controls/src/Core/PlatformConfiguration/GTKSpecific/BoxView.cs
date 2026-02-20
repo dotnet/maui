@@ -11,26 +11,35 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific
 			BindableProperty.Create("HasCornerRadius", typeof(bool),
 				typeof(BoxView), default(bool));
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific/BoxView.xml" path="//Member[@MemberName='GetHasCornerRadius'][1]/Docs/*" />
+		/// <summary>Gets the value that controls whether the box view has a corner radius.</summary>
+		/// <param name="element">The platform-specific element.</param>
+		/// <returns><see langword="true"/> if the box view has a corner radius; otherwise, <see langword="false"/>.</returns>
 		public static bool GetHasCornerRadius(BindableObject element)
 		{
 			return (bool)element.GetValue(HasCornerRadiusProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific/BoxView.xml" path="//Member[@MemberName='SetHasCornerRadius'][1]/Docs/*" />
+		/// <summary>Sets a value that controls whether the box view has a corner radius.</summary>
+		/// <param name="element">The platform-specific element.</param>
+		/// <param name="tabPosition">The new property value to assign.</param>
 		public static void SetHasCornerRadius(BindableObject element, bool tabPosition)
 		{
 			element.SetValue(HasCornerRadiusProperty, tabPosition);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific/BoxView.xml" path="//Member[@MemberName='GetHasCornerRadius'][2]/Docs/*" />
+		/// <summary>Gets the value that controls whether the box view has a corner radius.</summary>
+		/// <param name="config">The platform-specific configuration.</param>
+		/// <returns><see langword="true"/> if the box view has a corner radius; otherwise, <see langword="false"/>.</returns>
 		public static bool GetHasCornerRadius(
 			this IPlatformElementConfiguration<GTK, FormsElement> config)
 		{
 			return GetHasCornerRadius(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific/BoxView.xml" path="//Member[@MemberName='SetHasCornerRadius'][2]/Docs/*" />
+		/// <summary>Sets a value that controls whether the box view has a corner radius.</summary>
+		/// <param name="config">The platform-specific configuration.</param>
+		/// <param name="value">The new property value to assign.</param>
+		/// <returns>The updated configuration object.</returns>
 		public static IPlatformElementConfiguration<GTK, FormsElement> SetHasCornerRadius(
 			this IPlatformElementConfiguration<GTK, FormsElement> config, bool value)
 		{

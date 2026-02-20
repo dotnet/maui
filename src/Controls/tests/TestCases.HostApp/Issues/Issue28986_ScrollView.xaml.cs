@@ -1,3 +1,7 @@
+#if ANDROID
+using Android.Views;
+#endif
+
 namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 28986, "Test SafeArea ScrollView for per-edge safe area control", PlatformAffected.Android | PlatformAffected.iOS, issueTestNumber: 4)]
@@ -7,6 +11,12 @@ public partial class Issue28986_ScrollView : ContentPage
 	{
 		InitializeComponent();
 		UpdateCurrentSettingsLabel();
+
+#if ANDROID
+		// Set SoftInput.AdjustNothing - we have full control over insets (iOS-like behavior)
+		var window = Microsoft.Maui.ApplicationModel.Platform.CurrentActivity?.Window;
+		window?.SetSoftInputMode(SoftInput.AdjustNothing | SoftInput.StateUnspecified);
+#endif
 	}
 
 	private void OnScrollViewSetNoneClicked(object sender, EventArgs e)

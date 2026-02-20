@@ -5,16 +5,22 @@ using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/TableRoot.xml" path="Type[@FullName='Microsoft.Maui.Controls.TableRoot']/Docs/*" />
+	/// <summary>
+	/// The root element of a <see cref="TableView"/> that contains <see cref="TableSection"/> items.
+	/// </summary>
 	public sealed class TableRoot : TableSectionBase<TableSection>
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/TableRoot.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
+		/// <summary>
+		/// Creates a new <see cref="TableRoot"/> with default values.
+		/// </summary>
 		public TableRoot()
 		{
 			SetupEvents();
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/TableRoot.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />
+		/// <summary>
+		/// Creates a new <see cref="TableRoot"/> with the specified title.
+		/// </summary>
 		public TableRoot(string title) : base(title)
 		{
 			SetupEvents();

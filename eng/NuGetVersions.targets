@@ -61,6 +61,10 @@
         Version="$(_SkiaSharpVersion)"
     />
     <PackageReference
+         Update="System.Numerics.Tensors"
+         Version="$(SystemNumericsTensorsPackageVersion)"
+    />
+    <PackageReference
          Update="System.Numerics.Vectors"
          Version="$(SystemNumericsVectorsVersion)"
     />
@@ -83,6 +87,14 @@
     <PackageReference
          Update="System.Runtime.CompilerServices.Unsafe"
          Version="$(SystemRuntimeCompilerServicesUnsafePackageVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.Extensions.AI"
+        Version="$(MicrosoftExtensionsAIVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.Extensions.AI.Abstractions"
+        Version="$(MicrosoftExtensionsAIAbstractionsVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.Configuration"
@@ -111,6 +123,10 @@
     <PackageReference
         Update="Microsoft.Extensions.Hosting.Abstractions"
         Version="$(MicrosoftExtensionsHostingAbstractionsVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.Extensions.Http"
+        Version="$(MicrosoftExtensionsHttpVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.Logging.Abstractions"

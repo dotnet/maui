@@ -80,6 +80,12 @@ namespace Microsoft.Maui.DeviceTests
 			)]
 		public async Task BarTextColor()
 		{
+#if IOS || MACCATALYST
+			// Skip on iOS 26+ due to UITabBar internal API changes
+			// See: https://github.com/dotnet/maui/issues/33004
+			if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+				return;
+#endif
 			SetupBuilder();
 			var tabbedPage = CreateBasicTabbedPage(true, pages: new[]
 			{
@@ -114,6 +120,12 @@ namespace Microsoft.Maui.DeviceTests
 			)]
 		public async Task SelectedAndUnselectedTabColor()
 		{
+#if IOS || MACCATALYST
+			// Skip on iOS 26+ due to UITabBar internal API changes
+			// See: https://github.com/dotnet/maui/issues/33004
+			if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+				return;
+#endif
 			SetupBuilder();
 			var tabbedPage = CreateBasicTabbedPage(true);
 			tabbedPage.Children.Add(new ContentPage() { Title = "Page 2", IconImageSource = "white.png" });
@@ -366,10 +378,12 @@ namespace Microsoft.Maui.DeviceTests
 		}
 #endif
 
-#if IOS
+#if IOS 
 		[Theory(Skip = "Test doesn't work on iOS yet; probably because of https://github.com/dotnet/maui/issues/10591")]
 #elif WINDOWS
 		[Theory(Skip = "Test doesn't work on Windows")]
+#elif MACCATALYST
+		[Theory(Skip = "Test doesn't work on Catalyst macos 26")]
 #else
 		[Theory]
 #endif

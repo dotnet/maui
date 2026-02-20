@@ -17,7 +17,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.LifeCycle)]
-		[Category(UITestCategories.Compatibility)]
 		public void Issue1469Test()
 		{
 			App.WaitForElement(Go);

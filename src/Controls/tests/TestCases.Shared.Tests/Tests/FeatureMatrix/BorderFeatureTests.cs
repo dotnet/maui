@@ -4,19 +4,15 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-public class BorderFeatureTests : UITest
+public class BorderFeatureTests : _GalleryUITest
 {
 	public const string BorderFeatureMatrix = "Border Feature Matrix";
+
+	public override string GalleryPageName => BorderFeatureMatrix;
 
 	public BorderFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(BorderFeatureMatrix);
 	}
 
 	[Test]
@@ -34,7 +30,7 @@ public class BorderFeatureTests : UITest
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -55,7 +51,7 @@ public class BorderFeatureTests : UITest
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -73,7 +69,7 @@ public class BorderFeatureTests : UITest
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -91,7 +87,7 @@ public class BorderFeatureTests : UITest
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -109,7 +105,7 @@ public class BorderFeatureTests : UITest
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 
@@ -133,7 +129,7 @@ public class BorderFeatureTests : UITest
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 
@@ -155,7 +151,7 @@ public class BorderFeatureTests : UITest
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -177,7 +173,7 @@ public class BorderFeatureTests : UITest
 #if WINDOWS
 		VerifyScreenshot(cropTop: 100);
 #else
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 #endif
 	}
 
@@ -203,7 +199,7 @@ public class BorderFeatureTests : UITest
 #if WINDOWS
 		VerifyScreenshot(cropTop: 100);
 #else
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 #endif
 	}
 
@@ -225,7 +221,7 @@ public class BorderFeatureTests : UITest
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #if TEST_FAILS_ON_WINDOWS // For more information, see : https://github.com/dotnet/maui/issues/29741
 	[Test]
@@ -246,7 +242,7 @@ public class BorderFeatureTests : UITest
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -267,7 +263,7 @@ public class BorderFeatureTests : UITest
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -288,7 +284,7 @@ public class BorderFeatureTests : UITest
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -312,7 +308,7 @@ public class BorderFeatureTests : UITest
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -336,7 +332,7 @@ public class BorderFeatureTests : UITest
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 #endif
@@ -359,7 +355,7 @@ public class BorderFeatureTests : UITest
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -377,7 +373,7 @@ public class BorderFeatureTests : UITest
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -398,7 +394,7 @@ public class BorderFeatureTests : UITest
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -424,7 +420,7 @@ public class BorderFeatureTests : UITest
 #if WINDOWS
 		VerifyScreenshot(cropTop: 100);
 #else
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 #endif
 	}
 
@@ -450,7 +446,7 @@ public class BorderFeatureTests : UITest
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 

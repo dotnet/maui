@@ -25,25 +25,41 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void Issue10563OpenSwipeViewTest()
 		{
 			Exception? exception = null;
+			
+			// Test Left SwipeItems
 			App.WaitForElement(OpenLeftId);
 			App.Tap(OpenLeftId);
-			VerifyScreenshotOrSetException(ref exception, "Left_SwipeItems");
+			// Wait for swipe animation to complete - the SwipeItem text becomes visible
+			App.WaitForElement("Issue 10563");
+			// SwipeView animations can have timing variance - use retryTimeout
+			VerifyScreenshotOrSetException(ref exception, "Left_SwipeItems", retryTimeout: TimeSpan.FromSeconds(3));
 			App.Tap(CloseId);
+			// Wait for close animation to complete - the SwipeItem text disappears
+			App.WaitForNoElement("Issue 10563");
 
+			// Test Right SwipeItems
 			App.WaitForElement(OpenRightId);
 			App.Tap(OpenRightId);
-			VerifyScreenshotOrSetException(ref exception, "Right_SwipeItems");
+			App.WaitForElement("Issue 10563");
+			VerifyScreenshotOrSetException(ref exception, "Right_SwipeItems", retryTimeout: TimeSpan.FromSeconds(3));
 			App.Tap(CloseId);
+			App.WaitForNoElement("Issue 10563");
 
+			// Test Top SwipeItems
 			App.WaitForElement(OpenTopId);
 			App.Tap(OpenTopId);
-			VerifyScreenshotOrSetException(ref exception, "Top_SwipeItems");
+			App.WaitForElement("Issue 10563");
+			VerifyScreenshotOrSetException(ref exception, "Top_SwipeItems", retryTimeout: TimeSpan.FromSeconds(3));
 			App.Tap(CloseId);
+			App.WaitForNoElement("Issue 10563");
 
+			// Test Bottom SwipeItems
 			App.WaitForElement(OpenBottomId);
 			App.Tap(OpenBottomId);
-			VerifyScreenshotOrSetException(ref exception, "Bottom_SwipeItems");
+			App.WaitForElement("Issue 10563");
+			VerifyScreenshotOrSetException(ref exception, "Bottom_SwipeItems", retryTimeout: TimeSpan.FromSeconds(3));
 			App.Tap(CloseId);
+			App.WaitForNoElement("Issue 10563");
 
 			if (exception != null)
 			{

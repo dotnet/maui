@@ -4,12 +4,6 @@
              x:Class="Maui.Controls.Sample.CarouselViewOptionsPage"
              Title="CarouselViewOptionsPage">
 
-       <ContentPage.ToolbarItems>
-              <ToolbarItem Text="Apply"
-                           Clicked="ApplyButton_Clicked"
-                           AutomationId="Apply"/>
-       </ContentPage.ToolbarItems>
-
        <ScrollView>
               <!-- <StackLayout Padding="20"> -->
               <Grid Padding="1"
@@ -17,6 +11,13 @@
 
                      <StackLayout Grid.Row="1"
                                   Padding="1">
+
+                            <!-- Apply Button -->
+                            <Button Text="Apply"
+                                    Clicked="ApplyButton_Clicked"
+                                    HorizontalOptions="Center"
+                                    AutomationId="Apply"/>
+
                             <!-- Items Source -->
                             <Label Text="ItemsSource"
                                    FontAttributes="Bold"/>

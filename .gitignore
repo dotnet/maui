@@ -15,6 +15,7 @@ templatesTest/
 *.sln.docstates
 /src/Controls/tests/TestCases.HostApp/MauiProgram.user.cs
 CustomAgentLogsTmp/
+.github/.baseline-state.json
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
@@ -383,3 +384,7 @@ snapshots-diff/
 temp
 .packages
 /src/Templates/.tempTemplateOutput
+
+# TypeScript source map files (generated artifacts)
+# Note: CSS map files in templates (e.g., bootstrap) are intentionally tracked
+*.js.map

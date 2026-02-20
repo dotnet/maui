@@ -2,21 +2,21 @@ using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls.Internals
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/NavigationRequestType.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.NavigationRequestType']/Docs/*" />
+	/// <summary>Specifies the type of navigation operation.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public enum NavigationRequestType
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/NavigationRequestType.xml" path="//Member[@MemberName='Unknown']/Docs/*" />
+		/// <summary>Unknown navigation type.</summary>
 		Unknown = 0,
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/NavigationRequestType.xml" path="//Member[@MemberName='Push']/Docs/*" />
+		/// <summary>Push a page onto the navigation stack.</summary>
 		Push,
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/NavigationRequestType.xml" path="//Member[@MemberName='Pop']/Docs/*" />
+		/// <summary>Pop a page from the navigation stack.</summary>
 		Pop,
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/NavigationRequestType.xml" path="//Member[@MemberName='PopToRoot']/Docs/*" />
+		/// <summary>Pop all pages to root.</summary>
 		PopToRoot,
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/NavigationRequestType.xml" path="//Member[@MemberName='Insert']/Docs/*" />
+		/// <summary>Insert a page into the navigation stack.</summary>
 		Insert,
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/NavigationRequestType.xml" path="//Member[@MemberName='Remove']/Docs/*" />
+		/// <summary>Remove a page from the navigation stack.</summary>
 		Remove,
 	}
 }

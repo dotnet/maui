@@ -78,10 +78,13 @@ namespace Microsoft.Maui.DeviceTests
 
 				await AssertEventually(() => ImageSourceLoaded(handler));
 
-				await Task.Delay(100);
+				await handler.PlatformView.AttachAndRun(async () =>
+				{
+					await Task.Delay(100);
 
-				var expectedColor = Color.FromArgb("#FF0000");
-				await handler.PlatformView.AssertContainsColor(expectedColor, MauiContext);
+					var expectedColor = Color.FromArgb("#FF0000");
+					await handler.PlatformView.AssertContainsColor(expectedColor, MauiContext);
+				}, MauiContext);
 			});
 		}
 

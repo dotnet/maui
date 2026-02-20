@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue32845"
+             Title="Issue32845">
+    <VerticalStackLayout Padding="30"
+            Spacing="25">
+        <Label
+            AutomationId="InstructionsLabel"
+            x:Name="InstructionsLabel"
+            Text="1. Click 'Pick Photo' (should open picker)&#x0a;2. Close picker&#x0a;3. Click 'Open Activity'&#x0a;4. Click 'Close Activity'&#x0a;5. Click 'Pick Photo' again&#x0a;Expected: Picker should open&#x0a;Actual (bug): Picker does not open"
+            FontSize="14"/>
+
+        <Button
+            AutomationId="PickPhotoButton"
+            x:Name="PickPhotoButton"
+            Text="Pick Photo"
+            Clicked="OnPickPhotoClicked"
+            HorizontalOptions="Fill"/>
+
+        <Button
+            AutomationId="OpenActivityButton"
+            x:Name="OpenActivityButton"
+            Text="Open Activity"
+            Clicked="OnOpenActivityClicked"
+            HorizontalOptions="Fill"/>
+
+        <Label
+            AutomationId="StatusLabel"
+            x:Name="StatusLabel"
+            Text="Status: Ready"
+            FontSize="16"
+            FontAttributes="Bold"/>
+    </VerticalStackLayout>
+</ContentPage>

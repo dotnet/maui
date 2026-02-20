@@ -1,13 +1,13 @@
 namespace Microsoft.Maui.Controls.Shapes
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PenLineCap.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.PenLineCap']/Docs/*" />
+	/// <summary>Specifies the shape at the end of a line or segment.</summary>
 	public enum PenLineCap
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PenLineCap.xml" path="//Member[@MemberName='Flat']/Docs/*" />
+		/// <summary>A cap that does not extend beyond the last point of the line.</summary>
 		Flat,
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PenLineCap.xml" path="//Member[@MemberName='Square']/Docs/*" />
+		/// <summary>A rectangle with height equal to the line thickness and length equal to half the line thickness.</summary>
 		Square,
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PenLineCap.xml" path="//Member[@MemberName='Round']/Docs/*" />
+		/// <summary>A semicircle with a diameter equal to the line thickness.</summary>
 		Round
 	}
 }

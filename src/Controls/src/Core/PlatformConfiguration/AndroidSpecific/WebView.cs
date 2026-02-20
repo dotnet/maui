@@ -28,7 +28,9 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			return (MixedContentHandling)element.GetValue(MixedContentModeProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/WebView.xml" path="//Member[@MemberName='SetMixedContentMode'][1]/Docs/*" />
+		/// <summary>Sets how the Android WebView handles mixed HTTP/HTTPS content.</summary>
+		/// <param name="element">The WebView element.</param>
+		/// <param name="value">The mixed content handling mode.</param>
 		public static void SetMixedContentMode(BindableObject element, MixedContentHandling value)
 		{
 			element.SetValue(MixedContentModeProperty, value);
@@ -41,7 +43,10 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			return GetMixedContentMode(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/WebView.xml" path="//Member[@MemberName='SetMixedContentMode'][2]/Docs/*" />
+		/// <summary>Sets how the Android WebView handles mixed HTTP/HTTPS content.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <param name="value">The mixed content handling mode.</param>
+		/// <returns>The platform configuration for fluent API chaining.</returns>
 		public static IPlatformElementConfiguration<Android, FormsElement> SetMixedContentMode(this IPlatformElementConfiguration<Android, FormsElement> config, MixedContentHandling value)
 		{
 			SetMixedContentMode(config.Element, value);
@@ -57,7 +62,9 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			return (bool)element.GetValue(EnableZoomControlsProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/WebView.xml" path="//Member[@MemberName='SetEnableZoomControls'][2]/Docs/*" />
+		/// <summary>Sets whether pinch-to-zoom is enabled on the Android WebView.</summary>
+		/// <param name="element">The WebView element.</param>
+		/// <param name="value"><see langword="true"/> to enable zoom controls; otherwise, <see langword="false"/>.</param>
 		public static void SetEnableZoomControls(FormsElement element, bool value)
 		{
 			element.SetValue(EnableZoomControlsProperty, value);
@@ -75,7 +82,10 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			return GetEnableZoomControls(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/WebView.xml" path="//Member[@MemberName='SetEnableZoomControls'][1]/Docs/*" />
+		/// <summary>Sets whether pinch-to-zoom is enabled on the Android WebView.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <param name="value"><see langword="true"/> to enable zoom controls; otherwise, <see langword="false"/>.</param>
+		/// <returns>The platform configuration for fluent API chaining.</returns>
 		public static IPlatformElementConfiguration<Android, FormsElement> SetEnableZoomControls(this IPlatformElementConfiguration<Android, FormsElement> config, bool value)
 		{
 			SetEnableZoomControls(config.Element, value);
@@ -91,7 +101,9 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			return (bool)element.GetValue(DisplayZoomControlsProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/WebView.xml" path="//Member[@MemberName='SetDisplayZoomControls'][2]/Docs/*" />
+		/// <summary>Sets whether the on-screen zoom buttons are visible on the Android WebView.</summary>
+		/// <param name="element">The WebView element.</param>
+		/// <param name="value"><see langword="true"/> to display zoom controls; otherwise, <see langword="false"/>.</param>
 		public static void SetDisplayZoomControls(FormsElement element, bool value)
 		{
 			element.SetValue(DisplayZoomControlsProperty, value);
@@ -110,7 +122,10 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			return GetDisplayZoomControls(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/WebView.xml" path="//Member[@MemberName='SetDisplayZoomControls'][1]/Docs/*" />
+		/// <summary>Sets whether the on-screen zoom buttons are visible on the Android WebView.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <param name="value"><see langword="true"/> to display zoom controls; otherwise, <see langword="false"/>.</param>
+		/// <returns>The platform configuration for fluent API chaining.</returns>
 		public static IPlatformElementConfiguration<Android, FormsElement> SetDisplayZoomControls(this IPlatformElementConfiguration<Android, FormsElement> config, bool value)
 		{
 			SetDisplayZoomControls(config.Element, value);

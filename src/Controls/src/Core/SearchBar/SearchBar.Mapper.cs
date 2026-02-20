@@ -6,6 +6,13 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class SearchBar
 	{
+		static SearchBar()
+		{
+			// Register dependency: SearchCommand depends on SearchCommandParameter for CanExecute evaluation
+			// See https://github.com/dotnet/maui/issues/31939
+			SearchCommandProperty.DependsOn(SearchCommandParameterProperty);
+		}
+
 		internal static new void RemapForControls()
 		{
 			// Adjust the mappings to preserve Controls.SearchBar legacy behaviors

@@ -4,16 +4,22 @@ using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/OrientationStateTrigger.xml" path="Type[@FullName='Microsoft.Maui.Controls.OrientationStateTrigger']/Docs/*" />
+	/// <summary>
+	/// A state trigger that activates when the device orientation matches the specified <see cref="Orientation"/>.
+	/// </summary>
 	public sealed class OrientationStateTrigger : StateTriggerBase
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/OrientationStateTrigger.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="OrientationStateTrigger"/> class.
+		/// </summary>
 		public OrientationStateTrigger()
 		{
 			UpdateState();
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/OrientationStateTrigger.xml" path="//Member[@MemberName='Orientation']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the orientation that activates this trigger. This is a bindable property.
+		/// </summary>
 		public DisplayOrientation Orientation
 		{
 			get => (DisplayOrientation)GetValue(OrientationProperty);

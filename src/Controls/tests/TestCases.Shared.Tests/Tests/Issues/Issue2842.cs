@@ -15,7 +15,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.TabbedPage)]
-		[Category(UITestCategories.Compatibility)]
 		public void Issue2842Test()
 		{
 			App.WaitForElement("btnClick");

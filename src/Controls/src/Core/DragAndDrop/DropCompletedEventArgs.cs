@@ -2,7 +2,9 @@ using System;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/DropCompletedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Controls.DropCompletedEventArgs']/Docs/*" />
+	/// <summary>
+	/// Provides data for the event raised when a drop operation completes.
+	/// </summary>
 	public class DropCompletedEventArgs : EventArgs
 	{
 		DataPackageOperation DropResult { get; }

@@ -27,7 +27,7 @@ class PointConverter : ISGTypeConverter
 			}
 		}
 
-		context.ReportConversionFailed( xmlLineInfo, value, Descriptors.PointConversionFailed);
+		context.ReportConversionFailed(xmlLineInfo, value, Descriptors.PointConversionFailed);
 		return "default";
 	}
 }

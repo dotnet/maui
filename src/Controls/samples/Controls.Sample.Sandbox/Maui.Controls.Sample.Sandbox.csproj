@@ -13,10 +13,19 @@
     <!-- Disable multi-RID builds to workaround a parallel build issue -->
     <RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst'))">maccatalyst-x64</RuntimeIdentifier>
     <RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst')) and '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'arm64'">maccatalyst-arm64</RuntimeIdentifier>
+    <!-- NOTE: By default the UseMaterial3 flag value is false. If you change the UseMaterial3 flag, you MUST delete the artifacts folder 
+       and rebuild the entire codebase using: dotnet build ./Microsoft.Maui.BuildTasks.slnf -->
+    <UseMaterial3>false</UseMaterial3>
   </PropertyGroup>
 
   <PropertyGroup>
     <ApplicationTitle>Sandbox</ApplicationTitle>
+    <!-- Workaround for https://github.com/dotnet/sdk/issues/47727
+         dotnet run on MacCatalyst constructs the .app bundle path using the assembly name,
+         but the build creates the bundle using ApplicationTitle. This mismatch causes
+         "file not found" errors. Override ApplicationTitle to match assembly name as a
+         workaround. This can be removed once the SDK fix is available. -->
+    <ApplicationTitle Condition="$(TargetFramework.Contains('-maccatalyst'))">Maui.Controls.Sample.Sandbox</ApplicationTitle>
     <ApplicationId>com.microsoft.maui.sandbox</ApplicationId>
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>

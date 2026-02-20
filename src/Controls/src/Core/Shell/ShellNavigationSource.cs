@@ -1,27 +1,25 @@
-using System;
-
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/ShellNavigationSource.xml" path="Type[@FullName='Microsoft.Maui.Controls.ShellNavigationSource']/Docs/*" />
+	/// <summary>Indicates how Shell navigation was initiated.</summary>
 	public enum ShellNavigationSource
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellNavigationSource.xml" path="//Member[@MemberName='Unknown']/Docs/*" />
+		/// <summary>The navigation source is unknown.</summary>
 		Unknown = 0,
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellNavigationSource.xml" path="//Member[@MemberName='Push']/Docs/*" />
+		/// <summary>Navigation was initiated by pushing a page onto the stack.</summary>
 		Push,
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellNavigationSource.xml" path="//Member[@MemberName='Pop']/Docs/*" />
+		/// <summary>Navigation was initiated by popping a page from the stack.</summary>
 		Pop,
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellNavigationSource.xml" path="//Member[@MemberName='PopToRoot']/Docs/*" />
+		/// <summary>Navigation was initiated by popping to the root page.</summary>
 		PopToRoot,
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellNavigationSource.xml" path="//Member[@MemberName='Insert']/Docs/*" />
+		/// <summary>Navigation was initiated by inserting a page into the stack.</summary>
 		Insert,
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellNavigationSource.xml" path="//Member[@MemberName='Remove']/Docs/*" />
+		/// <summary>Navigation was initiated by removing a page from the stack.</summary>
 		Remove,
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellNavigationSource.xml" path="//Member[@MemberName='ShellItemChanged']/Docs/*" />
+		/// <summary>Navigation was initiated by changing the active <see cref="ShellItem"/>.</summary>
 		ShellItemChanged,
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellNavigationSource.xml" path="//Member[@MemberName='ShellSectionChanged']/Docs/*" />
+		/// <summary>Navigation was initiated by changing the active <see cref="ShellSection"/>.</summary>
 		ShellSectionChanged,
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellNavigationSource.xml" path="//Member[@MemberName='ShellContentChanged']/Docs/*" />
+		/// <summary>Navigation was initiated by changing the active <see cref="ShellContent"/>.</summary>
 		ShellContentChanged,
 	}
 }

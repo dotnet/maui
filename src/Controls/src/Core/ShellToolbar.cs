@@ -131,7 +131,7 @@ namespace Microsoft.Maui.Controls
 
 		void UpdateBackbuttonBehavior()
 		{
-			var bbb = Shell.GetBackButtonBehavior(_currentPage);
+			var bbb = Shell.GetEffectiveBackButtonBehavior(_currentPage);
 
 			if (bbb == _backButtonBehavior)
 				return;

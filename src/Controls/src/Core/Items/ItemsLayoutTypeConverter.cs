@@ -4,7 +4,13 @@ using System.Globalization;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/ItemsLayoutTypeConverter.xml" path="Type[@FullName='Microsoft.Maui.Controls.ItemsLayoutTypeConverter']/Docs/*" />
+	/// <summary>
+	/// Converts string representations to <see cref="IItemsLayout"/> instances for use in XAML.
+	/// </summary>
+	/// <remarks>
+	/// This type converter enables XAML shortcuts for common item layouts.
+	/// Supported string values: "VerticalList", "HorizontalList", "VerticalGrid,{span}", "HorizontalGrid,{span}".
+	/// </remarks>
 	public class ItemsLayoutTypeConverter : TypeConverter
 	{
 		public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)

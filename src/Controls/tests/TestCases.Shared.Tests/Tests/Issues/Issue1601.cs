@@ -14,7 +14,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Layout)]
-		[Category(UITestCategories.Compatibility)]
 		public void Issue1601Test()
 		{
 			App.WaitForElement("CrashButton");

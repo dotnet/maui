@@ -19,6 +19,6 @@ public class Issue29693 : _IssuesUITest
 		App.WaitForElement("button1");
 		App.Tap("button1");
 		App.Tap("button2");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 }

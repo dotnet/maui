@@ -6,11 +6,15 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Controls.Internals
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls.Internals/ActionSheetArguments.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.ActionSheetArguments']/Docs/*" />
+	/// <summary>Arguments for an action sheet dialog.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class ActionSheetArguments
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/ActionSheetArguments.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>Creates a new <see cref="ActionSheetArguments"/> with the specified parameters.</summary>
+		/// <param name="title">The title for the action sheet.</param>
+		/// <param name="cancel">The text for the cancel button.</param>
+		/// <param name="destruction">The text for the destructive button.</param>
+		/// <param name="buttons">Additional buttons to display.</param>
 		public ActionSheetArguments(string title, string cancel, string destruction, IEnumerable<string> buttons)
 		{
 			Title = title;
@@ -37,7 +41,7 @@ namespace Microsoft.Maui.Controls.Internals
 		/// </summary>
 		public string Destruction { get; private set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/ActionSheetArguments.xml" path="//Member[@MemberName='Result']/Docs/*" />
+		/// <summary>Gets the task completion source for the user's choice.</summary>
 		public TaskCompletionSource<string> Result { get; }
 
 		/// <summary>
@@ -47,7 +51,8 @@ namespace Microsoft.Maui.Controls.Internals
 
 		public FlowDirection FlowDirection { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/ActionSheetArguments.xml" path="//Member[@MemberName='SetResult']/Docs/*" />
+		/// <summary>Sets the result of the action sheet.</summary>
+		/// <param name="result">The selected button text.</param>
 		public void SetResult(string result)
 		{
 			Result.TrySetResult(result);

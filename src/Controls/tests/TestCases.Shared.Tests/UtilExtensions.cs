@@ -31,8 +31,12 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		public static void NavigateToGallery(this IApp app, string page)
 		{
-			app.WaitForElement(goToTestButtonId, "Timed out waiting for Go To Test button to appear", TimeSpan.FromMinutes(2));
-			NavigateTo(app, page);
+			// For Catalyst app directly go the test page while opening.
+			if (app is not AppiumCatalystApp)
+			{
+				app.WaitForElement(goToTestButtonId, "Timed out waiting for Go To Test button to appear", TimeSpan.FromMinutes(2));
+				NavigateTo(app, page);
+			}
 		}
 
 		public static void NavigateTo(this IApp app, string text)
@@ -73,6 +77,21 @@ namespace Microsoft.Maui.TestCases.Tests
 				}
 
 				throw;
+			}
+		}
+
+		public static void TapFirstSearchResult(this IApp app, UITestContextBase context, IUIElement searchHandler, string searchResultIdentifier = "SearchResultName")
+		{
+			if (context.Device == TestDevice.Android)
+			{
+				// Android does not support selecting elements in SearchHandler results
+				var y = searchHandler.GetRect().Y + searchHandler.GetRect().Height;
+				app.TapCoordinates(searchHandler.GetRect().X + 10, y + 10);
+			}
+			else
+			{
+				var searchResults = app.FindElements(searchResultIdentifier);
+				searchResults.First().Tap();
 			}
 		}
 	}

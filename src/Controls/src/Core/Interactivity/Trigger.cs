@@ -5,16 +5,23 @@ using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/Trigger.xml" path="Type[@FullName='Microsoft.Maui.Controls.Trigger']/Docs/*" />
+	/// <summary>
+	/// A trigger that activates setters when a property on the control matches a specified value.
+	/// </summary>
 	[ContentProperty("Setters")]
 	public sealed class Trigger : TriggerBase
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Trigger.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Initializes a new <see cref="Trigger" /> instance.
+		/// </summary>
+		/// <param name="targetType">The type of object to which this trigger can be attached.</param>
 		public Trigger([System.ComponentModel.TypeConverter(typeof(TypeTypeConverter))][Parameter("TargetType")] Type targetType) : base(new PropertyCondition(), targetType)
 		{
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Trigger.xml" path="//Member[@MemberName='Property']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the property whose value will be compared to <see cref="Value" /> to determine when to activate the trigger.
+		/// </summary>
 		public BindableProperty Property
 		{
 			get { return ((PropertyCondition)Condition).Property; }
@@ -30,13 +37,17 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Trigger.xml" path="//Member[@MemberName='Setters']/Docs/*" />
+		/// <summary>
+		/// Gets the collection of <see cref="Setter" /> objects to apply when the trigger condition is met.
+		/// </summary>
 		public new IList<Setter> Setters
 		{
 			get { return base.Setters; }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Trigger.xml" path="//Member[@MemberName='Value']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the value to compare against <see cref="Property" /> to determine when to activate the trigger.
+		/// </summary>
 		public object Value
 		{
 			get { return ((PropertyCondition)Condition).Value; }

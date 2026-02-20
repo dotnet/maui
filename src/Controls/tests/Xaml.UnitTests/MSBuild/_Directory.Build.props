@@ -1,6 +1,14 @@
 <Project>
 
-  <PropertyGroup>
+  <PropertyGroup Condition="'$(HELIX_CORRELATION_PAYLOAD)' != ''">
+    <!-- On Helix, use the correlation payload paths -->
+    <MauiRootDirectory>$(HELIX_CORRELATION_PAYLOAD)\</MauiRootDirectory>
+    <MauiSrcDirectory>$(MauiRootDirectory)src\</MauiSrcDirectory>
+    <_MauiBuildTasksLocation>$(MauiRootDirectory)buildtasks\</_MauiBuildTasksLocation>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(HELIX_CORRELATION_PAYLOAD)' == ''">
+    <!-- Local development - use relative paths from repo root -->
     <MauiRootDirectory>$(MSBuildThisFileDirectory)..\..\..\..\..\..\..\</MauiRootDirectory>
     <MauiSrcDirectory>$(MauiRootDirectory)src\</MauiSrcDirectory>
     <_MauiBuildTasksLocation>$(MauiRootDirectory).buildtasks\</_MauiBuildTasksLocation>
@@ -8,4 +16,4 @@
 
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" />
 
-</Project> 
+</Project>

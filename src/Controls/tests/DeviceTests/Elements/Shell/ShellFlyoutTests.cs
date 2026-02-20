@@ -172,7 +172,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				// validate footer position
 				#if IOS
-				AssertionExtensions.CloseEnough(footerFrame.Y, headerFrame.Height + contentFrame.Height + GetSafeArea(handler.ToPlatform()).Top);
+				AssertionExtensions.CloseEnough(footerFrame.Y + GetSafeArea(handler.ToPlatform()).Bottom, headerFrame.Height + contentFrame.Height + GetSafeArea(handler.ToPlatform()).Top); 
 				#else
 				// On android the we pad the top of the header frame by the safe area because how layout works
 				// so that is already included in the headerFrame Height
@@ -253,7 +253,7 @@ namespace Microsoft.Maui.DeviceTests
                                 // validate footer position
                                 var expectedFooterY = expectedContentY + contentMargin.Bottom + contentFrame.Height;
                                 AssertionExtensions.CloseEnough(0, footerFrame.X, message: "Footer X");
-                                AssertionExtensions.CloseEnough(expectedFooterY, footerFrame.Y, epsilon: 0.6, message: "Footer Y");
+                                AssertionExtensions.CloseEnough(expectedFooterY, footerFrame.Y + GetSafeArea(handler.ToPlatform()).Bottom, epsilon: 0.6, message: "Footer Y");
                                 AssertionExtensions.CloseEnough(flyoutFrame.Width, footerFrame.Width, message: "Footer Width");
 
                                 //All three views should measure to the height of the flyout
@@ -277,6 +277,11 @@ namespace Microsoft.Maui.DeviceTests
 		[ClassData(typeof(ShellFlyoutHeaderScrollTestCases))]
 		public async Task FlyoutHeaderScroll(FlyoutHeaderBehavior flyoutHeaderBehavior, string contentType)
                 {
+                        // Skip on iOS 26+ due to FlyoutHeader collapse behavior changes
+                        // See: https://github.com/dotnet/maui/issues/33004
+                        if (OperatingSystem.IsIOSVersionAtLeast(26))
+                                return;
+
                         var headerRequestedHeight = 250;
                         var headerMinHeight = 100;
 

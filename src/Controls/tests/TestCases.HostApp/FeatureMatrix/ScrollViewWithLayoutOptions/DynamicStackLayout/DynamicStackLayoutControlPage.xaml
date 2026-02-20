@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.DynamicStackLayoutControlPage"
+             x:DataType="local:LayoutViewModel"
+             Title="DynamicStackLayoutControlPage">
+    <VerticalStackLayout Padding="10"
+                         Spacing="10">
+        <ScrollView x:Name="MyScrollView"
+                    Orientation="{Binding Orientation}"
+                    BackgroundColor="Lavender"
+                    AutomationId="ScrollViewWithDynamicStackLayout">
+            <StackLayout x:Name="DynamicStack"
+                         Spacing="5"
+                         Padding="10"
+                         Orientation="{Binding Orientation}">
+            </StackLayout>
+        </ScrollView>
+        <Label x:Name="OrientationLabel"
+               Text="Orientation:"
+               FontAttributes="Bold"/>
+        <HorizontalStackLayout x:Name="OrientationButtons"
+                               Spacing="10">
+            <RadioButton x:Name="VerticalStack"
+                         Content="Vertical"
+                         IsChecked="True"
+                         CheckedChanged="OnOrientationClicked"
+                         AutomationId="VerticalButton"/>
+            <RadioButton x:Name="HorizontalStack"
+                         Content="Horizontal"
+                         CheckedChanged="OnOrientationClicked"
+                         AutomationId="HorizontalButton"/>
+
+        </HorizontalStackLayout>
+        <StackLayout Orientation="Horizontal"
+                     Spacing="10"
+                     HorizontalOptions="Center">
+            <Button Text="Add Child"
+                    Clicked="OnAddChildClicked"
+                    AutomationId="AddButton"/>
+            <Button Text="Remove Child"
+                    Clicked="OnRemoveChildClicked"
+                    AutomationId="RemoveButton"/>
+        </StackLayout>
+    </VerticalStackLayout>
+</ContentPage>

@@ -12,7 +12,9 @@ namespace Microsoft.Maui.Controls.Shapes
 		Unknown = 4
 	}
 
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Matrix.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.Matrix']/Docs/*" />
+	/// <summary>
+	/// Represents a 3x3 affine transformation matrix used for 2D transformations such as rotation, scaling, skewing, and translation.
+	/// </summary>
 	[System.ComponentModel.TypeConverter(typeof(MatrixTypeConverter))]
 	public struct Matrix : IEquatable<Matrix>
 	{
@@ -27,7 +29,15 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		static Matrix IdentityMatrix = CreateIdentity();
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Matrix.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Initializes a new <see cref="Matrix"/> with the specified values.
+		/// </summary>
+		/// <param name="m11">The value at row 1, column 1 (scale X component).</param>
+		/// <param name="m12">The value at row 1, column 2.</param>
+		/// <param name="m21">The value at row 2, column 1.</param>
+		/// <param name="m22">The value at row 2, column 2 (scale Y component).</param>
+		/// <param name="offsetX">The X translation offset.</param>
+		/// <param name="offsetY">The Y translation offset.</param>
 		public Matrix(double m11, double m12,
 					  double m21, double m22,
 					  double offsetX, double offsetY)
@@ -44,16 +54,22 @@ namespace Microsoft.Maui.Controls.Shapes
 			DeriveMatrixType();
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Matrix.xml" path="//Member[@MemberName='Identity']/Docs/*" />
+		/// <summary>
+		/// Gets the identity matrix.
+		/// </summary>
 		public static Matrix Identity { get { return IdentityMatrix; } }
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Matrix.xml" path="//Member[@MemberName='SetIdentity']/Docs/*" />
+		/// <summary>
+		/// Sets this matrix to the identity matrix.
+		/// </summary>
 		public void SetIdentity()
 		{
 			_type = MatrixTypes.Identity;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Matrix.xml" path="//Member[@MemberName='IsIdentity']/Docs/*" />
+		/// <summary>
+		/// Gets a value indicating whether this matrix is the identity matrix.
+		/// </summary>
 		public bool IsIdentity
 		{
 			get
@@ -69,78 +85,129 @@ namespace Microsoft.Maui.Controls.Shapes
 			return trans1;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Matrix.xml" path="//Member[@MemberName='Multiply']/Docs/*" />
+		/// <summary>
+		/// Multiplies two matrices and returns the result.
+		/// </summary>
+		/// <param name="trans1">The first matrix.</param>
+		/// <param name="trans2">The second matrix.</param>
+		/// <returns>The result of multiplying <paramref name="trans1"/> by <paramref name="trans2"/>.</returns>
 		public static Matrix Multiply(Matrix trans1, Matrix trans2)
 		{
 			MatrixUtil.MultiplyMatrix(ref trans1, ref trans2);
 			return trans1;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Matrix.xml" path="//Member[@MemberName='Append']/Docs/*" />
+		/// <summary>
+		/// Appends the specified matrix to this matrix.
+		/// </summary>
+		/// <param name="matrix">The matrix to append.</param>
 		public void Append(Matrix matrix)
 		{
 			this *= matrix;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Matrix.xml" path="//Member[@MemberName='Prepend']/Docs/*" />
+		/// <summary>
+		/// Prepends the specified matrix to this matrix.
+		/// </summary>
+		/// <param name="matrix">The matrix to prepend.</param>
 		public void Prepend(Matrix matrix)
 		{
 			this = matrix * this;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Matrix.xml" path="//Member[@MemberName='Rotate']/Docs/*" />
+		/// <summary>
+		/// Appends a rotation transformation to this matrix.
+		/// </summary>
+		/// <param name="angle">The angle of rotation, in degrees.</param>
 		public void Rotate(double angle)
 		{
 			angle %= 360.0;
 			this *= CreateRotationRadians(angle * (Math.PI / 180.0));
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Matrix.xml" path="//Member[@MemberName='RotatePrepend']/Docs/*" />
+		/// <summary>
+		/// Prepends a rotation transformation to this matrix.
+		/// </summary>
+		/// <param name="angle">The angle of rotation, in degrees.</param>
 		public void RotatePrepend(double angle)
 		{
 			angle %= 360.0;
 			this = CreateRotationRadians(angle * (Math.PI / 180.0)) * this;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Matrix.xml" path="//Member[@MemberName='RotateAt']/Docs/*" />
+		/// <summary>
+		/// Appends a rotation transformation around the specified point to this matrix.
+		/// </summary>
+		/// <param name="angle">The angle of rotation, in degrees.</param>
+		/// <param name="centerX">The X coordinate of the rotation center.</param>
+		/// <param name="centerY">The Y coordinate of the rotation center.</param>
 		public void RotateAt(double angle, double centerX, double centerY)
 		{
 			angle %= 360.0;
 			this *= CreateRotationRadians(angle * (Math.PI / 180.0), centerX, centerY);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Matrix.xml" path="//Member[@MemberName='RotateAtPrepend']/Docs/*" />
+		/// <summary>
+		/// Prepends a rotation transformation around the specified point to this matrix.
+		/// </summary>
+		/// <param name="angle">The angle of rotation, in degrees.</param>
+		/// <param name="centerX">The X coordinate of the rotation center.</param>
+		/// <param name="centerY">The Y coordinate of the rotation center.</param>
 		public void RotateAtPrepend(double angle, double centerX, double centerY)
 		{
 			angle %= 360.0;
 			this = CreateRotationRadians(angle * (Math.PI / 180.0), centerX, centerY) * this;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Matrix.xml" path="//Member[@MemberName='Scale']/Docs/*" />
+		/// <summary>
+		/// Appends a scale transformation to this matrix.
+		/// </summary>
+		/// <param name="scaleX">The scale factor along the X axis.</param>
+		/// <param name="scaleY">The scale factor along the Y axis.</param>
 		public void Scale(double scaleX, double scaleY)
 		{
 			this *= CreateScaling(scaleX, scaleY);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Matrix.xml" path="//Member[@MemberName='ScalePrepend']/Docs/*" />
+		/// <summary>
+		/// Prepends a scale transformation to this matrix.
+		/// </summary>
+		/// <param name="scaleX">The scale factor along the X axis.</param>
+		/// <param name="scaleY">The scale factor along the Y axis.</param>
 		public void ScalePrepend(double scaleX, double scaleY)
 		{
 			this = CreateScaling(scaleX, scaleY) * this;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Matrix.xml" path="//Member[@MemberName='ScaleAt']/Docs/*" />
+		/// <summary>
+		/// Appends a scale transformation around the specified point to this matrix.
+		/// </summary>
+		/// <param name="scaleX">The scale factor along the X axis.</param>
+		/// <param name="scaleY">The scale factor along the Y axis.</param>
+		/// <param name="centerX">The X coordinate of the scale center.</param>
+		/// <param name="centerY">The Y coordinate of the scale center.</param>
 		public void ScaleAt(double scaleX, double scaleY, double centerX, double centerY)
 		{
 			this *= CreateScaling(scaleX, scaleY, centerX, centerY);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Matrix.xml" path="//Member[@MemberName='ScaleAtPrepend']/Docs/*" />
+		/// <summary>
+		/// Prepends a scale transformation around the specified point to this matrix.
+		/// </summary>
+		/// <param name="scaleX">The scale factor along the X axis.</param>
+		/// <param name="scaleY">The scale factor along the Y axis.</param>
+		/// <param name="centerX">The X coordinate of the scale center.</param>
+		/// <param name="centerY">The Y coordinate of the scale center.</param>
 		public void ScaleAtPrepend(double scaleX, double scaleY, double centerX, double centerY)
 		{
 			this = CreateScaling(scaleX, scaleY, centerX, centerY) * this;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Matrix.xml" path="//Member[@MemberName='Skew']/Docs/*" />
+		/// <summary>
+		/// Appends a skew transformation to this matrix.
+		/// </summary>
+		/// <param name="skewX">The horizontal skew angle, in degrees.</param>
+		/// <param name="skewY">The vertical skew angle, in degrees.</param>
 		public void Skew(double skewX, double skewY)
 		{
 			skewX %= 360;
@@ -149,7 +216,11 @@ namespace Microsoft.Maui.Controls.Shapes
 									  skewY * (Math.PI / 180.0));
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Matrix.xml" path="//Member[@MemberName='SkewPrepend']/Docs/*" />
+		/// <summary>
+		/// Prepends a skew transformation to this matrix.
+		/// </summary>
+		/// <param name="skewX">The horizontal skew angle, in degrees.</param>
+		/// <param name="skewY">The vertical skew angle, in degrees.</param>
 		public void SkewPrepend(double skewX, double skewY)
 		{
 			skewX %= 360;
@@ -158,7 +229,11 @@ namespace Microsoft.Maui.Controls.Shapes
 									 skewY * (Math.PI / 180.0)) * this;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Matrix.xml" path="//Member[@MemberName='Translate']/Docs/*" />
+		/// <summary>
+		/// Appends a translation transformation to this matrix.
+		/// </summary>
+		/// <param name="offsetX">The translation offset along the X axis.</param>
+		/// <param name="offsetY">The translation offset along the Y axis.</param>
 		public void Translate(double offsetX, double offsetY)
 		{
 			//
@@ -190,13 +265,21 @@ namespace Microsoft.Maui.Controls.Shapes
 			}
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Matrix.xml" path="//Member[@MemberName='TranslatePrepend']/Docs/*" />
+		/// <summary>
+		/// Prepends a translation transformation to this matrix.
+		/// </summary>
+		/// <param name="offsetX">The translation offset along the X axis.</param>
+		/// <param name="offsetY">The translation offset along the Y axis.</param>
 		public void TranslatePrepend(double offsetX, double offsetY)
 		{
 			this = CreateTranslation(offsetX, offsetY) * this;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Matrix.xml" path="//Member[@MemberName='Transform'][1]/Docs/*" />
+		/// <summary>
+		/// Transforms the specified point by this matrix and returns the result.
+		/// </summary>
+		/// <param name="point">The point to transform.</param>
+		/// <returns>The transformed point.</returns>
 		public Point Transform(Point point)
 		{
 			Point newPoint = point;
@@ -209,7 +292,10 @@ namespace Microsoft.Maui.Controls.Shapes
 			return new Point(x, y);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Matrix.xml" path="//Member[@MemberName='Transform'][2]/Docs/*" />
+		/// <summary>
+		/// Transforms the specified array of points by this matrix.
+		/// </summary>
+		/// <param name="points">The array of points to transform.</param>
 		public void Transform(Point[] points)
 		{
 			if (points != null)
@@ -227,7 +313,9 @@ namespace Microsoft.Maui.Controls.Shapes
 			}
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Matrix.xml" path="//Member[@MemberName='Determinant']/Docs/*" />
+		/// <summary>
+		/// Gets the determinant of this matrix.
+		/// </summary>
 		public double Determinant
 		{
 			get
@@ -246,10 +334,15 @@ namespace Microsoft.Maui.Controls.Shapes
 			}
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Matrix.xml" path="//Member[@MemberName='HasInverse']/Docs/*" />
+		/// <summary>
+		/// Gets a value indicating whether this matrix has an inverse (determinant is non-zero).
+		/// </summary>
 		public bool HasInverse { get { return Determinant != 0; } }
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Matrix.xml" path="//Member[@MemberName='Invert']/Docs/*" />
+		/// <summary>
+		/// Inverts this matrix if it is invertible.
+		/// </summary>
+		/// <exception cref="InvalidOperationException">The matrix is not invertible.</exception>
 		public void Invert()
 		{
 			double determinant = Determinant;
@@ -296,7 +389,9 @@ namespace Microsoft.Maui.Controls.Shapes
 			}
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Matrix.xml" path="//Member[@MemberName='M11']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the value at row 1, column 1 of the matrix (horizontal scale component).
+		/// </summary>
 		public double M11
 		{
 			get
@@ -330,7 +425,9 @@ namespace Microsoft.Maui.Controls.Shapes
 			}
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Matrix.xml" path="//Member[@MemberName='M12']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the value at row 1, column 2 of the matrix.
+		/// </summary>
 		public double M12
 		{
 			get
@@ -361,7 +458,9 @@ namespace Microsoft.Maui.Controls.Shapes
 			}
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Matrix.xml" path="//Member[@MemberName='M21']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the value at row 2, column 1 of the matrix.
+		/// </summary>
 		public double M21
 		{
 			get
@@ -392,7 +491,9 @@ namespace Microsoft.Maui.Controls.Shapes
 			}
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Matrix.xml" path="//Member[@MemberName='M22']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the value at row 2, column 2 of the matrix (vertical scale component).
+		/// </summary>
 		public double M22
 		{
 			get
@@ -426,7 +527,9 @@ namespace Microsoft.Maui.Controls.Shapes
 			}
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Matrix.xml" path="//Member[@MemberName='OffsetX']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the X translation offset of the matrix.
+		/// </summary>
 		public double OffsetX
 		{
 			get
@@ -460,7 +563,9 @@ namespace Microsoft.Maui.Controls.Shapes
 			}
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Matrix.xml" path="//Member[@MemberName='OffsetY']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the Y translation offset of the matrix.
+		/// </summary>
 		public double OffsetY
 		{
 			get

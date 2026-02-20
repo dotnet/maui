@@ -2,21 +2,21 @@ using System;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/TargetIdiom.xml" path="Type[@FullName='Microsoft.Maui.Controls.TargetIdiom']/Docs/*" />
+	/// <summary>Specifies the device form factor.</summary>
 	[Obsolete("Use Microsoft.Maui.Devices.DeviceIdiom instead.")]
 	public enum TargetIdiom
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/TargetIdiom.xml" path="//Member[@MemberName='Unsupported']/Docs/*" />
+		/// <summary>The device idiom is not supported.</summary>
 		Unsupported,
-		/// <include file="../../docs/Microsoft.Maui.Controls/TargetIdiom.xml" path="//Member[@MemberName='Phone']/Docs/*" />
+		/// <summary>The device is a phone.</summary>
 		Phone,
-		/// <include file="../../docs/Microsoft.Maui.Controls/TargetIdiom.xml" path="//Member[@MemberName='Tablet']/Docs/*" />
+		/// <summary>The device is a tablet.</summary>
 		Tablet,
-		/// <include file="../../docs/Microsoft.Maui.Controls/TargetIdiom.xml" path="//Member[@MemberName='Desktop']/Docs/*" />
+		/// <summary>The device is a desktop computer.</summary>
 		Desktop,
-		/// <include file="../../docs/Microsoft.Maui.Controls/TargetIdiom.xml" path="//Member[@MemberName='TV']/Docs/*" />
+		/// <summary>The device is a television.</summary>
 		TV,
-		/// <include file="../../docs/Microsoft.Maui.Controls/TargetIdiom.xml" path="//Member[@MemberName='Watch']/Docs/*" />
+		/// <summary>The device is a watch.</summary>
 		Watch
 	}
 }

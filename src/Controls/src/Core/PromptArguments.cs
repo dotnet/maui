@@ -4,11 +4,11 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Controls.Internals
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls.Internals/PromptArguments.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.PromptArguments']/Docs/*" />
+	/// <summary>Arguments for a prompt dialog.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class PromptArguments
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/PromptArguments.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />
+		/// <summary>Creates a new <see cref="PromptArguments"/> with the specified parameters.</summary>
 		public PromptArguments(string title, string message, string accept = "OK", string cancel = "Cancel", string placeholder = null, int maxLength = -1, Keyboard keyboard = default(Keyboard), string initialValue = "")
 		{
 			Title = title;
@@ -22,34 +22,35 @@ namespace Microsoft.Maui.Controls.Internals
 			Result = new TaskCompletionSource<string>();
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/PromptArguments.xml" path="//Member[@MemberName='Title']/Docs/*" />
+		/// <summary>Gets the title for the prompt.</summary>
 		public string Title { get; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/PromptArguments.xml" path="//Member[@MemberName='Message']/Docs/*" />
+		/// <summary>Gets the message for the prompt.</summary>
 		public string Message { get; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/PromptArguments.xml" path="//Member[@MemberName='Accept']/Docs/*" />
+		/// <summary>Gets the text for the accept button.</summary>
 		public string Accept { get; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/PromptArguments.xml" path="//Member[@MemberName='Cancel']/Docs/*" />
+		/// <summary>Gets the text for the cancel button.</summary>
 		public string Cancel { get; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/PromptArguments.xml" path="//Member[@MemberName='Placeholder']/Docs/*" />
+		/// <summary>Gets the placeholder text for the input field.</summary>
 		public string Placeholder { get; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/PromptArguments.xml" path="//Member[@MemberName='InitialValue']/Docs/*" />
+		/// <summary>Gets the initial value for the input field.</summary>
 		public string InitialValue { get; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/PromptArguments.xml" path="//Member[@MemberName='MaxLength']/Docs/*" />
+		/// <summary>Gets the maximum input length, or -1 for no limit.</summary>
 		public int MaxLength { get; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/PromptArguments.xml" path="//Member[@MemberName='Keyboard']/Docs/*" />
+		/// <summary>Gets the keyboard type for the input field.</summary>
 		public Keyboard Keyboard { get; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/PromptArguments.xml" path="//Member[@MemberName='Result']/Docs/*" />
+		/// <summary>Gets the task completion source for the user's input.</summary>
 		public TaskCompletionSource<string> Result { get; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/PromptArguments.xml" path="//Member[@MemberName='SetResult']/Docs/*" />
+		/// <summary>Sets the result of the prompt.</summary>
+		/// <param name="text">The user's input text.</param>
 		public void SetResult(string text)
 		{
 			Result.TrySetResult(text);

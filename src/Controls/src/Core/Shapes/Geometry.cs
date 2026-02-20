@@ -3,9 +3,15 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Geometry.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.Geometry']/Docs/*" />
+	/// <summary>
+	/// The base class for all geometry objects that describe 2D shapes.
+	/// </summary>
 	public abstract class Geometry : BindableObject, IGeometry
 	{
+		/// <summary>
+		/// Appends the geometry to the specified <see cref="PathF"/>.
+		/// </summary>
+		/// <param name="path">The path to append the geometry to.</param>
 		public abstract void AppendPath(PathF path);
 
 		PathF IShape.PathForBounds(Graphics.Rect bounds)

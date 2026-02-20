@@ -35,6 +35,11 @@ public static partial class AppHostBuilderExtensions
 		return builder;
 	}
 
+	/// <summary>
+	/// Registers the .NET MAUI Controls handlers with the handlers collection.
+	/// </summary>
+	/// <param name="handlersCollection">The handlers collection to register handlers with.</param>
+	/// <returns>The handlers collection for chaining.</returns>
 	public static IMauiHandlersCollection AddMauiControlsHandlers(this IMauiHandlersCollection handlersCollection) =>
 		handlersCollection.AddControlsHandlers();
 

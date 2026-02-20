@@ -399,6 +399,7 @@ namespace Microsoft.Maui.Platform
 			if (provider == null)
 				return;
 
+			platformView.RemoveBackgroundLayer();
 			if (imageSource != null)
 			{
 				var service = provider.GetRequiredImageSourceService(imageSource);
@@ -410,7 +411,32 @@ namespace Microsoft.Maui.Platform
 				if (backgroundImage == null)
 					return;
 
-				platformView.BackgroundColor = UIColor.FromPatternImage(backgroundImage);
+				var cgImage = backgroundImage.CGImage;
+				var shouldDisposeCGImage = false;
+				if (cgImage == null && backgroundImage.CIImage != null)
+				{
+					using var context = CoreImage.CIContext.Create();
+					cgImage = context.CreateCGImage(backgroundImage.CIImage, backgroundImage.CIImage.Extent);
+					shouldDisposeCGImage = true;
+				}
+
+				if (cgImage == null)
+					return;
+
+				var imageLayer = new StaticCALayer
+				{
+					Name = BackgroundLayerName,
+					Contents = cgImage,
+					Frame = platformView.Bounds,
+					ContentsGravity = CoreAnimation.CALayer.GravityResize
+				};
+
+				platformView.BackgroundColor = UIColor.Clear;
+				platformView.InsertBackgroundLayer(imageLayer, 0);
+
+				// Dispose the CGImage if we created it via CreateCGImage.
+				if (shouldDisposeCGImage)
+					cgImage?.Dispose();
 			}
 		}
 

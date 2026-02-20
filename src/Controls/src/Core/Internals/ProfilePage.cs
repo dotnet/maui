@@ -8,30 +8,30 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls.Internals
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/ProfileDatum.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.ProfileDatum']/Docs/*" />
+	/// <summary>Stores profiling data for a single measured operation.</summary>
 	public class ProfileDatum
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/ProfileDatum.xml" path="//Member[@MemberName='Name']/Docs/*" />
+		/// <summary>The name of the profiled operation.</summary>
 		public string Name;
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/ProfileDatum.xml" path="//Member[@MemberName='Id']/Docs/*" />
+		/// <summary>Optional identifier for the operation.</summary>
 		public string Id;
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/ProfileDatum.xml" path="//Member[@MemberName='Ticks']/Docs/*" />
+		/// <summary>Total ticks for this operation.</summary>
 		public long Ticks;
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/ProfileDatum.xml" path="//Member[@MemberName='SubTicks']/Docs/*" />
+		/// <summary>Ticks spent in sub-operations.</summary>
 		public long SubTicks;
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/ProfileDatum.xml" path="//Member[@MemberName='Depth']/Docs/*" />
+		/// <summary>Nesting depth of this operation.</summary>
 		public int Depth;
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/ProfileDatum.xml" path="//Member[@MemberName='Path']/Docs/*" />
+		/// <summary>Source file path.</summary>
 		public string Path;
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/ProfileDatum.xml" path="//Member[@MemberName='Line']/Docs/*" />
+		/// <summary>Source line number.</summary>
 		public int Line;
 	}
 
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/ContentPageEx.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.ContentPageEx']/Docs/*" />
+	/// <summary>Extension methods for displaying profiling data on a ContentPage.</summary>
 	public static class ContentPageEx
 	{
 		const long MS = TimeSpan.TicksPerMillisecond;
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/ContentPageEx.xml" path="//Member[@MemberName='Data']/Docs/*" />
+		/// <summary>The collected profile data.</summary>
 		public static List<ProfileDatum> Data = new List<ProfileDatum>();
 
 		private static void ASSERT(bool condition)

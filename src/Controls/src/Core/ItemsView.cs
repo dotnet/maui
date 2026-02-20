@@ -34,14 +34,24 @@ namespace Microsoft.Maui.Controls
 		internal ItemsView()
 			=> TemplatedItems = new TemplatedItemsList<ItemsView<TVisual>, TVisual>(this, ItemsSourceProperty, ItemTemplateProperty);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="//Member[@MemberName='ItemsSource']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the source of items to display in the view.
+		/// </summary>
+		/// <value>
+		/// An <see cref="IEnumerable"/> collection that provides the items to display. The default value is <see langword="null"/>.
+		/// </value>
 		public IEnumerable ItemsSource
 		{
 			get => (IEnumerable)GetValue(ItemsSourceProperty);
 			set => SetValue(ItemsSourceProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="//Member[@MemberName='ItemTemplate']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the <see cref="DataTemplate"/> to apply to each item in the <see cref="ItemsSource"/>.
+		/// </summary>
+		/// <value>
+		/// The <see cref="DataTemplate"/> that defines the visual structure of each item. The default value is <see langword="null"/>.
+		/// </value>
 		public DataTemplate ItemTemplate
 		{
 			get => (DataTemplate)GetValue(ItemTemplateProperty);

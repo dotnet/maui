@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Layouts;
 
 namespace Maui.Controls.Sample;
 
@@ -11,6 +12,10 @@ public class LayoutViewModel : INotifyPropertyChanged
 	private double _widthRequest = -1;
 	private double _heightRequest = -1;
 	private ScrollOrientation _orientation = ScrollOrientation.Vertical;
+	private FlexDirection _flexDirection = FlexDirection.Column;
+	private int _labelCount = 3;
+	private int _rowCount = 2;
+	private int _columnCount = 2;
 
 	public ScrollOrientation Orientation
 	{
@@ -77,6 +82,57 @@ public class LayoutViewModel : INotifyPropertyChanged
 		}
 	}
 
+	public int LabelCount
+	{
+		get => _labelCount;
+		set
+		{
+			if (_labelCount != value)
+			{
+				_labelCount = value;
+				OnPropertyChanged(nameof(LabelCount));
+			}
+		}
+	}
+
+	public int RowCount
+	{
+		get => _rowCount;
+		set
+		{
+			if (_rowCount != value)
+			{
+				_rowCount = value;
+				OnPropertyChanged(nameof(RowCount));
+			}
+		}
+	}
+
+	public int ColumnCount
+	{
+		get => _columnCount;
+		set
+		{
+			if (_columnCount != value)
+			{
+				_columnCount = value;
+				OnPropertyChanged(nameof(ColumnCount));
+			}
+		}
+	}
+
+	public FlexDirection FlexDirection
+	{
+		get => _flexDirection;
+		set
+		{
+			if (_flexDirection != value)
+			{
+				_flexDirection = value;
+				OnPropertyChanged(nameof(FlexDirection));
+			}
+		}
+	}
 	public event PropertyChangedEventHandler PropertyChanged;
 
 	protected void OnPropertyChanged([CallerMemberName] string propertyName = "") =>

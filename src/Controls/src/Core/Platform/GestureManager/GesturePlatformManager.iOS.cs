@@ -89,6 +89,12 @@ namespace Microsoft.Maui.Controls.Platform
 					tapGestureRecognizer.PropertyChanged -= OnTapGestureRecognizerPropertyChanged;
 				}
 
+				if (TryGetSwipeGestureRecognizer(kvp.Key, out SwipeGestureRecognizer? swipeGestureRecognizer) &&
+					swipeGestureRecognizer != null)
+				{
+					swipeGestureRecognizer.PropertyChanged -= OnSwipeGestureRecognizerPropertyChanged;
+				}
+
 				foreach (var uiGestureRecognizer in kvp.Value)
 				{
 					if (uiGestureRecognizer is null)
@@ -402,6 +408,11 @@ namespace Microsoft.Maui.Controls.Platform
 			return result;
 		}
 
+		void UpdateSwipeGestureDirection(UISwipeGestureRecognizer recognizer, SwipeDirection direction)
+		{
+			recognizer.Direction = (UISwipeGestureRecognizerDirection)direction;
+		}
+
 		[SupportedOSPlatform("ios13.0")]
 		[SupportedOSPlatform("maccatalyst13.0")]
 		List<UIGestureRecognizer?> CreatePointerRecognizer(WeakReference weakRecognizer, WeakReference weakEventTracker)
@@ -594,6 +605,15 @@ namespace Microsoft.Maui.Controls.Platform
 			return tapGestureRecognizer != null;
 		}
 
+		bool TryGetSwipeGestureRecognizer(IGestureRecognizer? recognizer, out SwipeGestureRecognizer? swipeGestureRecognizer)
+		{
+			swipeGestureRecognizer =
+					recognizer as SwipeGestureRecognizer ??
+					(recognizer as ChildGestureRecognizer)?.GestureRecognizer as SwipeGestureRecognizer;
+
+			return swipeGestureRecognizer != null;
+		}
+
 		void LoadRecognizers()
 		{
 			if (ElementGestureRecognizers == null)
@@ -651,6 +671,11 @@ namespace Microsoft.Maui.Controls.Platform
 					tapGestureRecognizer != null)
 				{
 					tapGestureRecognizer.PropertyChanged += OnTapGestureRecognizerPropertyChanged;
+				}
+
+				if (TryGetSwipeGestureRecognizer(recognizer, out SwipeGestureRecognizer? swipeGestureRecognizer) && swipeGestureRecognizer != null)
+				{
+					swipeGestureRecognizer.PropertyChanged += OnSwipeGestureRecognizerPropertyChanged;
 				}
 
 				// AddFakeRightClickForMacCatalyst returns the button mask for the processed tap gesture
@@ -743,6 +768,12 @@ namespace Microsoft.Maui.Controls.Platform
 						gestureRecognizer.PropertyChanged -= OnTapGestureRecognizerPropertyChanged;
 					}
 
+					if (TryGetSwipeGestureRecognizer(gestureRecognizer, out SwipeGestureRecognizer? swipeGestureRecognizer) &&
+						swipeGestureRecognizer != null)
+					{
+						swipeGestureRecognizer.PropertyChanged -= OnSwipeGestureRecognizerPropertyChanged;
+					}
+
 					uiRecognizer.Dispose();
 				}
 			}
@@ -764,6 +795,23 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			if (e.Is(TapGestureRecognizer.ButtonsProperty))
 				LoadRecognizers();
+		}
+
+		void OnSwipeGestureRecognizerPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+		{
+			if (e.Is(SwipeGestureRecognizer.DirectionProperty) && 
+				sender is SwipeGestureRecognizer swipeGesture &&
+				_gestureRecognizers.TryGetValue(swipeGesture, out var uiRecognizers))
+			{
+				foreach (var uiRecognizer in uiRecognizers)
+				{
+					if (uiRecognizer is UISwipeGestureRecognizer uiSwipe)
+					{
+						UpdateSwipeGestureDirection(uiSwipe, swipeGesture.Direction);
+						break;
+					}
+				}
+			}
 		}
 
 		class ShouldReceiveTouchProxy

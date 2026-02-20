@@ -20,6 +20,7 @@
 		<IsPackable>true</IsPackable>
 		<PackageId>Microsoft.Maui.Controls</PackageId>
 		<Description>.NET Multi-platform App UI (.NET MAUI) is a cross-platform framework for creating native mobile and desktop apps with C# and XAML. Using .NET MAUI, you can develop apps that can run on Android, iOS, macOS, Tizen, and Windows from a single shared codebase.</Description>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -27,6 +28,10 @@
 		<ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml.csproj" />
 		<ProjectReference Include="..\..\..\Controls\src\Build.Tasks\Controls.Build.Tasks.csproj" />
 		<ProjectReference Include="..\..\..\SingleProject\Resizetizer\src\Resizetizer.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="README.md" Pack="true" PackagePath="\" />
 	</ItemGroup>
 
 	<Import Project="$(MauiSrcDirectory)Workload\Shared\LibraryPacks.targets" />

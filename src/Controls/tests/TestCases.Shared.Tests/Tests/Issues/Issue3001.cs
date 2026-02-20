@@ -17,7 +17,6 @@ public class Issue3001 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Navigation)]
-	[Category(UITestCategories.Compatibility)]
 	public void Issue3001Test()
 	{
 		App.WaitForElement(ButtonId);

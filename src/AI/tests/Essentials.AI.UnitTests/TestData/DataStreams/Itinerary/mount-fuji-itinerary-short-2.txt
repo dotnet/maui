@@ -1,0 +1,23 @@
+{"title": "Mount Fuji Itinerary", "rationale": "Mount Fuji is an iconic 
+destination in Japan, known for its striking snow-capped peak and as a 
+symbol of the country's natural beauty. This itinerary is designed to 
+provide a blend of cultural exploration, scenic beauty, and local experiences.
+", "
+days": [{"title": "Day 1: Arrival and Introduction to Mount Fuji", "
+activities": [{"description": "Hike to the base of Mount Fuji for a close-up 
+view of the iconic peak.", "title": "Mount Fuji Hike (Base Trail)", "type": "
+Sightseeing"}, {"title": "Mount Fuji Tower", "type": "Sightseeing", "description
+": "Visit the Mount Fuji Tower for panoramic views of the mountain."}], "subtitle
+": "Explore Mount Fuji's base and enjoy the iconic mountain from the ground.", 
+"destination": "Mount Fuji"}, {"subtitle": "Dive into the rich history and culture 
+of Mount Fuji.", "destination": "Mount Fuji", "activities": [{"type": "Sightseeing", 
+"title": "Fujisan Sengen Shrine", "description": "Visit the historic shrine dedicated
+ to the divine spirit of Mount Fuji."}, {"title": "Mount Fuji Five Lakes", "type": 
+"Sightseeing", "description": "Explore the beautiful lakes surrounding Mount Fuji, 
+offering serene landscapes."}], "title": "Day 2: Cultural and Historical 
+Exploration"}], "destinationName": "Mount Fuji", "description": "When seen at a 
+distance, Mount Fuji presents a beautiful, nearly symmetric, often snow-capped 
+profile and is Japan’s tallest and most iconic mountain. The volcanic cone rises 
+gracefully up to slightly more than 12,000 feet. On clear days, the mountain is 
+visible as far away as Tokyo. Despite its seemingly peaceful distant existence, 
+Mount Fuji is an active volcano. Its last eruption was in 1707."}
