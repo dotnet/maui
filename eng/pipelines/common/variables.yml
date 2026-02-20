@@ -66,9 +66,11 @@ variables:
       value: true
     - name: _SignType
       value: real
-    - group: Publish-Build-Assets
     - group: DotNet-HelixApi-Access
     - group: SDL_Settings
     - group: AzureDevOps-Artifact-Feeds-Pats
+    - ${{ if eq(variables['Build.DefinitionName'], 'dotnet-maui') }}:
+      - group: Publish-Build-Assets # This variable group contains secrets to publis to BAR
+
 
 
