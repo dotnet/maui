@@ -15,7 +15,7 @@ namespace Microsoft.Maui
 				return string.Empty;
 			}
 
-			var indexOfQueryString = url.IndexOf('?', StringComparison.Ordinal);
+			var indexOfQueryString = url.IndexOfAny(new[] { '?', '#' });
 			return (indexOfQueryString == -1)
 				? url
 				: url.Substring(0, indexOfQueryString);
