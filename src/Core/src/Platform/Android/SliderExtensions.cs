@@ -3,6 +3,7 @@ using Android.Content.Res;
 using Android.Graphics;
 using Android.Util;
 using Android.Widget;
+using MSlider = Google.Android.Material.Slider.Slider;
 
 namespace Microsoft.Maui.Platform
 {
@@ -12,7 +13,24 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateMinimum(this SeekBar seekBar, ISlider slider) => UpdateValue(seekBar, slider);
 
+		// TODO: Material3: Make it public in .NET 11
+		// WARNING: Material3 Slider enforces ValueFrom < ValueTo and ValueFrom <= Value <= ValueTo
+		// on every setter call, throwing IllegalStateException if violated. When MapMinimum, MapMaximum,
+		// and MapValue fire independently during initialization or reconfiguration, intermediate states
+		// can violate these constraints. Unlike SeekBar (which has no bounds) and iOS UISlider (which
+		// silently clamps), the Material3 Slider will crash.
+		internal static void UpdateMinimum(this MSlider mSlider, ISlider slider)
+		{
+			mSlider.ValueFrom = (float)slider.Minimum;
+		}
+
 		public static void UpdateMaximum(this SeekBar seekBar, ISlider slider) => UpdateValue(seekBar, slider);
+
+		// TODO: Material3: Make it public in .NET 11
+		internal static void UpdateMaximum(this MSlider mSlider, ISlider slider)
+		{
+			mSlider.ValueTo = (float)slider.Maximum;
+		}
 
 		public static void UpdateValue(this SeekBar seekBar, ISlider slider)
 		{
@@ -23,12 +41,30 @@ namespace Microsoft.Maui.Platform
 			seekBar.Progress = (int)((value - min) / (max - min) * PlatformMaxValue);
 		}
 
+		// TODO: Material3: Make it public in .NET 11
+		internal static void UpdateValue(this MSlider mSlider, ISlider slider)
+		{
+			if ((float)slider.Value != mSlider.Value)
+			{
+				mSlider.Value = (float)slider.Value;
+			}
+		}
+
 		public static void UpdateMinimumTrackColor(this SeekBar seekBar, ISlider slider)
 		{
 			if (slider.MinimumTrackColor != null)
 			{
 				seekBar.ProgressTintList = ColorStateList.ValueOf(slider.MinimumTrackColor.ToPlatform());
 				seekBar.ProgressTintMode = PorterDuff.Mode.SrcIn;
+			}
+		}
+
+		// TODO: Material3: Make it public in .NET 11
+		internal static void UpdateMinimumTrackColor(this MSlider mSlider, ISlider slider)
+		{
+			if (slider.MinimumTrackColor is not null)
+			{
+				mSlider.TrackActiveTintList = ColorStateList.ValueOf(slider.MinimumTrackColor.ToPlatform());
 			}
 		}
 
@@ -41,8 +77,32 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		// TODO: Material3: Make it public in .NET 11
+		internal static void UpdateMaximumTrackColor(this MSlider mSlider, ISlider slider)
+		{
+			if (slider.MaximumTrackColor is not null)
+			{
+				mSlider.TrackInactiveTintList = ColorStateList.ValueOf(slider.MaximumTrackColor.ToPlatform());
+			}
+		}
+		
 		public static void UpdateThumbColor(this SeekBar seekBar, ISlider slider) =>
 			seekBar.Thumb?.SetColorFilter(slider.ThumbColor, FilterMode.SrcIn);
+
+		// TODO: Material3: Make it public in .NET 11
+		internal static void UpdateThumbColor(this MSlider mSlider, ISlider slider)
+		{
+			if (slider.ThumbImageSource is not null && slider.Handler is not null)
+			{
+				var provider = slider.Handler.GetRequiredService<IImageSourceServiceProvider>();
+				mSlider.UpdateThumbImageSourceAsync(slider, provider)
+					.FireAndForget(slider.Handler);
+			}
+			else if (slider.ThumbColor is not null)
+			{
+				mSlider.ThumbTintList = ColorStateList.ValueOf(slider.ThumbColor.ToPlatform());
+			}
+		}
 
 		public static async Task UpdateThumbImageSourceAsync(this SeekBar seekBar, ISlider slider, IImageSourceServiceProvider provider)
 		{
@@ -76,6 +136,39 @@ namespace Microsoft.Maui.Platform
 				else
 				{
 					seekBar.UpdateThumbColor(slider);
+				}
+			}
+		}
+
+		// TODO: Material3: Make it public in .NET 11
+		internal static async Task UpdateThumbImageSourceAsync(this MSlider mSlider, ISlider slider,
+			IImageSourceServiceProvider provider)
+		{
+			var context = mSlider.Context;
+
+			if (context is null)
+			{
+				return;
+			}
+
+			var thumbImageSource = slider.ThumbImageSource;
+
+			if (thumbImageSource is not null)
+			{
+				var service = provider.GetRequiredImageSourceService(thumbImageSource);
+				var result = await service.GetDrawableAsync(thumbImageSource, context);
+
+				var thumbDrawable = result?.Value;
+
+				if (mSlider.IsAlive() && thumbDrawable is not null)
+				{
+					if (slider.ThumbColor is not null)
+					{
+						// Mutate the drawable to avoid affecting other instances
+						thumbDrawable = thumbDrawable.Mutate();
+						thumbDrawable.SetColorFilter(slider.ThumbColor.ToPlatform(), FilterMode.SrcIn);
+					}
+					mSlider.SetCustomThumbDrawable(thumbDrawable);
 				}
 			}
 		}
