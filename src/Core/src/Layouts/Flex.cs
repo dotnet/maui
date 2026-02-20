@@ -603,7 +603,6 @@ namespace Microsoft.Maui.Layouts.Flex
 
 					flex_layout.flex_layout_line line = layout.lines![i];
 
-
 					// Re-position the children of this line, honoring any child
 					// alignment previously set within the line.
 					for (int j = line.child_begin; j < line.child_end; j++)
