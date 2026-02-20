@@ -1,9 +1,10 @@
 #nullable disable
+using CoreGraphics;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
-	internal class ShellFlyoutHeaderContainer : UIContainerView
+	internal class ShellFlyoutHeaderContainer : UIContainerView, IPlatformMeasureInvalidationController
 	{
 		Thickness _safearea = Thickness.Zero;
 
@@ -32,6 +33,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					safeArea.Right,
 					0);
 			}
+		}
+
+		void IPlatformMeasureInvalidationController.InvalidateAncestorsMeasuresWhenMovedToWindow() { }
+
+		bool IPlatformMeasureInvalidationController.InvalidateMeasure(bool isPropagating)
+		{
+			var size = SizeThatFits(new CGSize(Superview.Frame.Width, double.PositiveInfinity));
+			Frame = new CGRect(Frame.X, Frame.Y, size.Width, size.Height);
+			return false;
 		}
 
 		public override void LayoutSubviews()
