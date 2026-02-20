@@ -287,7 +287,10 @@ namespace Microsoft.Maui.Controls.Platform
 			return ItemRenderer;
 		}
 
-		void TabSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args) =>
+		void TabSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
+		{
 			Element?.Handler?.UpdateValue(nameof(Shell.CurrentItem));
+			UpdateHeaderVisibility();
+		}
 	}
 }
