@@ -12,6 +12,7 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Input;
 using Windows.Storage.Streams;
+using Windows.System;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -400,6 +401,54 @@ namespace Microsoft.Maui.Controls.Platform
 					}
 				}
 			}
+
+			// Reset tab stop state when clearing gesture handlers for Border
+			UpdateContentPanelIsTapStop(false);
+		}
+
+		// Sets or resets the IsTabStop property on ContentPanel (Border) when gesture recognizers are added or removed for border.
+		// This allows Border to be focusable when it has TapGestureRecognizers for keyboard accessibility.
+		void UpdateContentPanelIsTapStop(bool canAllowTabStop)
+		{
+			if (_control is ContentPanel contentPanel && contentPanel.CrossPlatformLayout is IBorderView)
+			{
+				if (canAllowTabStop && !contentPanel.IsTabStop)
+				{
+					contentPanel.IsTabStop = true;
+					contentPanel.KeyDown += ContentPanelOnKeyDown;
+				}
+				else if (!canAllowTabStop && contentPanel.IsTabStop)
+				{
+					contentPanel.IsTabStop = false;
+					contentPanel.KeyDown -= ContentPanelOnKeyDown;
+				}
+			}
+		}
+
+		// Handle Enter and Space key presses to trigger TapGestureRecognizers on Border for keyboard accessibility
+		// This is only applicable when the Border has TapGestureRecognizers attached
+		void ContentPanelOnKeyDown(object sender, KeyRoutedEventArgs e)
+		{
+			if (e.Key == VirtualKey.Enter || e.Key == VirtualKey.Space)
+			{
+				if (Element is View view)
+				{
+					IEnumerable<TapGestureRecognizer> tapGestures = view.GestureRecognizers.GetGesturesFor<TapGestureRecognizer>();
+
+					if (tapGestures is null)
+					{
+						return;
+					}
+
+					foreach (var recognizer in tapGestures)
+					{
+						recognizer.SendTapped(view, (relativeTo) =>
+						{
+							return new Point(view.X, view.Y);
+						});
+					}
+				}
+			}
 		}
 
 		protected virtual void Dispose(bool disposing)
@@ -434,6 +483,9 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					_control.DoubleTapped -= HandleDoubleTapped;
 				}
+
+				// Reset tab stop state when clearing gesture handlers for border layouts
+				UpdateContentPanelIsTapStop(false);
 			}
 
 			Control = null;
@@ -973,6 +1025,9 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 
 				_container.RightTapped += OnTap;
+
+				// Set tab stop state when adding gesture handlers for border layouts
+				UpdateContentPanelIsTapStop(true);
 			}
 			else
 			{
