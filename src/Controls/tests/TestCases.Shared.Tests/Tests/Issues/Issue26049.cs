@@ -1,4 +1,3 @@
-#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS   //More information - https://github.com/dotnet/maui/issues/27494
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -19,6 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("ChangeShellContentTitle");
 			App.Click("ChangeShellContentTitle");
+			TabNavigationViewItemIfWindows();
 			VerifyScreenshot();
 		}
 
@@ -26,9 +26,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Shell)]
 		public void VerifyNewlyAddedShellContentTitle()
 		{
+			TabNavigationViewItemIfWindows();
 			App.WaitForElement("AddShellContent");
 			App.Click("AddShellContent");
 			App.Click("UpdateNewShellContentTitle");
+			TabNavigationViewItemIfWindows();
 			VerifyScreenshot();
 		}
 
@@ -36,11 +38,19 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Shell)]
 		public void VerifyExistingTabTitle()
 		{
+			TabNavigationViewItemIfWindows();
 			App.WaitForElement("RemoveShellContent");
 			App.Click("RemoveShellContent");
 			App.Click("UpdateThirdTabTitle");
+			TabNavigationViewItemIfWindows();
 			VerifyScreenshot();
+		}
+
+		void TabNavigationViewItemIfWindows()
+		{
+#if WINDOWS
+			App.Tap("navViewItem");
+#endif
 		}
 	}
 }
-#endif

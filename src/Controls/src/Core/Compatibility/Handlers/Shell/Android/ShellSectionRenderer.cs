@@ -267,6 +267,22 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				adapter.OnItemsCollectionChanged(sender, e);
 				SafeNotifyDataSetChanged();
 			}
+
+			if (e.OldItems is not null)
+			{
+				foreach (ShellContent item in e.OldItems)
+				{
+					item.PropertyChanged -= OnShellContentPropertyChanged;
+				}
+			}
+
+			if (e.NewItems is not null)
+			{
+				foreach (ShellContent item in e.NewItems)
+				{
+					item.PropertyChanged += OnShellContentPropertyChanged;
+				}
+			}
 		}
 
 		void SafeNotifyDataSetChanged(int iteration = 0)
