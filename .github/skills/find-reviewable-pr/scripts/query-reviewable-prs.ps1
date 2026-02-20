@@ -9,7 +9,7 @@
     2. Approved (not merged) PRs
     3. Ready To Review (from project board)
     4. Milestoned PRs (dynamically sorted by SR number - lower numbers first, e.g., SR5 before SR6)
-    5. Agent Reviewed PRs (with AI summary highlights)
+    5. Agent Reviewed PRs (detected via labels)
     6. Partner PRs (Syncfusion, etc.)
     7. Community PRs (external contributions)
     8. Recent PRs waiting for review (last 2 weeks)
@@ -205,76 +205,6 @@ function Get-ReadyToReviewPRNumbers {
         Write-Warning "  Could not query project board: $_"
         return @()
     }
-}
-
-# Helper function to fetch the AI Summary comment from a PR
-function Get-AgentSummaryComment {
-    param([int]$PRNumber)
-    
-    try {
-        $result = gh api "repos/dotnet/maui/issues/$PRNumber/comments" --jq '.[] | select(.body | contains("<!-- AI Summary -->")) | .body' 2>&1
-        if ($LASTEXITCODE -eq 0 -and $result) {
-            return $result -join "`n"
-        }
-    }
-    catch { }
-    return $null
-}
-
-# Helper function to extract merge-relevant highlights from an AI Summary comment
-function Get-AgentSummaryHighlights {
-    param([string]$CommentBody)
-    
-    if (-not $CommentBody) { return $null }
-    
-    # Strip HTML tags for cleaner extraction
-    $cleanBody = $CommentBody -replace '<[^>]+>', ''
-    
-    $highlights = [ordered]@{}
-    
-    # Extract the overall verdict/recommendation
-    if ($cleanBody -match "(?i)(?:Verdict|Recommendation|Overall)[:\s]+([^\n]+)") {
-        $verdict = $Matches[1].Trim()
-        if ($verdict.Length -gt 5) {
-            $highlights["Verdict"] = if ($verdict.Length -gt 150) { $verdict.Substring(0, 147) + "..." } else { $verdict }
-        }
-    }
-    
-    # Check for gate results (tests pass/fail)
-    if ($cleanBody -match "(?i)Gate[:\s]+(PASS|FAIL|passed|failed)[^\n]*") {
-        $highlights["Gate"] = $Matches[0].Trim()
-    } elseif ($cleanBody -match "(?i)tests?\s+(pass|fail|catch|verified)[^\n]*") {
-        $gate = $Matches[0].Trim()
-        if ($gate.Length -gt 5) {
-            $highlights["Gate"] = if ($gate.Length -gt 100) { $gate.Substring(0, 97) + "..." } else { $gate }
-        }
-    }
-    
-    # Check for fix comparison results
-    if ($cleanBody -match "(?i)(fix.*optimal|fix.*win|fix.*lose|better.*alternative|PR fix is|agent found)[^\n]*") {
-        $fix = $Matches[0].Trim()
-        if ($fix.Length -gt 5) {
-            $highlights["Fix"] = if ($fix.Length -gt 150) { $fix.Substring(0, 147) + "..." } else { $fix }
-        }
-    }
-    
-    # Check for agent label-based status (most reliable)
-    if ($CommentBody -match "s/agent-approved") {
-        if (-not $highlights.Contains("Verdict")) { $highlights["Verdict"] = "Agent recommends approval" }
-    } elseif ($CommentBody -match "s/agent-changes-requested") {
-        if (-not $highlights.Contains("Verdict")) { $highlights["Verdict"] = "Agent recommends changes" }
-    }
-    
-    # Extract key concern if present
-    if ($cleanBody -match "(?i)(?:concern|blocker|issue found|problem)[:\s]+([^\n]+)") {
-        $concern = $Matches[1].Trim()
-        if ($concern.Length -gt 10 -and $concern.Length -le 200) {
-            $highlights["Concern"] = $concern
-        }
-    }
-    
-    if ($highlights.Count -eq 0) { return $null }
-    return $highlights
 }
 
 # Check if we have read:project scope by testing a simple query with projectItems
@@ -678,15 +608,10 @@ foreach ($pr in $allPRs) {
         IsReadyToReview = $isReadyToReview
         HasAgentReview = $hasAgentReview
         AgentStatus = $agentStatus
-        AgentSummary = $null  # Populated later for agent-reviewed PRs
     }
 }
 
 Write-Host "  Processed $($processedPRs.Count) PRs matching filters" -ForegroundColor Green
-
-# Agent summary fetching is deferred until after category filtering
-# to avoid unnecessary API calls for PRs that won't be displayed.
-# See the block before output generation below.
 
 # Process docs-maui PRs
 $processedDocsMauiPRs = @()
@@ -830,12 +755,6 @@ function Write-PREntry {
     Write-Host "ReviewStatus:$($pr.ReviewStatus)"
     if ($pr.ProjectStatus) { Write-Host "ProjectStatus:$($pr.ProjectStatus)" }
     if ($pr.AgentStatus) { Write-Host "AgentReview:$($pr.AgentStatus)" } else { Write-Host "AgentReview:❌ Not Reviewed" }
-    if ($pr.AgentSummary) {
-        Write-Host "AgentSummary:"
-        foreach ($key in $pr.AgentSummary.Keys) {
-            Write-Host "  ${key}: $($pr.AgentSummary[$key])"
-        }
-    }
     if ($pr.IsReadyToReview) { Write-Host "BoardStatus:Ready To Review" }
     Write-Host "Age:$($pr.Age) days"
     Write-Host "Updated:$($pr.Updated) days ago"
@@ -933,7 +852,7 @@ function Format-Review-Output {
         }
     }
     
-    # 5. Agent Reviewed PRs (with summary highlights)
+    # 5. Agent Reviewed PRs
     if ($agentReviewedPRList.Count -gt 0 -and (& $showCategory "agent-reviewed")) {
         $agentToDisplay = if ($Category -eq "agent-reviewed") {
             $agentReviewedPRList
@@ -1090,55 +1009,6 @@ function Format-Table-Output {
         @{Label="Age"; Expression={"$($_.Age)d"}; Width=5},
         @{Label="Files"; Expression={$_.Files}; Width=5}
     ) -AutoSize
-}
-
-# Fetch agent review summaries only for PRs that will actually be displayed.
-# In JSON mode, all categories are included so we need all agent-reviewed PRs.
-# In review/table mode, only the selected category's PRs are shown.
-$prsNeedingSummaries = @()
-if ($OutputFormat -eq "json") {
-    # JSON output includes all categories
-    $prsNeedingSummaries = $processedPRs | Where-Object { $_.HasAgentReview }
-} elseif ($OutputFormat -eq "table") {
-    # Table output doesn't display agent summaries
-    $prsNeedingSummaries = @()
-} else {
-    # Review output: determine which PRs will be displayed based on category
-    $displayedPRs = switch ($Category) {
-        "default" {
-            $combined = @()
-            if ($priorityPRs) { $combined += @($priorityPRs) }
-            if ($milestonedPRs) { $combined += @($milestonedPRs) }
-            $combined | Where-Object { $_.ReviewDecision -ne "CHANGES_REQUESTED" } | Sort-Object Number -Unique
-        }
-        "priority" { $priorityPRs }
-        "milestoned" { $milestonedPRs }
-        "partner" { $partnerPRs }
-        "community" { $communityPRs }
-        "recent" { $recentPRs }
-        "approved" { $approvedPRs }
-        "ready-to-review" { $readyToReviewPRs }
-        "agent-reviewed" { $agentReviewedPRList }
-        "docs-maui" { @() }
-        "all" { $processedPRs }
-        default { $processedPRs }
-    }
-    $prsNeedingSummaries = @($displayedPRs) | Where-Object { $_ -and $_.HasAgentReview }
-}
-
-if ($prsNeedingSummaries.Count -gt 0) {
-    Write-Host ""
-    Write-Host "Fetching agent review summaries for $($prsNeedingSummaries.Count) displayed PRs..." -ForegroundColor Cyan
-    foreach ($pr in $prsNeedingSummaries) {
-        Write-Host "  PR #$($pr.Number)..." -ForegroundColor Gray -NoNewline
-        $commentBody = Get-AgentSummaryComment -PRNumber $pr.Number
-        if ($commentBody) {
-            $pr.AgentSummary = Get-AgentSummaryHighlights -CommentBody $commentBody
-            Write-Host " ✓" -ForegroundColor Green
-        } else {
-            Write-Host " (no AI Summary comment found)" -ForegroundColor Yellow
-        }
-    }
 }
 
 # Generate output

@@ -26,7 +26,7 @@ This skill searches the dotnet/maui and dotnet/docs-maui repositories for open p
 2. **Approved (Not Merged)** - PRs with human approval that haven't been merged yet
 3. **Ready To Review (Project Board)** - PRs in "Ready To Review" column of the MAUI SDK Ongoing project board (requires `read:project` scope)
 4. **Milestoned** - PRs assigned to current milestone(s), sorted by lowest SR number first (e.g., SR5 before SR6), then Servicing
-5. **Agent Reviewed** - PRs reviewed by AI agent workflow, with summary highlights to help decide whether to merge
+5. **Agent Reviewed** - PRs reviewed by AI agent workflow (detected via labels)
 6. **Partner** - PRs from Syncfusion and other partners
 7. **Community** - External contributions needing review
 8. **Recent Waiting for Review** - PRs created in last 2 weeks that need review (minimum 5)
@@ -113,7 +113,7 @@ To enable: `gh auth refresh -s read:project`
 2. 🟢 **Approved (Not Merged)** - Always include if present
 3. 📋 **Ready To Review (Board)** - Always include if present
 4. 📅 **Milestoned** - Always include if present  
-5. 🤖 **Agent Reviewed** - Always include if present (with agent summary highlights)
+5. 🤖 **Agent Reviewed** - Always include if present
 6. 🤝 **Partner** - Always include if present
 7. ✨ **Community** - Always include if present
 8. 🕐 **Recent** - Always include if present
@@ -134,7 +134,7 @@ To enable: `gh auth refresh -s read:project`
 - **P/0 PRs** should always be reviewed first - they're blocking releases
 - **Approved PRs** are ready to merge - verify CI is green and merge
 - **Ready To Review PRs** are in the project board pipeline and need timely review
-- **Agent Reviewed PRs** include AI analysis highlights - use the summary to decide if you should merge
+- **Agent Reviewed PRs** have been analyzed by the AI agent workflow - check their labels for status
 - **Milestoned PRs** have deadlines and should be prioritized
 - **Partner PRs** often have business priority
 - **Community PRs** may need more guidance and thorough review
