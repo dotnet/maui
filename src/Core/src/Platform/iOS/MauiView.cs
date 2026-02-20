@@ -68,6 +68,11 @@ namespace Microsoft.Maui.Platform
 		// otherwise, false. Null means not yet determined.
 		bool? _scrollViewDescendant;
 
+		// Cached result of IsParentHandlingSafeArea() to avoid walking the view hierarchy
+		// on every safe area validation. Null means not yet determined.
+		// Invalidated in MovedToWindow() when the view hierarchy changes.
+		bool? _parentHandlesSafeArea;
+
 		// Keyboard tracking
 		CGRect _keyboardFrame = CGRect.Empty;
 		bool _isKeyboardShowing;
@@ -381,6 +386,24 @@ namespace Microsoft.Maui.Platform
 				&& SafeAreaEdges.IsSoftInput(safeAreaView2.GetSafeAreaRegionsForEdge(3))) is not null;
 		}
 
+		/// <summary>
+		/// Checks if any parent MauiView is already applying safe area adjustments.
+		/// This prevents multiple views in the hierarchy from applying conflicting safe area logic.
+		/// </summary>
+		/// <returns>True if a parent is already handling safe area adjustments, false otherwise</returns>
+		bool IsParentHandlingSafeArea()
+		{
+			if (_parentHandlesSafeArea.HasValue)
+			{
+				return _parentHandlesSafeArea.Value;
+			}
+
+			_parentHandlesSafeArea = this.FindParent(x => x is MauiView mv
+				&& mv._appliesSafeAreaAdjustments
+				&& mv.View is ISafeAreaView or ISafeAreaView2) is not null;
+
+			return _parentHandlesSafeArea.Value;
+		}
 
 		/// <summary>
 		/// Checks if the current measure information is still valid for the given constraints.
@@ -610,7 +633,10 @@ namespace Microsoft.Maui.Platform
 			_safeArea = GetAdjustedSafeAreaInsets();
 
 			var oldApplyingSafeAreaAdjustments = _appliesSafeAreaAdjustments;
-			_appliesSafeAreaAdjustments = RespondsToSafeArea() && !_safeArea.IsEmpty;
+
+			// Check if parent is already handling safe area - if so, don't apply adjustments here
+			var parentHandlingSafeArea = IsParentHandlingSafeArea();
+			_appliesSafeAreaAdjustments = !parentHandlingSafeArea && RespondsToSafeArea() && !_safeArea.IsEmpty;
 
 			// Return whether the way safe area interacts with our view has changed
 			return oldApplyingSafeAreaAdjustments == _appliesSafeAreaAdjustments &&
@@ -702,6 +728,7 @@ namespace Microsoft.Maui.Platform
 		public override void SafeAreaInsetsDidChange()
 		{
 			_safeAreaInvalidated = true;
+			_parentHandlesSafeArea = null;
 			base.SafeAreaInsetsDidChange();
 		}
 
@@ -714,6 +741,7 @@ namespace Microsoft.Maui.Platform
 			base.MovedToWindow();
 
 			_scrollViewDescendant = null;
+			_parentHandlesSafeArea = null;
 
 			// Notify any subscribers that this view has been moved to a window
 			_movedToWindow?.Invoke(this, EventArgs.Empty);
