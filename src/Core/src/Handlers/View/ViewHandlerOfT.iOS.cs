@@ -32,20 +32,7 @@ namespace Microsoft.Maui.Handlers
 			ContainerView ??= new WrapperView(PlatformView.Bounds);
 			ContainerView.AddSubview(PlatformView);
 
-			if (oldParent is ContentView contentView && contentView.View is IBorderView)
-			{
-				// Border controls need special handling to ensure proper z-ordering
-				// of content above background layers when clipping is applied
-				contentView.AddSubview(ContainerView);
-			}
-			else if (oldIndex is int idx && idx >= 0)
-			{
-				oldParent?.InsertSubview(ContainerView, idx);
-			}
-			else
-			{
-				oldParent?.AddSubview(ContainerView);
-			}
+			InsertViewIntoParent(ContainerView, oldParent, oldIndex);
 		}
 
 		protected override void RemoveContainer()
@@ -63,20 +50,7 @@ namespace Microsoft.Maui.Handlers
 			CleanupContainerView(ContainerView);
 			ContainerView = null;
 
-			if (oldParent is ContentView contentView && contentView.View is IBorderView)
-			{
-				// Border controls need special handling to ensure proper z-ordering
-				// of content above background layers when clipping is removed
-				contentView.AddSubview(PlatformView);
-			}
-			else if (oldIndex is int idx && idx >= 0)
-			{
-				oldParent?.InsertSubview(PlatformView, idx);
-			}
-			else
-			{
-				oldParent?.AddSubview(PlatformView);
-			}
+			InsertViewIntoParent(PlatformView, oldParent, oldIndex);
 
 			void CleanupContainerView(UIView? containerView)
 			{
@@ -85,6 +59,24 @@ namespace Microsoft.Maui.Handlers
 					wrapperView.RemoveFromSuperview();
 					wrapperView.Disconnect();
 				}
+			}
+		}
+
+		private static void InsertViewIntoParent(UIView view, UIView? oldParent, int? oldIndex)
+		{
+			if (oldParent is ContentView contentView && contentView.View is IBorderView)
+			{
+				// Border controls need special handling to ensure proper z-ordering
+				// of content above background layers when clipping is applied
+				contentView.AddSubview(view);
+			}
+			if (oldIndex is int idx && idx >= 0)
+			{
+				oldParent?.InsertSubview(view, idx);
+			}
+			else
+			{
+				oldParent?.AddSubview(view);
 			}
 		}
 	}
