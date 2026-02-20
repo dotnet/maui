@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue25124"
+             Title="Issue25124">
+    <Grid>
+        <CollectionView AutomationId="CollectionView">
+            <CollectionView.ItemsSource>
+                <x:Array Type="{x:Type x:String}">
+                    <x:String>A</x:String>
+                    <x:String>B</x:String>
+                </x:Array>
+            </CollectionView.ItemsSource>
+            <CollectionView.Header>
+                <OnPlatform x:TypeArguments="View">
+                    <On Platform="Android">
+                        <Label Text="Android Header"/>
+                    </On>
+                    <On Platform="WinUI">
+                        <Label Text="WinUI Header"/>
+                    </On>
+                    <On Platform="iOS">
+                        <Label Text="IOS Header"/>
+                    </On>
+                    <On Platform="MacCatalyst">
+                        <Label Text="Mac Header"/>
+                    </On>
+                </OnPlatform>
+            </CollectionView.Header>
+        </CollectionView>
+    </Grid>
+</ContentPage>

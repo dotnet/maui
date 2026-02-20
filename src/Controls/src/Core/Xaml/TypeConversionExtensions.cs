@@ -224,6 +224,17 @@ namespace Microsoft.Maui.Controls.Xaml
 				}
 			}
 
+			// When toType is object and value is OnPlatform<T>, we need to return the wrapped value from IWrappedView
+			if (toType is object && value is IWrappedValue { Value: var wrappedValue })
+			{
+				if (wrappedValue is null)
+				{
+					return value;
+				}
+
+				return wrappedValue;
+			}
+
 			var platformValueConverterService = DependencyService.Get<INativeValueConverterService>();
 
 			object platformValue = null;
