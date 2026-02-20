@@ -5,6 +5,16 @@
              Title="Issue21375">
     <VerticalStackLayout>
         <CollectionView ItemsSource="{Binding Items}" SelectionMode="Single" x:Name="collectionView" AutomationId="collectionView" Background="LightBlue">
+        <CollectionView.HeaderTemplate>
+            <DataTemplate>
+                <Label HeightRequest="0" Text="HeaderTemplate"/>
+            </DataTemplate>
+        </CollectionView.HeaderTemplate>
+        <CollectionView.FooterTemplate>
+            <DataTemplate>
+                <Label HeightRequest="0" Text="FooterTemplate"/>
+            </DataTemplate>
+        </CollectionView.FooterTemplate>
             <CollectionView.ItemTemplate>
                 <DataTemplate>
                     <StackLayout Padding="10" SemanticProperties.Description="{Binding Name}" HeightRequest="50">
