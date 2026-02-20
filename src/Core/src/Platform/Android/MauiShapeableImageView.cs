@@ -7,15 +7,16 @@ namespace Microsoft.Maui.Platform
 {
 	public class MauiShapeableImageView : ShapeableImageView
 	{
-		public MauiShapeableImageView(Context? context) : base(context)
+
+		public MauiShapeableImageView(Context? context) : base(MauiMaterialContextThemeWrapper.Create(context))
 		{
 		}
 
-		public MauiShapeableImageView(Context? context, IAttributeSet? attrs) : base(context, attrs)
+		public MauiShapeableImageView(Context? context, IAttributeSet? attrs) : base(MauiMaterialContextThemeWrapper.Create(context), attrs)
 		{
 		}
 
-		public MauiShapeableImageView(Context? context, IAttributeSet? attrs, int defStyle) : base(context, attrs, defStyle)
+		public MauiShapeableImageView(Context? context, IAttributeSet? attrs, int defStyle) : base(MauiMaterialContextThemeWrapper.Create(context), attrs, defStyle)
 		{
 		}
 
