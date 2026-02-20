@@ -13,7 +13,6 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 	[MemoryDiagnoser]
 	public class LayoutHotPathBenchmarker
 	{
-		const int LoopCount = 50;
 		const double ConstraintWidth = 640;
 		const double ConstraintHeight = 480;
 		const int GridColumnCount = 4;
@@ -44,43 +43,31 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 		}
 
 		[Benchmark]
-		public Size GridMeasureArrangeLoop() => RunManagerLoop(_gridManager);
+		public Size GridMeasureArrange() => RunMeasureArrange(_gridManager);
 
 		[Benchmark]
-		public Size VerticalStackMeasureArrangeLoop() => RunManagerLoop(_verticalStackManager);
+		public Size VerticalStackMeasureArrange() => RunMeasureArrange(_verticalStackManager);
 
 		[Benchmark]
-		public Size HorizontalStackMeasureArrangeLoop() => RunManagerLoop(_horizontalStackManager);
+		public Size HorizontalStackMeasureArrange() => RunMeasureArrange(_horizontalStackManager);
 
 		[Benchmark]
-		public Size FlexMeasureArrangeLoopWrap() => RunFlexLoop(_flexWrapLayout);
+		public Size FlexMeasureArrangeWrap() => RunFlexMeasureArrange(_flexWrapLayout);
 
 		[Benchmark]
-		public Size FlexMeasureArrangeLoopNoWrap() => RunFlexLoop(_flexNoWrapLayout);
+		public Size FlexMeasureArrangeNoWrap() => RunFlexMeasureArrange(_flexNoWrapLayout);
 
-		Size RunManagerLoop(ILayoutManager manager)
+		Size RunMeasureArrange(ILayoutManager manager)
 		{
-			Size result = Size.Zero;
-
-			for (int i = 0; i < LoopCount; i++)
-			{
-				result = manager.Measure(ConstraintWidth, ConstraintHeight);
-				manager.ArrangeChildren(new Rect(Point.Zero, result));
-			}
-
+			var result = manager.Measure(ConstraintWidth, ConstraintHeight);
+			manager.ArrangeChildren(new Rect(Point.Zero, result));
 			return result;
 		}
 
-		Size RunFlexLoop(FlexLayout layout)
+		Size RunFlexMeasureArrange(FlexLayout layout)
 		{
-			Size result = Size.Zero;
-
-			for (int i = 0; i < LoopCount; i++)
-			{
-				result = layout.CrossPlatformMeasure(ConstraintWidth, ConstraintHeight);
-				result = layout.CrossPlatformArrange(new Rect(Point.Zero, result));
-			}
-
+			var result = layout.CrossPlatformMeasure(ConstraintWidth, ConstraintHeight);
+			result = layout.CrossPlatformArrange(new Rect(Point.Zero, result));
 			return result;
 		}
 

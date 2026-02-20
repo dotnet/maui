@@ -12,14 +12,13 @@ namespace Microsoft.Maui.Layouts
 		public override Size Measure(double widthConstraint, double heightConstraint)
 		{
 			var padding = Stack.Padding;
-			var childCount = Stack.Count;
 
 			double measuredHeight = 0;
 			double measuredWidth = 0;
 			double childWidthConstraint = widthConstraint - padding.HorizontalThickness;
 			int spacingCount = 0;
 
-			for (int n = 0; n < childCount; n++)
+			for (int n = 0; n < Stack.Count; n++)
 			{
 				var child = Stack[n];
 
@@ -47,14 +46,12 @@ namespace Microsoft.Maui.Layouts
 		public override Size ArrangeChildren(Rect bounds)
 		{
 			var padding = Stack.Padding;
-			var childCount = Stack.Count;
-			var spacing = Stack.Spacing;
 
 			double stackHeight = padding.Top + bounds.Y;
 			double left = padding.Left + bounds.X;
 			double width = Math.Max(0, bounds.Width - padding.HorizontalThickness);
 
-			for (int n = 0; n < childCount; n++)
+			for (int n = 0; n < Stack.Count; n++)
 			{
 				var child = Stack[n];
 
@@ -65,7 +62,7 @@ namespace Microsoft.Maui.Layouts
 
 				var destination = new Rect(left, stackHeight, width, child.DesiredSize.Height);
 				child.Arrange(destination);
-				stackHeight += destination.Height + spacing;
+				stackHeight += destination.Height + Stack.Spacing;
 			}
 			return new Size(bounds.Width, bounds.Height);
 		}

@@ -16,7 +16,6 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 	[MemoryDiagnoser]
 	public class LayoutAllocBenchmarker
 	{
-		const int LoopCount = 50;
 		const double ConstraintWidth = 640;
 		const double ConstraintHeight = 480;
 		const int GridColumnCount = 4;
@@ -81,36 +80,24 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 		[Benchmark]
 		public Size GridMeasureArrange()
 		{
-			Size result = Size.Zero;
-			for (int i = 0; i < LoopCount; i++)
-			{
-				result = _gridManager.Measure(ConstraintWidth, ConstraintHeight);
-				_gridManager.ArrangeChildren(new Rect(Point.Zero, result));
-			}
+			var result = _gridManager.Measure(ConstraintWidth, ConstraintHeight);
+			_gridManager.ArrangeChildren(new Rect(Point.Zero, result));
 			return result;
 		}
 
 		[Benchmark]
 		public Size VerticalStackMeasureArrange()
 		{
-			Size result = Size.Zero;
-			for (int i = 0; i < LoopCount; i++)
-			{
-				result = _vstackManager.Measure(ConstraintWidth, ConstraintHeight);
-				_vstackManager.ArrangeChildren(new Rect(Point.Zero, result));
-			}
+			var result = _vstackManager.Measure(ConstraintWidth, ConstraintHeight);
+			_vstackManager.ArrangeChildren(new Rect(Point.Zero, result));
 			return result;
 		}
 
 		[Benchmark]
 		public Size HorizontalStackMeasureArrange()
 		{
-			Size result = Size.Zero;
-			for (int i = 0; i < LoopCount; i++)
-			{
-				result = _hstackManager.Measure(ConstraintWidth, ConstraintHeight);
-				_hstackManager.ArrangeChildren(new Rect(Point.Zero, result));
-			}
+			var result = _hstackManager.Measure(ConstraintWidth, ConstraintHeight);
+			_hstackManager.ArrangeChildren(new Rect(Point.Zero, result));
 			return result;
 		}
 
@@ -140,11 +127,8 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 		[Benchmark]
 		public void FlexCoreMeasureArrange()
 		{
-			for (int i = 0; i < LoopCount; i++)
-			{
-				_flexRoot.Layout(true);  // measure mode
-				_flexRoot.Layout(false); // arrange mode
-			}
+			_flexRoot.Layout(true);  // measure mode
+			_flexRoot.Layout(false); // arrange mode
 		}
 
 		readonly record struct CellLocation(int Row, int Column, int RowSpan, int ColumnSpan);
