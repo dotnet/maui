@@ -112,5 +112,31 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(new string('●', entry.Text.Length), passwordTextBox.Text);
 			});
 		}
+
+		[Fact]
+		[Description("Password entry should not crash when platform text is set from empty")]
+		public async Task PasswordEntryPlatformSetDoesNotCrash()
+		{
+			var entry = new Entry
+			{
+				Text = string.Empty,
+				IsPassword = true
+			};
+
+			var handler = await CreateHandlerAsync<EntryHandler>(entry);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var platformControl = GetPlatformControl(handler);
+				var passwordTextBox = platformControl as Microsoft.Maui.Platform.MauiPasswordTextBox;
+
+				Assert.NotNull(passwordTextBox);
+				Assert.True(passwordTextBox.IsPassword);
+
+			// Setting Text on an empty password entry triggers TextChanging event which previously threw ArgumentOutOfRangeException
+				passwordTextBox.Text = "test";
+				Assert.NotNull(passwordTextBox.Text);
+			});
+		}
 	}
 }
