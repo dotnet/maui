@@ -39,6 +39,10 @@ public class Issue12008 : _IssuesUITest
 		var groupCountLabel = App.WaitForElement("GroupCount12008EmptyGroup");
 		var countText = groupCountLabel.GetText();
 		Assert.That(countText, Is.EqualTo("Count: 1"), "Item was not moved into the empty group");
+
+		// Verify reorder completed event was raised
+		var statusText = App.WaitForElement("StatusLabel12008").GetText();
+		Assert.That(statusText, Does.Contain("Reorder completed"));
 	}
 }
 #endif
