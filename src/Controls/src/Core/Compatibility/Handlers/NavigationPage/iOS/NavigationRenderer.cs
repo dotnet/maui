@@ -1602,12 +1602,28 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				return empty;
 			}
 
+			/// <summary>
+			/// Called when the view controller's view transitions to a new size.
+			/// On iPad iOS 26+, manually updates TitleView frame to handle Stage Manager window resizing.
+			/// </summary>
 			public override void ViewWillTransitionToSize(SizeF toSize, IUIViewControllerTransitionCoordinator coordinator)
 			{
 				base.ViewWillTransitionToSize(toSize, coordinator);
 
 				if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad)
+				{
 					UpdateLeftBarButtonItem();
+
+					// For iOS 26+, force TitleView to re-layout on window size changes (iPad Stage Manager, multitasking)
+					// Complements TraitCollectionDidChange handling (device rotation) added in #32815
+					if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+					{
+						coordinator.AnimateAlongsideTransition(_ =>
+						{
+							UpdateTitleViewFrameForOrientation();
+						}, null);
+					}
+				}
 			}
 
 			public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
