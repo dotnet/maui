@@ -96,6 +96,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					break;
 				case UIGestureRecognizerState.Ended:
 					collectionView.EndInteractiveMovement();
+					// UICollectionView doesn't refresh supplementary views after interactive movement.
+					// Reload sections so group headers reflect updated data (e.g. item counts).
+					if (ItemsView?.IsGrouped == true)
+					{
+						var sectionCount = collectionView.NumberOfSections();
+						if (sectionCount > 0)
+						{
+							UIView.PerformWithoutAnimation(() =>
+								collectionView.ReloadSections(NSIndexSet.FromNSRange(new NSRange(0, sectionCount))));
+						}
+					}
 					break;
 				default:
 					collectionView.CancelInteractiveMovement();
