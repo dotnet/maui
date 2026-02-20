@@ -58,7 +58,7 @@ stages:
             displayName: 'Validate Parameters'
 
           - script: |
-              echo "##vso[build.updatebuildnumber]PR: ${{ parameters.PRNumber }} ${{ parameters.Platform }}"
+              echo "##vso[build.updatebuildnumber]PR ${{ parameters.PRNumber }} ${{ parameters.Platform }}"
             displayName: 'Set Pipeline Run Title'
 
           # Provision environment (Xcode, .NET SDK, Android SDK, etc.)
