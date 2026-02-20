@@ -35,13 +35,10 @@ public partial class TriggersControlMainPage : ContentPage
 		// Reset entry values and focus only when returning from options page
 		if (_isReturningFromOptions)
 		{
-			// Use async delay to ensure UI is ready before clearing
-			Dispatcher.Dispatch(async () =>
-			{
-				await Task.Delay(50); // Small delay for page transition to complete
-				_viewModel.Reset();
-				ClearAndUnfocusAllEntries();
-			});
+			// Reset view model and clear entry focus
+			// OnAppearing is called after the page is visible, so UI is already ready
+			_viewModel.Reset();
+			ClearAndUnfocusAllEntries();
 			_isReturningFromOptions = false;
 		}
 

@@ -191,14 +191,14 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("OrientationStateTriggerGrid");
 
 			// Verify orientation label is displayed
-			var orientationPotraitText = App.FindElement("OrientationLabel").GetText();
-			Assert.That(orientationPotraitText, Is.EqualTo("Current orientation: Portrait"));
+			var orientationPortraitText = App.FindElement("OrientationLabel").GetText();
+			Assert.That(orientationPortraitText, Is.EqualTo("Current orientation: Portrait"));
 
 			App.SetOrientationLandscape();
 
 			App.WaitForElement("Options"); // Wait for page to stabilize after orientation change
-			var orientationLandScapeText = App.FindElement("OrientationLabel").GetText();
-			Assert.That(orientationLandScapeText, Is.EqualTo("Current orientation: Landscape"));
+			var orientationLandscapeText = App.FindElement("OrientationLabel").GetText();
+			Assert.That(orientationLandscapeText, Is.EqualTo("Current orientation: Landscape"));
 
 			App.SetOrientationPortrait();
 			App.WaitForElement("Options");// Verify orientation label returns to portrait
