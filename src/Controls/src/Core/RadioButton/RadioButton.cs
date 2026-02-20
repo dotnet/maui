@@ -509,9 +509,9 @@ namespace Microsoft.Maui.Controls
 			border.SetBinding(HorizontalOptionsProperty, static (RadioButton rb) => rb.HorizontalOptions, source: RelativeBindingSource.TemplatedParent);
 			border.SetBinding(VerticalOptionsProperty, static (RadioButton rb) => rb.VerticalOptions, source: RelativeBindingSource.TemplatedParent);
 
-			border.SetBinding(Border.StrokeProperty, static (RadioButton rb) => rb.BorderColor, source: RelativeBindingSource.TemplatedParent);
+			border.SetBinding(Border.StrokeProperty, static (RadioButton rb) => rb.BorderColor, source: RelativeBindingSource.TemplatedParent, targetNullValue: SolidColorBrush.Transparent);
 			border.SetBinding(Border.StrokeShapeProperty, static (RadioButton rb) => rb.CornerRadius, source: RelativeBindingSource.TemplatedParent, converter: new CornerRadiusToShape());
-			border.SetBinding(Border.StrokeThicknessProperty, static (RadioButton rb) => rb.BorderWidth, source: RelativeBindingSource.TemplatedParent);
+			border.SetBinding(Border.StrokeThicknessProperty, static (RadioButton rb) => rb.BorderWidth, source: RelativeBindingSource.TemplatedParent, targetNullValue: 0);
 
 			var grid = new Grid
 			{
