@@ -946,6 +946,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			NavigationBar.TintColor = iconColor == null || NavPage.OnThisPlatform().GetStatusBarTextColorMode() == StatusBarTextColorMode.DoNotAdjust
 				? UINavigationBar.Appearance.TintColor
 				: iconColor.ToPlatform();
+
+			if ((OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26)) && NavigationBar.TintColor is not null)
+			{
+				if (VisibleViewController?.NavigationItem?.RightBarButtonItems is UIBarButtonItem[] items)
+				{
+					foreach (var item in items)
+					{
+						item.TintColor = NavigationBar.TintColor;
+					}
+				}
+			}
 		}
 
 		void SetStatusBarStyle()
@@ -1064,7 +1075,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				// We only check height because the navigation bar constrains vertical space (44pt height),
 				// but allows horizontal flexibility. Width can vary based on icon design and content,
 				// while height must fit within the fixed navigation bar bounds to avoid clipping.
-				
+
 				// if the image is bigger than the default available size, resize it
 				if (icon is not null)
 				{
@@ -1937,6 +1948,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 
 				NavigationItem.SetRightBarButtonItems(primaries is null ? [] : primaries.ToArray(), false);
+				if ((OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26)) && primaries is not null && _navigation.TryGetTarget(out NavigationRenderer navigationRenderer)
+					  && navigationRenderer.NavigationBar?.TintColor is UIColor tintColor)
+				{
+					foreach (var item in primaries)
+					{
+						item.TintColor = tintColor;
+					}
+				}
 
 				if (_navigation.TryGetTarget(out NavigationRenderer n))
 				{
