@@ -55,30 +55,52 @@ public static class TimePickerExtensions
 		var time = timePicker.Time;
 		var format = timePicker.Format;
 
-		mauiTimePicker.Text = time?.ToFormattedString(format, cultureInfo);
+		// Determine if format contains AM/PM designator
+		bool hasAmPmFormat = format != null && format.Contains('t', StringComparison.Ordinal);
 
-		if (format is not null)
+		// Determine which culture to use for consistent formatting
+		CultureInfo formattingCulture;
+		if (format != null)
 		{
-			if (format.Contains('H', StringComparison.Ordinal))
+			if (hasAmPmFormat || format.Contains('h', StringComparison.Ordinal))
 			{
-				var ci = new CultureInfo("de-DE");
-				NSLocale locale = new NSLocale(ci.TwoLetterISOLanguageName);
+				// For 12-hour format or any format with AM/PM, use US locale
+				formattingCulture = new CultureInfo("en-US");
+			}
 
-				if (picker is not null)
+			if (format != null)
+			{
+				if (format.Contains('t', StringComparison.Ordinal) || format.Contains('h', StringComparison.Ordinal))
 				{
-					picker.Locale = locale;
+					// For 12-hour format or any format with AM/PM, use US locale
+					formattingCulture = new CultureInfo("en-US");
+				}
+				else if (format.Contains('H', StringComparison.Ordinal))
+				{
+					// For 24-hour format without AM/PM, use German locale
+					formattingCulture = new CultureInfo("de-DE");
+				}
+				else
+				{
+					formattingCulture = cultureInfo;
 				}
 			}
-			else if (format.Contains('h', StringComparison.Ordinal))
+			else
 			{
-				var ci = new CultureInfo("en-US");
-				NSLocale locale = new NSLocale(ci.TwoLetterISOLanguageName);
-
-				if (picker is not null)
-				{
-					picker.Locale = locale;
-				}
+				formattingCulture = cultureInfo;
 			}
+		}
+		else
+		{
+			formattingCulture = cultureInfo;
+		}
+
+		// Apply the same culture to both the text display and the picker
+		mauiTimePicker.Text = time?.ToFormattedString(format ?? string.Empty, formattingCulture) ?? string.Empty;
+
+		if (picker != null && format != null)
+		{
+			picker.Locale = new NSLocale(formattingCulture.TwoLetterISOLanguageName);
 		}
 
 		mauiTimePicker.UpdateCharacterSpacing(timePicker);
