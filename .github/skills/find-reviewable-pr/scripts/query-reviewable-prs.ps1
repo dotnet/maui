@@ -5,12 +5,15 @@
 
 .DESCRIPTION
     This script queries GitHub for open PRs and prioritizes them by:
-    1. Milestoned PRs (dynamically sorted by SR number - lower numbers first, e.g., SR5 before SR6)
-    2. P/0 labeled PRs (critical priority)
-    3. Recent PRs (5 from maui + 5 from docs-maui by default)
-    4. Partner PRs (Syncfusion, etc.)
-    5. Community PRs (external contributions)
-    6. docs-maui PRs (5 priority + 5 recent by default)
+    1. P/0 labeled PRs (critical priority - always on top)
+    2. Approved (not merged) PRs
+    3. Ready To Review (from project board)
+    4. Milestoned PRs (dynamically sorted by SR number - lower numbers first, e.g., SR5 before SR6)
+    5. Agent Reviewed PRs (with AI summary highlights)
+    6. Partner PRs (Syncfusion, etc.)
+    7. Community PRs (external contributions)
+    8. Recent PRs waiting for review (last 2 weeks)
+    9. docs-maui PRs (priority + waiting for review)
 
 .PARAMETER Category
     Filter by category: "default" (P/0 + milestoned only), "milestoned", "priority", "recent", "partner", "community", "docs-maui", "approved", "ready-to-review", "agent-reviewed", "all"
@@ -19,7 +22,7 @@
     Filter by platform: "android", "ios", "windows", "maccatalyst", "all"
 
 .PARAMETER Limit
-    Maximum number of PRs to return per category (default: 10)
+    Maximum number of PRs to return per category (default: 100)
 
 .PARAMETER RecentLimit
     Maximum number of recent PRs to return from maui (default: 5)

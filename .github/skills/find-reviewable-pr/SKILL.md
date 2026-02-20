@@ -35,7 +35,7 @@ This skill searches the dotnet/maui and dotnet/docs-maui repositories for open p
 ## Quick Start
 
 ```bash
-# Find all reviewable PRs (shows top from each category including docs-maui)
+# Find P/0 and milestoned PRs (default behavior, excludes changes-requested)
 pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1
 
 # Find only milestoned PRs
@@ -83,10 +83,10 @@ pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1 -DocsLim
 
 ### Step 1: Find PRs to Review
 
-**CRITICAL**: You MUST use the PowerShell script below. Do NOT attempt to query GitHub directly with `gh` commands or `jq` if the script fails. The script contains important prioritization logic (SR3 before SR4, P/0 first, etc.) that cannot be replicated with ad-hoc queries.
+**CRITICAL**: You MUST use the PowerShell script below. Do NOT attempt to query GitHub directly with `gh` commands or `jq` if the script fails. The script contains important prioritization logic (SR5 before SR6, P/0 first, etc.) that cannot be replicated with ad-hoc queries.
 
 ```bash
-pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1 -Limit 5
+pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1
 ```
 
 **If the script fails** (e.g., HTTP 502, network error, authentication issue):
