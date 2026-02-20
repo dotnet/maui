@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Handlers
 				// of content above background layers when clipping is applied
 				contentView.AddSubview(view);
 			}
-			if (oldIndex is int idx && idx >= 0)
+			else if (oldIndex is int idx && idx >= 0)
 			{
 				oldParent?.InsertSubview(view, idx);
 			}
