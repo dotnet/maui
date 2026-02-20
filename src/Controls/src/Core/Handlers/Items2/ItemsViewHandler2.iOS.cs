@@ -33,7 +33,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			[Controls.ItemsView.EmptyViewTemplateProperty.PropertyName] = MapEmptyViewTemplate,
 			[Controls.ItemsView.FlowDirectionProperty.PropertyName] = MapFlowDirection,
 			[Controls.ItemsView.IsVisibleProperty.PropertyName] = MapIsVisible,
-			[Controls.ItemsView.ItemsUpdatingScrollModeProperty.PropertyName] = MapItemsUpdatingScrollMode
+			[Controls.ItemsView.ItemsUpdatingScrollModeProperty.PropertyName] = MapItemsUpdatingScrollMode,
+			[nameof(IView.IsEnabled)] = MapIsEnabled
 		};
 
 		UICollectionViewLayout _layout;
@@ -119,6 +120,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public static void MapIsVisible(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
 		{
 			handler.Controller?.UpdateVisibility();
+		}
+
+		internal static void MapIsEnabled(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
+		{
+			if (handler.Controller?.CollectionView is not null)
+				handler.Controller.CollectionView.UserInteractionEnabled = itemsView.IsEnabled;
 		}
 
 		public static void MapItemsUpdatingScrollMode(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
