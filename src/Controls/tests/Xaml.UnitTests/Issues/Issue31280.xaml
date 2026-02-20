@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Issue31280">
+	<ContentPage.Resources>
+		<ResourceDictionary>
+			<Style
+				x:Key="LabelBaseStyle"
+				TargetType="Label">
+				<Setter Property="TextColor"
+						Value="{AppThemeBinding Light=Green, Dark=Green}"/>
+			</Style>
+
+			<Style
+				x:Key="LabelBaseStyleRed"
+				BaseResourceKey="LabelBaseStyle"
+				TargetType="Label">
+				<Setter Property="TextColor"
+						Value="Red"/>
+			</Style>
+
+			<Style
+				x:Key="LabelBaseStyleFromRedWithPadding"
+				BaseResourceKey="LabelBaseStyleRed"
+				TargetType="Label">
+				<Setter Property="Padding"
+						Value="20"/>
+			</Style>
+		</ResourceDictionary>
+	</ContentPage.Resources>
+
+	<StackLayout>
+		<Label Text="Base Style"
+			   x:Name="LabelBaseStyle"
+			   Style="{StaticResource LabelBaseStyle}"/>
+		<Label Text="Red Style"
+			   x:Name="LabelBaseStyleRed"
+			   Style="{StaticResource LabelBaseStyleRed}"/>
+		<Label Text="From Red With Padding"
+			   x:Name="LabelWithPadding"
+			   Style="{StaticResource LabelBaseStyleFromRedWithPadding}"/>
+	</StackLayout>
+</ContentPage>
