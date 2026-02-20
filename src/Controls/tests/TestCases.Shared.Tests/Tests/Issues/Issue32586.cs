@@ -143,5 +143,109 @@ public class Issue32586 : _IssuesUITest
 		App.Tap("FooterButton");
 		WaitForText("TestLabel", "Footer is now hidden", timeoutSec: 10);
 	}
+
+	[Test, Order(4)]
+	[Category(UITestCategories.SafeAreaEdges)]
+	public void VerifyRotationDuringAnimationPreservesSafeArea()
+	{
+		// Regression test: rotation during an active TranslateToAsync animation
+		// should still update safe area correctly. The Window-level SafeAreaInsets
+		// comparison fix must not suppress genuine rotation-induced changes.
+
+		// Reset to Container state
+		var currentStatus = App.WaitForElement("SafeAreaStatusLabel").GetText();
+		if (currentStatus?.Contains("Parent: None", StringComparison.OrdinalIgnoreCase) == true)
+			App.Tap("ParentSafeAreaToggleButton");
+		currentStatus = App.WaitForElement("SafeAreaStatusLabel").GetText();
+		if (currentStatus?.Contains("Child: None", StringComparison.OrdinalIgnoreCase) == true)
+			App.Tap("ChildSafeAreaToggleButton");
+
+		// Step 1: Record portrait safe area position
+		App.SetOrientationPortrait();
+		Thread.Sleep(1000);
+		var portraitTopY = App.WaitForElement("TopMarker").GetRect().Y;
+		Assert.That(portraitTopY, Is.GreaterThan(0), "Content should be below safe area in portrait");
+
+		// Step 2: Start footer animation (triggers TranslateToAsync)
+		App.Tap("FooterButton");
+
+		// Step 3: Rotate to landscape DURING animation
+		App.SetOrientationLandscape();
+		Thread.Sleep(2000);
+
+		// Step 4: Wait for animation to complete
+		WaitForText("TestLabel", "Footer is now visible", timeoutSec: 10);
+
+		// Step 5: Verify safe area still applies correctly in landscape
+		var landscapeTopY = App.WaitForElement("TopMarker").GetRect().Y;
+		Assert.That(landscapeTopY, Is.GreaterThan(0),
+			"Content should still respect safe area after rotation during animation");
+
+		// Step 6: Rotate back to portrait and verify
+		App.SetOrientationPortrait();
+		Thread.Sleep(2000);
+
+		var restoredTopY = App.WaitForElement("TopMarker").GetRect().Y;
+		Assert.That(restoredTopY, Is.EqualTo(portraitTopY).Within(5),
+			"Safe area should restore to original portrait position after rotation cycle");
+
+		// Cleanup: hide footer
+		App.Tap("FooterButton");
+		WaitForText("TestLabel", "Footer is now hidden", timeoutSec: 10);
+	}
+
+	[Test, Order(5)]
+	[Category(UITestCategories.SafeAreaEdges)]
+	public void VerifyRapidSafeAreaToggleCycling()
+	{
+		// Regression test: rapidly cycling SafeAreaEdges between None and Container
+		// should always produce correct layout. The _safeAreaInvalidated bug fix in
+		// MauiScrollView could unmask missing invalidation paths if any exist.
+
+		// Reset to known state
+		var currentStatus = App.WaitForElement("SafeAreaStatusLabel").GetText();
+		if (currentStatus?.Contains("Parent: None", StringComparison.OrdinalIgnoreCase) == true)
+			App.Tap("ParentSafeAreaToggleButton");
+		currentStatus = App.WaitForElement("SafeAreaStatusLabel").GetText();
+		if (currentStatus?.Contains("Child: None", StringComparison.OrdinalIgnoreCase) == true)
+			App.Tap("ChildSafeAreaToggleButton");
+		WaitForText("SafeAreaStatusLabel", "Parent: Container, Child: Container");
+
+		var containerY = App.WaitForElement("TopMarker").GetRect().Y;
+
+		// Cycle 3 times: Container → None → Container
+		for (int i = 0; i < 3; i++)
+		{
+			// Toggle parent to None
+			App.Tap("ParentSafeAreaToggleButton");
+			WaitForText("SafeAreaStatusLabel", "Parent: None, Child: Container");
+
+			// Toggle child to None
+			App.Tap("ChildSafeAreaToggleButton");
+			WaitForText("SafeAreaStatusLabel", "Parent: None, Child: None");
+
+			var noneY = App.WaitForElement("TopMarker").GetRect().Y;
+			Assert.That(noneY, Is.LessThan(containerY),
+				$"Cycle {i + 1}: Content should be under safe area when both are None");
+
+			// Toggle parent back to Container
+			App.Tap("ParentSafeAreaToggleButton");
+			WaitForText("SafeAreaStatusLabel", "Parent: Container, Child: None");
+
+			// Toggle child back to Container
+			App.Tap("ChildSafeAreaToggleButton");
+			WaitForText("SafeAreaStatusLabel", "Parent: Container, Child: Container");
+
+			var restoredY = App.WaitForElement("TopMarker").GetRect().Y;
+			Assert.That(restoredY, Is.EqualTo(containerY).Within(5),
+				$"Cycle {i + 1}: Content should return to original safe area position");
+		}
+
+		// Verify app is still responsive after rapid cycling
+		App.Tap("FooterButton");
+		WaitForText("TestLabel", "Footer is now visible", timeoutSec: 10);
+		App.Tap("FooterButton");
+		WaitForText("TestLabel", "Footer is now hidden", timeoutSec: 10);
+	}
 }
 #endif
