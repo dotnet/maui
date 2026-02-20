@@ -17,6 +17,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		Dictionary<Element, UIContainerCell> _cells;
 		IShellController ShellController => _context.Shell;
 
+		readonly HashSet<NSIndexPath> _pendingReloads = new();
+        readonly Dictionary<NSIndexPath, nfloat> _rowHeightCache = new();
+
 		public ShellTableViewSource(IShellContext context, Action<Element> onElementSelected)
 		{
 			_context = context;
@@ -103,6 +106,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public override nfloat GetHeightForRow(UITableView tableView, NSIndexPath indexPath)
 		{
+			if (_rowHeightCache.TryGetValue(indexPath, out var cachedHeight))
+        		return cachedHeight;
+
+
 			int section = indexPath.Section;
 			int row = indexPath.Row;
 			var context = Groups[section][row];
@@ -136,6 +143,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (height == -1)
 				height = defaultHeight;
+
+
+			_rowHeightCache[indexPath] = height;
 
 			return height;
 		}
@@ -184,9 +194,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		}
 
 		void OnViewMeasureInvalidated(UIContainerCell cell)
-		{
-			cell.ReloadRow();
-		}
+        {
+            if (cell?.IndexPath == null)
+                return;
+
+            _rowHeightCache.Remove(cell.IndexPath);
+            
+             if (_pendingReloads.Contains(cell.IndexPath))
+                return;
+                
+            _pendingReloads.Add(cell.IndexPath);
+    
+            cell.ReloadRow();
+        }
 
 		public override nfloat GetHeightForFooter(UITableView tableView, nint section)
 		{
