@@ -5,7 +5,7 @@ using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-public class Issue33417
+public class Maui33417
 {
 	const string InvalidBindingXaml = """
 		<?xml version="1.0" encoding="utf-8" ?>
@@ -21,7 +21,7 @@ public class Issue33417
 		""";
 
 	[Fact]
-	public void Issue33417_Test()
+	public void Maui33417_Test()
 	{
 		var result = CreateMauiCompilation()
 			.RunMauiSourceGenerator(new AdditionalXamlFile("Maui33417_InvalidBinding.xaml", InvalidBindingXaml));
