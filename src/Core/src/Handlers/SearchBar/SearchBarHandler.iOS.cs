@@ -41,7 +41,10 @@ namespace Microsoft.Maui.Handlers
 			if (double.IsInfinity(widthConstraint) || double.IsInfinity(heightConstraint))
 			{
 				PlatformView.SizeToFit();
-				return new Size(PlatformView.Frame.Width, PlatformView.Frame.Height);
+
+				double constrainedWidth = ViewHandlerExtensions.ResolveConstraints(PlatformView.Frame.Width, VirtualView.Width, VirtualView.MinimumWidth, VirtualView.MaximumWidth);
+				double constrainedHeight = ViewHandlerExtensions.ResolveConstraints(PlatformView.Frame.Height, VirtualView.Height, VirtualView.MinimumHeight, VirtualView.MaximumHeight);
+				return new Size(constrainedWidth, constrainedHeight);
 			}
 
 			return base.GetDesiredSize(widthConstraint, heightConstraint);
