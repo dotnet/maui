@@ -44,9 +44,10 @@ namespace Microsoft.Maui.Controls
 			return view;
 		}
 
-		static Label ConvertToLabel(string textContent, ContentPresenter presenter)
+		static ContentLabel ConvertToLabel(string textContent, ContentPresenter presenter)
 		{
-			var label = new Label
+			// Use ContentLabel instead of Label to avoid interference from global styles
+			var label = new ContentLabel
 			{
 				Text = textContent
 			};
@@ -129,4 +130,7 @@ namespace Microsoft.Maui.Controls
 			return false;
 		}
 	}
+
+	// Internal label type used by ContentPresenter to avoid interference from global Label styles.
+	class ContentLabel : Label { }
 }
