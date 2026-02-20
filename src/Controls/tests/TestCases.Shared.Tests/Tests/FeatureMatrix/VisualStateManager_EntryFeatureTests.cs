@@ -34,13 +34,17 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("EntryState");
 		var stateText = App.FindElement("EntryState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Focused"));
-		App.WaitForElement("FocusEntryButton");
-#if ANDROID || IOS
-		if (App.WaitForKeyboardToShow())
+#if ANDROID
+		VerifyScreenshot(cropBottom: 1150);
+		if(App.IsKeyboardShown())
 			App.DismissKeyboard();
-#endif
-		App.Tap("FocusEntryButton");
+#elif IOS
+		VerifyScreenshot(cropBottom: 1200);
+		if(App.IsKeyboardShown())
+			App.DismissKeyboard();
+#else
 		VerifyScreenshot();
+#endif
 	}
 
 	[Test, Order(3)]
@@ -83,7 +87,7 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 		App.EnterText("VSMEntry", "Testing");
 		App.WaitForElement("FocusEntryButton");
 #if ANDROID || IOS
-		if (App.WaitForKeyboardToShow())
+		if (App.IsKeyboardShown())
 			App.DismissKeyboard();
 #endif
 		App.Tap("FocusEntryButton");
@@ -137,7 +141,7 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 		App.EnterText("VSMEntry", "Testing");
 		App.WaitForElement("FocusEntryButton");
 #if ANDROID || IOS
-		if (App.WaitForKeyboardToShow())
+		if (App.IsKeyboardShown())
 			App.DismissKeyboard();
 #endif
 		App.Tap("FocusEntryButton");
@@ -249,7 +253,7 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 		App.Tap("ValidationEntry");
 		App.EnterText("ValidationEntry", "965-999-9999");
 #if ANDROID || IOS
-		if (App.WaitForKeyboardToShow())
+		if (App.IsKeyboardShown())
 			App.DismissKeyboard();
 #endif
 		App.WaitForElement("ValidationEntryLabel");
@@ -267,7 +271,7 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 		App.Tap("ValidationEntry");
 		App.EnterText("ValidationEntry", "Invalid");
 #if ANDROID || IOS
-		if (App.WaitForKeyboardToShow())
+		if (App.IsKeyboardShown())
 			App.DismissKeyboard();
 #endif
 		App.WaitForElement("ValidationEntryLabel");
@@ -285,7 +289,7 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 		App.Tap("ValidationEntry");
 		App.EnterText("ValidationEntry", "777-777-7777");
 #if ANDROID || IOS
-		if (App.WaitForKeyboardToShow())
+		if (App.IsKeyboardShown())
 			App.DismissKeyboard();
 #endif
 		App.WaitForElement("ValidationEntryLabel");
@@ -307,7 +311,7 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 		App.Tap("ValidationEntry");
 		App.EnterText("ValidationEntry", "965-999-9999");
 #if ANDROID || IOS
-		if (App.WaitForKeyboardToShow())
+		if (App.IsKeyboardShown())
 			App.DismissKeyboard();
 #endif
 		App.WaitForElement("ValidationEntryLabel");
@@ -318,7 +322,7 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 		App.ClearText("ValidationEntry");
 		App.EnterText("ValidationEntry", "6789-456-1234");
 #if ANDROID || IOS
-		if (App.WaitForKeyboardToShow())
+		if (App.IsKeyboardShown())
 			App.DismissKeyboard();
 #endif
 		App.WaitForElement("ValidationEntryLabel");
