@@ -47,8 +47,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("ScrollToMiddle");
 			App.Click("ScrollToMiddle");
 			App.WaitForElement("Vegetables.jpg, 10");
-			App.Click("AddItemAbove");
-			App.WaitForElement("photo.jpg, 9");
+
+			for (int i = 0; i < 5; i++)
+			{
+				App.Click("AddItemAbove");
+			}
+
+			App.WaitForElement("FlowerBuds.jpg, 12");
 		}
 
 		// KeepLastItemInView(src\Compatibility\ControlGallery\src\Issues.Shared\CollectionViewItemsUpdatingScrollMode.cs)
