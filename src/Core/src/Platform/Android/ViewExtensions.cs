@@ -595,13 +595,15 @@ namespace Microsoft.Maui.Platform
 					return;
 				}
 
-				disposable?.Dispose();
+				// Store local reference to allow cancellation inside the Post callback
+				var localDisposable = disposable;
 				disposable = null;
 				view.Post(() =>
 				{
-					if (view.IsAttachedToWindow)
+					if (view.IsAttachedToWindow && localDisposable is not null)
 					{
 						action();
+						localDisposable.Dispose();
 					}
 				});
 			};
