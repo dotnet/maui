@@ -132,11 +132,6 @@ namespace UITest.Appium.NUnit
 					// App is unresponsive - let the outer TimeoutException handler deal with it
 					throw;
 				}
-				catch (TimeoutException)
-				{
-					// Let unresponsive-app timeouts bubble to the outer TimeoutException handler.
-					throw;
-				}
 				catch (Exception)
 				{
 					// AppState query failed for some other reason (not a timeout/freeze).
