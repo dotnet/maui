@@ -960,6 +960,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			_searchController = new UISearchController(_resultsRenderer?.ViewController);
+
+			// Fix for iPhone: Prevent the navigation bar from hiding during search presentation.
+			// When HidesNavigationBarDuringPresentation is true (the default), the search bar moves
+			// upward but the suggestions list doesn't follow, creating a visible gap.
+			// Setting these properties to false keeps the suggestions list attached to the search bar.
+			// iPad doesn't have this issue because the navigation bar layout differs.
+			_searchController.HidesNavigationBarDuringPresentation = false;
+			_searchController.ObscuresBackgroundDuringPresentation = false;
 			var visibility = SearchHandler.SearchBoxVisibility;
 			if (visibility != SearchBoxVisibility.Hidden)
 			{
