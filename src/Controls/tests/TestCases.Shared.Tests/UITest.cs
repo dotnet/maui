@@ -454,13 +454,7 @@ namespace Microsoft.Maui.TestCases.Tests
 					IImageEditor imageEditor = _imageEditorFactory.CreateImageEditor(actualImage);
 					(int width, int height) = imageEditor.GetSize();
 
-					// For better readability
-					int cropX = cropFromLeft;
-					int cropY = cropFromTop;
-					int cropWidth = width - cropFromLeft;
-					int cropHeight = height - cropFromTop - cropFromBottom;
-
-					imageEditor.Crop(cropX, cropY, cropWidth, cropHeight);
+					imageEditor.Crop(cropFromLeft, cropFromTop, width - cropFromLeft, height - cropFromTop - cropFromBottom);
 
 					actualImage = imageEditor.GetUpdatedImage();
 				}
