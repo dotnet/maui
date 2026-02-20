@@ -68,6 +68,10 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		bool _safeAreaInvalidated = true;
 
+		// Cached Window.SafeAreaInsets used to distinguish genuine safe area changes
+		// (rotation, status bar) from animation-induced noise. See SafeAreaInsetsDidChange.
+		UIEdgeInsets _lastWindowSafeAreaInsets;
+
 		/// <summary>
 		/// Flag indicating whether this scroll view should apply safe area adjustments to its content.
 		/// Only true when not nested in another scroll view and safe area is not empty.
@@ -144,38 +148,19 @@ namespace Microsoft.Maui.Platform
 		/// This method marks the safe area as invalidated. Note that UIKit automatically calls
 		/// LayoutSubviews immediately after this method.
 		/// </summary>
-		static double RoundToPixel(double value, nfloat scale)
-			=> Math.Round(value * (double)scale) / (double)scale;
-
-		static SafeAreaPadding RoundSafeAreaToPixel(SafeAreaPadding padding, nfloat scale)
-			=> new(
-				RoundToPixel(padding.Left, scale),
-				RoundToPixel(padding.Right, scale),
-				RoundToPixel(padding.Top, scale),
-				RoundToPixel(padding.Bottom, scale));
-
-		SafeAreaPadding GetAdjustedSafeAreaInsets()
-		{
-			if (SystemAdjustedContentInset == UIEdgeInsets.Zero || ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Never)
-				return GetInset().ToSafeAreaInsets();
-			else
-				return SystemAdjustedContentInset.ToSafeAreaInsets();
-		}
-
 		public override void SafeAreaInsetsDidChange()
 		{
 			// Note: UIKit invokes LayoutSubviews right after this method
 			base.SafeAreaInsetsDidChange();
 
+			// Window.SafeAreaInsets represent device-level safe area and are stable
+			// during animations. Filter out animation-induced noise (#33934).
 			if (Window is not null)
 			{
-				var scale = Window?.Screen?.Scale ?? UIScreen.MainScreen.Scale;
-				var newSafeArea = RoundSafeAreaToPixel(GetAdjustedSafeAreaInsets(), scale);
-
-				if (newSafeArea.Equals(_safeArea))
-				{
+				var windowInsets = Window.SafeAreaInsets;
+				if (windowInsets == _lastWindowSafeAreaInsets)
 					return;
-				}
+				_lastWindowSafeAreaInsets = windowInsets;
 			}
 
 			_safeAreaInvalidated = true;
@@ -379,8 +364,10 @@ namespace Microsoft.Maui.Platform
 			// it can push ContentSize over the Bounds, causing AdjustedContentInset to become non-zero and SafeAreaInsets on the child to reset to zero.
 			// This can result in a loop of invalidations as the layout toggles between these states.
 			// To prevent this, we ignore safe area calculations on child views when they are inside a scroll view.
-			var scale = (nfloat)ContentScaleFactor;
-			_safeArea = RoundSafeAreaToPixel(GetAdjustedSafeAreaInsets(), scale);
+			if (SystemAdjustedContentInset == UIEdgeInsets.Zero || ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Never)
+				_safeArea = GetInset().ToSafeAreaInsets();
+			else
+				_safeArea = SystemAdjustedContentInset.ToSafeAreaInsets();
 
 			var oldApplyingSafeAreaAdjustments = _appliesSafeAreaAdjustments;
 			_appliesSafeAreaAdjustments = RespondsToSafeArea() && !_safeArea.IsEmpty;
@@ -698,6 +685,9 @@ namespace Microsoft.Maui.Platform
 
 			// Clear cached scroll view descendant status since the view hierarchy may have changed
 			_scrollViewDescendant = null;
+
+			// Reset cached window insets so the new window's safe area is processed
+			_lastWindowSafeAreaInsets = Window?.SafeAreaInsets ?? UIEdgeInsets.Zero;
 
 			// Mark safe area as invalidated since moving to a new window may change safe area
 			_safeAreaInvalidated = true;

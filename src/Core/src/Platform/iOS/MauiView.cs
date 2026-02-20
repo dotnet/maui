@@ -68,6 +68,10 @@ namespace Microsoft.Maui.Platform
 		// otherwise, false. Null means not yet determined.
 		bool? _scrollViewDescendant;
 
+		// Cached Window.SafeAreaInsets used to distinguish genuine safe area changes
+		// (rotation, status bar) from animation-induced noise. See SafeAreaInsetsDidChange.
+		UIEdgeInsets _lastWindowSafeAreaInsets;
+
 		// Keyboard tracking
 		CGRect _keyboardFrame = CGRect.Empty;
 		bool _isKeyboardShowing;
@@ -607,17 +611,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			var oldSafeArea = _safeArea;
-
-			// Round to the nearest device pixel before storing. iOS fires
-			// SafeAreaInsetsDidChange whenever a view moves during animation,
-			// producing sub-pixel inset differences. Without rounding, the exact
-			// SafeAreaPadding == comparison below returns false for semantically
-			// identical values, triggering InvalidateAncestorsMeasures and an
-			// infinite layout cycle (see #33934). Rounding also stabilizes the
-			// Rounding also stabilizes the constraints fed to CrossPlatformMeasure,
-			// preventing per-frame jitter.
-			var scale = (nfloat)ContentScaleFactor;
-			_safeArea = RoundSafeAreaToPixel(GetAdjustedSafeAreaInsets(), scale);
+			_safeArea = GetAdjustedSafeAreaInsets();
 
 			var oldApplyingSafeAreaAdjustments = _appliesSafeAreaAdjustments;
 			_appliesSafeAreaAdjustments = RespondsToSafeArea() && !_safeArea.IsEmpty;
@@ -709,27 +703,20 @@ namespace Microsoft.Maui.Platform
 		}
 
 
-		static double RoundToPixel(double value, nfloat scale)
-			=> Math.Round(value * (double)scale) / (double)scale;
-
-		static SafeAreaPadding RoundSafeAreaToPixel(SafeAreaPadding padding, nfloat scale)
-			=> new(
-				RoundToPixel(padding.Left, scale),
-				RoundToPixel(padding.Right, scale),
-				RoundToPixel(padding.Top, scale),
-				RoundToPixel(padding.Bottom, scale));
-
 		public override void SafeAreaInsetsDidChange()
 		{
+			// Window.SafeAreaInsets represent device-level safe area (status bar,
+			// home indicator) and are stable during animations. A view's own
+			// SafeAreaInsets change as it moves, producing sub-pixel noise that
+			// can trigger infinite layout cycles (#33934). Comparing at the
+			// Window level filters out that noise while still detecting genuine
+			// safe area changes (rotation, keyboard, status bar).
 			if (Window is not null)
 			{
-				var scale = Window?.Screen?.Scale ?? UIScreen.MainScreen.Scale;
-				var newSafeArea = RoundSafeAreaToPixel(GetAdjustedSafeAreaInsets(), scale);
-
-				if (newSafeArea.Equals(_safeArea))
-				{
+				var windowInsets = Window.SafeAreaInsets;
+				if (windowInsets == _lastWindowSafeAreaInsets)
 					return;
-				}
+				_lastWindowSafeAreaInsets = windowInsets;
 			}
 
 			_safeAreaInvalidated = true;
@@ -745,6 +732,9 @@ namespace Microsoft.Maui.Platform
 			base.MovedToWindow();
 
 			_scrollViewDescendant = null;
+
+			// Reset cached window insets so the new window's safe area is processed
+			_lastWindowSafeAreaInsets = Window?.SafeAreaInsets ?? UIEdgeInsets.Zero;
 
 			// Notify any subscribers that this view has been moved to a window
 			_movedToWindow?.Invoke(this, EventArgs.Empty);
