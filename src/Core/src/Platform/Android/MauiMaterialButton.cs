@@ -22,21 +22,31 @@ namespace Microsoft.Maui.Platform
 		// bottom using SetCompoundDrawablesRelative.
 		internal const int IconGravityBottom = 0x1000;
 
+		// Cache the default text colors from the Material theme
+		// This is needed to properly restore default colors when VisualState setters are unapplied
+		internal global::Android.Content.Res.ColorStateList? DefaultTextColors { get; private set; }
+
 		public MauiMaterialButton(Context context)
 			: base(MauiMaterialContextThemeWrapper.Create(context))
 		{
+			// Cache the default text colors immediately after construction
+			DefaultTextColors = TextColors;
 		}
 
 		protected MauiMaterialButton(nint javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
 		{
+			// Also cache here in case the .NET wrapper is recreated via JNI marshaling
+			DefaultTextColors = TextColors;
 		}
 
 		public MauiMaterialButton(Context context, IAttributeSet? attrs) : base(MauiMaterialContextThemeWrapper.Create(context), attrs)
 		{
+			DefaultTextColors = TextColors;
 		}
 
 		public MauiMaterialButton(Context context, IAttributeSet? attrs, int defStyleAttr) : base(MauiMaterialContextThemeWrapper.Create(context), attrs, defStyleAttr)
 		{
+			DefaultTextColors = TextColors;
 		}
 
 		public override int IconGravity
