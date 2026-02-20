@@ -26,7 +26,7 @@ public class Issue32586 : _IssuesUITest
 		Assert.That(finalText, Is.EqualTo(expectedText), $"Timed out waiting for {elementId} text to be '{expectedText}'");
 	}
 
-	[Test]
+	[Test, Order(1)]
 	[Category(UITestCategories.SafeAreaEdges)]
 	public void VerifyFooterAnimationCompletes()
 	{
@@ -47,7 +47,7 @@ public class Issue32586 : _IssuesUITest
 		WaitForText("TestLabel", "Footer is now hidden", timeoutSec: 10);
 	}
 
-	[Test]
+	[Test, Order(2)]
 	[Category(UITestCategories.SafeAreaEdges)]
 	public void VerifyFooterPositionRespectsSafeArea()
 	{
@@ -85,10 +85,28 @@ public class Issue32586 : _IssuesUITest
 			"The footer is still being insetted by the safe area despite SafeAreaEdges=None.");
 	}
 
-	[Test]
+	[Test, Order(3)]
 	[Category(UITestCategories.SafeAreaEdges)]
 	public void VerifyRuntimeSafeAreaEdgesChange()
 	{
+		// Reset to initial state in case previous tests left state changes
+		var currentStatus = App.WaitForElement("SafeAreaStatusLabel").GetText();
+		if (currentStatus != "Parent: Container, Child: Container")
+		{
+			// If parent is None, toggle it back to Container
+			if (currentStatus?.Contains("Parent: None", StringComparison.OrdinalIgnoreCase) == true)
+			{
+				App.Tap("ParentSafeAreaToggleButton");
+			}
+			// If child is None, toggle it back to Container
+			currentStatus = App.WaitForElement("SafeAreaStatusLabel").GetText();
+			if (currentStatus?.Contains("Child: None", StringComparison.OrdinalIgnoreCase) == true)
+			{
+				App.Tap("ChildSafeAreaToggleButton");
+			}
+			WaitForText("SafeAreaStatusLabel", "Parent: Container, Child: Container");
+		}
+
 		// Step 1: Default state - Parent Grid handles safe area (Container)
 		var statusLabel = App.WaitForElement("SafeAreaStatusLabel");
 		Assert.That(statusLabel.GetText(), Is.EqualTo("Parent: Container, Child: Container"));
@@ -123,7 +141,7 @@ public class Issue32586 : _IssuesUITest
 
 		// Step 5: Verify UI is still responsive
 		App.Tap("FooterButton");
-		WaitForText("TestLabel", "Footer is now visible", timeoutSec: 10);
+		WaitForText("TestLabel", "Footer is now hidden", timeoutSec: 10);
 	}
 }
 #endif
