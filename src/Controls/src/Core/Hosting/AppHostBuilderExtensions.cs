@@ -63,7 +63,7 @@ public static partial class AppHostBuilderExtensions
 
 	internal static IMauiHandlersCollection AddControlsHandlers(this IMauiHandlersCollection handlersCollection)
 	{
-#if IOS || MACCATALYST
+	#if IOS || MACCATALYST
 		handlersCollection.AddHandler<CollectionView, CollectionViewHandler2>();
 		handlersCollection.AddHandler<CarouselView, CarouselViewHandler2>();
 #else
@@ -90,11 +90,8 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<TimePicker, TimePickerHandler>();
 		handlersCollection.AddHandler<Page, PageHandler>();
 		handlersCollection.AddHandler<WebView, WebViewHandler>();
-		if (RuntimeFeature.IsHybridWebViewSupported)
-		{
-			// NOTE: not registered under NativeAOT or TrimMode=Full scenarios
-			handlersCollection.AddHandler<HybridWebView, HybridWebViewHandler>();
-		}
+
+		RegisterHybridWebViewHandlerIfSupported(handlersCollection);
 		handlersCollection.AddHandler<Border, BorderHandler>();
 		handlersCollection.AddHandler<IContentView, ContentViewHandler>();
 		handlersCollection.AddHandler<ContentView, ContentViewHandler>();
@@ -188,6 +185,16 @@ public static partial class AppHostBuilderExtensions
 #endif
 
 		return handlersCollection;
+	}
+
+	[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Registration guarded by RuntimeFeature.IsHybridWebViewSupported; HybridWebView optional.")]
+	static void RegisterHybridWebViewHandlerIfSupported(IMauiHandlersCollection handlersCollection)
+	{
+		if (RuntimeFeature.IsHybridWebViewSupported)
+		{
+			// NOTE: not registered under NativeAOT or TrimMode=Full scenarios
+			handlersCollection.AddHandler<HybridWebView, HybridWebViewHandler>();
+		}
 	}
 
 	static MauiAppBuilder SetupDefaults(this MauiAppBuilder builder)

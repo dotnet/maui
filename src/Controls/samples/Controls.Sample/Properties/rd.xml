@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Directives xmlns="http://schemas.microsoft.com/netfx/2013/01/metadata">
+  <Application>
+    <!-- Preserve types used in reflection-based binding -->
+    <Assembly Name="Microsoft.Maui.Controls" Dynamic="Required All" />
+    
+    <!-- Preserve Blazor types needed for reflection -->
+    <Assembly Name="Microsoft.AspNetCore.Components">
+      <Type Name="Microsoft.AspNetCore.Components.Routing.Router" Dynamic="Required All" />
+      <Type Name="Microsoft.AspNetCore.Components.RenderFragment" Dynamic="Required All" />
+      <Type Name="Microsoft.AspNetCore.Components.RenderFragment`1" Dynamic="Required All" />
+    </Assembly>
+    
+    <!-- Preserve types needed for reflection -->
+    <Assembly Name="Maui.Controls.Sample">
+      <!-- PageSearchHandler and its Data nested class -->
+      <Type Name="Maui.Controls.Sample.Pages.PageSearchHandler" Dynamic="Required All" />
+      <Type Name="Maui.Controls.Sample.Pages.PageSearchHandler+Data" Dynamic="Required All" />
+      
+      <!-- SectionModel and its Type property -->
+      <Type Name="Maui.Controls.Sample.Models.SectionModel" Dynamic="Required All" />
+      
+      <!-- Types used with Activator.CreateInstance -->
+      <Type Name="Maui.Controls.Sample.Pages.ShellGalleries.ShellChromeGallery" Dynamic="Required PublicParameterlessConstructor" />
+      <Type Name="Maui.Controls.Sample.Pages.ButtonPage" Dynamic="Required PublicParameterlessConstructor" />
+      <Type Name="Maui.Controls.Sample.Pages.SemanticsPage" Dynamic="Required PublicParameterlessConstructor" />
+    </Assembly>
+    
+    <!-- Preserve MauiRazorClassLibrarySample types -->
+    <Assembly Name="MauiRazorClassLibrarySample" Dynamic="Required All" />
+  </Application>
+</Directives>

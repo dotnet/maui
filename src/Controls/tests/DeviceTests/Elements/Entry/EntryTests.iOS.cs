@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
@@ -150,6 +151,7 @@ namespace Microsoft.Maui.DeviceTests
 			}
 
 			[Fact]
+			[UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Test intentionally uses string-based SetBinding; trim safety not relevant for behavior under test.")]
 			public async Task NextListView()
 			{
 				SetupNextBuilder();

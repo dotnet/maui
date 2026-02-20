@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using System;
 using System.IO;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,6 +12,7 @@ using Microsoft.Maui.Hosting;
 namespace Microsoft.Maui.DeviceTests;
 
 [Category(TestCategory.HybridWebView)]
+[UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "HybridWebView tests exercise APIs requiring dynamic JSON; trimming safety not under test.")]
 public partial class HybridWebViewTestsBase : ControlsHandlerTestBase
 {
 	void SetupBuilder()

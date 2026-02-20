@@ -341,6 +341,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 
+		[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2045", Justification = "TupleElementNamesAttribute instances are optional; if trimmed binding still functions by skipping tuple element name mapping.")]
 		void SetupPart(TypeInfo sourceType, BindingExpressionPart part)
 		{
 			part.Arguments = null;

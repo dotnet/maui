@@ -33,6 +33,7 @@ namespace Maui.Controls.Sample.Pages
 
 		public PageSearchHandler()
 		{
+			// Create list with known types that have public parameterless constructors
 			Pages = new List<Data>()
 			{
 				new Data(typeof(ShellChromeGallery).Name, typeof(ShellChromeGallery), "dotnet_bot.png"),
@@ -62,9 +63,18 @@ namespace Maui.Controls.Sample.Pages
 			base.OnItemSelected(item);
 
 			var thing = (Data)item;
-
-			var result = Shell.Current.Handler!.MauiContext!.Services.GetService(thing.Type) ??
-				Activator.CreateInstance(thing.Type);
+			
+			// Fix the issue with a clear null check
+			object result;
+			var service = Shell.Current.Handler?.MauiContext?.Services.GetService(thing.Type);
+			if (service != null)
+			{
+				result = service;
+			}
+			else
+			{
+				result = Activator.CreateInstance(thing.Type)!;
+			}
 
 			await Shell.Current.Navigation.PushAsync(result as Page);
 		}

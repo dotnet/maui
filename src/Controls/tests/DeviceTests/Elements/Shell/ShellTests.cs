@@ -1125,7 +1125,7 @@ namespace Microsoft.Maui.DeviceTests
 				shell.CurrentItem = new ShellContent { Content = page };
 			});
 
-			var appearanceObserversField = shell.GetType().GetField("_appearanceObservers", BindingFlags.Instance | BindingFlags.NonPublic);
+			var appearanceObserversField = typeof(Shell).GetField("_appearanceObservers", BindingFlags.Instance | BindingFlags.NonPublic);
 			Assert.NotNull(appearanceObserversField);
 			var appearanceObservers = appearanceObserversField.GetValue(shell) as IList;
 			Assert.NotNull(appearanceObservers);

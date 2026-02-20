@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Controls
 {
 	internal static class TypeConversionHelper
 	{
+		[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Implicit operator reflection usage is feature-flagged and optional; suppression avoids trimmer error when feature disabled.")]
 		internal static bool TryConvert(object value, Type targetType, out object? convertedValue)
 		{
 			Type valueType = value.GetType();

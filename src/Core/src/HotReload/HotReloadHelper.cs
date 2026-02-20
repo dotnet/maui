@@ -36,10 +36,14 @@ namespace Microsoft.Maui.HotReload
 		{
 			// Check separately to avoid trim warnings
 			if (!IsSupported)
+			{
 				return;
+			}
 
 			if (!IsEnabled)
+			{
 				return;
+			}
 
 			currentViews[view] = parameters;
 		}
@@ -48,10 +52,14 @@ namespace Microsoft.Maui.HotReload
 		{
 			// Check separately to avoid trim warnings
 			if (!IsSupported)
+			{
 				return;
+			}
 
 			if (!IsEnabled)
+			{
 				return;
+			}
 
 			currentViews.Remove(view);
 		}
@@ -59,30 +67,46 @@ namespace Microsoft.Maui.HotReload
 		{
 			// Check separately to avoid trim warnings
 			if (!IsSupported)
+			{
 				return false;
+			}
 
 			if (!IsEnabled)
+			{
 				return false;
+			}
 
 			if (view == null || newView == null)
+			{
 				return false;
+			}
 
 			if (!replacedViews.TryGetValue(view.GetType().FullName!, out var newViewType))
+			{
 				return false;
+			}
+
 			return newView.GetType() == newViewType;
 		}
+		[UnconditionalSuppressMessage("Trimming", "IL2067", Justification = "New view types are provided by hot reload infrastructure and required constructors are preserved by design during development scenarios.")]
 		public static IView GetReplacedView(IHotReloadableView view)
 		{
 			// Check separately to avoid trim warnings
 			if (!IsSupported)
+			{
 				return view;
+			}
 
 			if (!IsEnabled)
+			{
 				return view;
+			}
 
 			var viewType = view.GetType();
 			if (!replacedViews.TryGetValue(viewType.FullName!, out var newViewType) || viewType == newViewType)
+			{
 				return view;
+			}
 
 			currentViews.TryGetValue(view, out var parameters);
 			try
@@ -126,10 +150,14 @@ namespace Microsoft.Maui.HotReload
 		{
 			// Check separately to avoid trim warnings
 			if (!IsSupported)
+			{
 				return;
+			}
 
 			if (!IsEnabled)
+			{
 				return;
+			}
 
 			Action<MethodInfo> executeStaticMethod = (method) =>
 			{
@@ -149,14 +177,18 @@ namespace Microsoft.Maui.HotReload
 			onHotReloadMethods.ForEach(x => executeStaticMethod(x));
 
 			if (typeof(IHotReloadableView).IsAssignableFrom(newViewType))
+			{
 				replacedViews[oldViewType] = newViewType;
+			}
 
 			if (typeof(IViewHandler).IsAssignableFrom(newViewType))
 			{
 				if (replacedHandlers.TryGetValue(oldViewType, out var vTypes))
 				{
 					foreach (var vType in vTypes)
+					{
 						RegisterHandler(vType, newViewType);
+					}
 					return;
 				}
 
@@ -180,7 +212,9 @@ namespace Microsoft.Maui.HotReload
 				var view = pair.Key;
 				var newType = newHandler;
 				if (pair.Value.IsGenericType)
+				{
 					newType = pair.Value.GetGenericTypeDefinition().MakeGenericType(newHandler);
+				}
 				HandlerService.AddHandler(view, newType);
 			}
 		}
@@ -214,7 +248,9 @@ namespace Microsoft.Maui.HotReload
 		{
 			IsEnabled = true;
 			foreach (var t in types)
+			{
 				RegisterReplacedView(t.FullName ?? "", t);
+			}
 		}
 		public static void ClearCache(Type[] types) => TriggerReload();
 		#endregion
