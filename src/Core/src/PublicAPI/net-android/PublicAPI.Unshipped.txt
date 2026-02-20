@@ -1,2 +1,4 @@
 #nullable enable
 override Microsoft.Maui.Handlers.LabelHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
+override Microsoft.Maui.Platform.MauiHybridWebView.OnSizeChanged(int width, int height, int oldWidth, int oldHeight) -> void
+override Microsoft.Maui.Platform.MauiWebView.OnSizeChanged(int width, int height, int oldWidth, int oldHeight) -> void
