@@ -209,6 +209,49 @@ namespace Microsoft.Maui.DeviceTests
 			var platformRotation = await InvokeOnMainThreadAsync(() => handler.PlatformView.Rotation);
 			Assert.Equal(expected, platformRotation);
 		}
+
+		[Fact]
+		[Description("BottomNavigationView should extend to screen bottom in Edge-to-Edge mode (Issue 33344)")]
+		public async Task BottomNavigationViewExtendsToScreenBottom()
+		{
+			SetupBuilder();
+
+			var tabbedPage = new TabbedPage
+			{
+				Children =
+				{
+					new ContentPage() { Title = "Page1" },
+					new ContentPage() { Title = "Page2" }
+				},
+				BarBackgroundColor = Colors.Orange
+			};
+
+			Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.TabbedPage
+				.SetToolbarPlacement(tabbedPage, Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ToolbarPlacement.Bottom);
+
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, async handler =>
+			{
+				var bottomNavView = GetBottomNavigationView(handler);
+				Assert.NotNull(bottomNavView);
+
+				// Wait for layout to complete
+				await AssertEventually(() => bottomNavView.Height > 0);
+
+				var location = new int[2];
+				bottomNavView.GetLocationOnScreen(location);
+				var bottomNavBottom = location[1] + bottomNavView.Height;
+
+				var decorView = MauiContext.Context.GetActivity()?.Window?.DecorView;
+				Assert.NotNull(decorView);
+
+				decorView.GetLocationOnScreen(location);
+				var screenHeight = location[1] + decorView.Height;
+
+				Assert.True(screenHeight == bottomNavBottom,
+					$"BottomNavigationView should extend to screen bottom. Expected bottom at {screenHeight}px, but was at {bottomNavBottom}px (gap of {screenHeight - bottomNavBottom}px)");
+			});
+		}
+
 		BottomNavigationView GetBottomNavigationView(IPlatformViewHandler tabViewHandler)
 		{
 			var layout = tabViewHandler.PlatformView.FindParent((view) => view is CoordinatorLayout)
