@@ -12,6 +12,7 @@
 name: Merge main to net10.0
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
