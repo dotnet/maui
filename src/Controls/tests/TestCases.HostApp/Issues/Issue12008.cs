@@ -3,7 +3,7 @@ using System.ComponentModel;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 12008, "CollectionView Drag and Drop Reordering Can't Drop in Empty Group", PlatformAffected.Android)]
+[Issue(IssueTracker.Github, 12008, "CollectionView Drag and Drop Reordering Can't Drop in Empty Group", PlatformAffected.Android | PlatformAffected.iOS | PlatformAffected.macOS)]
 public partial class Issue12008 : ContentPage
 {
 	private Label statusLabel;

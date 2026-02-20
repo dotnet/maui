@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					return false;
 				}
 
-				if (fromItemIndex < 0 || fromItemIndex > fromList.Count)
+				if (fromItemIndex < 0 || fromItemIndex >= fromList.Count)
 				{
 					return false;
 				}
