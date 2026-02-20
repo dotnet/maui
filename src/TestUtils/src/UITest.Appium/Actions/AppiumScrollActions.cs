@@ -26,6 +26,7 @@ namespace UITest.Appium
 		const string ScrollRightCommand = "scrollRight";
 		const string ScrollUpCommand = "scrollUp";
 		const string ScrollUpToCommand = "scrollUpTo";
+		const string ScrollToBottomCommand = "scrollToBottom";
 
 		readonly AppiumApp _appiumApp;
 
@@ -37,6 +38,7 @@ namespace UITest.Appium
 			ScrollRightCommand,
 			ScrollUpCommand,
 			ScrollUpToCommand,
+			ScrollToBottomCommand,
 		};
 
 		public AppiumScrollActions(AppiumApp appiumApp)
@@ -59,6 +61,7 @@ namespace UITest.Appium
 				ScrollRightCommand => ScrollRight(parameters),
 				ScrollUpCommand => ScrollUp(parameters),
 				ScrollUpToCommand => ScrollUpTo(parameters),
+				ScrollToBottomCommand => ScrollToBottom(parameters),
 				_ => CommandResponse.FailedEmptyResponse,
 			};
 		}
@@ -169,6 +172,24 @@ namespace UITest.Appium
 			bool withInertia = (bool)parameters["withInertia"];
 
 			ScrollToUpTo(_appiumApp.Driver, marked, element, strategy, swipePercentage, swipeSpeed, withInertia);
+
+			return CommandResponse.SuccessEmptyResponse;
+		}
+
+		CommandResponse ScrollToBottom(IDictionary<string, object> parameters)
+		{
+			parameters.TryGetValue("element", out var value);
+			var element = GetAppiumElement(value);
+
+			if (element is null)
+				return CommandResponse.FailedEmptyResponse;
+
+			string bottomMarked = (string)parameters["bottomMarked"];
+			ScrollStrategy strategy = (ScrollStrategy)parameters["strategy"];
+			int swipeSpeed = (int)parameters["swipeSpeed"];
+			int maxScrolls = (int)parameters["maxScrolls"];
+
+			PerformScrollToBottom(_appiumApp.Driver, element, bottomMarked, strategy, swipeSpeed, maxScrolls);
 
 			return CommandResponse.SuccessEmptyResponse;
 		}
@@ -315,6 +336,141 @@ namespace UITest.Appium
 			}
 
 			return result;
+		}
+
+		void PerformScrollToBottom(AppiumDriver driver, AppiumElement scrollElement, string bottomMarked, ScrollStrategy strategy, int swipeSpeed, int maxScrolls)
+		{
+			// Get scroll coordinates once from the scroll element
+			var position = scrollElement.Location;
+			var size = scrollElement.Size;
+			
+			int startX = position.X + size.Width / 2;
+			int startY = position.Y + size.Height - 10;
+			int endX = startX;
+			int endY = position.Y + 10;
+
+			// Check if bottom element is already visible AND already at bottom (can't scroll further)
+			bool foundBottom = false;
+			bool alreadyAtBottom = false;
+			try
+			{
+				var element = driver.FindElement(By.XPath("//*[@text='" + bottomMarked + "' or @label='" + bottomMarked + "' or @Name='" + bottomMarked + "']"));
+				if (element != null)
+				{
+					foundBottom = true;
+					
+					// Check if we can scroll further by attempting a scroll and checking if position changes
+					int yPositionBefore = element.Location.Y;
+					
+					// Perform a test scroll
+					OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Touch);
+					var swipeSequence = new ActionSequence(touchDevice, 0);
+					swipeSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, startX, startY, TimeSpan.Zero));
+					swipeSequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
+					swipeSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, endX, endY, TimeSpan.FromMilliseconds(swipeSpeed)));
+					swipeSequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
+					driver.PerformActions(new List<ActionSequence> { swipeSequence });
+					
+					System.Threading.Thread.Sleep(50);
+					
+					// Check if position changed
+					var elementAfter = driver.FindElement(By.XPath("//*[@text='" + bottomMarked + "' or @label='" + bottomMarked + "' or @Name='" + bottomMarked + "']"));
+					int yPositionAfter = elementAfter.Location.Y;
+					
+					if (Math.Abs(yPositionAfter - yPositionBefore) <= 5)
+					{
+						// Position didn't change, we're already at the bottom
+						alreadyAtBottom = true;
+					}
+					else
+					{
+						// Position changed, need to continue scrolling
+						foundBottom = false;
+					}
+				}
+			}
+			catch
+			{
+				// Element not visible yet, need to scroll
+			}
+
+			// If already at bottom and can't scroll further, exit early
+			if (alreadyAtBottom)
+			{
+				// Already at bottom, no more scrolling needed
+				return;
+			}
+
+			for (int i = 0; i < maxScrolls && !foundBottom; i++)
+			{
+				// Use direct Appium Actions API for fast, precise scrolling
+				OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Touch);
+				var swipeSequence = new ActionSequence(touchDevice, 0);
+				swipeSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, startX, startY, TimeSpan.Zero));
+				swipeSequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
+				swipeSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, endX, endY, TimeSpan.FromMilliseconds(swipeSpeed)));
+				swipeSequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
+				driver.PerformActions(new List<ActionSequence> { swipeSequence });
+
+				// Brief delay to let UI settle after scroll
+				System.Threading.Thread.Sleep(50);
+
+				// Check if we reached the bottom by looking for the bottom element
+				try
+				{
+					var element = driver.FindElement(By.XPath("//*[@text='" + bottomMarked + "' or @label='" + bottomMarked + "' or @Name='" + bottomMarked + "']"));
+					if (element != null)
+					{
+						foundBottom = true;
+					}
+				}
+				catch
+				{
+					// Element not found yet, continue scrolling
+				}
+			}
+
+			if (!foundBottom)
+			{
+				throw new InvalidOperationException($"Could not find bottom element '{bottomMarked}' after {maxScrolls} scroll attempts");
+			}
+
+			// Perform final validation scroll
+			PerformFinalValidationScroll(driver, startX, startY, endX, endY, bottomMarked, swipeSpeed);
+		}
+
+		void PerformFinalValidationScroll(AppiumDriver driver, int startX, int startY, int endX, int endY, string bottomMarked, int swipeSpeed)
+		{
+			// Perform one final scroll to ensure we're fully at the bottom
+			// and validate the position doesn't change (meaning we're truly at bottom)
+			try
+			{
+				var elementBeforeFinalScroll = driver.FindElement(By.XPath("//*[@text='" + bottomMarked + "' or @label='" + bottomMarked + "' or @Name='" + bottomMarked + "']"));
+				int yPositionBefore = elementBeforeFinalScroll.Location.Y;
+
+				// Perform one more scroll
+				OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Touch);
+				var swipeSequence = new ActionSequence(touchDevice, 0);
+				swipeSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, startX, startY, TimeSpan.Zero));
+				swipeSequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
+				swipeSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, endX, endY, TimeSpan.FromMilliseconds(swipeSpeed)));
+				swipeSequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
+				driver.PerformActions(new List<ActionSequence> { swipeSequence });
+
+				// Verify position hasn't changed (we're at the bottom)
+				var elementAfterFinalScroll = driver.FindElement(By.XPath("//*[@text='" + bottomMarked + "' or @label='" + bottomMarked + "' or @Name='" + bottomMarked + "']"));
+				int yPositionAfter = elementAfterFinalScroll.Location.Y;
+
+				// Position should be the same or very close (within a few pixels for rendering differences)
+				if (Math.Abs(yPositionAfter - yPositionBefore) > 5)
+				{
+					throw new InvalidOperationException($"Final scroll validation failed. Element moved from Y={yPositionBefore} to Y={yPositionAfter}. May not be at true bottom.");
+				}
+			}
+			catch (Exception ex) when (!(ex is InvalidOperationException))
+			{
+				// If we can't validate, that's okay - we found the element which is the main goal
+			}
 		}
 
 		virtual protected void PerformActions(
