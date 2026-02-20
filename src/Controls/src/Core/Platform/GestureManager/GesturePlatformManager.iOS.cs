@@ -265,7 +265,17 @@ namespace Microsoft.Maui.Controls.Platform
 					var view = eventTracker?._handler.VirtualView as View;
 
 					if (swipeGestureRecognizer != null && view != null)
-						swipeGestureRecognizer.SendSwiped(view, direction);
+					{
+						if (view.Rotation != 0)
+						{
+							var transformedDirection = SwipeGestureExtensions.TransformSwipeDirectionForRotation(direction, view.Rotation);
+							swipeGestureRecognizer.SendSwiped(view, transformedDirection);
+						}
+						else
+						{
+							swipeGestureRecognizer.SendSwiped(view, direction);
+						}
+					}
 				});
 				var uiRecognizer = CreateSwipeRecognizer(swipeRecognizer.Direction, returnAction, 1);
 				return new List<UIGestureRecognizer?> { uiRecognizer };
