@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
@@ -19,7 +20,7 @@ namespace Microsoft.Maui.Controls.Platform
 		bool _didHaveWindow;
 
 		public bool IsConnected => GesturePlatformManager != null;
-		public GesturePlatformManager? GesturePlatformManager { get; private set; }
+		public IGesturePlatformManager? GesturePlatformManager { get; private set; }
 
 		public GestureManager(IControlsView view)
 		{
@@ -76,7 +77,12 @@ namespace Microsoft.Maui.Controls.Platform
 			if (GesturePlatformManager != null)
 				return;
 
-			GesturePlatformManager = new GesturePlatformManager(handler);
+			// Try to get IGesturePlatformManager from services first, fallback to default implementation
+			var context = handler.MauiContext;
+			GesturePlatformManager =
+				context?.Services.GetService<IGesturePlatformManager>() ??
+				new GesturePlatformManager(handler);
+			
 			_handler = handler;
 			_containerView = handler.ContainerView;
 			_platformView = handler.PlatformView;
