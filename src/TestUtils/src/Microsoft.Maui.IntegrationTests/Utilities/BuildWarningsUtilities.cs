@@ -23,7 +23,8 @@ namespace Microsoft.Maui.IntegrationTests
 	{
 		// We rely on the fact that expected file paths are stored as relative to the repo root (e.g., src/Core/...).
 		// While the actual file paths are always full paths and can have different repo roots (e.g., building locally or on CI).
-		private static bool CompareWarningsFilePaths(this string actual, string expected) => actual.Contains(expected, StringComparison.Ordinal);
+		private static bool CompareWarningsFilePaths(this string actual, string expected) =>
+			string.IsNullOrEmpty(expected) ? string.IsNullOrEmpty(actual) : actual.Contains(expected, StringComparison.Ordinal);
 
 		private static string NormalizeFilePath(string file) => file.Replace("\\\\", "/", StringComparison.Ordinal).Replace('\\', '/');
 
