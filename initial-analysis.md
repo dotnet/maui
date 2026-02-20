@@ -244,7 +244,7 @@ Remaining Flex allocations (37.5 KB for 12ch, 187.5 KB for 60ch) trace to the Co
 - `SetValue` on `double` properties boxes the value (24 bytes per double × 4 properties = 96 bytes)
 - Confirmed by scaling test: **64 B per child per loop** (768 B for 12 children, 3840 B for 60 children)
 - This is Controls-layer `BindableObject` infrastructure shared by ALL layout types
-- Optimizing this would require changes to the `BindableProperty` system (typed property accessors to avoid boxing)
+- Optimizing this requires generic `BindableProperty<T>` to avoid boxing — tracked in https://github.com/dotnet/maui/issues/34080
 
 ## Key Technical Decisions
 
