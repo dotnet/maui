@@ -12,12 +12,13 @@ namespace Microsoft.Maui.Layouts
 		public override Size Measure(double widthConstraint, double heightConstraint)
 		{
 			var padding = Stack.Padding;
+			var childCount = Stack.Count;
 
 			double measuredWidth = 0;
 			double measuredHeight = 0;
 			int spacingCount = 0;
 
-			for (int n = 0; n < Stack.Count; n++)
+			for (int n = 0; n < childCount; n++)
 			{
 				var child = Stack[n];
 
@@ -55,7 +56,7 @@ namespace Microsoft.Maui.Layouts
 			// Figure out where we're starting from 
 			double xPosition = padding.Left + bounds.Left;
 
-			for (int n = 0; n < Stack.Count; n++)
+			for (int n = 0; n < childCount; n++)
 			{
 				var child = Stack[n];
 
