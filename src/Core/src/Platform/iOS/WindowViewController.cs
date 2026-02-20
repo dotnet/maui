@@ -143,19 +143,16 @@ internal class WindowViewController : UIViewController
 			_titleBar = newPlatTitleBar;
 			_iTitleBarRef = new WeakReference<IView?>(iTitleBar);
 		}
-		
+
 		_isTitleBarVisible = (iTitleBar?.Visibility == Visibility.Visible);
 
 		var platformTitleBar = platformWindow.WindowScene?.Titlebar;
 
-		if (newTitleBar is not null && platformTitleBar is not null)
+		if (platformTitleBar is not null)
 		{
-			platformTitleBar.TitleVisibility = UITitlebarTitleVisibility.Hidden;
-		}
-
-		else if (newTitleBar is null && platformTitleBar is not null)
-		{
-			platformTitleBar.TitleVisibility = UITitlebarTitleVisibility.Visible;
+			// Hide separator to avoid it cutting through pages (#26650)
+			platformTitleBar.SeparatorStyle = UITitlebarSeparatorStyle.None;
+			platformTitleBar.TitleVisibility = newTitleBar is null ? UITitlebarTitleVisibility.Visible : UITitlebarTitleVisibility.Hidden;
 		}
 
 		IsFirstLayout = true;
