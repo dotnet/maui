@@ -1,6 +1,8 @@
 ﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using Foundation;
+using Microsoft.Extensions.Logging;
 using WebKit;
 
 namespace Microsoft.Maui.Platform
@@ -117,6 +119,43 @@ namespace Microsoft.Maui.Platform
 			}
 
 			return result.ToString() ?? "null";
+		}
+
+		/// <summary>
+		/// Loads a local file URL into the WebView using NSBundle resource loading.
+		/// </summary>
+		/// <param name="webView">The WKWebView instance to load the file into</param>
+		/// <param name="url">The local file URL to load</param>
+		/// <param name="logger">Optional logger for error reporting</param>
+		/// <returns>True if the file was successfully loaded, false otherwise</returns>
+		internal static bool LoadFile(this WKWebView webView, string url, ILogger? logger = null)
+		{
+			try
+			{
+				var file = Path.GetFileNameWithoutExtension(url);
+				var ext = Path.GetExtension(url);
+				var directory = Path.GetDirectoryName(url);
+
+				// If there's a subdirectory, use the overload that accepts a subdirectory parameter else fallback to the original method if subdirectory method fails or if no subdirectory
+				NSUrl? nsUrl = string.IsNullOrEmpty(directory)
+					? NSBundle.MainBundle.GetUrlForResource(file, ext)
+					: NSBundle.MainBundle.GetUrlForResource(file, ext, directory);
+
+				if (nsUrl is null)
+				{
+					return false;
+				}
+
+				webView.LoadFileUrl(nsUrl, nsUrl);
+
+				return true;
+			}
+			catch (Exception ex)
+			{
+				logger?.LogWarning($"Could not load {url} as local file: {ex}");
+			}
+
+			return false;
 		}
 	}
 }
