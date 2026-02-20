@@ -160,12 +160,13 @@ public class Issue31961SecondPage : ContentPage
 		NavigateToPage3Command = new Command(async () => await NavigateToPage3Async());
 
 		var btnGoToPage3 = new Button { Text = "Go to Page 3", AutomationId = "Page2" , Command = NavigateToPage3Command };
+		var btnGoBack = new Button { Text = "Go Back", AutomationId = "Page2GoBack", Command = new Command(async () => await Shell.Current.GoToAsync("..")) };
 
 		Content = new VerticalStackLayout
 		{
 			Padding = 20,
 			Spacing = 20,
-			Children = { btnGoToPage3 }
+			Children = { btnGoToPage3, btnGoBack }
 		};
 	}
 
@@ -189,6 +190,18 @@ public class Issue31961ThirdPage : ContentPage
 			VerticalOptions = LayoutOptions.Center
 		};
 
-		Content = label;
+		var btnGoBack = new Button
+		{
+			Text = "Go Back",
+			AutomationId = "Page3GoBack",
+			Command = new Command(async () => await Shell.Current.GoToAsync(".."))
+		};
+
+		Content = new VerticalStackLayout
+		{
+			Padding = 20,
+			Spacing = 20,
+			Children = { label, btnGoBack }
+		};
 	}
 }

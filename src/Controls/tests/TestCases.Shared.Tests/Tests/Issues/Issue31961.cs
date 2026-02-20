@@ -22,6 +22,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("Page2");
 			App.Tap("Page2");
 			App.WaitForElement("Page3");
+			App.Tap("Page3GoBack");
+			App.WaitForElement("Page2");
+			App.Tap("Page2GoBack");
+			App.WaitForElement("OpenModalButton");
 		}
 	}
 }
