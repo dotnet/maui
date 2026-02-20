@@ -1,0 +1,236 @@
+name: Daily Template Size Tracking
+
+on:
+  schedule:
+    # Daily at midnight ET (5 AM UTC)
+    - cron: '0 5 * * *'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/daily-template-size-tracking.yml'
+      - '.github/scripts/template-size-tracking/**'
+  workflow_dispatch:
+    inputs:
+      dotnet_versions:
+        description: 'Comma-separated .NET versions to test (e.g., 9.0,10.0)'
+        required: false
+        default: '9.0,10.0'
+        type: string
+      templates:
+        description: 'Comma-separated templates to test (maui,maui-blazor,maui-sample)'
+        required: false
+        default: 'maui,maui-blazor,maui-sample'
+        type: string
+      alert_threshold:
+        description: 'Alert threshold percentage for size increases'
+        required: false
+        default: '10'
+        type: string
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  ALERT_THRESHOLD: ${{ inputs.alert_threshold || '10' }}
+  FAILURE_THRESHOLD: '20'
+
+jobs:
+  prepare-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      maui-version: ${{ steps.detect-version.outputs.maui-version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Detect MAUI Version
+        id: detect-version
+        shell: pwsh
+        run: |
+          $response = Invoke-RestMethod -Uri "https://api.nuget.org/v3-flatcontainer/microsoft.maui.templates.net10/index.json" -ErrorAction Stop
+          $stable = $response.versions | Where-Object { $_ -notmatch '-' }
+          $version = if ($stable.Count -gt 0) { $stable[-1] } else { $response.versions[-1] }
+          Write-Host "MAUI Templates version: $version"
+          echo "maui-version=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Prepare Build Matrix
+        id: set-matrix
+        shell: pwsh
+        run: |
+          & "${{ github.workspace }}/.github/scripts/template-size-tracking/prepare-matrix.ps1" `
+            -DotNetVersions "${{ inputs.dotnet_versions || '9.0,10.0' }}" `
+            -Templates "${{ inputs.templates || 'maui,maui-blazor,maui-sample' }}"
+
+  build-and-measure:
+    needs: prepare-matrix
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.prepare-matrix.outputs.matrix) }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET ${{ matrix.dotnet }}
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '${{ matrix.dotnet }}.x'
+
+      - name: Setup Xcode
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          LATEST_XCODE=$(ls -d /Applications/Xcode*.app 2>/dev/null | sort -V | tail -1)
+          if [ -n "$LATEST_XCODE" ]; then
+            echo "Selecting Xcode: $LATEST_XCODE"
+            sudo xcode-select -s "$LATEST_XCODE/Contents/Developer"
+          fi
+          xcodebuild -version
+
+      - name: Setup Java
+        if: matrix.platform == 'android'
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'microsoft'
+          java-version: '17'
+
+      - name: Install Workloads (Linux)
+        if: runner.os == 'Linux'
+        run: dotnet workload install maui-android
+
+      - name: Install Workloads (macOS/Windows)
+        if: runner.os != 'Linux'
+        run: dotnet workload install maui
+
+      - name: Create Project
+        shell: pwsh
+        run: |
+          & "${{ github.workspace }}/.github/scripts/template-size-tracking/create-project.ps1" `
+            -Template "${{ matrix.template }}" `
+            -DotNetVersion "${{ matrix.dotnet }}" `
+            -Description "${{ matrix.description }}" `
+            -Framework "${{ matrix.framework }}"
+
+      - name: Build and Publish
+        shell: pwsh
+        run: |
+          & "${{ github.workspace }}/.github/scripts/template-size-tracking/build-and-publish.ps1" `
+            -ProjectPath $env:PROJECT_PATH `
+            -Platform "${{ matrix.platform }}" `
+            -Framework "${{ matrix.framework }}" `
+            -Rid "${{ matrix.rid }}" `
+            -IsAot "${{ matrix.aot }}"
+
+      - name: Upload Build Binlog
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: binlog-${{ matrix.dotnet }}-${{ matrix.template }}-${{ matrix.description }}
+          path: build.binlog
+          retention-days: 14
+
+      - name: Measure Package Size
+        shell: pwsh
+        run: |
+          & "${{ github.workspace }}/.github/scripts/template-size-tracking/measure-package-size.ps1" `
+            -PublishPath "publish" `
+            -Platform "${{ matrix.platform }}" `
+            -Description "${{ matrix.description }}" `
+            -OS "${{ matrix.os }}" `
+            -IsAot "${{ matrix.aot }}" `
+            -Template "${{ matrix.template }}" `
+            -DotNetVersion "${{ matrix.dotnet }}" `
+            -MauiVersion "${{ needs.prepare-matrix.outputs.maui-version }}" `
+            -BuildTime $env:BUILD_TIME `
+            -OutputPath "metrics.json"
+
+      - name: Upload Metrics
+        uses: actions/upload-artifact@v4
+        with:
+          name: metrics-${{ matrix.dotnet }}-${{ matrix.template }}-${{ matrix.description }}
+          path: metrics.json
+          retention-days: 31
+
+  analyze-and-report:
+    needs: [prepare-matrix, build-and-measure]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download All Metrics
+        uses: actions/download-artifact@v4
+        with:
+          pattern: metrics-*
+          path: metrics
+
+      - name: Restore Historical Metrics Cache
+        uses: actions/cache/restore@v4
+        with:
+          path: metrics-history
+          # Each run saves with a unique key (GitHub Actions cache is immutable).
+          # Restore uses prefix matching to find the most recent entry.
+          key: template-size-metrics-${{ github.run_id }}
+          restore-keys: |
+            template-size-metrics-
+
+      - name: Prepare Historical Data
+        shell: pwsh
+        run: |
+          & "${{ github.workspace }}/.github/scripts/template-size-tracking/prepare-historical-data.ps1" `
+            -MetricsPath "metrics" `
+            -HistoryDir "metrics-history"
+
+      - name: Compare and Generate Report
+        id: compare
+        shell: pwsh
+        run: |
+          & "${{ github.workspace }}/.github/scripts/template-size-tracking/compare-and-alert.ps1" `
+            -CurrentMetricsPath "metrics" `
+            -PreviousMetricsPath "previous-metrics" `
+            -HistoricalMetricsPath "metrics-history" `
+            -AlertThreshold $env:ALERT_THRESHOLD `
+            -FailureThreshold $env:FAILURE_THRESHOLD
+
+      - name: Generate Summary
+        shell: pwsh
+        run: |
+          & "${{ github.workspace }}/.github/scripts/template-size-tracking/generate-summary.ps1" `
+            -MetricsPath "metrics" `
+            -ComparisonPath "comparison.json"
+
+      - name: Save Historical Metrics Cache
+        uses: actions/cache/save@v4
+        with:
+          path: metrics-history
+          key: template-size-metrics-${{ github.run_id }}
+
+      - name: Create Issue on Alert
+        if: steps.compare.outputs.alert == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const alertContent = fs.readFileSync('alert-report.md', 'utf8');
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `⚠️ Template Size Alert - ${new Date().toISOString().split('T')[0]}`,
+              body: alertContent,
+              labels: ['size-alert', 'automated']
+            });
+
+      - name: Fail on Critical Size Increase
+        if: steps.compare.outputs.critical == 'true'
+        run: |
+          echo "::error::Critical size increase detected (>${{ env.FAILURE_THRESHOLD }}%)"
+          exit 1
