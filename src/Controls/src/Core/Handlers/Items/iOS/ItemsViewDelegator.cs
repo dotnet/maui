@@ -29,8 +29,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			var (visibleItems, firstVisibleItemIndex, centerItemIndex, lastVisibleItemIndex) = GetVisibleItemsIndex();
 
-			if (!visibleItems)
+			if (!visibleItems && !HasHeaderOrFooter())
+			{
 				return;
+			}
 
 			var contentInset = scrollView.ContentInset;
 			var contentOffsetX = scrollView.ContentOffset.X + contentInset.Left;
@@ -145,6 +147,37 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				lastVisibleItemIndex = GetItemIndex(Last, source);
 			}
 			return (VisibleItems, firstVisibleItemIndex, centerItemIndex, lastVisibleItemIndex);
+		}
+
+		bool HasHeaderOrFooter()
+		{
+			var viewController = ViewController;
+
+			if (viewController?.ItemsView is null)
+			{
+				return false;
+			}
+
+			// Check for structured headers/footers
+			if (viewController.ItemsView is StructuredItemsView structuredItemsView)
+			{
+				if (structuredItemsView.Header is not null || structuredItemsView.HeaderTemplate is not null ||
+					structuredItemsView.Footer is not null || structuredItemsView.FooterTemplate is not null)
+				{
+					return true;
+				}
+			}
+
+			// Check for group headers/footers
+			if (viewController.ItemsView is GroupableItemsView groupableItemsView && groupableItemsView.IsGrouped)
+			{
+				if (groupableItemsView.GroupHeaderTemplate is not null || groupableItemsView.GroupFooterTemplate is not null)
+				{
+					return true;
+				}
+			}
+
+			return false;
 		}
 
 		static int GetItemIndex(NSIndexPath indexPath, IItemsViewSource itemSource)
