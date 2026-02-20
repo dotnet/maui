@@ -18,17 +18,20 @@ public partial class ShellFlyoutControlPage : Shell
     }
     private async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)
     {
-        BindingContext = _viewModel = new ShellViewModel();
+        BindingContext = _viewModel = new ShellViewModel(); // Create fresh ViewModel to reset all flyout properties to defaults
         await Navigation.PushAsync(new ShellFlyoutOptionsPage(_viewModel));
     }
+    private const int MenuItemCount = 40;
+    private const string MenuItemPrefix = "MenuItem";
     private void GenerateMenuItems()
     {
-        for (int i = 1; i <= 40; i++)
+        for (int i = 1; i <= MenuItemCount; i++)
         {
+            var itemId = $"{MenuItemPrefix}{i}";
             var menuItem = new MenuItem
             {
-                Text = $"MenuItem{i}",
-                AutomationId = $"MenuItem{i}"
+                Text = itemId,
+                AutomationId = itemId
             };
             this.Items.Add(menuItem);
         }

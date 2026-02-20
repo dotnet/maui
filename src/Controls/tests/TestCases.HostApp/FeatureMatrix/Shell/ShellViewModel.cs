@@ -10,8 +10,9 @@ public class ShellViewModel : INotifyPropertyChanged
     private FlyoutHeaderBehavior _flyoutHeaderBehavior = FlyoutHeaderBehavior.Default;
     private ScrollMode _flyoutVerticalScrollMode = ScrollMode.Enabled;
     private bool _flyoutIsPresented;
-    private double _flyoutWidth = -1;
-    private double _flyoutHeight = -1;
+    private const double DefaultDimension = -1; // -1 = use Shell's default
+    private double _flyoutWidth = DefaultDimension;
+    private double _flyoutHeight = DefaultDimension;
     private Color _flyoutBackgroundColor;
     private Aspect _flyoutBackgroundImageAspect = Aspect.AspectFill;
     private string _flyoutIcon;

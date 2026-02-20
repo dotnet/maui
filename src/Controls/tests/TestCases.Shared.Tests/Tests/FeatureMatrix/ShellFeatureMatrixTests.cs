@@ -5,6 +5,11 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
+/// <summary>
+/// Shell Flyout feature matrix tests.
+/// WARNING: Tests use [Order] and maintain state across methods.
+/// They are NOT independent - running out of order may cause failures.
+/// </summary>
 public class ShellFeatureTests : _GalleryUITest
 {
 	public const string ShellFeatureMatrix = "Shell Feature Matrix";
