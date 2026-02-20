@@ -45,8 +45,9 @@ namespace Microsoft.Maui.Controls
 		static bool UsesExpansion(StackLayout stackLayout)
 		{
 			var orientation = stackLayout.Orientation;
+			var childCount = stackLayout.Count;
 
-			for (int n = 0; n < stackLayout.Count; n++)
+			for (int n = 0; n < childCount; n++)
 			{
 				if (stackLayout[n] is View view)
 				{
