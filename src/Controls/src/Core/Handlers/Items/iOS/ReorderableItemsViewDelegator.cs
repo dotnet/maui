@@ -37,11 +37,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var totalSections = itemsSource.GroupCount;
 
-			// When the proposed path hasn't changed and mixing is allowed,
-			// redirect to the first empty group so the user can drop there.
+			// UICollectionView falls back to proposedIndexPath == originalIndexPath when the
+			// user drags over an area with no cells (e.g. an empty group's header region).
+			// In that case, redirect to the nearest empty group so the drop can succeed.
 			if (originalIndexPath.Equals(proposedIndexPath) && itemsView.CanMixGroups)
 			{
-				var emptyGroupTarget = FindFirstEmptyGroup(itemsSource, totalSections);
+				var emptyGroupTarget = FindNearestEmptyGroup(itemsSource, totalSections, originalIndexPath.Section);
 				if (emptyGroupTarget != null)
 				{
 					return emptyGroupTarget;
@@ -77,14 +78,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return proposedIndexPath;
 		}
 
-		static NSIndexPath FindFirstEmptyGroup(IItemsViewSource itemsSource, int totalSections)
+		static NSIndexPath FindNearestEmptyGroup(IItemsViewSource itemsSource, int totalSections, nint currentSection)
 		{
-			for (int section = 0; section < totalSections; section++)
+			// Search outward from the current section to find the closest empty group.
+			for (int offset = 1; offset < totalSections; offset++)
 			{
-				var sectionItemCount = itemsSource.ItemCountInGroup(section);
-				if (sectionItemCount == 0)
+				var before = (int)currentSection - offset;
+				if (before >= 0 && itemsSource.ItemCountInGroup(before) == 0)
 				{
-					return NSIndexPath.FromRowSection(0, section);
+					return NSIndexPath.FromRowSection(0, before);
+				}
+
+				var after = (int)currentSection + offset;
+				if (after < totalSections && itemsSource.ItemCountInGroup(after) == 0)
+				{
+					return NSIndexPath.FromRowSection(0, after);
 				}
 			}
 			return null;
