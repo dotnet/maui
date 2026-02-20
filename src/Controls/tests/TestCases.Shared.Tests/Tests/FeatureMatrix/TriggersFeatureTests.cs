@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests
 #if IOS
 		private const int CropBottomValue = 1200;
 #elif ANDROID
-		private const int CropBottomValue = 1150;
+		private const int CropBottomValue = 1100;
 #endif
 
 		public TriggersFeatureTests(TestDevice device)
@@ -21,10 +21,15 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 		}
 
-		private void VerifyScreenshotOrSetExceptionWithCroppingBottom(ref Exception? exception, string? name = null)
+		private void VerifyScreenshotOrSetExceptionWithCroppingBottom(ref Exception? exception, string? name = null, bool isKeyBoardNotShown = false)
 		{
-#if ANDROID || IOS
+#if IOS
 			VerifyScreenshotOrSetException(ref exception, name, cropBottom: CropBottomValue, tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+#elif ANDROID
+			if (isKeyBoardNotShown)
+				VerifyScreenshotOrSetException(ref exception, name, tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+			else
+				VerifyScreenshotOrSetException(ref exception, name, cropBottom: CropBottomValue, tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 #else
 			VerifyScreenshotOrSetException(ref exception, name, tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 #endif
@@ -48,19 +53,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("Options");
-		}
-
-		private static void AssertPlatformText(string? platformText)
-		{
-#if ANDROID
-			Assert.That(platformText, Is.EqualTo("Running on: Android"));
-#elif IOS
-			Assert.That(platformText, Is.EqualTo("Running on: iOS"));
-#elif MACCATALYST
-			Assert.That(platformText, Is.EqualTo("Running on: MacCatalyst"));
-#else
-			Assert.That(platformText, Does.Contain("Running on: Windows"));
-#endif
 		}
 
 		[Test]
@@ -121,12 +113,12 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("EventTriggerEntry");
 			App.Tap("EventTriggerEntry");
 			App.EnterText("EventTriggerEntry", "123");
-			VerifyScreenshotOrSetExceptionWithCroppingBottom(ref exception, "EventTrigger_ValidNumeric");
+			VerifyScreenshotOrSetExceptionWithCroppingBottom(ref exception, "EventTrigger_ValidNumeric", isKeyBoardNotShown: true);
 
 			// Enter invalid text (should trigger validation)
 			App.ClearText("EventTriggerEntry");
 			App.EnterText("EventTriggerEntry", "abc");
-			VerifyScreenshotOrSetExceptionWithCroppingBottom(ref exception, "EventTrigger_InvalidText");
+			VerifyScreenshotOrSetExceptionWithCroppingBottom(ref exception, "EventTrigger_InvalidText", isKeyBoardNotShown: true);
 
 			if (exception != null)
 			{
@@ -178,18 +170,18 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 		}
 
+#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST // DeviceStateTrigger is currently not supported on Windows and Catalyst platform
 		[Test]
 		[Order(6)]
 		public void DeviceStateTriggerShowsPlatformSpecificBackground()
 		{
 			SelectTriggerType("DeviceStateTriggerButton");
-
-			// Verify platform label is displayed correctly
-			var platformText = App.FindElement("PlatformLabel").GetText();
-			AssertPlatformText(platformText);
+			// Verify platform updated with correct background color for current platform
+			VerifyScreenshot();
 		}
+#endif
 
-#if ANDROID || IOS // These platforms support orientation changes which is required to test the OrientationStateTrigger
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // These platforms not support orientation changes which is required to test the OrientationStateTrigger
 #if TEST_FAILS_ON_ANDROID // This test is currently failing on Android in Automation, But can be passes Manually.
 		[Test]
 		[Order(7)]

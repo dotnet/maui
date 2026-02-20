@@ -501,24 +501,6 @@
                                                 Value="#E8F5E9"/>
                                     </VisualState.Setters>
                                 </VisualState>
-                                <VisualState x:Name="WindowsState">
-                                    <VisualState.StateTriggers>
-                                        <DeviceStateTrigger Device="Windows"/>
-                                    </VisualState.StateTriggers>
-                                    <VisualState.Setters>
-                                        <Setter Property="BackgroundColor"
-                                                Value="#E3F2FD"/>
-                                    </VisualState.Setters>
-                                </VisualState>
-                                <VisualState x:Name="MacCatalystState">
-                                    <VisualState.StateTriggers>
-                                        <DeviceStateTrigger Device="MacCatalyst"/>
-                                    </VisualState.StateTriggers>
-                                    <VisualState.Setters>
-                                        <Setter Property="BackgroundColor"
-                                                Value="#FFF3E0"/>
-                                    </VisualState.Setters>
-                                </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
                         <Label x:Name="platformLabel"
@@ -529,7 +511,7 @@
                                AutomationId="PlatformLabel"/>
                     </Grid>
 
-                    <Label Text="Tests: DeviceStateTrigger for iOS, Android, WinUI, MacCatalyst"
+                    <Label Text="Tests: DeviceStateTrigger for iOS, Android"
                            FontSize="11"
                            TextColor="Green"/>
                 </VerticalStackLayout>
