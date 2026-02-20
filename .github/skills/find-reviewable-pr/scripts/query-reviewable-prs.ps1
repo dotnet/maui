@@ -161,11 +161,21 @@ function Get-ReadyToReviewPRNumbers {
     Write-Host "  Fetching 'Ready To Review' items from MAUI SDK Ongoing board..." -ForegroundColor Gray
     
     try {
-        $graphqlQuery = @"
+        $readyPRs = @()
+        $hasNextPage = $true
+        $endCursor = $null
+
+        while ($hasNextPage) {
+            $afterClause = if ($endCursor) { ", after: `"$endCursor`"" } else { "" }
+            $graphqlQuery = @"
 {
   node(id: "$MAUI_PROJECT_ID") {
     ... on ProjectV2 {
-      items(first: 100) {
+      items(first: 100$afterClause) {
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
         nodes {
           fieldValueByName(name: "Status") {
             ... on ProjectV2ItemFieldSingleSelectValue {
@@ -184,18 +194,21 @@ function Get-ReadyToReviewPRNumbers {
   }
 }
 "@
-        $result = Invoke-GitHubWithRetry -Command "gh api graphql -f query='$($graphqlQuery -replace "`r?`n", " " -replace "'", "'\''")'" -Description "fetch project board items"
-        $parsed = $result | ConvertFrom-Json
-        
-        $readyPRs = @()
-        foreach ($item in $parsed.data.node.items.nodes) {
-            if ($item.fieldValueByName -and 
-                $item.fieldValueByName.optionId -eq $READY_TO_REVIEW_OPTION_ID -and
-                $item.content -and 
-                $item.content.number -and
-                $item.content.state -eq "OPEN") {
-                $readyPRs += $item.content.number
+            $result = Invoke-GitHubWithRetry -Command "gh api graphql -f query='$($graphqlQuery -replace "`r?`n", " " -replace "'", "'\''")'" -Description "fetch project board items"
+            $parsed = $result | ConvertFrom-Json
+
+            foreach ($item in $parsed.data.node.items.nodes) {
+                if ($item.fieldValueByName -and 
+                    $item.fieldValueByName.optionId -eq $READY_TO_REVIEW_OPTION_ID -and
+                    $item.content -and 
+                    $item.content.number -and
+                    $item.content.state -eq "OPEN") {
+                    $readyPRs += $item.content.number
+                }
             }
+
+            $hasNextPage = $parsed.data.node.items.pageInfo.hasNextPage
+            $endCursor = $parsed.data.node.items.pageInfo.endCursor
         }
         
         Write-Host "    Ready To Review: $($readyPRs.Count) PRs" -ForegroundColor Gray

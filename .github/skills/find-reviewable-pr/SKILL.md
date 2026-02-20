@@ -38,6 +38,9 @@ This skill searches the dotnet/maui and dotnet/docs-maui repositories for open p
 # Find P/0 and milestoned PRs (default behavior, excludes changes-requested)
 pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1
 
+# Find all reviewable PRs across all categories
+pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1 -Category all
+
 # Find only milestoned PRs
 pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1 -Category milestoned
 
