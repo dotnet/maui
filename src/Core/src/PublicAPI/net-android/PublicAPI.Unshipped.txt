@@ -1,2 +1,3 @@
 #nullable enable
 override Microsoft.Maui.Handlers.LabelHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
+override Microsoft.Maui.Platform.MauiWebView.OnTouchEvent(Android.Views.MotionEvent? e) -> bool
