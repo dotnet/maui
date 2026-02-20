@@ -78,7 +78,15 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (args is ScrollToRequest request)
 			{
-				handler.PlatformView.ChangeView(request.HorizontalOffset, request.VerticalOffset, null, request.Instant);
+				bool isAlreadyAtRequestedPosition = request.VerticalOffset == handler.PlatformView.VerticalOffset && request.HorizontalOffset == handler.PlatformView.HorizontalOffset;
+				if (isAlreadyAtRequestedPosition)
+				{
+					handler.VirtualView.ScrollFinished();
+				}
+				else
+				{
+					handler.PlatformView.ChangeView(request.HorizontalOffset, request.VerticalOffset, null, request.Instant);
+				}
 			}
 		}
 
