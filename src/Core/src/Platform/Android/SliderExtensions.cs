@@ -14,6 +14,11 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateMinimum(this SeekBar seekBar, ISlider slider) => UpdateValue(seekBar, slider);
 
 		// TODO: Material3: Make it public in .NET 11
+		// WARNING: Material3 Slider enforces ValueFrom < ValueTo and ValueFrom <= Value <= ValueTo
+		// on every setter call, throwing IllegalStateException if violated. When MapMinimum, MapMaximum,
+		// and MapValue fire independently during initialization or reconfiguration, intermediate states
+		// can violate these constraints. Unlike SeekBar (which has no bounds) and iOS UISlider (which
+		// silently clamps), the Material3 Slider will crash.
 		internal static void UpdateMinimum(this MSlider mSlider, ISlider slider)
 		{
 			mSlider.ValueFrom = (float)slider.Minimum;
@@ -91,7 +96,7 @@ namespace Microsoft.Maui.Platform
 			{
 				var provider = slider.Handler.GetRequiredService<IImageSourceServiceProvider>();
 				mSlider.UpdateThumbImageSourceAsync(slider, provider)
-					.FireAndForget();
+					.FireAndForget(slider.Handler);
 			}
 			else if (slider.ThumbColor is not null)
 			{

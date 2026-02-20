@@ -372,6 +372,21 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.Slider)]
+		public void Slider_SetThumbImageSourceAndReset_VerifyVisualState()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("ThumbImageSourceButton");
+			App.Tap("ThumbImageSourceButton");
+			App.Tap("ThumbImageResetButton");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElementTillPageNavigationSettled("SliderControl");
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		}
+
+		[Test]
+		[Category(UITestCategories.Slider)]
 		public void Slider_SetMinimumAndChangeFlowDirection_RTL()
 		{
 			App.WaitForElement("Options");
