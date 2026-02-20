@@ -11,6 +11,10 @@ namespace Microsoft.Maui.Layouts
 {
 	public class GridLayoutManager : LayoutManager
 	{
+		// NOTE: GridStructure rents arrays from ArrayPool. They are returned at the start
+		// of each Measure() call. If this manager is discarded without a final Measure(),
+		// the arrays will be reclaimed by the GC but not returned to the pool. If
+		// LayoutManager gains IDisposable, we should call _gridStructure.ReturnArrays().
 		GridStructure _gridStructure;
 		bool _hasGridStructure;
 		Dictionary<SpanKey, double>? _spansDictionary;
@@ -24,8 +28,9 @@ namespace Microsoft.Maui.Layouts
 
 		public override Size Measure(double widthConstraint, double heightConstraint)
 		{
+			var newStructure = new GridStructure(Grid, widthConstraint, heightConstraint, _spansDictionary);
 			_gridStructure.ReturnArrays();
-			_gridStructure = new GridStructure(Grid, widthConstraint, heightConstraint, _spansDictionary);
+			_gridStructure = newStructure;
 			_spansDictionary = _gridStructure.SpansDictionary;
 			_hasGridStructure = true;
 
@@ -39,7 +44,8 @@ namespace Microsoft.Maui.Layouts
 		{
 			if (!_hasGridStructure)
 			{
-				_gridStructure = new GridStructure(Grid, bounds.Width, bounds.Height, _spansDictionary);
+				var newStructure = new GridStructure(Grid, bounds.Width, bounds.Height, _spansDictionary);
+				_gridStructure = newStructure;
 				_spansDictionary = _gridStructure.SpansDictionary;
 				_hasGridStructure = true;
 			}

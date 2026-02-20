@@ -470,6 +470,9 @@ namespace Microsoft.Maui.Layouts.Flex
 
 			var layout = new flex_layout();
 			layout.init(item, width, height);
+
+			try
+			{
 			layout.reset();
 
 			int last_layout_child = 0;
@@ -651,8 +654,11 @@ namespace Microsoft.Maui.Layouts.Flex
 					}
 				}
 			}
-
-			layout.cleanup();
+			}
+			finally
+			{
+				layout.cleanup();
+			}
 		}
 
 		float MarginThickness(bool vertical) =>
