@@ -54,10 +54,10 @@ public partial class VisualStateManagerButtonPage : ContentPage
 	}
 
 	void OnDemoButtonPointerEntered(object sender, PointerEventArgs e)
-	{if (!DemoButton.IsEnabled)
+	{
+		if (!DemoButton.IsEnabled)
 			return;
-		if (DemoButton.IsEnabled)
-			VisualStateManager.GoToState(DemoButton, "PointerOver");
+		VisualStateManager.GoToState(DemoButton, "PointerOver");
 		StateLabel.Text = "State: PointerOver Enter";
 		DemoButton.Text = "PointerOver Enter";
 	}
@@ -66,8 +66,7 @@ public partial class VisualStateManagerButtonPage : ContentPage
 	{
 		if (!DemoButton.IsEnabled)
 			return;
-		if (DemoButton.IsEnabled)
-			VisualStateManager.GoToState(DemoButton, "Normal");
+		VisualStateManager.GoToState(DemoButton, "Normal");
 		StateLabel.Text = "State: PointerOver Exit";
 		DemoButton.Text = "PointerOver Exit";
 	}

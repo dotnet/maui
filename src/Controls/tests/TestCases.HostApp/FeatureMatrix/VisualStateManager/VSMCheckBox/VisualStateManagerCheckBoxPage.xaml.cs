@@ -5,7 +5,7 @@ public partial class VisualStateManagerCheckBoxPage : ContentPage
 	public VisualStateManagerCheckBoxPage()
 	{
 		InitializeComponent();
-		VisualStateManager.GoToState(VSMCheckBox, "Unchecked");
+		VisualStateManager.GoToState(VSMCheckBox, "Normal");
 	}
 
 	void OnCheckBoxCheckedChanged(object sender, CheckedChangedEventArgs e)
@@ -43,8 +43,7 @@ public partial class VisualStateManagerCheckBoxPage : ContentPage
 		VSMCheckBox.IsEnabled = true;
 		VSMCheckBox.IsChecked = false;
 		CheckBoxDisableButton.Text = "Disable";
-		CheckBoxDisableButton.Text = "Disable";
-		VisualStateManager.GoToState(VSMCheckBox, "Unchecked");
-		CheckBoxState.Text = "State: Unchecked";
+		VisualStateManager.GoToState(VSMCheckBox, "Normal");
+		CheckBoxState.Text = "State: Normal";
 	}
 }

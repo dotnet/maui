@@ -41,7 +41,7 @@
                                                                 <Setter Property="Scale"
                                                                         Value="1.5"/>
                                                                 <Setter Property="TranslationY"
-                                                                        Value="1.5"/>
+                                                                        Value="1.4"/>
                                                         </VisualState.Setters>
                                                 </VisualState>
                                                 <VisualState x:Name="PointerOver">

@@ -17,14 +17,16 @@
                                 <Setter Property="Scale" Value="1.0" />
                                 <Setter Property="ThumbColor" Value="#1141a7" />
                                 <Setter Property="OnColor" Value="#6295ec" />
+                                <Setter Property="OffColor" Value="#FF9EBDF4"  />
                             </VisualState.Setters>
                         </VisualState>
                         <VisualState x:Name="Disabled">
                             <VisualState.Setters>
                                 <Setter Property="Opacity" Value="0.6" />
                                 <Setter Property="Scale" Value="1.0" />
-                                <Setter Property="ThumbColor" Value="#FF707172" />
-                                <Setter Property="OnColor" Value="#9CA3AF" />
+                                <Setter Property="ThumbColor" Value="#FF575858" />
+                                <Setter Property="OnColor" Value="#FF9CA3AF" />
+                                <Setter Property="OffColor" Value="Gray" />
                             </VisualState.Setters>
                         </VisualState>
                     </VisualStateGroup>
@@ -40,7 +42,7 @@
                             <VisualState.Setters>
                                 <Setter Property="ThumbColor" Value="#ff2e2e" />
                                 <Setter Property="OffColor" Value="#FFDB8787" />
-                                <Setter Property="Scale" Value="1.5" />
+                                <Setter Property="Scale" Value="1.3" />
                             </VisualState.Setters>
                         </VisualState>
                     </VisualStateGroup>

@@ -13,28 +13,28 @@
                             <VisualState.Setters>
                                 <Setter Property="Opacity" Value="1" />
                                 <Setter Property="Scale" Value="1.0" />
-                                <Setter Property="Color" Value="#374151" />
+                                <Setter Property="Color" Value="#FF1F64D4" />
                             </VisualState.Setters>
                         </VisualState>
                         <VisualState x:Name="Disabled">
                             <VisualState.Setters>
                                 <Setter Property="Opacity" Value="0.6" />
                                 <Setter Property="Scale" Value="1.0" />
-                                <Setter Property="Color" Value="#9CA3AF" />
+                                <Setter Property="Color" Value="#FF9CA3AF" />
                             </VisualState.Setters>
                         </VisualState>
                     </VisualStateGroup>
                     <VisualStateGroup x:Name="CheckStates">
                         <VisualState x:Name="Checked">
                             <VisualState.Setters>
-                                <Setter Property="Color" Value="#2563EB" />
+                                <Setter Property="Color" Value="#FF25DF2E" />
                                 <Setter Property="Scale" Value="1.5" />
                             </VisualState.Setters>
                         </VisualState>
                         <VisualState x:Name="Unchecked">
                             <VisualState.Setters>
-                                <Setter Property="Color" Value="#374151" />
-                                <Setter Property="Scale" Value="1.5" />
+                                <Setter Property="Color" Value="#FFC9150B" />
+                                <Setter Property="Scale" Value="1.25" />
                             </VisualState.Setters>
                         </VisualState>
                     </VisualStateGroup>

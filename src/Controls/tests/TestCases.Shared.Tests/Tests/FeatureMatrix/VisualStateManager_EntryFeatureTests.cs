@@ -23,7 +23,7 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("EntryState");
 		var stateText = App.FindElement("EntryState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Normal"));
-		VerifyScreenshot("Entry_Initial_State");
+		VerifyScreenshot();
 	}
 
 	[Test, Order(2)]
@@ -31,14 +31,16 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 	{
 		App.WaitForElement("VSMEntry");
 		App.Tap("VSMEntry");
-#if ANDROID
-		if (App.WaitForKeyboardToShow())
-			App.DismissKeyboard();
-#endif
 		App.WaitForElement("EntryState");
 		var stateText = App.FindElement("EntryState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Focused"));
-		VerifyScreenshot("Entry_Focused_State");
+		App.WaitForElement("FocusEntryButton");
+#if ANDROID || IOS
+		if (App.WaitForKeyboardToShow())
+			App.DismissKeyboard();
+#endif
+		App.Tap("FocusEntryButton");
+		VerifyScreenshot();
 	}
 
 	[Test, Order(3)]
@@ -48,7 +50,7 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 		App.Tap("NormalEntryButton");
 		var stateText = App.FindElement("EntryState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Normal/Unfocused"));
-		VerifyScreenshot("Entry_Unfocused_State");
+		VerifyScreenshot();
 	}
 
 	[Test, Order(4)]
@@ -58,7 +60,7 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 		App.Tap("DisableEntryButton");
 		var stateText = App.FindElement("EntryState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Disabled"));
-		VerifyScreenshot("Entry_Disabled_State");
+		VerifyScreenshot();
 	}
 
 	[Test, Order(5)]
@@ -68,7 +70,7 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 		App.Tap("ResetEntryButton");
 		var stateText = App.FindElement("EntryState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Normal"));
-		VerifyScreenshot("Entry_Reset_State");
+		VerifyScreenshot();
 	}
 
 	[Test, Order(6)]
@@ -85,13 +87,14 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 			App.DismissKeyboard();
 #endif
 		App.Tap("FocusEntryButton");
+		App.WaitForElement("EntryState");
 		var stateText = App.FindElement("EntryState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Focused"));
 		App.WaitForElement("DisableEntryButton");
 		App.Tap("DisableEntryButton");
 		stateText = App.FindElement("EntryState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Disabled"));
-		VerifyScreenshot("Entry_FocusedAndDisabled_State");
+		VerifyScreenshot();
 	}
 
 	[Test, Order(7)]
@@ -107,11 +110,11 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 		App.Tap("DisableEntryButton");
 		stateText = App.FindElement("EntryState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Disabled"));
-		VerifyScreenshot("Entry_UnfocusedAndDisabled_State");
+		VerifyScreenshot();
 	}
 
 	[Test, Order(8)]
-	public void VerifyVSM_Entry_ResetAfterDisable()
+	public void VerifyVSM_Entry_DisableWhileReset()
 	{
 		App.WaitForElement("ResetEntryButton");
 		App.Tap("ResetEntryButton");
@@ -121,7 +124,7 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 		App.Tap("DisableEntryButton");
 		stateText = App.FindElement("EntryState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Disabled"));
-		VerifyScreenshot("Entry_ResetAndDisabled_State");
+		VerifyScreenshot();
 	}
 
 	[Test, Order(9)]
@@ -138,6 +141,7 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 			App.DismissKeyboard();
 #endif
 		App.Tap("FocusEntryButton");
+		App.WaitForElement("EntryState");
 		var stateText = App.FindElement("EntryState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Focused"));
 		App.WaitForElement("DisableEntryButton");
@@ -148,7 +152,7 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 		App.Tap("DisableEntryButton");
 		stateText = App.FindElement("EntryState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Normal"));
-		VerifyScreenshot("Entry_Focused_Disable_And_Enable_State");
+		VerifyScreenshot();
 	}
 
 	[Test, Order(10)]
@@ -168,7 +172,7 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 		App.Tap("DisableEntryButton");
 		stateText = App.FindElement("EntryState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Normal"));
-		VerifyScreenshot("Entry_Unfocused_Disable_And_Enable_State");
+		VerifyScreenshot();
 	}
 
 	[Test, Order(11)]
@@ -251,7 +255,7 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("ValidationEntryLabel");
 		var stateText = App.FindElement("ValidationEntryLabel").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Valid"));
-		VerifyScreenshot("Entry_Valid_State");
+		VerifyScreenshot();
 	}
 
 	[Test, Order(16)]
@@ -269,7 +273,7 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("ValidationEntryLabel");
 		var stateText = App.FindElement("ValidationEntryLabel").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Invalid"));
-		VerifyScreenshot("Entry_Invalid_State");
+		VerifyScreenshot();
 	}
 
 	[Test, Order(17)]
@@ -311,6 +315,7 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 		Assert.That(stateText, Is.EqualTo("State: Valid"));
 		App.WaitForElement("ValidateEntryButton");
 		App.Tap("ValidateEntryButton");
+		App.ClearText("ValidationEntry");
 		App.EnterText("ValidationEntry", "6789-456-1234");
 #if ANDROID || IOS
 		if (App.WaitForKeyboardToShow())

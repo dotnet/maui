@@ -40,9 +40,9 @@ public partial class VisualStateManagerSwitchPage : ContentPage
 	void OnResetSwitch(object sender, EventArgs e)
 	{
 		VSMSwitch.IsEnabled = true;
-		VSMSwitch.IsToggled = false;
 		SwitchDisableButton.Text = "Disable";
 		VisualStateManager.GoToState(VSMSwitch, "Normal");
+		VSMSwitch.IsToggled = false;
 		SwitchState.Text = "State: Normal";
 	}
 }

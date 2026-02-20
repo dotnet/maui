@@ -18,7 +18,7 @@
                                 <Setter Property="TextColor"
                                         Value="Black"/>
                                 <Setter Property="Scale"
-                                        Value="1.0"/>
+                                        Value="0.75"/>
                             </VisualState.Setters>
                         </VisualState>
                         <VisualState x:Name="Focused">
@@ -28,7 +28,7 @@
                                 <Setter Property="TextColor"
                                         Value="Black"/>
                                 <Setter Property="Scale"
-                                        Value="1.15"/>
+                                        Value="1.10"/>
                             </VisualState.Setters>
                         </VisualState>
                         <VisualState x:Name="Disabled">
@@ -40,7 +40,7 @@
                                 <Setter Property="Opacity"
                                         Value="0.6"/>
                                 <Setter Property="Scale"
-                                        Value="1.0"/>
+                                        Value="0.75"/>
                             </VisualState.Setters>
                         </VisualState>
                     </VisualStateGroup>
@@ -66,7 +66,7 @@
                                 <Setter Property="TextColor"
                                         Value="Black"/>
                                 <Setter Property="Scale"
-                                        Value="1.15"/>
+                                        Value="1.10"/>
                             </VisualState.Setters>
                         </VisualState>
                         <VisualState x:Name="Invalid">
@@ -76,7 +76,7 @@
                                 <Setter Property="TextColor"
                                         Value="White"/>
                                 <Setter Property="Scale"
-                                        Value="1.0"/>
+                                        Value="0.75"/>
                             </VisualState.Setters>
                         </VisualState>
                     </VisualStateGroup>
@@ -86,9 +86,8 @@
 
     </ContentPage.Resources>
 
-    <VerticalStackLayout Padding="20"
-                         Spacing="18">
-
+    <VerticalStackLayout Padding="15"
+                         Spacing="10">
         <!-- Entry1: CommonStates -->
         <Label Text="Entry1: Normal / Focused / Disabled"
                FontAttributes="Bold"/>
@@ -123,15 +122,12 @@
                     Clicked="OnResetEntry"/>
         </HorizontalStackLayout>
 
-        <BoxView HeightRequest="2"
-                 Color="Gray"
-                 Opacity="0.4"/>
-
         <!-- Entry2: ValidationStates -->
         <Label Text="Entry2: Valid / Invalid"
                FontAttributes="Bold"/>
 
         <local:UITestEntry x:Name="ValidationEntry"
+                           Margin="5"
                            AutomationId="ValidationEntry"
                            Placeholder="Enter phone: 555-555-5555"
                            Style="{StaticResource EntryValidationStyle}"

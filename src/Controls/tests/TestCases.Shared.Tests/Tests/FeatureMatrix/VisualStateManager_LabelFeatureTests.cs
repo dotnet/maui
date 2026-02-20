@@ -23,7 +23,7 @@ public class VisualStateManager_LabelFeatureTests : _GalleryUITest
 		App.WaitForElement("LabelState");
 		var labelText = App.FindElement("LabelState").GetText();
 		Assert.That(labelText, Is.EqualTo("State: Normal"));
-		VerifyScreenshot("Label_Initial_State");
+		VerifyScreenshot();
 	}
 
 	[Test, Order(2)]
@@ -34,7 +34,7 @@ public class VisualStateManager_LabelFeatureTests : _GalleryUITest
 		App.WaitForElement("LabelState");
 		var labelText = App.FindElement("LabelState").GetText();
 		Assert.That(labelText, Is.EqualTo("State: Selected"));
-		VerifyScreenshot("Label_Selected_State");
+		VerifyScreenshot();
 	}
 
 	[Test, Order(3)]
@@ -45,7 +45,7 @@ public class VisualStateManager_LabelFeatureTests : _GalleryUITest
 		App.WaitForElement("LabelState");
 		var labelText = App.FindElement("LabelState").GetText();
 		Assert.That(labelText, Is.EqualTo("State: Disabled"));
-		VerifyScreenshot("Label_Disabled_State");
+		VerifyScreenshot();
 	}
 
 	[Test, Order(4)]
@@ -56,7 +56,7 @@ public class VisualStateManager_LabelFeatureTests : _GalleryUITest
 		App.WaitForElement("LabelState");
 		var labelText = App.FindElement("LabelState").GetText();
 		Assert.That(labelText, Is.EqualTo("State: Normal"));
-		VerifyScreenshot("Label_Reset_State");
+		VerifyScreenshot();
 	}
 
 	[Test, Order(5)]
@@ -74,7 +74,7 @@ public class VisualStateManager_LabelFeatureTests : _GalleryUITest
 		App.WaitForElement("LabelState");
 		labelText = App.FindElement("LabelState").GetText();
 		Assert.That(labelText, Is.EqualTo("State: Disabled"));
-		VerifyScreenshot("Label_SelectedAndDisabled_State");
+		VerifyScreenshot();
 	}
 
 	[Test, Order(6)]
@@ -87,11 +87,11 @@ public class VisualStateManager_LabelFeatureTests : _GalleryUITest
 		App.WaitForElement("LabelState");
 		var labelText = App.FindElement("LabelState").GetText();
 		Assert.That(labelText, Is.EqualTo("State: Disabled"));
-		VerifyScreenshot("Label_DisabledWhileNormal_State");
+		VerifyScreenshot();
 	}
 
 	[Test, Order(7)]
-	public void VerifyVSM_Label_EnableWhileSelected()
+	public void VerifyVSM_Label_DisableAndEnableWhileSelected()
 	{
 		App.WaitForElement("LabelReset");
 		App.Tap("LabelReset");
@@ -113,7 +113,7 @@ public class VisualStateManager_LabelFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(8)]
-	public void VerifyVSM_Label_EnableWhileNormal()
+	public void VerifyVSM_Label_DisableAndEnableWhileNormal()
 	{
 		App.WaitForElement("LabelReset");
 		App.Tap("LabelReset");
@@ -130,7 +130,7 @@ public class VisualStateManager_LabelFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(9)]
-	public void VerifyVSM_Label_SelectedAfterReset()
+	public void VerifyVSM_Label_ResetWhileSelected()
 	{
 		App.WaitForElement("LabelReset");
 		App.Tap("LabelReset");
@@ -147,7 +147,7 @@ public class VisualStateManager_LabelFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(10)]
-	public void VerifyVSM_Label_DisableAfterReset()
+	public void VerifyVSM_Label_ResetWhileDisabled()
 	{
 		App.WaitForElement("LabelReset");
 		App.Tap("LabelReset");

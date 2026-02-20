@@ -4,7 +4,7 @@
              x:Class="Maui.Controls.Sample.VisualStateManagerSliderPage"
              Title="VisualStateManagerSliderPage">
     <ContentPage.Resources>
-        <!-- Slider VSM VSM -->
+        <!-- Slider VSM -->
         <Style TargetType="Slider"
                x:Key="VsmSliderStyle">
             <Setter Property="VisualStateManager.VisualStateGroups">

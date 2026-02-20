@@ -16,14 +16,14 @@ public class VisualStateManager_CollectionViewFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(1)]
-	public void VisualStateManager_CollectionView_InitialState()
+	public void VerifyVSM_CollectionView_InitialState()
 	{
 		App.WaitForElement("VSMCollectionViewButton");
 		App.Tap("VSMCollectionViewButton");
 		App.WaitForElement("CVState");
 		var stateText = App.FindElement("CVState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Normal"));
-		VerifyScreenshot("CollectionView_Initial_Normal_State");
+		VerifyScreenshot();
 	}
 
 	[Test, Order(2)]
@@ -34,7 +34,7 @@ public class VisualStateManager_CollectionViewFeatureTests : _GalleryUITest
 		App.WaitForElement("CVState");
 		var stateText = App.FindElement("CVState").GetText();
 		Assert.That(stateText, Does.Contain("State: Selected (1)"));
-		VerifyScreenshot("CollectionView_Selected_State");
+		VerifyScreenshot();
 	}
 
 	[Test, Order(3)]
@@ -45,7 +45,7 @@ public class VisualStateManager_CollectionViewFeatureTests : _GalleryUITest
 		App.WaitForElement("CVState");
 		var stateText = App.FindElement("CVState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Normal/Unselected"));
-		VerifyScreenshot("CollectionView_Normal_State");
+		VerifyScreenshot();
 	}
 
 	[Test, Order(4)]
@@ -56,7 +56,7 @@ public class VisualStateManager_CollectionViewFeatureTests : _GalleryUITest
 		App.WaitForElement("CVState");
 		var stateText = App.FindElement("CVState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Disabled"));
-		VerifyScreenshot("CollectionView_Disabled_State");
+		VerifyScreenshot();
 	}
 
 	[Test, Order(5)]
@@ -67,7 +67,7 @@ public class VisualStateManager_CollectionViewFeatureTests : _GalleryUITest
 		App.WaitForElement("CVState");
 		var stateText = App.FindElement("CVState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Normal"));
-		VerifyScreenshot("CollectionView_Reset_State");
+		VerifyScreenshot();
 	}
 
 #if TEST_FAILS_ON_CATALYST //related issue: https://github.com/dotnet/maui/issues/18028
@@ -85,7 +85,7 @@ public class VisualStateManager_CollectionViewFeatureTests : _GalleryUITest
 		App.WaitForElement("CVState");
 		var stateText = App.FindElement("CVState").GetText();
 		Assert.That(stateText, Does.Contain("State: Selected (3)"));
-		VerifyScreenshot("CollectionView_Selected_Multiple_State");
+		VerifyScreenshot();
 	}
 #endif
 
@@ -342,7 +342,6 @@ public class VisualStateManager_CollectionViewFeatureTests : _GalleryUITest
 		Assert.That(stateText, Is.EqualTo("State: Disabled"));
 	}
 
-#if TEST_FAILS_ON_CATALYST //related issue: https://github.com/dotnet/maui/issues/18028
 	[Test, Order(20)]
 	public void VerifyVSM_CollectionView_SelectedMultipleWhileDisabled()
 	{
@@ -386,5 +385,4 @@ public class VisualStateManager_CollectionViewFeatureTests : _GalleryUITest
 		stateText = App.FindElement("CVState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Disabled"));
 	}
-#endif
 }

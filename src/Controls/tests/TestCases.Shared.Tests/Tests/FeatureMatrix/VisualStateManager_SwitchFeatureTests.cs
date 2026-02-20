@@ -23,7 +23,7 @@ public class VisualStateManager_SwitchFeatureTests : _GalleryUITest
 		App.WaitForElement("VSMSwitch");
 		var stateText = App.FindElement("SwitchState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Off"));
-		VerifyScreenshot("Switch_Initial_State");
+		VerifyScreenshot();
 	}
 
 	[Test, Order(2)]
@@ -33,7 +33,7 @@ public class VisualStateManager_SwitchFeatureTests : _GalleryUITest
 		App.Tap("VSMSwitch");
 		var stateText = App.FindElement("SwitchState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: On"));
-		VerifyScreenshot("Switch_On_State");
+		VerifyScreenshot();
 	}
 
 	[Test, Order(3)]
@@ -43,7 +43,7 @@ public class VisualStateManager_SwitchFeatureTests : _GalleryUITest
 		App.Tap("VSMSwitch");
 		var stateText = App.FindElement("SwitchState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Off"));
-		VerifyScreenshot("Switch_Off_State");
+		VerifyScreenshot();
 	}
 
 	[Test, Order(4)]
@@ -53,11 +53,11 @@ public class VisualStateManager_SwitchFeatureTests : _GalleryUITest
 		App.Tap("SwitchReset");
 		var stateText = App.FindElement("SwitchState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Normal"));
-		VerifyScreenshot("Switch_Reset_State");
+		VerifyScreenshot();
 	}
 
 	[Test, Order(5)]
-	public void VerifyVSM_Switch_OnAndOff()
+	public void VerifyVSM_Switch_OnToOff()
 	{
 		App.WaitForElement("SwitchReset");
 		App.Tap("SwitchReset");
@@ -71,6 +71,22 @@ public class VisualStateManager_SwitchFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(6)]
+	public void VerifyVSM_Switch_OffToOn()
+	{
+		App.WaitForElement("SwitchReset");
+		App.Tap("SwitchReset");
+		App.WaitForElement("VSMSwitch");
+		App.Tap("VSMSwitch");
+		App.WaitForElement("VSMSwitch");
+		App.Tap("VSMSwitch");
+		var stateText = App.FindElement("SwitchState").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Off"));
+		App.Tap("VSMSwitch");
+		stateText = App.FindElement("SwitchState").GetText();
+		Assert.That(stateText, Is.EqualTo("State: On"));
+	}
+
+	[Test, Order(7)]
 	public void VerifyVSM_Switch_DisableWhileOn()
 	{
 		App.WaitForElement("SwitchReset");
@@ -83,10 +99,10 @@ public class VisualStateManager_SwitchFeatureTests : _GalleryUITest
 		App.Tap("SwitchDisable");
 		stateText = App.FindElement("SwitchState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Disabled"));
-		VerifyScreenshot("Switch_On_And_Disable_State");
+		VerifyScreenshot();
 	}
 
-	[Test, Order(7)]
+	[Test, Order(8)]
 	public void VerifyVSM_Switch_DisableWhileOff()
 	{
 		App.WaitForElement("SwitchReset");
@@ -95,11 +111,11 @@ public class VisualStateManager_SwitchFeatureTests : _GalleryUITest
 		App.Tap("SwitchDisable");
 		var stateText = App.FindElement("SwitchState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Disabled"));
-		VerifyScreenshot("Switch_Off_And_Disable_State");
+		VerifyScreenshot();
 	}
 
-	[Test, Order(8)]
-	public void VerifyVSM_Switch_DisableAndReset()
+	[Test, Order(9)]
+	public void VerifyVSM_Switch_ResetWhileDisabled()
 	{
 		App.WaitForElement("SwitchReset");
 		App.Tap("SwitchReset");
@@ -109,13 +125,12 @@ public class VisualStateManager_SwitchFeatureTests : _GalleryUITest
 		Assert.That(stateText, Is.EqualTo("State: Disabled"));
 		App.WaitForElement("SwitchReset");
 		App.Tap("SwitchReset");
-		stateText = App.FindElement("SwitchState").GetText();;
+		stateText = App.FindElement("SwitchState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Normal"));
-		VerifyScreenshot("Switch_Disable_And_Reset_State");
 	}
 
-	[Test, Order(9)]
-	public void VerifyVSM_Switch_OnDisableAndReset()
+	[Test, Order(10)]
+	public void VerifyVSM_Switch_DisableAndResetWhileOn()
 	{
 		App.WaitForElement("SwitchReset");
 		App.Tap("SwitchReset");
@@ -131,11 +146,10 @@ public class VisualStateManager_SwitchFeatureTests : _GalleryUITest
 		App.Tap("SwitchReset");
 		stateText = App.FindElement("SwitchState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Normal"));
-		VerifyScreenshot("Switch_On_Disable_And_Reset_State");
 	}
 
-	[Test, Order(10)]
-	public void VerifyVSM_Switch_OffDisableAndReset()
+	[Test, Order(11)]
+	public void VerifyVSM_Switch_DisableAndResetWhileOff()
 	{
 		App.WaitForElement("SwitchReset");
 		App.Tap("SwitchReset");
@@ -147,26 +161,10 @@ public class VisualStateManager_SwitchFeatureTests : _GalleryUITest
 		App.Tap("SwitchReset");
 		stateText = App.FindElement("SwitchState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Normal"));
-		VerifyScreenshot("Switch_Off_Disable_And_Reset_State");
-	}
-
-	[Test, Order(11)]
-	public void VerifyVSM_Switch_OnAfterDisable()
-	{
-		App.WaitForElement("SwitchReset");
-		App.Tap("SwitchReset");
-		App.WaitForElement("SwitchDisable");
-		App.Tap("SwitchDisable");
-		var stateText = App.FindElement("SwitchState").GetText();
-		Assert.That(stateText, Is.EqualTo("State: Disabled"));
-		App.WaitForElement("VSMSwitch");
-		App.Tap("VSMSwitch");
-		stateText = App.FindElement("SwitchState").GetText();
-		Assert.That(stateText, Is.EqualTo("State: Disabled"));
 	}
 
 	[Test, Order(12)]
-	public void VerifyVSM_Switch_OffAfterDisable()
+	public void VerifyVSM_Switch_OnWhileDisabled()
 	{
 		App.WaitForElement("SwitchReset");
 		App.Tap("SwitchReset");
@@ -181,6 +179,23 @@ public class VisualStateManager_SwitchFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(13)]
+	public void VerifyVSM_Switch_OffWhileDisabled()
+	{
+		App.WaitForElement("SwitchReset");
+		App.Tap("SwitchReset");
+		App.WaitForElement("VSMSwitch");
+		App.Tap("VSMSwitch");
+		App.WaitForElement("SwitchDisable");
+		App.Tap("SwitchDisable");
+		var stateText = App.FindElement("SwitchState").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Disabled"));
+		App.WaitForElement("VSMSwitch");
+		App.Tap("VSMSwitch");
+		stateText = App.FindElement("SwitchState").GetText();
+		Assert.That(stateText, Is.EqualTo("State: Disabled"));
+	}
+
+	[Test, Order(14)]
 	public void VerifyVSM_Switch_OnWhileDisableAndEnable()
 	{
 		App.WaitForElement("SwitchReset");
@@ -197,10 +212,9 @@ public class VisualStateManager_SwitchFeatureTests : _GalleryUITest
 		App.Tap("SwitchDisable");
 		stateText = App.FindElement("SwitchState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: On"));
-		VerifyScreenshot("Switch_On_While_Disable_And_Enable_State");
 	}
 
-	[Test, Order(14)]
+	[Test, Order(15)]
 	public void VerifyVSM_Switch_OffWhileDisableAndEnable()
 	{
 		App.WaitForElement("SwitchReset");
@@ -213,26 +227,10 @@ public class VisualStateManager_SwitchFeatureTests : _GalleryUITest
 		App.Tap("SwitchDisable");
 		stateText = App.FindElement("SwitchState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Off"));
-		VerifyScreenshot("Switch_Off_While_Disable_And_Enable_State");
-	}
-
-	[Test, Order(15)]
-	public void VerifyVSM_Switch_ResetAfterDisable()
-	{
-		App.WaitForElement("SwitchReset");
-		App.Tap("SwitchReset");
-		App.WaitForElement("SwitchDisable");
-		App.Tap("SwitchDisable");
-		var stateText = App.FindElement("SwitchState").GetText();
-		Assert.That(stateText, Is.EqualTo("State: Disabled"));
-		App.WaitForElement("SwitchReset");
-		App.Tap("SwitchReset");
-		stateText = App.FindElement("SwitchState").GetText();
-		Assert.That(stateText, Is.EqualTo("State: Normal"));
 	}
 
 	[Test, Order(16)]
-	public void VerifyVSM_Switch_ResetAfterOnDisable()
+	public void VerifyVSM_Switch_ResetWhileOnAndDisabled()
 	{
 		App.WaitForElement("SwitchReset");
 		App.Tap("SwitchReset");
@@ -251,7 +249,7 @@ public class VisualStateManager_SwitchFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(17)]
-	public void VerifyVSM_Switch_ResetAfterOffDisable()
+	public void VerifyVSM_Switch_ResetWhileOffAndDisabled()
 	{
 		App.WaitForElement("SwitchReset");
 		App.Tap("SwitchReset");
@@ -266,7 +264,7 @@ public class VisualStateManager_SwitchFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(18)]
-	public void VerifyVSM_Switch_OnAfterReset()
+	public void VerifyVSM_Switch_ResetWhileOn()
 	{
 		App.WaitForElement("SwitchReset");
 		App.Tap("SwitchReset");

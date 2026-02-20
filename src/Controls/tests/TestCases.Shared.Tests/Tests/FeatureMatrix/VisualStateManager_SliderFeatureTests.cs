@@ -23,7 +23,7 @@ public class VisualStateManager_SliderFeatureTests : _GalleryUITest
 		App.WaitForElement("SliderState");
 		var stateText = App.FindElement("SliderState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Normal | Value: 50"));
-		VerifyScreenshot("Slider_Initial_State");
+		VerifyScreenshot();
 	}
 
 	[Test, Order(2)]
@@ -34,7 +34,7 @@ public class VisualStateManager_SliderFeatureTests : _GalleryUITest
 		App.WaitForElement("SliderState");
 		var stateText1 = App.FindElement("SliderState").GetText();
 		Assert.That(stateText1, Is.EqualTo("State: Normal/Unfocused | Value: 50"));
-		VerifyScreenshot("Slider_Unfocused_State");
+		VerifyScreenshot();
 	}
 
 	[Test, Order(3)]
@@ -45,7 +45,7 @@ public class VisualStateManager_SliderFeatureTests : _GalleryUITest
 		App.WaitForElement("SliderState");
 		var stateText = App.FindElement("SliderState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Disabled | Value: 50"));
-		VerifyScreenshot("Slider_Disabled_State");
+		VerifyScreenshot();
 	}
 
 	[Test, Order(4)]
@@ -56,7 +56,7 @@ public class VisualStateManager_SliderFeatureTests : _GalleryUITest
 		App.WaitForElement("SliderState");
 		var stateText = App.FindElement("SliderState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Normal | Value: 50"));
-		VerifyScreenshot("Slider_Reset_State");
+		VerifyScreenshot();
 	}
 
 	[Test, Order(5)]
@@ -67,11 +67,11 @@ public class VisualStateManager_SliderFeatureTests : _GalleryUITest
 		App.WaitForElement("SliderState");	
 		var stateText = App.FindElement("SliderState").GetText();
 		Assert.That(stateText, Is.EqualTo("State: Focused | Value: 65"));
-		VerifyScreenshot("Slider_Focused_State");
+		VerifyScreenshot();
 	}
 
 	[Test, Order(6)]
-	public void VerifyVSM_Slider_FocusedAfterReset()
+	public void VerifyVSM_Slider_ResetWhileFocused()
 	{
 		App.WaitForElement("VSMSlider");
 		App.WaitForElement("SliderReset");
@@ -89,7 +89,7 @@ public class VisualStateManager_SliderFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(7)]
-	public void VerifyVSM_Slider_UnfocusedAfterReset()
+	public void VerifyVSM_Slider_ResetWhileUnfocused()
 	{
 		App.WaitForElement("VSMSlider");
 		App.WaitForElement("SliderReset");
@@ -107,7 +107,7 @@ public class VisualStateManager_SliderFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(8)]
-	public void VerifyVSM_Slider_DisabledAfterReset()
+	public void VerifyVSM_Slider_ResetWhileDisabled()
 	{
 		App.WaitForElement("VSMSlider");
 		App.WaitForElement("SliderReset");
@@ -125,7 +125,7 @@ public class VisualStateManager_SliderFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(9)]
-	public void VerifyVSM_Slider_FocusedAfterDisable()
+	public void VerifyVSM_Slider_DisableWhileFocused()
 	{
 		App.WaitForElement("VSMSlider");
 		App.WaitForElement("SliderReset");
@@ -143,7 +143,7 @@ public class VisualStateManager_SliderFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(10)]
-	public void VerifyVSM_Slider_UnfocusedAfterDisable()
+	public void VerifyVSM_Slider_DisableWhileUnfocused()
 	{
 		App.WaitForElement("VSMSlider");
 		App.WaitForElement("SliderReset");
@@ -161,7 +161,7 @@ public class VisualStateManager_SliderFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(11)]
-	public void VerifyVSM_Slider_DisableAfterFocus()
+	public void VerifyVSM_Slider_FocusedWhileDisabled()
 	{
 		App.WaitForElement("VSMSlider");
 		App.WaitForElement("SliderReset");
@@ -184,7 +184,7 @@ public class VisualStateManager_SliderFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(12)]
-	public void VerifyVSM_Slider_UnfocusAfterFocus()
+	public void VerifyVSM_Slider_UnfocusToFocus()
 	{
 		App.WaitForElement("VSMSlider");
 		App.WaitForElement("SliderReset");
@@ -202,7 +202,7 @@ public class VisualStateManager_SliderFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(13)]
-	public void VerifyVSM_Slider_FocusAfterUnFocus()
+	public void VerifyVSM_Slider_FocusToUnFocus()
 	{
 		App.WaitForElement("VSMSlider");
 		App.WaitForElement("SliderReset");
@@ -220,7 +220,7 @@ public class VisualStateManager_SliderFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(14)]
-	public void VerifyVSM_Slider_DisableAfterUnFocus()
+	public void VerifyVSM_Slider_DisableAndEnableWhileUnfocused()
 	{
 		App.WaitForElement("VSMSlider");
 		App.WaitForElement("SliderReset");
@@ -243,7 +243,7 @@ public class VisualStateManager_SliderFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(15)]
-	public void VerifyVSM_Slider_FocusAfterDisableAndEnable()
+	public void VerifyVSM_Slider_DisableAndEnableWhileFocused()
 	{
 		App.WaitForElement("VSMSlider");
 		App.WaitForElement("SliderReset");
@@ -266,16 +266,14 @@ public class VisualStateManager_SliderFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(16)]
-	public void VerifyVSM_Slider_UnfocusAfterDisableAndEnable()
+	public void VerifyVSM_Slider_DisableAndEnableWhileReset()
 	{
 		App.WaitForElement("VSMSlider");
 		App.WaitForElement("SliderReset");
 		App.Tap("SliderReset");
-		App.WaitForElement("SliderNormal");
-		App.Tap("SliderNormal");
 		App.WaitForElement("SliderState");
 		var unfocusedStateText = App.FindElement("SliderState").GetText();
-		Assert.That(unfocusedStateText, Is.EqualTo("State: Normal/Unfocused | Value: 50"));
+		Assert.That(unfocusedStateText, Is.EqualTo("State: Normal | Value: 50"));
 		App.WaitForElement("SliderDisable");
 		App.Tap("SliderDisable");
 		App.WaitForElement("SliderState");
@@ -286,31 +284,5 @@ public class VisualStateManager_SliderFeatureTests : _GalleryUITest
 		App.WaitForElement("SliderState");
 		var unfocusedEnabledStateText = App.FindElement("SliderState").GetText();
 		Assert.That(unfocusedEnabledStateText, Is.EqualTo("State: Normal | Value: 50"));
-	}
-
-	[Test, Order(17)]
-	public void VerifyVSM_Slider_DisableAfterEnable()
-	{
-		Exception? exception = null;
-		App.WaitForElement("VSMSlider");
-		App.WaitForElement("SliderReset");
-		App.Tap("SliderReset");
-		App.WaitForElement("SliderState");
-		var initialStateText = App.FindElement("SliderState").GetText();
-		Assert.That(initialStateText, Is.EqualTo("State: Normal | Value: 50"));
-		App.WaitForElement("SliderDisable");
-		App.Tap("SliderDisable");
-		var stateText = App.FindElement("SliderState").GetText();
-		Assert.That(stateText, Is.EqualTo("State: Disabled | Value: 50"));
-		VerifyScreenshotOrSetException(ref exception, "Slider_Reset_Disabled_State");
-		App.WaitForElement("SliderDisable");
-		App.Tap("SliderDisable");
-		var enabledStateText = App.FindElement("SliderState").GetText();
-		Assert.That(enabledStateText, Is.EqualTo("State: Normal | Value: 50"));
-		VerifyScreenshotOrSetException(ref exception, "Slider_Reenabled_Normal_State");
-		if (exception is not null)
-		{
-			throw exception;
-		}
 	}
 }
