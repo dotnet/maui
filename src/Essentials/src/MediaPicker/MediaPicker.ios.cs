@@ -529,6 +529,10 @@ namespace Microsoft.Maui.Media
 	{
 		readonly string _identifier;
 		readonly NSItemProvider _provider;
+		readonly object _loadLock = new object();
+		NSUrl _fileUrl;
+		bool _isFileLoaded;
+		bool _isLoading;
 
 		internal PHPickerFileResult(NSItemProvider provider)
 		{
@@ -545,12 +549,95 @@ namespace Microsoft.Maui.Media
 				return;
 			}
 
-			FileName = FullPath
-				= $"{provider?.SuggestedName}.{GetTag(_identifier, UTType.TagClassFilenameExtension)}";
+			// Set the original filename
+			var extension = GetTag(_identifier, UTType.TagClassFilenameExtension);
+			FileName = $"{provider?.SuggestedName}.{extension}";
 		}
 
 		internal override async Task<Stream> PlatformOpenReadAsync()
-			=> (await _provider?.LoadDataRepresentationAsync(_identifier))?.AsStream();
+		{
+			// Ensure the file is loaded
+			if (!_isFileLoaded)
+			{
+				await EnsureFileLoadedAsync();
+			}
+
+			// Return a stream to the file
+			if (_fileUrl != null && !string.IsNullOrWhiteSpace(FullPath))
+			{
+				return File.OpenRead(FullPath);
+			}
+
+			throw new InvalidOperationException("File could not be loaded");
+		}
+
+		async Task EnsureFileLoadedAsync()
+		{
+			bool shouldLoad = false;
+			
+			lock (_loadLock)
+			{
+				// If already loaded or currently loading, return
+				if (_isFileLoaded || _isLoading)
+					return;
+
+				// Mark as loading to prevent other threads from also attempting to load
+				_isLoading = true;
+				shouldLoad = true;
+			}
+
+			if (shouldLoad)
+			{
+				try
+				{
+					// Validate provider is not null
+					if (_provider == null)
+					{
+						throw new InvalidOperationException("Item provider is null");
+					}
+
+					// Use LoadFileRepresentationAsync to get a file URL without copying
+					var tcs = new TaskCompletionSource<NSUrl>();
+					_provider.LoadFileRepresentation(_identifier, (url, error) =>
+					{
+						if (error != null)
+						{
+							tcs.TrySetException(new NSErrorException(error));
+						}
+						else
+						{
+							tcs.TrySetResult(url);
+						}
+					});
+
+					_fileUrl = await tcs.Task;
+					
+					if (_fileUrl == null)
+					{
+						throw new InvalidOperationException("Failed to load file from provider");
+					}
+
+					// Set FullPath to the file URL path
+					FullPath = _fileUrl.Path;
+					
+					// Only mark as loaded after successful load
+					lock (_loadLock)
+					{
+						_isFileLoaded = true;
+						_isLoading = false;
+					}
+				}
+				catch
+				{
+					// If loading fails, reset loading flag so it can be retried
+					lock (_loadLock)
+					{
+						_isLoading = false;
+					}
+					throw;
+				}
+			}
+		}
 
 		protected internal static string GetTag(string identifier, string tagClass)
 			   => UTType.CopyAllTags(identifier, tagClass)?.FirstOrDefault();
