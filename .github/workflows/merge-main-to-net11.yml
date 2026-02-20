@@ -16,6 +16,10 @@ on:
     branches:
       - main
 
+  # Daily safety net in case a push event is missed
+  schedule:
+    - cron: '0 3 * * *'
+
 permissions:
   contents: write
   pull-requests: write
