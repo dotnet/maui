@@ -87,44 +87,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		// - Do not extend; add new logic to the forthcoming implementation instead.
 		internal class WindowsListener : MauiWindowInsetListener, IOnApplyWindowInsetsListener
 		{
-			private WeakReference<ImageView> _bgImageRef;
-			private WeakReference<AView> _flyoutViewRef;
-			private WeakReference<AView> _footerViewRef;
-
-			public AView FlyoutView
-			{
-				get
-				{
-					if (_flyoutViewRef != null && _flyoutViewRef.TryGetTarget(out var flyoutView))
-						return flyoutView;
-
-					return null;
-				}
-				set
-				{
-					_flyoutViewRef = new WeakReference<AView>(value);
-				}
-			}
-			public AView FooterView
-			{
-				get
-				{
-					if (_footerViewRef != null && _footerViewRef.TryGetTarget(out var footerView))
-						return footerView;
-
-					return null;
-				}
-				set
-				{
-					_footerViewRef = new WeakReference<AView>(value);
-				}
-			}
-
-			public WindowsListener(ImageView bgImage)
-			{
-				_bgImageRef = new WeakReference<ImageView>(bgImage);
-			}
-
 			public override WindowInsetsCompat OnApplyWindowInsets(AView v, WindowInsetsCompat insets)
 			{
 				if (insets == null || v == null)
@@ -135,38 +97,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					// The flyout overlaps the status bar so we don't really care about insetting it
 					var systemBars = insets.GetInsets(WindowInsetsCompat.Type.SystemBars());
 					var displayCutout = insets.GetInsets(WindowInsetsCompat.Type.DisplayCutout());
+					var leftInset = Math.Max(systemBars?.Left ?? 0, displayCutout?.Left ?? 0);
 					var topInset = Math.Max(systemBars?.Top ?? 0, displayCutout?.Top ?? 0);
+					var rightInset = Math.Max(systemBars?.Right ?? 0, displayCutout?.Right ?? 0);
 					var bottomInset = Math.Max(systemBars?.Bottom ?? 0, displayCutout?.Bottom ?? 0);
 					var appbarLayout = v.FindDescendantView<AppBarLayout>((v) => true);
 
-					int flyoutViewBottomInset = 0;
-
-					if (FooterView is not null)
-					{
-						v.SetPadding(0, 0, 0, bottomInset);
-						flyoutViewBottomInset = 0;
-					}
-					else
-					{
-						flyoutViewBottomInset = bottomInset;
-						v.SetPadding(0, 0, 0, 0);
-					}
-
-					if (appbarLayout.MeasuredHeight > 0)
-					{
-						FlyoutView?.SetPadding(0, 0, 0, flyoutViewBottomInset);
-						appbarLayout?.SetPadding(0, topInset, 0, 0);
-					}
-					else
-					{
-						FlyoutView?.SetPadding(0, topInset, 0, flyoutViewBottomInset);
-						appbarLayout?.SetPadding(0, 0, 0, 0);
-					}
-
-					if (_bgImageRef != null && _bgImageRef.TryGetTarget(out var bgImage) && bgImage != null)
-					{
-						bgImage.SetPadding(0, topInset, 0, bottomInset);
-					}
+					v.SetPadding(leftInset, topInset, rightInset, bottomInset);
 
 					return WindowInsetsCompat.Consumed;
 				}
@@ -207,7 +144,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				LayoutParameters = new LP(coordinator.LayoutParameters)
 			};
 
-			_windowsListener = new WindowsListener(_bgImage);
+			_windowsListener = new WindowsListener();
 			MauiWindowInsetListener.SetupViewWithLocalListener(coordinator, _windowsListener);
 
 			UpdateFlyoutHeaderBehavior();
@@ -304,7 +241,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			_flyoutContentView = CreateFlyoutContent(_rootView);
-			_windowsListener.FlyoutView = _flyoutContentView;
 			if (_flyoutContentView == null)
 				return;
 
@@ -420,7 +356,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				var oldFooterView = _footerView;
 				_rootView.RemoveView(_footerView);
 				_footerView = null;
-				_windowsListener.FooterView = null;
 				oldFooterView.View = null;
 			}
 
@@ -439,8 +374,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				MatchWidth = true
 			};
-
-			_windowsListener.FooterView = _footerView;
 
 			var footerViewLP = new CoordinatorLayout.LayoutParams(0, 0)
 			{
