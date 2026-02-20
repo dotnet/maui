@@ -19,6 +19,13 @@ namespace Microsoft.Maui.Layouts
 		bool _hasGridStructure;
 		Dictionary<SpanKey, double>? _spansDictionary;
 
+		// Cached single-element arrays for grids with no explicit row/column definitions.
+		// These avoid renting from ArrayPool for the common implied-single-row/column case.
+		// The Definition struct is mutable (Size/MinimumSize change during layout), so
+		// these are reset on each use — but the array itself is reused.
+		Definition[]? _cachedImpliedRow;
+		Definition[]? _cachedImpliedColumn;
+
 		public GridLayoutManager(IGridLayout layout) : base(layout)
 		{
 			Grid = layout;
@@ -28,10 +35,12 @@ namespace Microsoft.Maui.Layouts
 
 		public override Size Measure(double widthConstraint, double heightConstraint)
 		{
-			var newStructure = new GridStructure(Grid, widthConstraint, heightConstraint, _spansDictionary);
+			var newStructure = new GridStructure(Grid, widthConstraint, heightConstraint, _spansDictionary, _cachedImpliedRow, _cachedImpliedColumn);
 			_gridStructure.ReturnArrays();
 			_gridStructure = newStructure;
 			_spansDictionary = _gridStructure.SpansDictionary;
+			_cachedImpliedRow = _gridStructure.CachedImpliedRow;
+			_cachedImpliedColumn = _gridStructure.CachedImpliedColumn;
 			_hasGridStructure = true;
 
 			var measuredWidth = _gridStructure.MeasuredGridWidth();
@@ -44,9 +53,11 @@ namespace Microsoft.Maui.Layouts
 		{
 			if (!_hasGridStructure)
 			{
-				var newStructure = new GridStructure(Grid, bounds.Width, bounds.Height, _spansDictionary);
+				var newStructure = new GridStructure(Grid, bounds.Width, bounds.Height, _spansDictionary, _cachedImpliedRow, _cachedImpliedColumn);
 				_gridStructure = newStructure;
 				_spansDictionary = _gridStructure.SpansDictionary;
+				_cachedImpliedRow = _gridStructure.CachedImpliedRow;
+				_cachedImpliedColumn = _gridStructure.CachedImpliedColumn;
 				_hasGridStructure = true;
 			}
 
@@ -104,9 +115,18 @@ namespace Microsoft.Maui.Layouts
 
 			Dictionary<SpanKey, double>? _spans;
 
-			public Dictionary<SpanKey, double>? SpansDictionary => _spans;
+			// Cached single-element arrays for implied row/column (not rented from pool)
+			bool _rowsFromPool;
+			bool _columnsFromPool;
 
-			public GridStructure(IGridLayout grid, double widthConstraint, double heightConstraint, Dictionary<SpanKey, double>? existingSpans = null)
+			public Dictionary<SpanKey, double>? SpansDictionary => _spans;
+			public Definition[]? CachedImpliedRow => !_rowsFromPool ? _rows : null;
+			public Definition[]? CachedImpliedColumn => !_columnsFromPool ? _columns : null;
+
+			public GridStructure(IGridLayout grid, double widthConstraint, double heightConstraint,
+				Dictionary<SpanKey, double>? existingSpans = null,
+				Definition[]? cachedImpliedRow = null,
+				Definition[]? cachedImpliedColumn = null)
 			{
 				_grid = grid;
 				_spans = existingSpans;
@@ -118,6 +138,8 @@ namespace Microsoft.Maui.Layouts
 				_rowCount = 0;
 				_columns = null!;
 				_columnCount = 0;
+				_rowsFromPool = false;
+				_columnsFromPool = false;
 
 				_explicitGridHeight = _grid.Height;
 				_explicitGridWidth = _grid.Width;
@@ -136,8 +158,8 @@ namespace Microsoft.Maui.Layouts
 				_columnSpacing = grid.ColumnSpacing;
 				_rowSpacing = grid.RowSpacing;
 
-				InitializeRows(grid.RowDefinitions);
-				InitializeColumns(grid.ColumnDefinitions);
+				InitializeRows(grid.RowDefinitions, cachedImpliedRow);
+				InitializeColumns(grid.ColumnDefinitions, cachedImpliedColumn);
 
 				_rowStarCount = CountStars(_rows, _rowCount);
 				_columnStarCount = CountStars(_columns, _columnCount);
@@ -188,32 +210,33 @@ namespace Microsoft.Maui.Layouts
 					ArrayPool<Cell>.Shared.Return(_cells);
 					_cells = null!;
 				}
-				if (_rows is not null)
+				if (_rows is not null && _rowsFromPool)
 				{
 					ArrayPool<Definition>.Shared.Return(_rows);
 					_rows = null!;
 				}
-				if (_columns is not null)
+				if (_columns is not null && _columnsFromPool)
 				{
 					ArrayPool<Definition>.Shared.Return(_columns);
 					_columns = null!;
 				}
 			}
 
-			void InitializeRows(IReadOnlyList<IGridRowDefinition> rowDefinitions)
+			void InitializeRows(IReadOnlyList<IGridRowDefinition> rowDefinitions, Definition[]? cachedImplied)
 			{
 				int count = rowDefinitions.Count;
 
 				if (count == 0)
 				{
-					// Since no rows are specified, we'll create an implied row 0 
-					_rows = ArrayPool<Definition>.Shared.Rent(1);
+					// Since no rows are specified, we'll create an implied row 0
+					_rows = cachedImplied ?? new Definition[1];
 					_rows[0] = new Definition(GridLength.Star);
 					_rowCount = 1;
 					return;
 				}
 
 				_rows = ArrayPool<Definition>.Shared.Rent(count);
+				_rowsFromPool = true;
 				_rowCount = count;
 
 				for (int n = 0; n < count; n++)
@@ -223,20 +246,21 @@ namespace Microsoft.Maui.Layouts
 				}
 			}
 
-			void InitializeColumns(IReadOnlyList<IGridColumnDefinition> columnDefinitions)
+			void InitializeColumns(IReadOnlyList<IGridColumnDefinition> columnDefinitions, Definition[]? cachedImplied)
 			{
 				int count = columnDefinitions.Count;
 
 				if (count == 0)
 				{
-					// Since no columns are specified, we'll create an implied column 0 
-					_columns = ArrayPool<Definition>.Shared.Rent(1);
+					// Since no columns are specified, we'll create an implied column 0
+					_columns = cachedImplied ?? new Definition[1];
 					_columns[0] = new Definition(GridLength.Star);
 					_columnCount = 1;
 					return;
 				}
 
 				_columns = ArrayPool<Definition>.Shared.Rent(count);
+				_columnsFromPool = true;
 				_columnCount = count;
 
 				for (int n = 0; n < count; n++)
