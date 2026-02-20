@@ -70,7 +70,7 @@ internal partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPicker>
 		handler.PlatformView?.UpdateBackground(picker);
 	}
 
-	internal static void MapItems(PickerHandler2 handler, IPicker picker) => Reload(handler);
+	public static void MapItems(PickerHandler2 handler, IPicker picker) => Reload(handler);
 
 	public static void MapTitle(PickerHandler2 handler, IPicker picker)
 	{
@@ -114,7 +114,7 @@ internal partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPicker>
 		handler.PlatformView?.UpdateVerticalAlignment(picker.VerticalTextAlignment);
 	}
 
-	internal static void MapIsOpen(PickerHandler2 handler, IPicker picker)
+	public static void MapIsOpen(PickerHandler2 handler, IPicker picker)
 	{
 		if (handler.IsConnected())
 		{
@@ -129,7 +129,7 @@ internal partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPicker>
 		}
 	}
 
-	internal static void MapFocus(PickerHandler2 handler, IPicker picker, object? args)
+	public static void MapFocus(PickerHandler2 handler, IPicker picker, object? args)
 	{
 		if (handler.IsConnected())
 		{
@@ -138,7 +138,7 @@ internal partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPicker>
 		}
 	}
 
-	internal static void MapUnfocus(PickerHandler2 handler, IPicker picker, object? args)
+	public static void MapUnfocus(PickerHandler2 handler, IPicker picker, object? args)
 	{
 		if (handler.IsConnected())
 		{
@@ -206,7 +206,7 @@ internal partial class PickerHandler2 : ViewHandler<IPicker, MauiMaterialPicker>
 			var item = items[i];
 			if (item is null)
 			{
-				items[i] = String.Empty;
+				items[i] = string.Empty;
 			}
 		}
 

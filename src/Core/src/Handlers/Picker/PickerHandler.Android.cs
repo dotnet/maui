@@ -158,7 +158,7 @@ namespace Microsoft.Maui.Handlers
 					{
 						var item = items[i];
 						if (item == null)
-							items[i] = String.Empty;
+							items[i] = string.Empty;
 					}
 
 					builder.SetSingleChoiceItems(items, VirtualView.SelectedIndex, (s, e) =>
