@@ -1,7 +1,12 @@
-﻿namespace Maui.Controls.Sample;
+namespace Maui.Controls.Sample;
 
 public static class MauiProgram
 {
+	// Toggle this to test different handlers
+	// true = Use Handler2 (CURRENT DEFAULT - the one being fixed in PR)
+	// false = Use Handler1 (LEGACY - to compare behavior)
+	private static bool UseHandler2 = true;
+
 	public static MauiApp CreateMauiApp() =>
 		MauiApp
 			.CreateBuilder()
@@ -9,6 +14,21 @@ public static class MauiProgram
 			.UseMauiMaps()
 #endif
 			.UseMauiApp<App>()
+			.ConfigureMauiHandlers(handlers =>
+			{
+#if IOS || MACCATALYST
+				if (!UseHandler2)
+				{
+					// Force use of legacy Handler1 by overriding default
+					handlers.AddHandler<Microsoft.Maui.Controls.CarouselView, Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler>();
+					Console.WriteLine("✅ Forcing CarouselViewHandler1 (legacy)");
+				}
+				else
+				{
+					Console.WriteLine("✅ Using CarouselViewHandler2 (current default)");
+				}
+#endif
+			})
 			.ConfigureFonts(fonts =>
 			{
 				fonts.AddFont("Dokdo-Regular.ttf", "Dokdo");
