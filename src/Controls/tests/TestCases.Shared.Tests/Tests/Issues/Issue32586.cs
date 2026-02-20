@@ -14,23 +14,35 @@ public class Issue32586 : _IssuesUITest
 	: base(device)
 	{ }
 
-	[Test]
-	[Category(UITestCategories.SafeAreaEdges)]
-	public async Task VerifyLayoutWithTranslateToAsync()
+	void WaitForText(string elementId, string expectedText, int timeoutSec = 5)
 	{
-		var label = App.WaitForElement("TestLabel");
-		App.Tap("FooterButton");
-		await Task.Delay(500); // Wait for the animation to complete
-		App.Tap("FooterButton");
-		await Task.Delay(500); // Wait for the animation to complete
-
-		var labelText = label.GetText();
-		Assert.That(labelText, Is.EqualTo("Footer is now hidden"));
+		var endTime = DateTime.Now.AddSeconds(timeoutSec);
+		while (DateTime.Now < endTime)
+		{
+			var text = App.WaitForElement(elementId).GetText();
+			if (text == expectedText) return;
+			Thread.Sleep(100);
+		}
+		// Final check - will fail if text doesn't match
+		var finalText = App.WaitForElement(elementId).GetText();
+		Assert.That(finalText, Is.EqualTo(expectedText), $"Timed out waiting for {elementId} text to be '{expectedText}'");
 	}
 
 	[Test]
 	[Category(UITestCategories.SafeAreaEdges)]
-	public async Task VerifyRuntimeSafeAreaEdgesChange()
+	public void VerifyLayoutWithTranslateToAsync()
+	{
+		var label = App.WaitForElement("TestLabel");
+		App.Tap("FooterButton");
+		WaitForText("TestLabel", "Footer is now visible");
+		
+		App.Tap("FooterButton");
+		WaitForText("TestLabel", "Footer is now hidden");
+	}
+
+	[Test]
+	[Category(UITestCategories.SafeAreaEdges)]
+	public void VerifyRuntimeSafeAreaEdgesChange()
 	{
 		// Step 1: Default state - Parent Grid handles safe area (Container)
 		// Content should be pushed below the safe area (TopMarker.Y > 0)
@@ -45,9 +57,7 @@ public class Issue32586 : _IssuesUITest
 		// Child StackLayout should take over safe area responsibility
 		// Content should still be pushed below the safe area
 		App.Tap("ParentSafeAreaToggleButton");
-		await Task.Delay(500);
-		statusLabel = App.WaitForElement("SafeAreaStatusLabel");
-		Assert.That(statusLabel.GetText(), Is.EqualTo("Parent: None, Child: Container"));
+		WaitForText("SafeAreaStatusLabel", "Parent: None, Child: Container");
 
 		topMarkerRect = App.WaitForElement("TopMarker").GetRect();
 		var childHandlingY = topMarkerRect.Y;
@@ -56,9 +66,7 @@ public class Issue32586 : _IssuesUITest
 		// Step 3: Set child StackLayout SafeAreaEdges to None too
 		// No one handles safe area - content should go under the safe area (Y closer to 0)
 		App.Tap("ChildSafeAreaToggleButton");
-		await Task.Delay(500);
-		statusLabel = App.WaitForElement("SafeAreaStatusLabel");
-		Assert.That(statusLabel.GetText(), Is.EqualTo("Parent: None, Child: None"));
+		WaitForText("SafeAreaStatusLabel", "Parent: None, Child: None");
 
 		topMarkerRect = App.WaitForElement("TopMarker").GetRect();
 		var noSafeAreaY = topMarkerRect.Y;
@@ -66,9 +74,7 @@ public class Issue32586 : _IssuesUITest
 
 		// Step 4: Restore parent to Container - parent should take over again
 		App.Tap("ParentSafeAreaToggleButton");
-		await Task.Delay(500);
-		statusLabel = App.WaitForElement("SafeAreaStatusLabel");
-		Assert.That(statusLabel.GetText(), Is.EqualTo("Parent: Container, Child: None"));
+		WaitForText("SafeAreaStatusLabel", "Parent: Container, Child: None");
 
 		topMarkerRect = App.WaitForElement("TopMarker").GetRect();
 		var restoredY = topMarkerRect.Y;
@@ -76,9 +82,7 @@ public class Issue32586 : _IssuesUITest
 
 		// Step 5: Verify UI is still responsive - no infinite cycle
 		App.Tap("FooterButton");
-		await Task.Delay(500);
-		var testLabel = App.WaitForElement("TestLabel");
-		Assert.That(testLabel.GetText(), Is.EqualTo("Footer is now visible"));
+		WaitForText("TestLabel", "Footer is now visible");
 	}
 }
 #endif

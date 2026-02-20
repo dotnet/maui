@@ -144,10 +144,39 @@ namespace Microsoft.Maui.Platform
 		/// This method marks the safe area as invalidated. Note that UIKit automatically calls
 		/// LayoutSubviews immediately after this method.
 		/// </summary>
+		static double RoundToPixel(double value, nfloat scale)
+			=> Math.Round(value * (double)scale) / (double)scale;
+
+		static SafeAreaPadding RoundSafeAreaToPixel(SafeAreaPadding padding, nfloat scale)
+			=> new(
+				RoundToPixel(padding.Left, scale),
+				RoundToPixel(padding.Right, scale),
+				RoundToPixel(padding.Top, scale),
+				RoundToPixel(padding.Bottom, scale));
+
+		SafeAreaPadding GetAdjustedSafeAreaInsets()
+		{
+			if (SystemAdjustedContentInset == UIEdgeInsets.Zero || ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Never)
+				return GetInset().ToSafeAreaInsets();
+			else
+				return SystemAdjustedContentInset.ToSafeAreaInsets();
+		}
+
 		public override void SafeAreaInsetsDidChange()
 		{
 			// Note: UIKit invokes LayoutSubviews right after this method
 			base.SafeAreaInsetsDidChange();
+
+			if (Window is not null)
+			{
+				var scale = Window?.Screen?.Scale ?? UIScreen.MainScreen.Scale;
+				var newSafeArea = RoundSafeAreaToPixel(GetAdjustedSafeAreaInsets(), scale);
+
+				if (newSafeArea.Equals(_safeArea))
+				{
+					return;
+				}
+			}
 
 			_safeAreaInvalidated = true;
 		}
@@ -340,7 +369,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			// Mark the safe area as validated given that we're about to check it
-			_safeAreaInvalidated = true;
+			_safeAreaInvalidated = false;
 
 			var oldSafeArea = _safeArea;
 
@@ -350,10 +379,8 @@ namespace Microsoft.Maui.Platform
 			// it can push ContentSize over the Bounds, causing AdjustedContentInset to become non-zero and SafeAreaInsets on the child to reset to zero.
 			// This can result in a loop of invalidations as the layout toggles between these states.
 			// To prevent this, we ignore safe area calculations on child views when they are inside a scroll view.
-			if (SystemAdjustedContentInset == UIEdgeInsets.Zero || ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Never)
-				_safeArea = GetInset().ToSafeAreaInsets();
-			else
-				_safeArea = SystemAdjustedContentInset.ToSafeAreaInsets();
+			var scale = (nfloat)ContentScaleFactor;
+			_safeArea = RoundSafeAreaToPixel(GetAdjustedSafeAreaInsets(), scale);
 
 			var oldApplyingSafeAreaAdjustments = _appliesSafeAreaAdjustments;
 			_appliesSafeAreaAdjustments = RespondsToSafeArea() && !_safeArea.IsEmpty;

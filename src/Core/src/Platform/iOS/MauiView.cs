@@ -614,8 +614,9 @@ namespace Microsoft.Maui.Platform
 			// SafeAreaPadding == comparison below returns false for semantically
 			// identical values, triggering InvalidateAncestorsMeasures and an
 			// infinite layout cycle (see #33934). Rounding also stabilizes the
-			// constraints fed to CrossPlatformMeasure, preventing per-frame jitter.
-			var scale = Window?.Screen?.Scale ?? UIScreen.MainScreen.Scale;
+			// Rounding also stabilizes the constraints fed to CrossPlatformMeasure,
+			// preventing per-frame jitter.
+			var scale = (nfloat)ContentScaleFactor;
 			_safeArea = RoundSafeAreaToPixel(GetAdjustedSafeAreaInsets(), scale);
 
 			var oldApplyingSafeAreaAdjustments = _appliesSafeAreaAdjustments;
@@ -720,6 +721,17 @@ namespace Microsoft.Maui.Platform
 
 		public override void SafeAreaInsetsDidChange()
 		{
+			if (Window is not null)
+			{
+				var scale = Window?.Screen?.Scale ?? UIScreen.MainScreen.Scale;
+				var newSafeArea = RoundSafeAreaToPixel(GetAdjustedSafeAreaInsets(), scale);
+
+				if (newSafeArea.Equals(_safeArea))
+				{
+					return;
+				}
+			}
+
 			_safeAreaInvalidated = true;
 			base.SafeAreaInsetsDidChange();
 		}
