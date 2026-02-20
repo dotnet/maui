@@ -82,22 +82,6 @@ internal static class SafeAreaExtensions
 				}
 			}
 
-
-			if (isKeyboardShowing &&
-				context.GetActivity()?.Window is Window window &&
-				window?.Attributes is WindowManagerLayoutParams attr)
-			{
-				// When AdjustPan is set, the window pans instead of resizing
-				// so we should not modify any padding - just consume the insets and return
-				// Use MaskAdjust to properly distinguish AdjustPan from AdjustNothing
-				var softInputMode = attr.SoftInputMode;
-				var adjustMode = softInputMode & SoftInput.MaskAdjust;
-				if (adjustMode == SoftInput.AdjustPan)
-				{
-					return WindowInsetsCompat.Consumed;
-				}
-			}
-
 			// Check intersection with view bounds to determine which edges actually need padding
 			// If we don't have any tracked views yet we will find the first view to pad
 			// in order to limit duplicate measures
