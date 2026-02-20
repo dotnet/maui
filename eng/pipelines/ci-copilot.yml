@@ -183,6 +183,7 @@ stages:
               Write-Host "=== Android Emulator Started Successfully ==="
             displayName: 'Start Android Emulator'
             condition: eq('${{ parameters.Platform }}', 'android')
+            continueOnError: true
             timeoutInMinutes: 35
             env:
               ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
@@ -523,6 +524,7 @@ stages:
               adb devices -l
             displayName: 'Restart Android Emulator (Fresh)'
             condition: eq('${{ parameters.Platform }}', 'android')
+            continueOnError: true
             timeoutInMinutes: 15
             env:
               ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
