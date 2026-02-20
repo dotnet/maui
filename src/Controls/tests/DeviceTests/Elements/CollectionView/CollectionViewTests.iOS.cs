@@ -292,6 +292,156 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.False(weakHandler.IsAlive, "CollectionViewHandler2 should have been garbage collected");
 		}
 
+		[Fact(DisplayName = "Empty View Disables Scroll And Bounce Properties")]
+		public async Task EmptyViewDisablesScrollAndBounce()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<CollectionView, CollectionViewHandler2>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
+
+			var items = new ObservableCollection<string>();
+
+			var collectionView = new CollectionView
+			{
+				EmptyView = new Label { Text = "Empty" },
+				ItemsSource = items
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
+			{
+				var nativeCollectionView = handler.Controller?.CollectionView;
+				Assert.NotNull(nativeCollectionView); 
+
+				// Verify scroll/bounce disabled when empty
+				Assert.False(nativeCollectionView!.ScrollEnabled, "ScrollEnabled should be false when CollectionView is empty");
+				Assert.False(nativeCollectionView.AlwaysBounceVertical, "AlwaysBounceVertical should be false when empty");
+				Assert.False(nativeCollectionView.AlwaysBounceHorizontal, "AlwaysBounceHorizontal should be false when empty");
+
+				// Add items to trigger data source update
+				items.Add("Item 1");
+				items.Add("Item 2");
+
+				// Verify scroll/bounce restored after adding items
+				Assert.True(nativeCollectionView.ScrollEnabled, "ScrollEnabled should be true after adding items");
+				Assert.True(nativeCollectionView.AlwaysBounceVertical || nativeCollectionView.AlwaysBounceHorizontal,
+					"At least one bounce direction should be enabled after adding items");
+			});
+		}
+
+		[Fact(DisplayName = "CollectionView Updates When Items Added To ObservableCollection")]
+		public async Task CollectionViewUpdatesWhenItemsAdded()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<CollectionView, CollectionViewHandler2>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
+
+			var items = new ObservableCollection<string> { "Initial Item" };
+
+			var collectionView = new CollectionView
+			{
+				ItemsSource = items,
+				ItemTemplate = new DataTemplate(() => new Label())
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
+			{
+				var nativeCollectionView = handler.Controller?.CollectionView;
+				Assert.NotNull(nativeCollectionView);
+
+				// Verify initial count
+				var initialCount = nativeCollectionView!.NumberOfItemsInSection(0);
+				Assert.Equal(1, initialCount);
+
+				// Add more items
+				items.Add("Item 2");
+				items.Add("Item 3");
+
+				// Verify count increased
+				var updatedCount = nativeCollectionView.NumberOfItemsInSection(0);
+				Assert.Equal(3, updatedCount);
+			});
+		}
+
+		[Fact(DisplayName = "CollectionView Updates When Items Removed From ObservableCollection")]
+		public async Task CollectionViewUpdatesWhenItemsRemoved()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<CollectionView, CollectionViewHandler2>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
+
+			var items = new ObservableCollection<string> { "Item 1", "Item 2", "Item 3" };
+
+			var collectionView = new CollectionView
+			{
+				ItemsSource = items,
+				ItemTemplate = new DataTemplate(() => new Label())
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
+			{
+				var nativeCollectionView = handler.Controller?.CollectionView;
+				Assert.NotNull(nativeCollectionView);
+
+				// Verify initial count
+				var initialCount = nativeCollectionView!.NumberOfItemsInSection(0);
+				Assert.Equal(3, initialCount);
+
+				// Remove items
+				items.RemoveAt(1);
+
+				// Verify count decreased
+				var updatedCount = nativeCollectionView.NumberOfItemsInSection(0);
+				Assert.Equal(2, updatedCount);
+			});
+		}
+
+		[Fact(DisplayName = "CollectionView ScrollEnabled Matches Property")]
+		public async Task CollectionViewScrollEnabledMatchesProperty()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<CollectionView, CollectionViewHandler2>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
+
+			var items = new ObservableCollection<string> { "Item 1", "Item 2", "Item 3" };
+
+			// Start with non-empty collection so scrolling should be enabled by default
+			var collectionView = new CollectionView
+			{
+				ItemsSource = items,
+				ItemTemplate = new DataTemplate(() => new Label())
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
+			{
+				var nativeCollectionView = handler.Controller?.CollectionView;
+				Assert.NotNull(nativeCollectionView);
+
+				// Verify scroll is enabled for non-empty collection
+				Assert.True(nativeCollectionView!.ScrollEnabled, "ScrollEnabled should be true for non-empty collection");
+			});
+
+		}
+
 		/// <summary>
 		/// Simulates what a developer might do with a Page/View
 		/// </summary>
