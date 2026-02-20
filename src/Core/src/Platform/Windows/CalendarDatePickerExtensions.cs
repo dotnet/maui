@@ -1,9 +1,12 @@
-﻿using System;
+﻿
+using System;
+using System.Globalization;
 using System.Linq;
 
 namespace Microsoft.Maui.Platform
 {
-	public static class CalendarDatePickerExtensions
+	//TODO make this public on NET8
+	internal static class CalendarDatePickerExtensions
 	{
 		public static string ToDateFormat(this string dateFormat)
 		{
@@ -13,10 +16,26 @@ namespace Microsoft.Maui.Platform
 			if (string.IsNullOrEmpty(dateFormat) || CheckDateFormat(dateFormat))
 				return string.Empty;
 
-			string result = string.Empty;
-			string separator = GetSeparator(dateFormat);
+			// Handle standard .NET DateTime format strings (single characters)
+			if (dateFormat.Length == 1)
+			{
+				string convertedFormat = ConvertStandardFormat(dateFormat);
 
-			var parts = dateFormat.Split(separator);
+				// If ConvertStandardFormat returns a WinUI format (starts with '{'), return it directly
+				if (!string.IsNullOrEmpty(convertedFormat) && convertedFormat.StartsWith("{"))
+					return convertedFormat;
+
+				// If empty, use default
+				if (string.IsNullOrEmpty(convertedFormat))
+					return string.Empty;
+
+				// Otherwise, it's a .NET pattern that needs conversion - let it fall through
+				dateFormat = convertedFormat;
+			}
+
+			// Handle custom format strings (or resolved standard formats)
+			string result = string.Empty;
+			string separator = GetSeparator(dateFormat); var parts = dateFormat.Split(separator);
 
 			if (parts.Length > 0)
 			{
@@ -30,6 +49,51 @@ namespace Microsoft.Maui.Platform
 			}
 
 			return result;
+		}
+
+		internal static string ConvertStandardFormat(string format)
+		{
+			var dtfi = CultureInfo.CurrentCulture.DateTimeFormat;
+
+			switch (format)
+			{
+				// Supported formats - return .NET pattern to be converted through normal flow
+				case "d": // Short date pattern
+					return dtfi.ShortDatePattern;
+				case "D": // Long date pattern
+					return dtfi.LongDatePattern;
+				case "m":
+				case "M": // Month day pattern
+					return dtfi.MonthDayPattern;
+				case "y":
+				case "Y": // Year month pattern
+					return dtfi.YearMonthPattern;
+
+				// Unsupported formats - return WinUI format string directly
+				case "f": // Full date/time pattern (short time) - use long date since time is not applicable
+					return "{dayofweek.full} {month.full} {day.integer}, {year.full} {hour.integer}:{minute.integer(2)} {period.abbreviated}";
+				case "F": // Full date/time pattern (long time) - include seconds as per .NET standard
+					return "{dayofweek.full} {month.full} {day.integer}, {year.full} {hour.integer}:{minute.integer(2)}:{second.integer(2)} {period.abbreviated}";
+				case "g": // General date/time pattern (short time) - use short date since time is not applicable  
+					return "{month.integer}/{day.integer}/{year.abbreviated} {hour.integer}:{minute.integer(2)} {period.abbreviated}";
+				case "G": // General date/time pattern (long time) - use short date since time is not applicable
+					return "{month.integer}/{day.integer}/{year.abbreviated} {hour.integer}:{minute.integer(2)}:{second.integer(2)} {period.abbreviated}";
+				case "u":
+					return "{year.full}-{month.integer(2)}-{day.integer(2)} {hour.integer(2)}:{minute.integer(2)}:{second.integer(2)}Z";
+				case "U": // Universal full date/time pattern - use long date since time is not applicable
+					return "{dayofweek.full} {month.full} {day.integer} {year.full} {hour.integer(2)}:{minute.integer(2)}:{second.integer(2)}";
+				case "o":
+				case "O": // Round-trip date/time pattern - use ISO 8601 format
+					return "{year.full}-{month.integer(2)}-{day.integer(2)}T{hour.integer(2)}:{minute.integer(2)}:{second.integer(7)}";
+				case "r":
+				case "R": // RFC1123 pattern - use abbreviated format as close approximation
+					return "{dayofweek.abbreviated}, {day.integer(2)} {month.abbreviated} {year.full} {hour.integer(2)}:{minute.integer(2)}:{second.integer(2)} GMT";
+				case "s": // Sortable date/time pattern - use numeric format
+					return "{year.full}-{month.integer(2)}-{day.integer(2)}T{hour.integer(2)}:{minute.integer(2)}:{second.integer(2)}";
+				default:
+					// For unrecognized formats, return empty string so that they use the default format
+					return string.Empty;
+			}
 		}
 
 		internal static string GetSeparator(string format)
