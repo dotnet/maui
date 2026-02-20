@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Graphics.Platform
 		private IPattern _fillPattern;
 		private CGRect _fillPatternRect;
 
-		private IImage _fillImage;
+		IImage _fillImage;
 
 		private RectF _gradientRectangle = RectF.Zero;
 		private Paint _paint;
@@ -635,9 +635,9 @@ namespace Microsoft.Maui.Graphics.Platform
 			}
 		}
 
-		private void DrawImageCallback(CGContext context)
+		private void DrawImageCallback(CGContext context, IImage fillImage)
 		{
-			var platformWrapper = _fillImage.ToPlatformImage() as PlatformImage;
+			var platformWrapper = fillImage?.ToPlatformImage() as PlatformImage;
 			var platformImage = platformWrapper?.PlatformRepresentation;
 			if (platformImage != null)
 			{
@@ -651,11 +651,7 @@ namespace Microsoft.Maui.Graphics.Platform
 #else
 				var cgImage = platformImage.CGImage;
 #endif
-				context.TranslateCTM(0, rect.Height);
-				context.ScaleCTM(1, -1);
 				context.DrawImage(rect, cgImage);
-				context.ScaleCTM(1, -1);
-				context.TranslateCTM(0, -rect.Height);
 			}
 		}
 
@@ -759,7 +755,8 @@ namespace Microsoft.Maui.Graphics.Platform
 			transform.Multiply(currentTransform);
 			transform.Multiply(new CGAffineTransform(1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f));
 
-			var pattern = new CGPattern(_fillPatternRect, transform, _fillImage.Width, _fillImage.Height, CGPatternTiling.NoDistortion, true, DrawImageCallback);
+			var imageToDraw = _fillImage;
+			var pattern = new CGPattern(_fillPatternRect, transform, _fillImage.Width, _fillImage.Height, CGPatternTiling.NoDistortion, true, (handle) => DrawImageCallback(handle, imageToDraw));
 			_context.SetFillPattern(pattern, new nfloat[] { 1 });
 			drawingAction();
 
