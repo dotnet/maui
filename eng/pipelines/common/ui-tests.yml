@@ -37,7 +37,7 @@ parameters:
     - 'SearchBar,Shape,Slider'
     - 'SoftInput,Stepper,Switch,SwipeView'
     - 'Shell'
-    - 'TabbedPage,TableView,TimePicker,TitleView,ToolbarItem'
+    - 'TabbedPage,TableView,TimePicker,TitleView,ToolbarItem,Triggers'
     - 'ViewBaseTests,Window'
     - 'WebView'
 
