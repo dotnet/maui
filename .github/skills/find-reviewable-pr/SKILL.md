@@ -25,8 +25,8 @@ This skill searches the dotnet/maui and dotnet/docs-maui repositories for open p
 1. **Priority (P/0)** - Critical priority PRs that need immediate attention (always on top)
 2. **Approved (Not Merged)** - PRs with human approval that haven't been merged yet
 3. **Ready To Review (Project Board)** - PRs in "Ready To Review" column of the MAUI SDK Ongoing project board (requires `read:project` scope)
-4. **Agent Reviewed** - PRs reviewed by AI agent workflow, with summary highlights to help decide whether to merge
-5. **Milestoned** - PRs assigned to current milestone(s), sorted by lowest SR number first (e.g., SR5 before SR6), then Servicing
+4. **Milestoned** - PRs assigned to current milestone(s), sorted by lowest SR number first (e.g., SR5 before SR6), then Servicing
+5. **Agent Reviewed** - PRs reviewed by AI agent workflow, with summary highlights to help decide whether to merge
 6. **Partner** - PRs from Syncfusion and other partners
 7. **Community** - External contributions needing review
 8. **Recent Waiting for Review** - PRs created in last 2 weeks that need review (minimum 5)
@@ -70,9 +70,9 @@ pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1 -DocsLim
 
 | Parameter | Values | Default | Description |
 |-----------|--------|---------|-------------|
-| `-Category` | milestoned, priority, recent, partner, community, docs-maui, approved, ready-to-review, agent-reviewed, all | all | Filter by category |
+| `-Category` | default, milestoned, priority, recent, partner, community, docs-maui, approved, ready-to-review, agent-reviewed, all | default | Filter by category. `default` shows only P/0 + milestoned, excluding changes-requested PRs. |
 | `-Platform` | android, ios, windows, maccatalyst, all | all | Filter by platform |
-| `-Limit` | 1-100 | 10 | Max PRs per category (maui repo) |
+| `-Limit` | 1-100 | 20 | Max PRs per category (maui repo) |
 | `-RecentLimit` | 1-100 | 5 | Max recent PRs waiting for review from maui repo (minimum 5 enforced) |
 | `-DocsLimit` | 1-100 | 5 | Max PRs for docs-maui waiting for review (minimum 5 enforced) |
 | `-ExcludeAuthors` | string[] | (none) | Exclude PRs from specific authors (e.g., `-ExcludeAuthors PureWeen,rmarinho`) |
@@ -112,8 +112,8 @@ To enable: `gh auth refresh -s read:project`
 1. 🔴 **Priority (P/0)** - Always include if present (always first)
 2. 🟢 **Approved (Not Merged)** - Always include if present
 3. 📋 **Ready To Review (Board)** - Always include if present
-4. 🤖 **Agent Reviewed** - Always include if present (with agent summary highlights)
-5. 📅 **Milestoned** - Always include if present  
+4. 📅 **Milestoned** - Always include if present  
+5. 🤖 **Agent Reviewed** - Always include if present (with agent summary highlights)
 6. 🤝 **Partner** - Always include if present
 7. ✨ **Community** - Always include if present
 8. 🕐 **Recent** - Always include if present
