@@ -287,11 +287,11 @@ namespace Microsoft.Maui.Controls
 		{
 			if (_rest is null)
 			{
-				_rest = new Entry[Math.Max(requiredLength, 4)];
+				_rest = new Entry[requiredLength];
 			}
 			else if (_rest.Length < requiredLength)
 			{
-				var newEntries = new Entry[Math.Max(requiredLength, _rest.Length * 2)];
+				var newEntries = new Entry[requiredLength];
 				Array.Copy(_rest, 0, newEntries, 0, RestCount);
 				_rest = newEntries;
 			}

@@ -15,8 +15,10 @@ public class SetterSpecificityListBenchmarks
 {
 	static readonly SetterSpecificity DefaultValue = default;
 	static readonly SetterSpecificity FromHandler = SetterSpecificity.FromHandler;
-	static readonly SetterSpecificity ManualValueSetter = new(0, 0, 0, 1, 0, 0, 0, 0);
-	static readonly SetterSpecificity Style = new(0, 1, 0, 0, 0, 0, 0, 0);
+	static readonly SetterSpecificity ManualValueSetter = SetterSpecificity.ManualValueSetter;
+	static readonly SetterSpecificity Style = new(SetterSpecificity.StyleLocal, 0, 0, 0);
+	static readonly SetterSpecificity FromBinding = SetterSpecificity.FromBinding;
+	static readonly SetterSpecificity DynamicResource = SetterSpecificity.DynamicResourceSetter;
 
 	LegacyContext _legacyCtx = null!;
 	CurrentContext _currentCtx = null!;
@@ -72,6 +74,56 @@ public class SetterSpecificityListBenchmarks
 		ctx.Values.SetValue(DefaultValue, "default");
 		ctx.Values.SetValue(Style, "style");
 		ctx.Values.SetValue(ManualValueSetter, "manual");
+		return ctx;
+	}
+
+	// --- Create context and set 4 entries ---
+
+	[Benchmark]
+	public object Legacy_CreateAndSet4()
+	{
+		var ctx = new LegacyContext();
+		ctx.Values[DefaultValue] = "default";
+		ctx.Values[Style] = "style";
+		ctx.Values[ManualValueSetter] = "manual";
+		ctx.Values[FromHandler] = "handler";
+		return ctx;
+	}
+
+	[Benchmark]
+	public object Current_CreateAndSet4()
+	{
+		var ctx = new CurrentContext();
+		ctx.Values.SetValue(DefaultValue, "default");
+		ctx.Values.SetValue(Style, "style");
+		ctx.Values.SetValue(ManualValueSetter, "manual");
+		ctx.Values.SetValue(FromHandler, "handler");
+		return ctx;
+	}
+
+	// --- Create context and set 5 entries ---
+
+	[Benchmark]
+	public object Legacy_CreateAndSet5()
+	{
+		var ctx = new LegacyContext();
+		ctx.Values[DefaultValue] = "default";
+		ctx.Values[Style] = "style";
+		ctx.Values[FromBinding] = "binding";
+		ctx.Values[ManualValueSetter] = "manual";
+		ctx.Values[DynamicResource] = "dynamic";
+		return ctx;
+	}
+
+	[Benchmark]
+	public object Current_CreateAndSet5()
+	{
+		var ctx = new CurrentContext();
+		ctx.Values.SetValue(DefaultValue, "default");
+		ctx.Values.SetValue(Style, "style");
+		ctx.Values.SetValue(FromBinding, "binding");
+		ctx.Values.SetValue(ManualValueSetter, "manual");
+		ctx.Values.SetValue(DynamicResource, "dynamic");
 		return ctx;
 	}
 
