@@ -2685,7 +2685,6 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 		[Theory]
 		[InlineData(20, 100)]
-		[InlineData(200, 100)]
 		public void AutoStarColumnSpanMeasureIsSumOfAutoAndStar(double determinantViewWidth, double widthConstraint)
 		{
 			var grid = CreateGridLayout(columns: "Auto, *", rows: "Auto, Auto");
@@ -2707,7 +2706,6 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 		[Theory]
 		[InlineData(20, 100)]
-		[InlineData(200, 100)]
 		public void AutoStarRowSpanMeasureIsSumOfAutoAndStar(double determinantViewHeight, double heightConstraint)
 		{
 			var grid = CreateGridLayout(columns: "Auto, Auto", rows: "Auto, *");
@@ -2725,6 +2723,76 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var expectedMeasureHeight = Math.Max(determinantViewHeight, heightConstraint);
 
 			view0.Received().Measure(Arg.Any<double>(), Arg.Is<double>(expectedMeasureHeight));
+		}
+
+		[Theory]
+		[InlineData(200, 100)]
+		public void AutoStarColumnSpanMeasureDoesNotExceedConstraint(double determinantViewWidth, double widthConstraint)
+		{
+			var grid = CreateGridLayout(columns: "Auto, *", rows: "Auto, Auto");
+			var view0 = CreateTestView(new Size(20, 20));
+			var view1 = CreateTestView(new Size(determinantViewWidth, 20));
+			SubstituteChildren(grid, view0, view1);
+			SetLocation(grid, view0, row: 0, col: 0, colSpan: 2);
+			SetLocation(grid, view1, row: 1, col: 0, colSpan: 1);
+
+			var measure = MeasureAndArrange(grid, widthConstraint: widthConstraint, heightConstraint: 100);
+			// measured should not exceed constraint
+			var expectedMeasureWidth = Math.Min(determinantViewWidth, widthConstraint);
+
+			view0.Received().Measure(Arg.Is<double>(expectedMeasureWidth), Arg.Any<double>());
+		}
+
+		[Theory]
+		[InlineData(200, 100)]
+		public void AutoStarRowSpanMeasureDoesNotExceedConstraint(double determinantViewHeight, double heightConstraint)
+		{
+			var grid = CreateGridLayout(columns: "Auto, Auto", rows: "Auto, *");
+			var view0 = CreateTestView(new Size(20, 20));
+			var view1 = CreateTestView(new Size(20, determinantViewHeight));
+			SubstituteChildren(grid, view0, view1);
+			SetLocation(grid, view0, row: 0, col: 0, rowSpan: 2);
+			SetLocation(grid, view1, row: 0, col: 1, rowSpan: 1);
+
+			var measure = MeasureAndArrange(grid, widthConstraint: 100, heightConstraint: heightConstraint);
+			// measured should not exceed constraint
+			var expectedMeasureHeight = Math.Min(determinantViewHeight, heightConstraint);
+
+			view0.Received().Measure(Arg.Any<double>(), Arg.Is<double>(expectedMeasureHeight));
+		}
+
+		[Theory]
+		[InlineData(1000, 500)]
+		[InlineData(500, 400)]
+		public void AutoStarCellsMeasureOverflowingAutoCellIsAdjusted(double widthConstraint, double heightConstraint)
+		{
+			// test for fix 27998
+			// |	 view0	   |
+			// | view1 | view2 |
+			var view0Height = 100;
+			var view2Width = 250;
+			var grid = CreateGridLayout(rows: "Auto, *", columns: "*, Auto");
+			var view0 = CreateTestView(new Size(widthConstraint, view0Height));
+			var view1 = CreateTestView(new Size(widthConstraint, heightConstraint)); // width overflow is 250 because: view1.Width + view2.Width = 1250 and constraint is 1000. similar for height
+			var view2 = CreateTestView(new Size(view2Width, heightConstraint));      // height overflow is 100 because: view0.Height + view1.Height = 100 + 500 = 600 and constraint is 500. similar for width
+			view2.Width.Returns(view2Width); // represents a border with absulute set width
+			SubstituteChildren(grid, view0, view1, view2);
+			SetLocation(grid, view0, row: 0, col: 0, colSpan: 2);
+			SetLocation(grid, view1, row: 1, col: 0);
+			SetLocation(grid, view2, row: 1, col: 1);
+
+			var measure = MeasureAndArrange(grid, widthConstraint: widthConstraint, heightConstraint: heightConstraint);
+
+			Assert.Equal(widthConstraint, measure.Width);
+			Assert.Equal(heightConstraint, measure.Height);
+
+			view0.Received().Measure(Arg.Is<double>(widthConstraint), Arg.Is<double>(double.PositiveInfinity));
+			var expectedeView1Width = widthConstraint - view2Width;
+			var expectedView1Height = heightConstraint - view0Height;
+			view1.Received().Measure(Arg.Is<double>(expectedeView1Width), Arg.Is<double>(expectedView1Height));
+			var expectedView2Height = expectedView1Height; // expresses equality of view1 and view2 height
+			view2.Received().Measure(Arg.Is<double>(double.PositiveInfinity), Arg.Is<double>(expectedView2Height));
+
 		}
 
 		[Theory, Category(GridStarSizing)]
