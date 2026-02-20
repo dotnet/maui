@@ -5,69 +5,69 @@
              x:Class="Maui.Controls.Sample.TriggersOptionsPage"
              x:DataType="local:TriggersViewModel"
              Title="TriggersOptionsPage">
-  <ContentPage.ToolbarItems>
-    <ToolbarItem Text="Apply"
-                 Clicked="ApplyButton_Clicked"
-                 AutomationId="Apply"/>
-  </ContentPage.ToolbarItems>
+        <ContentPage.ToolbarItems>
+                <ToolbarItem Text="Apply"
+                             Clicked="ApplyButton_Clicked"
+                             AutomationId="Apply"/>
+        </ContentPage.ToolbarItems>
 
-  <ScrollView>
-    <VerticalStackLayout Spacing="10"
-        Padding="15">
-      <Label Text="Select Trigger Type:"
-             FontSize="18"
-             FontAttributes="Bold"/>
+        <ScrollView>
+                <VerticalStackLayout Spacing="10"
+                                     Padding="15">
+                        <Label Text="Select Trigger Type:"
+                               FontSize="18"
+                               FontAttributes="Bold"/>
 
-      <Button Text="1. Property Trigger"
-              AutomationId="PropertyTriggerButton"
-              Clicked="OnTriggerTypeButtonClicked"
-              CommandParameter="PropertyTrigger"/>
+                        <Button Text="1. Property Trigger"
+                                AutomationId="PropertyTriggerButton"
+                                Clicked="OnTriggerTypeButtonClicked"
+                                CommandParameter="PropertyTrigger"/>
 
-      <Button Text="2. Data Trigger"
-              AutomationId="DataTriggerButton"
-              Clicked="OnTriggerTypeButtonClicked"
-              CommandParameter="DataTrigger"/>
+                        <Button Text="2. Data Trigger"
+                                AutomationId="DataTriggerButton"
+                                Clicked="OnTriggerTypeButtonClicked"
+                                CommandParameter="DataTrigger"/>
 
-      <Button Text="3. Event Trigger"
-              AutomationId="EventTriggerButton"
-              Clicked="OnTriggerTypeButtonClicked"
-              CommandParameter="EventTrigger"/>
+                        <Button Text="3. Event Trigger"
+                                AutomationId="EventTriggerButton"
+                                Clicked="OnTriggerTypeButtonClicked"
+                                CommandParameter="EventTrigger"/>
 
-      <Button Text="4. Multi Trigger"
-              AutomationId="MultiTriggerButton"
-              Clicked="OnTriggerTypeButtonClicked"
-              CommandParameter="MultiTrigger"/>
+                        <Button Text="4. Multi Trigger"
+                                AutomationId="MultiTriggerButton"
+                                Clicked="OnTriggerTypeButtonClicked"
+                                CommandParameter="MultiTrigger"/>
 
-      <Button Text="5. EnterActions &amp; ExitActions"
-              AutomationId="EnterExitActionsButton"
-              Clicked="OnTriggerTypeButtonClicked"
-              CommandParameter="EnterExitActions"/>
+                        <Button Text="5. EnterActions &amp; ExitActions"
+                                AutomationId="EnterExitActionsButton"
+                                Clicked="OnTriggerTypeButtonClicked"
+                                CommandParameter="EnterExitActions"/>
 
-      <Button Text="6. State Trigger"
-              AutomationId="StateTriggerButton"
-              Clicked="OnTriggerTypeButtonClicked"
-              CommandParameter="StateTrigger"/>
+                        <Button Text="6. State Trigger"
+                                AutomationId="StateTriggerButton"
+                                Clicked="OnTriggerTypeButtonClicked"
+                                CommandParameter="StateTrigger"/>
 
-      <Button Text="7. Adaptive Trigger"
-              AutomationId="AdaptiveTriggerButton"
-              Clicked="OnTriggerTypeButtonClicked"
-              CommandParameter="AdaptiveTrigger"/>
+                        <Button Text="7. Adaptive Trigger"
+                                AutomationId="AdaptiveTriggerButton"
+                                Clicked="OnTriggerTypeButtonClicked"
+                                CommandParameter="AdaptiveTrigger"/>
 
-      <Button Text="8. Compare State Trigger"
-              AutomationId="CompareStateTriggerButton"
-              Clicked="OnTriggerTypeButtonClicked"
-              CommandParameter="CompareStateTrigger"/>
+                        <Button Text="8. Compare State Trigger"
+                                AutomationId="CompareStateTriggerButton"
+                                Clicked="OnTriggerTypeButtonClicked"
+                                CommandParameter="CompareStateTrigger"/>
 
-      <Button Text="9. Device State Trigger"
-              AutomationId="DeviceStateTriggerButton"
-              Clicked="OnTriggerTypeButtonClicked"
-              CommandParameter="DeviceStateTrigger"/>
+                        <Button Text="9. Device State Trigger"
+                                AutomationId="DeviceStateTriggerButton"
+                                Clicked="OnTriggerTypeButtonClicked"
+                                CommandParameter="DeviceStateTrigger"/>
 
-      <Button Text="10. Orientation State Trigger"
-              AutomationId="OrientationStateTriggerButton"
-              Clicked="OnTriggerTypeButtonClicked"
-              CommandParameter="OrientationStateTrigger"/>
-    </VerticalStackLayout>
-  </ScrollView>
+                        <Button Text="10. Orientation State Trigger"
+                                AutomationId="OrientationStateTriggerButton"
+                                Clicked="OnTriggerTypeButtonClicked"
+                                CommandParameter="OrientationStateTrigger"/>
+                </VerticalStackLayout>
+        </ScrollView>
 
 </ContentPage>

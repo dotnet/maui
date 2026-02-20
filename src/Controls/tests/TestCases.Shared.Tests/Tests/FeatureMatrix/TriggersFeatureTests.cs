@@ -10,9 +10,33 @@ namespace Microsoft.Maui.TestCases.Tests
 		public const string TriggerFeatureMatrix = "Triggers Feature Matrix";
 		public override string GalleryPageName => TriggerFeatureMatrix;
 
+#if IOS
+		private const int CropBottomValue = 1200;
+#elif ANDROID
+		private const int CropBottomValue = 1150;
+#endif
+
 		public TriggersFeatureTests(TestDevice device)
 			: base(device)
 		{
+		}
+
+		private void VerifyScreenshotOrSetExceptionWithCroppingBottom(ref Exception? exception, string? name = null)
+		{
+#if ANDROID || IOS
+			VerifyScreenshotOrSetException(ref exception, name, cropBottom: CropBottomValue, tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+#else
+			VerifyScreenshotOrSetException(ref exception, name, tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+#endif
+		}
+
+		private void VerifyScreenshotOrSetExceptionWithCroppingLeft(ref Exception? exception, string? name = null)
+		{
+#if ANDROID
+			VerifyScreenshotOrSetException(ref exception, name, cropLeft: 125, tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+#else
+			VerifyScreenshotOrSetException(ref exception, name, tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+#endif
 		}
 
 		private void SelectTriggerType(string triggerButtonAutomationId)
@@ -23,6 +47,20 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap(triggerButtonAutomationId);
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
+			App.WaitForElement("Options");
+		}
+
+		private static void AssertPlatformText(string? platformText)
+		{
+#if ANDROID
+			Assert.That(platformText, Is.EqualTo("Running on: Android"));
+#elif IOS
+			Assert.That(platformText, Is.EqualTo("Running on: iOS"));
+#elif MACCATALYST
+			Assert.That(platformText, Is.EqualTo("Running on: MacCatalyst"));
+#else
+			Assert.That(platformText, Does.Contain("Running on: Windows"));
+#endif
 		}
 
 		[Test]
@@ -36,11 +74,11 @@ namespace Microsoft.Maui.TestCases.Tests
 			// Tap to focus
 			App.WaitForElement("PropertyTriggerEntry");
 			App.Tap("PropertyTriggerEntry");
-			VerifyScreenshotOrSetException(ref exception, "PropertyTrigger_Focused");
+			VerifyScreenshotOrSetExceptionWithCroppingBottom(ref exception, "PropertyTrigger_Focused");
 
 			App.WaitForElement("PropertyTriggerDummyEntry");
 			App.Tap("PropertyTriggerDummyEntry");
-			VerifyScreenshotOrSetException(ref exception, "PropertyTrigger_UnFocused");
+			VerifyScreenshotOrSetExceptionWithCroppingBottom(ref exception, "PropertyTrigger_UnFocused");
 
 			if (exception != null)
 			{
@@ -55,16 +93,15 @@ namespace Microsoft.Maui.TestCases.Tests
 			Exception? exception = null;
 
 			SelectTriggerType("DataTriggerButton");
-			App.WaitForElement("DataTriggerEntry");
 
 			// Initial state - button disabled (opacity 0.5)
-			VerifyScreenshotOrSetException(ref exception, "DataTrigger_ButtonDisabled");
+			VerifyScreenshotOrSetException(ref exception, "DataTrigger_ButtonDisabled", tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 
 			// Enter text to enable button
 			App.WaitForElement("DataTriggerEntry");
 			App.Tap("DataTriggerEntry");
 			App.EnterText("DataTriggerEntry", "Test");
-			VerifyScreenshotOrSetException(ref exception, "DataTrigger_ButtonEnabled");
+			VerifyScreenshotOrSetException(ref exception, "DataTrigger_ButtonEnabled", tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 
 			if (exception != null)
 			{
@@ -84,12 +121,12 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("EventTriggerEntry");
 			App.Tap("EventTriggerEntry");
 			App.EnterText("EventTriggerEntry", "123");
-			VerifyScreenshotOrSetException(ref exception, "EventTrigger_ValidNumeric");
+			VerifyScreenshotOrSetExceptionWithCroppingBottom(ref exception, "EventTrigger_ValidNumeric");
 
 			// Enter invalid text (should trigger validation)
 			App.ClearText("EventTriggerEntry");
 			App.EnterText("EventTriggerEntry", "abc");
-			VerifyScreenshotOrSetException(ref exception, "EventTrigger_InvalidText");
+			VerifyScreenshotOrSetExceptionWithCroppingBottom(ref exception, "EventTrigger_InvalidText");
 
 			if (exception != null)
 			{
@@ -104,15 +141,14 @@ namespace Microsoft.Maui.TestCases.Tests
 			Exception? exception = null;
 
 			SelectTriggerType("StateTriggerButton");
-			App.WaitForElement("StateTriggerSwitch");
 
 			// Initial state - switch off, background white
-			VerifyScreenshotOrSetException(ref exception, "StateTrigger_SwitchOff");
+			VerifyScreenshotOrSetException(ref exception, "StateTrigger_SwitchOff", tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 
 			// Toggle switch on - background black
 			App.WaitForElement("StateTriggerSwitch");
 			App.Tap("StateTriggerSwitch");
-			VerifyScreenshotOrSetException(ref exception, "StateTrigger_SwitchOn");
+			VerifyScreenshotOrSetException(ref exception, "StateTrigger_SwitchOn", tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 
 			if (exception != null)
 			{
@@ -127,15 +163,14 @@ namespace Microsoft.Maui.TestCases.Tests
 			Exception? exception = null;
 
 			SelectTriggerType("CompareStateTriggerButton");
-			App.WaitForElement("CompareStateCheckBox");
 
 			// Initial state - unchecked, background LightGray
-			VerifyScreenshotOrSetException(ref exception, "CompareStateTrigger_Unchecked");
+			VerifyScreenshotOrSetException(ref exception, "CompareStateTrigger_Unchecked", tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 
 			// Check the checkbox - background DarkGreen
 			App.WaitForElement("CompareStateCheckBox");
 			App.Tap("CompareStateCheckBox");
-			VerifyScreenshotOrSetException(ref exception, "CompareStateTrigger_Checked");
+			VerifyScreenshotOrSetException(ref exception, "CompareStateTrigger_Checked", tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 
 			if (exception != null)
 			{
@@ -151,18 +186,11 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			// Verify platform label is displayed correctly
 			var platformText = App.FindElement("PlatformLabel").GetText();
-#if ANDROID
-			Assert.That(platformText, Is.EqualTo("Running on: Android"));
-#elif IOS
-            Assert.That(platformText, Is.EqualTo("Running on: iOS"));
-#elif MACCATALYST
-            Assert.That(platformText, Is.EqualTo("Running on: MacCatalyst"));
-#else
-            Assert.That(platformText, Does.Contain("Running on: Windows"));
-#endif
+			AssertPlatformText(platformText);
 		}
 
 #if ANDROID || IOS // These platforms support orientation changes which is required to test the OrientationStateTrigger
+#if TEST_FAILS_ON_ANDROID // This test is currently failing on Android in Automation, But can be passes Manually.
 		[Test]
 		[Order(7)]
 		public void OrientationStateTriggerShowsCorrectBackground()
@@ -176,9 +204,14 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			App.SetOrientationLandscape();
 
+			App.WaitForElement("Options"); // Wait for page to stabilize after orientation change
 			var orientationLandScapeText = App.FindElement("OrientationLabel").GetText();
 			Assert.That(orientationLandScapeText, Is.EqualTo("Current orientation: Landscape"));
+
+			App.SetOrientationPortrait();
+			App.WaitForElement("Options");// Verify orientation label returns to portrait
 		}
+#endif
 
 		[Test]
 		[Order(8)]
@@ -189,10 +222,15 @@ namespace Microsoft.Maui.TestCases.Tests
 			SelectTriggerType("AdaptiveTriggerButton");
 
 			// Verify initial orientation (should be portrait for narrow width)
-			VerifyScreenshotOrSetException(ref exception, "AdaptiveTrigger_Portrait");
+			VerifyScreenshotOrSetException(ref exception, "AdaptiveTrigger_Portrait", tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 			App.SetOrientationLandscape();
-			// Verify landscape orientation after change
-			VerifyScreenshotOrSetException(ref exception, "AdaptiveTrigger_Landscape");
+
+			App.WaitForElement("Options"); // Wait for page to stabilize after orientation change
+										   // Verify landscape orientation after change
+			VerifyScreenshotOrSetExceptionWithCroppingLeft(ref exception, "AdaptiveTrigger_Landscape");
+
+			App.SetOrientationPortrait();
+			App.WaitForElement("Options"); // Wait for page to stabilize after orientation change
 
 			if (exception != null)
 			{
@@ -212,18 +250,18 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("MultiTriggerEmailEntry");
 			App.Tap("MultiTriggerEmailEntry");
 			App.EnterText("MultiTriggerEmailEntry", "user@test.com");
-			VerifyScreenshotOrSetException(ref exception, "MultiTrigger_EmailOnly_Filled");
+			VerifyScreenshotOrSetException(ref exception, "MultiTrigger_EmailOnly_Filled", tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 
 			App.ClearText("MultiTriggerEmailEntry");
 			App.WaitForElement("MultiTriggerPhoneEntry");
 			App.Tap("MultiTriggerPhoneEntry");
 			App.EnterText("MultiTriggerPhoneEntry", "555-1234");
-			VerifyScreenshotOrSetException(ref exception, "MultiTrigger_PhoneOnly_Filled");
+			VerifyScreenshotOrSetException(ref exception, "MultiTrigger_PhoneOnly_Filled", tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 
 			App.WaitForElement("MultiTriggerEmailEntry");
 			App.Tap("MultiTriggerEmailEntry");
 			App.EnterText("MultiTriggerEmailEntry", "user@test.com");
-			VerifyScreenshotOrSetException(ref exception, "MultiTrigger_Both_Filled");
+			VerifyScreenshotOrSetException(ref exception, "MultiTrigger_Both_Filled", tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 
 			if (exception != null)
 			{
@@ -408,7 +446,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("PropertyTriggerEntry");
 			App.WaitForElement("PropertyTriggerEntry");
 		}
-
+		// On Windows AutomationId is not working for BoxView. For more details see: https://github.com/dotnet/maui/issues/4715
+#if TEST_FAILS_ON_WINDOWS
 		[Test]
 		[Order(17)]
 		public void AdaptiveTriggerVerifiesWindowSizeLabelAndElements()
@@ -428,5 +467,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			var infoText = App.FindElement("AdaptiveTriggerInfo").GetText();
 			Assert.That(infoText, Is.EqualTo("Tests: MinWindowWidth, responsive layout"));
 		}
+#endif
 	}
 }

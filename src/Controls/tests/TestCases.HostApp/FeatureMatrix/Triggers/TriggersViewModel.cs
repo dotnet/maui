@@ -88,7 +88,6 @@ public class TriggersViewModel : INotifyPropertyChanged
 			{
 				_emailEntryText = value;
 				OnPropertyChanged();
-				OnPropertyChanged(nameof(IsSubmitButtonEnabled));
 			}
 		}
 	}
@@ -102,14 +101,11 @@ public class TriggersViewModel : INotifyPropertyChanged
 			{
 				_phoneEntryText = value;
 				OnPropertyChanged();
-				OnPropertyChanged(nameof(IsSubmitButtonEnabled));
 			}
 		}
 	}
 
 	public bool IsSaveButtonEnabled => !string.IsNullOrEmpty(DataEntryText);
-	public bool IsSubmitButtonEnabled => !string.IsNullOrEmpty(EmailEntryText) && !string.IsNullOrEmpty(PhoneEntryText);
-
 	public bool ShowPropertyTrigger => SelectedTriggerType == TriggerType.PropertyTrigger;
 	public bool ShowDataTrigger => SelectedTriggerType == TriggerType.DataTrigger;
 	public bool ShowEventTrigger => SelectedTriggerType == TriggerType.EventTrigger;
@@ -179,6 +175,7 @@ public class NumericValidationTriggerAction : TriggerAction<Entry>
 		double result;
 		bool isValid = double.TryParse(entry.Text, out result);
 		entry.TextColor = isValid ? Colors.Black : Colors.Red;
+		entry.BackgroundColor = isValid ? Colors.SkyBlue : Colors.Yellow;
 	}
 }
 
@@ -203,6 +200,22 @@ public class InverseBooleanConverter : IValueConverter
 			return !boolValue;
 		}
 		return false;
+	}
+}
+
+/// <summary>
+/// Value converter that returns true if a string is not null or empty
+/// </summary>
+public class StringNotNullOrEmptyConverter : IValueConverter
+{
+	public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+	{
+		return !string.IsNullOrEmpty(value as string);
+	}
+
+	public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+	{
+		throw new NotImplementedException();
 	}
 }
 
