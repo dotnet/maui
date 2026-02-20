@@ -143,7 +143,6 @@
         <Button Text="Reset"
                 AutomationId="ResetValidationEntryButton"
                 Clicked="OnValidateEntryReset"/>
-
     </VerticalStackLayout>
-
 </ContentPage>
+

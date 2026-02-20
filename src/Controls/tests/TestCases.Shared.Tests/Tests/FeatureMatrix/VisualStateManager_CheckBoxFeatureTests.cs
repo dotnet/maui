@@ -4,7 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-[Category(UITestCategories.ViewBaseTests)]
+[Category(UITestCategories.CheckBox)]
 public class VisualStateManager_CheckBoxFeatureTests : _GalleryUITest
 {
 	public const string VisualStateManagerCheckBoxFeatureTests = "VisualStateManager Feature Matrix";
@@ -208,3 +208,4 @@ public class VisualStateManager_CheckBoxFeatureTests : _GalleryUITest
 		Assert.That(stateText, Is.EqualTo("State: Normal"));
 	}
 }
+

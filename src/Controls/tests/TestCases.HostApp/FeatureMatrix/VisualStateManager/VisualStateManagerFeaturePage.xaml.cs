@@ -49,3 +49,4 @@ public partial class VisualStateManagerFeatureMainPage : ContentPage
 		await Navigation.PushAsync(new VisualStateManagerSwitchPage ());
 	}
 }
+

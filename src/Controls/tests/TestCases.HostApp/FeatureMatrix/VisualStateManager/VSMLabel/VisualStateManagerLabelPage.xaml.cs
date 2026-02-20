@@ -47,3 +47,4 @@ public partial class VisualStateManagerLabelPage : ContentPage
 		LabelState.Text = "State: Normal";
 	}
 }
+

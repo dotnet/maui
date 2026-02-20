@@ -4,7 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-[Category(UITestCategories.ViewBaseTests)]
+[Category(UITestCategories.Slider)]
 public class VisualStateManager_SliderFeatureTests : _GalleryUITest
 {
 	public const string VisualStateManagerSliderFeatureTests = "VisualStateManager Feature Matrix";
@@ -286,3 +286,4 @@ public class VisualStateManager_SliderFeatureTests : _GalleryUITest
 		Assert.That(unfocusedEnabledStateText, Is.EqualTo("State: Normal | Value: 50"));
 	}
 }
+

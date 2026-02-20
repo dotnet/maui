@@ -4,7 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-[Category(UITestCategories.ViewBaseTests)]
+[Category(UITestCategories.Label)]
 public class VisualStateManager_LabelFeatureTests : _GalleryUITest
 {
 	public const string VisualStateManagerLabelFeatureTests = "VisualStateManager Feature Matrix";
@@ -207,3 +207,4 @@ public class VisualStateManager_LabelFeatureTests : _GalleryUITest
 		Assert.That(labelText, Is.EqualTo("State: Disabled"));
 	}
 }
+

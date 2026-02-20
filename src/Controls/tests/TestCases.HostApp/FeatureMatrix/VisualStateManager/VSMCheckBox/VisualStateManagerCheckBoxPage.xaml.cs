@@ -47,3 +47,4 @@ public partial class VisualStateManagerCheckBoxPage : ContentPage
 		CheckBoxState.Text = "State: Normal";
 	}
 }
+

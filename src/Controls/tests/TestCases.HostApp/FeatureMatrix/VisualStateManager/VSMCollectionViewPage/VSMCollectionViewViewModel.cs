@@ -2,26 +2,27 @@ using System.Collections.ObjectModel;
 
 namespace Maui.Controls.Sample;
 
-public class Item
+public class VSMCollectionViewItem
 {
 	public string Name { get; set; } = string.Empty;
 }
 
 public class VSMCollectionViewViewModel
 {
-	public ObservableCollection<Item> Items { get; }
+	public ObservableCollection<VSMCollectionViewItem> Items { get; }
 
 	public VSMCollectionViewViewModel()
 	{
-		Items = new ObservableCollection<Item>
+		Items = new ObservableCollection<VSMCollectionViewItem>
 		{
-			new Item { Name = "Banana" },
-			new Item { Name = "Cherry" },
-			new Item { Name = "Date" },
-			new Item { Name = "Elderberry" },
-			new Item { Name = "Fig" },
-			new Item { Name = "Grape" },
-			new Item { Name = "Honeydew" }
+			new VSMCollectionViewItem { Name = "Banana" },
+			new VSMCollectionViewItem { Name = "Cherry" },
+			new VSMCollectionViewItem { Name = "Date" },
+			new VSMCollectionViewItem { Name = "Elderberry" },
+			new VSMCollectionViewItem { Name = "Fig" },
+			new VSMCollectionViewItem { Name = "Grape" },
+			new VSMCollectionViewItem { Name = "Honeydew" }
 		};
 	}
 }
+

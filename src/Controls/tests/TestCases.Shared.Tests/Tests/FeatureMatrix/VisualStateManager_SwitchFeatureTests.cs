@@ -4,7 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-[Category(UITestCategories.ViewBaseTests)]
+[Category(UITestCategories.Switch)]
 public class VisualStateManager_SwitchFeatureTests : _GalleryUITest
 {
 	public const string VisualStateManagerSwitchFeatureTests = "VisualStateManager Feature Matrix";
@@ -278,3 +278,4 @@ public class VisualStateManager_SwitchFeatureTests : _GalleryUITest
 		Assert.That(stateText, Is.EqualTo("State: Normal"));
 	}
 }
+

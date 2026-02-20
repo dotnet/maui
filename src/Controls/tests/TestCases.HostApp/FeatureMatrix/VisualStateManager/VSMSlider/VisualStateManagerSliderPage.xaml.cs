@@ -91,3 +91,4 @@ public partial class VisualStateManagerSliderPage : ContentPage
 		SliderState.Text = $"State: Focused | Value: {e.NewValue:0}";
 	}
 }
+

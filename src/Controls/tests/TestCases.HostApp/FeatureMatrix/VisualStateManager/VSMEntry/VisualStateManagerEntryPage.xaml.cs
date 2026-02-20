@@ -110,3 +110,4 @@ public partial class VisualStateManagerEntryPage : ContentPage
 		}
 	}
 }
+

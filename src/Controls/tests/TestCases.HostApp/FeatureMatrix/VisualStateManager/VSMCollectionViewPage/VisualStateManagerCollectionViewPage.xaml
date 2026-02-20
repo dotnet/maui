@@ -73,10 +73,12 @@
                              Spacing="12">
                 <Label Text="VisualStateManager Feature Matrix"
                        FontSize="20"/>
-                <BoxView HeightRequest="150"/>
+                <!-- I used a BoxView to add spacing above the CollectionView. On Windows, this prevents the cursor from initially hovering over the CollectionView, avoiding the automatic triggering of the PointerOver state.-->
+                <BoxView HeightRequest="150" AutomationId="BoxViewSpace"/>
                 <Label Text="CollectionView States (Normal / PointerOver / Selected / Disabled)"
                        FontAttributes="Bold"/>
 
+                <!-- I used CollectionView2 is intentional. We are currently using CollectionView2 (Items2 handler) as the latest implementation, so the VSM behavior is being validated against the updated handler rather than the legacy CollectionView.-->
                 <local:CollectionView2 ItemsSource="{Binding Items}"
                                        SelectionMode="Multiple"
                                        x:Name="MyCollectionView"
@@ -125,3 +127,4 @@
                 </HorizontalStackLayout>
         </VerticalStackLayout>
 </ContentPage>
+

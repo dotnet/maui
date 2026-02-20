@@ -4,7 +4,7 @@ namespace Maui.Controls.Sample;
 
 public partial class VisualStateManagerCollectionViewPage : ContentPage
 {
-	private VSMCollectionViewViewModel _viewModel;
+	private readonly VSMCollectionViewViewModel _viewModel;
 	public VisualStateManagerCollectionViewPage()
 	{
 		InitializeComponent();
@@ -75,11 +75,7 @@ public partial class VisualStateManagerCollectionViewPage : ContentPage
 			var bc = ve.BindingContext;
 			var isSelected = IsItemSelected(bc);
 			VisualStateManager.GoToState(ve, isSelected ? "Selected" : "Normal");
-
-			if (!MyCollectionView.IsEnabled)
-				CVState.Text = "State: Disabled";
-			else
-				CVState.Text = GetSelectedCount() > 0 ? $"State: Selected ({GetSelectedCount()})" : "State: Normal";
+			CVState.Text = GetSelectedCount() > 0 ? $"State: Selected ({GetSelectedCount()})" : "State: Normal";
 		}
 	}
 
@@ -107,7 +103,7 @@ public partial class VisualStateManagerCollectionViewPage : ContentPage
 			CVState.Text = "State: Disabled";
 			return;
 		}
-		if (_viewModel.Items is ObservableCollection<Item> items && items.Count > 0)
+		if (_viewModel.Items is ObservableCollection<VSMCollectionViewItem> items && items.Count > 0)
 		{
 			if (MyCollectionView.SelectionMode == SelectionMode.Multiple)
 			{
@@ -141,3 +137,4 @@ public partial class VisualStateManagerCollectionViewPage : ContentPage
 		CVState.Text = "State: Normal/Unselected";
 	}
 }
+

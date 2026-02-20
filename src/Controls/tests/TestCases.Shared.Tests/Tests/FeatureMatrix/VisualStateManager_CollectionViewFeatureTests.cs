@@ -4,7 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-[Category(UITestCategories.ViewBaseTests)]
+[Category(UITestCategories.CollectionView)]
 public class VisualStateManager_CollectionViewFeatureTests : _GalleryUITest
 {
 	public const string VisualStateManagerCollectionViewFeatureTests = "VisualStateManager Feature Matrix";
@@ -386,3 +386,4 @@ public class VisualStateManager_CollectionViewFeatureTests : _GalleryUITest
 		Assert.That(stateText, Is.EqualTo("State: Disabled"));
 	}
 }
+

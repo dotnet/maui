@@ -4,7 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-[Category(UITestCategories.ViewBaseTests)]
+[Category(UITestCategories.Entry)]
 public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 {
 	public const string VisualStateManagerEntryFeatureTests = "VisualStateManager Feature Matrix";
@@ -326,3 +326,4 @@ public class VisualStateManager_EntryFeatureTests : _GalleryUITest
 		Assert.That(stateText, Is.EqualTo("State: Invalid"));
 	}
 }
+

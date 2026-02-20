@@ -4,7 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-[Category(UITestCategories.ViewBaseTests)]
+[Category(UITestCategories.Button)]
 public class VisualStateManager_ButtonFeatureTests : _GalleryUITest
 {
 	public const string VisualStateManagerButtonFeatureTests = "VisualStateManager Feature Matrix";
@@ -168,3 +168,4 @@ public class VisualStateManager_ButtonFeatureTests : _GalleryUITest
 	}
 #endif
 }
+

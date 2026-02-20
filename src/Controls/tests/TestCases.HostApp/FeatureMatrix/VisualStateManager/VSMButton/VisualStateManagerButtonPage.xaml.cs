@@ -75,9 +75,9 @@ public partial class VisualStateManagerButtonPage : ContentPage
 	{
 		if (!DemoButton.IsEnabled)
 			return;
-		DemoButton.Focus();
 		VisualStateManager.GoToState(DemoButton, "Focused");
 		StateLabel.Text = "State: Focused";
 		DemoButton.Text = "Focused";
 	}
 }
+
