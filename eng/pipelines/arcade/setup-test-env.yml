@@ -11,6 +11,14 @@ steps:
   fetchDepth: 1
   clean: true
 
+# Enable KVM for Android tests on Linux
+- bash: |
+    echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+    sudo udevadm control --reload-rules
+    sudo udevadm trigger --name-match=kvm
+  displayName: Enable KVM
+  condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
+
 - template: /eng/pipelines/common/provision.yml@self
   parameters:
     checkoutDirectory: '$(System.DefaultWorkingDirectory)'
