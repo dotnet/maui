@@ -136,9 +136,11 @@ When working with public API changes:
 
 1. **NEVER commit directly to `main`** - Always create a feature branch for your work. Direct commits to `main` are strictly prohibited.
 
-2. **Do NOT rebase, squash, or force-push** unless explicitly requested by the user. These operations rewrite git history and can cause problems for other contributors. Default behavior should be regular commits and pushes.
+2. **When amending an existing PR, work on the PR's branch directly** - Do NOT create a separate branch off a PR branch. The PR branch already IS a feature branch. Creating a new branch off it means CI won't run on the original PR, defeating the purpose. Use `gh pr checkout` to switch to the PR branch and commit there.
 
-3. **When amending an existing PR, do NOT automatically push** - After making changes to an existing PR branch, ask the user before pushing. This allows the user to review the changes locally first. Exception: If the user's instructions explicitly include pushing, proceed without asking.
+3. **Do NOT rebase, squash, or force-push** unless explicitly requested by the user. These operations rewrite git history and can cause problems for other contributors. Default behavior should be regular commits and pushes.
+
+4. **When amending an existing PR, do NOT automatically push** - After making changes to an existing PR branch, ask the user before pushing. This allows the user to review the changes locally first. Exception: If the user's instructions explicitly include pushing, proceed without asking.
 
 **Safe Git Workflow:**
 ```bash
@@ -154,6 +156,17 @@ git push -u origin feature/issue-12345
 
 # For subsequent pushes on the same branch
 git push
+```
+
+**When amending an existing PR:**
+```bash
+# Check out the PR branch directly (do NOT create a new branch off it)
+gh pr checkout 12345
+
+# Make fixes and commit to the PR branch
+git add .
+git commit -m "Fix: Description of the change"
+# Do NOT push automatically; ask the user before running: git push
 ```
 
 **When asked to update an existing PR:**
