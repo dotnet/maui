@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -10,7 +11,9 @@ namespace Microsoft.Maui.Layouts
 {
 	public class GridLayoutManager : LayoutManager
 	{
-		GridStructure? _gridStructure;
+		GridStructure _gridStructure;
+		bool _hasGridStructure;
+		Dictionary<SpanKey, double>? _spansDictionary;
 
 		public GridLayoutManager(IGridLayout layout) : base(layout)
 		{
@@ -21,7 +24,10 @@ namespace Microsoft.Maui.Layouts
 
 		public override Size Measure(double widthConstraint, double heightConstraint)
 		{
-			_gridStructure = new GridStructure(Grid, widthConstraint, heightConstraint);
+			_gridStructure.ReturnArrays();
+			_gridStructure = new GridStructure(Grid, widthConstraint, heightConstraint, _spansDictionary);
+			_spansDictionary = _gridStructure.SpansDictionary;
+			_hasGridStructure = true;
 
 			var measuredWidth = _gridStructure.MeasuredGridWidth();
 			var measuredHeight = _gridStructure.MeasuredGridHeight();
@@ -31,12 +37,19 @@ namespace Microsoft.Maui.Layouts
 
 		public override Size ArrangeChildren(Rect bounds)
 		{
-			_gridStructure ??= new GridStructure(Grid, bounds.Width, bounds.Height);
+			if (!_hasGridStructure)
+			{
+				_gridStructure = new GridStructure(Grid, bounds.Width, bounds.Height, _spansDictionary);
+				_spansDictionary = _gridStructure.SpansDictionary;
+				_hasGridStructure = true;
+			}
 
 			_gridStructure.PrepareForArrange(bounds.Size);
 
-			foreach (var view in Grid)
+			var gridCount = Grid.Count;
+			for (int n = 0; n < gridCount; n++)
 			{
+				var view = Grid[n];
 				if (view.Visibility == Visibility.Collapsed)
 				{
 					continue;
@@ -51,7 +64,7 @@ namespace Microsoft.Maui.Layouts
 			return actual.AdjustForFill(bounds, Grid);
 		}
 
-		class GridStructure
+		struct GridStructure
 		{
 			readonly IGridLayout _grid;
 			readonly double _gridWidthConstraint;
@@ -70,21 +83,35 @@ namespace Microsoft.Maui.Layouts
 			readonly double _rowStarCount;
 			readonly double _columnStarCount;
 
-			Definition[] _rows { get; }
-			Definition[] _columns { get; }
+			Definition[] _rows;
+			int _rowCount;
+			Definition[] _columns;
+			int _columnCount;
 
-			readonly IView[] _childrenToLayOut;
-			Cell[] _cells { get; }
+			IView[] _childrenToLayOut;
+			Cell[] _cells;
+			int _childCount;
 
 			readonly Thickness _padding;
 			readonly double _rowSpacing;
 			readonly double _columnSpacing;
 
-			readonly Dictionary<SpanKey, Span> _spans = new();
+			Dictionary<SpanKey, double>? _spans;
 
-			public GridStructure(IGridLayout grid, double widthConstraint, double heightConstraint)
+			public Dictionary<SpanKey, double>? SpansDictionary => _spans;
+
+			public GridStructure(IGridLayout grid, double widthConstraint, double heightConstraint, Dictionary<SpanKey, double>? existingSpans = null)
 			{
 				_grid = grid;
+				_spans = existingSpans;
+				_spans?.Clear();
+				_childrenToLayOut = null!;
+				_cells = null!;
+				_childCount = 0;
+				_rows = null!;
+				_rowCount = 0;
+				_columns = null!;
+				_columnCount = 0;
 
 				_explicitGridHeight = _grid.Height;
 				_explicitGridWidth = _grid.Width;
@@ -103,11 +130,11 @@ namespace Microsoft.Maui.Layouts
 				_columnSpacing = grid.ColumnSpacing;
 				_rowSpacing = grid.RowSpacing;
 
-				_rows = GridStructure.InitializeRows(grid.RowDefinitions);
-				_columns = GridStructure.InitializeColumns(grid.ColumnDefinitions);
+				InitializeRows(grid.RowDefinitions);
+				InitializeColumns(grid.ColumnDefinitions);
 
-				_rowStarCount = CountStars(_rows);
-				_columnStarCount = CountStars(_columns);
+				_rowStarCount = CountStars(_rows, _rowCount);
+				_columnStarCount = CountStars(_columns, _columnCount);
 
 				// Determine whether we can figure out the * values before doing any measurements
 				// i.e., are there any Auto values in the relevant dimensions, and are we working 
@@ -120,7 +147,7 @@ namespace Microsoft.Maui.Layouts
 				// happy path where _none_ of the children are Collapsed.
 				var gridChildCount = _grid.Count;
 
-				_childrenToLayOut = new IView[gridChildCount];
+				_childrenToLayOut = ArrayPool<IView>.Shared.Rent(gridChildCount);
 				int currentChild = 0;
 				for (int n = 0; n < gridChildCount; n++)
 				{
@@ -130,73 +157,92 @@ namespace Microsoft.Maui.Layouts
 						currentChild += 1;
 					}
 				}
-
-				if (currentChild < gridChildCount)
-				{
-					Array.Resize(ref _childrenToLayOut, currentChild);
-				}
+				_childCount = currentChild;
 
 				// We'll ignore any collapsed child views during layout
-				_cells = new Cell[_childrenToLayOut.Length];
+				_cells = ArrayPool<Cell>.Shared.Rent(_childCount);
 
 				InitializeCells();
 
 				MeasureCells();
 			}
 
-			static Definition[] Implied()
+			/// <summary>
+			/// Returns rented arrays back to the pool.
+			/// </summary>
+			public void ReturnArrays()
 			{
-				return
-				[
-					new Definition(GridLength.Star)
-				];
+				if (_childrenToLayOut is not null)
+				{
+					ArrayPool<IView>.Shared.Return(_childrenToLayOut, clearArray: true);
+					_childrenToLayOut = null!;
+				}
+				if (_cells is not null)
+				{
+					ArrayPool<Cell>.Shared.Return(_cells);
+					_cells = null!;
+				}
+				if (_rows is not null)
+				{
+					ArrayPool<Definition>.Shared.Return(_rows);
+					_rows = null!;
+				}
+				if (_columns is not null)
+				{
+					ArrayPool<Definition>.Shared.Return(_columns);
+					_columns = null!;
+				}
 			}
 
-			static Definition[] InitializeRows(IReadOnlyList<IGridRowDefinition> rowDefinitions)
+			void InitializeRows(IReadOnlyList<IGridRowDefinition> rowDefinitions)
 			{
 				int count = rowDefinitions.Count;
 
 				if (count == 0)
 				{
 					// Since no rows are specified, we'll create an implied row 0 
-					return Implied();
+					_rows = ArrayPool<Definition>.Shared.Rent(1);
+					_rows[0] = new Definition(GridLength.Star);
+					_rowCount = 1;
+					return;
 				}
 
-				var rows = new Definition[count];
+				_rows = ArrayPool<Definition>.Shared.Rent(count);
+				_rowCount = count;
 
 				for (int n = 0; n < count; n++)
 				{
 					var definition = rowDefinitions[n];
-					rows[n] = new Definition(definition.Height);
+					_rows[n] = new Definition(definition.Height);
 				}
-
-				return rows;
 			}
 
-			static Definition[] InitializeColumns(IReadOnlyList<IGridColumnDefinition> columnDefinitions)
+			void InitializeColumns(IReadOnlyList<IGridColumnDefinition> columnDefinitions)
 			{
 				int count = columnDefinitions.Count;
 
 				if (count == 0)
 				{
 					// Since no columns are specified, we'll create an implied column 0 
-					return Implied();
+					_columns = ArrayPool<Definition>.Shared.Rent(1);
+					_columns[0] = new Definition(GridLength.Star);
+					_columnCount = 1;
+					return;
 				}
 
-				var definitions = new Definition[count];
+				_columns = ArrayPool<Definition>.Shared.Rent(count);
+				_columnCount = count;
 
 				for (int n = 0; n < count; n++)
 				{
 					var definition = columnDefinitions[n];
-					definitions[n] = new Definition(definition.Width);
+					_columns[n] = new Definition(definition.Width);
 				}
-
-				return definitions;
 			}
 
 			void InitializeCells()
 			{
-				for (int n = 0; n < _childrenToLayOut.Length; n++)
+				for (int n = 0; n < _childCount; n++)
 				{
 					var view = _childrenToLayOut[n];
 
@@ -205,8 +251,8 @@ namespace Microsoft.Maui.Layouts
 						continue;
 					}
 
-					var column = _grid.GetColumn(view).Clamp(0, _columns.Length - 1);
-					var columnSpan = _grid.GetColumnSpan(view).Clamp(1, _columns.Length - column);
+					var column = _grid.GetColumn(view).Clamp(0, _columnCount - 1);
+					var columnSpan = _grid.GetColumnSpan(view).Clamp(1, _columnCount - column);
 
 					var columnGridLengthType = GridLengthType.None;
 
@@ -215,8 +261,8 @@ namespace Microsoft.Maui.Layouts
 						columnGridLengthType |= ToGridLengthType(_columns[columnIndex].GridLength.GridUnitType);
 					}
 
-					var row = _grid.GetRow(view).Clamp(0, _rows.Length - 1);
-					var rowSpan = _grid.GetRowSpan(view).Clamp(1, _rows.Length - row);
+					var row = _grid.GetRow(view).Clamp(0, _rowCount - 1);
+					var rowSpan = _grid.GetRowSpan(view).Clamp(1, _rowCount - row);
 
 					var rowGridLengthType = GridLengthType.None;
 
@@ -228,8 +274,8 @@ namespace Microsoft.Maui.Layouts
 					var cell = new Cell(n, row, column, rowSpan, columnSpan, columnGridLengthType, rowGridLengthType);
 
 					// We may have enough info at this point to determine some of the measurement constraints for cells
-					DetermineCellMeasureWidth(cell);
-					DetermineCellMeasureHeight(cell);
+					DetermineCellMeasureWidth(ref cell);
+					DetermineCellMeasureHeight(ref cell);
 
 					_cells[n] = cell;
 				}
@@ -249,12 +295,12 @@ namespace Microsoft.Maui.Layouts
 
 			public Rect GetCellBoundsFor(IView view, double xOffset, double yOffset)
 			{
-				var firstColumn = _grid.GetColumn(view).Clamp(0, _columns.Length - 1);
-				var columnSpan = _grid.GetColumnSpan(view).Clamp(1, _columns.Length - firstColumn);
+				var firstColumn = _grid.GetColumn(view).Clamp(0, _columnCount - 1);
+				var columnSpan = _grid.GetColumnSpan(view).Clamp(1, _columnCount - firstColumn);
 				var lastColumn = firstColumn + columnSpan;
 
-				var firstRow = _grid.GetRow(view).Clamp(0, _rows.Length - 1);
-				var rowSpan = _grid.GetRowSpan(view).Clamp(1, _rows.Length - firstRow);
+				var firstRow = _grid.GetRow(view).Clamp(0, _rowCount - 1);
+				var rowSpan = _grid.GetRowSpan(view).Clamp(1, _rowCount - firstRow);
 				var lastRow = firstRow + rowSpan;
 
 				double top = TopEdgeOfRow(firstRow);
@@ -282,22 +328,22 @@ namespace Microsoft.Maui.Layouts
 
 			double GridHeight()
 			{
-				return SumDefinitions(_rows, _rowSpacing) + _padding.VerticalThickness;
+				return SumDefinitions(_rows, _rowCount, _rowSpacing) + _padding.VerticalThickness;
 			}
 
 			double GridWidth()
 			{
-				return SumDefinitions(_columns, _columnSpacing) + _padding.HorizontalThickness;
+				return SumDefinitions(_columns, _columnCount, _columnSpacing) + _padding.HorizontalThickness;
 			}
 
 			double GridMinimumHeight()
 			{
-				return SumDefinitions(_rows, _rowSpacing, minimize: true) + _padding.VerticalThickness;
+				return SumDefinitions(_rows, _rowCount, _rowSpacing, minimize: true) + _padding.VerticalThickness;
 			}
 
 			double GridMinimumWidth()
 			{
-				return SumDefinitions(_columns, _columnSpacing, minimize: true) + _padding.HorizontalThickness;
+				return SumDefinitions(_columns, _columnCount, _columnSpacing, minimize: true) + _padding.HorizontalThickness;
 			}
 
 			public double MeasuredGridHeight()
@@ -334,11 +380,11 @@ namespace Microsoft.Maui.Layouts
 				return width;
 			}
 
-			static double SumDefinitions(Definition[] definitions, double spacing, bool minimize = false)
+			static double SumDefinitions(Definition[] definitions, int definitionsCount, double spacing, bool minimize = false)
 			{
 				double sum = 0;
 
-				for (int n = 0; n < definitions.Length; n++)
+				for (int n = 0; n < definitionsCount; n++)
 				{
 					sum += minimize ? definitions[n].MinimumSize : definitions[n].Size;
 
@@ -386,9 +432,9 @@ namespace Microsoft.Maui.Layouts
 
 			void FirstMeasurePass()
 			{
-				for (int n = 0; n < _cells.Length; n++)
+				for (int n = 0; n < _childCount; n++)
 				{
-					var cell = _cells[n];
+					ref var cell = ref _cells[n];
 
 					bool treatCellHeightAsAuto = TreatCellHeightAsAuto(cell);
 					bool treatCellWidthAsAuto = TreatCellWidthAsAuto(cell);
@@ -413,7 +459,7 @@ namespace Microsoft.Maui.Layouts
 						}
 						else
 						{
-							TrackSpan(new Span(cell.Column, cell.ColumnSpan, true, measure.Width));
+							TrackSpan(cell.Column, cell.ColumnSpan, true, measure.Width);
 						}
 					}
 
@@ -425,7 +471,7 @@ namespace Microsoft.Maui.Layouts
 						}
 						else
 						{
-							TrackSpan(new Span(cell.Row, cell.RowSpan, false, measure.Height));
+							TrackSpan(cell.Row, cell.RowSpan, false, measure.Height);
 						}
 					}
 				}
@@ -433,8 +479,9 @@ namespace Microsoft.Maui.Layouts
 
 			void SecondMeasurePass()
 			{
-				foreach (var cell in _cells)
+				for (int i = 0; i < _childCount; i++)
 				{
+					var cell = _cells[i];
 					if (!cell.NeedsSecondPass)
 					{
 						continue;
@@ -476,7 +523,7 @@ namespace Microsoft.Maui.Layouts
 
 					if (cell.IsColumnSpanStar && cell.ColumnSpan > 1)
 					{
-						TrackSpan(new Span(cell.Column, cell.ColumnSpan, true, measure.Width));
+						TrackSpan(cell.Column, cell.ColumnSpan, true, measure.Width);
 					}
 					else if (cell.ColumnSpan == 1)
 					{
@@ -488,7 +535,7 @@ namespace Microsoft.Maui.Layouts
 
 					if (cell.IsRowSpanStar && cell.RowSpan > 1)
 					{
-						TrackSpan(new Span(cell.Row, cell.RowSpan, false, measure.Height));
+						TrackSpan(cell.Row, cell.RowSpan, false, measure.Height);
 					}
 					else if (cell.RowSpan == 1)
 					{
@@ -500,33 +547,41 @@ namespace Microsoft.Maui.Layouts
 				}
 			}
 
-			void TrackSpan(Span span)
+			void TrackSpan(int start, int length, bool isColumn, double requestedLength)
 			{
-				if (_spans.TryGetValue(span.Key, out Span? otherSpan))
+				var key = new SpanKey(start, length, isColumn);
+
+				if (_spans != null && _spans.TryGetValue(key, out var previousRequestedLength))
 				{
 					// This span may replace an equivalent but smaller span
-					if (span.Requested > otherSpan.Requested)
+					if (requestedLength > previousRequestedLength)
 					{
-						_spans[span.Key] = span;
+						_spans[key] = requestedLength;
 					}
 				}
 				else
 				{
-					_spans[span.Key] = span;
+					_spans ??= new();
+					_spans[key] = requestedLength;
 				}
 			}
 
 			void ResolveSpans()
 			{
-				foreach (var span in _spans.Values)
+				if (_spans == null)
 				{
-					if (span.IsColumn)
+					return;
+				}
+
+				foreach (var span in _spans)
+				{
+					if (span.Key.IsColumn)
 					{
-						ResolveSpan(_columns, span.Start, span.Length, _columnSpacing, span.Requested);
+						ResolveSpan(_columns, span.Key.Start, span.Key.Length, _columnSpacing, span.Value);
 					}
 					else
 					{
-						ResolveSpan(_rows, span.Start, span.Length, _rowSpacing, span.Requested);
+						ResolveSpan(_rows, span.Key.Start, span.Key.Length, _rowSpacing, span.Value);
 					}
 				}
 			}
@@ -610,7 +665,7 @@ namespace Microsoft.Maui.Layouts
 				return top;
 			}
 
-			void ResolveStars(Definition[] defs, double availableSpace, Func<Cell, bool> cellCheck, Func<Size, double> dimension, double starCount)
+			void ResolveStars(Definition[] defs, int defsCount, double availableSpace, Func<Cell, bool> cellCheck, Func<Size, double> dimension, double starCount)
 			{
 				Debug.Assert(starCount > 0, "The caller of ResolveStars has already checked that there are star values to resolve.");
 
@@ -630,8 +685,9 @@ namespace Microsoft.Maui.Layouts
 					// (each one would be infinite). So instead we'll use the size of the actual view in the star row/column.
 					// This means that an empty star row/column goes to zero if the available space is infinite. 
 
-					foreach (var cell in _cells)
+					for (int i = 0; i < _childCount; i++)
 					{
+						var cell = _cells[i];
 						if (cellCheck(cell)) // Check whether this cell should count toward the type of star value we're measuring
 						{
 							// Update the star size if the view in this cell is bigger
@@ -645,12 +701,12 @@ namespace Microsoft.Maui.Layouts
 					starSize = availableSpace / starCount;
 				}
 
-				foreach (var definition in defs)
+				for (int d = 0; d < defsCount; d++)
 				{
-					if (definition.IsStar)
+					if (defs[d].IsStar)
 					{
 						// Give the star row/column the appropriate portion of the space based on its weight
-						definition.Size = starSize * definition.GridLength.Value;
+						defs[d].Size = starSize * defs[d].GridLength.Value;
 					}
 				}
 			}
@@ -666,13 +722,13 @@ namespace Microsoft.Maui.Layouts
 				static bool cellCheck(Cell cell) => cell.IsColumnSpanStar;
 				static double getDimension(Size size) => size.Width;
 
-				ResolveStars(_columns, availableSpace, cellCheck, getDimension, _columnStarCount);
+				ResolveStars(_columns, _columnCount, availableSpace, cellCheck, getDimension, _columnStarCount);
 
-				foreach (var cell in _cells)
+				for (int n = 0; n < _childCount; n++)
 				{
-					if (double.IsNaN(cell.MeasureWidth))
+					if (double.IsNaN(_cells[n].MeasureWidth))
 					{
-						UpdateKnownMeasureWidth(cell);
+						UpdateKnownMeasureWidth(ref _cells[n]);
 					}
 				}
 			}
@@ -688,13 +744,13 @@ namespace Microsoft.Maui.Layouts
 				static bool cellCheck(Cell cell) => cell.IsRowSpanStar;
 				static double getDimension(Size size) => size.Height;
 
-				ResolveStars(_rows, availableSpace, cellCheck, getDimension, _rowStarCount);
+				ResolveStars(_rows, _rowCount, availableSpace, cellCheck, getDimension, _rowStarCount);
 
-				foreach (var cell in _cells)
+				for (int n = 0; n < _childCount; n++)
 				{
-					if (double.IsNaN(cell.MeasureHeight))
+					if (double.IsNaN(_cells[n].MeasureHeight))
 					{
-						UpdateKnownMeasureHeight(cell);
+						UpdateKnownMeasureHeight(ref _cells[n]);
 					}
 				}
 			}
@@ -710,7 +766,7 @@ namespace Microsoft.Maui.Layouts
 				// Iterate over the cells; determine if they span any star rows
 				// and find the mininum sizes for those star rows to contain the cell contents
 
-				for (int n = 0; n < _cells.Length; n++)
+				for (int n = 0; n < _childCount; n++)
 				{
 					var cell = _cells[n];
 
@@ -734,7 +790,7 @@ namespace Microsoft.Maui.Layouts
 				// Iterate over the cells; determine if they span any star columns
 				// and find the mininum sizes for those star columns to contain the cell contents
 
-				for (int n = 0; n < _cells.Length; n++)
+				for (int n = 0; n < _childCount; n++)
 				{
 					var cell = _cells[n];
 
@@ -800,8 +856,8 @@ namespace Microsoft.Maui.Layouts
 			public void PrepareForArrange(Size targetSize)
 			{
 				// Minimize all the star values (if any); then we can expand them to the target size if necessary
-				MinimizeStars(_rows);
-				MinimizeStars(_columns);
+				MinimizeStars(_rows, _rowCount);
+				MinimizeStars(_columns, _columnCount);
 
 				bool expandStarRows = _rowStarCount > 0
 					&& (Dimension.IsExplicitSet(_explicitGridHeight)
@@ -816,7 +872,7 @@ namespace Microsoft.Maui.Layouts
 					// If the grid is constrained vertically, we will need to limit the upper size of * rows;
 					// if not, they can be whatever size makes sense for the content
 					var limitStarRowHeights = !double.IsInfinity(_gridHeightConstraint);
-					ExpandStarDefinitions(_rows, targetSize.Height - _padding.VerticalThickness, GridMinimumHeight() - _padding.VerticalThickness,
+					ExpandStarDefinitions(_rows, _rowCount, targetSize.Height - _padding.VerticalThickness, GridMinimumHeight() - _padding.VerticalThickness,
 						_rowSpacing, _rowStarCount, limitStarRowHeights);
 				}
 
@@ -825,72 +881,71 @@ namespace Microsoft.Maui.Layouts
 					// If the grid is constrained horizontally, we will need to limit the upper size of * columns;
 					// if not, they can be whatever size makes sense for the content
 					var limitStarRowWidths = !double.IsInfinity(_gridWidthConstraint);
-					ExpandStarDefinitions(_columns, targetSize.Width - _padding.HorizontalThickness, GridMinimumWidth() - _padding.HorizontalThickness,
+					ExpandStarDefinitions(_columns, _columnCount, targetSize.Width - _padding.HorizontalThickness, GridMinimumWidth() - _padding.HorizontalThickness,
 						_columnSpacing, _columnStarCount, limitStarRowWidths);
 				}
 			}
 
-			static void MinimizeStars(Definition[] defs)
+			static void MinimizeStars(Definition[] defs, int defsCount)
 			{
-				foreach (var def in defs)
+				for (int d = 0; d < defsCount; d++)
 				{
-					if (def.IsStar)
+					if (defs[d].IsStar)
 					{
-						def.Size = def.MinimumSize;
+						defs[d].Size = defs[d].MinimumSize;
 					}
 				}
 			}
 
-			static void ExpandStarDefinitions(Definition[] definitions, double targetSize, double currentSize, double spacing, double starCount, bool limitStarSizes)
+			static void ExpandStarDefinitions(Definition[] definitions, int definitionsCount, double targetSize, double currentSize, double spacing, double starCount, bool limitStarSizes)
 			{
 				// Figure out what the star value should be at this size
-				var starSize = ComputeStarSizeForTarget(targetSize, definitions, spacing, starCount);
+				var starSize = ComputeStarSizeForTarget(targetSize, definitions, definitionsCount, spacing, starCount);
 
 				if (limitStarSizes)
 				{
 					// Before we expand the star values, we need to ensure that the size and minimum size of
 					// each star row/column do not exceed the value for starSize at the arranged size 
 					// (which may be smaller than the measured size)
-					EnsureSizeLimit(definitions, starSize);
+					EnsureSizeLimit(definitions, definitionsCount, starSize);
 				}
 
 				// Inflate the stars so that we fill up the space at this size
-				ExpandStars(targetSize, currentSize, definitions, starSize, starCount);
+				ExpandStars(targetSize, currentSize, definitions, definitionsCount, starSize, starCount);
 			}
 
-			static void EnsureSizeLimit(Definition[] definitions, double starSize)
+			static void EnsureSizeLimit(Definition[] definitions, int definitionsCount, double starSize)
 			{
-				for (int n = 0; n < definitions.Length; n++)
+				for (int n = 0; n < definitionsCount; n++)
 				{
-					var def = definitions[n];
-					if (!def.IsStar)
+					if (!definitions[n].IsStar)
 					{
 						continue;
 					}
 
-					var maxSize = starSize * def.GridLength.Value;
-					def.Size = Math.Min(maxSize, def.Size);
-					def.MinimumSize = Math.Min(maxSize, def.MinimumSize);
+					var maxSize = starSize * definitions[n].GridLength.Value;
+					definitions[n].Size = Math.Min(maxSize, definitions[n].Size);
+					definitions[n].MinimumSize = Math.Min(maxSize, definitions[n].MinimumSize);
 				}
 			}
 
-			static double ComputeStarSizeForTarget(double targetSize, Definition[] defs, double spacing, double starCount)
+			static double ComputeStarSizeForTarget(double targetSize, Definition[] defs, int defsCount, double spacing, double starCount)
 			{
-				var sum = SumDefinitions(defs, spacing, true);
+				var sum = SumDefinitions(defs, defsCount, spacing, true);
 
 				// Remove all the star defintions from the current size
-				foreach (var def in defs)
+				for (int d = 0; d < defsCount; d++)
 				{
-					if (def.IsStar)
+					if (defs[d].IsStar)
 					{
-						sum -= def.MinimumSize;
+						sum -= defs[d].MinimumSize;
 					}
 				}
 
 				return (targetSize - sum) / starCount;
 			}
 
-			static void ExpandStars(double targetSize, double currentSize, Definition[] defs, double targetStarSize, double starCount)
+			static void ExpandStars(double targetSize, double currentSize, Definition[] defs, int defsCount, double targetStarSize, double starCount)
 			{
 				Debug.Assert(starCount > 0, "Assume that the caller has already checked for the existence of star rows/columns before using this.");
 
@@ -904,13 +959,13 @@ namespace Microsoft.Maui.Layouts
 				// Figure out which is the biggest star definition in this dimension (absolute value and star scale)
 				var maxCurrentSize = 0.0;
 				var maxCurrentStarSize = 0.0;
-				foreach (var definition in defs)
+				for (int d = 0; d < defsCount; d++)
 				{
-					if (definition.IsStar)
+					if (defs[d].IsStar)
 					{
-						double definitionSize = definition.MinimumSize;
+						double definitionSize = defs[d].MinimumSize;
 						maxCurrentSize = Math.Max(maxCurrentSize, definitionSize);
-						maxCurrentStarSize = Math.Max(maxCurrentStarSize, definitionSize / definition.GridLength.Value);
+						maxCurrentStarSize = Math.Max(maxCurrentStarSize, definitionSize / defs[d].GridLength.Value);
 					}
 				}
 
@@ -923,11 +978,11 @@ namespace Microsoft.Maui.Layouts
 					// targetStarSize, that means we have enough room to expand all of our star rows/columns
 					// to their full size.
 
-					foreach (var definition in defs)
+					for (int d = 0; d < defsCount; d++)
 					{
-						if (definition.IsStar)
+						if (defs[d].IsStar)
 						{
-							definition.Size = targetStarSize * definition.GridLength.Value;
+							defs[d].Size = targetStarSize * defs[d].GridLength.Value;
 						}
 					}
 
@@ -941,24 +996,24 @@ namespace Microsoft.Maui.Layouts
 				// minimum sizes for all definitions where the minimum is less than the full star size
 				// target; we'll need that later to distribute available space.
 				double totaldiff = 0;
-				foreach (var definition in defs)
+				for (int d = 0; d < defsCount; d++)
 				{
-					if (definition.IsStar)
+					if (defs[d].IsStar)
 					{
-						double fullTargetSize = targetStarSize * definition.GridLength.Value;
-						if (definition.MinimumSize < fullTargetSize)
-							totaldiff += fullTargetSize - definition.MinimumSize;
+						double fullTargetSize = targetStarSize * defs[d].GridLength.Value;
+						if (defs[d].MinimumSize < fullTargetSize)
+							totaldiff += fullTargetSize - defs[d].MinimumSize;
 					}
 				}
 
-				foreach (var definition in defs)
+				for (int d = 0; d < defsCount; d++)
 				{
-					if (definition.IsStar)
+					if (defs[d].IsStar)
 					{
 						// Skip the star rows/columns whose minimums are at or higher than the target sizes
-						double fullTargetSize = targetStarSize * definition.GridLength.Value;
+						double fullTargetSize = targetStarSize * defs[d].GridLength.Value;
 
-						if (definition.MinimumSize < fullTargetSize)
+						if (defs[d].MinimumSize < fullTargetSize)
 						{
 							// Figure out how small this definition is relative to the total difference,
 							// and use that to determine how much of the available space this definition gets
@@ -966,19 +1021,19 @@ namespace Microsoft.Maui.Layouts
 							// The goal is to have the definitions expand proportionate to their deficit from
 							// their full target sizes
 
-							var scale = (fullTargetSize - definition.MinimumSize) / totaldiff;
+							var scale = (fullTargetSize - defs[d].MinimumSize) / totaldiff;
 							var portion = scale * availableSpace;
-							definition.Size = definition.MinimumSize + portion;
+							defs[d].Size = defs[d].MinimumSize + portion;
 						}
 					}
 				}
 			}
 
-			static bool AnyAuto(Definition[] definitions)
+			static bool AnyAuto(Definition[] definitions, int definitionsCount)
 			{
-				foreach (var definition in definitions)
+				for (int n = 0; n < definitionsCount; n++)
 				{
-					if (definition.IsAuto)
+					if (definitions[n].IsAuto)
 					{
 						return true;
 					}
@@ -994,7 +1049,7 @@ namespace Microsoft.Maui.Layouts
 					return false;
 				}
 
-				return !AnyAuto(_columns);
+				return !AnyAuto(_columns, _columnCount);
 			}
 
 			bool IsStarHeightPrecomputable()
@@ -1004,10 +1059,10 @@ namespace Microsoft.Maui.Layouts
 					return false;
 				}
 
-				return !AnyAuto(_rows);
+				return !AnyAuto(_rows, _rowCount);
 			}
 
-			void UpdateKnownMeasureWidth(Cell cell)
+			void UpdateKnownMeasureWidth(ref Cell cell)
 			{
 				double measureWidth = 0;
 				for (int column = cell.Column; column < cell.Column + cell.ColumnSpan; column++)
@@ -1023,7 +1078,7 @@ namespace Microsoft.Maui.Layouts
 				cell.MeasureWidth = measureWidth;
 			}
 
-			void UpdateKnownMeasureHeight(Cell cell)
+			void UpdateKnownMeasureHeight(ref Cell cell)
 			{
 				double measureHeight = 0;
 				for (int row = cell.Row; row < cell.Row + cell.RowSpan; row++)
@@ -1039,11 +1094,11 @@ namespace Microsoft.Maui.Layouts
 				cell.MeasureHeight = measureHeight;
 			}
 
-			void DetermineCellMeasureWidth(Cell cell)
+			void DetermineCellMeasureWidth(ref Cell cell)
 			{
 				if (cell.ColumnGridLengthType == GridLengthType.Absolute)
 				{
-					UpdateKnownMeasureWidth(cell);
+					UpdateKnownMeasureWidth(ref cell);
 				}
 				else if (TreatCellWidthAsAuto(cell))
 				{
@@ -1053,11 +1108,11 @@ namespace Microsoft.Maui.Layouts
 				// For all other situations, we'll have to wait until we've measured the Auto columns
 			}
 
-			void DetermineCellMeasureHeight(Cell cell)
+			void DetermineCellMeasureHeight(ref Cell cell)
 			{
 				if (cell.RowGridLengthType == GridLengthType.Absolute)
 				{
-					UpdateKnownMeasureHeight(cell);
+					UpdateKnownMeasureHeight(ref cell);
 				}
 				else if (TreatCellHeightAsAuto(cell))
 				{
@@ -1089,16 +1144,16 @@ namespace Microsoft.Maui.Layouts
 				return cell.IsRowSpanAuto;
 			}
 
-			static double CountStars(Definition[] definitions)
+			static double CountStars(Definition[] definitions, int count)
 			{
 				// Count up the total weight of star values (e.g., "*, 3*, *" == 5)
 				var starCount = 0.0;
 
-				foreach (var definition in definitions)
+				for (int i = 0; i < count; i++)
 				{
-					if (definition.IsStar)
+					if (definitions[i].IsStar)
 					{
-						starCount += definition.GridLength.Value;
+						starCount += definitions[i].GridLength.Value;
 					}
 				}
 
@@ -1106,38 +1161,55 @@ namespace Microsoft.Maui.Layouts
 			}
 		}
 
-		// Dictionary key for tracking a Span
-		record SpanKey(int Start, int Length, bool IsColumn);
-
-		class Span
+		readonly struct SpanKey : IEquatable<SpanKey>
 		{
-			public int Start { get; }
-			public int Length { get; }
-			public bool IsColumn { get; }
-			public double Requested { get; }
-
-			public SpanKey Key { get; }
-
-			public Span(int start, int length, bool isColumn, double requestedLength)
+			public SpanKey(int start, int length, bool isColumn)
 			{
 				Start = start;
 				Length = length;
 				IsColumn = isColumn;
-				Requested = requestedLength;
+			}
 
-				Key = new SpanKey(Start, Length, IsColumn);
+			public int Start { get; }
+			public int Length { get; }
+			public bool IsColumn { get; }
+
+			public bool Equals(SpanKey other)
+			{
+				return Start == other.Start && Length == other.Length && IsColumn == other.IsColumn;
+			}
+
+			public override bool Equals(object? obj)
+			{
+				return obj is SpanKey other && Equals(other);
+			}
+
+			public override int GetHashCode()
+			{
+#if NETSTANDARD
+				unchecked
+				{
+					int hash = 17;
+					hash = hash * 31 + Start;
+					hash = hash * 31 + Length;
+					hash = hash * 31 + (IsColumn ? 1 : 0);
+					return hash;
+				}
+#else
+				return HashCode.Combine(Start, Length, IsColumn);
+#endif
 			}
 		}
 
-		class Cell
+		struct Cell
 		{
 			public int ViewIndex { get; }
 			public int Row { get; }
 			public int Column { get; }
 			public int RowSpan { get; }
 			public int ColumnSpan { get; }
-			public double MeasureWidth { get; set; } = double.NaN;
-			public double MeasureHeight { get; set; } = double.NaN;
+			public double MeasureWidth { get; set; }
+			public double MeasureHeight { get; set; }
 			public bool NeedsSecondPass { get; set; }
 
 			/// <summary>
@@ -1160,6 +1232,9 @@ namespace Microsoft.Maui.Layouts
 				ColumnSpan = columnSpan;
 				ColumnGridLengthType = columnGridLengthType;
 				RowGridLengthType = rowGridLengthType;
+				MeasureWidth = double.NaN;
+				MeasureHeight = double.NaN;
+				NeedsSecondPass = false;
 			}
 
 			public bool IsColumnSpanAuto => HasFlag(ColumnGridLengthType, GridLengthType.Auto);
@@ -1194,7 +1269,7 @@ namespace Microsoft.Maui.Layouts
 			};
 		}
 
-		class Definition
+		struct Definition
 		{
 			readonly GridLength _gridLength;
 			private double _size;
@@ -1230,14 +1305,16 @@ namespace Microsoft.Maui.Layouts
 				}
 			}
 
-			public bool IsAuto => _gridLength.IsAuto;
-			public bool IsStar => _gridLength.IsStar;
-			public bool IsAbsolute => _gridLength.IsAbsolute;
+			public readonly bool IsAuto => _gridLength.IsAuto;
+			public readonly bool IsStar => _gridLength.IsStar;
+			public readonly bool IsAbsolute => _gridLength.IsAbsolute;
 
-			public GridLength GridLength => _gridLength;
+			public readonly GridLength GridLength => _gridLength;
 
 			public Definition(GridLength gridLength)
 			{
+				_size = 0;
+				MinimumSize = 0;
 				if (gridLength.IsAbsolute)
 				{
 					Size = gridLength.Value;
