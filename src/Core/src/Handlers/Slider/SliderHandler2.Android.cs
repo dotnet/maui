@@ -67,6 +67,7 @@ internal class SliderHandler2 : ViewHandler<ISlider, Slider>
                     break;
                 }
         }
+        // Pass through to Material3 Slider so it can update its own visual state
         e.Handled = false;
     }
 
