@@ -13,7 +13,7 @@
     6. docs-maui PRs (5 priority + 5 recent by default)
 
 .PARAMETER Category
-    Filter by category: "milestoned", "priority", "recent", "partner", "community", "docs-maui", "all"
+    Filter by category: "default" (P/0 + milestoned only), "milestoned", "priority", "recent", "partner", "community", "docs-maui", "approved", "ready-to-review", "agent-reviewed", "all"
 
 .PARAMETER Platform
     Filter by platform: "android", "ios", "windows", "maccatalyst", "all"
@@ -32,7 +32,11 @@
 
 .EXAMPLE
     ./query-reviewable-prs.ps1
-    # Returns prioritized PRs across all categories including 5 recent from maui and 5 from docs-maui
+    # Returns only P/0 and Milestoned PRs (default behavior)
+
+.EXAMPLE
+    ./query-reviewable-prs.ps1 -Category all
+    # Returns PRs across all categories
 
 .EXAMPLE
     ./query-reviewable-prs.ps1 -Category milestoned -Platform android
@@ -45,15 +49,15 @@
 
 param(
     [Parameter(Mandatory = $false)]
-    [ValidateSet("milestoned", "priority", "recent", "partner", "community", "docs-maui", "approved", "ready-to-review", "agent-reviewed", "all")]
-    [string]$Category = "all",
+    [ValidateSet("default", "milestoned", "priority", "recent", "partner", "community", "docs-maui", "approved", "ready-to-review", "agent-reviewed", "all")]
+    [string]$Category = "default",
 
     [Parameter(Mandatory = $false)]
     [ValidateSet("android", "ios", "windows", "maccatalyst", "all")]
     [string]$Platform = "all",
 
     [Parameter(Mandatory = $false)]
-    [int]$Limit = 10,
+    [int]$Limit = 20,
 
     [Parameter(Mandatory = $false)]
     [int]$RecentLimit = 5,
@@ -295,7 +299,7 @@ catch {
 }
 
 # Build the JSON fields list based on available scopes
-$baseFields = "number,title,labels,createdAt,updatedAt,isDraft,author,additions,deletions,changedFiles,milestone,url,reviewDecision,reviews"
+$baseFields = "number,title,labels,createdAt,updatedAt,isDraft,author,assignees,additions,deletions,changedFiles,milestone,url,reviewDecision,reviews"
 $jsonFields = if ($hasProjectScope) { "$baseFields,projectItems" } else { $baseFields }
 
 # Fetch "Ready To Review" PR numbers from the project board
@@ -647,6 +651,7 @@ foreach ($pr in $allPRs) {
         Number = $pr.number
         Title = $pr.title
         Author = $pr.author.login
+        Assignees = if ($pr.assignees) { ($pr.assignees | ForEach-Object { $_.login }) -join ", " } else { "" }
         Platform = Get-PRPlatform -pr $pr
         Complexity = Get-PRComplexity -pr $pr
         Milestone = if ($pr.milestone) { $pr.milestone.title } else { "" }
@@ -709,6 +714,7 @@ foreach ($pr in $docsMauiPRs) {
         Number = $pr.number
         Title = $pr.title
         Author = $pr.author.login
+        Assignees = if ($pr.assignees) { ($pr.assignees | ForEach-Object { $_.login }) -join ", " } else { "" }
         Platform = "Docs"
         Complexity = Get-PRComplexity -pr $pr
         Milestone = if ($pr.milestone) { $pr.milestone.title } else { "" }
@@ -819,12 +825,13 @@ function Write-PREntry {
     Write-Host "Title:$($pr.Title)"
     Write-Host "URL:$($pr.URL)"
     Write-Host "Author:$($pr.Author)"
+    if ($pr.Assignees) { Write-Host "Assignees:$($pr.Assignees)" } else { Write-Host "Assignees:⚠️ Unassigned" }
     if ($RepoOverride) { Write-Host "Repo:$RepoOverride" } else { Write-Host "Platform:$($pr.Platform)" }
     Write-Host "Complexity:$($pr.Complexity)"
     Write-Host "Milestone:$($pr.Milestone)"
     Write-Host "ReviewStatus:$($pr.ReviewStatus)"
     if ($pr.ProjectStatus) { Write-Host "ProjectStatus:$($pr.ProjectStatus)" }
-    if ($pr.AgentStatus) { Write-Host "AgentStatus:$($pr.AgentStatus)" }
+    if ($pr.AgentStatus) { Write-Host "AgentReview:$($pr.AgentStatus)" } else { Write-Host "AgentReview:❌ Not Reviewed" }
     if ($pr.AgentSummary) {
         Write-Host "AgentSummary:"
         foreach ($key in $pr.AgentSummary.Keys) {
@@ -843,19 +850,41 @@ function Format-Review-Output {
     Write-Host ""
     Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Cyan
     
+    # Helper: check if a category should be displayed
+    # "default" shows only priority + milestoned; "all" shows everything
+    $showCategory = {
+        param([string]$cat)
+        if ($Category -eq $cat) { return $true }
+        if ($Category -eq "all") { return $true }
+        if ($Category -eq "default" -and ($cat -eq "priority" -or $cat -eq "milestoned")) { return $true }
+        return $false
+    }
+
+    # In default mode, only show approved or needs-review PRs (skip changes-requested)
+    $defaultFilter = {
+        param($prList)
+        if ($Category -eq "default") {
+            $prList | Where-Object { $_.ReviewDecision -ne "CHANGES_REQUESTED" }
+        } else {
+            $prList
+        }
+    }
+
     # 1. Priority PRs (P/0) - ALWAYS on top
-    if ($priorityPRs.Count -gt 0 -and ($Category -eq "all" -or $Category -eq "priority")) {
-        Write-Host ""
-        Write-Host "🔴 PRIORITY (P/0) PRs - $($priorityPRs.Count) found" -ForegroundColor Red
-        Write-Host "-----------------------------------------------------------"
-        foreach ($pr in ($priorityPRs | Select-Object -First $Limit)) {
-            Write-PREntry -pr $pr -CategoryName "priority"
+    if ($priorityPRs.Count -gt 0 -and (& $showCategory "priority")) {
+        $priorityToDisplay = & $defaultFilter $priorityPRs
+        if ($priorityToDisplay.Count -gt 0) {
+            Write-Host ""
+            Write-Host "🔴 PRIORITY (P/0) PRs - $($priorityToDisplay.Count) found" -ForegroundColor Red
+            Write-Host "-----------------------------------------------------------"
+            foreach ($pr in ($priorityToDisplay | Select-Object -First $Limit)) {
+                Write-PREntry -pr $pr -CategoryName "priority"
+            }
         }
     }
     
     # 2. Approved but not merged PRs
-    if ($approvedPRs.Count -gt 0 -and ($Category -eq "all" -or $Category -eq "approved")) {
-        # When showing "all", exclude PRs already shown in priority
+    if ($approvedPRs.Count -gt 0 -and (& $showCategory "approved")) {
         $approvedToDisplay = if ($Category -eq "approved") {
             $approvedPRs
         } else {
@@ -872,8 +901,7 @@ function Format-Review-Output {
     }
     
     # 3. Ready To Review (from project board)
-    if ($readyToReviewPRs.Count -gt 0 -and ($Category -eq "all" -or $Category -eq "ready-to-review")) {
-        # When showing "all", exclude PRs already shown above
+    if ($readyToReviewPRs.Count -gt 0 -and (& $showCategory "ready-to-review")) {
         $readyToDisplay = if ($Category -eq "ready-to-review") {
             $readyToReviewPRs
         } else {
@@ -889,13 +917,30 @@ function Format-Review-Output {
         }
     }
     
-    # 4. Agent Reviewed PRs (with summary highlights)
-    if ($agentReviewedPRList.Count -gt 0 -and ($Category -eq "all" -or $Category -eq "agent-reviewed")) {
-        # When showing "all", exclude PRs already shown above
+    # 4. Milestoned PRs (review these BEFORE non-milestoned agent-reviewed PRs)
+    if ($milestonedPRs.Count -gt 0 -and (& $showCategory "milestoned")) {
+        $milestonedToDisplay = if ($Category -eq "milestoned") {
+            $milestonedPRs
+        } else {
+            $milestonedPRs | Where-Object { -not $_.IsPriority -and -not $_.IsApproved -and -not $_.IsReadyToReview }
+        }
+        $milestonedToDisplay = & $defaultFilter $milestonedToDisplay
+        if ($milestonedToDisplay.Count -gt 0) {
+            Write-Host ""
+            Write-Host "📅 MILESTONED PRs - $($milestonedToDisplay.Count) found" -ForegroundColor Yellow
+            Write-Host "-----------------------------------------------------------"
+            foreach ($pr in ($milestonedToDisplay | Select-Object -First $Limit)) {
+                Write-PREntry -pr $pr -CategoryName "milestoned"
+            }
+        }
+    }
+    
+    # 5. Agent Reviewed PRs (with summary highlights)
+    if ($agentReviewedPRList.Count -gt 0 -and (& $showCategory "agent-reviewed")) {
         $agentToDisplay = if ($Category -eq "agent-reviewed") {
             $agentReviewedPRList
         } else {
-            $agentReviewedPRList | Where-Object { -not $_.IsPriority -and -not $_.IsApproved -and -not $_.IsReadyToReview }
+            $agentReviewedPRList | Where-Object { -not $_.IsPriority -and -not $_.IsApproved -and -not $_.IsReadyToReview -and $_.Milestone -eq "" }
         }
         if ($agentToDisplay.Count -gt 0) {
             Write-Host ""
@@ -907,30 +952,12 @@ function Format-Review-Output {
         }
     }
     
-    # 5. Milestoned PRs
-    if ($milestonedPRs.Count -gt 0 -and ($Category -eq "all" -or $Category -eq "milestoned")) {
-        # When showing "all", exclude PRs already shown above
-        $milestonedToDisplay = if ($Category -eq "milestoned") {
-            $milestonedPRs
-        } else {
-            $milestonedPRs | Where-Object { -not $_.IsPriority -and -not $_.IsApproved -and -not $_.IsReadyToReview -and -not $_.HasAgentReview }
-        }
-        if ($milestonedToDisplay.Count -gt 0) {
-            Write-Host ""
-            Write-Host "📅 MILESTONED PRs - $($milestonedToDisplay.Count) found" -ForegroundColor Yellow
-            Write-Host "-----------------------------------------------------------"
-            foreach ($pr in ($milestonedToDisplay | Select-Object -First $Limit)) {
-                Write-PREntry -pr $pr -CategoryName "milestoned"
-            }
-        }
-    }
-    
     # 6. Partner PRs
-    if ($partnerPRs.Count -gt 0 -and ($Category -eq "all" -or $Category -eq "partner")) {
+    if ($partnerPRs.Count -gt 0 -and (& $showCategory "partner")) {
         $partnerToDisplay = if ($Category -eq "partner") {
             $partnerPRs
         } else {
-            $partnerPRs | Where-Object { -not $_.IsPriority -and -not $_.IsApproved -and -not $_.IsReadyToReview }
+            $partnerPRs | Where-Object { -not $_.IsPriority -and -not $_.IsApproved -and -not $_.IsReadyToReview -and $_.Milestone -eq "" }
         }
         if ($partnerToDisplay.Count -gt 0) {
             Write-Host ""
@@ -943,11 +970,11 @@ function Format-Review-Output {
     }
     
     # 7. Community PRs
-    if ($communityPRs.Count -gt 0 -and ($Category -eq "all" -or $Category -eq "community")) {
+    if ($communityPRs.Count -gt 0 -and (& $showCategory "community")) {
         $communityToDisplay = if ($Category -eq "community") {
             $communityPRs
         } else {
-            $communityPRs | Where-Object { -not $_.IsPriority -and -not $_.IsApproved -and -not $_.IsReadyToReview }
+            $communityPRs | Where-Object { -not $_.IsPriority -and -not $_.IsApproved -and -not $_.IsReadyToReview -and $_.Milestone -eq "" }
         }
         if ($communityToDisplay.Count -gt 0) {
             Write-Host ""
@@ -967,7 +994,7 @@ function Format-Review-Output {
             -not $_.IsPriority -and -not $_.IsPartner -and -not $_.IsCommunity -and -not $_.IsApproved -and -not $_.IsReadyToReview -and $_.Milestone -eq ""
         }
     }
-    if ($recentToDisplay.Count -gt 0 -and ($Category -eq "all" -or $Category -eq "recent")) {
+    if ($recentToDisplay.Count -gt 0 -and (& $showCategory "recent")) {
         Write-Host ""
         Write-Host "🕐 RECENT PRs WAITING FOR REVIEW (last 2 weeks) - $($recentToDisplay.Count) found" -ForegroundColor Cyan
         Write-Host "-----------------------------------------------------------"
@@ -978,7 +1005,7 @@ function Format-Review-Output {
     }
     
     # 9. docs-maui PRs - Priority
-    if ($docsMauiPriorityPRs.Count -gt 0 -and ($Category -eq "all" -or $Category -eq "docs-maui")) {
+    if ($docsMauiPriorityPRs.Count -gt 0 -and (& $showCategory "docs-maui")) {
         Write-Host ""
         Write-Host "📚 DOCS-MAUI PRIORITY PRs - $($docsMauiPriorityPRs.Count) found" -ForegroundColor Blue
         Write-Host "-----------------------------------------------------------"
@@ -988,7 +1015,7 @@ function Format-Review-Output {
     }
     
     # 10. docs-maui PRs - Waiting for Review
-    if ($docsMauiRecentPRs.Count -gt 0 -and ($Category -eq "all" -or $Category -eq "docs-maui")) {
+    if ($docsMauiRecentPRs.Count -gt 0 -and (& $showCategory "docs-maui")) {
         Write-Host ""
         Write-Host "📖 DOCS-MAUI PRs WAITING FOR REVIEW - $($docsMauiRecentPRs.Count) found" -ForegroundColor Blue
         Write-Host "-----------------------------------------------------------"
@@ -998,20 +1025,42 @@ function Format-Review-Output {
         }
     }
     
-    # Summary
+    # Summary - show only categories that were displayed, with actual filtered/deduped counts
     Write-Host ""
     Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Cyan
-    Write-Host "SUMMARY" -ForegroundColor Cyan
-    Write-Host "  Priority (P/0): $($priorityPRs.Count)"
-    Write-Host "  Approved (not merged): $($approvedPRs.Count)"
-    Write-Host "  Ready To Review (board): $($readyToReviewPRs.Count)"
-    Write-Host "  Agent Reviewed: $($agentReviewedPRList.Count)"
-    Write-Host "  Milestoned: $($milestonedPRs.Count)"
-    Write-Host "  Partner: $($partnerPRs.Count)"
-    Write-Host "  Community: $($communityPRs.Count)"
-    Write-Host "  Recent Waiting for Review (2 weeks): $($recentPRs.Count)"
-    Write-Host "  docs-maui Priority: $($docsMauiPriorityPRs.Count)"
-    Write-Host "  docs-maui Waiting for Review: $($docsMauiRecentPRs.Count)"
+    Write-Host "SUMMARY (showing: $Category)" -ForegroundColor Cyan
+    if (& $showCategory "priority") {
+        $c = @(& $defaultFilter $priorityPRs).Count
+        Write-Host "  Priority (P/0): $c"
+    }
+    if (& $showCategory "approved") {
+        $l = if ($Category -eq "approved") { $approvedPRs } else { @($approvedPRs | Where-Object { -not $_.IsPriority }) }
+        Write-Host "  Approved (not merged): $($l.Count)"
+    }
+    if (& $showCategory "ready-to-review") {
+        $l = if ($Category -eq "ready-to-review") { $readyToReviewPRs } else { @($readyToReviewPRs | Where-Object { -not $_.IsPriority -and -not $_.IsApproved }) }
+        Write-Host "  Ready To Review (board): $($l.Count)"
+    }
+    if (& $showCategory "milestoned") {
+        $l = if ($Category -eq "milestoned") { $milestonedPRs } else { @($milestonedPRs | Where-Object { -not $_.IsPriority -and -not $_.IsApproved -and -not $_.IsReadyToReview }) }
+        $l = @(& $defaultFilter $l)
+        Write-Host "  Milestoned: $($l.Count)"
+    }
+    if (& $showCategory "agent-reviewed") {
+        $l = if ($Category -eq "agent-reviewed") { $agentReviewedPRList } else { @($agentReviewedPRList | Where-Object { -not $_.IsPriority -and -not $_.IsApproved -and -not $_.IsReadyToReview -and $_.Milestone -eq "" }) }
+        Write-Host "  Agent Reviewed: $($l.Count)"
+    }
+    if (& $showCategory "partner") {
+        $l = if ($Category -eq "partner") { $partnerPRs } else { @($partnerPRs | Where-Object { -not $_.IsPriority -and -not $_.IsApproved -and -not $_.IsReadyToReview -and $_.Milestone -eq "" }) }
+        Write-Host "  Partner: $($l.Count)"
+    }
+    if (& $showCategory "community") {
+        $l = if ($Category -eq "community") { $communityPRs } else { @($communityPRs | Where-Object { -not $_.IsPriority -and -not $_.IsApproved -and -not $_.IsReadyToReview -and $_.Milestone -eq "" }) }
+        Write-Host "  Community: $($l.Count)"
+    }
+    if (& $showCategory "recent") { Write-Host "  Recent Waiting for Review (2 weeks): $($recentPRs.Count)" }
+    if (& $showCategory "docs-maui") { Write-Host "  docs-maui Priority: $($docsMauiPriorityPRs.Count)" }
+    if (& $showCategory "docs-maui") { Write-Host "  docs-maui Waiting for Review: $($docsMauiRecentPRs.Count)" }
 }
 
 function Format-Json-Output {
