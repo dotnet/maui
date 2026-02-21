@@ -176,14 +176,19 @@ namespace Microsoft.Maui.Maps.Handlers
 			var nativeCircle = GetNativeCircle(mauiCircle);
 
 			if (nativeCircle == null)
+			{
 				return;
-
+			}
 
 			if (mauiCircle.Stroke is SolidPaint solidPaint)
-				nativeCircle.FillColor = solidPaint.Color.AsColor();
+			{
+				nativeCircle.StrokeColor = solidPaint.Color.AsColor();
+			}
 
 			if (mauiCircle.Fill is SolidPaint solidFillPaint)
+			{
 				nativeCircle.FillColor = solidFillPaint.Color.AsColor();
+			}
 
 			nativeCircle.Center = new LatLng(mauiCircle.Center.Latitude, mauiCircle.Center.Longitude);
 			nativeCircle.Radius = mauiCircle.Radius.Meters;
