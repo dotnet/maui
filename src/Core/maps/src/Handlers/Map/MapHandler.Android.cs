@@ -461,6 +461,19 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		void ClearMapElements()
 		{
+			// Clear MapElementId on all map elements before removing native elements
+			// This prevents issues when the same elements are re-added later
+			if (VirtualView?.Elements != null)
+			{
+				foreach (var element in VirtualView.Elements)
+				{
+					if (element is IMapElement mapElement)
+					{
+						mapElement.MapElementId = null;
+					}
+				}
+			}
+
 			if (_polylines != null)
 			{
 				for (int i = 0; i < _polylines.Count; i++)

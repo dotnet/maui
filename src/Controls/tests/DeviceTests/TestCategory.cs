@@ -28,6 +28,7 @@
 		public const string Layout = "Layout";
 		public const string Lifecycle = nameof(Lifecycle);
 		public const string ListView = "ListView";
+		public const string Map = "Map";
 		public const string MenuFlyout = nameof(MenuFlyout);
 		public const string Mapper = nameof(Mapper);
 		public const string Memory = nameof(Memory);
