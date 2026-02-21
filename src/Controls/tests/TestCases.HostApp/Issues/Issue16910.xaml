@@ -3,10 +3,12 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues.Issue16910">
     <VerticalStackLayout Padding="20" Spacing="10">
-        <Button AutomationId="RunTest" Text="Run Binding Test" Clicked="OnRunTestClicked" />
         <Label AutomationId="TestResult" x:Name="TestResultLabel" Text="Waiting" FontSize="18" />
+        <Button AutomationId="RunTest" Text="Run Binding Test" Clicked="OnRunTestClicked" />
+        <Button AutomationId="StopRefreshing" x:Name="StopRefreshingButton" Text="Stop Refresh"
+                Clicked="OnStopRefreshClicked" IsVisible="false" />
         <RefreshView x:Name="refreshView" IsRefreshing="{Binding IsRefreshing, Mode=TwoWay}">
-            <ScrollView>
+            <ScrollView AutomationId="RefreshScrollView">
                 <VerticalStackLayout Padding="10" Spacing="5">
                     <Label Text="Item 1" />
                     <Label Text="Item 2" />
