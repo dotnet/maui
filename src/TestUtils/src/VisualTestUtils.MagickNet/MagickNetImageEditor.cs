@@ -14,12 +14,12 @@ namespace VisualTestUtils.MagickNet
 
         public void Crop(int x, int y, int width, int height)
         {
-            _magickImage.Crop(new MagickGeometry(x, y, width, height));
-            _magickImage.RePage();
+            _magickImage.Crop(new MagickGeometry(x, y, (uint)width, (uint)height));
+            _magickImage.ResetPage();
         }
 
         public (int width, int height) GetSize() =>
-            (_magickImage.Width, _magickImage.Height);
+            ((int)_magickImage.Width, (int)_magickImage.Height);
 
         public ImageSnapshot GetUpdatedImage()
         {
