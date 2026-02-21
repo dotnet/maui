@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<TabbedPage 
+  xmlns="http://schemas.microsoft.com/dotnet/2021/maui" 
+  xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+  x:Class="Maui.Controls.Sample.Issues.Issue2708">
+
+  <ContentPage Title="Tab 1" AutomationId="Tab1">
+    <StackLayout Padding="20">
+      <Label Text="This is Tab 1" FontSize="18" HorizontalOptions="Center" />
+      <Button 
+        x:Name="OpenModalButton" 
+        AutomationId="OpenModalButton"
+        Text="Open Modal" 
+        Clicked="OnOpenModalClicked" />
+      <Label 
+        x:Name="StatusLabel"
+        AutomationId="StatusLabel"
+        Text="Tabs should remain visible during modal navigation" 
+        FontSize="14" 
+        HorizontalOptions="Center" />
+    </StackLayout>
+  </ContentPage>
+
+  <ContentPage Title="Tab 2" AutomationId="Tab2">
+    <StackLayout Padding="20">
+      <Label Text="This is Tab 2" FontSize="18" HorizontalOptions="Center" />
+      <Label Text="Switch to this tab to verify tab functionality" FontSize="14" />
+    </StackLayout>
+  </ContentPage>
+
+  <ContentPage Title="Tab 3" AutomationId="Tab3">
+    <StackLayout Padding="20">
+      <Label Text="This is Tab 3" FontSize="18" HorizontalOptions="Center" />
+      <Label Text="This tab confirms tab navigation works" FontSize="14" />
+    </StackLayout>
+  </ContentPage>
+
+</TabbedPage>
