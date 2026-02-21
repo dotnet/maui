@@ -90,10 +90,17 @@ namespace Microsoft.Maui.Controls.Platform
 				if (characterSpacing >= 0)
 					spannable.SetSpan(new PlatformFontSpan(characterSpacing.ToEm()), start, end, SpanTypes.InclusiveInclusive);
 
-				// Font
-				var font = span.ToFont(defaultFontSize);
-				if (font.IsDefault && defaultFont.HasValue)
-					font = defaultFont.Value;
+				// Inherit font properties from defaultFont if not explicitly set
+				var fontFamily = span.IsSet(Span.FontFamilyProperty) ? span.FontFamily : defaultFont?.Family;
+				var fontSize = span.IsSet(Span.FontSizeProperty) ? span.FontSize : defaultFontSize;
+				var fontAttributes = span.IsSet(Span.FontAttributesProperty)
+					? span.FontAttributes
+					: (defaultFont?.GetFontAttributes() ?? FontAttributes.None);
+				var autoScaling = span.IsSet(Span.FontAutoScalingEnabledProperty)
+					? span.FontAutoScalingEnabled
+					: (defaultFont?.AutoScalingEnabled ?? true);
+				var font = Font.OfSize(fontFamily, fontSize, enableScaling: autoScaling)
+					.WithAttributes(fontAttributes);
 				if (!font.IsDefault)
 					spannable.SetSpan(new PlatformFontSpan(context ?? AAplication.Context, font.ToTypeface(fontManager), font.AutoScalingEnabled, (float)fontManager.GetFontSize(font).Value), start, end, SpanTypes.InclusiveInclusive);
 
