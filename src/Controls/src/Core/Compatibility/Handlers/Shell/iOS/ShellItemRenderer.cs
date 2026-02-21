@@ -455,11 +455,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (page is null || !OperatingSystem.IsIOSVersionAtLeast(11))
 				return;
 
+			// Shell doesn't have the property PrefersLargeTitles, so we should not update the large titles
+			// if users doen't explicitly set the LargeTitleDisplay property on the Page.
+			// todo net 11: Add PrefersLargeTitles to Shell and use that here.
+			if (!page.IsSet(PlatformConfiguration.iOSSpecific.Page.LargeTitleDisplayProperty))
+			{
+				return;
+			}
+
 			var largeTitleDisplayMode = page.OnThisPlatform().LargeTitleDisplay();
 
 			if (SelectedViewController is UINavigationController navigationController)
 			{
-				navigationController.NavigationBar.PrefersLargeTitles = largeTitleDisplayMode == LargeTitleDisplayMode.Always;
+				navigationController.NavigationBar.PrefersLargeTitles = largeTitleDisplayMode != LargeTitleDisplayMode.Never;
 				var top = navigationController.TopViewController;
 				if (top is not null)
 				{
