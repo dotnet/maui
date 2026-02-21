@@ -1800,7 +1800,7 @@ namespace Microsoft.Maui.Graphics
 
 				_cachedBounds = Platform.GraphicsExtensions.AsRectangleF(cgPath.PathBoundingBox);
 #else
-				_cachedBounds = GetBoundsByFlattening();
+				_cachedBounds = CalculateTightBounds();
 #endif
 
 				return (RectF)_cachedBounds;
@@ -1849,6 +1849,247 @@ namespace Microsoft.Maui.Graphics
 			_cachedBounds = new RectF(l, t, r - l, b - t);
 			return (RectF)_cachedBounds;
 		}
+	private RectF CalculateTightBounds()
+	{
+		if (_points == null || _points.Count == 0)
+		{
+			return new RectF(0, 0, 0, 0);
+		}
+
+		float minX = float.MaxValue;
+		float minY = float.MaxValue;
+		float maxX = float.MinValue;
+		float maxY = float.MinValue;
+
+		int pointIndex = 0;
+		int arcAngleIndex = 0;
+		int arcClockwiseIndex = 0;
+
+		// Process each operation in the path
+		for (int i = 0; i < _operations.Count; i++)
+		{
+			PathOperation operation = _operations[i];
+			switch (operation)
+			{
+				case PathOperation.Move:
+				case PathOperation.Line:
+				{
+					// For move and line operations, simply include the point
+					PointF point = _points[pointIndex++];
+					minX = Math.Min(minX, point.X);
+					minY = Math.Min(minY, point.Y);
+					maxX = Math.Max(maxX, point.X);
+					maxY = Math.Max(maxY, point.Y);
+					break;
+				}
+
+				case PathOperation.Quad:
+				{
+					// For quadratic bezier curves, we need the extreme points
+					PointF startPoint = (i > 0 && _operations[i - 1] != PathOperation.Close) ? _points[pointIndex - 1] : _points[pointIndex - 1]; // Use previous point as start
+					PointF controlPoint = _points[pointIndex++];
+					PointF endPoint = _points[pointIndex++];
+
+					// Include start and end points in bounds
+					minX = Math.Min(minX, Math.Min(startPoint.X, endPoint.X));
+					minY = Math.Min(minY, Math.Min(startPoint.Y, endPoint.Y));
+					maxX = Math.Max(maxX, Math.Max(startPoint.X, endPoint.X));
+					maxY = Math.Max(maxY, Math.Max(startPoint.Y, endPoint.Y));
+
+					// Find extreme points for quadratic bezier curve
+					FindQuadBezierExtremePoints(startPoint, controlPoint, endPoint, ref minX, ref minY, ref maxX, ref maxY);
+					break;
+				}
+
+				case PathOperation.Cubic:
+				{
+					// For cubic bezier curves, we need the extreme points
+					PointF startPoint = (i > 0 && _operations[i - 1] != PathOperation.Close) ? _points[pointIndex - 1] : _points[pointIndex - 1]; // Use previous point as start
+					PointF controlPoint1 = _points[pointIndex++];
+					PointF controlPoint2 = _points[pointIndex++];
+					PointF endPoint = _points[pointIndex++];
+
+					// Include start and end points in bounds
+					minX = Math.Min(minX, Math.Min(startPoint.X, endPoint.X));
+					minY = Math.Min(minY, Math.Min(startPoint.Y, endPoint.Y));
+					maxX = Math.Max(maxX, Math.Max(startPoint.X, endPoint.X));
+					maxY = Math.Max(maxY, Math.Max(startPoint.Y, endPoint.Y));
+
+					// Find extreme points for cubic bezier curve
+					FindCubicBezierExtremePoints(startPoint, controlPoint1, controlPoint2, endPoint, ref minX, ref minY, ref maxX, ref maxY);
+					break;
+				}
+
+				case PathOperation.Arc:
+				{
+					// For arc operations, we need to find the bounds
+					PointF topLeft = _points[pointIndex++];
+					PointF bottomRight = _points[pointIndex++];
+					float startAngle = _arcAngles[arcAngleIndex++];
+					float endAngle = _arcAngles[arcAngleIndex++];
+					bool clockwise = _arcClockwise[arcClockwiseIndex++];
+
+					// For an arc, the points are the rectangle that bounds the ellipse
+					// Just ensure these points are included
+					minX = Math.Min(minX, Math.Min(topLeft.X, bottomRight.X));
+					minY = Math.Min(minY, Math.Min(topLeft.Y, bottomRight.Y));
+					maxX = Math.Max(maxX, Math.Max(topLeft.X, bottomRight.X));
+					maxY = Math.Max(maxY, Math.Max(topLeft.Y, bottomRight.Y));
+					break;
+				}
+
+				case PathOperation.Close:
+					// Close doesn't affect bounds
+					break;
+
+				default:
+					throw new ArgumentOutOfRangeException(nameof(operation), operation, $"Unexpected path operation: {operation}");
+			}
+		}
+
+		// If no bounds were found, return empty rect
+		if (minX == float.MaxValue)
+		{
+			return new RectF(0, 0, 0, 0);
+		}
+
+		return new RectF(minX, minY, maxX - minX, maxY - minY);
+	}
+
+	private void FindQuadBezierExtremePoints(PointF p0, PointF p1, PointF p2, ref float minX, ref float minY, ref float maxX, ref float maxY)
+	{
+		// For a quadratic bezier curve, extreme points can occur when t = 0, t = 1, or when the derivative is zero
+		// p(t) = (1-t)²p0 + 2(1-t)tp1 + t²p2
+		// p'(t) = 2(1-t)(p1-p0) + 2t(p2-p1)
+		// p'(t) = 0 when t = (p1-p0)/((p1-p0)+(p2-p1))
+
+		// Check X-coordinate
+		if (p1.X != p0.X && p1.X != p2.X)
+		{
+			float tx = (p1.X - p0.X) / (2 * p1.X - p0.X - p2.X);
+			if (tx > 0 && tx < 1)
+			{
+				float x = (1 - tx) * (1 - tx) * p0.X + 2 * (1 - tx) * tx * p1.X + tx * tx * p2.X;
+				minX = Math.Min(minX, x);
+				maxX = Math.Max(maxX, x);
+			}
+		}
+
+		// Check Y-coordinate
+		if (p1.Y != p0.Y && p1.Y != p2.Y)
+		{
+			float ty = (p1.Y - p0.Y) / (2 * p1.Y - p0.Y - p2.Y);
+			if (ty > 0 && ty < 1)
+			{
+				float y = (1 - ty) * (1 - ty) * p0.Y + 2 * (1 - ty) * ty * p1.Y + ty * ty * p2.Y;
+				minY = Math.Min(minY, y);
+				maxY = Math.Max(maxY, y);
+			}
+		}
+	}
+
+	private void FindCubicBezierExtremePoints(PointF p0, PointF p1, PointF p2, PointF p3, ref float minX, ref float minY, ref float maxX, ref float maxY)
+	{
+		// For a cubic bezier curve, extreme points can occur when t = 0, t = 1, or when the derivative is zero
+		// We need to solve a quadratic equation for each dimension
+
+		// For X-coordinate: Find roots of derivative equation
+		float a = 3 * (-p0.X + 3 * p1.X - 3 * p2.X + p3.X);
+		float b = 6 * (p0.X - 2 * p1.X + p2.X);
+		float c = 3 * (p1.X - p0.X);
+
+		if (Math.Abs(a) > 0.0001f) // Not a degenerate case
+		{
+			// Quadratic formula: (-b ± sqrt(b² - 4ac))/(2a)
+			float discriminant = b * b - 4 * a * c;
+			if (discriminant >= 0)
+			{
+				float sqrtDisc = (float)Math.Sqrt(discriminant);
+				float t1 = (-b + sqrtDisc) / (2 * a);
+				float t2 = (-b - sqrtDisc) / (2 * a);
+
+				// Check if t1 is in [0,1]
+				if (t1 >= 0 && t1 <= 1)
+				{
+					float x = EvaluateCubicBezier(t1, p0.X, p1.X, p2.X, p3.X);
+					minX = Math.Min(minX, x);
+					maxX = Math.Max(maxX, x);
+				}
+
+				// Check if t2 is in [0,1]
+				if (t2 >= 0 && t2 <= 1)
+				{
+					float x = EvaluateCubicBezier(t2, p0.X, p1.X, p2.X, p3.X);
+					minX = Math.Min(minX, x);
+					maxX = Math.Max(maxX, x);
+				}
+			}
+		}
+		else if (Math.Abs(b) > 0.0001f) // Linear case
+		{
+			float t = -c / b;
+			if (t >= 0 && t <= 1)
+			{
+				float x = EvaluateCubicBezier(t, p0.X, p1.X, p2.X, p3.X);
+				minX = Math.Min(minX, x);
+				maxX = Math.Max(maxX, x);
+			}
+		}
+
+		// For Y-coordinate: Find roots of derivative equation
+		a = 3 * (-p0.Y + 3 * p1.Y - 3 * p2.Y + p3.Y);
+		b = 6 * (p0.Y - 2 * p1.Y + p2.Y);
+		c = 3 * (p1.Y - p0.Y);
+
+		if (Math.Abs(a) > 0.0001f) // Not a degenerate case
+		{
+			// Quadratic formula: (-b ± sqrt(b² - 4ac))/(2a)
+			float discriminant = b * b - 4 * a * c;
+			if (discriminant >= 0)
+			{
+				float sqrtDisc = (float)Math.Sqrt(discriminant);
+				float t1 = (-b + sqrtDisc) / (2 * a);
+				float t2 = (-b - sqrtDisc) / (2 * a);
+
+				// Check if t1 is in [0,1]
+				if (t1 >= 0 && t1 <= 1)
+				{
+					float y = EvaluateCubicBezier(t1, p0.Y, p1.Y, p2.Y, p3.Y);
+					minY = Math.Min(minY, y);
+					maxY = Math.Max(maxY, y);
+				}
+
+				// Check if t2 is in [0,1]
+				if (t2 >= 0 && t2 <= 1)
+				{
+					float y = EvaluateCubicBezier(t2, p0.Y, p1.Y, p2.Y, p3.Y);
+					minY = Math.Min(minY, y);
+					maxY = Math.Max(maxY, y);
+				}
+			}
+		}
+		else if (Math.Abs(b) > 0.0001f) // Linear case
+		{
+			float t = -c / b;
+			if (t >= 0 && t <= 1)
+			{
+				float y = EvaluateCubicBezier(t, p0.Y, p1.Y, p2.Y, p3.Y);
+				minY = Math.Min(minY, y);
+				maxY = Math.Max(maxY, y);
+			}
+		}
+	}
+
+	private float EvaluateCubicBezier(float t, float p0, float p1, float p2, float p3)
+	{
+		float oneMinusT = 1 - t;
+		return oneMinusT * oneMinusT * oneMinusT * p0 +
+			   3 * oneMinusT * oneMinusT * t * p1 +
+			   3 * oneMinusT * t * t * p2 +
+			   t * t * t * p3;
+	}
+
+
 
 		/// <summary>
 		/// Creates a new path consisting only of line segments approximating all curves and arcs.
