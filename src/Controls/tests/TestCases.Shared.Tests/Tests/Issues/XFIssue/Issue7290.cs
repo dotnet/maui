@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // DisplayActionSheet and DisplayAlert are not working in initial loading on Android and Windows, Issue: https://github.com/dotnet/maui/issues/26481
+﻿#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS // On iOS 26, the app crashed on CI, so, disabled the test for iOS. DisplayActionSheet and DisplayAlert are not working in initial loading on Android and Windows, Issue: https://github.com/dotnet/maui/issues/26481
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;

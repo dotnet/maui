@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls.Platform
 				return true;
 
 			if (_pointerGestureHandler != null && ev?.Action is
-				MotionEventActions.Up or MotionEventActions.Down or MotionEventActions.Cancel)
+				MotionEventActions.Up or MotionEventActions.Down or MotionEventActions.Move or MotionEventActions.Cancel)
 			{
 				_pointerGestureHandler.OnTouch(ev);
 			}
