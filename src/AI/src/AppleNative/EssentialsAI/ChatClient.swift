@@ -87,6 +87,7 @@ public class ChatClientNative: NSObject {
                 for try await response in responseStream {
                     try Task.checkCancellation()
                     let text = response.content.jsonString
+                    guard !text.isEmpty else { continue }
 #if APPLE_INTELLIGENCE_LOGGING_ENABLED
                     if let log = AppleIntelligenceLogger.log {
                         log("[\(methodName)] Streaming update: \(text)")
@@ -115,6 +116,7 @@ public class ChatClientNative: NSObject {
                 for try await response in responseStream {
                     try Task.checkCancellation()
                     let text = response.content
+                    guard !text.isEmpty else { continue }
 #if APPLE_INTELLIGENCE_LOGGING_ENABLED
                     if let log = AppleIntelligenceLogger.log {
                         log("[\(methodName)] Streaming update: \(text)")
@@ -236,8 +238,14 @@ public class ChatClientNative: NSObject {
         }
 #endif
 
-        let lastMessage = messages.last!
-        let otherMessages = messages.dropLast()
+        // Find the last user message to use as the prompt.
+        // After FunctionInvokingChatClient processes tool calls, the last message
+        // may be a Tool role message (function result), not a User message.
+        guard let lastUserIndex = messages.lastIndex(where: { $0.role == .user }) else {
+            throw NSError.chatError(.invalidRole, description: "No user message found in conversation")
+        }
+        let lastMessage = messages[lastUserIndex]
+        let otherMessages = Array(messages[..<lastUserIndex]) + Array(messages[(lastUserIndex + 1)...])
 
         let model = SystemLanguageModel.default
         let tools = options?.tools?.map { ToolNative($0, toolWatcher?.notifyToolCall, toolWatcher?.notifyToolResult) } ?? []
@@ -252,7 +260,7 @@ public class ChatClientNative: NSObject {
         }
 #endif
 
-        let transcript = try Transcript(entries: otherMessages.map(self.toTranscriptEntry))
+        let transcript = try Transcript(entries: otherMessages.flatMap(self.toTranscriptEntries))
         let prompt = try self.toPrompt(message: lastMessage)
 
         // Parse the JSON schema from the options
@@ -375,25 +383,63 @@ public class ChatClientNative: NSObject {
         }
     }
 
-    private func toTranscriptEntry(message: ChatMessageNative) throws -> Transcript.Entry {
+    private func toTranscriptEntries(message: ChatMessageNative) throws -> [Transcript.Entry] {
         switch message.role {
         case .user:
-            return try .prompt(Transcript.Prompt(segments: message.contents.map(self.toTranscriptSegment)))
+            let segments: [Transcript.Segment] = message.contents.compactMap { content in
+                guard let textContent = content as? TextContentNative else { return nil }
+                return .text(Transcript.TextSegment(content: textContent.text))
+            }
+            return [.prompt(Transcript.Prompt(segments: segments))]
         case .assistant:
-            return try .response(Transcript.Response(assetIDs: [], segments: message.contents.map(self.toTranscriptSegment)))
+            // Process contents in order, flushing batches when the content type changes.
+            // This preserves interleaving: [text, funcCall, text] → [.response, .toolCalls, .response]
+            var entries: [Transcript.Entry] = []
+            var pendingTextSegments: [Transcript.Segment] = []
+            var pendingToolCalls: [Transcript.ToolCall] = []
+
+            for content in message.contents {
+                if let textContent = content as? TextContentNative {
+                    // Flush pending tool calls before starting text
+                    if !pendingToolCalls.isEmpty {
+                        entries.append(.toolCalls(Transcript.ToolCalls(pendingToolCalls)))
+                        pendingToolCalls = []
+                    }
+                    pendingTextSegments.append(.text(Transcript.TextSegment(content: textContent.text)))
+                } else if let funcCall = content as? FunctionCallContentNative {
+                    // Flush pending text before starting tool calls
+                    if !pendingTextSegments.isEmpty {
+                        entries.append(.response(Transcript.Response(assetIDs: [], segments: pendingTextSegments)))
+                        pendingTextSegments = []
+                    }
+                    let argsContent = (try? GeneratedContent(json: funcCall.arguments)) ?? GeneratedContent(funcCall.arguments)
+                    pendingToolCalls.append(Transcript.ToolCall(id: funcCall.callId, toolName: funcCall.name, arguments: argsContent))
+                }
+            }
+
+            // Flush remaining batches
+            if !pendingTextSegments.isEmpty {
+                entries.append(.response(Transcript.Response(assetIDs: [], segments: pendingTextSegments)))
+            }
+            if !pendingToolCalls.isEmpty {
+                entries.append(.toolCalls(Transcript.ToolCalls(pendingToolCalls)))
+            }
+            return entries
         case .system:
-            return try .instructions(Transcript.Instructions(segments: message.contents.map(self.toTranscriptSegment), toolDefinitions: []))
+            let segments: [Transcript.Segment] = message.contents.compactMap { content in
+                guard let textContent = content as? TextContentNative else { return nil }
+                return .text(Transcript.TextSegment(content: textContent.text))
+            }
+            return [.instructions(Transcript.Instructions(segments: segments, toolDefinitions: []))]
+        case .tool:
+            let toolOutputs: [Transcript.Entry] = message.contents.compactMap { content in
+                guard let funcResult = content as? FunctionResultContentNative else { return nil }
+                let segment = Transcript.Segment.text(Transcript.TextSegment(content: funcResult.result))
+                return .toolOutput(Transcript.ToolOutput(id: funcResult.callId, toolName: funcResult.name, segments: [segment]))
+            }
+            return toolOutputs
         default:
             throw NSError.chatError(.invalidRole, description: "Unsupported role in transcript. Found: \(message.role)")
-        }
-    }
-
-    private func toTranscriptSegment(content: AIContentNative) throws -> Transcript.Segment {
-        switch content {
-        case let textContent as TextContentNative:
-            return .text(Transcript.TextSegment(content: textContent.text))
-        default:
-            throw NSError.chatError(.invalidContent, description: "Unsupported content type in transcript. Found: \(type(of: content))")
         }
     }
 
@@ -453,7 +499,7 @@ public class ChatClientNative: NSObject {
                 return nil
             }
 
-            return FunctionResultContentNative(callId: toolOutput.id, result: resultText)
+            return FunctionResultContentNative(callId: toolOutput.id, name: toolOutput.toolName, result: resultText)
         }
     }
 

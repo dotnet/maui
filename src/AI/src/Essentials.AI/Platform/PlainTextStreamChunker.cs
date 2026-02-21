@@ -45,4 +45,10 @@ internal sealed class PlainTextStreamChunker : StreamChunkerBase
 		// Plain text has no pending state to flush
 		return string.Empty;
 	}
+
+	/// <inheritdoc />
+	public override void Reset()
+	{
+		_lastResponse = "";
+	}
 }
