@@ -35,14 +35,8 @@ steps:
     continueOnError: true
     timeoutInMinutes: 60
 
-# Enable KVM for Android builds on Linux
 - ${{ if and(ne(parameters.buildType, 'buildOnly'), eq(parameters.platform, 'android')) }}:
-  - bash: |
-      echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-      sudo udevadm control --reload-rules
-      sudo udevadm trigger --name-match=kvm
-    displayName: Enable KVM
-    condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
+  - template: enable-kvm.yml
 
 # Provision the various SDKs that are needed
 - template: provision.yml
