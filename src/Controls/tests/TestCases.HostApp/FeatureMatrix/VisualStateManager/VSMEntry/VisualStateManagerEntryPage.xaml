@@ -1,0 +1,148 @@
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.VisualStateManagerEntryPage"
+             Title="VisualStateManagerEntryPage">
+
+    <ContentPage.Resources>
+        <!-- Entry1 Style : Normal / Focused / Disabled -->
+        <Style TargetType="Entry"
+               x:Key="EntryStateStyle">
+            <Setter Property="VisualStateManager.VisualStateGroups">
+                <VisualStateGroupList>
+                    <VisualStateGroup x:Name="CommonStates">
+                        <VisualState x:Name="Normal">
+                            <VisualState.Setters>
+                                <Setter Property="BackgroundColor"
+                                        Value="#FF4EC1E8"/>
+                                <Setter Property="TextColor"
+                                        Value="Black"/>
+                                <Setter Property="Scale"
+                                        Value="0.75"/>
+                            </VisualState.Setters>
+                        </VisualState>
+                        <VisualState x:Name="Focused">
+                            <VisualState.Setters>
+                                <Setter Property="BackgroundColor"
+                                        Value="LightGreen"/>
+                                <Setter Property="TextColor"
+                                        Value="Black"/>
+                                <Setter Property="Scale"
+                                        Value="1.0"/>
+                            </VisualState.Setters>
+                        </VisualState>
+                        <VisualState x:Name="Disabled">
+                            <VisualState.Setters>
+                                <Setter Property="BackgroundColor"
+                                        Value="LightGray"/>
+                                <Setter Property="TextColor"
+                                        Value="#FF5F5F5F"/>
+                                <Setter Property="Opacity"
+                                        Value="0.6"/>
+                                <Setter Property="Scale"
+                                        Value="0.75"/>
+                            </VisualState.Setters>
+                        </VisualState>
+                    </VisualStateGroup>
+                </VisualStateGroupList>
+            </Setter>
+        </Style>
+
+        <!-- Entry2 Style : Valid / Invalid -->
+        <Style TargetType="Entry"
+               x:Key="EntryValidationStyle">
+            <Setter Property="BackgroundColor"
+                    Value="White"/>
+            <Setter Property="TextColor"
+                    Value="Black"/>
+
+            <Setter Property="VisualStateManager.VisualStateGroups">
+                <VisualStateGroupList>
+                    <VisualStateGroup x:Name="ValidationStates">
+                        <VisualState x:Name="Valid">
+                            <VisualState.Setters>
+                                <Setter Property="BackgroundColor"
+                                        Value="#FF14E04A"/>
+                                <Setter Property="TextColor"
+                                        Value="Black"/>
+                                <Setter Property="Scale"
+                                        Value="1.0"/>
+                            </VisualState.Setters>
+                        </VisualState>
+                        <VisualState x:Name="Invalid">
+                            <VisualState.Setters>
+                                <Setter Property="BackgroundColor"
+                                        Value="#FFDD3C0C"/>
+                                <Setter Property="TextColor"
+                                        Value="White"/>
+                                <Setter Property="Scale"
+                                        Value="0.75"/>
+                            </VisualState.Setters>
+                        </VisualState>
+                    </VisualStateGroup>
+                </VisualStateGroupList>
+            </Setter>
+        </Style>
+
+    </ContentPage.Resources>
+
+    <VerticalStackLayout Padding="15"
+                         Spacing="10">
+        <!-- Entry1: CommonStates -->
+        <Label Text="Entry1: Normal / Focused / Disabled"
+               FontAttributes="Bold"/>
+
+        <local:UITestEntry x:Name="VSMEntry"
+                           AutomationId="VSMEntry"
+                           Placeholder="Focus me..."
+                           Style="{StaticResource EntryStateStyle}"
+                           Focused="OnEntryFocused"
+                           Unfocused="OnEntryUnfocused"
+                           IsCursorVisible="False"/>
+
+        <Label x:Name="StateEntryLabel"
+               AutomationId="EntryState"
+               Text="State: Normal"/>
+
+        <HorizontalStackLayout Spacing="10">
+            <Button Text="Focus"
+                    AutomationId="FocusEntryButton"
+                    Clicked="OnFocusEntry"/>
+            <Button Text="Normal"
+                    AutomationId="NormalEntryButton"
+                    Clicked="OnNormalEntry"/>
+        </HorizontalStackLayout>
+        <HorizontalStackLayout Spacing="10">
+            <Button x:Name="DisableEntryButton"
+                    AutomationId="DisableEntryButton"
+                    Text="Disable"
+                    Clicked="OnEntryDisabled"/>
+            <Button Text="Reset"
+                    AutomationId="ResetEntryButton"
+                    Clicked="OnResetEntry"/>
+        </HorizontalStackLayout>
+
+        <!-- Entry2: ValidationStates -->
+        <Label Text="Entry2: Valid / Invalid"
+               FontAttributes="Bold"/>
+
+        <local:UITestEntry x:Name="ValidationEntry"
+                           Margin="5"
+                           AutomationId="ValidationEntry"
+                           Placeholder="Enter phone: 555-555-5555"
+                           Style="{StaticResource EntryValidationStyle}"
+                           TextChanged="OnValidationEntryTextChanged"
+                           IsCursorVisible="False"/>
+
+        <Label x:Name="ValidationEntryLabel"
+               AutomationId="ValidationEntryLabel"
+               Text="State: Invalid"/>
+        <Button Text="Validate"
+                AutomationId="ValidateEntryButton"
+                Clicked="OnValidateEntry"/>
+        <Button Text="Reset"
+                AutomationId="ResetValidationEntryButton"
+                Clicked="OnValidateEntryReset"/>
+    </VerticalStackLayout>
+</ContentPage>
+
