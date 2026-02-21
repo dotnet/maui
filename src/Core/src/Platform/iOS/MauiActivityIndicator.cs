@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Platform
 
 			if (IsRunning)
 				StartAnimating();
-			else
+			else 
 				StopAnimating();
 		}
 
