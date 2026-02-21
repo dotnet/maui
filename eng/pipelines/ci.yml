@@ -274,7 +274,25 @@ stages:
       timeout: 120
       testCategory: MultiProject
 
-    # TODO: macOSTemplates and AOT template categories
+    # TODO: macOSTemplates category
+
+    - name: win_aot_tests
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.WindowsPool.public }}
+        runAsPublic: true
+      ${{ else }}:
+        pool: ${{ parameters.WindowsPool.internal }}
+        runAsPublic: false
+      timeout: 120
+      testCategory: AOT
+    - name: mac_aot_tests
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:
+        pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 240
+      testCategory: AOT
+
     - name: mac_runandroid_tests
       ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
         pool:

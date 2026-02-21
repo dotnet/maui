@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging.StructuredLogger;
@@ -23,7 +23,8 @@ namespace Microsoft.Maui.IntegrationTests
 	{
 		// We rely on the fact that expected file paths are stored as relative to the repo root (e.g., src/Core/...).
 		// While the actual file paths are always full paths and can have different repo roots (e.g., building locally or on CI).
-		private static bool CompareWarningsFilePaths(this string actual, string expected) => actual.Contains(expected, StringComparison.Ordinal);
+		private static bool CompareWarningsFilePaths(this string actual, string expected) =>
+			string.IsNullOrEmpty(expected) ? string.IsNullOrEmpty(actual) : actual.Contains(expected, StringComparison.Ordinal);
 
 		private static string NormalizeFilePath(string file) => file.Replace("\\\\", "/", StringComparison.Ordinal).Replace('\\', '/');
 
@@ -172,6 +173,43 @@ namespace Microsoft.Maui.IntegrationTests
 		// These might be different from iOS/Mac warnings due to platform-specific implementations
 		private static readonly List<WarningsPerFile> expectedNativeAOTWarningsWindows = new();
 
+		// Android baseline warnings to ensure no new warnings are introduced
+		private static readonly List<WarningsPerFile> expectedNativeAOTWarningsAndroid = new()
+		{
+			new WarningsPerFile
+			{
+				File = "Xamarin.Android.Common.targets",
+				WarningsPerCode = new List<WarningsPerCode>
+				{
+					new WarningsPerCode
+					{
+						Code = "XA1040",
+						Messages = new List<string>
+						{
+							"The NativeAOT runtime on Android is an experimental feature and not yet suitable for production use. File issues at: https://github.com/dotnet/android/issues",
+						}
+					},
+				}
+			},
+			new WarningsPerFile
+			{
+				WarningsPerCode = new List<WarningsPerCode>
+				{
+					new WarningsPerCode
+					{
+						Code = "IL3050",
+						Messages = new List<string>
+						{
+							"Microsoft.Android.Runtime.ManagedTypeManager.<GetInvokerTypeCore>g__MakeGenericType|4_1(Type,Type[]): Using member 'System.Type.MakeGenericType(Type[])' which has 'RequiresDynamicCodeAttribute' can break functionality when AOT compiling. The native code for this instantiation might not be available at runtime.",
+							"Android.Runtime.JNIEnv.MakeArrayType(Type): Using member 'System.Type.MakeArrayType()' which has 'RequiresDynamicCodeAttribute' can break functionality when AOT compiling. The code for an array of the specified type might not be available.",
+							"Android.Runtime.JNINativeWrapper.CreateDelegate(Delegate): Using member 'System.Reflection.Emit.DynamicMethod.DynamicMethod(String,Type,Type[],Type,Boolean)' which has 'RequiresDynamicCodeAttribute' can break functionality when AOT compiling. Creating a DynamicMethod requires dynamic code.",
+							"Java.Interop.JavaConvert.<GetJniHandleConverter>g__MakeGenericType|2_0(Type,Type[]): Using member 'System.Type.MakeGenericType(Type[])' which has 'RequiresDynamicCodeAttribute' can break functionality when AOT compiling. The native code for this instantiation might not be available at runtime.",
+						}
+					},
+				}
+			},
+		};
+
 		public static List<WarningsPerFile> ExpectedNativeAOTWarnings
 		{
 			get => expectedNativeAOTWarnings;
@@ -180,6 +218,11 @@ namespace Microsoft.Maui.IntegrationTests
 		public static List<WarningsPerFile> ExpectedNativeAOTWarningsWindows
 		{
 			get => expectedNativeAOTWarningsWindows;
+		}
+
+		public static List<WarningsPerFile> ExpectedNativeAOTWarningsAndroid
+		{
+			get => expectedNativeAOTWarningsAndroid;
 		}
 
 		#region Utility methods for generating the list of expected warnings
