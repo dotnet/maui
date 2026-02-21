@@ -111,7 +111,6 @@ public class ImageFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-#if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/29812
 	[Test]
 	[Category(UITestCategories.Image)]
 	public void VerifyImageAspect_AspectFillWithImageSourceFromFile()
@@ -176,7 +175,6 @@ public class ImageFeatureTests : _GalleryUITest
 		App.WaitForElement("ImageControl");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
-#endif
 
 	[Test]
 	[Category(UITestCategories.Image)]
