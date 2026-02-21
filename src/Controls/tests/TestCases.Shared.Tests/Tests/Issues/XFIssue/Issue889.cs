@@ -23,9 +23,16 @@ public class Issue889 : _IssuesUITest
 		App.WaitForElement("PushedPageLabel");
 
 #if IOS || MACCATALYST
-		var initialPageQuery = AppiumQuery.ByName("Initial Page");
-		App.WaitForElement(initialPageQuery);
-		App.Tap(initialPageQuery);
+		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+		{
+			App.TapBackArrow(); // In iOS 26, the previous page title is not shown along with the back arrow, so we use the default back arrow
+		}
+		else
+		{
+			var initialPageQuery = AppiumQuery.ByName("Initial Page");
+			App.WaitForElement(initialPageQuery);
+			App.Tap(initialPageQuery);
+		}
 #else
 
 #if WINDOWS
