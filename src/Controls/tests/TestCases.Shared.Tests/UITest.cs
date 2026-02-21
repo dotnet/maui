@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Text.RegularExpressions;
 using ImageMagick;
+using ImageMagick.Drawing;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 using UITest.Appium;
@@ -662,7 +663,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			var bytes = App.Screenshot();
 
 			// Draw a rounded rectangle with the app window bounds as mask
-			using var surface = new MagickImage(MagickColors.Transparent, width, height);
+			using var surface = new MagickImage(MagickColors.Transparent, (uint)width, (uint)height);
 			new Drawables()
 				.RoundRectangle(0, 0, width, height, cornerRadius, cornerRadius)
 				.FillColor(MagickColors.Black)
