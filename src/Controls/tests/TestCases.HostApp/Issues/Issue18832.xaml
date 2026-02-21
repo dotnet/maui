@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue18832"
+             xmlns:ns="clr-namespace:Maui.Controls.Sample.Issues">
+    <VerticalStackLayout>
+        <Label Text="Button: "/>
+        <Button AutomationId="button" Text="Hello, World!" CharacterSpacing="10" FontSize="30" FontFamily="OpenSansRegular" TextColor="DarkBlue"/>
+        <Label Text="Label: "/>
+        <Label AutomationId="label" Text="Hello, World!" CharacterSpacing="10" FontSize="30" FontFamily="OpenSansRegular"/>
+    </VerticalStackLayout>
+</ContentPage>
