@@ -76,6 +76,7 @@ namespace Microsoft.Maui.Controls
 				{
 					previousDetail.SendNavigatedFrom(
 						new NavigatedFromEventArgs(destinationPage: value, NavigationType.Replace));
+					previousDetail.Handler?.DisconnectHandler();
 				}
 
 				_detail.SendNavigatedTo(new NavigatedToEventArgs(previousDetail, NavigationType.Replace));

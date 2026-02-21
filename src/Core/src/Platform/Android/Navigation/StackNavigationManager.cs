@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+
 using Android.Content;
 using Android.OS;
 using Android.Views;
@@ -309,14 +310,45 @@ namespace Microsoft.Maui.Platform
 				_fragmentContainerView.ViewAttachedToWindow -= OnNavigationPlatformViewAttachedToWindow;
 				_fragmentContainerView.ChildViewAdded -= OnNavigationHostViewAdded;
 			}
+			
+			if (_fragmentManager is not null)
+			{
+				CleanUpFragments(_fragmentManager);
+			}
 
 			_fragmentLifecycleCallbacks?.Disconnect();
 			_fragmentLifecycleCallbacks = null;
-
+			
 			VirtualView = null;
 			NavigationView = null;
 			SetNavHost(null);
 			_fragmentNavigator = null;
+			_fragmentManager = null;
+			_fragmentContainerView = null;
+			_navGraph = null;
+			_currentPage = null;
+			NavigationStack = [];
+			ActiveRequestedArgs = null;
+			OnResumeRequestedArgs = null;
+		}
+
+
+		static void CleanUpFragments(FragmentManager fragmentManager)
+		{
+			fragmentManager.ExecutePendingTransactionsEx();
+			while (fragmentManager.BackStackEntryCount > 0)
+			{
+				fragmentManager.PopBackStackImmediate();
+			}
+
+			var transaction = fragmentManager.BeginTransactionEx();
+			foreach (var fragment in fragmentManager.Fragments)
+			{
+				transaction.RemoveEx(fragment);
+			}
+
+			transaction.CommitNowAllowingStateLoss();
+			fragmentManager.ExecutePendingTransactionsEx();
 		}
 
 		public virtual void Connect(IView navigationView)
@@ -343,7 +375,7 @@ namespace Microsoft.Maui.Platform
 				_fragmentContainerView.ChildViewAdded += OnNavigationHostViewAdded;
 			}
 		}
-
+		
 		void OnNavigationPlatformViewAttachedToWindow(object? sender, AView.ViewAttachedToWindowEventArgs e)
 		{
 			// If the previous Navigation Host Fragment was destroyed then we need to add a new one
@@ -505,7 +537,7 @@ namespace Microsoft.Maui.Platform
 					(FragmentNavigator)NavController
 						.NavigatorProvider
 						.GetNavigator(Java.Lang.Class.FromType(typeof(FragmentNavigator)));
-
+				
 				foreach (var fragment in _navHost.ChildFragmentManager.Fragments)
 				{
 					if (fragment is NavigationViewFragment nvf)
