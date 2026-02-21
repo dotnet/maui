@@ -278,16 +278,41 @@ $env:DEVICE_UDID = $DeviceUdid
 Write-Info "Set DEVICE_UDID environment variable: $DeviceUdid"
 
 try {
-    # Run dotnet test and capture output
-    $testOutput = & dotnet test $TestProject --filter $effectiveFilter --logger "console;verbosity=detailed" 2>&1
+    # Run dotnet test with a timeout to prevent hanging forever if the app/test freezes
+    $testTimeoutMinutes = 5
+    Write-Info "Running tests with $testTimeoutMinutes minute timeout..."
+    
+    $job = Start-Job -ScriptBlock {
+        param($TestProject, $effectiveFilter)
+        & dotnet test $TestProject --filter $effectiveFilter --logger "console;verbosity=detailed" 2>&1
+    } -ArgumentList $TestProject, $effectiveFilter
+    
+    $completed = Wait-Job $job -Timeout ($testTimeoutMinutes * 60)
+    
+    if ($null -eq $completed) {
+        # Job timed out
+        Write-Error "Test execution timed out after $testTimeoutMinutes minutes. Stopping test process..."
+        Stop-Job $job
+        Remove-Job $job
+        
+        $testOutput = @(
+            "Test execution timed out after $testTimeoutMinutes minutes.",
+            "This typically indicates the app became unresponsive (e.g., infinite layout loop).",
+            "The test process was forcibly terminated."
+        )
+        $testExitCode = 124  # Standard timeout exit code
+    } else {
+        # Job completed
+        $testOutput = Receive-Job $job
+        $testExitCode = $job.ChildJobs[0].Output[-1] -eq $null ? 0 : $LASTEXITCODE
+        Remove-Job $job
+    }
     
     # Save test output to file
     $testOutput | Out-File -FilePath $testOutputFile -Encoding UTF8
     
     # Display test output
     $testOutput | ForEach-Object { Write-Host $_ }
-    
-    $testExitCode = $LASTEXITCODE
     
     Write-Host ""
     Write-Info "Test output saved to: $testOutputFile"

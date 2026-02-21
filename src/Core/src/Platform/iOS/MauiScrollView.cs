@@ -68,6 +68,10 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		bool _safeAreaInvalidated = true;
 
+		// Cached Window.SafeAreaInsets used to distinguish genuine safe area changes
+		// (rotation, status bar) from animation-induced noise. See SafeAreaInsetsDidChange.
+		UIEdgeInsets _lastWindowSafeAreaInsets;
+
 		/// <summary>
 		/// Flag indicating whether this scroll view should apply safe area adjustments to its content.
 		/// Only true when not nested in another scroll view and safe area is not empty.
@@ -148,6 +152,16 @@ namespace Microsoft.Maui.Platform
 		{
 			// Note: UIKit invokes LayoutSubviews right after this method
 			base.SafeAreaInsetsDidChange();
+
+			// Window.SafeAreaInsets represent device-level safe area and are stable
+			// during animations. Filter out animation-induced noise (#33934).
+			if (Window is not null)
+			{
+				var windowInsets = Window.SafeAreaInsets;
+				if (windowInsets == _lastWindowSafeAreaInsets)
+					return;
+				_lastWindowSafeAreaInsets = windowInsets;
+			}
 
 			_safeAreaInvalidated = true;
 		}
@@ -340,7 +354,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			// Mark the safe area as validated given that we're about to check it
-			_safeAreaInvalidated = true;
+			_safeAreaInvalidated = false;
 
 			var oldSafeArea = _safeArea;
 
@@ -671,6 +685,9 @@ namespace Microsoft.Maui.Platform
 
 			// Clear cached scroll view descendant status since the view hierarchy may have changed
 			_scrollViewDescendant = null;
+
+			// Reset cached window insets so the new window's safe area is processed
+			_lastWindowSafeAreaInsets = Window?.SafeAreaInsets ?? UIEdgeInsets.Zero;
 
 			// Mark safe area as invalidated since moving to a new window may change safe area
 			_safeAreaInvalidated = true;
