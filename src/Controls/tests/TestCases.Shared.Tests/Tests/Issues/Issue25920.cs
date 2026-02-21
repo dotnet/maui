@@ -19,6 +19,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Shell)]
 		public void ForegroundColorShouldbeSetandCustomIconAlignedProperly()
 		{
+			if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+			{
+				Assert.Ignore("Ignored due to a bug issue in iOS 26"); // Issue Link: https://github.com/dotnet/maui/issues/33971
+			}
 			App.WaitForElement("Label");
 
 			VerifyScreenshot();

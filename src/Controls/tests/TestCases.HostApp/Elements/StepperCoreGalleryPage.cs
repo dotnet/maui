@@ -12,6 +12,10 @@ internal class StepperCoreGalleryPage : ContentPage
 		// Default
 		var defaultLabel = new Label { AutomationId = "DefaultLabel", Text = "Default" };
 		var defaultStepper = new Stepper { AutomationId = "DefaultStepper" };
+		if (OperatingSystem.IsIOSVersionAtLeast(26))
+		{
+			defaultStepper.HorizontalOptions = LayoutOptions.Center;
+		}
 		var defaultLabelValue = new Label
 		{
 			AutomationId = "DefaultLabelValue",

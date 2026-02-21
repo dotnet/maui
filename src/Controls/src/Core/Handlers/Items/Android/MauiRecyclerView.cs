@@ -390,6 +390,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var position = DetermineTargetPosition(args);
 
+			// The collection view includes a header at the zeroth index, so the collection view scrolling is not correct using the index.
+			bool hasHeader = ItemsViewAdapter.ItemsSource.HasHeader;
+			if (hasHeader)
+			{
+				position += 1;
+			}
+
 			if (args.IsAnimated)
 			{
 				ScrollHelper.AnimateScrollToPosition(position, args.ScrollToPosition);
@@ -425,9 +432,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (args.Mode == ScrollToMode.Position)
 			{
 				// Do not use `IGroupableItemsViewSource` since `UngroupedItemsSource` also implements that interface
-				if (ItemsViewAdapter.ItemsSource is UngroupedItemsSource)
+				if (ItemsViewAdapter.ItemsSource is UngroupedItemsSource ungroupedSource)
 				{
-					return args.Index;
+					return ungroupedSource.HasHeader ? args.Index + 1 : args.Index;
 				}
 				else if (ItemsViewAdapter.ItemsSource is IGroupableItemsViewSource groupItemSource)
 				{
