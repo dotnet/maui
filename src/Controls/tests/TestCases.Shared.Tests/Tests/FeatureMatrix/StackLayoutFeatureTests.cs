@@ -406,11 +406,7 @@ public class StackLayoutFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
-#if ANDROID
-		VerifyScreenshot(cropLeft: 125);
-#else
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-#endif
 	}
 
 	[Test]
@@ -431,11 +427,7 @@ public class StackLayoutFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
-#if ANDROID
-		VerifyScreenshot(cropLeft: 125);
-#else
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-#endif
 	}
 #endif
 }

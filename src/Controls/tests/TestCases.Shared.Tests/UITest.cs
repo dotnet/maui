@@ -16,9 +16,9 @@ namespace Microsoft.Maui.TestCases.Tests
 #elif IOSUITEST
 	[TestFixture(TestDevice.iOS)]
 #elif MACUITEST
-		[TestFixture(TestDevice.Mac)]
+	[TestFixture(TestDevice.Mac)]
 #elif WINTEST
-		[TestFixture(TestDevice.Windows)]
+	[TestFixture(TestDevice.Windows)]
 #endif
 	public abstract class UITest : UITestBase
 	{
@@ -96,11 +96,11 @@ namespace Microsoft.Maui.TestCases.Tests
 						config.SetProperty("Udid", udid);
 					}
 					else
-					{					 
+					{
 						config.SetProperty("DeviceName", Environment.GetEnvironmentVariable("DEVICE_NAME") ?? "iPhone Xs");
 						config.SetProperty("PlatformVersion", Environment.GetEnvironmentVariable("PLATFORM_VERSION") ?? _defaultiOSVersion);
 					}
-					
+
 					config.SetProperty("Headless", bool.Parse(Environment.GetEnvironmentVariable("HEADLESS") ?? "false"));
 					break;
 				case TestDevice.Windows:
@@ -157,7 +157,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			App.LaunchApp();
 		}
-		
+
 		/// <summary>
 		/// Verifies the screenshots and returns an exception in case of failure.
 		/// </summary>
@@ -177,8 +177,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			string? name = null,
 			TimeSpan? retryDelay = null,
 			TimeSpan? retryTimeout = null,
-			int cropLeft = 0,
-			int cropRight = 0,
 			int cropTop = 0,
 			int cropBottom = 0,
 			double tolerance = 0.0
@@ -189,7 +187,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			try
 			{
-				VerifyScreenshot(name, retryDelay, retryTimeout, cropLeft, cropRight, cropTop, cropBottom, tolerance
+				VerifyScreenshot(name, retryDelay, retryTimeout, cropTop, cropBottom, tolerance
 #if MACUITEST || WINTEST
 				, includeTitleBar
 #endif
@@ -208,13 +206,11 @@ namespace Microsoft.Maui.TestCases.Tests
 		/// <param name="retryDelay">Optional delay between retry attempts when verification fails. Default is 500ms.</param>
 		/// <param name="retryTimeout">Optional total time to keep retrying before giving up. If not specified, only one retry is attempted.
 		/// Use this for animations with variable completion times (e.g., retryTimeout: TimeSpan.FromSeconds(2)).</param>
-		/// <param name="cropLeft">Number of pixels to crop from the left of the screenshot.</param>
-		/// <param name="cropRight">Number of pixels to crop from the right of the screenshot.</param>
 		/// <param name="cropTop">Number of pixels to crop from the top of the screenshot.</param>
 		/// <param name="cropBottom">Number of pixels to crop from the bottom of the screenshot.</param>
 		/// <param name="tolerance">Tolerance level for image comparison as a percentage from 0 to 100.</param>
 #if MACUITEST || WINTEST
-/// <param name="includeTitleBar">Whether to include the title bar in the screenshot comparison.</param>
+		/// <param name="includeTitleBar">Whether to include the title bar in the screenshot comparison.</param>
 #endif
 		/// <remarks>
 		/// This method immediately throws an exception if the screenshot verification fails.
@@ -242,8 +238,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			string? name = null,
 			TimeSpan? retryDelay = null,
 			TimeSpan? retryTimeout = null,
-			int cropLeft = 0,
-			int cropRight = 0,
 			int cropTop = 0,
 			int cropBottom = 0,
 			double tolerance = 0.0 // Add tolerance parameter (0.05 = 5%)
@@ -253,14 +247,14 @@ namespace Microsoft.Maui.TestCases.Tests
 		)
 		{
 			retryDelay ??= TimeSpan.FromMilliseconds(500);
-			
+
 			// If retryTimeout is specified, keep retrying until timeout expires
 			// Otherwise, just retry once (backward compatible behavior)
 			if (retryTimeout.HasValue)
 			{
 				var stopwatch = System.Diagnostics.Stopwatch.StartNew();
 				Exception? lastException = null;
-				
+
 				while (stopwatch.Elapsed < retryTimeout.Value)
 				{
 					try
@@ -277,7 +271,7 @@ namespace Microsoft.Maui.TestCases.Tests
 						}
 					}
 				}
-				
+
 				// Final attempt after timeout
 				try
 				{
@@ -407,13 +401,19 @@ namespace Microsoft.Maui.TestCases.Tests
 
 				var actualImage = new ImageSnapshot(screenshotPngBytes, ImageSnapshotFormat.PNG);
 
+				// Get the current orientation, default to Portrait (e.g. Windows, Mac)
+				var orientation = OpenQA.Selenium.ScreenOrientation.Portrait;
+#if ANDROID || IOSUITEST
+				orientation = App.GetOrientation();
+#endif
+
 				// For Android and iOS, crop off the OS status bar at the top since it's not part of the
 				// app itself and contains the time, which always changes. For WinUI, crop off the title
 				// bar at the top as it varies slightly based on OS theme and is also not part of the app.
 				int cropFromTop = _testDevice switch
 				{
 					TestDevice.Android => environmentName == "android-notch-36" ? 112 : 60,
-					TestDevice.iOS => environmentName == "ios-iphonex" ? 90 : 110,
+					TestDevice.iOS => orientation == OpenQA.Selenium.ScreenOrientation.Portrait ? (environmentName == "ios-iphonex" ? 90 : 110) : 0,
 					TestDevice.Windows => 32,
 					TestDevice.Mac => 29,
 					_ => 0,
@@ -425,34 +425,36 @@ namespace Microsoft.Maui.TestCases.Tests
 					cropFromTop = 0;
 				}
 #endif
-
-				// For Android also crop the 3 button nav from the bottom, since it's not part of the
+				// For Android crop the 3 button nav from the bottom and left based on orientation, since it's not part of the
 				// app itself and the button color can vary (the buttons change clear briefly when tapped).
 				// For iOS, crop the home indicator at the bottom.
-				int cropFromBottom = _testDevice switch
-				{
-					TestDevice.Android => environmentName == "android-notch-36" ? 52 : 125,
-					TestDevice.iOS => 40,
-					_ => 0,
-				};
-
-				// Cropping from the left or right can be applied for any platform using the user-specified crop values.
-				// The default values are set based on the platform, but the final cropping is determined by the parameters passed in.
-				// This allows cropping of UI elements (such as navigation bars or home indicators) for any platform as needed.
 				int cropFromLeft = 0;
-				int cropFromRight = 0;
+				int cropFromBottom = 0;
+				if (_testDevice == TestDevice.Android)
+				{
+					if (orientation == OpenQA.Selenium.ScreenOrientation.Portrait)
+					{
+						cropFromBottom = environmentName == "android-notch-36" ? 52 : 125;
+					}
+					else
+					{
+						cropFromLeft = 125;
+					}
+				}
+				else if (_testDevice == TestDevice.iOS)
+				{
+					cropFromBottom = 40;
+				}
 
-				cropFromLeft = cropLeft > 0 ? cropLeft : cropFromLeft;
-				cropFromRight = cropRight > 0 ? cropRight : cropFromRight;
 				cropFromTop = cropTop > 0 ? cropTop : cropFromTop;
 				cropFromBottom = cropBottom > 0 ? cropBottom : cropFromBottom;
 
-				if (cropFromLeft > 0 || cropFromRight > 0 || cropFromTop > 0 || cropFromBottom > 0)
+				if (cropFromTop > 0 || cropFromBottom > 0 || cropFromLeft > 0)
 				{
 					IImageEditor imageEditor = _imageEditorFactory.CreateImageEditor(actualImage);
 					(int width, int height) = imageEditor.GetSize();
 
-					imageEditor.Crop(cropFromLeft, cropFromTop, width - cropFromLeft - cropFromRight, height - cropFromTop - cropFromBottom);
+					imageEditor.Crop(cropFromLeft, cropFromTop, width - cropFromLeft, height - cropFromTop - cropFromBottom);
 
 					actualImage = imageEditor.GetUpdatedImage();
 				}
@@ -552,7 +554,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			Reset();
 		}
-		
+
 		protected override void FixtureSetup()
 		{
 			int retries = 0;
