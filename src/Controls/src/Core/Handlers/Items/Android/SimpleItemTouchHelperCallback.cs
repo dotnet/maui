@@ -28,7 +28,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override bool OnMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target)
 		{
-			if (viewHolder.ItemViewType != target.ItemViewType)
+			var sourceItemViewType = viewHolder.ItemViewType;
+
+			if (sourceItemViewType == ItemViewType.Header || sourceItemViewType == ItemViewType.Footer
+				|| sourceItemViewType == ItemViewType.GroupHeader || sourceItemViewType == ItemViewType.GroupFooter)
 			{
 				return false;
 			}
