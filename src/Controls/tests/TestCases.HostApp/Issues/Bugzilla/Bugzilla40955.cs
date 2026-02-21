@@ -161,6 +161,8 @@ public class Bugzilla40955 : TestFlyoutPage
 
 	public class _409555_Page3 : ContentPage
 	{
+		Label successLabel;
+		
 		public _409555_Page3()
 		{
 			Title = Page3Title;
@@ -176,20 +178,31 @@ public class Bugzilla40955 : TestFlyoutPage
 				Command = new Command(async () => await DisplayAlertAsync("Alert", Success, "Ok"))
 			});
 
-			var successLabel = new Label();
+			successLabel = new Label();
 			Content = new StackLayout
 			{
 				Children =
 				{
-					lbl
+					lbl,
+					successLabel
 				}
 			};
 		}
 
-		protected override void OnAppearing()
+		protected override async void OnAppearing()
 		{
 			base.OnAppearing();
-			GarbageCollectionHelper.Collect();
+			
+			// Try multiple GC cycles to ensure finalizers run
+			// Android GC can be less aggressive, so we need to retry
+			for (int i = 0; i < 10 && string.IsNullOrEmpty(Success); i++)
+			{
+				GarbageCollectionHelper.Collect();
+				await Task.Delay(100);
+			}
+			
+			successLabel.Text = Success;
+			successLabel.AutomationId = Success;
 		}
 	}
 }

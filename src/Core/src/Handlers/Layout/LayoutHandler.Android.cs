@@ -106,6 +106,17 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(LayoutViewGroup platformView)
 		{
+			// Disconnect all children's handlers to break circular references and allow GC.
+			// This is important for memory leak prevention - when a Layout is disconnected,
+			// its children (Frame, ListView, etc.) should also be disconnected.
+			if (VirtualView is ILayout layout)
+			{
+				foreach (var child in layout)
+				{
+					child.Handler?.DisconnectHandler();
+				}
+			}
+
 			// If we're being disconnected from the xplat element, then we should no longer be managing its children
 			Clear(platformView);
 			base.DisconnectHandler(platformView);

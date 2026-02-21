@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Handlers
 		LinearLayoutCompat? _sideBySideView;
 		DrawerLayout DrawerLayout => (DrawerLayout)PlatformView;
 		ScopedFragment? _detailViewFragment;
+		bool _isDisconnected;
 
 		protected override View CreatePlatformView()
 		{
@@ -70,27 +71,38 @@ namespace Microsoft.Maui.Handlers
 			if (context is null)
 				return;
 
-			if (VirtualView.Detail?.Handler is IPlatformViewHandler pvh)
-				pvh.DisconnectHandler();
+			// Disconnect the OLD detail's handler before replacing with the new one.
+			// This allows the old detail view to be garbage collected.
+			// Note: ScopedFragment.OnDestroy() also disconnects, but fragment destruction
+			// may be delayed, so we disconnect proactively here.
+			if (_detailViewFragment?.DetailView?.Handler is IPlatformViewHandler oldPvh)
+			{
+				oldPvh.DisconnectHandler();
+			}
+			// Clear our reference to the old fragment to help with GC
+			var oldFragment = _detailViewFragment;
+			_detailViewFragment = null;
 
 			var fragmentManager = MauiContext.GetFragmentManager();
 
 			if (VirtualView.Detail is null)
 			{
-				if (_detailViewFragment is not null)
+				if (oldFragment is not null)
 				{
 					_pendingFragment =
 						fragmentManager
 							.RunOrWaitForResume(context, (fm) =>
 							{
-								if (_detailViewFragment is null)
+								// Check if the handler was disconnected while waiting.
+								// If so, skip the fragment transaction as the container no longer exists.
+								if (_isDisconnected || oldFragment is null)
 								{
 									return;
 								}
 
 								fm
 									.BeginTransactionEx()
-									.RemoveEx(_detailViewFragment)
+									.RemoveEx(oldFragment)
 									.SetReorderingAllowed(true)
 									.Commit();
 							});
@@ -102,12 +114,31 @@ namespace Microsoft.Maui.Handlers
 					fragmentManager
 						.RunOrWaitForResume(context, (fm) =>
 						{
-							_detailViewFragment = new ScopedFragment(VirtualView.Detail, MauiContext);
-							fm
-								.BeginTransaction()
-								.Replace(Resource.Id.navigationlayout_content, _detailViewFragment)
-								.SetReorderingAllowed(true)
-								.Commit();
+							// Check if the handler was disconnected while waiting.
+							// If so, skip the fragment transaction as the container no longer exists.
+							if (_isDisconnected)
+							{
+								return;
+							}
+
+							try
+							{
+								_detailViewFragment = new ScopedFragment(VirtualView.Detail, MauiContext);
+								fm
+									.BeginTransaction()
+									.Replace(Resource.Id.navigationlayout_content, _detailViewFragment)
+									.SetReorderingAllowed(true)
+									// Use commitNowAllowingStateLoss to execute synchronously.
+									// This prevents crashes when the handler is disconnected between
+									// commit and execution, as the transaction runs immediately.
+									.CommitNowAllowingStateLoss();
+							}
+							catch (Java.Lang.IllegalArgumentException)
+							{
+								// Container view no longer exists - this can happen if the handler
+								// is disconnected while this callback was waiting to run.
+								// Safe to ignore as we're cleaning up anyway.
+							}
 						});
 			}
 		}
@@ -285,6 +316,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(View platformView)
 		{
+			_isDisconnected = false;
 			MauiWindowInsetListener.RegisterParentForChildViews(platformView);
 
 			if (_navigationRoot is CoordinatorLayout cl)
@@ -301,6 +333,43 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(View platformView)
 		{
+			// Mark as disconnected FIRST to prevent pending fragment transactions
+			// from executing after the view hierarchy is torn down.
+			_isDisconnected = true;
+
+			// Execute pending fragment transactions and remove the detail fragment BEFORE
+			// cleaning up the view hierarchy to prevent "No view found for id" crashes.
+			try
+			{
+				var fragmentManager = MauiContext?.GetFragmentManager();
+				if (fragmentManager != null && !fragmentManager.IsDestroyed)
+				{
+					fragmentManager.ExecutePendingTransactions();
+					
+					if (_detailViewFragment != null && _detailViewFragment.IsAdded)
+					{
+						fragmentManager
+							.BeginTransactionEx()
+							.RemoveEx(_detailViewFragment)
+							.CommitNowAllowingStateLoss();
+					}
+				}
+			}
+			catch (Java.Lang.IllegalArgumentException)
+			{
+				// Container may already be gone - ignore
+			}
+			catch (Java.Lang.IllegalStateException)
+			{
+				// FragmentManager may be in invalid state - ignore
+			}
+
+			// Cancel any pending fragment transactions.
+			// This prevents crashes where a delayed fragment transaction tries to add
+			// a fragment to a container that no longer exists in the view hierarchy.
+			_pendingFragment?.Dispose();
+			_pendingFragment = null;
+
 			MauiWindowInsetListener.UnregisterView(platformView);
 			if (_navigationRoot is CoordinatorLayout cl)
 			{
@@ -318,6 +387,21 @@ namespace Microsoft.Maui.Handlers
 			{
 				te.Toolbar?.Handler?.DisconnectHandler();
 			}
+
+			// Proactively disconnect the detail fragment's view to allow GC
+			// The fragment may not be destroyed immediately by the FragmentManager,
+			// so we clear the reference explicitly here.
+			_detailViewFragment?.DisconnectDetailView();
+
+			// Disconnect Detail handler to break circular references
+			VirtualView?.Detail?.Handler?.DisconnectHandler();
+
+			// Disconnect Flyout handler to break circular references
+			VirtualView?.Flyout?.Handler?.DisconnectHandler();
+
+			// Clear fragment and view references
+			_detailViewFragment = null;
+			_flyoutView = null;
 		}
 
 		void DrawerLayoutAttached(object? sender, View.ViewAttachedToWindowEventArgs e)

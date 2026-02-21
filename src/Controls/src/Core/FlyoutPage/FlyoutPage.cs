@@ -341,10 +341,33 @@ namespace Microsoft.Maui.Controls
 				SizeChanged -= OnSizeChanged;
 				SizeChanged += OnSizeChanged;
 				DeviceDisplay.MainDisplayInfoChanged -= OnMainDisplayInfoChanged;
+
+				// Propagate Window = null to children so they can clean up their resources.
+				// This is necessary because Window propagation only happens when Parent changes,
+				// not when parent's Window changes. Without this, children like NavigationPage
+				// won't know they've been removed from the window and won't clean up their toolbar.
+				if (Detail is IWindowController detailWindowController)
+				{
+					detailWindowController.Window = null;
+				}
+				if (Flyout is IWindowController flyoutWindowController)
+				{
+					flyoutWindowController.Window = null;
+				}
 			}
 			else
 			{
 				DeviceDisplay.MainDisplayInfoChanged += OnMainDisplayInfoChanged;
+
+				// Propagate Window to children
+				if (Detail is IWindowController detailWindowController)
+				{
+					detailWindowController.Window = Window;
+				}
+				if (Flyout is IWindowController flyoutWindowController)
+				{
+					flyoutWindowController.Window = Window;
+				}
 			}
 		}
 
