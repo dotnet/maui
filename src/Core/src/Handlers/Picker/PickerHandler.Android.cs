@@ -104,6 +104,20 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		internal static void MapIsEnabled(IPickerHandler handler, IPicker picker)
+		{
+			var platformView = handler.PlatformView;
+			if (platformView == null)
+				return;
+
+			// Set native enabled state
+			platformView.Enabled = picker.IsEnabled;
+
+			// Ensure touch events propagate to parent views when disabled
+			platformView.Clickable = picker.IsEnabled;
+			platformView.Focusable = picker.IsEnabled;
+		}
+
 		internal static void MapFocus(IPickerHandler handler, IPicker picker, object? args)
 		{
 			if (handler.IsConnected() && handler is PickerHandler pickerHandler)

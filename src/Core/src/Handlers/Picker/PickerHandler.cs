@@ -19,6 +19,9 @@ namespace Microsoft.Maui.Handlers
 #if __ANDROID__ || WINDOWS
 			[nameof(IPicker.Background)] = MapBackground,
 #endif
+#if __ANDROID__
+			[nameof(IView.IsEnabled)] = MapIsEnabled,
+#endif
 			[nameof(IPicker.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(IPicker.Font)] = MapFont,
 			[nameof(IPicker.SelectedIndex)] = MapSelectedIndex,
