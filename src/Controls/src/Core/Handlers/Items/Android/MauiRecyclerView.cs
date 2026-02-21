@@ -20,6 +20,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		where TAdapter : ItemsViewAdapter<TItemsView, TItemsViewSource>
 		where TItemsViewSource : IItemsViewSource
 	{
+		const int InvalidPosition = -1;
+
 		protected TAdapter ItemsViewAdapter;
 
 		protected TItemsView ItemsView;
@@ -390,6 +392,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var position = DetermineTargetPosition(args);
 
+			if (position < 0)
+			{
+				System.Diagnostics.Debug.WriteLine($"Invalid scroll request: position = {position}");
+				return;
+			}
+
 			if (args.IsAnimated)
 			{
 				ScrollHelper.AnimateScrollToPosition(position, args.ScrollToPosition);
@@ -432,6 +440,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				else if (ItemsViewAdapter.ItemsSource is IGroupableItemsViewSource groupItemSource)
 				{
 					item = FindBoundItemInGroup(args, groupItemSource);
+
+					if (item is null)
+					{
+						return InvalidPosition;
+					}
 				}
 			}
 
@@ -440,18 +453,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		private static object FindBoundItemInGroup(ScrollToRequestEventArgs args, IGroupableItemsViewSource groupItemSource)
 		{
-			if (args.GroupIndex >= 0 &&
-				args.GroupIndex < groupItemSource.Count)
-			{
-				var group = groupItemSource.GetGroupItemsViewSource(args.GroupIndex);
+			var group = groupItemSource.GetGroupItemsViewSource(args.GroupIndex);
 
-				if (group is not null)
-				{
-					// GetItem calls AdjustIndexRequest, which subtracts 1 if we have a header (UngroupedItemsSource does not do this)
-					return group.GetItem(args.Index + 1);
-				}
-			}
-			return groupItemSource.GetItem(args.Index);
+			// GetItem calls AdjustIndexRequest, which subtracts 1 if we have a  header (UngroupedItemsSource does not do this)
+			return group?.GetItem(args.Index + 1);
 		}
 
 		protected virtual void UpdateItemSpacing()
