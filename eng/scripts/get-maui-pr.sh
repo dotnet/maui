@@ -10,11 +10,12 @@
 #
 # Usage:
 #   curl -fsSL https://raw.githubusercontent.com/dotnet/maui/main/eng/scripts/get-maui-pr.sh | bash -s -- 33002
-#   ./get-maui-pr.sh <PR_NUMBER> [PROJECT_PATH]
+#   ./get-maui-pr.sh [-y|--yes] <PR_NUMBER> [PROJECT_PATH]
 #
 # Examples:
 #   ./get-maui-pr.sh 33002
 #   ./get-maui-pr.sh 33002 ./MyApp/MyApp.csproj
+#   ./get-maui-pr.sh -y 33002    # Skip confirmation prompts
 #
 # Requirements:
 #   - .NET SDK installed
@@ -55,6 +56,17 @@ AZURE_DEVOPS_ORG="dnceng-public"
 AZURE_DEVOPS_PROJECT="public"
 PACKAGE_NAME="Microsoft.Maui.Controls"
 
+# Build GitHub auth header if token available (GITHUB_TOKEN or gh CLI)
+GITHUB_AUTH_HEADER=""
+if [ -n "$GITHUB_TOKEN" ]; then
+    GITHUB_AUTH_HEADER="Authorization: token $GITHUB_TOKEN"
+elif command -v gh &> /dev/null && gh auth status &> /dev/null; then
+    GITHUB_TOKEN=$(gh auth token 2>/dev/null)
+    if [ -n "$GITHUB_TOKEN" ]; then
+        GITHUB_AUTH_HEADER="Authorization: token $GITHUB_TOKEN"
+    fi
+fi
+
 # Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -69,23 +81,23 @@ NC='\033[0m' # No Color
 
 # Output functions
 info() {
-    echo -e "${CYAN}ℹ️  $1${NC}"
+    echo -e "${CYAN}ℹ️  $1${NC}" >&2
 }
 
 success() {
-    echo -e "${GREEN}✅ $1${NC}"
+    echo -e "${GREEN}✅ $1${NC}" >&2
 }
 
 warning() {
-    echo -e "${YELLOW}⚠️  $1${NC}"
+    echo -e "${YELLOW}⚠️  $1${NC}" >&2
 }
 
 error() {
-    echo -e "${RED}❌ $1${NC}"
+    echo -e "${RED}❌ $1${NC}" >&2
 }
 
 step() {
-    echo -e "\n${BLUE}▶️  $1${NC}"
+    echo -e "\n${BLUE}▶️  $1${NC}" >&2
 }
 
 # Check dependencies
@@ -155,7 +167,8 @@ get_pr_info() {
     info "Fetching PR #$pr_number information from GitHub..."
     
     local pr_url="https://api.github.com/repos/$GITHUB_REPO/pulls/$pr_number"
-    local pr_json=$(curl -s -H "User-Agent: MAUI-PR-Script" "$pr_url")
+    local pr_json
+    pr_json=$(curl -s -H "User-Agent: MAUI-PR-Script" ${GITHUB_AUTH_HEADER:+-H "$GITHUB_AUTH_HEADER"} "$pr_url")
     
     if [ -z "$pr_json" ] || echo "$pr_json" | jq -e '.message' > /dev/null 2>&1; then
         error "Failed to fetch PR information. Make sure PR #$pr_number exists."
@@ -172,7 +185,8 @@ get_build_info() {
     info "Looking for build artifacts for commit ${sha:0:7}..."
     
     local checks_url="https://api.github.com/repos/$GITHUB_REPO/commits/$sha/check-runs"
-    local checks_json=$(curl -s -H "User-Agent: MAUI-PR-Script" -H "Accept: application/vnd.github.v3+json" "$checks_url")
+    local checks_json
+    checks_json=$(curl -s -H "User-Agent: MAUI-PR-Script" -H "Accept: application/vnd.github.v3+json" ${GITHUB_AUTH_HEADER:+-H "$GITHUB_AUTH_HEADER"} "$checks_url")
     
     # Find the main MAUI build check (not uitests)
     local build_check=$(echo "$checks_json" | jq -r '.check_runs[] | select((.name | startswith("maui-pr")) and (.name | contains("uitests") | not) and .status == "completed" and (.details_url | contains("buildId="))) | @json' | head -n 1)
@@ -186,11 +200,15 @@ get_build_info() {
     local conclusion=$(echo "$build_check" | jq -r '.conclusion')
     if [ "$conclusion" != "success" ]; then
         warning "Build completed with status: $conclusion"
-        read -p "Do you want to continue anyway? (y/N) " -n 1 -r
-        echo
-        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-            error "Build was not successful. Aborting."
-            exit 1
+        if [ "$YES_FLAG" = true ]; then
+            info "Auto-accepting non-successful build (-y flag)"
+        else
+            read -p "Do you want to continue anyway? (y/N) " -n 1 -r
+            echo >&2
+            if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+                error "Build was not successful. Aborting."
+                exit 1
+            fi
         fi
     fi
     
@@ -262,6 +280,9 @@ get_artifacts() {
         exit 1
     fi
     
+    # Clean up zip file to save disk space
+    rm -f "$zip_file"
+    
     echo "$nupkg_dir"
 }
 
@@ -269,7 +290,7 @@ get_artifacts() {
 get_package_version() {
     local packages_dir="$1"
     
-    local package_file=$(find "$packages_dir" -type f -name "$PACKAGE_NAME.*.nupkg" -not -name "*.symbols.nupkg" | head -n 1)
+    local package_file=$(find "$packages_dir" -type f -name "$PACKAGE_NAME.*.nupkg" -not -name "*.symbols.nupkg" | grep -E "$PACKAGE_NAME\.[0-9]" | head -n 1)
     
     if [ -z "$package_file" ]; then
         error "Could not find $PACKAGE_NAME package in artifacts"
@@ -343,7 +364,7 @@ update_target_frameworks() {
     cp "$project_path" "$project_path.bak"
     
     # Update all netX.0-* references (including in conditional TargetFrameworks)
-    sed -i.tmp "s/net[0-9]\+\.0-/net$new_net_version.0-/g" "$project_path"
+    sed -i.tmp -E "s/net[0-9]+\.0-/net${new_net_version}.0-/g" "$project_path"
     rm -f "$project_path.tmp"
     
     success "Updated target frameworks to .NET $new_net_version.0"
@@ -356,16 +377,16 @@ update_nuget_config() {
     local packages_dir="$2"
     
     local nuget_config="$project_dir/NuGet.config"
-    local source_name="maui-pr-build"
+    local source_name="maui-pr-$pr_number"
     
     if [ -f "$nuget_config" ]; then
         info "Updating existing NuGet.config..."
         
         # Remove existing source with same name if it exists
-        sed -i.tmp "/<add key=\"$source_name\"/d" "$nuget_config"
+        sed -i.tmp -E "/<add key=\"${source_name}\"/d" "$nuget_config"
         
         # Add new source before the closing packageSources tag
-        sed -i.tmp "s|</packageSources>|  <add key=\"$source_name\" value=\"$packages_dir\" />\n  </packageSources>|" "$nuget_config"
+        sed -i.tmp "s|</packageSources>|  <add key=\"${source_name}\" value=\"${packages_dir}\" />\n  </packageSources>|" "$nuget_config"
         
         rm -f "$nuget_config.tmp"
     else
@@ -401,23 +422,35 @@ update_package_reference() {
     fi
     
     # Replace the version in PackageReference
-    sed -i.tmp "s|\(<PackageReference[[:space:]]\+Include=\"$PACKAGE_NAME\"[[:space:]]\+Version=\"\)[^\"]\+\(\"[[:space:]]*/*>\)|\1$version\2|g" "$project_path"
+    sed -i.tmp -E "s#(<PackageReference[[:space:]]+Include=\"${PACKAGE_NAME}\"[[:space:]]+Version=\")[^\"]+#\1${version}#g" "$project_path"
     
     rm -f "$project_path.tmp"
     
     success "Updated $PACKAGE_NAME to version $version"
 }
 
+# Global flag for non-interactive mode (set by -y/--yes)
+YES_FLAG=false
+
 # Main execution
 main() {
+    # Parse flags
+    local positional_args=()
+    for arg in "$@"; do
+        case "$arg" in
+            -y|--yes) YES_FLAG=true ;;
+            *) positional_args+=("$arg") ;;
+        esac
+    done
+    
     # Check arguments
-    if [ $# -lt 1 ]; then
-        error "Usage: $0 <PR_NUMBER> [PROJECT_PATH]"
+    if [ ${#positional_args[@]} -lt 1 ]; then
+        error "Usage: $0 [-y|--yes] <PR_NUMBER> [PROJECT_PATH]"
         exit 1
     fi
     
-    pr_number="$1"  # Global for error handler
-    local project_path_arg="${2:-}"
+    pr_number="${positional_args[0]}"  # Global for error handler
+    local project_path_arg="${positional_args[1]:-}"
     
     # Check dependencies
     check_dependencies
@@ -436,33 +469,45 @@ EOF
     echo -e "${NC}"
     
     step "Finding MAUI project"
-    local project_path=$(find_maui_project "$project_path_arg")
-    local project_dir=$(dirname "$project_path")
-    local project_name=$(basename "$project_path")
+    local project_path
+    project_path=$(find_maui_project "$project_path_arg")
+    local project_dir
+    project_dir=$(dirname "$project_path")
+    local project_name
+    project_name=$(basename "$project_path")
     success "Found project: $project_name"
     
     step "Fetching PR information"
-    local pr_json=$(get_pr_info "$pr_number")
-    local pr_title=$(echo "$pr_json" | jq -r '.title')
-    local pr_state=$(echo "$pr_json" | jq -r '.state')
-    local pr_sha=$(echo "$pr_json" | jq -r '.head.sha')
+    local pr_json
+    pr_json=$(get_pr_info "$pr_number")
+    local pr_title
+    pr_title=$(echo "$pr_json" | jq -r '.title')
+    local pr_state
+    pr_state=$(echo "$pr_json" | jq -r '.state')
+    local pr_sha
+    pr_sha=$(echo "$pr_json" | jq -r '.head.sha')
     
     info "PR #$pr_number: $pr_title"
     info "State: $pr_state"
     
     step "Detecting target framework"
-    local target_net_version=$(get_target_framework_version "$project_path")
+    local target_net_version
+    target_net_version=$(get_target_framework_version "$project_path")
     info "Current target framework: .NET $target_net_version.0"
     
     step "Finding build artifacts"
-    local build_id=$(get_build_info "$pr_sha")
+    local build_id
+    build_id=$(get_build_info "$pr_sha")
     
     step "Downloading artifacts"
-    local download_url=$(get_build_artifacts "$build_id")
-    local packages_dir=$(get_artifacts "$download_url" "$build_id")
+    local download_url
+    download_url=$(get_build_artifacts "$build_id")
+    local packages_dir
+    packages_dir=$(get_artifacts "$download_url" "$build_id")
     
     step "Extracting package information"
-    local version=$(get_package_version "$packages_dir")
+    local version
+    version=$(get_package_version "$packages_dir")
     success "Found package version: $version"
     
     # Extract .NET version from package version (e.g., 10.0.20-ci.main.25607.5 -> 10)
@@ -488,13 +533,18 @@ EOF
             info "This PR build targets: .NET $package_net_version.0"
         fi
         
-        read -p "Do you want to update your project to .NET $target_version? (y/N) " -n 1 -r
-        echo
-        if [[ $REPLY =~ ^[Yy]$ ]]; then
+        if [ "$YES_FLAG" = true ]; then
             will_update_tfm=true
             warning "Note: You may need to manually update other package dependencies to versions compatible with .NET $target_version"
         else
-            warning "Continuing without updating target framework. The package may not be compatible."
+            read -p "Do you want to update your project to .NET $target_version? (y/N) " -n 1 -r
+            echo
+            if [[ $REPLY =~ ^[Yy]$ ]]; then
+                will_update_tfm=true
+                warning "Note: You may need to manually update other package dependencies to versions compatible with .NET $target_version"
+            else
+                warning "Continuing without updating target framework. The package may not be compatible."
+            fi
         fi
     fi
     
@@ -523,11 +573,15 @@ EOF
     fi
     echo ""
     
-    read -p "Do you want to continue? (y/N) " -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        warning "Operation cancelled by user"
-        exit 0
+    if [ "$YES_FLAG" = true ]; then
+        info "Auto-accepting confirmation (-y flag)"
+    else
+        read -p "Do you want to continue? (y/N) " -n 1 -r
+        echo
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            warning "Operation cancelled by user"
+            exit 0
+        fi
     fi
     echo ""
     
@@ -545,13 +599,6 @@ EOF
     
     step "Updating package reference"
     update_package_reference "$project_path" "$version"
-    
-    # Get latest stable version for revert instructions
-    local latest_stable=$(curl -s "https://api.nuget.org/v3-flatcontainer/microsoft.maui.controls/index.json" | \
-        jq -r '.versions[]' | grep -v '-' | tail -1)
-    if [ -z "$latest_stable" ]; then
-        latest_stable="X.Y.Z"
-    fi
     
     echo -e "${GREEN}"
     cat << EOF

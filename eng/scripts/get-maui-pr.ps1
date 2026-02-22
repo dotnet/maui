@@ -59,6 +59,17 @@ $AzureDevOpsOrg = "dnceng-public"
 $AzureDevOpsProject = "public"
 $PackageName = "Microsoft.Maui.Controls"
 
+# Build GitHub auth headers (GITHUB_TOKEN env var or gh CLI)
+$GitHubHeaders = @{ "User-Agent" = "MAUI-PR-Script" }
+if ($env:GITHUB_TOKEN) {
+    $GitHubHeaders["Authorization"] = "token $($env:GITHUB_TOKEN)"
+} elseif (Get-Command gh -ErrorAction SilentlyContinue) {
+    try {
+        $ghToken = gh auth token 2>$null
+        if ($ghToken) { $GitHubHeaders["Authorization"] = "token $ghToken" }
+    } catch { }
+}
+
 # Color output functions
 function Write-Info {
     param([string]$Message)
@@ -70,12 +81,12 @@ function Write-Success {
     Write-Host "✅ $Message" -ForegroundColor Green
 }
 
-function Write-Warning {
+function Write-Warn {
     param([string]$Message)
     Write-Host "⚠️  $Message" -ForegroundColor Yellow
 }
 
-function Write-Error {
+function Write-Err {
     param([string]$Message)
     Write-Host "❌ $Message" -ForegroundColor Red
 }
@@ -120,7 +131,7 @@ function Get-PullRequestInfo {
     
     try {
         $prUrl = "https://api.github.com/repos/$GitHubRepo/pulls/$PrNumber"
-        $pr = Invoke-RestMethod -Uri $prUrl -Headers @{ "User-Agent" = "MAUI-PR-Script" } -TimeoutSec 30
+        $pr = Invoke-RestMethod -Uri $prUrl -Headers $GitHubHeaders -TimeoutSec 30
         
         return @{
             Number = $pr.number
@@ -143,10 +154,9 @@ function Get-BuildInfo {
     
     try {
         $checksUrl = "https://api.github.com/repos/$GitHubRepo/commits/$SHA/check-runs"
-        $response = Invoke-RestMethod -Uri $checksUrl -Headers @{ 
-            "User-Agent" = "MAUI-PR-Script"
+        $response = Invoke-RestMethod -Uri $checksUrl -Headers ($GitHubHeaders + @{
             "Accept" = "application/vnd.github.v3+json"
-        } -TimeoutSec 30
+        }) -TimeoutSec 30
         
         # Look for the main MAUI build check (not uitests)
         $buildCheck = $response.check_runs | Where-Object { 
@@ -158,7 +168,7 @@ function Get-BuildInfo {
         }
         
         if ($buildCheck.conclusion -ne "success") {
-            Write-Warning "Build completed with status: $($buildCheck.conclusion)"
+            Write-Warn "Build completed with status: $($buildCheck.conclusion)"
             if (-not $Yes) {
                 $continue = Read-Host "Do you want to continue anyway? (y/N)"
                 if ($continue -ne "y" -and $continue -ne "Y") {
@@ -232,9 +242,19 @@ function Get-Artifacts {
     
     Write-Info "Downloading artifacts (this may take a moment)..."
     try {
-        $ProgressPreference = 'SilentlyContinue'
-        Invoke-WebRequest -Uri $DownloadUrl -OutFile $zipFile -UseBasicParsing
-        $ProgressPreference = 'Continue'
+        # Use curl on non-Windows (Invoke-WebRequest is extremely slow for large files on macOS/Linux)
+        if ((-not $IsWindows) -and $env:OS -ne "Windows_NT" -and (Get-Command curl -ErrorAction SilentlyContinue)) {
+            $curlExit = 0
+            & curl -sL -o $zipFile $DownloadUrl
+            $curlExit = $LASTEXITCODE
+            if ($curlExit -ne 0) {
+                throw "curl download failed with exit code $curlExit"
+            }
+        } else {
+            $ProgressPreference = 'SilentlyContinue'
+            Invoke-WebRequest -Uri $DownloadUrl -OutFile $zipFile -UseBasicParsing
+            $ProgressPreference = 'Continue'
+        }
         Write-Success "Downloaded artifacts"
         
         Write-Info "Extracting artifacts..."
@@ -249,6 +269,9 @@ function Get-Artifacts {
             throw "Could not find NuGet packages in the extracted artifacts"
         }
         
+        # Clean up zip file to save disk space
+        Remove-Item $zipFile -Force -ErrorAction SilentlyContinue
+        
         return $nupkgDir.FullName
     }
     catch {
@@ -261,14 +284,14 @@ function Get-PackageVersion {
     param([string]$PackagesDir)
 
     $package = Get-ChildItem -Path $PackagesDir -Filter "$PackageName.*.nupkg" -File |
-        Where-Object { $_.Name -notmatch '\.symbols\.nupkg$' } |
+        Where-Object { $_.Name -notmatch '\.symbols\.nupkg$' -and $_.Name -match "$([regex]::Escape($PackageName))\.\d" } |
         Select-Object -First 1
     
     if (-not $package) {
         throw "Could not find $PackageName package in artifacts"
     }
     
-    if ($package.Name -match "$PackageName\.(.+)\.nupkg") {
+    if ($package.Name -match "$([regex]::Escape($PackageName))\.(.+)\.nupkg") {
         return $Matches[1]
     }
     
@@ -335,7 +358,7 @@ function Update-TargetFrameworks {
     
     Set-Content -Path $ProjectPath -Value $content -NoNewline
     Write-Success "Updated target frameworks to .NET $NewNetVersion.0"
-    Write-Warning "You may need to update other package dependencies to match .NET $NewNetVersion.0"
+    Write-Warn "You may need to update other package dependencies to match .NET $NewNetVersion.0"
 }
 
 # Create or update NuGet.config
@@ -343,7 +366,7 @@ function Update-NuGetConfig {
     param([string]$ProjectDir, [string]$PackagesDir)
 
     $nugetConfigPath = Join-Path $ProjectDir "NuGet.config"
-    $sourceName = "maui-pr-build"
+    $sourceName = "maui-pr-$PrNumber"
     
     if (Test-Path $nugetConfigPath) {
         Write-Info "Updating existing NuGet.config..."
@@ -437,7 +460,7 @@ try {
     Write-Info "State: $($prInfo.State)"
     
     if ($prInfo.State -ne "open" -and $prInfo.State -ne "closed") {
-        Write-Warning "PR state is '$($prInfo.State)'. Continuing anyway..."
+        Write-Warn "PR state is '$($prInfo.State)'. Continuing anyway..."
     }
     
     Write-Step "Detecting target framework"
@@ -462,7 +485,7 @@ try {
     $compatible = Test-VersionCompatibility -Version $version -TargetNetVersion $targetNetVersion -PackageNetVersion $packageNetVersion
     $willUpdateTfm = $false
     if (-not $compatible) {
-        Write-Warning "This PR build may target a newer .NET version than your project"
+        Write-Warn "This PR build may target a newer .NET version than your project"
         Write-Info "Your project targets: .NET $targetNetVersion.0"
         Write-Info "This PR build targets: .NET $packageNetVersion.0"
         
@@ -474,10 +497,10 @@ try {
         }
         
         if ($willUpdateTfm) {
-            Write-Warning "Note: You may need to manually update other package dependencies to versions compatible with .NET $packageNetVersion.0"
+            Write-Warn "Note: You may need to manually update other package dependencies to versions compatible with .NET $packageNetVersion.0"
         }
         else {
-            Write-Warning "Continuing without updating target framework. The package may not be compatible."
+            Write-Warn "Continuing without updating target framework. The package may not be compatible."
         }
     }
     
@@ -489,7 +512,7 @@ try {
     Write-Host ""
     Write-Host "By continuing, you will apply the PR artifacts to your project." -ForegroundColor Cyan
     Write-Host ""
-    Write-Warning "This should NOT be used in production and is for testing purposes only."
+    Write-Warn "This should NOT be used in production and is for testing purposes only."
     Write-Host ""
     Write-Host "TIP: Create a separate Git branch for testing!" -ForegroundColor Cyan
     Write-Host "     git checkout -b test-pr-$PrNumber" -ForegroundColor Gray
@@ -502,7 +525,7 @@ try {
     Write-Host "  • Project: $projectName" -ForegroundColor Gray
     Write-Host "  • Package version: $version" -ForegroundColor Gray
     if ($willUpdateTfm) {
-        $targetVersionForDisplay = if ($packageDotNetVersion) { "$packageDotNetVersion.0" } else { "10.0" }
+        $targetVersionForDisplay = if ($packageNetVersion) { "$packageNetVersion.0" } else { "10.0" }
         Write-Host "  • Target framework: Will be updated to .NET $targetVersionForDisplay" -ForegroundColor Gray
     }
     Write-Host ""
@@ -512,14 +535,14 @@ try {
     } else {
         $response = Read-Host "Do you want to continue? (y/N)"
         if ($response -ne "y" -and $response -ne "Y") {
-            Write-Warning "Operation cancelled by user"
+            Write-Warn "Operation cancelled by user"
             return
         }
     }
     Write-Host ""
     
     if ($willUpdateTfm) {
-        $targetNetVersionToApply = if ($packageDotNetVersion) { [int]$packageDotNetVersion } else { 10 }
+        $targetNetVersionToApply = if ($packageNetVersion) { [int]$packageNetVersion } else { 10 }
         Update-TargetFrameworks -ProjectPath $projectPath -NewNetVersion $targetNetVersionToApply
         $targetNetVersion = $targetNetVersionToApply
     }
@@ -530,19 +553,6 @@ try {
     Write-Step "Updating package reference"
     Update-PackageReference -ProjectPath $projectPath -Version $version
     
-    # Get latest stable version for revert instructions
-    try {
-        $nugetResponse = Invoke-RestMethod -Uri "https://api.nuget.org/v3-flatcontainer/microsoft.maui.controls/index.json" -UseBasicParsing -TimeoutSec 30
-        $stableVersions = $nugetResponse.versions | Where-Object { $_ -notmatch '-' }
-        $latestStable = $stableVersions | Sort-Object { [Version]$_ } -Descending | Select-Object -First 1
-        if ([string]::IsNullOrEmpty($latestStable)) {
-            $latestStable = "X.Y.Z"
-        }
-    }
-    catch {
-        $latestStable = "X.Y.Z"
-    }
-
     Write-Host @"
 
 ╔═══════════════════════════════════════════════════════════╗
@@ -565,11 +575,11 @@ try {
     # Get latest stable version for revert instructions
     $stableVersion = "X.Y.Z"
     try {
-        $nugetResponse = Invoke-RestMethod -Uri "https://api.nuget.org/v3-flatcontainer/$($PackageName.ToLower())/index.json" -Method Get -ErrorAction SilentlyContinue
+        $nugetResponse = Invoke-RestMethod -Uri "https://api.nuget.org/v3-flatcontainer/$($PackageName.ToLower())/index.json" -TimeoutSec 30
         if ($nugetResponse -and $nugetResponse.versions) {
             $stableVersions = $nugetResponse.versions | Where-Object { $_ -notmatch '-' }
             if ($stableVersions) {
-                $stableVersion = $stableVersions | Select-Object -Last 1
+                $stableVersion = $stableVersions | Sort-Object { [Version]$_ } -Descending | Select-Object -First 1
             }
         }
     } catch {
@@ -595,7 +605,7 @@ try {
     
 }
 catch {
-    Write-Error "Failed to apply PR build: $_"
+    Write-Err "Failed to apply PR build: $_"
     Write-Host ""
     Write-Info "Troubleshooting tips:"
     Write-Host "  • Make sure you're in a directory containing a .NET MAUI project" -ForegroundColor Gray
@@ -603,4 +613,5 @@ catch {
     Write-Host "  • Check if there's a completed build for this PR (look for green checkmarks)" -ForegroundColor Gray
     Write-Host "  • Check your internet connection" -ForegroundColor Gray
     Write-Host "  • Visit: https://github.com/dotnet/maui/wiki/Testing-PR-Builds" -ForegroundColor Gray
+    exit 1
 }
