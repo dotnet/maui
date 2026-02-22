@@ -158,6 +158,11 @@ steps:
     if ($testFilter) {
       $command += " --test-filter ""$testFilter"""
     }
+
+    $deviceType = "${{ parameters.deviceType }}"
+    if ($deviceType) {
+      $command += " --skin=""$deviceType"""
+    }
     
     $headless = ${{ parameters.headless }}
     if ($headless) {
