@@ -465,6 +465,12 @@ namespace Microsoft.Maui.Layouts
 						{
 							width += _columns[n].Size;
 						}
+						
+						// Add spacing between spanned columns during measurement
+						if (cell.ColumnSpan > 1)
+						{
+							width += (cell.ColumnSpan - 1) * _columnSpacing;
+						}
 					}
 
 					if (width == 0 || height == 0)
@@ -1013,11 +1019,12 @@ namespace Microsoft.Maui.Layouts
 				for (int column = cell.Column; column < cell.Column + cell.ColumnSpan; column++)
 				{
 					measureWidth += _columns[column].Size;
+				}
 
-					if (column > cell.Column)
-					{
-						measureWidth += _columnSpacing;
-					}
+				// Add spacing between spanned columns to match arrange phase
+				if (cell.ColumnSpan > 1)
+				{
+					measureWidth += (cell.ColumnSpan - 1) * _columnSpacing;
 				}
 
 				cell.MeasureWidth = measureWidth;
