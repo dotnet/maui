@@ -18,5 +18,22 @@ namespace Microsoft.Maui.Controls
 
 			Platform.EditTextExtensions.UpdateText(handler.PlatformView, editor);
 		}
+
+		// TODO: Material3 - make it public in .net 11
+		internal static void MapText(EditorHandler2 handler, Editor editor)
+		{
+			if (handler.PlatformView is null)
+			{
+				return;
+			}
+
+			if (handler.DataFlowDirection == DataFlowDirection.FromPlatform)
+			{
+				Platform.EditTextExtensions.UpdateTextFromPlatform(handler.PlatformView, editor);
+				return;
+			}
+
+			Platform.EditTextExtensions.UpdateText(handler.PlatformView, editor);
+		}
 	}
 }
