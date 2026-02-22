@@ -485,7 +485,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void UpdateFlowDirection()
 		{
 			if (_shellContext?.Shell?.CurrentItem?.CurrentItem == ShellSection)
+			{
 				this.View.UpdateFlowDirection(_shellContext.Shell);
+
+				if (_tracker?.Page is not null && _shellContext?.Shell is not null)
+				{
+					if (_tracker.Page.FlowDirection == FlowDirection.MatchParent)
+					{
+						_tracker.Page.FlowDirection = _shellContext.Shell.FlowDirection;
+					}
+				}
+			}
 		}
 
 		void OnShellSectionItemsChanged(object sender, NotifyCollectionChangedEventArgs e)
