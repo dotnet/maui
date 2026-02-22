@@ -1,1 +1,2 @@
 #nullable enable
+~override Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.OnInterceptTouchEvent(Android.Views.MotionEvent ev) -> bool
