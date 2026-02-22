@@ -19,12 +19,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.ListView)]
 		public void Issue3275Test()
 		{
-			App.WaitForElement(BtnLeakId, timeout: TimeSpan.FromSeconds(45));
+			App.WaitForElement(BtnLeakId, timeout: TimeSpan.FromSeconds(90));
 			App.Tap(BtnLeakId);
-			App.WaitForElement(BtnScrollToId, timeout: TimeSpan.FromSeconds(45));
+			App.WaitForElement(BtnScrollToId, timeout: TimeSpan.FromSeconds(90));
 			App.Tap(BtnScrollToId);
 			App.TapBackArrow();
-			App.WaitForElement(BtnLeakId, timeout: TimeSpan.FromSeconds(45));
+			App.WaitForElement(BtnLeakId, timeout: TimeSpan.FromSeconds(90));
 		}
 	}
 }

@@ -13,6 +13,23 @@
                     <Label Text="Item 1" />
                     <Label Text="Item 2" />
                     <Label Text="Item 3" />
+                    <Label Text="Item 4" />
+                    <Label Text="Item 5" />
+                    <Label Text="Item 6" />
+                    <Label Text="Item 7" />
+                    <Label Text="Item 8" />
+                    <Label Text="Item 9" />
+                    <Label Text="Item 10" />
+                    <Label Text="Item 11" />
+                    <Label Text="Item 12" />
+                    <Label Text="Item 13" />
+                    <Label Text="Item 14" />
+                    <Label Text="Item 15" />
+                    <Label Text="Item 16" />
+                    <Label Text="Item 17" />
+                    <Label Text="Item 18" />
+                    <Label Text="Item 19" />
+                    <Label Text="Item 20" />
                 </VerticalStackLayout>
             </ScrollView>
         </RefreshView>
