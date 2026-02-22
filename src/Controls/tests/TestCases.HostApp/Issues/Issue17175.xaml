@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue17175"
+             Title="Issue 17175 - VSM Can Set Style Property">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <!-- Base style without VSM -->
+            <Style x:Key="BaseButtonStyle"
+                   TargetType="Button">
+                <Setter Property="BackgroundColor"
+                        Value="LightBlue"/>
+                <Setter Property="TextColor"
+                        Value="Black"/>
+                <Setter Property="Padding"
+                        Value="20"/>
+            </Style>
+
+            <!-- Highlighted style for Selected state -->
+            <Style x:Key="HighlightButtonStyle"
+                   TargetType="Button">
+                <Setter Property="BackgroundColor"
+                        Value="Orange"/>
+                <Setter Property="TextColor"
+                        Value="White"/>
+                <Setter Property="Padding"
+                        Value="20"/>
+                <Setter Property="FontAttributes"
+                        Value="Bold"/>
+            </Style>
+
+            <!-- Disabled style -->
+            <Style x:Key="DisabledButtonStyle"
+                   TargetType="Button">
+                <Setter Property="BackgroundColor"
+                        Value="Gray"/>
+                <Setter Property="TextColor"
+                        Value="DarkGray"/>
+                <Setter Property="Padding"
+                        Value="20"/>
+                <Setter Property="Text"
+                        Value="State: Disabled"/>
+            </Style>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <VerticalStackLayout Padding="20"
+                         Spacing="10">
+        <Button x:Name="TestButton"
+                Text="State: Normal"
+                Style="{StaticResource BaseButtonStyle}"
+                HorizontalOptions="Center">
+            <VisualStateManager.VisualStateGroups>
+                <VisualStateGroup Name="CommonStates">
+                    <VisualState Name="Normal">
+                        <VisualState.Setters>
+                            <Setter Property="Style"
+                                    Value="{StaticResource BaseButtonStyle}"/>
+                        </VisualState.Setters>
+                    </VisualState>
+                    <VisualState Name="Selected">
+                        <VisualState.Setters>
+                            <Setter Property="Style"
+                                    Value="{StaticResource HighlightButtonStyle}"/>
+                        </VisualState.Setters>
+                    </VisualState>
+                    <VisualState Name="Disabled">
+                        <VisualState.Setters>
+                            <Setter Property="Style"
+                                    Value="{StaticResource DisabledButtonStyle}"/>
+                        </VisualState.Setters>
+                    </VisualState>
+                </VisualStateGroup>
+            </VisualStateManager.VisualStateGroups>
+        </Button>
+
+        <Label x:Name="StateLabel"
+               AutomationId="StateLabel"
+               Text="State: Normal"
+               HorizontalOptions="Center"
+               Margin="0,10,0,0"/>
+
+        <Button Text="Go to Disabled"
+                AutomationId="GoToDisabledButton"
+                Clicked="OnGoToDisabledClicked"
+                HorizontalOptions="Center"/>
+    </VerticalStackLayout>
+</ContentPage>
