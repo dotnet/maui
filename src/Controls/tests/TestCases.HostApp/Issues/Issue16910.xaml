@@ -2,20 +2,36 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues.Issue16910">
-    <ContentPage.Content>
-        <Grid RowDefinitions="Auto,100,*,50,50" x:Name="grid">
-            <Label Grid.Row="1" Text="Interact with the RefreshView and make sure the IsRefreshing Label correctly Represents current state." />
-            <RefreshView x:Name="refreshView" Grid.Row="2" IsRefreshing="{Binding IsRefreshing, Mode=TwoWay}">
-                <CollectionView ItemsSource="{Binding ItemSource}" AutomationId="CollectionView">
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate>
-                            <Label Text="{Binding Text}" AutomationId="{Binding AutomationId}" />
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
-            </RefreshView>
-            <Button x:Name="StopRefreshing" AutomationId="StopRefreshing" Grid.Row="3" Text="Stop Refresh" Clicked="OnStopRefreshClicked" />
-            <Button x:Name="StartRefreshing" AutomationId="StartRefreshing" Grid.Row="4" Text="Refresh" Clicked="OnRefreshClicked" />
-        </Grid>
-    </ContentPage.Content>
+    <Grid RowDefinitions="Auto,Auto,Auto,*" Padding="20" RowSpacing="10">
+        <Label Grid.Row="0" AutomationId="TestResult" x:Name="TestResultLabel" Text="Waiting" FontSize="18" />
+        <Button Grid.Row="1" AutomationId="RunTest" Text="Run Binding Test" Clicked="OnRunTestClicked" />
+        <Button Grid.Row="2" AutomationId="StopRefreshing" x:Name="StopRefreshingButton" Text="Stop Refresh"
+                Clicked="OnStopRefreshClicked" IsVisible="false" />
+        <RefreshView Grid.Row="3" x:Name="refreshView" IsRefreshing="{Binding IsRefreshing, Mode=TwoWay}">
+            <ScrollView AutomationId="RefreshScrollView">
+                <VerticalStackLayout Padding="10" Spacing="5">
+                    <Label Text="Item 1" />
+                    <Label Text="Item 2" />
+                    <Label Text="Item 3" />
+                    <Label Text="Item 4" />
+                    <Label Text="Item 5" />
+                    <Label Text="Item 6" />
+                    <Label Text="Item 7" />
+                    <Label Text="Item 8" />
+                    <Label Text="Item 9" />
+                    <Label Text="Item 10" />
+                    <Label Text="Item 11" />
+                    <Label Text="Item 12" />
+                    <Label Text="Item 13" />
+                    <Label Text="Item 14" />
+                    <Label Text="Item 15" />
+                    <Label Text="Item 16" />
+                    <Label Text="Item 17" />
+                    <Label Text="Item 18" />
+                    <Label Text="Item 19" />
+                    <Label Text="Item 20" />
+                </VerticalStackLayout>
+            </ScrollView>
+        </RefreshView>
+    </Grid>
 </ContentPage>

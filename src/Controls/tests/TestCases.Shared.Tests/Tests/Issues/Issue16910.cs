@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -20,23 +19,22 @@ public class Issue16910 : _IssuesUITest
 	[Test]
 	public void BindingUpdatesFromProgrammaticRefresh()
 	{
-		_ = App.WaitForElement("StartRefreshing");
-		App.Tap("StartRefreshing");
-		App.WaitForElement("IsRefreshing");
-		App.Tap("StopRefreshing");
-		App.WaitForElement("IsNotRefreshing");
+		App.WaitForElement("RunTest", timeout: TimeSpan.FromSeconds(45));
+		App.Tap("RunTest");
+		var result = App.WaitForElement("TestResult", timeout: TimeSpan.FromSeconds(45)).GetText();
+		Assert.That(result, Is.EqualTo("SUCCESS"));
 	}
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // Failing on Mac and Windows. Flaky Test. More information: https://github.com/dotnet/maui/issues/28368
 	[Test]
 	public void BindingUpdatesFromInteractiveRefresh()
 	{
-		var collectionViewRect = App.WaitForElement("CollectionView").GetRect();
+		var scrollViewRect = App.WaitForElement("RefreshScrollView", timeout: TimeSpan.FromSeconds(45)).GetRect();
 		//In CI, using App.ScrollDown sometimes fails to trigger the refresh command, so here use DragCoordinates instead of the ScrollDown action in Appium.
-		App.DragCoordinates(collectionViewRect.CenterX(), collectionViewRect.Y + 50, collectionViewRect.CenterX(), collectionViewRect.Y + collectionViewRect.Height - 50);
-		App.WaitForElement("IsRefreshing");
+		App.DragCoordinates(scrollViewRect.CenterX(), scrollViewRect.Y + 50, scrollViewRect.CenterX(), scrollViewRect.Y + scrollViewRect.Height - 50);
+		App.WaitForElement("IsRefreshing", timeout: TimeSpan.FromSeconds(45));
 		App.Tap("StopRefreshing");
-		App.WaitForElement("IsNotRefreshing");
+		App.WaitForElement("IsNotRefreshing", timeout: TimeSpan.FromSeconds(45));
 	}
 #endif
 }

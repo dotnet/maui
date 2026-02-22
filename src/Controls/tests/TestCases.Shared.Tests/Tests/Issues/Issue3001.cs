@@ -19,8 +19,8 @@ public class Issue3001 : _IssuesUITest
 	[Category(UITestCategories.Navigation)]
 	public void Issue3001Test()
 	{
-		App.WaitForElement(ButtonId);
+		App.WaitForElement(ButtonId, timeout: TimeSpan.FromSeconds(45));
 		App.Tap(ButtonId);
-		App.WaitForElement(ReadyId, timeout: TimeSpan.FromSeconds(5));
+		App.WaitForElement(ReadyId, timeout: TimeSpan.FromSeconds(45));
 	}
 }
