@@ -84,6 +84,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				case DefaultCell2 defaultCell:
 					UpdateDefaultSupplementaryView(defaultCell, elementKind);
+					defaultCell.Label.UpdateFlowDirection(ItemsView);
 					break;
 				case TemplatedCell2 templatedCell:
 					UpdateTemplatedSupplementaryView(templatedCell, elementKind);
@@ -256,6 +257,48 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 						collectionView.CollectionViewLayout.InvalidateLayout();
 						return;
 					}
+				}
+			}
+		}
+
+		public override void UpdateFlowDirection()
+		{
+			base.UpdateFlowDirection();
+
+			UpdateSupplementaryViewsFlowDirection(
+				ItemsView.Header,
+				ItemsView.HeaderTemplate,
+				UICollectionElementKindSectionKey.Header
+			);
+
+			UpdateSupplementaryViewsFlowDirection(
+				ItemsView.Footer,
+				ItemsView.FooterTemplate,
+				UICollectionElementKindSectionKey.Footer
+			);
+		}
+
+		void UpdateSupplementaryViewsFlowDirection(object content, DataTemplate template, NSString elementKind)
+		{
+			if (content is null && template is null)
+				return;
+
+			var visibleViews = CollectionView.GetVisibleSupplementaryViews(elementKind);
+
+			foreach (var view in visibleViews)
+			{
+				if (view is DefaultCell2 defaultCell)
+				{
+					// String-based header/footer
+					defaultCell.Label.UpdateFlowDirection(ItemsView);
+				}
+				else if (view is TemplatedCell2 templatedCell &&
+					ItemsView.ItemTemplate is null &&
+					templatedCell.PlatformHandler?.VirtualView is VisualElement ve &&
+					ve.Handler?.PlatformView is UIView uiView)
+				{
+					// View or templated header/footer
+					uiView.UpdateFlowDirection(ve);
 				}
 			}
 		}
