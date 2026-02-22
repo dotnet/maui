@@ -18,7 +18,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		bool _initialized;
 		bool _isVisible;
 		bool _disposed;
-
+		readonly float _touchSlop;
+		volatile float _initialTouchX;
+		volatile float _initialTouchY;
 		List<View> _oldViews;
 		CarouselViewOnGlobalLayoutListener _carouselViewLayoutListener;
 
@@ -28,8 +30,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			_oldViews = new List<View>();
 			_carouselViewLoopManager = new CarouselViewLoopManager();
+			_touchSlop = ViewConfiguration.Get(context).ScaledTouchSlop;
 		}
 
+		// Gets or sets a value indicating whether swipe gestures are enabled for the carousel.
 		public bool IsSwipeEnabled { get; set; }
 
 		public override bool OnInterceptTouchEvent(MotionEvent ev)
@@ -37,7 +41,48 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (!IsSwipeEnabled)
 				return false;
 
+			switch (ev.Action)
+			{
+				case MotionEventActions.Down:
+					_initialTouchX = ev.GetX();
+					_initialTouchY = ev.GetY();
+					break;
+
+				case MotionEventActions.Move:
+					float deltaX = ev.GetX() - _initialTouchX;
+					float deltaY = ev.GetY() - _initialTouchY;
+
+					// Check if movement exceeds touch slop before evaluating direction
+					if (Math.Abs(deltaX) > _touchSlop || Math.Abs(deltaY) > _touchSlop)
+					{
+						if (ShouldDelegateToChild(deltaX, deltaY))
+						{
+							return false;
+						}
+					}
+					break;
+
+				case MotionEventActions.Cancel:
+				case MotionEventActions.Up:
+					// Reset initial touch values at the end of the gesture
+					// to prevent old values from being used if we don't get a Down event
+					_initialTouchX = 0;
+					_initialTouchY = 0;
+					break;
+			}
+
 			return base.OnInterceptTouchEvent(ev);
+		}
+
+		// Determines whether the touch event should be handled by a child view rather than the carousel. 
+		// Delegates when the dominant axis of movement does not match the
+		// carousel's scroll orientation.
+		bool ShouldDelegateToChild(float deltaX, float deltaY)
+		{
+			float absDeltaX = Math.Abs(deltaX);
+			float absDeltaY = Math.Abs(deltaY);
+
+			return IsHorizontal ? absDeltaY > absDeltaX : absDeltaX > absDeltaY;
 		}
 
 		protected virtual bool IsHorizontal => (Carousel?.ItemsLayout)?.Orientation == ItemsLayoutOrientation.Horizontal;
