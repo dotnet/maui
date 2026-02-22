@@ -64,5 +64,9 @@
 	<string>Just writing events to the Calendar, nothing to see here.</string>
 	<key>NSRemindersFullAccessUsageDescription</key>
 	<string>Just so you will remember</string>
+    <key>UIBackgroundModes</key>
+    <array>
+        <string>remote-notification</string>
+    </array>
 </dict>
 </plist>
