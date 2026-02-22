@@ -32,43 +32,63 @@ internal static partial class ImageProcessor
 			return inputStream;
 		}
 
-		// Create a new image with corrected orientation metadata (no pixel manipulation)
-		// This preserves the original image data while fixing the display orientation
-		var correctedImage = UIImage.FromImage(image.CGImage, image.CurrentScale, UIImageOrientation.Up);
+		// image.Size on iOS is already orientation-corrected.
+		// Draw into a new context to normalize pixel orientation.
+		UIGraphics.BeginImageContextWithOptions(image.Size, false, image.CurrentScale);
 		
-		// Write the corrected image back to a stream, preserving original quality
-		var outputStream = new MemoryStream();
-		
-		// Determine output format based on original file
-		NSData? imageData = null;
-		if (!string.IsNullOrEmpty(originalFileName))
+		try
 		{
-			var extension = Path.GetExtension(originalFileName).ToLowerInvariant();
-			if (extension == ".png")
+			image.Draw(new CGRect(CGPoint.Empty, image.Size));
+			
+			// Get the rotated image
+			using var rotatedImage = UIGraphics.GetImageFromCurrentImageContext();
+			
+			if (rotatedImage == null)
 			{
-				imageData = correctedImage.AsPNG();
+				return inputStream;
+			}
+			
+			// Write the rotated image back to a stream, preserving original quality
+			var outputStream = new MemoryStream();
+			
+			// Determine output format based on original file
+			NSData? imageData;
+			if (!string.IsNullOrEmpty(originalFileName))
+			{
+				var extension = Path.GetExtension(originalFileName).ToLowerInvariant();
+				if (extension == ".png")
+				{
+					imageData = rotatedImage.AsPNG();
+				}
+				else
+				{
+					// For JPEG and other formats, use maximum quality (1.0)
+					imageData = rotatedImage.AsJPEG(1f);
+				}
 			}
 			else
 			{
-				// For JPEG and other formats, use maximum quality (1.0)
-				// People can downscale themselves through the MediaPickerOptions
-				imageData = correctedImage.AsJPEG(1f);
+				// Default to JPEG with maximum quality (1.0)
+				imageData = rotatedImage.AsJPEG(1f);
 			}
+			
+			if (imageData is not null)
+			{
+				using (imageData)
+				using (var encodedStream = imageData.AsStream())
+				{
+					await encodedStream.CopyToAsync(outputStream);
+				}
+				outputStream.Position = 0;
+				return outputStream;
+			}
+			
+			return inputStream;
 		}
-		else
+		finally
 		{
-			// Default to JPEG with maximum quality (1.0)
-			imageData = correctedImage.AsJPEG(1f);
+			UIGraphics.EndImageContext();
 		}
-		
-		if (imageData is not null)
-		{
-			await imageData.AsStream().CopyToAsync(outputStream);
-			outputStream.Position = 0;
-			return outputStream;
-		}
-
-		return inputStream;
 	}
 
 	public static partial Task<byte[]?> ExtractMetadataAsync(Stream inputStream, string? originalFileName)
