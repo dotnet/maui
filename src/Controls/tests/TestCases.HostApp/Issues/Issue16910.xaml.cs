@@ -40,10 +40,12 @@
 			InitializeComponent();
 			BindingContext = this;
 
-			// Insert status labels at top (before TestResult)
-			var layout = (VerticalStackLayout)Content;
-			layout.Insert(0, _isRefreshingLabel);
-			layout.Insert(0, _isNotRefreshingLabel);
+			// Insert status labels at top of Grid (row 0, before TestResult)
+			var grid = (Grid)Content;
+			_isRefreshingLabel.SetValue(Grid.RowProperty, 0);
+			_isNotRefreshingLabel.SetValue(Grid.RowProperty, 0);
+			grid.Insert(0, _isRefreshingLabel);
+			grid.Insert(0, _isNotRefreshingLabel);
 			UpdateRefreshingLabels();
 		}
 

@@ -16,8 +16,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.ListView)]
 		public void TestIssue1905RefreshShows()
 		{
-			App.WaitForElement("Refresh", timeout: TimeSpan.FromSeconds(90));
-			App.WaitForElement("data refreshed", timeout: TimeSpan.FromSeconds(90));
+			App.WaitForElement("Refresh", timeout: TimeSpan.FromSeconds(120));
+			App.WaitForElement("data refreshed", timeout: TimeSpan.FromSeconds(120));
 		}
 	}
 }

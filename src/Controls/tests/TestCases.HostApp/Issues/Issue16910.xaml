@@ -2,12 +2,12 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues.Issue16910">
-    <VerticalStackLayout Padding="20" Spacing="10">
-        <Label AutomationId="TestResult" x:Name="TestResultLabel" Text="Waiting" FontSize="18" />
-        <Button AutomationId="RunTest" Text="Run Binding Test" Clicked="OnRunTestClicked" />
-        <Button AutomationId="StopRefreshing" x:Name="StopRefreshingButton" Text="Stop Refresh"
+    <Grid RowDefinitions="Auto,Auto,Auto,*" Padding="20" RowSpacing="10">
+        <Label Grid.Row="0" AutomationId="TestResult" x:Name="TestResultLabel" Text="Waiting" FontSize="18" />
+        <Button Grid.Row="1" AutomationId="RunTest" Text="Run Binding Test" Clicked="OnRunTestClicked" />
+        <Button Grid.Row="2" AutomationId="StopRefreshing" x:Name="StopRefreshingButton" Text="Stop Refresh"
                 Clicked="OnStopRefreshClicked" IsVisible="false" />
-        <RefreshView x:Name="refreshView" IsRefreshing="{Binding IsRefreshing, Mode=TwoWay}">
+        <RefreshView Grid.Row="3" x:Name="refreshView" IsRefreshing="{Binding IsRefreshing, Mode=TwoWay}">
             <ScrollView AutomationId="RefreshScrollView">
                 <VerticalStackLayout Padding="10" Spacing="5">
                     <Label Text="Item 1" />
@@ -33,5 +33,5 @@
                 </VerticalStackLayout>
             </ScrollView>
         </RefreshView>
-    </VerticalStackLayout>
+    </Grid>
 </ContentPage>
