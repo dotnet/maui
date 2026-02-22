@@ -118,17 +118,6 @@ These files are auto-generated and must NOT be committed:
 
 **For AI agents:** Always reset changes to these files before committing.
 
-### Dangerous System Commands (Never Run)
-
-**🚨 NEVER run these commands — they cause destructive system-wide side effects:**
-
-- **`tccutil reset`** — Wipes ALL permissions (Accessibility, Camera, etc.) system-wide. This breaks Appium/WebDriverAgent, Xcode, and other tools that depend on macOS permissions. Once reset, permissions must be manually re-granted through System Settings.
-- **`csrutil disable`** — Disables System Integrity Protection
-- **`networksetup`** — Modifies network configuration
-- **`defaults delete`** on system domains — Resets system preferences
-
-**General rule:** Do not run commands that modify macOS system-level privacy, security, or permission settings. If you need to check permissions, read them (e.g., `sqlite3 TCC.db "SELECT ..."`) — never reset or modify them.
-
 ### PublicAPI.Unshipped.txt File Management
 
 When working with public API changes:
