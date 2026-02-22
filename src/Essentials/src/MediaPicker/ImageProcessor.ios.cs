@@ -32,70 +32,13 @@ internal static partial class ImageProcessor
 			return inputStream;
 		}
 
-		// Create a graphics context with the rotated size and draw the rotated image
-		// This ensures the pixels are actually rotated, not just the orientation flag
-		var size = image.Size;
-		
-		// Determine the size after rotation
-		var rotatedSize = image.Orientation switch
-		{
-			UIImageOrientation.Left or UIImageOrientation.Right or
-			UIImageOrientation.LeftMirrored or UIImageOrientation.RightMirrored
-				=> new CGSize(size.Height, size.Width),
-			_ => size
-		};
-
-		// Create a graphics context with the rotated dimensions
-		UIGraphics.BeginImageContextWithOptions(rotatedSize, false, image.CurrentScale);
+		// image.Size on iOS is already orientation-corrected.
+		// Draw into a new context to normalize pixel orientation.
+		UIGraphics.BeginImageContextWithOptions(image.Size, false, image.CurrentScale);
 		
 		try
 		{
-			var context = UIGraphics.GetCurrentContext();
-			if (context is null)
-			{
-				return inputStream;
-			}
-			
-			// Apply the appropriate transformation based on orientation
-			switch (image.Orientation)
-			{
-				case UIImageOrientation.Right:
-					context.TranslateCTM(rotatedSize.Width, 0);
-					context.RotateCTM((nfloat)System.Math.PI / 2);
-					break;
-				case UIImageOrientation.Down:
-					context.TranslateCTM(rotatedSize.Width, rotatedSize.Height);
-					context.RotateCTM((nfloat)System.Math.PI);
-					break;
-				case UIImageOrientation.Left:
-					context.TranslateCTM(0, rotatedSize.Height);
-					context.RotateCTM(-(nfloat)System.Math.PI / 2);
-					break;
-				case UIImageOrientation.UpMirrored:
-					context.TranslateCTM(rotatedSize.Width, 0);
-					context.ScaleCTM(-1, 1);
-					break;
-				case UIImageOrientation.RightMirrored:
-					context.TranslateCTM(rotatedSize.Width, rotatedSize.Height);
-					context.RotateCTM((nfloat)System.Math.PI / 2);
-					context.ScaleCTM(-1, 1);
-					break;
-				case UIImageOrientation.DownMirrored:
-					context.TranslateCTM(0, rotatedSize.Height);
-					context.ScaleCTM(1, -1);
-					break;
-				case UIImageOrientation.LeftMirrored:
-					context.TranslateCTM(0, 0);
-					context.RotateCTM(-(nfloat)System.Math.PI / 2);
-					context.ScaleCTM(-1, 1);
-					break;
-				// UIImageOrientation.Up: no transformation needed
-			}
-			
-			// Draw raw pixels without applying UIImage orientation semantics again
-			context.TranslateCTM(0, rotatedSize.Height);
-			context.ScaleCTM(1, -1);
-			context.DrawImage(new CGRect(0, 0, size.Width, size.Height), image.CGImage);
+			image.Draw(new CGRect(CGPoint.Empty, image.Size));
 			
 			// Get the rotated image
 			using var rotatedImage = UIGraphics.GetImageFromCurrentImageContext();
