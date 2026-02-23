@@ -8,7 +8,8 @@ const string ReadyId = "ReadyLabel";
 
 int _counter = 0;
 int _level = 0;
-// Reduced from 5 to 3 levels: 4^3 = 64 labels instead of 4^5 = 1024
+// Reduced from 5 to 4 levels: 4^4 = 256 labels instead of 4^5 = 1024
+// Still deep enough to exercise nested disposal, but avoids catalyst timeout
 const int maxLevel = 4;
 
 public View BuildLevel()

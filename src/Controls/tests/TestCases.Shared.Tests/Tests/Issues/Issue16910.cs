@@ -19,10 +19,11 @@ public class Issue16910 : _IssuesUITest
 	[Test]
 	public void BindingUpdatesFromProgrammaticRefresh()
 	{
-		App.WaitForElement("RunTest", timeout: TimeSpan.FromSeconds(45));
-		App.Tap("RunTest");
-		var result = App.WaitForElement("TestResult", timeout: TimeSpan.FromSeconds(45)).GetText();
-		Assert.That(result, Is.EqualTo("SUCCESS"));
+		App.WaitForElement("StartRefreshing", timeout: TimeSpan.FromSeconds(45));
+		App.Tap("StartRefreshing");
+		App.WaitForElement("IsRefreshing", timeout: TimeSpan.FromSeconds(45));
+		App.Tap("StopRefreshing");
+		App.WaitForElement("IsNotRefreshing", timeout: TimeSpan.FromSeconds(45));
 	}
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // Failing on Mac and Windows. Flaky Test. More information: https://github.com/dotnet/maui/issues/28368

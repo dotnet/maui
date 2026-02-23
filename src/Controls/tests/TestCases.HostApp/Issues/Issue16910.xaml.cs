@@ -23,64 +23,35 @@
 		{
 			if (IsRefreshing)
 			{
-				_isNotRefreshingLabel.IsVisible = false;
-				_isRefreshingLabel.IsVisible = true;
-				StopRefreshingButton.IsVisible = true;
+				grid.Remove(_isNotRefreshingLabel);
+				grid.Insert(0, _isRefreshingLabel);
+				StartRefreshing.IsVisible = false;
+				StopRefreshing.IsVisible = true;
 			}
 			else
 			{
-				_isRefreshingLabel.IsVisible = false;
-				_isNotRefreshingLabel.IsVisible = true;
-				StopRefreshingButton.IsVisible = false;
+				grid.Remove(_isRefreshingLabel);
+				grid.Insert(0, _isNotRefreshingLabel);
+				StartRefreshing.IsVisible = true;
+				StopRefreshing.IsVisible = false;
 			}
 		}
 
 		public Issue16910()
 		{
 			InitializeComponent();
-			BindingContext = this;
-
-			// Insert status labels at top of Grid (row 0, before TestResult)
-			var grid = (Grid)Content;
-			_isRefreshingLabel.SetValue(Grid.RowProperty, 0);
-			_isNotRefreshingLabel.SetValue(Grid.RowProperty, 0);
-			grid.Insert(0, _isRefreshingLabel);
-			grid.Insert(0, _isNotRefreshingLabel);
 			UpdateRefreshingLabels();
-		}
-
-		async void OnRunTestClicked(object sender, EventArgs e)
-		{
-			// Test programmatic refresh start — binding should propagate to ViewModel
-			refreshView.IsRefreshing = true;
-
-			// Yield to let the XAML TwoWay binding engine propagate the value
-			await Task.Yield();
-
-			if (!IsRefreshing)
-			{
-				TestResultLabel.Text = "FAIL: IsRefreshing did not propagate to true";
-				return;
-			}
-
-			// Test programmatic refresh stop — binding should propagate to ViewModel
-			refreshView.IsRefreshing = false;
-
-			// Yield again to let binding propagate
-			await Task.Yield();
-
-			if (IsRefreshing)
-			{
-				TestResultLabel.Text = "FAIL: IsRefreshing did not propagate to false";
-				return;
-			}
-
-			TestResultLabel.Text = "SUCCESS";
+			BindingContext = this;
 		}
 
 		void OnStopRefreshClicked(object sender, EventArgs e)
 		{
 			refreshView.IsRefreshing = false;
+		}
+
+		void OnRefreshClicked(object sender, EventArgs e)
+		{
+			refreshView.IsRefreshing = true;
 		}
 	}
 }
