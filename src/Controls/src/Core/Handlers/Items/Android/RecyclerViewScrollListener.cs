@@ -54,21 +54,30 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			// Don't send RemainingItemsThresholdReached event for non-linear layout managers
 			// This can also happen if a layout pass has not happened yet
-			if (Last == -1)
-				return;
-
-			switch (_itemsView.RemainingItemsThreshold)
+			if (Last == -1 || ItemsViewAdapter is null || _itemsView.RemainingItemsThreshold == -1)
 			{
-				case -1:
-					return;
-				case 0:
-					if (Last == ItemsViewAdapter.ItemsSource.Count - 1)
-						_itemsView.SendRemainingItemsThresholdReached();
-					break;
-				default:
-					if (ItemsViewAdapter.ItemsSource.Count - 1 - Last <= _itemsView.RemainingItemsThreshold)
-						_itemsView.SendRemainingItemsThresholdReached();
-					break;
+				return;
+			}
+
+			var itemsSource = ItemsViewAdapter.ItemsSource;
+			int headerValue = itemsSource.HasHeader ? 1 : 0;
+			int footerValue = itemsSource.HasFooter ? 1 : 0;
+
+			// Calculate actual data item count (excluding header and footer positions)
+			int actualItemCount = ItemsViewAdapter.ItemCount - footerValue - headerValue;
+
+			// Ensure we're within the data items region (not in header/footer)
+			if (Last < headerValue || Last > actualItemCount)
+			{
+				return;
+			}
+
+			// Check if we're at or within threshold distance from the last data item
+			bool isThresholdReached = (Last == actualItemCount - 1) || (actualItemCount - 1 - Last <= _itemsView.RemainingItemsThreshold);
+
+			if (isThresholdReached)
+			{
+				_itemsView.SendRemainingItemsThresholdReached();
 			}
 		}
 
