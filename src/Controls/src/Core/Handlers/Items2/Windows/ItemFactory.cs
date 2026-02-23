@@ -157,13 +157,28 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			if (VirtualView is null || VirtualView.Handler is null)
 			{
-				Content = view.ToPlatform(_context);
+				// Store the virtual view but defer ToPlatform() until MeasureOverride.
+				// At this point the ElementWrapper is not yet in the WinUI visual tree
+				// (no XamlRoot). Calling ToPlatform() here would create a handler and
+				// GesturePlatformManager, which tries to subscribe pointer events on
+				// a disconnected element — causing a COM exception when the view has
+				// a PointerOver visual state. By deferring to MeasureOverride, the
+				// element is already in the visual tree with a valid XamlRoot.
 				VirtualView = view;
+			}
+		}
+
+		void EnsurePlatformViewCreated()
+		{
+			if (VirtualView is not null && Content is null)
+			{
+				Content = VirtualView.ToPlatform(_context);
 			}
 		}
 
 		protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
 		{
+			EnsurePlatformViewCreated();
 			// Access handler through view parent chain (same pattern as iOS)
 			CollectionViewHandler2? handler = null;
 			if (VirtualView is View view &&
