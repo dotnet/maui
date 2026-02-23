@@ -190,12 +190,16 @@ namespace Microsoft.Maui.Handlers
 
 			void OnEditingChanged(object? sender, EventArgs e)
 			{
-				if (sender is MauiTextField platformView)
+				if (sender is MauiTextField platformView && VirtualView is not null)
 				{
-					VirtualView?.UpdateText(platformView.Text);
-				}
-			}
+					// Update cursor position before updating text so that when TextChanged event fires,
+					// the CursorPosition property reflects the current native cursor position
+					VirtualView.UpdateCursorPosition(platformView.GetCursorPosition());
 
+					VirtualView.UpdateText(platformView.Text);
+				}
+			}	
+				
 			void OnEditingEnded(object? sender, EventArgs e)
 			{
 				if (sender is MauiTextField platformView && VirtualView is IEntry virtualView)
