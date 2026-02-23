@@ -40,6 +40,13 @@ namespace Microsoft.Maui.Platform
 				_clipRect.Set(0, 0, width, height);
 				ClipBounds = _clipRect;
 			}
+			else
+			{
+				// Reset to empty rect when the view becomes zero-sized or hidden,
+				// to avoid stale non-zero clip bounds.
+				_clipRect.Set(0, 0, 0, 0);
+				ClipBounds = _clipRect;
+			}
 		}
 
 		public void SendRawMessage(string rawMessage)
