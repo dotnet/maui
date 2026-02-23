@@ -101,7 +101,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				_headerView = new ShellFlyoutHeaderContainer(((IShellController)_shellContext.Shell).FlyoutHeader);
 
-				// Apply flow direction to header view
+				// Resolve MatchParent to the Shell's concrete FlowDirection before calling UpdateFlowDirection.
+				// Shell sub-elements have a disconnected MAUI visual tree, so MatchParent cannot traverse up
+				// to the Shell automatically. This is a one-way mutation consistent with existing codebase
+				// patterns; if Shell.FlowDirection changes at runtime, UpdateFlowDirection() will still
+				// update the native UIView correctly because it uses the Shell as context.
 				if (header.FlowDirection == FlowDirection.MatchParent)
 				{
 					header.FlowDirection = _shellContext.Shell.FlowDirection;
@@ -153,7 +157,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_footerView.ClipsToBounds = true;
 				_footer.MeasureInvalidated += OnFooterMeasureInvalidated;
 
-				// Apply flow direction to footer view
+				// Same MatchParent resolution as header — see UpdateFlyoutHeader for explanation.
 				if (_footer.FlowDirection == FlowDirection.MatchParent)
 				{
 					_footer.FlowDirection = _shellContext.Shell.FlowDirection;

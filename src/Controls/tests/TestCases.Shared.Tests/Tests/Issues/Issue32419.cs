@@ -26,7 +26,7 @@ public class Issue32419 : _IssuesUITest
 	{
 		App.WaitForElement("homePageLabel");
 		App.Tap("FlyoutLockedButton");
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 }

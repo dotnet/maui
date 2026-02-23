@@ -60,6 +60,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				if (behavior == FlyoutBehavior.Locked)
 				{
+					// In RTL (ForceRightToLeft), iOS mirrors the coordinate system so that x=0 is
+					// visually on the right. Setting positionX = shellWidth places the flyout's
+					// leading edge at the right boundary of the shell content area, which renders
+					// at the left (leading) edge of the screen in the mirrored coordinate space.
+					// This correctly anchors the locked flyout to the trailing side in RTL layout.
 					positionX = shellWidth;
 				}
 

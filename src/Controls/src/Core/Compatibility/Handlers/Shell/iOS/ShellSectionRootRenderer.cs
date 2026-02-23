@@ -490,6 +490,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				if (_tracker?.Page is not null && _shellContext?.Shell is not null)
 				{
+					// Resolve MatchParent to the Shell's concrete FlowDirection. The tracked page has a
+					// disconnected MAUI visual tree so MatchParent cannot auto-resolve. This is a one-way
+					// mutation consistent with existing codebase patterns.
 					if (_tracker.Page.FlowDirection == FlowDirection.MatchParent)
 					{
 						_tracker.Page.FlowDirection = _shellContext.Shell.FlowDirection;

@@ -175,15 +175,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			cell.SetAccessibilityProperties(context);
 
-			// If the view's FlowDirection is MatchParent, inherit from Shell
-			// This ensures UpdateFlowDirection can properly resolve the flow direction
+			// Resolve MatchParent to the Shell's concrete FlowDirection. Shell menu item cells have a
+			// disconnected MAUI visual tree, so MatchParent cannot traverse up automatically. This is a
+			// one-way mutation consistent with existing codebase patterns.
 			if (cell.View.FlowDirection == FlowDirection.MatchParent)
 			{
 				cell.View.FlowDirection = _context.Shell.FlowDirection;
 			}
 
-			// Apply flow direction to the cell's platform view
-			// This respects any explicit FlowDirection set in the item template
+			// Apply the resolved flow direction to the cell's native UIView. Even if Shell.FlowDirection
+			// changes later, UpdateFlowDirection() re-applies it using the Shell as context.
 			if (cell.View.Handler?.PlatformView is UIView platformView)
 			{
 				platformView.UpdateFlowDirection(cell.View);
