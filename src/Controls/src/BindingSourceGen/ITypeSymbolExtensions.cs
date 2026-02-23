@@ -68,29 +68,50 @@ public static class ITypeSymbolExtensions
 		// Extract the method name (property name without "Command" suffix)
 		var methodName = propertyName.Substring(0, propertyName.Length - "Command".Length);
 
-		// Look for a method with the base name - search in the type and base types
-		var methods = GetAllMethods(symbol, methodName);
-
-		foreach (var method in methods)
+		// CommunityToolkit.Mvvm command naming supports these patterns:
+		// - Save => SaveCommand
+		// - SaveAsync => SaveCommand
+		// - OnSave => SaveCommand
+		// - OnSaveAsync => SaveCommand
+		foreach (var candidateMethodName in GetRelayCommandMethodNameCandidates(methodName))
 		{
-			// Check if the method has the RelayCommand attribute
-			var hasRelayCommand = method.GetAttributes().Any(attr =>
-				attr.AttributeClass?.Name == "RelayCommandAttribute" ||
-				attr.AttributeClass?.ToDisplayString() == "CommunityToolkit.Mvvm.Input.RelayCommandAttribute");
-
-			if (hasRelayCommand)
+			var methods = GetAllMethods(symbol, candidateMethodName);
+			foreach (var method in methods)
 			{
-				// Try to find the ICommand interface type
-				var icommandType = compilation.GetTypeByMetadataName("System.Windows.Input.ICommand");
-				if (icommandType != null)
+				// Check if the method has the RelayCommand attribute
+				var hasRelayCommand = method.GetAttributes().Any(attr =>
+					attr.AttributeClass?.Name == "RelayCommandAttribute" ||
+					attr.AttributeClass?.ToDisplayString() == "CommunityToolkit.Mvvm.Input.RelayCommandAttribute");
+
+				if (hasRelayCommand)
 				{
-					commandType = icommandType;
-					return true;
+					// Try to find the ICommand interface type
+					var icommandType = compilation.GetTypeByMetadataName("System.Windows.Input.ICommand");
+					if (icommandType != null)
+					{
+						commandType = icommandType;
+						return true;
+					}
 				}
 			}
 		}
 
 		return false;
+	}
+
+	private static System.Collections.Generic.IEnumerable<string> GetRelayCommandMethodNameCandidates(string methodName)
+	{
+		yield return methodName;
+		yield return methodName + "Async";
+
+		if (methodName.Length > 0
+			&& char.IsUpper(methodName[0])
+			&& !methodName.StartsWith("On", System.StringComparison.Ordinal))
+		{
+			var onMethodName = "On" + methodName;
+			yield return onMethodName;
+			yield return onMethodName + "Async";
+		}
 	}
 
 	/// <summary>
