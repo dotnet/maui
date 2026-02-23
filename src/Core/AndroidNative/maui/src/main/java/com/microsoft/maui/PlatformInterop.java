@@ -350,7 +350,8 @@ public class PlatformInterop {
     public static void loadImageFromStream(ImageView imageView, InputStream inputStream, ImageLoaderCallback callback) {
         RequestBuilder<Drawable> builder = Glide
             .with(imageView)
-            .load(inputStream);
+            .load(inputStream)
+            .override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL);
         loadInto(builder, imageView, false, callback, inputStream);
     }
 
@@ -397,7 +398,8 @@ public class PlatformInterop {
         }
         RequestBuilder<Drawable> builder = Glide
             .with(context)
-            .load(inputStream);
+            .load(inputStream)
+            .override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL);
         load(builder, context, false, callback, inputStream);
     }
 
