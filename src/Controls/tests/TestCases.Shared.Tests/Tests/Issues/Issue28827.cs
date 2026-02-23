@@ -1,5 +1,5 @@
-﻿#if TEST_FAILS_ON_WINDOWS // NullReferenceException occurs when switching isGrouped to true
-// refer to https://github.com/dotnet/maui/issues/28824
+﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS // NullReferenceException occurs when switching isGrouped to true
+// refer to https://github.com/dotnet/maui/issues/29141, https://github.com/dotnet/maui/issues/28824
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;

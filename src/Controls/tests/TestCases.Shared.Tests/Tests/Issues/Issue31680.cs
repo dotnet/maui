@@ -22,6 +22,16 @@ public class Issue31680 : _IssuesUITest
         // but the issue can be consistently reproduced manually with each scroll.
         App.ScrollDown("MainCollectionView", ScrollStrategy.Gesture, 0.99, swipeSpeed: 50, true);
         App.ScrollDown("MainCollectionView", ScrollStrategy.Gesture, 0.99, swipeSpeed: 50, true);
+#if MACCATALYST
+        // MacCatalyst needs more scroll gestures to reach the bottom.
+        for (int i = 0; i < 5; i++)
+        {
+            App.ScrollDown("MainCollectionView", ScrollStrategy.Gesture, 0.99, swipeSpeed: 50, true);
+
+            if (App.FindElements("Footer").Count > 0)
+                break;
+        }
+#endif
         App.ScrollTo("Footer");
         App.WaitForElement("Footer");
     }

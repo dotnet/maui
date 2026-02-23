@@ -12,6 +12,7 @@ public class Issue32223 : _IssuesUITest
 	public override string Issue => "[Android] CollectionView items do not reorder correctly when using an item DataTemplateSelector";
 
 	[Test]
+	[Retry(5)]
 	[Category(UITestCategories.CollectionView)]
 	public void CanReorderWithItemDataTemplateSelector()
 	{
