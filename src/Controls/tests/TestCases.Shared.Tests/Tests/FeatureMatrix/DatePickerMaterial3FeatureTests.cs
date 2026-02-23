@@ -25,7 +25,7 @@ public class DatePickerMaterial3FeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(2)]
-	[Category(UITestCategories.DatePicker)]
+	[Category(UITestCategories.Material3)]
 	public void Material3DatePicker_ModifyOldDateAndNewDate_VerifyVisualState()
 	{
 		App.WaitForElement("DatePickerControl");
@@ -37,7 +37,7 @@ public class DatePickerMaterial3FeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(3)]
-	[Category(UITestCategories.DatePicker)]
+	[Category(UITestCategories.Material3)]
 	public void Material3DatePicker_OldDateAndNewDate_VerifyVisualState()
 	{
 		App.WaitForElement("DatePickerControl");
