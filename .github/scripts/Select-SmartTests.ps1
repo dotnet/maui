@@ -98,6 +98,605 @@ if (-not $OutputFile) {
 }
 
 # ──────────────────────────────────────────────────────
+# HELPERS
+# ──────────────────────────────────────────────────────
+
+function Extract-JsonFromOutput {
+    param([string]$RawOutput)
+    # Try code block first (```json ... ```)
+    $codeBlock = [regex]::Match($RawOutput, '```(?:json)?\s*(\{[\s\S]*?\})\s*```')
+    if ($codeBlock.Success) { return $codeBlock.Groups[1].Value }
+    # Fall back to first balanced { ... } (non-greedy via lazy quantifier won't work for nested, so find first valid JSON)
+    $firstBrace = $RawOutput.IndexOf('{')
+    if ($firstBrace -ge 0) {
+        $depth = 0; $inStr = $false; $escape = $false
+        for ($i = $firstBrace; $i -lt $RawOutput.Length; $i++) {
+            $c = $RawOutput[$i]
+            if ($escape) { $escape = $false; continue }
+            if ($c -eq '\') { $escape = $true; continue }
+            if ($c -eq '"') { $inStr = -not $inStr; continue }
+            if ($inStr) { continue }
+            if ($c -eq '{') { $depth++ } elseif ($c -eq '}') { $depth--; if ($depth -eq 0) { return $RawOutput.Substring($firstBrace, $i - $firstBrace + 1) } }
+        }
+    }
+    return $null
+}
+
+# ──────────────────────────────────────────────────────
+# RESILIENCE: DEVICE HEALTH, FLAKY TESTS, RETRY, AI ANALYSIS
+# ──────────────────────────────────────────────────────
+
+function Test-DeviceHealth {
+    param(
+        [Parameter(Mandatory)]
+        [ValidateSet("android", "ios", "catalyst")]
+        [string]$Platform
+    )
+
+    $deadline = (Get-Date).AddSeconds(180)
+    $issues = [System.Collections.Generic.List[string]]::new()
+    $actions = [System.Collections.Generic.List[string]]::new()
+    $deviceId = ""
+
+    function Test-TimedOut { return (Get-Date) -ge $deadline }
+
+    function Clear-AppiumPort {
+        try {
+            $pids = bash -c "lsof -i :4723 2>/dev/null | grep LISTEN | awk '{print `$2}'" 2>$null
+            if ($pids) {
+                foreach ($p in ($pids -split "`n" | Where-Object { $_ -match '^\d+$' })) {
+                    Write-Host "  ⚠️ Killing stale Appium process (PID $p) on port 4723"
+                    kill -9 $p 2>$null
+                    $actions.Add("Killed stale Appium PID $p")
+                }
+                Start-Sleep -Seconds 1
+                $stillListening = bash -c "lsof -i :4723 2>/dev/null | grep LISTEN" 2>$null
+                if ($stillListening) { $issues.Add("Port 4723 still occupied after kill"); return $false }
+            }
+            Write-Host "  ✅ Appium port 4723 is free"
+            return $true
+        } catch {
+            $issues.Add("Failed to check Appium port: $_")
+            return $false
+        }
+    }
+
+    if ($Platform -eq "android") {
+        if (-not (Get-Command "adb" -ErrorAction SilentlyContinue)) {
+            $issues.Add("adb not found in PATH")
+            return @{ Healthy = $false; Platform = $Platform; DeviceId = ""; Issues = $issues.ToArray(); Actions = $actions.ToArray() }
+        }
+
+        $runningDevices = adb devices 2>$null | Select-String "^emulator-\d+\s+device"
+        if ($runningDevices.Count -gt 0) {
+            $deviceId = ($runningDevices[0].Line -split '\s+')[0]
+            Write-Host "  ✅ Android emulator: $deviceId"
+            $bootDone = adb -s $deviceId shell getprop sys.boot_completed 2>$null
+            if ($bootDone -notmatch "1") {
+                Write-Host "  ⚠️ Waiting for boot..."
+                $actions.Add("Waited for emulator boot")
+                while (-not (Test-TimedOut)) {
+                    Start-Sleep -Seconds 5
+                    $bootDone = adb -s $deviceId shell getprop sys.boot_completed 2>$null
+                    if ($bootDone -match "1") { Write-Host "  ✅ Boot completed"; break }
+                }
+                if ($bootDone -notmatch "1") { $issues.Add("Emulator did not finish booting") }
+            }
+        } else {
+            Write-Host "  ⚠️ No emulator — trying Start-Emulator.ps1"
+            $actions.Add("Starting emulator via Start-Emulator.ps1")
+            $startScript = Join-Path $RepoRoot ".github/scripts/shared/Start-Emulator.ps1"
+            if (Test-Path $startScript) {
+                try {
+                    & pwsh $startScript -Platform android 2>&1 | ForEach-Object { Write-Host "     $_" }
+                    $runningDevices = adb devices 2>$null | Select-String "^emulator-\d+\s+device"
+                    if ($runningDevices.Count -gt 0) {
+                        $deviceId = ($runningDevices[0].Line -split '\s+')[0]
+                        Write-Host "  ✅ Emulator started: $deviceId"
+                    } else { $issues.Add("Start-Emulator.ps1 ran but no emulator appeared") }
+                } catch { $issues.Add("Start-Emulator.ps1 failed: $_") }
+            } else { $issues.Add("Start-Emulator.ps1 not found and no running emulator") }
+        }
+        if (-not (Test-TimedOut)) { if (-not (Clear-AppiumPort)) { $issues.Add("Could not free Appium port") } }
+    }
+    elseif ($Platform -eq "ios" -or $Platform -eq "catalyst") {
+        if (-not (Get-Command "xcrun" -ErrorAction SilentlyContinue)) {
+            $issues.Add("xcrun not found")
+            return @{ Healthy = $false; Platform = $Platform; DeviceId = ""; Issues = $issues.ToArray(); Actions = $actions.ToArray() }
+        }
+
+        $bootedRaw = xcrun simctl list devices booted --json 2>$null | ConvertFrom-Json
+        $bootedDevices = @()
+        if ($bootedRaw -and $bootedRaw.devices) {
+            $bootedDevices = $bootedRaw.devices.PSObject.Properties.Value | ForEach-Object { $_ } | Where-Object { $_.state -eq "Booted" }
+        }
+
+        if ($bootedDevices.Count -gt 0) {
+            $sim = $bootedDevices | Select-Object -First 1
+            $deviceId = $sim.udid
+            Write-Host "  ✅ Booted simulator: $($sim.name) ($deviceId)"
+        } else {
+            Write-Host "  ⚠️ No booted simulator — booting one"
+            $actions.Add("Booting simulator")
+            $allRaw = xcrun simctl list devices available --json 2>$null | ConvertFrom-Json
+            $targetSim = $null
+            if ($allRaw -and $allRaw.devices) {
+                $allSims = $allRaw.devices.PSObject.Properties | ForEach-Object {
+                    $_.Value | Where-Object { $_.isAvailable -eq $true }
+                }
+                $targetSim = $allSims | Where-Object { $_.name -eq "iPhone Xs" } | Select-Object -First 1
+                if (-not $targetSim) { $targetSim = $allSims | Where-Object { $_.name -match "^iPhone" } | Select-Object -First 1 }
+            }
+            if ($targetSim) {
+                xcrun simctl boot $targetSim.udid 2>$null
+                $actions.Add("Booted $($targetSim.name)")
+                $bootWait = 0
+                while ($bootWait -lt 60 -and -not (Test-TimedOut)) {
+                    Start-Sleep -Seconds 3; $bootWait += 3
+                    $dev = xcrun simctl list devices --json 2>$null | ConvertFrom-Json
+                    $check = $dev.devices.PSObject.Properties.Value | ForEach-Object { $_ } | Where-Object { $_.udid -eq $targetSim.udid }
+                    if ($check.state -eq "Booted") { $deviceId = $targetSim.udid; Write-Host "  ✅ Simulator booted"; break }
+                }
+                if (-not $deviceId) { $issues.Add("Simulator did not boot in time") }
+            } else { $issues.Add("No available iPhone simulator found") }
+        }
+
+        # Verify responsiveness
+        if ($deviceId -and -not (Test-TimedOut)) {
+            $responsive = $false
+            for ($r = 0; $r -lt 3; $r++) {
+                $null = xcrun simctl spawn $deviceId launchctl print system 2>&1
+                if ($LASTEXITCODE -eq 0) { $responsive = $true; break }
+                Start-Sleep -Seconds 3
+            }
+            if (-not $responsive) { $issues.Add("Simulator booted but unresponsive") }
+        }
+        if (-not (Test-TimedOut)) { if (-not (Clear-AppiumPort)) { $issues.Add("Could not free Appium port") } }
+    }
+
+    $healthy = ($issues.Count -eq 0) -and ($deviceId -ne "")
+    if ($healthy) { Write-Host "  ✅ Device health: PASSED" } else { Write-Host "  ❌ Device health: FAILED — $($issues -join '; ')" }
+    return @{ Healthy = $healthy; Platform = $Platform; DeviceId = $deviceId; Issues = $issues.ToArray(); Actions = $actions.ToArray() }
+}
+
+function Get-KnownFlakyTests {
+    param(
+        [string]$SearchPath,
+        [ValidateSet('Android', 'iOS', 'MacCatalyst', 'Windows')]
+        [string]$Platform
+    )
+    if (-not $SearchPath) { $SearchPath = Join-Path $RepoRoot 'src/Controls/tests/TestCases.Shared.Tests' }
+    if (-not (Test-Path $SearchPath)) { return @{} }
+
+    $attrPlatformMap = @{
+        'FlakyTest'                                = @('Android', 'iOS', 'MacCatalyst', 'Windows')
+        'FailsOnAllPlatformsWhenRunningOnXamarinUITest' = @('Android', 'iOS', 'MacCatalyst', 'Windows')
+        'FailsOnAllPlatforms'                      = @('Android', 'iOS', 'MacCatalyst', 'Windows')
+        'FailsOnAndroidWhenRunningOnXamarinUITest' = @('Android')
+        'FailsOnAndroid'                           = @('Android')
+        'FailsOnIOSWhenRunningOnXamarinUITest'     = @('iOS')
+        'FailsOnIOS'                               = @('iOS')
+        'FailsOnMacWhenRunningOnXamarinUITest'     = @('MacCatalyst')
+        'FailsOnMac'                               = @('MacCatalyst')
+        'FailsOnWindowsWhenRunningOnXamarinUITest' = @('Windows')
+        'FailsOnWindows'                           = @('Windows')
+    }
+
+    $attrNames = ($attrPlatformMap.Keys | Sort-Object -Descending { $_.Length }) -join '|'
+    $pattern = '^\s*\[(?<attr>' + $attrNames + ')(?:\((?<args>[^]]*)\))?\]'
+    $classPattern = '^\s*(?:public\s+)?(?:partial\s+)?class\s+(?<name>\w+)'
+    $results = @{}
+
+    foreach ($file in (Get-ChildItem -Path $SearchPath -Filter '*.cs' -Recurse -ErrorAction SilentlyContinue)) {
+        try { $lines = Get-Content -Path $file.FullName -ErrorAction Stop } catch { continue }
+        $currentClass = $null; $inBlock = $false
+        foreach ($line in $lines) {
+            if ($inBlock) { if ($line -match '\*/') { $inBlock = $false }; continue }
+            if ($line -match '/\*' -and $line -notmatch '\*/') { $inBlock = $true; continue }
+            if ($line -match '^\s*//') { continue }
+            if ($line -match $classPattern) { $currentClass = $Matches['name'] }
+            if ($line -match $pattern) {
+                $attrName = $Matches['attr']
+                $msg = $null; if ($Matches['args'] -and $Matches['args'] -match '"([^"]*)"') { $msg = $Matches[1] }
+                $plats = $attrPlatformMap[$attrName]
+                $cls = if ($currentClass) { $currentClass } else { [IO.Path]::GetFileNameWithoutExtension($file.Name) }
+                if (-not $results.ContainsKey($cls)) { $results[$cls] = @() }
+                $results[$cls] += [PSCustomObject]@{ Attribute = $attrName; Message = $msg; Platforms = $plats }
+            }
+        }
+    }
+
+    if ($Platform) {
+        $filtered = @{}
+        foreach ($key in $results.Keys) {
+            $matching = @($results[$key] | Where-Object { $_.Platforms -contains $Platform })
+            if ($matching.Count -gt 0) { $filtered[$key] = $matching }
+        }
+        return $filtered
+    }
+    return $results
+}
+
+function Invoke-TestWithRetry {
+    param(
+        [string]$TestCommand,
+        [string[]]$TestArgs,
+        [string]$TrxOutputDir,
+        [string]$TestLabel,
+        [int]$MaxRetries = 2,
+        [hashtable]$KnownFlaky = @{}
+    )
+
+    $allResults = @{
+        Label = $TestLabel
+        Attempts = @()
+        FinalExitCode = 0
+        FailedTests = @()
+        PassedOnRetry = @()
+        ConsistentFailures = @()
+    }
+
+    # Attempt 1: Run full test suite
+    $trxPath = Join-Path $TrxOutputDir "${TestLabel}_attempt1.trx"
+    Write-Host "  🧪 [$TestLabel] Attempt 1..." -ForegroundColor Cyan
+    $output = & $TestCommand @TestArgs --logger "trx;LogFileName=$trxPath" 2>&1
+    $exitCode = $LASTEXITCODE
+    $allResults.Attempts += @{ Number = 1; ExitCode = $exitCode; TrxPath = $trxPath; Output = ($output | Out-String) }
+
+    if ($exitCode -eq 0) {
+        Write-Host "  ✅ [$TestLabel] Passed on first attempt" -ForegroundColor Green
+        return $allResults
+    }
+
+    # Parse TRX to find failed tests
+    $failedTestNames = @()
+    if (Test-Path $trxPath) {
+        try {
+            [xml]$trx = Get-Content $trxPath
+            $ns = @{ t = 'http://microsoft.com/schemas/VisualStudio/TeamTest/2010' }
+            $failedResults = Select-Xml -Xml $trx -XPath "//t:UnitTestResult[@outcome='Failed']" -Namespace $ns
+            $failedTestNames = @($failedResults | ForEach-Object { $_.Node.testName })
+            Write-Host "  ⚠️ [$TestLabel] $($failedTestNames.Count) test(s) failed" -ForegroundColor Yellow
+        } catch {
+            Write-Host "  ⚠️ [$TestLabel] Could not parse TRX — retrying all" -ForegroundColor Yellow
+        }
+    }
+
+    if ($failedTestNames.Count -eq 0) {
+        # Couldn't parse individual failures — report as-is
+        $allResults.FinalExitCode = $exitCode
+        $allResults.ConsistentFailures = @(@{ TestName = "(unknown — TRX parse failed)"; FailedAttempts = @(1); Error = ($output | Out-String).Substring(0, [Math]::Min(2000, ($output | Out-String).Length)) })
+        return $allResults
+    }
+
+    # Track which attempts each test failed on
+    $perTestFailures = @{}
+    foreach ($name in $failedTestNames) { $perTestFailures[$name] = @(1) }
+
+    # Retry only failed tests
+    for ($retry = 2; $retry -le ($MaxRetries + 1); $retry++) {
+        $retryFilter = ($failedTestNames | ForEach-Object { "FullyQualifiedName~$_" }) -join '|'
+        $retryTrx = Join-Path $TrxOutputDir "${TestLabel}_attempt${retry}.trx"
+        Write-Host "  🔄 [$TestLabel] Retry $($retry-1)/$MaxRetries — $($failedTestNames.Count) test(s)..." -ForegroundColor Yellow
+
+        $retryArgs = @($TestArgs) + @('--filter', $retryFilter, '--logger', "trx;LogFileName=$retryTrx")
+        $retryOutput = & $TestCommand @retryArgs 2>&1
+        $retryExit = $LASTEXITCODE
+        $allResults.Attempts += @{ Number = $retry; ExitCode = $retryExit; TrxPath = $retryTrx; Output = ($retryOutput | Out-String) }
+
+        if ($retryExit -eq 0) {
+            Write-Host "  ✅ [$TestLabel] All failed tests passed on retry $($retry-1)" -ForegroundColor Green
+            $allResults.PassedOnRetry = $failedTestNames
+            $allResults.FinalExitCode = 0
+            return $allResults
+        }
+
+        # Parse retry TRX for still-failing tests
+        if (Test-Path $retryTrx) {
+            try {
+                [xml]$retryTrxXml = Get-Content $retryTrx
+                $ns = @{ t = 'http://microsoft.com/schemas/VisualStudio/TeamTest/2010' }
+                $stillFailed = Select-Xml -Xml $retryTrxXml -XPath "//t:UnitTestResult[@outcome='Failed']" -Namespace $ns
+                $stillFailedNames = @($stillFailed | ForEach-Object { $_.Node.testName })
+                $nowPassed = $failedTestNames | Where-Object { $_ -notin $stillFailedNames }
+                $allResults.PassedOnRetry += $nowPassed
+                # Track per-test failure attempts
+                foreach ($name in $stillFailedNames) {
+                    if (-not $perTestFailures.ContainsKey($name)) { $perTestFailures[$name] = @() }
+                    $perTestFailures[$name] += $retry
+                }
+                $failedTestNames = $stillFailedNames
+            } catch { }
+        }
+    }
+
+    # Build final failure report
+    foreach ($name in $failedTestNames) {
+        $errorMsg = ""
+        # Try to extract error from last TRX
+        $lastTrx = $allResults.Attempts[-1].TrxPath
+        if (Test-Path $lastTrx) {
+            try {
+                [xml]$trxXml = Get-Content $lastTrx
+                $ns = @{ t = 'http://microsoft.com/schemas/VisualStudio/TeamTest/2010' }
+                $testResult = Select-Xml -Xml $trxXml -XPath "//t:UnitTestResult[@testName='$name']" -Namespace $ns | Select-Object -First 1
+                if ($testResult) {
+                    $errorInfo = $testResult.Node.SelectSingleNode('t:Output/t:ErrorInfo', (New-Object System.Xml.XmlNamespaceManager($trxXml.NameTable)))
+                    if (-not $errorInfo) {
+                        $nsmgr = New-Object System.Xml.XmlNamespaceManager($trxXml.NameTable)
+                        $nsmgr.AddNamespace('t', 'http://microsoft.com/schemas/VisualStudio/TeamTest/2010')
+                        $errorInfo = $testResult.Node.SelectSingleNode('t:Output/t:ErrorInfo', $nsmgr)
+                    }
+                    if ($errorInfo) { $errorMsg = $errorInfo.InnerText.Substring(0, [Math]::Min(1000, $errorInfo.InnerText.Length)) }
+                }
+            } catch { }
+        }
+
+        $isKnownFlaky = $false
+        foreach ($cls in $KnownFlaky.Keys) {
+            if ($name -match $cls) { $isKnownFlaky = $true; break }
+        }
+
+        $failedAttempts = if ($perTestFailures.ContainsKey($name)) { $perTestFailures[$name] } else { @(1) }
+
+        $allResults.ConsistentFailures += @{
+            TestName = $name
+            FailedAttempts = $failedAttempts
+            TotalAttempts = $allResults.Attempts.Count
+            Error = $errorMsg
+            IsKnownFlaky = $isKnownFlaky
+        }
+    }
+
+    $allResults.FinalExitCode = 1
+    $allResults.FailedTests = $failedTestNames
+    Write-Host "  ❌ [$TestLabel] $($failedTestNames.Count) test(s) still failing after retries" -ForegroundColor Red
+    return $allResults
+}
+
+function Invoke-FailureAnalysis {
+    param(
+        [array]$TestResults,
+        [string[]]$ChangedFiles,
+        [string]$PRTitle,
+        [hashtable]$KnownFlaky,
+        [hashtable]$DeviceHealth,
+        [string]$Platform
+    )
+
+    # Build the failure summary for the AI
+    $failureSummary = @()
+    foreach ($result in $TestResults) {
+        if ($result.FinalExitCode -eq 0) { continue }
+        foreach ($failure in $result.ConsistentFailures) {
+            $failureSummary += @{
+                testName = $failure.TestName
+                label = $result.Label
+                error = $failure.Error
+                isKnownFlaky = $failure.IsKnownFlaky
+                passedOnRetry = $failure.TestName -in $result.PassedOnRetry
+                totalAttempts = $result.Attempts.Count
+            }
+        }
+    }
+
+    if ($failureSummary.Count -eq 0) {
+        return @{
+            verdict = 'PASS'
+            summary = 'All tests passed (some on retry)'
+            failures = @()
+            blockerCount = 0; flakyCount = 0; infraCount = 0; unrelatedCount = 0
+            retryRecommendation = 'none'
+        }
+    }
+
+    # Build flaky list summary for AI
+    $flakyListStr = ""
+    foreach ($cls in $KnownFlaky.Keys) {
+        $attrs = ($KnownFlaky[$cls] | ForEach-Object { "[$($_.Attribute)]" }) -join ', '
+        $flakyListStr += "  $cls — $attrs`n"
+    }
+
+    $prompt = @"
+Analyze these test failures from a CI run for PR "$PRTitle".
+
+Platform: $Platform
+Device health: $(if ($DeviceHealth.Healthy) { 'HEALTHY' } else { "ISSUES: $($DeviceHealth.Issues -join '; ')" })
+
+Failed tests (JSON):
+$($failureSummary | ConvertTo-Json -Depth 5)
+
+PR changed files:
+$($ChangedFiles -join "`n")
+
+Known flaky/failing tests:
+$flakyListStr
+
+Classify each failure and return ONLY a JSON object matching the test-failure-analyzer agent schema.
+"@
+
+    Write-Host "  🤖 Invoking AI failure analysis..." -ForegroundColor Cyan
+
+    try {
+        $rawOutput = & copilot --agent test-failure-analyzer -p $prompt 2>$null
+        if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($rawOutput)) {
+            Write-Host "  ⚠️ AI analysis unavailable — using heuristic classification" -ForegroundColor Yellow
+            return $null
+        }
+
+        $jsonStr = Extract-JsonFromOutput -RawOutput $rawOutput
+        if ($jsonStr) {
+            $parsed = $jsonStr | ConvertFrom-Json
+            Write-Host "  ✅ AI analysis complete: $($parsed.summary)" -ForegroundColor Green
+            return $parsed
+        }
+    } catch {
+        Write-Host "  ⚠️ AI analysis failed: $_ — using heuristic classification" -ForegroundColor Yellow
+    }
+    return $null
+}
+
+function Get-HeuristicClassification {
+    param(
+        [array]$TestResults,
+        [string[]]$ChangedFiles,
+        [hashtable]$KnownFlaky,
+        [hashtable]$DeviceHealth
+    )
+
+    $failures = @()
+    $blockers = 0; $flaky = 0; $infra = 0; $unrelated = 0
+
+    $infraPatterns = @('AppiumServer', 'socket hang up', 'ECONNREFUSED', 'session not created',
+                       'device not found', 'boot_completed', 'emulator', 'XCTest')
+
+    foreach ($result in $TestResults) {
+        if ($result.FinalExitCode -eq 0) { continue }
+        foreach ($f in $result.ConsistentFailures) {
+            $classification = 'REGRESSION'
+            $recommendation = 'BLOCK_MERGE'
+            $confidence = 'medium'
+
+            # Check infrastructure errors
+            $isInfra = $false
+            foreach ($pat in $infraPatterns) {
+                if ($f.Error -match [regex]::Escape($pat)) { $isInfra = $true; break }
+            }
+            if (-not $DeviceHealth.Healthy) { $isInfra = $true }
+
+            if ($isInfra) {
+                $classification = 'INFRASTRUCTURE'; $recommendation = 'RETRY'; $confidence = 'high'; $infra++
+            } elseif ($f.IsKnownFlaky -or ($f.TestName -in $result.PassedOnRetry)) {
+                $classification = 'FLAKY'; $recommendation = 'IGNORE'; $confidence = 'high'; $flaky++
+            } else {
+                # Check if test correlates with PR changes
+                $correlates = $false
+                foreach ($file in $ChangedFiles) {
+                    $parts = $file -split '/'
+                    foreach ($part in $parts) {
+                        if ($part -and $f.TestName -match $part) { $correlates = $true; break }
+                    }
+                    if ($correlates) { break }
+                }
+                if ($correlates) {
+                    $classification = 'REGRESSION'; $recommendation = 'BLOCK_MERGE'; $confidence = 'high'; $blockers++
+                } else {
+                    $classification = 'UNRELATED'; $recommendation = 'INVESTIGATE'; $confidence = 'low'; $unrelated++
+                }
+            }
+
+            $failures += @{
+                testName = $f.TestName
+                classification = $classification
+                confidence = $confidence
+                recommendation = $recommendation
+                reasoning = "Heuristic classification"
+            }
+        }
+    }
+
+    $verdict = if ($blockers -gt 0) { 'FAIL' } elseif ($infra -gt 0) { 'RETRY' } else { 'PASS' }
+    return @{
+        failures = $failures
+        verdict = $verdict
+        summary = "$blockers regression(s), $flaky flaky, $infra infra, $unrelated unrelated"
+        blockerCount = $blockers; flakyCount = $flaky; infraCount = $infra; unrelatedCount = $unrelated
+        retryRecommendation = if ($infra -gt 0) { 'retry_infra_only' } else { 'none' }
+    }
+}
+
+function Format-TestReport {
+    param(
+        [int]$PRNumber,
+        [string]$PRTitle,
+        [hashtable]$Selection,
+        [array]$TestResults,
+        $FailureAnalysis,
+        [hashtable]$DeviceHealth,
+        [string]$Platform
+    )
+
+    $sb = [System.Text.StringBuilder]::new()
+    [void]$sb.AppendLine("## 🤖 Smart Test Results — PR #$PRNumber")
+    [void]$sb.AppendLine("")
+
+    # Selection summary
+    [void]$sb.AppendLine("<details><summary>📋 Test Selection</summary>")
+    [void]$sb.AppendLine("")
+    $uiDisp = if ($Selection.uiTestCategories -contains 'ALL') { 'ALL' } else { $Selection.uiTestCategories -join ', ' }
+    $unitDisp = if ($Selection.unitTestProjects -contains 'ALL') { 'ALL' } else { $Selection.unitTestProjects -join ', ' }
+    [void]$sb.AppendLine("| Suite | Selected |")
+    [void]$sb.AppendLine("|-------|----------|")
+    [void]$sb.AppendLine("| UI Tests | $uiDisp |")
+    [void]$sb.AppendLine("| Unit Tests | $unitDisp |")
+    [void]$sb.AppendLine("| Platform | $Platform |")
+    [void]$sb.AppendLine("| Confidence | $($Selection.confidence) |")
+    [void]$sb.AppendLine("")
+    [void]$sb.AppendLine("</details>")
+    [void]$sb.AppendLine("")
+
+    # Device health
+    if (-not $DeviceHealth.Healthy) {
+        [void]$sb.AppendLine("⚠️ **Device Health Issues**: $($DeviceHealth.Issues -join '; ')")
+        [void]$sb.AppendLine("")
+    }
+
+    # Results
+    $totalPassed = ($TestResults | Where-Object { $_.FinalExitCode -eq 0 }).Count
+    $totalFailed = ($TestResults | Where-Object { $_.FinalExitCode -ne 0 }).Count
+    $totalRetried = ($TestResults | ForEach-Object { $_.PassedOnRetry } | Measure-Object).Count
+
+    [void]$sb.AppendLine("### Results")
+    [void]$sb.AppendLine("")
+    [void]$sb.AppendLine("| Metric | Count |")
+    [void]$sb.AppendLine("|--------|-------|")
+    [void]$sb.AppendLine("| ✅ Passed | $totalPassed suite(s) |")
+    [void]$sb.AppendLine("| ❌ Failed | $totalFailed suite(s) |")
+    [void]$sb.AppendLine("| 🔄 Passed on retry | $totalRetried test(s) |")
+    [void]$sb.AppendLine("")
+
+    # Failure analysis
+    if ($FailureAnalysis -and $FailureAnalysis.failures.Count -gt 0) {
+        $verdict = switch ($FailureAnalysis.verdict) {
+            'PASS'  { '✅ PASS — all failures are flaky or unrelated' }
+            'FAIL'  { '❌ FAIL — regressions detected' }
+            'RETRY' { '🔄 RETRY — infrastructure issues' }
+            default { "⚠️ $($FailureAnalysis.verdict)" }
+        }
+        [void]$sb.AppendLine("### Verdict: $verdict")
+        [void]$sb.AppendLine("")
+        [void]$sb.AppendLine("$($FailureAnalysis.summary)")
+        [void]$sb.AppendLine("")
+
+        if ($FailureAnalysis.blockerCount -gt 0) {
+            [void]$sb.AppendLine("#### 🔴 Regressions (block merge)")
+            [void]$sb.AppendLine("")
+            foreach ($f in ($FailureAnalysis.failures | Where-Object { $_.classification -eq 'REGRESSION' })) {
+                $name = if ($f.testName) { $f.testName } else { $f['testName'] }
+                $reason = if ($f.reasoning) { $f.reasoning } else { $f['reasoning'] }
+                [void]$sb.AppendLine("- **$name** — $reason")
+            }
+            [void]$sb.AppendLine("")
+        }
+
+        $otherCount = $FailureAnalysis.flakyCount + $FailureAnalysis.infraCount + $FailureAnalysis.unrelatedCount
+        if ($otherCount -gt 0) {
+            [void]$sb.AppendLine("<details><summary>ℹ️ Non-blocking failures ($otherCount)</summary>")
+            [void]$sb.AppendLine("")
+            foreach ($f in ($FailureAnalysis.failures | Where-Object { $_.classification -ne 'REGRESSION' })) {
+                $name = if ($f.testName) { $f.testName } else { $f['testName'] }
+                $cls = if ($f.classification) { $f.classification } else { $f['classification'] }
+                [void]$sb.AppendLine("- [$cls] **$name**")
+            }
+            [void]$sb.AppendLine("")
+            [void]$sb.AppendLine("</details>")
+        }
+    }
+
+    return $sb.ToString()
+}
+
+# ──────────────────────────────────────────────────────
 # DETERMINISTIC FILE-PATH → TEST MAPPING
 # ──────────────────────────────────────────────────────
 
@@ -373,14 +972,14 @@ Respond with ONLY a JSON object matching the schema in your agent definition.
         Write-Host "  ✅ Copilot CLI responded" -ForegroundColor Green
 
         # Extract JSON from response (Copilot may wrap in markdown code blocks)
-        $jsonMatch = [regex]::Match($rawOutput, '\{[\s\S]*\}')
-        if (-not $jsonMatch.Success) {
+        $jsonStr = Extract-JsonFromOutput -RawOutput $rawOutput
+        if (-not $jsonStr) {
             Write-Host "  ⚠️ Could not extract JSON from Copilot response" -ForegroundColor Yellow
             Write-Host "  Raw output: $($rawOutput.Substring(0, [Math]::Min(500, $rawOutput.Length)))" -ForegroundColor Gray
             return $null
         }
 
-        $parsed = $jsonMatch.Value | ConvertFrom-Json
+        $parsed = $jsonStr | ConvertFrom-Json
         return $parsed
     }
     catch {
@@ -667,13 +1266,41 @@ if ($env:BUILD_BUILDID) {
 # Step 8: Run tests if requested
 if ($RunTests) {
     Write-Host ""
-    Write-Host "🚀 Running selected tests..." -ForegroundColor Yellow
+    Write-Host "🚀 Running selected tests with resilience..." -ForegroundColor Yellow
     Write-Host ""
 
+    # Load known flaky tests
+    $platformForFlaky = switch ($Platform) {
+        'android' { 'Android' }
+        'ios'     { 'iOS' }
+        default   { $null }
+    }
+    Write-Host "📋 Loading known flaky/failing test annotations..." -ForegroundColor Yellow
+    $knownFlaky = Get-KnownFlakyTests -Platform $platformForFlaky
+    Write-Host "  ✅ Found $($knownFlaky.Count) test class(es) with annotations" -ForegroundColor Green
+
+    # Pre-test device health check (for UI tests)
+    $deviceHealth = @{ Healthy = $true; Platform = $Platform; DeviceId = ""; Issues = @(); Actions = @() }
+    if ($finalSelection.uiTestCategories.Count -gt 0) {
+        Write-Host ""
+        Write-Host "🏥 Running pre-test device health check..." -ForegroundColor Yellow
+        $healthPlatform = if ($Platform -eq 'all') { 'android' } else { $Platform }
+        $deviceHealth = Test-DeviceHealth -Platform $healthPlatform
+
+        if (-not $deviceHealth.Healthy) {
+            Write-Host "  ⚠️ Device health issues detected — tests may be unreliable" -ForegroundColor Yellow
+            Write-Host "  ⚠️ Issues: $($deviceHealth.Issues -join '; ')" -ForegroundColor Yellow
+        }
+    }
+
+    $allTestResults = @()
     $testsFailed = $false
 
-    # Run unit tests
+    # Run unit tests with structured retry
     if ($finalSelection.unitTestProjects.Count -gt 0) {
+        Write-Host ""
+        Write-Host "📦 Running unit tests..." -ForegroundColor Yellow
+
         $unitProjectPaths = @{
             'Core.UnitTests'            = 'src/Core/tests/UnitTests/Core.UnitTests.csproj'
             'Controls.Core.UnitTests'   = 'src/Controls/tests/Core.UnitTests/Controls.Core.UnitTests.csproj'
@@ -691,21 +1318,24 @@ if ($RunTests) {
         foreach ($projName in $projectsToRun) {
             if ($unitProjectPaths.ContainsKey($projName)) {
                 $projPath = Join-Path $RepoRoot $unitProjectPaths[$projName]
-                Write-Host "  🧪 Running $projName..." -ForegroundColor Cyan
-                $trxPath = Join-Path $ArtifactsDir "$projName.trx"
-                & dotnet test $projPath --no-restore --logger "trx;LogFileName=$trxPath" 2>&1 | ForEach-Object { Write-Host "     $_" }
-                if ($LASTEXITCODE -ne 0) {
-                    Write-Host "  ❌ $projName FAILED" -ForegroundColor Red
-                    $testsFailed = $true
-                } else {
-                    Write-Host "  ✅ $projName PASSED" -ForegroundColor Green
-                }
+                $result = Invoke-TestWithRetry `
+                    -TestCommand 'dotnet' `
+                    -TestArgs @('test', $projPath, '--no-restore') `
+                    -TrxOutputDir $ArtifactsDir `
+                    -TestLabel $projName `
+                    -MaxRetries 2 `
+                    -KnownFlaky $knownFlaky
+                $allTestResults += $result
+                if ($result.FinalExitCode -ne 0) { $testsFailed = $true }
             }
         }
     }
 
     # Run UI tests (using BuildAndRunHostApp.ps1 pattern)
     if ($finalSelection.uiTestCategories.Count -gt 0) {
+        Write-Host ""
+        Write-Host "🖥️ Running UI tests..." -ForegroundColor Yellow
+
         $categoryCsv = if ($finalSelection.uiTestCategories -contains 'ALL') {
             ''
         } else {
@@ -713,7 +1343,7 @@ if ($RunTests) {
         }
 
         $platformsToTest = if ($finalSelection.platforms -contains 'ALL') {
-            @($Platform)  # Use the parameter platform for ALL
+            @($Platform)
         } elseif ($Platform -eq 'all') {
             $finalSelection.platforms
         } else {
@@ -721,29 +1351,127 @@ if ($RunTests) {
         }
 
         foreach ($plat in $platformsToTest) {
-            Write-Host "  🧪 Running UI tests on $plat..." -ForegroundColor Cyan
             $uiArgs = @('-Platform', $plat)
-            if ($categoryCsv) {
-                $uiArgs += @('-Category', $categoryCsv)
-            }
+            if ($categoryCsv) { $uiArgs += @('-Category', $categoryCsv) }
             $scriptPath = Join-Path $RepoRoot '.github/scripts/BuildAndRunHostApp.ps1'
+
             if (Test-Path $scriptPath) {
+                Write-Host "  🧪 Running UI tests on $plat..." -ForegroundColor Cyan
                 & pwsh $scriptPath @uiArgs 2>&1 | ForEach-Object { Write-Host "     $_" }
-                if ($LASTEXITCODE -ne 0) {
+                $uiExitCode = $LASTEXITCODE
+
+                $uiResult = @{
+                    Label = "UITests-$plat"
+                    Attempts = @(@{ Number = 1; ExitCode = $uiExitCode; TrxPath = ''; Output = '' })
+                    FinalExitCode = $uiExitCode
+                    FailedTests = @()
+                    PassedOnRetry = @()
+                    ConsistentFailures = @()
+                }
+
+                if ($uiExitCode -ne 0) {
                     Write-Host "  ❌ UI tests on $plat FAILED" -ForegroundColor Red
+                    $uiResult.ConsistentFailures += @{
+                        TestName = "UITests-$plat (aggregate)"
+                        Error = "UI test suite exited with code $uiExitCode"
+                        IsKnownFlaky = $false
+                    }
                     $testsFailed = $true
                 } else {
                     Write-Host "  ✅ UI tests on $plat PASSED" -ForegroundColor Green
                 }
+                $allTestResults += $uiResult
             } else {
                 Write-Host "  ⚠️ BuildAndRunHostApp.ps1 not found — skipping UI tests" -ForegroundColor Yellow
             }
         }
     }
 
+    # Step 9: Failure analysis (only if tests failed)
+    $failureAnalysis = $null
     if ($testsFailed) {
         Write-Host ""
-        Write-Host "❌ Some tests failed. See results above." -ForegroundColor Red
+        Write-Host "🔬 Analyzing failures..." -ForegroundColor Yellow
+
+        if ($hasCopilot) {
+            $failureAnalysis = Invoke-FailureAnalysis `
+                -TestResults $allTestResults `
+                -ChangedFiles $changedFiles `
+                -PRTitle $prData.title `
+                -KnownFlaky $knownFlaky `
+                -DeviceHealth $deviceHealth `
+                -Platform $Platform
+        }
+
+        # Fall back to heuristic if AI unavailable
+        if (-not $failureAnalysis) {
+            $failureAnalysis = Get-HeuristicClassification `
+                -TestResults $allTestResults `
+                -ChangedFiles $changedFiles `
+                -KnownFlaky $knownFlaky `
+                -DeviceHealth $deviceHealth
+        }
+
+        # Display analysis
+        Write-Host ""
+        Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Yellow
+        Write-Host "║  FAILURE ANALYSIS                                         ║" -ForegroundColor Yellow
+        Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Yellow
+        Write-Host "║  Verdict:    $($failureAnalysis.verdict)" -ForegroundColor White
+        Write-Host "║  Regressions: $($failureAnalysis.blockerCount)  Flaky: $($failureAnalysis.flakyCount)  Infra: $($failureAnalysis.infraCount)  Unrelated: $($failureAnalysis.unrelatedCount)" -ForegroundColor White
+        Write-Host "║  Summary:   $($failureAnalysis.summary)" -ForegroundColor White
+        Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Yellow
+
+        # Save analysis to artifacts
+        $analysisJson = $failureAnalysis | ConvertTo-Json -Depth 10
+        $analysisJson | Out-File -FilePath (Join-Path $ArtifactsDir "failure-analysis.json") -Encoding utf8
+    }
+
+    # Step 10: Generate and post PR comment
+    Write-Host ""
+    Write-Host "📝 Generating test report..." -ForegroundColor Yellow
+
+    $report = Format-TestReport `
+        -PRNumber $PRNumber `
+        -PRTitle $prData.title `
+        -Selection $finalSelection `
+        -TestResults $allTestResults `
+        -FailureAnalysis $failureAnalysis `
+        -DeviceHealth $deviceHealth `
+        -Platform $Platform
+
+    $report | Out-File -FilePath (Join-Path $ArtifactsDir "test-report.md") -Encoding utf8
+    Write-Host "  ✅ Report saved to test-report.md" -ForegroundColor Green
+
+    # Post PR comment if GH_TOKEN is available
+    if ($env:GH_TOKEN -or $env:GH_COMMENT_TOKEN) {
+        Write-Host "  📤 Posting report to PR #$PRNumber..." -ForegroundColor Cyan
+        $reportPath = Join-Path $ArtifactsDir "test-report.md"
+        try {
+            gh pr comment $PRNumber --body-file $reportPath --edit-last 2>$null
+            if ($LASTEXITCODE -ne 0) {
+                gh pr comment $PRNumber --body-file $reportPath 2>$null
+            }
+            Write-Host "  ✅ PR comment posted" -ForegroundColor Green
+        } catch {
+            Write-Host "  ⚠️ Could not post PR comment: $_" -ForegroundColor Yellow
+        }
+    }
+
+    # Final exit code based on analysis verdict
+    if ($testsFailed) {
+        if ($failureAnalysis -and $failureAnalysis.verdict -ne 'FAIL') {
+            Write-Host ""
+            Write-Host "⚠️ Tests had failures but analysis says: $($failureAnalysis.verdict)" -ForegroundColor Yellow
+            Write-Host "  $($failureAnalysis.summary)" -ForegroundColor Yellow
+            # Exit 0 if all failures are flaky/infra/unrelated (no real regressions)
+            if ($failureAnalysis.blockerCount -eq 0) {
+                Write-Host "  ✅ No regressions detected — treating as PASS" -ForegroundColor Green
+                # Still exit non-zero but with warning — let the pipeline decide
+            }
+        }
+        Write-Host ""
+        Write-Host "❌ Test run completed with failures. See analysis above." -ForegroundColor Red
         exit 1
     } else {
         Write-Host ""

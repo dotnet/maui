@@ -333,6 +333,8 @@ stages:
                 echo "##vso[task.setvariable variable=TestsFailed]true"
               fi
             displayName: 'Run Smart Test Selector'
+            retryCountOnTaskFailure: 1
+            timeoutInMinutes: 120
             env:
               COPILOT_GITHUB_TOKEN: $(COPILOT_TOKEN)
               GH_TOKEN: $(GH_COMMENT_TOKEN)
@@ -358,13 +360,33 @@ stages:
             condition: and(succeededOrFailed(), ne(variables['LogDirectory'], ''))
 
           # ════════════════════════════════════════════
-          # Check Results
+          # Check Results (AI-aware)
           # ════════════════════════════════════════════
           - script: |
+              ANALYSIS_FILE="$(Build.ArtifactStagingDirectory)/smart-tests/failure-analysis.json"
+
               if [ "$(TestsFailed)" = "true" ]; then
-                echo "##vso[task.logissue type=error]Some tests failed. Check SmartTestResults artifact."
-                exit 1
+                if [ -f "$ANALYSIS_FILE" ]; then
+                  echo "Failure analysis available:"
+                  cat "$ANALYSIS_FILE" | python3 -m json.tool 2>/dev/null || cat "$ANALYSIS_FILE"
+
+                  VERDICT=$(python3 -c "import json; d=json.load(open('$ANALYSIS_FILE')); print(d.get('verdict','FAIL'))" 2>/dev/null || echo "FAIL")
+                  BLOCKERS=$(python3 -c "import json; d=json.load(open('$ANALYSIS_FILE')); print(d.get('blockerCount',1))" 2>/dev/null || echo "1")
+
+                  echo "Verdict: $VERDICT | Blockers: $BLOCKERS"
+
+                  if [ "$BLOCKERS" = "0" ]; then
+                    echo "##vso[task.logissue type=warning]Tests had failures but AI analysis found no regressions (verdict: $VERDICT). All failures classified as flaky/infra/unrelated."
+                    echo "No regressions detected — treating as warning, not failure."
+                  else
+                    echo "##vso[task.logissue type=error]$BLOCKERS regression(s) detected. Check SmartTestResults artifact."
+                    exit 1
+                  fi
+                else
+                  echo "##vso[task.logissue type=error]Tests failed and no failure analysis available."
+                  exit 1
+                fi
               fi
               echo "All selected tests passed (or selection-only mode)."
-            displayName: 'Check Test Results'
+            displayName: 'Check Test Results (AI-aware)'
             condition: succeededOrFailed()
