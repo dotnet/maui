@@ -118,7 +118,7 @@ internal class SearchBarHandler2 : ViewHandler<ISearchBar, MauiMaterialSearchBar
 
     public static void MapIsReadOnly(SearchBarHandler2 handler, ISearchBar searchBar)
     {
-        handler.PlatformView.EditText?.UpdateIsReadOnly(searchBar);
+        handler.PlatformView?.EditText?.UpdateIsReadOnly(searchBar);
     }
 
     public static void MapIsTextPredictionEnabled(SearchBarHandler2 handler, ISearchBar searchBar)
