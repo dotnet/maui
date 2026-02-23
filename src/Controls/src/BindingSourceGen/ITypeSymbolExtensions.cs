@@ -5,6 +5,11 @@ namespace Microsoft.Maui.Controls.BindingSourceGen;
 
 public static class ITypeSymbolExtensions
 {
+	static readonly SymbolDisplayFormat FullyQualifiedNullableFormat =
+		SymbolDisplayFormat.FullyQualifiedFormat.WithMiscellaneousOptions(
+			SymbolDisplayFormat.FullyQualifiedFormat.MiscellaneousOptions
+			| SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier);
+
 	public static bool IsTypeNullable(this ITypeSymbol typeInfo, bool enabledNullable)
 	{
 		if (!enabledNullable && typeInfo.IsReferenceType)
@@ -39,10 +44,16 @@ public static class ITypeSymbolExtensions
 		if (isNullable && isValueType)
 		{
 			// Strips the "?" from the type name
-			return ((INamedTypeSymbol)typeSymbol).TypeArguments[0].ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+			return ((INamedTypeSymbol)typeSymbol).TypeArguments[0].ToDisplayString(FullyQualifiedNullableFormat);
 		}
 
-		return typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+		var globalName = typeSymbol.ToDisplayString(FullyQualifiedNullableFormat);
+
+		// Keep nullable annotations in generic arguments but avoid nullable top-level type syntax (e.g. typeof(Foo?)).
+		if (globalName.EndsWith("?"))
+			globalName = globalName.Substring(0, globalName.Length - 1);
+
+		return globalName;
 	}
 
 	/// <summary>
