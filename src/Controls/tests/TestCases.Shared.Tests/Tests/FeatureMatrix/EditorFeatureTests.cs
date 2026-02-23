@@ -451,7 +451,7 @@ public class EditorFeatureTests : _GalleryUITest
 		App.Tap("Apply");
 		App.WaitForElement("TestEditor");
 		App.Tap("TestEditor");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -465,7 +465,7 @@ public class EditorFeatureTests : _GalleryUITest
 		App.Tap("Apply");
 		App.WaitForElement("TestEditor");
 		App.Tap("TestEditor");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 #endif

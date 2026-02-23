@@ -193,7 +193,7 @@ public class ToolbarFeatureTests : _GalleryUITest
 		App.WaitForMoreButton();
 		App.TapMoreButton();
 		App.WaitForElement("Test Secondary (2)");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 

@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace Microsoft.Maui.Controls.Internals
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/PropertyPropagationExtensions.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.PropertyPropagationExtensions']/Docs/*" />
+	/// <summary>Extension methods for propagating property values through the visual tree.</summary>
 	public static class PropertyPropagationExtensions
 	{
 		[Obsolete]
@@ -40,9 +40,6 @@ namespace Microsoft.Maui.Controls.Internals
 
 			if (propertyName == null || propertyName == Shell.NavBarVisibilityAnimationEnabledProperty.PropertyName)
 				BaseShellItem.PropagateFromParent(Shell.NavBarVisibilityAnimationEnabledProperty, element);
-				
-			if (propertyName == null || propertyName == Shell.BackButtonBehaviorProperty.PropertyName)
-				BaseShellItem.PropagateFromParent(Shell.BackButtonBehaviorProperty, element);
 
 			foreach (var child in children.ToArray())
 			{

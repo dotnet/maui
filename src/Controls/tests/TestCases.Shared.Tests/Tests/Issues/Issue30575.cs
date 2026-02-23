@@ -15,7 +15,7 @@ public class Issue30575 : _IssuesUITest
 	public void WebViewShouldNotMirrored()
 	{
 		App.WaitForElement("WebViewLabel");
-		Thread.Sleep(3000);
-		VerifyScreenshot();
+		// Use retryTimeout to wait for WebView content to fully load
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(3));
 	}
 }

@@ -203,4 +203,34 @@
     <value>{0} ‘required’ anahtar sözcüğüne sahip. XAML'de bunun için destek şu anda sınırlıdır, kullanmaktan kaçının. Hala bir değer sağlamak için elimizden geleni yapıyoruz.</value>
     <comment>0 is a property identifier</comment>
   </data>
+  <data name="BindingCompilationFailed" xml:space="preserve">
+    <value>Bağlama derlemesi başarısız oldu</value>
+  </data>
+  <data name="BindingCompilationWarning" xml:space="preserve">
+    <value>Bağlama derleme uyarısı</value>
+  </data>
+  <data name="BindingIndexerNotClosed" xml:space="preserve">
+    <value>Bağlama: Dizin oluşturucu kapatma köşeli ayracı içermiyordu.</value>
+  </data>
+  <data name="BindingIndexerEmpty" xml:space="preserve">
+    <value>Bağlama: Dizin oluşturucu bağımsız değişken içermiyordu.</value>
+  </data>
+  <data name="BindingIndexerTypeUnsupported" xml:space="preserve">
+    <value>Bağlama: Desteklenmeyen dizin oluşturucu dizin türü: “{0}”.</value>
+    <comment>0 is indexer type name</comment>
+  </data>
+  <data name="BindingPropertyNotFound" xml:space="preserve">
+    <value>Bağlama: "{0}" özelliği "{1}" üzerinde bulunamadı. Bağlama, çalışma zamanında daha yavaş olan yansıma tabanlı bağlamayı kullanacak. Bu özellik başka bir kaynak oluşturucu tarafından oluşturulduysa, kaynak oluşturucu birlikte çalışabilirliğini geliştirmemize yardımcı olmak için bunu https://github.com/dotnet/maui/issues adresinde bildirmenizi öneririz.</value>
+    <comment>0 is property name, 1 is type name</comment>
+  </data>
+  <data name="BindingWithXDataTypeFromOuterScope" xml:space="preserve">
+    <value>x:DataType ek açıklaması bir dış kapsamdan geldiğinden bağlama yanlış derlenmiş olabilir. Tüm DataTemplate XAML öğelerine doğru x:DataType ile not eklediğinizden emin olun. Bkz. https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings for more information.</value>
+  </data>
+  <data name="NamescopeError" xml:space="preserve">
+    <value>Ad alanı hatası</value>
+  </data>
+  <data name="NamescopeDuplicate" xml:space="preserve">
+    <value>“{0}” adında bir öğe bu NameScope'ta zaten var.</value>
+    <comment>0 is the duplicated key</comment>
+  </data>
 </root>

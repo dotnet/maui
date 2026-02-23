@@ -133,7 +133,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 #nullable restore
 			if (e.PropertyName == Shell.BackButtonBehaviorProperty.PropertyName)
 			{
-				SetBackButtonBehavior(Shell.GetBackButtonBehavior(Page));
+				SetBackButtonBehavior(Shell.GetEffectiveBackButtonBehavior(Page));
 			}
 			else if (e.PropertyName == Shell.SearchHandlerProperty.PropertyName)
 			{
@@ -217,7 +217,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 			}
 
-			SetBackButtonBehavior(Shell.GetBackButtonBehavior(Page));
+			SetBackButtonBehavior(Shell.GetEffectiveBackButtonBehavior(Page));
 			SearchHandler = Shell.GetSearchHandler(Page);
 			UpdateTitleView();
 			UpdateTitle();
@@ -1058,8 +1058,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 			}
 
-			_searchController.Active = false;
 			(SearchHandler as ISearchHandlerController)?.ItemSelected(e);
+			_searchController.Active = false;
 		}
 
 		void SearchButtonClicked(object? sender, EventArgs e)

@@ -13,8 +13,14 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Maps.Handlers
 {
+	/// <summary>
+	/// Handler for <see cref="IMapPin"/> objects that manages the platform-specific implementation.
+	/// </summary>
 	public partial class MapPinHandler : IMapPinHandler
 	{
+		/// <summary>
+		/// The property mapper that maps cross-platform properties to platform-specific methods.
+		/// </summary>
 		public static IPropertyMapper<IMapPin, IMapPinHandler> Mapper = new PropertyMapper<IMapPin, IMapPinHandler>(ElementMapper)
 		{
 			[nameof(IMapPin.Location)] = MapLocation,
@@ -22,11 +28,18 @@ namespace Microsoft.Maui.Maps.Handlers
 			[nameof(IMapPin.Address)] = MapAddress,
 		};
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="MapPinHandler"/> class with the default mapper.
+		/// </summary>
 		public MapPinHandler() : base(Mapper)
 		{
 
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="MapPinHandler"/> class with an optional custom mapper.
+		/// </summary>
+		/// <param name="mapper">The property mapper to use, or <see langword="null"/> to use the default.</param>
 		public MapPinHandler(IPropertyMapper? mapper = null)
 		: base(mapper ?? Mapper)
 		{

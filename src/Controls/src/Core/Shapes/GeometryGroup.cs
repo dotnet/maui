@@ -5,7 +5,9 @@ using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/GeometryGroup.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.GeometryGroup']/Docs/*" />
+	/// <summary>
+	/// A composite <see cref="Geometry"/> that combines multiple <see cref="Geometry"/> objects into a single shape.
+	/// </summary>
 	[ContentProperty("Children")]
 	public class GeometryGroup : Geometry
 	{
@@ -23,20 +25,26 @@ namespace Microsoft.Maui.Controls.Shapes
 		public static readonly BindableProperty FillRuleProperty =
 			BindableProperty.Create(nameof(FillRule), typeof(FillRule), typeof(GeometryGroup), FillRule.EvenOdd);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/GeometryGroup.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="GeometryGroup"/> class.
+		/// </summary>
 		public GeometryGroup()
 		{
 			Children = new GeometryCollection();
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/GeometryGroup.xml" path="//Member[@MemberName='Children']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the collection of <see cref="Geometry"/> objects that make up this group. This is a bindable property.
+		/// </summary>
 		public GeometryCollection Children
 		{
 			set { SetValue(ChildrenProperty, value); }
 			get { return (GeometryCollection)GetValue(ChildrenProperty); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/GeometryGroup.xml" path="//Member[@MemberName='FillRule']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the <see cref="Shapes.FillRule"/> that determines how the intersecting areas of the child geometries are combined. This is a bindable property.
+		/// </summary>
 		public FillRule FillRule
 		{
 			set { SetValue(FillRuleProperty, value); }

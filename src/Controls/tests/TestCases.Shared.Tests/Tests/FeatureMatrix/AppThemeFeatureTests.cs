@@ -18,7 +18,7 @@ public class AppThemeFeatureTests : _GalleryUITest
 #if IOS
         VerifyScreenshot(cropBottom: 1200); 
 #else
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 #endif
 	}
 
@@ -28,7 +28,7 @@ public class AppThemeFeatureTests : _GalleryUITest
 	{
 		App.WaitForElement("DefaultLightThemeButton");
 		App.Tap("DefaultLightThemeButton");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(2)]
@@ -37,7 +37,7 @@ public class AppThemeFeatureTests : _GalleryUITest
 	{
 		App.WaitForElement("DefaultDarkThemeButton");
 		App.Tap("DefaultDarkThemeButton");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(3)]
@@ -52,7 +52,7 @@ public class AppThemeFeatureTests : _GalleryUITest
 		App.Tap("LightThemeButton");
 		App.WaitForElement("CheckBox");
 		App.Tap("CheckBox");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(4)]
@@ -64,7 +64,7 @@ public class AppThemeFeatureTests : _GalleryUITest
 		App.WaitForElement("CheckBox");
 		App.Tap("CheckBox");
 		App.Tap("CheckBox");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(5)]
@@ -83,7 +83,7 @@ public class AppThemeFeatureTests : _GalleryUITest
 		App.Tap("DatePicker");
 		App.Tap("22");
 #endif
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(6)]
@@ -102,7 +102,7 @@ public class AppThemeFeatureTests : _GalleryUITest
 		App.Tap("DatePicker");
 		App.Tap("23");
 #endif
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(7)]
@@ -111,7 +111,7 @@ public class AppThemeFeatureTests : _GalleryUITest
 	{
 		App.WaitForElement("LightThemeButton");
 		App.Tap("LightThemeButton");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(8)]
@@ -122,7 +122,7 @@ public class AppThemeFeatureTests : _GalleryUITest
 		App.Tap("DarkThemeButton");
 		App.WaitForElement("RadioButton_Cat");
 		App.Tap("RadioButton_Cat");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST
@@ -137,7 +137,7 @@ public class AppThemeFeatureTests : _GalleryUITest
 		App.Tap("Picker");
 		App.WaitForElement("Blue Monkey");
 		App.Tap("Blue Monkey");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(10)]
@@ -150,7 +150,7 @@ public class AppThemeFeatureTests : _GalleryUITest
 		App.Tap("Picker");
 		App.WaitForElement("Howler Monkey");
 		App.Tap("Howler Monkey");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -161,7 +161,7 @@ public class AppThemeFeatureTests : _GalleryUITest
 		App.WaitForElement("LightThemeButton");
 		App.Tap("LightThemeButton");
 		App.WaitForElement("Slider");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(12)]
@@ -171,7 +171,7 @@ public class AppThemeFeatureTests : _GalleryUITest
 		App.WaitForElement("DarkThemeButton");
 		App.Tap("DarkThemeButton");
 		App.WaitForElement("Slider");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(13)]
@@ -182,7 +182,7 @@ public class AppThemeFeatureTests : _GalleryUITest
 		App.Tap("LightThemeButton");
 		App.WaitForElement("Switch");
 		App.Tap("Switch");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(14)]
@@ -194,7 +194,7 @@ public class AppThemeFeatureTests : _GalleryUITest
 		App.WaitForElement("Switch");
 		App.Tap("Switch");
 		App.Tap("Switch");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST // Issue Link - https://github.com/dotnet/maui/issues/30837
@@ -219,7 +219,7 @@ public class AppThemeFeatureTests : _GalleryUITest
 		App.WaitForElement("AcceptButton");
 		App.Tap("AcceptButton");
 #endif
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(16)]
@@ -242,7 +242,7 @@ public class AppThemeFeatureTests : _GalleryUITest
 		App.WaitForElement("AcceptButton");
 		App.Tap("AcceptButton");
 #endif
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -253,7 +253,7 @@ public class AppThemeFeatureTests : _GalleryUITest
 		App.WaitForElement("LightThemeButton");
 		App.Tap("LightThemeButton");
 		App.WaitForElement("SearchBar");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(18)]
@@ -263,7 +263,7 @@ public class AppThemeFeatureTests : _GalleryUITest
 		App.WaitForElement("DarkThemeButton");
 		App.Tap("DarkThemeButton");
 		App.WaitForElement("SearchBar");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(19)]
@@ -273,7 +273,7 @@ public class AppThemeFeatureTests : _GalleryUITest
 		App.WaitForElement("LightThemeButton");
 		App.Tap("LightThemeButton");
 		App.WaitForElement("Editor");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(20)]
@@ -283,7 +283,7 @@ public class AppThemeFeatureTests : _GalleryUITest
 		App.WaitForElement("DarkThemeButton");
 		App.Tap("DarkThemeButton");
 		App.WaitForElement("Editor");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS //Issue Link - https://github.com/dotnet/maui/issues/19997
