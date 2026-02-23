@@ -5,10 +5,13 @@ using ListView = Microsoft.Maui.Controls.ListView;
 namespace Maui.Controls.Sample.Issues
 {
 [Issue(IssueTracker.Github, 1905, "Pull to refresh doesn't work if iOS 11 large titles is enabled", PlatformAffected.iOS)]
-public class Issue1905LargeTitles : ContentPage
+public class Issue1905LargeTitles : TestNavigationPage
 {
-public Issue1905LargeTitles()
+protected override void Init()
 {
+// Large titles is the specific trigger for this bug
+On<iOS>().SetPrefersLargeTitles(true);
+
 var statusLabel = new Label
 {
 Text = "Ready",
@@ -16,19 +19,18 @@ AutomationId = "TestResult",
 FontSize = 20,
 };
 
-var runButton = new Button
-{
-Text = "Run Test",
-AutomationId = "RunTest",
-};
-
 bool refreshCompleted = false;
+
+var items = new List<string>();
+for (int i = 0; i < 20; i++)
+{
+items.Add($"pull to {i}");
+}
 
 var lst = new ListView
 {
 IsPullToRefreshEnabled = true,
-ItemsSource = new List<string> { "initial item" },
-HeightRequest = 200,
+ItemsSource = items,
 };
 
 lst.RefreshCommand = new Command(async () =>
@@ -38,6 +40,12 @@ lst.ItemsSource = new List<string> { "data refreshed" };
 lst.EndRefresh();
 refreshCompleted = true;
 });
+
+var runButton = new Button
+{
+Text = "Run Test",
+AutomationId = "RunTest",
+};
 
 runButton.Clicked += async (s, e) =>
 {
@@ -58,12 +66,16 @@ break;
 statusLabel.Text = refreshCompleted ? "SUCCESS" : "FAIL: refresh did not complete";
 };
 
+var page = new ContentPage
+{
+Title = "Pull Large Titles",
 Content = new VerticalStackLayout
 {
-Spacing = 10,
-Padding = 20,
 Children = { runButton, statusLabel, lst }
+}
 };
+
+Navigation.PushAsync(page);
 }
 }
 }
