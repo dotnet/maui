@@ -128,6 +128,7 @@ namespace Maui.Controls.Sample
 			new GalleryPageFactory(() => new BindableLayoutControlPage(), "BindableLayout Feature Matrix")
    			new GalleryPageFactory(() => new VisualTransformControlPage(), "VisualTransform Feature Matrix"),
 			new GalleryPageFactory(() => new ShellFeaturePage(), "Shell Feature Matrix"),
+			new GalleryPageFactory(() => new BrushesControlPage(), "Brushes Feature Matrix")
 		};
 
 
