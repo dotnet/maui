@@ -20,6 +20,6 @@ public partial class ShellFeatureMainPage : ContentPage
 
 	private void OnShellNavigationButtonClicked(object sender, EventArgs e)
 	{
-		Application.Current.MainPage = new ShellNavigationControlPage();
+		this.Window.Page = new ShellNavigationControlPage();
 	}
 }
