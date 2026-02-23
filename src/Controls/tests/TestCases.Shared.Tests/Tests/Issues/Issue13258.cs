@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_WINDOWS //Issue link - https://github.com/dotnet/maui/issues/29125
+﻿#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //Window issue link - https://github.com/dotnet/maui/issues/29125 && iOS and Mac PR - https://github.com/dotnet/maui/pull/34184
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;

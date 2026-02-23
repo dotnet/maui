@@ -1,6 +1,6 @@
 ﻿namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 13258, "MAUI Slider thumb image is big on android", PlatformAffected.Android | PlatformAffected.iOS | PlatformAffected.macOS)]
+[Issue(IssueTracker.Github, 13258, "MAUI Slider thumb image is big on android", PlatformAffected.Android)]
 public class Issue13258 : TestContentPage
 {
 	protected override void Init()
