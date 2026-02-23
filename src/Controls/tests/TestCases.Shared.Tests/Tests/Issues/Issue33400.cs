@@ -13,16 +13,28 @@ public class Issue33400 : _IssuesUITest
 
 	public override string Issue => "Runtime Scrollbar visibility not updating correctly on Android platform";
 
-	[Test]
+	[Test, Order(1)]
 	[Category(UITestCategories.ScrollView)]
-	public void Issue33400ImmediateScrollbarVisibility()
+	public void Issue33400ScrollbarVisibilityNever()
 	{
 		App.WaitForElement("Issue33400HorizontalNeverButton");
 		App.Tap("Issue33400HorizontalNeverButton");
 		VerifyScreenshot("Issue33400_Never");
+	}
+
+	[Test, Order(2)]
+	[Category(UITestCategories.ScrollView)]
+	public void Issue33400ScrollbarVisibilityAlways()
+	{
 		App.WaitForElement("Issue33400HorizontalAlwaysButton");
 		App.Tap("Issue33400HorizontalAlwaysButton");
 		VerifyScreenshot("Issue33400_Always");
+	}
+
+	[Test, Order(3)]
+	[Category(UITestCategories.ScrollView)]
+	public void Issue33400ScrollbarVisibilityDefault()
+	{
 		App.WaitForElement("Issue33400HorizontalDefaultButton");
 		App.Tap("Issue33400HorizontalDefaultButton");
 		VerifyScreenshot("Issue33400_Default");
