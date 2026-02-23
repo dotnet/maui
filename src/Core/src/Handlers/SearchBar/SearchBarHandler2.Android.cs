@@ -10,7 +10,7 @@ using AView = Android.Views.View;
 namespace Microsoft.Maui.Handlers;
 
 // TODO: material3 - make it public in .net 11
-internal class SearchBarHandler2 : ViewHandler<ISearchBar, MauiMaterialTextInputLayout>
+internal class SearchBarHandler2 : ViewHandler<ISearchBar, MauiMaterialSearchBarTextInputLayout>
 {
     public static PropertyMapper<ISearchBar, SearchBarHandler2> Mapper =
     new(ViewMapper)
@@ -50,15 +50,15 @@ internal class SearchBarHandler2 : ViewHandler<ISearchBar, MauiMaterialTextInput
     {
     }
 
-    protected override MauiMaterialTextInputLayout CreatePlatformView()
+    protected override MauiMaterialSearchBarTextInputLayout CreatePlatformView()
     {
-        var layout = new MauiMaterialTextInputLayout(Context);
+        var layout = new MauiMaterialSearchBarTextInputLayout(Context);
         layout.BoxBackgroundMode = TextInputLayout.BoxBackgroundFilled;
-        layout.AddView(new MauiMaterialTextInputEditText(layout.Context!));
+        layout.AddView(new MauiMaterialSearchBarTextInputEditText(layout.Context!));
         return layout;
     }
 
-    protected override void ConnectHandler(MauiMaterialTextInputLayout platformView)
+    protected override void ConnectHandler(MauiMaterialSearchBarTextInputLayout platformView)
     {
         base.ConnectHandler(platformView);
         if (platformView.EditText is not null)
@@ -66,14 +66,14 @@ internal class SearchBarHandler2 : ViewHandler<ISearchBar, MauiMaterialTextInput
             platformView.EditText.TextChanged += OnTextChanged;
             platformView.EditText.EditorAction += OnEditorAction;
             platformView.EditText.FocusChange += OnFocusChange;
-            if (platformView.EditText is MauiMaterialTextInputEditText editText)
+            if (platformView.EditText is MauiMaterialSearchBarTextInputEditText editText)
             {
                 editText.SelectionChanged += OnSelectionChanged;
             }
         }
     }
 
-    protected override void DisconnectHandler(MauiMaterialTextInputLayout platformView)
+    protected override void DisconnectHandler(MauiMaterialSearchBarTextInputLayout platformView)
     {
         if (platformView.EditText is not null)
         {
@@ -81,7 +81,7 @@ internal class SearchBarHandler2 : ViewHandler<ISearchBar, MauiMaterialTextInput
             platformView.EditText.EditorAction -= OnEditorAction;
             platformView.EditText.FocusChange -= OnFocusChange;
 
-            if (platformView.EditText is MauiMaterialTextInputEditText editText)
+            if (platformView.EditText is MauiMaterialSearchBarTextInputEditText editText)
             {
                 editText.SelectionChanged -= OnSelectionChanged;
             }

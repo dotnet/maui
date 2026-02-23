@@ -6,9 +6,9 @@ using Google.Android.Material.TextField;
 namespace Microsoft.Maui.Platform;
 
 // TODO: material3 - make it public in .net 11
-internal class MauiMaterialTextInputLayout : TextInputLayout
+internal class MauiMaterialSearchBarTextInputLayout : TextInputLayout
 {
-    public MauiMaterialTextInputLayout(Context context) : base(context)
+    public MauiMaterialSearchBarTextInputLayout(Context context) : base(context)
     {
         // Set the search icon as the start/leading icon
         SetStartIconDrawable(Resource.Drawable.abc_ic_search_api_material);
@@ -48,10 +48,10 @@ internal class MauiMaterialTextInputLayout : TextInputLayout
 }
 
 // TODO: material3 - make it public in .net 11
-internal class MauiMaterialTextInputEditText : TextInputEditText
+internal class MauiMaterialSearchBarTextInputEditText : TextInputEditText
 {
     public event EventHandler? SelectionChanged;
-    public MauiMaterialTextInputEditText(Context context) : base(context)
+    public MauiMaterialSearchBarTextInputEditText(Context context) : base(context)
     {
     }
 
@@ -79,9 +79,9 @@ internal class MauiMaterialTextInputEditText : TextInputEditText
 
 class ClearButtonClickListener : Java.Lang.Object, View.IOnClickListener
 {
-    readonly MauiMaterialTextInputLayout _layout;
+    readonly MauiMaterialSearchBarTextInputLayout _layout;
 
-    public ClearButtonClickListener(MauiMaterialTextInputLayout layout)
+    public ClearButtonClickListener(MauiMaterialSearchBarTextInputLayout layout)
     {
         _layout = layout;
     }
