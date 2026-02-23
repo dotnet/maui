@@ -66,7 +66,9 @@ internal class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMaterialDatePic
             _dialog = null;
         }
 
+        _positiveButtonClickListener?.Dispose();
         _positiveButtonClickListener = null;
+        _dismissListener?.Dispose();
         _dismissListener = null;
 
         platformView.ShowPicker = null;
