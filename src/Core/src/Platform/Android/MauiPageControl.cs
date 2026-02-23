@@ -96,9 +96,6 @@ namespace Microsoft.Maui.Platform
 
 				imageView.SetImageDrawable(index == i ? _currentPageShape : _pageShape);
 
-				// Set up accessibility for this indicator
-				SetupIndicatorAccessibility(imageView, i, index);
-
 				imageView.SetOnClickListener(new TEditClickListener(view =>
 				{
 					if (_indicatorView.IsEnabled && view?.Tag != null)
@@ -107,6 +104,9 @@ namespace Microsoft.Maui.Platform
 						_indicatorView.Position = position;
 					}
 				}));
+
+				// Set up accessibility after click listener so Clickable state is set correctly
+				SetupIndicatorAccessibility(imageView, i, index);
 
 				AddView(imageView);
 			}
@@ -165,7 +165,7 @@ namespace Microsoft.Maui.Platform
 
 		void UpdateIndicatorAccessibility(ImageView imageView, int position, int selectedPosition)
 		{
-			if (_indicatorView is null)
+			if (_indicatorView is null || Context is null)
 			{
 				return;
 			}
@@ -174,16 +174,16 @@ namespace Microsoft.Maui.Platform
 			var totalItems = _indicatorView.GetMaximumVisible();
 			var isSelected = position == selectedPosition;
 
-			// Create descriptive content description for TalkBack
-			var contentDescription = isSelected 
-				? $"Item {itemNumber} of {totalItems}, selected"
-				: $"Item {itemNumber} of {totalItems}";
+			// Use localized string resources for TalkBack announcements
+			var contentDescription = isSelected
+				? Context.GetString(Resource.String.indicator_item_accessible_description_selected, new Java.Lang.Integer(itemNumber), new Java.Lang.Integer(totalItems))
+				: Context.GetString(Resource.String.indicator_item_accessible_description, new Java.Lang.Integer(itemNumber), new Java.Lang.Integer(totalItems));
 
 			imageView.ContentDescription = contentDescription;
-			
-			// Prevent "double tap to activate" announcement for already selected indicators
+
+			// Prevent "double tap to activate" announcement for the already-selected indicator
 			imageView.Clickable = !isSelected;
-			
+
 			// Force TalkBack to announce the updated description for the selected item
 			if (isSelected && imageView.IsAccessibilityFocused)
 			{
