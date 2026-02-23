@@ -8,7 +8,9 @@ using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/Setter.xml" path="Type[@FullName='Microsoft.Maui.Controls.Setter']/Docs/*" />
+	/// <summary>
+	/// Sets a property value within a <see cref="Style"/> or <see cref="TriggerBase"/>.
+	/// </summary>
 	[ContentProperty(nameof(Value))]
 	[ProvideCompiled("Microsoft.Maui.Controls.XamlC.SetterValueProvider")]
 	[RequireService(
@@ -16,13 +18,19 @@ namespace Microsoft.Maui.Controls
 		 typeof(IXmlLineInfoProvider)])]
 	public sealed class Setter : IValueProvider
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/Setter.xml" path="//Member[@MemberName='TargetName']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the name of the element to which the setter applies.
+		/// </summary>
 		public string TargetName { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Setter.xml" path="//Member[@MemberName='Property']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the <see cref="BindableProperty"/> to set.
+		/// </summary>
 		public BindableProperty Property { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Setter.xml" path="//Member[@MemberName='Value']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the value to apply to the property.
+		/// </summary>
 		public object Value { get; set; }
 
 		object IValueProvider.ProvideValue(IServiceProvider serviceProvider)

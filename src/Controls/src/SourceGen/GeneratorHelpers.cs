@@ -45,7 +45,7 @@ static class GeneratorHelpers
 		return projectItem.Kind == "None" ? null : projectItem;
 	}
 
-    public static XamlProjectItemForIC? ComputeXamlProjectItemForIC((ProjectItem?, AssemblyAttributes) itemAndCaches, CancellationToken cancellationToken)
+	public static XamlProjectItemForIC? ComputeXamlProjectItemForIC((ProjectItem?, AssemblyAttributes) itemAndCaches, CancellationToken cancellationToken)
 	{
 		var (projectItem, assemblyCaches) = itemAndCaches;
 		var text = projectItem?.AdditionalText.GetText(cancellationToken);
@@ -204,9 +204,9 @@ static class GeneratorHelpers
 		INamedTypeSymbol? allowImplicitXmlnsAttribute = compilation.GetTypesByMetadataName(typeof(Xaml.Internals.AllowImplicitXmlnsDeclarationAttribute).FullName)
 			.FirstOrDefault(t => t.ContainingAssembly.Identity.Name == "Microsoft.Maui.Controls");
 
-		if (xmlnsDefinitonAttribute is null || internalsVisibleToAttribute is null)		
+		if (xmlnsDefinitonAttribute is null || internalsVisibleToAttribute is null)
 			return AssemblyAttributes.Empty;
-		
+
 
 		var xmlnsDefinitions = new List<XmlnsDefinitionAttribute>();
 		var internalsVisible = new List<IAssemblySymbol>();
@@ -389,20 +389,67 @@ static class GeneratorHelpers
 			reportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, e.Message));
 		}
 		return (code, xamlItem, diagnostics);
-    }
+	}
 
 	/// <summary>
 	/// Formats a value as a culture-independent C# literal for source generation.
-	/// Uses SymbolDisplay.FormatPrimitive to ensure proper handling of special values like NaN and Infinity
-	/// but also numeric types and makes sure they are formatted correctly.
+	/// Handles special floating-point values (NaN, Infinity) and uses SymbolDisplay.FormatPrimitive
+	/// for regular numeric types to ensure they are formatted correctly.
 	/// </summary>
 	/// <param name="value">The value to format</param>
 	/// <param name="quoted">Whether to include quotes around the formatted value</param>
 	/// <returns>A culture-independent string representation suitable for source generation</returns>
 	public static string FormatInvariant(object value, bool quoted = false)
 	{
+		// Handle special floating-point values that SymbolDisplay.FormatPrimitive doesn't prefix correctly
+		if (value is double d)
+		{
+			if (double.IsNaN(d))
+				return "double.NaN";
+			if (double.IsPositiveInfinity(d))
+				return "double.PositiveInfinity";
+			if (double.IsNegativeInfinity(d))
+				return "double.NegativeInfinity";
+		}
+		else if (value is float f)
+		{
+			if (float.IsNaN(f))
+				return "float.NaN";
+			if (float.IsPositiveInfinity(f))
+				return "float.PositiveInfinity";
+			if (float.IsNegativeInfinity(f))
+				return "float.NegativeInfinity";
+		}
+
 		return SymbolDisplay.FormatPrimitive(value, quoteStrings: quoted, useHexadecimalNumbers: false);
 	}
 
+	/// <summary>
+	/// Tries to parse a double value, including special values like NaN, Infinity, -Infinity.
+	/// </summary>
+	public static bool TryParseDouble(string value, out double result)
+	{
+		value = value.Trim();
+
+		// Handle special values that NumberStyles.Number doesn't parse
+		if (value.Equals("NaN", StringComparison.OrdinalIgnoreCase))
+		{
+			result = double.NaN;
+			return true;
+		}
+		if (value.Equals("Infinity", StringComparison.OrdinalIgnoreCase) ||
+			value.Equals("+Infinity", StringComparison.OrdinalIgnoreCase))
+		{
+			result = double.PositiveInfinity;
+			return true;
+		}
+		if (value.Equals("-Infinity", StringComparison.OrdinalIgnoreCase))
+		{
+			result = double.NegativeInfinity;
+			return true;
+		}
+
+		return double.TryParse(value, System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out result);
+	}
 
 }

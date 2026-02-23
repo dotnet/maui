@@ -311,10 +311,25 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			var task = GetAppearedOrDisappearedTask(page);
 
-			PopToRootViewController(animated);
+			var poppedControllers = PopToRootViewController(animated);
 
 			_ignorePopCall = false;
 			var success = !await task;
+
+			if (poppedControllers is not null)
+			{
+				foreach (var poppedController in poppedControllers)
+				{
+					if (poppedController is ParentingViewController parentingViewController)
+					{
+						parentingViewController.Disconnect(false);
+					}
+					else
+					{
+						poppedController?.Dispose();
+					}
+				}
+			}
 
 			UpdateToolBarVisible();
 			return success;
@@ -1593,6 +1608,38 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad)
 					UpdateLeftBarButtonItem();
+			}
+
+			public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
+			{
+				base.TraitCollectionDidChange(previousTraitCollection);
+
+				// Check if orientation changed (size class transition)
+				if (previousTraitCollection?.VerticalSizeClass != TraitCollection.VerticalSizeClass ||
+					previousTraitCollection?.HorizontalSizeClass != TraitCollection.HorizontalSizeClass)
+				{
+					if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+					{
+						UpdateTitleViewFrameForOrientation();
+					}
+				}
+			}
+
+			/// iOS 26+ requires autoresizing masks (UIViewAutoresizing.FlexibleWidth) During orientation changes, the autoresizing mask
+			/// automatically adjusts the width, but we need to explicitly update the frame to ensure the
+			/// title view uses the full available width from the navigation bar. Without this update,
+			/// the title view may not properly expand to fill the navigation bar after rotation.
+			void UpdateTitleViewFrameForOrientation()
+			{
+				if (NavigationItem?.TitleView is not UIView titleView)
+					return;
+
+				if (!_navigation.TryGetTarget(out NavigationRenderer navigationRenderer))
+					return;
+
+				var navigationBarFrame = navigationRenderer.NavigationBar.Frame;
+				titleView.Frame = new RectangleF(0, 0, navigationBarFrame.Width, navigationBarFrame.Height);
+				titleView.LayoutIfNeeded();
 			}
 
 			internal void UpdateLeftBarButtonItem(Page pageBeingRemoved = null)

@@ -7,7 +7,13 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <summary>A <see cref="Microsoft.Maui.Controls.View"/> that allows date picking.</summary>
+	/// <summary>
+	/// A view control that allows date selection.
+	/// </summary>
+	/// <remarks>
+	/// The DatePicker displays a date selection interface. Users can select a date within the range 
+	/// specified by <see cref="MinimumDate"/> and <see cref="MaximumDate"/>. The selected date is stored in the <see cref="Date"/> property.
+	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class DatePicker : View, IFontElement, ITextElement, IElementConfiguration<DatePicker>, IDatePicker
 	{
@@ -101,7 +107,8 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(TextElement.TextColorProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/DatePicker.xml" path="//Member[@MemberName='CharacterSpacing']/Docs/*" />
+		/// <summary>Gets or sets the character spacing for the date picker text. This is a bindable property.</summary>
+		/// <value>A <see cref="double"/> representing the spacing between characters.</value>
 		public double CharacterSpacing
 		{
 			get { return (double)GetValue(TextElement.CharacterSpacingProperty); }
@@ -122,7 +129,8 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(FontFamilyProperty, value); }
 		}
 
-		/// <summary>Gets or sets the size of the font for the text in the picker.</summary>
+		/// <summary>Gets or sets the size of the font for the text in the picker. This is a bindable property.</summary>
+		/// <value>A <see cref="double"/> representing the font size.</value>
 		[System.ComponentModel.TypeConverter(typeof(FontSizeConverter))]
 		public double FontSize
 		{
@@ -140,6 +148,8 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(FontAutoScalingEnabledProperty, value);
 		}
 
+		/// <summary>Gets or sets a value indicating whether the date picker is open. This is a bindable property.</summary>
+		/// <value><see langword="true"/> if the date picker is open; otherwise, <see langword="false"/>.</value>
 		public bool IsOpen
 		{
 			get => (bool)GetValue(IsOpenProperty);

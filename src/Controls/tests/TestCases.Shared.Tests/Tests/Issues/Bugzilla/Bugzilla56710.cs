@@ -14,7 +14,6 @@ public class Bugzilla56710 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.ListView)]
-	[Category(UITestCategories.Compatibility)]
 	public void Bugzilla56710Test()
 	{
 		App.WaitForElement("Go to Test Page");

@@ -4,7 +4,7 @@ using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/EffectiveVisualExtensions.xml" path="Type[@FullName='Microsoft.Maui.Controls.EffectiveVisualExtensions']/Docs/*" />
+	/// <summary>Extension methods for checking visual type.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class EffectiveVisualExtensions
 	{

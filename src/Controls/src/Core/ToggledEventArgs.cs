@@ -2,16 +2,17 @@ using System;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/ToggledEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Controls.ToggledEventArgs']/Docs/*" />
+	/// <summary>Event arguments for toggle state changes.</summary>
 	public class ToggledEventArgs : EventArgs
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/ToggledEventArgs.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>Creates a new <see cref="ToggledEventArgs"/> with the specified value.</summary>
+		/// <param name="value">The new toggle state.</param>
 		public ToggledEventArgs(bool value)
 		{
 			Value = value;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ToggledEventArgs.xml" path="//Member[@MemberName='Value']/Docs/*" />
+		/// <summary>Gets the new toggle state.</summary>
 		public bool Value { get; private set; }
 	}
 }

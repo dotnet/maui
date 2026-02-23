@@ -3,16 +3,17 @@ using System;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/SelectedPositionChangedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Controls.SelectedPositionChangedEventArgs']/Docs/*" />
+	/// <summary>Event arguments for position changes in a CarouselPage.</summary>
 	public class SelectedPositionChangedEventArgs : EventArgs
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/SelectedPositionChangedEventArgs.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>Creates a new <see cref="SelectedPositionChangedEventArgs"/> with the specified position.</summary>
+		/// <param name="selectedPosition">The index of the newly selected position.</param>
 		public SelectedPositionChangedEventArgs(int selectedPosition)
 		{
 			SelectedPosition = selectedPosition;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SelectedPositionChangedEventArgs.xml" path="//Member[@MemberName='SelectedPosition']/Docs/*" />
+		/// <summary>Gets the index of the newly selected position.</summary>
 		public object SelectedPosition { get; private set; }
 	}
 }

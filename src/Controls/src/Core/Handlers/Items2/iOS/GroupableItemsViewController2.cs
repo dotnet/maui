@@ -127,6 +127,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			var bindingContext = ItemsSource.Group(indexPath);
 
+			// Mark this templated cell as a supplementary view (header/footer)
+			cell.isSupplementaryView = true;
 			cell.isHeaderOrFooterChanged = true;
 			cell.Bind(template, bindingContext, ItemsView);
 			cell.isHeaderOrFooterChanged = false;

@@ -72,13 +72,13 @@
             <Label AutomationId="ColorValue" Text="{Binding Color, StringFormat='Color: {0}'}" HorizontalOptions="Start" LineBreakMode="CharacterWrap" FontSize="10" WidthRequest="100" />
             <controls:UITestEntry x:Name="ColorEntry" AutomationId="ColorEntry" IsCursorVisible="False" TextChanged="OnColorChanged" HorizontalOptions="Start" WidthRequest="100" Placeholder="Shadow Color Hex" />
             <Label AutomationId="OffsetXValue" Text="{Binding OffsetX, StringFormat='OffsetX: {0}'}" FontSize="15" />
-            <controls:UITestEntry x:Name="OffsetXEntry" AutomationId="OffsetXEntry" IsCursorVisible="False" Text="{Binding OffsetX}" TextChanged="OnOffsetXChanged" Keyboard="Numeric" HorizontalOptions="Start" WidthRequest="100" Placeholder="Shadow Offset X" />
+            <controls:UITestEntry x:Name="OffsetXEntry" AutomationId="OffsetXEntry" IsCursorVisible="False" Text="{Binding OffsetX}" TextChanged="OnOffsetXChanged" HorizontalOptions="Start" WidthRequest="100" Placeholder="Shadow Offset X" />
             <Label AutomationId="OffsetYValue" Text="{Binding OffsetY, StringFormat='OffsetY: {0}'}" FontSize="15" />
-            <controls:UITestEntry x:Name="OffsetYEntry" AutomationId="OffsetYEntry" IsCursorVisible="False" Text="{Binding OffsetY}" TextChanged="OnOffsetYChanged" Keyboard="Numeric" HorizontalOptions="Start" WidthRequest="100" Placeholder="Shadow Offset Y" />
+            <controls:UITestEntry x:Name="OffsetYEntry" AutomationId="OffsetYEntry" IsCursorVisible="False" Text="{Binding OffsetY}" TextChanged="OnOffsetYChanged" HorizontalOptions="Start" WidthRequest="100" Placeholder="Shadow Offset Y" />
             <Label AutomationId="RadiusValue" Text="{Binding Radius, StringFormat='Radius: {0}'}" FontSize="15" />
-            <controls:UITestEntry x:Name="RadiusEntry" AutomationId="RadiusEntry" IsCursorVisible="False" Text="{Binding Radius}" TextChanged="OnRadiusChanged" Keyboard="Numeric" HorizontalOptions="Start" WidthRequest="100" Placeholder="Shadow Radius" />
+            <controls:UITestEntry x:Name="RadiusEntry" AutomationId="RadiusEntry" IsCursorVisible="False" Text="{Binding Radius}" TextChanged="OnRadiusChanged" HorizontalOptions="Start" WidthRequest="100" Placeholder="Shadow Radius" />
             <Label AutomationId="OpacityValue" Text="{Binding Opacity, StringFormat='Opacity: {0}'}" FontSize="15" />
-            <controls:UITestEntry x:Name="OpacityEntry" AutomationId="OpacityEntry" IsCursorVisible="False" Text="{Binding Opacity}" TextChanged="OnOpacityChanged" Keyboard="Numeric" HorizontalOptions="Start" WidthRequest="100" Placeholder="Shadow Opacity" />
+            <controls:UITestEntry x:Name="OpacityEntry" AutomationId="OpacityEntry" IsCursorVisible="False" Text="{Binding Opacity}" TextChanged="OnOpacityChanged" HorizontalOptions="Start" WidthRequest="100" Placeholder="Shadow Opacity" />
           </StackLayout>
           <StackLayout Grid.Column="0" Grid.Row="1" Padding="10" Spacing="8">
             <Button x:Name="ClipButton" AutomationId="ClipButton" Text="Add Clip" HorizontalOptions="Start" Clicked="OnClipClicked" />

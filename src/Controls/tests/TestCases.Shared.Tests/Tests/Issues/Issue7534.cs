@@ -15,7 +15,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Label)]
-		[Category(UITestCategories.Compatibility)]
 		public void ExpectingPageNotToBreak()
 		{
 			App.WaitForElement("Success");

@@ -3,7 +3,7 @@ using System;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/ScrollToRequestedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Controls.ScrollToRequestedEventArgs']/Docs/*" />
+	/// <summary>Event arguments for scroll-to requests on scrollable views.</summary>
 	public class ScrollToRequestedEventArgs : EventArgs, ITemplatedItemsListScrollToRequestedEventArgs
 	{
 		internal ScrollToRequestedEventArgs(double scrollX, double scrollY, bool shouldAnimate)
@@ -39,22 +39,22 @@ namespace Microsoft.Maui.Controls
 			//Mode = ScrollToMode.GroupAndIem;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollToRequestedEventArgs.xml" path="//Member[@MemberName='Element']/Docs/*" />
+		/// <summary>Gets the element to scroll to when <see cref="Mode"/> is <see cref="ScrollToMode.Element"/>.</summary>
 		public Element Element { get; private set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollToRequestedEventArgs.xml" path="//Member[@MemberName='Mode']/Docs/*" />
+		/// <summary>Gets how the scroll request should be interpreted.</summary>
 		public ScrollToMode Mode { get; private set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollToRequestedEventArgs.xml" path="//Member[@MemberName='Position']/Docs/*" />
+		/// <summary>Gets the desired final position of the target within the viewport.</summary>
 		public ScrollToPosition Position { get; private set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollToRequestedEventArgs.xml" path="//Member[@MemberName='ScrollX']/Docs/*" />
+		/// <summary>Gets the target horizontal scroll position when <see cref="Mode"/> is <see cref="ScrollToMode.Position"/>.</summary>
 		public double ScrollX { get; private set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollToRequestedEventArgs.xml" path="//Member[@MemberName='ScrollY']/Docs/*" />
+		/// <summary>Gets the target vertical scroll position when <see cref="Mode"/> is <see cref="ScrollToMode.Position"/>.</summary>
 		public double ScrollY { get; private set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollToRequestedEventArgs.xml" path="//Member[@MemberName='ShouldAnimate']/Docs/*" />
+		/// <summary>Gets whether the scroll should be animated.</summary>
 		public bool ShouldAnimate { get; private set; }
 
 		internal object Group { get; private set; }

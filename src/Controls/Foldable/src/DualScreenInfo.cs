@@ -63,6 +63,10 @@ namespace Microsoft.Maui.Foldable
 		/// </summary>
 		public event PropertyChangedEventHandler PropertyChanged;
 
+		/// <summary>
+		/// Creates a new <see cref="DualScreenInfo"/> that monitors the specified element's position across screens.
+		/// </summary>
+		/// <param name="element">The visual element to monitor for spanning across screens.</param>
 		public DualScreenInfo(VisualElement element) : this(element, null)
 		{
 		}

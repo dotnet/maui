@@ -15,7 +15,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.ToolbarItem)]
-		[Category(UITestCategories.Navigation)]
 		public void ToolbarItemColorWithCustomBarTextColorShouldWork()
 		{
 			App.WaitForElement("SetResetButton");

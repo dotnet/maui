@@ -3,22 +3,34 @@ using System;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/RotateTransform.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.RotateTransform']/Docs/*" />
+	/// <summary>
+	/// A transform that rotates an element around a specified center point.
+	/// </summary>
 	public class RotateTransform : Transform
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/RotateTransform.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="RotateTransform"/> class.
+		/// </summary>
 		public RotateTransform()
 		{
 
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/RotateTransform.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="RotateTransform"/> class with the specified angle.
+		/// </summary>
+		/// <param name="angle">The rotation angle in degrees.</param>
 		public RotateTransform(double angle)
 		{
 			Angle = angle;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/RotateTransform.xml" path="//Member[@MemberName='.ctor'][3]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="RotateTransform"/> class with the specified angle and center point.
+		/// </summary>
+		/// <param name="angle">The rotation angle in degrees.</param>
+		/// <param name="centerX">The x-coordinate of the center of rotation.</param>
+		/// <param name="centerY">The y-coordinate of the center of rotation.</param>
 		public RotateTransform(double angle, double centerX, double centerY)
 		{
 			Angle = angle;
@@ -41,21 +53,27 @@ namespace Microsoft.Maui.Controls.Shapes
 			BindableProperty.Create(nameof(CenterY), typeof(double), typeof(RotateTransform), 0.0,
 				propertyChanged: OnTransformPropertyChanged);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/RotateTransform.xml" path="//Member[@MemberName='Angle']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the rotation angle in degrees. This is a bindable property.
+		/// </summary>
 		public double Angle
 		{
 			set { SetValue(AngleProperty, value); }
 			get { return (double)GetValue(AngleProperty); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/RotateTransform.xml" path="//Member[@MemberName='CenterX']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the x-coordinate of the center of rotation. This is a bindable property.
+		/// </summary>
 		public double CenterX
 		{
 			set { SetValue(CenterXProperty, value); }
 			get { return (double)GetValue(CenterXProperty); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/RotateTransform.xml" path="//Member[@MemberName='CenterY']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the y-coordinate of the center of rotation. This is a bindable property.
+		/// </summary>
 		public double CenterY
 		{
 			set { SetValue(CenterYProperty, value); }

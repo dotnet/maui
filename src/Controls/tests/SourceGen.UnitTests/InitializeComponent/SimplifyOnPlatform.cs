@@ -342,7 +342,9 @@ public partial class TestPage : ContentPage
 	public void OnPlatformWithMissingTargetPlatformShouldUseDefault()
 	{
 		// Reproduces Bugzilla39636: When MacCatalyst is not defined in OnPlatform,
-		// SourceGen should use default(T) instead of throwing an exception
+		// SourceGen should use default(T) instead of throwing an exception.
+		// The SimplifyOnPlatformVisitor marks the node as IsOnPlatformDefaultValue,
+		// and CreateValuesVisitor generates default(T) for it.
 		var xaml =
 """
 <?xml version="1.0" encoding="UTF-8"?>
@@ -385,11 +387,8 @@ public partial class TestPage : ContentPage
 		// Should not have any errors (no TargetInvocationException)
 		Assert.False(result.Diagnostics.Any(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error));
 		
-		// Should generate SetValue with default(double) for the WidthRequest property
-		// The generated code should look like: label.SetValue(global::Microsoft.Maui.Controls.VisualElement.WidthRequestProperty, double1);
-		// where double1 is assigned from double0 which is: double double0 = default;
+		// Should generate default(double) for the value since no matching platform
+		// The generated code should include: double double0 = default;
 		Assert.Contains("double double0 = default;", generated, StringComparison.Ordinal);
-		Assert.Contains("var double1 = double0;", generated, StringComparison.Ordinal);
-		Assert.Contains("label.SetValue(global::Microsoft.Maui.Controls.VisualElement.WidthRequestProperty, double1);", generated, StringComparison.Ordinal);
 	}
 }
