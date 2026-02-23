@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Maui.Controls.Sample.Models;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging;
 
 namespace Maui.Controls.Sample.Services;
 
@@ -16,7 +17,7 @@ public class DataService
 	};
 
 	private readonly IEmbeddingGenerator<string, Embedding<float>> _generator;
-
+	private readonly ILogger<DataService> _logger;
 	private readonly Task _initializationTask;
 
 	private List<Landmark>? _landmarks;
@@ -26,9 +27,10 @@ public class DataService
 	private Dictionary<int, Landmark>? _landmarksById;
 	private Landmark? _featuredLandmark;
 
-	public DataService(IEmbeddingGenerator<string, Embedding<float>> generator)
+	public DataService(IEmbeddingGenerator<string, Embedding<float>> generator, ILogger<DataService> logger)
 	{
 		_generator = generator;
+		_logger = logger;
 		_initializationTask = LoadLandmarksAsync();
 	}
 
@@ -95,10 +97,12 @@ public class DataService
 			_featuredLandmark = _landmarksById.GetValueOrDefault(1020);
 
 			_pointsOfInterest = await LoadDataAsync<PointOfInterest>("pointsOfInterestData.json");
+
+			_logger.LogInformation("Successfully loaded {LandmarkCount} landmarks and {POICount} points of interest.", _landmarks.Count, _pointsOfInterest.Count);
 		}
 		catch (Exception ex)
 		{
-			System.Diagnostics.Debug.WriteLine($"Error loading landmarks: {ex}");
+			_logger.LogError(ex, "Error loading landmarks: {Error}", ex.Message);
 
 			_landmarks = [];
 			_pointsOfInterest = [];
@@ -115,7 +119,7 @@ public class DataService
 		{
 			foreach (var landmark in _landmarks!)
 			{
-				var text = $"{landmark.Name}. {landmark.ShortDescription}";
+				var text = $"{landmark.Name}";
 				landmark.Embedding = await _generator.GenerateAsync(text);
 			}
 
@@ -124,10 +128,12 @@ public class DataService
 				var text = $"{poi.Name}. {poi.Description}";
 				poi.Embedding = await _generator.GenerateAsync(text);
 			}
+
+			_logger.LogInformation("Successfully generated embeddings for {LandmarkCount} landmarks and {POICount} points of interest.", _landmarks?.Count ?? 0, _pointsOfInterest?.Count ?? 0);
 		}
 		catch (Exception ex)
 		{
-			System.Diagnostics.Debug.WriteLine($"Error generating embeddings: {ex}");
+			_logger.LogError(ex, "Error generating embeddings: {Error}", ex.Message);
 		}
 	}
 
