@@ -1,0 +1,370 @@
+# Pipeline for AI-powered smart test selection
+# Analyzes PR changes using Copilot CLI to determine the minimum safe set of tests,
+# then builds and runs only the relevant tests.
+#
+# Mirrors the ci-copilot.yml (maui-copilot) pipeline logistics:
+# - Same pool (AcesShared), tokens, provisioning, tooling
+# - Manual trigger with PRNumber parameter
+# - Copilot CLI with custom agent for intelligent test selection
+
+trigger: none  # Manual trigger only
+
+pr: none  # Not triggered by PRs
+
+parameters:
+  - name: PRNumber
+    displayName: 'Pull Request Number'
+    type: string
+    default: ''
+
+  - name: Platform
+    displayName: 'Target Platform'
+    type: string
+    default: 'android'
+    values:
+      - android
+      - ios
+      - all
+
+  - name: ForceAll
+    displayName: 'Force ALL tests (skip AI selection)'
+    type: boolean
+    default: false
+
+  - name: RunTests
+    displayName: 'Actually run the selected tests (not just selection)'
+    type: boolean
+    default: true
+
+  - name: pool
+    type: object
+    default:
+      name: AcesShared
+
+variables:
+  - template: /eng/pipelines/common/variables.yml@self
+  - name: Codeql.Enabled
+    value: false
+  - name: Codeql.SkipTaskAutoInjection
+    value: true
+
+stages:
+  - stage: SmartTestSelection
+    displayName: 'Smart Test Selection & Execution'
+    jobs:
+      - job: SelectAndTest
+        displayName: 'Analyze PR & Run Selected Tests'
+        pool: ${{ parameters.pool }}
+        timeoutInMinutes: 180
+        steps:
+          - checkout: self
+            fetchDepth: 0
+            persistCredentials: true
+
+          # ════════════════════════════════════════════
+          # Validate Parameters
+          # ════════════════════════════════════════════
+          - script: |
+              echo "Validating PR Number parameter..."
+              if [ -z "${{ parameters.PRNumber }}" ]; then
+                echo "##vso[task.logissue type=error]PRNumber parameter is required"
+                exit 1
+              fi
+              echo "PR Number: ${{ parameters.PRNumber }}"
+              echo "Platform: ${{ parameters.Platform }}"
+              echo "ForceAll: ${{ parameters.ForceAll }}"
+              echo "RunTests: ${{ parameters.RunTests }}"
+            displayName: 'Validate Parameters'
+
+          - script: |
+              echo "##vso[build.updatebuildnumber]Smart Tests PR ${{ parameters.PRNumber }} ${{ parameters.Platform }}"
+            displayName: 'Set Pipeline Run Title'
+
+          # ════════════════════════════════════════════
+          # Provision Environment (same as ci-copilot)
+          # ════════════════════════════════════════════
+          - template: common/provision.yml
+            parameters:
+              skipXcode: false
+              skipProvisionator: false
+              skipAndroidCommonSdks: ${{ eq(parameters.Platform, 'ios') }}
+              skipAndroidPlatformApis: ${{ eq(parameters.Platform, 'ios') }}
+              skipJdk: ${{ eq(parameters.Platform, 'ios') }}
+              skipSimulatorSetup: false
+              skipCertificates: true
+              skipAndroidEmulatorImages: ${{ eq(parameters.Platform, 'ios') }}
+              skipAndroidCreateAvds: ${{ eq(parameters.Platform, 'ios') }}
+              androidEmulatorApiLevel: '30'
+
+          # ════════════════════════════════════════════
+          # Configure Android SDK PATH
+          # ════════════════════════════════════════════
+          - pwsh: |
+              if ($env:ANDROID_SDK_ROOT) {
+                $platformTools = Join-Path $env:ANDROID_SDK_ROOT "platform-tools"
+                $emulatorPath = Join-Path $env:ANDROID_SDK_ROOT "emulator"
+                $cmdlineTools = Join-Path $env:ANDROID_SDK_ROOT "cmdline-tools/latest/bin"
+
+                Write-Host "##vso[task.prependpath]$platformTools"
+                Write-Host "##vso[task.prependpath]$emulatorPath"
+                Write-Host "##vso[task.prependpath]$cmdlineTools"
+
+                if (Test-Path (Join-Path $platformTools "adb")) {
+                  Write-Host "✅ adb found"
+                }
+              }
+
+              # Auto-detect JAVA_HOME
+              if (-not $env:JAVA_HOME) {
+                $jvmDir = "/Library/Java/JavaVirtualMachines"
+                $msJdk = Get-ChildItem "$jvmDir/microsoft-*.jdk" -ErrorAction SilentlyContinue | Select-Object -First 1
+                if ($msJdk) {
+                  $javaHome = "$($msJdk.FullName)/Contents/Home"
+                  Write-Host "##vso[task.setvariable variable=JAVA_HOME]$javaHome"
+                  Write-Host "Set JAVA_HOME to: $javaHome"
+                }
+              }
+            displayName: 'Configure Android SDK PATH'
+            condition: ne('${{ parameters.Platform }}', 'ios')
+            env:
+              ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
+
+          # ════════════════════════════════════════════
+          # Start Android Emulator
+          # ════════════════════════════════════════════
+          - pwsh: |
+              $scriptPath = ".github/scripts/shared/Start-Emulator.ps1"
+              if (Test-Path $scriptPath) {
+                & "./$scriptPath" -Platform android -DeviceUdid Emulator_30 2>&1 | ForEach-Object { Write-Host $_ }
+                if ($LASTEXITCODE -ne 0) {
+                  Write-Host "##vso[task.logissue type=error]Start-Emulator failed"
+                  exit $LASTEXITCODE
+                }
+              } else {
+                Write-Host "##vso[task.logissue type=warning]Start-Emulator.ps1 not found"
+              }
+            displayName: 'Start Android Emulator'
+            condition: and(eq('${{ parameters.RunTests }}', 'true'), ne('${{ parameters.Platform }}', 'ios'))
+            timeoutInMinutes: 35
+            env:
+              ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
+
+          # ════════════════════════════════════════════
+          # Boot iOS Simulator
+          # ════════════════════════════════════════════
+          - script: |
+              echo "=== Booting iOS Simulator ==="
+              RUNTIME=$(xcrun simctl list runtimes available --json | jq -r '
+                [.runtimes[] | select(.name | test("iOS 18"))] | sort_by(.version) | last | .identifier // empty
+              ')
+              if [ -z "$RUNTIME" ]; then
+                RUNTIME=$(xcrun simctl list runtimes available --json | jq -r '
+                  [.runtimes[] | select(.name | test("iOS 17"))] | sort_by(.version) | last | .identifier // empty
+                ')
+              fi
+              echo "Selected runtime: $RUNTIME"
+
+              UDID=$(xcrun simctl list devices available --json | jq -r --arg rt "$RUNTIME" '
+                .devices[$rt] // [] | map(select(.name == "iPhone Xs")) | .[0].udid // empty
+              ')
+
+              if [ -z "$UDID" ]; then
+                UDID=$(xcrun simctl list devices available --json | jq -r '
+                  .devices | to_entries | map(.value) | flatten |
+                  map(select(.name | test("iPhone"))) | .[0].udid
+                ')
+              fi
+
+              if [ -z "$UDID" ]; then
+                echo "##vso[task.logissue type=error]No iOS simulator found"
+                exit 1
+              fi
+
+              xcrun simctl boot "$UDID" 2>/dev/null || echo "Simulator may already be booted"
+              sleep 10
+              echo "##vso[task.setvariable variable=DEVICE_UDID]$UDID"
+              echo "iOS Simulator UDID: $UDID"
+            displayName: 'Boot iOS Simulator'
+            condition: and(eq('${{ parameters.RunTests }}', 'true'), eq('${{ parameters.Platform }}', 'ios'))
+            timeoutInMinutes: 5
+
+          # ════════════════════════════════════════════
+          # Install .NET and workloads
+          # ════════════════════════════════════════════
+          - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
+            displayName: 'Install .NET and workloads'
+            condition: eq('${{ parameters.RunTests }}', 'true')
+            retryCountOnTaskFailure: 2
+            env:
+              DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+              PRIVATE_BUILD: $(PrivateBuild)
+
+          - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
+            displayName: 'Add .NET to PATH'
+            condition: eq('${{ parameters.RunTests }}', 'true')
+
+          - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="Release" --verbosity=diagnostic
+            displayName: 'Build MSBuild Tasks'
+            condition: eq('${{ parameters.RunTests }}', 'true')
+            retryCountOnTaskFailure: 1
+            env:
+              DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+              PRIVATE_BUILD: $(PrivateBuild)
+
+          # ════════════════════════════════════════════
+          # Install Tooling (Node, Appium, gh, Copilot)
+          # ════════════════════════════════════════════
+          - task: NodeTool@0
+            inputs:
+              versionSpec: '22.x'
+            displayName: 'Install Node.js'
+
+          - script: |
+              echo "Installing Appium..."
+              NPM_BIN=$(npm config get prefix)/bin
+              npm install -g appium
+              appium driver install uiautomator2
+              appium driver install xcuitest
+              echo "##vso[task.prependpath]$NPM_BIN"
+              echo "Appium version: $(appium --version)"
+            displayName: 'Install Appium'
+            condition: eq('${{ parameters.RunTests }}', 'true')
+
+          - script: |
+              echo "Installing GitHub CLI..."
+              brew install gh 2>/dev/null || echo "gh already installed"
+              gh --version
+            displayName: 'Install GitHub CLI'
+
+          - script: |
+              echo "Authenticating with GitHub CLI..."
+              if [ -z "$(GH_CLI_TOKEN)" ]; then
+                echo "##vso[task.logissue type=error]GH_CLI_TOKEN is not set"
+                exit 1
+              fi
+              echo "$(GH_CLI_TOKEN)" | gh auth login --with-token
+              gh auth status
+            displayName: 'Authenticate GitHub CLI'
+            env:
+              GH_CLI_TOKEN: $(GH_CLI_TOKEN)
+
+          - script: |
+              echo "Installing GitHub Copilot CLI..."
+              npm install -g @github/copilot
+              if ! which copilot; then
+                echo "##vso[task.logissue type=warning]Copilot CLI installation failed — will use deterministic mapping only"
+              else
+                echo "Copilot CLI installed: $(copilot --version)"
+              fi
+            displayName: 'Install GitHub Copilot CLI'
+
+          # ════════════════════════════════════════════
+          # Merge PR into working branch
+          # ════════════════════════════════════════════
+          - script: |
+              git config user.email "copilot-ci@microsoft.com"
+              git config user.name "Copilot CI"
+
+              # Skip Xcode version check
+              if [ -f "Directory.Build.Override.props.in" ]; then
+                cp Directory.Build.Override.props.in Directory.Build.Override.props
+                sed -i '' 's|</Project>|  <PropertyGroup><ValidateXcodeVersion>false</ValidateXcodeVersion></PropertyGroup>\n</Project>|' Directory.Build.Override.props
+              fi
+
+              echo "Merging PR #${{ parameters.PRNumber }}..."
+              git fetch origin pull/${{ parameters.PRNumber }}/head:temp-pr-${{ parameters.PRNumber }}
+              git merge temp-pr-${{ parameters.PRNumber }} --no-edit
+              echo "PR merged successfully"
+            displayName: 'Merge PR into working branch'
+            condition: eq('${{ parameters.RunTests }}', 'true')
+
+          # ════════════════════════════════════════════
+          # Run Smart Test Selector
+          # ════════════════════════════════════════════
+          - script: |
+              echo "Running Smart Test Selector..."
+              mkdir -p $(Build.ArtifactStagingDirectory)/smart-tests
+
+              FORCE_FLAG=""
+              if [ "${{ parameters.ForceAll }}" = "True" ]; then
+                FORCE_FLAG="-ForceAll"
+              fi
+
+              RUN_FLAG=""
+              if [ "${{ parameters.RunTests }}" = "True" ]; then
+                RUN_FLAG="-RunTests"
+              fi
+
+              set +e
+              pwsh .github/scripts/Select-SmartTests.ps1 \
+                -PRNumber ${{ parameters.PRNumber }} \
+                -Platform ${{ parameters.Platform }} \
+                $FORCE_FLAG \
+                $RUN_FLAG \
+                -OutputFile "$(Build.ArtifactStagingDirectory)/smart-tests/selection.json" \
+                -LogFile "$(Build.ArtifactStagingDirectory)/smart-tests/smart-tests.log"
+              TEST_EXIT_CODE=$?
+              set -e
+
+              echo "Select-SmartTests.ps1 exit code: $TEST_EXIT_CODE"
+
+              # Clean up orphaned copilot processes
+              SELF_PID=$$
+              for proc in $(pgrep -f "[c]opilot" 2>/dev/null || true); do
+                if [ -n "$proc" ] && [ "$proc" != "$SELF_PID" ]; then
+                  PROC_CMD=$(ps -p "$proc" -o args= 2>/dev/null || true)
+                  if echo "$PROC_CMD" | grep -q "copilot"; then
+                    echo "  Stopping copilot process $proc"
+                    kill "$proc" 2>/dev/null || true
+                  fi
+                fi
+              done
+
+              # Copy Copilot session state
+              if [ -d "$HOME/.copilot" ]; then
+                cp -r "$HOME/.copilot" $(Build.ArtifactStagingDirectory)/smart-tests/copilot-session-state || true
+              fi
+
+              if [ -d "CustomAgentLogsTmp" ]; then
+                cp -r CustomAgentLogsTmp $(Build.ArtifactStagingDirectory)/smart-tests/ || true
+              fi
+
+              if [ $TEST_EXIT_CODE -ne 0 ]; then
+                echo "##vso[task.setvariable variable=TestsFailed]true"
+              fi
+            displayName: 'Run Smart Test Selector'
+            env:
+              COPILOT_GITHUB_TOKEN: $(COPILOT_TOKEN)
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
+              DEVICE_UDID: $(DEVICE_UDID)
+
+          # ════════════════════════════════════════════
+          # Publish Artifacts
+          # ════════════════════════════════════════════
+          - task: PublishPipelineArtifact@1
+            displayName: 'Publish Smart Test Results'
+            inputs:
+              targetPath: '$(Build.ArtifactStagingDirectory)/smart-tests'
+              artifact: 'SmartTestResults'
+              publishLocation: 'pipeline'
+            condition: succeededOrFailed()
+
+          - task: PublishPipelineArtifact@1
+            displayName: 'Publish Build Logs'
+            inputs:
+              targetPath: '$(LogDirectory)'
+              artifact: 'BuildLogs'
+              publishLocation: 'pipeline'
+            condition: and(succeededOrFailed(), ne(variables['LogDirectory'], ''))
+
+          # ════════════════════════════════════════════
+          # Check Results
+          # ════════════════════════════════════════════
+          - script: |
+              if [ "$(TestsFailed)" = "true" ]; then
+                echo "##vso[task.logissue type=error]Some tests failed. Check SmartTestResults artifact."
+                exit 1
+              fi
+              echo "All selected tests passed (or selection-only mode)."
+            displayName: 'Check Test Results'
+            condition: succeededOrFailed()
