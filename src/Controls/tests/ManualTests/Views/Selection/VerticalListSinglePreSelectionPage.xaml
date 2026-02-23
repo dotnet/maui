@@ -1,0 +1,47 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
+             x:Class="Microsoft.Maui.ManualTests.Views.VerticalListSinglePreSelectionPage"
+             Title="Vertical list (single pre-selection)">
+    <Grid Margin="20" RowDefinitions="Auto, Auto, *">
+        <StackLayout Grid.Row="0">
+            <Label Text="1.Confirm that the CollectionView below is populated with monkeys and can be scrolled."/>
+            <Label Text="2.The test passes if the default set to the fourth item of the Monkeys collection and the selected option is highlighted, the “Selection” item shows the fourth item in the Monkeys Collection."/>
+            <Label Text="3.The test passes if you select another picture, and the selected picture is highlighted and the “Selection” item shows the picture you selected."/>
+        </StackLayout>        
+        <Label Grid.Row="1" Text="{Binding SelectedMonkeyMessage}" />        
+        <CollectionView Grid.Row="2"
+                        ItemsSource="{Binding Monkeys}"
+                        SelectionMode="Single"
+                        SelectedItem="{Binding SelectedMonkey}"
+                        SelectionChangedCommand="{Binding MonkeySelectionChangedCommand}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid Padding="10">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Image Grid.RowSpan="2" 
+                               Source="{Binding ImageUrl}" 
+                               Aspect="AspectFill"
+                               HeightRequest="60" 
+                               WidthRequest="60" />
+                        <Label Grid.Column="1" 
+                               Text="{Binding Name}" 
+                               FontAttributes="Bold" />
+                        <Label Grid.Row="1"
+                               Grid.Column="1" 
+                               Text="{Binding Location}"
+                               FontAttributes="Italic" 
+                               VerticalOptions="End" />
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>

@@ -69,7 +69,7 @@ namespace Microsoft.Maui.DeviceTests
 			return plaformDatePicker.DateFormat;
 		}
 
-		DateTime GetNativeDate(DatePickerHandler datePickerHandler)
+		DateTime? GetNativeDate(DatePickerHandler datePickerHandler)
 		{
 			var plaformDatePicker = GetNativeDatePicker(datePickerHandler);
 			var date = plaformDatePicker.Date;

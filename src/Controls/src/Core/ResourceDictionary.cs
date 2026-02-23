@@ -10,12 +10,12 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-
+using System.Runtime.ExceptionServices;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="Type[@FullName='Microsoft.Maui.Controls.ResourceDictionary']/Docs/*" />
+	/// <summary>A dictionary that maps identifier strings to arbitrary resource objects.</summary>
 	public class ResourceDictionary : IResourceDictionary, IDictionary<string, object>
 	{
 		const string GetResourcePathUriScheme = "maui://";
@@ -27,8 +27,8 @@ namespace Microsoft.Maui.Controls
 		// This action is instantiated in a module initializer in ResourceDictionaryHotReloadHelper
 		internal static Action<ResourceDictionary, Uri, string, Assembly, System.Xml.IXmlLineInfo> s_setAndLoadSource;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='Source']/Docs/*" />
-		[System.ComponentModel.TypeConverter(typeof(RDSourceTypeConverter))]
+		/// <summary>Gets or sets the URI of the merged resource dictionary.</summary>
+		[TypeConverter(typeof(RDSourceTypeConverter))]
 		public Uri Source
 		{
 			get { return _source; }
@@ -41,17 +41,35 @@ namespace Microsoft.Maui.Controls
 		}
 
 		//Used by the XamlC compiled converter
-		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='SetAndCreateSource']/Docs/*" />
+		/// <summary>For internal use by the MAUI platform.</summary>
+		/// <typeparam name="T">The type of resource dictionary to create.</typeparam>
+		/// <param name="value">The source URI.</param>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SetAndCreateSource<T>(Uri value)
 			where T : ResourceDictionary, new()
 		{
-			var instance = s_instances.GetValue(typeof(T), static _ => new T());
+			var instance = s_instances.GetValue(typeof(T), static _ =>
+			{
+				try
+				{
+					return new T();
+				}
+				catch (TargetInvocationException tie) when (tie.InnerException is not null)
+				{
+					ExceptionDispatchInfo.Capture(tie.InnerException).Throw();
+					throw;
+				}
+			});
+
 			SetSource(value, instance);
 		}
 
 		// Used by hot reload
-		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='SetAndLoadSource']/Docs/*" />
+		/// <summary>For internal use by the MAUI platform.</summary>
+		/// <param name="value">The source URI.</param>
+		/// <param name="resourcePath">The resource path.</param>
+		/// <param name="assembly">The assembly containing the resource.</param>
+		/// <param name="lineInfo">The XML line info for error reporting.</param>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
 		public void SetAndLoadSource(Uri value, string resourcePath, Assembly assembly, global::System.Xml.IXmlLineInfo lineInfo)
@@ -66,7 +84,18 @@ namespace Microsoft.Maui.Controls
 
 		internal static ResourceDictionary GetOrCreateInstance([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
 		{
-			return s_instances.GetValue(type, _ => (ResourceDictionary)Activator.CreateInstance(type));
+			return s_instances.GetValue(type, _ =>
+			{
+				try
+				{
+					return (ResourceDictionary)Activator.CreateInstance(type);
+				}
+				catch (TargetInvocationException tie) when (tie.InnerException is not null)
+				{
+					ExceptionDispatchInfo.Capture(tie.InnerException).Throw();
+					throw;
+				}
+			});
 		}
 
 		internal void SetSource(Uri source, ResourceDictionary sourceInstance)
@@ -77,7 +106,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		ObservableCollection<ResourceDictionary> _mergedDictionaries;
-		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='MergedDictionaries']/Docs/*" />
+		/// <summary>Gets the collection of dictionaries that were merged into this dictionary.</summary>
 		public ICollection<ResourceDictionary> MergedDictionaries
 		{
 			get
@@ -157,7 +186,7 @@ namespace Microsoft.Maui.Controls
 			OnValuesChanged(item);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='Clear']/Docs/*" />
+		/// <summary>Removes all items from the dictionary.</summary>
 		public void Clear()
 		{
 			_innerDictionary.Clear();
@@ -174,7 +203,7 @@ namespace Microsoft.Maui.Controls
 			((ICollection<KeyValuePair<string, object>>)_innerDictionary).CopyTo(array, arrayIndex);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='Count']/Docs/*" />
+		/// <summary>Gets the number of entries in the dictionary.</summary>
 		public int Count
 		{
 			get { return _innerDictionary.Count + (_mergedInstance?.Count ?? 0); }
@@ -190,7 +219,9 @@ namespace Microsoft.Maui.Controls
 			return ((ICollection<KeyValuePair<string, object>>)_innerDictionary).Remove(item);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='Add'][4]/Docs/*" />
+		/// <summary>Adds a key-value pair to the dictionary.</summary>
+		/// <param name="key">The identifier for the resource.</param>
+		/// <param name="value">The resource object to store.</param>
 		public void Add(string key, object value)
 		{
 			if (ContainsKey(key))
@@ -199,7 +230,9 @@ namespace Microsoft.Maui.Controls
 			OnValueChanged(key, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='ContainsKey']/Docs/*" />
+		/// <summary>Returns whether the dictionary contains a key-value pair identified by the specified key.</summary>
+		/// <param name="key">The identifier to search for.</param>
+		/// <returns><see langword="true"/> if the key exists in the immediate dictionary; otherwise, <see langword="false"/>.</returns>
 		public bool ContainsKey(string key)
 		{
 			// Note that this only checks the inner dictionary and ignores the merged dictionaries. This is apparently an intended 
@@ -238,7 +271,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='Keys']/Docs/*" />
+		/// <summary>Gets the collection of identifier strings that are keys in the dictionary.</summary>
 		public ICollection<string> Keys
 		{
 			get
@@ -251,13 +284,15 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='Remove']/Docs/*" />
+		/// <summary>Removes the key-value pair identified by the specified key.</summary>
+		/// <param name="key">The identifier of the item to remove.</param>
+		/// <returns><see langword="true"/> if the key existed and was removed; otherwise, <see langword="false"/>.</returns>
 		public bool Remove(string key)
 		{
 			return _innerDictionary.Remove(key) || (_mergedInstance?.Remove(key) ?? false);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='Values']/Docs/*" />
+		/// <summary>Gets the collection of values stored in the dictionary.</summary>
 		public ICollection<object> Values
 		{
 			get
@@ -275,7 +310,8 @@ namespace Microsoft.Maui.Controls
 			return GetEnumerator();
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='GetEnumerator']/Docs/*" />
+		/// <summary>Returns an enumerator that iterates through the dictionary's key-value pairs.</summary>
+		/// <returns>An enumerator for the dictionary.</returns>
 		public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
 		{
 			return _innerDictionary.GetEnumerator();
@@ -303,7 +339,10 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='TryGetValue']/Docs/*" />
+		/// <summary>Attempts to get the value associated with the specified key.</summary>
+		/// <param name="key">The key to search for.</param>
+		/// <param name="value">When this method returns, contains the value if found; otherwise, <see langword="null"/>.</param>
+		/// <returns><see langword="true"/> if the key was found; otherwise, <see langword="false"/>.</returns>
 		public bool TryGetValue(string key, out object value)
 			=> TryGetValueAndSource(key, out value, out _);
 
@@ -339,7 +378,8 @@ namespace Microsoft.Maui.Controls
 			remove { ValuesChanged -= value; }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='Add'][2]/Docs/*" />
+		/// <summary>Adds an implicit style to the dictionary.</summary>
+		/// <param name="style">The style to add.</param>
 		public void Add(Style style)
 		{
 			if (string.IsNullOrEmpty(style.Class))
@@ -355,13 +395,15 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='Add'][1]/Docs/*" />
+		/// <summary>Adds a resource dictionary to the merged dictionaries collection.</summary>
+		/// <param name="mergedResourceDictionary">The dictionary to merge.</param>
 		public void Add(ResourceDictionary mergedResourceDictionary)
 		{
 			MergedDictionaries.Add(mergedResourceDictionary);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='Add'][3]/Docs/*" />
+		/// <summary>Adds a style sheet to the dictionary.</summary>
+		/// <param name="styleSheet">The style sheet to add.</param>
 		public void Add(StyleSheets.StyleSheet styleSheet)
 		{
 			StyleSheets = StyleSheets ?? new List<StyleSheets.StyleSheet>(2);

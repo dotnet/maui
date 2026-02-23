@@ -99,12 +99,13 @@ namespace Microsoft.Maui.Controls.Platform
 			var firstLayoutChildren = firstLayout.Children;
 #pragma warning restore RS0030 // Do not use banned APIs
 
-			TitleBlock = new TextBlock { FontSize = 18, MaxLines = 2 };
+			TitleBlock = new TextBlock { FontSize = 18, MaxLines = 2, TextWrapping = TextWrapping.Wrap };
 			firstLayoutChildren.Add(TitleBlock);
 			UI.Xaml.Controls.Grid.SetRow(TitleBlock, 0);
 
 			OptionsList = new UI.Xaml.Controls.ListView { IsItemClickEnabled = true, Margin = new UI.Xaml.Thickness(0, 10, 0, 10), SelectionMode = UI.Xaml.Controls.ListViewSelectionMode.None };
 			OptionsList.ItemClick += ListItemSelected;
+			OptionsList.ItemTemplate = (Microsoft.UI.Xaml.DataTemplate)UI.Xaml.Application.Current.Resources["MauiActionSheetItemTemplate"];
 			firstLayoutChildren.Add(OptionsList);
 			UI.Xaml.Controls.Grid.SetRow(OptionsList, 1);
 
@@ -112,8 +113,8 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				ColumnDefinitions =
 				{
-					new UI.Xaml.Controls.ColumnDefinition { Width = new UI.Xaml.GridLength(0, UI.Xaml.GridUnitType.Star) },
-					new UI.Xaml.Controls.ColumnDefinition { Width = new UI.Xaml.GridLength(0, UI.Xaml.GridUnitType.Star) }
+					new UI.Xaml.Controls.ColumnDefinition { Width = new UI.Xaml.GridLength(1, UI.Xaml.GridUnitType.Star) },
+					new UI.Xaml.Controls.ColumnDefinition { Width = new UI.Xaml.GridLength(1, UI.Xaml.GridUnitType.Star) }
 				},
 				VerticalAlignment = VerticalAlignment.Bottom
 			};

@@ -1,6 +1,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:Maui.Controls.Sample"
+             SafeAreaEdges="Container"
              x:Class="Maui.Controls.Sample.CarouselViewControlPage"
              Title="CarouselViewControlPage">
 

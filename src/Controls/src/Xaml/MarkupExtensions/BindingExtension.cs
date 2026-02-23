@@ -5,19 +5,59 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
+	/// <summary>
+	/// Provides a XAML markup extension that creates a <see cref="Binding"/> from a XAML attribute value.
+	/// </summary>
 	[ContentProperty(nameof(Path))]
 	[RequireService([typeof(IXamlTypeResolver), typeof(IXamlDataTypeProvider)])]
 	public sealed class BindingExtension : IMarkupExtension<BindingBase>
 	{
+		/// <summary>
+		/// Gets or sets the path to the binding source property.
+		/// </summary>
 		public string Path { get; set; } = Binding.SelfPath;
+
+		/// <summary>
+		/// Gets or sets the binding mode.
+		/// </summary>
 		public BindingMode Mode { get; set; } = BindingMode.Default;
+
+		/// <summary>
+		/// Gets or sets the converter to use when converting between source and target values.
+		/// </summary>
 		public IValueConverter Converter { get; set; }
+
+		/// <summary>
+		/// Gets or sets a parameter to pass to the converter.
+		/// </summary>
 		public object ConverterParameter { get; set; }
+
+		/// <summary>
+		/// Gets or sets a format string to use when converting the bound value to a string.
+		/// </summary>
 		public string StringFormat { get; set; }
+
+		/// <summary>
+		/// Gets or sets the source object for the binding.
+		/// </summary>
 		public object Source { get; set; }
+
+		/// <summary>
+		/// Gets or sets the name of the event that triggers the source update in TwoWay bindings.
+		/// </summary>
 		public string UpdateSourceEventName { get; set; }
+
+		/// <summary>
+		/// Gets or sets the value to use when the target property value is <see langword="null"/>.
+		/// </summary>
 		public object TargetNullValue { get; set; }
+
+		/// <summary>
+		/// Gets or sets the value to use when the binding cannot return a value.
+		/// </summary>
 		public object FallbackValue { get; set; }
+
+		/// <summary>For internal use only. This API can be changed or removed without notice at any time.</summary>
 		[EditorBrowsable(EditorBrowsableState.Never)] public TypedBindingBase TypedBinding { get; set; }
 
 		BindingBase IMarkupExtension<BindingBase>.ProvideValue(IServiceProvider serviceProvider)

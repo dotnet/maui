@@ -1,6 +1,6 @@
 //This assumes that this is always running from a mac with global workloads
 const string DotnetToolPathDefault = "/usr/local/share/dotnet/dotnet";
-string DotnetVersion = Argument("targetFrameworkVersion", EnvironmentVariable("TARGET_FRAMEWORK_VERSION") ?? "net9.0");
+string DotnetVersion = Argument("targetFrameworkVersion", EnvironmentVariable("TARGET_FRAMEWORK_VERSION") ?? "net10.0");
 const string TestFramework = "net472";
 
 // Map project types to specific subdirectories under artifacts
@@ -42,7 +42,25 @@ IEnumerable<string> GetTestApplications(string project, string device, string co
     }
     else
     {
-        applications = FindAppsInDirectory(binDir);
+        // For iOS/macCatalyst multi-RID builds, prefer the universal binary in the parent directory
+        // The RID-specific directories may have stale/invalid code signatures
+        if (!string.IsNullOrEmpty(rid) && (tfm.Contains("ios") || tfm.Contains("maccatalyst")))
+        {
+            var parentBinDir = new DirectoryPath(project).Combine($"{config}/{tfm}");
+            Information($"Checking for universal binary in parent directory: {parentBinDir}");
+            applications = FindAppsInDirectory(parentBinDir);
+
+            // Fall back to RID-specific directory if no universal binary found
+            if (!applications.Any())
+            {
+                Information($"No universal binary found, checking RID-specific directory: {binDir}");
+                applications = FindAppsInDirectory(binDir);
+            }
+        }
+        else
+        {
+            applications = FindAppsInDirectory(binDir);
+        }
     }
 
     // If no applications found, check in specific artifact directories
@@ -74,7 +92,25 @@ IEnumerable<string> SearchInArtifacts(DirectoryPath originalBinDir, string proje
             }
             else
             {
-                applications = FindAppsInDirectory(binDir);
+                // For iOS/macCatalyst multi-RID builds, prefer the universal binary in the parent directory
+                // The RID-specific directories may have stale/invalid code signatures
+                if (!string.IsNullOrEmpty(rid) && (tfm.Contains("ios") || tfm.Contains("maccatalyst")))
+                {
+                    var parentBinDir = MakeAbsolute(new DirectoryPath($"{artifactsDir}{entry.Value}/{config}/{tfm}"));
+                    Information($"Checking for universal binary in parent directory: {parentBinDir}");
+                    applications = FindAppsInDirectory(parentBinDir);
+
+                    // Fall back to RID-specific directory if no universal binary found
+                    if (!applications.Any())
+                    {
+                        Information($"No universal binary found, checking RID-specific directory: {binDir}");
+                        applications = FindAppsInDirectory(binDir);
+                    }
+                }
+                else
+                {
+                    applications = FindAppsInDirectory(binDir);
+                }
             }
 
             if (applications.Any())
@@ -214,19 +250,19 @@ void HandleTestResults(string resultsDir, bool testsFailed, bool needsNameFix, s
         if (FileExists(resultsFile))
         {
             Information($"Test results found on {resultsDir}");
-            MoveFile(resultsFile, resultsFile.GetDirectory().CombineWithFilePath($"TestResults{suffix}.xml"));
+            MoveFile(resultsFile, resultsFile.GetDirectory().CombineWithFilePath($"testResults{suffix}.xml"));
             var logFiles = GetFiles($"{resultsDir}/*.log");
 
             foreach (var logFile in logFiles)
             {
-                if (logFile.GetFilename().ToString().StartsWith("TestResults"))
+                if (logFile.GetFilename().ToString().StartsWith("testResults"))
                 {
                     // These are log files that have already been renamed
                     continue;
                 }
 
                 Information($"Log file found: {logFile.GetFilename().ToString()}");
-                MoveFile(logFile, resultsFile.GetDirectory().CombineWithFilePath($"TestResults{suffix}-{logFile.GetFilename()}"));
+                MoveFile(logFile, resultsFile.GetDirectory().CombineWithFilePath($"testResults{suffix}-{logFile.GetFilename()}"));
             }
         }
     }
@@ -249,9 +285,9 @@ void HandleTestResults(string resultsDir, bool testsFailed, bool needsNameFix, s
         CopyFiles($"{resultsDir}/{searchQuery}", failurePath);
 
         // We don't want these to upload
-        MoveFile($"{failurePath}/TestResults{suffix}.xml", $"{failurePath}/Results{suffix}.xml");
+        MoveFile($"{failurePath}/testResults{suffix}.xml", $"{failurePath}/Results{suffix}.xml");
     }
-    FailRunOnOnlyInconclusiveTests($"{resultsDir}/TestResults{suffix}.xml");
+    FailRunOnOnlyInconclusiveTests($"{resultsDir}/testResults{suffix}.xml");
 }
 
 DirectoryPath DetermineBinlogDirectory(string projectPath, string binlogArg)

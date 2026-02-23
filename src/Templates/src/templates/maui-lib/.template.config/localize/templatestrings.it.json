@@ -1,8 +1,8 @@
 {
   "author": "Microsoft",
-  "name": "Libreria di .NET MAUI Class",
+  "name": "Libreria .NET MAUI Class",
   "description": "Progetto per la creazione di una libreria di classi .NET MAUI",
   "postActions/openInEditor/description": "Apre Class1.cs nell'editor.",
-  "symbols/Framework/description": "Il framework di destinazione per il progetto.",
+  "symbols/Framework/description": "Framework di destinazione per il progetto.",
   "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "DOTNET_TFM_VALUE di destinazione"
 }

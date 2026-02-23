@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Maui.Controls.Sample.Pages.CollectionViewGalleries.GroupingGalleries;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
@@ -9,6 +10,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.ReorderingGalleries
 {
 	internal class GroupedReorderingGallery : ContentPage
 	{
+		[RequiresUnreferencedCode("Calls Microsoft.Maui.Controls.Binding.Binding(String, BindingMode, IValueConverter, Object, String, Object)")]
 		public GroupedReorderingGallery(IItemsLayout itemsLayout)
 		{
 			var layout = new Grid

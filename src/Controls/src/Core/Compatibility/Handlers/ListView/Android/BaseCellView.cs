@@ -19,7 +19,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public const double DefaultMinHeight = 44;
 
 		readonly Color _androidDefaultTextColor;
+#pragma warning disable CS0618 // Type or member is obsolete
 		Cell _cell;
+#pragma warning restore CS0618 // Type or member is obsolete
 		readonly AppCompatTextView _detailText;
 		readonly ImageView _imageView;
 		readonly AppCompatTextView _mainText;
@@ -31,7 +33,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		Color _mainTextColor;
 		string _mainTextText;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		public BaseCellView(Context context, Cell cell) : base(context)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			_cell = cell;
 			SetMinimumWidth((int)context.ToPixels(25));

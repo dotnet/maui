@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.AppThemePage"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             Title="AppThemePage">
+
+       <Grid RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto"
+             ColumnDefinitions="0.5*, 0.5*"
+             RowSpacing="8.5"
+             ColumnSpacing="10"
+             HorizontalOptions="Center"
+             Margin="5,10,0,0">
+
+              <!-- Button -->
+              <Button Grid.Row="0"
+                      Grid.Column="0"
+                      AutomationId="LightThemeButton"
+                      Text="Light Theme"
+                      TextColor="{AppThemeBinding Light=Blue, Dark=Red}"
+                      BackgroundColor="{AppThemeBinding Light=Green, Dark=Yellow}"
+                      BorderColor="{AppThemeBinding Light=SlateBlue, Dark=DarkOrange}"
+                      BorderWidth="3"
+                      Clicked="OnLightThemeButtonClicked"
+                      HorizontalOptions="Center"/>
+              <Button Grid.Row="0"
+                      Grid.Column="1"
+                      AutomationId="DarkThemeButton"
+                      Text="Dark Theme"
+                      TextColor="{AppThemeBinding Light=Blue, Dark=Red}"
+                      BackgroundColor="{AppThemeBinding Light=Green, Dark=Yellow}"
+                      BorderColor="{AppThemeBinding Light=SlateBlue, Dark=DarkOrange}"
+                      BorderWidth="3"
+                      Clicked="OnDarkThemeButtonClicked"
+                      HorizontalOptions="Center"/>
+
+              <!-- Border -->
+              <HorizontalStackLayout Grid.Row="1"
+                                     Grid.Column="0">
+                     <Label Text="Border: "
+                            VerticalOptions="Center"/>
+                     <Border Stroke="Red"
+                             StrokeThickness="4"
+                             StrokeShape="RoundRectangle"
+                             BackgroundColor="{AppThemeBinding Light=Green, Dark=Yellow}"
+                             Padding="16,8"
+                             HorizontalOptions="Center"/>
+              </HorizontalStackLayout>
+
+              <!-- CheckBox -->
+              <HorizontalStackLayout Grid.Row="1"
+                                     Grid.Column="1">
+                     <Label Text="CheckBox: "
+                            VerticalOptions="Center"/>
+                     <CheckBox AutomationId="CheckBox"
+                               BackgroundColor="{AppThemeBinding Light=Green, Dark=Yellow}"
+                               Color="{AppThemeBinding Light=Blue, Dark=Red}"/>
+              </HorizontalStackLayout>
+
+              <!-- DatePicker -->
+              <HorizontalStackLayout Grid.Row="2"
+                                     Grid.Column="0">
+                     <Label Text="DatePicker: "
+                            VerticalOptions="Center"/>
+                     <DatePicker AutomationId="DatePicker"
+                                 TextColor="{AppThemeBinding Light=Blue, Dark=Red}"
+                                 BackgroundColor="{AppThemeBinding Light=Green, Dark=Yellow}"
+                                 Date="06/21/2022"/>
+              </HorizontalStackLayout>
+
+              <!-- Entry -->
+              <HorizontalStackLayout Grid.Row="2"
+                                     Grid.Column="1">
+                     <Label Text="Entry: "
+                            VerticalOptions="Center"/>
+                     <local:UITestEntry AutomationId="Entry"
+                                        TextColor="{AppThemeBinding Light=Blue, Dark=Red}"
+                                        BackgroundColor="{AppThemeBinding Light=Green, Dark=Yellow}"
+                                        PlaceholderColor="{AppThemeBinding Light=DarkGray, Dark=LightGray}"
+                                        IsCursorVisible="False"
+                                        IsSpellCheckEnabled="False"
+                                        ClearButtonVisibility="WhileEditing"
+                                        Placeholder="Entry"
+                                        Text="Entry Text"
+                                        WidthRequest="100"/>
+              </HorizontalStackLayout>
+
+              <!-- RadioButton -->
+              <HorizontalStackLayout Grid.Row="3"
+                                     Grid.Column="0"
+                                     Grid.ColumnSpan="2">
+                     <Label Text="RadioButton: "
+                            VerticalOptions="Center"/>
+                     <StackLayout>
+                            <RadioButton AutomationId="RadioButton_Cat"
+                                         Content="Cat"
+                                         BorderColor="{AppThemeBinding Light=Indigo, Dark=OrangeRed}"
+                                         BorderWidth="3"
+                                         BackgroundColor="{AppThemeBinding Light=Lavender, Dark=DimGray}"
+                                         TextColor="{AppThemeBinding Light=Blue, Dark=Red}"/>
+                            <RadioButton AutomationId="RadioButton_Monkey"
+                                         Content="Monkey"
+                                         IsChecked="true"
+                                         BorderColor="{AppThemeBinding Light=Indigo, Dark=OrangeRed}"
+                                         BorderWidth="3"
+                                         BackgroundColor="{AppThemeBinding Light=Lavender, Dark=DimGray}"
+                                         TextColor="{AppThemeBinding Light=Blue, Dark=Red}"/>
+                     </StackLayout>
+              </HorizontalStackLayout>
+
+              <!-- Editor -->
+              <HorizontalStackLayout Grid.Row="3"
+                                     Grid.Column="1">
+                     <Label Text="Editor: "
+                            VerticalOptions="Center"/>
+                     <local:UITestEditor AutomationId="Editor"
+                                         TextColor="{AppThemeBinding Light=Blue, Dark=Red}"
+                                         BackgroundColor="{AppThemeBinding Light=Green, Dark=Yellow}"
+                                         PlaceholderColor="{AppThemeBinding Light=SlateGray, Dark=LightSteelBlue}"
+                                         IsCursorVisible="False"
+                                         IsSpellCheckEnabled="False"
+                                         Placeholder="Editor Placeholder"
+                                         Text="Editor Text"
+                                         WidthRequest="100"
+                                         HeightRequest="50"
+                                         VerticalOptions="Center"/>
+              </HorizontalStackLayout>
+
+              <!-- SearchBar -->
+              <local:UITestSearchBar Grid.Row="4"
+                                     Grid.Column="0"
+                                     Grid.ColumnSpan="2"
+                                     AutomationId="SearchBar"
+                                     TextColor="{AppThemeBinding Light=Blue, Dark=Red}"
+                                     BackgroundColor="{AppThemeBinding Light=Green, Dark=Yellow}"
+                                     CancelButtonColor="{AppThemeBinding Light=Blue, Dark=Red}"
+                                     PlaceholderColor="{AppThemeBinding Light=Gray, Dark=Silver}"
+                                     IsCursorVisible="False"
+                                     IsSpellCheckEnabled="False"
+                                     Placeholder="SearchBar Placeholder"
+                                     Text="SearchBar Control"/>
+
+              <!-- Image -->
+              <HorizontalStackLayout Grid.Row="5"
+                                     Grid.Column="0">
+                     <Label Text="Image: "
+                            VerticalOptions="Center"/>
+                     <Image Source="dotnet_bot.png"
+                            BackgroundColor="{AppThemeBinding Light=AliceBlue, Dark=Black}"
+                            HeightRequest="50"/>
+              </HorizontalStackLayout>
+
+              <!-- BoxView -->
+              <HorizontalStackLayout Grid.Row="5"
+                                     Grid.Column="1">
+                     <Label Text="BoxView: "
+                            VerticalOptions="Center"/>
+                     <BoxView Color="{AppThemeBinding Light=Green, Dark=Yellow}"
+                              BackgroundColor="{AppThemeBinding Light=Beige, Dark=DarkSlateGray}"
+                              WidthRequest="50"
+                              HeightRequest="50"/>
+              </HorizontalStackLayout>
+
+              <!-- ImageButton -->
+              <HorizontalStackLayout Grid.Row="6"
+                                     Grid.Column="0"
+                                     Grid.ColumnSpan="2">
+                     <Label Text="ImageButton: "
+                            VerticalOptions="Center"/>
+                     <ImageButton Source="dotnet_bot.png"
+                                  BorderColor="{AppThemeBinding Light=SeaGreen, Dark=Orchid}"
+                                  BorderWidth="5"
+                                  BackgroundColor="{AppThemeBinding Light=Bisque, Dark=SlateGray}"
+                                  HeightRequest="50"
+                                  WidthRequest="100"/>
+              </HorizontalStackLayout>
+
+              <!-- Shapes -->
+              <HorizontalStackLayout Grid.Row="6"
+                                     Grid.Column="1">
+                     <Label Text="Rectangle: "
+                            VerticalOptions="Center"/>
+                     <Rectangle Fill="{AppThemeBinding Light=Green, Dark=Yellow}"
+                                WidthRequest="100"
+                                HeightRequest="50"
+                                HorizontalOptions="Start"/>
+              </HorizontalStackLayout>
+
+              <!-- Picker -->
+              <HorizontalStackLayout Grid.Row="7"
+                                     Grid.Column="0"
+                                     Grid.ColumnSpan="2">
+                     <Label Text="Picker: "
+                            VerticalOptions="Center"/>
+                     <Picker AutomationId="Picker"
+                             x:Name="picker"
+                             TextColor="{AppThemeBinding Light=Blue, Dark=Red}"
+                             BackgroundColor="{AppThemeBinding Light=Green, Dark=Yellow}"
+                             TitleColor="{AppThemeBinding Light=Indigo, Dark=Goldenrod}"
+                             SelectedIndex="4"
+                             WidthRequest="200"
+                             Title="Select a monkey">
+                            <Picker.ItemsSource>
+                                   <x:Array Type="{x:Type x:String}">
+                                          <x:String>Baboon</x:String>
+                                          <x:String>Capuchin Monkey</x:String>
+                                          <x:String>Blue Monkey</x:String>
+                                          <x:String>Squirrel Monkey</x:String>
+                                          <x:String>Golden Lion Tamarin</x:String>
+                                          <x:String>Howler Monkey</x:String>
+                                          <x:String>Japanese Macaque</x:String>
+                                   </x:Array>
+                            </Picker.ItemsSource>
+                     </Picker>
+              </HorizontalStackLayout>
+
+              <!-- ProgressBar -->
+              <HorizontalStackLayout Grid.Row="8"
+                                     Grid.Column="0"
+                                     Grid.ColumnSpan="2">
+                     <Label Text="ProgressBar: "
+                            VerticalOptions="Center"/>
+                     <ProgressBar BackgroundColor="{AppThemeBinding Light=Green, Dark=Yellow}"
+                                  ProgressColor="{AppThemeBinding Light=MediumOrchid, Dark=LightSeaGreen}"
+                                  Progress="0.5"
+                                  WidthRequest="300"/>
+              </HorizontalStackLayout>
+
+              <!-- Slider -->
+              <HorizontalStackLayout Grid.Row="9"
+                                     Grid.Column="0"
+                                     Grid.ColumnSpan="2">
+                     <Label x:Name="displayLabel"
+                            Text="{Binding x:DataType='Slider', Source={x:Reference slider}, Path=Value, StringFormat='Slider: {0:F0}'}"
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center"/>
+                     <Slider AutomationId="Slider"
+                             x:Name="slider"
+                             BackgroundColor="{AppThemeBinding Light=Green, Dark=Yellow}"
+                             MaximumTrackColor="{AppThemeBinding Light=HotPink, Dark=CadetBlue}"
+                             MinimumTrackColor="{AppThemeBinding Light=Gold, Dark=DarkSeaGreen}"
+                             Maximum="360"
+                             Minimum="100"
+                             Value="150"
+                             ThumbColor="{AppThemeBinding Light=Blue, Dark=Red}"
+                             WidthRequest="300"/>
+              </HorizontalStackLayout>
+
+              <!-- Label -->
+              <HorizontalStackLayout Grid.Row="10"
+                                     Grid.Column="0">
+                     <Label Text="Label: "
+                            VerticalOptions="Center"/>
+                     <Label TextColor="{AppThemeBinding Light=Blue, Dark=Red}"
+                            BackgroundColor="{AppThemeBinding Light=Green, Dark=Yellow}"
+                            Text="Label Text"
+                            VerticalOptions="Center"/>
+              </HorizontalStackLayout>
+
+              <!-- Stepper -->
+              <HorizontalStackLayout Grid.Row="10"
+                                     Grid.Column="1">
+
+                     <Label Text="{Binding x:DataType='Stepper', Source={x:Reference _stepper}, Path=Value, StringFormat='Stepper: {0:F0}'}"
+                            VerticalOptions="Center"/>
+                     <Stepper AutomationId="Stepper"
+                              x:Name="_stepper"
+                              BackgroundColor="{AppThemeBinding Light=Green, Dark=Yellow}"
+                              Minimum="100"
+                              Maximum="360"
+                              Increment="30"
+                              WidthRequest="100"/>
+              </HorizontalStackLayout>
+
+              <!-- Switch -->
+              <HorizontalStackLayout Grid.Row="11"
+                                     Grid.Column="0">
+                     <Label Text="Switch: "
+                            VerticalOptions="Center"/>
+                     <Switch AutomationId="Switch"
+                             BackgroundColor="{AppThemeBinding Light=Green, Dark=Yellow}"
+                             OnColor="{AppThemeBinding Light=Blue, Dark=Red}"
+                             ThumbColor="{AppThemeBinding Light=Black, Dark=White}"/>
+              </HorizontalStackLayout>
+
+              <!-- TitleBar -->
+              <HorizontalStackLayout Grid.Row="11"
+                                     Grid.Column="1"
+                                     Grid.ColumnSpan="2">
+                     <Label Text="TitleBar: "
+                            VerticalOptions="Center"/>
+                     <TitleBar BackgroundColor="{AppThemeBinding Light=Green, Dark=Yellow}"
+                               ForegroundColor="{AppThemeBinding Light=Blue, Dark=Red}"
+                               Title="My App"
+                               WidthRequest="100"/>
+              </HorizontalStackLayout>
+
+              <!-- TimePicker -->
+              <HorizontalStackLayout Grid.Row="12"
+                                     Grid.Column="0"
+                                     IsVisible="False">
+                     <Label Text="TimePicker: "
+                            VerticalOptions="Center"/>
+                     <TimePicker AutomationId="TimePicker"
+                                 TextColor="{AppThemeBinding Light=Blue, Dark=Red}"
+                                 BackgroundColor="{AppThemeBinding Light=Green, Dark=Yellow}"
+                                 Format="HH:mm tt"
+                                 Time="4:00"/>
+              </HorizontalStackLayout>
+       </Grid>
+</ContentPage>

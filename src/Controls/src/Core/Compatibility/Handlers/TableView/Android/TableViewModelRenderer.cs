@@ -12,13 +12,21 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
 	public class TableViewModelRenderer : CellAdapter
 	{
+#pragma warning disable CS0618 // Type or member is obsolete
 		readonly TableView _view;
+#pragma warning restore CS0618 // Type or member is obsolete
 		protected readonly Context Context;
 		ITableViewController Controller => _view;
+#pragma warning disable CS0618 // Type or member is obsolete
 		Cell _restoreFocus;
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 		Cell[] _cellCache;
+#pragma warning restore CS0618 // Type or member is obsolete
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		Cell[] CellCache
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			get
 			{
@@ -75,7 +83,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		public TableViewModelRenderer(Context context, AListView listView, TableView view) : base(context)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			_view = view;
 			Context = context;
@@ -132,7 +142,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public override AView GetView(int position, AView convertView, ViewGroup parent)
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			Cell item = GetCellForPosition(position, out var isHeader, out var nextIsHeader);
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			if (item == null)
 			{
@@ -195,7 +207,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			divider.SetBackgroundResource(DividerResourceId);
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		void UpdateCellFocus(Cell cell, AView nativeCell)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			// If this cell is the one that's supposed to have focus, then request focus for the native cell
 			if (_restoreFocus == cell)
@@ -219,11 +233,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public override bool IsEnabled(int position)
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			Cell item = GetCellForPosition(position, out var isHeader, out _);
+#pragma warning restore CS0618 // Type or member is obsolete
 			return !isHeader && item.IsEnabled;
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		protected override Cell GetCellForPosition(int position)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			bool isHeader, nextIsHeader;
 			return GetCellForPosition(position, out isHeader, out nextIsHeader);
@@ -242,7 +260,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			model.RowSelected(CellCache[position]);
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		Cell GetCellForPosition(int position, out bool isHeader, out bool nextIsHeader)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			isHeader = false;
 			nextIsHeader = false;
@@ -260,7 +280,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			ITableModel model = Controller.Model;
 			int sectionCount = model.GetSectionCount();
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			var newCellCache = new List<Cell>();
+#pragma warning restore CS0618 // Type or member is obsolete
 			var newIsHeaderCache = new List<bool>();
 			var newNextIsHeaderCache = new List<bool>();
 
@@ -272,9 +294,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				if (!string.IsNullOrEmpty(sectionTitle))
 				{
+#pragma warning disable CS0618 // Type or member is obsolete
 					Cell headerCell = model.GetHeaderCell(sectionIndex);
+#pragma warning restore CS0618 // Type or member is obsolete
 					if (headerCell == null)
+#pragma warning disable CS0618 // Type or member is obsolete
 						headerCell = new TextCell { Text = sectionTitle, TextColor = sectionTextColor };
+#pragma warning restore CS0618 // Type or member is obsolete
 					headerCell.Parent = _view;
 
 					newIsHeaderCache.Add(true);
@@ -286,7 +312,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				{
 					newIsHeaderCache.Add(false);
 					newNextIsHeaderCache.Add(i == sectionRowCount - 1 && sectionIndex < sectionCount - 1);
+#pragma warning disable CS0618 // Type or member is obsolete
 					newCellCache.Add((Cell)model.GetItem(sectionIndex, i));
+#pragma warning restore CS0618 // Type or member is obsolete
 				}
 			}
 

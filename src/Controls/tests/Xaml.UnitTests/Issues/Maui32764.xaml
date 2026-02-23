@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests"
+			x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui32764">
+	<local:TestCarouselView x:Name="carouselView">
+		<x:Arguments>
+			<local:TestProcessor ScaleFactor="0.5" />
+		</x:Arguments>
+	</local:TestCarouselView>
+</ContentPage>

@@ -220,7 +220,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					emptyView.EmptyViewVisibility = WVisibility.Visible;
 
 					if (PlatformView.ActualWidth >= 0 && PlatformView.ActualHeight >= 0)
-						_formsEmptyView?.Layout(new Rect(0, 0, PlatformView.ActualWidth, PlatformView.ActualHeight));
+						_formsEmptyView?.Arrange(new Rect(0, 0, PlatformView.ActualWidth, PlatformView.ActualHeight));
 				}
 
 				_emptyViewDisplayed = true;
@@ -659,7 +659,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				if (CollectionViewSource.View[n] is ItemTemplateContext pair)
 				{
-					if (pair.Item == args.Item)
+					if (Equals(pair.Item, args.Item))
 					{
 						return CollectionViewSource.View[n];
 					}

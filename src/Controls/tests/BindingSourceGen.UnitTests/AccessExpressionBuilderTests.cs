@@ -49,10 +49,10 @@ public class AccessExpressionBuilderTests
 	{
 		var generatedCode = Build("source",
 			[
-				new InaccessibleMemberAccess(new TypeDescription("X"), new TypeDescription("Z"), AccessorKind.Field, "Y")
+				new MemberAccess("Y", IsValueType: false, ContainingType: new TypeDescription("X"), MemberType: new TypeDescription("Z"), Kind: AccessorKind.Field, IsGetterInaccessible: true, IsSetterInaccessible: true)
 			]);
 
-		Assert.Equal("GetUnsafeField0Y(source)", generatedCode);
+		Assert.Equal("GetUnsafeField_Y(source)", generatedCode);
 	}
 
 	[Fact]
@@ -60,10 +60,10 @@ public class AccessExpressionBuilderTests
 	{
 		var generatedCode = Build("source",
 			[
-				new InaccessibleMemberAccess(new TypeDescription("X"), new TypeDescription("Z"), AccessorKind.Property, "Y")
+				new MemberAccess("Y", IsValueType: false, ContainingType: new TypeDescription("X"), MemberType: new TypeDescription("Z"), Kind: AccessorKind.Property, IsGetterInaccessible: true, IsSetterInaccessible: true)
 			]);
 
-		Assert.Equal("GetUnsafeProperty0Y(source)", generatedCode);
+		Assert.Equal("GetUnsafeProperty_Y(source)", generatedCode);
 	}
 
 	private static string Build(string initialExpression, IPathPart[] path)
@@ -72,7 +72,7 @@ public class AccessExpressionBuilderTests
 
 		foreach (var part in path)
 		{
-			expression = AccessExpressionBuilder.ExtendExpression(expression, part, bindingId: 0);
+			expression = AccessExpressionBuilder.ExtendExpression(expression, part);
 		}
 
 		return expression;

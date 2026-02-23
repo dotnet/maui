@@ -2,7 +2,8 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Name="Self"
-             x:Class="Maui.Controls.Sample.Issues.Issue29086">
+             x:Class="Maui.Controls.Sample.Issues.Issue29086"
+             SafeAreaEdges="Container">
     <CollectionView ItemsSource="{Binding Numbers}"
                     Margin="60">
         <CollectionView.ItemTemplate>
@@ -15,7 +16,7 @@
                             <SwipeItemView>
                                 <Button
                                     Text="+"
-                                    AutomationId="AddButton"
+                                    AutomationId="{Binding Value, StringFormat='AddButton{0}'}"
                                     WidthRequest="40"
                                     BackgroundColor="LightGreen"
                                     Command="{Binding Source={x:Reference Self}, Path=IncrementCommand}"
@@ -31,9 +32,32 @@
                             </SwipeItemView>
                         </SwipeItems>
                     </SwipeView.LeftItems>
+                    <SwipeView.RightItems>
+                        <SwipeItems
+                            Mode="Reveal"
+                            SwipeBehaviorOnInvoked="RemainOpen">
+                            <SwipeItemView>
+                                <Button
+                                    Text="+"
+                                    AutomationId="{Binding Value, StringFormat='AddButtonRight{0}'}"
+                                    WidthRequest="40"
+                                    BackgroundColor="LightGreen"
+                                    Command="{Binding Source={x:Reference Self}, Path=IncrementCommand}"
+                                    CommandParameter="{Binding .}"/>
+                            </SwipeItemView>
+                            <SwipeItemView>
+                                <Button
+                                    Text="-"
+                                    WidthRequest="40"
+                                    BackgroundColor="LightCoral"
+                                    Command="{Binding Source={x:Reference Self}, Path=DecrementCommand}"
+                                    CommandParameter="{Binding .}"/>
+                            </SwipeItemView>
+                        </SwipeItems>
+                    </SwipeView.RightItems>
 
                     <Grid Padding="10"
-                          AutomationId="SwipeItem"
+                          AutomationId="{Binding Value, StringFormat='SwipeItem{0}'}"
                           BackgroundColor="LightBlue">
                         <Label Text="{Binding Value}"
                                FontSize="18"

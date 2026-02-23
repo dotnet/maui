@@ -4,32 +4,33 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Controls.Internals
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/NavigationRequestedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.NavigationRequestedEventArgs']/Docs/*" />
+	/// <summary>For internal use by platform renderers.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class NavigationRequestedEventArgs : NavigationEventArgs
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/NavigationRequestedEventArgs.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
+		/// <summary>Creates navigation event args for the specified page.</summary>
 		public NavigationRequestedEventArgs(Page page, bool animated) : base(page)
 		{
 			Animated = animated;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/NavigationRequestedEventArgs.xml" path="//Member[@MemberName='.ctor'][3]/Docs/*" />
+		/// <summary>Creates navigation event args for inserting before another page.</summary>
 		public NavigationRequestedEventArgs(Page page, Page before, bool animated) : this(page, animated)
 		{
 			BeforePage = before;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/NavigationRequestedEventArgs.xml" path="//Member[@MemberName='Animated']/Docs/*" />
+		/// <summary>For internal use by platform renderers.</summary>
 		public bool Animated { get; set; }
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/NavigationRequestedEventArgs.xml" path="//Member[@MemberName='BeforePage']/Docs/*" />
+		/// <summary>For internal use by platform renderers.</summary>
 		public Page BeforePage { get; set; }
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/NavigationRequestedEventArgs.xml" path="//Member[@MemberName='Task']/Docs/*" />
+		/// <summary>For internal use by platform renderers.</summary>
 		public Task<bool> Task { get; set; }
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/NavigationRequestedEventArgs.xml" path="//Member[@MemberName='RequestType']/Docs/*" />
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		public NavigationRequestType RequestType { get; set; } = NavigationRequestType.Unknown;
 	}
 }

@@ -76,11 +76,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		void OnLoaded(object sender, RoutedEventArgs args)
 		{
-			var carouselPage = Element?.Parent as CarouselPage;
-			if (carouselPage != null && carouselPage.Children[0] != Element)
-			{
-				return;
-			}
 			_loaded = true;
 			Unloaded += OnUnloaded;
 			Element?.SendAppearing();

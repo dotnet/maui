@@ -1,3 +1,3 @@
-using Microsoft.Maui.Controls.Xaml;
+using System.Runtime.CompilerServices;
 
-[assembly: XamlCompilationAttribute(XamlCompilationOptions.Compile)]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Xaml.Benchmarks")]

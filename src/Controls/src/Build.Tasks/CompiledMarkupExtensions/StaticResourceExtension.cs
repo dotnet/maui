@@ -29,20 +29,20 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				if (n.Properties.TryGetValue(new XmlName(XamlParser.MauiUri, "Resources"), out var resourcesNode))
 				{
 					//single resource in <Resources>
-					if (resourcesNode is IElementNode irn
+					if (resourcesNode is ElementNode irn
 						&& irn.Properties.TryGetValue(XmlName.xKey, out INode xKeyNode)
-						&& context.Variables.ContainsKey(irn)
+						&& context.Variables.TryGetValue(irn, out VariableDefinition value)
 						&& xKeyNode is ValueNode xKeyValueNode
 						&& xKeyValueNode.Value as string == keyValueNode.Value as string)
 					{
-						if (context.Variables[irn].VariableType.FullName == "System.String")
+						if (value.VariableType.FullName == "System.String")
 						{
 							foreach (var instruction in TryConvert(irn.CollectionItems[0] as ValueNode, eNode, vardefref, module, context))
 								yield return instruction;
 							yield break;
 						}
 
-						vardefref.VariableDefinition = context.Variables[irn];
+						vardefref.VariableDefinition = value;
 						yield break;
 					}
 					//multiple resources in <Resources>
@@ -50,45 +50,45 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					{
 						foreach (var rn in lr.CollectionItems)
 						{
-							if (rn is IElementNode irn2
+							if (rn is ElementNode irn2
 								&& irn2.Properties.TryGetValue(XmlName.xKey, out INode xKeyNode2)
-								&& context.Variables.ContainsKey(irn2)
+								&& context.Variables.TryGetValue(irn2, out VariableDefinition value2)
 								&& xKeyNode2 is ValueNode xKeyValueNode2
 								&& xKeyValueNode2.Value as string == keyValueNode.Value as string)
 							{
-								if (context.Variables[irn2].VariableType.FullName == "System.String")
+								if (value2.VariableType.FullName == "System.String")
 								{
 									foreach (var instruction in TryConvert(irn2.CollectionItems[0] as ValueNode, eNode, vardefref, module, context))
 										yield return instruction;
 									yield break;
 								}
 
-								vardefref.VariableDefinition = context.Variables[irn2];
+								vardefref.VariableDefinition = value2;
 								yield break;
 							}
 						}
 					}
 					//explicit ResourceDictionary in Resources
-					else if (resourcesNode is IElementNode resourceDictionary
+					else if (resourcesNode is ElementNode resourceDictionary
 							&& resourceDictionary.XmlType.Name == "ResourceDictionary")
 					{
 						foreach (var rn in resourceDictionary.CollectionItems)
 						{
-							if (rn is IElementNode irn3
+							if (rn is ElementNode irn3
 								&& irn3.Properties.TryGetValue(XmlName.xKey, out INode xKeyNode3)
 								&& irn3.XmlType.Name != "OnPlatform"
-								&& context.Variables.ContainsKey(irn3)
+								&& context.Variables.TryGetValue(irn3, out VariableDefinition value3)
 								&& xKeyNode3 is ValueNode xKeyValueNode3
 								&& xKeyValueNode3.Value as string == keyValueNode.Value as string)
 							{
-								if (context.Variables[irn3].VariableType.FullName == "System.String")
+								if (value3.VariableType.FullName == "System.String")
 								{
 									foreach (var instruction in TryConvert(irn3.CollectionItems[0] as ValueNode, eNode, vardefref, module, context))
 										yield return instruction;
 									yield break;
 								}
 
-								vardefref.VariableDefinition = context.Variables[irn3];
+								vardefref.VariableDefinition = value3;
 								yield break;
 							}
 						}
@@ -97,7 +97,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 				n = n.Parent as ElementNode;
 			}
-
 
 			//Fallback
 			foreach (var instruction in FallBack(keyValueNode.Value as string, eNode, module, context).ToList())
@@ -108,12 +107,12 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			vardefref.VariableDefinition = vardef;
 		}
 
-		public static IEnumerable<Instruction> TryConvert(ValueNode stringResourceNode, IElementNode node, VariableDefinitionReference vardefref, ModuleDefinition module, ILContext context)
+		public static IEnumerable<Instruction> TryConvert(ValueNode stringResourceNode, ElementNode node, VariableDefinitionReference vardefref, ModuleDefinition module, ILContext context)
 		{
 			XmlName propertyName = XmlName.Empty;
 			SetPropertiesVisitor.TryGetPropertyName(node, node.Parent, out propertyName);
 			var localName = propertyName.LocalName;
-			var parentType = module.ImportReference((node.Parent as IElementNode).XmlType.GetTypeReference(context.Cache, module, (IXmlLineInfo)node));
+			var parentType = module.ImportReference((node.Parent as ElementNode).XmlType.GetTypeReference(context.Cache, module, (IXmlLineInfo)node));
 
 			var bpRef = SetPropertiesVisitor.GetBindablePropertyReference(parentType, propertyName.NamespaceURI, ref localName, out _, context, (IXmlLineInfo)node);
 			//BindableProperty
@@ -148,7 +147,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			}
 		}
 
-		public static IEnumerable<Instruction> FallBack(string key, IElementNode node, ModuleDefinition module, ILContext context)
+		public static IEnumerable<Instruction> FallBack(string key, ElementNode node, ModuleDefinition module, ILContext context)
 		{
 			var staticResourceExtensionType = module.ImportReference(context.Cache,
 																	("Microsoft.Maui.Controls.Xaml", "Microsoft.Maui.Controls.Xaml", "StaticResourceExtension"));
@@ -168,7 +167,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			FieldReference bpRef = null;
 			PropertyDefinition propertyRef = null;
 			TypeReference declaringTypeReference = null;
-			if (node.Parent is IElementNode parentNode && propertyName != XmlName.Empty)
+			if (node.Parent is ElementNode parentNode && propertyName != XmlName.Empty)
 			{
 				var parentType = module.ImportReference(parentNode.XmlType.GetTypeReference(context.Cache, module, (IXmlLineInfo)node));
 				bpRef = SetPropertiesVisitor.GetBindablePropertyReference(parentType,
@@ -188,7 +187,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			yield return Create(Callvirt, module.ImportMethodReference(context.Cache,
 																	   ("Microsoft.Maui.Controls.Xaml", "Microsoft.Maui.Controls.Xaml", "StaticResourceExtension"),
 																	   methodName: "ProvideValue",
-																	   parameterTypes: new[] { ("System.ComponentModel", "System", "IServiceProvider") }));
+																	   parameterTypes: [("System.ComponentModel", "System", "IServiceProvider")]));
 		}
 	}
 }

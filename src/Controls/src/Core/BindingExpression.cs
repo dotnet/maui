@@ -19,6 +19,7 @@ namespace Microsoft.Maui.Controls
 		internal const string PropertyNotFoundErrorMessage = "'{0}' property not found on '{1}', target property: '{2}.{3}'";
 		internal const string CannotConvertTypeErrorMessage = "'{0}' cannot be converted to type '{1}'";
 		internal const string ParseIndexErrorMessage = "'{0}' could not be parsed as an index for a '{1}'";
+		internal const string ApplyingRelativeSourceBindingErrorMessage = "Applying relative source binding ('{0}') failed due to {1}";
 		static readonly char[] ExpressionSplit = new[] { '.' };
 
 		readonly List<BindingExpressionPart> _parts = new List<BindingExpressionPart>();
@@ -67,7 +68,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (Binding is Binding { Source: var source, DataType: Type dataType })
 			{
-				// Do not check type mismatch if this is a binding with Source and compilation of bindings with Source is disale
+				// Do not check type mismatch if this is a binding with Source and compilation of bindings with Source is disabled
 				bool skipTypeMismatchCheck = source is not null && !RuntimeFeature.IsXamlCBindingWithSourceCompilationEnabled;
 				if (!skipTypeMismatchCheck)
 				{
@@ -317,6 +318,28 @@ namespace Microsoft.Maui.Controls
 			return null;
 		}
 
+		PropertyInfo GetProperty(TypeInfo sourceType, string propertyName)
+		{
+			// First, check the type and its base classes
+			TypeInfo type = sourceType;
+			do
+			{
+				var property = type.GetDeclaredProperty(propertyName);
+				if (property != null)
+					return property;
+			} while ((type = type.BaseType?.GetTypeInfo()) != null);
+
+			// If not found, check implemented interfaces (for interface-inherited properties like IReadOnlyList<T>.Count)
+			foreach (var iface in sourceType.ImplementedInterfaces)
+			{
+				var property = GetProperty(iface.GetTypeInfo(), propertyName);
+				if (property != null)
+					return property;
+			}
+
+			return null;
+		}
+
 
 		void SetupPart(TypeInfo sourceType, BindingExpressionPart part)
 		{
@@ -381,11 +404,7 @@ namespace Microsoft.Maui.Controls
 			}
 			else
 			{
-				TypeInfo type = sourceType;
-				do
-				{
-					property = type.GetDeclaredProperty(part.Content);
-				} while (property == null && (type = type.BaseType?.GetTypeInfo()) != null);
+				property = GetProperty(sourceType, part.Content);
 			}
 			if (property != null)
 			{

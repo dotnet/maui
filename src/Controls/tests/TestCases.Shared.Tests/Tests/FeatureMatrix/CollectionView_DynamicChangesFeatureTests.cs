@@ -3,21 +3,17 @@ using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
-public class CollectionView_DynamicChangesFeatureTests : UITest
+public class CollectionView_DynamicChangesFeatureTests : _GalleryUITest
 {
 	public const string DynamicChangesFeatureMatrix = "CollectionView Feature Matrix";
 	public const string Options = "Options";
 	public const string Apply = "Apply";
 
+	public override string GalleryPageName => DynamicChangesFeatureMatrix;
+
 	public CollectionView_DynamicChangesFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(DynamicChangesFeatureMatrix);
 	}
 
 	[Test, Order(1)]

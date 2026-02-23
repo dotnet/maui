@@ -37,8 +37,8 @@
 
 			button.Clicked += async (sender, args) =>
 			{
-				await button.RotateTo(539, 3000, Easing.CubicOut);
-				await button.RotateTo(0, 3000, Easing.CubicIn);
+				await button.RotateToAsync(539, 3000, Easing.CubicOut);
+				await button.RotateToAsync(0, 3000, Easing.CubicIn);
 
 				_clicks += 1;
 

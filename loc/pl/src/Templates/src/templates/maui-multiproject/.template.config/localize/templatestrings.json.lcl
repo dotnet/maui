@@ -28,7 +28,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";name" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";name" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[.NET MAUI Multi-Project App]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -68,7 +68,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Include the Android app head project]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Uwzględnij projekt nagłówka aplikacji systemu Android]]></Val>
+            <Val><![CDATA[Uwzględnij główny projekt aplikacji systemu Android]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -95,7 +95,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Include the iOS app head project]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Uwzględnij projekt nagłówka aplikacji systemu iOS]]></Val>
+            <Val><![CDATA[Uwzględnij główny projekt aplikacji systemu iOS]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -113,7 +113,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Include the macOS app head project (using Mac Catalyst)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Uwzględnij projekt nagłówka aplikacji dla systemu macOS (przy użyciu mac- ie)]]></Val>
+            <Val><![CDATA[Uwzględnij główny projekt aplikacji systemu macOS (przy wykorzystaniu struktury Mac Catalyst)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -122,7 +122,7 @@
         <Str Cat="Text">
           <Val><![CDATA[macOS using Mac Catalyst]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[system macOS używający komputerów Mac Host]]></Val>
+            <Val><![CDATA[System macOS korzystający ze struktury Mac Catalyst]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -131,7 +131,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Include the Windows app head project (using WinUI 3)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Uwzględnij projekt nagłówka aplikacji systemu Windows (przy użyciu interfejsu WinUI 3)]]></Val>
+            <Val><![CDATA[Uwzględnij główny projekt aplikacji systemu Windows (przy wykorzystaniu interfejsu WinUI 3)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -140,7 +140,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Windows using WinUI 3]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[System Windows używający interfejsu WinUI 3]]></Val>
+            <Val><![CDATA[System Windows korzystający z interfejsu WinUI 3]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

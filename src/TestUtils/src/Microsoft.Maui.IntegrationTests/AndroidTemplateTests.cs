@@ -4,32 +4,42 @@ using Microsoft.Maui.IntegrationTests.Android;
 
 namespace Microsoft.Maui.IntegrationTests
 {
-	[Category(Categories.RunOnAndroid)]
-	public class AndroidTemplateTests : BaseBuildTest
+	// Collection fixture for Android emulator management
+	[CollectionDefinition("Android Emulator Tests")]
+	public class AndroidEmulatorCollection : ICollectionFixture<AndroidEmulatorFixture>
 	{
-		Emulator TestAvd = new Emulator();
-		string testPackage = "";
+		// This class has no code, and is never created. Its purpose is simply
+		// to be the place to apply [CollectionDefinition] and all the
+		// ICollectionFixture<> interfaces.
+	}
 
-		[OneTimeSetUp]
-		public void AndroidTemplateFxtSetUp()
+	// Fixture to manage Android emulator lifecycle across all Android tests
+	public class AndroidEmulatorFixture : IDisposable
+	{
+		public Emulator TestAvd { get; } = new Emulator();
+		private readonly string _emulatorLogPath;
+
+		public AndroidEmulatorFixture()
 		{
+			// One-time setup: prepare and launch Android emulator
 			if (TestEnvironment.IsMacOS && RuntimeInformation.OSArchitecture == Architecture.Arm64)
 				TestAvd.Abi = "arm64-v8a";
 
-			Assert.IsTrue(TestAvd.AcceptLicenses(out var licenseOutput), $"Failed to accept SDK licenses.\n{licenseOutput}");
-			Assert.IsTrue(TestAvd.InstallAvd(out var installOutput), $"Failed to install Test AVD.\n{installOutput}");
+			if (!TestAvd.AcceptLicenses(out var licenseOutput))
+				throw new Exception($"Failed to accept SDK licenses.\n{licenseOutput}");
+			
+			if (!TestAvd.InstallAvd(out var installOutput))
+				throw new Exception($"Failed to install Test AVD.\n{installOutput}");
+
+			// Launch the emulator once for all tests in this collection
+			_emulatorLogPath = Path.Combine(TestEnvironment.GetLogDirectory(), $"emulator-launch-{DateTime.UtcNow.ToFileTimeUtc()}.log");
+			if (!TestAvd.LaunchAndWaitForAvd(600, _emulatorLogPath))
+				throw new Exception($"Failed to launch Test AVD. See log: {_emulatorLogPath}");
 		}
 
-		[SetUp]
-		public void AndroidTemplateSetUp()
+		public void Dispose()
 		{
-			var emulatorLog = Path.Combine(TestDirectory, $"emulator-launch-{DateTime.UtcNow.ToFileTimeUtc()}.log");
-			Assert.IsTrue(TestAvd.LaunchAndWaitForAvd(600, emulatorLog), "Failed to launch Test AVD.");
-		}
-
-		[OneTimeTearDown]
-		public void AndroidTemplateFxtTearDown()
-		{
+			// One-time teardown: cleanup emulator
 			Adb.KillEmulator(TestAvd.Id);
 
 			// adb.exe can lock certain files on windows, kill it after tests complete
@@ -40,31 +50,48 @@ namespace Microsoft.Maui.IntegrationTests
 					p.Kill();
 			}
 		}
+	}
 
-		[TearDown]
-		public void AndroidTemplateTearDown()
+	[Collection("Android Emulator Tests")]
+	[Trait("Category", "RunOnAndroid")]
+	public class AndroidTemplateTests : BaseBuildTest
+	{
+		private readonly AndroidEmulatorFixture _emulatorFixture;
+		private string testPackage = "";
+
+		public AndroidTemplateTests(IntegrationTestFixture fixture, ITestOutputHelper output, AndroidEmulatorFixture emulatorFixture) 
+			: base(fixture, output)
 		{
+			_emulatorFixture = emulatorFixture;
+			// Emulator is already launched by the fixture - no per-test launch needed
+		}
+
+		public override void Dispose()
+		{
+			// Per-test teardown
 			Adb.UninstallPackage(testPackage);
+			base.Dispose();
 		}
 
 
-		[Test]
-		[TestCase("maui", DotNetPrevious, "Debug", null)]
-		[TestCase("maui", DotNetPrevious, "Release", null)]
-		[TestCase("maui", DotNetCurrent, "Debug", null)]
-		[TestCase("maui", DotNetCurrent, "Release", null)]
-		[TestCase("maui", DotNetCurrent, "Release", "full")]
-		[TestCase("maui-blazor", DotNetPrevious, "Debug", null)]
-		[TestCase("maui-blazor", DotNetPrevious, "Release", null)]
-		[TestCase("maui-blazor", DotNetCurrent, "Debug", null)]
-		[TestCase("maui-blazor", DotNetCurrent, "Release", null)]
-		[TestCase("maui-blazor", DotNetCurrent, "Release", "full")]
-		public void RunOnAndroid(string id, string framework, string config, string trimMode)
+		[Theory]
+		[InlineData("maui", DotNetPrevious, "Debug", null)]
+		[InlineData("maui", DotNetPrevious, "Release", null)]
+		[InlineData("maui", DotNetCurrent, "Debug", null)]
+		[InlineData("maui", DotNetCurrent, "Release", null)]
+		[InlineData("maui", DotNetCurrent, "Release", "full")]
+		[InlineData("maui-blazor", DotNetPrevious, "Debug", null)]
+		[InlineData("maui-blazor", DotNetPrevious, "Release", null)]
+		[InlineData("maui-blazor", DotNetCurrent, "Debug", null)]
+		[InlineData("maui-blazor", DotNetCurrent, "Release", null)]
+		[InlineData("maui-blazor", DotNetCurrent, "Release", "full")]
+		public void RunOnAndroid(string id, string framework, string config, string? trimMode)
 		{
+			SetTestIdentifier(id, framework, config, trimMode);
 			var projectDir = TestDirectory;
 			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-			Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
+			Assert.True(DotnetInternal.New(id, projectDir, framework, output: _output),
 				$"Unable to create template {id}. Check test output for errors.");
 
 			var buildProps = BuildProps;
@@ -76,11 +103,15 @@ namespace Microsoft.Maui.IntegrationTests
 
 			AddInstrumentation(projectDir);
 
-			Assert.IsTrue(DotnetInternal.Build(projectFile, config, target: "Install", framework: $"{framework}-android", properties: BuildProps),
+			Assert.True(DotnetInternal.Build(projectFile, config, target: "Install", framework: $"{framework}-android", properties: BuildProps, output: _output),
 				$"Project {Path.GetFileName(projectFile)} failed to install. Check test output/attachments for errors.");
 
+			// Write xh-results to the log directory for artifact collection
+			var xhResultsDir = Path.Combine(TestEnvironment.GetLogDirectory(), "xh-results", Path.GetFileName(projectDir));
+			Directory.CreateDirectory(xhResultsDir);
+
 			testPackage = $"com.companyname.{Path.GetFileName(projectDir).ToLowerInvariant()}";
-			Assert.IsTrue(XHarness.RunAndroid(testPackage, Path.Combine(projectDir, "xh-results"), -1),
+			Assert.True(XHarness.RunAndroid(testPackage, xhResultsDir, -1, output: _output),
 				$"Project {Path.GetFileName(projectFile)} failed to run. Check test output/attachments for errors.");
 		}
 

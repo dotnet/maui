@@ -11,8 +11,12 @@ namespace Microsoft.Maui.Platform
 {
 	public class MauiCALayer : CALayer, IAutoSizableCALayer
 	{
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in MauiCALayerAutosizeToSuperLayerBehavior_DoesNotLeak test.")]
+		readonly MauiCALayerAutosizeToSuperLayerBehavior _autosizeToSuperLayerBehavior = new();
+
 		CGRect _bounds;
 		WeakReference<IShape?> _shape;
+		
 
 		UIColor? _backgroundColor;
 		Paint? _background;
@@ -29,9 +33,6 @@ namespace Microsoft.Maui.Platform
 
 		nfloat _strokeMiterLimit;
 
-		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in CALayerAutosizeObserver_DoesNotLeak test.")]
-		CALayerAutosizeObserver? _boundsObserver;
-
 		public MauiCALayer()
 		{
 			_bounds = new CGRect();
@@ -41,22 +42,19 @@ namespace Microsoft.Maui.Platform
 
 		protected override void Dispose(bool disposing)
 		{
-			_boundsObserver?.Dispose();
-			_boundsObserver = null;
+			_autosizeToSuperLayerBehavior.Detach();
 			base.Dispose(disposing);
 		}
 
 		public override void RemoveFromSuperLayer()
 		{
-			_boundsObserver?.Dispose();
-			_boundsObserver = null;
+			_autosizeToSuperLayerBehavior.Detach();
 			base.RemoveFromSuperLayer();
 		}
 
 		void IAutoSizableCALayer.AutoSizeToSuperLayer()
 		{
-			_boundsObserver?.Dispose();
-			_boundsObserver = CALayerAutosizeObserver.Attach(this);
+			_autosizeToSuperLayerBehavior.AttachOrThrow(this);
 		}
 
 		public override void AddAnimation(CAAnimation animation, string? key)
@@ -386,7 +384,8 @@ namespace Microsoft.Maui.Platform
 					for (int index = 0; index < gradientPaint.GradientStops.Length; index++)
 					{
 						Graphics.Color color = gradientPaint.GradientStops[index].Color;
-						colors[index] = new CGColor(new nfloat(color.Red), new nfloat(color.Green), new nfloat(color.Blue), new nfloat(color.Alpha));
+						var uiColor = new UIColor(new nfloat(color.Red), new nfloat(color.Green), new nfloat(color.Blue), new nfloat(color.Alpha));
+						colors[index] = uiColor.CGColor;
 						locations[index] = new nfloat(gradientPaint.GradientStops[index].Offset);
 					}
 

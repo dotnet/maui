@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>DOTNET_TFM</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<IsAspireSharedProject>true</IsAspireSharedProject>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Maui.Core" Version="$(MauiVersion)" />
+		<PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="9.0.0" />
+		<PackageReference Include="Microsoft.Extensions.ServiceDiscovery" Version="9.0.0" />
+		<PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.9.0" />
+		<PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.9.0" />
+		<PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.9.0" />
+		<PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="1.9.0" />
+	</ItemGroup>
+</Project>

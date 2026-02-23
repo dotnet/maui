@@ -1,47 +1,42 @@
 using System;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Platform;
-using NUnit.Framework;
+using Xunit;
+using Xunit.Sdk;
 
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+public partial class Maui11204 : ContentPage
 {
-	public partial class Maui11204 : ContentPage
+	public Maui11204() => InitializeComponent();
+
+	[Collection("Issue")]
+	public class Tests : IDisposable
 	{
-		public Maui11204() => InitializeComponent();
-		public Maui11204(bool useCompiledXaml)
+		public Tests() => AppInfo.SetCurrent(new MockAppInfo());
+		public void Dispose() => AppInfo.SetCurrent(null);
+
+		[Theory]
+		[XamlInflatorData]
+		internal void VSMSetterOverrideManualValues(XamlInflator inflator)
 		{
-			//this stub will be replaced at compile time
+			var page = new Maui11204(inflator);
+			Assert.Equal(Colors.FloralWhite, page.border.BackgroundColor);
+			VisualStateManager.GoToState(page.border, "State1");
+			Assert.Equal(2, page.border.StrokeThickness);
+			Assert.Equal(Colors.Blue, page.border.BackgroundColor);
 		}
 
-		[TestFixture]
-		class Tests
+		[Theory]
+		[XamlInflatorData]
+		internal void StyleVSMSetterOverrideManualValues(XamlInflator inflator)
 		{
-			[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
-			[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
-
-			[Test]
-			public void VSMSetterOverrideManualValues([Values(false, true)] bool useCompiledXaml)
-			{
-				var page = new Maui11204(useCompiledXaml);
-				Assert.AreEqual(Colors.FloralWhite, page.border.BackgroundColor);
-				VisualStateManager.GoToState(page.border, "State1");
-				Assert.AreEqual(2, page.border.StrokeThickness);
-				Assert.AreEqual(Colors.Blue, page.border.BackgroundColor);
-			}
-
-			[Test]
-			public void StyleVSMSetterOverrideManualValues([Values(false, true)] bool useCompiledXaml)
-			{
-				var page = new Maui11204(useCompiledXaml);
-				Assert.AreEqual(Colors.HotPink, page.borderWithStyleClass.BackgroundColor);
-				VisualStateManager.GoToState(page.borderWithStyleClass, "State1");
-				Assert.AreEqual(2, page.borderWithStyleClass.StrokeThickness);
-				Assert.AreEqual(Colors.Blue, page.borderWithStyleClass.BackgroundColor);
-			}
+			var page = new Maui11204(inflator);
+			Assert.Equal(Colors.HotPink, page.borderWithStyleClass.BackgroundColor);
+			VisualStateManager.GoToState(page.borderWithStyleClass, "State1");
+			Assert.Equal(2, page.borderWithStyleClass.StrokeThickness);
+			Assert.Equal(Colors.Blue, page.borderWithStyleClass.BackgroundColor);
 		}
 	}
 }

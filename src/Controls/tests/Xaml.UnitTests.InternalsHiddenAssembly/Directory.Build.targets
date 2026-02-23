@@ -1,5 +1,5 @@
 <Project>
   <Import Project="$(MauiSrcDirectory)Maui.InTree.targets" Condition=" '$(UseMaui)' != 'true' " />
-  <Import Project="$(MauiSrcDirectory)Microsoft.Maui.Controls.Debug.targets" />
+  <Import Project="..\XamlC.Tests.targets" />
   <Import Project="$(MauiRootDirectory)Directory.Build.targets" />
 </Project>

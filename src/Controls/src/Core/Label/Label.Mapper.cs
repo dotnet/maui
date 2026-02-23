@@ -6,11 +6,15 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/Label.xml" path="Type[@FullName='Microsoft.Maui.Controls.Label']/Docs/*" />
+	/// <summary>A <see cref="Microsoft.Maui.Controls.View"/> that displays text.</summary>
 	public partial class Label
 	{
-		internal static new void RemapForControls()
+		static Label() => RemapForControls();
+
+		private new static void RemapForControls()
 		{
+			VisualElement.RemapIfNeeded();
+
 			// Adjust the mappings to preserve Controls.Label legacy behaviors
 			// ILabel does not include the TextType property, so we map it here to handle HTML text
 			// And we map some of the other property handlers to Controls-specific versions that avoid stepping on HTML text settings

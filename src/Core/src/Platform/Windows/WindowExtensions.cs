@@ -209,6 +209,26 @@ namespace Microsoft.Maui.Platform
 				appWindow.Resize(temp);
 		}
 
+		internal static void UpdateIsMinimizable(this UI.Xaml.Window platformWindow, IWindow window)
+		{
+			var appWindow = platformWindow.GetAppWindow();
+
+			if (appWindow?.Presenter is UI.Windowing.OverlappedPresenter presenter)
+			{
+				presenter.IsMinimizable = window.IsMinimizable;
+			}
+		}
+
+		internal static void UpdateIsMaximizable(this UI.Xaml.Window platformWindow, IWindow window)
+		{
+			var appWindow = platformWindow.GetAppWindow();
+
+			if (appWindow?.Presenter is UI.Windowing.OverlappedPresenter presenter)
+			{
+				presenter.IsMaximizable = window.IsMaximizable;
+			}
+		}
+
 		public static IWindow? GetWindow(this UI.Xaml.Window platformWindow)
 		{
 			foreach (var window in WindowExtensions.GetWindows())

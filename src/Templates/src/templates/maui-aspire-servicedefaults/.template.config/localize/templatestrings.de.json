@@ -1,0 +1,10 @@
+{
+  "author": "Microsoft",
+  "name": ".NET MAUI für .NET Aspire-Dienststandardwerte",
+  "description": "Eine Projektvorlage zum Erstellen eines .NET Aspire-Dienststandardprojekts für .NET MAUI.",
+  "symbols/Framework/description": "Das Zielframework für das Projekt.",
+  "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Ziel DOTNET_TFM_VALUE",
+  "symbols/skipRestore/description": "Wenn angegeben, wird die automatische Wiederherstellung des Projekts beim Erstellen übersprungen.",
+  "postActions/restore/description": "Stellt die NuGet-Pakete wieder her, die für dieses Projekt erforderlich sind.",
+  "postActions/restore/manualInstructions/default/text": "„dotnet restore“ ausführen"
+}

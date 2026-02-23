@@ -23,12 +23,12 @@
         <Str Cat="Text">
           <Val><![CDATA[A window for displaying a page using XAML.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[XAML을 사용하여 페이지를 표시하는 창입니다.]]></Val>
+            <Val><![CDATA[XAML을 사용하여 페이지를 표시하기 위한 창입니다.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";name" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";name" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[.NET MAUI Window (XAML)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">

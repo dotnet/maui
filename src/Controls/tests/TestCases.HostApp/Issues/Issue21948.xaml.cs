@@ -24,10 +24,22 @@ namespace Maui.Controls.Sample.Issues
 #if IOS || MACCATALYST
 		async void OpenNewWindow()
 		{
-			var uIWindow = new UIWindow();
+			
 			var keyWindow = (this.Window.Handler.PlatformView as UIWindow);
 			if (keyWindow?.WindowLevel == UIWindowLevel.Normal)
 				keyWindow.WindowLevel = -1;
+
+			UIWindow uIWindow;
+			if (OperatingSystem.IsIOSVersionAtLeast(13) && keyWindow?.WindowScene is not null)
+			{
+				uIWindow = new UIWindow(keyWindow.WindowScene);
+			}
+			else
+			{
+#pragma warning disable CA1422 // This call site is reachable on iOS < 13.0
+				uIWindow = new UIWindow();
+#pragma warning restore CA1422
+			}
 
 			var page = new ContentPage();
 			this.AddLogicalChild(page);

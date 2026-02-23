@@ -1,32 +1,26 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class Bz37524 : ContentPage
 {
-	public partial class Bz37524 : ContentPage
+	public Bz37524()
 	{
-		public Bz37524()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
+	}
 
-		public Bz37524(bool useCompiledXaml)
+	[Collection("Issue")]
+	public class Tests
+	{
+		[Theory]
+		[XamlInflatorData]
+		internal void MultiTriggerConditionNotApplied(XamlInflator inflator)
 		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
-		{
-			[TestCase(true)]
-			[TestCase(false)]
-			public void MultiTriggerConditionNotApplied(bool useCompiledXaml)
-			{
-				var layout = new Bz37524(useCompiledXaml);
-				Assert.AreEqual(false, layout.TheButton.IsEnabled);
-			}
+			var layout = new Bz37524(inflator);
+			Assert.False(layout.TheButton.IsEnabled);
 		}
 	}
 }

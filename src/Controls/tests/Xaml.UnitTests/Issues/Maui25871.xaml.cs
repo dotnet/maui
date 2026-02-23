@@ -1,49 +1,32 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
-using System.Linq;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using Mono.Cecil.Cil;
-using NUnit.Framework;
+using Xunit;
+using Xunit.Sdk;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
 public partial class Maui25871 : ContentPage
 {
-	public Maui25871()
-	{
-		InitializeComponent();
-	}
+	public Maui25871() => InitializeComponent();
 
-	public Maui25871(bool useCompiledXaml)
+	[Collection("Issue")]
+	public class Test : IDisposable
 	{
-		//this stub will be replaced at compile time
-	}
-
-	[TestFixture]
-	class Test
-	{
-		[SetUp]
-		public void Setup()
+		public Test()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown]
-		public void TearDown()
-		{
-			AppInfo.SetCurrent(null);
-		}
+		public void Dispose() => AppInfo.SetCurrent(null);
 
-		[Test]
+		[Fact]
 		public void CompilationDoesNotFail()
 		{
 			MockCompiler.Compile(typeof(Maui25871));
-
 		}
 	}
 }

@@ -52,7 +52,7 @@ public class Issue2927 : TestContentPage // or TestFlyoutPage, etc .
 			var obj = (Issue2927Cell)e.Item;
 			obj.NumberOfTimesTapped += 1;
 		};
-
+		SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
 		Content = listView;
 	}
 }

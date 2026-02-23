@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 		{
 			if (sender is IVisualElementRenderer renderer && renderer.View is ImageView imageView)
 #pragma warning disable CS0618 // Obsolete
-				AViewCompat.SetClipBounds(imageView, imageView.GetScaleType() == AScaleType.CenterCrop ? new ARect(0, 0, e.Right - e.Left, e.Bottom - e.Top) : null);
+				AViewCompat.SetClipBounds(imageView, PlatformInterop.IsImageViewCenterCrop(imageView) ? new ARect(0, 0, e.Right - e.Left, e.Bottom - e.Top) : null);
 #pragma warning restore CS0618 // Obsolete
 
 		}

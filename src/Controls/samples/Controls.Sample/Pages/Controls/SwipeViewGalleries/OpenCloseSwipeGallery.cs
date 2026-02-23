@@ -61,7 +61,7 @@ namespace Maui.Controls.Sample.Pages.SwipeViewGalleries
 				Text = "File"
 			};
 
-			swipeItem.Invoked += (sender, e) => { DisplayAlert("SwipeView", "SwipeItem Invoked", "Ok"); };
+			swipeItem.Invoked += (sender, e) => { DisplayAlertAsync("SwipeView", "SwipeItem Invoked", "Ok"); };
 
 			var swipeItems1 = new SwipeItems { swipeItem };
 
@@ -109,7 +109,7 @@ namespace Maui.Controls.Sample.Pages.SwipeViewGalleries
 				Content = swipeItemContent
 			};
 
-			swipeItemView.Invoked += (sender, e) => { DisplayAlert("SwipeView", "SwipeItemView Invoked", "Ok"); };
+			swipeItemView.Invoked += (sender, e) => { DisplayAlertAsync("SwipeView", "SwipeItemView Invoked", "Ok"); };
 
 			var swipeItems2 = new SwipeItems { swipeItemView };
 

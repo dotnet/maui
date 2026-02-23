@@ -1,0 +1,10 @@
+{
+  "author": "Microsoft",
+  "name": ".NET MAUI para los valores predeterminados del servicio .NET Aspire",
+  "description": "Una plantilla de proyecto para crear un proyecto predeterminado del servicio .NET Aspire para .NET MAUI.",
+  "symbols/Framework/description": "Marco de destino del proyecto.",
+  "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Objetivo DOTNET_TFM_VALUE",
+  "symbols/skipRestore/description": "Si se especifica, se omite la restauración automática del proyecto durante la creación.",
+  "postActions/restore/description": "Restaure los paquetes NuGet necesarios para este proyecto.",
+  "postActions/restore/manualInstructions/default/text": "Ejecutar \"dotnet restore\""
+}

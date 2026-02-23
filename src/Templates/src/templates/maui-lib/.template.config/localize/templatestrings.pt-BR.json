@@ -3,6 +3,6 @@
   "name": ".NET MAUI Class Library",
   "description": "Um projeto para a criação de uma biblioteca de classes .NET MAUI",
   "postActions/openInEditor/description": "Abre Class1.cs no editor.",
-  "symbols/Framework/description": "A estrutura de destino do projeto.",
+  "symbols/Framework/description": "A estrutura de destino para o projeto.",
   "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Target DOTNET_TFM_VALUE"
 }

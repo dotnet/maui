@@ -1,12 +1,12 @@
 using System;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
-	[TestFixture]
+	[Collection("Issue")]
 	public class Issue1641
 	{
-		[Test]
+		[Fact]
 		public void StaticResourceInTableView()
 		{
 			var xaml = @"
@@ -29,8 +29,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 					</ContentPage>";
 			var page = new ContentPage().LoadFromXaml(xaml);
 			var table = page.Content as TableView;
-			Assert.AreEqual("Hello there!", page.Resources["caption"] as string);
-			Assert.AreEqual("Hello there!", (table.Root[0][0] as TextCell).Text);
+			Assert.Equal("Hello there!", page.Resources["caption"] as string);
+			Assert.Equal("Hello there!", (table.Root[0][0] as TextCell).Text);
 
 		}
 	}

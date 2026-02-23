@@ -19,7 +19,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.TabbedPage)]
-		[Category(UITestCategories.Compatibility)]
 		public void TabbedModalNavigation()
 		{
 			App.TapTab(Page2);

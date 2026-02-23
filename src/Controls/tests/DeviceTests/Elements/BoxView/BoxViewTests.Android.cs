@@ -123,7 +123,7 @@ namespace Microsoft.Maui.DeviceTests
 			return InvokeOnMainThreadAsync(() =>
 			{
 				var nativeView = GetNativeBoxView(boxViewViewHandler);
-				return nativeView.Visibility == Android.Views.ViewStates.Visible;
+				return nativeView.Visibility == global::Android.Views.ViewStates.Visible;
 			});
 		}
 

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests"
+             x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui31186"
+             Title="Maui31186">
+    <local:MyButton
+        x:Name="CounterBtn"
+        Text="Click me"
+        SemanticProperties.Hint="Counts the number of times you click"
+        Clicked="OnCounterClicked"
+        HorizontalOptions="Fill">
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="CommonStates">
+                <VisualState x:Name="Normal"/>
+                <VisualState x:Name="Disabled">
+                    <VisualState.Setters>
+                        <Setter Property="BackgroundColor" Value="LightBlue"/>
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+    </local:MyButton>
+</ContentPage>

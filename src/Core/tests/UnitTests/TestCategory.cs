@@ -12,5 +12,6 @@ namespace Microsoft.Maui.UnitTests
 		public const string ImageSource = "ImageSource";
 		public const string Dispatching = "Dispatching";
 		public const string View = "View";
+		public const string Extensions = "Extensions";
 	}
 }

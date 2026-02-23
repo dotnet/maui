@@ -1,24 +1,25 @@
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
-	[TestFixture]
+	[Collection("Xaml Inflation")]
 	public class FontConverterTests : BaseTestFixture
 	{
-		[TestCase("Bold", Controls.FontAttributes.Bold)]
-		[TestCase("Italic", Controls.FontAttributes.Italic)]
-		[TestCase("Bold, Italic", Controls.FontAttributes.Bold | Controls.FontAttributes.Italic)]
-		public void FontAttributes(string attributeString, FontAttributes result)
+		[Theory]
+		[InlineData("Bold", Controls.FontAttributes.Bold)]
+		[InlineData("Italic", Controls.FontAttributes.Italic)]
+		[InlineData("Bold, Italic", Controls.FontAttributes.Bold | Controls.FontAttributes.Italic)]
+		public void FontAttributesTest(string attributeString, FontAttributes result)
 		{
 			var xaml = @"
 			<Label 
 				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"" FontAttributes=""" + result + @""" />";
+				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"" FontAttributes=""" + attributeString + @""" />";
 
 			var label = new Label().LoadFromXaml(xaml);
 
-			Assert.AreEqual(result, label.FontAttributes);
+			Assert.Equal(result, label.FontAttributes);
 		}
 	}
 }

@@ -1,4 +1,3 @@
-using System;
 using Mono.Cecil;
 
 namespace Microsoft.Maui.Controls.Build.Tasks

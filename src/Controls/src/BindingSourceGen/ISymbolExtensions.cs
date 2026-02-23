@@ -9,6 +9,51 @@ internal static class ISymbolExtensions
 		|| symbol.DeclaredAccessibility == Accessibility.Internal
 		|| symbol.DeclaredAccessibility == Accessibility.ProtectedOrInternal;
 
+	/// <summary>
+	/// Determines if a property's getter is accessible.
+	/// For properties, checks the GetMethod accessibility.
+	/// For other symbols, uses the default IsAccessible check.
+	/// </summary>
+	internal static bool IsGetterAccessible(this ISymbol symbol)
+	{
+		if (symbol is IPropertySymbol propertySymbol)
+		{
+			// If there's no getter, it's not accessible for reading
+			if (propertySymbol.GetMethod == null)
+				return false;
+			
+			return propertySymbol.GetMethod.IsAccessible();
+		}
+		
+		// For fields and other symbols, use the default check
+		return symbol.IsAccessible();
+	}
+
+	/// <summary>
+	/// Determines if a property's setter is accessible for binding purposes.
+	/// For properties, checks the SetMethod accessibility.
+	/// Returns true if there's no setter (read-only properties don't need setter access).
+	/// Returns true if the setter exists and is accessible.
+	/// Returns false only if a setter exists but is inaccessible.
+	/// For other symbols, uses the default IsAccessible check.
+	/// </summary>
+	internal static bool IsSetterAccessible(this ISymbol symbol)
+	{
+		if (symbol is IPropertySymbol propertySymbol)
+		{
+			// Read-only properties (no setter) are OK - we don't need to write to them
+			// so we return true to avoid marking them as inaccessible
+			if (propertySymbol.SetMethod == null)
+				return true;
+			
+			// Check if the setter method itself is accessible
+			return propertySymbol.SetMethod.IsAccessible();
+		}
+		
+		// For fields, use the default check (fields don't have separate getter/setter)
+		return symbol.IsAccessible();
+	}
+
 	internal static AccessorKind ToAccessorKind(this ISymbol symbol)
 	{
 		return symbol switch

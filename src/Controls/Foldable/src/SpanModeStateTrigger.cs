@@ -13,6 +13,9 @@ namespace Microsoft.Maui.Controls.Foldable
 	{
 		VisualElement _visualElement;
 		DualScreenInfo _info;
+		/// <summary>
+		/// Initializes a new instance of the <see cref="SpanModeStateTrigger"/> class.
+		/// </summary>
 		public SpanModeStateTrigger()
 		{
 			UpdateState();

@@ -1,7 +1,6 @@
 #if (IndividualLocalAuth)
+#if (UseServer)
 using Microsoft.AspNetCore.Components.Authorization;
-#if (!UseServer && !UseWebAssembly)
-using Microsoft.AspNetCore.Components.Server;
 #endif
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -10,8 +9,8 @@ using Microsoft.EntityFrameworkCore;
 #endif
 using MauiApp._1.Web.Components;
 #if (IndividualLocalAuth)
-using MauiApp._1.Components.Account;
-using MauiApp._1.Data;
+using MauiApp._1.Web.Components.Account;
+using MauiApp._1.Web.Data;
 #endif
 #if (SampleContent)
 using MauiApp._1.Shared.Services;
@@ -25,11 +24,18 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents();
 #else
 builder.Services.AddRazorComponents()
-    #if (UseServer && UseWebAssembly)
+    #if (UseServer && UseWebAssembly && IndividualLocalAuth)
+    .AddInteractiveServerComponents()
+    .AddInteractiveWebAssemblyComponents()
+    .AddAuthenticationStateSerialization();
+    #elif (UseServer && UseWebAssembly)
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
     #elif (UseServer)
     .AddInteractiveServerComponents();
+    #elif (UseWebAssembly && IndividualLocalAuth)
+    .AddInteractiveWebAssemblyComponents()
+    .AddAuthenticationStateSerialization();
     #elif (UseWebAssembly)
     .AddInteractiveWebAssemblyComponents();
     #endif
@@ -42,27 +48,20 @@ builder.Services.AddSingleton<IFormFactor, FormFactor>();
 #endif
 #if (IndividualLocalAuth)
 builder.Services.AddCascadingAuthenticationState();
-builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
-#if (UseServer && UseWebAssembly)
-builder.Services.AddScoped<AuthenticationStateProvider, PersistingRevalidatingAuthenticationStateProvider>();
-#elif (UseServer)
+#if (UseServer)
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
-#elif (UseWebAssembly)
-builder.Services.AddScoped<AuthenticationStateProvider, PersistingServerAuthenticationStateProvider>();
-#else
-builder.Services.AddScoped<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
 #endif
 
-#if (!UseServer)
-builder.Services.AddAuthorization();
-#endif
 builder.Services.AddAuthentication(options =>
     {
         options.DefaultScheme = IdentityConstants.ApplicationScheme;
         options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
     })
     .AddIdentityCookies();
+#if (!UseServer)
+builder.Services.AddAuthorization();
+#endif
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -73,7 +72,11 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 #endif
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
+builder.Services.AddIdentityCore<ApplicationUser>(options =>
+    {
+        options.SignIn.RequireConfirmedAccount = true;
+        options.Stores.SchemaVersion = IdentitySchemaVersions.Version3;
+    })
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddSignInManager()
     .AddDefaultTokenProviders();
@@ -105,13 +108,14 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 #endif
 }
-
+app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 #if (HasHttpsProfile)
 app.UseHttpsRedirection();
 
 #endif
-app.UseStaticFiles();
 app.UseAntiforgery();
+
+app.MapStaticAssets();
 
 #if (UseServer && UseWebAssembly)
 app.MapRazorComponents<App>()
@@ -123,7 +127,8 @@ app.MapRazorComponents<App>()
 #elif (UseServer)
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
-    .AddAdditionalAssemblies(typeof(MauiApp._1.Shared._Imports).Assembly);
+    .AddAdditionalAssemblies(
+        typeof(MauiApp._1.Shared._Imports).Assembly);
 #elif (UseWebAssembly)
 app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode()
@@ -132,7 +137,8 @@ app.MapRazorComponents<App>()
         typeof(MauiApp._1.Web.Client._Imports).Assembly);
 #else
 app.MapRazorComponents<App>()
-    .AddAdditionalAssemblies(typeof(MauiApp._1.Shared._Imports).Assembly);
+    .AddAdditionalAssemblies(
+        typeof(MauiApp._1.Shared._Imports).Assembly);
 #endif
 
 #if (IndividualLocalAuth)

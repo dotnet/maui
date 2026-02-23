@@ -4,16 +4,16 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/RenderWithAttribute.xml" path="Type[@FullName='Microsoft.Maui.Controls.RenderWithAttribute']/Docs/*" />
+	/// <summary>Specifies the renderer type to use for a control.</summary>
 	[AttributeUsage(AttributeTargets.Class)]
 	public sealed class RenderWithAttribute : Attribute
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/RenderWithAttribute.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
+		/// <summary>Creates a new <see cref="RenderWithAttribute"/> with the specified renderer type.</summary>
 		public RenderWithAttribute([DynamicallyAccessedMembers(Internals.HandlerType.TargetMembers)] Type type) : this(type, new[] { typeof(VisualMarker.DefaultVisual) })
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RenderWithAttribute.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />
+		/// <summary>Creates a new <see cref="RenderWithAttribute"/> with the specified renderer type and supported visuals.</summary>
 		public RenderWithAttribute(
 			[DynamicallyAccessedMembers(Internals.HandlerType.TargetMembers)] Type type,
 			Type[] supportedVisuals)
@@ -22,10 +22,10 @@ namespace Microsoft.Maui.Controls
 			SupportedVisuals = supportedVisuals ?? new[] { typeof(VisualMarker.DefaultVisual) };
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RenderWithAttribute.xml" path="//Member[@MemberName='SupportedVisuals']/Docs/*" />
+		/// <summary>Gets the visual types supported by this renderer.</summary>
 		public Type[] SupportedVisuals { get; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RenderWithAttribute.xml" path="//Member[@MemberName='Type']/Docs/*" />
+		/// <summary>Gets the renderer type.</summary>
 		[DynamicallyAccessedMembers(Internals.HandlerType.TargetMembers)]
 		public Type Type { get; }
 	}

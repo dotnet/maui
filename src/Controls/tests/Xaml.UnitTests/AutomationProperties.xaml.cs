@@ -1,73 +1,54 @@
 using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+partial class AutomationProperties : ContentPage
 {
-	public partial class AutomationProperties : ContentPage
+	public AutomationProperties() => InitializeComponent();
+
+	[Collection("Xaml Inflation")]
+	public class Tests : IDisposable
 	{
-		public AutomationProperties()
+		public Tests() => Application.Current = new MockApplication();
+		public void Dispose() => Application.Current = null;
+
+		[Theory]
+		[XamlInflatorData]
+		internal void AutomationPropertiesName(XamlInflator inflator)
 		{
-			InitializeComponent();
+			var layout = new AutomationProperties(inflator);
+
+			Assert.Equal("Name", (string)layout.entry.GetValue(Microsoft.Maui.Controls.AutomationProperties.NameProperty));
 		}
 
-		public AutomationProperties(bool useCompiledXaml)
+		[Theory]
+		[XamlInflatorData]
+		internal void AutomationPropertiesHelpText(XamlInflator inflator)
 		{
-			//this stub will be replaced at compile time
+			var layout = new AutomationProperties(inflator);
+
+			Assert.Equal("Sets your name", (string)layout.entry.GetValue(Microsoft.Maui.Controls.AutomationProperties.HelpTextProperty));
 		}
 
-		[TestFixture]
-		public class Tests
+		[Theory]
+		[XamlInflatorData]
+		internal void AutomationPropertiesIsInAccessibleTree(XamlInflator inflator)
 		{
-			[SetUp]
-			public void Setup()
-			{
-				Application.Current = new MockApplication();
-			}
+			var layout = new AutomationProperties(inflator);
+			Application.Current.LoadPage(layout);
 
-			[TearDown]
-			public void TearDown()
-			{
-				Application.Current = null;
-			}
+			Assert.Equal(true, (bool?)layout.entry.GetValue(Microsoft.Maui.Controls.AutomationProperties.IsInAccessibleTreeProperty));
+		}
 
-			[TestCase(false)]
-			[TestCase(true)]
-			public void AutomationPropertiesName(bool useCompiledXaml)
-			{
-				var layout = new AutomationProperties(useCompiledXaml);
+		[Theory]
+		[XamlInflatorData]
+		internal void AutomationPropertiesLabeledBy(XamlInflator inflator)
+		{
+			var layout = new AutomationProperties(inflator);
+			Application.Current.LoadPage(layout);
 
-				Assert.AreEqual("Name", (string)layout.entry.GetValue(Microsoft.Maui.Controls.AutomationProperties.NameProperty));
-			}
-
-			[TestCase(false)]
-			[TestCase(true)]
-			public void AutomationPropertiesHelpText(bool useCompiledXaml)
-			{
-				var layout = new AutomationProperties(useCompiledXaml);
-
-				Assert.AreEqual("Sets your name", (string)layout.entry.GetValue(Microsoft.Maui.Controls.AutomationProperties.HelpTextProperty));
-			}
-
-			[TestCase(false)]
-			[TestCase(true)]
-			public void AutomationPropertiesIsInAccessibleTree(bool useCompiledXaml)
-			{
-				var layout = new AutomationProperties(useCompiledXaml);
-				Application.Current.LoadPage(layout);
-
-				Assert.AreEqual(true, (bool)layout.entry.GetValue(Microsoft.Maui.Controls.AutomationProperties.IsInAccessibleTreeProperty));
-			}
-
-			[TestCase(false)]
-			[TestCase(true)]
-			public void AutomationPropertiesLabeledBy(bool useCompiledXaml)
-			{
-				var layout = new AutomationProperties(useCompiledXaml);
-				Application.Current.LoadPage(layout);
-
-				Assert.AreEqual(layout.label, (Element)layout.entry.GetValue(Microsoft.Maui.Controls.AutomationProperties.LabeledByProperty));
-			}
+			Assert.Equal(layout.label, (Element)layout.entry.GetValue(Microsoft.Maui.Controls.AutomationProperties.LabeledByProperty));
 		}
 	}
 }

@@ -12,6 +12,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="!$(TargetFramework.StartsWith('netstandard'))">
+    <IsAotCompatible>true</IsAotCompatible>
     <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
     <EnableAotAnalyzer>true</EnableAotAnalyzer>
     <EnableSingleFileAnalyzer>true</EnableSingleFileAnalyzer>
@@ -33,6 +34,7 @@
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
     <PackageReference Include="SkiaSharp.Views.WinUI" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
   </ItemGroup>
 
   <ItemGroup>

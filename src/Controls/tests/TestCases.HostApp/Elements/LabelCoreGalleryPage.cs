@@ -18,7 +18,7 @@ internal class LabelCoreGalleryPage : CoreGalleryPage<Label>
 			var formattedString = new FormattedString();
 			formattedString.Spans.Add(new Span { BackgroundColor = Colors.Red, TextColor = Colors.Olive, Text = "Span 1 " });
 			var span = new Span { BackgroundColor = Colors.Black, TextColor = Colors.White, Text = "Span 2 (tap me) " };
-			span.GestureRecognizers.Add(new TapGestureRecognizer { Command = new Command(() => DisplayAlert("Congratulations!", "This is a tapped span", "ok")) });
+			span.GestureRecognizers.Add(new TapGestureRecognizer { Command = new Command(() => DisplayAlertAsync("Congratulations!", "This is a tapped span", "ok")) });
 			formattedString.Spans.Add(span);
 			formattedString.Spans.Add(new Span { BackgroundColor = Colors.Pink, TextColor = Colors.Purple, Text = "Span 3" });
 			var formattedTextContainer = new ViewContainer<Label>(Test.Label.FormattedText, new Label { FormattedText = formattedString });
@@ -245,7 +245,7 @@ internal class LabelCoreGalleryPage : CoreGalleryPage<Label>
 			var formattedString2 = new FormattedString();
 			formattedString2.Spans.Add(new Span { BackgroundColor = Colors.Red, TextColor = Colors.Olive, Text = "Span 1 " });
 			var span2 = new Span { BackgroundColor = Colors.Black, TextColor = Colors.White, Text = "Span 2 (tap me) " };
-			span2.GestureRecognizers.Add(new TapGestureRecognizer { Command = new Command(() => DisplayAlert("Congratulations!", "This is a tapped span", "ok")) });
+			span2.GestureRecognizers.Add(new TapGestureRecognizer { Command = new Command(() => DisplayAlertAsync("Congratulations!", "This is a tapped span", "ok")) });
 			formattedString2.Spans.Add(span2);
 			formattedString2.Spans.Add(new Span { BackgroundColor = Colors.Pink, TextColor = Colors.Purple, Text = "Span 3" });
 			var label = new Label

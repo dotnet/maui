@@ -5,6 +5,7 @@ public partial class SwipeViewUITest : ContentPage
 {
 	public SwipeViewUITest()
 	{
+		this.SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
 
 		SwipeItem favoriteSwipeItem = new SwipeItem
 		{

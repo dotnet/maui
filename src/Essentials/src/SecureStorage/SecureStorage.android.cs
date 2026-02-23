@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Storage
 				return CreateEncryptedSharedPreferences();
 			}
 			catch (System.Exception ex)
-			when (ex is InvalidProtocolBufferException or Android.Security.KeyStoreException or KeyStoreException or BadPaddingException)
+			when (ex is InvalidProtocolBufferException or global::Android.Security.KeyStoreException or KeyStoreException or BadPaddingException)
 			{
 				// If we encounter any of these exceptions, it's likely due to a corrupt key or bad migration between devices
 				// There isn't much to do at this point except try to delete the shared preferences so we can recreate them

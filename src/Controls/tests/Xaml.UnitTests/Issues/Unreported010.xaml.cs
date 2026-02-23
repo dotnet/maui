@@ -1,45 +1,36 @@
 using System;
-using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
 public partial class Unreported010
 {
-	public Unreported010()
-	{
-		InitializeComponent();
-	}
+	public Unreported010() => InitializeComponent();
 
-	public Unreported010(bool useCompiledXaml)
+	[Collection("Issue")]
+	public class Test : IDisposable
 	{
-		//this stub will be replaced at compile time
-	}
-
-	[TestFixture]
-	class Test
-	{
-		[SetUp]
-		public void Setup()
+		public Test()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		public void Dispose() => AppInfo.SetCurrent(null);
 
-		[Test]
-		public void LocalDynamicResources([Values(false, true)] bool useCompiledXaml)
+		[Theory]
+		[XamlInflatorData]
+		internal void LocalDynamicResources(XamlInflator inflator)
 		{
-			var page = new Unreported010(useCompiledXaml);
-			Assert.That(page.button0.BackgroundColor, Is.EqualTo(Colors.Blue));
+			var page = new Unreported010(inflator);
+			Assert.Equal(Colors.Blue, page.button0.BackgroundColor);
 			page.Resources["Foo"] = Colors.Red;
-			Assert.That(page.button0.BackgroundColor, Is.EqualTo(Colors.Red));
+			Assert.Equal(Colors.Red, page.button0.BackgroundColor);
 		}
 	}
 

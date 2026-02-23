@@ -14,7 +14,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
 		public VerticalDefaultCell2(CGRect frame) : base(frame)
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			Constraint = Label.WidthAnchor.ConstraintEqualTo(Frame.Width);
+#pragma warning restore CS0618 // Type or member is obsolete
 			Constraint.Priority = (float)UILayoutPriority.DefaultHigh;
 			Constraint.Active = true;
 		}

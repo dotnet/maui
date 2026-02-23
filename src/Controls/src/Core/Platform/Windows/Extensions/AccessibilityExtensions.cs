@@ -161,22 +161,13 @@ namespace Microsoft.Maui.Controls.Platform
 
 		static string ConcatenateNameAndHint(Element Element)
 		{
-			string separator;
-
 #pragma warning disable CS0618 // Type or member is obsolete
 			var name = (string)Element.GetValue(AutomationProperties.NameProperty);
 
 			var hint = (string)Element.GetValue(AutomationProperties.HelpTextProperty);
 #pragma warning restore CS0618 // Type or member is obsolete
 
-			if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(hint))
-			{
-				separator = "";
-			}
-			else
-			{
-				separator = ". ";
-			}
+			string separator = string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(hint) ? "" : ". ";
 
 			return string.Join(separator, name, hint);
 

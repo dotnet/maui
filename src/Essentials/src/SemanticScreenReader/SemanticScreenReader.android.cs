@@ -1,4 +1,6 @@
 ﻿using System;
+using Android.App;
+using Android.Content;
 using Android.Views.Accessibility;
 
 namespace Microsoft.Maui.Accessibility
@@ -7,7 +9,7 @@ namespace Microsoft.Maui.Accessibility
 	{
 		public void Announce(string text)
 		{
-			var manager = Android.App.Application.Context.GetSystemService(Android.Content.Context.AccessibilityService) as AccessibilityManager;
+			var manager = Application.Context.GetSystemService(Context.AccessibilityService) as AccessibilityManager;
 			var announcement = OperatingSystem.IsAndroidVersionAtLeast(33)
 				? new AccessibilityEvent()
 #pragma warning disable 618

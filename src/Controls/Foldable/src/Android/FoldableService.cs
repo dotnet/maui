@@ -8,7 +8,7 @@ using AndroidX.Window.Layout;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
-using AView = Android.Views.View;
+using AView = global::Android.Views.View;
 
 namespace Microsoft.Maui.Foldable
 {

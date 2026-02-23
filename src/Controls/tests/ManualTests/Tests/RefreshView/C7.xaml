@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="Microsoft.Maui.ManualTests.Tests.RefreshView.C7"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Microsoft.Maui.ManualTests.Tests.RefreshView"
+             Title="C7">
+    <Grid RowDefinitions="auto,auto,auto,auto,*">
+        <Label Grid.Row="0"
+               Text="1. Click the button to verify that it works. The button text should change if it is working." />
+        <Label Grid.Row="1"
+               Text="2. Pull down in the purple view to activate the RefreshView. You should see the progress ring spinning." />
+        <Label Grid.Row="2"
+               Text="3. While the RefreshView is refreshing, press the button and verify that it works." />
+        <Label Grid.Row="3"
+               Text="4. This test passes if the button is usable while the view is refreshing." />
+        <RefreshView x:Name="RefreshView"
+                     Grid.Row="4"
+                     Command="{Binding RefreshCommand}">
+            <ScrollView BackgroundColor="Purple">
+                <Button x:Name="Button"
+                        Clicked="Button_Clicked"
+                        HeightRequest="100"
+                        Text="Click me!"
+                        WidthRequest="200" />
+            </ScrollView>
+        </RefreshView>
+    </Grid>
+</ContentPage>

@@ -8,23 +8,34 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathGeometry.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.PathGeometry']/Docs/*" />
+	/// <summary>
+	/// Represents a complex geometry composed of <see cref="PathFigure"/> objects.
+	/// </summary>
 	[ContentProperty("Figures")]
 	public sealed class PathGeometry : Geometry
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathGeometry.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="PathGeometry"/> class.
+		/// </summary>
 		public PathGeometry()
 		{
 			Figures = new PathFigureCollection();
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathGeometry.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="PathGeometry"/> class with the specified figures.
+		/// </summary>
+		/// <param name="figures">The collection of path figures that define this geometry.</param>
 		public PathGeometry(PathFigureCollection figures)
 		{
 			Figures = figures;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathGeometry.xml" path="//Member[@MemberName='.ctor'][3]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="PathGeometry"/> class with the specified figures and fill rule.
+		/// </summary>
+		/// <param name="figures">The collection of path figures that define this geometry.</param>
+		/// <param name="fillRule">The rule that determines how the interior of this geometry is filled.</param>
 		public PathGeometry(PathFigureCollection figures, FillRule fillRule)
 		{
 			Figures = figures;
@@ -45,7 +56,10 @@ namespace Microsoft.Maui.Controls.Shapes
 			(bindable as PathGeometry)?.UpdatePathFigureCollection(oldValue as PathFigureCollection, newValue as PathFigureCollection);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathGeometry.xml" path="//Member[@MemberName='Figures']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the collection of <see cref="PathFigure"/> objects that describe the contents of this path.
+		/// This is a bindable property.
+		/// </summary>
 		[System.ComponentModel.TypeConverter(typeof(PathFigureCollectionConverter))]
 		public PathFigureCollection Figures
 		{
@@ -53,7 +67,10 @@ namespace Microsoft.Maui.Controls.Shapes
 			get { return (PathFigureCollection)GetValue(FiguresProperty); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathGeometry.xml" path="//Member[@MemberName='FillRule']/Docs/*" />
+		/// <summary>
+		/// Gets or sets a value that determines how the intersecting areas contained in this geometry are combined.
+		/// This is a bindable property.
+		/// </summary>
 		public FillRule FillRule
 		{
 			set { SetValue(FillRuleProperty, value); }

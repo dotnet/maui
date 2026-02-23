@@ -1,4 +1,5 @@
 ﻿namespace Maui.Controls.Sample.Issues;
+
 [Issue(IssueTracker.Github, 29615, "Flyout icon is displayed when flyout is disabled on iOS and MacCatalyst", PlatformAffected.iOS)]
 public class Issue29615 : Shell
 {

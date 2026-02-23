@@ -114,6 +114,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			_webviewManager.Navigate(VirtualView.StartPath);
 		}
 
+		internal static void MapFlowDirection(BlazorWebViewHandler handler, IView view)
+		{
+			// Explicitly do nothing here to override the base ViewHandler.MapFlowDirection behavior
+			// This prevents the WebView2.FlowDirection from being set, avoiding content mirroring
+		}
+
 		internal IFileProvider CreateFileProvider(string contentRootDir)
 		{
 			// On WinUI we override HandleWebResourceRequest in WinUIWebViewManager so that loading static assets is done entirely there in an async manner.

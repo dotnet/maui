@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (info == null)
 				return;
 
-			if (virtualView.TapGestureRecognizerNeedsDelegate())
+			if (virtualView.HasAccessibleTapGesture())
 				info.AddAction(AccessibilityNodeInfoCompat.AccessibilityActionCompat.ActionClick);
 		}
 
@@ -46,5 +46,9 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 			}
 		}
+
+		internal static bool ControlsAccessibilityDelegateNeeded(this View virtualView)
+			=> virtualView.HasAccessibleTapGesture();
+
 	}
 }

@@ -28,7 +28,6 @@ namespace Microsoft.Maui.Controls
 		public override bool Equals(object? obj) =>
 			obj is ImageBrush dest && ImageSource == dest.ImageSource;
 
-		public override int GetHashCode() =>
-			-1234567890 + (ImageSource?.GetHashCode() ?? 0);
+		public override int GetHashCode() => base.GetHashCode();
 	}
 }

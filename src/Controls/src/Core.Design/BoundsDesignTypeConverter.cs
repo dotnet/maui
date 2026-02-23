@@ -4,8 +4,12 @@ using System.Globalization;
 
 namespace Microsoft.Maui.Controls.Design
 {
+	/// <summary>
+	/// Provides design-time type conversion for bounds values.
+	/// </summary>
 	public class BoundsDesignTypeConverter : StringConverter
 	{
+		/// <inheritdoc/>
 		public override bool IsValid(ITypeDescriptorContext context, object value)
 		{
 			// MUST MATCH BoundsTypeConverter.ConvertFrom

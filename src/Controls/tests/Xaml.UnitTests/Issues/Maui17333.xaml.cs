@@ -1,38 +1,31 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Microsoft.Maui.Controls.Shapes;
-using Microsoft.Maui.Devices;
-using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
 public partial class Maui17333 : ResourceDictionary
 {
-
 	public Maui17333() => InitializeComponent();
 
-	public Maui17333(bool useCompiledXaml)
+	[Collection("Issue")]
+	public class Test : IDisposable
 	{
-		//this stub will be replaced at compile time
-	}
+		public Test() => AppInfo.SetCurrent(new MockAppInfo());
+		public void Dispose() => AppInfo.SetCurrent(null);
 
-	[TestFixture]
-	class Test
-	{
-		[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
-
-		[Test]
-		public void CompilerDoesntThrowOnOnPlatform([Values(true)] bool useCompiledXaml)
+		[Theory]
+		[InlineData(XamlInflator.XamlC)]
+		[InlineData(XamlInflator.SourceGen)]
+		internal void CompilerDoesntThrowOnOnPlatform(XamlInflator inflator)
 		{
-			if (useCompiledXaml)
-			{
+			if (inflator == XamlInflator.XamlC)
 				MockCompiler.Compile(typeof(Maui17333), targetFramework: "net-ios");
+			else if (inflator == XamlInflator.SourceGen)
+			{
+				var result = MockSourceGenerator.RunMauiSourceGenerator(MockSourceGenerator.CreateMauiCompilation(), typeof(Maui17333));
+				Assert.Empty(result.Diagnostics);
 			}
 		}
 	}

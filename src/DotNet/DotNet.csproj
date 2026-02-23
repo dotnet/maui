@@ -4,10 +4,9 @@
     <IsPackable>false</IsPackable>
     <InstallWorkloadPacks Condition=" '$(InstallWorkloadPacks)' == '' ">true</InstallWorkloadPacks>
     <InstallDotNet Condition=" '$(InstallDotNet)' == '' ">true</InstallDotNet>
-    <InternalAzureFeed>https://dotnetbuilds.blob.core.windows.net/internal</InternalAzureFeed>
-    <DotNetFeedUrl>https://builds.dotnet.microsoft.com/dotnet</DotNetFeedUrl>
+    <InternalAzureFeed>https://ci.dot.net/internal</InternalAzureFeed>
+    <DotNetFeedUrl>https://ci.dot.net/public</DotNetFeedUrl>
     <NugetArtifactsPath>$(MauiRootDirectory)/artifacts</NugetArtifactsPath>
-    <PublicSdk Condition=" '$(PublicSdk)' == ''">true</PublicSdk>
     <PrivateSdk>$(PRIVATE_BUILD)</PrivateSdk>
     <PrivateSdk Condition=" '$(PrivateSdk)' == ''">false</PrivateSdk>
     <_SkipUpgradeNetAnalyzersNuGetWarning>true</_SkipUpgradeNetAnalyzersNuGetWarning>
@@ -18,8 +17,7 @@
     <DotNetInstallScriptName>dotnet-install.ps1</DotNetInstallScriptName>
     <DotNetInstallScriptPath>$(DotNetTempDirectory)$(DotNetInstallScriptName)</DotNetInstallScriptPath>
     <DotNetInstallCommand>&amp; '$(DotNetInstallScriptPath)' -Version $(MicrosoftDotnetSdkInternalPackageVersion) -InstallDir '$(DotNetDirectory)' -Verbose</DotNetInstallCommand>
-    <DotNetInstallCommand Condition=" '$(PrivateSdk)' != 'true' AND '$(PublicSdk)' == 'true'">$(DotNetInstallCommand)</DotNetInstallCommand>
-    <DotNetInstallCommand Condition=" '$(PrivateSdk)' != 'true' AND '$(PublicSdk)' != 'true'">$(DotNetInstallCommand) -AzureFeed $(DotNetFeedUrl)</DotNetInstallCommand>
+    <DotNetInstallCommand Condition=" '$(PrivateSdk)' != 'true' ">$(DotNetInstallCommand) -AzureFeed $(DotNetFeedUrl)</DotNetInstallCommand>
     <DotNetInstallCommand Condition=" '$(PrivateSdk)' == 'true' ">$(DotNetInstallCommand) -AzureFeed $(InternalAzureFeed) -FeedCredential $env:DOTNET_TOKEN</DotNetInstallCommand> 
     <DotNetInstallCommand>powershell -ExecutionPolicy ByPass -NoProfile -Command &quot;$(DotNetInstallCommand)&quot;</DotNetInstallCommand>
   </PropertyGroup>
@@ -28,8 +26,7 @@
     <DotNetInstallScriptName>dotnet-install.sh</DotNetInstallScriptName>
     <DotNetInstallScriptPath>$(DotNetTempDirectory)$(DotNetInstallScriptName)</DotNetInstallScriptPath>
     <DotNetInstallCommand>bash '$(DotNetInstallScriptPath)' --version $(MicrosoftDotnetSdkInternalPackageVersion) --install-dir '$(DotNetDirectory)' --verbose</DotNetInstallCommand>
-    <DotNetInstallCommand Condition=" '$(PrivateSdk)' != 'true' AND '$(PublicSdk)' == 'true'">$(DotNetInstallCommand)</DotNetInstallCommand>
-    <DotNetInstallCommand Condition=" '$(PrivateSdk)' != 'true' AND '$(PublicSdk)' != 'true'">$(DotNetInstallCommand) --azure-feed $(DotNetFeedUrl)</DotNetInstallCommand>
+    <DotNetInstallCommand Condition=" '$(PrivateSdk)' != 'true' ">$(DotNetInstallCommand) --azure-feed $(DotNetFeedUrl)</DotNetInstallCommand>
     <DotNetInstallCommand Condition=" '$(PrivateSdk)' == 'true' ">$(DotNetInstallCommand) --azure-feed $(InternalAzureFeed) --feed-credential $DOTNET_TOKEN</DotNetInstallCommand>
   </PropertyGroup>
 
@@ -81,10 +78,13 @@
     <!-- Run 'dotnet workload install' for the current running 'dotnet' install -->
     <ItemGroup>
       <_WorkloadSource Include="$(NugetArtifactsPath)" />
+      <_LocalWorkloadIds Include="maui" />
+      
+      <_LocalWorkloadIds Include="tizen" Condition=" '$(IncludeTizenTargetFrameworks)' == 'true' " />
     </ItemGroup>
     <Copy SourceFiles="$(MauiRootDirectory)NuGet.config" DestinationFolder="$(DotNetTempDirectory)" />
     <Exec Command="dotnet nuget add source &quot;$(NugetArtifactsPath)&quot; --name artifacts --configfile &quot;$(DotNetTempDirectory)NuGet.config&quot;" />
-    <Exec Command="&quot;$(MSBuildExtensionsPath)../../dotnet&quot; workload install tizen maui --skip-sign-check --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --configfile &quot;$(DotNetTempDirectory)NuGet.config&quot;" WorkingDirectory="$(MauiRootDirectory)" />
+    <Exec Command="&quot;$(MSBuildExtensionsPath)../../dotnet&quot; workload install %(_LocalWorkloadIds.Identity) --skip-sign-check --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --configfile &quot;$(DotNetTempDirectory)NuGet.config&quot;" WorkingDirectory="$(MauiRootDirectory)" />
 
   </Target>
 
@@ -100,10 +100,28 @@
       Inputs="$(_Inputs)"
       Outputs="$(DotNetInstallScriptPath)"
       Condition=" '$(InstallDotNet)' == 'true' ">
+
+
+
+    <!--
+      On macOS, we do not use the DownloadFile task because it does not support disabling SSL certificate revocation checks,
+      which can cause failures due to unavailable CRL endpoints in some environments. Instead, we use curl with
+      DOTNET_SYSTEM_NET_SECURITY_NOREVOCATIONCHECKBYDEFAULT=true to work around these issues.
+      For more information, see:
+      https://learn.microsoft.com/dotnet/core/compatibility/networking/10.0/ssl-certificate-revocation-check-default
+    -->
+
+    <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(DotNetInstallScriptPath)'))" Condition="$([MSBuild]::IsOSPlatform('osx'))" />
+    <Exec
+      Condition="$([MSBuild]::IsOSPlatform('osx'))"
+      Command="curl -sSL &quot;$(DotNetInstallScriptUrl)&quot; -o &quot;$(DotNetInstallScriptPath)&quot;"
+    />
+
     <DownloadFile
         SourceUrl="$(DotNetInstallScriptUrl)"
         DestinationFolder="$(DotNetTempDirectory)"
         DestinationFileName="$(DotNetInstallScriptName)"
+        Condition="!$([MSBuild]::IsOSPlatform('osx'))"
     />
   </Target>
 
@@ -175,6 +193,17 @@
       Outputs="$(DotNetSdkManifestsDirectory).stamp">
     <PropertyGroup>
       <_WorkloadManifestDir>$(DotNetTempDirectory)workload/</_WorkloadManifestDir>
+      <_WorkloadRestoreEnvVars>NUGET_PACKAGES=$(_WorkloadManifestDir);DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1</_WorkloadRestoreEnvVars>
+
+    <!--
+      Disabling SSL certificate revocation checks via DOTNET_SYSTEM_NET_SECURITY_NOREVOCATIONCHECKBYDEFAULT=true
+      is a workaround for issues with certificate revocation list (CRL) endpoints being unavailable in some environments.
+      This is only applied on macOS where SSL certificate revocation issues are more common.
+      For more information, see:
+      https://learn.microsoft.com/dotnet/core/compatibility/networking/10.0/ssl-certificate-revocation-check-default
+    -->
+
+      <_WorkloadRestoreEnvVars Condition="$([MSBuild]::IsOSPlatform('osx'))">$(_WorkloadRestoreEnvVars);DOTNET_SYSTEM_NET_SECURITY_NOREVOCATIONCHECKBYDEFAULT=true</_WorkloadRestoreEnvVars>
     </PropertyGroup>
     <ItemGroup>
       <_WorkloadDirectoriesToRemove Include="$(DotNetDirectory)sdk-manifests/$(DotNetVersionBand)" />
@@ -184,7 +213,7 @@
     <MakeDir Directories="$(_WorkloadManifestDir)" />
     <Exec
         Command="&quot;$(DotNetToolPath)&quot; restore &quot;$(MSBuildThisFileDirectory)Dependencies/Workloads.csproj&quot; -bl:$(ArtifactsLogDir)/DotNetWorkloads.binlog"
-        EnvironmentVariables="NUGET_PACKAGES=$(_WorkloadManifestDir);DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1"
+        EnvironmentVariables="$(_WorkloadRestoreEnvVars)"
     />
     <!--
       NOTE: Workloads need to go in dotnet/sdk-manifests/6.0.100/microsoft.net.*/

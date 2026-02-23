@@ -6,7 +6,7 @@ First and foremost: if you are thinking about contributing a bigger change or fe
 
 ## Code of Conduct
 
-Please see our [Code of Conduct](CODE_OF_CONDUCT.md).
+Please see our [Code of Conduct](/.github/CODE_OF_CONDUCT.md).
 
 ## Prerequisite
 
@@ -16,7 +16,7 @@ You will need to complete a Contribution License Agreement before any pull reque
 
 Currently, we are in the beginning phases of building up MAUI. Yet, we are still very excited for you to join us during this exciting time :)
 
-Have a look at our [Development Guide](DEVELOPMENT.md) to learn about setting up your development environment.
+Have a look at our [Development Guide](/.github/DEVELOPMENT.md) to learn about setting up your development environment.
 
 ### What to work on
 
@@ -27,11 +27,11 @@ Follow the style used by the [.NET Foundation](https://github.com/dotnet/runtime
 - We do not use the `private` keyword, as it is the default accessibility level in C#.
 - We use hard tabs over spaces.
 
-Read and follow our [Pull Request template](PULL_REQUEST_TEMPLATE.md).
+Read and follow our [Pull Request template](/.github/PULL_REQUEST_TEMPLATE.md).
 
 ### Pull Request Requirements
 
-Please refer to our [Pull Request template](PULL_REQUEST_TEMPLATE.md).
+Please refer to our [Pull Request template](/.github/PULL_REQUEST_TEMPLATE.md).
 
 Please check the "Allow edits from maintainers" checkbox on your pull request. This allows us to quickly make minor fixes and resolve conflicts for you.
 
@@ -45,7 +45,7 @@ See [our profiling wiki](https://aka.ms/profile-maui) for instructions on how to
 
 2. **Benchmark your change**: If you're making a performance-related change, please include benchmarks in your pull request. This will help us understand the impact of your change, and will help us avoid performance regressions in the future.
 
-Provide before & after numbers using BenchmarkDotNet where possible. See our existing [BenchmarkDotNet project](../src/Core/tests/Benchmarks/) for examples.
+Provide before & after numbers using BenchmarkDotNet where possible. See our existing [BenchmarkDotNet project](/src/Core/tests/Benchmarks/) for examples.
 
 If a BenchmarkDotNet test case is not possible, share before & after profiling information from Visual Studio, `dotnet-trace`, etc. Keep in mind that sampling profilers can be inaccurate, so someone from the .NET MAUI team may need to reproduce your results before merging your change.
 

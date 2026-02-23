@@ -215,7 +215,9 @@ namespace Microsoft.Maui.DeviceTests
 			TValue expectedSetValue,
 			TValue expectedUnsetValue)
 		{
+#pragma warning disable IL2075 // 'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.
 			var propInfo = view.GetType().GetProperty(property);
+#pragma warning restore IL2075 // 'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.
 
 			// set initial values
 
@@ -241,7 +243,9 @@ namespace Microsoft.Maui.DeviceTests
 			TValue expectedUnsetValue)
 		{
 			var view = handler.VirtualView;
+#pragma warning disable IL2075 // 'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.
 			var propInfo = handler.VirtualView.GetType().GetProperty(property);
+#pragma warning restore IL2075 // 'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.
 
 			// confirm can update
 

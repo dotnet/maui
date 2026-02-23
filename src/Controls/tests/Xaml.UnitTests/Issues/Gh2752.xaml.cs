@@ -1,43 +1,36 @@
-using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public class Gh2752VM
 {
-	public class Gh2752VM
+	public Gh2752VM Foo { get; set; }
+	public Gh2752VM Bar { get; set; }
+	public string Baz { get; set; }
+}
+
+public partial class Gh2752 : ContentPage
+{
+	public static readonly BindableProperty MyProperty =
+		BindableProperty.Create(nameof(My), typeof(string), typeof(Gh2752), default(string), defaultValueCreator: b => "default created value");
+
+	public string My
 	{
-		public Gh2752VM Foo { get; set; }
-		public Gh2752VM Bar { get; set; }
-		public string Baz { get; set; }
+		get { return (string)GetValue(MyProperty); }
+		set { SetValue(MyProperty, value); }
 	}
-	public partial class Gh2752 : ContentPage
+
+	public Gh2752() => InitializeComponent();
+
+	[Collection("Issue")]
+	public class Tests
 	{
-		public static readonly BindableProperty MyProperty =
-			BindableProperty.Create("My", typeof(string), typeof(Gh2752), default(string), defaultValueCreator: b => "default created value");
-
-		public string My
+		[Theory]
+		[XamlInflatorData]
+		internal void FallbackToDefaultValueCreator(XamlInflator inflator)
 		{
-			get { return (string)GetValue(MyProperty); }
-			set { SetValue(MyProperty, value); }
-		}
-
-		public Gh2752() => InitializeComponent();
-		public Gh2752(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
-		{
-			[TestCase(true), TestCase(false)]
-			public void FallbcakToDefaultValueCreator(bool useCompiledXaml)
-			{
-				var layout = new Gh2752(useCompiledXaml) { BindingContext = null };
-				Assert.That(layout.My, Is.EqualTo("default created value"));
-			}
+			var layout = new Gh2752(inflator) { BindingContext = null };
+			Assert.Equal("default created value", layout.My);
 		}
 	}
 }

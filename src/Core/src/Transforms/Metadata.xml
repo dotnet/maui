@@ -8,6 +8,7 @@
   <!-- Public types -->
   <attr path="//class[@name='PlatformAppCompatTextView']" name="visibility">public</attr>
   <attr path="//class[@name='PlatformContentViewGroup']" name="visibility">public</attr>
+  <attr path="//class[@name='PlatformViewGroup']" name="visibility">public</attr>
   <attr path="//class[@name='PlatformWrapperView']" name="visibility">public</attr>
   <attr path="//class[@name='MauiViewGroup']" name="visibility">public</attr>
   <attr path="//interface[@name='ImageLoaderCallback']" name="visibility">public</attr>

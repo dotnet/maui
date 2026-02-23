@@ -43,7 +43,7 @@ namespace Microsoft.Maui.DeviceTests.ImageAnalysis
 #if WINDOWS
 			return await CaptureView(platformView as UIElement);
 #elif ANDROID
-			return await CaptureView(platformView as Android.Views.View);
+			return await CaptureView(platformView as global::Android.Views.View);
 #elif IOS
 			return await CaptureView(platformView as UIKit.UIView);
 #else
@@ -121,14 +121,14 @@ namespace Microsoft.Maui.DeviceTests.ImageAnalysis
 			});
 		}
 #elif ANDROID
-		private static async Task<RawBitmap> CaptureView(Android.Views.View view)
+		private static async Task<RawBitmap> CaptureView(global::Android.Views.View view)
 		{
 #pragma warning disable CS0618 // Obsolete			
 			while (!AndroidX.Core.View.ViewCompat.IsLaidOut(view))
 				await Task.Delay(10); // Wait for Android to render the view
 #pragma warning restore CS0618 // Obsolete				
-			var bitmap = Android.Graphics.Bitmap.CreateBitmap(view.Width, view.Height, Android.Graphics.Bitmap.Config.Argb8888);
-			Android.Graphics.Canvas canvas = new(bitmap);
+			var bitmap = global::Android.Graphics.Bitmap.CreateBitmap(view.Width, view.Height, global::Android.Graphics.Bitmap.Config.Argb8888);
+			global::Android.Graphics.Canvas canvas = new (bitmap);
 			view.Draw(canvas);
 			int[] pixels = new int[bitmap.Width * bitmap.Height];
 			bitmap.GetPixels(pixels, 0, bitmap.Width, 0, 0, bitmap.Width, bitmap.Height);

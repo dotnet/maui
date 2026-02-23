@@ -9,7 +9,7 @@ public partial class Issue14825 : ContentPage
 		InitializeComponent();
 	}
 
-	private async void CaptureButton_Clicked(object sender, EventArgs e)
+	private async void CaptureButton_Clicked(object? sender, EventArgs e)
 	{
 		IScreenshotResult? result = await myWebView.CaptureAsync();
 

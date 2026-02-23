@@ -95,6 +95,18 @@ namespace UITest.Appium
 				options.AddAdditionalAppiumOption(AndroidMobileCapabilityType.AppPackage, appId);
 				options.AddAdditionalAppiumOption(AndroidMobileCapabilityType.AppActivity, $"{appId}.MainActivity");
 			}
+			
+			var headless = config.GetProperty<bool>("Headless");
+			if (headless)
+			{
+				// Appium has the ability to start Android emulators in a "headless" mode.
+				// This means that the devices won't have any graphical user interface; but they will still be running silently, testing the app.
+				options.AddAdditionalAppiumOption("isHeadless", true);
+			}
+
+			// The UiAutomator2 driver continuously checks for toast messages, consuming valuable CPU cycles.
+			// Because our tests don’t require this feature, disable it to improve performance and consistency, especially in scrolling actions.
+			options.AddAdditionalAppiumOption("disableAndroidWatchers", "true");
 
 			// Maximum amount of milliseconds to wait until the application under test is installed.
 			// 90000 ms by default
