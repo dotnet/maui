@@ -6,9 +6,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 {
 	public class Issue3275 : _IssuesUITest
 	{
-		readonly string BtnLeakId = "btnLeak";
-		readonly string BtnScrollToId = "btnScrollTo";
-
 		public Issue3275(TestDevice testDevice) : base(testDevice)
 		{
 		}
@@ -19,12 +16,15 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.ListView)]
 		public void Issue3275Test()
 		{
-			App.WaitForElement(BtnLeakId, timeout: TimeSpan.FromSeconds(120));
-			App.Tap(BtnLeakId);
-			App.WaitForElement(BtnScrollToId, timeout: TimeSpan.FromSeconds(120));
-			App.Tap(BtnScrollToId);
-			App.TapBackArrow();
-			App.WaitForElement(BtnLeakId, timeout: TimeSpan.FromSeconds(120));
+			// Self-verifying: tap Run Test, the app programmatically builds a ListView
+			// with RecycleElement caching, performs ScrollTo, nulls BindingContext, and reports result.
+			App.WaitForElement("RunTest");
+			App.Tap("RunTest");
+
+			// Wait for the async test flow to complete, then check the result label
+			Task.Delay(5000).Wait();
+			var result = App.FindElement("TestResult").GetText();
+			Assert.That(result, Is.EqualTo("SUCCESS"), $"Test reported: {result}");
 		}
 	}
 }

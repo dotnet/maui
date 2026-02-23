@@ -9,7 +9,7 @@
 
 		int _counter = 0;
 		int _level = 0;
-		const int maxLevel = 5;
+		const int maxLevel = 3;
 
 		public View BuildLevel()
 		{

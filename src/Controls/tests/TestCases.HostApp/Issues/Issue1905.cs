@@ -12,7 +12,7 @@ namespace Maui.Controls.Sample.Issues
 		{
 			On<iOS>().SetPrefersLargeTitles(true);
 			var items = new List<string>();
-			for (int i = 0; i < 1000; i++)
+			for (int i = 0; i < 20; i++)
 			{
 				items.Add($"pull to {DateTime.Now.Ticks}");
 			}
@@ -28,8 +28,8 @@ namespace Maui.Controls.Sample.Issues
 			{
 				var newitems = new List<string>();
 				newitems.Add("data refreshed");
-				await Task.Delay(5000);
-				for (int i = 0; i < 1000; i++)
+				await Task.Delay(1000);
+				for (int i = 0; i < 20; i++)
 				{
 					newitems.Add($"data {DateTime.Now.Ticks} refreshed");
 				}

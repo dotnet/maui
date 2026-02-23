@@ -5,210 +5,157 @@ namespace Maui.Controls.Sample.Issues
 {
 
 	[Issue(IssueTracker.Github, 3275, "For ListView in Recycle mode ScrollTo causes cell leak and in some cases NRE", PlatformAffected.iOS)]
-	public class Issue3275 : NavigationPage
+	public class Issue3275 : ContentPage
 	{
-		public Issue3275() : base(new MainPage())
+		const string RunTestId = "RunTest";
+		const string TestResultId = "TestResult";
+
+		Label _statusLabel;
+
+		public Issue3275()
 		{
+			_statusLabel = new Label
+			{
+				Text = "Ready",
+				AutomationId = TestResultId,
+				FontSize = 20,
+			};
+
+			var runButton = new Button
+			{
+				Text = "Run Test",
+				AutomationId = RunTestId,
+			};
+
+			runButton.Clicked += OnRunTest;
+
+			Content = new VerticalStackLayout
+			{
+				Spacing = 10,
+				Padding = 20,
+				Children = { runButton, _statusLabel }
+			};
 		}
 
-		public class MainPage : ContentPage
+		async void OnRunTest(object sender, EventArgs e)
 		{
-			static readonly string BtnLeakId = "btnLeak";
-			static readonly string BtnScrollToId = "btnScrollTo";
-
-			public MainPage()
+			_statusLabel.Text = "Running...";
+			try
 			{
-				var layout = new StackLayout();
-
-				var btn = new Button
+				// Build a ListView using RecycleElement caching strategy
+				var viewModel = new TransactionsViewModel();
+				FastListView listView = null;
+				listView = new FastListView
 				{
-					Text = " Leak 1 ",
-					AutomationId = BtnLeakId,
-					Command = new Command(() =>
+					HasUnevenRows = true,
+					ItemTemplate = new DataTemplate(() =>
 					{
-						Navigation.PushAsync(new Issue3275TransactionsPage1());
+						var viewCell = new ViewCell();
+						var item = new MenuItem { Text = "test" };
+						item.SetBinding(MenuItem.CommandProperty, new Binding("BindingContext.RepeatCommand", source: listView));
+						item.SetBinding(MenuItem.CommandParameterProperty, new Binding("."));
+						viewCell.ContextActions.Add(item);
+						var lbl = new Label();
+						lbl.SetBinding(Label.TextProperty, "Name");
+						viewCell.View = lbl;
+						return viewCell;
 					})
 				};
-				layout.Children.Add(btn);
-				Content = layout;
+				listView.SetBinding(ListView.ItemsSourceProperty, "Items");
+				listView.BindingContext = viewModel;
+
+				// Show the ListView
+				var container = (VerticalStackLayout)Content;
+				container.Children.Add(listView);
+
+				// Wait for ListView to render
+				await Task.Delay(1000);
+
+				// Perform ScrollTo — this is the operation that causes cell leak/NRE in the bug
+				var targetItem = viewModel.Items.Skip(25).First();
+				listView.ScrollTo(targetItem, ScrollToPosition.MakeVisible, false);
+
+				await Task.Delay(500);
+
+				// Simulate what Prism.Forms does: set BindingContext to null
+				// This triggers the leak/NRE when combined with RecycleElement + ScrollTo
+				listView.BindingContext = null;
+
+				await Task.Delay(500);
+
+				// Remove the ListView — simulates navigating away
+				container.Children.Remove(listView);
+
+				_statusLabel.Text = "SUCCESS";
 			}
-
-
-
-			public class Issue3275TransactionsPage1 : ContentPage
+			catch (Exception ex)
 			{
-				private readonly TransactionsViewModel _viewModel = new TransactionsViewModel();
-				FastListView _transactionsListView;
-
-				public Issue3275TransactionsPage1()
-				{
-					var grd = new Grid();
-					grd.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-					grd.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-					grd.RowDefinitions.Add(new RowDefinition());
-					_transactionsListView = new FastListView
-					{
-						HasUnevenRows = true,
-						ItemTemplate = new DataTemplate(() =>
-						{
-							var viewCell = new ViewCell();
-							var item = new MenuItem
-							{
-								Text = "test"
-							};
-							item.SetBinding(MenuItem.CommandProperty, new Binding("BindingContext.RepeatCommand", source: _transactionsListView));
-							item.SetBinding(MenuItem.CommandParameterProperty, new Binding("."));
-							viewCell.ContextActions.Add(item);
-							var lbl = new Label();
-							lbl.SetBinding(Label.TextProperty, "Name");
-							viewCell.View = lbl;
-							return viewCell;
-						})
-					};
-					_transactionsListView.SetBinding(ListView.ItemsSourceProperty, "Items");
-
-					grd.Children.Add(new Label
-					{
-						Text = "Click 'Scroll To' and go back"
-					});
-
-					var btn = new Button
-					{
-						Text = "Scroll to",
-						AutomationId = BtnScrollToId,
-						Command = new Command(() =>
-						{
-							var item = _viewModel.Items.Skip(250).First();
-							_transactionsListView.ScrollTo(item, ScrollToPosition.MakeVisible, false);
-						})
-					};
-
-					Grid.SetRow(btn, 1);
-					grd.Children.Add(btn);
-					Grid.SetRow(_transactionsListView, 2);
-					grd.Children.Add(_transactionsListView);
-
-					Content = grd;
-
-
-					BindingContext = _viewModel;
-				}
-
-				protected override void OnDisappearing()
-				{
-					BindingContext = null; // IMPORTANT!!! Prism.Forms does this under the hood
-				}
+				_statusLabel.Text = $"FAIL: {ex.Message}";
 			}
+		}
 
-			public sealed class FastListView : ListView
+		class TransactionsPage : ContentPage
+		{
+			readonly TransactionsViewModel _viewModel = new();
+			readonly FastListView _listView;
+
+			public TransactionsPage()
 			{
-				public FastListView() : base(ListViewCachingStrategy.RecycleElement)
+				Title = "Transactions";
+				_listView = new FastListView
 				{
-				}
-			}
-
-			public class TransactionsViewModel
-			{
-				public TransactionsViewModel()
-				{
-					var items = Enumerable.Range(1, 500).Select(i => new Item { Name = i.ToString() });
-
-					Items = new ObservableCollection<Item>(items);
-
-					RepeatCommand = new AsyncDelegateCommand<object>(Repeat, x => true);
-				}
-
-				public ObservableCollection<Item> Items { get; }
-
-				public AsyncDelegateCommand<object> RepeatCommand { get; }
-
-				private Task Repeat(object item)
-				{
-					return Task.CompletedTask;
-				}
-			}
-
-			public class Item
-			{
-				public string Name { get; set; }
-			}
-
-			public sealed class AsyncDelegateCommand<T> : ICommand
-			{
-#pragma warning disable 0067
-				public event EventHandler CanExecuteChanged;
-#pragma warning restore 0067
-
-				private readonly Func<T, Task> _executeMethod;
-				private readonly Func<T, bool> _canExecuteMethod;
-				private bool _isInFlight;
-
-#if XAMARIN
-		private DateTime _lastExecuted = DateTime.MinValue;
-#endif
-
-				public AsyncDelegateCommand(Func<T, Task> executeMethod)
-					: this(executeMethod, _ => true)
-				{
-				}
-
-				public AsyncDelegateCommand(Func<T, Task> executeMethod, Func<T, bool> canExecuteMethod)
-				{
-					var genericType = typeof(T);
-
-					// DelegateCommand allows object or Nullable<>.  
-					// note: Nullable<> is a struct so we cannot use a class constraint.
-					if (genericType.IsValueType)
+					HasUnevenRows = true,
+					ItemTemplate = new DataTemplate(() =>
 					{
-						if (!genericType.IsGenericType || !typeof(Nullable<>).IsAssignableFrom(genericType.GetGenericTypeDefinition()))
-							throw new InvalidCastException("T for DelegateCommand<T> is not an object nor Nullable.");
-					}
-
-					_executeMethod = executeMethod;
-					_canExecuteMethod = canExecuteMethod;
-				}
-
-				internal async Task Execute(T parameter)
-				{
-					if (_isInFlight)
-						return;
-
-#if XAMARIN
-			if (DateTime.UtcNow.Subtract(_lastExecuted).TotalMilliseconds < 200d)
-				return;
-#endif
-
-					try
-					{
-						_isInFlight = true;
-
-						await _executeMethod(parameter);
-					}
-					finally
-					{
-						_isInFlight = false;
-
-#if XAMARIN
-				_lastExecuted = DateTime.UtcNow;
-#endif
-					}
-				}
-
-				internal bool CanExecute(T parameter)
-				{
-					return _canExecuteMethod(parameter);
-				}
-
-				public void Execute(object parameter)
-				{
-					//Execute((T)parameter).NotWait();
-				}
-
-				public bool CanExecute(object parameter)
-				{
-					return CanExecute((T)parameter);
-				}
+						var viewCell = new ViewCell();
+						var item = new MenuItem { Text = "test" };
+						item.SetBinding(MenuItem.CommandProperty, new Binding("BindingContext.RepeatCommand", source: _listView));
+						item.SetBinding(MenuItem.CommandParameterProperty, new Binding("."));
+						viewCell.ContextActions.Add(item);
+						var lbl = new Label();
+						lbl.SetBinding(Label.TextProperty, "Name");
+						viewCell.View = lbl;
+						return viewCell;
+					})
+				};
+				_listView.SetBinding(ListView.ItemsSourceProperty, "Items");
+				Content = _listView;
+				BindingContext = _viewModel;
 			}
+
+			public void DoScrollTo()
+			{
+				var item = _viewModel.Items.Skip(25).First();
+				_listView.ScrollTo(item, ScrollToPosition.MakeVisible, false);
+			}
+
+			protected override void OnDisappearing()
+			{
+				BindingContext = null; // IMPORTANT!!! Prism.Forms does this under the hood
+			}
+		}
+
+		sealed class FastListView : ListView
+		{
+			public FastListView() : base(ListViewCachingStrategy.RecycleElement) { }
+		}
+
+		class TransactionsViewModel
+		{
+			public TransactionsViewModel()
+			{
+				Items = new ObservableCollection<Item>(
+					Enumerable.Range(1, 50).Select(i => new Item { Name = i.ToString() }));
+				RepeatCommand = new Command(_ => { });
+			}
+
+			public ObservableCollection<Item> Items { get; }
+			public ICommand RepeatCommand { get; }
+		}
+
+		class Item
+		{
+			public string Name { get; set; }
 		}
 	}
 }

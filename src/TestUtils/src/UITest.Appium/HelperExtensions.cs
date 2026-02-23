@@ -2724,9 +2724,7 @@ namespace UITest.Appium
 
 			DateTime start = DateTime.Now;
 
-			// Cap the inner command timeout to the remaining time so WaitForElement(timeout: 15s)
-			// doesn't block for the full AppiumCommandTimeout (45s) on each attempt.
-			IUIElement? result = RunWithTimeout(query, CapTimeout(timeout.Value, start));
+			IUIElement? result = query();
 
 			while (!satisfactory(result))
 			{
@@ -2739,7 +2737,7 @@ namespace UITest.Appium
 				}
 
 				Task.Delay(retryFrequency.Value.Milliseconds).Wait();
-				result = RunWithTimeout(query, CapTimeout(timeout.Value, start));
+				result = query();
 			}
 
 			return result!;
