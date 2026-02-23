@@ -264,10 +264,12 @@ namespace Microsoft.Maui.Controls.Platform
 
 				if (!e.Event.IsCanceled)
 				{
+					// Prefer Tap over LongPress for accessibility key activation.
+					// A confirm key press is a discrete action that maps to Tap semantics.
+					// LongPress only fires if no Tap recognizer exists.
 					if (View.HasAccessibleTapGesture(out var tapGestureRecognizer))
 						tapGestureRecognizer.SendTapped(View, (v) => Point.Zero);
-
-					if (View.HasAccessibleLongPressGesture(out var longPressGestureRecognizer))
+					else if (View.HasAccessibleLongPressGesture(out var longPressGestureRecognizer))
 						longPressGestureRecognizer.SendLongPressed(View, (v) => Point.Zero);
 				}
 			}

@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
@@ -10,9 +12,9 @@ namespace Microsoft.Maui.Controls.Platform
 	class LongPressGestureHandler : IDisposable
 	{
 		readonly IPlatformViewHandler _handler;
-		DispatcherTimer? _timer;
+		readonly Dictionary<LongPressGestureRecognizer, DispatcherTimer> _timers = new();
 		WinPoint _startPosition;
-		bool _isLongPressing;
+		readonly HashSet<LongPressGestureRecognizer> _firedRecognizers = new();
 
 		public LongPressGestureHandler(IPlatformViewHandler handler)
 		{
@@ -41,7 +43,7 @@ namespace Microsoft.Maui.Controls.Platform
 				container.PointerCanceled -= OnPointerCanceled;
 				container.PointerMoved -= OnPointerMoved;
 			}
-			CancelTimer();
+			CancelTimers();
 		}
 
 		FrameworkElement? GetContainer() => 
@@ -59,9 +61,12 @@ namespace Microsoft.Maui.Controls.Platform
 			if (container == null)
 				return;
 
+			// Cancel any existing timers from a previous press before starting new ones
+			CancelTimers();
+
 			var pointerPoint = e.GetCurrentPoint(container);
 			_startPosition = pointerPoint.Position;
-			_isLongPressing = false;
+			_firedRecognizers.Clear();
 
 			StartTimers(view, new MauiPoint(_startPosition.X, _startPosition.Y));
 
@@ -87,14 +92,13 @@ namespace Microsoft.Maui.Controls.Platform
 			var deltaX = Math.Abs(currentPos.X - _startPosition.X);
 			var deltaY = Math.Abs(currentPos.Y - _startPosition.Y);
 
-			foreach (var recognizer in recognizers)
+			foreach (var recognizer in recognizers.ToList())
 			{
 				if (recognizer is LongPressGestureRecognizer longPress)
 				{
 					if (deltaX > longPress.AllowableMovement || deltaY > longPress.AllowableMovement)
 					{
-						CancelTimer();
-						break;
+						CancelTimer(longPress);
 					}
 				}
 			}
@@ -104,56 +108,44 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void OnPointerReleased(object sender, PointerRoutedEventArgs e)
 		{
-			CancelTimer();
+			CancelTimers();
 		}
 
 		void OnPointerCanceled(object sender, PointerRoutedEventArgs e)
 		{
-			CancelTimer();
+			CancelTimers();
 		}
 
 		void StartTimers(View view, MauiPoint position)
 		{
-			var recognizers = view.GestureRecognizers;
-			if (recognizers == null)
+			// Snapshot recognizers to avoid collection-modified issues in timer callbacks
+			var longPressRecognizers = view.GestureRecognizers.OfType<LongPressGestureRecognizer>().ToList();
+			if (longPressRecognizers.Count == 0)
 				return;
 
-			// Note: If multiple LongPressGestureRecognizers are present on the same view,
-			// only the last one's MinimumPressDuration is used. This is an edge case scenario
-			// that is not commonly used in practice (typically one LongPress per element).
-			foreach (var recognizer in recognizers)
+			// Create a separate timer for each recognizer so each fires at its own MinimumPressDuration
+			foreach (var longPress in longPressRecognizers)
 			{
-				if (recognizer is LongPressGestureRecognizer longPress)
-				{
-					var duration = TimeSpan.FromMilliseconds(longPress.MinimumPressDuration);
-					
-					// Use DispatcherTimer which automatically runs on UI thread
-					_timer = new DispatcherTimer();
-					_timer.Interval = duration;
-					_timer.Tick += (s, e) =>
-					{
-						if (_isLongPressing)
-							return; // Already fired
+				var duration = TimeSpan.FromMilliseconds(longPress.MinimumPressDuration);
+				var recognizer = longPress;
 
-						_isLongPressing = true;
-						
-						// Create position function that calculates relative position
-						Func<IElement?, MauiPoint?> getPosition = (relativeTo) => CalculatePosition(relativeTo, position, _handler);
-						
-						// Fire for ALL LongPress recognizers on this view
-						foreach (var r in view.GestureRecognizers)
-						{
-							if (r is LongPressGestureRecognizer lp)
-							{
-								lp.SendLongPressed(view, getPosition);
-								lp.SendLongPressing(view, GestureStatus.Completed, getPosition);
-							}
-						}
-						
-						CancelTimer();
-					};
-					_timer.Start();
-				}
+				var timer = new DispatcherTimer();
+				timer.Interval = duration;
+				timer.Tick += (s, e) =>
+				{
+					// Stop this individual timer immediately
+					((DispatcherTimer)s!).Stop();
+
+					if (!_firedRecognizers.Add(recognizer))
+						return;
+
+					Func<IElement?, MauiPoint?> getPosition = (relativeTo) => CalculatePosition(relativeTo, position, _handler);
+
+					recognizer.SendLongPressed(view, getPosition);
+					recognizer.SendLongPressing(view, GestureStatus.Completed, getPosition);
+				};
+				timer.Start();
+				_timers[longPress] = timer;
 			}
 		}
 
@@ -182,19 +174,30 @@ namespace Microsoft.Maui.Controls.Platform
 			return new MauiPoint(windowX - relativeViewLocation.Value.X, windowY - relativeViewLocation.Value.Y);
 		}
 
-		void CancelTimer()
+		void CancelTimer(LongPressGestureRecognizer recognizer)
 		{
-			if (_timer != null)
+			if (_timers.TryGetValue(recognizer, out var timer))
 			{
-				_timer.Stop();
-				_timer = null;
+				timer.Stop();
+				_timers.Remove(recognizer);
 			}
-			_isLongPressing = false;
+			_firedRecognizers.Remove(recognizer);
+		}
+
+		void CancelTimers()
+		{
+			foreach (var timer in _timers.Values)
+			{
+				timer.Stop();
+			}
+			_timers.Clear();
+			_firedRecognizers.Clear();
 		}
 
 		public void Dispose()
 		{
 			UnsubscribeEvents();
+			CancelTimers();
 		}
 	}
 }

@@ -97,6 +97,12 @@ namespace Microsoft.Maui.Controls.Platform
 					swipeGestureRecognizer.PropertyChanged -= OnSwipeGestureRecognizerPropertyChanged;
 				}
 
+				if (TryGetLongPressGestureRecognizer(kvp.Key, out LongPressGestureRecognizer? longPressGestureRecognizer) &&
+					longPressGestureRecognizer != null)
+				{
+					longPressGestureRecognizer.PropertyChanged -= OnLongPressGestureRecognizerPropertyChanged;
+				}
+
 				foreach (var uiGestureRecognizer in kvp.Value)
 				{
 					if (uiGestureRecognizer is null)
@@ -473,6 +479,33 @@ namespace Microsoft.Maui.Controls.Platform
 			return result;
 		}
 
+		void ConfigureTapLongPressFailureRequirements()
+		{
+			var nativeLongPressRecognizers = new List<UILongPressGestureRecognizer>();
+			var nativeTapRecognizers = new List<UITapGestureRecognizer>();
+
+			foreach (var kvp in _gestureRecognizers)
+			{
+				foreach (var native in kvp.Value)
+				{
+					if (native is UILongPressGestureRecognizer lp)
+						nativeLongPressRecognizers.Add(lp);
+					else if (native is UITapGestureRecognizer tap)
+						nativeTapRecognizers.Add(tap);
+				}
+			}
+
+			// Each tap recognizer must wait for all long press recognizers to fail
+			// before it can succeed. This prevents taps from firing during long presses.
+			foreach (var tap in nativeTapRecognizers)
+			{
+				foreach (var lp in nativeLongPressRecognizers)
+				{
+					tap.RequireGestureRecognizerToFail(lp);
+				}
+			}
+		}
+
 		void UpdateSwipeGestureDirection(UISwipeGestureRecognizer recognizer, SwipeDirection direction)
 		{
 			recognizer.Direction = (UISwipeGestureRecognizerDirection)direction;
@@ -679,6 +712,15 @@ namespace Microsoft.Maui.Controls.Platform
 			return swipeGestureRecognizer != null;
 		}
 
+		bool TryGetLongPressGestureRecognizer(IGestureRecognizer? recognizer, out LongPressGestureRecognizer? longPressGestureRecognizer)
+		{
+			longPressGestureRecognizer =
+					recognizer as LongPressGestureRecognizer ??
+					(recognizer as ChildGestureRecognizer)?.GestureRecognizer as LongPressGestureRecognizer;
+
+			return longPressGestureRecognizer != null;
+		}
+
 		void LoadRecognizers()
 		{
 			if (ElementGestureRecognizers == null)
@@ -743,6 +785,11 @@ namespace Microsoft.Maui.Controls.Platform
 					swipeGestureRecognizer.PropertyChanged += OnSwipeGestureRecognizerPropertyChanged;
 				}
 
+				if (TryGetLongPressGestureRecognizer(recognizer, out LongPressGestureRecognizer? longPressGestureRecognizer) && longPressGestureRecognizer != null)
+				{
+					longPressGestureRecognizer.PropertyChanged += OnLongPressGestureRecognizerPropertyChanged;
+				}
+
 				// AddFakeRightClickForMacCatalyst returns the button mask for the processed tap gesture
 				// If a fake gesture wasn't added then it just returns 0
 				// If a fake gesture was added then we return the button mask fromm the tap gesture
@@ -797,6 +844,10 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 			}
 
+			// Make tap recognizers require long press recognizers to fail first.
+			// This prevents taps from firing when the user performs a long press.
+			ConfigureTapLongPressFailureRequirements();
+
 			if (OperatingSystem.IsIOSVersionAtLeast(11))
 			{
 				if (!dragFound && uIDragInteraction != null && PlatformView != null)
@@ -839,6 +890,12 @@ namespace Microsoft.Maui.Controls.Platform
 						swipeGestureRecognizer.PropertyChanged -= OnSwipeGestureRecognizerPropertyChanged;
 					}
 
+					if (TryGetLongPressGestureRecognizer(gestureRecognizer, out LongPressGestureRecognizer? longPressGestureRecognizer) &&
+						longPressGestureRecognizer != null)
+					{
+						longPressGestureRecognizer.PropertyChanged -= OnLongPressGestureRecognizerPropertyChanged;
+					}
+
 					uiRecognizer.Dispose();
 				}
 			}
@@ -873,6 +930,27 @@ namespace Microsoft.Maui.Controls.Platform
 					if (uiRecognizer is UISwipeGestureRecognizer uiSwipe)
 					{
 						UpdateSwipeGestureDirection(uiSwipe, swipeGesture.Direction);
+						break;
+					}
+				}
+			}
+		}
+
+		void OnLongPressGestureRecognizerPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+		{
+			if ((e.Is(LongPressGestureRecognizer.MinimumPressDurationProperty) ||
+				e.Is(LongPressGestureRecognizer.AllowableMovementProperty) ||
+				e.Is(LongPressGestureRecognizer.NumberOfTouchesRequiredProperty)) &&
+				sender is LongPressGestureRecognizer longPressGesture &&
+				_gestureRecognizers.TryGetValue(longPressGesture, out var uiRecognizers))
+			{
+				foreach (var uiRecognizer in uiRecognizers)
+				{
+					if (uiRecognizer is UILongPressGestureRecognizer uiLongPress)
+					{
+						uiLongPress.MinimumPressDuration = longPressGesture.MinimumPressDuration / 1000.0;
+						uiLongPress.AllowableMovement = (nfloat)longPressGesture.AllowableMovement;
+						uiLongPress.NumberOfTouchesRequired = (nuint)longPressGesture.NumberOfTouchesRequired;
 						break;
 					}
 				}

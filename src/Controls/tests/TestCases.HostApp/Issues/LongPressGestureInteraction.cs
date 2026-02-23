@@ -32,7 +32,7 @@ public class LongPressGestureInteraction : ContentPage
 		_longPress5Label = new Label { AutomationId = "LongPress5Label", Text = "LongPress2 Count: 0" };
 
 		// Test 1: LongPress + Tap
-		var tapAndLongPressFrame = new Frame
+		var tapAndLongPressBorder = new Border
 		{
 			AutomationId = "TapAndLongPressFrame",
 			BackgroundColor = Colors.LightBlue,
@@ -45,7 +45,7 @@ public class LongPressGestureInteraction : ContentPage
 				VerticalOptions = LayoutOptions.Center
 			}
 		};
-		tapAndLongPressFrame.GestureRecognizers.Add(new TapGestureRecognizer
+		tapAndLongPressBorder.GestureRecognizers.Add(new TapGestureRecognizer
 		{
 			Command = new Command(() =>
 			{
@@ -53,7 +53,7 @@ public class LongPressGestureInteraction : ContentPage
 				_tapLabel.Text = $"Tap Count: {_tapCount}";
 			})
 		});
-		tapAndLongPressFrame.GestureRecognizers.Add(new LongPressGestureRecognizer
+		tapAndLongPressBorder.GestureRecognizers.Add(new LongPressGestureRecognizer
 		{
 			Command = new Command(() =>
 			{
@@ -63,7 +63,7 @@ public class LongPressGestureInteraction : ContentPage
 		});
 
 		// Test 2: LongPress + Swipe
-		var swipeAndLongPressFrame = new Frame
+		var swipeAndLongPressBorder = new Border
 		{
 			AutomationId = "SwipeAndLongPressFrame",
 			BackgroundColor = Colors.LightGreen,
@@ -82,8 +82,8 @@ public class LongPressGestureInteraction : ContentPage
 			_swipeCount++;
 			_swipeLabel.Text = $"Swipe Count: {_swipeCount}";
 		};
-		swipeAndLongPressFrame.GestureRecognizers.Add(swipeGesture);
-		swipeAndLongPressFrame.GestureRecognizers.Add(new LongPressGestureRecognizer
+		swipeAndLongPressBorder.GestureRecognizers.Add(swipeGesture);
+		swipeAndLongPressBorder.GestureRecognizers.Add(new LongPressGestureRecognizer
 		{
 			Command = new Command(() =>
 			{
@@ -93,7 +93,7 @@ public class LongPressGestureInteraction : ContentPage
 		});
 
 		// Test 3: LongPress in ScrollView
-		var longPressInScrollFrame = new Frame
+		var longPressInScrollBorder = new Border
 		{
 			AutomationId = "LongPressInScrollFrame",
 			BackgroundColor = Colors.Orange,
@@ -106,7 +106,7 @@ public class LongPressGestureInteraction : ContentPage
 				VerticalOptions = LayoutOptions.Center
 			}
 		};
-		longPressInScrollFrame.GestureRecognizers.Add(new LongPressGestureRecognizer
+		longPressInScrollBorder.GestureRecognizers.Add(new LongPressGestureRecognizer
 		{
 			Command = new Command(() =>
 			{
@@ -116,7 +116,7 @@ public class LongPressGestureInteraction : ContentPage
 		});
 
 		// Test 4: Multiple LongPress recognizers
-		var longPress1Frame = new Frame
+		var longPress1Border = new Border
 		{
 			AutomationId = "LongPress1",
 			BackgroundColor = Colors.Pink,
@@ -130,7 +130,7 @@ public class LongPressGestureInteraction : ContentPage
 				VerticalOptions = LayoutOptions.Center
 			}
 		};
-		longPress1Frame.GestureRecognizers.Add(new LongPressGestureRecognizer
+		longPress1Border.GestureRecognizers.Add(new LongPressGestureRecognizer
 		{
 			Command = new Command(() =>
 			{
@@ -139,7 +139,7 @@ public class LongPressGestureInteraction : ContentPage
 			})
 		});
 
-		var longPress2Frame = new Frame
+		var longPress2Border = new Border
 		{
 			AutomationId = "LongPress2",
 			BackgroundColor = Colors.LightCoral,
@@ -153,7 +153,7 @@ public class LongPressGestureInteraction : ContentPage
 				VerticalOptions = LayoutOptions.Center
 			}
 		};
-		longPress2Frame.GestureRecognizers.Add(new LongPressGestureRecognizer
+		longPress2Border.GestureRecognizers.Add(new LongPressGestureRecognizer
 		{
 			Command = new Command(() =>
 			{
@@ -169,11 +169,11 @@ public class LongPressGestureInteraction : ContentPage
 			Padding = 8,
 			Children =
 			{
-				tapAndLongPressFrame,
+				tapAndLongPressBorder,
 				_tapLabel,
 				_longPressLabel,
 
-				swipeAndLongPressFrame,
+				swipeAndLongPressBorder,
 				_swipeLabel,
 				_longPress2Label,
 
@@ -186,7 +186,7 @@ public class LongPressGestureInteraction : ContentPage
 					{
 						Children =
 						{
-							longPressInScrollFrame,
+							longPressInScrollBorder,
 							new BoxView { HeightRequest = 200, Color = Colors.Gray }
 						}
 					}
@@ -196,7 +196,7 @@ public class LongPressGestureInteraction : ContentPage
 				new HorizontalStackLayout
 				{
 					Spacing = 10,
-					Children = { longPress1Frame, longPress2Frame }
+					Children = { longPress1Border, longPress2Border }
 				},
 				_longPress4Label,
 				_longPress5Label,

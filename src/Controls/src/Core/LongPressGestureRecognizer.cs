@@ -16,13 +16,16 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty CommandParameterProperty = BindableProperty.Create(nameof(CommandParameter), typeof(object), typeof(LongPressGestureRecognizer), null);
 
 		/// <summary>Bindable property for <see cref="MinimumPressDuration"/>.</summary>
-		public static readonly BindableProperty MinimumPressDurationProperty = BindableProperty.Create(nameof(MinimumPressDuration), typeof(int), typeof(LongPressGestureRecognizer), 500);
+		public static readonly BindableProperty MinimumPressDurationProperty = BindableProperty.Create(nameof(MinimumPressDuration), typeof(int), typeof(LongPressGestureRecognizer), 500,
+			validateValue: (_, value) => (int)value >= 0);
 
 		/// <summary>Bindable property for <see cref="NumberOfTouchesRequired"/>.</summary>
-		public static readonly BindableProperty NumberOfTouchesRequiredProperty = BindableProperty.Create(nameof(NumberOfTouchesRequired), typeof(int), typeof(LongPressGestureRecognizer), 1);
+		public static readonly BindableProperty NumberOfTouchesRequiredProperty = BindableProperty.Create(nameof(NumberOfTouchesRequired), typeof(int), typeof(LongPressGestureRecognizer), 1,
+			validateValue: (_, value) => (int)value > 0);
 
 		/// <summary>Bindable property for <see cref="AllowableMovement"/>.</summary>
-		public static readonly BindableProperty AllowableMovementProperty = BindableProperty.Create(nameof(AllowableMovement), typeof(double), typeof(LongPressGestureRecognizer), 10.0);
+		public static readonly BindableProperty AllowableMovementProperty = BindableProperty.Create(nameof(AllowableMovement), typeof(double), typeof(LongPressGestureRecognizer), 10.0,
+			validateValue: (_, value) => (double)value >= 0.0);
 
 		/// <summary>Bindable property for <see cref="State"/>.</summary>
 		public static readonly BindableProperty StateProperty = BindableProperty.Create(nameof(State), typeof(GestureStatus), typeof(LongPressGestureRecognizer), GestureStatus.Canceled, BindingMode.OneWayToSource);

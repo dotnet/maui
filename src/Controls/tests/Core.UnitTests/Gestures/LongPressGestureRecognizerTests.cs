@@ -116,7 +116,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			var position = new Point(10, 20);
-			Func<IElement?, Point?> getPosition = (_) => position;
+			Func<IElement, Point?> getPosition = (_) => position;
 			longPress.SendLongPressed(view, getPosition);
 
 			Assert.True(eventRaised);
@@ -174,7 +174,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			var position = new Point(15, 25);
-			Func<IElement?, Point?> getPosition = (_) => position;
+			Func<IElement, Point?> getPosition = (_) => position;
 			longPress.SendLongPressing(view, GestureStatus.Started, getPosition);
 
 			Assert.True(eventRaised);
@@ -247,6 +247,39 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// Verify it has OneWayToSource binding mode by checking the property
 			var stateProperty = LongPressGestureRecognizer.StateProperty;
 			Assert.Equal(BindingMode.OneWayToSource, stateProperty.DefaultBindingMode);
+		}
+
+		[Fact]
+		public void MinimumPressDuration_RejectsNegativeValue()
+		{
+			var longPress = new LongPressGestureRecognizer();
+
+			longPress.MinimumPressDuration = -1;
+
+			// validateValue rejects -1, so value stays at default
+			Assert.Equal(500, longPress.MinimumPressDuration);
+		}
+
+		[Fact]
+		public void NumberOfTouchesRequired_RejectsZero()
+		{
+			var longPress = new LongPressGestureRecognizer();
+
+			longPress.NumberOfTouchesRequired = 0;
+
+			// validateValue rejects 0, so value stays at default
+			Assert.Equal(1, longPress.NumberOfTouchesRequired);
+		}
+
+		[Fact]
+		public void AllowableMovement_RejectsNegativeValue()
+		{
+			var longPress = new LongPressGestureRecognizer();
+
+			longPress.AllowableMovement = -5.0;
+
+			// validateValue rejects negative, so value stays at default
+			Assert.Equal(10.0, longPress.AllowableMovement);
 		}
 	}
 }

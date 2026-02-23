@@ -233,6 +233,7 @@ namespace Microsoft.Maui.Controls.Platform
 				_dragAndDropGestureHandler?.Dispose();
 				_dragAndDropGestureHandler = null;
 				_pointerGestureHandler = null;
+				_longPressGestureHandler = null;
 			}
 
 			base.Dispose(disposing);
