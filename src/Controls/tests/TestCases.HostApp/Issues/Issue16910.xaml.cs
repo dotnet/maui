@@ -49,10 +49,14 @@
 			UpdateRefreshingLabels();
 		}
 
-		void OnRunTestClicked(object sender, EventArgs e)
+		async void OnRunTestClicked(object sender, EventArgs e)
 		{
 			// Test programmatic refresh start — binding should propagate to ViewModel
 			refreshView.IsRefreshing = true;
+
+			// Yield to let the XAML TwoWay binding engine propagate the value
+			await Task.Yield();
+
 			if (!IsRefreshing)
 			{
 				TestResultLabel.Text = "FAIL: IsRefreshing did not propagate to true";
@@ -61,6 +65,10 @@
 
 			// Test programmatic refresh stop — binding should propagate to ViewModel
 			refreshView.IsRefreshing = false;
+
+			// Yield again to let binding propagate
+			await Task.Yield();
+
 			if (IsRefreshing)
 			{
 				TestResultLabel.Text = "FAIL: IsRefreshing did not propagate to false";
