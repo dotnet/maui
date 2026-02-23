@@ -135,7 +135,7 @@ When a fix operation fails:
 │  Unable to install Android SDK automatically.              │
 │                                                            │
 │  Error: Connection reset while downloading from            │
-│  dl.google.com (E4001)                                     │
+│  dl.google.com (E3004)                                     │
 │                                                            │
 │  Attempted:                                                │
 │    • Retry download (3 times)                              │

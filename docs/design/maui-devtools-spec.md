@@ -215,7 +215,7 @@ This tool eliminates that friction by providing a single, authoritative source f
 | FR-DL4 | Support `--platform` filter | P1 |
 | FR-DL5 | Support `--json` output | P0 |
 
-### 4.6 Install State Machine
+### 4.7 Install State Machine
 
 **Critical**: The tool must handle the "install gap" — the chicken-and-egg problem where native tools (sdkmanager, xcrun) don't exist yet.
 
@@ -413,7 +413,7 @@ IDE consumers can use the `type: "progress"` messages to update progress bars an
 |----|-------------|
 | NFR-P1 | `doctor` command must complete in <5s when no network calls needed |
 | NFR-P2 | Device list must complete in <2s |
-| NFR-P4 | Read operations must use direct file parsing (not CLI wrappers) for performance |
+| NFR-P3 | Read operations must use direct file parsing (not CLI wrappers) for performance |
 
 **Performance Implementation Notes**:
 - Android SDK detection: Parse `package.xml` and `source.properties` directly instead of invoking `sdkmanager --list` (which has 3-10s JVM startup time)
@@ -422,9 +422,12 @@ IDE consumers can use the `type: "progress"` messages to update progress bars an
 
 **Shell Quoting Implementation Notes**:
 - Package identifiers contain semicolons (e.g., `system-images;android-35;google_apis;arm64-v8a`)
-- When calling `avdmanager` or `sdkmanager`, arguments with semicolons must be properly quoted
-- Use single quotes with escaped inner quotes: `--package '{escapedImage}'`
-- This prevents shell interpretation of semicolons as command separators
+- When calling `avdmanager` or `sdkmanager`, arguments with semicolons **SHOULD** be passed directly to the child process as an argument list (not via a shell) so that semicolons are not interpreted as command separators.
+- If shell invocation is unavoidable, quoting **MUST** be documented per shell:
+  - POSIX shells (`bash`, `zsh`): `--package 'system-images;android-35;google_apis;arm64-v8a'`
+  - Windows `cmd.exe`: `--package "system-images;android-35;google_apis;arm64-v8a"`
+  - PowerShell: `--package 'system-images;android-35;google_apis;arm64-v8a'`
+- Correct quoting prevents shell interpretation of semicolons as command separators.
 
 ### 5.4 Security
 
@@ -458,12 +461,11 @@ When the tool detects that the target install path requires elevation (e.g., `Pr
 2. It launches a **new elevated process** via `ProcessStartInfo` with `Verb = "runas"`, which triggers the standard UAC prompt
 3. The elevated child process performs the install operation
 4. The parent process monitors the child and reports progress/result
-5. If the user declines UAC, the tool returns error `E5001`
+5. If the user declines UAC, the tool returns error `E2001`
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  maui android install --sdk-path "C:\Program Files\  │
-│  Android\sdk"                                                │
+│  maui android install --sdk-path "C:\Program Files\Android\sdk"  │
 ├─────────────────────────────────────────────────────────────┤
 │  1. Detect: target path requires elevation                   │
 │  2. Prompt: "Installing to a system path requires admin      │
@@ -774,17 +776,18 @@ This approach ensures DevTools benefits from the battle-tested discovery logic i
 
 #### Error Taxonomy
 
-Errors are classified into three categories:
+Errors are classified into four categories:
 
 | Category | Prefix | Responsibility | Example |
 |----------|--------|----------------|---------|
 | **Tool** | `E1xxx` | Bug in this tool | E1001: Internal state corruption |
 | **Platform** | `E2xxx` | Native tool or SDK issue | E2001: sdkmanager license not accepted |
 | **User** | `E3xxx` | User action required | E3001: Xcode not installed |
+| **Unknown** | `E0xxx` | Source cannot be reliably determined (e.g., truncated or partial native output) | E0001: Unknown native tool failure |
 
 #### Error Object Schema
 
-**Every error MUST be expressible as this JSON structure:**
+**Every error MUST be expressible as this JSON structure; `category` MUST be one of `tool`, `platform`, `user`, or `unknown`.**
 
 ```json
 {
