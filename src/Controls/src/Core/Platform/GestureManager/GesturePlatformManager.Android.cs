@@ -282,7 +282,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			if (e.Event != null)
-				e.Handled = OnTouchEvent(e.Event);
+				OnTouchEvent(e.Event);
 		}
 
 		void SetupElement(VisualElement? oldElement, VisualElement? newElement)
