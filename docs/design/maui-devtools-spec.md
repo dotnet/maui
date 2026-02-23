@@ -479,7 +479,7 @@ When the tool detects that the target install path requires elevation (e.g., `Pr
 | Context | Mechanism | Details |
 |---------|-----------|---------|
 | Terminal | `sudo` | Tool re-invokes itself with `sudo` for the specific operation that needs it (e.g., `sudo xcode-select -s <path>`) |
-| IDE (VS Code / VS for Mac) | Authorization Services | IDE presents system password dialog via `AuthorizationExecuteWithPrivileges` or equivalent |
+| IDE (e.g., VS Code) | OS-managed elevation | IDE invokes a privileged helper or re-launches the tool in an elevated context, relying on supported macOS mechanisms and system authentication UI |
 | CI | Pre-authorized | CI agents typically run with required permissions; use `--ci` flag to skip interactive prompts |
 
 ```
