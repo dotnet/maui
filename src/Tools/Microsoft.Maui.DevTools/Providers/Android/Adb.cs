@@ -31,16 +31,20 @@ public class Adb
 
 	public async Task<List<Device>> GetDevicesAsync(CancellationToken cancellationToken = default)
 	{
-		var result = await _runner.ListDevicesAsync(enrichProperties: true, cancellationToken);
-		if (!result.Success || result.Data == null)
+		try
+		{
+			var devices = await _runner.ListDevicesAsync(cancellationToken);
+			return devices.Select(MapToMauiDevice).ToList();
+		}
+		catch (InvalidOperationException)
+		{
 			return new List<Device>();
-
-		return result.Data.Select(MapToMauiDevice).ToList();
+		}
 	}
 
 	private static Device MapToMauiDevice(AndroidDeviceInfo info)
 	{
-		var isEmulator = info.Type == AndroidDeviceType.Emulator;
+		var isEmulator = info.IsEmulator;
 		var state = MapDeviceState(info.State);
 		var isRunning = state == DeviceState.Connected || state == DeviceState.Booted;
 
@@ -54,18 +58,8 @@ public class Adb
 			IsEmulator = isEmulator,
 			IsRunning = isRunning,
 			ConnectionType = isEmulator ? ConnectionType.Local : ConnectionType.Usb,
-			EmulatorId = info.AvdName,
 			Model = info.Model,
-			Manufacturer = info.Manufacturer,
-			Version = info.SdkVersion,
-			VersionName = info.ReleaseVersion ?? AndroidEnvironment.MapApiLevelToVersion(info.SdkVersion),
-			Architecture = AndroidEnvironment.MapAbiToArchitecture(info.Abi),
-			PlatformArchitecture = info.Abi,
-			RuntimeIdentifiers = AndroidEnvironment.GetRuntimeIdentifiers(AndroidEnvironment.MapAbiToArchitecture(info.Abi)),
 			Idiom = DeviceIdiom.Phone,
-			Details = info.Properties.Count > 0 
-				? info.Properties.ToDictionary(kvp => kvp.Key, kvp => (object)kvp.Value) 
-				: null
 		};
 	}
 
@@ -73,7 +67,7 @@ public class Adb
 	{
 		return state switch
 		{
-			AndroidDeviceState.Device => DeviceState.Connected,
+			AndroidDeviceState.Online => DeviceState.Connected,
 			AndroidDeviceState.Offline => DeviceState.Offline,
 			AndroidDeviceState.Unauthorized => DeviceState.Disconnected,
 			AndroidDeviceState.Bootloader => DeviceState.Booting,
@@ -86,28 +80,7 @@ public class Adb
 		if (!IsAvailable)
 			throw new MauiToolException(ErrorCodes.AndroidAdbNotFound, "ADB not found");
 
-		var result = await _runner.StopEmulatorAsync(deviceSerial, cancellationToken);
-
-		// emu kill doesn't always return success, so don't throw on failure
-	}
-
-	public async Task<string> TakeScreenshotAsync(string deviceSerial, string outputPath,
-		CancellationToken cancellationToken = default)
-	{
-		if (!IsAvailable)
-			throw new MauiToolException(ErrorCodes.AndroidAdbNotFound, "ADB not found");
-
-		var result = await _runner.TakeScreenshotAsync(deviceSerial, outputPath, cancellationToken);
-
-		if (!result.Success)
-		{
-			throw new MauiToolException(
-				ErrorCodes.AndroidDeviceNotFound,
-				$"Failed to capture screenshot: {result.ErrorMessage ?? result.StandardError}",
-				nativeError: result.StandardError);
-		}
-
-		return outputPath;
+		await _runner.StopEmulatorAsync(deviceSerial, cancellationToken);
 	}
 
 	public async Task WaitForDeviceAsync(string? deviceSerial = null, TimeSpan? timeout = null,
@@ -116,14 +89,40 @@ public class Adb
 		if (!IsAvailable)
 			throw new MauiToolException(ErrorCodes.AndroidAdbNotFound, "ADB not found");
 
-		var result = await _runner.WaitForDeviceAsync(deviceSerial, timeout, cancellationToken);
-
-		if (!result.Success)
+		try
+		{
+			await _runner.WaitForDeviceAsync(deviceSerial, timeout, cancellationToken);
+		}
+		catch (Exception ex) when (ex is not OperationCanceledException)
 		{
 			throw new MauiToolException(
 				ErrorCodes.AndroidDeviceNotFound,
-				result.ErrorMessage ?? "Timeout waiting for device",
-				nativeError: result.StandardError);
+				ex.Message);
 		}
+	}
+
+	public async Task<string> TakeScreenshotAsync(string deviceSerial, string outputPath,
+		CancellationToken cancellationToken = default)
+	{
+		if (!IsAvailable)
+			throw new MauiToolException(ErrorCodes.AndroidAdbNotFound, "ADB not found");
+
+		var remotePath = "/sdcard/screenshot.png";
+
+		// Capture screenshot on device
+		var captureResult = await ProcessRunner.RunAsync(AdbPath!, $"-s {deviceSerial} shell screencap -p {remotePath}", cancellationToken: cancellationToken);
+		if (!captureResult.Success)
+			throw new MauiToolException(ErrorCodes.AndroidDeviceNotFound,
+				$"Failed to capture screenshot: {captureResult.StandardError}",
+				nativeError: captureResult.StandardError);
+
+		// Pull screenshot to local path
+		var pullResult = await ProcessRunner.RunAsync(AdbPath!, $"-s {deviceSerial} pull {remotePath} {outputPath}", cancellationToken: cancellationToken);
+		if (!pullResult.Success)
+			throw new MauiToolException(ErrorCodes.AndroidDeviceNotFound,
+				$"Failed to pull screenshot: {pullResult.StandardError}",
+				nativeError: pullResult.StandardError);
+
+		return outputPath;
 	}
 }

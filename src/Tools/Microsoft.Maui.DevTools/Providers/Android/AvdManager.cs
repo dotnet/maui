@@ -32,17 +32,21 @@ public class AvdManager
 
 	public string? AvdManagerPath => _runner.AvdManagerPath;
 
-	public string? EmulatorPath => _runner.EmulatorPath;
+	public string? EmulatorPath => _emulatorRunner.EmulatorPath;
 
 	public bool IsAvailable => _runner.IsAvailable;
 
 	public async Task<List<AvdInfo>> GetAvdsAsync(CancellationToken cancellationToken = default)
 	{
-		var result = await _runner.ListAvdsAsync(cancellationToken);
-		if (!result.Success || result.Data == null)
+		try
+		{
+			var avds = await _runner.ListAvdsAsync(cancellationToken);
+			return avds.Select(MapToMauiAvd).ToList();
+		}
+		catch (InvalidOperationException)
+		{
 			return new List<AvdInfo>();
-
-		return result.Data.Select(MapToMauiAvd).ToList();
+		}
 	}
 
 	private static AvdInfo MapToMauiAvd(Xamarin.Android.Tools.AvdInfo avd)
@@ -54,11 +58,6 @@ public class AvdManager
 			SystemImage = avd.SystemImage,
 			Target = avd.Target,
 			Path = avd.Path,
-			Status = avd.Status,
-			ApiLevel = avd.ApiLevel,
-			Abi = avd.Abi,
-			TagId = avd.TagId,
-			PlayStoreEnabled = avd.PlayStoreEnabled
 		};
 	}
 
@@ -71,14 +70,15 @@ public class AvdManager
 				"AVD Manager not found",
 				"maui android install");
 
-		var result = await _runner.CreateAvdAsync(name, deviceProfile, systemImage, force, cancellationToken);
-
-		if (!result.Success)
+		try
+		{
+			await _runner.CreateAvdAsync(name, deviceProfile, systemImage, force, cancellationToken);
+		}
+		catch (Exception ex) when (ex is not OperationCanceledException)
 		{
 			throw new MauiToolException(
 				ErrorCodes.AndroidAvdCreateFailed,
-				$"Failed to create AVD '{name}': {result.ErrorMessage ?? result.StandardError}",
-				nativeError: result.StandardError);
+				$"Failed to create AVD '{name}': {ex.Message}");
 		}
 
 		return new AvdInfo
@@ -98,13 +98,22 @@ public class AvdManager
 				"Android emulator not installed",
 				"maui android sdk install emulator");
 
-		var result = await _emulatorRunner.StartAvdAsync(name, coldBoot, wait, cancellationToken: cancellationToken);
-
-		if (!result.Success)
+		try
+		{
+			if (wait)
+			{
+				using var process = await _emulatorRunner.StartAvdAndWaitForBootAsync(name, coldBoot, cancellationToken: cancellationToken);
+			}
+			else
+			{
+				_emulatorRunner.StartAvd(name, coldBoot);
+			}
+		}
+		catch (Exception ex) when (ex is not OperationCanceledException)
 		{
 			throw new MauiToolException(
 				ErrorCodes.AndroidEmulatorNotFound,
-				$"Failed to start AVD '{name}': {result.ErrorMessage}");
+				$"Failed to start AVD '{name}': {ex.Message}");
 		}
 	}
 
@@ -116,14 +125,15 @@ public class AvdManager
 				"AVD Manager not found",
 				"maui android install");
 
-		var result = await _runner.DeleteAvdAsync(name, cancellationToken);
-
-		if (!result.Success)
+		try
+		{
+			await _runner.DeleteAvdAsync(name, cancellationToken);
+		}
+		catch (Exception ex) when (ex is not OperationCanceledException)
 		{
 			throw new MauiToolException(
 				ErrorCodes.AndroidAvdDeleteFailed,
-				$"Failed to delete AVD '{name}': {result.ErrorMessage ?? result.StandardError}",
-				nativeError: result.StandardError);
+				$"Failed to delete AVD '{name}': {ex.Message}");
 		}
 	}
 }
