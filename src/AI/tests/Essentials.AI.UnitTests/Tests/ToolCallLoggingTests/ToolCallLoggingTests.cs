@@ -14,13 +14,10 @@ namespace Microsoft.Maui.Essentials.AI.UnitTests;
 /// </summary>
 public class ToolCallLoggingTests
 {
-	[Theory]
-	[InlineData(LogLevel.Trace)]
-	[InlineData(LogLevel.Debug)]
-	[InlineData(LogLevel.Information)]
-	public async Task FunctionCallContentLoggedAtTraceLevel(LogLevel level)
+	[Fact]
+	public async Task TraceLevel_LogsFullToolCallDetails()
 	{
-		var logCollector = new LogCollector(level);
+		var logCollector = new LogCollector(LogLevel.Trace);
 		var mockClient = new MockToolCallClient();
 		mockClient.AddFunctionCallContent("GetWeather", "call-1",
 			new Dictionary<string, object?> { ["location"] = "Seattle" });
@@ -28,33 +25,61 @@ public class ToolCallLoggingTests
 		mockClient.AddTextContent("The weather is sunny.");
 
 		using var client = new LoggingChatClient(mockClient, logCollector);
-		var response = await client.GetResponseAsync([new ChatMessage(ChatRole.User, "weather?")]);
+		await client.GetResponseAsync([new ChatMessage(ChatRole.User, "weather?")]);
 
-		if (level is LogLevel.Trace)
-		{
-			// At Trace, LoggingChatClient serializes the full response including FunctionCallContent
-			var allLogs = string.Join("\n", logCollector.Entries.Select(e => e.Message));
-			Assert.Contains("GetWeather", allLogs, StringComparison.Ordinal);
-			Assert.Contains("call-1", allLogs, StringComparison.Ordinal);
-			Assert.Contains("Seattle", allLogs, StringComparison.Ordinal);
-			Assert.Contains("Sunny, 72", allLogs, StringComparison.Ordinal);
-		}
-		else
-		{
-			// At Debug, only method invocation/completion is logged (no content details)
-			var allLogs = string.Join("\n", logCollector.Entries.Select(e => e.Message));
-			Assert.DoesNotContain("GetWeather", allLogs, StringComparison.Ordinal);
-			Assert.DoesNotContain("Seattle", allLogs, StringComparison.Ordinal);
-		}
+		// Trace emits "{MethodName} invoked: {Messages}..." and "{MethodName} completed: {ChatResponse}."
+		// with full JSON-serialized content including function names, arguments, and results
+		var allLogs = string.Join("\n", logCollector.Entries.Select(e => e.Message));
+		Assert.Contains("GetWeather", allLogs, StringComparison.Ordinal);
+		Assert.Contains("call-1", allLogs, StringComparison.Ordinal);
+		Assert.Contains("Seattle", allLogs, StringComparison.Ordinal);
+		Assert.Contains("Sunny, 72", allLogs, StringComparison.Ordinal);
 	}
 
-	[Theory]
-	[InlineData(LogLevel.Trace)]
-	[InlineData(LogLevel.Debug)]
-	[InlineData(LogLevel.Information)]
-	public async Task FunctionCallContentLoggedAtTraceLevelForStreaming(LogLevel level)
+	[Fact]
+	public async Task DebugLevel_LogsInvokedAndCompletedButNotContent()
 	{
-		var logCollector = new LogCollector(level);
+		var logCollector = new LogCollector(LogLevel.Debug);
+		var mockClient = new MockToolCallClient();
+		mockClient.AddFunctionCallContent("GetWeather", "call-1",
+			new Dictionary<string, object?> { ["location"] = "Seattle" });
+		mockClient.AddFunctionResultContent("call-1", "Sunny, 72°F");
+		mockClient.AddTextContent("The weather is sunny.");
+
+		using var client = new LoggingChatClient(mockClient, logCollector);
+		await client.GetResponseAsync([new ChatMessage(ChatRole.User, "weather?")]);
+
+		// Debug emits "{MethodName} invoked." and "{MethodName} completed." (no content)
+		var debugLogs = logCollector.Entries.Where(e => e.Level == LogLevel.Debug).Select(e => e.Message).ToList();
+		Assert.Contains(debugLogs, m => m.Contains("GetResponseAsync invoked", StringComparison.Ordinal));
+		Assert.Contains(debugLogs, m => m.Contains("GetResponseAsync completed", StringComparison.Ordinal));
+
+		// No sensitive content at Debug — tool names, args, results are Trace-only
+		var allLogs = string.Join("\n", logCollector.Entries.Select(e => e.Message));
+		Assert.DoesNotContain("GetWeather", allLogs, StringComparison.Ordinal);
+		Assert.DoesNotContain("Seattle", allLogs, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public async Task InformationLevel_NoLogsEmitted()
+	{
+		var logCollector = new LogCollector(LogLevel.Information);
+		var mockClient = new MockToolCallClient();
+		mockClient.AddFunctionCallContent("GetWeather", "call-1",
+			new Dictionary<string, object?> { ["location"] = "Seattle" });
+		mockClient.AddTextContent("The weather is sunny.");
+
+		using var client = new LoggingChatClient(mockClient, logCollector);
+		await client.GetResponseAsync([new ChatMessage(ChatRole.User, "weather?")]);
+
+		// LoggingChatClient only logs at Debug and Trace — nothing at Information+
+		Assert.Empty(logCollector.Entries);
+	}
+
+	[Fact]
+	public async Task TraceLevel_StreamingLogsEachUpdate()
+	{
+		var logCollector = new LogCollector(LogLevel.Trace);
 		var mockClient = new MockToolCallClient();
 		mockClient.AddFunctionCallContent("GetWeather", "call-1",
 			new Dictionary<string, object?> { ["location"] = "Boston" });
@@ -62,44 +87,47 @@ public class ToolCallLoggingTests
 		mockClient.AddTextContent("It's raining.");
 
 		using var client = new LoggingChatClient(mockClient, logCollector);
-		var updates = new List<ChatResponseUpdate>();
 		await foreach (var update in client.GetStreamingResponseAsync([new ChatMessage(ChatRole.User, "weather?")]))
 		{
-			updates.Add(update);
+			// consume
 		}
 
-		if (level is LogLevel.Trace)
-		{
-			var allLogs = string.Join("\n", logCollector.Entries.Select(e => e.Message));
-			Assert.Contains("GetWeather", allLogs, StringComparison.Ordinal);
-			Assert.Contains("call-1", allLogs, StringComparison.Ordinal);
-			Assert.Contains("Boston", allLogs, StringComparison.Ordinal);
-		}
-		else
-		{
-			var allLogs = string.Join("\n", logCollector.Entries.Select(e => e.Message));
-			Assert.DoesNotContain("GetWeather", allLogs, StringComparison.Ordinal);
-			Assert.DoesNotContain("Boston", allLogs, StringComparison.Ordinal);
-		}
+		// Streaming Trace emits "GetStreamingResponseAsync received update: {json}" for each update
+		var traceLogs = logCollector.Entries.Where(e => e.Level == LogLevel.Trace).Select(e => e.Message).ToList();
+		Assert.Contains(traceLogs, m => m.Contains("received update", StringComparison.Ordinal));
+		var allLogs = string.Join("\n", traceLogs);
+		Assert.Contains("GetWeather", allLogs, StringComparison.Ordinal);
+		Assert.Contains("call-1", allLogs, StringComparison.Ordinal);
+		Assert.Contains("Boston", allLogs, StringComparison.Ordinal);
 	}
 
 	[Fact]
-	public async Task NoToolCallContentWhenNoFunctions()
+	public async Task DebugLevel_StreamingLogsInvokedAndCompleted()
 	{
-		var logCollector = new LogCollector(LogLevel.Trace);
+		var logCollector = new LogCollector(LogLevel.Debug);
 		var mockClient = new MockToolCallClient();
-		mockClient.AddTextContent("Hello there!");
+		mockClient.AddFunctionCallContent("GetWeather", "call-1",
+			new Dictionary<string, object?> { ["location"] = "Boston" });
+		mockClient.AddFunctionResultContent("call-1", "Rainy, 55°F");
+		mockClient.AddTextContent("It's raining.");
 
 		using var client = new LoggingChatClient(mockClient, logCollector);
-		var response = await client.GetResponseAsync([new ChatMessage(ChatRole.User, "hi")]);
+		await foreach (var update in client.GetStreamingResponseAsync([new ChatMessage(ChatRole.User, "weather?")]))
+		{
+			// consume
+		}
+
+		var debugLogs = logCollector.Entries.Where(e => e.Level == LogLevel.Debug).Select(e => e.Message).ToList();
+		Assert.Contains(debugLogs, m => m.Contains("GetStreamingResponseAsync invoked", StringComparison.Ordinal));
+		Assert.Contains(debugLogs, m => m.Contains("GetStreamingResponseAsync completed", StringComparison.Ordinal));
 
 		var allLogs = string.Join("\n", logCollector.Entries.Select(e => e.Message));
-		Assert.DoesNotContain("FunctionCallContent", allLogs, StringComparison.Ordinal);
-		Assert.DoesNotContain("FunctionResultContent", allLogs, StringComparison.Ordinal);
+		Assert.DoesNotContain("GetWeather", allLogs, StringComparison.Ordinal);
+		Assert.DoesNotContain("Boston", allLogs, StringComparison.Ordinal);
 	}
 
 	[Fact]
-	public async Task MultipleFunctionCallsLoggedAtTrace()
+	public async Task TraceLevel_MultipleFunctionCallsAllLogged()
 	{
 		var logCollector = new LogCollector(LogLevel.Trace);
 		var mockClient = new MockToolCallClient();
@@ -112,13 +140,28 @@ public class ToolCallLoggingTests
 		mockClient.AddTextContent("Done.");
 
 		using var client = new LoggingChatClient(mockClient, logCollector);
-		var response = await client.GetResponseAsync([new ChatMessage(ChatRole.User, "info?")]);
+		await client.GetResponseAsync([new ChatMessage(ChatRole.User, "info?")]);
 
 		var allLogs = string.Join("\n", logCollector.Entries.Select(e => e.Message));
 		Assert.Contains("GetWeather", allLogs, StringComparison.Ordinal);
 		Assert.Contains("GetTime", allLogs, StringComparison.Ordinal);
 		Assert.Contains("NYC", allLogs, StringComparison.Ordinal);
 		Assert.Contains("EST", allLogs, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public async Task TraceLevel_NoToolCallContent_NoFunctionNames()
+	{
+		var logCollector = new LogCollector(LogLevel.Trace);
+		var mockClient = new MockToolCallClient();
+		mockClient.AddTextContent("Hello there!");
+
+		using var client = new LoggingChatClient(mockClient, logCollector);
+		await client.GetResponseAsync([new ChatMessage(ChatRole.User, "hi")]);
+
+		var allLogs = string.Join("\n", logCollector.Entries.Select(e => e.Message));
+		Assert.DoesNotContain("FunctionCallContent", allLogs, StringComparison.Ordinal);
+		Assert.DoesNotContain("FunctionResultContent", allLogs, StringComparison.Ordinal);
 	}
 
 	/// <summary>
