@@ -29,9 +29,12 @@ public class Issue22938 : ContentPage
 			AutomationId = "OpenModalButton",
 			Command = new Command(async () =>
 			{
-				var modalPage = new ContentPage
+				// Use semi-transparent background to match the reproduction scenario.
+			// This causes the underlying page to remain in the visual tree
+			// (ModalNavigationManager does not call RemovePage for non-default backgrounds).
+			var modalPage = new ContentPage
 				{
-					BackgroundColor = Colors.Beige,
+					BackgroundColor = Color.FromArgb("#40808080"),
 					Content = new VerticalStackLayout
 					{
 						Spacing = 20,

@@ -57,8 +57,13 @@ namespace Microsoft.Maui.Platform
 		{
 			if (!CachedChildren.Contains(pageView))
 			{
-				// Disable interaction on the page being covered by the modal
-				_topPage?.SetValue(IsHitTestVisibleProperty, false);
+				if (_topPage is not null)
+				{
+					// Disable pointer and keyboard interaction on the page being covered
+					_topPage.SetValue(IsHitTestVisibleProperty, false);
+					// Belt-and-suspenders: prevent tab navigation into the underlying subtree
+					_topPage.SetValue(TabFocusNavigationProperty, KeyboardNavigationMode.Once);
+				}
 
 				int indexOFTopPage = 0;
 				if (_topPage is not null)
@@ -66,6 +71,13 @@ namespace Microsoft.Maui.Platform
 
 				CachedChildren.Insert(indexOFTopPage, pageView);
 				_topPage = pageView;
+
+				// Trap Tab within the modal so it cycles instead of escaping.
+				// Only do this when covering another page (i.e., this is a modal).
+				if (indexOFTopPage > 0)
+				{
+					_topPage.SetValue(TabFocusNavigationProperty, KeyboardNavigationMode.Cycle);
+				}
 
 				// Move keyboard focus to the new top page
 				TryMoveFocusToPage(_topPage);
@@ -92,6 +104,7 @@ namespace Microsoft.Maui.Platform
 				if (_topPage is not null)
 				{
 					_topPage.IsHitTestVisible = true;
+					_topPage.ClearValue(TabFocusNavigationProperty);
 					TryMoveFocusToPage(_topPage);
 				}
 			}
