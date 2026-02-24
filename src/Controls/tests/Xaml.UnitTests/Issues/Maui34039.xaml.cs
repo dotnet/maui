@@ -6,6 +6,7 @@ public partial class Maui34039 : ContentPage
 {
 	public Maui34039() => InitializeComponent();
 
+	[Collection("Issue")]
 	public class Tests
 	{
 		[Theory]
