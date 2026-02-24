@@ -64,6 +64,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			_ => false
 		};
 
+		/// <summary>
+		/// Returns true when the current configuration is grouped + grid layout.
+		/// In this mode, the outer ItemsView uses StackLayout to virtualize groups,
+		/// and each group uses a native VariableSizedWrapGrid for item arrangement.
+		/// </summary>
+		protected bool IsGroupedGridMode() =>
+			Layout is GridItemsLayout &&
+			ItemsView is GroupableItemsView groupable &&
+			groupable.IsGrouped;
+
 		public ItemsViewHandler2() : base(ItemsViewMapper)
 		{
 
@@ -283,12 +293,24 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				if (ItemsView is GroupableItemsView groupableItemsView && groupableItemsView.IsGrouped)
 				{
+					// Grouped grid: one item per group, each rendered as a GroupGridPanel
+					if (Layout is GridItemsLayout)
+					{
+						return new CollectionViewSource
+						{
+							Source = TemplatedItemSourceFactory2.CreateGroupedGrid(itemsSource, itemTemplate,
+								groupableItemsView.GroupHeaderTemplate, groupableItemsView.GroupFooterTemplate,
+								Element, mauiContext: MauiContext),
+							IsSourceGrouped = false
+						};
+					}
+
+					// Grouped linear: flat list with interleaved headers/footers
 					return new CollectionViewSource
 					{
 						Source = TemplatedItemSourceFactory2.CreateGrouped(itemsSource, itemTemplate,
 							groupableItemsView.GroupHeaderTemplate, groupableItemsView.GroupFooterTemplate,
-							Element, mauiContext: MauiContext)
-							,
+							Element, mauiContext: MauiContext),
 						IsSourceGrouped = false
 					};
 				}
@@ -362,6 +384,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (VirtualView.ItemTemplate is not null)
 			{
 				_itemFactory = new ItemFactory(Element);
+
+				// Configure grid params for grouped grid mode
+				if (IsGroupedGridMode() && Layout is GridItemsLayout gridLayout)
+				{
+					_itemFactory.GridSpan = gridLayout.Span;
+					_itemFactory.GridHorizontalSpacing = gridLayout.HorizontalItemSpacing;
+					_itemFactory.GridVerticalSpacing = gridLayout.VerticalItemSpacing;
+				}
+
 				PlatformView.ItemTemplate = _itemFactory;
 			}
 			else if (PlatformView.ItemTemplate is not null)
@@ -387,6 +418,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				else if (_collectionViewSource.Source is GroupedItemTemplateCollection2 groupedItemTemplateCollection)
 				{
 					groupedItemTemplateCollection.CleanUp();
+				}
+				else if (_collectionViewSource.Source is GroupedGridTemplateCollection2 groupedGridTemplateCollection)
+				{
+					groupedGridTemplateCollection.CleanUp();
 				}
 
 				if (_collectionViewSource.Source is INotifyCollectionChanged incc)
@@ -613,6 +648,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			switch (Layout)
 			{
 				case GridItemsLayout gridItemsLayout:
+					// Grouped grid: use StackLayout as outer layout to virtualize groups.
+					// Each group is a single item containing VariableSizedWrapGrid.
+					if (ItemsView is GroupableItemsView groupable && groupable.IsGrouped)
+						return CreateGroupedGridOuterLayout(gridItemsLayout);
 					return CreateGridView(gridItemsLayout);
 				case LinearItemsLayout listItemsLayout:
 					return CreateStackLayout(listItemsLayout);
@@ -621,6 +660,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 
 			throw new NotImplementedException("The layout is not implemented");
+		}
+
+		/// <summary>
+		/// Creates a StackLayout for the outer ItemsView in grouped grid mode.
+		/// Groups are stacked vertically (or horizontally), and each group contains
+		/// its own VariableSizedWrapGrid for item arrangement.
+		/// </summary>
+		static UI.Xaml.Controls.StackLayout CreateGroupedGridOuterLayout(GridItemsLayout gridItemsLayout)
+		{
+			return new UI.Xaml.Controls.StackLayout()
+			{
+				Orientation = gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal
+						? Orientation.Horizontal : Orientation.Vertical,
+				Spacing = gridItemsLayout.VerticalItemSpacing
+			};
 		}
 
 		static UI.Xaml.Controls.StackLayout CreateStackLayout(LinearItemsLayout listItemsLayout)
@@ -725,6 +779,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				listViewLayout.MaximumRowsOrColumns = gridItemsLayout.Span;
 			}
+			else if (IsGroupedGridMode() && Layout is GridItemsLayout gridLayout)
+			{
+				// Rebuild to apply new span to each group's VariableSizedWrapGrid
+				if (_itemFactory is not null)
+					_itemFactory.GridSpan = gridLayout.Span;
+				UpdateItemsSource();
+			}
 		}
 
 		void UpdateItemsLayoutItemSpacing()
@@ -734,6 +795,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				listViewLayout.MinColumnSpacing = gridItemsLayout.HorizontalItemSpacing;
 				listViewLayout.MinRowSpacing = gridItemsLayout.VerticalItemSpacing;
+			}
+			else if (IsGroupedGridMode() && Layout is GridItemsLayout gridLayout)
+			{
+				// Rebuild to apply new spacing to each group's VariableSizedWrapGrid
+				if (_itemFactory is not null)
+				{
+					_itemFactory.GridHorizontalSpacing = gridLayout.HorizontalItemSpacing;
+					_itemFactory.GridVerticalSpacing = gridLayout.VerticalItemSpacing;
+				}
+				UpdateItemsSource();
 			}
 			else if (PlatformView.Layout is UI.Xaml.Controls.StackLayout stackLayout &&
 				Layout is LinearItemsLayout linearItemsLayout)
@@ -1424,6 +1495,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (itemsSource is null)
 			{
 				return -1;
+			}
+
+			// In grouped grid mode, each group is a single item.
+			// ScrollTo group index maps directly to the flat index.
+			if (IsGroupedGridMode())
+			{
+				var itemCount = _collectionViewSource.View?.Count ?? 0;
+				return groupIndex >= 0 && groupIndex < itemCount ? groupIndex : -1;
 			}
 
 			var hasGroupHeader = groupableItemsView.GroupHeaderTemplate is not null;

@@ -10,12 +10,26 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		private readonly ItemsView _view = view;
 		private Dictionary<DataTemplate, List<ItemContainer>> _recyclePool = new();
 
+		/// <summary>
+		/// Grid layout parameters for grouped grid mode.
+		/// Set by the handler when the layout is grouped + grid.
+		/// </summary>
+		internal int GridSpan { get; set; } = 1;
+		internal double GridHorizontalSpacing { get; set; }
+		internal double GridVerticalSpacing { get; set; }
+
 		internal static readonly BindableProperty OriginTemplateProperty =
 			BindableProperty.CreateAttached(
 				"OriginTemplate", typeof(DataTemplate), typeof(ItemFactory), null);
 
 		public UIElement? GetElement(ElementFactoryGetArgs args)
 		{
+			// Grouped grid mode: each item is a GroupGridContext representing an entire group
+			if (args.Data is GroupGridContext groupContext)
+			{
+				return CreateGroupGridElement(groupContext);
+			}
+
 			// NOTE: 1.6: replace w/ RecyclePool
 			if (args.Data is ItemTemplateContext2 templateContext)
 			{
@@ -100,9 +114,32 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			return null;
 		}
 
+		UIElement CreateGroupGridElement(GroupGridContext context)
+		{
+			var panel = new GroupGridPanel();
+			panel.Build(context, _view, GridSpan, GridHorizontalSpacing, GridVerticalSpacing);
+
+			var container = new ItemContainer
+			{
+				Child = panel,
+				VerticalAlignment = VerticalAlignment.Stretch,
+				HorizontalAlignment = HorizontalAlignment.Stretch
+			};
+
+			return container;
+		}
+
 		public void RecycleElement(ElementFactoryRecycleArgs args)
 		{
 			var item = args.Element as ItemContainer;
+
+			// Handle grouped grid panel recycling
+			if (item?.Child is GroupGridPanel groupPanel)
+			{
+				groupPanel.CleanUp(_view);
+				return;
+			}
+
 			var wrapper = item?.Child as ElementWrapper;
 			var wrapperView = wrapper?.VirtualView as View;
 			DataTemplate? template = wrapperView?.GetValue(OriginTemplateProperty) as DataTemplate;

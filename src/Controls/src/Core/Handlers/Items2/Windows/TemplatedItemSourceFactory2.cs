@@ -24,5 +24,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			return new GroupedItemTemplateCollection2(itemsSource, itemTemplate, groupHeaderTemplate, groupFooterTemplate, container, mauiContext);
 		}
+
+		/// <summary>
+		/// Creates a grouped grid source where each group is a single item.
+		/// Used with StackLayout outer layout + VariableSizedWrapGrid per group.
+		/// </summary>
+		internal static object CreateGroupedGrid(IEnumerable itemsSource, DataTemplate itemTemplate,
+			DataTemplate? groupHeaderTemplate, DataTemplate? groupFooterTemplate, BindableObject container, IMauiContext? mauiContext = null)
+		{
+			return new GroupedGridTemplateCollection2(itemsSource, itemTemplate, groupHeaderTemplate, groupFooterTemplate, container, mauiContext);
+		}
 	}
 }
