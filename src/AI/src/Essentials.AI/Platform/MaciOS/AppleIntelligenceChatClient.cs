@@ -121,7 +121,18 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 			{
 				try
 				{
-					handler.ProcessUpdate(StreamUpdate.FromNative(update));
+					switch (update.UpdateType)
+					{
+						case ResponseUpdateTypeNative.Content:
+							handler.ProcessContent(update.Text);
+							break;
+						case ResponseUpdateTypeNative.ToolCall:
+							handler.ProcessToolCall(update.ToolCallId, update.ToolCallName, update.ToolCallArguments);
+							break;
+						case ResponseUpdateTypeNative.ToolResult:
+							handler.ProcessToolResult(update.ToolCallId, update.ToolCallResult);
+							break;
+					}
 				}
 				catch (Exception ex)
 				{
