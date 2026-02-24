@@ -2,6 +2,11 @@
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
 {
+	/// <summary>
+	/// Wraps a non-list <see cref="IEnumerable"/> items source, yielding an
+	/// <see cref="ItemTemplateContext2"/> for each item on enumeration.
+	/// Used when the source does not implement <see cref="System.Collections.IList"/>.
+	/// </summary>
 	internal class ItemTemplateContextEnumerable2 : IEnumerable
 	{
 		readonly IEnumerable _itemsSource;

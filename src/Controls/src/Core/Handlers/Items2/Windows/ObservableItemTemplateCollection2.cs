@@ -5,6 +5,11 @@ using System.Collections.Specialized;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
 {
+	/// <summary>
+	/// An observable collection of <see cref="ItemTemplateContext2"/> that mirrors an
+	/// <see cref="INotifyCollectionChanged"/> items source, keeping the template collection
+	/// synchronized with the underlying data and supporting drag/drop reordering.
+	/// </summary>
 	internal class ObservableItemTemplateCollection2 : ObservableCollection<ItemTemplateContext2>
 	{
 		readonly IList _itemsSource;
@@ -25,8 +30,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public ObservableItemTemplateCollection2(IList itemsSource, DataTemplate itemTemplate, BindableObject container,
 			double? itemHeight = null, double? itemWidth = null, Thickness? itemSpacing = null, IMauiContext? mauiContext = null)
 		{
-			
-
 			_itemsSource = itemsSource;
 			_itemTemplate = itemTemplate;
 			_container = container;
@@ -65,6 +68,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			CollectionChanged += TemplateCollectionChanged;
 		}
 
+		/// <summary>
+		/// Unsubscribes from collection change events. Must be called when replacing
+		/// the items source or when the handler disconnects.
+		/// </summary>
 		public void CleanUp()
 		{
 			CollectionChanged -= TemplateCollectionChanged;

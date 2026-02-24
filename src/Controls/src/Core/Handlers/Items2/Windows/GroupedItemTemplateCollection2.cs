@@ -5,6 +5,10 @@ using System.Collections.Specialized;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
 {
+	/// <summary>
+	/// An observable collection that flattens grouped items into a single list with
+	/// header/footer contexts per group, keeping in sync with the source via INCC.
+	/// </summary>
 	internal class GroupedItemTemplateCollection2 : ObservableCollection<ItemTemplateContext2>
 	{
 		readonly IEnumerable _itemsSource;
