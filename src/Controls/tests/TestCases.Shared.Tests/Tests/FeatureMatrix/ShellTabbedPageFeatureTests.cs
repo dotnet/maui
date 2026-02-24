@@ -36,6 +36,10 @@ public class ShellTabbedPageFeatureTests : _GalleryUITest
 	[Category(UITestCategories.Shell)]
 	public void VerifyShell_TabBarUnselectedColor()
 	{
+		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+		{
+			Assert.Ignore("Ignored due to a bug issue in iOS 26"); // Issue Link: https://github.com/dotnet/maui/issues/32125
+		}
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("TabBarUnselectedColorBrown");
@@ -49,6 +53,10 @@ public class ShellTabbedPageFeatureTests : _GalleryUITest
 	[Category(UITestCategories.Shell)]
 	public void VerifyShell_TabBarForegroundColorAndUnSelectedColor()
 	{
+		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+		{
+			Assert.Ignore("Ignored due to a bug issue in iOS 26"); // Issue Link: https://github.com/dotnet/maui/issues/32125
+		}
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("TabBarForegroundColorBlue");
@@ -83,6 +91,10 @@ public class ShellTabbedPageFeatureTests : _GalleryUITest
 	[Category(UITestCategories.Shell)]
 	public void VerifyShell_TabBarTitleColorAndUnSelectedColor()
 	{
+		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+		{
+			Assert.Ignore("Ignored due to a bug issue in iOS 26"); // Issue Link: https://github.com/dotnet/maui/issues/32125
+		}
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("TabBarTitleColorPurple");
@@ -207,6 +219,10 @@ public class ShellTabbedPageFeatureTests : _GalleryUITest
 	[Category(UITestCategories.Shell)]
 	public void VerifyShell_TabBarBackgroundColor()
 	{
+		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+		{
+			Assert.Ignore("Ignored due to a bug issue in iOS 26"); // Issue Link: https://github.com/dotnet/maui/issues/32125
+		}
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("TabBarBackgroundColorLightGreen");
@@ -220,6 +236,10 @@ public class ShellTabbedPageFeatureTests : _GalleryUITest
 	[Category(UITestCategories.Shell)]
 	public void VerifyShell_TabBarBackgroundColorAndForegroundColor()
 	{
+		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+		{
+			Assert.Ignore("Ignored due to a bug issue in iOS 26"); // Issue Link: https://github.com/dotnet/maui/issues/32125
+		}
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("TabBarBackgroundColorLightYellow");
@@ -235,6 +255,10 @@ public class ShellTabbedPageFeatureTests : _GalleryUITest
 	[Category(UITestCategories.Shell)]
 	public void VerifyShell_TabBarBackgroundColorAndTitleColor()
 	{
+		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+		{
+			Assert.Ignore("Ignored due to a bug issue in iOS 26"); // Issue Link: https://github.com/dotnet/maui/issues/32125
+		}
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("TabBarBackgroundColorLightBlue");
@@ -250,6 +274,10 @@ public class ShellTabbedPageFeatureTests : _GalleryUITest
 	[Category(UITestCategories.Shell)]
 	public void VerifyShell_TabBarBackgroundColorAndUnSelectedColor()
 	{
+		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+		{
+			Assert.Ignore("Ignored due to a bug issue in iOS 26"); // Issue Link: https://github.com/dotnet/maui/issues/32125
+		}
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("TabBarBackgroundColorLightGreen");
@@ -260,13 +288,17 @@ public class ShellTabbedPageFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		VerifyScreenshot();
 	}
-#endif 
+#endif
 
 #if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/32992, https://github.com/dotnet/maui/issues/33158
 	[Test, Order(17)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShell_TabBarBackgroundColorSetToNull()
 	{
+		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+		{
+			Assert.Ignore("Ignored due to a bug issue in iOS 26"); // Issue Link: https://github.com/dotnet/maui/issues/32125
+		}
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("TabBarBackgroundColorLightGreen");
@@ -303,6 +335,10 @@ public class ShellTabbedPageFeatureTests : _GalleryUITest
    [Category(UITestCategories.Shell)]
    public void VerifyShell_TabBarBackgroundColorWithMoreTabs()
    {
+	   if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+	   {
+		 Assert.Ignore("Ignored due to a bug issue in iOS 26"); // Issue Link: https://github.com/dotnet/maui/issues/32125
+	   }
 	   App.WaitForElement("GoToTab1Button"); // Navigate to Tab1 to go back to initial tab
 	   App.Tap("GoToTab1Button");
 	   App.WaitForElement(Options);
@@ -320,6 +356,10 @@ public class ShellTabbedPageFeatureTests : _GalleryUITest
    [Category(UITestCategories.Shell)]
    public void VerifyShell_TabBarUnSelectedColorWithMoreTabs()
    {
+	if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+	{
+		Assert.Ignore("Ignored due to a bug issue in iOS 26"); // Issue Link: https://github.com/dotnet/maui/issues/32125
+	}
 #if IOS || MACCATALYST
       App.WaitForElement("Tab1"); // Navigate to Tab1 to close more button
 	  App.Tap("Tab1");
